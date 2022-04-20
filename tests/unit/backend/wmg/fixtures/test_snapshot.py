@@ -2,17 +2,19 @@ import contextlib
 import os
 import sys
 import tempfile
+from collections import namedtuple
 from itertools import filterfalse
-from typing import List, Callable, Tuple, Dict
+from typing import List, Callable, Tuple, Dict, NamedTuple
 
 import numpy as np
+import pandas as pd
 import tiledb
 from numpy.random import random, randint
+from pandas import DataFrame
 
 from backend.corpora.common.corpora_orm import DbDataset, CollectionVisibility, DbCollection
 from backend.corpora.common.entities import Collection
 from backend.corpora.common.utils.db_session import db_session_manager
-from backend.wmg.data.cube import WmgCubes
 from backend.wmg.data.schemas.cube_schema import (
     cube_indexed_dims,
     cube_logical_attrs,
@@ -23,7 +25,7 @@ from backend.wmg.data.schemas.cube_schema import (
     cell_counts_indexed_dims,
     cell_counts_logical_dims,
 )
-
+from backend.wmg.data.snapshot import WmgSnapshot, CELL_TYPE_ORDERINGS_FILENAME
 from backend.wmg.data.tiledb import create_ctx
 
 
@@ -97,14 +99,34 @@ def exclude_random_coords_75pct(_) -> bool:
     return random() > 0.75
 
 
+# use this to create a disjoint set of genes across organisms, to mimic real data (each organism has its own set of
+# genes); without this filtering function, the cube would have the cross-product of organisms * genes
+# noinspection PyUnresolvedReferences
+def exclude_all_but_one_gene_per_organism(logical_coord: NamedTuple) -> bool:
+    # HACK: method called during building of both "expr summary" and "cell count" cubes, but the latter does not
+    # include gene_ontology_term_id
+    if "gene_ontology_term_id" not in logical_coord._fields:
+        return False
+    return logical_coord.gene_ontology_term_id != logical_coord.organism_ontology_term_id.replace("organism", "gene")
+
+
+def forward_cell_type_ordering(cell_type_ontology_ids: List[str]) -> List[int]:
+    return list(range(len(cell_type_ontology_ids)))
+
+
+def reverse_cell_type_ordering(cell_type_ontology_ids: List[str]) -> List[int]:
+    return list(range(len(cell_type_ontology_ids), 0, -1))
+
+
 @contextlib.contextmanager
-def create_temp_wmg_cubes(
+def create_temp_wmg_snapshot(
     dim_size=3,
     snapshot_name="dummy-snapshot",
     expression_summary_vals_fn: Callable[[List[Tuple]], Dict[str, List]] = random_expression_summary_values,
-    exclude_logical_coord_fn: Callable[[Tuple], bool] = None,
+    exclude_logical_coord_fn: Callable[[NamedTuple], bool] = None,
     cell_counts_generator_fn: Callable[[List[Tuple]], List] = random_cell_counts_values,
-) -> WmgCubes:
+    cell_ordering_generator_fn: Callable[[List[str]], List[int]] = forward_cell_type_ordering,
+) -> WmgSnapshot:
     with tempfile.TemporaryDirectory() as cube_dir:
         expression_summary_cube_dir, cell_counts_cube_dir = create_cubes(
             cube_dir,
@@ -113,15 +135,44 @@ def create_temp_wmg_cubes(
             expression_summary_vals_fn=expression_summary_vals_fn,
             cell_counts_fn=cell_counts_generator_fn,
         )
+
+        cell_type_orderings = build_cell_orderings(cell_counts_cube_dir, cell_ordering_generator_fn)
+
         with tiledb.open(expression_summary_cube_dir, ctx=create_ctx()) as expression_summary_cube:
             with tiledb.open(cell_counts_cube_dir, ctx=create_ctx()) as cell_counts_cube:
-                yield WmgCubes(expression_summary_cube, cell_counts_cube, snapshot_name)
+                yield WmgSnapshot(
+                    snapshot_identifier=snapshot_name,
+                    expression_summary_cube=expression_summary_cube,
+                    cell_counts_cube=cell_counts_cube,
+                    cell_type_orderings=cell_type_orderings,
+                )
+
+
+def build_cell_orderings(cell_counts_cube_dir_, cell_ordering_generator_fn) -> DataFrame:
+    cell_type_orderings = []
+    with tiledb.open(cell_counts_cube_dir_, ctx=create_ctx()) as cell_counts_cube:
+        tissue_ontology_term_ids = cell_counts_cube.df[:]["tissue_ontology_term_id"].unique()
+        for tissue_ontology_term_id in tissue_ontology_term_ids:
+            cell_type_ontology_term_ids = sorted(
+                cell_counts_cube.df[tissue_ontology_term_id]["cell_type_ontology_term_id"].unique()
+            )
+            ordering = cell_ordering_generator_fn(cell_type_ontology_term_ids)
+            cell_type_orderings.append(
+                pd.DataFrame(
+                    data={
+                        "tissue_ontology_term_id": [tissue_ontology_term_id] * len(cell_type_ontology_term_ids),
+                        "cell_type_ontology_term_id": cell_type_ontology_term_ids,
+                        "order": ordering,
+                    }
+                )
+            )
+    return pd.concat(cell_type_orderings)
 
 
 def create_dataset(dataset_id_ordinal: int) -> str:
     coll_id = f"dataset_id_{dataset_id_ordinal}_coll_id"
     with db_session_manager() as session:
-        if coll := Collection.get(session, (coll_id, CollectionVisibility.PUBLIC)):
+        if coll := Collection.get(session, coll_id):
             Collection.delete(coll)
 
         collection = DbCollection(
@@ -135,7 +186,6 @@ def create_dataset(dataset_id_ordinal: int) -> str:
             id=f"dataset_id_{dataset_id_ordinal}",
             name=f"dataset_name_{dataset_id_ordinal}",
             collection_id=coll_id,
-            collection_visibility=CollectionVisibility.PUBLIC,
         )
         session.add(dataset)
         return dataset.id
@@ -145,7 +195,7 @@ def create_cubes(
     data_dir,
     dim_size: int = 3,
     dim_ontology_term_ids_generator_fn: Callable[[str, int], List[str]] = simple_ontology_terms_generator,
-    exclude_logical_coord_fn: Callable[[Tuple], bool] = None,
+    exclude_logical_coord_fn: Callable[[List[str], Tuple], bool] = None,
     expression_summary_vals_fn: Callable[[List[Tuple]], Dict[str, List]] = random_expression_summary_values,
     cell_counts_fn: Callable[[List[Tuple]], List[int]] = random_cell_counts_values,
 ) -> Tuple[str, str]:
@@ -230,18 +280,19 @@ def build_coords(
     ]
     coords = list(zip(*dim_values))
     if exclude_coord_fn:
-        coords: List[Tuple] = list(filterfalse(exclude_coord_fn, coords))
+        Coord = namedtuple("Coord", logical_dims)
+        coords: List[Tuple] = list(filterfalse(exclude_coord_fn, (Coord(*c) for c in coords)))
         dim_values: List[List] = [[coord_tuple[i_dim] for coord_tuple in coords] for i_dim in range(n_dims)]
     assert all([len(dim_values[i_dim]) == len(coords) for i_dim in range(n_dims)])
     return coords, dim_values
 
 
-# CLI invocation for use by setup_dev_data.sh, to create a cube for Docker-based dev & test envs
+# CLI invocation for use by setup_dev_data.sh, to create a snapshot for Docker-based dev & test envs
 if __name__ == "__main__":
     output_cube_dir = sys.argv[1]
     if not os.path.isdir(output_cube_dir):
         sys.exit(f"invalid dir {output_cube_dir} for cube")
-    create_cubes(
+    _, cell_counts_cube_dir = create_cubes(
         output_cube_dir,
         dim_size=4,
         dim_ontology_term_ids_generator_fn=semi_real_dimension_values_generator,
@@ -249,3 +300,5 @@ if __name__ == "__main__":
         expression_summary_vals_fn=random_expression_summary_values,
         cell_counts_fn=random_cell_counts_values,
     )
+    cell_counts_df = build_cell_orderings(cell_counts_cube_dir, cell_ordering_generator_fn=forward_cell_type_ordering)
+    cell_counts_df.to_json(os.path.join(output_cube_dir, CELL_TYPE_ORDERINGS_FILENAME), orient="records")

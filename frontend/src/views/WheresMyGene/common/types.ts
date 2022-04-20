@@ -42,6 +42,10 @@ export interface RawCellTypeGeneExpressionSummaryData {
   pc: number;
   /** mean expression of the current subset of cells that express this gene */
   me: number;
+  /** Expressed cell count */
+  n: number;
+  /** Tissue Composition */
+  tpc: number;
 }
 
 /**
@@ -55,6 +59,10 @@ export interface CellTypeGeneExpressionSummaryData {
   percentage: number;
   /** mean expression of the current subset of cells that express this gene */
   meanExpression: number;
+  /** Tissue Composition */
+  tissuePercentage: number;
+  /** Expressed cell count */
+  expressedCellCount: number;
 }
 
 export interface Gene {

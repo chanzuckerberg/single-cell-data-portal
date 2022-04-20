@@ -1,5 +1,5 @@
 import Head from "next/head";
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { EMPTY_OBJECT } from "src/common/constants/utils";
 import {
   CellTypeByTissueName,
@@ -23,6 +23,7 @@ import GeneSearchBar from "../GeneSearchBar";
 import GetStarted from "../GetStarted";
 import HeatMap from "../HeatMap";
 import InfoPanel from "../InfoPanel";
+import Loader from "../Loader";
 
 const INFO_PANEL_WIDTH_PX = 320;
 
@@ -31,6 +32,8 @@ export default function WheresMyGene(): JSX.Element {
   const dispatch = useContext(DispatchContext);
 
   const { selectedGenes, selectedCellTypeIds } = state;
+
+  const [isScaled, setIsScaled] = useState(true);
 
   const {
     data: rawCellTypesByTissueName,
@@ -205,17 +208,20 @@ export default function WheresMyGene(): JSX.Element {
   }, [dispatch]);
 
   const hasSelectedGenes = selectedGenes.length > 0;
-
-  const hasSelectedCellTypeIds = Object.keys(selectedCellTypeIds).length > 0;
+  const hasSelectedCellTypes = Object.keys(selectedCellTypeIds).length > 0;
 
   const shouldShowHeatMap = useMemo(() => {
-    return hasSelectedGenes && hasSelectedCellTypeIds;
-  }, [hasSelectedGenes, hasSelectedCellTypeIds]);
+    return hasSelectedGenes && hasSelectedCellTypes;
+  }, [hasSelectedGenes, hasSelectedCellTypes]);
+
+  const handleIsScaledChange = useCallback(() => {
+    setIsScaled((prevIsScaled) => !prevIsScaled);
+  }, [setIsScaled]);
 
   return (
     <>
       <Head>
-        <title>cellxgene | Where&apos;s My Gene</title>
+        <title>cellxgene | scExpression</title>
       </Head>
 
       <SideBar
@@ -235,11 +241,16 @@ export default function WheresMyGene(): JSX.Element {
         SideBarWrapperComponent={SideBarWrapper}
         SideBarPositionerComponent={SideBarPositioner}
       >
-        <InfoPanel />
+        <InfoPanel
+          isScaled={isScaled}
+          handleIsScaledChange={handleIsScaledChange}
+        />
       </SideBar>
 
       <View hideOverflow>
         <Wrapper>
+          {isLoading && !shouldShowHeatMap && <Loader />}
+
           <Top>
             <GeneSearchBar />
             <Beta />
@@ -247,6 +258,7 @@ export default function WheresMyGene(): JSX.Element {
 
           {shouldShowHeatMap ? (
             <HeatMap
+              isScaled={isScaled}
               isLoadingAPI={isLoading}
               cellTypes={selectedCellTypes}
               genes={selectedGenes}
