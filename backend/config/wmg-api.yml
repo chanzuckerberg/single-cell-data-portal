@@ -1,4 +1,4 @@
-qopenapi: 3.0.3
+openapi: 3.0.3
 info:
   version: "1.0.0"
   title: Chan Zuckerburg Initiative cellxgene Where's My Gene (WMG) API
