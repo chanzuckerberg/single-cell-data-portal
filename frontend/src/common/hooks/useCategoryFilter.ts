@@ -12,7 +12,6 @@ import {
   CATEGORY_KEY,
   CATEGORY_LABEL,
   ETHNICITY_UNSPECIFIED_LABEL,
-  IS_PRIMARY_DATA_LABEL,
   OnFilterFn,
   OntologyCategoryConfig,
   OntologyCategorySpeciesView,
@@ -45,7 +44,7 @@ interface CategoryFilter {
 }
 
 /**
- * Filterable metadata object key. For example, "assay", "cell_type" or "is_primary_data". Used for object key lookups
+ * Filterable metadata object key. For example, "assay" or "cell_type". Used for object key lookups
  * */
 export type CategoryKey = keyof Record<CATEGORY_KEY, string>;
 
@@ -429,13 +428,6 @@ function buildCategoryValueLabel(
   categoryKey: CategoryKey,
   categoryValueKey: CategoryValueKey
 ): string {
-  // Transform is_primary_data category values.
-  if (categoryKey === CATEGORY_KEY.IS_PRIMARY_DATA) {
-    return IS_PRIMARY_DATA_LABEL[
-      categoryValueKey as keyof typeof IS_PRIMARY_DATA_LABEL
-    ];
-  }
-
   if (categoryKey === CATEGORY_KEY.PUBLICATION_DATE_VALUES) {
     return PUBLICATION_DATE_LABELS[
       `LABEL_${categoryValueKey}` as keyof typeof PUBLICATION_DATE_LABELS
