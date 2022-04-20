@@ -24,22 +24,22 @@ locals {
   backend_cmd                  = ["gunicorn", "--worker-class", "gevent", "--workers", "1", "--bind", "0.0.0.0:5000", "backend.corpora.api_server.app:app", "--max-requests", "10000", "--timeout", "180", "--keep-alive", "5", "--log-level", "info"]
   data_load_path               = "s3://${local.secret["s3_buckets"]["env"]["name"]}/database/dev_data.sql"
 
-  vpc_id                         = local.secret["vpc_id"]
-  subnets                        = local.secret["private_subnets"]
-  security_groups                = local.secret["security_groups"]
-  zone                           = local.secret["zone_id"]
-  cluster                        = local.secret["cluster_arn"]
-  frontend_image_repo            = local.secret["ecrs"]["frontend"]["url"]
-  backend_image_repo             = local.secret["ecrs"]["backend"]["url"]
-  upload_image_repo              = local.secret["ecrs"]["processing"]["url"]
-  lambda_upload_success_repo     = local.secret["ecrs"]["upload_success"]["url"]
-  lambda_upload_repo             = local.secret["ecrs"]["upload_failures"]["url"]
-  lambda_dataset_submission_repo = local.secret["ecrs"]["dataset_submission"]["url"]
-  wmg_upload_image_repo          = local.secret["ecrs"]["wmg_processing"]["url"]
-  batch_role_arn                 = local.secret["batch_queues"]["upload"]["role_arn"]
-  job_queue_arn                  = local.secret["batch_queues"]["upload"]["queue_arn"]
-  external_dns                   = local.secret["external_zone_name"]
-  internal_dns                   = local.secret["internal_zone_name"]
+  vpc_id                          = local.secret["vpc_id"]
+  subnets                         = local.secret["private_subnets"]
+  security_groups                 = local.secret["security_groups"]
+  zone                            = local.secret["zone_id"]
+  cluster                         = local.secret["cluster_arn"]
+  frontend_image_repo             = local.secret["ecrs"]["frontend"]["url"]
+  backend_image_repo              = local.secret["ecrs"]["backend"]["url"]
+  upload_image_repo               = local.secret["ecrs"]["processing"]["url"]
+  lambda_upload_success_repo      = local.secret["ecrs"]["upload_success"]["url"]
+  lambda_upload_repo              = local.secret["ecrs"]["upload_failures"]["url"]
+  lambda_dataset_submissions_repo = local.secret["ecrs"]["dataset_submissions"]["url"]
+  wmg_upload_image_repo           = local.secret["ecrs"]["wmg_processing"]["url"]
+  batch_role_arn                  = local.secret["batch_queues"]["upload"]["role_arn"]
+  job_queue_arn                   = local.secret["batch_queues"]["upload"]["queue_arn"]
+  external_dns                    = local.secret["external_zone_name"]
+  internal_dns                    = local.secret["internal_zone_name"]
 
   frontend_listener_arn        = try(local.secret[local.alb_key]["frontend"]["listener_arn"], "")
   backend_listener_arn         = try(local.secret[local.alb_key]["backend"]["listener_arn"], "")
@@ -48,10 +48,10 @@ locals {
   frontend_alb_dns             = try(local.secret[local.alb_key]["frontend"]["dns_name"], "")
   backend_alb_dns              = try(local.secret[local.alb_key]["backend"]["dns_name"], "")
 
-  artifact_bucket              = try(local.secret["s3_buckets"]["artifact"]["name"], "")
-  cellxgene_bucket             = try(local.secret["s3_buckets"]["cellxgene"]["name"], "")
-  dataset_submission_bucket    = try(local.secret["s3_buckets"]["dataset_submission"]["name"], "")
-  wmg_bucket                   = try(local.secret["s3_buckets"]["wmg"]["name"], "")
+  artifact_bucket            = try(local.secret["s3_buckets"]["artifact"]["name"], "")
+  cellxgene_bucket           = try(local.secret["s3_buckets"]["cellxgene"]["name"], "")
+  dataset_submissions_bucket = try(local.secret["s3_buckets"]["dataset_submissions"]["name"], "")
+  wmg_bucket                 = try(local.secret["s3_buckets"]["wmg"]["name"], "")
 
   ecs_role_arn                 = local.secret["service_roles"]["ecs_role"]
   sfn_role_arn                 = local.secret["service_roles"]["sfn_upload"]
@@ -182,33 +182,33 @@ module wmg_batch {
 }
 
 module upload_success_lambda {
-  source                    = "../lambda"
-  image                     = "${local.lambda_upload_success_repo}:${local.image_tag}"
-  name                      = "upload-success"
-  custom_stack_name         = local.custom_stack_name
-  remote_dev_prefix         = local.remote_dev_prefix
-  deployment_stage          = local.deployment_stage
-  artifact_bucket           = local.artifact_bucket
-  cellxgene_bucket          = local.cellxgene_bucket
-  dataset_submission_bucket = local.dataset_submission_bucket
-  lambda_execution_role     = local.lambda_execution_role
-  subnets                   = local.subnets
-  security_groups           = local.security_groups
+  source                     = "../lambda"
+  image                      = "${local.lambda_upload_success_repo}:${local.image_tag}"
+  name                       = "upload-success"
+  custom_stack_name          = local.custom_stack_name
+  remote_dev_prefix          = local.remote_dev_prefix
+  deployment_stage           = local.deployment_stage
+  artifact_bucket            = local.artifact_bucket
+  cellxgene_bucket           = local.cellxgene_bucket
+  dataset_submissions_bucket = local.dataset_submissions_bucket
+  lambda_execution_role      = local.lambda_execution_role
+  subnets                    = local.subnets
+  security_groups            = local.security_groups
 }
 
 module upload_error_lambda {
-  source                    = "../lambda"
-  image                     = "${local.lambda_upload_repo}:${local.image_tag}"
-  name                      = "uploadfailures"
-  custom_stack_name         = local.custom_stack_name
-  remote_dev_prefix         = local.remote_dev_prefix
-  deployment_stage          = local.deployment_stage
-  artifact_bucket           = local.artifact_bucket
-  cellxgene_bucket          = local.cellxgene_bucket
-  dataset_submission_bucket = local.dataset_submission_bucket
-  lambda_execution_role     = local.lambda_execution_role
-  subnets                   = local.subnets
-  security_groups           = local.security_groups
+  source                     = "../lambda"
+  image                      = "${local.lambda_upload_repo}:${local.image_tag}"
+  name                       = "uploadfailures"
+  custom_stack_name          = local.custom_stack_name
+  remote_dev_prefix          = local.remote_dev_prefix
+  deployment_stage           = local.deployment_stage
+  artifact_bucket            = local.artifact_bucket
+  cellxgene_bucket           = local.cellxgene_bucket
+  dataset_submissions_bucket = local.dataset_submissions_bucket
+  lambda_execution_role      = local.lambda_execution_role
+  subnets                    = local.subnets
+  security_groups            = local.security_groups
 }
 
 module upload_sfn {
@@ -222,27 +222,26 @@ module upload_sfn {
   deployment_stage       = local.deployment_stage
 }
 
-module dataset_submission_lambda {
-  source                    = "../lambda"
-  image                     = "${local.lambda_dataset_submission_repo}:${local.image_tag}"
-  name                      = "dataset-submission"
-  custom_stack_name         = local.custom_stack_name
-  remote_dev_prefix         = local.remote_dev_prefix
-  deployment_stage          = local.deployment_stage
-  artifact_bucket           = local.artifact_bucket
-  cellxgene_bucket          = local.cellxgene_bucket
-  dataset_submission_bucket = local.dataset_submission_bucket
-  lambda_execution_role     = local.lambda_execution_role
-  subnets                   = local.subnets
-  security_groups           = local.security_groups
+module dataset_submissions_lambda {
+  source                     = "../lambda"
+  image                      = "${local.lambda_dataset_submissions_repo}:${local.image_tag}"
+  name                       = "dataset-submission"
+  custom_stack_name          = local.custom_stack_name
+  remote_dev_prefix          = local.remote_dev_prefix
+  deployment_stage           = local.deployment_stage
+  artifact_bucket            = local.artifact_bucket
+  cellxgene_bucket           = local.cellxgene_bucket
+  dataset_submissions_bucket = local.dataset_submissions_bucket
+  lambda_execution_role      = local.lambda_execution_role
+  subnets                    = local.subnets
+  security_groups            = local.security_groups
 }
 
-resource "aws_s3_bucket_notification" "on_dataset_submission_object_created" {
-  bucket = local.dataset_submission_bucket
+resource "aws_s3_bucket_notification" "on_dataset_submissions_object_created" {
+  bucket = local.dataset_submissions_bucket
 
   lambda_function {
-    lambda_function_arn = module.dataset_submission_lambda.arn
+    lambda_function_arn = module.dataset_submissions_lambda.arn
     events = ["s3:ObjectCreated:*"]
-    filter_suffix = ".h5ad"
   }
 }

@@ -136,14 +136,14 @@ services:
        corporanet:
           aliases:
             - uploadsuccess.corporanet.local
-  dataset_submission:
-    image: "${DOCKER_REPO}dataset-submission"
+  dataset_submissions:
+    image: "${DOCKER_REPO}dataset-submissions"
     platform: linux/amd64
     build:
       context: .
       cache_from:
-        - "${DOCKER_REPO}dataset-submission:branch-main"
-      dockerfile: Dockerfile.handle_dataset_submission
+        - "${DOCKER_REPO}dataset-submissions:branch-main"
+      dockerfile: Dockerfile.handle_dataset_submissions
       args:
         - BUILDKIT_INLINE_CACHE=1
         - HAPPY_COMMIT
@@ -166,11 +166,11 @@ services:
       - DEPLOYMENT_STAGE=test
       - ARTIFACT_BUCKET=artifact-bucket
       - CELLXGENE_BUCKET=cellxgene-bucket
-      - DATASET_SUBMISSION_BUCKET=cellxgene-dataset-submission
+      - DATASET_SUBMISSIONS_BUCKET=cellxgene-dataset-submission
     networks:
        corporanet:
           aliases:
-            - dataset_submission.corporanet.local
+            - dataset_submissions.corporanet.local
   processing:
     image: "${DOCKER_REPO}corpora-upload"
     platform: linux/amd64

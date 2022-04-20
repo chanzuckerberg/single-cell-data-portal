@@ -18,9 +18,9 @@ variable cellxgene_bucket {
   description = "Cellxgene bucket name"
 }
 
-variable dataset_submission_bucket {
+variable dataset_submissions_bucket {
   type        = string
-  description = "Dataset submission bucket name"
+  description = "Dataset submissions bucket name"
 }
 
 variable custom_stack_name {
