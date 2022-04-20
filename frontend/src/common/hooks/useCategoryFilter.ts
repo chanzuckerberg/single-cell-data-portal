@@ -116,6 +116,13 @@ interface RangeCategory {
 type SetFilterFn = (columnId: string, updater: any) => void;
 
 /**
+ * Generic tooltip displayed when select, ontology or range category is disabled due to no values matching current
+ * filter.
+ */
+const TOOLTIP_CATEGORY_DISABLED =
+  "There are no values that meet the current filter criteria";
+
+/**
  * Faceted filter functionality over dataset metadata. "or" between values, "and" across categories.
  * @param originalRows - Original result set before filtering.
  * @param categoryKeys - Set of category keys to include for this filter instance.
@@ -733,12 +740,20 @@ function buildOntologyCategoryView(
     [] as OntologyCategorySpeciesView[]
   );
 
-  // Return the ontology category view model.
-  return {
+  // Build up the ontology category view model.
+  const ontologyView: OntologyCategoryView = {
     key: categoryKey,
     label: CATEGORY_LABEL[categoryKey],
     species: speciesViews,
   };
+
+  // Check if ontology category is disabled.
+  if (isOntologyCategoryViewDisabled(ontologyView)) {
+    ontologyView.isDisabled = true;
+    ontologyView.tooltip = TOOLTIP_CATEGORY_DISABLED;
+  }
+
+  return ontologyView;
 }
 
 /**
@@ -805,15 +820,23 @@ function buildRangeCategoryView(
   categoryKey: CategoryKey,
   rangeCategory: RangeCategory
 ): RangeCategoryView {
-  // Return completed view model of this category.
-  return {
-    key: categoryKey as CategoryKey,
+  // Build view model of range category.
+  const rangeView: RangeCategoryView = {
+    key: categoryKey,
     label: CATEGORY_LABEL[categoryKey],
     max: rangeCategory.max,
     min: rangeCategory.min,
     selectedMax: rangeCategory.selectedMax,
     selectedMin: rangeCategory.selectedMin,
   };
+
+  // Determine if range view is disabled.
+  if (isRangeCategoryDisabled(rangeView)) {
+    rangeView.isDisabled = true;
+    rangeView.tooltip = TOOLTIP_CATEGORY_DISABLED;
+  }
+
+  return rangeView;
 }
 
 /**
@@ -833,29 +856,33 @@ function buildSelectCategoryView(
     .map(({ count, key, selected }: SelectCategoryValue) => ({
       count,
       key,
-      label: buildCategoryValueLabel(categoryKey as CategoryKey, key),
+      label: buildCategoryValueLabel(categoryKey, key),
       selected: selected,
     }))
     .sort(sortCategoryValueViews);
 
-  // Handle special cases where category may be disabled.
-  let disabled, tooltip;
+  // Build view model of select category.
+  const selectView: SelectCategoryView = {
+    key: categoryKey,
+    label: CATEGORY_LABEL[categoryKey],
+    values: categoryValueViews,
+  };
+
+  // Handle special cases where select category may be disabled.
   if (
     categoryKey === CATEGORY_KEY.ETHNICITY &&
     !isEthnicityViewEnabled(filterState)
   ) {
-    disabled = true;
-    tooltip = CATEGORY_CONFIGS_BY_CATEGORY_KEY[categoryKey].tooltip;
+    selectView.isDisabled = true;
+    selectView.tooltip = CATEGORY_CONFIGS_BY_CATEGORY_KEY[categoryKey].tooltip;
+  }
+  // Otherwise check generic case where category is disabled due to no values meeting current filter.
+  else if (isSelectCategoryDisabled(selectView)) {
+    selectView.isDisabled = true;
+    selectView.tooltip = TOOLTIP_CATEGORY_DISABLED;
   }
 
-  // Return completed view model of this category.
-  return {
-    disabled,
-    key: categoryKey as CategoryKey,
-    label: CATEGORY_LABEL[categoryKey],
-    tooltip,
-    values: categoryValueViews,
-  };
+  return selectView;
 }
 
 /**
@@ -1081,6 +1108,42 @@ function isCategoryConfigOntology(
   categoryConfig: CategoryConfig
 ): categoryConfig is OntologyCategoryConfig {
   return !!(categoryConfig as OntologyCategoryConfig).ontology;
+}
+
+/**
+ * Returns true if ontology category is disabled, that is, there are no species ontology trees or species
+ * ontology trees with values that have a count.
+ * @param categoryView - Ontology category view to check enabled/disabled state of.
+ * @returns True when there are no species or the count of children for each species is 0.
+ */
+function isOntologyCategoryViewDisabled(
+  categoryView: OntologyCategoryView
+): boolean {
+  const { species } = categoryView;
+  if (!species || species.length === 0) {
+    return true;
+  }
+  return !species.some((s) => s.children.some((child) => child.count > 0));
+}
+
+/**
+ * Returns true if range category is disabled, that is, range min and max are both 0 or both equal.
+ * @param categoryView - Range category view to check enabled/disabled state of.
+ * @returns true when range min and max are both 0 or both equal.
+ */
+function isRangeCategoryDisabled(categoryView: RangeCategoryView): boolean {
+  const { max, min } = categoryView;
+  return (min === 0 && max === 0) || min === max;
+}
+
+/**
+ * Returns true if select category is disabled, that is, the category is disabled or all values have a count of 0.
+ * @param categoryView - Select category view to check enabled/disabled state of.
+ * @returns true when the category is disabled or all category values have a count of 0.
+ */
+function isSelectCategoryDisabled(categoryView: SelectCategoryView): boolean {
+  const { isDisabled, values } = categoryView;
+  return isDisabled || values?.every((value) => value.count === 0);
 }
 
 /**
