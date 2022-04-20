@@ -8,6 +8,7 @@ from unittest.mock import patch
 import tiledb
 from scipy.sparse import coo_matrix, csr_matrix
 
+import backend.wmg.data.load_corpus
 from backend.wmg.data.cube_pipeline import load, load_data_and_create_cube
 from backend.wmg.data.load_corpus import (
     load_h5ad,
@@ -199,7 +200,8 @@ class TestCorpusLoad(unittest.TestCase):
 
         self.assertEqual(0.5 + 0.7 + 0.9, sum(rankits_filtered.data))
 
-    def test__filter_out_cells_with_incorrect_assays(self):
+    @patch("backend.wmg.data.load_corpus.transform_dataset_raw_counts_to_rankit")
+    def test__filter_out_cells_with_incorrect_assays(self, mock_rankit):
         # Create dataset with mixture of included and not included assays
         CELL_COUNT = 5
         test_anndata_object = create_anndata_test_object(num_genes=3, num_cells=CELL_COUNT)
@@ -211,7 +213,7 @@ class TestCorpusLoad(unittest.TestCase):
         anndata_filename.touch()
         test_anndata_object.write(anndata_filename, compression="gzip")
 
-        load_h5ad(anndata_filename, self.corpus_path, validate=False, min_genes=2)
+        load_h5ad(anndata_filename, self.corpus_path, validate=False, min_genes=0)
         obs = tiledb.open(f"{self.corpus_path}/obs", "r")
         corpus_cell_count = obs.df[:].shape[0]
 
