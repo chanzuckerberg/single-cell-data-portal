@@ -1,11 +1,6 @@
 import { ChangeEvent, Dispatch, SetStateAction } from "react";
 import { CellValue, Row } from "react-table";
-import {
-  Collection,
-  IS_PRIMARY_DATA,
-  Ontology,
-  PublisherMetadata,
-} from "src/common/entities";
+import { Collection, Ontology, PublisherMetadata } from "src/common/entities";
 import { CategoryKey } from "src/common/hooks/useCategoryFilter";
 
 /**
@@ -43,7 +38,6 @@ export enum CATEGORY_KEY {
   "DEVELOPMENT_STAGE_ANCESTORS" = "development_stage_ancestors",
   "DISEASE" = "disease",
   "ETHNICITY" = "ethnicity",
-  "IS_PRIMARY_DATA" = "is_primary_data",
   "MEAN_GENES_PER_CELL" = "mean_genes_per_cell",
   "ORGANISM" = "organism",
   "PUBLICATION_AUTHORS" = "publicationAuthors",
@@ -61,7 +55,6 @@ export interface Categories {
   disease: Ontology[];
   development_stage_ancestors: string[];
   ethnicity: Ontology[];
-  is_primary_data: IS_PRIMARY_DATA[];
   organism: Ontology[];
   sex: Ontology[];
   tissue: Ontology[];
@@ -82,7 +75,7 @@ export interface CollectionRow extends Categories, PublisherMetadataCategories {
 }
 
 /*
- * Ontology keys for species. For exmaple, for the ontology ID "HsapDv:0000045", the key is "HsapDv".
+ * Ontology keys for species. For example, for the ontology ID "HsapDv:0000045", the key is "HsapDv".
  */
 export enum SPECIES_KEY {
   "HsapDv" = "HsapDv",
@@ -373,11 +366,6 @@ const CATEGORY_CONFIGS: (CategoryConfig | OntologyCategoryConfig)[] = [
       "Ethnicity only applies to Homo sapiens which is not selected in the Organism filter.",
   },
   {
-    categoryKey: CATEGORY_KEY.IS_PRIMARY_DATA,
-    categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
-    multiselect: true,
-  },
-  {
     categoryKey: CATEGORY_KEY.MEAN_GENES_PER_CELL,
     categoryType: CATEGORY_FILTER_TYPE.BETWEEN,
     multiselect: false,
@@ -493,30 +481,21 @@ export type FilterCategoryValuesWithCountFn = (
 type KeyedCategoryConfigs = { [K in CATEGORY_KEY]: CategoryConfig };
 
 /**
- * Display values of is_primary_data labels.
- */
-export enum IS_PRIMARY_DATA_LABEL {
-  "PRIMARY" = "primary",
-  "SECONDARY" = "composed",
-}
-
-/**
  * Possible set of organism values.
  */
 export enum ORGANISM {
   "HOMO_SAPIENS" = "Homo sapiens",
+  "MUS_MUSCULUS" = "Mus musculus",
 }
 
 /**
- * Filterable metadata keys where the type of the corresponding value is Ontology. Currently, that is all metadata
- * keys except is_primary_data.
+ * Filterable metadata keys where the type of the corresponding value is Ontology.
  */
 export type OntologyCategoryKey = keyof Omit<
   Record<CATEGORY_KEY, string>,
   | CATEGORY_KEY.CELL_COUNT
   | CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS
   | CATEGORY_KEY.MEAN_GENES_PER_CELL
-  | CATEGORY_KEY.IS_PRIMARY_DATA
   | CATEGORY_KEY.PUBLICATION_DATE_VALUES
   | CATEGORY_KEY.PUBLICATION_AUTHORS
 >;
@@ -531,7 +510,6 @@ export enum CATEGORY_LABEL {
   development_stage_ancestors = "Development Stage",
   disease = "Disease",
   ethnicity = "Ethnicity",
-  is_primary_data = "Data Source",
   mean_genes_per_cell = "Gene Count",
   publicationAuthors = "Authors",
   publicationDateValues = "Publication Date",
