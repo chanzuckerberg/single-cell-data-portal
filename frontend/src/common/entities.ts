@@ -97,11 +97,12 @@ export interface Collection {
   data_submission_policy_version: string;
   created_at: number;
   updated_at: number;
-  has_revision: boolean;
   publisher_metadata: PublisherMetadata;
   revision_diff: boolean;
   summaryCitation?: string;
   tombstone?: boolean;
+  revision_of?: Collection["id"];
+  revisioning_in?: Collection["id"];
 }
 
 /**
@@ -248,6 +249,7 @@ export interface GeneSet {
 export interface PublisherMetadata {
   authors: (Author | Consortium)[];
   journal: string;
+  published_at: number;
   published_day: number;
   published_month: number;
   published_year: number;

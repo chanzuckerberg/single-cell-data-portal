@@ -10,6 +10,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { EMPTY_ARRAY, EMPTY_OBJECT } from "src/common/constants/utils";
@@ -22,11 +23,18 @@ import { selectFilters } from "../../common/store/actions";
 import { Filters as IFilters } from "../../common/types";
 import { StyledComplexFilterInputDropdown } from "./style";
 
+/**
+ * NOTE(thuang): Update this count to match the amount of filters we render,
+ * so that we don't accidentally clear filters when people collapse the sidebar
+ */
+const FILTERS_COUNT = 4;
+
 const MenuSelectProps = {
   getOptionSelected,
 };
 
 export default memo(function Filters(): JSX.Element {
+  const readyFilterCount = useRef(0);
   const dispatch = useContext(DispatchContext);
   const state = useContext(StateContext);
   const [availableFilters, setAvailableFilters] =
@@ -36,7 +44,6 @@ export default memo(function Filters(): JSX.Element {
 
   const {
     datasets: datasetIds,
-    developmentStages,
     diseases,
     ethnicities,
     sexes,
@@ -51,7 +58,7 @@ export default memo(function Filters(): JSX.Element {
       sex_terms: rawSexes,
     },
     isLoading: rawIsLoading,
-  } = useFilterDimensions();
+  } = useFilterDimensions({ includeAllFilterOptions: true });
 
   // (thuang): We only update available filters when API call is done,
   // otherwise when `useFilterDimensions()` is still loading, its filters
@@ -77,7 +84,6 @@ export default memo(function Filters(): JSX.Element {
 
   const {
     datasets = EMPTY_ARRAY,
-    development_stage_terms = EMPTY_ARRAY,
     disease_terms = EMPTY_ARRAY,
     ethnicity_terms = EMPTY_ARRAY,
     sex_terms = EMPTY_ARRAY,
@@ -86,12 +92,6 @@ export default memo(function Filters(): JSX.Element {
   const selectedDatasets = useMemo(() => {
     return datasets.filter((dataset) => datasetIds?.includes(dataset.id));
   }, [datasets, datasetIds]);
-
-  const selectedDevelopmentStages = useMemo(() => {
-    return development_stage_terms.filter((developmentStage) =>
-      developmentStages?.includes(developmentStage.id)
-    );
-  }, [development_stage_terms, developmentStages]);
 
   const selectedDiseases = useMemo(() => {
     return disease_terms.filter((disease) => diseases?.includes(disease.id));
@@ -114,6 +114,18 @@ export default memo(function Filters(): JSX.Element {
       return (options: DefaultMenuSelectOption[] | null): void => {
         if (!dispatch || !options) return;
 
+        /**
+         * (thuang): We don't want to dispatch empty selection at the following
+         * times:
+         * 1. At mount
+         * 2. When we have just loaded available filter options
+         * Thus, FILTERS_COUNT * 2 (conditions)
+         */
+        if (readyFilterCount.current !== FILTERS_COUNT * 2) {
+          readyFilterCount.current++;
+          return;
+        }
+
         dispatch(
           selectFilters(
             key,
@@ -122,16 +134,11 @@ export default memo(function Filters(): JSX.Element {
         );
       };
     },
-    [dispatch]
+    [dispatch, readyFilterCount]
   );
 
   const handleDatasetsChange = useMemo(
     () => handleFilterChange("datasets"),
-    [handleFilterChange]
-  );
-
-  const handleDevelopmentStagesChange = useMemo(
-    () => handleFilterChange("developmentStages"),
     [handleFilterChange]
   );
 
@@ -158,17 +165,6 @@ export default memo(function Filters(): JSX.Element {
         options={datasets as unknown as DefaultMenuSelectOption[]}
         onChange={handleDatasetsChange}
         value={selectedDatasets as unknown as DefaultMenuSelectOption[]}
-        InputDropdownComponent={
-          StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
-        }
-        MenuSelectProps={MenuSelectProps}
-      />
-      <ComplexFilter
-        multiple
-        label="Development Stage"
-        options={development_stage_terms}
-        onChange={handleDevelopmentStagesChange}
-        value={selectedDevelopmentStages}
         InputDropdownComponent={
           StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
         }

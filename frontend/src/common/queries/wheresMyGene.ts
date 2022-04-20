@@ -1,17 +1,16 @@
 import { useContext, useMemo } from "react";
 import { useQuery, UseQueryResult } from "react-query";
-import { StateContext } from "src/views/WheresMyGene/common/store";
+import { API_URL } from "src/configs/configs";
+import { State, StateContext } from "src/views/WheresMyGene/common/store";
 import {
   CellType,
   CellTypeGeneExpressionSummaryData,
   GeneExpressionSummary,
   RawCellTypeGeneExpressionSummaryData,
-  Tissue,
 } from "src/views/WheresMyGene/common/types";
 import { API } from "../API";
 import { EMPTY_OBJECT } from "../constants/utils";
 import { DEFAULT_FETCH_OPTIONS, JSON_BODY_FETCH_OPTIONS } from "./common";
-import { CELL_TYPE_ORDER_BY_TISSUE } from "./constants/cellTypeOrderByTissue";
 import { ENTITIES } from "./entities";
 
 interface RawPrimaryFilterDimensionsResponse {
@@ -40,13 +39,7 @@ export interface PrimaryFilterDimensionsResponse {
 }
 
 export async function fetchPrimaryFilterDimensions(): Promise<PrimaryFilterDimensionsResponse> {
-  // DEBUG
-  // DEBUG
-  // DEBUG
-  // const url = API_URL + API.WMG_PRIMARY_FILTER_DIMENSIONS;
-  const url =
-    "https://public-backend.dev.single-cell.czi.technology/" +
-    API.WMG_PRIMARY_FILTER_DIMENSIONS;
+  const url = API_URL + API.WMG_PRIMARY_FILTER_DIMENSIONS;
 
   const response = await (await fetch(url, DEFAULT_FETCH_OPTIONS)).json();
 
@@ -77,7 +70,7 @@ export const USE_PRIMARY_FILTER_DIMENSIONS = {
 export function usePrimaryFilterDimensions(): UseQueryResult<PrimaryFilterDimensionsResponse> {
   return useQuery<PrimaryFilterDimensionsResponse>(
     [USE_PRIMARY_FILTER_DIMENSIONS],
-    () => fetchPrimaryFilterDimensions(),
+    fetchPrimaryFilterDimensions,
     // (thuang): We don't need to refetch during the session
     { staleTime: Infinity }
   );
@@ -104,14 +97,7 @@ interface QueryResponse {
   expression_summary: {
     // gene_ontology_term_id
     [geneId: string]: {
-      [tissueId: string]: {
-        // cell_type_ontology_term_id
-        id: string;
-        me: number;
-        n: number;
-        pc: number;
-        tpc: number;
-      }[];
+      [tissueId: string]: RawCellTypeGeneExpressionSummaryData[];
     };
   };
   filter_dims: {
@@ -129,8 +115,10 @@ interface QueryResponse {
   snapshot_id: string;
   term_id_labels: {
     cell_types: {
-      [id: string]: string;
-    }[];
+      [tissue_type_ontology_term_id: string]: {
+        [id: string]: string;
+      }[];
+    };
     genes: {
       [id: string]: string;
     }[];
@@ -142,12 +130,7 @@ async function fetchQuery(
 ): Promise<QueryResponse | undefined> {
   if (!query) return;
 
-  // DEBUG
-  // DEBUG
-  // DEBUG
-  // const url = API_URL + API.WMG_QUERY;
-  const url =
-    "https://public-backend.dev.single-cell.czi.technology/" + API.WMG_QUERY;
+  const url = API_URL + API.WMG_QUERY;
   const response = await fetch(url, {
     ...DEFAULT_FETCH_OPTIONS,
     ...JSON_BODY_FETCH_OPTIONS,
@@ -199,11 +182,19 @@ export interface FilterDimensions {
   sex_terms: { id: string; name: string }[];
 }
 
-export function useFilterDimensions(): {
+/**
+ * (thuang): For Filters panel, `includeAllFilterOptions` should be `true`, so BE
+ * returns all available secondary filter options for us to display
+ */
+export function useFilterDimensions(
+  options = { includeAllFilterOptions: false }
+): {
   data: FilterDimensions;
   isLoading: boolean;
 } {
-  const requestBody = useWMGQueryRequestBody();
+  const { includeAllFilterOptions } = options;
+
+  const requestBody = useWMGQueryRequestBody({ includeAllFilterOptions });
 
   const { data, isLoading } = useWMGQuery(requestBody);
 
@@ -278,15 +269,15 @@ export function useCellTypesByTissueName(): {
     if (
       isLoading ||
       !data ||
+      Object.keys(data).length === 0 ||
       isLoadingPrimaryFilterDimensions ||
       !primaryFilterDimensions ||
       isLoadingTermIdLabels ||
-      !termIdLabels
+      !Object.keys(termIdLabels.cell_types).length
     ) {
       return { data: EMPTY_OBJECT, isLoading };
     }
 
-    const result: Map<Tissue, Map<string, CellType>> = new Map();
     const { tissues } = primaryFilterDimensions;
 
     const tissuesById: { [id: string]: { id: string; name: string } } = {};
@@ -295,47 +286,25 @@ export function useCellTypesByTissueName(): {
       tissuesById[tissue.id] = tissue;
     }
 
-    for (const expressionSummaryByTissue of Object.values(data)) {
-      for (const [tissueId, expressionSummaries] of Object.entries(
-        expressionSummaryByTissue
-      )) {
-        const cellTypes = result.get(tissueId) || new Map();
-
-        for (const expressionSummary of expressionSummaries) {
-          const { id } = expressionSummary;
-
-          const cellType = {
-            id,
-            name: termIdLabels.cell_types[id],
-          };
-
-          cellTypes.set(id, cellType);
-        }
-
-        result.set(tissueId, cellTypes);
-      }
-    }
-
     const cellTypesByTissueName: { [tissueName: string]: CellType[] } = {};
 
-    for (const [tissueId, cellTypesById] of result.entries()) {
+    for (const [tissueId, rawTissueCellTypes] of Object.entries(
+      termIdLabels.cell_types
+    )) {
       const tissueName = tissuesById[tissueId].name;
 
-      const cellTypeOrder = CELL_TYPE_ORDER_BY_TISSUE[tissueId];
-
-      const cellTypes = Array.from(cellTypesById.values());
-
-      if (cellTypeOrder) {
-        cellTypesByTissueName[tissueName] = cellTypes.sort((a, b) => {
-          const aIndex = cellTypeOrder[a.id];
-          const bIndex = cellTypeOrder[b.id];
-
-          return aIndex - bIndex;
+      const tissueCellTypes = Object.entries(rawTissueCellTypes)
+        // (thuang): Reverse the order, so the first cell type is at the top of
+        // the heat map
+        .reverse()
+        .map(([cellTypeId, cellTypeName]) => {
+          return {
+            id: cellTypeId,
+            name: cellTypeName,
+          };
         });
-      } else {
-        console.warn("No cell type order for tissue", tissueId);
-        cellTypesByTissueName[tissueName] = cellTypes;
-      }
+
+      cellTypesByTissueName[tissueName] = tissueCellTypes;
     }
 
     return {
@@ -431,18 +400,20 @@ export function useGeneExpressionSummariesByTissueName(): {
 function transformCellTypeGeneExpressionSummaryData(
   data: RawCellTypeGeneExpressionSummaryData
 ): CellTypeGeneExpressionSummaryData {
-  const { id, pc, me } = data;
+  const { id, pc, me, tpc, n } = data;
 
   return {
     ...data,
+    expressedCellCount: n,
     id,
     meanExpression: me,
     percentage: pc,
+    tissuePercentage: tpc,
   };
 }
 
 interface TermIdLabels {
-  cell_types: { [id: string]: string };
+  cell_types: { [tissueID: string]: { [id: string]: string } };
   genes: { [id: string]: string };
 }
 
@@ -464,9 +435,14 @@ export function useTermIdLabels(): {
       term_id_labels: { cell_types, genes },
     } = data;
 
+    const returnCellTypes: TermIdLabels["cell_types"] = {};
+    Object.entries(cell_types).forEach(([tissueID, cell_types]) => {
+      returnCellTypes[tissueID] = aggregateIdLabels(cell_types);
+    });
+
     return {
       data: {
-        cell_types: aggregateIdLabels(cell_types),
+        cell_types: returnCellTypes,
         genes: aggregateIdLabels(genes),
       },
       isLoading: false,
@@ -480,7 +456,17 @@ function aggregateIdLabels(items: { [id: string]: string }[]): {
   return items.reduce((memo, item) => ({ ...memo, ...item }), {});
 }
 
-function useWMGQueryRequestBody() {
+const EMPTY_FILTERS: State["selectedFilters"] = {
+  datasets: undefined,
+  developmentStages: undefined,
+  diseases: undefined,
+  ethnicities: undefined,
+  sexes: undefined,
+};
+
+function useWMGQueryRequestBody(options = { includeAllFilterOptions: false }) {
+  const { includeAllFilterOptions } = options;
+
   const {
     selectedGenes,
     selectedTissues,
@@ -490,8 +476,13 @@ function useWMGQueryRequestBody() {
 
   const { data } = usePrimaryFilterDimensions();
 
+  /**
+   * (thuang): When `includeAllFilterOptions` is `true`, we don't want to pass
+   * any selected secondary filter options to the query, otherwise BE will return
+   * only the filtered options back to us.
+   */
   const { datasets, developmentStages, diseases, ethnicities, sexes } =
-    selectedFilters;
+    includeAllFilterOptions ? EMPTY_FILTERS : selectedFilters;
 
   const organismGenesByName = useMemo(() => {
     const result: { [name: string]: { id: string; name: string } } = {};
@@ -575,5 +566,5 @@ function useWMGQueryRequestBody() {
 function toEntity(item: { [id: string]: string }) {
   const [id, name] = Object.entries(item)[0];
 
-  return { id, name };
+  return { id, name: name || id || "" };
 }

@@ -38,7 +38,7 @@ import {
 
 interface Props {
   cellTypes: CellType[];
-  selectedGeneData: (GeneExpressionSummary | undefined)[];
+  selectedGeneData?: (GeneExpressionSummary | undefined)[];
   setIsLoading: Dispatch<
     SetStateAction<{
       [tissue: Tissue]: boolean;
@@ -47,6 +47,7 @@ interface Props {
   tissue: Tissue;
   scaledMeanExpressionMax: number;
   scaledMeanExpressionMin: number;
+  isScaled: boolean;
 }
 
 const BASE_DEBOUNCE_MS = 200;
@@ -57,11 +58,12 @@ const TOOLTIP_THROTTLE_MS = 100;
 
 export default memo(function Chart({
   cellTypes,
-  selectedGeneData,
+  selectedGeneData = EMPTY_ARRAY,
   setIsLoading,
   tissue,
   scaledMeanExpressionMax,
   scaledMeanExpressionMin,
+  isScaled,
 }: Props): JSX.Element {
   const [currentIndices, setCurrentIndices] = useState([-1, -1]);
   const [cursorOffset, setCursorOffset] = useState([-1, -1]);
@@ -123,7 +125,7 @@ export default memo(function Chart({
     setHeatmapHeight(getHeatmapHeight(cellTypes));
   }, [cellTypes, selectedGeneData]);
 
-  useUpdateChart({ chart, chartProps });
+  useUpdateChart({ chart, chartProps, isScaled });
 
   // Calculate cellTypeSummaries
   /**
@@ -134,7 +136,10 @@ export default memo(function Chart({
 
   const debouncedIntegrateCellTypesAndGenes = useMemo(() => {
     return debounce(
-      (cellTypes: CellType[], geneData: Props["selectedGeneData"]) => {
+      (
+        cellTypes: CellType[],
+        geneData: Props["selectedGeneData"] = EMPTY_ARRAY
+      ) => {
         setCellTypeSummaries(
           integrateCelTypesAndGenes({
             cellTypes,
@@ -166,7 +171,7 @@ export default memo(function Chart({
     return debounce(
       (
         cellTypeSummaries: CellTypeSummary[],
-        selectedGeneData: Props["selectedGeneData"]
+        selectedGeneData: Props["selectedGeneData"] = EMPTY_ARRAY
       ) => {
         const result = {
           cellTypeMetadata: getAllSerializedCellTypeMetadata(
@@ -223,34 +228,44 @@ export default memo(function Chart({
 
     if (!dataPoint || !cellType || !gene) return null;
 
+    const { expressedCellCount } = dataPoint;
+
+    const percentage = Number(((dataPoint.percentage || 0) * 100).toFixed(2));
+
+    const tissuePercentage = Number(
+      ((dataPoint.tissuePercentage || 0) * 100).toFixed(2)
+    );
+
+    const totalCellCount = Math.round((expressedCellCount / percentage) * 100);
+
     const data = [
       {
         dataRows: [
           {
-            label: "Expressing Cells",
-            value: ((dataPoint?.percentage || 0) * 100).toFixed(2) + "%",
+            label: "Expressed in Cells",
+            value: `${percentage}% (${expressedCellCount} of ${totalCellCount} cells)`,
           },
           {
-            label: "Relative Expressions",
-            value: (dataPoint?.meanExpression || 0).toFixed(2),
+            label: "Gene Expression",
+            value: (dataPoint.meanExpression || 0).toFixed(2),
           },
           {
-            label: "Scaled Relative Expressions",
-            value: (dataPoint?.scaledMeanExpression || 0).toFixed(2),
+            label: "Gene Expression, Scaled",
+            value: (dataPoint.scaledMeanExpression || 0).toFixed(2),
           },
         ],
       },
       {
         dataRows: [
           { label: "Cell Type", value: cellType.name },
-          { label: "Tissue Composition", value: "" },
+          {
+            label: "Tissue Composition",
+            value: tissuePercentage + "%" || "",
+          },
         ],
       },
       {
-        dataRows: [
-          { label: "Gene Name", value: "" },
-          { label: "Gene Symbol", value: gene?.name || "" },
-        ],
+        dataRows: [{ label: "Gene Symbol", value: gene.name || "" }],
       },
     ];
 
@@ -268,10 +283,11 @@ export default memo(function Chart({
   return (
     <Wrapper height={heatmapHeight} width={heatmapWidth}>
       <Tooltip
-        placement="right-start"
+        width="wide"
         classes={tooltipClasses}
         title={tooltipContent || <>No data</>}
         leaveDelay={0}
+        placement="right-end"
         PopperProps={{
           anchorEl: {
             clientHeight: 0,
@@ -304,7 +320,7 @@ export default memo(function Chart({
  */
 function integrateCelTypesAndGenes({
   cellTypes,
-  geneExpressionSummaries,
+  geneExpressionSummaries = EMPTY_ARRAY,
 }: {
   cellTypes: CellType[];
   geneExpressionSummaries: Props["selectedGeneData"];

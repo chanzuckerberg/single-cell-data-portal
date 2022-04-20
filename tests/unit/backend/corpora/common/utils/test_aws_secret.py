@@ -3,7 +3,7 @@ import unittest
 from time import sleep
 
 import boto3
-from mock import patch
+from unittest.mock import patch
 
 from backend.corpora.common.utils.aws import AwsSecret
 from tests.unit.backend.corpora.fixtures.existing_aws_secret_test_fixture import ExistingAwsSecretTestFixture

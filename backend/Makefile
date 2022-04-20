@@ -5,7 +5,7 @@ db/migrate:
 .PHONY: db/remote_migration_init
 db/remote_migration_init:
 	# Run utility installation before invoking these commands.
-	pip install awscli
+	pip install awscli -r ../requirements.txt
 	apt-get update && apt-get install -y postgresql-client jq
 
 .PHONY: db/init_remote_dev
@@ -80,11 +80,12 @@ else
 endif
 
 db/test_migration:
-	$(MAKE) db/dump_schema > /tmp/before
+	$(MAKE) db/dump_schema > /tmp/before_migration
 	$(MAKE) db/migrate
+	$(MAKE) db/dump_schema > /tmp/after_migration
 	$(MAKE) db/rollback
-	$(MAKE) db/dump_schema > /tmp/after
-	diff /tmp/{before,after} # No news is good news.
+	$(MAKE) db/dump_schema > /tmp/after_rollback
+	diff /tmp/{before_migration,after_rollback} # No news is good news.
 
 SSH_SERVER_ALIVE_INTERVAL_IN_SECONDS?=60
 SSH_SERVER_ALIVE_COUNT_MAX?=60

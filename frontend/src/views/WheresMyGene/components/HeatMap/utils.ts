@@ -1,10 +1,12 @@
-import { interpolateYlOrRd } from "d3-scale-chromatic";
+import { interpolatePlasma } from "d3-scale-chromatic";
 import {
   DatasetComponentOption,
   DefaultLabelFormatterCallbackParams,
   EChartsOption,
   ScatterSeriesOption,
 } from "echarts";
+import { EMPTY_ARRAY } from "src/common/constants/utils";
+import { LIGHT_GRAY } from "src/components/common/theme";
 import { State } from "../../common/store";
 import {
   CellType,
@@ -36,16 +38,20 @@ const COMMON_SERIES: ScatterSeriesOption = {
   type: "scatter",
 };
 
+const MAX_MEAN_EXPRESSION_VALUE = 6;
+
 interface CreateChartOptionsProps {
   cellTypeMetadata: string[];
   chartData: ChartFormat[];
   geneNames: string[];
+  isScaled: boolean;
 }
 
 export function createChartOptions({
   cellTypeMetadata,
   chartData,
   geneNames,
+  isScaled,
 }: CreateChartOptionsProps): EChartsOption {
   return {
     ...COMMON_OPTIONS,
@@ -72,21 +78,22 @@ export function createChartOptions({
         ...COMMON_SERIES,
         itemStyle: {
           color(props: DefaultLabelFormatterCallbackParams) {
-            const { scaledMeanExpression } = props.data as {
+            const { scaledMeanExpression, meanExpression } = props.data as {
+              meanExpression: number;
               scaledMeanExpression: number;
             };
 
-            return interpolateYlOrRd(scaledMeanExpression);
+            const expressionValue = isScaled
+              ? scaledMeanExpression
+              : meanExpression / MAX_MEAN_EXPRESSION_VALUE;
+
+            return interpolatePlasma(1 - expressionValue);
           },
         },
         symbolSize: function (props: { percentage: number }) {
           const { percentage } = props;
 
-          const maxRadius = MAX_FIRST_PART_LENGTH_PX / 2;
-
-          const r = Math.sqrt(percentage * maxRadius ** 2);
-
-          return Math.round(2 * r);
+          return convertPercentageToDiameter(percentage);
         },
       },
     ],
@@ -126,6 +133,26 @@ export function createChartOptions({
   };
 }
 
+export function convertPercentageToDiameter(percentage: number): number {
+  const maxRadius = MAX_FIRST_PART_LENGTH_PX / 2;
+
+  const RADIUS_OFFSET = 0.2;
+
+  const baseRadius = RADIUS_OFFSET * (MAX_FIRST_PART_LENGTH_PX - RADIUS_OFFSET);
+
+  const radius = Math.sqrt(
+    percentage * (maxRadius - RADIUS_OFFSET) ** 2 + baseRadius
+  );
+
+  return Math.round(2 * radius);
+}
+
+const SELECTED_STYLE = {
+  backgroundColor: LIGHT_GRAY.D,
+  fontWeight: "bold" as never,
+  padding: 4,
+};
+
 interface CreateXAxisOptionsProps {
   geneNames: string[];
   genesToDelete: string[];
@@ -157,10 +184,7 @@ export function createXAxisOptions({
               : value;
           },
           rich: {
-            selected: {
-              color: "red",
-              fontWeight: "bold",
-            },
+            selected: SELECTED_STYLE,
           },
           rotate: 270,
           verticalAlign: "middle",
@@ -246,10 +270,7 @@ export function createYAxisOptions({
           // Turn off type checking here, because ecahrts' type is wrong
           ["overflow" as string]: "truncate",
           rich: {
-            selected: {
-              color: "red",
-              fontWeight: "bold",
-            },
+            selected: SELECTED_STYLE,
           },
           width: 260,
         },
@@ -276,6 +297,8 @@ export interface ChartFormat {
   percentage: number;
   meanExpression: number;
   scaledMeanExpression: number;
+  tissuePercentage: number;
+  expressedCellCount: number;
 }
 
 export function dataToChartFormat({
@@ -303,7 +326,12 @@ export function dataToChartFormat({
     if (!geneExpressions) return [];
 
     return Object.entries(geneExpressions).map(([geneName, geneExpression]) => {
-      const { percentage, meanExpression } = geneExpression;
+      const {
+        percentage,
+        meanExpression,
+        tissuePercentage,
+        expressedCellCount,
+      } = geneExpression;
 
       const scaledMeanExpression =
         (meanExpression - scaledMeanExpressionMin) / oldRange;
@@ -318,11 +346,13 @@ export function dataToChartFormat({
 
       return {
         cellTypeIndex,
+        expressedCellCount,
         geneIndex,
         id,
         meanExpression,
         percentage,
         scaledMeanExpression,
+        tissuePercentage,
       } as ChartFormat;
     });
   }
@@ -338,7 +368,9 @@ const HEAT_MAP_BASE_CELL_PX = 20;
  * of the number of genes selected.
  */
 export function getHeatmapWidth(
-  genes: (GeneExpressionSummary | undefined)[] | State["selectedGenes"]
+  genes:
+    | (GeneExpressionSummary | undefined)[]
+    | State["selectedGenes"] = EMPTY_ARRAY
 ): number {
   return HEAT_MAP_BASE_WIDTH_PX + HEAT_MAP_BASE_CELL_PX * genes.length;
 }
@@ -346,7 +378,7 @@ export function getHeatmapWidth(
 /**
  * Approximating the heatmap height by the number of cells.
  */
-export function getHeatmapHeight(cellTypes: CellType[] = []): number {
+export function getHeatmapHeight(cellTypes: CellType[] = EMPTY_ARRAY): number {
   return HEAT_MAP_BASE_HEIGHT_PX + HEAT_MAP_BASE_CELL_PX * cellTypes.length;
 }
 

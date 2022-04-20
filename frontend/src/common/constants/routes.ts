@@ -4,11 +4,10 @@ export enum ROUTES {
   COLLECTION = "/collections/:id",
   COLLECTIONS = "/collections",
   DATASETS = "/datasets",
-  PRIVATE_COLLECTION = "/collections/:id/private",
   TOS = "/tos/",
   PRIVACY = "/privacy/",
   PREVIEW_POLICIES = "/previewpolicies/",
-  WHERE_IS_MY_GENE = "/wmg",
+  WHERE_IS_MY_GENE = "/scExpression",
 }
 
 export enum EXTERNAL_LINKS {
@@ -20,4 +19,5 @@ export enum EXTERNAL_LINKS {
   DOCS_DATA_PORTAL = "https://github.com/chanzuckerberg/cellxgene-documentation/blob/main/README.md",
   DOCS_ROADMAP = "https://github.com/chanzuckerberg/cellxgene-documentation/blob/main/roadmap.md",
   DOCS_TUTORIAL = "https://github.com/chanzuckerberg/cellxgene-documentation/blob/main/portal/data-portal.md",
+  WMG_DOC = "https://github.com/chanzuckerberg/cellxgene-documentation/blob/main/scExpression/scExpression-documentation.md",
 }

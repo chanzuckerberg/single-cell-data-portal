@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ROUTES } from "src/common/constants/routes";
+import { EXTERNAL_LINKS, ROUTES } from "src/common/constants/routes";
 import Step from "./components/Step";
 import { Content, Details, Header, Step3Details } from "./style";
 
@@ -41,11 +41,9 @@ export default function GetStarted(): JSX.Element {
                 Darker dots represent higher relative gene expression. The
                 larger the dot, the more cells express that gene.
               </Step3Details>
-              <Link href={ROUTES.HOMEPAGE} passHref>
-                <a href="passHref" rel="noopener" target="_blank">
-                  Learn More
-                </a>
-              </Link>
+              <a href={EXTERNAL_LINKS.WMG_DOC} rel="noopener" target="_blank">
+                Learn More
+              </a>
             </>
           }
         />

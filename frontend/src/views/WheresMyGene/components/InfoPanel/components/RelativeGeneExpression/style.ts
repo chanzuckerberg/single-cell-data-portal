@@ -1,4 +1,5 @@
 import styled from "@emotion/styled";
+import { FormControlLabel } from "@material-ui/core";
 
 export const Wrapper = styled.div`
   margin-bottom: 16px;
@@ -20,4 +21,22 @@ export const Dots = styled.div`
   display: flex;
   gap: 8px;
   margin-bottom: 10px;
+`;
+
+export const ContentWrapper = styled.div`
+  display: flex;
+  position: relative;
+`;
+
+export const StyledFormControlLabel = styled(FormControlLabel)`
+  position: absolute;
+  left: 110px;
+  top: -10px;
+`;
+
+export const LabelWrapper = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
 `;
