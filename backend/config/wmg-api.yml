@@ -1,4 +1,4 @@
-openapi: 3.0.3
+qopenapi: 3.0.3
 info:
   version: "1.0.0"
   title: Chan Zuckerburg Initiative cellxgene Where's My Gene (WMG) API
@@ -39,7 +39,7 @@ paths:
                     $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
                   gene_terms:
                     # TODO: specify further: https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data-portal/1967
-                    # `[{"<ontology_term_id>": "<ontology_term_label"}, ...]`
+                    # {"organism_ontology_term_id_0": [ {"gene_ontology_term_id_0": "gene_ontology_term_id_0_label"}],}
                     type: object
         "404":
           $ref: "#/components/responses/404"
