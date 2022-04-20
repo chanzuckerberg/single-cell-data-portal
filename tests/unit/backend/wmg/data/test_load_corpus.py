@@ -203,8 +203,8 @@ class TestCorpusLoad(unittest.TestCase):
         # Create dataset with mixture of included and not included assays
         CELL_COUNT = 5
         test_anndata_object = create_anndata_test_object(num_genes=3, num_cells=CELL_COUNT)
-        test_anndata_object.obs['assay_ontology_term_id'].cat.add_categories(['NOT_INCLUDED'], inplace=True)
-        test_anndata_object.obs['assay_ontology_term_id'][0] = 'NOT_INCLUDED'
+        test_anndata_object.obs["assay_ontology_term_id"].cat.add_categories(["NOT_INCLUDED"], inplace=True)
+        test_anndata_object.obs["assay_ontology_term_id"][0] = "NOT_INCLUDED"
 
         os.mkdir(f"{self.tmp_dir}/filter_assays_test_dataset")
         anndata_filename = pathlib.Path(self.tmp_dir, "filter_assays_test_dataset/local.h5ad")
@@ -215,6 +215,6 @@ class TestCorpusLoad(unittest.TestCase):
         obs = tiledb.open(f"{self.corpus_path}/obs", "r")
         corpus_cell_count = obs.df[:].shape[0]
 
-        # check the cell count is one less than the starting count (because we replaced the assay type for one cell in the original anndata object)
-        self.assertEqual(corpus_cell_count, CELL_COUNT-1)
-
+        # check the cell count is one less than the starting count
+        # because we replaced the assay type for one cell in the original anndata object
+        self.assertEqual(corpus_cell_count, CELL_COUNT - 1)
