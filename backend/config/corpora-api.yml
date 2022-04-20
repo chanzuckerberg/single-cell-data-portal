@@ -1029,11 +1029,17 @@ paths:
                     $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
                   tissue_terms:
                     # TODO: specify further: https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data-portal/1967
-                    # `[{"<ontology_term_id>": "<ontology_term_label"}, ...]`
+                    # {"organism_ontology_term_id_0": [
+                    #                    {"tissue_ontology_term_id_0": "tissue_ontology_term_id_0_label"},
+                    #                    {"tissue_ontology_term_id_1": "tissue_ontology_term_id_1_label"},
+                    #                ],}
                     type: object
                   gene_terms:
                     # TODO: specify further: https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data-portal/1967
-                    # `[{"<ontology_term_id>": "<ontology_term_label"}, ...]`
+                    # {"organism_ontology_term_id_0": [
+                    #                    {"gene_ontology_term_id_0": "gene_ontology_term_id_0_label"},
+                    #                    {"gene_ontology_term_id_1": "gene_ontology_term_id_1_label"},
+                    #                ],}
                     type: object
         "404":
           $ref: "#/components/responses/404"
