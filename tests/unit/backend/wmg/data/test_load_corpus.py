@@ -15,6 +15,7 @@ from backend.wmg.data.load_corpus import (
     filter_out_rankits_with_low_expression_counts,
 )
 from backend.wmg.data.schemas.corpus_schema import create_tdb, OBS_ARRAY_NAME, VAR_ARRAY_NAME
+
 from tests.unit.backend.wmg.fixtures.test_anndata_object import create_anndata_test_object
 
 
@@ -198,3 +199,24 @@ class TestCorpusLoad(unittest.TestCase):
         )
 
         self.assertEqual(0.5 + 0.7 + 0.9, sum(rankits_filtered.data))
+
+    @patch("backend.wmg.data.load_corpus.transform_dataset_raw_counts_to_rankit")
+    def test__filter_out_cells_with_incorrect_assays(self, mock_rankit):
+        # Create dataset with mixture of included and not included assays
+        CELL_COUNT = 5
+        test_anndata_object = create_anndata_test_object(num_genes=3, num_cells=CELL_COUNT)
+        test_anndata_object.obs["assay_ontology_term_id"].cat.add_categories(["NOT_INCLUDED"], inplace=True)
+        test_anndata_object.obs["assay_ontology_term_id"][0] = "NOT_INCLUDED"
+
+        os.mkdir(f"{self.tmp_dir}/filter_assays_test_dataset")
+        anndata_filename = pathlib.Path(self.tmp_dir, "filter_assays_test_dataset/local.h5ad")
+        anndata_filename.touch()
+        test_anndata_object.write(anndata_filename, compression="gzip")
+
+        load_h5ad(anndata_filename, self.corpus_path, validate=False, min_genes=0)
+        obs = tiledb.open(f"{self.corpus_path}/obs", "r")
+        corpus_cell_count = obs.df[:].shape[0]
+
+        # check the cell count is one less than the starting count
+        # because we replaced the assay type for one cell in the original anndata object
+        self.assertEqual(corpus_cell_count, CELL_COUNT - 1)

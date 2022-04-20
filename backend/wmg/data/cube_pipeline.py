@@ -28,6 +28,7 @@ def load(dataset_directory: List, corpus_path: str, validate: bool = False):
         dataset_count = len(os.listdir(dataset_directory))
         i = 0
         for dataset in os.listdir(dataset_directory):
+            i += 1
             logger.info(f"Processing dataset {i} of {dataset_count}")
             h5ad_file_path = f"{dataset_directory}/{dataset}/local.h5ad"
             load_h5ad(
@@ -60,6 +61,7 @@ def load_data_and_create_cube(
     corpus_path = f"{snapshot_path}/{corpus_name}"
     if not tiledb.VFS().is_dir(corpus_path):
         create_tdb(snapshot_path, corpus_name)
+
     if extract_data:
         s3_uris = extract.get_dataset_s3_uris()
         extract.copy_datasets_to_instance(s3_uris, path_to_h5ad_datasets)

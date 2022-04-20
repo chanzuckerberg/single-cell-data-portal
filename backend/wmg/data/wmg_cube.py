@@ -1,5 +1,6 @@
 from backend.corpora.common.utils.math_utils import MB
 from backend.wmg.data.schemas.corpus_schema import INTEGRATED_ARRAY_NAME, OBS_ARRAY_NAME, VAR_ARRAY_NAME
+
 from backend.wmg.data.snapshot import CELL_COUNTS_CUBE_NAME, EXPRESSION_SUMMARY_CUBE_NAME
 
 import concurrent
@@ -29,6 +30,7 @@ def create_cell_count_cube(corpus_path: str):
     """
     uri = f"{corpus_path}/{CELL_COUNTS_CUBE_NAME}"
     with tiledb.open(f"{corpus_path}/{OBS_ARRAY_NAME}") as obs:
+
         df = (
             obs.df[:]
             .groupby(
@@ -50,6 +52,7 @@ def create_cell_count_cube(corpus_path: str):
         df = df.rename(columns={"size": "n_cells"})
         create_empty_cube(uri, cell_counts_schema)
         tiledb.from_pandas(uri, df, mode="append")
+        logger.info("Cell count cube creation complete")
 
 
 def create_cubes(corpus_path):

@@ -40,3 +40,7 @@ export const LabelWrapper = styled.div`
   align-items: center;
   gap: 5px;
 `;
+
+export const FlexDiv = styled.div`
+  display: flex;
+`;
