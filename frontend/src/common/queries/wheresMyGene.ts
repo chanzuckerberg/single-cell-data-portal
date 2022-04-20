@@ -13,29 +13,33 @@ import { EMPTY_OBJECT } from "../constants/utils";
 import { DEFAULT_FETCH_OPTIONS, JSON_BODY_FETCH_OPTIONS } from "./common";
 import { ENTITIES } from "./entities";
 
+interface OntologyTerm {
+  [id: string]: string;
+}
+
+interface OntologyTermsByOrganism {
+  [organismId: string]: Array<OntologyTerm>;
+}
 interface RawPrimaryFilterDimensionsResponse {
-  gene_terms: { [organismId: string]: Array<{ [id: string]: string }> };
-  organism_terms: { [id: string]: string }[];
+  gene_terms: OntologyTermsByOrganism;
+  organism_terms: Array<OntologyTerm>;
   snapshot_id: string;
-  tissue_terms: { [id: string]: string }[];
+  tissue_terms: OntologyTermsByOrganism;
+}
+
+interface OntologyTermEntity {
+  id: string;
+  name: string;
+}
+interface FlattenedOntologyTermEntitiesByOrganism {
+  [organismID: string]: OntologyTermEntity[];
 }
 
 export interface PrimaryFilterDimensionsResponse {
-  genes: {
-    [organismId: string]: {
-      id: string;
-      name: string;
-    }[];
-  };
-  organisms: {
-    id: string;
-    name: string;
-  }[];
+  genes: FlattenedOntologyTermEntitiesByOrganism;
+  organisms: OntologyTerm[];
   snapshotId: string;
-  tissues: {
-    id: string;
-    name: string;
-  }[];
+  tissues: FlattenedOntologyTermEntitiesByOrganism;
 }
 
 export async function fetchPrimaryFilterDimensions(): Promise<PrimaryFilterDimensionsResponse> {
@@ -46,19 +50,39 @@ export async function fetchPrimaryFilterDimensions(): Promise<PrimaryFilterDimen
   return transformPrimaryFilterDimensions(response);
 }
 
+function flattenOntologyTermsByOrganism(
+  termsObject: OntologyTermsByOrganism
+): FlattenedOntologyTermEntitiesByOrganism {
+  return Object.entries(termsObject).reduce((memo, [organismId, genes]) => {
+    memo[organismId] = genes.map(toEntity);
+    return memo;
+  }, {} as FlattenedOntologyTermEntitiesByOrganism);
+}
+
+function generateTermsByKey(
+  flattenedTerms: FlattenedOntologyTermEntitiesByOrganism,
+  key: keyof OntologyTermEntity
+) {
+  const termsByKey: { [key: string]: OntologyTermEntity } = {};
+
+  Object.values(flattenedTerms).forEach((terms) => {
+    for (const term of terms) {
+      termsByKey[term[key]] = term;
+    }
+  });
+  return termsByKey;
+}
+
 function transformPrimaryFilterDimensions(
   response: RawPrimaryFilterDimensionsResponse
 ): PrimaryFilterDimensionsResponse {
   const { gene_terms, organism_terms, snapshot_id, tissue_terms } = response;
 
   return {
-    genes: Object.entries(gene_terms).reduce((memo, [organismId, genes]) => {
-      memo[organismId] = genes.map(toEntity);
-      return memo;
-    }, {} as { [organismId: string]: { id: string; name: string }[] }),
+    genes: flattenOntologyTermsByOrganism(gene_terms),
     organisms: organism_terms.map(toEntity),
     snapshotId: snapshot_id,
-    tissues: tissue_terms.map(toEntity),
+    tissues: flattenOntologyTermsByOrganism(tissue_terms),
   };
 }
 
@@ -280,11 +304,7 @@ export function useCellTypesByTissueName(): {
 
     const { tissues } = primaryFilterDimensions;
 
-    const tissuesById: { [id: string]: { id: string; name: string } } = {};
-
-    for (const tissue of tissues) {
-      tissuesById[tissue.id] = tissue;
-    }
+    const tissuesById = generateTermsByKey(tissues, "id");
 
     const cellTypesByTissueName: { [tissueName: string]: CellType[] } = {};
 
@@ -353,11 +373,7 @@ export function useGeneExpressionSummariesByTissueName(): {
 
     const { tissues } = primaryFilterDimensions;
 
-    const tissuesById: { [id: string]: { id: string; name: string } } = {};
-
-    for (const tissue of tissues) {
-      tissuesById[tissue.id] = tissue;
-    }
+    const tissuesById = generateTermsByKey(tissues, "id");
 
     const result: {
       [tissueName: string]: { [geneName: string]: GeneExpressionSummary };
@@ -501,15 +517,13 @@ function useWMGQueryRequestBody(options = { includeAllFilterOptions: false }) {
   }, [data, selectedOrganismId]);
 
   const tissuesByName = useMemo(() => {
-    const result: { [name: string]: { id: string; name: string } } = {};
+    let result: { [name: string]: OntologyTermEntity } = {};
 
     if (!data) return result;
 
     const { tissues } = data;
 
-    for (const tissue of tissues) {
-      result[tissue.name] = tissue;
-    }
+    result = generateTermsByKey(tissues, "name");
 
     return result;
   }, [data]);
@@ -563,7 +577,7 @@ function useWMGQueryRequestBody(options = { includeAllFilterOptions: false }) {
   ]);
 }
 
-function toEntity(item: { [id: string]: string }) {
+function toEntity(item: OntologyTerm) {
   const [id, name] = Object.entries(item)[0];
 
   return { id, name: name || id || "" };
