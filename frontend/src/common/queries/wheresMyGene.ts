@@ -27,17 +27,17 @@ interface RawPrimaryFilterDimensionsResponse {
   tissue_terms: OntologyTermsByOrganism;
 }
 
-interface OntologyTermEntity {
+export interface OntologyTermEntity {
   id: string;
   name: string;
 }
 interface FlattenedOntologyTermEntitiesByOrganism {
-  [organismID: string]: OntologyTermEntity[];
+  [organismID: string]: Array<OntologyTermEntity>;
 }
 
 export interface PrimaryFilterDimensionsResponse {
   genes: FlattenedOntologyTermEntitiesByOrganism;
-  organisms: OntologyTerm[];
+  organisms: Array<OntologyTermEntity>;
   snapshotId: string;
   tissues: FlattenedOntologyTermEntitiesByOrganism;
 }
