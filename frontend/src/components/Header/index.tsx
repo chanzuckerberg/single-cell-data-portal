@@ -37,9 +37,9 @@ const Header: FC = () => {
             {isFilterEnabled && (
               <>
                 <LinkWrapper>
-                  <Link href={ROUTES.DATASETS} passHref>
+                  <Link href={ROUTES.HOMEPAGE} passHref>
                     <AnchorButton
-                      active={isRouteActive(pathname, ROUTES.DATASETS)}
+                      active={isRouteActive(pathname, ROUTES.HOMEPAGE)}
                       href="passHref"
                       minimal
                       text="Datasets"

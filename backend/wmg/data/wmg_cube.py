@@ -27,6 +27,7 @@ def create_cell_count_cube(corpus_path: str):
     """
     Create cell count cube and write to disk
     """
+    logger.info("Creating cell count cube")
     uri = f"{corpus_path}/{CELL_COUNTS_CUBE_NAME}"
     with tiledb.open(f"{corpus_path}/obs") as obs:
         df = (
@@ -50,6 +51,7 @@ def create_cell_count_cube(corpus_path: str):
         df = df.rename(columns={"size": "n_cells"})
         create_empty_cube(uri, cell_counts_schema)
         tiledb.from_pandas(uri, df, mode="append")
+        logger.info("Cell count cube creation complete")
 
 
 def create_cubes(corpus_path):

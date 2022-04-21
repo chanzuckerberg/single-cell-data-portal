@@ -1,7 +1,9 @@
 import { goToPage } from "tests/utils/helpers";
 import { getTestID } from "tests/utils/selectors";
 
-describe("Gene sets", () => {
+// Excluding gene sets test suite on go live of filter (#2391 and 1718) as the original Portal homepage that contained
+// the gene sets upload functionality will no longer available to users. Remove this test suite with #2121.
+describe.skip("Gene sets", () => {
   describe("CSV Validation", () => {
     describe("Given a non-UTF CSV", () => {
       it("returns an error message", async () => {
