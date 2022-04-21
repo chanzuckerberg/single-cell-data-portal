@@ -3,7 +3,10 @@ import { LoadingIndicator } from "czifui";
 import React, { useCallback, useContext, useMemo } from "react";
 import { EVENTS } from "src/common/analytics/events";
 import { EMPTY_ARRAY } from "src/common/constants/utils";
-import { usePrimaryFilterDimensions } from "src/common/queries/wheresMyGene";
+import {
+  OntologyTermEntity,
+  usePrimaryFilterDimensions,
+} from "src/common/queries/wheresMyGene";
 import Toast from "src/views/Collection/components/Toast";
 import { DispatchContext, StateContext } from "../../common/store";
 import { selectGenes, selectTissues } from "../../common/store/actions";
@@ -42,9 +45,20 @@ export default function GeneSearchBar(): JSX.Element {
 
     if (!tissues) return new Map<string, Tissue>();
 
-    return tissues.reduce((acc, tissue) => {
-      return acc.set(tissue.name, tissue);
-    }, result);
+    Object.values(tissues).forEach((tissueGroup) =>
+      tissueGroup.reduce((acc, tissue) => {
+        return acc.set(tissue.name, tissue);
+      }, result)
+    );
+    console.log(result);
+    return result;
+  }, [tissues]);
+
+  const flattenedTissues = useMemo((): Array<OntologyTermEntity> => {
+    if (!tissues) return [];
+    return Object.values(tissues).reduce((acc, tissueGroup) => {
+      return acc.concat(tissueGroup);
+    }, new Array<OntologyTermEntity>());
   }, [tissues]);
 
   const selectedTissueOptions: Tissue[] = useMemo(() => {
@@ -72,7 +86,7 @@ export default function GeneSearchBar(): JSX.Element {
         <Organism isLoading={isLoading} />
 
         <QuickSelect
-          items={tissues || EMPTY_ARRAY}
+          items={flattenedTissues || EMPTY_ARRAY}
           itemsByName={tissuesByName}
           multiple
           selected={selectedTissueOptions}

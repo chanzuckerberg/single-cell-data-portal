@@ -1006,7 +1006,6 @@ paths:
         "200":
           $ref: "#/components/responses/200"
 
-          
 components:
   schemas:
     user_uuid:
