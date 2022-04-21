@@ -49,10 +49,9 @@ const DatasetTab: FC<Props> = ({
   const isDatasetPresent =
     datasets?.length > 0 || Object.keys(uploadedFiles).length > 0;
 
-  const invalidateCollectionQuery = () =>
-    useCallback(() => {
-      queryClient.invalidateQueries([USE_COLLECTION, collectionId]);
-    }, [collectionId]);
+  const invalidateCollectionQuery = useCallback(() => {
+    queryClient.invalidateQueries([USE_COLLECTION, collectionId]);
+  }, [collectionId]);
 
   const addNewFile = (mutationFunction = uploadLink, originalId?: string) => {
     return (newFile: UploadingFile) => {
