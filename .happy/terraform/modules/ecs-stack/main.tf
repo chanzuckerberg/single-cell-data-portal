@@ -232,9 +232,28 @@ module dataset_submissions_lambda {
   artifact_bucket            = local.artifact_bucket
   cellxgene_bucket           = local.cellxgene_bucket
   dataset_submissions_bucket = local.dataset_submissions_bucket
-  lambda_execution_role      = local.lambda_execution_role
+  lambda_execution_role      = local.dataset_submissions_lambda_service_role.arn
   subnets                    = local.subnets
   security_groups            = local.security_groups
+}
+
+resource "aws_iam_role" "dataset_submissions_lambda_service_role" {
+  name               = "corpora-dataset-submissions-service-role-${var.env}"
+  path               = "/service-role/"
+  assume_role_policy = data.aws_iam_policy_document.lambda_step_function_execution_policy.json
+}
+
+data "aws_iam_policy_document" "lambda_step_function_execution_policy" {
+  statement {
+    sid    = "sfn"
+    effect = "Allow"
+    actions = [
+      "states:StartExecution"
+    ]
+    resources = [
+      module.upload_sfn.step_function_arn
+    ]
+  }
 }
 
 resource "aws_lambda_permission" "allow_dataset_submissions_lambda_execution" {
