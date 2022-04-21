@@ -38,6 +38,7 @@ paths:
                   tissue_terms:
                   # TODO: specify further: https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data-portal/1967
                   # {"organism_ontology_term_id_0": [ {"tissue_ontology_term_id_0": "tissue_ontology_term_id_0_label"}],}
+                    type: object
                   gene_terms:
                     # TODO: specify further: https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data-portal/1967
                     # {"organism_ontology_term_id_0": [ {"gene_ontology_term_id_0": "gene_ontology_term_id_0_label"}],}
