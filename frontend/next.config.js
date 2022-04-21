@@ -64,15 +64,4 @@ module.exports = {
       },
     ];
   },
-
-  // Redirect / to /datasets.
-  async redirects() {
-    return [
-      {
-        destination: "/datasets",
-        permanent: true,
-        source: "/",
-      },
-    ];
-  },
 };
