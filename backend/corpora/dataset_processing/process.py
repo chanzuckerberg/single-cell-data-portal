@@ -557,6 +557,10 @@ def main():
             from backend.corpora.dataset_processing.process_seurat import process
 
             process(dataset_id, os.environ["ARTIFACT_BUCKET"])
+        elif step_name == "cxg_remaster":
+            from backend.corpora.dataset_processing.remaster_cxg import process
+
+            process(dataset_id, os.environ["CELLXGENE_BUCKET"])
         else:
             logger.error(f"Step function configuration error: Unexpected STEP_NAME '{step_name}'")
 

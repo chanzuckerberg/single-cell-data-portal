@@ -202,6 +202,42 @@ resource "aws_sfn_state_machine" "state_machine_seurat" {
 EOF
 }
 
+resource "aws_sfn_state_machine" "state_machine_cxg_remaster" {
+  name     = "dp-${var.deployment_stage}-${var.custom_stack_name}-cxg-remaster-sfn"
+  role_arn = var.role_arn
+
+  definition = <<EOF
+{
+  "StartAt": "CxgRemaster",
+  "States": {
+    "CxgRemaster": {
+      "Type": "Task",
+      "End": true,
+      "Resource": "arn:aws:states:::batch:submitJob.sync",
+      "Parameters": {
+        "JobDefinition": "${var.job_definition_arn}",
+        "JobName": "cxg_remaster",
+        "JobQueue": "${var.job_queue_arn}",
+        "ContainerOverrides": {
+          "Environment": [
+            {
+              "Name": "DATASET_ID",
+              "Value.$": "$.dataset_uuid"
+            },
+            {
+              "Name": "STEP_NAME",
+              "Value": "cxg_remaster"
+            }
+          ]
+        }
+      },
+      "TimeoutSeconds": 36000
+    }
+  }
+}
+EOF
+}
+
 resource aws_cloudwatch_log_group cloud_watch_logs_group {
   retention_in_days = 365
   name              = "/dp/${var.deployment_stage}/${var.custom_stack_name}/upload-sfn"
