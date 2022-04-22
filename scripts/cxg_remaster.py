@@ -26,14 +26,14 @@ def main():
     parser.add_argument("--tile-order", choices=["row", "col"], type=str, default="col")
     parser.add_argument("--capacity", type=int, default=128000)
     parser.add_argument("--compression", type=int, default=22)
-    parser.add_argument("--name", type=str, default="X_new")
-    parser.add_argument("--arr", type=str, default="X")
+    parser.add_argument("--target-array", type=str, default="X_new")
+    parser.add_argument("--source-array", type=str, default="X")
     parser.add_argument("--sparse-threshold", type=float, default=25.0, help="sparse encoding threshold")
     args = parser.parse_args()
 
     global X_extent, X_name
     X_extent = [args.obs, args.var]
-    X_name = args.name
+    X_name = args.target_array
 
     ctx = create_fast_ctx(
         {
@@ -57,7 +57,7 @@ def main():
 
     st = time.time()
     with tiledb.scope_ctx(ctx):
-        with tiledb.open(f"{args.cxg}/{args.arr}", "r") as old_X:
+        with tiledb.open(f"{args.cxg}/{args.source_array}", "r") as old_X:
             create_new_X(args, old_X.schema)
             print("created, starting to read...")
             in_sparse = old_X.schema.sparse
@@ -98,7 +98,7 @@ def main():
 def choose_X_encoding(args, ctx):
     print("Reading array to determine sparsity...")
     with tiledb.scope_ctx(ctx):
-        with tiledb.open(f"{args.cxg}/{args.arr}", "r") as X:
+        with tiledb.open(f"{args.cxg}/{args.source_array}", "r") as X:
             nnz = 0
             i, chunk = 0, 200_000
             while i < X.shape[0]:
