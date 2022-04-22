@@ -60,26 +60,19 @@ const Collection: FC = () => {
   const [userWithdrawn, setUserWithdrawn] = useState(false);
 
   let id = "";
-  let isPrivate = false;
 
   if (Array.isArray(params)) {
     id = params[0];
-    isPrivate = params[1] === "private";
   } else if (params) {
     id = params;
   }
 
-  const visibility = isPrivate
-    ? VISIBILITY_TYPE.PRIVATE
-    : VISIBILITY_TYPE.PUBLIC;
-
-  const { mutateAsync: uploadLink } = useCollectionUploadLinks(id, visibility);
+  const { mutateAsync: uploadLink } = useCollectionUploadLinks(id);
 
   const [isUploadingLink, setIsUploadingLink] = useState(false);
 
   const collectionState = useCollection({
     id,
-    visibility,
   });
 
   const [hasShownWithdrawToast, setHasShownWithdrawToast] = useState(false);
@@ -88,7 +81,9 @@ const Collection: FC = () => {
 
   const { mutateAsync: deleteMutation, isLoading } = useDeleteCollection(
     id,
-    visibility
+    collection && "visibility" in collection
+      ? collection.visibility
+      : VISIBILITY_TYPE.PRIVATE
   );
 
   const isCurator = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
@@ -132,7 +127,9 @@ const Collection: FC = () => {
     return null;
   }
 
-  const isRevision = isCurator && !!collection?.has_revision;
+  const isPrivate = collection.visibility === VISIBILITY_TYPE.PRIVATE;
+
+  const isRevision = isCurator && !!collection?.revision_of;
 
   const addNewFile = (newFile: UploadingFile) => {
     if (!newFile.link) return;
@@ -178,7 +175,7 @@ const Collection: FC = () => {
   const shouldShowPrivateWriteAction = hasWriteAccess && isPrivate;
   const shouldShowPublicWriteAction = hasWriteAccess && !isPrivate;
   const shouldShowCollectionRevisionCallout =
-    collection.has_revision && visibility === VISIBILITY_TYPE.PRIVATE;
+    collection.revision_of && isPrivate;
   // TODO update to use buildCollectionMetadataLinks once filter feature flag is removed (#1718).
   const collectionMetadataLinksFn = isFilterEnabled
     ? buildCollectionMetadataLinks
@@ -195,7 +192,6 @@ const Collection: FC = () => {
 
     await deleteMutation({
       collectionID: id,
-      visibility: VISIBILITY_TYPE.PUBLIC,
     });
 
     router.push(ROUTES.MY_COLLECTIONS);
@@ -226,7 +222,8 @@ const Collection: FC = () => {
                 id={id}
                 addNewFile={addNewFile}
                 isPublishable={isPublishable}
-                isRevision={isRevision}
+                revisionOf={collection.revision_of}
+                visibility={collection.visibility}
               />
             )}
             {shouldShowPublicWriteAction && (
@@ -254,12 +251,12 @@ const Collection: FC = () => {
             collectionID={id}
             datasets={datasets}
             isRevision={isRevision}
-            visibility={visibility}
+            visibility={collection.visibility}
           />
         </ViewCollection>
       ) : (
         <ViewGrid>
-          {collection.has_revision && visibility === VISIBILITY_TYPE.PRIVATE && (
+          {collection.revision_of && isPrivate && (
             <StyledCallout intent={Intent.PRIMARY} icon={null}>
               <span data-test-id="revision-status">
                 {collection.revision_diff
@@ -293,7 +290,8 @@ const Collection: FC = () => {
               id={id}
               addNewFile={addNewFile}
               isPublishable={isPublishable}
-              isRevision={isRevision}
+              revisionOf={collection.revision_of}
+              visibility={collection.visibility}
             />
           )}
           {hasWriteAccess && !isPrivate && (
@@ -318,7 +316,7 @@ const Collection: FC = () => {
                   <DatasetTab
                     collectionID={id}
                     datasets={datasets}
-                    visibility={visibility}
+                    visibility={collection.visibility}
                     isRevision={isRevision}
                   />
                 }

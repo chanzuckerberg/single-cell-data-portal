@@ -15,14 +15,19 @@ interface Props {
   id: Collection["id"];
   Button?: React.ElementType;
   isRevision: boolean;
+  visibility: Collection["visibility"];
 }
 
 const DeleteCollection: FC<Props> = ({
   id,
   Button = RawButton,
   isRevision,
+  visibility,
 }) => {
-  const { mutateAsync: deleteMutation, isLoading } = useDeleteCollection(id);
+  const { mutateAsync: deleteMutation, isLoading } = useDeleteCollection(
+    id,
+    visibility
+  );
   const router = useRouter();
 
   const handleDelete = async () => {

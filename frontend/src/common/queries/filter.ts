@@ -250,10 +250,6 @@ function aggregateCollectionDatasetRows(
         ],
         disease: [...accum.disease, ...collectionDatasetRow.disease],
         ethnicity: [...accum.ethnicity, ...collectionDatasetRow.ethnicity],
-        is_primary_data: [
-          ...accum.is_primary_data,
-          ...collectionDatasetRow.is_primary_data,
-        ],
         organism: [...accum.organism, ...collectionDatasetRow.organism],
         sex: [...accum.sex, ...collectionDatasetRow.sex],
         tissue: [...accum.tissue, ...collectionDatasetRow.tissue],
@@ -265,7 +261,6 @@ function aggregateCollectionDatasetRows(
       development_stage_ancestors: [],
       disease: [],
       ethnicity: [],
-      is_primary_data: [],
       organism: [],
       sex: [],
       tissue: [],
@@ -281,7 +276,6 @@ function aggregateCollectionDatasetRows(
     ],
     disease: uniqueOntologies(aggregatedCategoryValues.disease),
     ethnicity: uniqueOntologies(aggregatedCategoryValues.ethnicity),
-    is_primary_data: [...new Set(aggregatedCategoryValues.is_primary_data)],
     organism: uniqueOntologies(aggregatedCategoryValues.organism),
     sex: uniqueOntologies(aggregatedCategoryValues.sex),
     tissue: uniqueOntologies(aggregatedCategoryValues.tissue),
@@ -354,7 +348,7 @@ function buildDatasetRows(
 }
 
 /**
- * Build dataset row from dataset response. Correct is_primary_data where necessary.
+ * Build dataset row from dataset response.
  * @param dataset - Response dataset values to build filterable data from.
  * @param collection - Response collection values to join with dataset values, possibly undefined if dataset is an
  * orphan with no corresponding collection.
@@ -365,8 +359,6 @@ function buildDatasetRow(
   dataset: DatasetResponse,
   collection?: ProcessedCollectionResponse
 ): DatasetRow {
-  const { is_primary_data } = dataset;
-
   // Determine dataset's publication month and year.
   const [publicationMonth, publicationYear] = getPublicationMonthYear(
     dataset,
@@ -390,7 +382,6 @@ function buildDatasetRow(
     ...dataset,
     collection_name: collection?.name ?? "-",
     isOverMaxCellCount: checkIsOverMaxCellCount(dataset.cell_count),
-    is_primary_data: expandIsPrimaryData(is_primary_data),
     publicationAuthors: collection?.publicationAuthors,
     publicationDateValues,
     recency,
@@ -487,23 +478,6 @@ export function calculateRecency(
 
   // Collection (or dataset's collection) has no publication metadata, use revised at or published at, in priority order.
   return response.revised_at ?? response.published_at;
-}
-
-/**
- * Determine the correct value for is_primary_data. Convert "BOTH" primary data values to ["primary", "secondary"].
- * Convert "primary" or "secondary" to singleton arrays. Convert error cases where is_primary_data is undefined to [].
- * @param isPrimaryData - Primary data value to sanitize.
- */
-function expandIsPrimaryData(
-  isPrimaryData: IS_PRIMARY_DATA
-): IS_PRIMARY_DATA[] {
-  if (!isPrimaryData) {
-    return [];
-  }
-
-  return isPrimaryData === IS_PRIMARY_DATA.BOTH
-    ? [IS_PRIMARY_DATA.PRIMARY, IS_PRIMARY_DATA.SECONDARY]
-    : [isPrimaryData];
 }
 
 /**
@@ -704,7 +678,7 @@ function processCollectionResponse(
 }
 
 /**
- * Add defaults for missing filterable values: convert missing ontology values to empty array, is_primary_data to "".
+ * Add defaults for missing filterable values, e.g. convert missing ontology values to empty array.
  * Remove any ethnicity values on the deny list.
  * @param dataset - Dataset to check for missing values.
  * @returns Corrected dataset response.
@@ -725,11 +699,6 @@ function sanitizeDataset(dataset: DatasetResponse): DatasetResponse {
       if (categoryKey === CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS) {
         accum.development_stage_ancestors =
           dataset.development_stage_ancestors ?? [];
-        return accum;
-      }
-
-      if (categoryKey === CATEGORY_KEY.IS_PRIMARY_DATA) {
-        accum.is_primary_data = dataset.is_primary_data ?? "";
         return accum;
       }
 
@@ -758,7 +727,6 @@ function sortCategoryValues<T extends Categories>(row: T): T {
     assay: row.assay.sort(sortOntologies),
     cell_type: row.cell_type.sort(sortOntologies),
     disease: row.disease.sort(sortOntologies),
-    is_primary_data: row.is_primary_data.sort(),
     organism: row.organism.sort(sortOntologies),
     sex: row.sex.sort(sortOntologies),
     tissue: row.tissue.sort(sortOntologies),
