@@ -13,33 +13,33 @@ import { EMPTY_OBJECT } from "../constants/utils";
 import { DEFAULT_FETCH_OPTIONS, JSON_BODY_FETCH_OPTIONS } from "./common";
 import { ENTITIES } from "./entities";
 
-interface OntologyTerm {
+interface RawOntologyTerm {
   [id: string]: string;
 }
 
-interface OntologyTermsByOrganism {
-  [organismId: string]: Array<OntologyTerm>;
+interface RawOntologyTermsByOrganism {
+  [organismId: string]: Array<RawOntologyTerm>;
 }
 interface RawPrimaryFilterDimensionsResponse {
-  gene_terms: OntologyTermsByOrganism;
-  organism_terms: Array<OntologyTerm>;
+  gene_terms: RawOntologyTermsByOrganism;
+  organism_terms: Array<RawOntologyTerm>;
   snapshot_id: string;
-  tissue_terms: OntologyTermsByOrganism;
+  tissue_terms: RawOntologyTermsByOrganism;
 }
 
-export interface OntologyTermEntity {
+export interface OntologyTerm {
   id: string;
   name: string;
 }
-interface FlattenedOntologyTermEntitiesByOrganism {
-  [organismID: string]: Array<OntologyTermEntity>;
+interface OntologyTermsByOrganism {
+  [organismID: string]: Array<OntologyTerm>;
 }
 
 export interface PrimaryFilterDimensionsResponse {
-  genes: FlattenedOntologyTermEntitiesByOrganism;
-  organisms: Array<OntologyTermEntity>;
+  genes: OntologyTermsByOrganism;
+  organisms: Array<OntologyTerm>;
   snapshotId: string;
-  tissues: FlattenedOntologyTermEntitiesByOrganism;
+  tissues: OntologyTermsByOrganism;
 }
 
 export async function fetchPrimaryFilterDimensions(): Promise<PrimaryFilterDimensionsResponse> {
@@ -51,25 +51,28 @@ export async function fetchPrimaryFilterDimensions(): Promise<PrimaryFilterDimen
 }
 
 function flattenOntologyTermsByOrganism(
-  termsObject: OntologyTermsByOrganism
-): FlattenedOntologyTermEntitiesByOrganism {
+  termsObject: RawOntologyTermsByOrganism
+): OntologyTermsByOrganism {
   return Object.entries(termsObject).reduce((memo, [organismId, genes]) => {
     memo[organismId] = genes.map(toEntity);
     return memo;
-  }, {} as FlattenedOntologyTermEntitiesByOrganism);
+  }, {} as OntologyTermsByOrganism);
 }
 
 function generateTermsByKey(
-  flattenedTerms: FlattenedOntologyTermEntitiesByOrganism,
-  key: keyof OntologyTermEntity
-) {
-  const termsByKey: { [key: string]: OntologyTermEntity } = {};
+  flattenedTerms: OntologyTermsByOrganism,
+  key: keyof OntologyTerm
+): {
+  [key: string]: OntologyTerm;
+} {
+  const termsByKey: { [key: string]: OntologyTerm } = {};
 
   Object.values(flattenedTerms).forEach((terms) => {
     for (const term of terms) {
       termsByKey[term[key]] = term;
     }
   });
+
   return termsByKey;
 }
 
@@ -517,7 +520,7 @@ function useWMGQueryRequestBody(options = { includeAllFilterOptions: false }) {
   }, [data, selectedOrganismId]);
 
   const tissuesByName = useMemo(() => {
-    let result: { [name: string]: OntologyTermEntity } = {};
+    let result: { [name: string]: OntologyTerm } = {};
 
     if (!data) return result;
 
@@ -577,7 +580,7 @@ function useWMGQueryRequestBody(options = { includeAllFilterOptions: false }) {
   ]);
 }
 
-function toEntity(item: OntologyTerm) {
+function toEntity(item: RawOntologyTerm) {
   const [id, name] = Object.entries(item)[0];
 
   return { id, name: name || id || "" };

@@ -4,7 +4,7 @@ import React, { useCallback, useContext, useMemo } from "react";
 import { EVENTS } from "src/common/analytics/events";
 import { EMPTY_ARRAY } from "src/common/constants/utils";
 import {
-  OntologyTermEntity,
+  OntologyTerm,
   usePrimaryFilterDimensions,
 } from "src/common/queries/wheresMyGene";
 import Toast from "src/views/Collection/components/Toast";
@@ -50,15 +50,15 @@ export default function GeneSearchBar(): JSX.Element {
         return acc.set(tissue.name, tissue);
       }, result)
     );
-    console.log(result);
+
     return result;
   }, [tissues]);
 
-  const flattenedTissues = useMemo((): Array<OntologyTermEntity> => {
+  const flattenedTissues = useMemo((): Array<OntologyTerm> => {
     if (!tissues) return [];
     return Object.values(tissues).reduce((acc, tissueGroup) => {
       return acc.concat(tissueGroup);
-    }, new Array<OntologyTermEntity>());
+    }, new Array<OntologyTerm>());
   }, [tissues]);
 
   const selectedTissueOptions: Tissue[] = useMemo(() => {
