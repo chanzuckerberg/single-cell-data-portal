@@ -1,13 +1,11 @@
 import { Button, Intent, UL } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
-import memoize from "lodash/memoize";
-import { FC, useState } from "react";
-import { MutateFunction, useQueryClient } from "react-query";
+import { FC, useCallback, useState } from "react";
+import { useQueryClient } from "react-query";
 import { Collection, Dataset } from "src/common/entities";
 import { FEATURES } from "src/common/featureFlags/features";
 import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
 import {
-  ReuploadLink,
   useCollection,
   useCollectionUploadLinks,
   useReuploadDataset,
@@ -38,13 +36,10 @@ const DatasetTab: FC<Props> = ({
   const CLI_README_LINK =
     "https://github.com/chanzuckerberg/single-cell-curation/blob/main/readme.md";
 
-  const { mutateAsync: uploadLink } = useCollectionUploadLinks(
-    collectionId,
-    visibility
-  );
+  const { mutateAsync: uploadLink } = useCollectionUploadLinks(collectionId);
   const { mutateAsync: reuploadDataset } = useReuploadDataset(collectionId);
   const [uploadedFiles, setUploadedFiles] = useState({} as UploadedFiles);
-  const { data: collection } = useCollection({ id: collectionId, visibility });
+  const { data: collection } = useCollection({ id: collectionId });
   const isFilterEnabled = useFeatureFlag(FEATURES.FILTER);
 
   const queryClient = useQueryClient();
@@ -54,21 +49,11 @@ const DatasetTab: FC<Props> = ({
   const isDatasetPresent =
     datasets?.length > 0 || Object.keys(uploadedFiles).length > 0;
 
-  const invalidateCollectionQuery = memoize(
-    () => {
-      queryClient.invalidateQueries([USE_COLLECTION, collectionId, visibility]);
-    },
-    () => collectionId + visibility
-  );
+  const invalidateCollectionQuery = useCallback(() => {
+    queryClient.invalidateQueries([USE_COLLECTION, collectionId]);
+  }, [collectionId]);
 
-  const addNewFile = (
-    mutationFunction = uploadLink as MutateFunction<
-      string,
-      unknown,
-      ReuploadLink
-    >,
-    originalId?: string
-  ) => {
+  const addNewFile = (mutationFunction = uploadLink, originalId?: string) => {
     return (newFile: UploadingFile) => {
       if (!newFile.link) return;
 

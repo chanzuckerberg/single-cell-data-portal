@@ -13,18 +13,18 @@ servers:
   - description: Staging environment
     url: https://api.staging.corpora.cziscience.com
 paths:
-  /dp/v1/wmg/cell_types:
+  /v1/wmg/cell_types:
     get:
       tags:
         - wmg
       summary: Get WMG cell types (WMG FEATURE PROTOTYPE)
       security:
-        - cxguserCookieLenient: [ ]
-        - { }
+        - cxguserCookieLenient: []
+        - {}
       description: >-
         JSON of all genes
       operationId: backend.corpora.lambdas.api.v1.wmg.get_cell_types
-      parameters: [ ]
+      parameters: []
       responses:
         "200":
           description: OK
@@ -44,18 +44,18 @@ paths:
                       type: string
         "400":
           $ref: "#/components/responses/400"
-  /dp/v1/wmg/genes:
+  /v1/wmg/genes:
     get:
       tags:
         - wmg
       summary: Get WMG genes (WMG FEATURE PROTOTYPE)
       security:
-        - cxguserCookieLenient: [ ]
-        - { }
+        - cxguserCookieLenient: []
+        - {}
       description: >-
         JSON of all cell types
       operationId: backend.corpora.lambdas.api.v1.wmg.get_genes
-      parameters: [ ]
+      parameters: []
       responses:
         "200":
           description: OK
@@ -75,24 +75,24 @@ paths:
                       type: string
         "400":
           $ref: "#/components/responses/400"
-  /dp/v1/wmg/genes/{gene_name}:
+  /v1/wmg/genes/{gene_name}:
     get:
       tags:
         - wmg
       summary: Get WMG gene expression for a given gene name (WMG FEATURE PROTOTYPE)
       security:
-        - cxguserCookieLenient: [ ]
-        - { }
+        - cxguserCookieLenient: []
+        - {}
       description: >-
         JSON of gene expression for a given gene
       operationId: backend.corpora.lambdas.api.v1.wmg.get_gene_expression
       parameters:
-      - name: gene_name
-        in: path
-        required: true
-        schema:
-          type: string
-        description: The name of the gene
+        - name: gene_name
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The name of the gene
       responses:
         "200":
           description: OK
@@ -117,7 +117,7 @@ paths:
                       format: float
         "400":
           $ref: "#/components/responses/400"
-  /dp/v1/collections:
+  /v1/collections:
     get:
       tags:
         - collections
@@ -222,7 +222,7 @@ paths:
         "401":
           $ref: "#/components/responses/401"
 
-  /dp/v1/collections/{collection_uuid}:
+  /v1/collections/{collection_uuid}:
     get:
       tags:
         - collections
@@ -235,7 +235,6 @@ paths:
       operationId: backend.corpora.lambdas.api.v1.collection.get_collection_details
       parameters:
         - $ref: "#/components/parameters/path_collection_uuid"
-        - $ref: "#/components/parameters/query_visibility"
       responses:
         "200":
           description: OK
@@ -338,14 +337,13 @@ paths:
       operationId: backend.corpora.lambdas.api.v1.collection.delete_collection
       parameters:
         - $ref: "#/components/parameters/path_collection_uuid"
-        - $ref: "#/components/parameters/query_visibility"
       responses:
         "204":
           $ref: "#/components/responses/204"
         "401":
           $ref: "#/components/responses/401"
 
-  /dp/v1/collections/{collection_uuid}/upload-links:
+  /v1/collections/{collection_uuid}/upload-links:
     post:
       summary: Start a dataset upload
       tags:
@@ -396,7 +394,7 @@ paths:
       description: >-
         An authenticated user can upload a file from a shared link to replace an existing dataset in their collection.
 
-        The existing dataset must be in an error start or completely uploaded before a replacement can be attempted.
+        The existing dataset must be in an error state or completely uploaded before a replacement can be attempted.
         Once the upload of the replacement dataset is complete, the previous version of the dataset is removed and is
         no longer available for downloading through this collection. The replacement datasets are not publicly available
         until the collection revision is published. The old datasets are available in the public collection until the
@@ -443,7 +441,7 @@ paths:
         "413":
           $ref: "#/components/responses/413"
 
-  /dp/v1/collections/{collection_uuid}/genesets:
+  /v1/collections/{collection_uuid}/genesets:
     post:
       tags:
         - collections
@@ -479,7 +477,7 @@ paths:
         "403":
           $ref: "#/components/responses/403"
 
-  /dp/v1/collections/{collection_uuid}/publish:
+  /v1/collections/{collection_uuid}/publish:
     post:
       tags:
         - collections
@@ -523,7 +521,7 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
-  /dp/v1/collections/index:
+  /v1/collections/index:
     get:
       tags:
         - collections
@@ -546,12 +544,18 @@ paths:
                   properties:
                     id:
                       $ref: "#/components/schemas/collection_uuid"
-                    created_at:
+                    name: 
+                      type: string
+                    publisher_metadata:
+                      $ref: "#/components/schemas/publisher_metadata"
+                    published_at:
+                      type: number
+                    revised_at:
                       type: number
         "400":
           $ref: "#/components/responses/400"
 
-  /dp/v1/datasets/{dataset_uuid}:
+  /v1/datasets/{dataset_uuid}:
     delete:
       tags:
         - datasets
@@ -575,7 +579,7 @@ paths:
         "405":
           $ref: "#/components/responses/405"
 
-  /dp/v1/datasets/meta:
+  /v1/datasets/meta:
     get:
       tags:
         - datasets
@@ -604,7 +608,7 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
-  /dp/v1/datasets/{dataset_uuid}/assets:
+  /v1/datasets/{dataset_uuid}/assets:
     get:
       tags:
         - datasets
@@ -628,7 +632,7 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
-  /dp/v1/datasets/{dataset_uuid}/asset/{asset_uuid}:
+  /v1/datasets/{dataset_uuid}/asset/{asset_uuid}:
     post:
       tags:
         - datasets
@@ -666,7 +670,7 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
-  /dp/v1/datasets/{dataset_uuid}/gene_sets:
+  /v1/datasets/{dataset_uuid}/gene_sets:
     post:
       tags:
         - datasets
@@ -711,7 +715,7 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
-  /dp/v1/datasets/{dataset_uuid}/status:
+  /v1/datasets/{dataset_uuid}/status:
     get:
       tags:
         - datasets
@@ -798,7 +802,7 @@ paths:
         "403":
           $ref: "#/components/responses/403"
 
-  /dp/v1/datasets/index:
+  /v1/datasets/index:
     get:
       tags:
         - datasets
@@ -809,7 +813,8 @@ paths:
         - cxguserCookieLenient: []
         - {}
       description: >-
-        STUB
+        Returns all datasets that belong to public, non tombstoned collections. This endpoint is meant to be used 
+        for displaying datasets in a compact view. It doesn't return all the fields, so it is not suitable for general usage.
       operationId: backend.corpora.lambdas.api.v1.dataset.get_datasets_index
       responses:
         "200":
@@ -841,16 +846,30 @@ paths:
                       $ref: "#/components/schemas/ontology_element_array"
                     development_stage:
                       $ref: "#/components/schemas/ontology_element_array"
+                    development_stage_ancestors:
+                      type: array
+                      items:
+                        type: string
                     cell_count:
                       type: integer
                     cell_type:
                       $ref: "#/components/schemas/ontology_element_array"
                     mean_genes_per_cell:
                       type: number
+                    is_primary_data:
+                      $ref: "#/components/schemas/is_primary_data"
+                    schema_version:
+                      type: string
+                    explorer_url:
+                      type: string
+                    published_at:
+                      type: number
+                    revised_at:
+                      type: number
         "400":
           $ref: "#/components/responses/400"
 
-  /dp/v1/genesets/{geneset_uuid}:
+  /v1/genesets/{geneset_uuid}:
     delete:
       tags:
         - genesets
@@ -870,7 +889,7 @@ paths:
         "405":
           $ref: "#/components/responses/405"
 
-  /dp/v1/login:
+  /v1/login:
     get:
       tags:
         - authentication
@@ -884,7 +903,7 @@ paths:
         "403":
           $ref: "#/components/responses/403"
 
-  /dp/v1/logout:
+  /v1/logout:
     get:
       tags:
         - authentication
@@ -898,7 +917,7 @@ paths:
         "403":
           $ref: "#/components/responses/403"
 
-  /dp/v1/userinfo:
+  /v1/userinfo:
     get:
       tags:
         - authentication
@@ -919,7 +938,7 @@ paths:
         "403":
           $ref: "#/components/responses/403"
 
-  /dp/v1/oauth2/callback:
+  /v1/oauth2/callback:
     get:
       tags:
         - authentication
@@ -932,7 +951,7 @@ paths:
           $ref: "#/components/responses/401"
         "403":
           $ref: "#/components/responses/403"
-  /dp/v1/auth/key:
+  /v1/auth/key:
     get:
       summary: Fetch the identifier of the curator's active API key -- for use with Data Portal UI
       operationId: backend.corpora.lambdas.api.v1.auth.keys.get
@@ -979,226 +998,13 @@ paths:
           $ref: "#/components/responses/401"
         "404":
           $ref: "#/components/responses/404"
-  /dp/v1/deployed_version:
+  /v1/deployed_version:
     get:
       summary: Returns version information
       operationId: backend.corpora.lambdas.api.v1.version.get
       responses:
         "200":
           $ref: "#/components/responses/200"
-
-  /wmg/v1/primary_filter_dimensions:
-    get:
-      summary: Returns the ontology terms for organism and tissue type that can be used when specifying a WMG query.
-      description: >-
-      tags:
-        - wmg
-      operationId: backend.wmg.api.v1.primary_filter_dimensions
-      parameters: [ ]
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  snapshot_id:
-                    $ref: "#/components/schemas/wmg_snapshot_id"
-                  organism_terms:
-                    $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
-                  tissue_terms:
-                    $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
-                  gene_terms:
-                    # TODO: specify further: https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data-portal/1967
-                    # `[{"<ontology_term_id>": "<ontology_term_label"}, ...]`
-                    type: object
-        "404":
-          $ref: "#/components/responses/404"
-  /wmg/v1/query:
-    post:
-      tags:
-        - wmg
-      operationId: backend.wmg.api.v1.query
-      parameters: [ ]
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                filter:
-                  type: object
-                  required:
-                    - gene_ontology_term_ids
-                    - organism_ontology_term_id
-                    - tissue_ontology_term_ids
-                  properties:
-                      gene_ontology_term_ids:
-                        $ref: "#/components/schemas/wmg_ontology_term_id_list"
-                      organism_ontology_term_id:
-                        type: string
-                      tissue_ontology_term_ids:
-                        $ref: "#/components/schemas/wmg_ontology_term_id_list"
-                      dataset_ids:
-                        type: array
-                        items:
-                          type: string
-                          format: uuid
-                      disease_ontology_term_ids:
-                        $ref: "#/components/schemas/wmg_ontology_term_id_list"
-                      sex_ontology_term_ids:
-                        $ref: "#/components/schemas/wmg_ontology_term_id_list"
-                      development_ontology_stage_term_ids:
-                        $ref: "#/components/schemas/wmg_ontology_term_id_list"
-                      ethnicity_ontology_term_ids:
-                        $ref: "#/components/schemas/wmg_ontology_term_id_list"
-                include_filter_dims:
-                  type: boolean
-                  default: false
-              required:
-                - filter
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              example:
-                {
-                  'snapshot_id': '8ce15034-162a-4e2e-9987-eb1af08bd4d4',
-                  'expression_summary': {
-                    'gene1': {
-                      'tissuetype1': [
-                        { 'id': 'CL00000', 'me': 0.0, 'n': 0, 'pc': 0.0, 'tpc': 0.0 },
-                        { 'id': 'CL00001', 'me': 0.0, 'n': 0, 'pc': 0.0, 'tpc': 0.0 },
-                        { 'id': 'CL00002', 'me': 0.0, 'n': 0, 'pc': 0.0, 'tpc': 0.0 }
-                      ],
-                      'tissuetype2': [
-                        { 'id': 'CL00000', 'me': 0.0, 'n': 0, 'pc': 0.0, 'tpc': 0.0 },
-                        { 'id': 'CL00001', 'me': 0.0, 'n': 0, 'pc': 0.0, 'tpc': 0.0 },
-                        { 'id': 'CL00002', 'me': 0.0, 'n': 0, 'pc': 0.0, 'tpc': 0.0 }
-                      ]
-                    },
-                    'gene2': {
-                      'tissuetype1': [
-                        { 'id': 'CL00000', 'me': 0.0, 'n': 0, 'pc': 0.0, 'tpc': 0.0 },
-                        { 'id': 'CL00001', 'me': 0.0, 'n': 0, 'pc': 0.0, 'tpc': 0.0 },
-                        { 'id': 'CL00002', 'me': 0.0, 'n': 0, 'pc': 0.0, 'tpc': 0.0 }
-                      ],
-                      'tissuetype2': [
-                        { 'id': 'CL00000', 'me': 0.0, 'n': 0, 'pc': 0.0, 'tpc': 0.0 },
-                        { 'id': 'CL00001', 'me': 0.0, 'n': 0, 'pc': 0.0, 'tpc': 0.0 },
-                        { 'id': 'CL00002', 'me': 0.0, 'n': 0, 'pc': 0.0, 'tpc': 0.0 }
-                      ]
-                    }
-                  },
-                  'term_id_labels': {
-                    'cell_types': [
-                      { 'CL00000': 'CL00000_label' },
-                      { 'CL00001': 'CL00001_label' },
-                      { 'CL00002': 'CL00002_label' }
-                    ],
-                    'genes': [
-                      { 'gene1': 'gene1_label' },
-                      { 'gene2': 'gene2_label' }
-                    ]
-                  }
-                }
-              schema:
-                type: object
-                required:
-                  - expression_summary
-                  - term_id_labels
-                properties:
-                  snapshot_id:
-                    $ref: "#/components/schemas/wmg_snapshot_id"
-                  expression_summary:
-                    type: object
-                    # we use `additionalProperties` instead of `properties`, since the object's property names are
-                    # ontology term ids, rather than a fixed set of names
-                    additionalProperties:
-                      description: ->
-                        One property per gene, where the gene ontology term id is the property name, and the property
-                        value is an object of tissue types.
-                      type: object
-                      # we use `additionalProperties` instead of `properties`, since the object's property names are
-                      # ontology term ids, rather than a fixed set of names
-                      additionalProperties:
-                        description: ->
-                          One property per tissue type, where the tissue type ontology term id is the property name,
-                          and the property value is an ordered array of viz matrix "dots" (data points). The ordering of
-                          the array elements (cell types) should be preserved in the client's rendering of this
-                          data.
-                        type: array
-                        items:
-                          type: object
-                          properties:
-                            id:
-                              description: cell type ontology term id
-                              type: string
-                            me:
-                              description: mean expression
-                              type: number
-                              format: float
-                              maxLength: 4
-                            pc:
-                              description: percentage of cells expressing gene within this cell type
-                              type: number
-                              format: float
-                              maxLength: 4
-                              minimum: 0.0
-                              maximum: 100.0
-                            tpc:
-                              description: perecentage of cells for this cell type within tissue (cell type's cell count / tissue's total cell count)
-                              type: number
-                              format: float
-                              maxLength: 4
-                              minimum: 0.0
-                              maximum: 100.0
-                            n:
-                              description: number of expressed cells (non-zero expression) within this cell type
-                              type: integer
-                              minimum: 0.0
-                  term_id_labels:
-                    type: object
-                    required:
-                      - genes
-                      - cell_types
-                    properties:
-                      genes:
-                        $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
-                      cell_types:
-                        type: object
-                        # TODO: specify further (grouped by tissue now): https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data-portal/1967
-#                        items:
-#                        $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
-                  filter_dimensions:
-                    type: object
-                    properties:
-                      datasets:
-                        type: array
-                        items:
-                          type: object
-                          properties:
-                            id:
-                              type: string
-                              format: uuid
-                            label:
-                              type: string
-                            collection_label:
-                              type: string
-                            collection_url:
-                              type: string
-                              format: url
-                      disease_terms:
-                        $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
-                      sex_terms:
-                        $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
-                      development_stage_terms:
-                        $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
-                      ethnicity_terms:
-                        $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
-
 
 components:
   schemas:
@@ -1298,6 +1104,8 @@ components:
           type: string
         data_submission_policy_version:
           type: string
+        publisher_metadata:
+          $ref: "#/components/schemas/publisher_metadata"
         datasets:
           type: array
           items:
@@ -1306,6 +1114,36 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/gene_set"
+    publisher_metadata:
+      type: object
+      required:
+        - authors
+        - is_preprint
+        - journal
+        - published_year
+      properties:
+        authors:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              given:
+                type: string
+              family:
+                type: string
+        is_preprint:
+          type: boolean
+        journal:
+          type: string
+        published_day:
+          type: number
+        published_month:
+          type: number
+        published_year:
+          type: number
+
     ontology_element:
       type: object
       properties:
@@ -1324,7 +1162,6 @@ components:
         - name
         - revision
         - collection_id
-        - collection_visibility
       properties:
         id:
           $ref: "#/components/schemas/dataset_uuid"
@@ -1363,8 +1200,6 @@ components:
             $ref: "#/components/schemas/dataset_asset"
         collection_id:
           $ref: "#/components/schemas/collection_uuid"
-        collection_visibility:
-          $ref: "#/components/schemas/visibility"
         is_primary_data:
           $ref: "#/components/schemas/is_primary_data"
         cell_type:
@@ -1474,7 +1309,6 @@ components:
     wmg_snapshot_id:
       type: string
       format: uuid
-
 
   parameters:
     path_collection_uuid:

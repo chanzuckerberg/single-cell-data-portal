@@ -1,8 +1,14 @@
+import { ROUTES } from "src/common/constants/routes";
 import { Collection, COLLECTION_LINK_TYPE } from "src/common/entities";
 import { sortByCellCountDescending } from "src/components/Collections/components/Grid/components/DatasetsGrid";
 import { isDOILink } from "src/components/CreateCollectionModal/components/Content/components/LinkInput";
-import { BLUEPRINT_SAFE_TYPE_OPTIONS } from "tests/common/constants";
-import { describeIfDeployed, login, tryUntil } from "tests/utils/helpers";
+import { BLUEPRINT_SAFE_TYPE_OPTIONS, TEST_URL } from "tests/common/constants";
+import {
+  describeIfDeployed,
+  goToPage,
+  login,
+  tryUntil,
+} from "tests/utils/helpers";
 import { getTestID, getText } from "tests/utils/selectors";
 import datasets from "../fixtures/datasets";
 
@@ -91,6 +97,8 @@ describe("Collection", () => {
 async function createCollection(
   collection?: Partial<Collection>
 ): Promise<string> {
+  await goToPage(`${TEST_URL}${ROUTES.MY_COLLECTIONS}`);
+
   await page.click(getText("Create Collection"));
 
   const testCollection = { ...TEST_COLLECTION, ...collection };

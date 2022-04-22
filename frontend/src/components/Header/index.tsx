@@ -12,7 +12,6 @@ import { HomepageLink } from "../common/HomepageLink";
 import AuthButtons from "./components/AuthButtons";
 import LearnButton from "./components/LearnButton";
 import {
-  BetaChip,
   LearnButtonWrapper,
   Left,
   LinkWrapper,
@@ -38,9 +37,9 @@ const Header: FC = () => {
             {isFilterEnabled && (
               <>
                 <LinkWrapper>
-                  <Link href={ROUTES.DATASETS} passHref>
+                  <Link href={ROUTES.HOMEPAGE} passHref>
                     <AnchorButton
-                      active={isRouteActive(pathname, ROUTES.DATASETS)}
+                      active={isRouteActive(pathname, ROUTES.HOMEPAGE)}
                       href="passHref"
                       minimal
                       text="Datasets"
@@ -59,17 +58,21 @@ const Header: FC = () => {
                 </LinkWrapper>
               </>
             )}
-            <LinkWrapper>
+            {/* TEMP */}
+            {/* TEMP */}
+            {/* TEMP re-enable once WMG is ready for staging deploy */}
+            {/* <LinkWrapper>
               <Link href={ROUTES.WHERE_IS_MY_GENE} passHref>
                 <AnchorButton
                   active={isRouteActive(pathname, ROUTES.WHERE_IS_MY_GENE)}
                   href="passHref"
                   minimal
                   text="scExpression"
+                  onClick={handleWMGClick}
                 />
               </Link>
               <BetaChip label="Beta" size="small" />
-            </LinkWrapper>
+            </LinkWrapper> */}
           </Nav>
         </Left>
         <Right>
@@ -93,6 +96,13 @@ const Header: FC = () => {
       </MainWrapper>
     </Wrapper>
   );
+
+  /* TEMP re-enable once WMG is ready for staging deploy */
+  /* TEMP re-enable once WMG is ready for staging deploy */
+  /* TEMP re-enable once WMG is ready for staging deploy */
+  // function handleWMGClick() {
+  //   track(EVENTS.WMG_CLICK_NAV);
+  // }
 };
 
 /**

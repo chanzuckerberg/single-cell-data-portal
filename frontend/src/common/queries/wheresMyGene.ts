@@ -7,37 +7,39 @@ import {
   CellTypeGeneExpressionSummaryData,
   GeneExpressionSummary,
   RawCellTypeGeneExpressionSummaryData,
-  Tissue,
 } from "src/views/WheresMyGene/common/types";
 import { API } from "../API";
 import { EMPTY_OBJECT } from "../constants/utils";
 import { DEFAULT_FETCH_OPTIONS, JSON_BODY_FETCH_OPTIONS } from "./common";
-import { CELL_TYPE_ORDER_BY_TISSUE } from "./constants/cellTypeOrderByTissue";
 import { ENTITIES } from "./entities";
 
+interface RawOntologyTerm {
+  [id: string]: string;
+}
+
+interface RawOntologyTermsByOrganism {
+  [organismId: string]: Array<RawOntologyTerm>;
+}
 interface RawPrimaryFilterDimensionsResponse {
-  gene_terms: { [organismId: string]: Array<{ [id: string]: string }> };
-  organism_terms: { [id: string]: string }[];
+  gene_terms: RawOntologyTermsByOrganism;
+  organism_terms: Array<RawOntologyTerm>;
   snapshot_id: string;
-  tissue_terms: { [id: string]: string }[];
+  tissue_terms: RawOntologyTermsByOrganism;
+}
+
+export interface OntologyTerm {
+  id: string;
+  name: string;
+}
+interface OntologyTermsByOrganism {
+  [organismID: string]: Array<OntologyTerm>;
 }
 
 export interface PrimaryFilterDimensionsResponse {
-  genes: {
-    [organismId: string]: {
-      id: string;
-      name: string;
-    }[];
-  };
-  organisms: {
-    id: string;
-    name: string;
-  }[];
+  genes: OntologyTermsByOrganism;
+  organisms: Array<OntologyTerm>;
   snapshotId: string;
-  tissues: {
-    id: string;
-    name: string;
-  }[];
+  tissues: OntologyTermsByOrganism;
 }
 
 export async function fetchPrimaryFilterDimensions(): Promise<PrimaryFilterDimensionsResponse> {
@@ -48,19 +50,42 @@ export async function fetchPrimaryFilterDimensions(): Promise<PrimaryFilterDimen
   return transformPrimaryFilterDimensions(response);
 }
 
+function flattenOntologyTermsByOrganism(
+  termsObject: RawOntologyTermsByOrganism
+): OntologyTermsByOrganism {
+  return Object.entries(termsObject).reduce((memo, [organismId, genes]) => {
+    memo[organismId] = genes.map(toEntity);
+    return memo;
+  }, {} as OntologyTermsByOrganism);
+}
+
+function generateTermsByKey(
+  flattenedTerms: OntologyTermsByOrganism,
+  key: keyof OntologyTerm
+): {
+  [key: string]: OntologyTerm;
+} {
+  const termsByKey: { [key: string]: OntologyTerm } = {};
+
+  Object.values(flattenedTerms).forEach((terms) => {
+    for (const term of terms) {
+      termsByKey[term[key]] = term;
+    }
+  });
+
+  return termsByKey;
+}
+
 function transformPrimaryFilterDimensions(
   response: RawPrimaryFilterDimensionsResponse
 ): PrimaryFilterDimensionsResponse {
   const { gene_terms, organism_terms, snapshot_id, tissue_terms } = response;
 
   return {
-    genes: Object.entries(gene_terms).reduce((memo, [organismId, genes]) => {
-      memo[organismId] = genes.map(toEntity);
-      return memo;
-    }, {} as { [organismId: string]: { id: string; name: string }[] }),
+    genes: flattenOntologyTermsByOrganism(gene_terms),
     organisms: organism_terms.map(toEntity),
     snapshotId: snapshot_id,
-    tissues: tissue_terms.map(toEntity),
+    tissues: flattenOntologyTermsByOrganism(tissue_terms),
   };
 }
 
@@ -271,64 +296,38 @@ export function useCellTypesByTissueName(): {
     if (
       isLoading ||
       !data ||
+      Object.keys(data).length === 0 ||
       isLoadingPrimaryFilterDimensions ||
       !primaryFilterDimensions ||
       isLoadingTermIdLabels ||
-      !termIdLabels
+      !Object.keys(termIdLabels.cell_types).length
     ) {
       return { data: EMPTY_OBJECT, isLoading };
     }
 
-    const result: Map<Tissue, Map<string, CellType>> = new Map();
     const { tissues } = primaryFilterDimensions;
 
-    const tissuesById: { [id: string]: { id: string; name: string } } = {};
-
-    for (const tissue of tissues) {
-      tissuesById[tissue.id] = tissue;
-    }
-
-    for (const expressionSummaryByTissue of Object.values(data)) {
-      for (const [tissueID, expressionSummaries] of Object.entries(
-        expressionSummaryByTissue
-      )) {
-        const cellTypes = result.get(tissueID) || new Map();
-
-        for (const expressionSummary of expressionSummaries) {
-          const { id } = expressionSummary;
-
-          const cellType = {
-            id,
-            name: termIdLabels.cell_types[tissueID][id],
-          };
-
-          cellTypes.set(id, cellType);
-        }
-
-        result.set(tissueID, cellTypes);
-      }
-    }
+    const tissuesById = generateTermsByKey(tissues, "id");
 
     const cellTypesByTissueName: { [tissueName: string]: CellType[] } = {};
 
-    for (const [tissueId, cellTypesById] of result.entries()) {
+    for (const [tissueId, rawTissueCellTypes] of Object.entries(
+      termIdLabels.cell_types
+    )) {
       const tissueName = tissuesById[tissueId].name;
 
-      const cellTypeOrder = CELL_TYPE_ORDER_BY_TISSUE[tissueId];
-
-      const cellTypes = Array.from(cellTypesById.values());
-
-      if (cellTypeOrder) {
-        cellTypesByTissueName[tissueName] = cellTypes.sort((a, b) => {
-          const aIndex = cellTypeOrder[a.id];
-          const bIndex = cellTypeOrder[b.id];
-
-          return aIndex - bIndex;
+      const tissueCellTypes = Object.entries(rawTissueCellTypes)
+        // (thuang): Reverse the order, so the first cell type is at the top of
+        // the heat map
+        .reverse()
+        .map(([cellTypeId, cellTypeName]) => {
+          return {
+            id: cellTypeId,
+            name: cellTypeName,
+          };
         });
-      } else {
-        console.warn("No cell type order for tissue", tissueId);
-        cellTypesByTissueName[tissueName] = cellTypes;
-      }
+
+      cellTypesByTissueName[tissueName] = tissueCellTypes;
     }
 
     return {
@@ -377,11 +376,7 @@ export function useGeneExpressionSummariesByTissueName(): {
 
     const { tissues } = primaryFilterDimensions;
 
-    const tissuesById: { [id: string]: { id: string; name: string } } = {};
-
-    for (const tissue of tissues) {
-      tissuesById[tissue.id] = tissue;
-    }
+    const tissuesById = generateTermsByKey(tissues, "id");
 
     const result: {
       [tissueName: string]: { [geneName: string]: GeneExpressionSummary };
@@ -428,11 +423,11 @@ function transformCellTypeGeneExpressionSummaryData(
 
   return {
     ...data,
+    expressedCellCount: n,
     id,
     meanExpression: me,
     percentage: pc,
     tissuePercentage: tpc,
-    expressedCellCount: n,
   };
 }
 
@@ -525,15 +520,13 @@ function useWMGQueryRequestBody(options = { includeAllFilterOptions: false }) {
   }, [data, selectedOrganismId]);
 
   const tissuesByName = useMemo(() => {
-    const result: { [name: string]: { id: string; name: string } } = {};
+    let result: { [name: string]: OntologyTerm } = {};
 
     if (!data) return result;
 
     const { tissues } = data;
 
-    for (const tissue of tissues) {
-      result[tissue.name] = tissue;
-    }
+    result = generateTermsByKey(tissues, "name");
 
     return result;
   }, [data]);
@@ -587,8 +580,8 @@ function useWMGQueryRequestBody(options = { includeAllFilterOptions: false }) {
   ]);
 }
 
-function toEntity(item: { [id: string]: string }) {
+function toEntity(item: RawOntologyTerm) {
   const [id, name] = Object.entries(item)[0];
 
-  return { id, name };
+  return { id, name: name || id || "" };
 }

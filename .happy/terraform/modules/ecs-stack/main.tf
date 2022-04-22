@@ -21,7 +21,7 @@ locals {
   deletion_cmd                 = ["make", "-C", "/corpora-data-portal/backend", "db/delete_remote_dev"]
   frontend_cmd                 = []
   # TODO: Assess whether this is safe for Portal API as well. Trying 1 worker in rdev portal backend containers, to minimize use of memory by TileDB (allocates multi-GB per process)
-  backend_cmd                  = ["gunicorn", "--worker-class", "gevent", "--workers", "1", "--bind", "0.0.0.0:5000", "backend.corpora.api_server.app:app", "--max-requests", "10000", "--timeout", "30", "--keep-alive", "5", "--log-level", "info"]
+  backend_cmd                  = ["gunicorn", "--worker-class", "gevent", "--workers", "1", "--bind", "0.0.0.0:5000", "backend.corpora.api_server.app:app", "--max-requests", "10000", "--timeout", "180", "--keep-alive", "5", "--log-level", "info"]
   data_load_path               = "s3://${local.secret["s3_buckets"]["env"]["name"]}/database/dev_data.sql"
 
   vpc_id                       = local.secret["vpc_id"]
@@ -92,6 +92,7 @@ module frontend_service {
   security_groups   = local.security_groups
   task_role_arn     = local.ecs_role_arn
   service_port      = 9000
+  memory            = var.frontend_memory
   deployment_stage  = local.deployment_stage
   step_function_arn = module.upload_sfn.step_function_arn
   host_match        = try(join(".", [module.frontend_dns[0].dns_prefix, local.external_dns]), "")
@@ -175,7 +176,7 @@ module wmg_batch {
   deployment_stage              = local.deployment_stage
   artifact_bucket               = local.artifact_bucket
   wmg_bucket                    = local.wmg_bucket
-  batch_container_memory_limit  = 300000
+  batch_container_memory_limit  = var.batch_container_memory_limit
 }
 
 module upload_success_lambda {

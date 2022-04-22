@@ -24,6 +24,12 @@ export function useFeatureFlag(
 
   /* Update state of enabled flag and redirect user if feature is not available to them. */
   useEffect(() => {
+    // Force enable of filter - start. Remove with #1718.
+    if (featureFlag === FEATURES.FILTER) {
+      setIsEnabled(true);
+      return;
+    }
+    // Force enable of filter - end.
     const enabled = get(featureFlag) === BOOLEAN.TRUE;
     setIsEnabled(enabled);
     if (!enabled && redirectRoute) {

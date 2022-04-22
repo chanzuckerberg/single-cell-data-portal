@@ -9,6 +9,7 @@
             "aws_profile": "single-cell-dev",
             "secret_arn": "happy/env-rdev-config",
             "terraform_directory": ".happy/terraform/envs/rdev",
+            "auto_run_migrations": true,
             "log_group_prefix": "/dp/rdev"
         },
         "dev": {
