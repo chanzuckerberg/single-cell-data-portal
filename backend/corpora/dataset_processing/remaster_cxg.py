@@ -30,13 +30,14 @@ def process(dataset_id: str, cellxgene_bucket: str):
     """
 
     # Careful with old datasets - the ones that do not have a UUID
-    cxg_filename = f"{dataset_id}.cxg"
+    # cxg_filename = f"{dataset_id}.cxg"
 
     # Download the cxg from the bucket
     bucket_prefix = get_bucket_prefix(dataset_id)
-    object_key = f"{bucket_prefix}/{cxg_filename}"
+    object_key = f"{bucket_prefix}.cxg"
     path = f"s3://{cellxgene_bucket}/{object_key}/X"
-    local_path = "cxg"
+    local_path = "/cxg"
+    logger.info(f"Downloading {path} to {local_path}/X_old")
 
     download_command = ["aws", "s3", "sync", path, f"{local_path}/X_old"]
     # Let errors fail the pipeline
@@ -68,7 +69,7 @@ def process(dataset_id: str, cellxgene_bucket: str):
     )
 
     upload_command = ["aws", "s3", "sync", f"{local_path}/X_new", path]
-    subprocess.run(download_command, check=True)
+    subprocess.run(upload_command, check=True)
 
 def compute(
     cxg,
@@ -119,7 +120,6 @@ def compute(
                 cell_order,
                 tile_order,
                 capacity,
-                old_X.schema,
             )
             print("created, starting to read...")
             in_sparse = old_X.schema.sparse
@@ -240,8 +240,8 @@ def fast_config(config_overrides: dict = {}) -> dict:
         "py.init_buffer_bytes": 16 * 1024**3,
         "sm.tile_cache_size": frac_mem(0.5),
         "sm.consolidation.buffer_size": consolidation_buffer_size,
-    } | config_overrides
-    config.update(config)
+    } 
+    config.update(config_overrides)
     return config
 
 
