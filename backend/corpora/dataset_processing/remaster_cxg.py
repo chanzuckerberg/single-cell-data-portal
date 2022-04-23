@@ -101,7 +101,7 @@ def compute(
         backend/corpora/dataset_processing/process.py::make_cxg()
         """
         if not 0 < sparse_threshold <= 100:
-            print("Sparse threhold must be in range (0, 100]")
+            logger.info("Sparse threhold must be in range (0, 100]")
             return
         kind = choose_X_encoding(cxg, source_array, sparse_threshold, ctx)
 
@@ -121,50 +121,50 @@ def compute(
                 tile_order,
                 capacity,
             )
-            print("created, starting to read...")
+            logger.info("created, starting to read...")
             in_sparse = old_X.schema.sparse
             with tiledb.open(f"{cxg}/{X_name}", "w") as new_X:
                 if in_sparse and out_sparse:
-                    print("sparse->sparse")
+                    logger.info("sparse->sparse")
                     i, chunk = 0, 200_000
                     while i < old_X.shape[0]:
-                        print(f"Chunk {i}")
+                        logger.info(f"Chunk {i}")
                         dat = old_X[i : i + chunk]
-                        print(f"Got dat")
+                        logger.info(f"Got dat")
                         new_X[dat["obs"], dat["var"]] = dat[""]
                         i += chunk
                 elif in_sparse and not out_sparse:
                     raise ValueError("sparse->dense not supported")
                 elif not in_sparse and out_sparse:
-                    print("dense->sparse")
+                    logger.info("dense->sparse")
                     i, chunk = 0, 20_000
                     while i < old_X.shape[0]:
-                        print(f"Chunk {i}")
+                        logger.info(f"Chunk {i}")
                         dat = old_X[i : i + chunk]
                         datnz = np.nonzero(dat)
                         new_X[datnz[0] + i, datnz[1]] = dat[datnz[0], datnz[1]]
                         i += chunk
                 else:
-                    print("dense->dense")
+                    logger.info("dense->dense")
                     new_X[:] = old_X[:]
 
-            print("consolidating...")
+            logger.info("consolidating...")
             tiledb.consolidate(f"{cxg}/{X_name}")
             tiledb.vacuum(f"{cxg}/{X_name}")
 
-        print(f"Took {time.time() - st} s")
+        logger.info(f"Took {time.time() - st} s")
 
-    print("done.")
+    logger.info("done.")
 
 
 def choose_X_encoding(cxg, source_array, sparse_threshold, ctx):
-    print("Reading array to determine sparsity...")
+    logger.info("Reading array to determine sparsity...")
     with tiledb.scope_ctx(ctx):
         with tiledb.open(f"{cxg}/{source_array}", "r") as X:
             nnz = 0
             i, chunk = 0, 200_000
             while i < X.shape[0]:
-                print(f"Chunk {i}")
+                logger.info(f"Chunk {i}")
                 dat = X.query(dims=[])[i : i + chunk]
 
                 if X.schema.sparse:
@@ -174,7 +174,7 @@ def choose_X_encoding(cxg, source_array, sparse_threshold, ctx):
                 i += chunk
 
             size = X.shape[0] * X.shape[1]
-            print(f"sparsity={1.0 - nnz / size}, nnz={nnz}, extent=({X.shape[0]}, {X.shape[1]})")
+            logger.info(f"sparsity={1.0 - nnz / size}, nnz={nnz}, extent=({X.shape[0]}, {X.shape[1]})")
             if 1.0 - nnz / size >= sparse_threshold / 100.0:
                 return "sparse"
 
