@@ -85,7 +85,6 @@ def compute(
     capacity,
 ):
     X_extent = [obs_extent, var_extent]
-    X_name = source_array
 
     ctx = create_fast_ctx(
         {
@@ -123,7 +122,8 @@ def compute(
             )
             logger.info("created, starting to read...")
             in_sparse = old_X.schema.sparse
-            with tiledb.open(f"{cxg}/{X_name}", "w") as new_X:
+            with tiledb.open(f"{cxg}/{target_array}", "w") as new_X:
+                logger.info(f"sparsity analysis: {in_sparse} {out_sparse} {old_X.schema.sparse} {new_X.schema.sparse}")
                 if in_sparse and out_sparse:
                     logger.info("sparse->sparse")
                     i, chunk = 0, 200_000
@@ -149,8 +149,8 @@ def compute(
                     new_X[:] = old_X[:]
 
             logger.info("consolidating...")
-            tiledb.consolidate(f"{cxg}/{X_name}")
-            tiledb.vacuum(f"{cxg}/{X_name}")
+            tiledb.consolidate(f"{cxg}/{target_array}")
+            tiledb.vacuum(f"{cxg}/{target_array}")
 
         logger.info(f"Took {time.time() - st} s")
 
@@ -183,6 +183,7 @@ def choose_X_encoding(cxg, source_array, sparse_threshold, ctx):
 
 def create_new_X(cxg, target_array, kind, compression, X_extent, old_schema, cell_order, tile_order, capacity):
     is_sparse = kind == "sparse"
+    logger.info(f"create_new_X: {is_sparse}")
     attr_filters = tiledb.FilterList([tiledb.ZstdFilter(level=compression)])
     dim_filters = tiledb.FilterList([tiledb.ByteShuffleFilter(), tiledb.ZstdFilter(level=compression)])
     old_dims = [old_schema.domain.dim(d) for d in range(old_schema.domain.ndim)]
