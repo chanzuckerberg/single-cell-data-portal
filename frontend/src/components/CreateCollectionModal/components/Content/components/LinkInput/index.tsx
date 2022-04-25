@@ -42,8 +42,7 @@ export type LinkValue = {
 
 const DOI_HELPER_TEXT =
   "A summary citation linked to this DOI will be automatically added to this collection.";
-const DOI_PLACEHOLDER = "https://doi.org/10.1126/science.aax6234";
-const FILTER_ENABLED_DOI_PLACEHOLDER = "10.12345/67890123456789";
+const DOI_PLACEHOLDER = "10.12345/67890123456789";
 const LINK_PLACEHOLDER = "https://cellxgene.cziscience.com";
 
 interface Props {
@@ -91,16 +90,10 @@ const LinkInput: FC<Props> = ({
   const urlPrefix = isFilterEnabledDOI ? (
     <InputPrefix warning={!!errorMessage}>doi:</InputPrefix>
   ) : undefined;
-  const urlPlaceholder = getUrlPlaceholder(isFilterEnabled, isDOI);
+  const urlPlaceholder = getUrlPlaceholder(isDOI);
 
-  // All links except DOIs are validated on the FE. DOIs are validated by the BE.
-  // TODO replace syncValidation below with this definition once filter flag is removed.
-  const filterEnabledValidation = isDOI ? [] : [isValidHttpUrl];
-
-  // Determine validation for link.
-  const syncValidation = isFilterEnabled
-    ? filterEnabledValidation
-    : [isValidHttpUrl, isDOILink(value)];
+  // Determine validation for link. All links except DOIs are validated on the FE. DOIs are validated by the BE.
+  const syncValidation = isDOI ? [] : [isValidHttpUrl];
 
   const LinkTypeButton = () => (
     <SelectButton fill minimal outlined rightIcon="caret-down" text={text} />
@@ -173,18 +166,11 @@ const LinkInput: FC<Props> = ({
 
   /**
    * Returns "url" input field placeholder text.
-   * @param isFilterEnabled
    * @param isDoiLink
    * @returns placeholder text for the "url" input field.
    */
-  function getUrlPlaceholder(
-    isFilterEnabled: boolean,
-    isDoiLink: boolean
-  ): string {
+  function getUrlPlaceholder(isDoiLink: boolean): string {
     if (isDoiLink) {
-      if (isFilterEnabled) {
-        return FILTER_ENABLED_DOI_PLACEHOLDER;
-      }
       return DOI_PLACEHOLDER;
     }
     return LINK_PLACEHOLDER;
@@ -209,7 +195,6 @@ const LinkInput: FC<Props> = ({
   function handleLinkTypeChange(newLinkType: COLLECTION_LINK_TYPE) {
     // Check if revalidation of link is required.
     const isRevalidationRequired = isRevalidationRequired_(
-      isFilterEnabled,
       url,
       linkType,
       newLinkType,
@@ -287,7 +272,6 @@ export function isDOILink(
  * and revalidation is therefore not required).
  * 3. There is currently a value specified for the link URL, or the field has been modified by the user and is
  * currently marked as invalid.
- * @param isFilterEnabled - True if filter flag is enabled.
  * @param url - URL specified by user.
  * @param linkType - Currently selected link type.
  * @param newLinkType - Link type to switch to.
@@ -296,18 +280,12 @@ export function isDOILink(
  * @returns True if re-validation is required.
  */
 function isRevalidationRequired_(
-  isFilterEnabled: boolean,
   url: string,
   linkType: COLLECTION_LINK_TYPE,
   newLinkType: COLLECTION_LINK_TYPE,
   isValid: boolean,
   isTouched = false
 ): boolean {
-  // Revalidation is only required for filter-related functionality.
-  if (!isFilterEnabled) {
-    return false;
-  }
-
   // If neither the current link type nor new link type is DOI, revalidation is not required.
   const isCurrentLinkTypeDOI = isLinkTypeDOI(linkType);
   if (!isCurrentLinkTypeDOI && !isLinkTypeDOI(newLinkType)) {

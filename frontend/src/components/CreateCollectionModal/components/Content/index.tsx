@@ -139,39 +139,30 @@ const Content: FC<Props> = (props) => {
   if (isTombstonedCollection(data)) data = null;
   const { name, description, contact_email, contact_name } = data || {};
 
-  const [links, setLinks] = useState<Link[]>([]);
-  useEffect(() => {
-    // TODO on remove of filter flag (1718):
-    // 1. useEffect can be reverted back to useState once isFilterEnabled is removed. See 7210a51d18b2747ea79b47fcad28579bb5b514b6.
-    // 2. Review usage of refetchOnWindowFocus in useCollection. See full comments in /common/queries/collections.ts.
-    if (isTombstonedCollection(data)) {
-      return;
-    }
-    setLinks(
-      data?.links.map((link, index) => {
-        const {
-          link_name: linkName,
-          link_type: linkType,
-          link_url: linkUrl,
-        } = link;
+  const [links, setLinks] = useState<Link[]>(
+    data?.links.map((link, index) => {
+      const {
+        link_name: linkName,
+        link_type: linkType,
+        link_url: linkUrl,
+      } = link;
 
-        // DOI links are specified as path only, all other links are specified as full URLs.
-        let url;
-        if (isLinkTypeDOI(linkType)) {
-          url = isFilterEnabled ? getDOIPath(linkUrl) : linkUrl;
-        } else {
-          url = linkUrl;
-        }
-        return {
-          id: Date.now() + index,
-          isValid: true,
-          linkName,
-          linkType,
-          url,
-        };
-      }) || []
-    );
-  }, [data, isFilterEnabled]);
+      // DOI links are specified as path only, all other links are specified as full URLs.
+      let url;
+      if (isLinkTypeDOI(linkType)) {
+        url = getDOIPath(linkUrl);
+      } else {
+        url = linkUrl;
+      }
+      return {
+        id: Date.now() + index,
+        isValid: true,
+        linkName,
+        linkType,
+        url,
+      };
+    }) || []
+  );
 
   useEffect(() => {
     const areLinksValid = links.every((link) => link.isValid);
