@@ -197,14 +197,14 @@ def create_new_X(cxg, target_array, kind, compression, X_extent, old_schema, cel
                     tiledb.Dim(
                         name="obs",
                         domain=old_dims[0].domain,
-                        tile=min(old_dims[0].domain, X_extent[0]),
+                        tile=min(old_dims[0].domain[1], X_extent[0]),
                         dtype=old_dims[0].dtype,
                         filters=dim_filters,
                     ),
                     tiledb.Dim(
                         name="var",
                         domain=old_dims[1].domain,
-                        tile=min(old_dims[1].domain, X_extent[1]),
+                        tile=min(old_dims[1].domain[1], X_extent[1]),
                         dtype=old_dims[1].dtype,
                         filters=dim_filters,
                     ),
