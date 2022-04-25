@@ -232,13 +232,13 @@ module dataset_submissions_lambda {
   artifact_bucket            = local.artifact_bucket
   cellxgene_bucket           = local.cellxgene_bucket
   dataset_submissions_bucket = local.dataset_submissions_bucket
-  lambda_execution_role      = local.dataset_submissions_lambda_service_role.arn
+  lambda_execution_role      = aws_iam_role.dataset_submissions_lambda_service_role.arn
   subnets                    = local.subnets
   security_groups            = local.security_groups
 }
 
 resource "aws_iam_role" "dataset_submissions_lambda_service_role" {
-  name               = "corpora-dataset-submissions-service-role-${var.env}"
+  name               = "corpora-dataset-submissions-service-role-${var.deployment_stage}"
   path               = "/service-role/"
   assume_role_policy = data.aws_iam_policy_document.lambda_step_function_execution_policy.json
 }
