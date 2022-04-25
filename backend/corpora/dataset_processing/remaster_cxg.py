@@ -55,48 +55,54 @@ def process(dataset_id: str, cellxgene_bucket: str, dry_run=True):
     # Let errors fail the pipeline
     subprocess.run(download_command, check=True)
 
-    kind = "auto"
-    obs_extent = 256
-    var_extent = 2048
-    cell_order = "row"
-    tile_order = "col"
-    capacity = 128000
-    compression = 22
-    target_array = "X_new"
-    source_array = "X_old"
-    sparse_threshold = 25.0
+    params = {
+        "kind": "auto",
+        "obs_extent": 256,
+        "var_extent": 2048,
+        "cell_order": "row",
+        "tile_order": "col",
+        "capacity": 128000,
+        "compression": 22,
+        "target_array": "X_new",
+        "source_array": "X_old",
+        "sparse_threshold": 25.0
+    }
 
-    compute(
-        local_path,
-        obs_extent,
-        var_extent,
-        source_array,
-        target_array,
-        kind,
-        sparse_threshold,
-        compression,
-        cell_order,
-        tile_order,
-        capacity,
-    )
+    compute(**params)
 
     if not dry_run:
         upload_command = ["aws", "s3", "sync", "--delete", f"{local_path}/X_new", path]
         subprocess.run(upload_command, check=True)
 
-def compute(
-    cxg,
-    obs_extent,
-    var_extent,
-    source_array,
-    target_array,
-    kind,
-    sparse_threshold,
-    compression,
-    cell_order,
-    tile_order,
-    capacity,
-):
+def compute(**kwargs):
+    """
+    Computes the evolved cxg from source_array and saves it to the target_array destination
+    :param cxg:
+    :param obs_extent:
+    :param var_extent:
+    :param source_array:
+    :param target_array:
+    :param kind:
+    :param sparse_threshold:
+    :param compression:
+    :param cell_order:
+    :param tile_order:
+    :param capacity:
+    """
+
+    cxg = kwargs["cxg"]
+    obs_extent = kwargs["obs_extent"]
+    var_extent = kwargs["var_extent"]
+    source_array = kwargs["source_array"]
+    target_array = kwargs["target_array"]
+    kind = kwargs["kind"]
+    sparse_threshold = kwargs["sparse_threshold"]
+    compression = kwargs["compression"]
+    cell_order = kwargs["cell_order"]
+    tile_order = kwargs["tile_order"]
+    capacity = kwargs["capacity"]
+
+
     X_extent = [obs_extent, var_extent]
 
     ctx = create_fast_ctx(
