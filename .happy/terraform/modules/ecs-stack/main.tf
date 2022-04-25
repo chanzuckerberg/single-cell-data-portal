@@ -237,10 +237,27 @@ module dataset_submissions_lambda {
   security_groups            = local.security_groups
 }
 
+#resource "aws_iam_role" "dataset_submissions_lambda_service_role" {
+#  name               = "corpora-dataset-submissions-service-role-${var.deployment_stage}"
+#  path               = "/service-role/"
+#  assume_role_policy = data.aws_iam_policy_document.lambda_step_function_execution_policy.json
+#}
+
 resource "aws_iam_role" "dataset_submissions_lambda_service_role" {
   name               = "corpora-dataset-submissions-service-role-${var.deployment_stage}"
   path               = "/service-role/"
-  assume_role_policy = data.aws_iam_policy_document.lambda_step_function_execution_policy.json
+  assume_role_policy = data.aws_iam_policy_document.assume_role.json
+}
+
+data "aws_iam_policy_document" "assume_role" {
+  statement {
+    principals {
+      type        = "Service"
+      identifiers = ["lambda.amazonaws.com"]  # not sure if this is correct!
+    }
+
+    actions = ["sts:AssumeRole"]
+  }
 }
 
 data "aws_iam_policy_document" "lambda_step_function_execution_policy" {
@@ -254,6 +271,16 @@ data "aws_iam_policy_document" "lambda_step_function_execution_policy" {
       module.upload_sfn.step_function_arn
     ]
   }
+}
+
+resource "aws_iam_policy" "lambda_step_function_execution_policy" {
+  name = "lambda-step-function-execution-policy-${var.deployment_stage}"
+  policy = data.aws_iam_policy_document.lambda_step_function_execution_policy.json
+}
+
+resource "aws_iam_role_policy_attachment" "lambda_step_function_execution_policy_attachment" {
+  role       = aws_iam_role.dataset_submissions_lambda_service_role.name
+  policy_arn = aws_iam_policy.lambda_step_function_execution_policy.arn
 }
 
 resource "aws_lambda_permission" "allow_dataset_submissions_lambda_execution" {
