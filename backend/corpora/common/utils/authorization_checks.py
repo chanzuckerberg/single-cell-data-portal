@@ -2,12 +2,8 @@ from typing import Union
 
 
 def has_scope(required_scope: str, scopes: Union[list, str]) -> bool:
-    result = False
     _scopes = scopes.split(" ") if isinstance(scopes, str) else scopes
-    for scope in _scopes:
-        if scope == required_scope:
-            result = True
-    return result
+    return True if required_scope in _scopes else False
 
 
 def is_user_owner_or_allowed(user: str, scope: Union[list, str], owner: str) -> bool:
