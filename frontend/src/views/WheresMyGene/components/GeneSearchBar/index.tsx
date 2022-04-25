@@ -57,7 +57,11 @@ export default function GeneSearchBar(): JSX.Element {
   const flattenedTissues = useMemo((): Array<OntologyTerm> => {
     if (!tissues) return [];
     return Object.values(tissues).reduce((acc, tissueGroup) => {
-      return acc.concat(tissueGroup);
+      return acc.concat(
+        // (thuang): Product requirement to exclude "cell culture" from the list
+        // https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data-portal/2335
+        tissueGroup.filter((tissue) => !tissue.name.includes("(cell culture)"))
+      );
     }, new Array<OntologyTerm>());
   }, [tissues]);
 
