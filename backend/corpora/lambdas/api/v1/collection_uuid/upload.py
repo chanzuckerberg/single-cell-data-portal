@@ -9,8 +9,12 @@ from .....common.utils.exceptions import (
     InvalidParametersHTTPException,
     TooLargeHTTPException,
     MethodNotAllowedException,
-    NotFoundHTTPException, MaxFileSizeExceededException, InvalidFileFormatException, NonExistentCollectionException,
-    InvalidProcessingStateException, NonExistentDatasetException,
+    NotFoundHTTPException,
+    MaxFileSizeExceededException,
+    InvalidFileFormatException,
+    NonExistentCollectionException,
+    InvalidProcessingStateException,
+    NonExistentDatasetException,
 )
 
 
@@ -55,7 +59,6 @@ def upload_from_link(collection_uuid: str, user: str, url: str, dataset_id: str 
         raise MethodNotAllowedException()
     except NonExistentDatasetException:
         raise NotFoundHTTPException()
-
 
     # if resp.get("size") is not None and resp["size"] > CorporaConfig().upload_max_file_size_gb * GB:
     #     raise TooLargeHTTPException()

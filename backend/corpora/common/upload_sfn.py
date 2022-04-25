@@ -9,8 +9,13 @@ import os
 
 from .corpora_orm import CollectionVisibility, ProcessingStatus
 from .entities import Collection, Dataset
-from .utils.exceptions import MaxFileSizeExceededException, InvalidFileFormatException, NonExistentCollectionException, \
-    InvalidProcessingStateException, NonExistentDatasetException
+from .utils.exceptions import (
+    MaxFileSizeExceededException,
+    InvalidFileFormatException,
+    NonExistentCollectionException,
+    InvalidProcessingStateException,
+    NonExistentDatasetException,
+)
 from .utils.math_utils import GB
 from ..lambdas.api.v1.collection import _owner_or_allowed
 
@@ -35,8 +40,15 @@ def start_upload_sfn(collection_uuid, dataset_uuid, url):
     return response
 
 
-def upload(db_session: Session, collection_uuid: str, user: str, url: str, file_size: int, file_extension: str,
-           dataset_id: str = None) -> str:
+def upload(
+    db_session: Session,
+    collection_uuid: str,
+    user: str,
+    url: str,
+    file_size: int,
+    file_extension: str,
+    dataset_id: str = None,
+) -> str:
     max_file_size_gb = CorporaConfig().upload_max_file_size_gb * GB
     if file_size is not None and file_size > max_file_size_gb:
         raise MaxFileSizeExceededException(f"{url} exceeds the maximum allowed file size of {max_file_size_gb} Gb")
@@ -62,7 +74,8 @@ def upload(db_session: Session, collection_uuid: str, user: str, url: str, file_
                 dataset.reprocess()
             else:
                 raise InvalidProcessingStateException(
-                    f"Unable to reprocess dataset {dataset_id}: {dataset.processing_status.processing_status=}")
+                    f"Unable to reprocess dataset {dataset_id}: {dataset.processing_status.processing_status=}"
+                )
         else:
             raise NonExistentDatasetException(f"Dataset {dataset_id} does not exist")
 

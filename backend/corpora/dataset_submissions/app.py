@@ -38,7 +38,8 @@ def dataset_submissions_handler(s3_event: dict, context) -> None:
         if expected_bucket != bucket:
             raise CorporaException(
                 f"Infrastructure misconfiguration: Expected S3 event from bucket '{expected_bucket}' "
-                "but received event from bucket '{bucket}' instead")
+                "but received event from bucket '{bucket}' instead"
+            )
 
         collection_uuid, incoming_curator_tag = parse_key(key)
 
@@ -54,8 +55,15 @@ def dataset_submissions_handler(s3_event: dict, context) -> None:
                     raise CorporaException(f"Collection {collection_uuid} does not exist")
 
                 s3_url = f"https://{bucket}.s3.{region}.amazonaws.com/{key}"
-                upload(session, collection_uuid, user=collection_owner, url=s3_url, file_size=size,
-                       file_extension=extension, dataset_id=dataset_uuid)
+                upload(
+                    session,
+                    collection_uuid,
+                    user=collection_owner,
+                    url=s3_url,
+                    file_size=size,
+                    file_extension=extension,
+                    dataset_id=dataset_uuid,
+                )
         else:
             raise CorporaException(f"Missing collection UUID and/or curator tag for {key=}")
 
@@ -96,8 +104,9 @@ def get_extension(path: str) -> str:
     return extension.replace(".", "")
 
 
-def get_dataset_info(session: Session, collection_uuid: str, incoming_curator_tag: str) -> Tuple[
-        Optional[str], Optional[str]]:
+def get_dataset_info(
+    session: Session, collection_uuid: str, incoming_curator_tag: str
+) -> Tuple[Optional[str], Optional[str]]:
     collection = Collection.get_collection(session=session, collection_uuid=collection_uuid)
 
     dataset_uuid = None
