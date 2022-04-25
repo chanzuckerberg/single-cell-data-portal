@@ -1,7 +1,6 @@
 import { Button, Intent, UL } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
-import memoize from "lodash/memoize";
-import { FC, useState } from "react";
+import { FC, useCallback, useState } from "react";
 import { useQueryClient } from "react-query";
 import { Collection, Dataset } from "src/common/entities";
 import { FEATURES } from "src/common/featureFlags/features";
@@ -50,12 +49,9 @@ const DatasetTab: FC<Props> = ({
   const isDatasetPresent =
     datasets?.length > 0 || Object.keys(uploadedFiles).length > 0;
 
-  const invalidateCollectionQuery = memoize(
-    () => {
-      queryClient.invalidateQueries([USE_COLLECTION, collectionId, visibility]);
-    },
-    () => collectionId + visibility
-  );
+  const invalidateCollectionQuery = useCallback(() => {
+    queryClient.invalidateQueries([USE_COLLECTION, collectionId]);
+  }, [collectionId]);
 
   const addNewFile = (mutationFunction = uploadLink, originalId?: string) => {
     return (newFile: UploadingFile) => {
