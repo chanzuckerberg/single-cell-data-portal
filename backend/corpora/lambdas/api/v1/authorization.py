@@ -1,6 +1,6 @@
 from backend.corpora.common.utils.authorization_checks import (
     is_user_owner_or_allowed as is_user_owner_or_allowed_common,
-    owner_or_allowed as owner_or_allowed_common,
+    owner_or_allowed,
 )
 
 
