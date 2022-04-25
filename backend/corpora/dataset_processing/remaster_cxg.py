@@ -17,20 +17,32 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
-def process(dataset_id: str, cellxgene_bucket: str):
+def process_all(cellxgene_bucket: str):
     """
-    1. Download the labeled dataset from the artifact bucket
-    2. Convert the labeled dataset to CXG
-    3. Upload the CXG to the cellxgene bucket
+    Process all cxgs in batch, by listing the ids in the provided bucket
+    """
+    import boto3
+    bucket = cellxgene_bucket
+    prefix = None # required if the datasets aren't in the bucket root
+
+    client = boto3.client('s3')
+    result = client.list_objects(Bucket=bucket, Prefix=prefix, Delimiter='/')
+    for o in result.get('CommonPrefixes'):
+        dataset_id = o["Prefix"].split("/")[1]
+        # TODO Might need to pass down the prefix
+        process(dataset_id, cellxgene_bucket, dry_run=True)
+
+
+def process(dataset_id: str, cellxgene_bucket: str, dry_run=True):
+    """
+    Converts an existing CXG to the new, performance optimized schema
     :param dataset_id:
-    :param artifact_bucket:
-    :param labeled_h5ad_filename:
     :param cellxgene_bucket:
+    :param dry_run:
     :return:
     """
 
     # Careful with old datasets - the ones that do not have a UUID
-    # cxg_filename = f"{dataset_id}.cxg"
 
     # Download the cxg from the bucket
     bucket_prefix = get_bucket_prefix(dataset_id)
@@ -68,8 +80,9 @@ def process(dataset_id: str, cellxgene_bucket: str):
         capacity,
     )
 
-    upload_command = ["aws", "s3", "sync", f"{local_path}/X_new", path]
-    subprocess.run(upload_command, check=True)
+    if not dry_run:
+        upload_command = ["aws", "s3", "sync", "--delete", f"{local_path}/X_new", path]
+        subprocess.run(upload_command, check=True)
 
 def compute(
     cxg,
