@@ -11,7 +11,6 @@ from swagger_ui_bundle import swagger_ui_path
 
 from backend.corpora.common.utils.aws import AwsSecret
 from backend.corpora.common.utils.json import CustomJSONEncoder
-from backend.corpora.lambdas.api.v1.authorization import AuthError
 
 DEPLOYMENT_STAGE = os.environ["DEPLOYMENT_STAGE"]
 APP_NAME = os.environ["APP_NAME"]
