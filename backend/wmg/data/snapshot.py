@@ -15,6 +15,7 @@ from backend.wmg.data.tiledb import create_ctx
 
 # Snapshot data artifact file/dir names
 CELL_TYPE_ORDERINGS_FILENAME = "cell_type_orderings.json"
+PRIMARY_FILTER_DIMENSIONS_FILENAME = "primary_filter_dimensions.json"
 EXPRESSION_SUMMARY_CUBE_NAME = "expression_summary"
 CELL_COUNTS_CUBE_NAME = "cell_counts"
 
