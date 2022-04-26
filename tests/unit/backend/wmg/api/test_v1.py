@@ -73,18 +73,26 @@ class WmgApiV1Tests(unittest.TestCase):
                 {"organism_ontology_term_id_1": "organism_ontology_term_id_1_label"},
                 {"organism_ontology_term_id_2": "organism_ontology_term_id_2_label"},
             ],
-            tissue_terms=[
-                {"tissue_ontology_term_id_0": "tissue_ontology_term_id_0_label"},
-                {"tissue_ontology_term_id_1": "tissue_ontology_term_id_1_label"},
-                {"tissue_ontology_term_id_2": "tissue_ontology_term_id_2_label"},
-            ],
-            gene_terms={
+            tissue_terms={
                 "organism_ontology_term_id_0": [
-                    {"gene_ontology_term_id_0": "gene_ontology_term_id_0_label"},
+                    {"tissue_ontology_term_id_0": "tissue_ontology_term_id_0_label"},
+                    {"tissue_ontology_term_id_1": "tissue_ontology_term_id_1_label"},
+                    {"tissue_ontology_term_id_2": "tissue_ontology_term_id_2_label"},
                 ],
                 "organism_ontology_term_id_1": [
-                    {"gene_ontology_term_id_1": "gene_ontology_term_id_1_label"},
+                    {"tissue_ontology_term_id_0": "tissue_ontology_term_id_0_label"},
+                    {"tissue_ontology_term_id_1": "tissue_ontology_term_id_1_label"},
+                    {"tissue_ontology_term_id_2": "tissue_ontology_term_id_2_label"},
                 ],
+                "organism_ontology_term_id_2": [
+                    {"tissue_ontology_term_id_0": "tissue_ontology_term_id_0_label"},
+                    {"tissue_ontology_term_id_1": "tissue_ontology_term_id_1_label"},
+                    {"tissue_ontology_term_id_2": "tissue_ontology_term_id_2_label"},
+                ],
+            },
+            gene_terms={
+                "organism_ontology_term_id_0": [{"gene_ontology_term_id_0": "gene_ontology_term_id_0_label"}],
+                "organism_ontology_term_id_1": [{"gene_ontology_term_id_1": "gene_ontology_term_id_1_label"}],
                 "organism_ontology_term_id_2": [{"gene_ontology_term_id_2": "gene_ontology_term_id_2_label"}],
             },
         )
