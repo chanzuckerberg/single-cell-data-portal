@@ -68,7 +68,7 @@ def process(dataset_id: str, cellxgene_bucket: str, dry_run=True):
         "sparse_threshold": 25.0
     }
 
-    compute(**params)
+    compute(cxg=local_path, **params)
 
     if not dry_run:
         upload_command = ["aws", "s3", "sync", "--delete", f"{local_path}/X_new", path]
