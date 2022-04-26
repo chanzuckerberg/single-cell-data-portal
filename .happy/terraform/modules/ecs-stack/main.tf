@@ -192,6 +192,7 @@ module upload_success_lambda {
   cellxgene_bucket           = local.cellxgene_bucket
   dataset_submissions_bucket = local.dataset_submissions_bucket
   lambda_execution_role      = local.lambda_execution_role
+  step_function_arn          = "" # ugly hack to avoid circular dependency
   subnets                    = local.subnets
   security_groups            = local.security_groups
 }
@@ -207,6 +208,7 @@ module upload_error_lambda {
   cellxgene_bucket           = local.cellxgene_bucket
   dataset_submissions_bucket = local.dataset_submissions_bucket
   lambda_execution_role      = local.lambda_execution_role
+  step_function_arn          = "" # ugly hack to avoid circular dependency
   subnets                    = local.subnets
   security_groups            = local.security_groups
 }
@@ -233,15 +235,10 @@ module dataset_submissions_lambda {
   cellxgene_bucket           = local.cellxgene_bucket
   dataset_submissions_bucket = local.dataset_submissions_bucket
   lambda_execution_role      = aws_iam_role.dataset_submissions_lambda_service_role.arn
+  step_function_arn          = module.upload_sfn.step_function_arn
   subnets                    = local.subnets
   security_groups            = local.security_groups
 }
-
-#resource "aws_iam_role" "dataset_submissions_lambda_service_role" {
-#  name               = "corpora-dataset-submissions-service-role-${var.deployment_stage}"
-#  path               = "/service-role/"
-#  assume_role_policy = data.aws_iam_policy_document.lambda_step_function_execution_policy.json
-#}
 
 resource "aws_iam_role" "dataset_submissions_lambda_service_role" {
   name               = "corpora-dataset-submissions-service-role-${var.deployment_stage}"
@@ -269,6 +266,27 @@ data "aws_iam_policy_document" "lambda_step_function_execution_policy" {
     ]
     resources = [
       module.upload_sfn.step_function_arn
+    ]
+  }
+  statement {
+    sid      = "cw"
+    effect = "Allow"
+    actions = [
+      "logs:CreateLogGroup",
+      "logs:CreateLogStream",
+      "logs:PutLogEvents"
+    ]
+    resources = [
+      "arn:aws:logs:*:*:*"
+    ]
+  }
+  statement {
+    actions = [
+      "secretsmanager:DescribeSecret",
+      "secretsmanager:GetSecretValue"
+    ]
+    resources = [
+      "arn:aws:secretsmanager:us-west-2:${var.aws_account_id}:secret:corpora/backend/${var.deployment_stage}/*"
     ]
   }
 }

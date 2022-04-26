@@ -39,6 +39,11 @@ variable deployment_stage {
   description = "The name of the deployment stage of the Application"
 }
 
+variable step_function_arn {
+  type = string
+  description = "ARN for the step function called by the uploader"
+}
+
 variable lambda_execution_role {
   type        = string
   description = "Role for lambda execution"
