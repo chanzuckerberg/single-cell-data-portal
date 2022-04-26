@@ -12,7 +12,7 @@ from backend.wmg.data.load_cube import update_s3_resources
 from backend.wmg.data.load_corpus import load_h5ad
 from backend.wmg.data.schemas.corpus_schema import create_tdb, INTEGRATED_ARRAY_NAME
 from backend.wmg.data.tiledb import create_ctx
-from backend.wmg.data.transform import get_cell_types_by_tissue, generate_cell_ordering
+from backend.wmg.data.transform import generate_primary_filter_dimensions, get_cell_types_by_tissue, generate_cell_ordering
 from backend.wmg.data.wmg_cube import create_cubes
 
 logger = logging.getLogger(__name__)
@@ -74,6 +74,7 @@ def load_data_and_create_cube(
 
     cell_type_by_tissue = get_cell_types_by_tissue(corpus_path)
     generate_cell_ordering(snapshot_path, cell_type_by_tissue)
+    generate_primary_filter_dimensions(snapshot_path)
     logger.info("Generated cell ordering json file")
     update_s3_resources(snapshot_path, timestamp)
     logger.info("Copied snapshot to s3")
