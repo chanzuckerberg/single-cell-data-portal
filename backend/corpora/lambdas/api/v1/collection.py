@@ -11,7 +11,7 @@ import logging
 from .common import get_collection
 from ....common.corpora_orm import DbCollection, CollectionVisibility
 from ....common.entities import Collection
-from ....common.utils.authorization_checks import is_user_owner_or_allowed, owner_or_allowed
+from authorization import is_user_owner_or_allowed, owner_or_allowed
 from ....common.utils.exceptions import (
     InvalidParametersHTTPException,
     ConflictException,
