@@ -3,7 +3,7 @@ import logging
 
 from backend.corpora.dataset_processing.process import (
     update_db,
-    download_from_dropbox_url,
+    download_from_source_uri,
     validate_h5ad_file_and_add_labels,
     extract_metadata,
     create_artifact,
@@ -34,10 +34,10 @@ def process(dataset_id: str, dropbox_url: str, artifact_bucket: str):
     update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.PENDING))
 
     # Download the original dataset from Dropbox
-    local_filename = download_from_dropbox_url(
-        dataset_id,
-        dropbox_url,
-        "raw.h5ad",
+    local_filename = download_from_source_uri(
+        dataset_uuid=dataset_id,
+        source_uri=dropbox_url,
+        local_path="raw.h5ad",
     )
 
     # Validate and label the dataset

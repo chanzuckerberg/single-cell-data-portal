@@ -48,6 +48,7 @@ def upload(
     file_size: int,
     file_extension: str,
     dataset_id: str = None,
+    curator_tag: str = None
 ) -> str:
     max_file_size_gb = CorporaConfig().upload_max_file_size_gb * GB
     if file_size is not None and file_size > max_file_size_gb:
@@ -81,7 +82,7 @@ def upload(
 
     else:
         # Add new dataset
-        dataset = Dataset.create(db_session, collection=collection)
+        dataset = Dataset.create(db_session, collection=collection, curator_tag=curator_tag)
 
     dataset.update(processing_status=dataset.new_processing_status())
 

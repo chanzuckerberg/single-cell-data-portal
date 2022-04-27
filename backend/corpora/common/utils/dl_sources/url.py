@@ -1,3 +1,4 @@
+import boto3
 import requests
 import typing
 from abc import ABC, abstractmethod
@@ -9,6 +10,7 @@ class MissingHeaderException(Exception):
         self.detail = "Missing header from response. " + detail
 
 
+# TODO: consider renaming as URI
 class URL(ABC):
     """Define the abstract base class to support different download sources."""
 
@@ -118,6 +120,39 @@ class S3URL(URL):
         }
 
 
+# TODO: consider replacing S3URL with S3URI
+class S3URI(URL):
+    """
+    Handles S3 URIs: s3://<bucket>/<key>
+    """
+
+    @classmethod
+    def validate(cls, url: str) -> typing.Optional["URL"]:
+        parsed = urlparse(url)
+        bucket_name = parsed.netloc
+        key = parsed.path
+        if parsed.scheme == "s3" and bucket_name and key:
+            return cls(parsed.geturl(), parsed)
+        else:
+            return None
+
+    def file_info(self) -> dict:
+        s3 = boto3.resource("s3")
+        s3_object = s3.Object(self.bucket_name, self.key)
+        return {
+            "name": self.key,
+            "size": s3_object.content_length
+        }
+
+    @property
+    def bucket_name(self):
+        return self.parsed_url.netloc
+
+    @property
+    def key(self):
+        return self.parsed_url.path
+
+
 class RegisteredSources:
     """Manages all of the download sources."""
 
@@ -149,3 +184,4 @@ def from_url(url: str) -> URL:
 
 RegisteredSources.add(DropBoxURL)
 RegisteredSources.add(S3URL)
+RegisteredSources.add(S3URI)

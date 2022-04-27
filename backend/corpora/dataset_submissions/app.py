@@ -32,8 +32,8 @@ def dataset_submissions_handler(s3_event: dict, context) -> None:
     # s3://cellxgene-curation-submissions-{dev,staging,prod}/<collection_id>/<curator_tag>
 
     for record in s3_event["Records"]:
-        region, bucket, key, size = parse_s3_event_record(record)
-        logger.info(f"{region=}, {bucket=}, {key=}, {size=}")
+        bucket, key, size = parse_s3_event_record(record)
+        logger.info(f"{bucket=}, {key=}, {size=}")
 
         if expected_bucket != bucket:
             raise CorporaException(
@@ -51,34 +51,28 @@ def dataset_submissions_handler(s3_event: dict, context) -> None:
                 session: Session
 
                 collection_owner, dataset_uuid = get_dataset_info(session, collection_uuid, incoming_curator_tag)
+
+                logger.info(f"@@@@@ {collection_owner=}, {dataset_uuid=}")
                 if not collection_owner:
                     raise CorporaException(f"Collection {collection_uuid} does not exist")
 
-                s3_url = f"https://{bucket}.s3.{region}.amazonaws.com/{key}"
-                upload(
-                    session,
-                    collection_uuid,
-                    user=collection_owner,
-                    url=s3_url,
-                    file_size=size,
-                    file_extension=extension,
-                    dataset_id=dataset_uuid,
-                )
+                s3_uri = f"s3://{bucket}/{key}"
+                upload(session, collection_uuid, user=collection_owner, url=s3_uri, file_size=size,
+                       file_extension=extension, dataset_id=dataset_uuid, curator_tag=incoming_curator_tag)
         else:
             raise CorporaException(f"Missing collection UUID and/or curator tag for {key=}")
 
 
-def parse_s3_event_record(s3_event_record: dict) -> Tuple[str, str, str, int]:
+def parse_s3_event_record(s3_event_record: dict) -> Tuple[str, str, int]:
     """
     Parses the S3 event record and returns the bucket name, object key and object size
     :param s3_event_record:
     :return:
     """
-    region = s3_event_record["awsRegion"]
     bucket = s3_event_record["s3"]["bucket"]["name"]
     key = unquote_plus(s3_event_record["s3"]["object"]["key"], encoding="utf-8")
     size = s3_event_record["s3"]["object"]["size"]
-    return region, bucket, key, size
+    return bucket, key, size
 
 
 def parse_key(key: str) -> Tuple[Optional[str], Optional[str]]:

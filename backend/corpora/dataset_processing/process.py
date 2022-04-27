@@ -127,7 +127,7 @@ from backend.corpora.common.corpora_orm import (
     ConversionStatus,
     DatasetArtifactFileType,
     ProcessingStatus,
-    ValidationStatus,
+    ValidationStatus, UploadStatus,
 )
 from backend.corpora.common.entities import Dataset, DatasetAsset
 from backend.corpora.common.utils.db_helpers import processing_status_updater
@@ -251,25 +251,59 @@ def update_db(dataset_id, metadata: dict = None, processing_status: dict = None)
             processing_status_updater(session, dataset.processing_status.id, processing_status)
 
 
-def download_from_dropbox_url(dataset_uuid: str, dropbox_url: str, local_path: str) -> str:
-    """Given a dropbox url, download it to local_path.
+def download_from_source_uri(dataset_uuid: str, source_uri: str, local_path: str) -> str:
+    """Given a source URI, download it to local_path.
     Handles fixing the url so it downloads directly.
     """
 
-    file_url = from_url(dropbox_url)
+    file_url = from_url(source_uri)
     if not file_url:
-        raise ValueError(f"Malformed Dropbox URL: {dropbox_url}")
+        raise ValueError(f"Malformed source URI: {source_uri}")
 
-    file_info = file_url.file_info()
-    status = download(dataset_uuid, file_url.url, local_path, file_info["size"])
-    logger.info(status)
+    # This is a bit ugly and should be done polymorphically instead, but Dropbox support will be dropped soon
+    if file_url.parsed_url.scheme == "https":
+        file_info = file_url.file_info()
+        status = download(dataset_uuid, file_url.url, local_path, file_info["size"])
+        logger.info(status)
+    elif file_url.parsed_url.scheme == "s3":
+        bucket_name = file_url.parsed_url.netloc
+        key = remove_prefix(file_url.parsed_url.path, "/")
+        wrapped_download_from_s3(dataset_uuid=dataset_uuid, bucket_name=bucket_name, object_key=key,
+                                 local_filename=local_path)
+    else:
+        raise ValueError(f"Download for URI scheme '{file_url.parsed_url.scheme}' not implemented")
+
     logger.info("Download complete")
     return local_path
+
+
+# TODO: after upgrading to Python 3.9, replace this with removeprefix()
+def remove_prefix(string: str, prefix: str) -> str:
+    if string.startswith(prefix):
+        return string[len(prefix):]
+    else:
+        return string[:]
 
 
 def download_from_s3(bucket_name: str, object_key: str, local_filename: str):
     logger.info(f"Downloading file {local_filename} from bucket {bucket_name} with object key {object_key}")
     buckets.portal_client.download_file(bucket_name, object_key, local_filename)
+
+
+def wrapped_download_from_s3(dataset_uuid: str, bucket_name: str, object_key: str, local_filename: str):
+    """
+    Wraps download_from_s3() to update the dataset's upload status
+    :param dataset_uuid:
+    :param bucket_name:
+    :param object_key:
+    :param local_filename:
+    :return:
+    """
+    with db_session_manager() as session:
+        processing_status = Dataset.get(session, dataset_uuid).processing_status
+        processing_status.upload_status = UploadStatus.UPLOADING
+        download_from_s3(bucket_name=bucket_name, object_key=object_key, local_filename=local_filename)
+        processing_status.upload_status = UploadStatus.UPLOADED
 
 
 def extract_metadata(filename) -> dict:
@@ -515,10 +549,10 @@ def log_batch_environment():
 
 def process(dataset_id, dropbox_url, cellxgene_bucket, artifact_bucket):
     update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.PENDING))
-    local_filename = download_from_dropbox_url(
-        dataset_id,
-        dropbox_url,
-        "raw.h5ad",
+    local_filename = download_from_source_uri(
+        dataset_uuid=dataset_id,
+        source_uri=dropbox_url,
+        local_path="raw.h5ad",
     )
 
     # No file cleanup needed due to docker run-time environment.

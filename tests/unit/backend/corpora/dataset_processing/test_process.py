@@ -29,7 +29,7 @@ from backend.corpora.dataset_processing.exceptions import ProcessingCancelled
 from backend.corpora.dataset_processing import process
 from backend.corpora.dataset_processing.process import (
     convert_file_ignore_exceptions,
-    download_from_dropbox_url,
+    download_from_source_uri,
 )
 from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 
@@ -558,7 +558,7 @@ class TestDatasetProcessing(DataPortalTestCase):
         start = time.time()
         # check that changing the db status leads to an exception being raised
         with self.assertRaises(ProcessingCancelled):
-            download_from_dropbox_url(
+            download_from_source_uri(
                 self.dataset_id,
                 "dropbox.com",
                 "raw.h5ad",
