@@ -2,7 +2,7 @@ import json
 import logging
 import os
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, Dict
 
 import pandas as pd
 import tiledb
@@ -84,6 +84,14 @@ def _open_cube(cube_uri) -> Array:
 
 def _load_cell_type_order(snapshot_identifier: str) -> DataFrame:
     return pd.read_json(_read_s3obj(f"{snapshot_identifier}/{CELL_TYPE_ORDERINGS_FILENAME}"))
+
+
+def _load_primary_filter_data(snapshot_identifier: str)-> Dict:
+    return json.loads(
+        open(_read_s3obj(
+            f"{snapshot_identifier}/{PRIMARY_FILTER_DIMENSIONS_FILENAME}"
+        ))
+    )
 
 
 def _read_s3obj(relative_path: str) -> str:
