@@ -59,6 +59,7 @@ export default memo(function YAxisChart({
     setIsChartInitialized(true);
 
     const yAxisChart = init(yAxisCurrent, EMPTY_OBJECT, {
+      renderer: "svg",
       useDirtyRect: true,
     });
 

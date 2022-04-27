@@ -35,6 +35,7 @@ export default function XAxisChart({ geneNames }: Props): JSX.Element {
     setIsChartInitialized(true);
 
     const xAxisChart = init(xAxisCurrent, EMPTY_OBJECT, {
+      renderer: "svg",
       useDirtyRect: true,
     });
 
