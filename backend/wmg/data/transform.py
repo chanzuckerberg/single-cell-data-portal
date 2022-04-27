@@ -89,7 +89,7 @@ def generate_cell_ordering(snapshot_path: str, cell_type_by_tissue: Dict) -> Non
     df = pd.DataFrame(data, columns=["tissue_ontology_term_id", "cell_type_ontology_term_id", "order"])
     df.to_json(f"{snapshot_path}/{CELL_TYPE_ORDERINGS_FILENAME}")
 
-def generate_primary_filter_dimensions(snapshot_path: str, corpus_name: str):
+def generate_primary_filter_dimensions(snapshot_path: str, corpus_name: str, snapshot_id: int):
 
     # TODO: remove them from WmgQuery (next 4 following functions)
     def list_primary_filter_dimension_term_ids(cube, primary_dim_name: str):
@@ -144,6 +144,7 @@ def generate_primary_filter_dimensions(snapshot_path: str, corpus_name: str):
         }
 
         result = dict(
+            snapshot_id=snapshot_id,
             organism_terms=build_ontology_term_id_label_mapping(
                 list_primary_filter_dimension_term_ids(cube, "organism_ontology_term_id")
             ),
