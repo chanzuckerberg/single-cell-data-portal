@@ -1,3 +1,4 @@
+/* TODO(cc) remove DatasetsGrid and other unused utils, style and child components (#1718). */
 import { FC } from "react";
 import { UseMutateAsyncFunction } from "react-query";
 import { Collection, Dataset, VISIBILITY_TYPE } from "src/common/entities";

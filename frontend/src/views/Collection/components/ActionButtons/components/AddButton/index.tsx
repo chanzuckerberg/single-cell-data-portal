@@ -1,6 +1,4 @@
-import { Button, Intent, Popover, Position } from "@blueprintjs/core";
-import { FEATURES } from "src/common/featureFlags/features";
-import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
+import { Intent, Popover, Position } from "@blueprintjs/core";
 import { StyledOutlineButton } from "src/components/common/Button/common/style";
 import {
   Props as DropboxChooserProps,
@@ -17,16 +15,14 @@ interface Props {
 }
 
 const AddButton = ({ addNewFile }: Props) => {
-  const isFilterEnabled = useFeatureFlag(FEATURES.FILTER);
-  const AddDatasetButton = isFilterEnabled ? StyledOutlineButton : Button;
   return (
     <Popover
       position={Position.BOTTOM_LEFT}
       content={<Content addNewFile={addNewFile} />}
     >
-      <AddDatasetButton intent={Intent.PRIMARY} outlined>
+      <StyledOutlineButton intent={Intent.PRIMARY} outlined>
         Add
-      </AddDatasetButton>
+      </StyledOutlineButton>
     </Popover>
   );
 };

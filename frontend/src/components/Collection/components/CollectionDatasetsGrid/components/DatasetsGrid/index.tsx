@@ -1,3 +1,4 @@
+/* TODO(cc) review (#1718). */
 /* Copied from src/components/Collections/components/Grid/components/DatasetsGrid and modified as an intermediate
    upgrade to the collection datasets table while keeping the existing core datasets grid outside of the filter feature
    flag untouched. Once filter feature flag is removed, the existing core datasets grid can be deleted and replaced

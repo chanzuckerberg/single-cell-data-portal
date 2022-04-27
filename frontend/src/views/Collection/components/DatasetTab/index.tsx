@@ -3,8 +3,6 @@ import { IconNames } from "@blueprintjs/icons";
 import { FC, useCallback, useState } from "react";
 import { useQueryClient } from "react-query";
 import { Collection, Dataset } from "src/common/entities";
-import { FEATURES } from "src/common/featureFlags/features";
-import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
 import {
   useCollection,
   useCollectionUploadLinks,
@@ -13,7 +11,6 @@ import {
 } from "src/common/queries/collections";
 import { isTombstonedCollection } from "src/common/utils/typeGuards";
 import { CollectionDatasetsGrid } from "src/components/Collection/components/CollectionDatasetsGrid/style";
-import DatasetsGrid from "src/components/Collections/components/Grid/components/DatasetsGrid";
 import DropboxChooser, { UploadingFile } from "src/components/DropboxChooser";
 import { StyledLink } from "src/views/Collection/common/style";
 import { UploadedFiles } from "src/views/Collection/components/ActionButtons";
@@ -40,7 +37,6 @@ const DatasetTab: FC<Props> = ({
   const { mutateAsync: reuploadDataset } = useReuploadDataset(collectionId);
   const [uploadedFiles, setUploadedFiles] = useState({} as UploadedFiles);
   const { data: collection } = useCollection({ id: collectionId });
-  const isFilterEnabled = useFeatureFlag(FEATURES.FILTER);
 
   const queryClient = useQueryClient();
 
@@ -79,29 +75,16 @@ const DatasetTab: FC<Props> = ({
   return (
     <>
       {isDatasetPresent ? (
-        isFilterEnabled ? (
-          <CollectionDatasetsGrid
-            accessType={collection?.access_type}
-            datasets={datasets}
-            invalidateCollectionQuery={invalidateCollectionQuery}
-            isRevision={isRevision}
-            onUploadFile={addNewFile}
-            reuploadDataset={reuploadDataset}
-            uploadedFiles={uploadedFiles}
-            visibility={visibility}
-          />
-        ) : (
-          <DatasetsGrid
-            visibility={visibility}
-            accessType={collection?.access_type}
-            datasets={datasets}
-            uploadedFiles={uploadedFiles}
-            invalidateCollectionQuery={invalidateCollectionQuery}
-            isRevision={isRevision}
-            onUploadFile={addNewFile}
-            reuploadDataset={reuploadDataset}
-          />
-        )
+        <CollectionDatasetsGrid
+          accessType={collection?.access_type}
+          datasets={datasets}
+          invalidateCollectionQuery={invalidateCollectionQuery}
+          isRevision={isRevision}
+          onUploadFile={addNewFile}
+          reuploadDataset={reuploadDataset}
+          uploadedFiles={uploadedFiles}
+          visibility={visibility}
+        />
       ) : (
         <EmptyModal
           title="No datasets uploaded"
