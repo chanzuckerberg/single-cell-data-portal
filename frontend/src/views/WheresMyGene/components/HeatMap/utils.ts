@@ -359,7 +359,7 @@ export function dataToChartFormat({
 }
 
 const HEAT_MAP_BASE_WIDTH_PX = 500;
-const HEAT_MAP_BASE_HEIGHT_PX = 300;
+export const HEAT_MAP_BASE_HEIGHT_PX = 300;
 const HEAT_MAP_BASE_CELL_PX = 20;
 
 /**
