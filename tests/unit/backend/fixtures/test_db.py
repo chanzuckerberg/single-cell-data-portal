@@ -70,8 +70,9 @@ class TestDatabase:
         )
         self.session.add(collection)
         collection = DbCollection(
-            id="test_collection_id",
+            id="test_collection_id_revision",
             visibility=CollectionVisibility.PRIVATE.name,
+            revision_of="test_collection_id",
             owner="test_user_id",
             name="test_collection_name",
             description="test_description",
@@ -118,6 +119,25 @@ class TestDatabase:
             data_submission_policy_version="0",
         )
         self.session.add(collection)
+        collection = DbCollection(
+            id="test_collection_with_link",
+            visibility=CollectionVisibility.PUBLIC.name,
+            owner="Someone_else",
+            name="test_collection_name",
+            description="test_description",
+            data_submission_policy_version="0",
+        )
+        self.session.add(collection)
+        collection = DbCollection(
+            id="test_collection_with_link_revision",
+            revision_of="test_collection_with_link",
+            visibility=CollectionVisibility.PRIVATE.name,
+            owner="Someone_else",
+            name="test_collection_name",
+            description="test_description",
+            data_submission_policy_version="0",
+        )
+        self.session.add(collection)
         self.session.commit()
 
     def _create_test_geneset(self):
@@ -126,7 +146,6 @@ class TestDatabase:
             name="test_geneset",
             description="this is a geneset",
             collection_id="test_collection_id",
-            collection_visibility=CollectionVisibility.PUBLIC.name,
         )
 
         self.session.add(geneset)
@@ -136,7 +155,6 @@ class TestDatabase:
             name="test_geneset_with_dataset",
             description="this is a geneset with a dataset",
             collection_id="test_collection_id",
-            collection_visibility=CollectionVisibility.PUBLIC.name,
             datasets=[dataset],
         )
         self.session.add(geneset)
@@ -148,7 +166,6 @@ class TestDatabase:
                 DbCollectionLink(
                     id=f"test_collection_{link_type.value}_link_id",
                     collection_id="test_collection_id",
-                    collection_visibility=CollectionVisibility.PUBLIC.name,
                     link_name=f"test_{link_type.value}_link_name",
                     link_url=f"http://test_{link_type.value}_url.place",
                     link_type=link_type.name,
@@ -158,8 +175,23 @@ class TestDatabase:
                 DbCollectionLink(
                     id=f"test_collection_no_name_{link_type.value}_link_id",
                     collection_id="test_collection_id",
-                    collection_visibility=CollectionVisibility.PUBLIC.name,
                     link_url=f"http://test_no_link_name_{link_type.value}_url.place",
+                    link_type=link_type.name,
+                )
+            )
+            self.session.add(
+                DbCollectionLink(
+                    id=f"test_publish_revision_with_links__{link_type.value}_link",
+                    collection_id="test_collection_with_link",
+                    link_url=f"http://test_link_{link_type.value}_url.place",
+                    link_type=link_type.name,
+                )
+            )
+            self.session.add(
+                DbCollectionLink(
+                    id=f"test_publish_revision_with_links__revision_{link_type.value}_link",
+                    collection_id="test_collection_with_link_revision",
+                    link_url=f"http://test_link_{link_type.value}_url.place_REVISION",
                     link_type=link_type.name,
                 )
             )
@@ -187,7 +219,6 @@ class TestDatabase:
             development_stage=[{"ontology_term_id": "test_obo", "label": "test_development_stage"}],
             collection_id="test_collection_id",
             explorer_url="test_url",
-            collection_visibility=CollectionVisibility.PUBLIC.name,
             cell_type=[{"label": "test_cell_type", "ontology_term_id": "test_opo"}],
             is_primary_data=IsPrimaryData.PRIMARY.name,
             x_normalization="test_x_normalization",
@@ -215,7 +246,6 @@ class TestDatabase:
             development_stage=[{"ontology_term_id": "test_obo", "label": "test_development_stage"}],
             collection_id="test_collection_id_public_for_revision_one",
             explorer_url="test_url",
-            collection_visibility=CollectionVisibility.PUBLIC.name,
             schema_version="2.0.0",
         )
         self.session.add(dataset)
@@ -239,7 +269,6 @@ class TestDatabase:
             development_stage=[{"ontology_term_id": "test_obo", "label": "test_development_stage"}],
             collection_id="test_collection_id_public_for_revision_two",
             explorer_url="test_url",
-            collection_visibility=CollectionVisibility.PUBLIC.name,
             schema_version="2.0.0",
         )
         self.session.add(dataset)
@@ -262,8 +291,34 @@ class TestDatabase:
             ethnicity=[{"ontology_term_id": "test_obo", "label": "test_ethnicity"}],
             development_stage=[{"ontology_term_id": "test_obo", "label": "test_development_stage"}],
             collection_id="test_collection_id_not_owner",
-            collection_visibility=CollectionVisibility.PRIVATE.name,
             explorer_url="test_url",
+            cell_type=[{"label": "test_cell_type", "ontology_term_id": "test_opo"}],
+            is_primary_data=IsPrimaryData.PRIMARY.name,
+            x_normalization="test_x_normalization",
+            x_approximate_distribution=XApproximateDistribution.NORMAL.name,
+            schema_version="2.0.0",
+        )
+        self.session.add(dataset)
+        dataset = DbDataset(
+            id="test_publish_revision_with_links__revision_dataset",
+            revision=0,
+            name="test_dataset_name_revised",
+            organism=[{"ontology_term_id": "test_obo", "label": "test_organism"}],
+            tissue=[{"ontology_term_id": "test_obo", "label": "test_tissue"}],
+            assay=[{"ontology_term_id": "test_obo", "label": "test_assay"}],
+            disease=[
+                {"ontology_term_id": "test_obo", "label": "test_disease"},
+                {"ontology_term_id": "test_obp", "label": "test_disease2"},
+                {"ontology_term_id": "test_obq", "label": "test_disease3"},
+            ],
+            sex=[
+                {"label": "test_sex", "ontology_term_id": "test_obo"},
+                {"label": "test_sex2", "ontology_term_id": "test_obp"},
+            ],
+            ethnicity=[{"ontology_term_id": "test_obo", "label": "test_ethnicity"}],
+            development_stage=[{"ontology_term_id": "test_obo", "label": "test_development_stage"}],
+            collection_id="test_collection_id_revision",
+            explorer_url="test_url_revised",
             cell_type=[{"label": "test_cell_type", "ontology_term_id": "test_opo"}],
             is_primary_data=IsPrimaryData.PRIMARY.name,
             x_normalization="test_x_normalization",
@@ -356,14 +411,25 @@ class TestDatabase:
 
         self.session.commit()
 
-        self.session.commit()
-
         self.session.add(
             DbDatasetArtifact(
                 id="test_dataset_artifact_for_revision_two_RDS_id",
                 dataset_id="test_dataset_for_revisions_two",
                 filename="test_filename",
                 filetype=DatasetArtifactFileType.RDS.name,
+                user_submitted=True,
+                s3_uri=self.real_s3_file if self.real_data else self.fake_s3_file,
+            )
+        )
+
+        self.session.commit()
+
+        self.session.add(
+            DbDatasetArtifact(
+                id="test_publish_revision_with_links__revision_artifact",
+                dataset_id="test_publish_revision_with_links__revision_dataset",
+                filename="test_filename",
+                filetype=DatasetArtifactFileType.H5AD.name,
                 user_submitted=True,
                 s3_uri=self.real_s3_file if self.real_data else self.fake_s3_file,
             )
