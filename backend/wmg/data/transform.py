@@ -1,4 +1,3 @@
-from typing import Dict
 import tiledb
 import pandas as pd
 
@@ -6,7 +5,11 @@ from backend.wmg.data.ontology_labels import ontology_term_label, gene_term_labe
 from typing import Dict, List, Iterable
 import json
 
-from backend.wmg.data.snapshot import CELL_TYPE_ORDERINGS_FILENAME, EXPRESSION_SUMMARY_CUBE_NAME, PRIMARY_FILTER_DIMENSIONS_FILENAME
+from backend.wmg.data.snapshot import (
+    CELL_TYPE_ORDERINGS_FILENAME,
+    EXPRESSION_SUMMARY_CUBE_NAME,
+    PRIMARY_FILTER_DIMENSIONS_FILENAME,
+)
 
 
 def get_cell_types_by_tissue(corpus_group: str) -> Dict:
@@ -89,17 +92,12 @@ def generate_cell_ordering(snapshot_path: str, cell_type_by_tissue: Dict) -> Non
     df = pd.DataFrame(data, columns=["tissue_ontology_term_id", "cell_type_ontology_term_id", "order"])
     df.to_json(f"{snapshot_path}/{CELL_TYPE_ORDERINGS_FILENAME}")
 
+
 def generate_primary_filter_dimensions(snapshot_path: str, corpus_name: str, snapshot_id: int):
 
     # TODO: remove them from WmgQuery (next 4 following functions)
     def list_primary_filter_dimension_term_ids(cube, primary_dim_name: str):
-        return (
-            cube.query(attrs=[], dims=[primary_dim_name])
-            .df[:]
-            .groupby([primary_dim_name])
-            .first()
-            .index.tolist()
-        )
+        return cube.query(attrs=[], dims=[primary_dim_name]).df[:].groupby([primary_dim_name]).first().index.tolist()
 
     def list_grouped_primary_filter_dimensions_term_ids(
         cube, primary_dim_name: str, group_by_dim: str
@@ -118,7 +116,6 @@ def generate_primary_filter_dimensions(snapshot_path: str, corpus_name: str, sna
             {gene_ontology_term_id: gene_term_label(gene_ontology_term_id)}
             for gene_ontology_term_id in gene_ontology_term_ids
         ]
-
 
     def build_ontology_term_id_label_mapping(ontology_term_ids: Iterable[str]) -> List[dict]:
         return [{ontology_term_id: ontology_term_label(ontology_term_id)} for ontology_term_id in ontology_term_ids]
@@ -151,6 +148,6 @@ def generate_primary_filter_dimensions(snapshot_path: str, corpus_name: str, sna
             tissue_terms=organism_tissue_terms,
             gene_terms=organism_gene_terms,
         )
-        
+
         with open(f"{snapshot_path}/{PRIMARY_FILTER_DIMENSIONS_FILENAME}", "w") as f:
             json.dump(result, f)
