@@ -228,3 +228,10 @@ class TestCorpusIntegrationETL(unittest.TestCase):
                 self.assertEqual(larger_test_anndata_object_obs.assay_ontology_term_id[i],
                                  self.larger_test_anndata_object.obs[:].assay_ontology_term_id[cell_id_mapping[i]])
 
+    @unittest.skip("TO DO IMPLEMENT")
+    def test_var_labels_contain_correct_dimensions(self):
+        raise NotImplementedError
+
+    @unittest.skip("TO DO IMPLEMENT")
+    def test_label_type(self):
+        raise NotImplementedError

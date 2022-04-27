@@ -113,7 +113,7 @@ def create_tdb(corpus_location: str, tdb_group: str):
     tiledb.group_create(uri)
 
     X_capacity = 128000
-    X_extent = [512, 2048]  # guess - needs tuning
+    X_extent = [512, 2048]  # todo tune for performance
     filters = tiledb.FilterList([tiledb.ZstdFilter(level=-22)])
 
     """ Optional array, normalized X from original dataset. """

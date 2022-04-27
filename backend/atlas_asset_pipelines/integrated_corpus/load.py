@@ -91,3 +91,6 @@ def update_corpus_var(corpus_path: str, anndata_object: pd.DataFrame) -> pd.Data
 
     logger.info(f"Global var index length: {var_df.shape}")
     return var_df
+
+
+def create
