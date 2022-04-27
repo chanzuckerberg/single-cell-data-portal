@@ -5,9 +5,14 @@ import {
 } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 import { FC } from "react";
-import { StyledIcon } from "src/components/common/Form/Input/style";
 import { GRAY } from "src/components/common/theme";
-import { BulletWrapper, ContentWrapper, FirstSentence, Text } from "./style";
+import {
+  BulletWrapper,
+  ContentWrapper,
+  FirstSentence,
+  StyledIcon,
+  Text,
+} from "./style";
 
 const DirectIdentifiers: FC = ({ children }) => {
   return (

@@ -1,10 +1,8 @@
-import { Button, Classes, Intent } from "@blueprintjs/core";
+import { Classes, Intent } from "@blueprintjs/core";
 import { useRouter } from "next/router";
-import { FC, Fragment, useEffect, useRef, useState } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 import { ROUTES } from "src/common/constants/routes";
 import { Collection, COLLECTION_LINK_TYPE } from "src/common/entities";
-import { FEATURES } from "src/common/featureFlags/features";
-import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
 import { useUserInfo } from "src/common/queries/auth";
 import {
   formDataToObject,
@@ -26,13 +24,11 @@ import { getDOIPath } from "src/views/Collection/utils";
 import AddLink from "./components/AddLink";
 import LinkInput, { LinkValue } from "./components/LinkInput";
 import {
-  CollectionDetail as Detail,
+  CollectionDetail,
   CollectionFooter,
-  CollectionLinks as Links,
-  ContactWrapper,
+  CollectionLinks,
   Form,
   FormDivider,
-  StyledInput,
   Title,
 } from "./style";
 
@@ -72,15 +68,6 @@ const AddMetadataLinkButton = () => (
   <StyledPrimaryAnchorButton intent={Intent.PRIMARY} minimal text="Add Link" />
 );
 
-/**
- * @deprecated by AddInputGroupButton once filter feature flag is removed (#1718).
- */
-const AddLinkButton = () => (
-  <Button outlined intent={Intent.PRIMARY}>
-    Add Link
-  </Button>
-);
-
 const requiredValidator = (value: string) => value.length > 0 || "Required";
 
 // checks if string value is a valid email
@@ -107,18 +94,6 @@ const Content: FC<Props> = (props) => {
     [FIELD_NAMES.CONTACT_NAME]: initialBooleanState,
     [FIELD_NAMES.CONTACT_EMAIL]: initialBooleanState,
   });
-
-  /* Temporary structure to enable both filter feature and existing functionality. */
-  /* Fragments and any deprecated styled components can either be removed or replaced, or reverted to bp components once filter feature flag is removed (#1718). */
-  const isFilterEnabled = useFeatureFlag(FEATURES.FILTER);
-  const CollectionDetail = isFilterEnabled ? Detail : Fragment;
-  const ContactDetailsWrapper = isFilterEnabled
-    ? Fragment
-    : ContactWrapper; /* remove ContactDetailsWrapper from structure once filter feature flag is removed (#1718) */
-  const CollectionLinks = isFilterEnabled ? Links : Fragment;
-  const DialogFooter = isFilterEnabled ? CollectionFooter : "div";
-  const CancelButton = isFilterEnabled ? StyledDefaultButton : Button;
-  const SaveButton = isFilterEnabled ? StyledPrimaryButton : Button;
 
   const formEl = useRef<HTMLFormElement>(null);
 
@@ -180,18 +155,15 @@ const Content: FC<Props> = (props) => {
   const { onClose } = props;
   return (
     <>
-      <div
-        data-test-id="collection-form-content"
-        className={isFilterEnabled ? undefined : Classes.DIALOG_BODY}
-      >
+      <div data-test-id="collection-form-content">
         {/* (thuang): turn off autocomplete seems to be the safest bet for now
          * https://github.com/facebook/react/issues/1159
          */}
-        <Form ref={formEl} autoComplete="off" isFilterEnabled={isFilterEnabled}>
+        <Form ref={formEl} autoComplete="off">
           {/* Collection detail */}
           <CollectionDetail>
             {/* Title */}
-            {isFilterEnabled && <Title>Collection Details</Title>}
+            <Title>Collection Details</Title>
             {/* Fields */}
             <Input
               name={FIELD_NAMES.NAME}
@@ -209,32 +181,30 @@ const Content: FC<Props> = (props) => {
               fill
               defaultValue={description}
             />
-            <ContactDetailsWrapper>
-              <StyledInput // @deprecated - revert to bp Input once filter feature flag is removed (#1718).
-                name={FIELD_NAMES.CONTACT_NAME}
-                text="Contact Name"
-                handleChange={handleInputChange}
-                placeholder={REQUIRED_FIELD_TEXT}
-                defaultValue={contact_name}
-                syncValidation={[requiredValidator]}
-              />
-              <StyledInput // @deprecated - revert to bp Input once filter feature flag is removed (#1718).
-                name={FIELD_NAMES.CONTACT_EMAIL}
-                text="Contact Email"
-                handleChange={handleInputChange}
-                placeholder={REQUIRED_FIELD_TEXT}
-                defaultValue={contact_email}
-                syncValidation={[requiredValidator, emailValidation]}
-              />
-            </ContactDetailsWrapper>
+            <Input
+              name={FIELD_NAMES.CONTACT_NAME}
+              text="Contact Name"
+              handleChange={handleInputChange}
+              placeholder={REQUIRED_FIELD_TEXT}
+              defaultValue={contact_name}
+              syncValidation={[requiredValidator]}
+            />
+            <Input
+              name={FIELD_NAMES.CONTACT_EMAIL}
+              text="Contact Email"
+              handleChange={handleInputChange}
+              placeholder={REQUIRED_FIELD_TEXT}
+              defaultValue={contact_email}
+              syncValidation={[requiredValidator, emailValidation]}
+            />
           </CollectionDetail>
           {/* Collection links */}
           {links.length > 0 && (
             <>
-              {isFilterEnabled && <FormDivider />}
+              <FormDivider />
               <CollectionLinks>
                 {/* Title */}
-                {isFilterEnabled && <Title>Links</Title>}
+                <Title>Links</Title>
                 {/* Fields */}
                 {links.map(
                   (
@@ -274,7 +244,7 @@ const Content: FC<Props> = (props) => {
           <AddLink
             doiSelected={isDOISelected()}
             handleClick={handleAddLinkClick}
-            Button={isFilterEnabled ? AddMetadataLinkButton : AddLinkButton}
+            Button={AddMetadataLinkButton}
           />
         </Form>
       </div>
@@ -285,16 +255,15 @@ const Content: FC<Props> = (props) => {
 
   function Footer() {
     return (
-      <DialogFooter className={Classes.DIALOG_FOOTER}>
+      <CollectionFooter className={Classes.DIALOG_FOOTER}>
         <div className={Classes.DIALOG_FOOTER_ACTIONS}>
-          <CancelButton
+          <StyledDefaultButton
             disabled={isLoading}
-            intent={isFilterEnabled ? undefined : Intent.PRIMARY}
             minimal
             onClick={onClose}
             text="Cancel"
           />
-          <SaveButton
+          <StyledPrimaryButton
             data-test-id="create-button"
             disabled={!isValid}
             intent={Intent.PRIMARY}
@@ -302,10 +271,10 @@ const Content: FC<Props> = (props) => {
             onClick={
               isEditCollection ? submitEditCollection : submitCreateCollection
             }
-            text={isFilterEnabled || isEditCollection ? "Save" : "Create"}
+            text="Save"
           />
         </div>
-      </DialogFooter>
+      </CollectionFooter>
     );
   }
 

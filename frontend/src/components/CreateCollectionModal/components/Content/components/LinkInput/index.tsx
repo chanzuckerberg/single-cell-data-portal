@@ -1,19 +1,15 @@
 import { Button } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
-import { FC, Fragment } from "react";
+import { FC } from "react";
 import {
   COLLECTION_LINK_TYPE,
   COLLECTION_LINK_TYPE_OPTIONS,
-  COLLECTION_LINK_TYPE_OPTIONS_DEPRECATED,
 } from "src/common/entities";
-import { FEATURES } from "src/common/featureFlags/features";
-import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
 import {
-  FormLabelText as StyledLabelText,
+  FormLabelText,
   SelectFormLabel,
 } from "src/components/common/Form/common/style";
 import Input from "src/components/common/Form/Input";
-import { LabelText, StyledDiv } from "src/components/common/Form/Input/style";
 import { GRAY } from "src/components/common/theme";
 import { isLinkTypeDOI } from "src/components/CreateCollectionModal/components/Content/common/utils";
 import AddLink from "../AddLink";
@@ -21,12 +17,7 @@ import {
   CloseCollectionLinkIcon,
   CollectionLink,
   HelperText,
-  IconWrapper,
   InputPrefix,
-  LinkWrapper,
-  StyledButton,
-  StyledLinkTypeButton,
-  StyledURLInput,
 } from "./style";
 
 export type LinkValue = {
@@ -74,20 +65,10 @@ const LinkInput: FC<Props> = ({
   isTouched,
   isValid,
 }) => {
-  const isFilterEnabled = useFeatureFlag(FEATURES.FILTER);
-  const option = isFilterEnabled
-    ? COLLECTION_LINK_TYPE_OPTIONS[linkType]
-    : COLLECTION_LINK_TYPE_OPTIONS_DEPRECATED[linkType];
+  const option = COLLECTION_LINK_TYPE_OPTIONS[linkType];
   const { text, value } = option;
-  const LinkInputWrapper = isFilterEnabled ? CollectionLink : LinkWrapper;
-  const FormLabel = isFilterEnabled ? SelectFormLabel : StyledDiv;
-  const SelectButton = isFilterEnabled ? Button : StyledLinkTypeButton;
-  const FormLabelText = isFilterEnabled ? StyledLabelText : LabelText;
-  const CloseCollectionLink = isFilterEnabled ? Fragment : IconWrapper;
   const isDOI = isLinkTypeDOI(value);
-  const isFilterEnabledDOI = isFilterEnabled && isDOI;
-  const nameFieldVisible = isNameFieldVisible(isFilterEnabled, isDOI);
-  const urlPrefix = isFilterEnabledDOI ? (
+  const urlPrefix = isDOI ? (
     <InputPrefix warning={!!errorMessage}>doi:</InputPrefix>
   ) : undefined;
   const urlPlaceholder = getUrlPlaceholder(isDOI);
@@ -96,12 +77,12 @@ const LinkInput: FC<Props> = ({
   const syncValidation = isDOI ? [] : [isValidHttpUrl];
 
   const LinkTypeButton = () => (
-    <SelectButton fill minimal outlined rightIcon="caret-down" text={text} />
+    <Button fill minimal outlined rightIcon="caret-down" text={text} />
   );
 
   return (
-    <LinkInputWrapper>
-      <FormLabel>
+    <CollectionLink>
+      <SelectFormLabel>
         <FormLabelText>Type</FormLabelText>
         <AddLink
           doiSelected={doiSelected}
@@ -109,22 +90,21 @@ const LinkInput: FC<Props> = ({
           handleClick={handleLinkTypeChange}
           Button={LinkTypeButton}
         />
-      </FormLabel>
-      {nameFieldVisible && (
+      </SelectFormLabel>
+      {!isDOI && (
         <Input
           name="Name"
           // (thuang): `noNameAttr` removes this input field from the FormData and
           // the payload
           noNameAttr
-          optionalField={isFilterEnabled}
-          text={isFilterEnabled ? "Name" : "Name (optional)"}
+          optionalField
+          text="Name"
           placeholder="Name"
           handleChange={handleNameChange}
           defaultValue={linkName}
-          percentage={25} // TODO remove prop once filter feature flag is removed (#1718).
         />
       )}
-      <StyledURLInput // TODO revert to Input component once filter feature flag is removed (#1718).
+      <Input
         // (thuang): `noNameAttr` removes this input field from the FormData and
         // the payload
         leftElement={urlPrefix}
@@ -136,32 +116,20 @@ const LinkInput: FC<Props> = ({
         placeholder={urlPlaceholder}
         defaultValue={url}
         handleChange={handleChange_}
-        percentage={40} // TODO remove prop once filter feature flag is removed (#1718).
         isRevalidationRequired={isRevalidationRequired}
       />
       {/* Helper text */}
-      {isFilterEnabledDOI && (
+      {isDOI && (
         <HelperText warning={!!errorMessage}>
           {errorMessage ? errorMessage : DOI_HELPER_TEXT}
         </HelperText>
       )}
-      <CloseCollectionLink>
-        {isFilterEnabled ? (
-          <CloseCollectionLinkIcon
-            color={GRAY.A}
-            icon={IconNames.CROSS}
-            onClick={() => handleDelete(id)}
-          />
-        ) : (
-          <StyledButton
-            minimal
-            color={GRAY.A}
-            icon={IconNames.CROSS}
-            onClick={() => handleDelete(id)}
-          />
-        )}
-      </CloseCollectionLink>
-    </LinkInputWrapper>
+      <CloseCollectionLinkIcon
+        color={GRAY.A}
+        icon={IconNames.CROSS}
+        onClick={() => handleDelete(id)}
+      />
+    </CollectionLink>
   );
 
   /**
@@ -220,9 +188,10 @@ const LinkInput: FC<Props> = ({
     isValid: boolean;
     value: string;
   }) {
+    // TODO(cc) review comment below; test was isFilterEnabled && isDio (#1718)
     // Adding special handling for filter-enabled DOI: DOI is considered invalid if not specified (that is, prevent form
     // submit) but don't mark the input as an error.
-    const isValid = isFilterEnabledDOI ? !!value : isValidFromInput;
+    const isValid = isDOI ? !!value : isValidFromInput;
     handleChange({
       id,
       index,
@@ -232,21 +201,6 @@ const LinkInput: FC<Props> = ({
       linkType,
       url: value,
     });
-  }
-
-  /**
-   * Returns true if either:
-   * - filter feature flag is not enabled, or
-   * - filter feature flag is enabled and link type is not DOI.
-   * @param isFilterEnabled
-   * @param isDoiLink
-   * @returns boolean
-   */
-  function isNameFieldVisible(isFilterEnabled: boolean, isDoiLink: boolean) {
-    if (!isFilterEnabled) {
-      return true;
-    }
-    return !isDoiLink;
   }
 };
 

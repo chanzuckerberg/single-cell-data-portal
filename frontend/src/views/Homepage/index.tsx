@@ -1,3 +1,4 @@
+/* TODO(cc) remove as part of (#1718)? */
 import loadable from "@loadable/component";
 import Head from "next/head";
 import { FC } from "react";
