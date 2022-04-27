@@ -74,7 +74,7 @@ def load_data_and_create_cube(
 
     cell_type_by_tissue = get_cell_types_by_tissue(corpus_path)
     generate_cell_ordering(snapshot_path, cell_type_by_tissue)
-    generate_primary_filter_dimensions(snapshot_path)
+    generate_primary_filter_dimensions(snapshot_path, corpus_name)
     logger.info("Generated cell ordering json file")
     update_s3_resources(snapshot_path, timestamp)
     logger.info("Copied snapshot to s3")

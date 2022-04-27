@@ -89,7 +89,7 @@ def generate_cell_ordering(snapshot_path: str, cell_type_by_tissue: Dict) -> Non
     df = pd.DataFrame(data, columns=["tissue_ontology_term_id", "cell_type_ontology_term_id", "order"])
     df.to_json(f"{snapshot_path}/{CELL_TYPE_ORDERINGS_FILENAME}")
 
-def generate_primary_filter_dimensions(snapshot_path: str):
+def generate_primary_filter_dimensions(snapshot_path: str, corpus_name: str):
 
     # TODO: remove them from WmgQuery (next 4 following functions)
     def list_primary_filter_dimension_term_ids(cube, primary_dim_name: str):
@@ -123,7 +123,7 @@ def generate_primary_filter_dimensions(snapshot_path: str):
     def build_ontology_term_id_label_mapping(ontology_term_ids: Iterable[str]) -> List[dict]:
         return [{ontology_term_id: ontology_term_label(ontology_term_id)} for ontology_term_id in ontology_term_ids]
 
-    with tiledb.open(f"{snapshot_path}/{EXPRESSION_SUMMARY_CUBE_NAME}") as cube:
+    with tiledb.open(f"{snapshot_path}/{corpus_name}/{EXPRESSION_SUMMARY_CUBE_NAME}") as cube:
 
         # gene terms are grouped by organism, and represented as a nested lists in dict, keyed by organism
         organism_gene_ids: dict[str, List[str]] = list_grouped_primary_filter_dimensions_term_ids(
