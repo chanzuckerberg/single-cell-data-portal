@@ -127,7 +127,7 @@ def generate_primary_filter_dimensions(snapshot_path: str):
 
         # gene terms are grouped by organism, and represented as a nested lists in dict, keyed by organism
         organism_gene_ids: dict[str, List[str]] = list_grouped_primary_filter_dimensions_term_ids(
-            "gene_ontology_term_id", group_by_dim="organism_ontology_term_id"
+            cube, "gene_ontology_term_id", group_by_dim="organism_ontology_term_id"
         )
         organism_gene_terms = {
             organism_term_id: build_gene_id_label_mapping(gene_term_ids)
@@ -136,7 +136,7 @@ def generate_primary_filter_dimensions(snapshot_path: str):
 
         # tissue terms are grouped by organism, and represented as a nested lists in dict, keyed by organism
         organism_tissue_ids: dict[str, List[str]] = list_grouped_primary_filter_dimensions_term_ids(
-            "tissue_ontology_term_id", group_by_dim="organism_ontology_term_id"
+            cube, "tissue_ontology_term_id", group_by_dim="organism_ontology_term_id"
         )
         organism_tissue_terms = {
             organism_term_id: build_ontology_term_id_label_mapping(tissue_term_ids)
@@ -145,7 +145,7 @@ def generate_primary_filter_dimensions(snapshot_path: str):
 
         result = dict(
             organism_terms=build_ontology_term_id_label_mapping(
-                list_primary_filter_dimension_term_ids("organism_ontology_term_id")
+                cube, list_primary_filter_dimension_term_ids("organism_ontology_term_id")
             ),
             tissue_terms=organism_tissue_terms,
             gene_terms=organism_gene_terms,
