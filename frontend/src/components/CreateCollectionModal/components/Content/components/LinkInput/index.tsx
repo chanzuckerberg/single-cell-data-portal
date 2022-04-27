@@ -188,9 +188,7 @@ const LinkInput: FC<Props> = ({
     isValid: boolean;
     value: string;
   }) {
-    // TODO(cc) review comment below; test was isFilterEnabled && isDio (#1718)
-    // Adding special handling for filter-enabled DOI: DOI is considered invalid if not specified (that is, prevent form
-    // submit) but don't mark the input as an error.
+    // DOI is considered invalid if not specified (that is, prevent form submit) but don't mark the input as an error.
     const isValid = isDOI ? !!value : isValidFromInput;
     handleChange({
       id,
@@ -203,21 +201,6 @@ const LinkInput: FC<Props> = ({
     });
   }
 };
-
-export function isDOILink(
-  type: COLLECTION_LINK_TYPE
-): (value: string) => true | string {
-  return (value: string) => {
-    // Skip validation if type is not DOI
-    if (type !== COLLECTION_LINK_TYPE.DOI) return true;
-    const origin = "doi.org/";
-    const originIndex = value.indexOf("doi.org/");
-    const isValid =
-      originIndex !== -1 && value.slice(originIndex + origin.length).length > 0;
-
-    return isValid || "Please enter a valid DOI link";
-  };
-}
 
 /**
  * Determine if validation of field needs to be executed on change on link type.  This is only true if:
