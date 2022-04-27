@@ -145,7 +145,7 @@ def generate_primary_filter_dimensions(snapshot_path: str):
 
         result = dict(
             organism_terms=build_ontology_term_id_label_mapping(
-                cube, list_primary_filter_dimension_term_ids("organism_ontology_term_id")
+                list_primary_filter_dimension_term_ids(cube, "organism_ontology_term_id")
             ),
             tissue_terms=organism_tissue_terms,
             gene_terms=organism_gene_terms,
