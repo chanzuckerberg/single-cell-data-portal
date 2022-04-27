@@ -499,7 +499,7 @@ class TestCollection(BaseAuthAPITest):
         self.assertEqual(400, response.status_code)
 
     @patch("backend.corpora.common.providers.crossref_provider.CrossrefProvider.fetch_metadata")
-    def test__post_collection_rejects_invalid_doi(self, mock_provider):
+    def test__post_collection_rejects_doi_not_in_crossref(self, mock_provider):
         mock_provider.side_effect = CrossrefDOINotFoundException("Mocked CrossrefDOINotFoundException")
         test_url = furl(path="/dp/v1/collections/")
         data = {
@@ -518,6 +518,25 @@ class TestCollection(BaseAuthAPITest):
         self.assertEqual(400, response.status_code)
         error_payload = json.loads(response.data)
         self.assertEqual(error_payload["detail"], "DOI cannot be found on Crossref")
+
+    def test__post_collection_rejects_invalid_doi(self):
+        test_url = furl(path="/dp/v1/collections/")
+        data = {
+            "name": "collection name",
+            "description": "This is a test collection",
+            "contact_name": "person human",
+            "contact_email": "person@human.com",
+            "links": [{"link_name": "DOI Link", "link_url": "invalid/doi", "link_type": "DOI"}],
+        }
+        json_data = json.dumps(data)
+        response = self.app.post(
+            test_url.url,
+            headers={"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)},
+            data=json_data,
+        )
+        self.assertEqual(400, response.status_code)
+        error_payload = json.loads(response.data)
+        self.assertEqual(error_payload["detail"], "Invalid DOI")
 
     @patch("backend.corpora.common.providers.crossref_provider.CrossrefProvider.fetch_metadata")
     def test__post_collection_ignores_metadata_if_crossref_exception(self, mock_provider):
