@@ -91,7 +91,7 @@ def _load_cell_type_order(snapshot_identifier: str) -> DataFrame:
 
 
 def _load_primary_filter_data(snapshot_identifier: str) -> Dict:
-    return json.loads(open(_read_s3obj(f"{snapshot_identifier}/{PRIMARY_FILTER_DIMENSIONS_FILENAME}")))
+    return json.loads(_read_s3obj(f"{snapshot_identifier}/{PRIMARY_FILTER_DIMENSIONS_FILENAME}"))
 
 
 def _read_s3obj(relative_path: str) -> str:
