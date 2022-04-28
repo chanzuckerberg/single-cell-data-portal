@@ -34,6 +34,7 @@ import {
   getOntologySpeciesKey,
   listOntologyTreeIds,
 } from "src/components/common/Filter/common/utils";
+import { track } from "../analytics";
 
 /**
  * Entry in react-table's filters arrays, models selected category values in a category.
@@ -169,40 +170,36 @@ export function useCategoryFilter<T extends Categories>(
     setFilterState(nextFilterState);
   }, [categoryKeys, categorySet, filters, originalRows]);
 
-  // Update set of filters on select of category value.
+  // Update set of filters on select of category value. Track selected category value.
   const onFilter = useCallback<OnFilterFn>(
     (categoryKey: CategoryKey, selectedValue: CategoryValueKey | Range) => {
       if (!categorySet) {
         return; // Error state - category set should be set at this point.
       }
 
+      // Grab the configuration model for the selected category.
+      const config = CATEGORY_CONFIGS_BY_CATEGORY_KEY[categoryKey];
+
       // Handle range categories.
       if (!isCategoryValueKey(selectedValue)) {
-        setFilter(categoryKey, selectedValue);
+        onFilterRangeCategory(config, selectedValue, setFilter);
         return;
       }
 
       // Handle ontology categories.
-      const config = CATEGORY_CONFIGS_BY_CATEGORY_KEY[categoryKey];
       if (isCategoryConfigOntology(config)) {
-        const nextCategoryFilters = buildNextOntologyCategoryFilters(
-          categoryKey,
+        onFilterOntologyCategory(
+          config,
           selectedValue,
+          setFilter,
           filters,
-          categorySet[categoryKey] as Set<CategoryValueKey>,
-          config.ontology
+          categorySet
         );
-        setFilter(categoryKey, nextCategoryFilters);
         return;
       }
 
       // Handle single or multiselect categories.
-      const nextCategoryFilters = buildNextSelectCategoryFilters(
-        categoryKey,
-        selectedValue,
-        filters
-      );
-      setFilter(categoryKey, nextCategoryFilters);
+      onFilterSelectCategory(config, selectedValue, setFilter, filters);
     },
     [categorySet, filters, setFilter]
   );
@@ -1265,6 +1262,92 @@ function removeOntologyDescendents(
 }
 
 /**
+ * Handle select of ontology value: build and set next set of filters for this category. Track selected ontology value.
+ * @param config - Configuration model of selected category.
+ * @param selectedValue - Selected category value key (e.g. [1, 100]).
+ * @param setFilter - Function to update set of selected values for a category.
+ * @param filters - Current set of selected category values (values) or ranges keyed by category (id).
+ * @param categorySet - Original, unfiltered sets of category values keyed by their category.
+ */
+function onFilterOntologyCategory<T extends Categories>(
+  config: OntologyCategoryConfig,
+  selectedValue: CategoryValueKey,
+  setFilter: SetFilterFn,
+  filters: Filters<T>,
+  categorySet: CategorySet
+) {
+  const { categoryKey, ontology } = config;
+
+  // Track selected category and value.
+  trackOntologyCategoryValueSelected(config, selectedValue, filters);
+
+  // Build and set next set of filters for this category.
+  const nextCategoryFilters = buildNextOntologyCategoryFilters(
+    categoryKey,
+    selectedValue,
+    filters,
+    categorySet[categoryKey] as Set<CategoryValueKey>,
+    ontology
+  );
+  setFilter(categoryKey, nextCategoryFilters);
+}
+
+/**
+ * Handle select of range min/max value: set next set of filters for this category. Track updated range.
+ * @param config - Configuration model of selected category.
+ * @param selectedValue - Selected category value key (e.g. [1, 100]).
+ * @param setFilter - Function to update set of selected values for a category.
+ */
+function onFilterRangeCategory(
+  config: CategoryConfig,
+  selectedValue: Range,
+  setFilter: SetFilterFn
+) {
+  const { analyticsEvent, categoryKey } = config;
+
+  // Track select of new range mim/max, ignoring any clear of selected range. Only track if event is specified on
+  // configuration model
+  if (analyticsEvent && selectedValue.length > 0) {
+    const [min, max] = selectedValue;
+    const payload = {
+      max,
+      min,
+    };
+    track(analyticsEvent, { payload });
+  }
+
+  // Update filters for this range category.
+  setFilter(categoryKey, selectedValue);
+}
+
+/**
+ * Handle select of select value: build and set next set of filters for this category. Track selected select value.
+ * @param config - Configuration model of selected category.
+ * @param selectedValue - Selected category value key (e.g. [1, 100]).
+ * @param setFilter - Function to update set of selected values for a category.
+ * @param filters - Current set of selected category values (values) or ranges keyed by category (id).
+ */
+function onFilterSelectCategory<T extends Categories>(
+  config: CategoryConfig,
+  selectedValue: CategoryValueKey,
+  setFilter: SetFilterFn,
+  filters: Filters<T>
+) {
+  const { categoryKey } = config;
+
+  // Track selected category and value.
+  trackSelectCategoryValueSelected(config, selectedValue, filters);
+
+  // Build and set next set of filters for this category.
+  const nextCategoryFilters = buildNextSelectCategoryFilters(
+    categoryKey,
+    selectedValue,
+    filters
+  );
+  setFilter(categoryKey, nextCategoryFilters);
+}
+
+/**
  * Update selected state of categories to match the current set of selected filters.
  * @param nextFilterState - Filter state being built on select of filter.
  * @param filters - Current set of selected category values (values) or ranges keyed by category (id).
@@ -1425,4 +1508,78 @@ function toggleCategoryValueSelected(
     selectedCategoryValueKeySet.add(selectedCategoryValueKey);
   }
   return [...selectedCategoryValueKeySet.values()];
+}
+
+/**
+ * Track select of the given ontology category and category value.
+ * @param config - Configuration model of selected category.
+ * @param categoryValueKey - Selected category value key (e.g. "HsapDv:0000003").
+ * @param filters - Current set of selected category values (values) or ranges keyed by category (id).
+ */
+function trackOntologyCategoryValueSelected<T extends Categories>(
+  config: OntologyCategoryConfig,
+  categoryValueKey: CategoryValueKey,
+  filters: Filters<T>
+) {
+  const { analyticsEvent, categoryKey, ontology } = config;
+
+  // No tracking if event isn't specified on category config.
+  if (!analyticsEvent) {
+    return;
+  }
+
+  // Only track the select (and not deselect) of category value.
+  const categoryFilters = new Set(
+    getCategoryFilter(categoryKey, filters)?.value as CategoryValueKey[]
+  );
+  if (!categoryFilters.has(categoryValueKey)) {
+    // Grab the analytics event for this category.
+
+    // Find the node for the selected value.
+    const ontologySpeciesKey = getOntologySpeciesKey(categoryValueKey);
+    const ontologyRootNodes = ontology[ontologySpeciesKey];
+    const selectedOntologyNode = findOntologyNodeById(
+      ontologyRootNodes,
+      categoryValueKey
+    );
+    if (!selectedOntologyNode) {
+      return; // Error state - ontology node with given ID does not exist.
+    }
+
+    // Build up payload for tracking event and send.
+    const payload = {
+      label: selectedOntologyNode.label,
+      ontologyTermId: selectedOntologyNode.ontology_term_id,
+    };
+    track(analyticsEvent, { payload });
+  }
+}
+
+/**
+ * Track select of the given select category and category value.
+ * @param config - Configuration model of selected category.
+ * @param categoryValueKey - Selected category value key (e.g. "10 3' v2").
+ * @param filters - Current set of selected category values (values) or ranges keyed by category (id).
+ */
+function trackSelectCategoryValueSelected<T extends Categories>(
+  config: CategoryConfig,
+  categoryValueKey: CategoryValueKey,
+  filters: Filters<T>
+) {
+  const { analyticsEvent, categoryKey } = config;
+
+  // No tracking if event isn't specified on category config.
+  if (!analyticsEvent) {
+    return;
+  }
+
+  // Only track the select (and not deselect) of category value.
+  const categoryFilters = new Set(
+    getCategoryFilter(categoryKey, filters)?.value as CategoryValueKey[]
+  );
+  if (!categoryFilters.has(categoryValueKey)) {
+    // Build up payload for tracking event and send.
+    const payload = categoryValueKey;
+    track(analyticsEvent, { payload });
+  }
 }

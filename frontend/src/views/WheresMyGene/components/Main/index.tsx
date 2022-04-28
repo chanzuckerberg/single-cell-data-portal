@@ -31,7 +31,7 @@ export default function WheresMyGene(): JSX.Element {
   const state = useContext(StateContext);
   const dispatch = useContext(DispatchContext);
 
-  const { selectedGenes, selectedCellTypeIds } = state;
+  const { selectedGenes, selectedCellTypeIds, selectedTissues } = state;
 
   const [isScaled, setIsScaled] = useState(true);
 
@@ -207,12 +207,11 @@ export default function WheresMyGene(): JSX.Element {
     }
   }, [dispatch]);
 
-  const hasSelectedGenes = selectedGenes.length > 0;
-  const hasSelectedCellTypes = Object.keys(selectedCellTypeIds).length > 0;
+  const hasSelectedTissues = selectedTissues.length > 0;
 
   const shouldShowHeatMap = useMemo(() => {
-    return hasSelectedGenes && hasSelectedCellTypes;
-  }, [hasSelectedGenes, hasSelectedCellTypes]);
+    return hasSelectedTissues;
+  }, [hasSelectedTissues]);
 
   const handleIsScaledChange = useCallback(() => {
     setIsScaled((prevIsScaled) => !prevIsScaled);
@@ -258,6 +257,7 @@ export default function WheresMyGene(): JSX.Element {
 
           {shouldShowHeatMap ? (
             <HeatMap
+              selectedTissues={selectedTissues}
               isScaled={isScaled}
               isLoadingAPI={isLoading}
               cellTypes={selectedCellTypes}

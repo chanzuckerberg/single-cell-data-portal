@@ -1,5 +1,6 @@
 import { ChangeEvent, Dispatch, SetStateAction } from "react";
 import { CellValue, Row } from "react-table";
+import { EVENTS } from "src/common/analytics/events";
 import { Collection, Ontology, PublisherMetadata } from "src/common/entities";
 import { CategoryKey } from "src/common/hooks/useCategoryFilter";
 
@@ -7,6 +8,7 @@ import { CategoryKey } from "src/common/hooks/useCategoryFilter";
  * Configuration model of category.
  */
 export interface CategoryConfig {
+  analyticsEvent?: EVENTS;
   categoryKey: CATEGORY_KEY;
   categoryType: CATEGORY_FILTER_TYPE;
   multiselect: boolean; // True if category can have multiple values selected.
@@ -333,32 +335,38 @@ export const DEVELOPMENT_STAGE_ONTOLOGY_VIEW: OntologyView = {
  */
 const CATEGORY_CONFIGS: (CategoryConfig | OntologyCategoryConfig)[] = [
   {
+    analyticsEvent: EVENTS.FILTER_SELECT_ASSAY,
     categoryKey: CATEGORY_KEY.ASSAY,
     categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
     multiselect: true,
   },
   {
+    analyticsEvent: EVENTS.FILTER_SELECT_CELL_COUNT,
     categoryKey: CATEGORY_KEY.CELL_COUNT,
     categoryType: CATEGORY_FILTER_TYPE.BETWEEN,
     multiselect: false,
   },
   {
+    analyticsEvent: EVENTS.FILTER_SELECT_CELL_TYPE,
     categoryKey: CATEGORY_KEY.CELL_TYPE,
     categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
     multiselect: true,
   },
   {
+    analyticsEvent: EVENTS.FILTER_SELECT_DEVELOPMENT_STAGE,
     categoryKey: CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS,
     categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
     multiselect: true,
     ontology: DEVELOPMENT_STAGE_ONTOLOGY_VIEW,
   },
   {
+    analyticsEvent: EVENTS.FILTER_SELECT_DISEASE,
     categoryKey: CATEGORY_KEY.DISEASE,
     categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
     multiselect: true,
   },
   {
+    analyticsEvent: EVENTS.FILTER_SELECT_ETHNICITY,
     categoryKey: CATEGORY_KEY.ETHNICITY,
     categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
     multiselect: true,
@@ -366,31 +374,37 @@ const CATEGORY_CONFIGS: (CategoryConfig | OntologyCategoryConfig)[] = [
       "Ethnicity only applies to Homo sapiens which is not selected in the Organism filter.",
   },
   {
+    analyticsEvent: EVENTS.FILTER_SELECT_GENE_COUNT,
     categoryKey: CATEGORY_KEY.MEAN_GENES_PER_CELL,
     categoryType: CATEGORY_FILTER_TYPE.BETWEEN,
     multiselect: false,
   },
   {
+    analyticsEvent: EVENTS.FILTER_SELECT_ORGANISM,
     categoryKey: CATEGORY_KEY.ORGANISM,
     categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
     multiselect: true,
   },
   {
+    analyticsEvent: EVENTS.FILTER_SELECT_AUTHORS,
     categoryKey: CATEGORY_KEY.PUBLICATION_AUTHORS,
     categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
     multiselect: true,
   },
   {
+    analyticsEvent: EVENTS.FILTER_SELECT_PUBLICATION_DATE,
     categoryKey: CATEGORY_KEY.PUBLICATION_DATE_VALUES,
     categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
     multiselect: false,
   },
   {
+    analyticsEvent: EVENTS.FILTER_SELECT_SEX,
     categoryKey: CATEGORY_KEY.SEX,
     categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
     multiselect: true,
   },
   {
+    analyticsEvent: EVENTS.FILTER_SELECT_TISSUE,
     categoryKey: CATEGORY_KEY.TISSUE,
     categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
     multiselect: true,
