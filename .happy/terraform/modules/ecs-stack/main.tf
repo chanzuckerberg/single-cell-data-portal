@@ -289,6 +289,20 @@ data "aws_iam_policy_document" "lambda_step_function_execution_policy" {
       "arn:aws:secretsmanager:us-west-2:${var.aws_account_id}:secret:corpora/backend/${var.deployment_stage}/*"
     ]
   }
+  statement {
+    sid     = "s3"
+    effect  = "Allow"
+    actions = [
+      "s3:ListBucket",
+      "s3:DeleteObject"
+    ]
+    resources = [
+      "arn:aws:s3:::${local.artifact_bucket}",
+      "arn:aws:s3:::${local.artifact_bucket}/*",
+      "arn:aws:s3:::${local.cellxgene_bucket}",
+      "arn:aws:s3:::${local.cellxgene_bucket}/*",
+    ]
+  }
 }
 
 resource "aws_iam_policy" "lambda_step_function_execution_policy" {
