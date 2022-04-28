@@ -13,7 +13,7 @@ class TestCellExpressionSummaryCubeETL(unittest.TestCase):
     def setUpClass(cls) -> None:
         super().setUp(cls)
         cls.tmp_dir = tempfile.mkdtemp()
-        expected_expression_summary_uri =  f"{cls.tmp_dir}/fixtures/{EXPRESSION_SUMMARY_CUBE_NAME}"
+        expected_expression_summary_uri = f"{cls.tmp_dir}/fixtures/{EXPRESSION_SUMMARY_CUBE_NAME}"
         # create empty expression summary cube
         ctx = create_ctx()
 

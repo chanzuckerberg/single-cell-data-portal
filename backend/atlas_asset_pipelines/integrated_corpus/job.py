@@ -68,7 +68,7 @@ def process_h5ad_for_corpus(h5ad_path: str, corpus_path: str, validate: bool):
     # load obs and var data
     first_obs_idx, global_var_index = load_h5ad(corpus_path, anndata_object, dataset_id)
 
-    # todo refactor this to separate the rankit transformation from laoding the tiledb object when working with the expression matrices
+    # todo refactor: separate rankit transformation from laoding the tiledb object when working with the x matrices
     transform_dataset_raw_counts_to_rankit(anndata_object, corpus_path, global_var_index, first_obs_idx)
 
     if validate:

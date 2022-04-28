@@ -58,10 +58,6 @@ class TestCorpusLoad(unittest.TestCase):
         super().tearDown()
         shutil.rmtree(self.corpus_path)
 
-
-
-
-
     def test_mapping_between_local_file_and_global_tdb_is_valid_and_consistent_as_datasets_are_added(self):
         """
         DO NOT DELETE THIS TEST
@@ -114,4 +110,3 @@ class TestCorpusLoad(unittest.TestCase):
             expected_x_df = x.df[:]
 
         self.assertTrue(expected_x_df.equals(actual_x_df))
-

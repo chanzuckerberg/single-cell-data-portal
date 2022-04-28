@@ -501,7 +501,7 @@ class QueryPrimaryFilterDimensionsTest(unittest.TestCase):
         dim_size = 3
 
         def exclude_one_gene_per_organism(logical_coord: NamedTuple) -> bool:
-            # HACK: method called during building of both "expr summary" and "cell count" expression_summary_cube, but the latter does not
+            # HACK: method called during building of both "expr summary" and "cell count" cube, but the latter does not
             # include gene_ontology_term_id
             if "gene_ontology_term_id" not in logical_coord._fields:
                 return False

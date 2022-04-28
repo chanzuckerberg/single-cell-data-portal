@@ -31,10 +31,12 @@ class TestCorpusIntegrationETL(unittest.TestCase):
         cls.BASIC_GENE_COUNT = 3
         cls.LARGER_CELL_COUNT = 5000
         cls.LARGER_GENE_COUNT = 1000
-        cls.basic_test_anndata_object = create_anndata_test_object(num_cells=cls.BASIC_CELL_COUNT,
-                                                                   num_genes=cls.BASIC_GENE_COUNT)
-        cls.larger_test_anndata_object = create_anndata_test_object(num_cells=cls.LARGER_CELL_COUNT,
-                                                                    num_genes=cls.LARGER_GENE_COUNT)
+        cls.basic_test_anndata_object = create_anndata_test_object(
+            num_cells=cls.BASIC_CELL_COUNT, num_genes=cls.BASIC_GENE_COUNT
+        )
+        cls.larger_test_anndata_object = create_anndata_test_object(
+            num_cells=cls.LARGER_CELL_COUNT, num_genes=cls.LARGER_GENE_COUNT
+        )
         os.mkdir(f"{cls.tmp_dir}/datasets")
         os.mkdir(f"{cls.tmp_dir}/datasets/basic_test_dataset")
         os.mkdir(f"{cls.tmp_dir}/datasets/larger_test_dataset")
@@ -155,7 +157,7 @@ class TestCorpusIntegrationETL(unittest.TestCase):
         anndata_filename.touch()
         test_anndata_object.write(anndata_filename, compression="gzip")
 
-        load_h5ad(self.corpus_path, test_anndata_object, dataset_id='lll')
+        load_h5ad(self.corpus_path, test_anndata_object, dataset_id="lll")
         obs = tiledb.open(f"{self.corpus_path}/obs", "r")
         corpus_cell_count = obs.df[:].shape[0]
 
@@ -173,7 +175,7 @@ class TestCorpusIntegrationETL(unittest.TestCase):
         anndata_filename.touch()
         test_anndata_object.write(anndata_filename, compression="gzip")
 
-        load_h5ad(self.corpus_path, test_anndata_object, dataset_id='lll')
+        load_h5ad(self.corpus_path, test_anndata_object, dataset_id="lll")
         obs = tiledb.open(f"{self.corpus_path}/{OBS_ARRAY_NAME}")
         var = tiledb.open(f"{self.corpus_path}/{VAR_ARRAY_NAME}")
 
@@ -195,19 +197,20 @@ class TestCorpusIntegrationETL(unittest.TestCase):
         self.assertEqual(len(updated_corpus_var.index), self.LARGER_GENE_COUNT)
 
         # corpus_var indexes on the gene ontology id
-        self.assertEqual(updated_corpus_var.index.name, 'gene_ontology_term_id')
+        self.assertEqual(updated_corpus_var.index.name, "gene_ontology_term_id")
 
     def test__update_corpus_obs_returns_position_of_first_cell(self):
-        initial_corpus_obs_starting_idx = update_corpus_obs(self.corpus_path, self.basic_test_anndata_object,
-                                                            'basic_test_dataset')
-        updated_corpus_obs_starting_idx = update_corpus_obs(self.corpus_path, self.larger_test_anndata_object,
-                                                            'larger_test_dataset')
+        initial_corpus_obs_starting_idx = update_corpus_obs(
+            self.corpus_path, self.basic_test_anndata_object, "basic_test_dataset"
+        )
+        updated_corpus_obs_starting_idx = update_corpus_obs(
+            self.corpus_path, self.larger_test_anndata_object, "larger_test_dataset"
+        )
         self.assertEqual(initial_corpus_obs_starting_idx, 0)
         self.assertEqual(updated_corpus_obs_starting_idx, self.BASIC_CELL_COUNT)
 
     def test__update_corpus_axis_extends_obs_df_by_anndata_obs(self):
-        update_corpus_obs(self.corpus_path, self.basic_test_anndata_object,
-                          'basic_test_dataset')
+        update_corpus_obs(self.corpus_path, self.basic_test_anndata_object, "basic_test_dataset")
 
         with tiledb.open(f"{self.corpus_path}/{OBS_ARRAY_NAME}", "r") as obs:
             obs_df = obs.df[:]
@@ -215,18 +218,23 @@ class TestCorpusIntegrationETL(unittest.TestCase):
 
             # map from the corpus index back to the anndata_object index via the cell_id_mapping to ensure data is concatenated correctly
             for i in range(len(cell_id_mapping)):
-                self.assertEqual(obs_df.assay_ontology_term_id[i],
-                                 self.basic_test_anndata_object.obs[:].assay_ontology_term_id[cell_id_mapping[i]])
+                self.assertEqual(
+                    obs_df.assay_ontology_term_id[i],
+                    self.basic_test_anndata_object.obs[:].assay_ontology_term_id[cell_id_mapping[i]],
+                )
 
-        updated_corpus_obs_starting_idx = update_corpus_obs(self.corpus_path, self.larger_test_anndata_object,
-                                                            'larger_test_dataset')
+        updated_corpus_obs_starting_idx = update_corpus_obs(
+            self.corpus_path, self.larger_test_anndata_object, "larger_test_dataset"
+        )
         with tiledb.open(f"{self.corpus_path}/{OBS_ARRAY_NAME}", "r") as obs:
             # slice out the data representing the larger_anndata_test_object obs
             larger_test_anndata_object_obs = obs.df[:][updated_corpus_obs_starting_idx:]
             cell_id_mapping = larger_test_anndata_object_obs.dataset_local_cell_id
             for i in range(updated_corpus_obs_starting_idx, len(cell_id_mapping)):
-                self.assertEqual(larger_test_anndata_object_obs.assay_ontology_term_id[i],
-                                 self.larger_test_anndata_object.obs[:].assay_ontology_term_id[cell_id_mapping[i]])
+                self.assertEqual(
+                    larger_test_anndata_object_obs.assay_ontology_term_id[i],
+                    self.larger_test_anndata_object.obs[:].assay_ontology_term_id[cell_id_mapping[i]],
+                )
 
     @unittest.skip("TO DO IMPLEMENT")
     def test_var_labels_contain_correct_dimensions(self):
