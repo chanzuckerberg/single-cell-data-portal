@@ -849,7 +849,11 @@ function buildSelectCategoryView(
   categoryValueByValue: KeyedSelectCategoryValue,
   filterState: FilterState
 ): SelectCategoryView {
-  const categoryValueViews = [...categoryValueByValue.values()]
+  // Grab the config for this category.
+  const { pinnedCategoryValues, tooltip } =
+    CATEGORY_CONFIGS_BY_CATEGORY_KEY[categoryKey];
+
+  const allCategoryValueViews = [...categoryValueByValue.values()]
     .map(({ count, key, selected }: SelectCategoryValue) => ({
       count,
       key,
@@ -858,11 +862,18 @@ function buildSelectCategoryView(
     }))
     .sort(sortCategoryValueViews);
 
+  // Split values into pinned and non-pinned.
+  const [pinnedValues, values] = partitionSelectCategoryValueViews(
+    allCategoryValueViews,
+    pinnedCategoryValues
+  );
+
   // Build view model of select category.
   const selectView: SelectCategoryView = {
     key: categoryKey,
     label: CATEGORY_LABEL[categoryKey],
-    values: categoryValueViews,
+    pinnedValues,
+    values,
   };
 
   // Handle special cases where select category may be disabled.
@@ -871,7 +882,7 @@ function buildSelectCategoryView(
     !isEthnicityViewEnabled(filterState)
   ) {
     selectView.isDisabled = true;
-    selectView.tooltip = CATEGORY_CONFIGS_BY_CATEGORY_KEY[categoryKey].tooltip;
+    selectView.tooltip = tooltip;
   }
   // Otherwise check generic case where category is disabled due to no values meeting current filter.
   else if (isSelectCategoryDisabled(selectView)) {
@@ -1241,6 +1252,37 @@ function listOntologySelectedViews(
   }
 
   return selectedSet;
+}
+
+/**
+ * Split select category values into arrays of pinned and non-pinned values.
+ * @param categoryValues - Category value view models for a given category.
+ * @param pinnedCategoryValues - Category value keys to be pinned for a given category.
+ * @returns Tuple containing an array of pinned values and an array of non-pinned values.
+ */
+function partitionSelectCategoryValueViews(
+  categoryValues: SelectCategoryValueView[],
+  pinnedCategoryValues?: CategoryValueKey[]
+): [SelectCategoryValueView[], SelectCategoryValueView[]] {
+  // Handle case where category has no pinned values.
+  if (!pinnedCategoryValues) {
+    return [[], categoryValues];
+  }
+
+  // Otherwise, split category values into pinned and non-pinned arrays.
+  const partitionedValues: [
+    SelectCategoryValueView[],
+    SelectCategoryValueView[]
+  ] = [[], []];
+  return categoryValues.reduce((accum, categoryValue) => {
+    const [pinned, nonPinned] = accum;
+    if (pinnedCategoryValues.includes(categoryValue.key)) {
+      pinned.push(categoryValue);
+    } else {
+      nonPinned.push(categoryValue);
+    }
+    return accum;
+  }, partitionedValues);
 }
 
 /**

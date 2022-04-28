@@ -12,6 +12,7 @@ export interface CategoryConfig {
   categoryKey: CATEGORY_KEY;
   categoryType: CATEGORY_FILTER_TYPE;
   multiselect: boolean; // True if category can have multiple values selected.
+  pinnedCategoryValues?: CATEGORY_VALUE_KEY[];
   tooltip?: string;
 }
 
@@ -46,6 +47,13 @@ export enum CATEGORY_KEY {
   "PUBLICATION_DATE_VALUES" = "publicationDateValues",
   "SEX" = "sex",
   "TISSUE" = "tissue",
+}
+
+/**
+ * Category value keys.
+ */
+export enum CATEGORY_VALUE_KEY {
+  NORMAL = "normal",
 }
 
 /**
@@ -364,6 +372,7 @@ const CATEGORY_CONFIGS: (CategoryConfig | OntologyCategoryConfig)[] = [
     categoryKey: CATEGORY_KEY.DISEASE,
     categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
     multiselect: true,
+    pinnedCategoryValues: [CATEGORY_VALUE_KEY.NORMAL],
   },
   {
     analyticsEvent: EVENTS.FILTER_SELECT_ETHNICITY,
@@ -654,6 +663,7 @@ export interface SelectCategoryView {
   isDisabled?: boolean;
   key: CATEGORY_KEY;
   label: CATEGORY_LABEL;
+  pinnedValues?: SelectCategoryValueView[];
   tooltip?: string;
   values: SelectCategoryValueView[];
 }
