@@ -1,5 +1,4 @@
 from collections import defaultdict
-from functools import cache
 from typing import Dict, List, Any, Iterable
 
 import connexion
@@ -14,7 +13,7 @@ from backend.wmg.data.query import (
     WmgQueryCriteria,
 )
 from backend.wmg.data.schemas.cube_schema import cube_non_indexed_dims
-from backend.wmg.data.snapshot import load_snapshot, WmgSnapshot, _load_primary_filter_data
+from backend.wmg.data.snapshot import load_snapshot, WmgSnapshot
 
 
 # TODO: add cache directives: no-cache (i.e. revalidate); impl etag
@@ -24,8 +23,7 @@ from backend.wmg.data.snapshot import load_snapshot, WmgSnapshot, _load_primary_
 
 def primary_filter_dimensions():
     snapshot: WmgSnapshot = load_snapshot()
-    result = _load_primary_filter_data(snapshot.snapshot_identifier)
-    return jsonify(result)
+    return jsonify(snapshot.primary_filter_dimensions)
 
 
 def query():
