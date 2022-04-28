@@ -56,6 +56,11 @@ const DATASET_NAME = "name";
 const EXPLORER_URL = "explorer_url";
 
 /**
+ * isOverMaxCellCount object key.
+ */
+const IS_OVER_MAX_CELL_COUNT = "isOverMaxCellCount";
+
+/**
  * Recency object key.
  */
 const RECENCY = "recency";
@@ -169,6 +174,10 @@ export default function Datasets(): JSX.Element {
       // Hidden, required for accessing explorer_url via row.values, for display.
       {
         accessor: EXPLORER_URL,
+      },
+      // Hidden, required for accessing isOverMaxCellCount via row.values, for Explore functionality.
+      {
+        accessor: IS_OVER_MAX_CELL_COUNT,
       },
       // Hidden, required for filter.
       {

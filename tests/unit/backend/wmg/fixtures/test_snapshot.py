@@ -27,6 +27,7 @@ from backend.wmg.data.schemas.cube_schema import (
 )
 from backend.wmg.data.snapshot import WmgSnapshot, CELL_TYPE_ORDERINGS_FILENAME
 from backend.wmg.data.tiledb import create_ctx
+from tests.unit.backend.wmg.fixtures.test_primary_filters import build_precomputed_primary_filters
 
 
 def simple_ontology_terms_generator(dimension_name: str, n_terms: int) -> List[str]:
@@ -137,6 +138,7 @@ def create_temp_wmg_snapshot(
         )
 
         cell_type_orderings = build_cell_orderings(cell_counts_cube_dir, cell_ordering_generator_fn)
+        primary_filter_dimensions = build_precomputed_primary_filters()
 
         with tiledb.open(expression_summary_cube_dir, ctx=create_ctx()) as expression_summary_cube:
             with tiledb.open(cell_counts_cube_dir, ctx=create_ctx()) as cell_counts_cube:
@@ -145,6 +147,7 @@ def create_temp_wmg_snapshot(
                     expression_summary_cube=expression_summary_cube,
                     cell_counts_cube=cell_counts_cube,
                     cell_type_orderings=cell_type_orderings,
+                    primary_filter_dimensions=primary_filter_dimensions,
                 )
 
 
