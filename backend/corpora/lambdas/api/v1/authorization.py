@@ -5,8 +5,8 @@ from backend.corpora.common.utils.authorization_checks import (
 
 
 def is_user_owner_or_allowed(token_info: dict, owner: str):
-    return is_user_owner_or_allowed_common(token_info.get("sub"), token_info["scope"], owner)
+    return is_user_owner_or_allowed_common(token_info.get("sub"), token_info.get("scope", ""), owner)
 
 
 def owner_or_allowed(token_info: dict):
-    return owner_or_allowed_common(token_info.get("sub"), token_info["scope"])
+    return owner_or_allowed_common(token_info.get("sub"), token_info.get("scope", ""))
