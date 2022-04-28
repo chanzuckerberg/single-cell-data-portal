@@ -18,11 +18,6 @@ variable cellxgene_bucket {
   description = "Cellxgene bucket name"
 }
 
-variable dataset_submissions_bucket {
-  type        = string
-  description = "Dataset submissions bucket name"
-}
-
 variable custom_stack_name {
   type        = string
   description = "Please provide the stack name"
@@ -40,8 +35,9 @@ variable deployment_stage {
 }
 
 variable step_function_arn {
-  type = string
+  type        = string
   description = "ARN for the step function called by the uploader"
+  default     = ""
 }
 
 variable lambda_execution_role {

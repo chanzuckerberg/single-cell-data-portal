@@ -24,22 +24,13 @@ def dataset_submissions_handler(s3_event: dict, context) -> None:
     :return:
     """
     logger.info(f"@@@@@ {s3_event=}")
-    logger.info(f"@@@@@ {os.environ.get('DATASET_SUBMISSIONS_BUCKET')=}")
     logger.info(f"@@@@@ {os.environ.get('REMOTE_DEV_PREFIX', '')=}")
-
-    expected_bucket = os.environ.get("DATASET_SUBMISSIONS_BUCKET", "")
 
     # s3://cellxgene-curation-submissions-{dev,staging,prod}/<collection_id>/<curator_tag>
 
     for record in s3_event["Records"]:
         bucket, key, size = parse_s3_event_record(record)
         logger.info(f"{bucket=}, {key=}, {size=}")
-
-        if expected_bucket != bucket:
-            raise CorporaException(
-                f"Infrastructure misconfiguration: Expected S3 event from bucket '{expected_bucket}' "
-                "but received event from bucket '{bucket}' instead"
-            )
 
         collection_uuid, incoming_curator_tag = parse_key(key)
 
@@ -50,7 +41,6 @@ def dataset_submissions_handler(s3_event: dict, context) -> None:
         logger.info(f"{collection_uuid=}, {incoming_curator_tag=}, {extension=}")
 
         with db_session_manager() as session:
-            session: Session
 
             collection_owner, dataset_uuid = get_dataset_info(session, collection_uuid, incoming_curator_tag)
 

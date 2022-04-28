@@ -190,9 +190,7 @@ module upload_success_lambda {
   deployment_stage           = local.deployment_stage
   artifact_bucket            = local.artifact_bucket
   cellxgene_bucket           = local.cellxgene_bucket
-  dataset_submissions_bucket = local.dataset_submissions_bucket
   lambda_execution_role      = local.lambda_execution_role
-  step_function_arn          = "" # ugly hack to avoid circular dependency
   subnets                    = local.subnets
   security_groups            = local.security_groups
 }
@@ -206,9 +204,7 @@ module upload_error_lambda {
   deployment_stage           = local.deployment_stage
   artifact_bucket            = local.artifact_bucket
   cellxgene_bucket           = local.cellxgene_bucket
-  dataset_submissions_bucket = local.dataset_submissions_bucket
   lambda_execution_role      = local.lambda_execution_role
-  step_function_arn          = "" # ugly hack to avoid circular dependency
   subnets                    = local.subnets
   security_groups            = local.security_groups
 }
@@ -233,7 +229,6 @@ module dataset_submissions_lambda {
   deployment_stage           = local.deployment_stage
   artifact_bucket            = local.artifact_bucket
   cellxgene_bucket           = local.cellxgene_bucket
-  dataset_submissions_bucket = local.dataset_submissions_bucket
   lambda_execution_role      = aws_iam_role.dataset_submissions_lambda_service_role.arn
   step_function_arn          = module.upload_sfn.step_function_arn
   subnets                    = local.subnets
