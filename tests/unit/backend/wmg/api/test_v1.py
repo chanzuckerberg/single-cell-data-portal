@@ -5,8 +5,12 @@ from unittest.mock import patch
 from backend.corpora.api_server.app import app
 from backend.wmg.data.schemas.cube_schema import cube_non_indexed_dims
 from tests.unit.backend.corpora.fixtures.environment_setup import EnvironmentSetup
-from tests.unit.backend.wmg.fixtures.test_primary_filters import test_snapshot_id, test_organism_terms, \
-    test_tissue_terms, test_gene_terms
+from tests.unit.backend.wmg.fixtures.test_primary_filters import (
+    test_snapshot_id,
+    test_organism_terms,
+    test_tissue_terms,
+    test_gene_terms,
+)
 from tests.unit.backend.wmg.fixtures.test_snapshot import (
     create_temp_wmg_snapshot,
     all_ones_expression_summary_values,
