@@ -13,7 +13,9 @@ from backend.corpora.common.utils.exceptions import CorporaException
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
-UUID_REGEX = "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
+UUID_REGEX = (
+    "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
+)
 
 
 def dataset_submissions_handler(s3_event: dict, context) -> None:
@@ -50,17 +52,31 @@ def dataset_submissions_handler(s3_event: dict, context) -> None:
             with db_session_manager() as session:
                 session: Session
 
-                collection_owner, dataset_uuid = get_dataset_info(session, collection_uuid, incoming_curator_tag)
+                collection_owner, dataset_uuid = get_dataset_info(
+                    session, collection_uuid, incoming_curator_tag
+                )
 
                 logger.info(f"@@@@@ {collection_owner=}, {dataset_uuid=}")
                 if not collection_owner:
-                    raise CorporaException(f"Collection {collection_uuid} does not exist")
+                    raise CorporaException(
+                        f"Collection {collection_uuid} does not exist"
+                    )
 
                 s3_uri = f"s3://{bucket}/{key}"
-                upload(session, collection_uuid, user=collection_owner, url=s3_uri, file_size=size,
-                       file_extension=extension, dataset_id=dataset_uuid, curator_tag=incoming_curator_tag)
+                upload(
+                    session,
+                    collection_uuid,
+                    user=collection_owner,
+                    url=s3_uri,
+                    file_size=size,
+                    file_extension=extension,
+                    dataset_id=dataset_uuid,
+                    curator_tag=incoming_curator_tag,
+                )
         else:
-            raise CorporaException(f"Missing collection UUID and/or curator tag for {key=}")
+            raise CorporaException(
+                f"Missing collection UUID and/or curator tag for {key=}"
+            )
 
 
 def parse_s3_event_record(s3_event_record: dict) -> Tuple[str, str, int]:
@@ -101,7 +117,9 @@ def get_extension(path: str) -> str:
 def get_dataset_info(
     session: Session, collection_uuid: str, incoming_curator_tag: str
 ) -> Tuple[Optional[str], Optional[str]]:
-    collection = Collection.get_collection(session=session, collection_uuid=collection_uuid)
+    collection = Collection.get_collection(
+        session=session, collection_uuid=collection_uuid
+    )
 
     dataset_uuid = None
 

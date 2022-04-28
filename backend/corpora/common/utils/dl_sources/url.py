@@ -85,13 +85,19 @@ class DropBoxURL(URL):
         resp.raise_for_status()
 
         try:
-            size = int(self._get_key_with_fallback(resp.headers, "content-length", "x-dropbox-content-length"))
+            size = int(
+                self._get_key_with_fallback(
+                    resp.headers, "content-length", "x-dropbox-content-length"
+                )
+            )
         except Exception:
             size = None
 
         return {
             "size": size,
-            "name": self._get_key(resp.headers, "content-disposition").split(";")[1].split("=", 1)[1][1:-1],
+            "name": self._get_key(resp.headers, "content-disposition")
+            .split(";")[1]
+            .split("=", 1)[1][1:-1],
         }
 
 
@@ -106,7 +112,8 @@ class S3URL(URL):
         parsed_url = urlparse(url)
         return (
             cls(url, parsed_url)
-            if parsed_url.scheme == cls._scheme and parsed_url.netloc.endswith(cls._netloc)
+            if parsed_url.scheme == cls._scheme
+            and parsed_url.netloc.endswith(cls._netloc)
             else None
         )
 
@@ -139,10 +146,7 @@ class S3URI(URL):
     def file_info(self) -> dict:
         s3 = boto3.resource("s3")
         s3_object = s3.Object(self.bucket_name, self.key)
-        return {
-            "name": self.key,
-            "size": s3_object.content_length
-        }
+        return {"name": self.key, "size": s3_object.content_length}
 
     @property
     def bucket_name(self):
