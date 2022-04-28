@@ -1,5 +1,4 @@
 from collections import defaultdict
-from functools import cache
 from typing import Dict, List, Any, Iterable
 
 import connexion
@@ -22,38 +21,9 @@ from backend.wmg.data.snapshot import load_snapshot, WmgSnapshot
 #  -portal/2132
 
 
-@cache
 def primary_filter_dimensions():
     snapshot: WmgSnapshot = load_snapshot()
-    qry = WmgQuery(snapshot)
-
-    # gene terms are grouped by organism, and represented as a nested lists in dict, keyed by organism
-    organism_gene_ids: dict[str, List[str]] = qry.list_grouped_primary_filter_dimensions_term_ids(
-        "gene_ontology_term_id", group_by_dim="organism_ontology_term_id"
-    )
-    organism_gene_terms = {
-        organism_term_id: build_gene_id_label_mapping(gene_term_ids)
-        for organism_term_id, gene_term_ids in organism_gene_ids.items()
-    }
-
-    # tissue terms are grouped by organism, and represented as a nested lists in dict, keyed by organism
-    organism_tissue_ids: dict[str, List[str]] = qry.list_grouped_primary_filter_dimensions_term_ids(
-        "tissue_ontology_term_id", group_by_dim="organism_ontology_term_id"
-    )
-    organism_tissue_terms = {
-        organism_term_id: build_ontology_term_id_label_mapping(tissue_term_ids)
-        for organism_term_id, tissue_term_ids in organism_tissue_ids.items()
-    }
-
-    result = dict(
-        snapshot_id=snapshot.snapshot_identifier,
-        organism_terms=build_ontology_term_id_label_mapping(
-            qry.list_primary_filter_dimension_term_ids("organism_ontology_term_id")
-        ),
-        tissue_terms=organism_tissue_terms,
-        gene_terms=organism_gene_terms,
-    )
-    return jsonify(result)
+    return jsonify(snapshot.primary_filter_dimensions)
 
 
 def query():
