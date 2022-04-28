@@ -43,32 +43,32 @@ def dataset_submissions_handler(s3_event: dict, context) -> None:
 
         collection_uuid, incoming_curator_tag = parse_key(key)
 
-        if collection_uuid and incoming_curator_tag:
-            extension = get_extension(incoming_curator_tag)
-            logger.info(f"{collection_uuid=}, {incoming_curator_tag=}, {extension=}")
-
-            with db_session_manager() as session:
-                session: Session
-
-                collection_owner, dataset_uuid = get_dataset_info(session, collection_uuid, incoming_curator_tag)
-
-                logger.info(f"@@@@@ {collection_owner=}, {dataset_uuid=}")
-                if not collection_owner:
-                    raise CorporaException(f"Collection {collection_uuid} does not exist")
-
-                s3_uri = f"s3://{bucket}/{key}"
-                upload(
-                    session,
-                    collection_uuid,
-                    user=collection_owner,
-                    url=s3_uri,
-                    file_size=size,
-                    file_extension=extension,
-                    dataset_id=dataset_uuid,
-                    curator_tag=incoming_curator_tag,
-                )
-        else:
+        if not collection_uuid or not incoming_curator_tag:
             raise CorporaException(f"Missing collection UUID and/or curator tag for {key=}")
+
+        extension = get_extension(incoming_curator_tag)
+        logger.info(f"{collection_uuid=}, {incoming_curator_tag=}, {extension=}")
+
+        with db_session_manager() as session:
+            session: Session
+
+            collection_owner, dataset_uuid = get_dataset_info(session, collection_uuid, incoming_curator_tag)
+
+            logger.info(f"@@@@@ {collection_owner=}, {dataset_uuid=}")
+            if not collection_owner:
+                raise CorporaException(f"Collection {collection_uuid} does not exist")
+
+            s3_uri = f"s3://{bucket}/{key}"
+            upload(
+                session,
+                collection_uuid,
+                user=collection_owner,
+                url=s3_uri,
+                file_size=size,
+                file_extension=extension,
+                dataset_id=dataset_uuid,
+                curator_tag=incoming_curator_tag,
+            )
 
 
 def parse_s3_event_record(s3_event_record: dict) -> Tuple[str, str, int]:
