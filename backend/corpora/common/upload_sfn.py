@@ -25,9 +25,7 @@ _stepfunctions_client = None
 def get_stepfunctions_client():
     global _stepfunctions_client
     if not _stepfunctions_client:
-        _stepfunctions_client = boto3.client(
-            "stepfunctions", endpoint_url=os.getenv("BOTO_ENDPOINT_URL") or None
-        )
+        _stepfunctions_client = boto3.client("stepfunctions", endpoint_url=os.getenv("BOTO_ENDPOINT_URL") or None)
     return _stepfunctions_client
 
 
@@ -58,15 +56,11 @@ def upload(
 ) -> str:
     max_file_size_gb = CorporaConfig().upload_max_file_size_gb * GB
     if file_size is not None and file_size > max_file_size_gb:
-        raise MaxFileSizeExceededException(
-            f"{url} exceeds the maximum allowed file size of {max_file_size_gb} Gb"
-        )
+        raise MaxFileSizeExceededException(f"{url} exceeds the maximum allowed file size of {max_file_size_gb} Gb")
 
     allowed_file_formats = CorporaConfig().upload_file_formats
     if file_extension not in allowed_file_formats:
-        raise InvalidFileFormatException(
-            f"{url} must be in the file format(s): {allowed_file_formats}"
-        )
+        raise InvalidFileFormatException(f"{url} must be in the file format(s): {allowed_file_formats}")
 
     collection = Collection.get_collection(
         db_session,
@@ -75,9 +69,7 @@ def upload(
         owner=_owner_or_allowed(user),
     )
     if not collection:
-        raise NonExistentCollectionException(
-            f"Collection {collection_uuid} does not exist"
-        )
+        raise NonExistentCollectionException(f"Collection {collection_uuid} does not exist")
 
     if dataset_id:
         # Update dataset
@@ -97,9 +89,7 @@ def upload(
 
     else:
         # Add new dataset
-        dataset = Dataset.create(
-            db_session, collection=collection, curator_tag=curator_tag
-        )
+        dataset = Dataset.create(db_session, collection=collection, curator_tag=curator_tag)
 
     dataset.update(processing_status=dataset.new_processing_status())
 
