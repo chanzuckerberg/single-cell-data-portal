@@ -63,9 +63,10 @@ def build_precomputed_primary_filters(
     tissue_terms=test_tissue_terms,
     gene_terms=test_gene_terms,
 ):
+
     return {
-        snapshot_id: snapshot_id,
-        organism_terms: organism_terms,
-        tissue_terms: tissue_terms,
-        gene_terms: gene_terms,
+        "snapshot_id": snapshot_id,
+        "organism_terms": organism_terms,
+        "tissue_terms": tissue_terms,
+        "gene_terms": gene_terms,
     }
