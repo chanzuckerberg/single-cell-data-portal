@@ -7,6 +7,26 @@ class CorporaException(Exception):
         super().__init__(*args, **kwargs)
 
 
+class MaxFileSizeExceededException(CorporaException):
+    pass
+
+
+class InvalidFileFormatException(CorporaException):
+    pass
+
+
+class NonExistentCollectionException(CorporaException):
+    pass
+
+
+class InvalidProcessingStateException(CorporaException):
+    pass
+
+
+class NonExistentDatasetException(CorporaException):
+    pass
+
+
 class ColorFormatException(ProblemException):
     def __init__(
         self, detail: str = "Color conversion helper function encountered an unknown color format.", *args, **kwargs
