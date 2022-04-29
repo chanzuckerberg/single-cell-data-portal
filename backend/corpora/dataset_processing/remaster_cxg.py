@@ -27,8 +27,6 @@ def process(dataset_id: str, cellxgene_bucket: str, prefix=None, dry_run=True):
     :return:
     """
 
-    # Careful with old datasets - the ones that do not have a UUID
-
     # Download the cxg from the bucket
     if prefix is not None:
         object_key = f"{prefix}{dataset_id}"

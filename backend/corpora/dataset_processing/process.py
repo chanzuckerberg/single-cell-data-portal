@@ -571,7 +571,7 @@ def main():
         elif step_name == "cxg_remaster":
             from backend.corpora.dataset_processing.remaster_cxg import process
 
-            process(f"{dataset_id}.cxg", os.environ["CELLXGENE_BUCKET"], dry_run=False)
+            process(dataset_id, os.environ["CELLXGENE_BUCKET"], dry_run=False)
         else:
             logger.error(f"Step function configuration error: Unexpected STEP_NAME '{step_name}'")
 
