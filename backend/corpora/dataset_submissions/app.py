@@ -18,7 +18,7 @@ UUID_REGEX = "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-
 
 def dataset_submissions_handler(s3_event: dict, context) -> None:
     """
-    Lambda function invoked when a dataset is uploaded to s3://cellxgene-dataset-submissions-{dev,staging,prod}
+    Lambda function invoked when a dataset is uploaded to the dataset submissions S3 bucket
     :param s3_event: Lambda's event object
     :param context: Lambda's context object
     :return:
@@ -26,7 +26,7 @@ def dataset_submissions_handler(s3_event: dict, context) -> None:
     logger.debug(f"{s3_event=}")
     logger.debug(f"{os.environ.get('REMOTE_DEV_PREFIX', '')=}")
 
-    # s3://cellxgene-curation-submissions-{dev,staging,prod}/<collection_id>/<curator_tag>
+    # s3://<dataset submissions bucket>/<collection_id>/<curator_tag>
 
     for record in s3_event["Records"]:
         bucket, key, size = parse_s3_event_record(record)
