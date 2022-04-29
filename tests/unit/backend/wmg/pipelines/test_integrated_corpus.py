@@ -157,7 +157,7 @@ class TestCorpusIntegrationETL(unittest.TestCase):
         anndata_filename.touch()
         test_anndata_object.write(anndata_filename, compression="gzip")
 
-        load_h5ad(self.corpus_path, test_anndata_object, dataset_id="lll")
+        process_h5ad_for_corpus(anndata_filename, self.corpus_path, False)
         obs = tiledb.open(f"{self.corpus_path}/obs", "r")
         corpus_cell_count = obs.df[:].shape[0]
 
