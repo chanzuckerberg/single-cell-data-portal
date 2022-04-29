@@ -17,27 +17,12 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
-def process_all(cellxgene_bucket: str):
-    """
-    Process all cxgs in batch, by listing the ids in the provided bucket
-    """
-    import boto3
-    bucket = cellxgene_bucket
-    prefix = None # required if the datasets aren't in the bucket root
-
-    client = boto3.client('s3')
-    result = client.list_objects(Bucket=bucket, Prefix=prefix, Delimiter='/')
-    for o in result.get('CommonPrefixes'):
-        dataset_id = o["Prefix"].split("/")[1]
-        # TODO Might need to pass down the prefix
-        process(dataset_id, cellxgene_bucket, dry_run=True)
-
-
-def process(dataset_id: str, cellxgene_bucket: str, dry_run=True):
+def process(dataset_id: str, cellxgene_bucket: str, prefix=None, dry_run=True):
     """
     Converts an existing CXG to the new, performance optimized schema
-    :param dataset_id:
-    :param cellxgene_bucket:
+    :param dataset_id: The id of the dataset to reprocess.
+    :param cellxgene_bucket: Name of the S3 bucket where the artifact is.
+    :param prefix: If specified, will 
     :param dry_run:
     :return:
     """
@@ -45,9 +30,15 @@ def process(dataset_id: str, cellxgene_bucket: str, dry_run=True):
     # Careful with old datasets - the ones that do not have a UUID
 
     # Download the cxg from the bucket
-    bucket_prefix = get_bucket_prefix(dataset_id)
-    object_key = f"{bucket_prefix}.cxg"
+    if prefix is not None:
+        object_key = f"{prefix}{dataset_id}"
+    else:
+        dataset_path = get_bucket_prefix(dataset_id)
+        object_key = f"{dataset_path}.cxg"
     path = f"s3://{cellxgene_bucket}/{object_key}/X"
+
+    logger.info(f"Processing dataset at path {path}, dry run {dry_run}")
+
     local_path = "/cxg"
     logger.info(f"Downloading {path} to {local_path}/X_old")
 
@@ -70,9 +61,17 @@ def process(dataset_id: str, cellxgene_bucket: str, dry_run=True):
 
     compute(cxg=local_path, **params)
 
+    logger.info(f"Dataset at {path} computed successfully")
+
     if not dry_run:
         upload_command = ["aws", "s3", "sync", "--delete", f"{local_path}/X_new", path]
         subprocess.run(upload_command, check=True)
+
+    # Cleanup
+    logger.info("Cleaning up local files")
+    import shutil
+    shutil.rmtree(f"{local_path}/X_old")
+    shutil.rmtree(f"{local_path}/X_new")
 
 def compute(**kwargs):
     """
@@ -107,8 +106,8 @@ def compute(**kwargs):
 
     ctx = create_fast_ctx(
         {
-            "py.init_buffer_bytes": 32 * 1024**3,
-            "sm.tile_cache_size": 2 * 1024**3,
+            "py.init_buffer_bytes": 4 * 1024**3,
+            "sm.tile_cache_size": 1 * 1024**3,
         }
     )
 

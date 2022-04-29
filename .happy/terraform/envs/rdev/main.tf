@@ -11,7 +11,7 @@ module stack {
   delete_protected             = false
   require_okta                 = true
   stack_prefix                 = "/${var.stack_name}"
-  batch_container_memory_limit = 28000
+  batch_container_memory_limit = 60000
   backend_instance_count       = 1
   frontend_instance_count      = 1
   backend_memory               = 1536

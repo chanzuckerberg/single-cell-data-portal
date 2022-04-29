@@ -217,7 +217,7 @@ resource "aws_sfn_state_machine" "state_machine_cxg_remaster" {
       "Parameters": {
         "JobDefinition": "${var.job_definition_arn}",
         "JobName": "cxg_remaster",
-        "JobQueue": "${var.job_queue_arn}",
+        "JobQueue": "arn:aws:batch:us-west-2:699936264352:job-queue/dp-dev",
         "ContainerOverrides": {
           "Environment": [
             {
