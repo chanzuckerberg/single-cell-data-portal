@@ -31,6 +31,18 @@ class URL(ABC):
         """
         pass
 
+    @property
+    def scheme(self):
+        return self.parsed_url.scheme
+
+    @property
+    def netloc(self):
+        return self.parsed_url.netloc
+
+    @property
+    def path(self):
+        return self.parsed_url.path
+
     def _get_key(self, headers: dict, key: str) -> str:
         try:
             return headers[key]

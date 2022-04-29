@@ -543,17 +543,16 @@ class TestDatasetProcessing(DataPortalTestCase):
     @patch("backend.corpora.dataset_processing.download.downloader")
     @patch("backend.corpora.dataset_processing.process.from_url")
     def test__dataset_tombstoned_while_uploading(self, mock_from_url, mock_downloader):
-        class file_info:
+        class file_url:
+            scheme = "https"
+            url = "url.com"
+
             @classmethod
-            def file_info(self):
+            def file_info(cls):
                 return {"size": 12}
 
-            @property
-            def url(self):
-                return "url.com"
-
         mock_downloader.side_effect = self.mock_downloader_function
-        mock_from_url.return_value = file_info
+        mock_from_url.return_value = file_url
         self.dataset_id = self.generate_dataset(self.session).id
         start = time.time()
         # check that changing the db status leads to an exception being raised
@@ -566,6 +565,8 @@ class TestDatasetProcessing(DataPortalTestCase):
         end = time.time()
         # check that tombstoning ends the download thread early
         self.assertLess(end - start, 11)
+
+    # TODO: add test case for scheme == "s3"
 
     @patch("backend.corpora.dataset_processing.process.make_cxg")
     @patch("backend.corpora.dataset_processing.process.download_from_dropbox_url")

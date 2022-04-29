@@ -300,13 +300,13 @@ def download_from_source_uri(dataset_uuid: str, source_uri: str, local_path: str
         raise ValueError(f"Malformed source URI: {source_uri}")
 
     # This is a bit ugly and should be done polymorphically instead, but Dropbox support will be dropped soon
-    if file_url.parsed_url.scheme == "https":
+    if file_url.scheme == "https":
         file_info = file_url.file_info()
         status = download(dataset_uuid, file_url.url, local_path, file_info["size"])
         logger.info(status)
-    elif file_url.parsed_url.scheme == "s3":
-        bucket_name = file_url.parsed_url.netloc
-        key = remove_prefix(file_url.parsed_url.path, "/")
+    elif file_url.scheme == "s3":
+        bucket_name = file_url.netloc
+        key = remove_prefix(file_url.path, "/")
         wrapped_download_from_s3(
             dataset_uuid=dataset_uuid,
             bucket_name=bucket_name,
@@ -314,7 +314,7 @@ def download_from_source_uri(dataset_uuid: str, source_uri: str, local_path: str
             local_filename=local_path,
         )
     else:
-        raise ValueError(f"Download for URI scheme '{file_url.parsed_url.scheme}' not implemented")
+        raise ValueError(f"Download for URI scheme '{file_url.scheme}' not implemented")
 
     logger.info("Download complete")
     return local_path
