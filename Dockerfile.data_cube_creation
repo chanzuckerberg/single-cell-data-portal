@@ -3,8 +3,6 @@ ARG BASE_TAG=branch-main
 FROM python:3.9
 RUN /usr/local/bin/python -m pip install --upgrade pip
 
-RUN apt update && apt -y install graphviz graphviz-dev
-
 RUN pip3 install awscli
 
 # For lighter weight Docker images

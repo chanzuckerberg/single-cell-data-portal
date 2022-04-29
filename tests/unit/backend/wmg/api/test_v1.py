@@ -46,8 +46,8 @@ class WmgApiV1Tests(unittest.TestCase):
 
         self.assertEqual(200, response.status_code)
 
-    @patch("backend.wmg.api.v1.gene_term_label")
-    @patch("backend.wmg.api.v1.ontology_term_label")
+    @patch("backend.wmg.api.v1.get_gene_term_label")
+    @patch("backend.wmg.api.v1.get_ontology_term_label")
     @patch("backend.wmg.api.v1.load_snapshot")
     def test__primary_filter_dimensions__returns_valid_response_body(
         self, load_snapshot, ontology_term_label, gene_term_label
@@ -77,8 +77,8 @@ class WmgApiV1Tests(unittest.TestCase):
 
         self.assertEqual(expected, json.loads(response.data))
 
-    @patch("backend.wmg.api.v1.gene_term_label")
-    @patch("backend.wmg.api.v1.ontology_term_label")
+    @patch("backend.wmg.api.v1.get_gene_term_label")
+    @patch("backend.wmg.api.v1.get_ontology_term_label")
     @patch("backend.wmg.api.v1.load_snapshot")
     def test__query_single_primary_dims__returns_200_and_correct_response(
         self, load_snapshot, ontology_term_label, gene_term_label
@@ -134,8 +134,8 @@ class WmgApiV1Tests(unittest.TestCase):
             }
             self.assertEqual(expected_response, json.loads(response.data))
 
-    @patch("backend.wmg.api.v1.gene_term_label")
-    @patch("backend.wmg.api.v1.ontology_term_label")
+    @patch("backend.wmg.api.v1.get_gene_term_label")
+    @patch("backend.wmg.api.v1.get_ontology_term_label")
     @patch("backend.wmg.api.v1.load_snapshot")
     def test__query_request_multi_primary_dims_only__returns_200_and_correct_response(
         self, load_snapshot, ontology_term_label, gene_term_label
@@ -301,8 +301,8 @@ class WmgApiV1Tests(unittest.TestCase):
             }
             self.assertEqual(expected, json.loads(response.data))
 
-    @patch("backend.wmg.api.v1.gene_term_label")
-    @patch("backend.wmg.api.v1.ontology_term_label")
+    @patch("backend.wmg.api.v1.get_gene_term_label")
+    @patch("backend.wmg.api.v1.get_ontology_term_label")
     @patch("backend.wmg.api.v1.load_snapshot")
     def test__query_explicit_cell_ordering__returns_correct_cell_ordering(
         self, load_snapshot, ontology_term_label, gene_term_label
@@ -391,8 +391,8 @@ class WmgApiV1Tests(unittest.TestCase):
         self.assertEqual(400, response.status_code)
 
     @patch("backend.wmg.api.v1.fetch_datasets_metadata")
-    @patch("backend.wmg.api.v1.gene_term_label")
-    @patch("backend.wmg.api.v1.ontology_term_label")
+    @patch("backend.wmg.api.v1.get_gene_term_label")
+    @patch("backend.wmg.api.v1.get_ontology_term_label")
     @patch("backend.wmg.api.v1.load_snapshot")
     def test__query_request_with_filter_dims__returns_valid_filter_dims(
         self, load_snapshot, ontology_term_label, gene_term_label, fetch_datasets_metadata
@@ -468,8 +468,8 @@ class WmgApiV1Tests(unittest.TestCase):
             self.assertEqual(expected, json.loads(response.data)["filter_dims"])
 
     @patch("backend.wmg.api.v1.fetch_datasets_metadata")
-    @patch("backend.wmg.api.v1.gene_term_label")
-    @patch("backend.wmg.api.v1.ontology_term_label")
+    @patch("backend.wmg.api.v1.get_gene_term_label")
+    @patch("backend.wmg.api.v1.get_ontology_term_label")
     @patch("backend.wmg.api.v1.load_snapshot")
     def test__query_request_with_filter_dims__returns_elided_filter_dims(
         self, load_snapshot, ontology_term_label, gene_term_label, fetch_datasets_metadata
