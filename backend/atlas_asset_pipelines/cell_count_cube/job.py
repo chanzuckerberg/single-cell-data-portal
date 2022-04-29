@@ -3,6 +3,7 @@ import logging
 import pandas as pd
 import tiledb
 
+from backend.wmg.data.schemas.corpus_schema import OBS_ARRAY_NAME
 from backend.wmg.data.schemas.cube_schema import cell_counts_schema
 from backend.wmg.data.snapshot import CELL_COUNTS_CUBE_NAME
 from backend.wmg.data.utils import create_empty_cube
@@ -12,8 +13,7 @@ logging.basicConfig(level=logging.INFO)
 
 
 def extract(corpus_path: str) -> pd.DataFrame:
-    with tiledb.open(f"{corpus_path}/obs") as obs:
-        return obs
+    return tiledb.open(f"{corpus_path}/{OBS_ARRAY_NAME}")
 
 
 def transform(obs: pd.DataFrame) -> pd.DataFrame:
