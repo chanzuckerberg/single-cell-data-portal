@@ -30,7 +30,6 @@ def relink(collection_uuid: str, body: dict, token_info: dict):
 
 @dbconnect
 def upload_from_link(collection_uuid: str, token_info: dict, url: str, dataset_id: str = None):
-    print(f"token_info is {token_info}, collection {collection_uuid}")
     db_session = g.db_session
     # Verify Dropbox URL
     valid_link = from_url(url)
