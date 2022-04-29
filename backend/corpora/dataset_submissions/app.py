@@ -23,14 +23,14 @@ def dataset_submissions_handler(s3_event: dict, context) -> None:
     :param context: Lambda's context object
     :return:
     """
-    logger.info(f"@@@@@ {s3_event=}")
-    logger.info(f"@@@@@ {os.environ.get('REMOTE_DEV_PREFIX', '')=}")
+    logger.debug(f"{s3_event=}")
+    logger.debug(f"{os.environ.get('REMOTE_DEV_PREFIX', '')=}")
 
     # s3://cellxgene-curation-submissions-{dev,staging,prod}/<collection_id>/<curator_tag>
 
     for record in s3_event["Records"]:
         bucket, key, size = parse_s3_event_record(record)
-        logger.info(f"{bucket=}, {key=}, {size=}")
+        logger.debug(f"{bucket=}, {key=}, {size=}")
 
         collection_uuid, incoming_curator_tag = parse_key(key)
 
@@ -38,13 +38,13 @@ def dataset_submissions_handler(s3_event: dict, context) -> None:
             raise CorporaException(f"Missing collection UUID and/or curator tag for {key=}")
 
         extension = get_extension(incoming_curator_tag)
-        logger.info(f"{collection_uuid=}, {incoming_curator_tag=}, {extension=}")
+        logger.debug(f"{collection_uuid=}, {incoming_curator_tag=}, {extension=}")
 
         with db_session_manager() as session:
 
             collection_owner, dataset_uuid = get_dataset_info(session, collection_uuid, incoming_curator_tag)
 
-            logger.info(f"@@@@@ {collection_owner=}, {dataset_uuid=}")
+            logger.debug(f"{collection_owner=}, {dataset_uuid=}")
             if not collection_owner:
                 raise CorporaException(f"Collection {collection_uuid} does not exist")
 
