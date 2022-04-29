@@ -216,7 +216,8 @@ class TestCorpusIntegrationETL(unittest.TestCase):
             obs_df = obs.df[:]
             cell_id_mapping = obs_df.dataset_local_cell_id
 
-            # map from the corpus index back to the anndata_object index via the cell_id_mapping to ensure data is concatenated correctly
+            # map from the corpus index back to the anndata_object index via the
+            # cell_id_mapping to ensure data is concatenated correctly
             for i in range(len(cell_id_mapping)):
                 self.assertEqual(
                     obs_df.assay_ontology_term_id[i],

@@ -1,6 +1,6 @@
 import unittest
 
-from backend.wmg.data.ontology_labels import ontology_term_label, gene_term_label
+from backend.wmg.data.ontology_labels import get_ontology_term_label, get_gene_term_label
 
 
 class OntologyLabelTests(unittest.TestCase):
@@ -21,7 +21,7 @@ class OntologyLabelTests(unittest.TestCase):
         }
         for ontology_term_id, expected_ontology_term_label in test_cases.items():
             with self.subTest(ontology_term_id):
-                self.assertEqual(ontology_term_label(ontology_term_id), expected_ontology_term_label)
+                self.assertEqual(get_ontology_term_label(ontology_term_id), expected_ontology_term_label)
 
     def test__gene_label(self):
         # A conservative, high-level check that all ontologies have been loaded, without checking explicit counts
@@ -38,7 +38,7 @@ class OntologyLabelTests(unittest.TestCase):
         }
         for gene_id, expected_gene_label in test_cases.items():
             with self.subTest(gene_id):
-                self.assertEqual(gene_term_label(gene_id), expected_gene_label)
+                self.assertEqual(get_gene_term_label(gene_id), expected_gene_label)
 
 
 if __name__ == "__main__":

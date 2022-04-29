@@ -7,7 +7,7 @@ from pandas import DataFrame
 
 from backend.corpora.common.entities import Dataset
 from backend.corpora.common.utils.db_session import db_session_manager
-from backend.wmg.data.ontology_labels import ontology_term_label, gene_term_label
+from backend.wmg.data.ontology_labels import get_ontology_term_label, get_gene_term_label
 from backend.wmg.data.query import (
     WmgQuery,
     WmgQueryCriteria,
@@ -138,13 +138,13 @@ def build_dot_plot_matrix(query_result: DataFrame, cell_counts: DataFrame) -> Da
 
 def build_gene_id_label_mapping(gene_ontology_term_ids: List[str]) -> List[dict]:
     return [
-        {gene_ontology_term_id: gene_term_label(gene_ontology_term_id)}
+        {gene_ontology_term_id: get_gene_term_label(gene_ontology_term_id)}
         for gene_ontology_term_id in gene_ontology_term_ids
     ]
 
 
 def build_ontology_term_id_label_mapping(ontology_term_ids: Iterable[str]) -> List[dict]:
-    return [{ontology_term_id: ontology_term_label(ontology_term_id)} for ontology_term_id in ontology_term_ids]
+    return [{ontology_term_id: get_ontology_term_label(ontology_term_id)} for ontology_term_id in ontology_term_ids]
 
 
 def build_ordered_cell_types_by_tissue(
@@ -163,7 +163,7 @@ def build_ordered_cell_types_by_tissue(
 
     for row in sorted.itertuples(index=False):
         structured_result[row.tissue_ontology_term_id].append(
-            {row.cell_type_ontology_term_id: ontology_term_label(row.cell_type_ontology_term_id)}
+            {row.cell_type_ontology_term_id: get_ontology_term_label(row.cell_type_ontology_term_id)}
         )
 
     return structured_result

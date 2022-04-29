@@ -20,7 +20,7 @@ ontology_term_id_labels: Dict[str, str] = None
 gene_term_id_labels: Dict[str, str] = None
 
 
-def ontology_term_label(ontology_term_id: str) -> Optional[str]:
+def get_ontology_term_label(ontology_term_id: str) -> Optional[str]:
     """
     Returns the label for an ontology term, given its id. This excludes gene ontology term, which are handled
     separately by gene_gene_term_label(). Return None if ontology term id is invalid.
@@ -31,7 +31,7 @@ def ontology_term_label(ontology_term_id: str) -> Optional[str]:
     return ontology_term_id_labels.get(ontology_term_id)
 
 
-def gene_term_label(gene_ontology_term_id: str) -> Optional[str]:
+def get_gene_term_label(gene_ontology_term_id: str) -> Optional[str]:
     """
     Returns the label for a gene ontology term, given its id. Return None if ontology term id is invalid.
     """
