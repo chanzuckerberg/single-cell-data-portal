@@ -74,18 +74,18 @@ def upload(
     if dataset_id:
         # Update dataset
         dataset = Dataset.get(db_session, dataset_id)
-        if collection_uuid == dataset.collection_id:
-            if dataset.processing_status.processing_status in [
+        if collection_uuid != dataset.collection_id:
+            raise NonExistentDatasetException(f"Dataset {dataset_id} does not exist")
+        else:
+            if dataset.processing_status.processing_status not in [
                 ProcessingStatus.SUCCESS,
                 ProcessingStatus.FAILURE,
             ]:
-                dataset.reprocess()
-            else:
                 raise InvalidProcessingStateException(
                     f"Unable to reprocess dataset {dataset_id}: {dataset.processing_status.processing_status=}"
                 )
-        else:
-            raise NonExistentDatasetException(f"Dataset {dataset_id} does not exist")
+            else:
+                dataset.reprocess()
 
     else:
         # Add new dataset
