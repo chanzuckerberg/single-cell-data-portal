@@ -1,9 +1,10 @@
 import logging
 from contextlib import contextmanager
+
 from sqlalchemy import create_engine
+from sqlalchemy import event
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import sessionmaker, session as sql_session
-from sqlalchemy import event
 
 from .exceptions import CorporaException
 from ..corpora_config import CorporaDbConfig
@@ -52,10 +53,11 @@ def db_session_manager(**kwargs):
             session.commit()
         else:
             session.expire_all()
-    except SQLAlchemyError:
-        session.rollback()
-        msg = "Failed to commit."
-        logger.exception(msg)
-        raise CorporaException(msg)
+    except SQLAlchemyError as e:
+        logger.exception(e)
+        if session is not None:
+            session.rollback()
+        raise CorporaException("Failed to commit.")
     finally:
-        session.close()
+        if session is not None:
+            session.close()
