@@ -569,20 +569,20 @@ class TestDatasetProcessing(DataPortalTestCase):
     # TODO: add test case for scheme == "s3"
 
     @patch("backend.corpora.dataset_processing.process.make_cxg")
-    @patch("backend.corpora.dataset_processing.process.download_from_dropbox_url")
+    @patch("backend.corpora.dataset_processing.process.download_from_source_uri")
     @patch("backend.corpora.dataset_processing.process.validate_h5ad_file_and_add_labels")
     @patch("backend.corpora.dataset_processing.process.extract_metadata")
     def test__cxg_not_created_when_metadata_extraction_fails(
         self,
         mock_extract_metadata,
         mock_validate_h5ad_file_and_add_labels,
-        mock_download_from_dropbox_url,
+        mock_download_from_source_uri,
         mock_make_cxg,
     ):
         # given
         mock_validate_h5ad_file_and_add_labels.return_value = (mock.ANY, False)
         mock_extract_metadata.side_effect = RuntimeError("metadata extraction failed")
-        mock_download_from_dropbox_url.return_value = self.h5ad_filename
+        mock_download_from_source_uri.return_value = self.h5ad_filename
         mock_make_cxg.return_value = str(self.cxg_filename)
         dataset = self.generate_dataset(self.session)
         dataset_id = dataset.id
