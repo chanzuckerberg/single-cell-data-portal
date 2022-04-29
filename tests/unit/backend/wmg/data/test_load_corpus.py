@@ -8,7 +8,7 @@ from unittest.mock import patch
 import tiledb
 
 from backend.wmg.data.schemas.corpus_schema import create_tdb, OBS_ARRAY_NAME, VAR_ARRAY_NAME
-from backend.wmg.data.wmg_asset_pipeline import wmg_asset_pipeline
+from backend.wmg.data.wmg_snapshot_pipeline import wmg_asset_pipeline
 from tests.unit.backend.wmg.fixtures.test_anndata_object import create_anndata_test_object
 
 
