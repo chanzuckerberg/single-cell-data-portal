@@ -19,6 +19,7 @@ from backend.corpora.common.corpora_orm import (
     DatasetArtifactFileType,
 )
 
+
 def process(dataset_id: str, dropbox_url: str, artifact_bucket: str):
     """
     1. Download the original dataset from Dropbox

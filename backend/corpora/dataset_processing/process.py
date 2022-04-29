@@ -112,8 +112,9 @@ Once all conversion are complete, the conversion status for each file will be ei
 # Standalone processing steps
 
 ## Seurat
-This is used to recompute the Seurat artifact in place, starting from the original h5ad. This is a state machine with a single
-state that mimics the Conversion step of the main step function.
+This is used to recompute the Seurat artifact in place, starting from the original h5ad.
+This is a state machine with a single state that mimics the Conversion step
+of the main step function.
 
 ## CXG_Remaster
 This is used to migrate the cxg to a different, more performant format. This is a state machine with a single

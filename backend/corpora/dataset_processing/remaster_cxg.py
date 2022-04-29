@@ -22,7 +22,7 @@ def process(dataset_id: str, cellxgene_bucket: str, prefix=None, dry_run=True):
     Converts an existing CXG to the new, performance optimized schema
     :param dataset_id: The id of the dataset to reprocess.
     :param cellxgene_bucket: Name of the S3 bucket where the artifact is.
-    :param prefix: If specified, will 
+    :param prefix: If specified, will
     :param dry_run:
     :return:
     """
@@ -54,7 +54,7 @@ def process(dataset_id: str, cellxgene_bucket: str, prefix=None, dry_run=True):
         "compression": 22,
         "target_array": "X_new",
         "source_array": "X_old",
-        "sparse_threshold": 25.0
+        "sparse_threshold": 25.0,
     }
 
     compute(cxg=local_path, **params)
@@ -68,8 +68,10 @@ def process(dataset_id: str, cellxgene_bucket: str, prefix=None, dry_run=True):
     # Cleanup
     logger.info("Cleaning up local files")
     import shutil
+
     shutil.rmtree(f"{local_path}/X_old")
     shutil.rmtree(f"{local_path}/X_new")
+
 
 def compute(**kwargs):
     """
@@ -98,7 +100,6 @@ def compute(**kwargs):
     cell_order = kwargs["cell_order"]
     tile_order = kwargs["tile_order"]
     capacity = kwargs["capacity"]
-
 
     X_extent = [obs_extent, var_extent]
 
@@ -146,7 +147,7 @@ def compute(**kwargs):
                     while i < old_X.shape[0]:
                         logger.info(f"Chunk {i}")
                         dat = old_X[i : i + chunk]
-                        logger.info(f"Got dat")
+                        logger.info("Got dat")
                         new_X[dat["obs"], dat["var"]] = dat[""]
                         i += chunk
                 elif in_sparse and not out_sparse:
@@ -257,7 +258,7 @@ def fast_config(config_overrides: dict = {}) -> dict:
         "py.init_buffer_bytes": 16 * 1024**3,
         "sm.tile_cache_size": frac_mem(0.5),
         "sm.consolidation.buffer_size": consolidation_buffer_size,
-    } 
+    }
     config.update(config_overrides)
     return config
 
