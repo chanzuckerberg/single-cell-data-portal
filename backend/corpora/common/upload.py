@@ -67,7 +67,7 @@ def upload(
         db_session,
         collection_uuid,
         visibility=CollectionVisibility.PRIVATE,  # Do not allow changes to public Collections
-        owner=owner_or_allowed(user,scope),
+        owner=owner_or_allowed(user, scope),
     )
     if not collection:
         raise NonExistentCollectionException(f"Collection {collection_uuid} does not exist")

@@ -48,7 +48,16 @@ def upload_from_link(collection_uuid: str, token_info: dict, url: str, dataset_i
     file_extension = resp["name"].rsplit(".")[-1].lower()
 
     try:
-        return upload(db_session, collection_uuid, token_info["sub"], token_info("scope"), url, file_size, file_extension, dataset_id)
+        return upload(
+            db_session,
+            collection_uuid,
+            token_info["sub"],
+            token_info("scope"),
+            url,
+            file_size,
+            file_extension,
+            dataset_id,
+        )
     except MaxFileSizeExceededException:
         raise TooLargeHTTPException()
     except InvalidFileFormatException:
