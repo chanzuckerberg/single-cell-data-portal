@@ -53,6 +53,7 @@ def dataset_submissions_handler(s3_event: dict, context) -> None:
                 session,
                 collection_uuid,
                 user=collection_owner,
+                scope="write:collection",
                 url=s3_uri,
                 file_size=size,
                 file_extension=extension,
