@@ -121,38 +121,3 @@ class TestCxgGenerationUtils(unittest.TestCase):
         self.assertTrue(actual_stored_array[1, 1][""] == 1)
         self.assertTrue(actual_stored_array[2, 2][""] == 2)
         self.assertTrue(actual_stored_array[:, :][""].size == 3)
-
-    def test__convert_matrix_to_cxg_array__sparse_array_with_column_encoding_empty_array(self):
-        matrix_name = f"{self.testing_cxg_temp_directory}/awesome_column_shift_matrix_{uuid4()}"
-        matrix = np.ones((3, 2))
-        # The column shift will be equal to the matrix since subtracting the column shift from the matrix will create
-        # a matrix of zeros which is sparse.
-        column_shift = np.ones((3, 2))
-
-        convert_matrix_to_cxg_array(
-            matrix_name, matrix, True, tiledb.Ctx(), column_shift_for_sparse_encoding=column_shift
-        )
-
-        actual_stored_array = tiledb.open(matrix_name)
-
-        self.assertTrue(path.isdir(matrix_name))
-        self.assertTrue(isinstance(actual_stored_array, tiledb.SparseArray))
-        self.assertTrue(actual_stored_array[:, :][""].size == 0)
-
-    def test__convert_matrix_to_cxg_array__sparse_array_with_column_encoding_partial_array(self):
-        matrix_name = f"{self.testing_cxg_temp_directory}/awesome_column_shift_matrix_{uuid4()}"
-        matrix = np.ones((2, 2))
-        # Only column shift the first column of ones.
-        column_shift = np.array([[1, 0], [1, 0]])
-
-        convert_matrix_to_cxg_array(
-            matrix_name, matrix, True, tiledb.Ctx(), column_shift_for_sparse_encoding=column_shift
-        )
-
-        actual_stored_array = tiledb.open(matrix_name)
-
-        self.assertTrue(path.isdir(matrix_name))
-        self.assertTrue(isinstance(actual_stored_array, tiledb.SparseArray))
-        self.assertTrue(actual_stored_array[0, 1][""] == 1)
-        self.assertTrue(actual_stored_array[1, 1][""] == 1)
-        self.assertTrue(actual_stored_array[:, :][""].size == 2)

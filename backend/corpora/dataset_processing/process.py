@@ -108,6 +108,18 @@ Once all conversion are complete, the conversion status for each file will be ei
     cxg_status = ConversionStatus.UPLOADED
     h5ad_status = ConversionStatus.UPLOADED
 }
+
+# Standalone processing steps
+
+## Seurat
+This is used to recompute the Seurat artifact in place, starting from the original h5ad.
+This is a state machine with a single state that mimics the Conversion step
+of the main step function.
+
+## CXG_Remaster
+This is used to migrate the cxg to a different, more performant format. This is a state machine with a single
+state that mimics the Conversion step of the main step function.
+
 """
 
 import logging
@@ -453,7 +465,7 @@ def make_cxg(local_filename):
     cxg_output_container = local_filename.replace(".h5ad", ".cxg")
     try:
         h5ad_data_file = H5ADDataFile(local_filename, var_index_column_name="feature_name")
-        h5ad_data_file.to_cxg(cxg_output_container, 10.0)
+        h5ad_data_file.to_cxg(cxg_output_container, sparse_threshold=25.0)
     except Exception as ex:
         msg = "CXG conversion failed."
         logger.exception(msg)
@@ -668,6 +680,10 @@ def main():
             from backend.corpora.dataset_processing.process_seurat import process
 
             process(dataset_id, os.environ["ARTIFACT_BUCKET"])
+        elif step_name == "cxg_remaster":
+            from backend.corpora.dataset_processing.remaster_cxg import process
+
+            process(dataset_id, os.environ["CELLXGENE_BUCKET"], dry_run=False)
         else:
             logger.error(f"Step function configuration error: Unexpected STEP_NAME '{step_name}'")
 

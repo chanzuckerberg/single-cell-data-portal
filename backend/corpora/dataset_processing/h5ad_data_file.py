@@ -17,7 +17,7 @@ from backend.corpora.common.utils.cxg_generation_utils import (
     convert_matrix_to_cxg_array,
 )
 from backend.corpora.common.utils.exceptions import ColorFormatException
-from backend.corpora.common.utils.matrix_utils import is_matrix_sparse, get_column_shift_encode_for_matrix
+from backend.corpora.common.utils.matrix_utils import is_matrix_sparse
 from backend.corpora.common.utils.semvar_utils import validate_version_str
 
 
@@ -91,18 +91,9 @@ class H5ADDataFile:
 
         x_matrix_data = self.anndata.X
         is_sparse = is_matrix_sparse(x_matrix_data, sparse_threshold)
-        if not is_sparse:
-            col_shift = get_column_shift_encode_for_matrix(x_matrix_data, sparse_threshold)
-            is_sparse = col_shift is not None
-        else:
-            col_shift = None
+        logging.info(f"is_sparse: {is_sparse}")
 
-        if col_shift is not None:
-            logging.info("Converting matrix X as sparse matrix with column shift encoding")
-            x_col_shift_name = f"{output_cxg_directory}/X_col_shift"
-            convert_ndarray_to_cxg_dense_array(x_col_shift_name, col_shift, ctx)
-
-        convert_matrix_to_cxg_array(matrix_container, x_matrix_data, is_sparse, ctx, col_shift)
+        convert_matrix_to_cxg_array(matrix_container, x_matrix_data, is_sparse, ctx)
 
         tiledb.consolidate(matrix_container, ctx=ctx)
         if hasattr(tiledb, "vacuum"):
