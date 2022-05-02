@@ -276,6 +276,21 @@ data "aws_iam_policy_document" "lambda_step_function_execution_policy" {
     ]
   }
   statement {
+    sid    = "networking"
+    effect = "Allow"
+    actions = [
+      "ec2:DescribeNetworkInterfaces",
+      "ec2:CreateNetworkInterface",
+      "ec2:DeleteNetworkInterface",
+      "ec2:DescribeInstances",
+      "ec2:AttachNetworkInterface",
+      "ec2:DescribeSecurityGroups",
+      "ec2:DescribeSubnets",
+      "ec2:DescribeVpcs"
+    ]
+    resources = ["*"]
+  }
+  statement {
     actions = [
       "secretsmanager:DescribeSecret",
       "secretsmanager:GetSecretValue"
