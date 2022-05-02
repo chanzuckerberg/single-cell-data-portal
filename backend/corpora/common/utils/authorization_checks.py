@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, Optional
 
 
 def has_scope(required_scope: str, scope: Union[list, str]) -> bool:
@@ -13,7 +13,7 @@ def is_user_owner_or_allowed(user: str, scope: Union[list, str], owner: str) -> 
     return user == owner or (has_scope("write:collections", scope))
 
 
-def owner_or_allowed(user: str, scope: Union[list, str]):
+def owner_or_allowed(user: str, scope: Union[list, str]) -> Optional[str]:
     """
     Returns None if the user is superuser, `user` otherwise. Used for SQL Query where conditions
     """

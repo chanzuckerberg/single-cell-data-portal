@@ -52,7 +52,7 @@ def upload_from_link(collection_uuid: str, token_info: dict, url: str, dataset_i
             db_session,
             collection_uuid,
             token_info["sub"],
-            token_info("scope"),
+            token_info["scope"],
             url,
             file_size,
             file_extension,

@@ -35,7 +35,7 @@ duration = 3600
 def get_s3_credentials(collection_uuid: str, token_info: dict):
     db_session = g.db_session
     config = CorporaConfig()
-    # Raise an error if they are not allow to modify the collection.
+    # Raise an error if they are not allowed to modify the collection.
     get_collection(
         db_session, collection_uuid, visibility=CollectionVisibility.PRIVATE.name, owner=owner_or_allowed(token_info)
     )

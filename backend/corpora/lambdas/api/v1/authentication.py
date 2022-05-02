@@ -197,11 +197,11 @@ def check_token(token: dict) -> dict:
     return payload
 
 
-def curation_apikey_info_func(token, required_scopes: list = None):
+def curation_apikey_info_func(token):
     return assert_authorized_token(token, CorporaAuthConfig().curation_audience)
 
 
-def curation_apikey_info_func_lenient(token: str, required_scopes: list) -> dict:
+def curation_apikey_info_func_lenient(token: str) -> dict:
     """
     Lenient version that allows endpoints to work even if authentication fails.
     Use this for endpoints that also require public access, so if users end up with a bad token,
