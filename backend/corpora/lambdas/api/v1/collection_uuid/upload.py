@@ -1,11 +1,8 @@
 import requests
 from flask import make_response, g
 
-from .....common.corpora_config import CorporaConfig
-from .....common.corpora_orm import CollectionVisibility, ProcessingStatus
-from .....common import upload_sfn
-from .....common.entities import Collection, Dataset
 from .....api_server.db import dbconnect
+from .....common.upload import upload
 from .....common.utils.dl_sources.url import MissingHeaderException, from_url
 from .....common.utils.exceptions import (
     ForbiddenHTTPException,
@@ -13,9 +10,12 @@ from .....common.utils.exceptions import (
     TooLargeHTTPException,
     MethodNotAllowedException,
     NotFoundHTTPException,
+    MaxFileSizeExceededException,
+    InvalidFileFormatException,
+    NonExistentCollectionException,
+    InvalidProcessingStateException,
+    NonExistentDatasetException,
 )
-from .....common.utils.math_utils import GB
-from ..authorization import owner_or_allowed
 
 
 def link(collection_uuid: str, body: dict, token_info: dict):
@@ -44,36 +44,18 @@ def upload_from_link(collection_uuid: str, token_info: dict, url: str, dataset_i
     except MissingHeaderException as ex:
         raise InvalidParametersHTTPException(ex.detail)
 
-    if resp.get("size") is not None and resp["size"] > CorporaConfig().upload_max_file_size_gb * GB:
+    file_size = resp.get("size")
+    file_extension = resp["name"].rsplit(".")[-1].lower()
+
+    try:
+        return upload(db_session, collection_uuid, token_info["sub"], token_info("scope"), url, file_size, file_extension, dataset_id)
+    except MaxFileSizeExceededException:
         raise TooLargeHTTPException()
-    if resp["name"].rsplit(".")[-1].lower() not in CorporaConfig().upload_file_formats:
+    except InvalidFileFormatException:
         raise InvalidParametersHTTPException("The file referred to by the link is not a support file format.")
-
-    # Get the Collection
-    collection = Collection.get_collection(
-        db_session,
-        collection_uuid,
-        visibility=CollectionVisibility.PRIVATE,  # Do not allow changes to public Collections
-        owner=owner_or_allowed(token_info),
-    )
-    if not collection:
-        raise ForbiddenHTTPException
-
-    if dataset_id:
-        # Update dataset
-        dataset = Dataset.get(db_session, dataset_id)
-        if collection_uuid == dataset.collection_id:
-            if dataset.processing_status.processing_status in [ProcessingStatus.SUCCESS, ProcessingStatus.FAILURE]:
-                dataset.reprocess()
-            else:
-                raise MethodNotAllowedException
-        else:
-            raise NotFoundHTTPException
-
-    else:
-        # Add new dataset
-        dataset = Dataset.create(db_session, collection=collection)
-    dataset.update(processing_status=dataset.new_processing_status())
-    # Start processing link
-    upload_sfn.start_upload_sfn(collection_uuid, dataset.id, valid_link.url)
-    return dataset.id
+    except NonExistentCollectionException:
+        raise ForbiddenHTTPException()
+    except InvalidProcessingStateException:
+        raise MethodNotAllowedException()
+    except NonExistentDatasetException:
+        raise NotFoundHTTPException()

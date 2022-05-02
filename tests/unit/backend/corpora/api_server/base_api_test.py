@@ -11,7 +11,7 @@ from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 
 class BaseAPITest(DataPortalTestCase):
     """
-    Provide access to the test Corpora API. All test for the Corpora API should inherit this class.
+    Provide access to the test APIs. All tests for APIs should inherit this class.
     """
 
     maxDiff = None  # Easier to compare json responses.

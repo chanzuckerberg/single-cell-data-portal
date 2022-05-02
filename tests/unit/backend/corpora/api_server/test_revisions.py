@@ -416,10 +416,10 @@ class TestPublishRevision(BaseRevisionTest):
 
         return response_json
 
-    def verify_datasets(self, actual_body: dict, expected_dataset_ids: typing.List[str]) -> None:
+    def verify_datasets(self, actual_body: dict, expected_dataset_ids: typing.Set[str]) -> None:
         """Verify collection datasets."""
-        actual_datasets = [d["id"] for d in actual_body["datasets"]]
-        self.assertListEqual(expected_dataset_ids, actual_datasets)
+        actual_datasets = {d["id"] for d in actual_body["datasets"]}
+        self.assertEquals(expected_dataset_ids, actual_datasets)
         self.assertTrue(all([d["published"] for d in actual_body["datasets"]]))
 
         for dataset_id in expected_dataset_ids:
@@ -434,8 +434,8 @@ class TestPublishRevision(BaseRevisionTest):
     def test__with_revision_with_new_dataset__OK(self):
         """Publish a revision with new datasets."""
         new_dataset_id = self.generate_dataset_with_s3_resources(self.session, collection_id=self.rev_collection.id).id
-        dataset_ids = [ds.id for ds in self.pub_collection.datasets]
-        dataset_ids.append(new_dataset_id)
+        dataset_ids = {ds.id for ds in self.pub_collection.datasets}
+        dataset_ids.add(new_dataset_id)
 
         # Publish revision
         response_json = self.publish_collection(self.rev_collection)
@@ -547,7 +547,7 @@ class TestPublishRevision(BaseRevisionTest):
         self.refresh_datasets()
 
         response_json = self.publish_collection(self.rev_collection)
-        self.verify_datasets(response_json, [ds.id for ds in self.pub_collection.datasets])
+        self.verify_datasets(response_json, {ds.id for ds in self.pub_collection.datasets})
 
         # Check published_at and revised_at
         # Collection: Only revised_at should be updated
@@ -579,7 +579,7 @@ class TestPublishRevision(BaseRevisionTest):
         response_json = self.publish_collection(self.rev_collection)
         self.assertPublishedCollectionOK(expected_body, pub_s3_objects)
 
-        self.verify_datasets(response_json, [ds.id for ds in self.pub_collection.datasets])
+        self.verify_datasets(response_json, {ds.id for ds in self.pub_collection.datasets})
 
         # Check published_at and revised_at
         # Collection: None should be updated
@@ -594,7 +594,7 @@ class TestPublishRevision(BaseRevisionTest):
     def test__with_revision_and_existing_datasets(self):
         """Publish a revision with the same, existing datasets."""
         response_json = self.publish_collection(self.rev_collection)
-        self.verify_datasets(response_json, [ds.id for ds in self.pub_collection.datasets])
+        self.verify_datasets(response_json, {ds.id for ds in self.pub_collection.datasets})
 
         # Check published_at and revised_at
         # Collection: None should be updated

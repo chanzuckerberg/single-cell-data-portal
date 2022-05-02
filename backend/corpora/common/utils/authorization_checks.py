@@ -1,9 +1,9 @@
 from typing import Union
 
 
-def has_scope(required_scope: str, scopes: Union[list, str]) -> bool:
-    _scopes = scopes.split(" ") if isinstance(scopes, str) else scopes
-    return True if required_scope in _scopes else False
+def has_scope(required_scope: str, scope: Union[list, str]) -> bool:
+    scopes = scope.split(" ") if isinstance(scope, str) else scope
+    return True if required_scope in scopes else False
 
 
 def is_user_owner_or_allowed(user: str, scope: Union[list, str], owner: str) -> bool:

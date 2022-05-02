@@ -1,22 +1,18 @@
 import { ElementHandle } from "playwright";
 import { ROUTES } from "src/common/constants/routes";
 import { goToPage, tryUntil } from "tests/utils/helpers";
-import { TEST_URL } from "../common/constants";
+import { TEST_ENV, TEST_URL } from "../common/constants";
 import { getTestID, getText } from "../utils/selectors";
 
-// DEBUG
-// DEBUG
-// DEBUG
-// Temporarily skip WMG tests until BE API is available on deployed envs
-// const TEST_ENVS = ["dev", "staging"];
+//(thuang): BE API doesn't work in local happy
+const TEST_ENVS = ["dev", "staging", "prod"];
 
-// const describeIfDevOrStaging = TEST_ENVS.includes(TEST_ENV)
-//   ? describe
-//   : describe.skip;
+const describeIfDevStagingProd = TEST_ENVS.includes(TEST_ENV)
+  ? describe
+  : describe.skip;
 
-// describeIfDevOrStaging("Where's My Gene", () => {
-describe.skip("Where's My Gene", () => {
-  it("renders the expected elements", async () => {
+describeIfDevStagingProd("Where's My Gene", () => {
+  it("renders the getting started UI", async () => {
     await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`);
 
     // Getting Started section
@@ -51,7 +47,6 @@ describe.skip("Where's My Gene", () => {
     const filtersPanel = await page.$("*css=div >> text=Filters");
 
     await expect(filtersPanel).toHaveSelector(getText("Dataset"));
-    await expect(filtersPanel).toHaveSelector(getText("Development Stage"));
     await expect(filtersPanel).toHaveSelector(getText("Disease"));
     await expect(filtersPanel).toHaveSelector(getText("Ethnicity"));
     await expect(filtersPanel).toHaveSelector(getText("Sex"));
@@ -68,9 +63,28 @@ describe.skip("Where's My Gene", () => {
     await expect(InfoPanel).toHaveSelector(getText("Source Data"));
   });
 
-  test("Filters", async () => {
+  test("Filters and Heatmap", async () => {
     await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`);
 
+    const geneSelectorButton = await page.$(getTestID("add-gene"));
+    const tissueSelectorButton = await page.$(getTestID("add-tissue"));
+
+    if (!geneSelectorButton || !tissueSelectorButton) {
+      throw Error("At least a selector button not found");
+    }
+
+    await clickUntilOptionsShowUp(tissueSelectorButton);
+    await selectFirstOption();
+
+    await clickUntilOptionsShowUp(geneSelectorButton);
+    await selectFirstOption();
+
+    await tryUntil(async () => {
+      const canvases = await page.$$("canvas");
+      await expect(canvases.length).not.toBe(0);
+    });
+
+    // Select a filter
     const filtersPanel = await page.$("*css=div >> text=Filters");
 
     if (!filtersPanel) {
@@ -96,25 +110,6 @@ describe.skip("Where's My Gene", () => {
     const selectedSexesAfter = await sexSelector.$$(".MuiChip-root");
 
     await expect(selectedSexesAfter.length).toBe(1);
-  });
-
-  test("Heatmap", async () => {
-    await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`);
-
-    const geneSelectorButton = await page.$(getTestID("add-gene"));
-
-    if (!geneSelectorButton) {
-      throw Error("Gene selector button not found");
-    }
-
-    await clickUntilOptionsShowUp(geneSelectorButton);
-
-    await selectFirstOption();
-
-    await tryUntil(async () => {
-      const canvases = await page.$$("canvas");
-      await expect(canvases.length).not.toBe(0);
-    });
   });
 });
 

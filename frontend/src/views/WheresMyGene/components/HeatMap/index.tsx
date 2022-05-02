@@ -1,6 +1,7 @@
 import { memo, useEffect, useMemo, useState } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
+import { EMPTY_ARRAY } from "src/common/constants/utils";
 import { State } from "../../common/store";
 import { CellType, GeneExpressionSummary, Tissue } from "../../common/types";
 import Loader from "../Loader";
@@ -8,9 +9,14 @@ import Chart from "./components/Chart";
 import XAxisChart from "./components/XAxisChart";
 import YAxisChart from "./components/YAxisChart";
 import { ChartWrapper, Container, YAxisWrapper } from "./style";
-import { getHeatmapHeight, X_AXIS_CHART_HEIGHT_PX } from "./utils";
+import {
+  getHeatmapHeight,
+  HEAT_MAP_BASE_HEIGHT_PX,
+  X_AXIS_CHART_HEIGHT_PX,
+} from "./utils";
 
 interface Props {
+  selectedTissues: string[];
   cellTypes: { [tissue: Tissue]: CellType[] };
   genes: State["selectedGenes"];
   tissuesWithDeletedCellTypes: string[];
@@ -31,6 +37,7 @@ enum FirstLoadState {
 }
 
 export default memo(function HeatMap({
+  selectedTissues,
   cellTypes,
   genes,
   tissuesWithDeletedCellTypes,
@@ -69,10 +76,19 @@ export default memo(function HeatMap({
       0
     );
 
-    const tissueCount = Object.keys(cellTypes).length;
+    // (thuang): We can't use Object.keys(cellTypes) here, because when genes
+    // are not selected, we don't have cell types data from the API to populate
+    // `cellTypes`
+    const tissueCount = selectedTissues.length;
 
-    return yAxisChartHeight * tissueCount + X_AXIS_CHART_HEIGHT_PX;
-  }, [cellTypes]);
+    const baseTissueHeightWhenNoGenesSelected =
+      HEAT_MAP_BASE_HEIGHT_PX * tissueCount;
+
+    return (
+      Math.max(yAxisChartHeight, baseTissueHeightWhenNoGenesSelected) +
+      X_AXIS_CHART_HEIGHT_PX
+    );
+  }, [cellTypes, selectedTissues]);
 
   return (
     <Container>
@@ -81,7 +97,9 @@ export default memo(function HeatMap({
       <XAxisChart geneNames={genes} />
 
       <YAxisWrapper height={yAxisWrapperHeight}>
-        {Object.entries(cellTypes).map(([tissue, tissueCellTypes]) => {
+        {selectedTissues.map((tissue) => {
+          const tissueCellTypes = cellTypes[tissue];
+
           return (
             <YAxisChart
               key={tissue}
@@ -94,13 +112,15 @@ export default memo(function HeatMap({
         })}
       </YAxisWrapper>
       <ChartWrapper>
-        {Object.entries(cellTypes).map(([tissue, cellTypeSummaries]) => {
+        {selectedTissues.map((tissue) => {
+          const tissueCellTypes = cellTypes[tissue] || EMPTY_ARRAY;
+
           return (
             <Chart
               isScaled={isScaled}
               key={tissue}
               tissue={tissue}
-              cellTypes={cellTypeSummaries}
+              cellTypes={tissueCellTypes}
               selectedGeneData={
                 selectedGeneExpressionSummariesByTissueName[tissue]
               }

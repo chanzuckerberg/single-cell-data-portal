@@ -1,4 +1,4 @@
-import { interpolatePlasma } from "d3-scale-chromatic";
+import { interpolateMagma } from "d3-scale-chromatic";
 import {
   DatasetComponentOption,
   DefaultLabelFormatterCallbackParams,
@@ -87,7 +87,7 @@ export function createChartOptions({
               ? scaledMeanExpression
               : meanExpression / MAX_MEAN_EXPRESSION_VALUE;
 
-            return interpolatePlasma(1 - expressionValue);
+            return interpolateMagma(1 - expressionValue);
           },
         },
         symbolSize: function (props: { percentage: number }) {
@@ -359,7 +359,7 @@ export function dataToChartFormat({
 }
 
 const HEAT_MAP_BASE_WIDTH_PX = 500;
-const HEAT_MAP_BASE_HEIGHT_PX = 300;
+export const HEAT_MAP_BASE_HEIGHT_PX = 300;
 const HEAT_MAP_BASE_CELL_PX = 20;
 
 /**

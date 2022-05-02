@@ -10,4 +10,8 @@ export const StyledComplexFilterInputDropdown = styled(
     margin-left: 0;
     margin-right: 10px;
   }
+
+  &.Mui-disabled {
+    border: 0;
+  }
 `;
