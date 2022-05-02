@@ -66,17 +66,18 @@ describeIfDevStagingProd("Where's My Gene", () => {
   test("Filters and Heatmap", async () => {
     await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`);
 
-    const geneSelectorButton = await page.$(getTestID("add-gene"));
-    const tissueSelectorButton = await page.$(getTestID("add-tissue"));
-
-    if (!geneSelectorButton || !tissueSelectorButton) {
-      throw Error("At least a selector button not found");
+    async function getTissueSelectorButton() {
+      return page.$(getTestID("add-tissue"));
     }
 
-    await clickUntilOptionsShowUp(tissueSelectorButton);
+    async function getGeneSelectorButton() {
+      return page.$(getTestID("add-gene"));
+    }
+
+    await clickUntilOptionsShowUp(getTissueSelectorButton);
     await selectFirstOption();
 
-    await clickUntilOptionsShowUp(geneSelectorButton);
+    await clickUntilOptionsShowUp(getGeneSelectorButton);
     await selectFirstOption();
 
     await tryUntil(async () => {
@@ -84,39 +85,55 @@ describeIfDevStagingProd("Where's My Gene", () => {
       await expect(canvases.length).not.toBe(0);
     });
 
-    // Select a filter
-    const filtersPanel = await page.$("*css=div >> text=Filters");
+    const sexSelector = await getSexSelector();
 
-    if (!filtersPanel) {
-      throw Error("Filters panel not found");
-    }
-
-    const sexSelector = await filtersPanel.$("*css=div >> text=Sex");
-
-    const sexSelectorButton = await filtersPanel.$("*css=button >> text=Sex");
-
-    if (!sexSelector || !sexSelectorButton) {
-      throw Error("Dataset selector or button not found");
-    }
+    if (!sexSelector) throw Error("No sexSelector found");
 
     const selectedSexesBefore = await sexSelector.$$(".MuiChip-root");
 
     await expect(selectedSexesBefore.length).toBe(0);
 
-    await clickUntilOptionsShowUp(sexSelectorButton);
+    await clickUntilOptionsShowUp(getSexSelectorButton);
 
     await selectFirstOption();
 
     const selectedSexesAfter = await sexSelector.$$(".MuiChip-root");
 
     await expect(selectedSexesAfter.length).toBe(1);
+
+    async function getFiltersPanel() {
+      return page.$("*css=div >> text=Filters");
+    }
+
+    async function getSexSelector() {
+      const filtersPanel = await getFiltersPanel();
+
+      if (!filtersPanel) {
+        throw Error("Filters panel not found");
+      }
+
+      return filtersPanel.$("*css=div >> text=Sex");
+    }
+
+    async function getSexSelectorButton() {
+      const filtersPanel = await getFiltersPanel();
+
+      if (!filtersPanel) {
+        throw Error("Filters panel not found");
+      }
+
+      await filtersPanel.$("*css=div >> text=Sex");
+      return filtersPanel.$("*css=button >> text=Sex");
+    }
   });
 });
 
 async function clickUntilOptionsShowUp(
-  target: ElementHandle<SVGElement | HTMLElement> | null
+  getTarget: () => Promise<ElementHandle<SVGElement | HTMLElement> | null>
 ) {
   await tryUntil(async () => {
+    const target = await getTarget();
+
     if (!target) throw Error("no target");
 
     await target.click();
