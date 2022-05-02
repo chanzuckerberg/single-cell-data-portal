@@ -54,7 +54,7 @@ def upload(
     scope: str = None,
     dataset_id: str = None,
     curator_tag: str = None,
-    is_api_call: bool = True
+    is_api_call: bool = True,
 ) -> str:
     max_file_size_gb = CorporaConfig().upload_max_file_size_gb * GB
     if file_size is not None and file_size > max_file_size_gb:
