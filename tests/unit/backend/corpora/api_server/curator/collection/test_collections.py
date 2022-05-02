@@ -20,7 +20,7 @@ class TestAuthToken(BaseAPITest):
             )
             collection = self.generate_collection(self.session)
             headers = {"Authorization": "Bearer fake_access_token"}
-            response = self.app.get(
+            response = self.app.post(
                 f"/curation/v1/collections/{collection.id}/datasets/s3-upload-credentials", headers=headers
             )
             self.assertEqual(200, response.status_code)
@@ -36,7 +36,7 @@ class TestAuthToken(BaseAPITest):
         assert_authorized_token.return_value = {"sub": "test_user_id"}
         collection = self.generate_collection(self.session, owner="not_test_user")
         headers = {"Authorization": "Bearer fake_access_token"}
-        response = self.app.get(
+        response = self.app.post(
             f"/curation/v1/collections/{collection.id}/datasets/s3-upload-credentials", headers=headers
         )
         self.assertEqual(403, response.status_code)
@@ -46,7 +46,7 @@ class TestAuthToken(BaseAPITest):
         assert_authorized_token.return_value = {"sub": "test_user_id"}
         collection = self.generate_collection(self.session, visibility=CollectionVisibility.PUBLIC.name)
         headers = {"Authorization": "Bearer fake_access_token"}
-        response = self.app.get(
+        response = self.app.post(
             f"/curation/v1/collections/{collection.id}/datasets/s3-upload-credentials", headers=headers
         )
         self.assertEqual(403, response.status_code)

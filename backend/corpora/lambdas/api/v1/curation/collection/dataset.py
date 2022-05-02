@@ -32,7 +32,7 @@ duration = 3600
 
 
 @dbconnect
-def get_s3_credentials(collection_uuid: str, token_info: dict):
+def post_s3_credentials(collection_uuid: str, token_info: dict):
     db_session = g.db_session
     config = CorporaConfig()
     # Raise an error if they are not allowed to modify the collection.
