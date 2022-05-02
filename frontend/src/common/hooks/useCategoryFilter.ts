@@ -12,7 +12,6 @@ import {
   CATEGORY_KEY,
   CATEGORY_LABEL,
   ETHNICITY_UNSPECIFIED_LABEL,
-  IS_PRIMARY_DATA_LABEL,
   OnFilterFn,
   OntologyCategoryConfig,
   OntologyCategorySpeciesView,
@@ -35,6 +34,7 @@ import {
   getOntologySpeciesKey,
   listOntologyTreeIds,
 } from "src/components/common/Filter/common/utils";
+import { track } from "../analytics";
 
 /**
  * Entry in react-table's filters arrays, models selected category values in a category.
@@ -45,7 +45,7 @@ interface CategoryFilter {
 }
 
 /**
- * Filterable metadata object key. For example, "assay", "cell_type" or "is_primary_data". Used for object key lookups
+ * Filterable metadata object key. For example, "assay" or "cell_type". Used for object key lookups
  * */
 export type CategoryKey = keyof Record<CATEGORY_KEY, string>;
 
@@ -117,6 +117,13 @@ interface RangeCategory {
 type SetFilterFn = (columnId: string, updater: any) => void;
 
 /**
+ * Generic tooltip displayed when select, ontology or range category is disabled due to no values matching current
+ * filter.
+ */
+const TOOLTIP_CATEGORY_DISABLED =
+  "There are no values that meet the current filter criteria";
+
+/**
  * Faceted filter functionality over dataset metadata. "or" between values, "and" across categories.
  * @param originalRows - Original result set before filtering.
  * @param categoryKeys - Set of category keys to include for this filter instance.
@@ -163,40 +170,36 @@ export function useCategoryFilter<T extends Categories>(
     setFilterState(nextFilterState);
   }, [categoryKeys, categorySet, filters, originalRows]);
 
-  // Update set of filters on select of category value.
+  // Update set of filters on select of category value. Track selected category value.
   const onFilter = useCallback<OnFilterFn>(
     (categoryKey: CategoryKey, selectedValue: CategoryValueKey | Range) => {
       if (!categorySet) {
         return; // Error state - category set should be set at this point.
       }
 
+      // Grab the configuration model for the selected category.
+      const config = CATEGORY_CONFIGS_BY_CATEGORY_KEY[categoryKey];
+
       // Handle range categories.
       if (!isCategoryValueKey(selectedValue)) {
-        setFilter(categoryKey, selectedValue);
+        onFilterRangeCategory(config, selectedValue, setFilter);
         return;
       }
 
       // Handle ontology categories.
-      const config = CATEGORY_CONFIGS_BY_CATEGORY_KEY[categoryKey];
       if (isCategoryConfigOntology(config)) {
-        const nextCategoryFilters = buildNextOntologyCategoryFilters(
-          categoryKey,
+        onFilterOntologyCategory(
+          config,
           selectedValue,
+          setFilter,
           filters,
-          categorySet[categoryKey] as Set<CategoryValueKey>,
-          config.ontology
+          categorySet
         );
-        setFilter(categoryKey, nextCategoryFilters);
         return;
       }
 
       // Handle single or multiselect categories.
-      const nextCategoryFilters = buildNextSelectCategoryFilters(
-        categoryKey,
-        selectedValue,
-        filters
-      );
-      setFilter(categoryKey, nextCategoryFilters);
+      onFilterSelectCategory(config, selectedValue, setFilter, filters);
     },
     [categorySet, filters, setFilter]
   );
@@ -429,13 +432,6 @@ function buildCategoryValueLabel(
   categoryKey: CategoryKey,
   categoryValueKey: CategoryValueKey
 ): string {
-  // Transform is_primary_data category values.
-  if (categoryKey === CATEGORY_KEY.IS_PRIMARY_DATA) {
-    return IS_PRIMARY_DATA_LABEL[
-      categoryValueKey as keyof typeof IS_PRIMARY_DATA_LABEL
-    ];
-  }
-
   if (categoryKey === CATEGORY_KEY.PUBLICATION_DATE_VALUES) {
     return PUBLICATION_DATE_LABELS[
       `LABEL_${categoryValueKey}` as keyof typeof PUBLICATION_DATE_LABELS
@@ -478,7 +474,8 @@ function buildCategoryViews(filterState?: FilterState): CategoryView[] {
           return buildOntologyCategoryView(
             categoryKey as CategoryKey,
             config.ontology,
-            categoryValueByValue
+            categoryValueByValue,
+            filterState
           );
         }
 
@@ -686,17 +683,31 @@ function buildQueries<T extends Categories>(
  * @param categoryKey - Key of category to find selected filters of.
  * @param ontology - View model of ontology for this category.
  * @param categoryValueByValue - Internal filter model of ontology category.
+ * @param filterState - Categories, category value and their counts with the current filter applied. Required when
+ * checking enabled state of view that is dependent on the state of another category.
  * @returns Ontology view model.
  */
 function buildOntologyCategoryView(
   categoryKey: CategoryKey,
   ontology: OntologyView,
-  categoryValueByValue: KeyedSelectCategoryValue
+  categoryValueByValue: KeyedSelectCategoryValue,
+  filterState: FilterState
 ): OntologyCategoryView {
   // Build tree view model.
   const speciesViews = Object.keys(ontology).reduce(
     (accum, speciesKey: string) => {
       const ontologyNodes = ontology[speciesKey as SPECIES_KEY];
+
+      // Handle special cases where species is to be excluded.
+      if (
+        categoryKey === CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS &&
+        !isDevelopmentStageSpeciesVisible(
+          filterState,
+          speciesKey as SPECIES_KEY
+        )
+      ) {
+        return accum;
+      }
 
       // Build view model for each node.
       const childrenViews = ontologyNodes.map((ontologyNode) =>
@@ -726,12 +737,20 @@ function buildOntologyCategoryView(
     [] as OntologyCategorySpeciesView[]
   );
 
-  // Return the ontology category view model.
-  return {
+  // Build up the ontology category view model.
+  const ontologyView: OntologyCategoryView = {
     key: categoryKey,
     label: CATEGORY_LABEL[categoryKey],
     species: speciesViews,
   };
+
+  // Check if ontology category is disabled.
+  if (isOntologyCategoryViewDisabled(ontologyView)) {
+    ontologyView.isDisabled = true;
+    ontologyView.tooltip = TOOLTIP_CATEGORY_DISABLED;
+  }
+
+  return ontologyView;
 }
 
 /**
@@ -798,15 +817,23 @@ function buildRangeCategoryView(
   categoryKey: CategoryKey,
   rangeCategory: RangeCategory
 ): RangeCategoryView {
-  // Return completed view model of this category.
-  return {
-    key: categoryKey as CategoryKey,
+  // Build view model of range category.
+  const rangeView: RangeCategoryView = {
+    key: categoryKey,
     label: CATEGORY_LABEL[categoryKey],
     max: rangeCategory.max,
     min: rangeCategory.min,
     selectedMax: rangeCategory.selectedMax,
     selectedMin: rangeCategory.selectedMin,
   };
+
+  // Determine if range view is disabled.
+  if (isRangeCategoryDisabled(rangeView)) {
+    rangeView.isDisabled = true;
+    rangeView.tooltip = TOOLTIP_CATEGORY_DISABLED;
+  }
+
+  return rangeView;
 }
 
 /**
@@ -826,29 +853,33 @@ function buildSelectCategoryView(
     .map(({ count, key, selected }: SelectCategoryValue) => ({
       count,
       key,
-      label: buildCategoryValueLabel(categoryKey as CategoryKey, key),
+      label: buildCategoryValueLabel(categoryKey, key),
       selected: selected,
     }))
     .sort(sortCategoryValueViews);
 
-  // Handle special cases where category may be disabled.
-  let disabled, tooltip;
+  // Build view model of select category.
+  const selectView: SelectCategoryView = {
+    key: categoryKey,
+    label: CATEGORY_LABEL[categoryKey],
+    values: categoryValueViews,
+  };
+
+  // Handle special cases where select category may be disabled.
   if (
     categoryKey === CATEGORY_KEY.ETHNICITY &&
     !isEthnicityViewEnabled(filterState)
   ) {
-    disabled = true;
-    tooltip = CATEGORY_CONFIGS_BY_CATEGORY_KEY[categoryKey].tooltip;
+    selectView.isDisabled = true;
+    selectView.tooltip = CATEGORY_CONFIGS_BY_CATEGORY_KEY[categoryKey].tooltip;
+  }
+  // Otherwise check generic case where category is disabled due to no values meeting current filter.
+  else if (isSelectCategoryDisabled(selectView)) {
+    selectView.isDisabled = true;
+    selectView.tooltip = TOOLTIP_CATEGORY_DISABLED;
   }
 
-  // Return completed view model of this category.
-  return {
-    disabled,
-    key: categoryKey as CategoryKey,
-    label: CATEGORY_LABEL[categoryKey],
-    tooltip,
-    values: categoryValueViews,
-  };
+  return selectView;
 }
 
 /**
@@ -1002,16 +1033,31 @@ function isEveryChildNodeSelected(
 }
 
 /**
- * The ethnicity filter is only view enabled if Homo sapiens is available as an option in the organism filter.
+ * The ethnicity filter is only view enabled if:
+ * 1. Homo sapiens is available as an option in the organism filter.
+ * 2. The organism filter has selected values that includes Homo sapiens.
  * @param filterState - Categories, category value and their counts with the current filter applied. Required to
  * determine if ethnicity category should be enabled.
  * @returns True if ethnicity is either na or unknown.
  */
 function isEthnicityViewEnabled(filterState: FilterState) {
+  // Check to see if there are Homo sapiens values in the result set.
   const organismCategoryValues = filterState[
     CATEGORY_KEY.ORGANISM
   ] as KeyedSelectCategoryValue;
-  return Boolean(organismCategoryValues.get(ORGANISM.HOMO_SAPIENS)?.count);
+  const count = organismCategoryValues.get(ORGANISM.HOMO_SAPIENS)?.count ?? 0;
+  if (count === 0) {
+    return false;
+  }
+
+  // Check to see if there are any selected values for organism and if so, Homo sapiens must be one of them.
+  const selectedOrganisms = [...organismCategoryValues.values()]
+    .filter((selectCategoryValue) => selectCategoryValue.selected)
+    .map((selectCategoryValue) => selectCategoryValue.key);
+  return (
+    selectedOrganisms.length === 0 ||
+    selectedOrganisms.includes(ORGANISM.HOMO_SAPIENS)
+  );
 }
 
 /**
@@ -1062,6 +1108,42 @@ function isCategoryConfigOntology(
 }
 
 /**
+ * Returns true if ontology category is disabled, that is, there are no species ontology trees or species
+ * ontology trees with values that have a count.
+ * @param categoryView - Ontology category view to check enabled/disabled state of.
+ * @returns True when there are no species or the count of children for each species is 0.
+ */
+function isOntologyCategoryViewDisabled(
+  categoryView: OntologyCategoryView
+): boolean {
+  const { species } = categoryView;
+  if (!species || species.length === 0) {
+    return true;
+  }
+  return !species.some((s) => s.children.some((child) => child.count > 0));
+}
+
+/**
+ * Returns true if range category is disabled, that is, range min and max are both 0 or both equal.
+ * @param categoryView - Range category view to check enabled/disabled state of.
+ * @returns true when range min and max are both 0 or both equal.
+ */
+function isRangeCategoryDisabled(categoryView: RangeCategoryView): boolean {
+  const { max, min } = categoryView;
+  return (min === 0 && max === 0) || min === max;
+}
+
+/**
+ * Returns true if select category is disabled, that is, the category is disabled or all values have a count of 0.
+ * @param categoryView - Select category view to check enabled/disabled state of.
+ * @returns true when the category is disabled or all category values have a count of 0.
+ */
+function isSelectCategoryDisabled(categoryView: SelectCategoryView): boolean {
+  const { isDisabled, values } = categoryView;
+  return isDisabled || values?.every((value) => value.count === 0);
+}
+
+/**
  * Determine if the given category value is a select (including ontology) category value (and not a range category value).
  * @param categoryValue - Range or select (including ontology) category value.
  * @returns True if category value is a select category value.
@@ -1070,6 +1152,48 @@ function isSelectCategoryValue(
   categoryValue: RangeCategory | KeyedSelectCategoryValue
 ): categoryValue is KeyedSelectCategoryValue {
   return categoryValue instanceof Map;
+}
+
+/**
+ * Development stage species is only visible if:
+ * 1. There are no selected organisms or,
+ * 2. The given species is selected.
+ * @param filterState - Categories, category value and their counts with the current filter applied. Required to
+ * determine if development stage species should be visible.
+ * @param speciesKey - The species to check if a corresponding organism has been selected for.
+ * @returns True if given species is to be displayed.
+ */
+function isDevelopmentStageSpeciesVisible(
+  filterState: FilterState,
+  speciesKey: SPECIES_KEY
+) {
+  // Find the current selected values for organism.
+  const organismCategoryValues = filterState[
+    CATEGORY_KEY.ORGANISM
+  ] as KeyedSelectCategoryValue;
+  const selectedOrganisms = [...organismCategoryValues.values()]
+    .filter((selectCategoryValue) => selectCategoryValue.selected)
+    .map((selectCategoryValue) => selectCategoryValue.key);
+
+  // If no organisms are selected, all species can be displayed.
+  if (selectedOrganisms.length === 0) {
+    return true;
+  }
+
+  // Otherwise this species is only visible if it's selected.
+  if (speciesKey === SPECIES_KEY.HsapDv) {
+    return selectedOrganisms.includes(ORGANISM.HOMO_SAPIENS);
+  }
+  if (speciesKey === SPECIES_KEY.MmusDv) {
+    return selectedOrganisms.includes(ORGANISM.MUS_MUSCULUS);
+  }
+  // Check the "other" case where any species other than human and mouse must be selected.
+  return (
+    selectedOrganisms.filter(
+      (organism) =>
+        organism !== ORGANISM.HOMO_SAPIENS && organism !== ORGANISM.MUS_MUSCULUS
+    ).length > 0
+  );
 }
 
 /**
@@ -1135,6 +1259,92 @@ function removeOntologyDescendents(
       removeOntologyDescendents(ontologyNode.children, selectedCategoryValues);
     }
   });
+}
+
+/**
+ * Handle select of ontology value: build and set next set of filters for this category. Track selected ontology value.
+ * @param config - Configuration model of selected category.
+ * @param selectedValue - Selected category value key (e.g. [1, 100]).
+ * @param setFilter - Function to update set of selected values for a category.
+ * @param filters - Current set of selected category values (values) or ranges keyed by category (id).
+ * @param categorySet - Original, unfiltered sets of category values keyed by their category.
+ */
+function onFilterOntologyCategory<T extends Categories>(
+  config: OntologyCategoryConfig,
+  selectedValue: CategoryValueKey,
+  setFilter: SetFilterFn,
+  filters: Filters<T>,
+  categorySet: CategorySet
+) {
+  const { categoryKey, ontology } = config;
+
+  // Track selected category and value.
+  trackOntologyCategoryValueSelected(config, selectedValue, filters);
+
+  // Build and set next set of filters for this category.
+  const nextCategoryFilters = buildNextOntologyCategoryFilters(
+    categoryKey,
+    selectedValue,
+    filters,
+    categorySet[categoryKey] as Set<CategoryValueKey>,
+    ontology
+  );
+  setFilter(categoryKey, nextCategoryFilters);
+}
+
+/**
+ * Handle select of range min/max value: set next set of filters for this category. Track updated range.
+ * @param config - Configuration model of selected category.
+ * @param selectedValue - Selected category value key (e.g. [1, 100]).
+ * @param setFilter - Function to update set of selected values for a category.
+ */
+function onFilterRangeCategory(
+  config: CategoryConfig,
+  selectedValue: Range,
+  setFilter: SetFilterFn
+) {
+  const { analyticsEvent, categoryKey } = config;
+
+  // Track select of new range mim/max, ignoring any clear of selected range. Only track if event is specified on
+  // configuration model
+  if (analyticsEvent && selectedValue.length > 0) {
+    const [min, max] = selectedValue;
+    const payload = {
+      max,
+      min,
+    };
+    track(analyticsEvent, { payload });
+  }
+
+  // Update filters for this range category.
+  setFilter(categoryKey, selectedValue);
+}
+
+/**
+ * Handle select of select value: build and set next set of filters for this category. Track selected select value.
+ * @param config - Configuration model of selected category.
+ * @param selectedValue - Selected category value key (e.g. [1, 100]).
+ * @param setFilter - Function to update set of selected values for a category.
+ * @param filters - Current set of selected category values (values) or ranges keyed by category (id).
+ */
+function onFilterSelectCategory<T extends Categories>(
+  config: CategoryConfig,
+  selectedValue: CategoryValueKey,
+  setFilter: SetFilterFn,
+  filters: Filters<T>
+) {
+  const { categoryKey } = config;
+
+  // Track selected category and value.
+  trackSelectCategoryValueSelected(config, selectedValue, filters);
+
+  // Build and set next set of filters for this category.
+  const nextCategoryFilters = buildNextSelectCategoryFilters(
+    categoryKey,
+    selectedValue,
+    filters
+  );
+  setFilter(categoryKey, nextCategoryFilters);
 }
 
 /**
@@ -1298,4 +1508,78 @@ function toggleCategoryValueSelected(
     selectedCategoryValueKeySet.add(selectedCategoryValueKey);
   }
   return [...selectedCategoryValueKeySet.values()];
+}
+
+/**
+ * Track select of the given ontology category and category value.
+ * @param config - Configuration model of selected category.
+ * @param categoryValueKey - Selected category value key (e.g. "HsapDv:0000003").
+ * @param filters - Current set of selected category values (values) or ranges keyed by category (id).
+ */
+function trackOntologyCategoryValueSelected<T extends Categories>(
+  config: OntologyCategoryConfig,
+  categoryValueKey: CategoryValueKey,
+  filters: Filters<T>
+) {
+  const { analyticsEvent, categoryKey, ontology } = config;
+
+  // No tracking if event isn't specified on category config.
+  if (!analyticsEvent) {
+    return;
+  }
+
+  // Only track the select (and not deselect) of category value.
+  const categoryFilters = new Set(
+    getCategoryFilter(categoryKey, filters)?.value as CategoryValueKey[]
+  );
+  if (!categoryFilters.has(categoryValueKey)) {
+    // Grab the analytics event for this category.
+
+    // Find the node for the selected value.
+    const ontologySpeciesKey = getOntologySpeciesKey(categoryValueKey);
+    const ontologyRootNodes = ontology[ontologySpeciesKey];
+    const selectedOntologyNode = findOntologyNodeById(
+      ontologyRootNodes,
+      categoryValueKey
+    );
+    if (!selectedOntologyNode) {
+      return; // Error state - ontology node with given ID does not exist.
+    }
+
+    // Build up payload for tracking event and send.
+    const payload = {
+      label: selectedOntologyNode.label,
+      ontologyTermId: selectedOntologyNode.ontology_term_id,
+    };
+    track(analyticsEvent, { payload });
+  }
+}
+
+/**
+ * Track select of the given select category and category value.
+ * @param config - Configuration model of selected category.
+ * @param categoryValueKey - Selected category value key (e.g. "10 3' v2").
+ * @param filters - Current set of selected category values (values) or ranges keyed by category (id).
+ */
+function trackSelectCategoryValueSelected<T extends Categories>(
+  config: CategoryConfig,
+  categoryValueKey: CategoryValueKey,
+  filters: Filters<T>
+) {
+  const { analyticsEvent, categoryKey } = config;
+
+  // No tracking if event isn't specified on category config.
+  if (!analyticsEvent) {
+    return;
+  }
+
+  // Only track the select (and not deselect) of category value.
+  const categoryFilters = new Set(
+    getCategoryFilter(categoryKey, filters)?.value as CategoryValueKey[]
+  );
+  if (!categoryFilters.has(categoryValueKey)) {
+    // Build up payload for tracking event and send.
+    const payload = categoryValueKey;
+    track(analyticsEvent, { payload });
+  }
 }

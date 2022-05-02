@@ -108,7 +108,7 @@ jobs:
         shell: bash
         run: |
           pip install -r .happy/requirements.txt
-          scripts/happy --profile="" push --extra-tag sha-${GITHUB_SHA:0:8} --extra-tag build-${GITHUB_RUN_NUMBER} upload_failures upload_success processing
+          scripts/happy --profile="" push --extra-tag sha-${GITHUB_SHA:0:8} --extra-tag build-${GITHUB_RUN_NUMBER} upload_failures upload_success dataset_submissions processing wmg_processing
       - uses: 8398a7/action-slack@v3
         with:
           status: ${{ job.status }}

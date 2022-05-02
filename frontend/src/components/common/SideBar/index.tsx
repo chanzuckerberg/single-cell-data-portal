@@ -12,10 +12,16 @@ import {
 const COLLAPSED_WIDTH_PX = 36;
 const EXPANDED_WIDTH_PX = 240;
 
+/**
+ * Function prop called on toggle of side bar expanded state, if specified.
+ */
+export type SideBarToggleFn = (expanded: boolean) => void;
+
 export interface Props {
   children: ReactNode;
   label: string;
   isOpen?: boolean;
+  onToggle?: SideBarToggleFn;
   width?: number;
   position?: typeof Position[keyof typeof Position];
   SideBarWrapperComponent?: typeof SideBarWrapper;
@@ -26,6 +32,7 @@ export default function SideBar({
   children: content,
   label,
   isOpen = false,
+  onToggle,
   width = EXPANDED_WIDTH_PX,
   position = Position.LEFT,
   SideBarWrapperComponent = SideBarWrapper,
@@ -40,13 +47,24 @@ export default function SideBar({
     ? IconNames.CHEVRON_LEFT
     : IconNames.CHEVRON_RIGHT;
 
+  /**
+   * Handle click on open/close icon; update state.
+   * @param nextExpanded - Toggled expanded state of side bar.
+   */
+  const handleExpandedClick = (nextExpanded: boolean) => {
+    setIsExpanded(nextExpanded);
+    if (onToggle) {
+      onToggle(nextExpanded);
+    }
+  };
+
   return (
     <SideBarWrapperComponent sideBarWidth={sideBarWidth} position={position}>
       <SideBarPositionerComponent isExpanded={isExpanded}>
         <SideBarToggleButtonWrapper>
           <Button
             minimal
-            onClick={() => setIsExpanded(!isExpanded)}
+            onClick={() => handleExpandedClick(!isExpanded)}
             rightIcon={rightIcon}
             text={label}
           />

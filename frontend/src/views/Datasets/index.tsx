@@ -1,6 +1,6 @@
 import Head from "next/head";
-import React, { useMemo } from "react";
-import { Column, useFilters, useSortBy, useTable } from "react-table";
+import React, { useEffect, useMemo } from "react";
+import { Column, Filters, useFilters, useSortBy, useTable } from "react-table";
 import { PLURALIZED_METADATA_LABEL } from "src/common/constants/metadata";
 import { FEATURES } from "src/common/featureFlags/features";
 import {
@@ -9,7 +9,9 @@ import {
 } from "src/common/hooks/useCategoryFilter";
 import { useExplainNewTab } from "src/common/hooks/useExplainNewTab";
 import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
+import { useSessionStorage } from "src/common/hooks/useSessionStorage";
 import { useFetchDatasetRows } from "src/common/queries/filter";
+import { KEYS } from "src/common/sessionStorage/set";
 import Filter from "src/components/common/Filter";
 import {
   CATEGORY_KEY,
@@ -52,6 +54,11 @@ const DATASET_NAME = "name";
  * Explorer URL object key.
  */
 const EXPLORER_URL = "explorer_url";
+
+/**
+ * isOverMaxCellCount object key.
+ */
+const IS_OVER_MAX_CELL_COUNT = "isOverMaxCellCount";
 
 /**
  * Recency object key.
@@ -168,6 +175,10 @@ export default function Datasets(): JSX.Element {
       {
         accessor: EXPLORER_URL,
       },
+      // Hidden, required for accessing isOverMaxCellCount via row.values, for Explore functionality.
+      {
+        accessor: IS_OVER_MAX_CELL_COUNT,
+      },
       // Hidden, required for filter.
       {
         accessor: ontologyCellAccessorFn(CATEGORY_KEY.CELL_TYPE),
@@ -182,11 +193,6 @@ export default function Datasets(): JSX.Element {
       },
       {
         accessor: CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS,
-        filter: "includesSome",
-      },
-      // Hidden, required for filter.
-      {
-        accessor: CATEGORY_KEY.IS_PRIMARY_DATA,
         filter: "includesSome",
       },
       // Hidden, required for filter.
@@ -216,12 +222,19 @@ export default function Datasets(): JSX.Element {
     []
   );
 
+  // Handle initial filter state and save of filter state beyond component scope.
+  const [initialFilters, storeFilters] = useSessionStorage<Filters<DatasetRow>>(
+    KEYS.FILTER_DATASETS,
+    []
+  );
+
   // Table init
   const tableInstance = useTable<DatasetRow>(
     {
       columns: columnConfig,
       data: datasetRows,
       initialState: {
+        filters: initialFilters,
         hiddenColumns: [
           DATASET_ID,
           COLLECTION_ID,
@@ -230,7 +243,6 @@ export default function Datasets(): JSX.Element {
           CATEGORY_KEY.CELL_TYPE,
           CATEGORY_KEY.ETHNICITY,
           CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS,
-          CATEGORY_KEY.IS_PRIMARY_DATA,
           CATEGORY_KEY.MEAN_GENES_PER_CELL,
           CATEGORY_KEY.PUBLICATION_AUTHORS,
           CATEGORY_KEY.PUBLICATION_DATE_VALUES,
@@ -276,6 +288,17 @@ export default function Datasets(): JSX.Element {
     setFilter
   );
 
+  // Store latest filter state.
+  useEffect(() => {
+    storeFilters(filters);
+  }, [filters, storeFilters]);
+
+  // Handle side bar open/closed state beyond scope of component.
+  const [isSideBarOpen, storeIsSideBarOpen] = useSessionStorage<boolean>(
+    KEYS.SIDE_BAR_DATASETS,
+    true
+  );
+
   // Hide datasets behind feature flag - start
   const isFilterEnabled = useFeatureFlag(FEATURES.FILTER);
   if (!isFilterEnabled) {
@@ -290,7 +313,11 @@ export default function Datasets(): JSX.Element {
       </Head>
       {isError || isLoading ? null : (
         <>
-          <SideBar label="Filters" isOpen>
+          <SideBar
+            label="Filters"
+            isOpen={isSideBarOpen}
+            onToggle={storeIsSideBarOpen}
+          >
             <Filter {...filterInstance} />
           </SideBar>
           <View>

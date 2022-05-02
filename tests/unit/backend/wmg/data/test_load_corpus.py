@@ -1,14 +1,19 @@
 import os
+import pathlib
 import shutil
 import tempfile
 import unittest
 from unittest.mock import patch
-import pathlib
 
 import tiledb
+from scipy.sparse import coo_matrix, csr_matrix
 
 from backend.wmg.data.cube_pipeline import load, load_data_and_create_cube
-from backend.wmg.data.load_corpus import load_h5ad
+from backend.wmg.data.load_corpus import (
+    load_h5ad,
+    RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD,
+    filter_out_rankits_with_low_expression_counts,
+)
 from backend.wmg.data.schemas.corpus_schema import create_tdb
 from tests.unit.backend.wmg.fixtures.test_anndata_object import create_anndata_test_object
 
@@ -65,8 +70,8 @@ class TestCorpusLoad(unittest.TestCase):
     def test__load_loads_all_datasets_in_directory(self, mock_load_h5ad, mock_vacuum, mock_consolidate):
         load(self.path_to_datasets, self.corpus_path)
         self.assertEqual(mock_load_h5ad.call_count, 2)
-        self.assertEqual(mock_vacuum.call_count, 4)
-        self.assertEqual(mock_consolidate.call_count, 4)
+        self.assertEqual(mock_vacuum.call_count, 3)
+        self.assertEqual(mock_consolidate.call_count, 3)
 
     @patch("backend.wmg.data.load_corpus.update_global_var")
     @patch("backend.wmg.data.load_corpus.validate_dataset_properties")
@@ -141,3 +146,76 @@ class TestCorpusLoad(unittest.TestCase):
             expected_x_df = x.df[:]
 
         self.assertTrue(expected_x_df.equals(actual_x_df))
+
+    def test__filter_out_rankits_with_low_expression_counts__boundaries(self):
+        row = [0, 1, 2]
+        col = [0, 1, 2]
+        rankits = [0.5, 0.7, 0.9]  # 0.5 and 0.7 should be filtered
+        raw_counts = [
+            RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD - 1,  # should be filtered
+            RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD,  # should be filtered
+            RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD + 1,  # should not be filtered
+        ]
+        rankit_csr_matrix = csr_matrix((rankits, (row, col)))
+        raw_counts_coo_matrix = coo_matrix((raw_counts, (row, col)))
+
+        rankits_filtered = filter_out_rankits_with_low_expression_counts(rankit_csr_matrix, raw_counts_coo_matrix)
+
+        self.assertEqual(0.9, sum(rankits_filtered.data))
+
+    def test__filter_out_rankits_with_low_expression_counts__majority_filtered(self):
+        row = [0, 1]
+        col = [0, 1]
+        rankits = [0.7, 0.9]  # 0.5 and 0.7 should be filtered
+        raw_counts = [
+            RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD - 1,  # should be filtered
+            RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD + 1,  # should not be filtered
+        ]
+        rankit_csr_matrix = csr_matrix((rankits, (row, col)))
+        raw_counts_coo_matrix = coo_matrix((raw_counts, (row, col)))
+
+        rankits_filtered = filter_out_rankits_with_low_expression_counts(
+            rankit_csr_matrix, raw_counts_coo_matrix, expect_majority_filtered=True
+        )
+
+        self.assertEqual(0.9, sum(rankits_filtered.data))
+
+    def test__filter_out_rankits_with_low_expression_counts__minority_filtered(self):
+        row = [0, 1, 2, 3]
+        col = [0, 1, 2, 3]
+        rankits = [0.3, 0.5, 0.7, 0.9]  # 0.5 and 0.7 should be filtered
+        raw_counts = [
+            RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD - 1,  # should be filtered
+            RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD + 1,  # should not be filtered
+            RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD + 1,  # should not be filtered
+            RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD + 1,  # should not be filtered
+        ]
+        rankit_csr_matrix = csr_matrix((rankits, (row, col)))
+        raw_counts_coo_matrix = coo_matrix((raw_counts, (row, col)))
+
+        rankits_filtered = filter_out_rankits_with_low_expression_counts(
+            rankit_csr_matrix, raw_counts_coo_matrix, expect_majority_filtered=False
+        )
+
+        self.assertEqual(0.5 + 0.7 + 0.9, sum(rankits_filtered.data))
+
+    @patch("backend.wmg.data.load_corpus.transform_dataset_raw_counts_to_rankit")
+    def test__filter_out_cells_with_incorrect_assays(self, mock_rankit):
+        # Create dataset with mixture of included and not included assays
+        CELL_COUNT = 5
+        test_anndata_object = create_anndata_test_object(num_genes=3, num_cells=CELL_COUNT)
+        test_anndata_object.obs["assay_ontology_term_id"].cat.add_categories(["NOT_INCLUDED"], inplace=True)
+        test_anndata_object.obs["assay_ontology_term_id"][0] = "NOT_INCLUDED"
+
+        os.mkdir(f"{self.tmp_dir}/filter_assays_test_dataset")
+        anndata_filename = pathlib.Path(self.tmp_dir, "filter_assays_test_dataset/local.h5ad")
+        anndata_filename.touch()
+        test_anndata_object.write(anndata_filename, compression="gzip")
+
+        load_h5ad(anndata_filename, self.corpus_path, validate=False, min_genes=0)
+        obs = tiledb.open(f"{self.corpus_path}/obs", "r")
+        corpus_cell_count = obs.df[:].shape[0]
+
+        # check the cell count is one less than the starting count
+        # because we replaced the assay type for one cell in the original anndata object
+        self.assertEqual(corpus_cell_count, CELL_COUNT - 1)
