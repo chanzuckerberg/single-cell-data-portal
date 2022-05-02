@@ -50,13 +50,13 @@ def upload_from_link(collection_uuid: str, token_info: dict, url: str, dataset_i
     try:
         return upload(
             db_session,
-            collection_uuid,
-            token_info["sub"],
-            token_info["scope"],
-            url,
-            file_size,
-            file_extension,
-            dataset_id,
+            collection_uuid=collection_uuid,
+            url=url,
+            file_size=file_size,
+            file_extension=file_extension,
+            user=token_info["sub"],
+            scope=token_info["scope"],
+            dataset_id=dataset_id,
         )
     except MaxFileSizeExceededException:
         raise TooLargeHTTPException()

@@ -47,13 +47,14 @@ def start_upload_sfn(collection_uuid, dataset_uuid, url):
 def upload(
     db_session: Session,
     collection_uuid: str,
-    user: str,
-    scope: str,
     url: str,
     file_size: int,
     file_extension: str,
+    user: str,
+    scope: str = None,
     dataset_id: str = None,
     curator_tag: str = None,
+    is_api_call: bool = True
 ) -> str:
     max_file_size_gb = CorporaConfig().upload_max_file_size_gb * GB
     if file_size is not None and file_size > max_file_size_gb:
@@ -67,7 +68,7 @@ def upload(
         db_session,
         collection_uuid,
         visibility=CollectionVisibility.PRIVATE,  # Do not allow changes to public Collections
-        owner=owner_or_allowed(user, scope),
+        owner=owner_or_allowed(user, scope) if is_api_call else user,
     )
     if not collection:
         raise NonExistentCollectionException(f"Collection {collection_uuid} does not exist")
