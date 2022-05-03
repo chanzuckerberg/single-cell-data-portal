@@ -58,7 +58,6 @@ def dataset_submissions_handler(s3_event: dict, context) -> None:
                 file_extension=extension,
                 dataset_id=dataset_uuid,
                 curator_tag=incoming_curator_tag,
-                is_api_call=False,
             )
 
 
