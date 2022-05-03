@@ -5,7 +5,7 @@ export AWS_ACCESS_KEY_ID=nonce
 export AWS_SECRET_ACCESS_KEY=nonce
 
 export FRONTEND_URL=http://frontend.corporanet.local:3000
-export BACKEND_URL=http://backend.corporanet.local:5000
+export BACKEND_URL=http://backend.corporanet.local:5050
 
 # NOTE: This script is intended to run INSIDE the dockerized dev environment!
 # If you need to run it directly on your laptop for some reason, change
@@ -67,7 +67,9 @@ ${local_aws} secretsmanager update-secret --secret-id corpora/backend/test/auth0
     "days_to_live": 60,
     "mgmt_client_id": "test_mgmt_client_id",
     "mgmt_client_secret": "test_mgmt_client_secret",
-    "api_key_connection_name": "api-key-database"
+    "api_key_connection_name": "api-key-database",
+    "auth0_domain" :"localhost",
+    "curation_audience": "localhost/curation"
 }' || true
 
 
@@ -80,7 +82,7 @@ ${local_aws} secretsmanager update-secret --secret-id corpora/cicd/test/auth0-se
 }' || true
 
 ${local_aws} secretsmanager update-secret --secret-id corpora/backend/test/database_local --secret-string '{"database_uri": "postgresql://corpora:test_pw@database.corporanet.local:5432"}' || true
-${local_aws} secretsmanager update-secret --secret-id corpora/backend/test/config --secret-string '{"upload_sfn_arn": "arn:aws:states:us-west-2:000000000000:stateMachine:uploader-dev-sfn"}' || true
+${local_aws} secretsmanager update-secret --secret-id corpora/backend/test/config --secret-string '{"upload_sfn_arn": "arn:aws:states:us-west-2:000000000000:stateMachine:uploader-dev-sfn", "curator_role_arn":"test_curation_role"}' || true
 
 # Make a 1mb data file
 echo "Writing test file to s3"

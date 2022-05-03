@@ -6,17 +6,17 @@ from .....common.entities import Collection
 from .....common.entities.geneset import Geneset
 from .....api_server.db import dbconnect
 from .....common.utils.exceptions import ForbiddenHTTPException, InvalidParametersHTTPException
-from backend.corpora.lambdas.api.v1.collection import _owner_or_allowed
+from ..authorization import owner_or_allowed
 
 
 @dbconnect
-def post(collection_uuid: str, body: dict, user: str):
+def post(collection_uuid: str, body: dict, token_info: dict):
     db_session = g.db_session
     collection = Collection.get_collection(
         db_session,
         collection_uuid,
         CollectionVisibility.PRIVATE.name,
-        owner=_owner_or_allowed(user),
+        owner=owner_or_allowed(token_info),
     )
     if not collection:
         raise ForbiddenHTTPException

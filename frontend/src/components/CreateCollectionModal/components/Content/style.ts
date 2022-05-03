@@ -1,24 +1,10 @@
 import { Classes, Divider, H4 } from "@blueprintjs/core";
-import { PT_GRID_SIZE_PX, PT_TEXT_COLOR } from "src/components/common/theme";
-import styled, { css } from "styled-components";
-import Input from "../../../common/Form/Input";
+import { PT_TEXT_COLOR } from "src/components/common/theme";
+import styled from "styled-components";
 
-interface Props {
-  isFilterEnabled: boolean;
-}
-
-export const Form = styled.form<Props>`
-  ${(props) => {
-    return props.isFilterEnabled
-      ? css`
-          margin: 0;
-          width: 760px;
-        `
-      : css`
-          padding-top: ${PT_GRID_SIZE_PX}px;
-          width: 580px;
-        `;
-  }};
+export const Form = styled.form`
+  margin: 0;
+  width: 760px;
 `;
 
 export const CollectionDetail = styled.div`
@@ -51,24 +37,6 @@ export const Title = styled(H4)`
 export const FormDivider = styled(Divider)`
   margin-left: 0;
   margin-right: 0;
-`;
-
-/**
- * @deprecated once filter feature flag is removed (#1718).
- */
-export const StyledInput = styled(Input)`
-  /* Blank for ContactWrapper to target */
-`;
-
-/**
- * @deprecated once filter feature flag is removed (#1718).
- */
-export const ContactWrapper = styled.div`
-  display: flex;
-
-  ${StyledInput}:not(:last-child) {
-    margin-right: ${2 * PT_GRID_SIZE_PX}px;
-  }
 `;
 
 export const CollectionFooter = styled.div`

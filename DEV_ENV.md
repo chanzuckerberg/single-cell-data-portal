@@ -6,7 +6,7 @@
 1. Install the Python package dependencies to run Happy Path by running `pip install -r ./.happy/requirements.txt`.
 1. [install chamber](https://github.com/segmentio/chamber). If brew is installed run `brew install chamber`. (This is needed for running functional tests.)
 1. From the root of this repository, run `make local-init` to build and run the dev environment. The first build takes awhile, but subsequent runs will use cached artifacts.
-1. Visit [http://backend.corporanet.local:5000](http://backend.corporanet.local:5000) to view the backend, and [http://frontend.corporanet.local:3000](http://frontend.corporanet.local:3000) for the frontend.
+1. Visit [http://backend.corporanet.local:5050](http://backend.corporanet.local:5050) to view the backend, and [http://frontend.corporanet.local:3000](http://frontend.corporanet.local:3000) for the frontend.
 1. `make local-dbconsole` starts a connection with the local postgresql db.
 1. **Open the source code and start editing!**
 
