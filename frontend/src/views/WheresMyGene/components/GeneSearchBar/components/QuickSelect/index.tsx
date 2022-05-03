@@ -106,6 +106,9 @@ export default function QuickSelect<
   multiple,
   setSelected,
   selected,
+  /**
+   * name is lowercase for case insensitive CSV paste
+   */
   itemsByName,
   onItemNotFound,
   label,
@@ -147,7 +150,8 @@ export default function QuickSelect<
   const classes = useStyles();
 
   // `HandleEnter()` handles the enter key press when we detect comma(",") in the search bar
-  // Since this functionality is currently only used in the gene search bar, we'll be assuming that `itemsByName` is a Map<string, Gene>
+  // Since this functionality is currently only used in the gene search bar, we'll be assuming that `itemsByName` is a Map<string, Gene>.
+  // NOTE that `itemsByName` the key is lowercase!
   const handleEnter =
     !multiple || !("length" in selected) || onItemNotFound === undefined
       ? noop
@@ -158,7 +162,7 @@ export default function QuickSelect<
             const parsedPaste = pull(uniq(input.split(/[ ,]+/)), "");
 
             parsedPaste.map((item) => {
-              const newItem = itemsByName.get(item);
+              const newItem = itemsByName.get(item.toLowerCase());
               if (!newItem) {
                 onItemNotFound(item);
               } else if (!newSelected.includes(newItem))

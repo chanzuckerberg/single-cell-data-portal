@@ -40,27 +40,33 @@ export default function GeneSearchBar(): JSX.Element {
     return temp.filter((tissue) => !tissue.name.includes("(cell culture)"));
   }, [rawTissues, selectedOrganismId]);
 
+  /**
+   * NOTE: key is gene name in lowercase
+   */
   const genesByName = useMemo(() => {
     return genes.reduce((acc, gene) => {
-      return acc.set(gene.name, gene);
+      return acc.set(gene.name.toLowerCase(), gene);
     }, new Map<Gene["name"], Gene>());
   }, [genes]);
 
+  /**
+   * NOTE: key is tissue name in lowercase
+   */
   const tissuesByName = useMemo(() => {
     return tissues.reduce((acc, tissue) => {
-      return acc.set(tissue.name, tissue);
+      return acc.set(tissue.name.toLowerCase(), tissue);
     }, new Map<Tissue["name"], Tissue>());
   }, [tissues]);
 
   const selectedTissueOptions: Tissue[] = useMemo(() => {
     return selectedTissues.map((tissue: string) => {
-      return tissuesByName.get(tissue) as Tissue;
+      return tissuesByName.get(tissue.toLowerCase()) as Tissue;
     });
   }, [selectedTissues, tissuesByName]);
 
   const selectedGeneOptions: Gene[] = useMemo(() => {
     return selectedGenes.map((gene: string) => {
-      return genesByName.get(gene) as Gene;
+      return genesByName.get(gene.toLowerCase()) as Gene;
     });
   }, [selectedGenes, genesByName]);
 
