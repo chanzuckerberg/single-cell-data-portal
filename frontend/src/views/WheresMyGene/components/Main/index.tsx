@@ -228,6 +228,7 @@ export default function WheresMyGene(): JSX.Element {
         isOpen
         SideBarWrapperComponent={SideBarWrapper}
         SideBarPositionerComponent={SideBarPositioner}
+        testId="filters-panel"
       >
         <Filters />
       </SideBar>
