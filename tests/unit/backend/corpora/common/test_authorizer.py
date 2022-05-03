@@ -32,7 +32,7 @@ class TestAuthorizer(unittest.TestCase):
                 api_base_url="https://czi-single-cell.auth0.com",
                 audience=cls.auth0_secret["audience"],
                 client_id=cls.auth0_secret["client_id"],
-                auth0_domain="localhost"
+                auth0_domain="localhost",
             )
         )
 
