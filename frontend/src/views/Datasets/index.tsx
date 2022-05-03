@@ -2,13 +2,11 @@ import Head from "next/head";
 import React, { useEffect, useMemo } from "react";
 import { Column, Filters, useFilters, useSortBy, useTable } from "react-table";
 import { PLURALIZED_METADATA_LABEL } from "src/common/constants/metadata";
-import { FEATURES } from "src/common/featureFlags/features";
 import {
   CategoryKey,
   useCategoryFilter,
 } from "src/common/hooks/useCategoryFilter";
 import { useExplainNewTab } from "src/common/hooks/useExplainNewTab";
-import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
 import { useSessionStorage } from "src/common/hooks/useSessionStorage";
 import { useFetchDatasetRows } from "src/common/queries/filter";
 import { KEYS } from "src/common/sessionStorage/set";
@@ -298,13 +296,6 @@ export default function Datasets(): JSX.Element {
     KEYS.SIDE_BAR_DATASETS,
     true
   );
-
-  // Hide datasets behind feature flag - start
-  const isFilterEnabled = useFeatureFlag(FEATURES.FILTER);
-  if (!isFilterEnabled) {
-    return <></>;
-  }
-  // Hide datasets behind feature flag - end
 
   return (
     <>
