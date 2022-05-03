@@ -1,19 +1,15 @@
 import { Button } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
-import { FC, Fragment } from "react";
+import { FC } from "react";
 import {
   COLLECTION_LINK_TYPE,
   COLLECTION_LINK_TYPE_OPTIONS,
-  COLLECTION_LINK_TYPE_OPTIONS_DEPRECATED,
 } from "src/common/entities";
-import { FEATURES } from "src/common/featureFlags/features";
-import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
 import {
-  FormLabelText as StyledLabelText,
+  FormLabelText,
   SelectFormLabel,
 } from "src/components/common/Form/common/style";
 import Input from "src/components/common/Form/Input";
-import { LabelText, StyledDiv } from "src/components/common/Form/Input/style";
 import { GRAY } from "src/components/common/theme";
 import { isLinkTypeDOI } from "src/components/CreateCollectionModal/components/Content/common/utils";
 import AddLink from "../AddLink";
@@ -21,12 +17,7 @@ import {
   CloseCollectionLinkIcon,
   CollectionLink,
   HelperText,
-  IconWrapper,
   InputPrefix,
-  LinkWrapper,
-  StyledButton,
-  StyledLinkTypeButton,
-  StyledURLInput,
 } from "./style";
 
 export type LinkValue = {
@@ -42,8 +33,7 @@ export type LinkValue = {
 
 const DOI_HELPER_TEXT =
   "A summary citation linked to this DOI will be automatically added to this collection.";
-const DOI_PLACEHOLDER = "https://doi.org/10.1126/science.aax6234";
-const FILTER_ENABLED_DOI_PLACEHOLDER = "10.12345/67890123456789";
+const DOI_PLACEHOLDER = "10.12345/67890123456789";
 const LINK_PLACEHOLDER = "https://cellxgene.cziscience.com";
 
 interface Props {
@@ -75,40 +65,24 @@ const LinkInput: FC<Props> = ({
   isTouched,
   isValid,
 }) => {
-  const isFilterEnabled = useFeatureFlag(FEATURES.FILTER);
-  const option = isFilterEnabled
-    ? COLLECTION_LINK_TYPE_OPTIONS[linkType]
-    : COLLECTION_LINK_TYPE_OPTIONS_DEPRECATED[linkType];
+  const option = COLLECTION_LINK_TYPE_OPTIONS[linkType];
   const { text, value } = option;
-  const LinkInputWrapper = isFilterEnabled ? CollectionLink : LinkWrapper;
-  const FormLabel = isFilterEnabled ? SelectFormLabel : StyledDiv;
-  const SelectButton = isFilterEnabled ? Button : StyledLinkTypeButton;
-  const FormLabelText = isFilterEnabled ? StyledLabelText : LabelText;
-  const CloseCollectionLink = isFilterEnabled ? Fragment : IconWrapper;
   const isDOI = isLinkTypeDOI(value);
-  const isFilterEnabledDOI = isFilterEnabled && isDOI;
-  const nameFieldVisible = isNameFieldVisible(isFilterEnabled, isDOI);
-  const urlPrefix = isFilterEnabledDOI ? (
+  const urlPrefix = isDOI ? (
     <InputPrefix warning={!!errorMessage}>doi:</InputPrefix>
   ) : undefined;
-  const urlPlaceholder = getUrlPlaceholder(isFilterEnabled, isDOI);
+  const urlPlaceholder = getUrlPlaceholder(isDOI);
 
-  // All links except DOIs are validated on the FE. DOIs are validated by the BE.
-  // TODO replace syncValidation below with this definition once filter flag is removed.
-  const filterEnabledValidation = isDOI ? [] : [isValidHttpUrl];
-
-  // Determine validation for link.
-  const syncValidation = isFilterEnabled
-    ? filterEnabledValidation
-    : [isValidHttpUrl, isDOILink(value)];
+  // Determine validation for link. All links except DOIs are validated on the FE. DOIs are validated by the BE.
+  const syncValidation = isDOI ? [] : [isValidHttpUrl];
 
   const LinkTypeButton = () => (
-    <SelectButton fill minimal outlined rightIcon="caret-down" text={text} />
+    <Button fill minimal outlined rightIcon="caret-down" text={text} />
   );
 
   return (
-    <LinkInputWrapper>
-      <FormLabel>
+    <CollectionLink>
+      <SelectFormLabel>
         <FormLabelText>Type</FormLabelText>
         <AddLink
           doiSelected={doiSelected}
@@ -116,22 +90,21 @@ const LinkInput: FC<Props> = ({
           handleClick={handleLinkTypeChange}
           Button={LinkTypeButton}
         />
-      </FormLabel>
-      {nameFieldVisible && (
+      </SelectFormLabel>
+      {!isDOI && (
         <Input
           name="Name"
           // (thuang): `noNameAttr` removes this input field from the FormData and
           // the payload
           noNameAttr
-          optionalField={isFilterEnabled}
-          text={isFilterEnabled ? "Name" : "Name (optional)"}
+          optionalField
+          text="Name"
           placeholder="Name"
           handleChange={handleNameChange}
           defaultValue={linkName}
-          percentage={25} // TODO remove prop once filter feature flag is removed (#1718).
         />
       )}
-      <StyledURLInput // TODO revert to Input component once filter feature flag is removed (#1718).
+      <Input
         // (thuang): `noNameAttr` removes this input field from the FormData and
         // the payload
         leftElement={urlPrefix}
@@ -143,48 +116,29 @@ const LinkInput: FC<Props> = ({
         placeholder={urlPlaceholder}
         defaultValue={url}
         handleChange={handleChange_}
-        percentage={40} // TODO remove prop once filter feature flag is removed (#1718).
         isRevalidationRequired={isRevalidationRequired}
       />
       {/* Helper text */}
-      {isFilterEnabledDOI && (
+      {isDOI && (
         <HelperText warning={!!errorMessage}>
           {errorMessage ? errorMessage : DOI_HELPER_TEXT}
         </HelperText>
       )}
-      <CloseCollectionLink>
-        {isFilterEnabled ? (
-          <CloseCollectionLinkIcon
-            color={GRAY.A}
-            icon={IconNames.CROSS}
-            onClick={() => handleDelete(id)}
-          />
-        ) : (
-          <StyledButton
-            minimal
-            color={GRAY.A}
-            icon={IconNames.CROSS}
-            onClick={() => handleDelete(id)}
-          />
-        )}
-      </CloseCollectionLink>
-    </LinkInputWrapper>
+      <CloseCollectionLinkIcon
+        color={GRAY.A}
+        icon={IconNames.CROSS}
+        onClick={() => handleDelete(id)}
+      />
+    </CollectionLink>
   );
 
   /**
    * Returns "url" input field placeholder text.
-   * @param isFilterEnabled
    * @param isDoiLink
    * @returns placeholder text for the "url" input field.
    */
-  function getUrlPlaceholder(
-    isFilterEnabled: boolean,
-    isDoiLink: boolean
-  ): string {
+  function getUrlPlaceholder(isDoiLink: boolean): string {
     if (isDoiLink) {
-      if (isFilterEnabled) {
-        return FILTER_ENABLED_DOI_PLACEHOLDER;
-      }
       return DOI_PLACEHOLDER;
     }
     return LINK_PLACEHOLDER;
@@ -209,7 +163,6 @@ const LinkInput: FC<Props> = ({
   function handleLinkTypeChange(newLinkType: COLLECTION_LINK_TYPE) {
     // Check if revalidation of link is required.
     const isRevalidationRequired = isRevalidationRequired_(
-      isFilterEnabled,
       url,
       linkType,
       newLinkType,
@@ -235,9 +188,8 @@ const LinkInput: FC<Props> = ({
     isValid: boolean;
     value: string;
   }) {
-    // Adding special handling for filter-enabled DOI: DOI is considered invalid if not specified (that is, prevent form
-    // submit) but don't mark the input as an error.
-    const isValid = isFilterEnabledDOI ? !!value : isValidFromInput;
+    // DOI is considered invalid if not specified (that is, prevent form submit) but don't mark the input as an error.
+    const isValid = isDOI ? !!value : isValidFromInput;
     handleChange({
       id,
       index,
@@ -248,37 +200,7 @@ const LinkInput: FC<Props> = ({
       url: value,
     });
   }
-
-  /**
-   * Returns true if either:
-   * - filter feature flag is not enabled, or
-   * - filter feature flag is enabled and link type is not DOI.
-   * @param isFilterEnabled
-   * @param isDoiLink
-   * @returns boolean
-   */
-  function isNameFieldVisible(isFilterEnabled: boolean, isDoiLink: boolean) {
-    if (!isFilterEnabled) {
-      return true;
-    }
-    return !isDoiLink;
-  }
 };
-
-export function isDOILink(
-  type: COLLECTION_LINK_TYPE
-): (value: string) => true | string {
-  return (value: string) => {
-    // Skip validation if type is not DOI
-    if (type !== COLLECTION_LINK_TYPE.DOI) return true;
-    const origin = "doi.org/";
-    const originIndex = value.indexOf("doi.org/");
-    const isValid =
-      originIndex !== -1 && value.slice(originIndex + origin.length).length > 0;
-
-    return isValid || "Please enter a valid DOI link";
-  };
-}
 
 /**
  * Determine if validation of field needs to be executed on change on link type.  This is only true if:
@@ -287,7 +209,6 @@ export function isDOILink(
  * and revalidation is therefore not required).
  * 3. There is currently a value specified for the link URL, or the field has been modified by the user and is
  * currently marked as invalid.
- * @param isFilterEnabled - True if filter flag is enabled.
  * @param url - URL specified by user.
  * @param linkType - Currently selected link type.
  * @param newLinkType - Link type to switch to.
@@ -296,18 +217,12 @@ export function isDOILink(
  * @returns True if re-validation is required.
  */
 function isRevalidationRequired_(
-  isFilterEnabled: boolean,
   url: string,
   linkType: COLLECTION_LINK_TYPE,
   newLinkType: COLLECTION_LINK_TYPE,
   isValid: boolean,
   isTouched = false
 ): boolean {
-  // Revalidation is only required for filter-related functionality.
-  if (!isFilterEnabled) {
-    return false;
-  }
-
   // If neither the current link type nor new link type is DOI, revalidation is not required.
   const isCurrentLinkTypeDOI = isLinkTypeDOI(linkType);
   if (!isCurrentLinkTypeDOI && !isLinkTypeDOI(newLinkType)) {

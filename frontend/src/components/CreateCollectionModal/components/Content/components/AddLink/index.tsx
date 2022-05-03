@@ -4,10 +4,7 @@ import { FC } from "react";
 import {
   COLLECTION_LINK_TYPE,
   COLLECTION_LINK_TYPE_OPTIONS,
-  COLLECTION_LINK_TYPE_OPTIONS_DEPRECATED,
 } from "src/common/entities";
-import { FEATURES } from "src/common/featureFlags/features";
-import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
 import { isLinkTypeDOI } from "src/components/CreateCollectionModal/components/Content/common/utils";
 
 interface Props {
@@ -31,22 +28,14 @@ const OPTION_ORDER = [
 ];
 
 /**
- * @deprecated Superseded by "options" below. Remove once filter feature flag is removed. (#1718)
- */
-const optionsDeprecated = OPTION_ORDER.map(
-  (type) => COLLECTION_LINK_TYPE_OPTIONS_DEPRECATED[type]
-);
-
-/**
  * Base set of link types to build options from.
  */
 const options = OPTION_ORDER.map((type) => COLLECTION_LINK_TYPE_OPTIONS[type]);
 
 const LinkTypes: FC<Props> = ({ doiSelected, handleClick }) => {
-  const isFilterEnabled = useFeatureFlag(FEATURES.FILTER);
-  const filteredOptions = isFilterEnabled
-    ? options.filter((option) => !(isLinkTypeDOI(option.value) && doiSelected))
-    : optionsDeprecated;
+  const filteredOptions = options.filter(
+    (option) => !(isLinkTypeDOI(option.value) && doiSelected)
+  );
   return (
     <Menu>
       {filteredOptions.map(({ text, value }) => (

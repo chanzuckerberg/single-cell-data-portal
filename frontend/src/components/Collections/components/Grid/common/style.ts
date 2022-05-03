@@ -14,10 +14,6 @@ const titleColWidthCSS = css`
   width: calc(3 / 8 * 100%);
 `;
 
-const datasetTitleColWidthCSS = css`
-  width: calc(2 / 8 * 100%);
-`;
-
 export const StyledCollectionsGrid = styled(HTMLTable)`
   grid-column: 1/9;
   margin-top: ${PT_GRID_SIZE_PX * 2}px;
@@ -35,12 +31,6 @@ const HeaderCell = styled.th`
 export const CollectionHeaderCell = styled(HeaderCell)`
   ${titleColWidthCSS}
   text-align: left !important;
-`;
-
-export const DatasetHeaderCell = styled(HeaderCell)`
-  ${datasetTitleColWidthCSS}
-  text-align: left !important;
-  padding-left: ${PT_GRID_SIZE_PX * 2}px !important;
 `;
 
 export const LeftAlignedHeaderCell = styled(HeaderCell)`

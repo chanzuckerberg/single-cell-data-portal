@@ -7,7 +7,6 @@ import { EVENTS } from "src/common/analytics/events";
 import { ROUTES } from "src/common/constants/routes";
 import { get } from "src/common/featureFlags";
 import { FEATURES } from "src/common/featureFlags/features";
-import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
 import { BOOLEAN } from "src/common/localStorage/set";
 import { useUserInfo } from "src/common/queries/auth";
 import { HomepageLink } from "../common/HomepageLink";
@@ -26,7 +25,6 @@ import {
 
 const Header: FC = () => {
   const isCurator = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
-  const isFilterEnabled = useFeatureFlag(FEATURES.FILTER);
   const { data: userInfo } = useUserInfo(isCurator);
   const { pathname } = useRouter();
   const isMyCollectionsShown = userInfo?.name && isCurator;
@@ -37,30 +35,26 @@ const Header: FC = () => {
         <Left>
           <HomepageLink />
           <Nav>
-            {isFilterEnabled && (
-              <>
-                <LinkWrapper>
-                  <Link href={ROUTES.HOMEPAGE} passHref>
-                    <AnchorButton
-                      active={isRouteActive(pathname, ROUTES.HOMEPAGE)}
-                      href="passHref"
-                      minimal
-                      text="Datasets"
-                    />
-                  </Link>
-                </LinkWrapper>
-                <LinkWrapper>
-                  <Link href={ROUTES.COLLECTIONS} passHref>
-                    <AnchorButton
-                      active={isRouteActive(pathname, ROUTES.COLLECTIONS)}
-                      href="passHref"
-                      minimal
-                      text="Collections"
-                    />
-                  </Link>
-                </LinkWrapper>
-              </>
-            )}
+            <LinkWrapper>
+              <Link href={ROUTES.HOMEPAGE} passHref>
+                <AnchorButton
+                  active={isRouteActive(pathname, ROUTES.HOMEPAGE)}
+                  href="passHref"
+                  minimal
+                  text="Datasets"
+                />
+              </Link>
+            </LinkWrapper>
+            <LinkWrapper>
+              <Link href={ROUTES.COLLECTIONS} passHref>
+                <AnchorButton
+                  active={isRouteActive(pathname, ROUTES.COLLECTIONS)}
+                  href="passHref"
+                  minimal
+                  text="Collections"
+                />
+              </Link>
+            </LinkWrapper>
             <LinkWrapper>
               <Link href={ROUTES.WHERE_IS_MY_GENE} passHref>
                 <AnchorButton

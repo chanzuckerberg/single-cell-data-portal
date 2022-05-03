@@ -1,7 +1,5 @@
-import { Button, Icon } from "@blueprintjs/core";
-import Input from "src/components/common/Form/Input";
-import { StyledDiv } from "src/components/common/Form/Input/style";
-import { GRAY, PT_GRID_SIZE_PX, RED } from "src/components/common/theme";
+import { Icon } from "@blueprintjs/core";
+import { GRAY, RED } from "src/components/common/theme";
 import styled from "styled-components";
 
 interface Props {
@@ -42,54 +40,4 @@ export const HelperText = styled.div<Props>`
   grid-column: 1 / -1;
   line-height: 15px;
   margin-top: 8px;
-`;
-
-/**
- * @deprecated - supersede once filter feature flag is removed (#1718).
- */
-export const IconWrapper = styled.div`
-  position: relative;
-  width: ${3.5 * PT_GRID_SIZE_PX}px;
-`;
-
-/**
- * @deprecated - supersede once filter feature flag is removed (#1718).
- */
-export const StyledButton = styled(Button)`
-  && {
-    position: absolute;
-    top: 20px;
-    right: -${PT_GRID_SIZE_PX}px;
-  }
-`;
-
-/**
- * @deprecated - supersede once filter feature flag is removed (#1718).
- */
-export const StyledLinkTypeButton = styled(Button)`
-  height: 34px;
-  margin-top: 4px;
-  justify-content: space-between;
-`;
-
-/**
- * @deprecated - supersede once filter feature flag is removed (#1718).
- */
-export const StyledURLInput = styled(Input)`
-  /* Blank for LinkWrapper to target */
-`;
-
-/**
- * @deprecated - supersede by CollectionLink once filter feature flag is removed (#1718).
- */
-export const LinkWrapper = styled.div`
-  display: flex;
-
-  & > * :not(:last-child) {
-    margin-right: ${2 * PT_GRID_SIZE_PX}px;
-  }
-
-  ${StyledDiv} {
-    width: 25%;
-  }
 `;

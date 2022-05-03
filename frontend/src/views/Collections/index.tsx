@@ -3,12 +3,10 @@ import React, { useEffect, useMemo } from "react";
 import { Column, Filters, useFilters, useSortBy, useTable } from "react-table";
 import { PLURALIZED_METADATA_LABEL } from "src/common/constants/metadata";
 import { ROUTES } from "src/common/constants/routes";
-import { FEATURES } from "src/common/featureFlags/features";
 import {
   CategoryKey,
   useCategoryFilter,
 } from "src/common/hooks/useCategoryFilter";
-import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
 import { useSessionStorage } from "src/common/hooks/useSessionStorage";
 import { useFetchCollectionRows } from "src/common/queries/filter";
 import { KEYS } from "src/common/sessionStorage/set";
@@ -240,13 +238,6 @@ export default function Collections(): JSX.Element {
     KEYS.SIDE_BAR_COLLECTIONS,
     true
   );
-
-  // Hide datasets behind feature flag - start
-  const isFilterEnabled = useFeatureFlag(FEATURES.FILTER);
-  if (!isFilterEnabled) {
-    return <></>;
-  }
-  // Hide datasets behind feature flag - end
 
   return (
     <>

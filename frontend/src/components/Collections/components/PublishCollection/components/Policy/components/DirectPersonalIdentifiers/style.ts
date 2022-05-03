@@ -14,7 +14,7 @@ export const FirstSentence = styled.div`
 `;
 
 export const StyledIcon = styled(Icon)`
-  margin: 6px;
+  margin-right: 8px;
 `;
 
 export const BulletWrapper = styled.div`
