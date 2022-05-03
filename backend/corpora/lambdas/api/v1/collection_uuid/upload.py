@@ -2,7 +2,7 @@ import requests
 from flask import make_response, g
 
 from .....api_server.db import dbconnect
-from .....common.upload_sfn import upload
+from .....common.upload import upload
 from .....common.utils.dl_sources.url import MissingHeaderException, from_url
 from .....common.utils.exceptions import (
     ForbiddenHTTPException,
@@ -18,18 +18,18 @@ from .....common.utils.exceptions import (
 )
 
 
-def link(collection_uuid: str, body: dict, user: str):
-    dataset_id = upload_from_link(collection_uuid, user, body["url"])
+def link(collection_uuid: str, body: dict, token_info: dict):
+    dataset_id = upload_from_link(collection_uuid, token_info, body["url"])
     return make_response({"dataset_uuid": dataset_id}, 202)
 
 
-def relink(collection_uuid: str, body: dict, user: str):
-    dataset_id = upload_from_link(collection_uuid, user, body["url"], body["id"])
+def relink(collection_uuid: str, body: dict, token_info: dict):
+    dataset_id = upload_from_link(collection_uuid, token_info, body["url"], body["id"])
     return make_response({"dataset_uuid": dataset_id}, 202)
 
 
 @dbconnect
-def upload_from_link(collection_uuid: str, user: str, url: str, dataset_id: str = None):
+def upload_from_link(collection_uuid: str, token_info: dict, url: str, dataset_id: str = None):
     db_session = g.db_session
     # Verify Dropbox URL
     valid_link = from_url(url)
@@ -48,7 +48,16 @@ def upload_from_link(collection_uuid: str, user: str, url: str, dataset_id: str 
     file_extension = resp["name"].rsplit(".")[-1].lower()
 
     try:
-        return upload(db_session, collection_uuid, user, url, file_size, file_extension, dataset_id)
+        return upload(
+            db_session,
+            collection_uuid=collection_uuid,
+            url=url,
+            file_size=file_size,
+            file_extension=file_extension,
+            user=token_info["sub"],
+            scope=token_info["scope"],
+            dataset_id=dataset_id,
+        )
     except MaxFileSizeExceededException:
         raise TooLargeHTTPException()
     except InvalidFileFormatException:

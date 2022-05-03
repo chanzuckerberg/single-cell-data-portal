@@ -40,9 +40,8 @@ def main():
     parser.add_argument("--sparse-threshold", type=float, default=25.0, help="sparse encoding threshold")
     args = parser.parse_args()
 
-    compute(    
-        **vars(args)
-    )
+    compute(**vars(args))
+
 
 if __name__ == "__main__":
     main()

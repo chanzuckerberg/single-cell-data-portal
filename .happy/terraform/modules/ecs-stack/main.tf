@@ -236,7 +236,7 @@ module dataset_submissions_lambda {
 }
 
 resource "aws_iam_role" "dataset_submissions_lambda_service_role" {
-  name               = "corpora-dataset-submissions-service-role-${var.deployment_stage}"
+  name               = "corpora-dataset-submissions-service-role-${local.custom_stack_name}"
   path               = "/service-role/"
   assume_role_policy = data.aws_iam_policy_document.assume_role.json
 }
@@ -316,7 +316,7 @@ data "aws_iam_policy_document" "lambda_step_function_execution_policy" {
 }
 
 resource "aws_iam_policy" "lambda_step_function_execution_policy" {
-  name = "lambda-step-function-execution-policy-${var.deployment_stage}"
+  name = "lambda-step-function-execution-policy-${local.custom_stack_name}"
   policy = data.aws_iam_policy_document.lambda_step_function_execution_policy.json
 }
 

@@ -68,16 +68,6 @@ export function checkIfFailed(datasetStatus: DatasetUploadStatus): FailReturn {
   return { isFailed: false };
 }
 
-export function checkIfMetadataLoading(
-  dataset: Dataset,
-  datasetStatus: DatasetUploadStatus
-): boolean {
-  const isFailed = checkIfFailed(datasetStatus).isFailed;
-  const isNamePopulated = Boolean(dataset.name);
-
-  return !isFailed && !isNamePopulated;
-}
-
 export const checkIfLoading = (datasetStatus: DatasetUploadStatus): boolean => {
   if (checkIfFailed(datasetStatus).isFailed) return false;
 
