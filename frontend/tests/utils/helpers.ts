@@ -3,7 +3,7 @@ import { TEST_ENV } from "tests/common/constants";
 import { TEST_PASSWORD, TEST_URL, TEST_USERNAME } from "../common/constants";
 import { getText } from "./selectors";
 
-export const TIMEOUT_MS = 6 * 1000;
+export const TIMEOUT_MS = 3 * 1000;
 
 export const describeIfDeployed =
   TEST_ENV.includes("local") || TEST_ENV === "prod" ? describe.skip : describe;
