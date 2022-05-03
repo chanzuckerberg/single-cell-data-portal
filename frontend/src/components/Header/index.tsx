@@ -2,6 +2,8 @@ import { AnchorButton } from "@blueprintjs/core";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { FC } from "react";
+import { track } from "src/common/analytics";
+import { EVENTS } from "src/common/analytics/events";
 import { ROUTES } from "src/common/constants/routes";
 import { get } from "src/common/featureFlags";
 import { FEATURES } from "src/common/featureFlags/features";
@@ -12,6 +14,7 @@ import { HomepageLink } from "../common/HomepageLink";
 import AuthButtons from "./components/AuthButtons";
 import LearnButton from "./components/LearnButton";
 import {
+  BetaChip,
   LearnButtonWrapper,
   Left,
   LinkWrapper,
@@ -58,10 +61,7 @@ const Header: FC = () => {
                 </LinkWrapper>
               </>
             )}
-            {/* TEMP */}
-            {/* TEMP */}
-            {/* TEMP re-enable once WMG is ready for staging deploy */}
-            {/* <LinkWrapper>
+            <LinkWrapper>
               <Link href={ROUTES.WHERE_IS_MY_GENE} passHref>
                 <AnchorButton
                   active={isRouteActive(pathname, ROUTES.WHERE_IS_MY_GENE)}
@@ -72,7 +72,7 @@ const Header: FC = () => {
                 />
               </Link>
               <BetaChip label="Beta" size="small" />
-            </LinkWrapper> */}
+            </LinkWrapper>
           </Nav>
         </Left>
         <Right>
@@ -97,12 +97,9 @@ const Header: FC = () => {
     </Wrapper>
   );
 
-  /* TEMP re-enable once WMG is ready for staging deploy */
-  /* TEMP re-enable once WMG is ready for staging deploy */
-  /* TEMP re-enable once WMG is ready for staging deploy */
-  // function handleWMGClick() {
-  //   track(EVENTS.WMG_CLICK_NAV);
-  // }
+  function handleWMGClick() {
+    track(EVENTS.WMG_CLICK_NAV);
+  }
 };
 
 /**

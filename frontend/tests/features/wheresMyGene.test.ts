@@ -1,22 +1,18 @@
 import { ElementHandle } from "playwright";
 import { ROUTES } from "src/common/constants/routes";
 import { goToPage, tryUntil } from "tests/utils/helpers";
-import { TEST_URL } from "../common/constants";
+import { TEST_ENV, TEST_URL } from "../common/constants";
 import { getTestID, getText } from "../utils/selectors";
 
-// DEBUG
-// DEBUG
-// DEBUG
-// Temporarily skip WMG tests until BE API is available on deployed envs
-// const TEST_ENVS = ["dev", "staging"];
+//(thuang): BE API doesn't work in local happy
+const TEST_ENVS = ["dev", "staging", "prod"];
 
-// const describeIfDevOrStaging = TEST_ENVS.includes(TEST_ENV)
-//   ? describe
-//   : describe.skip;
+const describeIfDevStagingProd = TEST_ENVS.includes(TEST_ENV)
+  ? describe
+  : describe.skip;
 
-// describeIfDevOrStaging("Where's My Gene", () => {
-describe.skip("Where's My Gene", () => {
-  it("renders the expected elements", async () => {
+describeIfDevStagingProd("Where's My Gene", () => {
+  it("renders the getting started UI", async () => {
     await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`);
 
     // Getting Started section
@@ -51,7 +47,6 @@ describe.skip("Where's My Gene", () => {
     const filtersPanel = await page.$("*css=div >> text=Filters");
 
     await expect(filtersPanel).toHaveSelector(getText("Dataset"));
-    await expect(filtersPanel).toHaveSelector(getText("Development Stage"));
     await expect(filtersPanel).toHaveSelector(getText("Disease"));
     await expect(filtersPanel).toHaveSelector(getText("Ethnicity"));
     await expect(filtersPanel).toHaveSelector(getText("Sex"));
@@ -68,60 +63,77 @@ describe.skip("Where's My Gene", () => {
     await expect(InfoPanel).toHaveSelector(getText("Source Data"));
   });
 
-  test("Filters", async () => {
+  test("Filters and Heatmap", async () => {
     await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`);
 
-    const filtersPanel = await page.$("*css=div >> text=Filters");
-
-    if (!filtersPanel) {
-      throw Error("Filters panel not found");
+    async function getTissueSelectorButton() {
+      return page.$(getTestID("add-tissue"));
     }
 
-    const sexSelector = await filtersPanel.$("*css=div >> text=Sex");
-
-    const sexSelectorButton = await filtersPanel.$("*css=button >> text=Sex");
-
-    if (!sexSelector || !sexSelectorButton) {
-      throw Error("Dataset selector or button not found");
+    async function getGeneSelectorButton() {
+      return page.$(getTestID("add-gene"));
     }
 
-    const selectedSexesBefore = await sexSelector.$$(".MuiChip-root");
-
-    await expect(selectedSexesBefore.length).toBe(0);
-
-    await clickUntilOptionsShowUp(sexSelectorButton);
-
+    await clickUntilOptionsShowUp(getTissueSelectorButton);
     await selectFirstOption();
 
-    const selectedSexesAfter = await sexSelector.$$(".MuiChip-root");
-
-    await expect(selectedSexesAfter.length).toBe(1);
-  });
-
-  test("Heatmap", async () => {
-    await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`);
-
-    const geneSelectorButton = await page.$(getTestID("add-gene"));
-
-    if (!geneSelectorButton) {
-      throw Error("Gene selector button not found");
-    }
-
-    await clickUntilOptionsShowUp(geneSelectorButton);
-
+    await clickUntilOptionsShowUp(getGeneSelectorButton);
     await selectFirstOption();
 
     await tryUntil(async () => {
       const canvases = await page.$$("canvas");
       await expect(canvases.length).not.toBe(0);
     });
+
+    const sexSelector = await getSexSelector();
+
+    if (!sexSelector) throw Error("No sexSelector found");
+
+    const selectedSexesBefore = await sexSelector.$$(".MuiChip-root");
+
+    await expect(selectedSexesBefore.length).toBe(0);
+
+    await clickUntilOptionsShowUp(getSexSelectorButton);
+
+    await selectFirstOption();
+
+    const selectedSexesAfter = await sexSelector.$$(".MuiChip-root");
+
+    await expect(selectedSexesAfter.length).toBe(1);
+
+    async function getFiltersPanel() {
+      return page.$(getTestID("filters-panel"));
+    }
+
+    async function getSexSelector() {
+      const filtersPanel = await getFiltersPanel();
+
+      if (!filtersPanel) {
+        throw Error("Filters panel not found");
+      }
+
+      return filtersPanel.$("*css=div >> text=Sex");
+    }
+
+    async function getSexSelectorButton() {
+      const filtersPanel = await getFiltersPanel();
+
+      if (!filtersPanel) {
+        throw Error("Filters panel not found");
+      }
+
+      await filtersPanel.$("*css=div >> text=Sex");
+      return filtersPanel.$("*css=button >> text=Sex");
+    }
   });
 });
 
 async function clickUntilOptionsShowUp(
-  target: ElementHandle<SVGElement | HTMLElement> | null
+  getTarget: () => Promise<ElementHandle<SVGElement | HTMLElement> | null>
 ) {
   await tryUntil(async () => {
+    const target = await getTarget();
+
     if (!target) throw Error("no target");
 
     await target.click();
