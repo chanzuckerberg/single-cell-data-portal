@@ -102,7 +102,7 @@ describeIfDevStagingProd("Where's My Gene", () => {
     await expect(selectedSexesAfter.length).toBe(1);
 
     async function getFiltersPanel() {
-      return page.$("*css=div >> text=Filters");
+      return page.$(getTestID("filters-panel"));
     }
 
     async function getSexSelector() {
