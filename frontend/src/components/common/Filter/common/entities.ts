@@ -483,21 +483,6 @@ export enum ETHNICITY_UNSPECIFIED_LABEL {
 export const ETHNICITY_DENY_LIST = ["na"];
 
 /**
- * Function returns filtered category values when category key contains filter category input value.
- */
-export type FilterCategoryValuesFn = (
-  values: SelectCategoryValueView[],
-  searchValue: string
-) => SelectCategoryValueView[];
-
-/**
- * Function returns filtered category values with a count greater than zero.
- */
-export type FilterCategoryValuesWithCountFn = (
-  values: SelectCategoryValueView[]
-) => SelectCategoryValueView[];
-
-/**
  * Model of category configs keyed by category key. Used instead of generic Map to prevent null checking when grabbing
  * keyed value.
  */
@@ -663,9 +648,10 @@ export interface SelectCategoryView {
   isDisabled?: boolean;
   key: CATEGORY_KEY;
   label: CATEGORY_LABEL;
-  pinnedValues?: SelectCategoryValueView[];
+  pinnedValues: SelectCategoryValueView[];
   tooltip?: string;
-  values: SelectCategoryValueView[];
+  unpinnedValues: SelectCategoryValueView[];
+  values: SelectCategoryValueView[]; // both pinned and unpinned values
 }
 
 /**

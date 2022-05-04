@@ -862,8 +862,8 @@ function buildSelectCategoryView(
     }))
     .sort(sortCategoryValueViews);
 
-  // Split values into pinned and non-pinned.
-  const [pinnedValues, values] = partitionSelectCategoryValueViews(
+  // Split values into pinned and unpinned.
+  const [pinnedValues, unpinnedValues] = partitionSelectCategoryValueViews(
     allCategoryValueViews,
     pinnedCategoryValues
   );
@@ -873,7 +873,8 @@ function buildSelectCategoryView(
     key: categoryKey,
     label: CATEGORY_LABEL[categoryKey],
     pinnedValues,
-    values,
+    unpinnedValues,
+    values: allCategoryValueViews,
   };
 
   // Handle special cases where select category may be disabled.
@@ -1151,7 +1152,7 @@ function isRangeCategoryDisabled(categoryView: RangeCategoryView): boolean {
  */
 function isSelectCategoryDisabled(categoryView: SelectCategoryView): boolean {
   const { isDisabled, values } = categoryView;
-  return isDisabled || values?.every((value) => value.count === 0);
+  return isDisabled || values.every((value) => value.count === 0);
 }
 
 /**
