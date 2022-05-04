@@ -20,7 +20,7 @@ ADD backend/corpora/api_server/requirements.txt /corpora-data-portal/requirement
 RUN grep -v requirements.txt requirements.txt > reqs.txt \
     && cat requirements-api.txt >> reqs.txt \
     && python3 -m pip install -r reqs.txt
-EXPOSE 5000
+EXPOSE 5050
 
 # Install utilities to /corpora-data-portal so we can run db migrations.
 ADD tests /corpora-data-portal/tests
@@ -35,4 +35,4 @@ ENV COMMIT_SHA=${HAPPY_COMMIT}
 ENV COMMIT_BRANCH=${HAPPY_BRANCH}
 
 # Note: Using just 1 worker for dev/test env. Multiple workers are used in deployment envs, as defined in Terraform code.
-CMD gunicorn --worker-class gevent --workers 1 --bind 0.0.0.0:5000 backend.corpora.api_server.app:app --max-requests 10000 --timeout 180 --keep-alive 5 --log-level info
+CMD gunicorn --worker-class gevent --workers 1 --bind 0.0.0.0:5050 backend.corpora.api_server.app:app --max-requests 10000 --timeout 180 --keep-alive 5 --log-level info
