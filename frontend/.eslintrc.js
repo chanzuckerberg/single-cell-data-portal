@@ -13,6 +13,7 @@ module.exports = {
     "plugin:prettier/recommended",
     "plugin:sonarjs/recommended",
     "plugin:jest-playwright/recommended",
+    "plugin:mdx/recommended",
     "next",
   ],
   overrides: [
@@ -65,6 +66,7 @@ module.exports = {
     ],
   },
   settings: {
+    "mdx/code-blocks": true,
     react: {
       version: "detect",
     },
