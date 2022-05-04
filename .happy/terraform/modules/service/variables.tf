@@ -11,6 +11,11 @@ variable "custom_stack_name" {
 variable "remote_dev_prefix" {
   type        = string
   description = "S3 storage path / db schema prefix"
+}
+
+variable "dataset_submissions_bucket" {
+  type        = string
+  description = "S3 bucket for dataset submissions"
   default     = ""
 }
 

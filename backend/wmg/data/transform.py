@@ -141,7 +141,7 @@ def generate_primary_filter_dimensions(snapshot_path: str, corpus_name: str, sna
         }
 
         result = dict(
-            snapshot_id=snapshot_id,
+            snapshot_id=str(snapshot_id),
             organism_terms=build_ontology_term_id_label_mapping(
                 list_primary_filter_dimension_term_ids(cube, "organism_ontology_term_id")
             ),
