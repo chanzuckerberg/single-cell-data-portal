@@ -252,7 +252,7 @@ services:
       - localstack
       - database
     ports:
-      - "5050:5050"
+      - "5000:5000"
     environment:
       - PYTHONUNBUFFERED=1
       - CORPORA_LOCAL_DEV=true

@@ -21,7 +21,7 @@ locals {
   deletion_cmd                 = ["make", "-C", "/corpora-data-portal/backend", "db/delete_remote_dev"]
   frontend_cmd                 = []
   # TODO: Assess whether this is safe for Portal API as well. Trying 1 worker in rdev portal backend containers, to minimize use of memory by TileDB (allocates multi-GB per process)
-  backend_cmd                  = ["gunicorn", "--worker-class", "gevent", "--workers", "1", "--bind", "0.0.0.0:5050", "backend.corpora.api_server.app:app", "--max-requests", "10000", "--timeout", "180", "--keep-alive", "5", "--log-level", "info"]
+  backend_cmd                  = ["gunicorn", "--worker-class", "gevent", "--workers", "1", "--bind", "0.0.0.0:5000", "backend.corpora.api_server.app:app", "--max-requests", "10000", "--timeout", "180", "--keep-alive", "5", "--log-level", "info"]
   data_load_path               = "s3://${local.secret["s3_buckets"]["env"]["name"]}/database/dev_data.sql"
 
   vpc_id                          = local.secret["vpc_id"]
@@ -82,52 +82,54 @@ module backend_dns {
 }
 
 module frontend_service {
-  source            = "../service"
-  custom_stack_name = local.custom_stack_name
-  app_name          = "frontend"
-  vpc               = local.vpc_id
-  image             = "${local.frontend_image_repo}:${local.image_tag}"
-  cluster           = local.cluster
-  desired_count     = var.frontend_instance_count
-  listener          = local.frontend_listener_arn
-  subnets           = local.subnets
-  security_groups   = local.security_groups
-  task_role_arn     = local.ecs_role_arn
-  service_port      = 9000
-  memory            = var.frontend_memory
-  deployment_stage  = local.deployment_stage
-  step_function_arn = module.upload_sfn.step_function_arn
-  host_match        = try(join(".", [module.frontend_dns[0].dns_prefix, local.external_dns]), "")
-  priority          = local.priority
-  api_url           = local.backend_url
-  frontend_url      = local.frontend_url
-  remote_dev_prefix = local.remote_dev_prefix
+  source                     = "../service"
+  custom_stack_name          = local.custom_stack_name
+  app_name                   = "frontend"
+  vpc                        = local.vpc_id
+  image                      = "${local.frontend_image_repo}:${local.image_tag}"
+  cluster                    = local.cluster
+  desired_count              = var.frontend_instance_count
+  listener                   = local.frontend_listener_arn
+  subnets                    = local.subnets
+  security_groups            = local.security_groups
+  task_role_arn              = local.ecs_role_arn
+  service_port               = 9000
+  memory                     = var.frontend_memory
+  deployment_stage           = local.deployment_stage
+  step_function_arn          = module.upload_sfn.step_function_arn
+  host_match                 = try(join(".", [module.frontend_dns[0].dns_prefix, local.external_dns]), "")
+  priority                   = local.priority
+  api_url                    = local.backend_url
+  frontend_url               = local.frontend_url
+  remote_dev_prefix          = local.remote_dev_prefix
+  dataset_submissions_bucket = local.dataset_submissions_bucket
 
   wait_for_steady_state = local.wait_for_steady_state
 }
 
 module backend_service {
-  source            = "../service"
-  custom_stack_name = local.custom_stack_name
-  app_name          = "backend"
-  vpc               = local.vpc_id
-  image             = "${local.backend_image_repo}:${local.image_tag}"
-  cluster           = local.cluster
-  desired_count     = var.backend_instance_count
-  listener          = local.backend_listener_arn
-  subnets           = local.subnets
-  security_groups   = local.security_groups
-  task_role_arn     = local.ecs_role_arn
-  service_port      = 5050
-  memory            = var.backend_memory
-  cmd               = local.backend_cmd
-  deployment_stage  = local.deployment_stage
-  step_function_arn = module.upload_sfn.step_function_arn
-  host_match        = try(join(".", [module.backend_dns[0].dns_prefix, local.external_dns]), "")
-  priority          = local.priority
-  api_url           = local.backend_url
-  frontend_url      = local.frontend_url
-  remote_dev_prefix = local.remote_dev_prefix
+  source                     = "../service"
+  custom_stack_name          = local.custom_stack_name
+  app_name                   = "backend"
+  vpc                        = local.vpc_id
+  image                      = "${local.backend_image_repo}:${local.image_tag}"
+  cluster                    = local.cluster
+  desired_count              = var.backend_instance_count
+  listener                   = local.backend_listener_arn
+  subnets                    = local.subnets
+  security_groups            = local.security_groups
+  task_role_arn              = local.ecs_role_arn
+  service_port               = 5000
+  memory                     = var.backend_memory
+  cmd                        = local.backend_cmd
+  deployment_stage           = local.deployment_stage
+  step_function_arn          = module.upload_sfn.step_function_arn
+  host_match                 = try(join(".", [module.backend_dns[0].dns_prefix, local.external_dns]), "")
+  priority                   = local.priority
+  api_url                    = local.backend_url
+  frontend_url               = local.frontend_url
+  remote_dev_prefix          = local.remote_dev_prefix
+  dataset_submissions_bucket = local.dataset_submissions_bucket
 
   wait_for_steady_state = local.wait_for_steady_state
 }
