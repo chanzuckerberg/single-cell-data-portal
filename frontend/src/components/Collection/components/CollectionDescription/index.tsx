@@ -89,7 +89,7 @@ function getEllipsisMode(
 ): EllipsisMode {
   /* Grab the measurement of element height, including hidden content due to overflow. */
   const elScrollHeight = el.scrollHeight;
-  /* Calculate the number of lines rendered. */
+  /* Calculate the number of lines for the content fully rendered. */
   const elLineCount = elScrollHeight / DESCRIPTION_LINE_HEIGHT_PX;
 
   if (elLineCount <= MAX_LINE_COUNT) {
@@ -109,16 +109,16 @@ function getEllipsisMode(
 
 /**
  * Returns applicable button text for display corresponding with current mode.
- * When the current mode is "ON" the return value will be "Read More", otherwise the return value is "Read Less".
+ * When the current mode is "ON" the return value will be "Show More", otherwise the return value is "Show Less".
  * @param currentMode - current ellipsis mode.
  * @returns string for display as button text.
  */
 function getModeText(currentMode: EllipsisMode): string {
   if (currentMode === EllipsisMode.ON) {
-    return "Read More";
+    return "Show More";
   }
 
-  return "Read Less";
+  return "Show Less";
 }
 
 /**
