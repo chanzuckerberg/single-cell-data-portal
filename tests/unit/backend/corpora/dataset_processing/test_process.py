@@ -569,11 +569,7 @@ class TestDatasetProcessing(DataPortalTestCase):
     def test__download_from_source_uri_with_unhandled_scheme__raises_error(self):
         unhandled_uri = "unhandled_scheme://blah/foo"
         with self.assertRaises(ValueError):
-            download_from_source_uri(
-                self.dataset_id,
-                unhandled_uri,
-                "raw.h5ad"
-            )
+            download_from_source_uri(self.dataset_id, unhandled_uri, "raw.h5ad")
 
     @mock_s3
     @patch("backend.corpora.dataset_processing.process.download_from_s3")
