@@ -40,6 +40,10 @@ resource aws_ecs_task_definition task_definition {
         "value": "${var.remote_dev_prefix}"
       },
       {
+        "name": "DATASET_SUBMISSIONS_BUCKET",
+        "value": "${var.dataset_submissions_bucket}${var.remote_dev_prefix}"
+      },
+      {
         "name": "DEPLOYMENT_STAGE",
         "value": "${var.deployment_stage}"
       },
