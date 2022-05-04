@@ -1309,11 +1309,10 @@ function onFilterRangeCategory(
   // configuration model
   if (analyticsEvent && selectedValue.length > 0) {
     const [min, max] = selectedValue;
-    const payload = {
+    track(analyticsEvent, {
       max,
       min,
-    };
-    track(analyticsEvent, { payload });
+    });
   }
 
   // Update filters for this range category.
@@ -1547,11 +1546,10 @@ function trackOntologyCategoryValueSelected<T extends Categories>(
     }
 
     // Build up payload for tracking event and send.
-    const payload = {
+    track(analyticsEvent, {
       label: selectedOntologyNode.label,
       ontologyTermId: selectedOntologyNode.ontology_term_id,
-    };
-    track(analyticsEvent, { payload });
+    });
   }
 }
 
