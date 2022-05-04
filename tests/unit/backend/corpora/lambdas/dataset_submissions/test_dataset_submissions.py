@@ -13,7 +13,7 @@ class TestDatasetSubmissions(TestCase):
             dataset_submissions_handler(s3_event, None)
 
     def test__missing_collection_uuid__raises_error(self):
-        s3_event = create_s3_event(key=f"should_have_been_a_uuid/some_key")
+        s3_event = create_s3_event(key="should_have_been_a_uuid/some_key")
         with self.assertRaises(CorporaException):
             dataset_submissions_handler(s3_event, None)
 
