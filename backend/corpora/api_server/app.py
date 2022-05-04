@@ -134,5 +134,3 @@ def handle_corpora_error(exception):
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", debug=True)
-    name = os.getenv("DATASET_SUBMISSIONS_BUCKET")
-    logging.error(f"\n\ndataset_submissions_bucket name is {name}\n\n")

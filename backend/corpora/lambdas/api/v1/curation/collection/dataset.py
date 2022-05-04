@@ -1,5 +1,4 @@
 import json
-
 import boto3
 import logging
 from flask import g, make_response, jsonify
