@@ -1,5 +1,4 @@
 import json
-import os
 
 import boto3
 import logging
@@ -16,11 +15,6 @@ logger = logging.getLogger(__name__)
 
 
 def create_policy(data_bucket: str, collection_id: str) -> str:
-
-    rdev_prefix = os.environ.get("REMOTE_DEV_PREFIX", "").strip("/")
-    if rdev_prefix:
-        data_bucket = "rdev"
-
     policy = {
         "Version": "2012-10-17",
         "Statement": [
