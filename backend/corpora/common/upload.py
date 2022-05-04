@@ -9,6 +9,7 @@ import os
 
 from .corpora_orm import CollectionVisibility, ProcessingStatus
 from .entities import Collection, Dataset
+from .utils.authorization_checks import owner_or_allowed
 from .utils.exceptions import (
     MaxFileSizeExceededException,
     InvalidFileFormatException,
@@ -17,7 +18,6 @@ from .utils.exceptions import (
     NonExistentDatasetException,
 )
 from .utils.math_utils import GB
-from ..lambdas.api.v1.collection import _owner_or_allowed
 
 _stepfunctions_client = None
 
@@ -47,10 +47,11 @@ def start_upload_sfn(collection_uuid, dataset_uuid, url):
 def upload(
     db_session: Session,
     collection_uuid: str,
-    user: str,
     url: str,
     file_size: int,
     file_extension: str,
+    user: str,
+    scope: str = None,
     dataset_id: str = None,
     curator_tag: str = None,
 ) -> str:
@@ -66,7 +67,7 @@ def upload(
         db_session,
         collection_uuid,
         visibility=CollectionVisibility.PRIVATE,  # Do not allow changes to public Collections
-        owner=_owner_or_allowed(user),
+        owner=owner_or_allowed(user, scope) if scope else user,
     )
     if not collection:
         raise NonExistentCollectionException(f"Collection {collection_uuid} does not exist")

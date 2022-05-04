@@ -783,7 +783,7 @@ def cxg_remaster(ctx):
         import boto3
 
         client = boto3.client("stepfunctions")
-        import time
+        from time import time, sleep
 
         for record in session.query(DbDataset):
             if not record.tombstone:
@@ -796,6 +796,12 @@ def cxg_remaster(ctx):
                     bucket = p.hostname
                     dataset_id = p.path.strip("/").strip(".cxg")
 
+                    if dataset_id == "2e5273bd-aa36-4478-8f6f-62fa0abcea43":
+                        continue
+
+                    if bucket != "hosted-cellxgene-dev":
+                        continue
+
                     print(bucket, dataset_id)
 
                     input = {"dataset_uuid": dataset_id}
@@ -805,13 +811,13 @@ def cxg_remaster(ctx):
                     happy_stack_name = get_happy_stack_name(deployment)
 
                     response = client.start_execution(
-                        stateMachineArn=f"arn:aws:states:us-west-2:{aws_account_id}:stateMachine:dp-{happy_stack_name}-sfn",
+                        stateMachineArn=f"arn:aws:states:us-west-2:{aws_account_id}:stateMachine:dp-{happy_stack_name}-cxg-remaster-sfn",
                         name=f"{dataset_id}-{int(time())}",
                         input=json.dumps(input),
                     )
 
                     print(response["executionArn"])
-                    time.sleep(1)
+                    sleep(1)
 
 
 def get_database_uri() -> str:

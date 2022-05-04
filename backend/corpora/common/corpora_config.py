@@ -10,7 +10,12 @@ class CorporaConfig(SecretConfig):
         super().__init__("backend", secret_name="config", **kwargs)
 
     def get_defaults_template(self):
-        template = {"upload_file_formats": ["h5ad"], "upload_max_file_size_gb": 30}
+
+        template = {
+            "upload_file_formats": ["h5ad"],
+            "upload_max_file_size_gb": 30,
+            "submission_bucket": os.getenv("DATASET_SUBMISSIONS_BUCKET", "cellxgene-dataset-submissions-test"),
+        }
         upload_snf_arn = os.getenv("UPLOAD_SFN_ARN")
         if upload_snf_arn:
             template["upload_sfn_arn"] = upload_snf_arn
@@ -62,6 +67,7 @@ class CorporaAuthConfig(SecretConfig):
             "issuer": [],
         }
         template["issuer"].append(self.api_base_url + "/" if not self.api_base_url.endswith("/") else self.api_base_url)
+        template["issuer"].append("https://" + self.auth0_domain + "/")
         if self.config.get("api_signin_url"):
             # Adding the API sign in URL to the list of allow token issues. This allow the API to accept Auth token
             # generated for testing. Used in dev and staging.

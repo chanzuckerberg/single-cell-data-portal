@@ -7,7 +7,7 @@ from urllib.parse import unquote_plus
 from sqlalchemy.orm import Session
 
 from backend.corpora.common.entities import Collection
-from backend.corpora.common.upload_sfn import upload
+from backend.corpora.common.upload import upload
 from backend.corpora.common.utils.db_session import db_session_manager
 from backend.corpora.common.utils.exceptions import CorporaException
 
