@@ -1,6 +1,6 @@
 import { Tooltip } from "czifui";
 import { ReactElement, useMemo } from "react";
-import { categoryTooltipCss } from "src/components/common/Filter/components/FilterLabel/FilterLabelTooltip/style";
+import { categoryTooltipCss } from "src/components/common/Filter/components/FilterLabel/components/FilterLabelTooltip/style";
 
 interface Props {
   children: ReactElement;
