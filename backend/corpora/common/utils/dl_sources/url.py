@@ -132,7 +132,6 @@ class S3URL(URL):
         }
 
 
-# TODO: consider replacing S3URL with S3URI
 class S3URI(URL):
     """
     Handles S3 URIs: s3://<bucket>/<key>
