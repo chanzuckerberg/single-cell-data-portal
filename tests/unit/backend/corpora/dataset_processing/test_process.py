@@ -568,6 +568,8 @@ class TestDatasetProcessing(DataPortalTestCase):
 
     def test__download_from_source_uri_with_unhandled_scheme__raises_error(self):
         unhandled_uri = "unhandled_scheme://blah/foo"
+        self.dataset_id = self.generate_dataset(self.session).id
+
         with self.assertRaises(ValueError):
             download_from_source_uri(self.dataset_id, unhandled_uri, "raw.h5ad")
 
@@ -583,7 +585,7 @@ class TestDatasetProcessing(DataPortalTestCase):
 
         download_from_source_uri(test_dataset_id, s3_uri, local_file)
 
-        mock_download_from_s3.assert_called_with(bucket, key, local_file)
+        mock_download_from_s3.assert_called_with(bucket_name=bucket, object_key=key, local_filename=local_file)
         dataset = Dataset.get(self.session, test_dataset_id)
         self.assertEqual(UploadStatus.UPLOADED, dataset.processing_status.upload_status)
 
