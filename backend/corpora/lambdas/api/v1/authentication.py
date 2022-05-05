@@ -15,7 +15,7 @@ from ....common.authorizer import assert_authorized_token, get_userinfo_from_aut
 from ....common.corpora_config import CorporaAuthConfig
 
 # global oauth client
-from ....common.utils.exceptions import UnauthorizedError
+from ....common.utils.http_exceptions import UnauthorizedError
 
 oauth_client = None
 

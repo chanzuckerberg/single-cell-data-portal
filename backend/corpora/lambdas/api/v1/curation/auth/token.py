@@ -4,7 +4,7 @@ from jose import JWTError
 from backend.corpora.common.auth0_manager import auth0_management_session
 from backend.corpora.common.corpora_config import CorporaAuthConfig
 from backend.corpora.common.utils import api_key
-from backend.corpora.common.utils.exceptions import UnauthorizedError, NotFoundHTTPException
+from backend.corpora.common.utils.http_exceptions import UnauthorizedError, NotFoundHTTPException
 
 
 def post():

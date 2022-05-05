@@ -4,7 +4,7 @@ from ....common.corpora_orm import CollectionVisibility
 from ....common.entities.geneset import Geneset
 from ....api_server.db import dbconnect
 from ....common.utils.authorization_checks import is_user_owner_or_allowed
-from ....common.utils.exceptions import (
+from ....common.utils.http_exceptions import (
     ForbiddenHTTPException,
 )
 
