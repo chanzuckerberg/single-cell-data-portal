@@ -849,7 +849,11 @@ function buildSelectCategoryView(
   categoryValueByValue: KeyedSelectCategoryValue,
   filterState: FilterState
 ): SelectCategoryView {
-  const categoryValueViews = [...categoryValueByValue.values()]
+  // Grab the config for this category.
+  const { pinnedCategoryValues, tooltip } =
+    CATEGORY_CONFIGS_BY_CATEGORY_KEY[categoryKey];
+
+  const allCategoryValueViews = [...categoryValueByValue.values()]
     .map(({ count, key, selected }: SelectCategoryValue) => ({
       count,
       key,
@@ -858,11 +862,19 @@ function buildSelectCategoryView(
     }))
     .sort(sortCategoryValueViews);
 
+  // Split values into pinned and unpinned.
+  const [pinnedValues, unpinnedValues] = partitionSelectCategoryValueViews(
+    allCategoryValueViews,
+    pinnedCategoryValues
+  );
+
   // Build view model of select category.
   const selectView: SelectCategoryView = {
     key: categoryKey,
     label: CATEGORY_LABEL[categoryKey],
-    values: categoryValueViews,
+    pinnedValues,
+    unpinnedValues,
+    values: allCategoryValueViews,
   };
 
   // Handle special cases where select category may be disabled.
@@ -871,7 +883,7 @@ function buildSelectCategoryView(
     !isEthnicityViewEnabled(filterState)
   ) {
     selectView.isDisabled = true;
-    selectView.tooltip = CATEGORY_CONFIGS_BY_CATEGORY_KEY[categoryKey].tooltip;
+    selectView.tooltip = tooltip;
   }
   // Otherwise check generic case where category is disabled due to no values meeting current filter.
   else if (isSelectCategoryDisabled(selectView)) {
@@ -1140,7 +1152,7 @@ function isRangeCategoryDisabled(categoryView: RangeCategoryView): boolean {
  */
 function isSelectCategoryDisabled(categoryView: SelectCategoryView): boolean {
   const { isDisabled, values } = categoryView;
-  return isDisabled || values?.every((value) => value.count === 0);
+  return isDisabled || values.every((value) => value.count === 0);
 }
 
 /**
@@ -1244,6 +1256,37 @@ function listOntologySelectedViews(
 }
 
 /**
+ * Split select category values into arrays of pinned and non-pinned values.
+ * @param categoryValues - Category value view models for a given category.
+ * @param pinnedCategoryValues - Category value keys to be pinned for a given category.
+ * @returns Tuple containing an array of pinned values and an array of non-pinned values.
+ */
+function partitionSelectCategoryValueViews(
+  categoryValues: SelectCategoryValueView[],
+  pinnedCategoryValues?: CategoryValueKey[]
+): [SelectCategoryValueView[], SelectCategoryValueView[]] {
+  // Handle case where category has no pinned values.
+  if (!pinnedCategoryValues) {
+    return [[], categoryValues];
+  }
+
+  // Otherwise, split category values into pinned and non-pinned arrays.
+  const partitionedValues: [
+    SelectCategoryValueView[],
+    SelectCategoryValueView[]
+  ] = [[], []];
+  return categoryValues.reduce((accum, categoryValue) => {
+    const [pinned, nonPinned] = accum;
+    if (pinnedCategoryValues.includes(categoryValue.key)) {
+      pinned.push(categoryValue);
+    } else {
+      nonPinned.push(categoryValue);
+    }
+    return accum;
+  }, partitionedValues);
+}
+
+/**
  * Remove all descendents from the set of selected values.
  * @param ontologyNodes - Nodes to remove from selected set of values.
  * @param selectedCategoryValues - The current set of selected values.
@@ -1309,11 +1352,10 @@ function onFilterRangeCategory(
   // configuration model
   if (analyticsEvent && selectedValue.length > 0) {
     const [min, max] = selectedValue;
-    const payload = {
+    track(analyticsEvent, {
       max,
       min,
-    };
-    track(analyticsEvent, { payload });
+    });
   }
 
   // Update filters for this range category.
@@ -1547,11 +1589,10 @@ function trackOntologyCategoryValueSelected<T extends Categories>(
     }
 
     // Build up payload for tracking event and send.
-    const payload = {
+    track(analyticsEvent, {
       label: selectedOntologyNode.label,
       ontologyTermId: selectedOntologyNode.ontology_term_id,
-    };
-    track(analyticsEvent, { payload });
+    });
   }
 }
 
