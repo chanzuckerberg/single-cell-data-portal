@@ -8,7 +8,7 @@ from flask import Flask, request, redirect, make_response, jsonify
 import subprocess
 
 # seconds until the token expires
-TOKEN_EXPIRES = 2
+TOKEN_EXPIRES = 3
 
 
 # A mocked out oauth server, which serves all the endpoints needed by the oauth type.
