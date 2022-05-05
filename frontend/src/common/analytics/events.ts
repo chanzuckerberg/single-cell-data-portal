@@ -1,3 +1,9 @@
+/**
+ * NOTE: If you modify this file, you must update Plausible custom event page for
+ * both staging and prod environments as well.
+ * Staging: https://plausible.io/cellxgene.staging.single-cell.czi.technology/settings/goals
+ * Prod: https://plausible.io/cellxgene.cziscience.com/settings/goals
+ */
 export enum EVENTS {
   FILTER_SELECT_ASSAY = "FILTER_SELECT_ASSAY",
   FILTER_SELECT_AUTHORS = "FILTER_SELECT_AUTHORS",
