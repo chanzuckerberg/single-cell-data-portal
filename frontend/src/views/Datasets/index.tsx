@@ -246,6 +246,7 @@ export default function Datasets(): JSX.Element {
           CATEGORY_KEY.PUBLICATION_DATE_VALUES,
           CATEGORY_KEY.SEX,
           EXPLORER_URL,
+          IS_OVER_MAX_CELL_COUNT,
         ],
         sortBy: [
           {
