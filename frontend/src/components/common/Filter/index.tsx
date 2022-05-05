@@ -211,13 +211,13 @@ function createRangeTagLabel(min: number, max: number): [string, string] {
 
 /**
  * Returns filtered category values where category count is greater than zero.
- * @param values
+ * @param categoryValues - Category value view models for a given category.
  * @returns category values with a count
  */
 function filterCategoryValuesWithCount(
-  values: SelectCategoryValueView[]
+  categoryValues: SelectCategoryValueView[]
 ): SelectCategoryValueView[] {
-  return values.filter(({ count }) => count > 0);
+  return categoryValues.filter(({ count }) => count > 0);
 }
 
 /**

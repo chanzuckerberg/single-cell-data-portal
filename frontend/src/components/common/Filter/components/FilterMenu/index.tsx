@@ -116,28 +116,30 @@ export default function FilterMenu({
 
 /**
  * Returns filtered category values where category key includes search value.
- * @param values
- * @param searchValue
+ * @param categoryValues - Category value view models for a given category.
+ * @param searchValue - Search string to filters category values.
  * @returns array of category values filtered by the given search value
  */
 function filterCategoryValues(
-  values: SelectCategoryValueView[],
+  categoryValues: SelectCategoryValueView[],
   searchValue: string
 ): SelectCategoryValueView[] {
   if (searchValue) {
-    return values.filter(({ key }) => key.toLowerCase().includes(searchValue));
+    return categoryValues.filter(({ key }) =>
+      key.toLowerCase().includes(searchValue)
+    );
   }
-  return values;
+  return categoryValues;
 }
 
 /**
  * Returns true if the menu is searchable and exceeds the maximum number of displayable menu items.
- * @param values
- * @param isSearchable
+ * @param categoryValues - Category value view models for a given category.
+ * @param isSearchable - Category is searchable.
  */
 function isMenuScrollable(
-  values: SelectCategoryValueView[],
+  categoryValues: SelectCategoryValueView[],
   isSearchable: boolean
 ): boolean {
-  return isSearchable && values.length > MAX_DISPLAYABLE_MENU_ITEMS;
+  return isSearchable && categoryValues.length > MAX_DISPLAYABLE_MENU_ITEMS;
 }
