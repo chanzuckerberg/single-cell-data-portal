@@ -14,8 +14,8 @@ class TestWmgApi(unittest.TestCase):
     def setUpClass(cls):
         cls.deployment_stage = os.environ["DEPLOYMENT_STAGE"]
         cls.api = API_URL.get(cls.deployment_stage)
-
         cls.api = f"{cls.api}/wmg/v1"
+
         ## get snapshot id
         res = requests.get(f"{cls.api}/primary_filter_dimensions")
         cls.data = json.loads(res.content)
@@ -25,19 +25,17 @@ class TestWmgApi(unittest.TestCase):
         Load primary filters in less than 1.5 seconds
         """
         MAX_RESPONSE_TIME_SECONDs = 1.5
-        start_time = time.time()
         res = requests.get(f"{self.api}/primary_filter_dimensions")
-        end_time = time.time()
-        func_call_time_ms = end_time - start_time
-        self.assertGreater(MAX_RESPONSE_TIME_SECONDs, func_call_time_ms)
+        self.assertGreater(MAX_RESPONSE_TIME_SECONDs, res.elapsed)
         self.assertEqual(res.status_code, requests.codes.ok)
+        self.assertGreater(len(res.content), 10)
 
     def test_secondary_filters_common_case(self):
         """
         1 tissue w/50 cell types, 20 genes, 3 secondary filters specified
-        Returns in less than 2 seconds
+        Returns in less than 3 seconds
         """
-        MAX_RESPONSE_TIME_SECONDS = 2
+        MAX_RESPONSE_TIME_SECONDS = 3
         headers = {"Content-Type": "application/json"}
         data = {"filter": {"dataset_ids": [],
                            "disease_ontology_term_ids": ["MONDO:0005812", "MONDO:0100096", "PATO:0000461"],
@@ -48,19 +46,18 @@ class TestWmgApi(unittest.TestCase):
                            "tissue_ontology_term_ids": ["UBERON:0000178"]},  # blood (more than 50 cell types)
                 "include_filter_dims": True,
                 "snapshot_id": self.data["snapshot_id"]}
-        start_time = time.time()
         res = requests.post(f"{self.api}/query", data=json.dumps(data), headers=headers)
-        end_time = time.time()
-        func_call_time_ms = end_time - start_time
-        self.assertGreater(MAX_RESPONSE_TIME_SECONDS, func_call_time_ms)
+        self.assertGreater(MAX_RESPONSE_TIME_SECONDS, res.elapsed)
         self.assertEqual(res.status_code, requests.codes.ok)
+        self.assertGreater(len(res.content), 10)
+
 
     def test_secondary_filters_extreme_case(self):
         """
         4 tissues w/largest cell type counts, 400 genes, no secondary filtering
-        Returns in less than 10 seconds
+        Returns in less than 15 seconds
         """
-        MAX_RESPONSE_TIME_SECONDS = 10
+        MAX_RESPONSE_TIME_SECONDS = 15
         headers = {"Content-Type": "application/json"}
         data = {"filter": {"dataset_ids": [],
                            "disease_ontology_term_ids": [],
@@ -72,9 +69,7 @@ class TestWmgApi(unittest.TestCase):
                                                         "UBERON:0000970", "UBERON:0000362"]},
                 "include_filter_dims": True,
                 "snapshot_id": self.data["snapshot_id"]}
-        start_time = time.time()
         res = requests.post(f"{self.api}/query", data=json.dumps(data), headers=headers)
-        end_time = time.time()
-        func_call_time_ms = end_time - start_time
-        self.assertGreater(MAX_RESPONSE_TIME_SECONDS, func_call_time_ms)
+        self.assertGreater(MAX_RESPONSE_TIME_SECONDS, res.elapsed)
         self.assertEqual(res.status_code, requests.codes.ok)
+        self.assertGreater(len(res.content), 10)
