@@ -51,13 +51,12 @@ This is a good option if you want to quickly deploy an instance of cellxgene to 
 
 ## When should I not deploy with Heroku?
 
-* The default free dyno offered by Heroku is limited in memory to 512 MBs
-  * The amount of memory needed for the dyno is roughly the same size as the h5ad file
-  * Heroku offers tiered paid dynos. More can be found on the [Heroku pricing page](https://www.heroku.com/pricing)
-  * Note that this can get _very_ expensive for larger datasets \($25+ a month\)
-* On the free dyno, after 30 minutes of inactivity, Heroku will put your app into a hibernation mode. On the next access, Heroku will need time to boot the dyno back online.
-* Having multiple simultaneous users requires more memory. This means that the free container size is easily overwhelmed by multiple users, even with small datasets; this can be addressed by purchasing a larger container size
-* For this facilitated Heroku deployment to work, your dataset must be hosted on a publicly accessible URL
-* By default, Heroku publically shares your instance to anyone with the URL.
-  * There are many ways of securing your instance. One quick and simple way is by installing [wwwhisper](https://elements.heroku.com/addons/wwwhisper), a Heroku addon
-
+- The default free dyno offered by Heroku is limited in memory to 512 MBs
+  - The amount of memory needed for the dyno is roughly the same size as the h5ad file
+  - Heroku offers tiered paid dynos. More can be found on the [Heroku pricing page](https://www.heroku.com/pricing)
+  - Note that this can get _very_ expensive for larger datasets \($25+ a month\)
+- On the free dyno, after 30 minutes of inactivity, Heroku will put your app into a hibernation mode. On the next access, Heroku will need time to boot the dyno back online.
+- Having multiple simultaneous users requires more memory. This means that the free container size is easily overwhelmed by multiple users, even with small datasets; this can be addressed by purchasing a larger container size
+- For this facilitated Heroku deployment to work, your dataset must be hosted on a publicly accessible URL
+- By default, Heroku publically shares your instance to anyone with the URL.
+  - There are many ways of securing your instance. One quick and simple way is by installing [wwwhisper](https://elements.heroku.com/addons/wwwhisper), a Heroku addon
