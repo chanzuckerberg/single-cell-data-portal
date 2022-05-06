@@ -1,6 +1,5 @@
 import json
 import os
-import time
 import unittest
 
 import requests
@@ -16,7 +15,7 @@ class TestWmgApi(unittest.TestCase):
         cls.api = API_URL.get(cls.deployment_stage)
         cls.api = f"{cls.api}/wmg/v1"
 
-        ## get snapshot id
+        # get snapshot id
         res = requests.get(f"{cls.api}/primary_filter_dimensions")
         cls.data = json.loads(res.content)
 
@@ -37,20 +36,23 @@ class TestWmgApi(unittest.TestCase):
         """
         MAX_RESPONSE_TIME_SECONDS = 3
         headers = {"Content-Type": "application/json"}
-        data = {"filter": {"dataset_ids": [],
-                           "disease_ontology_term_ids": ["MONDO:0005812", "MONDO:0100096", "PATO:0000461"],
-                           "ethnicity_ontology_term_ids": ["HANCESTRO:0010", "HANCESTRO:0014"],
-                           "gene_ontology_term_ids": list(genes_20_count.keys()),
-                           "organism_ontology_term_id": "NCBITaxon:9606",
-                           "sex_ontology_term_ids": ["PATO:0000383"],
-                           "tissue_ontology_term_ids": ["UBERON:0000178"]},  # blood (more than 50 cell types)
-                "include_filter_dims": True,
-                "snapshot_id": self.data["snapshot_id"]}
+        data = {
+            "filter": {
+                "dataset_ids": [],
+                "disease_ontology_term_ids": ["MONDO:0005812", "MONDO:0100096", "PATO:0000461"],
+                "ethnicity_ontology_term_ids": ["HANCESTRO:0010", "HANCESTRO:0014"],
+                "gene_ontology_term_ids": list(genes_20_count.keys()),
+                "organism_ontology_term_id": "NCBITaxon:9606",
+                "sex_ontology_term_ids": ["PATO:0000383"],
+                "tissue_ontology_term_ids": ["UBERON:0000178"],
+            },  # blood (more than 50 cell types)
+            "include_filter_dims": True,
+            "snapshot_id": self.data["snapshot_id"],
+        }
         res = requests.post(f"{self.api}/query", data=json.dumps(data), headers=headers)
         self.assertGreater(MAX_RESPONSE_TIME_SECONDS, res.elapsed)
         self.assertEqual(res.status_code, requests.codes.ok)
         self.assertGreater(len(res.content), 10)
-
 
     def test_secondary_filters_extreme_case(self):
         """
@@ -59,16 +61,25 @@ class TestWmgApi(unittest.TestCase):
         """
         MAX_RESPONSE_TIME_SECONDS = 15
         headers = {"Content-Type": "application/json"}
-        data = {"filter": {"dataset_ids": [],
-                           "disease_ontology_term_ids": [],
-                           "ethnicity_ontology_term_ids": [],
-                           "gene_ontology_term_ids": list(genes_400_count.keys()),
-                           "organism_ontology_term_id": "NCBITaxon:9606",
-                           "sex_ontology_term_ids": [],
-                           "tissue_ontology_term_ids": ["UBERON:0000178", "UBERON:0002048", "UBERON:0000029",
-                                                        "UBERON:0000970", "UBERON:0000362"]},
-                "include_filter_dims": True,
-                "snapshot_id": self.data["snapshot_id"]}
+        data = {
+            "filter": {
+                "dataset_ids": [],
+                "disease_ontology_term_ids": [],
+                "ethnicity_ontology_term_ids": [],
+                "gene_ontology_term_ids": list(genes_400_count.keys()),
+                "organism_ontology_term_id": "NCBITaxon:9606",
+                "sex_ontology_term_ids": [],
+                "tissue_ontology_term_ids": [
+                    "UBERON:0000178",
+                    "UBERON:0002048",
+                    "UBERON:0000029",
+                    "UBERON:0000970",
+                    "UBERON:0000362",
+                ],
+            },
+            "include_filter_dims": True,
+            "snapshot_id": self.data["snapshot_id"],
+        }
         res = requests.post(f"{self.api}/query", data=json.dumps(data), headers=headers)
         self.assertGreater(MAX_RESPONSE_TIME_SECONDS, res.elapsed)
         self.assertEqual(res.status_code, requests.codes.ok)
