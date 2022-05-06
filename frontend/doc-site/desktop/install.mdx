@@ -4,8 +4,8 @@
 
 Cellxgene desktop has two parts:
 
-* [`cellxgene`](launch.md) is the main explorer application, which takes an already-processed `h5ad` file as input. This is installed by default.
-* [`cellxgene prepare`](install.md) provides auxiliary functionality for preparing your dataset. This is _not_ installed by default.
+- [`cellxgene`](launch.md) is the main explorer application, which takes an already-processed `h5ad` file as input. This is installed by default.
+- [`cellxgene prepare`](install.md) provides auxiliary functionality for preparing your dataset. This is _not_ installed by default.
 
 ### Requirements
 
@@ -97,4 +97,3 @@ Run the container and mount data \(change data location, `--port` and `--host` p
 ```text
 docker run -v "$PWD/example-dataset/:/data/" -p 5005:5005 cellxgene launch --host 0.0.0.0 data/pbmc3k.h5ad
 ```
-

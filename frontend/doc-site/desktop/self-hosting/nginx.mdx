@@ -6,15 +6,15 @@ Lisa Sikkema and Thomas Walzthoeni
 
 ## Hosting Use Case:
 
-* Private self-hosting on an EC2 instance
-* Access by external collaborators and potentially password authentication
+- Private self-hosting on an EC2 instance
+- Access by external collaborators and potentially password authentication
 
 ## Components:
 
-* [Cellxgene Desktop](https://github.com/chanzuckerberg/cellxgene): the application to be run
-* [Nginx](https://www.nginx.com/): used as a reverse proxy to redirect web requests to the WSGI
-* [uWSGI](https://uwsgi-docs.readthedocs.io/en/latest/): forwards requests from the Nginx web server to our python flask framework
-* [Htpasswd](https://httpd.apache.org/docs/2.4/programs/htpasswd.html): used to allow basic authentication for web requests
+- [Cellxgene Desktop](https://github.com/chanzuckerberg/cellxgene): the application to be run
+- [Nginx](https://www.nginx.com/): used as a reverse proxy to redirect web requests to the WSGI
+- [uWSGI](https://uwsgi-docs.readthedocs.io/en/latest/): forwards requests from the Nginx web server to our python flask framework
+- [Htpasswd](https://httpd.apache.org/docs/2.4/programs/htpasswd.html): used to allow basic authentication for web requests
 
 ## References:
 
@@ -34,7 +34,7 @@ server {
 
     location /cellxgene_example {
         proxy_set_header Accept-Encoding "";
-        proxy_pass                            
+        proxy_pass
 http://localhost:5007/
 ;
         proxy_set_header Host                 $http_host;
@@ -59,15 +59,14 @@ server {
 
     server_name _;
 
-    return 301 
+    return 301
 https://$host$request_uri
 ;
 }
 ```
 
-With respect to above Nginx config specification, one would start the browser using port 5007 and forward a request from [https://YOURHOSTNAME/cellxgene\_example](https://YOURHOSTNAME/cellxgene_example) to the cxg browser \([http://localhost:5007\](http://localhost:5007%29%29.%20What%20is%20also%20added%20is%20basic_auth%20that%20adds%20a%20login%20request%20with%20a%20username%20and%20password.%20The%20nginx.htpasswd%20file%20is%20generated%20using%20htpasswd.%20If%20you%20want%20to%20add%20additional%20browsers,%20this%20is%20done%20by%20just%20adding%20additional%20location%20stanzas%20and%20running%20the%20cxg%20on%20a%20different%20port.%20The%20additional%20location%20stanzas%20just%20need%20to%20be%20adapted%20accordingly%20%28proxy_pass%20and%20sub_filter%20lines\).
+With respect to above Nginx config specification, one would start the browser using port 5007 and forward a request from [https://YOURHOSTNAME/cellxgene_example](https://YOURHOSTNAME/cellxgene_example) to the cxg browser \([http://localhost:5007\](http://localhost:5007%29%29.%20What%20is%20also%20added%20is%20basic_auth%20that%20adds%20a%20login%20request%20with%20a%20username%20and%20password.%20The%20nginx.htpasswd%20file%20is%20generated%20using%20htpasswd.%20If%20you%20want%20to%20add%20additional%20browsers,%20this%20is%20done%20by%20just%20adding%20additional%20location%20stanzas%20and%20running%20the%20cxg%20on%20a%20different%20port.%20The%20additional%20location%20stanzas%20just%20need%20to%20be%20adapted%20accordingly%20%28proxy_pass%20and%20sub_filter%20lines\).
 
 **Note regarding storage and memory on the EC2 instance \(if you implement using AWS\):**
 
 Since datasets will be loaded into the memory of your machine, ram costs could potentially be high, especially if you plan to host multiple large datasets. To avoid higher than necessary costs, you can store data on S3 and only pull the data onto the machine’s memory when the cellxgene explorer is launched. This should be compatible with the approach detailed above \(albeit by tweaking a config variable to point to where the data is located\).
-
