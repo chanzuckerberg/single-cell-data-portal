@@ -6,7 +6,7 @@ from jose import jwt
 from jose.exceptions import ExpiredSignatureError, JWTError, JWTClaimsError
 
 from .corpora_config import CorporaAuthConfig
-from backend.corpora.common.utils.exceptions import UnauthorizedError
+from backend.corpora.common.utils.http_exceptions import UnauthorizedError
 
 
 def assert_authorized_token(token: str, audience: str = None) -> dict:

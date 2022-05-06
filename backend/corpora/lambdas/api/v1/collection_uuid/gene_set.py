@@ -5,7 +5,7 @@ from .....common.corpora_orm import CollectionVisibility
 from .....common.entities import Collection
 from .....common.entities.geneset import Geneset
 from .....api_server.db import dbconnect
-from .....common.utils.exceptions import ForbiddenHTTPException, InvalidParametersHTTPException
+from .....common.utils.http_exceptions import ForbiddenHTTPException, InvalidParametersHTTPException
 from ..authorization import owner_or_allowed
 
 

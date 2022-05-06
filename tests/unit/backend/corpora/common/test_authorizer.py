@@ -6,7 +6,7 @@ import requests
 
 from backend.corpora.common.authorizer import assert_authorized
 from backend.corpora.common.utils.aws import AwsSecret
-from backend.corpora.common.utils.exceptions import UnauthorizedError
+from backend.corpora.common.utils.http_exceptions import UnauthorizedError
 from backend.corpora.common.corpora_config import CorporaAuthConfig
 
 
