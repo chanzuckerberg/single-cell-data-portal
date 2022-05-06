@@ -16,12 +16,12 @@ We don't officially support web deployment, but we've offered some guidance in t
 
 Please consider the following when deploying cellxgene in any "hosted" environment, especially where access from the broader Internet is possible:
 
-* Information security requires careful configuration of the host environment, including firewall, logging, etc - please follow best practices
-* Cellxgene includes features which may be inappropriate for a hosted deployment - you may wish to use the following command line option: `--disable-diffexp`
-* `cellxgene launch` currently uses Flask's development server, which is not recommended for hosted deployment \(see the [Flask documentation](https://flask.palletsprojects.com/en/1.1.x/tutorial/deploy/#run-with-a-production-server)\)
-* We have no testing or official support for deployments where multiple users are accessing the same cellxgene instance
-* Your cellxgene instance is likely to hang or crash if too many people access it at the same time, especially if they using functions that call the Python backend \(such as differential expression, noted above\)
-* Cellxgene only supports one instance per dataset
+- Information security requires careful configuration of the host environment, including firewall, logging, etc - please follow best practices
+- Cellxgene includes features which may be inappropriate for a hosted deployment - you may wish to use the following command line option: `--disable-diffexp`
+- `cellxgene launch` currently uses Flask's development server, which is not recommended for hosted deployment \(see the [Flask documentation](https://flask.palletsprojects.com/en/1.1.x/tutorial/deploy/#run-with-a-production-server)\)
+- We have no testing or official support for deployments where multiple users are accessing the same cellxgene instance
+- Your cellxgene instance is likely to hang or crash if too many people access it at the same time, especially if they using functions that call the Python backend \(such as differential expression, noted above\)
+- Cellxgene only supports one instance per dataset
 
 If you believe you have found a security-related issue with cellxgene, please report the issue immediately to [security@chanzuckerberg.com](mailto:security@chanzuckerberg.com).
 
@@ -39,8 +39,8 @@ The following configuration options require special consideration in any multi-u
 
 There are a number of teams building tools or infrastructure to better utilize cellxgene in a multiple user environment. While we do not endorse any particular solution, you may find the following helpful.
 
-* [Novartis Cellxgene Gateway](https://github.com/Novartis/cellxgene-gateway) - a multiple-user and multiple-dataset gateway for cellxgene
-* Interactive Environment in the [Galaxy Project](https://galaxyproject.org/) \([patch notes](https://docs.galaxyproject.org/en/release_19.05/releases/19.05_announce.html)\)
+- [Novartis Cellxgene Gateway](https://github.com/Novartis/cellxgene-gateway) - a multiple-user and multiple-dataset gateway for cellxgene
+- Interactive Environment in the [Galaxy Project](https://galaxyproject.org/) \([patch notes](https://docs.galaxyproject.org/en/release_19.05/releases/19.05_announce.html)\)
 
 If you know of other solutions, drop us a note and we'll add to this list.
 
@@ -57,4 +57,3 @@ Several groups have independently deployed various versions of cellxgene to the 
 [Melanoma](https://melanoma.cellgeni.sanger.ac.uk/)
 
 [Cellxgene Data Portal](https://cellxgene.cziscience.com)
-
