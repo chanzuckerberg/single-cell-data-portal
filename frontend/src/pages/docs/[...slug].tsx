@@ -64,12 +64,12 @@ export const getStaticProps = async ({
 const components = { Image };
 
 interface Props {
-  frontMatter: Record<string, any>;
+  frontMatter: Record<string, unknown>;
   mdxSource: MDXRemoteSerializeResult;
   slug: Array<string>;
 }
 
-const BlogPage = ({ frontMatter, mdxSource }: Props) => {
+const BlogPage = ({ mdxSource }: Props): JSX.Element => {
   return (
     <>
       <MDXRemote {...mdxSource} components={components} />
