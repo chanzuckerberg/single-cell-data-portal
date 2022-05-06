@@ -122,14 +122,8 @@ class TestCrossrefProvider(unittest.TestCase):
                 {"name": "Foo consortium"},
                 {"name": "Smith"},
                 {"name": "Baz Consortium"},
-                {
-                    "given": "John",
-                    "family": "Doe"
-                },
-                {
-                    "given": "Jane",
-                    "family": "Doe"
-                },
+                {"given": "John", "family": "Doe"},
+                {"given": "Jane", "family": "Doe"},
             ],
             "published_year": 2021,
             "published_month": 11,
