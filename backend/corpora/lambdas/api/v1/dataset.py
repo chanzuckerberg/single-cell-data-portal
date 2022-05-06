@@ -4,12 +4,12 @@ from ....common.corpora_orm import CollectionVisibility, DatasetArtifactFileType
 from ....common.entities import Dataset, Collection
 from ....common.entities.geneset import GenesetDatasetLink
 from ....api_server.db import dbconnect
-from ....common.utils.exceptions import (
+from ....common.utils.http_exceptions import (
     NotFoundHTTPException,
     ServerErrorHTTPException,
     ForbiddenHTTPException,
-    CorporaException,
 )
+from ....common.utils.exceptions import CorporaException
 from .authorization import owner_or_allowed
 
 
