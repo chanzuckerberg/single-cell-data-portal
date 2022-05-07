@@ -25,7 +25,7 @@ class TestWmgApi(unittest.TestCase):
         """
         MAX_RESPONSE_TIME_SECONDs = 1.5
         res = requests.get(f"{self.api}/primary_filter_dimensions")
-        self.assertGreater(MAX_RESPONSE_TIME_SECONDs, res.elapsed)
+        self.assertGreater(MAX_RESPONSE_TIME_SECONDs, res.elapsed.seconds)
         self.assertEqual(res.status_code, requests.codes.ok)
         self.assertGreater(len(res.content), 10)
 
@@ -50,7 +50,7 @@ class TestWmgApi(unittest.TestCase):
             "snapshot_id": self.data["snapshot_id"],
         }
         res = requests.post(f"{self.api}/query", data=json.dumps(data), headers=headers)
-        self.assertGreater(MAX_RESPONSE_TIME_SECONDS, res.elapsed)
+        self.assertGreaterEqual(MAX_RESPONSE_TIME_SECONDS, res.elapsed.seconds)
         self.assertEqual(res.status_code, requests.codes.ok)
         self.assertGreater(len(res.content), 10)
 
@@ -81,6 +81,6 @@ class TestWmgApi(unittest.TestCase):
             "snapshot_id": self.data["snapshot_id"],
         }
         res = requests.post(f"{self.api}/query", data=json.dumps(data), headers=headers)
-        self.assertGreater(MAX_RESPONSE_TIME_SECONDS, res.elapsed)
+        self.assertGreater(MAX_RESPONSE_TIME_SECONDS, res.elapsed.seconds)
         self.assertEqual(res.status_code, requests.codes.ok)
         self.assertGreater(len(res.content), 10)
