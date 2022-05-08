@@ -28,13 +28,11 @@ export function useResizeObserver(
 
   // Observed element is resized or repositioned - set state elementRect with the element's new dimensions or position.
   const onResize = useCallback((entries: ResizeObserverEntry[]) => {
-    for (const entry of entries) {
-      if (entry) {
-        const scrollHeight = entry.target.scrollHeight;
-        const contentRect = entry.contentRect.toJSON();
-        setElementRect({ ...contentRect, scrollHeight });
-        break;
-      }
+    if (entries && entries.length > 0) {
+      const entry = entries[0]; // grab the first entry; observing a single element
+      const scrollHeight = entry.target.scrollHeight;
+      const contentRect = entry.contentRect.toJSON();
+      setElementRect({ ...contentRect, scrollHeight });
     }
   }, []);
 

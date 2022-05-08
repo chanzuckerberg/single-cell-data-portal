@@ -81,21 +81,23 @@ function getEllipsisMode(
   elScrollHeight: number | undefined,
   currentMode: EllipsisMode
 ): EllipsisMode {
-  if (elScrollHeight) {
-    /* Calculate the number of lines for the content fully rendered. */
-    const elLineCount = elScrollHeight / DESCRIPTION_LINE_HEIGHT_PX;
+  if (!elScrollHeight) {
+    return currentMode;
+  }
 
-    if (elLineCount <= MAX_LINE_COUNT) {
-      /* Element does not have hidden content and line count is within allowable limit. */
-      /* Mode is "NONE" - ellipsis mode not required. */
-      return EllipsisMode.NONE;
-    }
+  /* Calculate the number of lines for the content fully rendered. */
+  const elLineCount = elScrollHeight / DESCRIPTION_LINE_HEIGHT_PX;
 
-    if (currentMode === EllipsisMode.NONE) {
-      /* Line count exceeds allowable limit, and ellipsis mode is "NONE". */
-      /* Change mode to "ON" - ellipsis mode required. */
-      return EllipsisMode.ON;
-    }
+  if (elLineCount <= MAX_LINE_COUNT) {
+    /* Element does not have hidden content and line count is within allowable limit. */
+    /* Mode is "NONE" - ellipsis mode not required. */
+    return EllipsisMode.NONE;
+  }
+
+  if (currentMode === EllipsisMode.NONE) {
+    /* Line count exceeds allowable limit, and ellipsis mode is "NONE". */
+    /* Change mode to "ON" - ellipsis mode required. */
+    return EllipsisMode.ON;
   }
 
   return currentMode;
