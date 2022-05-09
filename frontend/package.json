@@ -41,6 +41,7 @@
     "@babel/preset-typescript": "^7.16.0",
     "@blueprintjs/eslint-plugin": "^0.3.5",
     "@next/eslint-plugin-next": "^11.1.2",
+    "@playwright/test": "^1.21.1",
     "@types/jest": "^27.0.2",
     "@types/loadable__component": "^5.13.4",
     "@types/lodash": "^4.14.176",

@@ -1,3 +1,6 @@
+const playwrightTest = require("@playwright/test");
+const { devices } = playwrightTest;
+
 /**
  * `frontend/jest-playwright.config.js` is for configuring Playwright's launch config options
  * `frontend/jest/playwright.setup.js` is for configuring `jest`, `browser`,
@@ -18,6 +21,13 @@ const DEFAULT_LAUNCH_CONFIG = {
 const DEFAULT_CONTEXT_CONFIG = {
   acceptDownloads: true,
   storageState,
+  /**
+   * (thuang): Add `czi-checker`, so Plausible will ignore it.
+   * NOTE: This changes all browsers to use Desktop Chrome UA, so please look
+   * out for bugs that could be caused by this.
+   * https://github.com/matomo-org/device-detector/blob/master/regexes/bots.yml#L2762
+   */
+  userAgent: devices["Desktop Chrome"].userAgent + " czi-checker",
 };
 
 module.exports = {
