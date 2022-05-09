@@ -26,10 +26,3 @@ export const CollectionDetail = styled.div`
   grid-template-columns: 8fr 1fr 8fr; /* grid columns for collection description and metadata (with 1fr allocated to column separation) */
   margin: 16px 0 44px;
 `;
-
-export const CollectionDescription = styled.div`
-  color: ${PT_TEXT_COLOR};
-  grid-area: description;
-  letter-spacing: -0.1px;
-  line-height: 18px;
-`;
