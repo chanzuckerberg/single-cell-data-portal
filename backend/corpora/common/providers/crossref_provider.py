@@ -111,7 +111,7 @@ class CrossrefProvider(object):
             authors = message["author"]
             parsed_authors = []
             for author in authors:
-                if "given" and "family" in author:
+                if "given" in author and "family" in author:
                     parsed_authors.append({"given": author["given"], "family": author["family"]})
                 elif "family" in author:
                     # Assume family is consortium
