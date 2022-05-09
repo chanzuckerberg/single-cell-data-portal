@@ -14,7 +14,7 @@ function recursiveFileGrab(...root: Array<string>): Array<Array<string>> {
   return paths.reduce((acc, path) => {
     const builtFullPath = pathTool.join(DOC_SITE_FOLDER_NAME, ...root, path);
     if (fs.lstatSync(builtFullPath).isFile()) {
-      acc.push([...root, path]);
+      if (path.endsWith(".mdx")) acc.push([...root, path]);
     } else {
       acc.push(...recursiveFileGrab(...root, path));
     }
@@ -69,7 +69,7 @@ interface Props {
   slug: Array<string>;
 }
 
-const BlogPage = ({ frontMatter, mdxSource }: Props) => {
+const BlogPage = ({ mdxSource }: Props) => {
   return (
     <>
       <MDXRemote {...mdxSource} components={components} />
