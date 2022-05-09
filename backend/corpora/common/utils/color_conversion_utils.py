@@ -1,6 +1,6 @@
 import re
 
-from backend.corpora.common.utils.exceptions import ColorFormatException
+from backend.corpora.common.utils.http_exceptions import ColorFormatException
 
 HEX_COLOR_FORMAT = re.compile("^#[a-fA-F0-9]{6,6}$")
 

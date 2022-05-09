@@ -13,6 +13,7 @@ from backend.wmg.data.load_corpus import (
     load_h5ad,
     RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD,
     filter_out_rankits_with_low_expression_counts,
+    validate_dataset_properties,
 )
 from backend.wmg.data.schemas.corpus_schema import create_tdb
 from tests.unit.backend.wmg.fixtures.test_anndata_object import create_anndata_test_object
@@ -219,3 +220,36 @@ class TestCorpusLoad(unittest.TestCase):
         # check the cell count is one less than the starting count
         # because we replaced the assay type for one cell in the original anndata object
         self.assertEqual(corpus_cell_count, CELL_COUNT - 1)
+
+    def test_dataset_validation_checks_correct_expression_matrix(self):
+        with self.subTest("Test dataset with sparse X and raw is valid"):
+            valid_anndata_object = create_anndata_test_object(num_genes=3, num_cells=5)
+            valid_anndata_object.raw = valid_anndata_object
+            is_dataset_valid = validate_dataset_properties(valid_anndata_object)
+            self.assertTrue(is_dataset_valid)
+
+        with self.subTest("Test dataset with dense X and sparse raw is valid"):
+            test_anndata_object = create_anndata_test_object(num_genes=3, num_cells=5)
+            dense_matrix = test_anndata_object.X.todense()
+            test_anndata_object.raw = test_anndata_object
+            test_anndata_object.X = dense_matrix
+            is_dataset_valid = validate_dataset_properties(test_anndata_object)
+            self.assertTrue(is_dataset_valid)
+
+        with self.subTest("Test dataset with sparse X and dense raw is invalid"):
+            test_anndata_object = create_anndata_test_object(num_genes=3, num_cells=5)
+            hold_x = test_anndata_object.X
+            dense_matrix = test_anndata_object.X.todense()
+            test_anndata_object.X = dense_matrix
+            test_anndata_object.raw = test_anndata_object
+            test_anndata_object.X = hold_x
+            is_dataset_valid = validate_dataset_properties(test_anndata_object)
+            self.assertFalse(is_dataset_valid)
+
+        with self.subTest("Test dataset with dense X and raw is invalid"):
+            invalid_anndata = create_anndata_test_object(num_genes=3, num_cells=5)
+            dense_matrix = invalid_anndata.X.todense()
+            invalid_anndata.X = dense_matrix
+            invalid_anndata.raw = invalid_anndata
+            is_dataset_valid = validate_dataset_properties(invalid_anndata)
+            self.assertFalse(is_dataset_valid)

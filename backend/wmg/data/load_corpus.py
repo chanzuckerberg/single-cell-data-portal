@@ -49,7 +49,8 @@ def get_dataset_id(h5ad_path: str) -> str:
 
 
 def validate_dataset_properties(anndata_object: anndata.AnnData) -> bool:
-    if not sparse.issparse(anndata_object.X):
+    expression_matrix = get_X_raw(anndata_object)
+    if not sparse.issparse(expression_matrix):
         logger.warning("No dense handling yet, not loading")
         return False
     schema_version = anndata_object.uns.get("schema_version", None)
