@@ -53,8 +53,10 @@ class TestExtract(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
             published=True,
             is_primary_data="PRIMARY",
             tombstone=False,
-            organism=[{"label": "Homo sapiens", "ontology_term_id": "NCBITaxon:9606"},
-                      {"label": "Mus musculus", "ontology_term_id": "NCBITaxon:10090"}],
+            organism=[
+                {"label": "Homo sapiens", "ontology_term_id": "NCBITaxon:9606"},
+                {"label": "Mus musculus", "ontology_term_id": "NCBITaxon:10090"},
+            ],
             assay=[{"ontology_term_id": assay_ontologies[0], "label": "test_assay"}],
         )
         self.dataset__wrong_assay = self.generate_dataset_with_s3_resources(

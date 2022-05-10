@@ -29,16 +29,16 @@ def get_dataset_s3_uris():
         dataset_ids = []
         published_dataset_non_null_assays = (
             session.query(Dataset.table.id, Dataset.table.assay, Dataset.table.organism)
-                .join(Dataset.table.collection)
-                .filter(
+            .join(Dataset.table.collection)
+            .filter(
                 Dataset.table.assay != "null",
                 Dataset.table.published == "TRUE",
                 Dataset.table.is_primary_data == "PRIMARY",
                 Collection.table.visibility == "PUBLIC",
                 Dataset.table.tombstone == "FALSE",
-                Dataset.table.organism != "null"
+                Dataset.table.organism != "null",
             )
-                .all()
+            .all()
         )
 
         for dataset_id, assays, organisms in published_dataset_non_null_assays:
