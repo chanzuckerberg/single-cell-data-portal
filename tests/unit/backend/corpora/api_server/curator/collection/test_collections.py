@@ -11,7 +11,7 @@ class TestAuthToken(BaseAPITest):
     def test__generate_s3_credentials__OK(self, sts_client: Mock, assert_authorized_token: Mock):
         def _test(assert_authorized_token_return_value):
             assert_authorized_token.return_value = assert_authorized_token_return_value
-            sts_client.assume_role = Mock(
+            sts_client.assume_role_with_web_identity = Mock(
                 return_value={
                     "access_key": "test_key",
                     "secret_access_key": "test_session_token",
@@ -19,7 +19,8 @@ class TestAuthToken(BaseAPITest):
                 }
             )
             collection = self.generate_collection(self.session)
-            headers = {"Authorization": "Bearer fake_access_token"}
+            headers = {"Authorization": "Bearer fake_access_token", "IdToken": "test id token"}
+
             response = self.app.post(
                 f"/curation/v1/collections/{collection.id}/datasets/s3-upload-credentials", headers=headers
             )

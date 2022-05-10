@@ -1,7 +1,7 @@
 import json
 import boto3
 import logging
-from flask import g, make_response, jsonify
+from flask import g, make_response, jsonify, request
 
 from backend.corpora.api_server.db import dbconnect
 from backend.corpora.common.corpora_config import CorporaConfig
@@ -44,8 +44,9 @@ def post_s3_credentials(collection_uuid: str, token_info: dict):
         RoleArn=config.curator_role_arn,
         RoleSessionName=token_info["sub"].replace("|", "-"),
         Policy=create_policy(config.submission_bucket, collection_uuid),
-        DurationSeconds=duration,
+        WebIdentityToken=request.headers["IdToken"],
+        DurationSeconds=duration
     )
     logger.info(json.dumps(parameters))
-    credentials = sts_client.assume_role(**parameters)
+    credentials = sts_client.assume_role_with_web_identity(**parameters)
     return make_response(jsonify(credentials), 200)
