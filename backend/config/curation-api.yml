@@ -409,11 +409,11 @@ paths:
       parameters:
         - $ref: "#/components/parameters/path_collection_uuid"
         - in: header
-            name: IdToken
-            schema:
-              type: string
-            required: true
-            description: Your id_token provided when generating an access token from
+          name: IdToken
+          schema:
+            type: string
+          required: true
+          description: Your id_token provided when generating an access token from
       responses:
         "200":
           description: OK
