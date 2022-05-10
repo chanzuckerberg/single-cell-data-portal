@@ -1,7 +1,12 @@
 import { useContext, useMemo } from "react";
 import { useQuery, UseQueryResult } from "react-query";
 import { API_URL } from "src/configs/configs";
-import { State, StateContext } from "src/views/WheresMyGene/common/store";
+import {
+  DispatchContext,
+  State,
+  StateContext,
+} from "src/views/WheresMyGene/common/store";
+import { setSnapshotId } from "src/views/WheresMyGene/common/store/actions";
 import {
   CellType,
   CellTypeGeneExpressionSummaryData,
@@ -45,7 +50,9 @@ export interface PrimaryFilterDimensionsResponse {
 export async function fetchPrimaryFilterDimensions(): Promise<PrimaryFilterDimensionsResponse> {
   const url = API_URL + API.WMG_PRIMARY_FILTER_DIMENSIONS;
 
-  const response = await (await fetch(url, DEFAULT_FETCH_OPTIONS)).json();
+  const response: RawPrimaryFilterDimensionsResponse = await (
+    await fetch(url, DEFAULT_FETCH_OPTIONS)
+  ).json();
 
   return transformPrimaryFilterDimensions(response);
 }
@@ -95,11 +102,27 @@ export const USE_PRIMARY_FILTER_DIMENSIONS = {
 };
 
 export function usePrimaryFilterDimensions(): UseQueryResult<PrimaryFilterDimensionsResponse> {
+  const dispatch = useContext(DispatchContext);
+
+  // (thuang): Refresh query when the snapshotId changes
+  const currentSnapshotId = useSnapshotId();
+
   return useQuery<PrimaryFilterDimensionsResponse>(
-    [USE_PRIMARY_FILTER_DIMENSIONS],
+    [USE_PRIMARY_FILTER_DIMENSIONS, currentSnapshotId],
     fetchPrimaryFilterDimensions,
-    // (thuang): We don't need to refetch during the session
-    { staleTime: Infinity }
+    {
+      onSuccess(response) {
+        if (!response || !dispatch) return;
+
+        const { snapshotId } = response;
+
+        if (currentSnapshotId !== snapshotId) {
+          dispatch(setSnapshotId(snapshotId));
+        }
+      },
+      // (thuang): We don't need to refetch during the session
+      staleTime: Infinity,
+    }
   );
 }
 
@@ -115,7 +138,6 @@ interface Filter {
 }
 
 export interface Query {
-  snapshot_id: string;
   include_filter_dims: boolean;
   filter: Filter;
 }
@@ -158,13 +180,14 @@ async function fetchQuery(
   if (!query) return;
 
   const url = API_URL + API.WMG_QUERY;
+
   const response = await fetch(url, {
     ...DEFAULT_FETCH_OPTIONS,
     ...JSON_BODY_FETCH_OPTIONS,
     body: JSON.stringify(query),
     method: "POST",
   });
-  const json = await response.json();
+  const json: QueryResponse = await response.json();
 
   if (!response.ok) {
     throw json;
@@ -181,11 +204,29 @@ export const USE_QUERY = {
 export function useWMGQuery(
   query: Query | null
 ): UseQueryResult<QueryResponse> {
-  return useQuery([USE_QUERY, query], () => fetchQuery(query), {
-    enabled: Boolean(query),
-    // (thuang): We don't need to refetch during the session
-    staleTime: Infinity,
-  });
+  const dispatch = useContext(DispatchContext);
+
+  // (thuang): Refresh query when the snapshotId changes
+  const currentSnapshotId = useSnapshotId();
+
+  return useQuery(
+    [USE_QUERY, query, currentSnapshotId],
+    () => fetchQuery(query),
+    {
+      enabled: Boolean(query),
+      onSuccess(response) {
+        if (!response || !dispatch) return;
+
+        const { snapshot_id } = response;
+
+        if (currentSnapshotId !== snapshot_id) {
+          dispatch(setSnapshotId(snapshot_id));
+        }
+      },
+      // (thuang): We don't need to refetch during the session
+      staleTime: Infinity,
+    }
+  );
 }
 
 const EMPTY_FILTER_DIMENSIONS = {
@@ -541,8 +582,6 @@ function useWMGQueryRequestBody(options = { includeAllFilterOptions: false }) {
       return null;
     }
 
-    const { snapshotId } = data;
-
     const gene_ontology_term_ids = selectedGenes.map((geneName) => {
       return organismGenesByName[geneName].id;
     });
@@ -563,7 +602,6 @@ function useWMGQueryRequestBody(options = { includeAllFilterOptions: false }) {
         tissue_ontology_term_ids,
       },
       include_filter_dims: true,
-      snapshot_id: snapshotId,
     };
   }, [
     selectedGenes,
@@ -584,4 +622,12 @@ function toEntity(item: RawOntologyTerm) {
   const [id, name] = Object.entries(item)[0];
 
   return { id, name: name || id || "" };
+}
+
+function useSnapshotId(): string | null {
+  const state = useContext(StateContext);
+
+  const { snapshotId } = state;
+
+  return snapshotId || null;
 }
