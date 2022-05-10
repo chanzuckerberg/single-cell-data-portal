@@ -16,6 +16,7 @@ import {
 } from "src/common/queries/collections";
 import { removeParams } from "src/common/utils/removeParams";
 import { isTombstonedCollection } from "src/common/utils/typeGuards";
+import CollectionDescription from "src/components/Collection/components/CollectionDescription";
 import CollectionMetadata from "src/components/Collection/components/CollectionMetadata";
 import CollectionMigrationCallout from "src/components/Collection/components/CollectionMigrationCallout";
 import CollectionRevisionStatusCallout from "src/components/Collection/components/CollectionRevisionStatusCallout";
@@ -24,12 +25,7 @@ import DatasetTab from "src/views/Collection/components/DatasetTab";
 import ActionButtons from "./components/ActionButtons";
 import DeleteCollectionButton from "./components/ActionButtons/components/DeleteButton";
 import Toast from "./components/Toast";
-import {
-  CollectionDescription,
-  CollectionDetail,
-  CollectionHero,
-  ViewCollection,
-} from "./style";
+import { CollectionDetail, CollectionHero, ViewCollection } from "./style";
 import {
   buildCollectionMetadataLinks,
   getIsPublishable,
@@ -207,9 +203,7 @@ const Collection: FC = () => {
         </CollectionHero>
         {/* Collection description and metadata */}
         <CollectionDetail>
-          <CollectionDescription data-test-id="collection-description">
-            {collection.description}
-          </CollectionDescription>
+          <CollectionDescription description={collection.description} />
           {collectionMetadataLinks.length > 0 && (
             <CollectionMetadata
               collectionMetadataLinks={collectionMetadataLinks}

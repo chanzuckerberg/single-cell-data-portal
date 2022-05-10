@@ -5,17 +5,6 @@ COPY backend/corpora/__init__.py ./backend/corpora/__init__.py
 COPY backend/corpora/common ./backend/corpora/common
 COPY backend/corpora/dataset_submissions .
 
-# TODO: remove after the authz refactoring (_owner_or_allowed)
-COPY backend/corpora/lambdas/__init__.py ./backend/corpora/lambdas/__init__.py
-COPY backend/corpora/lambdas/api/__init__.py ./backend/corpora/lambdas/api/__init__.py
-COPY backend/corpora/lambdas/api/v1/__init__.py ./backend/corpora/lambdas/api/v1/__init__.py
-COPY backend/corpora/lambdas/api/v1/collection.py ./backend/corpora/lambdas/api/v1/collection.py
-COPY backend/corpora/lambdas/api/v1/authorization.py ./backend/corpora/lambdas/api/v1/authorization.py
-COPY backend/corpora/lambdas/api/v1/authentication.py ./backend/corpora/lambdas/api/v1/authentication.py
-COPY backend/corpora/lambdas/api/v1/collection_uuid ./backend/corpora/lambdas/api/v1/collection_uuid
-COPY backend/corpora/api_server/__init__.py ./backend/corpora/api_server/__init__.py
-COPY backend/corpora/api_server/db.py ./backend/corpora/api_server/db.py
-
 # For lighter weight Docker images
 ENV PIP_NO_CACHE_DIR=1
 

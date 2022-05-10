@@ -4,12 +4,14 @@ from flask import make_response, g
 from .....api_server.db import dbconnect
 from .....common.upload import upload
 from .....common.utils.dl_sources.url import MissingHeaderException, from_url
-from .....common.utils.exceptions import (
+from .....common.utils.http_exceptions import (
     ForbiddenHTTPException,
     InvalidParametersHTTPException,
     TooLargeHTTPException,
     MethodNotAllowedException,
     NotFoundHTTPException,
+)
+from .....common.utils.exceptions import (
     MaxFileSizeExceededException,
     InvalidFileFormatException,
     NonExistentCollectionException,

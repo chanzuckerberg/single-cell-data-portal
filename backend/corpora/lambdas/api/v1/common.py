@@ -1,5 +1,5 @@
 from backend.corpora.common.entities import Collection
-from backend.corpora.common.utils.exceptions import ForbiddenHTTPException
+from backend.corpora.common.utils.http_exceptions import ForbiddenHTTPException
 
 
 def get_collection(db_session, collection_uuid, **kwargs):

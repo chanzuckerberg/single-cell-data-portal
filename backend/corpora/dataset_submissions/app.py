@@ -12,15 +12,14 @@ from backend.corpora.common.utils.db_session import db_session_manager
 from backend.corpora.common.utils.exceptions import CorporaException
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 UUID_REGEX = "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
 
 
-def dataset_submissions_handler(s3_event: dict, context) -> None:
+def dataset_submissions_handler(s3_event: dict, unused_context) -> None:
     """
     Lambda function invoked when a dataset is uploaded to the dataset submissions S3 bucket
     :param s3_event: Lambda's event object
-    :param context: Lambda's context object
+    :param unused_context: Lambda's context object
     :return:
     """
     logger.debug(f"{s3_event=}")
