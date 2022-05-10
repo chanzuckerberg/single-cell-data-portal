@@ -10,7 +10,7 @@ interface Props {
 }
 
 const DISEASE_CATEGORY_VALUE = {
-  NORMAL: "NORMAL",
+  NORMAL: "normal",
 };
 
 export default function DiseaseCell({ label, values }: Props): JSX.Element {
@@ -27,7 +27,7 @@ export default function DiseaseCell({ label, values }: Props): JSX.Element {
 function mapDiseasesToTagValues(values: string[]): TagValue[] {
   return values.map((value) => {
     let pinned = false;
-    if (value.toUpperCase() === DISEASE_CATEGORY_VALUE.NORMAL) {
+    if (value === DISEASE_CATEGORY_VALUE.NORMAL) {
       pinned = true;
     }
     return { label: value, pinned };
