@@ -45,7 +45,7 @@ def post_s3_credentials(collection_uuid: str, token_info: dict):
         RoleSessionName=token_info["sub"].replace("|", "-"),
         Policy=create_policy(config.submission_bucket, collection_uuid),
         WebIdentityToken=request.headers["IdToken"],
-        DurationSeconds=duration
+        DurationSeconds=duration,
     )
     logger.info(json.dumps(parameters))
     credentials = sts_client.assume_role_with_web_identity(**parameters)
