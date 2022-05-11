@@ -69,7 +69,7 @@ class BaseAuthAPITest(BaseAPITest):
             "audience": auth_config.audience,
             "api_audience": auth_config.api_audience,
             "cookie_name": auth_config.cookie_name,
-            "auth0_domain": "czi-single-cell.auth0.com",
+            "auth0_domain": f"localhost:{mock_oauth_server.port}",
         }
         auth_config.set(authconfig)
         return (mock_oauth_server, auth_config)

@@ -4,8 +4,10 @@ import logging
 from flask import g, make_response, jsonify, request
 
 from backend.corpora.api_server.db import dbconnect
-from backend.corpora.common.corpora_config import CorporaConfig
+from backend.corpora.common.authorizer import assert_authorized_token
+from backend.corpora.common.corpora_config import CorporaConfig, CorporaAuthConfig
 from backend.corpora.common.corpora_orm import CollectionVisibility
+from backend.corpora.common.utils.http_exceptions import UnauthorizedError
 from backend.corpora.lambdas.api.v1.common import get_collection
 from backend.corpora.lambdas.api.v1.authorization import owner_or_allowed
 
@@ -35,11 +37,15 @@ duration = 43200  # 12 hrs -- max time limit for AssumeRole call from within the
 def post_s3_credentials(collection_uuid: str, token_info: dict):
     db_session = g.db_session
     config = CorporaConfig()
+    auth_config = CorporaAuthConfig()
+
     # Raise an error if they are not allowed to modify the collection.
     get_collection(
         db_session, collection_uuid, visibility=CollectionVisibility.PRIVATE.name, owner=owner_or_allowed(token_info)
     )
-
+    id_token = assert_authorized_token(request.headers["IdToken"],auth_config.api_base_url)
+    if id_token["sub"] != token_info["sub"]:
+        raise UnauthorizedError("The ID token is from a different user than the Access token.")
     parameters = dict(
         RoleArn=config.curator_role_arn,
         RoleSessionName=token_info["sub"].replace("|", "-"),
