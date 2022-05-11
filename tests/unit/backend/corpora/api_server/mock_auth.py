@@ -1,5 +1,4 @@
 import urllib
-import jose.jwt
 import time
 import random
 import sys
@@ -8,8 +7,9 @@ from flask import Flask, request, redirect, make_response, jsonify
 import subprocess
 
 # seconds until the token expires
-TOKEN_EXPIRES = 2
+from tests.unit.backend.corpora.api_server.token_factory import make_token
 
+TOKEN_EXPIRES = 2
 
 # A mocked out oauth server, which serves all the endpoints needed by the oauth type.
 class MockOauthApp:
@@ -44,26 +44,19 @@ class MockOauthApp:
         )
 
     def api_oauth_token(self):
-        expires_at = time.time() + self.token_duration
-        headers = dict(alg="RS256", kid="fake_kid")
-        payload = dict(
-            name="Fake User",
-            sub="test_user_id",
-            email="fake_user@email.com",
-            email_verified=True,
-            exp=expires_at,
-            scope=self.additional_scope,
-        )
-
-        jwt = jose.jwt.encode(claims=payload, key="mysecret", algorithm="HS256", headers=headers)
-        r = {
+        payload=dict(name="Fake User",
+             sub="test_user_id",
+             email="fake_user@email.com",
+             email_verified=True)
+        jwt = make_token(payload, self.token_duration, TOKEN_EXPIRES, self.additional_scope)
+        r= {
             "access_token": jwt,
             "id_token": jwt,
             "refresh_token": f"random-{time.time()}",
-            "scope": "openid profile email offline write:collections",
+            "scope": "openid profile email offline " + " ".join(self.addition_scope),
             "expires_in": TOKEN_EXPIRES,
             "token_type": "Bearer",
-            "expires_at": expires_at,
+            "expires_at": self.token_duration,
         }
         return make_response(jsonify(r))
 

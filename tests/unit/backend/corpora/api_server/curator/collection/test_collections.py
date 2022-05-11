@@ -2,10 +2,10 @@ import unittest
 from unittest.mock import patch, Mock
 
 from backend.corpora.common.corpora_orm import CollectionVisibility
-from tests.unit.backend.corpora.api_server.base_api_test import BaseAPITest
+from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest
 
 
-class TestAuthToken(BaseAPITest):
+class TestAuthToken(BaseAuthAPITest):
     @patch("backend.corpora.lambdas.api.v1.authentication.assert_authorized_token")
     @patch("backend.corpora.lambdas.api.v1.curation.collection.dataset.sts_client")
     def test__generate_s3_credentials__OK(self, sts_client: Mock, assert_authorized_token: Mock):
