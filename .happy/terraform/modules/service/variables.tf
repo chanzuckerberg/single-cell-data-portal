@@ -115,6 +115,18 @@ variable "memory" {
   default     = 2048
 }
 
+variable "cpu" {
+  type        = number
+  description = "Amount of CPU to allocate to each task"
+  default     = 1024
+}
+
+variable "launch_type" {
+  type        = string
+  description = "Either EC2 or FARGATE"
+  default     = "EC2"
+}
+
 variable "wait_for_steady_state" {
   type        = bool
   description = "Whether Terraform should block until the service is in a steady state before exiting"
