@@ -68,9 +68,7 @@ describe("Collection", () => {
         });
 
         // Specify a DOI that is in an invalid format.
-        await page.click(getText("Add Link"));
-        await page.click(getText("Publication DOI"));
-        await page.type(ELEMENT_ID_INPUT_DOI, "x", BLUEPRINT_SAFE_TYPE_OPTIONS);
+        await populatePublicationDOI("10.1016/j.2022.104097");
 
         // Attempt submit, confirm error message is displayed.
         const [response] = await submitCreateForm();
@@ -89,13 +87,7 @@ describe("Collection", () => {
         });
 
         // Specify a DOI that is a valid format but is not on Crossref.
-        await page.click(getText("Add Link"));
-        await page.click(getText("Publication DOI"));
-        await page.type(
-          ELEMENT_ID_INPUT_DOI,
-          "10.1016/j.2022.104097",
-          BLUEPRINT_SAFE_TYPE_OPTIONS
-        );
+        await populatePublicationDOI("x");
 
         // Attempt submit, confirm error message is displayed.
         const [response] = await submitCreateForm();
@@ -169,6 +161,21 @@ async function submitCreateForm() {
     page.waitForEvent("response"),
     page.click(getTestID("create-button")),
   ]);
+}
+
+/**
+ * Specify a publication DOI on the collection form.
+ * @param value - Value to enter in the DOI input field.
+ */
+async function populatePublicationDOI(value: string) {
+  await page.click(getText("Add Link"));
+  await page.click(getText("Publication DOI"));
+  await expect(page).toHaveSelector(
+    getText(
+      "A summary citation linked to this DOI will be automatically added to this collection."
+    )
+  );
+  await page.type(ELEMENT_ID_INPUT_DOI, value, BLUEPRINT_SAFE_TYPE_OPTIONS);
 }
 
 /**
