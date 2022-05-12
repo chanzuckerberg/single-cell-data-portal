@@ -20,6 +20,11 @@ const TEST_COLLECTION: CollectionFormInput = {
 };
 
 /**
+ * HTML element ID of DOI input field.
+ */
+const ELEMENT_ID_INPUT_DOI = "#DOI";
+
+/**
  * Subset of collection fields required for creating/editing a collection.
  */
 type CollectionFormInput = Pick<
@@ -65,7 +70,7 @@ describe("Collection", () => {
         // Specify a DOI that is in an invalid format.
         await page.click(getText("Add Link"));
         await page.click(getText("Publication DOI"));
-        await page.type("#doi", "x", BLUEPRINT_SAFE_TYPE_OPTIONS);
+        await page.type(ELEMENT_ID_INPUT_DOI, "x", BLUEPRINT_SAFE_TYPE_OPTIONS);
 
         // Attempt submit, confirm error message is displayed.
         const [response] = await submitCreateForm();
@@ -87,7 +92,7 @@ describe("Collection", () => {
         await page.click(getText("Add Link"));
         await page.click(getText("Publication DOI"));
         await page.type(
-          "#doi",
+          ELEMENT_ID_INPUT_DOI,
           "10.1016/j.2022.104097",
           BLUEPRINT_SAFE_TYPE_OPTIONS
         );
