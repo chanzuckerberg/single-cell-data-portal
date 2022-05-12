@@ -9,7 +9,7 @@ import subprocess
 # seconds until the token expires
 from jose import jwt
 
-TOKEN_EXPIRES = 2
+TOKEN_EXPIRES = 3
 
 # A mocked out oauth server, which serves all the endpoints needed by the oauth type.
 class MockOauthApp:

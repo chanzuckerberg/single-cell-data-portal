@@ -30,7 +30,7 @@ def create_policy(data_bucket: str, collection_id: str) -> str:
     return json.dumps(policy)
 
 
-duration = 43200  # 12 hrs -- max time limit for AssumeRole call from within the AWS environment
+duration = 3600
 
 
 @dbconnect
