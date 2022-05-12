@@ -1,7 +1,8 @@
-import { memo, useEffect, useMemo, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { EMPTY_ARRAY } from "src/common/constants/utils";
+import { useResizeObserver } from "src/common/hooks/useResizeObserver";
 import { State } from "../../common/store";
 import { CellType, GeneExpressionSummary, Tissue } from "../../common/types";
 import Loader from "../Loader";
@@ -9,11 +10,7 @@ import Chart from "./components/Chart";
 import XAxisChart from "./components/XAxisChart";
 import YAxisChart from "./components/YAxisChart";
 import { ChartWrapper, Container, YAxisWrapper } from "./style";
-import {
-  getHeatmapHeight,
-  HEAT_MAP_BASE_HEIGHT_PX,
-  X_AXIS_CHART_HEIGHT_PX,
-} from "./utils";
+import { X_AXIS_CHART_HEIGHT_PX } from "./utils";
 
 interface Props {
   selectedTissues: string[];
@@ -51,6 +48,8 @@ export default memo(function HeatMap({
   // Loading state per tissue
   const [isLoading, setIsLoading] = useState(setInitialIsLoading(cellTypes));
   const [firstLoad, setFirstLoad] = useState(FirstLoadState.Initial);
+  const chartWrapperRef = useRef<HTMLDivElement>(null);
+  const chartWrapperRect = useResizeObserver(chartWrapperRef);
 
   // (thuang): We only want to send `WMG_HEATMAP_LOADED` event the first time it loads
   useEffect(() => {
@@ -68,35 +67,15 @@ export default memo(function HeatMap({
     }
   }, [firstLoad, isLoading]);
 
-  const yAxisWrapperHeight = useMemo(() => {
-    const yAxisChartHeight = Object.values(cellTypes).reduce(
-      (height, cellTypeSummaries) => {
-        return height + getHeatmapHeight(cellTypeSummaries);
-      },
-      0
-    );
-
-    // (thuang): We can't use Object.keys(cellTypes) here, because when genes
-    // are not selected, we don't have cell types data from the API to populate
-    // `cellTypes`
-    const tissueCount = selectedTissues.length;
-
-    const baseTissueHeightWhenNoGenesSelected =
-      HEAT_MAP_BASE_HEIGHT_PX * tissueCount;
-
-    return (
-      Math.max(yAxisChartHeight, baseTissueHeightWhenNoGenesSelected) +
-      X_AXIS_CHART_HEIGHT_PX
-    );
-  }, [cellTypes, selectedTissues]);
-
   return (
     <Container>
       {isLoadingAPI || isAnyTissueLoading(isLoading) ? <Loader /> : null}
 
       <XAxisChart geneNames={genes} />
 
-      <YAxisWrapper height={yAxisWrapperHeight}>
+      <YAxisWrapper
+        height={(chartWrapperRect?.height || 0) - X_AXIS_CHART_HEIGHT_PX}
+      >
         {selectedTissues.map((tissue) => {
           const tissueCellTypes = cellTypes[tissue];
 
@@ -111,7 +90,7 @@ export default memo(function HeatMap({
           );
         })}
       </YAxisWrapper>
-      <ChartWrapper>
+      <ChartWrapper ref={chartWrapperRef}>
         {selectedTissues.map((tissue) => {
           const tissueCellTypes = cellTypes[tissue] || EMPTY_ARRAY;
 
