@@ -70,6 +70,7 @@ class BaseAuthAPITest(BaseAPITest):
             "api_audience": auth_config.api_audience,
             "cookie_name": auth_config.cookie_name,
             "auth0_domain": f"localhost:{mock_oauth_server.port}",
+            "curation_audience": auth_config.audience,
         }
         auth_config.set(authconfig)
         return (mock_oauth_server, auth_config)

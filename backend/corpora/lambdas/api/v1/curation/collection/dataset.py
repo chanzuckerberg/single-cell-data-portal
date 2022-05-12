@@ -43,14 +43,14 @@ def post_s3_credentials(collection_uuid: str, token_info: dict):
     get_collection(
         db_session, collection_uuid, visibility=CollectionVisibility.PRIVATE.name, owner=owner_or_allowed(token_info)
     )
-    id_token = assert_authorized_token(request.headers["IdToken"],auth_config.api_base_url)
+    id_token = assert_authorized_token(request.headers["id_token"], auth_config.api_base_url)
     if id_token["sub"] != token_info["sub"]:
         raise UnauthorizedError("The ID token is from a different user than the Access token.")
     parameters = dict(
         RoleArn=config.curator_role_arn,
         RoleSessionName=token_info["sub"].replace("|", "-"),
         Policy=create_policy(config.submission_bucket, collection_uuid),
-        WebIdentityToken=request.headers["IdToken"],
+        WebIdentityToken=request.headers["id_token"],
         DurationSeconds=duration,
     )
     logger.info(json.dumps(parameters))

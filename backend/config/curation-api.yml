@@ -409,7 +409,7 @@ paths:
       parameters:
         - $ref: "#/components/parameters/path_collection_uuid"
         - in: header
-          name: IdToken
+          name: id_token
           schema:
             type: string
           required: true
