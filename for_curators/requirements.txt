@@ -1,7 +1,4 @@
-jupyter==1.0.0
-jupyter-client==7.3.0
-jupyter-console==6.4.3
-jupyter-core==4.10.0
-jupyterlab-pygments==0.2.2
-jupyterlab-widgets==1.1.0
-botocore==1.24.11
+boto3==1.22.13
+botocore==1.25.13
+notebook==6.4.11
+requests==2.27.1
