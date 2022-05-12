@@ -1,6 +1,4 @@
-import { memo, useEffect, useRef, useState } from "react";
-import { track } from "src/common/analytics";
-import { EVENTS } from "src/common/analytics/events";
+import { memo, useRef, useState } from "react";
 import { EMPTY_ARRAY } from "src/common/constants/utils";
 import { useResizeObserver } from "src/common/hooks/useResizeObserver";
 import { State } from "../../common/store";
@@ -9,6 +7,7 @@ import Loader from "../Loader";
 import Chart from "./components/Chart";
 import XAxisChart from "./components/XAxisChart";
 import YAxisChart from "./components/YAxisChart";
+import { useTrackHeatMapLoaded } from "./hooks/useTrackHeatMapLoaded";
 import { ChartWrapper, Container, YAxisWrapper } from "./style";
 import { X_AXIS_CHART_HEIGHT_PX } from "./utils";
 
@@ -27,12 +26,6 @@ interface Props {
   isScaled: boolean;
 }
 
-enum FirstLoadState {
-  Initial,
-  Loading,
-  Loaded,
-}
-
 export default memo(function HeatMap({
   selectedTissues,
   cellTypes,
@@ -45,27 +38,12 @@ export default memo(function HeatMap({
   isLoadingAPI,
   isScaled,
 }: Props): JSX.Element {
+  useTrackHeatMapLoaded({ selectedTissues, selectedGenes: genes });
+
   // Loading state per tissue
   const [isLoading, setIsLoading] = useState(setInitialIsLoading(cellTypes));
-  const [firstLoad, setFirstLoad] = useState(FirstLoadState.Initial);
   const chartWrapperRef = useRef<HTMLDivElement>(null);
   const chartWrapperRect = useResizeObserver(chartWrapperRef);
-
-  // (thuang): We only want to send `WMG_HEATMAP_LOADED` event the first time it loads
-  useEffect(() => {
-    if (firstLoad === FirstLoadState.Loaded) return;
-    if (firstLoad === FirstLoadState.Initial && isAnyTissueLoading(isLoading)) {
-      setFirstLoad(FirstLoadState.Loading);
-      return;
-    }
-    if (
-      firstLoad === FirstLoadState.Loading &&
-      !isAnyTissueLoading(isLoading)
-    ) {
-      track(EVENTS.WMG_HEATMAP_LOADED);
-      setFirstLoad(FirstLoadState.Loaded);
-    }
-  }, [firstLoad, isLoading]);
 
   return (
     <Container>
