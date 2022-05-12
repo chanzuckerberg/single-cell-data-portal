@@ -74,7 +74,7 @@ describe("Collection", () => {
 
         // Attempt submit, confirm error message is displayed.
         const [response] = await submitCreateForm();
-        expect(response.status).toEqual(400);
+        expect(response.status()).toEqual(400);
         await expect(page).toHaveSelector(getText(INVALID_DOI_ERROR_MESSAGE));
       });
 
@@ -99,7 +99,7 @@ describe("Collection", () => {
 
         // Attempt submit, confirm error message is displayed.
         const [response] = await submitCreateForm();
-        expect(response.status).toEqual(400);
+        expect(response.status()).toEqual(400);
         await expect(page).toHaveSelector(getText(INVALID_DOI_ERROR_MESSAGE));
       });
     });
