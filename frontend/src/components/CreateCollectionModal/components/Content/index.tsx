@@ -37,7 +37,7 @@ const REQUIRED_FIELD_TEXT = "Required";
 /**
  * Text displayed when BE has identified DOI as invalid.
  */
-const INVALID_DOI_ERROR_MESSAGE =
+export const INVALID_DOI_ERROR_MESSAGE =
   "This DOI could not be found. Please correct or remove it.";
 
 interface Props {
