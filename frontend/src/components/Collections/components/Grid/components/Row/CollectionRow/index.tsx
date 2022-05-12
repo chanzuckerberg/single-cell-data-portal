@@ -35,6 +35,13 @@ const AsyncPopover = loadable(
     )
 );
 
+const AsyncDiseasePopover = loadable(
+  () =>
+    /*webpackChunkName: 'src/components/common/Grid/components/DiseaseCell' */ import(
+      "src/components/common/Grid/components/DiseaseCell"
+    )
+);
+
 const conditionalPopover = (
   label: PLURALIZED_METADATA_LABEL,
   values: string[]
@@ -44,6 +51,17 @@ const conditionalPopover = (
   }
 
   return <AsyncPopover label={label} values={values} />;
+};
+
+const conditionalDiseasePopover = (
+  label: PLURALIZED_METADATA_LABEL,
+  values: string[]
+) => {
+  if (!values || values.length === 0) {
+    return <LeftAlignedDetailsCell>-</LeftAlignedDetailsCell>;
+  }
+
+  return <AsyncDiseasePopover label={label} values={values} />;
 };
 
 const CollectionRow: FC<Props> = (props) => {
@@ -109,6 +127,7 @@ const CollectionRow: FC<Props> = (props) => {
       </StyledCell>
       {conditionalPopover(PLURALIZED_METADATA_LABEL.TISSUE, tissue)}
       {conditionalPopover(PLURALIZED_METADATA_LABEL.ASSAY, assay)}
+      {conditionalDiseasePopover(PLURALIZED_METADATA_LABEL.DISEASE, disease)}
       {conditionalPopover(PLURALIZED_METADATA_LABEL.DISEASE, disease)}
       {conditionalPopover(PLURALIZED_METADATA_LABEL.ORGANISM, organism)}
       <RightAlignedDetailsCell>{cell_count || "-"}</RightAlignedDetailsCell>
