@@ -11,6 +11,7 @@ from jose import jwt
 
 TOKEN_EXPIRES = 3
 
+
 # A mocked out oauth server, which serves all the endpoints needed by the oauth type.
 class MockOauthApp:
     def __init__(self, port, additional_scope=None, token_duration=0):
