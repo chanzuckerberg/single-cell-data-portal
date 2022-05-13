@@ -487,17 +487,28 @@ const LandingPage = (): JSX.Element => {
           </div>
 
           <div className={styles.footerTopLinks}>
-            <a href="#">Github</a>
-            <a href="#">Careers</a>
-            <a href="#">Resources</a>
+            <a href="https://github.com/chanzuckerberg/aspen/" target="_blank">
+              Github
+            </a>
+            <a
+              href="https://chanzuckerberg.com/careers/career-opportunities/?initiative=science"
+              target="_blank"
+            >
+              Careers
+            </a>
+            <a href="https://czgenepi.org/resources">Resources</a>
           </div>
         </div>
 
         <div className={styles.footerBottomContainer}>
           <div className={styles.footerBottomLinks}>
-            <a href="#">Privacy</a>
-            <a href="#">Terms</a>
-            <a href="#">Contact Us</a>
+            <a href="https://czgenepi.org/privacy" target="_blank">
+              Privacy
+            </a>
+            <a href="https://czgenepi.org/terms" target="_blank">
+              Terms
+            </a>
+            <a href="mailto:hello@czgenepi.org">Contact Us</a>
           </div>
 
           <div className={styles.footerBottomLogos}>
@@ -505,11 +516,19 @@ const LandingPage = (): JSX.Element => {
               In partnership with:
             </span>
             <div className={styles.footerBottomLogosInner}>
-              <a href="#" className={styles.footerBottomLogoLeft}>
+              <a
+                href="https://chanzuckerberg.com/"
+                target="_blank"
+                className={styles.footerBottomLogoLeft}
+              >
                 <Image src={CZILogo} alt="Chan Zuckerberg Initiative logo" />
               </a>
               <span className={styles.footerBottomLogoSeparator}></span>
-              <a href="#" className={styles.footerBottomLogoRight}>
+              <a
+                href="https://www.czbiohub.org/"
+                target="_blank"
+                className={styles.footerBottomLogoRight}
+              >
                 <Image src={BiohubLogo} alt="CZ Biohub logo" />
               </a>
             </div>
