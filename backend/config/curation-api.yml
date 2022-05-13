@@ -408,12 +408,6 @@ paths:
       operationId: backend.corpora.lambdas.api.v1.curation.collection.dataset.post_s3_credentials
       parameters:
         - $ref: "#/components/parameters/path_collection_uuid"
-        - in: header
-          name: id_token
-          schema:
-            type: string
-          required: true
-          description: Your id_token provided when generating an access token from
       responses:
         "200":
           description: OK
