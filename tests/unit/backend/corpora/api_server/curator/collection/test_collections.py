@@ -20,7 +20,7 @@ class TestAuthToken(BaseAuthAPITest):
                 }
             )
             collection = self.generate_collection(self.session)
-            headers = {"Authorization": f"Bearer {token}", "id_token": token}
+            headers = {"Authorization": f"Bearer {token}"}
 
             response = self.app.post(
                 f"/curation/v1/collections/{collection.id}/datasets/s3-upload-credentials", headers=headers
@@ -60,7 +60,7 @@ class TestAuthToken(BaseAuthAPITest):
 
     def get_headers(self):
         token = decode_token(get_auth_token(self.app)[8:].split(";")[0])
-        return {"Authorization": f"Bearer {token['access_token']}", "id_token": token["id_token"]}
+        return {"Authorization": f"Bearer {token['access_token']}"}
 
 
 if __name__ == "__main__":
