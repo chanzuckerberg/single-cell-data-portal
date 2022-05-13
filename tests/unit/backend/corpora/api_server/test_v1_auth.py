@@ -66,6 +66,7 @@ class TestAuth(BaseAuthAPITest):
             body = json.loads(response.data)
             self.check_user_info(body)
             self.assertNotIn("Set-Cookie", response.headers)  # no cookie expected
+            # Some times the above check fails because the test ran slowly. Increase the TOKEN_EXPIRES time to fix.
 
             # sleep so the token expires, then try userinfo again, verify it refreshed
             time.sleep(TOKEN_EXPIRES + 1)

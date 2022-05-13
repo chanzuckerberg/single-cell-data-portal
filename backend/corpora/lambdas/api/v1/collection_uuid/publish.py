@@ -2,23 +2,23 @@ from flask import make_response, g
 
 from .....common.corpora_orm import CollectionVisibility
 from .....common.entities import Collection
-from .....common.utils.exceptions import ConflictException
+from .....common.utils.http_exceptions import ConflictException
 
 from .....api_server.db import dbconnect
-from .....common.utils.exceptions import ForbiddenHTTPException
-from backend.corpora.lambdas.api.v1.collection import _owner_or_allowed
+from .....common.utils.http_exceptions import ForbiddenHTTPException
+from ..authorization import owner_or_allowed
 
 from backend.corpora.common.utils import cloudfront
 
 
 @dbconnect
-def post(collection_uuid: str, body: object, user: str):
+def post(collection_uuid: str, body: object, token_info: dict):
     db_session = g.db_session
     collection = Collection.get_collection(
         db_session,
         collection_uuid,
         CollectionVisibility.PRIVATE,
-        owner=_owner_or_allowed(user),
+        owner=owner_or_allowed(token_info),
     )
     if not collection:
         raise ForbiddenHTTPException()

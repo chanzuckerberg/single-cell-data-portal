@@ -67,17 +67,17 @@ function buildBasicFilterContent(
 
   // Handle select categories
   if (isSelectCategoryView(categoryView)) {
-    const { values } = categoryView;
+    const { pinnedValues, unpinnedValues, values } = categoryView;
     return (
       <FilterMenu
         categoryKey={key}
-        filterCategoryValues={filterCategoryValues}
-        filterCategoryValuesWithCount={filterCategoryValuesWithCount}
         isMultiselect // Can possibly be single select with future filter types
         isSearchable={values.length > MAX_DISPLAYABLE_MENU_ITEMS}
         onFilter={onFilter}
         onUpdateSearchValue={onUpdateSearchValue}
-        values={values}
+        pinnedValues={filterCategoryValuesWithCount(pinnedValues)}
+        unpinnedValues={filterCategoryValuesWithCount(unpinnedValues)}
+        values={filterCategoryValuesWithCount(values)}
       />
     );
   }
@@ -188,11 +188,8 @@ function buildSelectCategoryTags(
   categoryView: SelectCategoryView,
   categoryKey: CategoryKey,
   onFilter: OnFilterFn
-): CategoryTag[] | undefined {
+): CategoryTag[] {
   const { values } = categoryView;
-  if (!values) {
-    return;
-  }
   return values
     .filter((value) => value.selected)
     .map(({ key, label }) => {
@@ -213,27 +210,14 @@ function createRangeTagLabel(min: number, max: number): [string, string] {
 }
 
 /**
- * Returns filtered category values where category key includes search value.
- * @param values
- * @param searchValue
- * @returns array of category values filtered by the given search value
- */
-function filterCategoryValues(
-  values: SelectCategoryValueView[],
-  searchValue: string
-): SelectCategoryValueView[] {
-  return values.filter(({ key }) => key.toLowerCase().includes(searchValue));
-}
-
-/**
  * Returns filtered category values where category count is greater than zero.
- * @param values
+ * @param categoryValues - Category value view models for a given category.
  * @returns category values with a count
  */
 function filterCategoryValuesWithCount(
-  values: SelectCategoryValueView[]
+  categoryValues: SelectCategoryValueView[]
 ): SelectCategoryValueView[] {
-  return values.filter(({ count }) => count > 0);
+  return categoryValues.filter(({ count }) => count > 0);
 }
 
 /**

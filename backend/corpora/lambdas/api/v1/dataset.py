@@ -4,13 +4,13 @@ from ....common.corpora_orm import CollectionVisibility, DatasetArtifactFileType
 from ....common.entities import Dataset, Collection
 from ....common.entities.geneset import GenesetDatasetLink
 from ....api_server.db import dbconnect
-from ....common.utils.exceptions import (
+from ....common.utils.http_exceptions import (
     NotFoundHTTPException,
     ServerErrorHTTPException,
     ForbiddenHTTPException,
-    CorporaException,
 )
-from backend.corpora.lambdas.api.v1.collection import _owner_or_allowed
+from ....common.utils.exceptions import CorporaException
+from .authorization import owner_or_allowed
 
 
 @dbconnect
@@ -57,7 +57,7 @@ def get_dataset_assets(dataset_uuid: str):
 
 
 @dbconnect
-def get_status(dataset_uuid: str, user: str):
+def get_status(dataset_uuid: str, token_info: dict):
     db_session = g.db_session
     dataset = Dataset.get(db_session, dataset_uuid)
     if not dataset:
@@ -66,7 +66,7 @@ def get_status(dataset_uuid: str, user: str):
         db_session,
         dataset.collection.id,
         dataset.collection.visibility,
-        owner=_owner_or_allowed(user),
+        owner=owner_or_allowed(token_info),
     )
     if not collection:
         raise ForbiddenHTTPException()
@@ -84,7 +84,7 @@ def get_datasets_index():
 
 
 @dbconnect
-def delete_dataset(dataset_uuid: str, user: str):
+def delete_dataset(dataset_uuid: str, token_info: dict):
     """
     Deletes an existing dataset or cancels an in progress upload.
     """
@@ -95,7 +95,7 @@ def delete_dataset(dataset_uuid: str, user: str):
     collection = Collection.get_collection(
         db_session,
         dataset.collection.id,
-        owner=_owner_or_allowed(user),
+        owner=owner_or_allowed(token_info),
     )
     if not collection:
         raise ForbiddenHTTPException()
@@ -133,13 +133,13 @@ def get_dataset_identifiers(url: str):
 
 
 @dbconnect
-def post_dataset_gene_sets(dataset_uuid: str, body: object, user: str):
+def post_dataset_gene_sets(dataset_uuid: str, body: object, token_info: dict):
     db_session = g.db_session
     dataset = Dataset.get(db_session, dataset_uuid)
     if not dataset:
         raise ForbiddenHTTPException()
     collection = Collection.get_collection(
-        db_session, dataset.collection.id, CollectionVisibility.PRIVATE.name, owner=_owner_or_allowed(user)
+        db_session, dataset.collection.id, CollectionVisibility.PRIVATE.name, owner=owner_or_allowed(token_info)
     )
     if not collection:
         raise ForbiddenHTTPException()

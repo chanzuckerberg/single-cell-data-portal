@@ -2,13 +2,11 @@ import Head from "next/head";
 import React, { useEffect, useMemo } from "react";
 import { Column, Filters, useFilters, useSortBy, useTable } from "react-table";
 import { PLURALIZED_METADATA_LABEL } from "src/common/constants/metadata";
-import { FEATURES } from "src/common/featureFlags/features";
 import {
   CategoryKey,
   useCategoryFilter,
 } from "src/common/hooks/useCategoryFilter";
 import { useExplainNewTab } from "src/common/hooks/useExplainNewTab";
-import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
 import { useSessionStorage } from "src/common/hooks/useSessionStorage";
 import { useFetchDatasetRows } from "src/common/queries/filter";
 import { KEYS } from "src/common/sessionStorage/set";
@@ -21,6 +19,7 @@ import {
 } from "src/components/common/Filter/common/entities";
 import { ontologyCellAccessorFn } from "src/components/common/Filter/common/utils";
 import CountCell from "src/components/common/Grid/components/CountCell";
+import DiseaseCell from "src/components/common/Grid/components/DiseaseCell";
 import { GridHero } from "src/components/common/Grid/components/Hero";
 import NTagCell from "src/components/common/Grid/components/NTagCell";
 import { RightAlignCell } from "src/components/common/Grid/components/RightAlignCell";
@@ -106,7 +105,10 @@ export default function Datasets(): JSX.Element {
       },
       {
         Cell: ({ value }: CellPropsValue<string[]>) => (
-          <NTagCell label={PLURALIZED_METADATA_LABEL.DISEASE} values={value} />
+          <DiseaseCell
+            label={PLURALIZED_METADATA_LABEL.DISEASE}
+            values={value}
+          />
         ),
         Header: "Disease",
         accessor: ontologyCellAccessorFn(CATEGORY_KEY.DISEASE),
@@ -248,6 +250,7 @@ export default function Datasets(): JSX.Element {
           CATEGORY_KEY.PUBLICATION_DATE_VALUES,
           CATEGORY_KEY.SEX,
           EXPLORER_URL,
+          IS_OVER_MAX_CELL_COUNT,
         ],
         sortBy: [
           {
@@ -298,13 +301,6 @@ export default function Datasets(): JSX.Element {
     KEYS.SIDE_BAR_DATASETS,
     true
   );
-
-  // Hide datasets behind feature flag - start
-  const isFilterEnabled = useFeatureFlag(FEATURES.FILTER);
-  if (!isFilterEnabled) {
-    return <></>;
-  }
-  // Hide datasets behind feature flag - end
 
   return (
     <>

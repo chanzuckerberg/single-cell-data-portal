@@ -2,11 +2,7 @@ import { Intent } from "@blueprintjs/core";
 import { LoadingIndicator } from "czifui";
 import React, { useCallback, useContext, useMemo } from "react";
 import { EVENTS } from "src/common/analytics/events";
-import { EMPTY_ARRAY } from "src/common/constants/utils";
-import {
-  OntologyTerm,
-  usePrimaryFilterDimensions,
-} from "src/common/queries/wheresMyGene";
+import { usePrimaryFilterDimensions } from "src/common/queries/wheresMyGene";
 import Toast from "src/views/Collection/components/Toast";
 import { DispatchContext, StateContext } from "../../common/store";
 import { selectGenes, selectTissues } from "../../common/store/actions";
@@ -26,7 +22,7 @@ export default function GeneSearchBar(): JSX.Element {
 
   const { data, isLoading } = usePrimaryFilterDimensions();
 
-  const { genes: rawGenes, tissues } = data || {};
+  const { genes: rawGenes, tissues: rawTissues } = data || {};
 
   const genes: Gene[] = useMemo(() => {
     if (!rawGenes) return [];
@@ -34,46 +30,43 @@ export default function GeneSearchBar(): JSX.Element {
     return rawGenes[selectedOrganismId || ""] || [];
   }, [rawGenes, selectedOrganismId]);
 
+  const tissues: Tissue[] = useMemo(() => {
+    if (!rawTissues) return [];
+
+    const temp = rawTissues[selectedOrganismId || ""] || [];
+
+    // (thuang): Product requirement to exclude "cell culture" from the list
+    // https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data-portal/2335
+    return temp.filter((tissue) => !tissue.name.includes("(cell culture)"));
+  }, [rawTissues, selectedOrganismId]);
+
+  /**
+   * NOTE: key is gene name in lowercase
+   */
   const genesByName = useMemo(() => {
     return genes.reduce((acc, gene) => {
-      return acc.set(gene.name, gene);
+      return acc.set(gene.name.toLowerCase(), gene);
     }, new Map<Gene["name"], Gene>());
   }, [genes]);
 
+  /**
+   * NOTE: key is tissue name in lowercase
+   */
   const tissuesByName = useMemo(() => {
-    const result = new Map<string, Tissue>();
-
-    if (!tissues) return new Map<string, Tissue>();
-
-    Object.values(tissues).forEach((tissueGroup) =>
-      tissueGroup.reduce((acc, tissue) => {
-        return acc.set(tissue.name, tissue);
-      }, result)
-    );
-
-    return result;
-  }, [tissues]);
-
-  const flattenedTissues = useMemo((): Array<OntologyTerm> => {
-    if (!tissues) return [];
-    return Object.values(tissues).reduce((acc, tissueGroup) => {
-      return acc.concat(
-        // (thuang): Product requirement to exclude "cell culture" from the list
-        // https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data-portal/2335
-        tissueGroup.filter((tissue) => !tissue.name.includes("(cell culture)"))
-      );
-    }, new Array<OntologyTerm>());
+    return tissues.reduce((acc, tissue) => {
+      return acc.set(tissue.name.toLowerCase(), tissue);
+    }, new Map<Tissue["name"], Tissue>());
   }, [tissues]);
 
   const selectedTissueOptions: Tissue[] = useMemo(() => {
     return selectedTissues.map((tissue: string) => {
-      return tissuesByName.get(tissue) as Tissue;
+      return tissuesByName.get(tissue.toLowerCase()) as Tissue;
     });
   }, [selectedTissues, tissuesByName]);
 
   const selectedGeneOptions: Gene[] = useMemo(() => {
     return selectedGenes.map((gene: string) => {
-      return genesByName.get(gene) as Gene;
+      return genesByName.get(gene.toLowerCase()) as Gene;
     });
   }, [selectedGenes, genesByName]);
 
@@ -90,7 +83,7 @@ export default function GeneSearchBar(): JSX.Element {
         <Organism isLoading={isLoading} />
 
         <QuickSelect
-          items={flattenedTissues || EMPTY_ARRAY}
+          items={tissues}
           itemsByName={tissuesByName}
           multiple
           selected={selectedTissueOptions}

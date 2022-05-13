@@ -5,13 +5,12 @@ from urllib.parse import urlparse
 
 import connexion
 from connexion import FlaskApi, ProblemException, problem
-from flask import g, jsonify, request
+from flask import g, request
 from flask_cors import CORS
 from swagger_ui_bundle import swagger_ui_path
 
 from backend.corpora.common.utils.aws import AwsSecret
 from backend.corpora.common.utils.json import CustomJSONEncoder
-from backend.corpora.lambdas.api.v1.authorization import AuthError
 
 DEPLOYMENT_STAGE = os.environ["DEPLOYMENT_STAGE"]
 APP_NAME = os.environ["APP_NAME"]
@@ -116,13 +115,6 @@ def pre_request_logging():
 @app.teardown_appcontext
 def close_db(e=None):
     g.pop("db_session", None)
-
-
-@app.errorhandler(AuthError)
-def handle_auth_error(ex):
-    response = jsonify(ex.error)
-    response.status_code = ex.status_code
-    return response
 
 
 @app.errorhandler(ProblemException)

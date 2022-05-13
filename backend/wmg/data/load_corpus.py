@@ -30,7 +30,8 @@ GENE_EXPRESSION_COUNT_MIN_THRESHOLD = 500
 
 # Minimum value for raw expression counts that will be used to filter out computed RankIt values. Details:
 # https://github.com/chanzuckerberg/cellxgene-documentation/blob/main/scExpression/scExpression-documentation.md#removal-of-noisy-ultra-low-expression-values
-RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD = 2
+# TODO: #2474 remove this and relevant code/unit tests after June 2022
+RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD = 0
 
 
 def is_dataset_already_loaded(corpus_path: str, dataset_id: str) -> bool:
@@ -48,7 +49,8 @@ def get_dataset_id(h5ad_path: str) -> str:
 
 
 def validate_dataset_properties(anndata_object: anndata.AnnData) -> bool:
-    if not sparse.issparse(anndata_object.X):
+    expression_matrix = get_X_raw(anndata_object)
+    if not sparse.issparse(expression_matrix):
         logger.warning("No dense handling yet, not loading")
         return False
     schema_version = anndata_object.uns.get("schema_version", None)

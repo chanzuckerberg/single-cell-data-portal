@@ -26,6 +26,7 @@ export interface Props {
   position?: typeof Position[keyof typeof Position];
   SideBarWrapperComponent?: typeof SideBarWrapper;
   SideBarPositionerComponent?: typeof SideBarPositioner;
+  testId?: string;
 }
 
 export default function SideBar({
@@ -37,6 +38,7 @@ export default function SideBar({
   position = Position.LEFT,
   SideBarWrapperComponent = SideBarWrapper,
   SideBarPositionerComponent = SideBarPositioner,
+  testId,
 }: Props): JSX.Element {
   const [isExpanded, setIsExpanded] = useState(isOpen);
   const sideBarWidth = isExpanded ? width : COLLAPSED_WIDTH_PX;
@@ -59,7 +61,11 @@ export default function SideBar({
   };
 
   return (
-    <SideBarWrapperComponent sideBarWidth={sideBarWidth} position={position}>
+    <SideBarWrapperComponent
+      sideBarWidth={sideBarWidth}
+      position={position}
+      data-test-id={testId}
+    >
       <SideBarPositionerComponent isExpanded={isExpanded}>
         <SideBarToggleButtonWrapper>
           <Button

@@ -1,6 +1,4 @@
 import { Collection } from "src/common/entities";
-import { FEATURES } from "src/common/featureFlags/features";
-import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
 import PublishCollection from "src/components/Collections/components/PublishCollection";
 import {
   Props as DropboxChooserProps,
@@ -8,7 +6,7 @@ import {
 } from "src/components/DropboxChooser";
 import AddButton from "./components/AddButton";
 import MoreDropdown from "./components/MoreDropdown";
-import { CollectionActions, Wrapper } from "./style";
+import { CollectionActions } from "./style";
 export interface UploadedFiles {
   [datasetID: string]: UploadingFile;
 }
@@ -28,10 +26,8 @@ const ActionButtons = ({
   revisionOf,
   visibility,
 }: Props): JSX.Element => {
-  const isFilterEnabled = useFeatureFlag(FEATURES.FILTER);
-  const Actions = isFilterEnabled ? CollectionActions : Wrapper;
   return (
-    <Actions>
+    <CollectionActions>
       <MoreDropdown id={id} isRevision={!!revisionOf} visibility={visibility} />
       <AddButton addNewFile={addNewFile} />
       <PublishCollection
@@ -39,7 +35,7 @@ const ActionButtons = ({
         isPublishable={isPublishable}
         revisionOf={revisionOf}
       />
-    </Actions>
+    </CollectionActions>
   );
 };
 

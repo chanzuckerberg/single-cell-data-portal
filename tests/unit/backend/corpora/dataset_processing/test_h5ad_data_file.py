@@ -174,7 +174,6 @@ class TestH5ADDataFile(unittest.TestCase):
         specific_embedding_array_location = f"{self.sample_output_directory}/emb/awesome_embedding"
         obs_array_location = f"{cxg_directory}/obs"
         var_array_location = f"{cxg_directory}/var"
-        x_col_shift_array_location = f"{cxg_directory}/X_col_shift"
 
         # Assert CXG structure
         self.assertEqual(tiledb.object_type(cxg_directory), "group")
@@ -184,15 +183,12 @@ class TestH5ADDataFile(unittest.TestCase):
         self.assertEqual(tiledb.object_type(embedding_array_location), "group")
         self.assertEqual(tiledb.object_type(specific_embedding_array_location), "array")
 
-        if has_column_encoding:
-            self.assertEqual(tiledb.object_type(x_col_shift_array_location), "array")
-
+        # Validate metadata
         with tiledb.open(metadata_array_location, mode="r") as metadata_array:
-            # Validate metadata
             self.assertIn("cxg_version", metadata_array.meta)
 
+        # Validate obs index
         with tiledb.open(obs_array_location, mode="r") as obs_array:
-            # Validate obs index
             expected_index_data = anndata_object.obs.index.to_numpy()
             index_name = json.loads(obs_array.meta["cxg_schema"])["index"]
             actual_index_data = obs_array.query(attrs=[index_name])[:][index_name]
@@ -205,8 +201,8 @@ class TestH5ADDataFile(unittest.TestCase):
                 actual_data = obs_array.query(attrs=[column_name])[:][column_name]
                 self.assertTrue(np.array_equal(expected_data, actual_data))
 
+        # Validate var index
         with tiledb.open(var_array_location, mode="r") as var_array:
-            # Validate var index
             expected_index_data = anndata_object.var.index.to_numpy()
             index_name = json.loads(var_array.meta["cxg_schema"])["index"]
             actual_index_data = var_array.query(attrs=[index_name])[:][index_name]

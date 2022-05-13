@@ -27,6 +27,11 @@ export interface State {
     ethnicities?: string[];
     sexes?: string[];
   };
+  /**
+   * (thuang): BE API response always returns a snapshot ID. When the ID changes,
+   * FE needs refresh the queries
+   */
+  snapshotId: string | null;
 }
 
 // (thuang): If you have derived states based on the state, use `useMemo`
@@ -39,6 +44,7 @@ export const INITIAL_STATE: State = {
   selectedGenes: [],
   selectedOrganismId: null,
   selectedTissues: [],
+  snapshotId: null,
 };
 
 export const REDUCERS = {
@@ -50,6 +56,7 @@ export const REDUCERS = {
   selectGenes,
   selectOrganism,
   selectTissues,
+  setSnapshotId,
   tissueCellTypesFetched,
   toggleCellTypeIdToDelete,
   toggleGeneToDelete,
@@ -117,6 +124,10 @@ function selectOrganism(
   state: State,
   action: PayloadAction<string | null>
 ): State {
+  if (state.selectedOrganismId === action.payload) {
+    return state;
+  }
+
   return {
     ...state,
     selectedGenes: [],
@@ -308,5 +319,17 @@ function selectFilters(
   return {
     ...state,
     selectedFilters: newSelectedFilters,
+  };
+}
+
+function setSnapshotId(
+  state: State,
+  action: PayloadAction<State["snapshotId"]>
+): State {
+  const { payload } = action;
+
+  return {
+    ...state,
+    snapshotId: payload,
   };
 }

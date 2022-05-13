@@ -21,7 +21,12 @@ import {
 import { ENTITIES } from "./entities";
 
 /**
- * Error text returned from BE when DOI is identified as invalid.
+ * Error text returned from BE when DOI format is identified as invalid.
+ */
+const INVALID_DOI_FORMAT_MESSAGE = "Invalid DOI";
+
+/**
+ * Error text returned from BE when DOI is identified as invalid, that is, DOI can not be found on Crossref.
  */
 const INVALID_DOI_MESSAGE = "DOI cannot be found on Crossref";
 
@@ -201,14 +206,6 @@ export function useCollection({
     () => queryFn(id),
     {
       enabled: !!collections,
-      // TODO review use of refetch flag below on remove of filter flag (#1718). This is set to false as a fix for #2204
-      //  where unsaved links on the collection edit form are cleared if the user clicks away and back again. The root
-      //  cause of the defect is the useEffect that was added in /components/CreateCollectionModal/components/Content/index.tsx
-      //  to handle filter flag-related functionality is re-run after the refetch causing unsaved links to be removed.
-      //  The useEffect can be reverted to useState on remove of the filter flag and will therefore remove the side
-      //  effect of the links being cleared as reported in #2204. Options going forward are to remove the refetch
-      //  option below and allow it to default to true, or to review setting the refetch option to false for all queries.
-      refetchOnWindowFocus: false,
     }
   );
 }
@@ -572,15 +569,23 @@ export function useReuploadDataset(
 }
 
 /**
- * Determine if a submitted DOI has failed validation on the BE. Expected response for invalid DOI:
- * {"detail": "DOI cannot be found on Crossref", "status": 400, "title": "Bad Request", "type": "about:blank"}
+ * Determine if a submitted DOI has failed validation on the BE.
+ *
+ * Expected response for invalid DOI:
+ * {"detail": "DOI cannot be found on Crossref", "status": 400, "title": "Bad Request", "type": "about:blank"}.
+ *
+ * Expected response for DOI with an invalid format:
+ * {"detail": "Invalid DOI", "status": 400, "title": "Bad Request", "type": "about:blank"}
+ *
  * TODO generalize beyond DOI link type once all links are validated on the BE (#1916).
+ *
  * @param status - Response status returned from server.
  * @param detail - Response error text, if any.
  * @returns True if DOI has been identified as invalid by the BE.
  */
 function isInvalidDOI(status: number, detail?: string): boolean {
   return (
-    status === HTTP_STATUS_CODE.BAD_REQUEST && detail === INVALID_DOI_MESSAGE
+    status === HTTP_STATUS_CODE.BAD_REQUEST &&
+    (detail === INVALID_DOI_MESSAGE || detail === INVALID_DOI_FORMAT_MESSAGE)
   );
 }
