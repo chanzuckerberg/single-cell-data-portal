@@ -190,5 +190,6 @@ class TestCrossrefProvider(unittest.TestCase):
         with self.assertRaises(CrossrefException):
             provider.fetch_metadata("test_doi")
 
+
 if __name__ == "__main__":
     unittest.main()
