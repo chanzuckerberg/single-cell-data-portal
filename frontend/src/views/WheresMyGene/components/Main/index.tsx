@@ -24,6 +24,7 @@ import GetStarted from "../GetStarted";
 import HeatMap from "../HeatMap";
 import InfoPanel from "../InfoPanel";
 import Loader from "../Loader";
+import { SideBarLabel } from "./style";
 
 const INFO_PANEL_WIDTH_PX = 320;
 
@@ -31,7 +32,7 @@ export default function WheresMyGene(): JSX.Element {
   const state = useContext(StateContext);
   const dispatch = useContext(DispatchContext);
 
-  const { selectedGenes, selectedCellTypeIds, selectedTissues } = state;
+  const { selectedGenes, selectedCellTypeIds, selectedTissues, sortBy } = state;
 
   const [isScaled, setIsScaled] = useState(true);
 
@@ -224,7 +225,7 @@ export default function WheresMyGene(): JSX.Element {
       </Head>
 
       <SideBar
-        label="Filters"
+        label={<SideBarLabel>Filters</SideBarLabel>}
         isOpen
         SideBarWrapperComponent={SideBarWrapper}
         SideBarPositionerComponent={SideBarPositioner}
@@ -235,7 +236,7 @@ export default function WheresMyGene(): JSX.Element {
 
       <SideBar
         width={INFO_PANEL_WIDTH_PX}
-        label="Info"
+        label={<SideBarLabel>Info</SideBarLabel>}
         isOpen
         position={Position.RIGHT}
         SideBarWrapperComponent={SideBarWrapper}
@@ -258,6 +259,8 @@ export default function WheresMyGene(): JSX.Element {
 
           {shouldShowHeatMap ? (
             <HeatMap
+              cellTypeSortBy={sortBy.cellTypes}
+              geneSortBy={sortBy.genes}
               selectedTissues={selectedTissues}
               isScaled={isScaled}
               isLoadingAPI={isLoading}
