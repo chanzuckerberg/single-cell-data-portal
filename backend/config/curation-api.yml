@@ -37,6 +37,8 @@ paths:
                 properties:
                   access_token:
                     type: string
+                  user_id:
+                    type: string
         "401":
           $ref: "#/components/responses/401"
 

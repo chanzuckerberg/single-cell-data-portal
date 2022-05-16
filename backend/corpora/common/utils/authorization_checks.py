@@ -1,5 +1,7 @@
 from typing import Union, Optional
 
+from backend.corpora.common.utils.corpora_constants import CorporaConstants
+
 
 def has_scope(required_scope: str, scope: Union[list, str]) -> bool:
     scopes = scope.split(" ") if isinstance(scope, str) else scope or []
@@ -10,11 +12,11 @@ def is_user_owner_or_allowed(user: str, scope: Union[list, str], owner: str) -> 
     """
     Check if the user has ownership on a collection, or if it has superuser permissions
     """
-    return user == owner or (has_scope("write:collections", scope))
+    return user == owner or (has_scope(CorporaConstants.SUPER_CURATOR_NAME, scope))
 
 
 def owner_or_allowed(user: str, scope: Union[list, str]) -> Optional[str]:
     """
     Returns None if the user is superuser, `user` otherwise. Used for SQL Query where conditions
     """
-    return None if has_scope("write:collections", scope) else user
+    return None if has_scope(CorporaConstants.SUPER_CURATOR_NAME, scope) else user
