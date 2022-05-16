@@ -189,3 +189,6 @@ class TestCrossrefProvider(unittest.TestCase):
         # Make sure that the parent CrossrefException will also be caught
         with self.assertRaises(CrossrefException):
             provider.fetch_metadata("test_doi")
+
+if __name__ == "__main__":
+    unittest.main()
