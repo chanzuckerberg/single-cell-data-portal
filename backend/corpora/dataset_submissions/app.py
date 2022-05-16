@@ -13,7 +13,7 @@ from backend.corpora.common.utils.db_session import db_session_manager
 from backend.corpora.common.utils.exceptions import CorporaException
 
 logger = logging.getLogger(__name__)
-USERNAME_REGEX = r"[\w-]+|\|[0-9a-fA-F]+"
+USERNAME_REGEX = r"[\w-|]+"
 UUID_REGEX = r"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
 
 
