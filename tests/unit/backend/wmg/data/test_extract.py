@@ -141,6 +141,7 @@ class TestExtract(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
             self.dataset__not_published,
             self.dataset__private_collection,
             self.dataset__wrong_assay,
+            self.dataset__multiple_organisms,
         ]
         for dataset in not_expected_datasets:
             dataset_assets = dataset.get_assets()
@@ -154,7 +155,6 @@ class TestExtract(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
 
         s3_uris = set(extract.get_dataset_s3_uris().values())
         self.assertEquals(set(expected_s3_uris), s3_uris)
-        self.assertEquals(1, 0)  # is this test even running?
 
         @unittest.skip
         def test_datasets_copied_to_correct_location(self):
