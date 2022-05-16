@@ -23,6 +23,7 @@
     "echarts": "^5.2.2",
     "jschardet": "^2.3.0",
     "lodash": "^4.17.20",
+    "ml-hclust": "^3.1.0",
     "next": "^11.1.2",
     "next-secure-headers": "^2.1.0",
     "node-sass": "^5.0.0",

@@ -78,3 +78,9 @@ export interface Filters {
   ethnicities?: DefaultMenuSelectOption[];
   sexes?: DefaultMenuSelectOption[];
 }
+
+export enum SORT_BY {
+  CELL_ONTOLOGY = "CELL_ONTOLOGY",
+  H_CLUSTER = "H_CLUSTER",
+  USER_ENTERED = "USER_ENTERED",
+}
