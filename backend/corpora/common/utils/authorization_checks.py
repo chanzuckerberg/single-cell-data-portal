@@ -12,11 +12,11 @@ def is_user_owner_or_allowed(user: str, scope: Union[list, str], owner: str) -> 
     """
     Check if the user has ownership on a collection, or if it has superuser permissions
     """
-    return user == owner or (has_scope(CorporaConstants.SUPER_CURATOR_NAME, scope))
+    return user == owner or (has_scope(CorporaConstants.SUPER_CURATOR_SCOPE, scope))
 
 
 def owner_or_allowed(user: str, scope: Union[list, str]) -> Optional[str]:
     """
     Returns None if the user is superuser, `user` otherwise. Used for SQL Query where conditions
     """
-    return None if has_scope(CorporaConstants.SUPER_CURATOR_NAME, scope) else user
+    return None if has_scope(CorporaConstants.SUPER_CURATOR_SCOPE, scope) else user

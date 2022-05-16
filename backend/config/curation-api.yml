@@ -421,13 +421,15 @@ paths:
                   credentials:
                     type: object
                     properties:
-                      access_key:
+                      AccessKeyId:
                         type: string
-                      secret_access_key:
+                      SecretAccessKey:
                         type: string
-                      session_token:
+                      SessionToken:
                         type: string
-                  upload_path:
+                  UploadPath:
+                    type: string
+                  Bucket:
                     type: string
         "401":
           $ref: "#/components/responses/401"

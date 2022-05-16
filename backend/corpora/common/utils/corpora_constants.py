@@ -15,4 +15,4 @@ class CorporaConstants(object):
         "X_approximate_distribution",
     ]
     SUPER_CURATOR_NAME = "super_curator"
-    SUPER_CURATOR_SCOPE = "write:collection"
+    SUPER_CURATOR_SCOPE = "write:collections"

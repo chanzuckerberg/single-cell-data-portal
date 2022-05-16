@@ -14,7 +14,7 @@ sts_client = boto3.client("sts")
 logger = logging.getLogger(__name__)
 
 
-def create_policy(upload_path: str) -> str:
+def create_policy(bucket: str, upload_path: str) -> str:
     policy = {
         "Version": "2012-10-17",
         "Statement": [
@@ -22,7 +22,7 @@ def create_policy(upload_path: str) -> str:
                 "Sid": "DataPortalUserUploadPolicy",
                 "Effect": "Allow",
                 "Action": ["s3:PutObject"],
-                "Resource": [f"arn:aws:s3:::{upload_path}/*"],
+                "Resource": [f"arn:aws:s3:::{bucket}/{upload_path}/*"],
             }
         ],
     }
@@ -42,17 +42,18 @@ def post_s3_credentials(collection_uuid: str, token_info: dict):
     )
     user_id = token_info["sub"]
     if CorporaConstants.SUPER_CURATOR_SCOPE in token_info["scope"]:
-        upload_path = f"{config.submission_bucket}/{CorporaConstants.SUPER_CURATOR_NAME}/{collection_uuid}"
+        upload_path = f"{CorporaConstants.SUPER_CURATOR_NAME}/{collection_uuid}"
     else:
-        upload_path = f"{config.submission_bucket}/{user_id}/{collection_uuid}"
+        upload_path = f"{user_id}/{collection_uuid}"
     parameters = dict(
         RoleArn=config.curator_role_arn,
         RoleSessionName=user_id.replace("|", "-"),
-        Policy=create_policy(upload_path),
+        Policy=create_policy(config.submission_bucket, upload_path),
         WebIdentityToken=request.headers["Authorization"][6:],
         DurationSeconds=duration,
     )
     logger.info(json.dumps(parameters))
     response = sts_client.assume_role_with_web_identity(**parameters)
-    response["upload_path"] = f"{upload_path}/"
+    response["UploadPath"] = f"{upload_path}/"
+    response["Bucket"] = config.submission_bucket
     return make_response(jsonify(response), 200)

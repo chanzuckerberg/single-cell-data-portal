@@ -10,13 +10,16 @@ from tests.unit.backend.corpora.api_server.mock_auth import get_auth_token, make
 class TestAuthToken(BaseAuthAPITest):
     @patch("backend.corpora.lambdas.api.v1.curation.collection.dataset.sts_client")
     def test__generate_s3_credentials__OK(self, sts_client: Mock):
-        def _test(token_claims: dict, additional_scope: list = None):
+        def _test(user_name: str, additional_scope: list = None):
+            token_claims = dict(sub=user_name, email="fake_user@email.com")
             token = make_token(token_claims, additional_scope=additional_scope, token_duration=10)
             sts_client.assume_role_with_web_identity = Mock(
                 return_value={
-                    "access_key": "test_key",
-                    "secret_access_key": "test_session_token",
-                    "session_token": "test_session_token",
+                    "Credentials": {
+                        "AccessKeyId": "test_key",
+                        "SecretAccessKey": "test_session_token",
+                        "SessionToken": "test_session_token",
+                    }
                 }
             )
             collection = self.generate_collection(self.session)
@@ -26,21 +29,20 @@ class TestAuthToken(BaseAuthAPITest):
                 f"/curation/v1/collections/{collection.id}/datasets/s3-upload-credentials", headers=headers
             )
             self.assertEqual(200, response.status_code)
+            self.assertEqual(response.json["Bucket"], "cellxgene-dataset-submissions-test")
+            if additional_scope:
+                self.assertEqual(response.json["UploadPath"], f"super_curator/{collection.id}/")
+            else:
+                self.assertEqual(response.json["UploadPath"], f"{user_name}/{collection.id}/")
 
         with self.subTest("collection owner"):
             _test(
-                dict(
-                    sub="test_user_id",
-                    email="fake_user@email.com",
-                )
+                user_name="test_user_id",
             )
 
         with self.subTest("super curator"):
             _test(
-                dict(
-                    sub="not_test_user_id",
-                    email="fake_user@email.com",
-                ),
+                user_name="test_super_user_id",
                 additional_scope="write:collections",
             )
 
