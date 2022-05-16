@@ -427,6 +427,8 @@ paths:
                         type: string
                       session_token:
                         type: string
+                      upload_path:
+                        type: string
         "401":
           $ref: "#/components/responses/401"
 

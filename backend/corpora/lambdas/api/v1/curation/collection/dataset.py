@@ -54,5 +54,5 @@ def post_s3_credentials(collection_uuid: str, token_info: dict):
     )
     logger.info(json.dumps(parameters))
     credentials = sts_client.assume_role_with_web_identity(**parameters)
-    credentials["UploadPath"] = ""
+    credentials["upload_path"] = f"{upload_path}/"
     return make_response(jsonify(credentials), 200)
