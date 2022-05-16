@@ -13,7 +13,7 @@ from backend.corpora.common.utils.db_session import db_session_manager
 from backend.corpora.common.utils.exceptions import CorporaException
 
 logger = logging.getLogger(__name__)
-USERNAME_REGEX = r"[\w-|]+"
+USERNAME_REGEX = r"[\w\-\|]+"
 UUID_REGEX = r"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
 
 
@@ -88,7 +88,7 @@ def parse_key(key: str) -> Tuple[Optional[str], Optional[str], Optional[str]]:
     if rdev_prefix:
         key = key.replace(f"{rdev_prefix}/", "")
 
-    matched = re.match(f"^{USERNAME_REGEX}/({UUID_REGEX})/(.*)$", key)
+    matched = re.match(f"^({USERNAME_REGEX})/({UUID_REGEX})/(.*)$", key)
     if matched:
         username, collection_uuid, curator_tag = matched.groups()
         return username, collection_uuid.lower(), curator_tag

@@ -8,11 +8,16 @@ from backend.corpora.dataset_submissions.app import dataset_submissions_handler
 
 class TestDatasetSubmissions(TestCase):
     def test__missing_curator_tag__raises_error(self):
-        s3_event = create_s3_event(bucket_name="some_bucket", key=f"{generate_uuid()}/")
+        s3_event = create_s3_event(bucket_name="some_bucket", key=f"user_name/{generate_uuid()}/")
         with self.assertRaises(CorporaException):
             dataset_submissions_handler(s3_event, None)
 
     def test__missing_collection_uuid__raises_error(self):
+        s3_event = create_s3_event(key="user_name/should_have_been_a_uuid/some_key")
+        with self.assertRaises(CorporaException):
+            dataset_submissions_handler(s3_event, None)
+
+    def test__missing_username__raises_error(self):
         s3_event = create_s3_event(key="should_have_been_a_uuid/some_key")
         with self.assertRaises(CorporaException):
             dataset_submissions_handler(s3_event, None)
