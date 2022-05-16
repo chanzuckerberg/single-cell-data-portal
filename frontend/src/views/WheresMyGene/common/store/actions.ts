@@ -109,6 +109,15 @@ export function selectFilters(
   };
 }
 
+export function setSnapshotId(
+  snapshotId: State["snapshotId"]
+): GetActionTypeOfReducer<typeof REDUCERS["setSnapshotId"]> {
+  return {
+    payload: snapshotId,
+    type: "setSnapshotId",
+  };
+}
+
 type GetActionTypeOfReducer<T> = T extends (
   state: never,
   action: infer Action

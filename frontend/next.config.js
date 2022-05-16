@@ -10,6 +10,7 @@ const PLAUSIBLE_URL = "https://plausible.io";
 const SCRIPT_SRC = ["'self'", PLAUSIBLE_URL];
 
 module.exports = {
+  eslint: { dirs: ["doc-site", "pages", "components", "lib"] },
   async generateBuildId() {
     // Return null to allow next.js to fallback to default behavior
     // if COMMIT_SHA env is missing or empty.

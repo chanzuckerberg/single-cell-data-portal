@@ -20,6 +20,7 @@ import {
   RowPropsValue,
 } from "src/components/common/Filter/common/entities";
 import { ontologyCellAccessorFn } from "src/components/common/Filter/common/utils";
+import DiseaseCell from "src/components/common/Grid/components/DiseaseCell";
 import { GridHero } from "src/components/common/Grid/components/Hero";
 import LinkCell from "src/components/common/Grid/components/LinkCell";
 import NTagCell from "src/components/common/Grid/components/NTagCell";
@@ -95,7 +96,10 @@ export default function Collections(): JSX.Element {
       },
       {
         Cell: ({ value }: CellPropsValue<string[]>) => (
-          <NTagCell label={PLURALIZED_METADATA_LABEL.DISEASE} values={value} />
+          <DiseaseCell
+            label={PLURALIZED_METADATA_LABEL.DISEASE}
+            values={value}
+          />
         ),
         Header: "Disease",
         accessor: ontologyCellAccessorFn(CATEGORY_KEY.DISEASE),
