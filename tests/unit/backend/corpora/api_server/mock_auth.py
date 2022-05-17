@@ -135,11 +135,11 @@ def get_auth_token(app):
     return response.headers["Set-Cookie"]
 
 
-def make_token(token_claims: dict, token_duration: int = 0, additional_scope: list = None) -> dict:
-    addition_scope = additional_scope if additional_scope else []
+def make_token(token_claims: dict, token_duration: int = 0, additional_scope: list = None) -> str:
+    additional_scope = additional_scope if additional_scope else []
     expires_at = time.time() + token_duration
     headers = dict(alg="RS256", kid="fake_kid")
-    token_claims.update(exp=expires_at, scope=addition_scope)
+    token_claims.update(exp=expires_at, scope=additional_scope)
 
     token = jwt.encode(claims=token_claims, key="mysecret", algorithm="HS256", headers=headers)
     return token

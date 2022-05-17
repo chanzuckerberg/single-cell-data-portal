@@ -1,37 +1,67 @@
 from unittest import TestCase
-from unittest.mock import patch
+from unittest.mock import patch, Mock
 
 from backend.corpora.common.corpora_orm import generate_uuid
+from backend.corpora.common.utils.corpora_constants import CorporaConstants
 from backend.corpora.common.utils.exceptions import CorporaException
 from backend.corpora.dataset_submissions.app import dataset_submissions_handler
 
 
 class TestDatasetSubmissions(TestCase):
-    def test__missing_curator_tag__raises_error(self):
-        s3_event = create_s3_event(bucket_name="some_bucket", key=f"user_name/{generate_uuid()}/")
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.collection_uuid = generate_uuid()
+        cls.incoming_curator_tag = "my_dataset.h5ad"
+        cls.user_name = "user_name"
+        cls.dataset_uuid = "12341234-1234-1234-1234-123412341234"
+
+    def _test_missing_fields(self, **kwargs):
+        s3_event = create_s3_event(**kwargs)
         with self.assertRaises(CorporaException):
             dataset_submissions_handler(s3_event, None)
+
+    def test__missing_curator_tag__raises_error(self):
+        self._test_missing_fields(key=f"{self.user_name}/{self.collection_uuid}/")
 
     def test__missing_collection_uuid__raises_error(self):
-        s3_event = create_s3_event(key="user_name/should_have_been_a_uuid/some_key")
-        with self.assertRaises(CorporaException):
-            dataset_submissions_handler(s3_event, None)
+        self._test_missing_fields(key=f"{self.user_name}/should_have_been_a_uuid/some_key")
 
     def test__missing_username__raises_error(self):
-        s3_event = create_s3_event(key="should_have_been_a_uuid/some_key")
+        self._test_missing_fields(key=f"{self.collection_uuid}/some_key")
+
+    @patch("backend.corpora.dataset_submissions.app.get_dataset_info")
+    def test__non_existent_collection__raises_error(self, mock_get_dataset_info):
+        s3_event = create_s3_event(key=f"{self.user_name}/{self.collection_uuid}/{self.incoming_curator_tag}")
+        mock_get_dataset_info.return_value = None, None
         with self.assertRaises(CorporaException):
             dataset_submissions_handler(s3_event, None)
 
     @patch("backend.corpora.dataset_submissions.app.get_dataset_info")
-    def test__non_existent_collection__raises_error(self, mock_get_dataset_info):
-        collection_uuid = generate_uuid()
-        incoming_curator_tag = "my_dataset.h5ad"
-        s3_event = create_s3_event(bucket_name="expected_bucket", key=f"{collection_uuid}/{incoming_curator_tag}")
-
-        mock_get_dataset_info.return_value = None, None
-
+    def test__non_owner__raises_error(self, mock_get_dataset_info):
+        s3_event = create_s3_event(key=f"{self.user_name}/{self.collection_uuid}/{self.incoming_curator_tag}")
+        mock_get_dataset_info.return_value = "not_owner", self.dataset_uuid
         with self.assertRaises(CorporaException):
             dataset_submissions_handler(s3_event, None)
+
+    @patch("backend.corpora.dataset_submissions.app.get_dataset_info")
+    @patch("backend.corpora.dataset_submissions.app.upload")
+    def test__super_curator__upload(self, mock_upload: Mock, mock_get_dataset_info: Mock):
+        s3_event = create_s3_event(
+            key=f"{CorporaConstants.SUPER_CURATOR_NAME}/{self.collection_uuid}/{self.incoming_curator_tag}"
+        )
+        mock_upload.return_value = None
+        mock_get_dataset_info.return_value = self.user_name, self.dataset_uuid
+        dataset_submissions_handler(s3_event, None)
+        mock_upload.assert_called()
+
+    @patch("backend.corpora.dataset_submissions.app.get_dataset_info")
+    @patch("backend.corpora.dataset_submissions.app.upload")
+    def test__owner__upload(self, mock_upload: Mock, mock_get_dataset_info: Mock):
+        s3_event = create_s3_event(key=f"{self.user_name}/{self.collection_uuid}/{self.incoming_curator_tag}")
+        mock_upload.return_value = None
+        mock_get_dataset_info.return_value = self.user_name, self.dataset_uuid
+        dataset_submissions_handler(s3_event, None)
+        mock_upload.assert_called()
 
 
 def create_s3_event(bucket_name: str = "some_bucket", key: str = "", size: int = 0) -> dict:
