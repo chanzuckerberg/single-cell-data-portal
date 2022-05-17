@@ -1,10 +1,7 @@
-import { Classes } from "@blueprintjs/core";
-import { Fragment } from "react";
 import {
   Collection,
   COLLECTION_LINK_TYPE,
   COLLECTION_LINK_TYPE_OPTIONS,
-  COLLECTION_LINK_TYPE_OPTIONS_DEPRECATED,
   Dataset,
   DATASET_ASSET_FORMAT,
   Link,
@@ -13,7 +10,6 @@ import {
 } from "src/common/entities";
 import { getUrlHost } from "src/common/utils/getUrlHost";
 import { CollectionMetadataLink } from "src/components/Collection/components/CollectionMetadata";
-import { StyledLink } from "./common/style";
 
 const LINK_ORDER: COLLECTION_LINK_TYPE[] = [
   COLLECTION_LINK_TYPE.DOI,
@@ -81,45 +77,6 @@ export function buildCollectionMetadataLinks(
 }
 
 /**
- * @deprecated Remove once feature flag is removed (#1718).
- * Returns collection metadata in preferred order of display.
- * @param links - links associated with collection.
- * @param contactName
- * @param contactEmail
- * @returns Array of collection metadata in preferred order of display.
- */
-export function buildCollectionMetadataLinksDeprecated(
-  links: Link[],
-  contactName?: Collection["contact_name"],
-  contactEmail?: Collection["contact_email"]
-): CollectionMetadataLink[] {
-  const collectionMetadataLinks = [];
-
-  /* Add contact name and email to the top of collection metadata list. */
-  if (contactName && contactEmail) {
-    collectionMetadataLinks.push({
-      label: "Contact",
-      testId: "collection-contact",
-      url: `mailto:${contactEmail}`,
-      value: contactName,
-    });
-  }
-
-  /* Add collection links to collection metadata list. */
-  /* Collection metadata reordered for preferred order of display. */
-  const orderedLinks = sortCollectionLinks(links);
-  for (const orderedLink of orderedLinks) {
-    /* Build and add any valid collection metadata. */
-    const collectionMetadataLink = buildCollectionMetadataLink(orderedLink);
-    if (!collectionMetadataLink) continue;
-    collectionMetadataLinks.push(collectionMetadataLink);
-  }
-
-  /* Return valid collection metadata. */
-  return collectionMetadataLinks;
-}
-
-/**
  * Build display model of DOI link associated with a collection, if any. Display publication metadata if it has been
  * retrieved for the DOI, otherwise display the DOI link as is.
  * @params links - Links associated with a collection.
@@ -160,51 +117,6 @@ export function getDOIPath(doiUrl: string): string {
   return new URL(doiUrl).pathname.substring(1);
 }
 
-/**
- * @deprecated - supersede by buildCollectionMetadata once filter feature flag is removed (#1718).
- * @param links
- */
-export function renderLinks(links: Link[]): (JSX.Element | null)[] {
-  /* Reorder links into preferred order of display. */
-  const orderedLinks = sortCollectionLinks(links);
-
-  return orderedLinks.map(
-    ({ link_url: url, link_type: type, link_name: name }) => {
-      const linkTypeOption = COLLECTION_LINK_TYPE_OPTIONS_DEPRECATED[type];
-
-      if (!linkTypeOption) return null;
-
-      let urlName: string | null = name;
-
-      if (!urlName) {
-        if (linkTypeOption === COLLECTION_LINK_TYPE_OPTIONS_DEPRECATED["DOI"]) {
-          urlName = getDOIPath(url);
-        } else {
-          urlName = getUrlHost(url);
-        }
-      }
-
-      const { text } = linkTypeOption;
-
-      if (!urlName) return null;
-
-      return (
-        <Fragment key={`${type}+${url}`}>
-          <span className={Classes.TEXT_MUTED}>{text}</span>
-          <StyledLink
-            data-test-id="collection-link"
-            target="_blank"
-            rel="noopener"
-            href={url}
-          >
-            {urlName}
-          </StyledLink>
-        </Fragment>
-      );
-    }
-  );
-}
-
 type LinkTypesToLinks = {
   [key in COLLECTION_LINK_TYPE]?: Link[];
 };
@@ -221,30 +133,6 @@ function createLinkTypesToLinks(links: Link[]) {
   }
 
   return linkTypesToLinks;
-}
-
-/**
- * @deprecated - supersede by buildCollectionMetadata once filter feature flag is removed (#1718).
- * @param contact_name
- * @param contact_email
- */
-export function renderContact(
-  contact_name?: Collection["contact_name"],
-  contact_email?: Collection["contact_email"]
-): JSX.Element | null {
-  if (!contact_name || !contact_email) return null;
-
-  return (
-    <>
-      <span className={Classes.TEXT_MUTED}>Contact</span>
-      <StyledLink
-        data-test-id="collection-contact"
-        href={"mailto:" + contact_email}
-      >
-        {contact_name}
-      </StyledLink>
-    </>
-  );
 }
 
 export function getIsPublishable(datasets: Array<Dataset>): boolean {
@@ -323,7 +211,7 @@ function buildCollectionMetadataLink(
 
 function isPrivateRevision(collection: Collection) {
   return (
-    collection.visibility === VISIBILITY_TYPE.PRIVATE && collection.has_revision
+    collection.visibility === VISIBILITY_TYPE.PRIVATE && collection.revision_of
   );
 }
 

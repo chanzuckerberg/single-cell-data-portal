@@ -15,7 +15,7 @@ from ....common.authorizer import assert_authorized_token, get_userinfo_from_aut
 from ....common.corpora_config import CorporaAuthConfig
 
 # global oauth client
-from ....common.utils.exceptions import UnauthorizedError
+from ....common.utils.http_exceptions import UnauthorizedError
 
 oauth_client = None
 
@@ -195,6 +195,22 @@ def check_token(token: dict) -> dict:
             raise UnauthorizedError(detail="Token is expired.")
 
     return payload
+
+
+def curation_apikey_info_func(token):
+    return assert_authorized_token(token, CorporaAuthConfig().curation_audience)
+
+
+def curation_apikey_info_func_lenient(token: str) -> dict:
+    """
+    Lenient version that allows endpoints to work even if authentication fails.
+    Use this for endpoints that also require public access, so if users end up with a bad token,
+    they won't be locked out.
+    """
+    try:
+        return assert_authorized_token(token, CorporaAuthConfig().curation_audience)
+    except Exception:
+        return {}
 
 
 def apikey_info_func(tokenstr: str, required_scopes: list) -> dict:

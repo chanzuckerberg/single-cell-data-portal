@@ -1,13 +1,9 @@
 import { Button, Intent, UL } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
-import memoize from "lodash/memoize";
-import { FC, useState } from "react";
-import { MutateFunction, useQueryClient } from "react-query";
+import { FC, useCallback, useState } from "react";
+import { useQueryClient } from "react-query";
 import { Collection, Dataset } from "src/common/entities";
-import { FEATURES } from "src/common/featureFlags/features";
-import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
 import {
-  ReuploadLink,
   useCollection,
   useCollectionUploadLinks,
   useReuploadDataset,
@@ -15,7 +11,6 @@ import {
 } from "src/common/queries/collections";
 import { isTombstonedCollection } from "src/common/utils/typeGuards";
 import { CollectionDatasetsGrid } from "src/components/Collection/components/CollectionDatasetsGrid/style";
-import DatasetsGrid from "src/components/Collections/components/Grid/components/DatasetsGrid";
 import DropboxChooser, { UploadingFile } from "src/components/DropboxChooser";
 import { StyledLink } from "src/views/Collection/common/style";
 import { UploadedFiles } from "src/views/Collection/components/ActionButtons";
@@ -38,14 +33,10 @@ const DatasetTab: FC<Props> = ({
   const CLI_README_LINK =
     "https://github.com/chanzuckerberg/single-cell-curation/blob/main/readme.md";
 
-  const { mutateAsync: uploadLink } = useCollectionUploadLinks(
-    collectionId,
-    visibility
-  );
+  const { mutateAsync: uploadLink } = useCollectionUploadLinks(collectionId);
   const { mutateAsync: reuploadDataset } = useReuploadDataset(collectionId);
   const [uploadedFiles, setUploadedFiles] = useState({} as UploadedFiles);
-  const { data: collection } = useCollection({ id: collectionId, visibility });
-  const isFilterEnabled = useFeatureFlag(FEATURES.FILTER);
+  const { data: collection } = useCollection({ id: collectionId });
 
   const queryClient = useQueryClient();
 
@@ -54,21 +45,11 @@ const DatasetTab: FC<Props> = ({
   const isDatasetPresent =
     datasets?.length > 0 || Object.keys(uploadedFiles).length > 0;
 
-  const invalidateCollectionQuery = memoize(
-    () => {
-      queryClient.invalidateQueries([USE_COLLECTION, collectionId, visibility]);
-    },
-    () => collectionId + visibility
-  );
+  const invalidateCollectionQuery = useCallback(() => {
+    queryClient.invalidateQueries([USE_COLLECTION, collectionId]);
+  }, [collectionId]);
 
-  const addNewFile = (
-    mutationFunction = uploadLink as MutateFunction<
-      string,
-      unknown,
-      ReuploadLink
-    >,
-    originalId?: string
-  ) => {
+  const addNewFile = (mutationFunction = uploadLink, originalId?: string) => {
     return (newFile: UploadingFile) => {
       if (!newFile.link) return;
 
@@ -94,29 +75,16 @@ const DatasetTab: FC<Props> = ({
   return (
     <>
       {isDatasetPresent ? (
-        isFilterEnabled ? (
-          <CollectionDatasetsGrid
-            accessType={collection?.access_type}
-            datasets={datasets}
-            invalidateCollectionQuery={invalidateCollectionQuery}
-            isRevision={isRevision}
-            onUploadFile={addNewFile}
-            reuploadDataset={reuploadDataset}
-            uploadedFiles={uploadedFiles}
-            visibility={visibility}
-          />
-        ) : (
-          <DatasetsGrid
-            visibility={visibility}
-            accessType={collection?.access_type}
-            datasets={datasets}
-            uploadedFiles={uploadedFiles}
-            invalidateCollectionQuery={invalidateCollectionQuery}
-            isRevision={isRevision}
-            onUploadFile={addNewFile}
-            reuploadDataset={reuploadDataset}
-          />
-        )
+        <CollectionDatasetsGrid
+          accessType={collection?.access_type}
+          datasets={datasets}
+          invalidateCollectionQuery={invalidateCollectionQuery}
+          isRevision={isRevision}
+          onUploadFile={addNewFile}
+          reuploadDataset={reuploadDataset}
+          uploadedFiles={uploadedFiles}
+          visibility={visibility}
+        />
       ) : (
         <EmptyModal
           title="No datasets uploaded"

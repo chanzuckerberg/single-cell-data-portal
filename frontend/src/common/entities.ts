@@ -8,11 +8,13 @@ export enum COLLECTION_LINK_TYPE {
 }
 
 /**
- * @deprecated Merge into COLLECTION_LINK_TYPE_OPTIONS once filter feature flag is removed (specifically, update DOI
- * text from "DOI" to "Publication DOI"). (#1718)
+ * Options backing link type menu, used when associating links with collection.
  */
-export const COLLECTION_LINK_TYPE_OPTIONS_DEPRECATED = {
-  [COLLECTION_LINK_TYPE.DOI]: { text: "DOI", value: COLLECTION_LINK_TYPE.DOI },
+export const COLLECTION_LINK_TYPE_OPTIONS = {
+  [COLLECTION_LINK_TYPE.DOI]: {
+    text: "Publication DOI",
+    value: COLLECTION_LINK_TYPE.DOI,
+  },
   [COLLECTION_LINK_TYPE.RAW_DATA]: {
     text: "Raw Data",
     value: COLLECTION_LINK_TYPE.RAW_DATA,
@@ -32,17 +34,6 @@ export const COLLECTION_LINK_TYPE_OPTIONS_DEPRECATED = {
   [COLLECTION_LINK_TYPE.DATA_SOURCE]: {
     text: "Data Source",
     value: COLLECTION_LINK_TYPE.DATA_SOURCE,
-  },
-};
-
-/**
- * Options backing link type menu, used when associating links with collection.
- */
-export const COLLECTION_LINK_TYPE_OPTIONS = {
-  ...COLLECTION_LINK_TYPE_OPTIONS_DEPRECATED,
-  [COLLECTION_LINK_TYPE.DOI]: {
-    text: "Publication DOI",
-    value: COLLECTION_LINK_TYPE.DOI,
   },
 };
 
@@ -97,11 +88,12 @@ export interface Collection {
   data_submission_policy_version: string;
   created_at: number;
   updated_at: number;
-  has_revision: boolean;
   publisher_metadata: PublisherMetadata;
   revision_diff: boolean;
   summaryCitation?: string;
   tombstone?: boolean;
+  revision_of?: Collection["id"];
+  revisioning_in?: Collection["id"];
 }
 
 /**

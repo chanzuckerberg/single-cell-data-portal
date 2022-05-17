@@ -6,11 +6,7 @@ import {
 } from "react-query";
 import { API_URL } from "src/configs/configs";
 import { API } from "../API";
-import {
-  DatasetAsset,
-  DatasetUploadStatus,
-  VISIBILITY_TYPE,
-} from "../entities";
+import { DatasetAsset, DatasetUploadStatus } from "../entities";
 import { apiTemplateToUrl } from "../utils/apiTemplateToUrl";
 import { USE_COLLECTION } from "./collections";
 import { DEFAULT_FETCH_OPTIONS, DELETE_FETCH_OPTIONS } from "./common";
@@ -67,11 +63,7 @@ export function useDeleteDataset(collection_uuid = "") {
 
   return useMutation(deleteDataset, {
     onSuccess: (uploadStatus: DatasetUploadStatus) => {
-      queryClient.invalidateQueries([
-        USE_COLLECTION,
-        collection_uuid,
-        VISIBILITY_TYPE.PRIVATE,
-      ]);
+      queryClient.invalidateQueries([USE_COLLECTION, collection_uuid]);
 
       queryClient.cancelQueries([USE_DATASET_STATUS, uploadStatus.dataset_id]);
 

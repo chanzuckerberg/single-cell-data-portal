@@ -17,10 +17,10 @@ class TestCollectionPostUploadLink(BaseAuthAPITest):
         self.good_link = "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"
         self.dummy_link = "https://www.dropbox.com/s/12345678901234/test.h5ad?dl=0"
 
-    @patch("backend.corpora.common.upload_sfn.start_upload_sfn")
+    @patch("backend.corpora.common.upload.start_upload_sfn")
     def test__link__202(self, mocked):
         with EnvironmentSetup({"CORPORA_CONFIG": fixture_file_path("bogo_config.js")}):
-            path = "/dp/v1/collections/test_collection_id/upload-links"
+            path = "/dp/v1/collections/test_collection_id_revision/upload-links"
             headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
             body = {"url": self.good_link}
 
@@ -120,20 +120,19 @@ class TestCollectionPutUploadLink(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         self.good_link = "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"
         self.headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
 
-    @patch("backend.corpora.common.upload_sfn.start_upload_sfn")
+    @patch("backend.corpora.common.upload.start_upload_sfn")
     def test__reupload_published_dataset_during_revision__202(self, mocked):
         """reupload a published dataset during a revision"""
         pub_collection = self.generate_collection(self.session, visibility=CollectionVisibility.PUBLIC.name)
         pub_dataset = self.generate_dataset_with_s3_resources(
             self.session,
             collection_id=pub_collection.id,
-            collection_visibility=pub_collection.visibility,
             published=True,
             processing_status={"processing_status": ProcessingStatus.SUCCESS},
         )
         pub_s3_objects = self.get_s3_object_paths_from_dataset(pub_dataset)
-        rev_collection = pub_collection.revision()
-        path = f"/dp/v1/collections/{pub_collection.id}/upload-links"
+        rev_collection = pub_collection.create_revision()
+        path = f"/dp/v1/collections/{rev_collection.id}/upload-links"
         body = {"url": self.good_link, "id": rev_collection.datasets[0].id}
 
         with EnvironmentSetup({"CORPORA_CONFIG": fixture_file_path("bogo_config.js")}):
@@ -144,14 +143,13 @@ class TestCollectionPutUploadLink(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
             for s3_object in pub_s3_objects:
                 self.assertS3FileExists(*s3_object)
 
-    @patch("backend.corpora.common.upload_sfn.start_upload_sfn")
+    @patch("backend.corpora.common.upload.start_upload_sfn")
     def test__reupload_unpublished_dataset__202(self, mocked):
         """reupload a unpublished dataset, this removes the old s3 assets. A new uuid is generated"""
         collection = self.generate_collection(self.session, visibility=CollectionVisibility.PRIVATE.name)
         dataset = self.generate_dataset_with_s3_resources(
             self.session,
             collection_id=collection.id,
-            collection_visibility=collection.visibility,
             published=False,
             processing_status={"processing_status": ProcessingStatus.SUCCESS},
         )
@@ -168,14 +166,13 @@ class TestCollectionPutUploadLink(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
             for s3_object in s3_objects:
                 self.assertS3FileDoesNotExist(*s3_object)
 
-    @patch("backend.corpora.common.upload_sfn.start_upload_sfn")
+    @patch("backend.corpora.common.upload.start_upload_sfn")
     def test__reupload_unpublished_dataset_during_revision_202(self, mock):
         """reupload a unpublished dataset during a revision, this removes the old s3 assets. A new uuid is generated"""
         collection = self.generate_collection(self.session)
         dataset = self.generate_dataset_with_s3_resources(
             self.session,
             collection_id=collection.id,
-            collection_visibility=collection.visibility,
             published=True,
             processing_status={"processing_status": ProcessingStatus.SUCCESS},
         )
@@ -195,7 +192,6 @@ class TestCollectionPutUploadLink(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         pub_dataset = self.generate_dataset_with_s3_resources(
             self.session,
             collection_id=collection.id,
-            collection_visibility=collection.visibility,
             published=True,
             processing_status={"processing_status": ProcessingStatus.SUCCESS},
         )
@@ -217,7 +213,6 @@ class TestCollectionPutUploadLink(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         dataset = self.generate_dataset_with_s3_resources(
             self.session,
             collection_id=collection.id,
-            collection_visibility=collection.visibility,
             processing_status={"processing_status": ProcessingStatus.PENDING},
         )
         s3_objects = self.get_s3_object_paths_from_dataset(dataset)
@@ -236,7 +231,6 @@ class TestCollectionPutUploadLink(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         dataset = self.generate_dataset_with_s3_resources(
             self.session,
             collection_id=collection.id,
-            collection_visibility=collection.visibility,
             published=False,
             processing_status={"processing_status": ProcessingStatus.SUCCESS},
         )
@@ -269,7 +263,7 @@ class TestCollectionUploadLinkCurators(BasicAuthAPITestCurator, CorporaTestCaseU
         super().setUp()
         self.good_link = "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"
 
-    @patch("backend.corpora.common.upload_sfn.start_upload_sfn")
+    @patch("backend.corpora.common.upload.start_upload_sfn")
     def test__can_upload_dataset_to_non_owned_collection(self, mocked):
         with EnvironmentSetup({"CORPORA_CONFIG": fixture_file_path("bogo_config.js")}):
             collection = self.generate_collection(self.session, visibility=CollectionVisibility.PRIVATE.name)
@@ -283,7 +277,7 @@ class TestCollectionUploadLinkCurators(BasicAuthAPITestCurator, CorporaTestCaseU
             self.assertEqual(202, response.status_code)
             self.assertIn("dataset_uuid", json.loads(response.data).keys())
 
-    @patch("backend.corpora.common.upload_sfn.start_upload_sfn")
+    @patch("backend.corpora.common.upload.start_upload_sfn")
     def test__can_reupload_dataset_not_owner(self, mocked):
         collection = self.generate_collection(
             self.session, visibility=CollectionVisibility.PRIVATE.name, owner="someone else"
@@ -291,7 +285,6 @@ class TestCollectionUploadLinkCurators(BasicAuthAPITestCurator, CorporaTestCaseU
         dataset = self.generate_dataset_with_s3_resources(
             self.session,
             collection_id=collection.id,
-            collection_visibility=collection.visibility,
             published=False,
             processing_status={"processing_status": ProcessingStatus.SUCCESS},
         )

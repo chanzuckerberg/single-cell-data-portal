@@ -24,6 +24,7 @@ import GetStarted from "../GetStarted";
 import HeatMap from "../HeatMap";
 import InfoPanel from "../InfoPanel";
 import Loader from "../Loader";
+import { SideBarLabel } from "./style";
 
 const INFO_PANEL_WIDTH_PX = 320;
 
@@ -31,7 +32,7 @@ export default function WheresMyGene(): JSX.Element {
   const state = useContext(StateContext);
   const dispatch = useContext(DispatchContext);
 
-  const { selectedGenes, selectedCellTypeIds } = state;
+  const { selectedGenes, selectedCellTypeIds, selectedTissues, sortBy } = state;
 
   const [isScaled, setIsScaled] = useState(true);
 
@@ -207,12 +208,12 @@ export default function WheresMyGene(): JSX.Element {
     }
   }, [dispatch]);
 
+  const hasSelectedTissues = selectedTissues.length > 0;
   const hasSelectedGenes = selectedGenes.length > 0;
-  const hasSelectedCellTypes = Object.keys(selectedCellTypeIds).length > 0;
 
   const shouldShowHeatMap = useMemo(() => {
-    return hasSelectedGenes && hasSelectedCellTypes;
-  }, [hasSelectedGenes, hasSelectedCellTypes]);
+    return hasSelectedTissues || hasSelectedGenes;
+  }, [hasSelectedTissues, hasSelectedGenes]);
 
   const handleIsScaledChange = useCallback(() => {
     setIsScaled((prevIsScaled) => !prevIsScaled);
@@ -225,17 +226,18 @@ export default function WheresMyGene(): JSX.Element {
       </Head>
 
       <SideBar
-        label="Filters"
+        label={<SideBarLabel>Filters</SideBarLabel>}
         isOpen
         SideBarWrapperComponent={SideBarWrapper}
         SideBarPositionerComponent={SideBarPositioner}
+        testId="filters-panel"
       >
         <Filters />
       </SideBar>
 
       <SideBar
         width={INFO_PANEL_WIDTH_PX}
-        label="Info"
+        label={<SideBarLabel>Info</SideBarLabel>}
         isOpen
         position={Position.RIGHT}
         SideBarWrapperComponent={SideBarWrapper}
@@ -258,6 +260,9 @@ export default function WheresMyGene(): JSX.Element {
 
           {shouldShowHeatMap ? (
             <HeatMap
+              cellTypeSortBy={sortBy.cellTypes}
+              geneSortBy={sortBy.genes}
+              selectedTissues={selectedTissues}
               isScaled={isScaled}
               isLoadingAPI={isLoading}
               cellTypes={selectedCellTypes}

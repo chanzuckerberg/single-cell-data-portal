@@ -70,6 +70,15 @@ export function selectTissues(
   };
 }
 
+export function selectSortBy(
+  sortBy: Partial<State["sortBy"]>
+): GetActionTypeOfReducer<typeof REDUCERS["selectSortBy"]> {
+  return {
+    payload: sortBy,
+    type: "selectSortBy",
+  };
+}
+
 export function resetGenesToDeleteAndCellTypeIdsToDelete(): GetActionTypeOfReducer<
   typeof REDUCERS["resetGenesToDeleteAndCellTypeIdsToDelete"]
 > {
@@ -106,6 +115,15 @@ export function selectFilters(
   return {
     payload: { key, options },
     type: "selectFilters",
+  };
+}
+
+export function setSnapshotId(
+  snapshotId: State["snapshotId"]
+): GetActionTypeOfReducer<typeof REDUCERS["setSnapshotId"]> {
+  return {
+    payload: snapshotId,
+    type: "setSnapshotId",
   };
 }
 

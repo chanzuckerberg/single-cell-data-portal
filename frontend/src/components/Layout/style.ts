@@ -1,5 +1,4 @@
 import styled, { css } from "styled-components";
-import { layout } from "../common/layout";
 import { HEADER_HEIGHT_PX } from "../Header/style";
 
 export const Wrapper = styled.div`
@@ -32,9 +31,4 @@ export const SidebarMainWrapper = styled(MainWrapper)`
     grid-template-areas: "leftsidebar content rightsidebar";
     grid-template-columns: auto 1fr auto; /* grid columns for sidebar and corresponding content. */
   }
-`;
-
-export const DefaultView = styled.div`
-  ${layout}
-  ${contentWrapper}
 `;

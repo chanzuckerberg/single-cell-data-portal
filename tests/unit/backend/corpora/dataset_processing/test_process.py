@@ -29,7 +29,7 @@ from backend.corpora.dataset_processing.exceptions import ProcessingCancelled
 from backend.corpora.dataset_processing import process
 from backend.corpora.dataset_processing.process import (
     convert_file_ignore_exceptions,
-    download_from_dropbox_url,
+    download_from_source_uri,
 )
 from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 
@@ -302,7 +302,8 @@ class TestDatasetProcessing(DataPortalTestCase):
 
         collection = Collection.create(self.session, visibility=CollectionVisibility.PRIVATE)
         dataset = Dataset.create(
-            self.session, collection_id=collection.id, collection_visibility=CollectionVisibility.PRIVATE
+            self.session,
+            collection_id=collection.id,
         )
         dataset_id = dataset.id
 
@@ -542,22 +543,21 @@ class TestDatasetProcessing(DataPortalTestCase):
     @patch("backend.corpora.dataset_processing.download.downloader")
     @patch("backend.corpora.dataset_processing.process.from_url")
     def test__dataset_tombstoned_while_uploading(self, mock_from_url, mock_downloader):
-        class file_info:
+        class file_url:
+            scheme = "https"
+            url = "url.com"
+
             @classmethod
-            def file_info(self):
+            def file_info(cls):
                 return {"size": 12}
 
-            @property
-            def url(self):
-                return "url.com"
-
         mock_downloader.side_effect = self.mock_downloader_function
-        mock_from_url.return_value = file_info
+        mock_from_url.return_value = file_url
         self.dataset_id = self.generate_dataset(self.session).id
         start = time.time()
         # check that changing the db status leads to an exception being raised
         with self.assertRaises(ProcessingCancelled):
-            download_from_dropbox_url(
+            download_from_source_uri(
                 self.dataset_id,
                 "dropbox.com",
                 "raw.h5ad",
@@ -566,21 +566,44 @@ class TestDatasetProcessing(DataPortalTestCase):
         # check that tombstoning ends the download thread early
         self.assertLess(end - start, 11)
 
+    def test__download_from_source_uri_with_unhandled_scheme__raises_error(self):
+        unhandled_uri = "unhandled_scheme://blah/foo"
+        self.dataset_id = self.generate_dataset(self.session).id
+
+        with self.assertRaises(ValueError):
+            download_from_source_uri(self.dataset_id, unhandled_uri, "raw.h5ad")
+
+    @mock_s3
+    @patch("backend.corpora.dataset_processing.process.download_from_s3")
+    def test__download_from_source_uri_with_s3_scheme__downloads_from_s3(self, mock_download_from_s3):
+        test_dataset_id = self.generate_dataset(self.session).id
+
+        bucket = "bucket"
+        key = "key"
+        local_file = "local.h5ad"
+        s3_uri = f"s3://{bucket}/{key}"
+
+        download_from_source_uri(test_dataset_id, s3_uri, local_file)
+
+        mock_download_from_s3.assert_called_with(bucket_name=bucket, object_key=key, local_filename=local_file)
+        dataset = Dataset.get(self.session, test_dataset_id)
+        self.assertEqual(UploadStatus.UPLOADED, dataset.processing_status.upload_status)
+
     @patch("backend.corpora.dataset_processing.process.make_cxg")
-    @patch("backend.corpora.dataset_processing.process.download_from_dropbox_url")
+    @patch("backend.corpora.dataset_processing.process.download_from_source_uri")
     @patch("backend.corpora.dataset_processing.process.validate_h5ad_file_and_add_labels")
     @patch("backend.corpora.dataset_processing.process.extract_metadata")
     def test__cxg_not_created_when_metadata_extraction_fails(
         self,
         mock_extract_metadata,
         mock_validate_h5ad_file_and_add_labels,
-        mock_download_from_dropbox_url,
+        mock_download_from_source_uri,
         mock_make_cxg,
     ):
         # given
         mock_validate_h5ad_file_and_add_labels.return_value = (mock.ANY, False)
         mock_extract_metadata.side_effect = RuntimeError("metadata extraction failed")
-        mock_download_from_dropbox_url.return_value = self.h5ad_filename
+        mock_download_from_source_uri.return_value = self.h5ad_filename
         mock_make_cxg.return_value = str(self.cxg_filename)
         dataset = self.generate_dataset(self.session)
         dataset_id = dataset.id

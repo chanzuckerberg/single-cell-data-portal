@@ -5,7 +5,7 @@ import { useRouter } from "next/router";
 import { FC } from "react";
 import { PLURALIZED_METADATA_LABEL } from "src/common/constants/metadata";
 import { ROUTES } from "src/common/constants/routes";
-import { ACCESS_TYPE, VISIBILITY_TYPE } from "src/common/entities";
+import { ACCESS_TYPE, Collection, VISIBILITY_TYPE } from "src/common/entities";
 import {
   useCollection,
   useCreateRevision,
@@ -35,6 +35,13 @@ const AsyncPopover = loadable(
     )
 );
 
+const AsyncDiseasePopover = loadable(
+  () =>
+    /*webpackChunkName: 'src/components/common/Grid/components/DiseaseCell' */ import(
+      "src/components/common/Grid/components/DiseaseCell"
+    )
+);
+
 const conditionalPopover = (
   label: PLURALIZED_METADATA_LABEL,
   values: string[]
@@ -46,16 +53,26 @@ const conditionalPopover = (
   return <AsyncPopover label={label} values={values} />;
 };
 
+const conditionalDiseasePopover = (
+  label: PLURALIZED_METADATA_LABEL,
+  values: string[]
+) => {
+  if (!values || values.length === 0) {
+    return <LeftAlignedDetailsCell>-</LeftAlignedDetailsCell>;
+  }
+
+  return <AsyncDiseasePopover label={label} values={values} />;
+};
+
 const CollectionRow: FC<Props> = (props) => {
   const { data: collection } = useCollection({
     id: props.id,
-    visibility: props.visibility,
   });
 
   const router = useRouter();
 
-  const navigateToRevision = () => {
-    router.push(ROUTES.PRIVATE_COLLECTION.replace(":id", id));
+  const navigateToRevision = (id: Collection["id"]) => {
+    router.push(ROUTES.COLLECTION.replace(":id", id));
   };
 
   const { mutate, isLoading } = useCreateRevision(navigateToRevision);
@@ -63,10 +80,10 @@ const CollectionRow: FC<Props> = (props) => {
   if (!collection || isTombstonedCollection(collection)) return null;
 
   const handleRevisionClick = () => {
-    if (collection?.has_revision === false) {
+    if (!collection?.revisioning_in) {
       mutate(id);
     } else {
-      navigateToRevision();
+      navigateToRevision(collection?.revisioning_in || collection.id);
     }
   };
 
@@ -85,10 +102,7 @@ const CollectionRow: FC<Props> = (props) => {
   return (
     <StyledRow data-test-id="collection-row">
       <StyledCell>
-        <Link
-          href={`/collections/${id}${isPrivate ? "/private" : ""}`}
-          passHref
-        >
+        <Link href={`/collections/${id}`} passHref>
           <CollectionTitleText data-test-id="collection-link" href="passHref">
             {name}
           </CollectionTitleText>
@@ -103,7 +117,7 @@ const CollectionRow: FC<Props> = (props) => {
             >
               {isPrivate ? "Private" : "Published"}
             </Tag>
-            {props.revisionsEnabled && collection.has_revision && (
+            {props.revisionsEnabled && collection.revisioning_in && (
               <Tag minimal intent={Intent.PRIMARY} data-test-id="revision-tag">
                 Revision Pending
               </Tag>
@@ -113,12 +127,13 @@ const CollectionRow: FC<Props> = (props) => {
       </StyledCell>
       {conditionalPopover(PLURALIZED_METADATA_LABEL.TISSUE, tissue)}
       {conditionalPopover(PLURALIZED_METADATA_LABEL.ASSAY, assay)}
+      {conditionalDiseasePopover(PLURALIZED_METADATA_LABEL.DISEASE, disease)}
       {conditionalPopover(PLURALIZED_METADATA_LABEL.DISEASE, disease)}
       {conditionalPopover(PLURALIZED_METADATA_LABEL.ORGANISM, organism)}
       <RightAlignedDetailsCell>{cell_count || "-"}</RightAlignedDetailsCell>
       {props.revisionsEnabled && visibility === VISIBILITY_TYPE.PUBLIC ? (
         <RevisionCell
-          isRevision={collection.has_revision}
+          revisionId={collection.revisioning_in}
           handleRevisionClick={handleRevisionClick}
           isLoading={isLoading}
         />
@@ -130,13 +145,13 @@ const CollectionRow: FC<Props> = (props) => {
 };
 
 const RevisionCell = ({
-  isRevision,
   handleRevisionClick,
   isLoading,
+  revisionId,
 }: {
-  isRevision?: boolean;
   handleRevisionClick: () => void;
   isLoading: boolean;
+  revisionId: Collection["revisioning_in"];
 }) => {
   return (
     <RightAlignedDetailsCell>
@@ -147,7 +162,7 @@ const RevisionCell = ({
         onClick={handleRevisionClick}
         data-test-id="revision-action-button"
       >
-        {isRevision ? "Continue" : "Start Revision"}
+        {revisionId ? "Continue" : "Start Revision"}
       </Button>
     </RightAlignedDetailsCell>
   );

@@ -1,16 +1,15 @@
-import loadable from "@loadable/component";
 import Head from "next/head";
-import React, { useMemo } from "react";
-import { Column, useFilters, useSortBy, useTable } from "react-table";
+import React, { useEffect, useMemo } from "react";
+import { Column, Filters, useFilters, useSortBy, useTable } from "react-table";
 import { PLURALIZED_METADATA_LABEL } from "src/common/constants/metadata";
 import { ROUTES } from "src/common/constants/routes";
-import { FEATURES } from "src/common/featureFlags/features";
 import {
   CategoryKey,
   useCategoryFilter,
 } from "src/common/hooks/useCategoryFilter";
-import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
+import { useSessionStorage } from "src/common/hooks/useSessionStorage";
 import { useFetchCollectionRows } from "src/common/queries/filter";
+import { KEYS } from "src/common/sessionStorage/set";
 import { useExplainTombstoned } from "src/components/Collections/common/utils";
 import { CollectionsGrid } from "src/components/Collections/components/Grid/components/CollectionsGrid/style";
 import Filter from "src/components/common/Filter";
@@ -21,6 +20,7 @@ import {
   RowPropsValue,
 } from "src/components/common/Filter/common/entities";
 import { ontologyCellAccessorFn } from "src/components/common/Filter/common/utils";
+import DiseaseCell from "src/components/common/Grid/components/DiseaseCell";
 import { GridHero } from "src/components/common/Grid/components/Hero";
 import LinkCell from "src/components/common/Grid/components/LinkCell";
 import NTagCell from "src/components/common/Grid/components/NTagCell";
@@ -53,22 +53,9 @@ const COLUMN_ID_RECENCY = "recency";
  */
 const RECENCY = "recency";
 
-/**
- * Gene sets CSV upload functionality, available if gene sets feature flag is enabled
- */
-const AsyncUploadCSV = loadable(
-  () =>
-    /*webpackChunkName: 'src/components/UploadCSV' */ import(
-      "src/components/UploadCSV"
-    )
-);
-
 export default function Collections(): JSX.Element {
   // Pop toast if user has been redirected from a tombstoned collection.
   useExplainTombstoned();
-
-  // Determine if gene sets functionality is available to user.
-  const isGeneSetsOn = useFeatureFlag(FEATURES.GENE_SETS);
 
   // Filterable collection datasets joined from datasets index and collections index responses.
   const { isError, isLoading, rows: collectionRows } = useFetchCollectionRows();
@@ -109,7 +96,10 @@ export default function Collections(): JSX.Element {
       },
       {
         Cell: ({ value }: CellPropsValue<string[]>) => (
-          <NTagCell label={PLURALIZED_METADATA_LABEL.DISEASE} values={value} />
+          <DiseaseCell
+            label={PLURALIZED_METADATA_LABEL.DISEASE}
+            values={value}
+          />
         ),
         Header: "Disease",
         accessor: ontologyCellAccessorFn(CATEGORY_KEY.DISEASE),
@@ -158,13 +148,6 @@ export default function Collections(): JSX.Element {
       },
       // Hidden, required for filter.
       {
-        accessor: (collectionRow: CollectionRow) =>
-          collectionRow.is_primary_data,
-        filter: "includesSome",
-        id: CATEGORY_KEY.IS_PRIMARY_DATA,
-      },
-      // Hidden, required for filter.
-      {
         accessor: CATEGORY_KEY.PUBLICATION_AUTHORS,
         filter: "includesSome",
         id: CATEGORY_KEY.PUBLICATION_AUTHORS,
@@ -185,12 +168,18 @@ export default function Collections(): JSX.Element {
     []
   );
 
+  // Handle initial filter state and save of filter state beyond component scope.
+  const [initialFilters, storeFilters] = useSessionStorage<
+    Filters<CollectionRow>
+  >(KEYS.FILTER_COLLECTIONS, []);
+
   // Table init
   const tableInstance = useTable<CollectionRow>(
     {
       columns: columnConfig,
       data: collectionRows,
       initialState: {
+        filters: initialFilters,
         // Only display tissue, disease and organism values.
         hiddenColumns: [
           COLLECTION_ID,
@@ -199,7 +188,6 @@ export default function Collections(): JSX.Element {
           CATEGORY_KEY.CELL_TYPE,
           CATEGORY_KEY.ETHNICITY,
           CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS,
-          CATEGORY_KEY.IS_PRIMARY_DATA,
           CATEGORY_KEY.PUBLICATION_AUTHORS,
           CATEGORY_KEY.PUBLICATION_DATE_VALUES,
           CATEGORY_KEY.SEX,
@@ -244,12 +232,16 @@ export default function Collections(): JSX.Element {
     setFilter
   );
 
-  // Hide datasets behind feature flag - start
-  const isFilterEnabled = useFeatureFlag(FEATURES.FILTER);
-  if (!isFilterEnabled) {
-    return <></>;
-  }
-  // Hide datasets behind feature flag - end
+  // Store latest filter state.
+  useEffect(() => {
+    storeFilters(filters);
+  }, [filters, storeFilters]);
+
+  // Handle side bar open/closed state beyond scope of component.
+  const [isSideBarOpen, storeIsSideBarOpen] = useSessionStorage<boolean>(
+    KEYS.SIDE_BAR_COLLECTIONS,
+    true
+  );
 
   return (
     <>
@@ -258,14 +250,14 @@ export default function Collections(): JSX.Element {
       </Head>
       {isError || isLoading ? null : (
         <>
-          <SideBar label="Filters" isOpen>
+          <SideBar
+            label="Filters"
+            isOpen={isSideBarOpen}
+            onToggle={storeIsSideBarOpen}
+          >
             <Filter {...filterInstance} />
           </SideBar>
           <View>
-            {
-              // (thuang): TEMP. Remove when we do https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/corpora-data-portal/917
-              isGeneSetsOn && <AsyncUploadCSV />
-            }
             {!rows || rows.length === 0 ? (
               <GridHero>
                 <h3>No Results</h3>

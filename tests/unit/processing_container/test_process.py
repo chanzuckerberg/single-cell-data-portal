@@ -4,9 +4,6 @@ from unittest.mock import patch
 
 import requests
 
-from backend.corpora.common.corpora_orm import (
-    CollectionVisibility,
-)
 from backend.corpora.dataset_processing import process
 from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
 
@@ -54,18 +51,16 @@ class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
             if os.path.exists(f):
                 os.remove(f)
 
-    @patch("backend.corpora.dataset_processing.process.download_from_dropbox_url")
-    def test_main(self, mock_download_from_dropbox):
+    @patch("backend.corpora.dataset_processing.process.download_from_source_uri")
+    def test_main(self, mock_download_from_source_uri):
         """
         Tests full pipeline for processing an uploaded H5AD file, including database updates
         generation and upload of all artifacts to S3 (localstack), but excluding the Dropbox download
         functionality.  Dropbox I/O is mocked to prevent dependency on remote services (non-Dockerized).
         """
-        mock_download_from_dropbox.return_value = self.h5ad_raw
+        mock_download_from_source_uri.return_value = self.h5ad_raw
 
-        dataset = self.generate_dataset(
-            self.session, collection_id="test_collection_id", collection_visibility=CollectionVisibility.PUBLIC.name
-        )
+        dataset = self.generate_dataset(self.session, collection_id="test_collection_id")
 
         process.process(
             dataset.id,

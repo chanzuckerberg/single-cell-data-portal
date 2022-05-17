@@ -1,12 +1,10 @@
-import { Button, H6, Intent } from "@blueprintjs/core";
+import { H6, Intent } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 import loadable from "@loadable/component";
 import { useRouter } from "next/router";
 import { FC, useState } from "react";
 import { ROUTES } from "src/common/constants/routes";
 import { Collection } from "src/common/entities";
-import { FEATURES } from "src/common/featureFlags/features";
-import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
 import { usePublishCollection } from "src/common/queries/collections";
 import { StyledPrimaryButton } from "src/components/common/Button/common/style";
 import Toast from "src/views/Collection/components/Toast";
@@ -20,22 +18,24 @@ const AsyncAlert = loadable(
 interface Props {
   id: Collection["id"];
   isPublishable: boolean;
-  isRevision: boolean;
+  revisionOf: Collection["revision_of"];
 }
 
 const PublishCollection: FC<Props> = ({
   id = "",
   isPublishable,
-  isRevision,
+  revisionOf,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const { mutateAsync: publish, isSuccess, isLoading } = usePublishCollection();
   const router = useRouter();
-  const isFilterEnabled = useFeatureFlag(FEATURES.FILTER);
-  const PublishButton = isFilterEnabled ? StyledPrimaryButton : Button;
 
   if (isSuccess) {
-    router.push(ROUTES.COLLECTION.replace(":id", id));
+    console.log(
+      "IS SUCCESS, used to be private collection redirect, now just refreshes data?"
+    );
+    if (revisionOf) router.push(ROUTES.COLLECTION.replace(":id", revisionOf));
+    else router.reload();
   }
 
   const toggleAlert = () => setIsOpen(!isOpen);
@@ -48,8 +48,9 @@ const PublishCollection: FC<Props> = ({
       { id, payload },
       {
         onSuccess: () => {
-          //if revision show  revision toast
-          if (isRevision) {
+          //if revision show revision toast
+          if (revisionOf) {
+            console.log("Published a revision");
             Toast.show({
               icon: IconNames.TICK,
               intent: Intent.SUCCESS,
@@ -73,7 +74,7 @@ const PublishCollection: FC<Props> = ({
 
   return (
     <>
-      <PublishButton
+      <StyledPrimaryButton
         onMouseEnter={handleHover}
         onClick={handleClick}
         intent={Intent.PRIMARY}
@@ -85,7 +86,7 @@ const PublishCollection: FC<Props> = ({
         <AsyncAlert
           cancelButtonText={"Cancel"}
           confirmButtonText={
-            isRevision ? "Publish Revision" : "Publish Collection"
+            revisionOf ? "Publish Revision" : "Publish Collection"
           }
           intent={Intent.PRIMARY}
           isOpen={isOpen}
@@ -93,7 +94,7 @@ const PublishCollection: FC<Props> = ({
           onConfirm={handleConfirm}
           loading={isLoading}
         >
-          {isRevision ? (
+          {revisionOf ? (
             <>
               <H6>
                 Are you sure you want to publish a revision to this collection?

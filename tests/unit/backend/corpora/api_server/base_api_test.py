@@ -11,7 +11,7 @@ from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 
 class BaseAPITest(DataPortalTestCase):
     """
-    Provide access to the test Corpora API. All test for the Corpora API should inherit this class.
+    Provide access to the test APIs. All tests for APIs should inherit this class.
     """
 
     maxDiff = None  # Easier to compare json responses.
@@ -69,6 +69,7 @@ class BaseAuthAPITest(BaseAPITest):
             "audience": auth_config.audience,
             "api_audience": auth_config.api_audience,
             "cookie_name": auth_config.cookie_name,
+            "auth0_domain": "czi-single-cell.auth0.com",
         }
         auth_config.set(authconfig)
         return (mock_oauth_server, auth_config)

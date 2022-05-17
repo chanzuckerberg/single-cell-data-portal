@@ -42,8 +42,9 @@ export default function Organism({ isLoading }: Props): JSX.Element {
     );
   }, [organisms]);
 
+  // (thuang): Default to "Homo sapiens" on first load
   useEffect(() => {
-    if (!organisms || !dispatch) return;
+    if (!organisms || !dispatch || selectedOrganismId) return;
 
     const organism = organisms.find(
       (organism: IOrganism) => organism.name === "Homo sapiens"
@@ -52,7 +53,7 @@ export default function Organism({ isLoading }: Props): JSX.Element {
     if (!organism) return;
 
     dispatch(selectOrganism(organism.id));
-  }, [organisms, dispatch]);
+  }, [organisms, dispatch, selectedOrganismId]);
 
   const organismsById = useMemo(() => {
     const result: { [id: string]: IOrganism } = {};

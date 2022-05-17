@@ -1,27 +1,21 @@
-/* Copied from src/components/Collections/components/Grid/components/Row/DatasetRow and modified as an intermediate
-   upgrade to the collection datasets table while keeping the existing core datasets grid outside of the filter feature
-   flag untouched. Once filter feature flag is removed, the existing core datasets grid can be deleted and replaced
-   with this version.Ideally collection datasets table should be moved to react-table but requires changes to how
-   dataset information (statuses etc) is calculated and rolled out. */
 import { Intent, Tooltip } from "@blueprintjs/core";
 import loadable from "@loadable/component";
 import { FC } from "react";
-import { CancelledError, useQueryClient } from "react-query";
+import { CancelledError, useQueryClient, UseQueryResult } from "react-query";
 import { PLURALIZED_METADATA_LABEL } from "src/common/constants/metadata";
 import {
   ACCESS_TYPE,
   Collection,
   CONVERSION_STATUS,
   Dataset,
+  DatasetUploadStatus,
   UPLOAD_STATUS,
   VALIDATION_STATUS,
   VISIBILITY_TYPE,
 } from "src/common/entities";
 import { useDatasetStatus } from "src/common/queries/datasets";
-import DownloadDataset from "src/components/Collections/components/Dataset/components/DownloadDataset";
-import { aggregateDatasetsMetadata } from "src/components/Collections/components/Grid/common/utils";
-import MoreDropdown from "src/components/Collections/components/Grid/components/Row/DatasetRow/components/MoreDropdown";
-import RevisionStatusTag from "src/components/Collections/components/Grid/components/Row/DatasetRow/components/RevisionStatusTag";
+import MoreDropdown from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/MoreDropdown";
+import RevisionStatusTag from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/RevisionStatusTag";
 import {
   checkIfCancelled,
   checkIfFailed,
@@ -34,12 +28,15 @@ import {
   useCheckCollectionPopulated,
   useConversionProgress,
   useUploadProgress,
-} from "src/components/Collections/components/Grid/components/Row/DatasetRow/utils";
+} from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/utils";
+import DownloadDataset from "src/components/Collections/components/Dataset/components/DownloadDataset";
+import { aggregateDatasetsMetadata } from "src/components/Collections/components/Grid/common/utils";
 import { OVER_MAX_CELL_COUNT_TOOLTIP } from "src/components/common/Grid/common/constants";
 import { checkIsOverMaxCellCount } from "src/components/common/Grid/common/utils";
 import ActionButton from "src/components/common/Grid/components/ActionButton";
 import ActionsCell from "src/components/common/Grid/components/ActionsCell";
 import CountCell from "src/components/common/Grid/components/CountCell";
+import DiseaseCell from "src/components/common/Grid/components/DiseaseCell";
 import NTagCell from "src/components/common/Grid/components/NTagCell";
 import { RightAlignCell } from "src/components/common/Grid/components/RightAlignCell";
 import { StatusTags } from "src/components/common/Grid/components/StatusTags";
@@ -52,14 +49,14 @@ import { Props as ChooserProps } from "src/components/DropboxChooser/index";
 const AsyncTooltip = loadable(
   () =>
     /*webpackChunkName: 'Grid/Row/DatasetRow/Tooltip' */ import(
-      "src/components/Collections/components/Grid/components/Row/DatasetRow/components/Tooltip"
+      "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/Tooltip"
     )
 );
 
 const AsyncUploadStatus = loadable(
   () =>
     /*webpackChunkName: 'Grid/Row/DatasetRow/UploadStatus' */ import(
-      "src/components/Collections/components/Grid/components/Row/DatasetRow/components/UploadStatus"
+      "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DatsetRow/components/UploadStatus"
     )
 );
 
@@ -67,6 +64,17 @@ const ErrorTooltip = ({ isFailed, error, type }: FailReturn) => {
   if (!isFailed) return null;
 
   return <AsyncTooltip error={error} type={type} />;
+};
+
+const handlePossibleError = (
+  datasetStatusResult: UseQueryResult<DatasetUploadStatus, unknown>
+) => {
+  if (
+    datasetStatusResult.isError &&
+    !(datasetStatusResult.error instanceof CancelledError)
+  ) {
+    console.error(datasetStatusResult.error);
+  }
 };
 
 interface Props {
@@ -79,7 +87,6 @@ interface Props {
   onUploadFile: ChooserProps["onUploadFile"];
 }
 
-/* eslint-disable sonarjs/cognitive-complexity */
 const DatasetRow: FC<Props> = ({
   dataset,
   file,
@@ -102,12 +109,7 @@ const DatasetRow: FC<Props> = ({
 
   const { upload_progress } = datasetStatus;
 
-  if (
-    datasetStatusResult.isError &&
-    !(datasetStatusResult.error instanceof CancelledError)
-  ) {
-    console.error(datasetStatusResult.error);
-  }
+  handlePossibleError(datasetStatusResult);
 
   const isNamePopulated = Boolean(dataset.name);
 
@@ -189,7 +191,10 @@ const DatasetRow: FC<Props> = ({
         <NTagCell label={PLURALIZED_METADATA_LABEL.TISSUE} values={tissue} />
       </td>
       <td>
-        <NTagCell label={PLURALIZED_METADATA_LABEL.DISEASE} values={disease} />
+        <DiseaseCell
+          label={PLURALIZED_METADATA_LABEL.DISEASE}
+          values={disease}
+        />
       </td>
       <td>
         <NTagCell label={PLURALIZED_METADATA_LABEL.ASSAY} values={assay} />
