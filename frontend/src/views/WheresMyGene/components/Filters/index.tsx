@@ -25,7 +25,8 @@ import {
 import { DispatchContext, StateContext } from "../../common/store";
 import { selectFilters } from "../../common/store/actions";
 import { Filters as IFilters } from "../../common/types";
-import { StyledComplexFilterInputDropdown } from "./style";
+import Sort from "./components/Sort";
+import { StyledComplexFilterInputDropdown, Wrapper } from "./style";
 
 /**
  * NOTE(thuang): Update this count to match the amount of filters we render,
@@ -172,56 +173,59 @@ export default memo(function Filters(): JSX.Element {
 
   return (
     <TooltipWrapper>
-      <div>
-        <ComplexFilter
-          multiple
-          label="Dataset"
-          options={datasets as unknown as DefaultMenuSelectOption[]}
-          onChange={handleDatasetsChange}
-          value={selectedDatasets as unknown as DefaultMenuSelectOption[]}
-          InputDropdownComponent={
-            StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
-          }
-          MenuSelectProps={MenuSelectProps}
-          InputDropdownProps={InputDropdownProps}
-        />
-        <ComplexFilter
-          multiple
-          label="Disease"
-          options={disease_terms}
-          onChange={handleDiseasesChange}
-          value={selectedDiseases}
-          InputDropdownComponent={
-            StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
-          }
-          MenuSelectProps={MenuSelectProps}
-          InputDropdownProps={InputDropdownProps}
-        />
-        <ComplexFilter
-          multiple
-          label="Ethnicity"
-          options={ethnicity_terms}
-          onChange={handleEthnicitiesChange}
-          value={selectedEthnicities}
-          InputDropdownComponent={
-            StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
-          }
-          MenuSelectProps={MenuSelectProps}
-          InputDropdownProps={InputDropdownProps}
-        />
-        <ComplexFilter
-          multiple
-          label="Sex"
-          options={sex_terms}
-          onChange={handleSexesChange}
-          value={selectedSexes}
-          InputDropdownComponent={
-            StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
-          }
-          MenuSelectProps={MenuSelectProps}
-          InputDropdownProps={InputDropdownProps}
-        />
-      </div>
+      <Wrapper>
+        <div>
+          <ComplexFilter
+            multiple
+            label="Dataset"
+            options={datasets as unknown as DefaultMenuSelectOption[]}
+            onChange={handleDatasetsChange}
+            value={selectedDatasets as unknown as DefaultMenuSelectOption[]}
+            InputDropdownComponent={
+              StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
+            }
+            MenuSelectProps={MenuSelectProps}
+            InputDropdownProps={InputDropdownProps}
+          />
+          <ComplexFilter
+            multiple
+            label="Disease"
+            options={disease_terms}
+            onChange={handleDiseasesChange}
+            value={selectedDiseases}
+            InputDropdownComponent={
+              StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
+            }
+            MenuSelectProps={MenuSelectProps}
+            InputDropdownProps={InputDropdownProps}
+          />
+          <ComplexFilter
+            multiple
+            label="Ethnicity"
+            options={ethnicity_terms}
+            onChange={handleEthnicitiesChange}
+            value={selectedEthnicities}
+            InputDropdownComponent={
+              StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
+            }
+            MenuSelectProps={MenuSelectProps}
+            InputDropdownProps={InputDropdownProps}
+          />
+          <ComplexFilter
+            multiple
+            label="Sex"
+            options={sex_terms}
+            onChange={handleSexesChange}
+            value={selectedSexes}
+            InputDropdownComponent={
+              StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
+            }
+            MenuSelectProps={MenuSelectProps}
+            InputDropdownProps={InputDropdownProps}
+          />
+        </div>
+        <Sort areFiltersDisabled={areFiltersDisabled} />
+      </Wrapper>
     </TooltipWrapper>
   );
 
