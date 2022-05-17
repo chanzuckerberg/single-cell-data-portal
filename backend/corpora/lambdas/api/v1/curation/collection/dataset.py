@@ -49,7 +49,7 @@ def post_s3_credentials(collection_uuid: str, token_info: dict):
         RoleArn=config.curator_role_arn,
         RoleSessionName=user_id.replace("|", "-"),
         Policy=create_policy(config.submission_bucket, upload_path),
-        WebIdentityToken=request.headers["Authorization"][6:],
+        WebIdentityToken=request.headers["Authorization"].split(' ')[1],
         DurationSeconds=duration,
     )
     logger.info(json.dumps(parameters))
