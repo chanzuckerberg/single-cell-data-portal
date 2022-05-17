@@ -209,10 +209,11 @@ export default function WheresMyGene(): JSX.Element {
   }, [dispatch]);
 
   const hasSelectedTissues = selectedTissues.length > 0;
+  const hasSelectedGenes = selectedGenes.length > 0;
 
   const shouldShowHeatMap = useMemo(() => {
-    return hasSelectedTissues;
-  }, [hasSelectedTissues]);
+    return hasSelectedTissues || hasSelectedGenes;
+  }, [hasSelectedTissues, hasSelectedGenes]);
 
   const handleIsScaledChange = useCallback(() => {
     setIsScaled((prevIsScaled) => !prevIsScaled);

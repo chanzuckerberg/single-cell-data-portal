@@ -1,5 +1,6 @@
 import { agnes } from "ml-hclust";
 import { useMemo } from "react";
+import { EMPTY_ARRAY } from "src/common/constants/utils";
 import {
   CellType,
   CellTypeGeneExpressionSummaryData,
@@ -85,7 +86,7 @@ export function useSortedGeneNames({
 
     const orderedGeneNames = tree?.indices().map((index) => genes[index]);
 
-    return JSON.stringify(orderedGeneNames);
+    return JSON.stringify(orderedGeneNames || EMPTY_ARRAY);
   }, [
     columns,
     genes,
