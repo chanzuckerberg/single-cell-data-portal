@@ -50,7 +50,7 @@ def dataset_submissions_handler(s3_event: dict, unused_context) -> None:
                 raise CorporaException(f"Collection {collection_uuid} does not exist")
             elif username != CorporaConstants.SUPER_CURATOR_NAME and username != collection_owner:
                 raise CorporaException(
-                    f"user:{username} does not have permission to modify datastes to {collection_uuid}."
+                    f"user:{username} does not have permission to modify datasets in collection {collection_uuid}."
                 )
 
             s3_uri = f"s3://{bucket}/{key}"
