@@ -70,6 +70,15 @@ export function selectTissues(
   };
 }
 
+export function selectSortBy(
+  sortBy: Partial<State["sortBy"]>
+): GetActionTypeOfReducer<typeof REDUCERS["selectSortBy"]> {
+  return {
+    payload: sortBy,
+    type: "selectSortBy",
+  };
+}
+
 export function resetGenesToDeleteAndCellTypeIdsToDelete(): GetActionTypeOfReducer<
   typeof REDUCERS["resetGenesToDeleteAndCellTypeIdsToDelete"]
 > {
