@@ -121,3 +121,21 @@ export const PrivacyStyle = styled.div`
     content: "10." counter(increase-by, decimal) " ";
   }
 `;
+
+export const LandingStyle = styled.div`
+  max-width: 700px;
+  margin: 0px auto;
+  padding: 50px;
+  line-height: 1.5;
+  font-family: "Roboto", sans-serif;
+
+  h4,
+  h5 {
+    display: inline;
+    font-size: 16px;
+  }
+
+  .caps {
+    text-transform: uppercase;
+  }
+`;
