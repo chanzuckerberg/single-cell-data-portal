@@ -19,7 +19,7 @@ export type SideBarToggleFn = (expanded: boolean) => void;
 
 export interface Props {
   children: ReactNode;
-  label: string;
+  label: ReactNode;
   isOpen?: boolean;
   onToggle?: SideBarToggleFn;
   width?: number;
