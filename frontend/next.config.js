@@ -7,7 +7,8 @@ const isProdBuild = process.env.NODE_ENV === nodeEnv.PRODUCTION;
 
 const PLAUSIBLE_URL = "https://plausible.io";
 
-const SCRIPT_SRC = ["'self'", PLAUSIBLE_URL];
+// unsafe-eval is required for next-mdx-remote. Currently pending sec review
+const SCRIPT_SRC = ["'self'", "'unsafe-eval'", PLAUSIBLE_URL];
 
 module.exports = {
   eslint: { dirs: ["doc-site", "pages", "components", "lib"] },
