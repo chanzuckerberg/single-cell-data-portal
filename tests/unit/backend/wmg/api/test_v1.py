@@ -515,7 +515,7 @@ class WmgApiV1Tests(unittest.TestCase):
     @patch("backend.wmg.api.v1.gene_term_label")
     @patch("backend.wmg.api.v1.ontology_term_label")
     @patch("backend.wmg.api.v1.load_snapshot")
-    def test__query_request_with_filter_dims__returns_elided_filter_dims(
+    def test__query_request_with_filter_dims__secondary_filters_dont_filter_themselves(
         self, load_snapshot, ontology_term_label, gene_term_label, fetch_datasets_metadata
     ):
         dim_size = 2
@@ -555,19 +555,23 @@ class WmgApiV1Tests(unittest.TestCase):
                         "label": "dataset_id_0_name",
                         "collection_label": "dataset_id_0_coll_name",
                         "collection_id": "dataset_id_0_coll_id",
-                    },
+                    }
                 ],
                 "disease_terms": [
+                    {"disease_ontology_term_id_0": "disease_ontology_term_id_0_label"},
                     {"disease_ontology_term_id_1": "disease_ontology_term_id_1_label"},
                 ],
                 "sex_terms": [
                     {"sex_ontology_term_id_0": "sex_ontology_term_id_0_label"},
+                    {"sex_ontology_term_id_1": "sex_ontology_term_id_1_label"},
                 ],
                 "development_stage_terms": [
+                    {"development_stage_ontology_term_id_0": "development_stage_ontology_term_id_0_label"},
                     {"development_stage_ontology_term_id_1": "development_stage_ontology_term_id_1_label"},
                 ],
                 "ethnicity_terms": [
                     {"ethnicity_ontology_term_id_0": "ethnicity_ontology_term_id_0_label"},
+                    {"ethnicity_ontology_term_id_1": "ethnicity_ontology_term_id_1_label"},
                 ],
             }
             self.maxDiff = None

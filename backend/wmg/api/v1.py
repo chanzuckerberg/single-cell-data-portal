@@ -36,10 +36,10 @@ def query():
     expression_summary = query.expression_summary(criteria)
     cell_counts = query.cell_counts(criteria)
     dot_plot_matrix_df = build_dot_plot_matrix(expression_summary, cell_counts)
-    all_filter_dims_values = extract_filter_dims_values(expression_summary)
+    # all_filter_dims_values = extract_filter_dims_values(expression_summary)
 
     include_filter_dims = request.get("include_filter_dims", False)
-    response_filter_dims_values = build_filter_dims_values(all_filter_dims_values) if include_filter_dims else {}
+    response_filter_dims_values = build_filter_dims_values(criteria, query) if include_filter_dims else {}
 
     return jsonify(
         dict(
@@ -78,18 +78,33 @@ def fetch_datasets_metadata(dataset_ids: Iterable[str]) -> List[Dict]:
         return [get_dataset(dataset_id) for dataset_id in dataset_ids]
 
 
-def build_filter_dims_values(all_filter_dims_values: Dict[str, Iterable[str]]):
+def build_filter_dims_values(criteria: WmgQueryCriteria, query: WmgQuery):
+    dataset_filter_options_criteria = criteria.copy(update={"dataset_ids": []}, deep=True)
+    disease_filter_options_criteria = criteria.copy(update={"disease_ontology_term_ids": []}, deep=True)
+    sex_filter_options_criteria = criteria.copy(update={"sex_ontology_term_ids": []}, deep=True)
+    dev_stage_filter_options_criteria = criteria.copy(update={"development_stage_ontology_term_ids": []}, deep=True)
+    ethnicity_filter_options_criteria = criteria.copy(update={"ethnicity_ontology_term_ids": []}, deep=True)
+
+    dataset_options = extract_filter_dims_values(query.cell_counts(dataset_filter_options_criteria))["dataset_id"]
+    disease_options = extract_filter_dims_values(query.cell_counts(disease_filter_options_criteria))[
+        "disease_ontology_term_id"
+    ]
+    sex_options = extract_filter_dims_values(query.cell_counts(sex_filter_options_criteria))["sex_ontology_term_id"]
+    dev_stage_options = extract_filter_dims_values(query.cell_counts(dev_stage_filter_options_criteria))[
+        "development_stage_ontology_term_id"
+    ]
+    ethnicity_options = extract_filter_dims_values(query.cell_counts(ethnicity_filter_options_criteria))[
+        "ethnicity_ontology_term_id"
+    ]
+
     response_filter_dims_values = dict(
-        datasets=fetch_datasets_metadata(all_filter_dims_values["dataset_id"]),
-        disease_terms=build_ontology_term_id_label_mapping(all_filter_dims_values["disease_ontology_term_id"]),
-        sex_terms=build_ontology_term_id_label_mapping(all_filter_dims_values["sex_ontology_term_id"]),
-        development_stage_terms=build_ontology_term_id_label_mapping(
-            all_filter_dims_values["development_stage_ontology_term_id"]
-        ),
-        ethnicity_terms=build_ontology_term_id_label_mapping(all_filter_dims_values["ethnicity_ontology_term_id"]),
-        # excluded per product requirements, but keeping in, commented-out, to reduce future head-scratching
-        # assay_ontology_terms=build_ontology_term_id_label_mapping(all_filter_dims_values["assay_ontology_term_id"]),
+        datasets=fetch_datasets_metadata(dataset_options),
+        disease_terms=build_ontology_term_id_label_mapping(disease_options),
+        sex_terms=build_ontology_term_id_label_mapping(sex_options),
+        development_stage_terms=build_ontology_term_id_label_mapping(dev_stage_options),
+        ethnicity_terms=build_ontology_term_id_label_mapping(ethnicity_options),
     )
+
     return response_filter_dims_values
 
 
