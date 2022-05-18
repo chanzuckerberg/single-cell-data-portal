@@ -1,5 +1,4 @@
 import tiledb
-import pandas as pd
 
 from backend.wmg.data.ontology_labels import ontology_term_label, gene_term_label
 from typing import Dict, List, Iterable
@@ -10,6 +9,9 @@ from backend.wmg.data.snapshot import (
     EXPRESSION_SUMMARY_CUBE_NAME,
     PRIMARY_FILTER_DIMENSIONS_FILENAME,
 )
+
+# Sets the number of levels that the cell type tree will have.
+ONTOLOGY_TREE_DEPTH = 3
 
 
 def get_cell_types_by_tissue(corpus_group: str) -> Dict:
@@ -36,7 +38,8 @@ def get_cell_types_by_tissue(corpus_group: str) -> Dict:
 
 def generate_cell_ordering(snapshot_path: str, cell_type_by_tissue: Dict) -> None:
     """
-    Use graphviz to map all the cells associated with a tissue to the ontology tree and return their correct order
+    Use graphviz to map all the cells associated with a tissue to the ontology tree and write a tree to be
+    used next to dot plot
     """
     # Note: those dependencies are only needed by the WMG pipeline, so we should keep them local
     # so that this file can be imported by tests without breaking.
@@ -65,32 +68,45 @@ def generate_cell_ordering(snapshot_path: str, cell_type_by_tissue: Dict) -> Non
 
         ancestor_ids = [a.id for a in ancestors]
 
-        def recurse(node):
+        def create_child(id_name: str):
+            return {"id": id_name, "children": []}
+
+        def recurse(node: Set[str], current_tree: Dict[str, Union[str, Dict]], depth=ONTOLOGY_TREE_DEPTH):
+
+            tree_to_pass = current_tree
+
             if node in cells:
-                yield (node)
+
+                cells.remove(node)
+                current_tree["children"].append(create_child(node))
+
+                # Skip indenting if we pass the threshold or if we find "naive cells" as these cell are unknown but
+                # in the ontology they're the root to most cell types.
+                if depth <= 1 or node == "CL:0000003":
+                    tree_to_pass = current_tree
+                else:
+                    depth -= 1
+                    tree_to_pass = current_tree["children"][-1]
+
+            # Get children left-to-right
             children = [
                 (c, positions[c.id]) for c in onto[node].subclasses(with_self=False, distance=1) if c.id in ancestor_ids
             ]
             sorted_children = sorted(children, key=lambda x: x[1][0])
             for child in sorted_children:
-                yield from recurse(child[0].id)
+                recurse(child[0].id, tree_to_pass, depth=depth)
 
-        ordered_list = list(dict.fromkeys(recurse(root)))
-        return ordered_list
+        tree = create_child("tree_root")
+        recurse(root, tree)
+        return tree
 
-    mapping = {}
+    trees = {}
     for tissue, cell_df in cell_type_by_tissue.items():
-        cells = list(cell_df)
-        ordered_cells = compute_ordering(cells, "CL:0000003")
-        mapping[tissue] = ordered_cells
+        cells = set(list(cell_df))
+        trees[tissue] = compute_ordering(cells, "CL:0000003")
 
-    data = []
-    for tissue, cells in mapping.items():
-        for i, cell in enumerate(cells):
-            data.append((tissue, cell, i))
-
-    df = pd.DataFrame(data, columns=["tissue_ontology_term_id", "cell_type_ontology_term_id", "order"])
-    df.to_json(f"{snapshot_path}/{CELL_TYPE_ORDERINGS_FILENAME}")
+    with open(f"{snapshot_path}/{CELL_TYPE_ORDERINGS_FILENAME}", "w") as tree_json_file:
+        json.dump(trees, tree_json_file, indent=2)
 
 
 def generate_primary_filter_dimensions(snapshot_path: str, corpus_name: str, snapshot_id: int):
