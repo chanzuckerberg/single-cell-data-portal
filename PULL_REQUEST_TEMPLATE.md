@@ -1,3 +1,5 @@
+- #TICKET_NUMBER
+
 ### Reviewers
 **Functional:** 
 
@@ -5,13 +7,12 @@
 
 ---
 
+
 ## Changes
 - add
 - remove
 - modify
 
-## Definition of Done (from ticket)
-
 ## QA steps (optional)
 
-## Known Issues
+## Notes for Reviewer
