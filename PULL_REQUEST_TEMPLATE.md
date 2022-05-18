@@ -11,7 +11,6 @@
 - remove
 - modify
 
-## Zenhub issue 
 - #TICKET_NUMBER
 
 ## QA steps (optional)
