@@ -1,5 +1,6 @@
 import json
 import os
+import timeit
 import unittest
 
 import requests
@@ -11,7 +12,8 @@ from tests.functional.backend.wmg.fixtures import genes_20_count, genes_400_coun
 class TestWmgApi(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.deployment_stage = os.environ["DEPLOYMENT_STAGE"]
+        # cls.deployment_stage = os.environ["DEPLOYMENT_STAGE"]
+        cls.deployment_stage = "prod"
         cls.api = API_URL.get(cls.deployment_stage)
         cls.api = f"{cls.api}/wmg/v1"
 
@@ -80,7 +82,17 @@ class TestWmgApi(unittest.TestCase):
             "include_filter_dims": True,
             "snapshot_id": self.data["snapshot_id"],
         }
-        res = requests.post(f"{self.api}/query", data=json.dumps(data), headers=headers)
-        self.assertGreater(MAX_RESPONSE_TIME_SECONDS, res.elapsed.seconds)
-        self.assertEqual(res.status_code, requests.codes.ok)
-        self.assertGreater(len(res.content), 10)
+        with self.subTest("Test once"):
+            res = requests.post(f"{self.api}/query", data=json.dumps(data), headers=headers)
+            self.assertGreater(MAX_RESPONSE_TIME_SECONDS, res.elapsed.seconds)
+            self.assertEqual(res.status_code, requests.codes.ok)
+            self.assertGreater(len(res.content), 10)
+
+        with self.subTest("Test 10 times"):
+            def make_request():
+                return requests.post(f"{self.api}/query", data=json.dumps(data), headers=headers)
+
+            seconds_for_10_runs = timeit.timeit(setup="", stmt=make_request,
+                                                number=10)
+            print(seconds_for_10_runs)
+            self.assertEqual(seconds_for_10_runs, 10)
