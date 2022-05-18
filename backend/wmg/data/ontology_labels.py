@@ -1,7 +1,6 @@
 import csv
 import gzip
 import json
-import os.path
 from typing import IO, Dict, Optional
 
 # TODO: Place this module into a common ontology util package with ontology_mapping.py and
@@ -68,4 +67,3 @@ def __open_ontology_resource(file) -> IO:
 
     path = resources.files("cellxgene_schema").joinpath(f"ontology_files/{file}")
     return gzip.open(path)
-
