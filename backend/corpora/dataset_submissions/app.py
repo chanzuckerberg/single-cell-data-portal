@@ -8,7 +8,6 @@ from sqlalchemy.orm import Session
 
 from backend.corpora.common.entities import Collection
 from backend.corpora.common.upload import upload
-from backend.corpora.common.utils.corpora_constants import CorporaConstants
 from backend.corpora.common.utils.db_session import db_session_manager
 from backend.corpora.common.utils.exceptions import CorporaException
 
@@ -48,7 +47,7 @@ def dataset_submissions_handler(s3_event: dict, unused_context) -> None:
             logger.debug(f"{collection_owner=}, {dataset_uuid=}")
             if not collection_owner:
                 raise CorporaException(f"Collection {collection_uuid} does not exist")
-            elif username != CorporaConstants.SUPER_CURATOR_NAME and username != collection_owner:
+            elif username != collection_owner:
                 raise CorporaException(
                     f"user:{username} does not have permission to modify datasets in collection {collection_uuid}."
                 )

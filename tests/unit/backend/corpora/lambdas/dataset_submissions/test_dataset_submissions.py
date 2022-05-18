@@ -2,7 +2,6 @@ from unittest import TestCase
 from unittest.mock import patch, Mock
 
 from backend.corpora.common.corpora_orm import generate_uuid
-from backend.corpora.common.utils.corpora_constants import CorporaConstants
 from backend.corpora.common.utils.exceptions import CorporaException
 from backend.corpora.dataset_submissions.app import dataset_submissions_handler
 
@@ -42,17 +41,6 @@ class TestDatasetSubmissions(TestCase):
         mock_get_dataset_info.return_value = "not_owner", self.dataset_uuid
         with self.assertRaises(CorporaException):
             dataset_submissions_handler(s3_event, None)
-
-    @patch("backend.corpora.dataset_submissions.app.get_dataset_info")
-    @patch("backend.corpora.dataset_submissions.app.upload")
-    def test__super_curator__upload(self, mock_upload: Mock, mock_get_dataset_info: Mock):
-        s3_event = create_s3_event(
-            key=f"{CorporaConstants.SUPER_CURATOR_NAME}/{self.collection_uuid}/{self.incoming_curator_tag}"
-        )
-        mock_upload.return_value = None
-        mock_get_dataset_info.return_value = self.user_name, self.dataset_uuid
-        dataset_submissions_handler(s3_event, None)
-        mock_upload.assert_called()
 
     @patch("backend.corpora.dataset_submissions.app.get_dataset_info")
     @patch("backend.corpora.dataset_submissions.app.upload")
