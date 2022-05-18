@@ -1,3 +1,5 @@
+- #TICKET_NUMBER
+
 ### Reviewers
 **Functional:** 
 
@@ -11,8 +13,6 @@
 - remove
 - modify
 
-- #TICKET_NUMBER
-
 ## QA steps (optional)
 
-## Known Issues or Open Questions
+## Notes for Reviewer
