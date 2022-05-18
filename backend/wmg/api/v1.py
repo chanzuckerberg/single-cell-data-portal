@@ -163,7 +163,10 @@ def build_ordered_cell_types_by_tissue(
 
     for row in sorted.itertuples(index=False):
         structured_result[row.tissue_ontology_term_id].append(
-            {row.cell_type_ontology_term_id: ontology_term_label(row.cell_type_ontology_term_id)}
+            {"cell_type_ontology_term_id": row.cell_type_ontology_term_id,
+             "cell_type": ontology_term_label(row.cell_type_ontology_term_id),
+             "depth": row.depth
+             }
         )
 
     return structured_result
