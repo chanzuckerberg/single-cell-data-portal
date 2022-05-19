@@ -36,6 +36,7 @@ import { checkIsOverMaxCellCount } from "src/components/common/Grid/common/utils
 import ActionButton from "src/components/common/Grid/components/ActionButton";
 import ActionsCell from "src/components/common/Grid/components/ActionsCell";
 import CountCell from "src/components/common/Grid/components/CountCell";
+import DiseaseCell from "src/components/common/Grid/components/DiseaseCell";
 import NTagCell from "src/components/common/Grid/components/NTagCell";
 import { RightAlignCell } from "src/components/common/Grid/components/RightAlignCell";
 import { StatusTags } from "src/components/common/Grid/components/StatusTags";
@@ -190,7 +191,10 @@ const DatasetRow: FC<Props> = ({
         <NTagCell label={PLURALIZED_METADATA_LABEL.TISSUE} values={tissue} />
       </td>
       <td>
-        <NTagCell label={PLURALIZED_METADATA_LABEL.DISEASE} values={disease} />
+        <DiseaseCell
+          label={PLURALIZED_METADATA_LABEL.DISEASE}
+          values={disease}
+        />
       </td>
       <td>
         <NTagCell label={PLURALIZED_METADATA_LABEL.ASSAY} values={assay} />
