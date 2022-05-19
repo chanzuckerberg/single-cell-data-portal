@@ -230,7 +230,7 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
-  /v1/collections/{public_collection_uuid}/revision:
+  /v1/collections/{collection_uuid}/revision:
     post:
       summary: Start a revision of a published Collection
       description: >-
@@ -239,12 +239,13 @@ paths:
         ongoing Revision may exist per published Collection at any given time.
 
         All methods of updating or adding Datasets and metadata to a Revision work the same as for a private Collection.
+      operationId: backend.corpora.lambdas.api.v1.curation.collection_uuid.revision.post_collection_revision
       security:
         - curatorAccess: []
       tags:
         - collection
       parameters:
-        - $ref: "#/components/parameters/path_public_collection_uuid"
+        - $ref: "#/components/parameters/path_collection_uuid"
       responses:
         "200":
           description: OK
@@ -738,13 +739,6 @@ components:
     path_collection_uuid:
       name: collection_uuid
       description: The uuid of a Collection.
-      in: path
-      required: true
-      schema:
-        $ref: "#/components/schemas/collection_uuid"
-    path_public_collection_uuid:
-      name: public_collection_uuid
-      description: The uuid of a public Collection.
       in: path
       required: true
       schema:
