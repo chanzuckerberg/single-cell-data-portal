@@ -168,9 +168,31 @@ def get_publisher_metadata(provider, doi):
         return None
 
 
+email_regex = re.compile(r"(.+)@(.+)\.(.+)")
+
+
+def verify_collection_body(body: dict, allow_none: bool = False) -> None:
+    errors = []
+    result = email_regex.match(body.get("contact_email", ""))
+    if not result and not allow_none:
+        errors.append({"name": "contact_email", "reason": "Invalid format."})
+
+    if not body.get("description") and not allow_none:  # Check if description is None or 0 length
+        errors.append({"name": "description", "reason": "Cannot be blank."})
+
+    if not body.get("name") and not allow_none:  # Check if description is None or 0 length
+        errors.append({"name": "name", "reason": "Cannot be blank."})
+
+    if not body.get("contact_name") and not allow_none:  # Check if description is None or 0 length
+        errors.append({"name": "contact_name", "reason": "Cannot be blank."})
+    if errors:
+        raise InvalidParametersHTTPException(detail=json.dumps(errors))
+
+
 @dbconnect
 def create_collection(body: object, user: str):
     db_session = g.db_session
+    verify_collection_body(body)
 
     doi = normalize_and_get_doi(body)
     if doi is not None:

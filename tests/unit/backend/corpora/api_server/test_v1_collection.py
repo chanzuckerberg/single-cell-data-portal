@@ -14,6 +14,8 @@ from backend.corpora.common.corpora_orm import (
     generate_uuid,
 )
 from backend.corpora.common.entities import Collection
+from backend.corpora.common.utils.http_exceptions import InvalidParametersHTTPException
+from backend.corpora.lambdas.api.v1.collection import verify_collection_body
 from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
 from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest, BasicAuthAPITestCurator
 from tests.unit.backend.corpora.api_server.mock_auth import get_auth_token
@@ -1283,3 +1285,34 @@ class TestCollectionsCurators(BasicAuthAPITestCurator):
         test_url = furl(path=f"/dp/v1/collections/{collection.id}", query_params=dict(visibility="PRIVATE"))
         response = self.app.delete(test_url.url, headers=headers)
         self.assertEqual(204, response.status_code)
+
+
+class TestVerifyCollection(unittest.TestCase):
+    def test_blank_body(self):
+        body = dict()
+        with self.subTest("allow_none:False"):
+            with self.assertRaises(InvalidParametersHTTPException) as ex:
+                verify_collection_body(body)
+                errors = json.loads(ex.detials)
+                self.assertIn(errors, {"name": "description", "reason": "Cannot be blank."})
+                self.assertIn(errors, {"name": "name", "reason": "Cannot be blank."})
+                self.assertIn(errors, {"name": "contact_name", "reason": "Cannot be blank."})
+                self.assertIn(errors, {"name": "contact_email", "reason": "Invalid format."})
+        with self.subTest("allow_none:True"):
+            verify_collection_body(body, allow_none=True)
+
+    def test_invalid_email(self):
+        bad_emails = ["@.", "", "email@.", "@place.com", "email@.com", "email@place."]
+        body = dict(name="something", contact_name="a name", description="description")
+
+        for email in bad_emails:
+            with self.subTest(email):
+                with self.assertRaises(InvalidParametersHTTPException) as ex:
+                    body["contect_email"] = email
+                    verify_collection_body(body)
+                    errors = json.loads(ex.detials)
+                    self.assertEqual(errors, [{"name": "contact_email", "reason": "Invalid format."}])
+
+    def test_OK(self):
+        body = dict(name="something", contact_name="a name", description="description", contact_email="email@place.com")
+        verify_collection_body(body)
