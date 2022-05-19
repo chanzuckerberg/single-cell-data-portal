@@ -195,6 +195,7 @@ paths:
       description: >-
         Update a private Collection or a Revision. If any Collection metadata fields are included in the body of the
         request, these fields SHALL be updated for the specified Collection.
+      operationId: backend.corpora.lambdas.api.v1.collection.update_collection
       security:
         - curatorAccess: []
       tags:

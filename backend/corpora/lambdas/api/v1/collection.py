@@ -1,3 +1,5 @@
+import json
+
 import sqlalchemy
 from typing import Optional
 from backend.corpora.common.providers import crossref_provider
@@ -243,6 +245,7 @@ def delete_collection(collection_uuid: str, token_info: dict):
 @dbconnect
 def update_collection(collection_uuid: str, body: dict, token_info: dict):
     db_session = g.db_session
+    verify_collection_body(body, allow_none=True)
     collection = get_collection(
         db_session,
         collection_uuid,
