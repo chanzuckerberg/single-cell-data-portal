@@ -1,6 +1,6 @@
 import Head from "next/head";
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { EMPTY_OBJECT } from "src/common/constants/utils";
+import { EMPTY_ARRAY, EMPTY_OBJECT } from "src/common/constants/utils";
 import {
   CellTypeByTissueName,
   GeneExpressionSummariesByTissueName,
@@ -172,9 +172,20 @@ export default function WheresMyGene(): JSX.Element {
 
       if (!tissueGeneExpressionSummaries) continue;
 
-      result[tissueName] = selectedGenes.map(
-        (geneName) => tissueGeneExpressionSummaries[geneName]
-      );
+      result[tissueName] = selectedGenes.map((geneName) => {
+        // (thuang): This is needed to ensure the heatmap's gene column
+        // is available even if there's no expression data for the column.
+        // Otherwise the heatmap columns and column labels won't match up
+        // where there's holes in the data.
+        const emptyGeneExpressionSummary = {
+          cellTypeGeneExpressionSummaries: EMPTY_ARRAY,
+          name: geneName,
+        };
+
+        return (
+          tissueGeneExpressionSummaries[geneName] || emptyGeneExpressionSummary
+        );
+      });
     }
 
     return result;
