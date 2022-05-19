@@ -2,7 +2,7 @@ import tiledb
 import pandas as pd
 
 from backend.wmg.data.ontology_labels import ontology_term_label, gene_term_label
-from typing import Dict, List, Iterable
+from typing import Dict, List, Iterable, Set
 import json
 
 from backend.wmg.data.snapshot import (
@@ -65,18 +65,25 @@ def generate_cell_ordering(snapshot_path: str, cell_type_by_tissue: Dict) -> Non
 
         ancestor_ids = [a.id for a in ancestors]
 
-        def recurse(node):
+        def recurse(node: Set[str], depth=0):
+
             if node in cells:
-                yield (node)
+
+                cells.remove(node)
+                yield {"id": node, "depth": depth}
+
+                if node != "CL:0000003":
+                    depth += 1
+
             children = [
                 (c, positions[c.id]) for c in onto[node].subclasses(with_self=False, distance=1) if c.id in ancestor_ids
             ]
             sorted_children = sorted(children, key=lambda x: x[1][0])
             for child in sorted_children:
-                yield from recurse(child[0].id)
+                yield from recurse(child[0].id, depth=depth)
 
-        ordered_list = list(dict.fromkeys(recurse(root)))
-        return ordered_list
+        ordered_list = recurse(root)
+        return list(ordered_list)
 
     mapping = {}
     for tissue, cell_df in cell_type_by_tissue.items():
@@ -87,9 +94,9 @@ def generate_cell_ordering(snapshot_path: str, cell_type_by_tissue: Dict) -> Non
     data = []
     for tissue, cells in mapping.items():
         for i, cell in enumerate(cells):
-            data.append((tissue, cell, i))
+            data.append((tissue, cell["id"], cell["depth"], i))
 
-    df = pd.DataFrame(data, columns=["tissue_ontology_term_id", "cell_type_ontology_term_id", "order"])
+    df = pd.DataFrame(data, columns=["tissue_ontology_term_id", "cell_type_ontology_term_id", "depth", "order"])
     df.to_json(f"{snapshot_path}/{CELL_TYPE_ORDERINGS_FILENAME}")
 
 
