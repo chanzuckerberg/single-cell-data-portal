@@ -75,19 +75,19 @@ class TestPostCollection(BaseAuthAPITest):
         )
 
     def test__create_collection__no_auth(self):
-        response = self.app.post(f"/curation/v1/collections", data=json.dumps(self.test_collection))
+        response = self.app.post("/curation/v1/collections", data=json.dumps(self.test_collection))
         self.assertEqual(401, response.status_code)
 
     def test__create_collection__OK(self):
         response = self.app.post(
-            f"/curation/v1/collections", headers=self.get_auth_headers(), data=json.dumps(self.test_collection)
+            "/curation/v1/collections", headers=self.get_auth_headers(), data=json.dumps(self.test_collection)
         )
         self.assertEqual(201, response.status_code)
 
     def test__create_collection__InvalidParameters(self):
         test_collection = dict(name="", description="", contact_name="", contact_email="@email.com")
         response = self.app.post(
-            f"/curation/v1/collections", headers=self.get_auth_headers(), data=json.dumps(test_collection)
+            "/curation/v1/collections", headers=self.get_auth_headers(), data=json.dumps(test_collection)
         )
         self.assertEqual(400, response.status_code)
 

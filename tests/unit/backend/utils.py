@@ -31,7 +31,12 @@ class BogusCollectionParams:
     @classmethod
     def get(cls, **kwargs):
         bogus_data = dict(
-            visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id", data_submission_policy_version=0
+            visibility=CollectionVisibility.PRIVATE.name,
+            owner="test_user_id",
+            data_submission_policy_version=0,
+            description="described",
+            contact_name="john doe",
+            contact_email="john.doe@email.com",
         )
         bogus_data.update(**kwargs)
         return bogus_data
