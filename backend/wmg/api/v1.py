@@ -1,5 +1,6 @@
 from collections import defaultdict
 from typing import Dict, List, Any, Iterable
+from math import isnan
 
 import connexion
 from flask import jsonify
@@ -152,16 +153,22 @@ def build_ordered_cell_types_by_tissue(
 ) -> Dict[str, List[Dict[str, str]]]:
     distinct_tissues_cell_types: DataFrame = cell_counts.groupby(
         ["tissue_ontology_term_id", "cell_type_ontology_term_id"], as_index=False
-    ).first()[["tissue_ontology_term_id", "cell_type_ontology_term_id"]]
+    ).first()[["tissue_ontology_term_id", "cell_type_ontology_term_id", "n_cells"]]
 
-    joined = distinct_tissues_cell_types.merge(
-        cell_type_orderings, on=["tissue_ontology_term_id", "cell_type_ontology_term_id"]
+    joined = cell_type_orderings.merge(
+        distinct_tissues_cell_types,
+        on=["tissue_ontology_term_id", "cell_type_ontology_term_id"],
+        how="left"
     )
-    sorted = joined.sort_values(by=["tissue_ontology_term_id", "order"])
+
+    # Fix depths based on the rows that need to be removed
+    joined = build_ordered_cell_types_by_tissue_fix_depths(joined)
+
+    # Remove cell types without counts
+    joined = joined[joined['n_cells'].notnull()]
 
     structured_result: Dict[str, List[Dict[str, str]]] = defaultdict(list)
-
-    for row in sorted.itertuples(index=False):
+    for row in joined.itertuples(index=False):
         structured_result[row.tissue_ontology_term_id].append(
             {"cell_type_ontology_term_id": row.cell_type_ontology_term_id,
              "cell_type": ontology_term_label(row.cell_type_ontology_term_id),
@@ -170,3 +177,27 @@ def build_ordered_cell_types_by_tissue(
         )
 
     return structured_result
+
+
+def build_ordered_cell_types_by_tissue_fix_depths(x):
+    """
+    Fixes the depths of the cell ontology tree based on cell types that have to be removed
+    because they have 0 counts
+    """
+
+    depth_col = x.columns.get_loc("depth")
+    n_cells = x.columns.get_loc("n_cells")
+
+    x['depth'] = x['depth'].astype('int')
+
+    for i in range(len(x)):
+        if isnan(x.iloc[i, n_cells]):
+            original_depth = x.iloc[i, depth_col]
+            for j in range(i + 1, len(x)):
+                if original_depth < x.iloc[j, depth_col]:
+                    x.iloc[j, depth_col] -= 1
+                else:
+                    break
+
+    return x
+
