@@ -1,9 +1,11 @@
+import { Link } from "czifui";
 import fs from "fs";
 import matter from "gray-matter";
 import { GetStaticPaths } from "next";
 import { MDXRemote, MDXRemoteSerializeResult } from "next-mdx-remote";
 import { serialize } from "next-mdx-remote/serialize";
 import Image from "next/image";
+import NextLink from "next/link";
 import pathTool from "path";
 import styled from "styled-components";
 
@@ -12,17 +14,22 @@ const DOC_SITE_FOLDER_NAME = "doc-site";
 interface Directory {
   dirName: string;
   files: Array<string>;
+  slug: Array<string>;
   subDirectories: Array<Directory>;
 }
 
 const CACHED_FILE_PATHS = new Map<Array<string>, Directory>();
 function filePaths(...root: Array<string>): Directory {
   const cacheStore = CACHED_FILE_PATHS && CACHED_FILE_PATHS.get(root);
-  if (cacheStore) return cacheStore;
+  if (cacheStore) {
+    console.log("CACHE HIT");
+    return cacheStore;
+  }
 
   const newDirectory = {
     dirName: root[root.length - 1] ?? "",
     files: [],
+    slug: root,
     subDirectories: [],
   } as Directory;
 
@@ -40,21 +47,16 @@ function filePaths(...root: Array<string>): Directory {
   return newDirectory;
 }
 
-// need to fix the index path
-// There are incorrect paths that are reminants from previous recursive calls
 function generatePaths(
   directory: Directory,
-  slugs = new Array<{ params: { slug: Array<string> } }>(),
-  indexPath = new Array<string>()
+  slugs = new Array<{ params: { slug: Array<string> } }>()
 ): Array<{ params: { slug: Array<string> } }> {
-  const newIndexPath = [...indexPath];
-  if (directory.dirName) newIndexPath.push(directory.dirName);
   directory.files.forEach((file) => {
-    slugs.push({ params: { slug: [...newIndexPath, file] } });
+    slugs.push({ params: { slug: [...directory.slug, file] } });
   });
   if (directory.subDirectories.length > 0) {
     directory.subDirectories.forEach((subDirectory) => {
-      slugs.push(...generatePaths(subDirectory, slugs, newIndexPath));
+      slugs.push(...generatePaths(subDirectory, slugs));
     });
   }
   return slugs;
@@ -99,7 +101,16 @@ const RenderDirectory = ({ directory }: { directory: Directory }) => {
   return (
     <ul>
       {directory.files.map((file) => {
-        return <li key={file}>{file}</li>;
+        let href = "/docs/";
+        if (directory.slug.length > 0) href += directory.slug.join("/") + "/";
+        href += file;
+        return (
+          <NextLink key={file} href={href}>
+            <li>
+              <Link>{file}</Link>
+            </li>
+          </NextLink>
+        );
       })}
       {directory.subDirectories.map((directory) => {
         return (
