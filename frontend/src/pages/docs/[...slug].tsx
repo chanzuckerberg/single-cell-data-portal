@@ -5,6 +5,7 @@ import { MDXRemote, MDXRemoteSerializeResult } from "next-mdx-remote";
 import { serialize } from "next-mdx-remote/serialize";
 import Image from "next/image";
 import pathTool from "path";
+import styled from "styled-components";
 
 const DOC_SITE_FOLDER_NAME = "doc-site";
 
@@ -19,16 +20,6 @@ function filePaths(...root: Array<string>): Directory {
   const cacheStore = CACHED_FILE_PATHS && CACHED_FILE_PATHS.get(root);
   if (cacheStore) return cacheStore;
 
-  // const paths = fs.readdirSync(pathTool.join(DOC_SITE_FOLDER_NAME, ...root));
-  // const builtPaths = paths.reduce((acc, path) => {
-  //   const builtFullPath = pathTool.join(DOC_SITE_FOLDER_NAME, ...root, path);
-  //   if (fs.lstatSync(builtFullPath).isFile()) {
-  //     if (path.endsWith(".mdx")) acc.push([...root, path]);
-  //   } else {
-  //     acc.push(...filePaths(...root, path));
-  //   }
-  //   return acc;
-  // }, {} as Directory);};
   const newDirectory = {
     dirName: root[root.length - 1] ?? "",
     files: [],
@@ -71,11 +62,7 @@ function generatePaths(
 
 export const getStaticPaths: GetStaticPaths = async () => {
   const filePath = filePaths();
-  // console.log(filePath);
   const paths = generatePaths(filePath);
-  paths.forEach((path) => {
-    console.log(path.params.slug);
-  });
 
   return {
     fallback: false,
@@ -94,10 +81,13 @@ export const getStaticProps = async ({
     pathTool.join("doc-site", slug.join("/") + ".mdx"),
     "utf-8"
   );
+
+  const filePath = filePaths();
   const { data: frontMatter, content } = matter(markdownWithMeta);
   const mdxSource = await serialize(content);
   return {
     props: {
+      filePath,
       frontMatter,
       mdxSource,
       slug,
@@ -105,24 +95,53 @@ export const getStaticProps = async ({
   };
 };
 
-const components = { Image };
+const RenderDirectory = ({ directory }: { directory: Directory }) => {
+  return (
+    <ul>
+      {directory.files.map((file) => {
+        return <li key={file}>{file}</li>;
+      })}
+      {directory.subDirectories.map((directory) => {
+        return (
+          <div key={directory.dirName}>
+            <li>{directory.dirName}</li>
+            <RenderDirectory directory={directory} />
+          </div>
+        );
+      })}
+    </ul>
+  );
+};
 
 interface Props {
   frontMatter: Record<string, any>;
   mdxSource: MDXRemoteSerializeResult;
   slug: Array<string>;
+  filePath: Directory;
 }
 
-const PageNavigator = ({ pages }) => {
-  return <div></div>;
+const PageNavigator = ({ filePath }: { filePath: Directory }) => {
+  return <RenderDirectory directory={filePath} />;
 };
 
-const BlogPage = ({ mdxSource }: Props) => {
+const StyledDocsLayout = styled.div`
+  display: flex;
+  flex-direction: row;
+`;
+const DocContent = styled.div`
+  margin: 16px;
+`;
+
+const components = { Image };
+const DocPage = ({ mdxSource, filePath }: Props) => {
   return (
-    <>
-      <MDXRemote {...mdxSource} components={components} />
-    </>
+    <StyledDocsLayout>
+      <PageNavigator filePath={filePath} />
+      <DocContent>
+        <MDXRemote {...mdxSource} components={components} />
+      </DocContent>
+    </StyledDocsLayout>
   );
 };
 
-export default BlogPage;
+export default DocPage;
