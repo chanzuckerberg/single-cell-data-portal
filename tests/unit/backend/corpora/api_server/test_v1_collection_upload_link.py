@@ -52,7 +52,7 @@ class TestCollectionPostUploadLink(BaseAuthAPITest):
         self.assertEqual(403, response.status_code)
 
     def test__bad_link__400(self):
-        path = "/dp/v1/collections/test_collection_id/upload-links"
+        path = "/dp/v1/collections/test_collection_id_revision/upload-links"
 
         with self.subTest("Unsupported Provider"):
             headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
@@ -74,7 +74,7 @@ class TestCollectionPostUploadLink(BaseAuthAPITest):
         "backend.corpora.common.utils.dl_sources.url.DropBoxURL.file_info", return_value={"size": 1, "name": "file.txt"}
     )
     def test__unsupported_format__400(self, mock_func):
-        path = "/dp/v1/collections/test_collection_id/upload-links"
+        path = "/dp/v1/collections/test_collection_id_revision/upload-links"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
         body = {"url": self.dummy_link}
 
@@ -87,7 +87,7 @@ class TestCollectionPostUploadLink(BaseAuthAPITest):
         return_value={"size": 31 * GB, "name": "file.txt"},
     )
     def test__oversized__413(self, mock_func):
-        path = "/dp/v1/collections/test_collection_id/upload-links"
+        path = "/dp/v1/collections/test_collection_id_revision/upload-links"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
         body = {"url": self.dummy_link}
 

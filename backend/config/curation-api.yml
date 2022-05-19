@@ -334,6 +334,7 @@ paths:
         request body; if an existing Dataset has this tag, the existing Dataset SHALL be replaced, otherwise a new
         Dataset will be added. MAY include the **id** of an existing Dataset, in which case the existing Dataset
         SHALL be replaced.
+      operationId: backend.corpora.lambdas.api.v1.collection_uuid.upload.relink
       tags:
         - collection
       security:

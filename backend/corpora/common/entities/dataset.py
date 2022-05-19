@@ -97,6 +97,15 @@ class Dataset(Entity):
         return dataset
 
     @classmethod
+    def get_dataset_from_curator_tag(cls, session: Session, collection_id, curator_tag) -> "Dataset":
+        dataset = (
+            session.query(cls.table)
+            .filter(cls.table.collection_id == collection_id, cls.table.curator_tag == curator_tag)
+            .one_or_none()
+        )
+        return cls(dataset) if dataset else None
+
+    @classmethod
     def get_by_explorer_url(cls, session: Session, explorer_url):
         """
         Return the most recently created dataset with the given explorer_url or None

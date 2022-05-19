@@ -16,6 +16,7 @@ from .utils.exceptions import (
     NonExistentCollectionException,
     InvalidProcessingStateException,
     NonExistentDatasetException,
+    DuplicateTagExistsException,
 )
 from .utils.math_utils import GB
 
@@ -89,6 +90,8 @@ def upload(
                 dataset.reprocess()
 
     else:
+        if curator_tag and Dataset.get_dataset_from_curator_tag(db_session, collection_uuid, curator_tag):
+            raise DuplicateTagExistsException()
         # Add new dataset
         dataset = Dataset.create(db_session, collection=collection, curator_tag=curator_tag)
 

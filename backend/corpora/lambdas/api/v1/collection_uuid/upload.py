@@ -1,7 +1,10 @@
 import requests
 from flask import make_response, g
 
+from ..authorization import owner_or_allowed
+from ..common import get_collection
 from .....api_server.db import dbconnect
+from .....common.corpora_orm import CollectionVisibility
 from .....common.upload import upload
 from .....common.utils.dl_sources.url import MissingHeaderException, from_url
 from .....common.utils.http_exceptions import (
@@ -17,22 +20,32 @@ from .....common.utils.exceptions import (
     NonExistentCollectionException,
     InvalidProcessingStateException,
     NonExistentDatasetException,
+    DuplicateTagExistsException,
 )
 
 
 def link(collection_uuid: str, body: dict, token_info: dict):
-    dataset_id = upload_from_link(collection_uuid, token_info, body["url"])
+    dataset_id = upload_from_link(collection_uuid, token_info, body["url"], curator_tag=body.get("curator_tag"))
     return make_response({"dataset_uuid": dataset_id}, 202)
 
 
 def relink(collection_uuid: str, body: dict, token_info: dict):
-    dataset_id = upload_from_link(collection_uuid, token_info, body["url"], body["id"])
+    dataset_id = upload_from_link(
+        collection_uuid,
+        token_info,
+        body.get("url", body.get("link")),
+        body.get("id"),
+        curator_tag=body.get("curator_tag"),
+    )
     return make_response({"dataset_uuid": dataset_id}, 202)
 
 
 @dbconnect
-def upload_from_link(collection_uuid: str, token_info: dict, url: str, dataset_id: str = None):
+def upload_from_link(collection_uuid: str, token_info: dict, url: str, dataset_id: str = None, curator_tag: str = None):
     db_session = g.db_session
+    get_collection(
+        db_session, collection_uuid, visibility=CollectionVisibility.PRIVATE.name, owner=owner_or_allowed(token_info)
+    )
     # Verify Dropbox URL
     valid_link = from_url(url)
     if not valid_link:
@@ -59,6 +72,7 @@ def upload_from_link(collection_uuid: str, token_info: dict, url: str, dataset_i
             user=token_info["sub"],
             scope=token_info["scope"],
             dataset_id=dataset_id,
+            curator_tag=curator_tag,
         )
     except MaxFileSizeExceededException:
         raise TooLargeHTTPException()
@@ -70,3 +84,5 @@ def upload_from_link(collection_uuid: str, token_info: dict, url: str, dataset_i
         raise MethodNotAllowedException()
     except NonExistentDatasetException:
         raise NotFoundHTTPException()
+    except DuplicateTagExistsException:
+        raise ForbiddenHTTPException("A dataset with the curator_tag already exists in the collection.")
