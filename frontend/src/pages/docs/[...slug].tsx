@@ -97,7 +97,7 @@ export const getStaticProps = async ({
   };
 };
 
-const RenderDirectory = memo(function RenderDirecotry({
+const Directory = memo(function RenderDirecotry({
   directory,
 }: {
   directory: Directory;
@@ -120,7 +120,7 @@ const RenderDirectory = memo(function RenderDirecotry({
         return (
           <div key={directory.dirName}>
             <li>{directory.dirName}</li>
-            <RenderDirectory directory={directory} />
+            <Directory directory={directory} />
           </div>
         );
       })}
@@ -136,7 +136,7 @@ interface Props {
 }
 
 const PageNavigator = ({ filePath }: { filePath: Directory }) => {
-  return <RenderDirectory directory={filePath} />;
+  return <Directory directory={filePath} />;
 };
 
 const StyledDocsLayout = styled.div`
