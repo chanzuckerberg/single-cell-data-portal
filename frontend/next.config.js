@@ -30,12 +30,6 @@ module.exports = {
                 "sentry.prod.si.czi.technology",
                 PLAUSIBLE_URL,
                 configs.API_URL,
-                // DEBUG
-                // DEBUG
-                // DEBUG
-                // (thuang): Remove after prototype done
-                "https://wmg-prototype-data-dev-public.s3.amazonaws.com",
-                "https://public-backend.dev.single-cell.czi.technology",
               ],
               defaultSrc: ["'self'"],
               fontSrc: ["'self'", "https://fonts.gstatic.com"],
