@@ -7,7 +7,7 @@ from backend.corpora.lambdas.api.v1.dataset import delete_dataset_common
 
 
 @dbconnect
-def delete_dataset(token_info: dict, collection_uuid: str, curator_tag: str = None, dataset_uuid=None):
+def delete_dataset(token_info: dict, collection_uuid: str, curator_tag: str = None, dataset_uuid = None):
     db_session = g.db_session
     if dataset_uuid:
         dataset = Dataset.get(db_session, dataset_uuid, include_tombstones=True)

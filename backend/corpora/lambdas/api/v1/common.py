@@ -13,7 +13,7 @@ def get_collection(db_session, collection_uuid, **kwargs):
     return collection
 
 
-def delete_dataset_common(db_session, dataset, token_info):
+def delete_dataset_common(db_session: Session, dataset: Dataset, token_info: dict):
     if not dataset:
         raise ForbiddenHTTPException()
     collection = Collection.get_collection(
@@ -24,7 +24,7 @@ def delete_dataset_common(db_session, dataset, token_info):
     if not collection:
         raise ForbiddenHTTPException()
     if dataset.collection.visibility == CollectionVisibility.PUBLIC:
-        return make_response(jsonify("Can not delete a public dataset"), 405)
+        return make_response(jsonify("Cannot delete a public Dataset"), 405)
     if dataset.tombstone is False:
         if dataset.published:
             dataset.update(tombstone=True, published=False)

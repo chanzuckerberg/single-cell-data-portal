@@ -25,7 +25,7 @@ class TestDeleteDataset(BaseAuthAPITest):
                         processing_status=processing_status,
                         curator_tag=curator_tag,
                     )
-                    test_url = f"/curation/v1/collections/{collection.id}/datasets/"
+                    test_url = f"/curation/v1/collections/{collection.id}/datasets"
                     if query == "dataset_uuid":
                         query_string = {query: dataset.id}
                     elif query == "curator_tag":
