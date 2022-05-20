@@ -49,7 +49,7 @@ class TestPutLink(BaseAuthAPITest):
 
     @patch("backend.corpora.common.upload.start_upload_sfn")
     def test__new_from_link__Super_Curator(self, start_upload_sfn):
-        headers = {"Authorization": "Bearer " + self.make_super_curator_token(), "Content-Type": "application/json"}
+        headers = self.make_super_curator_header()
         response = self._test_new({}, headers, body={"curator_tag": "test", "link": self.good_link})
         self.assertEqual(202, response.status_code)
 
@@ -94,7 +94,7 @@ class TestPutLink(BaseAuthAPITest):
 
     @patch("backend.corpora.common.upload.start_upload_sfn")
     def test__existing_from_link__Super_Curator(self, start_upload_sfn):
-        headers = {"Authorization": "Bearer " + self.make_super_curator_token(), "Content-Type": "application/json"}
+        headers = self.make_super_curator_header()
         with self.subTest("dataset_id"):
             response = self._test_existing(headers, use_curator_tag=True)
             self.assertEqual(202, response.status_code)

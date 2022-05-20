@@ -4,7 +4,6 @@ import typing
 from backend.corpora.api_server.app import app
 from backend.corpora.common.corpora_config import CorporaAuthConfig
 from backend.corpora.lambdas.api.v1.authentication import decode_token
-
 from tests.unit.backend.corpora.api_server.mock_auth import MockOauthServer, get_auth_token, make_token
 from tests.unit.backend.corpora.fixtures.environment_setup import EnvironmentSetup
 from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
@@ -84,8 +83,15 @@ class BaseAuthAPITest(BaseAPITest):
             "Content-Type": "application/json",
         }
 
-    def make_super_curator_token(self):
-        return make_token(dict(sub="someone_else", email="fake_user@email.com"), additional_scope=["write:collections"])
+    def make_super_curator_header(self):
+        token = make_token(
+            dict(sub="someone_else", email="fake_user@email.com"), additional_scope=["write:collections"]
+        )
+        return {"Authorization": "Bearer " + token, "Content-Type": "application/json"}
+
+    def make_not_owner_header(self):
+        token = make_token(dict(sub="not_owner", email="fake_user@email.com"))
+        return {"Authorization": "Bearer " + token, "Content-Type": "application/json"}
 
     @classmethod
     def setUpClass(cls):
