@@ -152,7 +152,7 @@ class TestExtract(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
             self.dataset__private_collection,
             self.dataset__wrong_assay,
             self.dataset__multiple_organisms,
-            self.dataset__null_organism
+            self.dataset__null_organism,
         ]
         for dataset in not_expected_datasets:
             dataset_assets = dataset.get_assets()
