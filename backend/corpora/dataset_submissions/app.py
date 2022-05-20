@@ -85,10 +85,10 @@ def parse_key(key: str) -> Optional[dict]:
     Parses the S3 object key to extract the collection UUID and curator tag, ignoring the REMOTE_DEV_PREFIX
 
     Example of key with only curator_tag:
-    s3://<dataset submissions bucket>/<user_id>/<collection_id>/tag/<curator_tag>
+    s3://<dataset submissions bucket>/<user_id>/<collection_id>/<curator_tag>
 
     Example of key with dataset id:
-    s3://<dataset submissions bucket>/<user_id>/<collection_id>/id/<dataset_id>
+    s3://<dataset submissions bucket>/<user_id>/<collection_id>/<dataset_id>
 
     :param key:
     :return:
