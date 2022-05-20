@@ -165,8 +165,8 @@ def build_cell_orderings(cell_counts_cube_dir_, cell_ordering_generator_fn) -> D
                     data={
                         "tissue_ontology_term_id": [tissue_ontology_term_id] * len(cell_type_ontology_term_ids),
                         "cell_type_ontology_term_id": cell_type_ontology_term_ids,
-                        "depth": list(islice(cycle([0,1,2]), len(cell_type_ontology_term_ids))),
-                        "order": ordering,
+                        "depth": list(islice(cycle([0, 1, 2]), len(cell_type_ontology_term_ids))),
+                        "order": ordering
                     }
                 )
             )
