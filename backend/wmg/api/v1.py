@@ -155,23 +155,24 @@ def build_ordered_cell_types_by_tissue(
         ["tissue_ontology_term_id", "cell_type_ontology_term_id"], as_index=False
     ).first()[["tissue_ontology_term_id", "cell_type_ontology_term_id", "n_total_cells"]]
 
-    joined = cell_type_orderings.merge(distinct_tissues_cell_types,
-                                       on=["tissue_ontology_term_id", "cell_type_ontology_term_id"],
-                                       how="left")
+    joined = cell_type_orderings.merge(
+        distinct_tissues_cell_types, on=["tissue_ontology_term_id", "cell_type_ontology_term_id"], how="left"
+    )
 
     # Fix depths based on the rows that need to be removed
     joined = build_ordered_cell_types_by_tissue_fix_depths(joined)
 
     # Remove cell types without counts
-    joined = joined[joined['n_total_cells'].notnull()]
+    joined = joined[joined["n_total_cells"].notnull()]
 
     structured_result: Dict[str, List[Dict[str, str]]] = defaultdict(list)
     for row in joined.itertuples(index=False):
         structured_result[row.tissue_ontology_term_id].append(
-            {"cell_type_ontology_term_id": row.cell_type_ontology_term_id,
-             "cell_type": ontology_term_label(row.cell_type_ontology_term_id),
-             "depth": row.depth
-             }
+            {
+                "cell_type_ontology_term_id": row.cell_type_ontology_term_id,
+                "cell_type": ontology_term_label(row.cell_type_ontology_term_id),
+                "depth": row.depth,
+            }
         )
 
     return structured_result
@@ -186,7 +187,7 @@ def build_ordered_cell_types_by_tissue_fix_depths(x):
     depth_col = x.columns.get_loc("depth")
     n_cells = x.columns.get_loc("n_total_cells")
 
-    x['depth'] = x['depth'].astype('int')
+    x["depth"] = x["depth"].astype("int")
 
     for i in range(len(x)):
         if isnan(x.iloc[i, n_cells]):

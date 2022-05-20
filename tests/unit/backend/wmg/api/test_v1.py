@@ -125,7 +125,11 @@ class WmgApiV1Tests(unittest.TestCase):
                 "term_id_labels": {
                     "cell_types": {
                         "tissue_ontology_term_id_0": [
-                            {"cell_type_ontology_term_id_0": "cell_type_ontology_term_id_0_label"}
+                            {
+                                "cell_type": "cell_type_ontology_term_id_0_label",
+                                "cell_type_ontology_term_id": "cell_type_ontology_term_id_0",
+                                "depth": 0,
+                            }
                         ]
                     },
                     "genes": [{"gene_ontology_term_id_0": "gene_ontology_term_id_0_label"}],
