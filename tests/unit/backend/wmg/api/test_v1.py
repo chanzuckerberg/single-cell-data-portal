@@ -294,12 +294,12 @@ class WmgApiV1Tests(unittest.TestCase):
                             {
                                 "cell_type": "cell_type_ontology_term_id_1_label",
                                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_1",
-                                "depth": 0,
+                                "depth": 1,
                             },
                             {
                                 "cell_type": "cell_type_ontology_term_id_2_label",
                                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_2",
-                                "depth": 0,
+                                "depth": 2,
                             },
                         ],
                         "tissue_ontology_term_id_2": [
@@ -311,12 +311,12 @@ class WmgApiV1Tests(unittest.TestCase):
                             {
                                 "cell_type": "cell_type_ontology_term_id_1_label",
                                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_1",
-                                "depth": 0,
+                                "depth": 1,
                             },
                             {
                                 "cell_type": "cell_type_ontology_term_id_2_label",
                                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_2",
-                                "depth": 0,
+                                "depth": 2,
                             },
                         ],
                     },
@@ -374,7 +374,7 @@ class WmgApiV1Tests(unittest.TestCase):
                     {
                         "cell_type": "cell_type_ontology_term_id_0_label",
                         "cell_type_ontology_term_id": "cell_type_ontology_term_id_0",
-                        "depth": 0,
+                        "depth": 1,
                     },
                 ],
                 "tissue_ontology_term_id_1": [
@@ -386,9 +386,9 @@ class WmgApiV1Tests(unittest.TestCase):
                     {
                         "cell_type": "cell_type_ontology_term_id_0_label",
                         "cell_type_ontology_term_id": "cell_type_ontology_term_id_0",
-                        "depth": 0,
+                        "depth": 1,
                     },
-                ]
+                ],
             }
             self.assertEqual(expected, json.loads(response.data)["term_id_labels"]["cell_types"])
 
