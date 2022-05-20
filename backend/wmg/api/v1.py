@@ -153,7 +153,7 @@ def build_ordered_cell_types_by_tissue(
 ) -> Dict[str, List[Dict[str, str]]]:
     distinct_tissues_cell_types: DataFrame = cell_counts.groupby(
         ["tissue_ontology_term_id", "cell_type_ontology_term_id"], as_index=False
-    ).first()[["tissue_ontology_term_id", "cell_type_ontology_term_id", "n_cells"]]
+    ).first()[["tissue_ontology_term_id", "cell_type_ontology_term_id", "n_total_cells"]]
 
     joined = cell_type_orderings.merge(distinct_tissues_cell_types,
                                        on=["tissue_ontology_term_id", "cell_type_ontology_term_id"],
@@ -163,7 +163,7 @@ def build_ordered_cell_types_by_tissue(
     joined = build_ordered_cell_types_by_tissue_fix_depths(joined)
 
     # Remove cell types without counts
-    joined = joined[joined['n_cells'].notnull()]
+    joined = joined[joined['n_total_cells'].notnull()]
 
     structured_result: Dict[str, List[Dict[str, str]]] = defaultdict(list)
     for row in joined.itertuples(index=False):
@@ -184,7 +184,7 @@ def build_ordered_cell_types_by_tissue_fix_depths(x):
     """
 
     depth_col = x.columns.get_loc("depth")
-    n_cells = x.columns.get_loc("n_cells")
+    n_cells = x.columns.get_loc("n_total_cells")
 
     x['depth'] = x['depth'].astype('int')
 
