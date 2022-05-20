@@ -174,9 +174,13 @@ interface QueryResponse {
   };
 }
 
-async function fetchQuery(
-  query: Query | null
-): Promise<QueryResponse | undefined> {
+async function fetchQuery({
+  query,
+  signal,
+}: {
+  query: Query | null;
+  signal?: AbortSignal;
+}): Promise<QueryResponse | undefined> {
   if (!query) return;
 
   const url = API_URL + API.WMG_QUERY;
@@ -186,6 +190,7 @@ async function fetchQuery(
     ...JSON_BODY_FETCH_OPTIONS,
     body: JSON.stringify(query),
     method: "POST",
+    signal,
   });
   const json: QueryResponse = await response.json();
 
@@ -211,7 +216,7 @@ export function useWMGQuery(
 
   return useQuery(
     [USE_QUERY, query, currentSnapshotId],
-    () => fetchQuery(query),
+    ({ signal }) => fetchQuery({ query, signal }),
     {
       enabled: Boolean(query),
       onSuccess(response) {

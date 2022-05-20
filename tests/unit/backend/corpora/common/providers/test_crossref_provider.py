@@ -81,12 +81,28 @@ class TestCrossrefProvider(unittest.TestCase):
                     "status": "ok",
                     "message": {
                         "author": [
+                            {},
+                            {"name": "A consortium"},
+                            {"family": "Foo consortium"},
+                            {
+                                "family": "Smith",
+                                "name": "Bar consortium",
+                            },
+                            {"given": "Jane"},
+                            {
+                                "given": "John",
+                                "name": "Baz consortium",
+                            },
                             {
                                 "given": "John",
                                 "family": "Doe",
                                 "sequence": "first",
                             },
-                            {"name": "A consortium"},
+                            {
+                                "given": "Jane",
+                                "family": "Doe",
+                                "name": "Bat consortium",
+                            },
                         ],
                         "published-online": {"date-parts": [[2021, 11]]},
                         "container-title": ["Nature"],
@@ -101,7 +117,14 @@ class TestCrossrefProvider(unittest.TestCase):
         mock_get.assert_called_once()
 
         expected_response = {
-            "authors": [{"given": "John", "family": "Doe"}, {"name": "A Consortium"}],
+            "authors": [
+                {"name": "A Consortium"},
+                {"name": "Foo consortium"},
+                {"name": "Smith"},
+                {"name": "Baz Consortium"},
+                {"given": "John", "family": "Doe"},
+                {"given": "Jane", "family": "Doe"},
+            ],
             "published_year": 2021,
             "published_month": 11,
             "published_day": 1,
@@ -166,3 +189,7 @@ class TestCrossrefProvider(unittest.TestCase):
         # Make sure that the parent CrossrefException will also be caught
         with self.assertRaises(CrossrefException):
             provider.fetch_metadata("test_doi")
+
+
+if __name__ == "__main__":
+    unittest.main()

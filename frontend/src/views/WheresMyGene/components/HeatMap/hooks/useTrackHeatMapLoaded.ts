@@ -10,7 +10,7 @@ interface Props {
 export function useTrackHeatMapLoaded({
   selectedTissues,
   selectedGenes,
-}: Props) {
+}: Props): void {
   const isHeatMapEventFired = useRef(false);
 
   /**
@@ -47,7 +47,6 @@ export function useTrackHeatMapLoaded({
     ) {
       track(EVENTS.WMG_HEATMAP_LOADED);
       isHeatMapEventFired.current = true;
-      return;
     }
   }, [selectedTissues, selectedGenes]);
 }

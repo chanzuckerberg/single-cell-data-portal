@@ -4,7 +4,7 @@ import {
   CellTypeMetadata,
   deserializeCellTypeMetadata,
 } from "../../components/HeatMap/utils";
-import { CellType, Tissue } from "../types";
+import { CellType, SORT_BY, Tissue } from "../types";
 
 export interface PayloadAction<Payload> {
   type: keyof typeof REDUCERS;
@@ -32,6 +32,7 @@ export interface State {
    * FE needs refresh the queries
    */
   snapshotId: string | null;
+  sortBy: { cellTypes: SORT_BY; genes: SORT_BY };
 }
 
 // (thuang): If you have derived states based on the state, use `useMemo`
@@ -45,6 +46,7 @@ export const INITIAL_STATE: State = {
   selectedOrganismId: null,
   selectedTissues: [],
   snapshotId: null,
+  sortBy: { cellTypes: SORT_BY.CELL_ONTOLOGY, genes: SORT_BY.USER_ENTERED },
 };
 
 export const REDUCERS = {
@@ -55,6 +57,7 @@ export const REDUCERS = {
   selectFilters,
   selectGenes,
   selectOrganism,
+  selectSortBy,
   selectTissues,
   setSnapshotId,
   tissueCellTypesFetched,
@@ -165,6 +168,16 @@ function selectTissues(
   return {
     ...state,
     selectedTissues: action.payload,
+  };
+}
+
+function selectSortBy(
+  state: State,
+  action: PayloadAction<Partial<State["sortBy"]>>
+): State {
+  return {
+    ...state,
+    sortBy: { ...state.sortBy, ...action.payload },
   };
 }
 
