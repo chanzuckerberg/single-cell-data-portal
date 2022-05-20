@@ -182,17 +182,17 @@ def verify_collection_body(body: dict, allow_none: bool = False) -> None:
     if not body.get("description") and not allow_none:  # Check if description is None or 0 length
         errors.append({"name": "description", "reason": "Cannot be blank."})
 
-    if not body.get("name") and not allow_none:  # Check if description is None or 0 length
+    if not body.get("name") and not allow_none:  # Check if name is None or 0 length
         errors.append({"name": "name", "reason": "Cannot be blank."})
 
-    if not body.get("contact_name") and not allow_none:  # Check if description is None or 0 length
+    if not body.get("contact_name") and not allow_none:  # Check if contact_name is None or 0 length
         errors.append({"name": "contact_name", "reason": "Cannot be blank."})
     if errors:
         raise InvalidParametersHTTPException(detail=json.dumps(errors))
 
 
 @dbconnect
-def create_collection(body: object, user: str):
+def create_collection(body: dict, user: str):
     db_session = g.db_session
     verify_collection_body(body)
 
