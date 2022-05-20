@@ -17,7 +17,7 @@ UUID_REGEX = r"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a
 EXTENSION_REGEX = r"(?P<extension>h5ad)"
 DATASET_ID_REGEX = f"(?P<dataset_uuid>{UUID_REGEX})"
 COLLECTION_ID_REGEX = f"(?P<collection_uuid>{UUID_REGEX})"
-REGEX = f"^{USERNAME_REGEX}/{COLLECTION_ID_REGEX}/((tag/(?P<tag>.*))|(id/{DATASET_ID_REGEX})).{EXTENSION_REGEX}$"
+REGEX = f"^{USERNAME_REGEX}/{COLLECTION_ID_REGEX}/((?P<tag>.*)|{DATASET_ID_REGEX}).{EXTENSION_REGEX}$"
 
 
 def dataset_submissions_handler(s3_event: dict, unused_context) -> None:

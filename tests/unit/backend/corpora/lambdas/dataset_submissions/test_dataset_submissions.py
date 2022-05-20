@@ -20,30 +20,25 @@ class TestDatasetSubmissions(TestCase):
         with self.assertRaises(CorporaException):
             dataset_submissions_handler(s3_event, None)
 
-    def test__missing_curator_tag__raises_error(self):
-        self._test_missing_fields(key=f"{self.user_name}/{self.collection_uuid}/tag/")
-
-    def test__missing_curator_id__raises_error(self):
-        self._test_missing_fields(key=f"{self.user_name}/{self.collection_uuid}/id/")
-
-    def test__missing_type__raise_error(self):
-        self._test_missing_fields(key=f"{self.user_name}/{self.collection_uuid}/{self.incoming_curator_tag}")
+    def test__missing_curator_file_name__raises_error(self):
+        self._test_missing_fields(key=f"{self.user_name}/{self.collection_uuid}/")
 
     def test__misssing_extension__raise_error(self):
-        self._test_missing_fields(key=f"{self.user_name}/{self.collection_uuid}/id/{self.dataset_uuid}")
+        self._test_missing_fields(key=f"{self.user_name}/{self.collection_uuid}/{self.dataset_uuid}")
 
     def test__missing_collection_uuid__raises_error(self):
-        self._test_missing_fields(key=f"{self.user_name}/should_have_been_a_uuid/tag/{self.incoming_curator_tag}")
+        self._test_missing_fields(key=f"{self.user_name}/should_have_been_a_uuid/t{self.incoming_curator_tag}")
 
     def test__missing_username__raises_error(self):
-        self._test_missing_fields(key=f"{self.collection_uuid}/tag/{self.incoming_curator_tag}")
+        self._test_missing_fields(key=f"{self.collection_uuid}/{self.incoming_curator_tag}")
 
     def _test_types(self):
-        types = [f"tag/{self.incoming_curator_tag}", f"id/{self.dataset_uuid_in_s3}"]
+        types = [f"{self.incoming_curator_tag}", f"{self.dataset_uuid_in_s3}"]
         for t in types:
-            s3_event = create_s3_event(key=f"{self.user_name}/{self.collection_uuid}/{t}")
-            with self.assertRaises(CorporaException):
-                dataset_submissions_handler(s3_event, None)
+            with self.subTest(t):
+                s3_event = create_s3_event(key=f"{self.user_name}/{self.collection_uuid}/{t}")
+                with self.assertRaises(CorporaException):
+                    dataset_submissions_handler(s3_event, None)
 
     @patch("backend.corpora.dataset_submissions.app.get_dataset_info")
     def test__non_existent_collection__raises_error(self, mock_get_dataset_info):
@@ -58,7 +53,7 @@ class TestDatasetSubmissions(TestCase):
     @patch("backend.corpora.dataset_submissions.app.get_dataset_info")
     @patch("backend.corpora.dataset_submissions.app.upload")
     def test__owner__upload(self, mock_upload: Mock, mock_get_dataset_info: Mock):
-        types = [f"tag/{self.incoming_curator_tag}", f"id/{self.dataset_uuid_in_s3}"]
+        types = [f"tag/{self.incoming_curator_tag}", f"{self.dataset_uuid_in_s3}"]
         for t in types:
             s3_event = create_s3_event(key=f"{self.user_name}/{self.collection_uuid}/{t}")
             mock_upload.return_value = None
