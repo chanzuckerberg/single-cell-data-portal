@@ -155,11 +155,9 @@ def build_ordered_cell_types_by_tissue(
         ["tissue_ontology_term_id", "cell_type_ontology_term_id"], as_index=False
     ).first()[["tissue_ontology_term_id", "cell_type_ontology_term_id", "n_cells"]]
 
-    joined = cell_type_orderings.merge(
-        distinct_tissues_cell_types,
-        on=["tissue_ontology_term_id", "cell_type_ontology_term_id"],
-        how="left"
-    )
+    joined = cell_type_orderings.merge(distinct_tissues_cell_types,
+                                       on=["tissue_ontology_term_id", "cell_type_ontology_term_id"],
+                                       how="left")
 
     # Fix depths based on the rows that need to be removed
     joined = build_ordered_cell_types_by_tissue_fix_depths(joined)
@@ -200,4 +198,3 @@ def build_ordered_cell_types_by_tissue_fix_depths(x):
                     break
 
     return x
-
