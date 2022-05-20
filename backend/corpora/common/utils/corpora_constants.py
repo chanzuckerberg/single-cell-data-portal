@@ -14,3 +14,5 @@ class CorporaConstants(object):
         "default_embedding",
         "X_approximate_distribution",
     ]
+    SUPER_CURATOR_NAME = "super|curator"
+    SUPER_CURATOR_SCOPE = "write:collections"
