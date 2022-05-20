@@ -23,11 +23,11 @@ class TestDatasetSubmissions(TestCase):
     def test__missing_curator_file_name__raises_error(self):
         self._test_missing_fields(key=f"{self.user_name}/{self.collection_uuid}/")
 
-    def test__misssing_extension__raise_error(self):
+    def test__missing_extension__raise_error(self):
         self._test_missing_fields(key=f"{self.user_name}/{self.collection_uuid}/{self.dataset_uuid}")
 
     def test__missing_collection_uuid__raises_error(self):
-        self._test_missing_fields(key=f"{self.user_name}/should_have_been_a_uuid/t{self.incoming_curator_tag}")
+        self._test_missing_fields(key=f"{self.user_name}/should_have_been_a_uuid/{self.incoming_curator_tag}")
 
     def test__missing_username__raises_error(self):
         self._test_missing_fields(key=f"{self.collection_uuid}/{self.incoming_curator_tag}")
