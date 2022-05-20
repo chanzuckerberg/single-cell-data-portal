@@ -286,14 +286,38 @@ class WmgApiV1Tests(unittest.TestCase):
                 "term_id_labels": {
                     "cell_types": {
                         "tissue_ontology_term_id_1": [
-                            {"cell_type_ontology_term_id_0": "cell_type_ontology_term_id_0_label"},
-                            {"cell_type_ontology_term_id_1": "cell_type_ontology_term_id_1_label"},
-                            {"cell_type_ontology_term_id_2": "cell_type_ontology_term_id_2_label"},
+                            {
+                                "cell_type": "cell_type_ontology_term_id_0_label",
+                                "cell_type_ontology_term_id": "cell_type_ontology_term_id_0",
+                                "depth": 0,
+                            },
+                            {
+                                "cell_type": "cell_type_ontology_term_id_1_label",
+                                "cell_type_ontology_term_id": "cell_type_ontology_term_id_1",
+                                "depth": 0,
+                            },
+                            {
+                                "cell_type": "cell_type_ontology_term_id_2_label",
+                                "cell_type_ontology_term_id": "cell_type_ontology_term_id_2",
+                                "depth": 0,
+                            },
                         ],
                         "tissue_ontology_term_id_2": [
-                            {"cell_type_ontology_term_id_0": "cell_type_ontology_term_id_0_label"},
-                            {"cell_type_ontology_term_id_1": "cell_type_ontology_term_id_1_label"},
-                            {"cell_type_ontology_term_id_2": "cell_type_ontology_term_id_2_label"},
+                            {
+                                "cell_type": "cell_type_ontology_term_id_0_label",
+                                "cell_type_ontology_term_id": "cell_type_ontology_term_id_0",
+                                "depth": 0,
+                            },
+                            {
+                                "cell_type": "cell_type_ontology_term_id_1_label",
+                                "cell_type_ontology_term_id": "cell_type_ontology_term_id_1",
+                                "depth": 0,
+                            },
+                            {
+                                "cell_type": "cell_type_ontology_term_id_2_label",
+                                "cell_type_ontology_term_id": "cell_type_ontology_term_id_2",
+                                "depth": 0,
+                            },
                         ],
                     },
                     "genes": [
@@ -342,13 +366,29 @@ class WmgApiV1Tests(unittest.TestCase):
 
             expected = {
                 "tissue_ontology_term_id_0": [
-                    {"cell_type_ontology_term_id_1": "cell_type_ontology_term_id_1_label"},
-                    {"cell_type_ontology_term_id_0": "cell_type_ontology_term_id_0_label"},
+                    {
+                        "cell_type": "cell_type_ontology_term_id_1_label",
+                        "cell_type_ontology_term_id": "cell_type_ontology_term_id_1",
+                        "depth": 0,
+                    },
+                    {
+                        "cell_type": "cell_type_ontology_term_id_0_label",
+                        "cell_type_ontology_term_id": "cell_type_ontology_term_id_0",
+                        "depth": 0,
+                    },
                 ],
                 "tissue_ontology_term_id_1": [
-                    {"cell_type_ontology_term_id_1": "cell_type_ontology_term_id_1_label"},
-                    {"cell_type_ontology_term_id_0": "cell_type_ontology_term_id_0_label"},
-                ],
+                    {
+                        "cell_type": "cell_type_ontology_term_id_1_label",
+                        "cell_type_ontology_term_id": "cell_type_ontology_term_id_1",
+                        "depth": 0,
+                    },
+                    {
+                        "cell_type": "cell_type_ontology_term_id_0_label",
+                        "cell_type_ontology_term_id": "cell_type_ontology_term_id_0",
+                        "depth": 0,
+                    },
+                ]
             }
             self.assertEqual(expected, json.loads(response.data)["term_id_labels"]["cell_types"])
 
