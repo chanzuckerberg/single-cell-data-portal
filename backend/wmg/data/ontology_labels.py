@@ -65,5 +65,5 @@ def __load_genes() -> None:
 def __open_ontology_resource(file) -> IO:
     from importlib import resources
 
-    path = resources.files("cellxgene_schema").joinpath(f"ontology_files/{file}")
+    path = (".").joinpath(f"ontology_files/{file}")
     return gzip.open(path)
