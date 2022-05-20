@@ -7,6 +7,7 @@ import { serialize } from "next-mdx-remote/serialize";
 import Image from "next/image";
 import NextLink from "next/link";
 import pathTool from "path";
+import { memo } from "react";
 import styled from "styled-components";
 
 const DOC_SITE_FOLDER_NAME = "doc-site";
@@ -18,11 +19,10 @@ interface Directory {
   subDirectories: Array<Directory>;
 }
 
-const CACHED_FILE_PATHS = new Map<Array<string>, Directory>();
+const CACHED_FILE_PATHS = new Map<string, Directory>();
 function filePaths(...root: Array<string>): Directory {
-  const cacheStore = CACHED_FILE_PATHS && CACHED_FILE_PATHS.get(root);
+  const cacheStore = CACHED_FILE_PATHS && CACHED_FILE_PATHS.get(root.join("/"));
   if (cacheStore) {
-    console.log("CACHE HIT");
     return cacheStore;
   }
 
@@ -43,7 +43,7 @@ function filePaths(...root: Array<string>): Directory {
       newDirectory.subDirectories.push(filePaths(...root, path));
     }
   });
-  CACHED_FILE_PATHS.set(root, newDirectory);
+  CACHED_FILE_PATHS.set(root.join("/"), newDirectory);
   return newDirectory;
 }
 
@@ -97,7 +97,11 @@ export const getStaticProps = async ({
   };
 };
 
-const RenderDirectory = ({ directory }: { directory: Directory }) => {
+const RenderDirectory = memo(function RenderDirecotry({
+  directory,
+}: {
+  directory: Directory;
+}) {
   return (
     <ul>
       {directory.files.map((file) => {
@@ -122,7 +126,7 @@ const RenderDirectory = ({ directory }: { directory: Directory }) => {
       })}
     </ul>
   );
-};
+});
 
 interface Props {
   frontMatter: Record<string, any>;
