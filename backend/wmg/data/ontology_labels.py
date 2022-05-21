@@ -63,7 +63,5 @@ def __load_genes() -> None:
 
 
 def __open_ontology_resource(file) -> IO:
-    from importlib import resources
-
-    path = (".").joinpath(f"ontology_files/{file}")
+    path = f"backend/ontology_files/{file}"
     return gzip.open(path)

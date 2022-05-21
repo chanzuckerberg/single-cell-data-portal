@@ -7,18 +7,16 @@ RUN apt update && apt -y install graphviz graphviz-dev
 
 RUN pip3 install awscli
 RUN git clone https://github.com/chanzuckerberg/single-cell-curation.git
-RUN mkdir ontology_files/
-RUN cd single-cell-curation/cellxgene_schema_cli/cellxgene_schema/ontology_files
-COPY . ontology_files/
-
 # For lighter weight Docker images
 ENV PIP_NO_CACHE_DIR=1
 
 WORKDIR /
-
 ADD backend/__init__.py backend/__init__.py
 ADD backend/wmg backend/wmg
 ADD backend/corpora backend/corpora
+RUN mkdir ontology_files
+RUN mv  /single-cell-curation/cellxgene_schema_cli/cellxgene_schema/ontology_files backend/ontology_files/
+RUN rm -rf /single-cell-curation
 
 RUN pip3 install -r backend/wmg/requirements.txt
 
