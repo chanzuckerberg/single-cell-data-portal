@@ -31,11 +31,12 @@ class TestWmgApi(unittest.TestCase):
             self.assertEqual(res.status_code, requests.codes.ok)
             self.assertGreater(len(res.content), 10)
         with self.subTest("Run 10 times"):
+
             def make_request():
                 return requests.get(f"{self.api}/primary_filter_dimensions")
 
             seconds_for_10_runs = timeit.timeit(setup="", stmt=make_request, number=10)
-            self.assertGreater(MAX_RESPONSE_TIME_SECONDS*10, seconds_for_10_runs)
+            self.assertGreater(MAX_RESPONSE_TIME_SECONDS * 10, seconds_for_10_runs)
 
     def test_secondary_filters_common_case(self):
         """
@@ -64,6 +65,7 @@ class TestWmgApi(unittest.TestCase):
             self.assertGreater(len(res.content), 10)
         with self.subTest("Run 10 times"):
             with self.subTest("Test 10 times"):
+
                 def make_request():
                     return requests.post(f"{self.api}/query", data=json.dumps(data), headers=headers)
 
@@ -103,9 +105,9 @@ class TestWmgApi(unittest.TestCase):
             self.assertGreater(len(res.content), 10)
 
         with self.subTest("Test 10 times"):
+
             def make_request():
                 return requests.post(f"{self.api}/query", data=json.dumps(data), headers=headers)
 
-            seconds_for_10_runs = timeit.timeit(setup="", stmt=make_request,
-                                                number=10)
-            self.assertGreater(MAX_RESPONSE_TIME_SECONDS*10, seconds_for_10_runs)
+            seconds_for_10_runs = timeit.timeit(setup="", stmt=make_request, number=10)
+            self.assertGreater(MAX_RESPONSE_TIME_SECONDS * 10, seconds_for_10_runs)
