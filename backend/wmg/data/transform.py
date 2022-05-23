@@ -70,7 +70,7 @@ def generate_cell_ordering(snapshot_path: str, cell_type_by_tissue: Dict) -> Non
             if node in cells:
 
                 cells.remove(node)
-                yield {"id": onto[node].name, "depth": depth}
+                yield {"id": node, "depth": depth}
 
                 if node != "CL:0000003":
                     depth += 1
