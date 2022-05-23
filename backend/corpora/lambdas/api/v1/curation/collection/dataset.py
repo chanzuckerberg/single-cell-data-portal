@@ -24,7 +24,7 @@ def post_s3_credentials(collection_uuid: str, token_info: dict):
         db_session, collection_uuid, visibility=CollectionVisibility.PRIVATE.name, owner=owner_or_allowed(token_info)
     )
     user_id = token_info["sub"]
-    upload_path = f"{user_id}/{collection_uuid}"
+    upload_key_prefix = f"{user_id}/{collection_uuid}"
     parameters = dict(
         RoleArn=config.curator_role_arn,
         RoleSessionName=user_id.replace("|", "-"),
@@ -33,6 +33,6 @@ def post_s3_credentials(collection_uuid: str, token_info: dict):
     )
     logger.info(json.dumps(parameters))
     response = sts_client.assume_role_with_web_identity(**parameters)
-    response["UploadPath"] = f"{upload_path}/"
+    response["UploadKeyPrefix"] = f"{upload_key_prefix}/"
     response["Bucket"] = config.submission_bucket
     return make_response(jsonify(response), 200)
