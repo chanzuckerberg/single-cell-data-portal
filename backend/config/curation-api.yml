@@ -430,7 +430,7 @@ paths:
                         type: string
                       SessionToken:
                         type: string
-                  UploadPath:
+                  UploadKeyPrefix:
                     type: string
                   Bucket:
                     type: string

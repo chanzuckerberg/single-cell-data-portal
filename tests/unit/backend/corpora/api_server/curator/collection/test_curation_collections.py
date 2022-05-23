@@ -30,11 +30,11 @@ class TestAuthToken(BaseAuthAPITest):
             )
             self.assertEqual(200, response.status_code)
             self.assertEqual(response.json["Bucket"], "cellxgene-dataset-submissions-test")
-            self.assertEqual(response.json["UploadPath"], f"{user_name}/{collection.id}/")
+            self.assertEqual(response.json["UploadKeyPrefix"], f"{user_name}/{collection.id}/")
             # if additional_scope:
-            #     self.assertEqual(response.json["UploadPath"], f"super|curator/{collection.id}/")
+            #     self.assertEqual(response.json["UploadKeyPrefix"], f"super|curator/{collection.id}/")
             # else:
-            #     self.assertEqual(response.json["UploadPath"], f"{user_name}/{collection.id}/")
+            #     self.assertEqual(response.json["UploadKeyPrefix"], f"{user_name}/{collection.id}/")
 
         with self.subTest("collection owner"):
             _test(
