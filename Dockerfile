@@ -13,6 +13,8 @@ RUN apt-get update && \
 # Make python3 the default 'python' executable.
 RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 1
 
+RUN git clone https://github.com/chanzuckerberg/single-cell-curation.git
+
 # Don't re-run pip install unless either requirements.txt has changed.
 WORKDIR /single-cell-data-portal
 ADD requirements.txt /single-cell-data-portal/requirements.txt
@@ -22,7 +24,14 @@ RUN grep -v requirements.txt requirements.txt > reqs.txt \
     && python3 -m pip install -r reqs.txt
 EXPOSE 5000
 
-# Install utilities to /single-cell-data-portal so we can run db migrations.
+# install ontology files in consistent location
+RUN mkdir backend/ontology_files
+RUN mv  /single-cell-curation/cellxgene_schema_cli/cellxgene_schema/ontology_files single-cell-data-portal/backend/ontology_files/
+RUN rm -rf /single-cell-curation
+
+
+
+# Install utilities to /corpora-data-portal so we can run db migrations.
 ADD tests /single-cell-data-portal/tests
 ADD scripts /single-cell-data-portal/scripts
 ADD backend /single-cell-data-portal/backend
