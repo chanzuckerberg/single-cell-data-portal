@@ -40,9 +40,9 @@ const LandingPage = (): JSX.Element => {
   });
 
   // HERO NUMBERS. DUMMY DATA TO BE REPLACED.
-  const [cellsHeroNum, setCellsHeroNum] = useState("100M+");
-  const [datasetsHeroNum, setDatasetssHeroNum] = useState("436");
-  const [donorsHeroNum, setDonorsHeroNum] = useState("2.7k+");
+  const [cellsHeroNum] = useState("100M+");
+  const [datasetsHeroNum] = useState("436");
+  const [donorsHeroNum] = useState("2.7k+");
 
   const publications = [
     {
