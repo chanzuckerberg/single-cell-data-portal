@@ -159,7 +159,7 @@ def build_ordered_cell_types_by_tissue(
         distinct_tissues_cell_types, on=["tissue_ontology_term_id", "cell_type_ontology_term_id"], how="left"
     )
 
-    # Fix depths based on the rows that need to be removed
+    # Updates depths based on the rows that need to be removed
     joined = build_ordered_cell_types_by_tissue_fix_depths(joined)
 
     # Remove cell types without counts
