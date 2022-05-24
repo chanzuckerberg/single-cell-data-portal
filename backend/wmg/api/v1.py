@@ -160,7 +160,7 @@ def build_ordered_cell_types_by_tissue(
     )
 
     # Updates depths based on the rows that need to be removed
-    joined = build_ordered_cell_types_by_tissue_fix_depths(joined)
+    joined = build_ordered_cell_types_by_tissue_update_depths(joined)
 
     # Remove cell types without counts
     joined = joined[joined["n_total_cells"].notnull()]
@@ -178,9 +178,9 @@ def build_ordered_cell_types_by_tissue(
     return structured_result
 
 
-def build_ordered_cell_types_by_tissue_fix_depths(x):
+def build_ordered_cell_types_by_tissue_update_depths(x):
     """
-    Updated the depths of the cell ontology tree based on cell types that have to be removed
+    Updates the depths of the cell ontology tree based on cell types that have to be removed
     because they have 0 counts
     """
 
