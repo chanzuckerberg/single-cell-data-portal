@@ -30,7 +30,6 @@ RUN mv /single-cell-data-portal/single-cell-curation/cellxgene_schema_cli/cellxg
 RUN rm -rf single-cell-curation
 
 
-
 # Install utilities to /corpora-data-portal so we can run db migrations.
 ADD tests /single-cell-data-portal/tests
 ADD scripts /single-cell-data-portal/scripts
