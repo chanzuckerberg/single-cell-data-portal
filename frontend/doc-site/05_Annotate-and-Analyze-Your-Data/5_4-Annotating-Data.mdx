@@ -14,7 +14,7 @@ To get started, run:
 cellxgene launch mydata.h5ad
 ```
 
-To preserve data provenance, *`cellxgene` does not alter the input h5ad file*. Rather, newly-created annotations are saved in a specified CSV file:
+To preserve data provenance, _`cellxgene` does not alter the input h5ad file_. Rather, newly-created annotations are saved in a specified CSV file:
 
 ```
 annotations-directory/name-########.csv
@@ -32,7 +32,7 @@ Compatible annotations are tabular, with category names as column headers; `annd
 
 There are two options for updating draft annotations.
 
-*Autodetect annotations CSV*
+_Autodetect annotations CSV_
 
 Cellxgene will automatically find and reload your draft annotations in editable mode. This assumes that:
 
@@ -40,9 +40,9 @@ Cellxgene will automatically find and reload your draft annotations in editable 
 2. You launch cellxgene from the `annotations-directory` (i.e., the directory that contains your CSV)
 3. You use the same browser and have not cleared your cookies (we use a small cookie to keep track of which user created the file to avoid accidental overwrites; see FAQ)
 
-*Specify an annotations CSV*
+_Specify an annotations CSV_
 
-*This mode is only appropriate for single-user, local cellxgene instances.*
+_This mode is only appropriate for single-user, local cellxgene instances._
 
 If you'd like to specify the complete file path for your annotations, you can do so by running:
 
@@ -50,7 +50,7 @@ If you'd like to specify the complete file path for your annotations, you can do
 cellxgene launch mydata.h5ad --annotations-file path/to/myfile.csv
 ```
 
-Any changes you make will be reflected in the original CSV. If the file does not exist, it will be created. *Please note that this file will be overwritten, making this mode inappropriate for hosted / multi-user settings (see below).*
+Any changes you make will be reflected in the original CSV. If the file does not exist, it will be created. _Please note that this file will be overwritten, making this mode inappropriate for hosted / multi-user settings (see below)._
 
 ### 3. Merging draft annotations with the main h5ad file
 
@@ -70,7 +70,6 @@ anndata.obs = anndata.obs.join(new_annotations)
 
 ## Annotations by multiple users
 
-
 As described in the hosted LINK TO THE HOSTED SECTION section, we do not officially support hosted or multi-user use of cellxgene. However, we recognize that the app is often adapted for this purpose, and have tried to provide a "safe path" for multi-user setups that avoids overwriting data.
 
 Specifying a single file name for multiple contributors will result in data overwriting. To avoid this, you can instead specify an output directory and allow cellxgene to assign filenames.
@@ -88,20 +87,20 @@ Any annotations created in the application will be autosaved in `annotations-dir
 
 ### FAQ
 
-*How do I know my annotations are saved?*
+_How do I know my annotations are saved?_
 `cellxgen`e autosaves any changes made to your annotations every 3 seconds.
 
-*I think I deleted my annotations! Can they be recovered?*
+_I think I deleted my annotations! Can they be recovered?_
 Not to worry! We save the last 10 versions of your annotations in `annotations-directory/NAME-backups/`
 
-*What about creating continuous annotations?*
+_What about creating continuous annotations?_
 Continuous metadata is important! However, these values (e.g., pseudotime) are the result of statistical analyses that are beyond cellxgene's visualization and exploration focused scope. We do, of course, provide visualization of continuous metadata values computed elsewhere and stored in `anndata.obs.`
 
-*I keep getting weird index errors when trying to join my annotations to my anndata?*
+_I keep getting weird index errors when trying to join my annotations to my anndata?_
 This is most likely because the h5ad file you are working with is not the original file used to generate the annotations! We recommend merging new annotations in on a regular basis for this reason.
 
-*How do you remember my unique ID to match my cellxgene session with my annotations file?*
+_How do you remember my unique ID to match my cellxgene session with my annotations file?_
 We place a small cookie (file) in your browser that identifies where your draft annotations are saved. This file never leaves your machine, and is never sent to the cellxgene team or anyone else.
 
-*I have feedback and ideas for you!*
+_I have feedback and ideas for you!_
 Wonderful! We would love to hear your feedback :) CAN WE MAKE THIS POPULATE AN EMAIL TO CELLXGENE@CHANZUCKERBERG.COM

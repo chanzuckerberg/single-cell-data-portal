@@ -1,28 +1,23 @@
 # Self-Host CellxGene
 
-
 ## Hosting cellxgene desktop on the web
 
 Cellxgene desktop is intended to be used by researchers on their local machines. In cases where collaborators are not comfortable installing cellxgene, it is possible to host cellxgene, so your collaborators only need to open the URL you send them.
 
 We don't officially support web deployment, but we've offered some guidance in the following sections on ways to deploy cellxgene to the web.
 
-
 ## General notes and cautions
 
 Please consider the following when deploying cellxgene in any "hosted" environment, especially where access from the broader Internet is possible:
 
-
-
-* Information security requires careful configuration of the host environment, including firewall, logging, etc - please follow best practices
-* Cellxgene includes features which may be inappropriate for a hosted deployment - you may wish to use the following command line option:` `--disable-diffexp``
-*  ``cellxgene launch`` currently uses Flask's development server, which is not recommended for hosted deployment (see [the Flask documentation](https://flask.palletsprojects.com/en/1.1.x/tutorial/deploy/#run-with-a-production-server))
-* We have no testing or official support for deployments where multiple users are accessing the same cellxgene instance
-* Your cellxgene instance is likely to hang or crash if too many people access it at the same time, especially if they using functions that call the Python backend (such as differential expression, noted above)
-* Cellxgene only supports one instance per dataset
+- Information security requires careful configuration of the host environment, including firewall, logging, etc - please follow best practices
+- Cellxgene includes features which may be inappropriate for a hosted deployment - you may wish to use the following command line option:` `--disable-diffexp``
+- `cellxgene launch` currently uses Flask's development server, which is not recommended for hosted deployment (see [the Flask documentation](https://flask.palletsprojects.com/en/1.1.x/tutorial/deploy/#run-with-a-production-server))
+- We have no testing or official support for deployments where multiple users are accessing the same cellxgene instance
+- Your cellxgene instance is likely to hang or crash if too many people access it at the same time, especially if they using functions that call the Python backend (such as differential expression, noted above)
+- Cellxgene only supports one instance per dataset
 
 If you believe you have found a security-related issue with cellxgene, please report the issue immediately to [[security@chanzuckerberg.com](security@chanzuckerberg.com](mailto:security@chanzuckerberg.com)]
-
 
 ## Configuration Options
 
@@ -34,18 +29,14 @@ The following configuration options require special consideration in any multi-u
 
 `--annotations-file`: this specifies a single file for all end-user annotations, and is incompatible with hosted or multi-user use of cellxgene. Using it will cause loss of user annotation data (ie, the CSV file will be overwritten). If you wish to explore using the annotations feature in a multi-user environment, please refer to the [annotations documentation](LINK TO THE ANNOTATION PAGE ON DOCS SITE), and in particular the `--annotations-dir` flag.
 
-
 ## Community software projects
 
 There are a number of teams building tools or infrastructure to better utilize cellxgene in a multiple user environment. While we do not endorse any particular solution, you may find the following helpful.
 
-
-
-* [Novartis Cellxgene Gateway](https://github.com/Novartis/cellxgene-gateway) - a multiple-user and multiple-dataset gateway for cellxgene
-* [Interactive Environment in the Galaxy Project](https://galaxyproject.org/) ([patch notes](https://docs.galaxyproject.org/en/release_19.05/releases/19.05_announce.html))
+- [Novartis Cellxgene Gateway](https://github.com/Novartis/cellxgene-gateway) - a multiple-user and multiple-dataset gateway for cellxgene
+- [Interactive Environment in the Galaxy Project](https://galaxyproject.org/) ([patch notes](https://docs.galaxyproject.org/en/release_19.05/releases/19.05_announce.html))
 
 If you know of other solutions, drop us a note and we'll add to this list.
-
 
 ## Live Examples of self-hosted Cellxgene Desktop
 
@@ -60,7 +51,6 @@ Several groups have independently deployed various versions of cellxgene to the 
 [Melanoma](https://melanoma.cellgeni.sanger.ac.uk/)
 
 [Cellxgene Data Portal](https://cellxgene.cziscience.com/)
-
 
 ## Cellxgene Gateway/Apache2 Reverse Proxy with Authentication ▼
 
@@ -86,18 +76,15 @@ Components:
 
 [Tutorial and Code}(https://github.com/mestia/cellxgene-gateway-proxy-example)
 
-
 ## AWS Elastic Bean Stalk ▼
 
 Contributors: The cellxgene team 🧬
 
 Hosting Use Case:
 
-
-
-* Cellxgene desktop deployed with elastic beanstalk
-* Used to host data in a read-only fashion (can't use annotations)
-* Solution for an AWS compute environment
+- Cellxgene desktop deployed with elastic beanstalk
+- Used to host data in a read-only fashion (can't use annotations)
+- Solution for an AWS compute environment
 
 Components:
 
@@ -113,14 +100,13 @@ This method requires familiarity with
 
 - [S3](https://aws.amazon.com/s3/)
 
-[Tutorial and Code](([https://github.com/chanzuckerberg/cellxgene/tree/main/backend/czi:hosted/eb](https://github.com/chanzuckerberg/cellxgene/tree/main/backend/czi:hosted/eb))  [THIS IS SUPPOSED TO LINK TO THIS ADDRESS BUT THE LINK IS BROKEN:
-
+[Tutorial and Code](([https://github.com/chanzuckerberg/cellxgene/tree/main/backend/czi:hosted/eb](https://github.com/chanzuckerberg/cellxgene/tree/main/backend/czi:hosted/eb)) [THIS IS SUPPOSED TO LINK TO THIS ADDRESS BUT THE LINK IS BROKEN:
 
 ## Heroku ▼
 
 Self-hosting with Heroku
 
-You can create a Heroku app via [our provided Dockerfile]([https://github.com/chanzuckerberg/cellxgene/blob/main/Dockerfile](https://github.com/chanzuckerberg/cellxgene/blob/main/Dockerfile)) and [Heroku’s documentation](https://devcenter.heroku.com/articles/build-docker-images-heroku-yml)
+You can create a Heroku app via [our provided Dockerfile](<[https://github.com/chanzuckerberg/cellxgene/blob/main/Dockerfile](https://github.com/chanzuckerberg/cellxgene/blob/main/Dockerfile)>) and [Heroku’s documentation](https://devcenter.heroku.com/articles/build-docker-images-heroku-yml)
 
 You may have to tweak the Docker file like so:
 
@@ -157,7 +143,6 @@ On Heroku's servers, applications run on a dyno which are Heroku's implementatio
 
 Heroku is one of many options available for hosting instances of cellxgene on the web. Some other options include: Amazon Web Services, Google Cloud Platform, Digital Ocean, and Microsoft Azure.
 
-
 ### Why use Heroku to deploy CellxGene?
 
 What Heroku enables is a quick, non-technical method of setting up a cellxgene instance. No command line knowledge needed. This also allows machines to access the instance via the internet, so sharing a visualized dataset is as simple as sharing a link.
@@ -165,7 +150,6 @@ What Heroku enables is a quick, non-technical method of setting up a cellxgene i
 Because cellxgene currently heavily relies on its Python backend for providing the viewer with the necessary data and tooling, it is currently not possible to host cellxgene as a static webpage.
 
 This is a good option if you want to quickly deploy an instance of cellxgene to the web. Heroku deployments are free for small datasets up to around 250MBs in size. See below regarding larger datasets.
-
 
 ### When should I not deploy with Heroku?
 
@@ -185,10 +169,7 @@ For this facilitated Heroku deployment to work, your dataset must be hosted on a
 
 By default, Heroku publically shares your instance to anyone with the URL.
 
-
-
-* There are many ways of securing your instance. One quick and simple way is by installing [wwwhisper](https://elements.heroku.com/addons/wwwhisper), a Heroku addon
-
+- There are many ways of securing your instance. One quick and simple way is by installing [wwwhisper](https://elements.heroku.com/addons/wwwhisper), a Heroku addon
 
 ## AWS/Linux server with basic authentication ▼
 

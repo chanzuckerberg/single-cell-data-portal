@@ -8,7 +8,6 @@ To read more about how to use gene sets in the cellxgene interface, please see E
 
 A gene set must have a unique name. A given gene may be included in multiple gene sets. A gene set may optionally include a description for the entire gene set, and descriptions for each gene included the gene set.
 
-
 ## `cellxgene` CLI Command
 
 Users MAY use `--gene-sets-file` `name_of_file.csv` to designate a CSV with preexisting gene sets you would like to view in cellxgene. The CSV MUST follow the format below.
@@ -31,7 +30,6 @@ Example:
 
 EMBED TABLE
 
-
 Users MAY include additional columns. Once gene sets are edited from cellxgene, the additional columns will no longer be stored in the file designated using the command `--gene-sets-file`.
 
 ## `gene_set_name`
@@ -48,12 +46,14 @@ Note: If gene_symbol(s) for a gene_set_name exist on noncontiguous rows, they wi
 
 EMBED TABLE
 
-
 ## `gene_set_description`
+
 Populating `gene_set_description` is optional. The first instance where `gene_set_description` is populated for a specific `gene_set_name` will be surfaced when a user hovers over `gene_set_name` in cellxgene. All other instances are ignored in subsequent rows for the same `gene_set_name`.
 
 ## `gene_symbol`
+
 A given `gene_symbol` may only be added once to a gene set and exist as a VAR in the underlying anndata file.
 
 ## `gene_description`
+
 Populating `gene_description` is optional and will be surfaced when a user hovers on `gene_symbol` in cellxgene.

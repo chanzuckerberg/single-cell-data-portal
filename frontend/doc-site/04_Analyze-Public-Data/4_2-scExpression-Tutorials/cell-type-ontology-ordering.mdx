@@ -10,10 +10,10 @@ The method traverses the DAG starting from the root until reaching the leftmost 
 1. Subset the ontology to only contain the cell types of interest along with their ancestors.
 1. Create a 2-dimensional representation of the DAG using the `dot` method of `graphiz`. See [here](http://www.graphviz.org/pdf/dotguide.pdf) for a full description of this method.
 1. Traverse the tree starting at the root:
-	1. If node is present in cell types of interest, add to the final ordered list.
-	1. Remove the node from nodes of interest.
-	1. Get children nodes
-	1. Perform recursion for each child node, going left-to-right through the children nodes. 
+   1. If node is present in cell types of interest, add to the final ordered list.
+   1. Remove the node from nodes of interest.
+   1. Get children nodes
+   1. Perform recursion for each child node, going left-to-right through the children nodes.
 1. Return the ordered list
 
 ## Example
@@ -26,32 +26,31 @@ The following is an example of how a subset of the CL DAG looks like when render
 
 The cell type ordering algorithm described above would return the following ordered list of cell types.
 
-* Native Cell
-* Secretory Cell
-* Club Cell
-* Chondrocyte
-* Goblet Cell
-* Mast Cell
-* T Cell
-* CD4 positive, Alpha beta T Cell
-* CD8 positive, Alpha beta T Cell
-* B Cell
-* Natural Killer
-* Dendritic Cell
-* Monocyte
-* Macrophage
-* Alveolar Macrophage
-* Basal Cell
-* Fibroblast
-* Megakaryocyte
-* Enucleate Erythrocyte
-* Myofibroblast Cell
-* Mesothelial Cell
-* Endothelial Cell
-* Blood Vessel Endothelial Cell
-* Smooth Muscle Cell
-* Vascular Associated Smooth Muscle Cell
-* Epithelial Cell
-* Squamous Epithelial Cell
-* Ciliated Cell
-
+- Native Cell
+- Secretory Cell
+- Club Cell
+- Chondrocyte
+- Goblet Cell
+- Mast Cell
+- T Cell
+- CD4 positive, Alpha beta T Cell
+- CD8 positive, Alpha beta T Cell
+- B Cell
+- Natural Killer
+- Dendritic Cell
+- Monocyte
+- Macrophage
+- Alveolar Macrophage
+- Basal Cell
+- Fibroblast
+- Megakaryocyte
+- Enucleate Erythrocyte
+- Myofibroblast Cell
+- Mesothelial Cell
+- Endothelial Cell
+- Blood Vessel Endothelial Cell
+- Smooth Muscle Cell
+- Vascular Associated Smooth Muscle Cell
+- Epithelial Cell
+- Squamous Epithelial Cell
+- Ciliated Cell

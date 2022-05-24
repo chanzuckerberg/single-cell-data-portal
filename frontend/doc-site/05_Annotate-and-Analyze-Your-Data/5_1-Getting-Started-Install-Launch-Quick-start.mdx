@@ -1,14 +1,12 @@
 # Getting Started: Install, Launch, Quick Start
 
-
 ## Install
 
 Cellxgene desktop has two parts:
 
-``cellxgene`` is the main explorer application, which takes an already-processed h5ad file as input. This is installed by default.
+`cellxgene` is the main explorer application, which takes an already-processed h5ad file as input. This is installed by default.
 
-``cellxgene prepare`` provides auxiliary functionality for preparing your dataset. This is not installed by default.
-
+`cellxgene prepare` provides auxiliary functionality for preparing your dataset. This is not installed by default.
 
 ### Requirements
 
@@ -16,32 +14,25 @@ You'll need python 3.6+ and an up-to-date version of Google Chrome. The web UI i
 
 Python.org has help on installing a recent version of Python, including the pip package manager. Chrome is available at [https://www.google.com/chrome/downloads/](https://www.google.com/chrome/downloads/).
 
-
 ### Basic Install Using Pip ▼
 
 To install the `cellxgene` explorer alone, run:
-
 
 ```
 pip install cellxgene
 ```
 
-
 To install `cellxgene` and the optional `cellxgene prepare`, run:
-
 
 ```
 pip install cellxgene[prepare]
 ```
 
-
 Note: if the aforementioned optional prepare package installation fails, you can also install these packages directly:
-
 
 ```
 pip install scanpy>=1.3.7 python-igraph louvain>=0.6
 ```
-
 
 On Linux platforms, you may also need to install build dependencies first:
 
@@ -52,12 +43,9 @@ pip install scanpy>=1.3.7 python-igraph louvain>=0.6
 
 If you already have `cellxgene` installed, you can update to the most recent version by running:
 
-
 ```
 pip install cellxgene --upgrade
 ```
-
-
 
 ### Using a conda environment ▼
 
@@ -77,7 +65,7 @@ conda activate cellxgene
 pip install cellxgene[prepare]
 ```
 
-### Using a virtual environment  ▼
+### Using a virtual environment ▼
 
 To install cellxgene alone, run:
 
@@ -89,7 +77,6 @@ pip install cellxgene
 ```
 
 To install cellxgene and cellxgene prepare, run:
-
 
 ```
 ENV_NAME=cellxgene
@@ -106,7 +93,6 @@ Build the image
 docker build . -t cellxgene
 ```
 
-
 Run the container and mount data (change data location, `--port` and `--host` parameters as needed). You will need to use `--host 0.0.0.0` to have the container listen to incoming requests from the browser.
 
 ```
@@ -115,31 +101,25 @@ docker run -v "$PWD/example-dataset/:/data/" -p 5005:5005 cellxgene launch --hos
 
 ## Launch
 
-
 ### Launching cellxgene with your dataset ▼
 
 Once you've prepared [link to prepare your data page] your data for cellxgene, you can launch the app using:
-
 
 ```
 cellxgene launch mydataset.h5ad --open
 ```
 
-
-
 ### Launching from a URL▼
 
 You can also launch from a URL directly like this:
-
 
 ```
 cellxgene launch https://github.com/chanzuckerberg/cellxgene/raw/main/example-dataset/pbmc3k.h5ad
 ```
 
-
 Support for S3 and GCS is not enabled by default. If you wish to directly access S3 or GFS, install one or both of the following packages:
 
--  [s3fs ](https://s3fs.readthedocs.io/en/latest/)for S3 support
+- [s3fs ](https://s3fs.readthedocs.io/en/latest/)for S3 support
 
 - [gcsfs ](https://gcsfs.readthedocs.io/en/latest/)for GCS support
 
@@ -149,7 +129,6 @@ For example:
 pip install s3fs
 cellxgene launch s3://mybucket.s3-us-west-2.amazonaws.com/mydata.h5ad
 ```
-
 
 ### Options for cellxgene launch ▼
 
@@ -179,9 +158,7 @@ By default, cellxgene will read the entire H5AD will be into memory at startup, 
 
 `--max-category-items` omits categorical metadata fields that contain more than N _distinct_ values. Defaults to 1000.
 
-
 ## Quick Start
-
 
 ### Overview
 
@@ -189,45 +166,35 @@ Cellxgene Desktop Explorer is a tool in the cellxgene suite that enables collabo
 
 This page describes how to quickly get started with exploratory analysis on your local computer. Those interested in hosting cellxgene to enable your collaborators to explore data from their browser without needing to download the data file or install cellxgene should see Self-Hosting CellxGene[LINK TO SELF-HOSTING CXG PAGE ON DOCS SITE ].
 
-
 ### Quick Start
 
-To install CellxGene[LINK TO INSTALL SECTION ABOVE], you need Python 3.6+. We recommend installing cellxgene into a conda[LINK TO CONDA INSTRUCTIONS ABOVE]  or virtual environment[LINK TO VIRTUAL ENVIRONMENT INSTRUCTIONS ABOVE].
+To install CellxGene[LINK TO INSTALL SECTION ABOVE], you need Python 3.6+. We recommend installing cellxgene into a conda[LINK TO CONDA INSTRUCTIONS ABOVE] or virtual environment[LINK TO VIRTUAL ENVIRONMENT INSTRUCTIONS ABOVE].
 
 Install the package, then launch cellxgene with an example [AnnData](https://anndata.readthedocs.io/en/latest/) file.
-
 
 ### Example datasets
 
 The following datasets are available on the web and can be opened directly using cellxgene launch:
 
-
 #### Peripheral blood mononuclear cells
 
 [embed table]
-
 
 ```
 cellxgene launch https://cellxgene-example-data.czi.technology/pbmc3k.h5ad
 ```
 
-
-
 #### Tabula muris
 
 [embed table]
-
 
 ```
 cellxgene launch https://cellxgene-example-data.czi.technology/tabula-muris.h5ad
 ```
 
-
-
 #### Tabula muris senis
 
 [embed table]
-
 
 ```
 cellxgene launch https://cellxgene-example-data.czi.technology/tabula-muris-senis.h5ad
