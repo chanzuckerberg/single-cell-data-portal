@@ -9,31 +9,36 @@ A dot plot can reveal gross differences in expression patterns across cell types
 Dot plots visualize two values across two dimensions: color and size (Figure 1). The color of the dot approximates average gene expression. Its size represents the percentage of cells within each cell type that expresses the gene.
 
 <p align="center">
-    <img src="./files/illustration_legend.png" width = 280 height = 308>
-    <br>
-    <b>Figure 1.</b> Two metrics are represented in gene expression dot plots, gene expression and percentage of expressing cells.
- </p>
+  <img src="./files/illustration_legend.png" width="280" height="308" />
+  <br />
+  <b>Figure 1.</b> Two metrics are represented in gene expression dot plots,
+  gene expression and percentage of expressing cells.
+</p>
 
 The combination of these metrics in a grid of genes by cell types allows to make qualitative assessments of gene expression (Figure 2).
 
 Genes that are lowly expressed or expressed in a small percentage of cells are difficult to visually identify in a dot plot. This is particularly important for certain marker genes that are specifically but lowly expressed in their target cell types, for example transcription factors and receptors.
 
-<p align="center"> 
-	<img src="./files/illustration_main_info.png">
-    <br>
-    <b>Figure 2.</b> Types of possible qualitatively assessments in a dot plot. 
- </p>
- 
+<p align="center">
+  <img src="./files/illustration_main_info.png" />
+  <br />
+  <b>Figure 2.</b> Types of possible qualitatively assessments in a dot plot.
+</p>
+
 ### How to make sense of normalized values
 
 The data used to create the averages for the dot plot is quantile normalized and it ranges from 0 to 6 ([see below](#Data-normalization) for details). Roughly, low expression has normalized values lower than 2, medium expression ranges from 2 to 4, and high expression is higher than 4 (Figure 3). These values are used for the dot plot color scheme and are constant and comparable across different dot plots. Additionally, the user has the ability to switch to a relative scale that maps the lowest and highest expression values in a dot plot to the min and max colors, thus providing a wider color range for what's shown in a dot plot.
 
-<p align="center"> 
-	<img src="./files/illustration_expression_levels.png" width=783 height=433>
-    <br>
-    <b>Figure 3.</b> Examples of high, medium and low expression. 
- </p>
- 
+<p align="center">
+  <img
+    src="./files/illustration_expression_levels.png"
+    width="783"
+    height="433"
+  />
+  <br />
+  <b>Figure 3.</b> Examples of high, medium and low expression.
+</p>
+
 The examples in Figure 3 have a relatively constant percentage of cells expressing a gene (dot size), however to identify highly expressed genes the user is advised to pay attention to both the color intensity and the size of the dot.
 
 ### How to navigate cell types
@@ -42,11 +47,16 @@ Cell types in the dot plot (rows) are ordered by default with an [algorithm](#Ce
 
 All cell types from a given tissue are shown as originally annotated in the dataset-of-origin. This leads to scenarios where parent and children cell types may be present in the dot plot, but they are independent observations and the former is not a superset of the latter (Figure 4).
 
-<p align="center"> 
-	<img src="./files/illustration_parent_children.png" width=613 height=263>
-    <br>
-    <b>Figure 4.</b> In some cases parent and children cell types are present, but these are independent of each other.
- </p>
+<p align="center">
+  <img
+    src="./files/illustration_parent_children.png"
+    width="613"
+    height="263"
+  />
+  <br />
+  <b>Figure 4.</b> In some cases parent and children cell types are present, but
+  these are independent of each other.
+</p>
 
 ### Caveats of normalization
 
@@ -72,10 +82,11 @@ An in-depth description of this method can be found [here](./cell-type-ontology-
 
 ## Processing of expression data
 
- <p align="center">
- 	<img src="./files/illustration_data_processing.png">
- 	<b>Figure 5. </b> Overview of processing steps from raw read counts to gene expression averages per cell type.
- </p>
+<p align="center">
+  <img src="./files/illustration_data_processing.png" />
+  <b>Figure 5. </b> Overview of processing steps from raw read counts to gene expression
+  averages per cell type.
+</p>
 
 ### Removal of duplicate cells
 
@@ -99,17 +110,17 @@ Read counts are normalized using a modification of the rankit method which is a 
 
 For a given cell in a count matrix, the read counts across genes are transformed to quantiles, then those quantiles are mapped to the corresponding values of a normal distribution with mean = 3 and variance = 1 (Figure 6). Normalized matrices from multiple datasets of the same tissue are concatenated along the gene axis.
 
- <p align="center">
-    <img src="./files/distribution_read_counts.png" width="600" height="246">
- </p>
- 
-  <p align="center">
-    <img src="./files/distribution_rankit.png" width="600" height="246"	>
-    <br>
-    <b> Figure 6. </b> Visual representation of rankit normalization.
- </p>
- 
-This method accounts for sequencing depth by scaling gene expression to the approximate range of 0 to 6. A high gene-cell value (>5)  indicates that the gene is amongst genes that are the highest expressed in that cell, and similarly a low value (<1) indicates that the gene is amongst the lowest expressed genes in that cell.
+<p align="center">
+  <img src="./files/distribution_read_counts.png" width="600" height="246" />
+</p>
+
+<p align="center">
+  <img src="./files/distribution_rankit.png" width="600" height="246" />
+  <br />
+  <b> Figure 6. </b> Visual representation of rankit normalization.
+</p>
+
+This method accounts for sequencing depth by scaling gene expression to the approximate range of 0 to 6. A high gene-cell value ( > 5 ) indicates that the gene is amongst genes that are the highest expressed in that cell, and similarly a low value ( < 1 ) indicates that the gene is amongst the lowest expressed genes in that cell.
 
 Rankit normalization compresses highly expressed genes to the right tail of the standard normal distribution (see below), thus providing ideal values for using a color representation of gene expression and avoiding saturation that would otherwise be present.
 
@@ -138,6 +149,6 @@ For each gene/cell type combination the following values are represented in the 
 
 1. Abrams ZB et al. A protocol to evaluate RNA sequencing normalization methods. BMC Bioinformatics. 2019. [PubMed](https://pubmed.ncbi.nlm.nih.gov/31861985/).
 1. Bolstad BM et al. A comparison of normalization methods for high density oligonucleotide array data based on variance and bias. Bioinformatics. 2002. [PubMed](https://pubmed.ncbi.nlm.nih.gov/12538238/).
-1. Evans C et al. Selecting between-sample RNA-Seq normalization methods from the perspective of their assumptions Ciaran. Briefings in Bioinformatics. 2018. [PubMed] (https://pubmed.ncbi.nlm.nih.gov/28334202/).
-1. The GTEx Consortium. The GTEx Consortium atlas of genetic regulatory effects across human tissues. Science. 2020. [PubMed] (https://pubmed.ncbi.nlm.nih.gov/32913098/).
-1. Zhao Y et al. How to do quantile normalization correctly for gene expression data analyses. Scientific Reports. 2020. [PubMed] (https://pubmed.ncbi.nlm.nih.gov/32968196/).
+1. Evans C et al. Selecting between-sample RNA-Seq normalization methods from the perspective of their assumptions Ciaran. Briefings in Bioinformatics. 2018. [PubMed](https://pubmed.ncbi.nlm.nih.gov/28334202/).
+1. The GTEx Consortium. The GTEx Consortium atlas of genetic regulatory effects across human tissues. Science. 2020. [PubMed](https://pubmed.ncbi.nlm.nih.gov/32913098/).
+1. Zhao Y et al. How to do quantile normalization correctly for gene expression data analyses. Scientific Reports. 2020. [PubMed](https://pubmed.ncbi.nlm.nih.gov/32968196/).
