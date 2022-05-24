@@ -37,7 +37,7 @@ jobs:
       - uses: actions/checkout@v2
       - name: Lint Python
         run: |
-          docker-compose run --no-deps --rm backend make -C /corpora-data-portal lint
+          docker-compose run --no-deps --rm backend make -C /single-cell-data-portal lint
       - name: Lint frontend
         run: |
           docker-compose run --no-deps --rm frontend make lint
