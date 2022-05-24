@@ -1,5 +1,3 @@
-import json
-
 import sqlalchemy
 from typing import Optional, List
 from backend.corpora.common.providers import crossref_provider
