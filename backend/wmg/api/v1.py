@@ -178,7 +178,7 @@ def build_ordered_cell_types_by_tissue(
     return structured_result
 
 
-def build_ordered_cell_types_by_tissue_update_depths(x):
+def build_ordered_cell_types_by_tissue_update_depths(x: DataFrame):
     """
     Updates the depths of the cell ontology tree based on cell types that have to be removed
     because they have 0 counts
