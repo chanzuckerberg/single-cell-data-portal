@@ -32,6 +32,9 @@ class TestDatasetSubmissions(TestCase):
     def test__missing_username__raises_error(self):
         self._test_missing_fields(key=f"{self.collection_uuid}/{self.incoming_curator_tag}")
 
+    def test__bad_extension__raises_error(self):
+        self._test_missing_fields(key=f"{self.user_name}/{self.collection_uuid}/{self.dataset_uuid}$h5ad")
+
     def _test_types(self):
         types = [f"{self.incoming_curator_tag}", f"{self.dataset_uuid_in_s3}"]
         for t in types:
@@ -53,7 +56,7 @@ class TestDatasetSubmissions(TestCase):
     @patch("backend.corpora.dataset_submissions.app.get_dataset_info")
     @patch("backend.corpora.dataset_submissions.app.upload")
     def test__owner__upload(self, mock_upload: Mock, mock_get_dataset_info: Mock):
-        types = [f"tag/{self.incoming_curator_tag}", f"{self.dataset_uuid_in_s3}"]
+        types = [f"{self.incoming_curator_tag}", f"{self.dataset_uuid_in_s3}"]
         for t in types:
             s3_event = create_s3_event(key=f"{self.user_name}/{self.collection_uuid}/{t}")
             mock_upload.return_value = None
