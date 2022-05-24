@@ -1,7 +1,7 @@
 import json
 
 import sqlalchemy
-from typing import Optional
+from typing import Optional, List
 from backend.corpora.common.providers import crossref_provider
 from backend.corpora.common.providers.crossref_provider import CrossrefDOINotFoundException, CrossrefException
 
@@ -126,7 +126,10 @@ def post_collection_revision(collection_uuid: str, token_info: dict):
     return make_response(jsonify(result), 201)
 
 
-def normalize_and_get_doi(body):
+doi_regex = re.compile(r"^10.\d{4,9}/[-._;()/:A-Z0-9]+$", flags=re.I)
+
+
+def normalize_and_get_doi(body: dict, errors: list) -> Optional[str]:
     """
     1. Check for DOI uniqueness in the payload
     2. Normalizes it so that the DOI is always a link (starts with https://doi.org)
@@ -140,7 +143,8 @@ def normalize_and_get_doi(body):
 
     # Verify that a single DOI exists
     if len(dois) > 1:
-        raise InvalidParametersHTTPException("Can only specify a single DOI")
+        errors.append({"link_type": "doi", "reason": "Can only specify a single DOI"})
+        return None
 
     doi_node = dois[0]
     doi = doi_node["link_url"]
@@ -148,8 +152,9 @@ def normalize_and_get_doi(body):
     parsed = urlparse(doi)
     if not parsed.scheme and not parsed.netloc:
         parsed_doi = parsed.path
-        if not re.match(r"^10.\d{4,9}/[-._;()/:A-Z0-9]+$", parsed_doi, flags=re.I):
-            raise InvalidParametersHTTPException("Invalid DOI")
+        if not doi_regex.match(parsed_doi):
+            errors.append({"link_type": "doi", "reason": "Invalid DOI"})
+            return None
         doi_node["link_url"] = f"https://doi.org/{parsed_doi}"
 
     return doi
@@ -173,8 +178,7 @@ def get_publisher_metadata(provider, doi):
 email_regex = re.compile(r"(.+)@(.+)\.(.+)")
 
 
-def verify_collection_body(body: dict, allow_none: bool = False) -> None:
-    errors = []
+def verify_collection_body(body: dict, errors: list, allow_none: bool = False) -> List[str]:
     result = email_regex.match(body.get("contact_email", ""))
     if not result and not allow_none:
         errors.append({"name": "contact_email", "reason": "Invalid format."})
@@ -187,16 +191,17 @@ def verify_collection_body(body: dict, allow_none: bool = False) -> None:
 
     if not body.get("contact_name") and not allow_none:  # Check if contact_name is None or 0 length
         errors.append({"name": "contact_name", "reason": "Cannot be blank."})
-    if errors:
-        raise InvalidParametersHTTPException(detail=json.dumps(errors))
+    return errors
 
 
 @dbconnect
 def create_collection(body: dict, user: str):
     db_session = g.db_session
-    verify_collection_body(body)
-
-    doi = normalize_and_get_doi(body)
+    errors = []
+    verify_collection_body(body, errors)
+    doi = normalize_and_get_doi(body, errors)
+    if errors:
+        raise InvalidParametersHTTPException(detail=json.dumps())
     if doi is not None:
         provider = crossref_provider.CrossrefProvider()
         publisher_metadata = get_publisher_metadata(provider, doi)
@@ -245,7 +250,8 @@ def delete_collection(collection_uuid: str, token_info: dict):
 @dbconnect
 def update_collection(collection_uuid: str, body: dict, token_info: dict):
     db_session = g.db_session
-    verify_collection_body(body, allow_none=True)
+    errors = []
+    verify_collection_body(body, errors, allow_none=True)
     collection = get_collection(
         db_session,
         collection_uuid,
@@ -255,7 +261,9 @@ def update_collection(collection_uuid: str, body: dict, token_info: dict):
 
     # Compute the diff between old and new DOI
     old_doi = collection.get_doi()
-    new_doi = normalize_and_get_doi(body)
+    new_doi = normalize_and_get_doi(body, errors)
+    if errors:
+        raise InvalidParametersHTTPException(detail=json.dumps())
 
     if old_doi and not new_doi:
         # If the DOI was deleted, remove the publisher_metadata field
