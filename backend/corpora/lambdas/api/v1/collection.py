@@ -12,7 +12,7 @@ import re
 import logging
 
 from .common import get_collection
-from ....common.corpora_orm import DbCollection, CollectionVisibility
+from ....common.corpora_orm import DbCollection, CollectionVisibility, ProjectLinkType
 from ....common.entities import Collection
 from .authorization import is_user_owner_or_allowed, owner_or_allowed
 from ....common.utils.http_exceptions import (
@@ -136,14 +136,14 @@ def normalize_and_get_doi(body: dict, errors: list) -> Optional[str]:
     3. Returns the newly normalized DOI
     """
     links = body.get("links", [])
-    dois = [link for link in links if link["link_type"] == "DOI"]
+    dois = [link for link in links if link["link_type"] == ProjectLinkType.DOI.name]
 
     if not dois:
         return None
 
     # Verify that a single DOI exists
     if len(dois) > 1:
-        errors.append({"link_type": "doi", "reason": "Can only specify a single DOI"})
+        errors.append({"link_type": ProjectLinkType.DOI.name, "reason": "Can only specify a single DOI"})
         return None
 
     doi_node = dois[0]
@@ -153,7 +153,7 @@ def normalize_and_get_doi(body: dict, errors: list) -> Optional[str]:
     if not parsed.scheme and not parsed.netloc:
         parsed_doi = parsed.path
         if not doi_regex.match(parsed_doi):
-            errors.append({"link_type": "doi", "reason": "Invalid DOI"})
+            errors.append({"link_type": ProjectLinkType.DOI.name, "reason": "Invalid DOI"})
             return None
         doi_node["link_url"] = f"https://doi.org/{parsed_doi}"
 
@@ -201,7 +201,7 @@ def create_collection(body: dict, user: str):
     verify_collection_body(body, errors)
     doi = normalize_and_get_doi(body, errors)
     if errors:
-        raise InvalidParametersHTTPException(detail=json.dumps())
+        raise InvalidParametersHTTPException(detail=errors)
     if doi is not None:
         provider = crossref_provider.CrossrefProvider()
         publisher_metadata = get_publisher_metadata(provider, doi)
@@ -263,7 +263,7 @@ def update_collection(collection_uuid: str, body: dict, token_info: dict):
     old_doi = collection.get_doi()
     new_doi = normalize_and_get_doi(body, errors)
     if errors:
-        raise InvalidParametersHTTPException(detail=json.dumps())
+        raise InvalidParametersHTTPException(detail=errors)
 
     if old_doi and not new_doi:
         # If the DOI was deleted, remove the publisher_metadata field
