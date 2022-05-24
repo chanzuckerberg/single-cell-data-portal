@@ -11,14 +11,14 @@ const spacing = {
   xxl: 40,
   xxs: 4,
   xxxs: 2,
-}
+};
 
 const corners = {
   l: 16,
   m: 4,
   none: 0,
   s: 2,
-}
+};
 
 const typography = {
   fontFamily: "Inter",
@@ -142,12 +142,12 @@ const typography = {
       },
     },
   },
-}
+};
 
 const customTheme = {
-  typography: typography,
-  spacing: spacing,
-  corners: corners
+  corners,
+  spacing,
+  typography,
 };
 
 const themeOptions = { ...defaultAppTheme, ...customTheme };
