@@ -119,7 +119,10 @@ export default memo(function YAxisChart({
       <TissueWrapper height={heatmapHeight}>
         <TissueName>{capitalize(tissue)}</TissueName>
         {hasDeletedCellTypes && (
-          <ResetImageWrapper onClick={() => handleResetTissue(tissue)}>
+          <ResetImageWrapper
+            data-test-id="reset-cell-types"
+            onClick={() => handleResetTissue(tissue)}
+          >
             <Image
               src={ReplaySVG.src}
               width="12"
@@ -129,7 +132,11 @@ export default memo(function YAxisChart({
           </ResetImageWrapper>
         )}
       </TissueWrapper>
-      <Container height={heatmapHeight} ref={yAxisRef} />
+      <Container
+        data-test-id="cell-type-labels"
+        height={heatmapHeight}
+        ref={yAxisRef}
+      />
     </Wrapper>
   );
 

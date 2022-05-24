@@ -119,9 +119,9 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/chanzuckerberg/corpora-data-portal"
+    "url": "https://github.com/chanzuckerberg/single-cell-data-portal"
   },
   "bugs": {
-    "url": "https://github.com/chanzuckerberg/corpora-data-portal/issues"
+    "url": "https://github.com/chanzuckerberg/single-cell-data-portal/issues"
   }
 }
