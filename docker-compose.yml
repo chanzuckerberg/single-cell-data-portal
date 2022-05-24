@@ -188,7 +188,7 @@ services:
       - ./backend/corpora/dataset_processing:/backend/corpora/dataset_processing
       - ./backend/corpora/common:/backend/corpora/common
       # Mount dirs in a layout suitable for running tests.
-      - .:/corpora-data-portal
+      - .:/single-cell-data-portal
     command: ["sleep", "infinity"]
     environment:
       - PYTHONUNBUFFERED=1
@@ -267,7 +267,7 @@ services:
       - IS_DOCKER_DEV=yes # This skips some unit tests.
     volumes:
       # Mount dirs in a layout suitable for running tests.
-      - .:/corpora-data-portal
+      - .:/single-cell-data-portal
       # SecretsManager population relies on oauth json
       - ./oauth/users.json:/oauth/users.json
     networks:
