@@ -1,6 +1,7 @@
 import csv
 import gzip
 import json
+import os
 from typing import IO, Dict, Optional
 
 # TODO: Place this module into a common ontology util package with ontology_mapping.py and
@@ -63,5 +64,8 @@ def __load_genes() -> None:
 
 
 def __open_ontology_resource(file) -> IO:
-    path = f"../../../backend/ontology_files/{file}"
-    return gzip.open(path)
+    curr_path = os.getcwd().split('/')
+    portal_root_index = curr_path.index("single-cell-data-portal")
+    root_path = ('/').join(curr_path[0:portal_root_index])
+    file_path = os.path.join(root_path, "backend", "ontology_files", file)
+    return gzip.open(file_path)
