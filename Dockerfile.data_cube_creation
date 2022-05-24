@@ -3,7 +3,7 @@ ARG BASE_TAG=branch-main
 FROM python:3.9
 RUN /usr/local/bin/python -m pip install --upgrade pip
 
-RUN apt update && apt -y install graphviz graphviz-dev
+RUN apt update && apt -y install graphviz graphviz-dev git
 
 RUN pip3 install awscli
 RUN git clone https://github.com/chanzuckerberg/single-cell-curation.git
