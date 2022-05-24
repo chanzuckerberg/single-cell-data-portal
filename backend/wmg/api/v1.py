@@ -180,17 +180,17 @@ def build_ordered_cell_types_by_tissue(
 
 def build_ordered_cell_types_by_tissue_fix_depths(x):
     """
-    Fixes the depths of the cell ontology tree based on cell types that have to be removed
+    Updated the depths of the cell ontology tree based on cell types that have to be removed
     because they have 0 counts
     """
 
     depth_col = x.columns.get_loc("depth")
-    n_cells = x.columns.get_loc("n_total_cells")
+    n_cells_col = x.columns.get_loc("n_total_cells")
 
     x["depth"] = x["depth"].astype("int")
 
     for i in range(len(x)):
-        if isnan(x.iloc[i, n_cells]):
+        if isnan(x.iloc[i, n_cells_col]):
             original_depth = x.iloc[i, depth_col]
             for j in range(i + 1, len(x)):
                 if original_depth < x.iloc[j, depth_col]:
