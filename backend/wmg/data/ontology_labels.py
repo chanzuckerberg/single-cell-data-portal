@@ -64,8 +64,8 @@ def __load_genes() -> None:
 
 
 def __open_ontology_resource(file) -> IO:
-    curr_path = os.getcwd().split('/')
+    curr_path = os.getcwd().split("/")
     portal_root_index = curr_path.index("single-cell-data-portal")
-    root_path = ('/').join(curr_path[0:portal_root_index+1])
+    root_path = ("/").join(curr_path[0 : portal_root_index + 1])
     file_path = os.path.join(root_path, "backend", "ontology_files", file)
     return gzip.open(file_path)
