@@ -109,11 +109,11 @@ const Directory = memo(function RenderDirecotry({
         if (directory.slug.length > 0) href += directory.slug.join("/") + "/";
         href += file;
         return (
-          <NextLink key={file} href={href}>
-            <li>
+          <li key={file}>
+            <NextLink href={href} passHref>
               <Link>{file}</Link>
-            </li>
-          </NextLink>
+            </NextLink>
+          </li>
         );
       })}
       {directory.subDirectories.map((directory) => {
