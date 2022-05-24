@@ -1,17 +1,16 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { ROUTES } from "src/common/constants/routes";
 import Logo from "src/components/common/staticPages/NEWxLOGO.png";
 import styles from "./index.module.scss";
 
 const LandingHeader = (): JSX.Element => {
   const router = useRouter();
 
-  console.log(router);
-
   return (
     <header className={styles.header}>
-      <Link href="/" passHref>
+      <Link href={ROUTES.HOMEPAGE} passHref>
         <a className={styles.headerLogoContainer}>
           <Image
             data-test-id="cellxgene-logo"
@@ -22,13 +21,16 @@ const LandingHeader = (): JSX.Element => {
       </Link>
       <nav className={styles.headerNavContainer}>
         <div className={styles.headerNavLeft}>
-          <Link href="/" passHref>
+          {/* href update tbd */}
+          <Link href={ROUTES.HOMEPAGE} passHref>
             <a>Browse</a>
           </Link>
-          <Link href="/" passHref>
+          {/* href update tbd */}
+          <Link href={ROUTES.HOMEPAGE} passHref>
             <a>Atlas</a>
           </Link>
-          <Link href="/" passHref>
+          {/* href update tbd */}
+          <Link href={ROUTES.HOMEPAGE} passHref>
             <a>Explore</a>
           </Link>
         </div>
@@ -42,10 +44,12 @@ const LandingHeader = (): JSX.Element => {
               <a className={styles.btnLink}>We're Hiring</a>
             </Link>
           )}
-          <Link href="/" passHref>
+          {/* href update tbd */}
+          <Link href={ROUTES.HOMEPAGE} passHref>
             <a>Help & Documentation</a>
           </Link>
-          <Link href="/" passHref>
+          {/* href update tbd */}
+          <Link href={ROUTES.HOMEPAGE} passHref>
             <a>Login</a>
           </Link>
         </div>

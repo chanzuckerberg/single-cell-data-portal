@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { useInView } from "react-intersection-observer";
+import { ROUTES } from "src/common/constants/routes";
 import AnalyzeDatasetsImg from "src/components/common/staticPages/analyze-datasets.png";
 import HeroBg from "src/components/common/staticPages/cellxgene_hero_bg.png";
 import LaptopImg from "src/components/common/staticPages/cellxgene_laptop.png";
@@ -252,12 +253,14 @@ const LandingPage = (): JSX.Element => {
                   human tissues.
                 </p>
                 <div className={styles.linkContainer}>
-                  <a href="https://cellxgene.cziscience.com/collections">
-                    Browse data collections
-                    <span className={styles.linkArrow}>
-                      <LinkArrow />
-                    </span>
-                  </a>
+                  <Link href={ROUTES.COLLECTIONS} passHref>
+                    <a>
+                      Browse data collections
+                      <span className={styles.linkArrow}>
+                        <LinkArrow />
+                      </span>
+                    </a>
+                  </Link>
                 </div>
               </div>
             </div>
@@ -294,12 +297,14 @@ const LandingPage = (): JSX.Element => {
                   largest integrated resource of over 30 million cells.
                 </p>
                 <div className={styles.linkContainer}>
-                  <a href="https://cellxgene.cziscience.com/scExpression">
-                    See how it works
-                    <span className={styles.linkArrow}>
-                      <LinkArrow />
-                    </span>
-                  </a>
+                  <Link href={ROUTES.WHERE_IS_MY_GENE} passHref>
+                    <a>
+                      See how it works
+                      <span className={styles.linkArrow}>
+                        <LinkArrow />
+                      </span>
+                    </a>
+                  </Link>
                 </div>
               </div>
             </div>
@@ -341,18 +346,25 @@ const LandingPage = (): JSX.Element => {
                   states.
                 </p>
                 <div className={styles.linkContainer}>
-                  <a href="https://cellxgene.cziscience.com/e/53d208b0-2cfd-4366-9866-c3c6114081bc.cxg/">
-                    Explore a multi-tissue atlas
-                    <span className={styles.linkArrow}>
-                      <LinkArrow />
-                    </span>
-                  </a>
-                  <a href="https://cellxgene.cziscience.com/collections">
-                    Explore the studies
-                    <span className={styles.linkArrow}>
-                      <LinkArrow />
-                    </span>
-                  </a>
+                  <Link
+                    href={`${ROUTES.HOMEPAGE}/e/53d208b0-2cfd-4366-9866-c3c6114081bc.cxg/`}
+                    passHref
+                  >
+                    <a>
+                      Explore a multi-tissue atlas
+                      <span className={styles.linkArrow}>
+                        <LinkArrow />
+                      </span>
+                    </a>
+                  </Link>
+                  <Link href={ROUTES.COLLECTIONS} passHref>
+                    <a>
+                      Explore the studies
+                      <span className={styles.linkArrow}>
+                        <LinkArrow />
+                      </span>
+                    </a>
+                  </Link>
                 </div>
               </div>
             </div>
@@ -387,12 +399,14 @@ const LandingPage = (): JSX.Element => {
                   corpus can be downloaded directly from R and python.
                 </p>
                 <div className={styles.linkContainer}>
-                  <a href="https://cellxgene.cziscience.com/collections">
-                    Browse datasets for download
-                    <span className={styles.linkArrow}>
-                      <LinkArrow />
-                    </span>
-                  </a>
+                  <Link href={ROUTES.COLLECTIONS} passHref>
+                    <a>
+                      Browse datasets for download
+                      <span className={styles.linkArrow}>
+                        <LinkArrow />
+                      </span>
+                    </a>
+                  </Link>
                   {/* LINK TO BE UPDATED POST-LAUNCH */}
                   <a href="#">
                     Download with R
