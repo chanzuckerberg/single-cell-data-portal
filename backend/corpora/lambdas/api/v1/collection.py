@@ -178,7 +178,7 @@ email_regex = re.compile(r"(.+)@(.+)\.(.+)")
 
 def verify_collection_links(body: dict, errors: list) -> None:
     def _error_message(i: int, _url: str) -> dict:
-        return {"name": f"links[{i}]", "reason": f"Invalid URL.", "value": _url}
+        return {"name": f"links[{i}]", "reason": "Invalid URL.", "value": _url}
 
     for index, link in enumerate(body.get("links", [])):
         if link["link_type"] == ProjectLinkType.DOI.name:
