@@ -124,7 +124,7 @@ paths:
                 type: object
                 properties:
                   collection_uuid:
-                      $ref: "#/components/schemas/collection_uuid"
+                    $ref: "#/components/schemas/collection_uuid"
         "400":
           $ref: "#/components/responses/400_multiple"
         "401":
@@ -783,6 +783,9 @@ components:
                 name:
                   type: string
                   description: the errant parameter
+                value:
+                  type: string
+                  description: the errant value
                 reason:
                   type: string
                   description: the specific problem with the parameter

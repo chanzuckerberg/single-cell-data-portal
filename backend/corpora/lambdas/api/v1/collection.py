@@ -183,9 +183,9 @@ def verify_collection_links(body: dict, errors: list) -> None:
         try:
             result = urlparse(link["link_url"].strip())
         except ValueError:
-            errors.append({"link_type": link["link_type"], "link_url": link["link_url"], "reason": "Invalid URL"})
+            errors.append({"name": link["link_type"], "value": link["link_url"], "reason": "Invalid URL"})
         if not all([result.scheme, result.netloc]):
-            errors.append({"link_type": link["link_type"], "link_url": link["link_url"], "reason": "Invalid URL"})
+            errors.append({"name": link["link_type"], "value": link["link_url"], "reason": "Invalid URL"})
 
 
 def verify_collection_body(body: dict, errors: list, allow_none: bool = False) -> None:
