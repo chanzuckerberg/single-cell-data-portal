@@ -431,7 +431,7 @@ paths:
                         type: string
                       SessionToken:
                         type: string
-                  UploadPath:
+                  UploadKeyPrefix:
                     type: string
                   Bucket:
                     type: string
@@ -777,6 +777,9 @@ components:
                 name:
                   type: string
                   description: the errant parameter
+                value:
+                  type: string
+                  description: the errant value
                 reason:
                   type: string
                   description: the specific problem with the parameter

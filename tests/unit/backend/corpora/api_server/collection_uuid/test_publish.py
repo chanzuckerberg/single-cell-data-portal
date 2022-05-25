@@ -133,7 +133,6 @@ class TestPublish(BaseAuthAPITest):
 
     def verify_publish_collection_with_links(self, collection: Collection, id_to_publish: str = None):
         link_names = [link.link_name for link in collection.links]
-        self.generate_dataset(self.session, collection_id=collection.id, published_at=self.mock_published_at).id
 
         response_json = self.verify_publish_collection(collection.id, id_to_publish=id_to_publish)
         self.assertEqual(self.mock_published_at, datetime.utcfromtimestamp(response_json["published_at"]))
@@ -151,6 +150,8 @@ class TestPublish(BaseAuthAPITest):
             ],
             published_at=self.mock_published_at,
         )
+        self.generate_dataset(self.session, collection_id=collection.id, published_at=self.mock_published_at)
+
         self.verify_publish_collection_with_links(collection)
 
     def test__publish_collection_revision_with_links__OK(self):

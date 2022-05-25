@@ -2,23 +2,22 @@ import itertools
 import json
 import unittest
 from datetime import datetime
-from backend.corpora.common.providers.crossref_provider import CrossrefDOINotFoundException, CrossrefFetchException
+from unittest.mock import patch
 
 from furl import furl
-
-from unittest.mock import patch
 
 from backend.corpora.common.corpora_orm import (
     CollectionVisibility,
     UploadStatus,
     generate_uuid,
+    ProjectLinkType,
 )
 from backend.corpora.common.entities import Collection
-from backend.corpora.common.utils.http_exceptions import InvalidParametersHTTPException
+from backend.corpora.common.providers.crossref_provider import CrossrefDOINotFoundException, CrossrefFetchException
 from backend.corpora.lambdas.api.v1.collection import verify_collection_body
-from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
 from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest, BasicAuthAPITestCurator
 from tests.unit.backend.corpora.api_server.mock_auth import get_auth_token
+from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
 
 
 def generate_mock_publisher_metadata(journal_override=None):
@@ -538,7 +537,7 @@ class TestCollection(BaseAuthAPITest):
         )
         self.assertEqual(400, response.status_code)
         error_payload = json.loads(response.data)
-        self.assertEqual(error_payload["detail"], "Invalid DOI")
+        self.assertEqual([{"link_type": "DOI", "reason": "Invalid DOI"}], error_payload["detail"])
 
     @patch("backend.corpora.common.providers.crossref_provider.CrossrefProvider.fetch_metadata")
     def test__post_collection_ignores_metadata_if_crossref_exception(self, mock_provider):
@@ -829,6 +828,42 @@ class TestCollection(BaseAuthAPITest):
         self.assertEqual(actual_collection["published_at"], collection.published_at.timestamp())
         self.assertEqual(actual_collection["revised_at"], collection.revised_at.timestamp())
         self.assertEqual(actual_collection["publisher_metadata"], collection.publisher_metadata)
+
+    def test__create_collection__InvalidParameters_DOI(self):
+        tests = [
+            (
+                dict(
+                    name="not blank",
+                    description="description",
+                    contact_name="some name",
+                    contact_email="robot@email.com",
+                    links=[{"link_type": "DOI", "link_url": "bad_doi"}],
+                ),
+                [
+                    {"link_type": "DOI", "reason": "Invalid DOI"},
+                ],
+            ),
+            (
+                dict(
+                    name="not blank",
+                    description="description",
+                    contact_name="some name",
+                    contact_email="robot@email.com",
+                    links=[
+                        {"link_type": "DOI", "link_url": "doi:duplicated"},
+                        {"link_type": "DOI", "link_url": "doi:duplicated"},
+                    ],
+                ),
+                [{"link_type": "DOI", "reason": "Can only specify a single DOI"}],
+            ),
+        ]
+        for body, expected_errors in tests:
+            with self.subTest(body):
+                headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+                response = self.app.post("/dp/v1/collections", headers=headers, data=json.dumps(body))
+                self.assertEqual(400, response.status_code)
+                for error in expected_errors:
+                    self.assertIn(error, response.json["detail"])
 
 
 class TestCollectionDeletion(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
@@ -1140,7 +1175,7 @@ class TestUpdateCollection(BaseAuthAPITest):
 
         # all together
         links = [
-            {"link_name": "Link 1", "link_url": "This is a new link", "link_type": "OTHER"},
+            {"link_name": "Link 1", "link_url": "http://link.com", "link_type": "OTHER"},
             {"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"},
         ]
         data = json.dumps({"links": links})
@@ -1290,16 +1325,17 @@ class TestCollectionsCurators(BasicAuthAPITestCurator):
 class TestVerifyCollection(unittest.TestCase):
     def test_blank_body(self):
         body = dict()
-        with self.subTest("allow_none:False"):
-            with self.assertRaises(InvalidParametersHTTPException) as ex:
-                verify_collection_body(body)
-                errors = json.loads(ex.detials)
-                self.assertIn(errors, {"name": "description", "reason": "Cannot be blank."})
-                self.assertIn(errors, {"name": "name", "reason": "Cannot be blank."})
-                self.assertIn(errors, {"name": "contact_name", "reason": "Cannot be blank."})
-                self.assertIn(errors, {"name": "contact_email", "reason": "Invalid format."})
+        with self.subTest("allow_none=False"):
+            errors = []
+            verify_collection_body(body, errors)
+            self.assertIn({"name": "description", "reason": "Cannot be blank."}, errors)
+            self.assertIn({"name": "name", "reason": "Cannot be blank."}, errors)
+            self.assertIn({"name": "contact_name", "reason": "Cannot be blank."}, errors)
+            self.assertIn({"name": "contact_email", "reason": "Invalid format."}, errors)
         with self.subTest("allow_none:True"):
-            verify_collection_body(body, allow_none=True)
+            errors = []
+            verify_collection_body(body, errors, allow_none=True)
+            self.assertFalse(errors)
 
     def test_invalid_email(self):
         bad_emails = ["@.", "", "email@.", "@place.com", "email@.com", "email@place."]
@@ -1307,12 +1343,40 @@ class TestVerifyCollection(unittest.TestCase):
 
         for email in bad_emails:
             with self.subTest(email):
-                with self.assertRaises(InvalidParametersHTTPException) as ex:
-                    body["contect_email"] = email
-                    verify_collection_body(body)
-                    errors = json.loads(ex.detials)
-                    self.assertEqual(errors, [{"name": "contact_email", "reason": "Invalid format."}])
+                body["contect_email"] = email
+                errors = []
+                verify_collection_body(body, errors)
+                self.assertEqual([{"name": "contact_email", "reason": "Invalid format."}], errors)
 
     def test_OK(self):
         body = dict(name="something", contact_name="a name", description="description", contact_email="email@place.com")
-        verify_collection_body(body)
+        errors = []
+        verify_collection_body(body, errors)
+        self.assertFalse(errors)
+
+    def test__link__INVALID(self):
+        test_urls = ["://", "google", ".com", "google.com", "https://"]
+        for link_type in ProjectLinkType:
+            if link_type.name == "DOI":
+                continue
+            for test_url in test_urls:
+                link_body = [{"link_type": link_type.name, "link_url": test_url}]
+                with self.subTest(link_body):
+                    errors = []
+                    body = dict(links=link_body)
+                    verify_collection_body(body, errors, allow_none=True)
+                    expected_error = [dict(reason="Invalid URL.", name="links[0]", value=link_body[0]["link_url"])]
+                    self.assertEqual(expected_error, errors)
+
+    def test__link__OK(self):
+        test_urls = ["https://www.google.com", "http://somewhere.org/path/?abcd=123"]
+        for link_type in ProjectLinkType:
+            if link_type.name == "DOI":
+                continue
+            for test_url in test_urls:
+                link_body = [{"link_type": link_type.name, "link_url": test_url}]
+                with self.subTest(link_body):
+                    errors = []
+                    body = dict(links=link_body)
+                    verify_collection_body(body, errors, allow_none=True)
+                    self.assertFalse(errors)
