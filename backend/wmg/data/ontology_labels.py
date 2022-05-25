@@ -1,7 +1,7 @@
 import csv
 import gzip
 import json
-import os.path
+import os
 from typing import IO, Dict, Optional
 
 # TODO: Place this module into a common ontology util package with ontology_mapping.py and
@@ -64,13 +64,8 @@ def __load_genes() -> None:
 
 
 def __open_ontology_resource(file) -> IO:
-    from importlib import resources
-
-    # TODO: Python 3.9
-    # path = resources.files("cellxgene_schema").joinpath(f"ontology_files/{file}")
-    # return gzip.open(path)
-
-    # Python 3.8 hack. Likely a cleaner way to do this, but it works, and best to just use above after upgrading to 3.9
-    with resources.path("cellxgene_schema", "cli.py") as cellxgene_schema_abs_dir:
-        ontology_file = os.path.join(os.path.dirname(cellxgene_schema_abs_dir), "ontology_files", file)
-        return gzip.open(ontology_file)
+    curr_path = os.getcwd().split("/")
+    portal_root_index = curr_path.index("single-cell-data-portal")
+    root_path = ("/").join(curr_path[0 : portal_root_index + 1])
+    file_path = os.path.join(root_path, "backend", "ontology_files", file)
+    return gzip.open(file_path)
