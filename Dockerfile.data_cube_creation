@@ -6,7 +6,6 @@ RUN /usr/local/bin/python -m pip install --upgrade pip
 RUN apt update && apt -y install graphviz graphviz-dev git
 
 RUN pip3 install awscli
-RUN git clone https://github.com/chanzuckerberg/single-cell-curation.git
 # For lighter weight Docker images
 ENV PIP_NO_CACHE_DIR=1
 
@@ -15,8 +14,6 @@ WORKDIR /single-cell-data-portal
 ADD backend/__init__.py single-cell-data-portal/backend/__init__.py
 ADD backend/wmg single-cell-data-portal/backend/wmg
 ADD backend/corpora single-cell-data-portal/backend/corpora
-RUN mv  /single-cell-curation/cellxgene_schema_cli/cellxgene_schema/ontology_files single-cell-data-portal/backend/
-RUN rm -rf /single-cell-curation
 
 # RUN pip3 install -r single-cell-data-portal/backend/wmg/requirements.txt
 
