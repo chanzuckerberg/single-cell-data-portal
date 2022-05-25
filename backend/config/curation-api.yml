@@ -105,6 +105,7 @@ paths:
     post:
       summary: Create a Collection
       description: Create a new Collection
+      operationId: backend.corpora.lambdas.api.v1.collection.create_collection
       tags:
         - collection
       security:
@@ -120,7 +121,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/collection_uuid"
+                type: object
+                properties:
+                  collection_uuid:
+                      $ref: "#/components/schemas/collection_uuid"
         "400":
           $ref: "#/components/responses/400_multiple"
         "401":
@@ -191,6 +195,7 @@ paths:
       description: >-
         Update a private Collection or a Revision. If any Collection metadata fields are included in the body of the
         request, these fields SHALL be updated for the specified Collection.
+      operationId: backend.corpora.lambdas.api.v1.collection.update_collection
       security:
         - curatorAccess: []
       tags:
@@ -778,6 +783,9 @@ components:
                 name:
                   type: string
                   description: the errant parameter
+                value:
+                  type: string
+                  description: the errant value
                 reason:
                   type: string
                   description: the specific problem with the parameter
