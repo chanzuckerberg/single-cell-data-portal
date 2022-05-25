@@ -10,6 +10,7 @@ from backend.corpora.common.corpora_orm import (
     CollectionVisibility,
     UploadStatus,
     generate_uuid,
+    ProjectLinkType,
 )
 from backend.corpora.common.entities import Collection
 from backend.corpora.common.providers.crossref_provider import CrossrefDOINotFoundException, CrossrefFetchException
@@ -1174,7 +1175,7 @@ class TestUpdateCollection(BaseAuthAPITest):
 
         # all together
         links = [
-            {"link_name": "Link 1", "link_url": "This is a new link", "link_type": "OTHER"},
+            {"link_name": "Link 1", "link_url": "http://link.com", "link_type": "OTHER"},
             {"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"},
         ]
         data = json.dumps({"links": links})
@@ -1352,3 +1353,17 @@ class TestVerifyCollection(unittest.TestCase):
         errors = []
         verify_collection_body(body, errors)
         self.assertFalse(errors)
+
+    def test_invalid_link(self):
+        test_urls = ["://", "google", ".com", "google.com", "https://"]
+        for link_type in ProjectLinkType:
+            if link_type.name is "DOI":
+                continue
+            for test_url in test_urls:
+                link_body = [{"link_type": link_type.name, "link_url": test_url}]
+                with self.subTest(link_body):
+                    errors = []
+                    body = dict(links=link_body)
+                    verify_collection_body(body, errors, allow_none=True)
+                    link_body[0]["reason"] = "Invalid URL"
+                    self.assertEqual(link_body, errors)
