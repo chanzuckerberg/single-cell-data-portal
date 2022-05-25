@@ -106,7 +106,7 @@ local-nohostconfig:
 
 .PHONY: local-init-test-data
 local-init-test-data:
-	docker-compose $(COMPOSE_OPTS) run --rm -T backend /bin/bash -c "pip3 install awscli && cd /corpora-data-portal && scripts/setup_dev_data.sh"
+	docker-compose $(COMPOSE_OPTS) run --rm -T backend /bin/bash -c "pip3 install awscli && cd /single-cell-data-portal && scripts/setup_dev_data.sh"
 
 .PHONY: local-init-host
 local-init-host: oauth/pkcs12/certificate.pfx .env.ecr local-ecr-login local-hostconfig local-start
@@ -145,10 +145,10 @@ local-clean: local-nohostconfig ## Remove everything related to the local dev en
 	-rm -rf ./oauth/pkcs12/server*
 	-rm -rf ./oauth/pkcs12/certificate*
 	docker-compose rm -sf
-	-docker volume rm corpora-data-portal_database
-	-docker volume rm corpora-data-portal_localstack
-	-docker network rm corpora-data-portal_corporanet
-	-docker network rm corpora-data-portal_default
+	-docker volume rm single-cell-data-portal_database
+	-docker volume rm single-cell-data-portal_localstack
+	-docker network rm single-cell-data-portal_corporanet
+	-docker network rm single-cell-data-portal_default
 
 .PHONY: local-logs
 local-logs: ## Tail the logs of the dev env containers. ex: make local-logs CONTAINER=backend
@@ -173,11 +173,11 @@ local-unit-test-backend: # Run container-unittest target in `backend` Docker con
 			CI=true; \
 		fi; \
 	    docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -e CI $$ci_env -T backend \
-	    bash -c "cd /corpora-data-portal && make container-unittest && if [ \"${CI}\" == "true" ]; then apt-get update && apt-get install -y git && bash <(curl -s https://codecov.io/bash) -cF backend,python,unitTest; fi"; \
+	    bash -c "cd /single-cell-data-portal && make container-unittest && if [ \"${CI}\" == "true" ]; then apt-get update && apt-get install -y git && bash <(curl -s https://codecov.io/bash) -cF backend,python,unitTest; fi"; \
 	else \
 		echo "Running specified backend unit test(s): $(path)"; \
 		docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -T backend \
-		bash -c "cd /corpora-data-portal && python -m unittest $(path)"; \
+		bash -c "cd /single-cell-data-portal && python -m unittest $(path)"; \
 	fi
 
 # Note: If you are manually running this on localhost, you should run `local-rebuild` target first to test latest changes; this is not needed when running in Github Actions
@@ -191,7 +191,7 @@ local-unit-test-processing: # Run processing-unittest target in `processing` Doc
 		CI=true; \
 	fi; \
 	docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -e CI $$ci_env -T processing \
-	bash -c "cd /corpora-data-portal && make processing-unittest && if [ \"${CI}\" == "true" ]; then apt-get update && apt-get install -y git && bash <(curl -s https://codecov.io/bash) -cF backend,python,unitTest; fi";
+	bash -c "cd /single-cell-data-portal && make processing-unittest && if [ \"${CI}\" == "true" ]; then apt-get update && apt-get install -y git && bash <(curl -s https://codecov.io/bash) -cF backend,python,unitTest; fi";
 
 # We optionally pass BOTO_ENDPOINT_URL if it is set, even if it is
 # set to be the empty string.
@@ -215,7 +215,7 @@ local-functional-test: ## Run functional tests in the dev environment
 	fi; \
 	chamber -b secretsmanager exec corpora/backend/$${DEPLOYMENT_STAGE}/auth0-secret -- \
 		docker-compose $(COMPOSE_OPTS) run --rm -T -e CLIENT_ID -e CLIENT_SECRET -e TEST_ACCOUNT_USERNAME -e TEST_ACCOUNT_PASSWORD -e DEPLOYMENT_STAGE -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e AWS_SESSION_TOKEN $${EXTRA_ARGS} \
-		backend bash -c "cd /corpora-data-portal && make container-functionaltest"
+		backend bash -c "cd /single-cell-data-portal && make container-functionaltest"
 
 .PHONY: local-smoke-test
 local-smoke-test: ## Run frontend/e2e tests in the dev environment
@@ -243,4 +243,4 @@ local-uploadfailure: .env.ecr ## Run the upload failure lambda with a dataset id
 
 .PHONY: local-cxguser-cookie
 local-cxguser-cookie: ## Get cxguser-cookie
-	docker-compose $(COMPOSE_OPTS) run --rm backend bash -c "cd /corpora-data-portal && python login.py"
+	docker-compose $(COMPOSE_OPTS) run --rm backend bash -c "cd /single-cell-data-portal && python login.py"
