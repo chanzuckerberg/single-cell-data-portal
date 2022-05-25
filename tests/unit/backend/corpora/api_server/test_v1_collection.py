@@ -1354,7 +1354,7 @@ class TestVerifyCollection(unittest.TestCase):
         verify_collection_body(body, errors)
         self.assertFalse(errors)
 
-    def test_invalid_link(self):
+    def test__link__INVALID(self):
         test_urls = ["://", "google", ".com", "google.com", "https://"]
         for link_type in ProjectLinkType:
             if link_type.name == "DOI":
@@ -1365,5 +1365,18 @@ class TestVerifyCollection(unittest.TestCase):
                     errors = []
                     body = dict(links=link_body)
                     verify_collection_body(body, errors, allow_none=True)
-                    link_body[0]["reason"] = "Invalid URL"
-                    self.assertEqual(link_body, errors)
+                    expected_error = [dict(reason="Invalid URL.", name="links[0]", value=link_body[0])]
+                    self.assertEqual(expected_error, errors)
+
+    def test__link__OK(self):
+        test_urls = ["https://www.google.com", "http://somewhere.org/path/?abcd=123"]
+        for link_type in ProjectLinkType:
+            if link_type.name == "DOI":
+                continue
+            for test_url in test_urls:
+                link_body = [{"link_type": link_type.name, "link_url": test_url}]
+                with self.subTest(link_body):
+                    errors = []
+                    body = dict(links=link_body)
+                    verify_collection_body(body, errors, allow_none=True)
+                    self.assertFalse(errors)
