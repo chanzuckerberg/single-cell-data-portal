@@ -1,5 +1,5 @@
 import sqlalchemy
-from typing import Optional, List
+from typing import Optional
 from backend.corpora.common.providers import crossref_provider
 from backend.corpora.common.providers.crossref_provider import CrossrefDOINotFoundException, CrossrefException
 

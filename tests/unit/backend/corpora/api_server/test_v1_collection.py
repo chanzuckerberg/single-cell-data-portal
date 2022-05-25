@@ -1357,7 +1357,7 @@ class TestVerifyCollection(unittest.TestCase):
     def test_invalid_link(self):
         test_urls = ["://", "google", ".com", "google.com", "https://"]
         for link_type in ProjectLinkType:
-            if link_type.name is "DOI":
+            if link_type.name == "DOI":
                 continue
             for test_url in test_urls:
                 link_body = [{"link_type": link_type.name, "link_url": test_url}]
