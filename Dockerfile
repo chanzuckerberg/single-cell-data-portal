@@ -7,7 +7,7 @@ ENV LC_ALL=C.UTF-8
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && \
-    apt-get install -y python3 libhdf5-dev python3-h5py gettext moreutils build-essential libxml2-dev python3-dev python3-pip zlib1g-dev python3-requests python3-aiohttp llvm jq git && \
+    apt-get install -y python3 libhdf5-dev python3-h5py gettext moreutils build-essential libxml2-dev python3-dev python3-pip zlib1g-dev python3-requests python3-aiohttp llvm jq && \
     rm -rf /var/lib/apt/lists/*
 
 # Make python3 the default 'python' executable.
@@ -22,7 +22,6 @@ RUN grep -v requirements.txt requirements.txt > reqs.txt \
     && cat requirements-api.txt >> reqs.txt \
     && python3 -m pip install -r reqs.txt
 EXPOSE 5000
-
 
 # Install utilities to /corpora-data-portal so we can run db migrations.
 ADD tests /single-cell-data-portal/tests
