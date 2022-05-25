@@ -176,7 +176,17 @@ def get_publisher_metadata(provider, doi):
 email_regex = re.compile(r"(.+)@(.+)\.(.+)")
 
 
-def verify_collection_body(body: dict, errors: list, allow_none: bool = False) -> List[str]:
+def verify_collection_links(body: dict, errors: list) -> None:
+    for link in body.get("links", []):
+        try:
+            result = urlparse(link["link_url"])
+        except ValueError:
+            errors.append({"link_type": link["link_type"], "link_name": link["link_url"], "reason": "Invalid URL"})
+        if not all([result.scheme, result.netloc]):
+            errors.append({"link_type": link["link_type"], "link_name": link["link_url"], "reason": "Invalid URL"})
+
+
+def verify_collection_body(body: dict, errors: list, allow_none: bool = False) -> None:
     result = email_regex.match(body.get("contact_email", ""))
     if not result and not allow_none:
         errors.append({"name": "contact_email", "reason": "Invalid format."})
@@ -189,7 +199,8 @@ def verify_collection_body(body: dict, errors: list, allow_none: bool = False) -
 
     if not body.get("contact_name") and not allow_none:  # Check if contact_name is None or 0 length
         errors.append({"name": "contact_name", "reason": "Cannot be blank."})
-    return errors
+
+    verify_collection_links(body, errors)
 
 
 @dbconnect
