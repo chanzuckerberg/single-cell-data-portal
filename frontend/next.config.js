@@ -42,9 +42,13 @@ const defaultSecureHeaders = {
 
 // unsafe-eval is required for next-mdx-remote
 const docSiteScriptSrc = [...SCRIPT_SRC, "'unsafe-eval'"];
+// Required for google slides iframe
+const docSiteFrameSrc = ["https://docs.google.com"];
 const docSiteSecureHeaders = cloneDeep(defaultSecureHeaders);
 docSiteSecureHeaders.contentSecurityPolicy.directives.scriptSrc =
   docSiteScriptSrc;
+docSiteSecureHeaders.contentSecurityPolicy.directives.frameSrc =
+  docSiteFrameSrc;
 
 module.exports = {
   eslint: { dirs: ["doc-site", "pages", "components", "lib"] },

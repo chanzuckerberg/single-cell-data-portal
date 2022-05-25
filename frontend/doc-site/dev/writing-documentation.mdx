@@ -45,14 +45,30 @@ We can also override the default markdown renderer to render our own components 
 
 - next/Image
 
+  - ```typescript
+    <Image src={"/doc-site/poly.jpg"} width={250} height={250} />
+    ```
+
+- EmbeddedGoogleSlides
+
+  - ```typescript
+    <EmbeddedGoogleSlides src="https://docs.google.com/presentation/d/e/2PACX-1vQzA99mYecRu0Y5v--QsUCAuoTJFxo7VIhApCB-E669-00KCKww8AumBZcX0pwV41qHIuLRTsL7AckB/embed?start=false&loop=true&delayms=3000" />
+    ```
+
 #### Images
 
-You can add images to the documentation by adding files to the public directory(`corpora-data-portal/frontend/public/doc-site`) and then display it in MDX using the `<Image/>` component from Next.js (`![](/doc-site/image.png)`).
+You can add images to the documentation by adding files to the public directory(`single-cell-data-portal/frontend/public/doc-site`) and then display it in MDX using the `<Image/>` component from Next.js (`![](/doc-site/image.png)`).
 
 <div align="center">
   <Image src={"/doc-site/poly.jpg"} width={250} height={250} />
   Example image
 </div>
+
+#### Embedded Google Slides
+
+You can embed a google slide iframe using the `<EmbeddedGoogleSlides/>` component. Just extract the source url from the published iframe on google slides and pass it in the `src` prop.
+
+<EmbeddedGoogleSlides src="https://docs.google.com/presentation/d/e/2PACX-1vQzA99mYecRu0Y5v--QsUCAuoTJFxo7VIhApCB-E669-00KCKww8AumBZcX0pwV41qHIuLRTsL7AckB/embed?start=false&loop=true&delayms=3000" />
 
 ### Deleting a page
 

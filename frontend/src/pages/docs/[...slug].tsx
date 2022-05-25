@@ -8,6 +8,7 @@ import Image from "next/image";
 import NextLink from "next/link";
 import pathTool from "path";
 import { memo } from "react";
+import EmbeddedGoogleSlides from "src/components/EmbeddedGoogleSlides";
 import styled from "styled-components";
 
 const DOC_SITE_FOLDER_NAME = "doc-site";
@@ -147,7 +148,10 @@ const DocContent = styled.div`
   margin: 16px;
 `;
 
-const components = { Image };
+const components = {
+  EmbeddedGoogleSlides,
+  Image,
+};
 const DocPage = ({ mdxSource, filePath }: Props) => {
   return (
     <StyledDocsLayout>
