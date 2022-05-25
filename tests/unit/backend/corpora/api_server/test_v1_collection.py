@@ -1365,7 +1365,7 @@ class TestVerifyCollection(unittest.TestCase):
                     errors = []
                     body = dict(links=link_body)
                     verify_collection_body(body, errors, allow_none=True)
-                    expected_error = [dict(reason="Invalid URL.", name="links[0]", value=link_body[0])]
+                    expected_error = [dict(reason="Invalid URL.", name="links[0]", value=link_body[0]["link_url"])]
                     self.assertEqual(expected_error, errors)
 
     def test__link__OK(self):

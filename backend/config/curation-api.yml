@@ -779,11 +779,13 @@ components:
             type: array
             items:
               type: object
-              additionalProperties: true
               properties:
                 name:
                   type: string
                   description: the errant parameter
+                value:
+                  type: string
+                  description: the errant value
                 reason:
                   type: string
                   description: the specific problem with the parameter

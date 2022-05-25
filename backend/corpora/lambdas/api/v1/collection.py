@@ -177,18 +177,19 @@ email_regex = re.compile(r"(.+)@(.+)\.(.+)")
 
 
 def verify_collection_links(body: dict, errors: list) -> None:
-    def _error_message(i: int, l: dict) -> dict:
-        return {"name": f"links[{i}]", "reason": f"Invalid URL.", "value": l}
+    def _error_message(i: int, _url: str) -> dict:
+        return {"name": f"links[{i}]", "reason": f"Invalid URL.", "value": _url}
 
     for index, link in enumerate(body.get("links", [])):
         if link["link_type"] == ProjectLinkType.DOI.name:
             continue
+        url = link["link_url"]
         try:
-            result = urlparse(link["link_url"].strip())
+            result = urlparse(url.strip())
         except ValueError:
-            errors.append(_error_message(index, link))
+            errors.append(_error_message(index, url))
         if not all([result.scheme, result.netloc]):
-            errors.append(_error_message(index, link))
+            errors.append(_error_message(index, url))
 
 
 def verify_collection_body(body: dict, errors: list, allow_none: bool = False) -> None:
