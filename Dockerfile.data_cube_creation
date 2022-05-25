@@ -18,7 +18,7 @@ ADD backend/corpora single-cell-data-portal/backend/corpora
 RUN mv  /single-cell-curation/cellxgene_schema_cli/cellxgene_schema/ontology_files single-cell-data-portal/backend/
 RUN rm -rf /single-cell-curation
 
-RUN pip3 install -r single-cell-data-portal/backend/wmg/requirements.txt
+# RUN pip3 install -r single-cell-data-portal/backend/wmg/requirements.txt
 
 ARG HAPPY_BRANCH="unknown"
 ARG HAPPY_COMMIT=""

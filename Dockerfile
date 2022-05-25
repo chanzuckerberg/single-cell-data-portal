@@ -25,8 +25,8 @@ EXPOSE 5000
 
 # install ontology files in consistent location
 RUN git clone https://github.com/chanzuckerberg/single-cell-curation.git
-RUN mkdir -p /backend/ontology_files
-RUN mv single-cell-data-portal/single-cell-curation/cellxgene_schema_cli/cellxgene_schema/ontology_files/* ./backend/ontology_files/.
+RUN mkdir -p backend/ontology_files
+RUN mv  single-cell-curation/cellxgene_schema_cli/cellxgene_schema/ontology_files/* backend/ontology_files
 RUN rm -rf single-cell-curation
 
 
