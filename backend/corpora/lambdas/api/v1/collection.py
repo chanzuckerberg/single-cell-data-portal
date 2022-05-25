@@ -104,8 +104,7 @@ def get_collections_index():
     return make_response(jsonify(updated_collection), 200)
 
 
-@dbconnect
-def post_collection_revision(collection_uuid: str, token_info: dict):
+def post_collection_revision_common(collection_uuid: str, token_info: dict):
     db_session = g.db_session
     collection = get_collection(
         db_session,
@@ -118,8 +117,13 @@ def post_collection_revision(collection_uuid: str, token_info: dict):
     except sqlalchemy.exc.IntegrityError as ex:
         db_session.rollback()
         raise ConflictException() from ex
-    result = collection_revision.reshape_for_api()
+    return collection_revision
 
+
+@dbconnect
+def post_collection_revision(collection_uuid: str, token_info: dict):
+    collection_revision = post_collection_revision_common(collection_uuid, token_info)
+    result = collection_revision.reshape_for_api()
     result["access_type"] = "WRITE"
     return make_response(jsonify(result), 201)
 
