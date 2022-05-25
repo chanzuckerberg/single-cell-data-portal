@@ -23,7 +23,7 @@ RUN grep -v requirements.txt requirements.txt > reqs.txt \
     && python3 -m pip install -r reqs.txt
 EXPOSE 5000
 
-# Install utilities to /corpora-data-portal so we can run db migrations.
+# Install utilities to /single-cell-data-portal so we can run db migrations.
 ADD tests /single-cell-data-portal/tests
 ADD scripts /single-cell-data-portal/scripts
 ADD backend /single-cell-data-portal/backend
