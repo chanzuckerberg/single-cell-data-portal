@@ -39,9 +39,7 @@ class TestWmgApi(unittest.TestCase):
 
         data = secondary_filter_common_case_request_data.copy()
         data["snapshot_id"] = self.data["snapshot_id"]
-        res = requests.post(
-            f"{self.api}/query", data=json.dumps(data), headers=headers
-        )
+        res = requests.post(f"{self.api}/query", data=json.dumps(data), headers=headers)
         self.assertEqual(res.status_code, requests.codes.ok)
         self.assertGreater(len(res.content), 10)
 
@@ -53,8 +51,6 @@ class TestWmgApi(unittest.TestCase):
         headers = {"Content-Type": "application/json"}
         data = secondary_filter_extreme_case_request_data.copy()
         data["snapshot_id"] = self.data["snapshot_id"]
-        res = requests.post(
-            f"{self.api}/query", data=json.dumps(data), headers=headers
-        )
+        res = requests.post(f"{self.api}/query", data=json.dumps(data), headers=headers)
         self.assertEqual(res.status_code, requests.codes.ok)
         self.assertGreater(len(res.content), 10)
