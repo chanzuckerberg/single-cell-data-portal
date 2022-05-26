@@ -5,46 +5,52 @@ from backend.corpora.common.providers.crossref_provider import CrossrefDOINotFou
 
 from flask import make_response, jsonify, g
 from urllib.parse import urlparse
+import re
 
 import logging
 
-from ....common.corpora_orm import DbCollection, CollectionVisibility
+from .common import get_collection
+from ....common.corpora_orm import DbCollection, CollectionVisibility, ProjectLinkType
 from ....common.entities import Collection
-from ....common.utils.exceptions import InvalidParametersHTTPException, ForbiddenHTTPException, ConflictException
+from .authorization import is_user_owner_or_allowed, owner_or_allowed
+from ....common.utils.http_exceptions import (
+    InvalidParametersHTTPException,
+    ConflictException,
+)
 from ....api_server.db import dbconnect
-from backend.corpora.lambdas.api.v1.authorization import has_scope
-
-
-def _is_user_owner_or_allowed(user, owner):
-    """
-    Check if the user has ownership on a collection, or if it has superuser permissions
-    """
-    return (user and user == owner) or (has_scope("write:collections"))
-
-
-def _owner_or_allowed(user):
-    """
-    Returns None if the user is superuser, `user` otherwise. Used for where conditions
-    """
-    return None if has_scope("write:collections") else user
 
 
 @dbconnect
-def get_collections_list(from_date: int = None, to_date: int = None, user: Optional[str] = None):
+def get_collections_list(from_date: int = None, to_date: int = None, token_info: Optional[dict] = None):
     db_session = g.db_session
     all_collections = Collection.list_attributes_in_time_range(
         db_session,
         from_date=from_date,
         to_date=to_date,
-        list_attributes=[DbCollection.id, DbCollection.visibility, DbCollection.owner, DbCollection.created_at],
+        list_attributes=[
+            DbCollection.id,
+            DbCollection.visibility,
+            DbCollection.owner,
+            DbCollection.created_at,
+            DbCollection.revision_of,
+        ],
     )
 
     collections = []
     for coll_dict in all_collections:
         visibility = coll_dict["visibility"]
         owner = coll_dict["owner"]
-        if visibility == CollectionVisibility.PUBLIC or _is_user_owner_or_allowed(user, owner):
+        if visibility == CollectionVisibility.PUBLIC:
             collections.append(dict(id=coll_dict["id"], created_at=coll_dict["created_at"], visibility=visibility.name))
+        elif is_user_owner_or_allowed(token_info, owner):
+            collections.append(
+                dict(
+                    id=coll_dict["id"],
+                    created_at=coll_dict["created_at"],
+                    visibility=visibility.name,
+                    revision_of=coll_dict["revision_of"],
+                )
+            )
 
     result = {"collections": collections}
     if from_date:
@@ -55,27 +61,21 @@ def get_collections_list(from_date: int = None, to_date: int = None, user: Optio
     return make_response(jsonify(result), 200)
 
 
-def get_collection(db_session, collection_uuid, visibility, **kwargs):
-    collection = Collection.get_collection(db_session, collection_uuid, visibility, **kwargs)
-    if not collection:
-        raise ForbiddenHTTPException()
-    return collection
-
-
 @dbconnect
-def get_collection_details(collection_uuid: str, visibility: str, user: str):
+def get_collection_details(collection_uuid: str, token_info: dict):
     db_session = g.db_session
-    collection = get_collection(db_session, collection_uuid, visibility, include_tombstones=True)
-    if collection.tombstone and visibility == CollectionVisibility.PUBLIC.name:
+    collection = get_collection(db_session, collection_uuid, include_tombstones=True)
+    if collection.tombstone:
         result = ""
         response = 410
     else:
         get_tombstone_datasets = (
-            _is_user_owner_or_allowed(user, collection.owner) and collection.visibility == CollectionVisibility.PRIVATE
+            is_user_owner_or_allowed(token_info, collection.owner)
+            and collection.visibility == CollectionVisibility.PRIVATE
         )
         result = collection.reshape_for_api(get_tombstone_datasets)
         response = 200
-        result["access_type"] = "WRITE" if _is_user_owner_or_allowed(user, collection.owner) else "READ"
+        result["access_type"] = "WRITE" if is_user_owner_or_allowed(token_info, collection.owner) else "READ"
     return make_response(jsonify(result), response)
 
 
@@ -104,48 +104,60 @@ def get_collections_index():
     return make_response(jsonify(updated_collection), 200)
 
 
-@dbconnect
-def post_collection_revision(collection_uuid: str, user: str):
+def post_collection_revision_common(collection_uuid: str, token_info: dict):
     db_session = g.db_session
     collection = get_collection(
         db_session,
         collection_uuid,
-        CollectionVisibility.PUBLIC.name,
-        owner=_owner_or_allowed(user),
+        visibility=CollectionVisibility.PUBLIC,
+        owner=owner_or_allowed(token_info),
     )
     try:
-        collection_revision = collection.revision()
+        collection_revision = collection.create_revision()
     except sqlalchemy.exc.IntegrityError as ex:
         db_session.rollback()
         raise ConflictException() from ex
-    result = collection_revision.reshape_for_api()
+    return collection_revision
 
+
+@dbconnect
+def post_collection_revision(collection_uuid: str, token_info: dict):
+    collection_revision = post_collection_revision_common(collection_uuid, token_info)
+    result = collection_revision.reshape_for_api()
     result["access_type"] = "WRITE"
     return make_response(jsonify(result), 201)
 
 
-def normalize_and_get_doi(body):
+doi_regex = re.compile(r"^10.\d{4,9}/[-._;()/:A-Z0-9]+$", flags=re.I)
+
+
+def normalize_and_get_doi(body: dict, errors: list) -> Optional[str]:
     """
     1. Check for DOI uniqueness in the payload
     2. Normalizes it so that the DOI is always a link (starts with https://doi.org)
     3. Returns the newly normalized DOI
     """
     links = body.get("links", [])
-    dois = [link for link in links if link["link_type"] == "DOI"]
+    dois = [link for link in links if link["link_type"] == ProjectLinkType.DOI.name]
 
     if not dois:
         return None
 
     # Verify that a single DOI exists
     if len(dois) > 1:
-        raise InvalidParametersHTTPException("Can only specify a single DOI")
+        errors.append({"link_type": ProjectLinkType.DOI.name, "reason": "Can only specify a single DOI"})
+        return None
 
     doi_node = dois[0]
     doi = doi_node["link_url"]
 
     parsed = urlparse(doi)
     if not parsed.scheme and not parsed.netloc:
-        doi_node["link_url"] = f"https://doi.org/{parsed.path}"
+        parsed_doi = parsed.path
+        if not doi_regex.match(parsed_doi):
+            errors.append({"link_type": ProjectLinkType.DOI.name, "reason": "Invalid DOI"})
+            return None
+        doi_node["link_url"] = f"https://doi.org/{parsed_doi}"
 
     return doi
 
@@ -165,11 +177,50 @@ def get_publisher_metadata(provider, doi):
         return None
 
 
-@dbconnect
-def create_collection(body: object, user: str):
-    db_session = g.db_session
+email_regex = re.compile(r"(.+)@(.+)\.(.+)")
 
-    doi = normalize_and_get_doi(body)
+
+def verify_collection_links(body: dict, errors: list) -> None:
+    def _error_message(i: int, _url: str) -> dict:
+        return {"name": f"links[{i}]", "reason": "Invalid URL.", "value": _url}
+
+    for index, link in enumerate(body.get("links", [])):
+        if link["link_type"] == ProjectLinkType.DOI.name:
+            continue
+        url = link["link_url"]
+        try:
+            result = urlparse(url.strip())
+        except ValueError:
+            errors.append(_error_message(index, url))
+        if not all([result.scheme, result.netloc]):
+            errors.append(_error_message(index, url))
+
+
+def verify_collection_body(body: dict, errors: list, allow_none: bool = False) -> None:
+    result = email_regex.match(body.get("contact_email", ""))
+    if not result and not allow_none:
+        errors.append({"name": "contact_email", "reason": "Invalid format."})
+
+    if not body.get("description") and not allow_none:  # Check if description is None or 0 length
+        errors.append({"name": "description", "reason": "Cannot be blank."})
+
+    if not body.get("name") and not allow_none:  # Check if name is None or 0 length
+        errors.append({"name": "name", "reason": "Cannot be blank."})
+
+    if not body.get("contact_name") and not allow_none:  # Check if contact_name is None or 0 length
+        errors.append({"name": "contact_name", "reason": "Cannot be blank."})
+
+    verify_collection_links(body, errors)
+
+
+@dbconnect
+def create_collection(body: dict, user: str):
+    db_session = g.db_session
+    errors = []
+    verify_collection_body(body, errors)
+    doi = normalize_and_get_doi(body, errors)
+    if errors:
+        raise InvalidParametersHTTPException(detail=errors)
     if doi is not None:
         provider = crossref_provider.CrossrefProvider()
         publisher_metadata = get_publisher_metadata(provider, doi)
@@ -192,64 +243,46 @@ def create_collection(body: object, user: str):
     return make_response(jsonify({"collection_uuid": collection.id}), 201)
 
 
-def get_collection_dataset(dataset_uuid: str):
-    raise NotImplementedError
-
-
 @dbconnect
-def delete_collection(collection_uuid: str, visibility: str, user: str):
-    db_session = g.db_session
-    if visibility == CollectionVisibility.PUBLIC.name:
-        pub_collection = Collection.get_collection(
-            db_session,
-            collection_uuid,
-            visibility,
-            owner=_owner_or_allowed(user),
-            include_tombstones=True,
-        )
-        priv_collection = Collection.get_collection(
-            db_session,
-            collection_uuid,
-            CollectionVisibility.PRIVATE.name,
-            owner=_owner_or_allowed(user),
-            include_tombstones=True,
-        )
-
-        if pub_collection:
-            if not pub_collection.tombstone:
-                pub_collection.tombstone_collection()
-            if priv_collection:
-                if not priv_collection.tombstone:
-                    priv_collection.delete()
-            return "", 204
-    else:
-        priv_collection = Collection.get_collection(
-            db_session,
-            collection_uuid,
-            CollectionVisibility.PRIVATE.name,
-            owner=_owner_or_allowed(user),
-            include_tombstones=True,
-        )
-        if priv_collection:
-            if not priv_collection.tombstone:
-                priv_collection.delete()
-            return "", 204
-    return "", 403
-
-
-@dbconnect
-def update_collection(collection_uuid: str, body: dict, user: str):
+def delete_collection(collection_uuid: str, token_info: dict):
     db_session = g.db_session
     collection = get_collection(
         db_session,
         collection_uuid,
-        CollectionVisibility.PRIVATE.name,
-        owner=_owner_or_allowed(user),
+        owner=owner_or_allowed(token_info),
+        include_tombstones=True,
+    )
+    if collection.visibility == CollectionVisibility.PUBLIC:
+        revision = Collection.get_collection(
+            db_session,
+            revision_of=collection_uuid,
+            owner=owner_or_allowed(token_info),
+        )
+        if revision:
+            revision.delete()
+        collection.tombstone_collection()
+    else:
+        collection.delete()
+    return "", 204
+
+
+@dbconnect
+def update_collection(collection_uuid: str, body: dict, token_info: dict):
+    db_session = g.db_session
+    errors = []
+    verify_collection_body(body, errors, allow_none=True)
+    collection = get_collection(
+        db_session,
+        collection_uuid,
+        visibility=CollectionVisibility.PRIVATE.name,
+        owner=owner_or_allowed(token_info),
     )
 
     # Compute the diff between old and new DOI
     old_doi = collection.get_doi()
-    new_doi = normalize_and_get_doi(body)
+    new_doi = normalize_and_get_doi(body, errors)
+    if errors:
+        raise InvalidParametersHTTPException(detail=errors)
 
     if old_doi and not new_doi:
         # If the DOI was deleted, remove the publisher_metadata field

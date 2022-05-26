@@ -4,13 +4,13 @@ from ....common.corpora_orm import CollectionVisibility, DatasetArtifactFileType
 from ....common.entities import Dataset, Collection
 from ....common.entities.geneset import GenesetDatasetLink
 from ....api_server.db import dbconnect
-from ....common.utils.exceptions import (
+from ....common.utils.http_exceptions import (
     NotFoundHTTPException,
     ServerErrorHTTPException,
     ForbiddenHTTPException,
-    CorporaException,
 )
-from backend.corpora.lambdas.api.v1.collection import _owner_or_allowed
+from ....common.utils.exceptions import CorporaException
+from .authorization import owner_or_allowed
 
 
 @dbconnect
@@ -57,7 +57,7 @@ def get_dataset_assets(dataset_uuid: str):
 
 
 @dbconnect
-def get_status(dataset_uuid: str, user: str):
+def get_status(dataset_uuid: str, token_info: dict):
     db_session = g.db_session
     dataset = Dataset.get(db_session, dataset_uuid)
     if not dataset:
@@ -66,7 +66,7 @@ def get_status(dataset_uuid: str, user: str):
         db_session,
         dataset.collection.id,
         dataset.collection.visibility,
-        owner=_owner_or_allowed(user),
+        owner=owner_or_allowed(token_info),
     )
     if not collection:
         raise ForbiddenHTTPException()
@@ -79,12 +79,12 @@ def get_status(dataset_uuid: str, user: str):
 @dbconnect
 def get_datasets_index():
     db_session = g.db_session
-    datasets = Dataset.list_for_index(db_session)
+    datasets = Collection.list_public_datasets_for_index(db_session)
     return make_response(jsonify(datasets), 200)
 
 
 @dbconnect
-def delete_dataset(dataset_uuid: str, user: str):
+def delete_dataset(dataset_uuid: str, token_info: dict):
     """
     Deletes an existing dataset or cancels an in progress upload.
     """
@@ -95,12 +95,11 @@ def delete_dataset(dataset_uuid: str, user: str):
     collection = Collection.get_collection(
         db_session,
         dataset.collection.id,
-        dataset.collection.visibility,
-        owner=_owner_or_allowed(user),
+        owner=owner_or_allowed(token_info),
     )
     if not collection:
         raise ForbiddenHTTPException()
-    if dataset.collection_visibility == CollectionVisibility.PUBLIC:
+    if dataset.collection.visibility == CollectionVisibility.PUBLIC:
         return make_response(jsonify("Can not delete a public dataset"), 405)
     if dataset.tombstone is False:
         if dataset.published:
@@ -108,7 +107,7 @@ def delete_dataset(dataset_uuid: str, user: str):
         else:
             if dataset.original_id:
                 original = Dataset.get(db_session, dataset.original_id)
-                original.create_revision()
+                original.create_revision(dataset.collection.id)
             dataset.asset_deletion()
             dataset.delete()
     return "", 202
@@ -127,20 +126,20 @@ def get_dataset_identifiers(url: str):
         "s3_uri": s3_uri,
         "dataset_id": dataset.id,
         "collection_id": dataset.collection_id,
-        "collection_visibility": dataset.collection_visibility,
+        "collection_visibility": dataset.collection.visibility,
         "tombstoned": dataset.tombstone,
     }
     return make_response(jsonify(dataset_identifiers), 200)
 
 
 @dbconnect
-def post_dataset_gene_sets(dataset_uuid: str, body: object, user: str):
+def post_dataset_gene_sets(dataset_uuid: str, body: object, token_info: dict):
     db_session = g.db_session
     dataset = Dataset.get(db_session, dataset_uuid)
     if not dataset:
         raise ForbiddenHTTPException()
     collection = Collection.get_collection(
-        db_session, dataset.collection.id, CollectionVisibility.PRIVATE.name, owner=_owner_or_allowed(user)
+        db_session, dataset.collection.id, CollectionVisibility.PRIVATE.name, owner=owner_or_allowed(token_info)
     )
     if not collection:
         raise ForbiddenHTTPException()
@@ -153,7 +152,6 @@ def post_dataset_gene_sets(dataset_uuid: str, body: object, user: str):
         x.to_dict(
             remove_attr=[
                 "collection",
-                "collection_visibility",
                 "collection_id",
                 "created_at",
                 "updated_at",

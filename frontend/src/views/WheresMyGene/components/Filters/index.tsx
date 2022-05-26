@@ -2,14 +2,19 @@ import {
   ComplexFilter,
   ComplexFilterInputDropdown,
   DefaultMenuSelectOption,
+  InputDropdownProps,
+  Tooltip,
 } from "czifui";
 import isEqual from "lodash/isEqual";
 import {
+  Fragment,
   memo,
+  ReactElement,
   useCallback,
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { EMPTY_ARRAY, EMPTY_OBJECT } from "src/common/constants/utils";
@@ -20,19 +25,27 @@ import {
 import { DispatchContext, StateContext } from "../../common/store";
 import { selectFilters } from "../../common/store/actions";
 import { Filters as IFilters } from "../../common/types";
-import { StyledComplexFilterInputDropdown } from "./style";
+import Sort from "./components/Sort";
+import { StyledComplexFilterInputDropdown, Wrapper } from "./style";
+
+/**
+ * NOTE(thuang): Update this count to match the amount of filters we render,
+ * so that we don't accidentally clear filters when people collapse the sidebar
+ */
+const FILTERS_COUNT = 4;
 
 const MenuSelectProps = {
   getOptionSelected,
 };
 
 export default memo(function Filters(): JSX.Element {
+  const readyFilterCount = useRef(0);
   const dispatch = useContext(DispatchContext);
   const state = useContext(StateContext);
   const [availableFilters, setAvailableFilters] =
     useState<Partial<FilterDimensions>>(EMPTY_OBJECT);
 
-  const { selectedFilters } = state;
+  const { selectedFilters, selectedTissues, selectedGenes } = state;
 
   const {
     datasets: datasetIds,
@@ -51,6 +64,15 @@ export default memo(function Filters(): JSX.Element {
     },
     isLoading: rawIsLoading,
   } = useFilterDimensions({ includeAllFilterOptions: true });
+
+  const areFiltersDisabled = !selectedTissues.length || !selectedGenes.length;
+
+  const InputDropdownProps = useMemo(() => {
+    return {
+      disabled: areFiltersDisabled,
+      sdsStyle: "minimal",
+    } as Partial<InputDropdownProps>;
+  }, [areFiltersDisabled]);
 
   // (thuang): We only update available filters when API call is done,
   // otherwise when `useFilterDimensions()` is still loading, its filters
@@ -106,6 +128,18 @@ export default memo(function Filters(): JSX.Element {
       return (options: DefaultMenuSelectOption[] | null): void => {
         if (!dispatch || !options) return;
 
+        /**
+         * (thuang): We don't want to dispatch empty selection at the following
+         * times:
+         * 1. At mount
+         * 2. When we have just loaded available filter options
+         * Thus, FILTERS_COUNT * 2 (conditions)
+         */
+        if (readyFilterCount.current !== FILTERS_COUNT * 2) {
+          readyFilterCount.current++;
+          return;
+        }
+
         dispatch(
           selectFilters(
             key,
@@ -114,7 +148,7 @@ export default memo(function Filters(): JSX.Element {
         );
       };
     },
-    [dispatch]
+    [dispatch, readyFilterCount]
   );
 
   const handleDatasetsChange = useMemo(
@@ -138,53 +172,72 @@ export default memo(function Filters(): JSX.Element {
   );
 
   return (
-    <div>
-      <ComplexFilter
-        multiple
-        label="Dataset"
-        options={datasets as unknown as DefaultMenuSelectOption[]}
-        onChange={handleDatasetsChange}
-        value={selectedDatasets as unknown as DefaultMenuSelectOption[]}
-        InputDropdownComponent={
-          StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
-        }
-        MenuSelectProps={MenuSelectProps}
-      />
-      <ComplexFilter
-        multiple
-        label="Disease"
-        options={disease_terms}
-        onChange={handleDiseasesChange}
-        value={selectedDiseases}
-        InputDropdownComponent={
-          StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
-        }
-        MenuSelectProps={MenuSelectProps}
-      />
-      <ComplexFilter
-        multiple
-        label="Ethnicity"
-        options={ethnicity_terms}
-        onChange={handleEthnicitiesChange}
-        value={selectedEthnicities}
-        InputDropdownComponent={
-          StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
-        }
-        MenuSelectProps={MenuSelectProps}
-      />
-      <ComplexFilter
-        multiple
-        label="Sex"
-        options={sex_terms}
-        onChange={handleSexesChange}
-        value={selectedSexes}
-        InputDropdownComponent={
-          StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
-        }
-        MenuSelectProps={MenuSelectProps}
-      />
-    </div>
+    <TooltipWrapper>
+      <Wrapper>
+        <div>
+          <ComplexFilter
+            multiple
+            label="Dataset"
+            options={datasets as unknown as DefaultMenuSelectOption[]}
+            onChange={handleDatasetsChange}
+            value={selectedDatasets as unknown as DefaultMenuSelectOption[]}
+            InputDropdownComponent={
+              StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
+            }
+            MenuSelectProps={MenuSelectProps}
+            InputDropdownProps={InputDropdownProps}
+          />
+          <ComplexFilter
+            multiple
+            label="Disease"
+            options={disease_terms}
+            onChange={handleDiseasesChange}
+            value={selectedDiseases}
+            InputDropdownComponent={
+              StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
+            }
+            MenuSelectProps={MenuSelectProps}
+            InputDropdownProps={InputDropdownProps}
+          />
+          <ComplexFilter
+            multiple
+            label="Ethnicity"
+            options={ethnicity_terms}
+            onChange={handleEthnicitiesChange}
+            value={selectedEthnicities}
+            InputDropdownComponent={
+              StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
+            }
+            MenuSelectProps={MenuSelectProps}
+            InputDropdownProps={InputDropdownProps}
+          />
+          <ComplexFilter
+            multiple
+            label="Sex"
+            options={sex_terms}
+            onChange={handleSexesChange}
+            value={selectedSexes}
+            InputDropdownComponent={
+              StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
+            }
+            MenuSelectProps={MenuSelectProps}
+            InputDropdownProps={InputDropdownProps}
+          />
+        </div>
+        <Sort areFiltersDisabled={areFiltersDisabled} />
+      </Wrapper>
+    </TooltipWrapper>
   );
+
+  function TooltipWrapper({ children }: { children: ReactElement }) {
+    const Wrapper = areFiltersDisabled ? Tooltip : Fragment;
+
+    return (
+      <Wrapper title="Please select an organism, tissue and at least one gene to use these filters.">
+        {children}
+      </Wrapper>
+    );
+  }
 });
 
 function getOptionSelected(

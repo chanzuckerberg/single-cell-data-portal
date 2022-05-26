@@ -1,6 +1,6 @@
 from collections import defaultdict
-from functools import cache
 from typing import Dict, List, Any, Iterable
+from math import isnan
 
 import connexion
 from flask import jsonify
@@ -22,31 +22,9 @@ from backend.wmg.data.snapshot import load_snapshot, WmgSnapshot
 #  -portal/2132
 
 
-@cache
 def primary_filter_dimensions():
     snapshot: WmgSnapshot = load_snapshot()
-    qry = WmgQuery(snapshot)
-
-    # gene terms are grouped by organism, and represented as a nested lists in dict, keyed by organism
-    organism_gene_ids: dict[str, List[str]] = qry.list_grouped_primary_filter_dimensions_term_ids(
-        "gene_ontology_term_id", group_by_dim="organism_ontology_term_id"
-    )
-    organism_gene_terms = {
-        organism_term_id: build_gene_id_label_mapping(gene_term_ids)
-        for organism_term_id, gene_term_ids in organism_gene_ids.items()
-    }
-
-    result = dict(
-        snapshot_id=snapshot.snapshot_identifier,
-        organism_terms=build_ontology_term_id_label_mapping(
-            qry.list_primary_filter_dimension_term_ids("organism_ontology_term_id")
-        ),
-        tissue_terms=build_ontology_term_id_label_mapping(
-            qry.list_primary_filter_dimension_term_ids("tissue_ontology_term_id")
-        ),
-        gene_terms=organism_gene_terms,
-    )
-    return jsonify(result)
+    return jsonify(snapshot.primary_filter_dimensions)
 
 
 def query():
@@ -175,18 +153,49 @@ def build_ordered_cell_types_by_tissue(
 ) -> Dict[str, List[Dict[str, str]]]:
     distinct_tissues_cell_types: DataFrame = cell_counts.groupby(
         ["tissue_ontology_term_id", "cell_type_ontology_term_id"], as_index=False
-    ).first()[["tissue_ontology_term_id", "cell_type_ontology_term_id"]]
+    ).first()[["tissue_ontology_term_id", "cell_type_ontology_term_id", "n_total_cells"]]
 
-    joined = distinct_tissues_cell_types.merge(
-        cell_type_orderings, on=["tissue_ontology_term_id", "cell_type_ontology_term_id"]
+    joined = cell_type_orderings.merge(
+        distinct_tissues_cell_types, on=["tissue_ontology_term_id", "cell_type_ontology_term_id"], how="left"
     )
-    sorted = joined.sort_values(by=["tissue_ontology_term_id", "order"])
+
+    # Updates depths based on the rows that need to be removed
+    joined = build_ordered_cell_types_by_tissue_update_depths(joined)
+
+    # Remove cell types without counts
+    joined = joined[joined["n_total_cells"].notnull()]
 
     structured_result: Dict[str, List[Dict[str, str]]] = defaultdict(list)
-
-    for row in sorted.itertuples(index=False):
+    for row in joined.itertuples(index=False):
         structured_result[row.tissue_ontology_term_id].append(
-            {row.cell_type_ontology_term_id: ontology_term_label(row.cell_type_ontology_term_id)}
+            {
+                "cell_type_ontology_term_id": row.cell_type_ontology_term_id,
+                "cell_type": ontology_term_label(row.cell_type_ontology_term_id),
+                "depth": row.depth,
+            }
         )
 
     return structured_result
+
+
+def build_ordered_cell_types_by_tissue_update_depths(x: DataFrame):
+    """
+    Updates the depths of the cell ontology tree based on cell types that have to be removed
+    because they have 0 counts
+    """
+
+    depth_col = x.columns.get_loc("depth")
+    n_cells_col = x.columns.get_loc("n_total_cells")
+
+    x["depth"] = x["depth"].astype("int")
+
+    for i in range(len(x)):
+        if isnan(x.iloc[i, n_cells_col]):
+            original_depth = x.iloc[i, depth_col]
+            for j in range(i + 1, len(x)):
+                if original_depth < x.iloc[j, depth_col]:
+                    x.iloc[j, depth_col] -= 1
+                else:
+                    break
+
+    return x

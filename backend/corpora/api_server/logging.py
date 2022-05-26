@@ -9,13 +9,13 @@ from pythonjsonlogger.jsonlogger import merge_record_extra
 
 
 # The fields to log using the json logger.
-LOGGED_FIELDS = ['levelname', 'asctime', 'name', 'message']
-LOG_FORMAT = ' '.join([f"%({field})" for field in LOGGED_FIELDS])
+LOGGED_FIELDS = ["levelname", "asctime", "name", "message"]
+LOG_FORMAT = " ".join([f"%({field})" for field in LOGGED_FIELDS])
 
 
 class JsonFormatter(jsonlogger.JsonFormatter):
-    default_time_format = '%Y-%m-%dT%H:%M:%S'
-    default_msec_format = '%s.%03dZ'
+    default_time_format = "%Y-%m-%dT%H:%M:%S"
+    default_msec_format = "%s.%03dZ"
 
     converter = time.gmtime
 
@@ -29,8 +29,7 @@ class JsonFormatter(jsonlogger.JsonFormatter):
         """
 
         self._required_fields += [field for field in fields if field not in self._required_fields]
-        self._skip_fields = dict(zip(self._required_fields,
-                                     self._required_fields))
+        self._skip_fields = dict(zip(self._required_fields, self._required_fields))
 
     def set_required_fields(self, fields: List[str]) -> None:
         """
@@ -41,8 +40,7 @@ class JsonFormatter(jsonlogger.JsonFormatter):
         :return:
         """
         self._required_fields = fields
-        self._skip_fields = dict(zip(self._required_fields,
-                                     self._required_fields))
+        self._skip_fields = dict(zip(self._required_fields, self._required_fields))
 
     def add_fields(self, log_record: dict, record: LogRecord, message_dict: dict) -> None:
         """
@@ -64,28 +62,28 @@ class JsonFormatter(jsonlogger.JsonFormatter):
 
 gunicorn_logger = logging.getLogger("gunicorn.error")
 
-dictConfig({
-    'version': 1,
-    'formatters': {'default': {
-        'format': LOG_FORMAT,
-        '()': JsonFormatter,
-    }},
-    'handlers': {
-        'wsgi': {
-            'class': 'logging.StreamHandler',
-            'stream': 'ext://flask.logging.wsgi_errors_stream',
-            'formatter': 'default'
+dictConfig(
+    {
+        "version": 1,
+        "formatters": {
+            "default": {
+                "format": LOG_FORMAT,
+                "()": JsonFormatter,
+            }
         },
-        'exceptions':{
-            'class': 'logging.StreamHandler',
-            'stream': 'ext://sys.stderr',
-            'formatter': 'default',
-            'level': 'ERROR'
-        }
-    },
-    'root': {
-        'level': gunicorn_logger.level,
-        'handlers': ['wsgi', 'exceptions']
+        "handlers": {
+            "wsgi": {
+                "class": "logging.StreamHandler",
+                "stream": "ext://flask.logging.wsgi_errors_stream",
+                "formatter": "default",
+            },
+            "exceptions": {
+                "class": "logging.StreamHandler",
+                "stream": "ext://sys.stderr",
+                "formatter": "default",
+                "level": "ERROR",
+            },
+        },
+        "root": {"level": gunicorn_logger.level, "handlers": ["wsgi", "exceptions"]},
     }
-}
 )

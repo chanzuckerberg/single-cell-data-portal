@@ -1,4 +1,4 @@
-import { interpolatePlasma } from "d3-scale-chromatic";
+import { interpolateMagma } from "d3-scale-chromatic";
 import {
   DatasetComponentOption,
   DefaultLabelFormatterCallbackParams,
@@ -18,6 +18,8 @@ import {
 export const MAX_FIRST_PART_LENGTH_PX = 16;
 export const X_AXIS_CHART_HEIGHT_PX = 80;
 export const Y_AXIS_CHART_WIDTH_PX = 300;
+
+const MAX_DEPTH = 2;
 
 const Y_AXIS_BOTTOM_PADDING = "10px";
 
@@ -87,7 +89,7 @@ export function createChartOptions({
               ? scaledMeanExpression
               : meanExpression / MAX_MEAN_EXPRESSION_VALUE;
 
-            return interpolatePlasma(1 - expressionValue);
+            return interpolateMagma(1 - expressionValue);
           },
         },
         symbolSize: function (props: { percentage: number }) {
@@ -230,7 +232,7 @@ export function createYAxisOptions({
     ...COMMON_OPTIONS,
     grid: {
       bottom: Y_AXIS_BOTTOM_PADDING,
-      left: "300px",
+      left: "20px",
       right: 0,
       top: 0,
     },
@@ -258,14 +260,19 @@ export function createYAxisOptions({
     yAxis: [
       {
         axisLabel: {
+          align: "left",
           formatter(value: number | string) {
-            const { name } = deserializeCellTypeMetadata(
+            const { name, depth = 0 } = deserializeCellTypeMetadata(
               value as CellTypeMetadata
             );
 
+            const displayDepth = Math.min(depth, MAX_DEPTH);
+
+            const paddedName = " ".repeat(displayDepth * 8) + name;
+
             return cellTypeIdsToDelete.includes(value as string)
-              ? `{selected|${name}}`
-              : name;
+              ? `{selected|${paddedName}}`
+              : paddedName;
           },
           // Turn off type checking here, because ecahrts' type is wrong
           ["overflow" as string]: "truncate",
@@ -359,7 +366,7 @@ export function dataToChartFormat({
 }
 
 const HEAT_MAP_BASE_WIDTH_PX = 500;
-const HEAT_MAP_BASE_HEIGHT_PX = 300;
+export const HEAT_MAP_BASE_HEIGHT_PX = 300;
 const HEAT_MAP_BASE_CELL_PX = 20;
 
 /**
@@ -383,10 +390,10 @@ export function getHeatmapHeight(cellTypes: CellType[] = EMPTY_ARRAY): number {
 }
 
 /**
- * Value format: `${id}~${tissue}~${name}`
+ * Value format: `${id}~${tissue}~${name}~${depth}`
  */
 export type CellTypeMetadata =
-  `${CellTypeSummary["id"]}~${Tissue}~${CellTypeSummary["name"]}`;
+  `${CellTypeSummary["id"]}~${Tissue}~${CellTypeSummary["name"]}~${number}`;
 
 /**
  * We need to encode cell type metadata here, so we can use it in onClick event
@@ -395,8 +402,8 @@ export function getAllSerializedCellTypeMetadata(
   cellTypes: CellType[],
   tissue: Tissue
 ): CellTypeMetadata[] {
-  return cellTypes.map(({ id, name }) => {
-    return `${id}~${tissue}~${name}` as CellTypeMetadata;
+  return cellTypes.map(({ id, name, depth }) => {
+    return `${id}~${tissue}~${name}~${depth}` as CellTypeMetadata;
   });
 }
 
@@ -406,10 +413,12 @@ export function deserializeCellTypeMetadata(
   id: string;
   name: string;
   tissue: Tissue;
+  depth: number;
 } {
-  const [id, tissue, name] = cellTypeMetadata.split("~");
+  const [id, tissue, name, depth] = cellTypeMetadata.split("~");
 
   return {
+    depth: Number(depth),
     id,
     name,
     tissue,

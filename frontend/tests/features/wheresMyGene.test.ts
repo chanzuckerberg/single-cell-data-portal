@@ -1,22 +1,21 @@
 import { ElementHandle } from "playwright";
 import { ROUTES } from "src/common/constants/routes";
 import { goToPage, tryUntil } from "tests/utils/helpers";
-import { TEST_URL } from "../common/constants";
+import { TEST_ENV, TEST_URL } from "../common/constants";
 import { getTestID, getText } from "../utils/selectors";
 
-// DEBUG
-// DEBUG
-// DEBUG
-// Temporarily skip WMG tests until BE API is available on deployed envs
-// const TEST_ENVS = ["dev", "staging"];
+//(thuang): BE API doesn't work in local happy
+const TEST_ENVS = ["dev", "staging", "prod"];
 
-// const describeIfDevOrStaging = TEST_ENVS.includes(TEST_ENV)
-//   ? describe
-//   : describe.skip;
+const GENE_LABELS_ID = "gene-labels";
+const CELL_TYPE_LABELS_ID = "cell-type-labels";
 
-// describeIfDevOrStaging("Where's My Gene", () => {
-describe.skip("Where's My Gene", () => {
-  it("renders the expected elements", async () => {
+const describeIfDevStagingProd = TEST_ENVS.includes(TEST_ENV)
+  ? describe
+  : describe.skip;
+
+describeIfDevStagingProd("Where's My Gene", () => {
+  it("renders the getting started UI", async () => {
     await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`);
 
     // Getting Started section
@@ -51,7 +50,6 @@ describe.skip("Where's My Gene", () => {
     const filtersPanel = await page.$("*css=div >> text=Filters");
 
     await expect(filtersPanel).toHaveSelector(getText("Dataset"));
-    await expect(filtersPanel).toHaveSelector(getText("Development Stage"));
     await expect(filtersPanel).toHaveSelector(getText("Disease"));
     await expect(filtersPanel).toHaveSelector(getText("Ethnicity"));
     await expect(filtersPanel).toHaveSelector(getText("Sex"));
@@ -68,60 +66,214 @@ describe.skip("Where's My Gene", () => {
     await expect(InfoPanel).toHaveSelector(getText("Source Data"));
   });
 
-  test("Filters", async () => {
+  test("Filters and Heatmap", async () => {
     await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`);
 
-    const filtersPanel = await page.$("*css=div >> text=Filters");
-
-    if (!filtersPanel) {
-      throw Error("Filters panel not found");
+    async function getTissueSelectorButton() {
+      return page.$(getTestID("add-tissue"));
     }
 
-    const sexSelector = await filtersPanel.$("*css=div >> text=Sex");
-
-    const sexSelectorButton = await filtersPanel.$("*css=button >> text=Sex");
-
-    if (!sexSelector || !sexSelectorButton) {
-      throw Error("Dataset selector or button not found");
+    async function getGeneSelectorButton() {
+      return page.$(getTestID("add-gene"));
     }
 
-    const selectedSexesBefore = await sexSelector.$$(".MuiChip-root");
-
-    await expect(selectedSexesBefore.length).toBe(0);
-
-    await clickUntilOptionsShowUp(sexSelectorButton);
-
+    await clickUntilOptionsShowUp(getTissueSelectorButton);
     await selectFirstOption();
 
-    const selectedSexesAfter = await sexSelector.$$(".MuiChip-root");
-
-    await expect(selectedSexesAfter.length).toBe(1);
-  });
-
-  test("Heatmap", async () => {
-    await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`);
-
-    const geneSelectorButton = await page.$(getTestID("add-gene"));
-
-    if (!geneSelectorButton) {
-      throw Error("Gene selector button not found");
-    }
-
-    await clickUntilOptionsShowUp(geneSelectorButton);
-
+    await clickUntilOptionsShowUp(getGeneSelectorButton);
     await selectFirstOption();
 
     await tryUntil(async () => {
       const canvases = await page.$$("canvas");
       await expect(canvases.length).not.toBe(0);
     });
+
+    const sexSelector = await getSexSelector();
+
+    if (!sexSelector) throw Error("No sexSelector found");
+
+    const selectedSexesBefore = await sexSelector.$$(".MuiChip-root");
+
+    await expect(selectedSexesBefore.length).toBe(0);
+
+    await clickUntilOptionsShowUp(getSexSelectorButton);
+
+    await selectFirstOption();
+
+    const selectedSexesAfter = await sexSelector.$$(".MuiChip-root");
+
+    await expect(selectedSexesAfter.length).toBe(1);
+
+    async function getFiltersPanel() {
+      return page.$(getTestID("filters-panel"));
+    }
+
+    async function getSexSelector() {
+      const filtersPanel = await getFiltersPanel();
+
+      if (!filtersPanel) {
+        throw Error("Filters panel not found");
+      }
+
+      return filtersPanel.$("*css=div >> text=Sex");
+    }
+
+    async function getSexSelectorButton() {
+      const filtersPanel = await getFiltersPanel();
+
+      if (!filtersPanel) {
+        throw Error("Filters panel not found");
+      }
+
+      await filtersPanel.$("*css=div >> text=Sex");
+      return filtersPanel.$("*css=button >> text=Sex");
+    }
+  });
+
+  test("Hierarchical Clustering", async () => {
+    await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`);
+
+    async function getTissueSelectorButton() {
+      return page.$(getTestID("add-tissue"));
+    }
+
+    async function getGeneSelectorButton() {
+      return page.$(getTestID("add-gene"));
+    }
+
+    const TISSUE_COUNT = 1;
+    const GENE_COUNT = 3;
+
+    await clickUntilOptionsShowUp(getTissueSelectorButton);
+    await selectFirstNOptions(TISSUE_COUNT);
+
+    await clickUntilOptionsShowUp(getGeneSelectorButton);
+    await selectFirstNOptions(GENE_COUNT);
+
+    const beforeGeneNames = await getNames(`${getTestID(GENE_LABELS_ID)} text`);
+
+    const beforeCellTypeNames = await getNames(
+      `${getTestID(CELL_TYPE_LABELS_ID)} text`
+    );
+
+    expect(beforeGeneNames.length).toBe(GENE_COUNT);
+    expect(beforeCellTypeNames.length).toBeGreaterThan(0);
+
+    const cellTypeSortDropdown = await page.locator(
+      getTestID("cell-type-sort-dropdown")
+    );
+    await cellTypeSortDropdown.click();
+    await selectNthOption(2);
+
+    const geneSortDropdown = await page.locator(
+      getTestID("gene-sort-dropdown")
+    );
+    await geneSortDropdown.click();
+    await selectNthOption(2);
+
+    const afterGeneNames = await getNames(`${getTestID(GENE_LABELS_ID)} text`);
+
+    const afterCellTypeNames = await getNames(
+      `${getTestID(CELL_TYPE_LABELS_ID)} text`
+    );
+
+    await tryUntil(async () => {
+      expect(afterGeneNames.length).toBe(beforeGeneNames.length);
+      expect(afterCellTypeNames.length).toBe(beforeCellTypeNames.length);
+
+      expect(afterGeneNames).not.toEqual(beforeGeneNames);
+      expect(afterCellTypeNames).not.toEqual(beforeCellTypeNames);
+    });
+  });
+
+  test("delete genes and cell types", async () => {
+    await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`);
+
+    async function getTissueSelectorButton() {
+      return page.$(getTestID("add-tissue"));
+    }
+
+    async function getGeneSelectorButton() {
+      return page.$(getTestID("add-gene"));
+    }
+
+    await clickUntilOptionsShowUp(getTissueSelectorButton);
+    await selectFirstNOptions(3);
+
+    await clickUntilOptionsShowUp(getGeneSelectorButton);
+    await selectFirstNOptions(3);
+
+    await tryUntil(async () => {
+      const canvases = await page.$$("canvas");
+      await expect(canvases.length).not.toBe(0);
+    });
+
+    const beforeGeneNames = await getNames(`${getTestID(GENE_LABELS_ID)} text`);
+    const beforeCellTypeNames = await getNames(
+      `${getTestID(CELL_TYPE_LABELS_ID)} text`
+    );
+
+    await page.click(getText(beforeGeneNames[0]));
+    await page.click(getText(beforeCellTypeNames[0]));
+
+    await tryUntil(async () => {
+      await page.focus(getTestID(GENE_LABELS_ID));
+      await page.keyboard.press("Backspace");
+
+      const afterGeneNames = await getNames(
+        `${getTestID(GENE_LABELS_ID)} text`
+      );
+      const afterCellTypeNames = await getNames(
+        `${getTestID(CELL_TYPE_LABELS_ID)} text`
+      );
+
+      expect(afterGeneNames.length).toBe(beforeGeneNames.length - 1);
+      expect(afterCellTypeNames.length).toBe(beforeCellTypeNames.length - 1);
+
+      expect(afterGeneNames).not.toEqual(beforeGeneNames);
+      expect(afterCellTypeNames).not.toEqual(beforeCellTypeNames);
+    });
+
+    const RESET_CELL_TYPES_BUTTON_ID = "reset-cell-types";
+
+    await tryUntil(async () => {
+      await page.click(getTestID(RESET_CELL_TYPES_BUTTON_ID));
+
+      const resetCellTypesButton = await page.$(
+        getTestID(RESET_CELL_TYPES_BUTTON_ID)
+      );
+
+      expect(resetCellTypesButton).toBe(null);
+    });
+
+    await tryUntil(async () => {
+      const afterCellTypeNames = await getNames(
+        `${getTestID(CELL_TYPE_LABELS_ID)} text`
+      );
+
+      expect(afterCellTypeNames.length).toBe(beforeCellTypeNames.length);
+      expect(afterCellTypeNames).toEqual(beforeCellTypeNames);
+    });
   });
 });
 
+async function getNames(selector: string): Promise<string[]> {
+  const geneLabelsLocator = await page.locator(selector);
+
+  await tryUntil(async () => {
+    const names = await geneLabelsLocator.allTextContents();
+    expect(typeof names[0]).toBe("string");
+  });
+
+  return geneLabelsLocator.allTextContents();
+}
+
 async function clickUntilOptionsShowUp(
-  target: ElementHandle<SVGElement | HTMLElement> | null
+  getTarget: () => Promise<ElementHandle<SVGElement | HTMLElement> | null>
 ) {
   await tryUntil(async () => {
+    const target = await getTarget();
+
     if (!target) throw Error("no target");
 
     await target.click();
@@ -137,7 +289,23 @@ async function clickUntilOptionsShowUp(
 
 // (thuang): This only works when a dropdown is open
 async function selectFirstOption() {
-  await page.keyboard.press("ArrowDown");
+  await selectFirstNOptions(1);
+}
+
+async function selectFirstNOptions(count: number) {
+  for (let i = 0; i < count; i++) {
+    await page.keyboard.press("ArrowDown");
+    await page.keyboard.press("Enter");
+  }
+
+  await page.keyboard.press("Escape");
+}
+
+async function selectNthOption(number: number) {
+  for (let i = 0; i < number; i++) {
+    await page.keyboard.press("ArrowDown");
+  }
+
   await page.keyboard.press("Enter");
   await page.keyboard.press("Escape");
 }

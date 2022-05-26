@@ -2,21 +2,22 @@ import itertools
 import json
 import unittest
 from datetime import datetime
-from backend.corpora.common.providers.crossref_provider import CrossrefDOINotFoundException, CrossrefFetchException
+from unittest.mock import patch
 
 from furl import furl
-
-from unittest.mock import patch
 
 from backend.corpora.common.corpora_orm import (
     CollectionVisibility,
     UploadStatus,
     generate_uuid,
+    ProjectLinkType,
 )
 from backend.corpora.common.entities import Collection
-from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
+from backend.corpora.common.providers.crossref_provider import CrossrefDOINotFoundException, CrossrefFetchException
+from backend.corpora.lambdas.api.v1.collection import verify_collection_body
 from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest, BasicAuthAPITestCurator
 from tests.unit.backend.corpora.api_server.mock_auth import get_auth_token
+from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
 
 
 def generate_mock_publisher_metadata(journal_override=None):
@@ -81,7 +82,6 @@ class TestCollection(BaseAuthAPITest):
                 "created_at",
                 "updated_at",
                 "collection_id",
-                "collection_visibility",
                 "is_valid",
                 "cell_count",
             ]
@@ -182,7 +182,6 @@ class TestCollection(BaseAuthAPITest):
                     "name": "test_dataset_name",
                     "organism": [{"label": "test_organism", "ontology_term_id": "test_obo"}],
                     "collection_id": "test_collection_id",
-                    "collection_visibility": "PUBLIC",
                     "cell_type": [{"label": "test_cell_type", "ontology_term_id": "test_opo"}],
                     "x_normalization": "test_x_normalization",
                     "x_approximate_distribution": "NORMAL",
@@ -214,7 +213,6 @@ class TestCollection(BaseAuthAPITest):
             "genesets": [
                 {
                     "collection_id": "test_collection_id",
-                    "collection_visibility": "PUBLIC",
                     "linked_datasets": [],
                     "description": "this is a geneset",
                     "id": "test_geneset",
@@ -222,7 +220,6 @@ class TestCollection(BaseAuthAPITest):
                 },
                 {
                     "collection_id": "test_collection_id",
-                    "collection_visibility": "PUBLIC",
                     "linked_datasets": ["test_dataset_id"],
                     "description": "this is a geneset with a dataset",
                     "id": "test_geneset_with_dataset",
@@ -326,7 +323,6 @@ class TestCollection(BaseAuthAPITest):
                 "datasets": [
                     {
                         "collection_id": collection.id,
-                        "collection_visibility": "PUBLIC",
                         "dataset_assets": [],
                         "dataset_deployments": [],
                         "linked_genesets": [],
@@ -358,10 +354,6 @@ class TestCollection(BaseAuthAPITest):
             # should keep stricter data types, but JSON doesn't support Enums and therefore have to be converted
             # as strings.
             self.assertEqual(expected_body.pop("visibility").name, actual_body.pop("visibility"))
-            self.assertEqual(
-                expected_body["datasets"][0].pop("collection_visibility").name,
-                actual_body["datasets"][0].pop("collection_visibility"),
-            )
             self.assertEqual(
                 expected_body["datasets"][0].pop("x_approximate_distribution").name,
                 actual_body["datasets"][0].pop("x_approximate_distribution"),
@@ -508,7 +500,7 @@ class TestCollection(BaseAuthAPITest):
         self.assertEqual(400, response.status_code)
 
     @patch("backend.corpora.common.providers.crossref_provider.CrossrefProvider.fetch_metadata")
-    def test__post_collection_rejects_invalid_doi(self, mock_provider):
+    def test__post_collection_rejects_doi_not_in_crossref(self, mock_provider):
         mock_provider.side_effect = CrossrefDOINotFoundException("Mocked CrossrefDOINotFoundException")
         test_url = furl(path="/dp/v1/collections/")
         data = {
@@ -527,6 +519,25 @@ class TestCollection(BaseAuthAPITest):
         self.assertEqual(400, response.status_code)
         error_payload = json.loads(response.data)
         self.assertEqual(error_payload["detail"], "DOI cannot be found on Crossref")
+
+    def test__post_collection_rejects_invalid_doi(self):
+        test_url = furl(path="/dp/v1/collections/")
+        data = {
+            "name": "collection name",
+            "description": "This is a test collection",
+            "contact_name": "person human",
+            "contact_email": "person@human.com",
+            "links": [{"link_name": "DOI Link", "link_url": "invalid/doi", "link_type": "DOI"}],
+        }
+        json_data = json.dumps(data)
+        response = self.app.post(
+            test_url.url,
+            headers={"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)},
+            data=json_data,
+        )
+        self.assertEqual(400, response.status_code)
+        error_payload = json.loads(response.data)
+        self.assertEqual([{"link_type": "DOI", "reason": "Invalid DOI"}], error_payload["detail"])
 
     @patch("backend.corpora.common.providers.crossref_provider.CrossrefProvider.fetch_metadata")
     def test__post_collection_ignores_metadata_if_crossref_exception(self, mock_provider):
@@ -737,6 +748,15 @@ class TestCollection(BaseAuthAPITest):
         private_not_owned = self.generate_collection(
             self.session, visibility=CollectionVisibility.PRIVATE.name, owner="someone else"
         ).id
+        revision_not_owned = self.generate_collection(
+            self.session,
+            visibility=CollectionVisibility.PRIVATE.name,
+            owner="someone else",
+            revision_of=public_not_owned,
+        ).id
+        revision_owned = self.generate_collection(
+            self.session, visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id", revision_of=public_owned
+        ).id
 
         path = "/dp/v1/collections"
         with self.subTest("no auth"):
@@ -751,6 +771,7 @@ class TestCollection(BaseAuthAPITest):
             self.assertIn(public_not_owned, ids)
             self.assertNotIn(private_owned, ids)
             self.assertNotIn(private_not_owned, ids)
+            self.assertNotIn(revision_owned, ids)
 
         with self.subTest("auth"):
             headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
@@ -764,6 +785,11 @@ class TestCollection(BaseAuthAPITest):
             self.assertIn(public_not_owned, ids)
             self.assertIn(private_owned, ids)
             self.assertNotIn(private_not_owned, ids)
+            self.assertNotIn(revision_not_owned, ids)
+            self.assertIn(revision_owned, ids)
+            self.assertTrue(
+                [collection for collection in collections if collection.get("revision_of") == public_owned][0]
+            )
 
     @unittest.skip("Flaky")  # TODO @mdunitz ticket 2223
     def test__get_all_collections_for_index(self):
@@ -802,6 +828,42 @@ class TestCollection(BaseAuthAPITest):
         self.assertEqual(actual_collection["published_at"], collection.published_at.timestamp())
         self.assertEqual(actual_collection["revised_at"], collection.revised_at.timestamp())
         self.assertEqual(actual_collection["publisher_metadata"], collection.publisher_metadata)
+
+    def test__create_collection__InvalidParameters_DOI(self):
+        tests = [
+            (
+                dict(
+                    name="not blank",
+                    description="description",
+                    contact_name="some name",
+                    contact_email="robot@email.com",
+                    links=[{"link_type": "DOI", "link_url": "bad_doi"}],
+                ),
+                [
+                    {"link_type": "DOI", "reason": "Invalid DOI"},
+                ],
+            ),
+            (
+                dict(
+                    name="not blank",
+                    description="description",
+                    contact_name="some name",
+                    contact_email="robot@email.com",
+                    links=[
+                        {"link_type": "DOI", "link_url": "doi:duplicated"},
+                        {"link_type": "DOI", "link_url": "doi:duplicated"},
+                    ],
+                ),
+                [{"link_type": "DOI", "reason": "Can only specify a single DOI"}],
+            ),
+        ]
+        for body, expected_errors in tests:
+            with self.subTest(body):
+                headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+                response = self.app.post("/dp/v1/collections", headers=headers, data=json.dumps(body))
+                self.assertEqual(400, response.status_code)
+                for error in expected_errors:
+                    self.assertIn(error, response.json["detail"])
 
 
 class TestCollectionDeletion(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
@@ -844,24 +906,24 @@ class TestCollectionDeletion(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         for bucket, key in s3_objects:
             self.assertS3FileDoesNotExist(bucket, key)
 
-    def test_tombstone_collection_revision__ok(self):
+    def test_delete_collection_revision__ok(self):
         # Generate test collection
         collection = self.generate_collection(
-            self.session, visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id"
+            self.session, visibility=CollectionVisibility.PUBLIC.name, owner="test_user_id"
         )
         # Generate the public collection with the same id as the private so a tombstone is created
-        self.generate_collection(
-            self.session, id=collection.id, visibility=CollectionVisibility.PUBLIC.name, owner="test_user_id"
+        revision = self.generate_collection(
+            self.session, visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id", revision_of=collection.id
         )
 
         processing_status_1 = {"upload_status": UploadStatus.WAITING, "upload_progress": 0.0}
         processing_status_2 = {"upload_status": UploadStatus.UPLOADED, "upload_progress": 100.0}
 
-        dataset_1 = self.generate_dataset(self.session, collection=collection, processing_status=processing_status_1)
-        dataset_2 = self.generate_dataset(self.session, collection=collection, processing_status=processing_status_2)
+        dataset_1 = self.generate_dataset(self.session, collection=revision, processing_status=processing_status_1)
+        dataset_2 = self.generate_dataset(self.session, collection=revision, processing_status=processing_status_2)
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
-        test_private_url = furl(path=f"/dp/v1/collections/{collection.id}", query_params=dict(visibility="PRIVATE"))
-        test_public_url = furl(path=f"/dp/v1/collections/{collection.id}", query_params=dict(visibility="PUBLIC"))
+        test_private_url = furl(path=f"/dp/v1/collections/{revision.id}")
+        test_public_url = furl(path=f"/dp/v1/collections/{collection.id}")
         response = self.app.get(test_private_url.url, headers=headers)
         self.assertEqual(200, response.status_code)
 
@@ -885,27 +947,24 @@ class TestCollectionDeletion(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
 
     def test_tombstone_published_collection_with_revision__ok(self):
         """Both the published and revised collections are tombstoned."""
+        # Generate the public collection
+        collection = self.generate_collection(
+            self.session, visibility=CollectionVisibility.PUBLIC.name, owner="test_user_id"
+        )
         # Generate test collection
-        collection_rev = self.generate_collection(
-            self.session, visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id"
+        revision = self.generate_collection(
+            self.session, visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id", revision_of=collection.id
         )
-        # Generate the public collection with the same id as the private so a tombstone is created
-        collection_pub = self.generate_collection(
-            self.session, id=collection_rev.id, visibility=CollectionVisibility.PUBLIC.name, owner="test_user_id"
-        )
+        revision_id = revision.id
 
         processing_status = {"upload_status": UploadStatus.UPLOADED, "upload_progress": 100.0}
 
-        dataset_rev = self.generate_dataset(
-            self.session, collection=collection_rev, processing_status=processing_status
-        )
-        dataset_pub = self.generate_dataset(
-            self.session, collection=collection_pub, processing_status=processing_status
-        )
+        dataset_rev = self.generate_dataset(self.session, collection=revision, processing_status=processing_status)
+        dataset_pub = self.generate_dataset(self.session, collection=collection, processing_status=processing_status)
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
 
         # Verify private collections exist
-        test_private_url = furl(path=f"/dp/v1/collections/{collection_rev.id}", query_params=dict(visibility="PRIVATE"))
+        test_private_url = furl(path=f"/dp/v1/collections/{revision.id}", query_params=dict(visibility="PRIVATE"))
         response = self.app.get(test_private_url.url, headers=headers)
         self.assertEqual(200, response.status_code)
         body = json.loads(response.data)
@@ -913,7 +972,7 @@ class TestCollectionDeletion(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         self.assertIn(dataset_rev.id, dataset_ids)
 
         # Verify public collections exist
-        test_public_url = furl(path=f"/dp/v1/collections/{collection_pub.id}", query_params=dict(visibility="PUBLIC"))
+        test_public_url = furl(path=f"/dp/v1/collections/{collection.id}", query_params=dict(visibility="PUBLIC"))
         response = self.app.get(test_public_url.url, headers=headers)
         self.assertEqual(200, response.status_code)
         body = json.loads(response.data)
@@ -924,7 +983,7 @@ class TestCollectionDeletion(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         response = self.app.delete(test_public_url.url, headers=headers)
         self.assertEqual(response.status_code, 204)
 
-        # check collection revision and datasets tombstoned
+        # check collection revision and datasets are gone
         response = self.app.get(test_private_url.url, headers=headers)
         self.assertEqual(response.status_code, 403)
 
@@ -934,29 +993,31 @@ class TestCollectionDeletion(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
 
         self.session.expire_all()
         collection = Collection.get_collection(
-            self.session, collection_pub.id, CollectionVisibility.PUBLIC.name, include_tombstones=True
+            self.session, collection.id, CollectionVisibility.PUBLIC.name, include_tombstones=True
         )
         self.assertTrue(collection.tombstone)
         self.assertTrue(dataset_pub.tombstone)
+        rev_collection = Collection.get_collection(self.session, revision_id, include_tombstones=True)
+        self.assertIsNone(rev_collection)  # Revision should be deleted, not tombstoned
 
     def test_delete_collection__dataset_not_available(self):
-        # Generate test collection
+        # Generate the public collection
         collection = self.generate_collection(
-            self.session, visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id"
+            self.session, visibility=CollectionVisibility.PUBLIC.name, owner="test_user_id", tombstone=True
         )
-        # Generate the public collection with the same id as the private so a tombstone is created
-        self.generate_collection(
-            self.session, id=collection.id, visibility=CollectionVisibility.PUBLIC.name, owner="test_user_id"
+        # Generate test collection
+        revision = self.generate_collection(
+            self.session, visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id", revision_of=collection.id
         )
         processing_status = {"upload_status": UploadStatus.UPLOADED, "upload_progress": 100.0}
 
-        dataset = self.generate_dataset(self.session, collection=collection, processing_status=processing_status)
+        dataset = self.generate_dataset(self.session, collection=revision, processing_status=processing_status)
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
         dataset_url = furl(path=f"/dp/v1/datasets/{dataset.id}/status")
         response = self.app.get(dataset_url.url, headers=headers)
         self.assertEqual(response.status_code, 200)
 
-        test_url = furl(path=f"/dp/v1/collections/{collection.id}", query_params=dict(visibility="PRIVATE"))
+        test_url = furl(path=f"/dp/v1/collections/{revision.id}", query_params=dict(visibility="PRIVATE"))
         response = self.app.delete(test_url.url, headers=headers)
 
         self.assertEqual(response.status_code, 204)
@@ -965,13 +1026,15 @@ class TestCollectionDeletion(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         self.assertEqual(response.status_code, 403)
 
     def test_delete_collection__already_tombstoned__ok(self):
+        # Generate the public collection
         collection = self.generate_collection(
-            self.session, visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id", tombstone=True
+            self.session, visibility=CollectionVisibility.PUBLIC.name, owner="test_user_id", tombstone=True
         )
-        # Generate the public collection with the same id as the private so a tombstone is created
+        # Generate test collection
         self.generate_collection(
-            self.session, id=collection.id, visibility=CollectionVisibility.PUBLIC.name, owner="test_user_id"
+            self.session, visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id", revision_of=collection.id
         )
+
         test_url = furl(path=f"/dp/v1/collections/{collection.id}", query_params=dict(visibility="PRIVATE"))
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
         response = self.app.delete(test_url.url, headers=headers)
@@ -983,7 +1046,6 @@ class TestCollectionDeletion(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         )
 
         test_urls = [
-            furl(path=f"/dp/v1/collections/{collection.id}", query_params=dict(visibility="PUBLIC")),
             furl(path=f"/dp/v1/collections/{collection.id}"),
         ]
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
@@ -1001,7 +1063,7 @@ class TestCollectionDeletion(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         collection = self.generate_collection(
             self.session, visibility=CollectionVisibility.PRIVATE.name, owner="someone_else"
         )
-        test_url = furl(path=f"/dp/v1/collections/{collection.id}", query_params=dict(visibility="PRIVATE"))
+        test_url = furl(path=f"/dp/v1/collections/{collection.id}")
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
         response = self.app.delete(test_url.url, headers=headers)
         self.assertEqual(response.status_code, 403)
@@ -1113,7 +1175,7 @@ class TestUpdateCollection(BaseAuthAPITest):
 
         # all together
         links = [
-            {"link_name": "Link 1", "link_url": "This is a new link", "link_type": "OTHER"},
+            {"link_name": "Link 1", "link_url": "http://link.com", "link_type": "OTHER"},
             {"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"},
         ]
         data = json.dumps({"links": links})
@@ -1258,3 +1320,63 @@ class TestCollectionsCurators(BasicAuthAPITestCurator):
         test_url = furl(path=f"/dp/v1/collections/{collection.id}", query_params=dict(visibility="PRIVATE"))
         response = self.app.delete(test_url.url, headers=headers)
         self.assertEqual(204, response.status_code)
+
+
+class TestVerifyCollection(unittest.TestCase):
+    def test_blank_body(self):
+        body = dict()
+        with self.subTest("allow_none=False"):
+            errors = []
+            verify_collection_body(body, errors)
+            self.assertIn({"name": "description", "reason": "Cannot be blank."}, errors)
+            self.assertIn({"name": "name", "reason": "Cannot be blank."}, errors)
+            self.assertIn({"name": "contact_name", "reason": "Cannot be blank."}, errors)
+            self.assertIn({"name": "contact_email", "reason": "Invalid format."}, errors)
+        with self.subTest("allow_none:True"):
+            errors = []
+            verify_collection_body(body, errors, allow_none=True)
+            self.assertFalse(errors)
+
+    def test_invalid_email(self):
+        bad_emails = ["@.", "", "email@.", "@place.com", "email@.com", "email@place."]
+        body = dict(name="something", contact_name="a name", description="description")
+
+        for email in bad_emails:
+            with self.subTest(email):
+                body["contect_email"] = email
+                errors = []
+                verify_collection_body(body, errors)
+                self.assertEqual([{"name": "contact_email", "reason": "Invalid format."}], errors)
+
+    def test_OK(self):
+        body = dict(name="something", contact_name="a name", description="description", contact_email="email@place.com")
+        errors = []
+        verify_collection_body(body, errors)
+        self.assertFalse(errors)
+
+    def test__link__INVALID(self):
+        test_urls = ["://", "google", ".com", "google.com", "https://"]
+        for link_type in ProjectLinkType:
+            if link_type.name == "DOI":
+                continue
+            for test_url in test_urls:
+                link_body = [{"link_type": link_type.name, "link_url": test_url}]
+                with self.subTest(link_body):
+                    errors = []
+                    body = dict(links=link_body)
+                    verify_collection_body(body, errors, allow_none=True)
+                    expected_error = [dict(reason="Invalid URL.", name="links[0]", value=link_body[0]["link_url"])]
+                    self.assertEqual(expected_error, errors)
+
+    def test__link__OK(self):
+        test_urls = ["https://www.google.com", "http://somewhere.org/path/?abcd=123"]
+        for link_type in ProjectLinkType:
+            if link_type.name == "DOI":
+                continue
+            for test_url in test_urls:
+                link_body = [{"link_type": link_type.name, "link_url": test_url}]
+                with self.subTest(link_body):
+                    errors = []
+                    body = dict(links=link_body)
+                    verify_collection_body(body, errors, allow_none=True)
+                    self.assertFalse(errors)

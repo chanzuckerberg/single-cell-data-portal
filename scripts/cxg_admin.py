@@ -769,6 +769,57 @@ def refresh_preprint_doi(ctx):
                     print(e)
 
 
+@cli.command()
+@click.pass_context
+def cxg_remaster(ctx):
+    """Cxg remaster"""
+
+    with db_session_manager() as session:
+        click.confirm(
+            f"Are you sure you want to remaster all the cxgs?",
+            abort=True,
+        )
+
+        import boto3
+
+        client = boto3.client("stepfunctions")
+        from time import time, sleep
+
+        for record in session.query(DbDataset):
+            if not record.tombstone:
+                dataset = Dataset.get(session, dataset_uuid=record.id)
+                artifacts = [a.s3_uri for a in dataset.artifacts if a.filetype == DatasetArtifactFileType.CXG]
+                if len(artifacts) > 0:
+                    cxg = artifacts[0]
+
+                    p = urlparse(cxg)
+                    bucket = p.hostname
+                    dataset_id = p.path.strip("/").strip(".cxg")
+
+                    if dataset_id == "2e5273bd-aa36-4478-8f6f-62fa0abcea43":
+                        continue
+
+                    if bucket != "hosted-cellxgene-dev":
+                        continue
+
+                    print(bucket, dataset_id)
+
+                    input = {"dataset_uuid": dataset_id}
+
+                    aws_account_id = get_aws_account_id()
+                    deployment = ctx.obj["deployment"]
+                    happy_stack_name = get_happy_stack_name(deployment)
+
+                    response = client.start_execution(
+                        stateMachineArn=f"arn:aws:states:us-west-2:{aws_account_id}:stateMachine:dp-{happy_stack_name}-cxg-remaster-sfn",
+                        name=f"{dataset_id}-{int(time())}",
+                        input=json.dumps(input),
+                    )
+
+                    print(response["executionArn"])
+                    sleep(1)
+
+
 def get_database_uri() -> str:
     uri = urlparse(CorporaDbConfig().database_uri)
     uri = uri._replace(netloc="@".join([uri[1].split("@")[0], "localhost:5432"]))

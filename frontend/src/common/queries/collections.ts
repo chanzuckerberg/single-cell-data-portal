@@ -1,5 +1,6 @@
 import {
   useMutation,
+  UseMutationResult,
   useQuery,
   useQueryClient,
   UseQueryResult,
@@ -20,7 +21,12 @@ import {
 import { ENTITIES } from "./entities";
 
 /**
- * Error text returned from BE when DOI is identified as invalid.
+ * Error text returned from BE when DOI format is identified as invalid.
+ */
+const INVALID_DOI_FORMAT_MESSAGE = "Invalid DOI";
+
+/**
+ * Error text returned from BE when DOI is identified as invalid, that is, DOI can not be found on Crossref.
  */
 const INVALID_DOI_MESSAGE = "DOI cannot be found on Crossref";
 
@@ -62,6 +68,7 @@ export interface CollectionResponse {
   id: string;
   created_at: number;
   visibility: VISIBILITY_TYPE;
+  revision_of?: string;
 }
 
 export interface RevisionResponse extends CollectionResponse {
@@ -82,9 +89,10 @@ async function fetchCollections(): Promise<CollectionResponsesMap> {
   const collectionsMap: CollectionResponsesMap = new Map();
 
   for (const collection of json.collections as CollectionResponse[]) {
-    const collectionsWithId = collectionsMap.get(collection.id) || new Map();
-    collectionsWithId.set(collection.visibility, collection);
-    collectionsMap.set(collection.id, collectionsWithId);
+    const publicID = collection.revision_of || collection.id;
+    const collectionsWithID = collectionsMap.get(publicID) || new Map();
+    collectionsWithID.set(collection.visibility, collection);
+    collectionsMap.set(publicID, collectionsWithID);
   }
 
   return collectionsMap;
@@ -120,21 +128,15 @@ export interface TombstonedCollection {
 
 function fetchCollection(allCollections: CollectionResponsesMap | undefined) {
   return async function (
-    id: string,
-    visibility: VISIBILITY_TYPE
+    id: string
   ): Promise<Collection | TombstonedCollection | null> {
     if (!id) {
       return null;
     }
 
-    const baseUrl = apiTemplateToUrl(API_URL + API.COLLECTION, { id });
+    const url = apiTemplateToUrl(API_URL + API.COLLECTION, { id });
 
-    const finalUrl =
-      visibility === VISIBILITY_TYPE.PRIVATE
-        ? baseUrl + `?visibility=${VISIBILITY_TYPE.PRIVATE}`
-        : baseUrl;
-
-    let response = await fetch(finalUrl, DEFAULT_FETCH_OPTIONS);
+    let response = await fetch(url, DEFAULT_FETCH_OPTIONS);
     let json = await response.json();
 
     if (response.status === HTTP_STATUS_CODE.GONE) {
@@ -144,18 +146,26 @@ function fetchCollection(allCollections: CollectionResponsesMap | undefined) {
       throw json;
     }
 
-    const collection = { ...json, datasets: generateDatasetMap(json) };
+    const collection: Collection = {
+      ...json,
+      datasets: generateDatasetMap(json),
+    };
 
     let publishedCounterpart;
 
-    if (allCollections) {
+    if (allCollections && collection.visibility === VISIBILITY_TYPE.PUBLIC) {
       const collectionsWithID = allCollections.get(id);
 
-      collection.has_revision = collectionsWithID && collectionsWithID.size > 1;
+      collection.revisioning_in = collectionsWithID?.get(
+        VISIBILITY_TYPE.PRIVATE
+      )?.id;
     }
 
-    if (visibility === VISIBILITY_TYPE.PRIVATE && collection.has_revision) {
-      response = await fetch(baseUrl, DEFAULT_FETCH_OPTIONS);
+    if (collection.revision_of) {
+      const publicCollectionURL = apiTemplateToUrl(API_URL + API.COLLECTION, {
+        id: collection.revision_of,
+      });
+      response = await fetch(publicCollectionURL, DEFAULT_FETCH_OPTIONS);
       json = await response.json();
 
       if (response.ok) {
@@ -167,7 +177,7 @@ function fetchCollection(allCollections: CollectionResponsesMap | undefined) {
     }
 
     // check for diffs between revision and published collection
-    if (collection.has_revision && visibility === VISIBILITY_TYPE.PRIVATE) {
+    if (collection.revision_of) {
       collection.revision_diff = checkForRevisionChange(
         collection,
         publishedCounterpart
@@ -185,27 +195,17 @@ function fetchCollection(allCollections: CollectionResponsesMap | undefined) {
 
 export function useCollection({
   id = "",
-  visibility = VISIBILITY_TYPE.PUBLIC,
 }: {
   id?: string;
-  visibility: VISIBILITY_TYPE;
 }): UseQueryResult<Collection | TombstonedCollection | null> {
   const { data: collections } = useCollections();
   const queryFn = fetchCollection(collections);
 
   return useQuery<Collection | TombstonedCollection | null>(
-    [USE_COLLECTION, id, visibility, collections],
-    () => queryFn(id, visibility),
+    [USE_COLLECTION, id, collections],
+    () => queryFn(id),
     {
       enabled: !!collections,
-      // TODO review use of refetch flag below on remove of filter flag (#1718). This is set to false as a fix for #2204
-      //  where unsaved links on the collection edit form are cleared if the user clicks away and back again. The root
-      //  cause of the defect is the useEffect that was added in /components/CreateCollectionModal/components/Content/index.tsx
-      //  to handle filter flag-related functionality is re-run after the refetch causing unsaved links to be removed.
-      //  The useEffect can be reverted to useState on remove of the filter flag and will therefore remove the side
-      //  effect of the links being cleared as reported in #2204. Options going forward are to remove the refetch
-      //  option below and allow it to default to true, or to review setting the refetch option to false for all queries.
-      refetchOnWindowFocus: false,
     }
   );
 }
@@ -291,32 +291,26 @@ async function collectionUploadLinks({
   return json.dataset_uuid;
 }
 
-export function useCollectionUploadLinks(
-  id: string,
-  visibility: VISIBILITY_TYPE
-) {
+export function useCollectionUploadLinks(id: string) {
   const queryCache = useQueryClient();
 
   return useMutation(collectionUploadLinks, {
     onSuccess: () => {
-      queryCache.invalidateQueries([USE_COLLECTION, id, visibility]);
+      queryCache.invalidateQueries([USE_COLLECTION, id]);
     },
   });
 }
 
 async function deleteCollection({
   collectionID,
-  visibility = VISIBILITY_TYPE.PRIVATE,
 }: {
   collectionID: Collection["id"];
-  visibility?: VISIBILITY_TYPE;
 }) {
-  const baseUrl = apiTemplateToUrl(API_URL + API.COLLECTION, {
+  const finalURL = apiTemplateToUrl(API_URL + API.COLLECTION, {
     id: collectionID,
   });
-  const finalUrl = baseUrl + `?visibility=${visibility}`;
 
-  const response = await fetch(finalUrl, DELETE_FETCH_OPTIONS);
+  const response = await fetch(finalURL, DELETE_FETCH_OPTIONS);
 
   if (!response.ok) {
     throw await response.json();
@@ -325,10 +319,14 @@ async function deleteCollection({
 
 export function useDeleteCollection(
   id = "",
-  visibility = VISIBILITY_TYPE.PRIVATE
-) {
+  visibility = ""
+): UseMutationResult<
+  void,
+  unknown,
+  { collectionID: string },
+  { previousCollections: CollectionResponsesMap }
+> {
   const queryClient = useQueryClient();
-
   return useMutation(deleteCollection, {
     onError: (
       _,
@@ -364,7 +362,7 @@ export function useDeleteCollection(
     onSuccess: () => {
       return Promise.all([
         queryClient.invalidateQueries([USE_COLLECTIONS]),
-        queryClient.removeQueries([USE_COLLECTION, id, visibility], {
+        queryClient.removeQueries([USE_COLLECTION, id], {
           exact: false,
         }),
       ]);
@@ -379,7 +377,7 @@ export type PublishCollection = {
 
 async function publishCollection({ id, payload }: PublishCollection) {
   const url = apiTemplateToUrl(API_URL + API.COLLECTION_PUBLISH, { id });
-
+  console.log("attempting to publish via API call");
   const response = await fetch(url, {
     ...DEFAULT_FETCH_OPTIONS,
     ...JSON_BODY_FETCH_OPTIONS,
@@ -390,16 +388,17 @@ async function publishCollection({ id, payload }: PublishCollection) {
   if (!response.ok) {
     throw await response.json();
   }
+  return id;
 }
 
 export function usePublishCollection() {
   const queryClient = useQueryClient();
 
   return useMutation(publishCollection, {
-    onSuccess: () => {
-      // (thuang): We don't need to invalidate `[USE_COLLECTION, id, visibility]`
-      // because `visibility` has changed from PRIVATE to PUBLIC
+    onSuccess: (id) => {
+      console.log("Completed publish mutation");
       queryClient.invalidateQueries([USE_COLLECTIONS]);
+      queryClient.invalidateQueries([USE_COLLECTION, id]);
     },
   });
 }
@@ -443,22 +442,31 @@ const editCollection = async function ({
   };
 };
 
-export function useEditCollection(collectionID?: Collection["id"]) {
+export function useEditCollection(
+  collectionID?: Collection["id"],
+  publicID?: Collection["id"]
+): UseMutationResult<
+  CollectionEditResponse,
+  unknown,
+  { id: string; payload: string },
+  unknown
+> {
   const queryClient = useQueryClient();
 
-  const { data: collections } = useCollections();
+  const { data: collections } = useCollections(); //all collections
 
   const { data: collection } = useCollection({
+    //revision
     id: collectionID,
-    visibility: VISIBILITY_TYPE.PRIVATE,
   });
 
   const { data: publishedCollection } = useCollection({
-    id: collectionID,
-    visibility: VISIBILITY_TYPE.PUBLIC,
+    //published collection
+    id: publicID,
   });
 
   return useMutation(editCollection, {
+    // newCollection is the result of the PUT on the revision
     onSuccess: ({ collection: newCollection }) => {
       // Check for updated collection: it's possible server-side validation errors have occurred where the error has
       // been swallowed (allowing error messages to be displayed on the edit form) and success flow is executed even
@@ -467,7 +475,7 @@ export function useEditCollection(collectionID?: Collection["id"]) {
         return;
       }
       queryClient.setQueryData(
-        [USE_COLLECTION, collectionID, VISIBILITY_TYPE.PRIVATE, collections],
+        [USE_COLLECTION, collectionID, collections],
         () => {
           let revision_diff;
           if (isTombstonedCollection(newCollection)) {
@@ -475,7 +483,7 @@ export function useEditCollection(collectionID?: Collection["id"]) {
           } else if (
             !isTombstonedCollection(collection) &&
             !isTombstonedCollection(publishedCollection) &&
-            collection?.has_revision &&
+            collection?.revision_of &&
             publishedCollection
           ) {
             revision_diff = checkForRevisionChange(
@@ -485,6 +493,7 @@ export function useEditCollection(collectionID?: Collection["id"]) {
 
             return { ...collection, ...newCollection, revision_diff };
           }
+          return { ...collection, ...newCollection };
         }
       );
     },
@@ -504,14 +513,14 @@ const createRevision = async function (id: string) {
   return response.json();
 };
 
-export function useCreateRevision(callback: () => void) {
+export function useCreateRevision(callback: (id: Collection["id"]) => void) {
   const queryClient = useQueryClient();
 
   return useMutation(createRevision, {
     onSuccess: async (collection: Collection) => {
       await queryClient.invalidateQueries([USE_COLLECTIONS]);
       await queryClient.invalidateQueries([USE_COLLECTION, collection.id]);
-      callback();
+      callback(collection.id);
     },
   });
 }
@@ -547,30 +556,36 @@ const reuploadDataset = async function ({
   return result.dataset_uuid;
 };
 
-export function useReuploadDataset(collectionId: string) {
+export function useReuploadDataset(
+  collectionId: string
+): UseMutationResult<unknown, unknown, ReuploadLink, unknown> {
   const queryClient = useQueryClient();
 
   return useMutation(reuploadDataset, {
     onSuccess: () => {
-      queryClient.invalidateQueries([
-        USE_COLLECTION,
-        collectionId,
-        VISIBILITY_TYPE.PRIVATE,
-      ]);
+      queryClient.invalidateQueries([USE_COLLECTION, collectionId]);
     },
   });
 }
 
 /**
- * Determine if a submitted DOI has failed validation on the BE. Expected response for invalid DOI:
- * {"detail": "DOI cannot be found on Crossref", "status": 400, "title": "Bad Request", "type": "about:blank"}
+ * Determine if a submitted DOI has failed validation on the BE.
+ *
+ * Expected response for invalid DOI:
+ * {"detail": "DOI cannot be found on Crossref", "status": 400, "title": "Bad Request", "type": "about:blank"}.
+ *
+ * Expected response for DOI with an invalid format:
+ * {"detail": "Invalid DOI", "status": 400, "title": "Bad Request", "type": "about:blank"}
+ *
  * TODO generalize beyond DOI link type once all links are validated on the BE (#1916).
+ *
  * @param status - Response status returned from server.
  * @param detail - Response error text, if any.
  * @returns True if DOI has been identified as invalid by the BE.
  */
 function isInvalidDOI(status: number, detail?: string): boolean {
   return (
-    status === HTTP_STATUS_CODE.BAD_REQUEST && detail === INVALID_DOI_MESSAGE
+    status === HTTP_STATUS_CODE.BAD_REQUEST &&
+    (detail === INVALID_DOI_MESSAGE || detail === INVALID_DOI_FORMAT_MESSAGE)
   );
 }

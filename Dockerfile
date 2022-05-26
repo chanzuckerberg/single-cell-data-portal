@@ -13,19 +13,20 @@ RUN apt-get update && \
 # Make python3 the default 'python' executable.
 RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 1
 
+
 # Don't re-run pip install unless either requirements.txt has changed.
-WORKDIR /corpora-data-portal
-ADD requirements.txt /corpora-data-portal/requirements.txt
-ADD backend/corpora/api_server/requirements.txt /corpora-data-portal/requirements-api.txt
+WORKDIR /single-cell-data-portal
+ADD requirements.txt /single-cell-data-portal/requirements.txt
+ADD backend/corpora/api_server/requirements.txt /single-cell-data-portal/requirements-api.txt
 RUN grep -v requirements.txt requirements.txt > reqs.txt \
     && cat requirements-api.txt >> reqs.txt \
     && python3 -m pip install -r reqs.txt
-EXPOSE 5005
+EXPOSE 5000
 
-# Install utilities to /corpora-data-portal so we can run db migrations.
-ADD tests /corpora-data-portal/tests
-ADD scripts /corpora-data-portal/scripts
-ADD backend /corpora-data-portal/backend
+# Install utilities to /single-cell-data-portal so we can run db migrations.
+ADD tests /single-cell-data-portal/tests
+ADD scripts /single-cell-data-portal/scripts
+ADD backend /single-cell-data-portal/backend
 
 ARG HAPPY_BRANCH="unknown"
 ARG HAPPY_COMMIT=""
@@ -35,4 +36,4 @@ ENV COMMIT_SHA=${HAPPY_COMMIT}
 ENV COMMIT_BRANCH=${HAPPY_BRANCH}
 
 # Note: Using just 1 worker for dev/test env. Multiple workers are used in deployment envs, as defined in Terraform code.
-CMD gunicorn --worker-class gevent --workers 1 --bind 0.0.0.0:5005 backend.corpora.api_server.app:app --max-requests 10000 --timeout 180 --keep-alive 5 --log-level info
+CMD gunicorn --worker-class gevent --workers 1 --bind 0.0.0.0:5000 backend.corpora.api_server.app:app --max-requests 10000 --timeout 180 --keep-alive 5 --log-level info

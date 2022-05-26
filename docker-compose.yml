@@ -12,9 +12,9 @@ services:
       - database:/var/lib/postgresql/data
       - ./backend/database:/import
     networks:
-       corporanet:
-          aliases:
-            - database.corporanet.local
+      corporanet:
+        aliases:
+          - database.corporanet.local
   localstack:
     image: localstack/localstack@sha256:7c6635493185d25165979995fb073fd789c72b6d8b17ef3a70b798d55576732f
     ports:
@@ -30,9 +30,9 @@ services:
     volumes:
       - localstack:/tmp/localstack
     networks:
-       corporanet:
-          aliases:
-            - localstack.corporanet.local
+      corporanet:
+        aliases:
+          - localstack.corporanet.local
   frontend:
     image: "${DOCKER_REPO}corpora-frontend"
     platform: linux/amd64
@@ -62,9 +62,9 @@ services:
       - ./frontend:/corpora-frontend
       - /corpora-frontend/node_modules/
     networks:
-       corporanet:
-          aliases:
-            - frontend.corporanet.local
+      corporanet:
+        aliases:
+          - frontend.corporanet.local
   upload_failures:
     image: "${DOCKER_REPO}corpora-upload-failures"
     platform: linux/amd64
@@ -98,9 +98,9 @@ services:
       - ARTIFACT_BUCKET=artifact-bucket
       - CELLXGENE_BUCKET=cellxgene-bucket
     networks:
-       corporanet:
-          aliases:
-            - uploadfailures.corporanet.local
+      corporanet:
+        aliases:
+          - uploadfailures.corporanet.local
   upload_success:
     image: "${DOCKER_REPO}corpora-upload-success"
     platform: linux/amd64
@@ -133,9 +133,43 @@ services:
       - ARTIFACT_BUCKET=artifact-bucket
       - CELLXGENE_BUCKET=cellxgene-bucket
     networks:
-       corporanet:
-          aliases:
-            - uploadsuccess.corporanet.local
+      corporanet:
+        aliases:
+          - uploadsuccess.corporanet.local
+  dataset_submissions:
+    image: "${DOCKER_REPO}dataset-submissions"
+    platform: linux/amd64
+    build:
+      context: .
+      cache_from:
+        - "${DOCKER_REPO}dataset-submissions:branch-main"
+      dockerfile: Dockerfile.handle_dataset_submissions
+      args:
+        - BUILDKIT_INLINE_CACHE=1
+        - HAPPY_COMMIT
+        - HAPPY_BRANCH
+        - HAPPY_TAG
+    restart: "no"
+    ports:
+      - "9002:8080"
+    volumes:
+      - ./backend/corpora/dataset_submissions:/var/task
+      - ./backend/corpora/common:/var/task/backend/corpora/common
+    environment:
+      - PYTHONUNBUFFERED=1
+      - CORPORA_LOCAL_DEV=true
+      - AWS_REGION=us-west-2
+      - AWS_DEFAULT_REGION=us-west-2
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - BOTO_ENDPOINT_URL=http://localstack:4566
+      - DEPLOYMENT_STAGE=test
+      - ARTIFACT_BUCKET=artifact-bucket
+      - CELLXGENE_BUCKET=cellxgene-bucket
+    networks:
+      corporanet:
+        aliases:
+          - dataset_submissions.corporanet.local
   processing:
     image: "${DOCKER_REPO}corpora-upload"
     platform: linux/amd64
@@ -154,7 +188,7 @@ services:
       - ./backend/corpora/dataset_processing:/backend/corpora/dataset_processing
       - ./backend/corpora/common:/backend/corpora/common
       # Mount dirs in a layout suitable for running tests.
-      - .:/corpora-data-portal
+      - .:/single-cell-data-portal
     command: ["sleep", "infinity"]
     environment:
       - PYTHONUNBUFFERED=1
@@ -168,9 +202,9 @@ services:
       - ARTIFACT_BUCKET=artifact-bucket
       - CELLXGENE_BUCKET=cellxgene-bucket
     networks:
-       corporanet:
-          aliases:
-            - processing.corporanet.local
+      corporanet:
+        aliases:
+          - processing.corporanet.local
   wmg_processing:
     image: "${DOCKER_REPO}wmg-processing"
     platform: linux/amd64
@@ -198,9 +232,9 @@ services:
       - ARTIFACT_BUCKET=artifact-bucket
       - CELLXGENE_BUCKET=cellxgene-bucket
     networks:
-       corporanet:
-          aliases:
-            - processing.corporanet.local
+      corporanet:
+        aliases:
+          - processing.corporanet.local
   backend:
     image: "${DOCKER_REPO}corpora-backend"
     platform: linux/amd64
@@ -218,7 +252,7 @@ services:
       - localstack
       - database
     ports:
-      - "5005:5005"
+      - "5000:5000"
     environment:
       - PYTHONUNBUFFERED=1
       - CORPORA_LOCAL_DEV=true
@@ -233,13 +267,13 @@ services:
       - IS_DOCKER_DEV=yes # This skips some unit tests.
     volumes:
       # Mount dirs in a layout suitable for running tests.
-      - .:/corpora-data-portal
+      - .:/single-cell-data-portal
       # SecretsManager population relies on oauth json
       - ./oauth/users.json:/oauth/users.json
     networks:
-       corporanet:
-          aliases:
-            - backend.corporanet.local
+      corporanet:
+        aliases:
+          - backend.corporanet.local
   oidc:
     image: soluto/oidc-server-mock:0.3.0
     # For Mac M1, you may need to build this image from source.
@@ -270,9 +304,9 @@ services:
       - ./oauth/pkcs12:/tmp/pkcs12:ro
       - ./oauth:/tmp/config:ro
     networks:
-       corporanet:
-          aliases:
-            - oidc.corporanet.local
+      corporanet:
+        aliases:
+          - oidc.corporanet.local
 networks:
   corporanet:
 volumes:

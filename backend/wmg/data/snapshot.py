@@ -2,7 +2,7 @@ import json
 import logging
 import os
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, Dict
 
 import pandas as pd
 import tiledb
@@ -15,6 +15,7 @@ from backend.wmg.data.tiledb import create_ctx
 
 # Snapshot data artifact file/dir names
 CELL_TYPE_ORDERINGS_FILENAME = "cell_type_orderings.json"
+PRIMARY_FILTER_DIMENSIONS_FILENAME = "primary_filter_dimensions.json"
 EXPRESSION_SUMMARY_CUBE_NAME = "expression_summary"
 CELL_COUNTS_CUBE_NAME = "cell_counts"
 
@@ -43,6 +44,9 @@ class WmgSnapshot:
     # Pandas DataFrame containing per-tissue ordering of cell types.
     # Columns are "tissue_ontology_term_id", "cell_type_ontology_term_id", "order"
     cell_type_orderings: DataFrame
+
+    # precomputed list of ids for all gene and tissue ontology term ids per organism
+    primary_filter_dimensions: Dict
 
 
 # Cached data
@@ -74,6 +78,7 @@ def _load_snapshot(new_snapshot_identifier) -> WmgSnapshot:
         expression_summary_cube=_open_cube(f"{snapshot_base_uri}/{EXPRESSION_SUMMARY_CUBE_NAME}"),
         cell_counts_cube=_open_cube(f"{snapshot_base_uri}/{CELL_COUNTS_CUBE_NAME}"),
         cell_type_orderings=_load_cell_type_order(new_snapshot_identifier),
+        primary_filter_dimensions=_load_primary_filter_data(new_snapshot_identifier),
     )
 
 
@@ -85,11 +90,15 @@ def _load_cell_type_order(snapshot_identifier: str) -> DataFrame:
     return pd.read_json(_read_s3obj(f"{snapshot_identifier}/{CELL_TYPE_ORDERINGS_FILENAME}"))
 
 
+def _load_primary_filter_data(snapshot_identifier: str) -> Dict:
+    return json.loads(_read_s3obj(f"{snapshot_identifier}/{PRIMARY_FILTER_DIMENSIONS_FILENAME}"))
+
+
 def _read_s3obj(relative_path: str) -> str:
     s3 = buckets.portal_resource
     wmg_config = WmgConfig()
     wmg_config.load()
-    prefixed_relative_path = os.path.join(wmg_config.data_path_prefix, relative_path or "")
+    prefixed_relative_path = os.path.join(_build_data_path_prefix(), relative_path or "")
     s3obj = s3.Object(WmgConfig().bucket, prefixed_relative_path)
     return s3obj.get()["Body"].read().decode("utf-8").strip()
 
@@ -114,11 +123,23 @@ def _update_latest_snapshot_identifier() -> Optional[str]:
         return None
 
 
+def _build_data_path_prefix():
+    wmg_config = WmgConfig()
+    rdev_prefix = os.environ.get("REMOTE_DEV_PREFIX")
+    if rdev_prefix:
+        return rdev_prefix.strip("/")
+    elif "data_path_prefix" in wmg_config.config:
+        return wmg_config.data_path_prefix
+    else:
+        return ""
+
+
 def _build_snapshot_base_uri(snapshot_identifier: str):
     wmg_config = WmgConfig()
+    data_path_prefix = _build_data_path_prefix()
     return os.path.join(
         "s3://",
         wmg_config.bucket,
-        wmg_config.data_path_prefix if "data_path_prefix" in wmg_config.config else "",
+        data_path_prefix,
         snapshot_identifier,
     )
