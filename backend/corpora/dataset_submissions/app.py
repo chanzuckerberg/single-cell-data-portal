@@ -14,10 +14,10 @@ from backend.corpora.common.utils.exceptions import CorporaException
 logger = logging.getLogger(__name__)
 USERNAME_REGEX = r"(?P<username>[\w\-\|]+)"
 UUID_REGEX = r"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
-EXTENTION_REGEX = r"(?P<extension>h5ad)"
+EXTENSION_REGEX = r"(?P<extension>h5ad)"
 DATASET_ID_REGEX = f"(?P<dataset_uuid>{UUID_REGEX})"
 COLLECTION_ID_REGEX = f"(?P<collection_uuid>{UUID_REGEX})"
-REGEX = f"^{USERNAME_REGEX}/{COLLECTION_ID_REGEX}/((tag/(?P<tag>.*))|(id/{DATASET_ID_REGEX})).{EXTENTION_REGEX}$"
+REGEX = f"^{USERNAME_REGEX}/{COLLECTION_ID_REGEX}/({DATASET_ID_REGEX}|(?P<tag>.*))\.{EXTENSION_REGEX}$"
 
 
 def dataset_submissions_handler(s3_event: dict, unused_context) -> None:
@@ -85,10 +85,10 @@ def parse_key(key: str) -> Optional[dict]:
     Parses the S3 object key to extract the collection UUID and curator tag, ignoring the REMOTE_DEV_PREFIX
 
     Example of key with only curator_tag:
-    s3://<dataset submissions bucket>/<user_id>/<collection_id>/tag/<curator_tag>
+    s3://<dataset submissions bucket>/<user_id>/<collection_id>/<curator_tag>
 
     Example of key with dataset id:
-    s3://<dataset submissions bucket>/<user_id>/<collection_id>/id/<dataset_id>
+    s3://<dataset submissions bucket>/<user_id>/<collection_id>/<dataset_id>
 
     :param key:
     :return:
