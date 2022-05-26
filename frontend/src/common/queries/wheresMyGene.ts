@@ -165,9 +165,7 @@ interface QueryResponse {
   term_id_labels: {
     cell_types: {
       [tissue_type_ontology_term_id: string]: {
-        cell_type: string;
-        cell_type_ontology_term_id: string;
-        depth: number;
+        [id: string]: string;
       }[];
     };
     genes: {
@@ -371,7 +369,7 @@ export function useCellTypesByTissueName(): {
         .map(([cellTypeId, cellTypeName]) => {
           return {
             id: cellTypeId,
-            ...cellTypeName,
+            name: cellTypeName,
           };
         });
 
@@ -480,9 +478,7 @@ function transformCellTypeGeneExpressionSummaryData(
 }
 
 interface TermIdLabels {
-  cell_types: {
-    [tissueID: string]: { [id: string]: { name: string; depth: number } };
-  };
+  cell_types: { [tissueID: string]: { [id: string]: string } };
   genes: { [id: string]: string };
 }
 
@@ -506,17 +502,7 @@ export function useTermIdLabels(): {
 
     const returnCellTypes: TermIdLabels["cell_types"] = {};
     Object.entries(cell_types).forEach(([tissueID, cell_types]) => {
-      const result: { [id: string]: { name: string; depth: number } } = {};
-
-      for (const {
-        cell_type_ontology_term_id,
-        cell_type,
-        depth,
-      } of cell_types) {
-        result[cell_type_ontology_term_id] = { depth, name: cell_type };
-      }
-
-      returnCellTypes[tissueID] = result;
+      returnCellTypes[tissueID] = aggregateIdLabels(cell_types);
     });
 
     return {
