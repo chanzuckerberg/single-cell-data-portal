@@ -13,7 +13,7 @@ class CorporaConfig(SecretConfig):
 
         template = {
             "upload_file_formats": ["h5ad"],
-            "upload_max_file_size_gb": 30,
+            "upload_max_file_size_gb": 50,
             "submission_bucket": os.getenv("DATASET_SUBMISSIONS_BUCKET", "cellxgene-dataset-submissions-test"),
         }
         upload_snf_arn = os.getenv("UPLOAD_SFN_ARN")
