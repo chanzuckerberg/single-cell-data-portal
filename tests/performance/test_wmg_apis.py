@@ -1,22 +1,19 @@
 import json
-import os
 import timeit
 import unittest
 
 import requests
 
-from tests.functional.backend.common import API_URL
 from tests.functional.backend.wmg.fixtures import (
     secondary_filter_common_case_request_data,
     secondary_filter_extreme_case_request_data,
 )
 
 
-class TestWmgApiPerformance(unittest.TestCase):
+class TestWmgApiPerformanceProd(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.deployment_stage = os.environ["DEPLOYMENT_STAGE"]
-        cls.api = API_URL.get(cls.deployment_stage)
+        cls.api = "https://api.cellxgene.cziscience.com"
         cls.api = f"{cls.api}/wmg/v1"
 
         # get snapshot id

@@ -26,9 +26,7 @@ class TestWmgApi(unittest.TestCase):
         """
         Load primary filters in less than 1.5 seconds
         """
-        MAX_RESPONSE_TIME_SECONDS = 1.5
         res = requests.get(f"{self.api}/primary_filter_dimensions")
-        self.assertGreater(MAX_RESPONSE_TIME_SECONDS, res.elapsed.seconds)
         self.assertEqual(res.status_code, requests.codes.ok)
         self.assertGreater(len(res.content), 10)
 
@@ -37,7 +35,6 @@ class TestWmgApi(unittest.TestCase):
         1 tissue w/50 cell types, 20 genes, 3 secondary filters specified
         Returns in less than 10 seconds
         """
-        MAX_RESPONSE_TIME_SECONDS = 10
         headers = {"Content-Type": "application/json"}
 
         data = secondary_filter_common_case_request_data.copy()
@@ -45,7 +42,6 @@ class TestWmgApi(unittest.TestCase):
         res = requests.post(
             f"{self.api}/query", data=json.dumps(secondary_filter_common_case_request_data), headers=headers
         )
-        self.assertGreaterEqual(MAX_RESPONSE_TIME_SECONDS, res.elapsed.seconds)
         self.assertEqual(res.status_code, requests.codes.ok)
         self.assertGreater(len(res.content), 10)
 
@@ -54,12 +50,10 @@ class TestWmgApi(unittest.TestCase):
         4 tissues w/largest cell type counts, 400 genes, no secondary filtering
         Returns in less than 15 seconds
         """
-        MAX_RESPONSE_TIME_SECONDS = 15
         headers = {"Content-Type": "application/json"}
         secondary_filter_extreme_case_request_data["snapshot_id"] = self.data["snapshot_id"]
         res = requests.post(
             f"{self.api}/query", data=json.dumps(secondary_filter_extreme_case_request_data), headers=headers
         )
-        self.assertGreater(MAX_RESPONSE_TIME_SECONDS, res.elapsed.seconds)
         self.assertEqual(res.status_code, requests.codes.ok)
         self.assertGreater(len(res.content), 10)

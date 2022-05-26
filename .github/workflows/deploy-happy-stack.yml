@@ -101,16 +101,11 @@ jobs:
         env:
           TFE_TOKEN: ${{ secrets.TFE_TOKEN }}
           DEPLOYMENT_STAGE: ${{ github.event.deployment.environment }}
-          if: github.event.deployment.environment == 'prod'
-          run: |
-            echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
-            mkdir -p .local/bin
-            curl -Ls https://github.com/segmentio/chamber/releases/download/v2.9.1/chamber-v2.9.1-linux-amd64 > .local/bin/chamber &&
-            chmod +x .local/bin/chamber
-            PATH="$PATH:$(pwd)/.local/bin"
-            echo DEPLOYMENT_STAGE ${DEPLOYMENT_STAGE}
-            docker-compose up --no-deps -d backend
-            BOTO_ENDPOINT_URL= make local-performance-test
+        if: github.event.deployment.environment == 'prod'
+        run: |
+          echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
+          echo DEPLOYMENT_STAGE ${DEPLOYMENT_STAGE}
+          make prod-performance-test
 
       ### Need to write success failure way because Github API doesn't allow doing
       ### "if: always(), state: ${{ success() }}:
