@@ -115,8 +115,10 @@ class SecretConfig:
         return source
 
     def value_from_config(self, name):
+        expected_type = self._expected_type(name)
         if name in self.config:
-            return self.config[name]
+            value = self.config[name]
+            return expected_type(value) if expected_type else value
         else:
             return None
 
@@ -124,10 +126,16 @@ class SecretConfig:
         return self._defaults.get(name)
 
     def value_from_env(self, name):
+        expected_type = self._expected_type(name)
         if self.__class__.use_env and name.upper() in os.environ:
-            return os.environ[name.upper()]
+            value = os.environ[name.upper()]
+            return expected_type(value) if expected_type else value
         else:
             return None
+
+    def _expected_type(self, name):
+        value = self.value_from_defaults(name)
+        return type(value) if value else None
 
     def raise_error(self, name):
         raise RuntimeError(name + " is not in configuration")
