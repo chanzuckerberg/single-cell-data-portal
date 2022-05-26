@@ -62,28 +62,25 @@ class JsonFormatter(jsonlogger.JsonFormatter):
 
 gunicorn_logger = logging.getLogger("gunicorn.error")
 
-dictConfig(
-    {
-        "version": 1,
-        "formatters": {
-            "default": {
-                "format": LOG_FORMAT,
-                "()": JsonFormatter,
-            }
-        },
-        "handlers": {
-            "wsgi": {
-                "class": "logging.StreamHandler",
-                "stream": "ext://flask.logging.wsgi_errors_stream",
-                "formatter": "default",
+
+def configure_logging():
+    dictConfig(
+        {
+            "version": 1,
+            "formatters": {"default": {"format": LOG_FORMAT, "()": JsonFormatter}},
+            "handlers": {
+                "wsgi": {
+                    "class": "logging.StreamHandler",
+                    "stream": "ext://flask.logging.wsgi_errors_stream",
+                    "formatter": "default",
+                },
+                "exceptions": {
+                    "class": "logging.StreamHandler",
+                    "stream": "ext://sys.stderr",
+                    "formatter": "default",
+                    "level": "ERROR",
+                },
             },
-            "exceptions": {
-                "class": "logging.StreamHandler",
-                "stream": "ext://sys.stderr",
-                "formatter": "default",
-                "level": "ERROR",
-            },
-        },
-        "root": {"level": gunicorn_logger.level, "handlers": ["wsgi", "exceptions"]},
-    }
-)
+            "root": {"level": gunicorn_logger.level, "handlers": ["wsgi", "exceptions"]},
+        }
+    )
