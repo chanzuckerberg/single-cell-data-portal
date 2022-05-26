@@ -65,7 +65,7 @@ def __load_genes() -> None:
 
 
 def __open_ontology_resource(file) -> IO:
-    curr_path = pathlib.Path(__file__).parent.absolute().split("/")
-    root_path = ("/").join(curr_path[:-2])
-    file_path = os.path.join(root_path, "ontology_files", file)
+    curr_path = pathlib.Path(__file__).parent.absolute()
+    root_path = curr_path.parent.parent
+    file_path = root_path.joinpath("ontology_files", file)
     return gzip.open(file_path)
