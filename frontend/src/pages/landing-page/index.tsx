@@ -13,7 +13,6 @@ import DownloadDataImg from "src/components/common/staticPages/download-data.png
 import ExpediteCollaborationImg from "src/components/common/staticPages/expedite-collaboration.png";
 import GeneExpressionImg from "src/components/common/staticPages/gene-expression.png";
 import SingleCellDataImg from "src/components/common/staticPages/single-cell-data.png";
-import Header from "src/components/Header";
 import AnalyzeDatasetsIcon from "./icons/analyze-datasets";
 import DownloadDataIcon from "./icons/download-data";
 import ExpediteCollaborationIcon from "./icons/expedite-collaboration";
@@ -155,7 +154,6 @@ const LandingPage = (): JSX.Element => {
       <Head>
         <title>cellxgene | Home</title>
       </Head>
-      <Header />
       <div
         className={styles.heroContainer}
         style={{
