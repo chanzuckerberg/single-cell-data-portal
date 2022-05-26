@@ -3,6 +3,7 @@ import logging
 import anndata
 from pathlib import Path
 
+
 def validate_corpus_load(anndata_object: anndata.AnnData, group_name: str, dataset_id: str):
     """
     Validate that the load looks sane
@@ -12,6 +13,7 @@ def validate_corpus_load(anndata_object: anndata.AnnData, group_name: str, datas
 
 def validate_cube(snapshot):
     pass
+
 
 # grab cube
 # check size
@@ -34,16 +36,23 @@ def validate_cube(snapshot):
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
-
-validation_ontologies = {
-
+validation_gene_ontologies = {
+    "MALAT1": "ENSG00000251562",
+    "CCL5": "ENSG00000271503",
+    "ACTB": "ENSG00000075624",
+    "XIST": "ENSG00000229807",
+    "FCN1": "ENSG00000085265",
+    "TUBB4B": "ENSG00000188229",
+    "CD68": "ENSG00000129226",
+    "AQP5": "ENSG00000161798"
 }
 
+
 def validate_cube_size(path_to_cube):
-    size_byte=sum(file.stat().st_size for file in Path('expression_summary').rglob('*'))
-    size_gb = size_byte/1000/1024/1024
+    size_byte = sum(file.stat().st_size for file in Path('expression_summary').rglob('*'))
+    size_gb = size_byte / 1000 / 1024 / 1024
     # check expression cube is larger than 3gb
-    assert(size_gb>3)
+    assert (size_gb > 3)
     logger.info(f"Expression summary cube is {size_gb}GB")
 
 
