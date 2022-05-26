@@ -53,19 +53,6 @@ class TestPutLink(BaseAuthAPITest):
         response = self._test_new({}, headers, body={"curator_tag": "test", "link": self.good_link})
         self.assertEqual(202, response.status_code)
 
-    @patch("backend.corpora.common.upload.start_upload_sfn")
-    def test__duplicate_tags__forbidden(self, start_upload_sfn):
-        curator_tag = "test.h5ad"
-        headers = self.get_auth_headers()
-        headers["Content-Type"] = "application/json"
-        collection = self.generate_collection(self.session)
-        dataset = self.generate_dataset(self.session, collection_id=collection.id, curator_tag=curator_tag)
-        body = {"id": dataset.id, "link": self.good_link, "curator_tag": curator_tag}
-        response = self.app.put(
-            f"/curation/v1/collections/{collection.id}/datasets/upload-link", data=json.dumps(body), headers=headers
-        )
-        self.assertEqual(405, response.status_code)
-
     def _test_existing(self, headers: dict = None, use_curator_tag=False):
         curator_tag = "test.h5ad"
         headers = headers if headers else {}
@@ -101,6 +88,23 @@ class TestPutLink(BaseAuthAPITest):
         with self.subTest("curator_tag"):
             response = self._test_existing(headers, use_curator_tag=True)
             self.assertEqual(202, response.status_code)
+
+    @patch("backend.corpora.common.upload.start_upload_sfn")
+    def test__curator_tag_ignored_when_dataset_id_is_present__OK(self, start_upload_sfn):
+        curator_tag = "test.h5ad"
+        headers = self.get_auth_headers()
+        headers["Content-Type"] = "application/json"
+        collection = self.generate_collection(self.session)
+        processing_status = dict(processing_status=ProcessingStatus.SUCCESS)
+        dataset = self.generate_dataset(
+            self.session, collection_id=collection.id, curator_tag=curator_tag, processing_status=processing_status
+        )
+
+        body = {"id": dataset.id, "link": self.good_link, "curator_tag": "different_tag"}
+        response = self.app.put(
+            f"/curation/v1/collections/{collection.id}/datasets/upload-link", data=json.dumps(body), headers=headers
+        )
+        self.assertEqual(202, response.status_code)
 
 
 if __name__ == "__main__":
