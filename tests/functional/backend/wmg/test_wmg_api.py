@@ -10,6 +10,8 @@ from tests.functional.backend.wmg.fixtures import (
     secondary_filter_extreme_case_request_data,
 )
 
+# Note that these tests share fixtures and general test paths with the wmg api performance tests
+
 
 class TestWmgApi(unittest.TestCase):
     @classmethod
