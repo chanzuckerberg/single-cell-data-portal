@@ -3,18 +3,18 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { useInView } from "react-intersection-observer";
+import { ROUTES } from "src/common/constants/routes";
 import AnalyzeDatasetsImg from "src/components/common/staticPages/analyze-datasets.png";
-import BiohubLogo from "src/components/common/staticPages/biohub-logo-white.png";
 import HeroBg from "src/components/common/staticPages/cellxgene_hero_bg.png";
 import LaptopImg from "src/components/common/staticPages/cellxgene_laptop.png";
-import CZILogo from "src/components/common/staticPages/czi-logo-white.png";
 import NewsImage1 from "src/components/common/staticPages/czi-news-tweet-1.png";
 import NewsImage2 from "src/components/common/staticPages/czi-news-tweet-2.png";
 import DownloadDataImg from "src/components/common/staticPages/download-data.png";
 import ExpediteCollaborationImg from "src/components/common/staticPages/expedite-collaboration.png";
 import GeneExpressionImg from "src/components/common/staticPages/gene-expression.png";
-import Logo from "src/components/common/staticPages/NEWxLOGO.png";
 import SingleCellDataImg from "src/components/common/staticPages/single-cell-data.png";
+import LandingFooter from "src/components/LandingFooter";
+import LandingHeader from "src/components/LandingHeader";
 import AnalyzeDatasetsIcon from "./icons/analyze-datasets";
 import DownloadDataIcon from "./icons/download-data";
 import ExpediteCollaborationIcon from "./icons/expedite-collaboration";
@@ -40,48 +40,114 @@ const LandingPage = (): JSX.Element => {
     rootMargin: "-70% 0px -30% 0px",
   });
 
-  const [activeNav, setActiveNav] = useState(1);
+  // HERO NUMBERS. DUMMY DATA TO BE REPLACED.
+  const [cellsHeroNum] = useState("100M+");
+  const [datasetsHeroNum] = useState("436");
+  const [donorsHeroNum] = useState("2.7k+");
+
+  const publications = [
+    {
+      title:
+        "The Tabula Sapiens: A multiple-organ, single-cell transcriptomic atlas of humans",
+      links: [
+        {
+          subheading: "03.04.22 - bioRxiv",
+          ctaText: "DOI: 10.1101/2021.07.19.452956",
+          ctaLink: "https://doi.org/10.1101/2021.07.19.452956",
+        },
+        {
+          subheading: "13.05.22 - Science",
+          ctaText: "DOI: 10.1126/science.abl4896",
+          ctaLink: "https://www.science.org/doi/10.1126/science.abl4896",
+        },
+        {
+          subheading: "13.05.22 - Cellxgene",
+          ctaText: "The Tabula Sapiens Consortium et al. (2021) bioRxiv",
+          ctaLink:
+            "https://cellxgene.cziscience.com/collections/e5f58829-1a66-40b5-a624-9046778e74f5",
+        },
+      ],
+    },
+    {
+      title:
+        "Cross-tissue immune cell analysis reveals tissue-specific features in humans",
+      links: [
+        {
+          subheading: "13.05.22 - Science",
+          ctaText: "DOI: 10.1126/science.abl5197",
+          ctaLink: "https://doi.org/10.1126/science.abl5197",
+        },
+        {
+          subheading: "20.07.21 - bioRxiv",
+          ctaText: "DOI: 10.1101/2021.04.28.441762",
+          ctaLink: "https://doi.org/10.1101/2021.04.28.441762",
+        },
+        {
+          subheading: "13.05.22 - Cellxgene",
+          ctaText: "Domínguez Conde et al. (2022) Science",
+          ctaLink:
+            "https://cellxgene.cziscience.com/collections/62ef75e4-cbea-454e-a0ce-998ec40223d3",
+        },
+      ],
+    },
+    {
+      title: "An integrated cell atlas of the human lung in health and disease",
+      links: [
+        {
+          subheading: "11.03.21 - bioRxiv",
+          ctaText: "DOI: 10.1101/2022.03.10.483747",
+          ctaLink: "https://doi.org/10.1101/2022.03.10.483747",
+        },
+        {
+          subheading: "13.05.22 - Cellxgene",
+          ctaText: "Sikkema et al. (2022) bioRxiv",
+          ctaLink:
+            "https://cellxgene.cziscience.com/collections/6f6d381a-7701-4781-935c-db10d30de293",
+        },
+      ],
+    },
+    {
+      title:
+        "Single-cell eQTL mapping identifies cell type–specific genetic control of autoimmune disease",
+      links: [
+        {
+          subheading: "08.04.22 - Science",
+          ctaText: "DOI: 10.1126/science.abf3041",
+          ctaLink: "https://doi.org/10.1126/science.abf3041",
+        },
+        {
+          subheading: "13.05.22 - Cellxgene",
+          ctaText: "Yazar et al. (2022) Science",
+          ctaLink:
+            "https://cellxgene.cziscience.com/collections/dde06e0f-ab3b-46be-96a2-a8082383c4a1",
+        },
+      ],
+    },
+    {
+      title:
+        "Single-cell RNA-seq reveals cell type–specific molecular and genetic associations to lupus",
+      links: [
+        {
+          subheading: "08.04.22 - Science",
+          ctaText: "DOI: 10.1126/science.abf1970",
+          ctaLink: "https://doi.org/10.1126/science.abf1970",
+        },
+        {
+          subheading: "13.05.22 - Cellxgene",
+          ctaText: "Perez et al. (2022) Science",
+          ctaLink:
+            "https://cellxgene.cziscience.com/collections/436154da-bcf1-4130-9c8b-120ff9a888f2",
+        },
+      ],
+    },
+  ];
 
   return (
     <>
       <Head>
         <title>cellxgene | Home</title>
       </Head>
-      <header className={styles.header}>
-        <Link href="/" passHref>
-          <a className={styles.headerLogoContainer}>
-            <Image
-              data-test-id="cellxgene-logo"
-              src={Logo}
-              alt="cellxgene logo"
-            />
-          </a>
-        </Link>
-        <nav className={styles.headerNavContainer}>
-          <div className={styles.headerNavLeft}>
-            <Link href="/" passHref>
-              <a>Browse</a>
-            </Link>
-            <Link href="/" passHref>
-              <a>Atlas</a>
-            </Link>
-            <Link href="/" passHref>
-              <a>Explore</a>
-            </Link>
-          </div>
-          <div className={styles.headerNavLeft}>
-            <Link href="/" passHref>
-              <a className={styles.btnLink}>We're Hiring</a>
-            </Link>
-            <Link href="/" passHref>
-              <a>Help & Documentation</a>
-            </Link>
-            <Link href="/" passHref>
-              <a>Login</a>
-            </Link>
-          </div>
-        </nav>
-      </header>
+      <LandingHeader />
       <div className={styles.heroContainer}>
         <div
           className={styles.heroImgContainer}
@@ -93,7 +159,7 @@ const LandingPage = (): JSX.Element => {
           }}
         >
           <div className={styles.laptopImg}>
-            <Image src={LaptopImg} alt="" />
+            <Image src={LaptopImg} alt="laptop with cell data on screen" />
           </div>
         </div>
         <div className={styles.heroTextContainer}>
@@ -105,15 +171,15 @@ const LandingPage = (): JSX.Element => {
           <div className={styles.heroStatsContainer}>
             <div>
               <span>Cells</span>
-              <p>100M+</p>
+              <p>{cellsHeroNum}</p>
             </div>
             <div>
               <span>datasets</span>
-              <p>436</p>
+              <p>{datasetsHeroNum}</p>
             </div>
             <div>
               <span>donors</span>
-              <p>2.7k+</p>
+              <p>{donorsHeroNum}</p>
             </div>
           </div>
         </div>
@@ -122,11 +188,8 @@ const LandingPage = (): JSX.Element => {
         <div className={styles.contentNav}>
           <Link passHref href="#single-cell">
             <a
-              onClick={() => {
-                setActiveNav(1);
-              }}
               className={`${styles.contentLink} ${
-                activeNav === 1 || inView1 ? styles.active : ""
+                inView1 ? styles.active : ""
               }`}
             >
               Find single-cell data
@@ -134,11 +197,8 @@ const LandingPage = (): JSX.Element => {
           </Link>
           <Link passHref href="#gene-expression">
             <a
-              onClick={() => {
-                setActiveNav(2);
-              }}
               className={`${styles.contentLink} ${
-                activeNav === 2 || inView2 ? styles.active : ""
+                inView2 ? styles.active : ""
               }`}
             >
               Explore gene expression
@@ -146,11 +206,8 @@ const LandingPage = (): JSX.Element => {
           </Link>
           <Link passHref href="#analyze-datasets">
             <a
-              onClick={() => {
-                setActiveNav(3);
-              }}
               className={`${styles.contentLink} ${
-                activeNav === 3 || inView3 ? styles.active : ""
+                inView3 ? styles.active : ""
               }`}
             >
               Analyze datasets
@@ -158,11 +215,8 @@ const LandingPage = (): JSX.Element => {
           </Link>
           <Link passHref href="#download-data">
             <a
-              onClick={() => {
-                setActiveNav(4);
-              }}
               className={`${styles.contentLink} ${
-                activeNav === 4 || inView4 ? styles.active : ""
+                inView4 ? styles.active : ""
               }`}
             >
               Download data
@@ -170,11 +224,8 @@ const LandingPage = (): JSX.Element => {
           </Link>
           <Link passHref href="#expedite-collaboration">
             <a
-              onClick={() => {
-                setActiveNav(5);
-              }}
               className={`${styles.contentLink} ${
-                activeNav === 5 || inView5 ? styles.active : ""
+                inView5 ? styles.active : ""
               }`}
             >
               Expedite collaboration
@@ -202,7 +253,7 @@ const LandingPage = (): JSX.Element => {
                   human tissues.
                 </p>
                 <div className={styles.linkContainer}>
-                  <Link href="/" passHref>
+                  <Link href={ROUTES.COLLECTIONS} passHref>
                     <a>
                       Browse data collections
                       <span className={styles.linkArrow}>
@@ -214,7 +265,12 @@ const LandingPage = (): JSX.Element => {
               </div>
             </div>
             <div className={styles.contentImageCol}>
-              <Image src={SingleCellDataImg} alt="" />
+              <div className={styles.contentImage}>
+                <Image
+                  src={SingleCellDataImg}
+                  alt="cellxgene collections page with sidebar for filtering through the table of data"
+                />
+              </div>
             </div>
           </div>
 
@@ -238,20 +294,12 @@ const LandingPage = (): JSX.Element => {
                 <h2>Explore gene expression across tissues and cell types</h2>
                 <p>
                   Visualize the expression of genes and gene sets using the
-                  largest integrated resource of 10s of millions of cells.
+                  largest integrated resource of over 30 million cells.
                 </p>
                 <div className={styles.linkContainer}>
-                  <Link href="/" passHref>
+                  <Link href={ROUTES.WHERE_IS_MY_GENE} passHref>
                     <a>
                       See how it works
-                      <span className={styles.linkArrow}>
-                        <LinkArrow />
-                      </span>
-                    </a>
-                  </Link>
-                  <Link href="/" passHref>
-                    <a>
-                      Find my gene
                       <span className={styles.linkArrow}>
                         <LinkArrow />
                       </span>
@@ -261,7 +309,12 @@ const LandingPage = (): JSX.Element => {
               </div>
             </div>
             <div className={styles.contentImageCol}>
-              <Image src={GeneExpressionImg} alt="" />
+              <div className={styles.contentImage}>
+                <Image
+                  src={GeneExpressionImg}
+                  alt="chart of gene expressions with genes plotted against types of tissues"
+                />
+              </div>
             </div>
           </div>
 
@@ -283,7 +336,7 @@ const LandingPage = (): JSX.Element => {
               </div>
               <div className={styles.contentInfoTextCol}>
                 <h2>
-                  Execute on-demand interactive analyses of single cell datasets
+                  Execute on-demand interactive analyses of single-cell datasets
                 </h2>
                 <p>
                   Visually explore how patterns of gene expression are
@@ -293,7 +346,10 @@ const LandingPage = (): JSX.Element => {
                   states.
                 </p>
                 <div className={styles.linkContainer}>
-                  <Link href="/" passHref>
+                  <Link
+                    href={`${ROUTES.HOMEPAGE}/e/53d208b0-2cfd-4366-9866-c3c6114081bc.cxg/`}
+                    passHref
+                  >
                     <a>
                       Explore a multi-tissue atlas
                       <span className={styles.linkArrow}>
@@ -301,9 +357,9 @@ const LandingPage = (): JSX.Element => {
                       </span>
                     </a>
                   </Link>
-                  <Link href="/" passHref>
+                  <Link href={ROUTES.COLLECTIONS} passHref>
                     <a>
-                      See all the studies you can explore
+                      Explore the studies
                       <span className={styles.linkArrow}>
                         <LinkArrow />
                       </span>
@@ -313,7 +369,12 @@ const LandingPage = (): JSX.Element => {
               </div>
             </div>
             <div className={styles.contentImageCol}>
-              <Image src={AnalyzeDatasetsImg} alt="" />
+              <div className={styles.contentImage}>
+                <Image
+                  src={AnalyzeDatasetsImg}
+                  alt="multi-tissue visualisation with a legend showing which colors correspond to specific cell types"
+                />
+              </div>
             </div>
           </div>
 
@@ -338,7 +399,7 @@ const LandingPage = (): JSX.Element => {
                   corpus can be downloaded directly from R and python.
                 </p>
                 <div className={styles.linkContainer}>
-                  <Link href="/" passHref>
+                  <Link href={ROUTES.COLLECTIONS} passHref>
                     <a>
                       Browse datasets for download
                       <span className={styles.linkArrow}>
@@ -346,17 +407,30 @@ const LandingPage = (): JSX.Element => {
                       </span>
                     </a>
                   </Link>
-                  <span>
-                    Download with <a href="/">R</a> or <a href="/">Python</a>
+                  {/* LINK TO BE UPDATED POST-LAUNCH */}
+                  <a href="#">
+                    Download with R
                     <span className={styles.linkArrow}>
                       <LinkArrow />
                     </span>
-                  </span>
+                  </a>
+                  {/* LINK TO BE UPDATED POST-LAUNCH */}
+                  <a href="#">
+                    Download with Python
+                    <span className={styles.linkArrow}>
+                      <LinkArrow />
+                    </span>
+                  </a>
                 </div>
               </div>
             </div>
             <div className={styles.contentImageCol}>
-              <Image src={DownloadDataImg} alt="" />
+              <div className={styles.contentImage}>
+                <Image
+                  src={DownloadDataImg}
+                  alt="pop-up modal for downloading a dataset"
+                />
+              </div>
             </div>
           </div>
 
@@ -383,19 +457,23 @@ const LandingPage = (): JSX.Element => {
                   explore and annotate datasets.
                 </p>
                 <div className={styles.linkContainer}>
-                  <Link href="/" passHref>
-                    <a>
-                      Learn how it works
-                      <span className={styles.linkArrow}>
-                        <LinkArrow />
-                      </span>
-                    </a>
-                  </Link>
+                  {/* LINK TO BE UPDATED POST-LAUNCH */}
+                  <a href="https://github.com/chanzuckerberg/cellxgene-documentation/blob/main/desktop/quick-start.md">
+                    Learn how it works
+                    <span className={styles.linkArrow}>
+                      <LinkArrow />
+                    </span>
+                  </a>
                 </div>
               </div>
             </div>
             <div className={styles.contentImageCol}>
-              <Image src={ExpediteCollaborationImg} alt="" />
+              <div className={styles.contentImage}>
+                <Image
+                  src={ExpediteCollaborationImg}
+                  alt="pop-up modal for user to create a data directory for storing gene sets and annotations"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -404,59 +482,41 @@ const LandingPage = (): JSX.Element => {
           <div className={styles.sciencePublications}>
             <span className={styles.pubSectionTitle}>Publications</span>
 
-            <div className={styles.pubArticle}>
-              <span className={styles.pubArticleDate}>03.03.21 - medRxiv</span>
-              <h3 className={styles.pubArticleTitle}>
-                Peng J et al.: Estimation of secondary household attack rates
-                for emergent SARS-CoV-2 variants detected by genomic
-                surveillance at a community-based testing site in San Francisco.
-              </h3>
-              <p className={styles.pubArticleCitation}>
-                medRxiv, 2021 doi:10.1101/2021.03.01.21252705
-              </p>
-              <a className={styles.pubArticleLink} href="#">
-                Read More
-                <span className={styles.linkArrow}>
-                  <LinkArrow />
-                </span>
-              </a>
-            </div>
+            {publications.map((pub, articleIndex) => (
+              <div
+                className={styles.pubArticle}
+                key={`pubArticle-${articleIndex}`}
+              >
+                <h3 className={styles.pubArticleTitle}>{pub.title}</h3>
 
-            <div className={styles.pubArticle}>
-              <span className={styles.pubArticleDate}>03.03.21 - medRxiv</span>
-              <h3 className={styles.pubArticleTitle}>
-                Peng J et al.: Estimation of secondary household attack rates
-                for emergent SARS-CoV-2 variants detected by genomic
-                surveillance at a community-based testing site in San Francisco.
-              </h3>
-              <p className={styles.pubArticleCitation}>
-                medRxiv, 2021 doi:10.1101/2021.03.01.21252705
-              </p>
-              <a className={styles.pubArticleLink} href="#">
-                Read More
-                <span className={styles.linkArrow}>
-                  <LinkArrow />
-                </span>
-              </a>
-            </div>
-
-            <div className={styles.pubArticle}>
-              <span className={styles.pubArticleDate}>03.03.21 - medRxiv</span>
-              <h3 className={styles.pubArticleTitle}>
-                Peng J et al.: Estimation of secondary household attack rates
-                for emergent SARS-CoV-2 variants detected by genomic
-                surveillance at a community-based testing site in San Francisco.
-              </h3>
-              <p className={styles.pubArticleCitation}>
-                medRxiv, 2021 doi:10.1101/2021.03.01.21252705
-              </p>
-              <a className={styles.pubArticleLink} href="#">
-                Read More
-                <span className={styles.linkArrow}>
-                  <LinkArrow />
-                </span>
-              </a>
-            </div>
+                {pub.links.map((link, linkIndex) => (
+                  <div
+                    className={styles.pubArticleSubRow}
+                    key={`article-${articleIndex}-link-${linkIndex}`}
+                  >
+                    <div>
+                      <span className={styles.pubArticleDate}>
+                        {link.subheading}
+                      </span>
+                      <p className={styles.pubArticleCitation}>
+                        {link.ctaText}
+                      </p>
+                    </div>
+                    <a
+                      className={styles.pubArticleLink}
+                      href={link.ctaLink}
+                      target="_blank"
+                      rel="noopener"
+                    >
+                      Read More
+                      <span className={styles.linkArrow}>
+                        <LinkArrow />
+                      </span>
+                    </a>
+                  </div>
+                ))}
+              </div>
+            ))}
           </div>
           <div className={styles.publicationsSeparator}></div>
           <div className={styles.newsPublications}>
@@ -464,77 +524,25 @@ const LandingPage = (): JSX.Element => {
               CELL X GENE IN THE NEWS
             </span>
             <div className={styles.pubSectionImage}>
-              <Image src={NewsImage1} alt="" />
+              <a href="https://twitter.com/satijalab/status/1404822000464433158">
+                <Image
+                  src={NewsImage1}
+                  alt="tweet from Rahul Satija (@satijalab) linking to a cellxgene human lung dataset"
+                />
+              </a>
             </div>
             <div className={styles.pubSectionImage}>
-              <Image src={NewsImage2} alt="" />
+              <a href="https://twitter.com/car_men_ita/status/1396854799908282376">
+                <Image
+                  src={NewsImage2}
+                  alt="tweet from Carmen Sandoval-Espinosa, PhD (@car_men_ita) about cellxgene capabilities"
+                />
+              </a>
             </div>
           </div>
         </div>
       </main>
-      <footer className={styles.footer}>
-        <div className={styles.footerTopContainer}>
-          <div className={styles.footerLogo}>
-            <Link href="/" passHref>
-              <a>
-                <Image
-                  data-test-id="cellxgene-logo"
-                  src={Logo}
-                  alt="cellxgene logo"
-                />
-              </a>
-            </Link>
-          </div>
-
-          <div className={styles.footerTopLinks}>
-            <a href="https://github.com/chanzuckerberg/aspen/" target="_blank">
-              Github
-            </a>
-            <a
-              href="https://chanzuckerberg.com/careers/career-opportunities/?initiative=science"
-              target="_blank"
-            >
-              Careers
-            </a>
-            <a href="https://czgenepi.org/resources">Resources</a>
-          </div>
-        </div>
-
-        <div className={styles.footerBottomContainer}>
-          <div className={styles.footerBottomLinks}>
-            <a href="https://czgenepi.org/privacy" target="_blank">
-              Privacy
-            </a>
-            <a href="https://czgenepi.org/terms" target="_blank">
-              Terms
-            </a>
-            <a href="mailto:hello@czgenepi.org">Contact Us</a>
-          </div>
-
-          <div className={styles.footerBottomLogos}>
-            <span className={styles.footerBottomLogoText}>
-              In partnership with:
-            </span>
-            <div className={styles.footerBottomLogosInner}>
-              <a
-                href="https://chanzuckerberg.com/"
-                target="_blank"
-                className={styles.footerBottomLogoLeft}
-              >
-                <Image src={CZILogo} alt="Chan Zuckerberg Initiative logo" />
-              </a>
-              <span className={styles.footerBottomLogoSeparator}></span>
-              <a
-                href="https://www.czbiohub.org/"
-                target="_blank"
-                className={styles.footerBottomLogoRight}
-              >
-                <Image src={BiohubLogo} alt="CZ Biohub logo" />
-              </a>
-            </div>
-          </div>
-        </div>
-      </footer>
+      <LandingFooter />
     </>
   );
 };

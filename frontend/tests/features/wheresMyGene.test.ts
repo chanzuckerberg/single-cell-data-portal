@@ -7,6 +7,9 @@ import { getTestID, getText } from "../utils/selectors";
 //(thuang): BE API doesn't work in local happy
 const TEST_ENVS = ["dev", "staging", "prod"];
 
+const GENE_LABELS_ID = "gene-labels";
+const CELL_TYPE_LABELS_ID = "cell-type-labels";
+
 const describeIfDevStagingProd = TEST_ENVS.includes(TEST_ENV)
   ? describe
   : describe.skip;
@@ -126,7 +129,144 @@ describeIfDevStagingProd("Where's My Gene", () => {
       return filtersPanel.$("*css=button >> text=Sex");
     }
   });
+
+  test("Hierarchical Clustering", async () => {
+    await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`);
+
+    async function getTissueSelectorButton() {
+      return page.$(getTestID("add-tissue"));
+    }
+
+    async function getGeneSelectorButton() {
+      return page.$(getTestID("add-gene"));
+    }
+
+    const TISSUE_COUNT = 1;
+    const GENE_COUNT = 3;
+
+    await clickUntilOptionsShowUp(getTissueSelectorButton);
+    await selectFirstNOptions(TISSUE_COUNT);
+
+    await clickUntilOptionsShowUp(getGeneSelectorButton);
+    await selectFirstNOptions(GENE_COUNT);
+
+    const beforeGeneNames = await getNames(`${getTestID(GENE_LABELS_ID)} text`);
+
+    const beforeCellTypeNames = await getNames(
+      `${getTestID(CELL_TYPE_LABELS_ID)} text`
+    );
+
+    expect(beforeGeneNames.length).toBe(GENE_COUNT);
+    expect(beforeCellTypeNames.length).toBeGreaterThan(0);
+
+    const cellTypeSortDropdown = await page.locator(
+      getTestID("cell-type-sort-dropdown")
+    );
+    await cellTypeSortDropdown.click();
+    await selectNthOption(2);
+
+    const geneSortDropdown = await page.locator(
+      getTestID("gene-sort-dropdown")
+    );
+    await geneSortDropdown.click();
+    await selectNthOption(2);
+
+    const afterGeneNames = await getNames(`${getTestID(GENE_LABELS_ID)} text`);
+
+    const afterCellTypeNames = await getNames(
+      `${getTestID(CELL_TYPE_LABELS_ID)} text`
+    );
+
+    await tryUntil(async () => {
+      expect(afterGeneNames.length).toBe(beforeGeneNames.length);
+      expect(afterCellTypeNames.length).toBe(beforeCellTypeNames.length);
+
+      expect(afterGeneNames).not.toEqual(beforeGeneNames);
+      expect(afterCellTypeNames).not.toEqual(beforeCellTypeNames);
+    });
+  });
+
+  test("delete genes and cell types", async () => {
+    await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`);
+
+    async function getTissueSelectorButton() {
+      return page.$(getTestID("add-tissue"));
+    }
+
+    async function getGeneSelectorButton() {
+      return page.$(getTestID("add-gene"));
+    }
+
+    await clickUntilOptionsShowUp(getTissueSelectorButton);
+    await selectFirstNOptions(3);
+
+    await clickUntilOptionsShowUp(getGeneSelectorButton);
+    await selectFirstNOptions(3);
+
+    await tryUntil(async () => {
+      const canvases = await page.$$("canvas");
+      await expect(canvases.length).not.toBe(0);
+    });
+
+    const beforeGeneNames = await getNames(`${getTestID(GENE_LABELS_ID)} text`);
+    const beforeCellTypeNames = await getNames(
+      `${getTestID(CELL_TYPE_LABELS_ID)} text`
+    );
+
+    await page.click(getText(beforeGeneNames[0]));
+    await page.click(getText(beforeCellTypeNames[0]));
+
+    await tryUntil(async () => {
+      await page.focus(getTestID(GENE_LABELS_ID));
+      await page.keyboard.press("Backspace");
+
+      const afterGeneNames = await getNames(
+        `${getTestID(GENE_LABELS_ID)} text`
+      );
+      const afterCellTypeNames = await getNames(
+        `${getTestID(CELL_TYPE_LABELS_ID)} text`
+      );
+
+      expect(afterGeneNames.length).toBe(beforeGeneNames.length - 1);
+      expect(afterCellTypeNames.length).toBe(beforeCellTypeNames.length - 1);
+
+      expect(afterGeneNames).not.toEqual(beforeGeneNames);
+      expect(afterCellTypeNames).not.toEqual(beforeCellTypeNames);
+    });
+
+    const RESET_CELL_TYPES_BUTTON_ID = "reset-cell-types";
+
+    await tryUntil(async () => {
+      await page.click(getTestID(RESET_CELL_TYPES_BUTTON_ID));
+
+      const resetCellTypesButton = await page.$(
+        getTestID(RESET_CELL_TYPES_BUTTON_ID)
+      );
+
+      expect(resetCellTypesButton).toBe(null);
+    });
+
+    await tryUntil(async () => {
+      const afterCellTypeNames = await getNames(
+        `${getTestID(CELL_TYPE_LABELS_ID)} text`
+      );
+
+      expect(afterCellTypeNames.length).toBe(beforeCellTypeNames.length);
+      expect(afterCellTypeNames).toEqual(beforeCellTypeNames);
+    });
+  });
 });
+
+async function getNames(selector: string): Promise<string[]> {
+  const geneLabelsLocator = await page.locator(selector);
+
+  await tryUntil(async () => {
+    const names = await geneLabelsLocator.allTextContents();
+    expect(typeof names[0]).toBe("string");
+  });
+
+  return geneLabelsLocator.allTextContents();
+}
 
 async function clickUntilOptionsShowUp(
   getTarget: () => Promise<ElementHandle<SVGElement | HTMLElement> | null>
@@ -149,7 +289,23 @@ async function clickUntilOptionsShowUp(
 
 // (thuang): This only works when a dropdown is open
 async function selectFirstOption() {
-  await page.keyboard.press("ArrowDown");
+  await selectFirstNOptions(1);
+}
+
+async function selectFirstNOptions(count: number) {
+  for (let i = 0; i < count; i++) {
+    await page.keyboard.press("ArrowDown");
+    await page.keyboard.press("Enter");
+  }
+
+  await page.keyboard.press("Escape");
+}
+
+async function selectNthOption(number: number) {
+  for (let i = 0; i < number; i++) {
+    await page.keyboard.press("ArrowDown");
+  }
+
   await page.keyboard.press("Enter");
   await page.keyboard.press("Escape");
 }

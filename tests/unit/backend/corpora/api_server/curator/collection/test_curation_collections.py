@@ -30,17 +30,19 @@ class TestAuthToken(BaseAuthAPITest):
             )
             self.assertEqual(200, response.status_code)
             self.assertEqual(response.json["Bucket"], "cellxgene-dataset-submissions-test")
-            self.assertEqual(response.json["UploadPath"], f"{user_name}/{collection.id}/")
+            self.assertEqual(response.json["UploadKeyPrefix"], f"{user_name}/{collection.id}/")
+            # TODO: uncomment once super curators or supported
             # if additional_scope:
-            #     self.assertEqual(response.json["UploadPath"], f"super|curator/{collection.id}/")
+            #     self.assertEqual(response.json["UploadKeyPrefix"], f"super|curator/{collection.id}/")
             # else:
-            #     self.assertEqual(response.json["UploadPath"], f"{user_name}/{collection.id}/")
+            #     self.assertEqual(response.json["UploadKeyPrefix"], f"{user_name}/{collection.id}/")
 
         with self.subTest("collection owner"):
             _test(
                 user_name="test_user_id",
             )
 
+        # TODO: uncomment once super curators or supported
         # with self.subTest("super curator"):
         #     _test(
         #         user_name="test_super_user_id",
@@ -85,11 +87,45 @@ class TestPostCollection(BaseAuthAPITest):
         self.assertEqual(201, response.status_code)
 
     def test__create_collection__InvalidParameters(self):
-        test_collection = dict(name="", description="", contact_name="", contact_email="@email.com")
-        response = self.app.post(
-            "/curation/v1/collections", headers=self.get_auth_headers(), data=json.dumps(test_collection)
-        )
-        self.assertEqual(400, response.status_code)
+        tests = [
+            (
+                dict(
+                    name="",
+                    description="",
+                    contact_name="",
+                    contact_email="@email.com",
+                    links=[{"link_type": "DOI", "link_url": "bad_doi"}],
+                ),
+                [
+                    {"name": "contact_email", "reason": "Invalid format."},
+                    {"name": "description", "reason": "Cannot be blank."},
+                    {"name": "name", "reason": "Cannot be blank."},
+                    {"name": "contact_name", "reason": "Cannot be blank."},
+                    {"link_type": "DOI", "reason": "Invalid DOI"},
+                ],
+            ),
+            (
+                dict(
+                    name="not blank",
+                    description="description",
+                    contact_name="some name",
+                    contact_email="robot@email.com",
+                    links=[
+                        {"link_type": "DOI", "link_url": "doi:duplicated"},
+                        {"link_type": "DOI", "link_url": "doi:duplicated"},
+                    ],
+                ),
+                [{"link_type": "DOI", "reason": "Can only specify a single DOI"}],
+            ),
+        ]
+        for body, expected_errors in tests:
+            with self.subTest(body):
+                response = self.app.post(
+                    "/curation/v1/collections", headers=self.get_auth_headers(), data=json.dumps(body)
+                )
+                self.assertEqual(400, response.status_code)
+                for error in expected_errors:
+                    self.assertIn(error, response.json["detail"])
 
 
 class TestPutCollectionUUID(BaseAuthAPITest):

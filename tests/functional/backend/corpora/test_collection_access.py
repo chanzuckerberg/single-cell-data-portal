@@ -3,7 +3,7 @@ import unittest
 import requests
 from jose import jwt
 
-from tests.functional.backend.corpora.common import BaseFunctionalTestCase
+from tests.functional.backend.common import BaseFunctionalTestCase
 
 
 class TestCollectionAccess(BaseFunctionalTestCase):
