@@ -43,6 +43,10 @@ container-functionaltest:
 	# This target is intended to be run INSIDE a container
 	python3 -m unittest discover --start-directory tests/functional --top-level-directory . --verbose
 
+.PHONY: prod-performance-test
+prod-performance-test:
+	python3 -m unittest discover --start-directory tests/performance --top-level-directory . --verbose
+
 .PHONY: local-backend
 local-backend:
 	$(MAKE) local-server -C ./backend/corpora/api_server
