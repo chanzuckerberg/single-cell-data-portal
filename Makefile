@@ -43,6 +43,11 @@ container-functionaltest:
 	# This target is intended to be run INSIDE a container
 	python3 -m unittest discover --start-directory tests/functional --top-level-directory . --verbose
 
+.PHONY: container-performance-test
+container-performance-test:
+	# This target is intended to be run INSIDE a container -- to run locally hard code deployment stage in test file
+	python3 -m unittest discover --start-directory tests/performance --top-level-directory . --verbose
+
 .PHONY: local-backend
 local-backend:
 	$(MAKE) local-server -C ./backend/corpora/api_server
@@ -215,6 +220,16 @@ local-functional-test: ## Run functional tests in the dev environment
 	chamber -b secretsmanager exec corpora/backend/$${DEPLOYMENT_STAGE}/auth0-secret -- \
 		docker-compose $(COMPOSE_OPTS) run --rm -T -e CLIENT_ID -e CLIENT_SECRET -e TEST_ACCOUNT_USERNAME -e TEST_ACCOUNT_PASSWORD -e DEPLOYMENT_STAGE -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e AWS_SESSION_TOKEN $${EXTRA_ARGS} \
 		backend bash -c "cd /single-cell-data-portal && make container-functionaltest"
+
+.PHONY: local-performance-test
+local-performance-test: export AWS_PROFILE=$(TEST_AWS_PROFILE)
+local-performance-test: ## Run functional tests in the dev environment
+	if [ -n "$${BOTO_ENDPOINT_URL+set}" ]; then \
+		EXTRA_ARGS="-e BOTO_ENDPOINT_URL"; \
+	fi; \
+	chamber -b secretsmanager exec corpora/backend/$${DEPLOYMENT_STAGE}/auth0-secret -- \
+		docker-compose $(COMPOSE_OPTS) run --rm -T -e CLIENT_ID -e CLIENT_SECRET -e TEST_ACCOUNT_USERNAME -e TEST_ACCOUNT_PASSWORD -e DEPLOYMENT_STAGE -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e AWS_SESSION_TOKEN $${EXTRA_ARGS} \
+		backend bash -c "cd /single-cell-data-portal && make container-performance-test"
 
 .PHONY: local-smoke-test
 local-smoke-test: ## Run frontend/e2e tests in the dev environment
