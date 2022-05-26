@@ -1,7 +1,6 @@
 import csv
 import gzip
 import json
-import os
 import pathlib
 from typing import IO, Dict, Optional
 
