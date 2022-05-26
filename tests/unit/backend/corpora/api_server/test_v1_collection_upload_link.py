@@ -84,7 +84,7 @@ class TestCollectionPostUploadLink(BaseAuthAPITest):
 
     @patch(
         "backend.corpora.common.utils.dl_sources.url.DropBoxURL.file_info",
-        return_value={"size": 31 * GB, "name": "file.txt"},
+        return_value={"size": 51 * GB, "name": "file.txt"},
     )
     def test__oversized__413(self, mock_func):
         path = "/dp/v1/collections/test_collection_id/upload-links"
