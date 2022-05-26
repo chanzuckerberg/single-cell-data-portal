@@ -1,0 +1,148 @@
+// FOOTER
+
+.footer {
+  background: #000000;
+  color: #ffffff;
+  padding: 65px 116px 65px 93px;
+
+  @media (max-width: 992px) {
+    padding: 32px 20px 42px;
+  }
+
+  &Logo {
+    width: 128px;
+
+    @media (max-width: 992px) {
+      margin-bottom: 40px;
+      align-self: flex-start;
+    }
+  }
+
+  &TopContainer {
+    margin-bottom: 70px;
+  }
+
+  &TopContainer,
+  &BottomContainer {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+
+    @media (max-width: 992px) {
+      flex-direction: column;
+    }
+  }
+
+  &BottomContainer {
+    @media (max-width: 992px) {
+      flex-direction: column-reverse;
+    }
+  }
+
+  &TopLinks {
+    display: flex;
+
+    @media (max-width: 992px) {
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+    }
+
+    a {
+      font-size: 14px;
+      line-height: 24px;
+      letter-spacing: 0.3px;
+      color: white;
+      text-decoration: none;
+      font-weight: 400;
+
+      @media (max-width: 992px) {
+        background: rgb(38, 37, 37);
+        border-radius: 24px;
+        padding: 7px 14px;
+        width: 100%;
+        max-width: 280px;
+        text-align: center;
+      }
+
+      &:hover {
+        text-decoration: underline;
+      }
+
+      & + a {
+        margin-left: 38px;
+
+        @media (max-width: 992px) {
+          margin-left: 0;
+          margin-top: 10px;
+        }
+      }
+    }
+  }
+
+  &BottomLinks {
+    display: flex;
+
+    @media (max-width: 992px) {
+      border-top: 1px solid #757575;
+      padding-top: 20px;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    a {
+      font-size: 14px;
+      line-height: 18px;
+      letter-spacing: 0.3px;
+      color: white;
+      text-decoration: none;
+      font-weight: 400;
+
+      &:hover {
+        text-decoration: underline;
+      }
+
+      & + a {
+        margin-left: 14px;
+        padding-left: 14px;
+        border-left: 1px solid #ffffff;
+      }
+    }
+  }
+
+  &BottomLogos {
+    display: flex;
+    align-items: center;
+
+    @media (max-width: 992px) {
+      flex-direction: column;
+    }
+
+    &Inner {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+
+      @media (max-width: 992px) {
+        margin: 20px auto;
+      }
+    }
+  }
+
+  &BottomLogo {
+    &Text {
+      display: inline-block;
+      margin-right: 27px;
+    }
+
+    &Left {
+      display: inline-block;
+      width: 70px;
+    }
+  }
+
+  // END FOOTER
+}

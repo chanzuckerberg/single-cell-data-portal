@@ -12,7 +12,8 @@ from backend.corpora.common.utils.db_session import db_session_manager
 from backend.corpora.common.utils.exceptions import CorporaException
 
 logger = logging.getLogger(__name__)
-UUID_REGEX = "[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
+USERNAME_REGEX = r"[\w\-\|]+"
+UUID_REGEX = r"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
 
 
 def dataset_submissions_handler(s3_event: dict, unused_context) -> None:
@@ -31,7 +32,7 @@ def dataset_submissions_handler(s3_event: dict, unused_context) -> None:
         bucket, key, size = parse_s3_event_record(record)
         logger.debug(f"{bucket=}, {key=}, {size=}")
 
-        collection_uuid, incoming_curator_tag = parse_key(key)
+        username, collection_uuid, incoming_curator_tag = parse_key(key)
 
         if not collection_uuid or not incoming_curator_tag:
             raise CorporaException(f"Missing collection UUID and/or curator tag for {key=}")
@@ -46,6 +47,10 @@ def dataset_submissions_handler(s3_event: dict, unused_context) -> None:
             logger.debug(f"{collection_owner=}, {dataset_uuid=}")
             if not collection_owner:
                 raise CorporaException(f"Collection {collection_uuid} does not exist")
+            elif username != collection_owner:
+                raise CorporaException(
+                    f"user:{username} does not have permission to modify datasets in collection {collection_uuid}."
+                )
 
             s3_uri = f"s3://{bucket}/{key}"
             upload(
@@ -72,7 +77,7 @@ def parse_s3_event_record(s3_event_record: dict) -> Tuple[str, str, int]:
     return bucket, key, size
 
 
-def parse_key(key: str) -> Tuple[Optional[str], Optional[str]]:
+def parse_key(key: str) -> Tuple[Optional[str], Optional[str], Optional[str]]:
     """
     Parses the S3 object key to extract the collection UUID and curator tag, ignoring the REMOTE_DEV_PREFIX
     :param key:
@@ -82,12 +87,12 @@ def parse_key(key: str) -> Tuple[Optional[str], Optional[str]]:
     if rdev_prefix:
         key = key.replace(f"{rdev_prefix}/", "")
 
-    matched = re.match(f"^({UUID_REGEX})/(.*)$", key)
+    matched = re.match(f"^({USERNAME_REGEX})/({UUID_REGEX})/(.*)$", key)
     if matched:
-        collection_uuid, curator_tag = matched.groups()
-        return collection_uuid.lower(), curator_tag
+        username, collection_uuid, curator_tag = matched.groups()
+        return username, collection_uuid.lower(), curator_tag
     else:
-        return None, None
+        return None, None, None
 
 
 def get_extension(path: str) -> str:

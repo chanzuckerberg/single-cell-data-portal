@@ -70,7 +70,7 @@ where the `FROM` parameter is the base name of the `.sqlc` file downloaded from 
 make db/import FROM=corpora_prod-202102221309
 ```
 - Note: The file is stored locally under `$REPO_ROOT/backend/database/corpora_${DEPLOYMENT_STAGE}-<YYYYmmddHHMM>.sqlc` 
-but the `make db/import` command retrieves it from `/import/$(FROM).sqlc` due to the way [the local paths are mapped to the Docker container](https://github.com/chanzuckerberg/corpora-data-portal/blob/ffca067b9e4aea237fa2bd7c7a9cbc5813ebd449/docker-compose.yml#L13)
+but the `make db/import` command retrieves it from `/import/$(FROM).sqlc` due to the way [the local paths are mapped to the Docker container](https://github.com/chanzuckerberg/single-cell-data-portal/blob/ffca067b9e4aea237fa2bd7c7a9cbc5813ebd449/docker-compose.yml#L13)
 
 You may need to run this a few times, until there are no significant errors.
  - Note: `pg_restore: error: could not execute query: ERROR:  role "rdsadmin" does not exist` is not a significant error

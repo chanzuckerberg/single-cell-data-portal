@@ -1,5 +1,4 @@
 import urllib
-import jose.jwt
 import time
 import random
 import sys
@@ -8,6 +7,8 @@ from flask import Flask, request, redirect, make_response, jsonify
 import subprocess
 
 # seconds until the token expires
+from jose import jwt
+
 TOKEN_EXPIRES = 3
 
 
@@ -15,7 +16,7 @@ TOKEN_EXPIRES = 3
 class MockOauthApp:
     def __init__(self, port, additional_scope=None, token_duration=0):
         self.port = port
-        self.additional_scope = additional_scope
+        self.additional_scope = additional_scope if additional_scope else []
         self.token_duration = int(token_duration)
 
         # mock flask app
@@ -44,26 +45,16 @@ class MockOauthApp:
         )
 
     def api_oauth_token(self):
-        expires_at = time.time() + self.token_duration
-        headers = dict(alg="RS256", kid="fake_kid")
-        payload = dict(
-            name="Fake User",
-            sub="test_user_id",
-            email="fake_user@email.com",
-            email_verified=True,
-            exp=expires_at,
-            scope=self.additional_scope,
-        )
-
-        jwt = jose.jwt.encode(claims=payload, key="mysecret", algorithm="HS256", headers=headers)
+        token_claims = dict(name="Fake User", sub="test_user_id", email="fake_user@email.com", email_verified=True)
+        jwt = make_token(token_claims, self.token_duration, self.additional_scope)
         r = {
             "access_token": jwt,
             "id_token": jwt,
             "refresh_token": f"random-{time.time()}",
-            "scope": "openid profile email offline write:collections",
+            "scope": "openid profile email offline " + " ".join(self.additional_scope),
             "expires_in": TOKEN_EXPIRES,
             "token_type": "Bearer",
-            "expires_at": expires_at,
+            "expires_at": self.token_duration,
         }
         return make_response(jsonify(r))
 
@@ -142,6 +133,16 @@ def get_auth_token(app):
     url = f"/dp/v1/oauth2/callback?code=fakecode&state={args['state']}"
     response = app.get(url, headers=dict(host="localhost", Cookie=response.headers["Set-Cookie"]))
     return response.headers["Set-Cookie"]
+
+
+def make_token(token_claims: dict, token_duration: int = 0, additional_scope: list = None) -> str:
+    additional_scope = additional_scope if additional_scope else []
+    expires_at = time.time() + token_duration
+    headers = dict(alg="RS256", kid="fake_kid")
+    token_claims.update(exp=expires_at, scope=additional_scope)
+
+    token = jwt.encode(claims=token_claims, key="mysecret", algorithm="HS256", headers=headers)
+    return token
 
 
 if __name__ == "__main__":
