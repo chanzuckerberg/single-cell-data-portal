@@ -89,11 +89,18 @@ class Dataset(Entity):
         super().update(commit=commit, **kwargs)
 
     @classmethod
-    def get(cls, session: Session, dataset_uuid, include_tombstones=False) -> "Dataset":
-        dataset = super().get(session, dataset_uuid)
+    def get(cls, session: Session, dataset_uuid, include_tombstones=False, collection_uuid=None) -> "Dataset":
+        filters = []
         if not include_tombstones:
-            if dataset and dataset.tombstone is True:
-                return None
+            filters.append(cls.table.tombstone != True)  # noqa
+        if collection_uuid:
+            filters.append(cls.table.collection_id == collection_uuid)
+        if filters:
+            filters.append(cls.table.id == dataset_uuid)
+            result = session.query(cls.table).filter(*filters).one_or_none()
+            dataset = cls(result) if result else None
+        else:
+            dataset = super().get(session, dataset_uuid)
         return dataset
 
     @classmethod

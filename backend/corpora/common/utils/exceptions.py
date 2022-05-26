@@ -21,7 +21,3 @@ class InvalidProcessingStateException(CorporaException):
 
 class NonExistentDatasetException(CorporaException):
     pass
-
-
-class DuplicateTagExistsException(CorporaException):
-    pass
