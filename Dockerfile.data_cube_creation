@@ -10,14 +10,13 @@ RUN pip3 install awscli
 # For lighter weight Docker images
 ENV PIP_NO_CACHE_DIR=1
 
-WORKDIR /single-cell-data-portal
+WORKDIR /
 
-ADD backend/__init__.py single-cell-data-portal/backend/__init__.py
-ADD backend/wmg single-cell-data-portal/backend/wmg
-ADD backend/corpora single-cell-data-portal/backend/corpora
-ADD backend/ontology_files single-cell-data-portal/backend/ontology_files
+ADD backend/__init__.py backend/__init__.py
+ADD backend/wmg backend/wmg
+ADD backend/corpora backend/corpora
 
-RUN pip3 install -r single-cell-data-portal/backend/wmg/requirements.txt
+RUN pip3 install -r backend/wmg/requirements.txt
 
 ARG HAPPY_BRANCH="unknown"
 ARG HAPPY_COMMIT=""
@@ -26,4 +25,4 @@ LABEL commit=${HAPPY_COMMIT}
 ENV COMMIT_SHA=${HAPPY_COMMIT}
 ENV COMMIT_BRANCH=${HAPPY_BRANCH}
 
-CMD ["python3", "-m", "single-cell-data-portal.backend.wmg.data.cube_pipeline"]
+CMD ["python3", "-m", "backend.wmg.data.cube_pipeline"]
