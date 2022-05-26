@@ -38,7 +38,7 @@ const LandingHeader = (): JSX.Element => {
           {/* CHANGE TO router.route === "/" FOR PROD */}
           {router.route === "/landing-page" && (
             <Link
-              href="https://chanzuckerberg.com/careers/career-opportunities/?team=data,design,engineering,it,infrastructure-security,product,technical-program-management/"
+              href="https://chanzuckerberg.com/careers/career-opportunities/?team=data,design,engineering,product,technical-program-management&initiative=science&gh_src=20d9f28d1us"
               passHref
             >
               <a className={styles.btnLink}>We're Hiring</a>

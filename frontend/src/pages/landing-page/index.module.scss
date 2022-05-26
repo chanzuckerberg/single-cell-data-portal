@@ -54,11 +54,28 @@
     margin: 0 auto;
     height: 550px;
     background-color: #000;
+    background-size: 50% auto;
+    margin-top: 48px;
+
+    @media (max-width: 1199px) {
+      padding-right: 40px;
+    }
+
+    @media (max-width: 768px) {
+      flex-direction: column-reverse;
+      height: auto;
+      padding-left: 40px;
+      padding-top: 40px;
+    }
   }
   &ImgContainer {
     width: 50%;
     height: 100%;
     position: relative;
+
+    @media (max-width: 768px) {
+      width: 100%;
+    }
 
     .laptopImg {
       position: absolute;
@@ -66,10 +83,29 @@
       left: 25%;
       width: 100%;
       min-width: 900px;
+      z-index: 0;
+
+      @media (max-width: 1199px) {
+        left: 5%;
+        min-width: 700px;
+      }
+
+      @media (max-width: 768px) {
+        position: relative;
+        left: 0;
+      }
     }
   }
   &TextContainer {
     width: 50%;
+
+    @media (max-width: 768px) {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
 
     h1 {
       color: #fff;
@@ -143,16 +179,31 @@
     padding-left: 80px;
     display: flex;
     justify-content: space-between;
+    scroll-margin-top: 148px;
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      scroll-margin-top: 348px;
+      padding-left: 40px;
+    }
   }
 
   &Nav {
     display: flex;
     justify-content: center;
     width: 100%;
-    max-width: 1066px;
-    margin: 0 auto;
-    padding-top: 160px;
-    padding-bottom: 120px;
+    position: sticky;
+    top: 48px;
+    z-index: 1;
+    background-color: white;
+    margin-top: 140px;
+    margin-bottom: 120px;
+    padding-top: 20px;
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      padding-top: 0px;
+    }
   }
 
   &Link {
@@ -165,6 +216,11 @@
     cursor: pointer;
     padding: 0 20px 16px;
     transition: all 0.4s;
+
+    @media (max-width: 768px) {
+      padding: 14px 20px;
+      font-size: 14px;
+    }
 
     &:hover {
       color: #000000;
@@ -187,6 +243,10 @@
     flex-shrink: 0;
     margin-right: 60px;
     max-width: 513px;
+
+    @media (max-width: 768px) {
+      width: 100%;
+    }
 
     .figure {
       &Wrapper {
@@ -226,6 +286,10 @@
       max-width: 320px;
       margin-left: 34px;
       transition: opacity 0.4s;
+
+      @media (max-width: 768px) {
+        padding-bottom: 60px;
+      }
 
       h2 {
         font-size: 28px;
@@ -300,16 +364,36 @@
   padding: 0 125px;
   margin: 0 auto 140px;
 
+  @media (max-width: 1199px) {
+    padding: 0 40px;
+  }
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+  }
+
   &Separator {
     min-height: 100%;
     width: 1px;
     background-color: #e1e1e1;
     margin: 0 80px;
+
+    @media (max-width: 1199px) {
+      margin: 0 40px;
+    }
+
+    @media (max-width: 768px) {
+      display: none;
+    }
   }
 }
 
 .pubArticle {
   max-width: 470px;
+
+  @media (max-width: 768px) {
+    max-width: none;
+  }
 
   & + .pubArticle {
     margin-top: 75px;
@@ -349,6 +433,7 @@
     line-height: 24px;
     letter-spacing: 0.3px;
     color: #3867fa;
+    flex-shrink: 0;
 
     .linkArrow {
       margin-left: 4px;
@@ -359,6 +444,14 @@
     display: flex;
     align-items: flex-start;
     justify-content: space-between;
+
+    @media (max-width: 1199px) {
+      flex-direction: column;
+    }
+
+    @media (max-width: 768px) {
+      flex-direction: row;
+    }
 
     & + .pubArticleSubRow {
       border-top: 1px solid #e1e1e1;
@@ -377,10 +470,20 @@
   letter-spacing: 1px;
   color: #545454;
   margin-bottom: 64px;
+
+  &.newsTitle {
+    @media (max-width: 768px) {
+      margin-top: 64px;
+    }
+  }
 }
 
 .pubSectionImage {
   max-width: 500px;
+
+  @media (max-width: 768px) {
+    max-width: none;
+  }
 
   & + .pubSectionImage {
     margin-top: 70px;

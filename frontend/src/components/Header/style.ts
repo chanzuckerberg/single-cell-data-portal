@@ -11,7 +11,7 @@ export const Wrapper = styled.div`
   position: fixed;
   top: 0;
   width: 100%;
-  z-index: 1;
+  z-index: 2;
 `;
 
 export const MainWrapper = styled.div`
@@ -105,4 +105,16 @@ export const BetaChip = styled(Chip)`
   color: white;
   margin-left: ${PT_GRID_SIZE_PX / 2}px;
   height: ${PT_GRID_SIZE_PX * 2}px !important;
+`;
+
+export const HiringLink = styled.a`
+  background-color: #3867fa;
+  padding: 7px 14px;
+  border-radius: 4px;
+  color: #fff;
+  font-weight: 600;
+  &:hover {
+    color: #fff;
+    text-decoration: none;
+  }
 `;

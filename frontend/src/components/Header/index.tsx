@@ -14,6 +14,7 @@ import AuthButtons from "./components/AuthButtons";
 import LearnButton from "./components/LearnButton";
 import {
   BetaChip,
+  HiringLink,
   LearnButtonWrapper,
   Left,
   LinkWrapper,
@@ -70,6 +71,12 @@ const Header: FC = () => {
           </Nav>
         </Left>
         <Right>
+          {/* CHANGE TO "/" ON PROD */}
+          {pathname === "/landing-page" && (
+            <Link href="#" passHref>
+              <HiringLink>We're Hiring!</HiringLink>
+            </Link>
+          )}
           {isMyCollectionsShown && (
             <LinkWrapper>
               <Link href={ROUTES.MY_COLLECTIONS} passHref>
