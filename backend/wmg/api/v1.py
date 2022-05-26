@@ -36,7 +36,6 @@ def query():
     expression_summary = query.expression_summary(criteria)
     cell_counts = query.cell_counts(criteria)
     dot_plot_matrix_df = build_dot_plot_matrix(expression_summary, cell_counts)
-    # all_filter_dims_values = extract_filter_dims_values(expression_summary)
 
     include_filter_dims = request.get("include_filter_dims", False)
     response_filter_dims_values = build_filter_dims_values(criteria, query) if include_filter_dims else {}
