@@ -35,9 +35,9 @@ To redeploy your app after updating, run `make deploy` again. To undeploy the ap
 run `make destroy`.
 
 ## Testing
-Tests are run in the top level directory `corpora-data-portal`.
+Tests are run in the top level directory `single-cell-data-portal`.
 
-See the [top level README](https://github.com/chanzuckerberg/corpora-data-portal/blob/main/README.md#commands)
+See the [top level README](https://github.com/chanzuckerberg/single-cell-data-portal/blob/main/README.md#commands)
 for how to run tests.
 
 ## Managing the Lambda IAM role and assume role policy
