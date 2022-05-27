@@ -163,6 +163,16 @@ class TestPublish(BaseAuthAPITest):
 
         self.verify_publish_collection_with_links(collection, revision.id)
 
+    def test__publish_collection_revision_with_links_and_dataset_changes__OK(self):
+        collection = Collection.get_collection(self.session, collection_uuid="test_collection_with_link")
+        self.generate_dataset(self.session, collection_id=collection.id, published_at=self.mock_published_at)
+        revision = collection.create_revision()
+        self.generate_dataset(self.session, collection_id=revision.id)  # Collection will have Dataset changes
+
+        collection.update(published_at=self.mock_published_at, keep_links=True)
+
+        self.verify_publish_collection_with_links(collection, revision.id)
+
     @patch("backend.corpora.common.utils.cloudfront.create_invalidation_for_index_paths")
     def test_publish_collection_does_cloudfront_invalidation(self, mock_cloudfront):
         """Publish a new collection with a single dataset."""

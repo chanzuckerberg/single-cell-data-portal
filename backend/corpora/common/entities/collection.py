@@ -254,10 +254,11 @@ class Collection(Entity):
                 remove_relationships=True,
             )
             revision["data_submission_policy_version"] = data_submission_policy_version
-            public_collection.update(
+            public_collection.update(  # This function call deletes old links (keep_links param defaults to False)
                 commit=False,
                 **revision,
             )
+            self.session.expire(public_collection)
             for link in self.links:
                 CollectionLink(link).update(collection_id=self.revision_of, commit=False)
             is_existing_collection = True
@@ -290,7 +291,7 @@ class Collection(Entity):
 
         if is_existing_collection:
             if has_dataset_changes:
-                public_collection.update(commit=False, remove_attr="revised_at", revised_at=now)
+                public_collection.update(commit=False, remove_attr="revised_at", revised_at=now, keep_links=True)
             self.delete()
             self.db_object = public_collection.db_object
 
