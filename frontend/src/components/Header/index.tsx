@@ -1,7 +1,7 @@
 import { AnchorButton } from "@blueprintjs/core";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { FC } from "react";
+import { FC, useRef, useState } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { ROUTES } from "src/common/constants/routes";
@@ -14,11 +14,17 @@ import AuthButtons from "./components/AuthButtons";
 import LearnButton from "./components/LearnButton";
 import {
   BetaChip,
+  DesktopHomeLink,
   HiringLink,
   LearnButtonWrapper,
   Left,
   LinkWrapper,
   MainWrapper,
+  MobileHomeLink,
+  MobileMenuButton,
+  MobileMenuButtonBar,
+  MobileNavTray,
+  MobileNavWrapper,
   Nav,
   Right,
   Wrapper,
@@ -30,72 +36,111 @@ const Header: FC = () => {
   const { pathname } = useRouter();
   const isMyCollectionsShown = userInfo?.name && isCurator;
 
+  const mobileNavTray = useRef<HTMLDivElement>(null!);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  function mobileNavHandler(mobileMenuOpen: boolean) {
+    if (!mobileMenuOpen) {
+      setMobileMenuOpen(true);
+      // mobileNavTray.current.style.right = "0";
+      document.documentElement.style.overflowY = "hidden";
+    } else {
+      // mobileNavTray.current.style.right = "-100vw";
+      document.documentElement.style.overflowY = "visible";
+      setMobileMenuOpen(false);
+      // setTimeout(()=>{
+      // }, 350)
+    }
+  }
+
   return (
-    <Wrapper>
-      <MainWrapper>
-        <Left>
-          <HomepageLink />
-          <Nav>
-            <LinkWrapper>
-              <Link href={ROUTES.HOMEPAGE} passHref>
-                <AnchorButton
-                  active={isRouteActive(pathname, ROUTES.HOMEPAGE)}
-                  href="passHref"
-                  minimal
-                  text="Datasets"
-                />
-              </Link>
-            </LinkWrapper>
-            <LinkWrapper>
-              <Link href={ROUTES.COLLECTIONS} passHref>
-                <AnchorButton
-                  active={isRouteActive(pathname, ROUTES.COLLECTIONS)}
-                  href="passHref"
-                  minimal
-                  text="Collections"
-                />
-              </Link>
-            </LinkWrapper>
-            <LinkWrapper>
-              <Link href={ROUTES.WHERE_IS_MY_GENE} passHref>
-                <AnchorButton
-                  active={isRouteActive(pathname, ROUTES.WHERE_IS_MY_GENE)}
-                  href="passHref"
-                  minimal
-                  text="scExpression"
-                  onClick={handleWMGClick}
-                />
-              </Link>
-              <BetaChip label="Beta" size="small" />
-            </LinkWrapper>
-          </Nav>
-        </Left>
-        <Right>
-          {/* CHANGE TO "/" ON PROD */}
-          {pathname === "/landing-page" && (
-            <Link href="#" passHref>
-              <HiringLink>We're Hiring!</HiringLink>
-            </Link>
-          )}
-          {isMyCollectionsShown && (
-            <LinkWrapper>
-              <Link href={ROUTES.MY_COLLECTIONS} passHref>
-                <AnchorButton
-                  active={isRouteActive(pathname, ROUTES.MY_COLLECTIONS)}
-                  href="passHref"
-                  minimal
-                  text="My Collections"
-                />
-              </Link>
-            </LinkWrapper>
-          )}
-          <LearnButtonWrapper>
-            <LearnButton />
-          </LearnButtonWrapper>
-          <AuthButtons />
-        </Right>
-      </MainWrapper>
-    </Wrapper>
+    <MobileNavWrapper>
+      <MobileHomeLink>
+        <HomepageLink />
+      </MobileHomeLink>
+      <MobileMenuButton onClick={() => mobileNavHandler(mobileMenuOpen)}>
+        {/* {mobileMenuOpen ? "close" : "open"} */}
+        <MobileMenuButtonBar className={mobileMenuOpen ? "open" : ""} />
+        <MobileMenuButtonBar className={mobileMenuOpen ? "open" : ""} />
+        <MobileMenuButtonBar className={mobileMenuOpen ? "open" : ""} />
+      </MobileMenuButton>
+      <MobileNavTray
+        className={`${mobileMenuOpen ? "active" : ""}`}
+        ref={mobileNavTray}
+      >
+        <Wrapper>
+          <MainWrapper>
+            <Left>
+              <DesktopHomeLink>
+                <HomepageLink />
+              </DesktopHomeLink>
+              <Nav>
+                <LinkWrapper>
+                  <Link href={ROUTES.HOMEPAGE} passHref>
+                    <AnchorButton
+                      active={isRouteActive(pathname, ROUTES.HOMEPAGE)}
+                      href="passHref"
+                      minimal
+                      text="Datasets"
+                    />
+                  </Link>
+                </LinkWrapper>
+                <LinkWrapper>
+                  <Link href={ROUTES.COLLECTIONS} passHref>
+                    <AnchorButton
+                      active={isRouteActive(pathname, ROUTES.COLLECTIONS)}
+                      href="passHref"
+                      minimal
+                      text="Collections"
+                    />
+                  </Link>
+                </LinkWrapper>
+                <LinkWrapper>
+                  <Link href={ROUTES.WHERE_IS_MY_GENE} passHref>
+                    <AnchorButton
+                      active={isRouteActive(pathname, ROUTES.WHERE_IS_MY_GENE)}
+                      href="passHref"
+                      minimal
+                      text="scExpression"
+                      onClick={handleWMGClick}
+                    />
+                  </Link>
+                  <BetaChip label="Beta" size="small" />
+                </LinkWrapper>
+              </Nav>
+            </Left>
+            <Right>
+              {/* CHANGE TO "/" ON PROD */}
+              {pathname === "/landing-page" && (
+                <a
+                  href="https://chanzuckerberg.com/careers/career-opportunities/?team=data,design,engineering,product,technical-program-management&initiative=science&gh_src=20d9f28d1us"
+                  target="_blank"
+                  rel="noopener"
+                >
+                  <HiringLink>We're Hiring!</HiringLink>
+                </a>
+              )}
+              {isMyCollectionsShown && (
+                <LinkWrapper>
+                  <Link href={ROUTES.MY_COLLECTIONS} passHref>
+                    <AnchorButton
+                      active={isRouteActive(pathname, ROUTES.MY_COLLECTIONS)}
+                      href="passHref"
+                      minimal
+                      text="My Collections"
+                    />
+                  </Link>
+                </LinkWrapper>
+              )}
+              <LearnButtonWrapper>
+                <LearnButton />
+              </LearnButtonWrapper>
+              <AuthButtons />
+            </Right>
+          </MainWrapper>
+        </Wrapper>
+      </MobileNavTray>
+    </MobileNavWrapper>
   );
 
   function handleWMGClick() {
