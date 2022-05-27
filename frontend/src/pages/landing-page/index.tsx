@@ -25,27 +25,27 @@ const LandingPage = (): JSX.Element => {
   const { ref: observerSection1, inView: inView1 } = useInView({
     rootMargin: "-50% 0px -50% 0px",
   });
-  const scrollSection1 = useRef();
+  const scrollSection1 = useRef<HTMLDivElement>(null!);
 
   const { ref: observerSection2, inView: inView2 } = useInView({
     rootMargin: "-50% 0px -50% 0px",
   });
-  const scrollSection2 = useRef();
+  const scrollSection2 = useRef<HTMLDivElement>(null!);
 
   const { ref: observerSection3, inView: inView3 } = useInView({
     rootMargin: "-50% 0px -50% 0px",
   });
-  const scrollSection3 = useRef();
+  const scrollSection3 = useRef<HTMLDivElement>(null!);
 
   const { ref: observerSection4, inView: inView4 } = useInView({
     rootMargin: "-50% 0px -50% 0px",
   });
-  const scrollSection4 = useRef();
+  const scrollSection4 = useRef<HTMLDivElement>(null!);
 
   const { ref: observerSection5, inView: inView5 } = useInView({
     rootMargin: "-50% 0px -50% 0px",
   });
-  const scrollSection5 = useRef();
+  const scrollSection5 = useRef<HTMLDivElement>(null!);
 
   // HERO NUMBERS. DUMMY DATA TO BE REPLACED.
   const [cellsHeroNum] = useState("30M+");
@@ -197,7 +197,7 @@ const LandingPage = (): JSX.Element => {
                 inView1 ? styles.active : ""
               }`}
               onClick={() => {
-                scrollSection1.current.scrollIntoView({ behavior: "smooth" });
+                scrollSection1.current?.scrollIntoView({ behavior: "smooth" });
               }}
             >
               Find single-cell data
@@ -207,7 +207,7 @@ const LandingPage = (): JSX.Element => {
                 inView2 ? styles.active : ""
               }`}
               onClick={() => {
-                scrollSection2.current.scrollIntoView({ behavior: "smooth" });
+                scrollSection2.current?.scrollIntoView({ behavior: "smooth" });
               }}
             >
               Explore gene expression
@@ -217,7 +217,7 @@ const LandingPage = (): JSX.Element => {
                 inView3 ? styles.active : ""
               }`}
               onClick={() => {
-                scrollSection3.current.scrollIntoView({ behavior: "smooth" });
+                scrollSection3.current?.scrollIntoView({ behavior: "smooth" });
               }}
             >
               Analyze datasets
@@ -227,7 +227,7 @@ const LandingPage = (): JSX.Element => {
                 inView4 ? styles.active : ""
               }`}
               onClick={() => {
-                scrollSection4.current.scrollIntoView({ behavior: "smooth" });
+                scrollSection4.current?.scrollIntoView({ behavior: "smooth" });
               }}
             >
               Download data
@@ -237,7 +237,7 @@ const LandingPage = (): JSX.Element => {
                 inView5 ? styles.active : ""
               }`}
               onClick={() => {
-                scrollSection5.current.scrollIntoView({ behavior: "smooth" });
+                scrollSection5.current?.scrollIntoView({ behavior: "smooth" });
               }}
             >
               Expedite collaboration
