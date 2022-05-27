@@ -1,7 +1,7 @@
 import unittest
 import requests
 
-from tests.functional.backend.corpora.common import BaseFunctionalTestCase
+from tests.functional.backend.common import BaseFunctionalTestCase
 
 
 class TestApiKey(BaseFunctionalTestCase):

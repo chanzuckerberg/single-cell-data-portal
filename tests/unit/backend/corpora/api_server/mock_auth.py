@@ -14,7 +14,7 @@ TOKEN_EXPIRES = 3
 
 # A mocked out oauth server, which serves all the endpoints needed by the oauth type.
 class MockOauthApp:
-    def __init__(self, port, additional_scope=None, token_duration=0):
+    def __init__(self, port, additional_scope=None, token_duration=TOKEN_EXPIRES):
         self.port = port
         self.additional_scope = additional_scope if additional_scope else []
         self.token_duration = int(token_duration)
@@ -135,7 +135,7 @@ def get_auth_token(app):
     return response.headers["Set-Cookie"]
 
 
-def make_token(token_claims: dict, token_duration: int = 0, additional_scope: list = None) -> str:
+def make_token(token_claims: dict, token_duration: int = 5, additional_scope: list = None) -> str:
     additional_scope = additional_scope if additional_scope else []
     expires_at = time.time() + token_duration
     headers = dict(alg="RS256", kid="fake_kid")

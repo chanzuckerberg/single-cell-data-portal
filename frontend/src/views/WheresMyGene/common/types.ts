@@ -23,6 +23,7 @@ export interface CellTypeSummary {
 export interface CellType {
   id: string;
   name: string;
+  depth?: number;
 }
 
 /**

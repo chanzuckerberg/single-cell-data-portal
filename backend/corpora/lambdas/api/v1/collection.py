@@ -10,7 +10,7 @@ import re
 import logging
 
 from .common import get_collection
-from ....common.corpora_orm import DbCollection, CollectionVisibility
+from ....common.corpora_orm import DbCollection, CollectionVisibility, ProjectLinkType
 from ....common.entities import Collection
 from .authorization import is_user_owner_or_allowed, owner_or_allowed
 from ....common.utils.http_exceptions import (
@@ -104,8 +104,7 @@ def get_collections_index():
     return make_response(jsonify(updated_collection), 200)
 
 
-@dbconnect
-def post_collection_revision(collection_uuid: str, token_info: dict):
+def post_collection_revision_common(collection_uuid: str, token_info: dict):
     db_session = g.db_session
     collection = get_collection(
         db_session,
@@ -118,27 +117,36 @@ def post_collection_revision(collection_uuid: str, token_info: dict):
     except sqlalchemy.exc.IntegrityError as ex:
         db_session.rollback()
         raise ConflictException() from ex
-    result = collection_revision.reshape_for_api()
+    return collection_revision
 
+
+@dbconnect
+def post_collection_revision(collection_uuid: str, token_info: dict):
+    collection_revision = post_collection_revision_common(collection_uuid, token_info)
+    result = collection_revision.reshape_for_api()
     result["access_type"] = "WRITE"
     return make_response(jsonify(result), 201)
 
 
-def normalize_and_get_doi(body):
+doi_regex = re.compile(r"^10.\d{4,9}/[-._;()/:A-Z0-9]+$", flags=re.I)
+
+
+def normalize_and_get_doi(body: dict, errors: list) -> Optional[str]:
     """
     1. Check for DOI uniqueness in the payload
     2. Normalizes it so that the DOI is always a link (starts with https://doi.org)
     3. Returns the newly normalized DOI
     """
     links = body.get("links", [])
-    dois = [link for link in links if link["link_type"] == "DOI"]
+    dois = [link for link in links if link["link_type"] == ProjectLinkType.DOI.name]
 
     if not dois:
         return None
 
     # Verify that a single DOI exists
     if len(dois) > 1:
-        raise InvalidParametersHTTPException("Can only specify a single DOI")
+        errors.append({"link_type": ProjectLinkType.DOI.name, "reason": "Can only specify a single DOI"})
+        return None
 
     doi_node = dois[0]
     doi = doi_node["link_url"]
@@ -146,8 +154,9 @@ def normalize_and_get_doi(body):
     parsed = urlparse(doi)
     if not parsed.scheme and not parsed.netloc:
         parsed_doi = parsed.path
-        if not re.match(r"^10.\d{4,9}/[-._;()/:A-Z0-9]+$", parsed_doi, flags=re.I):
-            raise InvalidParametersHTTPException("Invalid DOI")
+        if not doi_regex.match(parsed_doi):
+            errors.append({"link_type": ProjectLinkType.DOI.name, "reason": "Invalid DOI"})
+            return None
         doi_node["link_url"] = f"https://doi.org/{parsed_doi}"
 
     return doi
@@ -168,11 +177,50 @@ def get_publisher_metadata(provider, doi):
         return None
 
 
-@dbconnect
-def create_collection(body: object, user: str):
-    db_session = g.db_session
+email_regex = re.compile(r"(.+)@(.+)\.(.+)")
 
-    doi = normalize_and_get_doi(body)
+
+def verify_collection_links(body: dict, errors: list) -> None:
+    def _error_message(i: int, _url: str) -> dict:
+        return {"name": f"links[{i}]", "reason": "Invalid URL.", "value": _url}
+
+    for index, link in enumerate(body.get("links", [])):
+        if link["link_type"] == ProjectLinkType.DOI.name:
+            continue
+        url = link["link_url"]
+        try:
+            result = urlparse(url.strip())
+        except ValueError:
+            errors.append(_error_message(index, url))
+        if not all([result.scheme, result.netloc]):
+            errors.append(_error_message(index, url))
+
+
+def verify_collection_body(body: dict, errors: list, allow_none: bool = False) -> None:
+    result = email_regex.match(body.get("contact_email", ""))
+    if not result and not allow_none:
+        errors.append({"name": "contact_email", "reason": "Invalid format."})
+
+    if not body.get("description") and not allow_none:  # Check if description is None or 0 length
+        errors.append({"name": "description", "reason": "Cannot be blank."})
+
+    if not body.get("name") and not allow_none:  # Check if name is None or 0 length
+        errors.append({"name": "name", "reason": "Cannot be blank."})
+
+    if not body.get("contact_name") and not allow_none:  # Check if contact_name is None or 0 length
+        errors.append({"name": "contact_name", "reason": "Cannot be blank."})
+
+    verify_collection_links(body, errors)
+
+
+@dbconnect
+def create_collection(body: dict, user: str):
+    db_session = g.db_session
+    errors = []
+    verify_collection_body(body, errors)
+    doi = normalize_and_get_doi(body, errors)
+    if errors:
+        raise InvalidParametersHTTPException(detail=errors)
     if doi is not None:
         provider = crossref_provider.CrossrefProvider()
         publisher_metadata = get_publisher_metadata(provider, doi)
@@ -221,6 +269,8 @@ def delete_collection(collection_uuid: str, token_info: dict):
 @dbconnect
 def update_collection(collection_uuid: str, body: dict, token_info: dict):
     db_session = g.db_session
+    errors = []
+    verify_collection_body(body, errors, allow_none=True)
     collection = get_collection(
         db_session,
         collection_uuid,
@@ -230,7 +280,9 @@ def update_collection(collection_uuid: str, body: dict, token_info: dict):
 
     # Compute the diff between old and new DOI
     old_doi = collection.get_doi()
-    new_doi = normalize_and_get_doi(body)
+    new_doi = normalize_and_get_doi(body, errors)
+    if errors:
+        raise InvalidParametersHTTPException(detail=errors)
 
     if old_doi and not new_doi:
         # If the DOI was deleted, remove the publisher_metadata field
