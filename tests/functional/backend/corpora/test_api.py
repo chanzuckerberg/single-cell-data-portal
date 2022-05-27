@@ -51,7 +51,9 @@ class TestApi(BaseFunctionalTestCase):
             "contact_name": "Madrid Sparkle",
             "curator_name": "John Smith",
             "description": "Well here are some words",
-            "links": [{"link_name": "a link to somewhere", "link_type": "PROTOCOL", "link_url": "https://protocol.com"}],
+            "links": [
+                {"link_name": "a link to somewhere", "link_type": "PROTOCOL", "link_url": "https://protocol.com"}
+            ],
             "name": "my2collection",
         }
 
@@ -77,7 +79,9 @@ class TestApi(BaseFunctionalTestCase):
                 "contact_email": "person@random.com",
                 "contact_name": "Doctor Who",
                 "description": "These are different words",
-                "links": [{"link_name": "The Source", "link_type": "DATA_SOURCE", "link_url": "https://datasource.com"}],
+                "links": [
+                    {"link_name": "The Source", "link_type": "DATA_SOURCE", "link_url": "https://datasource.com"}
+                ],
                 "name": "lots of cells",
             }
             res = requests.put(
@@ -128,7 +132,9 @@ class TestApi(BaseFunctionalTestCase):
             "contact_email": "lisbon@gmail.com",
             "contact_name": "Madrid Sparkle",
             "description": "Well here are some words",
-            "links": [{"link_name": "a link to somewhere", "link_type": "PROTOCOL", "link_url": "https://protocol.com"}],
+            "links": [
+                {"link_name": "a link to somewhere", "link_type": "PROTOCOL", "link_url": "https://protocol.com"}
+            ],
             "name": "my2collection",
         }
 
@@ -168,7 +174,9 @@ class TestApi(BaseFunctionalTestCase):
             "contact_name": "Madrid Sparkle",
             "curator_name": "John Smith",
             "description": "Well here are some words",
-            "links": [{"link_name": "a link to somewhere", "link_type": "PROTOCOL", "link_url": "https://protocol.com"}],
+            "links": [
+                {"link_name": "a link to somewhere", "link_type": "PROTOCOL", "link_url": "https://protocol.com"}
+            ],
             "name": "my2collection",
         }
 
