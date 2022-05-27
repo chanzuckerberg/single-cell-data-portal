@@ -141,7 +141,7 @@ describeIfDevStagingProd("Where's My Gene", () => {
       return page.$(getTestID("add-gene"));
     }
 
-    const TISSUE_COUNT = 3;
+    const TISSUE_COUNT = 1;
     const GENE_COUNT = 3;
 
     await clickUntilOptionsShowUp(getTissueSelectorButton);
