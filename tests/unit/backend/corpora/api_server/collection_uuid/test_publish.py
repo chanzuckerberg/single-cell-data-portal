@@ -155,9 +155,11 @@ class TestPublish(BaseAuthAPITest):
         self.verify_publish_collection_with_links(collection)
 
     def test__publish_collection_revision_with_links__OK(self):
-        revision = Collection.get_collection(self.session, revision_of="test_collection_id")
-        collection = Collection.get_collection(self.session, collection_uuid="test_collection_id")
-        collection.update(published_at=self.mock_published_at)
+        collection = Collection.get_collection(self.session, collection_uuid="test_collection_with_link")
+        self.generate_dataset(self.session, collection_id=collection.id, published_at=self.mock_published_at)
+        revision = collection.create_revision()
+
+        collection.update(published_at=self.mock_published_at, keep_links=True)
 
         self.verify_publish_collection_with_links(collection, revision.id)
 
