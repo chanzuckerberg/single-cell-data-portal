@@ -279,7 +279,9 @@ class Collection(Entity):
             )
             revision["data_submission_policy_version"] = data_submission_policy_version
             revision["revised_at"] = now if has_dataset_changes else self.revised_at
-            public_collection.update(**revision, commit=False)  # This function call deletes old links (keep_links param defaults to False)
+            public_collection.update(
+                **revision, commit=False
+            )  # This function call deletes old links (keep_links param defaults to False)
             for link in self.links:
                 link.collection_id = self.revision_of
             self.delete()

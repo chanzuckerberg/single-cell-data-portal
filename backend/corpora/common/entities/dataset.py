@@ -317,7 +317,6 @@ class Dataset(Entity):
                     "published",
                     "revised_at",
                     "explorer_url",
-                    "published_at",
                 ],
                 remove_relationships=True,
             )
