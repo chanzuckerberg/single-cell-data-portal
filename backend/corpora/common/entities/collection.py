@@ -262,6 +262,8 @@ class Collection(Entity):
                     revised_dataset.publish_new(now)
                     has_dataset_changes = True
             self.session.flush()
+            # calling expire because the above code updates and deletes rows related to this object. If we don't expire
+            # the object, SqlAlchmey will try to modify rows that don't exists and thrown an error.
             self.session.expire(self.db_object)
             revision = self.to_dict(
                 remove_attr=(
