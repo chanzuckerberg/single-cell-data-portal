@@ -164,7 +164,9 @@ class TestPublish(BaseAuthAPITest):
         self.verify_publish_collection_with_links(collection, revision.id)
 
     def test__publish_collection_revision_with_links_and_dataset_changes__OK(self):
-        collection = Collection.get_collection(self.session, collection_uuid="test_collection_with_link")
+        collection = Collection.get_collection(
+            self.session, collection_uuid="test_collection_with_link_and_dataset_changes"
+        )
         self.generate_dataset(self.session, collection_id=collection.id, published_at=self.mock_published_at)
         revision = collection.create_revision()
         self.generate_dataset(self.session, collection_id=revision.id)  # Collection will have Dataset changes
