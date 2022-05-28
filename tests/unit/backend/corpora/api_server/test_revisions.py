@@ -609,15 +609,22 @@ class TestPublishRevision(BaseRevisionTest):
         }
         self.refresh_datasets()
 
-        # Add some links to the public collection
+        # add new dataset
+        new_dataset_id = self.generate_dataset_with_s3_resources(self.session, collection_id=self.rev_collection.id).id
+        dataset_ids = {ds.id for ds in self.pub_collection.datasets}
+        dataset_ids.add(new_dataset_id)
+
+        # Modify collectoin details
         self.rev_collection.update(**expected_body)
-        pub_s3_objects, _ = self.get_s3_objects_from_collections()
 
-        # Published revision with collection details updated
+        # get revision datasets
+        _, rev_s3_objects = self.get_s3_objects_from_collections()
+
+        # Published revision with collection details updated, new dataset, and refreshed datasets
         response_json = self.publish_collection(self.rev_collection)
-        self.assertPublishedCollectionOK(expected_body, pub_s3_objects)
+        self.assertPublishedCollectionOK(expected_body, rev_s3_objects)
 
-        self.verify_datasets(response_json, {ds.id for ds in self.pub_collection.datasets})
+        self.verify_datasets(response_json, dataset_ids)
 
         # Check published_at and revised_at
         # Collection: Only revised_at should be updated
