@@ -258,7 +258,6 @@ class Collection(Entity):
                 commit=False,
                 **revision,
             )
-            self.session.expire(public_collection)
             for link in self.links:
                 CollectionLink(link).update(collection_id=self.revision_of, commit=False)
             is_existing_collection = True
