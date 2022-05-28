@@ -23,7 +23,8 @@ from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingM
 class BaseRevisionTest(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
     def setUp(self):
         super().setUp()
-        pub_collection = self.generate_collection(self.session, visibility="PUBLIC")
+        self.public_links = [{"link_name": "old link", "link_type": "OTHER", "link_url": "http://old.com"}]
+        pub_collection = self.generate_collection(self.session, visibility="PUBLIC", links=self.public_links)
         for i in range(2):
             self.generate_dataset_with_s3_resources(self.session, collection_id=pub_collection.id, published=True)
         self.pub_collection = pub_collection
@@ -569,6 +570,7 @@ class TestPublishRevision(BaseRevisionTest):
             "links": [
                 {"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"},
                 {"link_name": "DOI Link 2", "link_url": "http://doi.org/10.1017", "link_type": "DOI"},
+                *self.public_links,
             ],
             "data_submission_policy_version": "1.0",
         }
@@ -590,6 +592,42 @@ class TestPublishRevision(BaseRevisionTest):
         for dataset in response_json["datasets"]:
             self.assertIsNone(dataset.get("published_at"))
             self.assertIsNone(dataset.get("revised_at"))
+
+    def test__publish_revision_with_collection_info_updated_and_refreshed_datasets__201(self):
+        """Publish a revision with collection detail changes."""
+        expected_body = {
+            "name": "collection name",
+            "description": "This is a test collection",
+            "contact_name": "person human",
+            "contact_email": "person@human.com",
+            "links": [
+                {"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"},
+                {"link_name": "DOI Link 2", "link_url": "http://doi.org/10.1017", "link_type": "OTHER"},
+                *self.public_links,
+            ],
+            "data_submission_policy_version": "1.0",
+        }
+        self.refresh_datasets()
+
+        # Add some links to the public collection
+        self.rev_collection.update(**expected_body)
+        pub_s3_objects, _ = self.get_s3_objects_from_collections()
+
+        # Published revision with collection details updated
+        response_json = self.publish_collection(self.rev_collection)
+        self.assertPublishedCollectionOK(expected_body, pub_s3_objects)
+
+        self.verify_datasets(response_json, {ds.id for ds in self.pub_collection.datasets})
+
+        # Check published_at and revised_at
+        # Collection: Only revised_at should be updated
+        self.assertIsNone(response_json.get("published_at"))
+        self.assertEqual(self.mock_timestamp, datetime.utcfromtimestamp(response_json["revised_at"]))
+
+        # Datatsets: None should be updated
+        for dataset in response_json["datasets"]:
+            self.assertIsNone(dataset.get("published_at"))
+            self.assertEqual(self.mock_timestamp, datetime.utcfromtimestamp(dataset["revised_at"]))
 
     def test__with_revision_and_existing_datasets(self):
         """Publish a revision with the same, existing datasets."""
