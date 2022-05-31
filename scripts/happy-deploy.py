@@ -8,9 +8,9 @@ import click
 import requests
 
 github_org = "chanzuckerberg"
-github_repo = "corpora-data-portal"
+github_repo = "single-cell-data-portal"
 github_graphql_endpoint = "https://api.github.com/graphql"
-github_deployment_endpoint = "https://api.github.com/repos/chanzuckerberg/corpora-data-portal/deployments"
+github_deployment_endpoint = "https://api.github.com/repos/chanzuckerberg/single-cell-data-portal/deployments"
 
 
 def get_latest_successful_deployment(github_api_token, stage):

@@ -80,3 +80,6 @@ class Entity:
                 setattr(self.db_object, key, value)
         if commit:
             self.session.commit()
+
+    def __repr__(self):
+        return f"<{self.__class__.__name__}(id={self.id})>"
