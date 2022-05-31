@@ -94,7 +94,7 @@ def validate_cube(snapshot):
     # check XIST appears in women but not men
     validate_sex_specific_marker_gene(f"{snapshot}/{EXPRESSION_SUMMARY_CUBE_NAME}")
     # check human lung cells of particular types have marker genes
-
+    validate_lung_cell_marker_genes(f"{snapshot}/{EXPRESSION_SUMMARY_CUBE_NAME}")
     # FCN1: monocytes
     # TUBB4B: ciliated cells, and this gene is expressed to lower values in most other cell types
     # CD68: macrophages
@@ -203,15 +203,20 @@ def validate_lung_cell_marker_genes(path_to_expression_summary):
     secretory_cells = validation_cell_types['secretory cells']
 
     with tiledb.open(path_to_expression_summary) as cube:
-        human_long_cube = cube.df[:lung_ontology_id:lung_ontology_id, human_ontology_id:human_ontology_id]
+        human_lung_cube = cube.df[:,lung_ontology_id:lung_ontology_id, human_ontology_id:human_ontology_id]
 
         # todo -- what to check for??
 
 
 
 
-def validate_expression_levels_for_particular_gene_dataset():
-    pass
+def validate_expression_levels_for_particular_gene_dataset(path_to_expression_summary):
+    human_ontology_id = validation_species_ontologies['human']
+    lung_ontology_id = validation_tissues_with_many_cell_types['lung']
+    with tiledb.open(path_to_expression_summary) as cube:
+        human_lung_cube = cube.df[:,lung_ontology_id:lung_ontology_id, human_ontology_id:human_ontology_id]
+        lung_dataset_datafame = human_lung_cube.query(f"dataset_id == '{validation_dataset_uuid}'")
+
 
 
 def validate_dataset_counts(path_to_cube):
