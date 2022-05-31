@@ -21,7 +21,7 @@ class TestRevisions(BaseFunctionalTestCase):
             "contact_email": "lisbon@gmail.com",
             "contact_name": "Madrid Sparkle",
             "description": "Well here are some words",
-            "links": [{"link_name": "a link to somewhere", "link_type": "PROTOCOL", "link_url": "protocol.com"}],
+            "links": [{"link_name": "a link to somewhere", "link_type": "PROTOCOL", "link_url": "http://protocol.com"}],
             "name": "my2collection",
         }
 

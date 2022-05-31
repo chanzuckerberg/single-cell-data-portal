@@ -63,6 +63,7 @@ def upload(
     if file_extension not in allowed_file_formats:
         raise InvalidFileFormatException(f"{url} must be in the file format(s): {allowed_file_formats}")
 
+    # Check if datasets can be added to the collection
     collection = Collection.get_collection(
         db_session,
         collection_uuid,
@@ -72,21 +73,27 @@ def upload(
     if not collection:
         raise NonExistentCollectionException(f"Collection {collection_uuid} does not exist")
 
+    # Check if a dataset already exists
     if dataset_id:
-        # Update dataset
-        dataset = Dataset.get(db_session, dataset_id)
-        if collection_uuid != dataset.collection_id:
+        dataset = Dataset.get(db_session, dataset_id, collection_uuid=collection_uuid)
+        if not dataset:
             raise NonExistentDatasetException(f"Dataset {dataset_id} does not exist")
+    elif curator_tag:
+        dataset = Dataset.get_dataset_from_curator_tag(db_session, collection_uuid, curator_tag)
+    else:
+        dataset = None
+
+    if dataset:
+        # Update dataset
+        if dataset.processing_status.processing_status not in [
+            ProcessingStatus.SUCCESS,
+            ProcessingStatus.FAILURE,
+        ]:
+            raise InvalidProcessingStateException(
+                f"Unable to reprocess dataset {dataset_id}: {dataset.processing_status.processing_status=}"
+            )
         else:
-            if dataset.processing_status.processing_status not in [
-                ProcessingStatus.SUCCESS,
-                ProcessingStatus.FAILURE,
-            ]:
-                raise InvalidProcessingStateException(
-                    f"Unable to reprocess dataset {dataset_id}: {dataset.processing_status.processing_status=}"
-                )
-            else:
-                dataset.reprocess()
+            dataset.reprocess()
 
     else:
         # Add new dataset
