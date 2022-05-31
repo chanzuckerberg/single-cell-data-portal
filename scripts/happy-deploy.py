@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-import dateutil.parser as dp
 import json
 import os
 import sys
 
 import click
+import dateutil.parser as dp
 import requests
 
 github_org = "chanzuckerberg"
@@ -59,7 +59,7 @@ def get_latest_successful_deployment(github_api_token, stage):
         for status in node["statuses"]["nodes"]:
             if status["state"] == "SUCCESS":
                 parsed_t = dp.parse(status["updatedAt"])
-                if sha_tuple[0] == None:
+                if sha_tuple[0] is None:
                     sha_tuple = (gh_sha, parsed_t)
                 else:
                     if sha_tuple[1] < parsed_t:
@@ -139,7 +139,8 @@ def happy_deploy(deployment_stage, github_sha, dry_run):
 
     if github_sha is None:
         print(
-            f"Error: Could not find a successful deployment for deployment stage {read_deployment_stage}, and no --github_sha was given"
+            f"Error: Could not find a successful deployment for deployment stage {read_deployment_stage}, "
+            f"and no --github_sha was given"
         )
         sys.exit(1)
 
