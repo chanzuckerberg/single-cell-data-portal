@@ -190,6 +190,7 @@ def from_url(url: str) -> URL:
             return url_obj
 
 
+# RegisteredSources are processed in the order registered and returns the first match.
 RegisteredSources.add(DropBoxURL)
 RegisteredSources.add(S3URL)
 RegisteredSources.add(S3URI)
