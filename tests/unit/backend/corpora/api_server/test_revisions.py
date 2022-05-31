@@ -158,7 +158,7 @@ class TestRevision(BaseRevisionTest):
             self.session,
             visibility=CollectionVisibility.PUBLIC,
             links=[
-                {"link_name": "Link 1", "link_url": "This is a new link", "link_type": "OTHER"},
+                {"link_name": "Link 1", "link_url": "http://link.good", "link_type": "OTHER"},
                 {"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"},
             ],
         )
