@@ -284,6 +284,7 @@ class Collection(Entity):
             )  # This function call deletes old links (keep_links param defaults to False)
             for link in self.links:
                 link.collection_id = self.revision_of
+            self.session.flush()
             self.delete()
             self.db_object = public_collection.db_object
         else:
