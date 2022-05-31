@@ -102,6 +102,7 @@ def validate_cube(snapshot):
 
     # check expression levels are correct for lung map dataset uuid 3de0ad6-4378-4f62-b37b-ec0b75a50d94
     # genes ["MALAT1", "CCL5"]
+    validate_expression_levels_for_particular_gene_dataset(f"{snapshot}/{EXPRESSION_SUMMARY_CUBE_NAME}")
 
 
 def validate_cube_size(path_to_cube):
@@ -133,7 +134,7 @@ def validate_tissues_in_cube(path_to_cube):
         for mandatory_species in validation_species_ontologies.keys():
             assert (mandatory_species in tissue_list)
         logger.info(f"{tissue_count} included in cube")
-        logger.info(f"Included species ids are: {[species for species in tissue_list]}")
+        logger.info(f"Included tissue ids are: {[tissues for tissues in tissue_list]}")
 
         # todo check/log cell type per tissue
 
@@ -176,6 +177,7 @@ def validate_sex_specific_marker_gene(path_to_expression_summary):
         # should be expressed in most female cells and no male cells
         assert (female_xist_cube.nnz.sum() > male_xist_cube.nnz.sum())
         # should be expressed in females at a much higher rate
+        # todo -- do as average per cell instead of just sum
         assert (female_xist_cube['sum'].sum() > male_xist_cube['sum'].sum() * 1000)
 
 
@@ -185,7 +187,7 @@ def validate_lung_cell_marker_genes(path_to_expression_summary):
     gene: cell_type
     FCN1: monocytes
     TUBB4B: ciliated cells, and this gene is expressed in lower values in most other cell types
-    CD68: macrophages
+    CD68: macrophages (alveioler)
     AQP5: goblet cells and secreting cells
     """
     human_ontology_id = validation_species_ontologies['human']
@@ -196,12 +198,14 @@ def validate_lung_cell_marker_genes(path_to_expression_summary):
     CD68_ontology_id = validation_gene_ontologies['CD68']
     AQP5_ontology_id = validation_gene_ontologies['AQP5']
 
-    monocyte_ontology_id = validation_cell_types['monocytes']
+    monocyte_ontology_id = validation_cell_types['monocytes'] # use multiple monocyte cell types
     ciliated_cells_ontology_id = validation_cell_types['ciliated cells']
     macrophage_ontology_id = validation_cell_types['macrophage']
     goblet_cell_ontology_id = validation_cell_types['goblet cells']
     secretory_cells = validation_cell_types['secretory cells']
 
+
+    # get avg expression value of gene for the celltype. That average should be greater than the avg for all other cell types (for FCN1 would use monocytes)
     with tiledb.open(path_to_expression_summary) as cube:
         human_lung_cube = cube.df[:,lung_ontology_id:lung_ontology_id, human_ontology_id:human_ontology_id]
 
@@ -209,13 +213,33 @@ def validate_lung_cell_marker_genes(path_to_expression_summary):
 
 
 
-
 def validate_expression_levels_for_particular_gene_dataset(path_to_expression_summary):
     human_ontology_id = validation_species_ontologies['human']
     lung_ontology_id = validation_tissues_with_many_cell_types['lung']
+    MALAT1_ontology_id = validation_gene_ontologies["MALAT1"]
+    CCL5_ontology_id = validation_gene_ontologies["CCL5"]
     with tiledb.open(path_to_expression_summary) as cube:
         human_lung_cube = cube.df[:,lung_ontology_id:lung_ontology_id, human_ontology_id:human_ontology_id]
-        lung_dataset_datafame = human_lung_cube.query(f"dataset_id == '{validation_dataset_uuid}'")
+        lung_df = human_lung_cube.query(f"dataset_id == '{validation_dataset_uuid}'")
+        MALAT1_expression = lung_df.query(f"gene_ontology_term_id == '{MALAT1_ontology_id}'")
+        CCL5_expression = lung_df.query(f"gene_ontology_term_id == '{CCL5_ontology_id}'")
+
+        malat1_expression_sum_by_cell_type = MALAT1_expression.groupby('cell_type_ontology_term_id').sum()['sum']
+        ccl5_expression_sum_by_cell_type = CCL5_expression.groupby('cell_type_ontology_term_id').sum()['sum']
+
+        expected_values = anndata.read_h5ad('lung_map_3de0ad6d-4378-4f62-b37b-ec0b75a50d94.h5ad')
+        malat_expected = expected_values.obs.assign(MALAT1=expected_values.layers['rankit'].toarray()[:, 0])
+        ccl5_expected = expected_values.obs.assign(CCL5=expected_values.layers['rankit'].toarray()[:, 1])
+
+        expected_malat1_by_cell_type = malat_expected.groupby("cell_type_ontology_term_id").sum().MALAT1
+        expected_ccl5_by_cell_type = ccl5_expected.groupby("cell_type_ontology_term_id").sum().CCL5
+
+        ## Todo actually compare once the h5ad file is swapped
+        malat1_comparison = expected_malat1_by_cell_type.compare(malat1_expression_sum_by_cell_type)
+        ccl5_comparison = expected_ccl5_by_cell_type.compare(ccl5_expression_sum_by_cell_type)
+        print(malat1_comparison)
+        print(ccl5_comparison)
+
 
 
 
