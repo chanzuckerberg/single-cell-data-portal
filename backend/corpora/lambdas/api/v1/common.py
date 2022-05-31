@@ -31,7 +31,8 @@ def delete_dataset_common(db_session: Session, dataset: Dataset, token_info: dic
             dataset.update(tombstone=True, published=False)
         else:
             if dataset.original_id:
+                # The dataset is a revision of a published dataset
                 original = Dataset.get(db_session, dataset.original_id)
-                original.create_revision(dataset.collection.id)
-            dataset.asset_deletion()
-            dataset.delete()
+                original.create_revision(dataset.collection.id)  # Restore the original dataset and S3 assets
+            dataset.asset_deletion()  # Delete the S3 assets and database rows.
+            dataset.delete()  # Delete the dataset row.
