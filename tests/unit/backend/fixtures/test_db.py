@@ -122,20 +122,23 @@ class TestDatabase:
         collection = DbCollection(
             id="test_collection_with_link",
             visibility=CollectionVisibility.PUBLIC.name,
-            owner="Someone_else",
+            owner="test_user_id",
             name="test_collection_name",
             description="test_description",
             data_submission_policy_version="0",
+            contact_name="Some Body",
+            contact_email="somebody@chanzuckerberg.com",
         )
         self.session.add(collection)
         collection = DbCollection(
-            id="test_collection_with_link_revision",
-            revision_of="test_collection_with_link",
-            visibility=CollectionVisibility.PRIVATE.name,
-            owner="Someone_else",
+            id="test_collection_with_link_and_dataset_changes",
+            visibility=CollectionVisibility.PUBLIC.name,
+            owner="test_user_id",
             name="test_collection_name",
             description="test_description",
             data_submission_policy_version="0",
+            contact_name="Some Body",
+            contact_email="somebody@chanzuckerberg.com",
         )
         self.session.add(collection)
         self.session.commit()
@@ -181,17 +184,19 @@ class TestDatabase:
             )
             self.session.add(
                 DbCollectionLink(
-                    id=f"test_publish_revision_with_links__{link_type.value}_link",
+                    id=f"test_publish_revision_with_link__{link_type.value}_link",
                     collection_id="test_collection_with_link",
+                    link_name=f"test_{link_type.value}_link_name",
                     link_url=f"http://test_link_{link_type.value}_url.place",
                     link_type=link_type.name,
                 )
             )
             self.session.add(
                 DbCollectionLink(
-                    id=f"test_publish_revision_with_links__revision_{link_type.value}_link",
-                    collection_id="test_collection_with_link_revision",
-                    link_url=f"http://test_link_{link_type.value}_url.place_REVISION",
+                    id=f"test_publish_revision_with_link_and_dataset_changes__{link_type.value}_link",
+                    collection_id="test_collection_with_link_and_dataset_changes",
+                    link_name=f"test_{link_type.value}_link_name",
+                    link_url=f"http://test_link_{link_type.value}_url.place",
                     link_type=link_type.name,
                 )
             )

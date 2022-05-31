@@ -85,8 +85,8 @@ class BogusDbCollectionLinkParams:
         bogus_data = dict(
             collection_id="test_collection_id",
             link_name="link_name",
-            link_url="link_url",
-            link_type=CollectionLinkType.DOI,
+            link_url="http://good.link",
+            link_type=CollectionLinkType.OTHER,
         )
         bogus_data.update(**kwargs)
         return bogus_data

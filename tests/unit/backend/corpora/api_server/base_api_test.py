@@ -83,11 +83,11 @@ class BaseAuthAPITest(BaseAPITest):
             "Content-Type": "application/json",
         }
 
+    def make_super_curator_token(self):
+        return make_token(dict(sub="someone_else", email="fake_user@email.com"), additional_scope=["write:collections"])
+
     def make_super_curator_header(self):
-        token = make_token(
-            dict(sub="someone_else", email="fake_user@email.com"), additional_scope=["write:collections"]
-        )
-        return {"Authorization": "Bearer " + token, "Content-Type": "application/json"}
+        return {"Authorization": "Bearer " + self.make_super_curator_token(), "Content-Type": "application/json"}
 
     def make_not_owner_header(self):
         token = make_token(dict(sub="not_owner", email="fake_user@email.com"))

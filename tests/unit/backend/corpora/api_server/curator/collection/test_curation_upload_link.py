@@ -6,6 +6,11 @@ from backend.corpora.common.corpora_orm import CollectionVisibility, ProcessingS
 from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest
 
 
+@patch(
+    "backend.corpora.common.utils.dl_sources.url.DropBoxURL.file_info",
+    return_value={"size": 1, "name": "file.h5ad"},
+)
+@patch("backend.corpora.common.upload.start_upload_sfn")
 class TestPutLink(BaseAuthAPITest):
     @classmethod
     def setUpClass(cls):
@@ -24,11 +29,11 @@ class TestPutLink(BaseAuthAPITest):
         )
         return response
 
-    def test__from_link__no_auth(self):
+    def test__from_link__no_auth(self, *mocks):
         response = self._test_new()
         self.assertEqual(401, response.status_code)
 
-    def test__from_link__Not_Public(self):
+    def test__from_link__Not_Public(self, *mocks):
         response = self._test_new(
             dict(visibility=CollectionVisibility.PUBLIC.name),
             self.get_auth_headers(),
@@ -36,19 +41,20 @@ class TestPutLink(BaseAuthAPITest):
         )
         self.assertEqual(403, response.status_code)
 
-    def test__from_link__Not_Owner(self):
+    def test__from_link__Not_Owner(self, *mocks):
         response = self._test_new(
-            dict(owner="someone else"), self.get_auth_headers(), body={"curator_tag": "test", "link": self.dummy_link}
+            dict(owner="someone else"),
+            self.make_not_owner_header(),
+            body={"curator_tag": "test", "link": self.dummy_link},
         )
         self.assertEqual(403, response.status_code)
 
-    @patch("backend.corpora.common.upload.start_upload_sfn")
-    def test__new_from_link__OK(self, start_upload_sfn):
-        response = self._test_new({}, self.get_auth_headers(), body={"curator_tag": "test", "link": self.good_link})
+    def test__new_from_link__OK(self, *mocks):
+        headers = self.make_curator_header()
+        response = self._test_new({}, headers, body={"curator_tag": "test", "link": self.good_link})
         self.assertEqual(202, response.status_code)
 
-    @patch("backend.corpora.common.upload.start_upload_sfn")
-    def test__new_from_link__Super_Curator(self, start_upload_sfn):
+    def test__new_from_link__Super_Curator(self, *mocks):
         headers = self.make_super_curator_header()
         response = self._test_new({}, headers, body={"curator_tag": "test", "link": self.good_link})
         self.assertEqual(202, response.status_code)
@@ -70,8 +76,7 @@ class TestPutLink(BaseAuthAPITest):
         )
         return response
 
-    @patch("backend.corpora.common.upload.start_upload_sfn")
-    def test__existing_from_link__OK(self, start_upload_sfn):
+    def test__existing_from_link__OK(self, *mocks):
         with self.subTest("dataset_id"):
             response = self._test_existing(self.get_auth_headers())
             self.assertEqual(202, response.status_code)
@@ -79,8 +84,7 @@ class TestPutLink(BaseAuthAPITest):
             response = self._test_existing(self.get_auth_headers(), use_curator_tag=True)
             self.assertEqual(202, response.status_code)
 
-    @patch("backend.corpora.common.upload.start_upload_sfn")
-    def test__existing_from_link__Super_Curator(self, start_upload_sfn):
+    def test__existing_from_link__Super_Curator(self, *mocks):
         headers = self.make_super_curator_header()
         with self.subTest("dataset_id"):
             response = self._test_existing(headers, use_curator_tag=True)
@@ -89,8 +93,7 @@ class TestPutLink(BaseAuthAPITest):
             response = self._test_existing(headers, use_curator_tag=True)
             self.assertEqual(202, response.status_code)
 
-    @patch("backend.corpora.common.upload.start_upload_sfn")
-    def test__curator_tag_ignored_when_dataset_id_is_present__OK(self, start_upload_sfn):
+    def test__curator_tag_ignored_when_dataset_id_is_present__OK(self, *mocks):
         curator_tag = "test.h5ad"
         headers = self.get_auth_headers()
         headers["Content-Type"] = "application/json"

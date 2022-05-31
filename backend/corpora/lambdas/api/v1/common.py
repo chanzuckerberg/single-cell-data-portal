@@ -1,4 +1,5 @@
 from flask import make_response, jsonify
+from sqlalchemy.orm import Session
 
 from backend.corpora.common.corpora_orm import CollectionVisibility
 from backend.corpora.common.entities import Collection, Dataset
