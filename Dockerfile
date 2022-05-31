@@ -13,6 +13,7 @@ RUN apt-get update && \
 # Make python3 the default 'python' executable.
 RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 1
 
+
 # Don't re-run pip install unless either requirements.txt has changed.
 WORKDIR /single-cell-data-portal
 ADD requirements.txt /single-cell-data-portal/requirements.txt

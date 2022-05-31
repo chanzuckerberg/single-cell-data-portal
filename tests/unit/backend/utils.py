@@ -31,7 +31,12 @@ class BogusCollectionParams:
     @classmethod
     def get(cls, **kwargs):
         bogus_data = dict(
-            visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id", data_submission_policy_version=0
+            visibility=CollectionVisibility.PRIVATE.name,
+            owner="test_user_id",
+            data_submission_policy_version=0,
+            description="described",
+            contact_name="john doe",
+            contact_email="john.doe@email.com",
         )
         bogus_data.update(**kwargs)
         return bogus_data
@@ -80,8 +85,8 @@ class BogusDbCollectionLinkParams:
         bogus_data = dict(
             collection_id="test_collection_id",
             link_name="link_name",
-            link_url="link_url",
-            link_type=CollectionLinkType.DOI,
+            link_url="http://good.link",
+            link_type=CollectionLinkType.OTHER,
         )
         bogus_data.update(**kwargs)
         return bogus_data

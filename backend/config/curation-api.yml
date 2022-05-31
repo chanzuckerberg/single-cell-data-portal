@@ -105,6 +105,7 @@ paths:
     post:
       summary: Create a Collection
       description: Create a new Collection
+      operationId: backend.corpora.lambdas.api.v1.collection.create_collection
       tags:
         - collection
       security:
@@ -120,7 +121,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/collection_uuid"
+                type: object
+                properties:
+                  collection_uuid:
+                      $ref: "#/components/schemas/collection_uuid"
         "400":
           $ref: "#/components/responses/400_multiple"
         "401":
@@ -191,6 +195,7 @@ paths:
       description: >-
         Update a private Collection or a Revision. If any Collection metadata fields are included in the body of the
         request, these fields SHALL be updated for the specified Collection.
+      operationId: backend.corpora.lambdas.api.v1.collection.update_collection
       security:
         - curatorAccess: []
       tags:
@@ -225,7 +230,7 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
-  /v1/collections/{public_collection_uuid}/revision:
+  /v1/collections/{collection_uuid}/revision:
     post:
       summary: Start a revision of a published Collection
       description: >-
@@ -234,12 +239,13 @@ paths:
         ongoing Revision may exist per published Collection at any given time.
 
         All methods of updating or adding Datasets and metadata to a Revision work the same as for a private Collection.
+      operationId: backend.corpora.lambdas.api.v1.curation.collection_uuid.revision.post_collection_revision
       security:
         - curatorAccess: []
       tags:
         - collection
       parameters:
-        - $ref: "#/components/parameters/path_public_collection_uuid"
+        - $ref: "#/components/parameters/path_collection_uuid"
       responses:
         "200":
           description: OK
@@ -328,6 +334,7 @@ paths:
         request body; if an existing Dataset has this tag, the existing Dataset SHALL be replaced, otherwise a new
         Dataset will be added. MAY include the **id** of an existing Dataset, in which case the existing Dataset
         SHALL be replaced.
+      operationId: backend.corpora.lambdas.api.v1.collection_uuid.upload.relink
       tags:
         - collection
       security:
@@ -737,13 +744,6 @@ components:
       required: true
       schema:
         $ref: "#/components/schemas/collection_uuid"
-    path_public_collection_uuid:
-      name: public_collection_uuid
-      description: The uuid of a public Collection.
-      in: path
-      required: true
-      schema:
-        $ref: "#/components/schemas/collection_uuid"
     query_visibility:
       name: visibility
       description: The 'visibility' of a Collection (and its constituent Datasets).
@@ -778,6 +778,9 @@ components:
                 name:
                   type: string
                   description: the errant parameter
+                value:
+                  type: string
+                  description: the errant value
                 reason:
                   type: string
                   description: the specific problem with the parameter

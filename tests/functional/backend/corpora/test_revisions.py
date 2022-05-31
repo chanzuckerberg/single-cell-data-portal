@@ -4,7 +4,7 @@ import unittest
 import requests
 from tenacity import retry, stop_after_attempt, wait_fixed
 
-from tests.functional.backend.corpora.common import BaseFunctionalTestCase
+from tests.functional.backend.common import BaseFunctionalTestCase
 
 
 class UndesiredHttpStatusCodeError(Exception):
@@ -21,7 +21,7 @@ class TestRevisions(BaseFunctionalTestCase):
             "contact_email": "lisbon@gmail.com",
             "contact_name": "Madrid Sparkle",
             "description": "Well here are some words",
-            "links": [{"link_name": "a link to somewhere", "link_type": "PROTOCOL", "link_url": "protocol.com"}],
+            "links": [{"link_name": "a link to somewhere", "link_type": "PROTOCOL", "link_url": "http://protocol.com"}],
             "name": "my2collection",
         }
 
