@@ -117,6 +117,9 @@ class TransformingBase(object):
 
     id = Column(String, primary_key=True, default=generate_uuid)
 
+    def __repr__(self):
+        return f"<{self.__class__.__name__}(id={self.id})>"
+
 
 class AuditMixin(object):
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)

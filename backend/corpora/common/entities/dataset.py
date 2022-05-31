@@ -322,7 +322,7 @@ class Dataset(Entity):
             )
 
             if revision.tombstone is not False:
-                self.update(commit=False, **updates, remove_attr="published_at")
+                self.update(commit=False, **updates)
             else:
                 # There was an update to a dataset, so update revised_at
                 self.update(commit=False, **updates, revised_at=now)
