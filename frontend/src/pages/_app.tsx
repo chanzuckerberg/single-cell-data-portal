@@ -1,6 +1,5 @@
 import { ThemeProvider as EmotionThemeProvider } from "@emotion/react";
 import { StylesProvider, ThemeProvider } from "@material-ui/core/styles";
-import { theme } from "src/common/theme";
 import { NextPage } from "next";
 import { AppProps } from "next/app";
 import Script from "next/script";
@@ -9,6 +8,7 @@ import { QueryClient, QueryClientProvider } from "react-query";
 import { ReactQueryDevtools } from "react-query/devtools";
 import { EVENTS } from "src/common/analytics/events";
 import { checkFeatureFlags } from "src/common/featureFlags";
+import { theme } from "src/common/theme";
 import DefaultLayout from "src/components/Layout/components/defaultLayout";
 import configs from "src/configs/configs";
 import "src/global.scss";
