@@ -1,4 +1,5 @@
 import logging
+import os
 
 import anndata
 from pathlib import Path
@@ -12,7 +13,8 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 validation_dataset_uuid = "3de0ad6-4378-4f62-b37b-ec0b75a50d94"
-MIN_CUBE_SIZE_GB = 3  # todo paramaterize by env
+env = os.getenv("ENV")
+MIN_CUBE_SIZE_GB = 3 if env == 'PROD' else 1 # todo this is too high for dev/staging
 MIN_TISSUE_COUNT = 5  # todo paramaterize by env
 MIN_SPECIES_COUNT = 2  # todo paramaterize by env
 MIN_DATASET_COUNT = 100  # todo paramaterize by env
@@ -42,19 +44,36 @@ validation_tissues_with_many_cell_types = {
     "renal medulla": "UBERON:0000362",
     "nasal cavity": "UBERON:0001707"
 }
-
 validation_cell_types = {
     "monocytes": "CL:0002393",
+    "Non-classical monocyte": "CL:0000875",
     "ciliated cells": "CL:0000064",
+    "lung ciliated cell": "CL:1000271",
     "macrophage": "CL:0000235",
+    "alveolar macrophage": "CL:0000583",
     "goblet cells": "CL:0000160",
-    "secretory cells": "CL:0000151"
+    "lung goblet cell": "CL:1000143",
+    "respiratory goblet cell": "CL:0002370",
+    "secretory cells": "CL:0000151",
+    "mucus secreting cell": "CL:0000319",
+    "serous cell of epithelium of bronchus": "CL:1000331"
 }
 validation_sex_ontologies = {
     "female": "PATO:0000383",
     'male': "PATO:0000384",
     "unknown": "unknown"
 }
+
+""""
+Non-classical monocyte: CL:0000875
+lung ciliated cell: CL:1000271
+alveolar macrophage: CL:0000583
+AQP5 cells :
+   lung goblet cell: CL:1000143  <-- USE THIS IF ONLY ONE CELL TYPE
+   respiratory goblet cell: CL:0002370
+   mucus secreting cell: CL:0000319
+   serous cell of epithelium of bronchus: CL:1000331
+"""
 
 
 def validate_corpus_load(anndata_object: anndata.AnnData, group_name: str, dataset_id: str):
@@ -105,9 +124,9 @@ def validate_cube(snapshot):
     validate_expression_levels_for_particular_gene_dataset(f"{snapshot}/{EXPRESSION_SUMMARY_CUBE_NAME}")
 
 
-def validate_cube_size(path_to_cube):
+def validate_cube_size(path_to_expression_cube):
     size_byte = sum(
-        file.stat().st_size for file in Path(path_to_cube).rglob('*'))
+        file.stat().st_size for file in Path(path_to_expression_cube).rglob('*'))
     size_gb = size_byte / GB
     assert (size_gb > MIN_CUBE_SIZE_GB)
     logger.info(f"Expression summary cube is {size_gb}GB")
@@ -146,7 +165,7 @@ def validate_housekeeping_gene_expression_levels(path_to_cell_count_cube, path_t
         with tiledb.open(path_to_expression_summary) as cube:
             human_expression_cube = cube.df[:, :, human_ontology_id:human_ontology_id]
             MALAT1_ontology_id = validation_gene_ontologies['MALAT1']
-            ACTB_ontology_id = validation_gene_ontologies['XIST']
+            ACTB_ontology_id = validation_gene_ontologies['ACTB']
             MALAT1_cell_count = human_expression_cube.df[MALAT1_ontology_id:MALAT1_ontology_id].nnz.sum()
             ACTB_cell_count = human_expression_cube.df[ACTB_ontology_id:ACTB_ontology_id].nnz.sum()
             # Most cells should express both genes, more cells should express MALAT1
@@ -157,7 +176,8 @@ def validate_housekeeping_gene_expression_levels(path_to_cell_count_cube, path_t
             MALAT1_avg_expression = cube.df[MALAT1_ontology_id:MALAT1_ontology_id]['sum'].sum() / MALAT1_cell_count
             ACTB_avg_expression = cube.df[ACTB_ontology_id:ACTB_ontology_id]['sum'].sum() / ACTB_cell_count
 
-            # paramaterize high expression quartile value?
+            # parameterize high expression quartile value?
+            # todo check correctness of ACTB expectation
             assert (MALAT1_avg_expression > 5)
             assert (ACTB_avg_expression > 3)
 
@@ -169,7 +189,8 @@ def validate_sex_specific_marker_gene(path_to_expression_summary):
         female_ontology_id = validation_sex_ontologies['female']
         male_ontology_id = validation_sex_ontologies['male']
         # slice cube by dimensions             gene_ontology                           organ (all)           species
-        human_XIST_cube = cube.df[sex_marker_gene_ontology_id:sex_marker_gene_ontology_id, :, human_ontology_id:human_ontology_id]
+        human_XIST_cube = cube.df[sex_marker_gene_ontology_id:sex_marker_gene_ontology_id, :,
+                          human_ontology_id:human_ontology_id]
 
         female_xist_cube = human_XIST_cube.query(f"sex_ontology_term_id == \'{female_ontology_id}\'")
         male_xist_cube = human_XIST_cube.query(f"sex_ontology_term_id == \'{male_ontology_id}\'")
@@ -177,8 +198,10 @@ def validate_sex_specific_marker_gene(path_to_expression_summary):
         # should be expressed in most female cells and no male cells
         assert (female_xist_cube.nnz.sum() > male_xist_cube.nnz.sum())
         # should be expressed in females at a much higher rate
-        # todo -- do as average per cell instead of just sum
-        assert (female_xist_cube['sum'].sum() > male_xist_cube['sum'].sum() * 1000)
+        female_avg_xist_expression = female_xist_cube['sum'].sum() / female_xist_cube['nnz'].sum()
+        male_avg_xist_expression = male_xist_cube['sum'].sum() / male_xist_cube['nnz'].sum()
+        # Todo compare and check x 1000
+        assert (female_avg_xist_expression > male_avg_xist_expression * 1000)
 
 
 def validate_lung_cell_marker_genes(path_to_expression_summary):
@@ -190,27 +213,100 @@ def validate_lung_cell_marker_genes(path_to_expression_summary):
     CD68: macrophages (alveioler)
     AQP5: goblet cells and secreting cells
     """
-    human_ontology_id = validation_species_ontologies['human']
-    lung_ontology_id = validation_tissues_with_many_cell_types['lung']
-
-    FCN1_ontology_id = validation_gene_ontologies['FCN1']
-    TUBB4B_ontology_id = validation_gene_ontologies['TUBB4B']
-    CD68_ontology_id = validation_gene_ontologies['CD68']
-    AQP5_ontology_id = validation_gene_ontologies['AQP5']
-
-    monocyte_ontology_id = validation_cell_types['monocytes'] # use multiple monocyte cell types
-    ciliated_cells_ontology_id = validation_cell_types['ciliated cells']
-    macrophage_ontology_id = validation_cell_types['macrophage']
-    goblet_cell_ontology_id = validation_cell_types['goblet cells']
-    secretory_cells = validation_cell_types['secretory cells']
-
+    human_ont_id = validation_species_ontologies['human']
+    lung_ont_id = validation_tissues_with_many_cell_types['lung']
 
     # get avg expression value of gene for the celltype. That average should be greater than the avg for all other cell types (for FCN1 would use monocytes)
     with tiledb.open(path_to_expression_summary) as cube:
-        human_lung_cube = cube.df[:,lung_ontology_id:lung_ontology_id, human_ontology_id:human_ontology_id]
+        FCN1_ont_id = validation_gene_ontologies['FCN1']
+        FCN1_human_lung_cube = cube.df[FCN1_ont_id:FCN1_ont_id, lung_ont_id:lung_ont_id, human_ont_id:human_ont_id]
+        validate_FCN1(FCN1_human_lung_cube)
 
-        # todo -- what to check for??
+        TUBB4B_ont_id = validation_gene_ontologies['TUBB4B']
+        TUBB4B_human_lung = cube.df[TUBB4B_ont_id:TUBB4B_ont_id, lung_ont_id:lung_ont_id, human_ont_id:human_ont_id]
+        validate_TUBB4B(TUBB4B_human_lung)
 
+        CD68_ont_id = validation_gene_ontologies['CD68']
+        CD68_human_lung = cube.df[CD68_ont_id:CD68_ont_id, lung_ont_id:lung_ont_id, human_ont_id:human_ont_id]
+        validate_CD68(CD68_human_lung)
+
+        AQP5_ont_id = validation_gene_ontologies['AQP5']
+        AQP5_human_lung = cube.df[AQP5_ont_id:AQP5_ont_id, lung_ont_id:lung_ont_id, human_ont_id:human_ont_id]
+        validate_AQP5(AQP5_human_lung)
+
+
+def validate_FCN1(FCN1_human_lung_cube):
+    monocyte_ontology_id = validation_cell_types['monocytes']  # use multiple monocyte cell types
+    non_classical_monocyte_ontology_id = validation_cell_types["Non-classical monocyte"]
+    monocyte_cell_type_ids = [monocyte_ontology_id, non_classical_monocyte_ontology_id]
+
+    FCN1_high_expression_cell_types = FCN1_human_lung_cube.query(
+        f"cell_type_ontology_term_id in {monocyte_cell_type_ids}")
+    FCN1_non_high_expression_cell_types = FCN1_human_lung_cube.query(
+        f"cell_type_ontology_term_id not in {monocyte_cell_type_ids}")
+
+    FCN1_high_expression_avg = \
+        FCN1_high_expression_cell_types.sum()['sum'] / FCN1_high_expression_cell_types.groupby.sum()['nnz']
+    FCN1_non_high_expression_avg = \
+        FCN1_non_high_expression_cell_types.sum()['sum'] / FCN1_non_high_expression_cell_types.sum()['nnz']
+    assert (FCN1_high_expression_avg > FCN1_non_high_expression_avg)
+
+
+def validate_TUBB4B(TUBB4B_human_lung_cube):
+    ciliated_cells_ontology_id = validation_cell_types['ciliated cells']
+    FILL_IN_ontology_id = validation_cell_types['FILL_IN']
+    FILL_IN_0_ontology_id = validation_cell_types["FILL_IN_0"]
+    ciliated_cell_type_ids = [ciliated_cells_ontology_id, FILL_IN_ontology_id, FILL_IN_0_ontology_id]
+
+    TUBB4B_high_expression_cell_types = TUBB4B_human_lung_cube.query(
+        f"cell_type_ontology_term_id in {ciliated_cell_type_ids}")
+    TUBB4B_non_high_expression_cell_types = TUBB4B_human_lung_cube.query(
+        f"cell_type_ontology_term_id not in {ciliated_cell_type_ids}")
+
+    TUBB4B_high_expression_avg = \
+        TUBB4B_high_expression_cell_types.sum()['sum'] / TUBB4B_high_expression_cell_types.groupby.sum()['nnz']
+    TUBB4B_non_high_expression_avg = \
+        TUBB4B_non_high_expression_cell_types.sum()['sum'] / TUBB4B_non_high_expression_cell_types.sum()['nnz']
+    assert (TUBB4B_high_expression_avg > TUBB4B_non_high_expression_avg)
+
+
+def validate_CD68(CD68_human_lung_cube):
+    macrophage_ontology_id = validation_cell_types['macrophage']
+    FILL_IN_ontology_id = validation_cell_types['FILL_IN']
+    FILL_IN_0_ontology_id = validation_cell_types["FILL_IN_0"]
+    macrophage_cell_type_ids = [macrophage_ontology_id, FILL_IN_ontology_id, FILL_IN_0_ontology_id]
+
+    CD68_high_expression_cell_types = CD68_human_lung_cube.query(
+        f"cell_type_ontology_term_id in {macrophage_cell_type_ids}")
+    CD68_non_high_expression_cell_types = CD68_human_lung_cube.query(
+        f"cell_type_ontology_term_id not in {macrophage_cell_type_ids}")
+
+    CD68_high_expression_avg = \
+        CD68_high_expression_cell_types.sum()['sum'] / CD68_high_expression_cell_types.groupby.sum()['nnz']
+    CD68_non_high_expression_avg = \
+        CD68_non_high_expression_cell_types.sum()['sum'] / CD68_non_high_expression_cell_types.sum()['nnz']
+    assert (CD68_high_expression_avg > CD68_non_high_expression_avg)
+
+
+def validate_AQP5(AQP5_human_lung_cube):
+    goblet_cell_ontology_id = validation_cell_types['goblet cells']
+    secretory_cells = validation_cell_types['secretory cells']
+
+    FILL_IN_ontology_id = validation_cell_types['FILL_IN']
+    FILL_IN_0_ontology_id = validation_cell_types["FILL_IN_0"]
+    goblet_cell_type_ids = [goblet_cell_ontology_id, FILL_IN_ontology_id, FILL_IN_0_ontology_id]
+    secretory_cell_type_ids = [secretory_cells, FILL_IN_ontology_id, FILL_IN_0_ontology_id]
+
+    AQP5_high_expression_cell_types = AQP5_human_lung_cube.query(
+        f"cell_type_ontology_term_id in {goblet_cell_type_ids.append(secretory_cell_type_ids)}")
+    AQP5_non_high_expression_cell_types = AQP5_human_lung_cube.query(
+        f"cell_type_ontology_term_id not in {goblet_cell_type_ids.append(secretory_cell_type_ids)}")
+
+    AQP5_high_expression_avg = \
+        AQP5_high_expression_cell_types.sum()['sum'] / AQP5_high_expression_cell_types.groupby.sum()['nnz']
+    AQP5_non_high_expression_avg = \
+        AQP5_non_high_expression_cell_types.sum()['sum'] / AQP5_non_high_expression_cell_types.sum()['nnz']
+    assert (AQP5_high_expression_avg > AQP5_non_high_expression_avg)
 
 
 def validate_expression_levels_for_particular_gene_dataset(path_to_expression_summary):
@@ -219,7 +315,7 @@ def validate_expression_levels_for_particular_gene_dataset(path_to_expression_su
     MALAT1_ontology_id = validation_gene_ontologies["MALAT1"]
     CCL5_ontology_id = validation_gene_ontologies["CCL5"]
     with tiledb.open(path_to_expression_summary) as cube:
-        human_lung_cube = cube.df[:,lung_ontology_id:lung_ontology_id, human_ontology_id:human_ontology_id]
+        human_lung_cube = cube.df[:, lung_ontology_id:lung_ontology_id, human_ontology_id:human_ontology_id]
         lung_df = human_lung_cube.query(f"dataset_id == '{validation_dataset_uuid}'")
         MALAT1_expression = lung_df.query(f"gene_ontology_term_id == '{MALAT1_ontology_id}'")
         CCL5_expression = lung_df.query(f"gene_ontology_term_id == '{CCL5_ontology_id}'")
@@ -239,8 +335,6 @@ def validate_expression_levels_for_particular_gene_dataset(path_to_expression_su
         ccl5_comparison = expected_ccl5_by_cell_type.compare(ccl5_expression_sum_by_cell_type)
         print(malat1_comparison)
         print(ccl5_comparison)
-
-
 
 
 def validate_dataset_counts(path_to_cube):
