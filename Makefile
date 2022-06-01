@@ -13,6 +13,7 @@ export DEPLOYMENT_STAGE ?= test
 .PHONY: fmt
 fmt:
 	black backend scripts tests
+	flake8 backend tests scripts
 
 .PHONY: lint
 lint:
