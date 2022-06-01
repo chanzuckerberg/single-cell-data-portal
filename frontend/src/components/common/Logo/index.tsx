@@ -2,15 +2,11 @@ import Image from "next/image";
 import { FC } from "react";
 import logo from "src/common/images/explore-white.svg";
 
-interface LogoProps {
-  dataTestId: string;
-}
-
-export const Logo: FC<LogoProps> = (props) => {
+export const Logo: FC = () => {
   return (
     <Image
       alt="cellxgene logo"
-      data-test-id={props.dataTestId}
+      data-test-id="logo"
       height={24}
       src={logo}
       width={24}
