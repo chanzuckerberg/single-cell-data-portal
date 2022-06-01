@@ -23,14 +23,14 @@ const LandingFooter = (): JSX.Element => {
 
         <div className={styles.footerTopLinks}>
           <a
-            href="https://github.com/chanzuckerberg/aspen/"
+            href="https://github.com/chanzuckerberg/single-cell-data-portal"
             target="_blank"
             rel="noopener"
           >
             Github
           </a>
           <a
-            href="https://chanzuckerberg.com/careers/career-opportunities/?team=data,design,engineering,it,infrastructure-security,product,technical-program-management/"
+            href="https://chanzuckerberg.com/careers/career-opportunities/?team=data,design,engineering,product,technical-program-management&initiative=science&gh_src=20d9f28d1us"
             target="_blank"
             rel="noopener"
           >
