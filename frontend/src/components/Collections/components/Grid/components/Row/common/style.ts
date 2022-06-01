@@ -41,6 +41,19 @@ export const LeftAlignedDetailsCell = styled(DetailsCell)`
   text-align: left !important;
 `;
 
+/* Disease cell - selection of td styles from DetailsCell. */
+export const DiseaseDetailsCell = styled.td`
+  && {
+    color: ${GRAY.A} !important;
+    ${textClippingCSS}
+    ${detailsColWidthCSS}
+    letter-spacing: -0.1px;
+    line-height: 18px;
+    padding: ${PT_GRID_SIZE_PX * 2}px 0px ${PT_GRID_SIZE_PX * 2}px ${PT_GRID_SIZE_PX * 2}px;
+    vertical-align: middle;
+  }
+`;
+
 export const StyledRow = styled.tr`
   align-content: center;
   vertical-align: top;
