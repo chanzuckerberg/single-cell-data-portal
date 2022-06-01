@@ -1,6 +1,17 @@
 import { createTheme } from "@material-ui/core/styles";
 import { defaultAppTheme, makeThemeOptions } from "czifui";
 
+const { fontWeights } = defaultAppTheme;
+
+const iconSizes = {
+  input: { height: 16, width: 16 }, // for use with input icons only (radio and checkbox)
+  l: { height: 24, width: 24 },
+  m: { height: 16, width: 16 },
+  s: { height: 12, width: 12 },
+  xl: { height: 32, width: 32 },
+  xs: { height: 8, width: 8 },
+};
+
 const spacing = {
   default: 8,
   l: 16,
@@ -11,14 +22,14 @@ const spacing = {
   xxl: 40,
   xxs: 4,
   xxxs: 2,
-}
+};
 
 const corners = {
   l: 16,
   m: 4,
   none: 0,
   s: 2,
-}
+};
 
 const typography = {
   fontFamily: "Inter",
@@ -26,44 +37,44 @@ const typography = {
     body: {
       button: {
         fontSize: 14,
-        fontWeight: 600,
+        fontWeight: fontWeights.medium,
         letterSpacing: "0px",
         lineHeight: "20px",
         textTransform: "none" as const,
       },
       l: {
         fontSize: 18,
-        fontWeight: 400,
+        fontWeight: fontWeights.regular,
         letterSpacing: "0px",
-        lineHeight: "28px",
+        lineHeight: "24px",
       },
       m: {
         fontSize: 16,
-        fontWeight: 400,
+        fontWeight: fontWeights.regular,
         letterSpacing: "0px",
         lineHeight: "24px",
       },
       s: {
         fontSize: 14,
-        fontWeight: 400,
+        fontWeight: fontWeights.regular,
         letterSpacing: "0px",
         lineHeight: "20px",
       },
       xs: {
         fontSize: 13,
-        fontWeight: 400,
+        fontWeight: fontWeights.regular,
         letterSpacing: "0px",
         lineHeight: "20px",
       },
       xxs: {
         fontSize: 12,
-        fontWeight: 400,
+        fontWeight: fontWeights.regular,
         letterSpacing: "0px",
         lineHeight: "16px",
       },
       xxxs: {
         fontSize: 11,
-        fontWeight: 400,
+        fontWeight: fontWeights.regular,
         letterSpacing: "0px",
         lineHeight: "16px",
       },
@@ -71,21 +82,21 @@ const typography = {
     caps: {
       xxs: {
         fontSize: 12,
-        fontWeight: 600,
+        fontWeight: fontWeights.semibold,
         letterSpacing: "1.0px",
         lineHeight: "16px",
         textTransform: "uppercase" as const,
       },
       xxxs: {
         fontSize: 11,
-        fontWeight: 600,
+        fontWeight: fontWeights.semibold,
         letterSpacing: "1.0px",
         lineHeight: "16px",
         textTransform: "uppercase" as const,
       },
       xxxxs: {
         fontSize: 10,
-        fontWeight: 600,
+        fontWeight: fontWeights.semibold,
         letterSpacing: "1.0px",
         lineHeight: "12px",
         textTransform: "uppercase" as const,
@@ -93,61 +104,62 @@ const typography = {
     },
     header: {
       l: {
-        fontSize: 18,
-        fontWeight: 600,
+        fontSize: 20,
+        fontWeight: fontWeights.semibold,
         letterSpacing: "0px",
         lineHeight: "24px",
       },
       m: {
         fontSize: 16,
-        fontWeight: 600,
+        fontWeight: fontWeights.semibold,
         letterSpacing: "0px",
         lineHeight: "20px",
       },
       s: {
         fontSize: 14,
-        fontWeight: 600,
+        fontWeight: fontWeights.semibold,
         letterSpacing: "0px",
         lineHeight: "20px",
       },
       xl: {
-        fontSize: 22,
-        fontWeight: 600,
+        fontSize: 24,
+        fontWeight: fontWeights.semibold,
         letterSpacing: "0px",
         lineHeight: "32px",
       },
       xs: {
         fontSize: 13,
-        fontWeight: 600,
+        fontWeight: fontWeights.semibold,
         letterSpacing: "0px",
         lineHeight: "16px",
       },
       xxl: {
-        fontSize: 26,
-        fontWeight: 600,
+        fontSize: 28,
+        fontWeight: fontWeights.semibold,
         letterSpacing: "0px",
         lineHeight: "32px",
       },
       xxs: {
         fontSize: 12,
-        fontWeight: 600,
+        fontWeight: fontWeights.semibold,
         letterSpacing: "0px",
         lineHeight: "16px",
       },
       xxxs: {
         fontSize: 11,
-        fontWeight: 600,
+        fontWeight: fontWeights.semibold,
         letterSpacing: "0px",
         lineHeight: "16px",
       },
     },
   },
-}
+};
 
 const customTheme = {
-  typography: typography,
-  spacing: spacing,
-  corners: corners
+  corners,
+  iconSizes,
+  spacing,
+  typography,
 };
 
 const themeOptions = { ...defaultAppTheme, ...customTheme };
