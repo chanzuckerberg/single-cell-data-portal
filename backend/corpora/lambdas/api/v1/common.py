@@ -1,9 +1,8 @@
-from flask import make_response, jsonify
 from sqlalchemy.orm import Session
 
 from backend.corpora.common.corpora_orm import CollectionVisibility
 from backend.corpora.common.entities import Collection, Dataset
-from backend.corpora.common.utils.http_exceptions import ForbiddenHTTPException
+from backend.corpora.common.utils.http_exceptions import ForbiddenHTTPException, MethodNotAllowedException
 from backend.corpora.lambdas.api.v1.authorization import owner_or_allowed
 
 
@@ -25,7 +24,7 @@ def delete_dataset_common(db_session: Session, dataset: Dataset, token_info: dic
     if not collection:
         raise ForbiddenHTTPException()
     if dataset.collection.visibility == CollectionVisibility.PUBLIC:
-        return make_response(jsonify("Cannot delete a public Dataset"), 405)
+        raise MethodNotAllowedException("Cannot delete a public Dataset")
     if dataset.tombstone is False:
         if dataset.published:
             dataset.update(tombstone=True, published=False)

@@ -50,7 +50,7 @@ class TestPutLink(BaseAuthAPITest):
         self.assertEqual(403, response.status_code)
 
     def test__new_from_link__OK(self, *mocks):
-        headers = self.make_curator_header()
+        headers = self.get_auth_headers()
         response = self._test_new({}, headers, body={"curator_tag": "test", "link": self.good_link})
         self.assertEqual(202, response.status_code)
 
