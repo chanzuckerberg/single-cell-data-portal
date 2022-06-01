@@ -20,6 +20,9 @@ export interface CategoryConfig {
  * Configuration model of ontology category.
  */
 export interface OntologyCategoryConfig extends CategoryConfig {
+  isLabelVisible: boolean; // True if ontology label is to be displayed (e.g. "Other Organisms")
+  isSearchable: boolean; // True if ontology category search box is displayed
+  isZerosVisible: boolean; // True if zero values are to be displayed
   ontology: OntologyView;
 }
 
@@ -46,7 +49,8 @@ export enum CATEGORY_KEY {
   "PUBLICATION_AUTHORS" = "publicationAuthors",
   "PUBLICATION_DATE_VALUES" = "publicationDateValues",
   "SEX" = "sex",
-  "TISSUE" = "tissue",
+  "TISSUE" = "tissue", // TODO(cc) remove with #2569.
+  "TISSUE_ANCESTORS" = "tissue_ancestors",
 }
 
 /**
@@ -67,7 +71,8 @@ export interface Categories {
   ethnicity: Ontology[];
   organism: Ontology[];
   sex: Ontology[];
-  tissue: Ontology[];
+  tissue: Ontology[]; // TODO(cc) remove with #2569.
+  tissue_ancestors: string[];
 }
 
 /**
@@ -85,18 +90,19 @@ export interface CollectionRow extends Categories, PublisherMetadataCategories {
 }
 
 /*
- * Ontology keys for species. For example, for the ontology ID "HsapDv:0000045", the key is "HsapDv".
+ * Ontology view keys used to lookup ontology nodes for display . For example, for the ontology ID "HsapDv:0000045",
+ * the key is "HsapDv".
  */
-export enum SPECIES_KEY {
+export enum ONTOLOGY_VIEW_KEY {
   "HsapDv" = "HsapDv",
   "MmusDv" = "MmusDv",
   "UBERON" = "UBERON",
 }
 
 /**
- * Labels for displaying species.
+ * Labels for displaying ontology views. Currently only used by development stage filter.
  */
-export enum SPECIES_LABEL {
+export enum ONTOLOGY_VIEW_LABEL {
   "HsapDv" = "Homo Sapiens",
   "MmusDv" = "Mus Musculus",
   "UBERON" = "Other Organisms",
@@ -107,7 +113,7 @@ export enum SPECIES_LABEL {
  */
 /* eslint-disable sort-keys -- disabling key order for readability. */
 export const DEVELOPMENT_STAGE_ONTOLOGY_VIEW: OntologyView = {
-  [SPECIES_KEY.HsapDv]: [
+  [ONTOLOGY_VIEW_KEY.HsapDv]: [
     {
       label: "Prenatal (conception–birth)",
       ontology_term_id: "HsapDv:0000045",
@@ -191,7 +197,7 @@ export const DEVELOPMENT_STAGE_ONTOLOGY_VIEW: OntologyView = {
       ],
     },
   ],
-  [SPECIES_KEY.MmusDv]: [
+  [ONTOLOGY_VIEW_KEY.MmusDv]: [
     {
       label: "Prenatal",
       ontology_term_id: "MmusDv:0000042",
@@ -267,7 +273,7 @@ export const DEVELOPMENT_STAGE_ONTOLOGY_VIEW: OntologyView = {
       ],
     },
   ],
-  [SPECIES_KEY.UBERON]: [
+  [ONTOLOGY_VIEW_KEY.UBERON]: [
     {
       label: "Embryo",
       ontology_term_id: "UBERON:0000068",
@@ -339,6 +345,116 @@ export const DEVELOPMENT_STAGE_ONTOLOGY_VIEW: OntologyView = {
 /* eslint-enable sort-keys -- disabling key order for readability. */
 
 /**
+ * Tissues to be included for display in tissue ontology tree.
+ */
+/* eslint-disable sort-keys -- disabling key order for readability. */
+export const TISSUE_ONTOLOGY_VIEW: OntologyView = {
+  [ONTOLOGY_VIEW_KEY.UBERON]: [
+    {
+      label: "Blood",
+      ontology_term_id: "UBERON:0000178",
+    },
+    {
+      label: "Blood Vascular",
+      ontology_term_id: "UBERON:0004537",
+    },
+    {
+      label: "Bone Marrow",
+      ontology_term_id: "UBERON:0002371",
+    },
+    {
+      label: "Brain",
+      ontology_term_id: "UBERON:0000955",
+    },
+    {
+      label: "Eye",
+      ontology_term_id: "UBERON:0000970",
+    },
+    {
+      label: "Fallopian Tube",
+      ontology_term_id: "UBERON:0003889",
+    },
+    {
+      label: "Heart",
+      ontology_term_id: "UBERON:0000948",
+    },
+    {
+      label: "Kidney",
+      ontology_term_id: "UBERON:0002113",
+    },
+    {
+      label: "Knee",
+      ontology_term_id: "UBERON:0001465",
+    },
+    {
+      label: "Large Intestine",
+      ontology_term_id: "UBERON:0000059",
+    },
+    {
+      label: "Liver",
+      ontology_term_id: "UBERON:0002107",
+    },
+    {
+      label: "Lung",
+      ontology_term_id: "UBERON:0002048",
+    },
+    {
+      label: "Lymph Node",
+      ontology_term_id: "UBERON:0000029",
+    },
+    {
+      label: "Lymph Vasculature",
+      ontology_term_id: "UBERON:0004536",
+    },
+    {
+      label: "Ovary",
+      ontology_term_id: "UBERON:0000992",
+    },
+    {
+      label: "Pancreas",
+      ontology_term_id: "UBERON:0001264",
+    },
+    {
+      label: "Peripheral Nervous System",
+      ontology_term_id: "UBERON:0000010",
+    },
+    {
+      label: "Prostate",
+      ontology_term_id: "UBERON:0002367",
+    },
+    {
+      label: "Skin",
+      ontology_term_id: "UBERON:0002097",
+    },
+    {
+      label: "Small Intestine",
+      ontology_term_id: "UBERON:0002108",
+    },
+    {
+      label: "Spleen",
+      ontology_term_id: "UBERON:0002106",
+    },
+    {
+      label: "Thymus",
+      ontology_term_id: "UBERON:0002370",
+    },
+    {
+      label: "Ureter",
+      ontology_term_id: "UBERON:0000056",
+    },
+    {
+      label: "Urinary Bladder",
+      ontology_term_id: "UBERON:0001255",
+    },
+    {
+      label: "Uterus",
+      ontology_term_id: "UBERON:0000995",
+    },
+  ],
+};
+/* eslint-enable sort-keys -- disabling key order for readability. */
+
+/**
  * Configuration for each category.
  */
 const CATEGORY_CONFIGS: (CategoryConfig | OntologyCategoryConfig)[] = [
@@ -364,8 +480,11 @@ const CATEGORY_CONFIGS: (CategoryConfig | OntologyCategoryConfig)[] = [
     analyticsEvent: EVENTS.FILTER_SELECT_DEVELOPMENT_STAGE,
     categoryKey: CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS,
     categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
+    isLabelVisible: true,
+    isSearchable: false,
+    isZerosVisible: false,
     multiselect: true,
-    ontology: DEVELOPMENT_STAGE_ONTOLOGY_VIEW,
+    ontology: DEVELOPMENT_STAGE_ONTOLOGY_VIEW, // ontology view, show zeros, search, label?
   },
   {
     analyticsEvent: EVENTS.FILTER_SELECT_DISEASE,
@@ -413,10 +532,21 @@ const CATEGORY_CONFIGS: (CategoryConfig | OntologyCategoryConfig)[] = [
     multiselect: true,
   },
   {
+    // TODO(cc) remove with #2569.
     analyticsEvent: EVENTS.FILTER_SELECT_TISSUE,
     categoryKey: CATEGORY_KEY.TISSUE,
     categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
     multiselect: true,
+  },
+  {
+    // TODO(cc) add analytics event with #2569.
+    categoryKey: CATEGORY_KEY.TISSUE_ANCESTORS,
+    categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
+    isLabelVisible: false,
+    isSearchable: true,
+    isZerosVisible: false,
+    multiselect: true,
+    ontology: TISSUE_ONTOLOGY_VIEW,
   },
 ];
 
@@ -506,6 +636,7 @@ export type OntologyCategoryKey = keyof Omit<
   | CATEGORY_KEY.MEAN_GENES_PER_CELL
   | CATEGORY_KEY.PUBLICATION_DATE_VALUES
   | CATEGORY_KEY.PUBLICATION_AUTHORS
+  | CATEGORY_KEY.TISSUE_ANCESTORS
 >;
 
 /**
@@ -522,7 +653,8 @@ export enum CATEGORY_LABEL {
   publicationAuthors = "Authors",
   publicationDateValues = "Publication Date",
   organism = "Organism",
-  tissue = "Tissue",
+  tissue = "Tissue", // TODO(cc) remove with #2569.
+  tissue_ancestors = "Tissue (Ontology)", // TODO(cc) update to "Tissue" with #2569.
   sex = "Sex",
 }
 
@@ -548,19 +680,20 @@ export type OnUpdateSearchValueFn = (
 export type Range = [number, number] | [];
 
 /**
- * View model of species-specific ontology tree.
+ * Tree view model of ontology view. For example, development stage has three tree views (human, mouse and other)
+ * whereas tissue has one tree view.
  */
-export interface OntologyCategorySpeciesView {
-  children: OntologyCategoryValueView[];
-  label: string;
-  selectedViews: OntologyCategoryValueView[];
+export interface OntologyCategoryTreeView {
+  children: OntologyCategoryTreeNodeView[];
+  label?: string;
+  selectedViews: OntologyCategoryTreeNodeView[];
 }
 
 /**
- * View model of category value, selected and partial selected state, count and children for ontology categories.
+ * View model of a node in an ontology tree view including partial selected state and possibly any children of this node.
  */
-export interface OntologyCategoryValueView extends SelectCategoryValueView {
-  children?: OntologyCategoryValueView[];
+export interface OntologyCategoryTreeNodeView extends SelectCategoryValueView {
+  children?: OntologyCategoryTreeNodeView[];
   selectedPartial: boolean; // True if value is a parent node and some children node are selected.
 }
 
@@ -569,9 +702,11 @@ export interface OntologyCategoryValueView extends SelectCategoryValueView {
  */
 export interface OntologyCategoryView {
   isDisabled?: boolean;
+  isSearchable: boolean;
+  isZerosVisible: boolean;
   key: CATEGORY_KEY;
   label: CATEGORY_LABEL;
-  species: OntologyCategorySpeciesView[];
+  views: OntologyCategoryTreeView[];
   tooltip?: string;
 }
 
@@ -585,7 +720,7 @@ export interface OntologyNode extends Ontology {
 /**
  * Development stage ontology tree structures, keyed by organism.
  */
-export type OntologyView = { [K in SPECIES_KEY]: OntologyNode[] };
+export type OntologyView = { [K in ONTOLOGY_VIEW_KEY]?: OntologyNode[] };
 
 /**
  * View model of range metadata key.

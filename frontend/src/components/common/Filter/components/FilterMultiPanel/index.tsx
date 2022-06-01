@@ -1,8 +1,8 @@
 import {
   CATEGORY_KEY,
   OnFilterFn,
-  OntologyCategorySpeciesView,
-  OntologyCategoryValueView,
+  OntologyCategoryTreeNodeView,
+  OntologyCategoryTreeView,
 } from "src/components/common/Filter/common/entities";
 import FilterPanel from "src/components/common/Filter/components/FilterMultiPanel/components/FilterPanel";
 import { MAX_DISPLAYABLE_LIST_ITEMS } from "src/components/common/Filter/components/FilterMultiPanel/components/FilterPanel/style";
@@ -11,7 +11,7 @@ import { MultiPanelSelector } from "src/components/common/Filter/components/Filt
 interface Props {
   categoryKey: CATEGORY_KEY;
   onFilter: OnFilterFn;
-  species: OntologyCategorySpeciesView[];
+  species: OntologyCategoryTreeView[];
 }
 
 export default function FilterMultiPanel({
@@ -46,7 +46,7 @@ export default function FilterMultiPanel({
  * @returns number of all views in the given view tree.
  */
 function countViews(
-  children: OntologyCategoryValueView[],
+  children: OntologyCategoryTreeNodeView[],
   increment = 0
 ): number {
   return children.reduce((acc, child) => {

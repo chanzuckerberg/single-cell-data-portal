@@ -60,7 +60,7 @@ function buildBasicFilterContent(
       <FilterMultiPanel
         categoryKey={key}
         onFilter={onFilter}
-        species={categoryView.species}
+        species={categoryView.views}
       />
     );
   }
@@ -141,7 +141,7 @@ function buildOntologyCategoryTags(
   categoryKey: CategoryKey,
   onFilter: OnFilterFn
 ): CategoryTag[] | undefined {
-  return categoryView.species?.reduce((accum, species) => {
+  return categoryView.views?.reduce((accum, species) => {
     species.selectedViews.forEach(({ key, label }) => {
       accum.push({ label: label, onRemove: () => onFilter(categoryKey, key) });
     });
@@ -229,7 +229,7 @@ function filterCategoryValuesWithCount(
 function isOntologyCategoryView(
   categoryView: CategoryView
 ): categoryView is OntologyCategoryView {
-  return (categoryView as OntologyCategoryView).species !== undefined;
+  return (categoryView as OntologyCategoryView).views !== undefined;
 }
 
 /**

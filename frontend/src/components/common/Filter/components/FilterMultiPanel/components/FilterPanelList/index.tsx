@@ -4,7 +4,7 @@ import { Fragment, ReactElement } from "react";
 import {
   CATEGORY_KEY,
   OnFilterFn,
-  OntologyCategoryValueView,
+  OntologyCategoryTreeNodeView,
 } from "src/components/common/Filter/common/entities";
 import { SelectionIcon } from "src/components/common/Filter/common/style";
 import { useFilterPanelListStyles } from "src/components/common/Filter/components/FilterMultiPanel/components/FilterPanelList/style";
@@ -15,7 +15,7 @@ interface Props {
   nested?: boolean;
   onFilter: OnFilterFn;
   PanelHeader?: ReactElement;
-  values: OntologyCategoryValueView[];
+  values: OntologyCategoryTreeNodeView[];
 }
 
 export default function FilterPanelList({

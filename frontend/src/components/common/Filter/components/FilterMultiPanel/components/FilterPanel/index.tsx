@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import {
   CATEGORY_KEY,
   OnFilterFn,
-  OntologyCategoryValueView,
+  OntologyCategoryTreeNodeView,
 } from "src/components/common/Filter/common/entities";
 import {
   Panel,
@@ -15,11 +15,11 @@ const ADDITIONAL_PANEL_WIDTH = 8;
 
 interface Props {
   categoryKey: CATEGORY_KEY;
-  label: string;
+  label?: string;
   onFilter: OnFilterFn;
   scrollable?: boolean;
   showPanelDivider: boolean;
-  values: OntologyCategoryValueView[];
+  values: OntologyCategoryTreeNodeView[];
 }
 
 export default function FilterPanel({
