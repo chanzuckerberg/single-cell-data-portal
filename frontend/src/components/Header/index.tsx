@@ -42,21 +42,17 @@ const Header: FC = () => {
   function mobileNavHandler(mobileMenuOpen: boolean) {
     if (!mobileMenuOpen) {
       setMobileMenuOpen(true);
-      // mobileNavTray.current.style.right = "0";
       document.documentElement.style.overflowY = "hidden";
     } else {
-      // mobileNavTray.current.style.right = "-100vw";
       document.documentElement.style.overflowY = "visible";
       setMobileMenuOpen(false);
-      // setTimeout(()=>{
-      // }, 350)
     }
   }
 
   return (
     <MobileNavWrapper>
       <MobileHomeLink>
-        <HomepageLink data-test-id="logo" />
+        <HomepageLink dataTestId="mobile-logo" />
       </MobileHomeLink>
       <MobileMenuButton onClick={() => mobileNavHandler(mobileMenuOpen)}>
         <MobileMenuButtonBar className={mobileMenuOpen ? "open" : ""} />
@@ -71,7 +67,7 @@ const Header: FC = () => {
           <MainWrapper>
             <Left>
               <DesktopHomeLink>
-                <HomepageLink data-test-id="logo" />
+                <HomepageLink dataTestId="desktop-logo" />
               </DesktopHomeLink>
               <Nav>
                 <LinkWrapper>

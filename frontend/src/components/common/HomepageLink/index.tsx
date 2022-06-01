@@ -3,11 +3,15 @@ import { FC } from "react";
 import { ROUTES } from "src/common/constants/routes";
 import { Logo } from "../Logo";
 
-export const HomepageLink: FC = () => {
+interface HomepageLinkProps {
+  dataTestId: string;
+}
+
+export const HomepageLink: FC<HomepageLinkProps> = (props) => {
   return (
     <Link href={ROUTES.HOMEPAGE} passHref>
       <a href="passHref">
-        <Logo />
+        <Logo dataTestId={props.dataTestId} />
       </a>
     </Link>
   );
