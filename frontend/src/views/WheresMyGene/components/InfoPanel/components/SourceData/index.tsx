@@ -1,8 +1,7 @@
 import { List, ListItem } from "czifui";
 import { useMemo } from "react";
-import { ROUTES } from "src/common/constants/routes";
 import {
-  FilterDimensions,
+  aggregateCollectionsFromDatasets,
   useFilterDimensions,
 } from "src/common/queries/wheresMyGene";
 import { Content, Header, ListSubheader, Wrapper } from "./style";
@@ -22,7 +21,7 @@ export default function SourceData(): JSX.Element {
   const { datasets = [] } = filterDimensions;
 
   const collections: Collections = useMemo(() => {
-    return getCollections(datasets);
+    return aggregateCollectionsFromDatasets(datasets);
   }, [datasets]);
 
   return (
@@ -56,24 +55,4 @@ export default function SourceData(): JSX.Element {
       </Content>
     </Wrapper>
   );
-}
-
-function getCollections(datasets: FilterDimensions["datasets"]): Collections {
-  const collections: Collections = {};
-
-  for (const dataset of datasets) {
-    const { collection_label, collection_id, id, label } = dataset;
-
-    if (!collections[collection_label]) {
-      collections[collection_label] = {
-        datasets: [],
-        name: collection_label,
-        url: ROUTES.COLLECTION.replace(":id", collection_id),
-      };
-    }
-
-    collections[collection_label].datasets.push({ id, label });
-  }
-
-  return collections;
 }
