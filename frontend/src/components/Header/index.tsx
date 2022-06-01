@@ -56,10 +56,9 @@ const Header: FC = () => {
   return (
     <MobileNavWrapper>
       <MobileHomeLink>
-        <HomepageLink />
+        <HomepageLink data-test-id="logo" />
       </MobileHomeLink>
       <MobileMenuButton onClick={() => mobileNavHandler(mobileMenuOpen)}>
-        {/* {mobileMenuOpen ? "close" : "open"} */}
         <MobileMenuButtonBar className={mobileMenuOpen ? "open" : ""} />
         <MobileMenuButtonBar className={mobileMenuOpen ? "open" : ""} />
         <MobileMenuButtonBar className={mobileMenuOpen ? "open" : ""} />
@@ -72,7 +71,7 @@ const Header: FC = () => {
           <MainWrapper>
             <Left>
               <DesktopHomeLink>
-                <HomepageLink />
+                <HomepageLink data-test-id="logo" />
               </DesktopHomeLink>
               <Nav>
                 <LinkWrapper>

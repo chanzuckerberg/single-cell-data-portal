@@ -262,7 +262,9 @@ const LandingPage = (): JSX.Element => {
                     <span className={styles.figureSeparator}></span>
                   </div>
                   <div className={styles.contentInfoTextCol}>
-                    <h2>Quickly find the single cell data you need</h2>
+                    <h2 className={styles.mt16}>
+                      Quickly find the single-cell data you need
+                    </h2>
                     <p>
                       Browse hundreds of standardized data collections and
                       millions of cells characterizing the functionality of
@@ -431,13 +433,15 @@ const LandingPage = (): JSX.Element => {
                     <span className={styles.figureSeparator}></span>
                   </div>
                   <div className={styles.contentInfoTextCol}>
-                    <h2>Download and integrate data with zero wrangling</h2>
+                    <h2 className={styles.mt16}>
+                      Download and integrate data with zero wrangling
+                    </h2>
                     <p>
                       Integrate datasets with zero data wrangling. Datasets with
                       standard metadata annotations can be downloaded in AnnData
                       and Seurat formats and custom cell selections from the
                       complete corpus can be downloaded directly from R and
-                      python.
+                      Python.
                     </p>
                     <div className={styles.linkContainer}>
                       <Link href={ROUTES.COLLECTIONS} passHref>
@@ -493,7 +497,9 @@ const LandingPage = (): JSX.Element => {
                     </div>
                   </div>
                   <div className={styles.contentInfoTextCol}>
-                    <h2>Expedite collaborative data analysis</h2>
+                    <h2 className={styles.mt16}>
+                      Expedite collaborative data analysis
+                    </h2>
                     <p>
                       Eliminate communication overhead and expedite cell type
                       characterization by empowering tissue experts to directly
