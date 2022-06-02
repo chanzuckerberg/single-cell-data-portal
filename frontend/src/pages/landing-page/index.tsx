@@ -3,12 +3,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRef, useState } from "react";
 import { useInView } from "react-intersection-observer";
+import TweetEmbed from "react-tweet-embed";
 import { ROUTES } from "src/common/constants/routes";
 import AnalyzeDatasetsImg from "src/components/common/staticPages/analyze-datasets.png";
 import HeroBg from "src/components/common/staticPages/cellxgene_hero_bg.png";
 import LaptopImg from "src/components/common/staticPages/cellxgene_laptop.png";
-import NewsImage1 from "src/components/common/staticPages/czi-news-tweet-1.png";
-import NewsImage2 from "src/components/common/staticPages/czi-news-tweet-2.png";
 import DownloadDataImg from "src/components/common/staticPages/download-data.png";
 import ExpediteCollaborationImg from "src/components/common/staticPages/expedite-collaboration.png";
 import GeneExpressionImg from "src/components/common/staticPages/gene-expression.png";
@@ -575,20 +574,10 @@ const LandingPage = (): JSX.Element => {
               CELL X GENE IN THE NEWS
             </span>
             <div className={styles.pubSectionImage}>
-              <a href="https://twitter.com/satijalab/status/1404822000464433158">
-                <Image
-                  src={NewsImage1}
-                  alt="tweet from Rahul Satija (@satijalab) linking to a cellxgene human lung dataset"
-                />
-              </a>
+              <TweetEmbed tweetId="1404822000464433158" />
             </div>
             <div className={styles.pubSectionImage}>
-              <a href="https://twitter.com/car_men_ita/status/1396854799908282376">
-                <Image
-                  src={NewsImage2}
-                  alt="tweet from Carmen Sandoval-Espinosa, PhD (@car_men_ita) about cellxgene capabilities"
-                />
-              </a>
+              <TweetEmbed tweetId="1396854799908282376" />
             </div>
           </div>
         </div>

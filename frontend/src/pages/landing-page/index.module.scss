@@ -482,6 +482,16 @@
   }
 }
 
+.newsPublications {
+  width: 50%;
+  max-width: 500px;
+
+  @media (max-width: 768px) {
+    width: 100%;
+    max-width: none;
+  }
+}
+
 .pubSectionImage {
   max-width: 500px;
 
