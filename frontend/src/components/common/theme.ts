@@ -5,7 +5,7 @@ export const PT_GRID_SIZE_PX = 8;
 export const PT_TEXT_COLOR = "#10161A";
 
 export const fontStyle = css`
-  font-family: "Roboto", sans-serif;
+  font-family: "Inter", sans-serif;
   font-style: normal;
   font-size: 14px;
 `;

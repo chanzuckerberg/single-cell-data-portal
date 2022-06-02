@@ -13,6 +13,7 @@ import {
 import { isTombstonedCollection } from "src/common/utils/typeGuards";
 import { aggregateDatasetsMetadata } from "../../../common/utils";
 import {
+  DiseaseDetailsCell,
   LeftAlignedDetailsCell,
   RightAlignedDetailsCell,
   StyledCell,
@@ -61,7 +62,11 @@ const conditionalDiseasePopover = (
     return <LeftAlignedDetailsCell>-</LeftAlignedDetailsCell>;
   }
 
-  return <AsyncDiseasePopover label={label} values={values} />;
+  return (
+    <DiseaseDetailsCell>
+      <AsyncDiseasePopover label={label} values={values} />
+    </DiseaseDetailsCell>
+  );
 };
 
 const CollectionRow: FC<Props> = (props) => {
@@ -128,7 +133,6 @@ const CollectionRow: FC<Props> = (props) => {
       {conditionalPopover(PLURALIZED_METADATA_LABEL.TISSUE, tissue)}
       {conditionalPopover(PLURALIZED_METADATA_LABEL.ASSAY, assay)}
       {conditionalDiseasePopover(PLURALIZED_METADATA_LABEL.DISEASE, disease)}
-      {conditionalPopover(PLURALIZED_METADATA_LABEL.DISEASE, disease)}
       {conditionalPopover(PLURALIZED_METADATA_LABEL.ORGANISM, organism)}
       <RightAlignedDetailsCell>{cell_count || "-"}</RightAlignedDetailsCell>
       {props.revisionsEnabled && visibility === VISIBILITY_TYPE.PUBLIC ? (
