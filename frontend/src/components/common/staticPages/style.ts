@@ -10,7 +10,7 @@ export const CommonStyle = styled.div`
   margin: 0px auto;
   padding: 50px;
   line-height: 1.5;
-  font-family: "Roboto", sans-serif;
+  font-family: "Inter", sans-serif;
 
   h4,
   h5 {
