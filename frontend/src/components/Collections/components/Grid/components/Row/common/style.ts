@@ -6,10 +6,12 @@ import { detailsColWidthCSS, textClippingCSS } from "../../../common/style";
 export const StyledCell = styled.td`
   padding: ${PT_GRID_SIZE_PX * 2}px 0px !important;
   line-height: 15px;
+
   & > :not(a:first-child, div:first-child) {
     :not(.${Classes.TAG}) {
       display: block;
     }
+
     :not(.${Classes.POPOVER_WRAPPER}) {
       margin-top: ${PT_GRID_SIZE_PX / 2}px;
     }
@@ -19,6 +21,7 @@ export const StyledCell = styled.td`
 export const TagContainer = styled.div`
   display: flex;
   flex-direction: row;
+
   & > .${Classes.TAG}:first-child {
     margin-right: ${PT_GRID_SIZE_PX}px;
   }
@@ -41,6 +44,20 @@ export const LeftAlignedDetailsCell = styled(DetailsCell)`
   text-align: left !important;
 `;
 
+/* Disease cell - selection of td styles from DetailsCell. */
+export const DiseaseDetailsCell = styled.td`
+  && {
+    color: ${GRAY.A} !important;
+    ${textClippingCSS}
+    ${detailsColWidthCSS}
+    letter-spacing: -0.1px;
+    line-height: 18px;
+    padding: ${PT_GRID_SIZE_PX * 2}px 0px ${PT_GRID_SIZE_PX * 2}px
+      ${PT_GRID_SIZE_PX * 2}px;
+    vertical-align: middle;
+  }
+`;
+
 export const StyledRow = styled.tr`
   align-content: center;
   vertical-align: top;
@@ -54,6 +71,7 @@ export const ActionCell = styled(RightAlignedDetailsCell)`
   vertical-align: middle !important;
   padding-top: 0 !important;
   padding-bottom: 0 !important;
+
   & > .${Classes.BUTTON} {
     margin: auto 0;
   }
