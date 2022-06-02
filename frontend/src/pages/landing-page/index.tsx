@@ -242,285 +242,288 @@ const LandingPage = (): JSX.Element => {
               Expedite collaboration
             </div>
           </div>
-          <div className={styles.contentContainer}>
-            <div ref={observerSection1}>
-              <div
-                className={styles.contentRow}
-                id="single-cell"
-                ref={scrollSection1}
-              >
+          <div className={styles.contentOverflowWrapper}>
+            <div className={styles.contentContainer}>
+              <div ref={observerSection1}>
                 <div
-                  className={`${styles.contentInfoCol} ${
-                    inView1 ? styles.active : null
-                  }`}
+                  className={styles.contentRow}
+                  id="single-cell"
+                  ref={scrollSection1}
                 >
-                  <div className={styles.contentInfoFigureCol}>
-                    <div className={styles.figureWrapper}>
-                      <SingleCellDataIcon />
+                  <div
+                    className={`${styles.contentInfoCol} ${
+                      inView1 ? styles.active : null
+                    }`}
+                  >
+                    <div className={styles.contentInfoFigureCol}>
+                      <div className={styles.figureWrapper}>
+                        <SingleCellDataIcon />
+                      </div>
+                      <span className={styles.figureSeparator}></span>
                     </div>
-                    <span className={styles.figureSeparator}></span>
-                  </div>
-                  <div className={styles.contentInfoTextCol}>
-                    <h2 className={styles.mt16}>
-                      Quickly find the single-cell data you need
-                    </h2>
-                    <p>
-                      Browse hundreds of standardized data collections and
-                      millions of cells characterizing the functionality of
-                      healthy mouse and human tissues.
-                    </p>
-                    <div className={styles.linkContainer}>
-                      <Link href={ROUTES.COLLECTIONS} passHref>
-                        <a>
-                          Browse data collections
-                          <span className={styles.linkArrow}>
-                            <LinkArrow />
-                          </span>
-                        </a>
-                      </Link>
+                    <div className={styles.contentInfoTextCol}>
+                      <h2 className={styles.mt16}>
+                        Quickly find the single-cell data you need
+                      </h2>
+                      <p>
+                        Browse hundreds of standardized data collections and
+                        millions of cells characterizing the functionality of
+                        healthy mouse and human tissues.
+                      </p>
+                      <div className={styles.linkContainer}>
+                        <Link href={ROUTES.COLLECTIONS} passHref>
+                          <a>
+                            Browse data collections
+                            <span className={styles.linkArrow}>
+                              <LinkArrow />
+                            </span>
+                          </a>
+                        </Link>
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div className={styles.contentImageCol}>
-                  <div className={styles.contentImage}>
-                    <Image
-                      src={SingleCellDataImg}
-                      alt="cellxgene collections page with sidebar for filtering through the table of data"
-                    />
+                  <div className={styles.contentImageCol}>
+                    <div className={styles.contentImage}>
+                      <Image
+                        src={SingleCellDataImg}
+                        alt="cellxgene collections page with sidebar for filtering through the table of data"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div ref={observerSection2}>
-              <div
-                className={styles.contentRow}
-                id="gene-expression"
-                ref={scrollSection2}
-              >
+              <div ref={observerSection2}>
                 <div
-                  className={`${styles.contentInfoCol} ${
-                    inView2 ? styles.active : ""
-                  }`}
+                  className={styles.contentRow}
+                  id="gene-expression"
+                  ref={scrollSection2}
                 >
-                  <div className={styles.contentInfoFigureCol}>
-                    <div className={styles.figureWrapper}>
-                      <GeneExpressionIcon />
+                  <div
+                    className={`${styles.contentInfoCol} ${
+                      inView2 ? styles.active : ""
+                    }`}
+                  >
+                    <div className={styles.contentInfoFigureCol}>
+                      <div className={styles.figureWrapper}>
+                        <GeneExpressionIcon />
+                      </div>
+                      <span className={styles.figureSeparator}></span>
                     </div>
-                    <span className={styles.figureSeparator}></span>
-                  </div>
-                  <div className={styles.contentInfoTextCol}>
-                    <h2>
-                      Explore gene expression across tissues and cell types
-                    </h2>
-                    <p>
-                      Visualize the expression of genes and gene sets using the
-                      largest integrated resource of over 30 million cells.
-                    </p>
-                    <div className={styles.linkContainer}>
-                      <Link href={ROUTES.WHERE_IS_MY_GENE} passHref>
-                        <a>
-                          See how it works
-                          <span className={styles.linkArrow}>
-                            <LinkArrow />
-                          </span>
-                        </a>
-                      </Link>
+                    <div className={styles.contentInfoTextCol}>
+                      <h2>
+                        Explore gene expression across tissues and cell types
+                      </h2>
+                      <p>
+                        Visualize the expression of genes and gene sets using
+                        the largest integrated resource of over 30 million
+                        cells.
+                      </p>
+                      <div className={styles.linkContainer}>
+                        <Link href={ROUTES.WHERE_IS_MY_GENE} passHref>
+                          <a>
+                            See how it works
+                            <span className={styles.linkArrow}>
+                              <LinkArrow />
+                            </span>
+                          </a>
+                        </Link>
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div className={styles.contentImageCol}>
-                  <div className={styles.contentImage}>
-                    <Image
-                      src={GeneExpressionImg}
-                      alt="chart of gene expressions with genes plotted against types of tissues"
-                    />
+                  <div className={styles.contentImageCol}>
+                    <div className={styles.contentImage}>
+                      <Image
+                        src={GeneExpressionImg}
+                        alt="chart of gene expressions with genes plotted against types of tissues"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div ref={observerSection3}>
-              <div
-                className={styles.contentRow}
-                id="analyze-datasets"
-                ref={scrollSection3}
-              >
+              <div ref={observerSection3}>
                 <div
-                  className={`${styles.contentInfoCol} ${
-                    inView3 ? styles.active : ""
-                  }`}
+                  className={styles.contentRow}
+                  id="analyze-datasets"
+                  ref={scrollSection3}
                 >
-                  <div className={styles.contentInfoFigureCol}>
-                    <div className={styles.figureWrapper}>
-                      <AnalyzeDatasetsIcon />
+                  <div
+                    className={`${styles.contentInfoCol} ${
+                      inView3 ? styles.active : ""
+                    }`}
+                  >
+                    <div className={styles.contentInfoFigureCol}>
+                      <div className={styles.figureWrapper}>
+                        <AnalyzeDatasetsIcon />
+                      </div>
+                      <span className={styles.figureSeparator}></span>
                     </div>
-                    <span className={styles.figureSeparator}></span>
-                  </div>
-                  <div className={styles.contentInfoTextCol}>
-                    <h2>
-                      Execute on-demand interactive analyses of single-cell
-                      datasets
-                    </h2>
-                    <p>
-                      Visually explore how patterns of gene expression are
-                      determined by environmental and genetic factors using an
-                      interactive speed no-code UI. Understand published
-                      datasets or use them as a launchpad to identify new cell
-                      sub-types and states.
-                    </p>
-                    <div className={styles.linkContainer}>
-                      <Link
-                        href={`${ROUTES.HOMEPAGE}/e/53d208b0-2cfd-4366-9866-c3c6114081bc.cxg/`}
-                        passHref
-                      >
-                        <a>
-                          Explore a multi-tissue atlas
-                          <span className={styles.linkArrow}>
-                            <LinkArrow />
-                          </span>
-                        </a>
-                      </Link>
-                      <Link href={ROUTES.COLLECTIONS} passHref>
-                        <a>
-                          Explore the studies
-                          <span className={styles.linkArrow}>
-                            <LinkArrow />
-                          </span>
-                        </a>
-                      </Link>
-                      <Link
-                        href={`${ROUTES.HOMEPAGE}/docs/04_Analyze-Public-Data/4_1-Hosted-Tutorials`}
-                        passHref
-                      >
-                        <a>
-                          Browse tutorials
-                          <span className={styles.linkArrow}>
-                            <LinkArrow />
-                          </span>
-                        </a>
-                      </Link>
+                    <div className={styles.contentInfoTextCol}>
+                      <h2>
+                        Execute on-demand interactive analyses of single-cell
+                        datasets
+                      </h2>
+                      <p>
+                        Visually explore how patterns of gene expression are
+                        determined by environmental and genetic factors using an
+                        interactive speed no-code UI. Understand published
+                        datasets or use them as a launchpad to identify new cell
+                        sub-types and states.
+                      </p>
+                      <div className={styles.linkContainer}>
+                        <Link
+                          href={`${ROUTES.HOMEPAGE}/e/53d208b0-2cfd-4366-9866-c3c6114081bc.cxg/`}
+                          passHref
+                        >
+                          <a>
+                            Explore a multi-tissue atlas
+                            <span className={styles.linkArrow}>
+                              <LinkArrow />
+                            </span>
+                          </a>
+                        </Link>
+                        <Link href={ROUTES.COLLECTIONS} passHref>
+                          <a>
+                            Explore the studies
+                            <span className={styles.linkArrow}>
+                              <LinkArrow />
+                            </span>
+                          </a>
+                        </Link>
+                        <Link
+                          href={`${ROUTES.HOMEPAGE}/docs/04_Analyze-Public-Data/4_1-Hosted-Tutorials`}
+                          passHref
+                        >
+                          <a>
+                            Browse tutorials
+                            <span className={styles.linkArrow}>
+                              <LinkArrow />
+                            </span>
+                          </a>
+                        </Link>
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div className={styles.contentImageCol}>
-                  <div className={styles.contentImage}>
-                    <Image
-                      src={AnalyzeDatasetsImg}
-                      alt="multi-tissue visualisation with a legend showing which colors correspond to specific cell types"
-                    />
+                  <div className={styles.contentImageCol}>
+                    <div className={styles.contentImage}>
+                      <Image
+                        src={AnalyzeDatasetsImg}
+                        alt="multi-tissue visualisation with a legend showing which colors correspond to specific cell types"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div ref={observerSection4}>
-              <div
-                className={styles.contentRow}
-                id="download-data"
-                ref={scrollSection4}
-              >
+              <div ref={observerSection4}>
                 <div
-                  className={`${styles.contentInfoCol} ${
-                    inView4 ? styles.active : ""
-                  }`}
+                  className={styles.contentRow}
+                  id="download-data"
+                  ref={scrollSection4}
                 >
-                  <div className={styles.contentInfoFigureCol}>
-                    <div className={styles.figureWrapper}>
-                      <DownloadDataIcon />
+                  <div
+                    className={`${styles.contentInfoCol} ${
+                      inView4 ? styles.active : ""
+                    }`}
+                  >
+                    <div className={styles.contentInfoFigureCol}>
+                      <div className={styles.figureWrapper}>
+                        <DownloadDataIcon />
+                      </div>
+                      <span className={styles.figureSeparator}></span>
                     </div>
-                    <span className={styles.figureSeparator}></span>
-                  </div>
-                  <div className={styles.contentInfoTextCol}>
-                    <h2 className={styles.mt16}>
-                      Download and integrate data with zero wrangling
-                    </h2>
-                    <p>
-                      Integrate datasets with zero data wrangling. Datasets with
-                      standard metadata annotations can be downloaded in AnnData
-                      and Seurat formats and custom cell selections from the
-                      complete corpus can be downloaded directly from R and
-                      Python.
-                    </p>
-                    <div className={styles.linkContainer}>
-                      <Link href={ROUTES.COLLECTIONS} passHref>
-                        <a>
-                          Browse datasets for download
+                    <div className={styles.contentInfoTextCol}>
+                      <h2 className={styles.mt16}>
+                        Download and integrate data with zero wrangling
+                      </h2>
+                      <p>
+                        Integrate datasets with zero data wrangling. Datasets
+                        with standard metadata annotations can be downloaded in
+                        AnnData and Seurat formats and custom cell selections
+                        from the complete corpus can be downloaded directly from
+                        R and Python.
+                      </p>
+                      <div className={styles.linkContainer}>
+                        <Link href={ROUTES.COLLECTIONS} passHref>
+                          <a>
+                            Browse datasets for download
+                            <span className={styles.linkArrow}>
+                              <LinkArrow />
+                            </span>
+                          </a>
+                        </Link>
+                        {/* LINK TO BE UPDATED POST-LAUNCH */}
+                        <a href="#">
+                          Download with R
                           <span className={styles.linkArrow}>
                             <LinkArrow />
                           </span>
                         </a>
-                      </Link>
-                      {/* LINK TO BE UPDATED POST-LAUNCH */}
-                      <a href="#">
-                        Download with R
-                        <span className={styles.linkArrow}>
-                          <LinkArrow />
-                        </span>
-                      </a>
-                      {/* LINK TO BE UPDATED POST-LAUNCH */}
-                      <a href="#">
-                        Download with Python
-                        <span className={styles.linkArrow}>
-                          <LinkArrow />
-                        </span>
-                      </a>
+                        {/* LINK TO BE UPDATED POST-LAUNCH */}
+                        <a href="#">
+                          Download with Python
+                          <span className={styles.linkArrow}>
+                            <LinkArrow />
+                          </span>
+                        </a>
+                      </div>
                     </div>
                   </div>
-                </div>
-                <div className={styles.contentImageCol}>
-                  <div className={styles.contentImage}>
-                    <Image
-                      src={DownloadDataImg}
-                      alt="pop-up modal for downloading a dataset"
-                    />
+                  <div className={styles.contentImageCol}>
+                    <div className={styles.contentImage}>
+                      <Image
+                        src={DownloadDataImg}
+                        alt="pop-up modal for downloading a dataset"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div ref={observerSection5}>
-              <div
-                className={styles.contentRow}
-                id="expedite-collaboration"
-                ref={scrollSection5}
-              >
+              <div ref={observerSection5}>
                 <div
-                  className={`${styles.contentInfoCol} ${
-                    inView5 ? styles.active : ""
-                  }`}
+                  className={styles.contentRow}
+                  id="expedite-collaboration"
+                  ref={scrollSection5}
                 >
-                  <div className={styles.contentInfoFigureCol}>
-                    <div className={styles.figureWrapper}>
-                      <ExpediteCollaborationIcon />
+                  <div
+                    className={`${styles.contentInfoCol} ${
+                      inView5 ? styles.active : ""
+                    }`}
+                  >
+                    <div className={styles.contentInfoFigureCol}>
+                      <div className={styles.figureWrapper}>
+                        <ExpediteCollaborationIcon />
+                      </div>
+                    </div>
+                    <div className={styles.contentInfoTextCol}>
+                      <h2 className={styles.mt16}>
+                        Expedite collaborative data analysis
+                      </h2>
+                      <p>
+                        Eliminate communication overhead and expedite cell type
+                        characterization by empowering tissue experts to
+                        directly explore and annotate datasets.
+                      </p>
+                      <div className={styles.linkContainer}>
+                        {/* LINK TO BE UPDATED POST-LAUNCH */}
+                        <a href="https://github.com/chanzuckerberg/cellxgene-documentation/blob/main/desktop/quick-start.md">
+                          Learn how it works
+                          <span className={styles.linkArrow}>
+                            <LinkArrow />
+                          </span>
+                        </a>
+                      </div>
                     </div>
                   </div>
-                  <div className={styles.contentInfoTextCol}>
-                    <h2 className={styles.mt16}>
-                      Expedite collaborative data analysis
-                    </h2>
-                    <p>
-                      Eliminate communication overhead and expedite cell type
-                      characterization by empowering tissue experts to directly
-                      explore and annotate datasets.
-                    </p>
-                    <div className={styles.linkContainer}>
-                      {/* LINK TO BE UPDATED POST-LAUNCH */}
-                      <a href="https://github.com/chanzuckerberg/cellxgene-documentation/blob/main/desktop/quick-start.md">
-                        Learn how it works
-                        <span className={styles.linkArrow}>
-                          <LinkArrow />
-                        </span>
-                      </a>
+                  <div className={styles.contentImageCol}>
+                    <div className={styles.contentImage}>
+                      <Image
+                        src={ExpediteCollaborationImg}
+                        alt="pop-up modal for user to create a data directory for storing gene sets and annotations"
+                      />
                     </div>
-                  </div>
-                </div>
-                <div className={styles.contentImageCol}>
-                  <div className={styles.contentImage}>
-                    <Image
-                      src={ExpediteCollaborationImg}
-                      alt="pop-up modal for user to create a data directory for storing gene sets and annotations"
-                    />
                   </div>
                 </div>
               </div>

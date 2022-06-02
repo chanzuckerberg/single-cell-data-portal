@@ -173,6 +173,10 @@
 
 // MAIN CONTENT
 .content {
+  &OverflowWrapper {
+    overflow-x: hidden;
+  }
+
   &Container {
     width: 100%;
     max-width: 1440px;
@@ -347,7 +351,6 @@
     }
 
     &Col {
-      overflow: hidden;
       padding-bottom: 138px;
       width: 867px;
     }
