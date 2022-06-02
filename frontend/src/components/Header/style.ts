@@ -30,7 +30,7 @@ export const MainWrapper = styled.div`
   @media (max-width: 768px) {
     flex-direction: column;
     justify-content: flex-start;
-    padding-top: 48px;
+    padding-top: ${HEADER_HEIGHT_PX}px;
   }
 `;
 
@@ -108,8 +108,6 @@ export const MobileNavWrapper = styled.div`
   background-color: ${PT_TEXT_COLOR};
   width: 100%;
   height: ${HEADER_HEIGHT_PX}px;
-  margin-bottom: -${HEADER_HEIGHT_PX}px;
-  // overflow: hidden;
 
   @media (max-width: 768px) {
     position: fixed;

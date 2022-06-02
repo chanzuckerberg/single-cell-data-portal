@@ -22,7 +22,6 @@ const EmbeddedGoogleSlides = ({ src }: { src: string }): ReactElement => {
   return (
     <ResponsiveContainer>
       <ResponsiveIFrame
-        sandbox="allow-scripts"
         src={src}
         frameBorder="0"
         allowFullScreen={true}
