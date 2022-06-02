@@ -229,7 +229,28 @@ paths:
           $ref: "#/components/responses/403"
         "404":
           $ref: "#/components/responses/404"
-
+    delete:
+      summary: Delete a private collection.
+      description: >-
+        Delete a private collection. Return 204 the delete succeeded.
+      operationId: backend.corpora.lambdas.api.v1.curation.collection_uuid.delete_collection
+      security:
+        - curatorAccess: [ ]
+      tags:
+        - collection
+      parameters:
+        - $ref: "#/components/parameters/path_collection_uuid"
+      responses:
+        "204":
+          $ref: "#/components/responses/204"
+        "400":
+          $ref: "#/components/responses/400_multiple"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "405":
+          $ref: "#/components/responses/405"
   /v1/collections/{collection_uuid}/revision:
     post:
       summary: Start a revision of a published Collection
