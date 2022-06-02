@@ -13,14 +13,14 @@ def delete_collection(collection_uuid: str, token_info: dict):
     collection = get_collection(
         db_session,
         collection_uuid,
-        collection_visibility=CollectionVisibility.PRIVATE,
+        visibility=CollectionVisibility.PRIVATE,
         owner=owner_or_allowed(token_info),
         include_tombstones=True,
     )
-    if not collection:
-        # Collection does not exist
-        return "", 204
     if collection.revision_of:
         raise MethodNotAllowedException("Can only delete a private collection through curation API.")
-    collection.delete()
+    elif collection.tombstone:
+        pass
+    else:
+        collection.delete()
     return "", 204
