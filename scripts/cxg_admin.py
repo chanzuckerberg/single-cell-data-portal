@@ -3,7 +3,7 @@ import json
 import logging
 import os
 import sys
-from datetime import datetime
+from datetime import datetime, time
 
 import click
 import requests
@@ -25,7 +25,6 @@ from backend.corpora.common.corpora_orm import (
     DbDataset,
     DatasetArtifactFileType,
     DbDatasetArtifact,
-    DbProjectLink,
     ProcessingStatus,
 )
 from backend.corpora.common.entities import DatasetAsset
@@ -102,7 +101,7 @@ def delete_collections(ctx, collection_name):
     """
 
     if ctx.obj["deployment"] == "prod":
-        logger.info(f"Cannot run this script for prod. Aborting.")
+        logger.info("Cannot run this script for prod. Aborting.")
         exit(0)
 
     click.confirm(
@@ -131,7 +130,7 @@ def delete_collections(ctx, collection_name):
             logger.info(f"Starting deletion of collection | name: {collection_name} | id: {c.id}")
             collection.delete()
 
-        logger.info(f"Deletions complete!")
+        logger.info("Deletions complete!")
 
 
 @cli.command()
@@ -259,7 +258,8 @@ def update_collection_owner(ctx, collection_uuid, new_owner):
 def transfer_collections(ctx, curr_owner, new_owner):
     """Transfer all collections owned by the curr_owner to the new_owner. You must first SSH into the target
     deployment using `make db/tunnel` before running.
-    Retrieve user ids from auth0 before running or ping an engineer on the team to check the id of the owner in the database
+    Retrieve user ids from auth0 before running or ping an engineer on the team to check the id of the owner in the
+    database
     To run (from repo root)
     ./scripts/cxg_admin.py --deployment prod transfer-collections $CURR_OWNER_ID $NEW_OWNER_ID
     """
@@ -269,7 +269,8 @@ def transfer_collections(ctx, curr_owner, new_owner):
         new_owner_collections_count = len(session.query(DbCollection).filter(DbCollection.owner == new_owner).all())
         if len(collections):
             click.confirm(
-                f"Are you sure you want to update the owner of {len(collections)} collection{'s' if len(collections) > 1 else ''} from {curr_owner} to "
+                f"Are you sure you want to update the owner of {len(collections)} collection"
+                f"{'s' if len(collections) > 1 else ''} from {curr_owner} to "
                 f"{new_owner}?",
                 abort=True,
             )
@@ -285,7 +286,8 @@ def transfer_collections(ctx, curr_owner, new_owner):
                     f"{new_owner} previously owned {new_owner_collections_count}, they now own {len(collections)}"
                 )
                 click.echo(
-                    f"Updated owner of collection for {updated} collections. {new_owner} is now the owner of {[[x.name, x.id] for x in collections]}"
+                    f"Updated owner of collection for {updated} collections. {new_owner} is now the owner of "
+                    f"{[[x.name, x.id] for x in collections]}"
                 )
                 exit(0)
             else:
@@ -310,8 +312,8 @@ def create_cxg_artifacts(ctx):
     """
     with db_session_manager() as session:
         click.confirm(
-            f"Are you sure you want to run this script? It will delete all of the current cxg artifacts and create new "
-            f"ones based on the explorer_url?",
+            "Are you sure you want to run this script? It will delete all of the current cxg artifacts and create new "
+            "ones based on the explorer_url?",
             abort=True,
         )
         session.query(DbDatasetArtifact).filter(DbDatasetArtifact.filetype == DatasetArtifactFileType.CXG).delete()
@@ -344,7 +346,7 @@ def migrate_schema_version(ctx):
 
     with db_session_manager() as session:
         click.confirm(
-            f"Are you sure you want to run this script? It will assign schema_version to all the datasets",
+            "Are you sure you want to run this script? It will assign schema_version to all the datasets",
             abort=True,
         )
         for record in session.query(DbDataset):
@@ -368,8 +370,8 @@ def migrate_published_at(ctx):
 
     with db_session_manager() as session:
         click.confirm(
-            f"Are you sure you want to run this script? It will assign published_at to "
-            f"all of the existing collections and datasets",
+            "Are you sure you want to run this script? It will assign published_at to "
+            "all of the existing collections and datasets",
             abort=True,
         )
         # Collections
@@ -390,7 +392,7 @@ def migrate_published_at(ctx):
             collection_created_at = record.created_at
             record.published_at = collection_created_at
 
-        logger.info(f"----- Finished migrating published_at for collections! -----")
+        logger.info("----- Finished migrating published_at for collections! -----")
 
         # Datasets
         for record in session.query(DbDataset):
@@ -410,7 +412,7 @@ def migrate_published_at(ctx):
             dataset_created_at = record.created_at
             record.published_at = dataset_created_at
 
-        logger.info(f"----- Finished migrating published_at for datasets! -----")
+        logger.info("----- Finished migrating published_at for datasets! -----")
 
 
 @cli.command()
@@ -424,8 +426,8 @@ def populate_revised_at(ctx):
 
     with db_session_manager() as session:
         click.confirm(
-            f"Are you sure you want to run this script? It will assign revised_at to "
-            f"all of the existing collections and datasets",
+            "Are you sure you want to run this script? It will assign revised_at to "
+            "all of the existing collections and datasets",
             abort=True,
         )
 
@@ -444,7 +446,7 @@ def populate_revised_at(ctx):
             logger.info(f"Setting revised_at for collection {collection_id}")
             record.revised_at = now
 
-        logger.info(f"----- Finished populating revised_at for collections! -----")
+        logger.info("----- Finished populating revised_at for collections! -----")
 
         # Datasets
         for record in session.query(DbDataset):
@@ -459,7 +461,7 @@ def populate_revised_at(ctx):
             logger.info(f"Setting revised_at for dataset {dataset_id}")
             record.revised_at = now
 
-        logger.info(f"----- Finished populating revised_at for datasets! -----")
+        logger.info("----- Finished populating revised_at for datasets! -----")
 
 
 @cli.command()
@@ -470,19 +472,19 @@ def strip_all_collection_fields(ctx):
     """
     with db_session_manager() as session:
         click.confirm(
-            f"Are you sure you want to run this script? It will strip whitespaces to all the string"
+            "Are you sure you want to run this script? It will strip whitespaces to all the string"
             "fields in the `collection` table",
             abort=True,
         )
 
         query = """
-            update project 
-            set 
-            owner=TRIM(owner), 
-            name=TRIM(name), 
-            description=TRIM(description), 
-            contact_name=TRIM(contact_name), 
-            contact_email=TRIM(contact_email), 
+            update project
+            set
+            owner=TRIM(owner),
+            name=TRIM(name),
+            description=TRIM(description),
+            contact_name=TRIM(contact_name),
+            contact_email=TRIM(contact_email),
             data_submission_policy_version=TRIM(data_submission_policy_version)
             where
             owner != TRIM(owner) OR
@@ -505,7 +507,7 @@ def backfill_processing_status_for_datasets(ctx):
     """
     with db_session_manager() as session:
         click.confirm(
-            f"Are you sure you want to run this script? It will assign dataset_processing_status "
+            "Are you sure you want to run this script? It will assign dataset_processing_status "
             "to all datasets that are missing it",
             abort=True,
         )
@@ -529,7 +531,7 @@ def add_trailing_slash_to_explorer_urls(ctx):
     """
     with db_session_manager() as session:
         click.confirm(
-            f"Are you sure you want to run this script? It will add a trailing slash to "
+            "Are you sure you want to run this script? It will add a trailing slash to "
             "a dataset's explorer_url if it already does not end with one.",
             abort=True,
         )
@@ -593,7 +595,8 @@ def reprocess_seurat(ctx: Context, dataset_uuid: str) -> None:
 
     click.echo(
         f"Step function executing: "
-        f"https://us-west-2.console.aws.amazon.com/states/home?region=us-west-2#/executions/details/{response['executionArn']}"
+        f"https://us-west-2.console.aws.amazon.com/states/home?region=us-west-2#/executions/details/"
+        f"{response['executionArn']}"
     )
 
 
@@ -627,8 +630,9 @@ auth0_apis = {
 def update_curator_names(ctx, access_token):
     """Add the curator name to all collection based on the owner of the collection.
 
-    ACCESS_TOKEN: Retrieved from Auth0 console or generated using the Client ID and Client Secret. The application must be
-    authorized to access to the Auth0 Management API with the following permissions read:users read:user_idp_tokens.
+    ACCESS_TOKEN: Retrieved from Auth0 console or generated using the Client ID and Client Secret.
+    The application must be authorized to access to the Auth0 Management API with the following permissions read:users
+    read:user_idp_tokens.
     """
 
     auth0_api = auth0_apis[ctx.obj["deployment"]]
@@ -676,9 +680,9 @@ def update_curator_names(ctx, access_token):
             owner_name = get_owner_info_from_auth0(owner, access_token)
             if owner_name:
                 owners[owner] = owner_name
-        except HTTPError as e:
+        except HTTPError:
             bad_owners.append(owner)
-            logger.error(f"Failed to fetch Auth0 info for owner:{owner}")
+            logger.exception(f"Failed to fetch Auth0 info for owner:{owner}")
     for owner_id, owner_name in owners.items():
         update_database_curator_name(owner_id, owner_name)
 
@@ -692,7 +696,7 @@ def add_publisher_metadata(ctx):
 
     with db_session_manager() as session:
         click.confirm(
-            f"Are you sure you want to run this script? It will populate publisher_metadata for all "
+            "Are you sure you want to run this script? It will populate publisher_metadata for all "
             "datasets. This will also do N calls to Crossref.",
             abort=True,
         )
@@ -715,7 +719,7 @@ def add_publisher_metadata(ctx):
                 continue
 
             if normalized_doi:
-                if not "/" in normalized_doi:
+                if "/" not in normalized_doi:
                     continue
 
                 try:
@@ -739,7 +743,7 @@ def refresh_preprint_doi(ctx):
 
     with db_session_manager() as session:
         click.confirm(
-            f"Are you sure you want to run this script? It will populate publisher_metadata for all "
+            "Are you sure you want to run this script? It will populate publisher_metadata for all "
             "datasets. This will also do N calls to Crossref.",
             abort=True,
         )
@@ -776,7 +780,7 @@ def cxg_remaster(ctx):
 
     with db_session_manager() as session:
         click.confirm(
-            f"Are you sure you want to remaster all the cxgs?",
+            "Are you sure you want to remaster all the cxgs?",
             abort=True,
         )
 
@@ -811,7 +815,8 @@ def cxg_remaster(ctx):
                     happy_stack_name = get_happy_stack_name(deployment)
 
                     response = client.start_execution(
-                        stateMachineArn=f"arn:aws:states:us-west-2:{aws_account_id}:stateMachine:dp-{happy_stack_name}-cxg-remaster-sfn",
+                        stateMachineArn=f"arn:aws:states:us-west-2:{aws_account_id}:stateMachine:dp-"
+                        f"{happy_stack_name}-cxg-remaster-sfn",
                         name=f"{dataset_id}-{int(time())}",
                         input=json.dumps(input),
                     )

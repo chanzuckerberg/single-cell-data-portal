@@ -10,7 +10,7 @@ class TestPostRevision(BaseAuthAPITest):
 
     def test__post_revision__Not_Public(self):
         collection_uuid = self.generate_collection(self.session).id
-        headers = {"Authorization": "Bearer " + self.make_super_curator_token(), "Content-Type": "application/json"}
+        headers = self.make_super_curator_header()
         response = self.app.post(f"/curation/v1/collections/{collection_uuid}/revision", headers=headers)
         self.assertEqual(403, response.status_code)
 
@@ -35,7 +35,7 @@ class TestPostRevision(BaseAuthAPITest):
 
     def test__post_revision__Super_Curator(self):
         collection_uuid = self.generate_collection(self.session, visibility=CollectionVisibility.PUBLIC.name).id
-        headers = {"Authorization": "Bearer " + self.make_super_curator_token(), "Content-Type": "application/json"}
+        headers = self.make_super_curator_header()
         response = self.app.post(f"/curation/v1/collections/{collection_uuid}/revision", headers=headers)
         self.assertEqual(201, response.status_code)
         self.assertNotEqual(collection_uuid, response.json["revision_id"])
