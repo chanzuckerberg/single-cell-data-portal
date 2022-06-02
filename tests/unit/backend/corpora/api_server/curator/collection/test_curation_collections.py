@@ -160,7 +160,7 @@ class TestPutCollectionUUID(BaseAuthAPITest):
 
     def test__update_collection__Super_Curator(self):
         collection_uuid = self.generate_collection(self.session).id
-        headers = {"Authorization": "Bearer " + self.make_super_curator_token(), "Content-Type": "application/json"}
+        headers = self.make_super_curator_header()
         response = self.app.put(
             f"/curation/v1/collections/{collection_uuid}", data=json.dumps(self.test_collection), headers=headers
         )
