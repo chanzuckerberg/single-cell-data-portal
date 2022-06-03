@@ -8,7 +8,7 @@ from backend.corpora.lambdas.api.v1.common import get_collection
 
 
 @dbconnect
-def delete_collection(collection_uuid: str, token_info: dict):
+def delete(collection_uuid: str, token_info: dict):
     db_session = g.db_session
     collection = get_collection(
         db_session,
