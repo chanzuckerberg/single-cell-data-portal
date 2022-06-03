@@ -16,7 +16,7 @@ def get_collection(db_session, collection_uuid, **kwargs):
 def delete_dataset_common(db_session: Session, dataset: Dataset, token_info: dict):
     if not dataset:
         raise ForbiddenHTTPException()
-    collection = Collection.get_collection(
+    collection = get_collection(
         db_session,
         dataset.collection.id,
         owner=owner_or_allowed(token_info),

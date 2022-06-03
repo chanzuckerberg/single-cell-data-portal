@@ -10,15 +10,8 @@ from backend.corpora.lambdas.api.v1.common import get_collection
 @dbconnect
 def delete(collection_uuid: str, token_info: dict):
     db_session = g.db_session
-    collection = get_collection(
-        db_session,
-        collection_uuid,
-        owner=owner_or_allowed(token_info),
-        include_tombstones=True,
-    )
-    if collection.tombstone:
-        pass
-    elif collection.visibility == CollectionVisibility.PUBLIC:
+    collection = get_collection(db_session, collection_uuid, owner=owner_or_allowed(token_info))
+    if collection.visibility == CollectionVisibility.PUBLIC:
         raise MethodNotAllowedException("Cannot delete a public collection through API.")
     else:
         collection.delete()
