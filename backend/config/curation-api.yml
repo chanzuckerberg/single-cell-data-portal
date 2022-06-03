@@ -232,7 +232,7 @@ paths:
     delete:
       summary: Delete a private collection.
       description: >-
-        Delete a private collection. Return 204 the delete succeeded.
+        Delete a private collection or cancel a revision.
       operationId: backend.corpora.lambdas.api.v1.curation.collection_uuid.delete_collection
       security:
         - curatorAccess: [ ]
