@@ -484,7 +484,7 @@ const CATEGORY_CONFIGS: (CategoryConfig | OntologyCategoryConfig)[] = [
     isSearchable: false,
     isZerosVisible: true,
     multiselect: true,
-    ontology: DEVELOPMENT_STAGE_ONTOLOGY_VIEW, // ontology view, show zeros, search, label?
+    ontology: DEVELOPMENT_STAGE_ONTOLOGY_VIEW,
   },
   {
     analyticsEvent: EVENTS.FILTER_SELECT_DISEASE,
