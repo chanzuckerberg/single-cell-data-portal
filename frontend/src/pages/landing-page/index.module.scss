@@ -108,6 +108,7 @@
       text-align: center;
       padding-left: 40px;
       padding-right: 40px;
+      padding-top: 40px;
     }
 
     h1 {
@@ -142,6 +143,11 @@
         padding-left: 40px;
         padding-right: 54px;
         margin: 0 40px;
+
+        @media (max-width: 500px) {
+          margin: 0 20px;
+          padding: 0 20px;
+        }
       }
     }
 
@@ -161,6 +167,11 @@
       line-height: 40px;
       color: #e9429a;
       margin: 0;
+      text-align: left;
+
+      @media (max-width: 400px) {
+        font-size: 18px;
+      }
     }
   }
 }
