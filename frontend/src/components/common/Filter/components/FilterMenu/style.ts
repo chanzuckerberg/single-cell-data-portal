@@ -1,7 +1,7 @@
 import { Classes, MenuItem } from "@blueprintjs/core";
 import { Divider } from "@material-ui/core";
 import { scrollbar } from "src/components/common/Filter/common/style";
-import { GRAY, LIGHT_GRAY, PT_TEXT_COLOR } from "src/components/common/theme";
+import { GRAY, PT_TEXT_COLOR } from "src/components/common/theme";
 import styled from "styled-components";
 
 export const MAX_DISPLAYABLE_MENU_ITEMS = 9;
@@ -38,33 +38,6 @@ export const MenuWrapper = styled.span<Props>`
   }
 `;
 
-export const InputGroupWrapper = styled.div`
-  margin-bottom: 4px;
-
-  .${Classes.INPUT_GROUP} {
-    .${Classes.ICON} {
-      color: ${GRAY.A};
-      margin: 0;
-      padding: 4px;
-      top: 50%;
-      transform: translateY(-50%);
-    }
-
-    .${Classes.INPUT} {
-      border: 1px solid ${LIGHT_GRAY.A} !important; /* required; overrides BP input border with important style declaration */
-      border-radius: 3px;
-      color: ${PT_TEXT_COLOR};
-      letter-spacing: -0.1px;
-      line-height: 18px;
-      height: 32px;
-
-      &::placeholder {
-        opacity: 0.6;
-      }
-    }
-  }
-`;
-
 export const MenuItemsWrapper = styled.div<MenuListProps>`
   max-height: ${({ isMenuDivided = false }) =>
     isMenuDivided
@@ -82,13 +55,16 @@ export const MenuDivider = styled(Divider)`
 `;
 
 export const NoMatches = styled(MenuItem)`
-  color: ${GRAY.A};
-  letter-spacing: -0.1px;
-  line-height: 18px;
-
-  &:hover {
-    background-color: transparent;
+  && {
     color: ${GRAY.A};
-    cursor: default;
+    letter-spacing: -0.1px;
+    line-height: 18px;
+    padding: 7px 8px;
+
+    &:hover {
+      background-color: transparent;
+      color: ${GRAY.A};
+      cursor: default;
+    }
   }
 `;

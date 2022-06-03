@@ -59,7 +59,10 @@ function buildBasicFilterContent(
     return (
       <FilterViews
         categoryKey={key}
+        isSearchable={categoryView.isSearchable}
+        isZerosVisible={categoryView.isZerosVisible}
         onFilter={onFilter}
+        onUpdateSearchValue={onUpdateSearchValue}
         views={categoryView.views}
       />
     );

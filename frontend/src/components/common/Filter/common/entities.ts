@@ -482,7 +482,7 @@ const CATEGORY_CONFIGS: (CategoryConfig | OntologyCategoryConfig)[] = [
     categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
     isLabelVisible: true,
     isSearchable: false,
-    isZerosVisible: false,
+    isZerosVisible: true,
     multiselect: true,
     ontology: DEVELOPMENT_STAGE_ONTOLOGY_VIEW, // ontology view, show zeros, search, label?
   },
@@ -690,7 +690,8 @@ export interface OntologyCategoryTreeView {
 }
 
 /**
- * View model of a node in an ontology tree view including partial selected state and possibly any children of this node.
+ * View model of a node in an ontology tree view including partial selected state and possibly any children of this
+ * node.
  */
 export interface OntologyCategoryTreeNodeView extends SelectCategoryValueView {
   children?: OntologyCategoryTreeNodeView[];

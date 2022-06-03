@@ -1,5 +1,7 @@
+import styled from "@emotion/styled";
 import { makeStyles } from "@material-ui/core";
-import { PT_TEXT_COLOR } from "src/components/common/theme";
+import { ListItem } from "czifui";
+import { GRAY, PT_TEXT_COLOR } from "src/components/common/theme";
 
 /* eslint-disable sort-keys -- ignore object key order for style objects */
 export const useFilterViewListStyles = makeStyles({
@@ -27,3 +29,17 @@ export const useFilterViewListStyles = makeStyles({
   },
 });
 /* eslint-enable sort-keys -- ignore object key order for style objects */
+
+export const NoMatches = styled(ListItem)`
+  && {
+    color: ${GRAY.A};
+    letter-spacing: -0.1px;
+    line-height: 18px;
+    margin: 0 /* overrides margin from layout.css */;
+    padding: 7px 8px;
+
+    &:before {
+      display: none; /* remove list item bullet. */
+    }
+  }
+`;

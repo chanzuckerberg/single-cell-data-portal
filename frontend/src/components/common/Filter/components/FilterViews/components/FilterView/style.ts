@@ -3,24 +3,21 @@ import { scrollbar } from "src/components/common/Filter/common/style";
 import { GRAY } from "src/components/common/theme";
 import styled from "styled-components";
 
-const LIST_HEIGHT = 32;
-const LIST_SUBHEADER_HEIGHT = 23;
-export const MAX_DISPLAYABLE_LIST_ITEMS = 15;
-const PANEL_MAX_HEIGHT =
-  (MAX_DISPLAYABLE_LIST_ITEMS + 0.5) * LIST_HEIGHT + LIST_SUBHEADER_HEIGHT;
+export const VIEW_LIST_ITEM_HEIGHT = 32;
+export const VIEW_LIST_SUBHEADER_HEIGHT = 23;
 
 interface Props {
   panelWidth: number;
+}
+
+interface ScrollProps {
+  maxHeight: number;
   scrollable: boolean;
 }
 
 export const ViewPanel = styled.div<Props>`
-  max-height: ${PANEL_MAX_HEIGHT}px;
   min-width: ${(props) =>
     `${props.panelWidth}px`}; /* required; makes allowances for list item selected state font weight changes by maintaining panel min width */
-  overflow-y: auto;
-  padding-right: ${(props) => (props.scrollable ? "8px" : undefined)};
-  ${scrollbar};
 `;
 
 /* eslint-disable sort-keys -- ignore object key order for style objects */
@@ -43,3 +40,10 @@ export const useFilterViewStyles = makeStyles({
   },
 });
 /* eslint-enable sort-keys -- ignore object key order for style objects */
+
+export const ViewPanelScroll = styled.div<ScrollProps>`
+  max-height: ${({ maxHeight }) => `${maxHeight}px`};
+  overflow-y: auto;
+  padding-right: ${({ scrollable }) => (scrollable ? "8px" : undefined)};
+  ${scrollbar};
+`;
