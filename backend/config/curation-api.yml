@@ -233,7 +233,7 @@ paths:
       summary: Delete a private collection.
       description: >-
         Delete a private collection or cancel a revision.
-      operationId: backend.corpora.lambdas.api.v1.curation.collection_uuid.actions.delete
+      operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_uuid.actions.delete
       security:
         - curatorAccess: [ ]
       tags:
@@ -260,7 +260,7 @@ paths:
         ongoing Revision may exist per published Collection at any given time.
 
         All methods of updating or adding Datasets and metadata to a Revision work the same as for a private Collection.
-      operationId: backend.corpora.lambdas.api.v1.curation.collection_uuid.revision.post_collection_revision
+      operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_uuid.revision.post_collection_revision
       security:
         - curatorAccess: []
       tags:
@@ -289,7 +289,7 @@ paths:
         Delete a Dataset. The **collection_uuid** MUST reference either a private Collection OR a Revision. MUST
         indicate the Dataset by providing *one* of either the **curator_tag** (non-null) OR the **dataset_uuid**
         parameters.
-      operationId: backend.corpora.lambdas.api.v1.curation.collection_uuid.dataset.delete_dataset
+      operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_uuid.dataset.delete_dataset
       tags:
         - collection
       security:
@@ -434,7 +434,7 @@ paths:
 
       security:
         - curatorAccess: []
-      operationId: backend.corpora.lambdas.api.v1.curation.collection.dataset.post_s3_credentials
+      operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_uuid.dataset.post_s3_credentials
       parameters:
         - $ref: "#/components/parameters/path_collection_uuid"
       responses:
