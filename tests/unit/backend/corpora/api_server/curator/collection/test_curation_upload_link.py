@@ -43,16 +43,19 @@ class TestPutLink(BaseAuthAPITest):
 
     def test__from_link__Not_Owner(self, *mocks):
         response = self._test_new(
-            dict(owner="someone else"), self.get_auth_headers(), body={"curator_tag": "test", "link": self.dummy_link}
+            dict(owner="someone else"),
+            self.make_not_owner_header(),
+            body={"curator_tag": "test", "link": self.dummy_link},
         )
         self.assertEqual(403, response.status_code)
 
     def test__new_from_link__OK(self, *mocks):
-        response = self._test_new({}, self.get_auth_headers(), body={"curator_tag": "test", "link": self.good_link})
+        headers = self.get_auth_headers()
+        response = self._test_new({}, headers, body={"curator_tag": "test", "link": self.good_link})
         self.assertEqual(202, response.status_code)
 
     def test__new_from_link__Super_Curator(self, *mocks):
-        headers = {"Authorization": "Bearer " + self.make_super_curator_token(), "Content-Type": "application/json"}
+        headers = self.make_super_curator_header()
         response = self._test_new({}, headers, body={"curator_tag": "test", "link": self.good_link})
         self.assertEqual(202, response.status_code)
 
@@ -82,7 +85,7 @@ class TestPutLink(BaseAuthAPITest):
             self.assertEqual(202, response.status_code)
 
     def test__existing_from_link__Super_Curator(self, *mocks):
-        headers = {"Authorization": "Bearer " + self.make_super_curator_token(), "Content-Type": "application/json"}
+        headers = self.make_super_curator_header()
         with self.subTest("dataset_id"):
             response = self._test_existing(headers, use_curator_tag=True)
             self.assertEqual(202, response.status_code)
