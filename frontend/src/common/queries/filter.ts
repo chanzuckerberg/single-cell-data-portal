@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { useQuery, UseQueryResult } from "react-query";
+import { API } from "src/common/API";
 import {
   Author,
   Consortium,
@@ -7,8 +8,7 @@ import {
   Ontology,
   PublisherMetadata,
 } from "src/common/entities";
-import { COLLECTIONS_RESPONSE } from "src/common/queries/collections-response";
-import { DATASETS_RESPONSE } from "src/common/queries/datasets-response";
+import { DEFAULT_FETCH_OPTIONS } from "src/common/queries/common";
 import { ENTITIES } from "src/common/queries/entities";
 import { COLLATOR_CASE_INSENSITIVE } from "src/components/common/Filter/common/constants";
 import {
@@ -20,6 +20,7 @@ import {
   PUBLICATION_DATE_VALUES,
 } from "src/components/common/Filter/common/entities";
 import { checkIsOverMaxCellCount } from "src/components/common/Grid/common/utils";
+import { API_URL } from "src/configs/configs";
 
 /**
  * Never expire cached collections and datasets. TODO revisit once state management approach is confirmed (#1809).
@@ -533,11 +534,9 @@ function expandPublicationDateValues(
 async function fetchCollections(): Promise<
   Map<string, ProcessedCollectionResponse>
 > {
-  // TODO(cc) revert
-  // const collections = await (
-  //   await fetch(API_URL + API.COLLECTIONS_INDEX, DEFAULT_FETCH_OPTIONS)
-  // ).json();
-  const collections = COLLECTIONS_RESPONSE as unknown as CollectionResponse[];
+  const collections = await (
+    await fetch(API_URL + API.COLLECTIONS_INDEX, DEFAULT_FETCH_OPTIONS)
+  ).json();
 
   // Calculate the number of months since publication for each collection.
   const [todayMonth, todayYear] = getMonthYear(new Date());
@@ -558,11 +557,9 @@ async function fetchCollections(): Promise<
  * filterable and sortable dataset fields.
  */
 async function fetchDatasets(): Promise<DatasetResponse[]> {
-  // TODO(cc) revert
-  // const datasets = await (
-  //   await fetch(API_URL + API.DATASETS_INDEX, DEFAULT_FETCH_OPTIONS)
-  // ).json();
-  const datasets = DATASETS_RESPONSE as unknown as DatasetResponse[];
+  const datasets = await (
+    await fetch(API_URL + API.DATASETS_INDEX, DEFAULT_FETCH_OPTIONS)
+  ).json();
 
   // Correct any dirty data returned from endpoint.
   return datasets.map((dataset: DatasetResponse) => {
