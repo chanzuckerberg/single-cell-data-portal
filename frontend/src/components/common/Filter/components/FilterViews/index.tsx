@@ -4,38 +4,38 @@ import {
   OntologyCategoryTreeNodeView,
   OntologyCategoryTreeView,
 } from "src/components/common/Filter/common/entities";
-import FilterPanel from "src/components/common/Filter/components/FilterMultiPanel/components/FilterPanel";
-import { MAX_DISPLAYABLE_LIST_ITEMS } from "src/components/common/Filter/components/FilterMultiPanel/components/FilterPanel/style";
-import { MultiPanelSelector } from "src/components/common/Filter/components/FilterMultiPanel/style";
+import FilterView from "src/components/common/Filter/components/FilterViews/components/FilterView";
+import { MAX_DISPLAYABLE_LIST_ITEMS } from "src/components/common/Filter/components/FilterViews/components/FilterView/style";
+import { ViewsMenu } from "src/components/common/Filter/components/FilterViews/style";
 
 interface Props {
   categoryKey: CATEGORY_KEY;
   onFilter: OnFilterFn;
-  species: OntologyCategoryTreeView[];
+  views: OntologyCategoryTreeView[];
 }
 
-export default function FilterMultiPanel({
+export default function FilterViews({
   categoryKey,
   onFilter,
-  species,
+  views,
 }: Props): JSX.Element {
-  const speciesToDisplay = species.filter(
+  const viewsToDisplay = views.filter(
     (s) => s.children && s.children.filter((child) => child.count).length > 0
   );
   return (
-    <MultiPanelSelector>
-      {speciesToDisplay.map(({ label, children }, i) => (
-        <FilterPanel
+    <ViewsMenu>
+      {viewsToDisplay.map(({ label, children }, i) => (
+        <FilterView
           categoryKey={categoryKey}
-          key={label}
+          key={`${label || "view"}-${i}`}
           label={label}
           onFilter={onFilter}
           scrollable={countViews(children) > MAX_DISPLAYABLE_LIST_ITEMS}
-          showPanelDivider={i !== 0}
+          showViewDivider={i !== 0}
           values={children}
         />
       ))}
-    </MultiPanelSelector>
+    </ViewsMenu>
   );
 }
 

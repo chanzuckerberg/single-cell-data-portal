@@ -6,10 +6,10 @@ import {
   OntologyCategoryTreeNodeView,
 } from "src/components/common/Filter/common/entities";
 import {
-  Panel,
-  useFilterPanelStyles,
-} from "src/components/common/Filter/components/FilterMultiPanel/components/FilterPanel/style";
-import FilterPanelList from "src/components/common/Filter/components/FilterMultiPanel/components/FilterPanelList";
+  useFilterViewStyles,
+  ViewPanel,
+} from "src/components/common/Filter/components/FilterViews/components/FilterView/style";
+import FilterViewList from "src/components/common/Filter/components/FilterViews/components/FilterViewList";
 
 const ADDITIONAL_PANEL_WIDTH = 8;
 
@@ -18,23 +18,23 @@ interface Props {
   label?: string;
   onFilter: OnFilterFn;
   scrollable?: boolean;
-  showPanelDivider: boolean;
+  showViewDivider: boolean;
   values: OntologyCategoryTreeNodeView[];
 }
 
-export default function FilterPanel({
+export default function FilterView({
   categoryKey,
   label,
   onFilter,
   scrollable = false,
-  showPanelDivider,
+  showViewDivider,
   values,
 }: Props): JSX.Element {
   const panelRef = useRef<HTMLDivElement>(null);
   const [panelWidth, setPanelWidth] = useState<number>(0);
-  const classes = useFilterPanelStyles();
+  const classes = useFilterViewStyles();
 
-  // Calculate and set a min width on panel to prevent panel width resizing
+  // Calculate and set a min width on menu panel to prevent width resizing
   // (derived from a change in list item selected state font weight).
   useEffect(() => {
     if (panelRef.current) {
@@ -46,19 +46,20 @@ export default function FilterPanel({
 
   return (
     <>
-      {showPanelDivider && (
+      {showViewDivider && (
         <Divider
-          classes={{ root: classes.panelDivider }}
+          classes={{ root: classes.viewDivider }}
           orientation="vertical"
         />
       )}
-      <Panel panelWidth={panelWidth} ref={panelRef} scrollable={scrollable}>
-        <FilterPanelList
+      <ViewPanel panelWidth={panelWidth} ref={panelRef} scrollable={scrollable}>
+        <FilterViewList
           categoryKey={categoryKey}
           onFilter={onFilter}
-          PanelHeader={
+          values={values}
+          ViewHeader={
             <ListSubheader
-              classes={{ root: classes.panelHeading }}
+              classes={{ root: classes.viewHeading }}
               disableGutters
               disableSticky
               inset
@@ -66,9 +67,8 @@ export default function FilterPanel({
               {label}
             </ListSubheader>
           }
-          values={values}
         />
-      </Panel>
+      </ViewPanel>
     </>
   );
 }

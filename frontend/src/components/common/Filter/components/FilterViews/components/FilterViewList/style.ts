@@ -2,7 +2,7 @@ import { makeStyles } from "@material-ui/core";
 import { PT_TEXT_COLOR } from "src/components/common/theme";
 
 /* eslint-disable sort-keys -- ignore object key order for style objects */
-export const useFilterPanelListStyles = makeStyles({
+export const useFilterViewListStyles = makeStyles({
   listItem: {
     color: PT_TEXT_COLOR,
     letterSpacing: "-0.1px",

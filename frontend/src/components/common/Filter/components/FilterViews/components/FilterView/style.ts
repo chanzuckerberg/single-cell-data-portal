@@ -14,7 +14,7 @@ interface Props {
   scrollable: boolean;
 }
 
-export const Panel = styled.div<Props>`
+export const ViewPanel = styled.div<Props>`
   max-height: ${PANEL_MAX_HEIGHT}px;
   min-width: ${(props) =>
     `${props.panelWidth}px`}; /* required; makes allowances for list item selected state font weight changes by maintaining panel min width */
@@ -24,13 +24,13 @@ export const Panel = styled.div<Props>`
 `;
 
 /* eslint-disable sort-keys -- ignore object key order for style objects */
-export const useFilterPanelStyles = makeStyles({
-  panelDivider: {
+export const useFilterViewStyles = makeStyles({
+  viewDivider: {
     backgroundColor: "rgba(16, 22, 26, 0.15)",
     marginLeft: 8,
     marginRight: 8,
   },
-  panelHeading: {
+  viewHeading: {
     color: GRAY.A,
     cursor: "default",
     fontSize: 11,

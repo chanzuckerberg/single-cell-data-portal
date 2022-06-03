@@ -7,31 +7,31 @@ import {
   OntologyCategoryTreeNodeView,
 } from "src/components/common/Filter/common/entities";
 import { SelectionIcon } from "src/components/common/Filter/common/style";
-import { useFilterPanelListStyles } from "src/components/common/Filter/components/FilterMultiPanel/components/FilterPanelList/style";
+import { useFilterViewListStyles } from "src/components/common/Filter/components/FilterViews/components/FilterViewList/style";
 import { GRAY } from "src/components/common/theme";
 
 interface Props {
   categoryKey: CATEGORY_KEY;
   nested?: boolean;
   onFilter: OnFilterFn;
-  PanelHeader?: ReactElement;
   values: OntologyCategoryTreeNodeView[];
+  ViewHeader?: ReactElement;
 }
 
-export default function FilterPanelList({
+export default function FilterViewList({
   categoryKey,
   nested = false,
   onFilter,
-  PanelHeader = undefined,
   values,
+  ViewHeader = undefined,
 }: Props): JSX.Element {
-  const classes = useFilterPanelListStyles();
+  const classes = useFilterViewListStyles();
   return (
     <List
       classes={{ root: nested ? classes.sublist : undefined }}
       dense
       disablePadding
-      subheader={PanelHeader}
+      subheader={ViewHeader}
     >
       {values.map(
         ({ key, children, count, label, selectedPartial, selected }) => (
@@ -48,7 +48,7 @@ export default function FilterPanelList({
               disableRipple
               onClick={() => onFilter(categoryKey, key)}
             >
-              {/* Icon - bp icon to uphold ui consistency between filter menu and filter multi panel */}
+              {/* Icon - bp icon to uphold ui consistency between filter menu and filter views */}
               <SelectionIcon
                 icon={
                   selected
@@ -81,7 +81,7 @@ export default function FilterPanelList({
             </ListItem>
             {/* Nested list */}
             {children && children.length && (
-              <FilterPanelList
+              <FilterViewList
                 categoryKey={categoryKey}
                 nested
                 onFilter={onFilter}
