@@ -246,12 +246,7 @@ def create_collection(body: dict, user: str):
 @dbconnect
 def delete_collection(collection_uuid: str, token_info: dict):
     db_session = g.db_session
-    collection = get_collection(
-        db_session,
-        collection_uuid,
-        owner=owner_or_allowed(token_info),
-        include_tombstones=True,
-    )
+    collection = get_collection(db_session, collection_uuid, owner=owner_or_allowed(token_info))
     if collection.visibility == CollectionVisibility.PUBLIC:
         revision = Collection.get_collection(
             db_session,
