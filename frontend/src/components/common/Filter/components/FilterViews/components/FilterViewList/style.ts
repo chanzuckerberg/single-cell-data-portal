@@ -31,6 +31,7 @@ export const useFilterViewListStyles = makeStyles({
 /* eslint-enable sort-keys -- ignore object key order for style objects */
 
 export const NoMatches = styled(ListItem)`
+  /* Remove && after updating SDS version that has this commit https://github.com/chanzuckerberg/sci-components/pull/201 */
   && {
     color: ${GRAY.A};
     letter-spacing: -0.1px;
