@@ -125,7 +125,6 @@ export default function FilterView({
 function filterViewValues(
   values: OntologyCategoryTreeNodeView[] = [],
   searchValue: string
-  // accValues: OntologyCategoryTreeNodeView[] = []
 ): OntologyCategoryTreeNodeView[] {
   if (searchValue) {
     return [...values].reduce((acc, value) => {
