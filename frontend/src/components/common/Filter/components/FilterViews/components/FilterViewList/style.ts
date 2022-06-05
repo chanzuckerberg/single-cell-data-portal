@@ -3,6 +3,10 @@ import { ListItemText } from "@material-ui/core";
 import { List, ListItem } from "czifui";
 import { GRAY } from "src/components/common/theme";
 
+export const ViewSublist = styled(List)`
+  margin-left: 22px;
+`;
+
 export const NoMatches = styled(ListItem)`
   /* TODO(cc) remove && after updating SDS version that has this commit https://github.com/chanzuckerberg/sci-components/pull/201 */
   && {
@@ -16,10 +20,6 @@ export const NoMatches = styled(ListItem)`
       display: none; /* remove list item bullet. */
     }
   }
-`;
-
-export const ViewSublist = styled(List)`
-  margin-left: 22px;
 `;
 
 export const ViewListItem = styled(ListItem)`
