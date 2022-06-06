@@ -16,9 +16,9 @@ logging.basicConfig(level=logging.INFO)
 env = os.getenv("ENV")
 validation_dataset_uuid = "3de0ad6d-4378-4f62-b37b-ec0b75a50d94"
 MIN_CUBE_SIZE_GB = 3 if env == "PROD" else 0.1
-MIN_TISSUE_COUNT = 15 if env == " PROD" else 2
-MIN_SPECIES_COUNT = 2 if env == " PROD" else 1
-MIN_DATASET_COUNT = 50 if env == " PROD" else 5
+MIN_TISSUE_COUNT = 15 if env == "PROD" else 2
+MIN_SPECIES_COUNT = 2 if env == "PROD" else 1
+MIN_DATASET_COUNT = 50 if env == "PROD" else 5
 MIN_MALAT1_GENE_EXPRESSION_CELL_COUNT_PERCENT = 90
 MIN_ACTB_GENE_EXPRESSION_CELL_COUNT_PERCENT = 70
 
