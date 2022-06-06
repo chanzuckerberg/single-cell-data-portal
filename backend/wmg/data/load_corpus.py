@@ -18,7 +18,7 @@ from backend.wmg.data.extract import included_assay_ontologies
 from backend.wmg.data.rankit import rankit
 from backend.wmg.data.schemas.corpus_schema import var_labels, obs_labels, INTEGRATED_ARRAY_NAME
 from backend.wmg.data.utils import get_all_dataset_ids
-from backend.wmg.data.validation import validate_corpus_load
+from backend.wmg.data.validation.validation import validate_corpus_load
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
