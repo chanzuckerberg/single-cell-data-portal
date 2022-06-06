@@ -7,10 +7,9 @@ export const ViewSublist = styled(List)`
   margin-left: 22px;
 `;
 
-export const NoMatches = styled(ListItem)`
+const StyledListItem = styled(ListItem)`
   /* TODO(cc) remove && after updating SDS version that has this commit https://github.com/chanzuckerberg/sci-components/pull/201 */
   && {
-    color: ${GRAY.A};
     letter-spacing: -0.1px;
     line-height: 18px;
     margin: 0 /* overrides margin from layout.css */;
@@ -22,16 +21,16 @@ export const NoMatches = styled(ListItem)`
   }
 `;
 
-export const ViewListItem = styled(ListItem)`
+export const NoMatches = styled(StyledListItem)`
   /* TODO(cc) remove && after updating SDS version that has this commit https://github.com/chanzuckerberg/sci-components/pull/201 */
   && {
-    letter-spacing: -0.1px;
-    line-height: 18px;
-    margin: 0 /* overrides margin from layout.css */;
-    padding: 7px 8px;
-    &:before {
-      display: none; /* remove list item bullet. */
-    }
+    color: ${GRAY.A};
+  }
+`;
+
+export const ViewListItem = styled(StyledListItem)`
+  /* TODO(cc) remove && after updating SDS version that has this commit https://github.com/chanzuckerberg/sci-components/pull/201 */
+  && {
     &:hover {
       background-color: rgba(
         167,
