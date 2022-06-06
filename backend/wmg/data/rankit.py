@@ -1,6 +1,7 @@
 import numpy as np
 import scipy as sc
 
+
 def rankit(Xraw: sc.sparse.spmatrix, offset: float = 3.0) -> sc.sparse.csr_matrix:
     """
     Row-wise normalizes values of a matrix using the rankit method. The target distribution is a normal distribution
@@ -26,7 +27,7 @@ def rankit(Xraw: sc.sparse.spmatrix, offset: float = 3.0) -> sc.sparse.csr_matri
         prob_level = []
 
         for i in ranks:
-            prob_level.append(np.round((i - 1 + 0.5) / max_rank, 5))
+            prob_level.append(np.round((i - 0.5) / max_rank, 5))
 
         normal_quantiles = sc.stats.norm.ppf(prob_level, loc=offset)
         X.data[indptr[row] : indptr[row + 1]][ranks] = normal_quantiles
