@@ -1,6 +1,5 @@
 import numpy as np
-import scipy.stats
-import scipy.sparse
+import scipy as sc
 import numba as nb
 
 
@@ -30,7 +29,16 @@ def rankit(Xraw: scipy.sparse.spmatrix, offset: float = 3.0) -> scipy.sparse.csr
     for row in range(0, indptr.shape[0] - 1):
         data = X.data[indptr[row] : indptr[row + 1]]
         # A normal continuous random variable.
-        normal_quantiles = scipy.stats.norm.ppf(quantiles(len(data)), loc=offset)
-        rank = np.argsort(data)
-        X.data[indptr[row] : indptr[row + 1]][rank] = normal_quantiles
+
+        # Assign ranks to data, assigning the same value to ties
+        ranks = sc.stats.rankdata(data, method="dense")
+
+        n = max(ranks)
+        prob_level = []
+
+        for i in ranks:
+            prob_level.append(np.round((i - 1 + 0.5) / n, 5))
+
+        normal_quantiles = sc.stats.norm.ppf(quantiles(len(data)), loc=offset)
+        X.data[indptr[row] : indptr[row + 1]][ranks] = normal_quantiles
     return X
