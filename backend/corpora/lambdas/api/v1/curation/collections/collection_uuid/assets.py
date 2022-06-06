@@ -6,7 +6,7 @@ from backend.corpora.common.utils.http_exceptions import InvalidParametersHTTPEx
 
 
 @dbconnect
-def post(collection_uuid: str, curator_tag: str = None, dataset_uuid=None):
+def get(collection_uuid: str, curator_tag: str = None, dataset_uuid=None):
     db_session = g.db_session
     if dataset_uuid:
         dataset = Dataset.get(db_session, dataset_uuid)

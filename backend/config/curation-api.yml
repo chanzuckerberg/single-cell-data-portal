@@ -502,14 +502,14 @@ paths:
           $ref: "#/components/responses/401"
 
   /v1/collections/{collection_uuid}/assets:
-    post:
+    get:
       summary: Retrieve links for downloading a dataset
       tags:
         - collection
       description: >-
         Generate URLs to download the files associated with the dataset. MUST include *one* of the **curator_tag**
         and **dataset_uuid** parameters.
-      operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_uuid.assets.post
+      operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_uuid.assets.get
       parameters:
         - $ref: "#/components/parameters/path_collection_uuid"
         - $ref: "#/components/parameters/query_curator_tag"

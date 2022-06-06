@@ -17,7 +17,7 @@ class TestAsset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
     def tearDown(self):
         super().tearDown()
 
-    def test__post_dataset_asset__OK(self):
+    def test__get_dataset_asset__OK(self):
         bucket = self.CORPORA_TEST_CONFIG["bucket_name"]
         s3_file_name = "test_s3_uri.h5ad"
         content = "Hello world!"
@@ -31,12 +31,12 @@ class TestAsset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
                 )
                 if dataset_uuid == "test_curator_tag":
                     expected_body["curator_tag"] = self.curator_tag
-                    response = self.app.post(
+                    response = self.app.get(
                         "/curation/v1/collections/test_collection_id/assets",
                         query_string=dict(curator_tag=self.curator_tag),
                     )
                 else:
-                    response = self.app.post(
+                    response = self.app.get(
                         "/curation/v1/collections/test_collection_id/assets",
                         query_string=dict(dataset_uuid=dataset_uuid),
                     )
@@ -46,7 +46,7 @@ class TestAsset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
                 self.assertIsNotNone(presign_url)
                 self.assertEqual(expected_body, actual_body)
 
-    def test__post_dataset_asset__file_error(self):
+    def test__get_dataset_asset__file_error(self):
         for dataset_uuid in self.test_dataset_uuid:
             with self.subTest(dataset_uuid):
                 expected_body = dict(
@@ -54,12 +54,12 @@ class TestAsset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
                 )
                 if dataset_uuid == "test_curator_tag":
                     expected_body["curator_tag"] = self.curator_tag
-                    response = self.app.post(
+                    response = self.app.get(
                         "/curation/v1/collections/test_collection_id/assets",
                         query_string=dict(curator_tag=self.curator_tag),
                     )
                 else:
-                    response = self.app.post(
+                    response = self.app.get(
                         "/curation/v1/collections/test_collection_id/assets",
                         query_string=dict(dataset_uuid=dataset_uuid),
                     )
@@ -69,17 +69,17 @@ class TestAsset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
                 self.assertIsNone(presign_url)
                 self.assertEqual(expected_body, actual_body)
 
-    def test__post_dataset_asset__dataset_NOT_FOUND(self):
+    def test__get_dataset_asset__dataset_NOT_FOUND(self):
         id_or_tag = "bad_id"
 
         for i in ["uuid", "tag"]:
             with self.subTest(i):
                 if i == "tag":
-                    response = self.app.post(
+                    response = self.app.get(
                         "/curation/v1/collections/test_collection_id/assets", query_string=dict(curator_tag=id_or_tag)
                     )
                 else:
-                    response = self.app.post(
+                    response = self.app.get(
                         "/curation/v1/collections/test_collection_id/assets", query_string=dict(dataset_uuid=id_or_tag)
                     )
                 self.assertEqual(404, response.status_code)
@@ -90,16 +90,16 @@ class TestAsset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         "backend.corpora.lambdas.api.v1.curation.collections.collection_uuid.assets.Dataset.get_assets",
         return_value=None,
     )
-    def test__post_dataset_asset__asset_NOT_FOUND(self, get_asset: Mock):
+    def test__get_dataset_asset__asset_NOT_FOUND(self, get_asset: Mock):
         for dataset_uuid in self.test_dataset_uuid:
             with self.subTest(dataset_uuid):
                 if dataset_uuid == "test_curator_tag":
-                    response = self.app.post(
+                    response = self.app.get(
                         "/curation/v1/collections/test_collection_id/assets",
                         query_string=dict(curator_tag="curator_tag"),
                     )
                 else:
-                    response = self.app.post(
+                    response = self.app.get(
                         "/curation/v1/collections/test_collection_id/assets",
                         query_string=dict(dataset_uuid=dataset_uuid),
                     )
