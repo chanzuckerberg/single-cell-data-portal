@@ -1038,7 +1038,7 @@ class TestCollectionDeletion(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         test_url = furl(path=f"/dp/v1/collections/{collection.id}", query_params=dict(visibility="PRIVATE"))
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
         response = self.app.delete(test_url.url, headers=headers)
-        self.assertEqual(response.status_code, 204)
+        self.assertEqual(response.status_code, 403)
 
     def test_delete_collection__public__ok(self):
         collection = self.generate_collection(
