@@ -17,6 +17,7 @@ from backend.wmg.data.transform import (
     get_cell_types_by_tissue,
     generate_cell_ordering,
 )
+from backend.wmg.data.validation.validation import validate_cube
 from backend.wmg.data.wmg_cube import create_cubes
 
 logger = logging.getLogger(__name__)
@@ -75,7 +76,7 @@ def load_data_and_create_cube(
     logger.info("Loaded datasets into corpus")
     create_cubes(corpus_path)
     logger.info("Built expression summary cube")
-
+    validate_cube(corpus_path)
     cell_type_by_tissue = get_cell_types_by_tissue(corpus_path)
     generate_cell_ordering(snapshot_path, cell_type_by_tissue)
     generate_primary_filter_dimensions(snapshot_path, corpus_name, timestamp)
