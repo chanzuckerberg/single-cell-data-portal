@@ -142,6 +142,18 @@ class TestDatabase:
         )
         self.session.add(collection)
         self.session.commit()
+        collection = DbCollection(
+            id="test_curator_tag_collection_id",
+            visibility=CollectionVisibility.PUBLIC.name,
+            owner="test_user_id",
+            name="test_collection_name",
+            description="test_description",
+            data_submission_policy_version="0",
+            contact_name="Some Body",
+            contact_email="somebody@chanzuckerberg.com",
+        )
+        self.session.add(collection)
+        self.session.commit()
 
     def _create_test_geneset(self):
         geneset = DbGeneset(
@@ -237,7 +249,7 @@ class TestDatabase:
             revision=0,
             name="test_dataset_name",
             schema_version="2.0.0",
-            collection_id="test_collection_id",
+            collection_id="test_curator_tag_collection_id",
         )
         self.session.add(dataset)
         dataset = DbDataset(

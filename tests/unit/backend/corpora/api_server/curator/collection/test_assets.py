@@ -32,7 +32,7 @@ class TestAsset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
                 if dataset_uuid == "test_curator_tag":
                     expected_body["curator_tag"] = self.curator_tag
                     response = self.app.get(
-                        "/curation/v1/collections/test_collection_id/assets",
+                        "/curation/v1/collections/test_curator_tag_collection_id/assets",
                         query_string=dict(curator_tag=self.curator_tag),
                     )
                 else:
@@ -55,7 +55,7 @@ class TestAsset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
                 if dataset_uuid == "test_curator_tag":
                     expected_body["curator_tag"] = self.curator_tag
                     response = self.app.get(
-                        "/curation/v1/collections/test_collection_id/assets",
+                        "/curation/v1/collections/test_curator_tag_collection_id/assets",
                         query_string=dict(curator_tag=self.curator_tag),
                     )
                 else:
@@ -76,7 +76,8 @@ class TestAsset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
             with self.subTest(i):
                 if i == "tag":
                     response = self.app.get(
-                        "/curation/v1/collections/test_collection_id/assets", query_string=dict(curator_tag=id_or_tag)
+                        "/curation/v1/collections/test_curator_tag_collection_id/assets",
+                        query_string=dict(curator_tag=id_or_tag),
                     )
                 else:
                     response = self.app.get(
@@ -95,7 +96,7 @@ class TestAsset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
             with self.subTest(dataset_uuid):
                 if dataset_uuid == "test_curator_tag":
                     response = self.app.get(
-                        "/curation/v1/collections/test_collection_id/assets",
+                        "/curation/v1/collections/test_curator_tag_collection_id/assets",
                         query_string=dict(curator_tag="curator_tag"),
                     )
                 else:
