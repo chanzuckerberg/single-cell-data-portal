@@ -232,6 +232,15 @@ class TestDatabase:
         )
         self.session.add(dataset)
         dataset = DbDataset(
+            id="test_curator_tag",
+            curator_tag="curator_tag",
+            revision=0,
+            name="test_dataset_name",
+            schema_version="2.0.0",
+            collection_id="test_collection_id",
+        )
+        self.session.add(dataset)
+        dataset = DbDataset(
             id="test_dataset_for_revisions_one",
             revision=0,
             name="test_dataset_name",
@@ -337,6 +346,17 @@ class TestDatabase:
         dataset_artifact = DbDatasetArtifact(
             id="test_dataset_artifact_id",
             dataset_id="test_dataset_id",
+            filename="test_filename",
+            filetype=DatasetArtifactFileType.H5AD.name,
+            user_submitted=True,
+            s3_uri=self.real_s3_file if self.real_data else self.fake_s3_file,
+        )
+        self.session.add(dataset_artifact)
+        self.session.commit()
+
+        # Curator Tags
+        dataset_artifact = DbDatasetArtifact(
+            dataset_id="test_curator_tag",
             filename="test_filename",
             filetype=DatasetArtifactFileType.H5AD.name,
             user_submitted=True,
