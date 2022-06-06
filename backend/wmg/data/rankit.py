@@ -11,7 +11,7 @@ def quantiles(n: int) -> np.ndarray:
     return np.array([np.round((i - 0.5) / n, 5) for i in range(1, n + 1)])
 
 
-def rankit(Xraw: scipy.sparse.spmatrix, offset: float = 3.0) -> scipy.sparse.csr_matrix:
+def rankit(Xraw: sc.sparse.spmatrix, offset: float = 3.0) -> sc.sparse.csr_matrix:
     """
     Row-wise normalizes values of a matrix using the rankit method. The target distribution is a normal distribution
     with variance of 1 and mean as set in `offset`
@@ -28,7 +28,6 @@ def rankit(Xraw: scipy.sparse.spmatrix, offset: float = 3.0) -> scipy.sparse.csr
     indptr = X.indptr  # get row count
     for row in range(0, indptr.shape[0] - 1):
         data = X.data[indptr[row] : indptr[row + 1]]
-        # A normal continuous random variable.
 
         # Assign ranks to data, assigning the same value to ties
         ranks = sc.stats.rankdata(data, method="dense")
