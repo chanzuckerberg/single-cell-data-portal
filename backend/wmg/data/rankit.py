@@ -1,15 +1,5 @@
 import numpy as np
 import scipy as sc
-import numba as nb
-
-
-@nb.jit
-def quantiles(n: int) -> np.ndarray:
-    """
-    :returns an array of n floats equally spaced from 0 to 1
-    """
-    return np.array([np.round((i - 0.5) / n, 5) for i in range(1, n + 1)])
-
 
 def rankit(Xraw: sc.sparse.spmatrix, offset: float = 3.0) -> sc.sparse.csr_matrix:
     """
@@ -32,12 +22,12 @@ def rankit(Xraw: sc.sparse.spmatrix, offset: float = 3.0) -> sc.sparse.csr_matri
         # Assign ranks to data, assigning the same value to ties
         ranks = sc.stats.rankdata(data, method="dense")
 
-        n = max(ranks)
+        max_rank = max(ranks)
         prob_level = []
 
         for i in ranks:
-            prob_level.append(np.round((i - 1 + 0.5) / n, 5))
+            prob_level.append(np.round((i - 1 + 0.5) / max_rank, 5))
 
-        normal_quantiles = sc.stats.norm.ppf(quantiles(len(data)), loc=offset)
+        normal_quantiles = sc.stats.norm.ppf(prob_level, loc=offset)
         X.data[indptr[row] : indptr[row + 1]][ranks] = normal_quantiles
     return X
