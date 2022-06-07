@@ -13,8 +13,8 @@ import { formatNumberToScale } from "src/components/common/Filter/common/utils";
 import FilterLabel from "src/components/common/Filter/components/FilterLabel";
 import FilterMenu from "src/components/common/Filter/components/FilterMenu";
 import { MAX_DISPLAYABLE_MENU_ITEMS } from "src/components/common/Filter/components/FilterMenu/style";
-import FilterMultiPanel from "src/components/common/Filter/components/FilterMultiPanel";
 import FilterRange from "src/components/common/Filter/components/FilterRange";
+import FilterViews from "src/components/common/Filter/components/FilterViews";
 import BasicFilter from "./components/BasicFilter";
 import FilterTags, { CategoryTag } from "./components/FilterTags";
 
@@ -57,10 +57,13 @@ function buildBasicFilterContent(
   // Handle ontology categories.
   if (isOntologyCategoryView(categoryView)) {
     return (
-      <FilterMultiPanel
+      <FilterViews
         categoryKey={key}
+        isSearchable={categoryView.isSearchable}
+        isZerosVisible={categoryView.isZerosVisible}
         onFilter={onFilter}
-        species={categoryView.species}
+        onUpdateSearchValue={onUpdateSearchValue}
+        views={categoryView.views}
       />
     );
   }
@@ -141,7 +144,7 @@ function buildOntologyCategoryTags(
   categoryKey: CategoryKey,
   onFilter: OnFilterFn
 ): CategoryTag[] | undefined {
-  return categoryView.species?.reduce((accum, species) => {
+  return categoryView.views?.reduce((accum, species) => {
     species.selectedViews.forEach(({ key, label }) => {
       accum.push({ label: label, onRemove: () => onFilter(categoryKey, key) });
     });
@@ -166,8 +169,8 @@ function buildRangeCategoryTag(
     return;
   }
   if (selectedMin && selectedMax) {
-    // There will only ever be a single selected tag for a range category but tag component is expecting an array: create
-    // singleton array.
+    // There will only ever be a single selected tag for a range category but tag component is expecting an array:
+    // create singleton array.
     return [
       {
         label: createRangeTagLabel(selectedMin, selectedMax),
@@ -229,7 +232,7 @@ function filterCategoryValuesWithCount(
 function isOntologyCategoryView(
   categoryView: CategoryView
 ): categoryView is OntologyCategoryView {
-  return (categoryView as OntologyCategoryView).species !== undefined;
+  return (categoryView as OntologyCategoryView).views !== undefined;
 }
 
 /**

@@ -97,7 +97,8 @@ export interface DatasetResponse {
   published_at: number;
   revised_at?: number;
   sex: Ontology[];
-  tissue: Ontology[];
+  tissue: Ontology[]; // TODO(cc) remove with #2569.
+  tissue_ancestors: string[];
 }
 
 /**
@@ -252,7 +253,11 @@ function aggregateCollectionDatasetRows(
         ethnicity: [...accum.ethnicity, ...collectionDatasetRow.ethnicity],
         organism: [...accum.organism, ...collectionDatasetRow.organism],
         sex: [...accum.sex, ...collectionDatasetRow.sex],
-        tissue: [...accum.tissue, ...collectionDatasetRow.tissue],
+        tissue: [...accum.tissue, ...collectionDatasetRow.tissue], // TODO(cc) remove with #2569.
+        tissue_ancestors: [
+          ...accum.development_stage_ancestors,
+          ...collectionDatasetRow.development_stage_ancestors,
+        ],
       };
     },
     {
@@ -263,7 +268,8 @@ function aggregateCollectionDatasetRows(
       ethnicity: [],
       organism: [],
       sex: [],
-      tissue: [],
+      tissue: [], // TODO(cc) remove with #2569.
+      tissue_ancestors: [],
     }
   );
 
@@ -278,7 +284,8 @@ function aggregateCollectionDatasetRows(
     ethnicity: uniqueOntologies(aggregatedCategoryValues.ethnicity),
     organism: uniqueOntologies(aggregatedCategoryValues.organism),
     sex: uniqueOntologies(aggregatedCategoryValues.sex),
-    tissue: uniqueOntologies(aggregatedCategoryValues.tissue),
+    tissue: uniqueOntologies(aggregatedCategoryValues.tissue), // TODO(cc) remove with #2569.
+    tissue_ancestors: [...new Set(aggregatedCategoryValues.tissue_ancestors)],
   };
 }
 
@@ -699,6 +706,11 @@ function sanitizeDataset(dataset: DatasetResponse): DatasetResponse {
       if (categoryKey === CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS) {
         accum.development_stage_ancestors =
           dataset.development_stage_ancestors ?? [];
+        return accum;
+      }
+
+      if (categoryKey === CATEGORY_KEY.TISSUE_ANCESTORS) {
+        accum.tissue_ancestors = dataset.tissue_ancestors ?? [];
         return accum;
       }
 

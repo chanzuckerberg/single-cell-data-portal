@@ -55,7 +55,6 @@
     height: 550px;
     background-color: #000;
     background-size: 50% auto;
-    margin-top: 48px;
 
     @media (max-width: 1199px) {
       padding-right: 40px;
@@ -109,6 +108,7 @@
       text-align: center;
       padding-left: 40px;
       padding-right: 40px;
+      padding-top: 40px;
     }
 
     h1 {
@@ -143,6 +143,11 @@
         padding-left: 40px;
         padding-right: 54px;
         margin: 0 40px;
+
+        @media (max-width: 500px) {
+          margin: 0 20px;
+          padding: 0 20px;
+        }
       }
     }
 
@@ -162,6 +167,11 @@
       line-height: 40px;
       color: #e9429a;
       margin: 0;
+      text-align: left;
+
+      @media (max-width: 400px) {
+        font-size: 18px;
+      }
     }
   }
 }
@@ -173,6 +183,10 @@
 
 // MAIN CONTENT
 .content {
+  &OverflowWrapper {
+    overflow-x: hidden;
+  }
+
   &Container {
     width: 100%;
     max-width: 1440px;
@@ -347,7 +361,6 @@
     }
 
     &Col {
-      overflow: hidden;
       padding-bottom: 138px;
       width: 867px;
     }
@@ -479,6 +492,16 @@
     @media (max-width: 768px) {
       margin-top: 40px;
     }
+  }
+}
+
+.newsPublications {
+  width: 50%;
+  max-width: 500px;
+
+  @media (max-width: 768px) {
+    width: 100%;
+    max-width: none;
   }
 }
 

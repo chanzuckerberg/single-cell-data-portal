@@ -38,7 +38,7 @@ const Header: FC = () => {
   const { pathname } = useRouter();
   const isMyCollectionsShown = userInfo?.name && isCurator;
 
-  const mobileNavTray = useRef<HTMLDivElement>(null!);
+  const mobileNavTray = useRef<HTMLDivElement>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   function mobileNavHandler(mobileMenuOpen: boolean) {
@@ -118,7 +118,7 @@ const Header: FC = () => {
                   target="_blank"
                   rel="noopener"
                 >
-                  <HiringLink>We're Hiring!</HiringLink>
+                  <HiringLink>We&apos;re Hiring!</HiringLink>
                 </a>
               )}
               {isMyCollectionsShown && (

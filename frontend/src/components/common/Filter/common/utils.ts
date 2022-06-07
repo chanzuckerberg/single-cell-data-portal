@@ -5,7 +5,7 @@ import {
   OntologyCategoryKey,
   OntologyNode,
   OntologyView,
-  SPECIES_KEY,
+  ONTOLOGY_VIEW_KEY,
 } from "src/components/common/Filter/common/entities";
 
 /**
@@ -95,8 +95,10 @@ export function findOntologyParentNode(
  * @param ontologyId - ID to determine ontology key from.
  * @returns String containing ontology key.
  */
-export function getOntologySpeciesKey(ontologyId: string): SPECIES_KEY {
-  return SPECIES_KEY[ontologyId.split(":")[0] as keyof typeof SPECIES_KEY];
+export function getOntologySpeciesKey(ontologyId: string): ONTOLOGY_VIEW_KEY {
+  return ONTOLOGY_VIEW_KEY[
+    ontologyId.split(":")[0] as keyof typeof ONTOLOGY_VIEW_KEY
+  ];
 }
 
 /**
