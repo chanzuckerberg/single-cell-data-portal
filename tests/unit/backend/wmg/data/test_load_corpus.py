@@ -4,18 +4,18 @@ import shutil
 import tempfile
 import unittest
 from unittest.mock import patch
-
+import anndata as ad
 import numpy as np
 import tiledb
 from scipy import sparse
 from scipy.sparse import coo_matrix, csr_matrix
-from backend.wmg.data import rankit
+from backend.wmg.data.rankit import rankit
 from backend.wmg.data.cube_pipeline import load, load_data_and_create_cube
 from backend.wmg.data.load_corpus import (
     load_h5ad,
     RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD,
     filter_out_rankits_with_low_expression_counts,
-    validate_dataset_properties,
+    validate_dataset_properties, get_X_raw,
 )
 from backend.wmg.data.schemas.corpus_schema import create_tdb
 from tests.unit.backend.wmg.fixtures.test_anndata_object import create_anndata_test_object
@@ -203,10 +203,44 @@ class TestCorpusLoad(unittest.TestCase):
         self.assertEqual(0.5 + 0.7 + 0.9, sum(rankits_filtered.data))
 
     def test__rankit_scores_ties_the_same(self):
-        B = np.array([[1, 1, 1], [1, 1, 1], [1, 1, 1]])
-        raw_expression_csr_matrix = sparse.csr_matrix(B)
+        """
+        when the expression values are the same for all genes in the cell the resulting rankit values should all be 3
+        """
+        expected_rankit_scores = [3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0]
+        counts = np.array([[1.0, 1.0, 1.0], [2.0, 2.0, 2.0], [3.0, 3.0, 3.0]])
+        raw_expression_csr_matrix = sparse.csr_matrix(counts)
         rankit_scores = rankit(raw_expression_csr_matrix)
-        print('heyyy')
+        self.assertEqual(expected_rankit_scores, rankit_scores.data.tolist())
+
+    def test__rankit_value_spread(self):
+        """
+        Regardless of the expression values, rankit scores should be spread around 3.0 with higher expression levels
+        (compared to other gene expression values for the cell) given a larger score and lower expression values given
+        a lower score.
+        """
+        expected_rankit_scores = [2.0325, 3.0, 3.9674, 2.0325, 3.0, 3.9674, 2.0325, 3.0, 3.9674]
+        counts = np.array([[1.0, 2.0, 3.0], [1.0, 5.0, 25.0], [1.0, 500.0, 1000.0]])
+        raw_expression_csr_matrix = sparse.csr_matrix(counts)
+        rankit_scores = rankit(raw_expression_csr_matrix)
+        for x in range(len(expected_rankit_scores)):
+            expected = expected_rankit_scores[x]
+            actual = rankit_scores.data[x]
+            self.assertAlmostEqual(expected, actual, 2)
+
+    def test__rankit_handles_zero_values_correctly(self):
+        """
+        Theoretically there shouldn't be any zero expression values in a sparse matrix
+        so they shouldn't receive a rankit score
+        """
+        expected_rankit_scores =[3.0, 3.0, 3.0, 3.0, 2.325, 3.674]
+        counts = np.array([[1.0, 0.0, 1.0], [2.0, 0.0, 2.0], [1.0, 0.0, 3.0]])
+        raw_expression_csr_matrix = sparse.csr_matrix(counts)
+        rankit_scores = rankit(raw_expression_csr_matrix)
+        for x in range(len(expected_rankit_scores)):
+            expected = expected_rankit_scores[x]
+            actual = rankit_scores.data[x]
+            self.assertAlmostEqual(expected, actual, 2)
+
 
     @patch("backend.wmg.data.load_corpus.transform_dataset_raw_counts_to_rankit")
     def test__filter_out_cells_with_incorrect_assays(self, mock_rankit):

@@ -30,5 +30,5 @@ def rankit(Xraw: sc.sparse.spmatrix, offset: float = 3.0) -> sc.sparse.csr_matri
             prob_level.append(np.round((i - 0.5) / max_rank, 5))
 
         normal_quantiles = sc.stats.norm.ppf(prob_level, loc=offset)
-        X.data[indptr[row] : indptr[row + 1]][ranks] = normal_quantiles
+        X.data[indptr[row] : indptr[row + 1]] = normal_quantiles
     return X
