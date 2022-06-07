@@ -4,7 +4,6 @@ import shutil
 import tempfile
 import unittest
 from unittest.mock import patch
-import anndata as ad
 import numpy as np
 import tiledb
 from scipy import sparse
@@ -15,7 +14,7 @@ from backend.wmg.data.load_corpus import (
     load_h5ad,
     RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD,
     filter_out_rankits_with_low_expression_counts,
-    validate_dataset_properties, get_X_raw,
+    validate_dataset_properties,
 )
 from backend.wmg.data.schemas.corpus_schema import create_tdb
 from tests.unit.backend.wmg.fixtures.test_anndata_object import create_anndata_test_object
@@ -232,7 +231,7 @@ class TestCorpusLoad(unittest.TestCase):
         Theoretically there shouldn't be any zero expression values in a sparse matrix
         so they shouldn't receive a rankit score
         """
-        expected_rankit_scores =[3.0, 3.0, 3.0, 3.0, 2.325, 3.674]
+        expected_rankit_scores = [3.0, 3.0, 3.0, 3.0, 2.325, 3.674]
         counts = np.array([[1.0, 0.0, 1.0], [2.0, 0.0, 2.0], [1.0, 0.0, 3.0]])
         raw_expression_csr_matrix = sparse.csr_matrix(counts)
         rankit_scores = rankit(raw_expression_csr_matrix)
@@ -240,7 +239,6 @@ class TestCorpusLoad(unittest.TestCase):
             expected = expected_rankit_scores[x]
             actual = rankit_scores.data[x]
             self.assertAlmostEqual(expected, actual, 2)
-
 
     @patch("backend.wmg.data.load_corpus.transform_dataset_raw_counts_to_rankit")
     def test__filter_out_cells_with_incorrect_assays(self, mock_rankit):
