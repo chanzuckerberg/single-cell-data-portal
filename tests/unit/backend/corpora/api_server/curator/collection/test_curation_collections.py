@@ -128,6 +128,25 @@ class TestPostCollection(BaseAuthAPITest):
                     self.assertIn(error, response.json["detail"])
 
 
+class TestGetCollections(BaseAuthAPITest):
+    def setUp(self):
+        super().setUp()
+        self.test_collection = dict(
+            name="collection", description="description", contact_name="john doe", contact_email="johndoe@email.com"
+        )
+
+    def test__get_public_collections__OK(self):
+        try:
+            res = self.app.get(
+                "/curation/v1/collections", headers=self.get_auth_headers(), data=json.dumps(self.test_collection)
+            )
+            print("success!")
+            print(res)
+        except Exception as e:
+            print("got exception")
+            print(e)
+
+
 class TestPutCollectionUUID(BaseAuthAPITest):
     def setUp(self):
         super().setUp()
