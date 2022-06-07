@@ -8,7 +8,9 @@ const isProdBuild = process.env.NODE_ENV === nodeEnv.PRODUCTION;
 
 const PLAUSIBLE_URL = "https://plausible.io";
 
-const SCRIPT_SRC = ["'self'", PLAUSIBLE_URL];
+const TWITTER_URL = "https://cdn.syndication.twimg.com platform.twitter.com";
+
+const SCRIPT_SRC = ["'self'", PLAUSIBLE_URL, TWITTER_URL];
 
 const defaultSecureHeaders = {
   contentSecurityPolicy: {
@@ -24,6 +26,7 @@ const defaultSecureHeaders = {
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
       formAction: "'self'",
       frameAncestors: ["'none'"],
+      frameSrc: TWITTER_URL,
       imgSrc: ["'self'", "data:"],
       manifestSrc: ["'self'"],
       mediaSrc: ["'self'"],
