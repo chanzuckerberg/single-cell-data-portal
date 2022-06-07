@@ -85,10 +85,12 @@ export const getStaticProps = async ({
   );
 
   const filePath = filePaths();
+  const activeFile = slug[slug.length - 1];
   const { data: frontMatter, content } = matter(markdownWithMeta);
   const mdxSource = await serialize(content);
   return {
     props: {
+      activeFile,
       filePath,
       frontMatter,
       mdxSource,
@@ -117,6 +119,11 @@ const StyledUL = styled.ul<{ $isChild: boolean }>`
     margin-bottom: 0;
   }
 
+  & li.active-file {
+    background-color: #ffffff;
+    color: #e9429a;
+  }
+
   & li:hover {
     background-color: #eaeaea;
   }
@@ -125,9 +132,11 @@ const StyledUL = styled.ul<{ $isChild: boolean }>`
   }
 `;
 const Directory = memo(function RenderDirectory({
+  activeFile,
   directory,
   isChild = false,
 }: {
+  activeFile: string;
   directory: Directory;
   isChild?: boolean;
 }) {
@@ -136,9 +145,10 @@ const Directory = memo(function RenderDirectory({
       let href = "/docs/";
       if (directory.slug.length > 0) href += directory.slug.join("/") + "/";
       href += file;
+      const isActiveFile = file === activeFile;
       return [
         file,
-        <li key={file}>
+        <li key={file} className={isActiveFile ? "active-file" : ""}>
           <NextLink href={href} passHref>
             {file}
           </NextLink>
@@ -153,7 +163,7 @@ const Directory = memo(function RenderDirectory({
         <Fragment key={directory.dirName}>
           <li>{directory.dirName}</li>
           <div>
-            <Directory directory={directory} isChild />
+            <Directory directory={directory} isChild activeFile={activeFile} />
           </div>
         </Fragment>,
       ];
@@ -170,6 +180,7 @@ const Directory = memo(function RenderDirectory({
 });
 
 interface Props {
+  activeFile: string;
   frontMatter: Record<string, any>;
   mdxSource: MDXRemoteSerializeResult;
   slug: Array<string>;
@@ -178,12 +189,19 @@ interface Props {
 
 const StyledLeftNav = styled.div`
   background-color: #f8f8f8;
+  border-right: 1px solid #eaeaea;
 `;
 
-const PageNavigator = ({ filePath }: { filePath: Directory }) => {
+const PageNavigator = ({
+  filePath,
+  activeFile,
+}: {
+  filePath: Directory;
+  activeFile: string;
+}) => {
   return (
     <StyledLeftNav>
-      <Directory directory={filePath} />
+      <Directory directory={filePath} activeFile={activeFile} />
     </StyledLeftNav>
   );
 };
@@ -199,7 +217,6 @@ const DocContent = styled.div`
   display: flex;
   align-items: center;
   flex-direction: column;
-
   & > * {
     max-width: 570px;
   }
@@ -209,10 +226,10 @@ const components = {
   EmbeddedGoogleSlides,
   Image,
 };
-const DocPage = ({ mdxSource, filePath }: Props) => {
+const DocPage = ({ activeFile, mdxSource, filePath }: Props) => {
   return (
     <StyledDocsLayout>
-      <PageNavigator filePath={filePath} />
+      <PageNavigator filePath={filePath} activeFile={activeFile} />
       <DocContent>
         <div>
           <MDXRemote {...mdxSource} components={components} />
