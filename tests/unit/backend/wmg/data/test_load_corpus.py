@@ -5,9 +5,11 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
+import numpy as np
 import tiledb
+from scipy import sparse
 from scipy.sparse import coo_matrix, csr_matrix
-
+from backend.wmg.data import rankit
 from backend.wmg.data.cube_pipeline import load, load_data_and_create_cube
 from backend.wmg.data.load_corpus import (
     load_h5ad,
@@ -199,6 +201,12 @@ class TestCorpusLoad(unittest.TestCase):
         )
 
         self.assertEqual(0.5 + 0.7 + 0.9, sum(rankits_filtered.data))
+
+    def test__rankit_scores_ties_the_same(self):
+        B = np.array([[1, 1, 1], [1, 1, 1], [1, 1, 1]])
+        raw_expression_csr_matrix = sparse.csr_matrix(B)
+        rankit_scores = rankit(raw_expression_csr_matrix)
+        print('heyyy')
 
     @patch("backend.wmg.data.load_corpus.transform_dataset_raw_counts_to_rankit")
     def test__filter_out_cells_with_incorrect_assays(self, mock_rankit):
