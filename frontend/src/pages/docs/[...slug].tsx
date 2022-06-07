@@ -188,7 +188,6 @@ const DocContent = styled.div`
   overflow-wrap: break-word;
   display: flex;
   align-items: center;
-  justify-content: center;
   flex-direction: column;
 
   & > * {
