@@ -137,9 +137,7 @@ class TestGetCollections(BaseAuthAPITest):
 
     def test__get_public_collections__OK(self):
         try:
-            res = self.app.get(
-                "/curation/v1/collections", headers=self.get_auth_headers(), data=json.dumps(self.test_collection)
-            )
+            res = self.app.get("/curation/v1/collections", headers=self.get_auth_headers())
             print("success!")
             print(res)
         except Exception as e:
