@@ -8,6 +8,8 @@ import NextLink from "next/link";
 import pathTool from "path";
 import { Fragment, memo } from "react";
 import EmbeddedGoogleSlides from "src/components/EmbeddedGoogleSlides";
+import Layout from "src/components/Layout";
+import { StyledDocsLayout } from "src/components/Layout/style";
 import styled from "styled-components";
 
 const DOC_SITE_FOLDER_NAME = "doc-site";
@@ -190,6 +192,7 @@ interface Props {
 const StyledLeftNav = styled.div`
   background-color: #f8f8f8;
   border-right: 1px solid #eaeaea;
+  grid-area: leftsidebar;
 `;
 
 const PageNavigator = ({
@@ -206,10 +209,6 @@ const PageNavigator = ({
   );
 };
 
-const StyledDocsLayout = styled.div`
-  display: grid;
-  grid-template-columns: [nav] 368px [content] auto [tableOfContents] 368px;
-`;
 const DocContent = styled.div`
   width: 100%;
   overflow-x: hidden;
@@ -217,6 +216,7 @@ const DocContent = styled.div`
   display: flex;
   align-items: center;
   flex-direction: column;
+  grid-area: content;
   & > * {
     max-width: 570px;
   }
@@ -228,15 +228,26 @@ const components = {
 };
 const DocPage = ({ activeFile, mdxSource, filePath }: Props) => {
   return (
-    <StyledDocsLayout>
+    <>
       <PageNavigator filePath={filePath} activeFile={activeFile} />
       <DocContent>
         <div>
           <MDXRemote {...mdxSource} components={components} />
         </div>
       </DocContent>
-    </StyledDocsLayout>
+    </>
   );
 };
 
+DocPage.Layout = function DocLayout({
+  children,
+}: {
+  children: JSX.Element;
+}): JSX.Element {
+  return (
+    <Layout>
+      <StyledDocsLayout>{children}</StyledDocsLayout>
+    </Layout>
+  );
+};
 export default DocPage;
