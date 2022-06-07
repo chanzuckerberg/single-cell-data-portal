@@ -1,4 +1,3 @@
-import { Link } from "czifui";
 import fs from "fs";
 import matter from "gray-matter";
 import { GetStaticPaths } from "next";
@@ -7,7 +6,7 @@ import { serialize } from "next-mdx-remote/serialize";
 import Image from "next/image";
 import NextLink from "next/link";
 import pathTool from "path";
-import { memo } from "react";
+import { Fragment, memo } from "react";
 import EmbeddedGoogleSlides from "src/components/EmbeddedGoogleSlides";
 import styled from "styled-components";
 
@@ -98,13 +97,42 @@ export const getStaticProps = async ({
   };
 };
 
-const Directory = memo(function RenderDirecotry({
+const StyledUL = styled.ul<{ $isChild: boolean }>`
+  border-left: ${(props) => props.$isChild && "1px solid #ccc"};
+  list-style: none;
+  margin-left: ${(props) => (!props.$isChild ? "40px" : "0px")};
+  margin-bottom: 0px;
+  color: ${(props) => props.$isChild && "#545454"};
+  width: auto;
+  overflow-x: hidden;
+  text-overflow: ellipsis;
+  & a {
+    color: inherit;
+    text-decoration: inherit;
+  }
+
+  & li {
+    height: 36px;
+    padding: 8px 16px;
+    margin-bottom: 0;
+  }
+
+  & li:hover {
+    background-color: #eaeaea;
+  }
+  & div {
+    padding: 0px 16px;
+  }
+`;
+const Directory = memo(function RenderDirectory({
   directory,
+  isChild = false,
 }: {
   directory: Directory;
+  isChild?: boolean;
 }) {
   return (
-    <ul>
+    <StyledUL $isChild={isChild}>
       {directory.files.map((file) => {
         let href = "/docs/";
         if (directory.slug.length > 0) href += directory.slug.join("/") + "/";
@@ -112,20 +140,22 @@ const Directory = memo(function RenderDirecotry({
         return (
           <li key={file}>
             <NextLink href={href} passHref>
-              <Link>{file}</Link>
+              {file}
             </NextLink>
           </li>
         );
       })}
       {directory.subDirectories.map((directory) => {
         return (
-          <div key={directory.dirName}>
+          <Fragment key={directory.dirName}>
             <li>{directory.dirName}</li>
-            <Directory directory={directory} />
-          </div>
+            <div>
+              <Directory directory={directory} isChild />
+            </div>
+          </Fragment>
         );
       })}
-    </ul>
+    </StyledUL>
   );
 });
 
@@ -136,16 +166,34 @@ interface Props {
   filePath: Directory;
 }
 
+const StyledLeftNav = styled.div`
+  background-color: #f8f8f8;
+`;
+
 const PageNavigator = ({ filePath }: { filePath: Directory }) => {
-  return <Directory directory={filePath} />;
+  return (
+    <StyledLeftNav>
+      <Directory directory={filePath} />
+    </StyledLeftNav>
+  );
 };
 
 const StyledDocsLayout = styled.div`
-  display: flex;
-  flex-direction: row;
+  display: grid;
+  grid-template-columns: [nav] 368px [content] auto [tableOfContents] 368px;
 `;
 const DocContent = styled.div`
-  margin: 16px;
+  width: 100%;
+  overflow-x: hidden;
+  overflow-wrap: break-word;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+
+  & > * {
+    max-width: 570px;
+  }
 `;
 
 const components = {
@@ -157,7 +205,9 @@ const DocPage = ({ mdxSource, filePath }: Props) => {
     <StyledDocsLayout>
       <PageNavigator filePath={filePath} />
       <DocContent>
-        <MDXRemote {...mdxSource} components={components} />
+        <div>
+          <MDXRemote {...mdxSource} components={components} />
+        </div>
       </DocContent>
     </StyledDocsLayout>
   );
