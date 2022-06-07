@@ -1,5 +1,6 @@
 import { IconNames } from "@blueprintjs/icons";
-import { Box, List, ListItem, ListItemText } from "@material-ui/core";
+import { Box } from "@material-ui/core";
+import { List } from "czifui";
 import React, { Fragment, ReactElement } from "react";
 import {
   CATEGORY_KEY,
@@ -9,7 +10,9 @@ import {
 import { SelectionIcon } from "src/components/common/Filter/common/style";
 import {
   NoMatches,
-  useFilterViewListStyles,
+  ViewListItem,
+  ViewListItemText,
+  ViewSublist,
 } from "src/components/common/Filter/components/FilterViews/components/FilterViewList/style";
 import { GRAY } from "src/components/common/theme";
 
@@ -33,14 +36,9 @@ export default function FilterViewList({
   const filteredValues = values.filter(
     (value) => isZerosVisible || value.count
   );
-  const classes = useFilterViewListStyles();
+  const ViewList = nested ? ViewSublist : List;
   return (
-    <List
-      classes={{ root: nested ? classes.sublist : undefined }}
-      dense
-      disablePadding
-      subheader={ViewHeader}
-    >
+    <ViewList dense disablePadding subheader={ViewHeader}>
       {/* No matches */}
       {filteredValues.length === 0 ? (
         <NoMatches>No items found</NoMatches>
@@ -49,15 +47,9 @@ export default function FilterViewList({
           ({ key, children, count, label, selectedPartial, selected }) => (
             <Fragment key={key}>
               {/* List item */}
-              <ListItem
-                alignItems="flex-start"
+              <ViewListItem
                 button
-                classes={{ root: classes.listItem }}
-                component="li"
-                dense
                 disabled={!count}
-                disableGutters
-                disableRipple
                 onClick={() => onFilter(categoryKey, key)}
               >
                 {/* Icon - bp icon to uphold ui consistency between filter menu and filter views */}
@@ -71,8 +63,7 @@ export default function FilterViewList({
                   }
                 />
                 {/* List item text and count */}
-                <ListItemText
-                  classes={{ root: classes.listItemText }}
+                <ViewListItemText
                   disableTypography
                   primary={
                     <Box
@@ -90,7 +81,7 @@ export default function FilterViewList({
                     </Box>
                   }
                 />
-              </ListItem>
+              </ViewListItem>
               {/* Nested list */}
               {children && children.length && (
                 <FilterViewList
@@ -105,6 +96,6 @@ export default function FilterViewList({
           )
         )
       )}
-    </List>
+    </ViewList>
   );
 }
