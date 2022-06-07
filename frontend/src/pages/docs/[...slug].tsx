@@ -131,30 +131,40 @@ const Directory = memo(function RenderDirectory({
   directory: Directory;
   isChild?: boolean;
 }) {
+  const fileComponents: Array<[string, JSX.Element]> = directory.files.map(
+    (file) => {
+      let href = "/docs/";
+      if (directory.slug.length > 0) href += directory.slug.join("/") + "/";
+      href += file;
+      return [
+        file,
+        <li key={file}>
+          <NextLink href={href} passHref>
+            {file}
+          </NextLink>
+        </li>,
+      ];
+    }
+  );
+  const directoryComponents: Array<[string, JSX.Element]> =
+    directory.subDirectories.map((directory) => {
+      return [
+        directory.dirName,
+        <Fragment key={directory.dirName}>
+          <li>{directory.dirName}</li>
+          <div>
+            <Directory directory={directory} isChild />
+          </div>
+        </Fragment>,
+      ];
+    });
   return (
     <StyledUL $isChild={isChild}>
-      {directory.files.map((file) => {
-        let href = "/docs/";
-        if (directory.slug.length > 0) href += directory.slug.join("/") + "/";
-        href += file;
-        return (
-          <li key={file}>
-            <NextLink href={href} passHref>
-              {file}
-            </NextLink>
-          </li>
-        );
-      })}
-      {directory.subDirectories.map((directory) => {
-        return (
-          <Fragment key={directory.dirName}>
-            <li>{directory.dirName}</li>
-            <div>
-              <Directory directory={directory} isChild />
-            </div>
-          </Fragment>
-        );
-      })}
+      {[...fileComponents, ...directoryComponents]
+        .sort((a, b) => {
+          return a[0] < b[0] ? -1 : 1;
+        })
+        .map((v) => v[1])}
     </StyledUL>
   );
 });
