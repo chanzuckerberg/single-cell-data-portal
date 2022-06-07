@@ -1,5 +1,4 @@
-import { InputGroup, Menu } from "@blueprintjs/core";
-import { IconNames } from "@blueprintjs/icons";
+import { Menu } from "@blueprintjs/core";
 import { Fragment, useEffect, useRef, useState } from "react";
 import {
   CATEGORY_KEY,
@@ -8,8 +7,8 @@ import {
   SelectCategoryValueView,
 } from "src/components/common/Filter/common/entities";
 import FilterMenuItems from "src/components/common/Filter/components/FilterMenu/components/FilterMenuItems";
+import FilterViewSearch from "src/components/common/Filter/components/FilterViews/components/FilterViewSearch";
 import {
-  InputGroupWrapper,
   MAX_DISPLAYABLE_MENU_ITEMS,
   MenuDivider,
   MenuItemsWrapper,
@@ -69,17 +68,12 @@ export default function FilterMenu({
     <MenuWrapper menuWidth={menuWidth} ref={menuRef}>
       <Menu>
         {/* Optional search bar */}
-        {isSearchable ? (
-          <InputGroupWrapper>
-            <InputGroup
-              leftIcon={IconNames.SEARCH}
-              onChange={(changeEvent) =>
-                onUpdateSearchValue(changeEvent, setSearchValue)
-              }
-              placeholder="Search"
-            />
-          </InputGroupWrapper>
-        ) : null}
+        {isSearchable && (
+          <FilterViewSearch
+            onUpdateSearchValue={onUpdateSearchValue}
+            setSearchValue={setSearchValue}
+          />
+        )}
         {/* No matches */}
         {emptyItems ? (
           <NoMatches
