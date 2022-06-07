@@ -44,12 +44,13 @@ paths:
     get:
       summary: Fetch Collections metadata.
       description: Fetch all Collections metadata. Authorization required for private collections.
+      operationId: backend.corpora.lambdas.api.v1.collection.get_collections_list
       security:
         - curatorAccessLenient: []
-      parameters:
-        - $ref: "#/components/parameters/query_visibility"
       tags:
         - collection
+      parameters:
+        - $ref: "#/components/parameters/query_visibility"
       responses:
         "200":
           description: OK
@@ -124,7 +125,7 @@ paths:
                 type: object
                 properties:
                   collection_uuid:
-                      $ref: "#/components/schemas/collection_uuid"
+                    $ref: "#/components/schemas/collection_uuid"
         "400":
           $ref: "#/components/responses/400_multiple"
         "401":
@@ -235,7 +236,7 @@ paths:
         Delete a private collection or cancel a revision.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_uuid.actions.delete
       security:
-        - curatorAccess: [ ]
+        - curatorAccess: []
       tags:
         - collection
       parameters:
