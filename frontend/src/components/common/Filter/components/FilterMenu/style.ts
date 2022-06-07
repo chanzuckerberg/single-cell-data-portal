@@ -1,8 +1,8 @@
 import { Classes, MenuItem } from "@blueprintjs/core";
 import { Divider } from "@material-ui/core";
-import { scrollbar } from "src/components/common/Filter/common/style";
 import { GRAY, PT_TEXT_COLOR } from "src/components/common/theme";
 import styled from "styled-components";
+import { scrollbar } from "../../common/style";
 
 export const MAX_DISPLAYABLE_MENU_ITEMS = 9;
 const DIVIDER_HEIGHT_PX = 9;
