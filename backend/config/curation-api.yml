@@ -44,7 +44,7 @@ paths:
     get:
       summary: Fetch Collections metadata.
       description: Fetch all Collections metadata. Authorization required for private collections.
-      operationId: backend.corpora.lambdas.api.v1.collection.get_collections_list
+      operationId: backend.corpora.lambdas.api.v1.collection.get_collections_curation
       security:
         - curatorAccessLenient: []
       tags:

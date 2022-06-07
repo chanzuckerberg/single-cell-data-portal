@@ -62,6 +62,12 @@ def get_collections_list(from_date: int = None, to_date: int = None, token_info:
 
 
 @dbconnect
+def get_collections_curation(visibility: str, token_info: dict):
+    print(f"visibility is {visibility}")
+    return get_collections_list(token_info=token_info)
+
+
+@dbconnect
 def get_collection_details(collection_uuid: str, token_info: dict):
     db_session = g.db_session
     collection = get_collection(db_session, collection_uuid, include_tombstones=True)
