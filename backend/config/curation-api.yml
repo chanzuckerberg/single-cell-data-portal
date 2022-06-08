@@ -47,6 +47,7 @@ paths:
       operationId: backend.corpora.lambdas.api.v1.collection.get_collections_curation
       security:
         - curatorAccessLenient: []
+        - {}
       tags:
         - collection
       parameters:
@@ -853,4 +854,4 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
-      x-apikeyInfoFunc: backend.corpora.lambdas.api.v1.authentication.curation_apikey_info_func_lenient
+      x-bearerInfoFunc: backend.corpora.lambdas.api.v1.authentication.curation_apikey_info_func_lenient

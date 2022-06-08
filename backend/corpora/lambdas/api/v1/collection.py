@@ -63,8 +63,32 @@ def get_collections_list(from_date: int = None, to_date: int = None, token_info:
 
 @dbconnect
 def get_collections_curation(visibility: str, token_info: dict):
-    print(f"visibility is {visibility}")
-    return get_collections_list(token_info=token_info)
+
+    collections = Collection.list_attributes_in_time_range(
+        g.db_session,
+        filters=[DbCollection.visibility == visibility],
+        list_attributes=[
+            DbCollection.id,
+            DbCollection.name,
+            DbCollection.visibility,
+            # collection_url
+            DbCollection.contact_name,
+            DbCollection.contact_email,
+            DbCollection.curator_name,
+            DbCollection.revised_at,
+            DbCollection.created_at,
+            # links
+            # datasets
+            # access_type
+            DbCollection.published_at,
+            DbCollection.description,
+            DbCollection.publisher_metadata,
+            DbCollection.revision_of,
+            DbCollection.tombstone,
+        ],
+    )
+
+    return jsonify(collections)
 
 
 @dbconnect
