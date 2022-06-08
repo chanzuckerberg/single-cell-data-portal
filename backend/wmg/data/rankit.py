@@ -10,6 +10,7 @@ def quantiles(max_rank: int, ranks: np.ndarray) -> np.ndarray:
     """
     return np.array([np.round((i - 0.5) / max_rank, 5) for i in ranks])
 
+
 def rankit(Xraw: sc.sparse.spmatrix, offset: float = 3.0) -> sc.sparse.csr_matrix:
     """
     Row-wise normalizes values of a matrix using the rankit method. The target distribution is a normal distribution

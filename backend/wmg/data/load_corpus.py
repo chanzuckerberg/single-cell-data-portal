@@ -236,7 +236,7 @@ def transform_dataset_raw_counts_to_rankit(
 
 
 def filter_out_rankits_with_low_expression_counts(
-    rankits: csr_matrix, raw_counts_csr: csr_matrix, expect_majority_filtered=True
+    rankits: csr_matrix, raw_counts_csr: csr_matrix, expect_majority_filtered=True, verbose=False
 ) -> coo_matrix:
     """
     Keep only rankit values that were computed from expression values above the desired threshold.
@@ -272,12 +272,12 @@ def filter_out_rankits_with_low_expression_counts(
         rankits_filtered = rankits.tocoo()
 
     end = time.time()
-
-    # logger.info(
-    #     f"filter duration={end - start}, "
-    #     f"orig size={rankits_nnz_orig}, "
-    #     f"abs reduction={rankits_nnz_orig - rankits_filtered.nnz}, "
-    #     f"% reduction={(rankits_nnz_orig - rankits_filtered.nnz) / rankits_nnz_orig}"
-    # )
+    if verbose is True:
+        logger.info(
+            f"filter duration={end - start}, "
+            f"orig size={rankits_nnz_orig}, "
+            f"abs reduction={rankits_nnz_orig - rankits_filtered.nnz}, "
+            f"% reduction={(rankits_nnz_orig - rankits_filtered.nnz) / rankits_nnz_orig}"
+        )
 
     return rankits_filtered
