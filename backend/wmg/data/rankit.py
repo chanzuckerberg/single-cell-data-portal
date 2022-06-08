@@ -1,18 +1,8 @@
 import numpy as np
-import scipy.stats
-import scipy.sparse
-import numba as nb
+import scipy as sc
 
 
-@nb.jit
-def quantiles(n: int) -> np.ndarray:
-    """
-    :returns an array of n floats equally spaced from 0 to 1
-    """
-    return np.array([np.round((i - 0.5) / n, 5) for i in range(1, n + 1)])
-
-
-def rankit(Xraw: scipy.sparse.spmatrix, offset: float = 3.0) -> scipy.sparse.csr_matrix:
+def rankit(Xraw: sc.sparse.spmatrix, offset: float = 3.0) -> sc.sparse.csr_matrix:
     """
     Row-wise normalizes values of a matrix using the rankit method. The target distribution is a normal distribution
     with variance of 1 and mean as set in `offset`
@@ -29,8 +19,16 @@ def rankit(Xraw: scipy.sparse.spmatrix, offset: float = 3.0) -> scipy.sparse.csr
     indptr = X.indptr  # get row count
     for row in range(0, indptr.shape[0] - 1):
         data = X.data[indptr[row] : indptr[row + 1]]
-        # A normal continuous random variable.
-        normal_quantiles = scipy.stats.norm.ppf(quantiles(len(data)), loc=offset)
-        rank = np.argsort(data)
-        X.data[indptr[row] : indptr[row + 1]][rank] = normal_quantiles
+
+        # Assign ranks to data, assigning the same value to ties
+        ranks = sc.stats.rankdata(data, method="dense")
+
+        max_rank = max(ranks)
+        prob_level = []
+
+        for i in ranks:
+            prob_level.append(np.round((i - 0.5) / max_rank, 5))
+
+        normal_quantiles = sc.stats.norm.ppf(prob_level, loc=offset)
+        X.data[indptr[row] : indptr[row + 1]] = normal_quantiles
     return X
