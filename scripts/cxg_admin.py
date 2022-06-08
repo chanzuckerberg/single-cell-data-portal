@@ -276,8 +276,8 @@ def transfer_collections(ctx, curr_owner, new_owner):
             )
             updated = (
                 session.query(DbCollection)
-                .filter(DbCollection.owner == curr_owner)
-                .update({DbCollection.owner: new_owner})
+                    .filter(DbCollection.owner == curr_owner)
+                    .update({DbCollection.owner: new_owner})
             )
             session.commit()
             if updated > 0:
@@ -736,6 +736,20 @@ def add_publisher_metadata(ctx):
 
 @cli.command()
 @click.pass_context
+def wmg_get_s3_uris(ctx):
+    """
+    Print dataset ids and s3_uris for all datasets meeting the wmg criteria
+    ./scripts/cxg_admin.py --deployment dev wmg-get-s3-uris
+    """
+
+    from backend.wmg.data.extract import get_dataset_s3_uris
+    with db_session_manager() as session:
+        s3_uris = get_dataset_s3_uris()
+        print(s3_uris)
+
+
+@cli.command()
+@click.pass_context
 def refresh_preprint_doi(ctx):
     """Add publisher metadata to the current records"""
 
@@ -816,7 +830,7 @@ def cxg_remaster(ctx):
 
                     response = client.start_execution(
                         stateMachineArn=f"arn:aws:states:us-west-2:{aws_account_id}:stateMachine:dp-"
-                        f"{happy_stack_name}-cxg-remaster-sfn",
+                                        f"{happy_stack_name}-cxg-remaster-sfn",
                         name=f"{dataset_id}-{int(time())}",
                         input=json.dumps(input),
                     )
