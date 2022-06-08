@@ -193,6 +193,7 @@ const StyledLeftNav = styled.div`
   background-color: #f8f8f8;
   border-right: 1px solid #eaeaea;
   grid-area: leftsidebar;
+  width: 100%;
 `;
 
 const PageNavigator = ({
@@ -246,7 +247,9 @@ DocPage.Layout = function DocLayout({
 }): JSX.Element {
   return (
     <Layout>
-      <StyledDocsLayout>{children}</StyledDocsLayout>
+      <StyledDocsLayout>
+        <main>{children}</main>
+      </StyledDocsLayout>
     </Layout>
   );
 };

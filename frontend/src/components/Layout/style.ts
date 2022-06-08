@@ -37,6 +37,6 @@ export const StyledDocsLayout = styled(MainWrapper)`
   main {
     display: grid;
     grid-template-areas: "leftsidebar content rightsidebar";
-    grid-template-columns: [nav] 368px [content] auto [tableOfContents] 368px;
+    grid-template-columns: 368px auto 368px;
   }
 `;
