@@ -14,7 +14,7 @@ You'll need python 3.6+ and an up-to-date version of Google Chrome. The web UI i
 
 Python.org has help on installing a recent version of Python, including the pip package manager. Chrome is available at [https://www.google.com/chrome/downloads/](https://www.google.com/chrome/downloads/).
 
-### Basic Install Using Pip ▼
+### Basic Install Using Pip
 
 To install the `cellxgene` explorer alone, run:
 
@@ -47,7 +47,7 @@ If you already have `cellxgene` installed, you can update to the most recent ver
 pip install cellxgene --upgrade
 ```
 
-### Using a conda environment ▼
+### Using a conda environment
 
 To install `cellxgene` alone, run:
 
@@ -65,7 +65,7 @@ conda activate cellxgene
 pip install cellxgene[prepare]
 ```
 
-### Using a virtual environment ▼
+### Using a virtual environment
 
 To install cellxgene alone, run:
 
@@ -85,7 +85,7 @@ source ${ENV_NAME}/bin/activate
 pip install cellxgene[prepare]
 ```
 
-### Using docker ▼
+### Using docker
 
 Build the image
 
@@ -101,7 +101,7 @@ docker run -v "$PWD/example-dataset/:/data/" -p 5005:5005 cellxgene launch --hos
 
 ## Launch
 
-### Launching cellxgene with your dataset ▼
+### Launching cellxgene with your dataset
 
 Once you've prepared [link to prepare your data page] your data for cellxgene, you can launch the app using:
 
@@ -109,7 +109,7 @@ Once you've prepared [link to prepare your data page] your data for cellxgene, y
 cellxgene launch mydataset.h5ad --open
 ```
 
-### Launching from a URL▼
+### Launching from a URL
 
 You can also launch from a URL directly like this:
 
@@ -130,7 +130,7 @@ pip install s3fs
 cellxgene launch s3://mybucket.s3-us-west-2.amazonaws.com/mydata.h5ad
 ```
 
-### Options for cellxgene launch ▼
+### Options for cellxgene launch
 
 For the most up-to-date and comprehensive list of options, run cellxgene launch --help
 
