@@ -42,8 +42,8 @@ mccabe==0.6.1
 mypy-extensions==0.4.3
 natsort==8.1.0
 networkx==2.7
-numba==0.53.1
 numexpr==2.8.1
+numba==0.53.1
 numpy==1.21.2
 openapi-schema-validator==0.2.3
 openapi-spec-validator==0.4.0
