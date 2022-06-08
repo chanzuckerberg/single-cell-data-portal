@@ -4,6 +4,7 @@ import logging
 import os
 import requests
 from requests import HTTPError
+from sqlalchemy import null
 import sys
 import time
 import traceback
@@ -72,8 +73,6 @@ def add_trailing_slash_to_explorer_urls(ctx):
 def get_collections_without_curator():
     logger.info("Gathering collections with no curator.")
     with db_session_manager() as session:
-        from sqlalchemy import null
-
         _filter = (Collection.table.curator_name == null()) | (Collection.table.curator_name == "")
         _owners = [result.owner for result in session.query(Collection.table.owner).filter(_filter).distinct().all()]
     return _owners

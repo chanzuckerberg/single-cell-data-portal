@@ -86,7 +86,7 @@ def migrate_published_at(ctx):
             dataset_id = record.id
 
             # Skip private dataset, since published_at will be populated when published.
-            if record.collection_visibility == CollectionVisibility.PRIVATE:
+            if record.collection.visibility == CollectionVisibility.PRIVATE:
                 logger.info(f"SKIPPING - Dataset's parent collection is PRIVATE | dataset.id: {dataset_id}")
                 continue
 
@@ -173,7 +173,7 @@ def populate_revised_at(ctx):
 
             # Skip private dataset, since revised_at will be populated on
             # publish if there are any changes.
-            if record.collection_visibility == CollectionVisibility.PRIVATE:
+            if record.collection.visibility == CollectionVisibility.PRIVATE:
                 logger.info(f"SKIPPING - Dataset's parent collection is PRIVATE | dataset.id: {dataset_id}")
                 continue
 
