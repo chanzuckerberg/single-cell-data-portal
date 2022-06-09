@@ -14,19 +14,19 @@ import {
   ETHNICITY_UNSPECIFIED_LABEL,
   OnFilterFn,
   OntologyCategoryConfig,
-  OntologyCategorySpeciesView,
-  OntologyCategoryValueView,
+  OntologyCategoryTreeNodeView,
+  OntologyCategoryTreeView,
   OntologyCategoryView,
   OntologyNode,
   OntologyView,
+  ONTOLOGY_VIEW_KEY,
+  ONTOLOGY_VIEW_LABEL,
   ORGANISM,
   PUBLICATION_DATE_LABELS,
   Range,
   RangeCategoryView,
   SelectCategoryValueView,
   SelectCategoryView,
-  SPECIES_KEY,
-  SPECIES_LABEL,
 } from "src/components/common/Filter/common/entities";
 import {
   findOntologyNodeById,
@@ -473,7 +473,7 @@ function buildCategoryViews(filterState?: FilterState): CategoryView[] {
         if (isCategoryConfigOntology(config)) {
           return buildOntologyCategoryView(
             categoryKey as CategoryKey,
-            config.ontology,
+            config,
             categoryValueByValue,
             filterState
           );
@@ -554,6 +554,9 @@ export function buildNextOntologyCategoryFilters<T extends Categories>(
   // Find the selected and parent node, if any, for the selected value.
   const ontologySpeciesKey = getOntologySpeciesKey(categoryValueKey);
   const ontologyRootNodes = ontology[ontologySpeciesKey];
+  if (!ontologyRootNodes) {
+    return [...categoryFilters.values()]; // Error state - ontology does not exist.
+  }
   const selectedOntologyNode = findOntologyNodeById(
     ontologyRootNodes,
     categoryValueKey
@@ -681,7 +684,7 @@ function buildQueries<T extends Categories>(
 /**
  * Build view model of ontology category.
  * @param categoryKey - Key of category to find selected filters of.
- * @param ontology - View model of ontology for this category.
+ * @param categoryConfig - Config model of ontology category.
  * @param categoryValueByValue - Internal filter model of ontology category.
  * @param filterState - Categories, category value and their counts with the current filter applied. Required when
  * checking enabled state of view that is dependent on the state of another category.
@@ -689,21 +692,28 @@ function buildQueries<T extends Categories>(
  */
 function buildOntologyCategoryView(
   categoryKey: CategoryKey,
-  ontology: OntologyView,
+  categoryConfig: OntologyCategoryConfig,
   categoryValueByValue: KeyedSelectCategoryValue,
   filterState: FilterState
 ): OntologyCategoryView {
-  // Build tree view model.
-  const speciesViews = Object.keys(ontology).reduce(
-    (accum, speciesKey: string) => {
-      const ontologyNodes = ontology[speciesKey as SPECIES_KEY];
+  const { isLabelVisible, isSearchable, isZerosVisible, ontology } =
+    categoryConfig;
+
+  // Build tree view models (e.g. individual tree structures for displaying different ontologies (e.g. human vs mouse
+  // vs other for development stage, or just tissues for tissue).
+  const treeViews = Object.keys(ontology).reduce(
+    (accum, ontologyViewKey: string) => {
+      const ontologyNodes = ontology[ontologyViewKey as ONTOLOGY_VIEW_KEY];
+      if (!ontologyNodes) {
+        return accum; // Error state - ignore species view.
+      }
 
       // Handle special cases where species is to be excluded.
       if (
         categoryKey === CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS &&
         !isDevelopmentStageSpeciesVisible(
           filterState,
-          speciesKey as SPECIES_KEY
+          ontologyViewKey as ONTOLOGY_VIEW_KEY
         )
       ) {
         return accum;
@@ -724,24 +734,31 @@ function buildOntologyCategoryView(
       const selectedViews = childrenViews.reduce((accum, childView) => {
         listOntologySelectedViews(childView, accum);
         return accum;
-      }, new Set<OntologyCategoryValueView>());
+      }, new Set<OntologyCategoryTreeNodeView>());
+
+      const label =
+        ONTOLOGY_VIEW_LABEL[
+          ontologyViewKey as keyof typeof ONTOLOGY_VIEW_LABEL
+        ];
 
       accum.push({
         children: childrenViews,
-        label: SPECIES_LABEL[speciesKey as keyof typeof SPECIES_LABEL],
+        label: isLabelVisible ? label : undefined,
         selectedViews: [...selectedViews.values()],
       });
 
       return accum;
     },
-    [] as OntologyCategorySpeciesView[]
+    [] as OntologyCategoryTreeView[]
   );
 
   // Build up the ontology category view model.
   const ontologyView: OntologyCategoryView = {
+    isSearchable,
+    isZerosVisible,
     key: categoryKey,
     label: CATEGORY_LABEL[categoryKey],
-    species: speciesViews,
+    views: treeViews,
   };
 
   // Check if ontology category is disabled.
@@ -762,7 +779,7 @@ function buildOntologyCategoryView(
 function buildOntologyCategoryValueView(
   ontologyNode: OntologyNode,
   categoryValueByValue: KeyedSelectCategoryValue
-): OntologyCategoryValueView {
+): OntologyCategoryTreeNodeView {
   const { ontology_term_id: categoryValueKey } = ontologyNode;
   const categoryValue = categoryValueByValue.get(categoryValueKey);
 
@@ -1128,11 +1145,11 @@ function isCategoryConfigOntology(
 function isOntologyCategoryViewDisabled(
   categoryView: OntologyCategoryView
 ): boolean {
-  const { species } = categoryView;
-  if (!species || species.length === 0) {
+  const { views } = categoryView;
+  if (!views || views.length === 0) {
     return true;
   }
-  return !species.some((s) => s.children.some((child) => child.count > 0));
+  return !views.some((s) => s.children.some((child) => child.count > 0));
 }
 
 /**
@@ -1177,7 +1194,7 @@ function isSelectCategoryValue(
  */
 function isDevelopmentStageSpeciesVisible(
   filterState: FilterState,
-  speciesKey: SPECIES_KEY
+  speciesKey: ONTOLOGY_VIEW_KEY
 ) {
   // Find the current selected values for organism.
   const organismCategoryValues = filterState[
@@ -1193,10 +1210,10 @@ function isDevelopmentStageSpeciesVisible(
   }
 
   // Otherwise this species is only visible if it's selected.
-  if (speciesKey === SPECIES_KEY.HsapDv) {
+  if (speciesKey === ONTOLOGY_VIEW_KEY.HsapDv) {
     return selectedOrganisms.includes(ORGANISM.HOMO_SAPIENS);
   }
-  if (speciesKey === SPECIES_KEY.MmusDv) {
+  if (speciesKey === ONTOLOGY_VIEW_KEY.MmusDv) {
     return selectedOrganisms.includes(ORGANISM.MUS_MUSCULUS);
   }
   // Check the "other" case where any species other than human and mouse must be selected.
@@ -1213,7 +1230,7 @@ function isDevelopmentStageSpeciesVisible(
  * selected, mark parent as partially selected
  * @param view - View model of ontology category value.
  */
-function markOntologySelectedPartialViews(view: OntologyCategoryValueView) {
+function markOntologySelectedPartialViews(view: OntologyCategoryTreeNodeView) {
   // Mark any children as partially selected.
   view.children?.forEach((childView) => {
     markOntologySelectedPartialViews(childView);
@@ -1236,8 +1253,8 @@ function markOntologySelectedPartialViews(view: OntologyCategoryValueView) {
  * @param selectedSet - Selected set of cateogry value keys.
  */
 function listOntologySelectedViews(
-  view: OntologyCategoryValueView,
-  selectedSet: Set<OntologyCategoryValueView>
+  view: OntologyCategoryTreeNodeView,
+  selectedSet: Set<OntologyCategoryTreeNodeView>
 ) {
   // If the view is selected it can be included in the selected set of tags.
   if (view.selected) {
@@ -1580,6 +1597,9 @@ function trackOntologyCategoryValueSelected<T extends Categories>(
     // Find the node for the selected value.
     const ontologySpeciesKey = getOntologySpeciesKey(categoryValueKey);
     const ontologyRootNodes = ontology[ontologySpeciesKey];
+    if (!ontologyRootNodes) {
+      return; // Error state - ontology does not exist.
+    }
     const selectedOntologyNode = findOntologyNodeById(
       ontologyRootNodes,
       categoryValueKey
