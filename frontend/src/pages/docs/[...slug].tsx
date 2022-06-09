@@ -1,4 +1,3 @@
-import { Link } from "czifui";
 import fs from "fs";
 import matter from "gray-matter";
 import { GetStaticPaths } from "next";
@@ -7,8 +6,10 @@ import { serialize } from "next-mdx-remote/serialize";
 import Image from "next/image";
 import NextLink from "next/link";
 import pathTool from "path";
-import { memo } from "react";
+import { Fragment, memo } from "react";
 import EmbeddedGoogleSlides from "src/components/EmbeddedGoogleSlides";
+import Layout from "src/components/Layout";
+import { StyledDocsLayout } from "src/components/Layout/style";
 import styled from "styled-components";
 
 const DOC_SITE_FOLDER_NAME = "doc-site";
@@ -86,10 +87,12 @@ export const getStaticProps = async ({
   );
 
   const filePath = filePaths();
+  const activeFile = slug[slug.length - 1];
   const { data: frontMatter, content } = matter(markdownWithMeta);
   const mdxSource = await serialize(content);
   return {
     props: {
+      activeFile,
       filePath,
       frontMatter,
       mdxSource,
@@ -98,69 +101,156 @@ export const getStaticProps = async ({
   };
 };
 
-const Directory = memo(function RenderDirecotry({
+const StyledUL = styled.ul<{ $isChild: boolean }>`
+  border-left: ${(props) => props.$isChild && "1px solid #ccc"};
+  list-style: none;
+  margin-left: ${(props) => (!props.$isChild ? "40px" : "0px")};
+  margin-bottom: 0px;
+  color: ${(props) => props.$isChild && "#545454"};
+  width: auto;
+  overflow-x: hidden;
+  text-overflow: ellipsis;
+  & a {
+    color: inherit;
+    text-decoration: inherit;
+  }
+
+  & li {
+    height: 36px;
+    padding: 8px 16px;
+    margin-bottom: 0;
+  }
+
+  & li.active-file {
+    background-color: #ffffff;
+    color: #e9429a;
+  }
+
+  & li:hover {
+    background-color: #eaeaea;
+  }
+  & div {
+    padding: 0px 16px;
+  }
+`;
+const Directory = memo(function RenderDirectory({
+  activeFile,
   directory,
+  isChild = false,
 }: {
+  activeFile: string;
   directory: Directory;
+  isChild?: boolean;
 }) {
-  return (
-    <ul>
-      {directory.files.map((file) => {
-        let href = "/docs/";
-        if (directory.slug.length > 0) href += directory.slug.join("/") + "/";
-        href += file;
-        return (
-          <li key={file}>
-            <NextLink href={href} passHref>
-              <Link>{file}</Link>
-            </NextLink>
-          </li>
-        );
-      })}
-      {directory.subDirectories.map((directory) => {
-        return (
-          <div key={directory.dirName}>
-            <li>{directory.dirName}</li>
-            <Directory directory={directory} />
+  const fileComponents: Array<[string, JSX.Element]> = directory.files.map(
+    (file) => {
+      let href = "/docs/";
+      if (directory.slug.length > 0) href += directory.slug.join("/") + "/";
+      href += file;
+      const isActiveFile = file === activeFile;
+      return [
+        file,
+        <li key={file} className={isActiveFile ? "active-file" : ""}>
+          <NextLink href={href} passHref>
+            {file}
+          </NextLink>
+        </li>,
+      ];
+    }
+  );
+  const directoryComponents: Array<[string, JSX.Element]> =
+    directory.subDirectories.map((directory) => {
+      return [
+        directory.dirName,
+        <Fragment key={directory.dirName}>
+          <li>{directory.dirName}</li>
+          <div>
+            <Directory directory={directory} isChild activeFile={activeFile} />
           </div>
-        );
-      })}
-    </ul>
+        </Fragment>,
+      ];
+    });
+  return (
+    <StyledUL $isChild={isChild}>
+      {[...fileComponents, ...directoryComponents]
+        .sort((a, b) => {
+          return a[0] < b[0] ? -1 : 1;
+        })
+        .map((v) => v[1])}
+    </StyledUL>
   );
 });
 
 interface Props {
+  activeFile: string;
   frontMatter: Record<string, any>;
   mdxSource: MDXRemoteSerializeResult;
   slug: Array<string>;
   filePath: Directory;
 }
 
-const PageNavigator = ({ filePath }: { filePath: Directory }) => {
-  return <Directory directory={filePath} />;
+const StyledLeftNav = styled.div`
+  background-color: #f8f8f8;
+  border-right: 1px solid #eaeaea;
+  grid-area: leftsidebar;
+  width: 100%;
+`;
+
+const PageNavigator = ({
+  filePath,
+  activeFile,
+}: {
+  filePath: Directory;
+  activeFile: string;
+}) => {
+  return (
+    <StyledLeftNav>
+      <Directory directory={filePath} activeFile={activeFile} />
+    </StyledLeftNav>
+  );
 };
 
-const StyledDocsLayout = styled.div`
-  display: flex;
-  flex-direction: row;
-`;
 const DocContent = styled.div`
-  margin: 16px;
+  width: 100%;
+  overflow-x: hidden;
+  overflow-wrap: break-word;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  grid-area: content;
+  & > * {
+    max-width: 570px;
+  }
 `;
 
 const components = {
   EmbeddedGoogleSlides,
   Image,
 };
-const DocPage = ({ mdxSource, filePath }: Props) => {
+const DocPage = ({ activeFile, mdxSource, filePath }: Props) => {
   return (
-    <StyledDocsLayout>
-      <PageNavigator filePath={filePath} />
+    <>
+      <PageNavigator filePath={filePath} activeFile={activeFile} />
       <DocContent>
-        <MDXRemote {...mdxSource} components={components} />
+        <div>
+          <MDXRemote {...mdxSource} components={components} />
+        </div>
       </DocContent>
-    </StyledDocsLayout>
+    </>
   );
 };
 
+DocPage.Layout = function DocLayout({
+  children,
+}: {
+  children: JSX.Element;
+}): JSX.Element {
+  return (
+    <Layout>
+      <StyledDocsLayout>
+        <main>{children}</main>
+      </StyledDocsLayout>
+    </Layout>
+  );
+};
 export default DocPage;
