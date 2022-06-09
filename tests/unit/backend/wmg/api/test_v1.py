@@ -528,7 +528,7 @@ class WmgApiV1Tests(unittest.TestCase):
             ontology_term_label.side_effect = lambda ontology_term_id: f"{ontology_term_id}_label"
             gene_term_label.side_effect = lambda gene_term_id: f"{gene_term_id}_label"
 
-            fetch_datasets_metadata.return_value = mock_datasets_metadata(["dataset_id_0"])
+            fetch_datasets_metadata.return_value = mock_datasets_metadata(["dataset_id_0", "dataset_id_1"])
 
             request = dict(
                 filter=dict(
@@ -555,6 +555,12 @@ class WmgApiV1Tests(unittest.TestCase):
                         "label": "dataset_id_0_name",
                         "collection_label": "dataset_id_0_coll_name",
                         "collection_id": "dataset_id_0_coll_id",
+                    },
+                    {
+                        "id": "dataset_id_1",
+                        "label": "dataset_id_1_name",
+                        "collection_label": "dataset_id_1_coll_name",
+                        "collection_id": "dataset_id_1_coll_id",
                     }
                 ],
                 "disease_terms": [
