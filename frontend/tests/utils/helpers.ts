@@ -8,6 +8,12 @@ export const TIMEOUT_MS = 3 * 1000;
 export const describeIfDeployed =
   TEST_ENV.includes("local") || TEST_ENV === "prod" ? describe.skip : describe;
 
+//(thuang): BE API doesn't work in local happy
+const TEST_ENVS = ["dev", "staging", "prod"];
+export const describeIfDevStagingProd = TEST_ENVS.includes(TEST_ENV)
+  ? describe
+  : describe.skip;
+
 export async function goToPage(url: string = TEST_URL): Promise<void> {
   await page.goto(url);
 }
