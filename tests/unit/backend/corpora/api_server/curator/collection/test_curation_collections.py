@@ -8,7 +8,7 @@ from tests.unit.backend.corpora.api_server.mock_auth import make_token
 
 
 class TestAuthToken(BaseAuthAPITest):
-    @patch("backend.corpora.lambdas.api.v1.curation.collection.dataset.sts_client")
+    @patch("backend.corpora.lambdas.api.v1.curation.collections.collection_uuid.dataset.sts_client")
     def test__generate_s3_credentials__OK(self, sts_client: Mock):
         def _test(user_name: str, additional_scope: list = None):
             token_claims = dict(sub=user_name, email="fake_user@email.com")
@@ -160,7 +160,7 @@ class TestPutCollectionUUID(BaseAuthAPITest):
 
     def test__update_collection__Super_Curator(self):
         collection_uuid = self.generate_collection(self.session).id
-        headers = {"Authorization": "Bearer " + self.make_super_curator_token(), "Content-Type": "application/json"}
+        headers = self.make_super_curator_header()
         response = self.app.put(
             f"/curation/v1/collections/{collection_uuid}", data=json.dumps(self.test_collection), headers=headers
         )
