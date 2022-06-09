@@ -54,15 +54,18 @@ class TestDatasetSubmissions(TestCase):
         self._test_types()
 
     @patch("backend.corpora.dataset_submissions.app.get_dataset_info")
-    @patch("backend.corpora.dataset_submissions.app.upload")
-    def test__owner__upload(self, mock_upload: Mock, mock_get_dataset_info: Mock):
+    def test__upload__OK(self, mock_get_dataset_info: Mock):
         types = [f"{self.incoming_curator_tag}", f"{self.dataset_uuid_in_s3}"]
+        mock_get_dataset_info.return_value = self.user_name, self.dataset_uuid
         for t in types:
-            s3_event = create_s3_event(key=f"{self.user_name}/{self.collection_uuid}/{t}")
-            mock_upload.return_value = None
-            mock_get_dataset_info.return_value = self.user_name, self.dataset_uuid
-            dataset_submissions_handler(s3_event, None)
-            mock_upload.assert_called()
+            with self.subTest(("owner", t)), patch("backend.corpora.dataset_submissions.app.upload") as mock_upload:
+                s3_event = create_s3_event(key=f"{self.user_name}/{self.collection_uuid}/{t}")
+                dataset_submissions_handler(s3_event, None)
+                mock_upload.assert_called()
+            with self.subTest(("super", t)), patch("backend.corpora.dataset_submissions.app.upload") as mock_upload:
+                s3_event = create_s3_event(key=f"super/{self.collection_uuid}/{t}")
+                dataset_submissions_handler(s3_event, None)
+                mock_upload.assert_called()
 
 
 def create_s3_event(bucket_name: str = "some_bucket", key: str = "", size: int = 0) -> dict:
