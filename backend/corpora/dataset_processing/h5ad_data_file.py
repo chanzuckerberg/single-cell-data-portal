@@ -14,8 +14,10 @@ from backend.corpora.common.utils.cxg_generation_utils import (
     convert_dictionary_to_cxg_group,
     convert_dataframe_to_cxg_array,
     convert_ndarray_to_cxg_dense_array,
+    convert_matrix_to_cxg_array,
 )
 from backend.corpora.common.utils.http_exceptions import ColorFormatException
+from backend.corpora.common.utils.matrix_utils import is_matrix_sparse
 from backend.corpora.common.utils.semvar_utils import validate_version_str
 
 
@@ -78,7 +80,24 @@ class H5ADDataFile:
 
         self.write_anndata_embeddings_to_cxg(output_cxg_directory, ctx)
         logging.info("\t...dataset embeddings saved")
+
+        self.write_anndata_x_matrix_to_cxg(output_cxg_directory, ctx, sparse_threshold)
+        logging.info("\t...dataset X matrix saved")
+
         logging.info("Completed writing to CXG.")
+
+    def write_anndata_x_matrix_to_cxg(self, output_cxg_directory, ctx, sparse_threshold):
+        matrix_container = f"{output_cxg_directory}/X"
+
+        x_matrix_data = self.anndata.X
+        is_sparse = is_matrix_sparse(x_matrix_data, sparse_threshold)
+        logging.info(f"is_sparse: {is_sparse}")
+
+        convert_matrix_to_cxg_array(matrix_container, x_matrix_data, is_sparse, ctx)
+
+        tiledb.consolidate(matrix_container, ctx=ctx)
+        if hasattr(tiledb, "vacuum"):
+            tiledb.vacuum(matrix_container)
 
     def write_anndata_embeddings_to_cxg(self, output_cxg_directory, ctx):
         def is_valid_embedding(adata, embedding_name, embedding_array):
