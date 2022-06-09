@@ -1,18 +1,15 @@
 import { ElementHandle } from "playwright";
 import { ROUTES } from "src/common/constants/routes";
-import { goToPage, tryUntil } from "tests/utils/helpers";
-import { TEST_ENV, TEST_URL } from "../common/constants";
+import {
+  describeIfDevStagingProd,
+  goToPage,
+  tryUntil,
+} from "tests/utils/helpers";
+import { TEST_URL } from "../common/constants";
 import { getTestID, getText } from "../utils/selectors";
-
-//(thuang): BE API doesn't work in local happy
-const TEST_ENVS = ["dev", "staging", "prod"];
 
 const GENE_LABELS_ID = "gene-labels";
 const CELL_TYPE_LABELS_ID = "cell-type-labels";
-
-const describeIfDevStagingProd = TEST_ENVS.includes(TEST_ENV)
-  ? describe
-  : describe.skip;
 
 describeIfDevStagingProd("Where's My Gene", () => {
   it("renders the getting started UI", async () => {
