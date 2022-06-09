@@ -3,7 +3,7 @@ import matter from "gray-matter";
 import { GetStaticPaths } from "next";
 import { MDXRemote, MDXRemoteSerializeResult } from "next-mdx-remote";
 import { serialize } from "next-mdx-remote/serialize";
-import Image from "next/image";
+import Image, { ImageProps } from "next/image";
 import NextLink from "next/link";
 import pathTool from "path";
 import { Fragment, memo } from "react";
@@ -223,9 +223,34 @@ const DocContent = styled.div`
   }
 `;
 
+const StyledImage = styled(Image)``;
+
+const ImageContainer = styled.div`
+  width: 100%;
+
+  > div {
+    position: unset !important;
+  }
+
+  ${StyledImage} {
+    object-fit: contain;
+    width: 100% !important;
+    position: relative !important;
+    height: unset !important;
+  }
+`;
+
+const DocsImage = ({ src }: ImageProps) => {
+  return (
+    <ImageContainer>
+      <StyledImage src={src} layout={"fill"} />
+    </ImageContainer>
+  );
+};
+
 const components = {
   EmbeddedGoogleSlides,
-  Image,
+  Image: DocsImage,
 };
 const DocPage = ({ activeFile, mdxSource, filePath }: Props) => {
   return (
