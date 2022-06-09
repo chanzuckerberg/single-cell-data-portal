@@ -2,4 +2,54 @@
 
 We’ve compiled a list of the questions we get most frequently. Check them out below:
 
-**MAX**
+## Cellxgene Data Portal
+
+### How can I find a dataset of interest?
+
+Refer to this [tutorial (TODO)](www.google.com) to find out how the dataportal is organized and how you can search by dataset metadata.
+
+### How can I request a particular dataset to be on the portal?
+
+You can request a particular dataset by [filing a github issue](https://github.com/chanzuckerberg/single-cell-curation/issues/new) on the cellxgene single-cell-curation repo.
+
+## Cellxgene hosted Explorer
+
+### Is there a way to shift the color scales for continuous variables?
+
+You can use the clipping feature to remove outliers (based on percentiles) and shift the color scale (see [this tutorial](https://docs.google.com/presentation/d/13c0Nj_kR32j0hNL0uZG_4cl646N_TH3ADaQzZFqDPBI/edit#slide=id.gee6c9f6165_0_18) for a demonstration of the feature on slide 8)
+
+### If I have multiple levels of cell type annotations, how can I visualize cell type hierarchy within cellxgene?
+
+While we don't offer this capability, you can make use of the subsetting feature to reduce the cells in view to just your major subtype of interest. See
+
+## scExpression
+
+### How is scExpression Integration Performed?
+
+Please see the [scExpression documentation](https://github.com/chanzuckerberg/cellxgene-documentation/blob/new-doc-structure/04_Analyze-Public-Data/4_2-scExpression-Tutorials/scExpression-documentation.md).
+
+## Cellxgene Desktop Explorer
+
+### I tried to `pip install cellxgene` and got a weird error I don't understand
+
+This may happen, especially as we work out bugs in our installation process! Please create a new [Github issue](https://github.com/chanzuckerberg/cellxgene/issues), explain what you did, and include all the error messages you saw. It'd also be super helpful if you call `pip freeze` and include the full output alongside your issue.
+
+### What are the requirements for an anndata object to be consumed by cellxgene?
+
+Take a look at the [data format requirements](https://github.com/chanzuckerberg/cellxgene-documentation/blob/new-doc-structure/05_Annotate-and-Analyze-Your-Data/5_3-Preparing-Data.md#data-format-requirements)
+
+### How can I remove categorical metadata from my dataset that I do not wish to visualize?
+
+All metadata is read from `adata.obs`. Cellxgene detects columns in this table and displays them in the UI. To remove these categories from the interface, you simply need remove them form the `obs` dataframe.
+
+### Once loaded in and viewing the UMAP, one of my categories is failing to color the UMAP. In the drop down menu, it is showing that it assigns the colors to each observation, but over the UMAP it says "Failure loading umap". What is the problem?
+
+It may be that you have invalid values in your categorical metadata field of interest. Check for values such as `NULL` or `NA` and recast them as a string with the appropriate value (i.e. `'NA'`).
+
+### I have a BIG dataset, how can I make cellxgene run as fast as possible?
+
+If your dataset requires gigabytes of disk space, you may need to select an appropriate storage format in order to effectively utilize `cellxgene`. Tips and tricks:
+
+- `cellxgene` is optimized for columnar data access. For large datasets, format the expression matrix \(`.X`\) as either a [SciPy CSC sparse matrix](https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.csc_matrix.html) or a dense Numpy array \(whichever creates a smaller `h5ad` file\). If you are using `cellxgene prepare`, include the `--sparse` flag to ensure `.X` is formatted as a CSC sparse matrix \(by default, `.X` will be a dense matrix\).
+- By default, `cellxgene` loads the dataset into memory, and start time is directly proportional to `h5ad` file size and the speed of your file system. Expect that large \(e.g., million cell\) datasets will take minutes to load, even on relatively fast computers with a high performance local hard drive. Once loaded, exploring metadata should still be quick. If this start time is a problem, try the `--backed` flag, which will attempt to lazily load data as needed \(caveat: subsequent data access may be slower\).
+- If your dataset size exceeds the size of memory \(RAM\) on the host computer, differential expression calculations will be extremely slow \(or fail, if you run out of virtual memory\). In this case, we recommend running with the `--disable-diffexp` flag. For datasets that are extremely large, you may also find the `--backed` flag improves your ability to explore them.
