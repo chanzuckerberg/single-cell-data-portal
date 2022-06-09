@@ -2,7 +2,6 @@
 
 We’ve compiled a list of the questions we get most frequently. Check them out below:
 
-
 ## Cellxgene Data Portal
 
 ### How can I find a dataset of interest?
@@ -21,7 +20,7 @@ You can use the clipping feature to remove outliers (based on percentiles) and s
 
 ### If I have multiple levels of cell type annotations, how can I visualize cell type hierarchy within cellxgene?
 
-While we don't offer this capability, you can make use of the subsetting feature to reduce the cells in view to just your major subtype of interest. See 
+While we don't offer this capability, you can make use of the subsetting feature to reduce the cells in view to just your major subtype of interest. See
 
 ## scExpression
 
@@ -51,6 +50,6 @@ It may be that you have invalid values in your categorical metadata field of int
 
 If your dataset requires gigabytes of disk space, you may need to select an appropriate storage format in order to effectively utilize `cellxgene`. Tips and tricks:
 
-* `cellxgene` is optimized for columnar data access. For large datasets, format the expression matrix \(`.X`\) as either a [SciPy CSC sparse matrix](https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.csc_matrix.html) or a dense Numpy array \(whichever creates a smaller `h5ad` file\). If you are using `cellxgene prepare`, include the `--sparse` flag to ensure `.X` is formatted as a CSC sparse matrix \(by default, `.X` will be a dense matrix\).
-* By default, `cellxgene` loads the dataset into memory, and start time is directly proportional to `h5ad` file size and the speed of your file system. Expect that large \(e.g., million cell\) datasets will take minutes to load, even on relatively fast computers with a high performance local hard drive. Once loaded, exploring metadata should still be quick. If this start time is a problem, try the `--backed` flag, which will attempt to lazily load data as needed \(caveat: subsequent data access may be slower\).
-* If your dataset size exceeds the size of memory \(RAM\) on the host computer, differential expression calculations will be extremely slow \(or fail, if you run out of virtual memory\). In this case, we recommend running with the `--disable-diffexp` flag. For datasets that are extremely large, you may also find the `--backed` flag improves your ability to explore them.
+- `cellxgene` is optimized for columnar data access. For large datasets, format the expression matrix \(`.X`\) as either a [SciPy CSC sparse matrix](https://docs.scipy.org/doc/scipy/reference/generated/scipy.sparse.csc_matrix.html) or a dense Numpy array \(whichever creates a smaller `h5ad` file\). If you are using `cellxgene prepare`, include the `--sparse` flag to ensure `.X` is formatted as a CSC sparse matrix \(by default, `.X` will be a dense matrix\).
+- By default, `cellxgene` loads the dataset into memory, and start time is directly proportional to `h5ad` file size and the speed of your file system. Expect that large \(e.g., million cell\) datasets will take minutes to load, even on relatively fast computers with a high performance local hard drive. Once loaded, exploring metadata should still be quick. If this start time is a problem, try the `--backed` flag, which will attempt to lazily load data as needed \(caveat: subsequent data access may be slower\).
+- If your dataset size exceeds the size of memory \(RAM\) on the host computer, differential expression calculations will be extremely slow \(or fail, if you run out of virtual memory\). In this case, we recommend running with the `--disable-diffexp` flag. For datasets that are extremely large, you may also find the `--backed` flag improves your ability to explore them.
