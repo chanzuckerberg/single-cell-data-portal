@@ -156,29 +156,6 @@ def save_axes_labels(df: pd.DataFrame, array_name: str, label_info: List) -> int
     return next_join_index
 
 
-def save_X(anndata_object: anndata.AnnData, group_name: str, global_var_index: np.ndarray, first_obs_idx: int):
-    """
-    Save (pre)normalized expression counts to the tiledb corpus object
-    """
-    array_name = f"{group_name}/X"
-    expression_matrix = anndata_object.X
-    logger.debug(f"saving {array_name}...\n")
-    stride = max(int(np.power(10, np.around(np.log10(1e9 / expression_matrix.shape[1])))), 10_000)
-    with tiledb.open(array_name, mode="w") as array:
-        for start in range(0, expression_matrix.shape[0], stride):
-            end = min(start + stride, expression_matrix.shape[0])
-            sparse_expression_matrix = sparse.coo_matrix(expression_matrix[start:end, :])
-            rows = sparse_expression_matrix.row + start + first_obs_idx
-            cols = global_var_index[sparse_expression_matrix.col]
-            data = sparse_expression_matrix.data
-
-            array[rows, cols] = data
-            del sparse_expression_matrix, rows, cols, data
-            gc.collect()
-
-    logger.debug(f"Saved {group_name}.")
-
-
 def get_X_raw(anndata_object: anndata.AnnData) -> Union[np.ndarray, sparse.spmatrix, ArrayView]:
     """
     Current rules for our curated H5ADs:

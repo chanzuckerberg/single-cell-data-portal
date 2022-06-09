@@ -169,7 +169,6 @@ class TestH5ADDataFile(unittest.TestCase):
 
         # Array locations
         metadata_array_location = f"{cxg_directory}/cxg_group_metadata"
-        main_x_array_location = f"{cxg_directory}/X"
         embedding_array_location = f"{cxg_directory}/emb"
         specific_embedding_array_location = f"{self.sample_output_directory}/emb/awesome_embedding"
         obs_array_location = f"{cxg_directory}/obs"
@@ -179,7 +178,6 @@ class TestH5ADDataFile(unittest.TestCase):
         self.assertEqual(tiledb.object_type(cxg_directory), "group")
         self.assertEqual(tiledb.object_type(obs_array_location), "array")
         self.assertEqual(tiledb.object_type(var_array_location), "array")
-        self.assertEqual(tiledb.object_type(main_x_array_location), "array")
         self.assertEqual(tiledb.object_type(embedding_array_location), "group")
         self.assertEqual(tiledb.object_type(specific_embedding_array_location), "array")
 
@@ -220,16 +218,6 @@ class TestH5ADDataFile(unittest.TestCase):
         with tiledb.open(specific_embedding_array_location, mode="r") as embedding_array:
             actual_embedding_data = embedding_array[:, 0:2]
             self.assertTrue(np.array_equal(expected_embedding_data, actual_embedding_data))
-
-        # Validate X matrix if not column shifted
-        if not has_column_encoding:
-            expected_x_data = anndata_object.X
-            with tiledb.open(main_x_array_location, mode="r") as x_array:
-                if is_sparse:
-                    actual_x_data = np.reshape(x_array[:, :][""], expected_x_data.shape)
-                else:
-                    actual_x_data = x_array[:, :]
-                self.assertTrue(np.array_equal(expected_x_data, actual_x_data))
 
     def _validate_cxg_var_index_column_match(self, cxg_directory, expected_index_name):
         var_array_location = f"{cxg_directory}/var"
