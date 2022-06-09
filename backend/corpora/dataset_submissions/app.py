@@ -6,7 +6,7 @@ from urllib.parse import unquote_plus
 
 from sqlalchemy.orm import Session
 
-from backend.corpora.common.entities import Dataset
+from backend.corpora.common.entities import Dataset, Collection
 from backend.corpora.common.upload import upload
 from backend.corpora.common.utils.db_session import db_session_manager
 from backend.corpora.common.utils.exceptions import CorporaException
@@ -46,7 +46,7 @@ def dataset_submissions_handler(s3_event: dict, unused_context) -> None:
                 session, parsed["collection_uuid"], parsed["dataset_uuid"], parsed["tag"]
             )
 
-            logger.debug(f"{collection_owner=}, {dataset_uuid=}")
+            logger.info(f"{collection_owner=}, {dataset_uuid=}")
             if not collection_owner:
                 raise CorporaException(f"Collection {parsed['collection_uuid']} does not exist")
             elif parsed["username"] == "super":
@@ -107,10 +107,14 @@ def parse_key(key: str) -> Optional[dict]:
 def get_dataset_info(
     session: Session, collection_uuid: str, dataset_uuid: str, incoming_curator_tag: str
 ) -> Tuple[Optional[str], Optional[str]]:
-    if dataset_uuid:
+    if dataset_uuid:  # If a dataset uuid was provided
         dataset = Dataset.get(session, dataset_uuid)
-    else:
+    else:  # if incoming_curator_tag
         dataset = Dataset.get_dataset_from_curator_tag(session, collection_uuid, incoming_curator_tag)
+        if not dataset:  # New dataset
+            collection = Collection.get_collection(session, collection_uuid)
+            if collection:
+                return collection.owner, None
     if dataset:
         return dataset.collection.owner, dataset.id
     return None, None
