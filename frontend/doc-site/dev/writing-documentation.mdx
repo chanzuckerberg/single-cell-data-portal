@@ -46,7 +46,7 @@ We can also override the default markdown renderer to render our own components 
 - next/Image
 
   - ```typescript
-    <Image src={"/doc-site/poly.jpg"} width={250} height={250} />
+    <Image src={"/doc-site/poly.jpg"} />
     ```
 
 - EmbeddedGoogleSlides
@@ -60,7 +60,7 @@ We can also override the default markdown renderer to render our own components 
 You can add images to the documentation by adding files to the public directory(`single-cell-data-portal/frontend/public/doc-site`) and then display it in MDX using the `<Image/>` component from Next.js (`![](/doc-site/image.png)`).
 
 <div align="center">
-  <Image src={"/doc-site/poly.jpg"} width={250} height={250} />
+  <Image src={"/doc-site/poly.jpg"} />
   Example image
 </div>
 
