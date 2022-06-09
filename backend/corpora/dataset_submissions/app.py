@@ -49,6 +49,8 @@ def dataset_submissions_handler(s3_event: dict, unused_context) -> None:
             logger.debug(f"{collection_owner=}, {dataset_uuid=}")
             if not collection_owner:
                 raise CorporaException(f"Collection {parsed['collection_uuid']} does not exist")
+            elif parsed["username"] == "super":
+                pass
             elif parsed["username"] != collection_owner:
                 raise CorporaException(
                     f"user:{parsed['username']} does not have permission to modify datasets in collection "
