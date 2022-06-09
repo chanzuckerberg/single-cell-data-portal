@@ -21,6 +21,12 @@ interface Directory {
   subDirectories: Array<Directory>;
 }
 
+const removeHelperCharactersFromSlug = (slug: Array<string>): Array<string> => {
+  return slug.map((part) => {
+    return part.replace(/(__|\.)/g, "");
+  });
+};
+
 const CACHED_FILE_PATHS = new Map<string, Directory>();
 function filePaths(...root: Array<string>): Directory {
   const cacheStore = CACHED_FILE_PATHS && CACHED_FILE_PATHS.get(root.join("/"));
@@ -148,22 +154,27 @@ const Directory = memo(function RenderDirectory({
       if (directory.slug.length > 0) href += directory.slug.join("/") + "/";
       href += file;
       const isActiveFile = file === activeFile;
+      const formattedFileName = file.split("__")[1];
+      console.log(file, formattedFileName);
+
       return [
         file,
         <li key={file} className={isActiveFile ? "active-file" : ""}>
           <NextLink href={href} passHref>
-            {file}
+            {formattedFileName}
           </NextLink>
         </li>,
       ];
     }
   );
-  const directoryComponents: Array<[string, JSX.Element]> =
+
+  const directoryComponents: Array<[string, JSX.Element | null]> =
     directory.subDirectories.map((directory) => {
+      if (directory.dirName.startsWith(".")) return [directory.dirName, null];
       return [
         directory.dirName,
         <Fragment key={directory.dirName}>
-          <li>{directory.dirName}</li>
+          <li>{directory.dirName.split("__")[1]}</li>
           <div>
             <Directory directory={directory} isChild activeFile={activeFile} />
           </div>
