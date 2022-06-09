@@ -61,7 +61,6 @@ def fetch_datasets_metadata(dataset_ids: Iterable[str]) -> List[Dict]:
     # and we want to keep session management out of the calling method
 
     with db_session_manager() as session:
-
         def get_dataset(dataset_id_):
             dataset = Dataset.get(session, dataset_id_)
             if dataset is None:
@@ -77,31 +76,30 @@ def fetch_datasets_metadata(dataset_ids: Iterable[str]) -> List[Dict]:
         return [get_dataset(dataset_id) for dataset_id in dataset_ids]
 
 
-def build_filter_dims_values(criteria: WmgQueryCriteria, query: WmgQuery):
-    dataset_filter_options_criteria = criteria.copy(update={"dataset_ids": []}, deep=True)
-    disease_filter_options_criteria = criteria.copy(update={"disease_ontology_term_ids": []}, deep=True)
-    sex_filter_options_criteria = criteria.copy(update={"sex_ontology_term_ids": []}, deep=True)
-    dev_stage_filter_options_criteria = criteria.copy(update={"development_stage_ontology_term_ids": []}, deep=True)
-    ethnicity_filter_options_criteria = criteria.copy(update={"ethnicity_ontology_term_ids": []}, deep=True)
+def find_dim_option_values(criteria: Dict, query: WmgQuery, dimension: str) -> set:
+    """ Find values for the specified dimension that satisfy the given filtering criteria,
+    ignoring any criteria specified for the given dimension. """
+    filter_options_criteria = criteria.copy(update={dimension + 's': []}, deep=True)
+    return extract_filter_dims_values(query.cell_counts(filter_options_criteria))[dimension]
 
-    dataset_options = extract_filter_dims_values(query.cell_counts(dataset_filter_options_criteria))["dataset_id"]
-    disease_options = extract_filter_dims_values(query.cell_counts(disease_filter_options_criteria))[
-        "disease_ontology_term_id"
-    ]
-    sex_options = extract_filter_dims_values(query.cell_counts(sex_filter_options_criteria))["sex_ontology_term_id"]
-    dev_stage_options = extract_filter_dims_values(query.cell_counts(dev_stage_filter_options_criteria))[
-        "development_stage_ontology_term_id"
-    ]
-    ethnicity_options = extract_filter_dims_values(query.cell_counts(ethnicity_filter_options_criteria))[
-        "ethnicity_ontology_term_id"
-    ]
+
+def build_filter_dims_values(criteria: WmgQueryCriteria, query: WmgQuery) -> Dict:
+    dims = {
+        "dataset_id": "",
+        "disease_ontology_term_id": "",
+        "sex_ontology_term_id": "",
+        "development_stage_ontology_term_id": "",
+        "ethnicity_ontology_term_id": ""
+    }
+    for dim in dims:
+        dims[dim] = find_dim_option_values(criteria, query, dim)
 
     response_filter_dims_values = dict(
-        datasets=fetch_datasets_metadata(dataset_options),
-        disease_terms=build_ontology_term_id_label_mapping(disease_options),
-        sex_terms=build_ontology_term_id_label_mapping(sex_options),
-        development_stage_terms=build_ontology_term_id_label_mapping(dev_stage_options),
-        ethnicity_terms=build_ontology_term_id_label_mapping(ethnicity_options),
+        datasets=fetch_datasets_metadata(dims["dataset_id"]),
+        disease_terms=build_ontology_term_id_label_mapping(dims["disease_ontology_term_id"]),
+        sex_terms=build_ontology_term_id_label_mapping(dims["sex_ontology_term_id"]),
+        development_stage_terms=build_ontology_term_id_label_mapping(dims["development_stage_ontology_term_id"]),
+        ethnicity_terms=build_ontology_term_id_label_mapping(dims["ethnicity_ontology_term_id"]),
     )
 
     return response_filter_dims_values
@@ -163,7 +161,7 @@ def build_ontology_term_id_label_mapping(ontology_term_ids: Iterable[str]) -> Li
 
 
 def build_ordered_cell_types_by_tissue(
-    cell_counts: DataFrame, cell_type_orderings: DataFrame
+        cell_counts: DataFrame, cell_type_orderings: DataFrame
 ) -> Dict[str, List[Dict[str, str]]]:
     distinct_tissues_cell_types: DataFrame = cell_counts.groupby(
         ["tissue_ontology_term_id", "cell_type_ontology_term_id"], as_index=False
