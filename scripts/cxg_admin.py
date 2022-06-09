@@ -24,14 +24,6 @@ logger = logging.getLogger(__name__)
 
 os.environ["CORPORA_LOCAL_DEV"] = "1"
 
-"""
-    For all cxg_admin scripts
-    You must first SSH into the target deployment using `make db/tunnel` before running (see 
-    backend/database readme for specific instructions)
-    You must first set DEPLOYMENT_STAGE as an env var before running
-
-"""
-
 
 def get_database_uri() -> str:
     uri = urlparse(CorporaDbConfig().database_uri)
@@ -43,6 +35,13 @@ def get_database_uri() -> str:
 @click.option("--deployment", default="test", show_default=True, help="The name of the deployment to target.")
 @click.pass_context
 def cli(ctx, deployment):
+    """
+        For all cxg_admin scripts
+        You must first SSH into the target deployment using `make db/tunnel` before running (see
+        backend/database readme for specific instructions)
+        You must first set DEPLOYMENT_STAGE as an env var before running
+
+    """
     os.environ["DEPLOYMENT_STAGE"] = deployment
     ctx.obj["deployment"] = deployment
     DBSessionMaker(get_database_uri())
