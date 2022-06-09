@@ -32,3 +32,11 @@ export const SidebarMainWrapper = styled(MainWrapper)`
     grid-template-columns: auto 1fr auto; /* grid columns for sidebar and corresponding content. */
   }
 `;
+
+export const StyledDocsLayout = styled(MainWrapper)`
+  main {
+    display: grid;
+    grid-template-areas: "leftsidebar content rightsidebar";
+    grid-template-columns: 368px auto 368px;
+  }
+`;
