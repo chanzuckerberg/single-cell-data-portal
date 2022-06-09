@@ -154,6 +154,10 @@ class TestGetCollections(BaseAuthAPITest):
         # self.assertEqual(6, len(res.json["collections"]))
         # [self.assertEqual("PUBLIC", c["visibility"]) for c in res.json["collections"]]
         # print(res.json)
+        import pprint
+
+        # pprint.pprint(res.json)
+        print(len(res.json["collections"]))
 
 
 class TestPutCollectionUUID(BaseAuthAPITest):

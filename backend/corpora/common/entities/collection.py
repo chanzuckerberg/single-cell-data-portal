@@ -151,6 +151,87 @@ class Collection(Entity):
         return results
 
     @classmethod
+    def list_collections_for_curator_api(cls, session: Session, visibility: str = None):
+
+        datetime_serializer = lambda x: x.isoformat() if x else None
+        enum_serializer = lambda x: x.name if x else None
+
+        collection_columns = [
+            "id",
+            "name",
+            ("visibility", enum_serializer),
+            "tombstone",
+            # collection_url
+            "contact_name",
+            "contact_email",
+            "curator_name",
+            ("revised_at", datetime_serializer),
+            ("created_at", datetime_serializer),
+            "links",
+            "datasets",
+            # # access_type
+            ("published_at", datetime_serializer),
+            "description",
+            "publisher_metadata",
+            "revision_of",
+            "tombstone",
+        ]
+
+        link_columns = [
+            "link_name",
+            "link_url",
+            ("link_type", enum_serializer),
+        ]
+
+        dataset_columns = [
+            "id",
+            "curator_tag",
+            "tissue",
+            "assay",
+            "disease",
+            "organism",
+            "tombstone",
+        ]
+
+        filters = []
+        if visibility == CollectionVisibility.PUBLIC.name:
+            filters = [DbCollection.visibility == CollectionVisibility.PUBLIC]
+        elif visibility == CollectionVisibility.PRIVATE.name:
+            filters = [DbCollection.visibility == CollectionVisibility.PRIVATE]
+
+        collection_objects = [dict(r) for r in session.query(cls.table).filter(*filters).all()]
+
+        # Select the collection_columns
+        collections = [cls._copy_columns(collection_columns, r) for r in collection_objects]
+
+        # Select the link_columns and dataset_columns
+        for relation_name, rel_cols in (("links", link_columns), ("datasets", dataset_columns)):
+            for collection in collections:
+                if relation_name in collection:
+                    updated_relations = []
+                    for rel in collection[relation_name]:
+                        updated_relations.append(cls._copy_columns(rel_cols, rel))
+                    collection[relation_name] = updated_relations
+
+        for collection in collections:
+            collection["collection_url"] = f"https://www.cellxgene.cziscience.com/collections/{collection['id']}"
+
+        return collections
+
+    @staticmethod
+    def _copy_columns(cols, from_obj):
+        to_obj = {}
+        for c in cols:
+            if type(c) == tuple:
+                col_name = c[0]
+                converter = c[1]
+                if col_name in from_obj:
+                    to_obj[col_name] = converter(from_obj[col_name])
+            elif c in from_obj:
+                to_obj[c] = from_obj[c]
+        return to_obj
+
+    @classmethod
     def list_public_datasets_for_index(cls, session: Session) -> typing.List[typing.Dict]:
         """
         Return a list of all the datasets and associated metadata. For efficiency reasons, this only returns the fields

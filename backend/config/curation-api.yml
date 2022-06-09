@@ -59,49 +59,49 @@ paths:
             application/json:
               schema:
                 type: object
-                properties:
-                  collections:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        id:
-                          $ref: "#/components/schemas/collection_uuid"
-                        name:
-                          type: string
-                        visibility:
-                          $ref: "#/components/schemas/visibility"
-                        collection_url:
-                          type: string
-                        contact_name:
-                          type: string
-                        contact_email:
-                          type: string
-                        curator_name:
-                          type: string
-                        revised_at:
-                          type: number
-                        created_at:
-                          type: number
-                        links:
-                          $ref: "#/components/schemas/links"
-                        datasets:
-                          type: array
-                          items:
-                            $ref: "#/components/schemas/dataset_preview"
-                        access_type:
-                          type: string
-                          enum: [READ, WRITE]
-                        published_at:
-                          type: number
-                        description:
-                          type: string
-                        publisher_metadata:
-                          $ref: "#/components/schemas/publisher_metadata"
-                        revision_of:
-                          type: string
-                        tombstone:
-                          type: boolean
+        #                properties:
+        #                  collections:
+        #                    type: array
+        #                    items:
+        #                      type: object
+        #                      properties:
+        #                        id:
+        #                          $ref: "#/components/schemas/collection_uuid"
+        #                        name:
+        #                          type: string
+        #                        visibility:
+        #                          $ref: "#/components/schemas/visibility"
+        #                        collection_url:
+        #                          type: string
+        #                        contact_name:
+        #                          type: string
+        #                        contact_email:
+        #                          type: string
+        #                        curator_name:
+        #                          type: string
+        #                        revised_at:
+        #                          type: number
+        #                        created_at:
+        #                          type: number
+        #                        links:
+        #                          $ref: "#/components/schemas/links"
+        #                        datasets:
+        #                          type: array
+        #                          items:
+        #                            $ref: "#/components/schemas/dataset_preview"
+        #                        access_type:
+        #                          type: string
+        #                          enum: [READ, WRITE]
+        #                        published_at:
+        #                          type: number
+        #                        description:
+        #                          type: string
+        #                        publisher_metadata:
+        #                          $ref: "#/components/schemas/publisher_metadata"
+        #                        revision_of:
+        #                          type: string
+        #                        tombstone:
+        #                          type: boolean
         "401":
           $ref: "#/components/responses/401"
     post:

@@ -64,31 +64,15 @@ def get_collections_list(from_date: int = None, to_date: int = None, token_info:
 @dbconnect
 def get_collections_curation(visibility: str, token_info: dict):
 
-    collections = Collection.list_attributes_in_time_range(
-        g.db_session,
-        filters=[DbCollection.visibility == visibility],
-        list_attributes=[
-            DbCollection.id,
-            DbCollection.name,
-            DbCollection.visibility,
-            # collection_url
-            DbCollection.contact_name,
-            DbCollection.contact_email,
-            DbCollection.curator_name,
-            DbCollection.revised_at,
-            DbCollection.created_at,
-            # links
-            # datasets
-            # access_type
-            DbCollection.published_at,
-            DbCollection.description,
-            DbCollection.publisher_metadata,
-            DbCollection.revision_of,
-            DbCollection.tombstone,
-        ],
-    )
+    collections = Collection.list_collections_for_curator_api(g.db_session)
 
-    return jsonify(collections)
+    # Add collection_url
+    # for c in collections:
+    #     c["collection_url"] = f"https://cellxgene.cziscience.com/collection/{c['id']}"
+
+    res_object = {"collections": collections}
+
+    return jsonify(res_object)
 
 
 @dbconnect
