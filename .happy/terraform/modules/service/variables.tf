@@ -29,6 +29,11 @@ variable "cluster" {
   description = "Please provide the ECS Cluster ID that this service should run on"
 }
 
+variable "WMG_BUCKET" {
+  type        = string
+  description = "Please provide the location of the WMG bucket"
+}
+
 variable "image" {
   type        = string
   description = "Image name"
