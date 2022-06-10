@@ -51,7 +51,7 @@ paths:
       tags:
         - collection
       parameters:
-        - $ref: "#/components/parameters/query_visibility"
+        - $ref: "#/components/parameters/query_visibility_default_null"
       responses:
         "200":
           description: OK
@@ -59,49 +59,52 @@ paths:
             application/json:
               schema:
                 type: object
-        #                properties:
-        #                  collections:
-        #                    type: array
-        #                    items:
-        #                      type: object
-        #                      properties:
-        #                        id:
-        #                          $ref: "#/components/schemas/collection_uuid"
-        #                        name:
-        #                          type: string
-        #                        visibility:
-        #                          $ref: "#/components/schemas/visibility"
-        #                        collection_url:
-        #                          type: string
-        #                        contact_name:
-        #                          type: string
-        #                        contact_email:
-        #                          type: string
-        #                        curator_name:
-        #                          type: string
-        #                        revised_at:
-        #                          type: number
-        #                        created_at:
-        #                          type: number
-        #                        links:
-        #                          $ref: "#/components/schemas/links"
-        #                        datasets:
-        #                          type: array
-        #                          items:
-        #                            $ref: "#/components/schemas/dataset_preview"
-        #                        access_type:
-        #                          type: string
-        #                          enum: [READ, WRITE]
-        #                        published_at:
-        #                          type: number
-        #                        description:
-        #                          type: string
-        #                        publisher_metadata:
-        #                          $ref: "#/components/schemas/publisher_metadata"
-        #                        revision_of:
-        #                          type: string
-        #                        tombstone:
-        #                          type: boolean
+                properties:
+                  collections:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          $ref: "#/components/schemas/collection_uuid"
+                        name:
+                          type: string
+                        visibility:
+                          $ref: "#/components/schemas/visibility"
+                        collection_url:
+                          type: string
+                        contact_name:
+                          type: string
+                        contact_email:
+                          type: string
+                        curator_name:
+                          type: string
+                        revised_at:
+                          type: number
+                          nullable: true
+                        created_at:
+                          type: number
+                        links:
+                          $ref: "#/components/schemas/links"
+                        datasets:
+                          type: array
+                          items:
+                            $ref: "#/components/schemas/dataset_preview"
+                        access_type:
+                          type: string
+                          enum: [READ, WRITE]
+                        published_at:
+                          type: number
+                          nullable: true
+                        description:
+                          type: string
+                        publisher_metadata:
+                          $ref: "#/components/schemas/publisher_metadata"
+                        revision_of:
+                          type: string
+                          nullable: true
+                        tombstone:
+                          type: boolean
         "401":
           $ref: "#/components/responses/401"
     post:
@@ -572,6 +575,14 @@ components:
       type: string
       enum: [PUBLIC, PRIVATE]
       default: PUBLIC
+    visibility_default_null:
+      description: >-
+        Determines the visibility of the collection, that will either make the collection visible on the public
+        sites or only viewable through obfuscated URLs.
+      type: string
+      enum: [PUBLIC, PRIVATE, null]
+      nullable: true
+      default: null
     distribution:
       description: >-
         Cellxgene runs a heuristic to detect the approximate distribution of the data in X so that it can accurately
@@ -775,6 +786,13 @@ components:
       required: false
       schema:
         $ref: "#/components/schemas/visibility"
+    query_visibility_default_null:
+      name: visibility
+      description: The 'visibility' of a Collection (and its constituent Datasets).
+      in: query
+      required: false
+      schema:
+        $ref: "#/components/schemas/visibility_default_null"
   responses:
     200:
       description: OK

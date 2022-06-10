@@ -64,15 +64,21 @@ def get_collections_list(from_date: int = None, to_date: int = None, token_info:
 @dbconnect
 def get_collections_curation(visibility: str, token_info: dict):
 
-    collections = Collection.list_collections_for_curator_api(g.db_session)
+    collections = Collection.list_collections_for_curator_api(g.db_session, visibility)
+    allowed_collections = []
+    for collection in collections:
+        owner = collection["owner"]
+        if is_user_owner_or_allowed(token_info, owner):
+            collection["access_type"] = "WRITE"
+        elif collection["visibility"] == "PRIVATE":
+            continue
+        else:
+            collection["access_type"] = "READ"
+        del collection["owner"]  # Don't actually want to return 'owner' in response
+        collection["collection_url"] = f"https://www.cellxgene.cziscience.com/collections/{collection['id']}"
+        allowed_collections.append(collection)
 
-    # Add collection_url
-    # for c in collections:
-    #     c["collection_url"] = f"https://cellxgene.cziscience.com/collection/{c['id']}"
-
-    res_object = {"collections": collections}
-
-    return jsonify(res_object)
+    return jsonify({"collections": allowed_collections})
 
 
 @dbconnect

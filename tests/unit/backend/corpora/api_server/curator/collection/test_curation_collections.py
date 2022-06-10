@@ -150,14 +150,20 @@ class TestGetCollections(BaseAuthAPITest):
     def test__get_only_public_collections_with_auth__OK(self):
         params = {"visibility": "PUBLIC"}
         res = self.app.get("/curation/v1/collections", query_string=params, headers=self.get_auth_headers())
-        # self.assertEqual(200, res.status_code)
-        # self.assertEqual(6, len(res.json["collections"]))
-        # [self.assertEqual("PUBLIC", c["visibility"]) for c in res.json["collections"]]
-        # print(res.json)
+        self.assertEqual(200, res.status_code)
+        self.assertEqual(6, len(res.json["collections"]))
+        [self.assertEqual("PUBLIC", c["visibility"]) for c in res.json["collections"]]
+
+    def test__get_only_private_collections_with_auth__OK(self):
+        params = {"visibility": "PRIVATE"}
+        res = self.app.get("/curation/v1/collections", query_string=params, headers=self.get_auth_headers())
+        self.assertEqual(200, res.status_code)
+        self.assertEqual(1, len(res.json["collections"]))
+        [self.assertEqual("PRIVATE", c["visibility"]) for c in res.json["collections"]]
+
         import pprint
 
-        # pprint.pprint(res.json)
-        print(len(res.json["collections"]))
+        pprint.pprint(self.get_auth_headers())
 
 
 class TestPutCollectionUUID(BaseAuthAPITest):

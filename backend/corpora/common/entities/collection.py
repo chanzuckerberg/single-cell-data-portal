@@ -1,7 +1,9 @@
+import enum
 import typing
 from datetime import datetime
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
+from time import mktime
 
 from . import Dataset
 from .entity import Entity
@@ -152,16 +154,17 @@ class Collection(Entity):
 
     @classmethod
     def list_collections_for_curator_api(cls, session: Session, visibility: str = None):
+        def datetime_serializer(dt: datetime):
+            return mktime(dt.timetuple())
 
-        datetime_serializer = lambda x: x.isoformat() if x else None
-        enum_serializer = lambda x: x.name if x else None
+        def enum_serializer(e: enum.Enum):
+            return e.name
 
         collection_columns = [
             "id",
             "name",
             ("visibility", enum_serializer),
             "tombstone",
-            # collection_url
             "contact_name",
             "contact_email",
             "curator_name",
@@ -169,12 +172,12 @@ class Collection(Entity):
             ("created_at", datetime_serializer),
             "links",
             "datasets",
-            # # access_type
             ("published_at", datetime_serializer),
             "description",
             "publisher_metadata",
             "revision_of",
             "tombstone",
+            "owner",  # Needed for determining view permissions
         ]
 
         link_columns = [
@@ -213,9 +216,6 @@ class Collection(Entity):
                         updated_relations.append(cls._copy_columns(rel_cols, rel))
                     collection[relation_name] = updated_relations
 
-        for collection in collections:
-            collection["collection_url"] = f"https://www.cellxgene.cziscience.com/collections/{collection['id']}"
-
         return collections
 
     @staticmethod
@@ -223,12 +223,18 @@ class Collection(Entity):
         to_obj = {}
         for c in cols:
             if type(c) == tuple:
+                # Column needs to be converted to a serializable form
                 col_name = c[0]
                 converter = c[1]
                 if col_name in from_obj:
-                    to_obj[col_name] = converter(from_obj[col_name])
+                    if from_obj[col_name] is not None:
+                        if type(from_obj[col_name]) == datetime:
+                            print("offset")
+                            print(from_obj[col_name].utcoffset())
+                        to_obj[col_name] = converter(from_obj[col_name])
             elif c in from_obj:
-                to_obj[c] = from_obj[c]
+                if from_obj[c] is not None:
+                    to_obj[c] = from_obj[c]
         return to_obj
 
     @classmethod
