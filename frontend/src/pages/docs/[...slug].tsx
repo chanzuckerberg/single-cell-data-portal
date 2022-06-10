@@ -7,8 +7,9 @@ import { serialize } from "next-mdx-remote/serialize";
 import Image, { ImageProps } from "next/image";
 import NextLink from "next/link";
 import pathTool from "path";
-import { Fragment, memo } from "react";
+import { Fragment, memo, useState } from "react";
 import rehypeSlug from "rehype-slug";
+import { noop } from "src/common/constants/utils";
 import EmbeddedGoogleSlides from "src/components/EmbeddedGoogleSlides";
 import Layout from "src/components/Layout";
 import { StyledDocsLayout } from "src/components/Layout/style";
@@ -325,6 +326,7 @@ const MDX_AVAILABLE_COMPONENTS = {
   a: (props: React.AnchorHTMLAttributes<HTMLAnchorElement>) => (
     <a rel="noopener" target="_blank" {...props} />
   ),
+  NextLink,
 };
 const DocPage = ({ activeFile, mdxSource, filePath }: Props) => {
   return (
