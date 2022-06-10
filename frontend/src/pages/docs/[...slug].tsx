@@ -8,6 +8,7 @@ import Image, { ImageProps } from "next/image";
 import NextLink from "next/link";
 import pathTool from "path";
 import { Fragment, memo, useState } from "react";
+import rehypeSlug from "rehype-slug";
 import { noop } from "src/common/constants/utils";
 import EmbeddedGoogleSlides from "src/components/EmbeddedGoogleSlides";
 import Layout from "src/components/Layout";
@@ -91,7 +92,9 @@ export const getStaticProps = async ({
   const filePath = filePaths();
   const activeFile = slug[slug.length - 1];
   const { data: frontMatter, content } = matter(markdownWithMeta);
-  const mdxSource = await serialize(content);
+  const mdxSource = await serialize(content, {
+    mdxOptions: { rehypePlugins: [rehypeSlug] },
+  });
   return {
     props: {
       activeFile,
@@ -320,6 +323,9 @@ const DocsImage = ({ src }: ImageProps) => {
 const MDX_AVAILABLE_COMPONENTS = {
   EmbeddedGoogleSlides,
   Image: DocsImage,
+  a: (props: React.AnchorHTMLAttributes<HTMLAnchorElement>) => (
+    <a rel="noopener" target="_blank" {...props} />
+  ),
 };
 const DocPage = ({ activeFile, mdxSource, filePath }: Props) => {
   return (
