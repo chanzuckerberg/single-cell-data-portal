@@ -53,10 +53,10 @@ validation_sex_ontologies = {"female": "PATO:0000383", "male": "PATO:0000384", "
 
 
 class Validation:
-    def __init__(self, snapshot):
+    def __init__(self, corpus_path):
         self.errors = []
-        self.snapshot = snapshot
-        self.expression_summary_path = f"{snapshot}/{EXPRESSION_SUMMARY_CUBE_NAME}"
+        self.corpus_path = corpus_path
+        self.expression_summary_path = f"{corpus_path}/{EXPRESSION_SUMMARY_CUBE_NAME}"
         self.env = os.getenv("ENV")
         self.validation_dataset_uuid = "3de0ad6d-4378-4f62-b37b-ec0b75a50d94"
         self.MIN_CUBE_SIZE_GB = 3 if self.env == "PROD" else 0.1
@@ -92,7 +92,7 @@ class Validation:
         self.validate_tissues_in_cube()
 
         # check MALAT1 and ACTB
-        self.validate_housekeeping_gene_expression_levels(f"{self.snapshot}/{CELL_COUNTS_CUBE_NAME}")
+        self.validate_housekeeping_gene_expression_levels(f"{self.corpus_path}/{CELL_COUNTS_CUBE_NAME}")
 
         # check XIST appears in women but not men
         self.validate_sex_specific_marker_gene()
@@ -173,7 +173,7 @@ class Validation:
         with tiledb.open(path_to_cell_count_cube, "r") as cell_count_cube:
             human_ontology_id = validation_species_ontologies["human"]
             cell_count_human = cell_count_cube.df[:, human_ontology_id:human_ontology_id].n_cells.sum()
-            with tiledb.open(self.path_to_expression_summary) as cube:
+            with tiledb.open(self.expression_summary_path) as cube:
                 MALAT1_ont_id = validation_gene_ontologies["MALAT1"]
                 MALAT1_human_expression_cube = cube.df[
                                                MALAT1_ont_id:MALAT1_ont_id, :, human_ontology_id:human_ontology_id
@@ -202,7 +202,7 @@ class Validation:
                     self.errors.append(f"ACTB avg rankit score is {ACTB_avg_expression}")
 
     def validate_sex_specific_marker_gene(self):
-        with tiledb.open(self.path_to_expression_summary) as cube:
+        with tiledb.open(self.expression_summary_path) as cube:
             human_ontology_id = validation_species_ontologies["human"]
             sex_marker_gene_ontology_id = validation_gene_ontologies["XIST"]
             female_ontology_id = validation_sex_ontologies["female"]
@@ -243,7 +243,7 @@ class Validation:
 
         # get avg expression value of gene for the celltype. That average should be greater than the avg for all
         # other cell types
-        with tiledb.open(self.path_to_expression_summary) as cube:
+        with tiledb.open(self.expression_summary_path) as cube:
             FCN1_ont_id = validation_gene_ontologies["FCN1"]
             FCN1_human_lung_cube = cube.df[FCN1_ont_id:FCN1_ont_id, lung_ont_id:lung_ont_id, human_ont_id:human_ont_id]
             self.validate_FCN1(FCN1_human_lung_cube)
@@ -359,7 +359,7 @@ class Validation:
         human_lung_int = validation_tissues_with_many_cell_types["lung"]
         MALAT1_ont_id = validation_gene_ontologies["MALAT1"]
         CCL5_ont_id = validation_gene_ontologies["CCL5"]
-        with tiledb.open(self.path_to_expression_summary) as cube:
+        with tiledb.open(self.expression_summary_path) as cube:
             MALAT1_human_lung_cube = cube.df[
                                      MALAT1_ont_id:MALAT1_ont_id, human_lung_int:human_lung_int,
                                      human_ont_id:human_ont_id

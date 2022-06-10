@@ -81,7 +81,7 @@ def load_data_and_create_cube(
     create_cubes(corpus_path)
     logger.info("Built expression summary cube")
     if validate_cubes:
-        is_valid = Validation(snapshot_path).validate_cube()
+        is_valid = Validation(corpus_path).validate_cube()
     cell_type_by_tissue = get_cell_types_by_tissue(corpus_path)
     generate_cell_ordering(snapshot_path, cell_type_by_tissue)
     generate_primary_filter_dimensions(snapshot_path, corpus_name, timestamp)
