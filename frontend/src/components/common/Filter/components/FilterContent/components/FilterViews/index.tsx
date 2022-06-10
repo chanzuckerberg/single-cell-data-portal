@@ -1,17 +1,17 @@
+import React from "react";
 import {
-  CATEGORY_KEY,
+  CATEGORY_FILTER_ID,
   OnFilterFn,
   OntologyCategoryTreeView,
-  OnUpdateSearchValueFn,
 } from "src/components/common/Filter/common/entities";
 import FilterView, {
   MAX_DISPLAYABLE_LIST_ITEMS,
-} from "src/components/common/Filter/components/FilterViews/components/FilterView";
+} from "src/components/common/Filter/components/FilterContent/components/FilterViews/components/FilterView";
 import {
   VIEW_LIST_ITEM_HEIGHT,
   VIEW_LIST_SUBHEADER_HEIGHT,
-} from "src/components/common/Filter/components/FilterViews/components/FilterView/style";
-import { ViewsMenu } from "src/components/common/Filter/components/FilterViews/style";
+} from "src/components/common/Filter/components/FilterContent/components/FilterViews/components/FilterView/style";
+import { ViewsMenu } from "src/components/common/Filter/components/FilterContent/components/FilterViews/style";
 
 export const enum CATEGORY_VIEWS_QUANTIFIER {
   NON_SINGLETON = "NON_SINGLETON",
@@ -19,20 +19,18 @@ export const enum CATEGORY_VIEWS_QUANTIFIER {
 }
 
 interface Props {
-  categoryKey: CATEGORY_KEY;
+  categoryFilterId: CATEGORY_FILTER_ID;
   isSearchable: boolean;
   isZerosVisible: boolean;
   onFilter: OnFilterFn;
-  onUpdateSearchValue: OnUpdateSearchValueFn;
   views: OntologyCategoryTreeView[];
 }
 
 export default function FilterViews({
-  categoryKey,
+  categoryFilterId,
   isSearchable,
   isZerosVisible,
   onFilter,
-  onUpdateSearchValue,
   views,
 }: Props): JSX.Element {
   const viewsToDisplay = views.filter(
@@ -50,13 +48,12 @@ export default function FilterViews({
     <ViewsMenu>
       {viewsToDisplay.map(({ label, children }, i) => (
         <FilterView
-          categoryKey={categoryKey}
+          categoryFilterId={categoryFilterId}
           key={`${label || "view"}-${i}`}
           label={label}
           isSearchable={isSearchable}
           isZerosVisible={isZerosVisible}
           onFilter={onFilter}
-          onUpdateSearchValue={onUpdateSearchValue}
           showViewDivider={i !== 0}
           values={children}
           viewListMaxHeight={viewListMaxHeight}

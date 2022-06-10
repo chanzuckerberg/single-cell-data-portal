@@ -1,11 +1,11 @@
 import { IconNames } from "@blueprintjs/icons";
-import { Box } from "@material-ui/core";
 import { List } from "czifui";
 import React, { Fragment, ReactElement } from "react";
 import {
-  CATEGORY_KEY,
+  CATEGORY_FILTER_ID,
   OnFilterFn,
   OntologyCategoryTreeNodeView,
+  SelectCategoryValueView,
 } from "src/components/common/Filter/common/entities";
 import { SelectionIcon } from "src/components/common/Filter/common/style";
 import {
@@ -13,20 +13,19 @@ import {
   ViewListItem,
   ViewListItemText,
   ViewSublist,
-} from "src/components/common/Filter/components/FilterViews/components/FilterViewList/style";
-import { GRAY } from "src/components/common/theme";
+} from "src/components/common/Filter/components/FilterContent/components/FilterViews/components/FilterViewList/style";
 
 interface Props {
-  categoryKey: CATEGORY_KEY;
+  categoryFilterId: CATEGORY_FILTER_ID;
   isZerosVisible: boolean;
   nested?: boolean;
   onFilter: OnFilterFn;
-  values: OntologyCategoryTreeNodeView[];
+  values: OntologyCategoryTreeNodeView[] | SelectCategoryValueView[];
   ViewHeader?: ReactElement;
 }
 
 export default function FilterViewList({
-  categoryKey,
+  categoryFilterId,
   isZerosVisible,
   nested = false,
   onFilter,
@@ -43,14 +42,17 @@ export default function FilterViewList({
       {filteredValues.length === 0 ? (
         <NoMatches>No items found</NoMatches>
       ) : (
-        filteredValues.map(
-          ({ key, children, count, label, selectedPartial, selected }) => (
+        filteredValues.map((value) => {
+          const { key, count, label, selected, values } = value;
+          const { children, selectedPartial } =
+            value as OntologyCategoryTreeNodeView; // TODO(cc) review destructure with SelectCategoryValueView or OntologyCategoryTreeNodeView.
+          return (
             <Fragment key={key}>
               {/* List item */}
               <ViewListItem
                 button
                 disabled={!count}
-                onClick={() => onFilter(categoryKey, key)}
+                onClick={() => onFilter(categoryFilterId, key, values)}
               >
                 {/* Icon - bp icon to uphold ui consistency between filter menu and filter views */}
                 <SelectionIcon
@@ -65,27 +67,15 @@ export default function FilterViewList({
                 {/* List item text and count */}
                 <ViewListItemText
                   disableTypography
-                  primary={
-                    <Box
-                      component="span"
-                      flex={1}
-                      fontWeight={selected ? 500 : undefined}
-                      mr={4}
-                    >
-                      {label}
-                    </Box>
-                  }
-                  secondary={
-                    <Box color={GRAY.A} component="span">
-                      {count}
-                    </Box>
-                  }
+                  primary={<span>{label}</span>}
+                  secondary={<span>{count}</span>}
+                  selected={selected}
                 />
               </ViewListItem>
               {/* Nested list */}
               {children && children.length && (
                 <FilterViewList
-                  categoryKey={categoryKey}
+                  categoryFilterId={categoryFilterId}
                   isZerosVisible={isZerosVisible}
                   nested
                   onFilter={onFilter}
@@ -93,8 +83,8 @@ export default function FilterViewList({
                 />
               )}
             </Fragment>
-          )
-        )
+          );
+        })
       )}
     </ViewList>
   );

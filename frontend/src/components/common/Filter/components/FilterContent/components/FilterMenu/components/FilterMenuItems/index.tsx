@@ -1,29 +1,29 @@
 import { MenuItem } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 import {
-  CATEGORY_KEY,
+  CATEGORY_FILTER_ID,
   OnFilterFn,
   SelectCategoryValueView,
 } from "src/components/common/Filter/common/entities";
-import { SelectionIcon } from "../../../../common/style";
+import { SelectionIcon } from "../../../../../../common/style";
 import { MenuItemWrapper } from "./style";
 
 interface Props {
-  categoryKey: CATEGORY_KEY;
+  categoryFilterId: CATEGORY_FILTER_ID;
   isMultiselect: boolean;
   menuItems: SelectCategoryValueView[];
   onFilter: OnFilterFn;
 }
 
 export default function FilterMenuItems({
-  categoryKey,
+  categoryFilterId,
   isMultiselect,
   menuItems,
   onFilter,
 }: Props): JSX.Element {
   return (
     <>
-      {menuItems.map(({ key, count, label, selected }) => (
+      {menuItems.map(({ key, count, label, selected, values }) => (
         <MenuItemWrapper key={key} isSelected={selected}>
           <MenuItem
             icon={
@@ -32,7 +32,7 @@ export default function FilterMenuItems({
               />
             }
             labelElement={count}
-            onClick={() => onFilter(categoryKey, key)}
+            onClick={() => onFilter(categoryFilterId, key, values)}
             shouldDismissPopover={!isMultiselect}
             text={label}
           />

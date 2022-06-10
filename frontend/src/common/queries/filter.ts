@@ -1,6 +1,5 @@
 import { useMemo } from "react";
 import { useQuery, UseQueryResult } from "react-query";
-import { API } from "src/common/API";
 import {
   Author,
   Consortium,
@@ -8,19 +7,24 @@ import {
   Ontology,
   PublisherMetadata,
 } from "src/common/entities";
-import { DEFAULT_FETCH_OPTIONS } from "src/common/queries/common";
+import { CELL_TYPE_ANCESTORS_BY_DATASET_ID } from "src/common/queries/cell-type-ancestors-by-dataset-id";
+import { COLLECTIONS_RESPONSE } from "src/common/queries/collections-response";
+import { DATASETS_RESPONSE } from "src/common/queries/datasets-response";
 import { ENTITIES } from "src/common/queries/entities";
+import { TISSUE_ANCESTORS_BY_DATASET_ID } from "src/common/queries/tissue-ancestors-by-dataset-id";
 import { COLLATOR_CASE_INSENSITIVE } from "src/components/common/Filter/common/constants";
 import {
   Categories,
-  CATEGORY_KEY,
   CollectionRow,
   DatasetRow,
   ETHNICITY_DENY_LIST,
   PUBLICATION_DATE_VALUES,
 } from "src/components/common/Filter/common/entities";
+import {
+  buildExplicitOntologyTermId,
+  buildInferredOntologyTermId,
+} from "src/components/common/Filter/common/utils";
 import { checkIsOverMaxCellCount } from "src/components/common/Grid/common/utils";
-import { API_URL } from "src/configs/configs";
 
 /**
  * Never expire cached collections and datasets. TODO revisit once state management approach is confirmed (#1809).
@@ -84,6 +88,7 @@ export interface DatasetResponse {
   assay: Ontology[];
   cell_count: number | null;
   cell_type: Ontology[];
+  cell_type_ancestors: string[];
   collection_id: string;
   development_stage_ancestors: string[];
   disease: Ontology[];
@@ -99,6 +104,14 @@ export interface DatasetResponse {
   sex: Ontology[];
   tissue: Ontology[]; // TODO(cc) remove with #2569.
   tissue_ancestors: string[];
+}
+
+/**
+ * Model of /datasets/index JSON response that has been modified to include calculated fields that facilitate filter
+ * functionality.
+ */
+interface ProcessedDatasetResponse extends DatasetResponse {
+  tissueCalculated: string[]; // Field to drive tissue system, tissue organ and tissue filter functionality.
 }
 
 /**
@@ -225,10 +238,14 @@ export function useFetchDatasetRows(): FetchCategoriesRows<DatasetRow> {
  * @returns Array of datasets - possible cached from previous request - containing filterable and sortable dataset
  * fields.
  */
-export function useFetchDatasets(): UseQueryResult<DatasetResponse[]> {
-  return useQuery<DatasetResponse[]>([USE_DATASETS_INDEX], fetchDatasets, {
-    ...DEFAULT_QUERY_OPTIONS,
-  });
+export function useFetchDatasets(): UseQueryResult<ProcessedDatasetResponse[]> {
+  return useQuery<ProcessedDatasetResponse[]>(
+    [USE_DATASETS_INDEX],
+    fetchDatasets,
+    {
+      ...DEFAULT_QUERY_OPTIONS,
+    }
+  );
 }
 
 /**
@@ -245,6 +262,10 @@ function aggregateCollectionDatasetRows(
       return {
         assay: [...accum.assay, ...collectionDatasetRow.assay],
         cell_type: [...accum.cell_type, ...collectionDatasetRow.cell_type],
+        cell_type_ancestors: [
+          ...accum.cell_type_ancestors,
+          ...collectionDatasetRow.cell_type_ancestors,
+        ],
         development_stage_ancestors: [
           ...accum.development_stage_ancestors,
           ...collectionDatasetRow.development_stage_ancestors,
@@ -254,21 +275,27 @@ function aggregateCollectionDatasetRows(
         organism: [...accum.organism, ...collectionDatasetRow.organism],
         sex: [...accum.sex, ...collectionDatasetRow.sex],
         tissue: [...accum.tissue, ...collectionDatasetRow.tissue], // TODO(cc) remove with #2569.
+        tissueCalculated: [
+          ...accum.tissueCalculated,
+          ...collectionDatasetRow.tissueCalculated,
+        ],
         tissue_ancestors: [
-          ...accum.development_stage_ancestors,
-          ...collectionDatasetRow.development_stage_ancestors,
+          ...accum.tissue_ancestors,
+          ...collectionDatasetRow.tissue_ancestors,
         ],
       };
     },
     {
       assay: [],
       cell_type: [],
+      cell_type_ancestors: [],
       development_stage_ancestors: [],
       disease: [],
       ethnicity: [],
       organism: [],
       sex: [],
       tissue: [], // TODO(cc) remove with #2569.
+      tissueCalculated: [],
       tissue_ancestors: [],
     }
   );
@@ -277,6 +304,9 @@ function aggregateCollectionDatasetRows(
   return {
     assay: uniqueOntologies(aggregatedCategoryValues.assay),
     cell_type: uniqueOntologies(aggregatedCategoryValues.cell_type),
+    cell_type_ancestors: [
+      ...new Set(aggregatedCategoryValues.cell_type_ancestors),
+    ],
     development_stage_ancestors: [
       ...new Set(aggregatedCategoryValues.development_stage_ancestors),
     ],
@@ -285,6 +315,7 @@ function aggregateCollectionDatasetRows(
     organism: uniqueOntologies(aggregatedCategoryValues.organism),
     sex: uniqueOntologies(aggregatedCategoryValues.sex),
     tissue: uniqueOntologies(aggregatedCategoryValues.tissue), // TODO(cc) remove with #2569.
+    tissueCalculated: [...new Set(aggregatedCategoryValues.tissueCalculated)],
     tissue_ancestors: [...new Set(aggregatedCategoryValues.tissue_ancestors)],
   };
 }
@@ -345,10 +376,10 @@ function buildCollectionRows(
  */
 function buildDatasetRows(
   collectionsById: Map<string, ProcessedCollectionResponse>,
-  datasets: DatasetResponse[]
+  datasets: ProcessedDatasetResponse[]
 ): DatasetRow[] {
   // Join collection and dataset information to create dataset rows.
-  return datasets.map((dataset: DatasetResponse) => {
+  return datasets.map((dataset: ProcessedDatasetResponse) => {
     const collection = collectionsById.get(dataset.collection_id);
     return buildDatasetRow(dataset, collection);
   });
@@ -363,7 +394,7 @@ function buildDatasetRows(
  * data primary values.
  */
 function buildDatasetRow(
-  dataset: DatasetResponse,
+  dataset: ProcessedDatasetResponse,
   collection?: ProcessedCollectionResponse
 ): DatasetRow {
   // Determine dataset's publication month and year.
@@ -534,9 +565,11 @@ function expandPublicationDateValues(
 async function fetchCollections(): Promise<
   Map<string, ProcessedCollectionResponse>
 > {
-  const collections = await (
-    await fetch(API_URL + API.COLLECTIONS_INDEX, DEFAULT_FETCH_OPTIONS)
-  ).json();
+  // TODO(cc) revert with #2569.
+  // const collections = await (
+  //   await fetch(API_URL + API.COLLECTIONS_INDEX, DEFAULT_FETCH_OPTIONS)
+  // ).json();
+  const collections = COLLECTIONS_RESPONSE as unknown as CollectionResponse[];
 
   // Calculate the number of months since publication for each collection.
   const [todayMonth, todayYear] = getMonthYear(new Date());
@@ -556,15 +589,65 @@ async function fetchCollections(): Promise<
  * @returns Promise resolving to an array of datasets - possible cached from previous request - containing
  * filterable and sortable dataset fields.
  */
-async function fetchDatasets(): Promise<DatasetResponse[]> {
-  const datasets = await (
-    await fetch(API_URL + API.DATASETS_INDEX, DEFAULT_FETCH_OPTIONS)
-  ).json();
+async function fetchDatasets(): Promise<ProcessedDatasetResponse[]> {
+  // TODO(cc) revert with #2569.
+  // const datasets = await (
+  //   await fetch(API_URL + API.DATASETS_INDEX, DEFAULT_FETCH_OPTIONS)
+  // ).json();
+  const datasets = DATASETS_RESPONSE as unknown as DatasetResponse[];
+
+  // TODO(cc) remove with #2569 - list tissue counts and all tissues
+  // const tissues = new Set();
+  // datasets.forEach((d) =>
+  //   d.tissue.forEach((t) => tissues.add(t.ontology_term_id))
+  // );
+  // console.log(tissues.size);
+  // console.log([...tissues].join(","));
+
+  // TODO(cc) remove with #2569 - this generates tissues_by_dataset_id to be used by the "compute_uberon_tissue_parts_graph" notebook for the PoC only.
+  // const mappings = datasets.map((d) => {
+  //   const tissueIds = d.tissue
+  //     .map((t) => `"${t.ontology_term_id.replace(/:/, "_")}"`)
+  //     .join(",");
+  //   return `"${d.id}": [${tissueIds}]`;
+  // });
+  // console.log(`tissues_by_dataset_id = {${mappings.join(", ")}}`);
+
+  // TODO(cc) remove with #2569 - add tissue_ancestors to datasets
+  datasets.forEach((d) => {
+    d.tissue_ancestors = TISSUE_ANCESTORS_BY_DATASET_ID[d.id] ?? [];
+  });
+
+  // TODO(cc) remove with #2569 - list cell type count and all cell types
+  // const cellTypes = new Set();
+  // datasets.forEach((d) =>
+  //   d.cell_type.forEach((c) => cellTypes.add(`"${c.ontology_term_id}"`))
+  // );
+  // console.log(cellTypes.size);
+  // console.log([...cellTypes].join(","));
+
+  // TODO(cc) remove with #2569 - this generates cellTypesByDatasetId to be used by the "compute_cell_type_is_a_graph" notebook for the PoC only.
+  // const mappings = datasets.map((d) => {
+  //   const cellTypeIds = d.cell_type
+  //     .map((cellType) => `"${cellType.ontology_term_id}"`)
+  //     .join(",");
+  //   return `"${d.id}": [${cellTypeIds}]`;
+  // });
+  // console.log(`cell_types_by_dataset_id = {${mappings.join(", ")}}`);
+
+  // TODO(cc) remove with #2569 - add cell_type_ancestors to datasets
+  datasets.forEach((d) => {
+    d.cell_type_ancestors = CELL_TYPE_ANCESTORS_BY_DATASET_ID[d.id] ?? [];
+  });
 
   // Correct any dirty data returned from endpoint.
-  return datasets.map((dataset: DatasetResponse) => {
-    return sanitizeDataset(dataset);
+  const sanitizedDatasets = datasets.map((dataset: DatasetResponse) => {
+    return sanitizeDatasetResponse(dataset);
   });
+
+  return sanitizedDatasets.map((dataset: DatasetResponse) =>
+    processDatasetResponse(dataset)
+  );
 }
 
 /**
@@ -658,7 +741,7 @@ function processCollectionResponse(
   todayMonth: number,
   todayYear: number
 ): ProcessedCollectionResponse {
-  // Determine the collections publication month and year.
+  // Determine the collection's publication month and year.
   const [publicationMonth, publicationYear] = getPublicationMonthYear(
     collection,
     collection.publisher_metadata
@@ -685,47 +768,60 @@ function processCollectionResponse(
 }
 
 /**
+ * Add calculated fields to dataset response.
+ * @param dataset - Dataset response returned from collections endpoint.
+ */
+function processDatasetResponse(
+  dataset: DatasetResponse
+): ProcessedDatasetResponse {
+  // Build up value to facilitate ontology-aware tissue filtering.
+  const tissueCalculated = [
+    ...tagAncestorsAsInferred(dataset.tissue_ancestors),
+    ...tagOntologyTermsAsExplicit(dataset.tissue),
+  ];
+  return {
+    ...dataset,
+    tissueCalculated,
+  };
+}
+
+/**
  * Add defaults for missing filterable values, e.g. convert missing ontology values to empty array.
  * Remove any ethnicity values on the deny list.
- * @param dataset - Dataset to check for missing values.
+ * @param datasetResponse - Dataset to check for missing values.
  * @returns Corrected dataset response.
  */
-function sanitizeDataset(dataset: DatasetResponse): DatasetResponse {
-  return Object.values(CATEGORY_KEY).reduce(
-    (accum: DatasetResponse, categoryKey: CATEGORY_KEY) => {
-      // Check for fields that don't require sanitizing.
-      if (
-        categoryKey === CATEGORY_KEY.CELL_COUNT ||
-        categoryKey === CATEGORY_KEY.MEAN_GENES_PER_CELL ||
-        categoryKey === CATEGORY_KEY.PUBLICATION_AUTHORS ||
-        categoryKey === CATEGORY_KEY.PUBLICATION_DATE_VALUES
-      ) {
-        return accum;
-      }
+function sanitizeDatasetResponse(
+  datasetResponse: DatasetResponse
+): DatasetResponse {
+  const sanitizedDatasetResponse = { ...datasetResponse };
 
-      if (categoryKey === CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS) {
-        accum.development_stage_ancestors =
-          dataset.development_stage_ancestors ?? [];
-        return accum;
-      }
-
-      if (categoryKey === CATEGORY_KEY.TISSUE_ANCESTORS) {
-        accum.tissue_ancestors = dataset.tissue_ancestors ?? [];
-        return accum;
-      }
-
-      if (categoryKey === CATEGORY_KEY.ETHNICITY) {
-        accum.ethnicity = (dataset.ethnicity ?? []).filter(
-          (ethnicity) => !ETHNICITY_DENY_LIST.includes(ethnicity.label)
-        );
-        return accum;
-      }
-
-      accum[categoryKey] = dataset[categoryKey] ?? [];
-      return accum;
-    },
-    { ...dataset }
+  sanitizedDatasetResponse.ethnicity = (datasetResponse.ethnicity ?? []).filter(
+    (ethnicity) => !ETHNICITY_DENY_LIST.includes(ethnicity.label)
   );
+
+  sanitizedDatasetResponse.assay = datasetResponse.assay ?? [];
+
+  sanitizedDatasetResponse.cell_type = datasetResponse.cell_type ?? [];
+
+  sanitizedDatasetResponse.cell_type_ancestors =
+    datasetResponse.cell_type_ancestors ?? [];
+
+  sanitizedDatasetResponse.development_stage_ancestors =
+    datasetResponse.development_stage_ancestors ?? [];
+
+  sanitizedDatasetResponse.disease = datasetResponse.disease ?? [];
+
+  sanitizedDatasetResponse.organism = datasetResponse.organism ?? [];
+
+  sanitizedDatasetResponse.sex = datasetResponse.sex ?? [];
+
+  sanitizedDatasetResponse.tissue = datasetResponse.tissue ?? [];
+
+  sanitizedDatasetResponse.tissue_ancestors =
+    datasetResponse.tissue_ancestors ?? [];
+
+  return sanitizedDatasetResponse;
 }
 
 /**
@@ -753,6 +849,28 @@ function sortCategoryValues<T extends Categories>(row: T): T {
  */
 function sortOntologies(o0: Ontology, o1: Ontology): number {
   return COLLATOR_CASE_INSENSITIVE.compare(o0.label, o1.label);
+}
+
+/**
+ * Convert each ancestor ontology term ID into one marked as "inferred", required for filtering across ancestors and
+ * actual ontology terms within a filter.
+ * TODO(cc) docs
+ */
+function tagAncestorsAsInferred(ancestors: string[]): string[] {
+  return ancestors.map((ancestorTermId) =>
+    buildInferredOntologyTermId(ancestorTermId)
+  );
+}
+
+/**
+ * Convert each ontology term ID into one marked as "explicit", required for filtering across ancestors and
+ * actual ontology terms within a filter.
+ * TODO(cc) docs
+ */
+function tagOntologyTermsAsExplicit(ontologyTerms: Ontology[]): string[] {
+  return ontologyTerms.map((ontologyTerm) =>
+    buildExplicitOntologyTermId(ontologyTerm.ontology_term_id)
+  );
 }
 
 /**

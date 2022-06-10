@@ -2,10 +2,11 @@
 import { Ontology } from "src/common/entities";
 import {
   Categories,
-  OntologyCategoryKey,
+  CategoriesKeyOfTypeOntologyArray,
   OntologyNode,
-  OntologyView,
+  OntologyTermSet,
   ONTOLOGY_VIEW_KEY,
+  OrFilterPrefix,
 } from "src/components/common/Filter/common/entities";
 
 /**
@@ -37,6 +38,65 @@ export const SYMBOL_MILLION = "M";
  * Scale symbol for million.
  */
 export const SYMBOL_THOUSAND = "k";
+
+/**
+ * Build filter value with an inferred prefix. Used by ontology-aware filter categories that require filtering by both
+ * inferred and explicit values (e.g. tissue).
+ * @param ontologyTermId - The term ID to prefix with inferred.
+ * @returns String containing inferred prefix pre-prended to the given ontology term ID.
+ */
+export function buildExplicitOntologyTermId(ontologyTermId: string): string {
+  return `${OrFilterPrefix.EXPLICIT}:${ontologyTermId}`;
+}
+
+/**
+ * Build filter value with an explicit prefix. Used by ontology-aware filter categories that require filtering by both
+ * inferred and explicit values (e.g. tissue).
+ * @param ontologyTermId - The term ID to prefix with inferred.
+ * @returns String containing explicit prefix pre-prended to the given ontology term ID.
+ */
+export function buildInferredOntologyTermId(ontologyTermId: string): string {
+  return `${OrFilterPrefix.INFERRED}:${ontologyTermId}`;
+}
+
+/**
+ * Returns the core ontology term ID that has been prefixed with an inferred or explicit identifier.
+ * @param prefixedOntologyTermId - Ontology term ID with either an inferred or explicit prefix.
+ * @return Core ontology term ID.
+ */
+export function removeOntologyTermIdPrefix(
+  prefixedOntologyTermId: string
+): string {
+  const [, ontologyTermId] = splitOntologyTermIdAndPrefix(
+    prefixedOntologyTermId
+  );
+  return ontologyTermId;
+}
+
+/**
+ * Returns the prefix of an ontology term ID that has been prefixed with an inferred or explicit identifier.
+ * @param prefixedOntologyTermId - Ontology term ID with either an inferred or explicit prefix.
+ * @return The prefix of the given ontology term ID that has been marked as inferred or explicit.
+ * TODO(cc) rename
+ */
+export function removeOntologyTermId(
+  prefixedOntologyTermId: string
+): OrFilterPrefix {
+  const [prefix] = splitOntologyTermIdAndPrefix(prefixedOntologyTermId);
+  return prefix;
+}
+
+/**
+ * Returns the prefix and core ontology term ID of an ontology term ID that has been prefixed with an inferred or
+ * explicit identifier.
+ * @param prefixedOntologyTermId - Ontology term ID with either an inferred or explicit prefix.
+ * @return An array containing the prefix and the core ontology term ID.
+ */
+export function splitOntologyTermIdAndPrefix(
+  prefixedOntologyTermId: string
+): [OrFilterPrefix, string] {
+  return prefixedOntologyTermId.split(/:(.*)/s) as [OrFilterPrefix, string];
+}
 
 /**
  * Find the node with the given ontology ID.
@@ -118,11 +178,13 @@ function listOntologyNodeIds(ontologyIds: Set<string>, node: OntologyNode) {
 
 /**
  * List all ontology IDs in the given ontology tree.
- * @param ontology - Ontology view model to list ontology IDs of.
+ * @param ontologyTermSet - Ontology view model to list ontology IDs of.
  * @returns Set of all ontology IDs present in the given ontology tree.
  */
-export function listOntologyTreeIds(ontology: OntologyView): Set<string> {
-  return Object.values(ontology).reduce((accum, node) => {
+export function listOntologyTreeIds(
+  ontologyTermSet: OntologyTermSet
+): Set<string> {
+  return Object.values(ontologyTermSet).reduce((accum, node) => {
     node.forEach((node) => listOntologyNodeIds(accum, node));
     return accum;
   }, new Set<string>());
@@ -130,13 +192,13 @@ export function listOntologyTreeIds(ontology: OntologyView): Set<string> {
 
 /**
  * Create function to be used by column.accessor in react-table column definition, for columns containing ontology
- * metadata (ontology label and key) values.
+ * metadata (ontology label) values.
  * @param categoryKey - Object key of value to display in cell.
- * @returns Function that returns value with the given key, to display in a cell.
+ * @returns Function that returns label of ontology value with the given key, to display in a cell.
  */
-export function ontologyCellAccessorFn(
-  categoryKey: OntologyCategoryKey
-): OntologyCellAccessorFn {
+export function ontologyLabelCellAccessorFn<
+  K extends CategoriesKeyOfTypeOntologyArray
+>(categoryKey: K): OntologyCellAccessorFn {
   return (categories: Categories) =>
     categories[categoryKey].map((o: Ontology) => o.label);
 }

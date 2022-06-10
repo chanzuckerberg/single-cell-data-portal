@@ -2,11 +2,10 @@ import { Mark, Slider } from "@material-ui/core";
 import React, { ChangeEvent, useState } from "react";
 import {
   OnFilterFn,
-  Range,
   RangeCategoryView,
 } from "src/components/common/Filter/common/entities";
 import { formatNumberToScale } from "src/components/common/Filter/common/utils";
-import { useSliderStyles } from "src/components/common/Filter/components/FilterRange/style";
+import { useSliderStyles } from "src/components/common/Filter/components/FilterContent/components/FilterRange/style";
 
 /**
  * Value returned on change events from MUI Slider.
@@ -60,7 +59,8 @@ export default function FilterRange({
     _changeEvent: ChangeEvent<{}>,
     committedRange: SliderRange
   ): void => {
-    onFilter(key, committedRange as Range);
+    const [min, max] = committedRange as number[]; // Always expecting a min/max array here.
+    onFilter(key, null, [min, max]);
   };
 
   return (

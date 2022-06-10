@@ -2,7 +2,7 @@ import { Classes, MenuItem } from "@blueprintjs/core";
 import styled from "@emotion/styled";
 import { Divider } from "@material-ui/core";
 import { GRAY, PT_TEXT_COLOR } from "src/components/common/theme";
-import { scrollbar } from "../../common/style";
+import { scrollbar } from "../../../../common/style";
 
 export const MAX_DISPLAYABLE_MENU_ITEMS = 9;
 const DIVIDER_HEIGHT_PX = 9;
