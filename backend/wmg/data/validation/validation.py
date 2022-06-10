@@ -52,7 +52,7 @@ validation_cell_types = {
 validation_sex_ontologies = {"female": "PATO:0000383", "male": "PATO:0000384", "unknown": "unknown"}
 
 
-class Validation():
+class Validation:
     def __int__(self, snapshot):
         self.errors = []
         self.snapshot = snapshot
@@ -120,9 +120,11 @@ class Validation():
         logger.info(f"MIN_SPECIES_COUNT is {self.MIN_SPECIES_COUNT}")
         logger.info(f"MIN_DATASET_COUNT is {self.MIN_DATASET_COUNT}")
         logger.info(
-            f"MIN_MALAT1_GENE_EXPRESSION_CELL_COUNT_PERCENT is {self.MIN_MALAT1_GENE_EXPRESSION_CELL_COUNT_PERCENT}")
+            f"MIN_MALAT1_GENE_EXPRESSION_CELL_COUNT_PERCENT is {self.MIN_MALAT1_GENE_EXPRESSION_CELL_COUNT_PERCENT}"
+        )
         logger.info(
-            f"MIN_ACTB_GENE_EXPRESSION_CELL_COUNT_PERCENT is {self.MIN_ACTB_GENE_EXPRESSION_CELL_COUNT_PERCENT}")
+            f"MIN_ACTB_GENE_EXPRESSION_CELL_COUNT_PERCENT is {self.MIN_ACTB_GENE_EXPRESSION_CELL_COUNT_PERCENT}"
+        )
 
     def validate_cube_size(self):
         size_byte = sum(file.stat().st_size for file in Path(self.expression_summary_path).rglob("*"))
@@ -137,7 +139,8 @@ class Validation():
             species_count = len(species_list)
             if self.MIN_SPECIES_COUNT > species_count:
                 self.errors.append(
-                    f"Expression summary cube missing mandatory species. Only contains {species_count} species")
+                    f"Expression summary cube missing mandatory species. Only contains {species_count} species"
+                )
             if self.env == "PROD":
                 mandatory_species = validation_species_ontologies.values()
             else:
@@ -174,8 +177,9 @@ class Validation():
             cell_count_human = cell_count_cube.df[:, human_ontology_id:human_ontology_id].n_cells.sum()
             with tiledb.open(self.path_to_expression_summary) as cube:
                 MALAT1_ont_id = validation_gene_ontologies["MALAT1"]
-                MALAT1_human_expression_cube = cube.df[MALAT1_ont_id:MALAT1_ont_id, :,
-                                               human_ontology_id:human_ontology_id]
+                MALAT1_human_expression_cube = cube.df[
+                    MALAT1_ont_id:MALAT1_ont_id, :, human_ontology_id:human_ontology_id
+                ]
                 ACTB_ont_id = validation_gene_ontologies["ACTB"]
                 ACTB_human_expression_cube = cube.df[ACTB_ont_id:ACTB_ont_id, :, human_ontology_id:human_ontology_id]
                 MALAT1_cell_count = MALAT1_human_expression_cube.nnz.sum()
@@ -184,11 +188,13 @@ class Validation():
                 if ACTB_cell_count > MALAT1_cell_count:
                     self.errors.append(f"More cells express ACTB ({ACTB_cell_count}) than MALAT1 ({MALAT1_cell_count})")
                 if self.MIN_MALAT1_GENE_EXPRESSION_CELL_COUNT_PERCENT > (100 * MALAT1_cell_count / cell_count_human):
-                    self.errors.append(f"less than "
-                                       f"{self.MIN_MALAT1_GENE_EXPRESSION_CELL_COUNT_PERCENT}% of cells express MALAT1")
+                    self.errors.append(
+                        f"less than " f"{self.MIN_MALAT1_GENE_EXPRESSION_CELL_COUNT_PERCENT}% of cells express MALAT1"
+                    )
                 if self.MIN_ACTB_GENE_EXPRESSION_CELL_COUNT_PERCENT > (100 * ACTB_cell_count / cell_count_human):
-                    self.errors.append(f"less than "
-                                       f"{self.MIN_ACTB_GENE_EXPRESSION_CELL_COUNT_PERCENT}% of cells express ACTB")
+                    self.errors.append(
+                        f"less than " f"{self.MIN_ACTB_GENE_EXPRESSION_CELL_COUNT_PERCENT}% of cells express ACTB"
+                    )
 
                 MALAT1_avg_expression = cube.df[MALAT1_ont_id:MALAT1_ont_id]["sum"].sum() / MALAT1_cell_count
                 ACTB_avg_expression = cube.df[ACTB_ont_id:ACTB_ont_id]["sum"].sum() / ACTB_cell_count
@@ -203,17 +209,18 @@ class Validation():
             sex_marker_gene_ontology_id = validation_gene_ontologies["XIST"]
             female_ontology_id = validation_sex_ontologies["female"]
             male_ontology_id = validation_sex_ontologies["male"]
-            # slice cube by dimensions             gene_ontology                           organ (all)          species
-            human_XIST_cube = cube.df[sex_marker_gene_ontology_id:sex_marker_gene_ontology_id, :,
-                              human_ontology_id:human_ontology_id]  # noqa
+            # slice cube by dimensions             gene_ontology      organ (all)          species
+            human_XIST_cube = cube.df[
+                sex_marker_gene_ontology_id:sex_marker_gene_ontology_id, :, human_ontology_id:human_ontology_id
+            ]
 
             female_xist_cube = human_XIST_cube.query(f"sex_ontology_term_id == '{female_ontology_id}'")
             male_xist_cube = human_XIST_cube.query(f"sex_ontology_term_id == '{male_ontology_id}'")
 
             # should be expressed in most female cells and no male cells
-            if male_xist_cube.nnz.sum() > female_xist_cube.nnz.sum()
-                self.errors.append(f"The number of male cells expressing XIST is higher than the number of "
-                                   f"female cells expressing XIST")
+            if male_xist_cube.nnz.sum() > female_xist_cube.nnz.sum():
+                self.errors.append("The number of male cells expressing XIST is higher than the number of female "
+                                   "cells expressing XIST")
             # should be expressed in females at a much higher rate
             female_avg_xist_expression = female_xist_cube["sum"].sum() / female_xist_cube["nnz"].sum()
             male_avg_xist_expression = male_xist_cube["sum"].sum() / male_xist_cube["nnz"].sum()
@@ -272,10 +279,10 @@ class Validation():
         )
 
         FCN1_high_expression_avg = (
-                FCN1_high_expression_cell_types.sum()["sum"] / FCN1_high_expression_cell_types.sum()["nnz"]
+            FCN1_high_expression_cell_types.sum()["sum"] / FCN1_high_expression_cell_types.sum()["nnz"]
         )
         FCN1_non_high_expression_avg = (
-                FCN1_non_high_expression_cell_types.sum()["sum"] / FCN1_non_high_expression_cell_types.sum()["nnz"]
+            FCN1_non_high_expression_cell_types.sum()["sum"] / FCN1_non_high_expression_cell_types.sum()["nnz"]
         )
         if FCN1_non_high_expression_avg > FCN1_high_expression_avg:
             self.errors.append("FCN1 expression levels are off")
@@ -293,10 +300,10 @@ class Validation():
         )
 
         TUBB4B_high_expression_avg = (
-                TUBB4B_high_expression_cell_types.sum()["sum"] / TUBB4B_high_expression_cell_types.sum()["nnz"]
+            TUBB4B_high_expression_cell_types.sum()["sum"] / TUBB4B_high_expression_cell_types.sum()["nnz"]
         )
         TUBB4B_non_high_expression_avg = (
-                TUBB4B_non_high_expression_cell_types.sum()["sum"] / TUBB4B_non_high_expression_cell_types.sum()["nnz"]
+            TUBB4B_non_high_expression_cell_types.sum()["sum"] / TUBB4B_non_high_expression_cell_types.sum()["nnz"]
         )
         if TUBB4B_non_high_expression_avg > TUBB4B_high_expression_avg:
             self.errors.append("TUBB4B expression levels are off")
@@ -314,10 +321,10 @@ class Validation():
         )
 
         CD68_high_expression_avg = (
-                CD68_high_expression_cell_types.sum()["sum"] / CD68_high_expression_cell_types.sum()["nnz"]
+            CD68_high_expression_cell_types.sum()["sum"] / CD68_high_expression_cell_types.sum()["nnz"]
         )
         CD68_non_high_expression_avg = (
-                CD68_non_high_expression_cell_types.sum()["sum"] / CD68_non_high_expression_cell_types.sum()["nnz"]
+            CD68_non_high_expression_cell_types.sum()["sum"] / CD68_non_high_expression_cell_types.sum()["nnz"]
         )
         if CD68_non_high_expression_avg > CD68_high_expression_avg:
             self.errors.append("TUBB4B expression levels are off")
@@ -339,16 +346,14 @@ class Validation():
         AQP5_non_high_expression_cell_types = AQP5_human_lung_cube.query(
             f"cell_type_ontology_term_id not in {AQP5_high_expression_cell_type_ids}"
         )
-
         AQP5_high_expression_avg = (
-                AQP5_high_expression_cell_types.sum()["sum"] / AQP5_high_expression_cell_types.sum()["nnz"]
+            AQP5_high_expression_cell_types.sum()["sum"] / AQP5_high_expression_cell_types.sum()["nnz"]
         )
         AQP5_non_high_expression_avg = (
-                AQP5_non_high_expression_cell_types.sum()["sum"] / AQP5_non_high_expression_cell_types.sum()["nnz"]
+            AQP5_non_high_expression_cell_types.sum()["sum"] / AQP5_non_high_expression_cell_types.sum()["nnz"]
         )
         if AQP5_non_high_expression_avg > AQP5_high_expression_avg:
             self.errors.append("AQP5 expression levels are off")
-
 
     def validate_expression_levels_for_particular_gene_dataset(self):
         human_ont_id = validation_species_ontologies["human"]
@@ -357,12 +362,11 @@ class Validation():
         CCL5_ont_id = validation_gene_ontologies["CCL5"]
         with tiledb.open(self.path_to_expression_summary) as cube:
             MALAT1_human_lung_cube = cube.df[
-                                     MALAT1_ont_id:MALAT1_ont_id, human_lung_int:human_lung_int,
-                                     human_ont_id:human_ont_id
-                                     ]
+                MALAT1_ont_id:MALAT1_ont_id, human_lung_int:human_lung_int, human_ont_id:human_ont_id
+            ]
             CCL5_human_lung_cube = cube.df[
-                                   CCL5_ont_id:CCL5_ont_id, human_lung_int:human_lung_int, human_ont_id:human_ont_id
-                                   ]
+                CCL5_ont_id:CCL5_ont_id, human_lung_int:human_lung_int, human_ont_id:human_ont_id
+            ]
 
             MALAT1_expression = MALAT1_human_lung_cube.query(f"dataset_id == '{self.validation_dataset_uuid}'")
             CCL5_expression = CCL5_human_lung_cube.query(f"dataset_id == '{self.validation_dataset_uuid}'")
@@ -393,6 +397,6 @@ class Validation():
             datasets = cube.df[:].dataset_id.drop_duplicates()
             dataset_count = len(datasets)
             if self.MIN_DATASET_COUNT > dataset_count:
-                self.errors.append(f"Not enough datasets in the cube")
+                self.errors.append("Not enough datasets in the cube")
             logger.info(f"{dataset_count} datasets included in {self.expression_summary_path}")
             logger.info(f"Included dataset ids are: {[dataset for dataset in datasets]}")
