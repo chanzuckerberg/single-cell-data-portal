@@ -8,7 +8,7 @@ from typing import List
 import tiledb
 
 from backend.wmg.data import extract
-from backend.wmg.data.load_cube import update_s3_resources
+from backend.wmg.data.load_cube import update_s3_resources, upload_artifacts_to_s3
 from backend.wmg.data.load_corpus import load_h5ad
 from backend.wmg.data.schemas.corpus_schema import create_tdb, INTEGRATED_ARRAY_NAME
 from backend.wmg.data.tiledb import create_ctx
@@ -17,7 +17,7 @@ from backend.wmg.data.transform import (
     get_cell_types_by_tissue,
     generate_cell_ordering,
 )
-from backend.wmg.data.validation.validation import validate_cube
+from backend.wmg.data.validation.validation import Validation
 from backend.wmg.data.wmg_cube import create_cubes
 
 logger = logging.getLogger(__name__)
@@ -48,7 +48,7 @@ def load(dataset_directory: List, corpus_path: str, validate: bool = False):
 
 
 def load_data_and_create_cube(
-    path_to_h5ad_datasets: str, corpus_name: str = "corpus_group", snapshot_path=None, extract_data=True
+    path_to_h5ad_datasets: str, corpus_name: str = "corpus_group", snapshot_path=None, extract_data=True, validate_cubes=True
 ):
     """
     Function to copy H5AD datasets (from a preconfiugred s3 bucket) to the path given then,
@@ -76,13 +76,17 @@ def load_data_and_create_cube(
     logger.info("Loaded datasets into corpus")
     create_cubes(corpus_path)
     logger.info("Built expression summary cube")
-    validate_cube(corpus_path)
+    if validate_cubes:
+        is_valid = Validation(snapshot_path).validate_cube()
     cell_type_by_tissue = get_cell_types_by_tissue(corpus_path)
     generate_cell_ordering(snapshot_path, cell_type_by_tissue)
     generate_primary_filter_dimensions(snapshot_path, corpus_name, timestamp)
     logger.info("Generated cell ordering json file")
-    update_s3_resources(snapshot_path, timestamp)
+    upload_artifacts_to_s3(snapshot_path, timestamp)
     logger.info("Copied snapshot to s3")
+    if validate_cubes:
+        update_s3_resources(timestamp)
+    logger.info(f"Updated latest_snapshot_identifier in s3. Current snapshot id is {timestamp}")
 
 
 if __name__ == "__main__":

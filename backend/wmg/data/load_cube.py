@@ -15,11 +15,10 @@ def _get_wmg_bucket_path():
         return f"s3://{wmg_bucket_name}"
 
 
-def update_s3_resources(snapshot_path, timestamp):
+def update_s3_resources(timestamp):
     """
-    Copy cube and cube related files to s3 under the current timestamp
+    Update snapshot pointer and remove older datasets
     """
-    upload_artifacts_to_s3(snapshot_path, timestamp)
     write_snapshot_id(timestamp)
     remove_oldest_datasets(timestamp)
 
