@@ -1,4 +1,3 @@
-import { Divider, ListSubheader } from "@material-ui/core";
 import React, { useEffect, useRef, useState } from "react";
 import { useResizeObserver } from "src/common/hooks/useResizeObserver";
 import {
@@ -8,7 +7,8 @@ import {
   OnUpdateSearchValueFn,
 } from "src/components/common/Filter/common/entities";
 import {
-  useFilterViewStyles,
+  ViewDivider,
+  ViewHeader,
   ViewPanel,
   ViewPanelScroll,
 } from "src/components/common/Filter/components/FilterViews/components/FilterView/style";
@@ -45,22 +45,20 @@ export default function FilterView({
   values,
   viewListMaxHeight,
 }: Props): JSX.Element {
+  const panelRef = useRef<HTMLDivElement>(null);
   const listContainerRef = useRef<HTMLDivElement>(null);
   const listContainerRect = useResizeObserver(listContainerRef);
   const [panelScrollable, setPanelScrollable] = useState(false);
   const [panelWidth, setPanelWidth] = useState<number>(0);
   const [searchValue, setSearchValue] = useState<string>("");
   const { scrollHeight: listScrollHeight } = listContainerRect || {};
-  const classes = useFilterViewStyles();
   const filteredValues = filterViewValues(values, searchValue);
 
-  // Calculate and set a min width on view list to prevent width resizing
+  // Calculate and set a min width on view panel to prevent width resizing
   // (derived from a change in list item selected state font weight).
   useEffect(() => {
-    if (listContainerRef.current) {
-      setPanelWidth(
-        listContainerRef.current?.clientWidth + ADDITIONAL_PANEL_WIDTH
-      );
+    if (panelRef.current) {
+      setPanelWidth(panelRef.current?.clientWidth + ADDITIONAL_PANEL_WIDTH);
     }
   }, []);
 
@@ -73,13 +71,8 @@ export default function FilterView({
 
   return (
     <>
-      {showViewDivider && (
-        <Divider
-          classes={{ root: classes.viewDivider }}
-          orientation="vertical"
-        />
-      )}
-      <ViewPanel panelWidth={panelWidth}>
+      {showViewDivider && <ViewDivider orientation="vertical" />}
+      <ViewPanel panelWidth={panelWidth} ref={panelRef}>
         {/* Optional search bar */}
         {isSearchable && (
           <FilterViewSearch
@@ -98,16 +91,7 @@ export default function FilterView({
             onFilter={onFilter}
             values={filteredValues}
             ViewHeader={
-              label ? (
-                <ListSubheader
-                  classes={{ root: classes.viewHeading }}
-                  disableGutters
-                  disableSticky
-                  inset
-                >
-                  {label}
-                </ListSubheader>
-              ) : undefined
+              label ? <ViewHeader disableSticky>{label}</ViewHeader> : undefined
             }
           />
         </ViewPanelScroll>
@@ -119,7 +103,7 @@ export default function FilterView({
 /**
  * Returns filtered ontology tree view values where value label includes search value.
  * @param values - Ontology tree view values.
- * @param searchValue - Search string to filters category values.
+ * @param searchValue - Search string that filters category values.
  * @returns array of ontology tree view values filtered by the given search value.
  */
 function filterViewValues(
