@@ -107,7 +107,7 @@ class Validation:
             logger.info(f"Cube Validation Failed with {len(self.errors)} errors")
             for error in self.errors:
                 logger.info(error)
-                return False
+            return False
         return True
 
     def log_validation_details(self):
@@ -276,7 +276,8 @@ class Validation:
         FCN1_non_high_expression_cell_types = FCN1_human_lung_cube.query(
             f"cell_type_ontology_term_id not in {monocyte_cell_type_ids}"
         )
-
+        import pdb
+        pdb.set_trace()
         FCN1_high_expression_avg = (
                 FCN1_high_expression_cell_types.sum()["sum"] / FCN1_high_expression_cell_types.sum()["nnz"]
         )
@@ -388,8 +389,10 @@ class Validation:
             # Todo actually compare once the rankit bug is fixed
             malat1_comparison = expected_malat1_by_cell_type.compare(malat1_expression_sum_by_cell_type)
             ccl5_comparison = expected_ccl5_by_cell_type.compare(ccl5_expression_sum_by_cell_type)
-            print(malat1_comparison)
-            print(ccl5_comparison)
+            import pdb
+            pdb.set_trace()
+            logger.info(malat1_comparison)
+            logger.info(ccl5_comparison)
 
     def validate_dataset_counts(self):
         # todo check # of datasets in dataset folder and number from relational db
