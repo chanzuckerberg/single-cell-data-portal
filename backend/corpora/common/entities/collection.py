@@ -226,14 +226,11 @@ class Collection(Entity):
         to_obj = {}
         for c in cols:
             if type(c) == tuple:
-                # Column needs to be converted to a serializable form
+                # Column needs to be transformed
                 col_name = c[0]
                 converter = c[1]
                 if col_name in from_obj:
                     if from_obj[col_name] is not None:
-                        if type(from_obj[col_name]) == datetime:
-                            print("offset")
-                            print(from_obj[col_name].utcoffset())
                         to_obj[col_name] = converter(from_obj[col_name])
             elif c in from_obj:
                 if from_obj[c] is not None:
