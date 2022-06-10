@@ -6,6 +6,7 @@ import sys
 import time
 from typing import List
 import tiledb
+from pydantic import ValidationError
 
 from backend.wmg.data import extract
 from backend.wmg.data.load_cube import update_s3_resources, upload_artifacts_to_s3
@@ -82,6 +83,8 @@ def load_data_and_create_cube(
     logger.info("Built expression summary cube")
     if validate_cubes:
         is_valid = Validation(corpus_path).validate_cube()
+        if is_valid is False:
+            return
     cell_type_by_tissue = get_cell_types_by_tissue(corpus_path)
     generate_cell_ordering(snapshot_path, cell_type_by_tissue)
     generate_primary_filter_dimensions(snapshot_path, corpus_name, timestamp)
