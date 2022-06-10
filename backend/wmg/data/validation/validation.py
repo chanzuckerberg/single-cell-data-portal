@@ -9,47 +9,10 @@ import tiledb
 
 from backend.wmg.data.snapshot import EXPRESSION_SUMMARY_CUBE_NAME, CELL_COUNTS_CUBE_NAME
 from backend.corpora.common.utils.math_utils import GB
+from backend.wmg.data.validation import fixtures
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
-
-validation_gene_ontologies = {
-    "MALAT1": "ENSG00000251562",
-    "CCL5": "ENSG00000271503",
-    "ACTB": "ENSG00000075624",
-    "XIST": "ENSG00000229807",
-    "FCN1": "ENSG00000085265",
-    "TUBB4B": "ENSG00000188229",
-    "CD68": "ENSG00000129226",
-    "AQP5": "ENSG00000161798",
-}
-
-validation_species_ontologies = {"human": "NCBITaxon:9606", "mouse": "NCBITaxon:10090"}
-
-validation_tissues_with_many_cell_types = {
-    "lung": "UBERON:0002048",
-    "blood": "UBERON:0000178",
-    "lymph node": "UBERON:0000029",
-    "eye": "UBERON:0000970",
-    "renal medulla": "UBERON:0000362",
-    "nasal cavity": "UBERON:0001707",
-}
-validation_cell_types = {
-    "intermediate monocytes": "CL:0002393",
-    "classical monocytes": "CL:0000860",
-    "Non-classical monocyte": "CL:0000875",
-    "ciliated cells": "CL:0000064",
-    "lung ciliated cell": "CL:1000271",
-    "macrophage": "CL:0000235",
-    "alveolar macrophage": "CL:0000583",
-    "goblet cells": "CL:0000160",
-    "lung goblet cell": "CL:1000143",
-    "respiratory goblet cell": "CL:0002370",
-    "secretory cells": "CL:0000151",
-    "mucus secreting cell": "CL:0000319",
-    "serous cell of epithelium of bronchus": "CL:1000331",
-}
-validation_sex_ontologies = {"female": "PATO:0000383", "male": "PATO:0000384", "unknown": "unknown"}
 
 
 class Validation:
@@ -140,9 +103,9 @@ class Validation:
                     f"Expression summary cube missing mandatory species. Only contains {species_count} species"
                 )
             if self.env == "PROD":
-                mandatory_species = validation_species_ontologies.values()
+                mandatory_species = fixtures.validation_species_ontologies.values()
             else:
-                mandatory_species = [validation_species_ontologies["human"]]
+                mandatory_species = [fixtures.validation_species_ontologies["human"]]
             for species in mandatory_species:
                 if species not in species_list:
                     self.errors.append(f"Cube missing species: {species}")
@@ -158,9 +121,9 @@ class Validation:
             if self.MIN_TISSUE_COUNT > tissue_count:
                 self.errors.append(f"Only {tissue_count} tissues included in cube")
             if self.env == "PROD":
-                mandatory_tissues = validation_tissues_with_many_cell_types.values()
+                mandatory_tissues = fixtures.validation_tissues_with_many_cell_types.values()
             else:
-                mandatory_tissues = [validation_tissues_with_many_cell_types["blood"]]
+                mandatory_tissues = [fixtures.validation_tissues_with_many_cell_types["blood"]]
             for tissue in mandatory_tissues:
                 if tissue not in tissue_list:
                     self.errors.append(f"{tissue} missing from tissue list")
@@ -171,14 +134,14 @@ class Validation:
 
     def validate_housekeeping_gene_expression_levels(self, path_to_cell_count_cube):
         with tiledb.open(path_to_cell_count_cube, "r") as cell_count_cube:
-            human_ontology_id = validation_species_ontologies["human"]
+            human_ontology_id = fixtures.validation_species_ontologies["human"]
             cell_count_human = cell_count_cube.df[:, human_ontology_id:human_ontology_id].n_cells.sum()
             with tiledb.open(self.expression_summary_path) as cube:
-                MALAT1_ont_id = validation_gene_ontologies["MALAT1"]
+                MALAT1_ont_id = fixtures.validation_gene_ontologies["MALAT1"]
                 MALAT1_human_expression_cube = cube.df[
                                                MALAT1_ont_id:MALAT1_ont_id, :, human_ontology_id:human_ontology_id
                                                ]
-                ACTB_ont_id = validation_gene_ontologies["ACTB"]
+                ACTB_ont_id = fixtures.validation_gene_ontologies["ACTB"]
                 ACTB_human_expression_cube = cube.df[ACTB_ont_id:ACTB_ont_id, :, human_ontology_id:human_ontology_id]
                 MALAT1_cell_count = MALAT1_human_expression_cube.nnz.sum()
                 ACTB_cell_count = ACTB_human_expression_cube.nnz.sum()
@@ -203,10 +166,10 @@ class Validation:
 
     def validate_sex_specific_marker_gene(self):
         with tiledb.open(self.expression_summary_path) as cube:
-            human_ontology_id = validation_species_ontologies["human"]
-            sex_marker_gene_ontology_id = validation_gene_ontologies["XIST"]
-            female_ontology_id = validation_sex_ontologies["female"]
-            male_ontology_id = validation_sex_ontologies["male"]
+            human_ontology_id = fixtures.validation_species_ontologies["human"]
+            sex_marker_gene_ontology_id = fixtures.validation_gene_ontologies["XIST"]
+            female_ontology_id = fixtures.validation_sex_ontologies["female"]
+            male_ontology_id = fixtures.validation_sex_ontologies["male"]
             # slice cube by dimensions             gene_ontology      organ (all)          species
             human_XIST_cube = cube.df[
                               sex_marker_gene_ontology_id:sex_marker_gene_ontology_id, :,
@@ -238,32 +201,32 @@ class Validation:
         CD68: macrophages (alveioler)
         AQP5: goblet cells and secreting cells
         """
-        human_ont_id = validation_species_ontologies["human"]
-        lung_ont_id = validation_tissues_with_many_cell_types["lung"]
+        human_ont_id = fixtures.validation_species_ontologies["human"]
+        lung_ont_id = fixtures.validation_tissues_with_many_cell_types["lung"]
 
         # get avg expression value of gene for the celltype. That average should be greater than the avg for all
         # other cell types
         with tiledb.open(self.expression_summary_path) as cube:
-            FCN1_ont_id = validation_gene_ontologies["FCN1"]
+            FCN1_ont_id = fixtures.validation_gene_ontologies["FCN1"]
             FCN1_human_lung_cube = cube.df[FCN1_ont_id:FCN1_ont_id, lung_ont_id:lung_ont_id, human_ont_id:human_ont_id]
             self.validate_FCN1(FCN1_human_lung_cube)
 
-            TUBB4B_ont_id = validation_gene_ontologies["TUBB4B"]
+            TUBB4B_ont_id = fixtures.validation_gene_ontologies["TUBB4B"]
             TUBB4B_human_lung = cube.df[TUBB4B_ont_id:TUBB4B_ont_id, lung_ont_id:lung_ont_id, human_ont_id:human_ont_id]
             self.validate_TUBB4B(TUBB4B_human_lung)
 
-            CD68_ont_id = validation_gene_ontologies["CD68"]
+            CD68_ont_id = fixtures.validation_gene_ontologies["CD68"]
             CD68_human_lung = cube.df[CD68_ont_id:CD68_ont_id, lung_ont_id:lung_ont_id, human_ont_id:human_ont_id]
             self.validate_CD68(CD68_human_lung)
 
-            AQP5_ont_id = validation_gene_ontologies["AQP5"]
+            AQP5_ont_id = fixtures.validation_gene_ontologies["AQP5"]
             AQP5_human_lung = cube.df[AQP5_ont_id:AQP5_ont_id, lung_ont_id:lung_ont_id, human_ont_id:human_ont_id]
             self.validate_AQP5(AQP5_human_lung)
 
     def validate_FCN1(self, FCN1_human_lung_cube):
-        intermediate_monocyte_ontology_id = validation_cell_types["intermediate monocytes"]
-        non_classical_monocyte_ontology_id = validation_cell_types["Non-classical monocyte"]
-        classical_monocyte_ontology_id = validation_cell_types["classical monocytes"]
+        intermediate_monocyte_ontology_id = fixtures.validation_cell_types["intermediate monocytes"]
+        non_classical_monocyte_ontology_id = fixtures.validation_cell_types["Non-classical monocyte"]
+        classical_monocyte_ontology_id = fixtures.validation_cell_types["classical monocytes"]
         monocyte_cell_type_ids = [
             intermediate_monocyte_ontology_id,
             non_classical_monocyte_ontology_id,
@@ -286,8 +249,8 @@ class Validation:
             self.errors.append("FCN1 expression levels are off")
 
     def validate_TUBB4B(self, TUBB4B_human_lung_cube):
-        ciliated_cells_ontology_id = validation_cell_types["ciliated cells"]
-        lung_ciliated_ontology_id = validation_cell_types["lung ciliated cell"]
+        ciliated_cells_ontology_id = fixtures.validation_cell_types["ciliated cells"]
+        lung_ciliated_ontology_id = fixtures.validation_cell_types["lung ciliated cell"]
         ciliated_cell_type_ids = [ciliated_cells_ontology_id, lung_ciliated_ontology_id]
 
         TUBB4B_high_expression_cell_types = TUBB4B_human_lung_cube.query(
@@ -307,8 +270,8 @@ class Validation:
             self.errors.append("TUBB4B expression levels are off")
 
     def validate_CD68(self, CD68_human_lung_cube):
-        macrophage_ontology_id = validation_cell_types["macrophage"]
-        alvelolar_macrophage_ont_id = validation_cell_types["alveolar macrophage"]
+        macrophage_ontology_id = fixtures.validation_cell_types["macrophage"]
+        alvelolar_macrophage_ont_id = fixtures.validation_cell_types["alveolar macrophage"]
         macrophage_cell_type_ids = [macrophage_ontology_id, alvelolar_macrophage_ont_id]
 
         CD68_high_expression_cell_types = CD68_human_lung_cube.query(
@@ -328,14 +291,14 @@ class Validation:
             self.errors.append("TUBB4B expression levels are off")
 
     def validate_AQP5(self, AQP5_human_lung_cube):
-        goblet_cell_ontology_id = validation_cell_types["goblet cells"]
-        lung_goblet_ontology_id = validation_cell_types["lung goblet cell"]
-        respiratory_goblet_ontology_id = validation_cell_types["respiratory goblet cell"]
+        goblet_cell_ontology_id = fixtures.validation_cell_types["goblet cells"]
+        lung_goblet_ontology_id = fixtures.validation_cell_types["lung goblet cell"]
+        respiratory_goblet_ontology_id = fixtures.validation_cell_types["respiratory goblet cell"]
         goblet_cell_type_ids = [goblet_cell_ontology_id, lung_goblet_ontology_id, respiratory_goblet_ontology_id]
 
-        secretory_ontology_id = validation_cell_types["secretory cells"]
-        mucus_secretory_ontology_id = validation_cell_types["mucus secreting cell"]
-        bronchus_serous_ontology_id = validation_cell_types["serous cell of epithelium of bronchus"]
+        secretory_ontology_id = fixtures.validation_cell_types["secretory cells"]
+        mucus_secretory_ontology_id = fixtures.validation_cell_types["mucus secreting cell"]
+        bronchus_serous_ontology_id = fixtures.validation_cell_types["serous cell of epithelium of bronchus"]
         secretory_cell_type_ids = [secretory_ontology_id, mucus_secretory_ontology_id, bronchus_serous_ontology_id]
         AQP5_high_expression_cell_type_ids = goblet_cell_type_ids + secretory_cell_type_ids
         AQP5_high_expression_cell_types = AQP5_human_lung_cube.query(
@@ -354,10 +317,10 @@ class Validation:
             self.errors.append("AQP5 expression levels are off")
 
     def validate_expression_levels_for_particular_gene_dataset(self):
-        human_ont_id = validation_species_ontologies["human"]
-        human_lung_int = validation_tissues_with_many_cell_types["lung"]
-        MALAT1_ont_id = validation_gene_ontologies["MALAT1"]
-        CCL5_ont_id = validation_gene_ontologies["CCL5"]
+        human_ont_id = fixtures.validation_species_ontologies["human"]
+        human_lung_int = fixtures.validation_tissues_with_many_cell_types["lung"]
+        MALAT1_ont_id = fixtures.validation_gene_ontologies["MALAT1"]
+        CCL5_ont_id = fixtures.validation_gene_ontologies["CCL5"]
         with tiledb.open(self.expression_summary_path) as cube:
             MALAT1_human_lung_cube = cube.df[
                                      MALAT1_ont_id:MALAT1_ont_id, human_lung_int:human_lung_int,
