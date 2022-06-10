@@ -27,3 +27,5 @@ export const LoadingIndicatorWrapper = styled.div`
   display: flex;
   align-items: center;
 `;
+
+export const labelFontSize = 14;

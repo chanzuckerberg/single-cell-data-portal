@@ -21,7 +21,7 @@ import { FixedSizeList, ListChildComponentProps } from "react-window";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { noop } from "src/common/constants/utils";
-import { Label } from "../../style";
+import { Label, labelFontSize } from "../../style";
 import { ButtonWrapper, StyledIconButton, StyledMenuItem } from "./style";
 
 const MAX_ITEMS_TO_SHOW = 9.5;
@@ -221,14 +221,14 @@ export default function QuickSelect<
   return (
     <>
       <ButtonWrapper>
-        <Label>{label}</Label>
+        <Label style={{ fontSize: labelFontSize }}>{label}</Label>
         <StyledIconButton
           disabled={isLoading}
           data-test-id={dataTestId}
           ref={ref}
           onClick={handleClick}
           sdsType="primary"
-          sdsSize="small"
+          sdsSize="medium"
         >
           <Icon sdsIcon="plusCircle" sdsSize="s" sdsType="iconButton" />
         </StyledIconButton>
