@@ -8,6 +8,8 @@ A dot plot can reveal gross differences in expression patterns across cell types
 
 Dot plots visualize two values across two dimensions: color and size (Figure 1). The color of the dot approximates average gene expression. Its size represents the percentage of cells within each cell type that expresses the gene.
 
+<Image src={"/doc-site/4-2_figure1.png"} width={442} height={185} />
+
 <p align="center">
   <img src="./files/illustration_legend.png" width="280" height="308" />
   <br />
@@ -19,6 +21,8 @@ The combination of these metrics in a grid of genes by cell types allows to make
 
 Genes that are lowly expressed or expressed in a small percentage of cells are difficult to visually identify in a dot plot. This is particularly important for certain marker genes that are specifically but lowly expressed in their target cell types, for example transcription factors and receptors.
 
+<Image src={"/doc-site/4-2_figure2.png"} width={250} height={250} />
+
 <p align="center">
   <img src="./files/illustration_main_info.png" />
   <br />
@@ -28,6 +32,8 @@ Genes that are lowly expressed or expressed in a small percentage of cells are d
 ### How to make sense of normalized values
 
 The data used to create the averages for the dot plot is quantile normalized and it ranges from 0 to 6 ([see below](#Data-normalization) for details). Roughly, low expression has normalized values lower than 2, medium expression ranges from 2 to 4, and high expression is higher than 4 (Figure 3). These values are used for the dot plot color scheme and are constant and comparable across different dot plots. Additionally, the user has the ability to switch to a relative scale that maps the lowest and highest expression values in a dot plot to the min and max colors, thus providing a wider color range for what's shown in a dot plot.
+
+<Image src={"/doc-site/4-2_figure3.png"} width={250} height={250} />
 
 <p align="center">
   <img
@@ -46,6 +52,8 @@ The examples in Figure 3 have a relatively constant percentage of cells expressi
 Cell types in the dot plot (rows) are ordered by default with an [algorithm](#Cell-type-ordering) that preserves relationships in the Cell Type ontology (CL). Thus cell types from the same lineage are roughly shown consecutively.
 
 All cell types from a given tissue are shown as originally annotated in the dataset-of-origin. This leads to scenarios where parent and children cell types may be present in the dot plot, but they are independent observations and the former is not a superset of the latter (Figure 4).
+
+<Image src={"/doc-site/4-2_figure4.png"} width={250} height={250} />
 
 <p align="center">
   <img
@@ -82,6 +90,8 @@ An in-depth description of this method can be found [here](./cell-type-ontology-
 
 ## Processing of expression data
 
+<Image src={"/doc-site/4-2_figure5.png"} width={250} height={250} />
+
 <p align="center">
   <img src="./files/illustration_data_processing.png" />
   <b>Figure 5. </b> Overview of processing steps from raw read counts to gene expression
@@ -109,6 +119,9 @@ For each gene in our reference files, length was calculated by creating non-over
 Read counts are normalized using a modification of the rankit method which is a variation of quantile normalization used for gene expression data (Bolstad BM et al., Evans C et al., The GTEx Consortium.).
 
 For a given cell in a count matrix, the read counts across genes are transformed to quantiles, then those quantiles are mapped to the corresponding values of a normal distribution with mean = 3 and variance = 1 (Figure 6). Normalized matrices from multiple datasets of the same tissue are concatenated along the gene axis.
+
+<Image src={"/doc-site/4-2_figure6.png"} width={250} height={250} />
+<Image src={"/doc-site/4-2_figure7.png"} width={250} height={250} />
 
 <p align="center">
   <img src="./files/distribution_read_counts.png" width="600" height="246" />
