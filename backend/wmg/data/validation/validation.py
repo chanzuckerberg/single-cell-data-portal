@@ -82,28 +82,26 @@ class Validation:
         self.validate_cube_size()
 
         # check species
-        self.validate_cube_species(self.expression_summary_path)
+        self.validate_cube_species()
         # todo check size of human v mouse
 
         # check datasets
-        self.validate_dataset_counts(self.expression_summary_path)
+        self.validate_dataset_counts()
 
         # todo list size of tissues?
-        self.validate_tissues_in_cube(self.expression_summary_path)
+        self.validate_tissues_in_cube()
 
         # check MALAT1 and ACTB
-        self.validate_housekeeping_gene_expression_levels(
-            f"{self.snapshot}/{CELL_COUNTS_CUBE_NAME}", self.expression_summary_path
-        )
+        self.validate_housekeeping_gene_expression_levels(f"{self.snapshot}/{CELL_COUNTS_CUBE_NAME}")
 
         # check XIST appears in women but not men
-        self.validate_sex_specific_marker_gene(self.expression_summary_path)
+        self.validate_sex_specific_marker_gene()
         # check human lung cells of particular types have marker genes
-        self.validate_lung_cell_marker_genes(self.expression_summary_path)
+        self.validate_lung_cell_marker_genes()
         # check expression levels are correct for lung map dataset uuid 3de0ad6d-4378-4f62-b37b-ec0b75a50d94
         # genes ["MALAT1", "CCL5"]
         if self.env == "PROD":
-            self.validate_expression_levels_for_particular_gene_dataset(self.expression_summary_path)
+            self.validate_expression_levels_for_particular_gene_dataset()
 
         if len(self.errors) > 0:
             logger.info(f"Cube Validation Failed with {len(self.errors)} errors")
