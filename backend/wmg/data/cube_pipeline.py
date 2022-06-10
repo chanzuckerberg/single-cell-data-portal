@@ -42,6 +42,7 @@ def load(dataset_directory: List, corpus_path: str, validate: bool = False):
             gc.collect()
 
         logger.info("all loaded, now consolidating.")
+
         for arr_name in [f"{corpus_path}/{name}" for name in ["obs", "var", INTEGRATED_ARRAY_NAME]]:
             tiledb.consolidate(arr_name)
             tiledb.vacuum(arr_name)
