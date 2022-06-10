@@ -1,4 +1,5 @@
 import React from "react";
+import { CellCount } from "src/components/common/Grid/components/CountCell/style";
 
 interface Props {
   cellCount: number;
@@ -6,5 +7,5 @@ interface Props {
 
 export default function CountCell({ cellCount }: Props): JSX.Element {
   const count = cellCount ? cellCount.toLocaleString() : "";
-  return <div>{count}</div>;
+  return <CellCount>{count}</CellCount>;
 }
