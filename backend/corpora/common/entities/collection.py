@@ -160,6 +160,9 @@ class Collection(Entity):
         def enum_serializer(e: enum.Enum):
             return e.name
 
+        def array_packager(o: object):
+            return o if type(o) == list else [o]
+
         collection_columns = [
             "id",
             "name",
@@ -192,7 +195,7 @@ class Collection(Entity):
             "tissue",
             "assay",
             "disease",
-            "organism",
+            ("organism", array_packager),
             "tombstone",
         ]
 
