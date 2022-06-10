@@ -276,8 +276,6 @@ class Validation:
         FCN1_non_high_expression_cell_types = FCN1_human_lung_cube.query(
             f"cell_type_ontology_term_id not in {monocyte_cell_type_ids}"
         )
-        import pdb
-        pdb.set_trace()
         FCN1_high_expression_avg = (
                 FCN1_high_expression_cell_types.sum()["sum"] / FCN1_high_expression_cell_types.sum()["nnz"]
         )
@@ -389,8 +387,6 @@ class Validation:
             # Todo actually compare once the rankit bug is fixed
             malat1_comparison = expected_malat1_by_cell_type.compare(malat1_expression_sum_by_cell_type)
             ccl5_comparison = expected_ccl5_by_cell_type.compare(ccl5_expression_sum_by_cell_type)
-            import pdb
-            pdb.set_trace()
             logger.info(malat1_comparison)
             logger.info(ccl5_comparison)
 
