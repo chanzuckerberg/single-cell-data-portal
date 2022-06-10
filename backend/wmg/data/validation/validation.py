@@ -348,8 +348,8 @@ class Validation:
             expected_ccl5_by_cell_type = expected_ccl5_by_cell_type[expected_ccl5_by_cell_type != 0]
 
             # Todo actually compare once the rankit bug is fixed
-            malat1_comparison = expected_malat1_by_cell_type.compare(malat1_expression_sum_by_cell_type)
-            ccl5_comparison = expected_ccl5_by_cell_type.compare(ccl5_expression_sum_by_cell_type)
+            malat1_comparison = expected_malat1_by_cell_type.compare(malat1_expression_sum_by_cell_type, keep_equal=True)
+            ccl5_comparison = expected_ccl5_by_cell_type.compare(ccl5_expression_sum_by_cell_type, keep_equal=True)
             logger.info(malat1_comparison)
             logger.info(ccl5_comparison)
 
