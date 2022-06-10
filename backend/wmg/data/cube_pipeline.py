@@ -6,7 +6,6 @@ import sys
 import time
 from typing import List
 import tiledb
-from pydantic import ValidationError
 
 from backend.wmg.data import extract
 from backend.wmg.data.load_cube import update_s3_resources, upload_artifacts_to_s3
