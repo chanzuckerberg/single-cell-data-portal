@@ -216,7 +216,7 @@ class Collection(Entity):
         collection_objects = [dict(r) for r in session.query(cls.table).filter(*filters).all()]
 
         # Select the collection_columns
-        collections = [cls._copy_columns(collection_columns, r) for r in collection_objects]
+        collections = [cls._copy_and_transform_columns(collection_columns, r) for r in collection_objects]
 
         # Select the link_columns and dataset_columns
         for relation_name, rel_cols in (("links", link_columns), ("datasets", dataset_columns)):
@@ -224,7 +224,7 @@ class Collection(Entity):
                 if relation_name in collection:
                     updated_relations = []
                     for rel in collection[relation_name]:
-                        updated_relations.append(cls._copy_columns(rel_cols, rel))
+                        updated_relations.append(cls._copy_and_transform_columns(rel_cols, rel))
                     collection[relation_name] = updated_relations
 
         return collections

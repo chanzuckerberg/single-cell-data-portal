@@ -147,6 +147,11 @@ class TestGetCollections(BaseAuthAPITest):
 
         self.assertGreater(len(res_auth.json["collections"]), len(res_no_auth.json["collections"]))
 
+    def test__get_collections_no_auth_private__(self):
+        params = {"visibility": "PRIVATE"}
+        res_no_auth = self.app.get("/curation/v1/collections", query_string=params)
+        print(res_no_auth.status_code)
+
     def test__get_only_public_collections_with_auth__OK(self):
         params = {"visibility": "PUBLIC"}
         res = self.app.get("/curation/v1/collections", query_string=params, headers=self.get_auth_headers())
