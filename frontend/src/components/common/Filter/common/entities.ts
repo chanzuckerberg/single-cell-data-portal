@@ -351,104 +351,282 @@ export const DEVELOPMENT_STAGE_ONTOLOGY_VIEW: OntologyView = {
 export const TISSUE_ONTOLOGY_VIEW: OntologyView = {
   [ONTOLOGY_VIEW_KEY.UBERON]: [
     {
-      label: "Blood",
+      label: "adipose tissue",
+      ontology_term_id: "UBERON:0001013",
+    },
+    {
+      label: "adrenal gland",
+      ontology_term_id: "UBERON:0002369",
+    },
+    {
+      label: "bladder organ",
+      ontology_term_id: "UBERON:0018707",
+    },
+    {
+      label: "blood",
       ontology_term_id: "UBERON:0000178",
     },
     {
-      label: "Blood Vascular",
+      label: "blood vascular",
       ontology_term_id: "UBERON:0004537",
     },
     {
-      label: "Bone Marrow",
+      label: "bone marrow",
       ontology_term_id: "UBERON:0002371",
     },
     {
-      label: "Brain",
+      label: "brain",
       ontology_term_id: "UBERON:0000955",
     },
     {
-      label: "Eye",
+      label: "breast",
+      ontology_term_id: "UBERON:0000310",
+    },
+    {
+      label: "bronchial epithelial cell (cell culture)",
+      ontology_term_id: "CL_0002328 (cell culture)",
+    },
+    {
+      label: "central nervous system",
+      ontology_term_id: "UBERON:0001017",
+    },
+    {
+      label: "circulatory system",
+      ontology_term_id: "UBERON:0001009",
+    },
+    {
+      label: "chorionic villus",
+      ontology_term_id: "UBERON:0007106",
+    },
+    {
+      label: "colon",
+      ontology_term_id: "UBERON:0001155",
+    },
+    {
+      label: "cultured cell (cell culture)",
+      ontology_term_id: "CL_0000010 (cell culture)",
+    },
+    {
+      label: "digestive system",
+      ontology_term_id: "UBERON:0001007",
+    },
+    {
+      label: "embryonic stem cell (cell culture)",
+      ontology_term_id: "CL_0002322 (cell culture)",
+    },
+    {
+      label: "endocrine gland",
+      ontology_term_id: "UBERON:0002368",
+    },
+    {
+      label: "endothelial cell (cell culture)",
+      ontology_term_id: "CL_0000115 (cell culture)",
+    },
+    {
+      label: "epithelial cell of alveolus of lung (cell culture)",
+      ontology_term_id: "CL_0010003 (cell culture)",
+    },
+    {
+      label: "epithelial cell of lung (cell culture)",
+      ontology_term_id: "CL_0000082 (cell culture)",
+    },
+    {
+      label: "esophagus",
+      ontology_term_id: "UBERON:0001043",
+    },
+    {
+      label: "excretory system",
+      ontology_term_id: "UBERON:0001008",
+    },
+    {
+      label: "exocrine gland",
+      ontology_term_id: "UBERON:0002365",
+    },
+    {
+      label: "eye",
       ontology_term_id: "UBERON:0000970",
     },
     {
-      label: "Fallopian Tube",
+      label: "fallopian tube",
       ontology_term_id: "UBERON:0003889",
     },
     {
-      label: "Heart",
+      label: "gall bladder",
+      ontology_term_id: "UBERON:0002110 ",
+    },
+    {
+      label: "heart",
       ontology_term_id: "UBERON:0000948",
     },
     {
-      label: "Kidney",
+      label: "immune system",
+      ontology_term_id: "UBERON:0002405",
+    },
+    {
+      label: "intestine",
+      ontology_term_id: "UBERON:0000160",
+    },
+    {
+      label: "kidney",
       ontology_term_id: "UBERON:0002113",
     },
     {
-      label: "Knee",
+      label: "knee",
       ontology_term_id: "UBERON:0001465",
     },
     {
-      label: "Large Intestine",
+      label: "lamina propria",
+      ontology_term_id: "UBERON:0000030",
+    },
+    {
+      label: "large intestine",
       ontology_term_id: "UBERON:0000059",
     },
     {
-      label: "Liver",
+      label: "liver",
       ontology_term_id: "UBERON:0002107",
     },
     {
-      label: "Lung",
+      label: "lung",
       ontology_term_id: "UBERON:0002048",
     },
     {
-      label: "Lymph Node",
+      label: "lymph node",
       ontology_term_id: "UBERON:0000029",
     },
     {
-      label: "Lymph Vasculature",
+      label: "lymph vasculature",
       ontology_term_id: "UBERON:0004536",
     },
     {
-      label: "Ovary",
+      label: "mammary gland epithelial cell (cell culture)",
+      ontology_term_id: "CL_0002327 (cell culture)",
+    },
+    {
+      label: "musculature",
+      ontology_term_id: "UBERON:0001015",
+    },
+    {
+      label: "nose",
+      ontology_term_id: "UBERON:0000004",
+    },
+    {
+      label: "omentum",
+      ontology_term_id: "UBERON:0003688 ",
+    },
+    {
+      label: "ovary",
       ontology_term_id: "UBERON:0000992",
     },
     {
-      label: "Pancreas",
+      label: "pancreas",
       ontology_term_id: "UBERON:0001264",
     },
     {
-      label: "Peripheral Nervous System",
+      label: "peripheral nervous system",
       ontology_term_id: "UBERON:0000010",
     },
     {
-      label: "Prostate",
+      label: "placenta",
+      ontology_term_id: "UBERON:0001987",
+    },
+    {
+      label: "pleura",
+      ontology_term_id: "UBERON:0000977",
+    },
+
+    {
+      label: "prostate",
       ontology_term_id: "UBERON:0002367",
     },
     {
-      label: "Skin",
+      label: "renal system",
+      ontology_term_id: "UBERON:0001008",
+    },
+    {
+      label: "reproductive system",
+      ontology_term_id: "UBERON:0000990",
+    },
+    {
+      label: "respiratory system",
+      ontology_term_id: "UBERON:0001004",
+    },
+    {
+      label: "rib",
+      ontology_term_id: "UBERON:0002228",
+    },
+    {
+      label: "saliva",
+      ontology_term_id: "UBERON:0001836",
+    },
+    {
+      label: "sensory system",
+      ontology_term_id: "UBERON:0001032",
+    },
+
+    {
+      label: "skeletal system",
+      ontology_term_id: "UBERON:0001434",
+    },
+    {
+      label: "skin",
       ontology_term_id: "UBERON:0002097",
     },
     {
-      label: "Small Intestine",
+      label: "skull",
+      ontology_term_id: "UBERON:0003129",
+    },
+    {
+      label: "small intestine",
       ontology_term_id: "UBERON:0002108",
     },
     {
-      label: "Spleen",
+      label: "spinal cord",
+      ontology_term_id: "UBERON:0002240",
+    },
+    {
+      label: "spleen",
       ontology_term_id: "UBERON:0002106",
     },
     {
-      label: "Thymus",
+      label: "stomach",
+      ontology_term_id: "UBERON:0000945",
+    },
+    {
+      label: "testis",
+      ontology_term_id: "UBERON:0000473",
+    },
+    {
+      label: "tongue",
+      ontology_term_id: " UBERON:0001723",
+    },
+    {
+      label: "thymus",
       ontology_term_id: "UBERON:0002370",
     },
     {
-      label: "Ureter",
+      label: "ureter",
       ontology_term_id: "UBERON:0000056",
     },
     {
-      label: "Urinary Bladder",
+      label: "urethra",
+      ontology_term_id: "UBERON:0000057",
+    },
+    {
+      label: "urinary bladder",
       ontology_term_id: "UBERON:0001255",
     },
     {
-      label: "Uterus",
+      label: "uterus",
       ontology_term_id: "UBERON:0000995",
+    },
+    {
+      label: "uterus (organoid)",
+      ontology_term_id: "UBERON_0000995 (organoid)",
+    },
+    {
+      label: "vasculature",
+      ontology_term_id: "UBERON:0002049",
     },
   ],
 };
