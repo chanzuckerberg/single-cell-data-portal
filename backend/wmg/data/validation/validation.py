@@ -139,8 +139,8 @@ class Validation:
             with tiledb.open(self.expression_summary_path) as cube:
                 MALAT1_ont_id = fixtures.validation_gene_ontologies["MALAT1"]
                 MALAT1_human_expression_cube = cube.df[
-                                               MALAT1_ont_id:MALAT1_ont_id, :, human_ontology_id:human_ontology_id
-                                               ]
+                    MALAT1_ont_id:MALAT1_ont_id, :, human_ontology_id:human_ontology_id
+                ]
                 ACTB_ont_id = fixtures.validation_gene_ontologies["ACTB"]
                 ACTB_human_expression_cube = cube.df[ACTB_ont_id:ACTB_ont_id, :, human_ontology_id:human_ontology_id]
                 MALAT1_cell_count = MALAT1_human_expression_cube.nnz.sum()
@@ -173,17 +173,18 @@ class Validation:
             male_ontology_id = fixtures.validation_sex_ontologies["male"]
             # slice cube by dimensions             gene_ontology      organ (all)          species
             human_XIST_cube = cube.df[
-                              sex_marker_gene_ontology_id:sex_marker_gene_ontology_id, :,
-                              human_ontology_id:human_ontology_id
-                              ]
+                sex_marker_gene_ontology_id:sex_marker_gene_ontology_id, :, human_ontology_id:human_ontology_id
+            ]
 
             female_xist_cube = human_XIST_cube.query(f"sex_ontology_term_id == '{female_ontology_id}'")
             male_xist_cube = human_XIST_cube.query(f"sex_ontology_term_id == '{male_ontology_id}'")
 
             # should be expressed in most female cells and no male cells
             if male_xist_cube.nnz.sum() > female_xist_cube.nnz.sum():
-                self.errors.append("The number of male cells expressing XIST is higher than the number of female "
-                                   "cells expressing XIST")
+                self.errors.append(
+                    "The number of male cells expressing XIST is higher than the number of female "
+                    "cells expressing XIST"
+                )
             # should be expressed in females at a much higher rate
             female_avg_xist_expression = female_xist_cube["sum"].sum() / female_xist_cube["nnz"].sum()
             male_avg_xist_expression = male_xist_cube["sum"].sum() / male_xist_cube["nnz"].sum()
@@ -241,10 +242,10 @@ class Validation:
             f"cell_type_ontology_term_id not in {monocyte_cell_type_ids}"
         )
         FCN1_high_expression_avg = (
-                FCN1_high_expression_cell_types.sum()["sum"] / FCN1_high_expression_cell_types.sum()["nnz"]
+            FCN1_high_expression_cell_types.sum()["sum"] / FCN1_high_expression_cell_types.sum()["nnz"]
         )
         FCN1_non_high_expression_avg = (
-                FCN1_non_high_expression_cell_types.sum()["sum"] / FCN1_non_high_expression_cell_types.sum()["nnz"]
+            FCN1_non_high_expression_cell_types.sum()["sum"] / FCN1_non_high_expression_cell_types.sum()["nnz"]
         )
         if FCN1_non_high_expression_avg > FCN1_high_expression_avg:
             self.errors.append("FCN1 expression levels are off")
@@ -262,10 +263,10 @@ class Validation:
         )
 
         TUBB4B_high_expression_avg = (
-                TUBB4B_high_expression_cell_types.sum()["sum"] / TUBB4B_high_expression_cell_types.sum()["nnz"]
+            TUBB4B_high_expression_cell_types.sum()["sum"] / TUBB4B_high_expression_cell_types.sum()["nnz"]
         )
         TUBB4B_non_high_expression_avg = (
-                TUBB4B_non_high_expression_cell_types.sum()["sum"] / TUBB4B_non_high_expression_cell_types.sum()["nnz"]
+            TUBB4B_non_high_expression_cell_types.sum()["sum"] / TUBB4B_non_high_expression_cell_types.sum()["nnz"]
         )
         if TUBB4B_non_high_expression_avg > TUBB4B_high_expression_avg:
             self.errors.append("TUBB4B expression levels are off")
@@ -283,10 +284,10 @@ class Validation:
         )
 
         CD68_high_expression_avg = (
-                CD68_high_expression_cell_types.sum()["sum"] / CD68_high_expression_cell_types.sum()["nnz"]
+            CD68_high_expression_cell_types.sum()["sum"] / CD68_high_expression_cell_types.sum()["nnz"]
         )
         CD68_non_high_expression_avg = (
-                CD68_non_high_expression_cell_types.sum()["sum"] / CD68_non_high_expression_cell_types.sum()["nnz"]
+            CD68_non_high_expression_cell_types.sum()["sum"] / CD68_non_high_expression_cell_types.sum()["nnz"]
         )
         if CD68_non_high_expression_avg > CD68_high_expression_avg:
             self.errors.append("TUBB4B expression levels are off")
@@ -309,10 +310,10 @@ class Validation:
             f"cell_type_ontology_term_id not in {AQP5_high_expression_cell_type_ids}"
         )
         AQP5_high_expression_avg = (
-                AQP5_high_expression_cell_types.sum()["sum"] / AQP5_high_expression_cell_types.sum()["nnz"]
+            AQP5_high_expression_cell_types.sum()["sum"] / AQP5_high_expression_cell_types.sum()["nnz"]
         )
         AQP5_non_high_expression_avg = (
-                AQP5_non_high_expression_cell_types.sum()["sum"] / AQP5_non_high_expression_cell_types.sum()["nnz"]
+            AQP5_non_high_expression_cell_types.sum()["sum"] / AQP5_non_high_expression_cell_types.sum()["nnz"]
         )
         if AQP5_non_high_expression_avg > AQP5_high_expression_avg:
             self.errors.append("AQP5 expression levels are off")
@@ -324,12 +325,11 @@ class Validation:
         CCL5_ont_id = fixtures.validation_gene_ontologies["CCL5"]
         with tiledb.open(self.expression_summary_path) as cube:
             MALAT1_human_lung_cube = cube.df[
-                                     MALAT1_ont_id:MALAT1_ont_id, human_lung_int:human_lung_int,
-                                     human_ont_id:human_ont_id
-                                     ]
+                MALAT1_ont_id:MALAT1_ont_id, human_lung_int:human_lung_int, human_ont_id:human_ont_id
+            ]
             CCL5_human_lung_cube = cube.df[
-                                   CCL5_ont_id:CCL5_ont_id, human_lung_int:human_lung_int, human_ont_id:human_ont_id
-                                   ]
+                CCL5_ont_id:CCL5_ont_id, human_lung_int:human_lung_int, human_ont_id:human_ont_id
+            ]
 
             MALAT1_expression = MALAT1_human_lung_cube.query(f"dataset_id == '{self.validation_dataset_uuid}'")
             CCL5_expression = CCL5_human_lung_cube.query(f"dataset_id == '{self.validation_dataset_uuid}'")
@@ -349,7 +349,9 @@ class Validation:
             expected_ccl5_by_cell_type = expected_ccl5_by_cell_type[expected_ccl5_by_cell_type != 0]
 
             # Todo actually compare once the rankit bug is fixed
-            malat1_comparison = expected_malat1_by_cell_type.compare(malat1_expression_sum_by_cell_type, keep_equal=True)
+            malat1_comparison = expected_malat1_by_cell_type.compare(
+                malat1_expression_sum_by_cell_type, keep_equal=True
+            )
             ccl5_comparison = expected_ccl5_by_cell_type.compare(ccl5_expression_sum_by_cell_type, keep_equal=True)
             logger.info(malat1_comparison)
             logger.info(ccl5_comparison)
