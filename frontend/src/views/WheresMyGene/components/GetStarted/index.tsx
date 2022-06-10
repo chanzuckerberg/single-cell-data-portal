@@ -14,6 +14,7 @@ export default function GetStarted(): JSX.Element {
             cellxgene Data Portal
           </a>
         </Link>
+        .
       </Details>
     </>
   );
