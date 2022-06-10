@@ -111,7 +111,7 @@ class Validation:
         return True
 
     def log_validation_details(self):
-        logger.info(f"Starting cube validation for snapshot {self.snapshot}")
+        logger.info(f"Starting cube validation for snapshot {self.corpus_path}")
         logger.info(f"env is {self.env}")
         logger.info(f"MIN_CUBE_SIZE_GB is {self.MIN_CUBE_SIZE_GB}")
         logger.info(f"MIN_TISSUE_COUNT is {self.MIN_TISSUE_COUNT}")
