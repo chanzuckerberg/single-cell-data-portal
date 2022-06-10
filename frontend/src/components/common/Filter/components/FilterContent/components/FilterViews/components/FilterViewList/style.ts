@@ -1,7 +1,12 @@
+import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import { ListItemText } from "@material-ui/core";
 import { List, ListItem } from "czifui";
 import { GRAY } from "src/components/common/theme";
+
+interface Props {
+  selected: boolean;
+}
 
 export const ViewSublist = styled(List)`
   margin-left: 22px;
@@ -50,7 +55,26 @@ export const ViewListItem = styled(StyledListItem)`
   }
 `;
 
-export const ViewListItemText = styled(ListItemText)`
+export const ViewListItemText = styled(ListItemText)<Props>`
   display: flex;
   margin: 0;
+
+  /* List item text - "primary" */
+  span:first-of-type {
+    flex: 1;
+    ${({ selected }) => {
+      return (
+        selected &&
+        css`
+          font-weight: 500;
+        `
+      );
+    }};
+    margin-right: 8px;
+  }
+
+  /* List item count - "secondary" */
+  span:last-of-type {
+    color: ${GRAY.A};
+  }
 `;

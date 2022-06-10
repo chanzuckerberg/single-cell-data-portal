@@ -15,6 +15,10 @@ interface ScrollProps {
   scrollable: boolean;
 }
 
+export const CategoryViewPanel = styled.div`
+  width: 360px;
+`;
+
 export const ViewPanel = styled.div<PanelProps>`
   min-width: ${(props) =>
     `${props.panelWidth}px`}; /* required; makes allowances for list item selected state font weight changes by maintaining panel min width */
@@ -46,14 +50,15 @@ export const ViewDivider = styled(Divider)`
 export const ViewHeader = styled(ListSubheader)`
   /* TODO(cc) remove && after upgrading SDS version to have this commit https://github.com/chanzuckerberg/sci-components/pull/201 */
   && {
+    background-color: #ffffff;
     color: ${GRAY.A};
     cursor: default;
     font-size: 11px;
     font-weight: 500;
     letter-spacing: 0.03em;
     line-height: 15px;
-    margin-bottom: 8px;
-    padding-left: 8px;
+    margin-bottom: 0;
+    padding: 0 0 8px 8px;
     text-transform: uppercase;
   }
 `;

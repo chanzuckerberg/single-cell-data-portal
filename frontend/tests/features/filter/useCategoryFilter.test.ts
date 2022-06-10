@@ -4,10 +4,10 @@
 
 // App dependencies
 import { buildNextOntologyCategoryFilters } from "src/common/hooks/useCategoryFilter";
+import { CATEGORY_FILTER_CONFIGS_BY_ID } from "src/components/common/Filter/common/constants";
 import {
-  CATEGORY_CONFIGS_BY_CATEGORY_KEY,
-  CATEGORY_KEY,
-  OntologyCategoryConfig,
+  CATEGORY_FILTER_ID,
+  CuratedOntologyCategoryFilterConfig,
 } from "src/components/common/Filter/common/entities";
 
 describe("useCategoryFilter", () => {
@@ -58,20 +58,21 @@ describe("useCategoryFilter", () => {
         const idToDeselect = ONTOLOGY_ID_HUMAN_CARNEGIE_CS1;
         const filters = [
           {
-            id: CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS,
+            id: CATEGORY_FILTER_ID.DEVELOPMENT_STAGE,
             value: [idToDeselect], // Add ID to de-select as already selected
           },
         ];
+
         const nextFilters = buildNextOntologyCategoryFilters(
-          CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS,
+          CATEGORY_FILTER_ID.DEVELOPMENT_STAGE,
           idToDeselect,
           filters,
           CATEGORY_VALUE_KEYS,
           (
-            CATEGORY_CONFIGS_BY_CATEGORY_KEY[
-              CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS
-            ] as OntologyCategoryConfig
-          ).ontology
+            CATEGORY_FILTER_CONFIGS_BY_ID[
+              CATEGORY_FILTER_ID.DEVELOPMENT_STAGE
+            ] as CuratedOntologyCategoryFilterConfig
+          ).mask
         );
         expect(nextFilters.length).toEqual(0);
       });
@@ -87,7 +88,7 @@ describe("useCategoryFilter", () => {
         const idToDeselect = ONTOLOGY_ID_HUMAN_CARNEGIE_CS1;
         const filters = [
           {
-            id: CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS,
+            id: CATEGORY_FILTER_ID.DEVELOPMENT_STAGE,
             value: [
               ONTOLOGY_ID_HUMAN_EMBRYONIC_HUMAN,
               idToDeselect,
@@ -96,15 +97,15 @@ describe("useCategoryFilter", () => {
           },
         ];
         const nextFilters = buildNextOntologyCategoryFilters(
-          CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS,
+          CATEGORY_FILTER_ID.DEVELOPMENT_STAGE,
           idToDeselect,
           filters,
           CATEGORY_VALUE_KEYS,
           (
-            CATEGORY_CONFIGS_BY_CATEGORY_KEY[
-              CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS
-            ] as OntologyCategoryConfig
-          ).ontology
+            CATEGORY_FILTER_CONFIGS_BY_ID[
+              CATEGORY_FILTER_ID.DEVELOPMENT_STAGE
+            ] as CuratedOntologyCategoryFilterConfig
+          ).mask
         );
         expect(nextFilters.length).toEqual(1);
         expect(
@@ -125,7 +126,7 @@ describe("useCategoryFilter", () => {
         const idToDeselect = ONTOLOGY_ID_HUMAN_EMBRYONIC_HUMAN;
         const filters = [
           {
-            id: CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS,
+            id: CATEGORY_FILTER_ID.DEVELOPMENT_STAGE,
             value: [
               idToDeselect,
               ONTOLOGY_ID_HUMAN_CARNEGIE_CS1,
@@ -134,15 +135,15 @@ describe("useCategoryFilter", () => {
           },
         ];
         const nextFilters = buildNextOntologyCategoryFilters(
-          CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS,
+          CATEGORY_FILTER_ID.DEVELOPMENT_STAGE,
           idToDeselect,
           filters,
           CATEGORY_VALUE_KEYS,
           (
-            CATEGORY_CONFIGS_BY_CATEGORY_KEY[
-              CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS
-            ] as OntologyCategoryConfig
-          ).ontology
+            CATEGORY_FILTER_CONFIGS_BY_ID[
+              CATEGORY_FILTER_ID.DEVELOPMENT_STAGE
+            ] as CuratedOntologyCategoryFilterConfig
+          ).mask
         );
         expect(nextFilters.length).toEqual(0);
       });
@@ -160,7 +161,7 @@ describe("useCategoryFilter", () => {
         const idToDeselect = ONTOLOGY_ID_HUMAN_EMBRYONIC_HUMAN;
         const filters = [
           {
-            id: CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS,
+            id: CATEGORY_FILTER_ID.DEVELOPMENT_STAGE,
             value: [
               ONTOLOGY_ID_HUMAN_PRENATAL,
               idToDeselect,
@@ -171,15 +172,15 @@ describe("useCategoryFilter", () => {
           },
         ];
         const nextFilters = buildNextOntologyCategoryFilters(
-          CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS,
+          CATEGORY_FILTER_ID.DEVELOPMENT_STAGE,
           idToDeselect,
           filters,
           CATEGORY_VALUE_KEYS,
           (
-            CATEGORY_CONFIGS_BY_CATEGORY_KEY[
-              CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS
-            ] as OntologyCategoryConfig
-          ).ontology
+            CATEGORY_FILTER_CONFIGS_BY_ID[
+              CATEGORY_FILTER_ID.DEVELOPMENT_STAGE
+            ] as CuratedOntologyCategoryFilterConfig
+          ).mask
         );
         expect(nextFilters.length).toEqual(1);
         expect(nextFilters.includes(ONTOLOGY_ID_HUMAN_FETAL)).toBeTruthy();
@@ -193,20 +194,20 @@ describe("useCategoryFilter", () => {
        * - Expected selected set: Carnegie (CS1) HsapDv:0000003
        */
       it(`selects leaf ${ONTOLOGY_ID_HUMAN_CARNEGIE_CS1}, no siblings currently selected`, () => {
-        const idToSelected = ONTOLOGY_ID_HUMAN_CARNEGIE_CS1;
+        const idToSelect = ONTOLOGY_ID_HUMAN_CARNEGIE_CS1;
         const nextFilters = buildNextOntologyCategoryFilters(
-          CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS,
-          idToSelected,
+          CATEGORY_FILTER_ID.DEVELOPMENT_STAGE,
+          idToSelect,
           [], // No filters selected
           CATEGORY_VALUE_KEYS,
           (
-            CATEGORY_CONFIGS_BY_CATEGORY_KEY[
-              CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS
-            ] as OntologyCategoryConfig
-          ).ontology
+            CATEGORY_FILTER_CONFIGS_BY_ID[
+              CATEGORY_FILTER_ID.DEVELOPMENT_STAGE
+            ] as CuratedOntologyCategoryFilterConfig
+          ).mask
         );
         expect(nextFilters.length).toEqual(1);
-        expect(nextFilters[0]).toEqual(idToSelected);
+        expect(nextFilters[0]).toEqual(idToSelect);
       });
 
       /**
@@ -220,20 +221,20 @@ describe("useCategoryFilter", () => {
        */
       it(`selects leaf ${ONTOLOGY_ID_HUMAN_INFANT}, some siblings currently selected`, () => {
         const nextFilters = buildNextOntologyCategoryFilters(
-          CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS,
+          CATEGORY_FILTER_ID.DEVELOPMENT_STAGE,
           ONTOLOGY_ID_HUMAN_INFANT,
           [
             {
-              id: CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS,
+              id: CATEGORY_FILTER_ID.DEVELOPMENT_STAGE,
               value: [ONTOLOGY_ID_HUMAN_NEWBORN],
             },
           ],
           CATEGORY_VALUE_KEYS,
           (
-            CATEGORY_CONFIGS_BY_CATEGORY_KEY[
-              CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS
-            ] as OntologyCategoryConfig
-          ).ontology
+            CATEGORY_FILTER_CONFIGS_BY_ID[
+              CATEGORY_FILTER_ID.DEVELOPMENT_STAGE
+            ] as CuratedOntologyCategoryFilterConfig
+          ).mask
         );
         expect(nextFilters.length).toEqual(2);
         expect(nextFilters.includes(ONTOLOGY_ID_HUMAN_NEWBORN)).toBeTruthy();
@@ -251,20 +252,20 @@ describe("useCategoryFilter", () => {
        */
       it(`selects leaf ${ONTOLOGY_ID_HUMAN_CHILD}, all siblings currently selected`, () => {
         const nextFilters = buildNextOntologyCategoryFilters(
-          CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS,
+          CATEGORY_FILTER_ID.DEVELOPMENT_STAGE,
           ONTOLOGY_ID_HUMAN_CHILD,
           [
             {
-              id: CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS,
+              id: CATEGORY_FILTER_ID.DEVELOPMENT_STAGE,
               value: [ONTOLOGY_ID_HUMAN_NEWBORN, ONTOLOGY_ID_HUMAN_INFANT],
             },
           ],
           CATEGORY_VALUE_KEYS,
           (
-            CATEGORY_CONFIGS_BY_CATEGORY_KEY[
-              CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS
-            ] as OntologyCategoryConfig
-          ).ontology
+            CATEGORY_FILTER_CONFIGS_BY_ID[
+              CATEGORY_FILTER_ID.DEVELOPMENT_STAGE
+            ] as CuratedOntologyCategoryFilterConfig
+          ).mask
         );
         expect(nextFilters.length).toEqual(4);
         expect(nextFilters.includes(ONTOLOGY_ID_HUMAN_NEWBORN)).toBeTruthy();
@@ -284,20 +285,20 @@ describe("useCategoryFilter", () => {
        */
       it(`selects leaf ${ONTOLOGY_ID_HUMAN_CARNEGIE_CS1}, all siblings and aunt currently selected`, () => {
         const nextFilters = buildNextOntologyCategoryFilters(
-          CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS,
+          CATEGORY_FILTER_ID.DEVELOPMENT_STAGE,
           ONTOLOGY_ID_HUMAN_CARNEGIE_CS1,
           [
             {
-              id: CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS,
+              id: CATEGORY_FILTER_ID.DEVELOPMENT_STAGE,
               value: [ONTOLOGY_ID_HUMAN_NEURULA_CS7_8, ONTOLOGY_ID_HUMAN_FETAL],
             },
           ],
           CATEGORY_VALUE_KEYS,
           (
-            CATEGORY_CONFIGS_BY_CATEGORY_KEY[
-              CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS
-            ] as OntologyCategoryConfig
-          ).ontology
+            CATEGORY_FILTER_CONFIGS_BY_ID[
+              CATEGORY_FILTER_ID.DEVELOPMENT_STAGE
+            ] as CuratedOntologyCategoryFilterConfig
+          ).mask
         );
         expect(nextFilters.length).toEqual(5);
         expect(nextFilters.includes(ONTOLOGY_ID_HUMAN_PRENATAL)).toBeTruthy();
@@ -324,15 +325,15 @@ describe("useCategoryFilter", () => {
        */
       it(`selects node ${ONTOLOGY_ID_HUMAN_EMBRYONIC_HUMAN}, nothing currently selected`, () => {
         const nextFilters = buildNextOntologyCategoryFilters(
-          CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS,
+          CATEGORY_FILTER_ID.DEVELOPMENT_STAGE,
           ONTOLOGY_ID_HUMAN_EMBRYONIC_HUMAN,
           [], // No filters
           CATEGORY_VALUE_KEYS,
           (
-            CATEGORY_CONFIGS_BY_CATEGORY_KEY[
-              CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS
-            ] as OntologyCategoryConfig
-          ).ontology
+            CATEGORY_FILTER_CONFIGS_BY_ID[
+              CATEGORY_FILTER_ID.DEVELOPMENT_STAGE
+            ] as CuratedOntologyCategoryFilterConfig
+          ).mask
         );
         expect(nextFilters.length).toEqual(3);
         expect(
@@ -357,20 +358,20 @@ describe("useCategoryFilter", () => {
        */
       it(`selects node ${ONTOLOGY_ID_HUMAN_EMBRYONIC_HUMAN}, child currently selected`, () => {
         const nextFilters = buildNextOntologyCategoryFilters(
-          CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS,
+          CATEGORY_FILTER_ID.DEVELOPMENT_STAGE,
           ONTOLOGY_ID_HUMAN_EMBRYONIC_HUMAN,
           [
             {
-              id: CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS,
+              id: CATEGORY_FILTER_ID.DEVELOPMENT_STAGE,
               value: [ONTOLOGY_ID_HUMAN_CARNEGIE_CS1],
             },
           ],
           CATEGORY_VALUE_KEYS,
           (
-            CATEGORY_CONFIGS_BY_CATEGORY_KEY[
-              CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS
-            ] as OntologyCategoryConfig
-          ).ontology
+            CATEGORY_FILTER_CONFIGS_BY_ID[
+              CATEGORY_FILTER_ID.DEVELOPMENT_STAGE
+            ] as CuratedOntologyCategoryFilterConfig
+          ).mask
         );
         expect(nextFilters.length).toEqual(3);
         expect(
@@ -395,11 +396,11 @@ describe("useCategoryFilter", () => {
        */
       it(`selects node ${ONTOLOGY_ID_HUMAN_EMBRYONIC_HUMAN}, sibling currently selected`, () => {
         const nextFilters = buildNextOntologyCategoryFilters(
-          CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS,
+          CATEGORY_FILTER_ID.DEVELOPMENT_STAGE,
           ONTOLOGY_ID_HUMAN_EMBRYONIC_HUMAN,
           [
             {
-              id: CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS,
+              id: CATEGORY_FILTER_ID.DEVELOPMENT_STAGE,
               value: [
                 ONTOLOGY_ID_HUMAN_FETAL, // Sibling selected
               ],
@@ -407,10 +408,10 @@ describe("useCategoryFilter", () => {
           ],
           CATEGORY_VALUE_KEYS,
           (
-            CATEGORY_CONFIGS_BY_CATEGORY_KEY[
-              CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS
-            ] as OntologyCategoryConfig
-          ).ontology
+            CATEGORY_FILTER_CONFIGS_BY_ID[
+              CATEGORY_FILTER_ID.DEVELOPMENT_STAGE
+            ] as CuratedOntologyCategoryFilterConfig
+          ).mask
         );
         expect(nextFilters.length).toEqual(5);
         expect(nextFilters.includes(ONTOLOGY_ID_HUMAN_PRENATAL)).toBeTruthy();
@@ -437,11 +438,11 @@ describe("useCategoryFilter", () => {
        */
       it(`de-selects leaf ${ONTOLOGY_ID_HUMAN_CARNEGIE_CS1}, ancestor currently selected`, () => {
         const nextFilters = buildNextOntologyCategoryFilters(
-          CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS,
+          CATEGORY_FILTER_ID.DEVELOPMENT_STAGE,
           ONTOLOGY_ID_HUMAN_CARNEGIE_CS1,
           [
             {
-              id: CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS,
+              id: CATEGORY_FILTER_ID.DEVELOPMENT_STAGE,
               value: [
                 ONTOLOGY_ID_HUMAN_PRENATAL,
                 ONTOLOGY_ID_HUMAN_EMBRYONIC_HUMAN,
@@ -453,10 +454,10 @@ describe("useCategoryFilter", () => {
           ],
           CATEGORY_VALUE_KEYS,
           (
-            CATEGORY_CONFIGS_BY_CATEGORY_KEY[
-              CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS
-            ] as OntologyCategoryConfig
-          ).ontology
+            CATEGORY_FILTER_CONFIGS_BY_ID[
+              CATEGORY_FILTER_ID.DEVELOPMENT_STAGE
+            ] as CuratedOntologyCategoryFilterConfig
+          ).mask
         );
         expect(nextFilters.length).toEqual(2);
         expect(
