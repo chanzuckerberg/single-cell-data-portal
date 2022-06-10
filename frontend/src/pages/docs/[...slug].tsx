@@ -1,3 +1,4 @@
+import { Icon } from "czifui";
 import fs from "fs";
 import matter from "gray-matter";
 import { GetStaticPaths } from "next";
@@ -6,7 +7,9 @@ import { serialize } from "next-mdx-remote/serialize";
 import Image, { ImageProps } from "next/image";
 import NextLink from "next/link";
 import pathTool from "path";
-import { Fragment, memo } from "react";
+import { Fragment, memo, useState } from "react";
+import rehypeSlug from "rehype-slug";
+import { noop } from "src/common/constants/utils";
 import EmbeddedGoogleSlides from "src/components/EmbeddedGoogleSlides";
 import Layout from "src/components/Layout";
 import { StyledDocsLayout } from "src/components/Layout/style";
@@ -89,7 +92,9 @@ export const getStaticProps = async ({
   const filePath = filePaths();
   const activeFile = slug[slug.length - 1];
   const { data: frontMatter, content } = matter(markdownWithMeta);
-  const mdxSource = await serialize(content);
+  const mdxSource = await serialize(content, {
+    mdxOptions: { rehypePlugins: [rehypeSlug] },
+  });
   return {
     props: {
       activeFile,
@@ -101,7 +106,7 @@ export const getStaticProps = async ({
   };
 };
 
-const StyledUL = styled.ul<{ $isChild: boolean }>`
+const StyledUL = styled.ul<{ $isChild: boolean; isExpanded: boolean }>`
   border-left: ${(props) => props.$isChild && "1px solid #ccc"};
   list-style: none;
   margin-left: ${(props) => (!props.$isChild ? "40px" : "0px")};
@@ -110,6 +115,7 @@ const StyledUL = styled.ul<{ $isChild: boolean }>`
   width: auto;
   overflow-x: hidden;
   text-overflow: ellipsis;
+  height: ${(props) => (props.isExpanded ? "auto" : "0px")};
   & a {
     color: inherit;
     text-decoration: inherit;
@@ -133,13 +139,70 @@ const StyledUL = styled.ul<{ $isChild: boolean }>`
     padding: 0px 16px;
   }
 `;
+
+const FileListItem = ({
+  file,
+  isActiveFile,
+  href,
+}: {
+  file: string;
+  isActiveFile: boolean;
+  href: string;
+}) => {
+  const formattedFileName = file.split("__")[1];
+
+  return (
+    <li key={file} className={isActiveFile ? "active-file" : ""}>
+      <NextLink href={href} passHref>
+        {formattedFileName}
+      </NextLink>
+    </li>
+  );
+};
+
+const DirectoryListItem = ({
+  directory,
+  activeFile,
+}: {
+  directory: Directory;
+  activeFile: string;
+}) => {
+  // 0 = default collapse, 1 = default expand, 2 = user collapse, 3 = user expand
+  const [isExpanded, setIsExpanded] = useState<0 | 1 | 2 | 3>(0);
+  return (
+    <Fragment>
+      <li onClick={() => setIsExpanded(isExpanded % 2 == 0 ? 3 : 2)}>
+        {directory.dirName.split("__")[1]}{" "}
+        <Icon
+          sdsIcon={isExpanded % 2 == 1 ? "chevronDown" : "chevronRight"}
+          sdsSize="s"
+          sdsType="interactive"
+        />
+      </li>
+      <div>
+        <Directory
+          directory={directory}
+          isChild
+          activeFile={activeFile}
+          isExpanded={isExpanded}
+          setIsExpanded={setIsExpanded}
+        />
+      </div>
+    </Fragment>
+  );
+};
+
 const Directory = memo(function RenderDirectory({
   activeFile,
   directory,
+  isExpanded,
+  setIsExpanded,
   isChild = false,
 }: {
   activeFile: string;
   directory: Directory;
+  isExpanded: 0 | 1 | 2 | 3;
+  setIsExpanded: (isExpanded: 0 | 1 | 2 | 3) => void;
   isChild?: boolean;
 }) {
   const fileComponents: Array<[string, JSX.Element]> = directory.files.map(
@@ -148,30 +211,34 @@ const Directory = memo(function RenderDirectory({
       if (directory.slug.length > 0) href += directory.slug.join("/") + "/";
       href += file;
       const isActiveFile = file === activeFile;
+      if (isActiveFile && isExpanded < 2) setIsExpanded(1);
+
       return [
         file,
-        <li key={file} className={isActiveFile ? "active-file" : ""}>
-          <NextLink href={href} passHref>
-            {file}
-          </NextLink>
-        </li>,
+        <FileListItem
+          key={file}
+          file={file}
+          href={href}
+          isActiveFile={isActiveFile}
+        />,
       ];
     }
   );
-  const directoryComponents: Array<[string, JSX.Element]> =
+
+  const directoryComponents: Array<[string, JSX.Element | null]> =
     directory.subDirectories.map((directory) => {
+      if (directory.dirName.startsWith(".")) return [directory.dirName, null];
       return [
         directory.dirName,
-        <Fragment key={directory.dirName}>
-          <li>{directory.dirName}</li>
-          <div>
-            <Directory directory={directory} isChild activeFile={activeFile} />
-          </div>
-        </Fragment>,
+        <DirectoryListItem
+          key={directory.dirName}
+          directory={directory}
+          activeFile={activeFile}
+        />,
       ];
     });
   return (
-    <StyledUL $isChild={isChild}>
+    <StyledUL $isChild={isChild} isExpanded={isExpanded % 2 == 1}>
       {[...fileComponents, ...directoryComponents]
         .sort((a, b) => {
           return a[0] < b[0] ? -1 : 1;
@@ -205,7 +272,12 @@ const PageNavigator = ({
 }) => {
   return (
     <StyledLeftNav>
-      <Directory directory={filePath} activeFile={activeFile} />
+      <Directory
+        directory={filePath}
+        activeFile={activeFile}
+        isExpanded={1}
+        setIsExpanded={noop}
+      />
     </StyledLeftNav>
   );
 };
@@ -248,9 +320,13 @@ const DocsImage = ({ src }: ImageProps) => {
   );
 };
 
-const components = {
+const MDX_AVAILABLE_COMPONENTS = {
   EmbeddedGoogleSlides,
   Image: DocsImage,
+  a: (props: React.AnchorHTMLAttributes<HTMLAnchorElement>) => (
+    <a rel="noopener" target="_blank" {...props} />
+  ),
+  NextLink,
 };
 const DocPage = ({ activeFile, mdxSource, filePath }: Props) => {
   return (
@@ -258,7 +334,7 @@ const DocPage = ({ activeFile, mdxSource, filePath }: Props) => {
       <PageNavigator filePath={filePath} activeFile={activeFile} />
       <DocContent>
         <div>
-          <MDXRemote {...mdxSource} components={components} />
+          <MDXRemote {...mdxSource} components={MDX_AVAILABLE_COMPONENTS} />
         </div>
       </DocContent>
     </>
