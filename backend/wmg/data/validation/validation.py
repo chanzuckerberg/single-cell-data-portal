@@ -159,6 +159,7 @@ class Validation:
 
                 MALAT1_avg_expression = cube.df[MALAT1_ont_id:MALAT1_ont_id]["sum"].sum() / MALAT1_cell_count
                 ACTB_avg_expression = cube.df[ACTB_ont_id:ACTB_ont_id]["sum"].sum() / ACTB_cell_count
+                # TODO -- need to update expected values for new rankit scores
                 if 5 > MALAT1_avg_expression:
                     self.errors.append(f"MALAT1 avg rankit score is {MALAT1_avg_expression}")
                 if 3 > ACTB_avg_expression:
