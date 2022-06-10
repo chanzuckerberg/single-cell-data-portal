@@ -3,10 +3,12 @@ import React, { useEffect, useMemo } from "react";
 import { Column, Filters, useFilters, useSortBy, useTable } from "react-table";
 import { PLURALIZED_METADATA_LABEL } from "src/common/constants/metadata";
 import { ROUTES } from "src/common/constants/routes";
+import { FEATURES } from "src/common/featureFlags/features";
 import {
   CategoryKey,
   useCategoryFilter,
 } from "src/common/hooks/useCategoryFilter";
+import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
 import { useSessionStorage } from "src/common/hooks/useSessionStorage";
 import { useFetchCollectionRows } from "src/common/queries/filter";
 import { KEYS } from "src/common/sessionStorage/set";
@@ -164,6 +166,11 @@ export default function Collections(): JSX.Element {
         filter: "includesSome",
         id: CATEGORY_KEY.SEX,
       },
+      // Hidden, required for filter.
+      {
+        accessor: CATEGORY_KEY.TISSUE_ANCESTORS,
+        filter: "includesSome",
+      },
     ],
     []
   );
@@ -191,6 +198,7 @@ export default function Collections(): JSX.Element {
           CATEGORY_KEY.PUBLICATION_AUTHORS,
           CATEGORY_KEY.PUBLICATION_DATE_VALUES,
           CATEGORY_KEY.SEX,
+          CATEGORY_KEY.TISSUE_ANCESTORS,
         ],
         sortBy: [
           {
@@ -205,18 +213,25 @@ export default function Collections(): JSX.Element {
   );
 
   // Determine the set of categories to display for the datasets view.
+  const isFilterEnabled = useFeatureFlag(FEATURES.FILTER); // TODO(cc) remove with #2569.
   const categories = useMemo<Set<CATEGORY_KEY>>(() => {
     return Object.values(CATEGORY_KEY)
-      .filter(
-        (categoryKey: CategoryKey) =>
-          categoryKey !== CATEGORY_KEY.CELL_COUNT &&
-          categoryKey !== CATEGORY_KEY.MEAN_GENES_PER_CELL
-      )
+      .filter((categoryKey: CategoryKey) => {
+        if (
+          categoryKey === CATEGORY_KEY.CELL_COUNT ||
+          categoryKey == CATEGORY_KEY.MEAN_GENES_PER_CELL
+        ) {
+          return false;
+        }
+        return !(
+          categoryKey === CATEGORY_KEY.TISSUE_ANCESTORS && !isFilterEnabled
+        );
+      })
       .reduce((accum, categoryKey: CategoryKey) => {
         accum.add(categoryKey);
         return accum;
       }, new Set<CATEGORY_KEY>());
-  }, []);
+  }, [isFilterEnabled]);
 
   // Filter init.
   const {
