@@ -53,7 +53,7 @@ validation_sex_ontologies = {"female": "PATO:0000383", "male": "PATO:0000384", "
 
 
 class Validation:
-    def __int__(self, snapshot):
+    def __init__(self, snapshot):
         self.errors = []
         self.snapshot = snapshot
         self.expression_summary_path = f"{snapshot}/{EXPRESSION_SUMMARY_CUBE_NAME}"
