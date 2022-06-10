@@ -153,7 +153,15 @@ class Collection(Entity):
         return results
 
     @classmethod
-    def list_collections_for_curator_api(cls, session: Session, visibility: str = None):
+    def list_collections_for_curator_api(cls, session: Session, visibility: str = None) -> typing.List[dict]:
+        """
+        Get a subset of columns, in dict form, for all Collections with the specified visibility. If visibility is None,
+        return *all* Collections.
+        @param session: the SQLAlchemy session
+        @param visibility: the CollectionVisibility string name
+        @return: a list of dict representations of Collections
+        """
+
         def datetime_serializer(dt: datetime):
             return mktime(dt.timetuple())
 
@@ -222,7 +230,16 @@ class Collection(Entity):
         return collections
 
     @staticmethod
-    def _copy_columns(cols, from_obj):
+    def _copy_and_transform_columns(cols: typing.Iterable, from_obj: dict) -> dict:
+        """
+        Create a copied/transformed subset of dict 'from_obj' and return it: include *only* the attributes from
+        'from_obj' which are found as strings in the iterable 'cols' object. If the value in 'from_obj' for a given key
+        found in 'cols' requires transformation, then that element of 'cols' should be a tuple of form
+        (<attribute name>: str, <transforming function>: Callable) instead of just the string attribute name.
+        @param cols: the keys to copy
+        @param from_obj: dict from which to copy key-value pairs
+        @return: copied and transform subset of 'from_obj'
+        """
         to_obj = {}
         for c in cols:
             if type(c) == tuple:

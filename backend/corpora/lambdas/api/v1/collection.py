@@ -63,6 +63,12 @@ def get_collections_list(from_date: int = None, to_date: int = None, token_info:
 
 @dbconnect
 def get_collections_curation(visibility: str, token_info: dict):
+    """
+    Collections index endpoint for Curation API. Only return Collection data for which the curator is authorized.
+    @param visibility: the CollectionVisibility in string form
+    @param token_info: access token info
+    @return: Response
+    """
 
     collections = Collection.list_collections_for_curator_api(g.db_session, visibility)
     allowed_collections = []
