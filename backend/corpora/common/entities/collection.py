@@ -153,7 +153,7 @@ class Collection(Entity):
         return results
 
     @classmethod
-    def list_collections_for_curator_api(cls, session: Session, visibility: str = None) -> typing.List[dict]:
+    def list_collections(cls, session: Session, visibility: str = None) -> typing.List[dict]:
         """
         Get a subset of columns, in dict form, for all Collections with the specified visibility. If visibility is None,
         return *all* Collections.

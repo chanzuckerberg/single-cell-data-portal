@@ -70,7 +70,7 @@ def get_collections_curation(visibility: str, token_info: dict):
     @return: Response
     """
 
-    collections = Collection.list_collections_for_curator_api(g.db_session, visibility)
+    collections = Collection.list_collections(g.db_session, visibility)
     allowed_collections = []
     for collection in collections:
         owner = collection["owner"]
