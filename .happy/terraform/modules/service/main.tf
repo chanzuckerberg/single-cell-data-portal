@@ -36,6 +36,10 @@ resource aws_ecs_task_definition task_definition {
     "memory": ${var.memory},
     "environment": [
       {
+        "name": "WMG_BUCKET",
+        "value": "${var.wmg_bucket}"
+      },      
+      {
         "name": "REMOTE_DEV_PREFIX",
         "value": "${var.remote_dev_prefix}"
       },
