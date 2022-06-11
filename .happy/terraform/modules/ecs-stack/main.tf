@@ -107,6 +107,31 @@ module frontend_service {
   wait_for_steady_state = local.wait_for_steady_state
 }
 
+resource "aws_secretsmanager_secret" "wmg_config" {
+   name = "/corpora/backend/${local.custom_stack_name}/wmg_config"
+}
+  
+variable "wmg_secret_config" {
+  default = {
+    bucket = "cellxgene-wmg-${custom_stack_name}"
+    tiledb_config_overrides = jsonencode(
+      {
+        "py.init_buffer_bytes": 52428800,
+        "sm.tile_cache_size": 134217728,
+        "sm.mem.total_budget": 2147483648,
+        "sm.memory_budget": 1073741824,
+        "sm.memory_budget_var": 2147483648
+      }
+    )
+  }
+  type = map(string)
+}
+
+resource "aws_secretsmanager_secret_version" "sversion" {
+  secret_id = aws_secretsmanager_secret.wmg_config.id
+  secret_string = jsonencode(var.wmg_secret_config)
+}
+
 module backend_service {
   source                     = "../service"
   custom_stack_name          = local.custom_stack_name
