@@ -18,7 +18,7 @@ APP_NAME = os.environ["APP_NAME"]
 
 def create_flask_app():
     connexion_app = connexion.FlaskApp(f"{APP_NAME}-{DEPLOYMENT_STAGE}", specification_dir="backend/config")
-    print(f"\n\nROOT PATH {connexion_app.get_root_path()}\n\n")
+
     # From https://github.com/zalando/connexion/issues/346
     connexion_app.app.url_map.strict_slashes = False
 
