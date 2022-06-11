@@ -20,7 +20,16 @@ from ....common.utils.http_exceptions import (
 )
 from ....api_server.db import dbconnect
 
-DEPLOYMENT_STAGE = os.environ["DEPLOYMENT_STAGE"]
+# Set collections_base_url
+RDEV_PREFIX = os.environ.get("REMOTE_DEV_PREFIX")  # has leading "/" char
+if RDEV_PREFIX:
+    collections_base_url = f"https:/{RDEV_PREFIX}-frontend.rdev.single-cell.czi.technology/collections"
+else:
+    DEPLOYMENT_STAGE = os.environ.get("DEPLOYMENT_STAGE")
+    if DEPLOYMENT_STAGE == "prod":
+        collections_base_url = "https://cellxgene.cziscience.com/collections"
+    else:
+        collections_base_url = f"https://cellxgene.{DEPLOYMENT_STAGE}.single-cell.czi.technology/collections"
 
 
 @dbconnect
@@ -84,7 +93,7 @@ def get_collections_curation(visibility: str, token_info: dict):
         else:
             collection["access_type"] = "READ"
         del collection["owner"]  # Don't actually want to return 'owner' in response
-        collection["collection_url"] = f"https://www.cellxgene.cziscience.com/collections/{collection['id']}"
+        collection["collection_url"] = f"{collections_base_url}/{collection['id']}"
         allowed_collections.append(collection)
 
     return jsonify({"collections": allowed_collections})
