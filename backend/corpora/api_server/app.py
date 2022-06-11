@@ -18,7 +18,8 @@ APP_NAME = os.environ["APP_NAME"]
 
 def create_flask_app():
     connexion_app = connexion.FlaskApp(f"{APP_NAME}-{DEPLOYMENT_STAGE}", specification_dir="backend/config")
-    print(f"\n\nROOT PATH {connexion_app.get_root_path()}\n\n")
+    logger = logging.getLogger("gunicorn.error")
+    logger.warning(f"ROOT PATH IS {connexion_app.get_root_path()}")
     # From https://github.com/zalando/connexion/issues/346
     connexion_app.app.url_map.strict_slashes = False
 
@@ -48,6 +49,7 @@ def create_flask_app():
 def configure_flask_app(flask_app):
     # configure logging
     gunicorn_logger = logging.getLogger("gunicorn.error")
+
     flask_app.logger.handlers = gunicorn_logger.handlers
     flask_app.logger.setLevel(gunicorn_logger.level)
     flask_app.debug = False if DEPLOYMENT_STAGE == "prod" else True

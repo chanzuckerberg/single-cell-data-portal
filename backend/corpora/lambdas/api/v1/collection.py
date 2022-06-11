@@ -1,3 +1,4 @@
+import os
 import sqlalchemy
 from typing import Optional
 from backend.corpora.common.providers import crossref_provider
@@ -18,6 +19,8 @@ from ....common.utils.http_exceptions import (
     ConflictException,
 )
 from ....api_server.db import dbconnect
+
+DEPLOYMENT_STAGE = os.environ["DEPLOYMENT_STAGE"]
 
 
 @dbconnect
