@@ -21,9 +21,9 @@ from ....common.utils.http_exceptions import (
 from ....api_server.db import dbconnect
 
 # Set collections_base_url
-RDEV_PREFIX = os.environ.get("REMOTE_DEV_PREFIX").strip("/")  # has leading "/" char
+RDEV_PREFIX = os.environ.get("REMOTE_DEV_PREFIX")
 if RDEV_PREFIX:
-    base_url = f"https://{RDEV_PREFIX}-frontend.rdev.single-cell.czi.technology"
+    base_url = f"https://{RDEV_PREFIX.strip('/')}-frontend.rdev.single-cell.czi.technology"
 else:
     DEPLOYMENT_STAGE = os.environ.get("DEPLOYMENT_STAGE")
     if DEPLOYMENT_STAGE == "prod":
@@ -88,7 +88,7 @@ def get_collections_curation(visibility: str, token_info: dict):
         owner = collection["owner"]
         if is_user_owner_or_allowed(token_info, owner):
             collection["access_type"] = "WRITE"
-        elif collection["visibility"] == "PRIVATE":
+        elif collection["visibility"] == CollectionVisibility.PRIVATE:
             continue
         else:
             collection["access_type"] = "READ"

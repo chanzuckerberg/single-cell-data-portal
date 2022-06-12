@@ -1,9 +1,7 @@
-import enum
 import typing
 from datetime import datetime
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
-from time import mktime
 
 from . import Dataset
 from .entity import Entity
@@ -162,28 +160,17 @@ class Collection(Entity):
         @return: a list of dict representations of Collections
         """
 
-        def datetime_serializer(dt: datetime):
-            return mktime(dt.timetuple())
-
-        def enum_serializer(e: enum.Enum):
-            return e.name
-
-        def array_packager(o: object):
-            return o if type(o) == list else [o]
-
         collection_columns = [
             "id",
             "name",
-            ("visibility", enum_serializer),
+            "visibility",
             "tombstone",
             "contact_name",
             "contact_email",
             "curator_name",
-            ("revised_at", datetime_serializer),
-            ("created_at", datetime_serializer),
-            "links",
-            "datasets",
-            ("published_at", datetime_serializer),
+            "revised_at",
+            "created_at",
+            "published_at",
             "description",
             "publisher_metadata",
             "revision_of",
@@ -194,7 +181,7 @@ class Collection(Entity):
         link_columns = [
             "link_name",
             "link_url",
-            ("link_type", enum_serializer),
+            "link_type",
         ]
 
         dataset_columns = [
@@ -203,7 +190,7 @@ class Collection(Entity):
             "tissue",
             "assay",
             "disease",
-            ("organism", array_packager),
+            "organism",
             "tombstone",
         ]
 
@@ -213,45 +200,29 @@ class Collection(Entity):
         elif visibility == CollectionVisibility.PRIVATE.name:
             filters = [DbCollection.visibility == CollectionVisibility.PRIVATE]
 
-        collection_objects = [dict(r) for r in session.query(cls.table).filter(*filters).all()]
+        collections = [r.to_dict() for r in session.query(cls.table).filter(*filters).all()]
 
-        # Select the collection_columns
-        collections = [cls._copy_and_transform_columns(collection_columns, r) for r in collection_objects]
+        resp_collections = []
+        for collection in collections:
+            resp_collection = cls._copy_columns(collection_columns, collection)
+            for entity_col, cols in (("datasets", dataset_columns), ("links", link_columns)):
+                entities = collection.get(entity_col)
+                resp_collection[entity_col] = [cls._copy_columns(cols, entity) for entity in entities]
+            resp_collections.append(resp_collection)
 
-        # Select the link_columns and dataset_columns
-        for relation_name, rel_cols in (("links", link_columns), ("datasets", dataset_columns)):
-            for collection in collections:
-                if relation_name in collection:
-                    updated_relations = []
-                    for rel in collection[relation_name]:
-                        updated_relations.append(cls._copy_and_transform_columns(rel_cols, rel))
-                    collection[relation_name] = updated_relations
-
-        return collections
+        return resp_collections
 
     @staticmethod
-    def _copy_and_transform_columns(cols: typing.Iterable, from_obj: dict) -> dict:
+    def _copy_columns(attrs: typing.Iterable, from_obj: dict) -> dict:
         """
-        Create a copied/transformed subset of dict 'from_obj' and return it: include *only* the attributes from
-        'from_obj' which are found as strings in the iterable 'cols' object. If the value in 'from_obj' for a given key
-        found in 'cols' requires transformation, then that element of 'cols' should be a tuple of form
-        (<attribute name>: str, <transforming function>: Callable) instead of just the string attribute name.
-        @param cols: the keys to copy
+        Return a subset copy of 'from_obj' which contains only the attributes found as strings in iterable 'attrs'
+        @param attrs: the keys to copy
         @param from_obj: dict from which to copy key-value pairs
-        @return: copied and transform subset of 'from_obj'
+        @return: copied subset of 'from_obj'
         """
         to_obj = {}
-        for c in cols:
-            if type(c) == tuple:
-                # Column needs to be transformed
-                col_name = c[0]
-                converter = c[1]
-                if col_name in from_obj:
-                    if from_obj[col_name] is not None:
-                        to_obj[col_name] = converter(from_obj[col_name])
-            elif c in from_obj:
-                if from_obj[c] is not None:
-                    to_obj[c] = from_obj[c]
+        for a in attrs:
+            to_obj[a] = from_obj[a]
         return to_obj
 
     @classmethod

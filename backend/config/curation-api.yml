@@ -100,6 +100,7 @@ paths:
                           type: string
                         publisher_metadata:
                           $ref: "#/components/schemas/publisher_metadata"
+                          nullable: true
                         revision_of:
                           type: string
                           nullable: true
@@ -563,7 +564,7 @@ components:
     curator_tag:
       description: A curator-provided tag for a Dataset that serves as a unique identifier *within a Collection*.
       type: string
-      example: an/example/curator.tag
+      example: an/example/curator_tag.h5ad
     dataset_uuid:
       description: A unique identifier of a Dataset.
       type: string
@@ -665,6 +666,7 @@ components:
           $ref: "#/components/schemas/dataset_uuid"
         curator_tag:
           $ref: "#/components/schemas/curator_tag"
+          nullable: true
         tissue:
           $ref: "#/components/schemas/ontology_elements"
         assay:
