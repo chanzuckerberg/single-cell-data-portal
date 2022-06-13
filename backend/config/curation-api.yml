@@ -43,7 +43,19 @@ paths:
   /v1/collections:
     get:
       summary: Fetch Collections metadata.
-      description: Fetch all Collections metadata. Authorization required for private collections.
+      description: >-
+        * When the visibility parameter is unspecified or set to `PUBLIC`, a list of all public collections is returned.
+        The Authorization header is not required. If a collection in the list has been deleted, then it is annotated
+        with tombstone set to True.
+
+        * When the visibility parameter is set to `PRIVATE`, a list of all private collections that the user is
+        authorized to access is returned. The Authorization header is required. If a collection in the list is a private
+        revision of a public collection, then it is annotated with revision_of.
+
+        * Each collection in the list contains a subset of collection metadata as a preview.
+
+        * To retrieve full collection metadata for a specific collection, `GET /v1/collections/{collection_uuid}`
+        must be used.
       operationId: backend.corpora.lambdas.api.v1.collection.get_collections_curation
       security:
         - curatorAccessLenient: []
@@ -139,10 +151,11 @@ paths:
   /v1/collections/{collection_uuid}:
     get:
       summary: Fetch a Collection with Datasets
-      description: Fetch Collection metadata and associated Datasets, public and private.
+      description: Fetch full Collection metadata and associated Datasets.
       operationId: backend.corpora.lambdas.api.v1.collection.get_collection_details
       security:
         - curatorAccessLenient: []
+        - {}
       tags:
         - collection
       parameters:
@@ -408,7 +421,7 @@ paths:
       summary: Get credentials for uploading local files
       tags:
         - collection
-      description: >
+      description: >-
         Retrieve temporary AWS credentials for uploading Dataset source files to S3 to create
         or update Datasets for the specified Collection.
 
