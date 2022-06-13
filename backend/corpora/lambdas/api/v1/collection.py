@@ -17,6 +17,7 @@ from .authorization import is_user_owner_or_allowed, owner_or_allowed
 from ....common.utils.http_exceptions import (
     InvalidParametersHTTPException,
     ConflictException,
+    UnauthorizedError,
 )
 from ....api_server.db import dbconnect
 
@@ -83,7 +84,8 @@ def get_collections_curation(visibility: str, token_info: dict):
     @param token_info: access token info
     @return: Response
     """
-
+    if not token_info and visibility == CollectionVisibility.PRIVATE.name:
+        raise UnauthorizedError()
     collections = Collection.list_collections(g.db_session, visibility)
     allowed_collections = []
     for collection in collections:

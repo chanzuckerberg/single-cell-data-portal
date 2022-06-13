@@ -51,7 +51,7 @@ paths:
       tags:
         - collection
       parameters:
-        - $ref: "#/components/parameters/query_visibility_default_null"
+        - $ref: "#/components/parameters/query_visibility"
       responses:
         "200":
           description: OK
@@ -576,14 +576,6 @@ components:
       type: string
       enum: [PUBLIC, PRIVATE]
       default: PUBLIC
-    visibility_default_null:
-      description: >-
-        Determines the visibility of the collection, that will either make the collection visible on the public
-        sites or only viewable through obfuscated URLs.
-      type: string
-      enum: [PUBLIC, PRIVATE, null]
-      nullable: true
-      default: null
     distribution:
       description: >-
         Cellxgene runs a heuristic to detect the approximate distribution of the data in X so that it can accurately
@@ -791,13 +783,6 @@ components:
       required: false
       schema:
         $ref: "#/components/schemas/visibility"
-    query_visibility_default_null:
-      name: visibility
-      description: The 'visibility' of a Collection (and its constituent Datasets).
-      in: query
-      required: false
-      schema:
-        $ref: "#/components/schemas/visibility_default_null"
   responses:
     200:
       description: OK
