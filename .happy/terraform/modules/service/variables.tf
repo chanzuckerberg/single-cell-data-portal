@@ -16,6 +16,7 @@ variable "remote_dev_prefix" {
 variable wmg_bucket {
   type        = string
   description = "Where's my gene (output) bucket name"
+  default     = ""
 }
 
 variable "dataset_submissions_bucket" {
