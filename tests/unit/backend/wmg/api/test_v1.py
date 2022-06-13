@@ -50,11 +50,10 @@ class WmgApiV1Tests(unittest.TestCase):
     @patch("backend.wmg.api.v1.ontology_term_label")
     @patch("backend.wmg.api.v1.load_snapshot")
     def test__primary_filter_dimensions__returns_valid_response_body(
-        self, load_snapshot, ontology_term_label, gene_term_label
+            self, load_snapshot, ontology_term_label, gene_term_label
     ):
-
         with create_temp_wmg_snapshot(
-            dim_size=3, exclude_logical_coord_fn=exclude_all_but_one_gene_per_organism
+                dim_size=3, exclude_logical_coord_fn=exclude_all_but_one_gene_per_organism
         ) as snapshot:
             # setup up API endpoints to use a mocked cube containing all stat values of 1, for a deterministic
             # expected query response
@@ -81,13 +80,13 @@ class WmgApiV1Tests(unittest.TestCase):
     @patch("backend.wmg.api.v1.ontology_term_label")
     @patch("backend.wmg.api.v1.load_snapshot")
     def test__query_single_primary_dims__returns_200_and_correct_response(
-        self, load_snapshot, ontology_term_label, gene_term_label
+            self, load_snapshot, ontology_term_label, gene_term_label
     ):
         dim_size = 1
         with create_temp_wmg_snapshot(
-            dim_size=dim_size,
-            expression_summary_vals_fn=all_ones_expression_summary_values,
-            cell_counts_generator_fn=all_tens_cell_counts_values,
+                dim_size=dim_size,
+                expression_summary_vals_fn=all_ones_expression_summary_values,
+                cell_counts_generator_fn=all_tens_cell_counts_values,
         ) as snapshot:
             # setup up API endpoints to use a mocked cube containing all stat values of 1, for a deterministic
             # expected query response
@@ -142,13 +141,13 @@ class WmgApiV1Tests(unittest.TestCase):
     @patch("backend.wmg.api.v1.ontology_term_label")
     @patch("backend.wmg.api.v1.load_snapshot")
     def test__query_request_multi_primary_dims_only__returns_200_and_correct_response(
-        self, load_snapshot, ontology_term_label, gene_term_label
+            self, load_snapshot, ontology_term_label, gene_term_label
     ):
         dim_size = 3
         with create_temp_wmg_snapshot(
-            dim_size=dim_size,
-            expression_summary_vals_fn=all_ones_expression_summary_values,
-            cell_counts_generator_fn=all_tens_cell_counts_values,
+                dim_size=dim_size,
+                expression_summary_vals_fn=all_ones_expression_summary_values,
+                cell_counts_generator_fn=all_tens_cell_counts_values,
         ) as snapshot:
             # setup up API endpoints to use a mocked cube containing all stat values of 1, for a deterministic
             # expected query response
@@ -193,21 +192,21 @@ class WmgApiV1Tests(unittest.TestCase):
                                 "n": 729,
                                 "me": 1.0,
                                 "pc": 0.1,
-                                "tpc": 729 / (10 * (3**7)),
+                                "tpc": 729 / (10 * (3 ** 7)),
                             },
                             {
                                 "id": "cell_type_ontology_term_id_1",
                                 "n": 729,
                                 "me": 1.0,
                                 "pc": 0.1,
-                                "tpc": 729 / (10 * (3**7)),
+                                "tpc": 729 / (10 * (3 ** 7)),
                             },
                             {
                                 "id": "cell_type_ontology_term_id_2",
                                 "n": 729,
                                 "me": 1.0,
                                 "pc": 0.1,
-                                "tpc": 729 / (10 * (3**7)),
+                                "tpc": 729 / (10 * (3 ** 7)),
                             },
                         ],
                         "tissue_ontology_term_id_2": [
@@ -216,21 +215,21 @@ class WmgApiV1Tests(unittest.TestCase):
                                 "n": 729,
                                 "me": 1.0,
                                 "pc": 0.1,
-                                "tpc": 729 / (10 * (3**7)),
+                                "tpc": 729 / (10 * (3 ** 7)),
                             },
                             {
                                 "id": "cell_type_ontology_term_id_1",
                                 "n": 729,
                                 "me": 1.0,
                                 "pc": 0.1,
-                                "tpc": 729 / (10 * (3**7)),
+                                "tpc": 729 / (10 * (3 ** 7)),
                             },
                             {
                                 "id": "cell_type_ontology_term_id_2",
                                 "n": 729,
                                 "me": 1.0,
                                 "pc": 0.1,
-                                "tpc": 729 / (10 * (3**7)),
+                                "tpc": 729 / (10 * (3 ** 7)),
                             },
                         ],
                     },
@@ -241,21 +240,21 @@ class WmgApiV1Tests(unittest.TestCase):
                                 "n": 729,
                                 "me": 1.0,
                                 "pc": 0.1,
-                                "tpc": 729 / (10 * (3**7)),
+                                "tpc": 729 / (10 * (3 ** 7)),
                             },
                             {
                                 "id": "cell_type_ontology_term_id_1",
                                 "n": 729,
                                 "me": 1.0,
                                 "pc": 0.1,
-                                "tpc": 729 / (10 * (3**7)),
+                                "tpc": 729 / (10 * (3 ** 7)),
                             },
                             {
                                 "id": "cell_type_ontology_term_id_2",
                                 "n": 729,
                                 "me": 1.0,
                                 "pc": 0.1,
-                                "tpc": 729 / (10 * (3**7)),
+                                "tpc": 729 / (10 * (3 ** 7)),
                             },
                         ],
                         "tissue_ontology_term_id_2": [
@@ -264,21 +263,21 @@ class WmgApiV1Tests(unittest.TestCase):
                                 "n": 729,
                                 "me": 1.0,
                                 "pc": 0.1,
-                                "tpc": 729 / (10 * (3**7)),
+                                "tpc": 729 / (10 * (3 ** 7)),
                             },
                             {
                                 "id": "cell_type_ontology_term_id_1",
                                 "n": 729,
                                 "me": 1.0,
                                 "pc": 0.1,
-                                "tpc": 729 / (10 * (3**7)),
+                                "tpc": 729 / (10 * (3 ** 7)),
                             },
                             {
                                 "id": "cell_type_ontology_term_id_2",
                                 "n": 729,
                                 "me": 1.0,
                                 "pc": 0.1,
-                                "tpc": 729 / (10 * (3**7)),
+                                "tpc": 729 / (10 * (3 ** 7)),
                             },
                         ],
                     },
@@ -333,14 +332,14 @@ class WmgApiV1Tests(unittest.TestCase):
     @patch("backend.wmg.api.v1.ontology_term_label")
     @patch("backend.wmg.api.v1.load_snapshot")
     def test__query_explicit_cell_ordering__returns_correct_cell_ordering(
-        self, load_snapshot, ontology_term_label, gene_term_label
+            self, load_snapshot, ontology_term_label, gene_term_label
     ):
         dim_size = 2
         with create_temp_wmg_snapshot(
-            dim_size=dim_size,
-            expression_summary_vals_fn=all_ones_expression_summary_values,
-            cell_counts_generator_fn=all_tens_cell_counts_values,
-            cell_ordering_generator_fn=reverse_cell_type_ordering,
+                dim_size=dim_size,
+                expression_summary_vals_fn=all_ones_expression_summary_values,
+                cell_counts_generator_fn=all_tens_cell_counts_values,
+                cell_ordering_generator_fn=reverse_cell_type_ordering,
         ) as snapshot:
             # setup up API endpoints to use a mocked cube containing all stat values of 1, for a deterministic
             # expected query response
@@ -439,7 +438,7 @@ class WmgApiV1Tests(unittest.TestCase):
     @patch("backend.wmg.api.v1.ontology_term_label")
     @patch("backend.wmg.api.v1.load_snapshot")
     def test__query_request_with_filter_dims__returns_valid_filter_dims(
-        self, load_snapshot, ontology_term_label, gene_term_label, fetch_datasets_metadata
+            self, load_snapshot, ontology_term_label, gene_term_label, fetch_datasets_metadata
     ):
         dim_size = 3
         with create_temp_wmg_snapshot(dim_size=dim_size) as snapshot:
@@ -516,7 +515,7 @@ class WmgApiV1Tests(unittest.TestCase):
     @patch("backend.wmg.api.v1.ontology_term_label")
     @patch("backend.wmg.api.v1.load_snapshot")
     def test__query_request_with_filter_dims__secondary_filters_dont_filter_themselves(
-        self, load_snapshot, ontology_term_label, gene_term_label, fetch_datasets_metadata
+            self, load_snapshot, ontology_term_label, gene_term_label, fetch_datasets_metadata
     ):
         dim_size = 2
         with create_temp_wmg_snapshot(dim_size=dim_size) as snapshot:
@@ -582,6 +581,53 @@ class WmgApiV1Tests(unittest.TestCase):
             }
             self.maxDiff = None
             self.assertEqual(expected_filter_dims, json.loads(response.data)["filter_dims"])
+
+    @patch("backend.wmg.api.v1.fetch_datasets_metadata")
+    @patch("backend.wmg.api.v1.gene_term_label")
+    @patch("backend.wmg.api.v1.ontology_term_label")
+    @patch("backend.wmg.api.v1.load_snapshot")
+    def test__query_request_with_filter_dims__secondary_filters_dont_filter_themselves(
+            self, load_snapshot, ontology_term_label, gene_term_label, fetch_datasets_metadata
+    ):
+        """
+        When querying with filters, the returned options for the secondary filters should return the
+        same value as if the secondary filter was not applied
+        """
+        dim_size = 2
+        with create_temp_wmg_snapshot(dim_size=dim_size) as snapshot:
+            load_snapshot.return_value = snapshot
+
+
+# when a secondary dimension has criteria, the remaining filter values for other secondary dimensions are properly
+# restricted (preferably exercising all the other secondary dimensions)
+
+# when a secondary dimension has criteria, it's own values are not restricted
+# (preferably testing this for all secondary dimensions as well)
+
+
+"""
+Note that the cube contains the cross-product of all dimension values. 
+With self-filtering removed, the secondary filter dim values in the result are actually no different than if we had specified no secondary filtering at all. 
+So this test can longer faithfully verify that secondary filter dims are being elided. 
+We'll need a more "interesting" cube. E.g., all rows where disease=X have only ethnicity=Y, . 
+Then we can filter on disease X and assert that 
+1) ethnicity secondary dim values are correctly elided and 
+2) disease secondary values contain all diseases. 
+These two assertions are better off as separate test methods. Let me get back to you on suggestions for how to setup the cube for such tests.
+"""
+
+"""
+The create_temp_wmg_snapshot method has an keyword param exclude_logical_coord_fn, 
+which takes a function that allows one to prune rows from what would otherwise be a cube 
+that contains one row for every combination of dimension values (i.e. the rows are the cross-product all dimensions' values). 
+This cross-product cube was good enough for most test cases, but is less useful when testing specific filtering behaviors. 
+
+Anyway, this exclude_logical_coord_fn param could be used to specify a function that creates the necessary cube. 
+It's not a beautiful solution for cube data setup, but it's serviceable. 
+We might want to put more effort in writing test fixture code for generating cubes that have specific data requirements. 
+"""
+
+
 
 
 # mock the dataset and collection entity data that would otherwise be fetched from the db; in this test
