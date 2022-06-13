@@ -36,10 +36,10 @@ def get_database_uri() -> str:
 @click.pass_context
 def cli(ctx, deployment):
     """
-        For all cxg_admin scripts
-        You must first SSH into the target deployment using `make db/tunnel` before running (see
-        backend/database readme for specific instructions)
-        You must first set DEPLOYMENT_STAGE as an env var before running
+    For all cxg_admin scripts
+    You must first SSH into the target deployment using `make db/tunnel` before running (see
+    backend/database readme for specific instructions)
+    You must first set DEPLOYMENT_STAGE as an env var before running
 
     """
     os.environ["DEPLOYMENT_STAGE"] = deployment
@@ -48,6 +48,7 @@ def cli(ctx, deployment):
 
 
 # Commands to delete artifacts (collections or datasets)
+
 
 @cli.command()
 @click.argument("uuid")
@@ -74,6 +75,7 @@ def delete_collections(ctx, collection_name):
 
 
 # Commands to tombstone artifacts (datasets or collections)
+
 
 @cli.command()
 @click.argument("uuid")
@@ -105,6 +107,7 @@ def tombstone_dataset(ctx, uuid):
 
 
 # Command to update different metadata fields
+
 
 @cli.command()
 @click.argument("collection_uuid")
@@ -182,6 +185,7 @@ def refresh_preprint_doi(ctx):
 
 # Commands to migrate the data, typically one off scripts run to populate db for existing rows after adding a new field
 
+
 @cli.command()
 @click.pass_context
 def create_cxg_artifacts(ctx):
@@ -241,6 +245,7 @@ def backfill_processing_status_for_datasets(ctx):
 
 # Commands to reprocess dataset artifacts (seurat or cxg)
 
+
 @cli.command()
 @click.argument("dataset_uuid")
 @click.pass_context
@@ -270,6 +275,7 @@ def wmg_get_s3_uris(ctx):
     """
 
     from backend.wmg.data.extract import get_dataset_s3_uris
+
     s3_uris = get_dataset_s3_uris()
     print(s3_uris)
 
