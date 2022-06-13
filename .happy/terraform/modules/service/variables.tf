@@ -13,6 +13,11 @@ variable "remote_dev_prefix" {
   description = "S3 storage path / db schema prefix"
 }
 
+variable wmg_bucket {
+  type        = string
+  description = "Where's my gene (output) bucket name"
+}
+
 variable "dataset_submissions_bucket" {
   type        = string
   description = "S3 bucket for dataset submissions"
