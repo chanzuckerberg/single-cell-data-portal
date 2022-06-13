@@ -26,7 +26,9 @@ if RDEV_PREFIX:
     base_url = f"https://{RDEV_PREFIX.strip('/')}-frontend.rdev.single-cell.czi.technology"
 else:
     DEPLOYMENT_STAGE = os.environ.get("DEPLOYMENT_STAGE")
-    if DEPLOYMENT_STAGE == "prod":
+    if DEPLOYMENT_STAGE == "test":
+        base_url = "http://frontend.corporanet.local:3000"
+    elif DEPLOYMENT_STAGE == "prod":
         base_url = "https://cellxgene.cziscience.com"
     else:
         base_url = f"https://cellxgene.{DEPLOYMENT_STAGE}.single-cell.czi.technology"

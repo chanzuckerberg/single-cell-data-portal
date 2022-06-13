@@ -608,11 +608,14 @@ components:
         properties:
           link_name:
             type: string
+            nullable: true
           link_url:
             type: string
+            nullable: true
           link_type:
             type: string
             enum: [PROTOCOL, RAW_DATA, DOI, LAB_WEBSITE, OTHER, DATA_SOURCE]
+            nullable: true
     dataset:
       allOf:
         - $ref: "#/components/schemas/dataset_preview"

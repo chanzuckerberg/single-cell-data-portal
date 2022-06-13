@@ -135,24 +135,24 @@ class TestGetCollections(BaseAuthAPITest):
             name="collection", description="description", contact_name="john doe", contact_email="johndoe@email.com"
         )
 
-    def test__get_collections_no_auth_and_auth__OK(self):
+    def test__get_collections_no_auth__OK(self):
         res_no_auth = self.app.get("/curation/v1/collections")
         self.assertEqual(200, res_no_auth.status_code)
         self.assertEqual(6, len(res_no_auth.json["collections"]))
         [self.assertEqual("PUBLIC", c["visibility"]) for c in res_no_auth.json["collections"]]
 
+    def test__get_collections_with_auth__OK(self):
         res_auth = self.app.get("/curation/v1/collections", headers=self.get_auth_headers())
         self.assertEqual(200, res_auth.status_code)
         self.assertEqual(7, len(res_auth.json["collections"]))
 
-        self.assertGreater(len(res_auth.json["collections"]), len(res_no_auth.json["collections"]))
-
-    def test__get_collections_no_auth_with_visibility_query__OK(self):
+    def test__get_collections_no_auth_with_visibility_query_private__OK(self):
         params = {"visibility": "PRIVATE"}
         res_private = self.app.get("/curation/v1/collections", query_string=params)
         self.assertEqual(200, res_private.status_code)
         self.assertEqual(0, len(res_private.json["collections"]))
 
+    def test__get_collections_no_auth_with_visibility_query_public__OK(self):
         params = {"visibility": "PUBLIC"}
         res_public = self.app.get("/curation/v1/collections", query_string=params)
         self.assertEqual(200, res_public.status_code)
