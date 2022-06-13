@@ -149,8 +149,7 @@ class TestGetCollections(BaseAuthAPITest):
     def test__get_collections_no_auth_with_visibility_query_private__OK(self):
         params = {"visibility": "PRIVATE"}
         res_private = self.app.get("/curation/v1/collections", query_string=params)
-        self.assertEqual(200, res_private.status_code)
-        self.assertEqual(0, len(res_private.json["collections"]))
+        self.assertEqual(401, res_private.status_code)
 
     def test__get_collections_no_auth_with_visibility_query_public__OK(self):
         params = {"visibility": "PUBLIC"}
