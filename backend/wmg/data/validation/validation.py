@@ -348,13 +348,30 @@ class Validation:
             # drop ccl5 cell types with expression value of zero (to match pipeline processing)
             expected_ccl5_by_cell_type = expected_ccl5_by_cell_type[expected_ccl5_by_cell_type != 0]
 
-            # Todo actually compare once the rankit bug is fixed
-            malat1_comparison = expected_malat1_by_cell_type.compare(
-                malat1_expression_sum_by_cell_type, keep_equal=True
-            )
-            ccl5_comparison = expected_ccl5_by_cell_type.compare(ccl5_expression_sum_by_cell_type, keep_equal=True)
+            malat1_comparison = expected_malat1_by_cell_type.compare(malat1_expression_sum_by_cell_type)
+            ccl5_comparison = expected_ccl5_by_cell_type.compare(ccl5_expression_sum_by_cell_type)
             logger.info(malat1_comparison)
             logger.info(ccl5_comparison)
+
+            """
+            Because the expected values are computed using a slightly different formula they should be very close
+            but not identical to the values produced by the pipeline (off by a .01 or less).
+            Here we take the absolute value of the sum of the difference for each cell type. That number should be
+            very small (less than 1).
+            """
+            malat1_diff_total = abs(sum(malat1_comparison.self - malat1_comparison.other))
+            ccl5_diff_total = abs(sum(ccl5_comparison.self - ccl5_comparison.other))
+
+            if malat1_diff_total > 1:
+                self.errors.append(
+                    f"MALAT1 expression values for dataset {self.validation_dataset_uuid} are further "
+                    f"from expected values than they should be. Abs sum of difference is {malat1_diff_total}"
+                )
+            if ccl5_diff_total > 1:
+                self.errors.append(
+                    f"CCL5 expression values for dataset {self.validation_dataset_uuid} are further "
+                    f"from expected values than they should be. Abs sum of difference is {ccl5_diff_total}"
+                )
 
     def validate_dataset_counts(self):
         # todo check # of datasets in dataset folder and number from relational db
