@@ -100,8 +100,10 @@ def load_h5ad(h5ad_path: str, corpus_path: str, validate: bool, min_genes: int =
     obs = anndata_object.obs
     obs["dataset_id"] = dataset_id
     first_obs_idx = save_axes_labels(obs, f"{corpus_path}/obs", obs_labels)
+    start = time.time()
     transform_dataset_raw_counts_to_rankit(anndata_object, corpus_path, global_var_index, first_obs_idx)
-
+    end = time.time()
+    logger.info(f"rankit duration={end - start} ")
     if validate:
         validate_corpus_load(anndata_object, corpus_path, dataset_id)
 
@@ -211,7 +213,7 @@ def transform_dataset_raw_counts_to_rankit(
 
 
 def filter_out_rankits_with_low_expression_counts(
-    rankits: csr_matrix, raw_counts_csr: csr_matrix, expect_majority_filtered=True
+    rankits: csr_matrix, raw_counts_csr: csr_matrix, expect_majority_filtered=True, verbose=False
 ) -> coo_matrix:
     """
     Keep only rankit values that were computed from expression values above the desired threshold.
@@ -247,12 +249,12 @@ def filter_out_rankits_with_low_expression_counts(
         rankits_filtered = rankits.tocoo()
 
     end = time.time()
-
-    logger.info(
-        f"filter duration={end - start}, "
-        f"orig size={rankits_nnz_orig}, "
-        f"abs reduction={rankits_nnz_orig - rankits_filtered.nnz}, "
-        f"% reduction={(rankits_nnz_orig - rankits_filtered.nnz) / rankits_nnz_orig}"
-    )
+    if verbose is True:
+        logger.info(
+            f"filter duration={end - start}, "
+            f"orig size={rankits_nnz_orig}, "
+            f"abs reduction={rankits_nnz_orig - rankits_filtered.nnz}, "
+            f"% reduction={(rankits_nnz_orig - rankits_filtered.nnz) / rankits_nnz_orig}"
+        )
 
     return rankits_filtered
