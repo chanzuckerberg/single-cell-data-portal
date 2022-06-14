@@ -22,12 +22,12 @@ class Validation:
         self.expression_summary_path = f"{corpus_path}/{EXPRESSION_SUMMARY_CUBE_NAME}"
         self.env = os.getenv("ENV")
         self.validation_dataset_uuid = "3de0ad6d-4378-4f62-b37b-ec0b75a50d94"
-        self.MIN_CUBE_SIZE_GB = 3 if self.env == "PROD" else 0.1
+        self.MIN_CUBE_SIZE_GB = 1 if self.env == "PROD" else 0.1
         self.MIN_TISSUE_COUNT = 15 if self.env == "PROD" else 2
         self.MIN_SPECIES_COUNT = 2 if self.env == "PROD" else 1
         self.MIN_DATASET_COUNT = 50 if self.env == "PROD" else 5
-        self.MIN_MALAT1_GENE_EXPRESSION_CELL_COUNT_PERCENT = 90
-        self.MIN_ACTB_GENE_EXPRESSION_CELL_COUNT_PERCENT = 70
+        self.MIN_MALAT1_GENE_EXPRESSION_CELL_COUNT_PERCENT = 80
+        self.MIN_ACTB_GENE_EXPRESSION_CELL_COUNT_PERCENT = 60
 
     def validate_cube(self):
         """
@@ -159,8 +159,7 @@ class Validation:
 
                 MALAT1_avg_expression = cube.df[MALAT1_ont_id:MALAT1_ont_id]["sum"].sum() / MALAT1_cell_count
                 ACTB_avg_expression = cube.df[ACTB_ont_id:ACTB_ont_id]["sum"].sum() / ACTB_cell_count
-                # TODO -- need to update expected values for new rankit scores
-                if 5 > MALAT1_avg_expression:
+                if 4 > MALAT1_avg_expression:
                     self.errors.append(f"MALAT1 avg rankit score is {MALAT1_avg_expression}")
                 if 3 > ACTB_avg_expression:
                     self.errors.append(f"ACTB avg rankit score is {ACTB_avg_expression}")
@@ -196,11 +195,10 @@ class Validation:
             # housekeeping gene (MALAT1 here)
             female_avg_xist_expression = female_xist_cube["sum"].sum() / female_malat1_cube["nnz"].sum()
             male_avg_xist_expression = male_xist_cube["sum"].sum() / male_malat1_cube["nnz"].sum()
-            # Todo -- why isnt male closer to 0?
             logger.info(f"female avg xist expression {female_avg_xist_expression}")
             logger.info(f"male avg xist expression {male_avg_xist_expression}")
-            if male_avg_xist_expression > female_avg_xist_expression:
-                self.errors.append("Male cells expressing XIST at a higher level than female cells")
+            if male_avg_xist_expression * 50 > female_avg_xist_expression:
+                self.errors.append("XIST levels dont show expected sex based difference")
 
     def validate_lung_cell_marker_genes(self):
         """
@@ -367,8 +365,8 @@ class Validation:
             Here we take the absolute value of the sum of the difference for each cell type. That number should be
             very small (less than 1).
             """
-            malat1_diff_total = abs(sum(malat1_comparison.self - malat1_comparison.other))
-            ccl5_diff_total = abs(sum(ccl5_comparison.self - ccl5_comparison.other))
+            malat1_diff_total = sum(abs(malat1_comparison.self - malat1_comparison.other))
+            ccl5_diff_total = sum(abs(ccl5_comparison.self - ccl5_comparison.other))
 
             if malat1_diff_total > 1:
                 self.errors.append(
