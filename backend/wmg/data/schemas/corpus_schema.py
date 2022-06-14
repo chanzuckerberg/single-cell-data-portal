@@ -116,37 +116,6 @@ def create_tdb(corpus_location: str, tdb_group: str):
     X_extent = [512, 2048]  # guess - needs tuning
     filters = tiledb.FilterList([tiledb.ZstdFilter(level=-22)])
 
-    """ Optional array, normalized X from original dataset. """
-    tiledb.Array.create(
-        f"{uri}/X",
-        tiledb.ArraySchema(
-            domain=tiledb.Domain(
-                [
-                    tiledb.Dim(
-                        name="obs_idx",
-                        domain=uint32_domain,
-                        tile=X_extent[0],
-                        dtype=np.uint32,
-                        filters=filters,
-                    ),
-                    tiledb.Dim(
-                        name="var_idx",
-                        domain=uint32_domain,
-                        tile=X_extent[1],
-                        dtype=np.uint32,
-                        filters=filters,
-                    ),
-                ]
-            ),
-            sparse=True,
-            allows_duplicates=True,
-            attrs=[tiledb.Attr(name="data", dtype=np.float32, filters=filters)],
-            cell_order="row-major",
-            tile_order="col-major",
-            capacity=X_capacity,
-        ),
-    )
-
     """ rankit expression values """
     tiledb.Array.create(
         f"{uri}/{INTEGRATED_ARRAY_NAME}",

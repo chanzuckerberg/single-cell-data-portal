@@ -123,8 +123,9 @@ const StyledUL = styled.ul<{ $isChild: boolean; isExpanded: boolean }>`
 
   & li {
     height: 36px;
-    padding: 8px 16px;
+    padding: 8px 24px;
     margin-bottom: 0;
+    cursor: pointer;
   }
 
   & li.active-file {
@@ -261,6 +262,20 @@ const StyledLeftNav = styled.div`
   border-right: 1px solid #eaeaea;
   grid-area: leftsidebar;
   width: 100%;
+  height: 100vh;
+  position: sticky;
+  top: 48px;
+  overflow-y: scroll;
+  padding-top: 48px;
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-clip: padding-box;
+    border-right: 4px #f8f8f8 solid;
+    background: grey;
+  }
 `;
 
 const PageNavigator = ({
@@ -283,15 +298,16 @@ const PageNavigator = ({
 };
 
 const DocContent = styled.div`
-  width: 100%;
-  overflow-x: hidden;
+  width: auto;
   overflow-wrap: break-word;
-  display: flex;
   align-items: center;
-  flex-direction: column;
   grid-area: content;
+  margin: 32px auto;
+  max-width: 659px;
+  min-width: 150px;
   & > * {
-    max-width: 570px;
+    margin-top: 24px;
+    line-height: 18px;
   }
 `;
 
@@ -323,12 +339,27 @@ const DocsImage = ({ src }: ImageProps) => {
 const MDX_AVAILABLE_COMPONENTS = {
   EmbeddedGoogleSlides,
   Image: DocsImage,
+  NextLink,
   a: (props: React.AnchorHTMLAttributes<HTMLAnchorElement>) => (
     <a rel="noopener" target="_blank" {...props} />
   ),
-  NextLink,
+  h1: styled.h1`
+    font-size: 26px;
+  `,
+  h2: styled.h1`
+    font-size: 22px;
+  `,
+  h3: styled.h1`
+    font-size: 18px;
+  `,
+  h4: styled.h1`
+    font-size: 14px;
+  `,
+  p: styled.p`
+    margin-top: 16px;
+  `,
 };
-const DocPage = ({ activeFile, mdxSource, filePath }: Props) => {
+const DocPage = ({ activeFile, mdxSource, filePath }: Props): JSX.Element => {
   return (
     <>
       <PageNavigator filePath={filePath} activeFile={activeFile} />
