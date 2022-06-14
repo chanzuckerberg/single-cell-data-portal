@@ -99,7 +99,7 @@ def _read_s3obj(relative_path: str) -> str:
     wmg_config = WmgConfig()
     wmg_config.load()
     prefixed_relative_path = os.path.join(_build_data_path_prefix(), relative_path or "")
-    s3obj = s3.Object(WmgConfig().bucket, prefixed_relative_path)
+    s3obj = s3.Object(wmg_config.wmg_bucket, prefixed_relative_path)
     return s3obj.get()["Body"].read().decode("utf-8").strip()
 
 
@@ -139,7 +139,7 @@ def _build_snapshot_base_uri(snapshot_identifier: str):
     data_path_prefix = _build_data_path_prefix()
     return os.path.join(
         "s3://",
-        wmg_config.bucket,
+        wmg_config.wmg_bucket,
         data_path_prefix,
         snapshot_identifier,
     )
