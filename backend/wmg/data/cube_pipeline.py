@@ -8,7 +8,7 @@ from typing import List
 import tiledb
 
 from backend.wmg.data import extract
-from backend.wmg.data.load_cube import update_s3_resources, upload_artifacts_to_s3
+from backend.wmg.data.load_cube import upload_artifacts_to_s3, make_snapshot_active
 from backend.wmg.data.load_corpus import load_h5ad
 from backend.wmg.data.schemas.corpus_schema import create_tdb, INTEGRATED_ARRAY_NAME
 from backend.wmg.data.tiledb import create_ctx
@@ -61,7 +61,6 @@ def load_data_and_create_cube(
     under the given corpus name.
     A cube of expression summary statistics (known as the expression summary cube) across genes (but queryable by
     the given dimensions/data) is then generated and stored under big-cube.
-    ## TODO add function to get cell count totals
     A per-tissue mapping of cell ontologies is generated and the files are copied to s3 under a shared timestamp,.
     On success the least recent set of files are removed from s3
     """
@@ -82,9 +81,8 @@ def load_data_and_create_cube(
     create_cubes(corpus_path)
     logger.info("Built expression summary cube")
     if validate_cubes:
-        is_valid = Validation(corpus_path).validate_cube()
-        if is_valid is False:
-            return
+        if Validation(corpus_path).validate_cube() is False:
+            sys.exit("Exiting due to cube validation failure")
     cell_type_by_tissue = get_cell_types_by_tissue(corpus_path)
     generate_cell_ordering(snapshot_path, cell_type_by_tissue)
     generate_primary_filter_dimensions(snapshot_path, corpus_name, timestamp)
@@ -92,10 +90,15 @@ def load_data_and_create_cube(
     upload_artifacts_to_s3(snapshot_path, timestamp)
     logger.info("Copied snapshot to s3")
     if validate_cubes:
-        update_s3_resources(timestamp)
-    logger.info(f"Updated latest_snapshot_identifier in s3. Current snapshot id is {timestamp}")
+        make_snapshot_active(timestamp)
+        logger.info(f"Updated latest_snapshot_identifier in s3. Current snapshot id is {timestamp}")
 
 
 if __name__ == "__main__":
+    """
+    To trigger the batch process in prod via the cli run
+    AWS_PROFILE=single-cell-prod aws batch submit-job --job-name $JOB_NAME --job-queue dp-prod --job-definition dp-prod-prodstack-wmg-processing # noqa E501
+    """
+    # todo pass in validate_cubes as env arg
     load_data_and_create_cube("datasets", ".")
     sys.exit()
