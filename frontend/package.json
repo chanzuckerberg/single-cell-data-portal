@@ -36,6 +36,7 @@
     "react-tweet-embed": "^2.0.0",
     "react-window": "^1.8.6",
     "rehype-slug": "^5.0.1",
+    "sharp": "^0.30.6",
     "styled-components": "^5.3.3"
   },
   "devDependencies": {
