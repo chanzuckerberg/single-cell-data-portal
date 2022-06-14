@@ -111,7 +111,7 @@ resource "aws_secretsmanager_secret" "wmg_config" {
    name = "corpora/backend/${local.deployment_stage}/wmg_config"
 }
   
-variable "wmg_secret_config" {
+variable "wmg_secret_string" {
   default = {
     tiledb_config_overrides = "{\"py.init_buffer_bytes\": 52428800, \"sm.tile_cache_size\": 134217728, \"sm.mem.total_budget\": 2147483648, \"sm.memory_budget\": 1073741824, \"sm.memory_budget_var\": 2147483648}"
   }
@@ -120,7 +120,7 @@ variable "wmg_secret_config" {
 
 resource "aws_secretsmanager_secret_version" "sversion" {
   secret_id = aws_secretsmanager_secret.wmg_config.id
-  secret_string = jsonencode(var.wmg_secret_config)
+  secret_string = jsonencode(var.wmg_secret_string)
 }
 
 module backend_service {
