@@ -171,7 +171,7 @@ class Validation:
             female_ontology_id = fixtures.validation_sex_ontologies["female"]
             male_ontology_id = fixtures.validation_sex_ontologies["male"]
             MALAT1_ont_id = fixtures.validation_gene_ontologies["MALAT1"]
-            human_malat1_cube = cube.df[MALAT1_ont_id:MALAT1_ont_id, :,human_ontology_id:human_ontology_id]
+            human_malat1_cube = cube.df[MALAT1_ont_id:MALAT1_ont_id, :, human_ontology_id:human_ontology_id]
             # slice cube by dimensions             gene_ontology      organ (all)          species
             human_XIST_cube = cube.df[
                 sex_marker_gene_ontology_id:sex_marker_gene_ontology_id, :, human_ontology_id:human_ontology_id
