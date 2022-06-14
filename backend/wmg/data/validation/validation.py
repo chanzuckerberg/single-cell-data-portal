@@ -171,6 +171,8 @@ class Validation:
             sex_marker_gene_ontology_id = fixtures.validation_gene_ontologies["XIST"]
             female_ontology_id = fixtures.validation_sex_ontologies["female"]
             male_ontology_id = fixtures.validation_sex_ontologies["male"]
+            MALAT1_ont_id = fixtures.validation_gene_ontologies["MALAT1"]
+            human_malat1_cube = cube.df[MALAT1_ont_id:MALAT1_ont_id, :,human_ontology_id:human_ontology_id]
             # slice cube by dimensions             gene_ontology      organ (all)          species
             human_XIST_cube = cube.df[
                 sex_marker_gene_ontology_id:sex_marker_gene_ontology_id, :, human_ontology_id:human_ontology_id
@@ -179,15 +181,21 @@ class Validation:
             female_xist_cube = human_XIST_cube.query(f"sex_ontology_term_id == '{female_ontology_id}'")
             male_xist_cube = human_XIST_cube.query(f"sex_ontology_term_id == '{male_ontology_id}'")
 
+            female_malat1_cube = human_malat1_cube.query(f"sex_ontology_term_id == '{female_ontology_id}'")
+            male_malat1_cube = human_malat1_cube.query(f"sex_ontology_term_id == '{male_ontology_id}'")
+
             # should be expressed in most female cells and no male cells
             if male_xist_cube.nnz.sum() > female_xist_cube.nnz.sum():
                 self.errors.append(
                     "The number of male cells expressing XIST is higher than the number of female "
                     "cells expressing XIST"
                 )
-            # should be expressed in females at a much higher rate
-            female_avg_xist_expression = female_xist_cube["sum"].sum() / female_xist_cube["nnz"].sum()
-            male_avg_xist_expression = male_xist_cube["sum"].sum() / male_xist_cube["nnz"].sum()
+
+            # should be expressed in females at a much higher rate. To ensure an accurate comparison divide
+            # the xist expression level by the number of cells of the correct sex expressing a highly expressed
+            # housekeeping gene (MALAT1 here)
+            female_avg_xist_expression = female_xist_cube["sum"].sum() / female_malat1_cube["nnz"].sum()
+            male_avg_xist_expression = male_xist_cube["sum"].sum() / male_malat1_cube["nnz"].sum()
             # Todo -- why isnt male closer to 0?
             logger.info(f"female avg xist expression {female_avg_xist_expression}")
             logger.info(f"male avg xist expression {male_avg_xist_expression}")
