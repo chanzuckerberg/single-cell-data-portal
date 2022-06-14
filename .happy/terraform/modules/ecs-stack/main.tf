@@ -108,20 +108,12 @@ module frontend_service {
 }
 
 resource "aws_secretsmanager_secret" "wmg_config" {
-   name = "/corpora/backend/${local.custom_stack_name}/wmg_config"
+   name = "corpora/backend/${local.deployment_stage}/wmg_config"
 }
   
 variable "wmg_secret_config" {
   default = {
-    tiledb_config_overrides = jsonencode(
-      {
-        "py.init_buffer_bytes": 52428800,
-        "sm.tile_cache_size": 134217728,
-        "sm.mem.total_budget": 2147483648,
-        "sm.memory_budget": 1073741824,
-        "sm.memory_budget_var": 2147483648
-      }
-    )
+    tiledb_config_overrides = "{\"py.init_buffer_bytes\": 52428800, \"sm.tile_cache_size\": 134217728, \"sm.mem.total_budget\": 2147483648, \"sm.memory_budget\": 1073741824, \"sm.memory_budget_var\": 2147483648}"
   }
   type = map(string)
 }
