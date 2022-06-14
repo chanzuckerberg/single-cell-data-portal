@@ -65,8 +65,8 @@ def load_data_and_create_cube(
     On success the least recent set of files are removed from s3
     """
     if not snapshot_path:
-        timestamp = int(time.time())
-        snapshot_path = f"{pathlib.Path().resolve()}/{timestamp}"
+        snapshot_id = int(time.time())
+        snapshot_path = f"{pathlib.Path().resolve()}/{snapshot_id}"
     corpus_path = f"{snapshot_path}/{corpus_name}"
     if not tiledb.VFS().is_dir(corpus_path):
         create_tdb(snapshot_path, corpus_name)
@@ -85,13 +85,13 @@ def load_data_and_create_cube(
             sys.exit("Exiting due to cube validation failure")
     cell_type_by_tissue = get_cell_types_by_tissue(corpus_path)
     generate_cell_ordering(snapshot_path, cell_type_by_tissue)
-    generate_primary_filter_dimensions(snapshot_path, corpus_name, timestamp)
+    generate_primary_filter_dimensions(snapshot_path, corpus_name, snapshot_id)
     logger.info("Generated cell ordering json file")
-    upload_artifacts_to_s3(snapshot_path, timestamp)
+    upload_artifacts_to_s3(snapshot_path, snapshot_id)
     logger.info("Copied snapshot to s3")
     if validate_cubes:
-        make_snapshot_active(timestamp)
-        logger.info(f"Updated latest_snapshot_identifier in s3. Current snapshot id is {timestamp}")
+        make_snapshot_active(snapshot_id)
+        logger.info(f"Updated latest_snapshot_identifier in s3. Current snapshot id is {snapshot_id}")
 
 
 if __name__ == "__main__":
