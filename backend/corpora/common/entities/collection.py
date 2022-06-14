@@ -14,6 +14,7 @@ from ..corpora_orm import (
     generate_uuid,
     ProcessingStatus,
     DbDatasetProcessingStatus,
+    DbDataset,
 )
 from ..utils.db_helpers import clone
 
@@ -152,6 +153,44 @@ class Collection(Entity):
 
         return results
 
+    columns_for_list_collections = {
+        DbCollectionLink: [
+            "link_name",
+            "link_url",
+            "link_type",
+        ],
+        DbCollection: [
+            "id",
+            "name",
+            "visibility",
+            "tombstone",
+            "contact_name",
+            "contact_email",
+            "curator_name",
+            "revised_at",
+            "created_at",
+            "published_at",
+            "description",
+            "publisher_metadata",
+            "revision_of",
+            "tombstone",
+            "owner",  # Needed for determining view permissions
+            "links",
+            "datasets",
+        ],
+        DbDataset: [
+            "id",
+            "curator_tag",
+            "tissue",
+            "assay",
+            "disease",
+            "organism",
+            "tombstone",
+            "processing_status",
+        ],
+        DbDatasetProcessingStatus: ["processing_status"],
+    }
+
     @classmethod
     def list_collections(cls, session: Session, visibility: str = None) -> typing.List[dict]:
         """
@@ -161,51 +200,15 @@ class Collection(Entity):
         @param visibility: the CollectionVisibility string name
         @return: a list of dict representations of Collections
         """
-
-        keep_columns = {
-            DbCollectionLink: [
-                "link_name",
-                "link_url",
-                "link_type",
-            ],
-            Collection.table: [
-                "id",
-                "name",
-                "visibility",
-                "tombstone",
-                "contact_name",
-                "contact_email",
-                "curator_name",
-                "revised_at",
-                "created_at",
-                "published_at",
-                "description",
-                "publisher_metadata",
-                "revision_of",
-                "tombstone",
-                "owner",  # Needed for determining view permissions
-                "links",
-                "datasets",
-            ],
-            Dataset.table: [
-                "id",
-                "curator_tag",
-                "tissue",
-                "assay",
-                "disease",
-                "organism",
-                "tombstone",
-                "processing_status",
-            ],
-            DbDatasetProcessingStatus: ["processing_status"],
-        }
         filters = []
         if visibility == CollectionVisibility.PUBLIC.name:
             filters = [DbCollection.visibility == CollectionVisibility.PUBLIC]
         elif visibility == CollectionVisibility.PRIVATE.name:
             filters = [DbCollection.visibility == CollectionVisibility.PRIVATE]
 
-        collections = [r.to_dict_keep(keep_columns) for r in session.query(cls.table).filter(*filters).all()]
+        collections = [
+            r.to_dict_keep(cls.columns_for_list_collections) for r in session.query(cls.table).filter(*filters).all()
+        ]
 
         # resp_collections = []
         for collection in collections:
