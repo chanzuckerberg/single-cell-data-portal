@@ -384,7 +384,7 @@ export const TISSUE_ONTOLOGY_VIEW: OntologyView = {
     },
     {
       label: "bronchial epithelial cell (cell culture)",
-      ontology_term_id: "CL_0002328 (cell culture)",
+      ontology_term_id: "CL:0002328 (cell culture)",
     },
     {
       label: "central nervous system",
@@ -404,7 +404,7 @@ export const TISSUE_ONTOLOGY_VIEW: OntologyView = {
     },
     {
       label: "cultured cell (cell culture)",
-      ontology_term_id: "CL_0000010 (cell culture)",
+      ontology_term_id: "CL:0000010 (cell culture)",
     },
     {
       label: "digestive system",
@@ -412,7 +412,7 @@ export const TISSUE_ONTOLOGY_VIEW: OntologyView = {
     },
     {
       label: "embryonic stem cell (cell culture)",
-      ontology_term_id: "CL_0002322 (cell culture)",
+      ontology_term_id: "CL:0002322 (cell culture)",
     },
     {
       label: "endocrine gland",
@@ -420,23 +420,19 @@ export const TISSUE_ONTOLOGY_VIEW: OntologyView = {
     },
     {
       label: "endothelial cell (cell culture)",
-      ontology_term_id: "CL_0000115 (cell culture)",
+      ontology_term_id: "CL:0000115 (cell culture)",
     },
     {
       label: "epithelial cell of alveolus of lung (cell culture)",
-      ontology_term_id: "CL_0010003 (cell culture)",
+      ontology_term_id: "CL:0010003 (cell culture)",
     },
     {
       label: "epithelial cell of lung (cell culture)",
-      ontology_term_id: "CL_0000082 (cell culture)",
+      ontology_term_id: "CL:0000082 (cell culture)",
     },
     {
       label: "esophagus",
       ontology_term_id: "UBERON:0001043",
-    },
-    {
-      label: "excretory system",
-      ontology_term_id: "UBERON:0001008",
     },
     {
       label: "exocrine gland",
@@ -500,7 +496,7 @@ export const TISSUE_ONTOLOGY_VIEW: OntologyView = {
     },
     {
       label: "mammary gland epithelial cell (cell culture)",
-      ontology_term_id: "CL_0002327 (cell culture)",
+      ontology_term_id: "CL:0002327 (cell culture)",
     },
     {
       label: "musculature",

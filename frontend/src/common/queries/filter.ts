@@ -1,6 +1,5 @@
 import { useMemo } from "react";
 import { useQuery, UseQueryResult } from "react-query";
-import { API } from "src/common/API";
 import {
   Author,
   Consortium,
@@ -8,8 +7,10 @@ import {
   Ontology,
   PublisherMetadata,
 } from "src/common/entities";
-import { DEFAULT_FETCH_OPTIONS } from "src/common/queries/common";
+import { COLLECTIONS_RESPONSE } from "src/common/queries/collections-response";
+import { DATASETS_RESPONSE } from "src/common/queries/datasets-response";
 import { ENTITIES } from "src/common/queries/entities";
+import { TISSUE_ANCESTORS_BY_DATASET_ID } from "src/common/queries/tissue-ancestors-by-dataset-id";
 import { COLLATOR_CASE_INSENSITIVE } from "src/components/common/Filter/common/constants";
 import {
   Categories,
@@ -20,7 +21,6 @@ import {
   PUBLICATION_DATE_VALUES,
 } from "src/components/common/Filter/common/entities";
 import { checkIsOverMaxCellCount } from "src/components/common/Grid/common/utils";
-import { API_URL } from "src/configs/configs";
 
 /**
  * Never expire cached collections and datasets. TODO revisit once state management approach is confirmed (#1809).
@@ -534,9 +534,11 @@ function expandPublicationDateValues(
 async function fetchCollections(): Promise<
   Map<string, ProcessedCollectionResponse>
 > {
-  const collections = await (
-    await fetch(API_URL + API.COLLECTIONS_INDEX, DEFAULT_FETCH_OPTIONS)
-  ).json();
+  // TODO(cc) revert with #2569.
+  // const collections = await (
+  //   await fetch(API_URL + API.COLLECTIONS_INDEX, DEFAULT_FETCH_OPTIONS)
+  // ).json();
+  const collections = COLLECTIONS_RESPONSE as unknown as CollectionResponse[];
 
   // Calculate the number of months since publication for each collection.
   const [todayMonth, todayYear] = getMonthYear(new Date());
@@ -557,9 +559,31 @@ async function fetchCollections(): Promise<
  * filterable and sortable dataset fields.
  */
 async function fetchDatasets(): Promise<DatasetResponse[]> {
-  const datasets = await (
-    await fetch(API_URL + API.DATASETS_INDEX, DEFAULT_FETCH_OPTIONS)
-  ).json();
+  // TODO(cc) revert with #2569.
+  // const datasets = await (
+  //   await fetch(API_URL + API.DATASETS_INDEX, DEFAULT_FETCH_OPTIONS)
+  // ).json();
+  const datasets = DATASETS_RESPONSE as unknown as DatasetResponse[];
+
+  // TODO(cc) remove with #2569 - this generates tissuesByDatasetId to be used by the "compute_uberon_tissue_parts_graph" notebook for the PoC only.
+  // const mappings = datasets.map((d) => {
+  //   const tissueIds = d.tissue
+  //     .map((t) => `"${t.ontology_term_id.replace(/:/, "_")}"`)
+  //     .join(",");
+  //   return `"${d.id}": [${tissueIds}]`;
+  // });
+  // console.log(`tissues_by_dataset_id = {${mappings.join(", ")}}`);
+
+  // TODO(cc) remove with #2569 - add tissue_ancestors to datasets
+  datasets.forEach((d) => {
+    d.tissue_ancestors = TISSUE_ANCESTORS_BY_DATASET_ID[d.id] ?? [];
+  });
+
+  datasets.forEach((d) => {
+    if (d.id === "4b9e0a15-c006-45d9-860f-b8a43ccf7d9d") {
+      console.log(d);
+    }
+  });
 
   // Correct any dirty data returned from endpoint.
   return datasets.map((dataset: DatasetResponse) => {

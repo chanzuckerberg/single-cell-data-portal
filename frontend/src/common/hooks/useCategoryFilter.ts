@@ -551,8 +551,14 @@ export function buildNextOntologyCategoryFilters<T extends Categories>(
     getCategoryFilter(categoryKey, filters)?.value as CategoryValueKey[]
   );
 
+  // TODO(cc) resolve with #2569 - will need to change OntologyView key or add "translate category value key" functionality to getOntologySpeciesKey (to handle "CL:xxx" for tissue)
+  const speciesKey =
+    categoryKey === CATEGORY_KEY.TISSUE_ANCESTORS
+      ? ONTOLOGY_VIEW_KEY.UBERON
+      : categoryValueKey;
+
   // Find the selected and parent node, if any, for the selected value.
-  const ontologySpeciesKey = getOntologySpeciesKey(categoryValueKey);
+  const ontologySpeciesKey = getOntologySpeciesKey(speciesKey);
   const ontologyRootNodes = ontology[ontologySpeciesKey];
   if (!ontologyRootNodes) {
     return [...categoryFilters.values()]; // Error state - ontology does not exist.
