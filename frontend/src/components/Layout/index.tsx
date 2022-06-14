@@ -3,6 +3,7 @@ import { FC } from "react";
 import Footer from "../Footer";
 import Header from "../Header";
 import LandingFooter from "../LandingFooter";
+import LandingHeader from "../LandingHeader";
 import { Wrapper } from "./style";
 
 const Layout: FC = ({ children }) => {
@@ -12,7 +13,7 @@ const Layout: FC = ({ children }) => {
   if (pathname === "/landing-page") {
     return (
       <>
-        <Header />
+        <LandingHeader />
         {children}
         <LandingFooter />
       </>

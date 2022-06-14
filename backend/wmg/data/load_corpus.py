@@ -31,7 +31,7 @@ GENE_EXPRESSION_COUNT_MIN_THRESHOLD = 500
 # Minimum value for raw expression counts that will be used to filter out computed RankIt values. Details:
 # https://github.com/chanzuckerberg/cellxgene-documentation/blob/main/scExpression/scExpression-documentation.md#removal-of-noisy-ultra-low-expression-values
 # TODO: #2474 remove this and relevant code/unit tests after June 2022
-RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD = 0
+RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD = 2
 
 
 def is_dataset_already_loaded(corpus_path: str, dataset_id: str) -> bool:
@@ -100,8 +100,10 @@ def load_h5ad(h5ad_path: str, corpus_path: str, validate: bool, min_genes: int =
     obs = anndata_object.obs
     obs["dataset_id"] = dataset_id
     first_obs_idx = save_axes_labels(obs, f"{corpus_path}/obs", obs_labels)
+    start = time.time()
     transform_dataset_raw_counts_to_rankit(anndata_object, corpus_path, global_var_index, first_obs_idx)
-
+    end = time.time()
+    logger.info(f"rankit duration={end - start} ")
     if validate:
         validate_corpus_load(anndata_object, corpus_path, dataset_id)
 
@@ -154,29 +156,6 @@ def save_axes_labels(df: pd.DataFrame, array_name: str, label_info: List) -> int
 
     logger.info("saved.")
     return next_join_index
-
-
-def save_X(anndata_object: anndata.AnnData, group_name: str, global_var_index: np.ndarray, first_obs_idx: int):
-    """
-    Save (pre)normalized expression counts to the tiledb corpus object
-    """
-    array_name = f"{group_name}/X"
-    expression_matrix = anndata_object.X
-    logger.debug(f"saving {array_name}...\n")
-    stride = max(int(np.power(10, np.around(np.log10(1e9 / expression_matrix.shape[1])))), 10_000)
-    with tiledb.open(array_name, mode="w") as array:
-        for start in range(0, expression_matrix.shape[0], stride):
-            end = min(start + stride, expression_matrix.shape[0])
-            sparse_expression_matrix = sparse.coo_matrix(expression_matrix[start:end, :])
-            rows = sparse_expression_matrix.row + start + first_obs_idx
-            cols = global_var_index[sparse_expression_matrix.col]
-            data = sparse_expression_matrix.data
-
-            array[rows, cols] = data
-            del sparse_expression_matrix, rows, cols, data
-            gc.collect()
-
-    logger.debug(f"Saved {group_name}.")
 
 
 def get_X_raw(anndata_object: anndata.AnnData) -> Union[np.ndarray, sparse.spmatrix, ArrayView]:
@@ -234,7 +213,7 @@ def transform_dataset_raw_counts_to_rankit(
 
 
 def filter_out_rankits_with_low_expression_counts(
-    rankits: csr_matrix, raw_counts_csr: csr_matrix, expect_majority_filtered=True
+    rankits: csr_matrix, raw_counts_csr: csr_matrix, expect_majority_filtered=True, verbose=False
 ) -> coo_matrix:
     """
     Keep only rankit values that were computed from expression values above the desired threshold.
@@ -270,12 +249,12 @@ def filter_out_rankits_with_low_expression_counts(
         rankits_filtered = rankits.tocoo()
 
     end = time.time()
-
-    logger.info(
-        f"filter duration={end - start}, "
-        f"orig size={rankits_nnz_orig}, "
-        f"abs reduction={rankits_nnz_orig - rankits_filtered.nnz}, "
-        f"% reduction={(rankits_nnz_orig - rankits_filtered.nnz) / rankits_nnz_orig}"
-    )
+    if verbose is True:
+        logger.info(
+            f"filter duration={end - start}, "
+            f"orig size={rankits_nnz_orig}, "
+            f"abs reduction={rankits_nnz_orig - rankits_filtered.nnz}, "
+            f"% reduction={(rankits_nnz_orig - rankits_filtered.nnz) / rankits_nnz_orig}"
+        )
 
     return rankits_filtered
