@@ -118,6 +118,8 @@ paths:
                           nullable: true
                         tombstone:
                           type: boolean
+                        processing_status:
+                          $ref: "#/components/schemas/processing_status"
         "401":
           $ref: "#/components/responses/401"
     post:
@@ -503,9 +505,7 @@ paths:
                 type: object
                 properties:
                   status:
-                    type: string
-                    description: Processing status for a Dataset
-                    enum: [FAILURE, PENDING, SUCCESS]
+                    $ref: "#/components/schemas/processing_status"
                   file_statuses:
                     type: object
                     properties:
@@ -714,6 +714,10 @@ components:
           type: string
         detail:
           type: string
+    processing_status:
+      type: string
+      description: Processing status for a Dataset or Collection
+      enum: [FAILURE, PENDING, SUCCESS]
     publisher_metadata:
       type: object
       properties:

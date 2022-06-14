@@ -12,6 +12,7 @@ from ..corpora_orm import (
     DbCollectionLink,
     CollectionVisibility,
     generate_uuid,
+    ProcessingStatus,
 )
 from ..utils.db_helpers import clone
 
@@ -204,7 +205,22 @@ class Collection(Entity):
 
         resp_collections = []
         for collection in collections:
+
+            # Select Collection columns of interest
             resp_collection = cls._copy_columns(collection_columns, collection)
+
+            # Add a Collection-level processing status
+            status = ProcessingStatus.SUCCESS
+            for dataset in collection["datasets"]:
+                processing_status = dataset["processing_status"]
+                if processing_status["processing_status"] == ProcessingStatus.PENDING:
+                    status = ProcessingStatus.PENDING
+                elif processing_status["processing_status"] == ProcessingStatus.FAILURE:
+                    status = ProcessingStatus.FAILURE
+                    break
+            resp_collection["processing_status"] = status
+
+            # Select other columns of interest
             for entity_col, cols in (("datasets", dataset_columns), ("links", link_columns)):
                 entities = collection.get(entity_col)
                 resp_collection[entity_col] = [cls._copy_columns(cols, entity) for entity in entities]
