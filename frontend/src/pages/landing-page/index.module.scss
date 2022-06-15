@@ -36,7 +36,7 @@
       }
 
       &.btnLink {
-        background-color: #3867fa;
+        background-color: #0073ff;
         padding: 7px 14px;
         border-radius: 4px;
       }
@@ -273,7 +273,7 @@
 
     &.active,
     &.active:hover {
-      border-bottom: 3px solid #3867fa;
+      border-bottom: 3px solid #0073ff;
       color: #000000;
       opacity: 1;
     }
@@ -305,7 +305,7 @@
         transition: background-color 0.4s;
 
         svg path {
-          fill: #3867fa;
+          fill: #0073ff;
           transition: fill 0.4s;
         }
       }
@@ -324,7 +324,7 @@
     }
 
     &.active .figureWrapper {
-      background-color: #3867fa;
+      background-color: #0073ff;
 
       @media (max-width: 999px) {
         margin-bottom: 15px;
@@ -500,7 +500,7 @@
     font-weight: 600;
     line-height: 24px;
     letter-spacing: 0.3px;
-    color: #3867fa;
+    color: #0073ff;
     flex-shrink: 0;
 
     .linkArrow {
