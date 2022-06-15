@@ -13,7 +13,7 @@ import {
   getCorners,
   getShadows,
   Icon,
-  MenuSelect,
+  MenuSelect
 } from "czifui";
 import { pull, uniq } from "lodash";
 import React, { createContext, ReactChild, useRef, useState } from "react";
@@ -21,7 +21,7 @@ import { FixedSizeList, ListChildComponentProps } from "react-window";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { noop } from "src/common/constants/utils";
-import { Label, labelFontSize } from "../../style";
+import { Label } from "../../style";
 import { ButtonWrapper, StyledIconButton, StyledMenuItem } from "./style";
 
 const MAX_ITEMS_TO_SHOW = 9.5;
@@ -217,11 +217,10 @@ export default function QuickSelect<
       setHasComma(false);
     }
   };
-
   return (
     <>
       <ButtonWrapper>
-        <Label style={{ fontSize: labelFontSize }}>{label}</Label>
+        <Label>{label}</Label>
         <StyledIconButton
           disabled={isLoading}
           data-test-id={dataTestId}

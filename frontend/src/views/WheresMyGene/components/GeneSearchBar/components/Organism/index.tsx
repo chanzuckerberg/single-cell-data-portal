@@ -13,7 +13,7 @@ import {
 } from "src/views/WheresMyGene/common/store";
 import { selectOrganism } from "src/views/WheresMyGene/common/store/actions";
 import { Organism as IOrganism } from "src/views/WheresMyGene/common/types";
-import { Label, labelFontSize } from "../../style";
+import { Label } from "../../style";
 import { StyledDropdown, Wrapper } from "./style";
 
 const TEMP_ALLOW_NAME_LIST = ["Homo sapiens", "Mus musculus"];
@@ -68,10 +68,9 @@ export default function Organism({ isLoading }: Props): JSX.Element {
   }, [organisms]);
 
   const organism = organismsById[selectedOrganismId || ""];
-
   return (
     <Wrapper>
-      <Label style={{ fontSize: labelFontSize }}>Organism</Label>
+      <Label>Organism</Label>
       <StyledDropdown
         label={organism?.name || "Select"}
         options={filteredOrganisms || EMPTY_ARRAY}
