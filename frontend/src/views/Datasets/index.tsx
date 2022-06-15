@@ -312,7 +312,7 @@ export default function Datasets(): JSX.Element {
     KEYS.SIDE_BAR_DATASETS,
     true
   );
-
+  
   return (
     <>
       <Head>

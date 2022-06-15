@@ -247,6 +247,7 @@ export default function WheresMyGene(): JSX.Element {
         testId="filters-panel"
         disabled={!shouldEnableSidebars}
         forceToggle={shouldEnableSidebars}
+        wmgSideBar
       >
         <Filters />
       </SideBar>
@@ -259,6 +260,7 @@ export default function WheresMyGene(): JSX.Element {
         SideBarPositionerComponent={SideBarPositioner}
         disabled={!shouldEnableSidebars}
         forceToggle={shouldEnableSidebars}
+        wmgSideBar
       >
         <InfoPanel
           isScaled={isScaled}

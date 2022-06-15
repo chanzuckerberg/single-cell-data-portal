@@ -29,6 +29,7 @@ export interface Props {
   testId?: string;
   disabled?: boolean;
   forceToggle?: boolean;
+  wmgSideBar?: boolean;
 }
 
 export default function SideBar({
@@ -43,6 +44,7 @@ export default function SideBar({
   testId,
   disabled,
   forceToggle,
+  wmgSideBar
 }: Props): JSX.Element {
   const [isExpanded, setIsExpanded] = useState(isOpen);
   const sideBarWidth = isExpanded ? width : COLLAPSED_WIDTH_PX;
@@ -65,7 +67,8 @@ export default function SideBar({
   };
 
   useEffect(() => {
-    if (!(disabled && !isExpanded)) handleExpandedClick(!isExpanded);
+    if (!(disabled && !isExpanded) && wmgSideBar)
+      handleExpandedClick(!isExpanded);
   }, [forceToggle]);
 
   return (
