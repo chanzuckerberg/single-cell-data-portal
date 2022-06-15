@@ -1,12 +1,12 @@
 # Self-Host CellxGene
 
-## Hosting cellxgene desktop on the web
+## Hosting CellxGene Desktop on the Web
 
 Cellxgene desktop is intended to be used by researchers on their local machines. In cases where collaborators are not comfortable installing cellxgene, it is possible to host cellxgene, so your collaborators only need to open the URL you send them.
 
 We don't officially support web deployment, but we've offered some guidance in the following sections on ways to deploy cellxgene to the web.
 
-## General notes and cautions
+## General Notes and Cautions
 
 Please consider the following when deploying cellxgene in any "hosted" environment, especially where access from the broader Internet is possible:
 
@@ -29,7 +29,7 @@ The following configuration options require special consideration in any multi-u
 
 `--annotations-file`: this specifies a single file for all end-user annotations, and is incompatible with hosted or multi-user use of cellxgene. Using it will cause loss of user annotation data (ie, the CSV file will be overwritten). If you wish to explore using the annotations feature in a multi-user environment, please refer to the [annotations documentation](/docs/05__Annotate%20and%20Analyze%20Your%20Data/5_4__Annotating%20Data), and in particular the `--annotations-dir` flag.
 
-## Community software projects
+## Community Software Projects
 
 There are a number of teams building tools or infrastructure to better utilize cellxgene in a multiple user environment. While we do not endorse any particular solution, you may find the following helpful.
 
@@ -38,7 +38,7 @@ There are a number of teams building tools or infrastructure to better utilize c
 
 If you know of other solutions, drop us a note and we'll add to this list.
 
-## Live Examples of self-hosted Cellxgene Desktop
+## Live Examples of Self-Hosted CellxGene Desktop
 
 Several groups have independently deployed various versions of cellxgene to the web. Check out the cool data that have been hosted using cellxgene!
 
@@ -54,47 +54,46 @@ Several groups have independently deployed various versions of cellxgene to the 
 
 ## Cellxgene Gateway/Apache2 Reverse Proxy with Authentication
 
-Contributors:Fabian Rost and Alexandre Mestiashvili
+### Contributors
+Fabian Rost and Alexandre Mestiashvili
 
-Hosting Use Case:
-
+### Hosting Use Case
 - Private self-hosting of multiple datasets for multiple groups
-
 - Groups only have access to datasets that they "own"
-
 - Password Authentication
 
-General description:
-
+### General Description
 Start multiple cellxgene-gateway instances for each of the different user groups and use a reverse proxy for authentication and forwarding to the different cellxgene instances.
 
-Components:
+### Components
 
-[CellxGene Gateway](https://github.com/Novartis/cellxgene-gateway): the application to be run
+[CellxGene Gateway](https://github.com/Novartis/cellxgene-gateway)
+- Application to be run
 
-[Apache Reverse Proxy](https://httpd.apache.org/docs/2.4/howto/reverse_proxy.html): used as a reverse proxy to redirect web requests and provide authentication
+[Apache Reverse Proxy](https://httpd.apache.org/docs/2.4/howto/reverse_proxy.html)
+- Used as a reverse proxy to redirect web requests and provide authentication
 
-[Tutorial and Code}(https://github.com/mestia/cellxgene-gateway-proxy-example)
+[Tutorial and Code](https://github.com/mestia/cellxgene-gateway-proxy-example)
 
 ## AWS Elastic Bean Stalk
 
-Contributors: The cellxgene team 🧬
+### Contributors
+The CellxGene Team 🧬
 
-Hosting Use Case:
-
+### Hosting Use Case
 - Cellxgene desktop deployed with elastic beanstalk
 - Used to host data in a read-only fashion (can't use annotations)
 - Solution for an AWS compute environment
 
-Components:
+### Components
 
-[CellxGene Desktop](https://github.com/chanzuckerberg/cellxgene): the application to be run
+[CellxGene Desktop](https://github.com/chanzuckerberg/cellxgene)
+- Application to be run
 
-[Elastic Beanstalk](https://aws.amazon.com/elasticbeanstalk/): AWS based solution for deploying and scaling web applications
+[Elastic Beanstalk](https://aws.amazon.com/elasticbeanstalk/)
+- AWS based solution for deploying and scaling web applications
 
-Note:
-
-This method requires familiarity with
+This method requires familiarity with:
 
 - [IAM](https://aws.amazon.com/iam/)
 
@@ -104,11 +103,11 @@ This method requires familiarity with
 
 ## Heroku
 
-Self-hosting with Heroku
+### Self-hosting with Heroku
 
-You can create a Heroku app via [our provided Dockerfile](<[https://github.com/chanzuckerberg/cellxgene/blob/main/Dockerfile](https://github.com/chanzuckerberg/cellxgene/blob/main/Dockerfile)>) and [Heroku’s documentation](https://devcenter.heroku.com/articles/build-docker-images-heroku-yml)
+You can create a Heroku app via [our provided Dockerfile](<[https://github.com/chanzuckerberg/cellxgene/blob/main/Dockerfile](https://github.com/chanzuckerberg/cellxgene/blob/main/Dockerfile)>) and [Heroku’s documentation](https://devcenter.heroku.com/articles/build-docker-images-heroku-yml).
 
-You may have to tweak the Docker file like so:
+You may have to tweak the `Dockerfile` like so:
 
 ```
 1 FROM ubuntu:bionic
@@ -153,7 +152,7 @@ This is a good option if you want to quickly deploy an instance of cellxgene to 
 
 ### When should I not deploy with Heroku?
 
-The default free dyno offered by Heroku is limited in memory to 512 MBs
+The default free dyno offered by Heroku is limited in memory to 512 MBs.
 
 - The amount of memory needed for the dyno is roughly the same size as the h5ad file
 
@@ -163,20 +162,19 @@ The default free dyno offered by Heroku is limited in memory to 512 MBs
 
 On the free dyno, after 30 minutes of inactivity, Heroku will put your app into a hibernation mode. On the next access, Heroku will need time to boot the dyno back online.
 
-Having multiple simultaneous users requires more memory. This means that the free container size is easily overwhelmed by multiple users, even with small datasets; this can be addressed by purchasing a larger container size
+Having multiple simultaneous users requires more memory. This means that the free container size is easily overwhelmed by multiple users, even with small datasets; this can be addressed by purchasing a larger container size.
 
-For this facilitated Heroku deployment to work, your dataset must be hosted on a publicly accessible URL
+For this facilitated Heroku deployment to work, your dataset must be hosted on a publicly accessible URL.
 
 By default, Heroku publically shares your instance to anyone with the URL.
 
-- There are many ways of securing your instance. One quick and simple way is by installing [wwwhisper](https://elements.heroku.com/addons/wwwhisper), a Heroku addon
+- There are many ways of securing your instance. One quick and simple way is by installing [wwwhisper](https://elements.heroku.com/addons/wwwhisper), a Heroku addon.
 
-## AWS/Linux server with basic authentication
+## AWS/Linux Server with Basic Authentication
 
-Contributors: Lisa Sikkema and Thomas Walzthoeni
+### Contributors
+Lisa Sikkema and Thomas Walzthoeni
 
-Hosting Use Case:
-
+### Hosting Use Case
 - Private self-hosting on an EC2 instance
-
 - Access by external collaborators and potentially password authentication
