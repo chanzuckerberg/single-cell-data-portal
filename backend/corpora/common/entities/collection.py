@@ -13,6 +13,8 @@ from ..corpora_orm import (
     CollectionVisibility,
     generate_uuid,
     ProcessingStatus,
+    DbDatasetProcessingStatus,
+    DbDataset,
 )
 from ..utils.db_helpers import clone
 
@@ -151,17 +153,13 @@ class Collection(Entity):
 
         return results
 
-    @classmethod
-    def list_collections(cls, session: Session, visibility: str = None) -> typing.List[dict]:
-        """
-        Get a subset of columns, in dict form, for all Collections with the specified visibility. If visibility is None,
-        return *all* Collections.
-        @param session: the SQLAlchemy session
-        @param visibility: the CollectionVisibility string name
-        @return: a list of dict representations of Collections
-        """
-
-        collection_columns = [
+    columns_for_list_collections = {
+        DbCollectionLink: [
+            "link_name",
+            "link_url",
+            "link_type",
+        ],
+        DbCollection: [
             "id",
             "name",
             "visibility",
@@ -177,15 +175,10 @@ class Collection(Entity):
             "revision_of",
             "tombstone",
             "owner",  # Needed for determining view permissions
-        ]
-
-        link_columns = [
-            "link_name",
-            "link_url",
-            "link_type",
-        ]
-
-        dataset_columns = [
+            "links",
+            "datasets",
+        ],
+        DbDataset: [
             "id",
             "curator_tag",
             "tissue",
@@ -193,53 +186,41 @@ class Collection(Entity):
             "disease",
             "organism",
             "tombstone",
-        ]
+            "processing_status",
+        ],
+        DbDatasetProcessingStatus: ["processing_status"],
+    }
 
+    @classmethod
+    def list_collections(cls, session: Session, visibility: str = None) -> typing.List[dict]:
+        """
+        Get a subset of columns, in dict form, for all Collections with the specified visibility. If visibility is None,
+        return *all* Collections.
+        @param session: the SQLAlchemy session
+        @param visibility: the CollectionVisibility string name
+        @return: a list of dict representations of Collections
+        """
         filters = []
         if visibility == CollectionVisibility.PUBLIC.name:
             filters = [DbCollection.visibility == CollectionVisibility.PUBLIC]
         elif visibility == CollectionVisibility.PRIVATE.name:
             filters = [DbCollection.visibility == CollectionVisibility.PRIVATE]
 
-        collections = [r.to_dict() for r in session.query(cls.table).filter(*filters).all()]
-
         resp_collections = []
-        for collection in collections:
-
-            # Select Collection columns of interest
-            resp_collection = cls._copy_columns(collection_columns, collection)
-
+        for collection in session.query(cls.table).filter(*filters).all():
             # Add a Collection-level processing status
             status = ProcessingStatus.SUCCESS
-            for dataset in collection["datasets"]:
-                processing_status = dataset["processing_status"]
-                if processing_status["processing_status"] == ProcessingStatus.PENDING:
+            for dataset in collection.datasets:
+                processing_status = dataset.processing_status
+                if processing_status.processing_status == ProcessingStatus.PENDING:
                     status = ProcessingStatus.PENDING
-                elif processing_status["processing_status"] == ProcessingStatus.FAILURE:
+                elif processing_status.processing_status == ProcessingStatus.FAILURE:
                     status = ProcessingStatus.FAILURE
                     break
+            resp_collection = collection.to_dict_keep(cls.columns_for_list_collections)
             resp_collection["processing_status"] = status
-
-            # Select other columns of interest
-            for entity_col, cols in (("datasets", dataset_columns), ("links", link_columns)):
-                entities = collection.get(entity_col)
-                resp_collection[entity_col] = [cls._copy_columns(cols, entity) for entity in entities]
             resp_collections.append(resp_collection)
-
         return resp_collections
-
-    @staticmethod
-    def _copy_columns(attrs: typing.Iterable, from_obj: dict) -> dict:
-        """
-        Return a subset copy of 'from_obj' which contains only the attributes found as strings in iterable 'attrs'
-        @param attrs: the keys to copy
-        @param from_obj: dict from which to copy key-value pairs
-        @return: copied subset of 'from_obj'
-        """
-        to_obj = {}
-        for a in attrs:
-            to_obj[a] = from_obj[a]
-        return to_obj
 
     @classmethod
     def list_public_datasets_for_index(cls, session: Session) -> typing.List[typing.Dict]:
