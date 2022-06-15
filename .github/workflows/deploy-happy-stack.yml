@@ -51,10 +51,13 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Update deployment
-        env:
-          TFE_TOKEN: ${{ secrets.TFE_TOKEN }}
-        run: |
-          ./scripts/happy --profile="" --env ${{ github.event.deployment.environment }} update ${{ github.event.deployment.environment }}stack --tag ${{ github.event.deployment.payload.tag }}
+        uses: chanzuckerberg/github-actions/.github/actions/deploy-happy-stack@v1.2.1
+        with:
+          tfe-token: ${{ secrets.TFE_TOKEN }}
+          stack-name: ${{ github.event.deployment.environment }}stack
+          happy_version: "0.19.1"
+          tag: ${{ github.event.deployment.payload.tag }}
+          env: ${{ github.event.deployment.environment }}
       - name: Invalidate CloudFront
         env:
           DEPLOYMENT_STAGE: ${{ github.event.deployment.environment }}
