@@ -206,23 +206,21 @@ class Collection(Entity):
         elif visibility == CollectionVisibility.PRIVATE.name:
             filters = [DbCollection.visibility == CollectionVisibility.PRIVATE]
 
-        collections = [
-            r.to_dict_keep(cls.columns_for_list_collections) for r in session.query(cls.table).filter(*filters).all()
-        ]
-
-        # resp_collections = []
-        for collection in collections:
+        resp_collections = []
+        for collection in session.query(cls.table).filter(*filters).all():
             # Add a Collection-level processing status
             status = ProcessingStatus.SUCCESS
-            for dataset in collection["datasets"]:
-                processing_status = dataset["processing_status"]
-                if processing_status["processing_status"] == ProcessingStatus.PENDING:
+            for dataset in collection.datasets:
+                processing_status = dataset.processing_status
+                if processing_status.processing_status == ProcessingStatus.PENDING:
                     status = ProcessingStatus.PENDING
-                elif processing_status["processing_status"] == ProcessingStatus.FAILURE:
+                elif processing_status.processing_status == ProcessingStatus.FAILURE:
                     status = ProcessingStatus.FAILURE
                     break
-            collection["processing_status"] = status
-        return collections
+            resp_collection = collection.to_dict_keep(cls.columns_for_list_collections)
+            resp_collection["processing_status"] = status
+            resp_collections.append(resp_collection)
+        return resp_collections
 
     @classmethod
     def list_public_datasets_for_index(cls, session: Session) -> typing.List[typing.Dict]:
