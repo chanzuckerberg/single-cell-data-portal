@@ -127,6 +127,14 @@ variable "launch_type" {
   default     = "EC2"
 }
 
+variable "use_fargate" {
+  type = object({
+    execution_role_arn : string
+  })
+  default     = null
+  description = "Set these values to use Fargate; null if EC2."
+}
+
 variable "wait_for_steady_state" {
   type        = bool
   description = "Whether Terraform should block until the service is in a steady state before exiting"

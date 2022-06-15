@@ -119,8 +119,10 @@ variable "frontend_cpu" {
   default     = 2048
 }
 
-variable "launch_type" {
-  type        = string
-  description = "Either EC2 or FARGATE"
-  default     = "EC2"
+variable "use_fargate" {
+  type = object({
+    execution_role_arn : string
+  })
+  default     = null
+  description = "Set these values to use Fargate; null if EC2."
 }

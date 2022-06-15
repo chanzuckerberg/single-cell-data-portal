@@ -7,7 +7,7 @@ resource "aws_ecs_service" "service" {
   cluster         = var.cluster
   desired_count   = var.desired_count
   task_definition = aws_ecs_task_definition.task_definition.id
-  launch_type     = var.launch_type
+  launch_type     = var.use_fargate == null ? "EC2" : "FARGATE"
   name            = "${var.custom_stack_name}-${var.app_name}"
   load_balancer {
     container_name   = "web"
@@ -27,6 +27,7 @@ resource "aws_ecs_task_definition" "task_definition" {
   family                   = "dp-${var.deployment_stage}-${var.custom_stack_name}-${var.app_name}"
   network_mode             = "awsvpc"
   task_role_arn            = var.task_role_arn
+  execution_role_arn       = lookup(var.use_fargate, "execution_role_arn", null)
   requires_compatibilities = ["EC2", "FARGATE"]
   container_definitions    = <<EOF
 [
@@ -79,7 +80,8 @@ resource "aws_ecs_task_definition" "task_definition" {
       "logDriver": "awslogs",
       "options": {
         "awslogs-group": "${aws_cloudwatch_log_group.cloud_watch_logs_group.id}",
-        "awslogs-region": "${data.aws_region.current.name}"
+        "awslogs-region": "${data.aws_region.current.name}",
+        "awslogs-stream-prefix": "web"
       }
     },
     "command": ${jsonencode((length(var.cmd) == 0) ? null : var.cmd)}
