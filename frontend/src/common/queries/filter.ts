@@ -579,12 +579,6 @@ async function fetchDatasets(): Promise<DatasetResponse[]> {
     d.tissue_ancestors = TISSUE_ANCESTORS_BY_DATASET_ID[d.id] ?? [];
   });
 
-  datasets.forEach((d) => {
-    if (d.id === "4b9e0a15-c006-45d9-860f-b8a43ccf7d9d") {
-      console.log(d);
-    }
-  });
-
   // Correct any dirty data returned from endpoint.
   return datasets.map((dataset: DatasetResponse) => {
     return sanitizeDataset(dataset);
