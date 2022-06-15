@@ -44,9 +44,6 @@ class TestAsset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
             ],
         )
 
-    def tearDown(self):
-        super().tearDown()
-
     def test__get_dataset_asset__OK(self):
         bucket = self.CORPORA_TEST_CONFIG["bucket_name"]
         s3_file_name = "test_s3_uri.h5ad"
