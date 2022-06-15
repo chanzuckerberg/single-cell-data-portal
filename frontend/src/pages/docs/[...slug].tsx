@@ -153,11 +153,11 @@ const FileListItem = ({
   const formattedFileName = file.split("__")[1];
 
   return (
-    <li key={file} className={isActiveFile ? "active-file" : ""}>
-      <NextLink href={href} passHref>
+    <NextLink href={href} passHref>
+      <li key={file} className={isActiveFile ? "active-file" : ""}>
         {formattedFileName}
-      </NextLink>
-    </li>
+      </li>
+    </NextLink>
   );
 };
 
