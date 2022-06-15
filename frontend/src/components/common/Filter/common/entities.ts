@@ -618,7 +618,7 @@ export const TISSUE_ONTOLOGY_VIEW: OntologyView = {
     },
     {
       label: "uterus (organoid)",
-      ontology_term_id: "UBERON_0000995 (organoid)",
+      ontology_term_id: "UBERON:0000995 (organoid)",
     },
     {
       label: "vasculature",
