@@ -34,9 +34,6 @@ class TestDatabaseManager:
 
 
 class TestDatabase:
-    fake_s3_file = f"s3://{config.CORPORA_TEST_CONFIG['bucket_name']}/test_s3_uri.h5ad"
-    real_s3_file = "s3://corpora-data-dev/fake-h5ad-file.h5ad"
-
     def __init__(self, real_data=False):
         self.real_data = real_data
 
@@ -142,18 +139,6 @@ class TestDatabase:
         )
         self.session.add(collection)
         self.session.commit()
-        collection = DbCollection(
-            id="test_curator_tag_collection_id",
-            visibility=CollectionVisibility.PUBLIC.name,
-            owner="test_user_id",
-            name="test_collection_name",
-            description="test_description",
-            data_submission_policy_version="0",
-            contact_name="Some Body",
-            contact_email="somebody@chanzuckerberg.com",
-        )
-        self.session.add(collection)
-        self.session.commit()
 
     def _create_test_geneset(self):
         geneset = DbGeneset(
@@ -241,15 +226,6 @@ class TestDatabase:
             x_normalization="test_x_normalization",
             x_approximate_distribution=XApproximateDistribution.NORMAL.name,
             schema_version="2.0.0",
-        )
-        self.session.add(dataset)
-        dataset = DbDataset(
-            id="test_curator_tag",
-            curator_tag="curator_tag",
-            revision=0,
-            name="test_dataset_name",
-            schema_version="2.0.0",
-            collection_id="test_curator_tag_collection_id",
         )
         self.session.add(dataset)
         dataset = DbDataset(
@@ -361,18 +337,7 @@ class TestDatabase:
             filename="test_filename",
             filetype=DatasetArtifactFileType.H5AD.name,
             user_submitted=True,
-            s3_uri=self.real_s3_file if self.real_data else self.fake_s3_file,
-        )
-        self.session.add(dataset_artifact)
-        self.session.commit()
-
-        # Curator Tags
-        dataset_artifact = DbDatasetArtifact(
-            dataset_id="test_curator_tag",
-            filename="test_filename",
-            filetype=DatasetArtifactFileType.H5AD.name,
-            user_submitted=True,
-            s3_uri=self.real_s3_file if self.real_data else self.fake_s3_file,
+            s3_uri=config.real_s3_file if self.real_data else config.fake_s3_file,
         )
         self.session.add(dataset_artifact)
         self.session.commit()
@@ -386,7 +351,7 @@ class TestDatabase:
                 filename="test_filename",
                 filetype=DatasetArtifactFileType.CXG.name,
                 user_submitted=True,
-                s3_uri=self.real_s3_file if self.real_data else self.fake_s3_file,
+                s3_uri=config.real_s3_file if self.real_data else config.fake_s3_file,
             )
         )
 
@@ -399,7 +364,7 @@ class TestDatabase:
                 filename="test_filename",
                 filetype=DatasetArtifactFileType.H5AD.name,
                 user_submitted=True,
-                s3_uri=self.real_s3_file if self.real_data else self.fake_s3_file,
+                s3_uri=config.real_s3_file if self.real_data else config.fake_s3_file,
             )
         )
 
@@ -414,7 +379,7 @@ class TestDatabase:
                 filename="test_filename",
                 filetype=DatasetArtifactFileType.RDS.name,
                 user_submitted=True,
-                s3_uri=self.real_s3_file if self.real_data else self.fake_s3_file,
+                s3_uri=config.real_s3_file if self.real_data else config.fake_s3_file,
             )
         )
 
@@ -429,7 +394,7 @@ class TestDatabase:
                 filename="test_filename",
                 filetype=DatasetArtifactFileType.CXG.name,
                 user_submitted=True,
-                s3_uri=self.real_s3_file if self.real_data else self.fake_s3_file,
+                s3_uri=config.real_s3_file if self.real_data else config.fake_s3_file,
             )
         )
 
@@ -442,7 +407,7 @@ class TestDatabase:
                 filename="test_filename",
                 filetype=DatasetArtifactFileType.H5AD.name,
                 user_submitted=True,
-                s3_uri=self.real_s3_file if self.real_data else self.fake_s3_file,
+                s3_uri=config.real_s3_file if self.real_data else config.fake_s3_file,
             )
         )
 
@@ -455,7 +420,7 @@ class TestDatabase:
                 filename="test_filename",
                 filetype=DatasetArtifactFileType.RDS.name,
                 user_submitted=True,
-                s3_uri=self.real_s3_file if self.real_data else self.fake_s3_file,
+                s3_uri=config.real_s3_file if self.real_data else config.fake_s3_file,
             )
         )
 
@@ -468,7 +433,7 @@ class TestDatabase:
                 filename="test_filename",
                 filetype=DatasetArtifactFileType.H5AD.name,
                 user_submitted=True,
-                s3_uri=self.real_s3_file if self.real_data else self.fake_s3_file,
+                s3_uri=config.real_s3_file if self.real_data else config.fake_s3_file,
             )
         )
 
