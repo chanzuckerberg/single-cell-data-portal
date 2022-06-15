@@ -8,7 +8,7 @@ const ExternalLinkArrow = (): JSX.Element => (
   >
     <path
       d="M1.24264 1.17875L5.48528 5.42139L1.24264 9.66403"
-      stroke="#3867FA"
+      stroke="#0073ff"
       strokeWidth="1.75"
     />
   </svg>
