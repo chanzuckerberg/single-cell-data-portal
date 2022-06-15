@@ -510,136 +510,64 @@ class WmgApiV1Tests(unittest.TestCase):
             }
             self.assertEqual(expected, json.loads(response.data)["filter_dims"])
 
+
     # @patch("backend.wmg.api.v1.fetch_datasets_metadata")
-    # @patch("backend.wmg.api.v1.gene_term_label")
-    # @patch("backend.wmg.api.v1.ontology_term_label")
     # @patch("backend.wmg.api.v1.load_snapshot")
     # def test__query_request_with_filter_dims__secondary_filters_dont_filter_themselves(
-    #         self, load_snapshot, ontology_term_label, gene_term_label, fetch_datasets_metadata
+    #         self, load_snapshot, fetch_datasets_metadata
     # ):
+    #     """
+    #     When querying with filters, the returned options for the secondary filters should return the
+    #     same value as if the secondary filter was not applied
+    #     """
     #     dim_size = 2
     #     with create_temp_wmg_snapshot(dim_size=dim_size) as snapshot:
     #         load_snapshot.return_value = snapshot
-    #
-    #         # mock the functions in the ontology_labels module, so we can assert deterministic values in the
-    #         # "term_id_labels" portion of the response body; note that the correct behavior of the ontology_labels
-    #         # module is separately unit tested, and here we just want to verify the response building logic is correct.
-    #         ontology_term_label.side_effect = lambda ontology_term_id: f"{ontology_term_id}_label"
-    #         gene_term_label.side_effect = lambda gene_term_id: f"{gene_term_id}_label"
-    #
-    #         fetch_datasets_metadata.return_value = mock_datasets_metadata(["dataset_id_0", "dataset_id_1"])
-    #
-    #         request = dict(
-    #             filter=dict(
-    #                 # these don't matter for the expected result
-    #                 gene_ontology_term_ids=["gene_ontology_term_id_0"],
-    #                 organism_ontology_term_id="organism_ontology_term_id_0",
-    #                 tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
-    #                 # these matter for the expected result
-    #                 dataset_ids=["dataset_id_0"],
-    #                 disease_ontology_term_ids=["disease_ontology_term_id_1"],
-    #                 sex_ontology_term_ids=["sex_ontology_term_id_0"],
-    #                 development_stage_ontology_term_ids=["development_stage_ontology_term_id_1"],
-    #                 ethnicity_ontology_term_ids=["ethnicity_ontology_term_id_0"],
-    #             ),
-    #             include_filter_dims=True,
+    #         filter_0 = dict(
+    #             # these don't matter for the expected result
+    #             gene_ontology_term_ids=["gene_ontology_term_id_0"],
+    #             organism_ontology_term_id="organism_ontology_term_id_0",
+    #             tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
+    #             # these matter for the expected result
+    #             dataset_ids=["dataset_id_0"],
+    #             disease_ontology_term_ids=["disease_ontology_term_id_0"],
+    #             sex_ontology_term_ids=["sex_ontology_term_id_0"],
+    #             development_stage_ontology_term_ids=["development_stage_ontology_term_id_0"],
+    #             ethnicity_ontology_term_ids=["ethnicity_ontology_term_id_0"],
     #         )
+    #         filter_0_no_dataset_filter = dict(
+    #             # these don't matter for the expected result
+    #             gene_ontology_term_ids=["gene_ontology_term_id_0"],
+    #             organism_ontology_term_id="organism_ontology_term_id_0",
+    #             tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
+    #             # these matter for the expected result
+    #             dataset_ids=[],
+    #             disease_ontology_term_ids=["disease_ontology_term_id_0"],
+    #             sex_ontology_term_ids=["sex_ontology_term_id_0"],
+    #             development_stage_ontology_term_ids=["development_stage_ontology_term_id_0"],
+    #             ethnicity_ontology_term_ids=["ethnicity_ontology_term_id_0"],
+    #         )
+    #         # request = dict(
+    #         #     dict(filter=filter_0_no_dataset_filter),
+    #         #     include_filter_dims=True,
+    #         # )
     #
+    #         request = dict(filter=dict(
+    #                             # these don't matter for the expected result
+    #                             gene_ontology_term_ids=["gene_ontology_term_id_0"],
+    #                             organism_ontology_term_id="organism_ontology_term_id_0",
+    #                             tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
+    #                             # these matter for the expected result
+    #                             dataset_ids=["dataset_id_0"],
+    #                             disease_ontology_term_ids=["disease_ontology_term_id_1"],
+    #                             sex_ontology_term_ids=["sex_ontology_term_id_0"],
+    #                             development_stage_ontology_term_ids=["development_stage_ontology_term_id_1"],
+    #                             ethnicity_ontology_term_ids=["ethnicity_ontology_term_id_0"],
+    #                         ),
+    #                         include_filter_dims=True,
+    #                     )
     #         response = self.app.post("/wmg/v1/query", json=request)
-    #
-    #         expected_filter_dims = {
-    #             "datasets": [
-    #                 {
-    #                     "id": "dataset_id_0",
-    #                     "label": "dataset_id_0_name",
-    #                     "collection_label": "dataset_id_0_coll_name",
-    #                     "collection_id": "dataset_id_0_coll_id",
-    #                 },
-    #                 {
-    #                     "id": "dataset_id_1",
-    #                     "label": "dataset_id_1_name",
-    #                     "collection_label": "dataset_id_1_coll_name",
-    #                     "collection_id": "dataset_id_1_coll_id",
-    #                 }
-    #             ],
-    #             "disease_terms": [
-    #                 {"disease_ontology_term_id_0": "disease_ontology_term_id_0_label"},
-    #                 {"disease_ontology_term_id_1": "disease_ontology_term_id_1_label"},
-    #             ],
-    #             "sex_terms": [
-    #                 {"sex_ontology_term_id_0": "sex_ontology_term_id_0_label"},
-    #                 {"sex_ontology_term_id_1": "sex_ontology_term_id_1_label"},
-    #             ],
-    #             "development_stage_terms": [
-    #                 {"development_stage_ontology_term_id_0": "development_stage_ontology_term_id_0_label"},
-    #                 {"development_stage_ontology_term_id_1": "development_stage_ontology_term_id_1_label"},
-    #             ],
-    #             "ethnicity_terms": [
-    #                 {"ethnicity_ontology_term_id_0": "ethnicity_ontology_term_id_0_label"},
-    #                 {"ethnicity_ontology_term_id_1": "ethnicity_ontology_term_id_1_label"},
-    #             ],
-    #         }
-    #         self.maxDiff = None
-    #         self.assertEqual(expected_filter_dims, json.loads(response.data)["filter_dims"])
-
-
-    @patch("backend.wmg.api.v1.load_snapshot")
-    def test__query_request_with_filter_dims__secondary_filters_dont_filter_themselves(
-            self, load_snapshot
-    ):
-        """
-        When querying with filters, the returned options for the secondary filters should return the
-        same value as if the secondary filter was not applied
-        """
-        dim_size = 2
-        with create_temp_wmg_snapshot(dim_size=dim_size) as snapshot:
-            load_snapshot.return_value = snapshot
-            filter_0 = dict(
-                # these don't matter for the expected result
-                gene_ontology_term_ids=["gene_ontology_term_id_0"],
-                organism_ontology_term_id="organism_ontology_term_id_0",
-                tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
-                # these matter for the expected result
-                dataset_ids=["dataset_id_0"],
-                disease_ontology_term_ids=["disease_ontology_term_id_0"],
-                sex_ontology_term_ids=["sex_ontology_term_id_0"],
-                development_stage_ontology_term_ids=["development_stage_ontology_term_id_0"],
-                ethnicity_ontology_term_ids=["ethnicity_ontology_term_id_0"],
-            )
-            filter_0_no_dataset_filter = dict(
-                # these don't matter for the expected result
-                gene_ontology_term_ids=["gene_ontology_term_id_0"],
-                organism_ontology_term_id="organism_ontology_term_id_0",
-                tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
-                # these matter for the expected result
-                dataset_ids=[],
-                disease_ontology_term_ids=["disease_ontology_term_id_0"],
-                sex_ontology_term_ids=["sex_ontology_term_id_0"],
-                development_stage_ontology_term_ids=["development_stage_ontology_term_id_0"],
-                ethnicity_ontology_term_ids=["ethnicity_ontology_term_id_0"],
-            )
-            # request = dict(
-            #     dict(filter=filter_0_no_dataset_filter),
-            #     include_filter_dims=True,
-            # )
-
-            request = dict(filter=dict(
-                                # these don't matter for the expected result
-                                gene_ontology_term_ids=["gene_ontology_term_id_0"],
-                                organism_ontology_term_id="organism_ontology_term_id_0",
-                                tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
-                                # these matter for the expected result
-                                dataset_ids=["dataset_id_0"],
-                                disease_ontology_term_ids=["disease_ontology_term_id_1"],
-                                sex_ontology_term_ids=["sex_ontology_term_id_0"],
-                                development_stage_ontology_term_ids=["development_stage_ontology_term_id_1"],
-                                ethnicity_ontology_term_ids=["ethnicity_ontology_term_id_0"],
-                            ),
-                            include_filter_dims=True,
-                        )
-            response = self.app.post("/wmg/v1/query", json=request)
-            response = self.app.post("/wmg/v1/query", json=request)
-
+    #         response = self.app.post("/wmg/v1/query", json=request)
 
 
 # when a secondary dimension has criteria, the remaining filter values for other secondary dimensions are properly
