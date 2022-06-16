@@ -74,6 +74,10 @@ You can embed a google slide iframe using the `<EmbeddedGoogleSlides/>` componen
 
 Deleting a file will delete the corresponding page on the doc site, no other work is necessary.
 
+### Linting changes
+
+We use tools to both lint and format the data portal codebase, including these `.mdx` files. To check if any lint errors were introduced, run `npm run lint` in the `/frontend` directory. To format any files, run `npm run format` to run prettier against all files in the frontend codebase. If you're using VSCode to edit these files, there are extensions to do both of theses actions for you. <NextLink href="/docs/.dev/01__writing-documentation#recommended-vscode-plugins">See the Recommended VSCode Plugins Section</NextLink>
+
 ## Running the dev server
 
 The first time you run the dev server, you will need to install the necessary tools.
