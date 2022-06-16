@@ -40,6 +40,10 @@ resource aws_ecs_task_definition task_definition {
         "value": "${var.wmg_bucket}"
       },      
       {
+        "name": "STACK_NAME",
+        "value": "${var.custom_stack_name}"
+      },      
+      {
         "name": "REMOTE_DEV_PREFIX",
         "value": "${var.remote_dev_prefix}"
       },

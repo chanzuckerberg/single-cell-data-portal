@@ -108,7 +108,7 @@ module frontend_service {
 }
 
 resource "aws_secretsmanager_secret" "wmg_config" {
-   name = "corpora/backend/${local.deployment_stage}/wmg_config"
+   name = "corpora/backend/${local.deployment_stage}/${local.custom_stack_name}/wmg_config"
 }
   
 variable "wmg_secret_string" {

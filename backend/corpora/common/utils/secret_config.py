@@ -32,7 +32,7 @@ class SecretConfig:
             cls.reset()
         return super(SecretConfig, cls).__new__(cls)
 
-    def __init__(self, component_name, deployment=None, source=None, secret_name="secrets"):
+    def __init__(self, component_name, deployment=None, stack=None, source=None, secret_name="secrets"):
         """
         If source is specified, it must be the path to a JSON file
         """
@@ -42,6 +42,8 @@ class SecretConfig:
         self._component_name = component_name
         self._deployment = deployment or os.environ["DEPLOYMENT_STAGE"]
         self._secret_name = secret_name
+        print(os.environ)
+        self._stack_name = stack or os.environ["STACK_NAME"]
         self._source = self._determine_source(source)
 
     @property
@@ -94,7 +96,7 @@ class SecretConfig:
         return self.config is not None
 
     def load_from_aws(self):
-        secret_path = f"corpora/{self._component_name}/{self._deployment}/{self._secret_name}"
+        secret_path = f"corpora/{self._component_name}/{self._deployment}/{self._stack_name}/{self._secret_name}"
         secret = AwsSecret(secret_path)
         self.from_json(secret.value)
 
