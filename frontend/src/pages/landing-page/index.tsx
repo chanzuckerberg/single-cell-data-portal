@@ -18,10 +18,8 @@ import DownloadDataIcon from "./icons/download-data";
 import ExpediteCollaborationIcon from "./icons/expedite-collaboration";
 import LinkArrow from "./icons/external-link-arrow";
 import GeneExpressionIcon from "./icons/gene-expression";
-import {
-  SingleCellDataIconActive,
-  SingleCellDataIconInactive,
-} from "./icons/single-cell-data";
+import SingleCellDataIconActive from "./icons/single-cell-data-active";
+import SingleCellDataIconInactive from "./icons/single-cell-data-inactive";
 import styles from "./index.module.scss";
 
 const LandingPage = (): JSX.Element => {
