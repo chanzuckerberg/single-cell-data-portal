@@ -474,7 +474,7 @@ class WmgApiV1Tests(unittest.TestCase):
             # check that rows were dropped
             self.assertGreater(snapshot.expression_summary_cube.df[:].shape[0], df.shape[0])
             # setup up API endpoints to use a mocked cube
-            snapshot.expression_summary_cube = df
+            snapshot.expression_summary_cube.df[:] = df
             load_snapshot.return_value = snapshot
 
             with self.subTest("when a secondary dimension has criteria, it's own values are not restricted"):
