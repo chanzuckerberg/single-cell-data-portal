@@ -164,6 +164,7 @@ def create_temp_wmg_snapshot_to_file(
         exclude_logical_coord_fn=exclude_logical_coord_fn,
         expression_summary_vals_fn=expression_summary_vals_fn,
         cell_counts_fn=cell_counts_generator_fn,
+        overwrite=False
     )
 
     cell_type_orderings = build_cell_orderings(cell_counts_cube_dir, cell_ordering_generator_fn)
@@ -224,25 +225,26 @@ def create_cubes(
     exclude_logical_coord_fn: Callable[[List[str], Tuple], bool] = None,
     expression_summary_vals_fn: Callable[[List[Tuple]], Dict[str, List]] = random_expression_summary_values,
     cell_counts_fn: Callable[[List[Tuple]], List[int]] = random_cell_counts_values,
+    overwrite=True
 ) -> Tuple[str, str]:
     coords, dim_values = build_coords(
         cube_logical_dims, dim_size, dim_ontology_term_ids_generator_fn, exclude_logical_coord_fn
     )
     expression_summary_cube_dir = create_expression_summary_cube(
-        data_dir, coords, dim_values, expression_summary_vals_fn=expression_summary_vals_fn
+        data_dir, coords, dim_values, expression_summary_vals_fn=expression_summary_vals_fn, overwrite=overwrite
     )
 
     coords, dim_values = build_coords(
         cell_counts_logical_dims, dim_size, dim_ontology_term_ids_generator_fn, exclude_logical_coord_fn
     )
-    cell_counts_cube_dir = create_cell_counts_cube(data_dir, coords, dim_values, cell_counts_fn=cell_counts_fn)
+    cell_counts_cube_dir = create_cell_counts_cube(data_dir, coords, dim_values, cell_counts_fn=cell_counts_fn, overwrite=overwrite)
 
     return expression_summary_cube_dir, cell_counts_cube_dir
 
 
-def create_cell_counts_cube(data_dir, coords, dim_values, cell_counts_fn: Callable[[List[Tuple]], List[int]]) -> str:
+def create_cell_counts_cube(data_dir, coords, dim_values, cell_counts_fn: Callable[[List[Tuple]], List[int]], overwrite=True) -> str:
     cube_dir = f"{data_dir}/cell_counts"
-    tiledb.Array.create(cube_dir, cell_counts_schema, overwrite=True)
+    tiledb.Array.create(cube_dir, cell_counts_schema, overwrite=overwrite)
 
     with tiledb.open(cube_dir, mode="w") as cube:
         logical_attr_values: Dict[str, list] = {"n_cells": cell_counts_fn(coords)}
@@ -265,9 +267,10 @@ def create_expression_summary_cube(
     coords,
     dim_values,
     expression_summary_vals_fn: Callable[[List[tuple]], Dict[str, List]] = random_expression_summary_values,
+    overwrite=True
 ) -> str:
     cube_dir = f"{data_dir}/expression_summary"
-    tiledb.Array.create(cube_dir, expression_summary_schema, overwrite=True)
+    tiledb.Array.create(cube_dir, expression_summary_schema, overwrite=overwrite)
 
     with tiledb.open(cube_dir, mode="w") as cube:
         logical_attr_values = expression_summary_vals_fn(coords)
