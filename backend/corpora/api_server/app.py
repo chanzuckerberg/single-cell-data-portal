@@ -111,9 +111,11 @@ def before_request():
     app.logger.info(
         dict(
             type="REQUEST",
-            url=request.path,
-            method=request.method,
-            content_length=request.content_length,
+            details=dict(
+                url=request.path,
+                method=request.method,
+                content_length=request.content_length,
+            ),
         )
     )
 
@@ -123,9 +125,11 @@ def after_request(response: Response):
     app.logger.info(
         dict(
             type="RESPONSE",
-            status_code=response.status_code,
-            content_length=response.content_length,
-            response_time=time.time() - g.start,
+            details=dict(
+                status_code=response.status_code,
+                content_length=response.content_length,
+                response_time=time.time() - g.start,
+            ),
         )
     )
     return response
