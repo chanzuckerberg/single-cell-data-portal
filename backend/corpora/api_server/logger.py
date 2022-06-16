@@ -15,10 +15,7 @@ def configure_logging():
         {
             "version": 1,  # The version of dictConfig to use. This must be 1.
             "formatters": {
-                "default": {
-                    "format": LOG_FORMAT,
-                    "()": jsonlogger.JsonFormatter,
-                }
+                "default": {"format": LOG_FORMAT, "()": jsonlogger.JsonFormatter, "datefmt": "%Y-%m-%dT%H:%M:%S.%03dZ"}
             },
             "handlers": {
                 "wsgi": {
