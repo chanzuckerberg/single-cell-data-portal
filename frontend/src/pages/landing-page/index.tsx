@@ -62,7 +62,6 @@ const LandingPage = (): JSX.Element => {
       links: [
         {
           subheading: "03.04.22 - bioRxiv",
-          ctaSource: "DOI: 10.1101/2021.07.19.452956",
           ctaLink: "https://doi.org/10.1101/2021.07.19.452956",
           ctaText: "Read More",
           ctaHighlight: false,
@@ -70,7 +69,6 @@ const LandingPage = (): JSX.Element => {
         },
         {
           subheading: "13.05.22 - Science",
-          ctaSource: "DOI: 10.1126/science.abl4896",
           ctaLink: "https://www.science.org/doi/10.1126/science.abl4896",
           ctaText: "Read More",
           ctaHighlight: false,
@@ -78,7 +76,6 @@ const LandingPage = (): JSX.Element => {
         },
         {
           subheading: "13.05.22 - Cellxgene",
-          ctaSource: "The Tabula Sapiens Consortium et al. (2021) bioRxiv",
           ctaLink:
             "https://cellxgene.cziscience.com/collections/e5f58829-1a66-40b5-a624-9046778e74f5",
           ctaText: "Explore Datasets",
@@ -93,7 +90,6 @@ const LandingPage = (): JSX.Element => {
       links: [
         {
           subheading: "13.05.22 - Science",
-          ctaSource: "DOI: 10.1126/science.abl5197",
           ctaLink: "https://doi.org/10.1126/science.abl5197",
           ctaText: "Read More",
           ctaHighlight: false,
@@ -101,7 +97,6 @@ const LandingPage = (): JSX.Element => {
         },
         {
           subheading: "20.07.21 - bioRxiv",
-          ctaSource: "DOI: 10.1101/2021.04.28.441762",
           ctaLink: "https://doi.org/10.1101/2021.04.28.441762",
           ctaText: "Read More",
           ctaHighlight: false,
@@ -109,7 +104,6 @@ const LandingPage = (): JSX.Element => {
         },
         {
           subheading: "13.05.22 - Cellxgene",
-          ctaSource: "Domínguez Conde et al. (2022) Science",
           ctaLink:
             "https://cellxgene.cziscience.com/collections/62ef75e4-cbea-454e-a0ce-998ec40223d3",
           ctaText: "Explore Datasets",
@@ -123,7 +117,6 @@ const LandingPage = (): JSX.Element => {
       links: [
         {
           subheading: "11.03.21 - bioRxiv",
-          ctaSource: "DOI: 10.1101/2022.03.10.483747",
           ctaLink: "https://doi.org/10.1101/2022.03.10.483747",
           ctaText: "Read More",
           ctaHighlight: false,
@@ -131,7 +124,6 @@ const LandingPage = (): JSX.Element => {
         },
         {
           subheading: "13.05.22 - Cellxgene",
-          ctaSource: "Sikkema et al. (2022) bioRxiv",
           ctaLink:
             "https://cellxgene.cziscience.com/collections/6f6d381a-7701-4781-935c-db10d30de293",
           ctaText: "Explore Datasets",
@@ -146,7 +138,6 @@ const LandingPage = (): JSX.Element => {
       links: [
         {
           subheading: "08.04.22 - Science",
-          ctaSource: "DOI: 10.1126/science.abf3041",
           ctaLink: "https://doi.org/10.1126/science.abf3041",
           ctaText: "Read More",
           ctaHighlight: false,
@@ -154,7 +145,6 @@ const LandingPage = (): JSX.Element => {
         },
         {
           subheading: "13.05.22 - Cellxgene",
-          ctaSource: "Yazar et al. (2022) Science",
           ctaLink:
             "https://cellxgene.cziscience.com/collections/dde06e0f-ab3b-46be-96a2-a8082383c4a1",
           ctaText: "Explore Datasets",
@@ -169,7 +159,6 @@ const LandingPage = (): JSX.Element => {
       links: [
         {
           subheading: "08.04.22 - Science",
-          ctaSource: "DOI: 10.1126/science.abf1970",
           ctaLink: "https://doi.org/10.1126/science.abf1970",
           ctaText: "Read More",
           ctaHighlight: false,
@@ -177,7 +166,6 @@ const LandingPage = (): JSX.Element => {
         },
         {
           subheading: "13.05.22 - Cellxgene",
-          ctaSource: "Perez et al. (2022) Science",
           ctaLink:
             "https://cellxgene.cziscience.com/collections/436154da-bcf1-4130-9c8b-120ff9a888f2",
           ctaText: "Explore Datasets",
@@ -610,30 +598,29 @@ const LandingPage = (): JSX.Element => {
                       }`}
                       key={`article-${articleIndex}-link-${linkIndex}`}
                     >
-                      <div>
-                        <span className={styles.pubArticleDate}>
-                          {link.subheading}
-                        </span>
-                        <p className={styles.pubArticleCitation}>
-                          {link.ctaSource}
-                        </p>
+                      {/* <div> */}
+                      <span className={styles.pubArticleDate}>
+                        {link.subheading}
+                      </span>
+                      {/* </div> */}
+                      <div className={styles.pubArticleSubRowInner}>
+                        <a
+                          className={styles.pubArticleLink}
+                          href={link.ctaLink}
+                          target="_blank"
+                          rel="noopener"
+                        >
+                          {link.ctaText}
+                          <span className={styles.linkArrow}>
+                            <LinkArrow />
+                          </span>
+                        </a>
+                        {link.ctaLogo && (
+                          <CellxgeneIconSmall
+                            className={styles.pubArticleLogoIcon}
+                          />
+                        )}
                       </div>
-                      <a
-                        className={styles.pubArticleLink}
-                        href={link.ctaLink}
-                        target="_blank"
-                        rel="noopener"
-                      >
-                        {link.ctaText}
-                        <span className={styles.linkArrow}>
-                          <LinkArrow />
-                        </span>
-                      </a>
-                      {link.ctaLogo && (
-                        <CellxgeneIconSmall
-                          className={styles.pubArticleLogoIcon}
-                        />
-                      )}
                     </div>
                   ))}
                 </div>
