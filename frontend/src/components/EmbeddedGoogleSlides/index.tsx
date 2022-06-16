@@ -5,7 +5,8 @@ const ResponsiveContainer = styled.div`
   position: relative;
   overflow: hidden;
   width: 100%;
-  padding-top: 56.25%;
+  height: auto;
+  padding-top: 68%;
 `;
 
 const ResponsiveIFrame = styled.iframe`
@@ -22,7 +23,6 @@ const EmbeddedGoogleSlides = ({ src }: { src: string }): ReactElement => {
   return (
     <ResponsiveContainer>
       <ResponsiveIFrame
-        sandbox="allow-scripts"
         src={src}
         frameBorder="0"
         allowFullScreen={true}

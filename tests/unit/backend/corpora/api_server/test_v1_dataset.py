@@ -342,8 +342,8 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         test_url = f"/dp/v1/datasets/{dataset.id}"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
         response = self.app.delete(test_url, headers=headers)
-        self.assertEqual(response.status_code, 405)
-        self.assertEqual(json.loads(response.data), "Can not delete a public dataset")
+        self.assertEqual(405, response.status_code)
+        self.assertEqual("Cannot delete a public Dataset", json.loads(response.data)["detail"])
 
     def test__cancel_dataset_download__user_not_collection_owner(self):
         collection = self.generate_collection(self.session, owner="someone_else")

@@ -1,0 +1,104 @@
+# How To Write Documentation
+
+## Documentation Format
+
+Our documentation is written in [MDX](https://mdxjs.com/), a Markdown-based markup language. It's a simple, declarative, and powerful way to write documentation. MDX is a superset of Markdown, which means you can treat it like Markdown for the most part while also adding additional features.
+
+All our documentation can be found in the [`doc-site` folder in the data-portal repo](https://github.com/chanzuckerberg/single-cell-data-portal/tree/main/frontent/doc-site). Adding directories and files to this folder will automatically update the documentation.
+
+## Workspaces
+
+There are a few ways you can edit the documentation, all with various advantages and disadvantages.
+
+1. GitHub's built-in Markdown editor
+   - (+) The Least amount of work needed to edit
+   - (+) Built in markdown renderer
+   - (-) Site styling isn't available
+   - (-) Components will be shown as their raw syntax
+   - (-) GitHub is relaxed when it comes to HTML + Markdown syntax, which will error during the building process
+1. VSCode
+
+   - (+) Access to extension library
+   - (+) ESLint and Prettier are available
+
+1. VSCode + Dev Server (recommended)
+   - Site styling is available
+   - Quick reloading of changes
+   - MDX building will render components as intended
+
+## Writing Documentation
+
+### Creating a new page
+
+The directory and file structure mirrors what will be shown on the website.
+The directory of this file is `doc-site/dev/writing-documentation` resulting in the URL `cellxgene.cziscience.com/docs/dev/writing-documentation`.
+
+Once implemented, the same structure will be shown on the left sidebar. If the file is named index.mdx, it will be shown as the root page for the folder.
+
+### Editing page
+
+Edit the file as you would normally for a Markdown file, you also have access to regular HTML tags.
+You can request for any components to be added to be available for use within the documentation. Feel free to create a ticket and assign @seve or message on Slack.
+We can also override the default markdown renderer to render our own components (# could render an SDS Header)
+
+#### Currently available components
+
+- next/Image
+
+  - ```typescript
+    <Image src={"/doc-site/poly.jpg"} />
+    ```
+
+- EmbeddedGoogleSlides
+
+  - ```typescript
+    <EmbeddedGoogleSlides src="https://docs.google.com/presentation/d/e/2PACX-1vQzA99mYecRu0Y5v--QsUCAuoTJFxo7VIhApCB-E669-00KCKww8AumBZcX0pwV41qHIuLRTsL7AckB/embed?start=false&loop=true&delayms=3000" />
+    ```
+
+#### Images
+
+You can add images to the documentation by adding files to the public directory(`single-cell-data-portal/frontend/public/doc-site`) and then display it in MDX using the `<Image/>` component from Next.js (`![](/doc-site/image.png)`).
+
+<div align="center">
+  <Image src={"/doc-site/poly.jpg"} />
+  Example image
+</div>
+
+#### Embedded Google Slides
+
+You can embed a google slide iframe using the `<EmbeddedGoogleSlides/>` component. Just extract the source url from the published iframe on google slides and pass it in the `src` prop.
+
+<EmbeddedGoogleSlides src="https://docs.google.com/presentation/d/e/2PACX-1vQzA99mYecRu0Y5v--QsUCAuoTJFxo7VIhApCB-E669-00KCKww8AumBZcX0pwV41qHIuLRTsL7AckB/embed?start=false&loop=true&delayms=3000" />
+
+### Deleting a page
+
+Deleting a file will delete the corresponding page on the doc site, no other work is necessary.
+
+## Running the dev server
+
+The first time you run the dev server, you will need to install the necessary tools.
+
+1. Install nvm
+   1. `curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash`
+1. Install the version of node compatible with our project
+   1. Navigate to the frontend directory
+   1. Ie. `cd single-cell-data-portal/frontend`
+   1. `nvm install node`
+1. Install NPM packages
+   1. `npm install`
+1. (optional) Set a backend with the configuration
+   1. For staging backend: `cp src/configs/staging.js src/configs/configs.js`
+1. Run the dev server
+   1. `npm run dev`
+1. View the site on `localhost:3000/docs`
+1. (temporary) While the navigation sidebar is being worked on, you will have to manually enter the page you want to view.
+   1. `single-cell-data-portal/frontend/doc-site/dev/writing-documentation` ➡️ `localhost:3000/docs/dev/writing-documentation/dev/writing-documentation`
+   1. `single-cell-data-portal/frontend/doc-site/desktop/self-hosting/heroku.mdx` ➡️ `localhost:3000/docs/desktop/self-hosting/heroku`
+
+## Recommended VSCode plugins
+
+- [ESLint](https://marketplace.visualstudio.com/items?itemName=dbaeumer.vscode-eslint)
+- [Prettier](https://marketplace.visualstudio.com/items?itemName=esbenp.prettier-vscode)
+- [markdownlint](https://marketplace.visualstudio.com/items?itemName=DavidAnson.vscode-markdownlint)
+- [MDX Preview](https://marketplace.visualstudio.com/items?itemName=xyc.vscode-mdx-preview)
+- [MDX](https://marketplace.visualstudio.com/items?itemName=silvenon.mdx)

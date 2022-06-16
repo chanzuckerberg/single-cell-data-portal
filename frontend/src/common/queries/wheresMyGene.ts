@@ -14,6 +14,7 @@ import {
   RawCellTypeGeneExpressionSummaryData,
 } from "src/views/WheresMyGene/common/types";
 import { API } from "../API";
+import { ROUTES } from "../constants/routes";
 import { EMPTY_OBJECT } from "../constants/utils";
 import { DEFAULT_FETCH_OPTIONS, JSON_BODY_FETCH_OPTIONS } from "./common";
 import { ENTITIES } from "./entities";
@@ -244,13 +245,15 @@ const EMPTY_FILTER_DIMENSIONS = {
   sex_terms: [],
 };
 
+interface RawDataset {
+  collection_id: string;
+  collection_label: string;
+  id: string;
+  label: string;
+}
+
 export interface FilterDimensions {
-  datasets: {
-    collection_id: string;
-    collection_label: string;
-    id: string;
-    label: string;
-  }[];
+  datasets: RawDataset[];
   development_stage_terms: { id: string; name: string }[];
   disease_terms: { id: string; name: string }[];
   ethnicity_terms: { id: string; name: string }[];
@@ -286,9 +289,13 @@ export function useFilterDimensions(
       sex_terms,
     } = filter_dims;
 
+    const sortedDatasets = Object.values(
+      aggregateCollectionsFromDatasets(datasets)
+    ).flatMap(({ datasets }) => datasets);
+
     return {
       data: {
-        datasets: datasets.map((dataset) => ({
+        datasets: sortedDatasets.map((dataset) => ({
           ...dataset,
           name: dataset.label,
         })),
@@ -649,4 +656,47 @@ function useSnapshotId(): string | null {
   const { snapshotId } = state;
 
   return snapshotId || null;
+}
+
+interface Dataset extends RawDataset {
+  id: string;
+  label: string;
+}
+
+export interface CollectionFromDatasets {
+  name: string;
+  url: string;
+  datasets: Dataset[];
+}
+
+export interface CollectionsFromDatasets {
+  [name: string]: CollectionFromDatasets;
+}
+
+export function aggregateCollectionsFromDatasets(
+  datasets: FilterDimensions["datasets"]
+): CollectionsFromDatasets {
+  const collections: CollectionsFromDatasets = {};
+
+  for (const dataset of datasets) {
+    const { collection_label, collection_id, id, label } = dataset;
+
+    if (!collections[collection_label]) {
+      collections[collection_label] = {
+        datasets: [],
+        name: collection_label,
+        url: ROUTES.COLLECTION.replace(":id", collection_id),
+      };
+    }
+
+    collections[collection_label].datasets.push({ ...dataset, id, label });
+  }
+
+  for (const collection of Object.values(collections)) {
+    collection.datasets.sort((a, b) => {
+      return a.label.localeCompare(b.label);
+    });
+  }
+
+  return collections;
 }

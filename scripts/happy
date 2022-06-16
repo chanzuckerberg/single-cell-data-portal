@@ -1,26 +1,23 @@
 #!/usr/bin/env python3
-import random
-from base64 import b64decode
-from contextlib import contextmanager
-from datetime import datetime
-import io
 import json
 import os
-import re
-from string import Template
+import random
 import subprocess
 import tarfile
 import tempfile
 import time
+from base64 import b64decode
+from contextlib import contextmanager
+from datetime import datetime
 from urllib.parse import urlparse
 
 import boto3
-from botocore.exceptions import WaiterError
-from botocore.config import Config
 import click
-from terrasnek.api import TFC
-from terrasnek import exceptions
 import yaml
+from botocore.config import Config
+from botocore.exceptions import WaiterError
+from terrasnek import exceptions
+from terrasnek.api import TFC
 
 
 class CliError(Exception):
@@ -339,7 +336,8 @@ class StackMgr:
         return stack
 
     def _resync(self, wait=True):
-        """Invoke a specific TFE workspace that creates/deletes TFE workspaces, with prepopulated variables for identifier tokens."""
+        """Invoke a specific TFE workspace that creates/deletes TFE workspaces, with prepopulated variables for identifier
+        tokens."""
         print("Resyncing workspaces")
         tfe_api = self.get_tfe_api()
         workspace = tfe_api.get_workspace(self.creator_workspace_name)
@@ -578,7 +576,8 @@ class TfeApi:
             error = True
         if error or hostname not in credentials:
             raise CliError(
-                f"Terraform credentials for {hostname} not found. Run 'terraform login {hostname}' and follow the instructions"
+                f"Terraform credentials for {hostname} not found. Run 'terraform login {hostname}' and follow the "
+                f"instructions"
             )
         return credentials[hostname]["token"]
 
@@ -935,6 +934,7 @@ def create(ctx, stack_name, tag, wait, force):
         ctx.invoke(migrate, stack_name=stack_name)
     stack.print_outputs()
 
+
 def should_auto_migrate(ctx):
     # Make sure this environment allows automatically running migrations on update
     try:
@@ -943,6 +943,7 @@ def should_auto_migrate(ctx):
     except KeyError:
         # The default behavior is to auto-migrate on update.
         return True
+
 
 @contextmanager
 def config_tarball(source_dir):
@@ -1095,6 +1096,7 @@ def addtags(ctx, images, source_tag, dest_tag):
             except ecr_client.exceptions.ImageAlreadyExistsException:
                 print(f"tag {tag} already exists, skipping.")
 
+
 def get_ecr_repo(config):
     # Assumption: All the ECR registries are within the same AWS account as the one configured
     # for the profile, and in the same region as the default one.
@@ -1105,6 +1107,7 @@ def get_ecr_repo(config):
     first_repo = next(iter(ecrs.values()))
     first_registry = first_repo["url"].split("/")[0]
     return first_registry
+
 
 def login_ecrs(images, ecrs, ecr_client):
     """Login to all registries associated with images.
@@ -1135,6 +1138,7 @@ def login_ecrs(images, ecrs, ecr_client):
         cmd = subprocess.run(["docker", "login", "--username", "AWS", "--password-stdin", registry], input=pwd)
         print(f"login to {registry}, done!")
 
+
 @cli.command()
 @click.argument("images", nargs=-1, default=None)
 @click.option(
@@ -1143,7 +1147,7 @@ def login_ecrs(images, ecrs, ecr_client):
 @click.option("--extra-tag", help="Extra tags to apply and push to the docker repo.", multiple=True)
 @click.option("--compose-env", help="Environment file to pass to docker compose", default=None)
 @click.option("--stack-name",
-              help="The rdev stack name to set in the env of the built image. " 
+              help="The rdev stack name to set in the env of the built image. "
                    "Only needed when being called by the push-rdev GHA.",
               default=None)
 @click.pass_context
@@ -1199,10 +1203,12 @@ def watch(ctx, stack_name):
     stack.watch()
     stack.print_outputs()
 
+
 @cli.group()
 def hosts():
     "Commands to manage system hostsfile"
     pass
+
 
 class HostnameManager():
     def __init__(self, filename):
@@ -1264,6 +1270,7 @@ class HostnameManager():
         lines.append(borders[1])
         return lines
 
+
 @hosts.command()
 @click.option(
     "--hostsfile",
@@ -1279,6 +1286,7 @@ def install(hostsfile):
     config = hostmgr.cleanup_config(borders, config)
     hostmgr.update_config(config, hostmgr.generate_config(borders, containers))
 
+
 @hosts.command()
 @click.option(
     "--hostsfile",
@@ -1293,13 +1301,15 @@ def uninstall(hostsfile):
     config = hostmgr.cleanup_config(borders, config)
     hostmgr.update_config(config, [])
 
+
 if __name__ == "__main__":
     obj = {}
     try:
         cli.main(obj=obj)
     except exceptions.TFCHTTPUnauthorized as err:
         print(
-            f"Not authorized to access TFE. Try going to {obj['secret_mgr'].secrets['tfe']['url']} in your browser then rerunning your command."
+            f"Not authorized to access TFE. Try going to {obj['secret_mgr'].secrets['tfe']['url']} in your browser then "
+            f"rerunning your command."
         )
     except CliError as err:
         print(f"ERROR: {err}")

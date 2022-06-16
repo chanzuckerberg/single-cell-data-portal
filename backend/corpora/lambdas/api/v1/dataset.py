@@ -1,5 +1,6 @@
 from flask import make_response, jsonify, g
 
+from .common import delete_dataset_common
 from ....common.corpora_orm import CollectionVisibility, DatasetArtifactFileType
 from ....common.entities import Dataset, Collection
 from ....common.entities.geneset import GenesetDatasetLink
@@ -90,26 +91,7 @@ def delete_dataset(dataset_uuid: str, token_info: dict):
     """
     db_session = g.db_session
     dataset = Dataset.get(db_session, dataset_uuid, include_tombstones=True)
-    if not dataset:
-        raise ForbiddenHTTPException()
-    collection = Collection.get_collection(
-        db_session,
-        dataset.collection.id,
-        owner=owner_or_allowed(token_info),
-    )
-    if not collection:
-        raise ForbiddenHTTPException()
-    if dataset.collection.visibility == CollectionVisibility.PUBLIC:
-        return make_response(jsonify("Can not delete a public dataset"), 405)
-    if dataset.tombstone is False:
-        if dataset.published:
-            dataset.update(tombstone=True, published=False)
-        else:
-            if dataset.original_id:
-                original = Dataset.get(db_session, dataset.original_id)
-                original.create_revision(dataset.collection.id)
-            dataset.asset_deletion()
-            dataset.delete()
+    delete_dataset_common(db_session, dataset, token_info)
     return "", 202
 
 
