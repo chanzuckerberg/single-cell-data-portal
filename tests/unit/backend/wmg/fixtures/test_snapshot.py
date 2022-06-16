@@ -5,7 +5,7 @@ import tempfile
 from collections import namedtuple
 from itertools import filterfalse, cycle, islice
 from typing import List, Callable, Tuple, Dict, NamedTuple
-
+import json
 import numpy as np
 import pandas as pd
 import tiledb
@@ -126,7 +126,7 @@ def create_temp_wmg_snapshot(
     expression_summary_vals_fn: Callable[[List[Tuple]], Dict[str, List]] = random_expression_summary_values,
     exclude_logical_coord_fn: Callable[[NamedTuple], bool] = None,
     cell_counts_generator_fn: Callable[[List[Tuple]], List] = random_cell_counts_values,
-    cell_ordering_generator_fn: Callable[[List[str]], List[int]] = forward_cell_type_ordering,
+    cell_ordering_generator_fn: Callable[[List[str]], List[int]] = forward_cell_type_ordering
 ) -> WmgSnapshot:
     with tempfile.TemporaryDirectory() as cube_dir:
         expression_summary_cube_dir, cell_counts_cube_dir = create_cubes(
@@ -148,8 +148,30 @@ def create_temp_wmg_snapshot(
                     cell_counts_cube=cell_counts_cube,
                     cell_type_orderings=cell_type_orderings,
                     primary_filter_dimensions=primary_filter_dimensions,
-                )
+            )
 
+def create_temp_wmg_snapshot_to_file(
+    cube_dir,
+    dim_size=3,
+    expression_summary_vals_fn: Callable[[List[Tuple]], Dict[str, List]] = random_expression_summary_values,
+    exclude_logical_coord_fn: Callable[[NamedTuple], bool] = None,
+    cell_counts_generator_fn: Callable[[List[Tuple]], List] = random_cell_counts_values,
+    cell_ordering_generator_fn: Callable[[List[str]], List[int]] = forward_cell_type_ordering
+) -> WmgSnapshot:
+    _, cell_counts_cube_dir = create_cubes(
+        cube_dir,
+        dim_size,
+        exclude_logical_coord_fn=exclude_logical_coord_fn,
+        expression_summary_vals_fn=expression_summary_vals_fn,
+        cell_counts_fn=cell_counts_generator_fn,
+    )
+
+    cell_type_orderings = build_cell_orderings(cell_counts_cube_dir, cell_ordering_generator_fn)
+    cell_type_orderings.to_json(os.path.join(cube_dir, CELL_TYPE_ORDERINGS_FILENAME), orient="records")
+
+    primary_filter_dimensions = build_precomputed_primary_filters()     
+    with open (f"{cube_dir}/primary_filter_dimensions.json","w") as f:
+        json.dump(primary_filter_dimensions, f)
 
 def build_cell_orderings(cell_counts_cube_dir_, cell_ordering_generator_fn) -> DataFrame:
     cell_type_orderings = []
@@ -291,18 +313,12 @@ def build_coords(
     return coords, dim_values
 
 
+
 # CLI invocation for use by setup_dev_data.sh, to create a snapshot for Docker-based dev & test envs
 if __name__ == "__main__":
     output_cube_dir = sys.argv[1]
     if not os.path.isdir(output_cube_dir):
         sys.exit(f"invalid dir {output_cube_dir} for cube")
-    _, cell_counts_cube_dir = create_cubes(
-        output_cube_dir,
-        dim_size=4,
-        dim_ontology_term_ids_generator_fn=semi_real_dimension_values_generator,
-        exclude_logical_coord_fn=exclude_random_coords_75pct,
-        expression_summary_vals_fn=random_expression_summary_values,
-        cell_counts_fn=random_cell_counts_values,
-    )
-    cell_counts_df = build_cell_orderings(cell_counts_cube_dir, cell_ordering_generator_fn=forward_cell_type_ordering)
-    cell_counts_df.to_json(os.path.join(output_cube_dir, CELL_TYPE_ORDERINGS_FILENAME), orient="records")
+
+    print("Creating temp wmg snapshot")
+    create_temp_wmg_snapshot_to_file(output_cube_dir)    
