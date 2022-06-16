@@ -359,6 +359,10 @@ export const TISSUE_ONTOLOGY_VIEW: OntologyView = {
       ontology_term_id: "UBERON:0002369",
     },
     {
+      label: "axilla",
+      ontology_term_id: "UBERON:0009472",
+    },
+    {
       label: "bladder organ",
       ontology_term_id: "UBERON:0018707",
     },
@@ -409,6 +413,10 @@ export const TISSUE_ONTOLOGY_VIEW: OntologyView = {
     {
       label: "digestive system",
       ontology_term_id: "UBERON:0001007",
+    },
+    {
+      label: "embryo",
+      ontology_term_id: "UBERON:0000922",
     },
     {
       label: "embryonic stem cell (cell culture)",
@@ -499,6 +507,10 @@ export const TISSUE_ONTOLOGY_VIEW: OntologyView = {
       ontology_term_id: "CL:0002327 (cell culture)",
     },
     {
+      label: "mucosa",
+      ontology_term_id: "UBERON:0000344",
+    },
+    {
       label: "musculature",
       ontology_term_id: "UBERON:0001015",
     },
@@ -530,7 +542,10 @@ export const TISSUE_ONTOLOGY_VIEW: OntologyView = {
       label: "pleura",
       ontology_term_id: "UBERON:0000977",
     },
-
+    {
+      label: "pleural fluid",
+      ontology_term_id: "UBERON:0001087",
+    },
     {
       label: "prostate",
       ontology_term_id: "UBERON:0002367",
