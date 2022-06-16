@@ -61,6 +61,7 @@ def fetch_datasets_metadata(dataset_ids: Iterable[str]) -> List[Dict]:
     # and we want to keep session management out of the calling method
 
     with db_session_manager() as session:
+
         def get_dataset(dataset_id_):
             dataset = Dataset.get(session, dataset_id_)
             if dataset is None:
@@ -77,9 +78,9 @@ def fetch_datasets_metadata(dataset_ids: Iterable[str]) -> List[Dict]:
 
 
 def find_dim_option_values(criteria: Dict, query: WmgQuery, dimension: str) -> set:
-    """ Find values for the specified dimension that satisfy the given filtering criteria,
-    ignoring any criteria specified for the given dimension. """
-    filter_options_criteria = criteria.copy(update={dimension + 's': []}, deep=True)
+    """Find values for the specified dimension that satisfy the given filtering criteria,
+    ignoring any criteria specified for the given dimension."""
+    filter_options_criteria = criteria.copy(update={dimension + "s": []}, deep=True)
     return extract_filter_dims_values(query.cell_counts(filter_options_criteria))[dimension]
 
 
@@ -89,7 +90,7 @@ def build_filter_dims_values(criteria: WmgQueryCriteria, query: WmgQuery) -> Dic
         "disease_ontology_term_id": "",
         "sex_ontology_term_id": "",
         "development_stage_ontology_term_id": "",
-        "ethnicity_ontology_term_id": ""
+        "ethnicity_ontology_term_id": "",
     }
     for dim in dims:
         dims[dim] = find_dim_option_values(criteria, query, dim)
@@ -161,7 +162,7 @@ def build_ontology_term_id_label_mapping(ontology_term_ids: Iterable[str]) -> Li
 
 
 def build_ordered_cell_types_by_tissue(
-        cell_counts: DataFrame, cell_type_orderings: DataFrame
+    cell_counts: DataFrame, cell_type_orderings: DataFrame
 ) -> Dict[str, List[Dict[str, str]]]:
     distinct_tissues_cell_types: DataFrame = cell_counts.groupby(
         ["tissue_ontology_term_id", "cell_type_ontology_term_id"], as_index=False
