@@ -1,9 +1,14 @@
 import json
+import tempfile
 import unittest
 from unittest.mock import patch
 
+import tiledb
+
 from backend.corpora.api_server.app import app
 from backend.wmg.data.schemas.cube_schema import cube_non_indexed_dims
+from backend.wmg.data.snapshot import EXPRESSION_SUMMARY_CUBE_NAME
+from backend.wmg.data.tiledb import create_ctx
 from tests.unit.backend.corpora.fixtures.environment_setup import EnvironmentSetup
 from tests.unit.backend.wmg.fixtures.test_primary_filters import (
     test_snapshot_id,
@@ -474,8 +479,12 @@ class WmgApiV1Tests(unittest.TestCase):
             # check that rows were dropped
             self.assertGreater(snapshot.expression_summary_cube.df[:].shape[0], df.shape[0])
             # setup up API endpoints to use a mocked cube
-            snapshot.expression_summary_cube.df[:] = df
-            load_snapshot.return_value = snapshot
+            with tempfile.TemporaryDirectory() as cube_dir:
+                expression_summary_cube_dir = f"{cube_dir}/{EXPRESSION_SUMMARY_CUBE_NAME}"
+                tiledb.from_pandas(uri=expression_summary_cube_dir, dataframe=df)
+                with tiledb.open(expression_summary_cube_dir, ctx=create_ctx()) as expression_summary_cube:
+                    snapshot.expression_summary_cube = expression_summary_cube
+                    load_snapshot.return_value = snapshot
 
             with self.subTest("when a secondary dimension has criteria, it's own values are not restricted"):
                 filter_0 = dict(

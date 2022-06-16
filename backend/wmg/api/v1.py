@@ -81,7 +81,8 @@ def find_dim_option_values(criteria: Dict, query: WmgQuery, dimension: str) -> s
     """Find values for the specified dimension that satisfy the given filtering criteria,
     ignoring any criteria specified for the given dimension."""
     filter_options_criteria = criteria.copy(update={dimension + "s": []}, deep=True)
-    return extract_filter_dims_values(query.cell_counts(filter_options_criteria))[dimension]
+    # to do can we query cell_counts for a performance gain?
+    return extract_filter_dims_values(query.expression_summary(filter_options_criteria))[dimension]
 
 
 def build_filter_dims_values(criteria: WmgQueryCriteria, query: WmgQuery) -> Dict:
