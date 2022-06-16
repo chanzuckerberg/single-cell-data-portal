@@ -1,7 +1,12 @@
 import { Classes, Colors } from "@blueprintjs/core";
 import { Chip } from "czifui";
 import styled, { css } from "styled-components";
-import { GRAY, PT_GRID_SIZE_PX, PT_TEXT_COLOR } from "../common/theme";
+import {
+  GRAY,
+  PRIMARY_BLUE,
+  PT_GRID_SIZE_PX,
+  PT_TEXT_COLOR,
+} from "../common/theme";
 
 export const HEADER_HEIGHT_PX = 48;
 
@@ -225,7 +230,7 @@ export const BetaChip = styled(Chip)`
 `;
 
 export const HiringLink = styled.a`
-  background-color: #3867fa;
+  background-color: ${PRIMARY_BLUE};
   padding: 7px 14px;
   border-radius: 4px;
   color: #fff;
