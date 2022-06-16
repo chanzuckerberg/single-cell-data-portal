@@ -469,6 +469,7 @@ paths:
       description: >-
         Get the processing status for a Dataset. MUST indicate the Dataset by providing *one* of either the
         **curator_tag** (non-null) OR the **dataset_uuid** parameters.
+      operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_uuid.datasets.status.get
       security:
         - curatorAccess: []
       parameters:
