@@ -1,5 +1,6 @@
 import json
 import os
+import time
 from urllib.parse import urlparse
 
 import connexion
@@ -12,10 +13,10 @@ from backend.corpora.api_server.logger import configure_logging
 from backend.corpora.common.utils.aws import AwsSecret
 from backend.corpora.common.utils.json import CustomJSONEncoder
 
+configure_logging()
+
 DEPLOYMENT_STAGE = os.environ["DEPLOYMENT_STAGE"]
 APP_NAME = os.environ["APP_NAME"]
-
-configure_logging()
 
 
 def create_flask_app():
@@ -105,21 +106,28 @@ def apis_landing_page() -> str:
 
 
 @app.before_request
-def pre_request_logging():
+def before_request():
+    g.start = time.time()
     app.logger.info(
         dict(
-            message="REQUEST",
+            type="REQUEST",
             url=request.path,
             method=request.method,
-            schema=request.scheme,
             content_length=request.content_length,
         )
     )
 
 
 @app.after_request
-def post_request_logging(response: Response):
-    app.logger.info(dict(message="REQUEST", status_code=response.status_code, content_length=response.content_length))
+def after_request(response: Response):
+    app.logger.info(
+        dict(
+            type="RESPONSE",
+            status_code=response.status_code,
+            content_length=response.content_length,
+            response_time=time.time() - g.start,
+        )
+    )
     return response
 
 
