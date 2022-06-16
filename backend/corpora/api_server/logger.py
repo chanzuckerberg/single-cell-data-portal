@@ -9,9 +9,6 @@ LOGGED_FIELDS = ["levelname", "asctime", "name", "message"]
 LOG_FORMAT = " ".join([f"%({field})" for field in LOGGED_FIELDS])
 
 
-gunicorn_logger = logging.getLogger("gunicorn.error")
-
-
 def configure_logging():
     """https://docs.python.org/3/library/logging.config.html"""
     dictConfig(
@@ -28,14 +25,9 @@ def configure_logging():
                     "class": "logging.StreamHandler",
                     "stream": "ext://flask.logging.wsgi_errors_stream",
                     "formatter": "default",
-                },
-                "exceptions": {
-                    "class": "logging.StreamHandler",
-                    "stream": "ext://sys.stderr",
-                    "formatter": "default",
-                    "level": "ERROR",
-                },
+                    "level": "INFO",
+                }
             },
-            "root": {"level": gunicorn_logger.level, "handlers": ["wsgi", "exceptions"]},
+            "root": {"level": logging.INFO, "handlers": ["wsgi"]},
         }
     )
