@@ -309,6 +309,14 @@ const DocContent = styled.div`
     margin-top: 24px;
     line-height: 18px;
   }
+
+  /* fixes navigate to anchor urls */
+  * :target::before {
+    content: "";
+    display: block;
+    height: 60px; /* fixed header height*/
+    margin: -60px 0 0; /* negative fixed header height */
+  }
 `;
 
 const StyledImage = styled(Image)``;
