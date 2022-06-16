@@ -55,22 +55,27 @@ Several groups have independently deployed various versions of cellxgene to the 
 ## Cellxgene Gateway/Apache2 Reverse Proxy with Authentication
 
 ### Contributors
+
 Fabian Rost and Alexandre Mestiashvili
 
 ### Hosting Use Case
+
 - Private self-hosting of multiple datasets for multiple groups
 - Groups only have access to datasets that they "own"
 - Password Authentication
 
 ### General Description
+
 Start multiple cellxgene-gateway instances for each of the different user groups and use a reverse proxy for authentication and forwarding to the different cellxgene instances.
 
 ### Components
 
 [CellxGene Gateway](https://github.com/Novartis/cellxgene-gateway)
+
 - Application to be run
 
 [Apache Reverse Proxy](https://httpd.apache.org/docs/2.4/howto/reverse_proxy.html)
+
 - Used as a reverse proxy to redirect web requests and provide authentication
 
 [Tutorial and Code](https://github.com/mestia/cellxgene-gateway-proxy-example)
@@ -78,9 +83,11 @@ Start multiple cellxgene-gateway instances for each of the different user groups
 ## AWS Elastic Bean Stalk
 
 ### Contributors
+
 The CellxGene Team 🧬
 
 ### Hosting Use Case
+
 - Cellxgene desktop deployed with elastic beanstalk
 - Used to host data in a read-only fashion (can't use annotations)
 - Solution for an AWS compute environment
@@ -88,9 +95,11 @@ The CellxGene Team 🧬
 ### Components
 
 [CellxGene Desktop](https://github.com/chanzuckerberg/cellxgene)
+
 - Application to be run
 
 [Elastic Beanstalk](https://aws.amazon.com/elasticbeanstalk/)
+
 - AWS based solution for deploying and scaling web applications
 
 This method requires familiarity with:
@@ -173,8 +182,10 @@ By default, Heroku publically shares your instance to anyone with the URL.
 ## AWS/Linux Server with Basic Authentication
 
 ### Contributors
+
 Lisa Sikkema and Thomas Walzthoeni
 
 ### Hosting Use Case
+
 - Private self-hosting on an EC2 instance
 - Access by external collaborators and potentially password authentication

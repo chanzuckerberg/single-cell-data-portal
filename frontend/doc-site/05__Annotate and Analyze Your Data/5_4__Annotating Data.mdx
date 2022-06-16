@@ -44,7 +44,7 @@ Cellxgene will automatically find and reload your draft annotations in editable 
 
 #### Specify an annotations CSV
 
-*This mode is only appropriate for single-user, local cellxgene instances.*
+_This mode is only appropriate for single-user, local cellxgene instances._
 
 If you'd like to specify the complete file path for your annotations, you can do so by running:
 
@@ -90,19 +90,25 @@ Any annotations created in the application will be autosaved in `annotations-dir
 ### FAQ
 
 #### How do I know my annotations are saved?
+
 `cellxgene` autosaves any changes made to your annotations every 3 seconds.
 
 #### I think I deleted my annotations! Can they be recovered?
+
 Not to worry! We save the last 10 versions of your annotations in `annotations-directory/NAME-backups/`
 
 #### What about creating continuous annotations?
+
 Continuous metadata is important! However, these values (e.g., pseudotime) are the result of statistical analyses that are beyond cellxgene's visualization and exploration focused scope. We do, of course, provide visualization of continuous metadata values computed elsewhere and stored in `anndata.obs.`
 
 #### I keep getting weird index errors when trying to join my annotations to my anndata?
+
 This is most likely because the h5ad file you are working with is not the original file used to generate the annotations! We recommend merging new annotations in on a regular basis for this reason.
 
 #### How do you remember my unique ID to match my cellxgene session with my annotations file?
+
 We place a small cookie (file) in your browser that identifies where your draft annotations are saved. This file never leaves your machine, and is never sent to the cellxgene team or anyone else.
 
 #### I have feedback and ideas for you!
+
 We would love to hear your feedback :) Contact us at: [cellxgene@chanzuckerberg.com](mailto:cellxgene@chanzuckerberg.com)
