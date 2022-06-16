@@ -5,6 +5,7 @@ import { INVALID_DOI_ERROR_MESSAGE } from "src/components/CreateCollectionModal/
 import { BLUEPRINT_SAFE_TYPE_OPTIONS, TEST_URL } from "tests/common/constants";
 import {
   describeIfDeployed,
+  describeIfDevStagingProd,
   goToPage,
   login,
   tryUntil,
@@ -56,6 +57,34 @@ describe("Collection", () => {
       }, 50);
     });
 
+    describe("dataset order", () => {
+      let lastValue = 1_000_000_000;
+      sortByCellCountDescending(datasets).forEach((dataset) => {
+        expect(dataset.cell_count).toBeLessThanOrEqual(lastValue);
+        lastValue = dataset.cell_count ?? 0;
+      });
+    });
+
+    describe("Publish a collection", () => {
+      describe("when no dataset", () => {
+        it("shows disabled publish button", async () => {
+          await login();
+
+          await createCollection();
+
+          await tryUntil(async () => {
+            const publishButton = await page.$(
+              getTestID("publish-collection-button")
+            );
+
+            expect(await publishButton?.getAttribute("disabled")).toBe("");
+          }, 100);
+        });
+      });
+    });
+  });
+
+  describeIfDevStagingProd("Deployed Env Tests", () => {
     describe.skip("invalid DOIs", () => {
       it("doesn't create a collection with a DOI in an invalid format", async () => {
         const timestamp = Date.now();
@@ -93,32 +122,6 @@ describe("Collection", () => {
         const [response] = await submitCreateForm();
         expect(response.status()).toEqual(400);
         await expect(page).toHaveSelector(getText(INVALID_DOI_ERROR_MESSAGE));
-      });
-    });
-
-    describe("dataset order", () => {
-      let lastValue = 1_000_000_000;
-      sortByCellCountDescending(datasets).forEach((dataset) => {
-        expect(dataset.cell_count).toBeLessThanOrEqual(lastValue);
-        lastValue = dataset.cell_count ?? 0;
-      });
-    });
-
-    describe("Publish a collection", () => {
-      describe("when no dataset", () => {
-        it("shows disabled publish button", async () => {
-          await login();
-
-          await createCollection();
-
-          await tryUntil(async () => {
-            const publishButton = await page.$(
-              getTestID("publish-collection-button")
-            );
-
-            expect(await publishButton?.getAttribute("disabled")).toBe("");
-          }, 100);
-        });
       });
     });
   });

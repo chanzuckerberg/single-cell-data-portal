@@ -45,6 +45,7 @@ export default function FilterView({
   values,
   viewListMaxHeight,
 }: Props): JSX.Element {
+  const panelRef = useRef<HTMLDivElement>(null);
   const listContainerRef = useRef<HTMLDivElement>(null);
   const listContainerRect = useResizeObserver(listContainerRef);
   const [panelScrollable, setPanelScrollable] = useState(false);
@@ -53,13 +54,11 @@ export default function FilterView({
   const { scrollHeight: listScrollHeight } = listContainerRect || {};
   const filteredValues = filterViewValues(values, searchValue);
 
-  // Calculate and set a min width on view list to prevent width resizing
+  // Calculate and set a min width on view panel to prevent width resizing
   // (derived from a change in list item selected state font weight).
   useEffect(() => {
-    if (listContainerRef.current) {
-      setPanelWidth(
-        listContainerRef.current?.clientWidth + ADDITIONAL_PANEL_WIDTH
-      );
+    if (panelRef.current) {
+      setPanelWidth(panelRef.current?.clientWidth + ADDITIONAL_PANEL_WIDTH);
     }
   }, []);
 
@@ -73,7 +72,7 @@ export default function FilterView({
   return (
     <>
       {showViewDivider && <ViewDivider orientation="vertical" />}
-      <ViewPanel panelWidth={panelWidth}>
+      <ViewPanel panelWidth={panelWidth} ref={panelRef}>
         {/* Optional search bar */}
         {isSearchable && (
           <FilterViewSearch
