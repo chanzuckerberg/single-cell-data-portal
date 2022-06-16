@@ -28,6 +28,7 @@ from backend.wmg.data.schemas.cube_schema import (
 from backend.wmg.data.snapshot import WmgSnapshot, CELL_TYPE_ORDERINGS_FILENAME
 from backend.wmg.data.tiledb import create_ctx
 from tests.unit.backend.wmg.fixtures.test_primary_filters import build_precomputed_primary_filters
+from tests.unit.backend.wmg.fixtures.test_primary_filters_local import build_precomputed_primary_filters_local
 
 
 def simple_ontology_terms_generator(dimension_name: str, n_terms: int) -> List[str]:
@@ -170,7 +171,7 @@ def create_temp_wmg_snapshot_to_file(
     cell_type_orderings = build_cell_orderings(cell_counts_cube_dir, cell_ordering_generator_fn)
     cell_type_orderings.to_json(os.path.join(cube_dir, CELL_TYPE_ORDERINGS_FILENAME), orient="records")
 
-    primary_filter_dimensions = build_precomputed_primary_filters()     
+    primary_filter_dimensions = build_precomputed_primary_filters_local()     
     with open (f"{cube_dir}/primary_filter_dimensions.json","w") as f:
         json.dump(primary_filter_dimensions, f)
 
