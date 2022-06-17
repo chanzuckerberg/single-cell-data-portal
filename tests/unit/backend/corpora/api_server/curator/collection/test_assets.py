@@ -127,10 +127,13 @@ class TestAsset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
                 self.assertEqual("Dataset not found.", actual_body["detail"])
 
     @patch(
-        "backend.corpora.lambdas.api.v1.curation.collections.collection_uuid.assets.Dataset.get_assets",
+        "backend.corpora.lambdas.api.v1.curation.collections.collection_uuid.assets.get_dataset_else_error",
         return_value=None,
     )
-    def test__get_dataset_asset__asset_NOT_FOUND(self, get_asset: Mock):
+    def test__get_dataset_asset__asset_NOT_FOUND(self, get_dataset_else_error: Mock):
+        mocked_dataset = Mock()
+        mocked_dataset.get_assets.return_value = None
+        get_dataset_else_error.return_value = mocked_dataset
         for dataset_uuid in self.test_dataset_uuid:
             with self.subTest(dataset_uuid):
                 if dataset_uuid == "test_curator_tag":
@@ -146,4 +149,4 @@ class TestAsset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
                 self.assertEqual(404, response.status_code)
                 actual_body = response.json
                 self.assertEqual("No assets found. The dataset may still be processing.", actual_body["detail"])
-                get_asset.assert_called()
+                mocked_dataset.get_assets.assert_called()
