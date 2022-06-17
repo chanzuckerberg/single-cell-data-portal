@@ -6,6 +6,7 @@ from backend.corpora.common.utils.http_exceptions import (
     ForbiddenHTTPException,
     MethodNotAllowedException,
     InvalidParametersHTTPException,
+    NotFoundHTTPException,
 )
 from backend.corpora.lambdas.api.v1.authorization import owner_or_allowed
 
@@ -42,8 +43,12 @@ def delete_dataset_common(db_session: Session, dataset: Dataset, token_info: dic
 
 
 def get_dataset_else_invalid_parameter(db_session, dataset_uuid, collection_uuid, curator_tag, **kwargs) -> Dataset:
-    dataset = Dataset.get(db_session, dataset_uuid, collection_uuid=collection_uuid, curator_tag=curator_tag, **kwargs)
-    if dataset:
-        return dataset
-    else:
+    try:
+        dataset = Dataset.get(
+            db_session, dataset_uuid, collection_uuid=collection_uuid, curator_tag=curator_tag, **kwargs
+        )
+    except ValueError:
         raise InvalidParametersHTTPException()
+    if not dataset:
+        raise NotFoundHTTPException()
+    return dataset

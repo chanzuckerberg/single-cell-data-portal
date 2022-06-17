@@ -93,7 +93,7 @@ class Dataset(Entity):
         cls, session: Session, dataset_uuid=None, include_tombstones=False, collection_uuid=None, curator_tag=None
     ) -> typing.Optional["Dataset"]:
         if not (dataset_uuid or (curator_tag and collection_uuid)):
-            return None  # Not enough information to query
+            raise ValueError("Not enough information to query")
         filters = []
         if not include_tombstones:
             filters.append(cls.table.tombstone != True)  # noqa

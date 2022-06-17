@@ -470,8 +470,6 @@ paths:
         Get the processing status for a Dataset. MUST indicate the Dataset by providing *one* of either the
         **curator_tag** (non-null) OR the **dataset_uuid** parameters.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_uuid.datasets.status.get
-      security:
-        - curatorAccess: []
       parameters:
         - $ref: "#/components/parameters/path_collection_uuid"
         - $ref: "#/components/parameters/query_curator_tag"
@@ -499,8 +497,8 @@ paths:
                         $ref: "#/components/schemas/conversion_status"
         "400":
           $ref: "#/components/responses/400"
-        "401":
-          $ref: "#/components/responses/401"
+        "404":
+          $ref: "#/components/responses/404"
 
   /v1/collections/{collection_uuid}/asset:
     get:
