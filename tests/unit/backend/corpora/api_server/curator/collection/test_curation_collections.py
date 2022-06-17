@@ -139,17 +139,12 @@ class TestGetCollections(BaseAuthAPITest):
         res_no_auth = self.app.get("/curation/v1/collections")
         self.assertEqual(200, res_no_auth.status_code)
         self.assertEqual(6, len(res_no_auth.json["collections"]))
-        [self.assertEqual("PUBLIC", c["visibility"]) for c in res_no_auth.json["collections"]]
-
-    def test__get_collections_no_auth_processing_status_PENDING__OK(self):
-        res_no_auth = self.app.get("/curation/v1/collections")
-        self.assertEqual(200, res_no_auth.status_code)
-        self.assertEqual(6, len(res_no_auth.json["collections"]))
-        for collection in res_no_auth.json["collections"]:
-            if collection["id"] == "test_collection_id":
-                self.assertEqual(collection["processing_status"], "PENDING")
-            else:
-                self.assertEqual(collection["processing_status"], "SUCCESS")
+        with self.subTest("Summary collection-level processing statuses are accurate"):
+            for collection in res_no_auth.json["collections"]:
+                if collection["id"] == "test_collection_id":
+                    self.assertEqual(collection["processing_status"], "PENDING")
+                else:
+                    self.assertEqual(collection["processing_status"], "SUCCESS")
         [self.assertEqual("PUBLIC", c["visibility"]) for c in res_no_auth.json["collections"]]
 
     def test__get_collections_with_auth__OK(self):
@@ -157,12 +152,12 @@ class TestGetCollections(BaseAuthAPITest):
         self.assertEqual(200, res_auth.status_code)
         self.assertEqual(6, len(res_auth.json["collections"]))
 
-    def test__get_collections_no_auth_with_visibility_query_private__OK(self):
+    def test__get_collections_no_auth_visibility_private__OK(self):
         params = {"visibility": "PRIVATE"}
         res_private = self.app.get("/curation/v1/collections", query_string=params)
         self.assertEqual(401, res_private.status_code)
 
-    def test__get_collections_no_auth_with_visibility_query_public__OK(self):
+    def test__get_collections_no_auth_visibility_public__OK(self):
         params = {"visibility": "PUBLIC"}
         res_public = self.app.get("/curation/v1/collections", query_string=params)
         self.assertEqual(200, res_public.status_code)
