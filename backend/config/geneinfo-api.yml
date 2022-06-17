@@ -1,0 +1,123 @@
+openapi: 3.0.3
+info:
+  version: "1.0.0"
+  title: Chan Zuckerburg Initiative cellxgene Gene Info API
+  description: >-
+    This API is for internal use to access information from NCBI's E-Utilities API about a given gene.
+servers:
+  - description: Local
+    url: /
+  - description: Production environment
+    url: https://api.cellxgene.cziscience.com/
+  - description: Development environment
+    url: https://api.dev.single-cell.czi.technology/
+  - description: Staging environment
+    url: https://api.staging.single-cell.czi.technology/
+
+paths:
+  /v1/geneinfo:
+    get:
+      summary: Given a gene ensembl ID, returns that gene's summary information, full name, synonyms, and NCBI URL. 
+      description: >-
+      tags:
+        - geneinfo
+      operationId: backend.geneinfo.api.v1.geneinfo
+      parameters: 
+        - $ref: '#/components/parameters/GeneID'
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeneInfo'
+        "404":
+          $ref: "#/components/responses/404"
+
+components:
+  schemas:
+    problem:
+      type: object
+      description: Error message container for HTTP APIs.
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        detail:
+          type: string
+    GeneInfo:
+      type: object
+      properties:
+        summary:
+          type: string
+        name:
+          type: string
+        synonyms:
+          type: array
+          items:
+            type: string
+        ncbi_url:
+          type: string
+  
+  parameters: 
+    GeneID:
+      name: geneID
+      in: query
+      description: Specifies the ensembl ID of the gene to search
+      schema:
+        type: string
+
+  responses:
+    200:
+      description: OK.
+    201:
+      description: Created.
+    202:
+      description: Accepted
+    204:
+      description: No Content
+    400:
+      description: Invalid parameter.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
+    401:
+      description: Failed to authenticate.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
+    403:
+      description: Unauthorized.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
+    404:
+      description: Resource not found.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
+    405:
+      description: Method not allowed.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
+    409:
+      description: File conflict.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
+    413:
+      description: Exceed File Size Limit
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
+
+  securitySchemes: {}
