@@ -483,8 +483,9 @@ class WmgApiV1Tests(unittest.TestCase):
                 expression_summary_cube_dir = f"{cube_dir}/{EXPRESSION_SUMMARY_CUBE_NAME}"
                 tiledb.from_pandas(uri=expression_summary_cube_dir, dataframe=df, sparse=True)
                 with tiledb.open(expression_summary_cube_dir, ctx=create_ctx()) as expression_summary_cube:
-                    snapshot.expression_summary_cube = expression_summary_cube
-                    load_snapshot.return_value = snapshot
+                    yield expression_summary_cube
+            snapshot.expression_summary_cube = expression_summary_cube
+            load_snapshot.return_value = snapshot
 
             with self.subTest("when a secondary dimension has criteria, it's own values are not restricted"):
                 filter_0 = dict(
