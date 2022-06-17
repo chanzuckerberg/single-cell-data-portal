@@ -75,7 +75,7 @@ jobs:
       - name: Install happy
         uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.2.1
         with:
-          happy_version: "0.19.1"
+          happy_version: "0.23.0"
       - name: Push images
         if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
         run: |
@@ -109,7 +109,7 @@ jobs:
       - name: Install happy
         uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.2.1
         with:
-          happy_version: "0.19.1"
+          happy_version: "0.23.0"
       - name: Docker build, push, and tag
         shell: bash
         run: |
@@ -213,7 +213,7 @@ jobs:
       - name: Install happy
         uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.2.1
         with:
-          happy_version: "0.19.1"
+          happy_version: "0.23.0"
       - name: Docker build, push, and tag
         shell: bash
         run: |
