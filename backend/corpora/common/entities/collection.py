@@ -200,11 +200,12 @@ class Collection(Entity):
         @param visibility: the CollectionVisibility string name
         @return: a list of dict representations of Collections
         """
-        filters = []
         if visibility == CollectionVisibility.PUBLIC.name:
             filters = [DbCollection.visibility == CollectionVisibility.PUBLIC]
         elif visibility == CollectionVisibility.PRIVATE.name:
             filters = [DbCollection.visibility == CollectionVisibility.PRIVATE]
+        else:
+            filters = []
 
         resp_collections = []
         for collection in session.query(cls.table).filter(*filters).all():
