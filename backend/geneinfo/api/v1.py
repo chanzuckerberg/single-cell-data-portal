@@ -1,7 +1,7 @@
 import string
 from flask import jsonify
 import urllib.request
-import json 
+import json
 import xml.etree.ElementTree as ET
 from backend.geneinfo.config import GeneInfoConfig
 
@@ -12,17 +12,15 @@ def geneinfo(geneID: string):
     api_key = gene_info_config.ncbi_api_key
 
     # search for gene UID from ensembl ID
-    search_url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=gene&term={}&api_key={}&retmode=json".format(
-        geneID, 
-        api_key)
+    search_url = ("https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?"
+                  "db=gene&term={}&api_key={}&retmode=json").format(geneID, api_key)
     search_data = urllib.request.urlopen(search_url).read()
     search_result = json.loads(search_data)
     uid = int(search_result["esearchresult"]["idlist"][0])
 
     # fetch gene information using NCBI UID
-    fetch_url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=gene&id={}&api_key={}&retmode=xml".format(
-        uid, 
-        api_key)
+    fetch_url = ("https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?"
+                 "db=gene&id={}&api_key={}&retmode=xml").format(uid, api_key)
     fetch_response = urllib.request.urlopen(fetch_url).read()
 
     # parse tree result
