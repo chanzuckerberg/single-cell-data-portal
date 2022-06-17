@@ -1,4 +1,3 @@
-import os
 import sqlalchemy
 from typing import Optional
 from backend.corpora.common.providers import crossref_provider
@@ -11,6 +10,7 @@ import re
 import logging
 
 from .common import get_collection
+from ....common.corpora_config import CorporaConfig
 from ....common.corpora_orm import DbCollection, CollectionVisibility, ProjectLinkType
 from ....common.entities import Collection
 from .authorization import is_user_owner_or_allowed, owner_or_allowed
@@ -20,19 +20,6 @@ from ....common.utils.http_exceptions import (
     UnauthorizedError,
 )
 from ....api_server.db import dbconnect
-
-# Set collections_base_url
-RDEV_PREFIX = os.environ.get("REMOTE_DEV_PREFIX")
-if RDEV_PREFIX:
-    base_url = f"https://{RDEV_PREFIX.strip('/')}-frontend.rdev.single-cell.czi.technology"
-else:
-    DEPLOYMENT_STAGE = os.environ.get("DEPLOYMENT_STAGE")
-    if DEPLOYMENT_STAGE == "test":
-        base_url = "http://frontend.corporanet.local:3000"
-    elif DEPLOYMENT_STAGE == "prod":
-        base_url = "https://cellxgene.cziscience.com"
-    else:
-        base_url = f"https://cellxgene.{DEPLOYMENT_STAGE}.single-cell.czi.technology"
 
 
 @dbconnect
@@ -97,7 +84,7 @@ def get_collections_curation(visibility: str, token_info: dict):
         else:
             collection["access_type"] = "READ"
         del collection["owner"]  # Don't actually want to return 'owner' in response
-        collection["collection_url"] = f"{base_url}/collections/{collection['id']}"
+        collection["collection_url"] = f"{CorporaConfig().collections_base_url}/collections/{collection['id']}"
         allowed_collections.append(collection)
 
     return jsonify({"collections": allowed_collections})
