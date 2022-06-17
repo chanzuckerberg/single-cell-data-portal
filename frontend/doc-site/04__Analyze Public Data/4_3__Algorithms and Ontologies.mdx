@@ -2,17 +2,18 @@
 
 ## Algorithms used by Cellxgene
 
-Differential expression
+## Differential expression
 
-We're . The assumes normally distributed values on a linear scale.
+> We're [actively working on how to improve differential expression](https://github.com/chanzuckerberg/cellxgene/issues/2211). **The** [**current implementation**](https://github.com/chanzuckerberg/cellxgene/blob/6f6634a4d9766a93596674fe42efbcae6ffabea6/backend/czi_hosted/compute/diffexp_generic.py#L42) **assumes normally distributed values on a linear scale.**
 
-Cellxgene's differential expression uses a , which assumes that the two populations are normally distributed, but may have unequal variance. We use a two-sided t-test against the null hypothesis that the two populations have equal means. P-values are adjusted with the .
+Cellxgene's differential expression uses a [Welch's _t_-test](https://en.wikipedia.org/wiki/Welch%27s_t-test), which assumes that the two populations are normally distributed, but may have unequal variance. We use a two-sided t-test against the null hypothesis that the two populations have **equal** means. P-values are adjusted with the [Bonferroni corrrection](https://en.wikipedia.org/wiki/Bonferroni_correction).
 
 To help avoid spurious results, we only return genes with log fold change greater than 0.01:
 
-|log2( mean(set1) / mean(set2) )| > 0.01
+`|log2( mean(set1) / mean(set2) )| > 0.01`
 
-The log fold change threshold can be configured on cellxgene Desktop with the command. We then sort genes by their associated |t value| and return the top 15 genes.
+The log fold change threshold can be configured on cellxgene Desktop with the [`--diffexp-lfc-cutoff`](../desktop/launch.md) command. We then sort genes by their associated `|t value|` and return the top 15 genes.
+
 
 ## Cell type ontology ordering
 
@@ -20,84 +21,57 @@ Cell types in a dot plot can be ordered using lineage information to maximize th
 
 The method traverses the DAG starting from the root until reaching the leftmost bottom node adding nodes present in the data along the way. Once it reaches the bottom, it recursively repeats the process for any siblings. After, it traverses back and repeats the sibling process until exhaustion.
 
-## Algorithm
+### Algorithm
 
-Load the CL ontology, using either the cl.obo or cl.owl from the source file .
+- Load the CL ontology, using either the cl.obo or cl.owl from the source file .
 
-Subset the ontology to only contain the cell types of interest along with their ancestors.
+- Subset the ontology to only contain the cell types of interest along with their ancestors.
 
-Create a 2-dimensional representation of the DAG using the dot method of graphiz. See for a full description of this method.
+- Create a 2-dimensional representation of the DAG using the dot method of graphiz. See for a full description of this method.
 
-Traverse the tree starting at the root:
+- Traverse the tree starting at the root:
 
-If node is present in cell types of interest, add to the final ordered list.
+  - If node is present in cell types of interest, add to the final ordered list.
 
-Remove the node from nodes of interest.
+  - Remove the node from nodes of interest.
 
-Get children nodes
+  - Get children nodes
 
-Perform recursion for each child node, going left-to-right through the children nodes.
+  - Perform recursion for each child node, going left-to-right through the children nodes.
 
-Return the ordered list
+- Return the ordered list
 
-## Example
+### Example
 
 The following is an example of how a subset of the CL DAG looks like when rendering it with the dot algorithm from graphiz. Orange nodes represent cell types that would be present in the data corpus and are the target labels to be ordered.
 
 The cell type ordering algorithm described above would return the following ordered list of cell types.
 
-Native Cell
-
-Secretory Cell
-
-Club Cell
-
-Chondrocyte
-
-Goblet Cell
-
-Mast Cell
-
-T Cell
-
-CD4 positive, Alpha beta T Cell
-
-CD8 positive, Alpha beta T Cell
-
-B Cell
-
-Natural Killer
-
-Dendritic Cell
-
-Monocyte
-
-Macrophage
-
-Alveolar Macrophage
-
-Basal Cell
-
-Fibroblast
-
-Megakaryocyte
-
-Enucleate Erythrocyte
-
-Myofibroblast Cell
-
-Mesothelial Cell
-
-Endothelial Cell
-
-Blood Vessel Endothelial Cell
-
-Smooth Muscle Cell
-
-Vascular Associated Smooth Muscle Cell
-
-Epithelial Cell
-
-Squamous Epithelial Cell
-
-Ciliated Cell
+- Native Cell
+- Secretory Cell
+- Club Cell
+- Chondrocyte
+- Goblet Cell
+- Mast Cell
+- T Cell
+- CD4 positive, Alpha beta T Cell
+- CD8 positive, Alpha beta T Cell
+- B Cell
+- Natural Killer
+- Dendritic Cell
+- Monocyte
+- Macrophage
+- Alveolar Macrophage
+- Basal Cell
+- Fibroblast
+- Megakaryocyte
+- Enucleate Erythrocyte
+- Myofibroblast Cell
+- Mesothelial Cell
+- Endothelial Cell
+- Blood Vessel Endothelial Cell
+- Smooth Muscle Cell
+- Vascular Associated Smooth Muscle Cell
+- Epithelial Cell
+- Squamous Epithelial Cell
+- Ciliated Cell
