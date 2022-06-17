@@ -2,7 +2,12 @@ from sqlalchemy.orm import Session
 
 from backend.corpora.common.corpora_orm import CollectionVisibility
 from backend.corpora.common.entities import Collection, Dataset
-from backend.corpora.common.utils.http_exceptions import ForbiddenHTTPException, MethodNotAllowedException
+from backend.corpora.common.utils.http_exceptions import (
+    ForbiddenHTTPException,
+    MethodNotAllowedException,
+    InvalidParametersHTTPException,
+    NotFoundHTTPException,
+)
 from backend.corpora.lambdas.api.v1.authorization import owner_or_allowed
 
 
@@ -35,3 +40,15 @@ def delete_dataset_common(db_session: Session, dataset: Dataset, token_info: dic
                 original.create_revision(dataset.collection.id)  # Restore the original dataset and S3 assets
             dataset.asset_deletion()  # Delete the S3 assets and database rows.
             dataset.delete()  # Delete the dataset row.
+
+
+def get_dataset_else_error(db_session, dataset_uuid, collection_uuid, curator_tag, **kwargs) -> Dataset:
+    try:
+        dataset = Dataset.get(
+            db_session, dataset_uuid, collection_uuid=collection_uuid, curator_tag=curator_tag, **kwargs
+        )
+    except ValueError:
+        raise InvalidParametersHTTPException()
+    if not dataset:
+        raise NotFoundHTTPException("Dataset not found.")
+    return dataset

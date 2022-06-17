@@ -3,19 +3,13 @@ from flask import g, make_response, jsonify
 from backend.corpora.api_server.db import dbconnect
 from backend.corpora.common.entities import Dataset, DatasetAsset
 from backend.corpora.common.utils.http_exceptions import InvalidParametersHTTPException, NotFoundHTTPException
+from backend.corpora.lambdas.api.v1.common import get_dataset_else_error
 
 
 @dbconnect
 def get(collection_uuid: str, curator_tag: str = None, dataset_uuid=None):
     db_session = g.db_session
-    if dataset_uuid:
-        dataset = Dataset.get(db_session, dataset_uuid)
-    elif curator_tag:
-        dataset = Dataset.get_dataset_from_curator_tag(db_session, collection_uuid, curator_tag)
-    else:
-        raise InvalidParametersHTTPException()
-    if not dataset:
-        raise NotFoundHTTPException("Dataset not found.")
+    dataset = get_dataset_else_error(db_session, dataset_uuid, collection_uuid, curator_tag)
 
     # retrieve the artifact
     assets = dataset.get_assets()
