@@ -108,7 +108,7 @@ ${local_aws} s3api create-bucket --bucket ${wmg_bucket} &>/dev/null || true
 ${local_aws} s3 sync --delete --quiet ${tmp_snapshot_dir} s3://${wmg_bucket}/$snapshot_identifier/
 echo $snapshot_identifier | ${local_aws} s3 cp --quiet - s3://${wmg_bucket}/latest_snapshot_identifier
 ${local_aws} secretsmanager create-secret --name ${wmg_config_secret_name} &>/dev/null || true
-${local_aws} secretsmanager update-secret --secret-id ${wmg_config_secret_name} --secret-string '{"bucket": "wmg-test", "tiledb_config_overrides": "{\"py.init_buffer_bytes\": 536870912, \"sm.tile_cache_size\": 134217728, \"sm.mem.total_budget\": 1073741824, \"sm.memory_budget\": 536870912, \"sm.memory_budget_var\": 1073741824}"}'
+${local_aws} secretsmanager update-secret --secret-id ${wmg_config_secret_name} --secret-string '{"bucket": "wmg-test"}'
 
 echo
 echo "Dev env is up and running!"

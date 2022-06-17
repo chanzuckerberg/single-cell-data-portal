@@ -172,7 +172,7 @@ def create_temp_wmg_snapshot(
 
 def create_temp_wmg_snapshot_to_file(
     cube_dir,
-    dim_size=3,
+    dim_size=2,
     expression_summary_vals_fn: Callable[[List[Tuple]], Dict[str, List]] = random_expression_summary_values,
     exclude_logical_coord_fn: Callable[[NamedTuple], bool] = None,
     cell_counts_generator_fn: Callable[[List[Tuple]], List] = random_cell_counts_values,
