@@ -1,8 +1,8 @@
 from flask import g, make_response, jsonify
 
 from backend.corpora.api_server.db import dbconnect
-from backend.corpora.common.entities import Dataset, DatasetAsset
-from backend.corpora.common.utils.http_exceptions import InvalidParametersHTTPException, NotFoundHTTPException
+from backend.corpora.common.entities import DatasetAsset
+from backend.corpora.common.utils.http_exceptions import NotFoundHTTPException
 from backend.corpora.lambdas.api.v1.common import get_dataset_else_error
 
 
