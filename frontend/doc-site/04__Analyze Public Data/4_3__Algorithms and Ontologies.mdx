@@ -12,7 +12,6 @@ To help avoid spurious results, we only return genes with log fold change greate
 
 The log fold change threshold can be configured on cellxgene Desktop with the [`--diffexp-lfc-cutoff`](../desktop/launch.md) command. We then sort genes by their associated `|t value|` and return the top 15 genes.
 
-
 ## Cell type ontology ordering
 
 Cell types in a dot plot can be ordered using lineage information to maximize the utility of scExpression for pattern discovery and readability. The cell ontology (CL) directed acyclic graph (DAG) provides a good approximation to biological lineages. Thus we have a developed a method to create an ordered list of cell types based on the information contained in the CL DAG.
