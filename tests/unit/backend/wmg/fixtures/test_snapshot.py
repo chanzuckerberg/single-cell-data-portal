@@ -32,7 +32,24 @@ from tests.unit.backend.wmg.fixtures.test_primary_filters_local import build_pre
 
 
 def simple_ontology_terms_generator(dimension_name: str, n_terms: int) -> List[str]:
-    return [f"{dimension_name}_{i}" for i in range(n_terms)]
+    if dimension_name == "cell_type_ontology_term_id": 
+        # everything can be fake but cell types need to be real
+        # because they are queried against the ontology for the display labels
+        import backend.wmg.data.ontology_labels as ontology_labels
+        if ontology_labels.ontology_term_id_labels is None:
+            ontology_labels.__load_ontologies()
+        deterministic_term_ids = sorted(ontology_labels.ontology_term_id_labels.keys())
+        n = 0
+        terms = []
+        for term_id in deterministic_term_ids:
+            if term_id.startswith("CL"):
+                terms.append(term_id)
+                n+=1
+            if n==n_terms:
+                break
+        return terms
+    else:
+        return [f"{dimension_name}_{i}" for i in range(n_terms)]
 
 
 def semi_real_dimension_values_generator(dimension_name: str, dim_size: int) -> List[str]:
