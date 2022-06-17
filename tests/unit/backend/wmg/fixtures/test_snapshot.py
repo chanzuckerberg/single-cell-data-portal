@@ -32,6 +32,9 @@ from tests.unit.backend.wmg.fixtures.test_primary_filters_local import build_pre
 
 
 def simple_ontology_terms_generator(dimension_name: str, n_terms: int) -> List[str]:
+    return [f"{dimension_name}_{i}" for i in range(n_terms)]
+
+def simple_ontology_terms_generator_local(dimension_name: str, n_terms: int) -> List[str]:
     if dimension_name == "cell_type_ontology_term_id": 
         # everything can be fake but cell types need to be real
         # because they are queried against the ontology for the display labels
@@ -49,8 +52,7 @@ def simple_ontology_terms_generator(dimension_name: str, n_terms: int) -> List[s
                 break
         return terms
     else:
-        return [f"{dimension_name}_{i}" for i in range(n_terms)]
-
+        return [f"{dimension_name}_{i}" for i in range(n_terms)]    
 
 def semi_real_dimension_values_generator(dimension_name: str, dim_size: int) -> List[str]:
     """
@@ -182,7 +184,8 @@ def create_temp_wmg_snapshot_to_file(
         exclude_logical_coord_fn=exclude_logical_coord_fn,
         expression_summary_vals_fn=expression_summary_vals_fn,
         cell_counts_fn=cell_counts_generator_fn,
-        overwrite=False
+        overwrite=False,
+        dim_ontology_term_ids_generator_fn = simple_ontology_terms_generator_local
     )
 
     cell_type_orderings = build_cell_orderings(cell_counts_cube_dir, cell_ordering_generator_fn)

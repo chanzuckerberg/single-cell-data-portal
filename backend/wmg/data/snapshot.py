@@ -83,7 +83,11 @@ def _load_snapshot(new_snapshot_identifier) -> WmgSnapshot:
 
 
 def _open_cube(cube_uri) -> Array:
-    return tiledb.open(cube_uri, ctx=create_ctx(json.loads(WmgConfig().tiledb_config_overrides)))
+    config = WmgConfig()
+    tiledb_config_overrides = config.tiledb_config_overrides
+    if type(tiledb_config_overrides) is str:
+        tiledb_config_overrides = json.loads(tiledb_config_overrides)
+    return tiledb.open(cube_uri, ctx=create_ctx(tiledb_config_overrides))
 
 
 def _load_cell_type_order(snapshot_identifier: str) -> DataFrame:
