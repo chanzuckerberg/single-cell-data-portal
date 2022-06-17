@@ -485,7 +485,7 @@ class TestDatabase:
         dataset_processing_status = DbDatasetProcessingStatus(
             id="test_dataset_processing_status_for_revision_with_links",
             dataset_id="test_publish_revision_with_links__revision_dataset",
-            processing_status=ProcessingStatus.PENDING,
+            processing_status=ProcessingStatus.SUCCESS,
             upload_status=UploadStatus.UPLOADED,
             upload_progress=1,
             validation_status=ValidationStatus.VALID,
