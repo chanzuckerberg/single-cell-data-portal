@@ -1,7 +1,5 @@
 # Algorithms and Ontologies
 
-## Algorithms used by Cellxgene
-
 ## Differential expression
 
 > We're [actively working on how to improve differential expression](https://github.com/chanzuckerberg/cellxgene/issues/2211). **The** [**current implementation**](https://github.com/chanzuckerberg/cellxgene/blob/6f6634a4d9766a93596674fe42efbcae6ffabea6/backend/czi_hosted/compute/diffexp_generic.py#L42) **assumes normally distributed values on a linear scale.**
@@ -27,7 +25,7 @@ The method traverses the DAG starting from the root until reaching the leftmost 
 
 - Subset the ontology to only contain the cell types of interest along with their ancestors.
 
-- Create a 2-dimensional representation of the DAG using the dot method of graphiz. See for a full description of this method.
+- Create a 2-dimensional representation of the DAG using the dot method of graphiz. See [here](http://www.graphviz.org/pdf/dotguide.pdf) for a full description of this method.
 
 - Traverse the tree starting at the root:
 
