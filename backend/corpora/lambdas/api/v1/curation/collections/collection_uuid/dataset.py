@@ -8,16 +8,14 @@ from backend.corpora.api_server.db import dbconnect
 from backend.corpora.common.corpora_config import CorporaConfig
 from backend.corpora.common.corpora_orm import CollectionVisibility
 from backend.corpora.lambdas.api.v1.authorization import owner_or_allowed
-from backend.corpora.lambdas.api.v1.common import get_collection_else_forbidden, get_dataset_else_invalid_parameter
+from backend.corpora.lambdas.api.v1.common import get_collection_else_forbidden, get_dataset_else_error
 from backend.corpora.lambdas.api.v1.dataset import delete_dataset_common
 
 
 @dbconnect
 def delete_dataset(token_info: dict, collection_uuid: str, curator_tag: str = None, dataset_uuid: str = None):
     db_session = g.db_session
-    dataset = get_dataset_else_invalid_parameter(
-        db_session, dataset_uuid, collection_uuid, curator_tag, include_tombstones=True
-    )
+    dataset = get_dataset_else_error(db_session, dataset_uuid, collection_uuid, curator_tag, include_tombstones=True)
     delete_dataset_common(db_session, dataset, token_info)
     return "", 202
 
