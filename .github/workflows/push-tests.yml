@@ -72,12 +72,14 @@ jobs:
           make local-sync
           sleep 30  # Give frontend some time to finish building
           make local-smoke-test
+      - name: Install happy
+        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.2.1
+        with:
+          happy_version: "0.23.0"
       - name: Push images
         if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
         run: |
-          # Two requirements files is a temp workaround for python package conflicts
-          pip install -r .happy/requirements.txt
-          scripts/happy --profile="" push --extra-tag sha-${GITHUB_SHA:0:8} --extra-tag build-${GITHUB_RUN_NUMBER} frontend backend
+          happy --profile="" push --extra-tag sha-${GITHUB_SHA:0:8} --extra-tag build-${GITHUB_RUN_NUMBER} frontend backend
       - uses: 8398a7/action-slack@v3
         with:
           status: ${{ job.status }}
@@ -104,11 +106,14 @@ jobs:
         with:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v2
+      - name: Install happy
+        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.2.1
+        with:
+          happy_version: "0.23.0"
       - name: Docker build, push, and tag
         shell: bash
         run: |
-          pip install -r .happy/requirements.txt
-          scripts/happy --profile="" push --extra-tag sha-${GITHUB_SHA:0:8} --extra-tag build-${GITHUB_RUN_NUMBER} upload_failures upload_success dataset_submissions processing wmg_processing
+          happy --profile="" push --extra-tag sha-${GITHUB_SHA:0:8} --extra-tag build-${GITHUB_RUN_NUMBER} upload_failures upload_success dataset_submissions processing wmg_processing
       - uses: 8398a7/action-slack@v3
         with:
           status: ${{ job.status }}
@@ -205,11 +210,14 @@ jobs:
         with:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v2
+      - name: Install happy
+        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.2.1
+        with:
+          happy_version: "0.23.0"
       - name: Docker build, push, and tag
         shell: bash
         run: |
-          pip install -r .happy/requirements.txt
-          scripts/happy --profile="" addtags --source-tag sha-${GITHUB_SHA:0:8} --dest-tag branch-$(echo ${GITHUB_REF#refs/heads/} | sed 's/[\+\/]/-/g')
+          happy --profile="" addtags --source-tag sha-${GITHUB_SHA:0:8} --dest-tag branch-$(echo ${GITHUB_REF#refs/heads/} | sed 's/[\+\/]/-/g')
       - uses: 8398a7/action-slack@v3
         with:
           status: ${{ job.status }}
