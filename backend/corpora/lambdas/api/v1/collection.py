@@ -86,7 +86,7 @@ def get_collections_curation(visibility: str, token_info: dict):
     """
     if not token_info and visibility == CollectionVisibility.PRIVATE.name:
         raise UnauthorizedError()
-    collections = Collection.list_collections(g.db_session, visibility)
+    collections = Collection.list_collections_for_curation(g.db_session, visibility)
     allowed_collections = []
     for collection in collections:
         owner = collection["owner"]
