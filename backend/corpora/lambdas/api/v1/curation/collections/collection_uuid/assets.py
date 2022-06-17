@@ -36,9 +36,7 @@ def get(collection_uuid: str, curator_tag: str = None, dataset_uuid=None):
         presigned_url = asset.generate_file_url()
         if not presigned_url:
             result["presigned_url"] = "Not Found."
-            asset_list.append(result)
             error_flag = True
-            continue
         else:
             result["presigned_url"] = presigned_url
         asset_list.append(result)
