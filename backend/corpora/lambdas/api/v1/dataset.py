@@ -1,6 +1,6 @@
 from flask import make_response, jsonify, g
 
-from .common import delete_dataset_common, authorize_get_collection
+from .common import delete_dataset_common, get_collection_else_forbidden
 from ....common.corpora_orm import CollectionVisibility, DatasetArtifactFileType
 from ....common.entities import Dataset, Collection
 from ....common.entities.geneset import GenesetDatasetLink
@@ -63,7 +63,7 @@ def get_status(dataset_uuid: str, token_info: dict):
     dataset = Dataset.get(db_session, dataset_uuid)
     if not dataset:
         raise ForbiddenHTTPException()
-    authorize_get_collection(
+    get_collection_else_forbidden(
         db_session,
         dataset.collection.id,
         owner=owner_or_allowed(token_info),
