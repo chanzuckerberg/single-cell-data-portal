@@ -22,5 +22,5 @@ class WmgConfig(SecretConfig):
 
     def get_defaults_template(self):
         deployment_stage = os.getenv("DEPLOYMENT_STAGE", "test")
-        defaults_template = {"bucket": f"wmg-{deployment_stage}", "data_path_prefix": "", "tiledb_config_overrides": {"py.init_buffer_bytes": 536870912, "sm.tile_cache_size": 134217728, "sm.mem.total_budget": 1073741824, "sm.memory_budget": 536870912, "sm.memory_budget_var": 1073741824}}
+        defaults_template = {"bucket": f"wmg-{deployment_stage}", "data_path_prefix": "", "tiledb_config_overrides": {}}
         return defaults_template
