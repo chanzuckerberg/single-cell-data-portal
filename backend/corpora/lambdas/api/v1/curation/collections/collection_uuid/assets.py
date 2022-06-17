@@ -20,7 +20,7 @@ def get(collection_uuid: str, curator_tag: str = None, dataset_uuid=None):
     # retrieve the artifact
     assets = dataset.get_assets()
     if not assets:
-        raise NotFoundHTTPException("No assets found not found. The dataset may still be processing.")
+        raise NotFoundHTTPException("No assets found. The dataset may still be processing.")
 
     asset_list = []
     error_flag = False
