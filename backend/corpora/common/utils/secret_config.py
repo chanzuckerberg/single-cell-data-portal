@@ -58,7 +58,6 @@ class SecretConfig:
             return value
         if (value := self.value_from_defaults(name)) is not None:
             return value
-        print("here!")
         self.raise_error(name)
 
     @classmethod

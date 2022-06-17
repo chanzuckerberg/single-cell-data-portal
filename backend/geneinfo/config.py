@@ -1,5 +1,5 @@
-import os
 from backend.corpora.common.utils.secret_config import SecretConfig
+
 
 class GeneInfoConfig(SecretConfig):
     def __init__(self, *args, **kwargs):
