@@ -12,17 +12,17 @@ class CorporaConfig(SecretConfig):
     def get_defaults_template(self):
 
         # Set collections_base_url
-        RDEV_PREFIX = os.environ.get("REMOTE_DEV_PREFIX")
-        if RDEV_PREFIX:
-            collections_base_url = f"https://{RDEV_PREFIX.strip('/')}-frontend.rdev.single-cell.czi.technology"
+        rdev_prefix = os.environ.get("REMOTE_DEV_PREFIX")
+        if rdev_prefix:
+            collections_base_url = f"https://{rdev_prefix.strip('/')}-frontend.rdev.single-cell.czi.technology"
         else:
-            DEPLOYMENT_STAGE = os.environ.get("DEPLOYMENT_STAGE")
-            if DEPLOYMENT_STAGE == "test":
+            deployment_stage = os.environ.get("DEPLOYMENT_STAGE")
+            if deployment_stage == "test":
                 collections_base_url = "http://frontend.corporanet.local:3000"
-            elif DEPLOYMENT_STAGE == "prod":
+            elif deployment_stage == "prod":
                 collections_base_url = "https://cellxgene.cziscience.com"
             else:
-                collections_base_url = f"https://cellxgene.{DEPLOYMENT_STAGE}.single-cell.czi.technology"
+                collections_base_url = f"https://cellxgene.{deployment_stage}.single-cell.czi.technology"
 
         template = {
             "upload_file_formats": ["h5ad"],
