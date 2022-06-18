@@ -2,7 +2,7 @@ import json
 import unittest
 from unittest.mock import patch, Mock
 
-from backend.corpora.common.corpora_orm import CollectionVisibility
+from backend.corpora.common.corpora_orm import CollectionVisibility, ProcessingStatus
 from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest
 from tests.unit.backend.corpora.api_server.mock_auth import make_token
 
@@ -126,6 +126,63 @@ class TestPostCollection(BaseAuthAPITest):
                 self.assertEqual(400, response.status_code)
                 for error in expected_errors:
                     self.assertIn(error, response.json["detail"])
+
+
+class TestGetCollections(BaseAuthAPITest):
+    def setUp(self):
+        super().setUp()
+        self.test_collection = dict(
+            name="collection", description="description", contact_name="john doe", contact_email="johndoe@email.com"
+        )
+
+    def test__get_collections_no_auth__OK(self):
+        res_no_auth = self.app.get("/curation/v1/collections")
+        self.assertEqual(200, res_no_auth.status_code)
+        self.assertEqual(6, len(res_no_auth.json["collections"]))
+        [self.assertEqual("PUBLIC", c["visibility"]) for c in res_no_auth.json["collections"]]
+
+    def test__get_collections_with_auth__OK(self):
+        res_auth = self.app.get("/curation/v1/collections", headers=self.get_auth_headers())
+        self.assertEqual(200, res_auth.status_code)
+        self.assertEqual(6, len(res_auth.json["collections"]))
+
+    def test__get_collections_no_auth_visibility_private__OK(self):
+        params = {"visibility": "PRIVATE"}
+        res_private = self.app.get("/curation/v1/collections", query_string=params)
+        self.assertEqual(401, res_private.status_code)
+
+    def test__get_collections_no_auth_visibility_public__OK(self):
+        params = {"visibility": "PUBLIC"}
+        res_public = self.app.get("/curation/v1/collections", query_string=params)
+        self.assertEqual(200, res_public.status_code)
+        self.assertEqual(6, len(res_public.json["collections"]))
+
+    def test__get_only_public_collections_with_auth__OK(self):
+        params = {"visibility": "PUBLIC"}
+        res = self.app.get("/curation/v1/collections", query_string=params, headers=self.get_auth_headers())
+        self.assertEqual(200, res.status_code)
+        self.assertEqual(6, len(res.json["collections"]))
+        [self.assertEqual("PUBLIC", c["visibility"]) for c in res.json["collections"]]
+
+    def test__get_only_private_collections_with_auth__OK(self):
+        second_collection = self.generate_collection(self.session)
+        for status in (ProcessingStatus.PENDING, ProcessingStatus.SUCCESS):
+            self.generate_dataset(
+                self.session,
+                collection_id=second_collection.id,
+                processing_status={"processing_status": status},
+            ).id
+        params = {"visibility": "PRIVATE"}
+        res = self.app.get("/curation/v1/collections", query_string=params, headers=self.get_auth_headers())
+        with self.subTest("Summary collection-level processing statuses are accurate"):
+            for collection in res.json["collections"]:
+                if collection["id"] == second_collection.id:
+                    self.assertEqual(collection["processing_status"], "PENDING")
+                else:
+                    self.assertEqual(collection["processing_status"], "SUCCESS")
+        self.assertEqual(200, res.status_code)
+        self.assertEqual(2, len(res.json["collections"]))
+        [self.assertEqual("PRIVATE", c["visibility"]) for c in res.json["collections"]]
 
 
 class TestPutCollectionUUID(BaseAuthAPITest):
