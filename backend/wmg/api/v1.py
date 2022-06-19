@@ -16,7 +16,6 @@ from backend.wmg.data.query import (
 from backend.wmg.data.schemas.cube_schema import cube_non_indexed_dims
 from backend.wmg.data.snapshot import load_snapshot, WmgSnapshot
 
-
 # TODO: add cache directives: no-cache (i.e. revalidate); impl etag
 #  https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data
 #  -portal/2132
@@ -38,17 +37,12 @@ def query():
     dot_plot_matrix_df = build_dot_plot_matrix(expression_summary, cell_counts)
     all_filter_dims_values = extract_filter_dims_values(expression_summary)
 
-    n_cells_cell_type = cell_counts['n_total_cells']
-    n_cells_cell_type.index = cell_counts['cell_type_ontology_term_id']
-    n_cells_cell_type = n_cells_cell_type.to_dict()
-
     include_filter_dims = request.get("include_filter_dims", False)
     response_filter_dims_values = build_filter_dims_values(all_filter_dims_values) if include_filter_dims else {}
     return jsonify(
         dict(
             snapshot_id=snapshot.snapshot_identifier,
             expression_summary=build_expression_summary(dot_plot_matrix_df),
-            n_cells_cell_type=n_cells_cell_type,
             term_id_labels=dict(
                 genes=build_gene_id_label_mapping(criteria.gene_ontology_term_ids),
                 cell_types=build_ordered_cell_types_by_tissue(cell_counts, snapshot.cell_type_orderings),
@@ -56,7 +50,6 @@ def query():
             filter_dims=response_filter_dims_values,
         )
     )
-
 
 
 # TODO: Read this from generated data artifact instead of DB.
@@ -176,6 +169,7 @@ def build_ordered_cell_types_by_tissue(
             {
                 "cell_type_ontology_term_id": row.cell_type_ontology_term_id,
                 "cell_type": ontology_term_label(row.cell_type_ontology_term_id),
+                "total_count": row.n_total_cells,
                 "depth": row.depth,
             }
         )
