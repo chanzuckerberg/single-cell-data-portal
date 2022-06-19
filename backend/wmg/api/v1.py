@@ -38,13 +38,12 @@ def query():
     dot_plot_matrix_df = build_dot_plot_matrix(expression_summary, cell_counts)
     all_filter_dims_values = extract_filter_dims_values(expression_summary)
 
-    n_cells_cell_type = dot_plot_matrix_df['n_cells_cell_type']
-    n_cells_cell_type.index = dot_plot_matrix_df['cell_type_ontology_term_id']
+    n_cells_cell_type = cell_counts['n_total_cells']
+    n_cells_cell_type.index = cell_counts['cell_type_ontology_term_id']
     n_cells_cell_type = n_cells_cell_type.to_dict()
 
     include_filter_dims = request.get("include_filter_dims", False)
     response_filter_dims_values = build_filter_dims_values(all_filter_dims_values) if include_filter_dims else {}
-
     return jsonify(
         dict(
             snapshot_id=snapshot.snapshot_identifier,
@@ -57,6 +56,7 @@ def query():
             filter_dims=response_filter_dims_values,
         )
     )
+
 
 
 # TODO: Read this from generated data artifact instead of DB.
