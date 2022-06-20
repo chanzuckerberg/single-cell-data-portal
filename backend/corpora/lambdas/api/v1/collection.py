@@ -97,7 +97,16 @@ def get_collection_uuid_curation(collection_uuid: str):
     collection = Collection.get_collection(db_session, collection_uuid, include_tombstones=True)
     if not collection:
         raise NotFoundHTTPException
-    return jsonify(collection.to_dict_keep(Collection.columns_for_collection))
+    collection_response: dict = collection.to_dict_keep(Collection.columns_for_collection)
+
+    del collection_response["owner"]  # Don't actually want to return 'owner' in response
+
+    # Modify response columns to fit Curator API response schema
+    for dataset in collection_response["datasets"]:
+        dataset["dataset_assets"] = dataset["artifacts"]
+        del dataset["artifacts"]
+
+    return jsonify(collection_response)
 
 
 @dbconnect

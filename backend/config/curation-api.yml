@@ -655,13 +655,8 @@ components:
             development_stage:
               $ref: "#/components/schemas/ontology_elements"
               nullable: true
-            dataset_deployments:
-              type: array
-              items:
-                type: object
-                properties:
-                  url:
-                    type: string
+            explorer_url:
+              $ref: "#/components/schemas/explorer_url"
             cell_type:
               $ref: "#/components/schemas/ontology_elements"
               nullable: true
@@ -706,6 +701,9 @@ components:
           enum: [H5AD, RDS]
         filename:
           type: string
+    explorer_url:
+      type: string
+      description: The url at which a given Dataset may be explored using the cellxgene visualization tool
     ontology_element:
       type: object
       properties:

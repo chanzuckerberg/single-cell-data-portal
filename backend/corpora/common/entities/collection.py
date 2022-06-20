@@ -202,11 +202,11 @@ class Collection(Entity):
         "sex",
         "ethnicity",
         "development_stage",
-        "dataset_deployments",
+        "explorer_url",
         "cell_type",
         "cell_count",
         "x_approximate_distribution",
-        # "batch_condition",  # TODO: https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data-portal/1461
+        # "batch_condition",  # TODO: https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data-portal/1461  # noqa: E501
         "mean_genes_per_cell",
         "schema_version",
     ]
