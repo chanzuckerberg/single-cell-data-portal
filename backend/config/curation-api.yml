@@ -112,6 +112,7 @@ paths:
                           type: string
                         publisher_metadata:
                           $ref: "#/components/schemas/publisher_metadata"
+                          nullable: true
                         revision_of:
                           type: string
                           nullable: true
