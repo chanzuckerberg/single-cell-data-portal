@@ -1,0 +1,4 @@
+click==7.1.2
+pyyaml==5.4.1
+terrasnek==0.1.2
+boto3==1.17.47
