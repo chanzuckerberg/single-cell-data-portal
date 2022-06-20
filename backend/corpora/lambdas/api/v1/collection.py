@@ -18,6 +18,7 @@ from ....common.utils.http_exceptions import (
     InvalidParametersHTTPException,
     ConflictException,
     UnauthorizedError,
+    NotFoundHTTPException,
 )
 from ....api_server.db import dbconnect
 
@@ -88,6 +89,15 @@ def get_collections_curation(visibility: str, token_info: dict):
         allowed_collections.append(collection)
 
     return jsonify({"collections": allowed_collections})
+
+
+@dbconnect
+def get_collection_uuid_curation(collection_uuid: str):
+    db_session = g.db_session
+    collection = Collection.get_collection(db_session, collection_uuid, include_tombstones=True)
+    if not collection:
+        raise NotFoundHTTPException
+    return jsonify(collection.to_dict_keep(Collection.columns_for_collection))
 
 
 @dbconnect

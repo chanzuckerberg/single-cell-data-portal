@@ -112,7 +112,6 @@ paths:
                           type: string
                         publisher_metadata:
                           $ref: "#/components/schemas/publisher_metadata"
-                          nullable: true
                         revision_of:
                           type: string
                           nullable: true
@@ -154,10 +153,7 @@ paths:
     get:
       summary: Fetch a Collection with Datasets
       description: Fetch full Collection metadata and associated Datasets.
-      operationId: backend.corpora.lambdas.api.v1.collection.get_collection_details
-      security:
-        - curatorAccessLenient: []
-        - {}
+      operationId: backend.corpora.lambdas.api.v1.collection.get_collection_uuid_curation
       tags:
         - collection
       parameters:
@@ -186,6 +182,7 @@ paths:
                     type: string
                   revised_at:
                     type: number
+                    nullable: true
                   created_at:
                     type: number
                   links:
@@ -199,16 +196,20 @@ paths:
                     enum: [READ, WRITE]
                   published_at:
                     type: number
+                    nullable: true
                   description:
                     type: string
                   publisher_metadata:
                     $ref: "#/components/schemas/publisher_metadata"
                   revision_of:
                     type: string
+                    nullable: true
                   tombstone:
                     type: boolean
-        "401":
-          $ref: "#/components/responses/401"
+                  processing_status:
+                    $ref: "#/components/schemas/processing_status"
+        "400":
+          $ref: "#/components/responses/400"
         "404":
           $ref: "#/components/responses/404"
     put:
@@ -628,24 +629,31 @@ components:
           properties:
             name:
               type: string
+              nullable: true
             revision:
               type: integer
+              nullable: true
             revised_at:
               type: number
+              nullable: true
             is_primary_data:
               $ref: "#/components/schemas/is_primary_data"
             X_normalization:
               type: string
+              nullable: true
             dataset_assets:
               type: array
               items:
                 $ref: "#/components/schemas/dataset_asset"
             sex:
               $ref: "#/components/schemas/ontology_elements"
+              nullable: true
             ethnicity:
               $ref: "#/components/schemas/ontology_elements"
+              nullable: true
             development_stage:
               $ref: "#/components/schemas/ontology_elements"
+              nullable: true
             dataset_deployments:
               type: array
               items:
@@ -655,18 +663,22 @@ components:
                     type: string
             cell_type:
               $ref: "#/components/schemas/ontology_elements"
+              nullable: true
             cell_count:
               type: integer
+              nullable: true
             X_approximate_distribution:
               $ref: "#/components/schemas/distribution"
-            batch_condition:
-              type: array
-              items:
-                type: string
+#            batch_condition:  # TODO: https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data-portal/1461
+#              type: array
+#              items:
+#                type: string
             mean_genes_per_cell:
               type: number
+              nullable: true
             schema_version:
               type: string
+              nullable: true
     dataset_preview:
       type: object
       properties:
@@ -742,6 +754,7 @@ components:
           type: number
         published_year:
           type: number
+      nullable: true
     collection_form_metadata:
       type: object
       additionalProperties: false

@@ -185,6 +185,28 @@ class TestGetCollections(BaseAuthAPITest):
         [self.assertEqual("PRIVATE", c["visibility"]) for c in res.json["collections"]]
 
 
+class TestGetCollectionUUID(BaseAuthAPITest):
+    def setUp(self):
+        super().setUp()
+        self.test_collection = dict(
+            name="collection", description="description", contact_name="john doe", contact_email="johndoe@email.com"
+        )
+
+    def test__get_public_collection__OK(self):
+        res = self.app.get("/curation/v1/collections/test_collection_id")
+        self.assertEqual(200, res.status_code)
+        self.assertEqual("test_collection_id", res.json["id"])
+
+    def test__get_private_collection__OK(self):
+        res = self.app.get("/curation/v1/collections/test_collection_id_revision")
+        self.assertEqual(200, res.status_code)
+        self.assertEqual("test_collection_id_revision", res.json["id"])
+
+    def test__get_nonexistent_collection__Not_Found(self):
+        res = self.app.get("/curation/v1/collections/test_collection_id_nonexistent")
+        self.assertEqual(404, res.status_code)
+
+
 class TestPutCollectionUUID(BaseAuthAPITest):
     def setUp(self):
         super().setUp()

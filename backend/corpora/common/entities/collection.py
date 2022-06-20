@@ -15,6 +15,7 @@ from ..corpora_orm import (
     ProcessingStatus,
     DbDatasetProcessingStatus,
     DbDataset,
+    DbDatasetArtifact,
 )
 from ..utils.db_helpers import clone
 
@@ -153,42 +154,85 @@ class Collection(Entity):
 
         return results
 
+    collections_cols = [
+        "id",
+        "name",
+        "visibility",
+        "tombstone",
+        "contact_name",
+        "contact_email",
+        "curator_name",
+        "revised_at",
+        "created_at",
+        "published_at",
+        "description",
+        "publisher_metadata",
+        "revision_of",
+        "tombstone",
+        "owner",  # Needed for determining view permissions
+        "links",
+        "datasets",
+    ]
+
+    link_cols = [
+        "link_name",
+        "link_url",
+        "link_type",
+    ]
+
+    dataset_preview_cols = [
+        "id",
+        "curator_tag",
+        "tissue",
+        "assay",
+        "disease",
+        "organism",
+        "tombstone",
+        "processing_status",
+    ]
+
+    dataset_cols = [
+        *dataset_preview_cols,
+        "name",
+        "revision",
+        "revised_at",
+        "is_primary_data",
+        "x_normalization",
+        "artifacts",
+        "sex",
+        "ethnicity",
+        "development_stage",
+        "dataset_deployments",
+        "cell_type",
+        "cell_count",
+        "x_approximate_distribution",
+        # "batch_condition",  # TODO: https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data-portal/1461
+        "mean_genes_per_cell",
+        "schema_version",
+    ]
+
+    dataset_asset_cols = [
+        "filetype",
+        "filename",
+    ]
+
+    dataset_processing_status_cols = [
+        "processing_status",
+    ]
+
     columns_for_list_collections = {
-        DbCollectionLink: [
-            "link_name",
-            "link_url",
-            "link_type",
-        ],
-        DbCollection: [
-            "id",
-            "name",
-            "visibility",
-            "tombstone",
-            "contact_name",
-            "contact_email",
-            "curator_name",
-            "revised_at",
-            "created_at",
-            "published_at",
-            "description",
-            "publisher_metadata",
-            "revision_of",
-            "tombstone",
-            "owner",  # Needed for determining view permissions
-            "links",
-            "datasets",
-        ],
-        DbDataset: [
-            "id",
-            "curator_tag",
-            "tissue",
-            "assay",
-            "disease",
-            "organism",
-            "tombstone",
-            "processing_status",
-        ],
-        DbDatasetProcessingStatus: ["processing_status"],
+        DbCollectionLink: link_cols,
+        DbCollection: collections_cols,
+        DbDataset: dataset_preview_cols,
+        DbDatasetProcessingStatus: dataset_processing_status_cols,
+    }
+
+    columns_for_collection = {
+        DbCollectionLink: link_cols,
+        DbCollection: collections_cols,
+        DbDataset: dataset_cols,
+        DbDatasetArtifact: dataset_asset_cols,
+        DbDatasetProcessingStatus: dataset_processing_status_cols,
     }
 
     @classmethod
