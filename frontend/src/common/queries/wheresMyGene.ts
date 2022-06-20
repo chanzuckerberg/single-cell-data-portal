@@ -143,7 +143,7 @@ export interface Query {
   filter: Filter;
 }
 
-interface QueryResponse {
+export interface QueryResponse {
   expression_summary: {
     // gene_ontology_term_id
     [geneId: string]: {
@@ -212,6 +212,7 @@ export const USE_QUERY = {
 export function useWMGQuery(
   query: Query | null
 ): UseQueryResult<QueryResponse> {
+  console.log("TRIGGER")
   const dispatch = useContext(DispatchContext);
 
   // (thuang): Refresh query when the snapshotId changes
@@ -307,16 +308,15 @@ export function useFilterDimensions(
       isLoading: false,
     };
   }, [data, isLoading]);
-}
+} 
 
-export function useExpressionSummary(): {
+export function useExpressionSummary(
+  data: QueryResponse | undefined,
+  isLoading: boolean
+): {
   isLoading: boolean;
   data: QueryResponse["expression_summary"];
 } {
-  const requestBody = useWMGQueryRequestBody();
-
-  const { data, isLoading } = useWMGQuery(requestBody);
-
   return useMemo(() => {
     if (isLoading || !data) return { data: EMPTY_OBJECT, isLoading };
 
@@ -333,20 +333,17 @@ export interface CellTypeByTissueName {
   [tissueName: string]: CellType[];
 }
 
-export function useCellTypesByTissueName(): {
+export function useCellTypesByTissueName(
+  data: QueryResponse["expression_summary"],
+  isLoading: boolean,
+  primaryFilterDimensions: PrimaryFilterDimensionsResponse | undefined,
+  isLoadingPrimaryFilterDimensions: boolean,
+  termIdLabels: TermIdLabels,
+  isLoadingTermIdLabels: boolean
+): {
   isLoading: boolean;
   data: CellTypeByTissueName;
 } {
-  const { data, isLoading } = useExpressionSummary();
-
-  const {
-    data: primaryFilterDimensions,
-    isLoading: isLoadingPrimaryFilterDimensions,
-  } = usePrimaryFilterDimensions();
-
-  const { data: termIdLabels, isLoading: isLoadingTermIdLabels } =
-    useTermIdLabels();
-
   return useMemo(() => {
     if (
       isLoading ||
@@ -403,20 +400,18 @@ export interface GeneExpressionSummariesByTissueName {
   [tissueName: string]: { [geneName: string]: GeneExpressionSummary };
 }
 
-export function useGeneExpressionSummariesByTissueName(): {
+export function useGeneExpressionSummariesByTissueName(
+  data: QueryResponse["expression_summary"],
+  isLoading: boolean,
+  primaryFilterDimensions: PrimaryFilterDimensionsResponse | undefined,
+  isLoadingPrimaryFilterDimensions: boolean,
+  termIdLabels: TermIdLabels,
+  isLoadingTermIdLabels: boolean
+): {
   data: GeneExpressionSummariesByTissueName;
   isLoading: boolean;
 } {
-  const { data, isLoading } = useExpressionSummary();
-
-  const {
-    data: primaryFilterDimensions,
-    isLoading: isLoadingPrimaryFilterDimensions,
-  } = usePrimaryFilterDimensions();
-
-  const { data: termIdLabels, isLoading: isLoadingTermIdLabels } =
-    useTermIdLabels();
-
+  
   return useMemo(() => {
     if (
       isLoading ||
@@ -486,20 +481,20 @@ function transformCellTypeGeneExpressionSummaryData(
   };
 }
 
-interface TermIdLabels {
+export interface TermIdLabels {
   cell_types: {
     [tissueID: string]: { [id: string]: { name: string; depth: number } };
   };
   genes: { [id: string]: string };
 }
 
-export function useTermIdLabels(): {
+export function useTermIdLabels(
+  data: QueryResponse | undefined,
+  isLoading: boolean
+): {
   data: TermIdLabels;
   isLoading: boolean;
 } {
-  const requestBody = useWMGQueryRequestBody();
-  const { data, isLoading } = useWMGQuery(requestBody);
-
   return useMemo(() => {
     if (isLoading || !data)
       return {
@@ -550,7 +545,7 @@ const EMPTY_FILTERS: State["selectedFilters"] = {
   sexes: undefined,
 };
 
-function useWMGQueryRequestBody(options = { includeAllFilterOptions: false }) {
+export function useWMGQueryRequestBody(options = { includeAllFilterOptions: false }) {
   const { includeAllFilterOptions } = options;
 
   const {

@@ -5,7 +5,12 @@ import {
   CellTypeByTissueName,
   GeneExpressionSummariesByTissueName,
   useCellTypesByTissueName,
-  useGeneExpressionSummariesByTissueName,
+  useExpressionSummary,
+  useTermIdLabels,
+  usePrimaryFilterDimensions,
+  useWMGQuery,
+  useWMGQueryRequestBody,
+  useGeneExpressionSummariesByTissueName
 } from "src/common/queries/wheresMyGene";
 import SideBar from "src/components/common/SideBar";
 import { Position } from "src/components/common/SideBar/style";
@@ -36,10 +41,36 @@ export default function WheresMyGene(): JSX.Element {
 
   const [isScaled, setIsScaled] = useState(true);
 
+  const requestBody = useWMGQueryRequestBody();
+  const { data, isLoading: loading } = useWMGQuery(requestBody);
+
+  const { data: expressionSummaryData, isLoading: expressionSummaryLoading } = useExpressionSummary(
+    data,
+    loading
+  );
+
+  const {
+    data: primaryFilterDimensions,
+    isLoading: isLoadingPrimaryFilterDimensions,
+  } = usePrimaryFilterDimensions();
+
+  const { data: termIdLabels, isLoading: isLoadingTermIdLabels } =
+    useTermIdLabels(
+      data,
+      loading
+    );
+
   const {
     data: rawCellTypesByTissueName,
     isLoading: isLoadingCellTypesByTissueName,
-  } = useCellTypesByTissueName();
+  } = useCellTypesByTissueName(
+    expressionSummaryData,
+    expressionSummaryLoading,
+    primaryFilterDimensions,
+    isLoadingPrimaryFilterDimensions,
+    termIdLabels,
+    isLoadingTermIdLabels    
+  );
 
   const [cellTypesByTissueName, setCellTypesByTissueName] =
     useState<CellTypeByTissueName>(EMPTY_OBJECT);
@@ -56,9 +87,17 @@ export default function WheresMyGene(): JSX.Element {
    * We use `selectedGeneData` to subset the data to only the genes that are
    * currently selected.
    */
-  const { data: rawGeneExpressionSummariesByTissueName, isLoading } =
-    useGeneExpressionSummariesByTissueName();
 
+  const { data: rawGeneExpressionSummariesByTissueName, isLoading } =
+    useGeneExpressionSummariesByTissueName(
+      expressionSummaryData,
+      expressionSummaryLoading,
+      primaryFilterDimensions,
+      isLoadingPrimaryFilterDimensions,
+      termIdLabels,
+      isLoadingTermIdLabels
+    );
+  
   const [
     geneExpressionSummariesByTissueName,
     setGeneExpressionSummariesByTissueName,
