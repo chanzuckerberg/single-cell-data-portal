@@ -549,8 +549,6 @@ class WmgApiV1Tests(unittest.TestCase):
                         ]
 
                         # filter options for dev_stage
-                        import pdb
-                        pdb.set_trace()
                         self.assertEqual(dev_stage_terms, dev_stage_terms_if_no_dev_stage_filters)
                         self.assertEqual(ethnicity_terms, ethnictiy_terms_if_no_dev_stage_filters)
 
@@ -669,8 +667,7 @@ class WmgApiV1Tests(unittest.TestCase):
                         response = self.app.post("/wmg/v1/query", json=eth_2_dev_2_request)
                         dev_stage_terms_eth_2_dev_2 = json.loads(response.data)["filter_dims"]["development_stage_terms"]
                         eth_stage_terms_eth_2_dev_2 = json.loads(response.data)["filter_dims"]["ethnicity_terms"]
-                        import pdb
-                        pdb.set_trace()
+
                         self.assertEqual(expected_development_stage_terms, dev_stage_terms_eth_2_dev_2)
                         self.assertEqual(expected_ethnicity_term, eth_stage_terms_eth_2_dev_2)
                         self.assertEqual(dev_stage_terms_eth_2_dev_2, dev_stage_terms_eth_2_no_dev_filter)
