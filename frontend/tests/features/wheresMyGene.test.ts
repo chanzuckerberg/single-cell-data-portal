@@ -25,7 +25,6 @@ describeIfDevStagingProd("Where's My Gene", () => {
     // Beta callout
     await expect(page).toHaveSelector(getText("This feature is in beta"));
 
-
     // Filters Panel
     // (thuang): `*` is for intermediate match
     // https://playwright.dev/docs/selectors#intermediate-matches
@@ -43,9 +42,9 @@ describeIfDevStagingProd("Where's My Gene", () => {
 
     await clickUntilOptionsShowUp(getGeneSelectorButton);
     await selectFirstOption();
-        
+
     const filtersPanel = await page.$("*css=div >> text=Filters");
-    
+
     await expect(filtersPanel).toHaveSelector(getText("Dataset"));
     await expect(filtersPanel).toHaveSelector(getText("Disease"));
     await expect(filtersPanel).toHaveSelector(getText("Ethnicity"));
