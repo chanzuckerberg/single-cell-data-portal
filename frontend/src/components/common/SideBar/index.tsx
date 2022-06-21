@@ -44,7 +44,7 @@ export default function SideBar({
   testId,
   disabled,
   forceToggle,
-  wmgSideBar
+  wmgSideBar,
 }: Props): JSX.Element {
   const [isExpanded, setIsExpanded] = useState(isOpen);
   const sideBarWidth = isExpanded ? width : COLLAPSED_WIDTH_PX;
