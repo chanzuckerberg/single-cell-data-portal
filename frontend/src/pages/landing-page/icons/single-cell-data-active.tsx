@@ -1,6 +1,6 @@
-const SingleCellDataIcon = (): JSX.Element => (
+const SingleCellDataIconActive = (): JSX.Element => (
   <svg
-    width="48"
+    width="100"
     height="55"
     viewBox="0 0 48 55"
     fill="none"
@@ -73,4 +73,4 @@ const SingleCellDataIcon = (): JSX.Element => (
   </svg>
 );
 
-export default SingleCellDataIcon;
+export default SingleCellDataIconActive;
