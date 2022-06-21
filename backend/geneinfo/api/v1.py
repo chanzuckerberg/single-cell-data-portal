@@ -12,15 +12,17 @@ def geneinfo(geneID: string):
     api_key = gene_info_config.ncbi_api_key
 
     # search for gene UID from ensembl ID
-    search_url = ('https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?'
-                  'db=gene&term={}&api_key={}&retmode=json').format(geneID, api_key)
+    search_url = (
+        "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?" "db=gene&term={}&api_key={}&retmode=json"
+    ).format(geneID, api_key)
     search_data = urllib.request.urlopen(search_url).read()
     search_result = json.loads(search_data)
     uid = int(search_result["esearchresult"]["idlist"][0])
 
     # fetch gene information using NCBI UID
-    fetch_url = ('https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?'
-                 'db=gene&id={}&api_key={}&retmode=xml').format(uid, api_key)
+    fetch_url = (
+        "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?" "db=gene&id={}&api_key={}&retmode=xml"
+    ).format(uid, api_key)
     fetch_response = urllib.request.urlopen(fetch_url).read()
 
     # parse tree result
@@ -28,13 +30,13 @@ def geneinfo(geneID: string):
     root = result_tree.getroot()
     synonyms = []
     for x in root[0]:
-        if x.tag == 'Entrezgene_summary':
+        if x.tag == "Entrezgene_summary":
             summary = x.text
-        elif x.tag == 'Entrezgene_gene':
+        elif x.tag == "Entrezgene_gene":
             for y in x[0]:
-                if y.tag == 'Gene-ref_desc':
+                if y.tag == "Gene-ref_desc":
                     name = y.text
-                elif y.tag == 'Gene-ref_syn':
+                elif y.tag == "Gene-ref_syn":
                     for syn in y:
                         synonyms.append(syn.text)
 
