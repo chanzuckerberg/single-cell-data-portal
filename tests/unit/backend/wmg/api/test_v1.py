@@ -572,7 +572,7 @@ class WmgApiV1Tests(unittest.TestCase):
 
                 no_ethnicity_filter_response = self.app.post("/wmg/v1/query", json=filter_0_no_ethnicity_request)
                 ethnictiy_terms_if_no_dev_stage_filters = json.loads(no_ethnicity_filter_response.data)["filter_dims"][
-                    "development_stage_terms"
+                    "ethnicity_terms"
                 ]
 
                 # filter options for dev_stage
@@ -632,10 +632,9 @@ class WmgApiV1Tests(unittest.TestCase):
                 expected_development_stage_terms = [
                     {"development_stage_ontology_term_id_0": "development_stage_ontology_term_id_0_label"},
                 ]
-                expected_ethnicity_term = all_ethnicity_terms = [
+                expected_ethnicity_term  = [
                     {"ethnicity_ontology_term_id_0": "ethnicity_ontology_term_id_0_label"}
                 ]
-
                 ethnicity_1_request = dict(filter=ethnicity_1_filter, include_filter_dims=True)
                 response = self.app.post("/wmg/v1/query", json=ethnicity_1_request)
                 dev_stage_terms_no_dev_filter = json.loads(response.data)["filter_dims"]["development_stage_terms"]
@@ -653,6 +652,7 @@ class WmgApiV1Tests(unittest.TestCase):
                     ethnicity_ontology_term_ids=["ethnicity_ontology_term_id_1"],
                 )
                 ethnicity_1_dev_1_request = dict(filter=ethnicity_1_dev_1_filter, include_filter_dims=True)
+
                 response = self.app.post("/wmg/v1/query", json=ethnicity_1_dev_1_request)
                 dev_stage_terms_dev_filter = json.loads(response.data)["filter_dims"]["development_stage_terms"]
                 ethnicity_terms_dev_filter = json.loads(response.data)["filter_dims"]["ethnicity_terms"]
