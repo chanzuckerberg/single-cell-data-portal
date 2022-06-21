@@ -79,10 +79,6 @@ def get_collections_curation(visibility: str, token_info: dict):
         if reshape_for_curation_api_and_is_allowed(collection, token_info):
             allowed_collections.append(collection)
 
-    import pprint
-
-    pprint.pprint(allowed_collections)
-
     return jsonify({"collections": allowed_collections})
 
 
