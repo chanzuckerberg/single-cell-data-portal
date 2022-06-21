@@ -11,10 +11,24 @@ class CorporaConfig(SecretConfig):
 
     def get_defaults_template(self):
 
+        # Set collections_base_url
+        rdev_prefix = os.environ.get("REMOTE_DEV_PREFIX")
+        if rdev_prefix:
+            collections_base_url = f"https://{rdev_prefix.strip('/')}-frontend.rdev.single-cell.czi.technology"
+        else:
+            deployment_stage = os.environ.get("DEPLOYMENT_STAGE")
+            if deployment_stage == "test":
+                collections_base_url = "http://frontend.corporanet.local:3000"
+            elif deployment_stage == "prod":
+                collections_base_url = "https://cellxgene.cziscience.com"
+            else:
+                collections_base_url = f"https://cellxgene.{deployment_stage}.single-cell.czi.technology"
+
         template = {
             "upload_file_formats": ["h5ad"],
             "upload_max_file_size_gb": 30,
             "submission_bucket": os.getenv("DATASET_SUBMISSIONS_BUCKET", "cellxgene-dataset-submissions-test"),
+            "collections_base_url": collections_base_url,
         }
         upload_snf_arn = os.getenv("UPLOAD_SFN_ARN")
         if upload_snf_arn:

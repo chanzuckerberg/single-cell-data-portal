@@ -11,7 +11,7 @@ We don't officially support web deployment, but we've offered some guidance in t
 Please consider the following when deploying cellxgene in any "hosted" environment, especially where access from the broader Internet is possible:
 
 - Information security requires careful configuration of the host environment, including firewall, logging, etc - please follow best practices
-- Cellxgene includes features which may be inappropriate for a hosted deployment - you may wish to use the following command line option:` `--disable-diffexp``
+- Cellxgene includes features which may be inappropriate for a hosted deployment - you may wish to use the following command line option:`--disable-diffexp`
 - `cellxgene launch` currently uses Flask's development server, which is not recommended for hosted deployment (see [the Flask documentation](https://flask.palletsprojects.com/en/1.1.x/tutorial/deploy/#run-with-a-production-server))
 - We have no testing or official support for deployments where multiple users are accessing the same cellxgene instance
 - Your cellxgene instance is likely to hang or crash if too many people access it at the same time, especially if they using functions that call the Python backend (such as differential expression, noted above)
@@ -38,19 +38,7 @@ There are a number of teams building tools or infrastructure to better utilize c
 
 If you know of other solutions, drop us a note and we'll add to this list.
 
-## Live Examples of Self-Hosted CellxGene Desktop
-
-Several groups have independently deployed various versions of cellxgene to the web. Check out the cool data that have been hosted using cellxgene!
-
-[Kidney cell atlas](https://www.kidneycellatlas.org/)
-
-[Tabula muris senis](https://tabula-muris-senis.ds.czbiohub.org/)
-
-[Hemocytes](https://hemocytes.cellgeni.sanger.ac.uk/)
-
-[Melanoma](https://melanoma.cellgeni.sanger.ac.uk/)
-
-[Cellxgene Data Portal](https://cellxgene.cziscience.com/)
+# Community Self-Hosting Approaches
 
 ## Cellxgene Gateway/Apache2 Reverse Proxy with Authentication
 
@@ -80,105 +68,6 @@ Start multiple cellxgene-gateway instances for each of the different user groups
 
 [Tutorial and Code](https://github.com/mestia/cellxgene-gateway-proxy-example)
 
-## AWS Elastic Bean Stalk
-
-### Contributors
-
-The CellxGene Team 🧬
-
-### Hosting Use Case
-
-- Cellxgene desktop deployed with elastic beanstalk
-- Used to host data in a read-only fashion (can't use annotations)
-- Solution for an AWS compute environment
-
-### Components
-
-[CellxGene Desktop](https://github.com/chanzuckerberg/cellxgene)
-
-- Application to be run
-
-[Elastic Beanstalk](https://aws.amazon.com/elasticbeanstalk/)
-
-- AWS based solution for deploying and scaling web applications
-
-This method requires familiarity with:
-
-- [IAM](https://aws.amazon.com/iam/)
-
-- [S3](https://aws.amazon.com/s3/)
-
-[Tutorial and Code](([https://github.com/chanzuckerberg/cellxgene/tree/main/backend/czi:hosted/eb](https://github.com/chanzuckerberg/cellxgene/tree/main/backend/czi:hosted/eb)) [THIS IS SUPPOSED TO LINK TO THIS ADDRESS BUT THE LINK IS BROKEN:
-
-## Heroku
-
-### Self-hosting with Heroku
-
-You can create a Heroku app via [our provided Dockerfile](<[https://github.com/chanzuckerberg/cellxgene/blob/main/Dockerfile](https://github.com/chanzuckerberg/cellxgene/blob/main/Dockerfile)>) and [Heroku’s documentation](https://devcenter.heroku.com/articles/build-docker-images-heroku-yml).
-
-You may have to tweak the `Dockerfile` like so:
-
-```
-1 FROM ubuntu:bionic
-2
-3 ENV LC_ALL=C.UTF-8
-4 ENV LANG=C.UTF-8
-5
-6 RUN apt-get update && \
-7     apt-get install -y build-essential libxml2-dev python3-dev python3-pip zlib1g-dev python3-requests && \
-8     pip3 install cellxgene
-9
-10 # ENTRYPOINT ["cellxgene"]  # Heroku doesn't work well with ENTRYPOINT
-```
-
-and provide a `heroku.yml` file similar to this:
-
-```
-1 build:
-2   docker:
-3     web: Dockerfile
-4  run:
-5   web:
-6    command:
-7     - cellxgene launch --host 0.0.0.0 --port $PORT $DATASET # the DATATSET config var must be defined in your dashboard settings.
-```
-
-### What is Heroku?
-
-Heroku is a quick and easy way to host applications on the cloud. A Heroku deployment of cellxgene means that the app is not running on your local machine. Instead, the app is installed, configured, and run on the Heroku servers (read: cloud).
-
-On Heroku's servers, applications run on a dyno which are Heroku's implementation and abstraction of containers.
-
-Heroku is one of many options available for hosting instances of cellxgene on the web. Some other options include: Amazon Web Services, Google Cloud Platform, Digital Ocean, and Microsoft Azure.
-
-### Why use Heroku to deploy CellxGene?
-
-What Heroku enables is a quick, non-technical method of setting up a cellxgene instance. No command line knowledge needed. This also allows machines to access the instance via the internet, so sharing a visualized dataset is as simple as sharing a link.
-
-Because cellxgene currently heavily relies on its Python backend for providing the viewer with the necessary data and tooling, it is currently not possible to host cellxgene as a static webpage.
-
-This is a good option if you want to quickly deploy an instance of cellxgene to the web. Heroku deployments are free for small datasets up to around 250MBs in size. See below regarding larger datasets.
-
-### When should I not deploy with Heroku?
-
-The default free dyno offered by Heroku is limited in memory to 512 MBs.
-
-- The amount of memory needed for the dyno is roughly the same size as the h5ad file
-
-- Heroku offers tiered paid dynos. More can be found on the [Heroku pricing page](https://www.heroku.com/pricing)
-
-- Note that this can get _very_ expensive for larger datasets ($25+ a month)
-
-On the free dyno, after 30 minutes of inactivity, Heroku will put your app into a hibernation mode. On the next access, Heroku will need time to boot the dyno back online.
-
-Having multiple simultaneous users requires more memory. This means that the free container size is easily overwhelmed by multiple users, even with small datasets; this can be addressed by purchasing a larger container size.
-
-For this facilitated Heroku deployment to work, your dataset must be hosted on a publicly accessible URL.
-
-By default, Heroku publically shares your instance to anyone with the URL.
-
-- There are many ways of securing your instance. One quick and simple way is by installing [wwwhisper](https://elements.heroku.com/addons/wwwhisper), a Heroku addon.
-
 ## AWS/Linux Server with Basic Authentication
 
 ### Contributors
@@ -189,3 +78,65 @@ Lisa Sikkema and Thomas Walzthoeni
 
 - Private self-hosting on an EC2 instance
 - Access by external collaborators and potentially password authentication
+
+### Components:
+
+- [Cellxgene Desktop](https://github.com/chanzuckerberg/cellxgene): the application to be run
+- [Nginx](https://www.nginx.com/): used as a reverse proxy to redirect web requests to the WSGI
+- [uWSGI](https://uwsgi-docs.readthedocs.io/en/latest/): forwards requests from the Nginx web server to our python flask framework
+- [Htpasswd](https://httpd.apache.org/docs/2.4/programs/htpasswd.html): used to allow basic authentication for web requests
+
+### References:
+
+For a general reference, you can [refer](https://hackersandslackers.com/deploy-flask-uwsgi-nginx/) to this article on how to deploy a flask application \(a.k.a. Cellxgene\) to an AWS EC2 instance - or a general linux server using Nginx for receiving web requests, uWSGI to redirect those requests to the python application and htpasswd to add a basic authentication layer over the server.
+
+This general guide can be modified with a few components that would be specific to a cellxgene deployment. First, the flask application which is deployed on your server \(found in the ‘prep your project’ section of the linked article\) should be cellxgene with an appropriate wsgi.py file added as described in the article. Second, the Nginx config file needs to be modified, an example config file may look like the following:
+
+```text
+# Default route to login
+server {
+    listen 443 ssl;
+    server_name YOURHOSTNAME;
+
+    # SSL
+    ssl_certificate /etc/nginx/conf.d/domain.crt;
+    ssl_certificate_key /etc/nginx/conf.d/domain.key;
+
+    location /cellxgene_example {
+        proxy_set_header Accept-Encoding "";
+        proxy_pass
+http://localhost:5007/
+;
+        proxy_set_header Host                 $http_host;
+        proxy_set_header X-Real-IP            $remote_addr;
+        proxy_set_header X-Forwarded-For      $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto    $scheme;
+        # replacements
+        sub_filter 'href="static' 'href="cellxgene_example/static';
+        sub_filter 'src="static' 'src="cellxgene_example/static';
+        sub_filter_types *;
+        sub_filter_once off;
+        # To add basic authentication to v2 use auth_basic setting.
+        auth_basic "Registry realm";
+        auth_basic_user_file /etc/nginx/conf.d/nginx.htpasswd;
+        client_max_body_size 50M;
+    }
+
+}
+
+server {
+    listen 80 default_server;
+
+    server_name _;
+
+    return 301
+https://$host$request_uri
+;
+}
+```
+
+With respect to above Nginx config specification, one would start the browser using port 5007 and forward a request from [https://YOURHOSTNAME/cellxgene_example](https://YOURHOSTNAME/cellxgene_example) to the cxg browser (i.e. [http://localhost:5007](http://localhost:5007)).
+
+**Note regarding storage and memory on the EC2 instance \(if you implement using AWS\):**
+
+Since datasets will be loaded into the memory of your machine, ram costs could potentially be high, especially if you plan to host multiple large datasets. To avoid higher than necessary costs, you can store data on S3 and only pull the data onto the machine’s memory when the cellxgene explorer is launched. This should be compatible with the approach detailed above \(albeit by tweaking a config variable to point to where the data is located\).
