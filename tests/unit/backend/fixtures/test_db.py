@@ -479,3 +479,29 @@ class TestDatabase:
         )
         self.session.add(dataset_processing_status)
         self.session.commit()
+        dataset_processing_status = DbDatasetProcessingStatus(
+            id="test_dataset_processing_status_for_revision_with_links",
+            dataset_id="test_publish_revision_with_links__revision_dataset",
+            processing_status=ProcessingStatus.SUCCESS,
+            upload_status=UploadStatus.UPLOADED,
+            upload_progress=1,
+            validation_status=ValidationStatus.VALID,
+            rds_status=ConversionStatus.CONVERTED,
+            cxg_status=ConversionStatus.CONVERTED,
+            h5ad_status=ConversionStatus.CONVERTED,
+        )
+        self.session.add(dataset_processing_status)
+        self.session.commit()
+        dataset_processing_status = DbDatasetProcessingStatus(
+            id="test_dataset_processing_status_for_not_owner",
+            dataset_id="test_dataset_id_not_owner",
+            processing_status=ProcessingStatus.PENDING,
+            upload_status=UploadStatus.UPLOADED,
+            upload_progress=1,
+            validation_status=ValidationStatus.VALID,
+            rds_status=ConversionStatus.CONVERTED,
+            cxg_status=ConversionStatus.CONVERTED,
+            h5ad_status=ConversionStatus.CONVERTED,
+        )
+        self.session.add(dataset_processing_status)
+        self.session.commit()

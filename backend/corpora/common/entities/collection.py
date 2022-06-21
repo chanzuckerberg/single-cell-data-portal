@@ -12,6 +12,9 @@ from ..corpora_orm import (
     DbCollectionLink,
     CollectionVisibility,
     generate_uuid,
+    ProcessingStatus,
+    DbDatasetProcessingStatus,
+    DbDataset,
 )
 from ..utils.db_helpers import clone
 
@@ -149,6 +152,76 @@ class Collection(Entity):
         ]
 
         return results
+
+    columns_for_list_collections = {
+        DbCollectionLink: [
+            "link_name",
+            "link_url",
+            "link_type",
+        ],
+        DbCollection: [
+            "id",
+            "name",
+            "visibility",
+            "tombstone",
+            "contact_name",
+            "contact_email",
+            "curator_name",
+            "revised_at",
+            "created_at",
+            "published_at",
+            "description",
+            "publisher_metadata",
+            "revision_of",
+            "tombstone",
+            "owner",  # Needed for determining view permissions
+            "links",
+            "datasets",
+        ],
+        DbDataset: [
+            "id",
+            "curator_tag",
+            "tissue",
+            "assay",
+            "disease",
+            "organism",
+            "tombstone",
+            "processing_status",
+        ],
+        DbDatasetProcessingStatus: ["processing_status"],
+    }
+
+    @classmethod
+    def list_collections_for_curation(cls, session: Session, visibility: str = None) -> typing.List[dict]:
+        """
+        Get a subset of columns, in dict form, for all Collections with the specified visibility. If visibility is None,
+        return *all* Collections.
+        @param session: the SQLAlchemy session
+        @param visibility: the CollectionVisibility string name
+        @return: a list of dict representations of Collections
+        """
+        if visibility == CollectionVisibility.PUBLIC.name:
+            filters = [DbCollection.visibility == CollectionVisibility.PUBLIC]
+        elif visibility == CollectionVisibility.PRIVATE.name:
+            filters = [DbCollection.visibility == CollectionVisibility.PRIVATE]
+        else:
+            filters = []
+
+        resp_collections = []
+        for collection in session.query(cls.table).filter(*filters).all():
+            # Add a Collection-level processing status
+            status = ProcessingStatus.SUCCESS
+            for dataset in collection.datasets:
+                processing_status = dataset.processing_status
+                if processing_status.processing_status == ProcessingStatus.PENDING:
+                    status = ProcessingStatus.PENDING
+                elif processing_status.processing_status == ProcessingStatus.FAILURE:
+                    status = ProcessingStatus.FAILURE
+                    break
+            resp_collection = collection.to_dict_keep(cls.columns_for_list_collections)
+            resp_collection["processing_status"] = status
+            resp_collections.append(resp_collection)
+        return resp_collections
 
     @classmethod
     def list_public_datasets_for_index(cls, session: Session) -> typing.List[typing.Dict]:

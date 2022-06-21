@@ -17,7 +17,7 @@ from backend.corpora.common.corpora_orm import (
     CollectionVisibility,
     DbCollection,
     DbCollectionLink,
-    DbDataset
+    DbDataset,
 )
 from backend.corpora.common.entities.collection import Collection
 from backend.corpora.common.providers import crossref_provider
