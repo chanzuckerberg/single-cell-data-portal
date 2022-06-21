@@ -9,7 +9,7 @@ import re
 
 import logging
 
-from .common import get_collection
+from .common import get_collection_else_forbidden
 from ....common.corpora_config import CorporaConfig
 from ....common.corpora_orm import DbCollection, CollectionVisibility, ProjectLinkType
 from ....common.entities import Collection
@@ -93,7 +93,7 @@ def get_collections_curation(visibility: str, token_info: dict):
 @dbconnect
 def get_collection_details(collection_uuid: str, token_info: dict):
     db_session = g.db_session
-    collection = get_collection(db_session, collection_uuid, include_tombstones=True)
+    collection = get_collection_else_forbidden(db_session, collection_uuid, include_tombstones=True)
     if collection.tombstone:
         result = ""
         response = 410
@@ -135,7 +135,7 @@ def get_collections_index():
 
 def post_collection_revision_common(collection_uuid: str, token_info: dict):
     db_session = g.db_session
-    collection = get_collection(
+    collection = get_collection_else_forbidden(
         db_session,
         collection_uuid,
         visibility=CollectionVisibility.PUBLIC,
@@ -275,7 +275,7 @@ def create_collection(body: dict, user: str):
 @dbconnect
 def delete_collection(collection_uuid: str, token_info: dict):
     db_session = g.db_session
-    collection = get_collection(db_session, collection_uuid, owner=owner_or_allowed(token_info))
+    collection = get_collection_else_forbidden(db_session, collection_uuid, owner=owner_or_allowed(token_info))
     if collection.visibility == CollectionVisibility.PUBLIC:
         revision = Collection.get_collection(
             db_session,
@@ -295,7 +295,7 @@ def update_collection(collection_uuid: str, body: dict, token_info: dict):
     db_session = g.db_session
     errors = []
     verify_collection_body(body, errors, allow_none=True)
-    collection = get_collection(
+    collection = get_collection_else_forbidden(
         db_session,
         collection_uuid,
         visibility=CollectionVisibility.PRIVATE.name,
