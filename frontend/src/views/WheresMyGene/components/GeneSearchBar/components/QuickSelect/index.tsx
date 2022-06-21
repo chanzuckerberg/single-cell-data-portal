@@ -217,7 +217,6 @@ export default function QuickSelect<
       setHasComma(false);
     }
   };
-
   return (
     <>
       <ButtonWrapper>
@@ -228,7 +227,7 @@ export default function QuickSelect<
           ref={ref}
           onClick={handleClick}
           sdsType="primary"
-          sdsSize="small"
+          sdsSize="medium"
         >
           <Icon sdsIcon="plusCircle" sdsSize="s" sdsType="iconButton" />
         </StyledIconButton>
