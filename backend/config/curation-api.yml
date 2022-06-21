@@ -519,14 +519,15 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
-  /v1/collections/{collection_uuid}/asset:
+  /v1/collections/{collection_uuid}/assets:
     get:
       summary: Retrieve links for downloading a dataset
       tags:
         - collection
       description: >-
-        Request to download a file which on success will generate and return a pre-signed URL to download
-        the dataset. MUST include *one* of the **curator_tag** and **dataset_uuid** parameters.
+        Generate URLs to download the files associated with the dataset. MUST include *one* of the **curator_tag**
+        and **dataset_uuid** parameters.
+      operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_uuid.assets.get
       parameters:
         - $ref: "#/components/parameters/path_collection_uuid"
         - $ref: "#/components/parameters/query_curator_tag"
@@ -537,34 +538,40 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  dataset_uuid:
-                    $ref: "#/components/schemas/dataset_uuid"
-                  curator_tag:
-                    $ref: "#/components/schemas/curator_tag"
-                  assets:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        presigned_url:
-                          type: string
-                        file_name:
-                          type: string
-                        file_size:
-                          type: number
-                        filetype:
-                          type: string
+                $ref: "#/components/schemas/asset_response"
+        "202":
+          description: Unable to retrieve one or more asset response fields.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/asset_response"
         "400":
           $ref: "#/components/responses/400"
-        "401":
-          $ref: "#/components/responses/401"
         "404":
           $ref: "#/components/responses/404"
 
 components:
   schemas:
+    asset_response:
+      type: object
+      properties:
+        dataset_uuid:
+          $ref: "#/components/schemas/dataset_uuid"
+        curator_tag:
+          $ref: "#/components/schemas/curator_tag"
+        assets:
+          type: array
+          items:
+            type: object
+            properties:
+              presigned_url:
+                type: string
+              file_name:
+                type: string
+              file_size:
+                type: number
+              filetype:
+                type: string
     collection_uuid:
       description: A unique identifier of a Collection.
       type: string
