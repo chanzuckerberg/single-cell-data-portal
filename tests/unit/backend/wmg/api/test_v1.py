@@ -499,7 +499,7 @@ class WmgApiV1Tests(unittest.TestCase):
         # "term_id_labels" portion of the response body; note that the correct behavior of the ontology_labels
         # module is separately unit tested, and here we just want to verify the response building logic is correct.
         dim_size = 3
-
+        self.maxDiff = None
         with create_temp_wmg_snapshot(
             dim_size=dim_size, exclude_logical_coord_fn=exclude_dev_stage_and_ethnicity_for_secondary_filter_test
         ) as snapshot:
