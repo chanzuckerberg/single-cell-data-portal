@@ -4,19 +4,19 @@
 
 If your data is an h5ad file and meets the following requirements, you can go straight to cellxgene launch.
 
--Matrix data (usually raw or normalized expression values) in `anndata.X`
--At least one embedding (e.g., tSNE, UMAP) in `anndata.obsm`, specified with the `prefix X_` (e.g., by default scanpy stores UMAP coordinates in `anndata.obsm['X_umap']`)
--A unique identifier is required for each cell, which by default will be pulled from the `obs` DataFrame index. If the index is not unique or does not contain the cell ID, an alternative column can be specified with `--obs-names`
--A unique identifier is required for each gene, which by default will be pulled from the `var `DataFrame index. If the index is not unique or does not contain the gene ID, an alternative column can be specified with `--var-names`
+- Matrix data (usually raw or normalized expression values) in `anndata.X`
+- At least one embedding (e.g., tSNE, UMAP) in `anndata.obsm`, specified with the `prefix X_` (e.g., by default scanpy stores UMAP coordinates in `anndata.obsm['X_umap']`)
+- A unique identifier is required for each cell, which by default will be pulled from the `obs` DataFrame index. If the index is not unique or does not contain the cell ID, an alternative column can be specified with `--obs-names`
+- A unique identifier is required for each gene, which by default will be pulled from the `var `DataFrame index. If the index is not unique or does not contain the gene ID, an alternative column can be specified with `--var-names`
 
-_What about R objects from Seurat or Bioconductor!?_
+**What about R objects from Seurat or Bioconductor!?**
 You can use sceasy to convert to h5ad. Seurat also has conversion tools that you can try.
 _Can I use data hosted on the web somewhere?_
 Yes! You can launch from a URL instead of a filepath. The same data format requirements apply. Please see here
 
-##Data Format Options
+## Data Format Options
 
-_Category Colors_
+**Category Colors**
 
 `cellxgene` will display scanpy-style color information for category-label pairs. An example of this format is shown below:
 
@@ -48,18 +48,18 @@ If you need to normalize your data and create an embedding, `cellxgene` can do t
 
 `cellxgene prepare` offers an easy command line interface (CLI) to preliminarily wrangle your data into the required format for previewing it with cellxgene. It runs `scanpy` under the hood and can read in any format that is currently supported by `scanpy` , including mtx, loom, and more listed in the scanpy documentation. THIS LINK IS BROKEN
 
-prepare uses `scanpy` to:
+`prepare` uses `scanpy` to:
 
-Handle simple data normalization (from a recipe)
-Do basic preprocessing, run PCA, and compute the neighbor graph
-Generate UMAP and tSNE embeddings
-Infer clusters using Louvain
+- Handle simple data normalization (from a recipe)
+- Do basic preprocessing, run PCA, and compute the neighbor graph
+- Generate UMAP and tSNE embeddings
+- Infer clusters using Louvain
 
 You can control which steps to run and their methods (when applicable), via the CLI. The CLI also includes options for computing QC metrics, enforcing matrix sparcity, specifying index names, and plotting output.
 
 ## What is ‘cellxgene prepare’ not?
 
-‘cellxgene prepare’ is _not_ meant as a way to formally process or analyze your data. It's simply a utility for quickly wrangling your data into cellxgene-compatible format and computing a "vanilla" embedding so you can try out ‘cellxgene’ and get a general sense of a dataset.
+`cellxgene prepare` is _not_ meant as a way to formally process or analyze your data. It's simply a utility for quickly wrangling your data into cellxgene-compatible format and computing a "vanilla" embedding so you can try out ‘cellxgene’ and get a general sense of a dataset.
 
 ## Quickstart for cellxgene prepare
 
