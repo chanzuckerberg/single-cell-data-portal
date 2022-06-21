@@ -11,7 +11,7 @@ from backend.corpora.common.utils.http_exceptions import (
 from backend.corpora.lambdas.api.v1.authorization import owner_or_allowed
 
 
-def get_collection(db_session, collection_uuid, **kwargs):
+def get_collection_else_forbidden(db_session, collection_uuid, **kwargs):
     collection = Collection.get_collection(db_session, collection_uuid, **kwargs)
     if not collection:
         raise ForbiddenHTTPException()

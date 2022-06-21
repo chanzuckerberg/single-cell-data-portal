@@ -1,6 +1,6 @@
 from flask import make_response, jsonify, g
 
-from .common import delete_dataset_common
+from .common import delete_dataset_common, get_collection_else_forbidden
 from ....common.corpora_orm import CollectionVisibility, DatasetArtifactFileType
 from ....common.entities import Dataset, Collection
 from ....common.entities.geneset import GenesetDatasetLink
@@ -63,17 +63,12 @@ def get_status(dataset_uuid: str, token_info: dict):
     dataset = Dataset.get(db_session, dataset_uuid)
     if not dataset:
         raise ForbiddenHTTPException()
-    collection = Collection.get_collection(
+    get_collection_else_forbidden(
         db_session,
         dataset.collection.id,
-        dataset.collection.visibility,
         owner=owner_or_allowed(token_info),
     )
-    if not collection:
-        raise ForbiddenHTTPException()
-    status = dataset.processing_status.to_dict(remove_none=True)
-    for remove in ["dataset", "created_at", "updated_at"]:
-        status.pop(remove)
+    status = dataset.processing_status.to_dict(remove_none=True, remove_attr=["dataset", "created_at", "updated_at"])
     return make_response(jsonify(status), 200)
 
 
