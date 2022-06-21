@@ -47,7 +47,7 @@ class TestDatasetStatus(BaseAuthAPITest):
                     self.assertEqual(404, response.status_code)
 
     def test__get_status_wrong_collection__404(self):
-        """Return 404 when the dataset is not part of the collection."""
+        """Return 404 when the dataset exists but is not part of the collection."""
         collection = self.generate_collection(self.session, visibility=CollectionVisibility.PRIVATE.name)
         dataset = self.generate_dataset(
             self.session,
