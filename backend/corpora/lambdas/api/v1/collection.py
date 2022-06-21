@@ -9,8 +9,7 @@ import re
 
 import logging
 
-from .common import get_collection
-from ....common.corpora_config import CorporaConfig
+from .common import get_collection, reshape_for_curation_api_and_is_allowed
 from ....common.corpora_orm import DbCollection, CollectionVisibility, ProjectLinkType
 from ....common.entities import Collection
 from .authorization import is_user_owner_or_allowed, owner_or_allowed
@@ -77,34 +76,25 @@ def get_collections_curation(visibility: str, token_info: dict):
     collections = Collection.list_collections_for_curation(g.db_session, visibility)
     allowed_collections = []
     for collection in collections:
-        owner = collection["owner"]
-        if is_user_owner_or_allowed(token_info, owner):
-            collection["access_type"] = "WRITE"
-        elif collection["visibility"] == CollectionVisibility.PRIVATE:
-            continue
-        else:
-            collection["access_type"] = "READ"
-        del collection["owner"]  # Don't actually want to return 'owner' in response
-        collection["collection_url"] = f"{CorporaConfig().collections_base_url}/collections/{collection['id']}"
-        allowed_collections.append(collection)
+        if reshape_for_curation_api_and_is_allowed(collection, token_info):
+            allowed_collections.append(collection)
+
+    import pprint
+
+    pprint.pprint(allowed_collections)
 
     return jsonify({"collections": allowed_collections})
 
 
 @dbconnect
-def get_collection_uuid_curation(collection_uuid: str):
+def get_collection_uuid_curation(collection_uuid: str, token_info: dict):
     db_session = g.db_session
     collection = Collection.get_collection(db_session, collection_uuid, include_tombstones=True)
     if not collection:
         raise NotFoundHTTPException
     collection_response: dict = collection.to_dict_keep(Collection.columns_for_collection)
 
-    del collection_response["owner"]  # Don't actually want to return 'owner' in response
-
-    # Modify response columns to fit Curator API response schema
-    for dataset in collection_response["datasets"]:
-        dataset["dataset_assets"] = dataset["artifacts"]
-        del dataset["artifacts"]
+    reshape_for_curation_api_and_is_allowed(collection_response, token_info, allow_access=True)
 
     return jsonify(collection_response)
 
