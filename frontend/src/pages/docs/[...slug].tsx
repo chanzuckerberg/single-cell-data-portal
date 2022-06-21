@@ -318,6 +318,9 @@ const DocContent = styled.div`
   h6 {
     margin-top: 24px;
     margin-bottom: 0px;
+    & > code {
+      font-size: inherit;
+    }
   }
 
   /* fixes navigate to anchor urls */
