@@ -7,6 +7,7 @@ const ResponsiveContainer = styled.div`
   width: 100%;
   height: auto;
   padding-top: 68%;
+  margin: 24px 0;
 `;
 
 const ResponsiveIFrame = styled.iframe`
