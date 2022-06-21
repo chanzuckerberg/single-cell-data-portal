@@ -13,7 +13,6 @@ from backend.wmg.data.query import (
     WmgQuery,
     WmgQueryCriteria,
 )
-from backend.wmg.data.schemas.cube_schema import cube_non_indexed_dims
 from backend.wmg.data.snapshot import load_snapshot, WmgSnapshot
 
 
@@ -82,7 +81,9 @@ def find_dim_option_values(criteria: Dict, query: WmgQuery, dimension: str) -> s
     ignoring any criteria specified for the given dimension."""
     filter_options_criteria = criteria.copy(update={dimension + "s": []}, deep=True)
     # todo can we query cell_counts for a performance gain?
-    return extract_filter_dims_values(query.expression_summary(filter_options_criteria))[dimension]
+    query_result = query.expression_summary(filter_options_criteria)
+    filter_dims = query_result.groupby(dimension).groups.keys()
+    return filter_dims
 
 
 def build_filter_dims_values(criteria: WmgQueryCriteria, query: WmgQuery) -> Dict:
@@ -121,15 +122,6 @@ def build_expression_summary(query_result: DataFrame) -> dict:
             )
         )
     return structured_result
-
-
-def extract_filter_dims_values(query_result: DataFrame) -> Dict[str, set]:
-    """
-    Return unique values for each dimension in the specified query result
-    """
-    dims: set = set(query_result.columns) & set(cube_non_indexed_dims)
-    dim_uniq_values: Dict[str, set] = {dim: query_result.groupby(dim).groups.keys() for dim in dims}
-    return dim_uniq_values
 
 
 def build_dot_plot_matrix(query_result: DataFrame, cell_counts: DataFrame) -> DataFrame:
