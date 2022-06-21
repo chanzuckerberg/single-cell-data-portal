@@ -363,7 +363,7 @@ const MDX_AVAILABLE_COMPONENTS = {
     <a rel="noopener" target="_blank" {...props} />
   ),
   h1: styled.h1`
-    font-size: 26px;
+    font-size: 28px;
   `,
   h2: styled.h1`
     font-size: 22px;
