@@ -192,10 +192,104 @@ class TestGetCollectionUUID(BaseAuthAPITest):
             name="collection", description="description", contact_name="john doe", contact_email="johndoe@email.com"
         )
 
-    def test__get_public_collection__OK(self):
+    def test__get_public_collection_verify_body__OK(self):
         res = self.app.get("/curation/v1/collections/test_collection_id")
         self.assertEqual(200, res.status_code)
         self.assertEqual("test_collection_id", res.json["id"])
+        self.assertIsNone(res.json["access_type"])
+
+        expected_body = {
+            "access_type": None,
+            "collection_url": "http://frontend.corporanet.local:3000/collections/test_collection_id",
+            "contact_email": "somebody@chanzuckerberg.com",
+            "contact_name": "Some Body",
+            "curator_name": "",
+            "datasets": [
+                {
+                    "assay": [{"label": "test_assay", "ontology_term_id": "test_obo"}],
+                    "cell_count": None,
+                    "cell_type": [{"label": "test_cell_type", "ontology_term_id": "test_opo"}],
+                    "curator_tag": None,
+                    "dataset_assets": [{"filename": "test_filename", "filetype": "H5AD"}],
+                    "development_stage": [{"label": "test_development_stage", "ontology_term_id": "test_obo"}],
+                    "disease": [
+                        {"label": "test_disease", "ontology_term_id": "test_obo"},
+                        {"label": "test_disease2", "ontology_term_id": "test_obp"},
+                        {"label": "test_disease3", "ontology_term_id": "test_obq"},
+                    ],
+                    "ethnicity": [{"label": "test_ethnicity", "ontology_term_id": "test_obo"}],
+                    "explorer_url": "test_url",
+                    "id": "test_dataset_id",
+                    "is_primary_data": "PRIMARY",
+                    "mean_genes_per_cell": 0.0,
+                    "name": "test_dataset_name",
+                    "organism": [{"label": "test_organism", "ontology_term_id": "test_obo"}],
+                    "processing_status": "PENDING",
+                    "revised_at": None,
+                    "revision": 0,
+                    "schema_version": "2.0.0",
+                    "sex": [
+                        {"label": "test_sex", "ontology_term_id": "test_obo"},
+                        {"label": "test_sex2", "ontology_term_id": "test_obp"},
+                    ],
+                    "tissue": [{"label": "test_tissue", "ontology_term_id": "test_obo"}],
+                    "tombstone": False,
+                    "x_approximate_distribution": "NORMAL",
+                    "x_normalization": "test_x_normalization",
+                }
+            ],
+            "description": "test_description",
+            "id": "test_collection_id",
+            "links": [
+                {"link_name": "test_doi_link_name", "link_type": "DOI", "link_url": "http://test_doi_url.place"},
+                {"link_name": None, "link_type": "DOI", "link_url": "http://test_no_link_name_doi_url.place"},
+                {
+                    "link_name": "test_raw_data_link_name",
+                    "link_type": "RAW_DATA",
+                    "link_url": "http://test_raw_data_url.place",
+                },
+                {"link_name": None, "link_type": "RAW_DATA", "link_url": "http://test_no_link_name_raw_data_url.place"},
+                {
+                    "link_name": "test_protocol_link_name",
+                    "link_type": "PROTOCOL",
+                    "link_url": "http://test_protocol_url.place",
+                },
+                {"link_name": None, "link_type": "PROTOCOL", "link_url": "http://test_no_link_name_protocol_url.place"},
+                {
+                    "link_name": "test_lab_website_link_name",
+                    "link_type": "LAB_WEBSITE",
+                    "link_url": "http://test_lab_website_url.place",
+                },
+                {
+                    "link_name": None,
+                    "link_type": "LAB_WEBSITE",
+                    "link_url": "http://test_no_link_name_lab_website_url.place",
+                },
+                {"link_name": "test_other_link_name", "link_type": "OTHER", "link_url": "http://test_other_url.place"},
+                {"link_name": None, "link_type": "OTHER", "link_url": "http://test_no_link_name_other_url.place"},
+                {
+                    "link_name": "test_data_source_link_name",
+                    "link_type": "DATA_SOURCE",
+                    "link_url": "http://test_data_source_url.place",
+                },
+                {
+                    "link_name": None,
+                    "link_type": "DATA_SOURCE",
+                    "link_url": "http://test_no_link_name_data_source_url.place",
+                },
+            ],
+            "name": "test_collection_name",
+            "published_at": None,
+            "publisher_metadata": None,
+            "revised_at": None,
+            "revision_of": None,
+            "tombstone": False,
+            "visibility": "PUBLIC",
+        }
+
+        res_body = res.json
+        del res_body["created_at"]  # too finicky; ignore
+        self.assertDictEqual(expected_body, res_body)
 
     def test__get_private_collection__OK(self):
         res = self.app.get("/curation/v1/collections/test_collection_id_revision")
@@ -205,6 +299,18 @@ class TestGetCollectionUUID(BaseAuthAPITest):
     def test__get_nonexistent_collection__Not_Found(self):
         res = self.app.get("/curation/v1/collections/test_collection_id_nonexistent")
         self.assertEqual(404, res.status_code)
+
+    def test__get_public_collection_with_auth__OK(self):
+        # Collection with write access
+        res = self.app.get("/curation/v1/collections/test_collection_id", headers=self.get_auth_headers())
+        self.assertEqual(200, res.status_code)
+        self.assertEqual("test_collection_id", res.json["id"])
+        self.assertEqual("WRITE", res.json["access_type"])
+        # Collection with read access
+        res = self.app.get("/curation/v1/collections/test_collection_id_not_owner", headers=self.get_auth_headers())
+        self.assertEqual(200, res.status_code)
+        self.assertEqual("test_collection_id_not_owner", res.json["id"])
+        self.assertEqual("READ", res.json["access_type"])
 
 
 class TestPutCollectionUUID(BaseAuthAPITest):
