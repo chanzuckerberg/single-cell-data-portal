@@ -28,13 +28,44 @@ Each row represents a gene in a gene set and must be unique.
 
 Example:
 
-| gene_set_name | gene_set_description | gene_symbol | gene_description |
-| :------------ | :------------------- | :---------- | :--------------- |
-| club.cell     | description          | CCKAR       | description      |
-| club.cell     |                      | SCGB3A2     | description      |
-| club.cell     |                      | CYP2F2      | description      |
-| macrophage    | description          | CD68        | description      |
-| macrophage    |                      | CD163       | description      |
+<table>
+  <tr>
+    <th>gene\_set\_name</th>
+    <th>gene\_set\_description</th>
+    <th>gene\_symbol</th>
+    <th>gene\_description</th>
+  </tr>
+  <tr>
+    <td>club.cell</td>
+    <td>description</td>
+    <td>CCKAR</td>
+    <td>description</td>
+  </tr>
+  <tr>
+    <td>club.cell</td>
+    <td></td>
+    <td>SCGB3A2</td>
+    <td>description</td>
+  </tr>
+  <tr>
+    <td>club.cell</td>
+    <td></td>
+    <td>CYP2F2</td>
+    <td>description</td>
+  </tr>
+  <tr>
+    <td>macrophage</td>
+    <td>description</td>
+    <td>CD68</td>
+    <td>description</td>
+  </tr>
+  <tr>
+    <td>macrophage</td>
+    <td></td>
+    <td>CD163</td>
+    <td>description</td>
+  </tr>
+</table>
 
 Users MAY include additional columns. Once gene sets are edited from cellxgene, the additional columns will no longer be stored in the file designated using the command `--gene-sets-file`.
 
@@ -50,44 +81,46 @@ multiple spaces (decimal 32) "internal" to a field - "This is an example"
 
 Note: If gene_symbol(s) for a gene_set_name exist on noncontiguous rows, they will be added to the existing gene set. For example, CD163 below is added to the club.cell gene set:
 
-<div class="divTable">
-    <div class="row">
-        <div class="cell">gene\_set\_name</td>
-        <div class="cell">gene\_set\_description</td>
-        <div class="cell">gene\_symbol</td>
-        <div class="cell">gene\_description</td>
-    </div>
-    <div class="row">
-        <div class="cell">club.cell</td>
-        <div class="cell">description</td>
-        <div class="cell">CCKAR</td>
-        <div class="cell">description</td>
-    </div>
-    <div class="row">
-        <div class="cell">club.cell</td>
-        <div class="cell"></td>
-        <div class="cell">SCGB3A2</td>
-        <div class="cell">description</td>
-    </div>
-    <div class="row">
-        <div class="cell">club.cell</td>
-        <div class="cell"></td>
-        <div class="cell">CYP2F2</td>
-        <div class="cell">description</td>
-    </div>
-    <div class="row">
-        <div class="cell">macrophage</td>
-        <div class="cell">description</td>
-        <div class="cell">CD68</td>
-        <div class="cell">description</td>
-    </div>
-    <div class="row">
-        <div class="cell">club.cell</td>
-        <div class="cell"></td>
-        <div class="cell">**CD163**</td>
-        <div class="cell">description</td>
-    </div>
-</div>
+<table>
+  <tr>
+    <th>gene\_set\_name</th>
+    <th>gene\_set\_description</th>
+    <th>gene\_symbol</th>
+    <th>gene\_description</th>
+  </tr>
+  <tr>
+    <td>club.cell</td>
+    <td>description</td>
+    <td>CCKAR</td>
+    <td>description</td>
+  </tr>
+  <tr>
+    <td>club.cell</td>
+    <td></td>
+    <td>SCGB3A2</td>
+    <td>description</td>
+  </tr>
+  <tr>
+    <td>club.cell</td>
+    <td></td>
+    <td>CYP2F2</td>
+    <td>description</td>
+  </tr>
+  <tr>
+    <td>macrophage</td>
+    <td>description</td>
+    <td>CD68</td>
+    <td>description</td>
+  </tr>
+  <tr>
+    <td>club.cell</td>
+    <td></td>
+    <td>
+      <s>**CD163**</s>
+    </td>
+    <td>description</td>
+  </tr>
+</table>
 
 ## `gene_set_description`
 
