@@ -2,7 +2,7 @@ import json
 import unittest
 from unittest.mock import patch, Mock
 
-from backend.corpora.common.corpora_orm import CollectionVisibility
+from backend.corpora.common.corpora_orm import CollectionVisibility, ProcessingStatus, DatasetArtifactFileType
 from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest
 from tests.unit.backend.corpora.api_server.mock_auth import make_token
 from tests.unit.backend.fixtures.config import fake_s3_file
