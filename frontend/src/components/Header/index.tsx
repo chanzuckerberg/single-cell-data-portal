@@ -11,10 +11,8 @@ import { BOOLEAN } from "src/common/localStorage/set";
 import { useUserInfo } from "src/common/queries/auth";
 import { HomepageLink } from "../common/HomepageLink";
 import AuthButtons from "./components/AuthButtons";
-import LearnButton from "./components/LearnButton";
 import {
   BetaChip,
-  LearnButtonWrapper,
   Left,
   LinkWrapper,
   MainWrapper,
@@ -82,9 +80,16 @@ const Header: FC = () => {
               </Link>
             </LinkWrapper>
           )}
-          <LearnButtonWrapper>
-            <LearnButton />
-          </LearnButtonWrapper>
+          <LinkWrapper>
+            <AnchorButton
+              active={isRouteActive(pathname, ROUTES.DOCS)}
+              href={ROUTES.DOCS}
+              rel="noopener"
+              target="_blank"
+              minimal
+              text="Help & Documentation"
+            />
+          </LinkWrapper>
           <AuthButtons />
         </Right>
       </MainWrapper>
