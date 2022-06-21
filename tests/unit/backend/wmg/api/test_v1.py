@@ -632,9 +632,7 @@ class WmgApiV1Tests(unittest.TestCase):
                 expected_development_stage_terms = [
                     {"development_stage_ontology_term_id_0": "development_stage_ontology_term_id_0_label"},
                 ]
-                expected_ethnicity_term  = [
-                    {"ethnicity_ontology_term_id_0": "ethnicity_ontology_term_id_0_label"}
-                ]
+                expected_ethnicity_term = [{"ethnicity_ontology_term_id_0": "ethnicity_ontology_term_id_0_label"}]
                 ethnicity_1_request = dict(filter=ethnicity_1_filter, include_filter_dims=True)
                 response = self.app.post("/wmg/v1/query", json=ethnicity_1_request)
                 dev_stage_terms_no_dev_filter = json.loads(response.data)["filter_dims"]["development_stage_terms"]
