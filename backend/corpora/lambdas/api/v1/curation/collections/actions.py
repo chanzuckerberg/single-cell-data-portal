@@ -12,8 +12,8 @@ from backend.corpora.api_server.db import dbconnect
 def get(visibility: str, token_info: dict):
     """
     Collections index endpoint for Curation API. Only return Collection data for which the curator is authorized.
-    @param visibility: the CollectionVisibility in string form
-    @param token_info: access token info
+    :param visibility: the CollectionVisibility in string form
+    :param token_info: access token info
     @return: Response
     """
     if not token_info and visibility == CollectionVisibility.PRIVATE.name:

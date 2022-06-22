@@ -13,10 +13,10 @@ from ......common.corpora_orm import (
 def reshape_for_curation_api_and_is_allowed(collection, token_info, uuid_provided=False):
     """
     Reshape Collection data for the Curation API response.
-    @param collection: the Collection being returned in the API response
-    @param token_info: user access token
-    @param uuid_provided: bool - whether or not the collection uuid was provided by the user, for access purposes
-    @return: whether or not the Collection should be included in the response per ownership/access rules
+    :param collection: the Collection being returned in the API response
+    :param token_info: user access token
+    :param uuid_provided: bool - whether or not the collection uuid was provided by the user, for access purposes
+    :return: whether or not the Collection should be included in the response per ownership/access rules
     """
     owner = collection["owner"]
     if is_user_owner_or_allowed(token_info, owner):
