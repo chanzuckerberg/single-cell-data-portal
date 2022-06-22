@@ -90,6 +90,21 @@ class TestPatchDataset(BaseAuthAPITest):
                 self.session.expire_all()
                 self.assertIsNone(dataset.curator_tag)
 
+    def test___conflict_curator_tag(self):
+        test_tag = "tag.h5ad"
+        collection = self.generate_collection(self.session, visibility=CollectionVisibility.PRIVATE.name)
+        dataset_1 = self.generate_dataset(self.session, collection=collection, curator_tag=test_tag)
+        dataset_2 = self.generate_dataset(self.session, collection=collection)
+        test_body = {"curator_tag": test_tag}
+        test_url = f"/curation/v1/collections/{collection.id}/datasets"
+        query_string = {"dataset_uuid": dataset_2.id}
+        headers = self.get_auth_headers()
+        response = self.app.patch(test_url, headers=headers, query_string=query_string, json=test_body)
+        self.assertEqual(409, response.status_code)
+        self.session.expire_all()
+        self.assertEqual(test_tag, dataset_1.curator_tag)
+        self.assertIsNone(dataset_2.curator_tag)
+
 
 if __name__ == "__main__":
     unittest.main()
