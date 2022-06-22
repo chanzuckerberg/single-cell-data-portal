@@ -153,7 +153,7 @@ class Collection(Entity):
 
     @classmethod
     def list_collections_curation(
-        cls, session: Session, collection_columns: list, visibility: str = None
+        cls, session: Session, collection_columns: typing.Dict[Base,typing.List[str]], visibility: str = None
     ) -> typing.List[dict]:
         """
         Get a subset of columns, in dict form, for all Collections with the specified visibility. If visibility is None,
