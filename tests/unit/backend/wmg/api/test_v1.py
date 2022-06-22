@@ -17,6 +17,7 @@ from tests.unit.backend.wmg.fixtures.test_snapshot import (
     all_tens_cell_counts_values,
     reverse_cell_type_ordering,
     exclude_all_but_one_gene_per_organism,
+    exclude_dev_stage_and_ethnicity_for_secondary_filter_test,
 )
 
 
@@ -52,7 +53,6 @@ class WmgApiV1Tests(unittest.TestCase):
     def test__primary_filter_dimensions__returns_valid_response_body(
         self, load_snapshot, ontology_term_label, gene_term_label
     ):
-
         with create_temp_wmg_snapshot(
             dim_size=3, exclude_logical_coord_fn=exclude_all_but_one_gene_per_organism
         ) as snapshot:
@@ -438,140 +438,265 @@ class WmgApiV1Tests(unittest.TestCase):
     @patch("backend.wmg.api.v1.gene_term_label")
     @patch("backend.wmg.api.v1.ontology_term_label")
     @patch("backend.wmg.api.v1.load_snapshot")
-    def test__query_request_with_filter_dims__returns_valid_filter_dims(
+    def test__query_request_with_filter_dims__returns_valid_filter_dims__base_case(
         self, load_snapshot, ontology_term_label, gene_term_label, fetch_datasets_metadata
     ):
-        dim_size = 3
+        # mock the functions in the ontology_labels module, so we can assert deterministic values in the
+        # "term_id_labels" portion of the response body; note that the correct behavior of the ontology_labels
+        # module is separately unit tested, and here we just want to verify the response building logic is correct.
+        dim_size = 1
         with create_temp_wmg_snapshot(dim_size=dim_size) as snapshot:
-            # setup up API endpoints to use a mocked cube
-            load_snapshot.return_value = snapshot
-
-            # mock the functions in the ontology_labels module, so we can assert deterministic values in the
-            # "term_id_labels" portion of the response body; note that the correct behavior of the ontology_labels
-            # module is separately unit tested, and here we just want to verify the response building logic is correct.
             ontology_term_label.side_effect = lambda ontology_term_id: f"{ontology_term_id}_label"
             gene_term_label.side_effect = lambda gene_term_id: f"{gene_term_id}_label"
-
             fetch_datasets_metadata.return_value = mock_datasets_metadata([f"dataset_id_{i}" for i in range(dim_size)])
+            load_snapshot.return_value = snapshot
+            filter_0 = dict(
+                # these don't matter for the expected result
+                gene_ontology_term_ids=["gene_ontology_term_id_0"],
+                organism_ontology_term_id="organism_ontology_term_id_0",
+                tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
+                dataset_ids=["dataset_id_0"],
+                disease_ontology_term_ids=["disease_ontology_term_id_0"],
+                sex_ontology_term_ids=["sex_ontology_term_id_0"],
+                # these matter for the expected result
+                development_stage_ontology_term_ids=["development_stage_ontology_term_id_0"],
+                ethnicity_ontology_term_ids=["ethnicity_ontology_term_id_0"],
+            )
 
-            request = dict(
-                # doesn't matter for this test
-                filter=dict(
-                    gene_ontology_term_ids=["gene_ontology_term_id_0"],
-                    organism_ontology_term_id="organism_ontology_term_id_0",
-                    tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
-                ),
+            filter_0_request = dict(
+                filter=filter_0,
                 # matters for this test
                 include_filter_dims=True,
             )
 
-            response = self.app.post("/wmg/v1/query", json=request)
-
-            expected = {
+            response = self.app.post("/wmg/v1/query", json=filter_0_request)
+            expected_filters = {
                 "datasets": [
                     {
+                        "collection_id": "dataset_id_0_coll_id",
+                        "collection_label": "dataset_id_0_coll_name",
                         "id": "dataset_id_0",
                         "label": "dataset_id_0_name",
-                        "collection_label": "dataset_id_0_coll_name",
-                        "collection_id": "dataset_id_0_coll_id",
-                    },
-                    {
-                        "id": "dataset_id_1",
-                        "label": "dataset_id_1_name",
-                        "collection_label": "dataset_id_1_coll_name",
-                        "collection_id": "dataset_id_1_coll_id",
-                    },
-                    {
-                        "id": "dataset_id_2",
-                        "label": "dataset_id_2_name",
-                        "collection_label": "dataset_id_2_coll_name",
-                        "collection_id": "dataset_id_2_coll_id",
-                    },
+                    }
                 ],
                 "development_stage_terms": [
-                    {"development_stage_ontology_term_id_0": "development_stage_ontology_term_id_0_label"},
-                    {"development_stage_ontology_term_id_1": "development_stage_ontology_term_id_1_label"},
-                    {"development_stage_ontology_term_id_2": "development_stage_ontology_term_id_2_label"},
+                    {"development_stage_ontology_term_id_0": "development_stage_ontology_term_id_0_label"}
                 ],
-                "disease_terms": [
-                    {"disease_ontology_term_id_0": "disease_ontology_term_id_0_label"},
-                    {"disease_ontology_term_id_1": "disease_ontology_term_id_1_label"},
-                    {"disease_ontology_term_id_2": "disease_ontology_term_id_2_label"},
-                ],
-                "ethnicity_terms": [
-                    {"ethnicity_ontology_term_id_0": "ethnicity_ontology_term_id_0_label"},
-                    {"ethnicity_ontology_term_id_1": "ethnicity_ontology_term_id_1_label"},
-                    {"ethnicity_ontology_term_id_2": "ethnicity_ontology_term_id_2_label"},
-                ],
-                "sex_terms": [
-                    {"sex_ontology_term_id_0": "sex_ontology_term_id_0_label"},
-                    {"sex_ontology_term_id_1": "sex_ontology_term_id_1_label"},
-                    {"sex_ontology_term_id_2": "sex_ontology_term_id_2_label"},
-                ],
+                "disease_terms": [{"disease_ontology_term_id_0": "disease_ontology_term_id_0_label"}],
+                "ethnicity_terms": [{"ethnicity_ontology_term_id_0": "ethnicity_ontology_term_id_0_label"}],
+                "sex_terms": [{"sex_ontology_term_id_0": "sex_ontology_term_id_0_label"}],
             }
-            self.assertEqual(expected, json.loads(response.data)["filter_dims"])
+            self.assertEqual(json.loads(response.data)["filter_dims"], expected_filters)
 
     @patch("backend.wmg.api.v1.fetch_datasets_metadata")
     @patch("backend.wmg.api.v1.gene_term_label")
     @patch("backend.wmg.api.v1.ontology_term_label")
     @patch("backend.wmg.api.v1.load_snapshot")
-    def test__query_request_with_filter_dims__returns_elided_filter_dims(
+    def test__query_request_with_filter_dims__returns_valid_filter_dims(
         self, load_snapshot, ontology_term_label, gene_term_label, fetch_datasets_metadata
     ):
-        dim_size = 2
-        with create_temp_wmg_snapshot(dim_size=dim_size) as snapshot:
-            load_snapshot.return_value = snapshot
-
-            # mock the functions in the ontology_labels module, so we can assert deterministic values in the
-            # "term_id_labels" portion of the response body; note that the correct behavior of the ontology_labels
-            # module is separately unit tested, and here we just want to verify the response building logic is correct.
+        # mock the functions in the ontology_labels module, so we can assert deterministic values in the
+        # "term_id_labels" portion of the response body; note that the correct behavior of the ontology_labels
+        # module is separately unit tested, and here we just want to verify the response building logic is correct.
+        dim_size = 3
+        self.maxDiff = None
+        with create_temp_wmg_snapshot(
+            dim_size=dim_size, exclude_logical_coord_fn=exclude_dev_stage_and_ethnicity_for_secondary_filter_test
+        ) as snapshot:
+            # set up the expression summary cube for secondary filtering
+            # drop all rows where ethnicity_1 and ethnicity_2 are associated with dev_stage_1 and dev_stage_2
+            # thus filtering for dev_stage_0 should return filter options that include ethnicity 0,1 &2 but
+            # filtering for dev_stage_1 or dev_stage_2 should only return ethnicity 0 (and vice versa)
             ontology_term_label.side_effect = lambda ontology_term_id: f"{ontology_term_id}_label"
             gene_term_label.side_effect = lambda gene_term_id: f"{gene_term_id}_label"
+            fetch_datasets_metadata.return_value = mock_datasets_metadata([f"dataset_id_{i}" for i in range(dim_size)])
+            # setup up API endpoints to use a mocked cube
+            load_snapshot.return_value = snapshot
+            with self.subTest("when a secondary dimension has criteria, it's own values are not restricted"):
+                filter_0 = dict(
+                    # these don't matter for the expected result
+                    gene_ontology_term_ids=["gene_ontology_term_id_0"],
+                    organism_ontology_term_id="organism_ontology_term_id_0",
+                    tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
+                    dataset_ids=["dataset_id_0"],
+                    disease_ontology_term_ids=["disease_ontology_term_id_0"],
+                    sex_ontology_term_ids=["sex_ontology_term_id_0"],
+                    # these matter for the expected result
+                    development_stage_ontology_term_ids=["development_stage_ontology_term_id_0"],
+                    ethnicity_ontology_term_ids=["ethnicity_ontology_term_id_0"],
+                )
 
-            fetch_datasets_metadata.return_value = mock_datasets_metadata(["dataset_id_0"])
+                filter_0_request = dict(
+                    filter=filter_0,
+                    # matters for this test
+                    include_filter_dims=True,
+                )
 
-            request = dict(
-                filter=dict(
+                filter_0_no_dev_stage_filter = dict(
+                    # these don't matter for the expected result
+                    gene_ontology_term_ids=["gene_ontology_term_id_0"],
+                    organism_ontology_term_id="organism_ontology_term_id_0",
+                    tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
+                    dataset_ids=["dataset_id_0"],
+                    disease_ontology_term_ids=["disease_ontology_term_id_0"],
+                    sex_ontology_term_ids=["sex_ontology_term_id_0"],
+                    # these matter for the expected result
+                    development_stage_ontology_term_ids=[],
+                    ethnicity_ontology_term_ids=["ethnicity_ontology_term_id_0"],
+                )
+                filter_0_no_dev_stage_request = dict(filter=filter_0_no_dev_stage_filter, include_filter_dims=True)
+
+                filter_0_no_ethnicity_filter = dict(
+                    # these don't matter for the expected result
+                    gene_ontology_term_ids=["gene_ontology_term_id_0"],
+                    organism_ontology_term_id="organism_ontology_term_id_0",
+                    tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
+                    dataset_ids=["dataset_id_0"],
+                    disease_ontology_term_ids=["disease_ontology_term_id_0"],
+                    sex_ontology_term_ids=["sex_ontology_term_id_0"],
+                    # these matter for the expected result
+                    development_stage_ontology_term_ids=["development_stage_ontology_term_id_0"],
+                    ethnicity_ontology_term_ids=[],
+                )
+                filter_0_no_ethnicity_request = dict(filter=filter_0_no_ethnicity_filter, include_filter_dims=True)
+                # the values for dev_stage terms when a dev stage filter is included should match the values returned
+                # if no filter is passed in for dev stage
+                response = self.app.post("/wmg/v1/query", json=filter_0_request)
+                dev_stage_terms = json.loads(response.data)["filter_dims"]["development_stage_terms"]
+                ethnicity_terms = json.loads(response.data)["filter_dims"]["ethnicity_terms"]
+
+                no_dev_stage_filter_response = self.app.post("/wmg/v1/query", json=filter_0_no_dev_stage_request)
+                dev_stage_terms_if_no_dev_stage_filters = json.loads(no_dev_stage_filter_response.data)["filter_dims"][
+                    "development_stage_terms"
+                ]
+
+                no_ethnicity_filter_response = self.app.post("/wmg/v1/query", json=filter_0_no_ethnicity_request)
+                ethnictiy_terms_if_no_dev_stage_filters = json.loads(no_ethnicity_filter_response.data)["filter_dims"][
+                    "ethnicity_terms"
+                ]
+
+                # filter options for dev_stage
+                self.assertEqual(dev_stage_terms, dev_stage_terms_if_no_dev_stage_filters)
+                self.assertEqual(ethnicity_terms, ethnictiy_terms_if_no_dev_stage_filters)
+
+            with self.subTest(
+                "when a secondary dimension has criteria, the remaining filter values for other "
+                "secondary dimensions are properly restricted"
+            ):
+                # filtering for dev_stage_0 should return all possible ethnicity terms
+                # filtering for dev_stage_1 should only return ethnicity_0
+                # filtering for dev_stage_2 should only return ethnicity_0
+                # filtering for ethnicity_1 should only return dev_stage_0
+                # filtering for ethnicity_2 should only return dev_stage_0
+
+                # filtering for ethnicity_0 should return all dev stages
+                # not filtering for dev should return all ethnicities
+                ethnicity_0_filter = dict(
                     # these don't matter for the expected result
                     gene_ontology_term_ids=["gene_ontology_term_id_0"],
                     organism_ontology_term_id="organism_ontology_term_id_0",
                     tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
                     # these matter for the expected result
-                    dataset_ids=["dataset_id_0"],
-                    disease_ontology_term_ids=["disease_ontology_term_id_1"],
-                    sex_ontology_term_ids=["sex_ontology_term_id_0"],
-                    development_stage_ontology_term_ids=["development_stage_ontology_term_id_1"],
+                    development_stage_ontology_term_ids=[],
                     ethnicity_ontology_term_ids=["ethnicity_ontology_term_id_0"],
-                ),
-                include_filter_dims=True,
-            )
-
-            response = self.app.post("/wmg/v1/query", json=request)
-
-            expected_filter_dims = {
-                "datasets": [
-                    {
-                        "id": "dataset_id_0",
-                        "label": "dataset_id_0_name",
-                        "collection_label": "dataset_id_0_coll_name",
-                        "collection_id": "dataset_id_0_coll_id",
-                    },
-                ],
-                "disease_terms": [
-                    {"disease_ontology_term_id_1": "disease_ontology_term_id_1_label"},
-                ],
-                "sex_terms": [
-                    {"sex_ontology_term_id_0": "sex_ontology_term_id_0_label"},
-                ],
-                "development_stage_terms": [
+                )
+                all_development_stage_terms = [
+                    {"development_stage_ontology_term_id_0": "development_stage_ontology_term_id_0_label"},
                     {"development_stage_ontology_term_id_1": "development_stage_ontology_term_id_1_label"},
-                ],
-                "ethnicity_terms": [
+                    {"development_stage_ontology_term_id_2": "development_stage_ontology_term_id_2_label"},
+                ]
+                all_ethnicity_terms = [
                     {"ethnicity_ontology_term_id_0": "ethnicity_ontology_term_id_0_label"},
-                ],
-            }
-            self.maxDiff = None
-            self.assertEqual(expected_filter_dims, json.loads(response.data)["filter_dims"])
+                    {"ethnicity_ontology_term_id_1": "ethnicity_ontology_term_id_1_label"},
+                    {"ethnicity_ontology_term_id_2": "ethnicity_ontology_term_id_2_label"},
+                ]
+                ethnicity_0_request = dict(filter=ethnicity_0_filter, include_filter_dims=True)
+                response = self.app.post("/wmg/v1/query", json=ethnicity_0_request)
+                dev_stage_terms = json.loads(response.data)["filter_dims"]["development_stage_terms"]
+                ethnicity_terms = json.loads(response.data)["filter_dims"]["ethnicity_terms"]
+                self.assertEqual(all_development_stage_terms, dev_stage_terms)
+                self.assertEqual(all_ethnicity_terms, ethnicity_terms)
+
+                # filtering for ethnicity_1 should return dev_stage_0 (even when filtering for dev_stage_1 or 2)
+                ethnicity_1_filter = dict(
+                    # these don't matter for the expected result
+                    gene_ontology_term_ids=["gene_ontology_term_id_0"],
+                    organism_ontology_term_id="organism_ontology_term_id_0",
+                    tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
+                    # these matter for the expected result
+                    development_stage_ontology_term_ids=[],
+                    ethnicity_ontology_term_ids=["ethnicity_ontology_term_id_1"],
+                )
+                # since secondary filters should not affect term options for their own category, filtering (or not
+                # filtering) for dev stage 1 should not affect the terms returned
+                expected_development_stage_terms = [
+                    {"development_stage_ontology_term_id_0": "development_stage_ontology_term_id_0_label"},
+                ]
+                expected_ethnicity_term = [{"ethnicity_ontology_term_id_0": "ethnicity_ontology_term_id_0_label"}]
+                ethnicity_1_request = dict(filter=ethnicity_1_filter, include_filter_dims=True)
+                response = self.app.post("/wmg/v1/query", json=ethnicity_1_request)
+                dev_stage_terms_no_dev_filter = json.loads(response.data)["filter_dims"]["development_stage_terms"]
+                ethnicity_terms_no_dev_filter = json.loads(response.data)["filter_dims"]["ethnicity_terms"]
+                self.assertEqual(expected_development_stage_terms, dev_stage_terms_no_dev_filter)
+                self.assertEqual(all_ethnicity_terms, ethnicity_terms_no_dev_filter)
+
+                ethnicity_1_dev_1_filter = dict(
+                    # these don't matter for the expected result
+                    gene_ontology_term_ids=["gene_ontology_term_id_0"],
+                    organism_ontology_term_id="organism_ontology_term_id_0",
+                    tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
+                    # these matter for the expected result
+                    development_stage_ontology_term_ids=["development_stage_ontology_term_id_1"],
+                    ethnicity_ontology_term_ids=["ethnicity_ontology_term_id_1"],
+                )
+                ethnicity_1_dev_1_request = dict(filter=ethnicity_1_dev_1_filter, include_filter_dims=True)
+
+                response = self.app.post("/wmg/v1/query", json=ethnicity_1_dev_1_request)
+                dev_stage_terms_dev_filter = json.loads(response.data)["filter_dims"]["development_stage_terms"]
+                ethnicity_terms_dev_filter = json.loads(response.data)["filter_dims"]["ethnicity_terms"]
+
+                self.assertEqual(expected_development_stage_terms, dev_stage_terms_dev_filter)
+                self.assertEqual(dev_stage_terms_no_dev_filter, dev_stage_terms_dev_filter)
+                self.assertEqual(expected_ethnicity_term, ethnicity_terms_dev_filter)
+                self.assertNotEqual(ethnicity_terms_no_dev_filter, ethnicity_terms_dev_filter)
+
+                # filtering for ethnicity_2 should return dev_stage_0 (even when filtering for dev_stage_1 or 2)
+                ethnicity_2_filter = dict(
+                    # these don't matter for the expected result
+                    gene_ontology_term_ids=["gene_ontology_term_id_0"],
+                    organism_ontology_term_id="organism_ontology_term_id_0",
+                    tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
+                    # these matter for the expected result
+                    development_stage_ontology_term_ids=[],
+                    ethnicity_ontology_term_ids=["ethnicity_ontology_term_id_2"],
+                )
+                ethnicity_2_dev_2_filter = dict(
+                    # these don't matter for the expected result
+                    gene_ontology_term_ids=["gene_ontology_term_id_0"],
+                    organism_ontology_term_id="organism_ontology_term_id_0",
+                    tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
+                    # these matter for the expected result
+                    development_stage_ontology_term_ids=["development_stage_ontology_term_id_2"],
+                    ethnicity_ontology_term_ids=["ethnicity_ontology_term_id_2"],
+                )
+                ethnicity_2_request = dict(filter=ethnicity_2_filter, include_filter_dims=True)
+                eth_2_dev_2_request = dict(filter=ethnicity_2_dev_2_filter, include_filter_dims=True)
+                response = self.app.post("/wmg/v1/query", json=ethnicity_2_request)
+                dev_stage_terms_eth_2_no_dev_filter = json.loads(response.data)["filter_dims"][
+                    "development_stage_terms"
+                ]
+                ethnicity_terms_eth_2_no_dev_filter = json.loads(response.data)["filter_dims"]["ethnicity_terms"]
+                self.assertEqual(expected_development_stage_terms, dev_stage_terms_eth_2_no_dev_filter)
+                self.assertEqual(all_ethnicity_terms, ethnicity_terms_eth_2_no_dev_filter)
+
+                response = self.app.post("/wmg/v1/query", json=eth_2_dev_2_request)
+                dev_stage_terms_eth_2_dev_2 = json.loads(response.data)["filter_dims"]["development_stage_terms"]
+                eth_stage_terms_eth_2_dev_2 = json.loads(response.data)["filter_dims"]["ethnicity_terms"]
+
+                self.assertEqual(expected_development_stage_terms, dev_stage_terms_eth_2_dev_2)
+                self.assertEqual(expected_ethnicity_term, eth_stage_terms_eth_2_dev_2)
+                self.assertEqual(dev_stage_terms_eth_2_dev_2, dev_stage_terms_eth_2_no_dev_filter)
+                self.assertNotEqual(eth_stage_terms_eth_2_dev_2, ethnicity_terms_eth_2_no_dev_filter)
 
 
 # mock the dataset and collection entity data that would otherwise be fetched from the db; in this test
