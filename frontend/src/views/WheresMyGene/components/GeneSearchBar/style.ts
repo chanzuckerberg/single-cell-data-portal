@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { fontBodyXxxs, getColors } from "czifui";
+import { fontBodyXxs, getColors } from "czifui";
 
 export const Container = styled.div`
   width: 80vw;
@@ -12,7 +12,7 @@ export const ActionWrapper = styled.div`
 `;
 
 export const Label = styled.label`
-  ${fontBodyXxxs}
+  ${fontBodyXxs}
 
   ${(props) => {
     const colors = getColors(props);
