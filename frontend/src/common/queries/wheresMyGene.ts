@@ -591,18 +591,13 @@ function useWMGQueryRequestBody(options = { includeAllFilterOptions: false }) {
   }, [data]);
 
   return useMemo(() => {
-    if (
-      !data ||
-      !selectedOrganismId ||
-      !selectedTissues.length
-    ) {
+    if (!data || !selectedOrganismId || !selectedTissues.length) {
       return null;
     }
     const gene_ontology_term_ids = selectedGenes.map((geneName) => {
       return organismGenesByName[geneName].id;
     });
-    if (!gene_ontology_term_ids.length)
-      gene_ontology_term_ids.push(".");
+    if (!gene_ontology_term_ids.length) gene_ontology_term_ids.push(".");
     const tissue_ontology_term_ids = selectedTissues.map((tissueName) => {
       return tissuesByName[tissueName].id;
     });
