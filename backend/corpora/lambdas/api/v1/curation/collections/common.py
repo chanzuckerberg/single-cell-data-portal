@@ -29,16 +29,13 @@ def get_access_type(collection, token_info, uuid_provided=False):
         return "READ"
 
 
-def reshape_for_curation_api(collection, token_info, access_type=None, uuid_provided=False):
+def reshape_for_curation_api(collection, access_type=None):
     """
     Reshape Collection data for the Curation API response, in-place.
     :param collection: the Collection being returned in the API response
-    :param token_info: user access token
-    :param access_type: str - user access type to collection
-    :param uuid_provided: bool - whether the collection uuid was provided by the user, for access purposes
+    :param access_type: str - user access type to collection. Value must be READ or WRITE
     """
-    access_type = access_type if access_type else get_access_type(collection, token_info, uuid_provided)
-    if access_type:
+    if access_type == "READ" or access_type == "WRITE":
         collection["access_type"] = access_type
 
     del collection["owner"]  # Don't actually want to return 'owner' in response

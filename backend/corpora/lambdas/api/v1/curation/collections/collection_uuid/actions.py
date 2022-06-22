@@ -1,12 +1,11 @@
 from flask import g, jsonify
 
-from ..common import EntityColumns
+from ..common import EntityColumns, get_access_type, reshape_for_curation_api
 from backend.corpora.api_server.db import dbconnect
 from backend.corpora.common.corpora_orm import CollectionVisibility
 from backend.corpora.common.entities import Collection
 from backend.corpora.common.utils.http_exceptions import MethodNotAllowedException, NotFoundHTTPException
 from backend.corpora.lambdas.api.v1.authorization import owner_or_allowed
-from backend.corpora.lambdas.api.v1.curation.collections.common import reshape_for_curation_api
 from backend.corpora.lambdas.api.v1.common import get_collection_else_forbidden
 
 
@@ -28,7 +27,7 @@ def get(collection_uuid: str, token_info: dict):
     if not collection:
         raise NotFoundHTTPException
     collection_response: dict = collection.to_dict_keep(EntityColumns.columns_for_collection_uuid)
-
-    reshape_for_curation_api(collection_response, token_info, uuid_provided=True)
+    access_type = get_access_type(collection, token_info, uuid_provided=True)
+    reshape_for_curation_api(collection_response, access_type=access_type)
 
     return jsonify(collection_response)

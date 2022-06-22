@@ -22,8 +22,8 @@ def get(visibility: str, token_info: dict):
     allowed_collections = []
     for collection in collections:
         access_type = get_access_type(collection, token_info)
-        if access_type:
-            reshape_for_curation_api(collection, token_info, access_type=access_type)
+        if access_type or visibility == CollectionVisibility.PUBLIC.name:
+            reshape_for_curation_api(collection, access_type=access_type)
             allowed_collections.append(collection)
 
     return jsonify({"collections": allowed_collections})
