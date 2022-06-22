@@ -9,15 +9,13 @@ import re
 
 import logging
 
-from .common import get_collection
-from ....common.corpora_config import CorporaConfig
+from .common import get_collection_else_forbidden
 from ....common.corpora_orm import DbCollection, CollectionVisibility, ProjectLinkType
 from ....common.entities import Collection
 from .authorization import is_user_owner_or_allowed, owner_or_allowed
 from ....common.utils.http_exceptions import (
     InvalidParametersHTTPException,
     ConflictException,
-    UnauthorizedError,
 )
 from ....api_server.db import dbconnect
 
@@ -64,36 +62,9 @@ def get_collections_list(from_date: int = None, to_date: int = None, token_info:
 
 
 @dbconnect
-def get_collections_curation(visibility: str, token_info: dict):
-    """
-    Collections index endpoint for Curation API. Only return Collection data for which the curator is authorized.
-    @param visibility: the CollectionVisibility in string form
-    @param token_info: access token info
-    @return: Response
-    """
-    if not token_info and visibility == CollectionVisibility.PRIVATE.name:
-        raise UnauthorizedError()
-    collections = Collection.list_collections_for_curation(g.db_session, visibility)
-    allowed_collections = []
-    for collection in collections:
-        owner = collection["owner"]
-        if is_user_owner_or_allowed(token_info, owner):
-            collection["access_type"] = "WRITE"
-        elif collection["visibility"] == CollectionVisibility.PRIVATE:
-            continue
-        else:
-            collection["access_type"] = "READ"
-        del collection["owner"]  # Don't actually want to return 'owner' in response
-        collection["collection_url"] = f"{CorporaConfig().collections_base_url}/collections/{collection['id']}"
-        allowed_collections.append(collection)
-
-    return jsonify({"collections": allowed_collections})
-
-
-@dbconnect
 def get_collection_details(collection_uuid: str, token_info: dict):
     db_session = g.db_session
-    collection = get_collection(db_session, collection_uuid, include_tombstones=True)
+    collection = get_collection_else_forbidden(db_session, collection_uuid, include_tombstones=True)
     if collection.tombstone:
         result = ""
         response = 410
@@ -135,7 +106,7 @@ def get_collections_index():
 
 def post_collection_revision_common(collection_uuid: str, token_info: dict):
     db_session = g.db_session
-    collection = get_collection(
+    collection = get_collection_else_forbidden(
         db_session,
         collection_uuid,
         visibility=CollectionVisibility.PUBLIC,
@@ -275,7 +246,7 @@ def create_collection(body: dict, user: str):
 @dbconnect
 def delete_collection(collection_uuid: str, token_info: dict):
     db_session = g.db_session
-    collection = get_collection(db_session, collection_uuid, owner=owner_or_allowed(token_info))
+    collection = get_collection_else_forbidden(db_session, collection_uuid, owner=owner_or_allowed(token_info))
     if collection.visibility == CollectionVisibility.PUBLIC:
         revision = Collection.get_collection(
             db_session,
@@ -295,7 +266,7 @@ def update_collection(collection_uuid: str, body: dict, token_info: dict):
     db_session = g.db_session
     errors = []
     verify_collection_body(body, errors, allow_none=True)
-    collection = get_collection(
+    collection = get_collection_else_forbidden(
         db_session,
         collection_uuid,
         visibility=CollectionVisibility.PRIVATE.name,
