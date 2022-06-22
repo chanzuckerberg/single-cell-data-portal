@@ -12,13 +12,11 @@ import CGLogo from "src/common/images/explore-white.svg";
 import { BOOLEAN } from "src/common/localStorage/set";
 import { useUserInfo } from "src/common/queries/auth";
 import AuthButtons from "src/components/Header/components/AuthButtons";
-import LearnButton from "src/components/Header/components/LearnButton";
 import { HomepageLink } from "../common/HomepageLink";
 import {
   BetaChip,
   DesktopHomeLink,
   HiringLink,
-  LearnButtonWrapper,
   Left,
   LinkWrapper,
   MainWrapper,
@@ -133,9 +131,16 @@ const LandingHeader: FC = () => {
                   </Link>
                 </LinkWrapper>
               )}
-              <LearnButtonWrapper>
-                <LearnButton />
-              </LearnButtonWrapper>
+              <LinkWrapper>
+                <AnchorButton
+                  active={isRouteActive(pathname, ROUTES.DOCS)}
+                  href={ROUTES.DOCS}
+                  rel="noopener"
+                  target="_blank"
+                  minimal
+                  text="Help & Documentation"
+                />
+              </LinkWrapper>
               <AuthButtons />
             </Right>
           </MainWrapper>
