@@ -300,13 +300,13 @@ class TestGetCollectionUUID(BaseAuthAPITest):
         res = self.app.get("/curation/v1/collections/test_collection_id_nonexistent")
         self.assertEqual(404, res.status_code)
 
-    def test__get_public_collection_with_auth__OK(self):
-        # Collection with write access
+    def test__get_public_collection_with_auth_access_type_write__OK(self):
         res = self.app.get("/curation/v1/collections/test_collection_id", headers=self.get_auth_headers())
         self.assertEqual(200, res.status_code)
         self.assertEqual("test_collection_id", res.json["id"])
         self.assertEqual("WRITE", res.json["access_type"])
-        # Collection with read access
+
+    def test__get_public_collection_with_auth_access_type_read__OK(self):
         res = self.app.get("/curation/v1/collections/test_collection_id_not_owner", headers=self.get_auth_headers())
         self.assertEqual(200, res.status_code)
         self.assertEqual("test_collection_id_not_owner", res.json["id"])
