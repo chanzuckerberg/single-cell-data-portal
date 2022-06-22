@@ -70,11 +70,13 @@ def get_collection_details(collection_uuid: str, token_info: dict):
         result = ""
         response = 410
     else:
-        access_type = get_access_type(collection, token_info, uuid_provided=True)
-        get_tombstone_datasets = access_type == "WRITE" and collection.visibility == CollectionVisibility.PRIVATE
+        get_tombstone_datasets = (
+            is_user_owner_or_allowed(token_info, collection.owner)
+            and collection.visibility == CollectionVisibility.PRIVATE
+        )
         result = collection.reshape_for_api(get_tombstone_datasets)
         response = 200
-        result["access_type"] = access_type if access_type else "READ"
+        result["access_type"] = "WRITE" if is_user_owner_or_allowed(token_info, collection.owner) else "READ"
     return make_response(jsonify(result), response)
 
 
