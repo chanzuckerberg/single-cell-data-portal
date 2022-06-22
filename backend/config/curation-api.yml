@@ -56,7 +56,7 @@ paths:
 
         * To retrieve full collection metadata for a specific collection, `GET /v1/collections/{collection_uuid}`
         must be used.
-      operationId: backend.corpora.lambdas.api.v1.collection.get_collections_curation
+      operationId: backend.corpora.lambdas.api.v1.curation.collections.actions.get_collections
       security:
         - curatorAccessLenient: []
         - {}
@@ -117,7 +117,7 @@ paths:
     get:
       summary: Fetch a Collection with Datasets
       description: Fetch full Collection metadata and associated Datasets.
-      operationId: backend.corpora.lambdas.api.v1.collection.get_collection_uuid_curation
+      operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_uuid.actions.get_collection_uuid
       security:
         - curatorAccessLenient: []
         - {}

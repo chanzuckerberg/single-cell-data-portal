@@ -9,15 +9,13 @@ import re
 
 import logging
 
-from .common import get_collection, reshape_for_curation_api_and_is_allowed
+from .common import get_collection
 from ....common.corpora_orm import DbCollection, CollectionVisibility, ProjectLinkType
 from ....common.entities import Collection
 from .authorization import is_user_owner_or_allowed, owner_or_allowed
 from ....common.utils.http_exceptions import (
     InvalidParametersHTTPException,
     ConflictException,
-    UnauthorizedError,
-    NotFoundHTTPException,
 )
 from ....api_server.db import dbconnect
 
@@ -61,38 +59,6 @@ def get_collections_list(from_date: int = None, to_date: int = None, token_info:
         result["to_date"] = to_date
 
     return make_response(jsonify(result), 200)
-
-
-@dbconnect
-def get_collections_curation(visibility: str, token_info: dict):
-    """
-    Collections index endpoint for Curation API. Only return Collection data for which the curator is authorized.
-    @param visibility: the CollectionVisibility in string form
-    @param token_info: access token info
-    @return: Response
-    """
-    if not token_info and visibility == CollectionVisibility.PRIVATE.name:
-        raise UnauthorizedError()
-    collections = Collection.list_collections_for_curation(g.db_session, visibility)
-    allowed_collections = []
-    for collection in collections:
-        if reshape_for_curation_api_and_is_allowed(collection, token_info):
-            allowed_collections.append(collection)
-
-    return jsonify({"collections": allowed_collections})
-
-
-@dbconnect
-def get_collection_uuid_curation(collection_uuid: str, token_info: dict):
-    db_session = g.db_session
-    collection = Collection.get_collection(db_session, collection_uuid, include_tombstones=True)
-    if not collection:
-        raise NotFoundHTTPException
-    collection_response: dict = collection.to_dict_keep(Collection.columns_for_collection)
-
-    reshape_for_curation_api_and_is_allowed(collection_response, token_info, allow_access=True)
-
-    return jsonify(collection_response)
 
 
 @dbconnect
