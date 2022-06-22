@@ -437,7 +437,7 @@ const LandingPage = (): JSX.Element => {
                             </a>
                           </Link>
                           <Link
-                            href={`${ROUTES.HOMEPAGE}/docs/04_Analyze-Public-Data/4_1-Hosted-Tutorials`}
+                            href={`${ROUTES.HOMEPAGE}/docs/04__Analyze%20Public%20Data/4_1__Hosted%20Tutorials`}
                             passHref
                           >
                             <a>
@@ -485,9 +485,7 @@ const LandingPage = (): JSX.Element => {
                         <p>
                           Integrate datasets with zero data wrangling. Datasets
                           with standard metadata annotations can be downloaded
-                          in AnnData and Seurat formats and custom cell
-                          selections from the complete corpus can be downloaded
-                          directly from R and Python.
+                          in AnnData and Seurat formats.
                         </p>
                         <div className={styles.linkContainer}>
                           <Link href={ROUTES.COLLECTIONS} passHref>
@@ -498,13 +496,6 @@ const LandingPage = (): JSX.Element => {
                               </span>
                             </a>
                           </Link>
-                          {/* LINK TO BE UPDATED POST-LAUNCH */}
-                          <a href="#">
-                            Download with R
-                            <span className={styles.linkArrow}>
-                              <LinkArrow />
-                            </span>
-                          </a>
                           {/* LINK TO BE UPDATED POST-LAUNCH */}
                           <a href="#">
                             Download with Python
