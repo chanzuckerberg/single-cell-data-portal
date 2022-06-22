@@ -110,7 +110,7 @@ export function usePrimaryFilterDimensions(): UseQueryResult<PrimaryFilterDimens
 
   return useQuery<PrimaryFilterDimensionsResponse>(
     [USE_PRIMARY_FILTER_DIMENSIONS, currentSnapshotId],
-    fetchPrimaryFilterDimensions,
+    fetchPrimaryFilterDimensions,    
     {
       onSuccess(response) {
         if (!response || !dispatch) return;
@@ -131,11 +131,11 @@ interface Filter {
   gene_ontology_term_ids: string[];
   organism_ontology_term_id: string;
   tissue_ontology_term_ids: string[];
-  dataset_ids?: string[];
-  disease_ontology_term_ids?: string[];
-  sex_ontology_term_ids?: string[];
+  dataset_ids: string[];
+  disease_ontology_term_ids: string[];
+  sex_ontology_term_ids: string[];
   development_stage_ontology_term_ids?: string[];
-  ethnicity_ontology_term_ids?: string[];
+  ethnicity_ontology_term_ids: string[];
 }
 
 export interface Query {
@@ -543,11 +543,11 @@ function aggregateIdLabels(items: { [id: string]: string }[]): {
 }
 
 const EMPTY_FILTERS: State["selectedFilters"] = {
-  datasets: undefined,
-  developmentStages: undefined,
-  diseases: undefined,
-  ethnicities: undefined,
-  sexes: undefined,
+  datasets: [],
+  developmentStages: [],
+  diseases: [],
+  ethnicities: [],
+  sexes: [],
 };
 
 function useWMGQueryRequestBody(options = { includeAllFilterOptions: false }) {
@@ -569,7 +569,6 @@ function useWMGQueryRequestBody(options = { includeAllFilterOptions: false }) {
    */
   const { datasets, developmentStages, diseases, ethnicities, sexes } =
     includeAllFilterOptions ? EMPTY_FILTERS : selectedFilters;
-
   const organismGenesByName = useMemo(() => {
     const result: { [name: string]: { id: string; name: string } } = {};
 
@@ -618,13 +617,13 @@ function useWMGQueryRequestBody(options = { includeAllFilterOptions: false }) {
 
     return {
       filter: {
-        dataset_ids: datasets,
-        development_stage_ontology_term_ids: developmentStages,
-        disease_ontology_term_ids: diseases,
-        ethnicity_ontology_term_ids: ethnicities,
+        dataset_ids: datasets ?? [],
+        development_stage_ontology_term_ids: developmentStages ?? [],
+        disease_ontology_term_ids: diseases ?? [],
+        ethnicity_ontology_term_ids: ethnicities ?? [],
         gene_ontology_term_ids,
         organism_ontology_term_id: selectedOrganismId,
-        sex_ontology_term_ids: sexes,
+        sex_ontology_term_ids: sexes ?? [],
         tissue_ontology_term_ids,
       },
       include_filter_dims: true,
