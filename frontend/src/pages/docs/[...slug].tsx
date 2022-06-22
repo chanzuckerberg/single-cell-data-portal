@@ -310,6 +310,19 @@ const DocContent = styled.div`
     line-height: 18px;
   }
 
+  & h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    margin-top: 24px;
+    margin-bottom: 0px;
+    & > code {
+      font-size: inherit;
+    }
+  }
+
   /* fixes navigate to anchor urls */
   * :target::before {
     content: "";
@@ -323,6 +336,7 @@ const StyledImage = styled(Image)``;
 
 const ImageContainer = styled.div`
   width: 100%;
+  margin: 24px 0;
 
   > div {
     position: unset !important;
@@ -352,7 +366,7 @@ const MDX_AVAILABLE_COMPONENTS = {
     <a rel="noopener" target="_blank" {...props} />
   ),
   h1: styled.h1`
-    font-size: 26px;
+    font-size: 28px;
   `,
   h2: styled.h1`
     font-size: 22px;
@@ -364,7 +378,7 @@ const MDX_AVAILABLE_COMPONENTS = {
     font-size: 14px;
   `,
   p: styled.p`
-    margin-top: 16px;
+    margin: 16px 0px;
   `,
 };
 const DocPage = ({ activeFile, mdxSource, filePath }: Props): JSX.Element => {
