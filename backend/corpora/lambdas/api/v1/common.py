@@ -59,10 +59,8 @@ def reshape_for_curation_api_and_is_allowed(collection, token_info, allow_access
     if "datasets" in collection:
         for dataset in collection["datasets"]:
             if "artifacts" in dataset:
-                dataset["dataset_assets"] = dataset["artifacts"]
-                del dataset["artifacts"]
+                dataset["dataset_assets"] = dataset.pop("artifacts")
             if "processing_status" in dataset:
-                if type(dataset["processing_status"]) == dict:
-                    dataset["processing_status"] = dataset["processing_status"]["processing_status"]
+                dataset["processing_status"] = dataset["processing_status"]["processing_status"]
 
     return True

@@ -707,6 +707,7 @@ components:
       enum: [FAILURE, PENDING, SUCCESS]
     publisher_metadata:
       type: object
+      nullable: true
       properties:
         authors:
           type: array
@@ -729,7 +730,6 @@ components:
           type: number
         published_year:
           type: number
-      nullable: true
     collection_form_metadata:
       type: object
       additionalProperties: false
