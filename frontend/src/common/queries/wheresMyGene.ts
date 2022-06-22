@@ -110,7 +110,7 @@ export function usePrimaryFilterDimensions(): UseQueryResult<PrimaryFilterDimens
 
   return useQuery<PrimaryFilterDimensionsResponse>(
     [USE_PRIMARY_FILTER_DIMENSIONS, currentSnapshotId],
-    fetchPrimaryFilterDimensions,    
+    fetchPrimaryFilterDimensions,
     {
       onSuccess(response) {
         if (!response || !dispatch) return;
@@ -134,7 +134,7 @@ interface Filter {
   dataset_ids: string[];
   disease_ontology_term_ids: string[];
   sex_ontology_term_ids: string[];
-  development_stage_ontology_term_ids?: string[];
+  development_stage_ontology_term_ids: string[];
   ethnicity_ontology_term_ids: string[];
 }
 
