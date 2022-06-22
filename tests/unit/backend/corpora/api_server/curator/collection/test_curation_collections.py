@@ -192,10 +192,9 @@ class TestGetCollectionUUID(BaseAuthAPITest):
         res = self.app.get("/curation/v1/collections/test_collection_id")
         self.assertEqual(200, res.status_code)
         self.assertEqual("test_collection_id", res.json["id"])
-        self.assertIsNone(res.json["access_type"])
+        self.assertTrue("access_type" not in res.json)
 
         expected_body = {
-            "access_type": None,
             "collection_url": "http://frontend.corporanet.local:3000/collections/test_collection_id",
             "contact_email": "somebody@chanzuckerberg.com",
             "contact_name": "Some Body",
@@ -291,7 +290,7 @@ class TestGetCollectionUUID(BaseAuthAPITest):
         res = self.app.get("/curation/v1/collections/test_collection_id_revision")
         self.assertEqual(200, res.status_code)
         self.assertEqual("test_collection_id_revision", res.json["id"])
-        self.assertEqual(None, res.json["access_type"])
+        self.assertTrue("access_type" not in res.json)
 
     def test__get_nonexistent_collection__Not_Found(self):
         res = self.app.get("/curation/v1/collections/test_collection_id_nonexistent")

@@ -10,19 +10,23 @@ from ......common.corpora_orm import (
 )
 
 
-def reshape_for_curation_api_and_is_allowed(collection, token_info, allow_access=False):
+def reshape_for_curation_api_and_is_allowed(collection, token_info, uuid_provided=False):
+    """
+    Reshape Collection data for the Curation API response.
+    @param collection: the Collection being returned in the API response
+    @param token_info: user access token
+    @param uuid_provided: bool - whether or not the collection uuid was provided by the user, for access purposes
+    @return: whether or not the Collection should be included in the response per ownership/access rules
+    """
     owner = collection["owner"]
     if is_user_owner_or_allowed(token_info, owner):
         collection["access_type"] = "WRITE"
-    elif not allow_access and collection["visibility"] == CollectionVisibility.PRIVATE:
+    elif not uuid_provided and collection["visibility"] == CollectionVisibility.PRIVATE:
         # User neither provided the uuid for access nor are they authorized by their access token
         return False
     elif token_info:
         # Access token was provided but user is not authorized
         collection["access_type"] = "READ"
-    else:
-        # No access token was provided
-        collection["access_type"] = None
 
     del collection["owner"]  # Don't actually want to return 'owner' in response
     collection["collection_url"] = f"{CorporaConfig().collections_base_url}/collections/{collection['id']}"
