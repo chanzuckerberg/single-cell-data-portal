@@ -1,6 +1,6 @@
 import { Button } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
-import { ReactNode, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import {
   Position,
   SideBar as SideBarWrapper,
@@ -27,6 +27,9 @@ export interface Props {
   SideBarWrapperComponent?: typeof SideBarWrapper;
   SideBarPositionerComponent?: typeof SideBarPositioner;
   testId?: string;
+  disabled?: boolean;
+  forceToggle?: boolean;
+  wmgSideBar?: boolean;
 }
 
 export default function SideBar({
@@ -39,6 +42,9 @@ export default function SideBar({
   SideBarWrapperComponent = SideBarWrapper,
   SideBarPositionerComponent = SideBarPositioner,
   testId,
+  disabled,
+  forceToggle,
+  wmgSideBar,
 }: Props): JSX.Element {
   const [isExpanded, setIsExpanded] = useState(isOpen);
   const sideBarWidth = isExpanded ? width : COLLAPSED_WIDTH_PX;
@@ -60,6 +66,11 @@ export default function SideBar({
     }
   };
 
+  useEffect(() => {
+    if (!(disabled && !isExpanded) && wmgSideBar)
+      handleExpandedClick(!isExpanded);
+  }, [forceToggle]);
+
   return (
     <SideBarWrapperComponent
       sideBarWidth={sideBarWidth}
@@ -73,6 +84,7 @@ export default function SideBar({
             onClick={() => handleExpandedClick(!isExpanded)}
             rightIcon={rightIcon}
             text={label}
+            disabled={disabled}
           />
         </SideBarToggleButtonWrapper>
         {isExpanded ? content : null}
