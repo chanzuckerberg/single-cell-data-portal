@@ -10,23 +10,36 @@ from ......common.corpora_orm import (
 )
 
 
-def reshape_for_curation_api_and_is_allowed(collection, token_info, uuid_provided=False):
+def get_access_type(collection, token_info, uuid_provided=False):
     """
-    Reshape Collection data for the Curation API response.
+    Determine user's access to collection
     @param collection: the Collection being returned in the API response
     @param token_info: user access token
-    @param uuid_provided: bool - whether or not the collection uuid was provided by the user, for access purposes
-    @return: whether or not the Collection should be included in the response per ownership/access rules
+    @param uuid_provided: bool - whether the collection uuid was provided by the user, for access purposes
+    @return: user's level of access (str)
     """
     owner = collection["owner"]
     if is_user_owner_or_allowed(token_info, owner):
-        collection["access_type"] = "WRITE"
+        return "WRITE"
     elif not uuid_provided and collection["visibility"] == CollectionVisibility.PRIVATE:
         # User neither provided the uuid for access nor are they authorized by their access token
-        return False
+        return None
     elif token_info:
         # Access token was provided but user is not authorized
-        collection["access_type"] = "READ"
+        return "READ"
+
+
+def reshape_for_curation_api(collection, token_info, access_type=None, uuid_provided=False):
+    """
+    Reshape Collection data for the Curation API response, in-place.
+    @param collection: the Collection being returned in the API response
+    @param token_info: user access token
+    @param access_type: str - user access type to collection
+    @param uuid_provided: bool - whether the collection uuid was provided by the user, for access purposes
+    """
+    access_type = access_type if access_type else get_access_type(collection, token_info, uuid_provided)
+    if access_type:
+        collection["access_type"] = access_type
 
     del collection["owner"]  # Don't actually want to return 'owner' in response
     collection["collection_url"] = f"{CorporaConfig().collections_base_url}/collections/{collection['id']}"
@@ -37,8 +50,6 @@ def reshape_for_curation_api_and_is_allowed(collection, token_info, uuid_provide
                 dataset["dataset_assets"] = dataset.pop("artifacts")
             if "processing_status" in dataset:
                 dataset["processing_status"] = dataset["processing_status"]["processing_status"]
-
-    return True
 
 
 class EntityColumns:

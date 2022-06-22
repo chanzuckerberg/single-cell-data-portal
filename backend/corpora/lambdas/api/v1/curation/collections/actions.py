@@ -1,6 +1,6 @@
 from flask import jsonify, g
 
-from .common import reshape_for_curation_api_and_is_allowed
+from .common import get_access_type, reshape_for_curation_api
 from .common import EntityColumns
 from ......common.entities import Collection
 from ......common.corpora_orm import CollectionVisibility
@@ -21,7 +21,8 @@ def get(visibility: str, token_info: dict):
     collections = Collection.list_collections_curation(g.db_session, EntityColumns.columns_for_collections, visibility)
     allowed_collections = []
     for collection in collections:
-        if reshape_for_curation_api_and_is_allowed(collection, token_info):
-            allowed_collections.append(collection)
+        access_type = get_access_type(collection, token_info)
+        if access_type:
+            allowed_collections.append(reshape_for_curation_api(collection, token_info, access_type=access_type))
 
     return jsonify({"collections": allowed_collections})
