@@ -275,12 +275,12 @@ services:
         aliases:
           - backend.corporanet.local
   oidc:
-    image: soluto/oidc-server-mock:0.3.0
+   # image: soluto/oidc-server-mock:0.3.0
     # For Mac M1, you may need to build this image from source.
     # 1. Comment out `image:` line, above, and uncomment the following two lines
     # 2. In the same directory as this file, run `git clone -b v0.3.0 git@github.com:Soluto/oidc-server-mock.git`
-    # container_name: oidc-server-mock-local
-    # build: oidc-server-mock/src
+    container_name: oidc-server-mock-local
+    build: oidc-server-mock/src
     ports:
       - "4011:80"
       - "8443:8443"

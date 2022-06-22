@@ -21,6 +21,7 @@ class CorporaTestCaseUsingMockAWS(DataPortalTestCase):
         super().setUp()
         # Setup configuration
         self.corpora_config = CorporaConfig()
+        self.addCleanup(self.corpora_config.reset)
         self.corpora_config.set(config.CORPORA_TEST_CONFIG)
 
         # Mock S3 service if we don't have a mock api already running

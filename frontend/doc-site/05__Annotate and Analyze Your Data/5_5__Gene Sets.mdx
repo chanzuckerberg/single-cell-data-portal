@@ -1,6 +1,6 @@
 # Gene Sets
 
-Cellxgene Desktop enables cellxgene users to pre-load gene sets for exploration, and to create or modify gene sets while exploring data. This is particularly useful for recording cell type markers when [annotating cells](/docs/05__Annotate%20and%20Analyze%20Your%20Data/5_0__Annotate%20and%20Analyze%20Your%20Data). This section explains how to format gene sets data for preloading of gene sets and where to find gene sets information after making changes in the explorer.
+Cellxgene Desktop enables cellxgene users to pre-load gene sets for exploration, and to create or modify gene sets while exploring data. This is particularly useful for recording cell type markers when [annotating cells](/docs/05__Annotate%20and%20Analyze%20Your%20Data/5_0__Get%20Started.mdx). This section explains how to format gene sets data for preloading of gene sets and where to find gene sets information after making changes in the explorer.
 
 To read more about how to use gene sets in the cellxgene interface, please see Exploring Gene Expression. LINK TO THIS GITHUB PAGE IS NOT WORKING FOR ME
 
@@ -28,7 +28,44 @@ Each row represents a gene in a gene set and must be unique.
 
 Example:
 
-EMBED TABLE
+<table>
+  <tr>
+    <th>gene\_set\_name</th>
+    <th>gene\_set\_description</th>
+    <th>gene\_symbol</th>
+    <th>gene\_description</th>
+  </tr>
+  <tr>
+    <td>club.cell</td>
+    <td>description</td>
+    <td>CCKAR</td>
+    <td>description</td>
+  </tr>
+  <tr>
+    <td>club.cell</td>
+    <td></td>
+    <td>SCGB3A2</td>
+    <td>description</td>
+  </tr>
+  <tr>
+    <td>club.cell</td>
+    <td></td>
+    <td>CYP2F2</td>
+    <td>description</td>
+  </tr>
+  <tr>
+    <td>macrophage</td>
+    <td>description</td>
+    <td>CD68</td>
+    <td>description</td>
+  </tr>
+  <tr>
+    <td>macrophage</td>
+    <td></td>
+    <td>CD163</td>
+    <td>description</td>
+  </tr>
+</table>
 
 Users MAY include additional columns. Once gene sets are edited from cellxgene, the additional columns will no longer be stored in the file designated using the command `--gene-sets-file`.
 
@@ -44,7 +81,46 @@ multiple spaces (decimal 32) "internal" to a field - "This is an example"
 
 Note: If gene_symbol(s) for a gene_set_name exist on noncontiguous rows, they will be added to the existing gene set. For example, CD163 below is added to the club.cell gene set:
 
-EMBED TABLE
+<table>
+  <tr>
+    <th>gene\_set\_name</th>
+    <th>gene\_set\_description</th>
+    <th>gene\_symbol</th>
+    <th>gene\_description</th>
+  </tr>
+  <tr>
+    <td>club.cell</td>
+    <td>description</td>
+    <td>CCKAR</td>
+    <td>description</td>
+  </tr>
+  <tr>
+    <td>club.cell</td>
+    <td></td>
+    <td>SCGB3A2</td>
+    <td>description</td>
+  </tr>
+  <tr>
+    <td>club.cell</td>
+    <td></td>
+    <td>CYP2F2</td>
+    <td>description</td>
+  </tr>
+  <tr>
+    <td>macrophage</td>
+    <td>description</td>
+    <td>CD68</td>
+    <td>description</td>
+  </tr>
+  <tr>
+    <td>club.cell</td>
+    <td></td>
+    <td>
+      <s>**CD163**</s>
+    </td>
+    <td>description</td>
+  </tr>
+</table>
 
 ## `gene_set_description`
 
