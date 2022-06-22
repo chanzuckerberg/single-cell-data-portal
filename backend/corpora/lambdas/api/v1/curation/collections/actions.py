@@ -1,6 +1,7 @@
 from flask import jsonify, g
 
 from .common import reshape_for_curation_api_and_is_allowed
+from .common import EntityColumns
 from ......common.entities import Collection
 from ......common.corpora_orm import CollectionVisibility
 from ......common.utils.http_exceptions import UnauthorizedError
@@ -17,7 +18,7 @@ def get_collections(visibility: str, token_info: dict):
     """
     if not token_info and visibility == CollectionVisibility.PRIVATE.name:
         raise UnauthorizedError()
-    collections = Collection.list_collections_for_curation(g.db_session, visibility)
+    collections = Collection.list_collections_curation(g.db_session, EntityColumns.columns_for_collections, visibility)
     allowed_collections = []
     for collection in collections:
         if reshape_for_curation_api_and_is_allowed(collection, token_info):

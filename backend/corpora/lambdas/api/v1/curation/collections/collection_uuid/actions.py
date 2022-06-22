@@ -1,5 +1,6 @@
 from flask import g, jsonify
 
+from ..common import EntityColumns
 from backend.corpora.api_server.db import dbconnect
 from backend.corpora.common.corpora_orm import CollectionVisibility
 from backend.corpora.common.entities import Collection
@@ -26,7 +27,7 @@ def get_collection_uuid(collection_uuid: str, token_info: dict):
     collection = Collection.get_collection(db_session, collection_uuid, include_tombstones=True)
     if not collection:
         raise NotFoundHTTPException
-    collection_response: dict = collection.to_dict_keep(Collection.columns_for_collection)
+    collection_response: dict = collection.to_dict_keep(EntityColumns.columns_for_collection_uuid)
 
     reshape_for_curation_api_and_is_allowed(collection_response, token_info, allow_access=True)
 
