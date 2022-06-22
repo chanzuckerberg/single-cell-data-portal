@@ -56,7 +56,7 @@ paths:
 
         * To retrieve full collection metadata for a specific collection, `GET /v1/collections/{collection_uuid}`
         must be used.
-      operationId: backend.corpora.lambdas.api.v1.curation.collections.actions.get_collections
+      operationId: backend.corpora.lambdas.api.v1.curation.collections.actions.get
       security:
         - curatorAccessLenient: []
         - {}

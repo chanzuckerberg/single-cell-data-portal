@@ -9,7 +9,7 @@ from backend.corpora.api_server.db import dbconnect
 
 
 @dbconnect
-def get_collections(visibility: str, token_info: dict):
+def get(visibility: str, token_info: dict):
     """
     Collections index endpoint for Curation API. Only return Collection data for which the curator is authorized.
     @param visibility: the CollectionVisibility in string form
