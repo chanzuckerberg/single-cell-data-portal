@@ -276,6 +276,7 @@ paths:
         the Dataset by providing *one* of either the **curator_tag** (non-null) OR the **dataset_uuid** parameters.
       security:
         - curatorAccess: []
+      operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_uuid.datasets.actions.patch
       parameters:
         - $ref: "#/components/parameters/path_collection_uuid"
         - $ref: "#/components/parameters/query_curator_tag"

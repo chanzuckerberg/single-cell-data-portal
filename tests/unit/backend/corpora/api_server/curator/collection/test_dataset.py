@@ -35,5 +35,61 @@ class TestDeleteDataset(BaseAuthAPITest):
                     self.assertEqual(expected_status_code, response.status_code)
 
 
+class TestPatchDataset(BaseAuthAPITest):
+    def test__patch_dataset(self):
+        new_tag = "new_tag.h5ad"
+        starting_curator_tags = ["tag.h5ad", None]
+        test_body = {"curator_tag": new_tag}
+        queries = ["dataset_uuid", "curator_tag"]
+        auth_credentials = [
+            (self.make_super_curator_header, "super", 204),
+            (self.get_auth_headers, "owner", 204),
+            (None, "none", 401),
+            (self.make_not_owner_header, "not_owner", 403),
+        ]
+        for query in queries:
+            for starting_tag in starting_curator_tags:
+                if not starting_tag and query == "curator_tag":
+                    continue
+                for auth, auth_description, expected_status_code in auth_credentials:
+                    with self.subTest(f"{query=}, {starting_tag=}, auth={auth_description}, {expected_status_code=}"):
+                        collection = self.generate_collection(
+                            self.session, visibility=CollectionVisibility.PRIVATE.name
+                        )
+                        dataset = self.generate_dataset(
+                            self.session,
+                            collection=collection,
+                            curator_tag=starting_tag,
+                        )
+                        test_url = f"/curation/v1/collections/{collection.id}/datasets"
+                        if query == "dataset_uuid":
+                            query_string = {query: dataset.id}
+                        elif query == "curator_tag":
+                            query_string = {query: starting_tag}
+                        headers = auth() if callable(auth) else auth
+                        response = self.app.patch(test_url, headers=headers, query_string=query_string, json=test_body)
+                        self.assertEqual(expected_status_code, response.status_code)
+                        self.session.expire_all()
+                        if expected_status_code == 204:
+                            self.assertEqual(dataset.curator_tag, new_tag)
+                        else:
+                            self.assertEqual(dataset.curator_tag, starting_tag)
+
+    def test___invalid_curator_tag(self):
+        collection = self.generate_collection(self.session, visibility=CollectionVisibility.PRIVATE.name)
+        test_tags = ["new.cxg", "no_extention", "uuid"]
+        for tag in test_tags:
+            with self.subTest(tag):
+                dataset = self.generate_dataset(self.session, collection=collection)
+                test_body = {"curator_tag": f"{dataset.id}.h5ad" if tag == "uuid" else tag}
+                test_url = f"/curation/v1/collections/{collection.id}/datasets"
+                query_string = {"dataset_uuid": dataset.id}
+                headers = self.get_auth_headers()
+                response = self.app.patch(test_url, headers=headers, query_string=query_string, json=test_body)
+                self.assertEqual(400, response.status_code)
+                self.session.expire_all()
+                self.assertIsNone(dataset.curator_tag)
+
+
 if __name__ == "__main__":
     unittest.main()
