@@ -13,9 +13,9 @@ from ......common.corpora_orm import (
 def get_access_type(collection, token_info, uuid_provided=False):
     """
     Determine user's access to collection
-    @param collection: the Collection being returned in the API response
-    @param token_info: user access token
-    @param uuid_provided: bool - whether the collection uuid was provided by the user, for access purposes
+    :param collection: the Collection being returned in the API response
+    :param token_info: user access token
+    :param uuid_provided: bool - whether the collection uuid was provided by the user, for access purposes
     @return: user's level of access (str)
     """
     owner = collection["owner"]
@@ -32,10 +32,10 @@ def get_access_type(collection, token_info, uuid_provided=False):
 def reshape_for_curation_api(collection, token_info, access_type=None, uuid_provided=False):
     """
     Reshape Collection data for the Curation API response, in-place.
-    @param collection: the Collection being returned in the API response
-    @param token_info: user access token
-    @param access_type: str - user access type to collection
-    @param uuid_provided: bool - whether the collection uuid was provided by the user, for access purposes
+    :param collection: the Collection being returned in the API response
+    :param token_info: user access token
+    :param access_type: str - user access type to collection
+    :param uuid_provided: bool - whether the collection uuid was provided by the user, for access purposes
     """
     access_type = access_type if access_type else get_access_type(collection, token_info, uuid_provided)
     if access_type:

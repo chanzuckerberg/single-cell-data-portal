@@ -13,6 +13,7 @@ from ..corpora_orm import (
     CollectionVisibility,
     generate_uuid,
     ProcessingStatus,
+    Base,
 )
 from ..utils.db_helpers import clone
 
@@ -153,14 +154,14 @@ class Collection(Entity):
 
     @classmethod
     def list_collections_curation(
-        cls, session: Session, collection_columns: typing.Dict[Base,typing.List[str]], visibility: str = None
+        cls, session: Session, collection_columns: typing.Dict[Base, typing.List[str]], visibility: str = None
     ) -> typing.List[dict]:
         """
         Get a subset of columns, in dict form, for all Collections with the specified visibility. If visibility is None,
         return *all* Collections.
-        @param session: the SQLAlchemy session
-        @param collection_columns: the list of columns to be returned (see usage by TransformingBase::to_dict_keep)
-        @param visibility: the CollectionVisibility string name
+        :param session: the SQLAlchemy session
+        :param collection_columns: the list of columns to be returned (see usage by TransformingBase::to_dict_keep)
+        :param visibility: the CollectionVisibility string name
         @return: a list of dict representations of Collections
         """
         if visibility == CollectionVisibility.PUBLIC.name:
