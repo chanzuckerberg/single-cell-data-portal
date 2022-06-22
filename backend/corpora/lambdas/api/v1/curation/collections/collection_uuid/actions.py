@@ -22,7 +22,7 @@ def delete(collection_uuid: str, token_info: dict):
 
 
 @dbconnect
-def get_collection_uuid(collection_uuid: str, token_info: dict):
+def get(collection_uuid: str, token_info: dict):
     db_session = g.db_session
     collection = Collection.get_collection(db_session, collection_uuid, include_tombstones=True)
     if not collection:

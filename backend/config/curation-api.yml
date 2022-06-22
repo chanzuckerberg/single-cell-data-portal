@@ -117,7 +117,7 @@ paths:
     get:
       summary: Fetch a Collection with Datasets
       description: Fetch full Collection metadata and associated Datasets.
-      operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_uuid.actions.get_collection_uuid
+      operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_uuid.actions.get
       security:
         - curatorAccessLenient: []
         - {}
