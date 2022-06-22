@@ -10,7 +10,6 @@ import re
 import logging
 
 from .common import get_collection_else_forbidden
-from .curation.collections.common import get_access_type
 from ....common.corpora_orm import DbCollection, CollectionVisibility, ProjectLinkType
 from ....common.entities import Collection
 from .authorization import is_user_owner_or_allowed, owner_or_allowed
