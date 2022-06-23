@@ -4,13 +4,11 @@ import json
 
 from tests.unit.backend.corpora.fixtures.environment_setup import EnvironmentSetup
 from backend.corpora.api_server.app import app
-from tests.unit.backend.geneinfo.fixtures import (
-    correct_ensembl_to_gene_mappings
-)
+from tests.unit.backend.geneinfo.fixtures import correct_ensembl_to_gene_mappings
 
 
 class GeneInfoAPIv1Tests(unittest.TestCase):
-    ''' Tests Gene Info API endpoint '''
+    """Tests Gene Info API endpoint"""
 
     def setUp(self):
         super().setUp()
