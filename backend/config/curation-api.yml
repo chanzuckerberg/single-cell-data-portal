@@ -56,7 +56,7 @@ paths:
 
         * To retrieve full collection metadata for a specific collection, `GET /v1/collections/{collection_uuid}`
         must be used.
-      operationId: backend.corpora.lambdas.api.v1.collection.get_collections_curation
+      operationId: backend.corpora.lambdas.api.v1.curation.collections.actions.get
       security:
         - curatorAccessLenient: []
         - {}
@@ -75,51 +75,14 @@ paths:
                   collections:
                     type: array
                     items:
-                      type: object
-                      properties:
-                        id:
-                          $ref: "#/components/schemas/collection_uuid"
-                        name:
-                          type: string
-                        visibility:
-                          $ref: "#/components/schemas/visibility"
-                        collection_url:
-                          type: string
-                        contact_name:
-                          type: string
-                        contact_email:
-                          type: string
-                        curator_name:
-                          type: string
-                        revised_at:
-                          type: number
-                          nullable: true
-                        created_at:
-                          type: number
-                        links:
-                          $ref: "#/components/schemas/links"
-                        datasets:
-                          type: array
-                          items:
-                            $ref: "#/components/schemas/dataset_preview"
-                        access_type:
-                          type: string
-                          enum: [READ, WRITE]
-                        published_at:
-                          type: number
-                          nullable: true
-                        description:
-                          type: string
-                        publisher_metadata:
-                          $ref: "#/components/schemas/publisher_metadata"
-                          nullable: true
-                        revision_of:
-                          type: string
-                          nullable: true
-                        tombstone:
-                          type: boolean
-                        processing_status:
-                          $ref: "#/components/schemas/processing_status"
+                      allOf:
+                        - $ref: "#/components/schemas/collection_common"
+                        - type: object
+                          properties:
+                            datasets:
+                              type: array
+                              items:
+                                $ref: "#/components/schemas/dataset_preview"
         "401":
           $ref: "#/components/responses/401"
     post:
@@ -154,7 +117,7 @@ paths:
     get:
       summary: Fetch a Collection with Datasets
       description: Fetch full Collection metadata and associated Datasets.
-      operationId: backend.corpora.lambdas.api.v1.collection.get_collection_details
+      operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_uuid.actions.get
       security:
         - curatorAccessLenient: []
         - {}
@@ -168,47 +131,16 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  id:
-                    $ref: "#/components/schemas/collection_uuid"
-                  name:
-                    type: string
-                  visibility:
-                    $ref: "#/components/schemas/visibility"
-                  collection_url:
-                    type: string
-                  contact_name:
-                    type: string
-                  contact_email:
-                    type: string
-                  curator_name:
-                    type: string
-                  revised_at:
-                    type: number
-                  created_at:
-                    type: number
-                  links:
-                    $ref: "#/components/schemas/links"
-                  datasets:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/dataset"
-                  access_type:
-                    type: string
-                    enum: [READ, WRITE]
-                  published_at:
-                    type: number
-                  description:
-                    type: string
-                  publisher_metadata:
-                    $ref: "#/components/schemas/publisher_metadata"
-                  revision_of:
-                    type: string
-                  tombstone:
-                    type: boolean
-        "401":
-          $ref: "#/components/responses/401"
+                allOf:
+                  - $ref: "#/components/schemas/collection_common"
+                  - type: object
+                    properties:
+                      datasets:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/dataset"
+        "400":
+          $ref: "#/components/responses/400"
         "404":
           $ref: "#/components/responses/404"
     put:
@@ -272,6 +204,7 @@ paths:
           $ref: "#/components/responses/403"
         "405":
           $ref: "#/components/responses/405"
+
   /v1/collections/{collection_uuid}/revision:
     post:
       summary: Start a revision of a published Collection
@@ -519,14 +452,15 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
-  /v1/collections/{collection_uuid}/asset:
+  /v1/collections/{collection_uuid}/assets:
     get:
       summary: Retrieve links for downloading a dataset
       tags:
         - collection
       description: >-
-        Request to download a file which on success will generate and return a pre-signed URL to download
-        the dataset. MUST include *one* of the **curator_tag** and **dataset_uuid** parameters.
+        Generate URLs to download the files associated with the dataset. MUST include *one* of the **curator_tag**
+        and **dataset_uuid** parameters.
+      operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_uuid.assets.get
       parameters:
         - $ref: "#/components/parameters/path_collection_uuid"
         - $ref: "#/components/parameters/query_curator_tag"
@@ -537,38 +471,87 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  dataset_uuid:
-                    $ref: "#/components/schemas/dataset_uuid"
-                  curator_tag:
-                    $ref: "#/components/schemas/curator_tag"
-                  assets:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        presigned_url:
-                          type: string
-                        file_name:
-                          type: string
-                        file_size:
-                          type: number
-                        filetype:
-                          type: string
+                $ref: "#/components/schemas/asset_response"
+        "202":
+          description: Unable to retrieve one or more asset response fields.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/asset_response"
         "400":
           $ref: "#/components/responses/400"
-        "401":
-          $ref: "#/components/responses/401"
         "404":
           $ref: "#/components/responses/404"
 
 components:
   schemas:
+    asset_response:
+      type: object
+      properties:
+        dataset_uuid:
+          $ref: "#/components/schemas/dataset_uuid"
+        curator_tag:
+          $ref: "#/components/schemas/curator_tag"
+        assets:
+          type: array
+          items:
+            type: object
+            properties:
+              presigned_url:
+                type: string
+              file_name:
+                type: string
+              file_size:
+                type: number
+              filetype:
+                type: string
     collection_uuid:
       description: A unique identifier of a Collection.
       type: string
       example: fedcba98-7654-3210-fedc-ba9876543210
+    collection_common:
+      description: Full Collection metadata
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/collection_uuid"
+        name:
+          type: string
+        visibility:
+          $ref: "#/components/schemas/visibility"
+        collection_url:
+          type: string
+        contact_name:
+          type: string
+        contact_email:
+          type: string
+        curator_name:
+          type: string
+        revised_at:
+          type: number
+          nullable: true
+        created_at:
+          type: number
+        links:
+          $ref: "#/components/schemas/links"
+        access_type:
+          type: string
+          enum: [READ, WRITE]
+          nullable: true
+        published_at:
+          type: number
+          nullable: true
+        description:
+          type: string
+        publisher_metadata:
+          $ref: "#/components/schemas/publisher_metadata"
+        revision_of:
+          type: string
+          nullable: true
+        tombstone:
+          type: boolean
+        processing_status:
+          $ref: "#/components/schemas/processing_status"
     conversion_status:
       type: string
       description: Status for a Dataset asset generated during initial Dataset source file processing
@@ -627,45 +610,51 @@ components:
           properties:
             name:
               type: string
+              nullable: true
             revision:
               type: integer
+              nullable: true
             revised_at:
               type: number
+              nullable: true
             is_primary_data:
               $ref: "#/components/schemas/is_primary_data"
             X_normalization:
               type: string
+              nullable: true
             dataset_assets:
               type: array
               items:
                 $ref: "#/components/schemas/dataset_asset"
             sex:
               $ref: "#/components/schemas/ontology_elements"
+              nullable: true
             ethnicity:
               $ref: "#/components/schemas/ontology_elements"
+              nullable: true
             development_stage:
               $ref: "#/components/schemas/ontology_elements"
-            dataset_deployments:
-              type: array
-              items:
-                type: object
-                properties:
-                  url:
-                    type: string
+              nullable: true
+            explorer_url:
+              $ref: "#/components/schemas/explorer_url"
             cell_type:
               $ref: "#/components/schemas/ontology_elements"
+              nullable: true
             cell_count:
               type: integer
+              nullable: true
             X_approximate_distribution:
               $ref: "#/components/schemas/distribution"
-            batch_condition:
-              type: array
-              items:
-                type: string
+            #            batch_condition:  # TODO: https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data-portal/1461  # noqa: E501
+            #              type: array
+            #              items:
+            #                type: string
             mean_genes_per_cell:
               type: number
+              nullable: true
             schema_version:
               type: string
+              nullable: true
     dataset_preview:
       type: object
       properties:
@@ -682,6 +671,8 @@ components:
           $ref: "#/components/schemas/ontology_elements"
         organism:
           $ref: "#/components/schemas/ontology_elements"
+        processing_status:
+          $ref: "#/components/schemas/processing_status"
         tombstone:
           type: boolean
     dataset_asset:
@@ -692,6 +683,9 @@ components:
           enum: [H5AD, RDS]
         filename:
           type: string
+    explorer_url:
+      type: string
+      description: The url at which a given Dataset may be explored using the cellxgene visualization tool
     ontology_element:
       type: object
       properties:
@@ -719,6 +713,7 @@ components:
       enum: [FAILURE, PENDING, SUCCESS]
     publisher_metadata:
       type: object
+      nullable: true
       properties:
         authors:
           type: array
