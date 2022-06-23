@@ -77,18 +77,27 @@ class TestPatchDataset(BaseAuthAPITest):
 
     def test___invalid_curator_tag(self):
         collection = self.generate_collection(self.session, visibility=CollectionVisibility.PRIVATE.name)
-        test_tags = ["new.cxg", "no_extention", "uuid"]
-        for tag in test_tags:
+        test_url = f"/curation/v1/collections/{collection.id}/datasets"
+
+        def _test(_tag, _dataset):
+            test_body = {"curator_tag": _tag}
+            query_string = {"dataset_uuid": _dataset.id}
+            headers = self.get_auth_headers()
+            response = self.app.patch(test_url, headers=headers, query_string=query_string, json=test_body)
+            self.assertEqual(400, response.status_code)
+            self.session.expire_all()
+            self.assertIsNone(_dataset.curator_tag)
+
+        tests = [("new", "bad"), ("uuid", "h5ad"), ("uuid", "bad")]
+        for tag, extension in tests:
             with self.subTest(tag):
                 dataset = self.generate_dataset(self.session, collection=collection)
-                test_body = {"curator_tag": f"{dataset.id}.h5ad" if tag == "uuid" else tag}
-                test_url = f"/curation/v1/collections/{collection.id}/datasets"
-                query_string = {"dataset_uuid": dataset.id}
-                headers = self.get_auth_headers()
-                response = self.app.patch(test_url, headers=headers, query_string=query_string, json=test_body)
-                self.assertEqual(400, response.status_code)
-                self.session.expire_all()
-                self.assertIsNone(dataset.curator_tag)
+                _test(tag, dataset)
+            with self.subTest([tag, extension]):
+                dataset = self.generate_dataset(self.session, collection=collection)
+                name = dataset.id if tag == "uuid" else extension
+                tag = f"{name}.{extension}"
+                _test(tag, dataset)
 
     def test___conflict_curator_tag(self):
         test_tag = "tag.h5ad"
