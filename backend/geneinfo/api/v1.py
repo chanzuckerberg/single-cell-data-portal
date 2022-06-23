@@ -13,10 +13,14 @@ def geneinfo(geneID: string):
     api_key = gene_info_config.ncbi_api_key
 
     # search for gene UID from ensembl ID
-    search_url = (
-        "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?"
-        f"db=gene&term={geneID}&api_key={api_key}&retmode=json"
-    )
+    if api_key == "test-key":  # adjusting for api key issues in unit tests
+        search_url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?" f"db=gene&term={geneID}&retmode=json"
+    else:
+        search_url = (
+            "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?"
+            f"db=gene&term={geneID}&api_key={api_key}&retmode=json"
+        )
+    print(search_url)
     try:
         search_data = urllib.request.urlopen(search_url).read()
     except Exception:
@@ -32,9 +36,13 @@ def geneinfo(geneID: string):
     uid = int(search_result["esearchresult"]["idlist"][0])
 
     # fetch gene information using NCBI UID
-    fetch_url = (
-        "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?" f"db=gene&id={uid}&api_key={api_key}&retmode=xml"
-    )
+    if api_key == "test-key":  # adjusting for api key issues in unit tests
+        fetch_url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?" f"db=gene&id={uid}&retmode=xml"
+    else:
+        fetch_url = (
+            "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?"
+            f"db=gene&id={uid}&api_key={api_key}&retmode=xml"
+        )
     try:
         fetch_response = urllib.request.urlopen(fetch_url).read()
     except Exception:
