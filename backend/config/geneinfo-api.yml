@@ -37,15 +37,8 @@ paths:
 components:
   schemas:
     problem:
-      type: object
+      type: string
       description: Error message container for HTTP APIs.
-      properties:
-        type:
-          type: string
-        title:
-          type: string
-        detail:
-          type: string
     GeneInfo:
       type: object
       properties:
@@ -71,53 +64,9 @@ components:
   responses:
     200:
       description: OK.
-    201:
-      description: Created.
-    202:
-      description: Accepted
-    204:
-      description: No Content
-    400:
-      description: Invalid parameter.
-      content:
-        application/problem+json:
-          schema:
-            $ref: "#/components/schemas/problem"
-    401:
-      description: Failed to authenticate.
-      content:
-        application/problem+json:
-          schema:
-            $ref: "#/components/schemas/problem"
-    403:
-      description: Unauthorized.
-      content:
-        application/problem+json:
-          schema:
-            $ref: "#/components/schemas/problem"
     404:
       description: Resource not found.
       content:
         application/problem+json:
           schema:
             $ref: "#/components/schemas/problem"
-    405:
-      description: Method not allowed.
-      content:
-        application/problem+json:
-          schema:
-            $ref: "#/components/schemas/problem"
-    409:
-      description: File conflict.
-      content:
-        application/problem+json:
-          schema:
-            $ref: "#/components/schemas/problem"
-    413:
-      description: Exceed File Size Limit
-      content:
-        application/problem+json:
-          schema:
-            $ref: "#/components/schemas/problem"
-
-  securitySchemes: {}
