@@ -1,5 +1,4 @@
 import unittest
-
 from backend.corpora.common.corpora_orm import CollectionVisibility, UploadStatus
 from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest
 
@@ -89,15 +88,15 @@ class TestPatchDataset(BaseAuthAPITest):
             self.assertIsNone(_dataset.curator_tag)
 
         tests = [("new", "bad"), ("uuid", "h5ad"), ("uuid", "bad")]
-        for tag, extension in tests:
-            with self.subTest(tag):
+        for tag_name, tag_extension in tests:
+            with self.subTest(tag_name):
                 dataset = self.generate_dataset(self.session, collection=collection)
-                _test(tag, dataset)
-            with self.subTest([tag, extension]):
+                _test(tag_name, dataset)
+            with self.subTest([tag_name, tag_extension]):
                 dataset = self.generate_dataset(self.session, collection=collection)
-                name = dataset.id if tag == "uuid" else extension
-                tag = f"{name}.{extension}"
-                _test(tag, dataset)
+                name = dataset.id if tag_name == "uuid" else tag_extension
+                tag_name = f"{name}.{tag_extension}"
+                _test(tag_name, dataset)
 
     def test___conflict_curator_tag(self):
         test_tag = "tag.h5ad"
