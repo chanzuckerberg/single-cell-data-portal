@@ -3,4 +3,4 @@ UUID_REGEX = r"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a
 EXTENSION_REGEX = r"(?P<extension>h5ad)"
 DATASET_ID_REGEX = f"(?P<dataset_uuid>{UUID_REGEX})"
 COLLECTION_ID_REGEX = f"(?P<collection_uuid>{UUID_REGEX})"
-CURATOR_TAG_NAME_REGEX = r"(?P<tag>.*)"
+CURATOR_TAG_PREFIX_REGEX = r"(?P<tag>.*)"

@@ -15,11 +15,11 @@ from backend.corpora.common.utils.regex import (
     COLLECTION_ID_REGEX,
     EXTENSION_REGEX,
     DATASET_ID_REGEX,
-    CURATOR_TAG_NAME_REGEX,
+    CURATOR_TAG_PREFIX_REGEX,
 )
 
 logger = logging.getLogger(__name__)
-REGEX = f"^{USERNAME_REGEX}/{COLLECTION_ID_REGEX}/({DATASET_ID_REGEX}|{CURATOR_TAG_NAME_REGEX})\\.{EXTENSION_REGEX}$"
+REGEX = f"^{USERNAME_REGEX}/{COLLECTION_ID_REGEX}/({DATASET_ID_REGEX}|{CURATOR_TAG_PREFIX_REGEX})\\.{EXTENSION_REGEX}$"
 
 
 def dataset_submissions_handler(s3_event: dict, unused_context) -> None:
