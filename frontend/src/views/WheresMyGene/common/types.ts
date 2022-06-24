@@ -24,6 +24,7 @@ export interface CellType {
   id: string;
   name: string;
   depth?: number;
+  total_count: number;
 }
 
 /**
