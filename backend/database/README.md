@@ -18,12 +18,12 @@ For example `Revision ID: a8cd0dc08805` becomes `Revision ID: 18_a8cd0dc08805` a
 6. [Test your migration](#test-a-migration)
 7. Check that [corpora_orm.py](../corpora/common/corpora_orm.py) matches up with your changes.
 8. Once you've completed the changes, create a PR to get the functions reviewed.
-9. Once the PR is merged, you can run the migration.
-10. [Connect to Remote RDS](#connect-to-remote-rds) for the env you want to run the migration in
-11. In a new terminal, complete the migration by running:
+9. Once the PR is merged, migrations will be run as part of the deployment process to each env.
+10. [Connect to Remote RDS](#connect-to-remote-rds) to single-cell-dev
+11. In a new terminal, complete the migration in the single-cell-dev test env by running:
 ```shell
 cd $REPO_ROOT/backend
-DEPLOYMENT_STAGE={dev, staging, prod} make db/migrate
+DEPLOYMENT_STAGE=test make db/migrate
 ```
 
 ## How to autogenerate migration script
