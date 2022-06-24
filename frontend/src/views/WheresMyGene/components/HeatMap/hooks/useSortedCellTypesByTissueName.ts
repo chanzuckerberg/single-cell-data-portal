@@ -71,9 +71,9 @@ export function useSortedCellTypesByTissueName({
           ?.indices()
           .reverse()
           .map((index) => {
-            const { id, name } = cellTypes[index];
+            const { id, name, total_count } = cellTypes[index];
 
-            return { id, name };
+            return { id, name, total_count };
           }) || [];
 
       sortedCellTypesByTissueName[tissueName] = orderedCellTypes;

@@ -169,6 +169,7 @@ interface QueryResponse {
         cell_type: string;
         cell_type_ontology_term_id: string;
         depth: number;
+        total_count: number;
       }[];
     };
     genes: {

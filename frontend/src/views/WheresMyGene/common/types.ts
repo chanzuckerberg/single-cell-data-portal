@@ -15,6 +15,7 @@ export interface CellTypeSummary {
   id: string;
   /** cellType name */
   name: string;
+  total_count: number;
   geneExpressions?: {
     [geneName: string]: CellTypeGeneExpressionSummaryData;
   };
