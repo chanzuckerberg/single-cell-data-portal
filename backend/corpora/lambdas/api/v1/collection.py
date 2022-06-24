@@ -10,14 +10,12 @@ import re
 import logging
 
 from .common import get_collection_else_forbidden
-from ....common.corpora_config import CorporaConfig
 from ....common.corpora_orm import DbCollection, CollectionVisibility, ProjectLinkType
 from ....common.entities import Collection
 from .authorization import is_user_owner_or_allowed, owner_or_allowed
 from ....common.utils.http_exceptions import (
     InvalidParametersHTTPException,
     ConflictException,
-    UnauthorizedError,
 )
 from ....api_server.db import dbconnect
 
@@ -61,33 +59,6 @@ def get_collections_list(from_date: int = None, to_date: int = None, token_info:
         result["to_date"] = to_date
 
     return make_response(jsonify(result), 200)
-
-
-@dbconnect
-def get_collections_curation(visibility: str, token_info: dict):
-    """
-    Collections index endpoint for Curation API. Only return Collection data for which the curator is authorized.
-    @param visibility: the CollectionVisibility in string form
-    @param token_info: access token info
-    @return: Response
-    """
-    if not token_info and visibility == CollectionVisibility.PRIVATE.name:
-        raise UnauthorizedError()
-    collections = Collection.list_collections_for_curation(g.db_session, visibility)
-    allowed_collections = []
-    for collection in collections:
-        owner = collection["owner"]
-        if is_user_owner_or_allowed(token_info, owner):
-            collection["access_type"] = "WRITE"
-        elif collection["visibility"] == CollectionVisibility.PRIVATE:
-            continue
-        else:
-            collection["access_type"] = "READ"
-        del collection["owner"]  # Don't actually want to return 'owner' in response
-        collection["collection_url"] = f"{CorporaConfig().collections_base_url}/collections/{collection['id']}"
-        allowed_collections.append(collection)
-
-    return jsonify({"collections": allowed_collections})
 
 
 @dbconnect
