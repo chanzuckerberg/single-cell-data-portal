@@ -20,7 +20,7 @@ For example `Revision ID: a8cd0dc08805` becomes `Revision ID: 18_a8cd0dc08805` a
 8. Once you've completed the changes, create a PR to get the functions reviewed.
 9. Once the PR is merged, you can run the migration.
 10. [Connect to Remote RDS](#connect-to-remote-rds) for the env you want to run the migration in
-11. In a new terminal, complete the migration by running the following:
+11. In a new terminal, complete the migration by running:
 ```shell
 cd $REPO_ROOT/backend
 DEPLOYMENT_STAGE={dev, staging, prod} make db/migrate
