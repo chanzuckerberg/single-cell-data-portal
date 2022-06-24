@@ -15,6 +15,7 @@ from tests.unit.backend.wmg.fixtures.test_snapshot import (
     create_temp_wmg_snapshot,
     all_ones_expression_summary_values,
     all_tens_cell_counts_values,
+    all_X_cell_counts_values,
     reverse_cell_type_ordering,
     exclude_all_but_one_gene_per_organism,
     exclude_dev_stage_and_ethnicity_for_secondary_filter_test,
@@ -397,6 +398,74 @@ class WmgApiV1Tests(unittest.TestCase):
                         "cell_type": "cell_type_ontology_term_id_1_label",
                         "cell_type_ontology_term_id": "cell_type_ontology_term_id_1",
                         "total_count": 10,
+                        "depth": 1,
+                    },
+                ],
+            }
+            self.assertEqual(expected, json.loads(response.data)["term_id_labels"]["cell_types"])
+
+    @patch("backend.wmg.api.v1.gene_term_label")
+    @patch("backend.wmg.api.v1.ontology_term_label")
+    @patch("backend.wmg.api.v1.load_snapshot")
+    def test__query_total_cell_count_per_cell_type(
+        self, load_snapshot, ontology_term_label, gene_term_label
+    ):
+        expected_count = 42
+        dim_size = 2
+        with create_temp_wmg_snapshot(
+            dim_size=dim_size,
+            expression_summary_vals_fn=all_ones_expression_summary_values,
+            cell_counts_generator_fn=lambda coords : all_X_cell_counts_values(coords,expected_count),
+            cell_ordering_generator_fn=reverse_cell_type_ordering,
+        ) as snapshot:
+            # setup up API endpoints to use a mocked cube containing all stat values of 1, for a deterministic
+            # expected query response
+            load_snapshot.return_value = snapshot
+
+            # mock the functions in the ontology_labels module, so we can assert deterministic values in the
+            # "term_id_labels" portion of the response body; note that the correct behavior of the ontology_labels
+            # module is separately unit tested, and here we just want to verify the response building logic is correct.
+            ontology_term_label.side_effect = lambda ontology_term_id: f"{ontology_term_id}_label"
+            gene_term_label.side_effect = lambda gene_term_id: f"{gene_term_id}_label"
+
+            request = dict(
+                filter=dict(
+                    gene_ontology_term_ids=["gene_ontology_term_id_0"],
+                    organism_ontology_term_id="organism_ontology_term_id_0",
+                    tissue_ontology_term_ids=["tissue_ontology_term_id_0", "tissue_ontology_term_id_1"],
+                ),
+            )
+
+            response = self.app.post("/wmg/v1/query", json=request)
+
+            self.assertEqual(200, response.status_code)
+
+            expected = {
+                "tissue_ontology_term_id_0": [
+                    {
+                        "cell_type": "cell_type_ontology_term_id_0_label",
+                        "cell_type_ontology_term_id": "cell_type_ontology_term_id_0",
+                        "total_count": expected_count,
+                        "depth": 0,
+                    },
+                    {
+                        "cell_type": "cell_type_ontology_term_id_1_label",
+                        "cell_type_ontology_term_id": "cell_type_ontology_term_id_1",
+                        "total_count": expected_count,
+                        "depth": 1,
+                    },
+                ],
+                "tissue_ontology_term_id_1": [
+                    {
+                        "cell_type": "cell_type_ontology_term_id_0_label",
+                        "cell_type_ontology_term_id": "cell_type_ontology_term_id_0",
+                        "total_count": expected_count,
+                        "depth": 0,
+                    },
+                    {
+                        "cell_type": "cell_type_ontology_term_id_1_label",
+                        "cell_type_ontology_term_id": "cell_type_ontology_term_id_1",
+                        "total_count": expected_count,
                         "depth": 1,
                     },
                 ],
