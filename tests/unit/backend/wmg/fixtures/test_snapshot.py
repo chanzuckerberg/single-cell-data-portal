@@ -91,8 +91,10 @@ def all_ones_expression_summary_values(coords):
 def all_tens_cell_counts_values(coords) -> List[int]:
     return list(np.full(shape=len(coords), fill_value=10.0))
 
-def all_X_cell_counts_values(coords,X) -> List[int]:
+
+def all_X_cell_counts_values(coords, X) -> List[int]:
     return list(np.full(shape=len(coords), fill_value=X))
+
 
 def random_cell_counts_values(coords) -> List[int]:
     return list(randint(size=len(coords), low=1, high=1000))

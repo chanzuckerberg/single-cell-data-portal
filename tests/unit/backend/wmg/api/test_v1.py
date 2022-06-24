@@ -407,15 +407,13 @@ class WmgApiV1Tests(unittest.TestCase):
     @patch("backend.wmg.api.v1.gene_term_label")
     @patch("backend.wmg.api.v1.ontology_term_label")
     @patch("backend.wmg.api.v1.load_snapshot")
-    def test__query_total_cell_count_per_cell_type(
-        self, load_snapshot, ontology_term_label, gene_term_label
-    ):
+    def test__query_total_cell_count_per_cell_type(self, load_snapshot, ontology_term_label, gene_term_label):
         expected_count = 42
         dim_size = 2
         with create_temp_wmg_snapshot(
             dim_size=dim_size,
             expression_summary_vals_fn=all_ones_expression_summary_values,
-            cell_counts_generator_fn=lambda coords : all_X_cell_counts_values(coords,expected_count),
+            cell_counts_generator_fn=lambda coords: all_X_cell_counts_values(coords, expected_count),
             cell_ordering_generator_fn=reverse_cell_type_ordering,
         ) as snapshot:
             # setup up API endpoints to use a mocked cube containing all stat values of 1, for a deterministic
