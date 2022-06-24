@@ -18,7 +18,6 @@ from backend.wmg.data.extract import included_assay_ontologies
 from backend.wmg.data.rankit import rankit
 from backend.wmg.data.schemas.corpus_schema import var_labels, obs_labels, INTEGRATED_ARRAY_NAME
 from backend.wmg.data.utils import get_all_dataset_ids
-from backend.wmg.data.validation import validate_corpus_load
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -104,8 +103,6 @@ def load_h5ad(h5ad_path: str, corpus_path: str, validate: bool, min_genes: int =
     transform_dataset_raw_counts_to_rankit(anndata_object, corpus_path, global_var_index, first_obs_idx)
     end = time.time()
     logger.info(f"rankit duration={end - start} ")
-    if validate:
-        validate_corpus_load(anndata_object, corpus_path, dataset_id)
 
 
 def update_global_var(corpus_path: str, src_var_df: pd.DataFrame) -> pd.DataFrame:

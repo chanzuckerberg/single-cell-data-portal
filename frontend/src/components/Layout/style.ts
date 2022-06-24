@@ -6,6 +6,7 @@ export const Wrapper = styled.div`
   flex-direction: column;
   height: 100vh; /* required for content scroll */
   min-height: 100vh; /* required for full height flex on child */
+  /* TODO(seve): #2755 */
   overflow-x: hidden; /* responsive requirement; facilitates hiding of content when viewport is resized and layout min width is applied */
 `;
 
@@ -17,6 +18,7 @@ export const MainWrapper = styled.div`
   display: grid; /* required: ensures any remaining viewport height allocated to main content is observed; ancestor component heights are unspecified and so any height specification will revert to "auto" */
   flex: 1; /* sticks footer to bottom of viewport and initial render of main content is at full viewport height while data is loading. */
   margin-top: ${HEADER_HEIGHT_PX}px; /* positions content below fixed header */
+  justify-content: center; /* Allows for center resizing based on viewport width */
 `;
 
 export const DefaultMainWrapper = styled(MainWrapper)`
@@ -38,6 +40,7 @@ export const StyledDocsLayout = styled(MainWrapper)`
     display: grid;
     grid-template-areas: "leftsidebar content rightsidebar";
     grid-template-columns: 368px auto 253px;
-    gutter: 80px;
+    grid-column-gap: 80px;
+    max-width: 1440px;
   }
 `;
