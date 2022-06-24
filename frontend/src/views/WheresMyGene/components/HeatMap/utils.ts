@@ -118,19 +118,19 @@ export function createChartOptions({
     ],
     yAxis: [
       {
-        axisLabel: {         
+        axisLabel: {
           formatter(value: number | string) {
             const { total_count } = deserializeCellTypeMetadata(
               value as CellTypeMetadata
             );
             return `${total_count}`;
           },
-        
+
           rich: {
             selected: SELECTED_STYLE,
           },
           align: "right",
-          margin: -50
+          margin: -50,
         },
         axisLine: {
           show: false,
@@ -436,7 +436,7 @@ export function deserializeCellTypeMetadata(
     id,
     name,
     tissue,
-    total_count: Number(total_count)
+    total_count: Number(total_count),
   };
 }
 
