@@ -565,6 +565,14 @@ async function fetchDatasets(): Promise<DatasetResponse[]> {
   // ).json();
   const datasets = DATASETS_RESPONSE as unknown as DatasetResponse[];
 
+  // TODO(cc) remove with #2569 - list tissue counts and all tissues
+  // const tissues = new Set();
+  // datasets.forEach((d) =>
+  //   d.tissue.forEach((t) => tissues.add(t.ontology_term_id))
+  // );
+  // console.log(tissues.size);
+  // console.log([...tissues].join(","));
+
   // TODO(cc) remove with #2569 - this generates tissuesByDatasetId to be used by the "compute_uberon_tissue_parts_graph" notebook for the PoC only.
   // const mappings = datasets.map((d) => {
   //   const tissueIds = d.tissue
@@ -578,6 +586,14 @@ async function fetchDatasets(): Promise<DatasetResponse[]> {
   datasets.forEach((d) => {
     d.tissue_ancestors = TISSUE_ANCESTORS_BY_DATASET_ID[d.id] ?? [];
   });
+
+  // TODO(cc) remove with #2569 - list cell type count and all cell types
+  // const cellTypes = new Set();
+  // datasets.forEach((d) =>
+  //   d.cell_type.forEach((c) => cellTypes.add(`"${c.ontology_term_id}"`))
+  // );
+  // console.log(cellTypes.size);
+  // console.log([...cellTypes].join(","));
 
   // Correct any dirty data returned from endpoint.
   return datasets.map((dataset: DatasetResponse) => {
