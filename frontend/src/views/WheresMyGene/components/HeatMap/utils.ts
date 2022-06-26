@@ -17,7 +17,8 @@ import {
 
 export const MAX_FIRST_PART_LENGTH_PX = 16;
 export const X_AXIS_CHART_HEIGHT_PX = 80;
-export const Y_AXIS_CHART_WIDTH_PX = 300;
+export const Y_AXIS_CELL_COUNT_PADDING = 0;
+export const Y_AXIS_CHART_WIDTH_PX = 300+Y_AXIS_CELL_COUNT_PADDING;
 
 const MAX_DEPTH = 2;
 
@@ -118,20 +119,7 @@ export function createChartOptions({
     ],
     yAxis: [
       {
-        axisLabel: {
-          formatter(value: number | string) {
-            const { total_count } = deserializeCellTypeMetadata(
-              value as CellTypeMetadata
-            );
-            return `${total_count}`;
-          },
-
-          rich: {
-            selected: SELECTED_STYLE,
-          },
-          align: "right",
-          margin: -50,
-        },
+        axisLabel: { fontSize: 0 },
         axisLine: {
           show: false,
         },
@@ -143,8 +131,8 @@ export function createChartOptions({
         splitLine: {
           show: false,
         },
-      },
-    ],
+      }
+    ]
   };
 }
 
@@ -292,7 +280,7 @@ export function createYAxisOptions({
           rich: {
             selected: SELECTED_STYLE,
           },
-          width: 260,
+          width: 230,
         },
         axisLine: {
           show: false,
@@ -307,6 +295,34 @@ export function createYAxisOptions({
         },
         triggerEvent: true,
       },
+      {
+        axisLabel: {
+          formatter(value: number | string) {
+            const { total_count } = deserializeCellTypeMetadata(
+              value as CellTypeMetadata
+            );
+            return `${total_count}`;
+          },
+
+          rich: {
+            selected: SELECTED_STYLE,
+          },
+          align: "right",
+        },
+        position: "right",
+        offset: -10,
+        axisLine: {
+          show: false,
+        },
+        axisTick: {
+          show: false,
+        },
+        boundaryGap: true,
+        data: cellTypeMetadata,
+        splitLine: {
+          show: false,
+        },
+      }         
     ],
   };
 }
