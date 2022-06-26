@@ -7,6 +7,7 @@ import {
   Ontology,
   PublisherMetadata,
 } from "src/common/entities";
+import { CELL_TYPE_ANCESTORS_BY_DATASET_ID } from "src/common/queries/cell-type-ancestors-by-dataset-id";
 import { COLLECTIONS_RESPONSE } from "src/common/queries/collections-response";
 import { DATASETS_RESPONSE } from "src/common/queries/datasets-response";
 import { ENTITIES } from "src/common/queries/entities";
@@ -84,6 +85,7 @@ export interface DatasetResponse {
   assay: Ontology[];
   cell_count: number | null;
   cell_type: Ontology[];
+  cell_type_ancestors: string[];
   collection_id: string;
   development_stage_ancestors: string[];
   disease: Ontology[];
@@ -245,6 +247,10 @@ function aggregateCollectionDatasetRows(
       return {
         assay: [...accum.assay, ...collectionDatasetRow.assay],
         cell_type: [...accum.cell_type, ...collectionDatasetRow.cell_type],
+        cell_type_ancestors: [
+          ...accum.cell_type_ancestors,
+          ...collectionDatasetRow.cell_type_ancestors,
+        ],
         development_stage_ancestors: [
           ...accum.development_stage_ancestors,
           ...collectionDatasetRow.development_stage_ancestors,
@@ -255,14 +261,15 @@ function aggregateCollectionDatasetRows(
         sex: [...accum.sex, ...collectionDatasetRow.sex],
         tissue: [...accum.tissue, ...collectionDatasetRow.tissue], // TODO(cc) remove with #2569.
         tissue_ancestors: [
-          ...accum.development_stage_ancestors,
-          ...collectionDatasetRow.development_stage_ancestors,
+          ...accum.tissue_ancestors,
+          ...collectionDatasetRow.tissue_ancestors,
         ],
       };
     },
     {
       assay: [],
       cell_type: [],
+      cell_type_ancestors: [],
       development_stage_ancestors: [],
       disease: [],
       ethnicity: [],
@@ -277,6 +284,9 @@ function aggregateCollectionDatasetRows(
   return {
     assay: uniqueOntologies(aggregatedCategoryValues.assay),
     cell_type: uniqueOntologies(aggregatedCategoryValues.cell_type),
+    cell_type_ancestors: [
+      ...new Set(aggregatedCategoryValues.cell_type_ancestors),
+    ],
     development_stage_ancestors: [
       ...new Set(aggregatedCategoryValues.development_stage_ancestors),
     ],
@@ -573,7 +583,7 @@ async function fetchDatasets(): Promise<DatasetResponse[]> {
   // console.log(tissues.size);
   // console.log([...tissues].join(","));
 
-  // TODO(cc) remove with #2569 - this generates tissuesByDatasetId to be used by the "compute_uberon_tissue_parts_graph" notebook for the PoC only.
+  // TODO(cc) remove with #2569 - this generates tissues_by_dataset_id to be used by the "compute_uberon_tissue_parts_graph" notebook for the PoC only.
   // const mappings = datasets.map((d) => {
   //   const tissueIds = d.tissue
   //     .map((t) => `"${t.ontology_term_id.replace(/:/, "_")}"`)
@@ -594,6 +604,20 @@ async function fetchDatasets(): Promise<DatasetResponse[]> {
   // );
   // console.log(cellTypes.size);
   // console.log([...cellTypes].join(","));
+
+  // TODO(cc) remove with #2569 - this generates cellTypesByDatasetId to be used by the "compute_cell_type_is_a_graph" notebook for the PoC only.
+  // const mappings = datasets.map((d) => {
+  //   const cellTypeIds = d.cell_type
+  //     .map((cellType) => `"${cellType.ontology_term_id.replace(/:/, "_")}"`)
+  //     .join(",");
+  //   return `"${d.id}": [${cellTypeIds}]`;
+  // });
+  // console.log(`cell_types_by_dataset_id = {${mappings.join(", ")}}`);
+
+  // TODO(cc) remove with #2569 - add cell_type_ancestors to datasets
+  datasets.forEach((d) => {
+    d.cell_type_ancestors = CELL_TYPE_ANCESTORS_BY_DATASET_ID[d.id] ?? [];
+  });
 
   // Correct any dirty data returned from endpoint.
   return datasets.map((dataset: DatasetResponse) => {
@@ -734,6 +758,11 @@ function sanitizeDataset(dataset: DatasetResponse): DatasetResponse {
         categoryKey === CATEGORY_KEY.PUBLICATION_AUTHORS ||
         categoryKey === CATEGORY_KEY.PUBLICATION_DATE_VALUES
       ) {
+        return accum;
+      }
+
+      if (categoryKey === CATEGORY_KEY.CELL_TYPE_ANCESTORS) {
+        accum.cell_type_ancestors = dataset.cell_type_ancestors ?? [];
         return accum;
       }
 

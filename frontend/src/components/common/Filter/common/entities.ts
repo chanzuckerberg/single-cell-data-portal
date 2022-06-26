@@ -41,6 +41,7 @@ export enum CATEGORY_KEY {
   "ASSAY" = "assay",
   "CELL_COUNT" = "cell_count",
   "CELL_TYPE" = "cell_type",
+  "CELL_TYPE_ANCESTORS" = "cell_type_ancestors",
   "DEVELOPMENT_STAGE_ANCESTORS" = "development_stage_ancestors",
   "DISEASE" = "disease",
   "ETHNICITY" = "ethnicity",
@@ -66,6 +67,7 @@ export enum CATEGORY_VALUE_KEY {
 export interface Categories {
   assay: Ontology[];
   cell_type: Ontology[];
+  cell_type_ancestors: string[];
   disease: Ontology[];
   development_stage_ancestors: string[];
   ethnicity: Ontology[];
@@ -94,6 +96,7 @@ export interface CollectionRow extends Categories, PublisherMetadataCategories {
  * the key is "HsapDv".
  */
 export enum ONTOLOGY_VIEW_KEY {
+  "CL" = "CL",
   "HsapDv" = "HsapDv",
   "MmusDv" = "MmusDv",
   "UBERON" = "UBERON",
@@ -107,6 +110,1987 @@ export enum ONTOLOGY_VIEW_LABEL {
   "MmusDv" = "Mus Musculus",
   "UBERON" = "Other Organisms",
 }
+
+/**
+ * Cell types to be included for display in cell type ontology tree.
+ */
+/* eslint-disable sort-keys -- disabling key order for readability. */
+export const CELL_TYPE_ONTOLOGY_VIEW: OntologyView = {
+  [ONTOLOGY_VIEW_KEY.CL]: [
+    {
+      label: "cell in vitro",
+      ontology_term_id: "CL:0001034",
+      children: [
+        {
+          label: "experimentally modified cell in vitro",
+          ontology_term_id: "CL:0000578",
+          children: [
+            {
+              label: "cultured cell",
+              ontology_term_id: "CL:0000010",
+            },
+          ],
+        },
+      ],
+    },
+    {
+      label: "ciliated cell",
+      ontology_term_id: "CL:0000064",
+      children: [
+        {
+          label: "ciliated epithelial cell",
+          ontology_term_id: "CL:0000067",
+          children: [
+            {
+              label: "multi-ciliated epithelial cell",
+              ontology_term_id: "CL:0005012",
+            },
+          ],
+        },
+        {
+          label: "lung ciliated cell",
+          ontology_term_id: "CL:1000271",
+        },
+      ],
+    },
+    { label: "contractile cell", ontology_term_id: "CL:0000183" },
+    {
+      label: "endothelial cell",
+      ontology_term_id: "CL:0000115",
+      children: [
+        {
+          label: "cardiac endothelial cell",
+          ontology_term_id: "CL:0010008",
+          children: [
+            {
+              label: "endocardial cell",
+              ontology_term_id: "CL:0002350",
+            },
+            {
+              label: "endothelial cell of coronary artery",
+              ontology_term_id: "CL:2000018",
+            },
+          ],
+        },
+        {
+          label: "cerebral cortex endothelial cell",
+          ontology_term_id: "CL:1001602",
+        },
+        {
+          label: "endothelial cell of hepatic sinusoid",
+          ontology_term_id: "CL:1000398",
+          children: [
+            {
+              label: "endothelial cell of pericentral hepatic sinusoid",
+              ontology_term_id: "CL:0019022",
+            },
+            {
+              label: "endothelial cell of periportal hepatic sinusoid",
+              ontology_term_id: "CL:0019021",
+            },
+          ],
+        },
+        {
+          label: "endothelial cell of vascular tree",
+          ontology_term_id: "CL:0002139",
+          children: [
+            {
+              label: "adipose microvascular endothelial cell",
+              ontology_term_id: "CL:2000072",
+            },
+            {
+              label: "aortic endothelial cell",
+              ontology_term_id: "CL:0002544",
+            },
+            {
+              label: "blood vessel endothelial cell",
+              ontology_term_id: "CL:0000071",
+            },
+            {
+              label: "capillary endothelial cell",
+              ontology_term_id: "CL:0002144",
+            },
+            {
+              label: "dermis microvascular lymphatic vessel endothelial cell",
+              ontology_term_id: "CL:2000041",
+            },
+            {
+              label: "endothelial cell of artery",
+              ontology_term_id: "CL:1000413",
+            },
+            {
+              label: "endothelial cell of lymphatic vessel",
+              ontology_term_id: "CL:0002138",
+            },
+            {
+              label: "endothelial cell of umbilical vein",
+              ontology_term_id: "CL:0002618",
+            },
+            {
+              label: "endothelial stalk cell",
+              ontology_term_id: "CL:0002671",
+            },
+            {
+              label: "kidney capillary endothelial cell",
+              ontology_term_id: "CL:1000892",
+            },
+            {
+              label: "lung endothelial cell",
+              ontology_term_id: "CL:1001567",
+            },
+            {
+              label: "lung microvascular endothelial cell",
+              ontology_term_id: "CL:2000016",
+            },
+            {
+              label: "peritubular capillary endothelial cell",
+              ontology_term_id: "CL:1001033",
+            },
+            {
+              label: "prostate gland microvascular endothelial cell",
+              ontology_term_id: "CL:2000059",
+            },
+            {
+              label: "pulmonary artery endothelial cell",
+              ontology_term_id: "CL:1001568",
+            },
+            {
+              label: "retinal blood vessel endothelial cell",
+              ontology_term_id: "CL:0002585",
+            },
+            {
+              label: "vasa recta ascending limb cell",
+              ontology_term_id: "CL:1001131",
+            },
+            {
+              label: "vasa recta descending limb cell",
+              ontology_term_id: "CL:1001285",
+            },
+            {
+              label: "vein endothelial cell",
+              ontology_term_id: "CL:0002543",
+            },
+          ],
+        },
+        {
+          label: "glomerular endothelial cell",
+          ontology_term_id: "CL:0002188",
+        },
+        {
+          label: "gut endothelial cell",
+          ontology_term_id: "CL:0000131",
+        },
+      ],
+    },
+    {
+      label: "enucleated reticulocyte",
+      ontology_term_id: "CL:0002422",
+    },
+    {
+      label: "erythrocyte",
+      ontology_term_id: "CL:0000232",
+      children: [
+        {
+          label: "enucleate erythrocyte",
+          ontology_term_id: "CL:0000595",
+        },
+      ],
+    },
+    {
+      label: "eukaryotic cell",
+      ontology_term_id: "CL:0000255",
+      children: [
+        {
+          label: "animal cell",
+          ontology_term_id: "CL:0000548",
+          children: [
+            { label: "bladder cell", ontology_term_id: "CL:1001319" },
+            {
+              label: "embryonic stem cell",
+              ontology_term_id: "CL:0002322",
+            },
+            {
+              label: "epithelial cell",
+              ontology_term_id: "CL:0000066",
+            },
+            {
+              label: "epithelial cell of alveolus of lung",
+              ontology_term_id: "CL:0010003",
+            },
+            {
+              label: "epithelial cell of lung",
+              ontology_term_id: "CL:0000082",
+            },
+            { label: "pneumocyte", ontology_term_id: "CL:0000322" },
+            {
+              label: "squamous epithelial cell",
+              ontology_term_id: "CL:0000076",
+            },
+            { label: "stem cell", ontology_term_id: "CL:0000034" },
+            {
+              label: "surface ectodermal cell",
+              ontology_term_id: "CL:0000114",
+            },
+            {
+              label: "type I pneumocyte",
+              ontology_term_id: "CL:0002062",
+            },
+          ],
+        },
+      ],
+    },
+    {
+      label: "follicular dendritic cell",
+      ontology_term_id: "CL:0000442",
+    },
+    {
+      label: "gut absorptive cell",
+      ontology_term_id: "CL:0000677",
+      children: [
+        {
+          label: "enterocyte",
+          ontology_term_id: "CL:0000584",
+          children: [
+            {
+              label: "enterocyte of epithelium of large intestine",
+              ontology_term_id: "CL:0002071",
+            },
+            {
+              label: "enterocyte of epithelium of small intestine",
+              ontology_term_id: "CL:1000334",
+            },
+            {
+              label: "enterocyte of epithelium proper of ileum",
+              ontology_term_id: "CL:1000342",
+            },
+          ],
+        },
+      ],
+    },
+    {
+      label: "hepatocyte",
+      ontology_term_id: "CL:0000182",
+      children: [
+        {
+          label: "centrilobular region hepatocyte",
+          ontology_term_id: "CL:0019029",
+        },
+        {
+          label: "midzonal region hepatocyte",
+          ontology_term_id: "CL:0019028",
+        },
+        {
+          label: "periportal region hepatocyte",
+          ontology_term_id: "CL:0019026",
+        },
+      ],
+    },
+    {
+      label: "mesothelial cell",
+      ontology_term_id: "CL:0000077",
+      children: [
+        {
+          label: "mesothelial cell of pleura",
+          ontology_term_id: "CL:1000491",
+          children: [
+            {
+              label: "mesothelial cell of visceral pleura",
+              ontology_term_id: "CL:1000493",
+            },
+          ],
+        },
+      ],
+    },
+    {
+      label: "native cell",
+      ontology_term_id: "CL:0000003",
+    },
+    {
+      label: "neoplastic cell",
+      ontology_term_id: "CL:0001063",
+      children: [{ label: "malignant cell", ontology_term_id: "CL:0001064" }],
+    },
+    {
+      label: "neural progenitor cell",
+      ontology_term_id: "CL:0011020",
+    },
+    {
+      label: "phagocyte",
+      ontology_term_id: "CL:0000234",
+      children: [
+        {
+          label: "mononuclear phagocyte",
+          ontology_term_id: "CL:0000113",
+        },
+        {
+          label: "podocyte (sensu Diptera)",
+          ontology_term_id: "CL:0000391",
+        },
+      ],
+    },
+    { label: "primordial germ cell", ontology_term_id: "CL:0000670" },
+    { label: "progenitor cell", ontology_term_id: "CL:0011026" },
+    { label: "sebaceous gland cell", ontology_term_id: "CL:2000021" },
+    {
+      label: "secretory cell",
+      ontology_term_id: "CL:0000151",
+      children: [
+        {
+          label: "GABAergic neuron",
+          ontology_term_id: "CL:0000617",
+          children: [
+            {
+              label:
+                "caudal ganglionic eminence derived GABAergic cortical interneuron",
+              ontology_term_id: "CL:4023070",
+            },
+            {
+              label: "cerebellar Golgi cell",
+              ontology_term_id: "CL:0000119",
+            },
+            {
+              label: "cerebral cortex GABAergic interneuron",
+              ontology_term_id: "CL:0010011",
+            },
+            {
+              label: "chandelier pvalb GABAergic cortical interneuron",
+              ontology_term_id: "CL:4023036",
+            },
+            {
+              label: "lamp5 GABAergic cortical interneuron",
+              ontology_term_id: "CL:4023011",
+            },
+            {
+              label: "pvalb GABAergic cortical interneuron",
+              ontology_term_id: "CL:4023018",
+            },
+            {
+              label: "sncg GABAergic cortical interneuron",
+              ontology_term_id: "CL:4023015",
+            },
+            {
+              label: "sst GABAergic cortical interneuron",
+              ontology_term_id: "CL:4023017",
+            },
+            {
+              label: "vip GABAergic cortical interneuron",
+              ontology_term_id: "CL:4023016",
+            },
+          ],
+        },
+        {
+          label: "PP cell",
+          ontology_term_id: "CL:0000696",
+          children: [
+            {
+              label: "pancreatic PP cell",
+              ontology_term_id: "CL:0002275",
+            },
+          ],
+        },
+        { label: "Sertoli cell", ontology_term_id: "CL:0000216" },
+        {
+          label: "acinar cell of salivary gland",
+          ontology_term_id: "CL:0002623",
+        },
+        { label: "chondrocyte", ontology_term_id: "CL:0000138" },
+        { label: "club cell", ontology_term_id: "CL:0000158" },
+        {
+          label: "endocrine cell",
+          ontology_term_id: "CL:0000163",
+          children: [
+            {
+              label: "chromaffin cell",
+              ontology_term_id: "CL:0000166",
+            },
+            {
+              label: "cortical cell of adrenal gland",
+              ontology_term_id: "CL:0002097",
+            },
+            {
+              label: "enteroendocrine cell",
+              ontology_term_id: "CL:0000164",
+            },
+            {
+              label: "enteroendocrine cell of small intestine",
+              ontology_term_id: "CL:0009006",
+            },
+            {
+              label: "granulosa cell",
+              ontology_term_id: "CL:0000501",
+            },
+            {
+              label: "intestinal enteroendocrine cell",
+              ontology_term_id: "CL:1001516",
+            },
+            {
+              label: "neuroendocrine cell",
+              ontology_term_id: "CL:0000165",
+            },
+            {
+              label: "pancreatic endocrine cell",
+              ontology_term_id: "CL:0008024",
+            },
+            { label: "theca cell", ontology_term_id: "CL:0000503" },
+          ],
+        },
+        {
+          label: "glandular epithelial cell",
+          ontology_term_id: "CL:0000150",
+          children: [
+            { label: "acinar cell", ontology_term_id: "CL:0000622" },
+            {
+              label: "duodenum glandular cell",
+              ontology_term_id: "CL:1001589",
+            },
+            {
+              label: "paneth cell of colon",
+              ontology_term_id: "CL:0009009",
+            },
+            {
+              label: "paneth cell of epithelium of small intestine",
+              ontology_term_id: "CL:1000343",
+            },
+            { label: "peptic cell", ontology_term_id: "CL:0000155" },
+            {
+              label: "seminal vesicle glandular cell",
+              ontology_term_id: "CL:1001597",
+            },
+            {
+              label: "thyroid follicular cell",
+              ontology_term_id: "CL:0002258",
+            },
+          ],
+        },
+        {
+          label: "glutamatergic neuron",
+          ontology_term_id: "CL:0000679",
+          children: [
+            {
+              label:
+                "L2/3-6 intratelencephalic projecting glutamatergic cortical neuron",
+              ontology_term_id: "CL:4023040",
+            },
+            {
+              label:
+                "L5 extratelencephalic projecting glutamatergic cortical neuron",
+              ontology_term_id: "CL:4023041",
+            },
+            {
+              label: "L6b glutamatergic cortical neuron",
+              ontology_term_id: "CL:4023038",
+            },
+            {
+              label: "OFF-bipolar cell",
+              ontology_term_id: "CL:0000750",
+            },
+            {
+              label: "ON-bipolar cell",
+              ontology_term_id: "CL:0000749",
+            },
+            {
+              label: "corticothalamic-projecting glutamatergic cortical neuron",
+              ontology_term_id: "CL:4023013",
+            },
+            {
+              label:
+                "intratelencephalic-projecting glutamatergic cortical neuron",
+              ontology_term_id: "CL:4023008",
+            },
+            {
+              label: "near-projecting glutamatergic cortical neuron",
+              ontology_term_id: "CL:4023012",
+            },
+            {
+              label: "retinal bipolar neuron",
+              ontology_term_id: "CL:0000748",
+            },
+            {
+              label: "rod bipolar cell",
+              ontology_term_id: "CL:0000751",
+            },
+          ],
+        },
+        {
+          label: "kidney granular cell",
+          ontology_term_id: "CL:0000648",
+        },
+        { label: "lung goblet cell", ontology_term_id: "CL:1000143" },
+        {
+          label: "lung neuroendocrine cell",
+          ontology_term_id: "CL:1000223",
+        },
+        {
+          label: "mammary alveolar cell",
+          ontology_term_id: "CL:0002325",
+        },
+        {
+          label: "mast cell",
+          ontology_term_id: "CL:0000097",
+          children: [
+            {
+              label: "mucosal type mast cell",
+              ontology_term_id: "CL:0000485",
+            },
+          ],
+        },
+        {
+          label: "mucus secreting cell",
+          ontology_term_id: "CL:0000319",
+          children: [
+            {
+              label: "bronchial goblet cell",
+              ontology_term_id: "CL:1000312",
+            },
+            { label: "goblet cell", ontology_term_id: "CL:0000160" },
+            {
+              label: "ileal goblet cell",
+              ontology_term_id: "CL:1000326",
+            },
+            {
+              label: "intestine goblet cell",
+              ontology_term_id: "CL:0019031",
+            },
+            {
+              label: "large intestine goblet cell",
+              ontology_term_id: "CL:1000320",
+            },
+            {
+              label: "nasal mucosa goblet cell",
+              ontology_term_id: "CL:0002480",
+            },
+            {
+              label: "respiratory goblet cell",
+              ontology_term_id: "CL:0002370",
+            },
+            {
+              label: "small intestine goblet cell",
+              ontology_term_id: "CL:1000495",
+            },
+            {
+              label: "tracheal goblet cell",
+              ontology_term_id: "CL:1000329",
+            },
+            {
+              label: "tracheobronchial goblet cell",
+              ontology_term_id: "CL:0019003",
+            },
+          ],
+        },
+        {
+          label: "pancreatic acinar cell",
+          ontology_term_id: "CL:0002064",
+        },
+        {
+          label: "pancreatic epsilon cell",
+          ontology_term_id: "CL:0005019",
+        },
+        { label: "platelet", ontology_term_id: "CL:0000233" },
+        { label: "podocyte", ontology_term_id: "CL:0000653" },
+        {
+          label: "serous secreting cell",
+          ontology_term_id: "CL:0000313",
+          children: [
+            {
+              label: "serous cell of epithelium of bronchus",
+              ontology_term_id: "CL:1000331",
+            },
+            {
+              label: "serous cell of epithelium of trachea",
+              ontology_term_id: "CL:1000330",
+            },
+            {
+              label: "tracheobronchial serous cell",
+              ontology_term_id: "CL:0019001",
+            },
+          ],
+        },
+        {
+          label: "type A enteroendocrine cell",
+          ontology_term_id: "CL:0002067",
+          children: [
+            {
+              label: "pancreatic A cell",
+              ontology_term_id: "CL:0000171",
+            },
+          ],
+        },
+        {
+          label: "type B pancreatic cell",
+          ontology_term_id: "CL:0000169",
+        },
+        {
+          label: "type D enteroendocrine cell",
+          ontology_term_id: "CL:0000502",
+          children: [
+            {
+              label: "pancreatic D cell",
+              ontology_term_id: "CL:0000173",
+            },
+          ],
+        },
+        {
+          label: "type II pneumocyte",
+          ontology_term_id: "CL:0002063",
+        },
+      ],
+    },
+    {
+      label: "somatic cell",
+      ontology_term_id: "CL:0002371",
+      children: [
+        {
+          label: "basal cell",
+          ontology_term_id: "CL:0000646",
+          children: [
+            {
+              label: "epithelial cell of stratum germinativum of esophagus",
+              ontology_term_id: "CL:1000447",
+            },
+          ],
+        },
+        {
+          label: "brush cell",
+          ontology_term_id: "CL:0002204",
+          children: [
+            {
+              label: "brush cell of bronchus",
+              ontology_term_id: "CL:0002208",
+            },
+            {
+              label: "brush cell of trachea",
+              ontology_term_id: "CL:0002207",
+            },
+            {
+              label: "brush cell of trachebronchial tree",
+              ontology_term_id: "CL:0002075",
+            },
+          ],
+        },
+        {
+          label: "cardiac muscle cell",
+          ontology_term_id: "CL:0000746",
+          children: [
+            {
+              label: "regular atrial cardiac myocyte",
+              ontology_term_id: "CL:0002129",
+            },
+            {
+              label: "regular cardiac myocyte",
+              ontology_term_id: "CL:0002098",
+            },
+            {
+              label: "regular ventricular cardiac myocyte",
+              ontology_term_id: "CL:0002131",
+            },
+            {
+              label: "ventricular cardiac muscle cell",
+              ontology_term_id: "CL:2000046",
+            },
+          ],
+        },
+        {
+          label: "cell of skeletal muscle",
+          ontology_term_id: "CL:0000188",
+          children: [
+            {
+              label: "fast muscle cell",
+              ontology_term_id: "CL:0000190",
+            },
+            {
+              label: "skeletal muscle fiber",
+              ontology_term_id: "CL:0008002",
+            },
+            {
+              label: "skeletal muscle satellite cell",
+              ontology_term_id: "CL:0000594",
+            },
+            {
+              label: "skeletal muscle satellite stem cell",
+              ontology_term_id: "CL:0008011",
+            },
+            {
+              label: "slow muscle cell",
+              ontology_term_id: "CL:0000189",
+            },
+            {
+              label: "tongue muscle cell",
+              ontology_term_id: "CL:0002673",
+            },
+          ],
+        },
+        {
+          label: "chorionic trophoblast cell",
+          ontology_term_id: "CL:0011101",
+        },
+        {
+          label: "conjunctival epithelial cell",
+          ontology_term_id: "CL:1000432",
+        },
+        {
+          label: "connective tissue cell",
+          ontology_term_id: "CL:0002320",
+          children: [
+            {
+              label: "adventitial cell",
+              ontology_term_id: "CL:0002503",
+            },
+            {
+              label: "brain pericyte",
+              ontology_term_id: "CL:2000043",
+            },
+            {
+              label: "bronchus fibroblast of lung",
+              ontology_term_id: "CL:2000093",
+            },
+            { label: "fat cell", ontology_term_id: "CL:0000136" },
+            { label: "fibroblast", ontology_term_id: "CL:0000057" },
+            {
+              label: "fibroblast of breast",
+              ontology_term_id: "CL:4006000",
+            },
+            {
+              label:
+                "fibroblast of connective tissue of glandular part of prostate",
+              ontology_term_id: "CL:1000305",
+            },
+            {
+              label:
+                "fibroblast of connective tissue of nonglandular part of prostate",
+              ontology_term_id: "CL:1000304",
+            },
+            {
+              label: "fibroblast of connective tissue of prostate",
+              ontology_term_id: "CL:1000299",
+            },
+            {
+              label: "fibroblast of lung",
+              ontology_term_id: "CL:0002553",
+            },
+            { label: "fibrocyte", ontology_term_id: "CL:0000135" },
+            {
+              label: "hepatic stellate cell",
+              ontology_term_id: "CL:0000632",
+            },
+            { label: "keratocyte", ontology_term_id: "CL:0002363" },
+            {
+              label: "kidney interstitial fibroblast",
+              ontology_term_id: "CL:1000692",
+            },
+            {
+              label: "leptomeningeal cell",
+              ontology_term_id: "CL:0000708",
+            },
+            {
+              label: "mesangial cell",
+              ontology_term_id: "CL:0000650",
+            },
+            {
+              label: "mesenchymal stem cell",
+              ontology_term_id: "CL:0000134",
+            },
+            {
+              label: "mesenchymal stem cell of adipose tissue",
+              ontology_term_id: "CL:0002570",
+            },
+            {
+              label: "pancreatic stellate cell",
+              ontology_term_id: "CL:0002410",
+            },
+            { label: "pericyte", ontology_term_id: "CL:0000669" },
+            {
+              label: "prostate stromal cell",
+              ontology_term_id: "CL:0002622",
+            },
+            {
+              label: "pulmonary interstitial fibroblast",
+              ontology_term_id: "CL:0002241",
+            },
+            {
+              label: "renal interstitial pericyte",
+              ontology_term_id: "CL:1001318",
+            },
+            {
+              label: "reticular cell",
+              ontology_term_id: "CL:0000432",
+            },
+            {
+              label: "skin fibroblast",
+              ontology_term_id: "CL:0002620",
+            },
+            { label: "stromal cell", ontology_term_id: "CL:0000499" },
+            {
+              label: "stromal cell of ovary",
+              ontology_term_id: "CL:0002132",
+            },
+            {
+              label: "subcutaneous fat cell",
+              ontology_term_id: "CL:0002521",
+            },
+            { label: "tendon cell", ontology_term_id: "CL:0000388" },
+            {
+              label: "vascular leptomeningeal cell",
+              ontology_term_id: "CL:4023051",
+            },
+          ],
+        },
+        {
+          label: "corneal epithelial cell",
+          ontology_term_id: "CL:0000575",
+        },
+        {
+          label: "duct epithelial cell",
+          ontology_term_id: "CL:0000068",
+          children: [
+            {
+              label: "basal epithelial cell of prostatic duct",
+              ontology_term_id: "CL:0002236",
+            },
+            {
+              label: "cholangiocyte",
+              ontology_term_id: "CL:1000488",
+            },
+            {
+              label: "epithelial cell of lacrimal sac",
+              ontology_term_id: "CL:1000436",
+            },
+            {
+              label: "intrahepatic cholangiocyte",
+              ontology_term_id: "CL:0002538",
+            },
+            {
+              label: "kidney collecting duct epithelial cell",
+              ontology_term_id: "CL:1000454",
+            },
+            {
+              label: "kidney collecting duct intercalated cell",
+              ontology_term_id: "CL:1001432",
+            },
+            {
+              label: "kidney collecting duct principal cell",
+              ontology_term_id: "CL:1001431",
+            },
+            {
+              label: "luminal epithelial cell of mammary gland",
+              ontology_term_id: "CL:0002326",
+            },
+            {
+              label: "renal alpha-intercalated cell",
+              ontology_term_id: "CL:0005011",
+            },
+            {
+              label: "renal beta-intercalated cell",
+              ontology_term_id: "CL:0002201",
+            },
+          ],
+        },
+        { label: "ependymal cell", ontology_term_id: "CL:0000065" },
+        {
+          label: "epicardial adipocyte",
+          ontology_term_id: "CL:1000309",
+        },
+        {
+          label: "epidermal cell",
+          ontology_term_id: "CL:0000362",
+          children: [
+            {
+              label: "basal cell of epidermis",
+              ontology_term_id: "CL:0002187",
+            },
+            { label: "keratinocyte", ontology_term_id: "CL:0000312" },
+            {
+              label: "keratinocyte stem cell",
+              ontology_term_id: "CL:0002337",
+            },
+          ],
+        },
+        {
+          label: "epithelial cell of exocrine pancreas",
+          ontology_term_id: "CL:1001433",
+          children: [
+            {
+              label: "pancreatic ductal cell",
+              ontology_term_id: "CL:0002079",
+            },
+          ],
+        },
+        {
+          label: "epithelial cell of lower respiratory tract",
+          ontology_term_id: "CL:0002632",
+          children: [
+            {
+              label: "basal cell of epithelium of bronchus",
+              ontology_term_id: "CL:1000349",
+            },
+            {
+              label: "basal cell of epithelium of trachea",
+              ontology_term_id: "CL:1000348",
+            },
+            {
+              label: "basal epithelial cell of tracheobronchial tree",
+              ontology_term_id: "CL:0002329",
+            },
+            {
+              label: "ciliated cell of the bronchus",
+              ontology_term_id: "CL:0002332",
+            },
+            {
+              label: "ciliated columnar cell of tracheobronchial tree",
+              ontology_term_id: "CL:0002145",
+            },
+          ],
+        },
+        {
+          label: "epithelial cell of prostate",
+          ontology_term_id: "CL:0002231",
+          children: [
+            {
+              label: "basal cell of prostate epithelium",
+              ontology_term_id: "CL:0002341",
+            },
+            {
+              label: "luminal cell of prostate epithelium",
+              ontology_term_id: "CL:0002340",
+            },
+          ],
+        },
+        {
+          label: "epithelial cell of proximal tubule",
+          ontology_term_id: "CL:0002306",
+          children: [
+            {
+              label: "kidney proximal convoluted tubule epithelial cell",
+              ontology_term_id: "CL:1000838",
+            },
+            {
+              label: "kidney proximal straight tubule epithelial cell",
+              ontology_term_id: "CL:1000839",
+            },
+          ],
+        },
+        {
+          label: "epithelial cell of sweat gland",
+          ontology_term_id: "CL:1000448",
+        },
+        {
+          label: "epithelial cell of thymus",
+          ontology_term_id: "CL:0002293",
+          children: [
+            {
+              label: "medullary thymic epithelial cell",
+              ontology_term_id: "CL:0002365",
+            },
+          ],
+        },
+        {
+          label: "epithelial cell of urethra",
+          ontology_term_id: "CL:1000296",
+        },
+        {
+          label: "epithelial cell of uterus",
+          ontology_term_id: "CL:0002149",
+        },
+        {
+          label: "extravillous trophoblast",
+          ontology_term_id: "CL:0008036",
+        },
+        { label: "fenestrated cell", ontology_term_id: "CL:0000666" },
+        {
+          label: "fibroblast of cardiac tissue",
+          ontology_term_id: "CL:0002548",
+        },
+        {
+          label: "hematopoietic cell",
+          ontology_term_id: "CL:0000988",
+          children: [
+            { label: "B cell", ontology_term_id: "CL:0000236" },
+            {
+              label: "CD14-low, CD16-positive monocyte",
+              ontology_term_id: "CL:0002396",
+            },
+            {
+              label: "CD14-positive monocyte",
+              ontology_term_id: "CL:0001054",
+            },
+            {
+              label: "CD14-positive, CD16-negative classical monocyte",
+              ontology_term_id: "CL:0002057",
+            },
+            {
+              label: "CD14-positive, CD16-positive monocyte",
+              ontology_term_id: "CL:0002397",
+            },
+            {
+              label: "CD141-positive myeloid dendritic cell",
+              ontology_term_id: "CL:0002394",
+            },
+            {
+              label: "CD16-negative, CD56-bright natural killer cell, human",
+              ontology_term_id: "CL:0000938",
+            },
+            {
+              label: "CD16-positive, CD56-dim natural killer cell, human",
+              ontology_term_id: "CL:0000939",
+            },
+            {
+              label: "CD1c-positive myeloid dendritic cell",
+              ontology_term_id: "CL:0002399",
+            },
+            {
+              label: "CD34-positive, CD38-negative hematopoietic stem cell",
+              ontology_term_id: "CL:0001024",
+            },
+            {
+              label: "CD4-positive helper T cell",
+              ontology_term_id: "CL:0000492",
+            },
+            {
+              label:
+                "CD4-positive, CD25-positive, alpha-beta regulatory T cell",
+              ontology_term_id: "CL:0000792",
+            },
+            {
+              label: "CD4-positive, alpha-beta T cell",
+              ontology_term_id: "CL:0000624",
+            },
+            {
+              label: "CD4-positive, alpha-beta cytotoxic T cell",
+              ontology_term_id: "CL:0000934",
+            },
+            {
+              label: "CD4-positive, alpha-beta memory T cell",
+              ontology_term_id: "CL:0000897",
+            },
+            {
+              label: "CD4-positive, alpha-beta memory T cell, CD45RO-positive",
+              ontology_term_id: "CL:0001204",
+            },
+            {
+              label: "CD4-positive, alpha-beta thymocyte",
+              ontology_term_id: "CL:0000810",
+            },
+            {
+              label:
+                "CD8-alpha alpha positive, gamma-delta intraepithelial T cell",
+              ontology_term_id: "CL:0000802",
+            },
+            {
+              label: "CD8-positive, alpha-beta T cell",
+              ontology_term_id: "CL:0000625",
+            },
+            {
+              label:
+                "CD8-positive, alpha-beta cytokine secreting effector T cell",
+              ontology_term_id: "CL:0000908",
+            },
+            {
+              label: "CD8-positive, alpha-beta cytotoxic T cell",
+              ontology_term_id: "CL:0000794",
+            },
+            {
+              label: "CD8-positive, alpha-beta memory T cell",
+              ontology_term_id: "CL:0000909",
+            },
+            {
+              label: "CD8-positive, alpha-beta memory T cell, CD45RO-positive",
+              ontology_term_id: "CL:0001203",
+            },
+            {
+              label: "CD8-positive, alpha-beta thymocyte",
+              ontology_term_id: "CL:0000811",
+            },
+            {
+              label: "DN1 thymic pro-T cell",
+              ontology_term_id: "CL:0000894",
+            },
+            {
+              label: "DN3 thymocyte",
+              ontology_term_id: "CL:0000807",
+            },
+            {
+              label: "DN4 thymocyte",
+              ontology_term_id: "CL:0000808",
+            },
+            { label: "ILC1, human", ontology_term_id: "CL:0001077" },
+            {
+              label: "IgA plasma cell",
+              ontology_term_id: "CL:0000987",
+            },
+            {
+              label: "IgA plasmablast",
+              ontology_term_id: "CL:0000984",
+            },
+            {
+              label: "IgG memory B cell",
+              ontology_term_id: "CL:0000979",
+            },
+            {
+              label: "IgG plasma cell",
+              ontology_term_id: "CL:0000985",
+            },
+            {
+              label: "IgG plasmablast",
+              ontology_term_id: "CL:0000982",
+            },
+            {
+              label: "IgG-negative class switched memory B cell",
+              ontology_term_id: "CL:0002117",
+            },
+            {
+              label: "IgM plasma cell",
+              ontology_term_id: "CL:0000986",
+            },
+            { label: "Kupffer cell", ontology_term_id: "CL:0000091" },
+            {
+              label: "Langerhans cell",
+              ontology_term_id: "CL:0000453",
+            },
+            { label: "T cell", ontology_term_id: "CL:0000084" },
+            {
+              label: "T follicular helper cell",
+              ontology_term_id: "CL:0002038",
+            },
+            {
+              label: "T-helper 1 cell",
+              ontology_term_id: "CL:0000545",
+            },
+            {
+              label: "T-helper 17 cell",
+              ontology_term_id: "CL:0000899",
+            },
+            {
+              label: "T-helper 2 cell",
+              ontology_term_id: "CL:0000546",
+            },
+            {
+              label: "T-helper 22 cell",
+              ontology_term_id: "CL:0001042",
+            },
+            {
+              label: "activated CD4-positive, alpha-beta T cell",
+              ontology_term_id: "CL:0000896",
+            },
+            {
+              label: "activated CD4-positive, alpha-beta T cell, human",
+              ontology_term_id: "CL:0001043",
+            },
+            {
+              label: "activated CD8-positive, alpha-beta T cell",
+              ontology_term_id: "CL:0000906",
+            },
+            {
+              label: "activated CD8-positive, alpha-beta T cell, human",
+              ontology_term_id: "CL:0001049",
+            },
+            {
+              label: "alpha-beta T cell",
+              ontology_term_id: "CL:0000789",
+            },
+            {
+              label: "alternatively activated macrophage",
+              ontology_term_id: "CL:0000890",
+            },
+            {
+              label: "alveolar macrophage",
+              ontology_term_id: "CL:0000583",
+            },
+            { label: "basophil", ontology_term_id: "CL:0000767" },
+            { label: "blood cell", ontology_term_id: "CL:0000081" },
+            {
+              label: "central memory CD4-positive, alpha-beta T cell",
+              ontology_term_id: "CL:0000904",
+            },
+            {
+              label: "central memory CD8-positive, alpha-beta T cell",
+              ontology_term_id: "CL:0000907",
+            },
+            {
+              label: "class switched memory B cell",
+              ontology_term_id: "CL:0000972",
+            },
+            {
+              label: "classical monocyte",
+              ontology_term_id: "CL:0000860",
+            },
+            {
+              label: "colon macrophage",
+              ontology_term_id: "CL:0009038",
+            },
+            {
+              label: "common myeloid progenitor",
+              ontology_term_id: "CL:0000049",
+            },
+            {
+              label: "conventional dendritic cell",
+              ontology_term_id: "CL:0000990",
+            },
+            {
+              label: "cord blood hematopoietic stem cell",
+              ontology_term_id: "CL:2000095",
+            },
+            {
+              label: "dendritic cell",
+              ontology_term_id: "CL:0000451",
+            },
+            {
+              label: "dendritic cell, human",
+              ontology_term_id: "CL:0001056",
+            },
+            {
+              label: "double negative T regulatory cell",
+              ontology_term_id: "CL:0011024",
+            },
+            {
+              label: "double negative thymocyte",
+              ontology_term_id: "CL:0002489",
+            },
+            {
+              label: "double-positive, alpha-beta thymocyte",
+              ontology_term_id: "CL:0000809",
+            },
+            {
+              label: "early pro-B cell",
+              ontology_term_id: "CL:0002046",
+            },
+            {
+              label: "effector CD4-positive, alpha-beta T cell",
+              ontology_term_id: "CL:0001044",
+            },
+            {
+              label: "effector CD8-positive, alpha-beta T cell",
+              ontology_term_id: "CL:0001050",
+            },
+            {
+              label: "effector memory CD4-positive, alpha-beta T cell",
+              ontology_term_id: "CL:0000905",
+            },
+            {
+              label: "effector memory CD8-positive, alpha-beta T cell",
+              ontology_term_id: "CL:0000913",
+            },
+            {
+              label:
+                "effector memory CD8-positive, alpha-beta T cell, terminally differentiated",
+              ontology_term_id: "CL:0001062",
+            },
+            {
+              label: "elicited macrophage",
+              ontology_term_id: "CL:0000861",
+            },
+            {
+              label: "epidermal Langerhans cell",
+              ontology_term_id: "CL:0002457",
+            },
+            { label: "erythroblast", ontology_term_id: "CL:0000765" },
+            {
+              label: "erythroid lineage cell",
+              ontology_term_id: "CL:0000764",
+            },
+            {
+              label: "erythroid progenitor cell",
+              ontology_term_id: "CL:0000038",
+            },
+            {
+              label: "erythroid progenitor cell, mammalian",
+              ontology_term_id: "CL:0001066",
+            },
+            {
+              label: "exhausted T cell",
+              ontology_term_id: "CL:0011025",
+            },
+            {
+              label: "follicular B cell",
+              ontology_term_id: "CL:0000843",
+            },
+            {
+              label: "gamma-delta T cell",
+              ontology_term_id: "CL:0000798",
+            },
+            {
+              label: "germinal center B cell",
+              ontology_term_id: "CL:0000844",
+            },
+            { label: "granulocyte", ontology_term_id: "CL:0000094" },
+            {
+              label: "granulocyte monocyte progenitor cell",
+              ontology_term_id: "CL:0000557",
+            },
+            {
+              label: "granulocytopoietic cell",
+              ontology_term_id: "CL:0002191",
+            },
+            {
+              label: "group 2 innate lymphoid cell, human",
+              ontology_term_id: "CL:0001081",
+            },
+            {
+              label: "group 3 innate lymphoid cell",
+              ontology_term_id: "CL:0001071",
+            },
+            {
+              label: "hematopoietic precursor cell",
+              ontology_term_id: "CL:0008001",
+            },
+            {
+              label: "hematopoietic stem cell",
+              ontology_term_id: "CL:0000037",
+            },
+            {
+              label: "immature B cell",
+              ontology_term_id: "CL:0000816",
+            },
+            {
+              label: "immature NK T cell",
+              ontology_term_id: "CL:0000914",
+            },
+            {
+              label: "immature T cell",
+              ontology_term_id: "CL:0002420",
+            },
+            {
+              label: "immature alpha-beta T cell",
+              ontology_term_id: "CL:0000790",
+            },
+            {
+              label: "immature natural killer cell",
+              ontology_term_id: "CL:0000823",
+            },
+            {
+              label: "immature neutrophil",
+              ontology_term_id: "CL:0000776",
+            },
+            {
+              label: "inflammatory macrophage",
+              ontology_term_id: "CL:0000863",
+            },
+            {
+              label: "innate lymphoid cell",
+              ontology_term_id: "CL:0001065",
+            },
+            {
+              label: "intermediate monocyte",
+              ontology_term_id: "CL:0002393",
+            },
+            {
+              label: "late pro-B cell",
+              ontology_term_id: "CL:0002048",
+            },
+            { label: "leukocyte", ontology_term_id: "CL:0000738" },
+            {
+              label: "liver dendritic cell",
+              ontology_term_id: "CL:2000055",
+            },
+            {
+              label: "lung macrophage",
+              ontology_term_id: "CL:1001603",
+            },
+            { label: "lymphocyte", ontology_term_id: "CL:0000542" },
+            {
+              label: "lymphoid lineage restricted progenitor cell",
+              ontology_term_id: "CL:0000838",
+            },
+            { label: "macrophage", ontology_term_id: "CL:0000235" },
+            {
+              label: "macrophage dendritic cell progenitor",
+              ontology_term_id: "CL:0002009",
+            },
+            {
+              label: "mature B cell",
+              ontology_term_id: "CL:0000785",
+            },
+            {
+              label: "mature NK T cell",
+              ontology_term_id: "CL:0000814",
+            },
+            {
+              label: "mature alpha-beta T cell",
+              ontology_term_id: "CL:0000791",
+            },
+            {
+              label: "mature conventional dendritic cell",
+              ontology_term_id: "CL:0000841",
+            },
+            {
+              label: "mature gamma-delta T cell",
+              ontology_term_id: "CL:0000800",
+            },
+            {
+              label: "mature microglial cell",
+              ontology_term_id: "CL:0002629",
+            },
+            {
+              label: "megakaryocyte",
+              ontology_term_id: "CL:0000556",
+            },
+            {
+              label: "megakaryocyte-erythroid progenitor cell",
+              ontology_term_id: "CL:0000050",
+            },
+            {
+              label: "memory B cell",
+              ontology_term_id: "CL:0000787",
+            },
+            {
+              label: "memory T cell",
+              ontology_term_id: "CL:0000813",
+            },
+            {
+              label: "microglial cell",
+              ontology_term_id: "CL:0000129",
+            },
+            { label: "monocyte", ontology_term_id: "CL:0000576" },
+            {
+              label: "mononuclear cell",
+              ontology_term_id: "CL:0000842",
+            },
+            {
+              label: "mucosal invariant T cell",
+              ontology_term_id: "CL:0000940",
+            },
+            {
+              label: "multinucleated giant cell",
+              ontology_term_id: "CL:0000647",
+            },
+            { label: "myeloid cell", ontology_term_id: "CL:0000763" },
+            {
+              label: "myeloid dendritic cell",
+              ontology_term_id: "CL:0000782",
+            },
+            {
+              label: "myeloid dendritic cell, human",
+              ontology_term_id: "CL:0001057",
+            },
+            {
+              label: "myeloid leukocyte",
+              ontology_term_id: "CL:0000766",
+            },
+            {
+              label: "myeloid lineage restricted progenitor cell",
+              ontology_term_id: "CL:0000839",
+            },
+            { label: "naive B cell", ontology_term_id: "CL:0000788" },
+            { label: "naive T cell", ontology_term_id: "CL:0000898" },
+            {
+              label: "naive regulatory T cell",
+              ontology_term_id: "CL:0002677",
+            },
+            {
+              label: "naive thymus-derived CD4-positive, alpha-beta T cell",
+              ontology_term_id: "CL:0000895",
+            },
+            {
+              label: "naive thymus-derived CD8-positive, alpha-beta T cell",
+              ontology_term_id: "CL:0000900",
+            },
+            {
+              label: "natural killer cell",
+              ontology_term_id: "CL:0000623",
+            },
+            { label: "neutrophil", ontology_term_id: "CL:0000775" },
+            {
+              label: "non-classical monocyte",
+              ontology_term_id: "CL:0000875",
+            },
+            {
+              label: "peripheral blood mononuclear cell",
+              ontology_term_id: "CL:2000001",
+            },
+            { label: "plasma cell", ontology_term_id: "CL:0000786" },
+            { label: "plasmablast", ontology_term_id: "CL:0000980" },
+            {
+              label: "plasmacytoid dendritic cell",
+              ontology_term_id: "CL:0000784",
+            },
+            {
+              label: "plasmacytoid dendritic cell, human",
+              ontology_term_id: "CL:0001058",
+            },
+            {
+              label: "precursor B cell",
+              ontology_term_id: "CL:0000817",
+            },
+            { label: "pro-B cell", ontology_term_id: "CL:0000826" },
+            {
+              label: "proerythroblast",
+              ontology_term_id: "CL:0000547",
+            },
+            {
+              label: "professional antigen presenting cell",
+              ontology_term_id: "CL:0000145",
+            },
+            { label: "promonocyte", ontology_term_id: "CL:0000559" },
+            {
+              label: "regulatory T cell",
+              ontology_term_id: "CL:0000815",
+            },
+            { label: "thymocyte", ontology_term_id: "CL:0000893" },
+            {
+              label: "tissue-resident macrophage",
+              ontology_term_id: "CL:0000864",
+            },
+            {
+              label: "transitional stage B cell",
+              ontology_term_id: "CL:0000818",
+            },
+            {
+              label: "type I NK T cell",
+              ontology_term_id: "CL:0000921",
+            },
+            {
+              label: "unswitched memory B cell",
+              ontology_term_id: "CL:0000970",
+            },
+          ],
+        },
+        { label: "hepatoblast", ontology_term_id: "CL:0005026" },
+        {
+          label: "inflammatory cell",
+          ontology_term_id: "CL:0009002",
+        },
+        {
+          label: "interstitial cell of Cajal",
+          ontology_term_id: "CL:0002088",
+        },
+        {
+          label: "intestinal epithelial cell",
+          ontology_term_id: "CL:0002563",
+          children: [
+            {
+              label: "brush cell of epithelium proper of large intestine",
+              ontology_term_id: "CL:0002203",
+            },
+            {
+              label: "epithelial cell of large intestine",
+              ontology_term_id: "CL:0002253",
+            },
+            {
+              label: "intestinal crypt stem cell",
+              ontology_term_id: "CL:0002250",
+            },
+            {
+              label: "intestinal crypt stem cell of large intestine",
+              ontology_term_id: "CL:0009016",
+            },
+            {
+              label: "intestinal crypt stem cell of small intestine",
+              ontology_term_id: "CL:0009017",
+            },
+            {
+              label: "intestinal tuft cell",
+              ontology_term_id: "CL:0019032",
+            },
+          ],
+        },
+        {
+          label: "ionocyte",
+          ontology_term_id: "CL:0005006",
+          children: [
+            {
+              label: "pulmonary ionocyte",
+              ontology_term_id: "CL:0017000",
+            },
+          ],
+        },
+        {
+          label: "kidney cell",
+          ontology_term_id: "CL:1000497",
+          children: [
+            {
+              label: "epithelial cell of glomerular capsule",
+              ontology_term_id: "CL:1000450",
+            },
+            {
+              label: "epithelial cell of nephron",
+              ontology_term_id: "CL:1000449",
+            },
+            {
+              label: "kidney collecting duct cell",
+              ontology_term_id: "CL:1001225",
+            },
+            {
+              label: "kidney connecting tubule epithelial cell",
+              ontology_term_id: "CL:1000768",
+            },
+            {
+              label: "kidney cortex artery cell",
+              ontology_term_id: "CL:1001045",
+            },
+            {
+              label: "kidney epithelial cell",
+              ontology_term_id: "CL:0002518",
+            },
+            {
+              label: "kidney inner medulla collecting duct epithelial cell",
+              ontology_term_id: "CL:1000547",
+            },
+            {
+              label: "kidney interstitial cell",
+              ontology_term_id: "CL:1000500",
+            },
+            {
+              label: "kidney loop of Henle epithelial cell",
+              ontology_term_id: "CL:1000909",
+            },
+            {
+              label:
+                "kidney loop of Henle thin descending limb epithelial cell",
+              ontology_term_id: "CL:1001111",
+            },
+            {
+              label: "kidney resident macrophage",
+              ontology_term_id: "CL:1000698",
+            },
+            {
+              label: "nephron tubule epithelial cell",
+              ontology_term_id: "CL:1000494",
+            },
+            {
+              label: "papillary tips cell",
+              ontology_term_id: "CL:1000597",
+            },
+            {
+              label: "parietal epithelial cell",
+              ontology_term_id: "CL:1000452",
+            },
+          ],
+        },
+        {
+          label: "kidney distal convoluted tubule epithelial cell",
+          ontology_term_id: "CL:1000849",
+        },
+        {
+          label: "kidney loop of Henle ascending limb epithelial cell",
+          ontology_term_id: "CL:1001016",
+          children: [
+            {
+              label:
+                "kidney loop of Henle thick ascending limb epithelial cell",
+              ontology_term_id: "CL:1001106",
+            },
+            {
+              label: "kidney loop of Henle thin ascending limb epithelial cell",
+              ontology_term_id: "CL:1001107",
+            },
+          ],
+        },
+        { label: "lens fiber cell", ontology_term_id: "CL:0011004" },
+        {
+          label: "macula densa epithelial cell",
+          ontology_term_id: "CL:1000850",
+        },
+        {
+          label: "melanocyte",
+          ontology_term_id: "CL:0000148",
+          children: [
+            {
+              label: "melanocyte of skin",
+              ontology_term_id: "CL:1000458",
+            },
+          ],
+        },
+        { label: "mesenchymal cell", ontology_term_id: "CL:0008019" },
+        {
+          label: "muscle cell",
+          ontology_term_id: "CL:0000187",
+          children: [
+            {
+              label: "aortic smooth muscle cell",
+              ontology_term_id: "CL:0002539",
+            },
+            {
+              label: "blood vessel smooth muscle cell",
+              ontology_term_id: "CL:0019018",
+            },
+            {
+              label: "bronchial smooth muscle cell",
+              ontology_term_id: "CL:0002598",
+            },
+            {
+              label: "enteric smooth muscle cell",
+              ontology_term_id: "CL:0002504",
+            },
+            {
+              label: "myometrial cell",
+              ontology_term_id: "CL:0002366",
+            },
+            {
+              label: "smooth muscle cell",
+              ontology_term_id: "CL:0000192",
+            },
+            {
+              label: "smooth muscle cell of large intestine",
+              ontology_term_id: "CL:1000279",
+            },
+            {
+              label: "smooth muscle cell of prostate",
+              ontology_term_id: "CL:1000487",
+            },
+            {
+              label: "smooth muscle cell of small intestine",
+              ontology_term_id: "CL:1000275",
+            },
+            {
+              label: "smooth muscle cell of the pulmonary artery",
+              ontology_term_id: "CL:0002591",
+            },
+            {
+              label: "smooth muscle cell of trachea",
+              ontology_term_id: "CL:0002600",
+            },
+            {
+              label: "smooth muscle fiber of ileum",
+              ontology_term_id: "CL:1000278",
+            },
+            {
+              label: "tracheobronchial smooth muscle cell",
+              ontology_term_id: "CL:0019019",
+            },
+            {
+              label: "uterine smooth muscle cell",
+              ontology_term_id: "CL:0002601",
+            },
+            {
+              label: "vascular associated smooth muscle cell",
+              ontology_term_id: "CL:0000359",
+            },
+          ],
+        },
+        {
+          label: "myoepithelial cell",
+          ontology_term_id: "CL:0000185",
+        },
+        {
+          label: "myoepithelial cell of mammary gland",
+          ontology_term_id: "CL:0002324",
+        },
+        {
+          label: "myofibroblast cell",
+          ontology_term_id: "CL:0000186",
+        },
+        {
+          label: "neural cell",
+          ontology_term_id: "CL:0002319",
+          children: [
+            {
+              label: "Bergmann glial cell",
+              ontology_term_id: "CL:0000644",
+            },
+            {
+              label: "Cajal-Retzius cell",
+              ontology_term_id: "CL:0000695",
+            },
+            { label: "Mueller cell", ontology_term_id: "CL:0000636" },
+            {
+              label: "Purkinje cell",
+              ontology_term_id: "CL:0000121",
+            },
+            { label: "Schwann cell", ontology_term_id: "CL:0002573" },
+            {
+              label: "amacrine cell",
+              ontology_term_id: "CL:0000561",
+            },
+            { label: "astrocyte", ontology_term_id: "CL:0000127" },
+            {
+              label: "astrocyte of the cerebellum",
+              ontology_term_id: "CL:0002603",
+            },
+            {
+              label: "astrocyte of the cerebral cortex",
+              ontology_term_id: "CL:0002605",
+            },
+            {
+              label: "bipolar neuron",
+              ontology_term_id: "CL:0000103",
+            },
+            {
+              label: "cardiac neuron",
+              ontology_term_id: "CL:0010022",
+            },
+            {
+              label: "cerebellar granule cell",
+              ontology_term_id: "CL:0001031",
+            },
+            {
+              label: "enteric neuron",
+              ontology_term_id: "CL:0007011",
+            },
+            {
+              label: "eye photoreceptor cell",
+              ontology_term_id: "CL:0000287",
+            },
+            {
+              label: "forebrain radial glial cell",
+              ontology_term_id: "CL:0013000",
+            },
+            {
+              label: "ganglion interneuron",
+              ontology_term_id: "CL:0000397",
+            },
+            { label: "glial cell", ontology_term_id: "CL:0000125" },
+            { label: "granule cell", ontology_term_id: "CL:0000120" },
+            {
+              label: "inhibitory interneuron",
+              ontology_term_id: "CL:0000498",
+            },
+            {
+              label: "inhibitory motor neuron",
+              ontology_term_id: "CL:0008015",
+            },
+            { label: "interneuron", ontology_term_id: "CL:0000099" },
+            {
+              label: "macroglial cell",
+              ontology_term_id: "CL:0000126",
+            },
+            {
+              label: "mature astrocyte",
+              ontology_term_id: "CL:0002627",
+            },
+            {
+              label: "medium spiny neuron",
+              ontology_term_id: "CL:1001474",
+            },
+            { label: "motor neuron", ontology_term_id: "CL:0000100" },
+            { label: "neuron", ontology_term_id: "CL:0000540" },
+            {
+              label: "neuron associated cell (sensu Vertebrata)",
+              ontology_term_id: "CL:0000123",
+            },
+            {
+              label: "neuronal brush cell",
+              ontology_term_id: "CL:0000555",
+            },
+            {
+              label: "neuronal stem cell",
+              ontology_term_id: "CL:0000047",
+            },
+            {
+              label: "oligodendrocyte",
+              ontology_term_id: "CL:0000128",
+            },
+            {
+              label: "oligodendrocyte precursor cell",
+              ontology_term_id: "CL:0002453",
+            },
+            {
+              label: "photoreceptor cell",
+              ontology_term_id: "CL:0000210",
+            },
+            {
+              label: "radial glial cell",
+              ontology_term_id: "CL:0000681",
+            },
+            {
+              label: "retina horizontal cell",
+              ontology_term_id: "CL:0000745",
+            },
+            {
+              label: "retinal cone cell",
+              ontology_term_id: "CL:0000573",
+            },
+            {
+              label: "retinal ganglion cell",
+              ontology_term_id: "CL:0000740",
+            },
+            {
+              label: "retinal pigment epithelial cell",
+              ontology_term_id: "CL:0002586",
+            },
+            {
+              label: "retinal rod cell",
+              ontology_term_id: "CL:0000604",
+            },
+            {
+              label: "stellate neuron",
+              ontology_term_id: "CL:0000122",
+            },
+            {
+              label: "sympathetic neuron",
+              ontology_term_id: "CL:0011103",
+            },
+            {
+              label: "visceromotor neuron",
+              ontology_term_id: "CL:0005025",
+            },
+          ],
+        },
+        {
+          label: "neuroepithelial stem cell",
+          ontology_term_id: "CL:0002259",
+        },
+        {
+          label: "pigmented ciliary epithelial cell",
+          ontology_term_id: "CL:0002303",
+        },
+        {
+          label: "renal intercalated cell",
+          ontology_term_id: "CL:0005010",
+        },
+        {
+          label: "renal principal cell",
+          ontology_term_id: "CL:0005009",
+        },
+        {
+          label: "respiratory basal cell",
+          ontology_term_id: "CL:0002633",
+        },
+        {
+          label: "salivary gland cell",
+          ontology_term_id: "CL:0009005",
+        },
+        {
+          label: "stem cell of epidermis",
+          ontology_term_id: "CL:1000428",
+        },
+        {
+          label: "stratified epithelial cell",
+          ontology_term_id: "CL:0000079",
+        },
+        {
+          label: "syncytiotrophoblast cell",
+          ontology_term_id: "CL:0000525",
+        },
+        {
+          label: "taste receptor cell",
+          ontology_term_id: "CL:0000209",
+        },
+        {
+          label: "trophoblast giant cell",
+          ontology_term_id: "CL:0002488",
+        },
+        {
+          label: "urothelial cell",
+          ontology_term_id: "CL:0000731",
+          children: [
+            {
+              label: "bladder urothelial cell",
+              ontology_term_id: "CL:1001428",
+            },
+            {
+              label: "urethra urothelial cell",
+              ontology_term_id: "CL:1001430",
+            },
+          ],
+        },
+        {
+          label: "vascular lymphangioblast",
+          ontology_term_id: "CL:0005022",
+        },
+      ],
+    },
+    { label: "sperm", ontology_term_id: "CL:0000019" },
+    { label: "supporting cell", ontology_term_id: "CL:0000630" },
+    {
+      label: "transit amplifying cell of colon",
+      ontology_term_id: "CL:0009011",
+    },
+    {
+      label: "transit amplifying cell of small intestine",
+      ontology_term_id: "CL:0009012",
+    },
+    { label: "valve cell", ontology_term_id: "CL:0000663" },
+  ],
+};
+/* eslint-enable sort-keys -- disabling key order for readability. */
 
 /**
  * Homo sapiens, Mus musculus and other organisms development stage ontology tree.
@@ -660,10 +2644,21 @@ const CATEGORY_CONFIGS: (CategoryConfig | OntologyCategoryConfig)[] = [
     multiselect: false,
   },
   {
+    // TODO(cc) possibly remove with #2569.
     analyticsEvent: EVENTS.FILTER_SELECT_CELL_TYPE,
     categoryKey: CATEGORY_KEY.CELL_TYPE,
     categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
     multiselect: true,
+  },
+  {
+    // TODO(cc) add analytics event with #2569.
+    categoryKey: CATEGORY_KEY.CELL_TYPE_ANCESTORS,
+    categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
+    isLabelVisible: false,
+    isSearchable: true,
+    isZerosVisible: true,
+    multiselect: true,
+    ontology: CELL_TYPE_ONTOLOGY_VIEW,
   },
   {
     analyticsEvent: EVENTS.FILTER_SELECT_DEVELOPMENT_STAGE,
@@ -721,7 +2716,7 @@ const CATEGORY_CONFIGS: (CategoryConfig | OntologyCategoryConfig)[] = [
     multiselect: true,
   },
   {
-    // TODO(cc) remove with #2569.
+    // TODO(cc) possibly remove with #2569.
     analyticsEvent: EVENTS.FILTER_SELECT_TISSUE,
     categoryKey: CATEGORY_KEY.TISSUE,
     categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
@@ -821,6 +2816,7 @@ export enum ORGANISM {
 export type OntologyCategoryKey = keyof Omit<
   Record<CATEGORY_KEY, string>,
   | CATEGORY_KEY.CELL_COUNT
+  | CATEGORY_KEY.CELL_TYPE_ANCESTORS
   | CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS
   | CATEGORY_KEY.MEAN_GENES_PER_CELL
   | CATEGORY_KEY.PUBLICATION_DATE_VALUES
@@ -834,7 +2830,8 @@ export type OntologyCategoryKey = keyof Omit<
 export enum CATEGORY_LABEL {
   assay = "Assay",
   cell_count = "Cell Count",
-  cell_type = "Cell Type",
+  cell_type = "Cell Type", // TODO(cc) remove with #2569?
+  cell_type_ancestors = "Cell Type (Ontology)", // TODO(cc) revisit naming with #2569.
   development_stage_ancestors = "Development Stage",
   disease = "Disease",
   ethnicity = "Ethnicity",

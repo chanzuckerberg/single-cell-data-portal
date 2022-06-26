@@ -140,6 +140,11 @@ export default function Collections(): JSX.Element {
       },
       // Hidden, required for filter.
       {
+        accessor: CATEGORY_KEY.CELL_TYPE_ANCESTORS,
+        filter: "includesSome",
+      },
+      // Hidden, required for filter.
+      {
         accessor: ontologyCellAccessorFn(CATEGORY_KEY.ETHNICITY),
         filter: "includesSome",
         id: CATEGORY_KEY.ETHNICITY,
@@ -193,6 +198,7 @@ export default function Collections(): JSX.Element {
           COLUMN_ID_RECENCY,
           CATEGORY_KEY.ASSAY,
           CATEGORY_KEY.CELL_TYPE,
+          CATEGORY_KEY.CELL_TYPE_ANCESTORS,
           CATEGORY_KEY.ETHNICITY,
           CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS,
           CATEGORY_KEY.PUBLICATION_AUTHORS,
@@ -224,7 +230,9 @@ export default function Collections(): JSX.Element {
           return false;
         }
         return !(
-          categoryKey === CATEGORY_KEY.TISSUE_ANCESTORS && !isFilterEnabled
+          (categoryKey === CATEGORY_KEY.TISSUE_ANCESTORS ||
+            categoryKey === CATEGORY_KEY.CELL_TYPE_ANCESTORS) &&
+          !isFilterEnabled
         );
       })
       .reduce((accum, categoryKey: CategoryKey) => {
