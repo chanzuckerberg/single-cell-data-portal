@@ -175,15 +175,18 @@ class Collection(Entity):
         for collection in session.query(cls.table).filter(*filters).all():
             # Add a Collection-level processing status
             status = None
+            has_statuses = False
             for dataset in collection.datasets:
                 processing_status = dataset.processing_status
                 if processing_status:
+                    has_statuses = True
                     if processing_status.processing_status == ProcessingStatus.PENDING:
                         status = ProcessingStatus.PENDING
                     elif processing_status.processing_status == ProcessingStatus.FAILURE:
                         status = ProcessingStatus.FAILURE
-                    elif processing_status.processing_status == ProcessingStatus.SUCCESS:
-                        status = ProcessingStatus.SUCCESS
+                        break
+            if has_statuses and not status:  # At least one dataset processing status exists, and all were SUCCESS
+                status = ProcessingStatus.SUCCESS
             resp_collection = collection.to_dict_keep(collection_columns)
             resp_collection["processing_status"] = status
             resp_collections.append(resp_collection)
