@@ -35,7 +35,7 @@ export function useUpdateYAxisChart({
         );
         // (alec): this is a hack to get echarts to display text overflow.
         const el = document.getElementById("cell-type-labels-axis");
-        
+
         // @ts-ignore: style definitely exists on element but maybe it is not typed?
         el.children[0].style.overflow = "visible";
         // @ts-ignore: style definitely exists on element but maybe it is not typed?

@@ -137,7 +137,7 @@ export default memo(function YAxisChart({
         data-test-id="cell-type-labels"
         height={heatmapHeight}
         ref={yAxisRef}
-      />   
+      />
     </Wrapper>
   );
 

@@ -130,8 +130,8 @@ export function createChartOptions({
         splitLine: {
           show: false,
         },
-      }
-    ]
+      },
+    ],
   };
 }
 
@@ -325,7 +325,7 @@ export function createYAxisOptions({
         splitLine: {
           show: false,
         },
-      }         
+      },
     ],
   };
 }
