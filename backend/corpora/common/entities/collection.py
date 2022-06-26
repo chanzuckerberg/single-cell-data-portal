@@ -174,14 +174,16 @@ class Collection(Entity):
         resp_collections = []
         for collection in session.query(cls.table).filter(*filters).all():
             # Add a Collection-level processing status
-            status = ProcessingStatus.SUCCESS
+            status = None
             for dataset in collection.datasets:
                 processing_status = dataset.processing_status
-                if processing_status.processing_status == ProcessingStatus.PENDING:
-                    status = ProcessingStatus.PENDING
-                elif processing_status.processing_status == ProcessingStatus.FAILURE:
-                    status = ProcessingStatus.FAILURE
-                    break
+                if processing_status:
+                    if processing_status.processing_status == ProcessingStatus.PENDING:
+                        status = ProcessingStatus.PENDING
+                    elif processing_status.processing_status == ProcessingStatus.FAILURE:
+                        status = ProcessingStatus.FAILURE
+                    elif processing_status.processing_status == ProcessingStatus.SUCCESS:
+                        status = ProcessingStatus.SUCCESS
             resp_collection = collection.to_dict_keep(collection_columns)
             resp_collection["processing_status"] = status
             resp_collections.append(resp_collection)

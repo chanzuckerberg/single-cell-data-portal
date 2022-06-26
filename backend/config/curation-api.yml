@@ -711,6 +711,7 @@ components:
       type: string
       description: Processing status for a Dataset or Collection
       enum: [FAILURE, PENDING, SUCCESS]
+      nullable: true
     publisher_metadata:
       type: object
       nullable: true
