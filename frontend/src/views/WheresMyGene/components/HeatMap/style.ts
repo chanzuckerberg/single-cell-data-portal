@@ -39,7 +39,7 @@ export const YAxisWrapper = styled.div`
   position: sticky;
   top: 0;
   left: 0;
-  z-index: 1;
+  z-index: 3;
 
   ${({ height }: { height: number }) => {
     return `

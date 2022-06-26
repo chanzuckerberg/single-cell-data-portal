@@ -133,10 +133,11 @@ export default memo(function YAxisChart({
         )}
       </TissueWrapper>
       <Container
+        id="cell-type-labels-axis"
         data-test-id="cell-type-labels"
         height={heatmapHeight}
         ref={yAxisRef}
-      />
+      />   
     </Wrapper>
   );
 

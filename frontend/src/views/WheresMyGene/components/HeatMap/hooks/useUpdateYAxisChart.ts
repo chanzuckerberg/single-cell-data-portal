@@ -27,13 +27,19 @@ export function useUpdateYAxisChart({
         // (thuang): resize() needs to be called before setOption() to prevent
         // TypeError: Cannot read properties of undefined (reading 'shouldBePainted')
         yAxisChart.resize();
-
         yAxisChart.setOption(
           createYAxisOptions({
             cellTypeIdsToDelete,
             cellTypeMetadata,
           })
         );
+        // (alec): this is a hack to get echarts to display text overflow.
+        const el = document.getElementById("cell-type-labels-axis");
+        
+        // @ts-ignore: style definitely exists on element but maybe it is not typed?
+        el.children[0].style.overflow = "visible";
+        // @ts-ignore: style definitely exists on element but maybe it is not typed?
+        el.children[0].children[0].style.overflow = "visible";
       },
       UPDATE_THROTTLE_MS,
       // (thuang): Trailing guarantees that the last call to the function will
