@@ -36,7 +36,8 @@ def reshape_for_curation_api_and_is_allowed(collection, token_info, uuid_provide
             if "artifacts" in dataset:
                 dataset["dataset_assets"] = dataset.pop("artifacts")
             if "processing_status" in dataset:
-                dataset["processing_status"] = dataset["processing_status"]["processing_status"]
+                if dataset["processing_status"]:
+                    dataset["processing_status"] = dataset["processing_status"]["processing_status"]
 
     return True
 
@@ -77,7 +78,6 @@ class EntityColumns:
         "disease",
         "organism",
         "tombstone",
-        "processing_status",
     ]
 
     dataset_cols = [
@@ -98,6 +98,7 @@ class EntityColumns:
         # "batch_condition",  # TODO: https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data-portal/1461  # noqa: E501
         "mean_genes_per_cell",
         "schema_version",
+        "processing_status",
     ]
 
     dataset_asset_cols = [
