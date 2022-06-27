@@ -7,6 +7,7 @@ from ......common.corpora_orm import (
     DbDataset,
     DbDatasetProcessingStatus,
     DbDatasetArtifact,
+    DatasetArtifactFileType,
 )
 
 
@@ -46,7 +47,10 @@ def reshape_for_curation_api_and_is_allowed(collection, token_info, uuid_provide
     if "datasets" in collection:
         for dataset in collection["datasets"]:
             if "artifacts" in dataset:
-                dataset["dataset_assets"] = dataset.pop("artifacts")
+                dataset["dataset_assets"] = []
+                for asset in dataset["artifacts"]:
+                    if asset["filetype"] in (DatasetArtifactFileType.H5AD, DatasetArtifactFileType.RDS):
+                        dataset["dataset_assets"].append(asset)
             if "processing_status" in dataset:
                 if dataset["processing_status"]:
                     dataset["processing_status"] = dataset["processing_status"]["processing_status"]
