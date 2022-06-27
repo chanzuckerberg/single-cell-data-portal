@@ -12,7 +12,13 @@ from backend.corpora.lambdas.api.v1.common import get_dataset_else_error, get_co
 REGEX = f"^({DATASET_ID_REGEX}|{CURATOR_TAG_PREFIX_REGEX})\\.{EXTENSION_REGEX}$"
 
 
-def validate_curator_tag(curator_tag):
+def validate_curator_tag(curator_tag: str) -> bool:
+    """
+    Verify the correct curator tag format is obeyed.
+
+    :param curator_tag: the tag name to validate.
+    :return: True if CURATOR_TAG_PREFIX_REGEX is matched.
+    """
     matched = re.match(REGEX, curator_tag)
     return True if matched and matched.groupdict().get("tag") else False
 
