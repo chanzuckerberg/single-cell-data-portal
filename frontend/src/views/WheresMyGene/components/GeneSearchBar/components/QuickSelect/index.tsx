@@ -130,7 +130,7 @@ export default function QuickSelect<
 
   const setOpen = (open: boolean) => {
     setOpenPopper(open);
-    dispatch(setQuickSelectOpen(open));
+    dispatch?.(setQuickSelectOpen(open));
   };
 
   const [input, setInput] = useState("");
