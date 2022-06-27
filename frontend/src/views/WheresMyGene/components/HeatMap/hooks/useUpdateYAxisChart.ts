@@ -33,13 +33,6 @@ export function useUpdateYAxisChart({
             cellTypeMetadata,
           })
         );
-        // (alec): this is a hack to get echarts to display text overflow.
-        const el = document.getElementById("cell-type-labels-axis");
-
-        // @ts-ignore: style definitely exists on element but maybe it is not typed?
-        el.children[0].style.overflow = "visible";
-        // @ts-ignore: style definitely exists on element but maybe it is not typed?
-        el.children[0].children[0].style.overflow = "visible";
       },
       UPDATE_THROTTLE_MS,
       // (thuang): Trailing guarantees that the last call to the function will
