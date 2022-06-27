@@ -52,9 +52,12 @@ def reshape_for_curation_api_and_is_allowed(collection, token_info, uuid_provide
                     dataset["processing_status"] = dataset["processing_status"]["processing_status"]
             for ontology_element in DATASET_ONTOLOGY_ELEMENTS:
                 if ontology_element in dataset:
-                    if dataset[ontology_element] and not isinstance(dataset[ontology_element], list):
-                        # Package in array
-                        dataset[ontology_element] = [dataset[ontology_element]]
+                    if dataset[ontology_element]:
+                        if not isinstance(dataset[ontology_element], list):
+                            # Package in array
+                            dataset[ontology_element] = [dataset[ontology_element]]
+                    else:
+                        dataset[ontology_element] = []
 
     return True
 
