@@ -38,6 +38,9 @@ def reshape_for_curation_api_and_is_allowed(collection, token_info, uuid_provide
             if "processing_status" in dataset:
                 if dataset["processing_status"]:
                     dataset["processing_status"] = dataset["processing_status"]["processing_status"]
+            if "organism" in dataset:
+                if not isinstance(dataset["organism"], list):
+                    dataset["organism"] = [dataset["organism"]]
 
     return True
 
