@@ -527,6 +527,7 @@ components:
           type: string
         curator_name:
           type: string
+          nullable: true
         revised_at:
           type: number
           nullable: true
