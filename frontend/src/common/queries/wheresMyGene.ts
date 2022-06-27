@@ -218,7 +218,7 @@ export function useWMGQuery(
   const currentSnapshotId = useSnapshotId();
 
   return useQuery(
-    [USE_QUERY, quickSelectOpen, query, currentSnapshotId],
+    [USE_QUERY, query, currentSnapshotId],
     ({ signal }) => fetchQuery({ query, signal }),
     {
       enabled: Boolean(query) && !quickSelectOpen,
