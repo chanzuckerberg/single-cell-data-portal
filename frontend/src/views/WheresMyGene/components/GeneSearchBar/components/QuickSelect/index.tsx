@@ -16,19 +16,11 @@ import {
   MenuSelect,
 } from "czifui";
 import { pull, uniq } from "lodash";
-import React, {
-  createContext,
-  ReactChild,
-  useContext,
-  useRef,
-  useState,
-} from "react";
+import React, { createContext, ReactChild, useRef, useState } from "react";
 import { FixedSizeList, ListChildComponentProps } from "react-window";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { noop } from "src/common/constants/utils";
-import { DispatchContext } from "src/views/WheresMyGene/common/store";
-import { setQuickSelectOpen } from "src/views/WheresMyGene/common/store/actions";
 import { Label } from "../../style";
 import { ButtonWrapper, StyledIconButton, StyledMenuItem } from "./style";
 
@@ -98,6 +90,7 @@ interface Props<T, Multiple> {
   multiple?: Multiple;
   setSelected: (selected: Value<T, Multiple>) => void;
   selected: Value<T, Multiple>;
+  toggleRefresher: () => void;
   itemsByName: Map<string, T>;
   onItemNotFound?: (item: string) => void;
   label: string;
@@ -114,6 +107,7 @@ export default function QuickSelect<
   multiple,
   setSelected,
   selected,
+  toggleRefresher,
   /**
    * name is lowercase for case insensitive CSV paste
    */
@@ -125,12 +119,11 @@ export default function QuickSelect<
   analyticsEvent,
   isLoading,
 }: Props<T, Multiple>): JSX.Element {
-  const dispatch = useContext(DispatchContext);
   const [open, setOpenPopper] = useState(false);
 
   const setOpen = (open: boolean) => {
     setOpenPopper(open);
-    dispatch?.(setQuickSelectOpen(open));
+    if (!open) toggleRefresher();
   };
 
   const [input, setInput] = useState("");

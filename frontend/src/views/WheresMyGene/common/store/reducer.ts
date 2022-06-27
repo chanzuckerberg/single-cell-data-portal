@@ -33,7 +33,7 @@ export interface State {
    */
   snapshotId: string | null;
   sortBy: { cellTypes: SORT_BY; genes: SORT_BY };
-  quickSelectOpen: boolean;
+  wmgQueryRefresher: boolean;
 }
 
 // (thuang): If you have derived states based on the state, use `useMemo`
@@ -48,7 +48,7 @@ export const INITIAL_STATE: State = {
   selectedTissues: [],
   snapshotId: null,
   sortBy: { cellTypes: SORT_BY.CELL_ONTOLOGY, genes: SORT_BY.USER_ENTERED },
-  quickSelectOpen: false,
+  wmgQueryRefresher: false,
 };
 
 export const REDUCERS = {
@@ -59,7 +59,7 @@ export const REDUCERS = {
   selectFilters,
   selectGenes,
   selectOrganism,
-  setQuickSelectOpen,
+  setWmgQueryRefresher,
   selectSortBy,
   selectTissues,
   setSnapshotId,
@@ -154,13 +154,13 @@ function selectGenes(
   };
 }
 
-function setQuickSelectOpen(
+function setWmgQueryRefresher(
   state: State,
-  action: PayloadAction<State["quickSelectOpen"]>
+  action: PayloadAction<State["wmgQueryRefresher"]>
 ): State {
   return {
     ...state,
-    quickSelectOpen: action.payload,
+    wmgQueryRefresher: action.payload,
   };
 }
 

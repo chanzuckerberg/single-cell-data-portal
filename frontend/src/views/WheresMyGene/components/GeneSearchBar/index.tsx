@@ -5,7 +5,11 @@ import { EVENTS } from "src/common/analytics/events";
 import { usePrimaryFilterDimensions } from "src/common/queries/wheresMyGene";
 import Toast from "src/views/Collection/components/Toast";
 import { DispatchContext, StateContext } from "../../common/store";
-import { selectGenes, selectTissues } from "../../common/store/actions";
+import {
+  selectGenes,
+  selectTissues,
+  setWmgQueryRefresher,
+} from "../../common/store/actions";
 import { Gene } from "../../common/types";
 import Organism from "./components/Organism";
 import QuickSelect from "./components/QuickSelect";
@@ -17,9 +21,17 @@ interface Tissue {
 
 export default function GeneSearchBar(): JSX.Element {
   const dispatch = useContext(DispatchContext);
-  const { selectedGenes, selectedTissues, selectedOrganismId } =
-    useContext(StateContext);
+  const {
+    selectedGenes,
+    selectedTissues,
+    selectedOrganismId,
+    wmgQueryRefresher,
+  } = useContext(StateContext);
 
+  const toggleWmgQueryRefresher = () => {
+    if (!dispatch) return;
+    dispatch(setWmgQueryRefresher(!wmgQueryRefresher));
+  };
   const { data, isLoading } = usePrimaryFilterDimensions();
 
   const { genes: rawGenes, tissues: rawTissues } = data || {};
@@ -88,6 +100,7 @@ export default function GeneSearchBar(): JSX.Element {
           multiple
           selected={selectedTissueOptions}
           setSelected={handleSelectTissues}
+          toggleRefresher={toggleWmgQueryRefresher}
           label="Add Tissue"
           dataTestId="add-tissue"
           placeholder="Search"
@@ -101,6 +114,7 @@ export default function GeneSearchBar(): JSX.Element {
           selected={selectedGeneOptions}
           multiple
           setSelected={handleSelectGenes}
+          toggleRefresher={toggleWmgQueryRefresher}
           onItemNotFound={handleGeneNotFound}
           label="Add Gene"
           dataTestId="add-gene"

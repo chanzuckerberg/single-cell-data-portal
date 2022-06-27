@@ -213,15 +213,13 @@ export function useWMGQuery(
   query: Query | null
 ): UseQueryResult<QueryResponse> {
   const dispatch = useContext(DispatchContext);
-  const { quickSelectOpen } = useContext(StateContext);
   // (thuang): Refresh query when the snapshotId changes
   const currentSnapshotId = useSnapshotId();
-
   return useQuery(
     [USE_QUERY, query, currentSnapshotId],
     ({ signal }) => fetchQuery({ query, signal }),
     {
-      enabled: Boolean(query) && !quickSelectOpen,
+      enabled: Boolean(query),
       onSuccess(response) {
         if (!response || !dispatch) return;
 
@@ -316,7 +314,6 @@ export function useExpressionSummary(): {
   const requestBody = useWMGQueryRequestBody();
 
   const { data, isLoading } = useWMGQuery(requestBody);
-
   return useMemo(() => {
     if (isLoading || !data) return { data: EMPTY_OBJECT, isLoading };
 
@@ -556,6 +553,7 @@ function useWMGQueryRequestBody(options = { includeAllFilterOptions: false }) {
   const {
     selectedGenes,
     selectedTissues,
+    wmgQueryRefresher,
     selectedOrganismId,
     selectedFilters,
   } = useContext(StateContext);
@@ -630,8 +628,7 @@ function useWMGQueryRequestBody(options = { includeAllFilterOptions: false }) {
       include_filter_dims: true,
     };
   }, [
-    selectedGenes,
-    selectedTissues,
+    wmgQueryRefresher,
     selectedOrganismId,
     data,
     organismGenesByName,

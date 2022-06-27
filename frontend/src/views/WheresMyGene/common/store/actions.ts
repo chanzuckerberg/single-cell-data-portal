@@ -52,12 +52,12 @@ export function selectGenes(
   };
 }
 
-export function setQuickSelectOpen(
-  open: State["quickSelectOpen"]
-): GetActionTypeOfReducer<typeof REDUCERS["setQuickSelectOpen"]> {
+export function setWmgQueryRefresher(
+  open: State["wmgQueryRefresher"]
+): GetActionTypeOfReducer<typeof REDUCERS["setWmgQueryRefresher"]> {
   return {
     payload: open,
-    type: "setQuickSelectOpen",
+    type: "setWmgQueryRefresher",
   };
 }
 
