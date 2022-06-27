@@ -52,6 +52,15 @@ export function selectGenes(
   };
 }
 
+export function setQuickSelectOpen(
+  open: State["quickSelectOpen"]
+): GetActionTypeOfReducer<typeof REDUCERS["setQuickSelectOpen"]> {
+  return {
+    payload: open,
+    type: "setQuickSelectOpen",
+  };
+}
+
 export function selectCellTypeIds(
   cellTypeIndices: State["selectedCellTypeIds"]
 ): GetActionTypeOfReducer<typeof REDUCERS["selectCellTypeIds"]> {

@@ -213,15 +213,15 @@ export function useWMGQuery(
   query: Query | null
 ): UseQueryResult<QueryResponse> {
   const dispatch = useContext(DispatchContext);
-
+  const { quickSelectOpen } = useContext(StateContext);
   // (thuang): Refresh query when the snapshotId changes
   const currentSnapshotId = useSnapshotId();
-
+  
   return useQuery(
-    [USE_QUERY, query, currentSnapshotId],
+    [USE_QUERY, quickSelectOpen, query, currentSnapshotId],
     ({ signal }) => fetchQuery({ query, signal }),
     {
-      enabled: Boolean(query),
+      enabled: Boolean(query) && !quickSelectOpen,
       onSuccess(response) {
         if (!response || !dispatch) return;
 

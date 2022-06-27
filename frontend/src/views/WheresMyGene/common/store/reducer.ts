@@ -33,6 +33,7 @@ export interface State {
    */
   snapshotId: string | null;
   sortBy: { cellTypes: SORT_BY; genes: SORT_BY };
+  quickSelectOpen: boolean;
 }
 
 // (thuang): If you have derived states based on the state, use `useMemo`
@@ -47,6 +48,7 @@ export const INITIAL_STATE: State = {
   selectedTissues: [],
   snapshotId: null,
   sortBy: { cellTypes: SORT_BY.CELL_ONTOLOGY, genes: SORT_BY.USER_ENTERED },
+  quickSelectOpen: false
 };
 
 export const REDUCERS = {
@@ -57,6 +59,7 @@ export const REDUCERS = {
   selectFilters,
   selectGenes,
   selectOrganism,
+  setQuickSelectOpen,
   selectSortBy,
   selectTissues,
   setSnapshotId,
@@ -148,6 +151,16 @@ function selectGenes(
     cellTypeIdsToDelete: [],
     genesToDelete: [],
     selectedGenes: action.payload,
+  };
+}
+
+function setQuickSelectOpen(
+  state: State,
+  action: PayloadAction<State["quickSelectOpen"]>
+): State {
+  return {
+    ...state,
+    quickSelectOpen: action.payload
   };
 }
 

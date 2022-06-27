@@ -16,7 +16,9 @@ import {
   MenuSelect,
 } from "czifui";
 import { pull, uniq } from "lodash";
-import React, { createContext, ReactChild, useRef, useState } from "react";
+import React, { createContext, ReactChild, useRef, useState, useContext } from "react";
+import { DispatchContext } from "src/views/WheresMyGene/common/store";
+import { setQuickSelectOpen } from "src/views/WheresMyGene/common/store/actions";
 import { FixedSizeList, ListChildComponentProps } from "react-window";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
@@ -117,7 +119,14 @@ export default function QuickSelect<
   analyticsEvent,
   isLoading,
 }: Props<T, Multiple>): JSX.Element {
-  const [open, setOpen] = useState(false);
+  const dispatch = useContext(DispatchContext);  
+  const [open, setOpenPopper] = useState(false);
+
+  const setOpen = (open: boolean) => {
+    setOpenPopper(open);
+    dispatch(setQuickSelectOpen(open))
+  }
+
   const [input, setInput] = useState("");
   const [hasComma, setHasComma] = useState(false);
 
