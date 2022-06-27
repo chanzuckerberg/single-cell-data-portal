@@ -632,10 +632,8 @@ components:
                 $ref: "#/components/schemas/dataset_asset"
             sex:
               $ref: "#/components/schemas/ontology_elements"
-              nullable: true
             ethnicity:
               $ref: "#/components/schemas/ontology_elements"
-              nullable: true
             development_stage:
               $ref: "#/components/schemas/ontology_elements"
               nullable: true
@@ -643,7 +641,6 @@ components:
               $ref: "#/components/schemas/explorer_url"
             cell_type:
               $ref: "#/components/schemas/ontology_elements"
-              nullable: true
             cell_count:
               type: integer
               nullable: true
@@ -699,6 +696,7 @@ components:
           type: string
     ontology_elements:
       type: array
+      default: []
       items:
         $ref: "#/components/schemas/ontology_element"
     problem:

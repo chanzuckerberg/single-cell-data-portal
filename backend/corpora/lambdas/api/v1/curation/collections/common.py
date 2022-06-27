@@ -10,6 +10,18 @@ from ......common.corpora_orm import (
 )
 
 
+DATASET_ONTOLOGY_ELEMENTS = (
+    "sex",
+    "ethnicity",
+    "development_stage",
+    "cell_type",
+    "tissue",
+    "assay",
+    "disease",
+    "organism",
+)
+
+
 def reshape_for_curation_api_and_is_allowed(collection, token_info, uuid_provided=False):
     """
     Reshape Collection data for the Curation API response.
@@ -38,9 +50,11 @@ def reshape_for_curation_api_and_is_allowed(collection, token_info, uuid_provide
             if "processing_status" in dataset:
                 if dataset["processing_status"]:
                     dataset["processing_status"] = dataset["processing_status"]["processing_status"]
-            if "organism" in dataset:
-                if not isinstance(dataset["organism"], list):
-                    dataset["organism"] = [dataset["organism"]]
+            for ontology_element in DATASET_ONTOLOGY_ELEMENTS:
+                if ontology_element in dataset:
+                    if dataset[ontology_element] and not isinstance(dataset[ontology_element], list):
+                        # Package in array
+                        dataset[ontology_element] = [dataset[ontology_element]]
 
     return True
 
