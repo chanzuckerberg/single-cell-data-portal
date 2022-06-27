@@ -517,14 +517,17 @@ components:
           $ref: "#/components/schemas/collection_uuid"
         name:
           type: string
+          nullable: true
         visibility:
           $ref: "#/components/schemas/visibility"
         collection_url:
           type: string
         contact_name:
           type: string
+          nullable: true
         contact_email:
           type: string
+          nullable: true
         curator_name:
           type: string
           nullable: true
