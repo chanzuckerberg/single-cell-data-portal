@@ -208,7 +208,7 @@ export function createXAxisOptions({
         nameLocation: "end",
         nameRotate: 270,
         offset: 10,
-        nameGap: 8,        
+        nameGap: 8,
         axisLabel: { fontSize: 0 },
         axisLine: {
           show: false,
