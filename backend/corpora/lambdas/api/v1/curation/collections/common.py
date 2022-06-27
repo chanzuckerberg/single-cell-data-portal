@@ -7,6 +7,19 @@ from ......common.corpora_orm import (
     DbDataset,
     DbDatasetProcessingStatus,
     DbDatasetArtifact,
+    DatasetArtifactFileType,
+)
+
+
+DATASET_ONTOLOGY_ELEMENTS = (
+    "sex",
+    "ethnicity",
+    "development_stage",
+    "cell_type",
+    "tissue",
+    "assay",
+    "disease",
+    "organism",
 )
 
 
@@ -34,9 +47,20 @@ def reshape_for_curation_api_and_is_allowed(collection, token_info, uuid_provide
     if "datasets" in collection:
         for dataset in collection["datasets"]:
             if "artifacts" in dataset:
-                dataset["dataset_assets"] = dataset.pop("artifacts")
-            if "processing_status" in dataset:
+                dataset["dataset_assets"] = []
+                for asset in dataset["artifacts"]:
+                    if asset["filetype"] in (DatasetArtifactFileType.H5AD, DatasetArtifactFileType.RDS):
+                        dataset["dataset_assets"].append(asset)
+                del dataset["artifacts"]
+            if dataset.get("processing_status"):
                 dataset["processing_status"] = dataset["processing_status"]["processing_status"]
+            for ontology_element in DATASET_ONTOLOGY_ELEMENTS:
+                if dataset_ontology_element := dataset.get(ontology_element):
+                    if not isinstance(dataset_ontology_element, list):
+                        # Package in array
+                        dataset[ontology_element] = [dataset_ontology_element]
+                else:
+                    dataset[ontology_element] = []
 
     return True
 
@@ -77,7 +101,6 @@ class EntityColumns:
         "disease",
         "organism",
         "tombstone",
-        "processing_status",
     ]
 
     dataset_cols = [
@@ -98,6 +121,7 @@ class EntityColumns:
         # "batch_condition",  # TODO: https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data-portal/1461  # noqa: E501
         "mean_genes_per_cell",
         "schema_version",
+        "processing_status",
     ]
 
     dataset_asset_cols = [
