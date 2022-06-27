@@ -68,7 +68,7 @@ def dataset_submissions_handler(s3_event: dict, unused_context) -> None:
                 file_size=size,
                 file_extension=parsed["extension"],
                 dataset_id=dataset_uuid,
-                curator_tag=parsed["tag"],
+                curator_tag=parsed.get("tag"),
             )
 
 
