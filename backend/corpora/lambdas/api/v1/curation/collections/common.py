@@ -52,9 +52,8 @@ def reshape_for_curation_api_and_is_allowed(collection, token_info, uuid_provide
                     if asset["filetype"] in (DatasetArtifactFileType.H5AD, DatasetArtifactFileType.RDS):
                         dataset["dataset_assets"].append(asset)
                 del dataset["artifacts"]
-            if "processing_status" in dataset:
-                if dataset["processing_status"]:
-                    dataset["processing_status"] = dataset["processing_status"]["processing_status"]
+            if dataset.get("processing_status"):
+                dataset["processing_status"] = dataset["processing_status"]["processing_status"]
             for ontology_element in DATASET_ONTOLOGY_ELEMENTS:
                 if dataset_ontology_element := dataset.get(ontology_element):
                     if not isinstance(dataset_ontology_element, list):
