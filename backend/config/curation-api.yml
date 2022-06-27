@@ -517,16 +517,20 @@ components:
           $ref: "#/components/schemas/collection_uuid"
         name:
           type: string
+          nullable: true
         visibility:
           $ref: "#/components/schemas/visibility"
         collection_url:
           type: string
         contact_name:
           type: string
+          nullable: true
         contact_email:
           type: string
+          nullable: true
         curator_name:
           type: string
+          nullable: true
         revised_at:
           type: number
           nullable: true
@@ -628,10 +632,8 @@ components:
                 $ref: "#/components/schemas/dataset_asset"
             sex:
               $ref: "#/components/schemas/ontology_elements"
-              nullable: true
             ethnicity:
               $ref: "#/components/schemas/ontology_elements"
-              nullable: true
             development_stage:
               $ref: "#/components/schemas/ontology_elements"
               nullable: true
@@ -639,7 +641,6 @@ components:
               $ref: "#/components/schemas/explorer_url"
             cell_type:
               $ref: "#/components/schemas/ontology_elements"
-              nullable: true
             cell_count:
               type: integer
               nullable: true
@@ -655,6 +656,8 @@ components:
             schema_version:
               type: string
               nullable: true
+            processing_status:
+              $ref: "#/components/schemas/processing_status"
     dataset_preview:
       type: object
       properties:
@@ -671,8 +674,6 @@ components:
           $ref: "#/components/schemas/ontology_elements"
         organism:
           $ref: "#/components/schemas/ontology_elements"
-        processing_status:
-          $ref: "#/components/schemas/processing_status"
         tombstone:
           type: boolean
     dataset_asset:
@@ -695,6 +696,7 @@ components:
           type: string
     ontology_elements:
       type: array
+      default: []
       items:
         $ref: "#/components/schemas/ontology_element"
     problem:
@@ -711,6 +713,7 @@ components:
       type: string
       description: Processing status for a Dataset or Collection
       enum: [FAILURE, PENDING, SUCCESS]
+      nullable: true
     publisher_metadata:
       type: object
       nullable: true
