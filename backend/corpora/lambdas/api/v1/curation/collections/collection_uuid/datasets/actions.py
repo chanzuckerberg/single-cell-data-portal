@@ -20,7 +20,7 @@ def validate_curator_tag(curator_tag: str) -> bool:
     :return: True if CURATOR_TAG_PREFIX_REGEX is matched.
     """
     matched = re.match(REGEX, curator_tag)
-    return True if matched and matched.groupdict().get("tag") else False
+    return True if matched and matched.groupdict().get("tag_prefix") else False
 
 
 @dbconnect
