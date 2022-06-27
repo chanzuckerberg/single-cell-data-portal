@@ -216,7 +216,7 @@ export function useWMGQuery(
   const { quickSelectOpen } = useContext(StateContext);
   // (thuang): Refresh query when the snapshotId changes
   const currentSnapshotId = useSnapshotId();
-  
+
   return useQuery(
     [USE_QUERY, quickSelectOpen, query, currentSnapshotId],
     ({ signal }) => fetchQuery({ query, signal }),

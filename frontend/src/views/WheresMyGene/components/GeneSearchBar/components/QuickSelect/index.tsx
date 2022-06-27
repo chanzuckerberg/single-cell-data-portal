@@ -16,13 +16,19 @@ import {
   MenuSelect,
 } from "czifui";
 import { pull, uniq } from "lodash";
-import React, { createContext, ReactChild, useRef, useState, useContext } from "react";
-import { DispatchContext } from "src/views/WheresMyGene/common/store";
-import { setQuickSelectOpen } from "src/views/WheresMyGene/common/store/actions";
+import React, {
+  createContext,
+  ReactChild,
+  useContext,
+  useRef,
+  useState,
+} from "react";
 import { FixedSizeList, ListChildComponentProps } from "react-window";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { noop } from "src/common/constants/utils";
+import { DispatchContext } from "src/views/WheresMyGene/common/store";
+import { setQuickSelectOpen } from "src/views/WheresMyGene/common/store/actions";
 import { Label } from "../../style";
 import { ButtonWrapper, StyledIconButton, StyledMenuItem } from "./style";
 
@@ -119,13 +125,13 @@ export default function QuickSelect<
   analyticsEvent,
   isLoading,
 }: Props<T, Multiple>): JSX.Element {
-  const dispatch = useContext(DispatchContext);  
+  const dispatch = useContext(DispatchContext);
   const [open, setOpenPopper] = useState(false);
 
   const setOpen = (open: boolean) => {
     setOpenPopper(open);
-    dispatch(setQuickSelectOpen(open))
-  }
+    dispatch(setQuickSelectOpen(open));
+  };
 
   const [input, setInput] = useState("");
   const [hasComma, setHasComma] = useState(false);

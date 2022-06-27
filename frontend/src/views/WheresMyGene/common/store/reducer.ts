@@ -48,7 +48,7 @@ export const INITIAL_STATE: State = {
   selectedTissues: [],
   snapshotId: null,
   sortBy: { cellTypes: SORT_BY.CELL_ONTOLOGY, genes: SORT_BY.USER_ENTERED },
-  quickSelectOpen: false
+  quickSelectOpen: false,
 };
 
 export const REDUCERS = {
@@ -160,7 +160,7 @@ function setQuickSelectOpen(
 ): State {
   return {
     ...state,
-    quickSelectOpen: action.payload
+    quickSelectOpen: action.payload,
   };
 }
 
