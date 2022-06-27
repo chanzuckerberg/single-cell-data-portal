@@ -15,13 +15,13 @@ servers:
     url: https://api.staging.single-cell.czi.technology/
 
 paths:
-  /v1/geneinfo:
+  /v1/gene_info:
     get:
       summary: Given a gene ensembl ID, returns that gene's summary information, full name, synonyms, and NCBI URL. 
       description: >-
       tags:
-        - geneinfo
-      operationId: backend.geneinfo.api.v1.geneinfo
+        - gene_info
+      operationId: backend.gene_info.api.v1.gene_info
       parameters: 
         - $ref: '#/components/parameters/GeneID'
       responses:

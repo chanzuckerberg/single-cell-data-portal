@@ -1,15 +1,12 @@
-import os
-
 from backend.corpora.common.utils.secret_config import SecretConfig
 
 
-class WmgConfig(SecretConfig):
+class GeneInfoConfig(SecretConfig):
     def __init__(self, *args, **kwargs):
-        super().__init__("backend", secret_name="wmg_config", **kwargs)
+        super().__init__("backend", secret_name="gene_info_config", **kwargs)
 
     def get_defaults_template(self):
-        deployment_stage = os.getenv("DEPLOYMENT_STAGE", "test")
-        defaults_template = {"bucket": f"wmg-{deployment_stage}", "data_path_prefix": "", "tiledb_config_overrides": {}}
+        defaults_template = {"ncbi_api_key": ""}
         return defaults_template
 
     # TODO: promote this impl to parent class, if new behavior works universally
