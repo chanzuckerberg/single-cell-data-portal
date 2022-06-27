@@ -176,13 +176,13 @@ export default function QuickSelect<
         };
 
   const handleClose = (
-    _: React.ChangeEvent<Record<string, never>>,
+    e: React.FocusEvent<Record<string, never>>,
     reason: AutocompleteCloseReason
   ) => {
     if (reason === "toggleInput") {
       return;
     }
-    setOpen(false);
+    if (e.relatedTarget?.id !== `${dataTestId}-id`) setOpen(false);
     setInput("");
   };
   const handleChange = (
@@ -193,7 +193,7 @@ export default function QuickSelect<
   };
 
   const handleClick = () => {
-    setOpen(true);
+    setOpen(!open);
   };
 
   const ref = useRef(null);
@@ -223,6 +223,7 @@ export default function QuickSelect<
         <Label>{label}</Label>
         <StyledIconButton
           disabled={isLoading}
+          id={`${dataTestId}-id`}
           data-test-id={dataTestId}
           ref={ref}
           onClick={handleClick}
