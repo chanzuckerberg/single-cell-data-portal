@@ -39,13 +39,13 @@ def dataset_submissions_handler(s3_event: dict, unused_context) -> None:
         parsed = parse_key(key)
         if not parsed:
             raise CorporaException(f"Missing collection UUID, curator tag, and/or dataset UUID for {key=}")
-        if parsed["tag"]:
-            parsed["tag"] = f"{parsed['tag']}.{parsed['extension']}"
+        if parsed["tag_prefix"]:
+            parsed["tag"] = f"{parsed['tag_prefix']}.{parsed['extension']}"
         logger.debug(parsed)
 
         with db_session_manager() as session:
             collection_owner, dataset_uuid = get_dataset_info(
-                session, parsed["collection_uuid"], parsed["dataset_uuid"], parsed["tag"]
+                session, parsed["collection_uuid"], parsed["dataset_uuid"], parsed.get("tag")
             )
 
             logger.info(f"{collection_owner=}, {dataset_uuid=}")
