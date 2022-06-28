@@ -31,14 +31,23 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/GeneInfo'
+        "403":
+          $ref: "#/components/responses/403"
         "404":
           $ref: "#/components/responses/404"
 
 components:
   schemas:
     problem:
-      type: string
+      type: object
       description: Error message container for HTTP APIs.
+      properties:
+        type:
+          type: string
+        title:
+          type: string
+        detail:
+          type: string
     GeneInfo:
       type: object
       properties:
@@ -64,6 +73,12 @@ components:
   responses:
     200:
       description: OK.
+    403:
+      description: Unauthorized.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
     404:
       description: Resource not found.
       content:

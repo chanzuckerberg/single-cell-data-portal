@@ -25,28 +25,28 @@ class NCBIProvider(object):
     def __init__(self) -> None:
         self.base_ncbi_uri = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/"
         gene_info_config = GeneInfoConfig()
-        gene_info_config.load()
         try:
-            self.ncbi_api_key = f"&api_key={gene_info_config.ncbi_api_key}"
+            self._api_key = f"&api_key={gene_info_config.ncbi_api_key}"
         except RuntimeError:
             logging.error("Could not find NCBI API key")
-            self.ncbi_api_key = None
-        super().__init__()
+            self._api_key = None
 
-    def _get_api_key(self):
-        if self.ncbi_api_key is None:
-            return None
-        else:
-            return f"&api_key={self.ncbi_api_key}"
+    @property
+    def api_key(self):
+        return self._api_key
+
+    @api_key.setter
+    def api_key(self, value):
+        self._api_key = value
 
     def fetch_gene_info_tree(self, uid):
         """
         Given a gene UID from NCBI, returns an XML tree of gene information
         """
 
-        if self._get_api_key() is None:
+        if self.api_key is None:
             raise NCBIAPIException
-        fetch_url = f"{self.base_ncbi_uri}efetch.fcgi?db=gene&id={uid}{self._get_api_key()}&retmode=xml"
+        fetch_url = f"{self.base_ncbi_uri}efetch.fcgi?db=gene&id={uid}{self.api_key}&retmode=xml"
         try:
             return urllib.request.urlopen(fetch_url).read()
         except Exception:
@@ -57,9 +57,9 @@ class NCBIProvider(object):
         Given a gene ensembl ID, returns NCBI's corresponding gene UID
         """
 
-        if self._get_api_key() is None:
+        if self.api_key is None:
             raise NCBIAPIException
-        search_url = f"{self.base_ncbi_uri}esearch.fcgi?db=gene&term={geneID}{self._get_api_key()}&retmode=json"
+        search_url = f"{self.base_ncbi_uri}esearch.fcgi?db=gene&term={geneID}{self.api_key}&retmode=json"
         try:
             search_response = urllib.request.urlopen(search_url).read()
         except Exception:
