@@ -183,9 +183,11 @@ def build_ordered_cell_types_by_tissue(
             {
                 "cell_type_ontology_term_id": row.cell_type_ontology_term_id,
                 "cell_type": ontology_term_label(row.cell_type_ontology_term_id),
-                "total_count": cell_counts_cell_type_agg_T[row.tissue_ontology_term_id][row.cell_type_ontology_term_id][
-                    "n_cells_cell_type"
-                ],
+                "total_count": int(
+                    cell_counts_cell_type_agg_T[row.tissue_ontology_term_id][row.cell_type_ontology_term_id][
+                        "n_cells_cell_type"
+                    ]
+                ),
                 "depth": row.depth,
             }
         )
