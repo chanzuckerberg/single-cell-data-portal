@@ -44,7 +44,7 @@ def query():
             expression_summary=build_expression_summary(dot_plot_matrix_df),
             term_id_labels=dict(
                 genes=build_gene_id_label_mapping(criteria.gene_ontology_term_ids),
-                cell_types=build_ordered_cell_types_by_tissue(cell_counts, snapshot.cell_type_orderings),
+                cell_types=build_ordered_cell_types_by_tissue(cell_counts, dot_plot_matrix_df.T, snapshot.cell_type_orderings),
             ),
             filter_dims=response_filter_dims_values,
         )
@@ -154,7 +154,7 @@ def build_ontology_term_id_label_mapping(ontology_term_ids: Iterable[str]) -> Li
 
 
 def build_ordered_cell_types_by_tissue(
-    cell_counts: DataFrame, cell_type_orderings: DataFrame
+    cell_counts: DataFrame, dot_plot_matrix_df_T: DataFrame, cell_type_orderings: DataFrame,
 ) -> Dict[str, List[Dict[str, str]]]:
     distinct_tissues_cell_types: DataFrame = cell_counts.groupby(
         ["tissue_ontology_term_id", "cell_type_ontology_term_id"], as_index=False
@@ -176,7 +176,7 @@ def build_ordered_cell_types_by_tissue(
             {
                 "cell_type_ontology_term_id": row.cell_type_ontology_term_id,
                 "cell_type": ontology_term_label(row.cell_type_ontology_term_id),
-                "total_count": row.n_total_cells,
+                "total_count": dot_plot_matrix_df_T[row.tissue_ontology_term_id][row.cell_type_ontology_term_id]['n_cells_cell_type'],
                 "depth": row.depth,
             }
         )
