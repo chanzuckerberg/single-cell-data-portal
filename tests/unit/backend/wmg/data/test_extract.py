@@ -2,7 +2,7 @@ import unittest
 
 from backend.corpora.common.corpora_orm import DatasetArtifactFileType
 from backend.wmg.data import extract
-from backend.wmg.data.extract import included_assay_ontologies
+from backend.wmg.data.constants import INCLUDED_ASSAYS
 from tests.unit.backend.fixtures.generate_data_mixin import GenerateDataMixin
 from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
 
@@ -16,7 +16,7 @@ class TestExtract(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
         super().setUp()
         pub_collection = self.generate_collection(self.session, visibility="PUBLIC")
         # INCLUDE
-        assay_ontologies = list(included_assay_ontologies.keys())
+        assay_ontologies = list(INCLUDED_ASSAYS.keys())
         self.dataset_0 = self.generate_dataset_with_s3_resources(
             self.session,
             artifacts=True,
