@@ -12,9 +12,9 @@ from backend.wmg.data.rankit import rankit
 from backend.wmg.data.cube_pipeline import load, load_data_and_create_cube
 from backend.wmg.data.load_corpus import (
     load_h5ad,
-    filter_out_rankits_with_low_expression_counts,
     validate_dataset_properties,
 )
+from backend.corpus_asset_pipelines.integrated_corpus.transform import filter_out_rankits_with_low_expression_counts
 from backend.wmg.data.constants import RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD
 from backend.wmg.data.schemas.corpus_schema import create_tdb
 from tests.unit.backend.wmg.fixtures.test_anndata_object import create_anndata_test_object
