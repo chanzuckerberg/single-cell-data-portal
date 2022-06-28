@@ -122,4 +122,6 @@ class GeneInfoAPIv1Tests(unittest.TestCase):
         entrez3 = ET.SubElement(root3, "Entrez")
         summary3 = ET.SubElement(entrez3, "Entrezgene_summary")
         summary3.text = "gene summary"
-        self.assertEqual(provider.parse_gene_info_tree(ET.tostring(root3)), dict(name="", summary="gene summary", synonyms=[]))
+        self.assertEqual(
+            provider.parse_gene_info_tree(ET.tostring(root3)), dict(name="", summary="gene summary", synonyms=[])
+        )
