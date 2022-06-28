@@ -9,10 +9,9 @@ import tiledb
 from scipy import sparse
 from scipy.sparse import coo_matrix, csr_matrix
 from backend.wmg.data.rankit import rankit
-from backend.wmg.data.cube_pipeline import load, load_data_and_create_cube
-from backend.wmg.data.load_corpus import (
-    load_h5ad,
-)
+from backend.wmg.data.cube_pipeline import load_data_and_create_cube
+from backend.corpus_asset_pipelines.integrated_corpus.job import build_integrated_corpus
+from backend.corpus_asset_pipelines.integrated_corpus.load import load_dataset
 from backend.corpus_asset_pipelines.integrated_corpus.validate import validate_dataset_properties
 from backend.corpus_asset_pipelines.integrated_corpus.transform import filter_out_rankits_with_low_expression_counts
 from backend.wmg.data.constants import RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD
@@ -70,7 +69,7 @@ class TestCorpusLoad(unittest.TestCase):
     @patch("backend.wmg.data.cube_pipeline.tiledb.vacuum")
     @patch("backend.wmg.data.cube_pipeline.load_h5ad")
     def test__load_loads_all_datasets_in_directory(self, mock_load_h5ad, mock_vacuum, mock_consolidate):
-        load(self.path_to_datasets, self.corpus_path)
+        build_integrated_corpus(self.path_to_datasets, self.corpus_path)
         self.assertEqual(mock_load_h5ad.call_count, 2)
         self.assertEqual(mock_vacuum.call_count, 3)
         self.assertEqual(mock_consolidate.call_count, 3)
@@ -79,18 +78,18 @@ class TestCorpusLoad(unittest.TestCase):
     @patch("backend.wmg.data.load_corpus.validate_dataset_properties")
     def test_invalid_datasets_are_not_added_to_corpus(self, mock_validation, mock_global_var):
         mock_validation.return_value = False
-        load(self.path_to_datasets, self.corpus_path)
+        build_integrated_corpus(self.path_to_datasets, self.corpus_path)
         self.assertEqual(mock_global_var.call_count, 0)
 
     def test_global_var_array_updated_when_dataset_contains_new_genes(self):
-        load_h5ad(self.small_anndata_filename, self.corpus_path, False)
+        load_dataset(self.small_anndata_filename, self.corpus_path, False)
         with tiledb.open(f"{self.corpus_path}/var", "r") as var:
             var_df = var.df[:]
             total_stored_genes = len(set(var_df["gene_ontology_term_id"].to_numpy(dtype=str)))
         small_gene_count = 3
         self.assertEqual(small_gene_count, total_stored_genes)
 
-        load_h5ad(self.large_anndata_filename, self.corpus_path, False)
+        load_dataset(self.large_anndata_filename, self.corpus_path, False)
 
         large_gene_count = 1000  # overlapping genes should only be counted once
         with tiledb.open(f"{self.corpus_path}/var", "r") as var:
@@ -253,7 +252,7 @@ class TestCorpusLoad(unittest.TestCase):
         anndata_filename.touch()
         test_anndata_object.write(anndata_filename, compression="gzip")
 
-        load_h5ad(anndata_filename, self.corpus_path, validate=False, min_genes=0)
+        load_dataset(anndata_filename, self.corpus_path, validate=False, min_genes=0)
         obs = tiledb.open(f"{self.corpus_path}/obs", "r")
         corpus_cell_count = obs.df[:].shape[0]
 
