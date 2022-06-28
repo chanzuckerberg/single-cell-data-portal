@@ -415,6 +415,12 @@ def extract_metadata(filename) -> dict:
         else:
             return None
 
+    def _get_batch_condition():
+        if "batch_condition" in adata.uns:
+            return adata.uns["batch_condition"]
+        else:
+            return None
+
     metadata = {
         "name": adata.uns["title"],
         "organism": _get_term_pairs("organism"),
@@ -431,6 +437,7 @@ def extract_metadata(filename) -> dict:
         "x_normalization": adata.uns["X_normalization"],
         "x_approximate_distribution": _get_x_approximate_distribution(),
         "schema_version": adata.uns["schema_version"],
+        "batch_condition": _get_batch_condition(),
     }
     logger.info(f"Extract metadata: {metadata}")
     return metadata
