@@ -4,7 +4,7 @@ import pandas as pd
 import anndata as ad
 from scipy.sparse import csr_matrix
 
-from backend.wmg.data.extract import included_assay_ontologies
+from backend.wmg.data.constants import INCLUDED_ASSAYS
 
 
 def create_anndata_test_object(num_genes: int = 3, num_cells: int = 5):
@@ -45,7 +45,7 @@ def create_anndata_test_object(num_genes: int = 3, num_cells: int = 5):
     # add cell level metadata
     cell_type = np.random.choice(["B", "T", "Monocyte"], size=(adata.n_obs,))
     adata.obs["cell_type"] = pd.Categorical(cell_type)  # Categoricals are preferred for efficiency
-    assay_ontologies = np.random.choice(list(included_assay_ontologies.keys()), size=(adata.n_obs,))
+    assay_ontologies = np.random.choice(list(INCLUDED_ASSAYS.keys()), size=(adata.n_obs,))
     adata.obs["assay_ontology_term_id"] = pd.Categorical(assay_ontologies)
 
     # Add cell level metadata matrices
