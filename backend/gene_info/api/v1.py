@@ -5,7 +5,6 @@ from ...corpora.common.utils.http_exceptions import (
     NotFoundHTTPException,
     ForbiddenHTTPException,
 )
-import logging
 
 
 def gene_info(geneID: string):
