@@ -182,8 +182,8 @@ export default function QuickSelect<
     if (reason === "toggleInput") {
       return;
     }
-    // @ts-ignore: relatedTarget is a valid property as the event will sometimes be a FocusEvent depending on the action taken.
-    if (e.relatedTarget?.id !== `${dataTestId}-id`) setOpen(false);
+    const nativeEvent: any = e.nativeEvent;
+    if (nativeEvent.relatedTarget?.id !== `${dataTestId}-id`) setOpen(false);
     setInput("");
   };
   const handleChange = (
