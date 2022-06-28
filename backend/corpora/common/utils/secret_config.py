@@ -52,12 +52,13 @@ class SecretConfig:
         # Environment variables intentionally override config file.
         if not self.config_is_loaded():
             self.load()
-        return (
-            self.value_from_env(name)
-            or self.value_from_config(name)
-            or self.value_from_defaults(name)
-            or self.raise_error(name)
-        )
+        if (value := self.value_from_env(name)) is not None:
+            return value
+        if (value := self.value_from_config(name)) is not None:
+            return value
+        if (value := self.value_from_defaults(name)) is not None:
+            return value
+        self.raise_error(name)
 
     @classmethod
     def reset(cls):
