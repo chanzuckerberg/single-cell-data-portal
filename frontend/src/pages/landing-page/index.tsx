@@ -49,7 +49,7 @@ const LandingPage = (): JSX.Element => {
   const scrollSection5 = useRef<HTMLDivElement>(null!);
 
   // HERO NUMBERS. DUMMY DATA TO BE REPLACED.
-  const [cellsHeroNum] = useState("30M+");
+  const [cellsHeroNum] = useState("25M+");
   const [datasetsHeroNum] = useState("436");
   const [donorsHeroNum] = useState("2.7k+");
 
@@ -361,7 +361,7 @@ const LandingPage = (): JSX.Element => {
                         </h2>
                         <p>
                           Visualize the expression of genes and gene sets using
-                          the largest integrated resource of over 30 million
+                          the largest integrated resource of over 25 million
                           cells.
                         </p>
                         <div className={styles.linkContainer}>
@@ -496,13 +496,6 @@ const LandingPage = (): JSX.Element => {
                               </span>
                             </a>
                           </Link>
-                          {/* LINK TO BE UPDATED POST-LAUNCH */}
-                          <a href="#">
-                            Download with Python
-                            <span className={styles.linkArrow}>
-                              <LinkArrow />
-                            </span>
-                          </a>
                         </div>
                       </div>
                     </div>
@@ -545,7 +538,7 @@ const LandingPage = (): JSX.Element => {
                         <div className={styles.linkContainer}>
                           {/* LINK TO BE UPDATED POST-LAUNCH */}
                           <a href="https://github.com/chanzuckerberg/cellxgene-documentation/blob/main/desktop/quick-start.md">
-                            Learn how it works
+                            Explore CZ Cell×Gene Annotate
                             <span className={styles.linkArrow}>
                               <LinkArrow />
                             </span>
