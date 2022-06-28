@@ -7,7 +7,7 @@ import time
 from typing import List
 import tiledb
 
-from backend.wmg.data import extract
+import backend.corpus_asset_pipelines.integrated_corpus.extract
 from backend.wmg.data.load_cube import upload_artifacts_to_s3, make_snapshot_active
 from backend.wmg.data.load_corpus import load_h5ad
 from backend.wmg.data.schemas.corpus_schema import create_tdb, INTEGRATED_ARRAY_NAME
@@ -72,8 +72,10 @@ def load_data_and_create_cube(
         create_tdb(snapshot_path, corpus_name)
 
     if extract_data:
-        s3_uris = extract.get_dataset_s3_uris()
-        extract.copy_datasets_to_instance(s3_uris, path_to_h5ad_datasets)
+        s3_uris = backend.corpus_asset_pipelines.integrated_corpus.extract.get_dataset_s3_uris()
+        backend.corpus_asset_pipelines.integrated_corpus.extract.copy_datasets_to_instance(
+            s3_uris, path_to_h5ad_datasets
+        )
         logger.info("Copied datasets to instance")
 
     load(path_to_h5ad_datasets, corpus_path, True)
