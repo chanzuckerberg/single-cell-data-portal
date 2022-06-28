@@ -14,8 +14,11 @@ from anndata._core.views import ArrayView
 from scipy import sparse
 from scipy.sparse import coo_matrix, csr_matrix
 
-from backend.wmg.data.constants import GENE_EXPRESSION_COUNT_MIN_THRESHOLD, \
-    RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD, INCLUDED_ASSAYS
+from backend.wmg.data.constants import (
+    GENE_EXPRESSION_COUNT_MIN_THRESHOLD,
+    RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD,
+    INCLUDED_ASSAYS,
+)
 from backend.wmg.data.rankit import rankit
 from backend.wmg.data.schemas.corpus_schema import var_labels, obs_labels, INTEGRATED_ARRAY_NAME
 from backend.wmg.data.utils import get_all_dataset_ids
