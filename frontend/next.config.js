@@ -73,4 +73,13 @@ module.exports = {
       },
     ];
   },
+  async redirects() {
+    return [
+      {
+        destination: "/docs/01__CellxGene",
+        permanent: true,
+        source: "/docs",
+      },
+    ];
+  },
 };

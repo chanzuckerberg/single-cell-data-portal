@@ -1,18 +1,15 @@
 import { ElementHandle } from "playwright";
 import { ROUTES } from "src/common/constants/routes";
-import { goToPage, tryUntil } from "tests/utils/helpers";
-import { TEST_ENV, TEST_URL } from "../common/constants";
+import {
+  describeIfDevStagingProd,
+  goToPage,
+  tryUntil,
+} from "tests/utils/helpers";
+import { TEST_URL } from "../common/constants";
 import { getTestID, getText } from "../utils/selectors";
-
-//(thuang): BE API doesn't work in local happy
-const TEST_ENVS = ["dev", "staging", "prod"];
 
 const GENE_LABELS_ID = "gene-labels";
 const CELL_TYPE_LABELS_ID = "cell-type-labels";
-
-const describeIfDevStagingProd = TEST_ENVS.includes(TEST_ENV)
-  ? describe
-  : describe.skip;
 
 describeIfDevStagingProd("Where's My Gene", () => {
   it("renders the getting started UI", async () => {
@@ -22,31 +19,30 @@ describeIfDevStagingProd("Where's My Gene", () => {
     await expect(page).toHaveSelector(getText("Getting Started"));
     await expect(page).toHaveSelector(
       getText(
-        "Visualize and compare the expression of genes across cell types using a dot plot"
+        "Use the Add Tissue and Add Gene buttons to find where genes are expressed, powered by data from the"
       )
     );
-
-    // Step 1
-    await expect(page).toHaveSelector(
-      getText("Add tissues you are interested in exploring")
-    );
-
-    // Step 2
-    await expect(page).toHaveSelector(
-      getText("Add genes of interest to the visualization")
-    );
-
-    // Step 3
-    await expect(page).toHaveSelector(
-      getText("Darker dots represent higher relative gene expression")
-    );
-
     // Beta callout
     await expect(page).toHaveSelector(getText("This feature is in beta"));
 
     // Filters Panel
     // (thuang): `*` is for intermediate match
     // https://playwright.dev/docs/selectors#intermediate-matches
+
+    async function getTissueSelectorButton() {
+      return page.$(getTestID("add-tissue"));
+    }
+
+    async function getGeneSelectorButton() {
+      return page.$(getTestID("add-gene"));
+    }
+
+    await clickUntilOptionsShowUp(getTissueSelectorButton);
+    await selectFirstOption();
+
+    await clickUntilOptionsShowUp(getGeneSelectorButton);
+    await selectFirstOption();
+
     const filtersPanel = await page.$("*css=div >> text=Filters");
 
     await expect(filtersPanel).toHaveSelector(getText("Dataset"));

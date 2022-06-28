@@ -13,11 +13,13 @@ import ExpediteCollaborationImg from "src/components/common/staticPages/expedite
 import GeneExpressionImg from "src/components/common/staticPages/gene-expression.png";
 import SingleCellDataImg from "src/components/common/staticPages/single-cell-data.png";
 import AnalyzeDatasetsIcon from "./icons/analyze-datasets";
+import CellxgeneIconSmall from "./icons/cellxgene-icon-small";
 import DownloadDataIcon from "./icons/download-data";
 import ExpediteCollaborationIcon from "./icons/expedite-collaboration";
 import LinkArrow from "./icons/external-link-arrow";
 import GeneExpressionIcon from "./icons/gene-expression";
-import SingleCellDataIcon from "./icons/single-cell-data";
+import SingleCellDataIconActive from "./icons/single-cell-data-active";
+import SingleCellDataIconInactive from "./icons/single-cell-data-inactive";
 import styles from "./index.module.scss";
 
 const LandingPage = (): JSX.Element => {
@@ -58,19 +60,25 @@ const LandingPage = (): JSX.Element => {
       links: [
         {
           subheading: "03.04.22 - bioRxiv",
-          ctaText: "DOI: 10.1101/2021.07.19.452956",
           ctaLink: "https://doi.org/10.1101/2021.07.19.452956",
+          ctaText: "Read More",
+          ctaHighlight: false,
+          ctaLogo: false,
         },
         {
           subheading: "13.05.22 - Science",
-          ctaText: "DOI: 10.1126/science.abl4896",
           ctaLink: "https://www.science.org/doi/10.1126/science.abl4896",
+          ctaText: "Read More",
+          ctaHighlight: false,
+          ctaLogo: false,
         },
         {
           subheading: "13.05.22 - Cellxgene",
-          ctaText: "The Tabula Sapiens Consortium et al. (2021) bioRxiv",
           ctaLink:
             "https://cellxgene.cziscience.com/collections/e5f58829-1a66-40b5-a624-9046778e74f5",
+          ctaText: "Explore Datasets",
+          ctaHighlight: true,
+          ctaLogo: true,
         },
       ],
     },
@@ -80,19 +88,25 @@ const LandingPage = (): JSX.Element => {
       links: [
         {
           subheading: "13.05.22 - Science",
-          ctaText: "DOI: 10.1126/science.abl5197",
           ctaLink: "https://doi.org/10.1126/science.abl5197",
+          ctaText: "Read More",
+          ctaHighlight: false,
+          ctaLogo: false,
         },
         {
           subheading: "20.07.21 - bioRxiv",
-          ctaText: "DOI: 10.1101/2021.04.28.441762",
           ctaLink: "https://doi.org/10.1101/2021.04.28.441762",
+          ctaText: "Read More",
+          ctaHighlight: false,
+          ctaLogo: false,
         },
         {
           subheading: "13.05.22 - Cellxgene",
-          ctaText: "Domínguez Conde et al. (2022) Science",
           ctaLink:
             "https://cellxgene.cziscience.com/collections/62ef75e4-cbea-454e-a0ce-998ec40223d3",
+          ctaText: "Explore Datasets",
+          ctaHighlight: true,
+          ctaLogo: true,
         },
       ],
     },
@@ -101,14 +115,18 @@ const LandingPage = (): JSX.Element => {
       links: [
         {
           subheading: "11.03.21 - bioRxiv",
-          ctaText: "DOI: 10.1101/2022.03.10.483747",
           ctaLink: "https://doi.org/10.1101/2022.03.10.483747",
+          ctaText: "Read More",
+          ctaHighlight: false,
+          ctaLogo: false,
         },
         {
           subheading: "13.05.22 - Cellxgene",
-          ctaText: "Sikkema et al. (2022) bioRxiv",
           ctaLink:
             "https://cellxgene.cziscience.com/collections/6f6d381a-7701-4781-935c-db10d30de293",
+          ctaText: "Explore Datasets",
+          ctaHighlight: true,
+          ctaLogo: true,
         },
       ],
     },
@@ -118,14 +136,18 @@ const LandingPage = (): JSX.Element => {
       links: [
         {
           subheading: "08.04.22 - Science",
-          ctaText: "DOI: 10.1126/science.abf3041",
           ctaLink: "https://doi.org/10.1126/science.abf3041",
+          ctaText: "Read More",
+          ctaHighlight: false,
+          ctaLogo: false,
         },
         {
           subheading: "13.05.22 - Cellxgene",
-          ctaText: "Yazar et al. (2022) Science",
           ctaLink:
             "https://cellxgene.cziscience.com/collections/dde06e0f-ab3b-46be-96a2-a8082383c4a1",
+          ctaText: "Explore Datasets",
+          ctaHighlight: true,
+          ctaLogo: true,
         },
       ],
     },
@@ -135,14 +157,18 @@ const LandingPage = (): JSX.Element => {
       links: [
         {
           subheading: "08.04.22 - Science",
-          ctaText: "DOI: 10.1126/science.abf1970",
           ctaLink: "https://doi.org/10.1126/science.abf1970",
+          ctaText: "Read More",
+          ctaHighlight: false,
+          ctaLogo: false,
         },
         {
           subheading: "13.05.22 - Cellxgene",
-          ctaText: "Perez et al. (2022) Science",
           ctaLink:
             "https://cellxgene.cziscience.com/collections/436154da-bcf1-4130-9c8b-120ff9a888f2",
+          ctaText: "Explore Datasets",
+          ctaHighlight: true,
+          ctaLogo: true,
         },
       ],
     },
@@ -192,72 +218,76 @@ const LandingPage = (): JSX.Element => {
         <div className={styles.main}>
           <div>
             <div className={styles.contentNav}>
-              <div
-                className={`${styles.contentLink} ${
-                  inView1 ? styles.active : ""
-                }`}
-                onClick={() => {
-                  scrollSection1.current?.scrollIntoView({
-                    behavior: "smooth",
-                  });
-                }}
-              >
-                Find single-cell data
+              <div className={styles.contentNavSubrow}>
+                <div
+                  className={`${styles.contentLink} ${
+                    inView1 ? styles.active : ""
+                  }`}
+                  onClick={() => {
+                    scrollSection1.current?.scrollIntoView({
+                      behavior: "smooth",
+                    });
+                  }}
+                >
+                  Find single-cell data
+                </div>
+                <div
+                  className={`${styles.contentLink} ${
+                    inView2 ? styles.active : ""
+                  }`}
+                  onClick={() => {
+                    scrollSection2.current?.scrollIntoView({
+                      behavior: "smooth",
+                    });
+                  }}
+                >
+                  Explore gene expression
+                </div>
               </div>
-              <div
-                className={`${styles.contentLink} ${
-                  inView2 ? styles.active : ""
-                }`}
-                onClick={() => {
-                  scrollSection2.current?.scrollIntoView({
-                    behavior: "smooth",
-                  });
-                }}
-              >
-                Explore gene expression
-              </div>
-              <div
-                className={`${styles.contentLink} ${
-                  inView3 ? styles.active : ""
-                }`}
-                onClick={() => {
-                  scrollSection3.current?.scrollIntoView({
-                    behavior: "smooth",
-                  });
-                }}
-              >
-                Analyze datasets
-              </div>
-              <div
-                className={`${styles.contentLink} ${
-                  inView4 ? styles.active : ""
-                }`}
-                onClick={() => {
-                  scrollSection4.current?.scrollIntoView({
-                    behavior: "smooth",
-                  });
-                }}
-              >
-                Download data
-              </div>
-              <div
-                className={`${styles.contentLink} ${
-                  inView5 ? styles.active : ""
-                }`}
-                onClick={() => {
-                  scrollSection5.current?.scrollIntoView({
-                    behavior: "smooth",
-                  });
-                }}
-              >
-                Expedite collaboration
+              <div className={styles.contentNavSubrow}>
+                <div
+                  className={`${styles.contentLink} ${
+                    inView3 ? styles.active : ""
+                  }`}
+                  onClick={() => {
+                    scrollSection3.current?.scrollIntoView({
+                      behavior: "smooth",
+                    });
+                  }}
+                >
+                  Analyze datasets
+                </div>
+                <div
+                  className={`${styles.contentLink} ${
+                    inView4 ? styles.active : ""
+                  }`}
+                  onClick={() => {
+                    scrollSection4.current?.scrollIntoView({
+                      behavior: "smooth",
+                    });
+                  }}
+                >
+                  Download data
+                </div>
+                <div
+                  className={`${styles.contentLink} ${
+                    inView5 ? styles.active : ""
+                  }`}
+                  onClick={() => {
+                    scrollSection5.current?.scrollIntoView({
+                      behavior: "smooth",
+                    });
+                  }}
+                >
+                  Expedite collaboration
+                </div>
               </div>
             </div>
             <div className={styles.contentOverflowWrapper}>
               <div className={styles.contentContainer}>
                 <div ref={observerSection1}>
                   <div
-                    className={styles.contentRow}
+                    className={`${styles.contentRow} ${styles.contentRowFirst}`}
                     id="single-cell"
                     ref={scrollSection1}
                   >
@@ -268,7 +298,11 @@ const LandingPage = (): JSX.Element => {
                     >
                       <div className={styles.contentInfoFigureCol}>
                         <div className={styles.figureWrapper}>
-                          <SingleCellDataIcon />
+                          {inView1 ? (
+                            <SingleCellDataIconActive />
+                          ) : (
+                            <SingleCellDataIconInactive />
+                          )}
                         </div>
                         <span className={styles.figureSeparator}></span>
                       </div>
@@ -555,28 +589,36 @@ const LandingPage = (): JSX.Element => {
 
                   {pub.links.map((link, linkIndex) => (
                     <div
-                      className={styles.pubArticleSubRow}
+                      className={`${styles.pubArticleSubRow} ${
+                        link.ctaHighlight
+                          ? styles.pubArticleSubRowHighlight
+                          : ""
+                      }`}
                       key={`article-${articleIndex}-link-${linkIndex}`}
                     >
-                      <div>
-                        <span className={styles.pubArticleDate}>
-                          {link.subheading}
-                        </span>
-                        <p className={styles.pubArticleCitation}>
+                      {/* <div> */}
+                      <span className={styles.pubArticleDate}>
+                        {link.subheading}
+                      </span>
+                      {/* </div> */}
+                      <div className={styles.pubArticleSubRowInner}>
+                        <a
+                          className={styles.pubArticleLink}
+                          href={link.ctaLink}
+                          target="_blank"
+                          rel="noopener"
+                        >
                           {link.ctaText}
-                        </p>
+                          <span className={styles.linkArrow}>
+                            <LinkArrow />
+                          </span>
+                        </a>
+                        {link.ctaLogo && (
+                          <CellxgeneIconSmall
+                            className={styles.pubArticleLogoIcon}
+                          />
+                        )}
                       </div>
-                      <a
-                        className={styles.pubArticleLink}
-                        href={link.ctaLink}
-                        target="_blank"
-                        rel="noopener"
-                      >
-                        Read More
-                        <span className={styles.linkArrow}>
-                          <LinkArrow />
-                        </span>
-                      </a>
                     </div>
                   ))}
                 </div>

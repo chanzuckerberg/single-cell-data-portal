@@ -6,18 +6,20 @@ from urllib.parse import unquote_plus
 
 from sqlalchemy.orm import Session
 
-from backend.corpora.common.entities import Dataset
+from backend.corpora.common.entities import Dataset, Collection
 from backend.corpora.common.upload import upload
 from backend.corpora.common.utils.db_session import db_session_manager
 from backend.corpora.common.utils.exceptions import CorporaException
+from backend.corpora.common.utils.regex import (
+    USERNAME_REGEX,
+    COLLECTION_ID_REGEX,
+    EXTENSION_REGEX,
+    DATASET_ID_REGEX,
+    CURATOR_TAG_PREFIX_REGEX,
+)
 
 logger = logging.getLogger(__name__)
-USERNAME_REGEX = r"(?P<username>[\w\-\|]+)"
-UUID_REGEX = r"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
-EXTENSION_REGEX = r"(?P<extension>h5ad)"
-DATASET_ID_REGEX = f"(?P<dataset_uuid>{UUID_REGEX})"
-COLLECTION_ID_REGEX = f"(?P<collection_uuid>{UUID_REGEX})"
-REGEX = f"^{USERNAME_REGEX}/{COLLECTION_ID_REGEX}/({DATASET_ID_REGEX}|(?P<tag>.*))\\.{EXTENSION_REGEX}$"
+REGEX = f"^{USERNAME_REGEX}/{COLLECTION_ID_REGEX}/({DATASET_ID_REGEX}|{CURATOR_TAG_PREFIX_REGEX})\\.{EXTENSION_REGEX}$"
 
 
 def dataset_submissions_handler(s3_event: dict, unused_context) -> None:
@@ -37,18 +39,20 @@ def dataset_submissions_handler(s3_event: dict, unused_context) -> None:
         parsed = parse_key(key)
         if not parsed:
             raise CorporaException(f"Missing collection UUID, curator tag, and/or dataset UUID for {key=}")
-        if parsed["tag"]:
-            parsed["tag"] = f"{parsed['tag']}.{parsed['extension']}"
+        if parsed["tag_prefix"]:
+            parsed["tag"] = f"{parsed['tag_prefix']}.{parsed['extension']}"
         logger.debug(parsed)
 
         with db_session_manager() as session:
             collection_owner, dataset_uuid = get_dataset_info(
-                session, parsed["collection_uuid"], parsed["dataset_uuid"], parsed["tag"]
+                session, parsed["collection_uuid"], parsed["dataset_uuid"], parsed.get("tag")
             )
 
-            logger.debug(f"{collection_owner=}, {dataset_uuid=}")
+            logger.info(f"{collection_owner=}, {dataset_uuid=}")
             if not collection_owner:
                 raise CorporaException(f"Collection {parsed['collection_uuid']} does not exist")
+            elif parsed["username"] == "super":
+                pass
             elif parsed["username"] != collection_owner:
                 raise CorporaException(
                     f"user:{parsed['username']} does not have permission to modify datasets in collection "
@@ -64,7 +68,7 @@ def dataset_submissions_handler(s3_event: dict, unused_context) -> None:
                 file_size=size,
                 file_extension=parsed["extension"],
                 dataset_id=dataset_uuid,
-                curator_tag=parsed["tag"],
+                curator_tag=parsed.get("tag"),
             )
 
 
@@ -105,10 +109,14 @@ def parse_key(key: str) -> Optional[dict]:
 def get_dataset_info(
     session: Session, collection_uuid: str, dataset_uuid: str, incoming_curator_tag: str
 ) -> Tuple[Optional[str], Optional[str]]:
-    if dataset_uuid:
+    if dataset_uuid:  # If a dataset uuid was provided
         dataset = Dataset.get(session, dataset_uuid)
-    else:
+    else:  # if incoming_curator_tag
         dataset = Dataset.get_dataset_from_curator_tag(session, collection_uuid, incoming_curator_tag)
+        if not dataset:  # New dataset
+            collection = Collection.get_collection(session, collection_uuid)
+            if collection:
+                return collection.owner, None
     if dataset:
         return dataset.collection.owner, dataset.id
     return None, None

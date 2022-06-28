@@ -5,7 +5,9 @@ const ResponsiveContainer = styled.div`
   position: relative;
   overflow: hidden;
   width: 100%;
-  padding-top: 56.25%;
+  height: auto;
+  padding-top: 68%;
+  margin: 24px 0;
 `;
 
 const ResponsiveIFrame = styled.iframe`
