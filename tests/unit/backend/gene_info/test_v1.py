@@ -73,10 +73,10 @@ class GeneInfoAPIv1Tests(unittest.TestCase):
             mock_api_key.return_value = ""
             res1 = self.app.get("/gene_info/v1/gene_info?geneID=")
             self.assertEqual(res1.status_code, 404)
-            self.assertEqual(json.loads(res1.data)["detail"], "Resource not found.")
+            self.assertEqual(json.loads(res1.data)["detail"], "Unexpected NCBI search result")
             res2 = self.app.get("/gene_info/v1/gene_info?geneID=abc")
             self.assertEqual(res2.status_code, 404)
-            self.assertEqual(json.loads(res2.data)["detail"], "Resource not found.")
+            self.assertEqual(json.loads(res2.data)["detail"], "Unexpected NCBI search result")
 
     def test_correct_parse_xml_tree(self):
         """
