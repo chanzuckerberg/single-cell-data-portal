@@ -7,11 +7,11 @@ info:
     https://cellxgene.cziscience.com to access the cellxgene Data Portal.
 servers:
   - description: Production environment
-    url: https://api.corpora.cziscience.com
+    url: https://api.cellxgene.cziscience.com/
   - description: Development environment
-    url: https://api.dev.corpora.cziscience.com
+    url: https://api.cellxgene.dev.single-cell.czi.technology
   - description: Staging environment
-    url: https://api.staging.corpora.cziscience.com
+    url: https://api.cellxgene.staging.single-cell.czi.technology
 paths:
   /v1/wmg/cell_types:
     get:
@@ -544,7 +544,7 @@ paths:
                   properties:
                     id:
                       $ref: "#/components/schemas/collection_uuid"
-                    name: 
+                    name:
                       type: string
                     publisher_metadata:
                       $ref: "#/components/schemas/publisher_metadata"
@@ -956,7 +956,7 @@ paths:
       summary: Fetch the identifier of the curator's active API key -- for use with Data Portal UI
       operationId: backend.corpora.lambdas.api.v1.auth.keys.get
       security:
-        - cxguserCookie: [ ]
+        - cxguserCookie: []
       responses:
         "200":
           description: OK
@@ -1299,9 +1299,9 @@ components:
         type: object
         # TODO: fix: https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data-portal/1967
         # `{"<ontology_term_id>": "<ontology_term_label"}`
-#        maxProperties: 1
-#        additionalProperties:
-#          type: string
+    #        maxProperties: 1
+    #        additionalProperties:
+    #          type: string
     wmg_ontology_term_id_list:
       type: array
       items:
