@@ -129,7 +129,7 @@ class WmgApiV1Tests(unittest.TestCase):
                             {
                                 "cell_type": "cell_type_ontology_term_id_0_label",
                                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_0",
-                                "total_count": 7290,
+                                "total_count": 10,
                                 "depth": 0,
                             }
                         ]
@@ -377,13 +377,13 @@ class WmgApiV1Tests(unittest.TestCase):
                     {
                         "cell_type": "cell_type_ontology_term_id_0_label",
                         "cell_type_ontology_term_id": "cell_type_ontology_term_id_0",
-                        "total_count": 7290,
+                        "total_count": 640,
                         "depth": 0,
                     },
                     {
                         "cell_type": "cell_type_ontology_term_id_1_label",
                         "cell_type_ontology_term_id": "cell_type_ontology_term_id_1",
-                        "total_count": 7290,
+                        "total_count": 640,
                         "depth": 1,
                     },
                 ],
@@ -391,13 +391,13 @@ class WmgApiV1Tests(unittest.TestCase):
                     {
                         "cell_type": "cell_type_ontology_term_id_0_label",
                         "cell_type_ontology_term_id": "cell_type_ontology_term_id_0",
-                        "total_count": 7290,
+                        "total_count": 640,
                         "depth": 0,
                     },
                     {
                         "cell_type": "cell_type_ontology_term_id_1_label",
                         "cell_type_ontology_term_id": "cell_type_ontology_term_id_1",
-                        "total_count": 7290,
+                        "total_count": 640,
                         "depth": 1,
                     },
                 ],
