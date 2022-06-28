@@ -15,18 +15,15 @@ def gene_info(geneID: string):
     try:
         uid = provider.fetch_gene_uid(geneID)
     except NCBIAPIException:
-        logging.error("Failed search of NCBI database, API key issue")
-        raise ForbiddenHTTPException
+        raise ForbiddenHTTPException("Failed search of NCBI database, API key issue")
     except NCBIUnexpectedResultException:
-        logging.error("Unexpected NCBI search result")
-        raise NotFoundHTTPException
+        raise NotFoundHTTPException("Unexpected NCBI search result")
 
     # fetch gene information using NCBI UID
     try:
         gene_info_tree = provider.fetch_gene_info_tree(uid)
     except NCBIAPIException:
-        logging.error("Failed fetch of NCBI database, API key issue")
-        raise ForbiddenHTTPException
+        raise ForbiddenHTTPException("Failed fetch of NCBI database, API key issue")
     gene_info = provider.parse_gene_info_tree(gene_info_tree)
     return make_response(
         jsonify(
