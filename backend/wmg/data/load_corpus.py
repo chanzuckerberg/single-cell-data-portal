@@ -2,7 +2,7 @@ import gc
 import logging
 import os
 import time
-from typing import List, Union
+from typing import List
 
 import anndata
 import numpy
@@ -10,10 +10,10 @@ import numpy as np
 import pandas as pd
 import scanpy
 import tiledb
-from anndata._core.views import ArrayView
 from scipy import sparse
 from scipy.sparse import coo_matrix, csr_matrix
 
+from backend.corpus_asset_pipelines.integrated_corpus.extract import get_X_raw
 from backend.wmg.data.constants import (
     GENE_EXPRESSION_COUNT_MIN_THRESHOLD,
     RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD,
@@ -147,16 +147,6 @@ def save_axes_labels(df: pd.DataFrame, array_name: str, label_info: List) -> int
 
     logger.info("saved.")
     return next_join_index
-
-
-def get_X_raw(anndata_object: anndata.AnnData) -> Union[np.ndarray, sparse.spmatrix, ArrayView]:
-    """
-    Current rules for our curated H5ADs:
-    * if there is a .raw, it is the raw counts, and .X is transformed/normalized (by author) or is == to .raw.X
-    * if there is no .raw, ad.X contains the raw counts
-    """
-    raw_expression_matrix = getattr(anndata_object.raw, "X", None)
-    return raw_expression_matrix if raw_expression_matrix is not None else anndata_object.X
 
 
 def transform_dataset_raw_counts_to_rankit(

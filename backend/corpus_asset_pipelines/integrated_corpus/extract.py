@@ -1,9 +1,29 @@
+import logging
 import subprocess
+from typing import Union
+
+import anndata
+import numpy as np
+from anndata._core.views import ArrayView
+from scipy import sparse
 
 from backend.corpora.common.corpora_orm import DatasetArtifactFileType
-from backend.corpora.common.entities import Collection, Dataset, DatasetAsset
+from backend.corpora.common.entities import Dataset, Collection, DatasetAsset
 from backend.corpora.common.utils.db_session import db_session_manager
 from backend.wmg.data.constants import INCLUDED_ASSAYS
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
+
+
+def get_X_raw(anndata_object: anndata.AnnData) -> Union[np.ndarray, sparse.spmatrix, ArrayView]:
+    """
+    Current rules for our curated H5ADs:
+    * if there is a .raw, it is the raw counts, and .X is transformed/normalized (by author) or is == to .raw.X
+    * if there is no .raw, ad.X contains the raw counts
+    """
+    raw_expression_matrix = getattr(anndata_object.raw, "X", None)
+    return raw_expression_matrix if raw_expression_matrix is not None else anndata_object.X
 
 
 def get_dataset_s3_uris():
@@ -41,3 +61,8 @@ def copy_datasets_to_instance(s3_uris, dataset_directory):
     for dataset in s3_uris:
         copy_command = ["aws", "s3", "cp", s3_uris[dataset], f"./{dataset_directory}/{dataset}/local.h5ad"]
         subprocess.run(copy_command)
+
+
+def extract_h5ad(h5ad_path: str):
+    logger.info(f"Loading {h5ad_path}...")
+    return anndata.read_h5ad(h5ad_path)

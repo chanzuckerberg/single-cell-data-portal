@@ -1,7 +1,7 @@
 import unittest
 
+import backend.corpus_asset_pipelines.integrated_corpus.extract
 from backend.corpora.common.corpora_orm import DatasetArtifactFileType
-from backend.wmg.data import extract
 from backend.wmg.data.constants import INCLUDED_ASSAYS
 from tests.unit.backend.fixtures.generate_data_mixin import GenerateDataMixin
 from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
@@ -164,7 +164,7 @@ class TestExtract(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
                 if asset.filetype == DatasetArtifactFileType.H5AD:
                     expected_s3_uris.append(asset.s3_uri)
 
-        s3_uris = set(extract.get_dataset_s3_uris().values())
+        s3_uris = set(backend.corpus_asset_pipelines.integrated_corpus.extract.get_dataset_s3_uris().values())
         self.assertEquals(set(expected_s3_uris), s3_uris)
 
         @unittest.skip
