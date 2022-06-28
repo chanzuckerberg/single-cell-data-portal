@@ -11,6 +11,13 @@ export interface PayloadAction<Payload> {
   payload: Payload;
 }
 
+const EMPTY_FILTERS: State["selectedFilters"] = {
+  datasets: [],
+  developmentStages: [],
+  diseases: [],
+  ethnicities: [],
+  sexes: [],
+};
 export interface State {
   cellTypeIdsToDelete: CellTypeMetadata[];
   genesToDelete: string[];
@@ -21,11 +28,11 @@ export interface State {
   selectedOrganismId: string | null;
   selectedTissues: string[];
   selectedFilters: {
-    datasets?: string[];
-    developmentStages?: string[];
-    diseases?: string[];
-    ethnicities?: string[];
-    sexes?: string[];
+    datasets: string[];
+    developmentStages: string[];
+    diseases: string[];
+    ethnicities: string[];
+    sexes: string[];
   };
   /**
    * (thuang): BE API response always returns a snapshot ID. When the ID changes,
@@ -41,7 +48,7 @@ export const INITIAL_STATE: State = {
   cellTypeIdsToDelete: [],
   genesToDelete: [],
   selectedCellTypeIds: {},
-  selectedFilters: {},
+  selectedFilters: EMPTY_FILTERS,
   selectedGenes: [],
   selectedOrganismId: null,
   selectedTissues: [],
