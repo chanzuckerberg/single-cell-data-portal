@@ -4,8 +4,7 @@ import sys
 import time
 import tiledb
 
-import backend.corpus_asset_pipelines.integrated_corpus.extract
-from backend.corpus_asset_pipelines.integrated_corpus.job import build_integrated_corpus
+from backend.corpus_asset_pipelines import integrated_corpus
 from backend.wmg.data.load_cube import upload_artifacts_to_s3, make_snapshot_active
 from backend.wmg.data.schemas.corpus_schema import create_tdb
 from backend.wmg.data.transform import (
@@ -43,14 +42,7 @@ def load_data_and_create_cube(
     if not tiledb.VFS().is_dir(corpus_path):
         create_tdb(snapshot_path, corpus_name)
 
-    if extract_data:
-        s3_uris = backend.corpus_asset_pipelines.integrated_corpus.extract.get_dataset_s3_uris()
-        backend.corpus_asset_pipelines.integrated_corpus.extract.copy_datasets_to_instance(
-            s3_uris, path_to_h5ad_datasets
-        )
-        logger.info("Copied datasets to instance")
-
-    build_integrated_corpus(path_to_h5ad_datasets, corpus_path, True)
+    integrated_corpus.run(path_to_h5ad_datasets, corpus_path, extract_data)
     logger.info("Loaded datasets into corpus")
     create_cubes(corpus_path)
     logger.info("Built expression summary cube")
