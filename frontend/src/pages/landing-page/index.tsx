@@ -437,7 +437,7 @@ const LandingPage = (): JSX.Element => {
                             </a>
                           </Link>
                           <Link
-                            href={`${ROUTES.HOMEPAGE}/docs/04__Analyze%20Public%20Data/4_1__Hosted%20Tutorials`}
+                            href={`${ROUTES.DOCS}/04__Analyze%20Public%20Data/4_1__Hosted%20Tutorials`}
                             passHref
                           >
                             <a>
