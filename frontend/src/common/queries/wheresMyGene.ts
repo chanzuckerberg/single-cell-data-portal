@@ -339,7 +339,6 @@ export function useCellTypesByTissueName(): {
   data: CellTypeByTissueName;
 } {
   const { data, isLoading } = useExpressionSummary();
-
   const {
     data: primaryFilterDimensions,
     isLoading: isLoadingPrimaryFilterDimensions,
@@ -347,12 +346,9 @@ export function useCellTypesByTissueName(): {
 
   const { data: termIdLabels, isLoading: isLoadingTermIdLabels } =
     useTermIdLabels();
-
   return useMemo(() => {
     if (
       isLoading ||
-      !data ||
-      Object.keys(data).length === 0 ||
       isLoadingPrimaryFilterDimensions ||
       !primaryFilterDimensions ||
       isLoadingTermIdLabels ||
@@ -360,7 +356,6 @@ export function useCellTypesByTissueName(): {
     ) {
       return { data: EMPTY_OBJECT, isLoading };
     }
-
     const { tissues } = primaryFilterDimensions;
 
     const tissuesById = generateTermsByKey(tissues, "id");
@@ -502,14 +497,13 @@ export function useTermIdLabels(): {
 } {
   const requestBody = useWMGQueryRequestBody();
   const { data, isLoading } = useWMGQuery(requestBody);
-
   return useMemo(() => {
-    if (isLoading || !data)
+    if (isLoading || !data) {
       return {
         data: { cell_types: EMPTY_OBJECT, genes: EMPTY_OBJECT },
         isLoading,
       };
-
+    }
     const {
       term_id_labels: { cell_types, genes },
     } = data;
@@ -532,7 +526,6 @@ export function useTermIdLabels(): {
       }
       returnCellTypes[tissueID] = result;
     });
-
     return {
       data: {
         cell_types: returnCellTypes,
@@ -566,7 +559,6 @@ function useWMGQueryRequestBody(options = { includeAllFilterOptions: false }) {
     selectedOrganismId,
     selectedFilters,
   } = useContext(StateContext);
-
   const { data } = usePrimaryFilterDimensions();
 
   /**
@@ -606,19 +598,13 @@ function useWMGQueryRequestBody(options = { includeAllFilterOptions: false }) {
   }, [data]);
 
   return useMemo(() => {
-    if (
-      !data ||
-      !selectedOrganismId ||
-      !selectedTissues.length ||
-      !selectedGenes.length
-    ) {
+    if (!data || !selectedOrganismId || !selectedTissues.length) {
       return null;
     }
-
     const gene_ontology_term_ids = selectedGenes.map((geneName) => {
       return organismGenesByName[geneName].id;
     });
-
+    if (!gene_ontology_term_ids.length) gene_ontology_term_ids.push(".");
     const tissue_ontology_term_ids = selectedTissues.map((tissueName) => {
       return tissuesByName[tissueName].id;
     });
