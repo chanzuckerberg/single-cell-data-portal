@@ -5,7 +5,6 @@ import json
 from backend.gene_info.api import ncbi_provider
 from tests.unit.backend.corpora.fixtures.environment_setup import EnvironmentSetup
 from backend.corpora.api_server.app import app
-from backend.gene_info.api.v1 import parse_gene_info_tree
 import xml.etree.ElementTree as ET
 from unittest.mock import patch, call
 
@@ -53,7 +52,7 @@ class GeneInfoAPIv1Tests(unittest.TestCase):
 
     @patch("backend.gene_info.api.v1.NCBIProvider.fetch_gene_uid")
     @patch("backend.gene_info.api.v1.NCBIProvider.fetch_gene_info_tree")
-    @patch("backend.gene_info.api.v1.parse_gene_info_tree")
+    @patch("backend.gene_info.api.v1.NCBIProvider.parse_gene_info_tree")
     def test_fetches_and_searches(self, mock_parse_gene_info_tree, mock_fetch_gene_info_tree, mock_fetch_gene_uid):
         """
         Successfully calls NCBIProvider fetch and search functions with correct parameters
@@ -85,6 +84,7 @@ class GeneInfoAPIv1Tests(unittest.TestCase):
         """
         Successfully parses a properly formatted XML tree for gene information
         """
+        provider = ncbi_provider.NCBIProvider()
         root = ET.Element("root")
         entrez = ET.SubElement(root, "Entrez")
         summary = ET.SubElement(entrez, "Entrezgene_summary")
@@ -101,7 +101,7 @@ class GeneInfoAPIv1Tests(unittest.TestCase):
         syn2.text = "syn2"
         syn.append(syn2)
         self.assertEqual(
-            parse_gene_info_tree(ET.tostring(root)),
+            provider.parse_gene_info_tree(ET.tostring(root)),
             dict(name="gene description", summary="gene summary", synonyms=["syn1", "syn2"]),
         )
 
@@ -109,15 +109,17 @@ class GeneInfoAPIv1Tests(unittest.TestCase):
         """
         Returns correct dictionary with missing values if given XML tree with missing values
         """
+        provider = ncbi_provider.NCBIProvider()
+
         root1 = ET.Element("root")
-        self.assertEqual(parse_gene_info_tree(ET.tostring(root1)), dict(name="", summary="", synonyms=[]))
+        self.assertEqual(provider.parse_gene_info_tree(ET.tostring(root1)), dict(name="", summary="", synonyms=[]))
 
         root2 = ET.Element("root")
         ET.SubElement(root2, "Entrez")
-        self.assertEqual(parse_gene_info_tree(ET.tostring(root2)), dict(name="", summary="", synonyms=[]))
+        self.assertEqual(provider.parse_gene_info_tree(ET.tostring(root2)), dict(name="", summary="", synonyms=[]))
 
         root3 = ET.Element("root")
         entrez3 = ET.SubElement(root3, "Entrez")
         summary3 = ET.SubElement(entrez3, "Entrezgene_summary")
         summary3.text = "gene summary"
-        self.assertEqual(parse_gene_info_tree(ET.tostring(root3)), dict(name="", summary="gene summary", synonyms=[]))
+        self.assertEqual(provider.parse_gene_info_tree(ET.tostring(root3)), dict(name="", summary="gene summary", synonyms=[]))

@@ -2,6 +2,7 @@ from ..config import GeneInfoConfig
 import logging
 import urllib.request
 import json
+import xml.etree.ElementTree as ET
 
 
 class NCBIException(Exception):
@@ -80,3 +81,34 @@ class NCBIProvider(object):
         ):
             return None
         return int(search_result["esearchresult"]["idlist"][0])
+
+    def parse_gene_info_tree(self, tree_response):
+        # parse NCBI XML response into relevant values to return by gene_info API
+        result_tree = ET.ElementTree(ET.fromstring(tree_response))
+        root = result_tree.getroot()
+        synonyms = []
+        summary = ""
+        name = ""
+
+        summary_tag = "Entrezgene_summary"
+        gene_tag = "Entrezgene_gene"
+        desc_tag = "Gene-ref_desc"
+        syn_tag = "Gene-ref_syn"
+
+        if len(root) > 0:
+            for x in root[0]:
+                if x.tag == summary_tag:
+                    summary = x.text
+                elif x.tag == gene_tag:
+                    if len(x) > 0:
+                        for y in x[0]:
+                            if y.tag == desc_tag:
+                                name = y.text
+                            elif y.tag == syn_tag:
+                                for syn in y:
+                                    synonyms.append(syn.text)
+        return dict(
+            name=name,
+            summary=summary,
+            synonyms=synonyms,
+        )
