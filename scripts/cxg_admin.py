@@ -1,23 +1,16 @@
 #!/usr/bin/env python
+import click
+from click import Context
 import logging
 import os
 import sys
-
-import click
-from click import Context
+from urllib.parse import urlparse
 
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
 
 from backend.corpora.common.corpora_config import CorporaDbConfig
 from backend.corpora.common.utils.db_session import DBSessionMaker
-
-from scripts.cxg_admin_scripts import deletions
-from scripts.cxg_admin_scripts import tombstones
-from scripts.cxg_admin_scripts import migrate
-from scripts.cxg_admin_scripts import updates
-from scripts.cxg_admin_scripts import reprocess_datafile
-from urllib.parse import urlparse
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
@@ -55,7 +48,9 @@ def cli(ctx, deployment):
 @click.pass_context
 def delete_dataset(ctx, uuid):
     """Delete a dataset from Cellxgene."""
-    deletions.delete_dataset(ctx, uuid)
+    from cxg_admin_scripts import delete
+
+    delete.delete_dataset(ctx, uuid)
 
 
 @cli.command()
@@ -71,7 +66,9 @@ def delete_collections(ctx, collection_name):
         - String with no spaces: ThisCollection
         - String with spaces: "This Collection"
     """
-    deletions.delete_collections(ctx, collection_name)
+    from cxg_admin_scripts import delete
+
+    delete.delete_collections(ctx, collection_name)
 
 
 # Commands to tombstone artifacts (datasets or collections)
@@ -89,8 +86,9 @@ def tombstone_collection(ctx: Context, uuid: str):
     :param ctx: command context
     :param uuid: UUID that identifies the collection to tombstone
     """
+    from cxg_admin_scripts import tombstone
 
-    tombstones.tombstone_collection(ctx, uuid)
+    tombstone.tombstone_collection(ctx, uuid)
 
 
 @cli.command()
@@ -103,7 +101,9 @@ def tombstone_dataset(ctx, uuid):
     To run:
       ./scripts/cxg_admin.py --deployment staging tombstone-dataset "57cf1b53-af10-49e5-9a86-4bc70d0c92b6"
     """
-    tombstones.tombstone_dataset(ctx, uuid)
+    from cxg_admin_scripts import tombstone
+
+    tombstone.tombstone_dataset(ctx, uuid)
 
 
 # Command to update different metadata fields
@@ -118,7 +118,9 @@ def update_collection_owner(ctx, collection_uuid, new_owner):
     To run:
     ./scripts/cxg_admin.py --deployment prod update-collection-owner "$COLLECTION_ID $NEW_OWNER_ID
     """
-    updates.update_collection_owner(ctx, collection_uuid, new_owner)
+    from cxg_admin_scripts import update
+
+    update.update_collection_owner(ctx, collection_uuid, new_owner)
 
 
 @cli.command()
@@ -132,7 +134,9 @@ def transfer_collections(ctx, curr_owner, new_owner):
     To run:
     ./scripts/cxg_admin.py --deployment prod transfer-collections $CURR_OWNER_ID $NEW_OWNER_ID
     """
-    updates.transfer_collections(ctx, curr_owner, new_owner)
+    from cxg_admin_scripts import update
+
+    update.transfer_collections(ctx, curr_owner, new_owner)
 
 
 @cli.command()
@@ -141,7 +145,9 @@ def strip_all_collection_fields(ctx):
     """
     Strip all the `collection` string fields, so whitespace at the beginning and the end are removed.
     """
-    updates.strip_all_collection_fields(ctx)
+    from cxg_admin_scripts import update
+
+    update.strip_all_collection_fields(ctx)
 
 
 @cli.command()
@@ -152,7 +158,9 @@ def add_trailing_slash_to_explorer_urls(ctx):
     properly. This script adds a trailing slash to a dataset's explorer_url
     if it already does not end with one.
     """
-    updates.add_trailing_slash_to_explorer_urls(ctx)
+    from cxg_admin_scripts import update
+
+    update.add_trailing_slash_to_explorer_urls(ctx)
 
 
 @cli.command()
@@ -165,22 +173,27 @@ def update_curator_names(ctx, access_token):
     The application must be authorized to access to the Auth0 Management API with the following permissions read:users
     read:user_idp_tokens.
     """
+    from cxg_admin_scripts import update
 
-    updates.update_curator_names(ctx, access_token)
+    update.update_curator_names(ctx, access_token)
 
 
 @cli.command()
 @click.pass_context
 def add_publisher_metadata(ctx):
     """Add publisher metadata to the current records"""
-    updates.add_publisher_metadata(ctx)
+    from cxg_admin_scripts import update
+
+    update.add_publisher_metadata(ctx)
 
 
 @cli.command()
 @click.pass_context
 def refresh_preprint_doi(ctx):
     """Add publisher metadata to the current records"""
-    updates.refresh_preprint_doi(ctx)
+    from cxg_admin_scripts import update
+
+    update.refresh_preprint_doi(ctx)
 
 
 # Commands to migrate the data, typically one off scripts run to populate db for existing rows after adding a new field
@@ -196,6 +209,8 @@ def create_cxg_artifacts(ctx):
     To run
     ./scripts/cxg_admin.py --deployment prod create-cxg-artifacts
     """
+    from cxg_admin_scripts import migrate
+
     migrate.create_cxg_artifacts(ctx)
 
 
@@ -208,6 +223,7 @@ def migrate_schema_version(ctx):
     which contains the version. This is a one-off procedure since new datasets will have
     the version already set.
     """
+    from cxg_admin_scripts import migrate
 
     migrate.migrate_schema_version(ctx)
 
@@ -220,6 +236,8 @@ def migrate_published_at(ctx):
     one-off procedure since published_at will be set for collections and new
     datasets when they are first published.
     """
+    from cxg_admin_scripts import migrate
+
     migrate.migrate_published_at(ctx)
 
 
@@ -231,6 +249,8 @@ def populate_revised_at(ctx):
     current datetime (UTC). This is a one-off procedure since revised_at will
     be set for collections and datasets when they are updated.
     """
+    from cxg_admin_scripts import migrate
+
     migrate.populate_revised_at(ctx)
 
 
@@ -240,6 +260,8 @@ def backfill_processing_status_for_datasets(ctx):
     """
     Backfills the `dataset_processing_status` table for datasets that do not have a matching record.
     """
+    from cxg_admin_scripts import migrate
+
     migrate.backfill_processing_status_for_datasets(ctx)
 
 
@@ -255,6 +277,8 @@ def reprocess_seurat(ctx: Context, dataset_uuid: str) -> None:
     :param ctx: command context
     :param dataset_uuid: UUID of dataset to reconvert to Seurat format
     """
+    from cxg_admin_scripts import reprocess_datafile
+
     reprocess_datafile.reprocess_seurat(ctx, dataset_uuid)
 
 
@@ -262,6 +286,8 @@ def reprocess_seurat(ctx: Context, dataset_uuid: str) -> None:
 @click.pass_context
 def cxg_remaster(ctx):
     """Cxg remaster"""
+    from cxg_admin_scripts import reprocess_datafile
+
     reprocess_datafile.cxg_remaster(ctx)
 
 
