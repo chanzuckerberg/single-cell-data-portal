@@ -305,7 +305,7 @@ export function createYAxisOptions({
             const { total_count } = deserializeCellTypeMetadata(
               value as CellTypeMetadata
             );
-            return `${total_count}`;
+            return total_count > 10000 ? ">10K" : `${total_count}`;
           },
 
           rich: {
