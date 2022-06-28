@@ -63,6 +63,6 @@ def copy_datasets_to_instance(s3_uris, dataset_directory):
         subprocess.run(copy_command)
 
 
-def extract_h5ad(h5ad_path: str):
-    logger.info(f"Loading {h5ad_path}...")
+def extract_h5ad(h5ad_path: str) -> anndata.AnnData:
+    logger.info(f"Extracting {h5ad_path}...")
     return anndata.read_h5ad(h5ad_path)

@@ -73,6 +73,7 @@ def update_corpus_obs(corpus_path: str, anndata_object: pd.DataFrame, dataset_id
     obs["dataset_id"] = dataset_id
     return update_corpus_axis(obs, obs_array_path, obs_labels)
 
+
 def update_corpus_axis(df: pd.DataFrame, array_name: str, label_info: List) -> int:
     """
     Safely add given dataframe to extend the specified array with the appropriate encoding

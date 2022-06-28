@@ -6,11 +6,12 @@ from typing import List
 import tiledb
 
 from backend.corpus_asset_pipelines.integrated_corpus import extract
-from backend.corpus_asset_pipelines.integrated_corpus.load import load_dataset
-from backend.corpus_asset_pipelines.integrated_corpus.transform import apply_pre_concatenation_filters, \
-    transform_dataset_raw_counts_to_rankit
+from backend.corpus_asset_pipelines.integrated_corpus import load
+from backend.corpus_asset_pipelines.integrated_corpus.transform import (
+    apply_pre_concatenation_filters,
+    transform_dataset_raw_counts_to_rankit,
+)
 from backend.corpus_asset_pipelines.integrated_corpus.validate import should_load_dataset, validate_dataset_properties
-from backend.wmg.data.cube_pipeline import logger
 from backend.wmg.data.schemas.corpus_schema import INTEGRATED_ARRAY_NAME, OBS_ARRAY_NAME, VAR_ARRAY_NAME
 from backend.wmg.data.tiledb import create_ctx
 
@@ -18,20 +19,10 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
-def _extract():
-    pass
-
-
-def _transform():
-    pass
-
-
-def _load():
-    pass
-
-
-def run():
-    pass
+def extract_datasets(dataset_directory: List):
+    s3_uris = extract.get_dataset_s3_uris()
+    extract.copy_datasets_to_instance(s3_uris, dataset_directory)
+    logger.info("Copied datasets to instance")
 
 
 def build_integrated_corpus(dataset_directory: List, corpus_path: str):
@@ -46,8 +37,9 @@ def build_integrated_corpus(dataset_directory: List, corpus_path: str):
             i += 1
             logger.info(f"Processing dataset {i} of {dataset_count}")
             h5ad_file_path = f"{dataset_directory}/{dataset}/local.h5ad"
-            load_dataset(
-                h5ad_file_path, corpus_path)  # TODO Can this be parallelized? need to be careful handling global indexes but tiledb has a lock I think
+            process_h5ad_for_corpus(
+                h5ad_file_path, corpus_path
+            )  # TODO Can this be parallelized? need to be careful handling global indexes but tiledb has a lock I think
             gc.collect()
 
         logger.info("all loaded, now consolidating.")
@@ -77,7 +69,8 @@ def process_h5ad_for_corpus(h5ad_path: str, corpus_path: str):
         return
 
     # load obs and var data
-    first_obs_idx, global_var_index = load_dataset(corpus_path, anndata_object, dataset_id)
+    first_obs_idx, global_var_index = load.load_dataset(corpus_path, anndata_object, dataset_id)
 
-    # todo refactor: separate rankit transformation from laoding the tiledb object when working with the x matrices
+    # transform and load expression data
+    # todo refactor: separate rankit transformation from loading the tiledb object when working with the x matrices
     transform_dataset_raw_counts_to_rankit(anndata_object, corpus_path, global_var_index, first_obs_idx)
