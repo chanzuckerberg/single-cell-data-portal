@@ -1,4 +1,3 @@
-
 # Minimum number of expressed genes for a cell to be included in the corpus.
 # See the following document for further details:
 # https://github.com/chanzuckerberg/cellxgene-documentation/blob/main/scExpression/scExpression-documentation.md#removal-of-low-coverage-cells
