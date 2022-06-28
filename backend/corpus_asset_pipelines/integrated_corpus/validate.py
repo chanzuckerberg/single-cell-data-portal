@@ -45,11 +45,3 @@ def validate_dataset_properties(anndata_object: anndata.AnnData) -> bool:
         logger.warning("Invalid schema version, not loading")
         return False
     return True
-
-
-def validate_corpus_load(anndata_object: anndata.AnnData, group_name: str, dataset_id: str):
-    """
-    Validate that the load looks sane
-    """
-    # todo if necessary
-    pass
