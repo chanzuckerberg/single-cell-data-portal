@@ -34,7 +34,7 @@ Compatible annotations are tabular, with category names as column headers; `annd
 
 There are two options for updating draft annotations.
 
-_Autodetect annotations CSV_
+#### Autodetect annotations CSV
 
 Cellxgene will automatically find and reload your draft annotations in editable mode. This assumes that:
 
@@ -42,7 +42,7 @@ Cellxgene will automatically find and reload your draft annotations in editable 
 2. You launch cellxgene from the `annotations-directory` (i.e., the directory that contains your CSV)
 3. You use the same browser and have not cleared your cookies (we use a small cookie to keep track of which user created the file to avoid accidental overwrites; see FAQ)
 
-_Specify an annotations CSV_
+#### Specify an annotations CSV
 
 _This mode is only appropriate for single-user, local cellxgene instances._
 
@@ -89,20 +89,26 @@ Any annotations created in the application will be autosaved in `annotations-dir
 
 ### FAQ
 
-_How do I know my annotations are saved?_
-`cellxgen`e autosaves any changes made to your annotations every 3 seconds.
+#### How do I know my annotations are saved?
 
-_I think I deleted my annotations! Can they be recovered?_
+`cellxgene` autosaves any changes made to your annotations every 3 seconds.
+
+#### I think I deleted my annotations! Can they be recovered?
+
 Not to worry! We save the last 10 versions of your annotations in `annotations-directory/NAME-backups/`
 
-_What about creating continuous annotations?_
+#### What about creating continuous annotations?
+
 Continuous metadata is important! However, these values (e.g., pseudotime) are the result of statistical analyses that are beyond cellxgene's visualization and exploration focused scope. We do, of course, provide visualization of continuous metadata values computed elsewhere and stored in `anndata.obs.`
 
-_I keep getting weird index errors when trying to join my annotations to my anndata?_
+#### I keep getting weird index errors when trying to join my annotations to my anndata?
+
 This is most likely because the h5ad file you are working with is not the original file used to generate the annotations! We recommend merging new annotations in on a regular basis for this reason.
 
-_How do you remember my unique ID to match my cellxgene session with my annotations file?_
+#### How do you remember my unique ID to match my cellxgene session with my annotations file?
+
 We place a small cookie (file) in your browser that identifies where your draft annotations are saved. This file never leaves your machine, and is never sent to the cellxgene team or anyone else.
 
-_I have feedback and ideas for you!_
-Wonderful! We would love to hear your feedback :) CAN WE MAKE THIS POPULATE AN EMAIL TO CELLXGENE@CHANZUCKERBERG.COM
+#### I have feedback and ideas for you!
+
+We would love to hear your feedback :) Contact us at: [cellxgene@chanzuckerberg.com](mailto:cellxgene@chanzuckerberg.com)

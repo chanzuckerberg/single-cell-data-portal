@@ -13,9 +13,7 @@ from backend.wmg.data.query import (
     WmgQuery,
     WmgQueryCriteria,
 )
-from backend.wmg.data.schemas.cube_schema import cube_non_indexed_dims
 from backend.wmg.data.snapshot import load_snapshot, WmgSnapshot
-
 
 # TODO: add cache directives: no-cache (i.e. revalidate); impl etag
 #  https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data
@@ -36,11 +34,10 @@ def query():
     expression_summary = query.expression_summary(criteria)
     cell_counts = query.cell_counts(criteria)
     dot_plot_matrix_df = build_dot_plot_matrix(expression_summary, cell_counts)
-    all_filter_dims_values = extract_filter_dims_values(expression_summary)
 
     include_filter_dims = request.get("include_filter_dims", False)
-    response_filter_dims_values = build_filter_dims_values(all_filter_dims_values) if include_filter_dims else {}
 
+    response_filter_dims_values = build_filter_dims_values(criteria, query) if include_filter_dims else {}
     return jsonify(
         dict(
             snapshot_id=snapshot.snapshot_identifier,
@@ -78,18 +75,35 @@ def fetch_datasets_metadata(dataset_ids: Iterable[str]) -> List[Dict]:
         return [get_dataset(dataset_id) for dataset_id in dataset_ids]
 
 
-def build_filter_dims_values(all_filter_dims_values: Dict[str, Iterable[str]]):
+def find_dim_option_values(criteria: Dict, query: WmgQuery, dimension: str) -> set:
+    """Find values for the specified dimension that satisfy the given filtering criteria,
+    ignoring any criteria specified for the given dimension."""
+    filter_options_criteria = criteria.copy(update={dimension + "s": []}, deep=True)
+    # todo can we query cell_counts for a performance gain?
+    query_result = query.expression_summary(filter_options_criteria)
+    filter_dims = query_result.groupby(dimension).groups.keys()
+    return filter_dims
+
+
+def build_filter_dims_values(criteria: WmgQueryCriteria, query: WmgQuery) -> Dict:
+    dims = {
+        "dataset_id": "",
+        "disease_ontology_term_id": "",
+        "sex_ontology_term_id": "",
+        "development_stage_ontology_term_id": "",
+        "ethnicity_ontology_term_id": "",
+    }
+    for dim in dims:
+        dims[dim] = find_dim_option_values(criteria, query, dim)
+
     response_filter_dims_values = dict(
-        datasets=fetch_datasets_metadata(all_filter_dims_values["dataset_id"]),
-        disease_terms=build_ontology_term_id_label_mapping(all_filter_dims_values["disease_ontology_term_id"]),
-        sex_terms=build_ontology_term_id_label_mapping(all_filter_dims_values["sex_ontology_term_id"]),
-        development_stage_terms=build_ontology_term_id_label_mapping(
-            all_filter_dims_values["development_stage_ontology_term_id"]
-        ),
-        ethnicity_terms=build_ontology_term_id_label_mapping(all_filter_dims_values["ethnicity_ontology_term_id"]),
-        # excluded per product requirements, but keeping in, commented-out, to reduce future head-scratching
-        # assay_ontology_terms=build_ontology_term_id_label_mapping(all_filter_dims_values["assay_ontology_term_id"]),
+        datasets=fetch_datasets_metadata(dims["dataset_id"]),
+        disease_terms=build_ontology_term_id_label_mapping(dims["disease_ontology_term_id"]),
+        sex_terms=build_ontology_term_id_label_mapping(dims["sex_ontology_term_id"]),
+        development_stage_terms=build_ontology_term_id_label_mapping(dims["development_stage_ontology_term_id"]),
+        ethnicity_terms=build_ontology_term_id_label_mapping(dims["ethnicity_ontology_term_id"]),
     )
+
     return response_filter_dims_values
 
 
@@ -107,15 +121,6 @@ def build_expression_summary(query_result: DataFrame) -> dict:
             )
         )
     return structured_result
-
-
-def extract_filter_dims_values(query_result: DataFrame) -> Dict[str, set]:
-    """
-    Return unique values for each dimension in the specified query result
-    """
-    dims: set = set(query_result.columns) & set(cube_non_indexed_dims)
-    dim_uniq_values: Dict[str, set] = {dim: query_result.groupby(dim).groups.keys() for dim in dims}
-    return dim_uniq_values
 
 
 def build_dot_plot_matrix(query_result: DataFrame, cell_counts: DataFrame) -> DataFrame:
@@ -171,6 +176,7 @@ def build_ordered_cell_types_by_tissue(
             {
                 "cell_type_ontology_term_id": row.cell_type_ontology_term_id,
                 "cell_type": ontology_term_label(row.cell_type_ontology_term_id),
+                "total_count": row.n_total_cells,
                 "depth": row.depth,
             }
         )

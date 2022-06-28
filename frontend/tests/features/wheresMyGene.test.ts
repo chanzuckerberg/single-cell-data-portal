@@ -19,31 +19,30 @@ describeIfDevStagingProd("Where's My Gene", () => {
     await expect(page).toHaveSelector(getText("Getting Started"));
     await expect(page).toHaveSelector(
       getText(
-        "Visualize and compare the expression of genes across cell types using a dot plot"
+        "Use the Add Tissue and Add Gene buttons to find where genes are expressed, powered by data from the"
       )
     );
-
-    // Step 1
-    await expect(page).toHaveSelector(
-      getText("Add tissues you are interested in exploring")
-    );
-
-    // Step 2
-    await expect(page).toHaveSelector(
-      getText("Add genes of interest to the visualization")
-    );
-
-    // Step 3
-    await expect(page).toHaveSelector(
-      getText("Darker dots represent higher relative gene expression")
-    );
-
     // Beta callout
     await expect(page).toHaveSelector(getText("This feature is in beta"));
 
     // Filters Panel
     // (thuang): `*` is for intermediate match
     // https://playwright.dev/docs/selectors#intermediate-matches
+
+    async function getTissueSelectorButton() {
+      return page.$(getTestID("add-tissue"));
+    }
+
+    async function getGeneSelectorButton() {
+      return page.$(getTestID("add-gene"));
+    }
+
+    await clickUntilOptionsShowUp(getTissueSelectorButton);
+    await selectFirstOption();
+
+    await clickUntilOptionsShowUp(getGeneSelectorButton);
+    await selectFirstOption();
+
     const filtersPanel = await page.$("*css=div >> text=Filters");
 
     await expect(filtersPanel).toHaveSelector(getText("Dataset"));

@@ -20,14 +20,18 @@ class Validation:
         self.errors = []
         self.corpus_path = corpus_path
         self.expression_summary_path = f"{corpus_path}/{EXPRESSION_SUMMARY_CUBE_NAME}"
-        self.env = os.getenv("ENV")
+        self.env = os.getenv("DEPLOYMENT_STAGE")
         self.validation_dataset_uuid = "3de0ad6d-4378-4f62-b37b-ec0b75a50d94"
-        self.MIN_CUBE_SIZE_GB = 1 if self.env == "PROD" else 0.1
-        self.MIN_TISSUE_COUNT = 15 if self.env == "PROD" else 2
-        self.MIN_SPECIES_COUNT = 2 if self.env == "PROD" else 1
-        self.MIN_DATASET_COUNT = 50 if self.env == "PROD" else 5
-        self.MIN_MALAT1_GENE_EXPRESSION_CELL_COUNT_PERCENT = 80
-        self.MIN_ACTB_GENE_EXPRESSION_CELL_COUNT_PERCENT = 60
+        self.MIN_CUBE_SIZE_GB = 1 if self.env == "prod" else 0.1
+        self.MIN_TISSUE_COUNT = 15 if self.env == "prod" else 2
+        self.MIN_SPECIES_COUNT = 2 if self.env == "prod" else 1
+        self.MIN_DATASET_COUNT = 50 if self.env == "prod" else 5
+        # These numbers should be generally consistent across datasets but we have some weird datasets in dev
+        # throwing the numbers off
+        self.MIN_MALAT1_GENE_EXPRESSION_CELL_COUNT_PERCENT = 80 if self.env == "prod" else 25
+        self.MIN_ACTB_GENE_EXPRESSION_CELL_COUNT_PERCENT = 60 if self.env == "prod" else 10
+        self.MIN_MALAT1_RANKIT_EXPRESSION = 4 if self.env == "prod" else 3
+        self.MIN_ACTB_RANKIT_EXPRESSION = 3 if self.env == "prod" else 2
 
     def validate_cube(self):
         """
@@ -63,7 +67,7 @@ class Validation:
         self.validate_lung_cell_marker_genes()
         # check expression levels are correct for lung map dataset uuid 3de0ad6d-4378-4f62-b37b-ec0b75a50d94
         # genes ["MALAT1", "CCL5"]
-        if self.env == "PROD":
+        if self.env == "prod":
             self.validate_expression_levels_for_particular_gene_dataset()
 
         if len(self.errors) > 0:
@@ -86,6 +90,8 @@ class Validation:
         logger.info(
             f"MIN_ACTB_GENE_EXPRESSION_CELL_COUNT_PERCENT is {self.MIN_ACTB_GENE_EXPRESSION_CELL_COUNT_PERCENT}"
         )
+        logger.info(f"MIN_MALAT1_RANKIT_EXPRESSION is {self.MIN_MALAT1_RANKIT_EXPRESSION}")
+        logger.info(f"MIN_ACTB_RANKIT_EXPRESSION is {self.MIN_ACTB_RANKIT_EXPRESSION}")
 
     def validate_cube_size(self):
         size_byte = sum(file.stat().st_size for file in Path(self.expression_summary_path).rglob("*"))
@@ -159,9 +165,9 @@ class Validation:
 
                 MALAT1_avg_expression = cube.df[MALAT1_ont_id:MALAT1_ont_id]["sum"].sum() / MALAT1_cell_count
                 ACTB_avg_expression = cube.df[ACTB_ont_id:ACTB_ont_id]["sum"].sum() / ACTB_cell_count
-                if 4 > MALAT1_avg_expression:
+                if self.MIN_MALAT1_RANKIT_EXPRESSION > MALAT1_avg_expression:
                     self.errors.append(f"MALAT1 avg rankit score is {MALAT1_avg_expression}")
-                if 3 > ACTB_avg_expression:
+                if self.MIN_ACTB_RANKIT_EXPRESSION > ACTB_avg_expression:
                     self.errors.append(f"ACTB avg rankit score is {ACTB_avg_expression}")
 
     def validate_sex_specific_marker_gene(self):

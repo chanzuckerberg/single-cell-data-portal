@@ -30,8 +30,8 @@ class WmgQuery:
 
     def expression_summary(self, criteria: WmgQueryCriteria) -> DataFrame:
         return self._query(
-            self._snapshot.expression_summary_cube,
-            criteria,
+            cube=self._snapshot.expression_summary_cube,
+            criteria=criteria,
             indexed_dims=["gene_ontology_term_ids", "tissue_ontology_term_ids", "organism_ontology_term_id"],
         )
 
