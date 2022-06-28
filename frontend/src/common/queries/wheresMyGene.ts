@@ -603,13 +603,13 @@ function useWMGQueryRequestBody(options = { includeAllFilterOptions: false }) {
 
     return {
       filter: {
-        dataset_ids: datasets ?? [],
-        development_stage_ontology_term_ids: developmentStages ?? [],
-        disease_ontology_term_ids: diseases ?? [],
-        ethnicity_ontology_term_ids: ethnicities ?? [],
+        dataset_ids: datasets,
+        development_stage_ontology_term_ids: developmentStages,
+        disease_ontology_term_ids: diseases,
+        ethnicity_ontology_term_ids: ethnicities,
         gene_ontology_term_ids,
         organism_ontology_term_id: selectedOrganismId,
-        sex_ontology_term_ids: sexes ?? [],
+        sex_ontology_term_ids: sexes,
         tissue_ontology_term_ids,
       },
       include_filter_dims: true,
