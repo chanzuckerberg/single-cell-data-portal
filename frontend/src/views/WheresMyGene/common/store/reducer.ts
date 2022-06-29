@@ -1,11 +1,11 @@
 import cloneDeep from "lodash/cloneDeep";
 import isEqual from "lodash/isEqual";
+import { EMPTY_FILTERS } from "src/common/queries/wheresMyGene";
 import {
   CellTypeMetadata,
   deserializeCellTypeMetadata,
 } from "../../components/HeatMap/utils";
 import { CellType, SORT_BY, Tissue } from "../types";
-import { EMPTY_FILTERS } from "src/common/queries/wheresMyGene";
 export interface PayloadAction<Payload> {
   type: keyof typeof REDUCERS;
   payload: Payload;
