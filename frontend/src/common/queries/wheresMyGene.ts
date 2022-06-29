@@ -535,14 +535,6 @@ function aggregateIdLabels(items: { [id: string]: string }[]): {
   return items.reduce((memo, item) => ({ ...memo, ...item }), {});
 }
 
-const EMPTY_FILTERS: State["selectedFilters"] = {
-  datasets: [],
-  developmentStages: [],
-  diseases: [],
-  ethnicities: [],
-  sexes: [],
-};
-
 function useWMGQueryRequestBody(options = { includeAllFilterOptions: false }) {
   const { includeAllFilterOptions } = options;
 
@@ -648,6 +640,13 @@ interface Dataset extends RawDataset {
   label: string;
 }
 
+export const EMPTY_FILTERS: State["selectedFilters"] = {
+  datasets: [],
+  developmentStages: [],
+  diseases: [],
+  ethnicities: [],
+  sexes: [],
+};
 export interface CollectionFromDatasets {
   name: string;
   url: string;

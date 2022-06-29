@@ -5,19 +5,11 @@ import {
   deserializeCellTypeMetadata,
 } from "../../components/HeatMap/utils";
 import { CellType, SORT_BY, Tissue } from "../types";
-
+import { EMPTY_FILTERS } from "src/common/queries/wheresMyGene";
 export interface PayloadAction<Payload> {
   type: keyof typeof REDUCERS;
   payload: Payload;
 }
-
-const EMPTY_FILTERS: State["selectedFilters"] = {
-  datasets: [],
-  developmentStages: [],
-  diseases: [],
-  ethnicities: [],
-  sexes: [],
-};
 export interface State {
   cellTypeIdsToDelete: CellTypeMetadata[];
   genesToDelete: string[];
