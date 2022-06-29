@@ -18,7 +18,7 @@ def load_dataset(corpus_path: str, anndata_object: pd.DataFrame, dataset_id: str
     Read given anndata dataset into the tiledb object (under corpus name), updating the var and feature indexes
     to avoid collisions within the larger tiledb object
     """
-    var_df = update_corpus_var(corpus_path, anndata_object.var)
+    var_df = update_corpus_var(corpus_path, anndata_object)
 
     # Calculate mapping between var/feature coordinates in H5AD (file local) and TDB (global)
     global_var_index = np.zeros((anndata_object.shape[1],), dtype=np.uint32)
@@ -30,6 +30,7 @@ def load_dataset(corpus_path: str, anndata_object: pd.DataFrame, dataset_id: str
 
     first_obs_idx = update_corpus_obs(corpus_path, anndata_object, dataset_id)
     start = time.time()
+    # todo refactor: separate rankit transformation from loading the tiledb object when working with the x matrices
     transform_dataset_raw_counts_to_rankit(anndata_object, corpus_path, global_var_index, first_obs_idx)
     end = time.time()
     logger.info(f"rankit duration={end - start} ")
