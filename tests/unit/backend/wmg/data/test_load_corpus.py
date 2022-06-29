@@ -4,6 +4,8 @@ import shutil
 import tempfile
 import unittest
 from unittest.mock import patch
+
+import anndata
 import numpy as np
 import tiledb
 from scipy import sparse
@@ -65,31 +67,33 @@ class TestCorpusLoad(unittest.TestCase):
         super().tearDown()
         shutil.rmtree(self.corpus_path)
 
-    @patch("backend.wmg.data.cube_pipeline.tiledb.consolidate")
-    @patch("backend.wmg.data.cube_pipeline.tiledb.vacuum")
-    @patch("backend.wmg.data.cube_pipeline.load_h5ad")
+    @patch("backend.corpus_asset_pipelines.integrated_corpus.job.tiledb.consolidate")
+    @patch("backend.corpus_asset_pipelines.integrated_corpus.job.tiledb.vacuum")
+    @patch("backend.corpus_asset_pipelines.integrated_corpus.load.load_dataset")
     def test__load_loads_all_datasets_in_directory(self, mock_load_h5ad, mock_vacuum, mock_consolidate):
         build_integrated_corpus(self.path_to_datasets, self.corpus_path)
         self.assertEqual(mock_load_h5ad.call_count, 2)
         self.assertEqual(mock_vacuum.call_count, 3)
         self.assertEqual(mock_consolidate.call_count, 3)
 
-    @patch("backend.wmg.data.load_corpus.update_global_var")
-    @patch("backend.wmg.data.load_corpus.validate_dataset_properties")
+    @patch("backend.corpus_asset_pipeline.integrated_corpus.load.update_corpus_var")
+    @patch("backend.corpus_asset_pipeline.integrated_corpus.validate_dataset_properties")
     def test_invalid_datasets_are_not_added_to_corpus(self, mock_validation, mock_global_var):
         mock_validation.return_value = False
         build_integrated_corpus(self.path_to_datasets, self.corpus_path)
         self.assertEqual(mock_global_var.call_count, 0)
 
     def test_global_var_array_updated_when_dataset_contains_new_genes(self):
-        load_dataset(self.small_anndata_filename, self.corpus_path, False)
+        small_anndata_object = anndata.read_h5ad(self.small_anndata_filename)
+        larger_anndata_object = anndata.read_h5ad(self.large_anndata_filename)
+        load_dataset(self.corpus_path, small_anndata_object, "datasest_0")
         with tiledb.open(f"{self.corpus_path}/var", "r") as var:
             var_df = var.df[:]
             total_stored_genes = len(set(var_df["gene_ontology_term_id"].to_numpy(dtype=str)))
         small_gene_count = 3
         self.assertEqual(small_gene_count, total_stored_genes)
 
-        load_dataset(self.large_anndata_filename, self.corpus_path, False)
+        load_dataset(self.corpus_path, larger_anndata_object, "dataset_1")
 
         large_gene_count = 1000  # overlapping genes should only be counted once
         with tiledb.open(f"{self.corpus_path}/var", "r") as var:
@@ -239,7 +243,7 @@ class TestCorpusLoad(unittest.TestCase):
             actual = rankit_scores.data[x]
             self.assertAlmostEqual(expected, actual, 2)
 
-    @patch("backend.wmg.data.load_corpus.transform_dataset_raw_counts_to_rankit")
+    @patch("backend.corpus_asset_pipelines.integrated_corpus.transform.transform_dataset_raw_counts_to_rankit")
     def test__filter_out_cells_with_incorrect_assays(self, mock_rankit):
         # Create dataset with mixture of included and not included assays
         CELL_COUNT = 5
