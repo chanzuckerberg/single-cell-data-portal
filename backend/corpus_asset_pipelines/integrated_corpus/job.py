@@ -13,17 +13,18 @@ from backend.corpus_asset_pipelines.integrated_corpus.transform import (
 from backend.corpus_asset_pipelines.integrated_corpus.validate import should_load_dataset, validate_dataset_properties
 from backend.wmg.data.schemas.corpus_schema import INTEGRATED_ARRAY_NAME, OBS_ARRAY_NAME, VAR_ARRAY_NAME
 from backend.wmg.data.tiledb import create_ctx
+from backend.wmg.data.utils import log_func_runtime
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
-
+@log_func_runtime
 def extract_datasets(dataset_directory: List):
     s3_uris = extract.get_dataset_s3_uris()
     extract.copy_datasets_to_instance(s3_uris, dataset_directory)
     logger.info("Copied datasets to instance")
 
-
+@log_func_runtime
 def build_integrated_corpus(dataset_directory: List, corpus_path: str):
     """
     Given the path to a directory containing one or more h5ad files and a group name, call the h5ad loading function
@@ -32,7 +33,7 @@ def build_integrated_corpus(dataset_directory: List, corpus_path: str):
     with tiledb.scope_ctx(create_ctx()):
         dataset_count = len(os.listdir(dataset_directory))
         for dataset in enumerate(os.listdir(dataset_directory)):
-            logger.info(f"Processing dataset {dataset[0]} of {dataset_count}")
+            logger.info(f"Processing dataset {dataset[0] + 1} of {dataset_count}")
             h5ad_file_path = f"{dataset_directory}/{dataset[1]}/local.h5ad"
             process_h5ad_for_corpus(
                 h5ad_file_path, corpus_path

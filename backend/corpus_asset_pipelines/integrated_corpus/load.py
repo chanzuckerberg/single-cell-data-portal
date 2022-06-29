@@ -8,11 +8,12 @@ import tiledb
 
 from backend.corpus_asset_pipelines.integrated_corpus.transform import transform_dataset_raw_counts_to_rankit
 from backend.wmg.data.schemas.corpus_schema import obs_labels, var_labels, VAR_ARRAY_NAME, OBS_ARRAY_NAME
+from backend.wmg.data.utils import log_func_runtime
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
-
+@log_func_runtime
 def load_dataset(corpus_path: str, anndata_object: pd.DataFrame, dataset_id: str):
     """
     Read given anndata dataset into the tiledb object (under corpus name), updating the var and feature indexes
@@ -29,11 +30,8 @@ def load_dataset(corpus_path: str, anndata_object: pd.DataFrame, dataset_id: str
         global_var_index[idx] = global_coord
 
     first_obs_idx = update_corpus_obs(corpus_path, anndata_object, dataset_id)
-    start = time.time()
     # todo refactor: separate rankit transformation from loading the tiledb object when working with the x matrices
     transform_dataset_raw_counts_to_rankit(anndata_object, corpus_path, global_var_index, first_obs_idx)
-    end = time.time()
-    logger.info(f"rankit duration={end - start} ")
 
 
 def update_corpus_var(corpus_path: str, anndata_object: pd.DataFrame) -> pd.DataFrame:
