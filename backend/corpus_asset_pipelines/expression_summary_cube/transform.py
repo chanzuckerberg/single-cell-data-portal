@@ -1,6 +1,5 @@
 import concurrent
 import logging
-import time
 
 import numba as nb
 import numpy as np
@@ -10,7 +9,6 @@ import tiledb
 
 from backend.corpora.common.utils.math_utils import MB
 from backend.corpus_asset_pipelines.expression_summary_cube.extract import extract_obs_data
-from backend.wmg.data.schemas.cube_schema import cube_non_indexed_dims
 
 from backend.wmg.data.schemas.corpus_schema import INTEGRATED_ARRAY_NAME
 from backend.wmg.data.tiledb import create_ctx
@@ -19,7 +17,7 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
-def transform(corpus_path:str, gene_ontology_term_ids: list, cube_dims: list):
+def transform(corpus_path: str, gene_ontology_term_ids: list, cube_dims: list):
     ##
     # Reduce X
     ##
