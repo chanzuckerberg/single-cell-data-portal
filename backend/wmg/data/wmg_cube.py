@@ -52,22 +52,15 @@ def create_cell_count_cube(corpus_path: str):
         df = df.rename(columns={"size": "n_cells"})
 
         mat = np.tile(df.columns[:-1].values[None, :], (df.shape[0], 1)) + "__" + df.iloc[:, :-1].values
-        nodes = np.unique(mat.astype("str"))
-
-        mapper = pd.Series(index=nodes, data=np.arange(nodes.size))
-        r_mapper = pd.Series(index=np.arange(nodes.size), data=nodes)
 
         Xs = []
         Ys = []
         for i in range(mat.shape[0]):
-            ix = mapper[mat[i]].values
-            Xs.extend(np.repeat(ix, ix.size))
-            Ys.extend(np.tile(ix, ix.size))
+            Xs.extend(np.repeat(mat[i], mat[i].size))
+            Ys.extend(np.tile(mat[i], mat[i].size))
         Xs, Ys = np.unique(np.array((Xs, Ys)), axis=1)
         filt = Xs != Ys
         Xs, Ys = Xs[filt], Ys[filt]
-        Xs = r_mapper[Xs].values
-        Ys = r_mapper[Ys].values
         htable = _to_dict(Xs, Ys)
         pickle.dump(htable, open(f"{corpus_path}/filter_graph.p", "wb"))
 
