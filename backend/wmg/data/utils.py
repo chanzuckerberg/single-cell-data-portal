@@ -1,3 +1,5 @@
+import logging
+import time
 from functools import cache
 from typing import List
 
@@ -10,3 +12,16 @@ def get_all_dataset_ids(tdb_group: str) -> List[str]:
         all_dataset_ids = obs.query(attrs=[], dims=["dataset_id"]).df[:].dataset_id.unique()
     all_dataset_ids.sort()
     return all_dataset_ids
+
+
+
+def timer_func(func):
+    # This decorator function logs the execution time of the function object passed
+    def wrap_func(*args, **kwargs):
+        logger = logging.getLogger(func.__module__)
+        start = time.perf_counter()
+        result = func(*args, **kwargs)
+        stop = time.perf_counter()
+        logger.info(f'Function {func.__name__} executed in {(stop-start):.4f}s')
+        return result
+    return wrap_func
