@@ -1,5 +1,4 @@
 import logging
-import time
 from typing import List
 
 import numpy as np
@@ -12,6 +11,7 @@ from backend.wmg.data.utils import log_func_runtime
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
+
 
 @log_func_runtime
 def load_dataset(corpus_path: str, anndata_object: pd.DataFrame, dataset_id: str):

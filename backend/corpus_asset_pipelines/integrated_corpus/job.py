@@ -18,11 +18,13 @@ from backend.wmg.data.utils import log_func_runtime
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
+
 @log_func_runtime
 def extract_datasets(dataset_directory: List):
     s3_uris = extract.get_dataset_s3_uris()
     extract.copy_datasets_to_instance(s3_uris, dataset_directory)
     logger.info("Copied datasets to instance")
+
 
 @log_func_runtime
 def build_integrated_corpus(dataset_directory: List, corpus_path: str):
