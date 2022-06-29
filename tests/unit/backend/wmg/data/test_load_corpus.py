@@ -15,8 +15,10 @@ from backend.wmg.data.cube_pipeline import load_data_and_create_cube
 from backend.corpus_asset_pipelines.integrated_corpus.job import build_integrated_corpus
 from backend.corpus_asset_pipelines.integrated_corpus.load import load_dataset
 from backend.corpus_asset_pipelines.integrated_corpus.validate import validate_dataset_properties
-from backend.corpus_asset_pipelines.integrated_corpus.transform import filter_out_rankits_with_low_expression_counts, \
-    apply_pre_concatenation_filters
+from backend.corpus_asset_pipelines.integrated_corpus.transform import (
+    filter_out_rankits_with_low_expression_counts,
+    apply_pre_concatenation_filters,
+)
 from backend.wmg.data.constants import RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD
 from backend.wmg.data.schemas.corpus_schema import create_tdb, OBS_ARRAY_NAME, VAR_ARRAY_NAME
 from tests.unit.backend.wmg.fixtures.test_anndata_object import create_anndata_test_object

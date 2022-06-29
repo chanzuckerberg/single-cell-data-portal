@@ -13,14 +13,14 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
-def load_dataset(corpus_path: str, anndata_object: pd.DataFrame, dataset_id: str) -> (int, np.ndarray):
+def load_dataset(corpus_path: str, anndata_object: pd.DataFrame, dataset_id: str):
     """
     Read given anndata dataset into the tiledb object (under corpus name), updating the var and feature indexes
     to avoid collisions within the larger tiledb object
     """
     var_df = update_corpus_var(corpus_path, anndata_object)
 
-    # Calculate mapping between var/feature coordinates in H5AD (file local) and TDB (global)
+    # Calculate mapping between var/feature coordinates in anndata_object (local h5ad file) and corpus (global tdb object) # noqa E501
     global_var_index = np.zeros((anndata_object.shape[1],), dtype=np.uint32)
     var_feature_to_coord_map = {k: v for k, v in var_df[["gene_ontology_term_id", "var_idx"]].to_dict("split")["data"]}
     for idx in range(anndata_object.shape[1]):
@@ -34,7 +34,6 @@ def load_dataset(corpus_path: str, anndata_object: pd.DataFrame, dataset_id: str
     transform_dataset_raw_counts_to_rankit(anndata_object, corpus_path, global_var_index, first_obs_idx)
     end = time.time()
     logger.info(f"rankit duration={end - start} ")
-    return first_obs_idx, global_var_index
 
 
 def update_corpus_var(corpus_path: str, anndata_object: pd.DataFrame) -> pd.DataFrame:

@@ -116,7 +116,7 @@ def create_tdb(corpus_location: str, tdb_group: str):
     create_var_array(uri, filters)
 
 
-def create_var_array(uri, filters):
+def create_var_array(uri: str, filters: tiledb.filter.FilterList):
     """
     var/feature/gene axes labels.
     """
@@ -138,7 +138,7 @@ def create_var_array(uri, filters):
     )
 
 
-def create_obs_array(uri, filters):
+def create_obs_array(uri: str, filters: tiledb.filter.FilterList):
     """
     obs/cell axes labels
     """
@@ -160,7 +160,7 @@ def create_obs_array(uri, filters):
     )
 
 
-def create_integrated_expression_array(uri, filters):
+def create_integrated_expression_array(uri: str, filters: tiledb.filter.FilterList):
     X_capacity = 128000
     X_extent = [512, 2048]  # guess - needs tuning
     tiledb.Array.create(

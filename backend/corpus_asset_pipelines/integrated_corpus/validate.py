@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
-def should_load_dataset(h5ad_path, corpus_path):
+def should_load_dataset(h5ad_path: str, corpus_path: str) -> str:
     dataset_id = get_dataset_id(h5ad_path)
     if is_dataset_already_loaded(corpus_path, dataset_id):
         return None

@@ -1,6 +1,6 @@
 import logging
 import subprocess
-from typing import Union
+from typing import Dict, Union
 
 import anndata
 import numpy as np
@@ -26,7 +26,7 @@ def get_X_raw(anndata_object: anndata.AnnData) -> Union[np.ndarray, sparse.spmat
     return raw_expression_matrix if raw_expression_matrix is not None else anndata_object.X
 
 
-def get_dataset_s3_uris():
+def get_dataset_s3_uris() -> Dict:
     """
     Retrieve list of s3 uris for datasets included in the wmg cube
     """
@@ -56,7 +56,7 @@ def get_dataset_s3_uris():
     return s3_uris
 
 
-def copy_datasets_to_instance(s3_uris, dataset_directory):
+def copy_datasets_to_instance(s3_uris: Dict, dataset_directory: str):
     """Copy given list of s3 uris to the provided path"""
     for dataset in s3_uris:
         copy_command = ["aws", "s3", "cp", s3_uris[dataset], f"./{dataset_directory}/{dataset}/local.h5ad"]
