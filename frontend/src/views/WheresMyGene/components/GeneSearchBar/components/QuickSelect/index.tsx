@@ -184,9 +184,9 @@ export default function QuickSelect<
     }
     const { nativeEvent } = e;
     if (
-      nativeEvent instanceof FocusEvent &&
-      nativeEvent.relatedTarget instanceof Element &&
-      nativeEvent.relatedTarget?.id !== `${dataTestId}-id`
+      (nativeEvent instanceof FocusEvent &&
+        nativeEvent.relatedTarget?.id !== `${dataTestId}-id`) ||
+      !(nativeEvent instanceof FocusEvent)
     )
       setOpen(false);
 
