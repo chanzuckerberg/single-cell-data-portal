@@ -9,6 +9,7 @@ import time
 import numba as nb
 import numpy as np
 import pandas as pd
+import pickle
 import tiledb
 
 from backend.wmg.data.schemas.cube_schema import expression_summary_schema, cube_non_indexed_dims, cell_counts_schema
@@ -49,6 +50,27 @@ def create_cell_count_cube(corpus_path: str):
             .size()
         )
         df = df.rename(columns={"size": "n_cells"})
+
+        mat = np.tile(df.columns[:-1].values[None, :], (df.shape[0], 1)) + "__" + df.iloc[:, :-1].values
+        nodes = np.unique(mat.astype("str"))
+
+        mapper = pd.Series(index=nodes, data=np.arange(nodes.size))
+        r_mapper = pd.Series(index=np.arange(nodes.size), data=nodes)
+
+        Xs = []
+        Ys = []
+        for i in range(mat.shape[0]):
+            ix = mapper[mat[i]].values
+            Xs.extend(np.repeat(ix, ix.size))
+            Ys.extend(np.tile(ix, ix.size))
+        Xs, Ys = np.unique(np.array((Xs, Ys)), axis=1)
+        filt = Xs != Ys
+        Xs, Ys = Xs[filt], Ys[filt]
+        Xs = r_mapper[Xs].values
+        Ys = r_mapper[Ys].values
+        htable = _df_to_dict(Xs, Ys)
+        pickle.dump(htable, open(f"{corpus_path}/filter_graph.p", "wb"))
+
         create_empty_cube(uri, cell_counts_schema)
         tiledb.from_pandas(uri, df, mode="append")
         logger.info("Cell count cube creation complete")
@@ -261,3 +283,16 @@ def coo_cube_pass1_into(data, row, col, row_groups, sum_into, nnz_into, min_into
                 min_into[grp_idx, cidx] = val
             if val > max_into[grp_idx, cidx]:
                 max_into[grp_idx, cidx] = val
+
+
+def _df_to_dict(a, b):
+    idx = np.argsort(a)
+    a = a[idx]
+    b = b[idx]
+    bounds = np.where(a[:-1] != a[1:])[0] + 1
+    bounds = np.append(np.append(0, bounds), a.size)
+    bounds_left = bounds[:-1]
+    bounds_right = bounds[1:]
+    slists = [b[bounds_left[i] : bounds_right[i]] for i in range(bounds_left.size)]
+    d = dict(zip(np.unique(a), [list(x) for x in slists]))
+    return d
