@@ -68,7 +68,7 @@ def create_cell_count_cube(corpus_path: str):
         Xs, Ys = Xs[filt], Ys[filt]
         Xs = r_mapper[Xs].values
         Ys = r_mapper[Ys].values
-        htable = _df_to_dict(Xs, Ys)
+        htable = _to_dict(Xs, Ys)
         pickle.dump(htable, open(f"{corpus_path}/filter_graph.p", "wb"))
 
         create_empty_cube(uri, cell_counts_schema)
@@ -285,7 +285,10 @@ def coo_cube_pass1_into(data, row, col, row_groups, sum_into, nnz_into, min_into
                 max_into[grp_idx, cidx] = val
 
 
-def _df_to_dict(a, b):
+def _to_dict(a, b):
+    """
+    convert a flat key array (a) and a value array (b) into a dictionary with values grouped by keys
+    """
     idx = np.argsort(a)
     a = a[idx]
     b = b[idx]
