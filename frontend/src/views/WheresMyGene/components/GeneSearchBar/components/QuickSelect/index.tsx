@@ -182,8 +182,14 @@ export default function QuickSelect<
     if (reason === "toggleInput") {
       return;
     }
-    const nativeEvent: any = e.nativeEvent;
-    if (nativeEvent.relatedTarget?.id !== `${dataTestId}-id`) setOpen(false);
+    const { nativeEvent } = e;
+    if (
+      nativeEvent instanceof FocusEvent &&
+      nativeEvent.relatedTarget instanceof Element &&
+      nativeEvent.relatedTarget?.id !== `${dataTestId}-id`
+    )
+      setOpen(false);
+
     setInput("");
   };
   const handleChange = (
