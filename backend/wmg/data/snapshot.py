@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from typing import Optional, Dict
 
 import pandas as pd
+import pickle
 import tiledb
 from pandas import DataFrame
 from tiledb import Array
@@ -48,6 +49,9 @@ class WmgSnapshot:
     # precomputed list of ids for all gene and tissue ontology term ids per organism
     primary_filter_dimensions: Dict
 
+    # precomputed filter relationships graph
+    filter_relationships: Dict
+
 
 # Cached data
 cached_snapshot: Optional[WmgSnapshot] = None
@@ -79,6 +83,7 @@ def _load_snapshot(new_snapshot_identifier) -> WmgSnapshot:
         cell_counts_cube=_open_cube(f"{snapshot_base_uri}/{CELL_COUNTS_CUBE_NAME}"),
         cell_type_orderings=_load_cell_type_order(new_snapshot_identifier),
         primary_filter_dimensions=_load_primary_filter_data(new_snapshot_identifier),
+        filter_relationships=_read_filter_graph(new_snapshot_identifier),
     )
 
 
@@ -101,6 +106,15 @@ def _read_s3obj(relative_path: str) -> str:
     prefixed_relative_path = os.path.join(_build_data_path_prefix(), relative_path or "")
     s3obj = s3.Object(WmgConfig().bucket, prefixed_relative_path)
     return s3obj.get()["Body"].read().decode("utf-8").strip()
+
+
+def _read_filter_graph(snapshot_identifier: str) -> str:
+    s3 = buckets.portal_resource
+    wmg_config = WmgConfig()
+    wmg_config.load()
+    prefixed_relative_path = os.path.join(_build_data_path_prefix(), f"{snapshot_identifier}/filter_graph.p")
+    s3obj = s3.Object(WmgConfig().bucket, prefixed_relative_path)
+    return pickle.loads(s3obj.get()["Body"].read())
 
 
 # TODO: Worth doing this on a thread, continuously, rather than on-demand, in order to proactively load an updated

@@ -13,6 +13,7 @@ from backend.wmg.data.query import (
     WmgQuery,
     WmgQueryCriteria,
 )
+from backend.wmg.data.wmg_cube import _to_dict
 from backend.wmg.data.snapshot import load_snapshot, WmgSnapshot
 
 # TODO: add cache directives: no-cache (i.e. revalidate); impl etag
@@ -36,8 +37,9 @@ def query():
     dot_plot_matrix_df = build_dot_plot_matrix(expression_summary, cell_counts)
 
     include_filter_dims = request.get("include_filter_dims", False)
-
-    response_filter_dims_values = build_filter_dims_values(criteria, query) if include_filter_dims else {}
+    response_filter_dims_values = (
+        build_filter_dims_values(criteria, snapshot.filter_relationships) if include_filter_dims else {}
+    )
     return jsonify(
         dict(
             snapshot_id=snapshot.snapshot_identifier,
@@ -75,26 +77,31 @@ def fetch_datasets_metadata(dataset_ids: Iterable[str]) -> List[Dict]:
         return [get_dataset(dataset_id) for dataset_id in dataset_ids]
 
 
-def find_dim_option_values(criteria: Dict, query: WmgQuery, dimension: str) -> set:
-    """Find values for the specified dimension that satisfy the given filtering criteria,
-    ignoring any criteria specified for the given dimension."""
-    filter_options_criteria = criteria.copy(update={dimension + "s": []}, deep=True)
-    # todo can we query cell_counts for a performance gain?
-    query_result = query.expression_summary(filter_options_criteria)
-    filter_dims = query_result.groupby(dimension).groups.keys()
-    return filter_dims
+def find_filter_option_values(criteria: Dict, htable: Dict) -> set:
+    """Find valid options given criteria."""
+    supersets = []
+    for key in criteria:
+        vals = [key + "__" + val for val in criteria[key]]
+        sets = [set(htable[v]) for v in vals]
+        supersets.append(sets[0].intersection(*sets[1:]))
+    filter_vals = [i.split("__") for i in supersets[0].intersection(*supersets[1:])]
+    a = [i[0] for i in filter_vals]
+    b = [i[1] for i in filter_vals]
+    return _to_dict(a, b)
 
 
-def build_filter_dims_values(criteria: WmgQueryCriteria, query: WmgQuery) -> Dict:
-    dims = {
+def build_filter_dims_values(criteria: WmgQueryCriteria, htable: Dict) -> Dict:
+    default_dims = {
         "dataset_id": "",
         "disease_ontology_term_id": "",
         "sex_ontology_term_id": "",
         "development_stage_ontology_term_id": "",
         "ethnicity_ontology_term_id": "",
     }
-    for dim in dims:
-        dims[dim] = find_dim_option_values(criteria, query, dim)
+    dims = find_filter_option_values(criteria, htable)
+    for dim in default_dims:
+        if dim not in dims:
+            dims[dim] = ""
 
     response_filter_dims_values = dict(
         datasets=fetch_datasets_metadata(dims["dataset_id"]),
@@ -103,7 +110,6 @@ def build_filter_dims_values(criteria: WmgQueryCriteria, query: WmgQuery) -> Dic
         development_stage_terms=build_ontology_term_id_label_mapping(dims["development_stage_ontology_term_id"]),
         ethnicity_terms=build_ontology_term_id_label_mapping(dims["ethnicity_ontology_term_id"]),
     )
-
     return response_filter_dims_values
 
 
