@@ -14,7 +14,6 @@ def get_all_dataset_ids(tdb_group: str) -> List[str]:
     return all_dataset_ids
 
 
-
 def timer_func(func):
     # This decorator function logs the execution time of the function object passed
     def wrap_func(*args, **kwargs):
@@ -22,6 +21,7 @@ def timer_func(func):
         start = time.perf_counter()
         result = func(*args, **kwargs)
         stop = time.perf_counter()
-        logger.info(f'Function {func.__name__} executed in {(stop-start):.4f}s')
+        logger.info(f"Function {func.__name__} executed in {(stop-start):.4f}s")
         return result
+
     return wrap_func
