@@ -13,7 +13,6 @@ from backend.wmg.data.query import (
     WmgQuery,
     WmgQueryCriteria
 )
-from backend.wmg.data.wmg_cube import _to_dict
 from backend.wmg.data.snapshot import load_snapshot, WmgSnapshot
 
 # TODO: add cache directives: no-cache (i.e. revalidate); impl etag
@@ -77,42 +76,45 @@ def fetch_datasets_metadata(dataset_ids: Iterable[str]) -> List[Dict]:
         return [get_dataset(dataset_id) for dataset_id in dataset_ids]
 
 
-def find_filter_option_values(criteria: Dict, htable: Dict) -> set:
-    """Find valid options given criteria."""
-    criteria = dict(criteria)
-    del criteria['gene_ontology_term_ids']    
-    
-    supersets = []
+def find_dim_option_values(criteria: Dict, htable: Dict, dimension: str) -> set:
+    """Find valid options given criteria."""      
+    dimension = dimension[:-1] if dimension[-1] == "s" else dimension
+    supersets=[]
     for key in criteria:
         attrs = criteria[key]
-        key = key[:-1] if key[-1] == "s" else key
-        if isinstance(attrs,list):
-            if (len(attrs) > 0):
-                vals = [key + "__" + val for val in attrs]
-                sets = [set(htable[v]) for v in vals]
-                supersets.append(sets[0].intersection(*sets[1:]))
-        else:
-            if attrs != "":
-                supersets.append(set(htable[key+"__"+attrs]))
+        key = key[:-1] if key[-1] == "s" else key        
+        if key != dimension:
+            if isinstance(attrs,list):
+                if (len(attrs) > 0):
+                    vals = [key + "__" + val for val in attrs]
+                    sets = [set([x for x in htable[v] if dimension in x]) for v in vals]
+                    supersets.append(sets[0].union(*sets[1:]))
+            else:
+                if attrs != "":
+                    supersets.append(set([x for x in htable[key+"__"+attrs] if dimension in x]))
+
+    if len(supersets) > 1:
+        supersets = supersets[0].intersection(*supersets[1:])
+    else:
+        supersets = supersets[0]
         
-    filter_vals = [i.split("__") for i in supersets[0].intersection(*supersets[1:])]
-    a = [i[0] for i in filter_vals]
-    b = [i[1] for i in filter_vals]
-    return _to_dict(a, b)
+    return [i.split("__")[1] for i in supersets]
 
 
 def build_filter_dims_values(criteria: WmgQueryCriteria, htable: Dict) -> Dict:
-    default_dims = {
+    dims = {
         "dataset_id": "",
         "disease_ontology_term_id": "",
         "sex_ontology_term_id": "",
         "development_stage_ontology_term_id": "",
         "ethnicity_ontology_term_id": "",
     }
-    dims = find_filter_option_values(criteria, htable)
-    for dim in default_dims:
-        if dim not in dims:
-            dims[dim] = ""
+    
+    criteria = dict(criteria)
+    del criteria['gene_ontology_term_ids']      
+    
+    for dim in dims:
+        dims[dim] = find_dim_option_values(criteria, htable, dim)
 
     response_filter_dims_values = dict(
         #datasets=fetch_datasets_metadata(dims["dataset_id"]),
