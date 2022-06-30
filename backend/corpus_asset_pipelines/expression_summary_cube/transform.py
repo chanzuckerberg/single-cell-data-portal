@@ -12,6 +12,7 @@ from backend.corpus_asset_pipelines.expression_summary_cube.extract import extra
 
 from backend.wmg.data.schemas.corpus_schema import INTEGRATED_ARRAY_NAME
 from backend.wmg.data.tiledb import create_ctx
+from backend.wmg.data.utils import log_func_runtime
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -32,9 +33,9 @@ def transform(corpus_path: str, gene_ontology_term_ids: list, cube_dims: list):
 
     # pass 1 - sum, nnz, min, max
     reduce_X(corpus_path, cell_labels.cube_idx.values, cube_sum, cube_nnz, cube_min, cube_max)
-    return cube_index, cube_sum, cube_nnz, cube_dims
+    return cube_index, cube_sum, cube_nnz
 
-
+@log_func_runtime
 def reduce_X(tdb_group, cube_indices, *accum):
     """
     # TODO

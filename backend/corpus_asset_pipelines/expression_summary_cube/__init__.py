@@ -4,10 +4,12 @@ from backend.corpora.common.utils.slack import format_failed_batch_issue_slack_a
     gen_wmg_pipeline_failure_message
 from backend.corpus_asset_pipelines.expression_summary_cube.job import create_expression_summary_cube
 from backend.wmg.data.validation.validation import Validation
+from backend.wmg.data.wmg_cube import create_cell_count_cube
 
 
 def run(corpus_path, validate_cube):
     create_expression_summary_cube(corpus_path)
+    create_cell_count_cube(corpus_path)
     if validate_cube:
         if Validation(corpus_path).validate_cube() is False:
             pipeline_failure_message = gen_wmg_pipeline_failure_message(
