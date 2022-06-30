@@ -13,14 +13,15 @@ from backend.corpora.api_server.logger import configure_logging
 from backend.corpora.common.utils.aws import AwsSecret
 from backend.corpora.common.utils.json import CustomJSONEncoder
 
-configure_logging()
-
 DEPLOYMENT_STAGE = os.environ["DEPLOYMENT_STAGE"]
-APP_NAME = os.environ["APP_NAME"]
+APP_NAME = "{}-{}".format(os.environ["APP_NAME"], DEPLOYMENT_STAGE)
+
+
+configure_logging(APP_NAME)
 
 
 def create_flask_app():
-    connexion_app = connexion.FlaskApp(f"{APP_NAME}-{DEPLOYMENT_STAGE}", specification_dir="backend/config")
+    connexion_app = connexion.FlaskApp(APP_NAME, specification_dir="backend/config")
 
     # From https://github.com/zalando/connexion/issues/346
     connexion_app.app.url_map.strict_slashes = False

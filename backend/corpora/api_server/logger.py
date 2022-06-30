@@ -1,4 +1,3 @@
-import logging
 from logging.config import dictConfig
 
 from pythonjsonlogger import jsonlogger
@@ -9,7 +8,7 @@ LOGGED_FIELDS = ["levelname", "asctime", "name", "message"]
 LOG_FORMAT = " ".join([f"%({field})" for field in LOGGED_FIELDS])
 
 
-def configure_logging():
+def configure_logging(app_name):
     """https://docs.python.org/3/library/logging.config.html"""
     dictConfig(
         {
@@ -25,6 +24,7 @@ def configure_logging():
                     "level": "INFO",
                 }
             },
-            "root": {"level": logging.INFO, "handlers": ["wsgi"]},
+            "loggers": {app_name: {"level": "INFO", "handlers": ["wsgi"]}},
+            "root": {"level": "INFO", "handlers": ["wsgi"]},
         }
     )
