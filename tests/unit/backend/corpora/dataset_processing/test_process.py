@@ -385,7 +385,7 @@ class TestDatasetProcessing(DataPortalTestCase):
 
         self.assertEqual(len(artifacts), 1)
         self.assertEqual(artifacts[0].dataset_id, dataset_id)
-        self.assertEqual(artifacts[0].s3_uri, f"s3://{explorer_bucket}/{dataset_id}.cxg/")
+        self.assertEqual(artifacts[0].s3_uri, (f"s3://{explorer_bucket}/{artifacts[0].id}.cxg/"))
         self.assertEqual(artifacts[0].filetype, DatasetArtifactFileType.CXG)
 
     @patch("backend.corpora.dataset_processing.process.make_seurat")
