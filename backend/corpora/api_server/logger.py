@@ -5,7 +5,7 @@ from pythonjsonlogger import jsonlogger
 
 
 # The fields to log using the json logger.
-LOGGED_FIELDS = ["levelname", "asctime", "name", "message", "lineno", "module", "funcName", "pathname"]
+LOGGED_FIELDS = ["levelname", "asctime", "name", "message", "lineno", "funcName", "pathname"]
 LOG_FORMAT = " ".join([f"%({field})" for field in LOGGED_FIELDS])
 
 
