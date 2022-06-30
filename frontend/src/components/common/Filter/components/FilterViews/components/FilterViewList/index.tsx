@@ -1,5 +1,4 @@
 import { IconNames } from "@blueprintjs/icons";
-import { Box } from "@material-ui/core";
 import { List } from "czifui";
 import React, { Fragment, ReactElement } from "react";
 import {
@@ -14,7 +13,6 @@ import {
   ViewListItemText,
   ViewSublist,
 } from "src/components/common/Filter/components/FilterViews/components/FilterViewList/style";
-import { GRAY } from "src/components/common/theme";
 
 interface Props {
   categoryKey: CATEGORY_KEY;
@@ -65,21 +63,9 @@ export default function FilterViewList({
                 {/* List item text and count */}
                 <ViewListItemText
                   disableTypography
-                  primary={
-                    <Box
-                      component="span"
-                      flex={1}
-                      fontWeight={selected ? 500 : undefined}
-                      mr={4}
-                    >
-                      {label}
-                    </Box>
-                  }
-                  secondary={
-                    <Box color={GRAY.A} component="span">
-                      {count}
-                    </Box>
-                  }
+                  primary={<span>{label}</span>}
+                  secondary={<span>{count}</span>}
+                  selected={selected}
                 />
               </ViewListItem>
               {/* Nested list */}
