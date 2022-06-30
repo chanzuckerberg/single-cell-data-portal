@@ -74,7 +74,9 @@ def fetch_datasets_metadata(dataset_ids: Iterable[str]) -> List[Dict]:
 
 
 def find_dim_option_values(criteria: Dict, htable: Dict, dimension: str) -> set:
-    """Find valid options given criteria."""
+    """Find values for the specified dimension that satisfy the given filtering criteria,
+    ignoring any criteria specified for the given dimension."""
+
     dimension = dimension[:-1] if dimension[-1] == "s" else dimension
     supersets = []
     for key in criteria:
