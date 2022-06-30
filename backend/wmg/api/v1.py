@@ -93,11 +93,18 @@ def find_dim_option_values(criteria: Dict, htable: Dict, dimension: str) -> set:
                     supersets.append(set([x for x in htable[key + "__" + attrs] if dimension in x]))
 
     if len(supersets) > 1:
-        supersets = supersets[0].intersection(*supersets[1:])
+        valid_options = supersets[0].intersection(*supersets[1:])
     else:
-        supersets = supersets[0]
+        valid_options = supersets[0]
 
-    return [i.split("__")[1] for i in supersets]
+    # now, close the loop and make sure that the set of filter options will each yield a valid combination of filters with the existing filters.
+    final_options = []
+    for v in valid_options:
+        loop_back_options = htable[v]
+        if len(set(loop_back_options).intersection(*supersets)) > 0:
+            final_options.append(v)
+
+    return [i.split("__")[1] for i in final_options]
 
 
 def build_filter_dims_values(criteria: WmgQueryCriteria, htable: Dict) -> Dict:
