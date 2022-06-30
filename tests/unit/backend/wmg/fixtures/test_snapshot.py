@@ -242,7 +242,7 @@ def create_cubes(
         filt = Xs != Ys
         Xs, Ys = Xs[filt], Ys[filt]
         filter_graph = _to_dict(Xs, Ys)
-        pickle.dump(open(f"{data_dir}/filter_graph.p", "wb"))
+        pickle.dump(filter_graph, open(f"{data_dir}/filter_graph.p", "wb"))
 
     return expression_summary_cube_dir, cell_counts_cube_dir, filter_graph
 
