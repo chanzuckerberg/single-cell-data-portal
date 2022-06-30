@@ -5,7 +5,7 @@ from pythonjsonlogger import jsonlogger
 
 
 # The fields to log using the json logger.
-LOGGED_FIELDS = ["levelname", "asctime", "name", "message", "lineno", "funcName", "pathname"]
+LOGGED_FIELDS = ["levelname", "asctime", "name", "message", "lineno", "pathname"]
 LOG_FORMAT = " ".join([f"%({field})" for field in LOGGED_FIELDS])
 
 
@@ -23,11 +23,11 @@ def configure_logging(app_name):
                     "class": "logging.StreamHandler",
                     "stream": "ext://flask.logging.wsgi_errors_stream",
                     "formatter": "default",
-                    "level": "INFO",
+                    "level": gunicorn_logger.level,
                 }
             },
             "loggers": {
-                app_name: {"level": gunicorn_logger.level, "handlers": ["wsgi"]},
+                app_name: {"level": gunicorn_logger.level, "handlers": ["wsgi"], "propagate": 0},
             },
             "root": {"level": gunicorn_logger.level, "handlers": ["wsgi"]},
         }
