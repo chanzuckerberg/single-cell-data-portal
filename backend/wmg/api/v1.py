@@ -97,7 +97,6 @@ def find_dim_option_values(criteria: Dict, htable: Dict, dimension: str) -> set:
     else:
         valid_options = supersets[0]
 
-    # now, close the loop and make sure that the set of filter options will each yield a valid combination of filters with the existing filters.
     final_options = []
     for v in valid_options:
         loop_back_options = htable[v]
