@@ -116,18 +116,19 @@ def load_data_into_cube(tdb_group, uri: str):
     n_groups = len(cube_index)
 
     cube_sum = np.zeros((n_groups, n_genes), dtype=np.float32)
+    cube_sq_sum = np.zeros((n_groups, n_genes), dtype=np.float32)
     cube_nnz = np.zeros((n_groups, n_genes), dtype=np.uint64)
     # TODO: These do not appear to be used. Remove?
     cube_min = np.zeros((n_groups, n_genes), dtype=np.float32)
     cube_max = np.zeros((n_groups, n_genes), dtype=np.float32)
 
     # pass 1 - sum, nnz, min, max
-    reduce_X(tdb_group, start_time, cell_labels.cube_idx.values, cube_sum, cube_nnz, cube_min, cube_max)
+    reduce_X(tdb_group, start_time, cell_labels.cube_idx.values, cube_sum, cube_sq_sum, cube_nnz, cube_min, cube_max)
 
-    return build_in_mem_cube(gene_ontology_term_ids, cube_index, cube_non_indexed_dims, cube_sum, cube_nnz)
+    return build_in_mem_cube(gene_ontology_term_ids, cube_index, cube_non_indexed_dims, cube_sum, cube_sq_sum, cube_nnz)
 
 
-def build_in_mem_cube(gene_ids, cube_index, other_attrs, cube_sum, cube_nnz):
+def build_in_mem_cube(gene_ids, cube_index, other_attrs, cube_sum, cube_sq_sum, cube_nnz):
     """
     Build the cube in memory, calculating the gene expression value for each combination of attributes
     """
@@ -147,6 +148,7 @@ def build_in_mem_cube(gene_ids, cube_index, other_attrs, cube_sum, cube_nnz):
     ]
     vals = {
         "sum": np.empty((total_vals,)),
+        "sumsq": np.empty((total_vals,)),
         "nnz": np.empty((total_vals,), dtype=np.uint64),
         "n_cells": np.empty((total_vals,), dtype=np.uint32),
         **{k: np.empty((total_vals,), dtype=object) for k in other_attrs},
@@ -175,6 +177,7 @@ def build_in_mem_cube(gene_ids, cube_index, other_attrs, cube_sum, cube_nnz):
         dims[2][idx : idx + n_vals] = organism_ontology_term_id
 
         vals["sum"][idx : idx + n_vals] = cube_sum[cube_idx, mask]
+        vals["sumsq"][idx : idx + n_vals] = cube_sq_sum[cube_idx, mask]
         vals["nnz"][idx : idx + n_vals] = cube_nnz[cube_idx, mask]
         vals["n_cells"][idx : idx + n_vals] = n  # wasteful
 
@@ -246,7 +249,7 @@ arrays if compute ends up being a bottleneck.
 
 
 @nb.njit(fastmath=True, error_model="numpy", parallel=False, nogil=True)
-def coo_cube_pass1_into(data, row, col, row_groups, sum_into, nnz_into, min_into, max_into):
+def coo_cube_pass1_into(data, row, col, row_groups, sum_into, sq_sum_into, nnz_into, min_into, max_into):
     """
     # TODO
     """
@@ -256,6 +259,7 @@ def coo_cube_pass1_into(data, row, col, row_groups, sum_into, nnz_into, min_into
             cidx = col[k]
             grp_idx = row_groups[row[k]]
             sum_into[grp_idx, cidx] += val
+            sq_sum_into[grp_idx, cidx] += val**2
             nnz_into[grp_idx, cidx] += 1
             if val < min_into[grp_idx, cidx]:
                 min_into[grp_idx, cidx] = val
