@@ -1,23 +1,27 @@
 import json
-import logging
 import os
+import time
 from urllib.parse import urlparse
 
 import connexion
+
 from connexion import FlaskApi, ProblemException, problem
-from flask import g, request
+from flask import g, request, Response
 from flask_cors import CORS
 from swagger_ui_bundle import swagger_ui_path
-
+from backend.corpora.api_server.logger import configure_logging
 from backend.corpora.common.utils.aws import AwsSecret
 from backend.corpora.common.utils.json import CustomJSONEncoder
 
 DEPLOYMENT_STAGE = os.environ["DEPLOYMENT_STAGE"]
-APP_NAME = os.environ["APP_NAME"]
+APP_NAME = "{}-{}".format(os.environ["APP_NAME"], DEPLOYMENT_STAGE)
+
+
+configure_logging(APP_NAME)
 
 
 def create_flask_app():
-    connexion_app = connexion.FlaskApp(f"{APP_NAME}-{DEPLOYMENT_STAGE}", specification_dir="backend/config")
+    connexion_app = connexion.FlaskApp(APP_NAME, specification_dir="backend/config")
 
     # From https://github.com/zalando/connexion/issues/346
     connexion_app.app.url_map.strict_slashes = False
@@ -47,10 +51,6 @@ def create_flask_app():
 
 
 def configure_flask_app(flask_app):
-    # configure logging
-    gunicorn_logger = logging.getLogger("gunicorn.error")
-    flask_app.logger.handlers = gunicorn_logger.handlers
-    flask_app.logger.setLevel(gunicorn_logger.level)
     flask_app.debug = False if DEPLOYMENT_STAGE == "prod" else True
 
     # set the flask secret key, needed for session cookies
@@ -108,9 +108,33 @@ def apis_landing_page() -> str:
 
 
 @app.before_request
-def pre_request_logging():
-    message = json.dumps(dict(url=request.path, method=request.method, schema=request.scheme))
-    app.logger.info(message)
+def before_request():
+    g.start = time.time()
+    app.logger.info(
+        dict(
+            type="REQUEST",
+            details=dict(
+                url=request.path,
+                method=request.method,
+                content_length=request.content_length,
+            ),
+        )
+    )
+
+
+@app.after_request
+def after_request(response: Response):
+    app.logger.info(
+        dict(
+            type="RESPONSE",
+            details=dict(
+                status_code=response.status_code,
+                content_length=response.content_length,
+                response_time=time.time() - g.start,
+            ),
+        )
+    )
+    return response
 
 
 @app.teardown_appcontext
