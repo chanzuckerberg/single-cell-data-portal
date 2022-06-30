@@ -9,10 +9,7 @@ from pandas import DataFrame
 from backend.corpora.common.entities import Dataset
 from backend.corpora.common.utils.db_session import db_session_manager
 from backend.wmg.data.ontology_labels import ontology_term_label, gene_term_label
-from backend.wmg.data.query import (
-    WmgQuery,
-    WmgQueryCriteria
-)
+from backend.wmg.data.query import WmgQuery, WmgQueryCriteria
 from backend.wmg.data.snapshot import load_snapshot, WmgSnapshot
 
 # TODO: add cache directives: no-cache (i.e. revalidate); impl etag
@@ -77,27 +74,27 @@ def fetch_datasets_metadata(dataset_ids: Iterable[str]) -> List[Dict]:
 
 
 def find_dim_option_values(criteria: Dict, htable: Dict, dimension: str) -> set:
-    """Find valid options given criteria."""      
+    """Find valid options given criteria."""
     dimension = dimension[:-1] if dimension[-1] == "s" else dimension
-    supersets=[]
+    supersets = []
     for key in criteria:
         attrs = criteria[key]
-        key = key[:-1] if key[-1] == "s" else key        
+        key = key[:-1] if key[-1] == "s" else key
         if key != dimension:
-            if isinstance(attrs,list):
-                if (len(attrs) > 0):
+            if isinstance(attrs, list):
+                if len(attrs) > 0:
                     vals = [key + "__" + val for val in attrs]
                     sets = [set([x for x in htable[v] if dimension in x]) for v in vals]
                     supersets.append(sets[0].union(*sets[1:]))
             else:
                 if attrs != "":
-                    supersets.append(set([x for x in htable[key+"__"+attrs] if dimension in x]))
+                    supersets.append(set([x for x in htable[key + "__" + attrs] if dimension in x]))
 
     if len(supersets) > 1:
         supersets = supersets[0].intersection(*supersets[1:])
     else:
         supersets = supersets[0]
-        
+
     return [i.split("__")[1] for i in supersets]
 
 
@@ -109,15 +106,15 @@ def build_filter_dims_values(criteria: WmgQueryCriteria, htable: Dict) -> Dict:
         "development_stage_ontology_term_id": "",
         "ethnicity_ontology_term_id": "",
     }
-    
+
     criteria = dict(criteria)
-    del criteria['gene_ontology_term_ids']      
-    
+    del criteria["gene_ontology_term_ids"]
+
     for dim in dims:
         dims[dim] = find_dim_option_values(criteria, htable, dim)
 
     response_filter_dims_values = dict(
-        #datasets=fetch_datasets_metadata(dims["dataset_id"]),
+        datasets=fetch_datasets_metadata(dims["dataset_id"]),
         disease_terms=build_ontology_term_id_label_mapping(dims["disease_ontology_term_id"]),
         sex_terms=build_ontology_term_id_label_mapping(dims["sex_ontology_term_id"]),
         development_stage_terms=build_ontology_term_id_label_mapping(dims["development_stage_ontology_term_id"]),
