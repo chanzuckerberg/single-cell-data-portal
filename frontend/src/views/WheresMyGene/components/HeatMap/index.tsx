@@ -113,54 +113,58 @@ export default memo(function HeatMap({
       {isLoadingAPI || isAnyTissueLoading(isLoading) ? <Loader /> : null}
 
       <XAxisChart geneNames={sortedGeneNames} />
+      <div style={{
+        display: "flex",
+        flexDirection: "row"
+      }}>
+        <YAxisWrapper
+          height={(chartWrapperRect?.height || 0) - X_AXIS_CHART_HEIGHT_PX}
+        >
+          {selectedTissues.map((tissue) => {
+            const tissueCellTypes = getTissueCellTypes({
+              cellTypeSortBy,
+              cellTypes,
+              sortedCellTypesByTissueName,
+              tissue,
+            });
 
-      <YAxisWrapper
-        height={(chartWrapperRect?.height || 0) - X_AXIS_CHART_HEIGHT_PX}
-      >
-        {selectedTissues.map((tissue) => {
-          const tissueCellTypes = getTissueCellTypes({
-            cellTypeSortBy,
-            cellTypes,
-            sortedCellTypesByTissueName,
-            tissue,
-          });
+            return (
+              <YAxisChart
+                key={tissue}
+                tissue={tissue}
+                cellTypes={tissueCellTypes}
+                hasDeletedCellTypes={tissuesWithDeletedCellTypes.includes(tissue)}
+                availableCellTypes={allTissueCellTypes[tissue]}
+              />
+            );
+          })}
+        </YAxisWrapper>
+        <ChartWrapper ref={chartWrapperRef}>
+          {selectedTissues.map((tissue) => {
+            const tissueCellTypes = getTissueCellTypes({
+              cellTypeSortBy,
+              cellTypes,
+              sortedCellTypesByTissueName,
+              tissue,
+            });
 
-          return (
-            <YAxisChart
-              key={tissue}
-              tissue={tissue}
-              cellTypes={tissueCellTypes}
-              hasDeletedCellTypes={tissuesWithDeletedCellTypes.includes(tissue)}
-              availableCellTypes={allTissueCellTypes[tissue]}
-            />
-          );
-        })}
-      </YAxisWrapper>
-      <ChartWrapper ref={chartWrapperRef}>
-        {selectedTissues.map((tissue) => {
-          const tissueCellTypes = getTissueCellTypes({
-            cellTypeSortBy,
-            cellTypes,
-            sortedCellTypesByTissueName,
-            tissue,
-          });
-
-          return (
-            <Chart
-              isScaled={isScaled}
-              key={tissue}
-              tissue={tissue}
-              cellTypes={tissueCellTypes}
-              selectedGeneData={
-                orderedSelectedGeneExpressionSummariesByTissueName[tissue]
-              }
-              setIsLoading={setIsLoading}
-              scaledMeanExpressionMax={scaledMeanExpressionMax}
-              scaledMeanExpressionMin={scaledMeanExpressionMin}
-            />
-          );
-        })}
-      </ChartWrapper>
+            return (
+              <Chart
+                isScaled={isScaled}
+                key={tissue}
+                tissue={tissue}
+                cellTypes={tissueCellTypes}
+                selectedGeneData={
+                  orderedSelectedGeneExpressionSummariesByTissueName[tissue]
+                }
+                setIsLoading={setIsLoading}
+                scaledMeanExpressionMax={scaledMeanExpressionMax}
+                scaledMeanExpressionMin={scaledMeanExpressionMin}
+              />
+            );
+          })}
+        </ChartWrapper>
+      </div>
     </Container>
   );
 });

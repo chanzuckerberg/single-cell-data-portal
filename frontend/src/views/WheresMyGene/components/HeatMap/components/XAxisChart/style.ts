@@ -15,8 +15,7 @@ export const XAxisMask = styled.div`
   background-color: white;
   height: ${X_AXIS_CHART_HEIGHT_PX}px;
   width: ${Y_AXIS_CHART_WIDTH_PX}px;
-  position: sticky;
-  left: 0;
+  position: relative;
 `;
 
 export const XAxisContainer = styled.div`
@@ -24,7 +23,7 @@ export const XAxisContainer = styled.div`
 
   background-color: white;
   height: ${X_AXIS_CHART_HEIGHT_PX}px;
-  position: absolute;
+  position: relative;
 `;
 
 function xAxisWidth({ width }: { width: number }) {
