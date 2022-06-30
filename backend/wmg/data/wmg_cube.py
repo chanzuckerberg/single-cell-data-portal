@@ -282,6 +282,8 @@ def _to_dict(a, b):
     """
     convert a flat key array (a) and a value array (b) into a dictionary with values grouped by keys
     """
+    a = np.array(a)
+    b = np.array(b)
     idx = np.argsort(a)
     a = a[idx]
     b = b[idx]

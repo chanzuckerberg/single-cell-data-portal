@@ -11,7 +11,7 @@ from backend.corpora.common.utils.db_session import db_session_manager
 from backend.wmg.data.ontology_labels import ontology_term_label, gene_term_label
 from backend.wmg.data.query import (
     WmgQuery,
-    WmgQueryCriteria,
+    WmgQueryCriteria
 )
 from backend.wmg.data.wmg_cube import _to_dict
 from backend.wmg.data.snapshot import load_snapshot, WmgSnapshot
@@ -79,11 +79,22 @@ def fetch_datasets_metadata(dataset_ids: Iterable[str]) -> List[Dict]:
 
 def find_filter_option_values(criteria: Dict, htable: Dict) -> set:
     """Find valid options given criteria."""
+    criteria = dict(criteria)
+    del criteria['gene_ontology_term_ids']    
+    
     supersets = []
     for key in criteria:
-        vals = [key + "__" + val for val in criteria[key]]
-        sets = [set(htable[v]) for v in vals]
-        supersets.append(sets[0].intersection(*sets[1:]))
+        attrs = criteria[key]
+        key = key[:-1] if key[-1] == "s" else key
+        if isinstance(attrs,list):
+            if (len(attrs) > 0):
+                vals = [key + "__" + val for val in attrs]
+                sets = [set(htable[v]) for v in vals]
+                supersets.append(sets[0].intersection(*sets[1:]))
+        else:
+            if attrs != "":
+                supersets.append(set(htable[key+"__"+attrs]))
+        
     filter_vals = [i.split("__") for i in supersets[0].intersection(*supersets[1:])]
     a = [i[0] for i in filter_vals]
     b = [i[1] for i in filter_vals]
@@ -104,7 +115,7 @@ def build_filter_dims_values(criteria: WmgQueryCriteria, htable: Dict) -> Dict:
             dims[dim] = ""
 
     response_filter_dims_values = dict(
-        datasets=fetch_datasets_metadata(dims["dataset_id"]),
+        #datasets=fetch_datasets_metadata(dims["dataset_id"]),
         disease_terms=build_ontology_term_id_label_mapping(dims["disease_ontology_term_id"]),
         sex_terms=build_ontology_term_id_label_mapping(dims["sex_ontology_term_id"]),
         development_stage_terms=build_ontology_term_id_label_mapping(dims["development_stage_ontology_term_id"]),
