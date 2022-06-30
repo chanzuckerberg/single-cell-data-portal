@@ -12,6 +12,7 @@ import anndata
 import boto3
 from unittest import mock
 import numpy
+import numpy as np
 import pandas
 from moto import mock_s3
 
@@ -152,6 +153,7 @@ class TestDatasetProcessing(DataPortalTestCase):
             "title": "my test dataset",
             "X_normalization": "normal",
             "X_approximate_distribution": "normal",
+            "batch_condition": np.array({"batchA", "batchB"}),
             "schema_version": "2.0.0",
         }
 
@@ -209,6 +211,7 @@ class TestDatasetProcessing(DataPortalTestCase):
 
         self.assertEqual(extracted_metadata["x_normalization"], "normal")
         self.assertEqual(extracted_metadata["x_approximate_distribution"], "NORMAL")
+        self.assertEqual(extracted_metadata["batch_condition"], np.array({"batchA", "batchB"}))
         self.assertEqual(extracted_metadata["schema_version"], "2.0.0")
 
         self.assertEqual(extracted_metadata["cell_count"], 50001)
@@ -276,6 +279,7 @@ class TestDatasetProcessing(DataPortalTestCase):
             "title": "my test dataset",
             "X_normalization": "normal",
             "X_approximate_distribution": "normal",
+            "batch_condition": np.array({"batchA", "batchB"}),
             "schema_version": "2.0.0",
         }
 

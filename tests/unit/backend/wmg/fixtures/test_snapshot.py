@@ -92,12 +92,25 @@ def all_tens_cell_counts_values(coords) -> List[int]:
     return list(np.full(shape=len(coords), fill_value=10.0))
 
 
+def all_X_cell_counts_values(coords, X) -> List[int]:
+    return list(np.full(shape=len(coords), fill_value=X))
+
+
 def random_cell_counts_values(coords) -> List[int]:
     return list(randint(size=len(coords), low=1, high=1000))
 
 
 def exclude_random_coords_75pct(_) -> bool:
     return random() > 0.75
+
+
+def exclude_dev_stage_and_ethnicity_for_secondary_filter_test(coord) -> bool:
+    dev_stages_to_exclude = ("development_stage_ontology_term_id_1", "development_stage_ontology_term_id_2")
+    ethnicity_terms_to_exclude = ("ethnicity_ontology_term_id_1", "ethnicity_ontology_term_id_2")
+    if coord.development_stage_ontology_term_id in dev_stages_to_exclude:
+        if coord.ethnicity_ontology_term_id in ethnicity_terms_to_exclude:
+            return True
+    return False
 
 
 # use this to create a disjoint set of genes across organisms, to mimic real data (each organism has its own set of

@@ -6,7 +6,6 @@ It is a roadmap item.  Currently supported:
 Casting to ASCII for now as that covers 99.99% of our data (eg, ontology IDs).
 """
 
-# Hints on how to map between H5AD and TDB schemas.
 from collections import namedtuple
 from typing import Union, List
 
@@ -16,11 +15,11 @@ import tiledb
 
 import pathlib
 
-
 uint32_domain = (np.iinfo(np.uint32).min, np.iinfo(np.uint32).max - 1)
 
-# TODO: also define and use constants for obs and var array names
 INTEGRATED_ARRAY_NAME = "integrated"
+OBS_ARRAY_NAME = "obs"
+VAR_ARRAY_NAME = "var"
 
 
 class LabelType(
@@ -105,18 +104,65 @@ var_labels = [
 
 def create_tdb(corpus_location: str, tdb_group: str):
     """
-    Create the empty tiledb object for the corpus
-    ## TODO break out each array
+    Create the empty tiledb object for the integrated corpus
     """
     uri = f"{corpus_location}/{tdb_group}"
     pathlib.Path(uri).mkdir(parents=True, exist_ok=True)
     tiledb.group_create(uri)
 
+    filters = tiledb.FilterList([tiledb.ZstdFilter(level=-22)])
+    create_integrated_expression_array(uri, filters)
+    create_obs_array(uri, filters)
+    create_var_array(uri, filters)
+
+
+def create_var_array(uri: str, filters: tiledb.filter.FilterList):
+    """
+    var/feature/gene axes labels.
+    """
+    tiledb.Array.create(
+        f"{uri}/{VAR_ARRAY_NAME}",
+        tiledb.ArraySchema(
+            domain=tiledb.Domain(create_axes_label_dims(var_labels)),
+            sparse=True,
+            allows_duplicates=True,
+            attrs=[
+                tiledb.Attr(name=lbl.key, dtype=lbl.dtype, var=lbl.var, filters=filters)
+                for lbl in var_labels
+                if lbl.encode_as_dim is False
+            ],
+            cell_order="row-major",
+            tile_order="row-major",
+            capacity=10000,
+        ),
+    )
+
+
+def create_obs_array(uri: str, filters: tiledb.filter.FilterList):
+    """
+    obs/cell axes labels
+    """
+    tiledb.Array.create(
+        f"{uri}/{OBS_ARRAY_NAME}",
+        tiledb.ArraySchema(
+            domain=tiledb.Domain(create_axes_label_dims(obs_labels)),
+            sparse=True,
+            allows_duplicates=True,
+            attrs=[
+                tiledb.Attr(name=lbl.key, dtype=lbl.dtype, var=lbl.var, filters=filters)
+                for lbl in obs_labels
+                if lbl.encode_as_dim is False
+            ],
+            cell_order="row-major",
+            tile_order="row-major",
+            capacity=10000,
+        ),
+    )
+
+
+def create_integrated_expression_array(uri: str, filters: tiledb.filter.FilterList):
     X_capacity = 128000
     X_extent = [512, 2048]  # guess - needs tuning
-    filters = tiledb.FilterList([tiledb.ZstdFilter(level=-22)])
-
-    """ rankit expression values """
     tiledb.Array.create(
         f"{uri}/{INTEGRATED_ARRAY_NAME}",
         tiledb.ArraySchema(
@@ -146,46 +192,6 @@ def create_tdb(corpus_location: str, tdb_group: str):
             cell_order="row-major",
             tile_order="col-major",
             capacity=X_capacity,
-        ),
-    )
-
-    """
-    obs/cell axes labels
-    """
-    tiledb.Array.create(
-        f"{uri}/obs",
-        tiledb.ArraySchema(
-            domain=tiledb.Domain(create_axes_label_dims(obs_labels)),
-            sparse=True,
-            allows_duplicates=True,
-            attrs=[
-                tiledb.Attr(name=lbl.key, dtype=lbl.dtype, var=lbl.var, filters=filters)
-                for lbl in obs_labels
-                if lbl.encode_as_dim is False
-            ],
-            cell_order="row-major",
-            tile_order="row-major",
-            capacity=10000,
-        ),
-    )
-
-    """
-    var/feature/gene axes labels.
-    """
-    tiledb.Array.create(
-        f"{uri}/var",
-        tiledb.ArraySchema(
-            domain=tiledb.Domain(create_axes_label_dims(var_labels)),
-            sparse=True,
-            allows_duplicates=True,
-            attrs=[
-                tiledb.Attr(name=lbl.key, dtype=lbl.dtype, var=lbl.var, filters=filters)
-                for lbl in var_labels
-                if lbl.encode_as_dim is False
-            ],
-            cell_order="row-major",
-            tile_order="row-major",
-            capacity=10000,
         ),
     )
 
