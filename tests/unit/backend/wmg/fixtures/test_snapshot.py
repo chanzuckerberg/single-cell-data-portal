@@ -26,8 +26,10 @@ from backend.wmg.data.schemas.cube_schema import (
     cell_counts_logical_dims,
 )
 from backend.wmg.data.snapshot import WmgSnapshot, CELL_TYPE_ORDERINGS_FILENAME
+from backend.wmg.data.wmg_cube import _to_dict
 from backend.wmg.data.tiledb import create_ctx
 from tests.unit.backend.wmg.fixtures.test_primary_filters import build_precomputed_primary_filters
+import pickle
 
 
 def simple_ontology_terms_generator(dimension_name: str, n_terms: int) -> List[str]:
@@ -142,7 +144,7 @@ def create_temp_wmg_snapshot(
     cell_ordering_generator_fn: Callable[[List[str]], List[int]] = forward_cell_type_ordering,
 ) -> WmgSnapshot:
     with tempfile.TemporaryDirectory() as cube_dir:
-        expression_summary_cube_dir, cell_counts_cube_dir = create_cubes(
+        expression_summary_cube_dir, cell_counts_cube_dir, filter_graph = create_cubes(
             cube_dir,
             dim_size,
             exclude_logical_coord_fn=exclude_logical_coord_fn,
@@ -161,6 +163,7 @@ def create_temp_wmg_snapshot(
                     cell_counts_cube=cell_counts_cube,
                     cell_type_orderings=cell_type_orderings,
                     primary_filter_dimensions=primary_filter_dimensions,
+                    filter_relationships=filter_graph,
                 )
 
 
@@ -227,8 +230,21 @@ def create_cubes(
         cell_counts_logical_dims, dim_size, dim_ontology_term_ids_generator_fn, exclude_logical_coord_fn
     )
     cell_counts_cube_dir = create_cell_counts_cube(data_dir, coords, dim_values, cell_counts_fn=cell_counts_fn)
+    with tiledb.open(cell_counts_cube_dir) as cube:
+        df = cube.df[:]
+        mat = np.tile(df.columns[:-1].values[None, :], (df.shape[0], 1)) + "__" + df.iloc[:, :-1].values
+        Xs = []
+        Ys = []
+        for i in range(mat.shape[0]):
+            Xs.extend(np.repeat(mat[i], mat[i].size))
+            Ys.extend(np.tile(mat[i], mat[i].size))
+        Xs, Ys = np.unique(np.array((Xs, Ys)), axis=1)
+        filt = Xs != Ys
+        Xs, Ys = Xs[filt], Ys[filt]
+        filter_graph = _to_dict(Xs, Ys)
+        pickle.dump(open(f"{data_dir}/filter_graph.p", "wb"))
 
-    return expression_summary_cube_dir, cell_counts_cube_dir
+    return expression_summary_cube_dir, cell_counts_cube_dir, filter_graph
 
 
 def create_cell_counts_cube(data_dir, coords, dim_values, cell_counts_fn: Callable[[List[Tuple]], List[int]]) -> str:
@@ -309,7 +325,7 @@ if __name__ == "__main__":
     output_cube_dir = sys.argv[1]
     if not os.path.isdir(output_cube_dir):
         sys.exit(f"invalid dir {output_cube_dir} for cube")
-    _, cell_counts_cube_dir = create_cubes(
+    _, cell_counts_cube_dir, _ = create_cubes(
         output_cube_dir,
         dim_size=4,
         dim_ontology_term_ids_generator_fn=semi_real_dimension_values_generator,
