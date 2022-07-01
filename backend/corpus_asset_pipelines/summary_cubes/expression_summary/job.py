@@ -2,9 +2,9 @@ import logging
 
 import tiledb
 
-from backend.corpus_asset_pipelines.expression_summary_cube.extract import extract_var_data
-from backend.corpus_asset_pipelines.expression_summary_cube.load import build_in_mem_cube
-from backend.corpus_asset_pipelines.expression_summary_cube.transform import transform
+from backend.corpus_asset_pipelines.summary_cubes.expression_summary.extract import extract_var_data
+from backend.corpus_asset_pipelines.summary_cubes.expression_summary.load import build_in_mem_cube
+from backend.corpus_asset_pipelines.summary_cubes.expression_summary.transform import transform
 from backend.wmg.data.schemas.cube_schema import expression_summary_schema
 from backend.wmg.data.snapshot import EXPRESSION_SUMMARY_CUBE_NAME
 from backend.wmg.data.tiledb import create_ctx

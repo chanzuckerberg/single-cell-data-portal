@@ -8,7 +8,7 @@ import tiledb
 from backend.corpora.common.utils.slack import notify_slack, format_failed_batch_issue_slack_alert, \
     gen_wmg_pipeline_success_message, gen_wmg_pipeline_failure_message
 from backend.corpus_asset_pipelines import integrated_corpus
-from backend.corpus_asset_pipelines import expression_summary_cube
+from backend.corpus_asset_pipelines import summary_cubes
 
 from backend.wmg.data.load_cube import upload_artifacts_to_s3, make_snapshot_active
 from backend.wmg.data.schemas.corpus_schema import create_tdb
@@ -17,7 +17,7 @@ from backend.wmg.data.transform import (
     get_cell_types_by_tissue,
     generate_cell_ordering,
 )
-from backend.wmg.data.wmg_cube import create_cell_count_cube
+from backend.corpus_asset_pipelines.summary_cubes import create_cell_count_cube
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -50,10 +50,8 @@ def load_data_and_create_cube(
 
     integrated_corpus.run(path_to_h5ad_datasets, corpus_path, extract_data)
     logger.info("Loaded datasets into corpus")
-
-    expression_summary_cube.run(corpus_path, validate_cube)
+    summary_cubes.run(corpus_path, validate_cube)
     logger.info("Build expression summary cube")
-    create_cell_count_cube(corpus_path)
     logger.info("Built cell count cube")
 
     cell_type_by_tissue = get_cell_types_by_tissue(corpus_path)

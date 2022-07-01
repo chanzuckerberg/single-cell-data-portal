@@ -1,10 +1,14 @@
 import sys
 
-from backend.corpora.common.utils.slack import format_failed_batch_issue_slack_alert, notify_slack, \
+from backend.corpora.common.utils.slack import (
+    format_failed_batch_issue_slack_alert,
+    notify_slack,
     gen_wmg_pipeline_failure_message
-from backend.corpus_asset_pipelines.expression_summary_cube.job import create_expression_summary_cube
+)
+
+from backend.corpus_asset_pipelines.summary_cubes.expression_summary.job import create_expression_summary_cube
 from backend.wmg.data.validation.validation import Validation
-from backend.wmg.data.wmg_cube import create_cell_count_cube
+from backend.corpus_asset_pipelines.summary_cubes.cell_count import create_cell_count_cube
 
 
 def run(corpus_path, validate_cube):
