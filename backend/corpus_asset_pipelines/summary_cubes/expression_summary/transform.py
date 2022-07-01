@@ -35,6 +35,7 @@ def transform(corpus_path: str, gene_ontology_term_ids: list, cube_dims: list):
     reduce_X(corpus_path, cell_labels.cube_idx.values, cube_sum, cube_nnz, cube_min, cube_max)
     return cube_index, cube_sum, cube_nnz
 
+
 @log_func_runtime
 def reduce_X(tdb_group, cube_indices, *accum):
     """

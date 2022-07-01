@@ -6,7 +6,7 @@ import tiledb
 from backend.wmg.data.schemas.corpus_schema import OBS_ARRAY_NAME
 from backend.wmg.data.schemas.cube_schema import cell_counts_schema
 from backend.wmg.data.snapshot import CELL_COUNTS_CUBE_NAME
-from backend.wmg.data.utils import create_empty_cube
+from backend.wmg.data.utils import create_empty_cube, log_func_runtime
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -19,7 +19,7 @@ def extract(corpus_path: str) -> pd.DataFrame:
 def transform(obs: pd.DataFrame) -> pd.DataFrame:
     df = (
         obs.df[:]
-            .groupby(
+        .groupby(
             by=[
                 "dataset_id",
                 "cell_type_ontology_term_id",
@@ -33,7 +33,7 @@ def transform(obs: pd.DataFrame) -> pd.DataFrame:
             ],
             as_index=False,
         )
-            .size()
+        .size()
     ).rename(columns={"size": "n_cells"})
     return df
 
@@ -44,7 +44,7 @@ def load(corpus_path: str, df: pd.DataFrame) -> str:
     tiledb.from_pandas(uri, df, mode="append")
     return uri
 
-
+@log_func_runtime
 def create_cell_count_cube(corpus_path: str):
     """
     Create cell count cube and write to disk

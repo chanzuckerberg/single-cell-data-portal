@@ -17,7 +17,6 @@ from backend.wmg.data.transform import (
     get_cell_types_by_tissue,
     generate_cell_ordering,
 )
-from backend.corpus_asset_pipelines.summary_cubes import create_cell_count_cube
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -49,10 +48,7 @@ def load_data_and_create_cube(
         create_tdb(snapshot_path, corpus_name)
 
     integrated_corpus.run(path_to_h5ad_datasets, corpus_path, extract_data)
-    logger.info("Loaded datasets into corpus")
     summary_cubes.run(corpus_path, validate_cube)
-    logger.info("Build expression summary cube")
-    logger.info("Built cell count cube")
 
     cell_type_by_tissue = get_cell_types_by_tissue(corpus_path)
     generate_cell_ordering(snapshot_path, cell_type_by_tissue)
