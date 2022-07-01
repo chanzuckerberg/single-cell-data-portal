@@ -570,10 +570,8 @@ def process_cxg(local_filename, dataset_id, cellxgene_bucket):
         }
         with db_session_manager() as session:
             logger.info(f"Updating database with cxg artifact for dataset {dataset_id}. s3_uri is {s3_uri}")
-            DatasetAsset.update(
-                session,
-                s3_uri=s3_uri,
-            )
+            asset = DatasetAsset.get(session, asset_id)
+            asset.update(s3_uri=s3_uri)
         update_db(dataset_id, processing_status={"cxg_status": ConversionStatus.UPLOADED})
 
     else:
