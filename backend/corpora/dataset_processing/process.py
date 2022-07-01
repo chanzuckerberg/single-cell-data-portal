@@ -216,12 +216,8 @@ def create_artifact(
             processing_status={processing_status_type: ConversionStatus.UPLOADED},
         )
 
-    except Exception as e:
-        update_db(
-            dataset_id,
-            processing_status={processing_status_type: ConversionStatus.FAILED},
-        )
-        raise e
+    except Exception:
+        raise Exception({processing_status_type: ConversionStatus.FAILED})
 
 
 def replace_artifact(
@@ -595,10 +591,8 @@ def validate_h5ad_file_and_add_labels(dataset_id: str, local_filename: str) -> t
         status = dict(
             validation_status=ValidationStatus.INVALID,
             validation_message=errors,
-            processing_status=ProcessingStatus.FAILURE,
         )
-        update_db(dataset_id, processing_status=status)
-        raise ValidationFailed
+        raise ValidationFailed(status)
     else:
         logger.info("Validation complete")
         status = dict(
@@ -627,6 +621,7 @@ def log_batch_environment():
         "CELLXGENE_BUCKET",
         "DATASET_ID",
         "DEPLOYMENT_STAGE",
+        "MAX_ATTEMPTS"
     ]
     env_vars = dict()
     for var in batch_environment_variables:
@@ -659,12 +654,12 @@ def process(dataset_id, dropbox_url, cellxgene_bucket, artifact_bucket):
 
 
 def main():
-    return_value = 0
     log_batch_environment()
     dataset_id = os.environ["DATASET_ID"]
     step_name = os.environ["STEP_NAME"]
+    is_last_attempt = os.environ["AWS_BATCH_JOB_ATTEMPT"] == os.getenv("MAX_ATTEMPTS", "1")
+    return_value = 0
     logger.info(f"Processing dataset {dataset_id}")
-
     try:
         if step_name == "download-validate":
             from backend.corpora.dataset_processing.process_download_validate import (
@@ -693,16 +688,23 @@ def main():
 
     except ProcessingCancelled:
         cancel_dataset(dataset_id)
-    except (ValidationFailed, ProcessingFailed):
+    except (ValidationFailed, ProcessingFailed) as e:
+        (status,) = e.args
+        if is_last_attempt:
+            update_db(
+                dataset_id,
+                processing_status=status
+            )
         logger.exception("An Error occurred while processing.")
         return_value = 1
-    except Exception:
-        message = "An unexpected error occurred while processing the data set."
-        logger.exception(message)
-        update_db(
-            dataset_id,
-            processing_status=dict(processing_status=ProcessingStatus.FAILURE, upload_message=message),
-        )
+    except Exception as e:
+        (status,) = e.args
+        if is_last_attempt:
+            update_db(
+                dataset_id,
+                processing_status=status
+            )
+        logger.exception("An unexpected error occurred while processing the data set.")
         return_value = 1
 
     return return_value

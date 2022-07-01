@@ -119,19 +119,11 @@ def updater(processing_status: DbDatasetProcessingStatus, tracker: ProgressTrack
         elif tracker.stop_updater.is_set():
             if progress > 1:
                 tracker.stop_downloader.set()
-                message = "The expected file size is smaller than the downloaded file size."
-                status = {
-                    "upload_progress": progress,
-                    "upload_message": message,
-                    "upload_status": UploadStatus.FAILED,
-                }
+                status = {"upload_progress": progress}
+                tracker.error = ProcessingFailed("The expected file size is smaller than the downloaded file size.")
             elif progress < 1:
-                message = "The expected file size is greater than the actual file size."
-                status = {
-                    "upload_progress": progress,
-                    "upload_message": message,
-                    "upload_status": UploadStatus.FAILED,
-                }
+                status = {"upload_progress": progress}
+                tracker.error = ProcessingFailed("The expected file size is greater than the actual file size.")
             elif progress == 1:
                 status = {
                     "upload_progress": progress,
