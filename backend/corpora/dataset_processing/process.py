@@ -621,7 +621,7 @@ def log_batch_environment():
         "CELLXGENE_BUCKET",
         "DATASET_ID",
         "DEPLOYMENT_STAGE",
-        "MAX_ATTEMPTS"
+        "MAX_ATTEMPTS",
     ]
     env_vars = dict()
     for var in batch_environment_variables:
@@ -691,19 +691,13 @@ def main():
     except (ValidationFailed, ProcessingFailed) as e:
         (status,) = e.args
         if is_last_attempt:
-            update_db(
-                dataset_id,
-                processing_status=status
-            )
+            update_db(dataset_id, processing_status=status)
         logger.exception("An Error occurred while processing.")
         return_value = 1
     except Exception as e:
         (status,) = e.args
         if is_last_attempt:
-            update_db(
-                dataset_id,
-                processing_status=status
-            )
+            update_db(dataset_id, processing_status=status)
         logger.exception("An unexpected error occurred while processing the data set.")
         return_value = 1
 
