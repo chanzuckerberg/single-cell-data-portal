@@ -564,7 +564,7 @@ def process_cxg(local_filename, dataset_id, cellxgene_bucket):
         metadata = {
             "explorer_url": join(
                 DEPLOYMENT_STAGE_TO_URL[os.environ["DEPLOYMENT_STAGE"]],
-                asset_id + ".cxg",
+                dataset_id + ".cxg",
                 "",
             )
         }
