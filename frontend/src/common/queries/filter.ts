@@ -608,7 +608,7 @@ async function fetchDatasets(): Promise<DatasetResponse[]> {
   // TODO(cc) remove with #2569 - this generates cellTypesByDatasetId to be used by the "compute_cell_type_is_a_graph" notebook for the PoC only.
   // const mappings = datasets.map((d) => {
   //   const cellTypeIds = d.cell_type
-  //     .map((cellType) => `"${cellType.ontology_term_id.replace(/:/, "_")}"`)
+  //     .map((cellType) => `"${cellType.ontology_term_id}"`)
   //     .join(",");
   //   return `"${d.id}": [${cellTypeIds}]`;
   // });
