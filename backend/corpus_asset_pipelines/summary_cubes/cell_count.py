@@ -44,6 +44,7 @@ def load(corpus_path: str, df: pd.DataFrame) -> str:
     tiledb.from_pandas(uri, df, mode="append")
     return uri
 
+
 @log_func_runtime
 def create_cell_count_cube(corpus_path: str):
     """
