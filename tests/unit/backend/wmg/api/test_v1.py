@@ -777,10 +777,8 @@ class WmgApiV1Tests(unittest.TestCase):
                 self.assertEqual(dev_stage_terms_eth_2_dev_2, dev_stage_terms_eth_2_no_dev_filter)
                 self.assertNotEqual(eth_stage_terms_eth_2_dev_2, ethnicity_terms_eth_2_no_dev_filter)
 
-
-
             with self.subTest("Additional queries are not performed when the secondary dimensions are not set"):
-                with patch('backend.wmg.api.v1.find_dim_option_values') as mock_dims:
+                with patch("backend.wmg.api.v1.find_dim_option_values") as mock_dims:
                     mock_dims.side_effect = find_dim_option_values
                     full_filters = dict(
                         gene_ontology_term_ids=["gene_ontology_term_id_0"],
@@ -812,7 +810,7 @@ class WmgApiV1Tests(unittest.TestCase):
                         ethnicity_ontology_term_ids=[],
                     )
 
-                    no_secondary_filters_request =  dict(
+                    no_secondary_filters_request = dict(
                         filter=no_secondary_filters,
                         include_filter_dims=True,
                     )
@@ -831,14 +829,12 @@ class WmgApiV1Tests(unittest.TestCase):
                         development_stage_ontology_term_ids=["development_stage_ontology_term_id_0"],
                         ethnicity_ontology_term_ids=["ethnicity_ontology_term_id_0"],
                     )
-                    two_secondary_filters_request =  dict(
+                    two_secondary_filters_request = dict(
                         filter=two_secondary_filters,
                         include_filter_dims=True,
                     )
                     self.app.post("/wmg/v1/query", json=two_secondary_filters_request)
                     self.assertEqual(mock_dims.call_count, 2)
-
-
 
 
 # mock the dataset and collection entity data that would otherwise be fetched from the db; in this test
