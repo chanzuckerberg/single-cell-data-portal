@@ -6,7 +6,7 @@ export const XAxisWrapper = styled.div`
 
   background-color: white;
   height: ${X_AXIS_CHART_HEIGHT_PX}px;
-  position: sticky;
+  position: relative;
   top: 0;
   z-index: 2;
 `;

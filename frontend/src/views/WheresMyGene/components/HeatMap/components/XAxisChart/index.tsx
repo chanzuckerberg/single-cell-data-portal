@@ -3,8 +3,8 @@ import { useEffect, useRef, useState } from "react";
 import { EMPTY_OBJECT } from "src/common/constants/utils";
 import { useDeleteGenesAndCellTypes } from "../../hooks/useDeleteGenesAndCellTypes";
 import { useUpdateXAxisChart } from "../../hooks/useUpdateXAxisChart";
-import { getHeatmapWidth, Y_AXIS_CHART_WIDTH_PX } from "../../utils";
-import { XAxisContainer, XAxisMask, XAxisWrapper } from "./style";
+import { getHeatmapWidth } from "../../utils";
+import { XAxisContainer, XAxisWrapper } from "./style";
 interface Props {
   geneNames: string[];
 }
@@ -12,7 +12,7 @@ interface Props {
 export default function XAxisChart({ geneNames }: Props): JSX.Element {
   const [isChartInitialized, setIsChartInitialized] = useState(false);
   const [xAxisChart, setXAxisChart] = useState<echarts.ECharts | null>(null);
-  const [heatmapWidth, setHeatmapWidth] = useState(getHeatmapWidth(geneNames)+Y_AXIS_CHART_WIDTH_PX);
+  const [heatmapWidth, setHeatmapWidth] = useState(getHeatmapWidth(geneNames));
 
   const { genesToDelete, handleGeneClick } = useDeleteGenesAndCellTypes();
 
@@ -60,13 +60,12 @@ export default function XAxisChart({ geneNames }: Props): JSX.Element {
   });
 
   return (
-    <XAxisWrapper width={heatmapWidth+Y_AXIS_CHART_WIDTH_PX}>
+    <XAxisWrapper width={heatmapWidth}>
       {/* (thuang): The extra div is needed to implement the mask */}
       <div style={{
         display: "flex",
         flexDirection: "row",
       }}>
-        <XAxisMask />        
         <XAxisContainer
           data-test-id="gene-labels"
           width={heatmapWidth}

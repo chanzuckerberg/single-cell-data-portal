@@ -45,6 +45,7 @@ interface Props {
     }>
   >;
   tissue: Tissue;
+  gene: GeneExpressionSummary;
   scaledMeanExpressionMax: number;
   scaledMeanExpressionMin: number;
   isScaled: boolean;
@@ -61,10 +62,12 @@ export default memo(function Chart({
   selectedGeneData = EMPTY_ARRAY,
   setIsLoading,
   tissue,
+  gene,
   scaledMeanExpressionMax,
   scaledMeanExpressionMin,
   isScaled,
 }: Props): JSX.Element {
+  const selectedGene = [gene];
   const [currentIndices, setCurrentIndices] = useState([-1, -1]);
   const [cursorOffset, setCursorOffset] = useState([-1, -1]);
 
@@ -84,7 +87,7 @@ export default memo(function Chart({
 
   useEffect(() => {
     setIsLoading((isLoading) => ({ ...isLoading, [tissue]: true }));
-  }, [cellTypes, selectedGeneData, setIsLoading, tissue]);
+  }, [cellTypes, gene, setIsLoading, tissue]);
 
   const throttledSetCurrentIndices = useMemo(() => {
     return throttle((params, chart) => {
@@ -121,9 +124,8 @@ export default memo(function Chart({
 
   // Update heatmap size
   useEffect(() => {
-    setHeatmapWidth(getHeatmapWidth(selectedGeneData));
     setHeatmapHeight(getHeatmapHeight(cellTypes));
-  }, [cellTypes, selectedGeneData]);
+  }, [cellTypes]);
 
   useUpdateChart({ chart, chartProps, isScaled });
 
@@ -180,7 +182,7 @@ export default memo(function Chart({
           ),
           chartData: dataToChartFormat({
             cellTypeSummaries,
-            genes: selectedGeneData,
+            genes: selectedGene,
             scaledMeanExpressionMax,
             scaledMeanExpressionMin,
           }),
@@ -211,20 +213,20 @@ export default memo(function Chart({
     return () => debouncedDataToChartFormat.cancel();
   }, [debouncedDataToChartFormat]);
 
-  const [hoveredGeneIndex, hoveredCellTypeIndex] = currentIndices;
-
+  const [_, hoveredCellTypeIndex] = currentIndices;
+  const hoveredGeneIndex = selectedGeneData.findIndex((g) => g?.name === gene.name);
+  
   const tooltipContent = useMemo(() => {
     if (!chartProps) return null;
 
     const { chartData } = chartProps;
-
     const dataPoint = chartData.find(
-      ({ geneIndex, cellTypeIndex }) =>
-        geneIndex === hoveredGeneIndex && cellTypeIndex === hoveredCellTypeIndex
+      ({ id, cellTypeIndex }) =>
+      {
+        return id.split('-').at(-1) === gene.name && cellTypeIndex === hoveredCellTypeIndex
+      }
     );
-
     const cellType = cellTypes[hoveredCellTypeIndex];
-    const gene = selectedGeneData[hoveredGeneIndex];
 
     if (!dataPoint || !cellType || !gene) return null;
 
@@ -276,6 +278,7 @@ export default memo(function Chart({
     hoveredGeneIndex,
     hoveredCellTypeIndex,
     selectedGeneData,
+    gene
   ]);
 
   const tooltipClasses = useMemo(() => ({ tooltip: tooltipCss }), []);

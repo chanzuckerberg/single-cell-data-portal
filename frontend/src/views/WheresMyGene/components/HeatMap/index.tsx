@@ -21,6 +21,7 @@ import {
 import { useTrackHeatMapLoaded } from "./hooks/useTrackHeatMapLoaded";
 import { ChartWrapper, Container, YAxisWrapper } from "./style";
 import { X_AXIS_CHART_HEIGHT_PX } from "./utils";
+import { XAxisMask } from "./components/XAxisChart/style";
 
 interface Props {
   selectedTissues: string[];
@@ -112,13 +113,18 @@ export default memo(function HeatMap({
     <Container>
       {isLoadingAPI || isAnyTissueLoading(isLoading) ? <Loader /> : null}
 
-      <XAxisChart geneNames={sortedGeneNames} />
+      <div style={{display: "flex", flexDirection: "row", position: "relative"}}>
+      <XAxisMask/>
+      {sortedGeneNames.map((gene)=>{
+        return <XAxisChart geneNames={[gene]} />
+      })}
+      </div>
       <div style={{
         display: "flex",
         flexDirection: "row"
       }}>
         <YAxisWrapper
-          height={(chartWrapperRect?.height || 0) - X_AXIS_CHART_HEIGHT_PX}
+          height={(chartWrapperRect?.height || 0) - 60}
         >
           {selectedTissues.map((tissue) => {
             const tissueCellTypes = getTissueCellTypes({
@@ -147,20 +153,24 @@ export default memo(function HeatMap({
               sortedCellTypesByTissueName,
               tissue,
             });
-
             return (
-              <Chart
+              <div style={{display: "flex", flexDirection: "row",position: "relative"}}>
+              {orderedSelectedGeneExpressionSummariesByTissueName[tissue]?.map((gene)=>{
+              return (<Chart
                 isScaled={isScaled}
-                key={tissue}
+                key={`${tissue}-${gene}`}
                 tissue={tissue}
                 cellTypes={tissueCellTypes}
                 selectedGeneData={
                   orderedSelectedGeneExpressionSummariesByTissueName[tissue]
                 }
+                gene={gene}
                 setIsLoading={setIsLoading}
                 scaledMeanExpressionMax={scaledMeanExpressionMax}
                 scaledMeanExpressionMin={scaledMeanExpressionMin}
-              />
+              />);
+              })}
+              </div>
             );
           })}
         </ChartWrapper>

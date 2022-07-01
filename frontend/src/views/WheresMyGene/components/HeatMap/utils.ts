@@ -23,7 +23,7 @@ const MAX_DEPTH = 2;
 
 const Y_AXIS_BOTTOM_PADDING = "10px";
 
-const MIN_NUM_COLUMNS = 50;
+const MIN_NUM_COLUMNS = 20;
 
 const COMMON_OPTIONS = {
   animation: false,
@@ -74,6 +74,7 @@ export function createChartOptions({
     },
     grid: {
       bottom: Y_AXIS_BOTTOM_PADDING,
+      left: 25
     },
     series: [
       {
@@ -108,9 +109,8 @@ export function createChartOptions({
         axisTick: {
           show: false,
         },
-        min: 0,
-        max: Math.max(geneNames.length-1,MIN_NUM_COLUMNS),
-        data: Array.from(Array(geneNames.length).keys()),
+        boundaryGap: true,
+        data: geneNames,
         splitLine: {
           show: false,
         },
@@ -180,11 +180,10 @@ export function createXAxisOptions({
     xAxis: [
       {
         axisLabel: {
-          formatter(val) {
-            const value = geneNames[val];
+          formatter(value) {
             return genesToDelete.includes(value)
               ? `{selected|${value}}`
-              : val;
+              : value;
           },
           rich: {
             selected: SELECTED_STYLE,
@@ -196,9 +195,8 @@ export function createXAxisOptions({
         axisTick: {
           show: false,
         },
-        min: 0,
-        max: Math.max(geneNames.length-1,MIN_NUM_COLUMNS),
-        data: Array.from(Array(geneNames.length).keys()),
+        boundaryGap: true,
+        data: geneNames,
         position: "top",
         triggerEvent: true,
         type: "category",
@@ -304,6 +302,7 @@ export interface ChartFormat {
   cellTypeIndex: number;
   geneIndex: number;
   percentage: number;
+  id: string;
   meanExpression: number;
   scaledMeanExpression: number;
   tissuePercentage: number;
@@ -369,7 +368,7 @@ export function dataToChartFormat({
 
 export const HEAT_MAP_BASE_HEIGHT_PX = 300;
 const HEAT_MAP_BASE_CELL_PX = 20;
-const HEAT_MAP_BASE_CELL_WIDTH_PX = 35;
+const HEAT_MAP_BASE_CELL_WIDTH_PX = 50;
 
 /**
  * Approximating the heatmap width by the number of genes.
@@ -381,7 +380,7 @@ export function getHeatmapWidth(
     | (GeneExpressionSummary | undefined)[]
     | State["selectedGenes"] = EMPTY_ARRAY
 ): number {
-  return HEAT_MAP_BASE_CELL_WIDTH_PX * Math.max(genes.length,MIN_NUM_COLUMNS);
+  return HEAT_MAP_BASE_CELL_WIDTH_PX;
 }
 
 /**
