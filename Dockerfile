@@ -8,11 +8,9 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && \
     apt-get install -y python3 libhdf5-dev python3-h5py gettext moreutils build-essential libxml2-dev python3-dev python3-pip zlib1g-dev python3-requests python3-aiohttp llvm jq && \
-    rm -rf /var/lib/apt/lists/*
-
-# Make python3 the default 'python' executable.
-RUN update-alternatives --install /usr/bin/python python /usr/bin/python3 1
-
+    rm -rf /var/lib/apt/lists/* 
+    # # Make python3 the default 'python' executable.
+    # update-alternatives --install /usr/bin/python python /usr/bin/python3 1
 
 # Don't re-run pip install unless either requirements.txt has changed.
 WORKDIR /single-cell-data-portal
