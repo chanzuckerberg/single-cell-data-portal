@@ -536,12 +536,12 @@ def convert_file_ignore_exceptions(
     return file_dir
 
 
-def get_bucket_prefix(dataset_id):
+def get_bucket_prefix(identifier):
     remote_dev_prefix = os.environ.get("REMOTE_DEV_PREFIX", "")
     if remote_dev_prefix:
-        return join(remote_dev_prefix, dataset_id).strip("/")
+        return join(remote_dev_prefix, identifier).strip("/")
     else:
-        return dataset_id
+        return identifier
 
 
 def process_cxg(local_filename, dataset_id, cellxgene_bucket):
