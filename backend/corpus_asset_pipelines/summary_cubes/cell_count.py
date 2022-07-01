@@ -13,10 +13,17 @@ logging.basicConfig(level=logging.INFO)
 
 
 def extract(corpus_path: str) -> pd.DataFrame:
+    """
+    get obs data from integrated corpus
+    """
     return tiledb.open(f"{corpus_path}/{OBS_ARRAY_NAME}")
 
 
 def transform(obs: pd.DataFrame) -> pd.DataFrame:
+    """
+    Create cell count cube data frame by grouping data in the
+    integrated corpus obs arrays on relevant features
+    """
     df = (
         obs.df[:]
         .groupby(
@@ -39,6 +46,9 @@ def transform(obs: pd.DataFrame) -> pd.DataFrame:
 
 
 def load(corpus_path: str, df: pd.DataFrame) -> str:
+    """
+    write cell count cube to disk
+    """
     uri = f"{corpus_path}/{CELL_COUNTS_CUBE_NAME}"
     create_empty_cube(uri, cell_counts_schema)
     tiledb.from_pandas(uri, df, mode="append")

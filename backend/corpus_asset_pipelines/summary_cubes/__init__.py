@@ -11,7 +11,13 @@ from backend.wmg.data.validation.validation import Validation
 from backend.corpus_asset_pipelines.summary_cubes.cell_count import create_cell_count_cube
 
 
-def run(corpus_path, validate_cube):
+def run(corpus_path: str, validate_cube: bool):
+    """
+    Build expression summary cube and cell count cube based
+    on cell data stored in integrated corpus
+    validate expression summary cube based on biological expectations
+    if indicated by param
+    """
     create_expression_summary_cube(corpus_path)
     create_cell_count_cube(corpus_path)
     if validate_cube:

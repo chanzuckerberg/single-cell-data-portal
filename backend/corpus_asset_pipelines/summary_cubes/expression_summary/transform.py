@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
-def transform(corpus_path: str, gene_ontology_term_ids: list, cube_dims: list):
+def transform(corpus_path: str, gene_ontology_term_ids: list, cube_dims: list) -> (pd.DataFrame, np.ndarray, np.ndarray):
     ##
     # Reduce X
     ##
@@ -37,7 +37,7 @@ def transform(corpus_path: str, gene_ontology_term_ids: list, cube_dims: list):
 
 
 @log_func_runtime
-def reduce_X(tdb_group, cube_indices, *accum):
+def reduce_X(tdb_group: str, cube_indices, *accum):
     """
     # TODO
     """
@@ -46,8 +46,8 @@ def reduce_X(tdb_group, cube_indices, *accum):
             "py.init_buffer_bytes": 512 * MB,
             "py.exact_init_buffer_bytes": "true",
         }
-        with tiledb.open(f"{tdb_group}/{INTEGRATED_ARRAY_NAME}", ctx=create_ctx(config_overrides=cfg)) as X:
-            iterable = X.query(return_incomplete=True, order="U", attrs=["rankit"])
+        with tiledb.open(f"{tdb_group}/{INTEGRATED_ARRAY_NAME}", ctx=create_ctx(config_overrides=cfg)) as expression:
+            iterable = expression.query(return_incomplete=True, order="U", attrs=["rankit"])
             future = None
             for i, result in enumerate(iterable.df[:]):
                 # todo pull out into sep function
@@ -85,7 +85,7 @@ def coo_cube_pass1_into(data, row, col, row_groups, sum_into, nnz_into, min_into
                 max_into[grp_idx, cidx] = val
 
 
-def make_cube_index(tdb_group, cube_dims):
+def make_cube_index(tdb_group: str, cube_dims: list) -> (pd.DataFrame,  pd.DataFrame):
     """
     Create index for queryable dimensions
     """

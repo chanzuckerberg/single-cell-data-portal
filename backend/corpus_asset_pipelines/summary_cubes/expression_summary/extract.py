@@ -4,7 +4,7 @@ import tiledb
 from backend.wmg.data.schemas.corpus_schema import VAR_ARRAY_NAME, OBS_ARRAY_NAME
 
 
-def extract_var_data(tdb_group, ctx):
+def extract_var_data(tdb_group: str, ctx: tiledb.Ctx ) -> list:
     """
     Extract var (gene) data from the concatenated corpus
     """
@@ -14,7 +14,7 @@ def extract_var_data(tdb_group, ctx):
         return gene_ontology_term_ids
 
 
-def extract_obs_data(tdb_group, cube_dims):
+def extract_obs_data(tdb_group:str, cube_dims: list) -> pd.DataFrame:
     """
     Extract obs (cell) data from the concatenated corpus
     """

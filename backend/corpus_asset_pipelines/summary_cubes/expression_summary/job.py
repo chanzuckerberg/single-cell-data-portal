@@ -15,7 +15,10 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
-def _load(uri, gene_ontology_term_ids, cube_index, cube_sum, cube_nnz):
+def _load(uri: str, gene_ontology_term_ids: list, cube_index, cube_sum, cube_nnz):
+    """
+    Build expression summary cube in memory and write to disk
+    """
     dims, vals = build_in_mem_cube(gene_ontology_term_ids, cube_index, cube_non_indexed_dims, cube_sum, cube_nnz)
 
     logger.debug("Saving cube to tiledb")
@@ -30,7 +33,7 @@ def _load(uri, gene_ontology_term_ids, cube_index, cube_sum, cube_nnz):
 
 
 @log_func_runtime
-def create_expression_summary_cube(corpus_path):
+def create_expression_summary_cube(corpus_path: str):
     """
     Create queryable cube and write to disk
     """
