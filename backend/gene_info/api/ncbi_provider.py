@@ -1,4 +1,4 @@
-from ..config import GeneInfoConfig
+from backend.gene_info.config import GeneInfoConfig
 import logging
 import urllib.request
 import json
