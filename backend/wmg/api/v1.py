@@ -24,25 +24,32 @@ def primary_filter_dimensions():
 
 def query():
     request = connexion.request.json
+    include_filter_dims = request.get("include_filter_dims", False)    
     criteria = WmgQueryCriteria(**request["filter"])
-
     snapshot: WmgSnapshot = load_snapshot()
-    query = WmgQuery(snapshot)
-    expression_summary = query.expression_summary(criteria)
-    cell_counts = query.cell_counts(criteria)
-    dot_plot_matrix_df = build_dot_plot_matrix(expression_summary, cell_counts)
+    
+    if not include_filter_dims:
+        query = WmgQuery(snapshot)
+        expression_summary = query.expression_summary(criteria)
+        cell_counts = query.cell_counts(criteria)
+        dot_plot_matrix_df = build_dot_plot_matrix(expression_summary, cell_counts)
+        expression_summary = build_expression_summary(dot_plot_matrix_df)
+        genes = build_gene_id_label_mapping(criteria.gene_ontology_term_ids)
+        cell_types = build_ordered_cell_types_by_tissue(cell_counts, snapshot.cell_type_orderings)
+        response_filter_dims_values = {}
+    else:
+        expression_summary = {}
+        genes = {}
+        cell_types = {}
+        response_filter_dims_values = build_filter_dims_values(criteria, snapshot.filter_relationships)
 
-    include_filter_dims = request.get("include_filter_dims", False)
-    response_filter_dims_values = (
-        build_filter_dims_values(criteria, snapshot.filter_relationships) if include_filter_dims else {}
-    )
     return jsonify(
         dict(
             snapshot_id=snapshot.snapshot_identifier,
-            expression_summary=build_expression_summary(dot_plot_matrix_df),
+            expression_summary=expression_summary,
             term_id_labels=dict(
-                genes=build_gene_id_label_mapping(criteria.gene_ontology_term_ids),
-                cell_types=build_ordered_cell_types_by_tissue(cell_counts, snapshot.cell_type_orderings),
+                genes=genes,
+                cell_types=cell_types,
             ),
             filter_dims=response_filter_dims_values,
         )
@@ -108,6 +115,7 @@ def find_dim_option_values(criteria: Dict, htable: Dict, dimension: str) -> set:
 
 def build_filter_dims_values(criteria: WmgQueryCriteria, htable: Dict) -> Dict:
     dims = {
+        "tissue_ontology_term_id": "",
         "dataset_id": "",
         "disease_ontology_term_id": "",
         "sex_ontology_term_id": "",
@@ -123,6 +131,7 @@ def build_filter_dims_values(criteria: WmgQueryCriteria, htable: Dict) -> Dict:
 
     response_filter_dims_values = dict(
         datasets=fetch_datasets_metadata(dims["dataset_id"]),
+        tissue_terms=build_ontology_term_id_label_mapping(dims["tissue_ontology_term_id"]),
         disease_terms=build_ontology_term_id_label_mapping(dims["disease_ontology_term_id"]),
         sex_terms=build_ontology_term_id_label_mapping(dims["sex_ontology_term_id"]),
         development_stage_terms=build_ontology_term_id_label_mapping(dims["development_stage_ontology_term_id"]),
