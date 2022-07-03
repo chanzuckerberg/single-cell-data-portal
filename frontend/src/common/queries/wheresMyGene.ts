@@ -272,10 +272,10 @@ export function useFilterDimensions(
   isLoading: boolean;
 } {
   const { includeAllFilterOptions } = options;
-
   const requestBody = useWMGQueryRequestBody({ includeAllFilterOptions });
-  const { data, isLoading } = useWMGQuery(requestBody);
 
+  const { data, isLoading } = useWMGQuery(requestBody);
+  
   return useMemo(() => {
     if (isLoading || !data) return { data: EMPTY_FILTER_DIMENSIONS, isLoading };
 

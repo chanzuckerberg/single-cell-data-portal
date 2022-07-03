@@ -16,13 +16,13 @@ interface Tissue {
 
 export default function GeneSearchBar(): JSX.Element {
   const dispatch = useContext(DispatchContext);
-  const { selectedGenes, selectedTissues, selectedOrganismId } =
+  const { selectedGenes, selectedTissues, selectedOrganismId, filterDimensions: prevFilterDimensions } =
     useContext(StateContext);
 
   const { data, isLoading } = usePrimaryFilterDimensions();
   const { data: filterDimensions } = useFilterDimensions();
   const { tissue_terms } = filterDimensions;
-  //console.log(tissue_terms)
+  const { tissue_terms: prev_tissue_terms } = prevFilterDimensions;
   const { genes: rawGenes } = data || {};
 
   const { tissues: rawTissues } = data || {};
@@ -30,9 +30,14 @@ export default function GeneSearchBar(): JSX.Element {
     if (!rawTissues) return [];
 
     const temp = rawTissues[selectedOrganismId || ""] || [];
-    const tissue_term_names = tissue_terms.map((tissue)=>tissue.name);
+    let tissue_term_names: string[];
+    if (tissue_terms.length === 0) {
+      tissue_term_names = prev_tissue_terms.map((tissue)=>tissue.name);
+    } else {
+      tissue_term_names = tissue_terms.map((tissue)=>tissue.name);
+    }
     return temp.filter((tissue) => !tissue.name.includes("(cell culture)") && tissue_term_names.includes(tissue.name));
-  }, [rawTissues, selectedOrganismId, tissue_terms]);
+  }, [rawTissues, selectedOrganismId, tissue_terms, prev_tissue_terms]);
 
   const genes: Gene[] = useMemo(() => {
     if (!rawGenes) return [];
@@ -95,6 +100,7 @@ export default function GeneSearchBar(): JSX.Element {
           placeholder="Search"
           isLoading={isLoading}
           analyticsEvent={EVENTS.WMG_SELECT_TISSUE}
+          filterDimensions={filterDimensions}
         />
 
         <QuickSelect
@@ -109,6 +115,7 @@ export default function GeneSearchBar(): JSX.Element {
           placeholder="Search or paste comma separated gene names"
           isLoading={isLoading}
           analyticsEvent={EVENTS.WMG_SELECT_GENE}
+          filterDimensions={filterDimensions}
         />
 
         {isLoading && (

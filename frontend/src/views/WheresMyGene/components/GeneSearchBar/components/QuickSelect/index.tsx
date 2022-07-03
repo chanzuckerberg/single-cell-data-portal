@@ -16,11 +16,14 @@ import {
   MenuSelect,
 } from "czifui";
 import { pull, uniq } from "lodash";
-import React, { createContext, ReactChild, useRef, useState } from "react";
+import React, { createContext, ReactChild, useRef, useState, useContext } from "react";
 import { FixedSizeList, ListChildComponentProps } from "react-window";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { noop } from "src/common/constants/utils";
+import { FilterDimensions } from "src/common/queries/wheresMyGene";
+import { DispatchContext } from "src/views/WheresMyGene/common/store";
+import { setFilterDimensions } from "src/views/WheresMyGene/common/store/actions";
 import { Label } from "../../style";
 import { ButtonWrapper, StyledIconButton, StyledMenuItem } from "./style";
 
@@ -97,6 +100,7 @@ interface Props<T, Multiple> {
   placeholder?: string;
   analyticsEvent: EVENTS;
   isLoading: boolean;
+  filterDimensions: FilterDimensions;
 }
 export default function QuickSelect<
   T extends DefaultMenuSelectOption,
@@ -116,7 +120,9 @@ export default function QuickSelect<
   placeholder,
   analyticsEvent,
   isLoading,
+  filterDimensions
 }: Props<T, Multiple>): JSX.Element {
+  const dispatch = useContext(DispatchContext);
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const [hasComma, setHasComma] = useState(false);
@@ -170,7 +176,7 @@ export default function QuickSelect<
             });
 
             setOpen(false);
-
+            setFilterDimensions(filterDimensions)
             return setSelected(newSelected as Value<T, Multiple>);
           }
         };
@@ -189,6 +195,7 @@ export default function QuickSelect<
     _: React.ChangeEvent<Record<string, never>>,
     newValue: T[] | T | null
   ) => {
+    dispatch?.(setFilterDimensions(filterDimensions))
     return setSelected(newValue as Value<T, Multiple>);
   };
 

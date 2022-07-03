@@ -23,7 +23,7 @@ import {
   useFilterDimensions,
 } from "src/common/queries/wheresMyGene";
 import { DispatchContext, StateContext } from "../../common/store";
-import { selectFilters, setFilterDimensions } from "../../common/store/actions";
+import { selectFilters } from "../../common/store/actions";
 import { Filters as IFilters } from "../../common/types";
 import Sort from "./components/Sort";
 import { StyledComplexFilterInputDropdown, Wrapper } from "./style";
