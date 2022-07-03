@@ -83,9 +83,6 @@ paths:
                         $ref: "#/components/schemas/wmg_ontology_term_id_list"
                       ethnicity_ontology_term_ids:
                         $ref: "#/components/schemas/wmg_ontology_term_id_list"
-                include_filter_dims:
-                  type: boolean
-                  default: false
               required:
                 - filter
       responses:

@@ -22,20 +22,17 @@ const GENE_OPTIONS = [
   { id: SORT_BY.H_CLUSTER, name: "Hierarchical" },
 ];
 
-interface Props {
-  areFiltersDisabled: boolean;
-}
 
-export default function Sort({ areFiltersDisabled }: Props): JSX.Element {
+export default function Sort(): JSX.Element {
   const dispatch = useContext(DispatchContext);
   const { sortBy } = useContext(StateContext);
 
   const InputDropdownProps = useMemo(
     () => ({
       ...DEFAULT_INPUT_DROPDOWN_PROPS,
-      disabled: areFiltersDisabled,
+      disabled: false,
     }),
-    [areFiltersDisabled]
+    []
   );
 
   const cellTypeSelectedOptionLabel = useMemo(() => {

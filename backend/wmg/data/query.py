@@ -13,7 +13,7 @@ EMPTY_DIM_VALUES = ""
 class WmgQueryCriteria(BaseModel):
     gene_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=1)
     organism_ontology_term_id: str  # required!
-    tissue_ontology_term_ids: List[str] = Field(unique_items=True, min_items=1)  # required!
+    tissue_ontology_term_ids: List[str] = Field(unique_items=True, min_items=0)  # required!
     dataset_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
     # excluded per product requirements, but keeping in, commented-out, to reduce future head-scratching
     # assay_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)

@@ -1,6 +1,6 @@
 import cloneDeep from "lodash/cloneDeep";
 import isEqual from "lodash/isEqual";
-import { EMPTY_FILTERS } from "src/common/queries/wheresMyGene";
+import { EMPTY_FILTERS, EMPTY_FILTER_DIMENSIONS, FilterDimensions } from "src/common/queries/wheresMyGene";
 import {
   CellTypeMetadata,
   deserializeCellTypeMetadata,
@@ -26,6 +26,7 @@ export interface State {
     ethnicities: string[];
     sexes: string[];
   };
+  filterDimensions: FilterDimensions;
   /**
    * (thuang): BE API response always returns a snapshot ID. When the ID changes,
    * FE needs refresh the queries
@@ -41,6 +42,7 @@ export const INITIAL_STATE: State = {
   genesToDelete: [],
   selectedCellTypeIds: {},
   selectedFilters: EMPTY_FILTERS,
+  filterDimensions: EMPTY_FILTER_DIMENSIONS,
   selectedGenes: [],
   selectedOrganismId: null,
   selectedTissues: [],
@@ -58,6 +60,7 @@ export const REDUCERS = {
   selectOrganism,
   selectSortBy,
   selectTissues,
+  setFilterDimensions,
   setSnapshotId,
   tissueCellTypesFetched,
   toggleCellTypeIdToDelete,
@@ -167,6 +170,16 @@ function selectTissues(
   return {
     ...state,
     selectedTissues: action.payload,
+  };
+}
+
+function setFilterDimensions(
+  state: State,
+  action: PayloadAction<State["filterDimensions"]>
+): State {
+  return {
+    ...state,
+    filterDimensions: action.payload,
   };
 }
 

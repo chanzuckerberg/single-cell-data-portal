@@ -23,7 +23,7 @@ import {
   useFilterDimensions,
 } from "src/common/queries/wheresMyGene";
 import { DispatchContext, StateContext } from "../../common/store";
-import { selectFilters } from "../../common/store/actions";
+import { selectFilters, setFilterDimensions } from "../../common/store/actions";
 import { Filters as IFilters } from "../../common/types";
 import Sort from "./components/Sort";
 import { StyledComplexFilterInputDropdown, Wrapper } from "./style";
@@ -45,7 +45,7 @@ export default memo(function Filters(): JSX.Element {
   const [availableFilters, setAvailableFilters] =
     useState<Partial<FilterDimensions>>(EMPTY_OBJECT);
 
-  const { selectedFilters, selectedTissues, selectedGenes } = state;
+  const { selectedFilters, selectedTissues } = state;
 
   const {
     datasets: datasetIds,
@@ -53,7 +53,13 @@ export default memo(function Filters(): JSX.Element {
     ethnicities,
     sexes,
   } = selectedFilters;
-
+  const includeAll = !(
+    datasetIds.length > 0 ||
+    diseases.length > 0 ||
+    ethnicities.length > 0 ||
+    sexes.length > 0 ||
+    selectedTissues.length > 0
+  );
   const {
     data: {
       datasets: rawDatasets,
@@ -63,16 +69,14 @@ export default memo(function Filters(): JSX.Element {
       sex_terms: rawSexes,
     },
     isLoading: rawIsLoading,
-  } = useFilterDimensions({ includeAllFilterOptions: true });
-
-  const areFiltersDisabled = !selectedTissues.length || !selectedGenes.length;
+  } = useFilterDimensions({ includeAllFilterOptions: includeAll });
 
   const InputDropdownProps = useMemo(() => {
     return {
-      disabled: areFiltersDisabled,
+      disabled: false,
       sdsStyle: "minimal",
     } as Partial<InputDropdownProps>;
-  }, [areFiltersDisabled]);
+  }, []);
 
   // (thuang): We only update available filters when API call is done,
   // otherwise when `useFilterDimensions()` is still loading, its filters
@@ -172,72 +176,60 @@ export default memo(function Filters(): JSX.Element {
   );
 
   return (
-    <TooltipWrapper>
-      <Wrapper>
-        <div>
-          <ComplexFilter
-            multiple
-            label="Dataset"
-            options={datasets as unknown as DefaultMenuSelectOption[]}
-            onChange={handleDatasetsChange}
-            value={selectedDatasets as unknown as DefaultMenuSelectOption[]}
-            InputDropdownComponent={
-              StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
-            }
-            MenuSelectProps={MenuSelectProps}
-            InputDropdownProps={InputDropdownProps}
-          />
-          <ComplexFilter
-            multiple
-            label="Disease"
-            options={disease_terms}
-            onChange={handleDiseasesChange}
-            value={selectedDiseases}
-            InputDropdownComponent={
-              StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
-            }
-            MenuSelectProps={MenuSelectProps}
-            InputDropdownProps={InputDropdownProps}
-          />
-          <ComplexFilter
-            multiple
-            label="Ethnicity"
-            options={ethnicity_terms}
-            onChange={handleEthnicitiesChange}
-            value={selectedEthnicities}
-            InputDropdownComponent={
-              StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
-            }
-            MenuSelectProps={MenuSelectProps}
-            InputDropdownProps={InputDropdownProps}
-          />
-          <ComplexFilter
-            multiple
-            label="Sex"
-            options={sex_terms}
-            onChange={handleSexesChange}
-            value={selectedSexes}
-            InputDropdownComponent={
-              StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
-            }
-            MenuSelectProps={MenuSelectProps}
-            InputDropdownProps={InputDropdownProps}
-          />
-        </div>
-        <Sort areFiltersDisabled={areFiltersDisabled} />
-      </Wrapper>
-    </TooltipWrapper>
+    <Wrapper>
+      <div>
+        <ComplexFilter
+          multiple
+          label="Dataset"
+          options={datasets as unknown as DefaultMenuSelectOption[]}
+          onChange={handleDatasetsChange}
+          value={selectedDatasets as unknown as DefaultMenuSelectOption[]}
+          InputDropdownComponent={
+            StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
+          }
+          MenuSelectProps={MenuSelectProps}
+          InputDropdownProps={InputDropdownProps}
+        />
+        <ComplexFilter
+          multiple
+          label="Disease"
+          options={disease_terms}
+          onChange={handleDiseasesChange}
+          value={selectedDiseases}
+          InputDropdownComponent={
+            StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
+          }
+          MenuSelectProps={MenuSelectProps}
+          InputDropdownProps={InputDropdownProps}
+        />
+        <ComplexFilter
+          multiple
+          label="Ethnicity"
+          options={ethnicity_terms}
+          onChange={handleEthnicitiesChange}
+          value={selectedEthnicities}
+          InputDropdownComponent={
+            StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
+          }
+          MenuSelectProps={MenuSelectProps}
+          InputDropdownProps={InputDropdownProps}
+        />
+        <ComplexFilter
+          multiple
+          label="Sex"
+          options={sex_terms}
+          onChange={handleSexesChange}
+          value={selectedSexes}
+          InputDropdownComponent={
+            StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
+          }
+          MenuSelectProps={MenuSelectProps}
+          InputDropdownProps={InputDropdownProps}
+        />
+      </div>
+      <Sort/>
+    </Wrapper>
   );
-
-  function TooltipWrapper({ children }: { children: ReactElement }) {
-    const Wrapper = areFiltersDisabled ? Tooltip : Fragment;
-
-    return (
-      <Wrapper title="Please select an organism, tissue and at least one gene to use these filters.">
-        {children}
-      </Wrapper>
-    );
-  }
 });
 
 function getOptionSelected(

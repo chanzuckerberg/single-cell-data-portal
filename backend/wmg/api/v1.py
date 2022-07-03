@@ -15,7 +15,8 @@ from backend.wmg.data.snapshot import load_snapshot, WmgSnapshot
 # TODO: add cache directives: no-cache (i.e. revalidate); impl etag
 #  https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data
 #  -portal/2132
-
+import logging
+logger = logging.getLogger("gunicorn.error")
 
 def primary_filter_dimensions():
     snapshot: WmgSnapshot = load_snapshot()
@@ -24,11 +25,10 @@ def primary_filter_dimensions():
 
 def query():
     request = connexion.request.json
-    include_filter_dims = request.get("include_filter_dims", False)    
     criteria = WmgQueryCriteria(**request["filter"])
     snapshot: WmgSnapshot = load_snapshot()
     
-    if not include_filter_dims:
+    if len(criteria.gene_ontology_term_ids)>0 and len(criteria.tissue_ontology_term_ids)>0:
         query = WmgQuery(snapshot)
         expression_summary = query.expression_summary(criteria)
         cell_counts = query.cell_counts(criteria)
@@ -36,12 +36,12 @@ def query():
         expression_summary = build_expression_summary(dot_plot_matrix_df)
         genes = build_gene_id_label_mapping(criteria.gene_ontology_term_ids)
         cell_types = build_ordered_cell_types_by_tissue(cell_counts, snapshot.cell_type_orderings)
-        response_filter_dims_values = {}
     else:
         expression_summary = {}
-        genes = {}
+        genes = []
         cell_types = {}
-        response_filter_dims_values = build_filter_dims_values(criteria, snapshot.filter_relationships)
+        
+    response_filter_dims_values = build_filter_dims_values(criteria, snapshot.filter_relationships)
 
     return jsonify(
         dict(
@@ -86,6 +86,7 @@ def find_dim_option_values(criteria: Dict, htable: Dict, dimension: str) -> set:
 
     dimension = dimension[:-1] if dimension[-1] == "s" else dimension
     supersets = []
+    all_attrs = []
     for key in criteria:
         attrs = criteria[key]
         key = key[:-1] if key[-1] == "s" else key
@@ -93,10 +94,12 @@ def find_dim_option_values(criteria: Dict, htable: Dict, dimension: str) -> set:
             if isinstance(attrs, list):
                 if len(attrs) > 0:
                     vals = [key + "__" + val for val in attrs]
+                    all_attrs.extend(vals)
                     sets = [set([x for x in htable[v] if dimension in x]) for v in vals]
                     supersets.append(sets[0].union(*sets[1:]))
             else:
                 if attrs != "":
+                    all_attrs.append(key + "__" + attrs)
                     supersets.append(set([x for x in htable[key + "__" + attrs] if dimension in x]))
 
     if len(supersets) > 1:
@@ -104,10 +107,12 @@ def find_dim_option_values(criteria: Dict, htable: Dict, dimension: str) -> set:
     else:
         valid_options = supersets[0]
 
+
     final_options = []
+
     for v in valid_options:
         loop_back_options = htable[v]
-        if len(set(loop_back_options).intersection(*supersets)) > 0:
+        if len(set(loop_back_options).intersection(all_attrs)) > 0:
             final_options.append(v)
 
     return [i.split("__")[1] for i in final_options]

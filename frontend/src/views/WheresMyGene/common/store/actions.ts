@@ -70,6 +70,15 @@ export function selectTissues(
   };
 }
 
+export function setFilterDimensions(
+  filters: State["filterDimensions"]
+): GetActionTypeOfReducer<typeof REDUCERS["setFilterDimensions"]> {
+  return {
+    payload: filters,
+    type: "setFilterDimensions",
+  };
+}
+
 export function selectSortBy(
   sortBy: Partial<State["sortBy"]>
 ): GetActionTypeOfReducer<typeof REDUCERS["selectSortBy"]> {
