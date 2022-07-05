@@ -18,7 +18,9 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
-def transform(corpus_path: str, gene_ontology_term_ids: list, cube_dims: list) -> (pd.DataFrame, np.ndarray, np.ndarray):
+def transform(
+    corpus_path: str, gene_ontology_term_ids: list, cube_dims: list
+) -> (pd.DataFrame, np.ndarray, np.ndarray):
     ##
     # Reduce X
     ##
@@ -85,7 +87,7 @@ def coo_cube_pass1_into(data, row, col, row_groups, sum_into, nnz_into, min_into
                 max_into[grp_idx, cidx] = val
 
 
-def make_cube_index(tdb_group: str, cube_dims: list) -> (pd.DataFrame,  pd.DataFrame):
+def make_cube_index(tdb_group: str, cube_dims: list) -> (pd.DataFrame, pd.DataFrame):
     """
     Create index for queryable dimensions
     """
