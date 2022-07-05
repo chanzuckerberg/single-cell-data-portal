@@ -284,7 +284,8 @@ class TestGetCollectionUUID(BaseAuthAPITest):
     def test__get_public_collection_verify_body_is_reshaped_correctly__OK(self):
         dataset = self.session.query(DbDataset).filter(DbDataset.id == "test_dataset_id").one_or_none()
         self.assertIsInstance(dataset.organism, list)
-        dataset.organism = dataset.organism[0]  # Make this entry a dict instead of a list
+        # Make this entry a dict instead of a list to test ability of the handler to reshape to list/array
+        dataset.organism = dataset.organism[0]
         self.session.flush()
         dataset_modified = self.session.query(DbDataset).filter(DbDataset.id == "test_dataset_id").one_or_none()
         self.assertIsInstance(dataset_modified.organism, dict)
