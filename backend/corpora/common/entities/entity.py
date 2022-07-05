@@ -4,7 +4,6 @@ import typing
 from sqlalchemy import inspect
 from sqlalchemy.orm import Session
 
-logger = logging.getLogger(__name__)
 
 from ..corpora_orm import Base
 
@@ -41,7 +40,7 @@ class Entity:
         if result:
             return cls(result)
         else:
-            logger.info(f"Unable to find a row with primary key {key}, in {cls.__name__} table.")
+            logging.info(f"Unable to find a row with primary key {key}, in {cls.__name__} table.")
             return None
 
     @classmethod

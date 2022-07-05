@@ -1,5 +1,4 @@
 import csv
-import logging
 import os
 import typing
 from collections import OrderedDict
@@ -26,8 +25,6 @@ from ..corpora_orm import (
 from ..utils.db_helpers import clone
 from ..utils.ontology_mapping import ontology_mapping
 from ..utils.s3_buckets import buckets
-
-logger = logging.getLogger(__name__)
 
 
 class Dataset(Entity):
