@@ -1,5 +1,4 @@
 import csv
-import logging
 import os
 import typing
 from collections import OrderedDict
@@ -26,8 +25,6 @@ from ..corpora_orm import (
 from ..utils.db_helpers import clone
 from ..utils.ontology_mapping import ontology_mapping
 from ..utils.s3_buckets import buckets
-
-logger = logging.getLogger(__name__)
 
 
 class Dataset(Entity):
@@ -89,28 +86,27 @@ class Dataset(Entity):
         super().update(commit=commit, **kwargs)
 
     @classmethod
-    def get(cls, session: Session, dataset_uuid, include_tombstones=False, collection_uuid=None) -> "Dataset":
+    def get(
+        cls, session: Session, dataset_uuid=None, include_tombstones=False, collection_uuid=None, curator_tag=None
+    ) -> typing.Optional["Dataset"]:
+        if not (dataset_uuid or (curator_tag and collection_uuid)):
+            raise ValueError("Not enough information to query")
         filters = []
         if not include_tombstones:
             filters.append(cls.table.tombstone != True)  # noqa
         if collection_uuid:
             filters.append(cls.table.collection_id == collection_uuid)
-        if filters:
+        if curator_tag:
+            filters.append(cls.table.curator_tag == curator_tag)
+        if dataset_uuid:
             filters.append(cls.table.id == dataset_uuid)
-            result = session.query(cls.table).filter(*filters).one_or_none()
-            dataset = cls(result) if result else None
-        else:
-            dataset = super().get(session, dataset_uuid)
+        result = session.query(cls.table).filter(*filters).one_or_none()
+        dataset = cls(result) if result else None
         return dataset
 
     @classmethod
-    def get_dataset_from_curator_tag(cls, session: Session, collection_id, curator_tag) -> "Dataset":
-        dataset = (
-            session.query(cls.table)
-            .filter(cls.table.collection_id == collection_id, cls.table.curator_tag == curator_tag)
-            .one_or_none()
-        )
-        return cls(dataset) if dataset else None
+    def get_dataset_from_curator_tag(cls, session: Session, collection_id, curator_tag, **kwargs) -> "Dataset":
+        return cls.get(session, collection_uuid=collection_id, curator_tag=curator_tag, **kwargs)
 
     @classmethod
     def get_by_explorer_url(cls, session: Session, explorer_url):

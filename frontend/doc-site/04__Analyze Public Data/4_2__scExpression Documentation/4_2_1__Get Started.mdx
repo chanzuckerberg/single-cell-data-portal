@@ -60,7 +60,7 @@ Cell types are ordered according to the CL directed acyclic graph (DAG). Briefly
 
 This method groups cell types together based on their ontological relationships thus providing a loose lineage-based ordering.
 
-An in-depth description of this method can be found [here](./cell-type-ontology-ordering.md).
+An in-depth description of this method can be found <NextLink href="/docs/04__Analyze%20Public%20Data/4_2__scExpression%20Documentation/4_2_2__Cell%20Type%20Ontology%20Ordering#algorithm">here</NextLink>.
 
 ## Processing of Expression Data
 
@@ -78,7 +78,7 @@ Any cell that has less than 500 genes expressed is excluded, this filters out ab
 
 ### Gene-length Pre-normalization
 
-![#ffab24](https://via.placeholder.com/15/ffab24/000000?text=+) WARNING - The following process has not been implemented as the feature **currently only includes data that does not require gene-length normalization.**
+WARNING - The following process has not been implemented as the feature **currently only includes data that does not require gene-length normalization.**
 
 In platforms that sequence full RNA molecules, such as Smart-seq, gene counts are directly correlated with gene length. To account for this, gene counts from these technologies are divided by the corresponding gene length prior to normalization.
 
