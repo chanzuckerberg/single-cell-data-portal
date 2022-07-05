@@ -1,0 +1,1316 @@
+#!/usr/bin/env python3
+import json
+import os
+import random
+import subprocess
+import tarfile
+import tempfile
+import time
+from base64 import b64decode
+from contextlib import contextmanager
+from datetime import datetime
+from urllib.parse import urlparse
+
+import boto3
+import click
+import yaml
+from botocore.config import Config
+from botocore.exceptions import WaiterError
+from terrasnek import exceptions
+from terrasnek.api import TFC
+
+
+class CliError(Exception):
+    # Don't print core dumps for some kinds of exceptions
+    pass
+
+
+class HappyConfig:
+    def __init__(self, config_file=".happy/config.json", env=None, substitutions=None, ctx=None):
+        self.ctx = ctx
+        with open(config_file) as f:
+            self._data = json.load(f)
+        self.env = env
+        self.set_env()
+        try:
+            if self.config_version != "v1":
+                raise CliError(f'Config file {config_file} has invalid version number. Only version "v1" supported.')
+        except KeyError:
+            raise CliError(f"Config file {config_file} missing config_version field.")
+
+    def set_env(self):
+        env_override = self.env
+        env = self._data["default_env"]
+        if env_override:
+            env = env_override
+        elif os.getenv("HAPPY_ENV"):
+            env = os.getenv("HAPPY_ENV")
+
+        try:
+            self.env = env  # HACK HACK HACK
+            self._data["env"] = env
+            self._data.update(self._data["environments"][env])
+        except KeyError:
+            error = f'Invalid environment: "{env}". Check .happy/config for valid environments'
+            raise CliError(error)
+
+    def __getattr__(self, field):
+        if field == "default_compose_env":
+            return self._data["default_compose_env_file"]
+        if field == "ecrs":
+            return self.ctx.obj["secret_mgr"].secrets["ecrs"]
+        if field in self._data:
+            return self._data[field]
+        return self.__dict__[field]
+
+
+class TablePrinter:
+    def __init__(self, headers):
+        self.rows = []
+        self.widths = []
+
+        self.bump_widths(headers)
+        self.headers = headers
+
+    def bump_widths(self, data):
+        for i in range(len(data)):
+            try:
+                self.widths[i] = max(len(data[i]), self.widths[i])
+            except IndexError:
+                self.widths.append(len(data[i]))
+
+    def add_row(self, row):
+        self.bump_widths(row)
+        self.rows.append(row)
+
+    def print(self):
+        fmt_string = "  ".join(["{: <%s}" % width for width in self.widths])
+        print(fmt_string.format(*self.headers))
+        separators = ["-----" for i in range(len(self.headers))]
+        print(fmt_string.format(*separators))
+        for row in self.rows:
+            print(fmt_string.format(*row))
+
+
+class StackMeta:
+    tag_map = {
+        "app": "happy/app",
+        "env": "happy/env",
+        "instance": "happy/instance",
+        "owner": "happy/meta/owner",
+        "priority": "happy/meta/priority",
+        "imagetag": "happy/meta/imagetag",
+        "configsecret": "happy/meta/configsecret",
+        "created": "happy/meta/created-at",
+        "updated": "happy/meta/updated-at",
+    }
+
+    parameter_map = {
+        "instance": "stack_name",
+        "priority": "priority",
+        "imagetag": "image_tag",
+        "configsecret": "happy_config_secret",
+    }
+
+    def __init__(self, ctx, stack_name):
+        self.stack_name = stack_name
+        self.ctx = ctx
+        config = ctx.obj["config"]
+        self.meta = {
+            "app": config.app,
+            "env": config.env,
+            "instance": self.stack_name,
+        }
+
+    def load(self, existing_tags):
+        for short_tag, tag_name in self.tag_map.items():
+            if tag_name in existing_tags:
+                self.meta[short_tag] = existing_tags[tag_name]
+            elif short_tag not in self.meta:
+                self.meta[short_tag] = ""
+
+    def __getattr__(self, tag):
+        if tag in self.tag_map:
+            return self.meta[tag]
+        return self.__dict__[tag]
+
+    def __setattr__(self, tag, value):
+        if tag in self.tag_map:
+            self.meta[tag] = value
+        else:
+            self.__dict__[tag] = value
+
+    @property
+    def tags(self):
+        return {v: self.meta[k] for k, v in self.tag_map.items()}
+
+    @property
+    def parameters(self):
+        return {v: self.meta[k] for k, v in self.parameter_map.items()}
+
+    def update(self, tag, stack_mgr):
+        stacks = stack_mgr.stacks
+
+        # Track timestamps for this stack
+        now = int(time.time())
+        if not self.created:
+            self.created = now
+
+        self.imagetag = tag
+        self.updated = now
+
+        if not self.owner:
+            self.owner = resolve_owner(self.ctx)
+
+        if not self.priority:
+            # Find the first available priority id and use it.
+            existing_priorities = set()
+            for stack in stacks.values():
+                try:
+                    stack_priority = int(stack.meta.priority)
+                    existing_priorities.add(stack_priority)
+                except ValueError:
+                    # meta.priority was unparsable, might be empty. Either way, no existing value to avoid.
+                    pass
+            while True:
+                # pick a random number between 1000 and 5000 that's not in use right now.
+                random.seed()
+                priority = random.randint(1000, 5000)
+                if priority not in existing_priorities:
+                    break
+            self.priority = priority
+
+
+class Stack:
+    """Represents a Happy Stack"""
+
+    def __init__(self, stack_mgr, stack_name):
+        self.stack_mgr = stack_mgr
+        self.stack_name = stack_name
+        self._workspace = None
+
+        self._meta = None
+
+    @property
+    def workspace(self):
+        # If the corresponding workspace is missing from TFE, we will intentionally return None
+        if not self._workspace:
+            try:
+                self._workspace = self.stack_mgr.get_stack_workspace(self.stack_name)
+            except exceptions.TFCHTTPNotFound:
+                pass
+        return self._workspace
+
+    @property
+    def outputs(self):
+        if self.workspace:
+            return self.workspace.outputs
+        return {}
+
+    @property
+    def status(self):
+        if self.workspace and self.workspace.latest_run:
+            status = self.workspace.latest_run["data"]["attributes"]["status"]
+            if self.workspace.latest_run["data"]["attributes"]["is-destroy"]:
+                status += " destroy"
+            return status
+        return "UNKNOWN"
+
+    @property
+    def meta(self):
+        if not self._meta:
+            self._meta = StackMeta(self.stack_mgr.ctx, self.stack_name)
+            # Default to unknown if missing data
+            tags = {"happy/meta/owner": "UNKNOWN", "happy/meta/imagetag": "UNKNOWN"}
+            if self.workspace:  # Non existent workspace has no meta data
+                try:
+                    meta_var = self.workspace.vars.get("terraform", {}).get("happymeta_")
+                except exceptions.TFCHTTPNotFound:
+                    meta_var = None
+                if meta_var:
+                    if meta_var["attributes"]["sensitive"]:
+                        raise Exception(f"Invalid meta var for stack {self.stack_name}, must not be sensitive")
+                    tags = json.loads(meta_var["attributes"]["value"])
+                else:
+                    print(f"No happymeta_ variable for stack {self.stack_name}")
+                    # Any valid environment will have a tags variable; if missing
+                    # don't add to list
+            self._meta.load(tags)
+        return self._meta
+
+    def _ensure_workspace(self):
+        if not self.workspace:
+            raise Exception(f"Could not find TFE workspace for stack {self.stack_name}")
+
+    def apply(self, wait):
+        """Saves the variables and applies the workspace"""
+        self._ensure_workspace()
+        self.workspace.set_var(
+            "happymeta_",
+            json.dumps(self.meta.tags),
+            "Happy Path metadata",
+            sensitive=False,
+        )
+        for k, v in self.meta.parameters.items():
+            self.workspace.set_var(k, str(v), "", sensitive=False)
+        self.workspace.reset_cache()  # Resets known vars
+
+        with config_tarball(self.stack_mgr.config.terraform_directory) as targz_file:
+            config_version_id = self.workspace.upload_version(targz_file.name)
+
+        self.workspace.run_config_version(config_version_id)
+        if wait:
+            return self.workspace.wait()
+        return True
+
+    def destroy(self):
+        self._ensure_workspace()
+        if not self.workspace.latest_config_version_id:
+            print("WARNING: No latest version of workspace to destroy. Assuming already empty and continuing.")
+            return True
+        self.workspace.run(is_destroy=True)
+        return self.workspace.wait()
+
+    def watch(self):
+        self._ensure_workspace()
+        return self.workspace.wait()
+
+    def cancelupdate(self, wait):
+        self._ensure_workspace()
+        # TODO(mbarrien): Check run status to see if it's in a cancellable state
+        if self.workspace.latest_run_id:
+            self.workspace.cancel_run()
+        if wait:
+            return self.workspace.wait()
+        return True
+
+    def print_outputs(self):
+        print()
+        print("Module Outputs --")
+        for k, v in self.outputs.items():
+            print(f"{k}: {v}")
+
+
+class StackMgr:
+    def __init__(self, ctx):
+        self.ctx = ctx
+        self.config = ctx.obj["config"]
+        self.write_path = f"/happy/{self.config.env}/stacklist"
+        # self.read_prefix = f"/happy/{self.config.env}/stacks"
+        self._stacks = {}
+        self.creator_workspace_name = f"env-{self.config.env}"
+        self.tfe_api = None
+
+    def get_tfe_api(self):
+        if not self.tfe_api:
+            secrets = self.ctx.obj["secret_mgr"].secrets
+            self.tfe_api = TfeApi(secrets["tfe"]["url"], secrets["tfe"]["org"])
+        return self.tfe_api
+
+    def remove(self, stack_name):
+        self._stacks = {}  # Force a refresh of stacks.
+        stack_names = set(self.stacks.keys())
+        stack_names.remove(stack_name)
+
+        param_client = AwsSession.get_client(self.ctx, "ssm")
+        param_client.put_parameter(Name=self.write_path, Value=json.dumps(sorted(stack_names)), Overwrite=True)
+        self._resync(wait=False)
+        del self._stacks[stack_name]
+
+    def add(self, stack_name):
+        self._stacks = {}  # Force a refresh of stacks.
+        stack_names = set(self.stacks.keys())
+        stack_names.add(stack_name)
+
+        param_client = AwsSession.get_client(self.ctx, "ssm")
+        param_client.put_parameter(Name=self.write_path, Value=json.dumps(sorted(stack_names)), Overwrite=True)
+        success = self._resync()
+        if not success:
+            raise Exception("Error invoking Terraform to create stack")
+
+        if not self.get_stack_workspace(stack_name):
+            raise Exception("Could not find newly created workspace for our stack")
+
+        stack = Stack(self, stack_name)
+        self._stacks[stack_name] = stack
+        return stack
+
+    def _resync(self, wait=True):
+        """Invoke a specific TFE workspace that creates/deletes TFE workspaces, with prepopulated variables for identifier
+        tokens."""
+        print("Resyncing workspaces")
+        tfe_api = self.get_tfe_api()
+        workspace = tfe_api.get_workspace(self.creator_workspace_name)
+        workspace.run()
+        if wait:
+            return workspace.wait()
+        return True
+
+    @property
+    def stacks(self):
+        if self._stacks:
+            return self._stacks
+
+        param_client = AwsSession.get_client(self.ctx, "ssm")
+        param = param_client.get_parameter(Name=self.write_path)
+        stacklist = json.loads(param["Parameter"]["Value"])
+        for stack_name in stacklist:
+            self._stacks[stack_name] = Stack(self, stack_name)
+        return self._stacks
+
+    def get_stack_workspace(self, stack_name):
+        workspace_name = f"{self.config.env}-{stack_name}"
+        tfe_api = self.get_tfe_api()
+        return tfe_api.get_workspace(workspace_name)
+
+
+# Singleton for handling aws sessions since this is oddly slow.
+class AwsSession:
+    session = None
+    config = None
+    clients = {}
+
+    @classmethod
+    def get_session(cls, ctx):
+        if not cls.session:
+            cls.session = boto3.session.Session(profile_name=ctx.obj["aws_profile"])
+        return cls.session
+
+    @classmethod
+    def get_config(cls, ctx):
+        if not cls.config:
+            cls.config = Config(region_name="us-west-2", retries={"max_attempts": 2, "mode": "standard"})
+        return cls.config
+
+    @classmethod
+    def get_client(cls, ctx, client_type):
+        if not cls.clients.get(client_type):
+            session = cls.get_session(ctx)
+            cls.clients[client_type] = session.client(client_type, config=cls.get_config(ctx))
+        return cls.clients[client_type]
+
+
+class TFEWorkspace:
+    def __init__(self, tfc, workspace):
+        self.tfc = tfc
+        self.workspace = workspace
+        self.reset_cache()
+
+    @property
+    def workspace_id(self):
+        return self.workspace["id"]
+
+    @property
+    def name(self):
+        return self.workspace["attributes"]["name"]
+
+    @property
+    def latest_run_id(self):
+        if not self._latest_run_id:
+            latest_run = self.workspace["relationships"]["latest-run"]["data"]
+            if latest_run:
+                self._latest_run_id = latest_run["id"]
+            # latest_run == None if never run before
+        return self._latest_run_id
+
+    @property
+    def latest_run(self):
+        if not self._latest_run:
+            if self.latest_run_id:
+                self._latest_run = self.tfc.runs.show(self.latest_run_id)
+        return self._latest_run
+
+    @property
+    def latest_config_version_id(self):
+        if self.latest_run:
+            return self.latest_run["data"]["relationships"]["configuration-version"]["data"]["id"]
+        return None
+
+    def run(self, is_destroy=False):
+        return self.run_config_version(self.latest_config_version_id, is_destroy=is_destroy)
+
+    def run_config_version(self, config_version_id, is_destroy=False):
+        print(f"Running {'DESTROY ' if is_destroy else ''}workspace {self.name}")
+        run = self.tfc.runs.create(
+            {
+                "data": {
+                    "attributes": {
+                        "is-destroy": is_destroy,
+                        "message": "Queued from happy cli",
+                    },
+                    "type": "runs",
+                    "relationships": {
+                        "workspace": {
+                            "data": {
+                                "type": "workspaces",
+                                "id": self.workspace_id,
+                            }
+                        },
+                        "configuration-version": {
+                            "data": {
+                                "type": "configuration-versions",
+                                "id": config_version_id,
+                            }
+                        },
+                    },
+                }
+            }
+        )
+        run_id = run["data"]["id"]
+        self._latest_run_id = run_id  # The run we just created is now the latest.
+        self._latest_run = None  # Reset the cache
+        self._outputs = None
+        return True
+
+    def wait(self):
+        RUN_DONE_STATUSES = {"applied", "discarded", "errored", "canceled", "force_canceled", "policy_soft_failed"}
+        last_status = ""
+        while last_status not in RUN_DONE_STATUSES:
+            if last_status:  # Skip sleep on first time
+                time.sleep(5)
+            run = self.tfc.runs.show(self.latest_run_id)
+            status = run["data"]["attributes"]["status"]
+            if status != last_status:
+                print(f"{datetime.now().strftime('%H:%M:%S')} - {status}")
+                last_status = status
+
+        if last_status != "applied":
+            print(f"Error applying, ended in status {last_status}")
+            return False
+        return True
+
+    @property
+    def vars(self):
+        """Get a nested dict of all the variables of the given workspace.
+
+        Returns a 2-deep nested dict.
+        Top-level dict has 2 possible entries for the 2 kinds of variables a workspace may have,
+        "terraform" and "env". Value of that top level entry is itself a dict of key->value.
+        The inner value is a dict object as returned by Terraform Enterprise API.
+        """
+        if not self._vars:
+            workspace_vars = self.tfc.workspace_vars.list(self.workspace_id)
+            self._vars = {}
+            for workspace_var in workspace_vars["data"]:
+                attributes = workspace_var["attributes"]
+                self._vars.setdefault(attributes["category"], {})[attributes["key"]] = workspace_var
+        return self._vars
+
+    def set_var(self, key, value, description, sensitive=True):
+        category = "terraform"  # Hard-coded, not allowing setting environment vars directly
+        var_data = {
+            "data": {
+                "type": "vars",
+                "attributes": {
+                    "key": key,
+                    "value": value,
+                    "description": description,
+                    "category": category,
+                    "sensitive": sensitive,
+                },
+            },
+        }
+        if category in self.vars and key in self.vars[category]:
+            self.tfc.workspace_vars.update(self.workspace_id, self.vars[category][key]["id"], var_data)
+        else:
+            self.tfc.workspace_vars.create(self.workspace_id, var_data)
+
+    def reset_cache(self):
+        self._vars = None
+        self._outputs = None
+        self._latest_run_id = None
+        self._latest_run = None
+
+    @property
+    def outputs(self):
+        if self._outputs:
+            return self._outputs
+        try:
+            state_version = self.tfc.state_versions.get_current(self.workspace_id)
+        except exceptions.TFCHTTPNotFound:
+            return {}
+        # terrasnek api lacks a way to append ?include=outputs to state_version requests,
+        # so we have to iterate through all outputs and get them individually
+        # TODO(mbarrien): Add code to Terrasnek
+        outputs = state_version["data"]["relationships"]["outputs"]["data"]
+        state_version_output_ids = (output["id"] for output in outputs)
+        self._outputs = {}
+        for state_version_output_id in state_version_output_ids:
+            state_version_output = self.tfc.state_version_outputs.show(state_version_output_id)["data"]["attributes"]
+            if not state_version_output["sensitive"]:
+                key = state_version_output["name"]
+                value = state_version_output["value"]
+                self._outputs[key] = value
+        return self._outputs
+
+    def upload_version(self, filename):
+        # Not using auto-queue-runs, will explicitly create later
+        config_version = self.tfc.config_versions.create(
+            self.workspace_id, {"data": {"type": "configuration-versions", "attributes": {"auto-queue-runs": False}}}
+        )
+
+        config_version_id = config_version["data"]["id"]
+        upload_url = config_version["data"]["attributes"]["upload-url"]
+        self.tfc.config_versions.upload(filename, upload_url)
+        return config_version_id
+
+    def cancel_run(self):
+        self.tfc.runs.force_cancel(self.latest_run_id, {"comment": "Force cancelled by happy cli"})
+
+
+class TfeApi:
+    def __init__(self, url, org):
+        self.url = url
+        self.org = org
+        self._tfc = None
+
+    def get_token(self, hostname):
+        env_token = os.getenv("TFE_TOKEN")
+        if env_token:
+            return env_token
+        error = False
+        try:
+            with open(os.path.expanduser("~/.terraform.d/credentials.tfrc.json")) as f:
+                credentials = json.load(f)["credentials"]
+        except FileNotFoundError:
+            error = True
+        if error or hostname not in credentials:
+            raise CliError(
+                f"Terraform credentials for {hostname} not found. Run 'terraform login {hostname}' and follow the "
+                f"instructions"
+            )
+        return credentials[hostname]["token"]
+
+    @property
+    def tfc(self):
+        if self._tfc:
+            return self._tfc
+        hostname = urlparse(self.url).hostname
+        tfc = TFC(self.get_token(hostname), url=self.url)
+        tfc.set_org(self.org)
+        self._tfc = tfc
+        return tfc
+
+    def get_workspace(self, workspace_name):
+        workspace = self.tfc.workspaces.show(workspace_name)
+        return TFEWorkspace(self.tfc, workspace["data"])
+
+
+@click.group()
+@click.option(
+    "--profile",
+    default=None,
+    help="AWS profile to use. Explicitly passing empty string uses Boto default credentials resolver.",
+)
+@click.option("--env", default=None, help="Switch happy envs")
+@click.pass_context
+def cli(ctx, profile, env):
+    ctx.ensure_object(dict)
+    config = HappyConfig(env=env, ctx=ctx)
+    if profile is None:
+        profile = config.aws_profile
+    elif profile == "":
+        profile = None
+    ctx.obj["secret_mgr"] = SecretMgr(ctx)
+    ctx.obj["config"] = config
+    ctx.obj["aws_profile"] = profile
+    # These aren't lazy-instantiating!
+    ctx.obj["stack_mgr"] = StackMgr(ctx)
+    ctx.obj["orchestrator"] = Orchestrator(ctx)
+
+
+class SecretMgr:
+    def __init__(self, ctx):
+        self.ctx = ctx
+        self._secrets = None
+
+    @property
+    def secrets(self):
+        if self._secrets:
+            return self._secrets
+        config = self.ctx.obj["config"]
+        secrets_client = AwsSession.get_client(self.ctx, "secretsmanager")
+        secrets = secrets_client.get_secret_value(SecretId=config.secret_arn)["SecretString"]
+        self._secrets = json.loads(secrets)
+        return self._secrets
+
+
+def run_aws_cmd(ctx, cmd, return_output=True, json_output=True):
+    command = [
+        "aws",
+        "--profile",
+        AwsSession.get_session(ctx).profile_name,
+        "--region",
+        AwsSession.get_config(ctx).region_name,
+    ]
+    command.extend(cmd)
+    if return_output:
+        output = subprocess.check_output(command)
+    else:
+        subprocess.check_call(command)
+        return
+    if not json_output:
+        return output
+    return json.loads(output)
+
+
+def resolve_owner(ctx):
+    # Figure out what our current identity is
+    sts_client = AwsSession.get_client(ctx, "sts")
+    identity = sts_client.get_caller_identity()["Arn"]
+    return identity.split("/")[-1].split("@")[0]
+
+
+def generate_tag(ctx):
+    now = datetime.now().strftime("%m%d-%H%M%S")
+    owner = resolve_owner(ctx)
+    return f"{owner}-{now}"
+
+
+class Orchestrator:
+    def __init__(self, ctx):
+        self.ctx = ctx
+        self._secrets = None
+
+    @property
+    def secrets(self):
+        if not self._secrets:
+            self._secrets = self.ctx.obj["secret_mgr"].secrets
+        return self._secrets
+
+    def shell(self, stack_name, service):
+        cluster_arn = self.secrets["cluster_arn"]
+        service_name = f"{stack_name}-{service}"
+
+        ecs_client = AwsSession.get_client(self.ctx, "ecs")
+        tasks = ecs_client.list_tasks(cluster=cluster_arn, serviceName=service_name)["taskArns"]
+        print("Found tasks: ")
+        taskinfo = ecs_client.describe_tasks(cluster=cluster_arn, tasks=tasks)["tasks"]
+        tp = TablePrinter(["Task ID", "Started", "Status"])
+        containers = []
+        for task in taskinfo:
+            task_id = task["taskArn"].split("/")[-1]
+            tp.add_row([task_id, task["startedAt"].strftime("%m/%d %H:%M"), task["lastStatus"]])
+            containers.append(
+                {
+                    "host": task["containerInstanceArn"],
+                    "container": task["containers"][0]["runtimeId"],
+                    "arn": task["taskArn"],
+                }
+            )
+        tp.print()
+        print()
+        for container in containers:
+            instance_info = ecs_client.describe_container_instances(
+                cluster=cluster_arn, containerInstances=[container["host"]]
+            )
+            ec2_instance = instance_info["containerInstances"][0]["ec2InstanceId"]
+            ec2_client = AwsSession.get_client(self.ctx, "ec2")
+            hostinfo = ec2_client.describe_instances(InstanceIds=[ec2_instance])
+            ip = hostinfo["Reservations"][0]["Instances"][0]["PrivateIpAddress"]
+            print(f"Connecting to {container['arn']}")
+            os.execvp("ssh", ["ssh", "-t", ip, "sudo", "docker", "exec", "-ti", container["container"], "/bin/bash"])
+
+    def logs(self, stack_name, service, since):
+        config = self.ctx.obj["config"]
+        # TODO, we should get the logs path from ECS instead of generating it.
+        log_prefix = config.log_group_prefix
+        run_aws_cmd(
+            self.ctx,
+            ["logs", "tail", "--since", since, "--follow", f"{log_prefix}/{stack_name}/{service}"],
+            return_output=False,
+            json_output=False,
+        )
+
+    def run_task(self, taskdef_arn, wait=False, show_logs=True):
+        """Run a one-off ECS task and optionally wait"""
+        secrets = self.secrets
+        cluster_arn = secrets["cluster_arn"]
+        subnets = secrets["private_subnets"]
+        security_groups = secrets["security_groups"]
+        print(f"Using task definition {taskdef_arn}")
+        ecs_client = AwsSession.get_client(self.ctx, "ecs")
+        output = ecs_client.run_task(
+            cluster=cluster_arn,
+            taskDefinition=taskdef_arn,
+            networkConfiguration={
+                "awsvpcConfiguration": {
+                    "subnets": subnets,
+                    "securityGroups": security_groups,
+                    "assignPublicIp": "DISABLED",
+                }
+            },
+        )
+        task_info = output["tasks"][0]
+        print(f"Task {task_info['taskArn']} started")
+        if not wait:
+            return
+
+        # Wait for the task to start.
+        waiter = ecs_client.get_waiter("tasks_running")
+        try:
+            waiter.wait(cluster=cluster_arn, tasks=[task_info["taskArn"]])
+        except WaiterError:
+            print("Task failed!")
+        result = ecs_client.describe_tasks(cluster=cluster_arn, tasks=[task_info["taskArn"]])
+        container = result["tasks"][0]["containers"][0]
+        status = container["lastStatus"]
+        if status != "RUNNING":
+            reason = ""
+            if "reason" in container:
+                reason = container["reason"]
+            print(f"Container did not start. Current status {status}: {reason}")
+        else:
+            print(f"Task {task_info['taskArn']} running")
+            # Wait for the task to exit.
+            waiter = ecs_client.get_waiter("tasks_stopped")
+            waiter.wait(cluster=cluster_arn, tasks=[task_info["taskArn"]])
+            print(f"Task {task_info['taskArn']} stopped")
+        result = ecs_client.describe_tasks(cluster=cluster_arn, tasks=[task_info["taskArn"]])
+        container = result["tasks"][0]["containers"][0]
+        log_stream = container["runtimeId"]
+        if "reason" in container:
+            status = container["lastStatus"]
+            reason = container["reason"]
+            print(f"Container exited with status {status}: {reason}")
+
+        # Get logs
+        print("getting taskdef info")
+        result = ecs_client.describe_task_definition(taskDefinition=taskdef_arn)
+        taskdef = result["taskDefinition"]
+        container = taskdef["containerDefinitions"][0]
+        log_group = container["logConfiguration"]["options"]["awslogs-group"]
+        print("Log Events:")
+        logs_client = AwsSession.get_client(self.ctx, "logs")
+        result = logs_client.get_log_events(logGroupName=log_group, logStreamName=log_stream)
+        logs = result["events"]
+        for log in logs:
+            print(log)
+        print("done!")
+
+
+def subprocess_output_with_default(cmd, default="unknown"):
+    try:
+        return subprocess.check_output(cmd).decode().strip()
+    except subprocess.CalledProcessError:
+        return default
+
+
+class ArtifactBuilder:
+    """Builds artifacts such asx Docker containers. For now, this is hard coded to use docker-compose as the backend."""
+
+    DEFAULT_CONFIG = {"compose_file": "docker-compose.yml", "env": None}
+
+    def __init__(self, config={}):
+        self.config = {**self.DEFAULT_CONFIG, **config}  # Replace defaults with the input
+
+    def get_env(self):
+        env = dict(os.environ)  # Make a copy of the current environment
+        env["DOCKER_BUILDKIT"] = "1"
+        env["BUILDKIT_INLINE_CACHE"] = "1"
+        env["COMPOSE_DOCKER_CLI_BUILD"] = "1"
+        env["DOCKER_REPO"] = f"{self.config['ecr_repo']}/"
+        env["HAPPY_COMMIT"] = subprocess_output_with_default(["git", "rev-parse", "--verify", "HEAD"])
+        env["HAPPY_BRANCH"] = subprocess_output_with_default(["git", "branch", "--show-current"])
+        env["HAPPY_TAG"] = subprocess_output_with_default(["git", "describe"])
+        return env
+
+    def build(self, artifacts=None):
+        env = self.get_env()
+        compose_args = ["--file", self.config["compose_file"]]
+        if self.config["env"]:
+            compose_args += ["--env", self.config["env"]]
+        cmd = ["docker-compose"] + compose_args + ["build"]
+        if artifacts:
+            cmd += artifacts
+        subprocess.check_call(cmd, env=env)
+
+        cmd = ["docker-compose"] + compose_args + ["config"]
+        config_file = subprocess.check_output(cmd, env=env)
+        result = yaml.load(config_file, Loader=yaml.Loader)
+        images = {}
+        for service_name, service in result["services"].items():
+            if "build" in service:
+                if artifacts and service_name not in artifacts:
+                    continue
+                images[service_name] = service["image"]
+        return images
+
+    def push(self, ecrs, images, tags):
+        print("Tagging images...")
+        env = self.get_env()
+        for artifact_id, registry in ecrs.items():
+            if images and artifact_id not in images:
+                continue
+            image = images[artifact_id]
+            for current_tag in tags:
+                subprocess.check_call(["docker", "tag", f"{image}:latest", f"{registry['url']}:{current_tag}"], env=env)
+        print(f"Pushing images...{images}")
+        for artifact_id, registry in ecrs.items():
+            if images and artifact_id not in images:
+                continue
+            for current_tag in tags:
+                subprocess.check_call(["docker", "push", f"{registry['url']}:{current_tag}"], env=env)
+
+
+def run_tasks(ctx, stack, task_type, wait=False, show_logs=True):
+    print(f"Running tasks for {task_type}")
+    config = ctx.obj["config"]
+    orchestrator = ctx.obj["orchestrator"]
+    task_outputs = config.tasks.get(task_type, [])
+    if not task_outputs:
+        print(f"Found no tasks for {task_type}")
+    try:
+        tasks = [stack.outputs[task_output] for task_output in task_outputs]
+    except KeyError as exc:
+        raise CliError(f"Stack {stack.stack_name} is missing output field '{exc.args[0]}' for task {task_type}")
+    for task in tasks:
+        orchestrator.run_task(task, wait=wait, show_logs=show_logs)
+
+
+@cli.command()
+@click.argument("stack_name")
+@click.option("--reset", is_flag=True, default=False, help="Drop and recreate the dev db from the latest snapshot")
+@click.pass_context
+def migrate(ctx, stack_name, reset):
+    """Run DB migration task for given stack"""
+    stack_mgr = ctx.obj["stack_mgr"]
+    stack = stack_mgr.stacks[stack_name]
+    if reset:
+        run_tasks(ctx, stack, "delete", wait=True, show_logs=True)
+    run_tasks(ctx, stack, "migrate", wait=True, show_logs=True)
+
+
+@cli.command()
+@click.argument("stack_name")
+@click.argument("service")
+@click.option("--instanceid", help="Choose a specific instance")
+@click.pass_context
+def shell(ctx, stack_name, service, instanceid):
+    orchestrator = ctx.obj["orchestrator"]
+    orchestrator.shell(stack_name, service)
+
+
+@cli.command()
+@click.argument("stack_name")
+@click.argument("service")
+@click.option("--since", default="10m", help="Output logs since <number>s|m|h|d")
+@click.pass_context
+def logs(ctx, stack_name, service, since):
+    """Tail the logs of a service (frontend, backend, upload, migrations)"""
+    orchestrator = ctx.obj["orchestrator"]
+    orchestrator.logs(stack_name, service, since)
+
+
+@cli.command()
+@click.argument("stack_name")
+@click.option("--tag", help="Tag name for docker image. Leave empty to generate one automatically.", default=None)
+@click.option("--wait/--no-wait", is_flag=True, default=True, help="wait for this to complete")
+@click.option("--force", is_flag=True, default=False, help="Ignore already-exists errors")
+@click.pass_context
+def create(ctx, stack_name, tag, wait, force):
+    """Create a new stack with a given tag"""
+    stackmgr = ctx.obj["stack_mgr"]
+    if stack_name in stackmgr.stacks:
+        if force:
+            print(f"Stack {stack_name} already exists")
+        else:
+            raise CliError(f"Stack {stack_name} already exists")
+
+    stack_meta = StackMeta(ctx, stack_name)
+    stack_meta.load({"happy/meta/configsecret": ctx.obj["config"].secret_arn})
+    if not tag:
+        tag = generate_tag(ctx)
+        ctx.invoke(push, tag=tag)
+    stack_meta.update(tag, stackmgr)
+    print(f"creating {stack_name}")
+
+    stack = stackmgr.add(stack_name)
+    stack._meta = stack_meta  # TODO(mbarrien): Hack!
+    success = stack.apply(wait)
+    if not success:
+        raise CliError("Apply failed, skipping migrations")
+    if should_auto_migrate(ctx):
+        ctx.invoke(migrate, stack_name=stack_name)
+    stack.print_outputs()
+
+
+def should_auto_migrate(ctx):
+    # Make sure this environment allows automatically running migrations on update
+    try:
+        migrate_ok = ctx.obj["config"].auto_run_migrations
+        return migrate_ok
+    except KeyError:
+        # The default behavior is to auto-migrate on update.
+        return True
+
+
+@contextmanager
+def config_tarball(source_dir):
+    """Create a config tarball from given source_dir, then automatically delete it once we're done."""
+    targz_file = tempfile.NamedTemporaryFile(delete=False)
+    try:
+        with tarfile.open(fileobj=targz_file, mode="w:gz", dereference=True) as tar:
+            tar.add(source_dir, arcname="")
+        with targz_file:
+            yield targz_file
+    finally:
+        os.remove(targz_file.name)
+
+
+@cli.command()
+@click.argument("stack_name")
+@click.option("--tag", help="Tag name for docker image. Leave empty to generate one automatically.", default=None)
+@click.option("--wait/--no-wait", is_flag=True, default=True, help="wait for this to complete")
+@click.option("--skip-migrations/--do-migrations", is_flag=True, default=False, help="Skip running migrations")
+@click.pass_context
+def update(ctx, stack_name, tag, wait, skip_migrations):
+    """Update a dev stack tag version"""
+    stackmgr = ctx.obj["stack_mgr"]
+    try:
+        stack = stackmgr.stacks[stack_name]
+    except KeyError:
+        raise CliError(f"Stack {stack_name} does not exist")
+
+    print(f"updating {stack_name}")
+    if not tag:
+        tag = generate_tag(ctx)
+        ctx.invoke(push, tag=tag)
+
+    stack_meta = stack.meta
+    # Reset the configsecret if it has changed
+    stack_meta.load({"happy/meta/configsecret": ctx.obj["config"].secret_arn})
+    stack_meta.update(tag, stackmgr)
+    success = stack.apply(wait or not skip_migrations)
+    if not success:
+        raise CliError("Apply failed, skipping migrations")
+    if not skip_migrations and should_auto_migrate(ctx):
+        ctx.invoke(migrate, stack_name=stack_name)
+    stack.print_outputs()
+
+
+@cli.command()
+@click.argument("stack_name")
+@click.option("--wait/--no-wait", is_flag=True, default=True, help="wait for this to complete")
+@click.pass_context
+def cancelupdate(ctx, stack_name, wait):
+    """Cancel a dev stack update"""
+    print(f"Canceling update of {stack_name}")
+    stack_mgr = ctx.obj["stack_mgr"]
+    stack = stack_mgr.stacks[stack_name]
+    stack.cancelupdate(wait)
+    stack.print_outputs()
+
+
+@cli.command()
+@click.argument("stack_name")
+@click.pass_context
+def delete(ctx, stack_name):
+    """Delete a dev stack"""
+    stackmgr = ctx.obj["stack_mgr"]
+    try:
+        stack = stackmgr.stacks[stack_name]
+    except Exception:
+        raise CliError(f"Stack {stack_name} doesn't exist in our list")
+
+    # Make sure this environment allows stack deletion.
+    try:
+        delete_protected = ctx.obj["config"].delete_protected
+        if delete_protected:
+            raise CliError("This stack cannot be deleted")
+    except KeyError:
+        pass
+
+    print(f"deleting {stack_name}")
+    try:
+        run_tasks(ctx, stack, "delete", wait=False, show_logs=False)
+        print(f"Database dropped")
+    except CliError:
+        print(f"Database task missing, skipping delete")
+
+    success = stack.destroy()
+    do_remove_workspace = False
+    if not success:
+        do_remove_workspace = input(
+            f"Error while destroying {stack_name}; resources might remain. Continue to remove workspace (y/n)? "
+        ) in ["Y", "y", "yes", "YES"]
+    if success or do_remove_workspace:
+        stackmgr.remove(stack_name)
+        print(f"Delete done")
+    else:
+        print(f"Delete NOT done")
+
+
+@cli.command(name="list")  # don't redefine list()
+@click.pass_context
+def list_command(ctx):
+    """List dev stacks"""
+    env = ctx.obj["config"].env
+    stackmgr = ctx.obj["stack_mgr"]
+    print(f"Listing stacks in environment '{env}'")
+    headings = ["Name", "Owner", "Tag", "Status", "URLs"]
+    tp = TablePrinter(headings)
+    for name, info in stackmgr.stacks.items():
+        url = info.outputs.get("frontend_url", "")
+        status = info.status
+        tp.add_row([name, info.meta.owner, info.meta.imagetag, status, url])
+    tp.print()
+
+
+@cli.command()
+@click.argument("images", nargs=-1)
+@click.option(
+    "--source-tag",
+    help="Tag name for existing docker image. Leave empty to generate one automatically.",
+    default=None,
+    required=True,
+)
+@click.option("--dest-tag", help="Extra tags to apply and push to the docker repo.", multiple=True, required=True)
+@click.pass_context
+def addtags(ctx, images, source_tag, dest_tag):
+    """Add additional tags to already-pushed images in the ECR repo"""
+    config = ctx.obj["config"]
+    ecrs = config.ecrs
+    ecr_client = AwsSession.get_client(ctx, "ecr")
+    for image_name, repository in ecrs.items():
+        if images and image_name not in images:
+            continue
+        print(f"retagging {image_name} from {source_tag} to {', '.join(dest_tag)}")
+        registry_id = repository["url"].split(".")[0]
+        repo_name = "/".join(repository["url"].split("/")[1:])
+
+        manifest = ecr_client.batch_get_image(
+            registryId=registry_id, repositoryName=repo_name, imageIds=[{"imageTag": source_tag}]
+        )
+
+        if not manifest["images"]:
+            print(f"Image for repo_name:{repo_name} and source_tag:{source_tag} doesn't exit. Skipping.")
+            continue
+
+        manifest = manifest["images"][0]["imageManifest"]
+        for tag in dest_tag:
+            try:
+                ecr_client.put_image(
+                    registryId=registry_id, repositoryName=repo_name, imageManifest=manifest, imageTag=tag
+                )
+            except ecr_client.exceptions.ImageAlreadyExistsException:
+                print(f"tag {tag} already exists, skipping.")
+
+
+def get_ecr_repo(config):
+    # Assumption: All the ECR registries are within the same AWS account as the one configured
+    # for the profile, and in the same region as the default one.
+    # TODO(mbarrien): Ensure this is true, print an error if not.
+    # TODO(mbarrien): If correct account and wrong region, create an ecr_client with config
+    # for the correct region, and login to that.
+    ecrs = config.ecrs
+    first_repo = next(iter(ecrs.values()))
+    first_registry = first_repo["url"].split("/")[0]
+    return first_registry
+
+
+def login_ecrs(images, ecrs, ecr_client):
+    """Login to all registries associated with images.
+
+    An item in images must be a key in ecrs, skipping any that is not, with a warning msg.
+
+    If images list is empty, assume that we are building and pushing everything, so
+    login everywhere.
+    """
+
+    registry_logins = set()
+    if not images:
+        registry_logins = set([entry["url"].split("/")[0] for entry in ecrs.values()])
+    else:
+        for image_name in images:
+            if image_name not in ecrs:
+                print(f"WARNING: Registry url for image {image_name} not found, please check config. Skipping...")
+                continue
+            registry_logins.add(ecrs[image_name]["url"].split("/")[0])
+
+    print("logging in to ECR...")
+    for registry in registry_logins:
+        # Equivalent to aws get-login-password
+        # We need to do this *before* a build now for buildkit's build cache to work.
+        auth = ecr_client.get_authorization_token()["authorizationData"][0]
+        auth_token = b64decode(auth["authorizationToken"]).decode()
+        pwd = auth_token.split(":")[1].encode()
+        cmd = subprocess.run(["docker", "login", "--username", "AWS", "--password-stdin", registry], input=pwd)
+        print(f"login to {registry}, done!")
+
+
+@cli.command()
+@click.argument("images", nargs=-1, default=None)
+@click.option(
+    "--tag", help="Tag name for existing docker image. Leave empty to generate one automatically.", default=None
+)
+@click.option("--extra-tag", help="Extra tags to apply and push to the docker repo.", multiple=True)
+@click.option("--compose-env", help="Environment file to pass to docker compose", default=None)
+@click.option("--stack-name",
+              help="The rdev stack name to set in the env of the built image. "
+                   "Only needed when being called by the push-rdev GHA.",
+              default=None)
+@click.pass_context
+def push(ctx, images, tag, extra_tag, compose_env, stack_name):
+    """Build and push docker images to ECR. Optionally filter by service name"""
+    config = ctx.obj["config"]
+    ecrs = config.ecrs
+    ecr_client = AwsSession.get_client(ctx, "ecr")
+
+    login_ecrs(images, ecrs, ecr_client)
+
+    if not tag:
+        tag = generate_tag(ctx)
+    print("Building images...")
+    builder_config = {}
+    if compose_env:
+        builder_config["env"] = compose_env
+    elif os.path.isfile(config.default_compose_env_file):
+        builder_config["env"] = config.default_compose_env_file
+
+    # NOTE: It's OK to set an arbitrary repo here because it's only
+    # used for buildkit caching during image building.
+    # Image pushing does not care about this setting, and will push
+    # images to the right places with some re-tagging.
+    first_registry = get_ecr_repo(config)
+    builder_config["ecr_repo"] = first_registry  # TODO this is a leak in our abstraction, need to fix.
+    # Stack name needs to be set in docker image at build time when this build is being triggered by the push-rdev GHA.
+    # Unfortunately, the stack name is not parameterized in the Docker image env and therefore cannot be set in
+    # container at run time.  (Note that images built on localhost via the `single-cell-infra/scripts/happy` script set
+    # this similarly.)
+    if stack_name:
+        print(f"Setting happy_env (rdev stack name) to {stack_name}")
+        builder_config["happy_env"] = stack_name
+
+    builder = ArtifactBuilder(builder_config)
+    artifacts = builder.build(images)
+    print("Build complete")
+
+    print("Pushing images...")
+    # extra_tag is a tuple
+    all_tags = [tag] + (list(extra_tag) or []) + ([stack_name] if stack_name else [])
+    builder.push(ecrs, artifacts, all_tags)
+    print(f"Built and pushed docker images with tags: {all_tags}")
+
+
+@cli.command()
+@click.argument("stack_name")
+@click.pass_context
+def watch(ctx, stack_name):
+    """Wait until a dev stack is updated"""
+    stack_mgr = ctx.obj["stack_mgr"]
+    stack = stack_mgr.stacks[stack_name]
+    stack.watch()
+    stack.print_outputs()
+
+
+@cli.group()
+def hosts():
+    "Commands to manage system hostsfile"
+    pass
+
+
+class HostnameManager():
+    def __init__(self, filename):
+        self.filename = filename
+
+    def get_file_borders(self):
+        cwd = os.getcwd()
+        directory = os.path.split(cwd)[-1]
+        return [
+            f"# ==== Happy docker-compose DNS for {directory} ===\n",
+            f"# ==== Happy docker-compose DNS for {directory} ===\n",
+        ]
+
+    def get_hostsfile(self):
+        with open(self.filename, "r") as hostsfile:
+            return hostsfile.readlines()
+
+    def get_compose_containers(self):
+        containers = []
+        with open("docker-compose.yml") as composefile:
+            result = yaml.load(composefile, Loader=yaml.Loader)
+            got_alias = False
+            for service_name, service in result["services"].items():
+                for networkname, netconf in service.get("networks", {}).items():
+                    for alias in netconf.get("aliases", []):
+                        got_alias = True
+                        containers.append(alias)
+                if not got_alias:
+                    containers.append(service_name)
+        return containers
+
+    def cleanup_config(self, borders, config):
+        write_lines = True
+        new_config = []
+        for idx in range(len(config)):
+            line = config[idx]
+            if write_lines and line == borders[0]:
+                write_lines = False
+                continue
+            if not write_lines and line == borders[1]:
+                write_lines = True
+                continue
+            if write_lines:
+                new_config.append(line)
+        return new_config
+
+    def update_config(self, config, newconfig):
+        with open(self.filename, "w") as hostfile:
+            for line in config:
+                hostfile.write(line)
+            for line in newconfig:
+                hostfile.write(line)
+
+    def generate_config(self, borders, containers):
+        lines = []
+        lines.append(borders[0])
+        for container in containers:
+            lines.append(f"127.0.0.1\t{container}\n")
+        lines.append(borders[1])
+        return lines
+
+
+@hosts.command()
+@click.option(
+    "--hostsfile",
+    default="/etc/hosts",
+    help="Path to system hosts file"
+)
+def install(hostsfile):
+    "Install compose DNS entries"
+    hostmgr = HostnameManager(hostsfile)
+    config = hostmgr.get_hostsfile()
+    containers = hostmgr.get_compose_containers()
+    borders = hostmgr.get_file_borders()
+    config = hostmgr.cleanup_config(borders, config)
+    hostmgr.update_config(config, hostmgr.generate_config(borders, containers))
+
+
+@hosts.command()
+@click.option(
+    "--hostsfile",
+    default="/etc/hosts",
+    help="Path to system hosts file"
+)
+def uninstall(hostsfile):
+    "Remove compose DNS entries"
+    hostmgr = HostnameManager(hostsfile)
+    config = hostmgr.get_hostsfile()
+    borders = hostmgr.get_file_borders()
+    config = hostmgr.cleanup_config(borders, config)
+    hostmgr.update_config(config, [])
+
+
+if __name__ == "__main__":
+    obj = {}
+    try:
+        cli.main(obj=obj)
+    except exceptions.TFCHTTPUnauthorized as err:
+        print(
+            f"Not authorized to access TFE. Try going to {obj['secret_mgr'].secrets['tfe']['url']} in your browser then "
+            f"rerunning your command."
+        )
+    except CliError as err:
+        print(f"ERROR: {err}")
+        exit(1)
