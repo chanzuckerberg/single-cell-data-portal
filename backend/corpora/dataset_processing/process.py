@@ -481,13 +481,11 @@ def make_cxg(local_filename):
     return cxg_output_container
 
 
-def copy_cxg_files_to_cxg_bucket(cxg_dir, object_key, cellxgene_bucket):
+def copy_cxg_files_to_cxg_bucket(cxg_dir, s3_uri):
     """
     Copy cxg files to the cellxgene bucket (under the given object key) for access by the explorer
-    returns the s3_uri where the cxg is stored
     """
     command = ["aws"]
-    s3_uri = f"s3://{cellxgene_bucket}/{object_key}.cxg/"
     if os.getenv("BOTO_ENDPOINT_URL"):
         command.append(f"--endpoint-url={os.getenv('BOTO_ENDPOINT_URL')}")
 
@@ -506,7 +504,6 @@ def copy_cxg_files_to_cxg_bucket(cxg_dir, object_key, cellxgene_bucket):
         command,
         check=True,
     )
-    return s3_uri
 
 
 def convert_file_ignore_exceptions(
@@ -539,20 +536,31 @@ def convert_file_ignore_exceptions(
     return file_dir
 
 
-def get_bucket_prefix(dataset_id):
+def get_bucket_prefix(identifier):
     remote_dev_prefix = os.environ.get("REMOTE_DEV_PREFIX", "")
     if remote_dev_prefix:
-        return join(remote_dev_prefix, dataset_id).strip("/")
+        return join(remote_dev_prefix, identifier).strip("/")
     else:
-        return dataset_id
+        return identifier
 
 
 def process_cxg(local_filename, dataset_id, cellxgene_bucket):
-    bucket_prefix = get_bucket_prefix(dataset_id)
     cxg_dir = convert_file_ignore_exceptions(make_cxg, local_filename, "Issue creating cxg.", dataset_id, "cxg_status")
     if cxg_dir:
+        with db_session_manager() as session:
+            asset = DatasetAsset.create(
+                session,
+                dataset_id=dataset_id,
+                filename="explorer_cxg",
+                filetype=DatasetArtifactFileType.CXG,
+                user_submitted=True,
+                s3_uri="",
+            )
+            asset_id = asset.id
+            bucket_prefix = get_bucket_prefix(asset_id)
+            s3_uri = f"s3://{cellxgene_bucket}/{bucket_prefix}.cxg/"
         update_db(dataset_id, processing_status={"cxg_status": ConversionStatus.UPLOADING})
-        s3_uri = copy_cxg_files_to_cxg_bucket(cxg_dir, bucket_prefix, cellxgene_bucket)
+        copy_cxg_files_to_cxg_bucket(cxg_dir, s3_uri)
         metadata = {
             "explorer_url": join(
                 DEPLOYMENT_STAGE_TO_URL[os.environ["DEPLOYMENT_STAGE"]],
@@ -562,14 +570,8 @@ def process_cxg(local_filename, dataset_id, cellxgene_bucket):
         }
         with db_session_manager() as session:
             logger.info(f"Updating database with cxg artifact for dataset {dataset_id}. s3_uri is {s3_uri}")
-            DatasetAsset.create(
-                session,
-                dataset_id=dataset_id,
-                filename="explorer_cxg",
-                filetype=DatasetArtifactFileType.CXG,
-                user_submitted=True,
-                s3_uri=s3_uri,
-            )
+            asset = DatasetAsset.get(session, asset_id)
+            asset.update(s3_uri=s3_uri)
         update_db(dataset_id, processing_status={"cxg_status": ConversionStatus.UPLOADED})
 
     else:
