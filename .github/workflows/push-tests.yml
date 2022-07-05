@@ -83,7 +83,7 @@ jobs:
       - name: Push images
         if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod' || github.ref == 'refs/heads/ebezzi/happy-go-client-new')
         run: |
-          happy push --tag sha-${GITHUB_SHA:0:8} frontend backend
+          happy push --aws-profile "" --tag sha-${GITHUB_SHA:0:8} frontend backend
       - uses: 8398a7/action-slack@v3
         with:
           status: ${{ job.status }}
@@ -221,7 +221,7 @@ jobs:
       - name: Docker build, push, and tag
         shell: bash
         run: |
-          happy addtags --source-tag sha-${GITHUB_SHA:0:8} --dest-tag branch-$(echo ${GITHUB_REF#refs/heads/} | sed 's/[\+\/]/-/g')
+          happy addtags --aws-profile "" --source-tag sha-${GITHUB_SHA:0:8} --dest-tag branch-$(echo ${GITHUB_REF#refs/heads/} | sed 's/[\+\/]/-/g')
       - uses: 8398a7/action-slack@v3
         with:
           status: ${{ job.status }}
