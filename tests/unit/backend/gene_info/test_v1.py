@@ -6,7 +6,7 @@ from backend.gene_info.api import ncbi_provider
 from tests.unit.backend.corpora.fixtures.environment_setup import EnvironmentSetup
 from backend.corpora.api_server.app import app
 import xml.etree.ElementTree as ET
-from unittest.mock import patch, call, PropertyMock
+from unittest.mock import patch, call
 
 
 class GeneInfoAPIv1Tests(unittest.TestCase):
@@ -35,18 +35,18 @@ class GeneInfoAPIv1Tests(unittest.TestCase):
         """
         mock_get.read = None
         mock_load_search_result.return_value = 348
-        with patch("backend.gene_info.api.v1.NCBIProvider.api_key", new_callable=PropertyMock) as mock_api_key:
-            mock_api_key.return_value = ""
-            test_search_url = (
-                "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?"
-                "db=gene&term=ENSG00000130203&retmode=json"
-            )
-            test_fetch_url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=gene&id=348&retmode=xml"
-            test_provider = ncbi_provider.NCBIProvider()
-            test_provider.fetch_gene_uid("ENSG00000130203")
-            test_provider.fetch_gene_info_tree(348)
-            mock_get.assert_has_calls([call(test_search_url), call().read(), call(test_fetch_url), call().read()])
-            self.assertEqual(mock_get.call_count, 2)
+        # with patch("backend.gene_info.api.v1.NCBIProvider.api_key", new_callable=PropertyMock) as mock_api_key:
+        # mock_api_key.return_value = ""
+        test_search_url = (
+            "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?" "db=gene&term=ENSG00000130203&retmode=json"
+        )
+        test_fetch_url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=gene&id=348&retmode=xml"
+        test_provider = ncbi_provider.NCBIProvider()
+        test_provider.api_key = ""
+        test_provider.fetch_gene_uid("ENSG00000130203")
+        test_provider.fetch_gene_info_tree(348)
+        mock_get.assert_has_calls([call(test_search_url), call().read(), call(test_fetch_url), call().read()])
+        self.assertEqual(mock_get.call_count, 2)
 
     @patch("backend.gene_info.api.v1.NCBIProvider.fetch_gene_uid")
     @patch("backend.gene_info.api.v1.NCBIProvider.fetch_gene_info_tree")
@@ -65,18 +65,18 @@ class GeneInfoAPIv1Tests(unittest.TestCase):
         self.assertEqual(res.status_code, requests.codes.ok)
         self.assertEqual(json.loads(res.data), self.final_gene_info_result)
 
-    def test_incorrect_gene_ids(self):
+    @patch("backend.gene_info.api.v1.gene_info")
+    def test_incorrect_gene_ids(self, test_provider):
         """
         Successfully raises exception for ensembl IDs that do not exist
         """
-        with patch("backend.gene_info.api.v1.NCBIProvider.api_key", new_callable=PropertyMock) as mock_api_key:
-            mock_api_key.return_value = ""
-            res1 = self.app.get("/gene_info/v1/gene_info?geneID=")
-            self.assertEqual(res1.status_code, 404)
-            self.assertEqual(json.loads(res1.data)["detail"], "Unexpected NCBI search result")
-            res2 = self.app.get("/gene_info/v1/gene_info?geneID=abc")
-            self.assertEqual(res2.status_code, 404)
-            self.assertEqual(json.loads(res2.data)["detail"], "Unexpected NCBI search result")
+        test_provider.provider.api_key = ""
+        res1 = self.app.get("/gene_info/v1/gene_info?geneID=")
+        self.assertEqual(res1.status_code, 404)
+        self.assertEqual(json.loads(res1.data)["detail"], "Unexpected NCBI search result")
+        res2 = self.app.get("/gene_info/v1/gene_info?geneID=abc")
+        self.assertEqual(res2.status_code, 404)
+        self.assertEqual(json.loads(res2.data)["detail"], "Unexpected NCBI search result")
 
     def test_correct_parse_xml_tree(self):
         """

@@ -26,18 +26,10 @@ class NCBIProvider(object):
         self.base_ncbi_uri = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/"
         gene_info_config = GeneInfoConfig()
         try:
-            self._api_key = f"&api_key={gene_info_config.ncbi_api_key}"
+            self.api_key = f"&api_key={gene_info_config.ncbi_api_key}"
         except RuntimeError:
             logging.error("Could not find NCBI API key")
-            self._api_key = None
-
-    @property
-    def api_key(self):
-        return self._api_key
-
-    @api_key.setter
-    def api_key(self, value):
-        self._api_key = value
+            self.api_key = None
 
     def fetch_gene_info_tree(self, uid):
         """
