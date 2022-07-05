@@ -345,6 +345,17 @@ class TestDatabase:
         self.session.add(dataset_artifact)
         self.session.commit()
 
+        dataset_artifact = DbDatasetArtifact(
+            id="test_dataset_artifact_id_cxg",
+            dataset_id="test_dataset_id",
+            filename="test_filename",
+            filetype=DatasetArtifactFileType.CXG.name,
+            user_submitted=True,
+            s3_uri=config.real_s3_file if self.real_data else config.fake_s3_file,
+        )
+        self.session.add(dataset_artifact)
+        self.session.commit()
+
         # Revision 1
 
         self.session.add(
