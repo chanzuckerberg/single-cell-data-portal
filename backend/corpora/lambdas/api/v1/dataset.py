@@ -15,17 +15,17 @@ from .authorization import owner_or_allowed
 
 
 @dbconnect
-def post_dataset_asset(dataset_uuid: str, asset_uuid: str):
+def post_dataset_asset(dataset_id: str, asset_id: str):
     db_session = g.db_session
     # retrieve the dataset
-    dataset = Dataset.get(db_session, dataset_uuid)
+    dataset = Dataset.get(db_session, dataset_id)
     if not dataset:
-        raise NotFoundHTTPException(f"'dataset/{dataset_uuid}' not found.")
+        raise NotFoundHTTPException(f"'dataset/{dataset_id}' not found.")
 
     # retrieve the artifact
-    asset = dataset.get_asset(asset_uuid)
+    asset = dataset.get_asset(asset_id)
     if not asset:
-        raise NotFoundHTTPException(f"'dataset/{dataset_uuid}/asset/{asset_uuid}' not found.")
+        raise NotFoundHTTPException(f"'dataset/{dataset_id}/asset/{asset_id}' not found.")
 
     # Retrieve S3 metadata
     file_size = asset.get_file_size()
@@ -39,7 +39,7 @@ def post_dataset_asset(dataset_uuid: str, asset_uuid: str):
 
     return make_response(
         jsonify(
-            dataset_id=dataset_uuid,
+            dataset_id=dataset_id,
             file_name=asset.filename,
             file_size=file_size,
             presigned_url=presigned_url,
@@ -49,18 +49,18 @@ def post_dataset_asset(dataset_uuid: str, asset_uuid: str):
 
 
 @dbconnect
-def get_dataset_assets(dataset_uuid: str):
+def get_dataset_assets(dataset_id: str):
     db_session = g.db_session
     # retrieve the dataset
-    dataset = Dataset.get(db_session, dataset_uuid)
+    dataset = Dataset.get(db_session, dataset_id)
     assets = dataset.get_assets()
     return make_response(jsonify(assets=assets))
 
 
 @dbconnect
-def get_status(dataset_uuid: str, token_info: dict):
+def get_status(dataset_id: str, token_info: dict):
     db_session = g.db_session
-    dataset = Dataset.get(db_session, dataset_uuid)
+    dataset = Dataset.get(db_session, dataset_id)
     if not dataset:
         raise ForbiddenHTTPException()
     get_collection_else_forbidden(
@@ -80,12 +80,12 @@ def get_datasets_index():
 
 
 @dbconnect
-def delete_dataset(dataset_uuid: str, token_info: dict):
+def delete_dataset(dataset_id: str, token_info: dict):
     """
     Deletes an existing dataset or cancels an in progress upload.
     """
     db_session = g.db_session
-    dataset = Dataset.get(db_session, dataset_uuid, include_tombstones=True)
+    dataset = Dataset.get(db_session, dataset_id, include_tombstones=True)
     delete_dataset_common(db_session, dataset, token_info)
     return "", 202
 
@@ -110,9 +110,9 @@ def get_dataset_identifiers(url: str):
 
 
 @dbconnect
-def post_dataset_gene_sets(dataset_uuid: str, body: object, token_info: dict):
+def post_dataset_gene_sets(dataset_id: str, body: object, token_info: dict):
     db_session = g.db_session
-    dataset = Dataset.get(db_session, dataset_uuid)
+    dataset = Dataset.get(db_session, dataset_id)
     if not dataset:
         raise ForbiddenHTTPException()
     collection = Collection.get_collection(
@@ -122,7 +122,7 @@ def post_dataset_gene_sets(dataset_uuid: str, body: object, token_info: dict):
         raise ForbiddenHTTPException()
     validate_genesets_in_collection_and_linked_to_dataset(dataset, collection, body)
     try:
-        GenesetDatasetLink.update_links_for_a_dataset(db_session, dataset_uuid, add=body["add"], remove=body["remove"])
+        GenesetDatasetLink.update_links_for_a_dataset(db_session, dataset_id, add=body["add"], remove=body["remove"])
     except CorporaException:
         raise NotFoundHTTPException()
     gene_sets = [

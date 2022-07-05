@@ -140,7 +140,7 @@ class EntityColumns:
         DbDatasetProcessingStatus: dataset_processing_status_cols,
     }
 
-    columns_for_collection_uuid = {
+    columns_for_collection_id = {
         DbCollectionLink: link_cols,
         DbCollection: collections_cols,
         DbDataset: dataset_cols,

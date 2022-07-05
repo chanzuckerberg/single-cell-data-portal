@@ -18,7 +18,7 @@ from ..corpora_orm import (
     UploadStatus,
     ProcessingStatus,
     DbGenesetDatasetLink,
-    generate_uuid,
+    generate_id,
     DatasetArtifactFileType,
     ConversionStatus,
 )
@@ -87,26 +87,26 @@ class Dataset(Entity):
 
     @classmethod
     def get(
-        cls, session: Session, dataset_uuid=None, include_tombstones=False, collection_uuid=None, curator_tag=None
+        cls, session: Session, dataset_id=None, include_tombstones=False, collection_id=None, curator_tag=None
     ) -> typing.Optional["Dataset"]:
-        if not (dataset_uuid or (curator_tag and collection_uuid)):
+        if not (dataset_id or (curator_tag and collection_id)):
             raise ValueError("Not enough information to query")
         filters = []
         if not include_tombstones:
             filters.append(cls.table.tombstone != True)  # noqa
-        if collection_uuid:
-            filters.append(cls.table.collection_id == collection_uuid)
+        if collection_id:
+            filters.append(cls.table.collection_id == collection_id)
         if curator_tag:
             filters.append(cls.table.curator_tag == curator_tag)
-        if dataset_uuid:
-            filters.append(cls.table.id == dataset_uuid)
+        if dataset_id:
+            filters.append(cls.table.id == dataset_id)
         result = session.query(cls.table).filter(*filters).one_or_none()
         dataset = cls(result) if result else None
         return dataset
 
     @classmethod
     def get_dataset_from_curator_tag(cls, session: Session, collection_id, curator_tag, **kwargs) -> "Dataset":
-        return cls.get(session, collection_uuid=collection_id, curator_tag=curator_tag, **kwargs)
+        return cls.get(session, collection_id=collection_id, curator_tag=curator_tag, **kwargs)
 
     @classmethod
     def get_by_explorer_url(cls, session: Session, explorer_url):
@@ -129,13 +129,13 @@ class Dataset(Entity):
 
         return dataset
 
-    def get_asset(self, asset_uuid) -> typing.Union[DatasetAsset, None]:
+    def get_asset(self, asset_id) -> typing.Union[DatasetAsset, None]:
         """
         Retrieve the asset if it exists in the dataset.
-        :param asset_uuid: uuid of the asset to find
+        :param asset_id: uuid of the asset to find
         :return: If the asset is found it is returned, else None is returned.
         """
-        asset = [asset for asset in self.artifacts if asset.id == asset_uuid]
+        asset = [asset for asset in self.artifacts if asset.id == asset_id]
         return None if not asset else DatasetAsset(asset[0])
 
     def get_assets(self):
@@ -172,12 +172,12 @@ class Dataset(Entity):
         if unique_ancestors:
             dataset["development_stage_ancestors"] = unique_ancestors
 
-    def _create_new_explorer_url(self, new_uuid: str) -> str:
+    def _create_new_explorer_url(self, new_id: str) -> str:
         if self.explorer_url is None:
             return None
         original_url = urlparse(self.explorer_url)
         original_path = PurePosixPath(original_url.path)
-        new_path = str(original_path.parent / f"{new_uuid}.cxg/")
+        new_path = str(original_path.parent / f"{new_id}.cxg/")
         new_url = original_url._replace(path=new_path).geturl()
         # Note: the final slash is mandatory, otherwise the explorer won't load this link
         return f"{new_url}/"
@@ -189,11 +189,11 @@ class Dataset(Entity):
         :return: dataset revision.
 
         """
-        revision_dataset_uuid = generate_uuid()
-        revision_explorer_url = self._create_new_explorer_url(revision_dataset_uuid)
+        revision_dataset_id = generate_id()
+        revision_explorer_url = self._create_new_explorer_url(revision_dataset_id)
         revision_dataset = clone(
             self.db_object,
-            id=revision_dataset_uuid,
+            id=revision_dataset_id,
             collection_id=revision_collection_id,
             original_id=self.id,
             explorer_url=revision_explorer_url,

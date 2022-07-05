@@ -64,21 +64,21 @@ def copy_collection(ctx, uuid, cookie):
         f"{ctx.obj['api_base']}/collections/", headers=headers, data=json.dumps(collection_metadata)
     )
 
-    new_collection_uuid = json.loads(response._content)["collection_uuid"]
+    new_collection_id = json.loads(response._content)["collection_id"]
 
     for asset in dataset_assets:
         response = requests.post(
             f"https://api.cellxgene.cziscience.com/dp/v1/datasets/{asset['dataset_id']}/asset/{asset['asset_id']}"
         )
         presigned_s3_uri = json.loads(response._content)["presigned_url"]
-        dataset_body = {"dataset_uuid": "", "url": presigned_s3_uri}
+        dataset_body = {"dataset_id": "", "url": presigned_s3_uri}
         response = requests.post(
-            f"{ctx.obj['api_base']}/collections/{new_collection_uuid}/upload-links",
+            f"{ctx.obj['api_base']}/collections/{new_collection_id}/upload-links",
             headers=headers,
             data=json.dumps(dataset_body),
         )
-        dataset_uuid = json.loads(response._content)
-        click.echo(f"New Collection_uuid: {new_collection_uuid}, new dataset_uuid: {dataset_uuid}")
+        dataset_id = json.loads(response._content)
+        click.echo(f"New Collection_id: {new_collection_id}, new dataset_id: {dataset_id}")
 
 
 if __name__ == "__main__":

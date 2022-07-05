@@ -52,7 +52,7 @@ def cxg_remaster(ctx):
 
         for record in session.query(DbDataset):
             if not record.tombstone:
-                dataset = Dataset.get(session, dataset_uuid=record.id)
+                dataset = Dataset.get(session, dataset_id=record.id)
                 artifacts = [a.s3_uri for a in dataset.artifacts if a.filetype == DatasetArtifactFileType.CXG]
                 if len(artifacts) > 0:
                     cxg = artifacts[0]
@@ -69,7 +69,7 @@ def cxg_remaster(ctx):
 
                     print(bucket, dataset_id)
 
-                    input = {"dataset_uuid": dataset_id}
+                    input = {"dataset_id": dataset_id}
 
                     aws_account_id = get_aws_account_id()
                     deployment = ctx.obj["deployment"]

@@ -197,7 +197,7 @@ CREATE TABLE public.project (
     contact_email character varying,
     contact_name character varying,
     data_submission_policy_version character varying NOT NULL,
-    obfuscated_uuid character varying
+    obfuscated_id character varying
 );
 
 
