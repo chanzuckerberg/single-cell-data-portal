@@ -72,6 +72,10 @@ jobs:
           make local-sync
           sleep 30  # Give frontend some time to finish building
           make local-smoke-test
+      - name: Install happy
+        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.2.1
+        with:
+          happy_version: "0.23.0"
       - name: Push images
         if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
         run: |
@@ -102,6 +106,10 @@ jobs:
         with:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v2
+      - name: Install happy
+        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.2.1
+        with:
+          happy_version: "0.23.0"
       - name: Docker build, push, and tag
         shell: bash
         run: |
@@ -202,6 +210,10 @@ jobs:
         with:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v2
+      - name: Install happy
+        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.2.1
+        with:
+          happy_version: "0.23.0"
       - name: Docker build, push, and tag
         shell: bash
         run: |
