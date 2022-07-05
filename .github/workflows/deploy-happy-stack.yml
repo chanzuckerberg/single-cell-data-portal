@@ -42,19 +42,19 @@ jobs:
       - uses: actions/checkout@v2
         with:
           ref: ${{ github.event.deployment.sha }}
+      - name: Install happy dependencies
+        run: |
+          pip install -r .happy/requirements.txt
       - uses: avakar/set-deployment-status@v1
         with:
           state: in_progress
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Update deployment
-        uses: chanzuckerberg/github-actions/.github/actions/deploy-happy-stack@v1.2.1
-        with:
-          tfe-token: ${{ secrets.TFE_TOKEN }}
-          stack-name: ${{ github.event.deployment.environment }}stack
-          happy_version: "0.23.0"
-          tag: ${{ github.event.deployment.payload.tag }}
-          env: ${{ github.event.deployment.environment }}
+        env:
+          TFE_TOKEN: ${{ secrets.TFE_TOKEN }}
+        run: |
+          ./scripts/happy --profile="" --env ${{ github.event.deployment.environment }} update ${{ github.event.deployment.environment }}stack --tag ${{ github.event.deployment.payload.tag }}
       - name: Invalidate CloudFront
         env:
           DEPLOYMENT_STAGE: ${{ github.event.deployment.environment }}
