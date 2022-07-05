@@ -352,12 +352,12 @@ class TestPutCollectionUUID(BaseAuthAPITest):
 
     def test__update_collection__no_auth(self):
         collection_uuid = self.generate_collection(self.session).id
-        response = self.app.put(f"/curation/v1/collections/{collection_uuid}", data=json.dumps(self.test_collection))
+        response = self.app.patch(f"/curation/v1/collections/{collection_uuid}", data=json.dumps(self.test_collection))
         self.assertEqual(401, response.status_code)
 
     def test__update_collection__OK(self):
         collection_uuid = self.generate_collection(self.session).id
-        response = self.app.put(
+        response = self.app.patch(
             f"/curation/v1/collections/{collection_uuid}",
             data=json.dumps(self.test_collection),
             headers=self.get_auth_headers(),
@@ -366,7 +366,7 @@ class TestPutCollectionUUID(BaseAuthAPITest):
 
     def test__update_collection__Not_Owner(self):
         collection_uuid = self.generate_collection(self.session, owner="someone else").id
-        response = self.app.put(
+        response = self.app.patch(
             f"/curation/v1/collections/{collection_uuid}",
             data=json.dumps(self.test_collection),
             headers=self.get_auth_headers(),
@@ -376,7 +376,7 @@ class TestPutCollectionUUID(BaseAuthAPITest):
     def test__update_collection__Super_Curator(self):
         collection_uuid = self.generate_collection(self.session).id
         headers = self.make_super_curator_header()
-        response = self.app.put(
+        response = self.app.patch(
             f"/curation/v1/collections/{collection_uuid}", data=json.dumps(self.test_collection), headers=headers
         )
         self.assertEqual(200, response.status_code)
