@@ -35,8 +35,6 @@ class GeneInfoAPIv1Tests(unittest.TestCase):
         """
         mock_get.read = None
         mock_load_search_result.return_value = 348
-        # with patch("backend.gene_info.api.v1.NCBIProvider.api_key", new_callable=PropertyMock) as mock_api_key:
-        # mock_api_key.return_value = ""
         test_search_url = (
             "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?" "db=gene&term=ENSG00000130203&retmode=json"
         )
