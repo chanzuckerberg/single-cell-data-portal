@@ -20,12 +20,12 @@ def post_dataset_asset(dataset_id: str, asset_id: str):
     # retrieve the dataset
     dataset = Dataset.get(db_session, dataset_id)
     if not dataset:
-        raise NotFoundHTTPException(f"'dataset/{dataset_id}' not found.")
+        raise NotFoundHTTPException(detail=f"'dataset/{dataset_id}' not found.")
 
     # retrieve the artifact
     asset = dataset.get_asset(asset_id)
     if not asset:
-        raise NotFoundHTTPException(f"'dataset/{dataset_id}/asset/{asset_id}' not found.")
+        raise NotFoundHTTPException(detail=f"'dataset/{dataset_id}/asset/{asset_id}' not found.")
 
     # Retrieve S3 metadata
     file_size = asset.get_file_size()

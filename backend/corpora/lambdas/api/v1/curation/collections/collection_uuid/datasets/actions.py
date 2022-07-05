@@ -32,13 +32,14 @@ def patch(token_info: dict, collection_id: str, body: dict, curator_tag: str = N
     )
     tag = body["curator_tag"]
     if not validate_curator_tag(tag):
-        raise InvalidParametersHTTPException("Invalid Curator Tag")
+        raise InvalidParametersHTTPException(detail="Invalid Curator Tag")
 
     # Check if the curator_tag is unique across datasets in the collection.
     if dataset.curator_tag != tag:
         if conflict := Dataset.get(db_session, collection_id=collection_id, curator_tag=tag):
             raise ConflictException(
-                f"Curator_tags must be unique within a collection. Dataset={conflict.id} is using curator_tag={tag}"
+                detail=f"Curator_tags must be unique within a collection. Dataset={conflict.id} is using "
+                f"curator_tag={tag}"
             )
         else:
             dataset.update(curator_tag=tag)

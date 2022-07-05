@@ -171,7 +171,7 @@ def get_publisher_metadata(provider, doi):
         return provider.fetch_metadata(doi)
     except CrossrefDOINotFoundException:
         # TODO: add an error message
-        raise InvalidParametersHTTPException("DOI cannot be found on Crossref")
+        raise InvalidParametersHTTPException(detail="DOI cannot be found on Crossref")
     except CrossrefException as e:
         logging.warning(f"CrossrefException on create_collection: {e}. Will ignore metadata.")
         return None

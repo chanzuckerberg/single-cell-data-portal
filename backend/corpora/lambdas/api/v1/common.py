@@ -29,7 +29,7 @@ def delete_dataset_common(db_session: Session, dataset: Dataset, token_info: dic
     if not collection:
         raise ForbiddenHTTPException()
     if dataset.collection.visibility == CollectionVisibility.PUBLIC:
-        raise MethodNotAllowedException("Cannot delete a public Dataset")
+        raise MethodNotAllowedException(detail="Cannot delete a public Dataset")
     if dataset.tombstone is False:
         if dataset.published:
             dataset.update(tombstone=True, published=False)
@@ -48,5 +48,5 @@ def get_dataset_else_error(db_session, dataset_id, collection_id, curator_tag, *
     except ValueError:
         raise InvalidParametersHTTPException()
     if not dataset:
-        raise NotFoundHTTPException("Dataset not found.")
+        raise NotFoundHTTPException(detail="Dataset not found.")
     return dataset

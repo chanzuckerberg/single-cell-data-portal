@@ -32,7 +32,7 @@ def post(collection_id: str, body: dict, token_info: dict):
             )
         except IntegrityError:
             db_session.rollback()
-            raise InvalidParametersHTTPException("Duplicate geneset name")
+            raise InvalidParametersHTTPException(detail="Duplicate geneset name")
 
     result = Geneset.retrieve_all_genesets_for_a_collection(db_session, collection_id)
 
