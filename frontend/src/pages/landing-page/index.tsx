@@ -49,7 +49,7 @@ const LandingPage = (): JSX.Element => {
   const scrollSection5 = useRef<HTMLDivElement>(null!);
 
   // HERO NUMBERS. DUMMY DATA TO BE REPLACED.
-  const [cellsHeroNum] = useState("30M+");
+  const [cellsHeroNum] = useState("25M+");
   const [datasetsHeroNum] = useState("436");
   const [donorsHeroNum] = useState("2.7k+");
 
@@ -361,7 +361,7 @@ const LandingPage = (): JSX.Element => {
                         </h2>
                         <p>
                           Visualize the expression of genes and gene sets using
-                          the largest integrated resource of over 30 million
+                          the largest integrated resource of over 25 million
                           cells.
                         </p>
                         <div className={styles.linkContainer}>
@@ -437,7 +437,7 @@ const LandingPage = (): JSX.Element => {
                             </a>
                           </Link>
                           <Link
-                            href={`${ROUTES.HOMEPAGE}/docs/04_Analyze-Public-Data/4_1-Hosted-Tutorials`}
+                            href={`${ROUTES.DOCS}/04__Analyze%20Public%20Data/4_1__Hosted%20Tutorials`}
                             passHref
                           >
                             <a>
@@ -485,9 +485,7 @@ const LandingPage = (): JSX.Element => {
                         <p>
                           Integrate datasets with zero data wrangling. Datasets
                           with standard metadata annotations can be downloaded
-                          in AnnData and Seurat formats and custom cell
-                          selections from the complete corpus can be downloaded
-                          directly from R and Python.
+                          in AnnData and Seurat formats.
                         </p>
                         <div className={styles.linkContainer}>
                           <Link href={ROUTES.COLLECTIONS} passHref>
@@ -498,20 +496,6 @@ const LandingPage = (): JSX.Element => {
                               </span>
                             </a>
                           </Link>
-                          {/* LINK TO BE UPDATED POST-LAUNCH */}
-                          <a href="#">
-                            Download with R
-                            <span className={styles.linkArrow}>
-                              <LinkArrow />
-                            </span>
-                          </a>
-                          {/* LINK TO BE UPDATED POST-LAUNCH */}
-                          <a href="#">
-                            Download with Python
-                            <span className={styles.linkArrow}>
-                              <LinkArrow />
-                            </span>
-                          </a>
                         </div>
                       </div>
                     </div>
@@ -554,7 +538,7 @@ const LandingPage = (): JSX.Element => {
                         <div className={styles.linkContainer}>
                           {/* LINK TO BE UPDATED POST-LAUNCH */}
                           <a href="https://github.com/chanzuckerberg/cellxgene-documentation/blob/main/desktop/quick-start.md">
-                            Learn how it works
+                            Explore CZ Cell×Gene Annotate
                             <span className={styles.linkArrow}>
                               <LinkArrow />
                             </span>

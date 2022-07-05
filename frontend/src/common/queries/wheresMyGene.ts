@@ -131,11 +131,11 @@ interface Filter {
   gene_ontology_term_ids: string[];
   organism_ontology_term_id: string;
   tissue_ontology_term_ids: string[];
-  dataset_ids?: string[];
-  disease_ontology_term_ids?: string[];
-  sex_ontology_term_ids?: string[];
-  development_stage_ontology_term_ids?: string[];
-  ethnicity_ontology_term_ids?: string[];
+  dataset_ids: string[];
+  disease_ontology_term_ids: string[];
+  sex_ontology_term_ids: string[];
+  development_stage_ontology_term_ids: string[];
+  ethnicity_ontology_term_ids: string[];
 }
 
 export interface Query {
@@ -338,7 +338,6 @@ export function useCellTypesByTissueName(): {
   data: CellTypeByTissueName;
 } {
   const { data, isLoading } = useExpressionSummary();
-
   const {
     data: primaryFilterDimensions,
     isLoading: isLoadingPrimaryFilterDimensions,
@@ -346,12 +345,9 @@ export function useCellTypesByTissueName(): {
 
   const { data: termIdLabels, isLoading: isLoadingTermIdLabels } =
     useTermIdLabels();
-
   return useMemo(() => {
     if (
       isLoading ||
-      !data ||
-      Object.keys(data).length === 0 ||
       isLoadingPrimaryFilterDimensions ||
       !primaryFilterDimensions ||
       isLoadingTermIdLabels ||
@@ -359,7 +355,6 @@ export function useCellTypesByTissueName(): {
     ) {
       return { data: EMPTY_OBJECT, isLoading };
     }
-
     const { tissues } = primaryFilterDimensions;
 
     const tissuesById = generateTermsByKey(tissues, "id");
@@ -499,14 +494,13 @@ export function useTermIdLabels(): {
 } {
   const requestBody = useWMGQueryRequestBody();
   const { data, isLoading } = useWMGQuery(requestBody);
-
   return useMemo(() => {
-    if (isLoading || !data)
+    if (isLoading || !data) {
       return {
         data: { cell_types: EMPTY_OBJECT, genes: EMPTY_OBJECT },
         isLoading,
       };
-
+    }
     const {
       term_id_labels: { cell_types, genes },
     } = data;
@@ -525,7 +519,6 @@ export function useTermIdLabels(): {
 
       returnCellTypes[tissueID] = result;
     });
-
     return {
       data: {
         cell_types: returnCellTypes,
@@ -542,14 +535,6 @@ function aggregateIdLabels(items: { [id: string]: string }[]): {
   return items.reduce((memo, item) => ({ ...memo, ...item }), {});
 }
 
-const EMPTY_FILTERS: State["selectedFilters"] = {
-  datasets: undefined,
-  developmentStages: undefined,
-  diseases: undefined,
-  ethnicities: undefined,
-  sexes: undefined,
-};
-
 function useWMGQueryRequestBody(options = { includeAllFilterOptions: false }) {
   const { includeAllFilterOptions } = options;
 
@@ -559,7 +544,6 @@ function useWMGQueryRequestBody(options = { includeAllFilterOptions: false }) {
     selectedOrganismId,
     selectedFilters,
   } = useContext(StateContext);
-
   const { data } = usePrimaryFilterDimensions();
 
   /**
@@ -569,7 +553,6 @@ function useWMGQueryRequestBody(options = { includeAllFilterOptions: false }) {
    */
   const { datasets, developmentStages, diseases, ethnicities, sexes } =
     includeAllFilterOptions ? EMPTY_FILTERS : selectedFilters;
-
   const organismGenesByName = useMemo(() => {
     const result: { [name: string]: { id: string; name: string } } = {};
 
@@ -599,19 +582,13 @@ function useWMGQueryRequestBody(options = { includeAllFilterOptions: false }) {
   }, [data]);
 
   return useMemo(() => {
-    if (
-      !data ||
-      !selectedOrganismId ||
-      !selectedTissues.length ||
-      !selectedGenes.length
-    ) {
+    if (!data || !selectedOrganismId || !selectedTissues.length) {
       return null;
     }
-
     const gene_ontology_term_ids = selectedGenes.map((geneName) => {
       return organismGenesByName[geneName].id;
     });
-
+    if (!gene_ontology_term_ids.length) gene_ontology_term_ids.push(".");
     const tissue_ontology_term_ids = selectedTissues.map((tissueName) => {
       return tissuesByName[tissueName].id;
     });
@@ -663,6 +640,13 @@ interface Dataset extends RawDataset {
   label: string;
 }
 
+export const EMPTY_FILTERS: State["selectedFilters"] = {
+  datasets: [],
+  developmentStages: [],
+  diseases: [],
+  ethnicities: [],
+  sexes: [],
+};
 export interface CollectionFromDatasets {
   name: string;
   url: string;
