@@ -67,6 +67,9 @@ jobs:
         with:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v2
+      - name: Display github.ref
+        run: |
+          echo '${{ github.ref }}'
       - name: Run tests in docker-compose
         run: |
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
