@@ -1,9 +1,9 @@
 export enum API {
   CURATOR_AUTH_KEY = "/dp/v1/auth/key",
-  DATASET = "/dp/v1/datasets/{dataset_id}",
-  DATASET_ASSETS = "/dp/v1/datasets/{dataset_id}/assets",
-  DATASET_ASSET_DOWNLOAD_LINK = "/dp/v1/datasets/{dataset_id}/asset/{asset_id}",
-  DATASET_STATUS = "/dp/v1/datasets/{dataset_id}/status",
+  DATASET = "/dp/v1/datasets/{dataset_uuid}",
+  DATASET_ASSETS = "/dp/v1/datasets/{dataset_uuid}/assets",
+  DATASET_ASSET_DOWNLOAD_LINK = "/dp/v1/datasets/{dataset_uuid}/asset/{asset_uuid}",
+  DATASET_STATUS = "/dp/v1/datasets/{dataset_uuid}/status",
   DATASETS_INDEX = "/dp/v1/datasets/index", // Filter-specific endpoint
   COLLECTIONS = "/dp/v1/collections",
   COLLECTIONS_INDEX = "/dp/v1/collections/index", // Filter-specific endpoint

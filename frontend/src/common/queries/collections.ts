@@ -234,7 +234,7 @@ export async function createCollection(
   }
 
   return {
-    collectionId: json.collection_id,
+    collectionId: json.collection_uuid,
   };
 }
 
@@ -288,7 +288,7 @@ async function collectionUploadLinks({
     throw json;
   }
 
-  return json.dataset_id;
+  return json.dataset_uuid;
 }
 
 export function useCollectionUploadLinks(id: string) {

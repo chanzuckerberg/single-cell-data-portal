@@ -7,7 +7,7 @@ class TestDeleteDataset(BaseAuthAPITest):
     def test__delete_dataset(self):
         curator_tag = "tag.h5ad"
         processing_status = {"upload_status": UploadStatus.UPLOADING, "upload_progress": 10.0}
-        queries = ["dataset_id", "curator_tag"]
+        queries = ["dataset_uuid", "curator_tag"]
         auth_credentials = [
             (self.make_super_curator_header, "super", 202),
             (self.get_auth_headers, "owner", 202),
@@ -25,7 +25,7 @@ class TestDeleteDataset(BaseAuthAPITest):
                         curator_tag=curator_tag,
                     )
                     test_url = f"/curation/v1/collections/{collection.id}/datasets"
-                    if query == "dataset_id":
+                    if query == "dataset_uuid":
                         query_string = {query: dataset.id}
                     elif query == "curator_tag":
                         query_string = {query: curator_tag}
@@ -39,7 +39,7 @@ class TestPatchDataset(BaseAuthAPITest):
         new_tag = "new_tag.h5ad"
         starting_curator_tags = ["tag.h5ad", None]
         test_body = {"curator_tag": new_tag}
-        queries = ["dataset_id", "curator_tag"]
+        queries = ["dataset_uuid", "curator_tag"]
         auth_credentials = [
             (self.make_super_curator_header, "super", 204),
             (self.get_auth_headers, "owner", 204),
@@ -61,7 +61,7 @@ class TestPatchDataset(BaseAuthAPITest):
                             curator_tag=starting_tag,
                         )
                         test_url = f"/curation/v1/collections/{collection.id}/datasets"
-                        if query == "dataset_id":
+                        if query == "dataset_uuid":
                             query_string = {query: dataset.id}
                         elif query == "curator_tag":
                             query_string = {query: starting_tag}
@@ -80,7 +80,7 @@ class TestPatchDataset(BaseAuthAPITest):
 
         def _test(_tag, _dataset):
             test_body = {"curator_tag": _tag}
-            query_string = {"dataset_id": _dataset.id}
+            query_string = {"dataset_uuid": _dataset.id}
             headers = self.get_auth_headers()
             response = self.app.patch(test_url, headers=headers, query_string=query_string, json=test_body)
             self.assertEqual(400, response.status_code)
@@ -105,7 +105,7 @@ class TestPatchDataset(BaseAuthAPITest):
         dataset_2 = self.generate_dataset(self.session, collection=collection)
         test_body = {"curator_tag": test_tag}
         test_url = f"/curation/v1/collections/{collection.id}/datasets"
-        query_string = {"dataset_id": dataset_2.id}
+        query_string = {"dataset_uuid": dataset_2.id}
         headers = self.get_auth_headers()
         response = self.app.patch(test_url, headers=headers, query_string=query_string, json=test_body)
         self.assertEqual(409, response.status_code)

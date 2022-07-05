@@ -10,11 +10,11 @@ from ..authorization import owner_or_allowed
 
 
 @dbconnect
-def post(collection_id: str, body: dict, token_info: dict):
+def post(collection_uuid: str, body: dict, token_info: dict):
     db_session = g.db_session
     collection = Collection.get_collection(
         db_session,
-        collection_id,
+        collection_uuid,
         CollectionVisibility.PRIVATE.name,
         owner=owner_or_allowed(token_info),
     )
@@ -34,6 +34,6 @@ def post(collection_id: str, body: dict, token_info: dict):
             db_session.rollback()
             raise InvalidParametersHTTPException(detail="Duplicate geneset name")
 
-    result = Geneset.retrieve_all_genesets_for_a_collection(db_session, collection_id)
+    result = Geneset.retrieve_all_genesets_for_a_collection(db_session, collection_uuid)
 
     return make_response(jsonify(result), 200)

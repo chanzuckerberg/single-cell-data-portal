@@ -5,6 +5,6 @@ from backend.corpora.lambdas.api.v1.collection import post_collection_revision_c
 
 
 @dbconnect
-def post_collection_revision(collection_id: str, token_info: dict):
-    collection_revision = post_collection_revision_common(collection_id, token_info)
+def post_collection_revision(collection_uuid: str, token_info: dict):
+    collection_revision = post_collection_revision_common(collection_uuid, token_info)
     return make_response(jsonify({"revision_id": collection_revision.id}), 201)

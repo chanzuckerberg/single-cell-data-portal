@@ -20,24 +20,24 @@ from .....common.utils.http_exceptions import (
 )
 
 
-def link(collection_id: str, body: dict, token_info: dict):
-    dataset_id = upload_from_link(collection_id, token_info, body["url"], curator_tag=body.get("curator_tag"))
-    return make_response({"dataset_id": dataset_id}, 202)
+def link(collection_uuid: str, body: dict, token_info: dict):
+    dataset_id = upload_from_link(collection_uuid, token_info, body["url"], curator_tag=body.get("curator_tag"))
+    return make_response({"dataset_uuid": dataset_id}, 202)
 
 
-def relink(collection_id: str, body: dict, token_info: dict):
+def relink(collection_uuid: str, body: dict, token_info: dict):
     dataset_id = upload_from_link(
-        collection_id,
+        collection_uuid,
         token_info,
         body.get("url", body.get("link")),
         body.get("id"),
         curator_tag=body.get("curator_tag"),
     )
-    return make_response({"dataset_id": dataset_id}, 202)
+    return make_response({"dataset_uuid": dataset_id}, 202)
 
 
 @dbconnect
-def upload_from_link(collection_id: str, token_info: dict, url: str, dataset_id: str = None, curator_tag: str = None):
+def upload_from_link(collection_uuid: str, token_info: dict, url: str, dataset_id: str = None, curator_tag: str = None):
     db_session = g.db_session
 
     # Verify Dropbox URL
@@ -59,7 +59,7 @@ def upload_from_link(collection_id: str, token_info: dict, url: str, dataset_id:
     try:
         return upload(
             db_session,
-            collection_id=collection_id,
+            collection_uuid=collection_uuid,
             url=url,
             file_size=file_size,
             file_extension=file_extension,

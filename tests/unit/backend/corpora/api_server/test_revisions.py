@@ -407,7 +407,7 @@ class TestPublishRevision(BaseRevisionTest):
             response = self.app.post(path, headers=self.headers, data=json.dumps(body))
         self.assertEqual(202, response.status_code)
 
-        self.assertDictEqual({"collection_id": collection_id, "visibility": "PUBLIC"}, json.loads(response.data))
+        self.assertDictEqual({"collection_uuid": collection_id, "visibility": "PUBLIC"}, json.loads(response.data))
         self.addCleanup(self.delete_collection, collection_id)
 
         # Cannot call publish for an already published collection

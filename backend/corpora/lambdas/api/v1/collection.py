@@ -62,9 +62,9 @@ def get_collections_list(from_date: int = None, to_date: int = None, token_info:
 
 
 @dbconnect
-def get_collection_details(collection_id: str, token_info: dict):
+def get_collection_details(collection_uuid: str, token_info: dict):
     db_session = g.db_session
-    collection = get_collection_else_forbidden(db_session, collection_id, include_tombstones=True)
+    collection = get_collection_else_forbidden(db_session, collection_uuid, include_tombstones=True)
     if collection.tombstone:
         result = ""
         response = 410
@@ -104,11 +104,11 @@ def get_collections_index():
     return make_response(jsonify(updated_collection), 200)
 
 
-def post_collection_revision_common(collection_id: str, token_info: dict):
+def post_collection_revision_common(collection_uuid: str, token_info: dict):
     db_session = g.db_session
     collection = get_collection_else_forbidden(
         db_session,
-        collection_id,
+        collection_uuid,
         visibility=CollectionVisibility.PUBLIC,
         owner=owner_or_allowed(token_info),
     )
@@ -121,8 +121,8 @@ def post_collection_revision_common(collection_id: str, token_info: dict):
 
 
 @dbconnect
-def post_collection_revision(collection_id: str, token_info: dict):
-    collection_revision = post_collection_revision_common(collection_id, token_info)
+def post_collection_revision(collection_uuid: str, token_info: dict):
+    collection_revision = post_collection_revision_common(collection_uuid, token_info)
     result = collection_revision.reshape_for_api()
     result["access_type"] = "WRITE"
     return make_response(jsonify(result), 201)
@@ -240,17 +240,17 @@ def create_collection(body: dict, user: str):
         publisher_metadata=publisher_metadata,
     )
 
-    return make_response(jsonify({"collection_id": collection.id}), 201)
+    return make_response(jsonify({"collection_uuid": collection.id}), 201)
 
 
 @dbconnect
-def delete_collection(collection_id: str, token_info: dict):
+def delete_collection(collection_uuid: str, token_info: dict):
     db_session = g.db_session
-    collection = get_collection_else_forbidden(db_session, collection_id, owner=owner_or_allowed(token_info))
+    collection = get_collection_else_forbidden(db_session, collection_uuid, owner=owner_or_allowed(token_info))
     if collection.visibility == CollectionVisibility.PUBLIC:
         revision = Collection.get_collection(
             db_session,
-            revision_of=collection_id,
+            revision_of=collection_uuid,
             owner=owner_or_allowed(token_info),
         )
         if revision:
@@ -262,13 +262,13 @@ def delete_collection(collection_id: str, token_info: dict):
 
 
 @dbconnect
-def update_collection(collection_id: str, body: dict, token_info: dict):
+def update_collection(collection_uuid: str, body: dict, token_info: dict):
     db_session = g.db_session
     errors = []
     verify_collection_body(body, errors, allow_none=True)
     collection = get_collection_else_forbidden(
         db_session,
-        collection_id,
+        collection_uuid,
         visibility=CollectionVisibility.PRIVATE.name,
         owner=owner_or_allowed(token_info),
     )

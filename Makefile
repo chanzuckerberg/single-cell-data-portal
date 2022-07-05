@@ -243,7 +243,7 @@ local-uploadjob: .env.ecr ## Run the upload task with a dataset_id and dropbox_u
 .PHONY: local-uploadfailure
 local-uploadfailure: .env.ecr ## Run the upload failure lambda with a dataset id and cause
 	docker-compose $(COMPOSE_OPTS) up -d upload_failures
-	curl -v -XPOST "http://127.0.0.1:9000/2015-03-31/functions/function/invocations" -d '{"dataset_id": "$(DATASET_ID)", "error": {"Cause": "$(CAUSE)"}}'
+	curl -v -XPOST "http://127.0.0.1:9000/2015-03-31/functions/function/invocations" -d '{"dataset_uuid": "$(DATASET_UUID)", "error": {"Cause": "$(CAUSE)"}}'
 
 .PHONY: local-cxguser-cookie
 local-cxguser-cookie: ## Get cxguser-cookie

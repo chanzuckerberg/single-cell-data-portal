@@ -1,4 +1,4 @@
-"""deprecate_obfuscated_id
+"""deprecate_obfuscated_uuid
 
 Revision ID: 26_913a1204bf96
 Revises: 25_43e20ba9f9f0
@@ -17,8 +17,8 @@ depends_on = None
 
 
 def upgrade():
-    op.drop_column("project", "obfuscated_id")
+    op.drop_column("project", "obfuscated_uuid")
 
 
 def downgrade():
-    op.add_column("project", sa.Column("obfuscated_id", sa.VARCHAR(), autoincrement=False, nullable=True))
+    op.add_column("project", sa.Column("obfuscated_uuid", sa.VARCHAR(), autoincrement=False, nullable=True))

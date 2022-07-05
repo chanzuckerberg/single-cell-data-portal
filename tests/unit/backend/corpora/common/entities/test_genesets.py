@@ -1,6 +1,6 @@
 from sqlalchemy.exc import IntegrityError
 
-from backend.corpora.common.corpora_orm import DbCollection, generate_id
+from backend.corpora.common.corpora_orm import DbCollection, generate_uuid
 from backend.corpora.common.entities import Dataset
 from backend.corpora.common.entities.geneset import Geneset, GenesetDatasetLink
 from backend.corpora.common.utils.exceptions import CorporaException
@@ -37,7 +37,7 @@ class TestGeneSets(DataPortalTestCase):
         self.assertIsInstance(stored_geneset.collection, DbCollection)
 
     def test_try_to_retrieve_a_geneset_that_does_not_exist(self):
-        geneset = Geneset.get(self.session, "not_a_id")
+        geneset = Geneset.get(self.session, "not_a_uuid")
         self.assertIsNone(geneset)
 
     def test_retrieve_all_genesets_for_a_collection(self):
@@ -222,7 +222,7 @@ class TestGenesetDatasetLinks(DataPortalTestCase):
         with self.subTest("cant link geneset that doesnot exist"):
             with self.assertRaises(CorporaException):
                 GenesetDatasetLink.update_links_for_a_dataset(
-                    self.session, dataset_id=dataset.id, add=[geneset2.id, generate_id()], remove=[geneset0.id]
+                    self.session, dataset_id=dataset.id, add=[geneset2.id, generate_uuid()], remove=[geneset0.id]
                 )
 
             linked_genesest_ids = [x.id for x in dataset.genesets]
@@ -232,7 +232,7 @@ class TestGenesetDatasetLinks(DataPortalTestCase):
         with self.subTest("cant delete link to geneset that doesnot exist"):
             with self.assertRaises(CorporaException):
                 GenesetDatasetLink.update_links_for_a_dataset(
-                    self.session, dataset_id=dataset.id, add=[geneset2.id], remove=[geneset0.id, generate_id()]
+                    self.session, dataset_id=dataset.id, add=[geneset2.id], remove=[geneset0.id, generate_uuid()]
                 )
 
             linked_genesest_ids = [x.id for x in dataset.genesets]

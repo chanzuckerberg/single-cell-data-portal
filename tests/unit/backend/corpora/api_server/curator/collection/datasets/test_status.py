@@ -9,7 +9,7 @@ class TestDatasetStatus(BaseAuthAPITest):
         self.processing_status = {
             "processing_status": ProcessingStatus.PENDING.name,
         }
-        self.queries = ["dataset_id", "curator_tag"]
+        self.queries = ["dataset_uuid", "curator_tag"]
         self.auth_credentials = [
             (self.make_super_curator_header, "super"),
             (self.get_auth_headers, "owner"),
@@ -31,7 +31,7 @@ class TestDatasetStatus(BaseAuthAPITest):
             for auth, auth_description in self.auth_credentials:
                 with self.subTest(f"{query} {auth_description} 200"):
                     headers = auth() if callable(auth) else auth
-                    query_string = {query: dataset.id} if query == "dataset_id" else {query: self.curator_tag}
+                    query_string = {query: dataset.id} if query == "dataset_uuid" else {query: self.curator_tag}
                     response = self.app.get(self.test_url, headers=headers, query_string=query_string)
                     self.assertEqual(200, response.status_code)
                     self.assertEqual(self.processing_status, response.json)
@@ -42,7 +42,7 @@ class TestDatasetStatus(BaseAuthAPITest):
             for auth, auth_description in self.auth_credentials:
                 with self.subTest(f"{query} {auth_description} 404"):
                     headers = auth() if callable(auth) else auth
-                    query_string = {query: "fake_id"} if query == "dataset_id" else {query: "fake_tag"}
+                    query_string = {query: "fake_id"} if query == "dataset_uuid" else {query: "fake_tag"}
                     response = self.app.get(self.test_url, headers=headers, query_string=query_string)
                     self.assertEqual(404, response.status_code)
 
@@ -59,7 +59,7 @@ class TestDatasetStatus(BaseAuthAPITest):
             for auth, auth_description in self.auth_credentials:
                 with self.subTest(f"{query} {auth_description} 404"):
                     headers = auth() if callable(auth) else auth
-                    query_string = {query: dataset.id} if query == "dataset_id" else {query: self.curator_tag}
+                    query_string = {query: dataset.id} if query == "dataset_uuid" else {query: self.curator_tag}
                     response = self.app.get(self.test_url, headers=headers, query_string=query_string)
                     self.assertEqual(404, response.status_code)
 

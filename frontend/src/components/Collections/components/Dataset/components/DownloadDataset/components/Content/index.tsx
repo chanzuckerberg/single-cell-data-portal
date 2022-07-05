@@ -57,8 +57,8 @@ const Content: FC<Props> = ({ onClose, name, dataAssets }) => {
       setIsLoading(true);
 
       const replace = {
-        asset_id: assetId,
-        dataset_id: datasetId,
+        asset_uuid: assetId,
+        dataset_uuid: datasetId,
       };
 
       const url = apiTemplateToUrl(API.DATASET_ASSET_DOWNLOAD_LINK, replace);

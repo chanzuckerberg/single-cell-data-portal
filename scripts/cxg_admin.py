@@ -110,15 +110,15 @@ def tombstone_dataset(ctx, uuid):
 
 
 @cli.command()
-@click.argument("collection_id")
+@click.argument("collection_uuid")
 @click.argument("new_owner")
 @click.pass_context
-def update_collection_owner(ctx, collection_id, new_owner):
+def update_collection_owner(ctx, collection_uuid, new_owner):
     """Update the owner of a cellxgene collection.
     To run:
     ./scripts/cxg_admin.py --deployment prod update-collection-owner "$COLLECTION_ID $NEW_OWNER_ID
     """
-    updates.update_collection_owner(ctx, collection_id, new_owner)
+    updates.update_collection_owner(ctx, collection_uuid, new_owner)
 
 
 @cli.command()
@@ -247,15 +247,15 @@ def backfill_processing_status_for_datasets(ctx):
 
 
 @cli.command()
-@click.argument("dataset_id")
+@click.argument("dataset_uuid")
 @click.pass_context
-def reprocess_seurat(ctx: Context, dataset_id: str) -> None:
+def reprocess_seurat(ctx: Context, dataset_uuid: str) -> None:
     """
     Reconverts the specified dataset to Seurat format in place.
     :param ctx: command context
-    :param dataset_id: UUID of dataset to reconvert to Seurat format
+    :param dataset_uuid: UUID of dataset to reconvert to Seurat format
     """
-    reprocess_datafile.reprocess_seurat(ctx, dataset_id)
+    reprocess_datafile.reprocess_seurat(ctx, dataset_uuid)
 
 
 @cli.command()

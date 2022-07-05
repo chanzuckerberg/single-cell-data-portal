@@ -67,4 +67,4 @@ class TestUpdateDataset(TestDataset):
         self.assertEqual(dataset.processing_status.upload_status, UploadStatus.WAITING)
 
     def test__update_processing_status__no_dataset__ok(self):
-        update_dataset_processing_status_to_failed("fake_id")
+        update_dataset_processing_status_to_failed("fake_uuid")

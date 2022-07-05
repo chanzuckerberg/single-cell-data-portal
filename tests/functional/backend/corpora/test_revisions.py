@@ -28,13 +28,13 @@ class TestRevisions(BaseFunctionalTestCase):
         res = requests.post(f"{self.api}/dp/v1/collections", data=json.dumps(data), headers=headers)
         res.raise_for_status()
         data = json.loads(res.content)
-        collection_id = data["collection_id"]
+        collection_uuid = data["collection_uuid"]
 
         # Doesn't work since the collection is published. See issue #1375
-        self.addCleanup(requests.delete, f"{self.api}/dp/v1/collections/{collection_id}", headers=headers)
+        self.addCleanup(requests.delete, f"{self.api}/dp/v1/collections/{collection_uuid}", headers=headers)
         self.assertEqual(res.status_code, requests.codes.created)
-        self.assertIn("collection_id", data)
-        return collection_id
+        self.assertIn("collection_uuid", data)
+        return collection_uuid
 
     def create_explorer_url(self, dataset_id):
         return f"https://cellxgene.{self.deployment_stage}.single-cell.czi.technology/e/{dataset_id}.cxg/"
@@ -44,24 +44,24 @@ class TestRevisions(BaseFunctionalTestCase):
 
         headers = {"Cookie": f"cxguser={self.curator_cookie}", "Content-Type": "application/json"}
 
-        collection_id = self.create_collection(headers)
+        collection_uuid = self.create_collection(headers)
 
         dataset_1_dropbox_url = "https://www.dropbox.com/s/qiclvn1slmap351/example_valid.h5ad?dl=0"
         dataset_2_dropbox_url = "https://www.dropbox.com/s/qiclvn1slmap351/example_valid.h5ad?dl=0"
 
         # Uploads a dataset
-        self.upload_and_wait(collection_id, dataset_1_dropbox_url)
+        self.upload_and_wait(collection_uuid, dataset_1_dropbox_url)
 
         # make collection public
         with self.subTest("Test make collection public"):
             body = {"data_submission_policy_version": "1.0"}
             res = requests.post(
-                f"{self.api}/dp/v1/collections/{collection_id}/publish", headers=headers, data=json.dumps(body)
+                f"{self.api}/dp/v1/collections/{collection_uuid}/publish", headers=headers, data=json.dumps(body)
             )
             res.raise_for_status()
             self.assertEqual(res.status_code, requests.codes.accepted)
 
-        dataset_id = requests.get(f"{self.api}/dp/v1/collections/{collection_id}").json()["datasets"][0]["id"]
+        dataset_id = requests.get(f"{self.api}/dp/v1/collections/{collection_uuid}").json()["datasets"][0]["id"]
         explorer_url = self.create_explorer_url(dataset_id)
 
         meta_payload_before_revision_res = requests.get(f"{self.api}/dp/v1/datasets/meta?url={explorer_url}")
@@ -73,9 +73,9 @@ class TestRevisions(BaseFunctionalTestCase):
 
         with self.subTest("Test updating a dataset in a revision does not effect the published dataset"):
             # Start a revision
-            res = requests.post(f"{self.api}/dp/v1/collections/{collection_id}", headers=headers)
+            res = requests.post(f"{self.api}/dp/v1/collections/{collection_uuid}", headers=headers)
             self.assertEqual(res.status_code, 201)
-            revision_id = res.json()["id"]
+            revision_uuid = res.json()["id"]
             private_dataset_id = res.json()["datasets"][0]["id"]
 
             meta_payload_res = requests.get(f"{self.api}/dp/v1/datasets/meta?url={explorer_url}")
@@ -86,7 +86,7 @@ class TestRevisions(BaseFunctionalTestCase):
 
             # Upload a new dataset
             new_dataset_id = self.upload_and_wait(
-                revision_id,
+                revision_uuid,
                 dataset_2_dropbox_url,
                 existing_dataset_id=private_dataset_id,
             )
@@ -101,7 +101,7 @@ class TestRevisions(BaseFunctionalTestCase):
             # Publish the revision
             body = {"data_submission_policy_version": "1.0"}
             res = requests.post(
-                f"{self.api}/dp/v1/collections/{revision_id}/publish", headers=headers, data=json.dumps(body)
+                f"{self.api}/dp/v1/collections/{revision_uuid}/publish", headers=headers, data=json.dumps(body)
             )
             res.raise_for_status()
             self.assertEqual(res.status_code, requests.codes.accepted)
@@ -117,18 +117,18 @@ class TestRevisions(BaseFunctionalTestCase):
         with self.subTest("Adding a dataset to a revision does not impact public datasets in that collection"):
 
             # Get datasets for the collection (before uploading)
-            public_datasets_before = requests.get(f"{self.api}/dp/v1/collections/{collection_id}").json()["datasets"]
+            public_datasets_before = requests.get(f"{self.api}/dp/v1/collections/{collection_uuid}").json()["datasets"]
 
             # Start a revision
-            res = requests.post(f"{self.api}/dp/v1/collections/{collection_id}", headers=headers)
-            revision_id = res.json()["id"]
+            res = requests.post(f"{self.api}/dp/v1/collections/{collection_uuid}", headers=headers)
+            revision_uuid = res.json()["id"]
             self.assertEqual(res.status_code, 201)
 
             # Upload a new dataset
-            another_dataset_id = self.upload_and_wait(revision_id, dataset_1_dropbox_url)
+            another_dataset_id = self.upload_and_wait(revision_uuid, dataset_1_dropbox_url)
 
             # Get datasets for the collection (after uploading)
-            public_datasets_after = requests.get(f"{self.api}/dp/v1/collections/{collection_id}").json()["datasets"]
+            public_datasets_after = requests.get(f"{self.api}/dp/v1/collections/{collection_uuid}").json()["datasets"]
             self.assertCountEqual(public_datasets_before, public_datasets_after)
 
         with self.subTest(
@@ -138,22 +138,22 @@ class TestRevisions(BaseFunctionalTestCase):
             # Publish the revision
             body = {"data_submission_policy_version": "1.0"}
             res = requests.post(
-                f"{self.api}/dp/v1/collections/{revision_id}/publish", headers=headers, data=json.dumps(body)
+                f"{self.api}/dp/v1/collections/{revision_uuid}/publish", headers=headers, data=json.dumps(body)
             )
             res.raise_for_status()
             self.assertEqual(res.status_code, requests.codes.accepted)
 
             # Check if the last updated dataset_id is among the public datasets
-            public_datasets = requests.get(f"{self.api}/dp/v1/collections/{collection_id}").json()["datasets"]
+            public_datasets = requests.get(f"{self.api}/dp/v1/collections/{collection_uuid}").json()["datasets"]
             self.assertEqual(len(public_datasets), 2)
             ids = [dataset["id"] for dataset in public_datasets]
             self.assertIn(another_dataset_id, ids)
 
         with self.subTest("Deleting a dataset does not effect the published dataset"):
             # Start a revision
-            res = requests.post(f"{self.api}/dp/v1/collections/{collection_id}", headers=headers)
+            res = requests.post(f"{self.api}/dp/v1/collections/{collection_uuid}", headers=headers)
             self.assertEqual(res.status_code, 201)
-            revision_id = res.json()["id"]
+            revision_uuid = res.json()["id"]
 
             # This only works if you pick the non replaced dataset.
             dataset_to_delete = res.json()["datasets"][1]
@@ -177,13 +177,13 @@ class TestRevisions(BaseFunctionalTestCase):
             # Publish the revision
             body = {"data_submission_policy_version": "1.0"}
             res = requests.post(
-                f"{self.api}/dp/v1/collections/{revision_id}/publish", headers=headers, data=json.dumps(body)
+                f"{self.api}/dp/v1/collections/{revision_uuid}/publish", headers=headers, data=json.dumps(body)
             )
             res.raise_for_status()
             self.assertEqual(res.status_code, requests.codes.accepted)
 
             # Check that the dataset doesn't exist anymore
-            res = requests.get(f"{self.api}/dp/v1/collections/{collection_id}", headers=headers)
+            res = requests.get(f"{self.api}/dp/v1/collections/{collection_uuid}", headers=headers)
             res.raise_for_status()
             datasets = [dataset["id"] for dataset in res.json()["datasets"]]
             self.assertEqual(1, len(datasets))
