@@ -37,7 +37,9 @@ def query():
 
     include_filter_dims = request.get("include_filter_dims", False)
 
-    response_filter_dims_values = build_filter_dims_values(criteria, query) if include_filter_dims else {}
+    response_filter_dims_values = (
+        build_filter_dims_values(criteria, query, expression_summary) if include_filter_dims else {}
+    )
     return jsonify(
         dict(
             snapshot_id=snapshot.snapshot_identifier,
@@ -85,7 +87,7 @@ def find_dim_option_values(criteria: Dict, query: WmgQuery, dimension: str) -> s
     return filter_dims
 
 
-def build_filter_dims_values(criteria: WmgQueryCriteria, query: WmgQuery) -> Dict:
+def build_filter_dims_values(criteria: WmgQueryCriteria, query: WmgQuery, expression_summary: DataFrame) -> Dict:
     dims = {
         "dataset_id": "",
         "disease_ontology_term_id": "",
@@ -94,7 +96,10 @@ def build_filter_dims_values(criteria: WmgQueryCriteria, query: WmgQuery) -> Dic
         "ethnicity_ontology_term_id": "",
     }
     for dim in dims:
-        dims[dim] = find_dim_option_values(criteria, query, dim)
+        if len(criteria.dict()[dim + "s"]) == 0:
+            dims[dim] = expression_summary.groupby(dim).groups.keys()
+        else:
+            dims[dim] = find_dim_option_values(criteria, query, dim)
 
     response_filter_dims_values = dict(
         datasets=fetch_datasets_metadata(dims["dataset_id"]),
