@@ -1,16 +1,15 @@
 import cloneDeep from "lodash/cloneDeep";
 import isEqual from "lodash/isEqual";
+import { EMPTY_FILTERS } from "src/common/queries/wheresMyGene";
 import {
   CellTypeMetadata,
   deserializeCellTypeMetadata,
 } from "../../components/HeatMap/utils";
 import { CellType, SORT_BY, Tissue } from "../types";
-
 export interface PayloadAction<Payload> {
   type: keyof typeof REDUCERS;
   payload: Payload;
 }
-
 export interface State {
   cellTypeIdsToDelete: CellTypeMetadata[];
   genesToDelete: string[];
@@ -21,11 +20,11 @@ export interface State {
   selectedOrganismId: string | null;
   selectedTissues: string[];
   selectedFilters: {
-    datasets?: string[];
-    developmentStages?: string[];
-    diseases?: string[];
-    ethnicities?: string[];
-    sexes?: string[];
+    datasets: string[];
+    developmentStages: string[];
+    diseases: string[];
+    ethnicities: string[];
+    sexes: string[];
   };
   /**
    * (thuang): BE API response always returns a snapshot ID. When the ID changes,
@@ -41,7 +40,7 @@ export const INITIAL_STATE: State = {
   cellTypeIdsToDelete: [],
   genesToDelete: [],
   selectedCellTypeIds: {},
-  selectedFilters: {},
+  selectedFilters: EMPTY_FILTERS,
   selectedGenes: [],
   selectedOrganismId: null,
   selectedTissues: [],
