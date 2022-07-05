@@ -218,7 +218,7 @@ def create_artifact(
 
     except Exception as e:
         logger.error(e)
-        e.args = ({processing_status_type: ConversionStatus.FAILED})
+        e.args = {processing_status_type: ConversionStatus.FAILED}
         raise e
 
 
