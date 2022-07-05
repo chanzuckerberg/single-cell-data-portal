@@ -216,7 +216,8 @@ def create_artifact(
             processing_status={processing_status_type: ConversionStatus.UPLOADED},
         )
 
-    except Exception:
+    except Exception as e:
+        logger.error(e)
         raise Exception({processing_status_type: ConversionStatus.FAILED})
 
 
@@ -696,9 +697,9 @@ def main():
         return_value = 1
     except Exception as e:
         (status,) = e.args
-        if is_last_attempt:
+        if is_last_attempt and isinstance(status, dict):
             update_db(dataset_id, processing_status=status)
-        logger.exception("An unexpected error occurred while processing the data set.")
+        logger.exception(f"An unexpected error occurred while processing the data set: {e}")
         return_value = 1
 
     return return_value
