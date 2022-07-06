@@ -13,10 +13,10 @@ def post():
     try:
         token_info = api_key.verify(user_api_key, config.api_key_secret)
     except JWTError:
-        raise UnauthorizedError("The API key is invalid")
+        raise UnauthorizedError(detail="The API key is invalid")
     else:
         identity = auth0_management_session.get_user_api_key_identity(token_info["sub"])
         if not identity:
-            raise NotFoundHTTPException("The API key is no longer valid.")
+            raise NotFoundHTTPException(detail="The API key is no longer valid.")
         token = auth0_management_session.generate_access_token(identity["profileData"]["email"], user_api_key)
         return make_response(token, 201)
