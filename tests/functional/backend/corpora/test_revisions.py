@@ -119,7 +119,7 @@ class TestRevisions(BaseFunctionalTestCase):
             self.assertNotIn(
                 dataset_id,
                 dataset_meta_payload["s3_uri"],
-                "The id of the S3_URI should be different from both the original dataset id.",
+                "The id of the S3_URI should be different from the original dataset id.",
             )
 
             # TODO: add `And the explorer url redirects appropriately`
