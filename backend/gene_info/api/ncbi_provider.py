@@ -58,7 +58,6 @@ class NCBIProvider(object):
             raise NCBIUnexpectedResultException
         search_result = self._load_search_result(search_response)
         if not search_result:
-            logging.error(f"Unexpected NCBI search result, got {search_result}")
             raise NCBIUnexpectedResultException
         else:
             return search_result
@@ -71,6 +70,7 @@ class NCBIProvider(object):
             or len(search_result["esearchresult"]["idlist"]) < 1
             or int(search_result["esearchresult"]["count"]) != 1
         ):
+            logging.error(f"Unexpected NCBI search result, got {search_result}")
             return None
         return int(search_result["esearchresult"]["idlist"][0])
 
