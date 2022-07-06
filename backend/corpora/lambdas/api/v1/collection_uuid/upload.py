@@ -43,15 +43,15 @@ def upload_from_link(collection_uuid: str, token_info: dict, url: str, dataset_i
     # Verify Dropbox URL
     valid_link = from_url(url)
     if not valid_link:
-        raise InvalidParametersHTTPException("The dropbox shared link is invalid.")
+        raise InvalidParametersHTTPException(detail="The dropbox shared link is invalid.")
 
     # Get file info
     try:
         resp = valid_link.file_info()
     except requests.HTTPError:
-        raise InvalidParametersHTTPException("The URL provided causes an error with Dropbox.")
+        raise InvalidParametersHTTPException(detail="The URL provided causes an error with Dropbox.")
     except MissingHeaderException as ex:
-        raise InvalidParametersHTTPException(ex.detail)
+        raise InvalidParametersHTTPException(detail=ex.detail)
 
     file_size = resp.get("size")
     file_extension = resp["name"].rsplit(".")[-1].lower()
@@ -71,7 +71,7 @@ def upload_from_link(collection_uuid: str, token_info: dict, url: str, dataset_i
     except MaxFileSizeExceededException:
         raise TooLargeHTTPException()
     except InvalidFileFormatException:
-        raise InvalidParametersHTTPException("The file referred to by the link is not a support file format.")
+        raise InvalidParametersHTTPException(detail="The file referred to by the link is not a support file format.")
     except NonExistentCollectionException:
         raise ForbiddenHTTPException()
     except InvalidProcessingStateException:
