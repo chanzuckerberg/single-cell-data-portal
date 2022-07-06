@@ -302,7 +302,7 @@ def update_db(dataset_id, metadata: dict = None, processing_status: dict = None)
             processing_status_updater(session, dataset.processing_status.id, processing_status)
 
 
-def download_from_source_uri(dataset_uuid: str, source_uri: str, local_path: str) -> str:
+def download_from_source_uri(dataset_id: str, source_uri: str, local_path: str) -> str:
     """Given a source URI, download it to local_path.
     Handles fixing the url so it downloads directly.
     """
@@ -314,13 +314,13 @@ def download_from_source_uri(dataset_uuid: str, source_uri: str, local_path: str
     # This is a bit ugly and should be done polymorphically instead, but Dropbox support will be dropped soon
     if file_url.scheme == "https":
         file_info = file_url.file_info()
-        status = download(dataset_uuid, file_url.url, local_path, file_info["size"])
+        status = download(dataset_id, file_url.url, local_path, file_info["size"])
         logger.info(status)
     elif file_url.scheme == "s3":
         bucket_name = file_url.netloc
         key = remove_prefix(file_url.path, "/")
         wrapped_download_from_s3(
-            dataset_uuid=dataset_uuid,
+            dataset_id=dataset_id,
             bucket_name=bucket_name,
             object_key=key,
             local_filename=local_path,
@@ -345,17 +345,17 @@ def download_from_s3(bucket_name: str, object_key: str, local_filename: str):
     buckets.portal_client.download_file(bucket_name, object_key, local_filename)
 
 
-def wrapped_download_from_s3(dataset_uuid: str, bucket_name: str, object_key: str, local_filename: str):
+def wrapped_download_from_s3(dataset_id: str, bucket_name: str, object_key: str, local_filename: str):
     """
     Wraps download_from_s3() to update the dataset's upload status
-    :param dataset_uuid:
+    :param dataset_id:
     :param bucket_name:
     :param object_key:
     :param local_filename:
     :return:
     """
     with db_session_manager() as session:
-        processing_status = Dataset.get(session, dataset_uuid).processing_status
+        processing_status = Dataset.get(session, dataset_id).processing_status
         processing_status.upload_status = UploadStatus.UPLOADING
         download_from_s3(
             bucket_name=bucket_name,
@@ -642,7 +642,7 @@ def log_batch_environment():
 def process(dataset_id, dropbox_url, cellxgene_bucket, artifact_bucket):
     update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.PENDING))
     local_filename = download_from_source_uri(
-        dataset_uuid=dataset_id,
+        dataset_id=dataset_id,
         source_uri=dropbox_url,
         local_path="raw.h5ad",
     )

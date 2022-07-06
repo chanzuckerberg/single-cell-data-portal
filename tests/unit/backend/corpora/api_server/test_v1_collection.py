@@ -9,7 +9,7 @@ from furl import furl
 from backend.corpora.common.corpora_orm import (
     CollectionVisibility,
     UploadStatus,
-    generate_uuid,
+    generate_id,
     ProjectLinkType,
 )
 from backend.corpora.common.entities import Collection
@@ -42,7 +42,7 @@ class TestCollection(BaseAuthAPITest):
             self.assertEqual(collection["visibility"], "PUBLIC")
             self.assertGreaterEqual(datetime.fromtimestamp(collection["created_at"]).year, 1969)
 
-    def validate_collection_uuid_response_structure(self, body):
+    def validate_collection_id_response_structure(self, body):
         required_keys = [
             "name",
             "description",
@@ -151,7 +151,7 @@ class TestCollection(BaseAuthAPITest):
             self.assertEqual(from_date, actual_body["from_date"])
             self.assertEqual(to_date, actual_body["to_date"])
 
-    def test__get_collection_uuid__ok(self):
+    def test__get_collection_id__ok(self):
         """Verify the test collection exists and the expected fields exist."""
         expected_body = {
             "datasets": [
@@ -431,13 +431,13 @@ class TestCollection(BaseAuthAPITest):
 
         self.assertNotIn(dataset.id, actual_dataset_ids)
 
-    def test__get_collection_uuid__403_not_found(self):
+    def test__get_collection_id__403_not_found(self):
         """Verify the test collection exists and the expected fields exist."""
         test_url = furl(path="/dp/v1/collections/AAAA-BBBB-CCCC-DDDD", query_params=dict(visibility="PUBLIC"))
         response = self.app.get(test_url.url, headers=dict(host="localhost"))
         self.assertEqual(403, response.status_code)
 
-    def test__post_collection_returns_uuid_on_success(self):
+    def test__post_collection_returns_id_on_success(self):
         test_url = furl(path="/dp/v1/collections/")
         data = {
             "name": "collection name",
@@ -1078,8 +1078,8 @@ class TestCollectionDeletion(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         self.assertEqual(response.status_code, 403)
 
     def test_delete_collection__does_not_exist(self):
-        fake_uuid = generate_uuid()
-        test_url = furl(path=f"/dp/v1/collections/{fake_uuid}", query_params=dict(visibility="PRIVATE"))
+        fake_id = generate_id()
+        test_url = furl(path=f"/dp/v1/collections/{fake_id}", query_params=dict(visibility="PRIVATE"))
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
         response = self.app.delete(test_url.url, headers=headers)
         self.assertEqual(response.status_code, 403)

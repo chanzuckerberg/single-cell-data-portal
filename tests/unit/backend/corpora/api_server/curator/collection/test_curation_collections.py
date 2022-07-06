@@ -14,7 +14,7 @@ from tests.unit.backend.fixtures.config import fake_s3_file
 
 
 class TestAuthToken(BaseAuthAPITest):
-    @patch("backend.corpora.lambdas.api.v1.curation.collections.collection_uuid.dataset.sts_client")
+    @patch("backend.corpora.lambdas.api.v1.curation.collections.collection_id.dataset.sts_client")
     def test__generate_s3_credentials__OK(self, sts_client: Mock):
         def _test(user_name: str, additional_scope: list = None):
             token_claims = dict(sub=user_name, email="fake_user@email.com")
@@ -362,33 +362,33 @@ class TestPutCollectionUUID(BaseAuthAPITest):
         )
 
     def test__update_collection__no_auth(self):
-        collection_uuid = self.generate_collection(self.session).id
-        response = self.app.patch(f"/curation/v1/collections/{collection_uuid}", data=json.dumps(self.test_collection))
+        collection_id = self.generate_collection(self.session).id
+        response = self.app.patch(f"/curation/v1/collections/{collection_id}", data=json.dumps(self.test_collection))
         self.assertEqual(401, response.status_code)
 
     def test__update_collection__OK(self):
-        collection_uuid = self.generate_collection(self.session).id
+        collection_id = self.generate_collection(self.session).id
         response = self.app.patch(
-            f"/curation/v1/collections/{collection_uuid}",
+            f"/curation/v1/collections/{collection_id}",
             data=json.dumps(self.test_collection),
             headers=self.get_auth_headers(),
         )
         self.assertEqual(200, response.status_code)
 
     def test__update_collection__Not_Owner(self):
-        collection_uuid = self.generate_collection(self.session, owner="someone else").id
+        collection_id = self.generate_collection(self.session, owner="someone else").id
         response = self.app.patch(
-            f"/curation/v1/collections/{collection_uuid}",
+            f"/curation/v1/collections/{collection_id}",
             data=json.dumps(self.test_collection),
             headers=self.get_auth_headers(),
         )
         self.assertEqual(403, response.status_code)
 
     def test__update_collection__Super_Curator(self):
-        collection_uuid = self.generate_collection(self.session).id
+        collection_id = self.generate_collection(self.session).id
         headers = self.make_super_curator_header()
         response = self.app.patch(
-            f"/curation/v1/collections/{collection_uuid}", data=json.dumps(self.test_collection), headers=headers
+            f"/curation/v1/collections/{collection_id}", data=json.dumps(self.test_collection), headers=headers
         )
         self.assertEqual(200, response.status_code)
 

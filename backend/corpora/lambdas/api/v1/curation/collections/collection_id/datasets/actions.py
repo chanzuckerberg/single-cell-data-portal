@@ -24,11 +24,11 @@ def validate_curator_tag(curator_tag: str) -> bool:
 
 
 @dbconnect
-def patch(token_info: dict, collection_uuid: str, body: dict, curator_tag: str = None, dataset_uuid: str = None):
+def patch(token_info: dict, collection_id: str, body: dict, curator_tag: str = None, dataset_id: str = None):
     db_session = g.db_session
-    dataset = get_dataset_else_error(db_session, dataset_uuid, collection_uuid, curator_tag)
+    dataset = get_dataset_else_error(db_session, dataset_id, collection_id, curator_tag)
     get_collection_else_forbidden(
-        db_session, collection_uuid, visibility=CollectionVisibility.PRIVATE, owner=owner_or_allowed(token_info)
+        db_session, collection_id, visibility=CollectionVisibility.PRIVATE, owner=owner_or_allowed(token_info)
     )
     tag = body["curator_tag"]
     if not validate_curator_tag(tag):
@@ -36,7 +36,7 @@ def patch(token_info: dict, collection_uuid: str, body: dict, curator_tag: str =
 
     # Check if the curator_tag is unique across datasets in the collection.
     if dataset.curator_tag != tag:
-        if conflict := Dataset.get(db_session, collection_uuid=collection_uuid, curator_tag=tag):
+        if conflict := Dataset.get(db_session, collection_id=collection_id, curator_tag=tag):
             raise ConflictException(
                 detail=f"Curator_tags must be unique within a collection. Dataset={conflict.id} is using "
                 f"curator_tag={tag}"

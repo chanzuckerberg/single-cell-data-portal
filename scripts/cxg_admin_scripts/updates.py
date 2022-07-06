@@ -205,14 +205,14 @@ def refresh_preprint_doi(ctx):
                     print(e)
 
 
-def update_collection_owner(ctx, collection_uuid, new_owner):
+def update_collection_owner(ctx, collection_id, new_owner):
     """Update the owner of a cellxgene collection.
     To run:
     ./scripts/cxg_admin.py --deployment prod update-collection-owner "$COLLECTION_ID $NEW_OWNER_ID
     """
 
     with db_session_manager() as session:
-        key = (collection_uuid, CollectionVisibility.PUBLIC.name)
+        key = (collection_id, CollectionVisibility.PUBLIC.name)
         collection = Collection.get(session, key)
         collection_name = collection.to_dict()["name"]
 
@@ -224,10 +224,10 @@ def update_collection_owner(ctx, collection_uuid, new_owner):
             collection.update(owner=new_owner)
             collection = Collection.get(session, key)
             if collection and (collection.owner == new_owner):
-                click.echo(f"Updated owner of collection:{collection_uuid}. Owner is now {collection.owner}")
+                click.echo(f"Updated owner of collection:{collection_id}. Owner is now {collection.owner}")
                 exit(0)
             else:
-                click.echo(f"Failed to update owner for collection_uuid:{collection_uuid}")
+                click.echo(f"Failed to update owner for collection_id:{collection_id}")
                 exit(0)
 
 

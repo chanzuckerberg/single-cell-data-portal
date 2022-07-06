@@ -1,5 +1,6 @@
 from flask import g, jsonify
 
+from backend.corpora.lambdas.api.v1.collection import update_collection
 from ..common import EntityColumns
 from backend.corpora.api_server.db import dbconnect
 from backend.corpora.common.corpora_orm import CollectionVisibility
@@ -11,9 +12,9 @@ from backend.corpora.lambdas.api.v1.common import get_collection_else_forbidden
 
 
 @dbconnect
-def delete(collection_uuid: str, token_info: dict):
+def delete(collection_id: str, token_info: dict):
     db_session = g.db_session
-    collection = get_collection_else_forbidden(db_session, collection_uuid, owner=owner_or_allowed(token_info))
+    collection = get_collection_else_forbidden(db_session, collection_id, owner=owner_or_allowed(token_info))
     if collection.visibility == CollectionVisibility.PUBLIC:
         raise MethodNotAllowedException(detail="Cannot delete a public collection through API.")
     else:
@@ -22,13 +23,17 @@ def delete(collection_uuid: str, token_info: dict):
 
 
 @dbconnect
-def get(collection_uuid: str, token_info: dict):
+def get(collection_id: str, token_info: dict):
     db_session = g.db_session
-    collection = Collection.get_collection(db_session, collection_uuid, include_tombstones=True)
+    collection = Collection.get_collection(db_session, collection_id, include_tombstones=True)
     if not collection:
         raise NotFoundHTTPException
-    collection_response: dict = collection.to_dict_keep(EntityColumns.columns_for_collection_uuid)
+    collection_response: dict = collection.to_dict_keep(EntityColumns.columns_for_collection_id)
 
     reshape_for_curation_api_and_is_allowed(collection_response, token_info, uuid_provided=True)
 
     return jsonify(collection_response)
+
+
+def patch(collection_id: str, body: dict, token_info: dict):
+    return update_collection(collection_id, body, token_info)
