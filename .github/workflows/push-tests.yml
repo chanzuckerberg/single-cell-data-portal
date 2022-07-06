@@ -6,7 +6,6 @@ on:
       - main
       - staging
       - prod
-      - ebezzi/happy-go-client-new
   pull_request:
     branches: "*"
 
@@ -81,7 +80,7 @@ jobs:
         with:
           happy_version: "0.23.0"
       - name: Push images
-        if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod' || github.ref == 'refs/heads/ebezzi/happy-go-client-new')
+        if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod' )
         run: |
           happy push --aws-profile "" --tag sha-${GITHUB_SHA:0:8} frontend backend
       - uses: 8398a7/action-slack@v3
@@ -95,7 +94,7 @@ jobs:
 
   build-extra-images:
     runs-on: ubuntu-20.04
-    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod' || github.ref == 'refs/heads/ebezzi/happy-go-client-new')
+    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod' )
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -199,7 +198,7 @@ jobs:
       - lint
       - build-extra-images
     runs-on: ubuntu-20.04
-    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod' || github.ref == 'refs/heads/ebezzi/happy-go-client-new')
+    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod' )
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -232,7 +231,7 @@ jobs:
         if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
 
   create_deployment:
-    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod' || github.ref == 'refs/heads/ebezzi/happy-go-client-new')
+    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod' )
     needs:
       - push-image
     runs-on: ubuntu-20.04
