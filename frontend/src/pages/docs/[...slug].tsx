@@ -4,6 +4,7 @@ import matter from "gray-matter";
 import { GetStaticPaths } from "next";
 import { MDXRemote, MDXRemoteSerializeResult } from "next-mdx-remote";
 import { serialize } from "next-mdx-remote/serialize";
+import Head from "next/head";
 import Image, { ImageProps } from "next/image";
 import NextLink from "next/link";
 import pathTool from "path";
@@ -401,6 +402,9 @@ DocPage.Layout = function DocLayout({
 }): JSX.Element {
   return (
     <Layout>
+      <Head>
+        <title>cellxgene | documentation</title>
+      </Head>
       <StyledDocsLayout>
         <main>{children}</main>
       </StyledDocsLayout>
