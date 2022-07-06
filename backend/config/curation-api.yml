@@ -143,7 +143,7 @@ paths:
           $ref: "#/components/responses/400"
         "404":
           $ref: "#/components/responses/404"
-    put:
+    patch:
       summary: Update a Collection's metadata.
       description: >-
         Update a private Collection or a Revision. If any Collection metadata fields are included in the body of the
@@ -496,16 +496,14 @@ components:
         assets:
           type: array
           items:
-            type: object
-            properties:
-              presigned_url:
-                type: string
-              file_name:
-                type: string
-              file_size:
-                type: number
-              filetype:
-                type: string
+            allOf:
+              - $ref: "#/components/schemas/dataset_asset"
+              - type: object
+                properties:
+                  presigned_url:
+                    type: string
+                  file_size:
+                    type: number
     collection_uuid:
       description: A unique identifier of a Collection.
       type: string

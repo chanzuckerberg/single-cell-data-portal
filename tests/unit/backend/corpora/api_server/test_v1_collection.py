@@ -165,7 +165,15 @@ class TestCollection(BaseAuthAPITest):
                             "id": "test_dataset_artifact_id",
                             "s3_uri": "s3://bogus-bucket/test_s3_uri.h5ad",
                             "user_submitted": True,
-                        }
+                        },
+                        {
+                            "dataset_id": "test_dataset_id",
+                            "filename": "test_filename",
+                            "filetype": "CXG",
+                            "id": "test_dataset_artifact_id_cxg",
+                            "s3_uri": "s3://bogus-bucket/test_s3_uri.h5ad",
+                            "user_submitted": True,
+                        },
                     ],
                     "dataset_deployments": [{"url": "test_url"}],
                     "development_stage": [{"label": "test_development_stage", "ontology_term_id": "test_obo"}],
