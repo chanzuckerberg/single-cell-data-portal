@@ -114,7 +114,7 @@ class TestRevisions(BaseFunctionalTestCase):
             self.assertNotIn(
                 dataset_meta_payload["dataset_id"],
                 dataset_meta_payload["s3_uri"],
-                "The id of the S3_URI should be diffe rent from both the revised dataset id.",
+                "The id of the S3_URI should be different from the revised dataset id.",
             )
             self.assertNotIn(
                 dataset_id,
