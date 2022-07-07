@@ -15,7 +15,7 @@ def delete(collection_uuid: str, token_info: dict):
     db_session = g.db_session
     collection = get_collection_else_forbidden(db_session, collection_uuid, owner=owner_or_allowed(token_info))
     if collection.visibility == CollectionVisibility.PUBLIC:
-        raise MethodNotAllowedException("Cannot delete a public collection through API.")
+        raise MethodNotAllowedException(detail="Cannot delete a public collection through API.")
     else:
         collection.delete()
     return "", 204

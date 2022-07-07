@@ -37,6 +37,6 @@ def post(user: str):
 def delete(user: str):
     identity = auth0_management_session.get_user_api_key_identity(user)
     if not identity:
-        raise NotFoundHTTPException
+        raise NotFoundHTTPException()
     auth0_management_session.delete_api_key(user, identity)
     return make_response("", 202)
