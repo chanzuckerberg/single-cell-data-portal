@@ -126,7 +126,7 @@ paths:
         - cxguserCookieLenient: []
         - {}
       description: >-
-        This lists all collections and their UUIDs that currently exist in the corpora. If a parameter is specified as
+        This lists all collections and their IDs that currently exist in the corpora. If a parameter is specified as
         a filter, then only collections that meet the status criteria will be outputted.
       operationId: backend.corpora.lambdas.api.v1.collection.get_collections_list
       parameters:

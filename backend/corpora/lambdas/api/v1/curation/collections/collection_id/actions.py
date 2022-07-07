@@ -30,7 +30,7 @@ def get(collection_id: str, token_info: dict):
         raise NotFoundHTTPException
     collection_response: dict = collection.to_dict_keep(EntityColumns.columns_for_collection_id)
 
-    reshape_for_curation_api_and_is_allowed(collection_response, token_info, uuid_provided=True)
+    reshape_for_curation_api_and_is_allowed(collection_response, token_info, id_provided=True)
 
     return jsonify(collection_response)
 

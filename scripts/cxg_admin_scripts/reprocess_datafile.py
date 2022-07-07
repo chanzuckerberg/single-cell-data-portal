@@ -90,7 +90,7 @@ def reprocess_seurat(ctx: Context, dataset_id: str) -> None:
     """
     Reconverts the specified dataset to Seurat format in place.
     :param ctx: command context
-    :param dataset_id: UUID of dataset to reconvert to Seurat format
+    :param dataset_id: ID of dataset to reconvert to Seurat format
     """
 
     deployment = ctx.obj["deployment"]

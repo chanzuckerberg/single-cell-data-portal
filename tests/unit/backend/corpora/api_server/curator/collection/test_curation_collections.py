@@ -186,7 +186,7 @@ class TestGetCollections(BaseAuthAPITest):
         [self.assertEqual("PRIVATE", c["visibility"]) for c in res.json["collections"]]
 
 
-class TestGetCollectionUUID(BaseAuthAPITest):
+class TestGetCollectionID(BaseAuthAPITest):
     expected_body = {
         "collection_url": "http://frontend.corporanet.local:3000/collections/test_collection_id",
         "contact_email": "somebody@chanzuckerberg.com",
@@ -326,7 +326,7 @@ class TestGetCollectionUUID(BaseAuthAPITest):
         self.assertEqual("WRITE", res.json["access_type"])
 
 
-class TestPutCollectionUUID(BaseAuthAPITest):
+class TestPutCollectionID(BaseAuthAPITest):
     def setUp(self):
         super().setUp()
         self.test_collection = dict(

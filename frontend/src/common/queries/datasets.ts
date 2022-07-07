@@ -76,7 +76,7 @@ export function useDeleteDataset(collection_id = "") {
 }
 
 /**
- * Query key for /datasets/uuid/assets.
+ * Query key for /datasets/id/assets.
  */
 export const USE_DATASETS_ASSETS = {
   entities: [ENTITIES.DATASET],

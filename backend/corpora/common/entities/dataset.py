@@ -44,7 +44,7 @@ class Dataset(Entity):
         **kwargs,
     ) -> "Dataset":
         """
-        Creates a new dataset and related objects and store in the database. UUIDs are generated for all new table
+        Creates a new dataset and related objects and store in the database. IDs are generated for all new table
         entries.
         """
         dataset = DbDataset(

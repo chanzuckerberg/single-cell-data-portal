@@ -27,7 +27,7 @@ def cli(ctx, deployment):
 
 
 @cli.command()
-@click.argument("uuid")
+@click.argument("id")
 @click.argument("cookie")
 @click.pass_context
 def copy_collection(ctx, uuid, cookie):

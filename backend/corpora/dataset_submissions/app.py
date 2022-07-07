@@ -38,7 +38,7 @@ def dataset_submissions_handler(s3_event: dict, unused_context) -> None:
 
         parsed = parse_key(key)
         if not parsed:
-            raise CorporaException(f"Missing collection UUID, curator tag, and/or dataset UUID for {key=}")
+            raise CorporaException(f"Missing collection ID, curator tag, and/or dataset ID for {key=}")
         if parsed["tag_prefix"]:
             parsed["tag"] = f"{parsed['tag_prefix']}.{parsed['extension']}"
         logger.debug(parsed)
@@ -86,7 +86,7 @@ def parse_s3_event_record(s3_event_record: dict) -> Tuple[str, str, int]:
 
 def parse_key(key: str) -> Optional[dict]:
     """
-    Parses the S3 object key to extract the collection UUID and curator tag, ignoring the REMOTE_DEV_PREFIX
+    Parses the S3 object key to extract the collection ID and curator tag, ignoring the REMOTE_DEV_PREFIX
 
     Example of key with only curator_tag:
     s3://<dataset submissions bucket>/<user_id>/<collection_id>/<curator_tag>

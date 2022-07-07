@@ -79,7 +79,7 @@ class TestDatasetSubmissions(TestCase):
 
     @patch("backend.corpora.dataset_submissions.app.Dataset.get")
     def test__upload_update_by_dataset_id__OK(self, mock_get_dataset):
-        """processing starts when an update of a dataset is uploaded by its UUID."""
+        """processing starts when an update of a dataset is uploaded by its ID."""
         mock_dataset = make_dataset_mock(self.user_name, self.dataset_id)
         mock_get_dataset.return_value = mock_dataset
         with self.subTest("owner"), patch("backend.corpora.dataset_submissions.app.upload") as mock_upload:

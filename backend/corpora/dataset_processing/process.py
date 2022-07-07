@@ -582,7 +582,7 @@ def process_cxg(local_filename, dataset_id, cellxgene_bucket):
 def validate_h5ad_file_and_add_labels(dataset_id: str, local_filename: str) -> typing.Tuple[str, bool]:
     """
     Validates and labels the specified dataset file and updates the processing status in the database
-    :param dataset_id: UUID of the dataset to update
+    :param dataset_id: ID of the dataset to update
     :param local_filename: file name of the dataset to validate and label
     :return: file name of labeled dataset, boolean indicating if seurat conversion is possible
     """
