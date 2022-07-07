@@ -23,6 +23,7 @@ export interface CellTypeSummary {
 export interface CellType {
   id: string;
   name: string;
+  depth?: number;
 }
 
 /**
@@ -77,4 +78,10 @@ export interface Filters {
   diseases?: DefaultMenuSelectOption[];
   ethnicities?: DefaultMenuSelectOption[];
   sexes?: DefaultMenuSelectOption[];
+}
+
+export enum SORT_BY {
+  CELL_ONTOLOGY = "CELL_ONTOLOGY",
+  H_CLUSTER = "H_CLUSTER",
+  USER_ENTERED = "USER_ENTERED",
 }

@@ -1,6 +1,6 @@
 import Head from "next/head";
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
-import { EMPTY_OBJECT } from "src/common/constants/utils";
+import { EMPTY_ARRAY, EMPTY_OBJECT } from "src/common/constants/utils";
 import {
   CellTypeByTissueName,
   GeneExpressionSummariesByTissueName,
@@ -24,6 +24,7 @@ import GetStarted from "../GetStarted";
 import HeatMap from "../HeatMap";
 import InfoPanel from "../InfoPanel";
 import Loader from "../Loader";
+import { SideBarLabel } from "./style";
 
 const INFO_PANEL_WIDTH_PX = 320;
 
@@ -31,7 +32,7 @@ export default function WheresMyGene(): JSX.Element {
   const state = useContext(StateContext);
   const dispatch = useContext(DispatchContext);
 
-  const { selectedGenes, selectedCellTypeIds, selectedTissues } = state;
+  const { selectedGenes, selectedCellTypeIds, selectedTissues, sortBy } = state;
 
   const [isScaled, setIsScaled] = useState(true);
 
@@ -171,9 +172,20 @@ export default function WheresMyGene(): JSX.Element {
 
       if (!tissueGeneExpressionSummaries) continue;
 
-      result[tissueName] = selectedGenes.map(
-        (geneName) => tissueGeneExpressionSummaries[geneName]
-      );
+      result[tissueName] = selectedGenes.map((geneName) => {
+        // (thuang): This is needed to ensure the heatmap's gene column
+        // is available even if there's no expression data for the column.
+        // Otherwise the heatmap columns and column labels won't match up
+        // where there's holes in the data.
+        const emptyGeneExpressionSummary = {
+          cellTypeGeneExpressionSummaries: EMPTY_ARRAY,
+          name: geneName,
+        };
+
+        return (
+          tissueGeneExpressionSummaries[geneName] || emptyGeneExpressionSummary
+        );
+      });
     }
 
     return result;
@@ -208,10 +220,15 @@ export default function WheresMyGene(): JSX.Element {
   }, [dispatch]);
 
   const hasSelectedTissues = selectedTissues.length > 0;
+  const hasSelectedGenes = selectedGenes.length > 0;
 
   const shouldShowHeatMap = useMemo(() => {
-    return hasSelectedTissues;
-  }, [hasSelectedTissues]);
+    return hasSelectedTissues || hasSelectedGenes;
+  }, [hasSelectedTissues, hasSelectedGenes]);
+
+  const shouldEnableSidebars = useMemo(() => {
+    return hasSelectedTissues && hasSelectedGenes;
+  }, [hasSelectedTissues, hasSelectedGenes]);
 
   const handleIsScaledChange = useCallback(() => {
     setIsScaled((prevIsScaled) => !prevIsScaled);
@@ -224,22 +241,26 @@ export default function WheresMyGene(): JSX.Element {
       </Head>
 
       <SideBar
-        label="Filters"
-        isOpen
+        label={<SideBarLabel>Filters</SideBarLabel>}
         SideBarWrapperComponent={SideBarWrapper}
         SideBarPositionerComponent={SideBarPositioner}
         testId="filters-panel"
+        disabled={!shouldEnableSidebars}
+        forceToggle={shouldEnableSidebars}
+        wmgSideBar
       >
         <Filters />
       </SideBar>
 
       <SideBar
         width={INFO_PANEL_WIDTH_PX}
-        label="Info"
-        isOpen
+        label={<SideBarLabel>Info</SideBarLabel>}
         position={Position.RIGHT}
         SideBarWrapperComponent={SideBarWrapper}
         SideBarPositionerComponent={SideBarPositioner}
+        disabled={!shouldEnableSidebars}
+        forceToggle={shouldEnableSidebars}
+        wmgSideBar
       >
         <InfoPanel
           isScaled={isScaled}
@@ -258,6 +279,8 @@ export default function WheresMyGene(): JSX.Element {
 
           {shouldShowHeatMap ? (
             <HeatMap
+              cellTypeSortBy={sortBy.cellTypes}
+              geneSortBy={sortBy.genes}
               selectedTissues={selectedTissues}
               isScaled={isScaled}
               isLoadingAPI={isLoading}

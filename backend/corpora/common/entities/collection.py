@@ -6,13 +6,14 @@ from sqlalchemy.orm import Session
 from . import Dataset
 from .entity import Entity
 from .geneset import Geneset
-from .collection_link import CollectionLink
 from ..corpora_orm import (
     CollectionLinkType,
     DbCollection,
     DbCollectionLink,
     CollectionVisibility,
     generate_uuid,
+    ProcessingStatus,
+    Base,
 )
 from ..utils.db_helpers import clone
 
@@ -152,6 +153,46 @@ class Collection(Entity):
         return results
 
     @classmethod
+    def list_collections_curation(
+        cls, session: Session, collection_columns: typing.Dict[Base, typing.List[str]], visibility: str = None
+    ) -> typing.List[dict]:
+        """
+        Get a subset of columns, in dict form, for all Collections with the specified visibility. If visibility is None,
+        return *all* Collections.
+        :param session: the SQLAlchemy session
+        :param collection_columns: the list of columns to be returned (see usage by TransformingBase::to_dict_keep)
+        :param visibility: the CollectionVisibility string name
+        @return: a list of dict representations of Collections
+        """
+        if visibility == CollectionVisibility.PUBLIC.name:
+            filters = [DbCollection.visibility == CollectionVisibility.PUBLIC]
+        elif visibility == CollectionVisibility.PRIVATE.name:
+            filters = [DbCollection.visibility == CollectionVisibility.PRIVATE]
+        else:
+            filters = []
+
+        resp_collections = []
+        for collection in session.query(cls.table).filter(*filters).all():
+            # Add a Collection-level processing status
+            status = None
+            has_statuses = False
+            for dataset in collection.datasets:
+                processing_status = dataset.processing_status
+                if processing_status:
+                    has_statuses = True
+                    if processing_status.processing_status == ProcessingStatus.PENDING:
+                        status = ProcessingStatus.PENDING
+                    elif processing_status.processing_status == ProcessingStatus.FAILURE:
+                        status = ProcessingStatus.FAILURE
+                        break
+            if has_statuses and not status:  # At least one dataset processing status exists, and all were SUCCESS
+                status = ProcessingStatus.SUCCESS
+            resp_collection = collection.to_dict_keep(collection_columns)
+            resp_collection["processing_status"] = status
+            resp_collections.append(resp_collection)
+        return resp_collections
+
+    @classmethod
     def list_public_datasets_for_index(cls, session: Session) -> typing.List[typing.Dict]:
         """
         Return a list of all the datasets and associated metadata. For efficiency reasons, this only returns the fields
@@ -245,24 +286,49 @@ class Collection(Entity):
         # Timestamp for published_at and revised_at
         now = datetime.utcnow()
         # Create a public collection with the same uuid and same fields
-        is_existing_collection = False
         if self.revision_of:
             # This is a revision of a published Collection
             public_collection = Collection.get_collection(self.session, collection_uuid=self.revision_of)
+            has_dataset_changes = False
+            for dataset in self.datasets:
+                revised_dataset = Dataset(dataset)
+                original = (
+                    Dataset.get(self.session, revised_dataset.original_id) if revised_dataset.original_id else None
+                )
+                if original and public_collection.check_has_dataset(original):
+                    dataset_is_changed = original.publish_revision(revised_dataset, now)
+                    if dataset_is_changed:
+                        has_dataset_changes = True
+                else:
+                    # The dataset is new
+                    revised_dataset.publish_new(now)
+                    has_dataset_changes = True
+            self.session.flush()
+            # calling expire because the above code updates and deletes rows related to this object. If we don't expire
+            # the object, SqlAlchmey will try to modify rows that don't exists and thrown an error.
+            self.session.expire(self.db_object)
             revision = self.to_dict(
-                remove_attr=("updated_at", "created_at", "visibility", "id", "revision_of", "published_at"),
+                remove_attr=(
+                    "updated_at",
+                    "created_at",
+                    "visibility",
+                    "id",
+                    "revision_of",
+                    "published_at",
+                    "revised_at",
+                ),
                 remove_relationships=True,
             )
             revision["data_submission_policy_version"] = data_submission_policy_version
+            revision["revised_at"] = now if has_dataset_changes else self.revised_at
             public_collection.update(
-                commit=False,
-                **revision,
-            )
+                **revision, commit=False
+            )  # This function call deletes old links (keep_links param defaults to False)
             for link in self.links:
-                CollectionLink(link).update(collection_id=self.revision_of, commit=False)
-            public_collection.links = self.links
-            is_existing_collection = True
-
+                link.collection_id = self.revision_of
+            self.session.flush()
+            self.delete()
+            self.db_object = public_collection.db_object
         else:
             # This is the first publishing of this Collection
             self.update(
@@ -272,28 +338,8 @@ class Collection(Entity):
                 data_submission_policy_version=data_submission_policy_version,
                 keep_links=True,
             )
-
-        has_dataset_changes = False
-        for dataset in self.datasets:
-            revised_dataset = Dataset(dataset)
-            original = Dataset.get(self.session, revised_dataset.original_id) if revised_dataset.original_id else None
-            if original and public_collection.check_has_dataset(original):
-                dataset_is_changed = original.publish_revision(revised_dataset, now)
-                if dataset_is_changed:
-                    has_dataset_changes = True
-            else:
-                # The dataset is new
-                revised_dataset.publish_new(now)
-                has_dataset_changes = True
-
-        self.session.flush()
-        self.session.expire_all()
-
-        if is_existing_collection:
-            if has_dataset_changes:
-                public_collection.update(commit=False, remove_attr="revised_at", revised_at=now)
-            self.delete()
-            self.db_object = public_collection.db_object
+            for dataset in self.datasets:
+                Dataset(dataset).publish_new(now)
 
         self.session.commit()
 

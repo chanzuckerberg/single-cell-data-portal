@@ -68,7 +68,6 @@ export default function Organism({ isLoading }: Props): JSX.Element {
   }, [organisms]);
 
   const organism = organismsById[selectedOrganismId || ""];
-
   return (
     <Wrapper>
       <Label>Organism</Label>

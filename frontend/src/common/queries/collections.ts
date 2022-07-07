@@ -21,7 +21,12 @@ import {
 import { ENTITIES } from "./entities";
 
 /**
- * Error text returned from BE when DOI is identified as invalid.
+ * Error text returned from BE when DOI format is identified as invalid.
+ */
+const INVALID_DOI_FORMAT_MESSAGE = "Invalid DOI";
+
+/**
+ * Error text returned from BE when DOI is identified as invalid, that is, DOI can not be found on Crossref.
  */
 const INVALID_DOI_MESSAGE = "DOI cannot be found on Crossref";
 
@@ -564,15 +569,23 @@ export function useReuploadDataset(
 }
 
 /**
- * Determine if a submitted DOI has failed validation on the BE. Expected response for invalid DOI:
- * {"detail": "DOI cannot be found on Crossref", "status": 400, "title": "Bad Request", "type": "about:blank"}
+ * Determine if a submitted DOI has failed validation on the BE.
+ *
+ * Expected response for invalid DOI:
+ * {"detail": "DOI cannot be found on Crossref", "status": 400, "title": "Bad Request", "type": "about:blank"}.
+ *
+ * Expected response for DOI with an invalid format:
+ * {"detail": "Invalid DOI", "status": 400, "title": "Bad Request", "type": "about:blank"}
+ *
  * TODO generalize beyond DOI link type once all links are validated on the BE (#1916).
+ *
  * @param status - Response status returned from server.
  * @param detail - Response error text, if any.
  * @returns True if DOI has been identified as invalid by the BE.
  */
 function isInvalidDOI(status: number, detail?: string): boolean {
   return (
-    status === HTTP_STATUS_CODE.BAD_REQUEST && detail === INVALID_DOI_MESSAGE
+    status === HTTP_STATUS_CODE.BAD_REQUEST &&
+    (detail === INVALID_DOI_MESSAGE || detail === INVALID_DOI_FORMAT_MESSAGE)
   );
 }

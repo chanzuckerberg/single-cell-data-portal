@@ -1,5 +1,6 @@
 from collections import defaultdict
 from typing import Dict, List, Any, Iterable
+from math import isnan
 
 import connexion
 from flask import jsonify
@@ -12,9 +13,7 @@ from backend.wmg.data.query import (
     WmgQuery,
     WmgQueryCriteria,
 )
-from backend.wmg.data.schemas.cube_schema import cube_non_indexed_dims
 from backend.wmg.data.snapshot import load_snapshot, WmgSnapshot
-
 
 # TODO: add cache directives: no-cache (i.e. revalidate); impl etag
 #  https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data
@@ -35,11 +34,12 @@ def query():
     expression_summary = query.expression_summary(criteria)
     cell_counts = query.cell_counts(criteria)
     dot_plot_matrix_df = build_dot_plot_matrix(expression_summary, cell_counts)
-    all_filter_dims_values = extract_filter_dims_values(expression_summary)
 
     include_filter_dims = request.get("include_filter_dims", False)
-    response_filter_dims_values = build_filter_dims_values(all_filter_dims_values) if include_filter_dims else {}
 
+    response_filter_dims_values = (
+        build_filter_dims_values(criteria, query, expression_summary) if include_filter_dims else {}
+    )
     return jsonify(
         dict(
             snapshot_id=snapshot.snapshot_identifier,
@@ -77,18 +77,38 @@ def fetch_datasets_metadata(dataset_ids: Iterable[str]) -> List[Dict]:
         return [get_dataset(dataset_id) for dataset_id in dataset_ids]
 
 
-def build_filter_dims_values(all_filter_dims_values: Dict[str, Iterable[str]]):
+def find_dim_option_values(criteria: Dict, query: WmgQuery, dimension: str) -> set:
+    """Find values for the specified dimension that satisfy the given filtering criteria,
+    ignoring any criteria specified for the given dimension."""
+    filter_options_criteria = criteria.copy(update={dimension + "s": []}, deep=True)
+    # todo can we query cell_counts for a performance gain?
+    query_result = query.expression_summary(filter_options_criteria)
+    filter_dims = query_result.groupby(dimension).groups.keys()
+    return filter_dims
+
+
+def build_filter_dims_values(criteria: WmgQueryCriteria, query: WmgQuery, expression_summary: DataFrame) -> Dict:
+    dims = {
+        "dataset_id": "",
+        "disease_ontology_term_id": "",
+        "sex_ontology_term_id": "",
+        "development_stage_ontology_term_id": "",
+        "ethnicity_ontology_term_id": "",
+    }
+    for dim in dims:
+        if len(criteria.dict()[dim + "s"]) == 0:
+            dims[dim] = expression_summary.groupby(dim).groups.keys()
+        else:
+            dims[dim] = find_dim_option_values(criteria, query, dim)
+
     response_filter_dims_values = dict(
-        datasets=fetch_datasets_metadata(all_filter_dims_values["dataset_id"]),
-        disease_terms=build_ontology_term_id_label_mapping(all_filter_dims_values["disease_ontology_term_id"]),
-        sex_terms=build_ontology_term_id_label_mapping(all_filter_dims_values["sex_ontology_term_id"]),
-        development_stage_terms=build_ontology_term_id_label_mapping(
-            all_filter_dims_values["development_stage_ontology_term_id"]
-        ),
-        ethnicity_terms=build_ontology_term_id_label_mapping(all_filter_dims_values["ethnicity_ontology_term_id"]),
-        # excluded per product requirements, but keeping in, commented-out, to reduce future head-scratching
-        # assay_ontology_terms=build_ontology_term_id_label_mapping(all_filter_dims_values["assay_ontology_term_id"]),
+        datasets=fetch_datasets_metadata(dims["dataset_id"]),
+        disease_terms=build_ontology_term_id_label_mapping(dims["disease_ontology_term_id"]),
+        sex_terms=build_ontology_term_id_label_mapping(dims["sex_ontology_term_id"]),
+        development_stage_terms=build_ontology_term_id_label_mapping(dims["development_stage_ontology_term_id"]),
+        ethnicity_terms=build_ontology_term_id_label_mapping(dims["ethnicity_ontology_term_id"]),
     )
+
     return response_filter_dims_values
 
 
@@ -106,15 +126,6 @@ def build_expression_summary(query_result: DataFrame) -> dict:
             )
         )
     return structured_result
-
-
-def extract_filter_dims_values(query_result: DataFrame) -> Dict[str, set]:
-    """
-    Return unique values for each dimension in the specified query result
-    """
-    dims: set = set(query_result.columns) & set(cube_non_indexed_dims)
-    dim_uniq_values: Dict[str, set] = {dim: query_result.groupby(dim).groups.keys() for dim in dims}
-    return dim_uniq_values
 
 
 def build_dot_plot_matrix(query_result: DataFrame, cell_counts: DataFrame) -> DataFrame:
@@ -152,18 +163,50 @@ def build_ordered_cell_types_by_tissue(
 ) -> Dict[str, List[Dict[str, str]]]:
     distinct_tissues_cell_types: DataFrame = cell_counts.groupby(
         ["tissue_ontology_term_id", "cell_type_ontology_term_id"], as_index=False
-    ).first()[["tissue_ontology_term_id", "cell_type_ontology_term_id"]]
+    ).first()[["tissue_ontology_term_id", "cell_type_ontology_term_id", "n_total_cells"]]
 
-    joined = distinct_tissues_cell_types.merge(
-        cell_type_orderings, on=["tissue_ontology_term_id", "cell_type_ontology_term_id"]
+    joined = cell_type_orderings.merge(
+        distinct_tissues_cell_types, on=["tissue_ontology_term_id", "cell_type_ontology_term_id"], how="left"
     )
-    sorted = joined.sort_values(by=["tissue_ontology_term_id", "order"])
+
+    # Updates depths based on the rows that need to be removed
+    joined = build_ordered_cell_types_by_tissue_update_depths(joined)
+
+    # Remove cell types without counts
+    joined = joined[joined["n_total_cells"].notnull()]
 
     structured_result: Dict[str, List[Dict[str, str]]] = defaultdict(list)
-
-    for row in sorted.itertuples(index=False):
+    for row in joined.itertuples(index=False):
         structured_result[row.tissue_ontology_term_id].append(
-            {row.cell_type_ontology_term_id: ontology_term_label(row.cell_type_ontology_term_id)}
+            {
+                "cell_type_ontology_term_id": row.cell_type_ontology_term_id,
+                "cell_type": ontology_term_label(row.cell_type_ontology_term_id),
+                "total_count": row.n_total_cells,
+                "depth": row.depth,
+            }
         )
 
     return structured_result
+
+
+def build_ordered_cell_types_by_tissue_update_depths(x: DataFrame):
+    """
+    Updates the depths of the cell ontology tree based on cell types that have to be removed
+    because they have 0 counts
+    """
+
+    depth_col = x.columns.get_loc("depth")
+    n_cells_col = x.columns.get_loc("n_total_cells")
+
+    x["depth"] = x["depth"].astype("int")
+
+    for i in range(len(x)):
+        if isnan(x.iloc[i, n_cells_col]):
+            original_depth = x.iloc[i, depth_col]
+            for j in range(i + 1, len(x)):
+                if original_depth < x.iloc[j, depth_col]:
+                    x.iloc[j, depth_col] -= 1
+                else:
+                    break
+
+    return x

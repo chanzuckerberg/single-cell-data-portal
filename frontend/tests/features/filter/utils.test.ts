@@ -153,8 +153,12 @@ describe("filter", () => {
       ].forEach((ontologyId) => {
         it(`finds ontology node with ID ${ontologyId}`, () => {
           const ontologyKey = getOntologySpeciesKey(ontologyId);
+          const ontologyRootNodes =
+            DEVELOPMENT_STAGE_ONTOLOGY_VIEW[ontologyKey];
+          expect(ontologyRootNodes).toBeTruthy();
           const ontologyNode = findOntologyNodeById(
-            DEVELOPMENT_STAGE_ONTOLOGY_VIEW[ontologyKey],
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- truthy check above
+            ontologyRootNodes!,
             ontologyId
           );
           expect(ontologyNode).toBeTruthy();
@@ -168,13 +172,18 @@ describe("filter", () => {
         const ontologyId = ONTOLOGY_ID_HUMAN_EMBRYONIC_HUMAN;
         const ontologyKey = getOntologySpeciesKey(ontologyId);
         const ontologyRootNodes = DEVELOPMENT_STAGE_ONTOLOGY_VIEW[ontologyKey];
+        expect(ontologyRootNodes).toBeTruthy();
         const ontologyNode = findOntologyNodeById(
-          ontologyRootNodes,
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- truthy check above
+          ontologyRootNodes!,
           ontologyId
         );
         expect(ontologyNode).toBeTruthy();
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- truthy check above
-        const parent = findOntologyParentNode(ontologyRootNodes, ontologyNode!);
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- truthy checks above
+        const parent = findOntologyParentNode(
+          ontologyRootNodes!,
+          ontologyNode!
+        );
         expect(parent).toBeTruthy();
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- truthy check above
         expect(parent!.ontology_term_id).toEqual(ONTOLOGY_ID_HUMAN_PRENATAL);
@@ -183,13 +192,18 @@ describe("filter", () => {
         const ontologyId = ONTOLOGY_ID_HUMAN_CARNEGIE_CS1;
         const ontologyKey = getOntologySpeciesKey(ontologyId);
         const ontologyRootNodes = DEVELOPMENT_STAGE_ONTOLOGY_VIEW[ontologyKey];
+        expect(ontologyRootNodes).toBeTruthy();
         const ontologyNode = findOntologyNodeById(
-          ontologyRootNodes,
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- truthy check above
+          ontologyRootNodes!,
           ontologyId
         );
         expect(ontologyNode).toBeTruthy();
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- truthy check above
-        const parent = findOntologyParentNode(ontologyRootNodes, ontologyNode!);
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- truthy checks above
+        const parent = findOntologyParentNode(
+          ontologyRootNodes!,
+          ontologyNode!
+        );
         expect(parent).toBeTruthy();
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- truthy check above
         expect(parent!.ontology_term_id).toEqual(
@@ -200,13 +214,18 @@ describe("filter", () => {
         const ontologyId = ONTOLOGY_ID_HUMAN_PRENATAL;
         const ontologyKey = getOntologySpeciesKey(ontologyId);
         const ontologyRootNodes = DEVELOPMENT_STAGE_ONTOLOGY_VIEW[ontologyKey];
+        expect(ontologyRootNodes).toBeTruthy();
         const ontologyNode = findOntologyNodeById(
-          ontologyRootNodes,
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- truthy check above
+          ontologyRootNodes!,
           ontologyId
         );
         expect(ontologyNode).toBeTruthy();
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- truthy check above
-        const parent = findOntologyParentNode(ontologyRootNodes, ontologyNode!);
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- truthy checks above
+        const parent = findOntologyParentNode(
+          ontologyRootNodes!,
+          ontologyNode!
+        );
         expect(parent).toBeFalsy();
       });
     });

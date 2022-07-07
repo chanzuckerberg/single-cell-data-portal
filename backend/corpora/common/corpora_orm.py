@@ -14,11 +14,11 @@ from sqlalchemy import (
     UniqueConstraint,
     types,
 )
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.dialects.postgresql.json import JSON
 from sqlalchemy.ext.declarative import declarative_base, DeclarativeMeta
 from sqlalchemy.orm import relationship
-from typing import Optional, List
+from typing import Optional, List, Dict
 from uuid import uuid4
 
 from .utils.exceptions import CorporaException
@@ -115,7 +115,52 @@ class TransformingBase(object):
             backref.pop()
         return result
 
+    def to_dict_keep(
+        self,
+        keep: Dict["Base", List[str]],
+        backref: List["Base"] = None,
+    ) -> dict:
+        """
+        Converts the columns and relationships of a SQLAlchemy Base object into a python dictionary.
+
+        :param backref: used to avoid recursively looping between two tables.
+        :param keep: the columns to keep
+        :return: a dictionary representation of the database object.
+        """
+        result = dict()
+        keep_from_table: List[str] = keep.get(type(self), [])
+        # Populate result with columns.
+        for attr, column in self.__mapper__.c.items():
+            if column.key in keep_from_table:
+                result[column.key] = getattr(self, attr)
+
+        # Populate result with relationships.
+        if backref:
+            backref.append(self.__table__)
+        else:
+            backref = [self.__table__]
+
+        for attr, relation in self.__mapper__.relationships.items():
+            if attr in keep_from_table:
+                # Avoid recursive loop between multiple tables.
+                if relation.target in backref:
+                    continue
+                value = getattr(self, attr)
+                if value is None:
+                    result[relation.key] = None
+                elif isinstance(value.__class__, DeclarativeMeta):
+                    result[relation.key] = value.to_dict_keep(keep=keep, backref=backref)
+                elif isinstance(value, list):
+                    result[relation.key] = [i.to_dict_keep(keep=keep, backref=backref) for i in value]
+                else:
+                    raise CorporaException(f"Unable to convert to dictionary. Unexpected type: {type(value)}.")
+        backref.pop()
+        return result
+
     id = Column(String, primary_key=True, default=generate_uuid)
+
+    def __repr__(self):
+        return f"<{self.__class__.__name__}(id={self.id})>"
 
 
 class AuditMixin(object):
@@ -290,6 +335,7 @@ class DbDataset(Base, AuditMixin, TimestampMixin):
     mean_genes_per_cell = Column(Float, default=0.0)
     schema_version = Column(String)
     curator_tag = Column(String)
+    batch_condition = Column(ARRAY(String))
 
     # Relationships
     collection = relationship("DbCollection", uselist=False, back_populates="datasets")

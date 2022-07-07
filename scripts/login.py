@@ -1,7 +1,8 @@
-import requests
 import json
 import re
 from urllib import parse
+
+import requests
 
 
 def get_cxguser_cookie():
@@ -41,7 +42,7 @@ def get_cxguser_cookie():
 
     # Parsing login page
     page_content = response.content
-    reg = re.compile('input name="__RequestVerificationToken" type="hidden" value="([A-Za-z0-9_\-]*)" />')
+    reg = re.compile(r'input name="__RequestVerificationToken" type="hidden" value="([A-Za-z0-9_\-]*)" />')
     verification_token = reg.search(page_content.decode("utf-8")).groups()[0]
 
     login_payload = {

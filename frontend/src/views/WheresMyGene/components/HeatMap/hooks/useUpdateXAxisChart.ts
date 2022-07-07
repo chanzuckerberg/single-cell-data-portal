@@ -19,7 +19,7 @@ export function useUpdateXAxisChart({
   const throttledUpdateXAxisChart = useMemo(() => {
     return throttle(
       ({ geneNames = [], genesToDelete, xAxisChart }: Props) => {
-        if (!geneNames.length || !xAxisChart) {
+        if (!xAxisChart) {
           return;
         }
 

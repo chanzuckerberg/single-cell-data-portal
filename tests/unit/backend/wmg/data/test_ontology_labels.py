@@ -30,11 +30,7 @@ class OntologyLabelTests(unittest.TestCase):
         test_cases = {
             "ERCC-00002": "ERCC-00002 (spike-in control)",
             "ENSG00000223972": "DDX11L1",
-            "ENST00000456328": "DDX11L1-202",
             "ENSMUSG00000102693": "4933401J01Rik",
-            "ENSMUST00000193812": "4933401J01Rik-201",
-            "ENSSASG00005000002": "ORF1ab",
-            "ENSSAST00005000002": "ORF1ab",
         }
         for gene_id, expected_gene_label in test_cases.items():
             with self.subTest(gene_id):

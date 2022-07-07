@@ -10,8 +10,6 @@ from .entity import Entity
 from ..corpora_orm import DbDatasetArtifact, DatasetArtifactFileType
 from ..utils.s3_buckets import buckets
 
-logger = logging.getLogger(__name__)
-
 
 class DatasetAsset(Entity):
     table = DbDatasetArtifact
@@ -34,7 +32,7 @@ class DatasetAsset(Entity):
                 "get_object", Params={"Bucket": self.bucket_name, "Key": self.key_name}, ExpiresIn=expiration
             )
         except ClientError:
-            logger.exception(f"Failed to generate presigned URL for '{self.url}'.")
+            logging.exception(f"Failed to generate presigned URL for '{self.url}'.")
             return None
         else:
             return response
@@ -48,7 +46,7 @@ class DatasetAsset(Entity):
         try:
             response = buckets.portal_client.head_object(Bucket=self.bucket_name, Key=self.key_name)
         except ClientError:
-            logger.exception(f"Failed to retrieve meta data for '{self.url}'.")
+            logging.exception(f"Failed to retrieve meta data for '{self.url}'.")
             return None
         else:
             return response["ContentLength"]
@@ -57,14 +55,14 @@ class DatasetAsset(Entity):
         try:
             if self.key_name.endswith("/"):
                 # This path should only be taken when deleting from the cellxgene bucket
-                logger.info(f"Deleting all files in bucket {self.bucket_name} under {self.dataset_id}.")
+                logging.info(f"Deleting all files in bucket {self.bucket_name} under {self.dataset_id}.")
                 buckets.portal_resource.Bucket(self.bucket_name).objects.filter(Prefix=self.dataset_id).delete()
                 # using dataset_id rather than the key_name because we also need to delete the genesets if they exist.
             else:
-                logger.info(f"Deleting file {self.key_name} in bucket {self.bucket_name}.")
+                logging.info(f"Deleting file {self.key_name} in bucket {self.bucket_name}.")
                 buckets.portal_client.delete_object(Bucket=self.bucket_name, Key=self.key_name)
         except ClientError:
-            logger.exception(f"Failed to delete artifact '{self.url}'.")
+            logging.exception(f"Failed to delete artifact '{self.url}'.")
 
     def queue_s3_asset_for_deletion(self):
         """Deletes s3 assets after the database changes have been commited."""

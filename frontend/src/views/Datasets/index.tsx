@@ -2,11 +2,13 @@ import Head from "next/head";
 import React, { useEffect, useMemo } from "react";
 import { Column, Filters, useFilters, useSortBy, useTable } from "react-table";
 import { PLURALIZED_METADATA_LABEL } from "src/common/constants/metadata";
+import { FEATURES } from "src/common/featureFlags/features";
 import {
   CategoryKey,
   useCategoryFilter,
 } from "src/common/hooks/useCategoryFilter";
 import { useExplainNewTab } from "src/common/hooks/useExplainNewTab";
+import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
 import { useSessionStorage } from "src/common/hooks/useSessionStorage";
 import { useFetchDatasetRows } from "src/common/queries/filter";
 import { KEYS } from "src/common/sessionStorage/set";
@@ -19,6 +21,7 @@ import {
 } from "src/components/common/Filter/common/entities";
 import { ontologyCellAccessorFn } from "src/components/common/Filter/common/utils";
 import CountCell from "src/components/common/Grid/components/CountCell";
+import DiseaseCell from "src/components/common/Grid/components/DiseaseCell";
 import { GridHero } from "src/components/common/Grid/components/Hero";
 import NTagCell from "src/components/common/Grid/components/NTagCell";
 import { RightAlignCell } from "src/components/common/Grid/components/RightAlignCell";
@@ -104,7 +107,10 @@ export default function Datasets(): JSX.Element {
       },
       {
         Cell: ({ value }: CellPropsValue<string[]>) => (
-          <NTagCell label={PLURALIZED_METADATA_LABEL.DISEASE} values={value} />
+          <DiseaseCell
+            label={PLURALIZED_METADATA_LABEL.DISEASE}
+            values={value}
+          />
         ),
         Header: "Disease",
         accessor: ontologyCellAccessorFn(CATEGORY_KEY.DISEASE),
@@ -216,6 +222,11 @@ export default function Datasets(): JSX.Element {
         filter: "includesSome",
         id: CATEGORY_KEY.SEX,
       },
+      // Hidden, required for filter.
+      {
+        accessor: CATEGORY_KEY.TISSUE_ANCESTORS,
+        filter: "includesSome",
+      },
     ],
     []
   );
@@ -245,6 +256,7 @@ export default function Datasets(): JSX.Element {
           CATEGORY_KEY.PUBLICATION_AUTHORS,
           CATEGORY_KEY.PUBLICATION_DATE_VALUES,
           CATEGORY_KEY.SEX,
+          CATEGORY_KEY.TISSUE_ANCESTORS,
           EXPLORER_URL,
           IS_OVER_MAX_CELL_COUNT,
         ],
@@ -269,15 +281,18 @@ export default function Datasets(): JSX.Element {
   } = tableInstance;
 
   // Determine the set of categories to display for the datasets view.
+  const isFilterEnabled = useFeatureFlag(FEATURES.FILTER); // TODO(cc) remove with #2569.
   const categories = useMemo<Set<CATEGORY_KEY>>(() => {
-    return Object.values(CATEGORY_KEY).reduce(
-      (accum, categoryKey: CategoryKey) => {
+    return Object.values(CATEGORY_KEY)
+      .filter(
+        (categoryKey: CategoryKey) =>
+          !(categoryKey === CATEGORY_KEY.TISSUE_ANCESTORS && !isFilterEnabled)
+      )
+      .reduce((accum, categoryKey: CategoryKey) => {
         accum.add(categoryKey);
         return accum;
-      },
-      new Set<CATEGORY_KEY>()
-    );
-  }, []);
+      }, new Set<CATEGORY_KEY>());
+  }, [isFilterEnabled]);
 
   // Set up filter instance.
   const filterInstance = useCategoryFilter(

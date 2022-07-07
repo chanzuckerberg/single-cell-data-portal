@@ -9,21 +9,21 @@ usage explanation of `DEPLOYMENT_STAGE`, `AWS_PROFILE` and `CORPORA_LOCAL_DEV`
 ## How to perform a database migration
 
 1. `cd $REPO_ROOT/backend`
-1. Run `make db/new_migration MESSAGE="purpose_of_migration"` where `purpose_of_migration` is a short phrase describing why the database migration is occurring.
+2. Run `make db/new_migration MESSAGE="purpose_of_migration"` where `purpose_of_migration` is a short phrase describing why the database migration is occurring.
    This generates a file in `$REPO_ROOT/backend/database/versions/xxxxxxxxxxxx_purpose_of_migration.py`
-1. In the generated file, edit the `upgrade()` and `downgrade()` functions such that `upgrade()` contains the Alembic DDL commands to perform the migration you would like and `downgrade()` contains the commands to undo it.
-1. Rename the generated file by prepending the migration count to the filename (`xxx_purpose_of_migration.py` -> `03_xxx_purpose_of_migration.py`)
-1. In the generated file, update the `Revision ID` and the `revision` (used by Alembic) to include the migration count.
+3. In the generated file, edit the `upgrade()` and `downgrade()` functions such that `upgrade()` contains the Alembic DDL commands to perform the migration you would like and `downgrade()` contains the commands to undo it.
+4. Rename the generated file by prepending the migration count to the filename (`xxx_purpose_of_migration.py` -> `03_xxx_purpose_of_migration.py`)
+5. In the generated file, update the `Revision ID` and the `revision` (used by Alembic) to include the migration count.
 For example `Revision ID: a8cd0dc08805` becomes `Revision ID: 18_a8cd0dc08805` and `revision = "a8cd0dc08805"` becomes `revision = "18_a8cd0dc08805"` 
-1. [Test your migration](#test-a-migration)
-1. Check that [corpora_orm.py](../corpora/common/corpora_orm.py) matches up with your changes.
-1. Once you've completed the changes, create a PR to get the functions reviewed.
-1. Once the PR is merged, you can run the migration.
-1. [Connect to Remote RDS](#connect-to-remote-rds)
-1. In a new terminal, complete the migration by running:
+6. [Test your migration](#test-a-migration)
+7. Check that [corpora_orm.py](../corpora/common/corpora_orm.py) matches up with your changes.
+8. Once you've completed the changes, create a PR to get the functions reviewed.
+9. Once the PR is merged, migrations will be run as part of the deployment process to each env.
+10. [Connect to Remote RDS](#connect-to-remote-rds) to single-cell-dev
+11. In a new terminal, complete the migration in the single-cell-dev test env by running:
 ```shell
 cd $REPO_ROOT/backend
-CORPORA_LOCAL_DEV=1 DEPLOYMENT_STAGE=test make db/migrate
+DEPLOYMENT_STAGE=test make db/migrate
 ```
 
 ## How to autogenerate migration script
@@ -70,7 +70,7 @@ where the `FROM` parameter is the base name of the `.sqlc` file downloaded from 
 make db/import FROM=corpora_prod-202102221309
 ```
 - Note: The file is stored locally under `$REPO_ROOT/backend/database/corpora_${DEPLOYMENT_STAGE}-<YYYYmmddHHMM>.sqlc` 
-but the `make db/import` command retrieves it from `/import/$(FROM).sqlc` due to the way [the local paths are mapped to the Docker container](https://github.com/chanzuckerberg/corpora-data-portal/blob/ffca067b9e4aea237fa2bd7c7a9cbc5813ebd449/docker-compose.yml#L13)
+but the `make db/import` command retrieves it from `/import/$(FROM).sqlc` due to the way [the local paths are mapped to the Docker container](https://github.com/chanzuckerberg/single-cell-data-portal/blob/ffca067b9e4aea237fa2bd7c7a9cbc5813ebd449/docker-compose.yml#L13)
 
 You may need to run this a few times, until there are no significant errors.
  - Note: `pg_restore: error: could not execute query: ERROR:  role "rdsadmin" does not exist` is not a significant error

@@ -8,7 +8,6 @@ from unittest.mock import patch
 import requests
 import socketserver
 
-from backend.corpora.common.corpora_orm import UploadStatus
 from backend.corpora.common.entities import Dataset
 from backend.corpora.common.utils.math_utils import MB
 from backend.corpora.dataset_processing import download
@@ -63,8 +62,8 @@ class TestDownload(DataPortalTestCase):
         self.assertTrue(os.path.exists(local_file))
 
     def test__wrong_file_size__FAILED(self):
-        """Upload status is set to failed when upload progress exceeds 1. This means the file size provided is smaller
-        than the file downloaded.
+        """ProcessingFailed Exception is raised when upload progress exceeds 1, or is below 1 after upload concludes.
+        This means the file size provided is smaller or larger than the file downloaded.
         """
         local_file = "local.h5ad"
         self.addCleanup(self.cleanup_local_file, local_file)
@@ -80,8 +79,6 @@ class TestDownload(DataPortalTestCase):
                     chunk_size=1024,
                     update_frequency=1,
                 )
-            processing_status = Dataset.get(self.session, "test_dataset_id").processing_status
-            self.assertEqual(UploadStatus.FAILED, processing_status.upload_status)
 
         with self.subTest("Smaller"):
             with self.assertRaises(ProcessingFailed):
@@ -93,8 +90,6 @@ class TestDownload(DataPortalTestCase):
                     chunk_size=1024,
                     update_frequency=1,
                 )
-            processing_status = Dataset.get(self.session, "test_dataset_id").processing_status
-            self.assertEqual(UploadStatus.FAILED, processing_status.upload_status)
 
     def test__stop_download(self):
         local_file = "local.h5ad"
@@ -122,8 +117,6 @@ class TestDownload(DataPortalTestCase):
                 chunk_size=1024,
                 update_frequency=1,
             )
-        processing_status = Dataset.get(self.session, "test_dataset_id").processing_status
-        self.assertEqual(UploadStatus.FAILED, processing_status.upload_status)
 
     def test__dataset_does_not_exist__error(self):
         local_file = "local.h5ad"

@@ -1,3 +1,5 @@
+import numpy as np
+
 from backend.corpora.common.corpora_orm import (
     CollectionVisibility,
     CollectionLinkType,
@@ -34,9 +36,6 @@ class TestDatabaseManager:
 
 
 class TestDatabase:
-    fake_s3_file = f"s3://{config.CORPORA_TEST_CONFIG['bucket_name']}/test_s3_uri.h5ad"
-    real_s3_file = "s3://corpora-data-dev/fake-h5ad-file.h5ad"
-
     def __init__(self, real_data=False):
         self.real_data = real_data
 
@@ -122,20 +121,23 @@ class TestDatabase:
         collection = DbCollection(
             id="test_collection_with_link",
             visibility=CollectionVisibility.PUBLIC.name,
-            owner="Someone_else",
+            owner="test_user_id",
             name="test_collection_name",
             description="test_description",
             data_submission_policy_version="0",
+            contact_name="Some Body",
+            contact_email="somebody@chanzuckerberg.com",
         )
         self.session.add(collection)
         collection = DbCollection(
-            id="test_collection_with_link_revision",
-            revision_of="test_collection_with_link",
-            visibility=CollectionVisibility.PRIVATE.name,
-            owner="Someone_else",
+            id="test_collection_with_link_and_dataset_changes",
+            visibility=CollectionVisibility.PUBLIC.name,
+            owner="test_user_id",
             name="test_collection_name",
             description="test_description",
             data_submission_policy_version="0",
+            contact_name="Some Body",
+            contact_email="somebody@chanzuckerberg.com",
         )
         self.session.add(collection)
         self.session.commit()
@@ -181,17 +183,19 @@ class TestDatabase:
             )
             self.session.add(
                 DbCollectionLink(
-                    id=f"test_publish_revision_with_links__{link_type.value}_link",
+                    id=f"test_publish_revision_with_link__{link_type.value}_link",
                     collection_id="test_collection_with_link",
+                    link_name=f"test_{link_type.value}_link_name",
                     link_url=f"http://test_link_{link_type.value}_url.place",
                     link_type=link_type.name,
                 )
             )
             self.session.add(
                 DbCollectionLink(
-                    id=f"test_publish_revision_with_links__revision_{link_type.value}_link",
-                    collection_id="test_collection_with_link_revision",
-                    link_url=f"http://test_link_{link_type.value}_url.place_REVISION",
+                    id=f"test_publish_revision_with_link_and_dataset_changes__{link_type.value}_link",
+                    collection_id="test_collection_with_link_and_dataset_changes",
+                    link_name=f"test_{link_type.value}_link_name",
+                    link_url=f"http://test_link_{link_type.value}_url.place",
                     link_type=link_type.name,
                 )
             )
@@ -223,6 +227,7 @@ class TestDatabase:
             is_primary_data=IsPrimaryData.PRIMARY.name,
             x_normalization="test_x_normalization",
             x_approximate_distribution=XApproximateDistribution.NORMAL.name,
+            batch_condition=np.array(["batchA", "batchB"], dtype="object"),
             schema_version="2.0.0",
         )
         self.session.add(dataset)
@@ -335,7 +340,18 @@ class TestDatabase:
             filename="test_filename",
             filetype=DatasetArtifactFileType.H5AD.name,
             user_submitted=True,
-            s3_uri=self.real_s3_file if self.real_data else self.fake_s3_file,
+            s3_uri=config.real_s3_file if self.real_data else config.fake_s3_file,
+        )
+        self.session.add(dataset_artifact)
+        self.session.commit()
+
+        dataset_artifact = DbDatasetArtifact(
+            id="test_dataset_artifact_id_cxg",
+            dataset_id="test_dataset_id",
+            filename="test_filename",
+            filetype=DatasetArtifactFileType.CXG.name,
+            user_submitted=True,
+            s3_uri=config.real_s3_file if self.real_data else config.fake_s3_file,
         )
         self.session.add(dataset_artifact)
         self.session.commit()
@@ -349,7 +365,7 @@ class TestDatabase:
                 filename="test_filename",
                 filetype=DatasetArtifactFileType.CXG.name,
                 user_submitted=True,
-                s3_uri=self.real_s3_file if self.real_data else self.fake_s3_file,
+                s3_uri=config.real_s3_file if self.real_data else config.fake_s3_file,
             )
         )
 
@@ -362,7 +378,7 @@ class TestDatabase:
                 filename="test_filename",
                 filetype=DatasetArtifactFileType.H5AD.name,
                 user_submitted=True,
-                s3_uri=self.real_s3_file if self.real_data else self.fake_s3_file,
+                s3_uri=config.real_s3_file if self.real_data else config.fake_s3_file,
             )
         )
 
@@ -377,7 +393,7 @@ class TestDatabase:
                 filename="test_filename",
                 filetype=DatasetArtifactFileType.RDS.name,
                 user_submitted=True,
-                s3_uri=self.real_s3_file if self.real_data else self.fake_s3_file,
+                s3_uri=config.real_s3_file if self.real_data else config.fake_s3_file,
             )
         )
 
@@ -392,7 +408,7 @@ class TestDatabase:
                 filename="test_filename",
                 filetype=DatasetArtifactFileType.CXG.name,
                 user_submitted=True,
-                s3_uri=self.real_s3_file if self.real_data else self.fake_s3_file,
+                s3_uri=config.real_s3_file if self.real_data else config.fake_s3_file,
             )
         )
 
@@ -405,7 +421,7 @@ class TestDatabase:
                 filename="test_filename",
                 filetype=DatasetArtifactFileType.H5AD.name,
                 user_submitted=True,
-                s3_uri=self.real_s3_file if self.real_data else self.fake_s3_file,
+                s3_uri=config.real_s3_file if self.real_data else config.fake_s3_file,
             )
         )
 
@@ -418,7 +434,7 @@ class TestDatabase:
                 filename="test_filename",
                 filetype=DatasetArtifactFileType.RDS.name,
                 user_submitted=True,
-                s3_uri=self.real_s3_file if self.real_data else self.fake_s3_file,
+                s3_uri=config.real_s3_file if self.real_data else config.fake_s3_file,
             )
         )
 
@@ -431,7 +447,7 @@ class TestDatabase:
                 filename="test_filename",
                 filetype=DatasetArtifactFileType.H5AD.name,
                 user_submitted=True,
-                s3_uri=self.real_s3_file if self.real_data else self.fake_s3_file,
+                s3_uri=config.real_s3_file if self.real_data else config.fake_s3_file,
             )
         )
 
@@ -468,6 +484,32 @@ class TestDatabase:
             id="test_dataset_processing_status_for_revisions_two_id",
             dataset_id="test_dataset_for_revisions_two",
             processing_status=ProcessingStatus.SUCCESS,
+            upload_status=UploadStatus.UPLOADED,
+            upload_progress=1,
+            validation_status=ValidationStatus.VALID,
+            rds_status=ConversionStatus.CONVERTED,
+            cxg_status=ConversionStatus.CONVERTED,
+            h5ad_status=ConversionStatus.CONVERTED,
+        )
+        self.session.add(dataset_processing_status)
+        self.session.commit()
+        dataset_processing_status = DbDatasetProcessingStatus(
+            id="test_dataset_processing_status_for_revision_with_links",
+            dataset_id="test_publish_revision_with_links__revision_dataset",
+            processing_status=ProcessingStatus.SUCCESS,
+            upload_status=UploadStatus.UPLOADED,
+            upload_progress=1,
+            validation_status=ValidationStatus.VALID,
+            rds_status=ConversionStatus.CONVERTED,
+            cxg_status=ConversionStatus.CONVERTED,
+            h5ad_status=ConversionStatus.CONVERTED,
+        )
+        self.session.add(dataset_processing_status)
+        self.session.commit()
+        dataset_processing_status = DbDatasetProcessingStatus(
+            id="test_dataset_processing_status_for_not_owner",
+            dataset_id="test_dataset_id_not_owner",
+            processing_status=ProcessingStatus.PENDING,
             upload_status=UploadStatus.UPLOADED,
             upload_progress=1,
             validation_status=ValidationStatus.VALID,

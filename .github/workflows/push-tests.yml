@@ -37,7 +37,7 @@ jobs:
       - uses: actions/checkout@v2
       - name: Lint Python
         run: |
-          docker-compose run --no-deps --rm backend make -C /corpora-data-portal lint
+          docker-compose run --no-deps --rm backend make -C /single-cell-data-portal lint
       - name: Lint frontend
         run: |
           docker-compose run --no-deps --rm frontend make lint
@@ -66,18 +66,23 @@ jobs:
         with:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v2
+      - name: Display github.ref
+        run: |
+          echo '${{ github.ref }}'
       - name: Run tests in docker-compose
         run: |
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
           make local-sync
           sleep 30  # Give frontend some time to finish building
           make local-smoke-test
+      - name: Install happy
+        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.2.1
+        with:
+          happy_version: "0.23.0"
       - name: Push images
-        if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
+        if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod' )
         run: |
-          # Two requirements files is a temp workaround for python package conflicts
-          pip install -r .happy/requirements.txt
-          scripts/happy --profile="" push --extra-tag sha-${GITHUB_SHA:0:8} --extra-tag build-${GITHUB_RUN_NUMBER} frontend backend
+          happy push --aws-profile "" --tag sha-${GITHUB_SHA:0:8} frontend backend
       - uses: 8398a7/action-slack@v3
         with:
           status: ${{ job.status }}
@@ -89,7 +94,7 @@ jobs:
 
   build-extra-images:
     runs-on: ubuntu-20.04
-    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
+    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod' )
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -104,11 +109,14 @@ jobs:
         with:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v2
+      - name: Install happy
+        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.2.1
+        with:
+          happy_version: "0.23.0"
       - name: Docker build, push, and tag
         shell: bash
         run: |
-          pip install -r .happy/requirements.txt
-          scripts/happy --profile="" push --extra-tag sha-${GITHUB_SHA:0:8} --extra-tag build-${GITHUB_RUN_NUMBER} upload_failures upload_success dataset_submissions processing wmg_processing
+          happy push --aws-profile "" --tag sha-${GITHUB_SHA:0:8} upload_failures upload_success dataset_submissions processing wmg_processing
       - uses: 8398a7/action-slack@v3
         with:
           status: ${{ job.status }}
@@ -149,6 +157,9 @@ jobs:
           docker pull ${{ secrets.ECR_REPO }}/corpora-upload-success:sha-${GITHUB_SHA:0:8}
           docker tag ${{ secrets.ECR_REPO }}/corpora-upload-success:sha-${GITHUB_SHA:0:8} ${{ secrets.ECR_REPO_PROD }}/corpora-upload-success:sha-${GITHUB_SHA:0:8}
           docker push ${{ secrets.ECR_REPO_PROD }}/corpora-upload-success:sha-${GITHUB_SHA:0:8}
+          docker pull ${{ secrets.ECR_REPO }}/dataset-submissions:sha-${GITHUB_SHA:0:8}
+          docker tag ${{ secrets.ECR_REPO }}/dataset-submissions:sha-${GITHUB_SHA:0:8} ${{ secrets.ECR_REPO_PROD }}/dataset-submissions:sha-${GITHUB_SHA:0:8}
+          docker push ${{ secrets.ECR_REPO_PROD }}/dataset-submissions:sha-${GITHUB_SHA:0:8}
 
   unit-test:
     runs-on: ubuntu-20.04
@@ -187,7 +198,7 @@ jobs:
       - lint
       - build-extra-images
     runs-on: ubuntu-20.04
-    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
+    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod' )
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -202,11 +213,14 @@ jobs:
         with:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v2
+      - name: Install happy
+        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.2.1
+        with:
+          happy_version: "0.23.0"
       - name: Docker build, push, and tag
         shell: bash
         run: |
-          pip install -r .happy/requirements.txt
-          scripts/happy --profile="" addtags --source-tag sha-${GITHUB_SHA:0:8} --dest-tag branch-$(echo ${GITHUB_REF#refs/heads/} | sed 's/[\+\/]/-/g')
+          happy addtags --aws-profile "" --source-tag sha-${GITHUB_SHA:0:8} --dest-tag branch-$(echo ${GITHUB_REF#refs/heads/} | sed 's/[\+\/]/-/g')
       - uses: 8398a7/action-slack@v3
         with:
           status: ${{ job.status }}
@@ -217,7 +231,7 @@ jobs:
         if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
 
   create_deployment:
-    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
+    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod' )
     needs:
       - push-image
     runs-on: ubuntu-20.04

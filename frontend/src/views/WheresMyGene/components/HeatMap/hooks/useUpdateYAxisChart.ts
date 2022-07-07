@@ -20,7 +20,7 @@ export function useUpdateYAxisChart({
   const throttledUpdateYAxisChart = useMemo(() => {
     return throttle(
       ({ cellTypeIdsToDelete, cellTypeMetadata = [], yAxisChart }: Props) => {
-        if (!cellTypeMetadata.length || !yAxisChart) {
+        if (!yAxisChart) {
           return;
         }
 

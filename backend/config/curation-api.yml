@@ -4,11 +4,11 @@ info:
   title: Chan Zuckerburg Initiative cellxgene Data Portal Curator API
 servers:
   - description: Production environment
-    url: https://api.corpora.cziscience.com
+    url: https://api.cellxgene.cziscience.com/
   - description: Development environment
-    url: https://api.dev.corpora.cziscience.com
+    url: https://api.cellxgene.dev.single-cell.czi.technology
   - description: Staging environment
-    url: https://api.staging.corpora.cziscience.com
+    url: https://api.cellxgene.staging.single-cell.czi.technology
 paths:
   /v1/auth/token:
     post:
@@ -43,13 +43,27 @@ paths:
   /v1/collections:
     get:
       summary: Fetch Collections metadata.
-      description: Fetch all Collections metadata. Authorization required for private collections.
+      description: >-
+        * When the visibility parameter is unspecified or set to `PUBLIC`, a list of all public collections is returned.
+        The Authorization header is not required. If a collection in the list has been deleted, then it is annotated
+        with tombstone set to True.
+
+        * When the visibility parameter is set to `PRIVATE`, a list of all private collections that the user is
+        authorized to access is returned. The Authorization header is required. If a collection in the list is a private
+        revision of a public collection, then it is annotated with revision_of.
+
+        * Each collection in the list contains a subset of collection metadata as a preview.
+
+        * To retrieve full collection metadata for a specific collection, `GET /v1/collections/{collection_uuid}`
+        must be used.
+      operationId: backend.corpora.lambdas.api.v1.curation.collections.actions.get
       security:
         - curatorAccessLenient: []
-      parameters:
-        - $ref: "#/components/parameters/query_visibility"
+        - {}
       tags:
         - collection
+      parameters:
+        - $ref: "#/components/parameters/query_visibility"
       responses:
         "200":
           description: OK
@@ -61,50 +75,20 @@ paths:
                   collections:
                     type: array
                     items:
-                      type: object
-                      properties:
-                        id:
-                          $ref: "#/components/schemas/collection_uuid"
-                        name:
-                          type: string
-                        visibility:
-                          $ref: "#/components/schemas/visibility"
-                        collection_url:
-                          type: string
-                        contact_name:
-                          type: string
-                        contact_email:
-                          type: string
-                        curator_name:
-                          type: string
-                        revised_at:
-                          type: number
-                        created_at:
-                          type: number
-                        links:
-                          $ref: "#/components/schemas/links"
-                        datasets:
-                          type: array
-                          items:
-                            $ref: "#/components/schemas/dataset_preview"
-                        access_type:
-                          type: string
-                          enum: [READ, WRITE]
-                        published_at:
-                          type: number
-                        description:
-                          type: string
-                        publisher_metadata:
-                          $ref: "#/components/schemas/publisher_metadata"
-                        revision_of:
-                          type: string
-                        tombstone:
-                          type: boolean
+                      allOf:
+                        - $ref: "#/components/schemas/collection_common"
+                        - type: object
+                          properties:
+                            datasets:
+                              type: array
+                              items:
+                                $ref: "#/components/schemas/dataset_preview"
         "401":
           $ref: "#/components/responses/401"
     post:
       summary: Create a Collection
       description: Create a new Collection
+      operationId: backend.corpora.lambdas.api.v1.collection.create_collection
       tags:
         - collection
       security:
@@ -120,7 +104,10 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/collection_uuid"
+                type: object
+                properties:
+                  collection_uuid:
+                    $ref: "#/components/schemas/collection_uuid"
         "400":
           $ref: "#/components/responses/400_multiple"
         "401":
@@ -129,10 +116,11 @@ paths:
   /v1/collections/{collection_uuid}:
     get:
       summary: Fetch a Collection with Datasets
-      description: Fetch Collection metadata and associated Datasets, public and private.
-      operationId: backend.corpora.lambdas.api.v1.collection.get_collection_details
+      description: Fetch full Collection metadata and associated Datasets.
+      operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_uuid.actions.get
       security:
         - curatorAccessLenient: []
+        - {}
       tags:
         - collection
       parameters:
@@ -143,54 +131,24 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  id:
-                    $ref: "#/components/schemas/collection_uuid"
-                  name:
-                    type: string
-                  visibility:
-                    $ref: "#/components/schemas/visibility"
-                  collection_url:
-                    type: string
-                  contact_name:
-                    type: string
-                  contact_email:
-                    type: string
-                  curator_name:
-                    type: string
-                  revised_at:
-                    type: number
-                  created_at:
-                    type: number
-                  links:
-                    $ref: "#/components/schemas/links"
-                  datasets:
-                    type: array
-                    items:
-                      $ref: "#/components/schemas/dataset"
-                  access_type:
-                    type: string
-                    enum: [READ, WRITE]
-                  published_at:
-                    type: number
-                  description:
-                    type: string
-                  publisher_metadata:
-                    $ref: "#/components/schemas/publisher_metadata"
-                  revision_of:
-                    type: string
-                  tombstone:
-                    type: boolean
-        "401":
-          $ref: "#/components/responses/401"
+                allOf:
+                  - $ref: "#/components/schemas/collection_common"
+                  - type: object
+                    properties:
+                      datasets:
+                        type: array
+                        items:
+                          $ref: "#/components/schemas/dataset"
+        "400":
+          $ref: "#/components/responses/400"
         "404":
           $ref: "#/components/responses/404"
-    put:
+    patch:
       summary: Update a Collection's metadata.
       description: >-
         Update a private Collection or a Revision. If any Collection metadata fields are included in the body of the
         request, these fields SHALL be updated for the specified Collection.
+      operationId: backend.corpora.lambdas.api.v1.collection.update_collection
       security:
         - curatorAccess: []
       tags:
@@ -224,8 +182,30 @@ paths:
           $ref: "#/components/responses/403"
         "404":
           $ref: "#/components/responses/404"
+    delete:
+      summary: Delete a private collection.
+      description: >-
+        Delete a private collection or cancel a revision.
+      operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_uuid.actions.delete
+      security:
+        - curatorAccess: []
+      tags:
+        - collection
+      parameters:
+        - $ref: "#/components/parameters/path_collection_uuid"
+      responses:
+        "204":
+          $ref: "#/components/responses/204"
+        "400":
+          $ref: "#/components/responses/400_multiple"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "405":
+          $ref: "#/components/responses/405"
 
-  /v1/collections/{public_collection_uuid}/revision:
+  /v1/collections/{collection_uuid}/revision:
     post:
       summary: Start a revision of a published Collection
       description: >-
@@ -234,12 +214,13 @@ paths:
         ongoing Revision may exist per published Collection at any given time.
 
         All methods of updating or adding Datasets and metadata to a Revision work the same as for a private Collection.
+      operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_uuid.revision.post_collection_revision
       security:
         - curatorAccess: []
       tags:
         - collection
       parameters:
-        - $ref: "#/components/parameters/path_public_collection_uuid"
+        - $ref: "#/components/parameters/path_collection_uuid"
       responses:
         "200":
           description: OK
@@ -262,6 +243,7 @@ paths:
         Delete a Dataset. The **collection_uuid** MUST reference either a private Collection OR a Revision. MUST
         indicate the Dataset by providing *one* of either the **curator_tag** (non-null) OR the **dataset_uuid**
         parameters.
+      operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_uuid.dataset.delete_dataset
       tags:
         - collection
       security:
@@ -294,6 +276,7 @@ paths:
         the Dataset by providing *one* of either the **curator_tag** (non-null) OR the **dataset_uuid** parameters.
       security:
         - curatorAccess: []
+      operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_uuid.datasets.actions.patch
       parameters:
         - $ref: "#/components/parameters/path_collection_uuid"
         - $ref: "#/components/parameters/query_curator_tag"
@@ -328,6 +311,7 @@ paths:
         request body; if an existing Dataset has this tag, the existing Dataset SHALL be replaced, otherwise a new
         Dataset will be added. MAY include the **id** of an existing Dataset, in which case the existing Dataset
         SHALL be replaced.
+      operationId: backend.corpora.lambdas.api.v1.collection_uuid.upload.relink
       tags:
         - collection
       security:
@@ -373,7 +357,7 @@ paths:
       summary: Get credentials for uploading local files
       tags:
         - collection
-      description: >
+      description: >-
         Retrieve temporary AWS credentials for uploading Dataset source files to S3 to create
         or update Datasets for the specified Collection.
 
@@ -405,7 +389,7 @@ paths:
 
       security:
         - curatorAccess: []
-      operationId: backend.corpora.lambdas.api.v1.curation.collection.dataset.post_s3_credentials
+      operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_uuid.dataset.post_s3_credentials
       parameters:
         - $ref: "#/components/parameters/path_collection_uuid"
       responses:
@@ -419,12 +403,16 @@ paths:
                   credentials:
                     type: object
                     properties:
-                      access_key:
+                      AccessKeyId:
                         type: string
-                      secret_access_key:
+                      SecretAccessKey:
                         type: string
-                      session_token:
+                      SessionToken:
                         type: string
+                  UploadKeyPrefix:
+                    type: string
+                  Bucket:
+                    type: string
         "401":
           $ref: "#/components/responses/401"
 
@@ -436,8 +424,7 @@ paths:
       description: >-
         Get the processing status for a Dataset. MUST indicate the Dataset by providing *one* of either the
         **curator_tag** (non-null) OR the **dataset_uuid** parameters.
-      security:
-        - curatorAccess: []
+      operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_uuid.datasets.status.get
       parameters:
         - $ref: "#/components/parameters/path_collection_uuid"
         - $ref: "#/components/parameters/query_curator_tag"
@@ -451,9 +438,7 @@ paths:
                 type: object
                 properties:
                   status:
-                    type: string
-                    description: Processing status for a Dataset
-                    enum: [FAILURE, PENDING, SUCCESS]
+                    $ref: "#/components/schemas/processing_status"
                   file_statuses:
                     type: object
                     properties:
@@ -465,17 +450,18 @@ paths:
                         $ref: "#/components/schemas/conversion_status"
         "400":
           $ref: "#/components/responses/400"
-        "401":
-          $ref: "#/components/responses/401"
+        "404":
+          $ref: "#/components/responses/404"
 
-  /v1/collections/{collection_uuid}/asset:
+  /v1/collections/{collection_uuid}/assets:
     get:
       summary: Retrieve links for downloading a dataset
       tags:
         - collection
       description: >-
-        Request to download a file which on success will generate and return a pre-signed URL to download
-        the dataset. MUST include *one* of the **curator_tag** and **dataset_uuid** parameters.
+        Generate URLs to download the files associated with the dataset. MUST include *one* of the **curator_tag**
+        and **dataset_uuid** parameters.
+      operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_uuid.assets.get
       parameters:
         - $ref: "#/components/parameters/path_collection_uuid"
         - $ref: "#/components/parameters/query_curator_tag"
@@ -486,38 +472,89 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  dataset_uuid:
-                    $ref: "#/components/schemas/dataset_uuid"
-                  curator_tag:
-                    $ref: "#/components/schemas/curator_tag"
-                  assets:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        presigned_url:
-                          type: string
-                        file_name:
-                          type: string
-                        file_size:
-                          type: number
-                        filetype:
-                          type: string
+                $ref: "#/components/schemas/asset_response"
+        "202":
+          description: Unable to retrieve one or more asset response fields.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/asset_response"
         "400":
           $ref: "#/components/responses/400"
-        "401":
-          $ref: "#/components/responses/401"
         "404":
           $ref: "#/components/responses/404"
 
 components:
   schemas:
+    asset_response:
+      type: object
+      properties:
+        dataset_uuid:
+          $ref: "#/components/schemas/dataset_uuid"
+        curator_tag:
+          $ref: "#/components/schemas/curator_tag"
+        assets:
+          type: array
+          items:
+            allOf:
+              - $ref: "#/components/schemas/dataset_asset"
+              - type: object
+                properties:
+                  presigned_url:
+                    type: string
+                  file_size:
+                    type: number
     collection_uuid:
       description: A unique identifier of a Collection.
       type: string
       example: fedcba98-7654-3210-fedc-ba9876543210
+    collection_common:
+      description: Full Collection metadata
+      type: object
+      properties:
+        id:
+          $ref: "#/components/schemas/collection_uuid"
+        name:
+          type: string
+          nullable: true
+        visibility:
+          $ref: "#/components/schemas/visibility"
+        collection_url:
+          type: string
+        contact_name:
+          type: string
+          nullable: true
+        contact_email:
+          type: string
+          nullable: true
+        curator_name:
+          type: string
+          nullable: true
+        revised_at:
+          type: number
+          nullable: true
+        created_at:
+          type: number
+        links:
+          $ref: "#/components/schemas/links"
+        access_type:
+          type: string
+          enum: [READ, WRITE]
+          nullable: true
+        published_at:
+          type: number
+          nullable: true
+        description:
+          type: string
+        publisher_metadata:
+          $ref: "#/components/schemas/publisher_metadata"
+        revision_of:
+          type: string
+          nullable: true
+        tombstone:
+          type: boolean
+        processing_status:
+          $ref: "#/components/schemas/processing_status"
     conversion_status:
       type: string
       description: Status for a Dataset asset generated during initial Dataset source file processing
@@ -525,7 +562,7 @@ components:
     curator_tag:
       description: A curator-provided tag for a Dataset that serves as a unique identifier *within a Collection*.
       type: string
-      example: an/example/curator.tag
+      example: an/example/curator_tag.h5ad
     dataset_uuid:
       description: A unique identifier of a Dataset.
       type: string
@@ -561,11 +598,14 @@ components:
         properties:
           link_name:
             type: string
+            nullable: true
           link_url:
             type: string
+            nullable: true
           link_type:
             type: string
             enum: [PROTOCOL, RAW_DATA, DOI, LAB_WEBSITE, OTHER, DATA_SOURCE]
+            nullable: true
     dataset:
       allOf:
         - $ref: "#/components/schemas/dataset_preview"
@@ -573,14 +613,18 @@ components:
           properties:
             name:
               type: string
+              nullable: true
             revision:
               type: integer
+              nullable: true
             revised_at:
               type: number
+              nullable: true
             is_primary_data:
               $ref: "#/components/schemas/is_primary_data"
             X_normalization:
               type: string
+              nullable: true
             dataset_assets:
               type: array
               items:
@@ -591,27 +635,28 @@ components:
               $ref: "#/components/schemas/ontology_elements"
             development_stage:
               $ref: "#/components/schemas/ontology_elements"
-            dataset_deployments:
-              type: array
-              items:
-                type: object
-                properties:
-                  url:
-                    type: string
+              nullable: true
+            explorer_url:
+              $ref: "#/components/schemas/explorer_url"
             cell_type:
               $ref: "#/components/schemas/ontology_elements"
             cell_count:
               type: integer
+              nullable: true
             X_approximate_distribution:
               $ref: "#/components/schemas/distribution"
-            batch_condition:
-              type: array
-              items:
-                type: string
+            #            batch_condition:  # TODO: https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data-portal/1461  # noqa: E501
+            #              type: array
+            #              items:
+            #                type: string
             mean_genes_per_cell:
               type: number
+              nullable: true
             schema_version:
               type: string
+              nullable: true
+            processing_status:
+              $ref: "#/components/schemas/processing_status"
     dataset_preview:
       type: object
       properties:
@@ -619,6 +664,7 @@ components:
           $ref: "#/components/schemas/dataset_uuid"
         curator_tag:
           $ref: "#/components/schemas/curator_tag"
+          nullable: true
         tissue:
           $ref: "#/components/schemas/ontology_elements"
         assay:
@@ -637,6 +683,9 @@ components:
           enum: [H5AD, RDS]
         filename:
           type: string
+    explorer_url:
+      type: string
+      description: The url at which a given Dataset may be explored using the cellxgene visualization tool
     ontology_element:
       type: object
       properties:
@@ -646,6 +695,7 @@ components:
           type: string
     ontology_elements:
       type: array
+      default: []
       items:
         $ref: "#/components/schemas/ontology_element"
     problem:
@@ -658,8 +708,14 @@ components:
           type: string
         detail:
           type: string
+    processing_status:
+      type: string
+      description: Processing status for a Dataset or Collection
+      enum: [FAILURE, PENDING, SUCCESS]
+      nullable: true
     publisher_metadata:
       type: object
+      nullable: true
       properties:
         authors:
           type: array
@@ -733,13 +789,6 @@ components:
       required: true
       schema:
         $ref: "#/components/schemas/collection_uuid"
-    path_public_collection_uuid:
-      name: public_collection_uuid
-      description: The uuid of a public Collection.
-      in: path
-      required: true
-      schema:
-        $ref: "#/components/schemas/collection_uuid"
     query_visibility:
       name: visibility
       description: The 'visibility' of a Collection (and its constituent Datasets).
@@ -774,6 +823,9 @@ components:
                 name:
                   type: string
                   description: the errant parameter
+                value:
+                  type: string
+                  description: the errant value
                 reason:
                   type: string
                   description: the specific problem with the parameter
@@ -823,4 +875,4 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
-      x-apikeyInfoFunc: backend.corpora.lambdas.api.v1.authentication.curation_apikey_info_func_lenient
+      x-bearerInfoFunc: backend.corpora.lambdas.api.v1.authentication.curation_apikey_info_func_lenient

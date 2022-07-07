@@ -52,39 +52,6 @@ def assert_authorized_token(token: str, audience: str = None) -> dict:
     raise UnauthorizedError(detail="Unable to find appropriate key")
 
 
-def assert_authorized(headers: dict) -> dict:
-    """
-    Determines if the Access Token is valid and return the decoded token. Userinfo is added to the token if it exists.
-    :param headers: The http headers from the request.
-    :return: The decoded access token and userinfo.
-    """
-    try:
-        token = get_token_auth_header(headers)
-        return assert_authorized_token(token)
-    except ExpiredSignatureError:
-        raise UnauthorizedError(detail="Token is expired.")
-
-
-def get_token_auth_header(headers: dict) -> str:
-    """Obtains the Access Token from the Authorization Header"""
-
-    auth_header = headers.get("Authorization", None)
-    if not auth_header:
-        raise UnauthorizedError(detail="Authorization header is expected")
-
-    parts = auth_header.split()
-
-    if parts[0].lower() != "bearer":
-        raise UnauthorizedError(detail="Authorization header must start with Bearer")
-    elif len(parts) == 1:
-        raise UnauthorizedError(detail="Token not found")
-    elif len(parts) > 2:
-        raise UnauthorizedError(detail="Authorization header must be Bearer token")
-
-    token = parts[1]
-    return token
-
-
 def get_userinfo_from_auth0(token: str) -> dict:
     auth_config = CorporaAuthConfig()
     res = requests.get(auth_config.api_userinfo_url, headers={"Authorization": f"Bearer {token}"})

@@ -13,6 +13,7 @@ import {
 import { isTombstonedCollection } from "src/common/utils/typeGuards";
 import { aggregateDatasetsMetadata } from "../../../common/utils";
 import {
+  DiseaseDetailsCell,
   LeftAlignedDetailsCell,
   RightAlignedDetailsCell,
   StyledCell,
@@ -35,6 +36,13 @@ const AsyncPopover = loadable(
     )
 );
 
+const AsyncDiseasePopover = loadable(
+  () =>
+    /*webpackChunkName: 'src/components/common/Grid/components/DiseaseCell' */ import(
+      "src/components/common/Grid/components/DiseaseCell"
+    )
+);
+
 const conditionalPopover = (
   label: PLURALIZED_METADATA_LABEL,
   values: string[]
@@ -44,6 +52,21 @@ const conditionalPopover = (
   }
 
   return <AsyncPopover label={label} values={values} />;
+};
+
+const conditionalDiseasePopover = (
+  label: PLURALIZED_METADATA_LABEL,
+  values: string[]
+) => {
+  if (!values || values.length === 0) {
+    return <LeftAlignedDetailsCell>-</LeftAlignedDetailsCell>;
+  }
+
+  return (
+    <DiseaseDetailsCell>
+      <AsyncDiseasePopover label={label} values={values} />
+    </DiseaseDetailsCell>
+  );
 };
 
 const CollectionRow: FC<Props> = (props) => {
@@ -109,7 +132,7 @@ const CollectionRow: FC<Props> = (props) => {
       </StyledCell>
       {conditionalPopover(PLURALIZED_METADATA_LABEL.TISSUE, tissue)}
       {conditionalPopover(PLURALIZED_METADATA_LABEL.ASSAY, assay)}
-      {conditionalPopover(PLURALIZED_METADATA_LABEL.DISEASE, disease)}
+      {conditionalDiseasePopover(PLURALIZED_METADATA_LABEL.DISEASE, disease)}
       {conditionalPopover(PLURALIZED_METADATA_LABEL.ORGANISM, organism)}
       <RightAlignedDetailsCell>{cell_count || "-"}</RightAlignedDetailsCell>
       {props.revisionsEnabled && visibility === VISIBILITY_TYPE.PUBLIC ? (

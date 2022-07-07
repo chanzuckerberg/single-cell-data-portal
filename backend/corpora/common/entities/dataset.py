@@ -1,5 +1,4 @@
 import csv
-import logging
 import os
 import typing
 from collections import OrderedDict
@@ -26,8 +25,6 @@ from ..corpora_orm import (
 from ..utils.db_helpers import clone
 from ..utils.ontology_mapping import ontology_mapping
 from ..utils.s3_buckets import buckets
-
-logger = logging.getLogger(__name__)
 
 
 class Dataset(Entity):
@@ -89,12 +86,27 @@ class Dataset(Entity):
         super().update(commit=commit, **kwargs)
 
     @classmethod
-    def get(cls, session: Session, dataset_uuid, include_tombstones=False) -> "Dataset":
-        dataset = super().get(session, dataset_uuid)
+    def get(
+        cls, session: Session, dataset_uuid=None, include_tombstones=False, collection_uuid=None, curator_tag=None
+    ) -> typing.Optional["Dataset"]:
+        if not (dataset_uuid or (curator_tag and collection_uuid)):
+            raise ValueError("Not enough information to query")
+        filters = []
         if not include_tombstones:
-            if dataset and dataset.tombstone is True:
-                return None
+            filters.append(cls.table.tombstone != True)  # noqa
+        if collection_uuid:
+            filters.append(cls.table.collection_id == collection_uuid)
+        if curator_tag:
+            filters.append(cls.table.curator_tag == curator_tag)
+        if dataset_uuid:
+            filters.append(cls.table.id == dataset_uuid)
+        result = session.query(cls.table).filter(*filters).one_or_none()
+        dataset = cls(result) if result else None
         return dataset
+
+    @classmethod
+    def get_dataset_from_curator_tag(cls, session: Session, collection_id, curator_tag, **kwargs) -> "Dataset":
+        return cls.get(session, collection_uuid=collection_id, curator_tag=curator_tag, **kwargs)
 
     @classmethod
     def get_by_explorer_url(cls, session: Session, explorer_url):
@@ -322,7 +334,7 @@ class Dataset(Entity):
             )
 
             if revision.tombstone is not False:
-                self.update(commit=False, **updates, remove_attr="published_at")
+                self.update(commit=False, **updates)
             else:
                 # There was an update to a dataset, so update revised_at
                 self.update(commit=False, **updates, revised_at=now)

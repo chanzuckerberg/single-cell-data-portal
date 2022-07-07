@@ -1,9 +1,11 @@
 import { ROUTES } from "src/common/constants/routes";
 import { Collection } from "src/common/entities";
 import { sortByCellCountDescending } from "src/components/Collection/components/CollectionDatasetsGrid/components/DatasetsGrid";
+import { INVALID_DOI_ERROR_MESSAGE } from "src/components/CreateCollectionModal/components/Content";
 import { BLUEPRINT_SAFE_TYPE_OPTIONS, TEST_URL } from "tests/common/constants";
 import {
   describeIfDeployed,
+  describeIfDevStagingProd,
   goToPage,
   login,
   tryUntil,
@@ -11,12 +13,25 @@ import {
 import { getTestID, getText } from "tests/utils/selectors";
 import datasets from "../fixtures/datasets";
 
-const TEST_COLLECTION = {
-  contactEmail: "TEST@example.com",
-  contactName: "TEST NAME",
+const TEST_COLLECTION: CollectionFormInput = {
+  contact_email: "TEST@example.com",
+  contact_name: "TEST NAME",
   description: "TEST DESCRIPTION",
   name: "TEST COLLECTION",
 };
+
+/**
+ * HTML element ID of DOI input field.
+ */
+const ELEMENT_ID_INPUT_DOI = "#DOI";
+
+/**
+ * Subset of collection fields required for creating/editing a collection.
+ */
+type CollectionFormInput = Pick<
+  Collection,
+  "contact_email" | "contact_name" | "description" | "name"
+>;
 
 describe("Collection", () => {
   describeIfDeployed("Logged In Tests", () => {
@@ -68,38 +83,60 @@ describe("Collection", () => {
       });
     });
   });
+
+  describeIfDevStagingProd("Deployed Env Tests", () => {
+    describe.skip("invalid DOIs", () => {
+      it("doesn't create a collection with a DOI in an invalid format", async () => {
+        const timestamp = Date.now();
+
+        await login();
+        await showCreateForm();
+        await populateRequiredInputs({
+          ...TEST_COLLECTION,
+          name: "TEST_COLLECTION" + timestamp,
+        });
+
+        // Specify a DOI that is in an invalid format.
+        await populatePublicationDOI("10.1016/j.2022.104097");
+
+        // Attempt submit, confirm error message is displayed.
+        const [response] = await submitCreateForm();
+        expect(response.status()).toEqual(400);
+        await expect(page).toHaveSelector(getText(INVALID_DOI_ERROR_MESSAGE));
+      });
+
+      it("doesn't create a collection with an invalid DOI", async () => {
+        const timestamp = Date.now();
+
+        await login();
+        await showCreateForm();
+        await populateRequiredInputs({
+          ...TEST_COLLECTION,
+          name: "TEST_COLLECTION" + timestamp,
+        });
+
+        // Specify a DOI that is a valid format but is not on Crossref.
+        await populatePublicationDOI("x");
+
+        // Attempt submit, confirm error message is displayed.
+        const [response] = await submitCreateForm();
+        expect(response.status()).toEqual(400);
+        await expect(page).toHaveSelector(getText(INVALID_DOI_ERROR_MESSAGE));
+      });
+    });
+  });
 });
 
 async function createCollection(
   collection?: Partial<Collection>
 ): Promise<string> {
-  await goToPage(`${TEST_URL}${ROUTES.MY_COLLECTIONS}`);
-
-  await page.click(getText("Create Collection"));
+  await showCreateForm();
 
   const testCollection = { ...TEST_COLLECTION, ...collection };
 
-  await page.type("#name", testCollection.name, BLUEPRINT_SAFE_TYPE_OPTIONS);
-  await page.type(
-    "#description",
-    testCollection.description,
-    BLUEPRINT_SAFE_TYPE_OPTIONS
-  );
-  await page.type(
-    "#contact-name",
-    testCollection.contactName,
-    BLUEPRINT_SAFE_TYPE_OPTIONS
-  );
-  await page.type(
-    "#contact-email",
-    testCollection.contactEmail,
-    BLUEPRINT_SAFE_TYPE_OPTIONS
-  );
+  await populateRequiredInputs(testCollection);
 
-  const [response] = await Promise.all([
-    page.waitForEvent("response"),
-    page.click(getTestID("create-button")),
-  ]);
+  const [response] = await submitCreateForm();
 
   const { collection_uuid } = (await response.json()) as {
     collection_uuid: string;
@@ -108,4 +145,61 @@ async function createCollection(
   await expect(page).toHaveSelector(getText(testCollection.name));
 
   return collection_uuid;
+}
+
+/**
+ * Display the collection form modal.
+ */
+async function showCreateForm() {
+  await goToPage(`${TEST_URL}${ROUTES.MY_COLLECTIONS}`);
+  await page.click(getText("Create Collection"));
+}
+
+/**
+ * Submit create collection form.
+ * @returns Form submit response.
+ */
+async function submitCreateForm() {
+  return await Promise.all([
+    page.waitForEvent("response"),
+    page.click(getTestID("create-button")),
+  ]);
+}
+
+/**
+ * Specify a publication DOI on the collection form.
+ * @param value - Value to enter in the DOI input field.
+ */
+async function populatePublicationDOI(value: string) {
+  await page.click(getText("Add Link"));
+  await page.click(getText("Publication DOI"));
+  await expect(page).toHaveSelector(
+    getText(
+      "A summary citation linked to this DOI will be automatically added to this collection."
+    )
+  );
+  await page.type(ELEMENT_ID_INPUT_DOI, value, BLUEPRINT_SAFE_TYPE_OPTIONS);
+}
+
+/**
+ * Populate required values on collection form.
+ * @param testCollection - Collection form input values.
+ */
+async function populateRequiredInputs(testCollection: CollectionFormInput) {
+  await page.type("#name", testCollection.name, BLUEPRINT_SAFE_TYPE_OPTIONS);
+  await page.type(
+    "#description",
+    testCollection.description,
+    BLUEPRINT_SAFE_TYPE_OPTIONS
+  );
+  await page.type(
+    "#contact-name",
+    testCollection.contact_name,
+    BLUEPRINT_SAFE_TYPE_OPTIONS
+  );
+  await page.type(
+    "#contact-email",
+    testCollection.contact_email,
+    BLUEPRINT_SAFE_TYPE_OPTIONS
+  );
 }

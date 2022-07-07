@@ -5,17 +5,22 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
+import anndata
+import numpy as np
 import tiledb
+from scipy import sparse
 from scipy.sparse import coo_matrix, csr_matrix
-
-from backend.wmg.data.cube_pipeline import load, load_data_and_create_cube
-from backend.wmg.data.load_corpus import (
-    load_h5ad,
-    RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD,
+from backend.wmg.data.rankit import rankit
+from backend.wmg.data.cube_pipeline import load_data_and_create_cube
+from backend.corpus_asset_pipelines.integrated_corpus.job import build_integrated_corpus
+from backend.corpus_asset_pipelines.integrated_corpus.load import load_dataset
+from backend.corpus_asset_pipelines.integrated_corpus.validate import validate_dataset_properties
+from backend.corpus_asset_pipelines.integrated_corpus.transform import (
     filter_out_rankits_with_low_expression_counts,
-    validate_dataset_properties,
+    apply_pre_concatenation_filters,
 )
-from backend.wmg.data.schemas.corpus_schema import create_tdb
+from backend.wmg.data.constants import RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD
+from backend.wmg.data.schemas.corpus_schema import create_tdb, OBS_ARRAY_NAME, VAR_ARRAY_NAME
 from tests.unit.backend.wmg.fixtures.test_anndata_object import create_anndata_test_object
 
 
@@ -65,31 +70,34 @@ class TestCorpusLoad(unittest.TestCase):
         super().tearDown()
         shutil.rmtree(self.corpus_path)
 
-    @patch("backend.wmg.data.cube_pipeline.tiledb.consolidate")
-    @patch("backend.wmg.data.cube_pipeline.tiledb.vacuum")
-    @patch("backend.wmg.data.cube_pipeline.load_h5ad")
-    def test__load_loads_all_datasets_in_directory(self, mock_load_h5ad, mock_vacuum, mock_consolidate):
-        load(self.path_to_datasets, self.corpus_path)
-        self.assertEqual(mock_load_h5ad.call_count, 2)
+    @patch("backend.corpus_asset_pipelines.integrated_corpus.job.tiledb.consolidate")
+    @patch("backend.corpus_asset_pipelines.integrated_corpus.job.tiledb.vacuum")
+    @patch("backend.corpus_asset_pipelines.integrated_corpus.job.process_h5ad_for_corpus")
+    def test__load_loads_all_datasets_in_directory(self, mock_process_h5ad, mock_vacuum, mock_consolidate):
+        build_integrated_corpus(self.path_to_datasets, self.corpus_path)
+        self.assertEqual(mock_process_h5ad.call_count, 2)
         self.assertEqual(mock_vacuum.call_count, 3)
         self.assertEqual(mock_consolidate.call_count, 3)
 
-    @patch("backend.wmg.data.load_corpus.update_global_var")
-    @patch("backend.wmg.data.load_corpus.validate_dataset_properties")
+    @patch("backend.corpus_asset_pipelines.integrated_corpus.load.update_corpus_var")
+    @patch("backend.corpus_asset_pipelines.integrated_corpus.job.validate_dataset_properties")
     def test_invalid_datasets_are_not_added_to_corpus(self, mock_validation, mock_global_var):
         mock_validation.return_value = False
-        load(self.path_to_datasets, self.corpus_path)
+        build_integrated_corpus(self.path_to_datasets, self.corpus_path)
         self.assertEqual(mock_global_var.call_count, 0)
 
-    def test_global_var_array_updated_when_dataset_contains_new_genes(self):
-        load_h5ad(self.small_anndata_filename, self.corpus_path, False)
-        with tiledb.open(f"{self.corpus_path}/var", "r") as var:
+    @patch("backend.corpus_asset_pipelines.integrated_corpus.load.transform_dataset_raw_counts_to_rankit")
+    def test_global_var_array_updated_when_dataset_contains_new_genes(self, mock_rankit):
+        small_anndata_object = anndata.read_h5ad(self.small_anndata_filename)
+        larger_anndata_object = anndata.read_h5ad(self.large_anndata_filename)
+        load_dataset(self.corpus_path, small_anndata_object, "dataset_0")
+        with tiledb.open(f"{self.corpus_path}/{VAR_ARRAY_NAME}", "r") as var:
             var_df = var.df[:]
             total_stored_genes = len(set(var_df["gene_ontology_term_id"].to_numpy(dtype=str)))
         small_gene_count = 3
         self.assertEqual(small_gene_count, total_stored_genes)
 
-        load_h5ad(self.large_anndata_filename, self.corpus_path, False)
+        load_dataset(self.corpus_path, larger_anndata_object, "dataset_1")
 
         large_gene_count = 1000  # overlapping genes should only be counted once
         with tiledb.open(f"{self.corpus_path}/var", "r") as var:
@@ -200,7 +208,46 @@ class TestCorpusLoad(unittest.TestCase):
 
         self.assertEqual(0.5 + 0.7 + 0.9, sum(rankits_filtered.data))
 
-    @patch("backend.wmg.data.load_corpus.transform_dataset_raw_counts_to_rankit")
+    def test__rankit_scores_ties_the_same(self):
+        """
+        when the expression values are the same for all genes in the cell the resulting rankit values should all be 3
+        """
+        expected_rankit_scores = [3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0, 3.0]
+        counts = np.array([[1.0, 1.0, 1.0], [2.0, 2.0, 2.0], [3.0, 3.0, 3.0]])
+        raw_expression_csr_matrix = sparse.csr_matrix(counts)
+        rankit_scores = rankit(raw_expression_csr_matrix)
+        self.assertEqual(expected_rankit_scores, rankit_scores.data.tolist())
+
+    def test__rankit_value_spread(self):
+        """
+        Regardless of the expression values, rankit scores should be spread around 3.0 with higher expression levels
+        (compared to other gene expression values for the cell) given a larger score and lower expression values given
+        a lower score.
+        """
+        expected_rankit_scores = [2.0325, 3.0, 3.9674, 2.0325, 3.0, 3.9674, 2.0325, 3.0, 3.9674]
+        counts = np.array([[1.0, 2.0, 3.0], [1.0, 5.0, 25.0], [1.0, 500.0, 1000.0]])
+        raw_expression_csr_matrix = sparse.csr_matrix(counts)
+        rankit_scores = rankit(raw_expression_csr_matrix)
+        for x in range(len(expected_rankit_scores)):
+            expected = expected_rankit_scores[x]
+            actual = rankit_scores.data[x]
+            self.assertAlmostEqual(expected, actual, 2)
+
+    def test__rankit_handles_zero_values_correctly(self):
+        """
+        Theoretically there shouldn't be any zero expression values in a sparse matrix
+        so they shouldn't receive a rankit score
+        """
+        expected_rankit_scores = [3.0, 3.0, 3.0, 3.0, 2.325, 3.674]
+        counts = np.array([[1.0, 0.0, 1.0], [2.0, 0.0, 2.0], [1.0, 0.0, 3.0]])
+        raw_expression_csr_matrix = sparse.csr_matrix(counts)
+        rankit_scores = rankit(raw_expression_csr_matrix)
+        for x in range(len(expected_rankit_scores)):
+            expected = expected_rankit_scores[x]
+            actual = rankit_scores.data[x]
+            self.assertAlmostEqual(expected, actual, 2)
+
+    @patch("backend.corpus_asset_pipelines.integrated_corpus.load.transform_dataset_raw_counts_to_rankit")
     def test__filter_out_cells_with_incorrect_assays(self, mock_rankit):
         # Create dataset with mixture of included and not included assays
         CELL_COUNT = 5
@@ -208,13 +255,10 @@ class TestCorpusLoad(unittest.TestCase):
         test_anndata_object.obs["assay_ontology_term_id"].cat.add_categories(["NOT_INCLUDED"], inplace=True)
         test_anndata_object.obs["assay_ontology_term_id"][0] = "NOT_INCLUDED"
 
-        os.mkdir(f"{self.tmp_dir}/filter_assays_test_dataset")
-        anndata_filename = pathlib.Path(self.tmp_dir, "filter_assays_test_dataset/local.h5ad")
-        anndata_filename.touch()
-        test_anndata_object.write(anndata_filename, compression="gzip")
-
-        load_h5ad(anndata_filename, self.corpus_path, validate=False, min_genes=0)
-        obs = tiledb.open(f"{self.corpus_path}/obs", "r")
+        # pre_concatenation filters remove irrelevant data
+        updated_test_anndata_object = apply_pre_concatenation_filters(test_anndata_object, min_genes=0)
+        load_dataset(self.corpus_path, updated_test_anndata_object, "dataset_0")
+        obs = tiledb.open(f"{self.corpus_path}/{OBS_ARRAY_NAME}", "r")
         corpus_cell_count = obs.df[:].shape[0]
 
         # check the cell count is one less than the starting count

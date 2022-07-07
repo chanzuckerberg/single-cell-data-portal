@@ -7,11 +7,16 @@ import { HEADER_HEIGHT_PX } from "src/components/Header/style";
 import { SidebarMainWrapper } from "src/components/Layout/style";
 import styled from "styled-components";
 
+// (thuang): This is needed to prevent the footer covering the heatmap when the
+// viewport height is shorter than the full height.
+const WRAPPER_BOTTOM_OFFSET_PX = 20;
+
 export const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
   flex: 1;
   height: calc(100vh - ${HEADER_HEIGHT_PX}px - ${FOOTER_HEIGHT_PX}px);
+  padding-bottom: ${WRAPPER_BOTTOM_OFFSET_PX}px;
 `;
 
 export const Gap = styled.div`

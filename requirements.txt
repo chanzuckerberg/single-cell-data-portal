@@ -5,7 +5,7 @@ botocore>=1.14.17
 boto3>=1.11.17
 click==8.0.1
 coverage>=2.0.15
-flake8-black==0.3.2
+flake8-black==0.3.2  # Must be kept in sync with flake8 version in .pre-commit-config.yaml
 flake8==4.0.1  # Must be kept in sync with flake8 version in .pre-commit-config.yaml
 furl
 h5py<3.0.0
@@ -27,3 +27,4 @@ tiledb==0.13.2  # Portal's tiledb version should always be the same or older tha
 -r ./backend/corpora/api_server/requirements.txt
 rsa>=4.7 # not directly required, pinned by Snyk to avoid a vulnerability
 parameterized
+python-json-logger
