@@ -1,0 +1,44 @@
+name: Push S3 Sync (Test)
+
+on:
+  push:
+    branches:
+      - atolopko/1735-env-mirroring
+#      - main
+#      - staging
+#      - prod
+#  pull_request:
+#    branches: "*"
+
+env:
+  CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+  DEPLOYMENT_STAGE: test
+  # Force using BuildKit instead of normal Docker, required so that metadata
+  # is written/read to allow us to use layers of previous builds as cache.
+  DOCKER_BUILDKIT: 1
+  COMPOSE_DOCKER_CLI_BUILD: 1
+  DOCKER_REPO: ${{ secrets.ECR_REPO }}/
+
+jobs:
+  s3-sync:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 1600
+      - uses: actions/checkout@v2
+      - name: S3 sync role perms in GHA (Test)
+        run: |
+          aws ls s3://corpora-data-dev
+          aws ls s3://hosted-cellxgene-dev
+          aws ls s3://cellxgene-wmg-dev
+          aws s3 ls s3://corpora-data-prod/0b696cf4-513e-4e59-b6ac-78d76409e6f8/
+          aws s3 ls s3://hosted-cellxgene-prod/00099d5e-154f-4a7a-aa8d-fa30c8c0c43c.cxg/
+          aws s3 ls s3://cellxgene-wmg-prod/1651599970/
+          aws s3 sync --dryrun s3://corpora-data-prod/0b696cf4-513e-4e59-b6ac-78d76409e6f8/ s3://atolopko-tmp/corpora-data-dev/
+          aws s3 sync --dryrun s3://hosted-cellxgene-prod/00099d5e-154f-4a7a-aa8d-fa30c8c0c43c.cxg/ s3://atolopko-tmp/hosted-cellxgene-dev/
+          aws s3 sync --dryrun s3://cellxgene-wmg-prod/1651599970/ s3://atolopko-tmp/cellxgene-wmg-dev/
