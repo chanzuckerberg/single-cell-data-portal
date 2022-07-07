@@ -20,7 +20,7 @@ env:
   DOCKER_REPO: ${{ secrets.ECR_REPO }}/
 
 jobs:
-  s3-sync:
+  mirror-prod-data-to-deploy-env:
     runs-on: ubuntu-20.04
     steps:
       - uses: aws-actions/configure-aws-credentials@v1
@@ -31,7 +31,7 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           role-duration-seconds: 1600
       - uses: actions/checkout@v2
-      - name: Mirror prod data to deployment environment
+      - name: Mirror S3 data
         run: |
           if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
             $GITHUB_WORKSPACE/backend/scripts/mirror_deploy_env_s3_data.sh dev
