@@ -1,6 +1,8 @@
 import random
 import string
 
+import numpy as np
+
 from backend.corpora.common.corpora_orm import (
     CollectionVisibility,
     ConversionStatus,
@@ -72,6 +74,7 @@ class BogusDatasetParams:
             explorer_url="test_url",
             x_normalization="normal",
             x_approximate_distribution=XApproximateDistribution.NORMAL.name,
+            batch_condition=np.array(["batchA", "batchB"], dtype="object"),
             schema_version="2.0.0",
         )
 

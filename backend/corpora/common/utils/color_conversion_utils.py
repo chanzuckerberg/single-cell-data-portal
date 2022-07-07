@@ -178,16 +178,16 @@ def convert_color_to_hex_format(unknown):
             elif all(0 <= ele <= 255 and isinstance(ele, int) for ele in unknown):
                 tup = tuple(unknown)
             else:
-                raise ColorFormatException("Unknown color iterable format!")
+                raise ColorFormatException(detail="Unknown color iterable format!")
             return "#%02x%02x%02x" % tup
         elif isinstance(unknown, str) and unknown.lower() in CSS4_NAMED_COLORS:
             return CSS4_NAMED_COLORS[unknown.lower()]
         elif isinstance(unknown, str) and HEX_COLOR_FORMAT.match(unknown):
             return unknown.lower()
         else:
-            raise ColorFormatException("Unknown color format type!")
+            raise ColorFormatException(detail="Unknown color format type!")
     except Exception as e:
-        raise ColorFormatException(e)
+        raise ColorFormatException() from e
 
 
 def convert_anndata_category_colors_to_cxg_category_colors(adata):

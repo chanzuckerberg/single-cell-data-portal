@@ -1,6 +1,7 @@
 from flask import g, make_response, jsonify
 
 from backend.corpora.api_server.db import dbconnect
+from backend.corpora.common.corpora_orm import DatasetArtifactFileType
 from backend.corpora.common.entities import DatasetAsset
 from backend.corpora.common.utils.http_exceptions import NotFoundHTTPException
 from backend.corpora.lambdas.api.v1.common import get_dataset_else_error
@@ -14,12 +15,14 @@ def get(collection_uuid: str, curator_tag: str = None, dataset_uuid=None):
     # retrieve the artifact
     assets = dataset.get_assets()
     if not assets:
-        raise NotFoundHTTPException("No assets found. The dataset may still be processing.")
+        raise NotFoundHTTPException(detail="No assets found. The dataset may still be processing.")
 
     asset_list = []
     error_flag = False
     for a in assets:
         asset = DatasetAsset(a)
+        if asset.filetype == DatasetArtifactFileType.CXG:
+            continue
         result = dict(file_type=asset.filetype, file_name=asset.filename)
 
         # Retrieve S3 metadata

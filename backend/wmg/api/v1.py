@@ -15,7 +15,6 @@ from backend.wmg.data.query import (
 )
 from backend.wmg.data.snapshot import load_snapshot, WmgSnapshot
 
-
 # TODO: add cache directives: no-cache (i.e. revalidate); impl etag
 #  https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data
 #  -portal/2132
@@ -37,8 +36,10 @@ def query():
     dot_plot_matrix_df = build_dot_plot_matrix(expression_summary, cell_counts)
 
     include_filter_dims = request.get("include_filter_dims", False)
-    response_filter_dims_values = build_filter_dims_values(criteria, query) if include_filter_dims else {}
 
+    response_filter_dims_values = (
+        build_filter_dims_values(criteria, query, expression_summary) if include_filter_dims else {}
+    )
     return jsonify(
         dict(
             snapshot_id=snapshot.snapshot_identifier,
@@ -86,7 +87,7 @@ def find_dim_option_values(criteria: Dict, query: WmgQuery, dimension: str) -> s
     return filter_dims
 
 
-def build_filter_dims_values(criteria: WmgQueryCriteria, query: WmgQuery) -> Dict:
+def build_filter_dims_values(criteria: WmgQueryCriteria, query: WmgQuery, expression_summary: DataFrame) -> Dict:
     dims = {
         "dataset_id": "",
         "disease_ontology_term_id": "",
@@ -95,7 +96,10 @@ def build_filter_dims_values(criteria: WmgQueryCriteria, query: WmgQuery) -> Dic
         "ethnicity_ontology_term_id": "",
     }
     for dim in dims:
-        dims[dim] = find_dim_option_values(criteria, query, dim)
+        if len(criteria.dict()[dim + "s"]) == 0:
+            dims[dim] = expression_summary.groupby(dim).groups.keys()
+        else:
+            dims[dim] = find_dim_option_values(criteria, query, dim)
 
     response_filter_dims_values = dict(
         datasets=fetch_datasets_metadata(dims["dataset_id"]),
@@ -177,6 +181,7 @@ def build_ordered_cell_types_by_tissue(
             {
                 "cell_type_ontology_term_id": row.cell_type_ontology_term_id,
                 "cell_type": ontology_term_label(row.cell_type_ontology_term_id),
+                "total_count": row.n_total_cells,
                 "depth": row.depth,
             }
         )

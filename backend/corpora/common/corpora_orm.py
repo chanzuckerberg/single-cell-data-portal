@@ -14,7 +14,7 @@ from sqlalchemy import (
     UniqueConstraint,
     types,
 )
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.dialects.postgresql.json import JSON
 from sqlalchemy.ext.declarative import declarative_base, DeclarativeMeta
 from sqlalchemy.orm import relationship
@@ -335,6 +335,7 @@ class DbDataset(Base, AuditMixin, TimestampMixin):
     mean_genes_per_cell = Column(Float, default=0.0)
     schema_version = Column(String)
     curator_tag = Column(String)
+    batch_condition = Column(ARRAY(String))
 
     # Relationships
     collection = relationship("DbCollection", uselist=False, back_populates="datasets")

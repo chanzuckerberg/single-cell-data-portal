@@ -85,7 +85,7 @@ class TestRevisions(BaseFunctionalTestCase):
             self.assertDictEqual(meta_payload_before_revision, meta_payload)
 
             # Upload a new dataset
-            new_dataset_id = self.upload_and_wait(
+            self.upload_and_wait(
                 revision_uuid,
                 dataset_2_dropbox_url,
                 existing_dataset_id=private_dataset_id,
@@ -107,9 +107,19 @@ class TestRevisions(BaseFunctionalTestCase):
             self.assertEqual(res.status_code, requests.codes.accepted)
 
             dataset_meta_payload = requests.get(f"{self.api}/dp/v1/datasets/meta?url={explorer_url}").json()
-            self.assertEqual(
+            self.assertTrue(
+                dataset_meta_payload["s3_uri"].startswith(f"s3://hosted-cellxgene-{os.environ['DEPLOYMENT_STAGE']}/")
+            )
+            self.assertTrue(dataset_meta_payload["s3_uri"].endswith(".cxg/"))
+            self.assertNotIn(
+                dataset_meta_payload["dataset_id"],
                 dataset_meta_payload["s3_uri"],
-                f"s3://hosted-cellxgene-{os.environ['DEPLOYMENT_STAGE']}/{new_dataset_id}.cxg/",
+                "The id of the S3_URI should be different from the revised dataset id.",
+            )
+            self.assertNotIn(
+                dataset_id,
+                dataset_meta_payload["s3_uri"],
+                "The id of the S3_URI should be different from the original dataset id.",
             )
 
             # TODO: add `And the explorer url redirects appropriately`

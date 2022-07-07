@@ -8,7 +8,7 @@ A dot plot can reveal gross differences in expression patterns across cell types
 
 Dot plots visualize two values across two dimensions: color and size (Figure 1). The color of the dot approximates average gene expression. Its size represents the percentage of cells within each cell type that expresses the gene.
 
-<Image src={"/doc-site/4-2_figure1.png"} width={442} height={185} />
+<Image src={"/doc-site/4-2_figure1.png"} />
 
 **Figure 1.** Two metrics are represented in gene expression dot plots, gene expression and percentage of expressing cells.
 
@@ -16,15 +16,22 @@ The combination of these metrics in a grid of genes by cell types allows to make
 
 Genes that are lowly expressed or expressed in a small percentage of cells are difficult to visually identify in a dot plot. This is particularly important for certain marker genes that are specifically but lowly expressed in their target cell types, for example transcription factors and receptors.
 
-<Image src={"/doc-site/4-2_figure2.png"} width={250} height={250} />
+<Image src={"/doc-site/4-2_figure2.png"} />
 
 **Figure 2.** Types of possible qualitatively assessments in a dot plot.
 
 ### How to Make Sense of Normalized Values
 
-The data used to create the averages for the dot plot is quantile normalized and it ranges from 0 to 6 ([see below](#Data-normalization) for details). Roughly, low expression has normalized values lower than 2, medium expression ranges from 2 to 4, and high expression is higher than 4 (Figure 3). These values are used for the dot plot color scheme and are constant and comparable across different dot plots. Additionally, the user has the ability to switch to a relative scale that maps the lowest and highest expression values in a dot plot to the min and max colors, thus providing a wider color range for what's shown in a dot plot.
+The data used to create the averages for the dot plot is quantile normalized and it ranges from 0 to 6 (<NextLink href="#data-normalization">see below</NextLink>) for details).
+Roughly, low expression has normalized values lower than 2, medium expression
+ranges from 2 to 4, and high expression is higher than 4 (Figure 3). These
+values are used for the dot plot color scheme and are constant and comparable
+across different dot plots. Additionally, the user has the ability to switch to
+a relative scale that maps the lowest and highest expression values in a dot
+plot to the min and max colors, thus providing a wider color range for what's
+shown in a dot plot.
 
-<Image src={"/doc-site/4-2_figure3.png"} width={250} height={250} />
+<Image src={"/doc-site/4-2_figure3.png"} />
 
 **Figure 3.** Examples of high, medium and low expression.
 
@@ -32,17 +39,17 @@ The examples in Figure 3 have a relatively constant percentage of cells expressi
 
 ### How to Navigate Cell Types
 
-Cell types in the dot plot (rows) are ordered by default with an [algorithm](#Cell-type-ordering) that preserves relationships in the Cell Type ontology (CL). Thus cell types from the same lineage are roughly shown consecutively.
+Cell types in the dot plot (rows) are ordered by default with an <NextLink href="#cell-type-ordering">algorithm</NextLink> that preserves relationships in the Cell Type ontology (CL). Thus cell types from the same lineage are roughly shown consecutively.
 
 All cell types from a given tissue are shown as originally annotated in the dataset-of-origin. This leads to scenarios where parent and children cell types may be present in the dot plot, but they are independent observations and the former is not a superset of the latter (Figure 4).
 
-<Image src={"/doc-site/4-2_figure4.png"} width={250} height={250} />
+<Image src={"/doc-site/4-2_figure4.png"} />
 
 **Figure 4.** In some cases parent and children cell types are present, but these are independent of each other.
 
 ### Caveats of Normalization
 
-Given that data are [quantile normalized](#Data-normalization) all expression is relative to the cells it is measured in. As such comparisons of absolute expression across cell types could be made if the number of genes measured is equal across all cells. While this assumption is violated, we attempt to minimize negative effects by [excluding cells with low gene coverage](#Removal-of-low-coverage-cells) thus reducing the variance in the number of genes measured across cells.
+Given that data are <NextLink href="#Data-normalization">quantile normalized</NextLink> all expression is relative to the cells it is measured in. As such comparisons of absolute expression across cell types could be made if the number of genes measured is equal across all cells. While this assumption is violated, we attempt to minimize negative effects by <NextLink href="#removal-of-low-coverage-cells">excluding cells with low gene coverage</NextLink> thus reducing the variance in the number of genes measured across cells.
 
 Nonetheless, caution is advised when finding subtle differences in the dot plot across cell types.
 
@@ -64,7 +71,7 @@ An in-depth description of this method can be found <NextLink href="/docs/04__An
 
 ## Processing of Expression Data
 
-<Image src={"/doc-site/4-2_figure5.png"} width={250} height={250} />
+<Image src={"/doc-site/4-2_figure5.png"} />
 
 **Figure 5.** Overview of processing steps from raw read counts to gene expression averages per cell type.
 
@@ -78,7 +85,7 @@ Any cell that has less than 500 genes expressed is excluded, this filters out ab
 
 ### Gene-length Pre-normalization
 
-![#ffab24](https://via.placeholder.com/15/ffab24/000000?text=+) WARNING - The following process has not been implemented as the feature **currently only includes data that does not require gene-length normalization.**
+WARNING - The following process has not been implemented as the feature **currently only includes data that does not require gene-length normalization.**
 
 In platforms that sequence full RNA molecules, such as Smart-seq, gene counts are directly correlated with gene length. To account for this, gene counts from these technologies are divided by the corresponding gene length prior to normalization.
 
@@ -90,8 +97,8 @@ Read counts are normalized using a modification of the rankit method which is a 
 
 For a given cell in a count matrix, the read counts across genes are transformed to quantiles, then those quantiles are mapped to the corresponding values of a normal distribution with mean = 3 and variance = 1 (Figure 6). Normalized matrices from multiple datasets of the same tissue are concatenated along the gene axis.
 
-<Image src={"/doc-site/4-2_figure6.png"} width={250} height={250} />
-<Image src={"/doc-site/4-2_figure7.png"} width={250} height={250} />
+<Image src={"/doc-site/4-2_figure6.png"} />
+<Image src={"/doc-site/4-2_figure7.png"} />
 
 **Figure 6.** Visual representation of rankit normalization.
 
