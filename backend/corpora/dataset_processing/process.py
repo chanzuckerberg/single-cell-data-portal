@@ -131,10 +131,8 @@ from datetime import datetime
 from os.path import join
 
 import numpy
-import requests
 import scanpy
 
-from backend.corpora.common.corpora_config import CorporaConfig
 from backend.corpora.common.corpora_orm import (
     ConversionStatus,
     DatasetArtifactFileType,
@@ -154,7 +152,6 @@ from backend.corpora.dataset_processing.exceptions import (
     ValidationFailed,
 )
 from backend.corpora.dataset_processing.h5ad_data_file import H5ADDataFile
-from backend.corpora.dataset_processing.slack import format_slack_message
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -220,10 +217,8 @@ def create_artifact(
         )
 
     except Exception as e:
-        update_db(
-            dataset_id,
-            processing_status={processing_status_type: ConversionStatus.FAILED},
-        )
+        logger.error(e)
+        e.args = {processing_status_type: ConversionStatus.FAILED}
         raise e
 
 
@@ -600,10 +595,8 @@ def validate_h5ad_file_and_add_labels(dataset_id: str, local_filename: str) -> t
         status = dict(
             validation_status=ValidationStatus.INVALID,
             validation_message=errors,
-            processing_status=ProcessingStatus.FAILURE,
         )
-        update_db(dataset_id, processing_status=status)
-        raise ValidationFailed
+        raise ValidationFailed(status)
     else:
         logger.info("Validation complete")
         status = dict(
@@ -632,6 +625,7 @@ def log_batch_environment():
         "CELLXGENE_BUCKET",
         "DATASET_ID",
         "DEPLOYMENT_STAGE",
+        "MAX_ATTEMPTS",
     ]
     env_vars = dict()
     for var in batch_environment_variables:
@@ -664,12 +658,12 @@ def process(dataset_id, dropbox_url, cellxgene_bucket, artifact_bucket):
 
 
 def main():
-    return_value = 0
     log_batch_environment()
     dataset_id = os.environ["DATASET_ID"]
     step_name = os.environ["STEP_NAME"]
+    is_last_attempt = os.environ["AWS_BATCH_JOB_ATTEMPT"] == os.getenv("MAX_ATTEMPTS", "1")
+    return_value = 0
     logger.info(f"Processing dataset {dataset_id}")
-
     try:
         if step_name == "download-validate":
             from backend.corpora.dataset_processing.process_download_validate import (
@@ -698,29 +692,20 @@ def main():
 
     except ProcessingCancelled:
         cancel_dataset(dataset_id)
-    except (ValidationFailed, ProcessingFailed):
+    except (ValidationFailed, ProcessingFailed) as e:
+        (status,) = e.args
+        if is_last_attempt:
+            update_db(dataset_id, processing_status=status)
         logger.exception("An Error occurred while processing.")
         return_value = 1
-    except Exception:
-        message = "An unexpected error occurred while processing the data set."
-        logger.exception(message)
-        update_db(
-            dataset_id,
-            processing_status=dict(processing_status=ProcessingStatus.FAILURE, upload_message=message),
-        )
+    except Exception as e:
+        (status,) = e.args
+        if is_last_attempt and isinstance(status, dict):
+            update_db(dataset_id, processing_status=status)
+        logger.exception(f"An unexpected error occurred while processing the data set: {e}")
         return_value = 1
 
-    if return_value > 0:
-        notify_slack_failure(dataset_id)
     return return_value
-
-
-def notify_slack_failure(dataset_id):
-    data = format_slack_message(dataset_id)
-    logger.info(data)
-    if os.getenv("DEPLOYMENT_STAGE") == "prod":
-        slack_webhook = CorporaConfig().slack_webhook
-        requests.post(slack_webhook, headers={"Content-type": "application/json"}, data=data)
 
 
 if __name__ == "__main__":

@@ -1,10 +1,21 @@
 import json
-
+import logging
 import os
+import requests
 
+from backend.corpora.common.corpora_config import CorporaConfig
 from backend.corpora.common.entities import Dataset
 from backend.corpora.common.utils.db_session import db_session_manager
 from backend.corpora.common.utils.json import CustomJSONEncoder
+
+logger = logging.getLogger(__name__)
+
+
+def notify_slack_failure(dataset_id):
+    data = format_slack_message(dataset_id)
+    logger.info(data)
+    slack_webhook = CorporaConfig().slack_webhook
+    requests.post(slack_webhook, headers={"Content-type": "application/json"}, data=data)
 
 
 def format_slack_message(dataset_id):
