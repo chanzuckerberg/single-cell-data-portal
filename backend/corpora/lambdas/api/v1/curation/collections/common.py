@@ -23,18 +23,18 @@ DATASET_ONTOLOGY_ELEMENTS = (
 )
 
 
-def reshape_for_curation_api_and_is_allowed(collection, token_info, uuid_provided=False):
+def reshape_for_curation_api_and_is_allowed(collection, token_info, id_provided=False):
     """
     Reshape Collection data for the Curation API response.
     :param collection: the Collection being returned in the API response
     :param token_info: user access token
-    :param uuid_provided: bool - whether or not the collection uuid was provided by the user, for access purposes
+    :param id_provided: bool - whether or not the collection uuid was provided by the user, for access purposes
     :return: whether or not the Collection should be included in the response per ownership/access rules
     """
     owner = collection["owner"]
     if is_user_owner_or_allowed(token_info, owner):
         collection["access_type"] = "WRITE"
-    elif not uuid_provided and collection["visibility"] == CollectionVisibility.PRIVATE:
+    elif not id_provided and collection["visibility"] == CollectionVisibility.PRIVATE:
         # User neither provided the uuid for access nor are they authorized by their access token
         return False
     elif token_info:
