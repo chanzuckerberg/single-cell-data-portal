@@ -131,11 +131,11 @@ interface Filter {
   gene_ontology_term_ids: string[];
   organism_ontology_term_id: string;
   tissue_ontology_term_ids: string[];
-  dataset_ids?: string[];
-  disease_ontology_term_ids?: string[];
-  sex_ontology_term_ids?: string[];
-  development_stage_ontology_term_ids?: string[];
-  ethnicity_ontology_term_ids?: string[];
+  dataset_ids: string[];
+  disease_ontology_term_ids: string[];
+  sex_ontology_term_ids: string[];
+  development_stage_ontology_term_ids: string[];
+  ethnicity_ontology_term_ids: string[];
 }
 
 export interface Query {
@@ -542,14 +542,6 @@ function aggregateIdLabels(items: { [id: string]: string }[]): {
   return items.reduce((memo, item) => ({ ...memo, ...item }), {});
 }
 
-const EMPTY_FILTERS: State["selectedFilters"] = {
-  datasets: undefined,
-  developmentStages: undefined,
-  diseases: undefined,
-  ethnicities: undefined,
-  sexes: undefined,
-};
-
 function useWMGQueryRequestBody(options = { includeAllFilterOptions: false }) {
   const { includeAllFilterOptions } = options;
 
@@ -568,7 +560,6 @@ function useWMGQueryRequestBody(options = { includeAllFilterOptions: false }) {
    */
   const { datasets, developmentStages, diseases, ethnicities, sexes } =
     includeAllFilterOptions ? EMPTY_FILTERS : selectedFilters;
-
   const organismGenesByName = useMemo(() => {
     const result: { [name: string]: { id: string; name: string } } = {};
 
@@ -656,6 +647,13 @@ interface Dataset extends RawDataset {
   label: string;
 }
 
+export const EMPTY_FILTERS: State["selectedFilters"] = {
+  datasets: [],
+  developmentStages: [],
+  diseases: [],
+  ethnicities: [],
+  sexes: [],
+};
 export interface CollectionFromDatasets {
   name: string;
   url: string;
