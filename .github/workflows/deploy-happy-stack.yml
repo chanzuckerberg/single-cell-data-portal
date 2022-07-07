@@ -22,12 +22,16 @@ jobs:
       - uses: actions/checkout@v2
         with:
           ref: ${{ github.event.deployment.sha }}
+      - name: Dump database data from prod
+        run: echo TODO (unimplemented)
       - name: Mirror S3 data to dev
         if: github.event.deployment.environment == 'dev'
         run: $GITHUB_WORKSPACE/backend/scripts/mirror_deploy_env_s3_data.sh dev
       - name: Mirror S3 data to staging
         if: github.event.deployment.environment == 'stage'
         run: $GITHUB_WORKSPACE/backend/scripts/mirror_deploy_env_s3_data.sh staging
+      - name: Load database data
+        run: echo TODO (unimplemented)
   upgrade:
     runs-on: ubuntu-20.04
     needs:
