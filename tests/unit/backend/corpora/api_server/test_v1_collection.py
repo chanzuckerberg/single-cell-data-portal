@@ -482,7 +482,7 @@ class TestCollection(BaseAuthAPITest):
             data=json_data,
         )
         self.assertEqual(201, response.status_code)
-        collection_id = json.loads(response.data)["collection_uuid"]
+        collection_id = json.loads(response.data)["collection_id"]
         collection = Collection.get_collection(
             self.session, collection_id, CollectionVisibility.PRIVATE.name, include_tombstones=True
         )
@@ -566,7 +566,7 @@ class TestCollection(BaseAuthAPITest):
             data=json_data,
         )
         self.assertEqual(201, response.status_code)
-        collection_id = json.loads(response.data)["collection_uuid"]
+        collection_id = json.loads(response.data)["collection_id"]
         collection = Collection.get_collection(
             self.session, collection_id, CollectionVisibility.PRIVATE.name, include_tombstones=True
         )
@@ -587,7 +587,7 @@ class TestCollection(BaseAuthAPITest):
             data=json_data,
         )
         self.assertEqual(201, response.status_code)
-        collection_id = json.loads(response.data)["collection_uuid"]
+        collection_id = json.loads(response.data)["collection_id"]
         collection = Collection.get_collection(
             self.session, collection_id, CollectionVisibility.PRIVATE.name, include_tombstones=True
         )
@@ -613,7 +613,7 @@ class TestCollection(BaseAuthAPITest):
             data=json_data,
         )
         self.assertEqual(201, response.status_code)
-        collection_id = json.loads(response.data)["collection_uuid"]
+        collection_id = json.loads(response.data)["collection_id"]
         collection = Collection.get_collection(
             self.session, collection_id, CollectionVisibility.PRIVATE.name, include_tombstones=True
         )
@@ -689,9 +689,9 @@ class TestCollection(BaseAuthAPITest):
         }
         response = self.app.post(test_url.url, headers=headers, data=json.dumps(data))
         self.assertEqual(201, response.status_code)
-        collection_uuid = json.loads(response.data)["collection_uuid"]
+        collection_id = json.loads(response.data)["collection_id"]
 
-        test_url = furl(path=f"/dp/v1/collections/{collection_uuid}")
+        test_url = furl(path=f"/dp/v1/collections/{collection_id}")
         test_url.add(query_params=dict(visibility="PRIVATE"))
         response = self.app.get(test_url.url, headers=headers)
         self.assertEqual(200, response.status_code)
@@ -704,7 +704,7 @@ class TestCollection(BaseAuthAPITest):
 
         # test that non owners only have read access
         no_cookie_headers = {"host": "localhost", "Content-Type": "application/json"}
-        test_url = furl(path=f"/dp/v1/collections/{collection_uuid}")
+        test_url = furl(path=f"/dp/v1/collections/{collection_id}")
         test_url.add(query_params=dict(visibility="PRIVATE"))
         response = self.app.get(test_url.url, headers=no_cookie_headers)
         self.assertEqual("READ", json.loads(response.data)["access_type"])
@@ -725,9 +725,9 @@ class TestCollection(BaseAuthAPITest):
         }
         response = self.app.post(test_url.url, headers=headers, data=json.dumps(data))
         self.assertEqual(201, response.status_code)
-        collection_uuid = json.loads(response.data)["collection_uuid"]
+        collection_id = json.loads(response.data)["collection_id"]
 
-        test_url = furl(path=f"/dp/v1/collections/{collection_uuid}")
+        test_url = furl(path=f"/dp/v1/collections/{collection_id}")
         test_url.add(query_params=dict(visibility="PRIVATE"))
         response = self.app.get(test_url.url, headers=headers)
         self.assertEqual(200, response.status_code)

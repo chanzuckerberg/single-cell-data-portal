@@ -42,7 +42,7 @@ class TestPublish(BaseAuthAPITest):
             response = self.app.post(path, headers=self.headers_authed, data=json.dumps(body))
         self.assertEqual(202, response.status_code)
 
-        self.assertDictEqual({"collection_uuid": pub_collection_id, "visibility": "PUBLIC"}, json.loads(response.data))
+        self.assertDictEqual({"collection_id": pub_collection_id, "visibility": "PUBLIC"}, json.loads(response.data))
         self.addCleanup(self.delete_collection, pub_collection_id)
 
         # Cannot call publish for an already published collection

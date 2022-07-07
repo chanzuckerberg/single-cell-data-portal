@@ -234,7 +234,7 @@ export async function createCollection(
   }
 
   return {
-    collectionId: json.collection_uuid,
+    collectionId: json.collection_id,
   };
 }
 
@@ -288,7 +288,7 @@ async function collectionUploadLinks({
     throw json;
   }
 
-  return json.dataset_uuid;
+  return json.dataset_id;
 }
 
 export function useCollectionUploadLinks(id: string) {
@@ -553,7 +553,7 @@ const reuploadDataset = async function ({
   const result = await response.json();
   if (!response.ok) throw result;
 
-  return result.dataset_uuid;
+  return result.dataset_id;
 };
 
 export function useReuploadDataset(

@@ -20,20 +20,20 @@ from .....common.utils.http_exceptions import (
 )
 
 
-def link(collection_uuid: str, body: dict, token_info: dict):
-    dataset_id = upload_from_link(collection_uuid, token_info, body["url"], curator_tag=body.get("curator_tag"))
-    return make_response({"dataset_uuid": dataset_id}, 202)
+def link(collection_id: str, body: dict, token_info: dict):
+    dataset_id = upload_from_link(collection_id, token_info, body["url"], curator_tag=body.get("curator_tag"))
+    return make_response({"dataset_id": dataset_id}, 202)
 
 
-def relink(collection_uuid: str, body: dict, token_info: dict):
+def relink(collection_id: str, body: dict, token_info: dict):
     dataset_id = upload_from_link(
-        collection_uuid,
+        collection_id,
         token_info,
         body.get("url", body.get("link")),
         body.get("id"),
         curator_tag=body.get("curator_tag"),
     )
-    return make_response({"dataset_uuid": dataset_id}, 202)
+    return make_response({"dataset_id": dataset_id}, 202)
 
 
 @dbconnect
