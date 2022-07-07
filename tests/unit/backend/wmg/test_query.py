@@ -1,13 +1,14 @@
 import unittest
 from typing import NamedTuple
 
-from backend.wmg.api.v1 import build_dot_plot_matrix
+from backend.wmg.api.v1 import get_dot_plot_data, agg_cell_type_counts, agg_tissue_counts
 from backend.wmg.data.query import WmgQueryCriteria, WmgQuery
 from backend.wmg.data.schemas.cube_schema import cube_non_indexed_dims
 from tests.unit.backend.wmg.fixtures.test_snapshot import (
     create_temp_wmg_snapshot,
     all_ones_expression_summary_values,
     all_tens_cell_counts_values,
+    all_X_cell_counts_values,
 )
 
 
@@ -27,7 +28,7 @@ class QueryTest(unittest.TestCase):
             dim_size=dim_size, expression_summary_vals_fn=all_ones_expression_summary_values
         ) as snapshot:
             query = WmgQuery(snapshot)
-            result, _ = build_dot_plot_matrix(query.expression_summary(criteria), query.cell_counts(criteria))
+            result, _ = get_dot_plot_data(query.expression_summary(criteria), query.cell_counts(criteria))
 
         expected = {
             "cell_type_ontology_term_id": {},
@@ -55,7 +56,7 @@ class QueryTest(unittest.TestCase):
             cell_counts_generator_fn=all_tens_cell_counts_values,
         ) as snapshot:
             query = WmgQuery(snapshot)
-            result, _ = build_dot_plot_matrix(query.expression_summary(criteria), query.cell_counts(criteria))
+            result, _ = get_dot_plot_data(query.expression_summary(criteria), query.cell_counts(criteria))
 
         # sanity check the expected value of the stats (n_cells, nnz, sum) for each data viz point; if this fails, the
         # cube test fixture may have changed (e.g. TileDB Array schema) or the logic for creating the test cube fixture
@@ -122,7 +123,7 @@ class QueryTest(unittest.TestCase):
             cell_counts_generator_fn=all_tens_cell_counts_values,
         ) as snapshot:
             query = WmgQuery(snapshot)
-            result, _ = build_dot_plot_matrix(query.expression_summary(criteria), query.cell_counts(criteria))
+            result, _ = get_dot_plot_data(query.expression_summary(criteria), query.cell_counts(criteria))
 
         # sanity check the expected value of the stats (n_cells, nnz, sum) for each data viz point; if this fails, the
         # cube test fixture may have changed (e.g. TileDB Array schema) or the logic for creating the test cube fixture
@@ -268,6 +269,69 @@ class QueryTest(unittest.TestCase):
             ),
         )
 
+    def test__query_agg_cell_type_counts__returns_correct_result(self):
+        criteria = WmgQueryCriteria(
+            gene_ontology_term_ids=["gene_ontology_term_id_0"],
+            organism_ontology_term_id="organism_ontology_term_id_1",
+            tissue_ontology_term_ids=[
+                "tissue_ontology_term_id_0",
+                "tissue_ontology_term_id_1",
+                "tissue_ontology_term_id_2",
+            ],
+        )
+
+        dim_size = 3
+        expected_count = 42
+        with create_temp_wmg_snapshot(
+            dim_size=dim_size,
+            expression_summary_vals_fn=all_ones_expression_summary_values,
+            cell_counts_generator_fn=lambda coords: all_X_cell_counts_values(coords, expected_count),
+        ) as snapshot:
+            query = WmgQuery(snapshot)
+            result = agg_cell_type_counts(query.cell_counts(criteria))
+
+        expected_n_combinations = dim_size ** (len(cube_non_indexed_dims) - 1)
+        assert expected_n_combinations == 729
+
+        # after aggregating, we will get three tissues, and three cell types per tissue, with 729 * expected_count total cells
+        expected = (
+            [{"n_cells_cell_type": expected_n_combinations * expected_count}]
+            * len(criteria.tissue_ontology_term_ids)
+            * dim_size
+        )
+
+        self.assertEqual(expected, result.to_dict("records"))
+
+    def test__query_agg_tissue_counts__returns_correct_result(self):
+        criteria = WmgQueryCriteria(
+            gene_ontology_term_ids=["gene_ontology_term_id_0"],
+            organism_ontology_term_id="organism_ontology_term_id_1",
+            tissue_ontology_term_ids=[
+                "tissue_ontology_term_id_0",
+                "tissue_ontology_term_id_1",
+                "tissue_ontology_term_id_2",
+            ],
+        )
+
+        dim_size = 3
+        expected_count = 42
+        with create_temp_wmg_snapshot(
+            dim_size=dim_size,
+            expression_summary_vals_fn=all_ones_expression_summary_values,
+            cell_counts_generator_fn=lambda coords: all_X_cell_counts_values(coords, expected_count),
+        ) as snapshot:
+            query = WmgQuery(snapshot)
+            result = agg_tissue_counts(query.cell_counts(criteria))
+
+        expected_n_combinations = dim_size ** (len(cube_non_indexed_dims) - 1)
+        assert expected_n_combinations == 729
+
+        # after aggregating, we will get three tissues, with 729 * expected_count * (# cell types per tissue = 3) total cells
+        expected = [{"n_cells_tissue": expected_n_combinations * expected_count * dim_size}] * len(
+            criteria.tissue_ontology_term_ids
+        )
+        self.assertEqual(expected, result.to_dict("records"))
+
     @classmethod
     def setUpClass(cls) -> None:
         super().setUpClass()
@@ -288,7 +352,7 @@ class QueryTest(unittest.TestCase):
             cell_counts_generator_fn=all_tens_cell_counts_values,
         ) as snapshot:
             query = WmgQuery(snapshot)
-            result, _ = build_dot_plot_matrix(query.expression_summary(criteria), query.cell_counts(criteria))
+            result, _ = get_dot_plot_data(query.expression_summary(criteria), query.cell_counts(criteria))
 
         # sanity check the expected value of the stats (n_cells, nnz, sum) for each data viz point; if this fails, the
         # cube test fixture may have changed (e.g. TileDB Array schema) or the logic for creating the test cube fixture
@@ -359,7 +423,7 @@ class QueryTest(unittest.TestCase):
             cell_counts_generator_fn=all_tens_cell_counts_values,
         ) as snapshot:
             query = WmgQuery(snapshot)
-            result, _ = build_dot_plot_matrix(query.expression_summary(criteria), query.cell_counts(criteria))
+            result, _ = get_dot_plot_data(query.expression_summary(criteria), query.cell_counts(criteria))
 
         # sanity check the expected value of the stats (n_cells, nnz, sum) for each data viz point; if this fails, the
         # cube test fixture may have changed (e.g. TileDB Array schema) or the logic for creating the test cube fixture
@@ -431,7 +495,7 @@ class QueryTest(unittest.TestCase):
             cell_counts_generator_fn=all_tens_cell_counts_values,
         ) as snapshot:
             query = WmgQuery(snapshot)
-            result, _ = build_dot_plot_matrix(query.expression_summary(criteria), query.cell_counts(criteria))
+            result, _ = get_dot_plot_data(query.expression_summary(criteria), query.cell_counts(criteria))
 
         # sanity check the expected value of the stats (n_cells, nnz, sum) for each data viz point; if this fails, the
         # cube test fixture may have changed (e.g. TileDB Array schema) or the logic for creating the test cube fixture

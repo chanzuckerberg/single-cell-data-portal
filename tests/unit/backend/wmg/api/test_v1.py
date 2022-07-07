@@ -185,6 +185,15 @@ class WmgApiV1Tests(unittest.TestCase):
             )
             assert expected_cell_count_per_cell_type == 729
 
+            # there are 729 possible combinations per tissue-cell type given the above filtering criteria,
+            # and 10 cells per type in the cell counts cube, so we expect 7290 total cells per tissue-cell type
+
+            expected_combinations_per_cell_type = dim_size ** len(
+                set(cube_non_indexed_dims).difference({"cell_type_ontology_term_id"})
+            )
+            expected_n_cells_per_cell_type = expected_combinations_per_cell_type * 10
+            assert expected_n_cells_per_cell_type == 7290
+
             expected = {
                 "snapshot_id": "dummy-snapshot",
                 "expression_summary": {
@@ -438,6 +447,10 @@ class WmgApiV1Tests(unittest.TestCase):
 
             self.assertEqual(200, response.status_code)
 
+            # each cell type has `expected_count` cells for each possible combination of secondary filters
+            # given the present constraints (1 organism, both tissues). There are 2**8=256 possible combinations
+            # of filters. After aggregating the counts across two tissues and two cell types per tissue,
+            # there are 64 entries per cell type-tissue combination. Hence, the toal count will be expected_count * 64
             expected = {
                 "tissue_ontology_term_id_0": [
                     {

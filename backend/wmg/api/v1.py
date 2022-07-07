@@ -33,7 +33,7 @@ def query():
     query = WmgQuery(snapshot)
     expression_summary = query.expression_summary(criteria)
     cell_counts = query.cell_counts(criteria)
-    dot_plot_matrix_df, cell_counts_cell_type_agg = build_dot_plot_matrix(expression_summary, cell_counts)
+    dot_plot_matrix_df, cell_counts_cell_type_agg = get_dot_plot_data(expression_summary, cell_counts)
 
     include_filter_dims = request.get("include_filter_dims", False)
 
@@ -125,26 +125,40 @@ def build_expression_summary(query_result: DataFrame) -> dict:
     return structured_result
 
 
-def build_dot_plot_matrix(query_result: DataFrame, cell_counts: DataFrame) -> Tuple[DataFrame, DataFrame]:
-    # Aggregate cube data by gene, tissue, cell type
-    expr_summary_agg = query_result.groupby(
-        ["gene_ontology_term_id", "tissue_ontology_term_id", "cell_type_ontology_term_id"], as_index=False
-    ).sum()
-
+def agg_cell_type_counts(cell_counts: DataFrame) -> DataFrame:
+    # Aggregate cube data by tissue, cell type
     cell_counts_cell_type_agg = cell_counts.groupby(
         ["tissue_ontology_term_id", "cell_type_ontology_term_id"], as_index=True
     ).sum()
     cell_counts_cell_type_agg.rename(columns={"n_total_cells": "n_cells_cell_type"}, inplace=True)
+    return cell_counts_cell_type_agg
 
+
+def agg_tissue_counts(cell_counts: DataFrame) -> DataFrame:
+    # Aggregate cube data by tissue
     cell_counts_tissue_agg = cell_counts.groupby(["tissue_ontology_term_id"], as_index=True).sum()
     cell_counts_tissue_agg.rename(columns={"n_total_cells": "n_cells_tissue"}, inplace=True)
+    return cell_counts_tissue_agg
 
-    return (
-        expr_summary_agg.join(
-            cell_counts_cell_type_agg, on=["tissue_ontology_term_id", "cell_type_ontology_term_id"], how="left"
-        ).join(cell_counts_tissue_agg, on=["tissue_ontology_term_id"], how="left"),
-        cell_counts_cell_type_agg,
-    )
+
+def get_dot_plot_data(query_result: DataFrame, cell_counts: DataFrame) -> Tuple[DataFrame, DataFrame]:
+    # Get the dot plot matrix dataframe and aggregated cell counts per cell type
+    cell_counts_cell_type_agg = agg_cell_type_counts(cell_counts)
+    cell_counts_tissue_agg = agg_tissue_counts(cell_counts)
+    dot_plot_matrix_df = build_dot_plot_matrix(query_result, cell_counts_cell_type_agg, cell_counts_tissue_agg)
+    return dot_plot_matrix_df, cell_counts_cell_type_agg
+
+
+def build_dot_plot_matrix(
+    query_result: DataFrame, cell_counts_cell_type_agg: DataFrame, cell_counts_tissue_agg: DataFrame
+) -> DataFrame:
+    # Aggregate cube data by gene, tissue, cell type
+    expr_summary_agg = query_result.groupby(
+        ["gene_ontology_term_id", "tissue_ontology_term_id", "cell_type_ontology_term_id"], as_index=False
+    ).sum()
+    return expr_summary_agg.join(
+        cell_counts_cell_type_agg, on=["tissue_ontology_term_id", "cell_type_ontology_term_id"], how="left"
+    ).join(cell_counts_tissue_agg, on=["tissue_ontology_term_id"], how="left")
 
 
 def build_gene_id_label_mapping(gene_ontology_term_ids: List[str]) -> List[dict]:
