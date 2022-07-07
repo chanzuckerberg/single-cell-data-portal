@@ -8,8 +8,30 @@ env:
   DOCKER_REPO: ${{ secrets.ECR_REPO }}/
 
 jobs:
+  mirror-prod-data-to-deploy-env:
+    if: github.event.deployment.environment != 'prod'
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 1600
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.deployment.sha }}
+      - name: Mirror S3 data to dev
+        if: github.event.deployment.environment == 'dev'
+        run: $GITHUB_WORKSPACE/backend/scripts/mirror_deploy_env_s3_data.sh dev
+      - name: Mirror S3 data to staging
+        if: github.event.deployment.environment == 'stage'
+        run: $GITHUB_WORKSPACE/backend/scripts/mirror_deploy_env_s3_data.sh staging
   upgrade:
     runs-on: ubuntu-20.04
+    needs:
+      - mirror-prod-data-to-deploy-env
     steps:
       - name: Configure AWS Prod Credentials
         uses: aws-actions/configure-aws-credentials@v1
