@@ -40,6 +40,6 @@ jobs:
           else
             # TODO: Remove after development of this GHA workflow
             $GITHUB_WORKSPACE/backend/scripts/mirror_env_s3_data.sh dev
-#            echo Unsupported deployment environment for data mirroring
-#            exit 1
+            # echo Unsupported deployment environment for data mirroring
+            # exit 1
           fi
