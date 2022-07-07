@@ -34,12 +34,12 @@ jobs:
       - name: Mirror prod data to deployment environment
         run: |
           if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-            $GITHUB_WORKSPACE/backend/scripts/mirror_env_s3_data.sh dev
+            $GITHUB_WORKSPACE/backend/scripts/mirror_deploy_env_s3_data.sh dev
           elif [[ "${{ github.ref }}" == "refs/heads/staging" ]]; then
             $GITHUB_WORKSPACE/backend/scripts/mirror_deploy_env_s3_data.sh staging
           else
             # TODO: Remove after development of this GHA workflow
-            $GITHUB_WORKSPACE/backend/scripts/mirror_env_s3_data.sh dev
+            $GITHUB_WORKSPACE/backend/scripts/mirror_deploy_env_s3_data.sh dev
             # echo Unsupported deployment environment for data mirroring
             # exit 1
           fi
