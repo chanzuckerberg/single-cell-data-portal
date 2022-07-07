@@ -293,7 +293,8 @@ class QueryTest(unittest.TestCase):
         expected_n_combinations = dim_size ** (len(cube_non_indexed_dims) - 1)
         assert expected_n_combinations == 729
 
-        # after aggregating, we will get three tissues, and three cell types per tissue, with 729 * expected_count total cells
+        # after aggregating, we will get three tissues, and three cell types per tissue,
+        # with 729 * expected_count total cells
         expected = (
             [{"n_cells_cell_type": expected_n_combinations * expected_count}]
             * len(criteria.tissue_ontology_term_ids)
@@ -326,7 +327,8 @@ class QueryTest(unittest.TestCase):
         expected_n_combinations = dim_size ** (len(cube_non_indexed_dims) - 1)
         assert expected_n_combinations == 729
 
-        # after aggregating, we will get three tissues, with 729 * expected_count * (# cell types per tissue = 3) total cells
+        # after aggregating, we will get three tissues,
+        # with 729 * expected_count * (# cell types per tissue = 3) total cells
         expected = [{"n_cells_tissue": expected_n_combinations * expected_count * dim_size}] * len(
             criteria.tissue_ontology_term_ids
         )
