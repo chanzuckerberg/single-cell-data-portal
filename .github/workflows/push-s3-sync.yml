@@ -33,9 +33,9 @@ jobs:
       - uses: actions/checkout@v2
       - name: S3 sync role perms in GHA (Test)
         run: |
-          aws ls s3://corpora-data-dev
-          aws ls s3://hosted-cellxgene-dev
-          aws ls s3://cellxgene-wmg-dev
+          aws s3 ls s3://corpora-data-dev
+          aws s3 ls s3://hosted-cellxgene-dev
+          aws s3 ls s3://cellxgene-wmg-dev
           aws s3 ls s3://corpora-data-prod/0b696cf4-513e-4e59-b6ac-78d76409e6f8/
           aws s3 ls s3://hosted-cellxgene-prod/00099d5e-154f-4a7a-aa8d-fa30c8c0c43c.cxg/
           aws s3 ls s3://cellxgene-wmg-prod/1651599970/
