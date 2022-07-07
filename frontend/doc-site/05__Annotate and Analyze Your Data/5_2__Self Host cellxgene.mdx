@@ -12,12 +12,12 @@ Please consider the following when deploying cellxgene in any "hosted" environme
 
 - Information security requires careful configuration of the host environment, including firewall, logging, etc - please follow best practices
 - Cellxgene includes features which may be inappropriate for a hosted deployment - you may wish to use the following command line option:`--disable-diffexp`
-- `cellxgene launch` currently uses Flask's development server, which is not recommended for hosted deployment (see [the Flask documentation](https://flask.palletsprojects.com/en/1.1.x/tutorial/deploy/#run-with-a-production-server))
+- `cellxgene launch` currently uses Flask's development server, which is not recommended for hosted deployment (see [the Flask documentation](https://flask.palletsprojects.com/en/2.1.x/tutorial/deploy/#run-with-a-production-server))
 - We have no testing or official support for deployments where multiple users are accessing the same cellxgene instance
 - Your cellxgene instance is likely to hang or crash if too many people access it at the same time, especially if they using functions that call the Python backend (such as differential expression, noted above)
 - Cellxgene only supports one instance per dataset
 
-If you believe you have found a security-related issue with cellxgene, please report the issue immediately to [[security@chanzuckerberg.com](security@chanzuckerberg.com](mailto:security@chanzuckerberg.com)]
+If you believe you have found a security-related issue with cellxgene, please report the issue immediately to [security@chanzuckerberg.com](mailto:security@chanzuckerberg.com).
 
 ## Configuration Options
 

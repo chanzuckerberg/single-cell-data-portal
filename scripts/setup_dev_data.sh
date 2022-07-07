@@ -109,6 +109,13 @@ echo $snapshot_identifier | ${local_aws} s3 cp --quiet - s3://${wmg_bucket}/late
 ${local_aws} secretsmanager create-secret --name ${wmg_config_secret_name} &>/dev/null || true
 ${local_aws} secretsmanager update-secret --secret-id ${wmg_config_secret_name} --secret-string "{\"bucket\": \"${wmg_bucket}\"}" || true
 
+# Access NCBI API key
+echo "Creating NCBI API key secret"
+ncbi_api_key="test-key"
+gene_info_config_secret_name="corpora/backend/test/gene_info_config"
+${local_aws} secretsmanager create-secret --name ${gene_info_config_secret_name} &>/dev/null || true
+${local_aws} secretsmanager update-secret --secret-id ${gene_info_config_secret_name} --secret-string "{\"ncbi_api_key\": \"${ncbi_api_key}\"}" || true
+
 echo
 echo "Dev env is up and running!"
 echo "  Frontend: ${FRONTEND_URL}"
