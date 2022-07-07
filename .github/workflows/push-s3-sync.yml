@@ -31,9 +31,13 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           role-duration-seconds: 1600
       - uses: actions/checkout@v2
-      - name: S3 sync corpora-data bucket (test)
-        run: aws s3 sync --copy-props metadata-directive s3://corpora-data-prod/0b696cf4-513e-4e59-b6ac-78d76409e6f8/ s3://atolopko-tmp/corpora-data-dev/
-      - name: S3 sync hosted-cellxgene bucket (test)
-        run: aws s3 sync --copy-props metadata-directive s3://hosted-cellxgene-prod/00099d5e-154f-4a7a-aa8d-fa30c8c0c43c.cxg/ s3://atolopko-tmp/hosted-cellxgene-dev/
-      - name: S3 sync cellxgene-wmg bucket (test)
-        run: aws s3 sync --copy-props metadata-directive s3://cellxgene-wmg-prod/1651599970/ s3://atolopko-tmp/cellxgene-wmg-dev/
+      - name: Mirror prod data to deployment environment
+        run:
+          if [[ "${{ github.ref }}" == "refs/heads/dev" ]]; then
+            $GITHUB_WORKSPACE/backend/scripts/mirror_env_s3_data.sh dev
+          elif [[ "${{ github.ref }}" == "refs/heads/staging" ]]; then
+            $GITHUB_WORKSPACE/backend/scripts/mirror_deploy_env_s3_data.sh staging
+          else
+            echo Unsupported deployment environment for data mirroring
+            exit 1
+          fi
