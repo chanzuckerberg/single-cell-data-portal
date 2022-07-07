@@ -32,8 +32,8 @@ jobs:
           role-duration-seconds: 1600
       - uses: actions/checkout@v2
       - name: Mirror prod data to deployment environment
-        run:
-          if [[ "${{ github.ref }}" == "refs/heads/dev" ]]; then
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
             $GITHUB_WORKSPACE/backend/scripts/mirror_env_s3_data.sh dev
           elif [[ "${{ github.ref }}" == "refs/heads/staging" ]]; then
             $GITHUB_WORKSPACE/backend/scripts/mirror_deploy_env_s3_data.sh staging
