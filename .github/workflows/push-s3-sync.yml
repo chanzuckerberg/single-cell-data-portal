@@ -38,6 +38,8 @@ jobs:
           elif [[ "${{ github.ref }}" == "refs/heads/staging" ]]; then
             $GITHUB_WORKSPACE/backend/scripts/mirror_deploy_env_s3_data.sh staging
           else
-            echo Unsupported deployment environment for data mirroring
-            exit 1
+            # TODO: Remove after development of this GHA workflow
+            $GITHUB_WORKSPACE/backend/scripts/mirror_env_s3_data.sh dev
+#            echo Unsupported deployment environment for data mirroring
+#            exit 1
           fi
