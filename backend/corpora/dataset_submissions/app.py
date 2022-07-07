@@ -10,14 +10,16 @@ from backend.corpora.common.entities import Dataset, Collection
 from backend.corpora.common.upload import upload
 from backend.corpora.common.utils.db_session import db_session_manager
 from backend.corpora.common.utils.exceptions import CorporaException
+from backend.corpora.common.utils.regex import (
+    USERNAME_REGEX,
+    COLLECTION_ID_REGEX,
+    EXTENSION_REGEX,
+    DATASET_ID_REGEX,
+    CURATOR_TAG_PREFIX_REGEX,
+)
 
 logger = logging.getLogger(__name__)
-USERNAME_REGEX = r"(?P<username>[\w\-\|]+)"
-UUID_REGEX = r"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}"
-EXTENSION_REGEX = r"(?P<extension>h5ad)"
-DATASET_ID_REGEX = f"(?P<dataset_uuid>{UUID_REGEX})"
-COLLECTION_ID_REGEX = f"(?P<collection_uuid>{UUID_REGEX})"
-REGEX = f"^{USERNAME_REGEX}/{COLLECTION_ID_REGEX}/({DATASET_ID_REGEX}|(?P<tag>.*))\\.{EXTENSION_REGEX}$"
+REGEX = f"^{USERNAME_REGEX}/{COLLECTION_ID_REGEX}/({DATASET_ID_REGEX}|{CURATOR_TAG_PREFIX_REGEX})\\.{EXTENSION_REGEX}$"
 
 
 def dataset_submissions_handler(s3_event: dict, unused_context) -> None:
@@ -37,13 +39,13 @@ def dataset_submissions_handler(s3_event: dict, unused_context) -> None:
         parsed = parse_key(key)
         if not parsed:
             raise CorporaException(f"Missing collection UUID, curator tag, and/or dataset UUID for {key=}")
-        if parsed["tag"]:
-            parsed["tag"] = f"{parsed['tag']}.{parsed['extension']}"
+        if parsed["tag_prefix"]:
+            parsed["tag"] = f"{parsed['tag_prefix']}.{parsed['extension']}"
         logger.debug(parsed)
 
         with db_session_manager() as session:
             collection_owner, dataset_uuid = get_dataset_info(
-                session, parsed["collection_uuid"], parsed["dataset_uuid"], parsed["tag"]
+                session, parsed["collection_uuid"], parsed["dataset_uuid"], parsed.get("tag")
             )
 
             logger.info(f"{collection_owner=}, {dataset_uuid=}")
@@ -66,7 +68,7 @@ def dataset_submissions_handler(s3_event: dict, unused_context) -> None:
                 file_size=size,
                 file_extension=parsed["extension"],
                 dataset_id=dataset_uuid,
-                curator_tag=parsed["tag"],
+                curator_tag=parsed.get("tag"),
             )
 
 

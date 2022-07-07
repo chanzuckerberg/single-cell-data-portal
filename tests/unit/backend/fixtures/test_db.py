@@ -1,3 +1,5 @@
+import numpy as np
+
 from backend.corpora.common.corpora_orm import (
     CollectionVisibility,
     CollectionLinkType,
@@ -225,6 +227,7 @@ class TestDatabase:
             is_primary_data=IsPrimaryData.PRIMARY.name,
             x_normalization="test_x_normalization",
             x_approximate_distribution=XApproximateDistribution.NORMAL.name,
+            batch_condition=np.array(["batchA", "batchB"], dtype="object"),
             schema_version="2.0.0",
         )
         self.session.add(dataset)
@@ -336,6 +339,17 @@ class TestDatabase:
             dataset_id="test_dataset_id",
             filename="test_filename",
             filetype=DatasetArtifactFileType.H5AD.name,
+            user_submitted=True,
+            s3_uri=config.real_s3_file if self.real_data else config.fake_s3_file,
+        )
+        self.session.add(dataset_artifact)
+        self.session.commit()
+
+        dataset_artifact = DbDatasetArtifact(
+            id="test_dataset_artifact_id_cxg",
+            dataset_id="test_dataset_id",
+            filename="test_filename",
+            filetype=DatasetArtifactFileType.CXG.name,
             user_submitted=True,
             s3_uri=config.real_s3_file if self.real_data else config.fake_s3_file,
         )
