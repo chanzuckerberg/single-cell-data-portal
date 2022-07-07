@@ -31,14 +31,9 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           role-duration-seconds: 1600
       - uses: actions/checkout@v2
-      - name: S3 sync role perms in GHA (Test)
-        run: |
-          aws s3 ls s3://corpora-data-dev
-          aws s3 ls s3://hosted-cellxgene-dev
-          aws s3 ls s3://cellxgene-wmg-dev
-          aws s3 ls s3://corpora-data-prod/0b696cf4-513e-4e59-b6ac-78d76409e6f8/
-          aws s3 ls s3://hosted-cellxgene-prod/00099d5e-154f-4a7a-aa8d-fa30c8c0c43c.cxg/
-          aws s3 ls s3://cellxgene-wmg-prod/1651599970/
-          aws s3 sync --dryrun s3://corpora-data-prod/0b696cf4-513e-4e59-b6ac-78d76409e6f8/ s3://atolopko-tmp/corpora-data-dev/
-          aws s3 sync --dryrun s3://hosted-cellxgene-prod/00099d5e-154f-4a7a-aa8d-fa30c8c0c43c.cxg/ s3://atolopko-tmp/hosted-cellxgene-dev/
-          aws s3 sync --dryrun s3://cellxgene-wmg-prod/1651599970/ s3://atolopko-tmp/cellxgene-wmg-dev/
+      - name: S3 sync corpora-data bucket (test)
+        run: aws s3 sync s3://corpora-data-prod/0b696cf4-513e-4e59-b6ac-78d76409e6f8/ s3://atolopko-tmp/corpora-data-dev/
+      - name: S3 sync hosted-cellxgene bucket (test)
+        run: aws s3 sync s3://hosted-cellxgene-prod/00099d5e-154f-4a7a-aa8d-fa30c8c0c43c.cxg/ s3://atolopko-tmp/hosted-cellxgene-dev/
+      - name: S3 sync cellxgene-wmg bucket (test)
+        run: aws s3 sync s3://cellxgene-wmg-prod/1651599970/ s3://atolopko-tmp/cellxgene-wmg-dev/
