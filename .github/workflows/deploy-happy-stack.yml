@@ -20,7 +20,6 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           role-duration-seconds: 1600
       - name: Invoke mirroring AWS lambda function (dev)
-        uses: gagoar/invoke-aws-lambda@master
         if: github.event.deployment.environment == 'dev'
         run: |
           aws lambda invoke --invocation-type RequestResponse --function-name atolopko-env-mirroring-dummy-fn --cli-binary-format raw-in-base64-out --payload '{"deployment_env":"dev"}' -
