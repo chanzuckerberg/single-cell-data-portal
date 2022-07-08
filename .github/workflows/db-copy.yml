@@ -31,7 +31,6 @@ jobs:
           cd backend
           make db/download-prod
           aws s3 cp corpora_prod.sqlc s3://madison-tmp/db-test.sqlc
-#          aws s3 cp corpora_prod.sqlc s3://madison-tmp/db-prod.sqlc
       - name: create new db (Test)
         run: |
           echo "NOT IMPLEMENTED: create db"
