@@ -103,4 +103,4 @@ db/download-prod:
     # Download the database to corpora_prod.sqlc
 	$(eval DB_PW = $(shell aws secretsmanager get-secret-value --secret-id corpora/backend/dev/database --region us-west-2 | jq -r '.SecretString | match(":([^:]*)@").captures[0].string'))
 	$(eval OUTFILE = corpora_prod.sqlc)
-	PGPASSWORD=${DB_PW} pg_dump -Fc --dbname=corpora_dev --file=database/${OUTFILE} --host 0.0.0.0 --username corpora_dev
+	PGPASSWORD=$(shell aws secretsmanager get-secret-value --secret-id corpora/backend/dev/database --region us-west-2 | jq -r '.SecretString | match(":([^:]*)@").captures[0].string')) pg_dump -Fc --dbname=corpora_dev --file=database/${OUTFILE} --host 0.0.0.0 --username corpora_dev
