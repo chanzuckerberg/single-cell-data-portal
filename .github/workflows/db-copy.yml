@@ -26,8 +26,17 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           role-duration-seconds: 1000
       - uses: actions/checkout@v2
-      - name: copy db sql to s3 (Test)
+      - name: copy prod db dump to s3 (Test)
         run: |
           cd backend
           make db/download-prod
           aws s3 cp corpora_prod.sqlc s3://madison-tmp/db-test.sqlc
+#          aws s3 cp corpora_prod.sqlc s3://madison-tmp/db-prod.sqlc
+      - name: create new db (Test)
+        run: |
+          echo "NOT IMPLEMENTED: create db"
+          echo "NOT IMPLEMENTED: import db data"
+      - name: migrate data for env (Test)
+          run: |
+            echo "NOT IMPLEMENTED: change dataset_artifact.s3_uri"
+            echo "NOT IMPLEMENTED: change dataset.explorer_url"
