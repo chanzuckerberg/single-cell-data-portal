@@ -6,6 +6,8 @@ on:
       - main
       - staging
       - prod
+      # TODO: revert after testing
+      - atolopko/1735-env-mirroring
   pull_request:
     branches: "*"
 
@@ -172,8 +174,9 @@ jobs:
       - name: Run tests in docker-compose
         run: |
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
-          make local-sync
-          make local-unit-test
+          # TODO: revert after testing
+          # make local-sync
+          # make local-unit-test
       - uses: 8398a7/action-slack@v3
         with:
           status: ${{ job.status }}
@@ -220,7 +223,9 @@ jobs:
         if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
 
   create_deployment:
-    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
+    # TODO: revert after testing
+#    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
+    if: (github.ref == 'refs/heads/atolopko/1735-env-mirroring')
     needs:
       - push-image
     runs-on: ubuntu-20.04

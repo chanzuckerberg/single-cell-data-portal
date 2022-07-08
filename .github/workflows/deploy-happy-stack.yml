@@ -80,7 +80,9 @@ jobs:
         env:
           TFE_TOKEN: ${{ secrets.TFE_TOKEN }}
         run: |
-          ./scripts/happy --profile="" --env ${{ github.event.deployment.environment }} update ${{ github.event.deployment.environment }}stack --tag ${{ github.event.deployment.payload.tag }}
+          # TODO: revert after testing
+          echo SKIPPING FOR ENV MIRROR TESTING
+          # ./scripts/happy --profile="" --env ${{ github.event.deployment.environment }} update ${{ github.event.deployment.environment }}stack --tag ${{ github.event.deployment.payload.tag }}
       - name: Invalidate CloudFront
         env:
           DEPLOYMENT_STAGE: ${{ github.event.deployment.environment }}
@@ -96,7 +98,8 @@ jobs:
             ALIAS=cellxgene.${DEPLOYMENT_STAGE}.single-cell.czi.technology
           fi
           DISTRIBUTION_ID=$(aws cloudfront list-distributions --query "DistributionList.Items[*].{id:Id,domain_name:Origins.Items[*].DomainName,alias:Aliases.Items[0]}[?contains(domain_name,'${DOMAIN_NAME}')&&alias=='${ALIAS}'].id" --output text)
-          aws cloudfront create-invalidation --distribution-id ${DISTRIBUTION_ID} --paths /index.html
+          echo SKIPPING FOR ENV MIRROR TESTING
+          # aws cloudfront create-invalidation --distribution-id ${DISTRIBUTION_ID} --paths /index.html
       - name: Run Smoke Tests
         env:
           DEPLOYMENT_STAGE: ${{ github.event.deployment.environment }}
@@ -122,7 +125,9 @@ jobs:
           fi
           echo DEPLOYMENT_STAGE ${DEPLOYMENT_STAGE}
           docker-compose up --no-deps -d backend
-          BOTO_ENDPOINT_URL= make local-functional-test
+          # TODO: revert after testing
+          echo SKIPPING DEPLOY FOR ENV MIRROR TESTING
+          # BOTO_ENDPOINT_URL= make local-functional-test
       - name: Run performance test
         env:
           TFE_TOKEN: ${{ secrets.TFE_TOKEN }}
