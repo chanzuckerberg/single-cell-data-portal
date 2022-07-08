@@ -1,4 +1,6 @@
-# scExpression Documentation
+# scExpression: query gene expression across tissues
+
+scExpression is a tool that allows to query the expression of any gene across all data in the cellxgene data portal. A query results in a dotplot per tissues as explanied below.
 
 ## How to Interpret a Gene Expression Dot Plot
 
@@ -61,13 +63,30 @@ Cell types are annotated by the original data contributors and mapped to the clo
 
 In some cases there are cell types annotated with a high-level term whereas in some other cases they can be very granularly annotated. For example, there are some cells annotated as "T cells" and others annotated with children terms like "effector CD8-positive, alpha-beta T cell". All of these cell types are shown in the dot plot and they should not be interpreted as one being a subset of the other.
 
+There are two options available for cell type ordering as described below.
+
 ### Ontology-based Ordering
 
-Cell types are ordered according to the CL directed acyclic graph (DAG). Briefly, for each tissue a 2-dimensional representation of the DAG containing the tissue cell types is built, then an ordered list of cell types is created by traversing the DAG using a depth-first approach.
+Cell types can be ordered according to the CL directed acyclic graph (DAG). Briefly, for each tissue a 2-dimensional representation of the DAG containing the tissue cell types is built, then an ordered list of cell types is created by traversing the DAG using a depth-first approach.
+
+Children cell types are represented with indentation in the dot plot, and indentation is truncated at depth 2 for readability. 
 
 This method groups cell types together based on their ontological relationships thus providing a loose lineage-based ordering.
 
 An in-depth description of this method can be found <NextLink href="/docs/04__Analyze%20Public%20Data/4_2__scExpression%20Documentation/4_2_2__Cell%20Type%20Ontology%20Ordering#algorithm">here</NextLink>.
+
+### Hierarchical Ordering
+
+Cell types can also be ordered using hierarchical clustering which will group cell types with similar expression patterns together based on the genes selected, consequently the ordering will vary based on the information shown in any given dot plot. 
+
+The underlying methods uses the agglomerative hierarchical clustering with Euclidean distances. 
+
+## Gene Ordering
+
+Similarly to cell types, genes can be ordered in two different ways:
+
+1. As entered: genes will be shown in the order they were queried.
+2. Hierarchical ordering: genes will be ordered using hierarchical clustering as described for cell types.
 
 ## Processing of Expression Data
 
