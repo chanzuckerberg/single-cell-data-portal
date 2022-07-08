@@ -18,9 +18,9 @@ class GenerateDataMixin:
     """
 
     @staticmethod
-    def delete_collection(uuid):
+    def delete_collection(_id):
         with db_session_manager() as session:
-            col = Collection.get(session, uuid)
+            col = Collection.get(session, _id)
             if col:
                 col.delete()
 
@@ -30,9 +30,9 @@ class GenerateDataMixin:
         return _collection
 
     @staticmethod
-    def delete_dataset(uuid):
+    def delete_dataset(_id):
         with db_session_manager() as session:
-            dat = Dataset.get(session, uuid)
+            dat = Dataset.get(session, _id)
             if dat:
                 dat.delete()
 
@@ -42,9 +42,9 @@ class GenerateDataMixin:
         return _dataset
 
     @staticmethod
-    def delete_geneset(uuid):
+    def delete_geneset(_id):
         with db_session_manager() as session:
-            geneset = Geneset.get(session, uuid)
+            geneset = Geneset.get(session, _id)
             if geneset:
                 geneset.delete()
 
@@ -54,9 +54,9 @@ class GenerateDataMixin:
         return _geneset
 
     @staticmethod
-    def delete_link(uuid):
+    def delete_link(_id):
         with db_session_manager() as session:
-            link = CollectionLink.get(session, uuid)
+            link = CollectionLink.get(session, _id)
             if link:
                 link.delete()
 

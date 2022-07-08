@@ -24,7 +24,7 @@ from uuid import uuid4
 from .utils.exceptions import CorporaException
 
 
-def generate_uuid():
+def generate_id():
     return str(uuid4())
 
 
@@ -157,7 +157,7 @@ class TransformingBase(object):
         backref.pop()
         return result
 
-    id = Column(String, primary_key=True, default=generate_uuid)
+    id = Column(String, primary_key=True, default=generate_id)
 
     def __repr__(self):
         return f"<{self.__class__.__name__}(id={self.id})>"

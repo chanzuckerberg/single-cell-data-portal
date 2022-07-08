@@ -13,9 +13,9 @@ from backend.corpora.lambdas.api.v1.dataset import delete_dataset_common
 
 
 @dbconnect
-def delete_dataset(token_info: dict, collection_uuid: str, curator_tag: str = None, dataset_uuid: str = None):
+def delete_dataset(token_info: dict, collection_id: str, curator_tag: str = None, dataset_id: str = None):
     db_session = g.db_session
-    dataset = get_dataset_else_error(db_session, dataset_uuid, collection_uuid, curator_tag, include_tombstones=True)
+    dataset = get_dataset_else_error(db_session, dataset_id, collection_id, curator_tag, include_tombstones=True)
     delete_dataset_common(db_session, dataset, token_info)
     return "", 202
 
@@ -26,15 +26,15 @@ duration = 43200
 
 
 @dbconnect
-def post_s3_credentials(collection_uuid: str, token_info: dict):
+def post_s3_credentials(collection_id: str, token_info: dict):
     db_session = g.db_session
     config = CorporaConfig()
     # Raise an error if they are not allowed to modify the collection.
     get_collection_else_forbidden(
-        db_session, collection_uuid, visibility=CollectionVisibility.PRIVATE.name, owner=owner_or_allowed(token_info)
+        db_session, collection_id, visibility=CollectionVisibility.PRIVATE.name, owner=owner_or_allowed(token_info)
     )
     user_id = token_info["sub"]
-    upload_key_prefix = f"{user_id}/{collection_uuid}"
+    upload_key_prefix = f"{user_id}/{collection_id}"
     parameters = dict(
         RoleArn=config.curator_role_arn,
         RoleSessionName=user_id.replace("|", "-"),

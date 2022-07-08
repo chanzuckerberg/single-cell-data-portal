@@ -18,9 +18,9 @@ export const USE_DATASET_STATUS = {
 };
 
 async function fetchDatasetStatus(
-  dataset_uuid: string
+  dataset_id: string
 ): Promise<DatasetUploadStatus> {
-  const url = apiTemplateToUrl(API_URL + API.DATASET_STATUS, { dataset_uuid });
+  const url = apiTemplateToUrl(API_URL + API.DATASET_STATUS, { dataset_id });
 
   return await (await fetch(url, DEFAULT_FETCH_OPTIONS)).json();
 }
@@ -28,12 +28,12 @@ async function fetchDatasetStatus(
 const REFETCH_INTERVAL_MS = 10 * 1000;
 
 export function useDatasetStatus(
-  dataset_uuid: string,
+  dataset_id: string,
   shouldFetch: boolean
 ): UseQueryResult<DatasetUploadStatus> {
   return useQuery<DatasetUploadStatus>(
-    [USE_DATASET_STATUS, dataset_uuid],
-    () => fetchDatasetStatus(dataset_uuid),
+    [USE_DATASET_STATUS, dataset_id],
+    () => fetchDatasetStatus(dataset_id),
     { enabled: shouldFetch, refetchInterval: REFETCH_INTERVAL_MS }
   );
 }
@@ -43,10 +43,10 @@ export const USE_DELETE_DATASET = {
   id: "dataset",
 };
 
-async function deleteDataset(dataset_uuid = ""): Promise<DatasetUploadStatus> {
-  if (!dataset_uuid) throw new Error("No dataset id provided");
+async function deleteDataset(dataset_id = ""): Promise<DatasetUploadStatus> {
+  if (!dataset_id) throw new Error("No dataset id provided");
 
-  const url = apiTemplateToUrl(API_URL + API.DATASET, { dataset_uuid });
+  const url = apiTemplateToUrl(API_URL + API.DATASET, { dataset_id });
   const response = await fetch(url, DELETE_FETCH_OPTIONS);
 
   if (response.ok) return await response.json();
@@ -54,8 +54,8 @@ async function deleteDataset(dataset_uuid = ""): Promise<DatasetUploadStatus> {
   throw Error(response.statusText);
 }
 
-export function useDeleteDataset(collection_uuid = "") {
-  if (!collection_uuid) {
+export function useDeleteDataset(collection_id = "") {
+  if (!collection_id) {
     throw new Error("No collection id given");
   }
 
@@ -63,7 +63,7 @@ export function useDeleteDataset(collection_uuid = "") {
 
   return useMutation(deleteDataset, {
     onSuccess: (uploadStatus: DatasetUploadStatus) => {
-      queryClient.invalidateQueries([USE_COLLECTION, collection_uuid]);
+      queryClient.invalidateQueries([USE_COLLECTION, collection_id]);
 
       queryClient.cancelQueries([USE_DATASET_STATUS, uploadStatus.dataset_id]);
 
@@ -76,7 +76,7 @@ export function useDeleteDataset(collection_uuid = "") {
 }
 
 /**
- * Query key for /datasets/uuid/assets.
+ * Query key for /datasets/id/assets.
  */
 export const USE_DATASETS_ASSETS = {
   entities: [ENTITIES.DATASET],
@@ -109,7 +109,7 @@ async function fetchDatasetAssets(datasetId: string): Promise<DatasetAsset[]> {
   const { assets } = await (
     await fetch(
       apiTemplateToUrl(API_URL + API.DATASET_ASSETS, {
-        dataset_uuid: datasetId,
+        dataset_id: datasetId,
       }),
       DEFAULT_FETCH_OPTIONS
     )

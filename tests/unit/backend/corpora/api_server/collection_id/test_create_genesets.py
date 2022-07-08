@@ -1,5 +1,5 @@
 import json
-from backend.corpora.common.corpora_orm import CollectionVisibility, generate_uuid
+from backend.corpora.common.corpora_orm import CollectionVisibility, generate_id
 from backend.corpora.common.entities.geneset import Geneset
 from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest
 from tests.unit.backend.corpora.api_server.mock_auth import get_auth_token
@@ -97,8 +97,8 @@ class TestGenesetCreation(BaseAuthAPITest):
         self.assertEqual(403, response.status_code)
 
     def test_geneset_creation__no_collection_403(self):
-        uuid = generate_uuid()
+        _id = generate_id()
         data = {"gene_sets": [self.geneset1]}
-        test_url = f"/dp/v1/collections/{uuid}/genesets"
+        test_url = f"/dp/v1/collections/{_id}/genesets"
         response = self.app.post(test_url, headers=self.headers, data=json.dumps(data))
         self.assertEqual(403, response.status_code)
