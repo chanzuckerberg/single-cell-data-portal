@@ -15,7 +15,7 @@ env:
   DOCKER_REPO: ${{ secrets.ECR_REPO }}/
 
 jobs:
-  unit-test:
+  copy-relational-db:
     runs-on: ubuntu-20.04
     steps:
       - uses: aws-actions/configure-aws-credentials@v1
@@ -24,7 +24,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-west-2
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-          role-duration-seconds: 500
+          role-duration-seconds: 1000
       - uses: actions/checkout@v2
       - name: copy db sql to s3 (Test)
         run: |
