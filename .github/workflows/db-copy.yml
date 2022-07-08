@@ -36,6 +36,6 @@ jobs:
           echo "NOT IMPLEMENTED: create db"
           echo "NOT IMPLEMENTED: import db data"
       - name: migrate data for env (Test)
-          run: |
-            echo "NOT IMPLEMENTED: change dataset_artifact.s3_uri"
-            echo "NOT IMPLEMENTED: change dataset.explorer_url"
+        run: |
+          echo "NOT IMPLEMENTED: change dataset_artifact.s3_uri"
+          echo "NOT IMPLEMENTED: change dataset.explorer_url"
