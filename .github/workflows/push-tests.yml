@@ -3,10 +3,10 @@ name: Push Tests
 on:
   push:
     branches:
-      - main
-      - staging
-      - prod
       # TODO: revert after testing
+      # - main
+      # - staging
+      # - prod
       - atolopko/1735-env-mirroring
   pull_request:
     branches: "*"

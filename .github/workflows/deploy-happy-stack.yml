@@ -12,26 +12,29 @@ jobs:
     if: github.event.deployment.environment != 'prod'
     runs-on: ubuntu-20.04
     steps:
-      - uses: aws-actions/configure-aws-credentials@v1
+    - uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-west-2
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           role-duration-seconds: 1600
-      - uses: actions/checkout@v2
-        with:
-          ref: ${{ github.event.deployment.sha }}
-      - name: Dump database data from prod
-        run: echo "TODO (unimplemented)"
-      - name: Mirror S3 data to dev
+    - name: Invoke mirroring AWS lambda function (dev)
+        uses: gagoar/invoke-aws-lambda@master
         if: github.event.deployment.environment == 'dev'
-        run: $GITHUB_WORKSPACE/backend/scripts/mirror_deploy_env_s3_data.sh dev
-      - name: Mirror S3 data to staging
+        with:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          FunctionName: atolopko-env-mirroring-dummy-fn
+          Payload: '{ "deployment_env": "dev" }'
+    - name: Invoke mirroring AWS lambda function (stage)
+        uses: gagoar/invoke-aws-lambda@master
         if: github.event.deployment.environment == 'stage'
-        run: $GITHUB_WORKSPACE/backend/scripts/mirror_deploy_env_s3_data.sh staging
-      - name: Load database data
-        run: echo "TODO (unimplemented)"
+        with:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          FunctionName: atolopko-env-mirroring-dummy-fn
+          Payload: '{ "deployment_env": "staging" }'
   upgrade:
     runs-on: ubuntu-20.04
     needs:
