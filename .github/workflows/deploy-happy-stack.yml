@@ -12,14 +12,14 @@ jobs:
     if: github.event.deployment.environment != 'prod'
     runs-on: ubuntu-20.04
     steps:
-    - uses: aws-actions/configure-aws-credentials@v1
+      - uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-west-2
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           role-duration-seconds: 1600
-    - name: Invoke mirroring AWS lambda function (dev)
+      - name: Invoke mirroring AWS lambda function (dev)
         uses: gagoar/invoke-aws-lambda@master
         if: github.event.deployment.environment == 'dev'
         with:
@@ -27,7 +27,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           FunctionName: atolopko-env-mirroring-dummy-fn
           Payload: '{ "deployment_env": "dev" }'
-    - name: Invoke mirroring AWS lambda function (stage)
+      - name: Invoke mirroring AWS lambda function (stage)
         uses: gagoar/invoke-aws-lambda@master
         if: github.event.deployment.environment == 'stage'
         with:
