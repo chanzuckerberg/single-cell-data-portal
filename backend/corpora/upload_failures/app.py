@@ -6,7 +6,7 @@ from backend.corpora.upload_failures.slack import notify_slack_failure
 
 
 def handle_failure(event, context):
-    dataset_uuid = event["dataset_id"]
+    dataset_id = event["dataset_id"]
     if os.getenv("DEPLOYMENT_STAGE") == "prod":
         notify_slack_failure(dataset_id)
     object_key = os.path.join(os.environ.get("REMOTE_DEV_PREFIX", ""), dataset_id).strip("/")
