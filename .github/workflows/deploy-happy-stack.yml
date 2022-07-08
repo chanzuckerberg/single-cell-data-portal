@@ -22,19 +22,8 @@ jobs:
       - name: Invoke mirroring AWS lambda function (dev)
         uses: gagoar/invoke-aws-lambda@master
         if: github.event.deployment.environment == 'dev'
-        with:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          FunctionName: atolopko-env-mirroring-dummy-fn
-          Payload: '{ "deployment_env": "dev" }'
-      - name: Invoke mirroring AWS lambda function (stage)
-        uses: gagoar/invoke-aws-lambda@master
-        if: github.event.deployment.environment == 'stage'
-        with:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          FunctionName: atolopko-env-mirroring-dummy-fn
-          Payload: '{ "deployment_env": "staging" }'
+        run: |
+          aws lambda invoke --invocation-type RequestResponse --function-name atolopko-env-mirroring-dummy-fn --cli-binary-format raw-in-base64-out --payload '{"deployment_env":"dev"}' -
   upgrade:
     runs-on: ubuntu-20.04
     needs:
