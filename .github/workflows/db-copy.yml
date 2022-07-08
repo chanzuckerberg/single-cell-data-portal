@@ -29,7 +29,6 @@ jobs:
       - name: copy prod db dump to s3 (Test)
         run: |
           cd backend
-          make db/tunnel
           make db/download-prod
           aws s3 cp corpora_prod.sqlc s3://madison-tmp/db-test.sqlc
       - name: create new db (Test)
