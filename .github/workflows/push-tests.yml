@@ -191,9 +191,10 @@ jobs:
   push-image:
     needs:
       - unit-test
-      - smoke-test
-      - lint
-      - build-extra-images
+      # TODO: revert after testing
+      # - smoke-test
+      # - lint
+      # - build-extra-images
     runs-on: ubuntu-20.04
     # TODO: revert after testing
 #    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
