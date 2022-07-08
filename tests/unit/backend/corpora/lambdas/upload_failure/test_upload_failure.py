@@ -73,7 +73,7 @@ class TestUploadFailureHandling(TestCase):
         # this should not raise any errors
         delete_many_from_s3(self.bucket_name, self.uuid)
 
-    def test_delete_from_s3_raises_error_for_missing_dataset_uuid(self):
+    def test_delete_from_s3_raises_error_for_missing_dataset_id(self):
         with self.assertRaises(ValueError):
             delete_many_from_s3(self.bucket_name, "")
 

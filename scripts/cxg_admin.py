@@ -51,11 +51,11 @@ def cli(ctx, deployment):
 
 
 @cli.command()
-@click.argument("uuid")
+@click.argument("id")
 @click.pass_context
-def delete_dataset(ctx, uuid):
+def delete_dataset(ctx, id):
     """Delete a dataset from Cellxgene."""
-    deletions.delete_dataset(ctx, uuid)
+    deletions.delete_dataset(ctx, id)
 
 
 @cli.command()
@@ -78,47 +78,47 @@ def delete_collections(ctx, collection_name):
 
 
 @cli.command()
-@click.argument("uuid")
+@click.argument("id")
 @click.pass_context
-def tombstone_collection(ctx: Context, uuid: str):
+def tombstone_collection(ctx: Context, id: str):
     """
-    Tombstones the collection specified by UUID.
+    Tombstones the collection specified by ID.
     To run:
         ./scripts/cxg_admin.py --deployment prod tombstone-collection 7edef704-f63a-462c-8636-4bc86a9472bd
 
     :param ctx: command context
-    :param uuid: UUID that identifies the collection to tombstone
+    :param id: ID that identifies the collection to tombstone
     """
 
-    tombstones.tombstone_collection(ctx, uuid)
+    tombstones.tombstone_collection(ctx, id)
 
 
 @cli.command()
-@click.argument("uuid")
+@click.argument("id")
 @click.pass_context
-def tombstone_dataset(ctx, uuid):
+def tombstone_dataset(ctx, id):
     """
     Remove a dataset from Cellxgene. This will delete its artifacts/genesets and mark the dataset as tombstoned so
      it no longer shows up in the data portal.
     To run:
       ./scripts/cxg_admin.py --deployment staging tombstone-dataset "57cf1b53-af10-49e5-9a86-4bc70d0c92b6"
     """
-    tombstones.tombstone_dataset(ctx, uuid)
+    tombstones.tombstone_dataset(ctx, id)
 
 
 # Command to update different metadata fields
 
 
 @cli.command()
-@click.argument("collection_uuid")
+@click.argument("collection_id")
 @click.argument("new_owner")
 @click.pass_context
-def update_collection_owner(ctx, collection_uuid, new_owner):
+def update_collection_owner(ctx, collection_id, new_owner):
     """Update the owner of a cellxgene collection.
     To run:
     ./scripts/cxg_admin.py --deployment prod update-collection-owner "$COLLECTION_ID $NEW_OWNER_ID
     """
-    updates.update_collection_owner(ctx, collection_uuid, new_owner)
+    updates.update_collection_owner(ctx, collection_id, new_owner)
 
 
 @cli.command()
@@ -247,15 +247,15 @@ def backfill_processing_status_for_datasets(ctx):
 
 
 @cli.command()
-@click.argument("dataset_uuid")
+@click.argument("dataset_id")
 @click.pass_context
-def reprocess_seurat(ctx: Context, dataset_uuid: str) -> None:
+def reprocess_seurat(ctx: Context, dataset_id: str) -> None:
     """
     Reconverts the specified dataset to Seurat format in place.
     :param ctx: command context
-    :param dataset_uuid: UUID of dataset to reconvert to Seurat format
+    :param dataset_id: ID of dataset to reconvert to Seurat format
     """
-    reprocess_datafile.reprocess_seurat(ctx, dataset_uuid)
+    reprocess_datafile.reprocess_seurat(ctx, dataset_id)
 
 
 @cli.command()

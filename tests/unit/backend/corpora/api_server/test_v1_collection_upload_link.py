@@ -27,7 +27,7 @@ class TestCollectionPostUploadLink(BaseAuthAPITest):
             test_url = furl(path=path)
             response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
             self.assertEqual(202, response.status_code)
-            self.assertIn("dataset_uuid", json.loads(response.data).keys())
+            self.assertIn("dataset_id", json.loads(response.data).keys())
 
     def test__link_no_auth__401(self):
         path = "/dp/v1/collections/test_collection_id/upload-links"
@@ -150,7 +150,7 @@ class TestCollectionPutUploadLink(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         with EnvironmentSetup({"CORPORA_CONFIG": fixture_file_path("bogo_config.js")}):
             response = self.app.put(path, headers=self.headers, data=json.dumps(body))
             self.assertEqual(202, response.status_code)
-            new_datset_id = json.loads(response.data)["dataset_uuid"]
+            new_datset_id = json.loads(response.data)["dataset_id"]
             self.assertEqual(pub_dataset.id, Dataset.get(self.session, new_datset_id).original_id)
             for s3_object in pub_s3_objects:
                 self.assertS3FileExists(*s3_object)
@@ -174,7 +174,7 @@ class TestCollectionPutUploadLink(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
             response = self.app.put(path, headers=self.headers, data=json.dumps(body))
             self.assertEqual(202, response.status_code)
             actual_body = json.loads(response.data)
-            self.assertEqual(dataset_id, actual_body["dataset_uuid"])
+            self.assertEqual(dataset_id, actual_body["dataset_id"])
             for s3_object in s3_objects:
                 self.assertS3FileDoesNotExist(*s3_object)
 
@@ -291,7 +291,7 @@ class TestCollectionUploadLinkCurators(BasicAuthAPITestCurator, CorporaTestCaseU
             response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
             print(response.data)
             self.assertEqual(202, response.status_code)
-            self.assertIn("dataset_uuid", json.loads(response.data).keys())
+            self.assertIn("dataset_id", json.loads(response.data).keys())
 
     @patch("backend.corpora.common.upload.start_upload_sfn")
     def test__can_reupload_dataset_not_owner(self, *mocked):

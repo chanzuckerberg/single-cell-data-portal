@@ -69,28 +69,28 @@ class BaseFunctionalTestCase(unittest.TestCase):
     def make_cookie(token: dict) -> str:
         return base64.b64encode(json.dumps(dict(token)).encode("utf-8")).decode()
 
-    def upload_and_wait(self, collection_uuid, dropbox_url, existing_dataset_id=None):
+    def upload_and_wait(self, collection_id, dropbox_url, existing_dataset_id=None):
         headers = {"Cookie": f"cxguser={self.curator_cookie}", "Content-Type": "application/json"}
         body = {"url": dropbox_url}
 
         if existing_dataset_id is None:
             res = requests.post(
-                f"{self.api}/dp/v1/collections/{collection_uuid}/upload-links", data=json.dumps(body), headers=headers
+                f"{self.api}/dp/v1/collections/{collection_id}/upload-links", data=json.dumps(body), headers=headers
             )
         else:
             body["id"] = existing_dataset_id
             res = requests.put(
-                f"{self.api}/dp/v1/collections/{collection_uuid}/upload-links", data=json.dumps(body), headers=headers
+                f"{self.api}/dp/v1/collections/{collection_id}/upload-links", data=json.dumps(body), headers=headers
             )
 
         res.raise_for_status()
-        dataset_uuid = json.loads(res.content)["dataset_uuid"]
-        self.addCleanup(requests.delete, f"{self.api}/dp/v1/datasets/{dataset_uuid}", headers=headers)
+        dataset_id = json.loads(res.content)["dataset_id"]
+        self.addCleanup(requests.delete, f"{self.api}/dp/v1/datasets/{dataset_id}", headers=headers)
 
         keep_trying = True
         timer = time.time()
         while keep_trying:
-            res = requests.get(f"{self.api}/dp/v1/datasets/{dataset_uuid}/status", headers=headers)
+            res = requests.get(f"{self.api}/dp/v1/datasets/{dataset_id}/status", headers=headers)
             res.raise_for_status()
             data = json.loads(res.content)
             upload_status = data["upload_status"]
@@ -103,7 +103,7 @@ class BaseFunctionalTestCase(unittest.TestCase):
                     keep_trying = False
             if time.time() >= timer + 600:
                 raise TimeoutError(
-                    f"Dataset upload or conversion timed out after 10 min. Check logs for dataset: {dataset_uuid}"
+                    f"Dataset upload or conversion timed out after 10 min. Check logs for dataset: {dataset_id}"
                 )
             time.sleep(10)
-        return dataset_uuid
+        return dataset_id
