@@ -102,5 +102,5 @@ db/download-prod:
     # only works locally if you've tunneled into prod
     # Download the database to corpora_prod.sqlc
 	$(eval OUTFILE = corpora_prod.sqlc)
-	# todo change secret id to prod
 	PGPASSWORD=$(shell aws secretsmanager get-secret-value --secret-id corpora/backend/dev/database --region us-west-2 | jq -r '.SecretString | match(":([^:]*)@").captures[0].string') pg_dump -Fc --dbname=corpora_dev --file=database/${OUTFILE} --host 0.0.0.0 --username corpora_dev
+
