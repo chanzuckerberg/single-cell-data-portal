@@ -52,7 +52,7 @@ def format_slack_message(dataset_id):
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f"```{json.dumps(processing_status, cls=CustomJSONEncoder, indent=2, sort_keys=True)}```"
+                    "text": f"```{json.dumps(processing_status, cls=CustomJSONEncoder, indent=2, sort_keys=True)}```",
                 },
             },
         ]
