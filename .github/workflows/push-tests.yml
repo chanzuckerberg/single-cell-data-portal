@@ -3,11 +3,9 @@ name: Push Tests
 on:
   push:
     branches:
-      # TODO: revert after testing
-      # - main
-      # - staging
-      # - prod
-      - atolopko/1735-env-mirroring
+      - main
+      - staging
+      - prod
   pull_request:
     branches: "*"
 
@@ -71,11 +69,9 @@ jobs:
       - name: Run tests in docker-compose
         run: |
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
-          # TODO: revert after testing
-          # make local-sync
+          make local-sync
           sleep 30  # Give frontend some time to finish building
-          # TODO: revert after testing
-          # make local-smoke-test
+          make local-smoke-test
       - name: Push images
         if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
         run: |
@@ -176,9 +172,8 @@ jobs:
       - name: Run tests in docker-compose
         run: |
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
-          # TODO: revert after testing
-          # make local-sync
-          # make local-unit-test
+          make local-sync
+          make local-unit-test
       - uses: 8398a7/action-slack@v3
         with:
           status: ${{ job.status }}
@@ -191,14 +186,11 @@ jobs:
   push-image:
     needs:
       - unit-test
-      # TODO: revert after testing
-      # - smoke-test
-      # - lint
-      # - build-extra-images
+      - smoke-test
+      - lint
+      - build-extra-images
     runs-on: ubuntu-20.04
-    # TODO: revert after testing
-#    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
-    if: (github.ref == 'refs/heads/atolopko/1735-env-mirroring')
+    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -228,9 +220,7 @@ jobs:
         if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
 
   create_deployment:
-    # TODO: revert after testing
-#    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
-    if: (github.ref == 'refs/heads/atolopko/1735-env-mirroring')
+    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
     needs:
       - push-image
     runs-on: ubuntu-20.04
