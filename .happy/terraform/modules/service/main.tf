@@ -27,7 +27,7 @@ resource "aws_ecs_task_definition" "task_definition" {
   family                   = "dp-${var.deployment_stage}-${var.custom_stack_name}-${var.app_name}"
   network_mode             = "awsvpc"
   task_role_arn            = var.task_role_arn
-  execution_role_arn       = lookup(var.use_fargate, "execution_role_arn", null)
+  execution_role_arn       = var.use_fargate == null ? null: lookup(var.use_fargate, "execution_role_arn", null)
   requires_compatibilities = ["EC2", "FARGATE"]
   container_definitions    = <<EOF
 [
