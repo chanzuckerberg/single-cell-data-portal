@@ -1,6 +1,9 @@
 name: Deploy Happy
 
-on: deployment
+on:
+  # TODO: revert after testing
+  # - deployment
+  - workflow_dispatch
 
 env:
   DOCKER_BUILDKIT: 1
@@ -22,7 +25,11 @@ jobs:
       - name: Invoke mirroring AWS lambda function (dev)
         if: github.event.deployment.environment == 'dev'
         run: |
-          aws lambda invoke --invocation-type RequestResponse --function-name atolopko-env-mirroring-dummy-fn --cli-binary-format raw-in-base64-out --payload '{"deployment_env":"dev"}' -
+          aws lambda invoke --invocation-type RequestResponse --function-name mirror-prod-env-data-to-dev --cli-binary-format raw-in-base64-out --payload '{"deployment_env":"dev"}' -
+      - name: Invoke mirroring AWS lambda function (staging)
+        if: github.event.deployment.environment == 'stage'
+        run: |
+          aws lambda invoke --invocation-type RequestResponse --function-name mirror-prod-env-data-to-stage --cli-binary-format raw-in-base64-out --payload '{"deployment_env":"staging"}' -
   upgrade:
     runs-on: ubuntu-20.04
     needs:
@@ -89,6 +96,7 @@ jobs:
             ALIAS=cellxgene.${DEPLOYMENT_STAGE}.single-cell.czi.technology
           fi
           DISTRIBUTION_ID=$(aws cloudfront list-distributions --query "DistributionList.Items[*].{id:Id,domain_name:Origins.Items[*].DomainName,alias:Aliases.Items[0]}[?contains(domain_name,'${DOMAIN_NAME}')&&alias=='${ALIAS}'].id" --output text)
+          # TODO: Revert after testing
           echo SKIPPING FOR ENV MIRROR TESTING
           # aws cloudfront create-invalidation --distribution-id ${DISTRIBUTION_ID} --paths /index.html
       - name: Run Smoke Tests
