@@ -50,12 +50,13 @@ locals {
 
   artifact_bucket            = try(local.secret["s3_buckets"]["artifact"]["name"], "")
   cellxgene_bucket           = try(local.secret["s3_buckets"]["cellxgene"]["name"], "")
+  db_dump_bucket             = try(local.secret["s3_buckets"]["cellxgene"]["name"], "")
   dataset_submissions_bucket = try(local.secret["s3_buckets"]["dataset_submissions"]["name"], "")
   wmg_bucket                 = try(local.secret["s3_buckets"]["wmg"]["name"], "")
-
-  ecs_role_arn                 = local.secret["service_roles"]["ecs_role"]
-  sfn_role_arn                 = local.secret["service_roles"]["sfn_upload"]
-  lambda_execution_role        = local.secret["service_roles"]["lambda_errorhandler"]
+  ecs_role_arn          = local.secret["service_roles"]["ecs_role"]
+  sfn_role_arn          = local.secret["service_roles"]["sfn_upload"]
+  lambda_execution_role = local.secret["service_roles"]["lambda_errorhandler"]
+  data_dump_lambda_execution_role = local.secret["service_roles"]["lambda_data_dump"]
 
   frontend_url = try(join("", ["https://", module.frontend_dns[0].dns_prefix, ".", local.external_dns]), var.frontend_url)
   backend_url  = try(join("", ["https://", module.backend_dns[0].dns_prefix, ".", local.external_dns]), var.backend_url)
@@ -236,6 +237,25 @@ module dataset_submissions_lambda {
   subnets                    = local.subnets
   security_groups            = local.security_groups
 }
+
+
+module "prod_data_copy" {
+ # this ensures this resource is only created in prod
+  count                 = local.deployment_stage == "prod" ? 1 : 0
+  source                = "../lambda"
+  image                 = "${local.lambda_upload_repo}:${local.image_tag}"
+  name                  = "prodCopyData"
+  custom_stack_name     = local.custom_stack_name
+  remote_dev_prefix     = local.remote_dev_prefix
+  deployment_stage      = local.deployment_stage
+  db_dump_bucket        = local.db_dump_bucket
+  artifact_bucket       = local.artifact_bucket
+  cellxgene_bucket      = local.cellxgene_bucket
+  lambda_execution_role = local.data_dump_lambda_execution_role
+  subnets               = local.subnets
+  security_groups       = local.security_groups
+}
+
 
 resource "aws_iam_role" "dataset_submissions_lambda_service_role" {
   name               = "corpora-dataset-submissions-service-role-${local.custom_stack_name}"

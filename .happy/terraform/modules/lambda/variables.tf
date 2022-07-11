@@ -1,3 +1,9 @@
+variable count {
+  type        = number
+  description = "count"
+  default     = 1
+}
+
 variable image {
   type        = string
   description = "Image name"

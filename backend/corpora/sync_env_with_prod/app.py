@@ -36,15 +36,3 @@ def generate_db_uri():
     secret = json.loads(response['SecretString'])
     db_uri = secret['database_uri']
     return db_uri
-
-# def copy_rds_snapshot_directly_to_s3():
-#     client = boto3.client('rds')
-#     response = client.start_export_task(
-#         ExportTaskIdentifier='test-test',
-#         SourceArn='arn:aws:rds:us-west-2:231426846575:cluster-snapshot:hosted-cellxgene-prod-hosted-cellxgene-snapshot',
-#         S3BucketName='cellxgene-db-dump-prod',
-#         IamRoleArn='arn:aws:iam::231426846575:role/cellxgene-staging-sync-lambda',
-#         KmsKeyId='26a79104-2c66-46a5-b8a9-89ec0eb9bfa1',
-#         S3Prefix='string',
-#         )
-#     print(response)
