@@ -47,11 +47,7 @@ class TestAuthToken(BaseAuthAPITest):
             )
 
         with self.subTest("super curator"):
-            _test(
-                user_name="test_super_user_id",
-                additional_scope="write:collections",
-                is_super_curator=True
-            )
+            _test(user_name="test_super_user_id", additional_scope="write:collections", is_super_curator=True)
 
     def test__generate_s3_credentials__Not_Owner(self):
         collection = self.generate_collection(self.session, owner="not_test_user")
