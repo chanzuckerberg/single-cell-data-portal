@@ -51,7 +51,7 @@ class TestSession(unittest.TestCase):
         id = self.createCollection()
         # Add dataset to collection
         dataset_name = "test_dataset"
-        dataset_id = self.db.add_dataset(id, dataset_name)
+        dataset_id = self.db.add_dataset(id, dataset_name, "12345")
         # Get dataset/collection
         datasets = self.db.get_datasets(id)
         dataset_ids = self.db.get_attribute(id, "datasets")
@@ -65,8 +65,8 @@ class TestSession(unittest.TestCase):
         # Add dataset to collection
         dataset_name_1 = "test_1"
         dataset_name_2 = "test_2"
-        self.db.add_dataset(id, dataset_name_1)
-        self.db.add_dataset(id, dataset_name_2)
+        self.db.add_dataset(id, dataset_name_1, "12345")
+        self.db.add_dataset(id, dataset_name_2, "12354")
         # Get datasets and delete one
         datasets = self.db.get_datasets(id)
         to_del = datasets[0]['uuid'][0].decode("utf-8") 
@@ -93,7 +93,7 @@ class TestSession(unittest.TestCase):
         # create collection
         id = self.createCollection()
         # add dataset
-        self.db.add_dataset(id, "test_dataset")
+        self.db.add_dataset(id, "test_dataset", "12345")
         # edit dataset
         datasets = self.db.get_datasets(id)
         dataset_id = datasets[0]['uuid'][0]
@@ -149,7 +149,17 @@ class TestSession(unittest.TestCase):
         status = self.db.get_attribute(rev_id, "published")
         self.assertEqual(status, -1)
 
-    def test_replace_dataset_in_revision(self):
+    def test_replace_dataset(self):
+        # Create collection 
+        id = self.createCollection()
+        # Add dataset to collection
+        dataset_name = "test_dataset"
+        dataset_id = self.db.add_dataset(id, dataset_name, "12345")
+        # Replace dataset
+        self.db.edit_dataset(dataset_id, "artifact_id", "12354")
+        # Get dataset/collection
+        dataset = self.db.get_dataset(dataset_id)
+        self.assertEqual(dataset['artifact_id'][0], "12354")
         # TODO: artifacts stuff
         pass
 

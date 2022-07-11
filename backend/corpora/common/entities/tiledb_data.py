@@ -23,7 +23,6 @@ s3://single-cell-corpus/
             - name
             - other metadata
 
-
     datasets/<UUID>/
         artifacts/
         <UUID>.h5ad
@@ -31,26 +30,6 @@ s3://single-cell-corpus/
         <UUID>.cxg
     wmg/<SNAPSHOT>/
     soma/<SNAPSHOT>/
-
-Revision and publishing functionality:
-- Create collection
-    - Add to “collections” with “published=False”
-- Publish collection
-    - Set item in “collections” by id to “published=True”
-- Create revision for collection
-    - Add to “revisions” with “revision_of={uuid of parent}”
-- Publish revision
-    - Write to “revision_of” item with new data
-    - (Optional) delete from “revisions”
-- Track history
-    - Query collections with timestamp through TileDB
-    - To revert, you may have to recreate the array using queried data and delete the old one
-
-Query functionality:
-- To query private collections by id, query “collections” by id
-- To query public collections by id, query “collections” by id with a filter for “published”
-- To query all public collections, query “collections” with a filter for “published”
-- To query all collections by owner, query “collections” with a filter for owner
 """
 
 def new_id():
@@ -68,6 +47,7 @@ class TileDBData():
 
         # create collections array
         # TODO: figure out ideal domain and tile
+        # TODO: should we use more than one dimension?
         dim1 = tiledb.Dim(name="uuid", domain=(None, None), tile=2, dtype="S0")
         dom = tiledb.Domain(dim1)
         # TODO: add rest of required attributes
@@ -86,9 +66,10 @@ class TileDBData():
         tiledb.Array.create(array, schema)
 
         # create datasets array
-        # TODO: add more attributes as
+        # TODO: add more attributes as needed
         a1 = tiledb.Attr(name="name", dtype="U1")
-        schema = tiledb.ArraySchema(domain=dom, sparse=True, attrs=[a1])
+        a2 = tiledb.Attr(name="artifact_id", dtype="U1")
+        schema = tiledb.ArraySchema(domain=dom, sparse=True, attrs=[a1, a2])
         array = location + "/datasets"
         tiledb.Array.create(array, schema)
 
@@ -161,7 +142,7 @@ class TileDBData():
     def publish_collection(self, id):
         self.edit_collection(id, "published", True)
 
-    def add_dataset(self, coll_id, name):
+    def add_dataset(self, coll_id, name, artifact_id):
         id = new_id()
         datasets = self.get_attribute(coll_id, "datasets")
         datasets.append(id)
@@ -169,6 +150,7 @@ class TileDBData():
         with tiledb.open(self.location + "/datasets", "w") as A:
             A[id] = {
                 "name": name,
+                "artifact_id": artifact_id
             }
         return id
 
@@ -182,6 +164,7 @@ class TileDBData():
             data = A[id]
             new_data = {
                 "name": data['name'][0],
+                "artifact_id": data['artifact_id'][0]
             }
             new_data[key] = val
             
@@ -262,6 +245,7 @@ class TileDBData():
         # overwrite with old data
         new_data = {
             "name": data['name'][0],
+            "artifact_id": data['artifact_id'][0]
         }
         with tiledb.open(self.location + "/datasets", 'w') as A:
             A[id] = new_data
@@ -306,3 +290,8 @@ class TileDBData():
 
     def delete_collection(self, id):
         self.edit_collection(id, "published", -1)
+
+    # TODO: functions for handling dataset artifacts (non-TileDB files)
+
+
+    # TODO: functions to fit the APIs' requirements
