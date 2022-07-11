@@ -1,9 +1,6 @@
 name: Deploy Happy
 
-on:
-  # TODO: revert after testing
-  # - deployment
-  - workflow_dispatch
+on: deployment
 
 env:
   DOCKER_BUILDKIT: 1
