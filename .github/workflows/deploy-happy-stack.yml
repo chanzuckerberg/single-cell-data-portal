@@ -8,7 +8,24 @@ env:
   DOCKER_REPO: ${{ secrets.ECR_REPO }}/
 
 jobs:
+  dump-prod-db-to-s3:
+    if: github.event.deployment.environment != 'prod'
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_PROD_ROLE_TO_ASSUME }}
+          role-duration-seconds: 1600
+      - name: Invoke AWS lambda function (prod)
+        run: |
+          aws lambda invoke --invocation-type RequestResponse --function-name prod-data-dump --cli-binary-format raw-in-base64-out --payload '{"bucket":"cellxgene-db-dump-prod"}' -
+
   mirror-prod-data-to-deploy-env:
+    needs:
+      - dump-prod-db-to-s3
     if: github.event.deployment.environment != 'prod'
     runs-on: ubuntu-20.04
     steps:
@@ -19,14 +36,15 @@ jobs:
           aws-region: us-west-2
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           role-duration-seconds: 1600
-      - name: Invoke mirroring AWS lambda function (dev)
+      - name: Invoke AWS lambda function (dev)
         if: github.event.deployment.environment == 'dev'
         run: |
           aws lambda invoke --invocation-type RequestResponse --function-name mirror-prod-env-data-to-dev --cli-binary-format raw-in-base64-out --payload '{"deployment_env":"dev"}' -
-      - name: Invoke mirroring AWS lambda function (staging)
+      - name: Invoke AWS lambda function (staging)
         if: github.event.deployment.environment == 'stage'
         run: |
           aws lambda invoke --invocation-type RequestResponse --function-name mirror-prod-env-data-to-stage --cli-binary-format raw-in-base64-out --payload '{"deployment_env":"staging"}' -
+
   upgrade:
     runs-on: ubuntu-20.04
     needs:
