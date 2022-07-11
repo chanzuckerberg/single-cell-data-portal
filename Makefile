@@ -96,24 +96,12 @@ local-ecr-login:
 		aws ecr get-login-password --region us-west-2 --profile single-cell-dev | docker login --username AWS --password-stdin $$(aws sts get-caller-identity --profile single-cell-dev | jq -r .Account).dkr.ecr.us-west-2.amazonaws.com; \
 	fi
 
-.PHONY: local-hostconfig
-local-hostconfig:
-	if [ "$$(uname -s)" == "Darwin" ]; then \
-	  sudo -E ./scripts/happy hosts install; \
-	fi
-
-.PHONY: local-nohostconfig
-local-nohostconfig:
-	if [ "$$(uname -s)" == "Darwin" ]; then \
-	  sudo -E ./scripts/happy hosts uninstall; \
-	fi
-
 .PHONY: local-init-test-data
 local-init-test-data:
 	docker-compose $(COMPOSE_OPTS) run --rm -T backend /bin/bash -c "pip3 install awscli && cd /single-cell-data-portal && scripts/setup_dev_data.sh"
 
 .PHONY: local-init-host
-local-init-host: oauth/pkcs12/certificate.pfx .env.ecr local-ecr-login local-hostconfig local-start
+local-init-host: oauth/pkcs12/certificate.pfx .env.ecr local-ecr-login local-start
 
 .PHONY:
 local-init: local-init-host local-init-test-data ## Launch a new local dev env and populate it with test data.
@@ -128,7 +116,7 @@ local-rebuild: .env.ecr local-ecr-login ## Rebuild local dev without re-importin
 	docker-compose $(COMPOSE_OPTS) up -d frontend backend processing database oidc localstack
 
 .PHONY: local-sync
-local-sync: local-rebuild local-init local-hostconfig ## Re-sync the local-environment state after modifying library deps or docker configs
+local-sync: local-rebuild local-init  ## Re-sync the local-environment state after modifying library deps or docker configs
 
 .PHONY: local-start
 local-start: .env.ecr ## Start a local dev environment that's been stopped.
@@ -139,7 +127,7 @@ local-stop: ## Stop the local dev environment.
 	docker-compose stop
 
 .PHONY: local-clean
-local-clean: local-nohostconfig ## Remove everything related to the local dev environment (including db data!)
+local-clean: ## Remove everything related to the local dev environment (including db data!)
 	-if [ -f ./oauth/pkcs12/server.crt ] ; then \
 	    export CERT=$$(docker run -v $(PWD)/oauth/pkcs12:/tmp/certs --workdir /tmp/certs --rm=true --entrypoint "" soluto/oidc-server-mock:0.3.0 bash -c "openssl x509 -in server.crt -outform DER | sha1sum | cut -d ' ' -f 1"); \
 	    echo ""; \
