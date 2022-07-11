@@ -104,7 +104,7 @@ local-init-test-data:
 local-init-host: oauth/pkcs12/certificate.pfx .env.ecr local-ecr-login local-start
 
 .PHONY:
-local-init: local-init-test-data ## Launch a new local dev env and populate it with test data.
+local-init: local-init-host local-init-test-data ## Launch a new local dev env and populate it with test data.
 
 .PHONY: local-status
 local-status: ## Show the status of the containers in the dev environment.
