@@ -7,9 +7,7 @@ from flask import g, request, make_response, jsonify
 from backend.corpora.api_server.db import dbconnect
 from backend.corpora.common.corpora_config import CorporaConfig
 from backend.corpora.common.corpora_orm import CollectionVisibility
-from backend.corpora.common.utils.authorization_checks import has_scope
-from backend.corpora.common.utils.corpora_constants import CorporaConstants
-from backend.corpora.lambdas.api.v1.authorization import owner_or_allowed
+from backend.corpora.lambdas.api.v1.authorization import owner_or_allowed, is_super_curator
 from backend.corpora.lambdas.api.v1.common import get_collection_else_forbidden, get_dataset_else_error
 from backend.corpora.lambdas.api.v1.dataset import delete_dataset_common
 
@@ -36,10 +34,10 @@ def post_s3_credentials(collection_id: str, token_info: dict):
         db_session, collection_id, visibility=CollectionVisibility.PRIVATE.name, owner=owner_or_allowed(token_info)
     )
     user_id = token_info["sub"]
-    upload_key_prefix = f"{user_id}/{collection_id}/"
-    is_super_curator = has_scope(CorporaConstants.SUPER_CURATOR_SCOPE, token_info.get("scope", ""))
-    if is_super_curator:
+    if is_super_curator(token_info):
         upload_key_prefix = f"super/{collection_id}/"
+    else:
+        upload_key_prefix = f"{user_id}/{collection_id}/"
     parameters = dict(
         RoleArn=config.curator_role_arn,
         RoleSessionName=user_id.replace("|", "-"),
