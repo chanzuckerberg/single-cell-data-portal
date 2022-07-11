@@ -327,8 +327,10 @@ paths:
               properties:
                 curator_tag:
                   type: string
+                  required: false
                 id:
                   $ref: "#/components/schemas/dataset_id"
+                  required: false
                 link:
                   $ref: "#/components/schemas/upload_link"
             examples:
