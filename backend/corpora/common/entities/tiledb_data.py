@@ -77,13 +77,15 @@ class Utils():
     @staticmethod
     def parse_stored_data(data: dict, array: str) -> dict:
         for a in Utils.attrs_to_parse[array]:
-            data[a] = ast.literal_eval(data[a])
+            if a in data:
+                data[a] = ast.literal_eval(data[a])
         return data
 
     @staticmethod
     def pack_input_data(data: dict, array: str) -> dict:
         for a in Utils.attrs_to_parse[array]:
-            data[a] = str(data[a])
+            if a in data:
+                data[a] = str(data[a])
         return data
 
 
@@ -170,7 +172,7 @@ class TileDBData():
 
     def get_collection(self, id):
         with tiledb.open(self.location + "/collections", 'r') as A:
-            return A[id]
+            return Utils.parse_stored_data(dict(A[id]), "collections")
 
     def get_all_collections(self):
         with tiledb.open(self.location + "/collections", mode="r") as A:
@@ -178,7 +180,7 @@ class TileDBData():
             q = A.query(attr_cond=qc)
             res = q.df[:].to_dict("records")
             for i in res:
-                res[i]['publisher_metadata'] = ast.literal_eval(res[i]['publisher_metadata'])
+                res[i] = Utils.parse_stored_data(res[i], "collections")
             return res
 
     def get_published_collections(self, user_id, from_date, to_date):
@@ -186,6 +188,8 @@ class TileDBData():
             qc = tiledb.QueryCondition(f"owner == {user_id} and created_at >= {from_date} and created_at <= {to_date} and published == 1")
             q = A.query(attr_cond=qc)["created_at", "id"]
             res = q.df[:].to_dict("records")
+            for i in res:
+                res[i] = Utils.parse_stored_data(res[i], "collections")
             return res
 
     def get_attribute(self, id, attr):
@@ -226,7 +230,7 @@ class TileDBData():
 
     def get_dataset(self, id):
         with tiledb.open(self.location + "/datasets", 'r') as A:
-            return A[id]
+            return Utils.parse_stored_data(dict(A[id]), "datasets")
 
     def edit_dataset(self, id, key, val):
         new_data = None
@@ -250,7 +254,7 @@ class TileDBData():
         data = []
         with tiledb.open(self.location + "/datasets", 'r') as A:
             for id in ids:
-                data.append(A[id])
+                data.append(Utils.parse_stored_data(dict(A[id]), "datasets"))
         return data
 
     # TODO: maybe we also want the ability to read and revert based on timestamp, not just number of versions
@@ -262,7 +266,7 @@ class TileDBData():
         times = fragments_info.timestamp_range[steps_idx]
 
         with tiledb.open(self.location + "/collections", 'r', timestamp=times) as A:
-            return A[id]
+            return Utils.parse_stored_data(dict(A[id]), "collections")
 
     def revert_collection_history(self, id, steps_back):
         fragments_info = tiledb.array_fragments(self.location + "/collections")
@@ -292,7 +296,7 @@ class TileDBData():
         times = fragments_info.timestamp_range[steps_idx]
 
         with tiledb.open(self.location + "/datasets", 'r', timestamp=times) as A:
-            return A[id]
+            return Utils.parse_stored_data(dict(A[id]), "datasets")
 
     def revert_dataset_history(self, id, steps_back):
         fragments_info = tiledb.array_fragments(self.location + "/datasets")
@@ -306,10 +310,10 @@ class TileDBData():
             data = A[id]
 
         # overwrite with old data
-        new_data = {
-            "name": data['name'][0],
-            "artifact_id": data['artifact_id'][0]
-        }
+        new_data = {}
+        for a in Utils.attrs['datasets']:
+            new_data[a] = data[a][0]
+
         with tiledb.open(self.location + "/datasets", 'w') as A:
             A[id] = new_data
 
