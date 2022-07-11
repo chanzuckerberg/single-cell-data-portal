@@ -33,3 +33,9 @@ variable deployment_stage {
   description = "The name of the deployment stage of the Application"
   default     = "test"
 }
+
+variable max_attempts {
+  type        = number
+  description = "The max number of attempts to run the Job before failing out"
+  default     = 3
+}

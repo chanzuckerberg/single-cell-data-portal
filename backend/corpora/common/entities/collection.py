@@ -11,7 +11,7 @@ from ..corpora_orm import (
     DbCollection,
     DbCollectionLink,
     CollectionVisibility,
-    generate_uuid,
+    generate_id,
     ProcessingStatus,
     Base,
 )
@@ -41,7 +41,7 @@ class Collection(Entity):
         **kwargs,
     ) -> "Collection":
         """
-        Create a new Collection and related objects and store in the database. UUIDs are generated for all new table
+        Create a new Collection and related objects and store in the database. ids are generated for all new table
         entries.
         """
 
@@ -68,16 +68,16 @@ class Collection(Entity):
     def get_collection(
         cls,
         session: Session,
-        collection_uuid: str = None,
+        collection_id: str = None,
         visibility: CollectionVisibility = None,
         revision_of: str = None,
         include_tombstones: bool = False,
         owner: typing.Optional[str] = None,
     ) -> typing.Union["Collection", None]:
         """
-        Given the collection_uuid, retrieve a live collection.
+        Given the collection_id, retrieve a live collection.
         :param session: the database session object.
-        :param collection_uuid:
+        :param collection_id:
         :param visibility: the visibility of the collection
         :param revision_of: the id of the associated public collection iff this collection is a revision
         :param include_tombstones: If true, the collection is returned even if it has been tombstoned.
@@ -88,8 +88,8 @@ class Collection(Entity):
         filters = []
         if visibility:
             filters.append(cls.table.visibility == visibility)
-        if collection_uuid:
-            filters.append(cls.table.id == collection_uuid)
+        if collection_id:
+            filters.append(cls.table.id == collection_id)
         if revision_of:
             filters.append(cls.table.revision_of == revision_of)
         if owner:
@@ -288,7 +288,7 @@ class Collection(Entity):
         # Create a public collection with the same uuid and same fields
         if self.revision_of:
             # This is a revision of a published Collection
-            public_collection = Collection.get_collection(self.session, collection_uuid=self.revision_of)
+            public_collection = Collection.get_collection(self.session, collection_id=self.revision_of)
             has_dataset_changes = False
             for dataset in self.datasets:
                 revised_dataset = Dataset(dataset)
@@ -351,7 +351,7 @@ class Collection(Entity):
         """
         revision_collection = clone(
             self.db_object,
-            primary_key=dict(id=generate_uuid()),
+            primary_key=dict(id=generate_id()),
             visibility=CollectionVisibility.PRIVATE,
             revision_of=self.id,
         )

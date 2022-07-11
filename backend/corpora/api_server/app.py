@@ -45,6 +45,7 @@ def create_flask_app():
     add_api(base_path="/dp", spec_file="corpora-api.yml")
     add_api(base_path="/curation", spec_file="curation-api.yml")
     add_api(base_path="/wmg", spec_file="wmg-api.yml")
+    add_api(base_path="/gene_info", spec_file="gene-info-api.yml")
 
     return connexion_app.app
 

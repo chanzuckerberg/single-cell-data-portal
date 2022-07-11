@@ -17,6 +17,9 @@ resource "aws_sfn_state_machine" "state_machine" {
           "JobDefinition": "${var.job_definition_arn}",
           "JobName": "download-validate",
           "JobQueue": "${var.job_queue_arn}",
+          "RetryStrategy": {
+            "Attempts": ${var.max_attempts}
+          },
           "ContainerOverrides": {
             "Environment": [
               {
@@ -25,27 +28,21 @@ resource "aws_sfn_state_machine" "state_machine" {
               },
               {
                 "Name": "DATASET_ID",
-                "Value.$": "$.dataset_uuid"
+                "Value.$": "$.dataset_id"
               },
               {
                 "Name": "STEP_NAME",
                 "Value": "download-validate"
+              },
+              {
+                "Name": "MAX_ATTEMPTS",
+                "Value": "${var.max_attempts}"
               }
             ]
           }
         },
         "ResultPath": null,
         "TimeoutSeconds": 36000,
-        "Retry": [
-          {
-            "ErrorEquals": [
-              "States.TaskFailed"
-            ],
-            "IntervalSeconds": 1,
-            "BackoffRate": 2,
-            "MaxAttempts": 2
-          }
-        ],
         "Catch": [
           {
             "ErrorEquals": [
@@ -72,31 +69,28 @@ resource "aws_sfn_state_machine" "state_machine" {
                   "JobDefinition": "${var.job_definition_arn}",
                   "JobName": "cxg",
                   "JobQueue": "${var.job_queue_arn}",
+                  "RetryStrategy": {
+                    "Attempts": ${var.max_attempts}
+                  },
                   "ContainerOverrides": {
                     "Environment": [
                       {
                         "Name": "DATASET_ID",
-                        "Value.$": "$.dataset_uuid"
+                        "Value.$": "$.dataset_id"
                       },
                       {
                         "Name": "STEP_NAME",
                         "Value": "cxg"
+                      },
+                      {
+                        "Name": "MAX_ATTEMPTS",
+                        "Value": "${var.max_attempts}"
                       }
                     ]
                   }
                 },
                 "ResultPath": null,
-                "TimeoutSeconds": 36000,
-                "Retry": [
-                  {
-                    "ErrorEquals": [
-                      "States.TaskFailed"
-                    ],
-                    "IntervalSeconds": 1,
-                    "BackoffRate": 2,
-                    "MaxAttempts": 2
-                  }
-                ]
+                "TimeoutSeconds": 36000
               }
             }
           },
@@ -111,30 +105,27 @@ resource "aws_sfn_state_machine" "state_machine" {
                   "JobDefinition": "${var.job_definition_arn}",
                   "JobName": "seurat",
                   "JobQueue": "${var.job_queue_arn}",
+                  "RetryStrategy": {
+                    "Attempts": ${var.max_attempts}
+                  },
                   "ContainerOverrides": {
                     "Environment": [
                       {
                         "Name": "DATASET_ID",
-                        "Value.$": "$.dataset_uuid"
+                        "Value.$": "$.dataset_id"
                       },
                       {
                         "Name": "STEP_NAME",
                         "Value": "seurat"
+                      },
+                      {
+                        "Name": "MAX_ATTEMPTS",
+                        "Value": "${var.max_attempts}"
                       }
                     ]
                   }
                 },
-                "TimeoutSeconds": 36000,
-                "Retry": [
-                  {
-                    "ErrorEquals": [
-                      "States.TaskFailed"
-                    ],
-                    "IntervalSeconds": 1,
-                    "BackoffRate": 2,
-                    "MaxAttempts": 2
-                  }
-                ]
+                "TimeoutSeconds": 36000
               }
             }
           }
@@ -186,7 +177,7 @@ resource "aws_sfn_state_machine" "state_machine_seurat" {
           "Environment": [
             {
               "Name": "DATASET_ID",
-              "Value.$": "$.dataset_uuid"
+              "Value.$": "$.dataset_id"
             },
             {
               "Name": "STEP_NAME",
@@ -222,7 +213,7 @@ resource "aws_sfn_state_machine" "state_machine_cxg_remaster" {
           "Environment": [
             {
               "Name": "DATASET_ID",
-              "Value.$": "$.dataset_uuid"
+              "Value.$": "$.dataset_id"
             },
             {
               "Name": "STEP_NAME",

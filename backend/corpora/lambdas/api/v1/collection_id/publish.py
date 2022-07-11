@@ -12,11 +12,11 @@ from backend.corpora.common.utils import cloudfront
 
 
 @dbconnect
-def post(collection_uuid: str, body: object, token_info: dict):
+def post(collection_id: str, body: object, token_info: dict):
     db_session = g.db_session
     collection = Collection.get_collection(
         db_session,
-        collection_uuid,
+        collection_id,
         CollectionVisibility.PRIVATE,
         owner=owner_or_allowed(token_info),
     )
@@ -28,4 +28,4 @@ def post(collection_uuid: str, body: object, token_info: dict):
     data_submission_policy_version = body["data_submission_policy_version"]
     collection.publish(data_submission_policy_version=data_submission_policy_version)
     cloudfront.create_invalidation_for_index_paths()
-    return make_response({"collection_uuid": collection_id, "visibility": CollectionVisibility.PUBLIC}, 202)
+    return make_response({"collection_id": collection_id, "visibility": CollectionVisibility.PUBLIC}, 202)

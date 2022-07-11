@@ -52,7 +52,7 @@ def cxg_remaster(ctx):
 
         for record in session.query(DbDataset):
             if not record.tombstone:
-                dataset = Dataset.get(session, dataset_uuid=record.id)
+                dataset = Dataset.get(session, dataset_id=record.id)
                 artifacts = [a.s3_uri for a in dataset.artifacts if a.filetype == DatasetArtifactFileType.CXG]
                 if len(artifacts) > 0:
                     cxg = artifacts[0]
@@ -69,7 +69,7 @@ def cxg_remaster(ctx):
 
                     print(bucket, dataset_id)
 
-                    input = {"dataset_uuid": dataset_id}
+                    input = {"dataset_id": dataset_id}
 
                     aws_account_id = get_aws_account_id()
                     deployment = ctx.obj["deployment"]
@@ -86,18 +86,18 @@ def cxg_remaster(ctx):
                     sleep(1)
 
 
-def reprocess_seurat(ctx: Context, dataset_uuid: str) -> None:
+def reprocess_seurat(ctx: Context, dataset_id: str) -> None:
     """
     Reconverts the specified dataset to Seurat format in place.
     :param ctx: command context
-    :param dataset_uuid: UUID of dataset to reconvert to Seurat format
+    :param dataset_id: ID of dataset to reconvert to Seurat format
     """
 
     deployment = ctx.obj["deployment"]
 
     click.confirm(
         f"Are you sure you want to run this script? "
-        f"It will reconvert and replace the dataset {dataset_uuid} to Seurat in the {deployment} environment.",
+        f"It will reconvert and replace the dataset {dataset_id} to Seurat in the {deployment} environment.",
         abort=True,
     )
 
@@ -105,12 +105,12 @@ def reprocess_seurat(ctx: Context, dataset_uuid: str) -> None:
     deployment = ctx.obj["deployment"]
     happy_stack_name = get_happy_stack_name(deployment)
 
-    payload = {"dataset_uuid": dataset_uuid}
+    payload = {"dataset_id": dataset_id}
 
     client = boto3.client("stepfunctions")
     response = client.start_execution(
         stateMachineArn=f"arn:aws:states:us-west-2:{aws_account_id}:stateMachine:dp-{happy_stack_name}-seurat-sfn",
-        name=f"{dataset_uuid}-{int(time())}",
+        name=f"{dataset_id}-{int(time())}",
         input=json.dumps(payload),
     )
 

@@ -30,7 +30,7 @@ def processing_status_updater(session: Session, uuid: str, updates: dict):
     Updates the DbDatasetProcessingStatus object with the specified statuses
     Note: The uuid parameter is the ID of the dataset_processing_status row, _NOT_ the dataset!
     :param session: active SQLAlchemy session
-    :param uuid: UUID of the dataset_processing_status to update
+    :param uuid: ID of the dataset_processing_status to update
     :param updates: dictionary of statuses to update
     :return: None
     """
