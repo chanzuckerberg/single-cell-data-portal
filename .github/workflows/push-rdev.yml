@@ -21,9 +21,6 @@ env:
 jobs:
   build-push-images:
     runs-on: ubuntu-20.04
-    strategy:
-      matrix:
-        component: ['frontend', 'backend', 'upload_failures', 'processing', 'upload_success', 'dataset_submissions']
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -38,13 +35,11 @@ jobs:
         with:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v2
+      - name: Install happy
+        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.2.1
+        with:
+          happy_version: "0.23.0"
       - name: Build component
         shell: bash
         run: |
-          pip install -r .happy/requirements.txt
-          # set tag from GITHUB_REF, but removing `refs/heads/` prefix
-          DOCKER_TAG=${GITHUB_REF#refs/heads/}
-          DOCKER_TAG=${DOCKER_TAG#refs/tags/}
-          # replace `/` with `_`
-          DOCKER_TAG=${DOCKER_TAG//\//-}
-          scripts/happy --profile="" push --stack-name ${DOCKER_TAG} --extra-tag sha-${GITHUB_SHA:0:8} --extra-tag build-${GITHUB_RUN_NUMBER} ${{ matrix.component }}
+          happy push --aws-profile "" --tag sha-${GITHUB_SHA:0:8}
