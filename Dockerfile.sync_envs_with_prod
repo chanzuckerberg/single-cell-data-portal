@@ -11,4 +11,4 @@ LABEL commit=${HAPPY_COMMIT}
 ENV COMMIT_SHA=${HAPPY_COMMIT}
 ENV COMMIT_BRANCH=${HAPPY_BRANCH}
 
-CMD ["app.copy_relational_db"]
+CMD ["backend.corpora.sync_env_with_prod.lambda_handler.run"]
