@@ -1,5 +1,5 @@
 # Frontend dockerfile
-ARG NODE_VERSION
+ARG NODE_VERSION=${NODE_VERSION}
 FROM node:${NODE_VERSION}
 
 # install dependencies first, in a different location for easier app bind mounting for local development
@@ -15,7 +15,7 @@ WORKDIR /opt/node_app
 # -- TODO, we should try turning this back on later.
 # USER node
 COPY package.json package-lock.json* ./
-RUN npm ci --verbose --no-optional && npm cache clean --force
+RUN npm ci --no-optional && npm cache clean --force
 ENV PATH /opt/node_app/node_modules/.bin:$PATH
 
 RUN apt-get update && apt-get install -y \
