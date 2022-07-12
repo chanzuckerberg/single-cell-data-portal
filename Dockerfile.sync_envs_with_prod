@@ -3,7 +3,7 @@ ARG BASE_TAG=branch-main
 FROM python:3.9
 RUN apt-get update && apt-get -y install postgresql-client
 
-COPY backend/corpora/sync_env_with_prod/ .
+COPY backend/corpora/sync_env_with_prod .
 
 ARG HAPPY_BRANCH="unknown"
 ARG HAPPY_COMMIT=""
