@@ -1,9 +1,13 @@
+import json
 import logging
+import os
 import pathlib
 import sys
 import time
 import tiledb
 
+from backend.corpora.lambdas.upload_failures.slack import notify_slack, format_batch_issue_slack_alert, \
+    format_failed_batch_issue_slack_alert
 from backend.corpus_asset_pipelines import integrated_corpus
 from backend.wmg.data.load_cube import upload_artifacts_to_s3, make_snapshot_active
 from backend.wmg.data.schemas.corpus_schema import create_tdb
@@ -18,13 +22,38 @@ from backend.wmg.data.wmg_cube import create_cubes
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
+pipeline_failure_message = {
+    "blocks": [
+        {
+            "type": "header",
+            "text": {
+                "type": "plain_text",
+                "text": "Corpus Asset Pipeline Failed:fire:",
+                "emoji": True,
+            },
+        }
+    ]
+}
+pipeline_success_message = {
+    "blocks": [
+        {
+            "type": "header",
+            "text": {
+                "type": "plain_text",
+                "text": "Corpus Asset Pipeline Succeeded:tada:",
+                "emoji": True,
+            },
+        }
+    ]
+}
+
 
 def load_data_and_create_cube(
-    path_to_h5ad_datasets: str,
-    corpus_name: str = "corpus_group",
-    snapshot_path=None,
-    extract_data=True,
-    validate_cubes=True,
+        path_to_h5ad_datasets: str,
+        corpus_name: str = "corpus_group",
+        snapshot_path=None,
+        extract_data=True,
+        validate_cubes=True,
 ):
     """
     Function to copy H5AD datasets (from a preconfiugred s3 bucket) to the path given then,
@@ -48,7 +77,11 @@ def load_data_and_create_cube(
     logger.info("Built expression summary cube")
     if validate_cubes:
         if Validation(corpus_path).validate_cube() is False:
+            if os.getenv("DEPLOYMENT_STAGE") == "prod":
+                data = format_failed_batch_issue_slack_alert(pipeline_failure_message)
+                notify_slack(data)
             sys.exit("Exiting due to cube validation failure")
+
     cell_type_by_tissue = get_cell_types_by_tissue(corpus_path)
     generate_cell_ordering(snapshot_path, cell_type_by_tissue)
     generate_primary_filter_dimensions(snapshot_path, corpus_name, snapshot_id)
@@ -58,6 +91,7 @@ def load_data_and_create_cube(
     if validate_cubes:
         make_snapshot_active(snapshot_id)
         logger.info(f"Updated latest_snapshot_identifier in s3. Current snapshot id is {snapshot_id}")
+        return True
 
 
 if __name__ == "__main__":
@@ -67,4 +101,8 @@ if __name__ == "__main__":
     """
     # todo pass in validate_cubes as env arg
     load_data_and_create_cube("datasets", ".")
+    if os.getenv("DEPLOYMENT_STAGE") == "prod":
+        data = json.dumps(pipeline_success_message, indent=2)
+        notify_slack(data)
+
     sys.exit()
