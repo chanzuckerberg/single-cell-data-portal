@@ -42,7 +42,7 @@ def delete_collection(id: str):
     """/v1/collections/{id} DELETE"""
     db = TileDBData(location)
     db.delete_collection(id)
-    return make_response(None, 204)
+    return make_response(jsonify(None), 204)
 
 def get_collection(id: str):
     """/v1/collections/{id} GET"""
@@ -50,14 +50,14 @@ def get_collection(id: str):
     coll = db.get_collection(id)
     datasets = db.get_datasets(coll)
     coll["datasets"] = datasets
-    return make_response(coll, 200)
+    return make_response(jsonify(coll), 200)
 
 def start_revision(id: str):
     """/v1/collections/{id} POST"""
     db = TileDBData(location)
     rev_id = db.create_revision(id)
     res = get_collection(rev_id)
-    return res
+    return make_response(jsonify(res), 200)
 
 def update_collection(id: str, body: dict):
     """/v1/collections/{id} PUT"""
@@ -65,7 +65,7 @@ def update_collection(id: str, body: dict):
     for key, val in body.items():
         db.edit_collection(id, key, val)
     res = get_collection(id)
-    return res
+    return make_response(jsonify(res), 200)
 
 def publish_collection(id: str):
     """/v1/collections/{id}/publish POST"""
@@ -75,14 +75,14 @@ def publish_collection(id: str):
         "collection_id": id,
         "visibility": "PUBLIC"
     }
-    return make_response(res, 202)
+    return make_response(jsonify(res), 202)
 
 def upload_dataset(id: str, url: str):
     """/v1/collections/{id}/upload-links POST"""
     db = TileDBData(location)
     dataset_id = db.add_dataset(id, url)
     res = {"dataset_id": dataset_id}
-    return make_response(res, 202)
+    return make_response(jsonify(res), 202)
 
 def replace_dataset(coll_id: str, dataset_id: str, url: str):
     """/v1/collections/{id}/upload-links PUT"""
@@ -90,13 +90,13 @@ def replace_dataset(coll_id: str, dataset_id: str, url: str):
     db.delete_dataset(coll_id, dataset_id)
     new_dataset = db.add_dataset(coll_id, url)
     res = {"dataset_id": new_dataset}
-    return make_response(res, 202)
+    return make_response(jsonify(res), 202)
 
 def list_published_datasets():
     """/v1/datasets/index GET"""
     db = TileDBData(location)
     datasets = db.get_all_datasets()
-    return make_response(datasets, 200)
+    return make_response(jsonify(datasets), 200)
 
 def get_dataset_metadata(explorer_url: str):
     """/v1/datasets/meta GET"""
@@ -107,7 +107,7 @@ def delete_dataset(coll_id: str, dataset_id: str):
     """/v1/datasets/{id} DELETE"""
     db = TileDBData(location)
     db.delete_dataset(coll_id, dataset_id)
-    return make_response(None, 202)
+    return make_response(jsonify(None), 202)
 
 def request_asset_download(dataset_id: str, asset_id: str):
     """/v1/datasets/{dataset_id}/asset/{asset_id} POST"""

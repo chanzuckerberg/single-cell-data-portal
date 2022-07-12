@@ -111,9 +111,9 @@ class Utils():
 
 
 class TileDBData():
-    # for testing purposes
     @staticmethod
     def init_db(location):
+        """FOR TESTING PURPOSES, create a local TileDB group and arrays according to our schema."""
         # create group
         if os.path.exists(location):
             shutil.rmtree(location)
@@ -163,9 +163,9 @@ class TileDBData():
         array = location + "/datasets"
         tiledb.Array.create(array, schema)
 
-    # for testing purposes
     @staticmethod
     def destroy_db(location):
+        """FOR TESTING PURPOSES, delete our local TileDB group."""
         shutil.rmtree(location)
 
     def __init__(self, location):
@@ -181,6 +181,7 @@ class TileDBData():
         curator_name: str = "",
         links: list = None,
     ):
+        """Creates a collection using provided data."""
         id = Utils.new_id()
         with tiledb.open(self.location + "/collections", "w") as A:
             A[id] = Utils.pack_input_data({
@@ -201,10 +202,12 @@ class TileDBData():
         return id
 
     def get_collection(self, id):
+        """Gets a collection by its id"""
         with tiledb.open(self.location + "/collections", 'r') as A:
             return Utils.parse_stored_data(dict(A[id]), "collections")
 
     def get_all_collections(self):
+        """Get all public collections"""
         with tiledb.open(self.location + "/collections", mode="r") as A:
             qc = tiledb.QueryCondition(f"visibility == 'PUBLIC'") # TODO: query conditions don't respect overwrites?
             q = A.query(attr_cond=qc)
@@ -214,6 +217,7 @@ class TileDBData():
             return res
 
     def get_published_collections(self, user_id, from_date, to_date):
+        """Get all public collections, filtered by owner and time of creation"""
         with tiledb.open(self.location + "/collections", mode="r") as A:
             qc = tiledb.QueryCondition(f"owner == {user_id} and created_at >= {from_date} and created_at <= {to_date} and visibility == 'PUBLIC'")
             q = A.query(attr_cond=qc)["created_at", "id"]
@@ -223,6 +227,7 @@ class TileDBData():
             return res
 
     def get_published_datasets(self):
+        """Get all datasets belonging to a public collection"""
         colls = self.get_all_collections()
         dataset_ids = []
         for coll in colls:
@@ -231,6 +236,7 @@ class TileDBData():
             return Utils.parse_stored_data(dict(A[dataset_ids]), "datasets")
 
     def get_attribute(self, id, attr):
+        """Get the data stored in one field of a specific collection"""
         coll = self.get_collection(id)
         data = coll[attr][0]
         if attr in Utils.attrs_to_parse["collections"]:
@@ -238,6 +244,7 @@ class TileDBData():
         return data
 
     def edit_collection(self, id, key, val):
+        """Update the data stored in one field of a specific collection"""
         new_data = None
         with tiledb.open(self.location + "/collections", "r") as A:
             data = A[id]
@@ -252,23 +259,27 @@ class TileDBData():
             A[id] = new_data
 
     def publish_collection(self, id):
+        """Set a collection's visibility to public"""
         self.edit_collection(id, "visibility", "PUBLIC")
 
     def add_dataset(self, coll_id, url):
+        """Add a dataset to a collection and to the datasets array using the data from the user's shared URL"""
         id = Utils.new_id()
         datasets = self.get_attribute(coll_id, "datasets")
         datasets.append(id)
         self.edit_collection(coll_id, "datasets", datasets)
         with tiledb.open(self.location + "/datasets", "w") as A:
-            A[id] = Utils.pack_input_data({}, "datasets")
+            A[id] = Utils.pack_input_data({}, "datasets") # TODO: put in data
         # TODO: get the dataset data from the given url, manage and upload the artifact, etc.
         return id
 
     def get_dataset(self, id):
+        """Get a dataset by its id"""
         with tiledb.open(self.location + "/datasets", 'r') as A:
             return Utils.parse_stored_data(dict(A[id]), "datasets")
 
     def edit_dataset(self, id, key, val):
+        """Update the data in one field of a specific dataset"""
         new_data = None
         with tiledb.open(self.location + "/datasets", "r") as A:
             data = A[id]
@@ -276,16 +287,19 @@ class TileDBData():
             for attr in Utils.attrs["datasets"]:
                 new_data[attr] = data[attr][0]
             new_data[key] = val
+            new_data = Utils.pack_input_data(new_data, "datasets")
             
         with tiledb.open(self.location + "/datasets", "w") as A:
             A[id] = new_data
 
     def delete_dataset(self, coll_id: str, dataset_id: str):
+        """Remove a dataset from a collection"""
         datasets = self.get_attribute(coll_id, "datasets")
         datasets.remove(dataset_id)
         self.edit_collection(coll_id, "datasets", datasets)
     
     def get_datasets(self, coll_id):
+        """Return all the datasets belonging to a specific collection"""
         ids = self.get_attribute(coll_id, "datasets")
         data = []
         with tiledb.open(self.location + "/datasets", 'r') as A:
@@ -295,6 +309,7 @@ class TileDBData():
 
     # TODO: maybe we also want the ability to read and revert based on timestamp, not just number of versions
     def read_collection_history(self, id, steps_back):
+        """Get a collection by its id some specific number of writes ago"""
         fragments_info = tiledb.array_fragments(self.location + "/collections")
         if steps_back > len(fragments_info):
             raise IndexError("too many steps back in time")
@@ -305,6 +320,7 @@ class TileDBData():
             return Utils.parse_stored_data(dict(A[id]), "collections")
 
     def revert_collection_history(self, id, steps_back):
+        """Revert a collection by its id to the state it was in a specific number of writes ago"""
         fragments_info = tiledb.array_fragments(self.location + "/collections")
         if steps_back > len(fragments_info):
             raise IndexError("too many steps back in time")
@@ -325,6 +341,7 @@ class TileDBData():
             A[id] = new_data
 
     def read_dataset_history(self, id, steps_back):
+        """Get a dataset by its id some specific number of writes ago"""
         fragments_info = tiledb.array_fragments(self.location + "/datasets")
         if steps_back > len(fragments_info):
             raise IndexError("too many steps back in time")
@@ -335,6 +352,7 @@ class TileDBData():
             return Utils.parse_stored_data(dict(A[id]), "datasets")
 
     def revert_dataset_history(self, id, steps_back):
+        """Revert a dataset by its id to the state it was in a specific number of writes ago"""
         fragments_info = tiledb.array_fragments(self.location + "/datasets")
         if steps_back > len(fragments_info):
             raise IndexError("too many steps back in time")
@@ -354,6 +372,7 @@ class TileDBData():
             A[id] = new_data
 
     def create_revision(self, coll_id):
+        """Start a revision of an existing collection by its id"""
         id = Utils.new_id()
         coll = self.get_collection(coll_id)
         data = {}
@@ -366,6 +385,7 @@ class TileDBData():
         return id
 
     def publish_revision(self, id):
+        """Publish a revision by its id"""
         # get revision data
         revision = self.get_collection(id)
         data = {}
@@ -382,6 +402,7 @@ class TileDBData():
         self.delete_collection(id)
 
     def delete_collection(self, id):
+        """Mark a collection as deleted by its id"""
         self.edit_collection(id, "visibility", "DELETED")
 
     # TODO: functions for handling dataset artifacts (non-TileDB files)

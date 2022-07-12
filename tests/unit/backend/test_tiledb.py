@@ -1,6 +1,6 @@
 import unittest
 
-from backend.corpora.common.entities.tiledb_data import TileDBData
+from backend.corpora.common.entities.tiledb_data import TileDBData, Utils
 
 class TestSession(unittest.TestCase):
     def setUp(self):
