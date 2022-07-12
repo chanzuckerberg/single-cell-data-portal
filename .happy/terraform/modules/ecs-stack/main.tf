@@ -50,7 +50,7 @@ locals {
 
   artifact_bucket            = try(local.secret["s3_buckets"]["artifact"]["name"], "")
   cellxgene_bucket           = try(local.secret["s3_buckets"]["cellxgene"]["name"], "")
-  db_dump_bucket             = try(local.secret["s3_buckets"]["cellxgene"]["name"], "")
+  db_dump_bucket             = try(local.secret["s3_buckets"]["db_dump"]["name"], "")
   dataset_submissions_bucket = try(local.secret["s3_buckets"]["dataset_submissions"]["name"], "")
   wmg_bucket                 = try(local.secret["s3_buckets"]["wmg"]["name"], "")
   ecs_role_arn          = local.secret["service_roles"]["ecs_role"]
