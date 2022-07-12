@@ -1,5 +1,5 @@
 FROM public.ecr.aws/lambda/python:3.9
-RUN  apt update && apt -y install postgresql-client
+RUN  apt-get update && apt-get -y install postgresql-client
 
 
 COPY backend/corpora/sync_env_with_prod .
