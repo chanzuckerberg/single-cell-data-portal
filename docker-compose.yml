@@ -116,7 +116,7 @@ services:
         - HAPPY_TAG
     restart: "no"
     ports:
-      - "9000:8080"
+      - "9005:8080"
     volumes:
       - ./backend/corpora/sync_envs_with_prod:/var/task
     environment:
