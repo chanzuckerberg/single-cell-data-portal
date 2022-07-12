@@ -1,5 +1,5 @@
 from backend.corpora.common.corpora_config import CorporaDbConfig
-from backend.corpora.sync_env_with_prod.app import copy_relational_db
+from backend.corpora.sync_env_with_prod.dump_db import copy_relational_db
 from backend.corpora.sync_env_with_prod.load_db import load_db
 
 
