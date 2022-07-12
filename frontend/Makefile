@@ -2,6 +2,8 @@ SHELL:=/bin/bash
 ACCOUNT_ID=$(shell aws sts get-caller-identity --query Account --output text)
 BROWSER_S3=corpora-static-site-$(DEPLOYMENT_STAGE)-$(ACCOUNT_ID)
 S3_ENVIRONMENT_FILE=s3://$(BROWSER_S3)/env.production
+export NODE_VERSION:=$(cat ./frontend/.nvmrc | tr -cd [:digit:].)
+
 
 check-var-defined = $(if $(strip $($1)),,$(error "$1" is not defined))
 
