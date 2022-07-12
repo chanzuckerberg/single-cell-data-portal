@@ -157,7 +157,7 @@ class AuthServerAPITest(BaseAPITest):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        (mock_oauth_server, auth_config) = BaseAuthAPITest.get_mock_server_and_auth_config()
+        (mock_oauth_server, auth_config) = cls.get_mock_server_and_auth_config()
         cls.mock_oauth_server = mock_oauth_server
         cls.auth_config = auth_config
 
