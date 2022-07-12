@@ -21,7 +21,8 @@ class Entity:
     Examples: Collection, Dataset
     """
 
-    table: Base = None  # The DbTable represented by this entity.
+    location = "/Users/ragarwal/code/single-cell-data-portal/tests/unit/backend/fixtures/test_tiledb/metadata" # TODO config this somewhere
+
     list_attributes: typing.Tuple = None  # A list of attributes to retrieve when listing entities
 
     def __init__(self, db_object: Base):
