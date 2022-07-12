@@ -1,5 +1,6 @@
 import os
 import shutil
+from unicodedata import name
 import numpy as np
 import tiledb
 import uuid
@@ -15,7 +16,7 @@ s3://single-cell-corpus/
         collections [ARRAY]
             - uuid
             - owner
-            - published
+            - visibility
             - revision_of
             - datasets
             - other metadata
@@ -49,12 +50,23 @@ class Utils():
             "published_at",
             "publisher_metadata",
             # internal TileDB schema
-            "published",
+            "visibility",
             "revision_of",
             "owner",
         ],
         "datasets": [
-
+            "X_approximate_distribution",
+            "X_normalization_assay",
+            "cell_count",
+            "cell_type",
+            "development_stage",
+            "disease",
+            "ethnicity",
+            "is_primary_data",
+            "name",
+            "organism",
+            "sex",
+            "tissue",
         ]
     }
        
@@ -65,7 +77,14 @@ class Utils():
             "publisher_metadata"
         ],
         "datasets": [
-
+            "assay",
+            "cell_type",
+            "development_stage",
+            "disease",
+            "ethnicity",
+            "organism",
+            "sex",
+            "tissue"
         ]
     }
   
@@ -108,7 +127,7 @@ class TileDBData():
         dom = tiledb.Domain(dim1)
 
         a1 = tiledb.Attr(name="owner", dtype="U1")
-        a2 = tiledb.Attr(name="published", dtype=np.int32) # 0=private, 1=published, -1=deleted
+        a2 = tiledb.Attr(name="visibility", dtype="U1") # DELETED, PRIVATE, PUBLIC
         a3 = tiledb.Attr(name="name", dtype="U1")
         a4 = tiledb.Attr(name="description", dtype="U1")
         a5 = tiledb.Attr(name="contact_name", dtype="U1")
@@ -127,9 +146,20 @@ class TileDBData():
 
         # create datasets array
         # TODO: add more attributes as needed
-        a1 = tiledb.Attr(name="name", dtype="U1")
-        a2 = tiledb.Attr(name="artifact_id", dtype="U1")
-        schema = tiledb.ArraySchema(domain=dom, sparse=True, attrs=[a1, a2])
+        a1 = tiledb.Attr(name="X_approximate_distribution", dtype="U1")
+        a2 = tiledb.Attr(name="X_normalization_assay", dtype="U1")
+        a3 = tiledb.Attr(name="cell_count", dtype=np.int32)
+        a4 = tiledb.Attr(name="cell_type", dtype="U1")
+        a5 = tiledb.Attr(name="development_stage", dtype="U1")
+        a6 = tiledb.Attr(name="disease", dtype="U1")
+        a7 = tiledb.Attr(name="ethnicity", dtype="U1")
+        a8 = tiledb.Attr(name="is_primary_data", dtype="U1")
+        a9 = tiledb.Attr(name="name", dtype="U!")
+        a10 = tiledb.Attr(name="organism", dtype="U1")
+        a11 = tiledb.Attr(name="sex", dtype="U1")
+        a12 = tiledb.Attr(name="tissue", dtype="U1")
+
+        schema = tiledb.ArraySchema(domain=dom, sparse=True, attrs=[a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12])
         array = location + "/datasets"
         tiledb.Array.create(array, schema)
 
@@ -154,7 +184,7 @@ class TileDBData():
         id = Utils.new_id()
         with tiledb.open(self.location + "/collections", "w") as A:
             A[id] = Utils.pack_input_data({
-                "published": False,
+                "visibility": "PRIVATE",
                 "name": name,
                 "description": description,
                 "contact_name": contact_name,
@@ -176,7 +206,7 @@ class TileDBData():
 
     def get_all_collections(self):
         with tiledb.open(self.location + "/collections", mode="r") as A:
-            qc = tiledb.QueryCondition(f"published == 1")
+            qc = tiledb.QueryCondition(f"visibility == 'PUBLIC'") # TODO: query conditions don't respect overwrites?
             q = A.query(attr_cond=qc)
             res = q.df[:].to_dict("records")
             for i in res:
@@ -185,12 +215,20 @@ class TileDBData():
 
     def get_published_collections(self, user_id, from_date, to_date):
         with tiledb.open(self.location + "/collections", mode="r") as A:
-            qc = tiledb.QueryCondition(f"owner == {user_id} and created_at >= {from_date} and created_at <= {to_date} and published == 1")
+            qc = tiledb.QueryCondition(f"owner == {user_id} and created_at >= {from_date} and created_at <= {to_date} and visibility == 'PUBLIC'")
             q = A.query(attr_cond=qc)["created_at", "id"]
             res = q.df[:].to_dict("records")
             for i in res:
                 res[i] = Utils.parse_stored_data(res[i], "collections")
             return res
+
+    def get_published_datasets(self):
+        colls = self.get_all_collections()
+        dataset_ids = []
+        for coll in colls:
+            dataset_ids += coll['datasets']
+        with tiledb.open(self.location + "/datasets", mode="r") as A:
+            return Utils.parse_stored_data(dict(A[dataset_ids]), "datasets")
 
     def get_attribute(self, id, attr):
         coll = self.get_collection(id)
@@ -214,18 +252,16 @@ class TileDBData():
             A[id] = new_data
 
     def publish_collection(self, id):
-        self.edit_collection(id, "published", 1)
+        self.edit_collection(id, "visibility", "PUBLIC")
 
-    def add_dataset(self, coll_id, name, artifact_id):
+    def add_dataset(self, coll_id, url):
         id = Utils.new_id()
         datasets = self.get_attribute(coll_id, "datasets")
         datasets.append(id)
         self.edit_collection(coll_id, "datasets", datasets)
         with tiledb.open(self.location + "/datasets", "w") as A:
-            A[id] = Utils.pack_input_data({
-                "name": name,
-                "artifact_id": artifact_id
-            }, "datasets")
+            A[id] = Utils.pack_input_data({}, "datasets")
+        # TODO: get the dataset data from the given url, manage and upload the artifact, etc.
         return id
 
     def get_dataset(self, id):
@@ -324,7 +360,7 @@ class TileDBData():
         for attr in Utils.attrs["collections"]:
             data[attr] = coll[attr][0]
         data['revision_of'] = coll_id
-        data["published"] = 0
+        data["visibility"] = "PRIVATE"
         with tiledb.open(self.location + "/collections", "w") as A:
             A[id] = data
         return id
@@ -335,8 +371,9 @@ class TileDBData():
         data = {}
         for attr in Utils.attrs["collections"]:
             data[attr] = revision[attr][0]
-        data['published'] = 0
+        data['visibility'] = "PRIVATE"
         data['revision_of'] = ""
+        data['updated_at'] = time.time()
         # write data to existing revision_of collection
         revision_of = revision["revision_of"][0]
         with tiledb.open(self.location + "/collections", "w") as A:
@@ -345,6 +382,6 @@ class TileDBData():
         self.delete_collection(id)
 
     def delete_collection(self, id):
-        self.edit_collection(id, "published", -1)
+        self.edit_collection(id, "visibility", "DELETED")
 
     # TODO: functions for handling dataset artifacts (non-TileDB files)
