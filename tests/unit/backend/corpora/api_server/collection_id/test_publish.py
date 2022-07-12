@@ -4,8 +4,7 @@ from unittest.mock import Mock, patch
 
 from backend.corpora.common.corpora_orm import CollectionLinkType
 from backend.corpora.common.entities import Collection
-from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest, BasicAuthAPITestCurator
-from tests.unit.backend.corpora.api_server.mock_auth import get_auth_token
+from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest, get_auth_token
 
 
 class TestPublish(BaseAuthAPITest):
@@ -17,7 +16,7 @@ class TestPublish(BaseAuthAPITest):
         self.headers_authed = {
             "host": "localhost",
             "Content-Type": "application/json",
-            "Cookie": get_auth_token(self.app),
+            "Cookie": get_auth_token(),
         }
         self.headers_unauthed = {"host": "localhost", "Content-Type": "application/json"}
         self.mock_published_at = datetime(2000, 12, 25, 0, 0)
@@ -203,19 +202,19 @@ class TestPublish(BaseAuthAPITest):
         self.assertEqual(403, response.status_code)
 
 
-class TestPublishCurators(BasicAuthAPITestCurator):
-    def verify_can_publish(self, collection):
+class TestPublishCurators(BaseAuthAPITest):
+    def verify_can_publish(self, collection, user):
         self.generate_dataset(self.session, collection_id=collection.id)
         path = f"/dp/v1/collections/{collection.id}/publish"
         body = {"data_submission_policy_version": "1.0"}
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(user)}
         response = self.app.post(path, headers=headers, data=json.dumps(body))
         self.assertEqual(202, response.status_code)
 
     def test__can_publish_owned_collection(self):
         collection = self.generate_collection(self.session)
-        self.verify_can_publish(collection)
+        self.verify_can_publish(collection, "owner")
 
-    def test__can_publish_non_owned_collection(self):
+    def test__can_publish_non_owned_collection_as_super_curator(self):
         collection = self.generate_collection(self.session, owner="someone_else")
-        self.verify_can_publish(collection)
+        self.verify_can_publish(collection, "super")

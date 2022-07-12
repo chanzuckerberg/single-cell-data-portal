@@ -5,8 +5,7 @@ from unittest.mock import patch
 from backend.corpora.common.corpora_orm import CollectionVisibility, ProcessingStatus
 from backend.corpora.common.entities import Dataset
 from backend.corpora.common.utils.math_utils import GB
-from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest, BasicAuthAPITestCurator
-from tests.unit.backend.corpora.api_server.mock_auth import get_auth_token
+from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest, get_auth_token
 from tests.unit.backend.corpora.fixtures.environment_setup import EnvironmentSetup, fixture_file_path
 from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
 
@@ -21,7 +20,7 @@ class TestCollectionPostUploadLink(BaseAuthAPITest):
     def test__link__202(self, mocked):
         with EnvironmentSetup({"CORPORA_CONFIG": fixture_file_path("bogo_config.js")}):
             path = "/dp/v1/collections/test_collection_id_revision/upload-links"
-            headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+            headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token()}
             body = {"url": self.good_link}
 
             test_url = furl(path=path)
@@ -44,7 +43,7 @@ class TestCollectionPostUploadLink(BaseAuthAPITest):
     )
     def test__link_not_owner__403(self, mock_get_file_info):
         path = "/dp/v1/collections/test_collection_id_not_owner/upload-links"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token()}
         body = {"url": self.dummy_link}
 
         test_url = furl(path=path)
@@ -55,7 +54,7 @@ class TestCollectionPostUploadLink(BaseAuthAPITest):
         path = "/dp/v1/collections/test_collection_id_revision/upload-links"
 
         with self.subTest("Unsupported Provider"):
-            headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+            headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token()}
             body = {"url": "https://test_url.com"}
             test_url = furl(path=path)
             response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
@@ -63,7 +62,7 @@ class TestCollectionPostUploadLink(BaseAuthAPITest):
             self.assertEqual("The dropbox shared link is invalid.", json.loads(response.data)["detail"])
 
         with self.subTest("Bad Dropbox link"):
-            headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+            headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token()}
             body = {"url": self.dummy_link}
             test_url = furl(path=path)
             response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
@@ -75,7 +74,7 @@ class TestCollectionPostUploadLink(BaseAuthAPITest):
     )
     def test__unsupported_format__400(self, mock_func):
         path = "/dp/v1/collections/test_collection_id_revision/upload-links"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token()}
         body = {"url": self.dummy_link}
 
         test_url = furl(path=path)
@@ -88,7 +87,7 @@ class TestCollectionPostUploadLink(BaseAuthAPITest):
     )
     def test__oversized__413(self, mock_func):
         path = "/dp/v1/collections/test_collection_id_revision/upload-links"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token()}
         body = {"url": self.dummy_link}
 
         test_url = furl(path=path)
@@ -101,7 +100,7 @@ class TestCollectionPostUploadLink(BaseAuthAPITest):
     )
     def test__link_fake_collection__403(self, *mocked):
         path = "/dp/v1/collections/fake/upload-links"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token()}
         body = {"url": self.good_link}
 
         test_url = furl(path=path)
@@ -114,7 +113,7 @@ class TestCollectionPostUploadLink(BaseAuthAPITest):
     )
     def test_link_public_collection__403(self, *mocked):
         path = "/dp/v1/collections/test_collection_id_public/upload-links"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token()}
         body = {"url": self.good_link}
 
         test_url = furl(path=path)
@@ -130,7 +129,7 @@ class TestCollectionPutUploadLink(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
     def setUp(self):
         super().setUp()
         self.good_link = "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"
-        self.headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+        self.headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token()}
 
     @patch("backend.corpora.common.upload.start_upload_sfn")
     def test__reupload_published_dataset_during_revision__202(self, *mocked):
@@ -274,16 +273,16 @@ class TestCollectionPutUploadLink(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
     "backend.corpora.common.utils.dl_sources.url.DropBoxURL.file_info",
     return_value={"size": 1, "name": "file.h5ad"},
 )
-class TestCollectionUploadLinkCurators(BasicAuthAPITestCurator, CorporaTestCaseUsingMockAWS):
+class TestCollectionUploadLinkCurators(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
     def setUp(self):
         super().setUp()
         self.good_link = "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"
 
     @patch("backend.corpora.common.upload.start_upload_sfn")
-    def test__can_upload_dataset_to_non_owned_collection(self, *mocked):
+    def test__can_upload_dataset_to_non_owned_collection_as_super_curator(self, *mocked):
         with EnvironmentSetup({"CORPORA_CONFIG": fixture_file_path("bogo_config.js")}):
             collection = self.generate_collection(self.session, visibility=CollectionVisibility.PRIVATE.name)
-            headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+            headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token("super")}
             path = f"/dp/v1/collections/{collection.id}/upload-links"
             body = {"url": self.good_link}
 
@@ -294,7 +293,7 @@ class TestCollectionUploadLinkCurators(BasicAuthAPITestCurator, CorporaTestCaseU
             self.assertIn("dataset_id", json.loads(response.data).keys())
 
     @patch("backend.corpora.common.upload.start_upload_sfn")
-    def test__can_reupload_dataset_not_owner(self, *mocked):
+    def test__can_reupload_dataset_as_super_curator(self, *mocked):
         collection = self.generate_collection(
             self.session, visibility=CollectionVisibility.PRIVATE.name, owner="someone else"
         )
@@ -307,7 +306,7 @@ class TestCollectionUploadLinkCurators(BasicAuthAPITestCurator, CorporaTestCaseU
         dataset_id = dataset.id
         path = f"/dp/v1/collections/{collection.id}/upload-links"
         body = {"url": self.good_link, "id": dataset_id}
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token("super")}
 
         with EnvironmentSetup({"CORPORA_CONFIG": fixture_file_path("bogo_config.js")}):
             response = self.app.put(path, headers=headers, data=json.dumps(body))

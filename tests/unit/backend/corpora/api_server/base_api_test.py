@@ -1,10 +1,16 @@
+import base64
+import json
 import os
+import time
 import typing
+
+from unittest.mock import patch
 
 from backend.corpora.api_server.app import app
 from backend.corpora.common.corpora_config import CorporaAuthConfig
 from backend.corpora.lambdas.api.v1.authentication import decode_token
-from tests.unit.backend.corpora.api_server.mock_auth import MockOauthServer, get_auth_token, make_token
+from tests.unit.backend.corpora.api_server.mock_auth import MockOauthServer, make_token
+from tests.unit.backend.corpora.api_server.config import TOKEN_EXPIRES
 from tests.unit.backend.corpora.fixtures.environment_setup import EnvironmentSetup
 from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 
@@ -48,7 +54,62 @@ class BaseAPITest(DataPortalTestCase):
         return _remove_timestamps(body, remove_attributes)
 
 
+def mock_assert_authorized_token(token: str, audience: str = None):
+    if token == "owner":
+        return {"sub": "test_user_id", "email": "fake_user@email.com", "scope": []}
+    elif token == "not_owner":
+        return {"sub": "someone_else", "email": "fake_user@email.com", "scope": []}
+    elif token == "super":
+        return {"sub": "super", "email": "fake_user@email.com", "scope": ["write:collections"]}
+    else:
+        raise Exception()
+
+
+def get_auth_token(user="owner"):
+    """
+    Generated an auth token for testing.
+    :param app: a WSGI app.
+    :return:
+    """
+    cxguser = base64.b64encode(
+        json.dumps(
+            {
+                "access_token": user,
+                "refresh_token": f"random-{time.time()}",
+                "scope": "openid profile email offline",
+                "expires_in": TOKEN_EXPIRES,
+                "token_type": "Bearer",
+                "expires_at": TOKEN_EXPIRES,
+            }
+        ).encode("utf8")
+    ).decode("utf8")
+    return f"cxguser={cxguser}"
+
+
 class BaseAuthAPITest(BaseAPITest):
+    def setUp(self):
+        super().setUp()
+        self.mock_assert_authorized_token = patch(
+            "backend.corpora.lambdas.api.v1.authentication.assert_authorized_token",
+            side_effect=mock_assert_authorized_token,
+        )
+        self.mock_assert_authorized_token.start()
+
+    def tearDown(self):
+        super().tearDown()
+        self.mock_assert_authorized_token.stop()
+
+    def make_owner_header(self):
+        return {"Authorization": "Bearer " + "owner", "Content-Type": "application/json"}
+
+    def make_super_curator_header(self):
+        return {"Authorization": "Bearer " + "super", "Content-Type": "application/json"}
+
+    def make_not_owner_header(self):
+        return {"Authorization": "Bearer " + "not_owner", "Content-Type": "application/json"}
+
+
+class AuthServerAPITest(BaseAPITest):
     @staticmethod
     def get_mock_server_and_auth_config(additional_scope=None, token_duration=0):
         mock_oauth_server = MockOauthServer(additional_scope, token_duration)
@@ -97,20 +158,6 @@ class BaseAuthAPITest(BaseAPITest):
     def setUpClass(cls):
         super().setUpClass()
         (mock_oauth_server, auth_config) = BaseAuthAPITest.get_mock_server_and_auth_config()
-        cls.mock_oauth_server = mock_oauth_server
-        cls.auth_config = auth_config
-
-    @classmethod
-    def tearDownClass(cls):
-        super().tearDownClass()
-        cls.mock_oauth_server.terminate()
-
-
-class BasicAuthAPITestCurator(BaseAPITest):
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        (mock_oauth_server, auth_config) = BaseAuthAPITest.get_mock_server_and_auth_config("write:collections", 60)
         cls.mock_oauth_server = mock_oauth_server
         cls.auth_config = auth_config
 

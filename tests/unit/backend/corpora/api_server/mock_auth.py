@@ -1,15 +1,14 @@
-import urllib
 import time
 import random
 import sys
+
 import requests
 from flask import Flask, request, redirect, make_response, jsonify
 import subprocess
 
 # seconds until the token expires
 from jose import jwt
-
-TOKEN_EXPIRES = 3
+from tests.unit.backend.corpora.api_server.config import TOKEN_EXPIRES
 
 
 # A mocked out oauth server, which serves all the endpoints needed by the oauth type.
@@ -115,24 +114,6 @@ class MockOauthServer:
 
     def terminate(self):
         self.process.terminate()
-
-
-def get_auth_token(app):
-    """
-    Generated an auth token for testing.
-    :param app: a WSGI app.
-    :return:
-    """
-    headers = dict(host="localhost")
-    response = app.get("/dp/v1/login", headers=headers)
-    location = response.headers["Location"]
-    split = urllib.parse.urlsplit(location)
-    args = dict(urllib.parse.parse_qsl(split.query))
-
-    # follow redirect
-    url = f"/dp/v1/oauth2/callback?code=fakecode&state={args['state']}"
-    response = app.get(url, headers=dict(host="localhost", Cookie=response.headers["Set-Cookie"]))
-    return response.headers["Set-Cookie"]
 
 
 def make_token(token_claims: dict, token_duration: int = 5, additional_scope: list = None) -> str:
