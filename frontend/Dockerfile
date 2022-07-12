@@ -1,6 +1,5 @@
 # Frontend dockerfile
-ARG NODE_VERSION=${cat ./frontend/.nvmrc | tr -cd [:digit:].}
-FROM node:${NODE_VERSION}
+FROM node:15
 
 # install dependencies first, in a different location for easier app bind mounting for local development
 # due to default /opt permissions we have to create the dir with root and change perms
