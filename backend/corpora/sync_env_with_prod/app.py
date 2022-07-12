@@ -4,10 +4,11 @@ import subprocess
 
 
 def copy_relational_db(event, context):
-    print('hey mads')
+    print('Starting copy')
     db_uri = generate_db_uri()
     copy_rds_data(db_uri)
-    write_to_s3('cellxgene-db-dump-prod')
+    # todo update to write to prod after confirming code works in dev
+    write_to_s3('cellxgene-db-dump-dev')
     return {
         'statusCode': 200,
         'body': json.dumps('Hello from Lambda!')
@@ -24,14 +25,18 @@ def copy_rds_data(db_uri):
     db_file = "/tmp/prod_data.sql"
     # todo refactor
     db_password = db_uri.split(":")[2].split('@')[0]
-    dump_command = f"PGPASSWORD={db_password} pg_dump -Fc --dbname=corpora_prod --file={db_file} --host 0.0.0.0 --username corpora_prod"
+    # todo swap
+    # dump_command = f"PGPASSWORD={db_password} pg_dump -Fc --dbname=corpora_prod --file={db_file} --host 0.0.0.0 --username corpora_prod"
+    dump_command = f"PGPASSWORD={db_password} pg_dump -Fc --dbname=corpora_dev --file={db_file} --host 0.0.0.0 --username corpora_dev"
+
     subprocess.Popen(dump_command, shell=True)
 
 
 def generate_db_uri():
     client = boto3.client('secretsmanager')
+    # todo update env to prod
     response = client.get_secret_value(
-        SecretId='corpora/backend/prod/database',
+        SecretId='corpora/backend/dev/database',
     )
     secret = json.loads(response['SecretString'])
     db_uri = secret['database_uri']
