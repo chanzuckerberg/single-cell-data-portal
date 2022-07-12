@@ -7,13 +7,7 @@ import boto3
 import psycopg2
 from sqlalchemy import create_engine
 
-from backend.corpora.common.corpora_config import CorporaDbConfig
 from backend.corpora.common.corpora_orm import Base
-
-
-def lambda_handler(event, context):
-    load_db(CorporaDbConfig().database_uri, event.get("db_dump_s3_bucket"), event.get("db_dump_s3_key"))
-    return {"statusCode": 200}
 
 
 def load_db(db_uri, db_dump_s3_bucket, db_dump_s3_key):

@@ -1,10 +1,8 @@
-ARG BASE_TAG=branch-main
-
-FROM python:3.9
-RUN apt-get update && apt-get -y install postgresql-client
 FROM public.ecr.aws/lambda/python:3.8
+RUN yum install -y postgresql
 
-COPY backend/corpora/sync_env_with_prod .
+COPY backend/corpora/sync_env_with_prod ./backend/corpora/sync_env_with_prod
+COPY backend/corpora/common ./backend/corpora/common
 
 ARG HAPPY_BRANCH="unknown"
 ARG HAPPY_COMMIT=""
