@@ -12,6 +12,7 @@ def copy_relational_db(event, context):
         write_to_s3("cellxgene-db-dump-dev")
     except Exception as e:
         print(f"Error copying rds data: {e}")
+        return {"statusCode": 500, "body": json.dumps(e)}
     return {"statusCode": 200, "body": json.dumps("Hello from Lambda!")}
 
 
