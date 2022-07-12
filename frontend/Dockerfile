@@ -25,6 +25,12 @@ RUN apt-get update && apt-get install -y \
 # ADD --chown=node . /corpora-frontend
 ADD . /corpora-frontend
 WORKDIR /corpora-frontend
+RUN mkdir -p ./node_modules
+RUN ln -sf /opt/node_app/node_modules/* /opt/node_app/node_modules/.bin ./node_modules/.
+RUN if [ ! -z "$API_URL" ]; then cat src/configs/$DEPLOYMENT_STAGE.js | envsubst >src/configs/configs.js;\
+    else cp src/configs/local.js src/configs/configs.js; \
+    fi
+RUN npm run build
 
 ARG HAPPY_BRANCH="unknown"
 ARG HAPPY_COMMIT=""
@@ -33,4 +39,4 @@ LABEL commit=${HAPPY_COMMIT}
 ENV COMMIT_SHA=${HAPPY_COMMIT}
 ENV COMMIT_BRANCH=${HAPPY_BRANCH}
 
-ENTRYPOINT ["./container_init.sh"]
+CMD npm run server -- -- -p 9000
