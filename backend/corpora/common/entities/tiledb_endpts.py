@@ -1,5 +1,6 @@
 # Wraps tiledb_data.py to fit API expected responses
 
+import os
 from flask import make_response, jsonify
 
 from tiledb_data import TileDBData
@@ -101,7 +102,7 @@ def list_published_datasets():
 def get_dataset_metadata(explorer_url: str):
     """/v1/datasets/meta GET"""
     # TODO
-    pass
+    return
 
 def delete_dataset(coll_id: str, dataset_id: str):
     """/v1/datasets/{id} DELETE"""
@@ -112,14 +113,14 @@ def delete_dataset(coll_id: str, dataset_id: str):
 def request_asset_download(dataset_id: str, asset_id: str):
     """/v1/datasets/{dataset_id}/asset/{asset_id} POST"""
     # TODO
-    pass
+    return
 
 def list_dataset_assets(id: str):
     """/v1/datasets/{dataset_id}/assets GET"""
     # TODO
-    pass
+    return
 
 def get_dataset_upload_status(id: str):
     """/v1/datasets/{dataset_id}/status GET"""
     # TODO
-    pass
+    return

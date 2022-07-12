@@ -2,7 +2,7 @@ import unittest
 
 from backend.corpora.common.entities.tiledb_data import TileDBData, Utils
 
-class TestSession(unittest.TestCase):
+class TestTileDbData(unittest.TestCase):
     def setUp(self):
         self.metadata = {
             "name": "test_collection",
