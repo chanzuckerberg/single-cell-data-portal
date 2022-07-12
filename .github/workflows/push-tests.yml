@@ -8,7 +8,7 @@ on:
       - prod
   pull_request:
     branches:
-      - *
+      - "*"
 
 env:
   CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
