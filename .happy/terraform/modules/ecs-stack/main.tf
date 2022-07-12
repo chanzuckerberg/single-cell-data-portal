@@ -240,9 +240,6 @@ module dataset_submissions_lambda {
 
 
 module "prod_data_copy" {
- # this ensures this resource is only created in prod
- # todo uncomment out next line when confirmed to work in dev
- # count                 = local.deployment_stage == "prod" ? 1 : 0
   source                = "../lambda"
   image                 = "${local.lambda_upload_repo}:${local.image_tag}"
   name                  = "prodCopyData"

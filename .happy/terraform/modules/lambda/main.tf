@@ -1,7 +1,6 @@
 # This is a lambda job
 # 
 resource aws_lambda_function lambda_job_def {
-  count         = var.count
   role          = var.lambda_execution_role
   function_name = "dp-${var.deployment_stage}-${var.custom_stack_name}-${var.name}"
   package_type  = "Image"

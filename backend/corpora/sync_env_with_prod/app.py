@@ -5,10 +5,13 @@ import subprocess
 
 def copy_relational_db(event, context):
     print("Starting copy")
-    db_uri = generate_db_uri()
-    copy_rds_data(db_uri)
-    # todo update to write to prod after confirming code works in dev
-    write_to_s3("cellxgene-db-dump-dev")
+    try:
+        db_uri = generate_db_uri()
+        copy_rds_data(db_uri)
+        # todo update to write to prod after confirming code works in dev
+        write_to_s3("cellxgene-db-dump-dev")
+    except Exception as e:
+        print(f"Error copying rds data: {e}")
     return {"statusCode": 200, "body": json.dumps("Hello from Lambda!")}
 
 
