@@ -2,6 +2,7 @@ ARG BASE_TAG=branch-main
 
 FROM python:3.9
 RUN apt-get update && apt-get -y install postgresql-client
+FROM public.ecr.aws/lambda/python:3.8
 
 COPY backend/corpora/sync_env_with_prod .
 
