@@ -58,6 +58,7 @@ services:
       - AWS_ACCESS_KEY_ID=test
       - AWS_SECRET_ACCESS_KEY=test
       - BOTO_ENDPOINT_URL=http://localstack:4566
+      - NODE_VERSION=$(cat ./frontend/.nvmrc | tr -cd [:digit:].)
     volumes:
       - ./frontend:/corpora-frontend
       - /corpora-frontend/node_modules/
