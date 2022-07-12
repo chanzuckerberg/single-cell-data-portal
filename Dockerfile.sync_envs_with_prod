@@ -1,5 +1,5 @@
 FROM public.ecr.aws/lambda/python:3.8
-yum install -y postgresql
+RUN yum install -y postgresql
 
 COPY backend/corpora/sync_env_with_prod .
 
@@ -10,4 +10,4 @@ LABEL commit=${HAPPY_COMMIT}
 ENV COMMIT_SHA=${HAPPY_COMMIT}
 ENV COMMIT_BRANCH=${HAPPY_BRANCH}
 
-CMD ["app.copy_relational_db"]
+CMD ["dump_db.copy_relational_db"]
