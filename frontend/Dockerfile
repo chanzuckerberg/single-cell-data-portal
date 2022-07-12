@@ -1,5 +1,5 @@
 # Frontend dockerfile
-FROM node:16
+FROM node:15
 
 # install dependencies first, in a different location for easier app bind mounting for local development
 # due to default /opt permissions we have to create the dir with root and change perms
@@ -12,7 +12,7 @@ WORKDIR /opt/node_app
 
 
 # -- TODO, we should try turning this back on later.
-# USER node
+USER node
 COPY package.json package-lock.json* ./
 RUN npm ci --no-optional && npm cache clean --force
 ENV PATH /opt/node_app/node_modules/.bin:$PATH
@@ -22,7 +22,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # -- TODO, we should try turning this back on later.
-# ADD --chown=node . /corpora-frontend
+ADD --chown=node . /corpora-frontend
 ADD . /corpora-frontend
 WORKDIR /corpora-frontend
 
