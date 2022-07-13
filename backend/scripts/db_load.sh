@@ -18,6 +18,7 @@ fi
 DB_PW=`aws secretsmanager get-secret-value --secret-id corpora/backend/${DEPLOYMENT_STAGE}/database --region us-west-2 | jq -r '.SecretString | match(":([^:]*)@").captures[0].string'`
 
 INFILE=${1:?}
+# TODO: Remove the suffix when ready for the real thing!
 DB_NAME="corpora_${DEPLOYMENT_STAGE}_sync_test"
 DB_USER=corpora_${DEPLOYMENT_STAGE}
 

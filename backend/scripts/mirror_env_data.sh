@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-# Sync S3 data from production environment to a specified destination deployment environment
+# Sync data from a source deployment environment (usually production)
+# to a specified destination deployment environment (dev or staging)
 
 set -e
 
@@ -17,18 +18,22 @@ if [[ ! "$DEST_ENV" =~ ^(dev|staging)$ ]]; then
   exit 1
 fi
 
+kill_ssh_tunnel()
+{
+  pkill -f "bastion\..*\.single-cell\.czi\.technology" || true
+}     
+
 # TODO: Remove `--copy-props metadata-directive` once IAM roles have {Get,Put}ObjectTagging perms added
 # TODO: Remove --dryrun after testing
-S3_SYNC_CMD="aws s3 sync --delete --copy-props metadata-directive --no-progress --dryrun"
+S3_SYNC_CMD="aws s3 sync --delete --metadata-directive REPLACE --no-progress --dryrun"
 
-
-# # TODO: Uncomment after testing with below commands
-# # $S3_SYNC_CMD s3://corpora-data-prod/ s3://corpora-data-${DEST_ENV}/
-# # $S3_SYNC_CMD s3://hosted-cellxgene-prod/ s3://hosted-cellxgene-${DEST_ENV}/
-# # $S3_SYNC_CMD s3://cellxgene-wmg-prod/ s3://cellxgene-wmg-${DEST_ENV}/
-# $S3_SYNC_CMD s3://corpora-data-prod/0b696cf4-513e-4e59-b6ac-78d76409e6f8/ s3://atolopko-tmp/corpora-data-${DEST_ENV}/
-# $S3_SYNC_CMD s3://hosted-cellxgene-prod/00099d5e-154f-4a7a-aa8d-fa30c8c0c43c.cxg/ s3://atolopko-tmp/hosted-cellxgene-${DEST_ENV}/
-# $S3_SYNC_CMD s3://cellxgene-wmg-prod/1651599970/ s3://atolopko-tmp/cellxgene-wmg-${DEST_ENV}/
+# TODO: Uncomment after testing with below commands
+# $S3_SYNC_CMD s3://corpora-data-${SRC_ENV}/ s3://corpora-data-${DEST_ENV}/
+# $S3_SYNC_CMD s3://hosted-cellxgene-${SRC_ENV}/ s3://hosted-cellxgene-${DEST_ENV}/
+# $S3_SYNC_CMD s3://cellxgene-wmg-${SRC_ENV}/ s3://cellxgene-wmg-${DEST_ENV}/
+# $S3_SYNC_CMD s3://corpora-data-${SRC_ENV}/0b696cf4-513e-4e59-b6ac-78d76409e6f8/ s3://atolopko-tmp/corpora-data-${DEST_ENV}/
+# $S3_SYNC_CMD s3://hosted-cellxgene-${SRC_ENV}/00099d5e-154f-4a7a-aa8d-fa30c8c0c43c.cxg/ s3://atolopko-tmp/hosted-cellxgene-${DEST_ENV}/
+# $S3_SYNC_CMD s3://cellxgene-wmg-${SRC_ENV}/1651599970/ s3://atolopko-tmp/cellxgene-wmg-${DEST_ENV}/
 
 
 DB_DUMP_FILE=`mktemp`
@@ -41,13 +46,18 @@ if [[ $SRC_ENV == 'staging' ]]; then
 else
    export AWS_PROFILE=single-cell-${SRC_ENV}
 fi
+kill_ssh_tunnel
 make db/tunnel
+pgrep -fl bastion
 make db/dump OUTFILE=$DB_DUMP_FILE
 
 export DEPLOYMENT_STAGE=$DEST_ENV
 export AWS_PROFILE=single-cell-dev
+kill_ssh_tunnel
 make db/tunnel
-./db_load.sh $DB_DUMP_FILE
+pgrep -fl bastion
+./scripts/db_load.sh $DB_DUMP_FILE
 
+kill_ssh_tunnel
 
-
+pgrep -fl bastion
