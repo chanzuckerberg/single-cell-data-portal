@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 
-# Loads a pg_dump-produced data file into a PostgreSQL database. Updates table columns that contain deployment environment-specific URLs to point at the current environment.
+# Loads a pg_dump-produced data file into a PostgreSQL
+# database. Updates table columns that contain deployment
+# environment-specific URLs to point at the current environment.
+#
+# THIS IS DESTRUCTIVE! (It will not run in prod)
 #
 # Pre-requisities:
 # - ssh tunnel to bastion is up
@@ -8,6 +12,8 @@
 #
 # Usage:
 # db_load.sh <pg_dump_file>
+#
+# where <pg_dump_file> is in "custom" format (pg_dump -Fc option); see backend/Makefile db/dump target
 
 
 if [[ ! "${DEPLOYMENT_STAGE}" =~ ^(dev|staging) ]]; then
