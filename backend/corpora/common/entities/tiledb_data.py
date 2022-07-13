@@ -180,6 +180,7 @@ class TileDBData:
         contact_email: str = "",
         curator_name: str = "",
         links: list = None,
+        publisher_metadata: dict = None
     ):
         """Creates a collection using provided data."""
         id = Utils.new_id()
@@ -197,7 +198,7 @@ class TileDBData:
                 "curator_name": curator_name,
                 "created_at": time.time(),
                 "updated_at": time.time(),
-                "publisher_metadata": None
+                "publisher_metadata": publisher_metadata
             }, "collections")
         return id
 

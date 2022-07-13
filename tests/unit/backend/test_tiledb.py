@@ -10,7 +10,24 @@ class TestTileDbData(unittest.TestCase):
             "owner": "Rohan Agarwal",
             "contact_name": "Emanuele Bezzi",
             "contact_email": "ebezzi@chanzuckerberg.com",
-            "links": ["https://nature.com/fake-article", "https://science.com/test-paper"],
+            "links": [
+                {"link_url": "https://doi.org/fake-article", "link_name": "Fake", "link_type": "FAKE TYPE"}, 
+                {"link_url": "https://doi.org/test-article", "link_name": "Test", "link_type": "Test TYPE"}, 
+            ],
+            "publisher_metadata": {
+                "authors": [
+                    {
+                        "family": "Agarwal",
+                        "given": "Rohan",
+                        "name": ""
+                    },
+                ],
+                "is_preprint": True,
+                "journal": "Nature",
+                "published_day": 10,
+                "published_month": 10,
+                "published_year": 2022
+            }
         } # TODO: fill in rest of required metadata
         self.location = "/Users/ragarwal/code/single-cell-data-portal/tests/unit/backend/fixtures/test_tiledb/metadata"
         TileDBData.init_db(self.location)
@@ -27,7 +44,7 @@ class TestTileDbData(unittest.TestCase):
             self.metadata['contact_name'], 
             self.metadata['contact_email'], 
             self.metadata['links'],
-            datasets=[]
+            self.metadata['publisher_metadata']
         )
         return id
 

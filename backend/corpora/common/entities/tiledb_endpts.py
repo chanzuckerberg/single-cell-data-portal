@@ -7,18 +7,32 @@ from tiledb_data import TileDBData
 
 location = "/Users/ragarwal/code/single-cell-data-portal/tests/unit/backend/fixtures/test_tiledb/metadata"
 
-def create_collection(
-    name: str = "",
-    description: str = "",
-    owner: str = "",
-    contact_name: str = "",
-    contact_email: str = "",
-    curator_name: str = "",
-    links: list = None,
-):
+def create_collection(body: dict, user: str):
     """/v1/collections POST"""
     db = TileDBData(location)
-    id = db.create_collection(name, description, owner, contact_name, contact_email, curator_name, links)
+    from backend.corpora.lambdas.api.v1.collection import normalize_and_get_doi, get_publisher_metadata
+    from backend.corpora.common.providers import crossref_provider
+
+    errors = []
+    doi = normalize_and_get_doi(body, errors)
+    if errors:
+        raise Exception(detail=errors)
+    if doi is not None:
+        provider = crossref_provider.CrossrefProvider()
+        publisher_metadata = get_publisher_metadata(provider, doi)
+    else:
+        publisher_metadata = None
+    id = db.create_collection(
+        visibility="PRIVATE",
+        name=body["name"],
+        description=body["description"],
+        owner=user,
+        links=body.get("links", []),
+        contact_name=body["contact_name"],
+        contact_email=body["contact_email"],
+        curator_name=body.get("curator_name", ""),
+        publisher_metadata=publisher_metadata,
+    )
     res = {"collection_id": id}
     return make_response(jsonify(res), 200)
 
