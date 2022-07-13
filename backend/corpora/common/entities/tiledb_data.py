@@ -1,14 +1,12 @@
 import os
 import shutil
-from unicodedata import name
 import numpy as np
 import tiledb
 import uuid
 import ast
 import time
-import boto3
 
-from backend.corpora.common.corpora_config import CorporaConfig
+from backend.corpora.dataset_processing.process import process
 
 """
 SCHEMA WITH TILEDB VERSIONING:
@@ -70,6 +68,7 @@ class Utils():
             "organism",
             "sex",
             "tissue",
+            "explorer_url"
         ]
     }
        
@@ -158,8 +157,9 @@ class TileDBData():
         a10 = tiledb.Attr(name="organism", dtype="U1")
         a11 = tiledb.Attr(name="sex", dtype="U1")
         a12 = tiledb.Attr(name="tissue", dtype="U1")
+        a13 = tiledb.Attr(name="explorer_url", dtype="U1")
 
-        schema = tiledb.ArraySchema(domain=dom, sparse=True, attrs=[a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12])
+        schema = tiledb.ArraySchema(domain=dom, sparse=True, attrs=[a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13])
         array = location + "/datasets"
         tiledb.Array.create(array, schema)
 
@@ -206,20 +206,18 @@ class TileDBData():
         with tiledb.open(self.location + "/collections", 'r') as A:
             return Utils.parse_stored_data(dict(A[id]), "collections")
 
-    def get_all_collections(self):
-        """Get all public collections"""
-        with tiledb.open(self.location + "/collections", mode="r") as A:
-            qc = tiledb.QueryCondition(f"visibility == 'PUBLIC'") # TODO: query conditions don't respect overwrites?
-            q = A.query(attr_cond=qc)
-            res = q.df[:].to_dict("records")
-            for i in res:
-                res[i] = Utils.parse_stored_data(res[i], "collections")
-            return res
-
-    def get_published_collections(self, user_id, from_date, to_date):
+    def get_published_collections(self, user_id=None, from_date=None, to_date=None):
         """Get all public collections, filtered by owner and time of creation"""
         with tiledb.open(self.location + "/collections", mode="r") as A:
-            qc = tiledb.QueryCondition(f"owner == {user_id} and created_at >= {from_date} and created_at <= {to_date} and visibility == 'PUBLIC'")
+            filters = ["visibility == 'PUBLIC'"]
+            if user_id:
+                filters.append(f"owner == {user_id}")
+            if from_date:
+                filters.append(f"created_at >= {from_date}")
+            if to_date:
+                filters.append(f"created_at <= {to_date}")
+            query_str = " and ".join(filters) if len(filters) > 1 else filters[0]
+            qc = tiledb.QueryCondition(query_str) # TODO: query conditions don't respect overwrites? replace with df for now
             q = A.query(attr_cond=qc)["created_at", "id"]
             res = q.df[:].to_dict("records")
             for i in res:
@@ -228,12 +226,18 @@ class TileDBData():
 
     def get_published_datasets(self):
         """Get all datasets belonging to a public collection"""
-        colls = self.get_all_collections()
+        colls = self.get_publisbhed_collections()
         dataset_ids = []
         for coll in colls:
             dataset_ids += coll['datasets']
+        return self.get_subset_datasets(dataset_ids)
+
+    def get_subset_datasets(self, dataset_ids):
+        """Get all datasets matching list of dataset ids"""
         with tiledb.open(self.location + "/datasets", mode="r") as A:
-            return Utils.parse_stored_data(dict(A[dataset_ids]), "datasets")
+            qc = tiledb.QueryCondition(f"visibility == 'PUBLIC'")
+            q = A.query(attr_cond=qc)[dataset_ids]
+            return Utils.parse_stored_data(dict(q), "datasets")
 
     def get_attribute(self, id, attr):
         """Get the data stored in one field of a specific collection"""
@@ -269,10 +273,14 @@ class TileDBData():
         datasets.append(id)
         self.edit_collection(coll_id, "datasets", datasets)
         
-        # TODO: get the dataset data from the given url, manage and upload the artifact, etc.
+        # get the dataset data from the given url, manage and upload the artifact, etc.
+        metadata = process(id, dropbox_url=url, cellxgene_bucket="", artifact_bucket="") # TODO: set buckets
+        data = {}
+        for a in Utils.attrs['datasets']:
+            data[a] = metadata[a]
 
         with tiledb.open(self.location + "/datasets", "w") as A:
-            A[id] = Utils.pack_input_data({}, "datasets") # TODO: put in data
+            A[id] = Utils.pack_input_data(data, "datasets")
         return id
 
     def get_dataset(self, id):
@@ -406,92 +414,3 @@ class TileDBData():
     def delete_collection(self, id):
         """Mark a collection as deleted by its id"""
         self.edit_collection(id, "visibility", "DELETED")
-
-    # TODO: functions for handling dataset artifacts (non-TileDB files)
-
-
-
-class UploadUtils():
-    _stepfunctions_client = None
-
-    @staticmethod
-    def get_stepfunctions_client():
-        import boto3
-
-        if not UploadUtils._stepfunctions_client:
-            UploadUtils._stepfunctions_client = boto3.client("stepfunctions", endpoint_url=os.getenv("BOTO_ENDPOINT_URL") or None)
-        return UploadUtils._stepfunctions_client
-
-    @staticmethod
-    def start_upload_sfn(collection_id, dataset_id, url):
-        import time, json
-
-        input_parameters = {
-            "collection_id": collection_id,
-            "url": url,
-            "dataset_id": dataset_id,
-        }
-        sfn_name = f"{dataset_id}_{int(time.time())}"
-        response = UploadUtils.get_stepfunctions_client().start_execution(
-            stateMachineArn=CorporaConfig().upload_sfn_arn,
-            name=sfn_name,
-            input=json.dumps(input_parameters),
-        )
-        return response
-
-    @staticmethod
-    def upload_from_link(collection_id: str, token_info: dict, url: str, dataset_id: str = None, curator_tag: str = None):
-        from backend.corpora.common.utils.dl_sources.url import from_url
-
-        valid_link = from_url(url)
-        try:
-            resp = valid_link.file_info()
-        except:
-            raise Exception(detail="The URL provided causes an error with Dropbox.")
-
-        file_size = resp.get("size")
-        file_extension = resp["name"].rsplit(".")[-1].lower()
-
-        try:
-            return UploadUtils.upload(
-                collection_id=collection_id,
-                url=url,
-                file_size=file_size,
-                file_extension=file_extension,
-                user=token_info["sub"],
-                scope=token_info["scope"],
-                dataset_id=dataset_id,
-                curator_tag=curator_tag,
-            )
-        except:
-            raise Exception("Something went wrong uploading a file.")
-
-    @staticmethod
-    def upload(
-        collection_id: str,
-        url: str,
-        file_size: int,
-        file_extension: str,
-        user: str,
-        scope: str = None,
-        dataset_id: str = None,
-        curator_tag: str = None,
-    ) -> str:
-        from backend.corpora.common.utils.math_utils import GB
-
-        max_file_size_gb = CorporaConfig().upload_max_file_size_gb * GB
-        if file_size is not None and file_size > max_file_size_gb:
-            raise Exception(f"{url} exceeds the maximum allowed file size of {max_file_size_gb} Gb")
-
-        allowed_file_formats = CorporaConfig().upload_file_formats
-        if file_extension not in allowed_file_formats:
-            raise Exception(f"{url} must be in the file format(s): {allowed_file_formats}")
-
-        dataset.reprocess()
-
-        UploadUtils.start_upload_sfn(collection_id, dataset.id, url)
-
-
-        # Start processing link
-
-        return dataset.id

@@ -36,7 +36,7 @@ def list_published_collections(user_id: str, from_date: int, to_date: int):
 def list_published_collections_compact():
     """/v1/collections/index GET"""
     db = TileDBData(location)
-    colls = db.get_all_collections()
+    colls = db.get_published_collections()
     return make_response(jsonify(colls))
 
 def delete_collection(id: str):
