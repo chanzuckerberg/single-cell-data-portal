@@ -5,7 +5,9 @@ import boto3
 import subprocess
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)def copy_relational_db(event, context):
+logging.basicConfig(level=logging.INFO)
+
+def copy_relational_db(event, context):
     logger.info("Hey mads Starting copy")
     try:
         db_uri = generate_db_uri()
