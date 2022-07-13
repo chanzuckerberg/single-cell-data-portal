@@ -1,17 +1,19 @@
 import json
+import logging
+
 import boto3
 import subprocess
 
-
-def copy_relational_db(event, context):
-    print("Starting copy")
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)def copy_relational_db(event, context):
+    logger.info("Hey mads Starting copy")
     try:
         db_uri = generate_db_uri()
         copy_rds_data(db_uri)
         # todo update to write to prod after confirming code works in dev
         write_to_s3("cellxgene-db-dump-dev")
     except Exception as e:
-        print(f"Error copying rds data: {e}")
+        logger.info(f"Error copying rds data: {e}")
         return {"statusCode": 500, "body": json.dumps(e)}
     return {"statusCode": 200, "body": json.dumps("Hello from Lambda!")}
 
