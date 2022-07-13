@@ -19,4 +19,6 @@ resource aws_lambda_function lambda_job_def {
     subnet_ids         = var.subnets
     security_group_ids = var.security_groups
   }
+
 }
+

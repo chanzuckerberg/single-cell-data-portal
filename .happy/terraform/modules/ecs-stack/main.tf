@@ -52,10 +52,9 @@ locals {
   cellxgene_bucket           = try(local.secret["s3_buckets"]["cellxgene"]["name"], "")
   dataset_submissions_bucket = try(local.secret["s3_buckets"]["dataset_submissions"]["name"], "")
   wmg_bucket                 = try(local.secret["s3_buckets"]["wmg"]["name"], "")
-
-  ecs_role_arn                 = local.secret["service_roles"]["ecs_role"]
-  sfn_role_arn                 = local.secret["service_roles"]["sfn_upload"]
-  lambda_execution_role        = local.secret["service_roles"]["lambda_errorhandler"]
+  ecs_role_arn          = local.secret["service_roles"]["ecs_role"]
+  sfn_role_arn          = local.secret["service_roles"]["sfn_upload"]
+  lambda_execution_role = local.secret["service_roles"]["lambda_errorhandler"]
 
   frontend_url = try(join("", ["https://", module.frontend_dns[0].dns_prefix, ".", local.external_dns]), var.frontend_url)
   backend_url  = try(join("", ["https://", module.backend_dns[0].dns_prefix, ".", local.external_dns]), var.backend_url)
@@ -236,6 +235,7 @@ module dataset_submissions_lambda {
   subnets                    = local.subnets
   security_groups            = local.security_groups
 }
+
 
 resource "aws_iam_role" "dataset_submissions_lambda_service_role" {
   name               = "corpora-dataset-submissions-service-role-${local.custom_stack_name}"

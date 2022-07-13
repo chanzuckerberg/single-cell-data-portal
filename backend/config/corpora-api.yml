@@ -1005,6 +1005,15 @@ paths:
       responses:
         "200":
           $ref: "#/components/responses/200"
+  /v1/data-dump:
+    get:
+      summary: Dumps copy or rds data to s3 bucket
+      operationId: backend.corpora.sync_env_with_prod.dump_db.copy_relational_db
+      responses:
+        "200":
+          $ref: "#/components/responses/200"
+        "500":
+          $ref: "#/components/responses/500"
 
 components:
   schemas:
@@ -1396,6 +1405,12 @@ components:
             $ref: "#/components/schemas/problem"
     413:
       description: Exceed File Size Limit
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/problem"
+    500:
+      description: Internal Server Error
       content:
         application/problem+json:
           schema:
