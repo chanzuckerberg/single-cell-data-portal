@@ -59,11 +59,13 @@ db/dump:
 	PGPASSWORD=${DB_PW} pg_dump -Fc --dbname=corpora_${DEPLOYMENT_STAGE} --file=$(OUTFILE) --host 0.0.0.0 --username corpora_${DEPLOYMENT_STAGE}
 
 db/load/local:
-	# Imports corpora_dev.sqlc into the corpora_test database
-	# Usage: make db/import INFILE=database/corpora_dev-202102221309.sqlc
+	# Loads corpora_dev.sqlc into the corpora_test database
+	# Usage: make db/load/local INFILE=<file>
 	docker-compose exec database pg_restore --clean --no-owner --username corpora --dbname corpora $(INFILE)
 
 db/load/remote:
+	# Loads the DEPLOYMENT_STAGE env's AWS RDS db from a dump file. THIS IS DESTRUCTIVE! (It will not run in prod)
+	# Usage: make db/load/remote INFILE=<file>
 	scripts/db_load.sh $(INFILE)
 
 db/load/schema:
