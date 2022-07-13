@@ -11,8 +11,8 @@ from backend.corpora.common.utils.http_exceptions import (
 from backend.corpora.lambdas.api.v1.authorization import owner_or_allowed
 
 
-def get_collection_else_forbidden(db_session, collection_uuid, **kwargs):
-    collection = Collection.get_collection(db_session, collection_uuid, **kwargs)
+def get_collection_else_forbidden(db_session, collection_id, **kwargs):
+    collection = Collection.get_collection(db_session, collection_id, **kwargs)
     if not collection:
         raise ForbiddenHTTPException()
     return collection
@@ -42,11 +42,9 @@ def delete_dataset_common(db_session: Session, dataset: Dataset, token_info: dic
             dataset.delete()  # Delete the dataset row.
 
 
-def get_dataset_else_error(db_session, dataset_uuid, collection_uuid, curator_tag, **kwargs) -> Dataset:
+def get_dataset_else_error(db_session, dataset_id, collection_id, curator_tag, **kwargs) -> Dataset:
     try:
-        dataset = Dataset.get(
-            db_session, dataset_uuid, collection_uuid=collection_uuid, curator_tag=curator_tag, **kwargs
-        )
+        dataset = Dataset.get(db_session, dataset_id, collection_id=collection_id, curator_tag=curator_tag, **kwargs)
     except ValueError:
         raise InvalidParametersHTTPException()
     if not dataset:

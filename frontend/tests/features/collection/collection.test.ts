@@ -138,13 +138,13 @@ async function createCollection(
 
   const [response] = await submitCreateForm();
 
-  const { collection_uuid } = (await response.json()) as {
-    collection_uuid: string;
+  const { collection_id } = (await response.json()) as {
+    collection_id: string;
   };
 
   await expect(page).toHaveSelector(getText(testCollection.name));
 
-  return collection_uuid;
+  return collection_id;
 }
 
 /**

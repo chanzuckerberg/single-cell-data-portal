@@ -1,7 +1,7 @@
 import json
 import os
 
-from backend.corpora.dataset_processing.slack import format_slack_message
+from backend.corpora.lambdas.upload_failures.slack import format_slack_message
 from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 
 

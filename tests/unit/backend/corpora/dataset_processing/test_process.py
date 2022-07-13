@@ -530,9 +530,7 @@ class TestDatasetProcessing(DataPortalTestCase):
             raise RuntimeError("conversion_failed")
 
         with self.assertLogs(process.logger, logging.ERROR):
-            filename = convert_file_ignore_exceptions(
-                converter, self.h5ad_filename, "error", "fake_uuid", "h5ad_status"
-            )
+            filename = convert_file_ignore_exceptions(converter, self.h5ad_filename, "error", "fake_id", "h5ad_status")
         self.assertIsNone(filename)
 
     def mock_downloader_function(self, url, local_path, tracker, chunk_size):

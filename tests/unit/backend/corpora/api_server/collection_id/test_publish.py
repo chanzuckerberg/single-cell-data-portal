@@ -42,7 +42,7 @@ class TestPublish(BaseAuthAPITest):
             response = self.app.post(path, headers=self.headers_authed, data=json.dumps(body))
         self.assertEqual(202, response.status_code)
 
-        self.assertDictEqual({"collection_uuid": pub_collection_id, "visibility": "PUBLIC"}, json.loads(response.data))
+        self.assertDictEqual({"collection_id": pub_collection_id, "visibility": "PUBLIC"}, json.loads(response.data))
         self.addCleanup(self.delete_collection, pub_collection_id)
 
         # Cannot call publish for an already published collection
@@ -155,7 +155,7 @@ class TestPublish(BaseAuthAPITest):
         self.verify_publish_collection_with_links(collection)
 
     def test__publish_collection_revision_with_links__OK(self):
-        collection = Collection.get_collection(self.session, collection_uuid="test_collection_with_link")
+        collection = Collection.get_collection(self.session, collection_id="test_collection_with_link")
         self.generate_dataset(self.session, collection_id=collection.id, published_at=self.mock_published_at)
         revision = collection.create_revision()
 
@@ -165,7 +165,7 @@ class TestPublish(BaseAuthAPITest):
 
     def test__publish_collection_revision_with_links_and_dataset_changes__OK(self):
         collection = Collection.get_collection(
-            self.session, collection_uuid="test_collection_with_link_and_dataset_changes"
+            self.session, collection_id="test_collection_with_link_and_dataset_changes"
         )
         self.generate_dataset(self.session, collection_id=collection.id, published_at=self.mock_published_at)
         revision = collection.create_revision()
@@ -194,9 +194,9 @@ class TestPublish(BaseAuthAPITest):
         response = self.app.post(path, headers=self.headers_authed, data=json.dumps(body))
         self.assertEqual(403, response.status_code)
 
-    def test__bad_uuid__403(self):
+    def test__bad_id__403(self):
         """Publish a collection with a bad uuid."""
-        collection_id = "bad_uuid"
+        collection_id = "bad_id"
         body = {"data_submission_policy_version": "1.0"}
         path = f"{self.base_path}/{collection_id}/publish"
         response = self.app.post(path, headers=self.headers_authed, data=json.dumps(body))
