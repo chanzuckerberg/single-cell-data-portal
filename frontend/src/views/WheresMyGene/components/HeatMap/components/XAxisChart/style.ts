@@ -17,6 +17,7 @@ export const XAxisMask = styled.div`
   width: ${Y_AXIS_CHART_WIDTH_PX}px;
   position: sticky;
   left: 0;
+  opacity: 0;
 `;
 
 export const XAxisContainer = styled.div`
