@@ -53,18 +53,20 @@ db/connect:
 	# ARGS usage: AWS_PROFILE=single-cell-dev DEPLOYMENT_STAGE=dev make db/connect ARGS="-c \"select * from dataset_artifact where filetype='CXG'\""
 	PGPASSWORD=${DB_PW} psql --dbname corpora_${DEPLOYMENT_STAGE} --username corpora_${DEPLOYMENT_STAGE} --host 0.0.0.0 $(ARGS)
 
-db/download:
-    # Download the database to corpora_dev-<date>.sqlc
+db/dump:
+  # Dump the DEPLOYMENT_STAGE database to OUTFILE
 	$(eval DB_PW = $(shell aws secretsmanager get-secret-value --secret-id corpora/backend/${DEPLOYMENT_STAGE}/database --region us-west-2 | jq -r '.SecretString | match(":([^:]*)@").captures[0].string'))
-	$(eval OUTFILE = $(shell date +corpora_${DEPLOYMENT_STAGE}-%Y%m%d%H%M.sqlc))
-	PGPASSWORD=${DB_PW} pg_dump -Fc --dbname=corpora_${DEPLOYMENT_STAGE} --file=database/${OUTFILE} --host 0.0.0.0 --username corpora_${DEPLOYMENT_STAGE}
+	PGPASSWORD=${DB_PW} pg_dump -Fc --dbname=corpora_${DEPLOYMENT_STAGE} --file=$(OUTFILE) --host 0.0.0.0 --username corpora_${DEPLOYMENT_STAGE}
 
-db/import:
-    # Imports corpora_dev.sqlc into the corpora_test database
-	# Usage: make db/import FROM=corpora_dev-202102221309
-	docker-compose exec database pg_restore --clean --no-owner --username corpora --dbname corpora /import/$(FROM).sqlc
+db/load/local:
+	# Imports corpora_dev.sqlc into the corpora_test database
+	# Usage: make db/import INFILE=database/corpora_dev-202102221309.sqlc
+	docker-compose exec database pg_restore --clean --no-owner --username corpora --dbname corpora $(INFILE)
 
-db/import/schema:
+db/load/remote:
+	scripts/db_load.sh $(INFILE)
+
+db/load/schema:
     # Imports the corpora_dev.sqlc schema (schema ONLY) into the corpora_test database
 	# Usage: DEPLOYMENT_STAGE=test make db/import/schema
 	pg_restore --schema-only --clean --no-owner --dbname corpora_test corpora_$(DEPLOYMENT_STAGE).sqlc
@@ -97,3 +99,4 @@ db/tunnel:
 	ssh -f -T -N \
 		-o ServerAliveInterval=${SSH_SERVER_ALIVE_INTERVAL_IN_SECONDS} -o ServerAliveCountMax=${SSH_SERVER_ALIVE_COUNT_MAX} \
 		-L 5432:${endpoint}:5432 bastion.${DEPLOYMENT_STAGE}.single-cell.czi.technology
+
