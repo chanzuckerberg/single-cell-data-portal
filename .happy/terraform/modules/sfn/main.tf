@@ -28,7 +28,7 @@ resource "aws_sfn_state_machine" "state_machine" {
               },
               {
                 "Name": "DATASET_ID",
-                "Value.$": "$.dataset_uuid"
+                "Value.$": "$.dataset_id"
               },
               {
                 "Name": "STEP_NAME",
@@ -76,7 +76,7 @@ resource "aws_sfn_state_machine" "state_machine" {
                     "Environment": [
                       {
                         "Name": "DATASET_ID",
-                        "Value.$": "$.dataset_uuid"
+                        "Value.$": "$.dataset_id"
                       },
                       {
                         "Name": "STEP_NAME",
@@ -112,7 +112,7 @@ resource "aws_sfn_state_machine" "state_machine" {
                     "Environment": [
                       {
                         "Name": "DATASET_ID",
-                        "Value.$": "$.dataset_uuid"
+                        "Value.$": "$.dataset_id"
                       },
                       {
                         "Name": "STEP_NAME",
@@ -177,7 +177,7 @@ resource "aws_sfn_state_machine" "state_machine_seurat" {
           "Environment": [
             {
               "Name": "DATASET_ID",
-              "Value.$": "$.dataset_uuid"
+              "Value.$": "$.dataset_id"
             },
             {
               "Name": "STEP_NAME",
@@ -213,7 +213,7 @@ resource "aws_sfn_state_machine" "state_machine_cxg_remaster" {
           "Environment": [
             {
               "Name": "DATASET_ID",
-              "Value.$": "$.dataset_uuid"
+              "Value.$": "$.dataset_id"
             },
             {
               "Name": "STEP_NAME",

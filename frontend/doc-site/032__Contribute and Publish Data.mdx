@@ -25,7 +25,7 @@ Cellxgene is focused on supporting the global community attempting to create ref
 
 ### Formatting Requirements
 
-We need the following collection metadata (i.e. details associate with your publication or study)
+We need the following collection metadata (i.e. details associated with your publication or study)
 
 - Collection information:
   - Title
@@ -37,7 +37,7 @@ We need the following collection metadata (i.e. details associate with your publ
 Datasets need the following information added to a single h5ad (AnnData 0.7) format file per cellxgene visualization:
 
 - **Dataset-level metadata in uns**:
-  - schema_version: `'2.0.0'`
+  - schema_version: `2.0.0`
   - title: title of the individual dataset visualization
   - X_normalization: method used to normalize the data stored in X and any scaling or logging; 'none' if data in X is raw
   - optional: batch_condition: list of obs fields that define that “batches” that a normalization or integration algorithm should be aware of
@@ -46,15 +46,15 @@ Datasets need the following information added to a single h5ad (AnnData 0.7) for
   - normalized counts are strongly recommended
   - raw counts should be in raw.X if normalized counts are in .X
   - if there is no normalized matrix, raw counts should be in .X
-- **Cell metadata in obs (the values MUST be the most specific specific term available from the specified ontology).** Let us know when the most specific term available isn't an accurate descriptor of your metadata, so we can flag these cases for updates in the future) get signal on when/how often to bump versions.:
-  - organism_ontology_term_id: NCBITaxon (`NCBITaxon:9606` for human, `NCBITaxon:10090` for mouse)
+- **Cell metadata in obs (the values MUST be the most specific specific term available from the specified ontology)**:
+  - organism_ontology_term_id: [NCBITaxon](https://www.ncbi.nlm.nih.gov/taxonomy) (`NCBITaxon:9606` for human, `NCBITaxon:10090` for mouse)
   - tissue_ontology_term_id: [UBERON](https://www.ebi.ac.uk/ols/ontologies/uberon)
-  - assay_ontology_term \_id: [EFO](https://www.ebi.ac.uk/ols/ontologies/efo)
-  - disease_ontology_term \_id: [MONDO](https://www.ebi.ac.uk/ols/ontologies/mondo) or PATO:0000461 for ‘normal’
-  - cell_type_ontology_term \_id: [CL](https://www.ebi.ac.uk/ols/ontologies/cl)
-  - ethnicity_ontology_term \_id: [HANCESTRO](https://www.ebi.ac.uk/ols/ontologies/hancestro) if human, ‘unknown’ if info unavailable, ‘na’ if non-human
-  - development_stage_ontology_term \_id: [HsapDv](https://www.ebi.ac.uk/ols/ontologies/hsapdv) if human, [MmusDv](https://www.ebi.ac.uk/ols/ontologies/mmusdv) if mouse, ‘unknown’ if info unavailable
-  - sex_ontology_term_id: PATO:0000384 for male, PATO:0000383 for female, or ‘unknown’ if unavailable
+  - assay_ontology_term_id: [EFO](https://www.ebi.ac.uk/ols/ontologies/efo)
+  - disease_ontology_term_id: [MONDO](https://www.ebi.ac.uk/ols/ontologies/mondo) or `PATO:0000461` for 'normal'
+  - cell_type_ontology_term_id: [CL](https://www.ebi.ac.uk/ols/ontologies/cl)
+  - ethnicity_ontology_term_id: [HANCESTRO](https://www.ebi.ac.uk/ols/ontologies/hancestro) if human, `unknown` if information unavailable, `na` if non-human
+  - development_stage_ontology_term_id: [HsapDv](https://www.ebi.ac.uk/ols/ontologies/hsapdv) if human, [MmusDv](https://www.ebi.ac.uk/ols/ontologies/mmusdv) if mouse, `unknown` if information unavailable
+  - sex_ontology_term_id: `PATO:0000384` for male, `PATO:0000383` for female, or `unknown` if unavailable
 - **Embeddings in obsm**:
   - One or more two-dimensional embeddings, prefixed with 'X\_'
 - **Features in var & raw.var (if present)**:

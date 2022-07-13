@@ -10,7 +10,7 @@ from datetime import datetime
 from backend.corpora.common.corpora_orm import (
     UploadStatus,
     CollectionVisibility,
-    generate_uuid,
+    generate_id,
     DatasetArtifactFileType,
 )
 from backend.corpora.common.utils.db_helpers import processing_status_updater
@@ -492,7 +492,7 @@ class TestDatasetGenesetLinkageUpdates(BaseAuthAPITest, CorporaTestCaseUsingMock
 
         with self.subTest("dataset does not exist"):
             data = {"add": [], "remove": []}
-            test_url = f"/dp/v1/datasets/{generate_uuid()}/gene_sets"
+            test_url = f"/dp/v1/datasets/{generate_id()}/gene_sets"
             headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
             response = self.app.post(test_url, headers=headers, data=json.dumps(data))
             self.assertEqual(response.status_code, 403)

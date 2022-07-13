@@ -149,7 +149,7 @@ def _processing_status_updater(processing_status: DbDatasetProcessingStatus, upd
 
 
 def download(
-    dataset_uuid: str,
+    dataset_id: str,
     url: str,
     local_path: str,
     file_size: int,
@@ -159,7 +159,7 @@ def download(
     """
     Download a file from a url and update the processing_status upload fields in the database
 
-    :param dataset_uuid: The uuid of the dataset the download will be associated with.
+    :param dataset_id: The uuid of the dataset the download will be associated with.
     :param url: The URL of the file to be downloaded.
     :param local_path: The local name of the file be downloaded.
     :param file_size: The size of the file in bytes.
@@ -178,7 +178,7 @@ def download(
             }
             logger.error(f"Upload failed: {status_dict}")
             raise ProcessingFailed(status_dict)
-        processing_status = Dataset.get(session, dataset_uuid).processing_status
+        processing_status = Dataset.get(session, dataset_id).processing_status
         processing_status.upload_status = UploadStatus.UPLOADING
         processing_status.upload_progress = 0
         if file_size is not None:
