@@ -2,7 +2,7 @@ import json
 
 from backend.corpora.common.corpora_orm import CollectionVisibility
 from backend.corpora.common.entities.geneset import GenesetDatasetLink
-from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest, get_auth_token
+from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest, get_cxguser_token
 from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
 
 
@@ -47,7 +47,7 @@ class TestGenesets(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         Delete a geneset from a private collection.
         """
 
-        headers = dict(host="localhost", Cookie=get_auth_token())
+        headers = dict(host="localhost", Cookie=get_cxguser_token())
         collection = self.generate_collection(
             self.session, visibility=CollectionVisibility.PRIVATE, owner="test_user_id"
         )
@@ -83,7 +83,7 @@ class TestGenesets(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
             self.assertIn(dataset.id, [d["id"] for d in body.get("datasets", [])])
 
     def test__delete_gene_set__UNAUTHORIZED(self):
-        headers = dict(host="localhost", Cookie=get_auth_token())
+        headers = dict(host="localhost", Cookie=get_cxguser_token())
         collection = self.generate_collection(
             self.session, visibility=CollectionVisibility.PRIVATE, owner="some_one_else"
         )
@@ -106,7 +106,7 @@ class TestGenesets(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         self.assertIn(geneset.id, actual_geneset_ids)
 
     def test__delete_gene_set__NOT_ALLOWED(self):
-        headers = dict(host="localhost", Cookie=get_auth_token())
+        headers = dict(host="localhost", Cookie=get_cxguser_token())
         collection = self.generate_collection(
             self.session, visibility=CollectionVisibility.PUBLIC, owner="test_user_id"
         )
@@ -140,7 +140,7 @@ class TestGenesetsCurators(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         return [g["id"] for g in bdy.get("genesets", [])]
 
     def test__delete_gene_set_as_super_curator__200(self):
-        headers = dict(host="localhost", Cookie=get_auth_token("super"))
+        headers = dict(host="localhost", Cookie=get_cxguser_token("super"))
         collection = self.generate_collection(
             self.session, visibility=CollectionVisibility.PRIVATE, owner="some_one_else"
         )

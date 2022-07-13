@@ -4,7 +4,7 @@ from jose import jws
 from unittest.mock import patch, DEFAULT
 
 from backend.corpora.common.auth0_manager import auth0_management_session
-from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest, get_auth_token
+from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest, get_cxguser_token
 
 
 class TestKeys(BaseAuthAPITest):
@@ -35,7 +35,7 @@ class TestKeys(BaseAuthAPITest):
         CorporaAuthConfig().api_key_secret = self.api_key_secret
         get_userinfo.return_value = {"email": "fake_user@email.com"}
         CorporaAuthConfig().days_to_live = 1
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token()}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_cxguser_token()}
         response = self.app.post("/dp/v1/auth/key", headers=headers)
 
         self.assertEqual(201, response.status_code)
@@ -72,7 +72,7 @@ class TestKeys(BaseAuthAPITest):
         delete_api_key.return_value = None
         store_api_key.return_value = self.api_key_id
         link_api_key.return_value = None
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token()}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_cxguser_token()}
         response = self.app.post("/dp/v1/auth/key", headers=headers)
 
         self.assertEqual(201, response.status_code)
@@ -94,7 +94,7 @@ class TestKeys(BaseAuthAPITest):
     def test__delete_key__202(self, get_user_api_key_identity, delete_api_key):
         get_user_api_key_identity.return_value = {"user_id": self.api_key_id, "username": "ABCDEF"}
         delete_api_key.return_value = None
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token()}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_cxguser_token()}
         response = self.app.delete("/dp/v1/auth/key", headers=headers)
         self.assertEqual(response.status_code, 202)
 
@@ -106,14 +106,14 @@ class TestKeys(BaseAuthAPITest):
     @patch("backend.corpora.lambdas.api.v1.auth.keys.auth0_management_session.get_user_api_key_identity")
     def test__delete_key__404(self, get_user_api_key_identity):
         get_user_api_key_identity.return_value = None
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token()}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_cxguser_token()}
         response = self.app.delete("/dp/v1/auth/key", headers=headers)
         self.assertEqual(404, response.status_code)
 
     @patch("backend.corpora.lambdas.api.v1.auth.keys.auth0_management_session.get_user_api_key_identity")
     def test__get_key__200(self, get_user_api_key_identity):
         get_user_api_key_identity.return_value = {"user_id": self.api_key_id}
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token()}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_cxguser_token()}
         response = self.app.get("/dp/v1/auth/key", headers=headers)
         self.assertEqual(200, response.status_code)
         get_user_api_key_identity.assert_called_once()
@@ -126,7 +126,7 @@ class TestKeys(BaseAuthAPITest):
     @patch("backend.corpora.lambdas.api.v1.auth.keys.auth0_management_session.get_user_api_key_identity")
     def test__get_key__404(self, get_user_api_key_identity):
         get_user_api_key_identity.return_value = None
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token()}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_cxguser_token()}
         response = self.app.get("/dp/v1/auth/key", headers=headers)
         self.assertEqual(404, response.status_code)
         get_user_api_key_identity.assert_called_once()

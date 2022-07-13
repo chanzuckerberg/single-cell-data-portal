@@ -15,7 +15,7 @@ from backend.corpora.common.corpora_orm import (
 from backend.corpora.common.entities import Collection
 from backend.corpora.common.providers.crossref_provider import CrossrefDOINotFoundException, CrossrefFetchException
 from backend.corpora.lambdas.api.v1.collection import verify_collection_body
-from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest, get_auth_token
+from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest, get_cxguser_token
 from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
 
 
@@ -284,7 +284,7 @@ class TestCollection(BaseAuthAPITest):
         with self.subTest("auth cookie"):
             expected_body["access_type"] = "WRITE"
             test_url = furl(path="/dp/v1/collections/test_collection_id", query_params=dict(visibility="PUBLIC"))
-            cxguser_cookie = get_auth_token()
+            cxguser_cookie = get_cxguser_token()
             response = self.app.get(test_url.url, headers=dict(host="localhost", Cookie=cxguser_cookie))
             self.assertEqual(200, response.status_code)
             actual_body = self.remove_timestamps(json.loads(response.data))
@@ -413,7 +413,7 @@ class TestCollection(BaseAuthAPITest):
 
                 headers = dict(host="localhost")
                 if auth:
-                    headers["Cookie"] = get_auth_token()
+                    headers["Cookie"] = get_cxguser_token()
                 response = self.app.get(test_url.url, headers=headers)
                 self.assertEqual(expected_response_code, response.status_code)
                 if expected_response_code == 200:
@@ -448,7 +448,7 @@ class TestCollection(BaseAuthAPITest):
         json_data = json.dumps(data)
         response = self.app.post(
             test_url.url,
-            headers={"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token()},
+            headers={"host": "localhost", "Content-Type": "application/json", "Cookie": get_cxguser_token()},
             data=json_data,
         )
         self.assertEqual(201, response.status_code)
@@ -458,7 +458,7 @@ class TestCollection(BaseAuthAPITest):
         json_data = json.dumps(data)
         response = self.app.post(
             test_url.url,
-            headers={"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token()},
+            headers={"host": "localhost", "Content-Type": "application/json", "Cookie": get_cxguser_token()},
             data=json_data,
         )
         self.assertEqual(201, response.status_code)
@@ -477,7 +477,7 @@ class TestCollection(BaseAuthAPITest):
         json_data = json.dumps(data)
         response = self.app.post(
             test_url.url,
-            headers={"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token()},
+            headers={"host": "localhost", "Content-Type": "application/json", "Cookie": get_cxguser_token()},
             data=json_data,
         )
         self.assertEqual(201, response.status_code)
@@ -502,7 +502,7 @@ class TestCollection(BaseAuthAPITest):
         json_data = json.dumps(data)
         response = self.app.post(
             test_url.url,
-            headers={"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token()},
+            headers={"host": "localhost", "Content-Type": "application/json", "Cookie": get_cxguser_token()},
             data=json_data,
         )
         self.assertEqual(400, response.status_code)
@@ -521,7 +521,7 @@ class TestCollection(BaseAuthAPITest):
         json_data = json.dumps(data)
         response = self.app.post(
             test_url.url,
-            headers={"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token()},
+            headers={"host": "localhost", "Content-Type": "application/json", "Cookie": get_cxguser_token()},
             data=json_data,
         )
         self.assertEqual(400, response.status_code)
@@ -540,7 +540,7 @@ class TestCollection(BaseAuthAPITest):
         json_data = json.dumps(data)
         response = self.app.post(
             test_url.url,
-            headers={"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token()},
+            headers={"host": "localhost", "Content-Type": "application/json", "Cookie": get_cxguser_token()},
             data=json_data,
         )
         self.assertEqual(400, response.status_code)
@@ -561,7 +561,7 @@ class TestCollection(BaseAuthAPITest):
         json_data = json.dumps(data)
         response = self.app.post(
             test_url.url,
-            headers={"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token()},
+            headers={"host": "localhost", "Content-Type": "application/json", "Cookie": get_cxguser_token()},
             data=json_data,
         )
         self.assertEqual(201, response.status_code)
@@ -582,7 +582,7 @@ class TestCollection(BaseAuthAPITest):
         json_data = json.dumps(data)
         response = self.app.post(
             test_url.url,
-            headers={"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token()},
+            headers={"host": "localhost", "Content-Type": "application/json", "Cookie": get_cxguser_token()},
             data=json_data,
         )
         self.assertEqual(201, response.status_code)
@@ -608,7 +608,7 @@ class TestCollection(BaseAuthAPITest):
         json_data = json.dumps(data)
         response = self.app.post(
             test_url.url,
-            headers={"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token()},
+            headers={"host": "localhost", "Content-Type": "application/json", "Cookie": get_cxguser_token()},
             data=json_data,
         )
         self.assertEqual(201, response.status_code)
@@ -656,7 +656,7 @@ class TestCollection(BaseAuthAPITest):
                     headers={
                         "host": "localhost",
                         "Content-Type": "application/json",
-                        "Cookie": get_auth_token(),
+                        "Cookie": get_cxguser_token(),
                     },
                     data=json.dumps(data),
                 )
@@ -667,14 +667,14 @@ class TestCollection(BaseAuthAPITest):
         data = json.dumps({"name": "bkjbjbjmbjm"})
         response = self.app.post(
             test_url.url,
-            headers={"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token()},
+            headers={"host": "localhost", "Content-Type": "application/json", "Cookie": get_cxguser_token()},
             data=data,
         )
         self.assertEqual(400, response.status_code)
 
     def test__can_retrieve_created_collection(self):
         test_url = furl(path="/dp/v1/collections/")
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token()}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_cxguser_token()}
         data = {
             "name": "another collection name",
             "description": "This is a test collection",
@@ -710,7 +710,7 @@ class TestCollection(BaseAuthAPITest):
 
     def test__create_collection_strip_string_fields(self):
         test_url = furl(path="/dp/v1/collections/")
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token()}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_cxguser_token()}
         data = {
             "name": "   another collection name   ",
             "description": "    This is a test collection  ",
@@ -782,7 +782,7 @@ class TestCollection(BaseAuthAPITest):
             self.assertNotIn(revision_owned, ids)
 
         with self.subTest("auth"):
-            headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token()}
+            headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_cxguser_token()}
             response = self.app.get(path, headers=headers)
             self.assertEqual(200, response.status_code)
             result = json.loads(response.data)
@@ -867,7 +867,7 @@ class TestCollection(BaseAuthAPITest):
         ]
         for body, expected_errors in tests:
             with self.subTest(body):
-                headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token()}
+                headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_cxguser_token()}
                 response = self.app.post("/dp/v1/collections", headers=headers, data=json.dumps(body))
                 self.assertEqual(400, response.status_code)
                 for error in expected_errors:
@@ -891,7 +891,7 @@ class TestCollectionDeletion(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         )
 
         s3_objects = self.get_s3_object_paths_from_dataset(dataset_1) + self.get_s3_object_paths_from_dataset(dataset_2)
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token()}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_cxguser_token()}
         test_url = furl(path=f"/dp/v1/collections/{collection.id}", query_params=dict(visibility="PRIVATE"))
         response = self.app.get(test_url.url, headers=headers)
 
@@ -929,7 +929,7 @@ class TestCollectionDeletion(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
 
         dataset_1 = self.generate_dataset(self.session, collection=revision, processing_status=processing_status_1)
         dataset_2 = self.generate_dataset(self.session, collection=revision, processing_status=processing_status_2)
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token()}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_cxguser_token()}
         test_private_url = furl(path=f"/dp/v1/collections/{revision.id}")
         test_public_url = furl(path=f"/dp/v1/collections/{collection.id}")
         response = self.app.get(test_private_url.url, headers=headers)
@@ -969,7 +969,7 @@ class TestCollectionDeletion(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
 
         dataset_rev = self.generate_dataset(self.session, collection=revision, processing_status=processing_status)
         dataset_pub = self.generate_dataset(self.session, collection=collection, processing_status=processing_status)
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token()}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_cxguser_token()}
 
         # Verify private collections exist
         test_private_url = furl(path=f"/dp/v1/collections/{revision.id}", query_params=dict(visibility="PRIVATE"))
@@ -1020,7 +1020,7 @@ class TestCollectionDeletion(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         processing_status = {"upload_status": UploadStatus.UPLOADED, "upload_progress": 100.0}
 
         dataset = self.generate_dataset(self.session, collection=revision, processing_status=processing_status)
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token()}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_cxguser_token()}
         dataset_url = furl(path=f"/dp/v1/datasets/{dataset.id}/status")
         response = self.app.get(dataset_url.url, headers=headers)
         self.assertEqual(response.status_code, 200)
@@ -1044,7 +1044,7 @@ class TestCollectionDeletion(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         )
 
         test_url = furl(path=f"/dp/v1/collections/{collection.id}", query_params=dict(visibility="PRIVATE"))
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token()}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_cxguser_token()}
         response = self.app.delete(test_url.url, headers=headers)
         self.assertEqual(response.status_code, 403)
 
@@ -1056,7 +1056,7 @@ class TestCollectionDeletion(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         test_urls = [
             furl(path=f"/dp/v1/collections/{collection.id}"),
         ]
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token()}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_cxguser_token()}
         for test_url in test_urls:
             with self.subTest(test_url.url):
                 response = self.app.delete(test_url.url, headers=headers)
@@ -1072,14 +1072,14 @@ class TestCollectionDeletion(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
             self.session, visibility=CollectionVisibility.PRIVATE.name, owner="someone_else"
         )
         test_url = furl(path=f"/dp/v1/collections/{collection.id}")
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token()}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_cxguser_token()}
         response = self.app.delete(test_url.url, headers=headers)
         self.assertEqual(response.status_code, 403)
 
     def test_delete_collection__does_not_exist(self):
         fake_id = generate_id()
         test_url = furl(path=f"/dp/v1/collections/{fake_id}", query_params=dict(visibility="PRIVATE"))
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token()}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_cxguser_token()}
         response = self.app.delete(test_url.url, headers=headers)
         self.assertEqual(response.status_code, 403)
 
@@ -1093,7 +1093,7 @@ class TestCollectionDeletion(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         collection_to_delete = self.generate_collection(
             self.session, visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id"
         )
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token()}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_cxguser_token()}
         response = self.app.get("/dp/v1/collections/", headers=headers)
 
         collection_ids = [collection["id"] for collection in json.loads(response.data)["collections"]]
@@ -1132,7 +1132,7 @@ class TestUpdateCollection(BaseAuthAPITest):
             "contact_email",
             "links",
         ]
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token()}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_cxguser_token()}
 
         # Update the collection
         expected_body = {
@@ -1151,14 +1151,14 @@ class TestUpdateCollection(BaseAuthAPITest):
 
     def test__update_collection__403(self):
         collection = self.generate_collection(self.session, owner="someone else")
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token()}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_cxguser_token()}
         data = json.dumps({"name": "new name"})
         response = self.app.put(f"/dp/v1/collections/{collection.id}", data=data, headers=headers)
         self.assertEqual(403, response.status_code)
 
     def test__update_collection_links__OK(self):
         collection = self.generate_collection(self.session)
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token()}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_cxguser_token()}
 
         # add links
         links = [{"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"}]
@@ -1210,7 +1210,7 @@ class TestUpdateCollection(BaseAuthAPITest):
         )
         self.assertEqual("Old Journal", collection.publisher_metadata["journal"])
 
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token()}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_cxguser_token()}
         response = self.app.put(
             f"/dp/v1/collections/{collection.id}",
             data=json.dumps({"links": [{"link_name": "Link 1", "link_url": "http://doi.org/456", "link_type": "DOI"}]}),
@@ -1235,7 +1235,7 @@ class TestUpdateCollection(BaseAuthAPITest):
         )
         self.assertEqual("Old Journal", collection.publisher_metadata["journal"])
 
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token()}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_cxguser_token()}
         # We're passing an empty links object, therefore the DOI is deleted
         response = self.app.put(
             f"/dp/v1/collections/{collection.id}",
@@ -1261,7 +1261,7 @@ class TestUpdateCollection(BaseAuthAPITest):
         )
         self.assertEqual("Old Journal", collection.publisher_metadata["journal"])
 
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token()}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_cxguser_token()}
         # Note that the DOI is the same as the original
         response = self.app.put(
             f"/dp/v1/collections/{collection.id}",
@@ -1287,7 +1287,7 @@ class TestCollectionsCurators:
             self.session, visibility=CollectionVisibility.PRIVATE.name, owner="another_test_user_id"
         )
 
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token()}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_cxguser_token()}
         test_url = furl(path=f"/dp/v1/collections/{collection.id}", query_params=dict(visibility="PRIVATE"))
         response = self.app.get(test_url.url, headers=headers)
 
@@ -1304,7 +1304,7 @@ class TestCollectionsCurators:
             self.session, visibility=CollectionVisibility.PRIVATE.name, owner="another_test_user_id"
         )
 
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token("super")}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_cxguser_token("super")}
 
         modified_collection = {
             "name": "new name",
@@ -1323,7 +1323,7 @@ class TestCollectionsCurators:
             self.session, visibility=CollectionVisibility.PRIVATE.name, owner="another_test_user_id"
         )
 
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token("super")}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_cxguser_token("super")}
 
         test_url = furl(path=f"/dp/v1/collections/{collection.id}", query_params=dict(visibility="PRIVATE"))
         response = self.app.delete(test_url.url, headers=headers)

@@ -1,7 +1,7 @@
 import json
 from backend.corpora.common.corpora_orm import CollectionVisibility, generate_id
 from backend.corpora.common.entities.geneset import Geneset
-from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest, get_auth_token
+from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest, get_cxguser_token
 
 
 class TestGenesetCreation(BaseAuthAPITest):
@@ -39,7 +39,7 @@ class TestGenesetCreation(BaseAuthAPITest):
         self.collection = self.generate_collection(
             self.session, visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id"
         )
-        self.headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token()}
+        self.headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_cxguser_token()}
         self.test_url = f"/dp/v1/collections/{self.collection.id}/genesets"
 
     def test_geneset_creation__ok(self):

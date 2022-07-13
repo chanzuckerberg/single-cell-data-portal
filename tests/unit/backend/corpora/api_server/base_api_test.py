@@ -8,8 +8,7 @@ from unittest.mock import patch
 
 from backend.corpora.api_server.app import app
 from backend.corpora.common.corpora_config import CorporaAuthConfig
-from backend.corpora.lambdas.api.v1.authentication import decode_token
-from tests.unit.backend.corpora.api_server.mock_auth import MockOauthServer, make_token
+from tests.unit.backend.corpora.api_server.mock_auth import MockOauthServer
 from tests.unit.backend.corpora.api_server.config import TOKEN_EXPIRES
 from tests.unit.backend.corpora.fixtures.environment_setup import EnvironmentSetup
 from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
@@ -65,7 +64,7 @@ def mock_assert_authorized_token(token: str, audience: str = None):
         raise Exception()
 
 
-def get_auth_token(user="owner"):
+def get_cxguser_token(user="owner"):
     """
     Generated an auth token for testing.
     :param app: a WSGI app.
@@ -110,6 +109,13 @@ class BaseAuthAPITest(BaseAPITest):
 
 
 class AuthServerAPITest(BaseAPITest):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        (mock_oauth_server, auth_config) = cls.get_mock_server_and_auth_config()
+        cls.mock_oauth_server = mock_oauth_server
+        cls.auth_config = auth_config
+
     @staticmethod
     def get_mock_server_and_auth_config(additional_scope=None, token_duration=0):
         mock_oauth_server = MockOauthServer(additional_scope, token_duration)
@@ -135,31 +141,6 @@ class AuthServerAPITest(BaseAPITest):
         }
         auth_config.set(authconfig)
         return (mock_oauth_server, auth_config)
-
-    def get_auth_headers(self):
-        token = decode_token(get_auth_token(self.app)[8:].split(";")[0])
-        return {
-            "Authorization": f"Bearer {token['access_token']}",
-            "host": "localhost",
-            "Content-Type": "application/json",
-        }
-
-    def make_super_curator_token(self):
-        return make_token(dict(sub="someone_else", email="fake_user@email.com"), additional_scope=["write:collections"])
-
-    def make_super_curator_header(self):
-        return {"Authorization": "Bearer " + self.make_super_curator_token(), "Content-Type": "application/json"}
-
-    def make_not_owner_header(self):
-        token = make_token(dict(sub="not_owner", email="fake_user@email.com"))
-        return {"Authorization": "Bearer " + token, "Content-Type": "application/json"}
-
-    @classmethod
-    def setUpClass(cls):
-        super().setUpClass()
-        (mock_oauth_server, auth_config) = cls.get_mock_server_and_auth_config()
-        cls.mock_oauth_server = mock_oauth_server
-        cls.auth_config = auth_config
 
     @classmethod
     def tearDownClass(cls):
