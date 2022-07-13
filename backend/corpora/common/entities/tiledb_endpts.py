@@ -118,6 +118,7 @@ def request_asset_download(dataset_id: str, asset_id: str):
 def list_dataset_assets(id: str):
     """/v1/datasets/{dataset_id}/assets GET"""
     # TODO
+    # Seems broken in API schema? Empty {} as response?
     return
 
 def get_dataset_upload_status(id: str):

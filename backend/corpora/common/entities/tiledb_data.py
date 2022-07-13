@@ -35,7 +35,7 @@ s3://single-cell-corpus/
     soma/<SNAPSHOT>/
 """
 
-class Utils():
+class Utils:
     attrs = {
         "collections": [
             # API
@@ -110,7 +110,7 @@ class Utils():
         return data
 
 
-class TileDBData():
+class TileDBData:
     @staticmethod
     def init_db(location):
         """FOR TESTING PURPOSES, create a local TileDB group and arrays according to our schema."""
@@ -274,7 +274,7 @@ class TileDBData():
         self.edit_collection(coll_id, "datasets", datasets)
         
         # get the dataset data from the given url, manage and upload the artifact, etc.
-        metadata = process(id, dropbox_url=url, cellxgene_bucket="", artifact_bucket="") # TODO: set buckets
+        metadata = process(id, dropbox_url=url, cellxgene_bucket="", artifact_bucket="") # TODO: set buckets to localstack
         data = {}
         for a in Utils.attrs['datasets']:
             data[a] = metadata[a]
@@ -401,7 +401,7 @@ class TileDBData():
         data = {}
         for attr in Utils.attrs["collections"]:
             data[attr] = revision[attr][0]
-        data['visibility'] = "PRIVATE"
+        data['visibility'] = "PUBLIC"
         data['revision_of'] = ""
         data['updated_at'] = time.time()
         # write data to existing revision_of collection

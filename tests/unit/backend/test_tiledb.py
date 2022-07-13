@@ -19,7 +19,7 @@ class TestTileDbData(unittest.TestCase):
     def tearDown(self):
         TileDBData.destroy_db(self.location)
 
-    def createCollection(self):
+    def create_collection(self):
         id = self.db.create_collection(
             self.metadata['name'], 
             self.metadata['description'], 
@@ -32,13 +32,13 @@ class TestTileDbData(unittest.TestCase):
         return id
 
     def test_create_collection(self):
-        id = self.createCollection()
+        id = self.create_collection()
         coll = self.db.get_collection(id)
         self.assertEqual(coll['name'][0], self.metadata['name']) # TODO: figure out why attributes are stored as arrays
 
     def test_edit_collection(self):
         # Create collection 
-        id = self.createCollection()
+        id = self.create_collection()
         # Edit collection name
         self.db.edit_collection(id, "name", "edited_name")
         # check
@@ -48,7 +48,7 @@ class TestTileDbData(unittest.TestCase):
 
     def test_add_dataset_to_collection(self):
         # Create collection 
-        id = self.createCollection()
+        id = self.create_collection()
         # Add dataset to collection
         dataset_name = "test_dataset"
         dataset_id = self.db.add_dataset(id, dataset_name, "12345")
@@ -61,7 +61,7 @@ class TestTileDbData(unittest.TestCase):
 
     def test_delete_dataset_from_collection(self):
         # Create collection 
-        id = self.createCollection()
+        id = self.create_collection()
         # Add dataset to collection
         dataset_name_1 = "test_1"
         dataset_name_2 = "test_2"
@@ -78,7 +78,7 @@ class TestTileDbData(unittest.TestCase):
 
     def test_collection_history(self):
         # create collection
-        id = self.createCollection()
+        id = self.create_collection()
         # edit collection
         self.db.edit_collection(id, "name", "edited_name")
         # read previous version
@@ -91,7 +91,7 @@ class TestTileDbData(unittest.TestCase):
 
     def test_dataset_history(self):
         # create collection
-        id = self.createCollection()
+        id = self.create_collection()
         # add dataset
         self.db.add_dataset(id, "test_dataset", "12345")
         # edit dataset
@@ -108,7 +108,7 @@ class TestTileDbData(unittest.TestCase):
 
     def test_create_revision_on_collection(self):
         # Create a collection
-        id = self.createCollection()
+        id = self.create_collection()
         # Create the revision
         rev_id = self.db.create_revision(id)
         # Get the revision
@@ -117,7 +117,7 @@ class TestTileDbData(unittest.TestCase):
 
     def test_edit_revision(self):
         # Create a collection
-        id = self.createCollection()
+        id = self.create_collection()
         # Create a revision
         rev_id = self.db.create_revision(id)
         # Edit the revision
@@ -128,7 +128,7 @@ class TestTileDbData(unittest.TestCase):
 
     def test_publish_revision(self):
         # Create a collection
-        id = self.createCollection()
+        id = self.create_collection()
         # Create a revision
         rev_id = self.db.create_revision(id)
         self.db.edit_collection(rev_id, "name", "edited_name")
@@ -140,7 +140,7 @@ class TestTileDbData(unittest.TestCase):
 
     def test_delete_revision(self):
         # Create a collection
-        id = self.createCollection()
+        id = self.create_collection()
         # Create a revision
         rev_id = self.db.create_revision(id)
         # Delete the revision
@@ -151,7 +151,7 @@ class TestTileDbData(unittest.TestCase):
 
     def test_replace_dataset(self):
         # Create collection 
-        id = self.createCollection()
+        id = self.create_collection()
         # Add dataset to collection
         dataset_name = "test_dataset"
         dataset_id = self.db.add_dataset(id, dataset_name, "12345")

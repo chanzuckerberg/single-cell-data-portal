@@ -544,11 +544,10 @@ def get_bucket_prefix(identifier):
 def process_cxg(local_filename, dataset_id, cellxgene_bucket):
     cxg_dir = convert_file_ignore_exceptions(make_cxg, local_filename, "Issue creating cxg.", dataset_id, "cxg_status")
     if cxg_dir:
-        with db_session_manager() as session:
-            bucket_prefix = get_bucket_prefix(dataset_id)
-            s3_uri = f"s3://{cellxgene_bucket}/{bucket_prefix}.cxg/"
+        bucket_prefix = get_bucket_prefix(dataset_id)
+        s3_uri = f"s3://{cellxgene_bucket}/{bucket_prefix}.cxg/"
         # update_db(dataset_id, processing_status={"cxg_status": ConversionStatus.UPLOADING})
-        copy_cxg_files_to_cxg_bucket(cxg_dir, s3_uri)
+        # TODO: uncomment when ready to use AWS: copy_cxg_files_to_cxg_bucket(cxg_dir, s3_uri)
         metadata = {
             "explorer_url": join(
                 DEPLOYMENT_STAGE_TO_URL[os.environ["DEPLOYMENT_STAGE"]],
@@ -644,7 +643,7 @@ def process(dataset_id, dropbox_url, cellxgene_bucket, artifact_bucket):
     # create artifacts
     explorer_url = process_cxg(file_with_labels, dataset_id, cellxgene_bucket)['explorer_url']
     metadata['explorer_url'] = explorer_url
-    create_artifacts(file_with_labels, dataset_id, artifact_bucket, can_convert_to_seurat)
+    # TODO uncomment when ready to use AWS: create_artifacts(file_with_labels, dataset_id, artifact_bucket, can_convert_to_seurat)
     # update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.SUCCESS))
     return metadata
 
@@ -683,7 +682,8 @@ def main():
             logger.error(f"Step function configuration error: Unexpected STEP_NAME '{step_name}'")
 
     except ProcessingCancelled:
-        cancel_dataset(dataset_id)
+        # cancel_dataset(dataset_id)
+        logger.exception("Dataset processing was cancelled.")
     except (ValidationFailed, ProcessingFailed) as e:
         (status,) = e.args
         if is_last_attempt:
