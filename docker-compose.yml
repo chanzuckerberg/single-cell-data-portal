@@ -101,39 +101,6 @@ services:
       corporanet:
         aliases:
           - uploadfailures.corporanet.local
-  sync_envs_with_prod:
-    image: "${DOCKER_REPO}corpora-prod-data"
-    platform: linux/amd64
-    build:
-      context: .
-      cache_from:
-        - "${DOCKER_REPO}corpora-prod-data:branch-main"
-      dockerfile: Dockerfile.sync_envs_with_prod
-      args:
-        - BUILDKIT_INLINE_CACHE=1
-        - HAPPY_COMMIT
-        - HAPPY_BRANCH
-        - HAPPY_TAG
-    restart: "no"
-    ports:
-      - "9005:8080"
-    volumes:
-      - ./backend/corpora/sync_envs_with_prod:/var/task
-    environment:
-      - PYTHONUNBUFFERED=1
-      - CORPORA_LOCAL_DEV=true
-      - AWS_REGION=us-west-2
-      - AWS_DEFAULT_REGION=us-west-2
-      - AWS_ACCESS_KEY_ID=test
-      - AWS_SECRET_ACCESS_KEY=test
-      - BOTO_ENDPOINT_URL=http://localstack:4566
-      - DEPLOYMENT_STAGE=test
-      - ARTIFACT_BUCKET=artifact-bucket
-      - CELLXGENE_BUCKET=cellxgene-bucket
-    networks:
-      corporanet:
-        aliases:
-          - prodcopy.corporanet.local
   upload_success:
     image: "${DOCKER_REPO}corpora-upload-success"
     platform: linux/amd64
