@@ -1,5 +1,5 @@
 # Frontend dockerfile
-FROM node:14
+FROM node:14.19.3
 
 # install dependencies first, in a different location for easier app bind mounting for local development
 # due to default /opt permissions we have to create the dir with root and change perms
