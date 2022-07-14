@@ -32,14 +32,12 @@ fi
 kill_ssh_tunnel
 cd $SCRIPTS_DIR/..
 make db/tunnel
-pgrep -fl bastion
 make db/dump OUTFILE=$DB_DUMP_FILE
 
 export DEPLOYMENT_STAGE=$DEST_ENV
 export AWS_PROFILE=single-cell-dev
 kill_ssh_tunnel
 make db/tunnel
-pgrep -fl bastion
 
 #  For safety, also dump the destination db to a local file, just in case.
 DEST_DB_BACKUP_DUMP_FILE="${DEST_ENV}_"`date +%Y%m%d_%H%M%S`".sqlc"
@@ -51,11 +49,11 @@ DB_PW=`aws secretsmanager get-secret-value --secret-id corpora/backend/${DEPLOYM
 DB_NAME="corpora_${DEPLOYMENT_STAGE}"
 DB_USER=corpora_${DEPLOYMENT_STAGE}
 
-read -n 1 -p "ATTENTION: Proceed to replace the destination database ${DB_NAME}? (Y/n) " ANS
+read -n 1 -p "ATTENTION: Proceed to replace the destination database \"${DB_NAME}\"? (Y/n) " ANS
 echo
 [[ $ANS == 'Y' ]] || exit 1
 
-PGPASSWORD=${DB_PW} pg_restore --clean --if-exists --no-owner --dbname=${DB_NAME} --host 0.0.0.0 --username ${DB_USER} ${DB_DUMP_FILE}
+PGPASSWORD=${DB_PW} pg_restore --clean --if-exists --no-owner --no-privileges --no-comments --dbname=${DB_NAME} --host 0.0.0.0 --username ${DB_USER} ${DB_DUMP_FILE}
 
 PGPASSWORD=${DB_PW} psql --dbname=${DB_NAME} --host 0.0.0.0 --username ${DB_USER} -c "UPDATE dataset SET explorer_url = regexp_replace(explorer_url, '(https:\\/\\/)(.+?)(\\/.+)', '\\1cellxgene.${DEPLOYMENT_STAGE}.single-cell.czi.technology\\3') WHERE explorer_url IS NOT NULL"
 
@@ -63,4 +61,3 @@ PGPASSWORD=${DB_PW} psql --dbname=${DB_NAME} --host 0.0.0.0 --username ${DB_USER
 
 kill_ssh_tunnel
 
-pgrep -fl bastion

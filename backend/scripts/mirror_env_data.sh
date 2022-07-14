@@ -11,4 +11,4 @@ SCRIPTS_DIR=`dirname $0`
 $SCRIPTS_DIR/mirror_rds_data.sh $@
 $SCRIPTS_DIR/mirror_s3_data.sh $@
 
-
+echo "Done!"
