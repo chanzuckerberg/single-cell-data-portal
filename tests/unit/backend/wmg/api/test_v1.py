@@ -22,9 +22,6 @@ from tests.unit.backend.wmg.fixtures.test_snapshot import (
     exclude_dev_stage_and_ethnicity_for_secondary_filter_test,
 )
 
-import logging
-logging.basicConfig(level=logging.INFO)
-
 class WmgApiV1Tests(unittest.TestCase):
     """
     Tests WMG API endpoints. Tests the flask app only, and not other stack dependencies, such as S3. Builds and uses a

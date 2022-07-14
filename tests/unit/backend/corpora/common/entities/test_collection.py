@@ -7,9 +7,6 @@ from backend.corpora.common.entities.geneset import Geneset, GenesetDatasetLink
 from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 from tests.unit.backend.utils import BogusCollectionParams, BogusDatasetParams
 
-import logging
-logging.basicConfig(level=logging.INFO)
-
 class TestCollection(DataPortalTestCase):
     def setUp(self):
         self.uuid = "test_collection_id"
