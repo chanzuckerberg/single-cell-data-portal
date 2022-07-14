@@ -72,10 +72,12 @@ jobs:
         with:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v2
-      - run: npm ci
-      - run: npx playwright install --with-deps
-      - name: Run E2E Tests
-        run: npm run e2e
+      - run: |
+          npm ci
+          npx playwright install --with-deps
+          cp src/configs/dev.js src/configs/configs.js
+      - run: npm run dev
+      - run: npm run e2e
       - name: Install happy
         uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.2.1
         with:
