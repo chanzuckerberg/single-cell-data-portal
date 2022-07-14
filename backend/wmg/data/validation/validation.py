@@ -31,7 +31,7 @@ class Validation:
         self.MIN_MALAT1_GENE_EXPRESSION_CELL_COUNT_PERCENT = 80 if self.env == "prod" else 1
         self.MIN_ACTB_GENE_EXPRESSION_CELL_COUNT_PERCENT = 60 if self.env == "prod" else 1
         self.MIN_MALAT1_RANKIT_EXPRESSION = 4 if self.env == "prod" else 3
-        self.MIN_ACTB_RANKIT_EXPRESSION = 3 if self.env == "prod" else 2
+        self.MIN_ACTB_RANKIT_EXPRESSION = 2.75 if self.env == "prod" else 2
 
     def validate_cube(self):
         """
