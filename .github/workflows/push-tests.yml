@@ -69,7 +69,10 @@ jobs:
         with:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v2
-      - run: cd frontend
+      # DEBUG
+      # DEBUG
+      # DEBUG
+      - run: cd frontend && ls && pwd
       - run: npm ci
       - run: npx playwright install --with-deps
       - name: Run E2E Tests
