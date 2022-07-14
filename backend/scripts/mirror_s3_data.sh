@@ -2,6 +2,9 @@
 
 # Mirror S3 data from a source deployment environment (usually production)
 # to a specified destination deployment environment (dev or staging)
+#
+# This will *add* S3 objects to the dest env, but will not remove existing objects (see NOTE, below).
+# The src S3 buckets will never be modified.
 
 set -e
 
@@ -10,10 +13,8 @@ SCRIPTS_DIR=`dirname $0`
 
 echo Mirroring S3 data from $SRC_ENV to $DEST_ENV
 
-
-# TODO: Remove --dryrun after testing
-# TODO: Add  --delete after initial sync
-S3_SYNC_CMD="aws s3 sync --no-progress" # --dryrun"
+# NOTE: Add --delete if you want to clean up orphaned data. This would make the operation more destructive, of course!
+S3_SYNC_CMD="aws s3 sync --no-progress"
 
 set -x
 $S3_SYNC_CMD --exclude '*loom' s3://corpora-data-${SRC_ENV}/ s3://corpora-data-${DEST_ENV}/

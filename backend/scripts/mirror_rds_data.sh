@@ -6,7 +6,8 @@
 # 2. Loads the pg_dump data file into a PostgreSQL db in the dest env
 # 3. Updates table columns that contain deployment environment-specific URLs to point at the dest environment
 #
-# THIS IS DESTRUCTIVE! (It will not run in prod)
+# THIS IS DESTRUCTIVE for the dest env! The src env database will never be modified, but dest environment database will
+# be replaced. The destination database will be dumped to a local file, for peace of mind.
 
 set -e
 
