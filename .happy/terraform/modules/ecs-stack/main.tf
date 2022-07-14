@@ -29,6 +29,8 @@ locals {
   security_groups                 = local.secret["security_groups"]
   zone                            = local.secret["zone_id"]
   cluster                         = local.secret["cluster_arn"]
+  ecs_execution_role              = lookup(local.secret, "ecs_execution_role", "")
+
   frontend_image_repo             = local.secret["ecrs"]["frontend"]["url"]
   backend_image_repo              = local.secret["ecrs"]["backend"]["url"]
   upload_image_repo               = local.secret["ecrs"]["processing"]["url"]
@@ -103,6 +105,7 @@ module frontend_service {
   frontend_url               = local.frontend_url
   remote_dev_prefix          = local.remote_dev_prefix
   dataset_submissions_bucket = local.dataset_submissions_bucket
+  execution_role             = local.ecs_execution_role
 
   wait_for_steady_state = local.wait_for_steady_state
 }
@@ -130,6 +133,7 @@ module backend_service {
   frontend_url               = local.frontend_url
   remote_dev_prefix          = local.remote_dev_prefix
   dataset_submissions_bucket = local.dataset_submissions_bucket
+  execution_role             = local.ecs_execution_role
 
   wait_for_steady_state = local.wait_for_steady_state
 }
@@ -143,6 +147,7 @@ module migrate_db {
   remote_dev_prefix = local.remote_dev_prefix
   deployment_stage  = local.deployment_stage
   data_load_path    = local.data_load_path
+  execution_role    = local.ecs_execution_role
 }
 
 module delete_db {
@@ -154,6 +159,7 @@ module delete_db {
   custom_stack_name = local.custom_stack_name
   remote_dev_prefix = local.remote_dev_prefix
   deployment_stage  = local.deployment_stage
+  execution_role    = local.ecs_execution_role
 }
 
 module upload_batch {
