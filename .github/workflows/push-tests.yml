@@ -72,6 +72,7 @@ jobs:
       - run: cd frontend
       - run: npm ci
       - run: npx playwright install --with-deps
+      - name: Run E2E Tests
         run: npm run e2e
       - name: Install happy
         uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.2.1
