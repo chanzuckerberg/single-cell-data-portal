@@ -21,8 +21,4 @@ $S3_SYNC_CMD --exclude '*loom' s3://corpora-data-${SRC_ENV}/ s3://corpora-data-$
 $S3_SYNC_CMD s3://hosted-cellxgene-${SRC_ENV}/ s3://hosted-cellxgene-${DEST_ENV}/
 $S3_SYNC_CMD s3://cellxgene-wmg-${SRC_ENV}/ s3://cellxgene-wmg-${DEST_ENV}/
 set +x
-# TODO: For testing with s3 sync quickly
-# $S3_SYNC_CMD s3://corpora-data-${SRC_ENV}/0b696cf4-513e-4e59-b6ac-78d76409e6f8/ s3://atolopko-tmp/corpora-data-${DEST_ENV}/
-# $S3_SYNC_CMD s3://hosted-cellxgene-${SRC_ENV}/00099d5e-154f-4a7a-aa8d-fa30c8c0c43c.cxg/ s3://atolopko-tmp/hosted-cellxgene-${DEST_ENV}/
-# $S3_SYNC_CMD s3://cellxgene-wmg-${SRC_ENV}/1651599970/ s3://atolopko-tmp/cellxgene-wmg-${DEST_ENV}/
 
