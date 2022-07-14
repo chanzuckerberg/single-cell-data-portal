@@ -15,8 +15,7 @@ from tests.unit.backend.fixtures.config import fake_s3_file
 class TestAuthToken(BaseAuthAPITest):
     @patch("backend.corpora.lambdas.api.v1.curation.collections.collection_id.dataset.sts_client")
     def test__generate_s3_credentials__OK(self, sts_client: Mock):
-        def _test(token):
-
+        def _test(token, is_super_curator: bool = False):
             sts_client.assume_role_with_web_identity = Mock(
                 return_value={
                     "Credentials": {
@@ -35,13 +34,16 @@ class TestAuthToken(BaseAuthAPITest):
             self.assertEqual(200, response.status_code)
             token_sub = mock_assert_authorized_token(token)["sub"]
             self.assertEqual(response.json["Bucket"], "cellxgene-dataset-submissions-test")
-            self.assertEqual(response.json["UploadKeyPrefix"], f"{token_sub}/{collection.id}/")
+            if is_super_curator:
+                self.assertEqual(response.json["UploadKeyPrefix"], f"super/{collection.id}/")
+            else:
+                self.assertEqual(response.json["UploadKeyPrefix"], f"{token_sub}/{collection.id}/")
 
         with self.subTest("collection owner"):
             _test("owner")
 
         with self.subTest("super curator"):
-            _test("super")
+            _test("super", is_super_curator=True)
 
     def test__generate_s3_credentials__Not_Owner(self):
         collection = self.generate_collection(self.session, owner="not_test_user")
