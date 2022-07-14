@@ -41,10 +41,14 @@ kill_ssh_tunnel
 make db/tunnel
 pgrep -fl bastion
 
+#  For safety, also dump the destination db to a local file, just in case.
+DEST_DB_BACKUP_DUMP_FILE="${DEST_ENV}_"`date +%Y%m%d_%H%M%S`".sqlc"
+make db/dump OUTFILE=$DEST_DB_BACKUP_DUMP_FILE
+echo Created backup dump of destination database: $DEST_DB_BACKUP_DUMP_FILE
+
 DB_PW=`aws secretsmanager get-secret-value --secret-id corpora/backend/${DEPLOYMENT_STAGE}/database --region us-west-2 | jq -r '.SecretString | match(":([^:]*)@").captures[0].string'`
 
-# TODO: Remove the suffix when ready for the real thing!
-DB_NAME="corpora_${DEPLOYMENT_STAGE}_sync_test"
+DB_NAME="corpora_${DEPLOYMENT_STAGE}"
 DB_USER=corpora_${DEPLOYMENT_STAGE}
 
 PGPASSWORD=${DB_PW} pg_restore --clean --if-exists --no-owner --dbname=${DB_NAME} --host 0.0.0.0 --username ${DB_USER} ${DB_DUMP_FILE}
