@@ -99,7 +99,7 @@ db/tunnel:
 
 SRC_ENV := prod
 mirror_env_data:
-	# Mirrors the DEPLOYMENT_STAGE env's AWS RDS database and S3 data. THIS IS DESTRUCTIVE! (It will not run in prod)
-	# Defaults to prod->dev
+	# Mirrors the SRC_ENV env's AWS RDS database and S3 data to DEST_ENV.
+    # THIS IS DESTRUCTIVE! (It will not run in prod). Defaults to prod->dev.
 	# Usage: make mirror_env_data [DEST_ENV={dev|staging}] [SRC_ENV={prod|staging|dev}] 
 	scripts/mirror_env_data.sh $(SRC_ENV) $(DEST_ENV)
