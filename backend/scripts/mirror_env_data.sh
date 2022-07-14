@@ -7,6 +7,8 @@ set -e
 
 SCRIPTS_DIR=`dirname $0`
 . $SCRIPTS_DIR/set_src_dest_envs.sh
-$SCRIPTS_DIR/mirror_s3_data.sh $@
+# Note: we run RDS mirror first to avoid possibility of referencing S3 data artifacts that are created after RDS dump
 $SCRIPTS_DIR/mirror_rds_data.sh $@
+$SCRIPTS_DIR/mirror_s3_data.sh $@
+
 
