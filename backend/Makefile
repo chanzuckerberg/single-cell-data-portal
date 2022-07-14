@@ -59,14 +59,9 @@ db/dump:
 	PGPASSWORD=${DB_PW} pg_dump -Fc --dbname=corpora_${DEPLOYMENT_STAGE} --file=$(OUTFILE) --host 0.0.0.0 --username corpora_${DEPLOYMENT_STAGE}
 
 db/load/local:
-	# Loads corpora_dev.sqlc into the corpora_test database
+	# Loads corpora_dev.sqlc into the local Docker env corpora database
 	# Usage: make db/load/local INFILE=<file>
 	docker-compose exec database pg_restore --clean --no-owner --username corpora --dbname corpora $(INFILE)
-
-db/load/remote:
-	# Loads the DEPLOYMENT_STAGE env's AWS RDS db from a dump file. THIS IS DESTRUCTIVE! (It will not run in prod)
-	# Usage: make db/load/remote INFILE=<file>
-	scripts/db_load.sh $(INFILE)
 
 db/load/schema:
     # Imports the corpora_dev.sqlc schema (schema ONLY) into the corpora_test database
@@ -102,3 +97,9 @@ db/tunnel:
 		-o ServerAliveInterval=${SSH_SERVER_ALIVE_INTERVAL_IN_SECONDS} -o ServerAliveCountMax=${SSH_SERVER_ALIVE_COUNT_MAX} \
 		-L 5432:${endpoint}:5432 bastion.${DEPLOYMENT_STAGE}.single-cell.czi.technology
 
+SRC_ENV := prod
+mirror_env_data:
+	# Mirrors the DEPLOYMENT_STAGE env's AWS RDS database and S3 data. THIS IS DESTRUCTIVE! (It will not run in prod)
+	# Defaults to prod->dev
+	# Usage: make mirror_env_data [DEST_ENV={dev|staging}] [SRC_ENV={prod|staging|dev}] 
+	scripts/mirror_env_data.sh $(SRC_ENV) $(DEST_ENV)
