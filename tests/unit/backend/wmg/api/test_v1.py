@@ -22,6 +22,8 @@ from tests.unit.backend.wmg.fixtures.test_snapshot import (
     exclude_dev_stage_and_ethnicity_for_secondary_filter_test,
 )
 
+import logging
+logging.basicConfig(level=logging.INFO)
 
 class WmgApiV1Tests(unittest.TestCase):
     """

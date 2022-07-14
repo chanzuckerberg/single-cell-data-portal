@@ -29,6 +29,8 @@ from backend.wmg.data.snapshot import WmgSnapshot, CELL_TYPE_ORDERINGS_FILENAME
 from backend.wmg.data.tiledb import create_ctx
 from tests.unit.backend.wmg.fixtures.test_primary_filters import build_precomputed_primary_filters
 
+import logging
+logging.basicConfig(level=logging.INFO)
 
 def simple_ontology_terms_generator(dimension_name: str, n_terms: int) -> List[str]:
     return [f"{dimension_name}_{i}" for i in range(n_terms)]

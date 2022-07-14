@@ -26,13 +26,13 @@ unit-test: local-unit-test
 .PHONY: container-unittest
 container-unittest:
 	# This target is intended to be run INSIDE a container
-	DEPLOYMENT_STAGE=test PYTHONWARNINGS=ignore:ResourceWarning python3 -m coverage run \
+	DEPLOYMENT_STAGE=test PYTHONWARNINGS=ignore:ResourceWarning python3 \
 		-m unittest discover --start-directory tests/unit/backend --top-level-directory . --verbose;
 
 .PHONY: processing-unittest
 processing-unittest:
 	# This target is intended to be run INSIDE a container
-	DEPLOYMENT_STAGE=test PYTHONWARNINGS=ignore:ResourceWarning python3 -m coverage run \
+	DEPLOYMENT_STAGE=test PYTHONWARNINGS=ignore:ResourceWarning python3 \
 		-m unittest discover --start-directory tests/unit/processing_container --top-level-directory . --verbose;
 
 .PHONY: functional-test
@@ -158,14 +158,8 @@ local-unit-test: local-unit-test-backend local-unit-test-processing # Run all ba
 local-unit-test-backend: # Run container-unittest target in `backend` Docker container.  If path arg provided, just run those specific backend tests
 	@if [ -z "$(path)" ]; then \
 	    echo "Running all backend unit tests"; \
-		export CI=""; \
-		ci_env=""; \
-		if [ ! -z "$(CODECOV_TOKEN)" ]; then \
-			ci_env=$$(bash <(curl -s https://codecov.io/env)); \
-			CI=true; \
-		fi; \
-	    docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -e CI $$ci_env -T backend \
-	    bash -c "cd /single-cell-data-portal && make container-unittest && if [ \"${CI}\" == "true" ]; then apt-get update && apt-get install -y git && bash <(curl -s https://codecov.io/bash) -cF backend,python,unitTest; fi"; \
+	    docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -T backend \
+	    bash -c "cd /single-cell-data-portal && make container-unittest;" \
 	else \
 		echo "Running specified backend unit test(s): $(path)"; \
 		docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -T backend \
@@ -176,14 +170,8 @@ local-unit-test-backend: # Run container-unittest target in `backend` Docker con
 .PHONY: local-unit-test-processing
 local-unit-test-processing: # Run processing-unittest target in `processing` Docker container
 	echo "Running all processing unit tests"; \
-    export CI=""; \
-	export ci_env=""; \
-	if [ ! -z "$(CODECOV_TOKEN)" ]; then \
-		ci_env=$$(bash <(curl -s https://codecov.io/env)); \
-		CI=true; \
-	fi; \
-	docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -e CI $$ci_env -T processing \
-	bash -c "cd /single-cell-data-portal && make processing-unittest && if [ \"${CI}\" == "true" ]; then apt-get update && apt-get install -y git && bash <(curl -s https://codecov.io/bash) -cF backend,python,unitTest; fi";
+	docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -T processing \
+	bash -c "cd /single-cell-data-portal && make processing-unittest;"
 
 # We optionally pass BOTO_ENDPOINT_URL if it is set, even if it is
 # set to be the empty string.
@@ -236,3 +224,7 @@ local-uploadfailure: .env.ecr ## Run the upload failure lambda with a dataset id
 .PHONY: local-cxguser-cookie
 local-cxguser-cookie: ## Get cxguser-cookie
 	docker-compose $(COMPOSE_OPTS) run --rm backend bash -c "cd /single-cell-data-portal && python login.py"
+
+.PHONY: local-prepare-for-unit-test
+local-prepare-for-unit-test:
+	docker-compose $(COMPOSE_OPTS) up -d database oidc localstack

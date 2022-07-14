@@ -10,6 +10,8 @@ from backend.corpora.common.utils.db_session import DBSessionMaker
 from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
 from tests.unit.backend.fixtures.generate_data_mixin import GenerateDataMixin
 
+import logging
+logging.basicConfig(level=logging.INFO)
 
 class TestDatasetAsset(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
     def setUp(self):
