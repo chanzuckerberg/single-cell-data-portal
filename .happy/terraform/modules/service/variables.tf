@@ -115,6 +115,12 @@ variable "memory" {
   default     = 2048
 }
 
+variable "cpu" {
+  type        = number
+  description = "CPU shares (1cpu=1024) per task"
+  default     = 2048
+}
+
 variable "wait_for_steady_state" {
   type        = bool
   description = "Whether Terraform should block until the service is in a steady state before exiting"
