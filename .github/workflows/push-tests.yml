@@ -180,7 +180,6 @@ jobs:
       - name: Run tests in docker-compose
         run: |
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
-          make local-prepare-for-unit-test
           make local-init-test-data
           make all-local-unit-test-backend
       - uses: 8398a7/action-slack@v3
@@ -211,7 +210,6 @@ jobs:
       - name: Run tests in docker-compose
         run: |
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
-          make local-prepare-for-unit-test
           make local-init-test-data
           make local-unit-test-processing
       - uses: 8398a7/action-slack@v3

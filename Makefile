@@ -230,7 +230,3 @@ local-uploadfailure: .env.ecr ## Run the upload failure lambda with a dataset id
 .PHONY: local-cxguser-cookie
 local-cxguser-cookie: ## Get cxguser-cookie
 	docker-compose $(COMPOSE_OPTS) run --rm backend bash -c "cd /single-cell-data-portal && python login.py"
-
-.PHONY: local-prepare-for-unit-test
-local-prepare-for-unit-test:
-	docker-compose $(COMPOSE_OPTS) up -d database oidc localstack
