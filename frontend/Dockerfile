@@ -39,4 +39,4 @@ LABEL commit=${HAPPY_COMMIT}
 ENV COMMIT_SHA=${HAPPY_COMMIT}
 ENV COMMIT_BRANCH=${HAPPY_BRANCH}
 
-CMD npm run server -- -- -p 9000
+CMD npm run serve -- -- -p 9000
