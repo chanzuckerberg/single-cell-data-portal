@@ -43,13 +43,17 @@ pgrep -fl bastion
 
 #  For safety, also dump the destination db to a local file, just in case.
 DEST_DB_BACKUP_DUMP_FILE="${DEST_ENV}_"`date +%Y%m%d_%H%M%S`".sqlc"
+echo "Backing up the destination database to $DEST_DB_BACKUP_DUMP_FILE. Just in case!"
 make db/dump OUTFILE=$DEST_DB_BACKUP_DUMP_FILE
-echo Created backup dump of destination database: $DEST_DB_BACKUP_DUMP_FILE
 
 DB_PW=`aws secretsmanager get-secret-value --secret-id corpora/backend/${DEPLOYMENT_STAGE}/database --region us-west-2 | jq -r '.SecretString | match(":([^:]*)@").captures[0].string'`
 
 DB_NAME="corpora_${DEPLOYMENT_STAGE}"
 DB_USER=corpora_${DEPLOYMENT_STAGE}
+
+read -n 1 -p "ATTENTION: Proceed to replace the destination database ${DB_NAME}? (Y/n) " ANS
+echo
+[[ $ANS == 'Y' ]] || exit 1
 
 PGPASSWORD=${DB_PW} pg_restore --clean --if-exists --no-owner --dbname=${DB_NAME} --host 0.0.0.0 --username ${DB_USER} ${DB_DUMP_FILE}
 
