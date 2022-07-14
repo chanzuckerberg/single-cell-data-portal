@@ -2,6 +2,9 @@
 
 # Mirror S3 and RDS (postgres db) data from a source deployment environment (usually production)
 # to a specified destination deployment environment (dev or staging)
+#
+# THIS IS DESTRUCTIVE for the destination env! The source env will
+# never be modified, but the dest env's data will be replaced.
 
 set -e
 
