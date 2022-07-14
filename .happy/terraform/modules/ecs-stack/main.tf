@@ -97,7 +97,7 @@ module frontend_service {
   task_role_arn              = local.ecs_role_arn
   service_port               = 9000
   memory                     = var.frontend_memory
-  cpu                        = 1024
+  cpu                        = 2048
   deployment_stage           = local.deployment_stage
   step_function_arn          = module.upload_sfn.step_function_arn
   host_match                 = try(join(".", [module.frontend_dns[0].dns_prefix, local.external_dns]), "")
@@ -125,7 +125,7 @@ module backend_service {
   task_role_arn              = local.ecs_role_arn
   service_port               = 5000
   memory                     = var.backend_memory
-  cpu                        = 1024
+  cpu                        = 2048
   cmd                        = local.backend_cmd
   deployment_stage           = local.deployment_stage
   step_function_arn          = module.upload_sfn.step_function_arn
