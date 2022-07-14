@@ -182,7 +182,7 @@ jobs:
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
           make local-prepare-for-unit-test
           make local-init-test-data
-          make local-unit-test-backend
+          make all-local-unit-test-backend
       - uses: 8398a7/action-slack@v3
         with:
           status: ${{ job.status }}
