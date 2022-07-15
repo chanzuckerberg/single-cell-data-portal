@@ -11,7 +11,10 @@ set -e
 SCRIPTS_DIR=`dirname $0`
 . $SCRIPTS_DIR/set_src_dest_envs.sh
 export NO_PROMPT=1
-# Note: we run RDS mirror first to avoid possibility of referencing S3 data artifacts that are created after RDS dump
+# Note: Run RDS mirroring before S3 mirroring. This avoids edge case
+# of having dangling references to S3 data artifacts in the dest env
+# db; this can occur if new artifacts are created and recorded in the
+# src env after the S3 mirroring object set has been computed.
 $SCRIPTS_DIR/mirror_rds_data.sh $@
 $SCRIPTS_DIR/mirror_s3_data.sh $@
 
