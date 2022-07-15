@@ -13,6 +13,7 @@ if [ ! -z "$API_URL" ]; then
 else
   cp src/configs/local.js src/configs/configs.js
 fi
+
 # If user passed a command line, run it in place of the server
 if [ $# -ne 0 ]; then
   exec "$@"
