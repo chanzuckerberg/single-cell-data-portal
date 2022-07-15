@@ -7,12 +7,12 @@ from backend.corpora.common.utils.http_exceptions import (
 )
 
 
-def gene_info(geneID: string):
+def gene_info(gene: string, geneID: string):
     provider = NCBIProvider()
 
     # search for gene UID from ensembl ID
     try:
-        uid = provider.fetch_gene_uid(geneID)
+        uid = provider.fetch_gene_uid(gene, geneID)
     except NCBIAPIException:
         raise ForbiddenHTTPException("Failed search of NCBI database, API key issue")
     except NCBIUnexpectedResultException:
