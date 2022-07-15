@@ -30,7 +30,11 @@ const DEFAULT_CONTEXT_CONFIG = {
   userAgent: devices["Desktop Chrome"].userAgent + " czi-checker",
 };
 
+// 'github' for GitHub Actions CI to generate annotations, default otherwise
+const PLAYWRIGHT_REPORTER = process.env.CI ? "github" : "list";
+
 module.exports = {
   contextOptions: DEFAULT_CONTEXT_CONFIG,
   launchOptions: DEFAULT_LAUNCH_CONFIG,
+  reporter: PLAYWRIGHT_REPORTER,
 };
