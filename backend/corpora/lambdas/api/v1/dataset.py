@@ -13,18 +13,22 @@ from ....common.utils.http_exceptions import (
 from ....common.utils.exceptions import CorporaException
 from .authorization import owner_or_allowed
 
+from backend.corpora.common.entities.tiledb_data import TileDBData
 
-@dbconnect
 def post_dataset_asset(dataset_id: str, asset_id: str):
-    db_session = g.db_session
     # retrieve the dataset
-    dataset = Dataset.get(db_session, dataset_id)
+    db = TileDBData(location = "../../../../tests/unit/backend/fixtures/test_tiledb/metadata") # TODO: config this somewhere
+
+    dataset = db.get_dataset(dataset_id)
     if not dataset:
         raise NotFoundHTTPException(detail=f"'dataset/{dataset_id}' not found.")
 
     # retrieve the artifact
-    asset = dataset.get_asset(asset_id)
-    if not asset:
+    assets = dataset['dataset_assets']
+    asset = None
+    try:
+        asset = [asset for asset in assets if asset['id'] == asset_id][0]
+    except:
         raise NotFoundHTTPException(detail=f"'dataset/{dataset_id}/asset/{asset_id}' not found.")
 
     # Retrieve S3 metadata

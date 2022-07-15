@@ -3,6 +3,7 @@
 import os
 from flask import make_response, jsonify
 from backend.corpora.lambdas.api.v1.collection_id.upload import upload_from_link
+from backend.corpora.lambdas.api.v1.dataset import post_dataset_asset
 
 from tiledb_data import TileDBData
 from backend.corpora.dataset_processing.process import process
@@ -134,16 +135,19 @@ def delete_dataset(coll_id: str, dataset_id: str):
 
 def request_asset_download(dataset_id: str, asset_id: str):
     """/v1/datasets/{dataset_id}/asset/{asset_id} POST"""
-    # TODO
-    return
+    res = post_dataset_asset(dataset_id, asset_id)
+    return make_response(res, 200)
 
 def list_dataset_assets(id: str):
     """/v1/datasets/{dataset_id}/assets GET"""
-    # TODO
-    # Seems broken in API schema? Empty {} as response?
-    return
+    db = TileDBData(location)
+    dataset = db.get_dataset(id)
+    assets = dataset["dataset_assets"]
+    return make_response(jsonify(assets), 200)
 
 def get_dataset_upload_status(id: str):
     """/v1/datasets/{dataset_id}/status GET"""
-    # TODO
-    return
+    db = TileDBData(location)
+    dataset = db.get_dataset(id)
+    status = dataset['processing_status']
+    return make_response(status, 200)
