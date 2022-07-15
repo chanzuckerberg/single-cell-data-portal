@@ -10,6 +10,7 @@ from backend.corpora.common.entities import Dataset
 from backend.corpora.common.utils.db_session import db_session_manager
 from backend.corpora.common.utils.math_utils import MB
 from backend.corpora.dataset_processing.exceptions import ProcessingFailed, ProcessingCancelled
+from backend.corpora.common.entities.tiledb_data import TileDBData
 
 logger = logging.getLogger(__name__)
 
@@ -98,7 +99,7 @@ def downloader(url: str, local_path: str, tracker: ProgressTracker, chunk_size: 
         tracker.stop_updater.set()
 
 
-def updater(processing_status: DbDatasetProcessingStatus, tracker: ProgressTracker, frequency: float):
+def updater(dataset_id, processing_status, tracker: ProgressTracker, frequency: float):
     """
     Update the progress of an upload to the database using the tracker.
 
@@ -107,11 +108,12 @@ def updater(processing_status: DbDatasetProcessingStatus, tracker: ProgressTrack
     :param frequency: The frequency in which the database is updated in seconds
     :return:
     """
-    db_session = inspect(processing_status).session
+    db = TileDBData(location = "../../../../tests/unit/backend/fixtures/test_tiledb/metadata") # TODO: config this somewhere
+
 
     def _update():
         progress = tracker.progress()
-        dataset = Dataset.get(db_session, processing_status.dataset_id, include_tombstones=True)
+        dataset = db.get_dataset(dataset_id)
         if dataset.tombstone:
             tracker.cancel()
             return
@@ -133,7 +135,6 @@ def updater(processing_status: DbDatasetProcessingStatus, tracker: ProgressTrack
             status = {"upload_progress": progress}
         logger.debug("Updating processing_status")
         _processing_status_updater(processing_status, status)
-        db_session.commit()
 
     try:
         while not tracker.stop_updater.wait(frequency):
@@ -143,7 +144,7 @@ def updater(processing_status: DbDatasetProcessingStatus, tracker: ProgressTrack
         tracker.stop_downloader.set()
 
 
-def _processing_status_updater(processing_status: DbDatasetProcessingStatus, updates: dict):
+def _processing_status_updater(processing_status: dict, updates: dict):
     for key, value in updates.items():
         setattr(processing_status, key, value)
 
@@ -168,48 +169,49 @@ def download(
 
     :return: The current dataset processing status.
     """
-    with db_session_manager() as session:
-        logger.info("Setting up download.")
-        logger.info(f"file_size: {file_size}")
-        if file_size and file_size >= shutil.disk_usage("/")[2]:
-            status_dict = {
-                "upload_status": UploadStatus.FAILED,
-                "upload_message": "Insufficient disk space.",
-            }
-            logger.error(f"Upload failed: {status_dict}")
-            raise ProcessingFailed(status_dict)
-        processing_status = Dataset.get(session, dataset_id).processing_status
-        processing_status.upload_status = UploadStatus.UPLOADING
-        processing_status.upload_progress = 0
-        if file_size is not None:
-            progress_tracker = ProgressTracker(file_size)
-        else:
-            progress_tracker = NoOpProgressTracker()
+    db = TileDBData(location = "../../../../tests/unit/backend/fixtures/test_tiledb/metadata") # TODO: config this somewhere
 
-        progress_thread = threading.Thread(
-            target=updater,
-            kwargs=dict(processing_status=processing_status, tracker=progress_tracker, frequency=update_frequency),
-        )
-        progress_thread.start()
-        download_thread = threading.Thread(
-            target=downloader,
-            kwargs=dict(url=url, local_path=local_path, tracker=progress_tracker, chunk_size=chunk_size),
-        )
-        download_thread.start()
-        download_thread.join()  # Wait for the download thread to complete
-        progress_thread.join()  # Wait for the progress thread to complete
-        if progress_tracker.tombstoned:
-            raise ProcessingCancelled
-        if progress_tracker.error:
-            status = {
-                "upload_status": UploadStatus.FAILED,
-                "upload_message": str(progress_tracker.error),
-            }
-            _processing_status_updater(processing_status, status)
+    logger.info("Setting up download.")
+    logger.info(f"file_size: {file_size}")
+    if file_size and file_size >= shutil.disk_usage("/")[2]:
+        status_dict = {
+            "upload_status": UploadStatus.FAILED,
+            "upload_message": "Insufficient disk space.",
+        }
+        logger.error(f"Upload failed: {status_dict}")
+        raise ProcessingFailed(status_dict)
+    processing_status = db.get_dataset(dataset_id)['processing_status']
+    processing_status['upload_status'] = UploadStatus.UPLOADING
+    processing_status['upload_progress'] = 0
+    if file_size is not None:
+        progress_tracker = ProgressTracker(file_size)
+    else:
+        progress_tracker = NoOpProgressTracker()
 
-        status_dict = processing_status.to_dict()
-        if processing_status.upload_status == UploadStatus.FAILED:
-            logger.error(f"Upload failed: {status_dict}")
-            raise ProcessingFailed(status_dict)
-        else:
-            return status_dict
+    progress_thread = threading.Thread(
+        target=updater,
+        kwargs=dict(processing_status=processing_status, tracker=progress_tracker, frequency=update_frequency),
+    )
+    progress_thread.start()
+    download_thread = threading.Thread(
+        target=downloader,
+        kwargs=dict(url=url, local_path=local_path, tracker=progress_tracker, chunk_size=chunk_size),
+    )
+    download_thread.start()
+    download_thread.join()  # Wait for the download thread to complete
+    progress_thread.join()  # Wait for the progress thread to complete
+    if progress_tracker.tombstoned:
+        raise ProcessingCancelled
+    if progress_tracker.error:
+        status = {
+            "upload_status": UploadStatus.FAILED,
+            "upload_message": str(progress_tracker.error),
+        }
+        _processing_status_updater(processing_status, status)
+
+    status_dict = processing_status
+    if processing_status['upload_status'] == UploadStatus.FAILED:
+        logger.error(f"Upload failed: {status_dict}")
+        raise ProcessingFailed(status_dict)
+    else:
+        return status_dict

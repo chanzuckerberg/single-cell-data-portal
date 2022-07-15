@@ -73,7 +73,6 @@ class Utils:
             "dataset_assets"
         ]
     }
-       
     attrs_to_parse = {
         "collections":   [
             "links",
@@ -89,10 +88,30 @@ class Utils:
             "organism",
             "sex",
             "tissue",
-            "dataset_assets"
+            "dataset_assets",
+            "processing_status"
         ]
     }
   
+    empty_dataset = {
+        "x_approximate_distribution": "",
+        "x_normalization": "",
+        "assay": [],
+        "cell_count": 0,
+        "cell_type": [],
+        "development_stage": [],
+        "disease": [],
+        "ethnicity": [],
+        "dataset_assets": [],
+        "is_primary_data": "",
+        "name": "",
+        "organism": [],
+        "sex": [],
+        "tissue": [],
+        "explorer_url": "",
+        "processing_status": ""
+    }
+
     @staticmethod
     def new_id():
         return uuid.uuid4().hex
@@ -278,7 +297,8 @@ class TileDBData:
         """Add a dataset to a collection and to the datasets array using the data from the user's shared URL"""
         id = Utils.new_id()
         datasets = self.get_attribute(coll_id, "datasets")
-        datasets.append(id)
+        if id not in datasets:
+            datasets.append(id)
         self.edit_collection(coll_id, "datasets", datasets)
         
         data = {}
@@ -288,6 +308,11 @@ class TileDBData:
         with tiledb.open(self.location + "/datasets", "w") as A:
             A[id] = Utils.pack_input_data(data, "datasets")
         return id
+
+    def clear_dataset(self, id: str):
+        data = self.get_dataset(id)
+        for a in Utils.attrs['datasets']:
+            if type(data[a]) == str and 
 
     def get_dataset(self, id):
         """Get a dataset by its id"""
@@ -307,6 +332,11 @@ class TileDBData:
             
         with tiledb.open(self.location + "/datasets", "w") as A:
             A[id] = new_data
+
+    def bulk_edit_dataset(self, id: str, metadata: str):
+        """Replace all data in a dataset by its id"""
+        with tiledb.open(self.location + "/datasets", "w") as A:
+            A[id] = Utils.pack_input_data(metadata, "datasets")
 
     def delete_dataset(self, coll_id: str, dataset_id: str):
         """Remove a dataset from a collection"""

@@ -46,7 +46,6 @@ class TestTileDbData(unittest.TestCase):
                 "ontology_term_id": "string"
                 }
             ],
-            "collection_id": "string",
             "development_stage": [
                 {
                 "label": "string",
@@ -74,7 +73,6 @@ class TestTileDbData(unittest.TestCase):
                 "s3_uri": "string"
                 }
             ],
-            "id": "string",
             "is_primary_data": "PRIMARY",
             "name": "string",
             "organism": [
@@ -96,7 +94,9 @@ class TestTileDbData(unittest.TestCase):
                 }
             ],
             "explorer_url": "https://cellxgene.com/e/lolol.cxg",
-            "processing_status": "PENDING"
+            "processing_status": {
+                "processing_status": "PENDING"
+            }
         }
         self.location = "tests/unit/backend/fixtures/test_tiledb/metadata"
         TileDBData.init_db(self.location)

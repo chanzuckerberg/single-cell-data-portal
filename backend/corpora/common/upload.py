@@ -2,12 +2,12 @@ import boto3
 import json
 import time
 
-from backend.corpora.common.entities.tiledb_data import TileDBData
+from backend.corpora.common.entities.tiledb_data import TileDBData, Utils
 
 from .corpora_config import CorporaConfig
 import os
 
-from .corpora_orm import CollectionVisibility, ProcessingStatus
+from .corpora_orm import CollectionVisibility, ProcessingStatus, UploadStatus
 from .entities import Collection, Dataset
 from .utils.authorization_checks import owner_or_allowed
 from .utils.exceptions import (
@@ -43,6 +43,12 @@ def start_upload_sfn(collection_id, dataset_id, url):
     )
     return response
 
+def new_processing_status() -> dict:
+    return {
+        "upload_status": UploadStatus.WAITING,
+        "upload_progress": 0,
+        "processing_status": ProcessingStatus.PENDING,
+    }
 
 def upload(
     collection_id: str,
@@ -74,30 +80,30 @@ def upload(
         dataset = db.get_dataset(dataset_id)
         if not dataset:
             raise NonExistentDatasetException(f"Dataset {dataset_id} does not exist")
-    elif curator_tag:
-        dataset = Dataset.get_dataset_from_curator_tag(db_session, collection_id, curator_tag)
+    # elif curator_tag: # TODO: Curator API support
+    #     dataset = Dataset.get_dataset_from_curator_tag(db_session, collection_id, curator_tag)
     else:
         dataset = None
 
     if dataset:
         # Update dataset
-        if dataset.processing_status.processing_status not in [
+        if dataset['processing_status']['processing_status'] not in [
             ProcessingStatus.SUCCESS,
             ProcessingStatus.FAILURE,
         ]:
             raise InvalidProcessingStateException(
-                f"Unable to reprocess dataset {dataset_id}: {dataset.processing_status.processing_status=}"
+                f"Unable to reprocess dataset {dataset_id}: {dataset['processing_status']['processing_status']}"
             )
         else:
-            dataset.reprocess()
+            db.bulk_edit_dataset(dataset_id, Utils.empty_dataset)
 
     else:
         # Add new dataset
-        dataset = Dataset.create(db_session, collection=collection, curator_tag=curator_tag)
+        dataset_id = db.add_dataset(collection_id, Utils.empty_dataset)
 
-    dataset.update(processing_status=dataset.new_processing_status())
+    db.edit_dataset(dataset_id, "processing_status", new_processing_status())
 
     # Start processing link
-    start_upload_sfn(collection_id, dataset.id, url)
+    start_upload_sfn(collection_id, dataset_id, url)
 
-    return dataset.id
+    return dataset_id

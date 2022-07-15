@@ -152,6 +152,7 @@ from backend.corpora.dataset_processing.exceptions import (
     ValidationFailed,
 )
 from backend.corpora.dataset_processing.h5ad_data_file import H5ADDataFile
+from backend.corpora.common.entities.tiledb_data import TileDBData
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -206,17 +207,12 @@ def create_artifact(
     artifact_bucket: str,
     processing_status_type: str,
 ):
-    # update_db(
-    #     dataset_id,
-    #     processing_status={processing_status_type: ConversionStatus.UPLOADING},
-    # )
+    update_db(dataset_id, processing_status={"processing_status_tyoe": ConversionStatus.UPLOADING})
+
     logger.info(f"Uploading [{dataset_id}/{file_name}] to S3 bucket: [{artifact_bucket}].")
     try:
         s3_uri = upload(file_name, bucket_prefix, artifact_bucket)
-        # update_db(
-        #     dataset_id,
-        #     processing_status={processing_status_type: ConversionStatus.UPLOADED},
-        # )
+        update_db(dataset_id, processing_status={"processing_status_tyoe": ConversionStatus.UPLOADED})
 
     except Exception as e:
         logger.error(e)
@@ -239,6 +235,8 @@ def create_artifacts(
     artifact_bucket: str,
     can_convert_to_seurat: bool = False,
 ):
+    db = TileDBData(location = "../../../../tests/unit/backend/fixtures/test_tiledb/metadata") # TODO: config this somewhere
+
     bucket_prefix = get_bucket_prefix(dataset_id)
     logger.info(f"Creating artifacts for dataset {dataset_id}...")
     # upload AnnData
@@ -270,7 +268,9 @@ def create_artifacts(
                 "rds_status",
             )
     else:
-        # update_db(dataset_id, processing_status=dict(rds_status=ConversionStatus.SKIPPED))
+        curr_status = db.get_dataset(dataset_id)['processing_status']
+        curr_status['rds_status'] = ConversionStatus.SKIPPED
+        db.edit_dataset(dataset_id, "processing_status", curr_status)
         logger.info(f"Skipped Seurat conversion for dataset {dataset_id}")
 
     logger.info(f"Finished creating artifacts for dataset {dataset_id}")
@@ -284,19 +284,19 @@ def create_artifacts(
 #         logger.info("Upload Canceled.")
 
 
-# def update_db(dataset_id, metadata: dict = None, processing_status: dict = None):
-#     with db_session_manager() as session:
-#         dataset = Dataset.get(session, dataset_id, include_tombstones=True)
-#         if dataset.tombstone:
-#             raise ProcessingCancelled
+def update_db(dataset_id, metadata: dict = None, processing_status: dict = None):
+    db = TileDBData(location = "../../../../tests/unit/backend/fixtures/test_tiledb/metadata") # TODO: config this somewhere
 
-#         if metadata:
-#             logger.debug("Updating metadata.")
-#             dataset.update(**metadata)
+    if metadata:
+        logger.debug("Updating metadata.")
+        for key, val in metadata.items():
+            db.edit_dataset(dataset_id, key, val)
 
-#         if processing_status:
-#             logger.debug(f"updating processing_status.{processing_status}")
-#             processing_status_updater(session, dataset.processing_status.id, processing_status)
+    if processing_status:
+        logger.debug(f"updating processing_status.{processing_status}")
+        curr_status = db.get_dataset(dataset_id)['processing_status']
+        for key, val in processing_status.items():
+            curr_status[key] = val
 
 
 def download_from_source_uri(dataset_id: str, source_uri: str, local_path: str) -> str:
@@ -342,24 +342,22 @@ def download_from_s3(bucket_name: str, object_key: str, local_filename: str):
     buckets.portal_client.download_file(bucket_name, object_key, local_filename)
 
 
-# def wrapped_download_from_s3(dataset_id: str, bucket_name: str, object_key: str, local_filename: str):
-#     """
-#     Wraps download_from_s3() to update the dataset's upload status
-#     :param dataset_id:
-#     :param bucket_name:
-#     :param object_key:
-#     :param local_filename:
-#     :return:
-#     """
-#     with db_session_manager() as session:
-#         # processing_status = Dataset.get(session, dataset_id).processing_status
-#         processing_status.upload_status = UploadStatus.UPLOADING
-#         download_from_s3(
-#             bucket_name=bucket_name,
-#             object_key=object_key,
-#             local_filename=local_filename,
-#         )
-#         processing_status.upload_status = UploadStatus.UPLOADED
+def wrapped_download_from_s3(dataset_id: str, bucket_name: str, object_key: str, local_filename: str):
+    """
+    Wraps download_from_s3() to update the dataset's upload status
+    :param dataset_id:
+    :param bucket_name:
+    :param object_key:
+    :param local_filename:
+    :return:
+    """
+    update_db(dataset_id, processing_status={"upload_status": UploadStatus.UPLOADING})
+    download_from_s3(
+        bucket_name=bucket_name,
+        object_key=object_key,
+        local_filename=local_filename,
+    )
+    update_db(dataset_id, processing_status={"upload_status": UploadStatus.UPLOADED})
 
 
 def extract_metadata(filename) -> dict:
@@ -428,13 +426,13 @@ def extract_metadata(filename) -> dict:
         "ethnicity": _get_term_pairs("ethnicity"),
         "development_stage": _get_term_pairs("development_stage"),
         "cell_count": adata.shape[0],
-        "mean_genes_per_cell": numerator / denominator,
+        # "mean_genes_per_cell": numerator / denominator,
         "is_primary_data": _get_is_primary_data(),
         "cell_type": _get_term_pairs("cell_type"),
         "x_normalization": adata.uns["X_normalization"],
         "x_approximate_distribution": _get_x_approximate_distribution(),
-        "schema_version": adata.uns["schema_version"],
-        "batch_condition": _get_batch_condition(),
+        # "schema_version": adata.uns["schema_version"],
+        # "batch_condition": _get_batch_condition(),
     }
     logger.info(f"Extract metadata: {metadata}")
     return metadata
@@ -513,22 +511,13 @@ def convert_file_ignore_exceptions(
     logger.info(f"Converting {local_filename}")
     start = datetime.now()
     try:
-        # update_db(
-        #     dataset_id,
-        #     processing_status={processing_status_type: ConversionStatus.CONVERTING},
-        # )
+        update_db(dataset_id, processing_status={"processing_status_type": ConversionStatus.CONVERTING})
         file_dir = converter(local_filename)
-        # update_db(
-        #     dataset_id,
-        #     processing_status={processing_status_type: ConversionStatus.CONVERTED},
-        # )
+        update_db(dataset_id, processing_status={"processing_status_type": ConversionStatus.CONVERTED})
         logger.info(f"Finished converting {converter} in {datetime.now()- start}")
     except Exception:
         file_dir = None
-        # update_db(
-        #     dataset_id,
-        #     processing_status={processing_status_type: ConversionStatus.FAILED},
-        # )
+        update_db(dataset_id, processing_status={"processing_status_type": ConversionStatus.FAILED})
         logger.exception(error_message)
     return file_dir
 
@@ -546,8 +535,8 @@ def process_cxg(local_filename, dataset_id, cellxgene_bucket):
     if cxg_dir:
         bucket_prefix = get_bucket_prefix(dataset_id)
         s3_uri = f"s3://{cellxgene_bucket}/{bucket_prefix}.cxg/"
-        # update_db(dataset_id, processing_status={"cxg_status": ConversionStatus.UPLOADING})
-        # TODO: uncomment when ready to use AWS: copy_cxg_files_to_cxg_bucket(cxg_dir, s3_uri)
+        update_db(dataset_id, processing_status={"cxg_status": ConversionStatus.UPLOADING})
+        copy_cxg_files_to_cxg_bucket(cxg_dir, s3_uri)
         metadata = {
             "explorer_url": join(
                 DEPLOYMENT_STAGE_TO_URL[os.environ["DEPLOYMENT_STAGE"]],
@@ -555,12 +544,11 @@ def process_cxg(local_filename, dataset_id, cellxgene_bucket):
                 "",
             )
         }
-        # update_db(dataset_id, processing_status={"cxg_status": ConversionStatus.UPLOADED})
+        update_db(dataset_id, processing_status={"cxg_status": ConversionStatus.UPLOADED})
 
     else:
         metadata = None
-    return metadata
-    # update_db(dataset_id, metadata)
+    update_db(dataset_id, metadata=metadata)
 
 
 def validate_h5ad_file_and_add_labels(dataset_id: str, local_filename: str) -> typing.Tuple[str, bool]:
@@ -572,10 +560,7 @@ def validate_h5ad_file_and_add_labels(dataset_id: str, local_filename: str) -> t
     """
     from cellxgene_schema import validate
 
-    # update_db(
-    #     dataset_id,
-    #     processing_status=dict(validation_status=ValidationStatus.VALIDATING),
-    # )
+    update_db(dataset_id, processing_status={"validation_status": ValidationStatus.VALIDATING})
     output_filename = LABELED_H5AD_FILENAME
     is_valid, errors, can_convert_to_seurat = validate.validate(local_filename, output_filename)
 
@@ -592,7 +577,7 @@ def validate_h5ad_file_and_add_labels(dataset_id: str, local_filename: str) -> t
             h5ad_status=ConversionStatus.CONVERTED,
             validation_status=ValidationStatus.VALID,
         )
-        # update_db(dataset_id, processing_status=status)
+        update_db(dataset_id, processing_status=status)
         return output_filename, can_convert_to_seurat
 
 
@@ -623,7 +608,7 @@ def log_batch_environment():
 
 
 def process(dataset_id, dropbox_url, cellxgene_bucket, artifact_bucket):
-    # update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.PENDING))
+    update_db(dataset_id, processing_status={"processing_status": ProcessingStatus.PENDING})
     local_filename = download_from_source_uri(
         dataset_id=dataset_id,
         source_uri=dropbox_url,
@@ -638,13 +623,13 @@ def process(dataset_id, dropbox_url, cellxgene_bucket, artifact_bucket):
 
     # Process metadata
     metadata = extract_metadata(file_with_labels)
-    # update_db(dataset_id, metadata)
+    update_db(dataset_id, metadata=metadata)
 
     # create artifacts
     explorer_url = process_cxg(file_with_labels, dataset_id, cellxgene_bucket)['explorer_url']
     metadata['explorer_url'] = explorer_url
-    # TODO uncomment when ready to use AWS: create_artifacts(file_with_labels, dataset_id, artifact_bucket, can_convert_to_seurat)
-    # update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.SUCCESS))
+    create_artifacts(file_with_labels, dataset_id, artifact_bucket, can_convert_to_seurat)
+    update_db(dataset_id, processing_status={"processing_status": ProcessingStatus.SUCCESS})
     return metadata
 
 
@@ -695,7 +680,7 @@ def main():
         (status,) = e.args
         if is_last_attempt and isinstance(status, dict):
             pass
-            # update_db(dataset_id, processing_status=status)
+            update_db(dataset_id, processing_status=status)
         logger.exception(f"An unexpected error occurred while processing the data set: {e}")
         return_value = 1
 
