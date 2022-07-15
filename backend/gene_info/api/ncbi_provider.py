@@ -44,7 +44,7 @@ class NCBIProvider(object):
         except Exception:
             raise NCBIUnexpectedResultException
 
-    def fetch_gene_uid(self, geneID):
+    def fetch_gene_uid(self, gene, geneID):
         """
         Given a gene ensembl ID, returns NCBI's corresponding gene UID
         """
