@@ -16,11 +16,6 @@ SCRIPTS_DIR=`dirname $0`
 
 echo Mirroring RDS data from $SRC_ENV to $DEST_ENV
 
-kill_ssh_tunnel()
-{
-  pkill -f "bastion\..*\.single-cell\.czi\.technology" || true
-}
-
 DB_DUMP_FILE=`mktemp`
 
 export DEPLOYMENT_STAGE=$SRC_ENV
@@ -29,16 +24,11 @@ if [[ $SRC_ENV == 'staging' ]]; then
 else
    export AWS_PROFILE=single-cell-${SRC_ENV}
 fi
-# TODO: move kill ssh tunnel to Makefile db/tunnel command
-kill_ssh_tunnel
 cd $SCRIPTS_DIR/..
-make db/tunnel
 make db/dump OUTFILE=$DB_DUMP_FILE
 
 export DEPLOYMENT_STAGE=$DEST_ENV
 export AWS_PROFILE=single-cell-dev
-kill_ssh_tunnel
-make db/tunnel
 
 #  For safety, also dump the destination db to a local file, just in case.
 DEST_DB_BACKUP_DUMP_FILE="${DEST_ENV}_"`date +%Y%m%d_%H%M%S`".sqlc"
@@ -54,11 +44,14 @@ read -n 1 -p "ATTENTION: Proceed to replace the destination database \"${DB_NAME
 echo
 [[ $ANS == 'Y' ]] || exit 1
 
+make db/tunnel/up
 PGPASSWORD=${DB_PW} pg_restore --clean --if-exists --no-owner --no-privileges --no-comments --dbname=${DB_NAME} --host 0.0.0.0 --username ${DB_USER} ${DB_DUMP_FILE}
+make db/tunnel/down
 
-PGPASSWORD=${DB_PW} psql --dbname=${DB_NAME} --host 0.0.0.0 --username ${DB_USER} -c "UPDATE dataset SET explorer_url = regexp_replace(explorer_url, '(https:\\/\\/)(.+?)(\\/.+)', '\\1cellxgene.${DEPLOYMENT_STAGE}.single-cell.czi.technology\\3') WHERE explorer_url IS NOT NULL"
-
-PGPASSWORD=${DB_PW} psql --dbname=${DB_NAME} --host 0.0.0.0 --username ${DB_USER} -c "UPDATE dataset_artifact SET s3_uri = regexp_replace(s3_uri, '(s3:\\/\\/)([[:alpha:]]+-[[:alpha:]]+-)([[:alpha:]]+)(\\/.+)', '\\1\\2${DEPLOYMENT_STAGE}\\4') WHERE s3_uri IS NOT NULL"
-
-kill_ssh_tunnel
+DB_UPDATE_CMDS=$(cat <<EOF
+-c "UPDATE dataset SET explorer_url = regexp_replace(explorer_url, '(https:\\/\\/)(.+?)(\\/.+)', '\\1cellxgene.${DEPLOYMENT_STAGE}.single-cell.czi.technology\\3') WHERE explorer_url IS NOT NULL" -c "UPDATE dataset_artifact SET s3_uri = regexp_replace(s3_uri, '(s3:\\/\\/)([[:alpha:]]+-[[:alpha:]]+-)([[:alpha:]]+)(\\/.+)', '\\1\\2${DEPLOYMENT_STAGE}\\4') WHERE s3_uri IS NOT NULL;"
+EOF
+)
+                 
+make db/connect ARGS="${DB_UPDATE_CMDS}"
 
