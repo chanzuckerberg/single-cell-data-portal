@@ -169,7 +169,7 @@ local-unit-test-backend: # Run container-unittest target in `backend` Docker con
 	else \
 		echo "Running specified backend unit test(s): $(path)"; \
 		docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -T backend \
-		bash -c "cd /single-cell-data-portal && python -m unittest $(path)"; \
+		bash -c "cd /single-cell-data-portal && python3 -m unittest $(path)"; \
 	fi
 
 # Note: If you are manually running this on localhost, you should run `local-rebuild` target first to test latest changes; this is not needed when running in Github Actions

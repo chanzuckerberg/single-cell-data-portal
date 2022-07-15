@@ -38,8 +38,6 @@ def relink(collection_id: str, body: dict, token_info: dict):
 
 @dbconnect
 def upload_from_link(collection_id: str, token_info: dict, url: str, dataset_id: str = None, curator_tag: str = None):
-    db_session = g.db_session
-
     # Verify Dropbox URL
     valid_link = from_url(url)
     if not valid_link:
@@ -58,7 +56,6 @@ def upload_from_link(collection_id: str, token_info: dict, url: str, dataset_id:
 
     try:
         return upload(
-            db_session,
             collection_id=collection_id,
             url=url,
             file_size=file_size,

@@ -2,10 +2,12 @@
 
 import os
 from flask import make_response, jsonify
+from backend.corpora.lambdas.api.v1.collection_id.upload import upload_from_link
 
 from tiledb_data import TileDBData
+from backend.corpora.dataset_processing.process import process
 
-location = "/Users/ragarwal/code/single-cell-data-portal/tests/unit/backend/fixtures/test_tiledb/metadata"
+location = "../../../../../tests/unit/backend/fixtures/test_tiledb/metadata"
 
 def create_collection(body: dict, user: str):
     """/v1/collections POST"""
@@ -34,7 +36,7 @@ def create_collection(body: dict, user: str):
         publisher_metadata=publisher_metadata,
     )
     res = {"collection_id": id}
-    return make_response(jsonify(res), 200)
+    return make_response(res, 200)
 
 def list_published_collections(user_id: str, from_date: int, to_date: int):
     """/v1/collections GET"""
@@ -45,7 +47,7 @@ def list_published_collections(user_id: str, from_date: int, to_date: int):
         "from_date": from_date,
         "to_date": to_date
     }
-    return make_response(jsonify(res), 200)
+    return make_response(res, 200)
 
 def list_published_collections_compact():
     """/v1/collections/index GET"""
@@ -57,7 +59,7 @@ def delete_collection(id: str):
     """/v1/collections/{id} DELETE"""
     db = TileDBData(location)
     db.delete_collection(id)
-    return make_response(jsonify(None), 204)
+    return make_response('', 204)
 
 def get_collection(id: str):
     """/v1/collections/{id} GET"""
@@ -72,7 +74,7 @@ def start_revision(id: str):
     db = TileDBData(location)
     rev_id = db.create_revision(id)
     res = get_collection(rev_id)
-    return make_response(jsonify(res), 200)
+    return make_response(res, 200)
 
 def update_collection(id: str, body: dict):
     """/v1/collections/{id} PUT"""
@@ -80,7 +82,7 @@ def update_collection(id: str, body: dict):
     for key, val in body.items():
         db.edit_collection(id, key, val)
     res = get_collection(id)
-    return make_response(jsonify(res), 200)
+    return make_response(res, 200)
 
 def publish_collection(id: str):
     """/v1/collections/{id}/publish POST"""
@@ -90,22 +92,28 @@ def publish_collection(id: str):
         "collection_id": id,
         "visibility": "PUBLIC"
     }
-    return make_response(jsonify(res), 202)
+    return make_response(res, 202)
 
-def upload_dataset(id: str, url: str):
+def upload_dataset(coll_id: str, body: dict, token_info: dict):
     """/v1/collections/{id}/upload-links POST"""
-    db = TileDBData(location)
-    dataset_id = db.add_dataset(id, url)
+    # get the dataset data from the given url, manage and upload the artifact, etc.
+    dataset_id = upload_from_link(coll_id, token_info, body["url"], curator_tag=body.get("curator_tag"))
     res = {"dataset_id": dataset_id}
-    return make_response(jsonify(res), 202)
+    return make_response(res, 202)
 
-def replace_dataset(coll_id: str, dataset_id: str, url: str):
+def replace_dataset(coll_id: str,  body: dict, token_info: dict):
     """/v1/collections/{id}/upload-links PUT"""
     db = TileDBData(location)
     db.delete_dataset(coll_id, dataset_id)
-    new_dataset = db.add_dataset(coll_id, url)
-    res = {"dataset_id": new_dataset}
-    return make_response(jsonify(res), 202)
+    dataset_id = upload_from_link(
+        coll_id,
+        token_info,
+        body.get("url", body.get("link")),
+        body.get("id"),
+        curator_tag=body.get("curator_tag"),
+    )
+    res = {"dataset_id": dataset_id}
+    return make_response(res, 202)
 
 def list_published_datasets():
     """/v1/datasets/index GET"""
@@ -122,7 +130,7 @@ def delete_dataset(coll_id: str, dataset_id: str):
     """/v1/datasets/{id} DELETE"""
     db = TileDBData(location)
     db.delete_dataset(coll_id, dataset_id)
-    return make_response(jsonify(None), 202)
+    return make_response('', 202)
 
 def request_asset_download(dataset_id: str, asset_id: str):
     """/v1/datasets/{dataset_id}/asset/{asset_id} POST"""

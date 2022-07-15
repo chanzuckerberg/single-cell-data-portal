@@ -1,12 +1,12 @@
+from curses import meta
 import os
+from re import A
 import shutil
 import numpy as np
 import tiledb
 import uuid
 import ast
-import time
-
-from backend.corpora.dataset_processing.process import process
+import time 
 
 """
 SCHEMA WITH TILEDB VERSIONING:
@@ -26,11 +26,11 @@ s3://single-cell-corpus/
             - name
             - other metadata
 
-    datasets/<UUID>/
+    datasets/dataset_id/
         artifacts/
-        <UUID>.h5ad
-        <UUID>.rds
-        <UUID>.cxg
+        uuid.h5ad
+        uuid.rds
+        uuid.cxg
     wmg/<SNAPSHOT>/
     soma/<SNAPSHOT>/
 """
@@ -48,7 +48,6 @@ class Utils:
             "curator_name",
             "created_at",
             "updated_at",
-            "published_at",
             "publisher_metadata",
             # internal TileDB schema
             "visibility",
@@ -56,8 +55,9 @@ class Utils:
             "owner",
         ],
         "datasets": [
-            "X_approximate_distribution",
-            "X_normalization_assay",
+            "x_approximate_distribution",
+            "x_normalization",
+            "assay",
             "cell_count",
             "cell_type",
             "development_stage",
@@ -68,7 +68,9 @@ class Utils:
             "organism",
             "sex",
             "tissue",
-            "explorer_url"
+            "explorer_url",
+            "processing_status",
+            "dataset_assets"
         ]
     }
        
@@ -86,7 +88,8 @@ class Utils:
             "ethnicity",
             "organism",
             "sex",
-            "tissue"
+            "tissue",
+            "dataset_assets"
         ]
     }
   
@@ -97,9 +100,13 @@ class Utils:
     # TODO: figure out actual list and dict support in TileDB
     @staticmethod
     def parse_stored_data(data: dict, array: str) -> dict:
-        for a in Utils.attrs_to_parse[array]:
+        for a in Utils.attrs[array]:
             if a in data:
-                data[a] = ast.literal_eval(data[a])
+                t = type(data[a])
+                if t == np.ndarray:
+                    data[a] = data[a][0] # for some reason some fields get stored as arrays in TileDB
+                if a in Utils.attrs_to_parse[array]:
+                    data[a] = ast.literal_eval(data[a])
         return data
 
     @staticmethod
@@ -144,22 +151,24 @@ class TileDBData:
         tiledb.Array.create(array, schema)
 
         # create datasets array
-        # TODO: add more attributes as needed
-        a1 = tiledb.Attr(name="X_approximate_distribution", dtype="U1")
-        a2 = tiledb.Attr(name="X_normalization_assay", dtype="U1")
+        a1 = tiledb.Attr(name="x_approximate_distribution", dtype="U1")
+        a2 = tiledb.Attr(name="x_normalization", dtype="U1")
         a3 = tiledb.Attr(name="cell_count", dtype=np.int32)
         a4 = tiledb.Attr(name="cell_type", dtype="U1")
         a5 = tiledb.Attr(name="development_stage", dtype="U1")
         a6 = tiledb.Attr(name="disease", dtype="U1")
         a7 = tiledb.Attr(name="ethnicity", dtype="U1")
         a8 = tiledb.Attr(name="is_primary_data", dtype="U1")
-        a9 = tiledb.Attr(name="name", dtype="U!")
+        a9 = tiledb.Attr(name="name", dtype="U1")
         a10 = tiledb.Attr(name="organism", dtype="U1")
         a11 = tiledb.Attr(name="sex", dtype="U1")
         a12 = tiledb.Attr(name="tissue", dtype="U1")
         a13 = tiledb.Attr(name="explorer_url", dtype="U1")
+        a14 = tiledb.Attr(name="processing_status", dtype="U1")
+        a15 = tiledb.Attr(name="assay", dtype="U1")
+        a16 = tiledb.Attr(name="dataset_assets", dtype="U1")
 
-        schema = tiledb.ArraySchema(domain=dom, sparse=True, attrs=[a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13])
+        schema = tiledb.ArraySchema(domain=dom, sparse=True, attrs=[a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16])
         array = location + "/datasets"
         tiledb.Array.create(array, schema)
 
@@ -210,42 +219,38 @@ class TileDBData:
     def get_published_collections(self, user_id=None, from_date=None, to_date=None):
         """Get all public collections, filtered by owner and time of creation"""
         with tiledb.open(self.location + "/collections", mode="r") as A:
-            filters = ["visibility == 'PUBLIC'"]
-            if user_id:
-                filters.append(f"owner == {user_id}")
-            if from_date:
-                filters.append(f"created_at >= {from_date}")
-            if to_date:
-                filters.append(f"created_at <= {to_date}")
-            query_str = " and ".join(filters) if len(filters) > 1 else filters[0]
-            qc = tiledb.QueryCondition(query_str) # TODO: query conditions don't respect overwrites? replace with df for now
-            q = A.query(attr_cond=qc)["created_at", "id"]
-            res = q.df[:].to_dict("records")
-            for i in res:
+            # TODO: try query conditions for efficiency
+            df = A.df[:]
+            df = df[
+                (df['visibility'] == "PUBLIC") & 
+                (df['owner'] == user_id if user_id else df['owner']) &
+                (df['created_at'] >= from_date if from_date else df['created_at']) &
+                (df['created_at'] <= to_date if to_date else df['created_at']) 
+            ]
+            res = df.to_dict("records")
+            for i in range(len(res)):
                 res[i] = Utils.parse_stored_data(res[i], "collections")
             return res
 
     def get_published_datasets(self):
         """Get all datasets belonging to a public collection"""
-        colls = self.get_publisbhed_collections()
+        colls = self.get_published_collections()
         dataset_ids = []
         for coll in colls:
-            dataset_ids += coll['datasets']
-        return self.get_subset_datasets(dataset_ids)
-
-    def get_subset_datasets(self, dataset_ids):
-        """Get all datasets matching list of dataset ids"""
+            d = coll['datasets']
+            dataset_ids.extend(d if d else [])
         with tiledb.open(self.location + "/datasets", mode="r") as A:
-            qc = tiledb.QueryCondition(f"visibility == 'PUBLIC'")
-            q = A.query(attr_cond=qc)[dataset_ids]
-            return Utils.parse_stored_data(dict(q), "datasets")
+            df = A.df[:]
+            df = df[(df['id'].isin(dataset_ids))]
+            res = df.to_dict("records")
+            for i in range(len(res)):
+                res[i] = Utils.parse_stored_data(res[i], "datasets")
+            return res
 
     def get_attribute(self, id, attr):
         """Get the data stored in one field of a specific collection"""
         coll = self.get_collection(id)
-        data = coll[attr][0]
-        if attr in Utils.attrs_to_parse["collections"]:
-            data = ast.literal_eval(data)
+        data = coll[attr]
         return data
 
     def edit_collection(self, id, key, val):
@@ -256,6 +261,8 @@ class TileDBData:
             new_data = {}
             for attr in Utils.attrs["collections"]:
                 new_data[attr] = data[attr][0]
+                if attr in Utils.attrs_to_parse["collections"]:
+                    new_data[attr] = ast.literal_eval(new_data[attr])
             new_data[key] = val
             new_data["updated_at"] = time.time()
             new_data = Utils.pack_input_data(new_data, "collections")
@@ -267,15 +274,13 @@ class TileDBData:
         """Set a collection's visibility to public"""
         self.edit_collection(id, "visibility", "PUBLIC")
 
-    def add_dataset(self, coll_id, url):
+    def add_dataset(self, coll_id, metadata):
         """Add a dataset to a collection and to the datasets array using the data from the user's shared URL"""
         id = Utils.new_id()
         datasets = self.get_attribute(coll_id, "datasets")
         datasets.append(id)
         self.edit_collection(coll_id, "datasets", datasets)
         
-        # get the dataset data from the given url, manage and upload the artifact, etc.
-        metadata = process(id, dropbox_url=url, cellxgene_bucket="", artifact_bucket="") # TODO: set buckets to localstack
         data = {}
         for a in Utils.attrs['datasets']:
             data[a] = metadata[a]
@@ -309,6 +314,9 @@ class TileDBData:
         datasets.remove(dataset_id)
         self.edit_collection(coll_id, "datasets", datasets)
     
+    def replace_dataset(self, dataset_id: str, assets: list):
+        self.edit_dataset(dataset_id, "dataset_assets", assets)
+
     def get_datasets(self, coll_id):
         """Return all the datasets belonging to a specific collection"""
         ids = self.get_attribute(coll_id, "datasets")
@@ -388,11 +396,11 @@ class TileDBData:
         coll = self.get_collection(coll_id)
         data = {}
         for attr in Utils.attrs["collections"]:
-            data[attr] = coll[attr][0]
+            data[attr] = coll[attr]
         data['revision_of'] = coll_id
         data["visibility"] = "PRIVATE"
         with tiledb.open(self.location + "/collections", "w") as A:
-            A[id] = data
+            A[id] = Utils.pack_input_data(data, "collections")
         return id
 
     def publish_revision(self, id):
@@ -401,17 +409,22 @@ class TileDBData:
         revision = self.get_collection(id)
         data = {}
         for attr in Utils.attrs["collections"]:
-            data[attr] = revision[attr][0]
+            data[attr] = revision[attr]
         data['visibility'] = "PUBLIC"
         data['revision_of'] = ""
         data['updated_at'] = time.time()
         # write data to existing revision_of collection
-        revision_of = revision["revision_of"][0]
+        revision_of = revision["revision_of"]
         with tiledb.open(self.location + "/collections", "w") as A:
-            A[revision_of] = data
+            A[revision_of] = Utils.pack_input_data(data, "collections")
         # delete the revision
         self.delete_collection(id)
 
     def delete_collection(self, id):
         """Mark a collection as deleted by its id"""
         self.edit_collection(id, "visibility", "DELETED")
+
+    def check_collection_access(self, coll_id: str, owner: str) -> bool:
+        coll_owner = self.get_attribute(coll_id, "owner")
+        coll_visibility = self.get_attribute(coll_id, "visibility")
+        return coll_visibility == "PUBLIC" or (coll_owner == owner or owner is None)

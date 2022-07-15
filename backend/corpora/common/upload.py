@@ -2,7 +2,7 @@ import boto3
 import json
 import time
 
-from sqlalchemy.orm import Session
+from backend.corpora.common.entities.tiledb_data import TileDBData
 
 from .corpora_config import CorporaConfig
 import os
@@ -45,7 +45,6 @@ def start_upload_sfn(collection_id, dataset_id, url):
 
 
 def upload(
-    db_session: Session,
     collection_id: str,
     url: str,
     file_size: int,
@@ -55,6 +54,8 @@ def upload(
     dataset_id: str = None,
     curator_tag: str = None,
 ) -> str:
+    db = TileDBData(location = "../../../../tests/unit/backend/fixtures/test_tiledb/metadata") # TODO: config this somewhere
+
     max_file_size_gb = CorporaConfig().upload_max_file_size_gb * GB
     if file_size is not None and file_size > max_file_size_gb:
         raise MaxFileSizeExceededException(f"{url} exceeds the maximum allowed file size of {max_file_size_gb} Gb")
@@ -64,18 +65,13 @@ def upload(
         raise InvalidFileFormatException(f"{url} must be in the file format(s): {allowed_file_formats}")
 
     # Check if datasets can be added to the collection
-    collection = Collection.get_collection(
-        db_session,
-        collection_id,
-        visibility=CollectionVisibility.PRIVATE,  # Do not allow changes to public Collections
-        owner=owner_or_allowed(user, scope) if scope else user,
-    )
+    collection = db.check_collection_access(collection_id)
     if not collection:
         raise NonExistentCollectionException(f"Collection {collection_id} does not exist")
 
     # Check if a dataset already exists
     if dataset_id:
-        dataset = Dataset.get(db_session, dataset_id, collection_id=collection_id)
+        dataset = db.get_dataset(dataset_id)
         if not dataset:
             raise NonExistentDatasetException(f"Dataset {dataset_id} does not exist")
     elif curator_tag:

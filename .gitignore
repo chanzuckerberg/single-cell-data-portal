@@ -141,3 +141,6 @@ dmypy.json
 .envrc
 .env.ecr
 *.sqlc
+
+# Testing TileDB local database
+**/fixtures/test_tiledb/
