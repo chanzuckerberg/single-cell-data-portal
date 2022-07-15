@@ -16,7 +16,7 @@ from tests.unit.backend.fixtures.config import fake_s3_file
 class TestAuthToken(BaseAuthAPITest):
     @patch("backend.corpora.lambdas.api.v1.curation.collections.collection_id.dataset.sts_client")
     def test__generate_s3_credentials__OK(self, sts_client: Mock):
-        def _test(user_name: str, additional_scope: list = None):
+        def _test(user_name: str, additional_scope: list = None, is_super_curator: bool = False):
             token_claims = dict(sub=user_name, email="fake_user@email.com")
             token = make_token(token_claims, additional_scope=additional_scope, token_duration=10)
             sts_client.assume_role_with_web_identity = Mock(
@@ -36,8 +36,10 @@ class TestAuthToken(BaseAuthAPITest):
             )
             self.assertEqual(200, response.status_code)
             self.assertEqual(response.json["Bucket"], "cellxgene-dataset-submissions-test")
-            self.assertEqual(response.json["UploadKeyPrefix"], f"{user_name}/{collection.id}/")
-            self.assertEqual(response.json["UploadKeyPrefix"], f"{user_name}/{collection.id}/")
+            if is_super_curator:
+                self.assertEqual(response.json["UploadKeyPrefix"], f"super/{collection.id}/")
+            else:
+                self.assertEqual(response.json["UploadKeyPrefix"], f"{user_name}/{collection.id}/")
 
         with self.subTest("collection owner"):
             _test(
@@ -45,10 +47,7 @@ class TestAuthToken(BaseAuthAPITest):
             )
 
         with self.subTest("super curator"):
-            _test(
-                user_name="test_super_user_id",
-                additional_scope="write:collections",
-            )
+            _test(user_name="test_super_user_id", additional_scope="write:collections", is_super_curator=True)
 
     def test__generate_s3_credentials__Not_Owner(self):
         collection = self.generate_collection(self.session, owner="not_test_user")

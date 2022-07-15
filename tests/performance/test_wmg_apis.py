@@ -1,4 +1,5 @@
 import json
+import logging
 import timeit
 import unittest
 import os
@@ -10,6 +11,8 @@ from tests.functional.backend.wmg.fixtures import (
 )
 
 # Note that these tests share fixtures and general test paths with the wmg api functional tests
+
+logger = logging.getLogger(__name__)
 
 
 @unittest.skipIf(os.getenv("DEPLOYMENT_STAGE") != "prod", "this test should only run in prod")
@@ -25,17 +28,18 @@ class TestWmgApiPerformanceProd(unittest.TestCase):
 
     def test_primary_filters(self):
         """
-        Load primary filters in less than 1.5 seconds
+        Load primary filters in less than 1 second
         """
-        MAX_RESPONSE_TIME_SECONDS = 1.5
+        MAX_RESPONSE_TIME_SECONDS = 1
 
         def make_request():
             return requests.get(f"{self.api}/primary_filter_dimensions")
 
         seconds_for_10_runs = timeit.timeit(setup="", stmt=make_request, number=10)
+        logger.info(f"primary filters seconds_for_10_runs: {seconds_for_10_runs}")
         self.assertGreater(MAX_RESPONSE_TIME_SECONDS * 10, seconds_for_10_runs)
 
-    def secondary_filters_common_case(self):
+    def test_secondary_filters_common_case(self):
         """
         1 tissue w/50 cell types, 20 genes, 3 secondary filters specified
         Returns in less than 10 seconds
@@ -49,9 +53,9 @@ class TestWmgApiPerformanceProd(unittest.TestCase):
             return requests.post(f"{self.api}/query", data=json.dumps(data), headers=headers)
 
         seconds_for_10_runs = timeit.timeit(setup="", stmt=make_request, number=10)
+        logger.info(f"secondary filters seconds_for_10_runs: {seconds_for_10_runs}")
         self.assertGreater(MAX_RESPONSE_TIME_SECONDS * 10, seconds_for_10_runs)
 
-    @unittest.skip("Temporarily skipping failing test to get prod deployed")
     def test_secondary_filters_extreme_case(self):
         """
         4 tissues w/largest cell type counts, 400 genes, no secondary filtering
@@ -66,4 +70,5 @@ class TestWmgApiPerformanceProd(unittest.TestCase):
             return requests.post(f"{self.api}/query", data=json.dumps(data), headers=headers)
 
         seconds_for_10_runs = timeit.timeit(setup="", stmt=make_request, number=10)
+        logger.info(f"secondary filters extreme case: seconds_for_10_runs: {seconds_for_10_runs}")
         self.assertGreater(MAX_RESPONSE_TIME_SECONDS * 10, seconds_for_10_runs)
