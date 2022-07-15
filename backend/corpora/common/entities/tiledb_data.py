@@ -309,11 +309,6 @@ class TileDBData:
             A[id] = Utils.pack_input_data(data, "datasets")
         return id
 
-    def clear_dataset(self, id: str):
-        data = self.get_dataset(id)
-        for a in Utils.attrs['datasets']:
-            if type(data[a]) == str and 
-
     def get_dataset(self, id):
         """Get a dataset by its id"""
         with tiledb.open(self.location + "/datasets", 'r') as A:
