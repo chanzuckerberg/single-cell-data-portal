@@ -91,7 +91,7 @@ resource aws_ecs_task_definition task_definition {
 EOF
 }
 
-resource "aws_cloudwatch_log_group" "cloud_watch_logs_group" {
+resource aws_cloudwatch_log_group cloud_watch_logs_group {
   retention_in_days = 365
   name              = "/dp/${var.deployment_stage}/${var.custom_stack_name}/${var.app_name}"
 }
