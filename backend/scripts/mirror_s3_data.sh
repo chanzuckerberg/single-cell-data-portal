@@ -13,7 +13,10 @@ SCRIPTS_DIR=`dirname $0`
 
 echo Mirroring S3 data from $SRC_ENV to $DEST_ENV
 
-# NOTE: Add --delete if you want to clean up orphaned data. This would make the operation more destructive, of course!
+# TODO: Add --delete once we confirm that is no data in the folders
+# that needs to be kept around (buckets are versioned, so we're not in
+# jeopardy of losing anything permanently). This would make the
+# operation more destructive, of course!
 S3_SYNC_CMD="aws s3 sync --no-progress"
 
 set -x
