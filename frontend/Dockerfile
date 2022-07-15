@@ -19,12 +19,19 @@ RUN apt-get update && apt-get install -y \
 USER node
 COPY package.json package-lock.json* ./
 # setting --verbose could help investigate dependency issues
-RUN npm ci --no-optional && npm cache clean --force
+RUN npm ci --no-optional
+RUN npm cache clean --force
 ENV PATH /opt/node_app/node_modules/.bin:$PATH
 
 
 ADD --chown=node . /corpora-frontend
 WORKDIR /corpora-frontend
+RUN mkdir -p ./node_modules
+RUN ln -sf /opt/node_app/node_modules/* /opt/node_app/node_modules/.bin ./node_modules/.
+RUN if [ ! -z "$API_URL" ]; then cat src/configs/$DEPLOYMENT_STAGE.js | envsubst >src/configs/configs.js;\
+    else cp src/configs/local.js src/configs/configs.js; \
+    fi
+RUN npm run build
 
 ARG HAPPY_BRANCH="unknown"
 ARG HAPPY_COMMIT=""
@@ -34,4 +41,4 @@ ENV COMMIT_SHA=${HAPPY_COMMIT}
 ENV COMMIT_BRANCH=${HAPPY_BRANCH}
 ENV PLAYWRIGHT_BROWSERS_PATH=0
 
-ENTRYPOINT ["./container_init.sh"]
+CMD npm run serve -- -- -p 9000
