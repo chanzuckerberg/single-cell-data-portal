@@ -10,7 +10,13 @@ env:
 jobs:
   upgrade:
     runs-on: ubuntu-20.04
+    defaults:
+      run:
+        working-directory: frontend
     steps:
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 15
       - name: Configure AWS Prod Credentials
         uses: aws-actions/configure-aws-credentials@v1
         if: github.event.deployment.environment == 'prod'
@@ -76,11 +82,12 @@ jobs:
         env:
           DEPLOYMENT_STAGE: ${{ github.event.deployment.environment }}
         run: |
-          echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
+          npm ci
+          npx playwright install --with-deps
           if [ "${DEPLOYMENT_STAGE}" == "stage" ]; then
             export DEPLOYMENT_STAGE=staging
           fi
-          BOTO_ENDPOINT_URL= make local-e2e
+          npm run e2e-${DEPLOYMENT_STAGE}
       - name: Run functional test
         env:
           TFE_TOKEN: ${{ secrets.TFE_TOKEN }}
