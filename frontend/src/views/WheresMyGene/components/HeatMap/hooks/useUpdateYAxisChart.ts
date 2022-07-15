@@ -27,7 +27,6 @@ export function useUpdateYAxisChart({
         // (thuang): resize() needs to be called before setOption() to prevent
         // TypeError: Cannot read properties of undefined (reading 'shouldBePainted')
         yAxisChart.resize();
-
         yAxisChart.setOption(
           createYAxisOptions({
             cellTypeIdsToDelete,
