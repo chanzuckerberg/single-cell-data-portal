@@ -11,7 +11,6 @@ variable task_role_arn {
 variable execution_role {
   type        = string
   description = "Execution role to use for fargate tasks - required for fargate services!"
-  default     = ""
 }
 
 variable cmd {
