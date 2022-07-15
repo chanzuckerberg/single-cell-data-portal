@@ -87,8 +87,7 @@ jobs:
           if [ "${DEPLOYMENT_STAGE}" == "stage" ]; then
             export DEPLOYMENT_STAGE=staging
           fi
-          cp src/configs/${DEPLOYMENT_STAGE}.js src/configs/configs.js
-          npm run smoke-test
+          npm run e2e-${DEPLOYMENT_STAGE}
       - name: Run functional test
         env:
           TFE_TOKEN: ${{ secrets.TFE_TOKEN }}
