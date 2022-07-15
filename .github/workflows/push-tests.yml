@@ -45,14 +45,20 @@ jobs:
         with:
           status: ${{ job.status }}
           fields: repo,commit,author,eventName,workflow,job,mention
-          mention: 'here'
+          mention: "here"
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
 
   smoke-test:
     runs-on: ubuntu-20.04
+    defaults:
+      run:
+        working-directory: frontend
     steps:
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 15
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -66,15 +72,12 @@ jobs:
         with:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v2
-      - name: Display github.ref
-        run: |
-          echo '${{ github.ref }}'
-      - name: Run tests in docker-compose
-        run: |
-          echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
-          make local-sync
-          sleep 30  # Give frontend some time to finish building
-          make local-smoke-test
+      - run: |
+          npm ci
+          npx playwright install --with-deps
+          cp src/configs/dev.js src/configs/configs.js
+          npm run dev&
+      - run: npm run e2e
       - name: Install happy
         uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.2.1
         with:
@@ -87,7 +90,7 @@ jobs:
         with:
           status: ${{ job.status }}
           fields: repo,commit,author,eventName,workflow,job,mention
-          mention: 'here'
+          mention: "here"
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: failure() && github.ref == 'refs/heads/main'
@@ -121,7 +124,7 @@ jobs:
         with:
           status: ${{ job.status }}
           fields: repo,commit,author,eventName,workflow,job,mention
-          mention: 'here'
+          mention: "here"
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
@@ -186,7 +189,7 @@ jobs:
         with:
           status: ${{ job.status }}
           fields: repo,commit,author,eventName,workflow,job,mention
-          mention: 'here'
+          mention: "here"
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
@@ -225,7 +228,7 @@ jobs:
         with:
           status: ${{ job.status }}
           fields: repo,commit,author,eventName,workflow,job,mention
-          mention: 'here'
+          mention: "here"
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
@@ -251,7 +254,7 @@ jobs:
           auto_merge: false
           environment: ${{ env.DEPLOYMENT_STAGE }}
           payload: ${{ env.payload }}
-          required_contexts: ""  # Temporary hack to avoid checking Github Status for the commit
+          required_contexts: "" # Temporary hack to avoid checking Github Status for the commit
           # TODO: Avoid circular dependency on the deploy step; this step hasn't finished yet so
           # it's not considered ready for deploy normally by required_contexts, but we need to
           # deploy for this to be considered ready.
