@@ -367,7 +367,7 @@ export function dataToChartFormat({
 
 export const HEAT_MAP_BASE_HEIGHT_PX = 300;
 const HEAT_MAP_BASE_CELL_PX = 20;
-const HEAT_MAP_BASE_CELL_WIDTH_PX = 50;
+export const HEAT_MAP_BASE_CELL_WIDTH_PX = 50;
 
 /**
  * Approximating the heatmap width by the number of genes.

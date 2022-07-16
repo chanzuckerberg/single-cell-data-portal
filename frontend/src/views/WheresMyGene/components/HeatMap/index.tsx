@@ -161,9 +161,6 @@ export default memo(function HeatMap({
                 key={`${tissue}-${gene}`}
                 tissue={tissue}
                 cellTypes={tissueCellTypes}
-                selectedGeneData={
-                  orderedSelectedGeneExpressionSummariesByTissueName[tissue]
-                }
                 gene={gene}
                 setIsLoading={setIsLoading}
                 scaledMeanExpressionMax={scaledMeanExpressionMax}

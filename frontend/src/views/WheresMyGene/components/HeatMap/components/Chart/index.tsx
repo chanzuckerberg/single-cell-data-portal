@@ -1,7 +1,6 @@
 import { Tooltip } from "czifui";
 import { init } from "echarts";
 import cloneDeep from "lodash/cloneDeep";
-import debounce from "lodash/debounce";
 import throttle from "lodash/throttle";
 import {
   Dispatch,
@@ -27,7 +26,7 @@ import {
   getAllSerializedCellTypeMetadata,
   getGeneNames,
   getHeatmapHeight,
-  getHeatmapWidth,
+  HEAT_MAP_BASE_CELL_WIDTH_PX
 } from "../../utils";
 import {
   ChartContainer,
@@ -38,7 +37,6 @@ import {
 
 interface Props {
   cellTypes: CellType[];
-  selectedGeneData?: (GeneExpressionSummary | undefined)[];
   setIsLoading: Dispatch<
     SetStateAction<{
       [tissue: Tissue]: boolean;
@@ -51,15 +49,10 @@ interface Props {
   isScaled: boolean;
 }
 
-const BASE_DEBOUNCE_MS = 200;
-
-const MAX_DEBOUNCE_MS = 2 * 1000;
-
 const TOOLTIP_THROTTLE_MS = 100;
 
 export default memo(function Chart({
   cellTypes,
-  selectedGeneData = EMPTY_ARRAY,
   setIsLoading,
   tissue,
   gene,
@@ -67,7 +60,6 @@ export default memo(function Chart({
   scaledMeanExpressionMin,
   isScaled,
 }: Props): JSX.Element {
-  const selectedGene = [gene];
   const [currentIndices, setCurrentIndices] = useState([-1, -1]);
   const [cursorOffset, setCursorOffset] = useState([-1, -1]);
 
@@ -76,9 +68,8 @@ export default memo(function Chart({
   const [chart, setChart] = useState<echarts.ECharts | null>(null);
   const ref = useRef(null);
 
-  const [heatmapWidth, setHeatmapWidth] = useState(
-    getHeatmapWidth(selectedGeneData)
-  );
+  const heatmapWidth = HEAT_MAP_BASE_CELL_WIDTH_PX;
+  
   const [heatmapHeight, setHeatmapHeight] = useState(
     getHeatmapHeight(cellTypes)
   );
@@ -135,84 +126,40 @@ export default memo(function Chart({
   const [cellTypeSummaries, setCellTypeSummaries] =
     useState<CellTypeSummary[]>(EMPTY_ARRAY);
 
-  const debouncedIntegrateCellTypesAndGenes = useMemo(() => {
-    return debounce(
-      (
-        cellTypes: CellType[],
-        geneData: Props["selectedGeneData"] = EMPTY_ARRAY
-      ) => {
-        setCellTypeSummaries(
-          integrateCelTypesAndGenes({
-            cellTypes,
-            geneExpressionSummaries: selectedGene,
-          })
-        );
-      },
-      getDebounceMs(selectedGeneData.length),
-      { leading: false }
-    );
-  }, [selectedGeneData]);
-
-  // Cancel debounce when unmounting
-  useEffect(() => {
-    return () => debouncedIntegrateCellTypesAndGenes.cancel();
-  }, [debouncedIntegrateCellTypesAndGenes]);
-
   /**
    * Performance optimization:
    * We only format and `setCellTypeSummaries()` after the watch list has stopped changing for
    * `getDebounceMs()`
    */
   useEffect(() => {
-    debouncedIntegrateCellTypesAndGenes(cellTypes, selectedGeneData);
-  }, [selectedGeneData, cellTypes, debouncedIntegrateCellTypesAndGenes]);
+    setCellTypeSummaries(
+      integrateCelTypesAndGenes({
+        cellTypes,
+        geneExpressionSummaries: [gene],
+      })
+    );
+  }, [gene, cellTypes]);
 
   // Generate chartProps
-  const debouncedDataToChartFormat = useMemo(() => {
-    return debounce(
-      (
-        cellTypeSummaries: CellTypeSummary[],
-        selectedGeneData: Props["selectedGeneData"] = EMPTY_ARRAY
-      ) => {
-        const result = {
-          cellTypeMetadata: getAllSerializedCellTypeMetadata(
-            cellTypeSummaries,
-            tissue
-          ),
-          chartData: dataToChartFormat({
-            cellTypeSummaries,
-            genes: selectedGene,
-            scaledMeanExpressionMax,
-            scaledMeanExpressionMin,
-          }),
-          geneNames: getGeneNames(selectedGene),
-        };
-        setChartProps(result);
-
-        setIsLoading((isLoading) => ({ ...isLoading, [tissue]: false }));
-      },
-      getDebounceMs(selectedGeneData.length),
-      { leading: false }
-    );
-  }, [
-    selectedGeneData,
-    setIsLoading,
-    tissue,
-    scaledMeanExpressionMax,
-    scaledMeanExpressionMin,
-  ]);
 
   useEffect(() => {
-    debouncedDataToChartFormat(cellTypeSummaries, selectedGeneData);
-  }, [cellTypeSummaries, selectedGeneData, debouncedDataToChartFormat]);
-
-  // Cancel debounce when unmounting
-  useEffect(() => {
-    return () => debouncedDataToChartFormat.cancel();
-  }, [debouncedDataToChartFormat]);
+    setChartProps({
+      cellTypeMetadata: getAllSerializedCellTypeMetadata(
+        cellTypeSummaries,
+        tissue
+      ),
+      chartData: dataToChartFormat({
+        cellTypeSummaries,
+        genes: [gene],
+        scaledMeanExpressionMax,
+        scaledMeanExpressionMin,
+      }),
+      geneNames: getGeneNames([gene]),
+    });
+    setIsLoading((isLoading) => ({ ...isLoading, [tissue]: false }));
+  }, [cellTypeSummaries, gene, tissue, scaledMeanExpressionMax, scaledMeanExpressionMin, setIsLoading]);
 
   const [_, hoveredCellTypeIndex] = currentIndices;
-  const hoveredGeneIndex = selectedGeneData.findIndex((g) => g?.name === gene.name);
   
   const tooltipContent = useMemo(() => {
     if (!chartProps) return null;
@@ -273,9 +220,7 @@ export default memo(function Chart({
   }, [
     chartProps,
     cellTypes,
-    hoveredGeneIndex,
     hoveredCellTypeIndex,
-    selectedGeneData,
     gene
   ]);
 
@@ -324,7 +269,7 @@ function integrateCelTypesAndGenes({
   geneExpressionSummaries = EMPTY_ARRAY,
 }: {
   cellTypes: CellType[];
-  geneExpressionSummaries: Props["selectedGeneData"];
+  geneExpressionSummaries: GeneExpressionSummary[] | undefined;
 }): CellTypeSummary[] {
   const geneMaps = geneExpressionSummaries.map((geneExpressionSummary) =>
     rawGeneDataToMap(geneExpressionSummary)
@@ -361,13 +306,4 @@ function rawGeneDataToMap(
     name,
     new Map(cellTypeGeneExpressionSummaries?.map((row) => [row.id, row])),
   ];
-}
-
-const BROWSER_PARALLEL_CALL_LIMIT = 10;
-
-function getDebounceMs(geneCount: number): number {
-  if (geneCount <= BROWSER_PARALLEL_CALL_LIMIT) return 0;
-  if (geneCount >= 100) return MAX_DEBOUNCE_MS;
-
-  return Math.floor(geneCount / BROWSER_PARALLEL_CALL_LIMIT) * BASE_DEBOUNCE_MS;
 }
