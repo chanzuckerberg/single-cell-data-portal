@@ -16,9 +16,9 @@ def success_handler(event: dict, context) -> None:
     :param context: Lambda's context object
     :return:
     """
-    dataset_uuid = event["dataset_uuid"]
+    dataset_id = event["dataset_id"]
 
     with db_session_manager() as session:
-        dataset = Dataset.get(session, dataset_uuid)
+        dataset = Dataset.get(session, dataset_id)
         success_status = {DbDatasetProcessingStatus.processing_status: ProcessingStatus.SUCCESS}
         processing_status_updater(session, dataset.processing_status.id, success_status)

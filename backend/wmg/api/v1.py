@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Dict, List, Any, Iterable
+from typing import Dict, List, Any, Iterable, Tuple
 from math import isnan
 
 import connexion
@@ -33,18 +33,22 @@ def query():
     query = WmgQuery(snapshot)
     expression_summary = query.expression_summary(criteria)
     cell_counts = query.cell_counts(criteria)
-    dot_plot_matrix_df = build_dot_plot_matrix(expression_summary, cell_counts)
+    dot_plot_matrix_df, cell_counts_cell_type_agg = get_dot_plot_data(expression_summary, cell_counts)
 
     include_filter_dims = request.get("include_filter_dims", False)
 
-    response_filter_dims_values = build_filter_dims_values(criteria, query) if include_filter_dims else {}
+    response_filter_dims_values = (
+        build_filter_dims_values(criteria, query, expression_summary) if include_filter_dims else {}
+    )
     return jsonify(
         dict(
             snapshot_id=snapshot.snapshot_identifier,
             expression_summary=build_expression_summary(dot_plot_matrix_df),
             term_id_labels=dict(
                 genes=build_gene_id_label_mapping(criteria.gene_ontology_term_ids),
-                cell_types=build_ordered_cell_types_by_tissue(cell_counts, snapshot.cell_type_orderings),
+                cell_types=build_ordered_cell_types_by_tissue(
+                    cell_counts, cell_counts_cell_type_agg.T, snapshot.cell_type_orderings
+                ),
             ),
             filter_dims=response_filter_dims_values,
         )
@@ -85,7 +89,7 @@ def find_dim_option_values(criteria: Dict, query: WmgQuery, dimension: str) -> s
     return filter_dims
 
 
-def build_filter_dims_values(criteria: WmgQueryCriteria, query: WmgQuery) -> Dict:
+def build_filter_dims_values(criteria: WmgQueryCriteria, query: WmgQuery, expression_summary: DataFrame) -> Dict:
     dims = {
         "dataset_id": "",
         "disease_ontology_term_id": "",
@@ -94,7 +98,10 @@ def build_filter_dims_values(criteria: WmgQueryCriteria, query: WmgQuery) -> Dic
         "ethnicity_ontology_term_id": "",
     }
     for dim in dims:
-        dims[dim] = find_dim_option_values(criteria, query, dim)
+        if len(criteria.dict()[dim + "s"]) == 0:
+            dims[dim] = expression_summary.groupby(dim).groups.keys()
+        else:
+            dims[dim] = find_dim_option_values(criteria, query, dim)
 
     response_filter_dims_values = dict(
         datasets=fetch_datasets_metadata(dims["dataset_id"]),
@@ -123,20 +130,37 @@ def build_expression_summary(query_result: DataFrame) -> dict:
     return structured_result
 
 
-def build_dot_plot_matrix(query_result: DataFrame, cell_counts: DataFrame) -> DataFrame:
-    # Aggregate cube data by gene, tissue, cell type
-    expr_summary_agg = query_result.groupby(
-        ["gene_ontology_term_id", "tissue_ontology_term_id", "cell_type_ontology_term_id"], as_index=False
-    ).sum()
-
+def agg_cell_type_counts(cell_counts: DataFrame) -> DataFrame:
+    # Aggregate cube data by tissue, cell type
     cell_counts_cell_type_agg = cell_counts.groupby(
         ["tissue_ontology_term_id", "cell_type_ontology_term_id"], as_index=True
     ).sum()
     cell_counts_cell_type_agg.rename(columns={"n_total_cells": "n_cells_cell_type"}, inplace=True)
+    return cell_counts_cell_type_agg
 
+
+def agg_tissue_counts(cell_counts: DataFrame) -> DataFrame:
+    # Aggregate cube data by tissue
     cell_counts_tissue_agg = cell_counts.groupby(["tissue_ontology_term_id"], as_index=True).sum()
     cell_counts_tissue_agg.rename(columns={"n_total_cells": "n_cells_tissue"}, inplace=True)
+    return cell_counts_tissue_agg
 
+
+def get_dot_plot_data(query_result: DataFrame, cell_counts: DataFrame) -> Tuple[DataFrame, DataFrame]:
+    # Get the dot plot matrix dataframe and aggregated cell counts per cell type
+    cell_counts_cell_type_agg = agg_cell_type_counts(cell_counts)
+    cell_counts_tissue_agg = agg_tissue_counts(cell_counts)
+    dot_plot_matrix_df = build_dot_plot_matrix(query_result, cell_counts_cell_type_agg, cell_counts_tissue_agg)
+    return dot_plot_matrix_df, cell_counts_cell_type_agg
+
+
+def build_dot_plot_matrix(
+    query_result: DataFrame, cell_counts_cell_type_agg: DataFrame, cell_counts_tissue_agg: DataFrame
+) -> DataFrame:
+    # Aggregate cube data by gene, tissue, cell type
+    expr_summary_agg = query_result.groupby(
+        ["gene_ontology_term_id", "tissue_ontology_term_id", "cell_type_ontology_term_id"], as_index=False
+    ).sum()
     return expr_summary_agg.join(
         cell_counts_cell_type_agg, on=["tissue_ontology_term_id", "cell_type_ontology_term_id"], how="left"
     ).join(cell_counts_tissue_agg, on=["tissue_ontology_term_id"], how="left")
@@ -154,7 +178,9 @@ def build_ontology_term_id_label_mapping(ontology_term_ids: Iterable[str]) -> Li
 
 
 def build_ordered_cell_types_by_tissue(
-    cell_counts: DataFrame, cell_type_orderings: DataFrame
+    cell_counts: DataFrame,
+    cell_counts_cell_type_agg_T: DataFrame,
+    cell_type_orderings: DataFrame,
 ) -> Dict[str, List[Dict[str, str]]]:
     distinct_tissues_cell_types: DataFrame = cell_counts.groupby(
         ["tissue_ontology_term_id", "cell_type_ontology_term_id"], as_index=False
@@ -176,7 +202,11 @@ def build_ordered_cell_types_by_tissue(
             {
                 "cell_type_ontology_term_id": row.cell_type_ontology_term_id,
                 "cell_type": ontology_term_label(row.cell_type_ontology_term_id),
-                "total_count": row.n_total_cells,
+                "total_count": int(
+                    cell_counts_cell_type_agg_T[row.tissue_ontology_term_id][row.cell_type_ontology_term_id][
+                        "n_cells_cell_type"
+                    ]
+                ),
                 "depth": row.depth,
             }
         )

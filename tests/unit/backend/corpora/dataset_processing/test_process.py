@@ -385,7 +385,7 @@ class TestDatasetProcessing(DataPortalTestCase):
 
         self.assertEqual(len(artifacts), 1)
         self.assertEqual(artifacts[0].dataset_id, dataset_id)
-        self.assertEqual(artifacts[0].s3_uri, f"s3://{explorer_bucket}/{dataset_id}.cxg/")
+        self.assertEqual(artifacts[0].s3_uri, f"s3://{explorer_bucket}/{artifacts[0].id}.cxg/")
         self.assertEqual(artifacts[0].filetype, DatasetArtifactFileType.CXG)
 
     @patch("backend.corpora.dataset_processing.process.make_seurat")
@@ -530,9 +530,7 @@ class TestDatasetProcessing(DataPortalTestCase):
             raise RuntimeError("conversion_failed")
 
         with self.assertLogs(process.logger, logging.ERROR):
-            filename = convert_file_ignore_exceptions(
-                converter, self.h5ad_filename, "error", "fake_uuid", "h5ad_status"
-            )
+            filename = convert_file_ignore_exceptions(converter, self.h5ad_filename, "error", "fake_id", "h5ad_status")
         self.assertIsNone(filename)
 
     def mock_downloader_function(self, url, local_path, tracker, chunk_size):

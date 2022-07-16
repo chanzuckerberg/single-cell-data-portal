@@ -35,7 +35,7 @@ def process(dataset_id: str, dropbox_url: str, artifact_bucket: str):
 
     # Download the original dataset from Dropbox
     local_filename = download_from_source_uri(
-        dataset_uuid=dataset_id,
+        dataset_id=dataset_id,
         source_uri=dropbox_url,
         local_path="raw.h5ad",
     )

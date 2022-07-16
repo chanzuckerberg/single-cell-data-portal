@@ -16,7 +16,7 @@ from backend.corpora.common.utils.json import CustomJSONEncoder
 
 def tombstone_collection(ctx: Context, uuid: str):
     """
-    Tombstones the collection specified by UUID.
+    Tombstones the collection specified by ID.
 
     Before running, create a tunnel to the database, e.g.:
 
@@ -27,7 +27,7 @@ def tombstone_collection(ctx: Context, uuid: str):
         ./scripts/cxg_admin.py --deployment prod tombstone-collection 7edef704-f63a-462c-8636-4bc86a9472bd
 
     :param ctx: command context
-    :param uuid: UUID that identifies the collection to tombstone
+    :param uuid: ID that identifies the collection to tombstone
     """
 
     with db_session_manager() as session:

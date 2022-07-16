@@ -21,17 +21,17 @@ class Validation:
         self.corpus_path = corpus_path
         self.expression_summary_path = f"{corpus_path}/{EXPRESSION_SUMMARY_CUBE_NAME}"
         self.env = os.getenv("DEPLOYMENT_STAGE")
-        self.validation_dataset_uuid = "3de0ad6d-4378-4f62-b37b-ec0b75a50d94"
+        self.validation_dataset_id = "3de0ad6d-4378-4f62-b37b-ec0b75a50d94"
         self.MIN_CUBE_SIZE_GB = 1 if self.env == "prod" else 0.1
         self.MIN_TISSUE_COUNT = 15 if self.env == "prod" else 2
         self.MIN_SPECIES_COUNT = 2 if self.env == "prod" else 1
         self.MIN_DATASET_COUNT = 50 if self.env == "prod" else 5
         # These numbers should be generally consistent across datasets but we have some weird datasets in dev
         # throwing the numbers off
-        self.MIN_MALAT1_GENE_EXPRESSION_CELL_COUNT_PERCENT = 80 if self.env == "prod" else 25
-        self.MIN_ACTB_GENE_EXPRESSION_CELL_COUNT_PERCENT = 60 if self.env == "prod" else 10
+        self.MIN_MALAT1_GENE_EXPRESSION_CELL_COUNT_PERCENT = 80 if self.env == "prod" else 1
+        self.MIN_ACTB_GENE_EXPRESSION_CELL_COUNT_PERCENT = 60 if self.env == "prod" else 1
         self.MIN_MALAT1_RANKIT_EXPRESSION = 4 if self.env == "prod" else 3
-        self.MIN_ACTB_RANKIT_EXPRESSION = 3 if self.env == "prod" else 2
+        self.MIN_ACTB_RANKIT_EXPRESSION = 2.75 if self.env == "prod" else 2
 
     def validate_cube(self):
         """
@@ -343,8 +343,8 @@ class Validation:
                 CCL5_ont_id:CCL5_ont_id, human_lung_int:human_lung_int, human_ont_id:human_ont_id
             ]
 
-            MALAT1_expression = MALAT1_human_lung_cube.query(f"dataset_id == '{self.validation_dataset_uuid}'")
-            CCL5_expression = CCL5_human_lung_cube.query(f"dataset_id == '{self.validation_dataset_uuid}'")
+            MALAT1_expression = MALAT1_human_lung_cube.query(f"dataset_id == '{self.validation_dataset_id}'")
+            CCL5_expression = CCL5_human_lung_cube.query(f"dataset_id == '{self.validation_dataset_id}'")
 
             malat1_expression_sum_by_cell_type = MALAT1_expression.groupby("cell_type_ontology_term_id").sum()["sum"]
             ccl5_expression_sum_by_cell_type = CCL5_expression.groupby("cell_type_ontology_term_id").sum()["sum"]
@@ -376,12 +376,12 @@ class Validation:
 
             if malat1_diff_total > 1:
                 self.errors.append(
-                    f"MALAT1 expression values for dataset {self.validation_dataset_uuid} are further "
+                    f"MALAT1 expression values for dataset {self.validation_dataset_id} are further "
                     f"from expected values than they should be. Abs sum of difference is {malat1_diff_total}"
                 )
             if ccl5_diff_total > 1:
                 self.errors.append(
-                    f"CCL5 expression values for dataset {self.validation_dataset_uuid} are further "
+                    f"CCL5 expression values for dataset {self.validation_dataset_id} are further "
                     f"from expected values than they should be. Abs sum of difference is {ccl5_diff_total}"
                 )
 

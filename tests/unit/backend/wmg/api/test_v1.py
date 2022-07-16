@@ -3,6 +3,7 @@ import unittest
 from unittest.mock import patch
 
 from backend.corpora.api_server.app import app
+from backend.wmg.api.v1 import find_dim_option_values
 from backend.wmg.data.schemas.cube_schema import cube_non_indexed_dims
 from tests.unit.backend.corpora.fixtures.environment_setup import EnvironmentSetup
 from tests.unit.backend.wmg.fixtures.test_primary_filters import (
@@ -185,6 +186,15 @@ class WmgApiV1Tests(unittest.TestCase):
             )
             assert expected_cell_count_per_cell_type == 729
 
+            # there are 729 possible combinations per tissue-cell type given the above filtering criteria,
+            # and 10 cells per type in the cell counts cube, so we expect 7290 total cells per tissue-cell type
+
+            expected_combinations_per_cell_type = dim_size ** len(
+                set(cube_non_indexed_dims).difference({"cell_type_ontology_term_id"})
+            )
+            expected_n_cells_per_cell_type = expected_combinations_per_cell_type * 10
+            assert expected_n_cells_per_cell_type == 7290
+
             expected = {
                 "snapshot_id": "dummy-snapshot",
                 "expression_summary": {
@@ -291,19 +301,19 @@ class WmgApiV1Tests(unittest.TestCase):
                             {
                                 "cell_type": "cell_type_ontology_term_id_0_label",
                                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_0",
-                                "total_count": 10,
+                                "total_count": 7290,
                                 "depth": 0,
                             },
                             {
                                 "cell_type": "cell_type_ontology_term_id_1_label",
                                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_1",
-                                "total_count": 10,
+                                "total_count": 7290,
                                 "depth": 1,
                             },
                             {
                                 "cell_type": "cell_type_ontology_term_id_2_label",
                                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_2",
-                                "total_count": 10,
+                                "total_count": 7290,
                                 "depth": 2,
                             },
                         ],
@@ -311,19 +321,19 @@ class WmgApiV1Tests(unittest.TestCase):
                             {
                                 "cell_type": "cell_type_ontology_term_id_0_label",
                                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_0",
-                                "total_count": 10,
+                                "total_count": 7290,
                                 "depth": 0,
                             },
                             {
                                 "cell_type": "cell_type_ontology_term_id_1_label",
                                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_1",
-                                "total_count": 10,
+                                "total_count": 7290,
                                 "depth": 1,
                             },
                             {
                                 "cell_type": "cell_type_ontology_term_id_2_label",
                                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_2",
-                                "total_count": 10,
+                                "total_count": 7290,
                                 "depth": 2,
                             },
                         ],
@@ -377,13 +387,13 @@ class WmgApiV1Tests(unittest.TestCase):
                     {
                         "cell_type": "cell_type_ontology_term_id_0_label",
                         "cell_type_ontology_term_id": "cell_type_ontology_term_id_0",
-                        "total_count": 10,
+                        "total_count": 640,
                         "depth": 0,
                     },
                     {
                         "cell_type": "cell_type_ontology_term_id_1_label",
                         "cell_type_ontology_term_id": "cell_type_ontology_term_id_1",
-                        "total_count": 10,
+                        "total_count": 640,
                         "depth": 1,
                     },
                 ],
@@ -391,13 +401,13 @@ class WmgApiV1Tests(unittest.TestCase):
                     {
                         "cell_type": "cell_type_ontology_term_id_0_label",
                         "cell_type_ontology_term_id": "cell_type_ontology_term_id_0",
-                        "total_count": 10,
+                        "total_count": 640,
                         "depth": 0,
                     },
                     {
                         "cell_type": "cell_type_ontology_term_id_1_label",
                         "cell_type_ontology_term_id": "cell_type_ontology_term_id_1",
-                        "total_count": 10,
+                        "total_count": 640,
                         "depth": 1,
                     },
                 ],
@@ -438,18 +448,22 @@ class WmgApiV1Tests(unittest.TestCase):
 
             self.assertEqual(200, response.status_code)
 
+            # each cell type has `expected_count` cells for each possible combination of secondary filters
+            # given the present constraints (1 organism, both tissues). There are 2**8=256 possible combinations
+            # of filters. After aggregating the counts across two tissues and two cell types per tissue,
+            # there are 64 entries per cell type-tissue combination. Hence, the toal count will be expected_count * 64
             expected = {
                 "tissue_ontology_term_id_0": [
                     {
                         "cell_type": "cell_type_ontology_term_id_0_label",
                         "cell_type_ontology_term_id": "cell_type_ontology_term_id_0",
-                        "total_count": expected_count,
+                        "total_count": expected_count * 64,
                         "depth": 0,
                     },
                     {
                         "cell_type": "cell_type_ontology_term_id_1_label",
                         "cell_type_ontology_term_id": "cell_type_ontology_term_id_1",
-                        "total_count": expected_count,
+                        "total_count": expected_count * 64,
                         "depth": 1,
                     },
                 ],
@@ -457,13 +471,13 @@ class WmgApiV1Tests(unittest.TestCase):
                     {
                         "cell_type": "cell_type_ontology_term_id_0_label",
                         "cell_type_ontology_term_id": "cell_type_ontology_term_id_0",
-                        "total_count": expected_count,
+                        "total_count": expected_count * 64,
                         "depth": 0,
                     },
                     {
                         "cell_type": "cell_type_ontology_term_id_1_label",
                         "cell_type_ontology_term_id": "cell_type_ontology_term_id_1",
-                        "total_count": expected_count,
+                        "total_count": expected_count * 64,
                         "depth": 1,
                     },
                 ],
@@ -775,6 +789,65 @@ class WmgApiV1Tests(unittest.TestCase):
                 self.assertEqual(expected_ethnicity_term, eth_stage_terms_eth_2_dev_2)
                 self.assertEqual(dev_stage_terms_eth_2_dev_2, dev_stage_terms_eth_2_no_dev_filter)
                 self.assertNotEqual(eth_stage_terms_eth_2_dev_2, ethnicity_terms_eth_2_no_dev_filter)
+
+            with self.subTest("Additional queries are not performed when the secondary dimensions are not set"):
+                with patch("backend.wmg.api.v1.find_dim_option_values") as mock_dims:
+                    mock_dims.side_effect = find_dim_option_values
+                    full_filters = dict(
+                        gene_ontology_term_ids=["gene_ontology_term_id_0"],
+                        organism_ontology_term_id="organism_ontology_term_id_0",
+                        tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
+                        dataset_ids=["dataset_id_0"],
+                        disease_ontology_term_ids=["disease_ontology_term_id_0"],
+                        sex_ontology_term_ids=["sex_ontology_term_id_0"],
+                        development_stage_ontology_term_ids=["development_stage_ontology_term_id_0"],
+                        ethnicity_ontology_term_ids=["ethnicity_ontology_term_id_0"],
+                    )
+
+                    full_filters_request = dict(
+                        filter=full_filters,
+                        include_filter_dims=True,
+                    )
+                    self.app.post("/wmg/v1/query", json=full_filters_request)
+                    self.assertEqual(mock_dims.call_count, 5)
+
+                    mock_dims.reset_mock()
+                    no_secondary_filters = dict(
+                        gene_ontology_term_ids=["gene_ontology_term_id_0"],
+                        organism_ontology_term_id="organism_ontology_term_id_0",
+                        tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
+                        dataset_ids=[],
+                        disease_ontology_term_ids=[],
+                        sex_ontology_term_ids=[],
+                        development_stage_ontology_term_ids=[],
+                        ethnicity_ontology_term_ids=[],
+                    )
+
+                    no_secondary_filters_request = dict(
+                        filter=no_secondary_filters,
+                        include_filter_dims=True,
+                    )
+                    self.app.post("/wmg/v1/query", json=no_secondary_filters_request)
+                    mock_dims.assert_not_called()
+                    # technically not necessary
+                    mock_dims.reset_mock()
+
+                    two_secondary_filters = dict(
+                        gene_ontology_term_ids=["gene_ontology_term_id_0"],
+                        organism_ontology_term_id="organism_ontology_term_id_0",
+                        tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
+                        dataset_ids=[],
+                        disease_ontology_term_ids=[],
+                        sex_ontology_term_ids=[],
+                        development_stage_ontology_term_ids=["development_stage_ontology_term_id_0"],
+                        ethnicity_ontology_term_ids=["ethnicity_ontology_term_id_0"],
+                    )
+                    two_secondary_filters_request = dict(
+                        filter=two_secondary_filters,
+                        include_filter_dims=True,
+                    )
+                    self.app.post("/wmg/v1/query", json=two_secondary_filters_request)
+                    self.assertEqual(mock_dims.call_count, 2)
 
 
 # mock the dataset and collection entity data that would otherwise be fetched from the db; in this test

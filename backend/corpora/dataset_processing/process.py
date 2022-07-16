@@ -131,10 +131,8 @@ from datetime import datetime
 from os.path import join
 
 import numpy
-import requests
 import scanpy
 
-from backend.corpora.common.corpora_config import CorporaConfig
 from backend.corpora.common.corpora_orm import (
     ConversionStatus,
     DatasetArtifactFileType,
@@ -154,7 +152,6 @@ from backend.corpora.dataset_processing.exceptions import (
     ValidationFailed,
 )
 from backend.corpora.dataset_processing.h5ad_data_file import H5ADDataFile
-from backend.corpora.dataset_processing.slack import format_slack_message
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -220,10 +217,8 @@ def create_artifact(
         )
 
     except Exception as e:
-        update_db(
-            dataset_id,
-            processing_status={processing_status_type: ConversionStatus.FAILED},
-        )
+        logger.error(e)
+        e.args = {processing_status_type: ConversionStatus.FAILED}
         raise e
 
 
@@ -302,7 +297,7 @@ def update_db(dataset_id, metadata: dict = None, processing_status: dict = None)
             processing_status_updater(session, dataset.processing_status.id, processing_status)
 
 
-def download_from_source_uri(dataset_uuid: str, source_uri: str, local_path: str) -> str:
+def download_from_source_uri(dataset_id: str, source_uri: str, local_path: str) -> str:
     """Given a source URI, download it to local_path.
     Handles fixing the url so it downloads directly.
     """
@@ -314,13 +309,13 @@ def download_from_source_uri(dataset_uuid: str, source_uri: str, local_path: str
     # This is a bit ugly and should be done polymorphically instead, but Dropbox support will be dropped soon
     if file_url.scheme == "https":
         file_info = file_url.file_info()
-        status = download(dataset_uuid, file_url.url, local_path, file_info["size"])
+        status = download(dataset_id, file_url.url, local_path, file_info["size"])
         logger.info(status)
     elif file_url.scheme == "s3":
         bucket_name = file_url.netloc
         key = remove_prefix(file_url.path, "/")
         wrapped_download_from_s3(
-            dataset_uuid=dataset_uuid,
+            dataset_id=dataset_id,
             bucket_name=bucket_name,
             object_key=key,
             local_filename=local_path,
@@ -345,17 +340,17 @@ def download_from_s3(bucket_name: str, object_key: str, local_filename: str):
     buckets.portal_client.download_file(bucket_name, object_key, local_filename)
 
 
-def wrapped_download_from_s3(dataset_uuid: str, bucket_name: str, object_key: str, local_filename: str):
+def wrapped_download_from_s3(dataset_id: str, bucket_name: str, object_key: str, local_filename: str):
     """
     Wraps download_from_s3() to update the dataset's upload status
-    :param dataset_uuid:
+    :param dataset_id:
     :param bucket_name:
     :param object_key:
     :param local_filename:
     :return:
     """
     with db_session_manager() as session:
-        processing_status = Dataset.get(session, dataset_uuid).processing_status
+        processing_status = Dataset.get(session, dataset_id).processing_status
         processing_status.upload_status = UploadStatus.UPLOADING
         download_from_s3(
             bucket_name=bucket_name,
@@ -481,13 +476,11 @@ def make_cxg(local_filename):
     return cxg_output_container
 
 
-def copy_cxg_files_to_cxg_bucket(cxg_dir, object_key, cellxgene_bucket):
+def copy_cxg_files_to_cxg_bucket(cxg_dir, s3_uri):
     """
     Copy cxg files to the cellxgene bucket (under the given object key) for access by the explorer
-    returns the s3_uri where the cxg is stored
     """
     command = ["aws"]
-    s3_uri = f"s3://{cellxgene_bucket}/{object_key}.cxg/"
     if os.getenv("BOTO_ENDPOINT_URL"):
         command.append(f"--endpoint-url={os.getenv('BOTO_ENDPOINT_URL')}")
 
@@ -506,7 +499,6 @@ def copy_cxg_files_to_cxg_bucket(cxg_dir, object_key, cellxgene_bucket):
         command,
         check=True,
     )
-    return s3_uri
 
 
 def convert_file_ignore_exceptions(
@@ -539,20 +531,31 @@ def convert_file_ignore_exceptions(
     return file_dir
 
 
-def get_bucket_prefix(dataset_id):
+def get_bucket_prefix(identifier):
     remote_dev_prefix = os.environ.get("REMOTE_DEV_PREFIX", "")
     if remote_dev_prefix:
-        return join(remote_dev_prefix, dataset_id).strip("/")
+        return join(remote_dev_prefix, identifier).strip("/")
     else:
-        return dataset_id
+        return identifier
 
 
 def process_cxg(local_filename, dataset_id, cellxgene_bucket):
-    bucket_prefix = get_bucket_prefix(dataset_id)
     cxg_dir = convert_file_ignore_exceptions(make_cxg, local_filename, "Issue creating cxg.", dataset_id, "cxg_status")
     if cxg_dir:
+        with db_session_manager() as session:
+            asset = DatasetAsset.create(
+                session,
+                dataset_id=dataset_id,
+                filename="explorer_cxg",
+                filetype=DatasetArtifactFileType.CXG,
+                user_submitted=True,
+                s3_uri="",
+            )
+            asset_id = asset.id
+            bucket_prefix = get_bucket_prefix(asset_id)
+            s3_uri = f"s3://{cellxgene_bucket}/{bucket_prefix}.cxg/"
         update_db(dataset_id, processing_status={"cxg_status": ConversionStatus.UPLOADING})
-        s3_uri = copy_cxg_files_to_cxg_bucket(cxg_dir, bucket_prefix, cellxgene_bucket)
+        copy_cxg_files_to_cxg_bucket(cxg_dir, s3_uri)
         metadata = {
             "explorer_url": join(
                 DEPLOYMENT_STAGE_TO_URL[os.environ["DEPLOYMENT_STAGE"]],
@@ -562,14 +565,8 @@ def process_cxg(local_filename, dataset_id, cellxgene_bucket):
         }
         with db_session_manager() as session:
             logger.info(f"Updating database with cxg artifact for dataset {dataset_id}. s3_uri is {s3_uri}")
-            DatasetAsset.create(
-                session,
-                dataset_id=dataset_id,
-                filename="explorer_cxg",
-                filetype=DatasetArtifactFileType.CXG,
-                user_submitted=True,
-                s3_uri=s3_uri,
-            )
+            asset = DatasetAsset.get(session, asset_id)
+            asset.update(s3_uri=s3_uri)
         update_db(dataset_id, processing_status={"cxg_status": ConversionStatus.UPLOADED})
 
     else:
@@ -580,7 +577,7 @@ def process_cxg(local_filename, dataset_id, cellxgene_bucket):
 def validate_h5ad_file_and_add_labels(dataset_id: str, local_filename: str) -> typing.Tuple[str, bool]:
     """
     Validates and labels the specified dataset file and updates the processing status in the database
-    :param dataset_id: UUID of the dataset to update
+    :param dataset_id: ID of the dataset to update
     :param local_filename: file name of the dataset to validate and label
     :return: file name of labeled dataset, boolean indicating if seurat conversion is possible
     """
@@ -598,10 +595,8 @@ def validate_h5ad_file_and_add_labels(dataset_id: str, local_filename: str) -> t
         status = dict(
             validation_status=ValidationStatus.INVALID,
             validation_message=errors,
-            processing_status=ProcessingStatus.FAILURE,
         )
-        update_db(dataset_id, processing_status=status)
-        raise ValidationFailed
+        raise ValidationFailed(status)
     else:
         logger.info("Validation complete")
         status = dict(
@@ -630,6 +625,7 @@ def log_batch_environment():
         "CELLXGENE_BUCKET",
         "DATASET_ID",
         "DEPLOYMENT_STAGE",
+        "MAX_ATTEMPTS",
     ]
     env_vars = dict()
     for var in batch_environment_variables:
@@ -640,7 +636,7 @@ def log_batch_environment():
 def process(dataset_id, dropbox_url, cellxgene_bucket, artifact_bucket):
     update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.PENDING))
     local_filename = download_from_source_uri(
-        dataset_uuid=dataset_id,
+        dataset_id=dataset_id,
         source_uri=dropbox_url,
         local_path="raw.h5ad",
     )
@@ -662,12 +658,12 @@ def process(dataset_id, dropbox_url, cellxgene_bucket, artifact_bucket):
 
 
 def main():
-    return_value = 0
     log_batch_environment()
     dataset_id = os.environ["DATASET_ID"]
     step_name = os.environ["STEP_NAME"]
+    is_last_attempt = os.environ["AWS_BATCH_JOB_ATTEMPT"] == os.getenv("MAX_ATTEMPTS", "1")
+    return_value = 0
     logger.info(f"Processing dataset {dataset_id}")
-
     try:
         if step_name == "download-validate":
             from backend.corpora.dataset_processing.process_download_validate import (
@@ -696,29 +692,20 @@ def main():
 
     except ProcessingCancelled:
         cancel_dataset(dataset_id)
-    except (ValidationFailed, ProcessingFailed):
+    except (ValidationFailed, ProcessingFailed) as e:
+        (status,) = e.args
+        if is_last_attempt:
+            update_db(dataset_id, processing_status=status)
         logger.exception("An Error occurred while processing.")
         return_value = 1
-    except Exception:
-        message = "An unexpected error occurred while processing the data set."
-        logger.exception(message)
-        update_db(
-            dataset_id,
-            processing_status=dict(processing_status=ProcessingStatus.FAILURE, upload_message=message),
-        )
+    except Exception as e:
+        (status,) = e.args
+        if is_last_attempt and isinstance(status, dict):
+            update_db(dataset_id, processing_status=status)
+        logger.exception(f"An unexpected error occurred while processing the data set: {e}")
         return_value = 1
 
-    if return_value > 0:
-        notify_slack_failure(dataset_id)
     return return_value
-
-
-def notify_slack_failure(dataset_id):
-    data = format_slack_message(dataset_id)
-    logger.info(data)
-    if os.getenv("DEPLOYMENT_STAGE") == "prod":
-        slack_webhook = CorporaConfig().slack_webhook
-        requests.post(slack_webhook, headers={"Content-type": "application/json"}, data=data)
 
 
 if __name__ == "__main__":

@@ -26,13 +26,13 @@ unit-test: local-unit-test
 .PHONY: container-unittest
 container-unittest:
 	# This target is intended to be run INSIDE a container
-	DEPLOYMENT_STAGE=test PYTHONWARNINGS=ignore:ResourceWarning python3 -m coverage run \
+	DEPLOYMENT_STAGE=test PYTHONWARNINGS=ignore:ResourceWarning python3 \
 		-m unittest discover --start-directory tests/unit/backend --top-level-directory . --verbose;
 
 .PHONY: processing-unittest
 processing-unittest:
 	# This target is intended to be run INSIDE a container
-	DEPLOYMENT_STAGE=test PYTHONWARNINGS=ignore:ResourceWarning python3 -m coverage run \
+	DEPLOYMENT_STAGE=test PYTHONWARNINGS=ignore:ResourceWarning python3 \
 		-m unittest discover --start-directory tests/unit/processing_container --top-level-directory . --verbose;
 
 .PHONY: functional-test
@@ -96,24 +96,12 @@ local-ecr-login:
 		aws ecr get-login-password --region us-west-2 --profile single-cell-dev | docker login --username AWS --password-stdin $$(aws sts get-caller-identity --profile single-cell-dev | jq -r .Account).dkr.ecr.us-west-2.amazonaws.com; \
 	fi
 
-.PHONY: local-hostconfig
-local-hostconfig:
-	if [ "$$(uname -s)" == "Darwin" ]; then \
-	  sudo -E ./scripts/happy hosts install; \
-	fi
-
-.PHONY: local-nohostconfig
-local-nohostconfig:
-	if [ "$$(uname -s)" == "Darwin" ]; then \
-	  sudo -E ./scripts/happy hosts uninstall; \
-	fi
-
 .PHONY: local-init-test-data
 local-init-test-data:
 	docker-compose $(COMPOSE_OPTS) run --rm -T backend /bin/bash -c "pip3 install awscli && cd /single-cell-data-portal && scripts/setup_dev_data.sh"
 
 .PHONY: local-init-host
-local-init-host: oauth/pkcs12/certificate.pfx .env.ecr local-ecr-login local-hostconfig local-start
+local-init-host: oauth/pkcs12/certificate.pfx .env.ecr local-ecr-login local-start
 
 .PHONY:
 local-init: local-init-host local-init-test-data ## Launch a new local dev env and populate it with test data.
@@ -128,7 +116,7 @@ local-rebuild: .env.ecr local-ecr-login ## Rebuild local dev without re-importin
 	docker-compose $(COMPOSE_OPTS) up -d frontend backend processing database oidc localstack
 
 .PHONY: local-sync
-local-sync: local-rebuild local-init local-hostconfig ## Re-sync the local-environment state after modifying library deps or docker configs
+local-sync: local-rebuild local-init  ## Re-sync the local-environment state after modifying library deps or docker configs
 
 .PHONY: local-start
 local-start: .env.ecr ## Start a local dev environment that's been stopped.
@@ -139,7 +127,7 @@ local-stop: ## Stop the local dev environment.
 	docker-compose stop
 
 .PHONY: local-clean
-local-clean: local-nohostconfig ## Remove everything related to the local dev environment (including db data!)
+local-clean: ## Remove everything related to the local dev environment (including db data!)
 	-if [ -f ./oauth/pkcs12/server.crt ] ; then \
 	    export CERT=$$(docker run -v $(PWD)/oauth/pkcs12:/tmp/certs --workdir /tmp/certs --rm=true --entrypoint "" soluto/oidc-server-mock:0.3.0 bash -c "openssl x509 -in server.crt -outform DER | sha1sum | cut -d ' ' -f 1"); \
 	    echo ""; \
@@ -170,32 +158,26 @@ local-unit-test: local-unit-test-backend local-unit-test-processing # Run all ba
 local-unit-test-backend: # Run container-unittest target in `backend` Docker container.  If path arg provided, just run those specific backend tests
 	@if [ -z "$(path)" ]; then \
 	    echo "Running all backend unit tests"; \
-		export CI=""; \
-		ci_env=""; \
-		if [ ! -z "$(CODECOV_TOKEN)" ]; then \
-			ci_env=$$(bash <(curl -s https://codecov.io/env)); \
-			CI=true; \
-		fi; \
-	    docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -e CI $$ci_env -T backend \
-	    bash -c "cd /single-cell-data-portal && make container-unittest && if [ \"${CI}\" == "true" ]; then apt-get update && apt-get install -y git && bash <(curl -s https://codecov.io/bash) -cF backend,python,unitTest; fi"; \
+	    docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -T backend \
+	    bash -c "cd /single-cell-data-portal && make container-unittest;" \
 	else \
 		echo "Running specified backend unit test(s): $(path)"; \
 		docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -T backend \
 		bash -c "cd /single-cell-data-portal && python -m unittest $(path)"; \
 	fi
 
+.PHONY: all-local-unit-test-backend
+all-local-unit-test-backend: # Run container-unittest target in `backend` Docker container.  If path arg provided, just run those specific backend tests
+	echo "Running all backend unit tests"; \
+	docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -T backend \
+	bash -c "cd /single-cell-data-portal && make container-unittest;"
+
 # Note: If you are manually running this on localhost, you should run `local-rebuild` target first to test latest changes; this is not needed when running in Github Actions
 .PHONY: local-unit-test-processing
 local-unit-test-processing: # Run processing-unittest target in `processing` Docker container
 	echo "Running all processing unit tests"; \
-    export CI=""; \
-	export ci_env=""; \
-	if [ ! -z "$(CODECOV_TOKEN)" ]; then \
-		ci_env=$$(bash <(curl -s https://codecov.io/env)); \
-		CI=true; \
-	fi; \
-	docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -e CI $$ci_env -T processing \
-	bash -c "cd /single-cell-data-portal && make processing-unittest && if [ \"${CI}\" == "true" ]; then apt-get update && apt-get install -y git && bash <(curl -s https://codecov.io/bash) -cF backend,python,unitTest; fi";
+	docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -T processing \
+	bash -c "cd /single-cell-data-portal && make processing-unittest;"
 
 # We optionally pass BOTO_ENDPOINT_URL if it is set, even if it is
 # set to be the empty string.
@@ -243,7 +225,7 @@ local-uploadjob: .env.ecr ## Run the upload task with a dataset_id and dropbox_u
 .PHONY: local-uploadfailure
 local-uploadfailure: .env.ecr ## Run the upload failure lambda with a dataset id and cause
 	docker-compose $(COMPOSE_OPTS) up -d upload_failures
-	curl -v -XPOST "http://127.0.0.1:9000/2015-03-31/functions/function/invocations" -d '{"dataset_uuid": "$(DATASET_UUID)", "error": {"Cause": "$(CAUSE)"}}'
+	curl -v -XPOST "http://127.0.0.1:9000/2015-03-31/functions/function/invocations" -d '{"dataset_id": "$(DATASET_ID)", "error": {"Cause": "$(CAUSE)"}}'
 
 .PHONY: local-cxguser-cookie
 local-cxguser-cookie: ## Get cxguser-cookie

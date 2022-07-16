@@ -29,13 +29,13 @@ def get_stepfunctions_client():
     return _stepfunctions_client
 
 
-def start_upload_sfn(collection_uuid, dataset_uuid, url):
+def start_upload_sfn(collection_id, dataset_id, url):
     input_parameters = {
-        "collection_uuid": collection_uuid,
+        "collection_id": collection_id,
         "url": url,
-        "dataset_uuid": dataset_uuid,
+        "dataset_id": dataset_id,
     }
-    sfn_name = f"{dataset_uuid}_{int(time.time())}"
+    sfn_name = f"{dataset_id}_{int(time.time())}"
     response = get_stepfunctions_client().start_execution(
         stateMachineArn=CorporaConfig().upload_sfn_arn,
         name=sfn_name,
@@ -46,7 +46,7 @@ def start_upload_sfn(collection_uuid, dataset_uuid, url):
 
 def upload(
     db_session: Session,
-    collection_uuid: str,
+    collection_id: str,
     url: str,
     file_size: int,
     file_extension: str,
@@ -66,20 +66,20 @@ def upload(
     # Check if datasets can be added to the collection
     collection = Collection.get_collection(
         db_session,
-        collection_uuid,
+        collection_id,
         visibility=CollectionVisibility.PRIVATE,  # Do not allow changes to public Collections
         owner=owner_or_allowed(user, scope) if scope else user,
     )
     if not collection:
-        raise NonExistentCollectionException(f"Collection {collection_uuid} does not exist")
+        raise NonExistentCollectionException(f"Collection {collection_id} does not exist")
 
     # Check if a dataset already exists
     if dataset_id:
-        dataset = Dataset.get(db_session, dataset_id, collection_uuid=collection_uuid)
+        dataset = Dataset.get(db_session, dataset_id, collection_id=collection_id)
         if not dataset:
             raise NonExistentDatasetException(f"Dataset {dataset_id} does not exist")
     elif curator_tag:
-        dataset = Dataset.get_dataset_from_curator_tag(db_session, collection_uuid, curator_tag)
+        dataset = Dataset.get_dataset_from_curator_tag(db_session, collection_id, curator_tag)
     else:
         dataset = None
 
@@ -102,6 +102,6 @@ def upload(
     dataset.update(processing_status=dataset.new_processing_status())
 
     # Start processing link
-    start_upload_sfn(collection_uuid, dataset.id, url)
+    start_upload_sfn(collection_id, dataset.id, url)
 
     return dataset.id

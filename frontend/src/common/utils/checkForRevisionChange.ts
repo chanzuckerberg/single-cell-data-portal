@@ -20,7 +20,7 @@ const IGNORED_DATASET_FIELDS = [
   "created_at",
   "updated_at",
   "collection_visibility",
-  "original_uuid",
+  "original_id",
   "id",
   "collection_id",
   "processing_status",

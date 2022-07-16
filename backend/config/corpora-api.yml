@@ -13,110 +13,6 @@ servers:
   - description: Staging environment
     url: https://api.cellxgene.staging.single-cell.czi.technology
 paths:
-  /v1/wmg/cell_types:
-    get:
-      tags:
-        - wmg
-      summary: Get WMG cell types (WMG FEATURE PROTOTYPE)
-      security:
-        - cxguserCookieLenient: []
-        - {}
-      description: >-
-        JSON of all genes
-      operationId: backend.corpora.lambdas.api.v1.wmg.get_cell_types
-      parameters: []
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-                  required:
-                    - id
-                    - name
-                  properties:
-                    id:
-                      type: string
-                    name:
-                      type: string
-        "400":
-          $ref: "#/components/responses/400"
-  /v1/wmg/genes:
-    get:
-      tags:
-        - wmg
-      summary: Get WMG genes (WMG FEATURE PROTOTYPE)
-      security:
-        - cxguserCookieLenient: []
-        - {}
-      description: >-
-        JSON of all cell types
-      operationId: backend.corpora.lambdas.api.v1.wmg.get_genes
-      parameters: []
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-                  required:
-                    - id
-                    - name
-                  properties:
-                    id:
-                      type: string
-                    name:
-                      type: string
-        "400":
-          $ref: "#/components/responses/400"
-  /v1/wmg/genes/{gene_name}:
-    get:
-      tags:
-        - wmg
-      summary: Get WMG gene expression for a given gene name (WMG FEATURE PROTOTYPE)
-      security:
-        - cxguserCookieLenient: []
-        - {}
-      description: >-
-        JSON of gene expression for a given gene
-      operationId: backend.corpora.lambdas.api.v1.wmg.get_gene_expression
-      parameters:
-        - name: gene_name
-          in: path
-          required: true
-          schema:
-            type: string
-          description: The name of the gene
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-                  required:
-                    - id
-                    - pc
-                    - me
-                  properties:
-                    id:
-                      type: string
-                    pc:
-                      type: number
-                      format: float
-                    me:
-                      type: number
-                      format: float
-        "400":
-          $ref: "#/components/responses/400"
   /v1/collections:
     get:
       tags:
@@ -126,11 +22,11 @@ paths:
         - cxguserCookieLenient: []
         - {}
       description: >-
-        This lists all collections and their UUIDs that currently exist in the corpora. If a parameter is specified as
+        This lists all collections and their IDs that currently exist in the corpora. If a parameter is specified as
         a filter, then only collections that meet the status criteria will be outputted.
       operationId: backend.corpora.lambdas.api.v1.collection.get_collections_list
       parameters:
-        - $ref: "#/components/parameters/query_user_uuid"
+        - $ref: "#/components/parameters/query_user_id"
         - name: from_date
           in: query
           schema:
@@ -160,7 +56,7 @@ paths:
                         - created_at
                       properties:
                         id:
-                          $ref: "#/components/schemas/collection_uuid"
+                          $ref: "#/components/schemas/collection_id"
                         created_at:
                           type: number
                   from_date:
@@ -215,14 +111,14 @@ paths:
               schema:
                 type: object
                 properties:
-                  collection_uuid:
-                    $ref: "#/components/schemas/collection_uuid"
+                  collection_id:
+                    $ref: "#/components/schemas/collection_id"
         "400":
           $ref: "#/components/responses/400"
         "401":
           $ref: "#/components/responses/401"
 
-  /v1/collections/{collection_uuid}:
+  /v1/collections/{collection_id}:
     get:
       tags:
         - collections
@@ -234,7 +130,7 @@ paths:
         This will return all datasets and associated attributes.
       operationId: backend.corpora.lambdas.api.v1.collection.get_collection_details
       parameters:
-        - $ref: "#/components/parameters/path_collection_uuid"
+        - $ref: "#/components/parameters/path_collection_id"
       responses:
         "200":
           description: OK
@@ -262,7 +158,7 @@ paths:
         public collection.
       operationId: backend.corpora.lambdas.api.v1.collection.post_collection_revision
       parameters:
-        - $ref: "#/components/parameters/path_collection_uuid"
+        - $ref: "#/components/parameters/path_collection_id"
       responses:
         "201":
           description: A new collection revision has been created.
@@ -289,7 +185,7 @@ paths:
         Update a private collection's summary, links, contact info, and description details.
       operationId: backend.corpora.lambdas.api.v1.collection.update_collection
       parameters:
-        - $ref: "#/components/parameters/path_collection_uuid"
+        - $ref: "#/components/parameters/path_collection_id"
       requestBody:
         content:
           application/json:
@@ -336,14 +232,14 @@ paths:
         deployments.
       operationId: backend.corpora.lambdas.api.v1.collection.delete_collection
       parameters:
-        - $ref: "#/components/parameters/path_collection_uuid"
+        - $ref: "#/components/parameters/path_collection_id"
       responses:
         "204":
           $ref: "#/components/responses/204"
         "401":
           $ref: "#/components/responses/401"
 
-  /v1/collections/{collection_uuid}/upload-links:
+  /v1/collections/{collection_id}/upload-links:
     post:
       summary: Start a dataset upload
       tags:
@@ -353,9 +249,9 @@ paths:
         An authenticated user can upload a file from a shared link to add a dataset into their collection.
       security:
         - cxguserCookie: []
-      operationId: backend.corpora.lambdas.api.v1.collection_uuid.upload.link
+      operationId: backend.corpora.lambdas.api.v1.collection_id.upload.link
       parameters:
-        - $ref: "#/components/parameters/path_collection_uuid"
+        - $ref: "#/components/parameters/path_collection_id"
       requestBody:
         content:
           application/json:
@@ -375,7 +271,7 @@ paths:
               schema:
                 type: object
                 properties:
-                  dataset_uuid:
+                  dataset_id:
                     type: string
         "400":
           $ref: "#/components/responses/400"
@@ -401,9 +297,9 @@ paths:
         collection revision is published.
       security:
         - cxguserCookie: []
-      operationId: backend.corpora.lambdas.api.v1.collection_uuid.upload.relink
+      operationId: backend.corpora.lambdas.api.v1.collection_id.upload.relink
       parameters:
-        - $ref: "#/components/parameters/path_collection_uuid"
+        - $ref: "#/components/parameters/path_collection_id"
       requestBody:
         content:
           application/json:
@@ -414,7 +310,7 @@ paths:
                   description: The shared link generated by dropbox linking to a dataset.
                   type: string
                 id:
-                  $ref: "#/components/schemas/dataset_uuid"
+                  $ref: "#/components/schemas/dataset_id"
               required:
                 - url
                 - id
@@ -426,7 +322,7 @@ paths:
               schema:
                 type: object
                 properties:
-                  dataset_uuid:
+                  dataset_id:
                     type: string
         "400":
           $ref: "#/components/responses/400"
@@ -441,7 +337,7 @@ paths:
         "413":
           $ref: "#/components/responses/413"
 
-  /v1/collections/{collection_uuid}/genesets:
+  /v1/collections/{collection_id}/genesets:
     post:
       tags:
         - collections
@@ -451,9 +347,9 @@ paths:
         - cxguserCookie: []
       description: >-
         Add genesets to a private collection
-      operationId: backend.corpora.lambdas.api.v1.collection_uuid.gene_set.post
+      operationId: backend.corpora.lambdas.api.v1.collection_id.gene_set.post
       parameters:
-        - $ref: "#/components/parameters/path_collection_uuid"
+        - $ref: "#/components/parameters/path_collection_id"
       requestBody:
         content:
           application/json:
@@ -477,7 +373,7 @@ paths:
         "403":
           $ref: "#/components/responses/403"
 
-  /v1/collections/{collection_uuid}/publish:
+  /v1/collections/{collection_id}/publish:
     post:
       tags:
         - collections
@@ -490,9 +386,9 @@ paths:
 
         If publishing modification to a previously published collection, this will replace the old collection with the new
         published collection. The old collection will no longer be accessible.
-      operationId: backend.corpora.lambdas.api.v1.collection_uuid.publish.post
+      operationId: backend.corpora.lambdas.api.v1.collection_id.publish.post
       parameters:
-        - $ref: "#/components/parameters/path_collection_uuid"
+        - $ref: "#/components/parameters/path_collection_id"
       requestBody:
         content:
           application/json:
@@ -510,8 +406,8 @@ paths:
               schema:
                 type: object
                 properties:
-                  collection_uuid:
-                    $ref: "#/components/schemas/collection_uuid"
+                  collection_id:
+                    $ref: "#/components/schemas/collection_id"
                   visibility:
                     $ref: "#/components/schemas/visibility"
         "401":
@@ -543,7 +439,7 @@ paths:
                     - name
                   properties:
                     id:
-                      $ref: "#/components/schemas/collection_uuid"
+                      $ref: "#/components/schemas/collection_id"
                     name:
                       type: string
                     publisher_metadata:
@@ -555,7 +451,7 @@ paths:
         "400":
           $ref: "#/components/responses/400"
 
-  /v1/datasets/{dataset_uuid}:
+  /v1/datasets/{dataset_id}:
     delete:
       tags:
         - datasets
@@ -568,7 +464,7 @@ paths:
       security:
         - cxguserCookie: []
       parameters:
-        - $ref: "#/components/parameters/path_dataset_uuid"
+        - $ref: "#/components/parameters/path_dataset_id"
       responses:
         "202":
           $ref: "#/components/responses/202"
@@ -608,7 +504,7 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
-  /v1/datasets/{dataset_uuid}/assets:
+  /v1/datasets/{dataset_id}/assets:
     get:
       tags:
         - datasets
@@ -617,7 +513,7 @@ paths:
         Return a list of all the dataset's assets
       operationId: backend.corpora.lambdas.api.v1.dataset.get_dataset_assets
       parameters:
-        - $ref: "#/components/parameters/path_dataset_uuid"
+        - $ref: "#/components/parameters/path_dataset_id"
       responses:
         "200":
           description: OK
@@ -632,7 +528,7 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
-  /v1/datasets/{dataset_uuid}/asset/{asset_uuid}:
+  /v1/datasets/{dataset_id}/asset/{asset_id}:
     post:
       tags:
         - datasets
@@ -641,8 +537,8 @@ paths:
         Request to download a file which on success will generate a pre-signed URL to download the dataset.
       operationId: backend.corpora.lambdas.api.v1.dataset.post_dataset_asset
       parameters:
-        - $ref: "#/components/parameters/path_dataset_uuid"
-        - name: asset_uuid
+        - $ref: "#/components/parameters/path_dataset_id"
+        - name: asset_id
           in: path
           required: true
           schema:
@@ -655,8 +551,8 @@ paths:
               schema:
                 type: object
                 properties:
-                  dataset_uuid:
-                    $ref: "#/components/schemas/dataset_uuid"
+                  dataset_id:
+                    $ref: "#/components/schemas/dataset_id"
                   presigned_url:
                     type: string
                   file_name:
@@ -670,7 +566,7 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
-  /v1/datasets/{dataset_uuid}/gene_sets:
+  /v1/datasets/{dataset_id}/gene_sets:
     post:
       tags:
         - datasets
@@ -683,7 +579,7 @@ paths:
         collection owner and the dataset and gene sets must all belong to the same private collection
       operationId: backend.corpora.lambdas.api.v1.dataset.post_dataset_gene_sets
       parameters:
-        - $ref: "#/components/parameters/path_dataset_uuid"
+        - $ref: "#/components/parameters/path_dataset_id"
       requestBody:
         content:
           application/json:
@@ -715,7 +611,7 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
-  /v1/datasets/{dataset_uuid}/status:
+  /v1/datasets/{dataset_id}/status:
     get:
       tags:
         - datasets
@@ -724,7 +620,7 @@ paths:
       security:
         - cxguserCookie: []
       parameters:
-        - $ref: "#/components/parameters/path_dataset_uuid"
+        - $ref: "#/components/parameters/path_dataset_id"
       responses:
         "200":
           description: OK
@@ -733,8 +629,8 @@ paths:
               schema:
                 type: object
                 properties:
-                  dataset_uuid:
-                    $ref: "#/components/schemas/dataset_uuid"
+                  dataset_id:
+                    $ref: "#/components/schemas/dataset_id"
                   processing_status:
                     type: string
                     enum: [PENDING, SUCCESS, FAILURE]
@@ -869,7 +765,7 @@ paths:
         "400":
           $ref: "#/components/responses/400"
 
-  /v1/genesets/{geneset_uuid}:
+  /v1/genesets/{geneset_id}:
     delete:
       tags:
         - genesets
@@ -880,7 +776,7 @@ paths:
         Delete a gene by set removing it from a collection and any data sets it was linked to.
       operationId: backend.corpora.lambdas.api.v1.gene_sets.delete
       parameters:
-        - $ref: "#/components/parameters/path_geneset_uuid"
+        - $ref: "#/components/parameters/path_geneset_id"
       responses:
         "202":
           $ref: "#/components/responses/202"
@@ -1008,27 +904,27 @@ paths:
 
 components:
   schemas:
-    user_uuid:
+    user_id:
       description: A unique identifier of a logged in User of Corpora.
       type: string
     userinfo:
       type: object
       properties:
         id:
-          $ref: "#/components/schemas/user_uuid"
+          $ref: "#/components/schemas/user_id"
         name:
           description: The user's name
           type: string
         email:
           description: The user's email
           type: string
-    collection_uuid:
+    collection_id:
       description: A unique identifier of a Collection.
       type: string
-    dataset_uuid:
+    dataset_id:
       description: A unique identifier of a Dataset.
       type: string
-    geneset_uuid:
+    geneset_id:
       description: A unique identifier of a gene set.
       type: string
     visibility:
@@ -1091,7 +987,7 @@ components:
         name:
           type: string
         id:
-          $ref: "#/components/schemas/collection_uuid"
+          $ref: "#/components/schemas/collection_id"
         visibility:
           $ref: "#/components/schemas/visibility"
         links:
@@ -1164,7 +1060,7 @@ components:
         - collection_id
       properties:
         id:
-          $ref: "#/components/schemas/dataset_uuid"
+          $ref: "#/components/schemas/dataset_id"
         assay:
           $ref: "#/components/schemas/ontology_element_array"
         tissue:
@@ -1199,7 +1095,7 @@ components:
           items:
             $ref: "#/components/schemas/dataset_asset"
         collection_id:
-          $ref: "#/components/schemas/collection_uuid"
+          $ref: "#/components/schemas/collection_id"
         is_primary_data:
           $ref: "#/components/schemas/is_primary_data"
         cell_type:
@@ -1311,24 +1207,24 @@ components:
       format: uuid
 
   parameters:
-    path_collection_uuid:
-      name: collection_uuid
+    path_collection_id:
+      name: collection_id
       in: path
       required: true
       schema:
-        $ref: "#/components/schemas/collection_uuid"
-    path_dataset_uuid:
-      name: dataset_uuid
+        $ref: "#/components/schemas/collection_id"
+    path_dataset_id:
+      name: dataset_id
       in: path
       required: true
       schema:
-        $ref: "#/components/schemas/dataset_uuid"
-    path_geneset_uuid:
-      name: geneset_uuid
+        $ref: "#/components/schemas/dataset_id"
+    path_geneset_id:
+      name: geneset_id
       in: path
       required: true
       schema:
-        $ref: "#/components/schemas/geneset_uuid"
+        $ref: "#/components/schemas/geneset_id"
     path_filename:
       name: filename
       description: The name of a file to add, remove, or download.
@@ -1336,12 +1232,12 @@ components:
       required: true
       schema:
         type: string
-    query_user_uuid:
-      name: user_uuid
+    query_user_id:
+      name: user_id
       description: an ID that represents the user.
       in: query
       schema:
-        $ref: "#/components/schemas/user_uuid"
+        $ref: "#/components/schemas/user_id"
     query_visibility:
       name: visibility
       in: query

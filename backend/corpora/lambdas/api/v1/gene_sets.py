@@ -10,12 +10,12 @@ from ....common.utils.http_exceptions import (
 
 
 @dbconnect
-def delete(geneset_uuid: str, token_info: dict):
+def delete(geneset_id: str, token_info: dict):
     """
     Deletes an existing geneset
     """
     db_session = g.db_session
-    geneset = Geneset.get(db_session, geneset_uuid)
+    geneset = Geneset.get(db_session, geneset_id)
     accepted_response = "", 202
     if not geneset:
         return accepted_response

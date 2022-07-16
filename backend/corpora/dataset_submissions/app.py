@@ -38,36 +38,36 @@ def dataset_submissions_handler(s3_event: dict, unused_context) -> None:
 
         parsed = parse_key(key)
         if not parsed:
-            raise CorporaException(f"Missing collection UUID, curator tag, and/or dataset UUID for {key=}")
+            raise CorporaException(f"Missing collection ID, curator tag, and/or dataset ID for {key=}")
         if parsed["tag_prefix"]:
             parsed["tag"] = f"{parsed['tag_prefix']}.{parsed['extension']}"
         logger.debug(parsed)
 
         with db_session_manager() as session:
-            collection_owner, dataset_uuid = get_dataset_info(
-                session, parsed["collection_uuid"], parsed["dataset_uuid"], parsed.get("tag")
+            collection_owner, dataset_id = get_dataset_info(
+                session, parsed["collection_id"], parsed["dataset_id"], parsed.get("tag")
             )
 
-            logger.info(f"{collection_owner=}, {dataset_uuid=}")
+            logger.info(f"{collection_owner=}, {dataset_id=}")
             if not collection_owner:
-                raise CorporaException(f"Collection {parsed['collection_uuid']} does not exist")
+                raise CorporaException(f"Collection {parsed['collection_id']} does not exist")
             elif parsed["username"] == "super":
                 pass
             elif parsed["username"] != collection_owner:
                 raise CorporaException(
                     f"user:{parsed['username']} does not have permission to modify datasets in collection "
-                    f"{parsed['collection_uuid']}."
+                    f"{parsed['collection_id']}."
                 )
 
             s3_uri = f"s3://{bucket}/{key}"
             upload(
                 session,
-                parsed["collection_uuid"],
+                parsed["collection_id"],
                 user=collection_owner,
                 url=s3_uri,
                 file_size=size,
                 file_extension=parsed["extension"],
-                dataset_id=dataset_uuid,
+                dataset_id=dataset_id,
                 curator_tag=parsed.get("tag"),
             )
 
@@ -86,7 +86,7 @@ def parse_s3_event_record(s3_event_record: dict) -> Tuple[str, str, int]:
 
 def parse_key(key: str) -> Optional[dict]:
     """
-    Parses the S3 object key to extract the collection UUID and curator tag, ignoring the REMOTE_DEV_PREFIX
+    Parses the S3 object key to extract the collection ID and curator tag, ignoring the REMOTE_DEV_PREFIX
 
     Example of key with only curator_tag:
     s3://<dataset submissions bucket>/<user_id>/<collection_id>/<curator_tag>
@@ -107,14 +107,14 @@ def parse_key(key: str) -> Optional[dict]:
 
 
 def get_dataset_info(
-    session: Session, collection_uuid: str, dataset_uuid: str, incoming_curator_tag: str
+    session: Session, collection_id: str, dataset_id: str, incoming_curator_tag: str
 ) -> Tuple[Optional[str], Optional[str]]:
-    if dataset_uuid:  # If a dataset uuid was provided
-        dataset = Dataset.get(session, dataset_uuid)
+    if dataset_id:  # If a dataset uuid was provided
+        dataset = Dataset.get(session, dataset_id)
     else:  # if incoming_curator_tag
-        dataset = Dataset.get_dataset_from_curator_tag(session, collection_uuid, incoming_curator_tag)
+        dataset = Dataset.get_dataset_from_curator_tag(session, collection_id, incoming_curator_tag)
         if not dataset:  # New dataset
-            collection = Collection.get_collection(session, collection_uuid)
+            collection = Collection.get_collection(session, collection_id)
             if collection:
                 return collection.owner, None
     if dataset:

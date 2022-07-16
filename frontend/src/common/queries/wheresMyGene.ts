@@ -131,11 +131,11 @@ interface Filter {
   gene_ontology_term_ids: string[];
   organism_ontology_term_id: string;
   tissue_ontology_term_ids: string[];
-  dataset_ids?: string[];
-  disease_ontology_term_ids?: string[];
-  sex_ontology_term_ids?: string[];
-  development_stage_ontology_term_ids?: string[];
-  ethnicity_ontology_term_ids?: string[];
+  dataset_ids: string[];
+  disease_ontology_term_ids: string[];
+  sex_ontology_term_ids: string[];
+  development_stage_ontology_term_ids: string[];
+  ethnicity_ontology_term_ids: string[];
 }
 
 export interface Query {
@@ -169,6 +169,7 @@ interface QueryResponse {
         cell_type: string;
         cell_type_ontology_term_id: string;
         depth: number;
+        total_count: number;
       }[];
     };
     genes: {
@@ -483,7 +484,9 @@ function transformCellTypeGeneExpressionSummaryData(
 
 interface TermIdLabels {
   cell_types: {
-    [tissueID: string]: { [id: string]: { name: string; depth: number } };
+    [tissueID: string]: {
+      [id: string]: { name: string; depth: number; total_count: number };
+    };
   };
   genes: { [id: string]: string };
 }
@@ -504,19 +507,23 @@ export function useTermIdLabels(): {
     const {
       term_id_labels: { cell_types, genes },
     } = data;
-
     const returnCellTypes: TermIdLabels["cell_types"] = {};
     Object.entries(cell_types).forEach(([tissueID, cell_types]) => {
-      const result: { [id: string]: { name: string; depth: number } } = {};
-
+      const result: {
+        [id: string]: { name: string; depth: number; total_count: number };
+      } = {};
       for (const {
         cell_type_ontology_term_id,
         cell_type,
         depth,
+        total_count,
       } of cell_types) {
-        result[cell_type_ontology_term_id] = { depth, name: cell_type };
+        result[cell_type_ontology_term_id] = {
+          depth,
+          name: cell_type,
+          total_count,
+        };
       }
-
       returnCellTypes[tissueID] = result;
     });
     return {
@@ -534,14 +541,6 @@ function aggregateIdLabels(items: { [id: string]: string }[]): {
 } {
   return items.reduce((memo, item) => ({ ...memo, ...item }), {});
 }
-
-const EMPTY_FILTERS: State["selectedFilters"] = {
-  datasets: undefined,
-  developmentStages: undefined,
-  diseases: undefined,
-  ethnicities: undefined,
-  sexes: undefined,
-};
 
 function useWMGQueryRequestBody(options = { includeAllFilterOptions: false }) {
   const { includeAllFilterOptions } = options;
@@ -561,7 +560,6 @@ function useWMGQueryRequestBody(options = { includeAllFilterOptions: false }) {
    */
   const { datasets, developmentStages, diseases, ethnicities, sexes } =
     includeAllFilterOptions ? EMPTY_FILTERS : selectedFilters;
-
   const organismGenesByName = useMemo(() => {
     const result: { [name: string]: { id: string; name: string } } = {};
 
@@ -649,6 +647,13 @@ interface Dataset extends RawDataset {
   label: string;
 }
 
+export const EMPTY_FILTERS: State["selectedFilters"] = {
+  datasets: [],
+  developmentStages: [],
+  diseases: [],
+  ethnicities: [],
+  sexes: [],
+};
 export interface CollectionFromDatasets {
   name: string;
   url: string;

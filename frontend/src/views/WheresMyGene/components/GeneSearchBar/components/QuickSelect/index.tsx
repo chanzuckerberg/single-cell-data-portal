@@ -176,13 +176,23 @@ export default function QuickSelect<
         };
 
   const handleClose = (
-    _: React.ChangeEvent<Record<string, never>>,
+    e: React.ChangeEvent<Record<string, never>>,
     reason: AutocompleteCloseReason
   ) => {
     if (reason === "toggleInput") {
       return;
     }
-    setOpen(false);
+    const { nativeEvent } = e;
+    if (
+      (nativeEvent instanceof FocusEvent &&
+        nativeEvent.relatedTarget instanceof Element &&
+        nativeEvent.relatedTarget?.id !== `${dataTestId}-id`) ||
+      (nativeEvent instanceof FocusEvent &&
+        !(nativeEvent.relatedTarget instanceof Element)) ||
+      !(nativeEvent instanceof FocusEvent)
+    )
+      setOpen(false);
+
     setInput("");
   };
   const handleChange = (
@@ -193,7 +203,7 @@ export default function QuickSelect<
   };
 
   const handleClick = () => {
-    setOpen(true);
+    setOpen(!open);
   };
 
   const ref = useRef(null);
@@ -223,6 +233,7 @@ export default function QuickSelect<
         <Label>{label}</Label>
         <StyledIconButton
           disabled={isLoading}
+          id={`${dataTestId}-id`}
           data-test-id={dataTestId}
           ref={ref}
           onClick={handleClick}
