@@ -73,8 +73,7 @@ export function createChartOptions({
       source: chartData as DatasetComponentOption["source"],
     },
     grid: {
-      bottom: Y_AXIS_BOTTOM_PADDING,
-      left: 25
+      bottom: Y_AXIS_BOTTOM_PADDING
     },
     series: [
       {

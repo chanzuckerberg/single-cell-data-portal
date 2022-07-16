@@ -114,7 +114,6 @@ export default memo(function Chart({
     setIsChartInitialized(true);
 
     const chart = init(current, EMPTY_OBJECT, { useDirtyRect: true });
-
     chart.getZr().on("mousemove", function (params) {
       throttledSetCurrentIndices(params, chart);
     });
@@ -145,7 +144,7 @@ export default memo(function Chart({
         setCellTypeSummaries(
           integrateCelTypesAndGenes({
             cellTypes,
-            geneExpressionSummaries: geneData,
+            geneExpressionSummaries: selectedGene,
           })
         );
       },
@@ -186,9 +185,8 @@ export default memo(function Chart({
             scaledMeanExpressionMax,
             scaledMeanExpressionMin,
           }),
-          geneNames: getGeneNames(selectedGeneData),
+          geneNames: getGeneNames(selectedGene),
         };
-
         setChartProps(result);
 
         setIsLoading((isLoading) => ({ ...isLoading, [tissue]: false }));
