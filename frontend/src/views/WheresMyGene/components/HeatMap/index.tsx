@@ -1,5 +1,5 @@
 import cloneDeep from "lodash/cloneDeep";
-import { memo, useMemo, useRef, useState } from "react";
+import { memo, useMemo, useRef, useState, Dispatch, SetStateAction } from "react";
 import { EMPTY_ARRAY } from "src/common/constants/utils";
 import { useResizeObserver } from "src/common/hooks/useResizeObserver";
 import { State } from "../../common/store";
@@ -9,6 +9,7 @@ import {
   SORT_BY,
   Tissue,
 } from "../../common/types";
+import { X_AXIS_CHART_HEIGHT_PX } from "./utils";
 import Loader from "../Loader";
 import Chart from "./components/Chart";
 import XAxisChart from "./components/XAxisChart";
@@ -19,9 +20,7 @@ import {
   useTissueNameToCellTypeIdToGeneNameToCellTypeGeneExpressionSummaryDataMap,
 } from "./hooks/useSortedGeneNames";
 import { useTrackHeatMapLoaded } from "./hooks/useTrackHeatMapLoaded";
-import { ChartWrapper, Container, YAxisWrapper } from "./style";
-import { X_AXIS_CHART_HEIGHT_PX } from "./utils";
-import { XAxisMask } from "./components/XAxisChart/style";
+import { Container} from "./style";
 
 interface Props {
   selectedTissues: string[];
@@ -112,41 +111,20 @@ export default memo(function HeatMap({
   return (
     <Container>
       {isLoadingAPI || isAnyTissueLoading(isLoading) ? <Loader /> : null}
-
-      <div style={{display: "flex", flexDirection: "row", position: "relative"}}>
-      <XAxisMask/>
-      {sortedGeneNames.map((gene)=>{
-        return <XAxisChart geneNames={[gene]} />
-      })}
-      </div>
-      <div style={{
-        display: "flex",
-        flexDirection: "row"
-      }}>
-        <YAxisWrapper
-          height={(chartWrapperRect?.height || 0) - 60}
-        >
-          {selectedTissues.map((tissue) => {
-            const tissueCellTypes = getTissueCellTypes({
-              cellTypeSortBy,
-              cellTypes,
-              sortedCellTypesByTissueName,
-              tissue,
-            });
-
-            return (
-              <YAxisChart
-                key={tissue}
-                tissue={tissue}
-                cellTypes={tissueCellTypes}
-                hasDeletedCellTypes={tissuesWithDeletedCellTypes.includes(tissue)}
-                availableCellTypes={allTissueCellTypes[tissue]}
-              />
-            );
+        <div style={{display: "inline",backgroundColor: "white", zIndex: 2, position: "sticky"}}>
+        <div style={{display: "inline-block", top: 0, backgroundColor: "white", height: X_AXIS_CHART_HEIGHT_PX, position: "sticky", width: 265}}/>
+        <XAxisChart noSelect geneNames={["Cell Count"]} />
+        <div style={{display: "inline-block", width: 15}}/>
+          {sortedGeneNames.map((gene)=>{
+            return (<XAxisChart geneNames={[gene]} />)
           })}
-        </YAxisWrapper>
-        <ChartWrapper ref={chartWrapperRef}>
-          {selectedTissues.map((tissue) => {
+        
+        </div>
+        <div style={{
+          display: "flex",
+          flexDirection: "column"
+        }}>           
+        {selectedTissues.map((tissue) => {
             const tissueCellTypes = getTissueCellTypes({
               cellTypeSortBy,
               cellTypes,
@@ -154,27 +132,80 @@ export default memo(function HeatMap({
               tissue,
             });
             return (
-              <div style={{display: "flex", flexDirection: "row",position: "relative"}}>
-              {orderedSelectedGeneExpressionSummariesByTissueName[tissue]?.map((gene)=>{
-              return (<Chart
-                isScaled={isScaled}
-                key={`${tissue}-${gene}`}
-                tissue={tissue}
-                cellTypes={tissueCellTypes}
-                gene={gene}
-                setIsLoading={setIsLoading}
-                scaledMeanExpressionMax={scaledMeanExpressionMax}
-                scaledMeanExpressionMin={scaledMeanExpressionMin}
-              />);
-              })}
+              <div style={{
+                display: "flex",
+                flexDirection: "row"
+              }}>       
+                <YAxisChart
+                  key={tissue}
+                  tissue={tissue}
+                  cellTypes={tissueCellTypes}
+                  hasDeletedCellTypes={tissuesWithDeletedCellTypes.includes(tissue)}
+                  availableCellTypes={allTissueCellTypes[tissue]}
+                />  
+                <TissueWrapper
+                  isScaled={isScaled}
+                  tissue={tissue}
+                  cellTypes={tissueCellTypes}
+                  setIsLoading={setIsLoading}
+                  scaledMeanExpressionMax={scaledMeanExpressionMax}
+                  scaledMeanExpressionMin={scaledMeanExpressionMin}
+                  orderedSelectedGeneExpressionSummariesByTissueName={orderedSelectedGeneExpressionSummariesByTissueName}
+                />
               </div>
             );
-          })}
-        </ChartWrapper>
+        })}
       </div>
     </Container>
   );
 });
+
+interface TissueWrapperProps {
+  cellTypes: CellType[];
+  setIsLoading: Dispatch<
+    SetStateAction<{
+      [tissue: Tissue]: boolean;
+    }>
+  >;
+  tissue: Tissue;
+  scaledMeanExpressionMax: number;
+  scaledMeanExpressionMin: number;
+  isScaled: boolean;
+  orderedSelectedGeneExpressionSummariesByTissueName: { [tissueName: string]: GeneExpressionSummary[] };
+}
+
+const TissueWrapper = memo(function TissueWrapper({
+  isScaled,
+  tissue,
+  cellTypes,
+  setIsLoading,
+  scaledMeanExpressionMax,
+  scaledMeanExpressionMin,
+  orderedSelectedGeneExpressionSummariesByTissueName
+}: TissueWrapperProps) {
+  return (
+    <div style={{display: "flex", flexDirection: "row",position: "relative"}}>
+      {orderedSelectedGeneExpressionSummariesByTissueName[tissue]?.map((gene)=>{
+      return (
+        <div style={{
+          display: "flex",
+          flexDirection: "column"
+        }}>  
+          <Chart
+            isScaled={isScaled}
+            key={`${tissue}-${gene}`}
+            tissue={tissue}
+            cellTypes={cellTypes}
+            gene={gene}
+            setIsLoading={setIsLoading}
+            scaledMeanExpressionMax={scaledMeanExpressionMax}
+            scaledMeanExpressionMin={scaledMeanExpressionMin}
+          />
+        </div>);
+      })}
+    </div>
+  )
+})
 
 function getTissueCellTypes({
   cellTypes,

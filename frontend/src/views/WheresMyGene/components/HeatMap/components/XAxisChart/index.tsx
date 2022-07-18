@@ -7,9 +7,10 @@ import { getHeatmapWidth } from "../../utils";
 import { XAxisContainer, XAxisWrapper } from "./style";
 interface Props {
   geneNames: string[];
+  noSelect?: boolean;
 }
 
-export default function XAxisChart({ geneNames }: Props): JSX.Element {
+export default function XAxisChart({ geneNames, noSelect }: Props): JSX.Element {
   const [isChartInitialized, setIsChartInitialized] = useState(false);
   const [xAxisChart, setXAxisChart] = useState<echarts.ECharts | null>(null);
   const [heatmapWidth, setHeatmapWidth] = useState(getHeatmapWidth(geneNames));
@@ -57,21 +58,16 @@ export default function XAxisChart({ geneNames }: Props): JSX.Element {
     genesToDelete,
     heatmapWidth,
     xAxisChart,
+    noSelect
   });
 
   return (
     <XAxisWrapper width={heatmapWidth}>
-      {/* (thuang): The extra div is needed to implement the mask */}
-      <div style={{
-        display: "flex",
-        flexDirection: "row",
-      }}>
-        <XAxisContainer
+      <XAxisContainer
           data-test-id="gene-labels"
           width={heatmapWidth}
           ref={xAxisRef}
-        />
-      </div>
+        />      
     </XAxisWrapper>
   );
 }

@@ -23,8 +23,6 @@ const MAX_DEPTH = 2;
 
 const Y_AXIS_BOTTOM_PADDING = "10px";
 
-const MIN_NUM_COLUMNS = 20;
-
 const COMMON_OPTIONS = {
   animation: false,
   hoverLayerThreshold: 10,
@@ -73,11 +71,12 @@ export function createChartOptions({
       source: chartData as DatasetComponentOption["source"],
     },
     grid: {
-      bottom: Y_AXIS_BOTTOM_PADDING
+      bottom: Y_AXIS_BOTTOM_PADDING,
     },
     series: [
       {
         ...COMMON_SERIES,
+        symbolOffset: [0,-60],
         itemStyle: {
           color(props: DefaultLabelFormatterCallbackParams) {
             const { scaledMeanExpression, meanExpression } = props.data as {
@@ -101,7 +100,7 @@ export function createChartOptions({
     ],
     xAxis: [
       {
-        axisLabel: { fontSize: 0, rotate: 90 },
+        axisLabel: { fontSize: 0 },
         axisLine: {
           show: false,
         },
@@ -158,17 +157,19 @@ const SELECTED_STYLE = {
 interface CreateXAxisOptionsProps {
   geneNames: string[];
   genesToDelete: string[];
+  noSelect?: boolean;
 }
 
 export function createXAxisOptions({
   geneNames,
   genesToDelete,
+  noSelect
 }: CreateXAxisOptionsProps): EChartsOption {
   return {
     ...COMMON_OPTIONS,
     grid: {
       bottom: "0",
-      top: "300px",
+      top: "240px",
     },
     series: [
       {
@@ -180,7 +181,7 @@ export function createXAxisOptions({
       {
         axisLabel: {
           formatter(value) {
-            return genesToDelete.includes(value)
+            return genesToDelete.includes(value) && !noSelect
               ? `{selected|${value}}`
               : value;
           },
@@ -203,11 +204,11 @@ export function createXAxisOptions({
     ],
     yAxis: [
       {
-        name: "Cell Count",
-        nameLocation: "end",
-        nameRotate: 270,
-        offset: 10,
-        nameGap: 8,
+        //name: "Cell Count",
+        //nameLocation: "end",
+        //nameRotate: 270,
+        //offset: 10,
+        //nameGap: 8,
         axisLabel: { fontSize: 0 },
         axisLine: {
           show: false,
@@ -399,7 +400,7 @@ export function dataToChartFormat({
 }
 
 export const HEAT_MAP_BASE_HEIGHT_PX = 300;
-const HEAT_MAP_BASE_CELL_PX = 20;
+export const HEAT_MAP_BASE_CELL_PX = 20;
 export const HEAT_MAP_BASE_CELL_WIDTH_PX = 50;
 
 /**
@@ -412,7 +413,7 @@ export function getHeatmapWidth(
     | (GeneExpressionSummary | undefined)[]
     | State["selectedGenes"] = EMPTY_ARRAY
 ): number {
-  return HEAT_MAP_BASE_CELL_WIDTH_PX;
+  return HEAT_MAP_BASE_CELL_WIDTH_PX*genes.length;
 }
 
 /**

@@ -7,7 +7,6 @@ export const Container = styled.div`
   overflow: scroll;
   position: relative;
 `;
-
 export const YAxisWrapper = styled.div`
   width: ${Y_AXIS_CHART_WIDTH_PX}px;
   position: relative;

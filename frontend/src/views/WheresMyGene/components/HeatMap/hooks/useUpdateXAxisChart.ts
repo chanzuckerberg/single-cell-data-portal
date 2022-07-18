@@ -8,6 +8,7 @@ interface Props {
   genesToDelete: string[];
   heatmapWidth: number;
   xAxisChart: echarts.ECharts | null;
+  noSelect?: boolean;
 }
 
 export function useUpdateXAxisChart({
@@ -15,6 +16,7 @@ export function useUpdateXAxisChart({
   genesToDelete,
   heatmapWidth,
   xAxisChart,
+  noSelect
 }: Props): void {
   const throttledUpdateXAxisChart = useMemo(() => {
     return throttle(
@@ -31,6 +33,7 @@ export function useUpdateXAxisChart({
           createXAxisOptions({
             geneNames,
             genesToDelete,
+            noSelect
           })
         );
       },

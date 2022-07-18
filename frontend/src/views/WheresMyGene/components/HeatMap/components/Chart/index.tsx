@@ -225,9 +225,13 @@ export default memo(function Chart({
   ]);
 
   const tooltipClasses = useMemo(() => ({ tooltip: tooltipCss }), []);
-
+  useEffect(() => {
+        return () => {
+            console.log(tissue)
+        }
+    }, [])
   return (
-    <Wrapper height={heatmapHeight} width={heatmapWidth}>
+    <Wrapper height={heatmapHeight-20} width={heatmapWidth}>
       <Tooltip
         width="wide"
         classes={tooltipClasses}
@@ -255,7 +259,7 @@ export default memo(function Chart({
           },
         }}
       >
-        <ChartContainer height={heatmapHeight} width={heatmapWidth} ref={ref} />
+        <ChartContainer height={heatmapHeight-20} width={heatmapWidth} ref={ref} />
       </Tooltip>
     </Wrapper>
   );
