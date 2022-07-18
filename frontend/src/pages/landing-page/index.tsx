@@ -73,7 +73,7 @@ const LandingPage = (): JSX.Element => {
           ctaLogo: false,
         },
         {
-          subheading: "13.05.22 - Cellxgene",
+          subheading: "13.05.22 - CZ CELLxGENE",
           ctaLink:
             "https://cellxgene.cziscience.com/collections/e5f58829-1a66-40b5-a624-9046778e74f5",
           ctaText: "Explore Datasets",
@@ -101,7 +101,7 @@ const LandingPage = (): JSX.Element => {
           ctaLogo: false,
         },
         {
-          subheading: "13.05.22 - Cellxgene",
+          subheading: "13.05.22 - CZ CELLxGENE",
           ctaLink:
             "https://cellxgene.cziscience.com/collections/62ef75e4-cbea-454e-a0ce-998ec40223d3",
           ctaText: "Explore Datasets",
@@ -121,7 +121,7 @@ const LandingPage = (): JSX.Element => {
           ctaLogo: false,
         },
         {
-          subheading: "13.05.22 - Cellxgene",
+          subheading: "13.05.22 - CZ CELLxGENE",
           ctaLink:
             "https://cellxgene.cziscience.com/collections/6f6d381a-7701-4781-935c-db10d30de293",
           ctaText: "Explore Datasets",
@@ -142,7 +142,7 @@ const LandingPage = (): JSX.Element => {
           ctaLogo: false,
         },
         {
-          subheading: "13.05.22 - Cellxgene",
+          subheading: "13.05.22 - CZ CELLxGENE",
           ctaLink:
             "https://cellxgene.cziscience.com/collections/dde06e0f-ab3b-46be-96a2-a8082383c4a1",
           ctaText: "Explore Datasets",
@@ -163,7 +163,7 @@ const LandingPage = (): JSX.Element => {
           ctaLogo: false,
         },
         {
-          subheading: "13.05.22 - Cellxgene",
+          subheading: "13.05.22 - CZ CELLxGENE",
           ctaLink:
             "https://cellxgene.cziscience.com/collections/436154da-bcf1-4130-9c8b-120ff9a888f2",
           ctaText: "Explore Datasets",
