@@ -9,7 +9,7 @@ import AnalyzeDatasetsImg from "src/components/common/staticPages/analyze-datase
 import HeroBg from "src/components/common/staticPages/cellxgene_hero_bg.png";
 import LaptopImg from "src/components/common/staticPages/cellxgene_laptop.png";
 import DownloadDataImg from "src/components/common/staticPages/download-data.png";
-import ExpediteCollaborationImg from "src/components/common/staticPages/expedite-collaboration.png";
+import ExpediteCollaborationImg from "src/components/common/staticPages/expedite-collaborative-analysis.png";
 import GeneExpressionImg from "src/components/common/staticPages/gene-expression.png";
 import SingleCellDataImg from "src/components/common/staticPages/single-cell-data.png";
 import AnalyzeDatasetsIcon from "./icons/analyze-datasets";
