@@ -10,7 +10,10 @@ interface Props {
   noSelect?: boolean;
 }
 
-export default function XAxisChart({ geneNames, noSelect }: Props): JSX.Element {
+export default function XAxisChart({
+  geneNames,
+  noSelect,
+}: Props): JSX.Element {
   const [isChartInitialized, setIsChartInitialized] = useState(false);
   const [xAxisChart, setXAxisChart] = useState<echarts.ECharts | null>(null);
   const [heatmapWidth, setHeatmapWidth] = useState(getHeatmapWidth(geneNames));
@@ -58,16 +61,16 @@ export default function XAxisChart({ geneNames, noSelect }: Props): JSX.Element 
     genesToDelete,
     heatmapWidth,
     xAxisChart,
-    noSelect
+    noSelect,
   });
 
   return (
     <XAxisWrapper width={heatmapWidth}>
       <XAxisContainer
-          data-test-id="gene-labels"
-          width={heatmapWidth}
-          ref={xAxisRef}
-        />      
+        data-test-id="gene-labels"
+        width={heatmapWidth}
+        ref={xAxisRef}
+      />
     </XAxisWrapper>
   );
 }

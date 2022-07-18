@@ -76,7 +76,7 @@ export function createChartOptions({
     series: [
       {
         ...COMMON_SERIES,
-        symbolOffset: [0,-60],
+        symbolOffset: [0, -60],
         itemStyle: {
           color(props: DefaultLabelFormatterCallbackParams) {
             const { scaledMeanExpression, meanExpression } = props.data as {
@@ -163,7 +163,7 @@ interface CreateXAxisOptionsProps {
 export function createXAxisOptions({
   geneNames,
   genesToDelete,
-  noSelect
+  noSelect,
 }: CreateXAxisOptionsProps): EChartsOption {
   return {
     ...COMMON_OPTIONS,
@@ -413,7 +413,7 @@ export function getHeatmapWidth(
     | (GeneExpressionSummary | undefined)[]
     | State["selectedGenes"] = EMPTY_ARRAY
 ): number {
-  return HEAT_MAP_BASE_CELL_WIDTH_PX*genes.length;
+  return HEAT_MAP_BASE_CELL_WIDTH_PX * genes.length;
 }
 
 /**

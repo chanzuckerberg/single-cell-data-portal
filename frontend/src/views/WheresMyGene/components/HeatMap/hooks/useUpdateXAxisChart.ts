@@ -16,7 +16,7 @@ export function useUpdateXAxisChart({
   genesToDelete,
   heatmapWidth,
   xAxisChart,
-  noSelect
+  noSelect,
 }: Props): void {
   const throttledUpdateXAxisChart = useMemo(() => {
     return throttle(
@@ -33,7 +33,7 @@ export function useUpdateXAxisChart({
           createXAxisOptions({
             geneNames,
             genesToDelete,
-            noSelect
+            noSelect,
           })
         );
       },

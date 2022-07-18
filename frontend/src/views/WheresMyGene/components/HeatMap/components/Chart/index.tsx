@@ -26,7 +26,7 @@ import {
   getAllSerializedCellTypeMetadata,
   getGeneNames,
   getHeatmapHeight,
-  HEAT_MAP_BASE_CELL_WIDTH_PX
+  HEAT_MAP_BASE_CELL_WIDTH_PX,
 } from "../../utils";
 import {
   ChartContainer,
@@ -69,7 +69,7 @@ export default memo(function Chart({
   const ref = useRef(null);
 
   const heatmapWidth = HEAT_MAP_BASE_CELL_WIDTH_PX;
-  
+
   const [heatmapHeight, setHeatmapHeight] = useState(
     getHeatmapHeight(cellTypes)
   );
@@ -157,20 +157,27 @@ export default memo(function Chart({
       geneNames: getGeneNames([gene]),
     });
     setIsLoading((isLoading) => ({ ...isLoading, [tissue]: false }));
-  }, [cellTypeSummaries, gene, tissue, scaledMeanExpressionMax, scaledMeanExpressionMin, setIsLoading]);
+  }, [
+    cellTypeSummaries,
+    gene,
+    tissue,
+    scaledMeanExpressionMax,
+    scaledMeanExpressionMin,
+    setIsLoading,
+  ]);
 
   const [_, hoveredCellTypeIndex] = currentIndices;
-  
+
   const tooltipContent = useMemo(() => {
     if (!chartProps) return null;
 
     const { chartData } = chartProps;
-    const dataPoint = chartData.find(
-      ({ id, cellTypeIndex }) =>
-      {
-        return id.split('-').at(-1) === gene.name && cellTypeIndex === hoveredCellTypeIndex
-      }
-    );
+    const dataPoint = chartData.find(({ id, cellTypeIndex }) => {
+      return (
+        id.split("-").at(-1) === gene.name &&
+        cellTypeIndex === hoveredCellTypeIndex
+      );
+    });
     const cellType = cellTypes[hoveredCellTypeIndex];
 
     if (!dataPoint || !cellType || !gene) return null;
@@ -217,21 +224,16 @@ export default memo(function Chart({
     ];
 
     return <StyledTooltipTable data={data || undefined} />;
-  }, [
-    chartProps,
-    cellTypes,
-    hoveredCellTypeIndex,
-    gene
-  ]);
+  }, [chartProps, cellTypes, hoveredCellTypeIndex, gene]);
 
   const tooltipClasses = useMemo(() => ({ tooltip: tooltipCss }), []);
   useEffect(() => {
-        return () => {
-            console.log(tissue)
-        }
-    }, [])
+    return () => {
+      console.log(tissue);
+    };
+  }, []);
   return (
-    <Wrapper height={heatmapHeight-20} width={heatmapWidth}>
+    <Wrapper height={heatmapHeight - 20} width={heatmapWidth}>
       <Tooltip
         width="wide"
         classes={tooltipClasses}
@@ -259,7 +261,11 @@ export default memo(function Chart({
           },
         }}
       >
-        <ChartContainer height={heatmapHeight-20} width={heatmapWidth} ref={ref} />
+        <ChartContainer
+          height={heatmapHeight - 20}
+          width={heatmapWidth}
+          ref={ref}
+        />
       </Tooltip>
     </Wrapper>
   );

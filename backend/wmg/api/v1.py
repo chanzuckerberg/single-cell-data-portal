@@ -44,7 +44,6 @@ def query():
         dict(
             snapshot_id=snapshot.snapshot_identifier,
             expression_summary=build_expression_summary(dot_plot_matrix_df),
-            hello="hi",
             term_id_labels=dict(
                 genes=build_gene_id_label_mapping(criteria.gene_ontology_term_ids),
                 cell_types=build_ordered_cell_types_by_tissue(
