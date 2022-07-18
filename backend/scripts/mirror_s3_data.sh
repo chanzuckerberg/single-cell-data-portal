@@ -17,7 +17,11 @@ echo Mirroring S3 data from $SRC_ENV to $DEST_ENV
 # that needs to be kept around (buckets are versioned, so we're not in
 # jeopardy of losing anything permanently). This would make the
 # operation more destructive, of course!
-S3_SYNC_CMD="aws s3 sync --no-progress"
+#
+# Note: "--copy-props metadata-directive" copies s3 object metadata, but not tags.
+# We have not granted s3:GetObjectTagging perm to dev AWS account on prod buckets,
+# so this avoids errors. As none of the s3 objects contain tags, this is acceptable.
+S3_SYNC_CMD="aws s3 sync --copy-props metadata-directive --no-progress"
 
 set -x
 $S3_SYNC_CMD --exclude '*loom' s3://corpora-data-${SRC_ENV}/ s3://corpora-data-${DEST_ENV}/
