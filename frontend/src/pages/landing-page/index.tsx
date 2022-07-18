@@ -49,7 +49,7 @@ const LandingPage = (): JSX.Element => {
   const scrollSection5 = useRef<HTMLDivElement>(null!);
 
   // HERO NUMBERS. DUMMY DATA TO BE REPLACED.
-  const [cellsHeroNum] = useState("25M+");
+  const [cellsHeroNum] = useState("33M+");
   const [datasetsHeroNum] = useState("436");
   const [donorsHeroNum] = useState("2.7k+");
 
@@ -177,7 +177,21 @@ const LandingPage = (): JSX.Element => {
   return (
     <>
       <Head>
-        <title>cellxgene | Home</title>
+        <title>CZ CELLxGENE Discover - Cellular Visualization Tool</title>
+        <meta
+          name="description"
+          content="Chan Zuckerberg CELLxGENE Discover is a tool to find, download, and visually explore curated and standardized single-cell biology datasets."
+        />
+        <meta
+          property="og:title"
+          content="Chan Zuckerberg CELLxGENE Discover"
+        />
+        <meta
+          property="og:description"
+          content="Find, download and visually explore curated and standardized single-cell datasets"
+        />
+        <meta property="og:image" content="/open-graph.jpg" />
+        <meta property="og:type" content="website" />
       </Head>
       <div className={styles.landingPage}>
         <div
@@ -197,7 +211,8 @@ const LandingPage = (): JSX.Element => {
             <h1>Discover the mechanisms of human health</h1>
             <p>
               Download and visually explore reference-quality data to understand
-              the functionality of human tissues at the cellular level.
+              the functionality of human tissues at the cellular level with Chan
+              Zuckerberg CELL by GENE Discover (CZ CELLxGENE Discover).
             </p>
             <div className={styles.heroStatsContainer}>
               <div>
@@ -418,7 +433,7 @@ const LandingPage = (): JSX.Element => {
                         </p>
                         <div className={styles.linkContainer}>
                           <Link
-                            href={`${ROUTES.HOMEPAGE}/e/53d208b0-2cfd-4366-9866-c3c6114081bc.cxg/`}
+                            href={`https://cellxgene.cziscience.com/e/53d208b0-2cfd-4366-9866-c3c6114081bc.cxg/`}
                             passHref
                           >
                             <a>
@@ -437,7 +452,7 @@ const LandingPage = (): JSX.Element => {
                             </a>
                           </Link>
                           <Link
-                            href={`${ROUTES.DOCS}/04__Analyze%20Public%20Data/4_1__Hosted%20Tutorials`}
+                            href={`https://cellxgene.cziscience.com/docs/04__Analyze%20Public%20Data/4_1__Hosted%20Tutorials`}
                             passHref
                           >
                             <a>
@@ -537,8 +552,8 @@ const LandingPage = (): JSX.Element => {
                         </p>
                         <div className={styles.linkContainer}>
                           {/* LINK TO BE UPDATED POST-LAUNCH */}
-                          <a href="https://github.com/chanzuckerberg/cellxgene-documentation/blob/main/desktop/quick-start.md">
-                            Explore CZ Cell×Gene Annotate
+                          <a href="https://cellxgene.cziscience.com/docs/05__Annotate%20and%20Analyze%20Your%20Data/5_0__Get%20Started">
+                            Explore CZ CELL×GENE Annotate
                             <span className={styles.linkArrow}>
                               <LinkArrow />
                             </span>
