@@ -1,12 +1,10 @@
-from curses import meta
 import os
-from re import A
 import shutil
 import numpy as np
 import tiledb
 import uuid
 import ast
-import time 
+import time
 
 """
 SCHEMA WITH TILEDB VERSIONING:
@@ -34,6 +32,7 @@ s3://single-cell-corpus/
     wmg/<SNAPSHOT>/
     soma/<SNAPSHOT>/
 """
+
 
 class Utils:
     attrs = {
@@ -92,7 +91,7 @@ class Utils:
             "processing_status"
         ]
     }
-  
+
     empty_dataset = {
         "x_approximate_distribution": "",
         "x_normalization": "",
@@ -123,7 +122,7 @@ class Utils:
             if a in data:
                 t = type(data[a])
                 if t == np.ndarray:
-                    data[a] = data[a][0] # for some reason some fields get stored as arrays in TileDB
+                    data[a] = data[a][0]  # for some reason some fields get stored as arrays in TileDB
                 if a in Utils.attrs_to_parse[array]:
                     data[a] = ast.literal_eval(data[a])
         return data
@@ -152,7 +151,7 @@ class TileDBData:
         dom = tiledb.Domain(dim1)
 
         a1 = tiledb.Attr(name="owner", dtype="U1")
-        a2 = tiledb.Attr(name="visibility", dtype="U1") # DELETED, PRIVATE, PUBLIC
+        a2 = tiledb.Attr(name="visibility", dtype="U1")  # DELETED, PRIVATE, PUBLIC
         a3 = tiledb.Attr(name="name", dtype="U1")
         a4 = tiledb.Attr(name="description", dtype="U1")
         a5 = tiledb.Attr(name="contact_name", dtype="U1")
@@ -164,8 +163,9 @@ class TileDBData:
         a11 = tiledb.Attr(name="created_at", dtype=np.float32)
         a12 = tiledb.Attr(name="updated_at", dtype=np.float32)
         a13 = tiledb.Attr(name="publisher_metadata", dtype="U1")
+        attrs = [a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13]
 
-        schema = tiledb.ArraySchema(domain=dom, sparse=True, attrs=[a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13])
+        schema = tiledb.ArraySchema(domain=dom, sparse=True, attrs=attrs)
         array = location + "/collections"
         tiledb.Array.create(array, schema)
 
@@ -186,8 +186,9 @@ class TileDBData:
         a14 = tiledb.Attr(name="processing_status", dtype="U1")
         a15 = tiledb.Attr(name="assay", dtype="U1")
         a16 = tiledb.Attr(name="dataset_assets", dtype="U1")
+        attrs = [a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16]
 
-        schema = tiledb.ArraySchema(domain=dom, sparse=True, attrs=[a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15, a16])
+        schema = tiledb.ArraySchema(domain=dom, sparse=True, attrs=attrs)
         array = location + "/datasets"
         tiledb.Array.create(array, schema)
 
@@ -219,7 +220,7 @@ class TileDBData:
                 "description": description,
                 "contact_name": contact_name,
                 "contact_email": contact_email,
-                "links": links, 
+                "links": links,
                 "owner": owner,
                 "datasets": [],
                 "revision_of": "",
@@ -241,10 +242,10 @@ class TileDBData:
             # TODO: try query conditions for efficiency
             df = A.df[:]
             df = df[
-                (df['visibility'] == "PUBLIC") & 
+                (df['visibility'] == "PUBLIC") &
                 (df['owner'] == user_id if user_id else df['owner']) &
                 (df['created_at'] >= from_date if from_date else df['created_at']) &
-                (df['created_at'] <= to_date if to_date else df['created_at']) 
+                (df['created_at'] <= to_date if to_date else df['created_at'])
             ]
             res = df.to_dict("records")
             for i in range(len(res)):
@@ -285,7 +286,7 @@ class TileDBData:
             new_data[key] = val
             new_data["updated_at"] = time.time()
             new_data = Utils.pack_input_data(new_data, "collections")
-            
+
         with tiledb.open(self.location + "/collections", "w") as A:
             A[id] = new_data
 
@@ -300,7 +301,7 @@ class TileDBData:
         if id not in datasets:
             datasets.append(id)
         self.edit_collection(coll_id, "datasets", datasets)
-        
+
         data = {}
         for a in Utils.attrs['datasets']:
             data[a] = metadata[a]
@@ -324,7 +325,7 @@ class TileDBData:
                 new_data[attr] = data[attr][0]
             new_data[key] = val
             new_data = Utils.pack_input_data(new_data, "datasets")
-            
+
         with tiledb.open(self.location + "/datasets", "w") as A:
             A[id] = new_data
 
@@ -338,7 +339,7 @@ class TileDBData:
         datasets = self.get_attribute(coll_id, "datasets")
         datasets.remove(dataset_id)
         self.edit_collection(coll_id, "datasets", datasets)
-    
+
     def replace_dataset(self, dataset_id: str, assets: list):
         self.edit_dataset(dataset_id, "dataset_assets", assets)
 

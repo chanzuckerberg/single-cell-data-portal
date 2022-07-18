@@ -122,7 +122,6 @@ state that mimics the Conversion step of the main step function.
 
 """
 
-from curses import meta
 import logging
 import os
 import subprocess
@@ -141,8 +140,6 @@ from backend.corpora.common.corpora_orm import (
     ValidationStatus,
     UploadStatus,
 )
-from backend.corpora.common.utils.db_helpers import processing_status_updater
-from backend.corpora.common.utils.db_session import db_session_manager
 from backend.corpora.common.utils.dl_sources.url import from_url
 from backend.corpora.common.utils.s3_buckets import buckets
 from backend.corpora.dataset_processing.download import download
@@ -186,6 +183,7 @@ def check_env():
     if missing:
         raise EnvironmentError(f"Missing environment variables: {missing}")
 
+
 def upload(file_name: str, bucket_prefix: str, artifact_bucket: str):
     from backend.corpora.common.utils.s3_buckets import buckets
     from os.path import basename
@@ -199,6 +197,7 @@ def upload(file_name: str, bucket_prefix: str, artifact_bucket: str):
     )
     return join("s3://", artifact_bucket, bucket_prefix, file_base)
 
+
 def create_artifact(
     file_name: str,
     artifact_type: DatasetArtifactFileType,
@@ -211,7 +210,7 @@ def create_artifact(
 
     logger.info(f"Uploading [{dataset_id}/{file_name}] to S3 bucket: [{artifact_bucket}].")
     try:
-        s3_uri = upload(file_name, bucket_prefix, artifact_bucket)
+        _ = upload(file_name, bucket_prefix, artifact_bucket)
         update_db(dataset_id, processing_status={"processing_status_tyoe": ConversionStatus.UPLOADED})
 
     except Exception as e:
@@ -235,7 +234,8 @@ def create_artifacts(
     artifact_bucket: str,
     can_convert_to_seurat: bool = False,
 ):
-    db = TileDBData(location = "../../../../tests/unit/backend/fixtures/test_tiledb/metadata") # TODO: config this somewhere
+    # TODO: config this somewhere
+    db = TileDBData(location="../../../../tests/unit/backend/fixtures/test_tiledb/metadata")
 
     bucket_prefix = get_bucket_prefix(dataset_id)
     logger.info(f"Creating artifacts for dataset {dataset_id}...")
@@ -285,7 +285,8 @@ def create_artifacts(
 
 
 def update_db(dataset_id, metadata: dict = None, processing_status: dict = None):
-    db = TileDBData(location = "../../../../tests/unit/backend/fixtures/test_tiledb/metadata") # TODO: config this somewhere
+    # TODO: config this somewhere
+    db = TileDBData(location="../../../../tests/unit/backend/fixtures/test_tiledb/metadata")
 
     if metadata:
         logger.debug("Updating metadata.")

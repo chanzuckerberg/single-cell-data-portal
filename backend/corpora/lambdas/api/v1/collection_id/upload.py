@@ -1,5 +1,5 @@
 import requests
-from flask import make_response, g
+from flask import make_response
 
 from .....api_server.db import dbconnect
 from .....common.upload import upload

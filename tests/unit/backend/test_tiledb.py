@@ -1,6 +1,7 @@
 import unittest
 
-from backend.corpora.common.entities.tiledb_data import TileDBData, Utils
+from backend.corpora.common.entities.tiledb_data import TileDBData
+
 
 class TestTileDbData(unittest.TestCase):
     def setUp(self):
@@ -12,8 +13,8 @@ class TestTileDbData(unittest.TestCase):
             "contact_email": "ebezzi@chanzuckerberg.com",
             "curator_name": "Kuni Katsuya",
             "links": [
-                {"link_url": "https://doi.org/fake-article", "link_name": "Fake", "link_type": "FAKE TYPE"}, 
-                {"link_url": "https://doi.org/test-article", "link_name": "Test", "link_type": "Test TYPE"}, 
+                {"link_url": "https://doi.org/fake-article", "link_name": "Fake", "link_type": "FAKE TYPE"},
+                {"link_url": "https://doi.org/test-article", "link_name": "Test", "link_type": "Test TYPE"},
             ],
             "publisher_metadata": {
                 "authors": [
@@ -35,62 +36,62 @@ class TestTileDbData(unittest.TestCase):
             "x_normalization": "string",
             "assay": [
                 {
-                "label": "string",
-                "ontology_term_id": "string"
+                    "label": "string",
+                    "ontology_term_id": "string"
                 }
             ],
             "cell_count": 12,
             "cell_type": [
                 {
-                "label": "string",
-                "ontology_term_id": "string"
+                    "label": "string",
+                    "ontology_term_id": "string"
                 }
             ],
             "development_stage": [
                 {
-                "label": "string",
-                "ontology_term_id": "string"
+                    "label": "string",
+                    "ontology_term_id": "string"
                 }
             ],
             "disease": [
                 {
-                "label": "string",
-                "ontology_term_id": "string"
+                    "label": "string",
+                    "ontology_term_id": "string"
                 }
             ],
             "ethnicity": [
                 {
-                "label": "string",
-                "ontology_term_id": "string"
+                    "label": "string",
+                    "ontology_term_id": "string"
                 }
             ],
             "dataset_assets": [
                 {
-                "dataset_id": "string",
-                "filename": "string",
-                "filetype": "H5AD",
-                "id": "string",
-                "s3_uri": "string"
+                    "dataset_id": "string",
+                    "filename": "string",
+                    "filetype": "H5AD",
+                    "id": "string",
+                    "s3_uri": "string"
                 }
             ],
             "is_primary_data": "PRIMARY",
             "name": "string",
             "organism": [
                 {
-                "label": "string",
-                "ontology_term_id": "string"
+                    "label": "string",
+                    "ontology_term_id": "string"
                 }
             ],
             "sex": [
                 {
-                "label": "string",
-                "ontology_term_id": "string"
+                    "label": "string",
+                    "ontology_term_id": "string"
                 }
             ],
             "tissue": [
                 {
-                "label": "string",
-                "ontology_term_id": "string"
+                    "label": "string",
+                    "ontology_term_id": "string"
                 }
             ],
             "explorer_url": "https://cellxgene.com/e/lolol.cxg",
@@ -107,12 +108,12 @@ class TestTileDbData(unittest.TestCase):
 
     def create_collection(self):
         id = self.db.create_collection(
-            self.metadata['name'], 
-            self.metadata['description'], 
+            self.metadata['name'],
+            self.metadata['description'],
             self.metadata['owner'],
-            self.metadata['contact_name'], 
+            self.metadata['contact_name'],
             self.metadata['contact_email'],
-            self.metadata['curator_name'], 
+            self.metadata['curator_name'],
             self.metadata['links'],
             self.metadata['publisher_metadata']
         )
@@ -125,7 +126,7 @@ class TestTileDbData(unittest.TestCase):
         self.assertDictEqual(coll['publisher_metadata'], self.metadata['publisher_metadata'])
 
     def test_edit_collection(self):
-        # Create collection 
+        # Create collection
         id = self.create_collection()
         # Edit collection name
         self.db.edit_collection(id, "name", "edited_name")
@@ -150,7 +151,7 @@ class TestTileDbData(unittest.TestCase):
         self.assertDictEqual(coll['publisher_metadata'], new_data)
 
     def test_add_dataset_to_collection(self):
-        # Create collection 
+        # Create collection
         id = self.create_collection()
         # Add dataset to collection
         dataset_id = self.db.add_dataset(id, self.dataset_metadata)
@@ -161,7 +162,7 @@ class TestTileDbData(unittest.TestCase):
         self.assertEqual(dataset_ids[0], dataset_id)
 
     def test_delete_dataset_from_collection(self):
-        # Create collection 
+        # Create collection
         id = self.create_collection()
         # Add dataset to collection
         did1 = self.db.add_dataset(id, self.dataset_metadata)
@@ -178,7 +179,7 @@ class TestTileDbData(unittest.TestCase):
         # edit collection
         self.db.edit_collection(id, "name", "edited_name")
         # read previous version
-        coll = self.db.read_collection_history(id, 1) # 1 version back
+        coll = self.db.read_collection_history(id, 1)  # 1 version back
         self.assertEqual(coll['name'], "test_collection")
         # revert to a previous version
         self.db.revert_collection_history(id, 1)
@@ -193,7 +194,7 @@ class TestTileDbData(unittest.TestCase):
         # edit dataset
         self.db.edit_dataset(did, "cell_count", 13)
         # read previous version
-        dataset = self.db.read_dataset_history(did, 1) # 1 version back
+        dataset = self.db.read_dataset_history(did, 1)  # 1 version back
         self.assertEqual(dataset['cell_count'], 12)
         # revert to previous version
         self.db.revert_dataset_history(did, 1)
@@ -242,7 +243,7 @@ class TestTileDbData(unittest.TestCase):
         # Try getting the revision
         status = self.db.get_attribute(rev_id, "visibility")
         self.assertEqual(status, "DELETED")
-    
+
     def test_get_published_collections(self):
         _ = self.create_collection()
         id2 = self.create_collection()

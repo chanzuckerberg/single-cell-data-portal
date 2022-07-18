@@ -1,6 +1,5 @@
 import unittest
 
-import backend.corpora.common.entities.tiledb_data as api
 
 class TestTileDbEndpts(unittest.TestCase):
     def setUp(self):

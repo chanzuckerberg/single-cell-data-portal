@@ -1,14 +1,13 @@
 # Wraps tiledb_data.py to fit API expected responses
 
-import os
 from flask import make_response, jsonify
 from backend.corpora.lambdas.api.v1.collection_id.upload import upload_from_link
 from backend.corpora.lambdas.api.v1.dataset import post_dataset_asset
 
 from tiledb_data import TileDBData
-from backend.corpora.dataset_processing.process import process
 
 location = "../../../../../tests/unit/backend/fixtures/test_tiledb/metadata"
+
 
 def create_collection(body: dict, user: str):
     """/v1/collections POST"""
@@ -39,6 +38,7 @@ def create_collection(body: dict, user: str):
     res = {"collection_id": id}
     return make_response(res, 200)
 
+
 def list_published_collections(user_id: str, from_date: int, to_date: int):
     """/v1/collections GET"""
     db = TileDBData(location)
@@ -50,17 +50,20 @@ def list_published_collections(user_id: str, from_date: int, to_date: int):
     }
     return make_response(res, 200)
 
+
 def list_published_collections_compact():
     """/v1/collections/index GET"""
     db = TileDBData(location)
     colls = db.get_published_collections()
     return make_response(jsonify(colls))
 
+
 def delete_collection(id: str):
     """/v1/collections/{id} DELETE"""
     db = TileDBData(location)
     db.delete_collection(id)
     return make_response('', 204)
+
 
 def get_collection(id: str):
     """/v1/collections/{id} GET"""
@@ -70,12 +73,14 @@ def get_collection(id: str):
     coll["datasets"] = datasets
     return make_response(jsonify(coll), 200)
 
+
 def start_revision(id: str):
     """/v1/collections/{id} POST"""
     db = TileDBData(location)
     rev_id = db.create_revision(id)
     res = get_collection(rev_id)
     return make_response(res, 200)
+
 
 def update_collection(id: str, body: dict):
     """/v1/collections/{id} PUT"""
@@ -84,6 +89,7 @@ def update_collection(id: str, body: dict):
         db.edit_collection(id, key, val)
     res = get_collection(id)
     return make_response(res, 200)
+
 
 def publish_collection(id: str):
     """/v1/collections/{id}/publish POST"""
@@ -95,6 +101,7 @@ def publish_collection(id: str):
     }
     return make_response(res, 202)
 
+
 def upload_dataset(coll_id: str, body: dict, token_info: dict):
     """/v1/collections/{id}/upload-links POST"""
     # get the dataset data from the given url, manage and upload the artifact, etc.
@@ -102,19 +109,22 @@ def upload_dataset(coll_id: str, body: dict, token_info: dict):
     res = {"dataset_id": dataset_id}
     return make_response(res, 202)
 
+
 def replace_dataset(coll_id: str,  body: dict, token_info: dict):
     """/v1/collections/{id}/upload-links PUT"""
     db = TileDBData(location)
+    dataset_id = body.get("id")
     db.delete_dataset(coll_id, dataset_id)
     dataset_id = upload_from_link(
         coll_id,
         token_info,
         body.get("url", body.get("link")),
-        body.get("id"),
+        dataset_id,
         curator_tag=body.get("curator_tag"),
     )
     res = {"dataset_id": dataset_id}
     return make_response(res, 202)
+
 
 def list_published_datasets():
     """/v1/datasets/index GET"""
@@ -122,10 +132,12 @@ def list_published_datasets():
     datasets = db.get_all_datasets()
     return make_response(jsonify(datasets), 200)
 
+
 def get_dataset_metadata(explorer_url: str):
     """/v1/datasets/meta GET"""
     # TODO
     return
+
 
 def delete_dataset(coll_id: str, dataset_id: str):
     """/v1/datasets/{id} DELETE"""
@@ -133,10 +145,12 @@ def delete_dataset(coll_id: str, dataset_id: str):
     db.delete_dataset(coll_id, dataset_id)
     return make_response('', 202)
 
+
 def request_asset_download(dataset_id: str, asset_id: str):
     """/v1/datasets/{dataset_id}/asset/{asset_id} POST"""
     res = post_dataset_asset(dataset_id, asset_id)
     return make_response(res, 200)
+
 
 def list_dataset_assets(id: str):
     """/v1/datasets/{dataset_id}/assets GET"""
@@ -144,6 +158,7 @@ def list_dataset_assets(id: str):
     dataset = db.get_dataset(id)
     assets = dataset["dataset_assets"]
     return make_response(jsonify(assets), 200)
+
 
 def get_dataset_upload_status(id: str):
     """/v1/datasets/{dataset_id}/status GET"""

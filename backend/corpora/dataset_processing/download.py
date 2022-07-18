@@ -3,11 +3,8 @@ import shutil
 import threading
 
 import requests
-from sqlalchemy import inspect
 
-from backend.corpora.common.corpora_orm import DbDatasetProcessingStatus, UploadStatus
-from backend.corpora.common.entities import Dataset
-from backend.corpora.common.utils.db_session import db_session_manager
+from backend.corpora.common.corpora_orm import UploadStatus
 from backend.corpora.common.utils.math_utils import MB
 from backend.corpora.dataset_processing.exceptions import ProcessingFailed, ProcessingCancelled
 from backend.corpora.common.entities.tiledb_data import TileDBData
@@ -108,8 +105,8 @@ def updater(dataset_id, processing_status, tracker: ProgressTracker, frequency: 
     :param frequency: The frequency in which the database is updated in seconds
     :return:
     """
-    db = TileDBData(location = "../../../../tests/unit/backend/fixtures/test_tiledb/metadata") # TODO: config this somewhere
-
+    # TODO: config this somewhere
+    db = TileDBData(location="../../../../tests/unit/backend/fixtures/test_tiledb/metadata")
 
     def _update():
         progress = tracker.progress()
@@ -169,7 +166,8 @@ def download(
 
     :return: The current dataset processing status.
     """
-    db = TileDBData(location = "../../../../tests/unit/backend/fixtures/test_tiledb/metadata") # TODO: config this somewhere
+    # TODO: config this somewhere
+    db = TileDBData(location="../../../../tests/unit/backend/fixtures/test_tiledb/metadata")
 
     logger.info("Setting up download.")
     logger.info(f"file_size: {file_size}")

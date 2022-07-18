@@ -7,9 +7,7 @@ from backend.corpora.common.entities.tiledb_data import TileDBData, Utils
 from .corpora_config import CorporaConfig
 import os
 
-from .corpora_orm import CollectionVisibility, ProcessingStatus, UploadStatus
-from .entities import Collection, Dataset
-from .utils.authorization_checks import owner_or_allowed
+from .corpora_orm import ProcessingStatus, UploadStatus
 from .utils.exceptions import (
     MaxFileSizeExceededException,
     InvalidFileFormatException,
@@ -43,12 +41,14 @@ def start_upload_sfn(collection_id, dataset_id, url):
     )
     return response
 
+
 def new_processing_status() -> dict:
     return {
         "upload_status": UploadStatus.WAITING,
         "upload_progress": 0,
         "processing_status": ProcessingStatus.PENDING,
     }
+
 
 def upload(
     collection_id: str,
@@ -60,7 +60,8 @@ def upload(
     dataset_id: str = None,
     curator_tag: str = None,
 ) -> str:
-    db = TileDBData(location = "../../../../tests/unit/backend/fixtures/test_tiledb/metadata") # TODO: config this somewhere
+    # TODO: config this somewhere
+    db = TileDBData(location="../../../../tests/unit/backend/fixtures/test_tiledb/metadata")
 
     max_file_size_gb = CorporaConfig().upload_max_file_size_gb * GB
     if file_size is not None and file_size > max_file_size_gb:

@@ -21,7 +21,8 @@ class Entity:
     Examples: Collection, Dataset
     """
 
-    location = "/Users/ragarwal/code/single-cell-data-portal/tests/unit/backend/fixtures/test_tiledb/metadata" # TODO config this somewhere
+    # TODO config this somewhere
+    location = "/Users/ragarwal/code/single-cell-data-portal/tests/unit/backend/fixtures/test_tiledb/metadata"
 
     list_attributes: typing.Tuple = None  # A list of attributes to retrieve when listing entities
 
