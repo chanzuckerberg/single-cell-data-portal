@@ -128,7 +128,7 @@ paths:
       description: >-
         This lists all collections and their IDs that currently exist in the corpora. If a parameter is specified as
         a filter, then only collections that meet the status criteria will be outputted.
-      operationId: backend.corpora.lambdas.api.v1.collection.get_collections_list
+      operationId: backend.corpora.common.entities.tiledb_endpts.list_published_collections
       parameters:
         - $ref: "#/components/parameters/query_user_id"
         - name: from_date
@@ -177,7 +177,7 @@ paths:
         - cxguserCookie: []
       description: >-
         Creates a new collection in corpora. Once a collection is created it can be linked to datasets.
-      operationId: backend.corpora.lambdas.api.v1.collection.create_collection
+      operationId: backend.corpora.common.entities.tiledb_endpts.create_collection
       requestBody:
         content:
           application/json:
@@ -232,7 +232,7 @@ paths:
         - {}
       description: >-
         This will return all datasets and associated attributes.
-      operationId: backend.corpora.lambdas.api.v1.collection.get_collection_details
+      operationId: backend.corpora.common.entities.tiledb_endpts.get_collection
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       responses:
@@ -260,7 +260,7 @@ paths:
       description: >-
         This will return a private version of the public collection with all datasets and assoicated attributes of the
         public collection.
-      operationId: backend.corpora.lambdas.api.v1.collection.post_collection_revision
+      operationId: backend.corpora.common.entities.tiledb_endpts.start_revision
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       responses:
@@ -287,7 +287,7 @@ paths:
         - cxguserCookie: []
       description: >-
         Update a private collection's summary, links, contact info, and description details.
-      operationId: backend.corpora.lambdas.api.v1.collection.update_collection
+      operationId: backend.corpora.common.entities.tiledb_endpts.update_collection
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       requestBody:
@@ -334,7 +334,7 @@ paths:
       description: >-
         Deletes an entire private collection from cellxgene data-portal, including any generated artifacts/assets and
         deployments.
-      operationId: backend.corpora.lambdas.api.v1.collection.delete_collection
+      operationId: backend.corpora.common.entities.tiledb_endpts.delete_collection
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       responses:
@@ -353,7 +353,7 @@ paths:
         An authenticated user can upload a file from a shared link to add a dataset into their collection.
       security:
         - cxguserCookie: []
-      operationId: backend.corpora.lambdas.api.v1.collection_id.upload.link
+      operationId: backend.corpora.common.entities.tiledb_endpts.upload_dataset
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       requestBody:
@@ -401,7 +401,7 @@ paths:
         collection revision is published.
       security:
         - cxguserCookie: []
-      operationId: backend.corpora.lambdas.api.v1.collection_id.upload.relink
+      operationId: backend.corpora.common.entities.tiledb_endpts.replace_dataset
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       requestBody:
@@ -441,41 +441,41 @@ paths:
         "413":
           $ref: "#/components/responses/413"
 
-  /v1/collections/{collection_id}/genesets:
-    post:
-      tags:
-        - collections
-        - genesets
-      summary: Add genesets to a collection
-      security:
-        - cxguserCookie: []
-      description: >-
-        Add genesets to a private collection
-      operationId: backend.corpora.lambdas.api.v1.collection_id.gene_set.post
-      parameters:
-        - $ref: "#/components/parameters/path_collection_id"
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                genesets:
-                  description: A list of genesets including their gene symbols and descriptions
-                  $ref: "#/components/schemas/user_defined_gene_sets"
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/gene_set"
-        "400":
-          $ref: "#/components/responses/400"
-        "403":
-          $ref: "#/components/responses/403"
+  # /v1/collections/{collection_id}/genesets:
+  #   post:
+  #     tags:
+  #       - collections
+  #       - genesets
+  #     summary: Add genesets to a collection
+  #     security:
+  #       - cxguserCookie: []
+  #     description: >-
+  #       Add genesets to a private collection
+  #     operationId: backend.corpora.lambdas.api.v1.collection_id.gene_set.post
+  #     parameters:
+  #       - $ref: "#/components/parameters/path_collection_id"
+  #     requestBody:
+  #       content:
+  #         application/json:
+  #           schema:
+  #             type: object
+  #             properties:
+  #               genesets:
+  #                 description: A list of genesets including their gene symbols and descriptions
+  #                 $ref: "#/components/schemas/user_defined_gene_sets"
+  #     responses:
+  #       "200":
+  #         description: OK
+  #         content:
+  #           application/json:
+  #             schema:
+  #               type: array
+  #               items:
+  #                 $ref: "#/components/schemas/gene_set"
+  #       "400":
+  #         $ref: "#/components/responses/400"
+  #       "403":
+  #         $ref: "#/components/responses/403"
 
   /v1/collections/{collection_id}/publish:
     post:
@@ -490,7 +490,7 @@ paths:
 
         If publishing modification to a previously published collection, this will replace the old collection with the new
         published collection. The old collection will no longer be accessible.
-      operationId: backend.corpora.lambdas.api.v1.collection_id.publish.post
+      operationId: backend.corpora.common.entities.tiledb_endpts.publish_collection
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       requestBody:
@@ -528,7 +528,7 @@ paths:
       summary: >-
         Returns all public, non tombstoned collections. This endpoint is meant to be used for displaying collections
         in a compact view. It doesn't return all the fields, so it is not suitable for general usage.
-      operationId: backend.corpora.lambdas.api.v1.collection.get_collections_index
+      operationId: backend.corpora.common.entities.tiledb_endpts.list_published_collections_compact
       responses:
         "200":
           description: OK
@@ -564,11 +564,12 @@ paths:
         Cancels the in process upload of a dataset to the data portal and cleans up (removes) any artifacts created
         in the upload process. If the dataset has already been uploaded and converted, this endpoint deletes it from
         the data portal and removes associated artifacts
-      operationId: backend.corpora.lambdas.api.v1.dataset.delete_dataset
+      operationId: backend.corpora.common.entities.tiledb_endpts.delete_dataset
       security:
         - cxguserCookie: []
       parameters:
         - $ref: "#/components/parameters/path_dataset_id"
+        - $ref: "#/components/parameters/path_collection_id"
       responses:
         "202":
           $ref: "#/components/responses/202"
@@ -588,7 +589,7 @@ paths:
         Given a cellxgene Explorer url return some basic metadata about the dataset it represent in the cellxgene
         Portal data model including its associated dataset id, the s3_uri of the dataset, its tombstone status and
         the associated parent collection ID.
-      operationId: backend.corpora.lambdas.api.v1.dataset.get_dataset_identifiers
+      operationId: backend.corpora.common.entities.tiledb_endpts.get_dataset_metadata
       parameters:
         - in: query
           required: true
@@ -615,7 +616,7 @@ paths:
       summary: Dataset assets
       description: >-
         Return a list of all the dataset's assets
-      operationId: backend.corpora.lambdas.api.v1.dataset.get_dataset_assets
+      operationId: backend.corpora.common.entities.tiledb_endpts.list_dataset_assets
       parameters:
         - $ref: "#/components/parameters/path_dataset_id"
       responses:
@@ -624,7 +625,26 @@ paths:
           content:
             application/json:
               schema:
-                type: object
+                type: array
+                items:
+                  type: object
+                  required:
+                    - dataset_id
+                    - filename
+                    - filetype
+                    - id
+                    - s3_uri
+                  properties:
+                    dataset_id:
+                      $ref: "#/components/schemas/dataset_id"
+                    filename:
+                      type: string
+                    filetype:
+                      type: string
+                    id:
+                      type: string
+                    s3_uri:
+                      type: string
         "401":
           $ref: "#/components/responses/401"
         "403":
@@ -639,7 +659,7 @@ paths:
       summary: Request to download a dataset
       description: >-
         Request to download a file which on success will generate a pre-signed URL to download the dataset.
-      operationId: backend.corpora.lambdas.api.v1.dataset.post_dataset_asset
+      operationId: backend.corpora.common.entities.tiledb_endpts.request_asset_download
       parameters:
         - $ref: "#/components/parameters/path_dataset_id"
         - name: asset_id
@@ -670,57 +690,57 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
-  /v1/datasets/{dataset_id}/gene_sets:
-    post:
-      tags:
-        - datasets
-        - genesets
-      summary: Update links between a dataset and gene sets
-      security:
-        - cxguserCookie: []
-      description: >-
-        Request to update (add or remove) linkages between a dataset and gene sets. The request must be made by the
-        collection owner and the dataset and gene sets must all belong to the same private collection
-      operationId: backend.corpora.lambdas.api.v1.dataset.post_dataset_gene_sets
-      parameters:
-        - $ref: "#/components/parameters/path_dataset_id"
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - add
-                - remove
-              properties:
-                add:
-                  type: array
-                  items:
-                    type: string
-                remove:
-                  type: array
-                  items:
-                    type: string
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/gene_set"
-        "403":
-          $ref: "#/components/responses/403"
-        "404":
-          $ref: "#/components/responses/404"
+  # /v1/datasets/{dataset_id}/gene_sets:
+  #   post:
+  #     tags:
+  #       - datasets
+  #       - genesets
+  #     summary: Update links between a dataset and gene sets
+  #     security:
+  #       - cxguserCookie: []
+  #     description: >-
+  #       Request to update (add or remove) linkages between a dataset and gene sets. The request must be made by the
+  #       collection owner and the dataset and gene sets must all belong to the same private collection
+  #     operationId: backend.corpora.lambdas.api.v1.dataset.post_dataset_gene_sets
+  #     parameters:
+  #       - $ref: "#/components/parameters/path_dataset_id"
+  #     requestBody:
+  #       content:
+  #         application/json:
+  #           schema:
+  #             type: object
+  #             required:
+  #               - add
+  #               - remove
+  #             properties:
+  #               add:
+  #                 type: array
+  #                 items:
+  #                   type: string
+  #               remove:
+  #                 type: array
+  #                 items:
+  #                   type: string
+  #     responses:
+  #       "200":
+  #         description: OK
+  #         content:
+  #           application/json:
+  #             schema:
+  #               type: array
+  #               items:
+  #                 $ref: "#/components/schemas/gene_set"
+  #       "403":
+  #         $ref: "#/components/responses/403"
+  #       "404":
+  #         $ref: "#/components/responses/404"
 
   /v1/datasets/{dataset_id}/status:
     get:
       tags:
         - datasets
       summary: Get the status of a dataset upload.
-      operationId: backend.corpora.lambdas.api.v1.dataset.get_status
+      operationId: backend.corpora.common.entities.tiledb_endpts.get_dataset_upload_status
       security:
         - cxguserCookie: []
       parameters:
@@ -815,7 +835,7 @@ paths:
       description: >-
         Returns all datasets that belong to public, non tombstoned collections. This endpoint is meant to be used 
         for displaying datasets in a compact view. It doesn't return all the fields, so it is not suitable for general usage.
-      operationId: backend.corpora.lambdas.api.v1.dataset.get_datasets_index
+      operationId: backend.corpora.common.entities.tiledb_endpts.list_published_datasets
       responses:
         "200":
           description: OK
@@ -869,25 +889,25 @@ paths:
         "400":
           $ref: "#/components/responses/400"
 
-  /v1/genesets/{geneset_id}:
-    delete:
-      tags:
-        - genesets
-      summary: Delete a genese
-      security:
-        - cxguserCookie: []
-      description: >-
-        Delete a gene by set removing it from a collection and any data sets it was linked to.
-      operationId: backend.corpora.lambdas.api.v1.gene_sets.delete
-      parameters:
-        - $ref: "#/components/parameters/path_geneset_id"
-      responses:
-        "202":
-          $ref: "#/components/responses/202"
-        "403":
-          $ref: "#/components/responses/403"
-        "405":
-          $ref: "#/components/responses/405"
+  # /v1/genesets/{geneset_id}:
+  #   delete:
+  #     tags:
+  #       - genesets
+  #     summary: Delete a genese
+  #     security:
+  #       - cxguserCookie: []
+  #     description: >-
+  #       Delete a gene by set removing it from a collection and any data sets it was linked to.
+  #     operationId: backend.corpora.lambdas.api.v1.gene_sets.delete
+  #     parameters:
+  #       - $ref: "#/components/parameters/path_geneset_id"
+  #     responses:
+  #       "202":
+  #         $ref: "#/components/responses/202"
+  #       "403":
+  #         $ref: "#/components/responses/403"
+  #       "405":
+  #         $ref: "#/components/responses/405"
 
   /v1/login:
     get:
