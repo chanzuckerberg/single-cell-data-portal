@@ -81,14 +81,14 @@ def load_data_and_create_cube(
     logger.info("Built expression summary cube")
     if validate_cubes:
         if Validation(corpus_path).validate_cube() is False:
+            pipeline_failure_message = gen_pipeline_failure_message(
+                "Issue with cube validation, see logs for more detail"
+            )
+            data = format_failed_batch_issue_slack_alert(pipeline_failure_message)
+            logger.info(data)
             if os.getenv("DEPLOYMENT_STAGE") == "prod":
-                pipeline_failure_message = gen_pipeline_failure_message(
-                    "Issue with cube validation, see logs for more detail"
-                )
-                data = format_failed_batch_issue_slack_alert(pipeline_failure_message)
                 notify_slack(data)
             sys.exit("Exiting due to cube validation failure")
-
     cell_type_by_tissue = get_cell_types_by_tissue(corpus_path)
     generate_cell_ordering(snapshot_path, cell_type_by_tissue)
     generate_primary_filter_dimensions(snapshot_path, corpus_name, snapshot_id)
@@ -109,16 +109,17 @@ if __name__ == "__main__":
     # todo pass in validate_cubes as env arg
     try:
         snapshot_id = load_data_and_create_cube("datasets", ".")
+        pipeline_success_message = gen_pipeline_success_message(snapshot_id)
+        data = json.dumps(pipeline_success_message, indent=2)
+        logger.info(data)
         if os.getenv("DEPLOYMENT_STAGE") == "prod":
-            pipeline_success_message = gen_pipeline_success_message(snapshot_id)
-            data = json.dumps(pipeline_success_message, indent=2)
             notify_slack(data)
     except Exception as e:
+        pipeline_failure_message = gen_pipeline_failure_message(
+            f"Issue with cube creation pipeline: {e}. See logs for more detail"
+        )
+        data = format_failed_batch_issue_slack_alert(pipeline_failure_message)
+        logger.info(data)
         if os.getenv("DEPLOYMENT_STAGE") == "prod":
-            pipeline_failure_message = gen_pipeline_failure_message(
-                f"Issue with cube creation pipeline: {e}. See logs for more detail"
-            )
-            data = format_failed_batch_issue_slack_alert(pipeline_failure_message)
             notify_slack(data)
-
     sys.exit()
