@@ -35,7 +35,6 @@ class BogusCollectionParams:
         bogus_data = dict(
             visibility=CollectionVisibility.PRIVATE.name,
             owner="test_user_id",
-            data_submission_policy_version=0,
             description="described",
             contact_name="john doe",
             contact_email="john.doe@email.com",
@@ -70,12 +69,11 @@ class BogusDatasetParams:
             development_stage=[{"ontology_term_id": "HsapDv:0011", "label": "just a baby"}],
             cell_type=[{"ontology_term_id": "Hepatic-1A", "label": "liver"}],
             is_primary_data=IsPrimaryData.PRIMARY.name,
-            collection_id="test_collection_id",
             explorer_url="test_url",
             x_normalization="normal",
             x_approximate_distribution=XApproximateDistribution.NORMAL.name,
-            batch_condition=np.array(["batchA", "batchB"], dtype="object"),
-            schema_version="2.0.0",
+            # batch_condition=np.array(["batchA", "batchB"], dtype="object"),
+            # schema_version="2.0.0",
         )
 
         bogus_data.update(**kwargs)
@@ -95,32 +93,32 @@ class BogusDbCollectionLinkParams:
         return bogus_data
 
 
-class BogusGenesetParams:
-    @classmethod
-    def get(cls, gene_count=6, **kwargs):
-        genes = []
-        for i in range(gene_count):
-            gene = {
-                "gene_symbol": f"{i}",
-                "gene_description": "describe a gene",
-                "additional_params": {},
-            }
-            if i % 3 == 0:
-                gene["additional_params"] = {
-                    "provenance1": "some words",
-                    "provenance1_description": "another set of words",
-                }
-            genes.append(gene)
-        bogus_data = dict(
-            description="This is a geneset bwhahaha",
-            name=cls.generate_random_string(7),
-            genes=genes,
-            collection_id="test_collection_id",
-        )
+# class BogusGenesetParams:
+#     @classmethod
+#     def get(cls, gene_count=6, **kwargs):
+#         genes = []
+#         for i in range(gene_count):
+#             gene = {
+#                 "gene_symbol": f"{i}",
+#                 "gene_description": "describe a gene",
+#                 "additional_params": {},
+#             }
+#             if i % 3 == 0:
+#                 gene["additional_params"] = {
+#                     "provenance1": "some words",
+#                     "provenance1_description": "another set of words",
+#                 }
+#             genes.append(gene)
+#         bogus_data = dict(
+#             description="This is a geneset bwhahaha",
+#             name=cls.generate_random_string(7),
+#             genes=genes,
+#             collection_id="test_collection_id",
+#         )
 
-        bogus_data.update(**kwargs)
-        return bogus_data
+#         bogus_data.update(**kwargs)
+#         return bogus_data
 
-    @staticmethod
-    def generate_random_string(length=7):
-        return "".join(random.choice(string.ascii_letters) for i in range(length))
+#     @staticmethod
+#     def generate_random_string(length=7):
+#         return "".join(random.choice(string.ascii_letters) for i in range(length))

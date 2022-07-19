@@ -111,6 +111,17 @@ class Utils:
         "processing_status": ""
     }
 
+    empty_collection = {
+        "name": "",
+        "description": "",
+        "owner": "",
+        "contact_name": "",
+        "contact_email": "",
+        "curator_name": "",
+        "links": [],
+        "publisher_metadata": {}
+    }
+
     @staticmethod
     def new_id():
         return uuid.uuid4().hex

@@ -1,7 +1,6 @@
 import json
 import os
 import unittest
-from backend.corpora.common.entities.dataset import Dataset
 
 from furl import furl
 

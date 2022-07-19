@@ -1,66 +1,60 @@
-from sqlalchemy.orm import Session
-
-from backend.corpora.common.entities import Collection, Dataset
-from backend.corpora.common.entities.geneset import Geneset
+from backend.corpora.common.entities.tiledb_data import TileDBData, Utils
 from backend.corpora.common.entities.collection_link import CollectionLink
-from backend.corpora.common.utils.db_session import db_session_manager
 from tests.unit.backend.utils import (
     BogusCollectionParams,
     BogusDatasetParams,
-    BogusGenesetParams,
     BogusDbCollectionLinkParams,
 )
 
+location = "./test_tiledb/metadata"  # TODO: config this somewhere
 
 class GenerateDataMixin:
     """
     Use to populate the database with test data that should be cleanup after the test
     """
 
+    attrs = Utils.attrs
+
     @staticmethod
     def delete_collection(_id):
-        with db_session_manager() as session:
-            col = Collection.get(session, _id)
-            if col:
-                col.delete()
+        db = TileDBData(location)
+        db.delete_collection(_id)
 
-    def generate_collection(self, session: Session, **params) -> Collection:
-        _collection = Collection.create(session, **BogusCollectionParams.get(**params))
-        self.addCleanup(self.delete_collection, _collection.id)
-        return _collection
-
-    @staticmethod
-    def delete_dataset(_id):
-        with db_session_manager() as session:
-            dat = Dataset.get(session, _id)
-            if dat:
-                dat.delete()
-
-    def generate_dataset(self, session: Session, **params) -> Dataset:
-        _dataset = Dataset.create(session, **BogusDatasetParams.get(**params))
-        self.addCleanup(self.delete_dataset, _dataset.id)
-        return _dataset
+    def generate_collection(self, **params):
+        db = TileDBData(location)
+        data = dict(Utils.empty_collection)
+        data.update(**BogusCollectionParams.get(**params))
+        id = db.create_collection(**data)
+        metadata = db.get_collection(id)
+        self.addCleanup(self.delete_collection, id)
+        return id, metadata
 
     @staticmethod
-    def delete_geneset(_id):
-        with db_session_manager() as session:
-            geneset = Geneset.get(session, _id)
-            if geneset:
-                geneset.delete()
+    def delete_dataset(coll_id, dataset_id):
+        db = TileDBData(location)
+        db.delete_dataset(coll_id, dataset_id)
 
-    def generate_geneset(self, session: Session, **params) -> Geneset:
-        _geneset = Geneset.create(session, **BogusGenesetParams.get(**params))
-        self.addCleanup(self.delete_geneset, _geneset.id)
-        return _geneset
+    def generate_dataset(self, coll_id: str, **params):
+        db = TileDBData(location)
+        data = dict(Utils.empty_dataset)
+        data.update(**BogusDatasetParams.get(**params))
+        dataset_id = db.add_dataset(coll_id, data)
+        dataset = db.get_dataset(dataset_id)
+        self.addCleanup(self.delete_dataset, dataset_id)
+        return dataset_id, dataset
 
-    @staticmethod
-    def delete_link(_id):
-        with db_session_manager() as session:
-            link = CollectionLink.get(session, _id)
-            if link:
-                link.delete()
+    # @staticmethod
+    # def delete_geneset(_id):
+    #     with db_session_manager() as session:
+    #         geneset = Geneset.get(session, _id)
+    #         if geneset:
+    #             geneset.delete()
+
+    # def generate_geneset(self, session: Session, **params) -> Geneset:
+    #     _geneset = Geneset.create(session, **BogusGenesetParams.get(**params))
+    #     self.addCleanup(self.delete_geneset, _geneset.id)
+    #     return _geneset
 
     def generate_link(self, session: Session, **params) -> CollectionLink:
-        _link = CollectionLink.create(session, **BogusDbCollectionLinkParams.get(**params))
-        self.addCleanup(self.delete_link, _link.id)
+        _link = BogusDbCollectionLinkParams.get(**params)
         return _link
