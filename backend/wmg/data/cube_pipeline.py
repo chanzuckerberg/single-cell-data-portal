@@ -36,6 +36,7 @@ def gen_pipeline_failure_message(failure_info):
         ]
     }
 
+
 def gen_pipeline_success_message(snapshot_id):
     return {
         "blocks": [
@@ -52,11 +53,11 @@ def gen_pipeline_success_message(snapshot_id):
 
 
 def load_data_and_create_cube(
-        path_to_h5ad_datasets: str,
-        corpus_name: str = "corpus_group",
-        snapshot_path=None,
-        extract_data=True,
-        validate_cubes=True,
+    path_to_h5ad_datasets: str,
+    corpus_name: str = "corpus_group",
+    snapshot_path=None,
+    extract_data=True,
+    validate_cubes=True,
 ):
     """
     Function to copy H5AD datasets (from a preconfiugred s3 bucket) to the path given then,
@@ -82,7 +83,8 @@ def load_data_and_create_cube(
         if Validation(corpus_path).validate_cube() is False:
             if os.getenv("DEPLOYMENT_STAGE") == "prod":
                 pipeline_failure_message = gen_pipeline_failure_message(
-                    "Issue with cube validation, see logs for more detail")
+                    "Issue with cube validation, see logs for more detail"
+                )
                 data = format_failed_batch_issue_slack_alert(pipeline_failure_message)
                 notify_slack(data)
             sys.exit("Exiting due to cube validation failure")
@@ -113,7 +115,8 @@ if __name__ == "__main__":
             notify_slack(data)
     except Exception as e:
         pipeline_failure_message = gen_pipeline_failure_message(
-            f"Issue with cube creation pipeline: {e}. See logs for more detail")
+            f"Issue with cube creation pipeline: {e}. See logs for more detail"
+        )
         data = format_failed_batch_issue_slack_alert(pipeline_failure_message)
         notify_slack(data)
 
