@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
-def gen_pipeline_failure_message(failure_info):
+def gen_pipeline_failure_message(failure_info: str) -> dict:
     return {
         "blocks": [
             {
@@ -37,7 +37,7 @@ def gen_pipeline_failure_message(failure_info):
     }
 
 
-def gen_pipeline_success_message(snapshot_id):
+def gen_pipeline_success_message(snapshot_id: str) -> dict:
     return {
         "blocks": [
             {
@@ -114,10 +114,11 @@ if __name__ == "__main__":
             data = json.dumps(pipeline_success_message, indent=2)
             notify_slack(data)
     except Exception as e:
-        pipeline_failure_message = gen_pipeline_failure_message(
-            f"Issue with cube creation pipeline: {e}. See logs for more detail"
-        )
-        data = format_failed_batch_issue_slack_alert(pipeline_failure_message)
-        notify_slack(data)
+        if os.getenv("DEPLOYMENT_STAGE") == "prod":
+            pipeline_failure_message = gen_pipeline_failure_message(
+                f"Issue with cube creation pipeline: {e}. See logs for more detail"
+            )
+            data = format_failed_batch_issue_slack_alert(pipeline_failure_message)
+            notify_slack(data)
 
     sys.exit()
