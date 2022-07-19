@@ -36,19 +36,19 @@ def gen_pipeline_failure_message(failure_info):
         ]
     }
 
-
-pipeline_success_message = {
-    "blocks": [
-        {
-            "type": "header",
-            "text": {
-                "type": "plain_text",
-                "text": "Corpus Asset Pipeline Succeeded:tada:",
-                "emoji": True,
-            },
-        }
-    ]
-}
+def gen_pipeline_success_message(snapshot_id):
+    return {
+        "blocks": [
+            {
+                "type": "header",
+                "text": {
+                    "type": "plain_text",
+                    "text": f"Corpus Asset Pipeline Succeeded:tada: \nStored under: {snapshot_id}",
+                    "emoji": True,
+                },
+            }
+        ]
+    }
 
 
 def load_data_and_create_cube(
@@ -96,6 +96,7 @@ def load_data_and_create_cube(
     if validate_cubes:
         make_snapshot_active(snapshot_id)
         logger.info(f"Updated latest_snapshot_identifier in s3. Current snapshot id is {snapshot_id}")
+        return snapshot_id
 
 
 if __name__ == "__main__":
@@ -105,8 +106,9 @@ if __name__ == "__main__":
     """
     # todo pass in validate_cubes as env arg
     try:
-        load_data_and_create_cube("datasets", ".")
+        snapshot_id = load_data_and_create_cube("datasets", ".")
         if os.getenv("DEPLOYMENT_STAGE") == "prod":
+            pipeline_success_message = gen_pipeline_success_message(snapshot_id)
             data = json.dumps(pipeline_success_message, indent=2)
             notify_slack(data)
     except Exception as e:
