@@ -432,17 +432,14 @@ const LandingPage = (): JSX.Element => {
                           cell sub-types and states.
                         </p>
                         <div className={styles.linkContainer}>
-                          <Link
-                            href={`https://cellxgene.cziscience.com/e/53d208b0-2cfd-4366-9866-c3c6114081bc.cxg/`}
-                            passHref
+                          <a
+                            href={`${ROUTES.HOMEPAGE}e/53d208b0-2cfd-4366-9866-c3c6114081bc.cxg/`}
                           >
-                            <a>
-                              Explore a multi-tissue atlas
-                              <span className={styles.linkArrow}>
-                                <LinkArrow />
-                              </span>
-                            </a>
-                          </Link>
+                            Explore a multi-tissue atlas
+                            <span className={styles.linkArrow}>
+                              <LinkArrow />
+                            </span>
+                          </a>
                           <Link href={ROUTES.COLLECTIONS} passHref>
                             <a>
                               Explore the studies
@@ -451,17 +448,17 @@ const LandingPage = (): JSX.Element => {
                               </span>
                             </a>
                           </Link>
-                          <Link
-                            href={`https://cellxgene.cziscience.com/docs/04__Analyze%20Public%20Data/4_1__Hosted%20Tutorials`}
-                            passHref
+                          {/* DOC PAGE LINKS NEED TO BE OPENED IN A NEW TAB IN ORDER TO LOAD UNIQUE CSP DIRECTIVE */}
+                          <a
+                            href={`${ROUTES.DOCS}/04__Analyze%20Public%20Data/4_1__Hosted%20Tutorials`}
+                            rel="noopener"
+                            target="_blank"
                           >
-                            <a>
-                              Browse tutorials
-                              <span className={styles.linkArrow}>
-                                <LinkArrow />
-                              </span>
-                            </a>
-                          </Link>
+                            Browse tutorials
+                            <span className={styles.linkArrow}>
+                              <LinkArrow />
+                            </span>
+                          </a>
                         </div>
                       </div>
                     </div>
@@ -551,8 +548,9 @@ const LandingPage = (): JSX.Element => {
                           directly explore and annotate datasets.
                         </p>
                         <div className={styles.linkContainer}>
-                          {/* LINK TO BE UPDATED POST-LAUNCH */}
-                          <a href="https://cellxgene.cziscience.com/docs/05__Annotate%20and%20Analyze%20Your%20Data/5_0__Get%20Started">
+                          <a
+                            href={`${ROUTES.DOCS}/05__Annotate%20and%20Analyze%20Your%20Data/5_0__Get%20Started}`}
+                          >
                             Explore CZ CELL×GENE Annotate
                             <span className={styles.linkArrow}>
                               <LinkArrow />
