@@ -180,6 +180,22 @@ jobs:
         with:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v23.1
+        with:
+          files: |
+            Dockerfile*
+            **/Dockerfile
+            requirements*.txt
+            **/requirements*.txt
+      - name: Check if containers need to be rebuilt
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: |
+          echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
+          make local-rebuild-backend
       - name: Run tests in docker-compose
         run: |
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
@@ -189,7 +205,7 @@ jobs:
         with:
           status: ${{ job.status }}
           fields: repo,commit,author,eventName,workflow,job,mention
-          mention: 'here'
+          mention: "here"
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
@@ -210,6 +226,22 @@ jobs:
         with:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v23.1
+        with:
+          files: |
+            Dockerfile*
+            **/Dockerfile*
+            requirements*.txt
+            **/requirements*.txt
+      - name: Check if containers need to be rebuilt
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: |
+          echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
+          make local-rebuild-processing
       - name: Run tests in docker-compose
         run: |
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
