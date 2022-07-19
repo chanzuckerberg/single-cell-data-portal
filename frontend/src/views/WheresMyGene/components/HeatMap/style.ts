@@ -40,7 +40,7 @@ export const YAxisWrapper = styled.div`
   top: 0;
   left: 0;
   z-index: 1;
-
+  
   ${({ height }: { height: number }) => {
     return `
       height: ${height}px;

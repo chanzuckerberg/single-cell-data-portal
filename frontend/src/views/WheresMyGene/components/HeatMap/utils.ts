@@ -204,11 +204,6 @@ export function createXAxisOptions({
     ],
     yAxis: [
       {
-        name: "Cell Count",
-        nameLocation: "end",
-        nameRotate: 270,
-        offset: 10,
-        nameGap: 8,
         axisLabel: { fontSize: 0 },
         axisLine: {
           show: false,
@@ -300,6 +295,10 @@ export function createYAxisOptions({
         triggerEvent: true,
       },
       {
+        name: "Cell Count",
+        nameLocation: "end",
+        nameRotate: 270,
+        nameGap: 8,        
         axisLabel: {
           formatter(value: number | string) {
             const { total_count } = deserializeCellTypeMetadata(
