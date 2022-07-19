@@ -7,7 +7,7 @@ from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest
 class TestDeleteCollection(BaseAuthAPITest):
     def _test(self, collection_id, header, expected_status):
         if header == "owner":
-            headers = self.get_auth_headers()
+            headers = self.make_owner_header()
         elif header == "super":
             headers = self.make_super_curator_header()
         elif header == "not_owner":
