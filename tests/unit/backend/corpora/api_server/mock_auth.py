@@ -1,15 +1,14 @@
-import urllib
 import time
 import random
 import sys
+
 import requests
 from flask import Flask, request, redirect, make_response, jsonify
-import subprocess
+from multiprocessing import Process
 
 # seconds until the token expires
 from jose import jwt
-
-TOKEN_EXPIRES = 3
+from tests.unit.backend.corpora.api_server.config import TOKEN_EXPIRES
 
 
 # A mocked out oauth server, which serves all the endpoints needed by the oauth type.
@@ -22,7 +21,6 @@ class MockOauthApp:
         # mock flask app
         self.app = Flask("mock_oauth_app")
 
-        self.app.add_url_rule("/test-refresh", view_func=self.test_refresh)
         self.app.add_url_rule("/authorize", view_func=self.api_authorize)
         self.app.add_url_rule("/oauth/token", view_func=self.api_oauth_token, methods=["POST"])
         self.app.add_url_rule("/v2/logout", view_func=self.api_logout)
@@ -75,13 +73,6 @@ class MockOauthApp:
         )
         return make_response(jsonify(dict(keys=[data])))
 
-    def test_refresh(self):
-        token = request.headers.get("Authorization")
-        if token == "Bearer good":
-            return make_response("", 200)
-        else:
-            return make_response("", 401)
-
 
 class MockOauthServer:
     def __init__(self, additional_scope=None, token_duration=0):
@@ -98,41 +89,24 @@ class MockOauthServer:
             params.append(self.additional_scope)
         if self.token_duration:
             params.append(str(self.token_duration))
-        self.process = subprocess.Popen(params)
+        mock_app = MockOauthApp(self.port, self.additional_scope, self.token_duration).app
+        self.process = Process(target=mock_app.run, kwargs=dict(port=self.port, debug=True, use_reloader=False))
+        self.process.start()
         # Verify that the mock oauth server is ready (accepting requests) before starting the tests.
         self.server_okay = False
         for _ in range(5):
             try:
                 response = requests.get(f"http://localhost:{self.port}/.well-known/jwks.json")
-                if response.status_code == 200:
-                    self.server_okay = True
-                    break
+                response.raise_for_status()
             except Exception:
-                pass
-
-            # wait one second and try again
-            time.sleep(1)
+                time.sleep(0.1)
+            else:
+                self.server_okay = True
+                break
 
     def terminate(self):
         self.process.terminate()
-
-
-def get_auth_token(app):
-    """
-    Generated an auth token for testing.
-    :param app: a WSGI app.
-    :return:
-    """
-    headers = dict(host="localhost")
-    response = app.get("/dp/v1/login", headers=headers)
-    location = response.headers["Location"]
-    split = urllib.parse.urlsplit(location)
-    args = dict(urllib.parse.parse_qsl(split.query))
-
-    # follow redirect
-    url = f"/dp/v1/oauth2/callback?code=fakecode&state={args['state']}"
-    response = app.get(url, headers=dict(host="localhost", Cookie=response.headers["Set-Cookie"]))
-    return response.headers["Set-Cookie"]
+        self.process.join()
 
 
 def make_token(token_claims: dict, token_duration: int = 5, additional_scope: list = None) -> str:
@@ -143,9 +117,3 @@ def make_token(token_claims: dict, token_duration: int = 5, additional_scope: li
 
     token = jwt.encode(claims=token_claims, key="mysecret", algorithm="HS256", headers=headers)
     return token
-
-
-if __name__ == "__main__":
-    port = int(sys.argv[1])
-    mock_app = MockOauthApp(port, *sys.argv[2:])
-    mock_app.app.run(port=port, debug=True)
