@@ -1,7 +1,7 @@
 import os
 
 from backend.corpora.common.utils.aws import delete_many_from_s3
-from backend.corpora.lambdas.upload_failures.slack import notify_slack
+from backend.corpora.lambdas.upload_failures.slack import dataset_processing_slack_notification
 
 from backend.corpora.lambdas.upload_failures.upload import update_dataset_processing_status_to_failed
 
@@ -9,7 +9,7 @@ from backend.corpora.lambdas.upload_failures.upload import update_dataset_proces
 def handle_failure(event, context):
     dataset_id = event["dataset_id"]
     if os.getenv("DEPLOYMENT_STAGE") == "prod":
-        notify_slack(dataset_id)
+        dataset_processing_slack_notification(dataset_id)
     object_key = os.path.join(os.environ.get("REMOTE_DEV_PREFIX", ""), dataset_id).strip("/")
     delete_many_from_s3(os.environ["ARTIFACT_BUCKET"], object_key)
     cellxgene_bucket = f"hosted-cellxgene-{os.environ['DEPLOYMENT_STAGE']}"
