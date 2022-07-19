@@ -17,9 +17,14 @@ def dataset_processing_slack_notification(dataset_id):
 
 
 def notify_slack(data):
+    """
+    This will only create a slack notification if called in the production env
+    In all other envs (and in prod) it will simply log alert data
+    """
     slack_webhook = CorporaConfig().slack_webhook
-    logger.info(data)
-    requests.post(slack_webhook, headers={"Content-type": "application/json"}, data=data)
+    logger.info(f"Slack notification function called with message: {data}")
+    if os.getenv("DEPLOYMENT_STAGE") == "prod":
+        requests.post(slack_webhook, headers={"Content-type": "application/json"}, data=data)
 
 
 def format_dataset_processing_failure_slack_message(dataset_id):
