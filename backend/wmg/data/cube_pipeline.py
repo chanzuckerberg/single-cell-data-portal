@@ -21,18 +21,22 @@ from backend.wmg.data.wmg_cube import create_cubes
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
-pipeline_failure_message = {
-    "blocks": [
-        {
-            "type": "header",
-            "text": {
-                "type": "plain_text",
-                "text": "Corpus Asset Pipeline Failed:fire:",
-                "emoji": True,
-            },
-        }
-    ]
-}
+
+def gen_pipeline_failure_message(failure_info):
+    return {
+        "blocks": [
+            {
+                "type": "header",
+                "text": {
+                    "type": "plain_text",
+                    "text": f"Corpus Asset Pipeline Failed:fire: \n{failure_info}",
+                    "emoji": True,
+                },
+            }
+        ]
+    }
+
+
 pipeline_success_message = {
     "blocks": [
         {
@@ -48,11 +52,11 @@ pipeline_success_message = {
 
 
 def load_data_and_create_cube(
-    path_to_h5ad_datasets: str,
-    corpus_name: str = "corpus_group",
-    snapshot_path=None,
-    extract_data=True,
-    validate_cubes=True,
+        path_to_h5ad_datasets: str,
+        corpus_name: str = "corpus_group",
+        snapshot_path=None,
+        extract_data=True,
+        validate_cubes=True,
 ):
     """
     Function to copy H5AD datasets (from a preconfiugred s3 bucket) to the path given then,
@@ -77,6 +81,8 @@ def load_data_and_create_cube(
     if validate_cubes:
         if Validation(corpus_path).validate_cube() is False:
             if os.getenv("DEPLOYMENT_STAGE") == "prod":
+                pipeline_failure_message = gen_pipeline_failure_message(
+                    "Issue with cube validation, see logs for more detail")
                 data = format_failed_batch_issue_slack_alert(pipeline_failure_message)
                 notify_slack(data)
             sys.exit("Exiting due to cube validation failure")
@@ -90,7 +96,6 @@ def load_data_and_create_cube(
     if validate_cubes:
         make_snapshot_active(snapshot_id)
         logger.info(f"Updated latest_snapshot_identifier in s3. Current snapshot id is {snapshot_id}")
-        return True
 
 
 if __name__ == "__main__":
@@ -99,9 +104,15 @@ if __name__ == "__main__":
     AWS_PROFILE=single-cell-prod aws batch submit-job --job-name $JOB_NAME --job-queue dp-prod --job-definition dp-prod-prodstack-wmg-processing # noqa E501
     """
     # todo pass in validate_cubes as env arg
-    load_data_and_create_cube("datasets", ".")
-    if os.getenv("DEPLOYMENT_STAGE") == "prod":
-        data = json.dumps(pipeline_success_message, indent=2)
+    try:
+        load_data_and_create_cube("datasets", ".")
+        if os.getenv("DEPLOYMENT_STAGE") == "prod":
+            data = json.dumps(pipeline_success_message, indent=2)
+            notify_slack(data)
+    except Exception as e:
+        pipeline_failure_message = gen_pipeline_failure_message(
+            f"Issue with cube creation pipeline: {e}. See logs for more detail")
+        data = format_failed_batch_issue_slack_alert(pipeline_failure_message)
         notify_slack(data)
 
     sys.exit()

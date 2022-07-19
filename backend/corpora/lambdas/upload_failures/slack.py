@@ -59,6 +59,7 @@ def format_dataset_processing_failure_slack_message(dataset_id):
         ]
     }
     batch_alert_data = format_failed_batch_issue_slack_alert(data)
+    logger.info(batch_alert_data)
     return batch_alert_data
 
 
