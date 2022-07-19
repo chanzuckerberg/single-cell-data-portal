@@ -46,25 +46,29 @@ db/new_migration_auto:
 	# Usage: make db/new_migration_auto MESSAGE="purpose_of_migration"
 	PYTHONPATH=.. alembic -c=./config/database.ini revision --autogenerate --message "$(MESSAGE)"
 
+# interactive mode usage: AWS_PROFILE=single-cell-dev DEPLOYMENT_STAGE=dev make db/connect
+# ARGS usage: AWS_PROFILE=single-cell-dev DEPLOYMENT_STAGE=dev make db/connect ARGS="-c \"select * from dataset_artifact where filetype='CXG'\""
 db/connect:
-	# Assuming you've created a tunnel to the DB. Check the docs for information on how to do that
 	$(eval DB_PW = $(shell aws secretsmanager get-secret-value --secret-id corpora/backend/${DEPLOYMENT_STAGE}/database --region us-west-2 | jq -r '.SecretString | match(":([^:]*)@").captures[0].string'))
-	# interactive mode usage: AWS_PROFILE=single-cell-dev DEPLOYMENT_STAGE=dev make db/connect
-	# ARGS usage: AWS_PROFILE=single-cell-dev DEPLOYMENT_STAGE=dev make db/connect ARGS="-c \"select * from dataset_artifact where filetype='CXG'\""
+	$(MAKE) db/tunnel/up
 	PGPASSWORD=${DB_PW} psql --dbname corpora_${DEPLOYMENT_STAGE} --username corpora_${DEPLOYMENT_STAGE} --host 0.0.0.0 $(ARGS)
+	$(MAKE) db/tunnel/down
 
-db/download:
-    # Download the database to corpora_dev-<date>.sqlc
+db/console: db/connect # alias
+
+db/dump:
+  # Dump the DEPLOYMENT_STAGE database to OUTFILE
 	$(eval DB_PW = $(shell aws secretsmanager get-secret-value --secret-id corpora/backend/${DEPLOYMENT_STAGE}/database --region us-west-2 | jq -r '.SecretString | match(":([^:]*)@").captures[0].string'))
-	$(eval OUTFILE = $(shell date +corpora_${DEPLOYMENT_STAGE}-%Y%m%d%H%M.sqlc))
-	PGPASSWORD=${DB_PW} pg_dump -Fc --dbname=corpora_${DEPLOYMENT_STAGE} --file=database/${OUTFILE} --host 0.0.0.0 --username corpora_${DEPLOYMENT_STAGE}
+	$(MAKE) db/tunnel/up
+	PGPASSWORD=${DB_PW} pg_dump -Fc --dbname=corpora_${DEPLOYMENT_STAGE} --file=$(OUTFILE) --host 0.0.0.0 --username corpora_${DEPLOYMENT_STAGE}
+	$(MAKE) db/tunnel/down
 
-db/import:
-    # Imports corpora_dev.sqlc into the corpora_test database
-	# Usage: make db/import FROM=corpora_dev-202102221309
-	docker-compose exec database pg_restore --clean --no-owner --username corpora --dbname corpora /import/$(FROM).sqlc
+db/load/local:
+	# Loads corpora_dev.sqlc into the local Docker env corpora database
+	# Usage: make db/load/local INFILE=<file>
+	docker-compose exec database pg_restore --clean --no-owner --username corpora --dbname corpora $(INFILE)
 
-db/import/schema:
+db/load/schema:
     # Imports the corpora_dev.sqlc schema (schema ONLY) into the corpora_test database
 	# Usage: DEPLOYMENT_STAGE=test make db/import/schema
 	pg_restore --schema-only --clean --no-owner --dbname corpora_test corpora_$(DEPLOYMENT_STAGE).sqlc
@@ -76,7 +80,9 @@ ifeq ($(DEPLOYMENT_STAGE),test)
 	docker-compose exec database pg_dump --schema-only --dbname=corpora --username corpora
 else
 	$(eval DB_PW = $(shell aws secretsmanager get-secret-value --secret-id corpora/backend/${DEPLOYMENT_STAGE}/database --region us-west-2 | jq -r '.SecretString | match(":([^:]*)@").captures[0].string'))
+	$(MAKE) db/tunnel/up
 	PGPASSWORD=${DB_PW} pg_dump --schema-only --dbname corpora_${DEPLOYMENT_STAGE} --username corpora_${DEPLOYMENT_STAGE} --host 0.0.0.0
+	$(MAKE) db/tunnel/down
 endif
 
 db/test_migration:
@@ -89,11 +95,29 @@ db/test_migration:
 
 SSH_SERVER_ALIVE_INTERVAL_IN_SECONDS?=60
 SSH_SERVER_ALIVE_COUNT_MAX?=60
+SSH_SOCKET=/tmp/data-portal-ssh-db-tunnel-socket-${DEPLOYMENT_STAGE}
+SSH_BASTION_HOST=bastion.${DEPLOYMENT_STAGE}.single-cell.czi.technology
 # TODO:
-# - consider adding -M and -S options on ssh command when needed
 # - add db/tunnel as a dependency for all targets so that a tunnel is automatically opened if not already
-db/tunnel:
+db/tunnel/up:
 	$(eval endpoint=$(shell aws rds describe-db-cluster-endpoints --db-cluster-identifier corpora-${DEPLOYMENT_STAGE}-corpora-api | jq -r '.DBClusterEndpoints[] | select(.EndpointType | contains("WRITER")) | .Endpoint'))
-	ssh -f -T -N \
+	ssh -f -T -N -M -S $(SSH_SOCKET)\
 		-o ServerAliveInterval=${SSH_SERVER_ALIVE_INTERVAL_IN_SECONDS} -o ServerAliveCountMax=${SSH_SERVER_ALIVE_COUNT_MAX} \
-		-L 5432:${endpoint}:5432 bastion.${DEPLOYMENT_STAGE}.single-cell.czi.technology
+		-o ExitOnForwardFailure=yes \
+		-L 5432:${endpoint}:5432 $(SSH_BASTION_HOST)
+
+db/tunnel: db/tunnel/up # alias for backwards compatibility
+
+db/tunnel/down:
+	ssh -S $(SSH_SOCKET) -O exit $(SSH_BASTION_HOST) || true
+
+SRC_ENV := prod
+mirror_env_data:
+	# Mirrors the SRC_ENV env's AWS RDS database and S3 data to
+	# DEST_ENV. Defaults to prod->dev.
+	#
+	# THIS IS DESTRUCTIVE for the DEST_ENV env! The SRC_ENV env will
+	# never be modified, but the DEST_ENV env's data will be replaced.
+	#
+	# Usage: make mirror_env_data [DEST_ENV={dev|staging}] [SRC_ENV={prod|staging|dev}] 
+	scripts/mirror_env_data.sh $(SRC_ENV) $(DEST_ENV)

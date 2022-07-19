@@ -279,7 +279,7 @@ export function createYAxisOptions({
           rich: {
             selected: SELECTED_STYLE,
           },
-          width: 260,
+          width: 230,
         },
         axisLine: {
           show: false,
@@ -293,6 +293,34 @@ export function createYAxisOptions({
           show: false,
         },
         triggerEvent: true,
+      },
+      {
+        axisLabel: {
+          formatter(value: number | string) {
+            const { total_count } = deserializeCellTypeMetadata(
+              value as CellTypeMetadata
+            );
+            return total_count > 10000 ? ">10k" : `${total_count}`;
+          },
+
+          rich: {
+            selected: SELECTED_STYLE,
+          },
+          align: "right",
+        },
+        position: "right",
+        offset: -10,
+        axisLine: {
+          show: false,
+        },
+        axisTick: {
+          show: false,
+        },
+        boundaryGap: true,
+        data: cellTypeMetadata,
+        splitLine: {
+          show: false,
+        },
       },
     ],
   };
@@ -393,7 +421,7 @@ export function getHeatmapHeight(cellTypes: CellType[] = EMPTY_ARRAY): number {
  * Value format: `${id}~${tissue}~${name}~${depth}`
  */
 export type CellTypeMetadata =
-  `${CellTypeSummary["id"]}~${Tissue}~${CellTypeSummary["name"]}~${number}`;
+  `${CellTypeSummary["id"]}~${Tissue}~${CellTypeSummary["name"]}~${number}~${number}`;
 
 /**
  * We need to encode cell type metadata here, so we can use it in onClick event
@@ -402,8 +430,8 @@ export function getAllSerializedCellTypeMetadata(
   cellTypes: CellType[],
   tissue: Tissue
 ): CellTypeMetadata[] {
-  return cellTypes.map(({ id, name, depth }) => {
-    return `${id}~${tissue}~${name}~${depth}` as CellTypeMetadata;
+  return cellTypes.map(({ id, name, depth, total_count }) => {
+    return `${id}~${tissue}~${name}~${depth}~${total_count}` as CellTypeMetadata;
   });
 }
 
@@ -414,14 +442,16 @@ export function deserializeCellTypeMetadata(
   name: string;
   tissue: Tissue;
   depth: number;
+  total_count: number;
 } {
-  const [id, tissue, name, depth] = cellTypeMetadata.split("~");
+  const [id, tissue, name, depth, total_count] = cellTypeMetadata.split("~");
 
   return {
     depth: Number(depth),
     id,
     name,
     tissue,
+    total_count: Number(total_count),
   };
 }
 

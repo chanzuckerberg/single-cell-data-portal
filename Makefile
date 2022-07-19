@@ -26,13 +26,13 @@ unit-test: local-unit-test
 .PHONY: container-unittest
 container-unittest:
 	# This target is intended to be run INSIDE a container
-	DEPLOYMENT_STAGE=test PYTHONWARNINGS=ignore:ResourceWarning python3 -m coverage run \
+	DEPLOYMENT_STAGE=test PYTHONWARNINGS=ignore:ResourceWarning python3 \
 		-m unittest discover --start-directory tests/unit/backend --top-level-directory . --verbose;
 
 .PHONY: processing-unittest
 processing-unittest:
 	# This target is intended to be run INSIDE a container
-	DEPLOYMENT_STAGE=test PYTHONWARNINGS=ignore:ResourceWarning python3 -m coverage run \
+	DEPLOYMENT_STAGE=test PYTHONWARNINGS=ignore:ResourceWarning python3 \
 		-m unittest discover --start-directory tests/unit/processing_container --top-level-directory . --verbose;
 
 .PHONY: functional-test
@@ -115,6 +115,12 @@ local-rebuild: .env.ecr local-ecr-login ## Rebuild local dev without re-importin
 	docker-compose $(COMPOSE_OPTS) build frontend backend processing
 	docker-compose $(COMPOSE_OPTS) up -d frontend backend processing database oidc localstack
 
+local-rebuild-backend: .env.ecr local-ecr-login
+	docker-compose $(COMPOSE_OPTS) build backend
+
+local-rebuild-processing: .env.ecr local-ecr-login
+	docker-compose $(COMPOSE_OPTS) build processing
+
 .PHONY: local-sync
 local-sync: local-rebuild local-init  ## Re-sync the local-environment state after modifying library deps or docker configs
 
@@ -158,32 +164,26 @@ local-unit-test: local-unit-test-backend local-unit-test-processing # Run all ba
 local-unit-test-backend: # Run container-unittest target in `backend` Docker container.  If path arg provided, just run those specific backend tests
 	@if [ -z "$(path)" ]; then \
 	    echo "Running all backend unit tests"; \
-		export CI=""; \
-		ci_env=""; \
-		if [ ! -z "$(CODECOV_TOKEN)" ]; then \
-			ci_env=$$(bash <(curl -s https://codecov.io/env)); \
-			CI=true; \
-		fi; \
-	    docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -e CI $$ci_env -T backend \
-	    bash -c "cd /single-cell-data-portal && make container-unittest && if [ \"${CI}\" == "true" ]; then apt-get update && apt-get install -y git && bash <(curl -s https://codecov.io/bash) -cF backend,python,unitTest; fi"; \
+	    docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -T backend \
+	    bash -c "cd /single-cell-data-portal && make container-unittest;" \
 	else \
 		echo "Running specified backend unit test(s): $(path)"; \
 		docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -T backend \
 		bash -c "cd /single-cell-data-portal && python -m unittest $(path)"; \
 	fi
 
+.PHONY: all-local-unit-test-backend
+all-local-unit-test-backend: # Run container-unittest target in `backend` Docker container.  If path arg provided, just run those specific backend tests
+	echo "Running all backend unit tests"; \
+	docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -T backend \
+	bash -c "cd /single-cell-data-portal && make container-unittest;"
+
 # Note: If you are manually running this on localhost, you should run `local-rebuild` target first to test latest changes; this is not needed when running in Github Actions
 .PHONY: local-unit-test-processing
 local-unit-test-processing: # Run processing-unittest target in `processing` Docker container
 	echo "Running all processing unit tests"; \
-    export CI=""; \
-	export ci_env=""; \
-	if [ ! -z "$(CODECOV_TOKEN)" ]; then \
-		ci_env=$$(bash <(curl -s https://codecov.io/env)); \
-		CI=true; \
-	fi; \
-	docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -e CI $$ci_env -T processing \
-	bash -c "cd /single-cell-data-portal && make processing-unittest && if [ \"${CI}\" == "true" ]; then apt-get update && apt-get install -y git && bash <(curl -s https://codecov.io/bash) -cF backend,python,unitTest; fi";
+	docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -T processing \
+	bash -c "cd /single-cell-data-portal && make processing-unittest;"
 
 # We optionally pass BOTO_ENDPOINT_URL if it is set, even if it is
 # set to be the empty string.
