@@ -295,10 +295,6 @@ export function createYAxisOptions({
         triggerEvent: true,
       },
       {
-        name: "Cell Count",
-        nameLocation: "end",
-        nameRotate: 270,
-        nameGap: 8,        
         axisLabel: {
           formatter(value: number | string) {
             const { total_count } = deserializeCellTypeMetadata(
