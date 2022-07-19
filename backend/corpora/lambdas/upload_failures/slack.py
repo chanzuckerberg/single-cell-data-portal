@@ -27,39 +27,37 @@ def format_dataset_processing_failure_slack_message(dataset_id):
         collection_id, collection_owner = collection.id, collection.owner
         processing_status = dataset.processing_status.to_dict(remove_relationships=True)
 
-        data = {
-            "blocks": [
-                {
-                    "type": "header",
-                    "text": {
-                        "type": "plain_text",
-                        "text": "Dataset failed to process:fire:",
-                        "emoji": True,
-                    },
+    data = {
+        "blocks": [
+            {
+                "type": "header",
+                "text": {
+                    "type": "plain_text",
+                    "text": "Dataset failed to process:fire:",
+                    "emoji": True,
                 },
-                {
-                    "type": "section",
-                    "text": {
-                        "type": "mrkdwn",
-                        "text": f"Dataset processing job failed!\n"
-                                f"*Owner*: {collection_owner}\n"
-                                f"*Collection*: https://cellxgene.cziscience.com/collections/{collection_id}/private\n"
-                                f"*Processing Status*:\n",
-                    },
+            },
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": f"Dataset processing job failed!\n"
+                    f"*Owner*: {collection_owner}\n"
+                    f"*Collection*: https://cellxgene.cziscience.com/collections/{collection_id}/private\n"
+                    f"*Processing Status*:\n",
                 },
-                {
-                    "type": "section",
-                    "text": {
-                        "type": "mrkdwn",
-                        "text": f"```{json.dumps(processing_status, cls=CustomJSONEncoder, indent=2, sort_keys=True)}```",
-                    },
+            },
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": f"```{json.dumps(processing_status, cls=CustomJSONEncoder, indent=2, sort_keys=True)}```",
                 },
-            ]
-        }
-        batch_alert_data = format_failed_batch_issue_slack_alert(data)
-        return batch_alert_data
-
-
+            },
+        ]
+    }
+    batch_alert_data = format_failed_batch_issue_slack_alert(data)
+    return batch_alert_data
 
 
 def format_failed_batch_issue_slack_alert(data):
@@ -70,9 +68,8 @@ def format_failed_batch_issue_slack_alert(data):
         "type": "section",
         "text": {
             "type": "mrkdwn",
-            "text": f"Batch processing job failed!\n"
-                    f"*Batch Job ID*:<{job_url}|{job_id}>\n",
-        }
+            "text": f"Batch processing job failed!\n" f"*Batch Job ID*:<{job_url}|{job_id}>\n",
+        },
     }
     data = batch_data | data
 

@@ -6,8 +6,7 @@ import sys
 import time
 import tiledb
 
-from backend.corpora.lambdas.upload_failures.slack import notify_slack, format_batch_issue_slack_alert, \
-    format_failed_batch_issue_slack_alert
+from backend.corpora.lambdas.upload_failures.slack import notify_slack, format_failed_batch_issue_slack_alert
 from backend.corpus_asset_pipelines import integrated_corpus
 from backend.wmg.data.load_cube import upload_artifacts_to_s3, make_snapshot_active
 from backend.wmg.data.schemas.corpus_schema import create_tdb
@@ -49,11 +48,11 @@ pipeline_success_message = {
 
 
 def load_data_and_create_cube(
-        path_to_h5ad_datasets: str,
-        corpus_name: str = "corpus_group",
-        snapshot_path=None,
-        extract_data=True,
-        validate_cubes=True,
+    path_to_h5ad_datasets: str,
+    corpus_name: str = "corpus_group",
+    snapshot_path=None,
+    extract_data=True,
+    validate_cubes=True,
 ):
     """
     Function to copy H5AD datasets (from a preconfiugred s3 bucket) to the path given then,
