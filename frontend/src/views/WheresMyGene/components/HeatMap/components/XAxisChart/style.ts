@@ -14,7 +14,7 @@ export const XAxisWrapper = styled.div`
 export const XAxisMask = styled.div`
   background-color: white;
   height: ${X_AXIS_CHART_HEIGHT_PX}px;
-  width: ${Y_AXIS_CHART_WIDTH_PX - 73}px;
+  width: ${Y_AXIS_CHART_WIDTH_PX - 5}px;
   position: sticky;
   left: 0;
 `;
@@ -32,9 +32,10 @@ export const CellCountLabel = styled.div`
   width: 12px;
   text-orientation: sideways;
   writing-mode: vertical-rl;
-  position: absolute;
+  position: sticky;
   left: 280px;
-  top: 16px;
+  padding-top: 16px;
+  z-index: 2;
 `;
 function xAxisWidth({ width }: { width: number }) {
   return `
