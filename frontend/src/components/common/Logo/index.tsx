@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { FC } from "react";
-import logo from "src/common/images/explore-white.svg";
+import logo from "src/common/images/cellxgene-logo-white-v2.svg";
 
 export const Logo: FC = () => {
   return (
@@ -9,7 +9,7 @@ export const Logo: FC = () => {
       data-test-id="logo"
       height={24}
       src={logo}
-      width={24}
+      width={130}
     />
   );
 };
