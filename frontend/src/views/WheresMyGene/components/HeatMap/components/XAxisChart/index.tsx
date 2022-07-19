@@ -6,6 +6,7 @@ import { useUpdateXAxisChart } from "../../hooks/useUpdateXAxisChart";
 import { getHeatmapWidth } from "../../utils";
 import {
   CellCountLabel,
+  MaskWrapper,
   XAxisContainer,
   XAxisMask,
   XAxisWrapper,
@@ -74,10 +75,10 @@ export default function XAxisChart({ geneNames }: Props): JSX.Element {
           width={heatmapWidth}
           ref={xAxisRef}
         />
-        <div style={{ display: "flex" }}>
+        <MaskWrapper>
           <CellCountLabel>Cell Count</CellCountLabel>
           <XAxisMask />
-        </div>
+        </MaskWrapper>
       </div>
     </XAxisWrapper>
   );
