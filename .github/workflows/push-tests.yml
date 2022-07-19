@@ -85,7 +85,9 @@ jobs:
       - name: Push images
         if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod' )
         run: |
-          happy push --aws-profile "" --tag sha-${GITHUB_SHA:0:8} frontend backend
+          echo "HAPPY_COMMIT=$(git rev-parse --verify HEAD)" >> envfile
+          echo "HAPPY_BRANCH=$(git branch --show-current)" >> envfile
+          happy push --docker-compose-env-file envfile --aws-profile "" --tag sha-${GITHUB_SHA:0:8} frontend backend
       - uses: 8398a7/action-slack@v3
         with:
           status: ${{ job.status }}
