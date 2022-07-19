@@ -173,7 +173,7 @@ def get_publisher_metadata(doi: str, errors: list) -> Optional[dict]:
     try:
         return provider.fetch_metadata(doi)
     except CrossrefDOINotFoundException:
-        errors.append({"name": "doi", "reason": "DOI cannot be found on Crossref"})
+        errors.append({"link_type": ProjectLinkType.DOI.name, "reason": "DOI cannot be found on Crossref"})
     except CrossrefException as e:
         logging.warning(f"CrossrefException on create_collection: {e}. Will ignore metadata.")
         return None
