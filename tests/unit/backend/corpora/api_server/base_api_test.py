@@ -67,7 +67,7 @@ def mock_assert_authorized_token(token: str, audience: str = None):
 def get_cxguser_token(user="owner"):
     """
     Generated an auth token for testing.
-    :param app: a WSGI app.
+    :param user: the type of use the token will simulate.
     :return:
     """
     cxguser = base64.b64encode(
