@@ -130,6 +130,9 @@ class TestTileDbData(unittest.TestCase):
         id = self.create_collection()
         # Edit collection name
         self.db.edit_collection(id, "name", "edited_name")
+        coll = self.db.get_collection(id)
+        self.assertEqual(coll['name'], "edited_name")
+        # Edit publisher metadata
         new_data = {
                 "authors": [
                     {
@@ -145,9 +148,7 @@ class TestTileDbData(unittest.TestCase):
                 "published_year": 2022
             }
         self.db.edit_collection(id, "publisher_metadata", new_data)
-        # check
         coll = self.db.get_collection(id)
-        self.assertEqual(coll['name'], "edited_name")
         self.assertDictEqual(coll['publisher_metadata'], new_data)
 
     def test_add_dataset_to_collection(self):
@@ -165,13 +166,16 @@ class TestTileDbData(unittest.TestCase):
         # Create collection
         id = self.create_collection()
         # Add dataset to collection
-        did1 = self.db.add_dataset(id, self.dataset_metadata)
-        did2 = self.db.add_dataset(id, self.dataset_metadata)
+        dataset_id_1 = self.db.add_dataset(id, self.dataset_metadata)
+        dataset_id_2 = self.db.add_dataset(id, self.dataset_metadata)
+        datasets = self.db.get_datasets(id)
+        self.assertEqual(len(datasets), 2)
         # Get datasets and delete one
-        self.db.delete_dataset(id, did1)
+        self.db.delete_dataset(id, dataset_id_1)
         # Get dataset/collection
         datasets = self.db.get_datasets(id)
-        self.assertEqual(datasets[0]['id'][0].decode("utf-8"), did2)
+        self.assertEqual(len(datasets), 1)
+        self.assertEqual(datasets[0]['id'][0].decode("utf-8"), dataset_id_2)
 
     def test_collection_history(self):
         # create collection
@@ -206,9 +210,11 @@ class TestTileDbData(unittest.TestCase):
         id = self.create_collection()
         # Create the revision
         rev_id = self.db.create_revision(id)
+        self.assertNotEqual(rev_id, id)
         # Get the revision
         rev = self.db.get_collection(rev_id)
         self.assertEqual(rev['name'], "test_collection")
+        self.assertEqual(rev['visibility'], "PRIVATE")
 
     def test_edit_revision(self):
         # Create a collection
@@ -232,6 +238,7 @@ class TestTileDbData(unittest.TestCase):
         # Get the new collection
         coll = self.db.get_collection(id)
         self.assertEqual(coll['name'], "edited_name")
+        self.assertEqual(coll['visibility'], "PUBLIC")
 
     def test_delete_revision(self):
         # Create a collection

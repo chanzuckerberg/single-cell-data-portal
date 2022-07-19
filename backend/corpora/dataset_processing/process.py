@@ -210,8 +210,18 @@ def create_artifact(
 
     logger.info(f"Uploading [{dataset_id}/{file_name}] to S3 bucket: [{artifact_bucket}].")
     try:
-        _ = upload(file_name, bucket_prefix, artifact_bucket)
-        update_db(dataset_id, processing_status={"processing_status_tyoe": ConversionStatus.UPLOADED})
+        s3_uri = upload(file_name, bucket_prefix, artifact_bucket)
+        asset = {
+            "dataset_id": dataset_id,
+            "filename": file_name,
+            "filetype": artifact_type,
+            "s3_uri": s3_uri
+        }
+        update_db(
+            dataset_id, 
+            processing_status={"processing_status_tyoe": ConversionStatus.UPLOADED},
+            asset=asset
+        )
 
     except Exception as e:
         logger.error(e)
@@ -284,7 +294,7 @@ def create_artifacts(
 #         logger.info("Upload Canceled.")
 
 
-def update_db(dataset_id, metadata: dict = None, processing_status: dict = None):
+def update_db(dataset_id, metadata: dict = None, processing_status: dict = None, asset: dict = None):
     # TODO: config this somewhere
     db = TileDBData(location="../../../../tests/unit/backend/fixtures/test_tiledb/metadata")
 
@@ -298,6 +308,13 @@ def update_db(dataset_id, metadata: dict = None, processing_status: dict = None)
         curr_status = db.get_dataset(dataset_id)['processing_status']
         for key, val in processing_status.items():
             curr_status[key] = val
+        db.edit_dataset(dataset_id, "processing_status", curr_status)
+    
+    if asset:
+        logger.debug("Updating assets.")
+        assets = db.get_dataset(dataset_id)['dataset_assets']
+        assets.append(asset)
+        db.edit_dataset(dataset_id, "dataset_assets", assets)
 
 
 def download_from_source_uri(dataset_id: str, source_uri: str, local_path: str) -> str:
@@ -536,7 +553,13 @@ def process_cxg(local_filename, dataset_id, cellxgene_bucket):
     if cxg_dir:
         bucket_prefix = get_bucket_prefix(dataset_id)
         s3_uri = f"s3://{cellxgene_bucket}/{bucket_prefix}.cxg/"
-        update_db(dataset_id, processing_status={"cxg_status": ConversionStatus.UPLOADING})
+        asset = {
+            "dataset_id": dataset_id,
+            "filename": bucket_prefix,
+            "filetype": DatasetArtifactFileType.CXG,
+            "s3_uri": s3_uri
+        }
+        update_db(dataset_id, processing_status={"cxg_status": ConversionStatus.UPLOADING}, asset=asset)
         copy_cxg_files_to_cxg_bucket(cxg_dir, s3_uri)
         metadata = {
             "explorer_url": join(

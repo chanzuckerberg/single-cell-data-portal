@@ -110,15 +110,11 @@ def updater(dataset_id, processing_status, tracker: ProgressTracker, frequency: 
 
     def _update():
         progress = tracker.progress()
-        dataset = db.get_dataset(dataset_id)
-        if dataset.tombstone:
-            tracker.cancel()
-            return
-
-        elif tracker.stop_updater.is_set():
+        status = {}
+        if tracker.stop_updater.is_set():
             if progress > 1:
                 tracker.stop_downloader.set()
-                status = {"upload_progress": progress}
+                status = {"upload_progress": progress}  
                 tracker.error = ProcessingFailed("The expected file size is smaller than the downloaded file size.")
             elif progress < 1:
                 status = {"upload_progress": progress}
@@ -130,8 +126,10 @@ def updater(dataset_id, processing_status, tracker: ProgressTracker, frequency: 
                 }
         else:
             status = {"upload_progress": progress}
+            
         logger.debug("Updating processing_status")
         _processing_status_updater(processing_status, status)
+        db.edit_dataset(dataset_id, "processing_status", processing_status)
 
     try:
         while not tracker.stop_updater.wait(frequency):
