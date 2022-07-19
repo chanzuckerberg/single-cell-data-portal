@@ -1,9 +1,9 @@
 import os
 
 from backend.corpora.common.utils.aws import delete_many_from_s3
-from backend.corpora.lambdas.upload_failures.slack import dataset_processing_slack_notification
+from backend.corpora.common.utils.slack import dataset_processing_slack_notification
 
-from backend.corpora.lambdas.upload_failures.upload import update_dataset_processing_status_to_failed
+from backend.corpora.upload_failures.upload import update_dataset_processing_status_to_failed
 
 
 def handle_failure(event, context):
