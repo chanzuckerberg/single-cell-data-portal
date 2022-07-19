@@ -526,7 +526,7 @@ class TestCollection(BaseAuthAPITest):
         )
         self.assertEqual(400, response.status_code)
         error_payload = json.loads(response.data)
-        self.assertEqual(error_payload["detail"], "DOI cannot be found on Crossref")
+        self.assertEqual(error_payload["detail"][0], {"link_type": "DOI", "reason": "DOI cannot be found on Crossref"})
 
     def test__post_collection_rejects_invalid_doi(self):
         test_url = furl(path="/dp/v1/collections/")

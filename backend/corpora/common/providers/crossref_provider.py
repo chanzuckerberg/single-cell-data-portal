@@ -67,7 +67,7 @@ class CrossrefProvider(object):
 
         return res
 
-    def fetch_metadata(self, doi):
+    def fetch_metadata(self, doi: str) -> dict:
         """
         Fetches and extracts publisher metadata from Crossref for a specified DOI.
         If the Crossref API URI isn't in the configuration, we will just return an empty object.
