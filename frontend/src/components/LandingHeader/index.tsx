@@ -1,5 +1,4 @@
 import { AnchorButton } from "@blueprintjs/core";
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { FC, useRef, useState } from "react";
@@ -8,7 +7,6 @@ import { EVENTS } from "src/common/analytics/events";
 import { ROUTES } from "src/common/constants/routes";
 import { get } from "src/common/featureFlags";
 import { FEATURES } from "src/common/featureFlags/features";
-import CGLogo from "src/common/images/explore-white.svg";
 import { BOOLEAN } from "src/common/localStorage/set";
 import { useUserInfo } from "src/common/queries/auth";
 import AuthButtons from "src/components/Header/components/AuthButtons";
@@ -52,11 +50,12 @@ const LandingHeader: FC = () => {
   return (
     <MobileNavWrapper>
       <MobileHomeLink>
-        <Link href={ROUTES.HOMEPAGE} passHref>
+        {/* <Link href={ROUTES.HOMEPAGE} passHref>
           <a>
             <Image src={CGLogo} alt="logo" width="24" height="24" />
           </a>
-        </Link>
+        </Link> */}
+        <HomepageLink />
       </MobileHomeLink>
       <MobileMenuButton onClick={() => mobileNavHandler(mobileMenuOpen)}>
         <MobileMenuButtonBar className={mobileMenuOpen ? "open" : ""} />
