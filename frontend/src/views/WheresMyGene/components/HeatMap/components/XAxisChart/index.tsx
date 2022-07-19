@@ -4,7 +4,12 @@ import { EMPTY_OBJECT } from "src/common/constants/utils";
 import { useDeleteGenesAndCellTypes } from "../../hooks/useDeleteGenesAndCellTypes";
 import { useUpdateXAxisChart } from "../../hooks/useUpdateXAxisChart";
 import { getHeatmapWidth } from "../../utils";
-import { XAxisContainer, XAxisMask, XAxisWrapper, CellCountLabel } from "./style";
+import {
+  CellCountLabel,
+  XAxisContainer,
+  XAxisMask,
+  XAxisWrapper,
+} from "./style";
 
 interface Props {
   geneNames: string[];
@@ -69,11 +74,9 @@ export default function XAxisChart({ geneNames }: Props): JSX.Element {
           width={heatmapWidth}
           ref={xAxisRef}
         />
-        <div style={{display: "flex"}}>
+        <div style={{ display: "flex" }}>
+          <CellCountLabel>Cell Count</CellCountLabel>
           <XAxisMask />
-          <CellCountLabel>
-            Cell Count
-          </CellCountLabel>
         </div>
       </div>
     </XAxisWrapper>
