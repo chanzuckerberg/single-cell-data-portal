@@ -164,12 +164,12 @@ local-unit-test: local-unit-test-backend local-unit-test-processing # Run all ba
 local-unit-test-backend: # Run container-unittest target in `backend` Docker container.  If path arg provided, just run those specific backend tests
 	@if [ -z "$(path)" ]; then \
 	    echo "Running all backend unit tests"; \
-	    docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -T backend \
-	    bash -c "cd /single-cell-data-portal && make container-unittest;" \
+	    docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -T backend; \
+	    bash -c "cd /single-cell-data-portal && make container-unittest;"; \
 	else \
 		echo "Running specified backend unit test(s): $(path)"; \
 		docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -T backend \
-		bash -c "cd /single-cell-data-portal && python -m unittest $(path)"; \
+		bash -c "cd /single-cell-data-portal && python3 -m unittest $(path)"; \
 	fi
 
 .PHONY: all-local-unit-test-backend
