@@ -9,7 +9,7 @@ import AnalyzeDatasetsImg from "src/components/common/staticPages/analyze-datase
 import HeroBg from "src/components/common/staticPages/cellxgene_hero_bg.png";
 import LaptopImg from "src/components/common/staticPages/cellxgene_laptop.png";
 import DownloadDataImg from "src/components/common/staticPages/download-data.png";
-import ExpediteCollaborationImg from "src/components/common/staticPages/expedite-collaboration.png";
+import ExpediteCollaborationImg from "src/components/common/staticPages/expedite-collaborative-analysis.png";
 import GeneExpressionImg from "src/components/common/staticPages/gene-expression.png";
 import SingleCellDataImg from "src/components/common/staticPages/single-cell-data.png";
 import AnalyzeDatasetsIcon from "./icons/analyze-datasets";
@@ -49,7 +49,7 @@ const LandingPage = (): JSX.Element => {
   const scrollSection5 = useRef<HTMLDivElement>(null!);
 
   // HERO NUMBERS. DUMMY DATA TO BE REPLACED.
-  const [cellsHeroNum] = useState("25M+");
+  const [cellsHeroNum] = useState("33M+");
   const [datasetsHeroNum] = useState("436");
   const [donorsHeroNum] = useState("2.7k+");
 
@@ -73,7 +73,7 @@ const LandingPage = (): JSX.Element => {
           ctaLogo: false,
         },
         {
-          subheading: "13.05.22 - Cellxgene",
+          subheading: "13.05.22 - CZ CELLxGENE",
           ctaLink:
             "https://cellxgene.cziscience.com/collections/e5f58829-1a66-40b5-a624-9046778e74f5",
           ctaText: "Explore Datasets",
@@ -101,7 +101,7 @@ const LandingPage = (): JSX.Element => {
           ctaLogo: false,
         },
         {
-          subheading: "13.05.22 - Cellxgene",
+          subheading: "13.05.22 - CZ CELLxGENE",
           ctaLink:
             "https://cellxgene.cziscience.com/collections/62ef75e4-cbea-454e-a0ce-998ec40223d3",
           ctaText: "Explore Datasets",
@@ -121,7 +121,7 @@ const LandingPage = (): JSX.Element => {
           ctaLogo: false,
         },
         {
-          subheading: "13.05.22 - Cellxgene",
+          subheading: "13.05.22 - CZ CELLxGENE",
           ctaLink:
             "https://cellxgene.cziscience.com/collections/6f6d381a-7701-4781-935c-db10d30de293",
           ctaText: "Explore Datasets",
@@ -142,7 +142,7 @@ const LandingPage = (): JSX.Element => {
           ctaLogo: false,
         },
         {
-          subheading: "13.05.22 - Cellxgene",
+          subheading: "13.05.22 - CZ CELLxGENE",
           ctaLink:
             "https://cellxgene.cziscience.com/collections/dde06e0f-ab3b-46be-96a2-a8082383c4a1",
           ctaText: "Explore Datasets",
@@ -163,7 +163,7 @@ const LandingPage = (): JSX.Element => {
           ctaLogo: false,
         },
         {
-          subheading: "13.05.22 - Cellxgene",
+          subheading: "13.05.22 - CZ CELLxGENE",
           ctaLink:
             "https://cellxgene.cziscience.com/collections/436154da-bcf1-4130-9c8b-120ff9a888f2",
           ctaText: "Explore Datasets",
@@ -177,7 +177,21 @@ const LandingPage = (): JSX.Element => {
   return (
     <>
       <Head>
-        <title>cellxgene | Home</title>
+        <title>CZ CELLxGENE Discover - Cellular Visualization Tool</title>
+        <meta
+          name="description"
+          content="Chan Zuckerberg CELLxGENE Discover is a tool to find, download, and visually explore curated and standardized single-cell biology datasets."
+        />
+        <meta
+          property="og:title"
+          content="Chan Zuckerberg CELLxGENE Discover"
+        />
+        <meta
+          property="og:description"
+          content="Find, download and visually explore curated and standardized single-cell datasets"
+        />
+        <meta property="og:image" content="/open-graph.jpg" />
+        <meta property="og:type" content="website" />
       </Head>
       <div className={styles.landingPage}>
         <div
@@ -197,7 +211,8 @@ const LandingPage = (): JSX.Element => {
             <h1>Discover the mechanisms of human health</h1>
             <p>
               Download and visually explore reference-quality data to understand
-              the functionality of human tissues at the cellular level.
+              the functionality of human tissues at the cellular level with Chan
+              Zuckerberg CELL by GENE Discover (CZ CELLxGENE Discover).
             </p>
             <div className={styles.heroStatsContainer}>
               <div>
@@ -417,17 +432,14 @@ const LandingPage = (): JSX.Element => {
                           cell sub-types and states.
                         </p>
                         <div className={styles.linkContainer}>
-                          <Link
-                            href={`${ROUTES.HOMEPAGE}/e/53d208b0-2cfd-4366-9866-c3c6114081bc.cxg/`}
-                            passHref
+                          <a
+                            href={`${ROUTES.HOMEPAGE}e/53d208b0-2cfd-4366-9866-c3c6114081bc.cxg/`}
                           >
-                            <a>
-                              Explore a multi-tissue atlas
-                              <span className={styles.linkArrow}>
-                                <LinkArrow />
-                              </span>
-                            </a>
-                          </Link>
+                            Explore a multi-tissue atlas
+                            <span className={styles.linkArrow}>
+                              <LinkArrow />
+                            </span>
+                          </a>
                           <Link href={ROUTES.COLLECTIONS} passHref>
                             <a>
                               Explore the studies
@@ -436,17 +448,17 @@ const LandingPage = (): JSX.Element => {
                               </span>
                             </a>
                           </Link>
-                          <Link
+                          {/* DOC PAGE LINKS NEED TO BE OPENED IN A NEW TAB IN ORDER TO LOAD UNIQUE CSP DIRECTIVE */}
+                          <a
                             href={`${ROUTES.DOCS}/04__Analyze%20Public%20Data/4_1__Hosted%20Tutorials`}
-                            passHref
+                            rel="noopener"
+                            target="_blank"
                           >
-                            <a>
-                              Browse tutorials
-                              <span className={styles.linkArrow}>
-                                <LinkArrow />
-                              </span>
-                            </a>
-                          </Link>
+                            Browse tutorials
+                            <span className={styles.linkArrow}>
+                              <LinkArrow />
+                            </span>
+                          </a>
                         </div>
                       </div>
                     </div>
@@ -536,9 +548,10 @@ const LandingPage = (): JSX.Element => {
                           directly explore and annotate datasets.
                         </p>
                         <div className={styles.linkContainer}>
-                          {/* LINK TO BE UPDATED POST-LAUNCH */}
-                          <a href="https://github.com/chanzuckerberg/cellxgene-documentation/blob/main/desktop/quick-start.md">
-                            Explore CZ Cell×Gene Annotate
+                          <a
+                            href={`${ROUTES.DOCS}/05__Annotate%20and%20Analyze%20Your%20Data/5_0__Get%20Started}`}
+                          >
+                            Explore CZ CELL×GENE Annotate
                             <span className={styles.linkArrow}>
                               <LinkArrow />
                             </span>

@@ -14,7 +14,7 @@ from tests.unit.backend.fixtures.generate_data_mixin import GenerateDataMixin
 class TestDatasetAsset(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
     def setUp(self):
         super().setUp()
-        self.id = "test_dataset_artifact_id"
+        self.identifier = "test_dataset_artifact_id"
         self.bucket_name = self.CORPORA_TEST_CONFIG["bucket_name"]
         self.session = DBSessionMaker().session()
 
@@ -23,8 +23,8 @@ class TestDatasetAsset(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
         super().tearDown()
 
     def test__get__ok(self):
-        asset = DatasetAsset.get(self.session, self.id)
-        self.assertEqual(self.id, asset.id)
+        asset = DatasetAsset.get(self.session, self.identifier)
+        self.assertEqual(self.identifier, asset.id)
         self.assertEqual(self.CORPORA_TEST_CONFIG["bucket_name"], asset.bucket_name)
         self.assertEqual("test_s3_uri.h5ad", asset.key_name)
 
