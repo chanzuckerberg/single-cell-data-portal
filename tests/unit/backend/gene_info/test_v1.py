@@ -2,7 +2,7 @@ import unittest
 import requests
 import json
 
-from backend.gene_info.api import ncbi_provider
+from backend.gene_info.api import ncbi_provider, ensembl_ids
 from tests.unit.backend.corpora.fixtures.environment_setup import EnvironmentSetup
 from backend.corpora.api_server.app import app
 import xml.etree.ElementTree as ET
@@ -49,14 +49,37 @@ class GeneInfoAPIv1Tests(unittest.TestCase):
     @patch("backend.gene_info.api.v1.NCBIProvider.fetch_gene_uid")
     @patch("backend.gene_info.api.v1.NCBIProvider.fetch_gene_info_tree")
     @patch("backend.gene_info.api.v1.NCBIProvider.parse_gene_info_tree")
-    def test_fetches_and_searches(self, mock_parse_gene_info_tree, mock_fetch_gene_info_tree, mock_fetch_gene_uid):
+    @patch("backend.gene_info.api.v1.GeneChecker.get_id")
+    def test_fetches_and_searches(
+        self, mock_get_id, mock_parse_gene_info_tree, mock_fetch_gene_info_tree, mock_fetch_gene_uid
+    ):
         """
         Successfully calls NCBIProvider fetch and search functions with correct parameters
         """
         mock_fetch_gene_uid.return_value = 1
         mock_fetch_gene_info_tree.return_value = None
         mock_parse_gene_info_tree.return_value = self.final_gene_info_result
+        mock_get_id.return_value = "ensembl1"
+
+        # parameters contain only gene ID
         res = self.app.get("/gene_info/v1/gene_info?geneID=ensembl1")
+        self.assertTrue(mock_fetch_gene_uid.called)
+        self.assertTrue(mock_fetch_gene_info_tree.called)
+        self.assertTrue(mock_parse_gene_info_tree.called)
+        self.assertEqual(res.status_code, requests.codes.ok)
+        self.assertEqual(json.loads(res.data), self.final_gene_info_result)
+
+        # parameters contain both gene ID and gene name
+        res = self.app.get("/gene_info/v1/gene_info?geneID=ensembl1&gene=name")
+        self.assertTrue(mock_fetch_gene_uid.called)
+        self.assertTrue(mock_fetch_gene_info_tree.called)
+        self.assertTrue(mock_parse_gene_info_tree.called)
+        self.assertEqual(res.status_code, requests.codes.ok)
+        self.assertEqual(json.loads(res.data), self.final_gene_info_result)
+
+        # parameters contain only gene name
+        res = self.app.get("/gene_info/v1/gene_info?gene=name")
+        self.assertTrue(mock_get_id.called)
         self.assertTrue(mock_fetch_gene_uid.called)
         self.assertTrue(mock_fetch_gene_info_tree.called)
         self.assertTrue(mock_parse_gene_info_tree.called)
@@ -121,3 +144,14 @@ class GeneInfoAPIv1Tests(unittest.TestCase):
         self.assertEqual(
             provider.parse_gene_info_tree(ET.tostring(root3)), dict(name="", summary="gene summary", synonyms=[])
         )
+
+    def test_gene_checker(self):
+        """
+        GeneChecker successfully creates a dictionary of gene names to gene IDs,
+        checks validity of gene names, and returns ensembl ID for a gene name.
+        """
+        gene_checker = ensembl_ids.GeneChecker()
+        self.assertTrue(gene_checker.gene_dict)
+        self.assertTrue(gene_checker.is_valid_label("APOE"))
+        self.assertFalse(gene_checker.is_valid_label("not a gene"))
+        self.assertEqual(gene_checker.get_id("APOE"), "ENSG00000130203")
