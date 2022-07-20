@@ -10,7 +10,7 @@ class TestDeleteDataset(BaseAuthAPITest):
         queries = ["dataset_id", "curator_tag"]
         auth_credentials = [
             (self.make_super_curator_header, "super", 202),
-            (self.get_auth_headers, "owner", 202),
+            (self.make_owner_header, "owner", 202),
             (None, "none", 401),
             (self.make_not_owner_header, "not_owner", 403),
         ]
@@ -42,7 +42,7 @@ class TestPatchDataset(BaseAuthAPITest):
         queries = ["dataset_id", "curator_tag"]
         auth_credentials = [
             (self.make_super_curator_header, "super", 204),
-            (self.get_auth_headers, "owner", 204),
+            (self.make_owner_header, "owner", 204),
             (None, "none", 401),
             (self.make_not_owner_header, "not_owner", 403),
         ]
@@ -81,7 +81,7 @@ class TestPatchDataset(BaseAuthAPITest):
         def _test(_tag, _dataset):
             test_body = {"curator_tag": _tag}
             query_string = {"dataset_id": _dataset.id}
-            headers = self.get_auth_headers()
+            headers = self.make_owner_header()
             response = self.app.patch(test_url, headers=headers, query_string=query_string, json=test_body)
             self.assertEqual(400, response.status_code)
             self.session.expire_all()
@@ -106,7 +106,7 @@ class TestPatchDataset(BaseAuthAPITest):
         test_body = {"curator_tag": test_tag}
         test_url = f"/curation/v1/collections/{collection.id}/datasets"
         query_string = {"dataset_id": dataset_2.id}
-        headers = self.get_auth_headers()
+        headers = self.make_owner_header()
         response = self.app.patch(test_url, headers=headers, query_string=query_string, json=test_body)
         self.assertEqual(409, response.status_code)
         self.session.expire_all()
