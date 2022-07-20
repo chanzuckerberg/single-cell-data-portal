@@ -1,7 +1,7 @@
 import requests
 from flask import make_response, g
 
-from backend.corpora.api_server.db import dbconnect
+from backend.api_server.db import dbconnect
 from backend.common.upload import upload
 from backend.common.utils.dl_sources.url import MissingHeaderException, from_url
 from backend.common.utils.exceptions import (

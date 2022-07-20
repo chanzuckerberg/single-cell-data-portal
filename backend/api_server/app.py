@@ -9,7 +9,7 @@ from connexion import FlaskApi, ProblemException, problem
 from flask import g, request, Response
 from flask_cors import CORS
 from swagger_ui_bundle import swagger_ui_path
-from backend.corpora.api_server.logger import configure_logging
+from backend.api_server.logger import configure_logging
 from backend.common.utils.aws import AwsSecret
 from backend.common.utils.json import CustomJSONEncoder
 

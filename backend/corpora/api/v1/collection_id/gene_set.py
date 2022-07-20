@@ -4,7 +4,7 @@ from sqlalchemy.exc import IntegrityError
 from backend.common.corpora_orm import CollectionVisibility
 from backend.common.entities import Collection
 from backend.common.entities.geneset import Geneset
-from backend.corpora.api_server.db import dbconnect
+from backend.api_server.db import dbconnect
 from backend.common.utils.http_exceptions import ForbiddenHTTPException, InvalidParametersHTTPException
 from ..authorization import owner_or_allowed
 

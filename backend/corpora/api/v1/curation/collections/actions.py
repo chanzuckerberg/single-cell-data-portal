@@ -5,7 +5,7 @@ from .common import EntityColumns
 from backend.common.entities import Collection
 from backend.common.corpora_orm import CollectionVisibility
 from backend.common.utils.http_exceptions import UnauthorizedError
-from backend.corpora.api_server.db import dbconnect
+from backend.api_server.db import dbconnect
 
 
 @dbconnect

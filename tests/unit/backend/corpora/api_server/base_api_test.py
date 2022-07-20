@@ -6,7 +6,7 @@ import typing
 
 from unittest.mock import patch
 
-from backend.corpora.api_server.app import app
+from backend.api_server.app import app
 from backend.common.corpora_config import CorporaAuthConfig
 from tests.unit.backend.corpora.api_server.mock_auth import MockOauthServer
 from tests.unit.backend.corpora.api_server.config import TOKEN_EXPIRES

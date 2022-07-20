@@ -20,7 +20,7 @@ from backend.common.utils.http_exceptions import (
     InvalidParametersHTTPException,
     ConflictException,
 )
-from backend.corpora.api_server.db import dbconnect
+from backend.api_server.db import dbconnect
 
 
 @dbconnect

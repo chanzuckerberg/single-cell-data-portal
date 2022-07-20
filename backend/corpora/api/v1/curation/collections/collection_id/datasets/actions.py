@@ -1,7 +1,7 @@
 import re
 from flask import g, make_response
 
-from backend.corpora.api_server.db import dbconnect
+from backend.api_server.db import dbconnect
 from backend.common.corpora_orm import CollectionVisibility
 from backend.common.entities import Dataset
 from backend.common.utils.http_exceptions import InvalidParametersHTTPException, ConflictException

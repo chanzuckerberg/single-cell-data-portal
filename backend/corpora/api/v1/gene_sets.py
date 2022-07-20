@@ -2,7 +2,7 @@ from flask import make_response, jsonify, g
 
 from backend.common.corpora_orm import CollectionVisibility
 from backend.common.entities.geneset import Geneset
-from backend.corpora.api_server.db import dbconnect
+from backend.api_server.db import dbconnect
 from backend.common.utils.authorization_checks import is_user_owner_or_allowed
 from backend.common.utils.http_exceptions import (
     ForbiddenHTTPException,

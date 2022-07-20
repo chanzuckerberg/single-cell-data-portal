@@ -17,7 +17,7 @@ RUN pip3 install scanpy==1.6.0 python-igraph==0.8.3 louvain==0.7.0 packaging==21
 
 
 ADD requirements.txt requirements.txt
-ADD backend/corpora/api_server/requirements.txt backend/corpora/api_server/requirements.txt
+ADD backend/api_server/requirements.txt backend/api_server/requirements.txt
 RUN pip3 install -r requirements.txt
 
 ADD tests /single-cell-data-portal/tests

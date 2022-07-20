@@ -1,6 +1,6 @@
 from flask import g, make_response, jsonify
 
-from backend.corpora.api_server.db import dbconnect
+from backend.api_server.db import dbconnect
 from backend.common.corpora_orm import DatasetArtifactFileType
 from backend.common.entities import DatasetAsset
 from backend.common.utils.http_exceptions import NotFoundHTTPException

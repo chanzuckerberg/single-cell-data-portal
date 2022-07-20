@@ -4,7 +4,7 @@ import logging
 import boto3
 from flask import g, request, make_response, jsonify
 
-from backend.corpora.api_server.db import dbconnect
+from backend.api_server.db import dbconnect
 from backend.common.corpora_config import CorporaConfig
 from backend.common.corpora_orm import CollectionVisibility
 from backend.corpora.api.v1.authorization import owner_or_allowed, is_super_curator

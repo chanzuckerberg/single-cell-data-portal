@@ -4,7 +4,7 @@ from .common import delete_dataset_common, get_collection_else_forbidden
 from backend.common.corpora_orm import CollectionVisibility, DatasetArtifactFileType
 from backend.common.entities import Dataset, Collection
 from backend.common.entities.geneset import GenesetDatasetLink
-from backend.corpora.api_server.db import dbconnect
+from backend.api_server.db import dbconnect
 from backend.common.utils.http_exceptions import (
     NotFoundHTTPException,
     ServerErrorHTTPException,
