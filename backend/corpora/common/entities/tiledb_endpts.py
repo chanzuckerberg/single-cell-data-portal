@@ -129,7 +129,7 @@ def replace_dataset(coll_id: str,  body: dict, token_info: dict):
 def list_published_datasets():
     """/v1/datasets/index GET"""
     db = TileDBData(location)
-    datasets = db.get_all_datasets()
+    datasets = db.get_published_datasets()
     return make_response(jsonify(datasets), 200)
 
 

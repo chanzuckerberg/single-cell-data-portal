@@ -65,6 +65,10 @@ class GenerateDataMixin:
         db = TileDBData(location)
         return db.get_dataset(dataset_id)
 
+    def update_processing(self, dataset_id: str, status: dict):
+        db = TileDBData(location)
+        db.edit_dataset(dataset_id, "processing_status", status)
+
     # @staticmethod
     # def delete_geneset(_id):
     #     with db_session_manager() as session:
@@ -77,6 +81,6 @@ class GenerateDataMixin:
     #     self.addCleanup(self.delete_geneset, _geneset.id)
     #     return _geneset
 
-    def generate_link(self, session: Session, **params) -> CollectionLink:
+    def generate_link(self, **params) -> CollectionLink:
         _link = BogusDbCollectionLinkParams.get(**params)
         return _link
