@@ -13,14 +13,14 @@ import re
 import logging
 
 from .common import get_collection_else_forbidden
-from ....common.corpora_orm import DbCollection, CollectionVisibility, ProjectLinkType
-from ....common.entities import Collection
+from backend.corpora.common.corpora_orm import DbCollection, CollectionVisibility, ProjectLinkType
+from backend.corpora.common.entities import Collection
 from .authorization import is_user_owner_or_allowed, owner_or_allowed
-from ....common.utils.http_exceptions import (
+from backend.corpora.common.utils.http_exceptions import (
     InvalidParametersHTTPException,
     ConflictException,
 )
-from ....api_server.db import dbconnect
+from backend.corpora.api_server.db import dbconnect
 
 
 @dbconnect

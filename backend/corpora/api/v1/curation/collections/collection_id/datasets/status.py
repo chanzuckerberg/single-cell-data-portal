@@ -1,7 +1,7 @@
 from flask import g, make_response, jsonify
 
 from backend.corpora.api_server.db import dbconnect
-from backend.corpora.lambdas.api.v1.common import get_dataset_else_error
+from backend.corpora.api.v1.common import get_dataset_else_error
 
 
 @dbconnect

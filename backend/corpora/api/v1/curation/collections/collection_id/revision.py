@@ -1,7 +1,7 @@
 from flask import make_response, jsonify
 
 from backend.corpora.api_server.db import dbconnect
-from backend.corpora.lambdas.api.v1.collection import post_collection_revision_common
+from backend.corpora.api.v1.collection import post_collection_revision_common
 
 
 @dbconnect

@@ -8,7 +8,7 @@ from backend.corpora.common.utils.http_exceptions import (
     InvalidParametersHTTPException,
     NotFoundHTTPException,
 )
-from backend.corpora.lambdas.api.v1.authorization import owner_or_allowed
+from backend.corpora.api.v1.authorization import owner_or_allowed
 
 
 def get_collection_else_forbidden(db_session, collection_id, **kwargs):

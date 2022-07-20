@@ -1,14 +1,14 @@
 from flask import g, jsonify
 
-from backend.corpora.lambdas.api.v1.collection import update_collection
+from backend.corpora.api.v1.collection import update_collection
 from ..common import EntityColumns
 from backend.corpora.api_server.db import dbconnect
 from backend.corpora.common.corpora_orm import CollectionVisibility
 from backend.corpora.common.entities import Collection
 from backend.corpora.common.utils.http_exceptions import MethodNotAllowedException, NotFoundHTTPException
-from backend.corpora.lambdas.api.v1.authorization import owner_or_allowed
-from backend.corpora.lambdas.api.v1.curation.collections.common import reshape_for_curation_api_and_is_allowed
-from backend.corpora.lambdas.api.v1.common import get_collection_else_forbidden
+from backend.corpora.api.v1.authorization import owner_or_allowed
+from backend.corpora.api.v1.curation.collections.common import reshape_for_curation_api_and_is_allowed
+from backend.corpora.api.v1.common import get_collection_else_forbidden
 
 
 @dbconnect

@@ -6,8 +6,8 @@ from backend.corpora.common.corpora_orm import CollectionVisibility
 from backend.corpora.common.entities import Dataset
 from backend.corpora.common.utils.http_exceptions import InvalidParametersHTTPException, ConflictException
 from backend.corpora.common.utils.regex import DATASET_ID_REGEX, CURATOR_TAG_PREFIX_REGEX, EXTENSION_REGEX
-from backend.corpora.lambdas.api.v1.authorization import owner_or_allowed
-from backend.corpora.lambdas.api.v1.common import get_dataset_else_error, get_collection_else_forbidden
+from backend.corpora.api.v1.authorization import owner_or_allowed
+from backend.corpora.api.v1.common import get_dataset_else_error, get_collection_else_forbidden
 
 REGEX = f"^({DATASET_ID_REGEX}|{CURATOR_TAG_PREFIX_REGEX})\\.{EXTENSION_REGEX}$"
 

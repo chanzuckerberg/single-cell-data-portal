@@ -11,11 +11,11 @@ from flask import make_response, jsonify, current_app, request, redirect, after_
 from jose.exceptions import ExpiredSignatureError
 
 
-from ....common.authorizer import assert_authorized_token, get_userinfo_from_auth0
-from ....common.corpora_config import CorporaAuthConfig
+from backend.corpora.common.authorizer import assert_authorized_token, get_userinfo_from_auth0
+from backend.corpora.common.corpora_config import CorporaAuthConfig
 
 # global oauth client
-from ....common.utils.http_exceptions import UnauthorizedError
+from backend.corpora.common.utils.http_exceptions import UnauthorizedError
 
 oauth_client = None
 

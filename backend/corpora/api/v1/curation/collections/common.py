@@ -1,6 +1,6 @@
 from ...authorization import is_user_owner_or_allowed
-from ......common.corpora_config import CorporaConfig
-from ......common.corpora_orm import (
+from backend.corpora.common.corpora_config import CorporaConfig
+from backend.corpora.common.corpora_orm import (
     CollectionVisibility,
     DbCollectionLink,
     DbCollection,

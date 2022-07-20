@@ -4,7 +4,7 @@ from backend.corpora.api_server.db import dbconnect
 from backend.corpora.common.corpora_orm import DatasetArtifactFileType
 from backend.corpora.common.entities import DatasetAsset
 from backend.corpora.common.utils.http_exceptions import NotFoundHTTPException
-from backend.corpora.lambdas.api.v1.common import get_dataset_else_error
+from backend.corpora.api.v1.common import get_dataset_else_error
 
 
 @dbconnect
