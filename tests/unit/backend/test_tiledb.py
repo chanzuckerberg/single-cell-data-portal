@@ -107,16 +107,16 @@ class TestTileDbData(unittest.TestCase):
         TileDBData.destroy_db(self.location)
 
     def create_collection(self):
-        id = self.db.create_collection(
-            self.metadata['name'],
-            self.metadata['description'],
-            self.metadata['owner'],
-            self.metadata['contact_name'],
-            self.metadata['contact_email'],
-            self.metadata['curator_name'],
-            self.metadata['links'],
-            self.metadata['publisher_metadata']
-        )
+        id = self.db.create_collection({
+            "name": self.metadata['name'],
+            "description": self.metadata['description'],
+            "owner": self.metadata['owner'],
+            "contact_name": self.metadata['contact_name'],
+            "contact_email": self.metadata['contact_email'],
+            "curator_name": self.metadata['curator_name'],
+            "links": self.metadata['links'],
+            "publisher_metadata": self.metadata['publisher_metadata']
+        })
         return id
 
     def test_create_collection(self):

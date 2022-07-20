@@ -1,5 +1,6 @@
 import os
 import shutil
+from importlib_metadata import metadata
 import numpy as np
 import tiledb
 import uuid
@@ -119,7 +120,12 @@ class Utils:
         "contact_email": "",
         "curator_name": "",
         "links": [],
-        "publisher_metadata": {}
+        "publisher_metadata": {},
+        "datasets": [],
+        "created_at": 0,
+        "updated_at": 0,
+        "visibility": "PRIVATE",
+        "revision_of": ""
     }
 
     @staticmethod
@@ -149,7 +155,7 @@ class Utils:
 class TileDBData:
     @staticmethod
     def init_db(location):
-        """FOR TESTING PURPOSES, create a local TileDB group and arrays according to our schema."""
+        """Create a local TileDB group and arrays according to our schema."""
         # create group
         if os.path.exists(location):
             shutil.rmtree(location)
@@ -205,41 +211,27 @@ class TileDBData:
 
     @staticmethod
     def destroy_db(location):
-        """FOR TESTING PURPOSES, delete our local TileDB group."""
+        """Delete our local TileDB group."""
         shutil.rmtree(location)
 
     def __init__(self, location):
         self.location = location
 
-    def create_collection(
-        self,
-        name: str = "",
-        description: str = "",
-        owner: str = "",
-        contact_name: str = "",
-        contact_email: str = "",
-        curator_name: str = "",
-        links: list = None,
-        publisher_metadata: dict = None
-    ):
+    def create_collection(self, metadata: dict = {}):
         """Creates a collection using provided data."""
         id = Utils.new_id()
+        return self._create_collection_custom_id(id, metadata)
+
+    def _create_collection_custom_id(self, id: str = "", metadata: dict = {}):
+        """Internal function to create a collection with a custom id. """
+        data = Utils.empty_collection
+        for a in Utils.attrs['collections']:
+            if a in metadata:
+                data[a] = metadata[a]
+        data["created_at"] = time.time()
+        data["updated_at"] = time.time()
         with tiledb.open(self.location + "/collections", "w") as A:
-            A[id] = Utils.pack_input_data({
-                "visibility": "PRIVATE",
-                "name": name,
-                "description": description,
-                "contact_name": contact_name,
-                "contact_email": contact_email,
-                "links": links,
-                "owner": owner,
-                "datasets": [],
-                "revision_of": "",
-                "curator_name": curator_name,
-                "created_at": time.time(),
-                "updated_at": time.time(),
-                "publisher_metadata": publisher_metadata
-            }, "collections")
+            A[id] = Utils.pack_input_data(data, "collections")
         return id
 
     def get_collection(self, id):
@@ -308,14 +300,19 @@ class TileDBData:
     def add_dataset(self, coll_id, metadata):
         """Add a dataset to a collection and to the datasets array using the data from the user's shared URL"""
         id = Utils.new_id()
+        return self._add_dataset_custom_id(id, coll_id, metadata)
+
+    def _add_dataset_custom_id(self, id: str, coll_id: str, metadata: dict):
+        """Add a dataset with a custom id."""
         datasets = self.get_attribute(coll_id, "datasets")
         if id not in datasets:
             datasets.append(id)
         self.edit_collection(coll_id, "datasets", datasets)
 
-        data = {}
+        data = Utils.empty_dataset
         for a in Utils.attrs['datasets']:
-            data[a] = metadata[a]
+            if a in metadata:
+                data[a] = metadata[a]
 
         with tiledb.open(self.location + "/datasets", "w") as A:
             A[id] = Utils.pack_input_data(data, "datasets")
