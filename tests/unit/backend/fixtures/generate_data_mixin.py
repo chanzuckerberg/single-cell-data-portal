@@ -15,8 +15,7 @@ class GenerateDataMixin:
 
     attrs = Utils.attrs
 
-    @staticmethod
-    def delete_collection(_id):
+    def delete_collection(self, _id):
         db = TileDBData(location)
         db.delete_collection(_id)
 
@@ -29,8 +28,27 @@ class GenerateDataMixin:
         self.addCleanup(self.delete_collection, id)
         return id, metadata
 
-    @staticmethod
-    def delete_dataset(coll_id, dataset_id):
+    def get_collection(self, coll_id: str):
+        db = TileDBData(location)
+        return db.get_collection(coll_id)
+
+    def get_doi(self, links) -> str:
+        doi = [link for link in links if link['link_type'] == "DOI"]
+        if doi:
+            return doi[0].link_url
+        else:
+            return None
+
+    def publish_collection(self, coll_id: str):
+        db = TileDBData(location)
+        db.publish_collection(coll_id)
+
+    def revise_collection(self, coll_id: str):
+        db = TileDBData(location)
+        id = db.create_revision(coll_id)
+        return id
+
+    def delete_dataset(self, coll_id, dataset_id):
         db = TileDBData(location)
         db.delete_dataset(coll_id, dataset_id)
 
@@ -42,6 +60,10 @@ class GenerateDataMixin:
         dataset = db.get_dataset(dataset_id)
         self.addCleanup(self.delete_dataset, dataset_id)
         return dataset_id, dataset
+    
+    def get_dataset(self, dataset_id: str):
+        db = TileDBData(location)
+        return db.get_dataset(dataset_id)
 
     # @staticmethod
     # def delete_geneset(_id):
