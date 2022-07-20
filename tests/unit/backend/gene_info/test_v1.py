@@ -78,7 +78,7 @@ class GeneInfoAPIv1Tests(unittest.TestCase):
         self.assertEqual(json.loads(res.data), self.final_gene_info_result)
 
         # parameters contain only gene name
-        res = self.app.get("/gene_info/v1/gene_info?gene=name")
+        res = self.app.get("/gene_info/v1/gene_info?gene=APOE")
         self.assertTrue(mock_get_id.called)
         self.assertTrue(mock_fetch_gene_uid.called)
         self.assertTrue(mock_fetch_gene_info_tree.called)
@@ -94,7 +94,7 @@ class GeneInfoAPIv1Tests(unittest.TestCase):
         test_provider.provider.api_key = ""
         res1 = self.app.get("/gene_info/v1/gene_info?geneID=")
         self.assertEqual(res1.status_code, 404)
-        self.assertEqual(json.loads(res1.data)["detail"], "Unexpected NCBI search result")
+        self.assertEqual(json.loads(res1.data)["detail"], "Could not find '' in dictionary.")
         res2 = self.app.get("/gene_info/v1/gene_info?geneID=abc")
         self.assertEqual(res2.status_code, 404)
         self.assertEqual(json.loads(res2.data)["detail"], "Unexpected NCBI search result")
