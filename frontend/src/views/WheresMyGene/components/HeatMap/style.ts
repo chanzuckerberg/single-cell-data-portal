@@ -40,6 +40,7 @@ export const YAxisWrapper = styled.div`
   top: 0;
   left: 0;
   z-index: 1;
+  overflow: hidden;
 
   ${({ height }: { height: number }) => {
     return `
@@ -53,6 +54,7 @@ export const ChartWrapper = styled.div`
   flex-direction: column;
   position: absolute;
   top: 0;
+  
 `;
 
 function xAxisWidth({ width }: { width: number }) {
