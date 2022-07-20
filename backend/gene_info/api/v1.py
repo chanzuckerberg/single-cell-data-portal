@@ -6,7 +6,6 @@ from backend.corpora.common.utils.http_exceptions import (
     ForbiddenHTTPException,
 )
 from backend.gene_info.api.ensembl_ids import GeneChecker
-import logging
 
 
 def gene_info(gene: string = "", geneID: string = ""):
@@ -15,7 +14,7 @@ def gene_info(gene: string = "", geneID: string = ""):
     # given just a gene name (finds corresponding gene ID)
     if geneID == "":
         gene_checker = GeneChecker()
-        try: 
+        try:
             geneID = gene_checker.get_id(gene)
         except ValueError as e:
             raise NotFoundHTTPException(str(e))
