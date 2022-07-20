@@ -113,7 +113,6 @@ export default memo(function HeatMap({
       {isLoadingAPI || isAnyTissueLoading(isLoading) ? <Loader /> : null}
 
       <XAxisChart geneNames={sortedGeneNames} />
-
       <YAxisWrapper
         height={(chartWrapperRect?.height || 0) - X_AXIS_CHART_HEIGHT_PX}
       >

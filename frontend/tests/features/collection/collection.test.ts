@@ -5,7 +5,7 @@ import { INVALID_DOI_ERROR_MESSAGE } from "src/components/CreateCollectionModal/
 import { BLUEPRINT_SAFE_TYPE_OPTIONS, TEST_URL } from "tests/common/constants";
 import {
   describeIfDeployed,
-  describeIfDevStagingProd,
+  describeIfDevStaging,
   goToPage,
   login,
   tryUntil,
@@ -84,8 +84,8 @@ describe("Collection", () => {
     });
   });
 
-  describeIfDevStagingProd("Deployed Env Tests", () => {
-    describe.skip("invalid DOIs", () => {
+  describeIfDevStaging("Deployed Env Tests", () => {
+    describe("invalid DOIs", () => {
       it("doesn't create a collection with a DOI in an invalid format", async () => {
         const timestamp = Date.now();
 
