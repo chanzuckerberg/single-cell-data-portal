@@ -14,6 +14,13 @@ export const describeIfDevStagingProd = TEST_ENVS.includes(TEST_ENV)
   ? describe
   : describe.skip;
 
+// Skip tests unless environment is dev or staging; used by tests that require a deployed environment but also modify
+// environment data (e.g. creating collections, which should be avoided in prod).
+const TEST_ENVS_DEV_STAGING = ["dev", "staging"];
+export const describeIfDevStaging = TEST_ENVS_DEV_STAGING.includes(TEST_ENV)
+  ? describe
+  : describe.skip;
+
 export async function goToPage(url: string = TEST_URL): Promise<void> {
   await page.goto(url);
 }

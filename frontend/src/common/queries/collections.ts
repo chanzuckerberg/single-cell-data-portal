@@ -47,6 +47,36 @@ export interface CollectionEditResponse {
   isInvalidDOI?: boolean;
 }
 
+/**
+ * Possible set of error keys returned from the BE.
+ */
+enum ERROR_KEY {
+  "DOI" = "link_type",
+}
+
+/**
+ * Possible set of error values returned from the BE.
+ */
+enum ERROR_VALUE {
+  "DOI" = "DOI",
+}
+
+/**
+ * Error information returned from create and edit collection API endpoints. For example,
+ * see the single element in the "detail" array in the following error response:
+ *
+ * {
+ *   "detail": [{
+ *       link_type: "DOI",
+ *       reason: "Invalid DOI"
+ *   }],
+ *   "status": 400,
+ *   "title": "Bad Request",
+ *   "type": "about:blank"
+ * }
+ */
+type Error = { [key in ERROR_KEY]?: ERROR_VALUE } & { reason: string };
+
 export const USE_COLLECTIONS = {
   entities: [ENTITIES.COLLECTION],
   id: "collections",
@@ -572,20 +602,59 @@ export function useReuploadDataset(
  * Determine if a submitted DOI has failed validation on the BE.
  *
  * Expected response for invalid DOI:
- * {"detail": "DOI cannot be found on Crossref", "status": 400, "title": "Bad Request", "type": "about:blank"}.
+ * {
+ *   "detail": [{
+ *       link_type: "DOI",
+ *       reason: "DOI cannot be found on Crossref"
+ *   }],
+ *   "status": 400,
+ *   "title": "Bad Request",
+ *   "type": "about:blank"
+ * }
  *
  * Expected response for DOI with an invalid format:
- * {"detail": "Invalid DOI", "status": 400, "title": "Bad Request", "type": "about:blank"}
+ * {
+ *   "detail": [{
+ *       link_type: "DOI",
+ *       reason: "Invalid DOI"
+ *   }],
+ *   "status": 400,
+ *   "title": "Bad Request",
+ *   "type": "about:blank"
+ * }
  *
  * TODO generalize beyond DOI link type once all links are validated on the BE (#1916).
  *
  * @param status - Response status returned from server.
- * @param detail - Response error text, if any.
+ * @param errors - Array of errors returned from server, if any.
  * @returns True if DOI has been identified as invalid by the BE.
  */
-function isInvalidDOI(status: number, detail?: string): boolean {
+function isInvalidDOI(status: number, errors?: Error[]): boolean {
+  if (status !== HTTP_STATUS_CODE.BAD_REQUEST || !errors) {
+    return false;
+  }
+
+  // Check if the errors returned from the server contain a DOI error.
+  const doiError = findErrorByKey(errors, ERROR_KEY.DOI);
+  if (!doiError) {
+    return false;
+  }
+
+  // There's a DOI error; check if it's an error we report on.
+  const { reason } = doiError;
   return (
-    status === HTTP_STATUS_CODE.BAD_REQUEST &&
-    (detail === INVALID_DOI_MESSAGE || detail === INVALID_DOI_FORMAT_MESSAGE)
+    reason === INVALID_DOI_MESSAGE || reason === INVALID_DOI_FORMAT_MESSAGE
   );
+}
+
+/**
+ * Find the error with the given key.
+ * @param errors - Array of errors returned from server.
+ * @param key - Key of error to find.
+ * @returns The error with the given key, if any.
+ */
+function findErrorByKey(errors: Error[], key: ERROR_KEY): Error | undefined {
+  return errors.find((error) => {
+    return Object.keys(error).find((errorKey) => errorKey === key);
+  });
 }

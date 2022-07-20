@@ -20,7 +20,7 @@ class TestPostRevision(BaseAuthAPITest):
         ).id
         response = self.app.post(
             f"/curation/v1/collections/{collection_id}/revision",
-            headers=self.get_auth_headers(),
+            headers=self.make_owner_header(),
         )
         self.assertEqual(403, response.status_code)
 
@@ -28,7 +28,7 @@ class TestPostRevision(BaseAuthAPITest):
         collection_id = self.generate_collection(self.session, visibility=CollectionVisibility.PUBLIC.name).id
         response = self.app.post(
             f"/curation/v1/collections/{collection_id}/revision",
-            headers=self.get_auth_headers(),
+            headers=self.make_owner_header(),
         )
         self.assertEqual(201, response.status_code)
         self.assertNotEqual(collection_id, response.json["revision_id"])
