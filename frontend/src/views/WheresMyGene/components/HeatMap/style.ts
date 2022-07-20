@@ -40,6 +40,7 @@ export const YAxisWrapper = styled.div`
   top: 0;
   left: 0;
   z-index: 1;
+  // Somehow Firefox requires this to scroll
   overflow: hidden;
 
   ${({ height }: { height: number }) => {
