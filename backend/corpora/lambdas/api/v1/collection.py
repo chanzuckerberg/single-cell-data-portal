@@ -1,7 +1,10 @@
 import sqlalchemy
 from typing import Optional
-from backend.corpora.common.providers import crossref_provider
-from backend.corpora.common.providers.crossref_provider import CrossrefDOINotFoundException, CrossrefException
+from backend.corpora.common.providers.crossref_provider import (
+    CrossrefDOINotFoundException,
+    CrossrefException,
+    CrossrefProvider,
+)
 
 from flask import make_response, jsonify, g
 from urllib.parse import urlparse
@@ -162,16 +165,15 @@ def normalize_and_get_doi(body: dict, errors: list) -> Optional[str]:
     return doi
 
 
-def get_publisher_metadata(provider, doi):
+def get_publisher_metadata(doi: str, errors: list) -> Optional[dict]:
     """
     Retrieves publisher metadata from Crossref.
     """
-    provider = crossref_provider.CrossrefProvider()
+    provider = CrossrefProvider()
     try:
         return provider.fetch_metadata(doi)
     except CrossrefDOINotFoundException:
-        # TODO: add an error message
-        raise InvalidParametersHTTPException(detail="DOI cannot be found on Crossref")
+        errors.append({"link_type": ProjectLinkType.DOI.name, "reason": "DOI cannot be found on Crossref"})
     except CrossrefException as e:
         logging.warning(f"CrossrefException on create_collection: {e}. Will ignore metadata.")
         return None
@@ -219,13 +221,13 @@ def create_collection(body: dict, user: str):
     errors = []
     verify_collection_body(body, errors)
     doi = normalize_and_get_doi(body, errors)
-    if errors:
-        raise InvalidParametersHTTPException(detail=errors)
     if doi is not None:
-        provider = crossref_provider.CrossrefProvider()
-        publisher_metadata = get_publisher_metadata(provider, doi)
+        publisher_metadata = get_publisher_metadata(doi, errors)
     else:
         publisher_metadata = None
+
+    if errors:
+        raise InvalidParametersHTTPException(detail=errors)
 
     collection = Collection.create(
         db_session,
@@ -276,18 +278,15 @@ def update_collection(collection_id: str, body: dict, token_info: dict):
     # Compute the diff between old and new DOI
     old_doi = collection.get_doi()
     new_doi = normalize_and_get_doi(body, errors)
-    if errors:
-        raise InvalidParametersHTTPException(detail=errors)
-
     if old_doi and not new_doi:
         # If the DOI was deleted, remove the publisher_metadata field
         collection.update(publisher_metadata=None)
     elif new_doi != old_doi:
         # If the DOI has changed, fetch and update the metadata
-        provider = crossref_provider.CrossrefProvider()
-        publisher_metadata = get_publisher_metadata(provider, new_doi)
+        publisher_metadata = get_publisher_metadata(new_doi, errors)
         body["publisher_metadata"] = publisher_metadata
-
+    if errors:
+        raise InvalidParametersHTTPException(detail=errors)
     collection.update(**body)
     result = collection.reshape_for_api(tombstoned_datasets=True)
     result["access_type"] = "WRITE"

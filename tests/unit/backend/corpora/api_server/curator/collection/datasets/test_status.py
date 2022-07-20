@@ -12,7 +12,7 @@ class TestDatasetStatus(BaseAuthAPITest):
         self.queries = ["dataset_id", "curator_tag"]
         self.auth_credentials = [
             (self.make_super_curator_header, "super"),
-            (self.get_auth_headers, "owner"),
+            (self.make_owner_header, "owner"),
             (None, "none"),
             (self.make_not_owner_header, "not_owner"),
         ]
