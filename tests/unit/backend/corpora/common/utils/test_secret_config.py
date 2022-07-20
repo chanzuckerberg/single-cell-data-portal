@@ -69,9 +69,7 @@ class TestSecretConfig(unittest.TestCase):
             self.assertEqual("custom", config.secret1)
 
     def test_singletonness(self):
-        with patch(
-            "backend.common.utils.aws.AwsSecret.value", new_callable=PropertyMock
-        ) as mock_aws_secret_value:
+        with patch("backend.common.utils.aws.AwsSecret.value", new_callable=PropertyMock) as mock_aws_secret_value:
             mock_aws_secret_value.return_value = '{"secret2": "foo"}'
 
             config1 = BogoComponentConfig(deployment=self.deployment_env, source="aws")
