@@ -2,8 +2,8 @@ import typing
 
 from sqlalchemy.orm import Session
 
-from backend.corpora.common.corpora_orm import DbCollectionLink
-from backend.corpora.common.entities.entity import Entity
+from backend.common.corpora_orm import DbCollectionLink
+from backend.common.entities.entity import Entity
 
 
 class CollectionLink(Entity):

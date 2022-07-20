@@ -6,15 +6,15 @@ from unittest import mock
 
 from sqlalchemy.exc import SQLAlchemyError
 
-from backend.corpora.common.corpora_orm import (
+from backend.common.corpora_orm import (
     CollectionVisibility,
     ConversionStatus,
     DatasetArtifactFileType,
 )
-from backend.corpora.common.entities import Dataset, Collection
-from backend.corpora.common.utils.db_session import db_session_manager
-from backend.corpora.common.utils.exceptions import CorporaException
-from backend.corpora.common.utils.json import CustomJSONEncoder
+from backend.common.entities import Dataset, Collection
+from backend.common.utils.db_session import db_session_manager
+from backend.common.utils.exceptions import CorporaException
+from backend.common.utils.json import CustomJSONEncoder
 from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest, get_cxguser_token
 from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
 
@@ -401,7 +401,7 @@ class TestPublishRevision(BaseRevisionTest):
         self.session.expire_all()
         body = {"data_submission_policy_version": "1.0"}
         path = f"{self.base_path}/{revision_id}/publish"
-        with patch("backend.corpora.common.entities.collection.datetime") as mock_dt:
+        with patch("backend.common.entities.collection.datetime") as mock_dt:
             mock_dt.utcnow = Mock(return_value=self.mock_timestamp)
             response = self.app.post(path, headers=self.headers, data=json.dumps(body))
         self.assertEqual(202, response.status_code)

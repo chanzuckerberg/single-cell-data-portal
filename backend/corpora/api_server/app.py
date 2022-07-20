@@ -10,8 +10,8 @@ from flask import g, request, Response
 from flask_cors import CORS
 from swagger_ui_bundle import swagger_ui_path
 from backend.corpora.api_server.logger import configure_logging
-from backend.corpora.common.utils.aws import AwsSecret
-from backend.corpora.common.utils.json import CustomJSONEncoder
+from backend.common.utils.aws import AwsSecret
+from backend.common.utils.json import CustomJSONEncoder
 
 DEPLOYMENT_STAGE = os.environ["DEPLOYMENT_STAGE"]
 APP_NAME = "{}-{}".format(os.environ["APP_NAME"], DEPLOYMENT_STAGE)

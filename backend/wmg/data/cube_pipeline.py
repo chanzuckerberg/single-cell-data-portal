@@ -5,7 +5,7 @@ import sys
 import time
 import tiledb
 
-from backend.corpora.common.utils.slack import notify_slack, format_failed_batch_issue_slack_alert
+from backend.common.utils.slack import notify_slack, format_failed_batch_issue_slack_alert
 from backend.corpus_asset_pipelines import integrated_corpus
 from backend.wmg.data.load_cube import upload_artifacts_to_s3, make_snapshot_active
 from backend.wmg.data.schemas.corpus_schema import create_tdb

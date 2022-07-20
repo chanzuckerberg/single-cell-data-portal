@@ -9,7 +9,7 @@ import tiledb
 from pandas import DataFrame
 from tiledb import Array
 
-from backend.corpora.common.utils.s3_buckets import buckets
+from backend.common.utils.s3_buckets import buckets
 from backend.wmg.config import WmgConfig
 from backend.wmg.data.tiledb import create_ctx
 

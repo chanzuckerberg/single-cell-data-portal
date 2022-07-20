@@ -2,7 +2,7 @@ import json
 import unittest
 from unittest.mock import patch, Mock
 
-from backend.corpora.common.corpora_orm import (
+from backend.common.corpora_orm import (
     CollectionVisibility,
     ProcessingStatus,
     DatasetArtifactFileType,

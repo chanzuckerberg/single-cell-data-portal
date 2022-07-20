@@ -1,6 +1,6 @@
 import sqlalchemy
 from typing import Optional
-from backend.corpora.common.providers.crossref_provider import (
+from backend.common.providers.crossref_provider import (
     CrossrefDOINotFoundException,
     CrossrefException,
     CrossrefProvider,
@@ -13,10 +13,10 @@ import re
 import logging
 
 from .common import get_collection_else_forbidden
-from backend.corpora.common.corpora_orm import DbCollection, CollectionVisibility, ProjectLinkType
-from backend.corpora.common.entities import Collection
+from backend.common.corpora_orm import DbCollection, CollectionVisibility, ProjectLinkType
+from backend.common.entities import Collection
 from .authorization import is_user_owner_or_allowed, owner_or_allowed
-from backend.corpora.common.utils.http_exceptions import (
+from backend.common.utils.http_exceptions import (
     InvalidParametersHTTPException,
     ConflictException,
 )

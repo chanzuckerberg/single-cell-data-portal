@@ -1,8 +1,8 @@
 from sqlalchemy.orm import Session
 
-from backend.corpora.common.corpora_orm import CollectionVisibility
-from backend.corpora.common.entities import Collection, Dataset
-from backend.corpora.common.utils.http_exceptions import (
+from backend.common.corpora_orm import CollectionVisibility
+from backend.common.entities import Collection, Dataset
+from backend.common.utils.http_exceptions import (
     ForbiddenHTTPException,
     MethodNotAllowedException,
     InvalidParametersHTTPException,

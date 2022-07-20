@@ -4,8 +4,8 @@ Drops and recreates all tables according to corpora_orm.py
 
 from sqlalchemy import create_engine
 
-from backend.corpora.common.corpora_config import CorporaDbConfig
-from backend.corpora.common.corpora_orm import Base
+from backend.common.corpora_config import CorporaDbConfig
+from backend.common.corpora_orm import Base
 
 
 def create_db():

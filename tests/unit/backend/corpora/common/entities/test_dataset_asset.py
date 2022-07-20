@@ -2,11 +2,11 @@ from unittest import mock
 
 from botocore.exceptions import ClientError
 
-from backend.corpora.common.corpora_orm import (
+from backend.common.corpora_orm import (
     DatasetArtifactFileType,
 )
-from backend.corpora.common.entities.dataset_asset import DatasetAsset
-from backend.corpora.common.utils.db_session import DBSessionMaker
+from backend.common.entities.dataset_asset import DatasetAsset
+from backend.common.utils.db_session import DBSessionMaker
 from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
 from tests.unit.backend.fixtures.generate_data_mixin import GenerateDataMixin
 
@@ -38,7 +38,7 @@ class TestDatasetAsset(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
         self.assertIn(file_name, url)
         self.assertIn("Expires=", url)
 
-    @mock.patch("backend.corpora.common.entities.dataset_asset.buckets")
+    @mock.patch("backend.common.entities.dataset_asset.buckets")
     def test__generate_file_url__ERROR(self, mock_s3):
         mock_s3.portal_client.generate_presigned_url.side_effect = ClientError({}, "mock ClientError")
         # Create the Dataset Asset

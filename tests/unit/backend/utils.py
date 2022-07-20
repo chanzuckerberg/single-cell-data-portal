@@ -3,7 +3,7 @@ import string
 
 import numpy as np
 
-from backend.corpora.common.corpora_orm import (
+from backend.common.corpora_orm import (
     CollectionVisibility,
     ConversionStatus,
     IsPrimaryData,

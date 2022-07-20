@@ -1,6 +1,6 @@
 import unittest
 
-from backend.corpora.common.utils.math_utils import sizeof_formatted
+from backend.common.utils.math_utils import sizeof_formatted
 
 
 class TestMathUtils(unittest.TestCase):

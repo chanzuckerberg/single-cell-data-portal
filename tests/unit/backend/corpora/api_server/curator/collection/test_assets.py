@@ -1,6 +1,6 @@
 from unittest.mock import patch, Mock
 
-from backend.corpora.common.corpora_orm import CollectionVisibility, DatasetArtifactFileType
+from backend.common.corpora_orm import CollectionVisibility, DatasetArtifactFileType
 from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest
 from tests.unit.backend.fixtures.config import fake_s3_file
 from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS

@@ -1,14 +1,14 @@
 from flask import make_response, g
 
-from backend.corpora.common.corpora_orm import CollectionVisibility
-from backend.corpora.common.entities import Collection
-from backend.corpora.common.utils.http_exceptions import ConflictException
+from backend.common.corpora_orm import CollectionVisibility
+from backend.common.entities import Collection
+from backend.common.utils.http_exceptions import ConflictException
 
 from backend.corpora.api_server.db import dbconnect
-from backend.corpora.common.utils.http_exceptions import ForbiddenHTTPException
+from backend.common.utils.http_exceptions import ForbiddenHTTPException
 from ..authorization import owner_or_allowed
 
-from backend.corpora.common.utils import cloudfront
+from backend.common.utils import cloudfront
 
 
 @dbconnect

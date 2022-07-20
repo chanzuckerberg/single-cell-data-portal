@@ -2,15 +2,15 @@ import json
 import unittest
 from unittest.mock import patch
 
-from backend.corpora.common.corpora_orm import CollectionVisibility, ProcessingStatus
+from backend.common.corpora_orm import CollectionVisibility, ProcessingStatus
 from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest
 
 
 @patch(
-    "backend.corpora.common.utils.dl_sources.url.DropBoxURL.file_info",
+    "backend.common.utils.dl_sources.url.DropBoxURL.file_info",
     return_value={"size": 1, "name": "file.h5ad"},
 )
-@patch("backend.corpora.common.upload.start_upload_sfn")
+@patch("backend.common.upload.start_upload_sfn")
 class TestPutLink(BaseAuthAPITest):
     @classmethod
     def setUpClass(cls):

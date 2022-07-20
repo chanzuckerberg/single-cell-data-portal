@@ -1,6 +1,6 @@
 import requests
 
-from backend.corpora.common.corpora_config import CorporaAuthConfig
+from backend.common.corpora_config import CorporaAuthConfig
 
 
 class Auth0ManagementSession:

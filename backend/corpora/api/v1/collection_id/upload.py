@@ -2,16 +2,16 @@ import requests
 from flask import make_response, g
 
 from backend.corpora.api_server.db import dbconnect
-from backend.corpora.common.upload import upload
-from backend.corpora.common.utils.dl_sources.url import MissingHeaderException, from_url
-from backend.corpora.common.utils.exceptions import (
+from backend.common.upload import upload
+from backend.common.utils.dl_sources.url import MissingHeaderException, from_url
+from backend.common.utils.exceptions import (
     MaxFileSizeExceededException,
     InvalidFileFormatException,
     NonExistentCollectionException,
     InvalidProcessingStateException,
     NonExistentDatasetException,
 )
-from backend.corpora.common.utils.http_exceptions import (
+from backend.common.utils.http_exceptions import (
     ForbiddenHTTPException,
     InvalidParametersHTTPException,
     TooLargeHTTPException,

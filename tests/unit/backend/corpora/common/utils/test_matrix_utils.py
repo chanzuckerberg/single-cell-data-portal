@@ -2,7 +2,7 @@ import unittest
 
 import numpy as np
 
-from backend.corpora.common.utils.matrix_utils import is_matrix_sparse
+from backend.common.utils.matrix_utils import is_matrix_sparse
 
 
 class TestMatrixUtils(unittest.TestCase):

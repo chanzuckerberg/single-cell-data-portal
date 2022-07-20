@@ -13,7 +13,7 @@ from backend.corpora.dataset_processing.process import (
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
-from backend.corpora.common.corpora_orm import (
+from backend.common.corpora_orm import (
     ConversionStatus,
     ProcessingStatus,
     DatasetArtifactFileType,

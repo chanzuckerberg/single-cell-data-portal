@@ -1,6 +1,6 @@
 import unittest
 
-from backend.corpora.common.corpora_orm import CollectionVisibility
+from backend.common.corpora_orm import CollectionVisibility
 from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest
 
 

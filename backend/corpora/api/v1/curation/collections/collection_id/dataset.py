@@ -5,8 +5,8 @@ import boto3
 from flask import g, request, make_response, jsonify
 
 from backend.corpora.api_server.db import dbconnect
-from backend.corpora.common.corpora_config import CorporaConfig
-from backend.corpora.common.corpora_orm import CollectionVisibility
+from backend.common.corpora_config import CorporaConfig
+from backend.common.corpora_orm import CollectionVisibility
 from backend.corpora.api.v1.authorization import owner_or_allowed, is_super_curator
 from backend.corpora.api.v1.common import get_collection_else_forbidden, get_dataset_else_error
 from backend.corpora.api.v1.dataset import delete_dataset_common

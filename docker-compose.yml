@@ -84,7 +84,7 @@ services:
     volumes:
       - ./backend/corpora/upload_failures:/var/task
       - ./backend/corpora/lambdas/upload_failures:/var/task/backend/corpora/upload_failures
-      - ./backend/corpora/common:/var/task/backend/corpora/common
+      - ./backend/common:/var/task/backend/common
       - ./backend/corpora/dataset_processing:/var/task/backend/corpora/dataset_processing
     environment:
       - PYTHONUNBUFFERED=1
@@ -119,7 +119,7 @@ services:
       - "9001:8080"
     volumes:
       - ./backend/corpora/upload_success:/var/task
-      - ./backend/corpora/common:/var/task/backend/corpora/common
+      - ./backend/common:/var/task/backend/common
       - ./backend/corpora/dataset_processing:/var/task/backend/corpora/dataset_processing
     environment:
       - PYTHONUNBUFFERED=1
@@ -154,7 +154,7 @@ services:
       - "9002:8080"
     volumes:
       - ./backend/corpora/dataset_submissions:/var/task
-      - ./backend/corpora/common:/var/task/backend/corpora/common
+      - ./backend/common:/var/task/backend/common
     environment:
       - PYTHONUNBUFFERED=1
       - CORPORA_LOCAL_DEV=true
@@ -186,7 +186,7 @@ services:
     restart: "no"
     volumes:
       - ./backend/corpora/dataset_processing:/backend/corpora/dataset_processing
-      - ./backend/corpora/common:/backend/corpora/common
+      - ./backend/common:/backend/common
       # Mount dirs in a layout suitable for running tests.
       - .:/single-cell-data-portal
     command: ["sleep", "infinity"]

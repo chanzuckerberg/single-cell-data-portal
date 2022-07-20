@@ -6,11 +6,11 @@ from urllib.parse import unquote_plus
 
 from sqlalchemy.orm import Session
 
-from backend.corpora.common.entities import Dataset, Collection
-from backend.corpora.common.upload import upload
-from backend.corpora.common.utils.db_session import db_session_manager
-from backend.corpora.common.utils.exceptions import CorporaException
-from backend.corpora.common.utils.regex import (
+from backend.common.entities import Dataset, Collection
+from backend.common.upload import upload
+from backend.common.utils.db_session import db_session_manager
+from backend.common.utils.exceptions import CorporaException
+from backend.common.utils.regex import (
     USERNAME_REGEX,
     COLLECTION_ID_REGEX,
     EXTENSION_REGEX,

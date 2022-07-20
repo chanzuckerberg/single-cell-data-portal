@@ -3,10 +3,10 @@ import logging
 import os
 import requests
 
-from backend.corpora.common.corpora_config import CorporaConfig
-from backend.corpora.common.entities import Dataset
-from backend.corpora.common.utils.db_session import db_session_manager
-from backend.corpora.common.utils.json import CustomJSONEncoder
+from backend.common.corpora_config import CorporaConfig
+from backend.common.entities import Dataset
+from backend.common.utils.db_session import db_session_manager
+from backend.common.utils.json import CustomJSONEncoder
 
 logger = logging.getLogger(__name__)
 

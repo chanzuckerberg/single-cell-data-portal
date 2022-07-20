@@ -1,8 +1,8 @@
 from unittest import TestCase
 from unittest.mock import patch, Mock
 
-from backend.corpora.common.corpora_orm import generate_id
-from backend.corpora.common.utils.exceptions import CorporaException
+from backend.common.corpora_orm import generate_id
+from backend.common.utils.exceptions import CorporaException
 from backend.corpora.dataset_submissions.app import dataset_submissions_handler
 
 

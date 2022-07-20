@@ -1,16 +1,16 @@
 from flask import make_response, jsonify, g
 
 from .common import delete_dataset_common, get_collection_else_forbidden
-from backend.corpora.common.corpora_orm import CollectionVisibility, DatasetArtifactFileType
-from backend.corpora.common.entities import Dataset, Collection
-from backend.corpora.common.entities.geneset import GenesetDatasetLink
+from backend.common.corpora_orm import CollectionVisibility, DatasetArtifactFileType
+from backend.common.entities import Dataset, Collection
+from backend.common.entities.geneset import GenesetDatasetLink
 from backend.corpora.api_server.db import dbconnect
-from backend.corpora.common.utils.http_exceptions import (
+from backend.common.utils.http_exceptions import (
     NotFoundHTTPException,
     ServerErrorHTTPException,
     ForbiddenHTTPException,
 )
-from backend.corpora.common.utils.exceptions import CorporaException
+from backend.common.utils.exceptions import CorporaException
 from .authorization import owner_or_allowed
 
 

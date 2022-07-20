@@ -1,6 +1,6 @@
 from typing import Union, Optional
 
-from backend.corpora.common.utils.corpora_constants import CorporaConstants
+from backend.common.utils.corpora_constants import CorporaConstants
 
 
 def has_scope(required_scope: str, scope: Union[list, str]) -> bool:

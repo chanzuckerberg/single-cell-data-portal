@@ -7,9 +7,9 @@ import boto3
 from moto import mock_s3
 from sqlalchemy.orm import Session
 
-from backend.corpora.common.corpora_config import CorporaConfig
-from backend.corpora.common.corpora_orm import DatasetArtifactFileType
-from backend.corpora.common.entities import DatasetAsset, Dataset
+from backend.common.corpora_config import CorporaConfig
+from backend.common.corpora_orm import DatasetArtifactFileType
+from backend.common.entities import DatasetAsset, Dataset
 from tests.unit.backend.fixtures import config
 from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 

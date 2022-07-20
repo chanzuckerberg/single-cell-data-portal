@@ -3,7 +3,7 @@ import json
 from jose import jws
 from unittest.mock import patch, DEFAULT
 
-from backend.corpora.common.auth0_manager import auth0_management_session
+from backend.common.auth0_manager import auth0_management_session
 from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest, get_cxguser_token
 
 

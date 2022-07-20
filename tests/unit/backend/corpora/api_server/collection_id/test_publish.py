@@ -2,8 +2,8 @@ import json
 from datetime import datetime
 from unittest.mock import Mock, patch
 
-from backend.corpora.common.corpora_orm import CollectionLinkType
-from backend.corpora.common.entities import Collection
+from backend.common.corpora_orm import CollectionLinkType
+from backend.common.entities import Collection
 from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest, get_cxguser_token
 
 
@@ -36,7 +36,7 @@ class TestPublish(BaseAuthAPITest):
         # Publish collection
         body = {"data_submission_policy_version": "1.0"}
         path = f"{self.base_path}/{id_to_publish}/publish"
-        with patch("backend.corpora.common.entities.collection.datetime") as mock_dt:
+        with patch("backend.common.entities.collection.datetime") as mock_dt:
             mock_dt.utcnow = Mock(return_value=mock_timestamp)
             response = self.app.post(path, headers=self.headers_authed, data=json.dumps(body))
         self.assertEqual(202, response.status_code)
@@ -174,7 +174,7 @@ class TestPublish(BaseAuthAPITest):
 
         self.verify_publish_collection_with_links(collection, revision.id)
 
-    @patch("backend.corpora.common.utils.cloudfront.create_invalidation_for_index_paths")
+    @patch("backend.common.utils.cloudfront.create_invalidation_for_index_paths")
     def test_publish_collection_does_cloudfront_invalidation(self, mock_cloudfront):
         """Publish a new collection with a single dataset."""
         collection = self.generate_collection(self.session)

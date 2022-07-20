@@ -7,7 +7,7 @@ import boto3
 import requests
 from moto import mock_s3
 
-from backend.corpora.common.utils.dl_sources.url import from_url, RegisteredSources, S3URL, DropBoxURL, S3URI
+from backend.common.utils.dl_sources.url import from_url, RegisteredSources, S3URL, DropBoxURL, S3URI
 from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
 
 

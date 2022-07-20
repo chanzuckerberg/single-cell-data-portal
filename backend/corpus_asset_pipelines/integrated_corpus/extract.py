@@ -7,9 +7,9 @@ import numpy as np
 from anndata._core.views import ArrayView
 from scipy import sparse
 
-from backend.corpora.common.corpora_orm import DatasetArtifactFileType
-from backend.corpora.common.entities import Dataset, Collection, DatasetAsset
-from backend.corpora.common.utils.db_session import db_session_manager
+from backend.common.corpora_orm import DatasetArtifactFileType
+from backend.common.entities import Dataset, Collection, DatasetAsset
+from backend.common.utils.db_session import db_session_manager
 from backend.wmg.data.constants import INCLUDED_ASSAYS
 
 logger = logging.getLogger(__name__)

@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import patch, Mock
 
-from backend.corpora.common.utils.api_key import generate
+from backend.common.utils.api_key import generate
 from tests.unit.backend.corpora.api_server.base_api_test import BaseAPITest
 
 

@@ -1,7 +1,7 @@
 from flask import g
 from functools import wraps
 
-from backend.corpora.common.utils.db_session import db_session_manager
+from backend.common.utils.db_session import db_session_manager
 
 
 def dbconnect(func):

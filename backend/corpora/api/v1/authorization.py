@@ -1,6 +1,6 @@
 from typing import Optional
 
-from backend.corpora.common.utils.authorization_checks import (
+from backend.common.utils.authorization_checks import (
     is_user_owner_or_allowed as is_user_owner_or_allowed_common,
     owner_or_allowed as owner_or_allowed_common,
     is_super_curator as is_super_curator_common,

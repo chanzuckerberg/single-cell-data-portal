@@ -1,19 +1,19 @@
 import json
 import os
 import unittest
-from backend.corpora.common.entities.dataset import Dataset
+from backend.common.entities.dataset import Dataset
 
 from furl import furl
 
 from datetime import datetime
 
-from backend.corpora.common.corpora_orm import (
+from backend.common.corpora_orm import (
     UploadStatus,
     CollectionVisibility,
     generate_id,
     DatasetArtifactFileType,
 )
-from backend.corpora.common.utils.db_helpers import processing_status_updater
+from backend.common.utils.db_helpers import processing_status_updater
 from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest, get_cxguser_token
 from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
 

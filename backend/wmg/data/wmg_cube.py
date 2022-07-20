@@ -1,4 +1,4 @@
-from backend.corpora.common.utils.math_utils import MB
+from backend.common.utils.math_utils import MB
 from backend.wmg.data.schemas.corpus_schema import INTEGRATED_ARRAY_NAME
 from backend.wmg.data.snapshot import CELL_COUNTS_CUBE_NAME, EXPRESSION_SUMMARY_CUBE_NAME
 

@@ -1,6 +1,6 @@
 import logging
 
-from backend.corpora.common.corpora_orm import Base, DbDatasetProcessingStatus
+from backend.common.corpora_orm import Base, DbDatasetProcessingStatus
 from sqlalchemy.orm import Session
 
 

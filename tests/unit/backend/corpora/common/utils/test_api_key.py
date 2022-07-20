@@ -1,6 +1,6 @@
 import unittest
 
-from backend.corpora.common.utils.api_key import generate, verify
+from backend.common.utils.api_key import generate, verify
 
 
 class TestAPIKey(unittest.TestCase):

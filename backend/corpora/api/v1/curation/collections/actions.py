@@ -2,9 +2,9 @@ from flask import jsonify, g
 
 from .common import reshape_for_curation_api_and_is_allowed
 from .common import EntityColumns
-from backend.corpora.common.entities import Collection
-from backend.corpora.common.corpora_orm import CollectionVisibility
-from backend.corpora.common.utils.http_exceptions import UnauthorizedError
+from backend.common.entities import Collection
+from backend.common.corpora_orm import CollectionVisibility
+from backend.common.utils.http_exceptions import UnauthorizedError
 from backend.corpora.api_server.db import dbconnect
 
 

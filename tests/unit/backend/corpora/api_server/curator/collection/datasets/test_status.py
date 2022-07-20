@@ -1,4 +1,4 @@
-from backend.corpora.common.corpora_orm import CollectionVisibility, ProcessingStatus
+from backend.common.corpora_orm import CollectionVisibility, ProcessingStatus
 from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest
 
 

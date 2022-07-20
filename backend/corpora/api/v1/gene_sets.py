@@ -1,10 +1,10 @@
 from flask import make_response, jsonify, g
 
-from backend.corpora.common.corpora_orm import CollectionVisibility
-from backend.corpora.common.entities.geneset import Geneset
+from backend.common.corpora_orm import CollectionVisibility
+from backend.common.entities.geneset import Geneset
 from backend.corpora.api_server.db import dbconnect
-from backend.corpora.common.utils.authorization_checks import is_user_owner_or_allowed
-from backend.corpora.common.utils.http_exceptions import (
+from backend.common.utils.authorization_checks import is_user_owner_or_allowed
+from backend.common.utils.http_exceptions import (
     ForbiddenHTTPException,
 )
 

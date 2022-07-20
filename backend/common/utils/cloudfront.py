@@ -2,7 +2,7 @@ import boto3
 import uuid
 from typing import List
 
-from backend.corpora.common.corpora_config import CorporaCloudfrontConfig
+from backend.common.corpora_config import CorporaCloudfrontConfig
 
 import logging
 

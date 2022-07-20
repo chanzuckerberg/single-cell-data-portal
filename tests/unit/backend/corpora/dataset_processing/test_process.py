@@ -16,16 +16,16 @@ import numpy as np
 import pandas
 from moto import mock_s3
 
-from backend.corpora.common.corpora_orm import (
+from backend.common.corpora_orm import (
     CollectionVisibility,
     DatasetArtifactFileType,
     UploadStatus,
     ValidationStatus,
     ConversionStatus,
 )
-from backend.corpora.common.entities.collection import Collection
-from backend.corpora.common.entities.dataset import Dataset
-from backend.corpora.common.utils.exceptions import CorporaException
+from backend.common.entities.collection import Collection
+from backend.common.entities.dataset import Dataset
+from backend.common.utils.exceptions import CorporaException
 from backend.corpora.dataset_processing.exceptions import ProcessingCancelled
 from backend.corpora.dataset_processing import process
 from backend.corpora.dataset_processing.process import (
