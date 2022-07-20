@@ -1,14 +1,6 @@
-import numpy as np
-
 from backend.corpora.common.corpora_orm import (
-    CollectionVisibility,
     CollectionLinkType,
     DatasetArtifactFileType,
-    DbCollection,
-    DbCollectionLink,
-    DbDataset,
-    DbDatasetArtifact,
-    DbDatasetProcessingStatus,
     IsPrimaryData,
     UploadStatus,
     ValidationStatus,
@@ -18,7 +10,7 @@ from backend.corpora.common.corpora_orm import (
 )
 from backend.scripts.create_db import create_db
 from tests.unit.backend.fixtures import config
-from backend.corpora.common.entities.tiledb_data import TileDBData, Utils
+from backend.corpora.common.entities.tiledb_data import TileDBData
 
 
 class TestDatabaseManager:

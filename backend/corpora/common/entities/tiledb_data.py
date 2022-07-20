@@ -1,6 +1,5 @@
 import os
 import shutil
-from importlib_metadata import metadata
 import numpy as np
 import tiledb
 import uuid
