@@ -5,6 +5,7 @@ import { useRef, useState } from "react";
 import { useInView } from "react-intersection-observer";
 import TweetEmbed from "react-tweet-embed";
 import { ROUTES } from "src/common/constants/routes";
+import wordmark from "src/common/images/cellxgene-discover-wordmark.svg";
 import AnalyzeDatasetsImg from "src/components/common/staticPages/analyze-datasets.png";
 import LaptopImg from "src/components/common/staticPages/cellxgene-discover-laptop.png";
 import HeroBg from "src/components/common/staticPages/cellxgene_hero_bg.png";
@@ -208,6 +209,9 @@ const LandingPage = (): JSX.Element => {
             </div>
           </div>
           <div className={styles.heroTextContainer}>
+            <div className={styles.heroLogo}>
+              <Image src={wordmark} alt="CZ CELLxGENE Discover" />
+            </div>
             <h1>Discover the mechanisms of human health</h1>
             <p>
               Download and visually explore reference-quality data to understand
