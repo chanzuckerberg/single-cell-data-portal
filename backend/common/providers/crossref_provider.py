@@ -1,5 +1,9 @@
+import typing
+
 import requests
-from ..corpora_config import CorporaConfig
+from requests import Response
+
+from backend.common.corpora_config import CorporaConfig
 from urllib.parse import urlparse
 from datetime import datetime
 
@@ -43,7 +47,7 @@ class CrossrefProvider(object):
         day = date_parts[2] if len(date_parts) > 2 else 1
         return (year, month, day)
 
-    def _fetch_crossref_payload(self, doi):
+    def _fetch_crossref_payload(self, doi) -> typing.Optional[Response]:
         # Remove the https://doi.org part
         parsed = urlparse(doi)
         if parsed.scheme and parsed.netloc:
@@ -52,7 +56,7 @@ class CrossrefProvider(object):
         if self.crossref_api_key is None:
             logging.info("No Crossref API key found, skipping metadata fetching.")
             return None
-
+        res = None
         try:
             res = requests.get(
                 f"{self.base_crossref_uri}/{doi}",
@@ -60,7 +64,7 @@ class CrossrefProvider(object):
             )
             res.raise_for_status()
         except Exception as e:
-            if res.status_code == 404:
+            if res and res.status_code == 404:
                 raise CrossrefDOINotFoundException from e
             else:
                 raise CrossrefFetchException("Cannot fetch metadata from Crossref") from e
