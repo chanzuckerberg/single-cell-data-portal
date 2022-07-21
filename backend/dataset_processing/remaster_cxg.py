@@ -2,7 +2,7 @@
 import logging
 import subprocess
 
-from backend.corpora.dataset_processing.process import (
+from backend.dataset_processing.process import (
     get_bucket_prefix,
 )
 
@@ -114,7 +114,7 @@ def compute(**kwargs):
         """
         Determine target encoding (sparse or dense) from the data.
         The "magic" sparsity threshold should in sync with
-        backend/corpora/dataset_processing/process.py::make_cxg()
+        backend/dataset_processing/process.py::make_cxg()
         """
         if not 0 < sparse_threshold <= 100:
             logger.info("Sparse threhold must be in range (0, 100]")

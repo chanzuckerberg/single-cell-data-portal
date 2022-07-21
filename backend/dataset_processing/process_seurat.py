@@ -3,7 +3,7 @@ import logging
 
 from backend.common.entities.dataset import Dataset
 from backend.common.utils.db_session import db_session_manager
-from backend.corpora.dataset_processing.process import (
+from backend.dataset_processing.process import (
     convert_file_ignore_exceptions,
     download_from_s3,
     make_seurat,

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import logging
 
-from backend.corpora.dataset_processing.process import (
+from backend.dataset_processing.process import (
     update_db,
     download_from_source_uri,
     validate_h5ad_file_and_add_labels,

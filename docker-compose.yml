@@ -85,7 +85,7 @@ services:
       - ./backend/corpora/upload_failures:/var/task
       - ./backend/corpora/lambdas/upload_failures:/var/task/backend/corpora/upload_failures
       - ./backend/common:/var/task/backend/common
-      - ./backend/corpora/dataset_processing:/var/task/backend/corpora/dataset_processing
+      - ./backend/dataset_processing:/var/task/backend/dataset_processing
     environment:
       - PYTHONUNBUFFERED=1
       - CORPORA_LOCAL_DEV=true
@@ -120,7 +120,7 @@ services:
     volumes:
       - ./backend/corpora/upload_success:/var/task
       - ./backend/common:/var/task/backend/common
-      - ./backend/corpora/dataset_processing:/var/task/backend/corpora/dataset_processing
+      - ./backend/dataset_processing:/var/task/backend/dataset_processing
     environment:
       - PYTHONUNBUFFERED=1
       - CORPORA_LOCAL_DEV=true
@@ -185,7 +185,7 @@ services:
         - HAPPY_TAG
     restart: "no"
     volumes:
-      - ./backend/corpora/dataset_processing:/backend/corpora/dataset_processing
+      - ./backend/dataset_processing:/backend/dataset_processing
       - ./backend/common:/backend/common
       # Mount dirs in a layout suitable for running tests.
       - .:/single-cell-data-portal

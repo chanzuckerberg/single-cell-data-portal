@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import logging
 
-from backend.corpora.dataset_processing.process import (
+from backend.dataset_processing.process import (
     download_from_s3,
     process_cxg,
     get_bucket_prefix,

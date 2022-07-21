@@ -226,7 +226,7 @@ local-dbconsole: ## Connect to the local postgres database.
 
 .PHONY: local-uploadjob
 local-uploadjob: .env.ecr ## Run the upload task with a dataset_id and dropbox_url
-	docker-compose $(COMPOSE_OPTS) run --rm -T -e DATASET_ID=$(DATASET_ID) -e DROPBOX_URL=$(DROPBOX_URL) processing sh -c "rm -rf /local.* && python3 -m backend.corpora.dataset_processing.process"
+	docker-compose $(COMPOSE_OPTS) run --rm -T -e DATASET_ID=$(DATASET_ID) -e DROPBOX_URL=$(DROPBOX_URL) processing sh -c "rm -rf /local.* && python3 -m backend.dataset_processing.process"
 
 .PHONY: local-uploadfailure
 local-uploadfailure: .env.ecr ## Run the upload failure lambda with a dataset id and cause

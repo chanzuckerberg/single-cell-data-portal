@@ -145,13 +145,13 @@ from backend.common.utils.db_helpers import processing_status_updater
 from backend.common.utils.db_session import db_session_manager
 from backend.common.utils.dl_sources.url import from_url
 from backend.common.utils.s3_buckets import buckets
-from backend.corpora.dataset_processing.download import download
-from backend.corpora.dataset_processing.exceptions import (
+from backend.dataset_processing.download import download
+from backend.dataset_processing.exceptions import (
     ProcessingCancelled,
     ProcessingFailed,
     ValidationFailed,
 )
-from backend.corpora.dataset_processing.h5ad_data_file import H5ADDataFile
+from backend.dataset_processing.h5ad_data_file import H5ADDataFile
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -666,13 +666,13 @@ def main():
     logger.info(f"Processing dataset {dataset_id}")
     try:
         if step_name == "download-validate":
-            from backend.corpora.dataset_processing.process_download_validate import (
+            from backend.dataset_processing.process_download_validate import (
                 process,
             )
 
             process(dataset_id, os.environ["DROPBOX_URL"], os.environ["ARTIFACT_BUCKET"])
         elif step_name == "cxg":
-            from backend.corpora.dataset_processing.process_cxg import process
+            from backend.dataset_processing.process_cxg import process
 
             process(
                 dataset_id,
@@ -680,11 +680,11 @@ def main():
                 os.environ["CELLXGENE_BUCKET"],
             )
         elif step_name == "seurat":
-            from backend.corpora.dataset_processing.process_seurat import process
+            from backend.dataset_processing.process_seurat import process
 
             process(dataset_id, os.environ["ARTIFACT_BUCKET"])
         elif step_name == "cxg_remaster":
-            from backend.corpora.dataset_processing.remaster_cxg import process
+            from backend.dataset_processing.remaster_cxg import process
 
             process(dataset_id, os.environ["CELLXGENE_BUCKET"], dry_run=False)
         else:

@@ -26,9 +26,9 @@ from backend.common.corpora_orm import (
 from backend.common.entities.collection import Collection
 from backend.common.entities.dataset import Dataset
 from backend.common.utils.exceptions import CorporaException
-from backend.corpora.dataset_processing.exceptions import ProcessingCancelled
-from backend.corpora.dataset_processing import process
-from backend.corpora.dataset_processing.process import (
+from backend.dataset_processing.exceptions import ProcessingCancelled
+from backend.dataset_processing import process
+from backend.dataset_processing.process import (
     convert_file_ignore_exceptions,
     download_from_source_uri,
 )
@@ -367,8 +367,8 @@ class TestDatasetProcessing(DataPortalTestCase):
         with self.assertRaises(ProcessingCancelled):
             process.update_db(dataset_id, metadata={"sex": ["male", "female"]})
 
-    @patch("backend.corpora.dataset_processing.process.make_cxg")
-    @patch("backend.corpora.dataset_processing.process.subprocess.run")
+    @patch("backend.dataset_processing.process.make_cxg")
+    @patch("backend.dataset_processing.process.subprocess.run")
     def test_create_explorer_cxg(self, mock_subprocess, mock_cxg):
         mock_cxg.return_value = str(self.cxg_filename)
         dataset = self.generate_dataset(self.session)
@@ -388,7 +388,7 @@ class TestDatasetProcessing(DataPortalTestCase):
         self.assertEqual(artifacts[0].s3_uri, f"s3://{explorer_bucket}/{artifacts[0].id}.cxg/")
         self.assertEqual(artifacts[0].filetype, DatasetArtifactFileType.CXG)
 
-    @patch("backend.corpora.dataset_processing.process.make_seurat")
+    @patch("backend.dataset_processing.process.make_seurat")
     def test_create_artifacts(self, make_seurat):
         make_seurat.return_value = str(self.seurat_filename)
         artifact_bucket = "test-artifact-bucket"
@@ -422,7 +422,7 @@ class TestDatasetProcessing(DataPortalTestCase):
         # cleanup
         self.delete_s3_bucket(artifact_bucket)
 
-    @patch("backend.corpora.dataset_processing.process.update_db")
+    @patch("backend.dataset_processing.process.update_db")
     def test__create_artifact__negative(self, mock_update_db):
         artifact_bucket = "test-artifact-bucket"
         test_dataset = self.generate_dataset(
@@ -486,7 +486,7 @@ class TestDatasetProcessing(DataPortalTestCase):
         # cleanup
         self.delete_s3_bucket(artifact_bucket)
 
-    @patch("backend.corpora.dataset_processing.process.make_seurat")
+    @patch("backend.dataset_processing.process.make_seurat")
     def test_process_continues_with_seurat_conversion_failures(self, mock_seurat):
         mock_seurat.side_effect = RuntimeError("seurat conversion failed")
         test_dataset_id = self.generate_dataset(
@@ -512,7 +512,7 @@ class TestDatasetProcessing(DataPortalTestCase):
         # cleanup
         self.delete_s3_bucket(artifact_bucket)
 
-    @patch("backend.corpora.dataset_processing.process.make_cxg")
+    @patch("backend.dataset_processing.process.make_cxg")
     def test_process_continues_with_cxg_conversion_failures(self, mock_cxg):
         mock_cxg.side_effect = RuntimeError("cxg conversion failed")
         test_dataset_id = self.generate_dataset(
@@ -524,7 +524,7 @@ class TestDatasetProcessing(DataPortalTestCase):
         processing_status = dataset.processing_status
         self.assertEqual(ConversionStatus.FAILED, processing_status.cxg_status)
 
-    @patch("backend.corpora.dataset_processing.process.update_db")
+    @patch("backend.dataset_processing.process.update_db")
     def test__convert_file_ignore_exceptions__fail(self, mock_update_db):
         def converter(_file):
             raise RuntimeError("conversion_failed")
@@ -542,8 +542,8 @@ class TestDatasetProcessing(DataPortalTestCase):
                 return
             time.sleep(3)
 
-    @patch("backend.corpora.dataset_processing.download.downloader")
-    @patch("backend.corpora.dataset_processing.process.from_url")
+    @patch("backend.dataset_processing.download.downloader")
+    @patch("backend.dataset_processing.process.from_url")
     def test__dataset_tombstoned_while_uploading(self, mock_from_url, mock_downloader):
         class file_url:
             scheme = "https"
@@ -576,7 +576,7 @@ class TestDatasetProcessing(DataPortalTestCase):
             download_from_source_uri(self.dataset_id, unhandled_uri, "raw.h5ad")
 
     @mock_s3
-    @patch("backend.corpora.dataset_processing.process.download_from_s3")
+    @patch("backend.dataset_processing.process.download_from_s3")
     def test__download_from_source_uri_with_s3_scheme__downloads_from_s3(self, mock_download_from_s3):
         test_dataset_id = self.generate_dataset(self.session).id
 
@@ -591,10 +591,10 @@ class TestDatasetProcessing(DataPortalTestCase):
         dataset = Dataset.get(self.session, test_dataset_id)
         self.assertEqual(UploadStatus.UPLOADED, dataset.processing_status.upload_status)
 
-    @patch("backend.corpora.dataset_processing.process.make_cxg")
-    @patch("backend.corpora.dataset_processing.process.download_from_source_uri")
-    @patch("backend.corpora.dataset_processing.process.validate_h5ad_file_and_add_labels")
-    @patch("backend.corpora.dataset_processing.process.extract_metadata")
+    @patch("backend.dataset_processing.process.make_cxg")
+    @patch("backend.dataset_processing.process.download_from_source_uri")
+    @patch("backend.dataset_processing.process.validate_h5ad_file_and_add_labels")
+    @patch("backend.dataset_processing.process.extract_metadata")
     def test__cxg_not_created_when_metadata_extraction_fails(
         self,
         mock_extract_metadata,
@@ -620,9 +620,9 @@ class TestDatasetProcessing(DataPortalTestCase):
         processing_status = dataset.processing_status
         self.assertEqual(None, processing_status.cxg_status)
 
-    @patch("backend.corpora.dataset_processing.process.make_seurat")
-    @patch("backend.corpora.dataset_processing.process.create_artifact")
-    @patch("backend.corpora.dataset_processing.process.update_db")
+    @patch("backend.dataset_processing.process.make_seurat")
+    @patch("backend.dataset_processing.process.create_artifact")
+    @patch("backend.dataset_processing.process.update_db")
     def test__process_skips_seurat_conversion_when_unconvertible_dataset_detected(
         self,
         mock_update_db,
@@ -644,9 +644,9 @@ class TestDatasetProcessing(DataPortalTestCase):
         # then
         mock_make_seurat.assert_not_called()
 
-    @patch("backend.corpora.dataset_processing.process.make_seurat")
-    @patch("backend.corpora.dataset_processing.process.create_artifact")
-    @patch("backend.corpora.dataset_processing.process.update_db")
+    @patch("backend.dataset_processing.process.make_seurat")
+    @patch("backend.dataset_processing.process.create_artifact")
+    @patch("backend.dataset_processing.process.update_db")
     def test__process_runs_seurat_conversion_when_convertible_dataset_detected(
         self,
         mock_update_db,
