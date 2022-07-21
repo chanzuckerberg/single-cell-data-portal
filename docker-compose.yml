@@ -153,7 +153,7 @@ services:
     ports:
       - "9002:8080"
     volumes:
-      - ./backend/corpora/dataset_submissions:/var/task
+      - ./backend/dataset_submissions:/var/task
       - ./backend/common:/var/task/backend/common
     environment:
       - PYTHONUNBUFFERED=1
