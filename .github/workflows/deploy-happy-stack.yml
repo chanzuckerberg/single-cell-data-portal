@@ -10,9 +10,6 @@ env:
 jobs:
   upgrade:
     runs-on: ubuntu-20.04
-    defaults:
-      run:
-        working-directory: frontend
     steps:
       - uses: actions/setup-node@v2
         with:
@@ -79,6 +76,7 @@ jobs:
           DISTRIBUTION_ID=$(aws cloudfront list-distributions --query "DistributionList.Items[*].{id:Id,domain_name:Origins.Items[*].DomainName,alias:Aliases.Items[0]}[?contains(domain_name,'${DOMAIN_NAME}')&&alias=='${ALIAS}'].id" --output text)
           aws cloudfront create-invalidation --distribution-id ${DISTRIBUTION_ID} --paths /index.html
       - name: Run Smoke Tests
+        working-directory: backend
         env:
           DEPLOYMENT_STAGE: ${{ github.event.deployment.environment }}
         run: |
@@ -90,7 +88,6 @@ jobs:
           cp src/configs/${DEPLOYMENT_STAGE}.js src/configs/configs.js
           npm run e2e-${DEPLOYMENT_STAGE}
       - name: Run functional test
-        working-directory: backend
         env:
           TFE_TOKEN: ${{ secrets.TFE_TOKEN }}
           DEPLOYMENT_STAGE: ${{ github.event.deployment.environment }}
@@ -108,7 +105,6 @@ jobs:
           docker-compose up --no-deps -d backend
           BOTO_ENDPOINT_URL= make local-functional-test
       - name: Run performance test
-        working-directory: backend
         env:
           TFE_TOKEN: ${{ secrets.TFE_TOKEN }}
           DEPLOYMENT_STAGE: ${{ github.event.deployment.environment }}
