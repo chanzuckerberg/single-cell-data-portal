@@ -99,7 +99,6 @@ jobs:
 
   build-extra-images:
     runs-on: ubuntu-20.04
-    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod' )
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
