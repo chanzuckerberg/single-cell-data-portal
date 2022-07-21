@@ -17,7 +17,7 @@ servers:
 paths:
   /v1/gene_info:
     get:
-      summary: Given a gene ensembl ID and/or gene name, returns that gene's summary information, full name, synonyms, and NCBI URL. 
+      summary: Given a gene ensembl ID, returns that gene's summary information, full name, synonyms, and NCBI URL. Gene name is only used if the ensembl ID is missing, in order to manually search the gene ensembl ID from its name.
       description: >-
       tags:
         - gene_info

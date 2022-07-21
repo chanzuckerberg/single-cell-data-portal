@@ -48,8 +48,10 @@ def create_flask_app():
     add_api(base_path="/wmg", spec_file="wmg-api.yml")
     add_api(base_path="/gene_info", spec_file="gene-info-api.yml")
 
-    # initialize gene checker to go ahead and create a dictionary of all
-    # gene ensembl ID to gene name mappings for the gene_info API endpoint
+    # Initialize gene checker to go ahead and create a dictionary of all
+    # gene ensembl ID to gene name mappings for the gene_info API endpoint.
+    # This is done here because the initialization of gene checker takes some
+    # time and, if done on API request, would significantly slow performance.
     GeneChecker()
 
     return connexion_app.app
