@@ -10,7 +10,9 @@
   }
 
   &Logo {
-    width: 128px;
+    img {
+      width: 151px;
+    }
 
     @media (max-width: 992px) {
       margin-bottom: 40px;
