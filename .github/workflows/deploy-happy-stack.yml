@@ -76,7 +76,7 @@ jobs:
           DISTRIBUTION_ID=$(aws cloudfront list-distributions --query "DistributionList.Items[*].{id:Id,domain_name:Origins.Items[*].DomainName,alias:Aliases.Items[0]}[?contains(domain_name,'${DOMAIN_NAME}')&&alias=='${ALIAS}'].id" --output text)
           aws cloudfront create-invalidation --distribution-id ${DISTRIBUTION_ID} --paths /index.html
       - name: Run Smoke Tests
-        working-directory: backend
+        working-directory: frontend
         env:
           DEPLOYMENT_STAGE: ${{ github.event.deployment.environment }}
         run: |
