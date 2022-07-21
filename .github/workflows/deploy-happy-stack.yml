@@ -90,6 +90,7 @@ jobs:
           cp src/configs/${DEPLOYMENT_STAGE}.js src/configs/configs.js
           npm run e2e-${DEPLOYMENT_STAGE}
       - name: Run functional test
+        working-directory: backend
         env:
           TFE_TOKEN: ${{ secrets.TFE_TOKEN }}
           DEPLOYMENT_STAGE: ${{ github.event.deployment.environment }}
@@ -107,6 +108,7 @@ jobs:
           docker-compose up --no-deps -d backend
           BOTO_ENDPOINT_URL= make local-functional-test
       - name: Run performance test
+        working-directory: backend
         env:
           TFE_TOKEN: ${{ secrets.TFE_TOKEN }}
           DEPLOYMENT_STAGE: ${{ github.event.deployment.environment }}
