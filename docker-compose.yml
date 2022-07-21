@@ -82,8 +82,8 @@ services:
     ports:
       - "9000:8080"
     volumes:
-      - ./backend/corpora/upload_failures:/var/task
-      - ./backend/corpora/lambdas/upload_failures:/var/task/backend/corpora/upload_failures
+      - ./backend/upload_failures:/var/task
+      - ./backend/upload_failures:/var/task/backend/upload_failures
       - ./backend/common:/var/task/backend/common
       - ./backend/dataset_processing:/var/task/backend/dataset_processing
     environment:

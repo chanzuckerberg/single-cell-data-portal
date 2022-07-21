@@ -3,7 +3,7 @@ import os
 from backend.common.utils.aws import delete_many_from_s3
 from backend.common.utils.slack import dataset_processing_slack_notification
 
-from backend.corpora.upload_failures.upload import update_dataset_processing_status_to_failed
+from backend.upload_failures.upload import update_dataset_processing_status_to_failed
 
 
 def handle_failure(event, context):
