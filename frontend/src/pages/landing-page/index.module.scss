@@ -47,6 +47,14 @@
 
 // HERO
 .hero {
+  &Logo {
+    margin-bottom: 20px;
+
+    img {
+      width: 158px;
+    }
+  }
+
   &Container {
     display: flex;
     align-items: center;

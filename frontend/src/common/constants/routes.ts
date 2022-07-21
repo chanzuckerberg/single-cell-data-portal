@@ -1,5 +1,6 @@
 export enum ROUTES {
   HOMEPAGE = "/",
+  LANDING = "/landing-page",
   MY_COLLECTIONS = "/my-collections",
   COLLECTION = "/collections/:id",
   COLLECTIONS = "/collections",
