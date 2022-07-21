@@ -3,7 +3,7 @@ import requests
 import json
 
 from backend.gene_info.api import ncbi_provider
-from tests.unit.backend.corpora.fixtures.environment_setup import EnvironmentSetup
+from tests.unit.backend.fixtures.environment_setup import EnvironmentSetup
 from backend.api_server.app import app
 import xml.etree.ElementTree as ET
 from unittest.mock import patch, call

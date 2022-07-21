@@ -57,7 +57,7 @@ class TestDatasetGenesetCSV(TestDataset):
         with tempfile.TemporaryDirectory() as temp_dir_name:
             csv_file = dataset.generate_tidy_csv_for_all_linked_genesets(temp_dir_name)
             expected_csv = os.path.abspath(
-                os.path.join(os.path.dirname(__file__), "../../../../fixtures/sample_geneset_csv.csv")
+                os.path.join(os.path.dirname(__file__), "../../../fixtures/sample_geneset_csv.csv")
             )  # noqa
             self.assertTrue(filecmp.cmp(csv_file, expected_csv, shallow=False))
 

@@ -28,7 +28,7 @@ class TestDownload(DataPortalTestCase):
         super().setUpClass()
         cls.port = random.randint(10000, 20000)
         cls.server_process = multiprocessing.Process(
-            target=start_server, args=("tests/unit/backend/corpora/fixtures", cls.port), daemon=True
+            target=start_server, args=("tests/unit/backend/fixtures", cls.port), daemon=True
         )
         cls.server_process.start()
 
