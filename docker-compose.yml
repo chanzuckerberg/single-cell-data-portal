@@ -118,7 +118,7 @@ services:
     ports:
       - "9001:8080"
     volumes:
-      - ./backend/corpora/upload_success:/var/task
+      - ./backend/upload_success:/var/task
       - ./backend/common:/var/task/backend/common
       - ./backend/dataset_processing:/var/task/backend/dataset_processing
     environment:
