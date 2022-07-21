@@ -1,15 +1,15 @@
 import Image from "next/image";
 import { FC } from "react";
-import logo from "src/common/images/cellxgene-logo-white-v2.svg";
+import logo from "src/common/images/cellxgene-discover-logo.svg";
 
 export const Logo: FC = () => {
   return (
     <Image
       alt="cellxgene logo"
       data-test-id="logo"
-      height={24}
+      height={23}
       src={logo}
-      width={130}
+      width={23}
     />
   );
 };

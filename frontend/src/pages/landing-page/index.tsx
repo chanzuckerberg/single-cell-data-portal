@@ -6,11 +6,11 @@ import { useInView } from "react-intersection-observer";
 import TweetEmbed from "react-tweet-embed";
 import { ROUTES } from "src/common/constants/routes";
 import AnalyzeDatasetsImg from "src/components/common/staticPages/analyze-datasets.png";
+import LaptopImg from "src/components/common/staticPages/cellxgene-discover-laptop.png";
 import HeroBg from "src/components/common/staticPages/cellxgene_hero_bg.png";
-import LaptopImg from "src/components/common/staticPages/cellxgene_laptop.png";
 import DownloadDataImg from "src/components/common/staticPages/download-data.png";
 import ExpediteCollaborationImg from "src/components/common/staticPages/expedite-collaborative-analysis.png";
-import GeneExpressionImg from "src/components/common/staticPages/gene-expression.png";
+import GeneExpressionImg from "src/components/common/staticPages/explore-gene-expression.png";
 import SingleCellDataImg from "src/components/common/staticPages/single-cell-data.png";
 import AnalyzeDatasetsIcon from "./icons/analyze-datasets";
 import CellxgeneIconSmall from "./icons/cellxgene-icon-small";
@@ -549,9 +549,9 @@ const LandingPage = (): JSX.Element => {
                         </p>
                         <div className={styles.linkContainer}>
                           <a
-                            href={`${ROUTES.DOCS}/05__Annotate%20and%20Analyze%20Your%20Data/5_0__Get%20Started}`}
+                            href={`${ROUTES.DOCS}/05__Annotate%20and%20Analyze%20Your%20Data/5_0__Get%20Started`}
                           >
-                            Explore CZ CELL×GENE Annotate
+                            Explore CZ CELLxGENE Annotate
                             <span className={styles.linkArrow}>
                               <LinkArrow />
                             </span>
