@@ -1,7 +1,7 @@
 from time import sleep
 
 from backend.common.entities import Dataset
-from tests.unit.backend.corpora.common.entities.datasets import TestDataset
+from tests.unit.backend.base_test_dataset import TestDataset
 
 
 class TestGetDatasetByExplorerUrl(TestDataset):

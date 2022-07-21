@@ -4,7 +4,7 @@ from backend.common.corpora_orm import CollectionLinkType, DbCollectionLink, Col
 from backend.common.entities import Dataset
 from backend.common.entities.collection import Collection
 from backend.common.entities.geneset import Geneset, GenesetDatasetLink
-from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
+from tests.unit.backend.data_portal_test_case import DataPortalTestCase
 from tests.unit.backend.utils import BogusCollectionParams, BogusDatasetParams
 
 

@@ -2,7 +2,7 @@ import filecmp
 import os
 import tempfile
 
-from tests.unit.backend.corpora.common.entities.datasets import TestDataset
+from tests.unit.backend.base_test_dataset import TestDataset
 
 
 class TestDatasetGenesetCSV(TestDataset):

@@ -3,7 +3,7 @@ import unittest
 from unittest.mock import patch
 
 from backend.common.corpora_orm import CollectionVisibility, ProcessingStatus
-from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest
+from tests.unit.backend.portal.api_server.base_api_test import BaseAuthAPITest
 
 
 @patch(

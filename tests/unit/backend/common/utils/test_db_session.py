@@ -2,7 +2,7 @@ from backend.common.corpora_orm import DbDataset
 from backend.common.utils.db_session import db_session_manager
 from backend.common.utils.db_helpers import clone
 from backend.common.utils.exceptions import CorporaException
-from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
+from tests.unit.backend.data_portal_test_case import DataPortalTestCase
 
 
 class TestDBSessionManager(DataPortalTestCase):

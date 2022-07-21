@@ -4,7 +4,7 @@ from sqlalchemy.orm import relationship
 
 from backend.common.corpora_orm import TransformingBase
 from backend.common.utils.db_session import DBSessionMaker, db_session_manager
-from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
+from tests.unit.backend.data_portal_test_case import DataPortalTestCase
 
 Test_Base = declarative_base(cls=TransformingBase)
 

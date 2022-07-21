@@ -4,8 +4,8 @@ import unittest
 import urllib.parse
 import time
 
-from tests.unit.backend.corpora.api_server.base_api_test import AuthServerAPITest
-from tests.unit.backend.corpora.api_server.config import TOKEN_EXPIRES
+from tests.unit.backend.portal.api_server.base_api_test import AuthServerAPITest
+from tests.unit.backend.portal.api_server.config import TOKEN_EXPIRES
 
 
 @unittest.skipIf(

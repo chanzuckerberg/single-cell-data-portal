@@ -5,7 +5,7 @@ from unittest.mock import patch
 import requests
 
 from backend.dataset_processing import process
-from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
+from tests.unit.backend.mock_aws_test_case import CorporaTestCaseUsingMockAWS
 
 
 class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):

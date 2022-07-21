@@ -2,7 +2,7 @@ import os
 from unittest.mock import patch
 import json
 
-from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest
+from tests.unit.backend.portal.api_server.base_api_test import BaseAuthAPITest
 
 
 class TestVersion(BaseAuthAPITest):

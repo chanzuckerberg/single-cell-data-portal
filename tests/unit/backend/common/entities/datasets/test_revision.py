@@ -1,4 +1,4 @@
-from tests.unit.backend.corpora.common.entities.datasets import TestDataset
+from tests.unit.backend.base_test_dataset import TestDataset
 
 
 class TestDatasetRevision(TestDataset):

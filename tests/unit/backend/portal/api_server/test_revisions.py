@@ -15,8 +15,8 @@ from backend.common.entities import Dataset, Collection
 from backend.common.utils.db_session import db_session_manager
 from backend.common.utils.exceptions import CorporaException
 from backend.common.utils.json import CustomJSONEncoder
-from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest, get_cxguser_token
-from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
+from tests.unit.backend.portal.api_server.base_api_test import BaseAuthAPITest, get_cxguser_token
+from tests.unit.backend.mock_aws_test_case import CorporaTestCaseUsingMockAWS
 
 
 class BaseRevisionTest(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):

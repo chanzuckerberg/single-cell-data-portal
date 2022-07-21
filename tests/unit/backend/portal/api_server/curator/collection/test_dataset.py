@@ -1,6 +1,6 @@
 import unittest
 from backend.common.corpora_orm import CollectionVisibility, UploadStatus
-from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest
+from tests.unit.backend.portal.api_server.base_api_test import BaseAuthAPITest
 
 
 class TestDeleteDataset(BaseAuthAPITest):

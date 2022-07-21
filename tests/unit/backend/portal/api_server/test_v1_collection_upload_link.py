@@ -5,9 +5,9 @@ from unittest.mock import patch
 from backend.common.corpora_orm import CollectionVisibility, ProcessingStatus
 from backend.common.entities import Dataset
 from backend.common.utils.math_utils import GB
-from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest, get_cxguser_token
+from tests.unit.backend.portal.api_server.base_api_test import BaseAuthAPITest, get_cxguser_token
 from tests.unit.backend.fixtures.environment_setup import EnvironmentSetup, fixture_file_path
-from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
+from tests.unit.backend.mock_aws_test_case import CorporaTestCaseUsingMockAWS
 
 
 class TestCollectionPostUploadLink(BaseAuthAPITest):

@@ -1,7 +1,7 @@
 import unittest
 
 from backend.common.utils.db_session import DBSessionMaker
-from tests.unit.backend.fixtures.generate_data_mixin import GenerateDataMixin
+from tests.unit.backend.generate_data_mixin import GenerateDataMixin
 from tests.unit.backend.fixtures.test_db import TestDatabaseManager
 
 

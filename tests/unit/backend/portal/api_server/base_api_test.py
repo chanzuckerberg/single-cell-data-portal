@@ -8,10 +8,10 @@ from unittest.mock import patch
 
 from backend.api_server.app import app
 from backend.common.corpora_config import CorporaAuthConfig
-from tests.unit.backend.corpora.api_server.mock_auth import MockOauthServer
-from tests.unit.backend.corpora.api_server.config import TOKEN_EXPIRES
+from tests.unit.backend.portal.api_server.mock_auth import MockOauthServer
+from tests.unit.backend.portal.api_server.config import TOKEN_EXPIRES
 from tests.unit.backend.fixtures.environment_setup import EnvironmentSetup
-from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
+from tests.unit.backend.data_portal_test_case import DataPortalTestCase
 
 
 class BaseAPITest(DataPortalTestCase):

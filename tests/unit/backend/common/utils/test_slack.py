@@ -2,7 +2,7 @@ import json
 import os
 
 from backend.common.utils.slack import format_dataset_processing_failure_slack_message
-from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
+from tests.unit.backend.data_portal_test_case import DataPortalTestCase
 
 
 class TestDatasetProcessing(DataPortalTestCase):

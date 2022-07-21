@@ -1,4 +1,4 @@
-from tests.unit.backend.corpora.api_server.base_api_test import BaseAPITest
+from tests.unit.backend.portal.api_server.base_api_test import BaseAPITest
 
 
 class TestAPI(BaseAPITest):

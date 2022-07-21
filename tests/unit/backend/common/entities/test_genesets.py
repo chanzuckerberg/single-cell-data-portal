@@ -4,7 +4,7 @@ from backend.common.corpora_orm import DbCollection, generate_id
 from backend.common.entities import Dataset
 from backend.common.entities.geneset import Geneset, GenesetDatasetLink
 from backend.common.utils.exceptions import CorporaException
-from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
+from tests.unit.backend.data_portal_test_case import DataPortalTestCase
 
 
 class TestGeneSets(DataPortalTestCase):

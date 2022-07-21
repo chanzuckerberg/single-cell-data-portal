@@ -8,7 +8,7 @@ from backend.common.corpora_orm import (
     DatasetArtifactFileType,
     DbDataset,
 )
-from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest, mock_assert_authorized_token
+from tests.unit.backend.portal.api_server.base_api_test import BaseAuthAPITest, mock_assert_authorized_token
 from tests.unit.backend.fixtures.config import fake_s3_file
 
 

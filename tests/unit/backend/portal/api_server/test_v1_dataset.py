@@ -14,8 +14,8 @@ from backend.common.corpora_orm import (
     DatasetArtifactFileType,
 )
 from backend.common.utils.db_helpers import processing_status_updater
-from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest, get_cxguser_token
-from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
+from tests.unit.backend.portal.api_server.base_api_test import BaseAuthAPITest, get_cxguser_token
+from tests.unit.backend.mock_aws_test_case import CorporaTestCaseUsingMockAWS
 
 
 class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):

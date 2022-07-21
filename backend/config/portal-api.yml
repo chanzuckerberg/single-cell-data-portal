@@ -17,12 +17,12 @@ paths:
     get:
       tags:
         - collections
-      summary: List published collections in Corpora
+      summary: List published collections.
       security:
         - cxguserCookieLenient: []
         - {}
       description: >-
-        This lists all collections and their IDs that currently exist in the corpora. If a parameter is specified as
+        This lists all collections and their IDs. If a parameter is specified as
         a filter, then only collections that meet the status criteria will be outputted.
       operationId: backend.portal.api.v1.collection.get_collections_list
       parameters:
@@ -72,7 +72,7 @@ paths:
       security:
         - cxguserCookie: []
       description: >-
-        Creates a new collection in corpora. Once a collection is created it can be linked to datasets.
+        Creates a new collection. Once a collection is created it can be linked to datasets.
       operationId: backend.portal.api.v1.collection.create_collection
       requestBody:
         content:
@@ -905,7 +905,7 @@ paths:
 components:
   schemas:
     user_id:
-      description: A unique identifier of a logged in User of Corpora.
+      description: A unique identifier of a logged in User.
       type: string
     userinfo:
       type: object

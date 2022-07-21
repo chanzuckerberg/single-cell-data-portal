@@ -4,7 +4,7 @@ from unittest.mock import Mock, patch
 
 from backend.common.corpora_orm import CollectionLinkType
 from backend.common.entities import Collection
-from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest, get_cxguser_token
+from tests.unit.backend.portal.api_server.base_api_test import BaseAuthAPITest, get_cxguser_token
 
 
 class TestPublish(BaseAuthAPITest):

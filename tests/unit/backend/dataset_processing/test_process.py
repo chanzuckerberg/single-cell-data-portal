@@ -32,7 +32,7 @@ from backend.dataset_processing.process import (
     convert_file_ignore_exceptions,
     download_from_source_uri,
 )
-from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
+from tests.unit.backend.data_portal_test_case import DataPortalTestCase
 
 
 class TestDatasetProcessing(DataPortalTestCase):

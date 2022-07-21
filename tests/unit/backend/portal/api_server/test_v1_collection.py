@@ -15,8 +15,8 @@ from backend.common.corpora_orm import (
 from backend.common.entities import Collection
 from backend.common.providers.crossref_provider import CrossrefDOINotFoundException, CrossrefFetchException
 from backend.portal.api.v1.collection import verify_collection_body
-from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest, get_cxguser_token
-from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
+from tests.unit.backend.portal.api_server.base_api_test import BaseAuthAPITest, get_cxguser_token
+from tests.unit.backend.mock_aws_test_case import CorporaTestCaseUsingMockAWS
 
 
 def generate_mock_publisher_metadata(journal_override=None):

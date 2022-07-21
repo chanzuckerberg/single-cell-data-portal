@@ -7,8 +7,8 @@ from backend.common.corpora_orm import (
 )
 from backend.common.entities.dataset_asset import DatasetAsset
 from backend.common.utils.db_session import DBSessionMaker
-from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
-from tests.unit.backend.fixtures.generate_data_mixin import GenerateDataMixin
+from tests.unit.backend.mock_aws_test_case import CorporaTestCaseUsingMockAWS
+from tests.unit.backend.generate_data_mixin import GenerateDataMixin
 
 
 class TestDatasetAsset(CorporaTestCaseUsingMockAWS, GenerateDataMixin):

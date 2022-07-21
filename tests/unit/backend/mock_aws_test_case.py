@@ -11,7 +11,7 @@ from backend.common.corpora_config import CorporaConfig
 from backend.common.corpora_orm import DatasetArtifactFileType
 from backend.common.entities import DatasetAsset, Dataset
 from tests.unit.backend.fixtures import config
-from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
+from tests.unit.backend.data_portal_test_case import DataPortalTestCase
 
 
 class CorporaTestCaseUsingMockAWS(DataPortalTestCase):
