@@ -18,7 +18,7 @@ paths:
       description: >-
         Returns a bearer access token that must be passed as a parameter to requests that
         require authorization such as creating a new Collection.
-      operationId: backend.corpora.api.v1.curation.auth.token.post
+      operationId: backend.portal.api.v1.curation.auth.token.post
       parameters:
         - in: header
           name: x-api-key
@@ -56,7 +56,7 @@ paths:
 
         * To retrieve full collection metadata for a specific collection, `GET /v1/collections/{collection_id}`
         must be used.
-      operationId: backend.corpora.api.v1.curation.collections.actions.get
+      operationId: backend.portal.api.v1.curation.collections.actions.get
       security:
         - curatorAccessLenient: []
         - {}
@@ -88,7 +88,7 @@ paths:
     post:
       summary: Create a Collection
       description: Create a new Collection
-      operationId: backend.corpora.api.v1.collection.create_collection
+      operationId: backend.portal.api.v1.collection.create_collection
       tags:
         - collection
       security:
@@ -117,7 +117,7 @@ paths:
     get:
       summary: Fetch a Collection with Datasets
       description: Fetch full Collection metadata and associated Datasets.
-      operationId: backend.corpora.api.v1.curation.collections.collection_id.actions.get
+      operationId: backend.portal.api.v1.curation.collections.collection_id.actions.get
       security:
         - curatorAccessLenient: []
         - {}
@@ -148,7 +148,7 @@ paths:
       description: >-
         Update a private Collection or a Revision. If any Collection metadata fields are included in the body of the
         request, these fields SHALL be updated for the specified Collection.
-      operationId: backend.corpora.api.v1.curation.collections.collection_id.actions.patch
+      operationId: backend.portal.api.v1.curation.collections.collection_id.actions.patch
       security:
         - curatorAccess: []
       tags:
@@ -186,7 +186,7 @@ paths:
       summary: Delete a private collection.
       description: >-
         Delete a private collection or cancel a revision.
-      operationId: backend.corpora.api.v1.curation.collections.collection_id.actions.delete
+      operationId: backend.portal.api.v1.curation.collections.collection_id.actions.delete
       security:
         - curatorAccess: []
       tags:
@@ -214,7 +214,7 @@ paths:
         ongoing Revision may exist per published Collection at any given time.
 
         All methods of updating or adding Datasets and metadata to a Revision work the same as for a private Collection.
-      operationId: backend.corpora.api.v1.curation.collections.collection_id.revision.post_collection_revision
+      operationId: backend.portal.api.v1.curation.collections.collection_id.revision.post_collection_revision
       security:
         - curatorAccess: []
       tags:
@@ -243,7 +243,7 @@ paths:
         Delete a Dataset. The **collection_id** MUST reference either a private Collection OR a Revision. MUST
         indicate the Dataset by providing *one* of either the **curator_tag** (non-null) OR the **dataset_id**
         parameters.
-      operationId: backend.corpora.api.v1.curation.collections.collection_id.dataset.delete_dataset
+      operationId: backend.portal.api.v1.curation.collections.collection_id.dataset.delete_dataset
       tags:
         - collection
       security:
@@ -276,7 +276,7 @@ paths:
         the Dataset by providing *one* of either the **curator_tag** (non-null) OR the **dataset_id** parameters.
       security:
         - curatorAccess: []
-      operationId: backend.corpora.api.v1.curation.collections.collection_id.datasets.actions.patch
+      operationId: backend.portal.api.v1.curation.collections.collection_id.datasets.actions.patch
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
         - $ref: "#/components/parameters/query_curator_tag"
@@ -311,7 +311,7 @@ paths:
         request body; if an existing Dataset has this tag, the existing Dataset SHALL be replaced, otherwise a new
         Dataset will be added. MAY include the **id** of an existing Dataset, in which case the existing Dataset
         SHALL be replaced.
-      operationId: backend.corpora.api.v1.curation.collections.collection_id.datasets.upload_link.put
+      operationId: backend.portal.api.v1.curation.collections.collection_id.datasets.upload_link.put
       tags:
         - collection
       security:
@@ -389,7 +389,7 @@ paths:
 
       security:
         - curatorAccess: []
-      operationId: backend.corpora.api.v1.curation.collections.collection_id.dataset.post_s3_credentials
+      operationId: backend.portal.api.v1.curation.collections.collection_id.dataset.post_s3_credentials
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       responses:
@@ -424,7 +424,7 @@ paths:
       description: >-
         Get the processing status for a Dataset. MUST indicate the Dataset by providing *one* of either the
         **curator_tag** (non-null) OR the **dataset_id** parameters.
-      operationId: backend.corpora.api.v1.curation.collections.collection_id.datasets.status.get
+      operationId: backend.portal.api.v1.curation.collections.collection_id.datasets.status.get
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
         - $ref: "#/components/parameters/query_curator_tag"
@@ -461,7 +461,7 @@ paths:
       description: >-
         Generate URLs to download the files associated with the dataset. MUST include *one* of the **curator_tag**
         and **dataset_id** parameters.
-      operationId: backend.corpora.api.v1.curation.collections.collection_id.assets.get
+      operationId: backend.portal.api.v1.curation.collections.collection_id.assets.get
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
         - $ref: "#/components/parameters/query_curator_tag"
@@ -870,9 +870,9 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
-      x-bearerInfoFunc: backend.corpora.api.v1.authentication.curation_apikey_info_func
+      x-bearerInfoFunc: backend.portal.api.v1.authentication.curation_apikey_info_func
     curatorAccessLenient:
       type: http
       scheme: bearer
       bearerFormat: JWT
-      x-bearerInfoFunc: backend.corpora.api.v1.authentication.curation_apikey_info_func_lenient
+      x-bearerInfoFunc: backend.portal.api.v1.authentication.curation_apikey_info_func_lenient

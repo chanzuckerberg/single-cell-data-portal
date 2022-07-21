@@ -1,6 +1,6 @@
 from flask import make_response
 
-from backend.corpora.api.v1.collection_id.upload import upload_from_link
+from backend.portal.api.v1.collection_id.upload import upload_from_link
 
 
 def put(collection_id: str, body: dict, token_info: dict):

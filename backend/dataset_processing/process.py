@@ -642,7 +642,7 @@ def process(dataset_id, dropbox_url, cellxgene_bucket, artifact_bucket):
     )
 
     # No file cleanup needed due to docker run-time environment.
-    # To implement proper cleanup, tests/unit/backend/corpora/dataset_processing/test_process.py
+    # To implement proper cleanup, tests/unit/backend/portal/dataset_processing/test_process.py
     # will have to be modified since it relies on a shared local file
 
     file_with_labels, can_convert_to_seurat = validate_h5ad_file_and_add_labels(dataset_id, local_filename)
