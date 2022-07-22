@@ -20,6 +20,8 @@ from backend.corpora.common.utils.http_exceptions import ColorFormatException
 from backend.corpora.common.utils.matrix_utils import is_matrix_sparse
 from backend.corpora.common.utils.semvar_utils import validate_version_str
 
+logger = logging.getLogger(__name__)
+
 
 class H5ADDataFile:
     """
@@ -55,7 +57,7 @@ class H5ADDataFile:
         matrix that might turn an otherwise Dense matrix into a Sparse matrix.
         """
 
-        logging.info("Beginning writing to CXG.")
+        logger.info("Beginning writing to CXG.")
         ctx = tiledb.Ctx(
             {
                 "sm.num_reader_threads": 32,
@@ -65,33 +67,33 @@ class H5ADDataFile:
         )
 
         tiledb.group_create(output_cxg_directory, ctx=ctx)
-        logging.info(f"\t...group created, with name {output_cxg_directory}")
+        logger.info(f"\t...group created, with name {output_cxg_directory}")
 
         convert_dictionary_to_cxg_group(
             output_cxg_directory, self.generate_cxg_metadata(convert_anndata_colors_to_cxg_colors), ctx=ctx
         )
-        logging.info("\t...dataset metadata saved")
+        logger.info("\t...dataset metadata saved")
 
         convert_dataframe_to_cxg_array(output_cxg_directory, "obs", self.obs, self.obs_index_column_name, ctx)
-        logging.info("\t...dataset obs dataframe saved")
+        logger.info("\t...dataset obs dataframe saved")
 
         convert_dataframe_to_cxg_array(output_cxg_directory, "var", self.var, self.var_index_column_name, ctx)
-        logging.info("\t...dataset var dataframe saved")
+        logger.info("\t...dataset var dataframe saved")
 
         self.write_anndata_embeddings_to_cxg(output_cxg_directory, ctx)
-        logging.info("\t...dataset embeddings saved")
+        logger.info("\t...dataset embeddings saved")
 
         self.write_anndata_x_matrix_to_cxg(output_cxg_directory, ctx, sparse_threshold)
-        logging.info("\t...dataset X matrix saved")
+        logger.info("\t...dataset X matrix saved")
 
-        logging.info("Completed writing to CXG.")
+        logger.info("Completed writing to CXG.")
 
     def write_anndata_x_matrix_to_cxg(self, output_cxg_directory, ctx, sparse_threshold):
         matrix_container = f"{output_cxg_directory}/X"
 
         x_matrix_data = self.anndata.X
         is_sparse = is_matrix_sparse(x_matrix_data, sparse_threshold)
-        logging.info(f"is_sparse: {is_sparse}")
+        logger.info(f"is_sparse: {is_sparse}")
 
         convert_matrix_to_cxg_array(matrix_container, x_matrix_data, is_sparse, ctx)
 
@@ -121,7 +123,7 @@ class H5ADDataFile:
             if is_valid_embedding(self.anndata, embedding_name, embedding_values):
                 embedding_name = f"{embedding_container}/{embedding_name[2:]}"
                 convert_ndarray_to_cxg_dense_array(embedding_name, embedding_values, ctx)
-                logging.info(f"\t\t...{embedding_name} embedding created")
+                logger.info(f"\t\t...{embedding_name} embedding created")
 
     def generate_cxg_metadata(self, convert_anndata_colors_to_cxg_colors):
         """
@@ -142,7 +144,7 @@ class H5ADDataFile:
                     convert_anndata_category_colors_to_cxg_category_colors(self.anndata)
                 )
             except ColorFormatException:
-                logging.warning(
+                logger.warning(
                     "Failed to extract colors from H5AD file! Fix the H5AD file or rerun with "
                     "--disable-custom-colors. See help for more details."
                 )
@@ -164,9 +166,9 @@ class H5ADDataFile:
             raise ValueError("Observation index in AnnData object is not unique.")
 
     def extract_anndata_elements_from_file(self):
-        logging.info(f"Reading in AnnData dataset: {path.basename(self.input_filename)}")
+        logger.info(f"Reading in AnnData dataset: {path.basename(self.input_filename)}")
         self.anndata = anndata.read_h5ad(self.input_filename)
-        logging.info("Completed reading in AnnData dataset!")
+        logger.info("Completed reading in AnnData dataset!")
 
         self.obs = self.transform_dataframe_index_into_column(self.anndata.obs, "obs", self.obs_index_column_name)
         self.var = self.transform_dataframe_index_into_column(self.anndata.var, "var", self.var_index_column_name)
@@ -246,7 +248,7 @@ class H5ADDataFile:
             try:
                 corpora_props[key] = self.anndata.uns[key].tolist()
             except AttributeError as e:
-                logging.error(f"Corpora schema field {key} expected to be list, got {type(self.anndata.uns[key])}")
+                logger.error(f"Corpora schema field {key} expected to be list, got {type(self.anndata.uns[key])}")
                 raise e
 
         for key in CorporaConstants.OPTIONAL_SIMPLE_METADATA_FIELDS:
