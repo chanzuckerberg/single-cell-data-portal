@@ -3,7 +3,7 @@ import sys
 from backend.corpora.common.utils.slack import (
     format_failed_batch_issue_slack_alert,
     notify_slack,
-    gen_wmg_pipeline_failure_message
+    gen_wmg_pipeline_failure_message,
 )
 
 from backend.corpus_asset_pipelines.summary_cubes.expression_summary.job import create_expression_summary_cube

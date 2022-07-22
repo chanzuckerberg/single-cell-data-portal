@@ -5,8 +5,12 @@ import sys
 import time
 import tiledb
 
-from backend.corpora.common.utils.slack import notify_slack, format_failed_batch_issue_slack_alert, \
-    gen_wmg_pipeline_success_message, gen_wmg_pipeline_failure_message
+from backend.corpora.common.utils.slack import (
+    notify_slack,
+    format_failed_batch_issue_slack_alert,
+    gen_wmg_pipeline_success_message,
+    gen_wmg_pipeline_failure_message,
+)
 from backend.corpus_asset_pipelines import integrated_corpus
 from backend.corpus_asset_pipelines import summary_cubes
 
