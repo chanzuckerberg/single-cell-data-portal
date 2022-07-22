@@ -27,24 +27,66 @@ class GeneInfoAPIv1Tests(unittest.TestCase):
         cls.maxDiff = None
 
     @patch("backend.gene_info.api.ncbi_provider.urllib.request.urlopen")
-    @patch("backend.gene_info.api.v1.NCBIProvider._load_search_result")
-    def test_api_calls(self, mock_load_search_result, mock_get):
+    @patch("backend.gene_info.api.v1.NCBIProvider._search_gene_uid")
+    def test_api_calls(self, mock_search_gene_uid, mock_get):
         """
         Mocks API key for NCBI requests, checks call counts and the correct external API calls.
         Will break if the external API call is down!
         """
         mock_get.read = None
-        mock_load_search_result.return_value = 348
+        mock_search_gene_uid.return_value = {
+            "esearchresult": {
+                "idlist": [348]
+            }
+        }
         test_search_url = (
             "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?" "db=gene&term=ENSG00000130203&retmode=json"
         )
         test_fetch_url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=gene&id=348&retmode=xml"
         test_provider = ncbi_provider.NCBIProvider()
         test_provider.api_key = ""
-        test_provider.fetch_gene_uid("ENSG00000130203")
+        test_provider.fetch_gene_uid("ENSG00000130203", "APOE")
         test_provider.fetch_gene_info_tree(348)
         mock_get.assert_has_calls([call(test_search_url), call().read(), call(test_fetch_url), call().read()])
         self.assertEqual(mock_get.call_count, 2)
+
+    @patch("backend.gene_info.api.ncbi_provider.urllib.request.urlopen")
+    @patch("backend.gene_info.api.v1.NCBIProvider._search_gene_uid")
+    def test_api_double_calls(self, mock_search_gene_uid, mock_get):
+        """ Additional testing for genes that fail on first search """
+        mock_get.read = None
+        mock_search_gene_uid.return_value = "fail"
+        test_provider = ncbi_provider.NCBIProvider()
+        test_provider.api_key = ""
+        test_search_url1 = (
+            "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?" "db=gene&term=ENSG00000267691&retmode=json"
+        )
+        test_search_url2 = (
+            "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?" "db=gene&term=SHC1P2&retmode=json"
+        )
+        test_fetch_url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=gene&id=1&retmode=xml"
+
+        with self.assertRaises(ncbi_provider.NCBIUnexpectedResultException):
+            test_provider.fetch_gene_uid("ENSG00000267691", "SHC1P2")
+            mock_get.assert_has_calls([
+            call(test_search_url1), 
+            call().read(), 
+            call(test_search_url2), 
+            call().read(), 
+            call(test_fetch_url), 
+            call().read()
+        ])
+        test_provider.fetch_gene_info_tree(1)
+        mock_get.assert_has_calls([
+            call(test_search_url1), 
+            call().read(), 
+            call(test_search_url2), 
+            call().read(), 
+            call(test_fetch_url), 
+            call().read()
+        ])
+        self.assertEqual(mock_get.call_count, 3)
+
 
     @patch("backend.gene_info.api.v1.NCBIProvider.fetch_gene_uid")
     @patch("backend.gene_info.api.v1.NCBIProvider.fetch_gene_info_tree")

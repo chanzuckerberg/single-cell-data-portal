@@ -23,7 +23,7 @@ def gene_info(gene: string = None, geneID: string = None):
 
     # search for gene UID from ensembl ID
     try:
-        uid = provider.fetch_gene_uid(geneID)
+        uid = provider.fetch_gene_uid(geneID, gene)
     except NCBIAPIException:
         raise ForbiddenHTTPException("Failed search of NCBI database, API key issue")
     except NCBIUnexpectedResultException:
@@ -34,6 +34,8 @@ def gene_info(gene: string = None, geneID: string = None):
         gene_info_tree = provider.fetch_gene_info_tree(uid)
     except NCBIAPIException:
         raise ForbiddenHTTPException("Failed fetch of NCBI database, API key issue")
+    except NCBIUnexpectedResultException:
+        raise NotFoundHTTPException("Unexpected NCBI info tree result")
     gene_info = provider.parse_gene_info_tree(gene_info_tree)
     return make_response(
         jsonify(
