@@ -1,7 +1,7 @@
 import Image from "next/image";
 import { ROUTES } from "src/common/constants/routes";
+import wordmark from "src/common/images/cellxgene-discover-wordmark.svg";
 import CZILogo from "src/components/common/staticPages/czi-logo-white.png";
-import { HomepageLink } from "../common/HomepageLink";
 import styles from "./index.module.scss";
 
 const LandingFooter = (): JSX.Element => {
@@ -9,7 +9,9 @@ const LandingFooter = (): JSX.Element => {
     <footer className={styles.footer}>
       <div className={styles.footerTopContainer}>
         <div className={styles.footerLogo}>
-          <HomepageLink />
+          <a href={ROUTES.LANDING} target="_blank" rel="noopener">
+            <Image src={wordmark} alt="CZ CELLxGENE Discover" />
+          </a>
         </div>
 
         <div className={styles.footerTopLinks}>
