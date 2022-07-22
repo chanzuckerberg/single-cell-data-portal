@@ -45,7 +45,7 @@ class TestCrossrefProvider(unittest.TestCase):
                                 "sequence": "additional",
                             },
                         ],
-                        "published-online": {"date-parts": [[2021, 11, 18]]},
+                        "published-online": {"date-parts": [[2021, 11, 10]]},
                         "container-title": ["Nature"],
                     },
                 }
@@ -62,7 +62,7 @@ class TestCrossrefProvider(unittest.TestCase):
             "published_year": 2021,
             "published_month": 11,
             "published_day": 10,
-            "published_at": 1636520400.0,
+            "published_at": 1636502400.0,
             "journal": "Nature",
             "is_preprint": False,
         }
@@ -132,7 +132,7 @@ class TestCrossrefProvider(unittest.TestCase):
             "journal": "Nature",
             "is_preprint": False,
         }
-
+        self.maxDiff
         self.assertDictEqual(expected_response, res)
 
     @patch("backend.common.providers.crossref_provider.requests.get")
