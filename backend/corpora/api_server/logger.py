@@ -24,6 +24,6 @@ def configure_logging(app_name):
             "loggers": {
                 app_name: {"level": gunicorn_logger.level, "handlers": ["wsgi"], "propagate": 0},
             },
-            "root": {"level": logging.INFO, "handlers": ["wsgi"]},
+            "root": {"level": gunicorn_logger.level, "handlers": ["wsgi"]},
         }
     )
