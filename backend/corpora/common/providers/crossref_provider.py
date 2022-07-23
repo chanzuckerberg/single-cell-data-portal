@@ -5,6 +5,8 @@ from datetime import datetime
 
 import logging
 
+logger = logging.getLogger(__name__)
+
 
 class CrossrefException(Exception):
     pass
@@ -50,7 +52,7 @@ class CrossrefProvider(object):
             doi = parsed.path
 
         if self.crossref_api_key is None:
-            logging.info("No Crossref API key found, skipping metadata fetching.")
+            logger.info("No Crossref API key found, skipping metadata fetching.")
             return None
 
         try:

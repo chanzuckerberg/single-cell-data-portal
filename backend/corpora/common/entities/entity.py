@@ -7,6 +7,8 @@ from sqlalchemy.orm import Session
 
 from ..corpora_orm import Base
 
+logger = logging.getLogger(__name__)
+
 
 class Entity:
     """
@@ -40,7 +42,7 @@ class Entity:
         if result:
             return cls(result)
         else:
-            logging.info(f"Unable to find a row with primary key {key}, in {cls.__name__} table.")
+            logger.info(f"Unable to find a row with primary key {key}, in {cls.__name__} table.")
             return None
 
     @classmethod

@@ -19,17 +19,11 @@ def configure_logging(app_name):
                 "default": {"format": LOG_FORMAT, "()": jsonlogger.JsonFormatter, "datefmt": "%Y-%m-%dT%H:%M:%S.%03dZ"}
             },
             "handlers": {
-                "wsgi": {
-                    "class": "logging.StreamHandler",
-                    "stream": "ext://flask.logging.wsgi_errors_stream",
-                    "formatter": "default",
-                    "level": gunicorn_logger.level,
-                }
+                "wsgi": {"class": "logging.StreamHandler", "formatter": "default", "stream": "ext://sys.stdout"}
             },
             "loggers": {
                 app_name: {"level": gunicorn_logger.level, "handlers": ["wsgi"], "propagate": 0},
-                "backend": {"level": gunicorn_logger.level, "handlers": ["wsgi"], "propagate": 0},
             },
-            "root": {"level": gunicorn_logger.level, "handlers": ["wsgi"]},
+            "root": {"level": logging.INFO, "handlers": ["wsgi"]},
         }
     )

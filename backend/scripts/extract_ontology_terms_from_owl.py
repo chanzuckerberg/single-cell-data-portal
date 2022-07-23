@@ -3,19 +3,21 @@ import boto3
 import logging
 from owlready2 import get_ontology
 
+logger = logging.getLogger(__name__)
+
 
 def extract_ontology_terms_from_file(input_file):
     """
     Returns the list of ontology classes in an OWL file.
     """
 
-    logging.info(f"Reading in input OWL file {input_file}")
+    logger.info(f"Reading in input OWL file {input_file}")
     ontology_file_object = open(input_file, "rb")
     ontology_object = get_ontology("")
     ontology_object.load(fileobj=ontology_file_object)
 
     ontology_classes = [ontology_class.name.replace("_", ":") for ontology_class in list(ontology_object.classes())]
-    logging.info(f"Completed loading OWL file and found {len(ontology_classes)} ontology classes.")
+    logger.info(f"Completed loading OWL file and found {len(ontology_classes)} ontology classes.")
 
     return ontology_classes
 
@@ -29,7 +31,7 @@ def generate_ontology_list_file(ontologies_list, filename, aws_bucket=None):
     file_contents = "\n".join(ontologies_list)
 
     if aws_bucket:
-        logging.info(f"Writing ontology classes to S3 bucket {aws_bucket}.")
+        logger.info(f"Writing ontology classes to S3 bucket {aws_bucket}.")
 
         # Truncate the filename to remove the path of the input file since the output filename is derived from the input
         # filename.
@@ -37,17 +39,17 @@ def generate_ontology_list_file(ontologies_list, filename, aws_bucket=None):
 
         s3_client = boto3.client("s3")
         s3_client.put_object(Body=file_contents, Bucket=aws_bucket, Key=truncated_filename)
-        logging.info("Completed writing ontology classes to S3.")
+        logger.info("Completed writing ontology classes to S3.")
 
     else:
         # Create a file locally
-        logging.info(f"Writing ontology classes locally to {filename}.")
+        logger.info(f"Writing ontology classes locally to {filename}.")
 
         output_file_object = open(filename, "w")
         output_file_object.write(file_contents)
         output_file_object.close()
 
-        logging.info("Completed writing ontology classes to local file.")
+        logger.info("Completed writing ontology classes to local file.")
 
 
 if __name__ == "__main__":

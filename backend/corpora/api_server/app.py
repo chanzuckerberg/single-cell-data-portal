@@ -129,7 +129,7 @@ def after_request(response: Response):
             type="RESPONSE",
             details=dict(
                 status_code=response.status_code,
-                content_length=response.content_length or 0,
+                content_length=response.content_length,
                 response_time=time.time() - g.start,
             ),
         )

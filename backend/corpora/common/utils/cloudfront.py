@@ -6,6 +6,8 @@ from backend.corpora.common.corpora_config import CorporaCloudfrontConfig
 
 import logging
 
+logger = logging.getLogger(__name__)
+
 client = boto3.client("cloudfront")
 
 
@@ -16,14 +18,14 @@ def create_invalidation(paths: List[str]):
     try:
         distribution = CorporaCloudfrontConfig().distribution_id
     except RuntimeError:  # Will be raised if the attribute is not found (i.e. in rdev)
-        logging.debug("No Cloudfront distribution found in secrets, will not invalidate")
+        logger.debug("No Cloudfront distribution found in secrets, will not invalidate")
         return None
     return _create_invalidation(distribution, paths)
 
 
 def _create_invalidation(distribution: str, paths: List[str]):
     invalidation_id = str(uuid.uuid4())
-    logging.info(f"Requesting invalidation {invalidation_id} for distribution {distribution}")
+    logger.info(f"Requesting invalidation {invalidation_id} for distribution {distribution}")
     return client.create_invalidation(
         DistributionId=distribution,
         InvalidationBatch={
