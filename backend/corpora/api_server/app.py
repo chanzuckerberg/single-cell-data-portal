@@ -2,6 +2,7 @@ import json
 import os
 import time
 from urllib.parse import urlparse
+from backend.gene_info.api.ensembl_ids import GeneChecker
 
 import connexion
 
@@ -46,6 +47,12 @@ def create_flask_app():
     add_api(base_path="/curation", spec_file="curation-api.yml")
     add_api(base_path="/wmg", spec_file="wmg-api.yml")
     add_api(base_path="/gene_info", spec_file="gene-info-api.yml")
+
+    # Initialize gene checker to go ahead and create a dictionary of all
+    # gene ensembl ID to gene name mappings for the gene_info API endpoint.
+    # This is done here because the initialization of gene checker takes some
+    # time and, if done on API request, would significantly slow performance.
+    GeneChecker()
 
     return connexion_app.app
 
