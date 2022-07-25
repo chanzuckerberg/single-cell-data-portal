@@ -14,7 +14,7 @@ db/init_remote_dev: db/remote_migration_init
 	# The create db script exits with a 1 status code if the db already exists.
 	-@ echo "Creating DB..." && \
 		cd .. && \
-		python -m scripts.populate_db --create-schema --skip-populate --skip-recreate-db && \
+		python3 -m scripts.populate_db --create-schema --skip-populate --skip-recreate-db && \
 		if [ ! -z "${DATA_LOAD_PATH}" ]; then \
 			echo "Importing db snapshot from s3..." && \
 			aws s3 cp ${DATA_LOAD_PATH} /tmp/db_snapshot.sql && \
@@ -23,7 +23,7 @@ db/init_remote_dev: db/remote_migration_init
 			echo "Importing blank db snapshot..." && \
 			psql ${DB_URI}${REMOTE_DEV_PREFIX} < scripts/db_snapshot.sql && \
 			echo "Writing test data..." && \
-			python -m scripts.populate_db --populate-data --skip-recreate-db; \
+			python3 -m scripts.populate_db --populate-data --skip-recreate-db; \
 		fi
 
 	PYTHONPATH=.. alembic -x db=${DEPLOYMENT_STAGE} -c=./config/database.ini upgrade head
@@ -33,7 +33,7 @@ db/delete_remote_dev: db/remote_migration_init
 	# Delete database.
 	-@ echo "Deleting DB..." && \
 		cd .. && \
-		python -m scripts.populate_db --drop-db
+		python3 -m scripts.populate_db --drop-db
 
 db/rollback:
 	PYTHONPATH=.. alembic -x db=${DEPLOYMENT_STAGE}  -c=./config/database.ini downgrade -1
