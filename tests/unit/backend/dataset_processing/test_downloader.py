@@ -14,6 +14,8 @@ from backend.dataset_processing import download
 from backend.dataset_processing.exceptions import ProcessingFailed
 from tests.unit.backend.data_portal_test_case import DataPortalTestCase
 
+logging.basicConfig(level=logging.INFO)
+
 
 def start_server(path, port):
     handler = http.server.SimpleHTTPRequestHandler
