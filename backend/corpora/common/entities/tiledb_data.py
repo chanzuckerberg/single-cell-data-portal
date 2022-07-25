@@ -108,7 +108,7 @@ class Utils:
         "sex": [],
         "tissue": [],
         "explorer_url": "",
-        "processing_status": ""
+        "processing_status": {}
     }
 
     empty_collection = {
@@ -138,9 +138,24 @@ class Utils:
             if a in data:
                 t = type(data[a])
                 if t == np.ndarray:
-                    data[a] = data[a][0]  # for some reason some fields get stored as arrays in TileDB
+                    if len(data[a]) > 0:
+                        data[a] = data[a][0]  # for some reason some fields get stored as arrays in TileDB
+                    else:
+                        if array == "collections":
+                            data[a] = Utils.empty_collection[a]
+                        else:
+                            data[a] = Utils.empty_dataset[a]
+                        if a in Utils.attrs_to_parse[array]:
+                            data[a] = str(data[a])
                 if a in Utils.attrs_to_parse[array]:
                     data[a] = ast.literal_eval(data[a])
+                t = type(data[a])
+                if t == np.float32:
+                    data[a] = float(data[a])
+                elif t == np.int32:
+                    data[a] = int(data[a])
+        if type(data['id']) == np.ndarray and len(data['id']) > 0:
+            data['id'] = data['id'][0].decode("utf-8") # TileDB stores the id index as byte string
         return data
 
     @staticmethod
@@ -211,7 +226,8 @@ class TileDBData:
     @staticmethod
     def destroy_db(location):
         """Delete our local TileDB group."""
-        shutil.rmtree(location)
+        if os.path.exists(location):
+            shutil.rmtree(location)
 
     def __init__(self, location):
         self.location = location
@@ -225,7 +241,7 @@ class TileDBData:
         """Internal function to create a collection with a custom id. """
         data = Utils.empty_collection
         for a in Utils.attrs['collections']:
-            if a in metadata:
+            if a in metadata and metadata[a]:
                 data[a] = metadata[a]
         data["created_at"] = time.time()
         data["updated_at"] = time.time()
@@ -236,24 +252,30 @@ class TileDBData:
     def get_collection(self, id):
         """Gets a collection by its id"""
         with tiledb.open(self.location + "/collections", 'r') as A:
-            return Utils.parse_stored_data(dict(A[id]), "collections")
+            res = Utils.parse_stored_data(dict(A[id]), "collections")
+            n = res['id']
+            return res if (type(n) == str and len(n) > 0) or (type(n) == np.ndarray and n.size > 0) else None
 
-    def get_published_collections(self, user_id=None, from_date=None, to_date=None):
-        """Get all public collections, filtered by owner and time of creation"""
+    def get_published_collections(self):
+        """Get all public collections"""
         with tiledb.open(self.location + "/collections", mode="r") as A:
             # TODO: try query conditions for efficiency
             df = A.df[:]
-            df = df[
-                (df['visibility'] == "PUBLIC") &
-                (df['owner'] == user_id if user_id else df['owner']) &
-                (df['created_at'] >= from_date if from_date else df['created_at']) &
-                (df['created_at'] <= to_date if to_date else df['created_at'])
-            ]
+            df = df[(df['visibility'] == "PUBLIC")]
             res = df.to_dict("records")
             for i in range(len(res)):
                 res[i] = Utils.parse_stored_data(res[i], "collections")
             return res
 
+    def get_all_collections(self):
+        """Get all collections"""
+        with tiledb.open(self.location + "/collections", mode="r") as A:
+            df = A.df[:]
+            res = df.to_dict("records")
+            for i in range(len(res)):
+                res[i] = Utils.parse_stored_data(res[i], "collections")
+            return res
+            
     def get_published_datasets(self):
         """Get all datasets belonging to a public collection"""
         colls = self.get_published_collections()
@@ -282,9 +304,7 @@ class TileDBData:
             data = A[id]
             new_data = {}
             for attr in Utils.attrs["collections"]:
-                new_data[attr] = data[attr][0]
-                if attr in Utils.attrs_to_parse["collections"]:
-                    new_data[attr] = ast.literal_eval(new_data[attr])
+                new_data[attr] = data[attr][0] if len(data[attr]) > 0 else Utils.empty_collection[attr]
             new_data[key] = val
             new_data["updated_at"] = time.time()
             new_data = Utils.pack_input_data(new_data, "collections")
@@ -292,11 +312,11 @@ class TileDBData:
         with tiledb.open(self.location + "/collections", "w") as A:
             A[id] = new_data
 
-    def publish_collection(self, id):
+    def publish_collection(self, id: str):
         """Set a collection's visibility to public"""
         self.edit_collection(id, "visibility", "PUBLIC")
 
-    def add_dataset(self, coll_id, metadata):
+    def add_dataset(self, coll_id: str, metadata: dict):
         """Add a dataset to a collection and to the datasets array using the data from the user's shared URL"""
         id = Utils.new_id()
         return self._add_dataset_custom_id(id, coll_id, metadata)
@@ -310,17 +330,19 @@ class TileDBData:
 
         data = Utils.empty_dataset
         for a in Utils.attrs['datasets']:
-            if a in metadata:
+            if a in metadata and metadata[a]:
                 data[a] = metadata[a]
 
         with tiledb.open(self.location + "/datasets", "w") as A:
             A[id] = Utils.pack_input_data(data, "datasets")
         return id
 
-    def get_dataset(self, id):
+    def get_dataset(self, id: str):
         """Get a dataset by its id"""
         with tiledb.open(self.location + "/datasets", 'r') as A:
-            return Utils.parse_stored_data(dict(A[id]), "datasets")
+            res = Utils.parse_stored_data(dict(A[id]), "datasets")
+            n = res['id']
+            return res if (type(n) == str and len(n) > 0) or (type(n) == np.ndarray and n.size > 0) else None
 
     def edit_dataset(self, id, key, val):
         """Update the data in one field of a specific dataset"""
@@ -329,7 +351,7 @@ class TileDBData:
             data = A[id]
             new_data = {}
             for attr in Utils.attrs["datasets"]:
-                new_data[attr] = data[attr][0]
+                new_data[attr] = data[attr][0] if len(data[attr]) > 0 else Utils.empty_dataset[attr]
             new_data[key] = val
             new_data = Utils.pack_input_data(new_data, "datasets")
 
@@ -423,9 +445,13 @@ class TileDBData:
         with tiledb.open(self.location + "/datasets", 'w') as A:
             A[id] = new_data
 
-    def create_revision(self, coll_id):
+    def create_revision(self, coll_id: str):
         """Start a revision of an existing collection by its id"""
         id = Utils.new_id()
+        return self._create_revision_custom_id(id, coll_id)
+
+    def _create_revision_custom_id(self, id: str, coll_id: str):
+        """Start a revision with a custom id"""
         coll = self.get_collection(coll_id)
         data = {}
         for attr in Utils.attrs["collections"]:

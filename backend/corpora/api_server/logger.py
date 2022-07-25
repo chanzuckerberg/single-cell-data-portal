@@ -30,5 +30,6 @@ def configure_logging(app_name):
                 app_name: {"level": gunicorn_logger.level, "handlers": ["wsgi"], "propagate": 0},
             },
             "root": {"level": gunicorn_logger.level, "handlers": ["wsgi"]},
+            "disable_existing_loggers": False # set to True to simplify logs; False for full detail for debugging
         }
     )

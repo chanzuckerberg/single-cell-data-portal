@@ -29,7 +29,7 @@ class TestDatabaseManager:
 class TestDatabase:
     def __init__(self, real_data=False):
         self.real_data = real_data
-        location = "./test_tiledb/metadata" # TODO: config this somewhere
+        location = "tests/unit/backend/fixtures/test_tiledb/metadata" # TODO: config this somewhere
         self.db = TileDBData(location)
 
     def create_db(self):
@@ -47,53 +47,66 @@ class TestDatabase:
 
     def _create_test_collections(self):
         collection = self.db._create_collection_custom_id(
-            id="test_collection_id",
-            owner="test_user_id",
-            name="test_collection_name",
-            description="test_description",
-            contact_name="Some Body",
-            contact_email="somebody@chanzuckerberg.com",
+            "test_collection_id",
+            dict(
+                owner="test_user_id",
+                name="test_collection_name",
+                description="test_description",
+                contact_name="Some Body",
+                contact_email="somebody@chanzuckerberg.com"
+            )
         )
         self.db.publish_collection(collection)
         self.db.create_revision(collection)
 
         collection = self.db._create_collection_custom_id(
-            id="test_collection_id_public",
-            owner="test_user_id",
-            name="test_collection_id_public",
-            description="test_description",
+            "test_collection_id_public",
+            dict(
+                owner="test_user_id",
+                name="test_collection_id_public",
+                description="test_description",
+            )
         )
         self.db.publish_collection(collection)
-        rev_id = self.db.create_revision(collection)
-        self.db.edit_collection(rev_id, "name", "test_collection_id_public_for_revision_one")
+        rev_id = self.db._create_revision_custom_id("test_collection_id_public_for_revision_one", collection)
+        self.db.edit_collection(rev_id, "name", "test_collection_id_public")
         self.db.edit_collection(rev_id, "owner", "User1")
         self.db.edit_collection(rev_id, "contact_name", "Some Body")
         self.db.edit_collection(rev_id, "contact_email", "somebody@chanzuckerberg.com")
+        self.db._create_revision_custom_id("test_collection_id_public_for_revision_two", collection)
+        self.db._create_revision_custom_id("test_collection_id_revision", collection)
+
 
         collection = self.db._create_collection_custom_id(
-            id="test_collection_id_not_owner",
-            owner="Someone_else",
-            name="test_collection_name",
-            description="test_description",
+            "test_collection_id_not_owner",
+            dict(
+                owner="Someone_else",
+                name="test_collection_name",
+                description="test_description",
+            )
         )
 
         collection = self.db._create_collection_custom_id(
-            id="test_collection_with_link",
-            owner="test_user_id",
-            name="test_collection_name",
-            description="test_description",
-            contact_name="Some Body",
-            contact_email="somebody@chanzuckerberg.com",
+            "test_collection_with_link",
+            dict(
+                owner="test_user_id",
+                name="test_collection_name",
+                description="test_description",
+                contact_name="Some Body",
+                contact_email="somebody@chanzuckerberg.com",
+            )
         )
         self.db.publish_collection(collection)
 
         collection = self.db._create_collection_custom_id(
-            id="test_collection_with_link_and_dataset_changes",
-            owner="test_user_id",
-            name="test_collection_name",
-            description="test_description",
-            contact_name="Some Body",
-            contact_email="somebody@chanzuckerberg.com",
+            "test_collection_with_link_and_dataset_changes",
+            dict(
+                owner="test_user_id",
+                name="test_collection_name",
+                description="test_description",
+                contact_name="Some Body",
+                contact_email="somebody@chanzuckerberg.com",
+            )
         )
         self.db.publish_collection(collection)
 
@@ -108,6 +121,7 @@ class TestDatabase:
             links.append({
                 "link_url": f"http://test_no_link_name_{link_type.value}_url.place",
                 "link_type": link_type.name,
+                "link_name": ""
             })
             self.db.edit_collection("test_collection_id", "links", links)
                     
@@ -130,7 +144,7 @@ class TestDatabase:
             
     def _create_test_datasets(self):
         test_dataset_id = "test_dataset_id"
-        self.db._create_collection_custom_id(
+        self.db._add_dataset_custom_id(
             test_dataset_id,
             "test_collection_id",
             dict(
@@ -138,6 +152,7 @@ class TestDatabase:
                 organism=[{"ontology_term_id": "test_obo", "label": "test_organism"}],
                 tissue=[{"ontology_term_id": "test_obo", "label": "test_tissue"}],
                 assay=[{"ontology_term_id": "test_obo", "label": "test_assay"}],
+                cell_count=1234,
                 disease=[
                     {"ontology_term_id": "test_obo", "label": "test_disease"},
                     {"ontology_term_id": "test_obp", "label": "test_disease2"},
@@ -176,7 +191,7 @@ class TestDatabase:
                 ],
                 ethnicity=[{"ontology_term_id": "test_obo", "label": "test_ethnicity"}],
                 development_stage=[{"ontology_term_id": "test_obo", "label": "test_development_stage"}],
-                explorer_url="test_url",
+                explorer_url="test_url"
             )
         )
 
@@ -274,6 +289,7 @@ class TestDatabase:
             user_submitted=True,
             s3_uri=config.real_s3_file if self.real_data else config.fake_s3_file,
         )
+        assets.append(dataset_artifact)
         self.db.edit_dataset("test_dataset_id", "dataset_assets", assets)
 
         # Revision 1
@@ -345,56 +361,56 @@ class TestDatabase:
 
     def _create_test_dataset_processing_status(self):
         dataset_processing_status = dict(
-            processing_status=ProcessingStatus.PENDING,
-            upload_status=UploadStatus.UPLOADING,
+            processing_status=ProcessingStatus.PENDING.name,
+            upload_status=UploadStatus.UPLOADING.name,
             upload_progress=4 / 9,
-            validation_status=ValidationStatus.NA,
-            rds_status=ConversionStatus.NA,
-            cxg_status=ConversionStatus.NA,
-            h5ad_status=ConversionStatus.NA,
+            validation_status=ValidationStatus.NA.name,
+            rds_status=ConversionStatus.NA.name,
+            cxg_status=ConversionStatus.NA.name,
+            h5ad_status=ConversionStatus.NA.name,
         )
         self.db.edit_dataset("test_dataset_id", "processing_status", dataset_processing_status)
 
         dataset_processing_status = dict(
-            processing_status=ProcessingStatus.SUCCESS,
-            upload_status=UploadStatus.UPLOADED,
+            processing_status=ProcessingStatus.SUCCESS.name,
+            upload_status=UploadStatus.UPLOADED.name,
             upload_progress=1,
-            validation_status=ValidationStatus.VALID,
-            rds_status=ConversionStatus.CONVERTED,
-            cxg_status=ConversionStatus.CONVERTED,
-            h5ad_status=ConversionStatus.CONVERTED,
+            validation_status=ValidationStatus.VALID.name,
+            rds_status=ConversionStatus.CONVERTED.name,
+            cxg_status=ConversionStatus.CONVERTED.name,
+            h5ad_status=ConversionStatus.CONVERTED.name,
         )
         self.db.edit_dataset("test_dataset_for_revisions+one", "processing_status", dataset_processing_status)
 
         dataset_processing_status = dict(
-            processing_status=ProcessingStatus.SUCCESS,
-            upload_status=UploadStatus.UPLOADED,
+            processing_status=ProcessingStatus.SUCCESS.name,
+            upload_status=UploadStatus.UPLOADED.name,
             upload_progress=1,
-            validation_status=ValidationStatus.VALID,
-            rds_status=ConversionStatus.CONVERTED,
-            cxg_status=ConversionStatus.CONVERTED,
-            h5ad_status=ConversionStatus.CONVERTED,
+            validation_status=ValidationStatus.VALID.name,
+            rds_status=ConversionStatus.CONVERTED.name,
+            cxg_status=ConversionStatus.CONVERTED.name,
+            h5ad_status=ConversionStatus.CONVERTED.name,
         )
         self.db.edit_dataset("test_dataset_for_revisions_two", "processing_status", dataset_processing_status)
 
         dataset_processing_status = dict(
-            processing_status=ProcessingStatus.SUCCESS,
-            upload_status=UploadStatus.UPLOADED,
+            processing_status=ProcessingStatus.SUCCESS.name,
+            upload_status=UploadStatus.UPLOADED.name,
             upload_progress=1,
-            validation_status=ValidationStatus.VALID,
-            rds_status=ConversionStatus.CONVERTED,
-            cxg_status=ConversionStatus.CONVERTED,
-            h5ad_status=ConversionStatus.CONVERTED,
+            validation_status=ValidationStatus.VALID.name,
+            rds_status=ConversionStatus.CONVERTED.name,
+            cxg_status=ConversionStatus.CONVERTED.name,
+            h5ad_status=ConversionStatus.CONVERTED.name,
         )
         self.db.edit_dataset("test_publish_revision_with_links__revision_dataset", "processing_status", dataset_processing_status)
 
         dataset_processing_status = dict(
-            processing_status=ProcessingStatus.PENDING,
-            upload_status=UploadStatus.UPLOADED,
+            processing_status=ProcessingStatus.PENDING.name,
+            upload_status=UploadStatus.UPLOADED.name,
             upload_progress=1,
-            validation_status=ValidationStatus.VALID,
-            rds_status=ConversionStatus.CONVERTED,
-            cxg_status=ConversionStatus.CONVERTED,
-            h5ad_status=ConversionStatus.CONVERTED,
+            validation_status=ValidationStatus.VALID.name,
+            rds_status=ConversionStatus.CONVERTED.name,
+            cxg_status=ConversionStatus.CONVERTED.name,
+            h5ad_status=ConversionStatus.CONVERTED.name,
         )
         self.db.edit_dataset("test_dataset_id_not_owner", "processing_status", dataset_processing_status)

@@ -122,7 +122,7 @@ def updater(dataset_id, processing_status, tracker: ProgressTracker, frequency: 
             elif progress == 1:
                 status = {
                     "upload_progress": progress,
-                    "upload_status": UploadStatus.UPLOADED,
+                    "upload_status": UploadStatus.UPLOADED.name,
                 }
         else:
             status = {"upload_progress": progress}

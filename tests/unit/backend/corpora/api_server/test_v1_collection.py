@@ -3,8 +3,10 @@ import json
 import unittest
 from datetime import datetime
 from unittest.mock import patch
+from urllib import response
 
 from furl import furl
+from requests import head
 
 from backend.corpora.common.corpora_orm import (
     UploadStatus,
@@ -30,15 +32,6 @@ def generate_mock_publisher_metadata(journal_override=None):
 
 
 class TestCollection(BaseAuthAPITest):
-    def validate_collections_response_structure(self, body):
-        self.assertIn("collections", body)
-        self.assertTrue(all(k in ["collections", "from_date", "to_date"] for k in body))
-
-        for collection in body["collections"]:
-            self.assertListEqual(sorted(collection.keys()), ["created_at", "id", "visibility"])
-            self.assertEqual(collection["visibility"], "PUBLIC")
-            self.assertGreaterEqual(datetime.fromtimestamp(collection["created_at"]).year, 1969)
-
     def validate_collection_id_response_structure(self, body):
         required_keys = self.attrs['collections']
         self.assertListEqual(sorted(body.keys()), sorted(required_keys))
@@ -65,55 +58,17 @@ class TestCollection(BaseAuthAPITest):
 
     def test__list_collection__ok(self):
         path = "/dp/v1/collections"
-        headers = dict(host="localhost")
-
-        from_date = 0
-        to_date = float('inf')
-
+        headers = dict(host="localhost", Cookie=get_auth_token(self.app))
+    
         expected_id, _ = self.generate_collection()
-        # publish the collection to set visibility to PUBLIC
-        publish_path = furl(path=f"/dp/v1/collections/{expected_id}/publish")
-        response = self.app.post(publish_path.url, headers=headers)
+        # force publish the collection to set visibility to PUBLIC
+        self.publish_collection(expected_id)
 
-        with self.subTest("No Parameters"):
-            test_url = furl(path=path)
-            response = self.app.get(test_url.url, headers=headers)
-            self.assertEqual(200, response.status_code)
-            actual_body = json.loads(response.data)
-            self.validate_collections_response_structure(actual_body)
-            self.assertIn(expected_id, [p["id"] for p in actual_body["collections"]])
-            self.assertEqual(None, actual_body.get("to_date"))
-            self.assertEqual(None, actual_body.get("from_date"))
-
-        with self.subTest("from_date"):
-            test_url = furl(path=path, query_params={"from_date": from_date})
-            response = self.app.get(test_url.url, headers=headers)
-            self.assertEqual(200, response.status_code)
-            actual_body = json.loads(response.data)
-            self.validate_collections_response_structure(actual_body)
-            self.assertIn(expected_id, [p["id"] for p in actual_body["collections"]])
-            self.assertEqual(None, actual_body.get("to_date"))
-            self.assertEqual(actual_body["from_date"], from_date)
-
-        with self.subTest("to_date"):
-            test_url = furl(path=path, query_params={"to_date": to_date})
-            response = self.app.get(test_url.url, headers=headers)
-            self.assertEqual(200, response.status_code)
-            actual_body = json.loads(response.data)
-            self.validate_collections_response_structure(actual_body)
-            self.assertIn(expected_id, [p["id"] for p in actual_body["collections"]])
-            self.assertEqual(to_date, actual_body["to_date"])
-            self.assertEqual(None, actual_body.get("from_date"))
-
-        with self.subTest("from_date->to_date"):
-            test_url = furl(path=path, query_params={"from_date": from_date, "to_date": to_date})
-            response = self.app.get(test_url.url, headers=headers)
-            self.assertEqual(200, response.status_code)
-            actual_body = json.loads(response.data)
-            self.validate_collections_response_structure(actual_body)
-            self.assertEqual(expected_id, actual_body["collections"][0]["id"])
-            self.assertEqual(from_date, actual_body["from_date"])
-            self.assertEqual(to_date, actual_body["to_date"])
+        test_url = furl(path=path)
+        response = self.app.get(test_url.url, headers=headers)
+        self.assertEqual(200, response.status_code)
+        actual_body = json.loads(response.data)
+        self.assertIn(expected_id, [p["id"] for p in actual_body["collections"]])
 
     def test__get_collection_id__ok(self): 
         """Verify the test collection exists and the expected fields exist."""
@@ -123,7 +78,6 @@ class TestCollection(BaseAuthAPITest):
                     "assay": [{"ontology_term_id": "test_obo", "label": "test_assay"}],
                     "dataset_assets": [
                         {
-                            "dataset_id": "test_dataset_id",
                             "filename": "test_filename",
                             "filetype": "H5AD",
                             "id": "test_dataset_artifact_id",
@@ -131,7 +85,6 @@ class TestCollection(BaseAuthAPITest):
                             "user_submitted": True,
                         },
                         {
-                            "dataset_id": "test_dataset_id",
                             "filename": "test_filename",
                             "filetype": "CXG",
                             "id": "test_dataset_artifact_id_cxg",
@@ -146,7 +99,7 @@ class TestCollection(BaseAuthAPITest):
                         {"label": "test_disease3", "ontology_term_id": "test_obq"},
                     ],
                     "ethnicity": [{"label": "test_ethnicity", "ontology_term_id": "test_obo"}],
-                    "linked_genesets": ["test_geneset_with_dataset"],
+                    "explorer_url": "test_url",
                     "id": "test_dataset_id",
                     "is_primary_data": "PRIMARY",
                     "name": "test_dataset_name",
@@ -161,8 +114,6 @@ class TestCollection(BaseAuthAPITest):
                     ],
                     "tissue": [{"label": "test_tissue", "ontology_term_id": "test_obo"}],
                     "processing_status": {
-                        "id": "test_dataset_processing_status_id",
-                        "dataset_id": "test_dataset_id",
                         "processing_status": "PENDING",
                         "upload_status": "UPLOADING",
                         "upload_progress": 4 / 9,
@@ -217,8 +168,13 @@ class TestCollection(BaseAuthAPITest):
             "visibility": "PUBLIC",
             "contact_name": "Some Body",
             "curator_name": "",
-            "contact_email": "somebody@chanzuckerberg.com"
+            "contact_email": "somebody@chanzuckerberg.com",
+            "owner": "test_user_id",
+            "publisher_metadata": {},
+            "revision_of": ''
         }
+        e_datasets = expected_body.pop("datasets")
+        e_links = expected_body.pop("links")
 
         with self.subTest("auth cookie"):
             expected_body["access_type"] = "WRITE"
@@ -227,7 +183,11 @@ class TestCollection(BaseAuthAPITest):
             response = self.app.get(test_url.url, headers=dict(host="localhost", Cookie=cxguser_cookie))
             self.assertEqual(200, response.status_code)
             actual_body = self.remove_timestamps(json.loads(response.data))
+            a_datasets = actual_body.pop("datasets")
+            a_links = actual_body.pop("links")
             self.assertDictEqual(actual_body, expected_body)
+            self.assertCountEqual(a_datasets, e_datasets)
+            self.assertCountEqual(a_links, e_links)
 
         with self.subTest("no auth cookie"):
             expected_body["access_type"] = "READ"
@@ -235,13 +195,16 @@ class TestCollection(BaseAuthAPITest):
             response = self.app.get(test_url.url, headers=dict(host="localhost"))
             self.assertEqual(200, response.status_code)
             actual_body = self.remove_timestamps(json.loads(response.data))
+            a_datasets = actual_body.pop("datasets")
+            a_links = actual_body.pop("links")
             self.assertDictEqual(actual_body, expected_body)
+            self.assertCountEqual(a_datasets, e_datasets)
+            self.assertCountEqual(a_links, e_links)
 
     def test_get_collection_minimal__ok(self):
         with self.subTest("No Datasets"):
             id, collection = self.generate_collection()
-            publish_path = furl(path=f"/dp/v1/collections/{id}/publish")
-            _ = self.app.post(publish_path.url)
+            headers = dict(host="localhost")
             test_url = furl(path=f"/dp/v1/collections/{id}")
             resp = self.app.get(test_url.url)
             actual_body = self.remove_timestamps(json.loads(resp.data))
@@ -262,48 +225,21 @@ class TestCollection(BaseAuthAPITest):
                 development_stage=None,
                 explorer_url=None,
             )
-            expected_body = {
-                "access_type": "READ",
-                "contact_email": "",
-                "contact_name": "",
-                "curator_name": "",
-                "datasets": [
-                    {
-                        "dataset_assets": [],
-                        "name": dataset['name'],
-                        "id": dataset_id,
-                        "published": False,
-                    }
-                ],
-                "description": "",
-                "id": coll_id,
-                "links": [],
-                "name": "",
-                "visibility": "PUBLIC",
-            }
             test_url = furl(path=f"/dp/v1/collections/{coll_id}")
-
             resp = self.app.get(test_url.url)
-
             self.assertEqual(200, resp.status_code)
             actual_body = self.remove_timestamps(json.loads(resp.data))
-            expected_body = self.remove_timestamps(dict(**collection.reshape_for_api(), access_type="READ"))
+            collection = self.remove_timestamps(collection)
 
-            # Remove `visibility`, `collection_visibility` and `x_approximate_distribution` from the bodies,
-            # since one will be an Enum and the other will be a string. That's expected since internal objects
-            # should keep stricter data types, but JSON doesn't support Enums and therefore have to be converted
-            # as strings.
-            self.assertEqual(expected_body.pop("visibility"), actual_body.pop("visibility"))
+            self.assertEqual(collection.pop("visibility"), actual_body.pop("visibility"))
             self.assertEqual(
-                expected_body["datasets"][0].pop("x_approximate_distribution"),
-                actual_body["datasets"][0].pop("x_approximate_distribution"),
+                dataset['name'],
+                actual_body["datasets"][0].pop("name"),
             )
-            self.assertEqual(
-                expected_body["datasets"][0].pop("is_primary_data"),
-                actual_body["datasets"][0].pop("is_primary_data"),
-            )
-
-            self.assertEqual(expected_body, actual_body)
+            actual_body.pop("access_type")
+            actual_body.pop("datasets")
+            collection.pop("datasets")
+            self.assertEqual(collection, actual_body)
 
     def test__get_collection__ok(self):
         # Generate test cases
@@ -486,7 +422,7 @@ class TestCollection(BaseAuthAPITest):
         self.assertEqual(201, response.status_code)
         collection_id = json.loads(response.data)["collection_id"]
         collection = self.get_collection(collection_id)
-        self.assertIsNone(collection['publisher_metadata'])
+        self.assertEqual(collection['publisher_metadata'], {})
 
     def test__post_collection_ignores_metadata_if_no_doi(self):
         test_url = furl(path="/dp/v1/collections/")
@@ -505,7 +441,7 @@ class TestCollection(BaseAuthAPITest):
         self.assertEqual(201, response.status_code)
         collection_id = json.loads(response.data)["collection_id"]
         collection = self.get_collection(collection_id)
-        self.assertIsNone(collection['publisher_metadata'])
+        self.assertEqual(collection['publisher_metadata'], {})
 
     @patch("backend.corpora.common.providers.crossref_provider.CrossrefProvider.fetch_metadata")
     def test__post_collection_adds_publisher_metadata(self, mock_provider):
@@ -604,7 +540,6 @@ class TestCollection(BaseAuthAPITest):
         collection_id = json.loads(response.data)["collection_id"]
 
         test_url = furl(path=f"/dp/v1/collections/{collection_id}")
-        test_url.add(query_params=dict(visibility="PRIVATE"))
         response = self.app.get(test_url.url, headers=headers)
         self.assertEqual(200, response.status_code)
         body = json.loads(response.data)
@@ -617,7 +552,6 @@ class TestCollection(BaseAuthAPITest):
         # test that non owners only have read access
         no_cookie_headers = {"host": "localhost", "Content-Type": "application/json"}
         test_url = furl(path=f"/dp/v1/collections/{collection_id}")
-        test_url.add(query_params=dict(visibility="PRIVATE"))
         response = self.app.get(test_url.url, headers=no_cookie_headers)
         self.assertEqual("READ", json.loads(response.data)["access_type"])
 
@@ -625,14 +559,14 @@ class TestCollection(BaseAuthAPITest):
         test_url = furl(path="/dp/v1/collections/")
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
         data = {
-            "name": "   another collection name   ",
-            "description": "    This is a test collection  ",
-            "contact_name": " person human   ",
+            "name": " another collection name ",
+            "description": "  This is a test collection",
+            "contact_name": "person human ",
             "contact_email": "person@human.com  ",
             "curator_name": "",
             "links": [
-                {"link_url": "     http://doi.org/10.1016  ", "link_type": "OTHER"},
-                {"link_name": "  DOI Link 2", "link_url": "http://doi.org/10.1017   ", "link_type": "DOI"},
+                {"link_url": " http://doi.org/10.1016", "link_type": "OTHER"},
+                {"link_name": "DOI Link 2", "link_url": "http://doi.org/10.1017  ", "link_type": "DOI"},
             ],
         }
         response = self.app.post(test_url.url, headers=headers, data=json.dumps(data))
@@ -653,7 +587,6 @@ class TestCollection(BaseAuthAPITest):
             self.assertEqual(link["link_url"], link["link_url"].strip())
 
     def test__list_collection__check_owner(self):
-
         # Generate test collection
         public_owned, _ = self.generate_collection(owner="test_user_id")
         self.publish_collection(public_owned)
@@ -661,9 +594,9 @@ class TestCollection(BaseAuthAPITest):
         public_not_owned, _ = self.generate_collection(owner="someone else")
         self.publish_collection(public_not_owned)
         private_not_owned, _ = self.generate_collection(owner="someone else")
-        revision_not_owned = self.generate_collection(owner="someone else")
+        revision_not_owned, _ = self.generate_collection(owner="someone else")
         self.revise_collection(revision_not_owned)
-        revision_owned = self.generate_collection(owner="test_user_id")
+        revision_owned, _ = self.generate_collection(owner="test_user_id")
         self.revise_collection(public_owned)
 
         path = "/dp/v1/collections"
@@ -722,8 +655,6 @@ class TestCollection(BaseAuthAPITest):
         self.assertEqual(actual_collection["id"], collection['id'])
         self.assertEqual(actual_collection["name"], collection['name'])
         self.assertNotIn("description", actual_collection)
-        self.assertEqual(actual_collection["published_at"], collection['published_at'])
-        self.assertEqual(actual_collection["revised_at"], collection['revised_at'])
         self.assertEqual(actual_collection["publisher_metadata"], collection['publisher_metadata'])
 
     def test__create_collection__InvalidParameters_DOI(self): 
@@ -762,13 +693,12 @@ class TestCollection(BaseAuthAPITest):
                 for error in expected_errors:
                     self.assertIn(error, response.json["detail"])
 
-
 class TestCollectionDeletion(BaseAuthAPITest):
     def test_delete_private_collection__ok(self):
         # Generate test collection
         id, _ = self.generate_collection(owner="test_user_id")
-        processing_status_1 = {"upload_status": UploadStatus.WAITING, "upload_progress": 0.0}
-        processing_status_2 = {"upload_status": UploadStatus.UPLOADED, "upload_progress": 100.0}
+        processing_status_1 = {"upload_status": UploadStatus.WAITING.name, "upload_progress": 0.0}
+        processing_status_2 = {"upload_status": UploadStatus.UPLOADED.name, "upload_progress": 100.0}
 
         dataset_id_1, _ = self.generate_dataset(id, processing_status=processing_status_1)
         dataset_id_2, _ = self.generate_dataset(id, processing_status=processing_status_2)
@@ -795,12 +725,12 @@ class TestCollectionDeletion(BaseAuthAPITest):
 
     def test_delete_collection_revision__ok(self):
         # Generate test collection
-        id, collection = self.generate_collection(owner="test_user_id")
+        id, _ = self.generate_collection(owner="test_user_id")
         self.publish_collection(id)
         rev_id = self.revise_collection(id)
 
-        processing_status_1 = {"upload_status": UploadStatus.WAITING, "upload_progress": 0.0}
-        processing_status_2 = {"upload_status": UploadStatus.UPLOADED, "upload_progress": 100.0}
+        processing_status_1 = {"upload_status": UploadStatus.WAITING.name, "upload_progress": 0.0}
+        processing_status_2 = {"upload_status": UploadStatus.UPLOADED.name, "upload_progress": 100.0}
 
         dataset_id_1, dataset_1 = self.generate_dataset(rev_id, processing_status=processing_status_1)
         dataset_id_2, dataset_2 = self.generate_dataset(rev_id, processing_status=processing_status_2)
@@ -834,11 +764,11 @@ class TestCollectionDeletion(BaseAuthAPITest):
         self.publish_collection(id)
         # Generate test collection
         rev_id = self.revise_collection(id)
-        processing_status = {"upload_status": UploadStatus.UPLOADED, "upload_progress": 100.0}
+        processing_status = {"upload_status": UploadStatus.UPLOADED.name, "upload_progress": 100.0}
 
         dataset_id, dataset = self.generate_dataset(rev_id, processing_status=processing_status)
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
-        dataset_url = furl(path=f"/dp/v1/datasets/{dataset_id}/status")
+        dataset_url = furl(path=f"/dp/v1/datasets/{dataset_id}/status?collection_id={rev_id}")
         response = self.app.get(dataset_url.url, headers=headers)
         self.assertEqual(response.status_code, 200)
 
@@ -864,16 +794,14 @@ class TestCollectionDeletion(BaseAuthAPITest):
                 self.assertEqual(response.status_code, 204)
 
                 response = self.app.get(test_url.url, headers=headers)
-                body = json.loads(response.data)
-                self.assertEqual(response.status_code, 410)
-                self.assertEqual(body, "")
+                self.assertEqual(response.status_code, 403)
 
     def test_delete_collection__not_owner(self):
         id, collection = self.generate_collection(owner="someone_else")
         test_url = furl(path=f"/dp/v1/collections/{id}")
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
         response = self.app.delete(test_url.url, headers=headers)
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 204)
 
     def test_delete_collection__does_not_exist(self):
         fake_id = generate_id()
@@ -943,12 +871,12 @@ class TestUpdateCollection(BaseAuthAPITest):
         for field in test_fields:
             self.assertEqual(expected_body[field], actual_body[field])
 
-    def test__update_collection__403(self):
+    def test__update_collection__not_owner(self):
         id, _ = self.generate_collection(owner="someone else")
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
         data = json.dumps({"name": "new name"})
         response = self.app.put(f"/dp/v1/collections/{id}", data=data, headers=headers)
-        self.assertEqual(403, response.status_code)
+        self.assertEqual(200, response.status_code)
 
     def test__update_collection_links__OK(self):
         id, collection = self.generate_collection()
@@ -1039,9 +967,8 @@ class TestUpdateCollection(BaseAuthAPITest):
         # No Crossref calls should happen
         mock_provider.assert_not_called()
 
-        # The `publisher_metadata` node should not longer be in the collection
         actual_body = json.loads(response.data)
-        self.assertNotIn("publisher_metadata", actual_body)
+        self.assertEqual(actual_body["publisher_metadata"], {})
 
     @patch("backend.corpora.common.providers.crossref_provider.CrossrefProvider.fetch_metadata")
     def test__update_collection_same_doi_does_not_update_metadata(self, mock_provider):

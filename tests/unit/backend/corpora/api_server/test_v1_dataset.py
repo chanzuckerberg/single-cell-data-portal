@@ -208,7 +208,7 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
     def test__cancel_dataset_download__ok(self):
         # Test pre upload
         collection, _ = self.generate_collection()
-        processing_status = {"upload_status": UploadStatus.WAITING, "upload_progress": 0.0}
+        processing_status = {"upload_status": UploadStatus.WAITING.name, "upload_progress": 0.0}
         dataset, _ = self.generate_dataset(collection, processing_status=processing_status)
         test_url = f"/dp/v1/datasets/{dataset}"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
@@ -217,7 +217,7 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         self.assertEqual(response.status_code, 202)
 
         # Test while uploading
-        processing_status = {"upload_status": UploadStatus.UPLOADING, "upload_progress": 10.0}
+        processing_status = {"upload_status": UploadStatus.UPLOADING.name, "upload_progress": 10.0}
         dataset, _ = self.generate_dataset(collection, processing_status=processing_status)
         test_url = f"/dp/v1/datasets/{dataset}"
 
@@ -233,7 +233,7 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
 
     def test__delete_uploaded_dataset__ok(self):
         coll_id, _ = self.generate_collection(self.session, visibility=CollectionVisibility.PRIVATE.name)
-        processing_status = {"upload_status": UploadStatus.UPLOADED, "upload_progress": 0.0}
+        processing_status = {"upload_status": UploadStatus.UPLOADED.name, "upload_progress": 0.0}
         dataset_id, _ = self.generate_dataset(coll_id, processing_status=processing_status)
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
 
@@ -246,7 +246,7 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         self.assertIn(dataset_id, dataset_ids)
 
         # delete dataset
-        test_url = f"/dp/v1/datasets/{dataset_id}"
+        test_url = f"/dp/v1/datasets/{dataset_id}?collection_id={id}"
         response = self.app.delete(test_url, headers=headers)
         self.assertEqual(response.status_code, 202)
 
@@ -262,7 +262,7 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         id, _ = self.generate_collection()
         processing_status = {"upload_status": UploadStatus.UPLOADING, "upload_progress": 10.0}
         dataset_id, _ = self.generate_dataset(id, processing_status=processing_status)
-        test_url = f"/dp/v1/datasets/{dataset_id}"
+        test_url = f"/dp/v1/datasets/{dataset_id}?collection_id={id}"
 
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
         response = self.app.delete(test_url, headers=headers)
@@ -275,7 +275,7 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
 
     def test__get_deleted_dataset_status__returns_403(self):
         collection, _ = self.generate_collection(owner="test_user_id")
-        processing_status = {"upload_status": UploadStatus.UPLOADED, "upload_progress": 0.0}
+        processing_status = {"upload_status": UploadStatus.UPLOADED.name, "upload_progress": 0.0}
         dataset, _ = self.generate_dataset(collection, processing_status=processing_status)
         test_url = f"/dp/v1/datasets/{dataset}/status"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
@@ -297,7 +297,7 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
     def test__delete_public_dataset_returns__405(self):
         collection, _ = self.generate_collection()
         self.publish_collection(collection)
-        processing_status = {"upload_status": UploadStatus.UPLOADED, "upload_progress": 0.0}
+        processing_status = {"upload_status": UploadStatus.UPLOADED.name, "upload_progress": 0.0}
         dataset, _ = self.generate_dataset(collection, processing_status=processing_status)
         test_url = f"/dp/v1/datasets/{dataset}"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
@@ -307,7 +307,7 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
 
     def test__cancel_dataset_download__user_not_collection_owner(self):
         collection, _ = self.generate_collection(owner="someone_else")
-        processing_status = {"upload_status": UploadStatus.WAITING, "upload_progress": 0.0}
+        processing_status = {"upload_status": UploadStatus.WAITING.name, "upload_progress": 0.0}
         dataset, _ = self.generate_dataset(collection, processing_status=processing_status)
         test_url = f"/dp/v1/datasets/{dataset}"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
@@ -315,7 +315,7 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         self.assertEqual(response.status_code, 403)
 
     def test__cancel_dataset_download__user_not_logged_in(self):
-        processing_status = {"upload_status": UploadStatus.WAITING, "upload_progress": 0.0}
+        processing_status = {"upload_status": UploadStatus.WAITING.name, "upload_progress": 0.0}
         collection, _ = self.generate_collection()
         dataset, _ = self.generate_dataset(collection, processing_status=processing_status)
         test_url = f"/dp/v1/datasets/{dataset}"
@@ -358,7 +358,7 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
             test_uri_1 = "some_uri_1"
             artifact_params_1 = dict(
                 filename="filename_x",
-                filetype=DatasetArtifactFileType.CXG,
+                filetype=DatasetArtifactFileType.CXG.name,
                 user_submitted=True,
                 s3_uri=test_uri_1,
             )
@@ -413,18 +413,18 @@ class TestDatasetCurators(BasicAuthAPITestCurator, CorporaTestCaseUsingMockAWS):
 
     def test__get_status__200_for_non_owned_dataset(self):
         id, _ = self.generate_collection(owner="someone_else")
-        processing_status = {"upload_status": UploadStatus.WAITING, "upload_progress": 0.0}
+        processing_status = {"upload_status": UploadStatus.WAITING.name, "upload_progress": 0.0}
         dataset_id, _ = self.generate_dataset(id, processing_status=processing_status)
-        test_url = f"/dp/v1/datasets/{dataset_id}/status"
+        test_url = f"/dp/v1/datasets/{dataset_id}/status?collection_id={id}"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
         response = self.app.get(test_url, headers=headers)
         self.assertEqual(200, response.status_code)
 
     def test__cancel_dataset_download__202_user_not_collection_owner(self):
         id, _ = self.generate_collection(owner="someone_else")
-        processing_status = {"upload_status": UploadStatus.WAITING, "upload_progress": 0.0}
+        processing_status = {"upload_status": UploadStatus.WAITING.name, "upload_progress": 0.0}
         dataset_id, _ = self.generate_dataset(id, processing_status=processing_status)
-        test_url = f"/dp/v1/datasets/{dataset_id}"
+        test_url = f"/dp/v1/datasets/{dataset_id}?collection_id={id}"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
         response = self.app.delete(test_url, headers=headers)
         self.assertEqual(response.status_code, 202)

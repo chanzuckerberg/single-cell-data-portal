@@ -206,7 +206,7 @@ def create_artifact(
     artifact_bucket: str,
     processing_status_type: str,
 ):
-    update_db(dataset_id, processing_status={"processing_status_tyoe": ConversionStatus.UPLOADING})
+    update_db(dataset_id, processing_status={"processing_status_tyoe": ConversionStatus.UPLOADING.name})
 
     logger.info(f"Uploading [{dataset_id}/{file_name}] to S3 bucket: [{artifact_bucket}].")
     try:
@@ -219,13 +219,13 @@ def create_artifact(
         }
         update_db(
             dataset_id, 
-            processing_status={"processing_status_tyoe": ConversionStatus.UPLOADED},
+            processing_status={"processing_status_tyoe": ConversionStatus.UPLOADED.name},
             asset=asset
         )
 
     except Exception as e:
         logger.error(e)
-        e.args = {processing_status_type: ConversionStatus.FAILED}
+        e.args = {processing_status_type: ConversionStatus.FAILED.name}
         raise e
 
 
@@ -252,7 +252,7 @@ def create_artifacts(
     # upload AnnData
     create_artifact(
         local_filename,
-        DatasetArtifactFileType.H5AD,
+        DatasetArtifactFileType.H5AD.name,
         bucket_prefix,
         dataset_id,
         artifact_bucket,
@@ -271,7 +271,7 @@ def create_artifacts(
         if seurat_filename:
             create_artifact(
                 seurat_filename,
-                DatasetArtifactFileType.RDS,
+                DatasetArtifactFileType.RDS.name,
                 bucket_prefix,
                 dataset_id,
                 artifact_bucket,
@@ -279,7 +279,7 @@ def create_artifacts(
             )
     else:
         curr_status = db.get_dataset(dataset_id)['processing_status']
-        curr_status['rds_status'] = ConversionStatus.SKIPPED
+        curr_status['rds_status'] = ConversionStatus.SKIPPED.name
         db.edit_dataset(dataset_id, "processing_status", curr_status)
         logger.info(f"Skipped Seurat conversion for dataset {dataset_id}")
 
@@ -369,13 +369,13 @@ def wrapped_download_from_s3(dataset_id: str, bucket_name: str, object_key: str,
     :param local_filename:
     :return:
     """
-    update_db(dataset_id, processing_status={"upload_status": UploadStatus.UPLOADING})
+    update_db(dataset_id, processing_status={"upload_status": UploadStatus.UPLOADING.name})
     download_from_s3(
         bucket_name=bucket_name,
         object_key=object_key,
         local_filename=local_filename,
     )
-    update_db(dataset_id, processing_status={"upload_status": UploadStatus.UPLOADED})
+    update_db(dataset_id, processing_status={"upload_status": UploadStatus.UPLOADED.name})
 
 
 def extract_metadata(filename) -> dict:

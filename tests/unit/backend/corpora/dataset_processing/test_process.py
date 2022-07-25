@@ -343,16 +343,16 @@ class TestDatasetProcessing(DataPortalTestCase):
         process.update_db(
             dataset_id,
             processing_status={
-                "upload_status": UploadStatus.UPLOADED,
+                "upload_status": UploadStatus.UPLOADED.name,
                 "upload_progress": 1,
-                "validation_status": ValidationStatus.VALIDATING,
+                "validation_status": ValidationStatus.VALIDATING.name,
             },
         )
         self.session.expire(dataset)
-        self.assertEqual(Dataset.get(self.session, dataset_id).processing_status.upload_status, UploadStatus.UPLOADED)
+        self.assertEqual(Dataset.get(self.session, dataset_id).processing_status.upload_status, UploadStatus.UPLOADED.name)
         self.assertEqual(Dataset.get(self.session, dataset_id).processing_status.upload_progress, 1)
         self.assertEqual(
-            Dataset.get(self.session, dataset_id).processing_status.validation_status, ValidationStatus.VALIDATING
+            Dataset.get(self.session, dataset_id).processing_status.validation_status, ValidationStatus.VALIDATING.name
         )
 
         fake_env.stop()
@@ -589,7 +589,7 @@ class TestDatasetProcessing(DataPortalTestCase):
 
         mock_download_from_s3.assert_called_with(bucket_name=bucket, object_key=key, local_filename=local_file)
         dataset = Dataset.get(self.session, test_dataset_id)
-        self.assertEqual(UploadStatus.UPLOADED, dataset.processing_status.upload_status)
+        self.assertEqual(UploadStatus.UPLOADED.name, dataset.processing_status.upload_status)
 
     @patch("backend.corpora.dataset_processing.process.make_cxg")
     @patch("backend.corpora.dataset_processing.process.download_from_source_uri")

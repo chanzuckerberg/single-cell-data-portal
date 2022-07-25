@@ -6,7 +6,7 @@ from tests.unit.backend.utils import (
     BogusDbCollectionLinkParams,
 )
 
-location = "./test_tiledb/metadata"  # TODO: config this somewhere
+location = "tests/unit/backend/fixtures/test_tiledb/metadata"  # TODO: config this somewhere
 
 class GenerateDataMixin:
     """
@@ -23,7 +23,7 @@ class GenerateDataMixin:
         db = TileDBData(location)
         data = dict(Utils.empty_collection)
         data.update(**BogusCollectionParams.get(**params))
-        id = db.create_collection(**data)
+        id = db.create_collection(data)
         metadata = db.get_collection(id)
         self.addCleanup(self.delete_collection, id)
         return id, metadata
@@ -35,7 +35,7 @@ class GenerateDataMixin:
     def get_doi(self, links) -> str:
         doi = [link for link in links if link['link_type'] == "DOI"]
         if doi:
-            return doi[0].link_url
+            return doi[0]['link_url']
         else:
             return None
 
@@ -58,7 +58,7 @@ class GenerateDataMixin:
         data.update(**BogusDatasetParams.get(**params))
         dataset_id = db.add_dataset(coll_id, data)
         dataset = db.get_dataset(dataset_id)
-        self.addCleanup(self.delete_dataset, dataset_id)
+        self.addCleanup(self.delete_dataset, coll_id, dataset_id)
         return dataset_id, dataset
     
     def get_dataset(self, dataset_id: str):

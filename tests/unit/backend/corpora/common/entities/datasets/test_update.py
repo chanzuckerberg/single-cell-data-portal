@@ -52,19 +52,19 @@ class TestUpdateDataset(TestDataset):
         dataset = Dataset.get(self.session, self.uuid)
         status = {
             DbDatasetProcessingStatus.upload_progress: 0,
-            DbDatasetProcessingStatus.upload_status: UploadStatus.WAITING,
+            DbDatasetProcessingStatus.upload_status: UploadStatus.WAITING.name,
         }
 
         processing_status_updater(self.session, dataset.processing_status.id, status)
 
         dataset = Dataset.get(self.session, self.uuid)
-        self.assertEqual(dataset.processing_status.upload_status, UploadStatus.WAITING)
+        self.assertEqual(dataset.processing_status.upload_status, UploadStatus.WAITING.name)
         update_dataset_processing_status_to_failed(self.uuid)
         self.session.expire_all()
 
         dataset = Dataset.get(self.session, self.uuid)
-        self.assertEqual(dataset.processing_status.processing_status, ProcessingStatus.FAILURE)
-        self.assertEqual(dataset.processing_status.upload_status, UploadStatus.WAITING)
+        self.assertEqual(dataset.processing_status.processing_status, ProcessingStatus.FAILURE.name)
+        self.assertEqual(dataset.processing_status.upload_status, UploadStatus.WAITING.name)
 
     def test__update_processing_status__no_dataset__ok(self):
         update_dataset_processing_status_to_failed("fake_id")

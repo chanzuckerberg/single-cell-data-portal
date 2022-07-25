@@ -19,7 +19,7 @@ from backend.corpora.common.entities.tiledb_data import TileDBData
 def post_dataset_asset(dataset_id: str, asset_id: str):
     # retrieve the dataset
     # TODO: config this somewhere
-    db = TileDBData(location="../../../../tests/unit/backend/fixtures/test_tiledb/metadata")
+    db = TileDBData(location="tests/unit/backend/fixtures/test_tiledb/metadata")
 
     dataset = db.get_dataset(dataset_id)
     if not dataset:
@@ -43,15 +43,21 @@ def post_dataset_asset(dataset_id: str, asset_id: str):
     if not presigned_url:
         raise ServerErrorHTTPException()
 
-    return make_response(
-        jsonify(
+    return dict(
             dataset_id=dataset_id,
-            file_name=asset.filename,
+            file_name=asset['filename'],
             file_size=file_size,
             presigned_url=presigned_url,
-        ),
-        200,
-    )
+        )
+    # return make_response(
+    #     jsonify(
+    #         dataset_id=dataset_id,
+    #         file_name=asset.filename,
+    #         file_size=file_size,
+    #         presigned_url=presigned_url,
+    #     ),
+    #     200,
+    # )
 
 
 @dbconnect

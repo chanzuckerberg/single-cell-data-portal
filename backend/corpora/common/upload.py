@@ -44,9 +44,9 @@ def start_upload_sfn(collection_id, dataset_id, url):
 
 def new_processing_status() -> dict:
     return {
-        "upload_status": UploadStatus.WAITING,
+        "upload_status": UploadStatus.WAITING.name,
         "upload_progress": 0,
-        "processing_status": ProcessingStatus.PENDING,
+        "processing_status": ProcessingStatus.PENDING.name,
     }
 
 

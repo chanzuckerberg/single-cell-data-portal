@@ -175,7 +175,7 @@ class TestTileDbData(unittest.TestCase):
         # Get dataset/collection
         datasets = self.db.get_datasets(id)
         self.assertEqual(len(datasets), 1)
-        self.assertEqual(datasets[0]['id'][0].decode("utf-8"), dataset_id_2)
+        self.assertEqual(datasets[0]['id'][0], dataset_id_2)
 
     def test_collection_history(self):
         # create collection

@@ -221,9 +221,9 @@ class Dataset(Entity):
     @staticmethod
     def new_processing_status() -> dict:
         return {
-            "upload_status": UploadStatus.WAITING,
+            "upload_status": UploadStatus.WAITING.name,
             "upload_progress": 0,
-            "processing_status": ProcessingStatus.PENDING,
+            "processing_status": ProcessingStatus.PENDING.name,
         }
 
     def copy_csv_to_s3(self, csv_file: str) -> str:

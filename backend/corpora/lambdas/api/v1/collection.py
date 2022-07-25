@@ -162,7 +162,7 @@ def normalize_and_get_doi(body: dict, errors: list) -> Optional[str]:
     return doi
 
 
-def get_publisher_metadata(provider, doi):
+def get_publisher_metadata(doi):
     """
     Retrieves publisher metadata from Crossref.
     """
