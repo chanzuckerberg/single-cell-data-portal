@@ -77,7 +77,7 @@ jobs:
           npx playwright install --with-deps
           cp src/configs/dev.js src/configs/configs.js
           npm run dev&
-      - run: npm run e2e
+      - run: DEBUG=pw:api npm run e2e
       - name: Install happy
         uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.2.1
         with:

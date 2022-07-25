@@ -111,7 +111,7 @@ class Auth0ManagementSession:
                 grant_type="http://auth0.com/oauth/grant-type/password-realm",
                 username=user_name,
                 password=password,
-                scope="profile email",
+                scope="profile email write:collections read:collections",
                 client_id=CorporaAuthConfig().curator_api_client_id,
                 client_secret=CorporaAuthConfig().curator_api_client_secret,
                 realm=CorporaAuthConfig().api_key_connection_name,
