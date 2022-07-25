@@ -62,6 +62,8 @@ components:
             type: string
         ncbi_url:
           type: string
+        is_searched_by_name:
+          type: boolean
   
   parameters: 
     Gene:

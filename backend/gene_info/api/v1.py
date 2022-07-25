@@ -23,7 +23,7 @@ def gene_info(gene: string = None, geneID: string = None):
 
     # search for gene UID from ensembl ID
     try:
-        uid = provider.fetch_gene_uid(geneID, gene)
+        (uid, is_searched_by_name) = provider.fetch_gene_uid(geneID, gene)
     except NCBIAPIException:
         raise ForbiddenHTTPException("Failed search of NCBI database, API key issue")
     except NCBIUnexpectedResultException:
@@ -44,6 +44,7 @@ def gene_info(gene: string = None, geneID: string = None):
                 summary=gene_info["summary"],
                 ncbi_url=f"https://www.ncbi.nlm.nih.gov/gene/{uid}",
                 synonyms=gene_info["synonyms"],
+                is_searched_by_name=is_searched_by_name,
             )
         ),
         200,
