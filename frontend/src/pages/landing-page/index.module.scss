@@ -47,6 +47,14 @@
 
 // HERO
 .hero {
+  &Logo {
+    margin-bottom: 20px;
+
+    img {
+      width: 158px;
+    }
+  }
+
   &Container {
     display: flex;
     align-items: center;
@@ -129,7 +137,7 @@
       font-weight: 400;
       line-height: 26px;
       color: #ccc;
-      max-width: 500px;
+      max-width: 515px;
     }
   }
 

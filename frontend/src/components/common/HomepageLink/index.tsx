@@ -5,7 +5,7 @@ import { Logo } from "../Logo";
 
 export const HomepageLink: FC = () => {
   return (
-    <Link href={ROUTES.HOMEPAGE} passHref>
+    <Link href={ROUTES.LANDING} passHref>
       <a href="passHref">
         <Logo />
       </a>
