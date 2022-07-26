@@ -28,7 +28,7 @@ def gen_pipeline_failure_message(failure_info: str) -> dict:
                 "type": "header",
                 "text": {
                     "type": "plain_text",
-                    "text": f"Corpus Asset Pipeline Failed:fire: \n{failure_info}",
+                    "text": f"WMG Corpus Asset Pipeline Failed:fire: \n{failure_info}",
                     "emoji": True,
                 },
             }
@@ -43,7 +43,8 @@ def gen_pipeline_success_message(snapshot_id: str) -> dict:
                 "type": "header",
                 "text": {
                     "type": "plain_text",
-                    "text": f"Corpus Asset Pipeline Succeeded:tada: \nStored under: {snapshot_id}",
+                    "text": f"Corpus Asset Pipeline Succeeded:tada: "
+                    f"\nWMG (prod) snapshot stored in 'cellxgene-wmg-prod' under: {snapshot_id}",
                     "emoji": True,
                 },
             }
