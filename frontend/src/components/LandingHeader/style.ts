@@ -235,8 +235,10 @@ export const HiringLink = styled.a`
   border-radius: 4px;
   color: #fff;
   font-weight: 600;
+  transition: 0.3s;
   &:hover {
     color: #fff;
-    text-decoration: none;
+    text-decoration: none !important;
+    background-color: #0056c6;
   }
 `;
