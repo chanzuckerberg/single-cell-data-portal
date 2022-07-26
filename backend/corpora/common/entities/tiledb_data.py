@@ -96,7 +96,7 @@ class Utils:
     }
 
     empty_dataset = {
-        "x_approximate_distribution": "",
+        "x_approximate_distribution": "PROCESSING",
         "x_normalization": "",
         "assay": [],
         "cell_count": 0,
@@ -105,7 +105,7 @@ class Utils:
         "disease": [],
         "ethnicity": [],
         "dataset_assets": [],
-        "is_primary_data": "",
+        "is_primary_data": "PROCESSING",
         "name": "",
         "organism": [],
         "sex": [],
@@ -159,6 +159,8 @@ class Utils:
                     data[a] = int(data[a])
         if type(data['id']) == np.ndarray and len(data['id']) > 0:
             data['id'] = data['id'][0].decode("utf-8") # TileDB stores the id index as byte string
+        elif len(data['id']) > 0:
+            data['id'] = data['id'].decode("utf-8")
         return data
 
     @staticmethod
@@ -486,7 +488,3 @@ class TileDBData:
         """Mark a collection as deleted by its id"""
         self.edit_collection(id, "visibility", "DELETED")
 
-    def check_collection_access(self, coll_id: str, owner: str) -> bool:
-        coll_owner = self.get_attribute(coll_id, "owner")
-        coll_visibility = self.get_attribute(coll_id, "visibility")
-        return coll_visibility == "PUBLIC" or (coll_owner == owner or owner is None)

@@ -86,7 +86,7 @@ SQLAlchemy==1.4.31
 stack-data==0.2.0
 stdlib-list==0.8.0
 threadpoolctl==3.1.0
-tiledb==0.13.2
+tiledb==0.16.3
 toml==0.10.2
 tomli==2.0.1
 tqdm==4.63.0

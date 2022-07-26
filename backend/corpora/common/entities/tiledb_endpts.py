@@ -7,6 +7,8 @@ from backend.corpora.lambdas.api.v1.dataset import post_dataset_asset
 from backend.corpora.lambdas.api.v1.collection import normalize_and_get_doi, get_publisher_metadata
 from backend.corpora.lambdas.api.v1.authorization import is_user_owner_or_allowed
 
+from backend.corpora.common.utils.http_exceptions import InvalidParametersHTTPException, TooLargeHTTPException, ForbiddenHTTPException, MethodNotAllowedException, NotFoundHTTPException, ServerErrorHTTPException
+
 from backend.corpora.common.entities.tiledb_data import TileDBData
 
 location = "tests/unit/backend/fixtures/test_tiledb/metadata"

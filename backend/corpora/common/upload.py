@@ -71,19 +71,18 @@ def upload(
         raise InvalidFileFormatException(f"{url} must be in the file format(s): {allowed_file_formats}")
 
     # Check if datasets can be added to the collection
-    collection = db.check_collection_access(collection_id)
+    collection = db.get_collection(collection_id)
     if not collection:
         raise NonExistentCollectionException(f"Collection {collection_id} does not exist")
 
     # Check if a dataset already exists
+    dataset = None
     if dataset_id:
         dataset = db.get_dataset(dataset_id)
         if not dataset:
             raise NonExistentDatasetException(f"Dataset {dataset_id} does not exist")
     # elif curator_tag: # TODO: Curator API support
     #     dataset = Dataset.get_dataset_from_curator_tag(db_session, collection_id, curator_tag)
-    else:
-        dataset = None
 
     if dataset:
         # Update dataset
@@ -96,7 +95,6 @@ def upload(
             )
         else:
             db.bulk_edit_dataset(dataset_id, Utils.empty_dataset)
-
     else:
         # Add new dataset
         dataset_id = db.add_dataset(collection_id, Utils.empty_dataset)

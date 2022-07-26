@@ -1,13 +1,13 @@
 # This is a service managed by ECS attached to the environment's load balancer
 #
 
-data "aws_region" "current" {}
+data aws_region current {}
 
-resource "aws_ecs_service" "service" {
+resource aws_ecs_service service {
   cluster         = var.cluster
   desired_count   = var.desired_count
   task_definition = aws_ecs_task_definition.task_definition.id
-  launch_type     = var.use_fargate == null ? "EC2" : "FARGATE"
+  launch_type     = "EC2"
   name            = "${var.custom_stack_name}-${var.app_name}"
   load_balancer {
     container_name   = "web"
@@ -23,20 +23,17 @@ resource "aws_ecs_service" "service" {
   wait_for_steady_state = var.wait_for_steady_state
 }
 
-resource "aws_ecs_task_definition" "task_definition" {
-  family                   = "dp-${var.deployment_stage}-${var.custom_stack_name}-${var.app_name}"
-  network_mode             = "awsvpc"
-  task_role_arn            = var.task_role_arn
-  execution_role_arn       = lookup(var.use_fargate, "execution_role_arn", null)
-  requires_compatibilities = ["EC2", "FARGATE"]
-  container_definitions    = <<EOF
+resource aws_ecs_task_definition task_definition {
+  family        = "dp-${var.deployment_stage}-${var.custom_stack_name}-${var.app_name}"
+  network_mode  = "awsvpc"
+  task_role_arn = var.task_role_arn
+  container_definitions = <<EOF
 [
   {
     "name": "web",
     "essential": true,
     "image": "${var.image}",
     "memory": ${var.memory},
-    "cpu": ${var.cpu},
     "environment": [
       {
         "name": "REMOTE_DEV_PREFIX",
@@ -80,8 +77,7 @@ resource "aws_ecs_task_definition" "task_definition" {
       "logDriver": "awslogs",
       "options": {
         "awslogs-group": "${aws_cloudwatch_log_group.cloud_watch_logs_group.id}",
-        "awslogs-region": "${data.aws_region.current.name}",
-        "awslogs-stream-prefix": "web"
+        "awslogs-region": "${data.aws_region.current.name}"
       }
     },
     "command": ${jsonencode((length(var.cmd) == 0) ? null : var.cmd)}
@@ -90,12 +86,12 @@ resource "aws_ecs_task_definition" "task_definition" {
 EOF
 }
 
-resource "aws_cloudwatch_log_group" "cloud_watch_logs_group" {
+resource aws_cloudwatch_log_group cloud_watch_logs_group {
   retention_in_days = 365
   name              = "/dp/${var.deployment_stage}/${var.custom_stack_name}/${var.app_name}"
 }
 
-resource "aws_lb_target_group" "target_group" {
+resource aws_lb_target_group target_group {
   vpc_id               = var.vpc
   port                 = var.service_port
   protocol             = "HTTP"
@@ -112,7 +108,7 @@ resource "aws_lb_target_group" "target_group" {
   }
 }
 
-resource "aws_lb_listener_rule" "listener_rule" {
+resource aws_lb_listener_rule listener_rule {
   listener_arn = var.listener
   priority     = var.priority
   # Dev stacks need to match on hostnames

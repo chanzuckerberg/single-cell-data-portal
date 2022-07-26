@@ -267,14 +267,6 @@ class TestTileDbData(unittest.TestCase):
         datasets = self.db.get_published_datasets()
         self.assertEqual(datasets[0]['id'], d2)
 
-    def test_check_collection_access(self):
-        id = self.create_collection()
-        self.db.edit_collection(id, "visibility", "PRIVATE")
-        self.assertTrue(self.db.check_collection_access(id, "Rohan Agarwal"))
-        self.assertFalse(self.db.check_collection_access(id, "Emanuele Bezzi"))
-        self.db.edit_collection(id, "visibility", "PUBLIC")
-        self.assertTrue(self.db.check_collection_access(id, "Emanuele Bezzi"))
-
 
 if __name__ == "__main__":
     unittest.main()

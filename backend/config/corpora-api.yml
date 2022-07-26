@@ -930,13 +930,13 @@ components:
         calculate statistical properties of the data. This field enables the curator to override this heuristic
         and specify the data distribution explicitly.
       type: string
-      enum: [COUNT, NORMAL]
+      enum: [COUNT, NORMAL, PROCESSING]
     is_primary_data:
       description: >-
         Describes whether cellular observations for this dataset are all canonical (PRIMARY),
         all non-canonical (SECONDARY), or contain a mixture (BOTH).
       type: string
-      enum: [PRIMARY, SECONDARY, BOTH]
+      enum: [PRIMARY, SECONDARY, BOTH, PROCESSING]
     links:
       type: array
       items:

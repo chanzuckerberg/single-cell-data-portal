@@ -1,4 +1,4 @@
-module "stack" {
+module stack {
   source                       = "./modules/ecs-stack"
   aws_account_id               = var.aws_account_id
   aws_role                     = var.aws_role
@@ -14,7 +14,7 @@ module "stack" {
   batch_container_memory_limit = 28000
   backend_instance_count       = 1
   frontend_instance_count      = 1
-  launch_type                  = "FARGATE"
+  backend_memory               = 1536
 
-  wait_for_steady_state = var.wait_for_steady_state
+  wait_for_steady_state        = var.wait_for_steady_state
 }

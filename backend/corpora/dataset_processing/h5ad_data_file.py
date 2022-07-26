@@ -16,7 +16,7 @@ from backend.corpora.common.utils.cxg_generation_utils import (
     convert_ndarray_to_cxg_dense_array,
     convert_matrix_to_cxg_array,
 )
-from backend.corpora.common.utils.http_exceptions import ColorFormatException
+from backend.corpora.common.utils.color_conversion_utils import ColorFormatException
 from backend.corpora.common.utils.matrix_utils import is_matrix_sparse
 from backend.corpora.common.utils.semvar_utils import validate_version_str
 

@@ -1,12 +1,12 @@
 # This deploys a Data Portal stack.
-#
+# 
 
-data "aws_secretsmanager_secret_version" "config" {
+data aws_secretsmanager_secret_version config {
   secret_id = var.happy_config_secret
 }
 
 locals {
-  secret  = jsondecode(data.aws_secretsmanager_secret_version.config.secret_string)
+  secret = jsondecode(data.aws_secretsmanager_secret_version.config.secret_string)
   alb_key = var.require_okta ? "private_albs" : "public_albs"
 
   custom_stack_name            = var.stack_name
@@ -17,14 +17,12 @@ locals {
   wait_for_steady_state        = var.wait_for_steady_state
   batch_container_memory_limit = var.batch_container_memory_limit
 
-
   migration_cmd                = ["make", "-C", "/single-cell-data-portal/backend", "db/init_remote_dev"]
   deletion_cmd                 = ["make", "-C", "/single-cell-data-portal/backend", "db/delete_remote_dev"]
   frontend_cmd                 = []
-
   # TODO: Assess whether this is safe for Portal API as well. Trying 1 worker in rdev portal backend containers, to minimize use of memory by TileDB (allocates multi-GB per process)
-  backend_cmd    = ["gunicorn", "--worker-class", "gevent", "--workers", "1", "--bind", "0.0.0.0:5000", "backend.corpora.api_server.app:app", "--max-requests", "10000", "--timeout", "180", "--keep-alive", "5", "--log-level", "info"]
-  data_load_path = "s3://${local.secret["s3_buckets"]["env"]["name"]}/database/dev_data.sql"
+  backend_cmd                  = ["gunicorn", "--worker-class", "gevent", "--workers", "1", "--bind", "0.0.0.0:5000", "backend.corpora.api_server.app:app", "--max-requests", "10000", "--timeout", "180", "--keep-alive", "5", "--log-level", "info"]
+  data_load_path               = "s3://${local.secret["s3_buckets"]["env"]["name"]}/database/dev_data.sql"
 
   vpc_id                          = local.secret["vpc_id"]
   subnets                         = local.secret["private_subnets"]
@@ -43,27 +41,27 @@ locals {
   external_dns                    = local.secret["external_zone_name"]
   internal_dns                    = local.secret["internal_zone_name"]
 
-  frontend_listener_arn = try(local.secret[local.alb_key]["frontend"]["listener_arn"], "")
-  backend_listener_arn  = try(local.secret[local.alb_key]["backend"]["listener_arn"], "")
-  frontend_alb_zone     = try(local.secret[local.alb_key]["frontend"]["zone_id"], "")
-  backend_alb_zone      = try(local.secret[local.alb_key]["backend"]["zone_id"], "")
-  frontend_alb_dns      = try(local.secret[local.alb_key]["frontend"]["dns_name"], "")
-  backend_alb_dns       = try(local.secret[local.alb_key]["backend"]["dns_name"], "")
+  frontend_listener_arn        = try(local.secret[local.alb_key]["frontend"]["listener_arn"], "")
+  backend_listener_arn         = try(local.secret[local.alb_key]["backend"]["listener_arn"], "")
+  frontend_alb_zone            = try(local.secret[local.alb_key]["frontend"]["zone_id"], "")
+  backend_alb_zone             = try(local.secret[local.alb_key]["backend"]["zone_id"], "")
+  frontend_alb_dns             = try(local.secret[local.alb_key]["frontend"]["dns_name"], "")
+  backend_alb_dns              = try(local.secret[local.alb_key]["backend"]["dns_name"], "")
 
   artifact_bucket            = try(local.secret["s3_buckets"]["artifact"]["name"], "")
   cellxgene_bucket           = try(local.secret["s3_buckets"]["cellxgene"]["name"], "")
   dataset_submissions_bucket = try(local.secret["s3_buckets"]["dataset_submissions"]["name"], "")
   wmg_bucket                 = try(local.secret["s3_buckets"]["wmg"]["name"], "")
 
-  ecs_role_arn          = local.secret["service_roles"]["ecs_role"]
-  sfn_role_arn          = local.secret["service_roles"]["sfn_upload"]
-  lambda_execution_role = local.secret["service_roles"]["lambda_errorhandler"]
+  ecs_role_arn                 = local.secret["service_roles"]["ecs_role"]
+  sfn_role_arn                 = local.secret["service_roles"]["sfn_upload"]
+  lambda_execution_role        = local.secret["service_roles"]["lambda_errorhandler"]
 
   frontend_url = try(join("", ["https://", module.frontend_dns[0].dns_prefix, ".", local.external_dns]), var.frontend_url)
   backend_url  = try(join("", ["https://", module.backend_dns[0].dns_prefix, ".", local.external_dns]), var.backend_url)
 }
 
-module "frontend_dns" {
+module frontend_dns {
   count                 = var.require_okta ? 1 : 0
   source                = "../dns"
   custom_stack_name     = local.custom_stack_name
@@ -73,7 +71,7 @@ module "frontend_dns" {
   zone                  = local.internal_dns
 }
 
-module "backend_dns" {
+module backend_dns {
   count                 = var.require_okta ? 1 : 0
   source                = "../dns"
   custom_stack_name     = local.custom_stack_name
@@ -83,7 +81,7 @@ module "backend_dns" {
   zone                  = local.internal_dns
 }
 
-module "frontend_service" {
+module frontend_service {
   source                     = "../service"
   custom_stack_name          = local.custom_stack_name
   app_name                   = "frontend"
@@ -105,12 +103,11 @@ module "frontend_service" {
   frontend_url               = local.frontend_url
   remote_dev_prefix          = local.remote_dev_prefix
   dataset_submissions_bucket = local.dataset_submissions_bucket
-  use_fargate                = var.use_fargate
 
   wait_for_steady_state = local.wait_for_steady_state
 }
 
-module "backend_service" {
+module backend_service {
   source                     = "../service"
   custom_stack_name          = local.custom_stack_name
   app_name                   = "backend"
@@ -133,12 +130,11 @@ module "backend_service" {
   frontend_url               = local.frontend_url
   remote_dev_prefix          = local.remote_dev_prefix
   dataset_submissions_bucket = local.dataset_submissions_bucket
-  use_fargate                = var.use_fargate
 
   wait_for_steady_state = local.wait_for_steady_state
 }
 
-module "migrate_db" {
+module migrate_db {
   source            = "../migration"
   image             = "${local.backend_image_repo}:${local.image_tag}"
   task_role_arn     = local.ecs_role_arn
@@ -149,7 +145,7 @@ module "migrate_db" {
   data_load_path    = local.data_load_path
 }
 
-module "delete_db" {
+module delete_db {
   count             = var.delete_protected ? 0 : 1
   source            = "../deletion"
   image             = "${local.backend_image_repo}:${local.image_tag}"
@@ -160,62 +156,62 @@ module "delete_db" {
   deployment_stage  = local.deployment_stage
 }
 
-module "upload_batch" {
-  source                       = "../batch"
-  image                        = "${local.upload_image_repo}:${local.image_tag}"
-  batch_role_arn               = local.batch_role_arn
-  cmd                          = ""
-  custom_stack_name            = local.custom_stack_name
-  remote_dev_prefix            = local.remote_dev_prefix
-  deployment_stage             = local.deployment_stage
-  artifact_bucket              = local.artifact_bucket
-  cellxgene_bucket             = local.cellxgene_bucket
-  frontend_url                 = local.frontend_url
+module upload_batch {
+  source            = "../batch"
+  image             = "${local.upload_image_repo}:${local.image_tag}"
+  batch_role_arn    = local.batch_role_arn
+  cmd               = ""
+  custom_stack_name = local.custom_stack_name
+  remote_dev_prefix = local.remote_dev_prefix
+  deployment_stage  = local.deployment_stage
+  artifact_bucket   = local.artifact_bucket
+  cellxgene_bucket  = local.cellxgene_bucket
+  frontend_url      = local.frontend_url
   batch_container_memory_limit = local.batch_container_memory_limit
 }
 
-module "wmg_batch" {
-  source                       = "../wmg-batch"
-  image                        = "${local.wmg_upload_image_repo}:${local.image_tag}"
-  batch_role_arn               = local.batch_role_arn
-  cmd                          = ""
-  custom_stack_name            = local.custom_stack_name
-  remote_dev_prefix            = local.remote_dev_prefix
-  deployment_stage             = local.deployment_stage
-  artifact_bucket              = local.artifact_bucket
-  wmg_bucket                   = local.wmg_bucket
-  batch_container_memory_limit = var.batch_container_memory_limit
+module wmg_batch {
+  source                        = "../wmg-batch"
+  image                         = "${local.wmg_upload_image_repo}:${local.image_tag}"
+  batch_role_arn                = local.batch_role_arn
+  cmd                           = ""
+  custom_stack_name             = local.custom_stack_name
+  remote_dev_prefix             = local.remote_dev_prefix
+  deployment_stage              = local.deployment_stage
+  artifact_bucket               = local.artifact_bucket
+  wmg_bucket                    = local.wmg_bucket
+  batch_container_memory_limit  = var.batch_container_memory_limit
 }
 
-module "upload_success_lambda" {
-  source                = "../lambda"
-  image                 = "${local.lambda_upload_success_repo}:${local.image_tag}"
-  name                  = "upload-success"
-  custom_stack_name     = local.custom_stack_name
-  remote_dev_prefix     = local.remote_dev_prefix
-  deployment_stage      = local.deployment_stage
-  artifact_bucket       = local.artifact_bucket
-  cellxgene_bucket      = local.cellxgene_bucket
-  lambda_execution_role = local.lambda_execution_role
-  subnets               = local.subnets
-  security_groups       = local.security_groups
+module upload_success_lambda {
+  source                     = "../lambda"
+  image                      = "${local.lambda_upload_success_repo}:${local.image_tag}"
+  name                       = "upload-success"
+  custom_stack_name          = local.custom_stack_name
+  remote_dev_prefix          = local.remote_dev_prefix
+  deployment_stage           = local.deployment_stage
+  artifact_bucket            = local.artifact_bucket
+  cellxgene_bucket           = local.cellxgene_bucket
+  lambda_execution_role      = local.lambda_execution_role
+  subnets                    = local.subnets
+  security_groups            = local.security_groups
 }
 
-module "upload_error_lambda" {
-  source                = "../lambda"
-  image                 = "${local.lambda_upload_repo}:${local.image_tag}"
-  name                  = "uploadfailures"
-  custom_stack_name     = local.custom_stack_name
-  remote_dev_prefix     = local.remote_dev_prefix
-  deployment_stage      = local.deployment_stage
-  artifact_bucket       = local.artifact_bucket
-  cellxgene_bucket      = local.cellxgene_bucket
-  lambda_execution_role = local.lambda_execution_role
-  subnets               = local.subnets
-  security_groups       = local.security_groups
+module upload_error_lambda {
+  source                     = "../lambda"
+  image                      = "${local.lambda_upload_repo}:${local.image_tag}"
+  name                       = "uploadfailures"
+  custom_stack_name          = local.custom_stack_name
+  remote_dev_prefix          = local.remote_dev_prefix
+  deployment_stage           = local.deployment_stage
+  artifact_bucket            = local.artifact_bucket
+  cellxgene_bucket           = local.cellxgene_bucket
+  lambda_execution_role      = local.lambda_execution_role
+  subnets                    = local.subnets
+  security_groups            = local.security_groups
 }
 
-module "upload_sfn" {
+module upload_sfn {
   source                 = "../sfn"
   job_definition_arn     = module.upload_batch.batch_job_definition_no_revision
   job_queue_arn          = local.job_queue_arn
@@ -226,19 +222,19 @@ module "upload_sfn" {
   deployment_stage       = local.deployment_stage
 }
 
-module "dataset_submissions_lambda" {
-  source                = "../lambda"
-  image                 = "${local.lambda_dataset_submissions_repo}:${local.image_tag}"
-  name                  = "dataset-submissions"
-  custom_stack_name     = local.custom_stack_name
-  remote_dev_prefix     = local.remote_dev_prefix
-  deployment_stage      = local.deployment_stage
-  artifact_bucket       = local.artifact_bucket
-  cellxgene_bucket      = local.cellxgene_bucket
-  lambda_execution_role = aws_iam_role.dataset_submissions_lambda_service_role.arn
-  step_function_arn     = module.upload_sfn.step_function_arn
-  subnets               = local.subnets
-  security_groups       = local.security_groups
+module dataset_submissions_lambda {
+  source                     = "../lambda"
+  image                      = "${local.lambda_dataset_submissions_repo}:${local.image_tag}"
+  name                       = "dataset-submissions"
+  custom_stack_name          = local.custom_stack_name
+  remote_dev_prefix          = local.remote_dev_prefix
+  deployment_stage           = local.deployment_stage
+  artifact_bucket            = local.artifact_bucket
+  cellxgene_bucket           = local.cellxgene_bucket
+  lambda_execution_role      = aws_iam_role.dataset_submissions_lambda_service_role.arn
+  step_function_arn          = module.upload_sfn.step_function_arn
+  subnets                    = local.subnets
+  security_groups            = local.security_groups
 }
 
 resource "aws_iam_role" "dataset_submissions_lambda_service_role" {
@@ -270,7 +266,7 @@ data "aws_iam_policy_document" "lambda_step_function_execution_policy" {
     ]
   }
   statement {
-    sid    = "cw"
+    sid      = "cw"
     effect = "Allow"
     actions = [
       "logs:CreateLogGroup",
@@ -306,8 +302,8 @@ data "aws_iam_policy_document" "lambda_step_function_execution_policy" {
     ]
   }
   statement {
-    sid    = "s3"
-    effect = "Allow"
+    sid     = "s3"
+    effect  = "Allow"
     actions = [
       "s3:ListBucket",
       "s3:DeleteObject"
@@ -322,7 +318,7 @@ data "aws_iam_policy_document" "lambda_step_function_execution_policy" {
 }
 
 resource "aws_iam_policy" "lambda_step_function_execution_policy" {
-  name   = "lambda-step-function-execution-policy-${local.custom_stack_name}"
+  name = "lambda-step-function-execution-policy-${local.custom_stack_name}"
   policy = data.aws_iam_policy_document.lambda_step_function_execution_policy.json
 }
 
@@ -344,7 +340,7 @@ resource "aws_s3_bucket_notification" "on_dataset_submissions_object_created" {
 
   lambda_function {
     lambda_function_arn = module.dataset_submissions_lambda.arn
-    events              = ["s3:ObjectCreated:*"]
+    events = ["s3:ObjectCreated:*"]
   }
 
   depends_on = [aws_lambda_permission.allow_dataset_submissions_lambda_execution]
