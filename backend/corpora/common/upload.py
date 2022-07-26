@@ -60,8 +60,7 @@ def upload(
     dataset_id: str = None,
     curator_tag: str = None,
 ) -> str:
-    # TODO: config this somewhere
-    db = TileDBData(location="../../../../tests/unit/backend/fixtures/test_tiledb/metadata")
+    db = TileDBData()
 
     max_file_size_gb = CorporaConfig().upload_max_file_size_gb * GB
     if file_size is not None and file_size > max_file_size_gb:

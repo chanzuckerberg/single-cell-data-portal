@@ -35,6 +35,9 @@ s3://single-cell-corpus/
 
 
 class Utils:
+    # TODO: config this somewhere, this is for testing only
+    location = "tests/unit/backend/fixtures/test_tiledb/metadata"
+
     attrs = {
         "collections": [
             # API
@@ -168,7 +171,7 @@ class Utils:
 
 class TileDBData:
     @staticmethod
-    def init_db(location):
+    def init_db(location=Utils.location):
         """Create a local TileDB group and arrays according to our schema."""
         # create group
         if os.path.exists(location):
@@ -229,7 +232,7 @@ class TileDBData:
         if os.path.exists(location):
             shutil.rmtree(location)
 
-    def __init__(self, location):
+    def __init__(self, location=Utils.location):
         self.location = location
 
     def create_collection(self, metadata: dict = {}):
@@ -275,7 +278,7 @@ class TileDBData:
             for i in range(len(res)):
                 res[i] = Utils.parse_stored_data(res[i], "collections")
             return res
-            
+
     def get_published_datasets(self):
         """Get all datasets belonging to a public collection"""
         colls = self.get_published_collections()

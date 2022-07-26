@@ -244,8 +244,7 @@ def create_artifacts(
     artifact_bucket: str,
     can_convert_to_seurat: bool = False,
 ):
-    # TODO: config this somewhere
-    db = TileDBData(location="../../../../tests/unit/backend/fixtures/test_tiledb/metadata")
+    db = TileDBData()
 
     bucket_prefix = get_bucket_prefix(dataset_id)
     logger.info(f"Creating artifacts for dataset {dataset_id}...")
@@ -295,8 +294,7 @@ def create_artifacts(
 
 
 def update_db(dataset_id, metadata: dict = None, processing_status: dict = None, asset: dict = None):
-    # TODO: config this somewhere
-    db = TileDBData(location="../../../../tests/unit/backend/fixtures/test_tiledb/metadata")
+    db = TileDBData()
 
     if metadata:
         logger.debug("Updating metadata.")

@@ -18,8 +18,7 @@ from backend.corpora.common.entities.tiledb_data import TileDBData
 
 def post_dataset_asset(dataset_id: str, asset_id: str):
     # retrieve the dataset
-    # TODO: config this somewhere
-    db = TileDBData(location="tests/unit/backend/fixtures/test_tiledb/metadata")
+    db = TileDBData()
 
     dataset = db.get_dataset(dataset_id)
     if not dataset:

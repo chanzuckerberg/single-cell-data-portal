@@ -632,7 +632,7 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
-  /v1/datasets/{dataset_id}/status:
+  /v1/datasets/{collection_id}/status/{dataset_id}:
     get:
       tags:
         - datasets

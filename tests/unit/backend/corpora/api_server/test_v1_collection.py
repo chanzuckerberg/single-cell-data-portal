@@ -768,7 +768,7 @@ class TestCollectionDeletion(BaseAuthAPITest):
 
         dataset_id, dataset = self.generate_dataset(rev_id, processing_status=processing_status)
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_auth_token(self.app)}
-        dataset_url = furl(path=f"/dp/v1/datasets/{dataset_id}/status?collection_id={rev_id}")
+        dataset_url = furl(path=f"/dp/v1/datasets/{rev_id}/status/{dataset_id}")
         response = self.app.get(dataset_url.url, headers=headers)
         self.assertEqual(response.status_code, 200)
 

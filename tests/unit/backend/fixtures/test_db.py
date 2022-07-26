@@ -29,8 +29,7 @@ class TestDatabaseManager:
 class TestDatabase:
     def __init__(self, real_data=False):
         self.real_data = real_data
-        location = "tests/unit/backend/fixtures/test_tiledb/metadata" # TODO: config this somewhere
-        self.db = TileDBData(location)
+        self.db = TileDBData()
 
     def create_db(self):
         create_db()

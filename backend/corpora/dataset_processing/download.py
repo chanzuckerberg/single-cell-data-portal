@@ -105,8 +105,7 @@ def updater(dataset_id, processing_status, tracker: ProgressTracker, frequency: 
     :param frequency: The frequency in which the database is updated in seconds
     :return:
     """
-    # TODO: config this somewhere
-    db = TileDBData(location="../../../../tests/unit/backend/fixtures/test_tiledb/metadata")
+    db = TileDBData()
 
     def _update():
         progress = tracker.progress()
@@ -164,8 +163,7 @@ def download(
 
     :return: The current dataset processing status.
     """
-    # TODO: config this somewhere
-    db = TileDBData(location="../../../../tests/unit/backend/fixtures/test_tiledb/metadata")
+    db = TileDBData()
 
     logger.info("Setting up download.")
     logger.info(f"file_size: {file_size}")
