@@ -12,3 +12,4 @@ psutil>=5.9.0
 python-json-logger
 numpy==1.21.2  # required for where's my gene
 pandas==1.4.3 # required for where's my gene
+pyarrow>=1.0 # required for where's my gene
