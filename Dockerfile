@@ -1,4 +1,4 @@
-FROM ubuntu:21.10
+FROM ubuntu:22.04
 
 ENV APP_NAME=corpora-api
 ENV DEPLOYMENT_STAGE=test
