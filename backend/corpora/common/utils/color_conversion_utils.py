@@ -1,7 +1,5 @@
 import re
 
-from backend.corpora.common.utils.http_exceptions import ColorFormatException
-
 HEX_COLOR_FORMAT = re.compile("^#[a-fA-F0-9]{6,6}$")
 
 # https://www.w3.org/TR/css-color-4/#named-colors
@@ -156,6 +154,12 @@ CSS4_NAMED_COLORS = dict(
     yellowgreen="#9acd32",
 )
 
+class ColorFormatException(Exception):
+    def __init__(
+        self, message: str = "Color conversion helper function encountered an unknown color format."
+    ) -> None:
+        super().__init__(message)
+
 
 def convert_color_to_hex_format(unknown):
     """
@@ -178,14 +182,14 @@ def convert_color_to_hex_format(unknown):
             elif all(0 <= ele <= 255 and isinstance(ele, int) for ele in unknown):
                 tup = tuple(unknown)
             else:
-                raise ColorFormatException(detail="Unknown color iterable format!")
+                raise ColorFormatException("Unknown color iterable format!")
             return "#%02x%02x%02x" % tup
         elif isinstance(unknown, str) and unknown.lower() in CSS4_NAMED_COLORS:
             return CSS4_NAMED_COLORS[unknown.lower()]
         elif isinstance(unknown, str) and HEX_COLOR_FORMAT.match(unknown):
             return unknown.lower()
         else:
-            raise ColorFormatException(detail="Unknown color format type!")
+            raise ColorFormatException("Unknown color format type!")
     except Exception as e:
         raise ColorFormatException() from e
 
