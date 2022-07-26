@@ -28,7 +28,7 @@ def gen_pipeline_failure_message(failure_info: str) -> dict:
                 "type": "header",
                 "text": {
                     "type": "plain_text",
-                    "text": f"Corpus Asset Pipeline Failed:fire: \n{failure_info}",
+                    "text": f"WMG Corpus Asset Pipeline Failed:fire: \n{failure_info}",
                     "emoji": True,
                 },
             }
