@@ -3,7 +3,7 @@ import os
 
 import boto3
 from botocore.errorfactory import ClientError
-
+import logging
 
 class AwsSecret:
     AWS_SECRETS_MGR_SETTLE_TIME_SEC = 2
@@ -49,6 +49,7 @@ class AwsSecret:
 
     @property
     def arn(self):
+        logging.error(self.secret_metadata)
         return self.secret_metadata["ARN"]
 
     def update(self, value):
