@@ -11,9 +11,9 @@ furl
 jsonschema
 moto==3.1.3
 #numba==0.56.0
-#numpy==1.21.5
+# numpy==1.21.2  # required for where's my gene
 owlready2
-#pandas==1.4.3
+# pandas==1.4.3 # required for where's my gene
 #pyarrow>=1.0
 PyMySQL==0.9.3
 pytest
@@ -22,7 +22,7 @@ s3fs==0.4.2
 scanpy
 #scipy==1.7.3
 tenacity
-#tiledb==0.13.2  # Portal's tiledb version should always be the same or older than Explorer's
+tiledb==0.13.2  # Portal's tiledb version should always be the same or older than Explorer's
 rsa>=4.7 # not directly required, pinned by Snyk to avoid a vulnerability
 parameterized
 python-json-logger
