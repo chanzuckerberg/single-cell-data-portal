@@ -180,7 +180,7 @@ interface QueryResponse {
 
 async function fetchQuery({
   query,
-  signal,
+  signal,//
 }: {
   query: Query | null;
   signal?: AbortSignal;
