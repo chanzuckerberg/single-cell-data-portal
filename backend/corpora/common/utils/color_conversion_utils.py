@@ -154,10 +154,9 @@ CSS4_NAMED_COLORS = dict(
     yellowgreen="#9acd32",
 )
 
+
 class ColorFormatException(Exception):
-    def __init__(
-        self, message: str = "Color conversion helper function encountered an unknown color format."
-    ) -> None:
+    def __init__(self, message: str = "Color conversion helper function encountered an unknown color format.") -> None:
         super().__init__(message)
 
 

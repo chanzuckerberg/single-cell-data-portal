@@ -1,6 +1,7 @@
 import requests
 from connexion.exceptions import ProblemException
 
+
 class ServerErrorHTTPException(ProblemException):
     def __init__(
         self, detail: str = "An internal server error has occurred. Please try again later.", *args, **kwargs
