@@ -66,7 +66,7 @@ class NCBIProvider(object):
             try:
                 search_response = self._search_gene_uid(gene)
                 if self._is_valid_search_result(search_response):
-                    return (int(search_response["esearchresult"]["idlist"][0]), True)
+                    return (int(search_response["esearchresult"]["idlist"][0]), False)
                 else:
                     logging.error(f"Unexpected NCBI search result, got {search_response}")
                     raise NCBIUnexpectedResultException
@@ -76,10 +76,12 @@ class NCBIProvider(object):
             logging.error(f"Unexpected NCBI search result, got {search_response}")
             raise NCBIUnexpectedResultException
         else:
-            return (int(search_response["esearchresult"]["idlist"][0]), False)
+            return (int(search_response["esearchresult"]["idlist"][0]), True)
 
     def _search_gene_uid(self, term):
-        """Conducts an Esearch using NCBI's E-Utilities API with provided term"""
+        """
+        Conducts an Esearch using NCBI's E-Utilities API with provided term
+        """
         search_url = f"{self.base_ncbi_uri}esearch.fcgi?db=gene&term={term}{self.api_key}&retmode=json"
         try:
             search_response = urllib.request.urlopen(search_url).read()
@@ -88,22 +90,21 @@ class NCBIProvider(object):
         return json.loads(search_response)
 
     def _is_valid_search_result(self, search_result):
-        """Checks that a search result contains only one UID as a result"""
-        if (
-            "esearchresult" in search_result
-            and "idlist" in search_result["esearchresult"]
-            and len(search_result["esearchresult"]["idlist"]) == 1
-        ):
-            try:
-                int(search_result["esearchresult"]["idlist"][0])
-                return True
-            except Exception:
+        """
+        Checks that a search result contains only one UID as a result
+        """
+        try:
+            int(search_result["esearchresult"]["idlist"][0])
+            if len(search_result["esearchresult"]["idlist"]) != 1:
                 return False
-        else:
+        except (ValueError, KeyError, IndexError):
             return False
+        return True
 
     def parse_gene_info_tree(self, tree_response):
-        """parse NCBI XML response into relevant values to return by gene_info API"""
+        """
+        Parse NCBI XML response into relevant values to return by gene_info API
+        """
         result_tree = ET.ElementTree(ET.fromstring(tree_response))
         root = result_tree.getroot()
         synonyms = []
