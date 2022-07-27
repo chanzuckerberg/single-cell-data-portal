@@ -110,13 +110,13 @@ const LandingHeader: FC = () => {
             <Right>
               {/* CHANGE TO "/" ON PROD */}
               {pathname === "/landing-page" && (
-                <a
+                <HiringLink
                   href="https://chanzuckerberg.com/careers/career-opportunities/?team=data,design,engineering,product,technical-program-management&initiative=science&gh_src=20d9f28d1us"
                   target="_blank"
                   rel="noopener"
                 >
-                  <HiringLink>We&apos;re Hiring!</HiringLink>
-                </a>
+                  We&apos;re Hiring!
+                </HiringLink>
               )}
               {isMyCollectionsShown && (
                 <LinkWrapper>
