@@ -2,6 +2,9 @@ import json
 import os
 import time
 from urllib.parse import urlparse
+
+from werkzeug.exceptions import InternalServerError
+
 from backend.gene_info.api.ensembl_ids import GeneChecker
 
 import connexion
@@ -162,6 +165,12 @@ def handle_corpora_error(exception):
             exception.ext,
         )
     )
+
+
+@app.errorhandler(InternalServerError)
+def handle_internal_server_error(exception):
+    app.logger.exception("InternalServerError", exc_info=exception.original_exception)
+    return exception
 
 
 if __name__ == "__main__":
