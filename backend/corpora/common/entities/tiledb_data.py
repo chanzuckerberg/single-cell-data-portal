@@ -36,7 +36,13 @@ s3://single-cell-corpus/
 
 class Utils:
     # TODO: config this somewhere, this is for testing only
-    location = "tests/unit/backend/fixtures/test_tiledb/metadata"
+    # location = "tests/unit/backend/fixtures/test_tiledb/metadata"
+
+    # TODO: unhardcode, config somewhere
+    from backend.wmg.config import WmgConfig
+    from backend.wmg.data.tiledb import create_ctx
+    location = "s3://env-rdev-cellxgene/roaga-portal/test_tiledb/metadata"
+    ctx = create_ctx(json.loads(WmgConfig().tiledb_config_overrides))
 
     attrs = {
         "collections": [
@@ -250,20 +256,20 @@ class TileDBData:
                 data[a] = metadata[a]
         data["created_at"] = time.time()
         data["updated_at"] = time.time()
-        with tiledb.open(self.location + "/collections", "w") as A:
+        with tiledb.open(self.location + "/collections", mode="w", ctx=Utils.ctx) as A:
             A[id] = Utils.pack_input_data(data, "collections")
         return id
 
     def get_collection(self, id):
         """Gets a collection by its id"""
-        with tiledb.open(self.location + "/collections", 'r') as A:
+        with tiledb.open(self.location + "/collections", mode='r', ctx=Utils.ctx) as A:
             res = Utils.parse_stored_data(dict(A[id]), "collections")
             n = res['id']
             return res if (type(n) == str and len(n) > 0) or (type(n) == np.ndarray and n.size > 0) else None
 
     def get_published_collections(self):
         """Get all public collections"""
-        with tiledb.open(self.location + "/collections", mode="r") as A:
+        with tiledb.open(self.location + "/collections", mode="r", ctx=Utils.ctx) as A:
             # TODO: try query conditions for efficiency
             df = A.df[:]
             df = df[(df['visibility'] == "PUBLIC")]
@@ -274,7 +280,7 @@ class TileDBData:
 
     def get_all_collections(self):
         """Get all collections"""
-        with tiledb.open(self.location + "/collections", mode="r") as A:
+        with tiledb.open(self.location + "/collections", mode="r", ctx=Utils.ctx) as A:
             df = A.df[:]
             res = df.to_dict("records")
             for i in range(len(res)):
@@ -288,7 +294,7 @@ class TileDBData:
         for coll in colls:
             d = coll['datasets']
             dataset_ids.extend(d if d else [])
-        with tiledb.open(self.location + "/datasets", mode="r") as A:
+        with tiledb.open(self.location + "/datasets", mode="r", ctx=Utils.ctx) as A:
             df = A.df[:]
             df = df[(df['id'].isin(dataset_ids))]
             res = df.to_dict("records")
@@ -305,7 +311,7 @@ class TileDBData:
     def edit_collection(self, id, key, val):
         """Update the data stored in one field of a specific collection"""
         new_data = None
-        with tiledb.open(self.location + "/collections", "r") as A:
+        with tiledb.open(self.location + "/collections", mode="r", ctx=Utils.ctx) as A:
             data = A[id]
             new_data = {}
             for attr in Utils.attrs["collections"]:
@@ -314,7 +320,7 @@ class TileDBData:
             new_data["updated_at"] = time.time()
             new_data = Utils.pack_input_data(new_data, "collections")
 
-        with tiledb.open(self.location + "/collections", "w") as A:
+        with tiledb.open(self.location + "/collections", mode="w", ctx=Utils.ctx) as A:
             A[id] = new_data
 
     def publish_collection(self, id: str):
@@ -338,13 +344,13 @@ class TileDBData:
             if a in metadata and metadata[a]:
                 data[a] = metadata[a]
 
-        with tiledb.open(self.location + "/datasets", "w") as A:
+        with tiledb.open(self.location + "/datasets", mode="w", ctx=Utils.ctx) as A:
             A[id] = Utils.pack_input_data(data, "datasets")
         return id
 
     def get_dataset(self, id: str):
         """Get a dataset by its id"""
-        with tiledb.open(self.location + "/datasets", 'r') as A:
+        with tiledb.open(self.location + "/datasets", mode='r', ctx=Utils.ctx) as A:
             res = Utils.parse_stored_data(dict(A[id]), "datasets")
             n = res['id']
             return res if (type(n) == str and len(n) > 0) or (type(n) == np.ndarray and n.size > 0) else None
@@ -352,7 +358,7 @@ class TileDBData:
     def edit_dataset(self, id, key, val):
         """Update the data in one field of a specific dataset"""
         new_data = None
-        with tiledb.open(self.location + "/datasets", "r") as A:
+        with tiledb.open(self.location + "/datasets", mode="r", ctx=Utils.ctx) as A:
             data = A[id]
             new_data = {}
             for attr in Utils.attrs["datasets"]:
@@ -360,12 +366,12 @@ class TileDBData:
             new_data[key] = val
             new_data = Utils.pack_input_data(new_data, "datasets")
 
-        with tiledb.open(self.location + "/datasets", "w") as A:
+        with tiledb.open(self.location + "/datasets", mode="w", ctx=Utils.ctx) as A:
             A[id] = new_data
 
     def bulk_edit_dataset(self, id: str, metadata: str):
         """Replace all data in a dataset by its id"""
-        with tiledb.open(self.location + "/datasets", "w") as A:
+        with tiledb.open(self.location + "/datasets", mode="w", ctx=Utils.ctx) as A:
             A[id] = Utils.pack_input_data(metadata, "datasets")
 
     def delete_dataset(self, coll_id: str, dataset_id: str):
@@ -381,7 +387,7 @@ class TileDBData:
         """Return all the datasets belonging to a specific collection"""
         ids = self.get_attribute(coll_id, "datasets")
         data = []
-        with tiledb.open(self.location + "/datasets", 'r') as A:
+        with tiledb.open(self.location + "/datasets", mode='r', ctx=Utils.ctx) as A:
             for id in ids:
                 data.append(Utils.parse_stored_data(dict(A[id]), "datasets"))
         return data
@@ -389,25 +395,25 @@ class TileDBData:
     # TODO: maybe we also want the ability to read and revert based on timestamp, not just number of versions
     def read_collection_history(self, id, steps_back):
         """Get a collection by its id some specific number of writes ago"""
-        fragments_info = tiledb.array_fragments(self.location + "/collections")
+        fragments_info = tiledb.array_fragments(self.location + "/collections", ctx=Utils.ctx)
         if steps_back > len(fragments_info):
             raise IndexError("too many steps back in time")
         steps_idx = len(fragments_info) - steps_back - 1
         times = fragments_info.timestamp_range[steps_idx]
 
-        with tiledb.open(self.location + "/collections", 'r', timestamp=times) as A:
+        with tiledb.open(self.location + "/collections", mode='r', timestamp=times, ctx=Utils.ctx) as A:
             return Utils.parse_stored_data(dict(A[id]), "collections")
 
     def revert_collection_history(self, id, steps_back):
         """Revert a collection by its id to the state it was in a specific number of writes ago"""
-        fragments_info = tiledb.array_fragments(self.location + "/collections")
+        fragments_info = tiledb.array_fragments(self.location + "/collections", ctx=Utils.ctx)
         if steps_back > len(fragments_info):
             raise IndexError("too many steps back in time")
         steps_idx = len(fragments_info) - steps_back - 1
         times = fragments_info.timestamp_range[steps_idx]
 
         data = None
-        with tiledb.open(self.location + "/collections", 'r', timestamp=times) as A:
+        with tiledb.open(self.location + "/collections", mode='r', timestamp=times, ctx=Utils.ctx) as A:
             data = A[id]
 
         # overwrite with old data
@@ -416,30 +422,30 @@ class TileDBData:
             new_data[attr] = data[attr][0]
         new_data["updated_at"] = time.time()
         new_data = Utils.pack_input_data(new_data, "collections")
-        with tiledb.open(self.location + "/collections", 'w') as A:
+        with tiledb.open(self.location + "/collections", mode='w', ctx=Utils.ctx) as A:
             A[id] = new_data
 
     def read_dataset_history(self, id, steps_back):
         """Get a dataset by its id some specific number of writes ago"""
-        fragments_info = tiledb.array_fragments(self.location + "/datasets")
+        fragments_info = tiledb.array_fragments(self.location + "/datasets", ctx=Utils.ctx)
         if steps_back > len(fragments_info):
             raise IndexError("too many steps back in time")
         steps_idx = len(fragments_info) - steps_back - 1
         times = fragments_info.timestamp_range[steps_idx]
 
-        with tiledb.open(self.location + "/datasets", 'r', timestamp=times) as A:
+        with tiledb.open(self.location + "/datasets", mode='r', timestamp=times, ctx=Utils.ctx) as A:
             return Utils.parse_stored_data(dict(A[id]), "datasets")
 
     def revert_dataset_history(self, id, steps_back):
         """Revert a dataset by its id to the state it was in a specific number of writes ago"""
-        fragments_info = tiledb.array_fragments(self.location + "/datasets")
+        fragments_info = tiledb.array_fragments(self.location + "/datasets", ctx=Utils.ctx)
         if steps_back > len(fragments_info):
             raise IndexError("too many steps back in time")
         steps_idx = len(fragments_info) - steps_back - 1
         times = fragments_info.timestamp_range[steps_idx]
 
         data = None
-        with tiledb.open(self.location + "/datasets", 'r', timestamp=times) as A:
+        with tiledb.open(self.location + "/datasets", mode='r', timestamp=times, ctx=Utils.ctx) as A:
             data = A[id]
 
         # overwrite with old data
@@ -447,7 +453,7 @@ class TileDBData:
         for a in Utils.attrs['datasets']:
             new_data[a] = data[a][0]
 
-        with tiledb.open(self.location + "/datasets", 'w') as A:
+        with tiledb.open(self.location + "/datasets", mode='w', ctx=Utils.ctx) as A:
             A[id] = new_data
 
     def create_revision(self, coll_id: str):
@@ -463,7 +469,7 @@ class TileDBData:
             data[attr] = coll[attr]
         data['revision_of'] = coll_id
         data["visibility"] = "PRIVATE"
-        with tiledb.open(self.location + "/collections", "w") as A:
+        with tiledb.open(self.location + "/collections", mode="w", ctx=Utils.ctx) as A:
             A[id] = Utils.pack_input_data(data, "collections")
         return id
 
@@ -479,7 +485,7 @@ class TileDBData:
         data['updated_at'] = time.time()
         # write data to existing revision_of collection
         revision_of = revision["revision_of"]
-        with tiledb.open(self.location + "/collections", "w") as A:
+        with tiledb.open(self.location + "/collections", mode="w", ctx=Utils.ctx) as A:
             A[revision_of] = Utils.pack_input_data(data, "collections")
         # delete the revision
         self.delete_collection(id)

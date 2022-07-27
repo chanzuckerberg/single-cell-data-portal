@@ -11,12 +11,10 @@ from backend.corpora.common.utils.http_exceptions import InvalidParametersHTTPEx
 
 from backend.corpora.common.entities.tiledb_data import TileDBData
 
-location = "tests/unit/backend/fixtures/test_tiledb/metadata"
-
 
 def create_collection(body: dict, user: str):
     """/v1/collections POST"""
-    db = TileDBData(location)
+    db = TileDBData()
 
     errors = []
     doi = normalize_and_get_doi(body, errors)
@@ -48,7 +46,7 @@ def create_collection(body: dict, user: str):
 
 def list_collections(token_info: dict = None):
     """/v1/collections GET"""
-    db = TileDBData(location)
+    db = TileDBData()
     colls = db.get_all_collections()
 
     filtered = []
@@ -71,7 +69,7 @@ def list_collections(token_info: dict = None):
 
 def list_published_collections_compact():
     """/v1/collections/index GET"""
-    db = TileDBData(location)
+    db = TileDBData()
     data = db.get_published_collections()
     colls = [{
         'id': x['id'], 'name': x['name'],
@@ -83,7 +81,7 @@ def list_published_collections_compact():
 
 def delete_collection(collection_id: str, token_info: dict):
     """/v1/collections/{id} DELETE"""
-    db = TileDBData(location)
+    db = TileDBData()
     coll = db.get_collection(collection_id)
     if not coll:
         return make_response({"detail": "Collection not found."}, 403)
@@ -98,7 +96,7 @@ def delete_collection(collection_id: str, token_info: dict):
 
 def get_collection(collection_id: str, token_info: dict):
     """/v1/collections/{id} GET"""
-    db = TileDBData(location)
+    db = TileDBData()
     coll = db.get_collection(collection_id)
     if not coll:
         return make_response({"detail": "Collection not found."}, 403)
@@ -113,7 +111,7 @@ def get_collection(collection_id: str, token_info: dict):
 
 def start_revision(collection_id: str, token_info: dict):
     """/v1/collections/{id} POST"""
-    db = TileDBData(location)
+    db = TileDBData()
     coll = db.get_collection(collection_id)
     if not coll:
         return make_response({"detail": "Collection not found."}, 404)
@@ -130,7 +128,7 @@ def start_revision(collection_id: str, token_info: dict):
 
 def update_collection(collection_id: str, body: dict, token_info: dict):
     """/v1/collections/{id} PUT"""
-    db = TileDBData(location)
+    db = TileDBData()
     coll = db.get_collection(collection_id)
     if not coll:
         return make_response({"detail": "Collection not found."}, 404)
@@ -161,7 +159,7 @@ def update_collection(collection_id: str, body: dict, token_info: dict):
 
 def publish_collection(collection_id: str, token_info: dict):
     """/v1/collections/{id}/publish POST"""
-    db = TileDBData(location)
+    db = TileDBData()
     coll = db.get_collection(collection_id)
     if not coll:
         return make_response({"detail": "Collection not found."}, 404)
@@ -198,7 +196,7 @@ def upload_dataset(collection_id: str, body: dict, token_info: dict):
 def replace_dataset(collection_id: str, body: dict, token_info: dict):
     """/v1/collections/{id}/upload-links PUT"""
     try:
-        db = TileDBData(location)
+        db = TileDBData()
         dataset_id = body.get("id")
         dataset_id = upload_from_link(
             collection_id,
@@ -224,7 +222,7 @@ def replace_dataset(collection_id: str, body: dict, token_info: dict):
 
 def list_published_datasets():
     """/v1/datasets/index GET"""
-    db = TileDBData(location)
+    db = TileDBData()
     datasets = db.get_published_datasets()
     return make_response(jsonify(datasets), 200)
 
@@ -237,7 +235,7 @@ def get_dataset_metadata(explorer_url: str):
 
 def delete_dataset(collection_id: str, dataset_id: str, token_info: dict):
     """/v1/datasets/{id} DELETE"""
-    db = TileDBData(location)
+    db = TileDBData()
     coll = db.get_collection(collection_id)
     if not coll:
         return make_response({"detail": "Collection not found."}, 404)
@@ -264,7 +262,7 @@ def request_asset_download(dataset_id: str, asset_id: str):
 
 def list_dataset_assets(dataset_id: str):
     """/v1/datasets/{dataset_id}/assets GET"""
-    db = TileDBData(location)
+    db = TileDBData()
     dataset = db.get_dataset(dataset_id)
     if not dataset:
         return make_response({"detail": "Dataset not found."}, 404)
@@ -274,7 +272,7 @@ def list_dataset_assets(dataset_id: str):
 
 def get_dataset_upload_status(collection_id: str, dataset_id: str, token_info: dict):
     """/v1/datasets/{dataset_id}/status GET"""
-    db = TileDBData(location)
+    db = TileDBData()
     coll = db.get_collection(collection_id)
     if not coll:
         return make_response({"detail": "Collection not found."}, 404)
