@@ -170,7 +170,7 @@ def handle_corpora_error(exception):
 @app.errorhandler(InternalServerError)
 def handle_internal_server_error(exception):
     app.logger.exception("InternalServerError", exc_info=exception.original_exception)
-    return exception
+    return FlaskApi.get_response(problem(500, "Internal Server Error"))
 
 
 if __name__ == "__main__":
