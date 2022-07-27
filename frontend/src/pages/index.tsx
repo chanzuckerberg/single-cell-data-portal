@@ -1,8 +1,5 @@
-import SidebarLayout from "src/components/Layout/components/sidebarLayout";
-import Datasets from "src/views/Datasets";
+import Landing from "../views/Landing";
 
-const Page = (): JSX.Element => <Datasets />;
+const Index = () => <Landing />;
 
-Page.Layout = SidebarLayout;
-
-export default Page;
+export default Index;

@@ -69,28 +69,28 @@ const LandingHeader: FC = () => {
               </DesktopHomeLink>
               <Nav>
                 <LinkWrapper>
-                  <Link href={ROUTES.HOMEPAGE} passHref>
-                    <AnchorButton
-                      onClick={() => {
-                        track(EVENTS.DATASETS_CLICK_NAV);
-                      }}
-                      active={isRouteActive(pathname, ROUTES.HOMEPAGE)}
-                      href="passHref"
-                      minimal
-                      text="Datasets"
-                    />
-                  </Link>
-                </LinkWrapper>
-                <LinkWrapper>
                   <Link href={ROUTES.COLLECTIONS} passHref>
                     <AnchorButton
                       onClick={() => {
-                        track(EVENTS.COLLECTIONS_CLICK_NAV);
+                        track(EVENTS.DATASETS_CLICK_NAV);
                       }}
                       active={isRouteActive(pathname, ROUTES.COLLECTIONS)}
                       href="passHref"
                       minimal
                       text="Collections"
+                    />
+                  </Link>
+                </LinkWrapper>
+                <LinkWrapper>
+                  <Link href={ROUTES.DATASETS} passHref>
+                    <AnchorButton
+                      onClick={() => {
+                        track(EVENTS.COLLECTIONS_CLICK_NAV);
+                      }}
+                      active={isRouteActive(pathname, ROUTES.DATASETS)}
+                      href="passHref"
+                      minimal
+                      text="Datasets"
                     />
                   </Link>
                 </LinkWrapper>
@@ -109,8 +109,7 @@ const LandingHeader: FC = () => {
               </Nav>
             </Left>
             <Right>
-              {/* CHANGE TO "/" ON PROD */}
-              {pathname === "/landing-page" && (
+              {pathname === ROUTES.HOMEPAGE && (
                 <HiringLink
                   onClick={() => {
                     track(EVENTS.BROWSE_CAREERS_CLICKED, {

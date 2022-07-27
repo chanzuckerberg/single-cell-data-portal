@@ -1,5 +1,6 @@
 import { useRouter } from "next/router";
 import { FC } from "react";
+import { ROUTES } from "src/common/constants/routes";
 import Footer from "../Footer";
 import Header from "../Header";
 import LandingFooter from "../LandingFooter";
@@ -9,8 +10,9 @@ import { Wrapper } from "./style";
 const Layout: FC = ({ children }) => {
   const { pathname } = useRouter();
 
-  // CHANGE TO "/" FOR PROD
-  if (pathname === "/landing-page") {
+  console.log(pathname);
+
+  if (pathname === ROUTES.HOMEPAGE) {
     return (
       <>
         <LandingHeader />
