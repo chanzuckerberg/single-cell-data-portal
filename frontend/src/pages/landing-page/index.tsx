@@ -191,7 +191,22 @@ const LandingPage = (): JSX.Element => {
           property="og:description"
           content="Find, download and visually explore curated and standardized single-cell datasets"
         />
-        <meta property="og:image" content="/open-graph.jpg" />
+        <meta
+          property="twitter:title"
+          content="Chan Zuckerberg CELLxGENE Discover"
+        />
+        <meta
+          property="twitter:description"
+          content="Find, download and visually explore curated and standardized single-cell datasets"
+        />
+        <meta
+          property="og:image"
+          content="https://cellxgene.cziscience.com/open-graph.jpg"
+        />
+        <meta
+          property="twitter:image"
+          content="https://cellxgene.cziscience.com/open-graph.jpg"
+        />
         <meta property="og:type" content="website" />
       </Head>
       <div className={styles.landingPage}>
