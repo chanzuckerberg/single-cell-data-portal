@@ -16,9 +16,9 @@ ENV PIP_NO_CACHE_DIR=1
 RUN pip3 install scanpy==1.6.0 python-igraph==0.8.3 louvain==0.7.0 packaging==21.0 awscli
 
 
-ADD requirements.txt requirements.txt
-ADD backend/api_server/requirements.txt backend/api_server/requirements.txt
-RUN pip3 install -r requirements.txt
+ADD requirements.txt requirements-base.txt
+ADD backend/dataset_processing/requirements.txt requirements-processing.txt
+RUN pip3 install -r requirements-base.txt -r requirements-processing.txt
 
 ADD tests /single-cell-data-portal/tests
 ADD backend/__init__.py backend/__init__.py
