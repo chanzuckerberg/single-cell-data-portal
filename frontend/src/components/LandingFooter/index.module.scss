@@ -55,7 +55,7 @@
       font-size: 14px;
       line-height: 24px;
       letter-spacing: 0.3px;
-      color: white;
+      color: #a7b6c2;
       text-decoration: none;
       font-weight: 400;
 
@@ -69,7 +69,8 @@
       }
 
       &:hover {
-        text-decoration: underline;
+        text-decoration: none;
+        color: #fff;
       }
 
       & + a {
@@ -99,18 +100,19 @@
       font-size: 14px;
       line-height: 18px;
       letter-spacing: 0.3px;
-      color: white;
+      color: #a7b6c2;
       text-decoration: none;
       font-weight: 400;
 
       &:hover {
-        text-decoration: underline;
+        text-decoration: none;
+        color: #fff;
       }
 
       & + a {
         margin-left: 14px;
         padding-left: 14px;
-        border-left: 1px solid #ffffff;
+        border-left: 1px solid #a7b6c2;
       }
     }
   }
