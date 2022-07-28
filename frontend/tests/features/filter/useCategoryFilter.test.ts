@@ -71,7 +71,7 @@ describe("useCategoryFilter", () => {
             CATEGORY_CONFIGS_BY_CATEGORY_KEY[
               CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS
             ] as OntologyCategoryConfig
-          ).ontology
+          ).ontologyTermSet
         );
         expect(nextFilters.length).toEqual(0);
       });
@@ -104,7 +104,7 @@ describe("useCategoryFilter", () => {
             CATEGORY_CONFIGS_BY_CATEGORY_KEY[
               CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS
             ] as OntologyCategoryConfig
-          ).ontology
+          ).ontologyTermSet
         );
         expect(nextFilters.length).toEqual(1);
         expect(
@@ -142,7 +142,7 @@ describe("useCategoryFilter", () => {
             CATEGORY_CONFIGS_BY_CATEGORY_KEY[
               CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS
             ] as OntologyCategoryConfig
-          ).ontology
+          ).ontologyTermSet
         );
         expect(nextFilters.length).toEqual(0);
       });
@@ -179,7 +179,7 @@ describe("useCategoryFilter", () => {
             CATEGORY_CONFIGS_BY_CATEGORY_KEY[
               CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS
             ] as OntologyCategoryConfig
-          ).ontology
+          ).ontologyTermSet
         );
         expect(nextFilters.length).toEqual(1);
         expect(nextFilters.includes(ONTOLOGY_ID_HUMAN_FETAL)).toBeTruthy();
@@ -203,7 +203,7 @@ describe("useCategoryFilter", () => {
             CATEGORY_CONFIGS_BY_CATEGORY_KEY[
               CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS
             ] as OntologyCategoryConfig
-          ).ontology
+          ).ontologyTermSet
         );
         expect(nextFilters.length).toEqual(1);
         expect(nextFilters[0]).toEqual(idToSelected);
@@ -233,7 +233,7 @@ describe("useCategoryFilter", () => {
             CATEGORY_CONFIGS_BY_CATEGORY_KEY[
               CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS
             ] as OntologyCategoryConfig
-          ).ontology
+          ).ontologyTermSet
         );
         expect(nextFilters.length).toEqual(2);
         expect(nextFilters.includes(ONTOLOGY_ID_HUMAN_NEWBORN)).toBeTruthy();
@@ -264,7 +264,7 @@ describe("useCategoryFilter", () => {
             CATEGORY_CONFIGS_BY_CATEGORY_KEY[
               CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS
             ] as OntologyCategoryConfig
-          ).ontology
+          ).ontologyTermSet
         );
         expect(nextFilters.length).toEqual(4);
         expect(nextFilters.includes(ONTOLOGY_ID_HUMAN_NEWBORN)).toBeTruthy();
@@ -297,7 +297,7 @@ describe("useCategoryFilter", () => {
             CATEGORY_CONFIGS_BY_CATEGORY_KEY[
               CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS
             ] as OntologyCategoryConfig
-          ).ontology
+          ).ontologyTermSet
         );
         expect(nextFilters.length).toEqual(5);
         expect(nextFilters.includes(ONTOLOGY_ID_HUMAN_PRENATAL)).toBeTruthy();
@@ -332,7 +332,7 @@ describe("useCategoryFilter", () => {
             CATEGORY_CONFIGS_BY_CATEGORY_KEY[
               CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS
             ] as OntologyCategoryConfig
-          ).ontology
+          ).ontologyTermSet
         );
         expect(nextFilters.length).toEqual(3);
         expect(
@@ -370,7 +370,7 @@ describe("useCategoryFilter", () => {
             CATEGORY_CONFIGS_BY_CATEGORY_KEY[
               CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS
             ] as OntologyCategoryConfig
-          ).ontology
+          ).ontologyTermSet
         );
         expect(nextFilters.length).toEqual(3);
         expect(
@@ -410,7 +410,7 @@ describe("useCategoryFilter", () => {
             CATEGORY_CONFIGS_BY_CATEGORY_KEY[
               CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS
             ] as OntologyCategoryConfig
-          ).ontology
+          ).ontologyTermSet
         );
         expect(nextFilters.length).toEqual(5);
         expect(nextFilters.includes(ONTOLOGY_ID_HUMAN_PRENATAL)).toBeTruthy();
@@ -456,7 +456,7 @@ describe("useCategoryFilter", () => {
             CATEGORY_CONFIGS_BY_CATEGORY_KEY[
               CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS
             ] as OntologyCategoryConfig
-          ).ontology
+          ).ontologyTermSet
         );
         expect(nextFilters.length).toEqual(2);
         expect(

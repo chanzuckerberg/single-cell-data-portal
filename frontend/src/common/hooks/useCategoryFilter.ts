@@ -10,7 +10,6 @@ import {
   CATEGORY_CONFIGS_BY_CATEGORY_KEY,
   CATEGORY_FILTER_TYPE,
   CATEGORY_KEY,
-  CATEGORY_LABEL,
   ETHNICITY_UNSPECIFIED_LABEL,
   OnFilterFn,
   OntologyCategoryConfig,
@@ -18,7 +17,7 @@ import {
   OntologyCategoryTreeView,
   OntologyCategoryView,
   OntologyNode,
-  OntologyView,
+  OntologyTermSet,
   ONTOLOGY_VIEW_KEY,
   ONTOLOGY_VIEW_LABEL,
   ORGANISM,
@@ -386,7 +385,7 @@ function buildCategorySet<T extends Categories>(
       const isCategoryOntology = isCategoryConfigOntology(config);
       let categoryOntologyIds: Set<string>;
       if (isCategoryOntology) {
-        categoryOntologyIds = listOntologyTreeIds(config.ontology);
+        categoryOntologyIds = listOntologyTreeIds(config.ontologyTermSet);
       }
 
       // Handle single or multi select categories. Check category value for this category, in every row.
@@ -465,11 +464,12 @@ function buildCategoryViews(filterState?: FilterState): CategoryView[] {
       // Build category value view models for this category and sort.
       const categoryValueByValue = filterState[categoryKey as CategoryKey];
 
+      const config =
+        CATEGORY_CONFIGS_BY_CATEGORY_KEY[categoryKey as CategoryKey];
+
       // Handle single or multiselect categories, or ontology categories.
       if (isSelectCategoryValue(categoryValueByValue)) {
         // Handle ontology categories.
-        const config =
-          CATEGORY_CONFIGS_BY_CATEGORY_KEY[categoryKey as CategoryKey];
         if (isCategoryConfigOntology(config)) {
           return buildOntologyCategoryView(
             categoryKey as CategoryKey,
@@ -481,6 +481,7 @@ function buildCategoryViews(filterState?: FilterState): CategoryView[] {
 
         return buildSelectCategoryView(
           categoryKey as CategoryKey,
+          config,
           categoryValueByValue,
           filterState
         );
@@ -489,6 +490,7 @@ function buildCategoryViews(filterState?: FilterState): CategoryView[] {
       // Handle range categories.
       return buildRangeCategoryView(
         categoryKey as CategoryKey,
+        config,
         categoryValueByValue
       );
     })
@@ -536,7 +538,7 @@ function buildNextFilterState<T extends Categories>(
  * @param categoryValueKey - Selected category value key (e.g. "HsapDv:0000003") to update selected state of.
  * @param filters - Current set of selected category values.
  * @param categoryKeyValues - Original, full set of values for this category.
- * @param ontology - View model of ontology for this category.
+ * @param ontologyTermSet - View model of ontology for this category.
  * @returns Array of selected category values for the given category.
  */
 export function buildNextOntologyCategoryFilters<T extends Categories>(
@@ -544,7 +546,7 @@ export function buildNextOntologyCategoryFilters<T extends Categories>(
   categoryValueKey: CategoryValueKey,
   filters: Filters<T>,
   categoryKeyValues: Set<CategoryValueKey>,
-  ontology: OntologyView
+  ontologyTermSet: OntologyTermSet
 ): CategoryValueKey[] {
   // Grab the current selected values for the category.
   const categoryFilters = new Set(
@@ -559,7 +561,7 @@ export function buildNextOntologyCategoryFilters<T extends Categories>(
 
   // Find the selected and parent node, if any, for the selected value.
   const ontologySpeciesKey = getOntologySpeciesKey(speciesKey);
-  const ontologyRootNodes = ontology[ontologySpeciesKey];
+  const ontologyRootNodes = ontologyTermSet[ontologySpeciesKey];
   if (!ontologyRootNodes) {
     return [...categoryFilters.values()]; // Error state - ontology does not exist.
   }
@@ -702,14 +704,20 @@ function buildOntologyCategoryView(
   categoryValueByValue: KeyedSelectCategoryValue,
   filterState: FilterState
 ): OntologyCategoryView {
-  const { isLabelVisible, isSearchable, isZerosVisible, ontology } =
-    categoryConfig;
+  const {
+    isLabelVisible,
+    isSearchable,
+    isZerosVisible,
+    label,
+    ontologyTermSet,
+  } = categoryConfig;
 
   // Build tree view models (e.g. individual tree structures for displaying different ontologies (e.g. human vs mouse
   // vs other for development stage, or just tissues for tissue).
-  const treeViews = Object.keys(ontology).reduce(
+  const treeViews = Object.keys(ontologyTermSet).reduce(
     (accum, ontologyViewKey: string) => {
-      const ontologyNodes = ontology[ontologyViewKey as ONTOLOGY_VIEW_KEY];
+      const ontologyNodes =
+        ontologyTermSet[ontologyViewKey as ONTOLOGY_VIEW_KEY];
       if (!ontologyNodes) {
         return accum; // Error state - ignore species view.
       }
@@ -742,14 +750,14 @@ function buildOntologyCategoryView(
         return accum;
       }, new Set<OntologyCategoryTreeNodeView>());
 
-      const label =
+      const viewLabel =
         ONTOLOGY_VIEW_LABEL[
           ontologyViewKey as keyof typeof ONTOLOGY_VIEW_LABEL
         ];
 
       accum.push({
         children: childrenViews,
-        label: isLabelVisible ? label : undefined,
+        label: isLabelVisible ? viewLabel : undefined,
         selectedViews: [...selectedViews.values()],
       });
 
@@ -763,7 +771,7 @@ function buildOntologyCategoryView(
     isSearchable,
     isZerosVisible,
     key: categoryKey,
-    label: CATEGORY_LABEL[categoryKey],
+    label,
     views: treeViews,
   };
 
@@ -833,17 +841,19 @@ function buildOntologyCategoryValueView(
 /**
  * Build view model of range category.
  * @param categoryKey - Key of category to find selected filters of.
+ * @param categoryConfig - Config model of ontology category.
  * @param rangeCategory - Internal filter model of range category.
  * @returns Range view model.
  */
 function buildRangeCategoryView(
   categoryKey: CategoryKey,
+  categoryConfig: CategoryConfig,
   rangeCategory: RangeCategory
 ): RangeCategoryView {
   // Build view model of range category.
   const rangeView: RangeCategoryView = {
     key: categoryKey,
-    label: CATEGORY_LABEL[categoryKey],
+    label: categoryConfig.label,
     max: rangeCategory.max,
     min: rangeCategory.min,
     selectedMax: rangeCategory.selectedMax,
@@ -862,6 +872,7 @@ function buildRangeCategoryView(
 /**
  * Build view model of single or multiselect category.
  * @param categoryKey - Key of category to find selected filters of.
+ * @param categoryConfig - Config model of ontology category.
  * @param categoryValueByValue - Internal filter model of single or multiselect category.
  * @param filterState - Categories, category value and their counts with the current filter applied. Required when
  * checking enabled state of view that is dependent on the state of another category.
@@ -869,6 +880,7 @@ function buildRangeCategoryView(
  */
 function buildSelectCategoryView(
   categoryKey: CategoryKey,
+  categoryConfig: CategoryConfig,
   categoryValueByValue: KeyedSelectCategoryValue,
   filterState: FilterState
 ): SelectCategoryView {
@@ -894,7 +906,7 @@ function buildSelectCategoryView(
   // Build view model of select category.
   const selectView: SelectCategoryView = {
     key: categoryKey,
-    label: CATEGORY_LABEL[categoryKey],
+    label: categoryConfig.label,
     pinnedValues,
     unpinnedValues,
     values: allCategoryValueViews,
@@ -932,7 +944,7 @@ function getCategoryFilter<T extends Categories>(
 
 /**
  * Reevaluate selected state of parent. It's possible all children of this parent are now selected; if so, add parent
- * to set of seleted values and then reevaluate the parent's parent selected state.
+ * to set of selected values and then reevaluate the parent's parent selected state.
  * @param ontologyRootNodes - Top-level nodes in ontology tree.
  * @param ontologyNode - Node to reevaluate selected state of.
  * @param selectedCategoryValues - The current set of selected values.
@@ -1139,7 +1151,7 @@ function isCategorySetCategoryKeyValue(
 function isCategoryConfigOntology(
   categoryConfig: CategoryConfig
 ): categoryConfig is OntologyCategoryConfig {
-  return !!(categoryConfig as OntologyCategoryConfig).ontology;
+  return !!(categoryConfig as OntologyCategoryConfig).ontologyTermSet;
 }
 
 /**
@@ -1342,7 +1354,7 @@ function onFilterOntologyCategory<T extends Categories>(
   filters: Filters<T>,
   categorySet: CategorySet
 ) {
-  const { categoryKey, ontology } = config;
+  const { categoryKey, ontologyTermSet } = config;
 
   // Track selected category and value.
   trackOntologyCategoryValueSelected(config, selectedValue, filters);
@@ -1353,7 +1365,7 @@ function onFilterOntologyCategory<T extends Categories>(
     selectedValue,
     filters,
     categorySet[categoryKey] as Set<CategoryValueKey>,
-    ontology
+    ontologyTermSet
   );
   setFilter(categoryKey, nextCategoryFilters);
 }
@@ -1477,10 +1489,7 @@ function sortCategoryValueViews(
  * @returns Number indicating sort precedence of c0 vs c1.
  */
 function sortCategoryViews(c0: CategoryView, c1: CategoryView): number {
-  return COLLATOR_CASE_INSENSITIVE.compare(
-    CATEGORY_LABEL[c0.key],
-    CATEGORY_LABEL[c1.key]
-  );
+  return COLLATOR_CASE_INSENSITIVE.compare(c0.label, c1.label);
 }
 
 /**
@@ -1586,7 +1595,7 @@ function trackOntologyCategoryValueSelected<T extends Categories>(
   categoryValueKey: CategoryValueKey,
   filters: Filters<T>
 ) {
-  const { analyticsEvent, categoryKey, ontology } = config;
+  const { analyticsEvent, categoryKey, ontologyTermSet } = config;
 
   // No tracking if event isn't specified on category config.
   if (!analyticsEvent) {
@@ -1602,7 +1611,7 @@ function trackOntologyCategoryValueSelected<T extends Categories>(
 
     // Find the node for the selected value.
     const ontologySpeciesKey = getOntologySpeciesKey(categoryValueKey);
-    const ontologyRootNodes = ontology[ontologySpeciesKey];
+    const ontologyRootNodes = ontologyTermSet[ontologySpeciesKey];
     if (!ontologyRootNodes) {
       return; // Error state - ontology does not exist.
     }

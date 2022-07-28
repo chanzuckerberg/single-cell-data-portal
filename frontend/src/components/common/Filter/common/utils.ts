@@ -4,7 +4,7 @@ import {
   Categories,
   OntologyCategoryKey,
   OntologyNode,
-  OntologyView,
+  OntologyTermSet,
   ONTOLOGY_VIEW_KEY,
 } from "src/components/common/Filter/common/entities";
 
@@ -118,11 +118,13 @@ function listOntologyNodeIds(ontologyIds: Set<string>, node: OntologyNode) {
 
 /**
  * List all ontology IDs in the given ontology tree.
- * @param ontology - Ontology view model to list ontology IDs of.
+ * @param ontologyTermSet - Ontology view model to list ontology IDs of.
  * @returns Set of all ontology IDs present in the given ontology tree.
  */
-export function listOntologyTreeIds(ontology: OntologyView): Set<string> {
-  return Object.values(ontology).reduce((accum, node) => {
+export function listOntologyTreeIds(
+  ontologyTermSet: OntologyTermSet
+): Set<string> {
+  return Object.values(ontologyTermSet).reduce((accum, node) => {
     node.forEach((node) => listOntologyNodeIds(accum, node));
     return accum;
   }, new Set<string>());

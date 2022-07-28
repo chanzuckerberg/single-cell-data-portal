@@ -11,6 +11,7 @@ export interface CategoryConfig {
   analyticsEvent?: EVENTS;
   categoryKey: CATEGORY_KEY;
   categoryType: CATEGORY_FILTER_TYPE;
+  label: string;
   multiselect: boolean; // True if category can have multiple values selected.
   pinnedCategoryValues?: CATEGORY_VALUE_KEY[];
   tooltip?: string;
@@ -23,7 +24,7 @@ export interface OntologyCategoryConfig extends CategoryConfig {
   isLabelVisible: boolean; // True if ontology label is to be displayed (e.g. "Other Organisms")
   isSearchable: boolean; // True if ontology category search box is displayed
   isZerosVisible: boolean; // True if zero values are to be displayed
-  ontology: OntologyView;
+  ontologyTermSet: OntologyTermSet;
 }
 
 /**
@@ -115,7 +116,7 @@ export enum ONTOLOGY_VIEW_LABEL {
  * Cell types to be included for display in cell type ontology tree.
  */
 /* eslint-disable sort-keys -- disabling key order for readability. */
-export const CELL_TYPE_ONTOLOGY_VIEW: OntologyView = {
+export const CELL_TYPE_ONTOLOGY_TERM_SET: OntologyTermSet = {
   [ONTOLOGY_VIEW_KEY.CL]: [
     { label: "bladder cell", ontology_term_id: "CL:1001319" },
     {
@@ -2129,7 +2130,7 @@ export const CELL_TYPE_ONTOLOGY_VIEW: OntologyView = {
  * Homo sapiens, Mus musculus and other organisms development stage ontology tree.
  */
 /* eslint-disable sort-keys -- disabling key order for readability. */
-export const DEVELOPMENT_STAGE_ONTOLOGY_VIEW: OntologyView = {
+export const DEVELOPMENT_STAGE_ONTOLOGY_TERM_SET: OntologyTermSet = {
   [ONTOLOGY_VIEW_KEY.HsapDv]: [
     {
       label: "Prenatal (conception–birth)",
@@ -2365,7 +2366,7 @@ export const DEVELOPMENT_STAGE_ONTOLOGY_VIEW: OntologyView = {
  * Tissues to be included for display in tissue ontology tree.
  */
 /* eslint-disable sort-keys -- disabling key order for readability. */
-export const TISSUE_ONTOLOGY_VIEW: OntologyView = {
+export const TISSUE_ONTOLOGY_TERM_SET: OntologyTermSet = {
   [ONTOLOGY_VIEW_KEY.UBERON]: [
     {
       label: "adipose tissue",
@@ -2668,12 +2669,14 @@ const CATEGORY_CONFIGS: (CategoryConfig | OntologyCategoryConfig)[] = [
     analyticsEvent: EVENTS.FILTER_SELECT_ASSAY,
     categoryKey: CATEGORY_KEY.ASSAY,
     categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
+    label: "Assay",
     multiselect: true,
   },
   {
     analyticsEvent: EVENTS.FILTER_SELECT_CELL_COUNT,
     categoryKey: CATEGORY_KEY.CELL_COUNT,
     categoryType: CATEGORY_FILTER_TYPE.BETWEEN,
+    label: "Cell Count",
     multiselect: false,
   },
   {
@@ -2681,6 +2684,7 @@ const CATEGORY_CONFIGS: (CategoryConfig | OntologyCategoryConfig)[] = [
     analyticsEvent: EVENTS.FILTER_SELECT_CELL_TYPE,
     categoryKey: CATEGORY_KEY.CELL_TYPE,
     categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
+    label: "Cell Type",
     multiselect: true,
   },
   {
@@ -2690,8 +2694,9 @@ const CATEGORY_CONFIGS: (CategoryConfig | OntologyCategoryConfig)[] = [
     isLabelVisible: false,
     isSearchable: true,
     isZerosVisible: true,
+    label: "Cell Type (Ontology)",
     multiselect: true,
-    ontology: CELL_TYPE_ONTOLOGY_VIEW,
+    ontologyTermSet: CELL_TYPE_ONTOLOGY_TERM_SET,
   },
   {
     analyticsEvent: EVENTS.FILTER_SELECT_DEVELOPMENT_STAGE,
@@ -2700,13 +2705,15 @@ const CATEGORY_CONFIGS: (CategoryConfig | OntologyCategoryConfig)[] = [
     isLabelVisible: true,
     isSearchable: false,
     isZerosVisible: true,
+    label: "Development Stage",
     multiselect: true,
-    ontology: DEVELOPMENT_STAGE_ONTOLOGY_VIEW,
+    ontologyTermSet: DEVELOPMENT_STAGE_ONTOLOGY_TERM_SET,
   },
   {
     analyticsEvent: EVENTS.FILTER_SELECT_DISEASE,
     categoryKey: CATEGORY_KEY.DISEASE,
     categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
+    label: "Disease",
     multiselect: true,
     pinnedCategoryValues: [CATEGORY_VALUE_KEY.NORMAL],
   },
@@ -2714,6 +2721,7 @@ const CATEGORY_CONFIGS: (CategoryConfig | OntologyCategoryConfig)[] = [
     analyticsEvent: EVENTS.FILTER_SELECT_ETHNICITY,
     categoryKey: CATEGORY_KEY.ETHNICITY,
     categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
+    label: "Ethnicity",
     multiselect: true,
     tooltip:
       "Ethnicity only applies to Homo sapiens which is not selected in the Organism filter.",
@@ -2722,30 +2730,35 @@ const CATEGORY_CONFIGS: (CategoryConfig | OntologyCategoryConfig)[] = [
     analyticsEvent: EVENTS.FILTER_SELECT_GENE_COUNT,
     categoryKey: CATEGORY_KEY.MEAN_GENES_PER_CELL,
     categoryType: CATEGORY_FILTER_TYPE.BETWEEN,
+    label: "Gene Count",
     multiselect: false,
   },
   {
     analyticsEvent: EVENTS.FILTER_SELECT_ORGANISM,
     categoryKey: CATEGORY_KEY.ORGANISM,
     categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
+    label: "Organism",
     multiselect: true,
   },
   {
     analyticsEvent: EVENTS.FILTER_SELECT_AUTHORS,
     categoryKey: CATEGORY_KEY.PUBLICATION_AUTHORS,
     categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
+    label: "Author",
     multiselect: true,
   },
   {
     analyticsEvent: EVENTS.FILTER_SELECT_PUBLICATION_DATE,
     categoryKey: CATEGORY_KEY.PUBLICATION_DATE_VALUES,
     categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
+    label: "Publication Date",
     multiselect: false,
   },
   {
     analyticsEvent: EVENTS.FILTER_SELECT_SEX,
     categoryKey: CATEGORY_KEY.SEX,
     categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
+    label: "Sex",
     multiselect: true,
   },
   {
@@ -2753,6 +2766,7 @@ const CATEGORY_CONFIGS: (CategoryConfig | OntologyCategoryConfig)[] = [
     analyticsEvent: EVENTS.FILTER_SELECT_TISSUE,
     categoryKey: CATEGORY_KEY.TISSUE,
     categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
+    label: "Tissue",
     multiselect: true,
   },
   {
@@ -2762,8 +2776,9 @@ const CATEGORY_CONFIGS: (CategoryConfig | OntologyCategoryConfig)[] = [
     isLabelVisible: false,
     isSearchable: true,
     isZerosVisible: false,
+    label: "Tissue (Ontology)",
     multiselect: true,
-    ontology: TISSUE_ONTOLOGY_VIEW,
+    ontologyTermSet: TISSUE_ONTOLOGY_TERM_SET,
   },
 ];
 
@@ -2858,26 +2873,6 @@ export type OntologyCategoryKey = keyof Omit<
 >;
 
 /**
- * Display value of category labels.
- */
-export enum CATEGORY_LABEL {
-  assay = "Assay",
-  cell_count = "Cell Count",
-  cell_type = "Cell Type", // TODO(cc) remove with #2569?
-  cell_type_ancestors = "Cell Type (Ontology)", // TODO(cc) revisit naming with #2569.
-  development_stage_ancestors = "Development Stage",
-  disease = "Disease",
-  ethnicity = "Ethnicity",
-  mean_genes_per_cell = "Gene Count",
-  publicationAuthors = "Authors",
-  publicationDateValues = "Publication Date",
-  organism = "Organism",
-  tissue = "Tissue", // TODO(cc) remove with #2569.
-  tissue_ancestors = "Tissue (Ontology)", // TODO(cc) update to "Tissue" with #2569.
-  sex = "Sex",
-}
-
-/**
  * Function invoked when selected state of a category value is toggled or range is selected.
  */
 export type OnFilterFn = (
@@ -2925,7 +2920,7 @@ export interface OntologyCategoryView {
   isSearchable: boolean;
   isZerosVisible: boolean;
   key: CATEGORY_KEY;
-  label: CATEGORY_LABEL;
+  label: string;
   views: OntologyCategoryTreeView[];
   tooltip?: string;
 }
@@ -2938,9 +2933,9 @@ export interface OntologyNode extends Ontology {
 }
 
 /**
- * Development stage ontology tree structures, keyed by organism.
+ * Ontology tree structures, keyed by view key. This is the allowed set of ontology values, configured per category.
  */
-export type OntologyView = { [K in ONTOLOGY_VIEW_KEY]?: OntologyNode[] };
+export type OntologyTermSet = { [K in ONTOLOGY_VIEW_KEY]?: OntologyNode[] };
 
 /**
  * View model of range metadata key.
@@ -2948,7 +2943,7 @@ export type OntologyView = { [K in ONTOLOGY_VIEW_KEY]?: OntologyNode[] };
 export interface RangeCategoryView {
   isDisabled?: boolean;
   key: CATEGORY_KEY;
-  label: CATEGORY_LABEL;
+  label: string;
   max: number;
   min: number;
   selectedMax?: number;
@@ -3002,7 +2997,7 @@ export interface SelectCategoryValueView {
 export interface SelectCategoryView {
   isDisabled?: boolean;
   key: CATEGORY_KEY;
-  label: CATEGORY_LABEL;
+  label: string;
   pinnedValues: SelectCategoryValueView[];
   tooltip?: string;
   unpinnedValues: SelectCategoryValueView[];
