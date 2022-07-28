@@ -44,38 +44,67 @@ class NCBIProvider(object):
         except Exception:
             raise NCBIUnexpectedResultException
 
-    def fetch_gene_uid(self, geneID):
+    def fetch_gene_uid(self, geneID, gene):
         """
-        Given a gene ensembl ID, returns NCBI's corresponding gene UID
+        Given a gene ensembl ID and gene name, returns a tuple with NCBI's corresponding gene UID and a
+        boolean noting if the result is from searching by the gene name, instead of the gene ENSEMBL id.
+        Initially, uses ensembl ID to find gene UID, but in the event that this returns an
+        unexpected result, call the NCBI API again with gene name. This is successful if
+        the response returns only 1 result for UID.
         """
 
         if self.api_key is None:
             raise NCBIAPIException
-        search_url = f"{self.base_ncbi_uri}esearch.fcgi?db=gene&term={geneID}{self.api_key}&retmode=json"
+        # first search with gene ENSEMBL id
+        try:
+            search_response = self._search_gene_uid(geneID)
+        except NCBIUnexpectedResultException:
+            raise NCBIUnexpectedResultException
+
+        # search with gene name if needed
+        if not self._is_valid_search_result(search_response) and gene != "":
+            try:
+                search_response = self._search_gene_uid(gene)
+                if self._is_valid_search_result(search_response):
+                    return (int(search_response["esearchresult"]["idlist"][0]), False)
+                else:
+                    logging.error(f"Unexpected NCBI search result, got {search_response}")
+                    raise NCBIUnexpectedResultException
+            except NCBIUnexpectedResultException:
+                raise NCBIUnexpectedResultException
+        elif not self._is_valid_search_result(search_response):
+            logging.error(f"Unexpected NCBI search result, got {search_response}")
+            raise NCBIUnexpectedResultException
+        else:
+            return (int(search_response["esearchresult"]["idlist"][0]), True)
+
+    def _search_gene_uid(self, term):
+        """
+        Conducts an Esearch using NCBI's E-Utilities API with provided term
+        """
+        search_url = f"{self.base_ncbi_uri}esearch.fcgi?db=gene&term={term}{self.api_key}&retmode=json"
         try:
             search_response = urllib.request.urlopen(search_url).read()
         except Exception:
             raise NCBIUnexpectedResultException
-        search_result = self._load_search_result(search_response)
-        if not search_result:
-            raise NCBIUnexpectedResultException
-        else:
-            return search_result
+        return json.loads(search_response)
 
-    def _load_search_result(self, response):
-        search_result = json.loads(response)
-        if (
-            "esearchresult" not in search_result
-            or "idlist" not in search_result["esearchresult"]
-            or len(search_result["esearchresult"]["idlist"]) < 1
-            or int(search_result["esearchresult"]["count"]) != 1
-        ):
-            logging.error(f"Unexpected NCBI search result, got {search_result}")
-            return None
-        return int(search_result["esearchresult"]["idlist"][0])
+    def _is_valid_search_result(self, search_result):
+        """
+        Checks that a search result contains only one UID as a result
+        """
+        try:
+            int(search_result["esearchresult"]["idlist"][0])
+            if len(search_result["esearchresult"]["idlist"]) != 1:
+                return False
+        except (ValueError, KeyError, IndexError):
+            return False
+        return True
 
     def parse_gene_info_tree(self, tree_response):
-        # parse NCBI XML response into relevant values to return by gene_info API
+        """
+        Parse NCBI XML response into relevant values to return by gene_info API
+        """
         result_tree = ET.ElementTree(ET.fromstring(tree_response))
         root = result_tree.getroot()
         synonyms = []
