@@ -17,8 +17,9 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
-def _load(uri: str, gene_ontology_term_ids: list, cube_index: pd.DataFrame, cube_sum: np.ndarray,
-          cube_nnz: np.ndarray) -> (list, dict):
+def _load(
+    uri: str, gene_ontology_term_ids: list, cube_index: pd.DataFrame, cube_sum: np.ndarray, cube_nnz: np.ndarray
+) -> (list, dict):
     """
     Build expression summary cube in memory and write to disk
     """
