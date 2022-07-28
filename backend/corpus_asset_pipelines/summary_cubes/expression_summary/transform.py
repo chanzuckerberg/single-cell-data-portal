@@ -32,54 +32,53 @@ def transform(
 
     cube_sum = np.zeros((n_groups, n_genes), dtype=np.float32)
     cube_nnz = np.zeros((n_groups, n_genes), dtype=np.uint64)
-    cube_min = np.zeros((n_groups, n_genes), dtype=np.float32)
-    cube_max = np.zeros((n_groups, n_genes), dtype=np.float32)
 
     # pass 1 - sum, nnz, min, max
-    reduce_X(corpus_path, cell_labels.cube_idx.values, cube_sum, cube_nnz, cube_min, cube_max)
+    reduce_X(corpus_path, cell_labels.cube_idx.values, cube_sum, cube_nnz)
     return cube_index, cube_sum, cube_nnz
 
 
 @log_func_runtime
-def reduce_X(tdb_group: str, cube_indices, *accum):
+def reduce_X(tdb_group: str, cube_indices, cube_sum, cube_nnz):
     """
-    # TODO
+    Reduce the expression data stored in the integrated corpus by summing it by gene for each cube row (unique combo
+    of cell features)
     """
     with concurrent.futures.ThreadPoolExecutor() as executor:
         cfg = {
             "py.init_buffer_bytes": 512 * MB,
             "py.exact_init_buffer_bytes": "true",
         }
-        with tiledb.open(f"{tdb_group}/{INTEGRATED_ARRAY_NAME}", ctx=create_ctx(config_overrides=cfg)) as expression_stats:
-            iterable = expression_stats.query(return_incomplete=True, order="U", attrs=["rankit"])
+        with tiledb.open(f"{tdb_group}/{INTEGRATED_ARRAY_NAME}", ctx=create_ctx(config_overrides=cfg)) as expression:
+            iterable = expression.query(return_incomplete=True, order="U", attrs=["rankit"])
             future = None
             for i, result in enumerate(iterable.df[:]):
                 logger.info(f"reduce integrated expression data, iter {i}")
                 if future is not None:
                     future.result()  # forces a wait
                 future = executor.submit(
-                    coo_cube_pass1_into,
+                    gene_expression_sum_x_cube_dimension,
                     result["rankit"].values,
                     result["obs_idx"].values,
                     result["var_idx"].values,
                     cube_indices,
-                    *accum,
+                    cube_sum,
+                    cube_nnz
                 )
-
-        return accum
 
 
 # TODO: this could be further optimize by parallel chunking.  Might help large arrays if compute ends up being a bottleneck. # noqa E501
 @nb.njit(fastmath=True, error_model="numpy", parallel=False, nogil=True)
-def coo_cube_pass1_into(data, row, col, row_groups, sum_into, nnz_into):
+def gene_expression_sum_x_cube_dimension(rankit_values, obs_idxs, var_idx, cube_indices, sum_into, nnz_into):
     """
-    # TODO
+    Sum the rankit values for each gene (for each cube row/combo of cell attributes)
+    Also track the number of cells that express that gene (nnz count)
     """
-    for k in range(len(data)):
-        val = data[k]
+    for k in range(len(rankit_values)):
+        val = rankit_values[k]
         if np.isfinite(val):
-            cidx = col[k]
-            grp_idx = row_groups[row[k]]
+            cidx = var_idx[k]
+            grp_idx = cube_indices[obs_idxs[k]]
             sum_into[grp_idx, cidx] += val
             nnz_into[grp_idx, cidx] += 1
 
@@ -89,7 +88,6 @@ def make_cube_index(tdb_group: str, cube_dims: list) -> (pd.DataFrame, pd.DataFr
     Create index for queryable dimensions
     """
     cell_labels = extract_obs_data(tdb_group, cube_dims)
-
     # number of cells with specific tuple of dims
     cube_index = pd.DataFrame(cell_labels.value_counts(), columns=["n"])
     cube_index["cube_idx"] = range(len(cube_index))
