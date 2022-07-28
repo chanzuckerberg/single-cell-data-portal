@@ -18,7 +18,12 @@ class Auth0ManagementSession:
         if not self._session:
             domain = self.domain
             session = requests.Session()
-            retry_config = Retry(total=3, backoff_factor=1, status_forcelist=[429, 500, 502, 503, 504])
+            retry_config = Retry(
+                total=3,
+                backoff_factor=1,
+                status_forcelist=[429, 500, 502, 503, 504],
+                method_whitelist=["POST", "HEAD", "GET", "PUT", "DELETE", "OPTIONS", "TRACE"],
+            )
             session.mount("https://", HTTPAdapter(max_retries=retry_config))
 
             def _refresh_token(r, *args, **kwargs):
