@@ -21,9 +21,11 @@ logging.basicConfig(level=logging.INFO)
 def transform(
     corpus_path: str, gene_ontology_term_ids: list, cube_dims: list
 ) -> (pd.DataFrame, np.ndarray, np.ndarray):
-    ##
-    # Reduce X
-    ##
+    """
+     Build the summary cube with sum, nnz (non zero), min and max values for
+     each gene for each possible group of features
+    """
+
     cell_labels, cube_index = make_cube_index(corpus_path, cube_dims)
     n_groups = len(cube_index)
     n_genes = len(gene_ontology_term_ids)
@@ -43,20 +45,19 @@ def reduce_X(tdb_group: str, cube_indices, *accum):
     """
     # TODO
     """
-    with concurrent.futures.ThreadPoolExecutor() as tp:
+    with concurrent.futures.ThreadPoolExecutor() as executor:
         cfg = {
             "py.init_buffer_bytes": 512 * MB,
             "py.exact_init_buffer_bytes": "true",
         }
-        with tiledb.open(f"{tdb_group}/{INTEGRATED_ARRAY_NAME}", ctx=create_ctx(config_overrides=cfg)) as expression:
-            iterable = expression.query(return_incomplete=True, order="U", attrs=["rankit"])
+        with tiledb.open(f"{tdb_group}/{INTEGRATED_ARRAY_NAME}", ctx=create_ctx(config_overrides=cfg)) as expression_stats:
+            iterable = expression_stats.query(return_incomplete=True, order="U", attrs=["rankit"])
             future = None
             for i, result in enumerate(iterable.df[:]):
-                # todo pull out into sep function
                 logger.info(f"reduce integrated expression data, iter {i}")
                 if future is not None:
                     future.result()  # forces a wait
-                future = tp.submit(
+                future = executor.submit(
                     coo_cube_pass1_into,
                     result["rankit"].values,
                     result["obs_idx"].values,
@@ -70,7 +71,7 @@ def reduce_X(tdb_group: str, cube_indices, *accum):
 
 # TODO: this could be further optimize by parallel chunking.  Might help large arrays if compute ends up being a bottleneck. # noqa E501
 @nb.njit(fastmath=True, error_model="numpy", parallel=False, nogil=True)
-def coo_cube_pass1_into(data, row, col, row_groups, sum_into, nnz_into, min_into, max_into):
+def coo_cube_pass1_into(data, row, col, row_groups, sum_into, nnz_into):
     """
     # TODO
     """
@@ -81,10 +82,6 @@ def coo_cube_pass1_into(data, row, col, row_groups, sum_into, nnz_into, min_into
             grp_idx = row_groups[row[k]]
             sum_into[grp_idx, cidx] += val
             nnz_into[grp_idx, cidx] += 1
-            if val < min_into[grp_idx, cidx]:
-                min_into[grp_idx, cidx] = val
-            if val > max_into[grp_idx, cidx]:
-                max_into[grp_idx, cidx] = val
 
 
 def make_cube_index(tdb_group: str, cube_dims: list) -> (pd.DataFrame, pd.DataFrame):
