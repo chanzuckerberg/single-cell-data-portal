@@ -5,10 +5,21 @@ from backend.corpora.common.utils.http_exceptions import (
     NotFoundHTTPException,
     ForbiddenHTTPException,
 )
+from backend.gene_info.api.ensembl_ids import GeneChecker
 
 
-def gene_info(geneID: string):
+def gene_info(gene: string = None, geneID: string = None):
     provider = NCBIProvider()
+
+    # given just a gene name (finds corresponding gene ID)
+    # note: we ignore gene name in any case gene ID is given
+    # in the event of a mismatch between name and ID, ID is selected
+    if not geneID:
+        gene_checker = GeneChecker()
+        try:
+            geneID = gene_checker.get_id(gene)
+        except ValueError as e:
+            raise NotFoundHTTPException(str(e))
 
     # search for gene UID from ensembl ID
     try:
