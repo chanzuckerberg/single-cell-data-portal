@@ -77,8 +77,6 @@ def update_corpus_axis(df: pd.DataFrame, array_name: str, label_info: List) -> i
     Safely add given dataframe to extend the specified array with the appropriate encoding
     typically used to update integrated_corpus obs/var frames for each new dataset
     """
-    logger.info(f"Saving {array_name}...\n")
-
     with tiledb.open(array_name) as array:
         starting_join_index = array.meta.get("next_join_index", 0)
 
