@@ -603,9 +603,9 @@ const LandingPage = (): JSX.Element => {
                         <div className={styles.linkContainer}>
                           <a
                             onClick={() => {
-                              track(EVENTS.DESKTOP_QUICK_START_DOC_CLICKED, {
-                                button: "explore CZ CELLxGENE annotate",
-                              });
+                              track(
+                                EVENTS.EXPLORE_CZ_CELLXGENE_ANNOTATE_CLICKED
+                              );
                             }}
                             href={`${ROUTES.DOCS}/05__Annotate%20and%20Analyze%20Your%20Data/5_0__Get%20Started`}
                           >
