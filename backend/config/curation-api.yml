@@ -587,6 +587,7 @@ components:
         all non-canonical (SECONDARY), or contain a mixture (BOTH).
       type: string
       enum: [PRIMARY, SECONDARY, BOTH]
+      nullable: true
     links:
       type: array
       items:
@@ -686,6 +687,7 @@ components:
     explorer_url:
       type: string
       description: The url at which a given Dataset may be explored using the cellxgene visualization tool
+      nullable: true
     ontology_element:
       type: object
       properties:
