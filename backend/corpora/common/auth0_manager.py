@@ -22,7 +22,7 @@ class Auth0ManagementSession:
                 total=3,
                 backoff_factor=1,
                 status_forcelist=[429, 500, 502, 503, 504],
-                method_whitelist=["POST", "HEAD", "GET", "PUT", "DELETE", "OPTIONS", "TRACE"],
+                method_whitelist=["POST", "HEAD", "GET", "PUT", "DELETE", "OPTIONS"],
             )
             session.mount("https://", HTTPAdapter(max_retries=retry_config))
 
