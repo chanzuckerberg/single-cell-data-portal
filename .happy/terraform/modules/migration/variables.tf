@@ -8,6 +8,11 @@ variable task_role_arn {
   description = "ARN for the role assumed by tasks"
 }
 
+variable execution_role {
+  type        = string
+  description = "Execution role to use for fargate tasks - required for fargate services!"
+}
+
 variable cmd {
   type        = list(string)
   description = "Command to run"

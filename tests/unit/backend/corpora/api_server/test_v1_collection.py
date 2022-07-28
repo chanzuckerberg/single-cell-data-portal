@@ -437,7 +437,7 @@ class TestCollection(BaseAuthAPITest):
         self.assertEqual(403, response.status_code)
 
     def test__post_collection_returns_id_on_success(self):
-        test_url = furl(path="/dp/v1/collections/")
+        test_url = furl(path="/dp/v1/collections")
         data = {
             "name": "collection name",
             "description": "This is a test collection",
@@ -464,7 +464,7 @@ class TestCollection(BaseAuthAPITest):
         self.assertEqual(201, response.status_code)
 
     def test__post_collection_normalizes_doi(self):
-        test_url = furl(path="/dp/v1/collections/")
+        test_url = furl(path="/dp/v1/collections")
         data = {
             "name": "collection name",
             "description": "This is a test collection",
@@ -488,7 +488,7 @@ class TestCollection(BaseAuthAPITest):
         self.assertEquals(collection.get_doi(), "https://doi.org/10.1016/foo")
 
     def test__post_collection_rejects_two_dois(self):
-        test_url = furl(path="/dp/v1/collections/")
+        test_url = furl(path="/dp/v1/collections")
         data = {
             "name": "collection name",
             "description": "This is a test collection",
@@ -510,7 +510,7 @@ class TestCollection(BaseAuthAPITest):
     @patch("backend.corpora.common.providers.crossref_provider.CrossrefProvider.fetch_metadata")
     def test__post_collection_rejects_doi_not_in_crossref(self, mock_provider):
         mock_provider.side_effect = CrossrefDOINotFoundException("Mocked CrossrefDOINotFoundException")
-        test_url = furl(path="/dp/v1/collections/")
+        test_url = furl(path="/dp/v1/collections")
         data = {
             "name": "collection name",
             "description": "This is a test collection",
@@ -529,7 +529,7 @@ class TestCollection(BaseAuthAPITest):
         self.assertEqual(error_payload["detail"][0], {"link_type": "DOI", "reason": "DOI cannot be found on Crossref"})
 
     def test__post_collection_rejects_invalid_doi(self):
-        test_url = furl(path="/dp/v1/collections/")
+        test_url = furl(path="/dp/v1/collections")
         data = {
             "name": "collection name",
             "description": "This is a test collection",
@@ -550,7 +550,7 @@ class TestCollection(BaseAuthAPITest):
     @patch("backend.corpora.common.providers.crossref_provider.CrossrefProvider.fetch_metadata")
     def test__post_collection_ignores_metadata_if_crossref_exception(self, mock_provider):
         mock_provider.side_effect = CrossrefFetchException("Mocked CrossrefFetchException")
-        test_url = furl(path="/dp/v1/collections/")
+        test_url = furl(path="/dp/v1/collections")
         data = {
             "name": "collection name",
             "description": "This is a test collection",
@@ -572,7 +572,7 @@ class TestCollection(BaseAuthAPITest):
         self.assertIsNone(collection.publisher_metadata)
 
     def test__post_collection_ignores_metadata_if_no_doi(self):
-        test_url = furl(path="/dp/v1/collections/")
+        test_url = furl(path="/dp/v1/collections")
         data = {
             "name": "collection name",
             "description": "This is a test collection",
@@ -597,7 +597,7 @@ class TestCollection(BaseAuthAPITest):
 
         mock_provider.return_value = generate_mock_publisher_metadata()
 
-        test_url = furl(path="/dp/v1/collections/")
+        test_url = furl(path="/dp/v1/collections")
         data = {
             "name": "collection name",
             "description": "This is a test collection",
@@ -619,7 +619,7 @@ class TestCollection(BaseAuthAPITest):
         self.assertEqual(collection.publisher_metadata, generate_mock_publisher_metadata())
 
     def test__post_collection_fails_with_extra_fields(self):
-        test_url = furl(path="/dp/v1/collections/")
+        test_url = furl(path="/dp/v1/collections")
         test_data = [
             {
                 "name": "extra field in collection",
@@ -663,7 +663,7 @@ class TestCollection(BaseAuthAPITest):
                 self.assertEqual(400, response.status_code)
 
     def test__post_collection_fails_if_data_missing(self):
-        test_url = furl(path="/dp/v1/collections/")
+        test_url = furl(path="/dp/v1/collections")
         data = json.dumps({"name": "bkjbjbjmbjm"})
         response = self.app.post(
             test_url.url,
@@ -673,7 +673,7 @@ class TestCollection(BaseAuthAPITest):
         self.assertEqual(400, response.status_code)
 
     def test__can_retrieve_created_collection(self):
-        test_url = furl(path="/dp/v1/collections/")
+        test_url = furl(path="/dp/v1/collections")
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_cxguser_token()}
         data = {
             "name": "another collection name",
@@ -709,7 +709,7 @@ class TestCollection(BaseAuthAPITest):
         self.assertEqual("READ", json.loads(response.data)["access_type"])
 
     def test__create_collection_strip_string_fields(self):
-        test_url = furl(path="/dp/v1/collections/")
+        test_url = furl(path="/dp/v1/collections")
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_cxguser_token()}
         data = {
             "name": "   another collection name   ",
@@ -1094,7 +1094,9 @@ class TestCollectionDeletion(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
             self.session, visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id"
         )
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_cxguser_token()}
-        response = self.app.get("/dp/v1/collections/", headers=headers)
+        response = self.app.get("/dp/v1/collections", headers=headers)
+
+        print(f"%%%%%%%%%%%% {response.data}")
 
         collection_ids = [collection["id"] for collection in json.loads(response.data)["collections"]]
         self.assertIn(private_collection.id, collection_ids)
@@ -1106,7 +1108,7 @@ class TestCollectionDeletion(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         self.assertEqual(response.status_code, 204)
 
         # check not returned privately
-        response = self.app.get("/dp/v1/collections/", headers=headers)
+        response = self.app.get("/dp/v1/collections", headers=headers)
         collection_ids = [collection["id"] for collection in json.loads(response.data)["collections"]]
         self.assertIn(private_collection.id, collection_ids)
         self.assertIn(public_collection.id, collection_ids)
@@ -1115,7 +1117,7 @@ class TestCollectionDeletion(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
 
         # check not returned publicly
         headers = {"host": "localhost", "Content-Type": "application/json"}
-        response = self.app.get("/dp/v1/collections/", headers=headers)
+        response = self.app.get("/dp/v1/collections", headers=headers)
         collection_ids = [collection["id"] for collection in json.loads(response.data)["collections"]]
         self.assertIn(public_collection.id, collection_ids)
         self.assertNotIn(private_collection.id, collection_ids)
