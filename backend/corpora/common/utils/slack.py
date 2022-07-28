@@ -21,9 +21,9 @@ def notify_slack(data):
     This will only create a slack notification if called in the production env
     In all other envs (and in prod) it will simply log alert data
     """
-    slack_webhook = CorporaConfig().slack_webhook
     logger.info(f"Slack notification function called with message: {data}")
     if os.getenv("DEPLOYMENT_STAGE") == "prod":
+        slack_webhook = CorporaConfig().slack_webhook
         requests.post(slack_webhook, headers={"Content-type": "application/json"}, data=data)
 
 
@@ -82,3 +82,34 @@ def format_failed_batch_issue_slack_alert(data):
     data = batch_data | data
 
     return json.dumps(data, indent=2)
+
+
+def gen_wmg_pipeline_failure_message(failure_info: str) -> dict:
+    return {
+        "blocks": [
+            {
+                "type": "header",
+                "text": {
+                    "type": "plain_text",
+                    "text": f"WMG Corpus Asset Pipeline Failed:fire: \n{failure_info}",
+                    "emoji": True,
+                },
+            }
+        ]
+    }
+
+
+def gen_wmg_pipeline_success_message(snapshot_id: str) -> dict:
+    return {
+        "blocks": [
+            {
+                "type": "header",
+                "text": {
+                    "type": "plain_text",
+                    "text": f"Corpus Asset Pipeline Succeeded:tada: "
+                    f"\nWMG (prod) snapshot stored in 'cellxgene-wmg-prod' under: {snapshot_id}",
+                    "emoji": True,
+                },
+            }
+        ]
+    }

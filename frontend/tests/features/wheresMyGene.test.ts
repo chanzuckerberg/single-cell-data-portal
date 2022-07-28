@@ -10,6 +10,8 @@ import { getTestID, getText } from "../utils/selectors";
 
 const GENE_LABELS_ID = "gene-labels";
 const CELL_TYPE_LABELS_ID = "cell-type-labels";
+const ADD_TISSUE_ID = "add-tissue";
+const ADD_GENE_ID = "add-gene";
 
 describeIfDevStagingProd("Where's My Gene", () => {
   it("renders the getting started UI", async () => {
@@ -30,11 +32,11 @@ describeIfDevStagingProd("Where's My Gene", () => {
     // https://playwright.dev/docs/selectors#intermediate-matches
 
     async function getTissueSelectorButton() {
-      return page.$(getTestID("add-tissue"));
+      return page.$(getTestID(ADD_TISSUE_ID));
     }
 
     async function getGeneSelectorButton() {
-      return page.$(getTestID("add-gene"));
+      return page.$(getTestID(ADD_GENE_ID));
     }
 
     await clickUntilOptionsShowUp(getTissueSelectorButton);
@@ -66,11 +68,11 @@ describeIfDevStagingProd("Where's My Gene", () => {
     await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`);
 
     async function getTissueSelectorButton() {
-      return page.$(getTestID("add-tissue"));
+      return page.$(getTestID(ADD_TISSUE_ID));
     }
 
     async function getGeneSelectorButton() {
-      return page.$(getTestID("add-gene"));
+      return page.$(getTestID(ADD_GENE_ID));
     }
 
     await clickUntilOptionsShowUp(getTissueSelectorButton);
@@ -130,11 +132,11 @@ describeIfDevStagingProd("Where's My Gene", () => {
     await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`);
 
     async function getTissueSelectorButton() {
-      return page.$(getTestID("add-tissue"));
+      return page.$(getTestID(ADD_TISSUE_ID));
     }
 
     async function getGeneSelectorButton() {
-      return page.$(getTestID("add-gene"));
+      return page.$(getTestID(ADD_GENE_ID));
     }
 
     const TISSUE_COUNT = 1;
@@ -186,15 +188,15 @@ describeIfDevStagingProd("Where's My Gene", () => {
     await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`);
 
     async function getTissueSelectorButton() {
-      return page.$(getTestID("add-tissue"));
+      return page.$(getTestID(ADD_TISSUE_ID));
     }
 
     async function getGeneSelectorButton() {
-      return page.$(getTestID("add-gene"));
+      return page.$(getTestID(ADD_GENE_ID));
     }
 
     await clickUntilOptionsShowUp(getTissueSelectorButton);
-    await selectFirstNOptions(3);
+    await selectFirstNOptions(1);
 
     await clickUntilOptionsShowUp(getGeneSelectorButton);
     await selectFirstNOptions(3);
@@ -224,7 +226,12 @@ describeIfDevStagingProd("Where's My Gene", () => {
       );
 
       expect(afterGeneNames.length).toBe(beforeGeneNames.length - 1);
-      expect(afterCellTypeNames.length).toBe(beforeCellTypeNames.length - 1);
+
+      // (thuang): We need to half the cellTypeName count, because it's grabbing
+      // Cell Count text elements as well.
+      expect(afterCellTypeNames.length / 2).toBe(
+        beforeCellTypeNames.length / 2 - 1
+      );
 
       expect(afterGeneNames).not.toEqual(beforeGeneNames);
       expect(afterCellTypeNames).not.toEqual(beforeCellTypeNames);
