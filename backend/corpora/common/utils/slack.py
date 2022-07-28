@@ -49,9 +49,9 @@ def format_dataset_processing_failure_slack_message(dataset_id):
                 "text": {
                     "type": "mrkdwn",
                     "text": f"Dataset processing job failed!\n"
-                            f"*Owner*: {collection_owner}\n"
-                            f"*Collection*: https://cellxgene.cziscience.com/collections/{collection_id}/private\n"
-                            f"*Processing Status*:\n",
+                    f"*Owner*: {collection_owner}\n"
+                    f"*Collection*: https://cellxgene.cziscience.com/collections/{collection_id}/private\n"
+                    f"*Processing Status*:\n",
                 },
             },
             {
@@ -107,7 +107,7 @@ def gen_wmg_pipeline_success_message(snapshot_id: str) -> dict:
                 "text": {
                     "type": "plain_text",
                     "text": f"Corpus Asset Pipeline Succeeded:tada: "
-                            f"\nWMG (prod) snapshot stored in 'cellxgene-wmg-prod' under: {snapshot_id}",
+                    f"\nWMG (prod) snapshot stored in 'cellxgene-wmg-prod' under: {snapshot_id}",
                     "emoji": True,
                 },
             }

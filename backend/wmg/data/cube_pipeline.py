@@ -26,8 +26,6 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
-
-
 def load_data_and_create_cube(
     path_to_h5ad_datasets: str,
     corpus_name: str = "corpus_group",

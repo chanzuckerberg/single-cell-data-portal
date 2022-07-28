@@ -22,8 +22,8 @@ def transform(
     corpus_path: str, gene_ontology_term_ids: list, cube_dims: list
 ) -> (pd.DataFrame, np.ndarray, np.ndarray):
     """
-     Build the summary cube with sum, nnz (non zero), min and max values for
-     each gene for each possible group of features
+    Build the summary cube with sum, nnz (non zero), min and max values for
+    each gene for each possible group of features
     """
 
     cell_labels, cube_index = make_cube_index(corpus_path, cube_dims)
@@ -63,7 +63,7 @@ def reduce_X(tdb_group: str, cube_indices, cube_sum, cube_nnz):
                     result["var_idx"].values,
                     cube_indices,
                     cube_sum,
-                    cube_nnz
+                    cube_nnz,
                 )
 
 
