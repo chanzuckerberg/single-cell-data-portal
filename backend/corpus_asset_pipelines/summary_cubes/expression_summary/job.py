@@ -1,5 +1,7 @@
 import logging
 
+import numpy as np
+import pandas as pd
 import tiledb
 
 from backend.corpus_asset_pipelines.summary_cubes.expression_summary.extract import extract_var_data
@@ -15,7 +17,7 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
-def _load(uri: str, gene_ontology_term_ids: list, cube_index, cube_sum, cube_nnz):
+def _load(uri: str, gene_ontology_term_ids: list, cube_index: pd.DataFrame, cube_sum: np.ndarray, cube_nnz: np.ndarray):
     """
     Build expression summary cube in memory and write to disk
     """
@@ -50,5 +52,4 @@ def create_expression_summary_cube(corpus_path: str):
 
         # transform
         cube_index, cube_sum, cube_nnz = transform(corpus_path, gene_ontology_term_ids, cube_dims)
-
         _load(uri, gene_ontology_term_ids, cube_index, cube_sum, cube_nnz)

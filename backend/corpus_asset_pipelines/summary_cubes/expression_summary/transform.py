@@ -22,8 +22,8 @@ def transform(
     corpus_path: str, gene_ontology_term_ids: list, cube_dims: list
 ) -> (pd.DataFrame, np.ndarray, np.ndarray):
     """
-    Build the summary cube with sum, nnz (non zero), min and max values for
-    each gene for each possible group of features
+    Build the summary cube with rankit expression sum, nnz (num cells with non zero expression) values for
+    each gene for each possible group of cell attributes (cube row)
     """
 
     cell_labels, cube_index = make_cube_index(corpus_path, cube_dims)
@@ -33,16 +33,15 @@ def transform(
     cube_sum = np.zeros((n_groups, n_genes), dtype=np.float32)
     cube_nnz = np.zeros((n_groups, n_genes), dtype=np.uint64)
 
-    # pass 1 - sum, nnz, min, max
     reduce_X(corpus_path, cell_labels.cube_idx.values, cube_sum, cube_nnz)
     return cube_index, cube_sum, cube_nnz
 
 
 @log_func_runtime
-def reduce_X(tdb_group: str, cube_indices, cube_sum, cube_nnz):
+def reduce_X(tdb_group: str, cube_indices: np.ndarray, cube_sum: np.ndarray, cube_nnz: np.ndarray):
     """
     Reduce the expression data stored in the integrated corpus by summing it by gene for each cube row (unique combo
-    of cell features)
+    of cell attributes)
     """
     with concurrent.futures.ThreadPoolExecutor() as executor:
         cfg = {
@@ -69,7 +68,14 @@ def reduce_X(tdb_group: str, cube_indices, cube_sum, cube_nnz):
 
 # TODO: this could be further optimize by parallel chunking.  Might help large arrays if compute ends up being a bottleneck. # noqa E501
 @nb.njit(fastmath=True, error_model="numpy", parallel=False, nogil=True)
-def gene_expression_sum_x_cube_dimension(rankit_values, obs_idxs, var_idx, cube_indices, sum_into, nnz_into):
+def gene_expression_sum_x_cube_dimension(
+    rankit_values: np.ndarray,
+    obs_idxs: np.ndarray,
+    var_idx: np.ndarray,
+    cube_indices: np.ndarray,
+    sum_into: np.ndarray,
+    nnz_into: np.ndarray,
+):
     """
     Sum the rankit values for each gene (for each cube row/combo of cell attributes)
     Also track the number of cells that express that gene (nnz count)

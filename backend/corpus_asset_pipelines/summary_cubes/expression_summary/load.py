@@ -1,12 +1,14 @@
 import logging
 
 import numpy as np
+import pandas as pd
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
-def build_in_mem_cube(gene_ids, cube_index, other_attrs, cube_sum, cube_nnz):
+def build_in_mem_cube(gene_ids: pd.DataFrame, cube_index: pd.DataFrame, other_cube_attrs: list, cube_sum: np.ndarray,
+                      cube_nnz: np.ndarray):
     """
     Build the cube in memory, calculating the gene expression value for each combination of attributes
     """
@@ -28,7 +30,7 @@ def build_in_mem_cube(gene_ids, cube_index, other_attrs, cube_sum, cube_nnz):
         "sum": np.empty((total_vals,)),
         "nnz": np.empty((total_vals,), dtype=np.uint64),
         "n_cells": np.empty((total_vals,), dtype=np.uint32),
-        **{k: np.empty((total_vals,), dtype=object) for k in other_attrs},
+        **{k: np.empty((total_vals,), dtype=object) for k in other_cube_attrs},
     }
 
     # populate buffers
@@ -49,16 +51,16 @@ def build_in_mem_cube(gene_ids, cube_index, other_attrs, cube_sum, cube_nnz):
 
         logger.debug(grp)
 
-        dims[0][idx : idx + n_vals] = gene_ids.gene_ontology_term_id.values[mask]
-        dims[1][idx : idx + n_vals] = tissue_ontology_term_id
-        dims[2][idx : idx + n_vals] = organism_ontology_term_id
+        dims[0][idx: idx + n_vals] = gene_ids.gene_ontology_term_id.values[mask]
+        dims[1][idx: idx + n_vals] = tissue_ontology_term_id
+        dims[2][idx: idx + n_vals] = organism_ontology_term_id
 
-        vals["sum"][idx : idx + n_vals] = cube_sum[cube_idx, mask]
-        vals["nnz"][idx : idx + n_vals] = cube_nnz[cube_idx, mask]
-        vals["n_cells"][idx : idx + n_vals] = n  # wasteful
+        vals["sum"][idx: idx + n_vals] = cube_sum[cube_idx, mask]
+        vals["nnz"][idx: idx + n_vals] = cube_nnz[cube_idx, mask]
+        vals["n_cells"][idx: idx + n_vals] = n  # wasteful
 
-        for i, k in enumerate(other_attrs):
-            vals[k][idx : idx + n_vals] = attr_values[i]
+        for i, k in enumerate(other_cube_attrs):
+            vals[k][idx: idx + n_vals] = attr_values[i]
 
         idx += n_vals
 
