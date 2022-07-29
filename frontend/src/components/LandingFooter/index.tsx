@@ -1,4 +1,6 @@
 import Image from "next/image";
+import { track } from "src/common/analytics";
+import { EVENTS } from "src/common/analytics/events";
 import { ROUTES } from "src/common/constants/routes";
 import wordmark from "src/common/images/cellxgene-discover-wordmark.svg";
 import CZILogo from "src/components/common/staticPages/czi-logo-white.png";
@@ -16,6 +18,9 @@ const LandingFooter = (): JSX.Element => {
 
         <div className={styles.footerTopLinks}>
           <a
+            onClick={() => {
+              track(EVENTS.GITHUB_CLICKED);
+            }}
             href="https://github.com/chanzuckerberg/single-cell-data-portal"
             target="_blank"
             rel="noopener"
@@ -23,6 +28,11 @@ const LandingFooter = (): JSX.Element => {
             Github
           </a>
           <a
+            onClick={() => {
+              track(EVENTS.BROWSE_CAREERS_CLICKED, {
+                button: "careers",
+              });
+            }}
             href="https://chanzuckerberg.com/careers/career-opportunities/?team=data,design,engineering,product,technical-program-management&initiative=science&gh_src=20d9f28d1us"
             target="_blank"
             rel="noopener"
@@ -40,7 +50,14 @@ const LandingFooter = (): JSX.Element => {
           <a href={ROUTES.TOS} target="_blank" rel="noopener">
             Terms
           </a>
-          <a href="mailto:cellxgene@chanzuckerberg.com">Contact Us</a>
+          <a
+            onClick={() => {
+              track(EVENTS.CONTACT_US_CLICKED);
+            }}
+            href="mailto:cellxgene@chanzuckerberg.com"
+          >
+            Contact Us
+          </a>
         </div>
 
         <div className={styles.footerBottomLogos}>

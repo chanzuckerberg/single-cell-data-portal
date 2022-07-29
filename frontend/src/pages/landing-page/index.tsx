@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useRef, useState } from "react";
 import { useInView } from "react-intersection-observer";
 import TweetEmbed from "react-tweet-embed";
+import { track } from "src/common/analytics";
+import { EVENTS } from "src/common/analytics/events";
 import { ROUTES } from "src/common/constants/routes";
 import wordmark from "src/common/images/cellxgene-discover-wordmark.svg";
 import AnalyzeDatasetsImg from "src/components/common/staticPages/analyze-datasets.png";
@@ -246,6 +248,8 @@ const LandingPage = (): JSX.Element => {
                     scrollSection1.current?.scrollIntoView({
                       behavior: "smooth",
                     });
+
+                    track(EVENTS.HOMEPAGE_LEARN_FIND_SINGLE_CELL_DATA_CLICKED);
                   }}
                 >
                   Find single-cell data
@@ -258,6 +262,10 @@ const LandingPage = (): JSX.Element => {
                     scrollSection2.current?.scrollIntoView({
                       behavior: "smooth",
                     });
+
+                    track(
+                      EVENTS.HOMEPAGE_LEARN_EXPLORE_GENE_EXPRESSION_CLICKED
+                    );
                   }}
                 >
                   Explore gene expression
@@ -272,6 +280,8 @@ const LandingPage = (): JSX.Element => {
                     scrollSection3.current?.scrollIntoView({
                       behavior: "smooth",
                     });
+
+                    track(EVENTS.HOMEPAGE_LEARN_ANALYZE_DATASETS_CLICKED);
                   }}
                 >
                   Analyze datasets
@@ -284,6 +294,8 @@ const LandingPage = (): JSX.Element => {
                     scrollSection4.current?.scrollIntoView({
                       behavior: "smooth",
                     });
+
+                    track(EVENTS.HOMEPAGE_LEARN_DOWNLOAD_DATA_CLICKED);
                   }}
                 >
                   Download data
@@ -296,6 +308,8 @@ const LandingPage = (): JSX.Element => {
                     scrollSection5.current?.scrollIntoView({
                       behavior: "smooth",
                     });
+
+                    track(EVENTS.HOMEPAGE_LEARN_EXPEDITE_COLLABORATION_CLICKED);
                   }}
                 >
                   Expedite collaboration
@@ -336,7 +350,13 @@ const LandingPage = (): JSX.Element => {
                         </p>
                         <div className={styles.linkContainer}>
                           <Link href={ROUTES.COLLECTIONS} passHref>
-                            <a>
+                            <a
+                              onClick={() =>
+                                track(EVENTS.BROWSE_COLLECTIONS_CLICKED, {
+                                  button: "browse data collections",
+                                })
+                              }
+                            >
                               Browse data collections
                               <span className={styles.linkArrow}>
                                 <LinkArrow />
@@ -385,7 +405,7 @@ const LandingPage = (): JSX.Element => {
                         </p>
                         <div className={styles.linkContainer}>
                           <Link href={ROUTES.WHERE_IS_MY_GENE} passHref>
-                            <a>
+                            <a onClick={() => track(EVENTS.WMG_CLICKED, {})}>
                               See how it works
                               <span className={styles.linkArrow}>
                                 <LinkArrow />
@@ -437,7 +457,21 @@ const LandingPage = (): JSX.Element => {
                         </p>
                         <div className={styles.linkContainer}>
                           <a
+                            /**
+                             * (thuang): Open in a new tab, so we don't lose
+                             * analytics API call that would otherwise get
+                             * cancelled due to a new full page request
+                             */
                             href={`${ROUTES.HOMEPAGE}e/53d208b0-2cfd-4366-9866-c3c6114081bc.cxg/`}
+                            rel="noopener"
+                            target="_blank"
+                            onClick={() =>
+                              track(EVENTS.DATASET_EXPLORE_CLICKED, {
+                                // (thuang): Please update the dataset name when the href link changes
+                                // to a different dataset
+                                dataset_name: "Tabula Sapiens - All Cells",
+                              })
+                            }
                           >
                             Explore a multi-tissue atlas
                             <span className={styles.linkArrow}>
@@ -445,7 +479,13 @@ const LandingPage = (): JSX.Element => {
                             </span>
                           </a>
                           <Link href={ROUTES.COLLECTIONS} passHref>
-                            <a>
+                            <a
+                              onClick={() =>
+                                track(EVENTS.BROWSE_COLLECTIONS_CLICKED, {
+                                  button: "explore the studies",
+                                })
+                              }
+                            >
                               Explore the studies
                               <span className={styles.linkArrow}>
                                 <LinkArrow />
@@ -457,6 +497,9 @@ const LandingPage = (): JSX.Element => {
                             href={`${ROUTES.DOCS}/04__Analyze%20Public%20Data/4_1__Hosted%20Tutorials`}
                             rel="noopener"
                             target="_blank"
+                            onClick={() =>
+                              track(EVENTS.BROWSE_TUTORIALS_CLICKED)
+                            }
                           >
                             Browse tutorials
                             <span className={styles.linkArrow}>
@@ -505,7 +548,13 @@ const LandingPage = (): JSX.Element => {
                         </p>
                         <div className={styles.linkContainer}>
                           <Link href={ROUTES.COLLECTIONS} passHref>
-                            <a>
+                            <a
+                              onClick={() =>
+                                track(EVENTS.BROWSE_COLLECTIONS_CLICKED, {
+                                  button: "browse datasets for download",
+                                })
+                              }
+                            >
                               Browse datasets for download
                               <span className={styles.linkArrow}>
                                 <LinkArrow />
@@ -553,6 +602,11 @@ const LandingPage = (): JSX.Element => {
                         </p>
                         <div className={styles.linkContainer}>
                           <a
+                            onClick={() => {
+                              track(
+                                EVENTS.EXPLORE_CZ_CELLXGENE_ANNOTATE_CLICKED
+                              );
+                            }}
                             href={`${ROUTES.DOCS}/05__Annotate%20and%20Analyze%20Your%20Data/5_0__Get%20Started`}
                           >
                             Explore CZ CELLxGENE Annotate
@@ -608,6 +662,16 @@ const LandingPage = (): JSX.Element => {
                           href={link.ctaLink}
                           target="_blank"
                           rel="noopener"
+                          onClick={
+                            // (thuang): We use `ctaLogo` to infer a collection page link
+                            // If this no longer true, we need to update this logic
+                            link.ctaLogo
+                              ? () =>
+                                  track(EVENTS.VIEW_COLLECTION_PAGE_CLICKED, {
+                                    collection_name: pub.title,
+                                  })
+                              : undefined
+                          }
                         >
                           {link.ctaText}
                           <span className={styles.linkArrow}>
