@@ -620,9 +620,7 @@ async function fetchDatasets(): Promise<DatasetResponse[]> {
 
   // Correct any dirty data returned from endpoint.
   return datasets.map((dataset: DatasetResponse) => {
-    const test = sanitizeDatasetResponse(dataset);
-    console.log(test.development_stage_ancestors);
-    return test;
+    return sanitizeDatasetResponse(dataset);
   });
 }
 

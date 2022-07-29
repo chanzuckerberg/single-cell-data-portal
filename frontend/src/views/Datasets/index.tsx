@@ -101,7 +101,7 @@ export default function Datasets(): JSX.Element {
           <NTagCell label={PLURALIZED_METADATA_LABEL.TISSUE} values={value} />
         ),
         Header: "Tissue",
-        accessor: ontologyCellAccessorFn(CATEGORY_KEY.TISSUE),
+        accessor: ontologyCellAccessorFn("tissue"),
         filter: "includesSome",
         id: CATEGORY_KEY.TISSUE,
       },
@@ -113,7 +113,7 @@ export default function Datasets(): JSX.Element {
           />
         ),
         Header: "Disease",
-        accessor: ontologyCellAccessorFn(CATEGORY_KEY.DISEASE),
+        accessor: ontologyCellAccessorFn("disease"),
         filter: "includesSome",
         id: CATEGORY_KEY.DISEASE,
       },
@@ -122,7 +122,7 @@ export default function Datasets(): JSX.Element {
           <NTagCell label={PLURALIZED_METADATA_LABEL.ASSAY} values={value} />
         ),
         Header: "Assay",
-        accessor: ontologyCellAccessorFn(CATEGORY_KEY.ASSAY),
+        accessor: ontologyCellAccessorFn("assay"),
         filter: "includesSome",
         id: CATEGORY_KEY.ASSAY,
       },
@@ -131,7 +131,7 @@ export default function Datasets(): JSX.Element {
           <NTagCell label={PLURALIZED_METADATA_LABEL.ORGANISM} values={value} />
         ),
         Header: "Organism",
-        accessor: ontologyCellAccessorFn(CATEGORY_KEY.ORGANISM),
+        accessor: ontologyCellAccessorFn("organism"),
         filter: "includesSome",
         id: CATEGORY_KEY.ORGANISM,
       },
@@ -185,7 +185,7 @@ export default function Datasets(): JSX.Element {
       },
       // Hidden, required for filter.
       {
-        accessor: ontologyCellAccessorFn(CATEGORY_KEY.CELL_TYPE),
+        accessor: ontologyCellAccessorFn("cell_type"),
         filter: "includesSome",
         id: CATEGORY_KEY.CELL_TYPE,
       },
@@ -196,7 +196,7 @@ export default function Datasets(): JSX.Element {
       },
       // Hidden, required for filter.
       {
-        accessor: ontologyCellAccessorFn(CATEGORY_KEY.ETHNICITY),
+        accessor: ontologyCellAccessorFn("ethnicity"),
         filter: "includesSome",
         id: CATEGORY_KEY.ETHNICITY,
       },
@@ -223,7 +223,7 @@ export default function Datasets(): JSX.Element {
       },
       // Hidden, required for filter.
       {
-        accessor: ontologyCellAccessorFn(CATEGORY_KEY.SEX),
+        accessor: ontologyCellAccessorFn("sex"),
         filter: "includesSome",
         id: CATEGORY_KEY.SEX,
       },

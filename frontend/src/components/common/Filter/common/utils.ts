@@ -2,7 +2,7 @@
 import { Ontology } from "src/common/entities";
 import {
   Categories,
-  OntologyCategoryKey,
+  CategoriesKeyOfTypeOntologyArray,
   OntologyNode,
   OntologyTermSet,
   ONTOLOGY_VIEW_KEY,
@@ -136,9 +136,9 @@ export function listOntologyTreeIds(
  * @param categoryKey - Object key of value to display in cell.
  * @returns Function that returns value with the given key, to display in a cell.
  */
-export function ontologyCellAccessorFn(
-  categoryKey: OntologyCategoryKey
-): OntologyCellAccessorFn {
+export function ontologyCellAccessorFn<
+  K extends CategoriesKeyOfTypeOntologyArray
+>(categoryKey: K): OntologyCellAccessorFn {
   return (categories: Categories) =>
     categories[categoryKey].map((o: Ontology) => o.label);
 }

@@ -22,7 +22,7 @@ export interface CategoryConfig {
 /**
  * Possible set of keys to filter over.
  */
-export type FilterKey = keyof CollectionRow | DatasetRow;
+export type FilterKey = keyof CollectionRow | keyof DatasetRow;
 
 /**
  * Configuration model of ontology category.
@@ -105,6 +105,13 @@ export interface Categories {
   tissue: Ontology[]; // TODO(cc) remove with #2569.
   tissue_ancestors: string[];
 }
+
+/**
+ * Keys of Categories that are ontology arrays.
+ */
+export type CategoriesKeyOfTypeOntologyArray = {
+  [K in keyof Categories]: Categories[K] extends Ontology[] ? K : never;
+}[keyof Categories];
 
 /**
  * Join of collection, dataset and aggregated dataset information, optimized for filtering collections (that is,
@@ -2782,7 +2789,8 @@ const CATEGORY_CONFIGS: (CategoryConfig | OntologyCategoryConfig)[] = [
     categoryKey: CATEGORY_KEY.ORGANISM,
     categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
     filterCategoryKey: FILTER_CATEGORY_KEY.ORGANISM,
-    filterKey: "organismx",
+    filterKey: "organism",
+    label: "Organism",
     multiselect: true,
   },
   {
