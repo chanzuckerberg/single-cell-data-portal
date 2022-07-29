@@ -31,7 +31,7 @@ def process(dataset_id: str, dropbox_url: str, artifact_bucket: str):
     :return:
     """
 
-    update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.PENDING))
+    update_db(dataset_id, processing_status=dict(processing_status=ProcessingStatus.PENDING.name))
 
     # Download the original dataset from Dropbox
     local_filename = download_from_source_uri(
@@ -47,11 +47,13 @@ def process(dataset_id: str, dropbox_url: str, artifact_bucket: str):
     update_db(dataset_id, metadata)
 
     if not can_convert_to_seurat:
-        update_db(dataset_id, processing_status=dict(rds_status=ConversionStatus.SKIPPED))
+        update_db(dataset_id, processing_status=dict(rds_status=ConversionStatus.SKIPPED.name))
         logger.info(f"Skipping Seurat conversion for dataset {dataset_id}")
+    else:
+        update_db(dataset_id, processing_status=dict(rds_status=""))
 
     # Upload the labeled dataset to the artifact bucket
     bucket_prefix = get_bucket_prefix(dataset_id)
     create_artifact(
-        file_with_labels, DatasetArtifactFileType.H5AD, bucket_prefix, dataset_id, artifact_bucket, "h5ad_status"
+        file_with_labels, DatasetArtifactFileType.H5AD.name, bucket_prefix, dataset_id, artifact_bucket, "h5ad_status"
     )

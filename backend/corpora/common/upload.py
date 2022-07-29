@@ -87,8 +87,8 @@ def upload(
     if dataset:
         # Update dataset
         if dataset['processing_status']['processing_status'] not in [
-            ProcessingStatus.SUCCESS,
-            ProcessingStatus.FAILURE,
+            ProcessingStatus.SUCCESS.name,
+            ProcessingStatus.FAILURE.name,
         ]:
             raise InvalidProcessingStateException(
                 f"Unable to reprocess dataset {dataset_id}: {dataset['processing_status']['processing_status']}"

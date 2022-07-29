@@ -79,13 +79,13 @@ export interface Collection {
   contact_name: string;
   description: string;
   id: string;
-  organs: string[];
+  // organs: string[];
   name: string;
   owner: string;
   visibility: VISIBILITY_TYPE;
   datasets: Map<Dataset["id"], Dataset>;
   links: Link[];
-  data_submission_policy_version: string;
+  // data_submission_policy_version: string;
   created_at: number;
   updated_at: number;
   publisher_metadata: PublisherMetadata;

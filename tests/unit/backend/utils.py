@@ -18,12 +18,12 @@ class BogusProcessingStatusParams:
     @classmethod
     def get(cls, **kwargs):
         bogus_data = dict(
-            upload_status=UploadStatus.UPLOADING,
+            upload_status=UploadStatus.UPLOADING.name,
             upload_progress=1 / 9,
-            validation_status=ValidationStatus.NA,
-            rds_status=ConversionStatus.NA,
-            cxg_status=ConversionStatus.NA,
-            h5ad_status=ConversionStatus.NA,
+            validation_status=ValidationStatus.NA.name,
+            rds_status=ConversionStatus.NA.name,
+            cxg_status=ConversionStatus.NA.name,
+            h5ad_status=ConversionStatus.NA.name,
         )
         bogus_data.update(**kwargs)
         return bogus_data
@@ -87,7 +87,7 @@ class BogusDbCollectionLinkParams:
             collection_id="test_collection_id",
             link_name="link_name",
             link_url="http://good.link",
-            link_type=CollectionLinkType.OTHER,
+            link_type=CollectionLinkType.OTHER.name,
         )
         bogus_data.update(**kwargs)
         return bogus_data

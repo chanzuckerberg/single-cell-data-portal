@@ -497,7 +497,7 @@ paths:
         "400":
           $ref: "#/components/responses/400"
 
-  /v1/datasets/{dataset_id}:
+  /v1/datasets/{dataset_id}/{collection_id}:
     delete:
       tags:
         - datasets
@@ -774,8 +774,10 @@ paths:
                       $ref: "#/components/schemas/ontology_element_array"
                     is_primary_data:
                       $ref: "#/components/schemas/is_primary_data"
-                    explorer_url:
-                      type: string
+                    dataset_deployments:
+                      type: array
+                      items:
+                        type: string
         "400":
           $ref: "#/components/responses/400"
 
@@ -990,6 +992,8 @@ components:
           type: string
         publisher_metadata:
           $ref: "#/components/schemas/publisher_metadata"
+        schema_version:
+          type: string
         datasets:
           type: array
           items:

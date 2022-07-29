@@ -43,10 +43,11 @@ export const USE_DELETE_DATASET = {
   id: "dataset",
 };
 
-async function deleteDataset(dataset_id = ""): Promise<DatasetUploadStatus> {
+async function deleteDataset(collection_id = "", dataset_id = ""): Promise<DatasetUploadStatus> {
   if (!dataset_id) throw new Error("No dataset id provided");
+  if (!collection_id) throw new Error("No collection id provided");
 
-  const url = apiTemplateToUrl(API_URL + API.DATASET, { dataset_id });
+  const url = apiTemplateToUrl(API_URL + API.DATASET, { dataset_id, collection_id });
   const response = await fetch(url, DELETE_FETCH_OPTIONS);
 
   if (response.ok) return await response.json();
@@ -54,10 +55,15 @@ async function deleteDataset(dataset_id = ""): Promise<DatasetUploadStatus> {
   throw Error(response.statusText);
 }
 
-export function useDeleteDataset(collection_id = "") {
+export function useDeleteDataset(collection_id = "", dataset_id = "") {
   if (!collection_id) {
     throw new Error("No collection id given");
   }
+  if (!dataset_id) {
+    throw new Error("No dataset id given");
+  }
+  deleteDataset(collection_id, dataset_id)
+  return
 
   const queryClient = useQueryClient();
 

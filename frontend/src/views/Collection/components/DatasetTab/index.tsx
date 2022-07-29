@@ -45,6 +45,12 @@ const DatasetTab: FC<Props> = ({
   const isDatasetPresent =
     datasets?.length > 0 || Object.keys(uploadedFiles).length > 0;
 
+  if (isDatasetPresent) { // needed since API no longer stores collection_id in dataset
+    for (let dataset of datasets) {
+      dataset.collection_id = collectionId;
+    }
+  }
+
   const invalidateCollectionQuery = useCallback(() => {
     queryClient.invalidateQueries([USE_COLLECTION, collectionId]);
   }, [collectionId]);

@@ -140,7 +140,7 @@ def updater(dataset_id, processing_status, tracker: ProgressTracker, frequency: 
 
 def _processing_status_updater(processing_status: dict, updates: dict):
     for key, value in updates.items():
-        setattr(processing_status, key, value)
+        processing_status[key] = value
 
 
 def download(
@@ -169,13 +169,13 @@ def download(
     logger.info(f"file_size: {file_size}")
     if file_size and file_size >= shutil.disk_usage("/")[2]:
         status_dict = {
-            "upload_status": UploadStatus.FAILED,
+            "upload_status": UploadStatus.FAILED.name,
             "upload_message": "Insufficient disk space.",
         }
         logger.error(f"Upload failed: {status_dict}")
         raise ProcessingFailed(status_dict)
     processing_status = db.get_dataset(dataset_id)['processing_status']
-    processing_status['upload_status'] = UploadStatus.UPLOADING
+    processing_status['upload_status'] = UploadStatus.UPLOADING.name
     processing_status['upload_progress'] = 0
     if file_size is not None:
         progress_tracker = ProgressTracker(file_size)
@@ -184,7 +184,7 @@ def download(
 
     progress_thread = threading.Thread(
         target=updater,
-        kwargs=dict(processing_status=processing_status, tracker=progress_tracker, frequency=update_frequency),
+        kwargs=dict(dataset_id=dataset_id, processing_status=processing_status, tracker=progress_tracker, frequency=update_frequency),
     )
     progress_thread.start()
     download_thread = threading.Thread(
@@ -198,13 +198,13 @@ def download(
         raise ProcessingCancelled
     if progress_tracker.error:
         status = {
-            "upload_status": UploadStatus.FAILED,
+            "upload_status": UploadStatus.FAILED.name,
             "upload_message": str(progress_tracker.error),
         }
         _processing_status_updater(processing_status, status)
 
     status_dict = processing_status
-    if processing_status['upload_status'] == UploadStatus.FAILED:
+    if processing_status['upload_status'] == UploadStatus.FAILED.name:
         logger.error(f"Upload failed: {status_dict}")
         raise ProcessingFailed(status_dict)
     else:

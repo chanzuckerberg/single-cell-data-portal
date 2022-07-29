@@ -1,4 +1,5 @@
 # Wraps tiledb_data.py to fit API expected responses
+import logging
 
 from flask import make_response, jsonify
 from backend.corpora.common.utils.http_exceptions import TooLargeHTTPException
@@ -11,6 +12,7 @@ from backend.corpora.common.utils.http_exceptions import InvalidParametersHTTPEx
 
 from backend.corpora.common.entities.tiledb_data import TileDBData
 
+logger = logging.getLogger(__name__)
 
 def create_collection(body: dict, user: str):
     """/v1/collections POST"""
@@ -106,7 +108,8 @@ def get_collection(collection_id: str, token_info: dict):
     coll['datasets'] = datasets
     owner = coll['owner']
     coll["access_type"] = "WRITE" if is_user_owner_or_allowed(token_info, owner) else "READ"
-    return make_response(coll, 200)
+    res = reshape_coll_for_api(coll)
+    return make_response(res, 200)
 
 
 def start_revision(collection_id: str, token_info: dict):
@@ -241,7 +244,7 @@ def delete_dataset(collection_id: str, dataset_id: str, token_info: dict):
         return make_response({"detail": "Collection not found."}, 404)
     if not is_user_owner_or_allowed(token_info, coll['owner']):
         return make_response({"detail": "Unauthorized to delete this dataset."}, 403)
-    if coll.visibility == "PUBLIC":
+    if coll['visibility'] == "PUBLIC":
         return make_response({"detail": "Cannot delete a public dataset."}, 405)
     if dataset_id not in coll['datasets']:
         return make_response({"detail": "Dataset not found."}, 405)
@@ -283,3 +286,28 @@ def get_dataset_upload_status(collection_id: str, dataset_id: str, token_info: d
         return make_response({"detail": "Dataset not found."}, 404)
     status = dataset['processing_status']
     return make_response(status, 200)
+
+
+def reshape_coll_for_api(result: dict):
+    """Modify some parts of a collection object to fit what the API and frontend expect. """
+    # TODO: Ideally, we wouldn't need this kind of adaptor at all
+    for hidden in ["user", "owner"]:
+        result.pop(hidden, None)
+    result["links"] = [
+        dict(link_url=link["link_url"], link_name=link.get("link_name", ""), link_type=link["link_type"])
+        for link in result["links"]
+    ]
+    datasets = []
+    for dataset in result["datasets"]:
+        dataset["dataset_deployments"] = []
+        explorer_url = dataset.pop("explorer_url", None)
+        if explorer_url:
+            dataset["dataset_deployments"].append({"url": explorer_url})
+        datasets.append(dataset)
+
+        from backend.corpora.common.entities import Dataset
+        Dataset.transform_sex_for_schema_2_0_0(dataset)
+        # Dataset.transform_organism_for_schema_2_0_0(dataset)
+
+    result["datasets"] = datasets
+    return result

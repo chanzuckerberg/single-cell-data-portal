@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 import logging
 
-from backend.corpora.common.entities.dataset import Dataset
-from backend.corpora.common.utils.db_session import db_session_manager
+from backend.corpora.common.entities.tiledb_data import TileDBData
 from backend.corpora.dataset_processing.process import (
     convert_file_ignore_exceptions,
     download_from_s3,
@@ -30,111 +29,110 @@ def process(dataset_id: str, artifact_bucket: str):
     :param local_filename:
     :return:
     """
+    db = TileDBData()
 
     # If the validator previously marked the dataset as rds_status.SKIPPED, do not start the Seurat processing
-    with db_session_manager() as session:
-        dataset = Dataset.get(session, dataset_id, include_tombstones=True)
+    dataset = db.get_dataset(dataset_id)
+    if dataset['processing_status']['rds_status'] == ConversionStatus.SKIPPED.name:
+        logger.info("Skipping Seurat conversion")
+        return
 
-        if dataset.processing_status.rds_status == ConversionStatus.SKIPPED:
-            logger.info("Skipping Seurat conversion")
-            return
+    labeled_h5ad_filename = "local.h5ad"
 
-        labeled_h5ad_filename = "local.h5ad"
+    # Four cases:
+    # 1. newly processed dataset: h5ad will exist with key == dataset_id, rds will not exist
+    # 2. non-revised reprocessed dataset with seurat
+    # 3. revised reprocessed dataset with no seurat: h5ad will exist with key != dataset_id, rds will not exist
+    # 4. revised reprocessed dataset with "to be replaced" seurat: h5ad will exist with key ≠ dataset_id,
+    #    rds will exist
 
-        # Four cases:
-        # 1. newly processed dataset: h5ad will exist with key == dataset_id, rds will not exist
-        # 2. non-revised reprocessed dataset with seurat
-        # 3. revised reprocessed dataset with no seurat: h5ad will exist with key != dataset_id, rds will not exist
-        # 4. revised reprocessed dataset with "to be replaced" seurat: h5ad will exist with key ≠ dataset_id,
-        #    rds will exist
+    h5ad_uri = next(a['s3_uri'] for a in dataset['dataset_assets'] if a['filetype'] == DatasetArtifactFileType.H5AD.name)
+    rds_artifacts = [a for a in dataset['dataset_assets'] if a['filetype'] == DatasetArtifactFileType.RDS.name]
+    artifact_key = h5ad_uri.split("/")[-2]
 
-        h5ad_uri = next(a.s3_uri for a in dataset.artifacts if a.filetype == DatasetArtifactFileType.H5AD)
-        rds_artifacts = [a for a in dataset.artifacts if a.filetype == DatasetArtifactFileType.RDS]
-        artifact_key = h5ad_uri.split("/")[-2]
+    if artifact_key == dataset_id and not rds_artifacts:  # Case 1
 
-        if artifact_key == dataset_id and not rds_artifacts:  # Case 1
+        bucket_prefix = get_bucket_prefix(dataset_id)
+        object_key = f"{bucket_prefix}/{labeled_h5ad_filename}"
+        download_from_s3(artifact_bucket, object_key, labeled_h5ad_filename)
 
-            bucket_prefix = get_bucket_prefix(dataset_id)
-            object_key = f"{bucket_prefix}/{labeled_h5ad_filename}"
-            download_from_s3(artifact_bucket, object_key, labeled_h5ad_filename)
+        seurat_filename = convert_file_ignore_exceptions(
+            make_seurat,
+            labeled_h5ad_filename,
+            "Failed to convert dataset to Seurat format.",
+            dataset_id,
+            "rds_status",
+        )
 
-            seurat_filename = convert_file_ignore_exceptions(
-                make_seurat,
-                labeled_h5ad_filename,
-                "Failed to convert dataset to Seurat format.",
+        if seurat_filename:
+            create_artifact(
+                seurat_filename,
+                DatasetArtifactFileType.RDS.name,
+                bucket_prefix,
                 dataset_id,
+                artifact_bucket,
                 "rds_status",
             )
 
-            if seurat_filename:
-                create_artifact(
-                    seurat_filename,
-                    DatasetArtifactFileType.RDS,
-                    bucket_prefix,
-                    dataset_id,
-                    artifact_bucket,
-                    "rds_status",
-                )
+    elif artifact_key == dataset_id and rds_artifacts:  # Case 2
+        logger.warning(f"Reprocessing Seurat for existing dataset {artifact_key}, will replace the S3 file only")
+        bucket_prefix = get_bucket_prefix(dataset_id)
+        object_key = f"{bucket_prefix}/{labeled_h5ad_filename}"
+        download_from_s3(artifact_bucket, object_key, labeled_h5ad_filename)
 
-        elif artifact_key == dataset_id and rds_artifacts:  # Case 2
-            logger.warning(f"Reprocessing Seurat for existing dataset {artifact_key}, will replace the S3 file only")
-            bucket_prefix = get_bucket_prefix(dataset_id)
-            object_key = f"{bucket_prefix}/{labeled_h5ad_filename}"
-            download_from_s3(artifact_bucket, object_key, labeled_h5ad_filename)
+        seurat_filename = convert_file_ignore_exceptions(
+            make_seurat,
+            labeled_h5ad_filename,
+            "Failed to convert dataset to Seurat format.",
+            dataset_id,
+            "rds_status",
+        )
 
-            seurat_filename = convert_file_ignore_exceptions(
-                make_seurat,
-                labeled_h5ad_filename,
-                "Failed to convert dataset to Seurat format.",
+        if seurat_filename:
+            replace_artifact(seurat_filename, bucket_prefix, artifact_bucket)
+            rds_artifact = rds_artifacts[0]  # Only one RDS artifact for dataset will ever exist
+            rds_artifact.updated_at = datetime.utcnow()
+
+    elif artifact_key != dataset_id and not rds_artifacts:  # Case 3
+        logger.warning(f"Found existing artifacts in {artifact_key} but no RDS, creating a new artifact")
+        bucket_prefix = get_bucket_prefix(artifact_key)
+        object_key = f"{bucket_prefix}/{labeled_h5ad_filename}"
+        download_from_s3(artifact_bucket, object_key, labeled_h5ad_filename)
+
+        seurat_filename = convert_file_ignore_exceptions(
+            make_seurat,
+            labeled_h5ad_filename,
+            "Failed to convert dataset to Seurat format.",
+            dataset_id,
+            "rds_status",
+        )
+
+        if seurat_filename:
+            create_artifact(
+                seurat_filename,
+                DatasetArtifactFileType.RDS.name,
+                bucket_prefix,
                 dataset_id,
+                artifact_bucket,
                 "rds_status",
             )
 
-            if seurat_filename:
-                replace_artifact(seurat_filename, bucket_prefix, artifact_bucket)
-                rds_artifact = rds_artifacts[0]  # Only one RDS artifact for dataset will ever exist
-                rds_artifact.updated_at = datetime.utcnow()
+    else:  # Case 4
+        logger.warning(f"Found existing artifacts in {artifact_key} including an RDS, replacing it")
 
-        elif artifact_key != dataset_id and not rds_artifacts:  # Case 3
-            logger.warning(f"Found existing artifacts in {artifact_key} but no RDS, creating a new artifact")
-            bucket_prefix = get_bucket_prefix(artifact_key)
-            object_key = f"{bucket_prefix}/{labeled_h5ad_filename}"
-            download_from_s3(artifact_bucket, object_key, labeled_h5ad_filename)
+        bucket_prefix = get_bucket_prefix(artifact_key)
+        object_key = f"{bucket_prefix}/{labeled_h5ad_filename}"
+        download_from_s3(artifact_bucket, object_key, labeled_h5ad_filename)
 
-            seurat_filename = convert_file_ignore_exceptions(
-                make_seurat,
-                labeled_h5ad_filename,
-                "Failed to convert dataset to Seurat format.",
-                dataset_id,
-                "rds_status",
-            )
+        seurat_filename = convert_file_ignore_exceptions(
+            make_seurat,
+            labeled_h5ad_filename,
+            "Failed to convert dataset to Seurat format.",
+            dataset_id,
+            "rds_status",
+        )
 
-            if seurat_filename:
-                create_artifact(
-                    seurat_filename,
-                    DatasetArtifactFileType.RDS,
-                    bucket_prefix,
-                    dataset_id,
-                    artifact_bucket,
-                    "rds_status",
-                )
-
-        else:  # Case 4
-            logger.warning(f"Found existing artifacts in {artifact_key} including an RDS, replacing it")
-
-            bucket_prefix = get_bucket_prefix(artifact_key)
-            object_key = f"{bucket_prefix}/{labeled_h5ad_filename}"
-            download_from_s3(artifact_bucket, object_key, labeled_h5ad_filename)
-
-            seurat_filename = convert_file_ignore_exceptions(
-                make_seurat,
-                labeled_h5ad_filename,
-                "Failed to convert dataset to Seurat format.",
-                dataset_id,
-                "rds_status",
-            )
-
-            if seurat_filename:
-                replace_artifact(seurat_filename, bucket_prefix, artifact_bucket)
-                rds_artifact = rds_artifacts[0]  # Only one RDS artifact for dataset will ever exist
-                rds_artifact.updated_at = datetime.utcnow()
+        if seurat_filename:
+            replace_artifact(seurat_filename, bucket_prefix, artifact_bucket)
+            rds_artifact = rds_artifacts[0]  # Only one RDS artifact for dataset will ever exist
+            rds_artifact.updated_at = datetime.utcnow()

@@ -118,7 +118,7 @@ def create_cxg_artifacts(ctx):
             "ones based on the explorer_url?",
             abort=True,
         )
-        session.query(DbDatasetArtifact).filter(DbDatasetArtifact.filetype == DatasetArtifactFileType.CXG).delete()
+        session.query(DbDatasetArtifact).filter(DbDatasetArtifact.filetype == DatasetArtifactFileType.CXG.name).delete()
         session.commit()
         datasets = session.query(DbDataset.id, DbDataset.explorer_url).all()
         for dataset in datasets:
@@ -130,7 +130,7 @@ def create_cxg_artifacts(ctx):
                     session,
                     dataset_id=dataset.id,
                     filename="explorer_cxg",
-                    filetype=DatasetArtifactFileType.CXG,
+                    filetype=DatasetArtifactFileType.CXG.name,
                     user_submitted=True,
                     s3_uri=s3_uri,
                 )
