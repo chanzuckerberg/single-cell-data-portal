@@ -51,7 +51,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Update deployment
-        uses: chanzuckerberg/github-actions/.github/actions/deploy-happy-stack@v1.7.2
+        uses: chanzuckerberg/github-actions/.github/actions/deploy-happy-stack@b7c85836bafa219f3535779053c15ee907658d42
         with:
           tfe-token: ${{ secrets.TFE_TOKEN }}
           stack-name: ${{ github.event.deployment.environment }}stack
@@ -59,6 +59,7 @@ jobs:
           operation: update
           tag: ${{ github.event.deployment.payload.tag }}
           env: ${{ github.event.deployment.environment }}
+          skip-migrations: true
       - name: Invalidate CloudFront
         env:
           DEPLOYMENT_STAGE: ${{ github.event.deployment.environment }}
