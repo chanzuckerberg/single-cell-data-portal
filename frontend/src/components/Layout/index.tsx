@@ -10,7 +10,6 @@ import { Wrapper } from "./style";
 const Layout: FC = ({ children }) => {
   const { pathname } = useRouter();
 
-  console.log(pathname);
 
   if (pathname === ROUTES.HOMEPAGE) {
     return (
