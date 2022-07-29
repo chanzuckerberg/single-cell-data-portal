@@ -25,7 +25,7 @@ def delete(collection_id: str, token_info: dict):
 @dbconnect
 def get(collection_id: str, token_info: dict):
     db_session = g.db_session
-    collection = Collection.get_collection(db_session, collection_id, include_tombstones=True)
+    collection = Collection.get_collection(db_session, collection_id, include_tombstones=False)
     if not collection:
         raise NotFoundHTTPException
     collection_response: dict = collection.to_dict_keep(EntityColumns.columns_for_collection_id)
