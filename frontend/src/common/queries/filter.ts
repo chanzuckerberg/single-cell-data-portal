@@ -15,7 +15,6 @@ import { TISSUE_ANCESTORS_BY_DATASET_ID } from "src/common/queries/tissue-ancest
 import { COLLATOR_CASE_INSENSITIVE } from "src/components/common/Filter/common/constants";
 import {
   Categories,
-  CATEGORY_KEY,
   CollectionRow,
   DatasetRow,
   ETHNICITY_DENY_LIST,
@@ -621,7 +620,9 @@ async function fetchDatasets(): Promise<DatasetResponse[]> {
 
   // Correct any dirty data returned from endpoint.
   return datasets.map((dataset: DatasetResponse) => {
-    return sanitizeDataset(dataset);
+    const test = sanitizeDatasetResponse(dataset);
+    console.log(test.development_stage_ancestors);
+    return test;
   });
 }
 
@@ -745,50 +746,40 @@ function processCollectionResponse(
 /**
  * Add defaults for missing filterable values, e.g. convert missing ontology values to empty array.
  * Remove any ethnicity values on the deny list.
- * @param dataset - Dataset to check for missing values.
+ * @param datasetResponse - Dataset to check for missing values.
  * @returns Corrected dataset response.
  */
-function sanitizeDataset(dataset: DatasetResponse): DatasetResponse {
-  return Object.values(CATEGORY_KEY).reduce(
-    (accum: DatasetResponse, categoryKey: CATEGORY_KEY) => {
-      // Check for fields that don't require sanitizing.
-      if (
-        categoryKey === CATEGORY_KEY.CELL_COUNT ||
-        categoryKey === CATEGORY_KEY.MEAN_GENES_PER_CELL ||
-        categoryKey === CATEGORY_KEY.PUBLICATION_AUTHORS ||
-        categoryKey === CATEGORY_KEY.PUBLICATION_DATE_VALUES
-      ) {
-        return accum;
-      }
+function sanitizeDatasetResponse(
+  datasetResponse: DatasetResponse
+): DatasetResponse {
+  const sanitizedDatasetResponse = { ...datasetResponse };
 
-      if (categoryKey === CATEGORY_KEY.CELL_TYPE_ANCESTORS) {
-        accum.cell_type_ancestors = dataset.cell_type_ancestors ?? [];
-        return accum;
-      }
-
-      if (categoryKey === CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS) {
-        accum.development_stage_ancestors =
-          dataset.development_stage_ancestors ?? [];
-        return accum;
-      }
-
-      if (categoryKey === CATEGORY_KEY.TISSUE_ANCESTORS) {
-        accum.tissue_ancestors = dataset.tissue_ancestors ?? [];
-        return accum;
-      }
-
-      if (categoryKey === CATEGORY_KEY.ETHNICITY) {
-        accum.ethnicity = (dataset.ethnicity ?? []).filter(
-          (ethnicity) => !ETHNICITY_DENY_LIST.includes(ethnicity.label)
-        );
-        return accum;
-      }
-
-      accum[categoryKey] = dataset[categoryKey] ?? [];
-      return accum;
-    },
-    { ...dataset }
+  sanitizedDatasetResponse.ethnicity = (datasetResponse.ethnicity ?? []).filter(
+    (ethnicity) => !ETHNICITY_DENY_LIST.includes(ethnicity.label)
   );
+
+  sanitizedDatasetResponse.assay = datasetResponse.assay ?? [];
+
+  sanitizedDatasetResponse.cell_type = datasetResponse.cell_type ?? [];
+
+  sanitizedDatasetResponse.cell_type_ancestors =
+    datasetResponse.cell_type_ancestors ?? [];
+
+  sanitizedDatasetResponse.development_stage_ancestors =
+    datasetResponse.development_stage_ancestors ?? [];
+
+  sanitizedDatasetResponse.disease = datasetResponse.disease ?? [];
+
+  sanitizedDatasetResponse.organism = datasetResponse.organism ?? [];
+
+  sanitizedDatasetResponse.sex = datasetResponse.sex ?? [];
+
+  sanitizedDatasetResponse.tissue = datasetResponse.tissue ?? [];
+
+  sanitizedDatasetResponse.tissue_ancestors =
+    datasetResponse.tissue_ancestors ?? [];
+
+  return sanitizedDatasetResponse;
 }
 
 /**

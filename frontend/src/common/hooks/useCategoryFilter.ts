@@ -638,7 +638,7 @@ function buildNextSelectCategoryFilters<T extends Categories>(
   // Grab the current selected values for the category.
   const categoryFilters = getCategoryFilter(categoryKey, filters);
 
-  // Currently no filters already selected for this category; add category value as first.
+  // Currently, no filters already selected for this category; add category value as first.
   if (!categoryFilters) {
     return [categoryValueKey];
   }

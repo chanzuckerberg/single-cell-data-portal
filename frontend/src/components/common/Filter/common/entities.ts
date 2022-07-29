@@ -11,11 +11,18 @@ export interface CategoryConfig {
   analyticsEvent?: EVENTS;
   categoryKey: CATEGORY_KEY;
   categoryType: CATEGORY_FILTER_TYPE;
+  filterCategoryKey: FILTER_CATEGORY_KEY;
+  filterKey: FilterKey; // Key in result set row values to filter on.
   label: string;
   multiselect: boolean; // True if category can have multiple values selected.
   pinnedCategoryValues?: CATEGORY_VALUE_KEY[];
   tooltip?: string;
 }
+
+/**
+ * Possible set of keys to filter over.
+ */
+export type FilterKey = keyof CollectionRow | DatasetRow;
 
 /**
  * Configuration model of ontology category.
@@ -37,6 +44,7 @@ export enum CATEGORY_FILTER_TYPE {
 
 /**
  * Filterable metadata keys.
+ * @deprecated - Ideally we want to remove this and use CATEGORY_CONFIGS (and type generated from it) instead.
  */
 export enum CATEGORY_KEY {
   "ASSAY" = "assay",
@@ -53,6 +61,26 @@ export enum CATEGORY_KEY {
   "SEX" = "sex",
   "TISSUE" = "tissue", // TODO(cc) remove with #2569.
   "TISSUE_ANCESTORS" = "tissue_ancestors",
+}
+
+/**
+ * Set of all categories to be included in filter.
+ */
+export enum FILTER_CATEGORY_KEY {
+  "ASSAY" = "ASSAY",
+  "CELL_COUNT" = "CELL_COUNT",
+  "CELL_TYPE_DEPRECATED" = "CELL_TYPE_DEPRECATED",
+  "CELL_TYPE" = "CELL_TYPE",
+  "DEVELOPMENT_STAGE" = "DEVELOPMENT_STAGE",
+  "DISEASE" = "DISEASE",
+  "ETHNICITY" = "ETHNICITY",
+  "GENE_COUNT" = "GENE_COUNT",
+  "ORGANISM" = "ORGANISM",
+  "PUBLICATION_AUTHORS" = "PUBLICATION_AUTHORS",
+  "PUBLICATION_DATE_VALUES" = "PUBLICATION_DATE_VALUES",
+  "SEX" = "SEX",
+  "TISSUE_DEPRECATED" = "TISSUE_DEPRECATED", // TODO(cc) remove with #2569.
+  "TISSUE" = "TISSUE",
 }
 
 /**
@@ -2669,6 +2697,8 @@ const CATEGORY_CONFIGS: (CategoryConfig | OntologyCategoryConfig)[] = [
     analyticsEvent: EVENTS.FILTER_SELECT_ASSAY,
     categoryKey: CATEGORY_KEY.ASSAY,
     categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
+    filterCategoryKey: FILTER_CATEGORY_KEY.ASSAY,
+    filterKey: "assay",
     label: "Assay",
     multiselect: true,
   },
@@ -2676,6 +2706,8 @@ const CATEGORY_CONFIGS: (CategoryConfig | OntologyCategoryConfig)[] = [
     analyticsEvent: EVENTS.FILTER_SELECT_CELL_COUNT,
     categoryKey: CATEGORY_KEY.CELL_COUNT,
     categoryType: CATEGORY_FILTER_TYPE.BETWEEN,
+    filterCategoryKey: FILTER_CATEGORY_KEY.CELL_COUNT,
+    filterKey: "cell_count",
     label: "Cell Count",
     multiselect: false,
   },
@@ -2684,6 +2716,8 @@ const CATEGORY_CONFIGS: (CategoryConfig | OntologyCategoryConfig)[] = [
     analyticsEvent: EVENTS.FILTER_SELECT_CELL_TYPE,
     categoryKey: CATEGORY_KEY.CELL_TYPE,
     categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
+    filterCategoryKey: FILTER_CATEGORY_KEY.CELL_TYPE_DEPRECATED,
+    filterKey: "cell_type",
     label: "Cell Type",
     multiselect: true,
   },
@@ -2691,6 +2725,8 @@ const CATEGORY_CONFIGS: (CategoryConfig | OntologyCategoryConfig)[] = [
     // TODO(cc) add analytics event with #2569.
     categoryKey: CATEGORY_KEY.CELL_TYPE_ANCESTORS,
     categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
+    filterCategoryKey: FILTER_CATEGORY_KEY.CELL_TYPE,
+    filterKey: "cell_type_ancestors",
     isLabelVisible: false,
     isSearchable: true,
     isZerosVisible: true,
@@ -2702,6 +2738,8 @@ const CATEGORY_CONFIGS: (CategoryConfig | OntologyCategoryConfig)[] = [
     analyticsEvent: EVENTS.FILTER_SELECT_DEVELOPMENT_STAGE,
     categoryKey: CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS,
     categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
+    filterCategoryKey: FILTER_CATEGORY_KEY.DEVELOPMENT_STAGE,
+    filterKey: "development_stage_ancestors",
     isLabelVisible: true,
     isSearchable: false,
     isZerosVisible: true,
@@ -2713,6 +2751,8 @@ const CATEGORY_CONFIGS: (CategoryConfig | OntologyCategoryConfig)[] = [
     analyticsEvent: EVENTS.FILTER_SELECT_DISEASE,
     categoryKey: CATEGORY_KEY.DISEASE,
     categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
+    filterCategoryKey: FILTER_CATEGORY_KEY.DISEASE,
+    filterKey: "disease",
     label: "Disease",
     multiselect: true,
     pinnedCategoryValues: [CATEGORY_VALUE_KEY.NORMAL],
@@ -2721,6 +2761,8 @@ const CATEGORY_CONFIGS: (CategoryConfig | OntologyCategoryConfig)[] = [
     analyticsEvent: EVENTS.FILTER_SELECT_ETHNICITY,
     categoryKey: CATEGORY_KEY.ETHNICITY,
     categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
+    filterCategoryKey: FILTER_CATEGORY_KEY.ETHNICITY,
+    filterKey: "ethnicity",
     label: "Ethnicity",
     multiselect: true,
     tooltip:
@@ -2730,6 +2772,8 @@ const CATEGORY_CONFIGS: (CategoryConfig | OntologyCategoryConfig)[] = [
     analyticsEvent: EVENTS.FILTER_SELECT_GENE_COUNT,
     categoryKey: CATEGORY_KEY.MEAN_GENES_PER_CELL,
     categoryType: CATEGORY_FILTER_TYPE.BETWEEN,
+    filterCategoryKey: FILTER_CATEGORY_KEY.GENE_COUNT,
+    filterKey: "mean_genes_per_cell",
     label: "Gene Count",
     multiselect: false,
   },
@@ -2737,13 +2781,16 @@ const CATEGORY_CONFIGS: (CategoryConfig | OntologyCategoryConfig)[] = [
     analyticsEvent: EVENTS.FILTER_SELECT_ORGANISM,
     categoryKey: CATEGORY_KEY.ORGANISM,
     categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
-    label: "Organism",
+    filterCategoryKey: FILTER_CATEGORY_KEY.ORGANISM,
+    filterKey: "organismx",
     multiselect: true,
   },
   {
     analyticsEvent: EVENTS.FILTER_SELECT_AUTHORS,
     categoryKey: CATEGORY_KEY.PUBLICATION_AUTHORS,
     categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
+    filterCategoryKey: FILTER_CATEGORY_KEY.PUBLICATION_AUTHORS,
+    filterKey: "publicationAuthors",
     label: "Author",
     multiselect: true,
   },
@@ -2751,6 +2798,8 @@ const CATEGORY_CONFIGS: (CategoryConfig | OntologyCategoryConfig)[] = [
     analyticsEvent: EVENTS.FILTER_SELECT_PUBLICATION_DATE,
     categoryKey: CATEGORY_KEY.PUBLICATION_DATE_VALUES,
     categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
+    filterCategoryKey: FILTER_CATEGORY_KEY.PUBLICATION_DATE_VALUES,
+    filterKey: "publicationDateValues",
     label: "Publication Date",
     multiselect: false,
   },
@@ -2758,6 +2807,8 @@ const CATEGORY_CONFIGS: (CategoryConfig | OntologyCategoryConfig)[] = [
     analyticsEvent: EVENTS.FILTER_SELECT_SEX,
     categoryKey: CATEGORY_KEY.SEX,
     categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
+    filterCategoryKey: FILTER_CATEGORY_KEY.SEX,
+    filterKey: "sex",
     label: "Sex",
     multiselect: true,
   },
@@ -2766,6 +2817,8 @@ const CATEGORY_CONFIGS: (CategoryConfig | OntologyCategoryConfig)[] = [
     analyticsEvent: EVENTS.FILTER_SELECT_TISSUE,
     categoryKey: CATEGORY_KEY.TISSUE,
     categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
+    filterCategoryKey: FILTER_CATEGORY_KEY.TISSUE_DEPRECATED,
+    filterKey: "tissue",
     label: "Tissue",
     multiselect: true,
   },
@@ -2773,6 +2826,8 @@ const CATEGORY_CONFIGS: (CategoryConfig | OntologyCategoryConfig)[] = [
     // TODO(cc) add analytics event with #2569.
     categoryKey: CATEGORY_KEY.TISSUE_ANCESTORS,
     categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
+    filterCategoryKey: FILTER_CATEGORY_KEY.TISSUE,
+    filterKey: "tissue_ancestors",
     isLabelVisible: false,
     isSearchable: true,
     isZerosVisible: false,
@@ -2795,6 +2850,21 @@ export const CATEGORY_CONFIGS_BY_CATEGORY_KEY: KeyedCategoryConfigs =
       };
     },
     {} as KeyedCategoryConfigs
+  );
+
+/**
+ * Category configs keyed by filter category key, for convenience. Using object literal with type
+ * KeyedFilterCategoryConfig rather than generic Map to prevent having to null check values.
+ */
+export const CATEGORY_CONFIGS_BY_FILTER_CATEGORY_KEY: KeyedFilterCategoryConfigs =
+  CATEGORY_CONFIGS.reduce(
+    (accum: KeyedFilterCategoryConfigs, config: CategoryConfig) => {
+      return {
+        ...accum,
+        [config.filterCategoryKey]: config,
+      };
+    },
+    {} as KeyedFilterCategoryConfigs
   );
 
 /**
@@ -2847,8 +2917,17 @@ export const ETHNICITY_DENY_LIST = ["na"];
 /**
  * Model of category configs keyed by category key. Used instead of generic Map to prevent null checking when grabbing
  * keyed value.
+ * @deprecated
  */
 type KeyedCategoryConfigs = { [K in CATEGORY_KEY]: CategoryConfig };
+
+/**
+ * Model of filter category configs keyed by category key. Used instead of generic Map to prevent null checking when
+ * grabbing keyed value.
+ */
+type KeyedFilterCategoryConfigs = {
+  [K in FILTER_CATEGORY_KEY]: CategoryConfig;
+};
 
 /**
  * Possible set of organism values.
