@@ -50,11 +50,6 @@ const LandingHeader: FC = () => {
   return (
     <MobileNavWrapper>
       <MobileHomeLink>
-        {/* <Link href={ROUTES.HOMEPAGE} passHref>
-          <a>
-            <Image src={CGLogo} alt="logo" width="24" height="24" />
-          </a>
-        </Link> */}
         <HomepageLink />
       </MobileHomeLink>
       <MobileMenuButton onClick={() => mobileNavHandler(mobileMenuOpen)}>
