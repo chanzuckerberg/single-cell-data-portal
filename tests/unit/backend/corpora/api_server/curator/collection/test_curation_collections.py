@@ -327,7 +327,7 @@ class TestGetCollectionID(BaseAuthAPITest):
         res = self.app.get(f"/curation/v1/collections/{tombstoned_collection.id}")
         self.assertEqual(404, res.status_code)
 
-    def test__get_collection_without_tombstoned_datasets__OK(self):
+    def test__get_collection_with_tombstoned_datasets__OK(self):
         collection = self.generate_collection(
             self.session, tombstone=False, name="collection", visibility=CollectionVisibility.PUBLIC
         )
