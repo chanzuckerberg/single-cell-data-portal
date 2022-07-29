@@ -45,10 +45,11 @@ def reshape_for_curation_api_and_is_allowed(collection, token_info, id_provided=
     collection["collection_url"] = f"{CorporaConfig().collections_base_url}/collections/{collection['id']}"
 
     if datasets := collection.get("datasets"):
+        active_datasets = []
         for i, dataset in enumerate(datasets):
             if dataset.get("tombstone"):
-                datasets.pop(i)  # Remove tombstoned Datasets
-                continue
+                continue  # Remove tombstoned Datasets
+            active_datasets.append(dataset)
             if artifacts := dataset.get("artifacts"):
                 dataset["dataset_assets"] = []
                 for asset in artifacts:
@@ -64,6 +65,7 @@ def reshape_for_curation_api_and_is_allowed(collection, token_info, id_provided=
                         dataset[ontology_element] = [dataset_ontology_element]
                 else:
                     dataset[ontology_element] = []
+        collection["datasets"] = active_datasets
 
     return True
 
