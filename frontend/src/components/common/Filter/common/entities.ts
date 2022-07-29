@@ -2,15 +2,15 @@ import { ChangeEvent, Dispatch, SetStateAction } from "react";
 import { CellValue, Row } from "react-table";
 import { EVENTS } from "src/common/analytics/events";
 import { Collection, Ontology, PublisherMetadata } from "src/common/entities";
-import { CategoryKey } from "src/common/hooks/useCategoryFilter";
+import { FilterCategoryKey } from "src/common/hooks/useCategoryFilter";
 
 /**
  * Configuration model of category.
  */
 export interface CategoryConfig {
   analyticsEvent?: EVENTS;
-  categoryKey: CATEGORY_KEY;
-  categoryType: CATEGORY_FILTER_TYPE;
+  categoryKey: CATEGORY_KEY; // TODO(cc) remove
+  categoryType: CATEGORY_FILTER_TYPE; // TODO(cc) rename to filter type?
   filterCategoryKey: FILTER_CATEGORY_KEY;
   filterKey: FilterKey; // Key in result set row values to filter on.
   label: string;
@@ -45,6 +45,7 @@ export enum CATEGORY_FILTER_TYPE {
 /**
  * Filterable metadata keys.
  * @deprecated - Ideally we want to remove this and use CATEGORY_CONFIGS (and type generated from it) instead.
+ * TODO(cc) remove completely (check analytics)
  */
 export enum CATEGORY_KEY {
   "ASSAY" = "assay",
@@ -59,7 +60,7 @@ export enum CATEGORY_KEY {
   "PUBLICATION_AUTHORS" = "publicationAuthors",
   "PUBLICATION_DATE_VALUES" = "publicationDateValues",
   "SEX" = "sex",
-  "TISSUE" = "tissue", // TODO(cc) remove with #2569.
+  "TISSUE" = "tissue",
   "TISSUE_ANCESTORS" = "tissue_ancestors",
 }
 
@@ -2846,21 +2847,6 @@ const CATEGORY_CONFIGS: (CategoryConfig | OntologyCategoryConfig)[] = [
 ];
 
 /**
- * Category configs keyed by category key, for convenience. Using object literal with type KeyedCategoryConfig rather
- * than generic Map to prevent having to null check values.
- */
-export const CATEGORY_CONFIGS_BY_CATEGORY_KEY: KeyedCategoryConfigs =
-  CATEGORY_CONFIGS.reduce(
-    (accum: KeyedCategoryConfigs, config: CategoryConfig) => {
-      return {
-        ...accum,
-        [config.categoryKey]: config,
-      };
-    },
-    {} as KeyedCategoryConfigs
-  );
-
-/**
  * Category configs keyed by filter category key, for convenience. Using object literal with type
  * KeyedFilterCategoryConfig rather than generic Map to prevent having to null check values.
  */
@@ -2923,13 +2909,6 @@ export enum ETHNICITY_UNSPECIFIED_LABEL {
 export const ETHNICITY_DENY_LIST = ["na"];
 
 /**
- * Model of category configs keyed by category key. Used instead of generic Map to prevent null checking when grabbing
- * keyed value.
- * @deprecated
- */
-type KeyedCategoryConfigs = { [K in CATEGORY_KEY]: CategoryConfig };
-
-/**
  * Model of filter category configs keyed by category key. Used instead of generic Map to prevent null checking when
  * grabbing keyed value.
  */
@@ -2946,24 +2925,10 @@ export enum ORGANISM {
 }
 
 /**
- * Filterable metadata keys where the type of the corresponding value is Ontology.
- */
-export type OntologyCategoryKey = keyof Omit<
-  Record<CATEGORY_KEY, string>,
-  | CATEGORY_KEY.CELL_COUNT
-  | CATEGORY_KEY.CELL_TYPE_ANCESTORS
-  | CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS
-  | CATEGORY_KEY.MEAN_GENES_PER_CELL
-  | CATEGORY_KEY.PUBLICATION_DATE_VALUES
-  | CATEGORY_KEY.PUBLICATION_AUTHORS
-  | CATEGORY_KEY.TISSUE_ANCESTORS
->;
-
-/**
  * Function invoked when selected state of a category value is toggled or range is selected.
  */
 export type OnFilterFn = (
-  categoryKey: CategoryKey,
+  categoryKey: FilterCategoryKey, // TODO(cc) rename categoryKey here and throughout.
   selectedValue: CategoryValueKey | Range
 ) => void;
 
@@ -3006,7 +2971,7 @@ export interface OntologyCategoryView {
   isDisabled?: boolean;
   isSearchable: boolean;
   isZerosVisible: boolean;
-  key: CATEGORY_KEY;
+  key: FilterCategoryKey;
   label: string;
   views: OntologyCategoryTreeView[];
   tooltip?: string;
@@ -3029,7 +2994,7 @@ export type OntologyTermSet = { [K in ONTOLOGY_VIEW_KEY]?: OntologyNode[] };
  */
 export interface RangeCategoryView {
   isDisabled?: boolean;
-  key: CATEGORY_KEY;
+  key: FilterCategoryKey;
   label: string;
   max: number;
   min: number;
@@ -3083,7 +3048,7 @@ export interface SelectCategoryValueView {
  */
 export interface SelectCategoryView {
   isDisabled?: boolean;
-  key: CATEGORY_KEY;
+  key: FilterCategoryKey;
   label: string;
   pinnedValues: SelectCategoryValueView[];
   tooltip?: string;

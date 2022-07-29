@@ -1,7 +1,7 @@
 import { MenuItem } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
+import { FilterCategoryKey } from "src/common/hooks/useCategoryFilter";
 import {
-  CATEGORY_KEY,
   OnFilterFn,
   SelectCategoryValueView,
 } from "src/components/common/Filter/common/entities";
@@ -9,7 +9,7 @@ import { SelectionIcon } from "../../../../common/style";
 import { MenuItemWrapper } from "./style";
 
 interface Props {
-  categoryKey: CATEGORY_KEY;
+  categoryKey: FilterCategoryKey;
   isMultiselect: boolean;
   menuItems: SelectCategoryValueView[];
   onFilter: OnFilterFn;

@@ -1,5 +1,5 @@
 import { ChangeEvent, ReactNode } from "react";
-import { CategoryKey } from "src/common/hooks/useCategoryFilter";
+import { FilterCategoryKey } from "src/common/hooks/useCategoryFilter";
 import {
   CategoryView,
   OnFilterFn,
@@ -141,7 +141,7 @@ function buildFilterTags(
  */
 function buildOntologyCategoryTags(
   categoryView: OntologyCategoryView,
-  categoryKey: CategoryKey,
+  categoryKey: FilterCategoryKey,
   onFilter: OnFilterFn
 ): CategoryTag[] | undefined {
   return categoryView.views?.reduce((accum, species) => {
@@ -161,7 +161,7 @@ function buildOntologyCategoryTags(
  */
 function buildRangeCategoryTag(
   categoryView: RangeCategoryView,
-  categoryKey: CategoryKey,
+  categoryKey: FilterCategoryKey,
   onFilter: OnFilterFn
 ): CategoryTag[] | undefined {
   const { selectedMax, selectedMin } = categoryView;
@@ -189,7 +189,7 @@ function buildRangeCategoryTag(
  */
 function buildSelectCategoryTags(
   categoryView: SelectCategoryView,
-  categoryKey: CategoryKey,
+  categoryKey: FilterCategoryKey,
   onFilter: OnFilterFn
 ): CategoryTag[] {
   const { values } = categoryView;

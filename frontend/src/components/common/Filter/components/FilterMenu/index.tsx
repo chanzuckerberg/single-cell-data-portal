@@ -1,7 +1,7 @@
 import { Menu } from "@blueprintjs/core";
 import { Fragment, useEffect, useRef, useState } from "react";
+import { FilterCategoryKey } from "src/common/hooks/useCategoryFilter";
 import {
-  CATEGORY_KEY,
   OnFilterFn,
   OnUpdateSearchValueFn,
   SelectCategoryValueView,
@@ -17,7 +17,7 @@ import {
 } from "./style";
 
 interface Props {
-  categoryKey: CATEGORY_KEY;
+  categoryKey: FilterCategoryKey;
   isMultiselect: boolean;
   isSearchable: boolean;
   onFilter: OnFilterFn;

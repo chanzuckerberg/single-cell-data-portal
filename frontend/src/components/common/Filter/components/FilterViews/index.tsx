@@ -1,5 +1,5 @@
+import { FilterCategoryKey } from "src/common/hooks/useCategoryFilter";
 import {
-  CATEGORY_KEY,
   OnFilterFn,
   OntologyCategoryTreeView,
   OnUpdateSearchValueFn,
@@ -19,7 +19,7 @@ export const enum CATEGORY_VIEWS_QUANTIFIER {
 }
 
 interface Props {
-  categoryKey: CATEGORY_KEY;
+  categoryKey: FilterCategoryKey;
   isSearchable: boolean;
   isZerosVisible: boolean;
   onFilter: OnFilterFn;

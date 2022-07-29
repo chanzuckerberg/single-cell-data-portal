@@ -5,7 +5,7 @@ import { PLURALIZED_METADATA_LABEL } from "src/common/constants/metadata";
 import { ROUTES } from "src/common/constants/routes";
 import { FEATURES } from "src/common/featureFlags/features";
 import {
-  CategoryKey,
+  FilterCategoryKey,
   useCategoryFilter,
 } from "src/common/hooks/useCategoryFilter";
 import { useFeatureFlag } from "src/common/hooks/useFeatureFlag";
@@ -16,9 +16,9 @@ import { useExplainTombstoned } from "src/components/Collections/common/utils";
 import { CollectionsGrid } from "src/components/Collections/components/Grid/components/CollectionsGrid/style";
 import Filter from "src/components/common/Filter";
 import {
-  CATEGORY_KEY,
   CellPropsValue,
   CollectionRow,
+  FILTER_CATEGORY_KEY,
   RowPropsValue,
 } from "src/components/common/Filter/common/entities";
 import { ontologyCellAccessorFn } from "src/components/common/Filter/common/utils";
@@ -94,7 +94,7 @@ export default function Collections(): JSX.Element {
         Header: "Tissue",
         accessor: ontologyCellAccessorFn("tissue"),
         filter: "includesSome",
-        id: CATEGORY_KEY.TISSUE,
+        id: FILTER_CATEGORY_KEY.TISSUE_DEPRECATED,
       },
       {
         Cell: ({ value }: CellPropsValue<string[]>) => (
@@ -106,7 +106,7 @@ export default function Collections(): JSX.Element {
         Header: "Disease",
         accessor: ontologyCellAccessorFn("disease"),
         filter: "includesSome",
-        id: CATEGORY_KEY.DISEASE,
+        id: FILTER_CATEGORY_KEY.DISEASE,
       },
       {
         Cell: ({ value }: CellPropsValue<string[]>) => (
@@ -115,7 +115,7 @@ export default function Collections(): JSX.Element {
         Header: "Organism",
         accessor: ontologyCellAccessorFn("organism"),
         filter: "includesSome",
-        id: CATEGORY_KEY.ORGANISM,
+        id: FILTER_CATEGORY_KEY.ORGANISM,
       },
       // Hidden, required for sorting
       {
@@ -130,51 +130,54 @@ export default function Collections(): JSX.Element {
       {
         accessor: ontologyCellAccessorFn("assay"),
         filter: "includesSome",
-        id: CATEGORY_KEY.ASSAY,
+        id: FILTER_CATEGORY_KEY.ASSAY,
       },
       // Hidden, required for filter.
       {
         accessor: ontologyCellAccessorFn("cell_type"),
         filter: "includesSome",
-        id: CATEGORY_KEY.CELL_TYPE,
+        id: FILTER_CATEGORY_KEY.CELL_TYPE_DEPRECATED,
       },
       // Hidden, required for filter.
       {
-        accessor: CATEGORY_KEY.CELL_TYPE_ANCESTORS,
+        accessor: "cell_type_ancestors",
         filter: "includesSome",
+        id: FILTER_CATEGORY_KEY.CELL_TYPE,
       },
       // Hidden, required for filter.
       {
         accessor: ontologyCellAccessorFn("ethnicity"),
         filter: "includesSome",
-        id: CATEGORY_KEY.ETHNICITY,
+        id: FILTER_CATEGORY_KEY.ETHNICITY,
       },
       {
-        accessor: CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS,
+        accessor: "development_stage_ancestors",
         filter: "includesSome",
-      },
-      // Hidden, required for filter.
-      {
-        accessor: CATEGORY_KEY.PUBLICATION_AUTHORS,
-        filter: "includesSome",
-        id: CATEGORY_KEY.PUBLICATION_AUTHORS,
+        id: FILTER_CATEGORY_KEY.DEVELOPMENT_STAGE,
       },
       // Hidden, required for filter.
       {
-        accessor: CATEGORY_KEY.PUBLICATION_DATE_VALUES,
+        accessor: "publicationAuthors",
         filter: "includesSome",
-        id: CATEGORY_KEY.PUBLICATION_DATE_VALUES,
+        id: FILTER_CATEGORY_KEY.PUBLICATION_AUTHORS,
+      },
+      // Hidden, required for filter.
+      {
+        accessor: "publicationDateValues",
+        filter: "includesSome",
+        id: FILTER_CATEGORY_KEY.PUBLICATION_DATE_VALUES,
       },
       // Hidden, required for filter.
       {
         accessor: ontologyCellAccessorFn("sex"),
         filter: "includesSome",
-        id: CATEGORY_KEY.SEX,
+        id: FILTER_CATEGORY_KEY.SEX,
       },
       // Hidden, required for filter.
       {
-        accessor: CATEGORY_KEY.TISSUE_ANCESTORS,
+        accessor: "tissue_ancestors",
         filter: "includesSome",
+        id: FILTER_CATEGORY_KEY.TISSUE,
       },
     ],
     []
@@ -196,15 +199,15 @@ export default function Collections(): JSX.Element {
         hiddenColumns: [
           COLLECTION_ID,
           COLUMN_ID_RECENCY,
-          CATEGORY_KEY.ASSAY,
-          CATEGORY_KEY.CELL_TYPE,
-          CATEGORY_KEY.CELL_TYPE_ANCESTORS,
-          CATEGORY_KEY.ETHNICITY,
-          CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS,
-          CATEGORY_KEY.PUBLICATION_AUTHORS,
-          CATEGORY_KEY.PUBLICATION_DATE_VALUES,
-          CATEGORY_KEY.SEX,
-          CATEGORY_KEY.TISSUE_ANCESTORS,
+          FILTER_CATEGORY_KEY.ASSAY,
+          FILTER_CATEGORY_KEY.CELL_TYPE_DEPRECATED,
+          FILTER_CATEGORY_KEY.CELL_TYPE,
+          FILTER_CATEGORY_KEY.ETHNICITY,
+          FILTER_CATEGORY_KEY.DEVELOPMENT_STAGE,
+          FILTER_CATEGORY_KEY.PUBLICATION_AUTHORS,
+          FILTER_CATEGORY_KEY.PUBLICATION_DATE_VALUES,
+          FILTER_CATEGORY_KEY.SEX,
+          FILTER_CATEGORY_KEY.TISSUE,
         ],
         sortBy: [
           {
@@ -220,25 +223,25 @@ export default function Collections(): JSX.Element {
 
   // Determine the set of categories to display for the datasets view.
   const isFilterEnabled = useFeatureFlag(FEATURES.FILTER); // TODO(cc) remove with #2569.
-  const categories = useMemo<Set<CATEGORY_KEY>>(() => {
-    return Object.values(CATEGORY_KEY)
-      .filter((categoryKey: CategoryKey) => {
+  const categories = useMemo<Set<FILTER_CATEGORY_KEY>>(() => {
+    return Object.values(FILTER_CATEGORY_KEY)
+      .filter((categoryKey: FilterCategoryKey) => {
         if (
-          categoryKey === CATEGORY_KEY.CELL_COUNT ||
-          categoryKey == CATEGORY_KEY.MEAN_GENES_PER_CELL
+          categoryKey === FILTER_CATEGORY_KEY.CELL_COUNT ||
+          categoryKey == FILTER_CATEGORY_KEY.GENE_COUNT
         ) {
           return false;
         }
         return !(
-          (categoryKey === CATEGORY_KEY.TISSUE_ANCESTORS ||
-            categoryKey === CATEGORY_KEY.CELL_TYPE_ANCESTORS) &&
+          (categoryKey === FILTER_CATEGORY_KEY.TISSUE ||
+            categoryKey === FILTER_CATEGORY_KEY.CELL_TYPE) &&
           !isFilterEnabled
         );
       })
-      .reduce((accum, categoryKey: CategoryKey) => {
+      .reduce((accum, categoryKey: FilterCategoryKey) => {
         accum.add(categoryKey);
         return accum;
-      }, new Set<CATEGORY_KEY>());
+      }, new Set<FILTER_CATEGORY_KEY>());
   }, [isFilterEnabled]);
 
   // Filter init.

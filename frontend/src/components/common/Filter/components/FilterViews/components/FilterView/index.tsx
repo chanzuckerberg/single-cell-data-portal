@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
+import { FilterCategoryKey } from "src/common/hooks/useCategoryFilter";
 import { useResizeObserver } from "src/common/hooks/useResizeObserver";
 import {
-  CATEGORY_KEY,
   OnFilterFn,
   OntologyCategoryTreeNodeView,
   OnUpdateSearchValueFn,
@@ -23,7 +23,7 @@ export const MAX_DISPLAYABLE_LIST_ITEMS = {
 };
 
 interface Props {
-  categoryKey: CATEGORY_KEY;
+  categoryKey: FilterCategoryKey;
   label?: string;
   isSearchable: boolean;
   isZerosVisible: boolean;
