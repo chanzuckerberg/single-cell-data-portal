@@ -161,6 +161,34 @@ def normalize_and_get_doi(body: dict, errors: list) -> Optional[str]:
 
     return doi
 
+def normalize_links_with_doi(body: dict, errors: list):
+    """
+    1. Check for DOI uniqueness in the payload
+    2. Normalizes it so that the DOI is always a link (starts with https://doi.org)
+    3. Returns the newly normalized list of links
+    """
+    links = body.get("links", [])
+
+    found = False
+    uri = None
+    for link in links:
+        if link['link_type'] == ProjectLinkType.DOI.name:
+            if found:
+                errors.append({"link_type": ProjectLinkType.DOI.name, "reason": "Can only specify a single DOI"})
+                return None
+            found = True
+
+            doi = link["link_url"]
+            parsed = urlparse(doi)
+            if not parsed.scheme and not parsed.netloc:
+                parsed_doi = parsed.path
+                if not doi_regex.match(parsed_doi):
+                    errors.append({"link_type": ProjectLinkType.DOI.name, "reason": "Invalid DOI"})
+                    return None
+                link["link_url"] = f"https://doi.org/{parsed_doi}"
+                uri = link["link_url"]
+    return links, uri
+
 
 def get_publisher_metadata(doi):
     """

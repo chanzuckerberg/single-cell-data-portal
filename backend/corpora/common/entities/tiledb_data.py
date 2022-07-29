@@ -390,12 +390,12 @@ class TileDBData:
     def replace_dataset(self, dataset_id: str, assets: list):
         self.edit_dataset(dataset_id, "dataset_assets", assets)
 
-    def get_datasets(self, coll_id):
+    def get_datasets(self, coll_id, ids: list[str] = None):
         """Return all the datasets belonging to a specific collection"""
-        ids = self.get_attribute(coll_id, "datasets")
+        ids = ids if ids else self.get_attribute(coll_id, "datasets")
         data = []
         with tiledb.open(self.location + "/datasets", mode='r', ctx=Utils.ctx) as A:
-            for id in ids:
+            for id in ids: # TODO: this is really slow; can we index with the whole list of ids?
                 dataset = Utils.parse_stored_data(dict(A[id]), "datasets")
                 dataset["id"] = id
                 data.append(dataset)

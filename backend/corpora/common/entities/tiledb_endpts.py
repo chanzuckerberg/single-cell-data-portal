@@ -1,11 +1,12 @@
 # Wraps tiledb_data.py to fit API expected responses
 import logging
+import time
 
 from flask import make_response, jsonify
 from backend.corpora.common.utils.http_exceptions import TooLargeHTTPException
 from backend.corpora.lambdas.api.v1.collection_id.upload import upload_from_link
 from backend.corpora.lambdas.api.v1.dataset import post_dataset_asset
-from backend.corpora.lambdas.api.v1.collection import normalize_and_get_doi, get_publisher_metadata
+from backend.corpora.lambdas.api.v1.collection import normalize_links_with_doi, get_publisher_metadata
 from backend.corpora.lambdas.api.v1.authorization import is_user_owner_or_allowed
 
 from backend.corpora.common.utils.http_exceptions import InvalidParametersHTTPException, TooLargeHTTPException, ForbiddenHTTPException, MethodNotAllowedException, NotFoundHTTPException, ServerErrorHTTPException
@@ -18,8 +19,11 @@ def create_collection(body: dict, user: str):
     """/v1/collections POST"""
     db = TileDBData()
 
+    for link in body.get("links", []):
+        link["link_url"] = link["link_url"].strip()
+
     errors = []
-    doi = normalize_and_get_doi(body, errors)
+    links, doi = normalize_links_with_doi(body, errors)
     publisher_metadata = {}
     if errors:
         return make_response({"detail": errors}, 400)
@@ -27,15 +31,13 @@ def create_collection(body: dict, user: str):
         data = get_publisher_metadata(doi)
         publisher_metadata = data if data else {}
 
-    for link in body.get("links", []):
-        link["link_url"] = link["link_url"].strip()
     id = db.create_collection(
         dict(
             visibility="PRIVATE",
             name=body["name"].strip(),
             description=body["description"].strip(),
             owner=user,
-            links=body.get("links", []),
+            links=links,
             contact_name=body["contact_name"].strip(),
             contact_email=body["contact_email"].strip(),
             curator_name=body.get("curator_name", "").strip(),
@@ -104,7 +106,10 @@ def get_collection(collection_id: str, token_info: dict):
         return make_response({"detail": "Collection not found."}, 403)
     elif coll['visibility'] == "DELETED":
         return make_response("", 403)
-    datasets = db.get_datasets(collection_id)
+        
+    ids = coll['datasets']
+    datasets = db.get_datasets(collection_id, ids)
+
     coll['datasets'] = datasets
     owner = coll['owner']
     coll["access_type"] = "WRITE" if is_user_owner_or_allowed(token_info, owner) else "READ"
@@ -141,13 +146,10 @@ def update_collection(collection_id: str, body: dict, token_info: dict):
         make_response({"detail": "Cannot update non-private collection."}, 403)
 
     for key, val in body.items():
-        db.edit_collection(collection_id, key, val)
-
         if key == "links":
             errors = []
-            old_errors = []
-            doi = normalize_and_get_doi(body, errors)
-            old_doi = normalize_and_get_doi(coll, old_errors)
+            links, doi = normalize_links_with_doi(body, errors)
+            _, old_doi = normalize_links_with_doi(coll, [])
             publisher_metadata = {}
             if errors:
                 return make_response({"detail": errors}, 400)
@@ -155,6 +157,8 @@ def update_collection(collection_id: str, body: dict, token_info: dict):
                 data = get_publisher_metadata(doi)
                 publisher_metadata = data if data else {}
                 db.edit_collection(collection_id, "publisher_metadata", publisher_metadata)
+            val = links
+        db.edit_collection(collection_id, key, val)
 
     res = get_collection(collection_id, token_info)
     return make_response(res, 200)
@@ -166,7 +170,8 @@ def publish_collection(collection_id: str, token_info: dict):
     coll = db.get_collection(collection_id)
     if not coll:
         return make_response({"detail": "Collection not found."}, 404)
-    datasets = db.get_datasets(collection_id)
+    ids = coll['datasets']
+    datasets = db.get_datasets(collection_id, ids)
     if not is_user_owner_or_allowed(token_info, coll['owner']) or len(datasets) == 0:
         return make_response({"detail": "Cannot publish this collection"}, 403)
     db.publish_collection(collection_id)
