@@ -59,7 +59,7 @@ jobs:
           operation: update
           tag: ${{ github.event.deployment.payload.tag }}
           env: ${{ github.event.deployment.environment }}
-          skip-migrations: true
+          skip-migrations: "true"
       - name: Invalidate CloudFront
         env:
           DEPLOYMENT_STAGE: ${{ github.event.deployment.environment }}
