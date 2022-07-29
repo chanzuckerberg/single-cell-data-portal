@@ -180,6 +180,23 @@ class TestGetCollections(BaseAuthAPITest):
         self.assertEqual(2, len(res.json["collections"]))
         [self.assertEqual("PRIVATE", c["visibility"]) for c in res.json["collections"]]
 
+    def test__no_tombstoned_collections_or_datasets_included(self):
+        second_collection = self.generate_collection(
+            self.session, tombstone=False, name="second collection", visibility=CollectionVisibility.PUBLIC
+        )
+        self.generate_dataset(self.session, collection_id=second_collection.id)
+        self.generate_dataset(self.session, collection_id=second_collection.id, tombstone=True)
+        tombstoned_collection = self.generate_collection(
+            self.session, tombstone=True, name="second collection", visibility=CollectionVisibility.PUBLIC
+        )
+        self.generate_dataset(self.session, collection_id=tombstoned_collection.id, tombstone=True)
+
+        res = self.app.get("/curation/v1/collections", headers=self.make_owner_header())
+        self.assertEqual(7, len(res.json["collections"]))
+        for collection in res.json["collections"]:
+            if collection["id"] == second_collection.id:
+                self.assertEqual(1, len(collection["datasets"]))
+
 
 class TestGetCollectionID(BaseAuthAPITest):
     expected_body = {
