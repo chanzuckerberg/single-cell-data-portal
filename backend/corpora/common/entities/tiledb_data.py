@@ -390,7 +390,7 @@ class TileDBData:
     def replace_dataset(self, dataset_id: str, assets: list):
         self.edit_dataset(dataset_id, "dataset_assets", assets)
 
-    def get_datasets(self, coll_id, ids: list[str] = None):
+    def get_datasets(self, coll_id, ids: list = None):
         """Return all the datasets belonging to a specific collection"""
         ids = ids if ids else self.get_attribute(coll_id, "datasets")
         data = []
