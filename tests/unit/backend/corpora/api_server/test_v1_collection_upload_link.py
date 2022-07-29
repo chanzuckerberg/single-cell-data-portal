@@ -67,13 +67,10 @@ class TestCollectionPostUploadLink(BaseAuthAPITest):
             test_url = furl(path=path)
             response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
             self.assertEqual(400, response.status_code)
-            expected = False
-            if (
+            self.assertTrue(
                 "'content-disposition' not present in the header." in json.loads(response.data)["detail"]
                 or "The URL provided causes an error with Dropbox." == json.loads(response.data)["detail"]
-            ):
-                expected = True
-            self.assertTrue(expected)
+            )
 
     @patch(
         "backend.corpora.common.utils.dl_sources.url.DropBoxURL.file_info", return_value={"size": 1, "name": "file.txt"}
