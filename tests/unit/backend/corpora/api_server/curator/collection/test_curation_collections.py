@@ -192,10 +192,14 @@ class TestGetCollections(BaseAuthAPITest):
         self.generate_dataset(self.session, collection_id=tombstoned_collection.id, tombstone=True)
 
         res = self.app.get("/curation/v1/collections", headers=self.make_owner_header())
-        self.assertEqual(7, len(res.json["collections"]))
+
+        contains_tombstoned_collection_flag = False
         for collection in res.json["collections"]:
             if collection["id"] == second_collection.id:
                 self.assertEqual(1, len(collection["datasets"]))
+            if collection["id"] == tombstoned_collection.id:
+                contains_tombstoned_collection_flag = True
+        self.assertEqual(False, contains_tombstoned_collection_flag)
 
 
 class TestGetCollectionID(BaseAuthAPITest):
