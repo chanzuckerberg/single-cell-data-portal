@@ -46,7 +46,7 @@ def reshape_for_curation_api_and_is_allowed(collection, token_info, id_provided=
 
     if datasets := collection.get("datasets"):
         active_datasets = []
-        for i, dataset in enumerate(datasets):
+        for dataset in datasets:
             if dataset.get("tombstone"):
                 continue  # Remove tombstoned Datasets
             active_datasets.append(dataset)
