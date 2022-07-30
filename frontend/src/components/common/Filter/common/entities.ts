@@ -9,7 +9,6 @@ import { FilterCategoryKey } from "src/common/hooks/useCategoryFilter";
  */
 export interface CategoryConfig {
   analyticsEvent?: EVENTS;
-  categoryKey: CATEGORY_KEY; // TODO(cc) remove
   categoryType: CATEGORY_FILTER_TYPE; // TODO(cc) rename to filter type?
   filterCategoryKey: FILTER_CATEGORY_KEY;
   filterKey: FilterKey; // Key in result set row values to filter on.
@@ -43,28 +42,6 @@ export enum CATEGORY_FILTER_TYPE {
 }
 
 /**
- * Filterable metadata keys.
- * @deprecated - Ideally we want to remove this and use CATEGORY_CONFIGS (and type generated from it) instead.
- * TODO(cc) remove completely (check analytics)
- */
-export enum CATEGORY_KEY {
-  "ASSAY" = "assay",
-  "CELL_COUNT" = "cell_count",
-  "CELL_TYPE" = "cell_type",
-  "CELL_TYPE_ANCESTORS" = "cell_type_ancestors",
-  "DEVELOPMENT_STAGE_ANCESTORS" = "development_stage_ancestors",
-  "DISEASE" = "disease",
-  "ETHNICITY" = "ethnicity",
-  "MEAN_GENES_PER_CELL" = "mean_genes_per_cell",
-  "ORGANISM" = "organism",
-  "PUBLICATION_AUTHORS" = "publicationAuthors",
-  "PUBLICATION_DATE_VALUES" = "publicationDateValues",
-  "SEX" = "sex",
-  "TISSUE" = "tissue",
-  "TISSUE_ANCESTORS" = "tissue_ancestors",
-}
-
-/**
  * Set of all categories to be included in filter.
  */
 export enum FILTER_CATEGORY_KEY {
@@ -82,6 +59,8 @@ export enum FILTER_CATEGORY_KEY {
   "SEX" = "SEX",
   "TISSUE_DEPRECATED" = "TISSUE_DEPRECATED", // TODO(cc) remove with #2569.
   "TISSUE" = "TISSUE",
+  "TISSUE_ORGAN_PART" = "TISSUE_ORGAN_PART",
+  "TISSUE_SYSTEM" = "TISSUE_SYSTEM",
 }
 
 /**
@@ -2402,6 +2381,7 @@ export const DEVELOPMENT_STAGE_ONTOLOGY_TERM_SET: OntologyTermSet = {
  * Tissues to be included for display in tissue ontology tree.
  */
 /* eslint-disable sort-keys -- disabling key order for readability. */
+// TODO(cc) remove
 export const TISSUE_ONTOLOGY_TERM_SET: OntologyTermSet = {
   [ONTOLOGY_VIEW_KEY.UBERON]: [
     {
@@ -2698,12 +2678,211 @@ export const TISSUE_ONTOLOGY_TERM_SET: OntologyTermSet = {
 /* eslint-enable sort-keys -- disabling key order for readability. */
 
 /**
+ * Tissues to be included for display in tissue system ontology tree.
+ */
+/* eslint-disable sort-keys -- disabling key order for readability. */
+export const TISSUE_ORGAN_PART_ONTOLOGY_TERM_SET: OntologyTermSet = {
+  [ONTOLOGY_VIEW_KEY.UBERON]: [
+    {
+      label: "adrenal gland",
+      ontology_term_id: "UBERON:0002369",
+    },
+    {
+      label: "bladder organ",
+      ontology_term_id: "UBERON:0018707",
+    },
+    {
+      label: "brain",
+      ontology_term_id: "UBERON:0000955",
+    },
+    {
+      label: "breast",
+      ontology_term_id: "UBERON:0000310",
+    },
+    {
+      label: "colon",
+      ontology_term_id: "UBERON:0001155",
+    },
+    {
+      label: "esophagus",
+      ontology_term_id: "UBERON:0001043",
+    },
+    {
+      label: "exocrine gland",
+      ontology_term_id: "UBERON:0002365",
+    },
+    {
+      label: "eye",
+      ontology_term_id: "UBERON:0000970",
+    },
+    {
+      label: "fallopian tube",
+      ontology_term_id: "UBERON:0003889",
+    },
+    {
+      label: "gall bladder",
+      ontology_term_id: "UBERON:0002110 ",
+    },
+    {
+      label: "heart",
+      ontology_term_id: "UBERON:0000948",
+    },
+    {
+      label: "intestine",
+      ontology_term_id: "UBERON:0000160",
+    },
+    {
+      label: "kidney",
+      ontology_term_id: "UBERON:0002113",
+    },
+    {
+      label: "knee",
+      ontology_term_id: "UBERON:0001465",
+    },
+    {
+      label: "large intestine",
+      ontology_term_id: "UBERON:0000059",
+    },
+    {
+      label: "liver",
+      ontology_term_id: "UBERON:0002107",
+    },
+    {
+      label: "lung",
+      ontology_term_id: "UBERON:0002048",
+    },
+    {
+      label: "nose",
+      ontology_term_id: "UBERON:0000004",
+    },
+    {
+      label: "ovary",
+      ontology_term_id: "UBERON:0000992",
+    },
+    {
+      label: "pancreas",
+      ontology_term_id: "UBERON:0001264",
+    },
+    {
+      label: "placenta",
+      ontology_term_id: "UBERON:0001987",
+    },
+    {
+      label: "prostate",
+      ontology_term_id: "UBERON:0002367",
+    },
+    {
+      label: "rib",
+      ontology_term_id: "UBERON:0002228",
+    },
+    {
+      label: "skin",
+      ontology_term_id: "UBERON:0002097",
+    },
+    {
+      label: "skull",
+      ontology_term_id: "UBERON:0003129",
+    },
+    {
+      label: "small intestine",
+      ontology_term_id: "UBERON:0002108",
+    },
+    {
+      label: "spinal cord",
+      ontology_term_id: "UBERON:0002240",
+    },
+    {
+      label: "spleen",
+      ontology_term_id: "UBERON:0002106",
+    },
+    {
+      label: "stomach",
+      ontology_term_id: "UBERON:0000945",
+    },
+    {
+      label: "testis",
+      ontology_term_id: "UBERON:0000473",
+    },
+    {
+      label: "tongue",
+      ontology_term_id: " UBERON:0001723",
+    },
+    {
+      label: "thymus",
+      ontology_term_id: "UBERON:0002370",
+    },
+    {
+      label: "ureter",
+      ontology_term_id: "UBERON:0000056",
+    },
+    {
+      label: "urethra",
+      ontology_term_id: "UBERON:0000057",
+    },
+    {
+      label: "uterus",
+      ontology_term_id: "UBERON:0000995",
+    },
+  ],
+};
+/* eslint-enable sort-keys -- disabling key order for readability. */
+
+/**
+ * Tissues to be included for display in tissue system ontology tree.
+ */
+/* eslint-disable sort-keys -- disabling key order for readability. */
+export const TISSUE_SYSTEM_ONTOLOGY_TERM_SET: OntologyTermSet = {
+  [ONTOLOGY_VIEW_KEY.UBERON]: [
+    {
+      label: "central nervous system",
+      ontology_term_id: "UBERON:0001017",
+    },
+    {
+      label: "circulatory system",
+      ontology_term_id: "UBERON:0001009",
+    },
+    {
+      label: "digestive system",
+      ontology_term_id: "UBERON:0001007",
+    },
+    {
+      label: "immune system",
+      ontology_term_id: "UBERON:0002405",
+    },
+    {
+      label: "peripheral nervous system",
+      ontology_term_id: "UBERON:0000010",
+    },
+    {
+      label: "renal system",
+      ontology_term_id: "UBERON:0001008",
+    },
+    {
+      label: "reproductive system",
+      ontology_term_id: "UBERON:0000990",
+    },
+    {
+      label: "respiratory system",
+      ontology_term_id: "UBERON:0001004",
+    },
+    {
+      label: "sensory system",
+      ontology_term_id: "UBERON:0001032",
+    },
+    {
+      label: "skeletal system",
+      ontology_term_id: "UBERON:0001434",
+    },
+  ],
+};
+/* eslint-enable sort-keys -- disabling key order for readability. */
+
+/**
  * Configuration for each category.
  */
 const CATEGORY_CONFIGS: (CategoryConfig | OntologyCategoryConfig)[] = [
   {
     analyticsEvent: EVENTS.FILTER_SELECT_ASSAY,
-    categoryKey: CATEGORY_KEY.ASSAY,
     categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
     filterCategoryKey: FILTER_CATEGORY_KEY.ASSAY,
     filterKey: "assay",
@@ -2712,7 +2891,6 @@ const CATEGORY_CONFIGS: (CategoryConfig | OntologyCategoryConfig)[] = [
   },
   {
     analyticsEvent: EVENTS.FILTER_SELECT_CELL_COUNT,
-    categoryKey: CATEGORY_KEY.CELL_COUNT,
     categoryType: CATEGORY_FILTER_TYPE.BETWEEN,
     filterCategoryKey: FILTER_CATEGORY_KEY.CELL_COUNT,
     filterKey: "cell_count",
@@ -2722,7 +2900,6 @@ const CATEGORY_CONFIGS: (CategoryConfig | OntologyCategoryConfig)[] = [
   {
     // TODO(cc) possibly remove with #2569.
     analyticsEvent: EVENTS.FILTER_SELECT_CELL_TYPE,
-    categoryKey: CATEGORY_KEY.CELL_TYPE,
     categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
     filterCategoryKey: FILTER_CATEGORY_KEY.CELL_TYPE_DEPRECATED,
     filterKey: "cell_type",
@@ -2731,7 +2908,6 @@ const CATEGORY_CONFIGS: (CategoryConfig | OntologyCategoryConfig)[] = [
   },
   {
     // TODO(cc) add analytics event with #2569.
-    categoryKey: CATEGORY_KEY.CELL_TYPE_ANCESTORS,
     categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
     filterCategoryKey: FILTER_CATEGORY_KEY.CELL_TYPE,
     filterKey: "cell_type_ancestors",
@@ -2744,7 +2920,6 @@ const CATEGORY_CONFIGS: (CategoryConfig | OntologyCategoryConfig)[] = [
   },
   {
     analyticsEvent: EVENTS.FILTER_SELECT_DEVELOPMENT_STAGE,
-    categoryKey: CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS,
     categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
     filterCategoryKey: FILTER_CATEGORY_KEY.DEVELOPMENT_STAGE,
     filterKey: "development_stage_ancestors",
@@ -2757,7 +2932,6 @@ const CATEGORY_CONFIGS: (CategoryConfig | OntologyCategoryConfig)[] = [
   },
   {
     analyticsEvent: EVENTS.FILTER_SELECT_DISEASE,
-    categoryKey: CATEGORY_KEY.DISEASE,
     categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
     filterCategoryKey: FILTER_CATEGORY_KEY.DISEASE,
     filterKey: "disease",
@@ -2767,7 +2941,6 @@ const CATEGORY_CONFIGS: (CategoryConfig | OntologyCategoryConfig)[] = [
   },
   {
     analyticsEvent: EVENTS.FILTER_SELECT_ETHNICITY,
-    categoryKey: CATEGORY_KEY.ETHNICITY,
     categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
     filterCategoryKey: FILTER_CATEGORY_KEY.ETHNICITY,
     filterKey: "ethnicity",
@@ -2778,7 +2951,6 @@ const CATEGORY_CONFIGS: (CategoryConfig | OntologyCategoryConfig)[] = [
   },
   {
     analyticsEvent: EVENTS.FILTER_SELECT_GENE_COUNT,
-    categoryKey: CATEGORY_KEY.MEAN_GENES_PER_CELL,
     categoryType: CATEGORY_FILTER_TYPE.BETWEEN,
     filterCategoryKey: FILTER_CATEGORY_KEY.GENE_COUNT,
     filterKey: "mean_genes_per_cell",
@@ -2787,7 +2959,6 @@ const CATEGORY_CONFIGS: (CategoryConfig | OntologyCategoryConfig)[] = [
   },
   {
     analyticsEvent: EVENTS.FILTER_SELECT_ORGANISM,
-    categoryKey: CATEGORY_KEY.ORGANISM,
     categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
     filterCategoryKey: FILTER_CATEGORY_KEY.ORGANISM,
     filterKey: "organism",
@@ -2796,7 +2967,6 @@ const CATEGORY_CONFIGS: (CategoryConfig | OntologyCategoryConfig)[] = [
   },
   {
     analyticsEvent: EVENTS.FILTER_SELECT_AUTHORS,
-    categoryKey: CATEGORY_KEY.PUBLICATION_AUTHORS,
     categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
     filterCategoryKey: FILTER_CATEGORY_KEY.PUBLICATION_AUTHORS,
     filterKey: "publicationAuthors",
@@ -2805,7 +2975,6 @@ const CATEGORY_CONFIGS: (CategoryConfig | OntologyCategoryConfig)[] = [
   },
   {
     analyticsEvent: EVENTS.FILTER_SELECT_PUBLICATION_DATE,
-    categoryKey: CATEGORY_KEY.PUBLICATION_DATE_VALUES,
     categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
     filterCategoryKey: FILTER_CATEGORY_KEY.PUBLICATION_DATE_VALUES,
     filterKey: "publicationDateValues",
@@ -2814,7 +2983,6 @@ const CATEGORY_CONFIGS: (CategoryConfig | OntologyCategoryConfig)[] = [
   },
   {
     analyticsEvent: EVENTS.FILTER_SELECT_SEX,
-    categoryKey: CATEGORY_KEY.SEX,
     categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
     filterCategoryKey: FILTER_CATEGORY_KEY.SEX,
     filterKey: "sex",
@@ -2824,7 +2992,6 @@ const CATEGORY_CONFIGS: (CategoryConfig | OntologyCategoryConfig)[] = [
   {
     // TODO(cc) possibly remove with #2569.
     analyticsEvent: EVENTS.FILTER_SELECT_TISSUE,
-    categoryKey: CATEGORY_KEY.TISSUE,
     categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
     filterCategoryKey: FILTER_CATEGORY_KEY.TISSUE_DEPRECATED,
     filterKey: "tissue",
@@ -2833,16 +3000,35 @@ const CATEGORY_CONFIGS: (CategoryConfig | OntologyCategoryConfig)[] = [
   },
   {
     // TODO(cc) add analytics event with #2569.
-    categoryKey: CATEGORY_KEY.TISSUE_ANCESTORS,
     categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
-    filterCategoryKey: FILTER_CATEGORY_KEY.TISSUE,
+    filterCategoryKey: FILTER_CATEGORY_KEY.TISSUE_SYSTEM,
     filterKey: "tissue_ancestors",
     isLabelVisible: false,
     isSearchable: true,
     isZerosVisible: false,
-    label: "Tissue (Ontology)",
+    label: "X System",
     multiselect: true,
-    ontologyTermSet: TISSUE_ONTOLOGY_TERM_SET,
+    ontologyTermSet: TISSUE_SYSTEM_ONTOLOGY_TERM_SET,
+  },
+  {
+    // TODO(cc) add analytics event with #2569.
+    categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
+    filterCategoryKey: FILTER_CATEGORY_KEY.TISSUE_ORGAN_PART,
+    filterKey: "tissue_ancestors",
+    isLabelVisible: false,
+    isSearchable: true,
+    isZerosVisible: false,
+    label: "Y Organ Part",
+    multiselect: true,
+    ontologyTermSet: TISSUE_ORGAN_PART_ONTOLOGY_TERM_SET,
+  },
+  {
+    // TODO(cc) add analytics event with #2569.
+    categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
+    filterCategoryKey: FILTER_CATEGORY_KEY.TISSUE,
+    filterKey: "tissue",
+    label: "Z Tissue",
+    multiselect: true,
   },
 ];
 

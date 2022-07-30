@@ -152,7 +152,6 @@ export function useCategoryFilter<T extends Categories>(
     }
 
     setCategorySet(buildCategorySet(originalRows, categoryKeys));
-    console.log(buildCategorySet(originalRows, categoryKeys));
   }, [originalRows, categoryKeys, categorySet]);
 
   // Build next filter state on change of filter.

@@ -175,9 +175,21 @@ export default function Collections(): JSX.Element {
       },
       // Hidden, required for filter.
       {
-        accessor: "tissue_ancestors",
+        accessor: ontologyCellAccessorFn("tissue"),
         filter: "includesSome",
         id: FILTER_CATEGORY_KEY.TISSUE,
+      },
+      // Hidden, required for filter.
+      {
+        accessor: "tissue_ancestors",
+        filter: "includesSome",
+        id: FILTER_CATEGORY_KEY.TISSUE_SYSTEM,
+      },
+      // Hidden, required for filter.
+      {
+        accessor: "tissue_ancestors",
+        filter: "includesSome",
+        id: FILTER_CATEGORY_KEY.TISSUE_ORGAN_PART,
       },
     ],
     []
@@ -208,6 +220,8 @@ export default function Collections(): JSX.Element {
           FILTER_CATEGORY_KEY.PUBLICATION_DATE_VALUES,
           FILTER_CATEGORY_KEY.SEX,
           FILTER_CATEGORY_KEY.TISSUE,
+          FILTER_CATEGORY_KEY.TISSUE_SYSTEM,
+          FILTER_CATEGORY_KEY.TISSUE_ORGAN_PART,
         ],
         sortBy: [
           {
