@@ -3,6 +3,7 @@ import { CellValue, Row } from "react-table";
 import { EVENTS } from "src/common/analytics/events";
 import { Collection, Ontology, PublisherMetadata } from "src/common/entities";
 import { FilterCategoryKey } from "src/common/hooks/useCategoryFilter";
+import { listOntologyTreeIds } from "src/components/common/Filter/common/utils";
 
 /**
  * Configuration model of category.
@@ -10,6 +11,7 @@ import { FilterCategoryKey } from "src/common/hooks/useCategoryFilter";
 export interface CategoryConfig {
   analyticsEvent?: EVENTS;
   categoryType: CATEGORY_FILTER_TYPE; // TODO(cc) rename to filter type?
+  excludeTerms?: string[]; // Set of ontology term IDs to exclude from the filter values. Currently specific to tissue.
   filterCategoryKey: FILTER_CATEGORY_KEY;
   filterKey: FilterKey; // Key in result set row values to filter on.
   label: string;
@@ -3025,6 +3027,10 @@ const CATEGORY_CONFIGS: (CategoryConfig | OntologyCategoryConfig)[] = [
   {
     // TODO(cc) add analytics event with #2569.
     categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
+    excludeTerms: [
+      ...listOntologyTreeIds(TISSUE_SYSTEM_ONTOLOGY_TERM_SET),
+      ...listOntologyTreeIds(TISSUE_ORGAN_PART_ONTOLOGY_TERM_SET),
+    ],
     filterCategoryKey: FILTER_CATEGORY_KEY.TISSUE,
     filterKey: "tissue",
     label: "Z Tissue",

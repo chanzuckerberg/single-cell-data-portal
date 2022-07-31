@@ -140,7 +140,7 @@ export function ontologyCellAccessorFn<
   K extends CategoriesKeyOfTypeOntologyArray
 >(categoryKey: K): OntologyCellAccessorFn {
   return (categories: Categories) =>
-    categories[categoryKey].map((o: Ontology) => o.label);
+    categories[categoryKey].map((o: Ontology) => o.ontology_term_id);
 }
 
 /**

@@ -892,11 +892,19 @@ function buildSelectCategoryView(
   categoryValueByValue: KeyedSelectCategoryValue,
   filterState: FilterState
 ): SelectCategoryView {
-  // Grab the config for this category.
-  const { pinnedCategoryValues, tooltip } =
+  // Grab the config for this category. TODO(cc) move earlier?
+  const { excludeTerms, pinnedCategoryValues, tooltip } =
     CATEGORY_CONFIGS_BY_FILTER_CATEGORY_KEY[categoryKey];
 
-  const allCategoryValueViews = [...categoryValueByValue.values()]
+  // Remove any excluded values from the filter. TODO(cc) clean up
+  let selectCategoryValues = [...categoryValueByValue.values()];
+  if (excludeTerms && excludeTerms.length) {
+    selectCategoryValues = selectCategoryValues.filter(
+      (selectCategoryValue) => !excludeTerms.includes(selectCategoryValue.key)
+    );
+  }
+
+  const allCategoryValueViews = selectCategoryValues
     .map(({ count, key, selected }: SelectCategoryValue) => ({
       count,
       key,
