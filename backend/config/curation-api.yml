@@ -98,6 +98,11 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/collection_form_metadata"
+              required:
+                - name
+                - description
+                - contact_name
+                - contact_email
       responses:
         "201":
           description: Created
@@ -743,11 +748,6 @@ components:
     collection_form_metadata:
       type: object
       additionalProperties: false
-      required:
-        - name
-        - description
-        - contact_name
-        - contact_email
       properties:
         name:
           type: string
