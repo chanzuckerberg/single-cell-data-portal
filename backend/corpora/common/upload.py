@@ -90,8 +90,7 @@ def upload(
             ProcessingStatus.FAILURE,
         ]:
             raise InvalidProcessingStateException(
-                f"Unable to reprocess dataset {dataset_id}: {dataset.processing_status.processing_status=}. Wait until "
-                "the current submission for the dataset has finished processing."
+                f"Unable to reprocess dataset {dataset_id}: {dataset.processing_status.processing_status=}"
             )
         else:
             dataset.reprocess()
