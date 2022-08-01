@@ -1,6 +1,8 @@
 import requests
-
+import logging
 from backend.corpora.common.corpora_config import CorporaAuthConfig
+
+logger = logging.getLogger(__name__)
 
 
 class Auth0ManagementSession:
@@ -20,6 +22,7 @@ class Auth0ManagementSession:
             def _refresh_token(r, *args, **kwargs):
                 """Automatically refresh the auth0 management token if it expires."""
                 if r.status_code == 401:
+                    logger.info("Refreshing auth0 management token")
                     token = self.get_auth0_management_token(domain)
                     session.headers.update({"Authorization": token})
                     r.request.headers["Authorization"] = session.headers["Authorization"]
