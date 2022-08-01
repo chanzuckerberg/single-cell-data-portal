@@ -6,6 +6,7 @@ import {
   Categories,
   CategoryConfig,
   CategoryValueKey,
+  CategoryView,
   CategoryViews,
   CATEGORY_CONFIGS_BY_FILTER_CATEGORY_KEY,
   CATEGORY_FILTER_TYPE,
@@ -469,18 +470,34 @@ function buildCategoryViews(filterState?: FilterState): CategoryViews[] {
   // Build up view models for each UI config.
   return CATEGORY_UI_CONFIGS.map((categoryUIConfig) => {
     const { categoryConfigKeys, label } = categoryUIConfig;
-    const categoryViews = categoryConfigKeys.map((categoryConfigKey) => {
-      const config = CATEGORY_CONFIGS_BY_FILTER_CATEGORY_KEY[categoryConfigKey];
-      const { filterCategoryKey } = config;
+    const categoryViews = categoryConfigKeys
+      .map((categoryConfigKey) => {
+        const config =
+          CATEGORY_CONFIGS_BY_FILTER_CATEGORY_KEY[categoryConfigKey];
+        const { filterCategoryKey } = config;
 
-      // Build category value view models for this category and sort.
-      const categoryValueByValue = filterState[filterCategoryKey];
+        // Build category value view models for this category and sort.
+        const categoryValueByValue = filterState[filterCategoryKey];
 
-      // Handle single or multiselect categories, or ontology categories.
-      if (isSelectCategoryValue(categoryValueByValue)) {
-        // Handle ontology categories.
-        if (isCategoryConfigOntology(config)) {
-          return buildOntologyCategoryView(
+        // Return if there's no filter state for the UI config. This will be true for categories such as cell count and
+        // gene count when viewing collections.
+        if (!categoryValueByValue) {
+          return;
+        }
+
+        // Handle single or multiselect categories, or ontology categories.
+        if (isSelectCategoryValue(categoryValueByValue)) {
+          // Handle ontology categories.
+          if (isCategoryConfigOntology(config)) {
+            return buildOntologyCategoryView(
+              filterCategoryKey,
+              config,
+              categoryValueByValue,
+              filterState
+            );
+          }
+
+          return buildSelectCategoryView(
             filterCategoryKey,
             config,
             categoryValueByValue,
@@ -488,21 +505,14 @@ function buildCategoryViews(filterState?: FilterState): CategoryViews[] {
           );
         }
 
-        return buildSelectCategoryView(
+        // Handle range categories.
+        return buildRangeCategoryView(
           filterCategoryKey,
           config,
-          categoryValueByValue,
-          filterState
+          categoryValueByValue
         );
-      }
-
-      // Handle range categories.
-      return buildRangeCategoryView(
-        filterCategoryKey,
-        config,
-        categoryValueByValue
-      );
-    });
+      })
+      .filter((categoryView): categoryView is CategoryView => !!categoryView);
 
     return {
       categoryViews,

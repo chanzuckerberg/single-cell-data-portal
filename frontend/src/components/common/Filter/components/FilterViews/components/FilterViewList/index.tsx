@@ -5,6 +5,7 @@ import { FilterCategoryKey } from "src/common/hooks/useCategoryFilter";
 import {
   OnFilterFn,
   OntologyCategoryTreeNodeView,
+  SelectCategoryValueView,
 } from "src/components/common/Filter/common/entities";
 import { SelectionIcon } from "src/components/common/Filter/common/style";
 import {
@@ -19,7 +20,7 @@ interface Props {
   isZerosVisible: boolean;
   nested?: boolean;
   onFilter: OnFilterFn;
-  values: OntologyCategoryTreeNodeView[];
+  values: OntologyCategoryTreeNodeView[] | SelectCategoryValueView[];
   ViewHeader?: ReactElement;
 }
 
@@ -41,8 +42,11 @@ export default function FilterViewList({
       {filteredValues.length === 0 ? (
         <NoMatches>No items found</NoMatches>
       ) : (
-        filteredValues.map(
-          ({ key, children, count, label, selectedPartial, selected }) => (
+        filteredValues.map((value) => {
+          const { key, count, label, selected } = value;
+          const { children, selectedPartial } =
+            value as OntologyCategoryTreeNodeView; // TODO(cc) review destructure with SelectCategoryValueView or OntologyCategoryTreeNodeView.
+          return (
             <Fragment key={key}>
               {/* List item */}
               <ViewListItem
@@ -79,8 +83,8 @@ export default function FilterViewList({
                 />
               )}
             </Fragment>
-          )
-        )
+          );
+        })
       )}
     </ViewList>
   );

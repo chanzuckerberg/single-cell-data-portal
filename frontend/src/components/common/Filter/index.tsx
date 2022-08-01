@@ -1,4 +1,4 @@
-import { ChangeEvent, Fragment, ReactNode } from "react";
+import { ChangeEvent, ReactNode } from "react";
 import { FilterCategoryKey } from "src/common/hooks/useCategoryFilter";
 import {
   CategoryView,
@@ -17,6 +17,7 @@ import FilterMenu from "src/components/common/Filter/components/FilterMenu";
 import { MAX_DISPLAYABLE_MENU_ITEMS } from "src/components/common/Filter/components/FilterMenu/style";
 import FilterRange from "src/components/common/Filter/components/FilterRange";
 import FilterViews from "src/components/common/Filter/components/FilterViews";
+import FilterCategoryViews from "src/components/common/Filter/components/FilterViews/components/FilterCategoryViews";
 import FilterTags, { CategoryTag } from "./components/FilterTags";
 
 interface Props {
@@ -30,58 +31,37 @@ export default function Filter({
 }: Props): JSX.Element {
   return (
     <>
-      {allCategoryViews.map((categoryViews: CategoryViews, index) => {
+      {allCategoryViews.map((categoryViews: CategoryViews) => {
         if (categoryViews.categoryViews.length === 1) {
           const categoryView = categoryViews.categoryViews[0];
-          const { isDisabled = false, key } = categoryView;
+          const { isDisabled = false, label, tooltip } = categoryView;
           return (
             <BasicFilter
               content={buildBasicFilterContent(categoryView, onFilter)}
               isDisabled={isDisabled}
-              key={key}
+              key={categoryViews.label}
               tags={
                 <FilterTags tags={buildFilterTags(categoryView, onFilter)} />
               }
-              target={buildFilterLabel(categoryView, isDisabled)}
+              target={buildFilterLabel(label, isDisabled, tooltip)}
             />
           );
         }
-
-        const { label } = categoryViews;
         return (
-          <Fragment key={index}>
-            {label}
-            {categoryViews.categoryViews.map((categoryView) => {
-              const { isDisabled = false, key } = categoryView;
-              return (
-                <BasicFilter
-                  content={buildBasicFilterContent(categoryView, onFilter)}
-                  isDisabled={isDisabled}
-                  key={key}
-                  tags={
-                    <FilterTags
-                      tags={buildFilterTags(categoryView, onFilter)}
-                    />
-                  }
-                  target={buildFilterLabel(categoryView, isDisabled)}
-                />
-              );
-            })}
-          </Fragment>
+          <BasicFilter
+            content={
+              <FilterCategoryViews
+                categoryViews={categoryViews.categoryViews}
+                onFilter={onFilter}
+              />
+            }
+            key={categoryViews.label}
+            isDisabled={false} // TODO(cc) add category view isDisabled
+            tags={undefined}
+            target={buildFilterLabel(categoryViews.label, false)} // TODO(cc) add category view isDisabled
+          />
         );
       })}
-      {/*{allCategoryViews.map((categoryViews: CategoryViews) => {*/}
-      {/*  const { isDisabled = false, key } = categoryView;*/}
-      {/*  return (*/}
-      {/*    <BasicFilter*/}
-      {/*      content={buildBasicFilterContent(categoryView, onFilter)}*/}
-      {/*      isDisabled={isDisabled}*/}
-      {/*      key={key}*/}
-      {/*      tags={<FilterTags tags={buildFilterTags(categoryView, onFilter)} />}*/}
-      {/*      target={buildFilterLabel(categoryView, isDisabled)}*/}
-      {/*    />*/}
-      {/*  );*/}
-      {/*})}*/}
     </>
   );
 }
@@ -135,16 +115,16 @@ function buildBasicFilterContent(
 
 /**
  * Build the filter label for the given category.
- * @param categoryView - View model of category to display.
- * @param isDisabled - True if this category is currently disabled.
+ * @param label - Category view label.
+ * @param isDisabled - True if this category view is currently disabled.
+ * @param tooltip - Category tooltip.
  * @returns React node representing content to display as filter label.
  */
 function buildFilterLabel(
-  categoryView: CategoryView,
-  isDisabled: boolean
+  label: string,
+  isDisabled: boolean,
+  tooltip?: string
 ): ReactNode {
-  const { label, tooltip } = categoryView;
-
   return (
     <FilterLabel isDisabled={isDisabled} label={label} tooltip={tooltip} />
   );
@@ -273,10 +253,22 @@ function filterCategoryValuesWithCount(
  * ontology tree.
  * @returns True if the given category view is a select category view.
  */
-function isOntologyCategoryView(
+export function isOntologyCategoryView(
   categoryView: CategoryView
 ): categoryView is OntologyCategoryView {
   return (categoryView as OntologyCategoryView).views !== undefined;
+}
+
+/**
+ * Determine if the given category view is a range category view and not a select or ontology category view.
+ * @param categoryView - Selected filter value, either a category value key (e.g. "normal"), range (e.g. [0, 10]) or
+ * ontology tree.
+ * @returns True if the given category view is a range category view.
+ */
+export function isRangeCategoryView(
+  categoryView: CategoryView
+): categoryView is RangeCategoryView {
+  return (categoryView as RangeCategoryView).max !== undefined;
 }
 
 /**
@@ -285,7 +277,7 @@ function isOntologyCategoryView(
  * ontology tree.
  * @returns True if the given category view is a select category view.
  */
-function isSelectCategoryView(
+export function isSelectCategoryView(
   categoryView: CategoryView
 ): categoryView is SelectCategoryView {
   return (categoryView as SelectCategoryView).values !== undefined;

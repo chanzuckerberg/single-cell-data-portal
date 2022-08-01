@@ -3102,14 +3102,14 @@ export const CATEGORY_UI_CONFIGS: CategoryUIConfig[] = [
     categoryConfigKeys: [FILTER_CATEGORY_KEY.TISSUE_DEPRECATED],
     label: "Tissue",
   },
-  // {
-  //   categoryConfigKeys: [
-  //     FILTER_CATEGORY_KEY.TISSUE_SYSTEM,
-  //     FILTER_CATEGORY_KEY.TISSUE_ORGAN_PART,
-  //     FILTER_CATEGORY_KEY.TISSUE,
-  //   ],
-  //   label: "Tissue (Ontology)",
-  // },
+  {
+    categoryConfigKeys: [
+      FILTER_CATEGORY_KEY.TISSUE_SYSTEM,
+      FILTER_CATEGORY_KEY.TISSUE_ORGAN_PART,
+      FILTER_CATEGORY_KEY.TISSUE,
+    ],
+    label: "Tissue (Ontology)",
+  },
 ];
 
 /**
