@@ -12,6 +12,7 @@ class Auth0ManagementSession:
 
     _session = None
     _domain = None
+    config = CorporaAuthConfig()
 
     @property
     def session(self):
@@ -21,7 +22,7 @@ class Auth0ManagementSession:
             retry_config = Retry(
                 total=3,
                 backoff_factor=1,
-                status_forcelist=[429, 500, 502, 503, 504],
+                status_forcelist=self.config.retry_status_forcelist,
                 method_whitelist=["POST", "HEAD", "GET", "PUT", "DELETE", "OPTIONS"],
             )
             session.mount("https://", HTTPAdapter(max_retries=retry_config))
@@ -41,7 +42,7 @@ class Auth0ManagementSession:
     @property
     def domain(self):
         if not self._domain:
-            self._domain = CorporaAuthConfig().auth0_domain
+            self._domain = self.config.auth0_domain
         return self._domain
 
     @domain.setter
@@ -51,12 +52,11 @@ class Auth0ManagementSession:
     def __getattr__(self, item):
         return getattr(self.session, item)
 
-    @staticmethod
-    def get_auth0_management_token(domain: str) -> str:
+    def get_auth0_management_token(self, domain: str) -> str:
         # Generate management token
         payload = dict(
-            client_id=CorporaAuthConfig().client_id,
-            client_secret=CorporaAuthConfig().client_secret,
+            client_id=self.config.client_id,
+            client_secret=self.config.client_secret,
             grant_type="client_credentials",
             audience=f"https://{domain}/api/v2/",
         )
@@ -76,7 +76,7 @@ class Auth0ManagementSession:
         body = response.json()
         identity = None
         for i in body["identities"]:
-            if i["connection"] == CorporaAuthConfig().api_key_connection_name:
+            if i["connection"] == self.config.api_key_connection_name:
                 identity = i
                 break
         return identity
@@ -98,7 +98,7 @@ class Auth0ManagementSession:
             email=email,
             email_verified=True,
             password=password,
-            connection=CorporaAuthConfig().api_key_connection_name,
+            connection=self.config.api_key_connection_name,
         )
 
         response = self.session.post(f"https://{self.domain}/api/v2/users", json=payload)
@@ -108,7 +108,7 @@ class Auth0ManagementSession:
 
     def link_api_key(self, user: str, api_key_id: str) -> None:
         # link the user to the api key.
-        payload = {"provider": "auth0", "connection_id": CorporaAuthConfig().api_key_connection, "user_id": api_key_id}
+        payload = {"provider": "auth0", "connection_id": self.config.api_key_connection, "user_id": api_key_id}
         response = self.session.post(f"https://{self.domain}/api/v2/users/{user}/identities", json=payload)
         response.raise_for_status()
 
@@ -121,10 +121,10 @@ class Auth0ManagementSession:
                 username=user_name,
                 password=password,
                 scope="profile email write:collections read:collections",
-                client_id=CorporaAuthConfig().curator_api_client_id,
-                client_secret=CorporaAuthConfig().curator_api_client_secret,
-                realm=CorporaAuthConfig().api_key_connection_name,
-                audience=CorporaAuthConfig().curation_audience,
+                client_id=self.config.curator_api_client_id,
+                client_secret=self.config.curator_api_client_secret,
+                realm=self.config.api_key_connection_name,
+                audience=self.config.curation_audience,
             ),
         )
         response.raise_for_status()

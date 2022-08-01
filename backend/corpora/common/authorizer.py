@@ -12,7 +12,7 @@ from backend.corpora.common.utils.http_exceptions import UnauthorizedError
 
 
 auth0_session_with_retry = requests.Session()
-retry_config = Retry(total=3, backoff_factor=1, status_forcelist=[429, 500, 502, 503, 504])
+retry_config = Retry(total=3, backoff_factor=1, status_forcelist=CorporaAuthConfig().retry_status_forcelist)
 auth0_session_with_retry.mount("https://", HTTPAdapter(max_retries=retry_config))
 
 
