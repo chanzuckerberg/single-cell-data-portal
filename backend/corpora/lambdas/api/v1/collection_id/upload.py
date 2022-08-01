@@ -75,3 +75,5 @@ def upload_from_link(collection_id: str, token_info: dict, url: str, dataset_id:
         raise MethodNotAllowedException()
     except NonExistentDatasetException:
         raise NotFoundHTTPException()
+    except:
+        raise Exception("Invalid dataset")
