@@ -75,6 +75,10 @@ def upload_from_link(collection_id: str, token_info: dict, url: str, dataset_id:
     except NonExistentCollectionException:
         raise ForbiddenHTTPException()
     except InvalidProcessingStateException:
-        raise MethodNotAllowedException()
+        raise MethodNotAllowedException(
+            detail="Submission failed. A dataset cannot be updated while a previous update for the same dataset is in "
+            "progress. Please cancel the current submission with "
+            f"DELETE /v1/collections/collection/dataset/{dataset_id}"
+        )
     except NonExistentDatasetException:
         raise NotFoundHTTPException()
