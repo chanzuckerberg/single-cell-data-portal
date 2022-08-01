@@ -1,4 +1,5 @@
 import { ElementHandle } from "playwright";
+import { ROUTES } from "src/common/constants/routes";
 import { TEST_ENV } from "tests/common/constants";
 import { TEST_PASSWORD, TEST_URL, TEST_USERNAME } from "../common/constants";
 import { getText } from "./selectors";
@@ -21,7 +22,9 @@ export const describeIfDevStaging = TEST_ENVS_DEV_STAGING.includes(TEST_ENV)
   ? describe
   : describe.skip;
 
-export async function goToPage(url: string = TEST_URL): Promise<void> {
+const DEFAULT_LINK = `${TEST_URL}${ROUTES.DATASETS}`;
+
+export async function goToPage(url: string = DEFAULT_LINK): Promise<void> {
   await page.goto(url);
 }
 
