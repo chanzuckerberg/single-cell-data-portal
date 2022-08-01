@@ -359,7 +359,7 @@ class TestGetCollectionID(BaseAuthAPITest):
         self.assertEqual("WRITE", res.json["access_type"])
 
 
-class TestPutCollectionID(BaseAuthAPITest):
+class TestPatchCollectionID(BaseAuthAPITest):
     def setUp(self):
         super().setUp()
         self.test_collection = dict(
@@ -407,6 +407,18 @@ class TestPutCollectionID(BaseAuthAPITest):
             headers=self.make_owner_header(),
         )
         self.assertEqual(200, response.status_code)
+
+    def test__update_collection_partial_data__OK(self):
+        collection_id = self.generate_collection(self.session).id
+        metadata = {"name": "A new name, and only a new name"}
+        response = self.app.patch(
+            f"/curation/v1/collections/{collection_id}",
+            data=json.dumps(metadata),
+            headers=self.make_owner_header(),
+        )
+        self.assertEqual(200, response.status_code)
+        response = self.app.get(f"curation/v1/collections/{collection_id}")
+        self.assertEqual(response.json["name"], metadata["name"])
 
     def test__update_collection__Not_Owner(self):
         collection_id = self.generate_collection(self.session, owner="someone else").id
