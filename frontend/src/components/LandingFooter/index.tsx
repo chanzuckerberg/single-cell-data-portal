@@ -11,7 +11,7 @@ const LandingFooter = (): JSX.Element => {
     <footer className={styles.footer}>
       <div className={styles.footerTopContainer}>
         <div className={styles.footerLogo}>
-          <a href={ROUTES.LANDING} target="_blank" rel="noopener">
+          <a href={ROUTES.HOMEPAGE} target="_blank" rel="noopener">
             <Image src={wordmark} alt="CZ CELLxGENE Discover" />
           </a>
         </div>
