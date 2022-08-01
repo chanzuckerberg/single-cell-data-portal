@@ -142,18 +142,23 @@ describeIfDeployed("Collection Revision", () => {
 });
 
 async function startRevision(): Promise<string> {
-  // (thuang): NOTE: the `*` captures the "collection-row" selector
-  const COLLECTION_ROW_SELECTOR_START = `*${getTestID(
-    COLLECTION_ROW_ID
-  )} >> text="Start Revision"`;
-
   await goToPage(TEST_URL + ROUTES.MY_COLLECTIONS);
-  await page.waitForLoadState();
+  // (thuang): Wait for collections to load to prevent race condition
+  await page.waitForLoadState("networkidle");
 
-  // (thuang): If we can't a usable collection row, we'll delete a revision
+  const MIN_USABLE_COLLECTION_COUNT = 4;
+
+  // (thuang): If we can't find at least 4 usable collections, we'll delete a revision
   await tryUntil(async () => {
     try {
-      await expect(page).toHaveSelector(COLLECTION_ROW_SELECTOR_START);
+      await expect(page).toHaveSelector(getText("Start Revision"));
+
+      await tryUntil(async () => {
+        const collectionRows = await page.locator(getText("Start Revision"));
+        expect(await collectionRows.count()).toBeGreaterThan(
+          MIN_USABLE_COLLECTION_COUNT - 1
+        );
+      });
     } catch {
       await page.click(getText("Continue"));
       await deleteRevision();
@@ -161,7 +166,21 @@ async function startRevision(): Promise<string> {
     }
   });
 
-  const collectionRow = await page.$(COLLECTION_ROW_SELECTOR_START);
+  /**
+   * (thuang): NOTE: the `*` at the beginning of the string captures the
+   * `COLLECTION_ROW_ID` selector element
+   * @see https://playwright.dev/docs/selectors#intermediate-matches
+   */
+  const COLLECTION_ROW_SELECTOR_START = `*${getTestID(
+    COLLECTION_ROW_ID
+  )} >> text="Start Revision"`;
+
+  // (thuang): We randomly select a collection row to start a revision
+  const collectionRows = await page.$$(COLLECTION_ROW_SELECTOR_START);
+  const collectionRowCount = await collectionRows.length;
+
+  const collectionRow =
+    collectionRows[Math.floor(Math.random() * collectionRowCount)];
 
   expect(collectionRow).not.toBe(null);
 
@@ -175,7 +194,7 @@ async function startRevision(): Promise<string> {
 
   const collectionName = await collectionRow?.$eval(
     getTestID("collection-link"),
-    (element) => element.textContent
+    (element: HTMLElement) => element.textContent
   );
 
   const actionButton = await collectionRow?.$(

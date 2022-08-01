@@ -158,18 +158,17 @@ class Collection(Entity):
     ) -> typing.List[dict]:
         """
         Get a subset of columns, in dict form, for all Collections with the specified visibility. If visibility is None,
-        return *all* Collections.
+        return *all* Collections that are *not* tombstoned.
         :param session: the SQLAlchemy session
         :param collection_columns: the list of columns to be returned (see usage by TransformingBase::to_dict_keep)
         :param visibility: the CollectionVisibility string name
         @return: a list of dict representations of Collections
         """
+        filters = [DbCollection.tombstone == False]  # noqa
         if visibility == CollectionVisibility.PUBLIC.name:
-            filters = [DbCollection.visibility == CollectionVisibility.PUBLIC]
+            filters.append(DbCollection.visibility == CollectionVisibility.PUBLIC)
         elif visibility == CollectionVisibility.PRIVATE.name:
-            filters = [DbCollection.visibility == CollectionVisibility.PRIVATE]
-        else:
-            filters = []
+            filters.append(DbCollection.visibility == CollectionVisibility.PRIVATE)
 
         resp_collections = []
         for collection in session.query(cls.table).filter(*filters).all():

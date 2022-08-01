@@ -50,11 +50,6 @@ const LandingHeader: FC = () => {
   return (
     <MobileNavWrapper>
       <MobileHomeLink>
-        {/* <Link href={ROUTES.HOMEPAGE} passHref>
-          <a>
-            <Image src={CGLogo} alt="logo" width="24" height="24" />
-          </a>
-        </Link> */}
         <HomepageLink />
       </MobileHomeLink>
       <MobileMenuButton onClick={() => mobileNavHandler(mobileMenuOpen)}>
@@ -76,6 +71,9 @@ const LandingHeader: FC = () => {
                 <LinkWrapper>
                   <Link href={ROUTES.HOMEPAGE} passHref>
                     <AnchorButton
+                      onClick={() => {
+                        track(EVENTS.DATASETS_CLICK_NAV);
+                      }}
                       active={isRouteActive(pathname, ROUTES.HOMEPAGE)}
                       href="passHref"
                       minimal
@@ -86,6 +84,9 @@ const LandingHeader: FC = () => {
                 <LinkWrapper>
                   <Link href={ROUTES.COLLECTIONS} passHref>
                     <AnchorButton
+                      onClick={() => {
+                        track(EVENTS.COLLECTIONS_CLICK_NAV);
+                      }}
                       active={isRouteActive(pathname, ROUTES.COLLECTIONS)}
                       href="passHref"
                       minimal
@@ -111,6 +112,11 @@ const LandingHeader: FC = () => {
               {/* CHANGE TO "/" ON PROD */}
               {pathname === "/landing-page" && (
                 <HiringLink
+                  onClick={() => {
+                    track(EVENTS.BROWSE_CAREERS_CLICKED, {
+                      button: "we're hiring",
+                    });
+                  }}
                   href="https://chanzuckerberg.com/careers/career-opportunities/?team=data,design,engineering,product,technical-program-management&initiative=science&gh_src=20d9f28d1us"
                   target="_blank"
                   rel="noopener"
@@ -132,6 +138,9 @@ const LandingHeader: FC = () => {
               )}
               <LinkWrapper>
                 <AnchorButton
+                  onClick={() => {
+                    track(EVENTS.BROWSE_DOCUMENTATION_CLICKED);
+                  }}
                   active={isRouteActive(pathname, ROUTES.DOCS)}
                   href={ROUTES.DOCS}
                   rel="noopener"

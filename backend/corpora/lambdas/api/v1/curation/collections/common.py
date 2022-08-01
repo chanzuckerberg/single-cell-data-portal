@@ -25,7 +25,7 @@ DATASET_ONTOLOGY_ELEMENTS = (
 
 def reshape_for_curation_api_and_is_allowed(collection, token_info, id_provided=False):
     """
-    Reshape Collection data for the Curation API response.
+    Reshape Collection data for the Curation API response. Remove tombstoned Datasets.
     :param collection: the Collection being returned in the API response
     :param token_info: user access token
     :param id_provided: bool - whether or not the collection uuid was provided by the user, for access purposes
@@ -44,11 +44,15 @@ def reshape_for_curation_api_and_is_allowed(collection, token_info, id_provided=
     del collection["owner"]  # Don't actually want to return 'owner' in response
     collection["collection_url"] = f"{CorporaConfig().collections_base_url}/collections/{collection['id']}"
 
-    if "datasets" in collection:
-        for dataset in collection["datasets"]:
-            if "artifacts" in dataset:
+    if datasets := collection.get("datasets"):
+        active_datasets = []
+        for dataset in datasets:
+            if dataset.get("tombstone"):
+                continue  # Remove tombstoned Datasets
+            active_datasets.append(dataset)
+            if artifacts := dataset.get("artifacts"):
                 dataset["dataset_assets"] = []
-                for asset in dataset["artifacts"]:
+                for asset in artifacts:
                     if asset["filetype"] in (DatasetArtifactFileType.H5AD, DatasetArtifactFileType.RDS):
                         dataset["dataset_assets"].append(asset)
                 del dataset["artifacts"]
@@ -61,6 +65,7 @@ def reshape_for_curation_api_and_is_allowed(collection, token_info, id_provided=
                         dataset[ontology_element] = [dataset_ontology_element]
                 else:
                     dataset[ontology_element] = []
+        collection["datasets"] = active_datasets
 
     return True
 

@@ -1183,28 +1183,6 @@ components:
           type: string
         tombstoned:
           type: boolean
-    wmg_ontology_term_id_label_list:
-      description: ->
-        An array of ontology term ids and labels, where array elements are single-element objects of the
-        form "<id>":"<label>"
-      type: array
-      items:
-        description: ->
-          A single-element object with the ontology term id as the element's property name and the ontology term label
-          as the element's property value.
-        type: object
-        # TODO: fix: https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data-portal/1967
-        # `{"<ontology_term_id>": "<ontology_term_label"}`
-    #        maxProperties: 1
-    #        additionalProperties:
-    #          type: string
-    wmg_ontology_term_id_list:
-      type: array
-      items:
-        type: string
-    wmg_snapshot_id:
-      type: string
-      format: uuid
 
   parameters:
     path_collection_id:
