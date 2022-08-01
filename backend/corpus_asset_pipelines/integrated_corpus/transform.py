@@ -45,7 +45,6 @@ def transform_dataset_raw_counts_to_rankit(
     """
     array_name = f"{corpus_path}/{INTEGRATED_ARRAY_NAME}"
     expression_matrix = get_X_raw(anndata_object)
-    logger.info(f"saving {array_name}...")
     stride = max(int(np.power(10, np.around(np.log10(1e9 / expression_matrix.shape[1])))), 10_000)
     with tiledb.open(array_name, mode="w") as array:
         for start in range(0, expression_matrix.shape[0], stride):
