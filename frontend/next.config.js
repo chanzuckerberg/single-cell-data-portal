@@ -80,6 +80,11 @@ module.exports = {
         permanent: true,
         source: "/docs",
       },
+      {
+        destination: "/",
+        permanent: true,
+        source: "/landing-page",
+      },
     ];
   },
 };
