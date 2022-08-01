@@ -6,9 +6,10 @@ import {
   Categories,
   CategoryConfig,
   CategoryValueKey,
-  CategoryView,
+  CategoryViews,
   CATEGORY_CONFIGS_BY_FILTER_CATEGORY_KEY,
   CATEGORY_FILTER_TYPE,
+  CATEGORY_UI_CONFIGS,
   ETHNICITY_UNSPECIFIED_LABEL,
   FILTER_CATEGORY_KEY,
   OnFilterFn,
@@ -79,7 +80,7 @@ export interface SelectCategoryValue {
  * Shape of return value from this useFilter hook.
  */
 export interface FilterInstance {
-  categories: CategoryView[];
+  categoryViews: CategoryViews[];
   onFilter: OnFilterFn;
 }
 
@@ -208,7 +209,7 @@ export function useCategoryFilter<T extends Categories>(
   );
 
   return {
-    categories: buildCategoryViews(filterState),
+    categoryViews: buildCategoryViews(filterState),
     onFilter,
   };
 }
@@ -456,31 +457,31 @@ function buildCategoryValueLabel(
 }
 
 /**
- * Build view-specific models from filter state, to facilitate easy rendering.
+ * Build view-specific models from UI config and filter state, to facilitate easy rendering.
  * @param filterState - Categories, category value and their counts with the current filter applied.
- * @returns Array of category view objects.
+ * @returns Array of category views objects.
  */
-function buildCategoryViews(filterState?: FilterState): CategoryView[] {
+function buildCategoryViews(filterState?: FilterState): CategoryViews[] {
   if (!filterState) {
     return [];
   }
-  return Object.keys(filterState)
-    .map((categoryKey: string) => {
-      // Build category value view models for this category and sort.
-      const categoryValueByValue =
-        filterState[categoryKey as FilterCategoryKey];
 
-      const config =
-        CATEGORY_CONFIGS_BY_FILTER_CATEGORY_KEY[
-          categoryKey as FilterCategoryKey
-        ];
+  // Build up view models for each UI config.
+  return CATEGORY_UI_CONFIGS.map((categoryUIConfig) => {
+    const { categoryConfigKeys, label } = categoryUIConfig;
+    const categoryViews = categoryConfigKeys.map((categoryConfigKey) => {
+      const config = CATEGORY_CONFIGS_BY_FILTER_CATEGORY_KEY[categoryConfigKey];
+      const { filterCategoryKey } = config;
+
+      // Build category value view models for this category and sort.
+      const categoryValueByValue = filterState[filterCategoryKey];
 
       // Handle single or multiselect categories, or ontology categories.
       if (isSelectCategoryValue(categoryValueByValue)) {
         // Handle ontology categories.
         if (isCategoryConfigOntology(config)) {
           return buildOntologyCategoryView(
-            categoryKey as FilterCategoryKey,
+            filterCategoryKey,
             config,
             categoryValueByValue,
             filterState
@@ -488,7 +489,7 @@ function buildCategoryViews(filterState?: FilterState): CategoryView[] {
         }
 
         return buildSelectCategoryView(
-          categoryKey as FilterCategoryKey,
+          filterCategoryKey,
           config,
           categoryValueByValue,
           filterState
@@ -497,12 +498,17 @@ function buildCategoryViews(filterState?: FilterState): CategoryView[] {
 
       // Handle range categories.
       return buildRangeCategoryView(
-        categoryKey as FilterCategoryKey,
+        filterCategoryKey,
         config,
         categoryValueByValue
       );
-    })
-    .sort(sortCategoryViews);
+    });
+
+    return {
+      categoryViews,
+      label,
+    };
+  }).sort(sortCategoryViews);
 }
 
 /**
@@ -902,6 +908,7 @@ function buildSelectCategoryView(
   if (excludeTerms && excludeTerms.length) {
     selectCategoryValues = selectCategoryValues.filter(
       (selectCategoryValue) =>
+        !selectCategoryValue.ontologyTermId ||
         !excludeTerms.includes(selectCategoryValue.ontologyTermId)
     );
   }
@@ -1503,11 +1510,11 @@ function sortCategoryValueViews(
 
 /**
  * Sort category views by display label, ascending.
- * @param c0 - First category view to compare.
- * @param c1 - Second category view to compare.
+ * @param c0 - First category views to compare.
+ * @param c1 - Second category views to compare.
  * @returns Number indicating sort precedence of c0 vs c1.
  */
-function sortCategoryViews(c0: CategoryView, c1: CategoryView): number {
+function sortCategoryViews(c0: CategoryViews, c1: CategoryViews): number {
   return COLLATOR_CASE_INSENSITIVE.compare(c0.label, c1.label);
 }
 

@@ -21,6 +21,14 @@ export interface CategoryConfig {
 }
 
 /**
+ * UI configuration for each category.
+ */
+export interface CategoryUIConfig {
+  categoryConfigKeys: FILTER_CATEGORY_KEY[];
+  label: string;
+}
+
+/**
  * Possible set of keys to filter over.
  */
 export type FilterKey = keyof CollectionRow | keyof DatasetRow;
@@ -3039,6 +3047,72 @@ const CATEGORY_CONFIGS: (CategoryConfig | OntologyCategoryConfig)[] = [
 ];
 
 /**
+ * UI configuration for each category.
+ */
+export const CATEGORY_UI_CONFIGS: CategoryUIConfig[] = [
+  {
+    categoryConfigKeys: [FILTER_CATEGORY_KEY.ASSAY],
+    label: "Assay",
+  },
+  {
+    categoryConfigKeys: [FILTER_CATEGORY_KEY.CELL_COUNT],
+    label: "Cell Count",
+  },
+  {
+    categoryConfigKeys: [FILTER_CATEGORY_KEY.CELL_TYPE_DEPRECATED],
+    label: "Cell Type",
+  },
+  {
+    categoryConfigKeys: [FILTER_CATEGORY_KEY.CELL_TYPE],
+    label: "Cell Type (Ontology)",
+  },
+  {
+    categoryConfigKeys: [FILTER_CATEGORY_KEY.DEVELOPMENT_STAGE],
+    label: "Development Stage",
+  },
+  {
+    categoryConfigKeys: [FILTER_CATEGORY_KEY.DISEASE],
+    label: "Disease",
+  },
+  {
+    categoryConfigKeys: [FILTER_CATEGORY_KEY.ETHNICITY],
+    label: "Ethnicity",
+  },
+  {
+    categoryConfigKeys: [FILTER_CATEGORY_KEY.GENE_COUNT],
+    label: "Gene Count",
+  },
+  {
+    categoryConfigKeys: [FILTER_CATEGORY_KEY.ORGANISM],
+    label: "Organism",
+  },
+  {
+    categoryConfigKeys: [FILTER_CATEGORY_KEY.PUBLICATION_AUTHORS],
+    label: "Author",
+  },
+  {
+    categoryConfigKeys: [FILTER_CATEGORY_KEY.PUBLICATION_DATE_VALUES],
+    label: "Publication Date",
+  },
+  {
+    categoryConfigKeys: [FILTER_CATEGORY_KEY.SEX],
+    label: "Sex",
+  },
+  {
+    categoryConfigKeys: [FILTER_CATEGORY_KEY.TISSUE_DEPRECATED],
+    label: "Tissue",
+  },
+  // {
+  //   categoryConfigKeys: [
+  //     FILTER_CATEGORY_KEY.TISSUE_SYSTEM,
+  //     FILTER_CATEGORY_KEY.TISSUE_ORGAN_PART,
+  //     FILTER_CATEGORY_KEY.TISSUE,
+  //   ],
+  //   label: "Tissue (Ontology)",
+  // },
+];
+
+/**
  * Category configs keyed by filter category key, for convenience. Using object literal with type
  * KeyedFilterCategoryConfig rather than generic Map to prevent having to null check values.
  */
@@ -3057,6 +3131,15 @@ export const CATEGORY_CONFIGS_BY_FILTER_CATEGORY_KEY: KeyedFilterCategoryConfigs
  * "value" prop passed to react-table's Cell function
  */
 export type CellPropsValue<T> = { value: CellValue<T> };
+
+/**
+ * View model of category view container, possibly containing more than one category to display in multiple filter
+ * panels (e.g. tissue).
+ */
+export interface CategoryViews {
+  categoryViews: CategoryView[];
+  label: string;
+}
 
 /**
  * View model of category.

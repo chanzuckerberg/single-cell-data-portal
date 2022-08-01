@@ -1,7 +1,8 @@
-import { ChangeEvent, ReactNode } from "react";
+import { ChangeEvent, Fragment, ReactNode } from "react";
 import { FilterCategoryKey } from "src/common/hooks/useCategoryFilter";
 import {
   CategoryView,
+  CategoryViews,
   OnFilterFn,
   OntologyCategoryView,
   RangeCategoryView,
@@ -10,34 +11,77 @@ import {
   SetSearchValueFn,
 } from "src/components/common/Filter/common/entities";
 import { formatNumberToScale } from "src/components/common/Filter/common/utils";
+import BasicFilter from "src/components/common/Filter/components/BasicFilter";
 import FilterLabel from "src/components/common/Filter/components/FilterLabel";
 import FilterMenu from "src/components/common/Filter/components/FilterMenu";
 import { MAX_DISPLAYABLE_MENU_ITEMS } from "src/components/common/Filter/components/FilterMenu/style";
 import FilterRange from "src/components/common/Filter/components/FilterRange";
 import FilterViews from "src/components/common/Filter/components/FilterViews";
-import BasicFilter from "./components/BasicFilter";
 import FilterTags, { CategoryTag } from "./components/FilterTags";
 
 interface Props {
-  categories: CategoryView[];
+  categoryViews: CategoryViews[];
   onFilter: OnFilterFn;
 }
 
-export default function Filter({ categories, onFilter }: Props): JSX.Element {
+export default function Filter({
+  categoryViews: allCategoryViews,
+  onFilter,
+}: Props): JSX.Element {
   return (
     <>
-      {categories.map((categoryView: CategoryView) => {
-        const { isDisabled = false, key } = categoryView;
+      {allCategoryViews.map((categoryViews: CategoryViews, index) => {
+        if (categoryViews.categoryViews.length === 1) {
+          const categoryView = categoryViews.categoryViews[0];
+          const { isDisabled = false, key } = categoryView;
+          return (
+            <BasicFilter
+              content={buildBasicFilterContent(categoryView, onFilter)}
+              isDisabled={isDisabled}
+              key={key}
+              tags={
+                <FilterTags tags={buildFilterTags(categoryView, onFilter)} />
+              }
+              target={buildFilterLabel(categoryView, isDisabled)}
+            />
+          );
+        }
+
+        const { label } = categoryViews;
         return (
-          <BasicFilter
-            content={buildBasicFilterContent(categoryView, onFilter)}
-            isDisabled={isDisabled}
-            key={key}
-            tags={<FilterTags tags={buildFilterTags(categoryView, onFilter)} />}
-            target={buildFilterLabel(categoryView, isDisabled)}
-          />
+          <Fragment key={index}>
+            {label}
+            {categoryViews.categoryViews.map((categoryView) => {
+              const { isDisabled = false, key } = categoryView;
+              return (
+                <BasicFilter
+                  content={buildBasicFilterContent(categoryView, onFilter)}
+                  isDisabled={isDisabled}
+                  key={key}
+                  tags={
+                    <FilterTags
+                      tags={buildFilterTags(categoryView, onFilter)}
+                    />
+                  }
+                  target={buildFilterLabel(categoryView, isDisabled)}
+                />
+              );
+            })}
+          </Fragment>
         );
       })}
+      {/*{allCategoryViews.map((categoryViews: CategoryViews) => {*/}
+      {/*  const { isDisabled = false, key } = categoryView;*/}
+      {/*  return (*/}
+      {/*    <BasicFilter*/}
+      {/*      content={buildBasicFilterContent(categoryView, onFilter)}*/}
+      {/*      isDisabled={isDisabled}*/}
+      {/*      key={key}*/}
+      {/*      tags={<FilterTags tags={buildFilterTags(categoryView, onFilter)} />}*/}
+      {/*      target={buildFilterLabel(categoryView, isDisabled)}*/}
+      {/*    />*/}
+      {/*  );*/}
+      {/*})}*/}
     </>
   );
 }
