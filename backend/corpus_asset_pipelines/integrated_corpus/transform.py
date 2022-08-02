@@ -37,8 +37,8 @@ def apply_pre_concatenation_filters(
     return anndata_object
 
 def create_high_level_tissue(anndata_object: anndata.AnnData):
-    anndata_object.AnnData.obs["tissue_highlevel"] = anndata_object.AnnData.obs["tissue"]
-    anndata_object.AnnData.obs["tissue_highlevel_ontology_term_id"] = anndata_object.AnnData.obs["tissue_ontology_id"]
+    anndata_object.obs["tissue_highlevel"] = anndata_object.obs["tissue"]
+    anndata_object.obs["tissue_highlevel_ontology_term_id"] = anndata_object.obs["tissue_ontology_term_id"]
 
 
 def transform_dataset_raw_counts_to_rankit(
