@@ -69,6 +69,7 @@ obs_labels = [
         for key in [
             "cell_type_ontology_term_id",
             "tissue_ontology_term_id",
+            "tissue_highlevel_ontology_term_id",
         ]
     ],
     *[
@@ -81,6 +82,7 @@ obs_labels = [
             "development_stage_ontology_term_id",
             "disease_ontology_term_id",
             "tissue",
+            "tissue_highlevel",
             "ethnicity",
             "ethnicity_ontology_term_id",
             "sex",
