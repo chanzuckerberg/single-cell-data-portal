@@ -79,6 +79,7 @@ class CorporaAuthConfig(SecretConfig):
             "api_userinfo_url": "{api_base_url}/userinfo",
             "internal_url": "{api_base_url}",
             "issuer": [],
+            "retry_status_forcelist": [429, 500, 502, 503, 504],
         }
         template["issuer"].append(self.api_base_url + "/" if not self.api_base_url.endswith("/") else self.api_base_url)
         template["issuer"].append("https://" + self.auth0_domain + "/")
