@@ -34,22 +34,22 @@ const Header: FC = () => {
           <HomepageLink />
           <Nav>
             <LinkWrapper>
-              <Link href={ROUTES.HOMEPAGE} passHref>
-                <AnchorButton
-                  active={isRouteActive(pathname, ROUTES.HOMEPAGE)}
-                  href="passHref"
-                  minimal
-                  text="Datasets"
-                />
-              </Link>
-            </LinkWrapper>
-            <LinkWrapper>
               <Link href={ROUTES.COLLECTIONS} passHref>
                 <AnchorButton
                   active={isRouteActive(pathname, ROUTES.COLLECTIONS)}
                   href="passHref"
                   minimal
                   text="Collections"
+                />
+              </Link>
+            </LinkWrapper>
+            <LinkWrapper>
+              <Link href={ROUTES.DATASETS} passHref>
+                <AnchorButton
+                  active={isRouteActive(pathname, ROUTES.DATASETS)}
+                  href="passHref"
+                  minimal
+                  text="Datasets"
                 />
               </Link>
             </LinkWrapper>
