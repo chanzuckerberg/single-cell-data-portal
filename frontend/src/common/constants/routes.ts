@@ -1,9 +1,9 @@
 export enum ROUTES {
   HOMEPAGE = "/",
-  LANDING = "/landing-page",
   MY_COLLECTIONS = "/my-collections",
   COLLECTION = "/collections/:id",
   COLLECTIONS = "/collections",
+  DATASETS = "/datasets",
   TOS = "/tos/",
   PRIVACY = "/privacy/",
   PREVIEW_POLICIES = "/previewpolicies/",
