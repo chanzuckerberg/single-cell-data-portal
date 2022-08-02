@@ -14,7 +14,8 @@ module stack {
   batch_container_memory_limit = 28000
   backend_instance_count       = 1
   frontend_instance_count      = 1
-  backend_memory               = 1536
+  backend_memory               = 8192
+  frontend_memory              = 8192
 
   wait_for_steady_state        = var.wait_for_steady_state
 }

@@ -1,4 +1,4 @@
-FROM ubuntu:21.10
+FROM ubuntu:22.04
 
 ENV APP_NAME=corpora-api
 ENV DEPLOYMENT_STAGE=test
@@ -12,11 +12,9 @@ RUN apt-get update && \
 
 # Don't re-run pip install unless either requirements.txt has changed.
 WORKDIR /single-cell-data-portal
-ADD requirements.txt /single-cell-data-portal/requirements.txt
-ADD backend/corpora/api_server/requirements.txt /single-cell-data-portal/requirements-api.txt
-RUN grep -v requirements.txt requirements.txt > reqs.txt \
-    && cat requirements-api.txt >> reqs.txt \
-    && python3 -m pip install -r reqs.txt
+ADD requirements.txt requirements-base.txt
+ADD backend/corpora/api_server/requirements.txt requirements-api.txt
+RUN python3 -m pip install -r requirements-base.txt -r requirements-api.txt
 EXPOSE 5000
 
 # Install utilities to /single-cell-data-portal so we can run db migrations.

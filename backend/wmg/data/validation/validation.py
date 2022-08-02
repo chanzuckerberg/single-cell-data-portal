@@ -22,16 +22,14 @@ class Validation:
         self.expression_summary_path = f"{corpus_path}/{EXPRESSION_SUMMARY_CUBE_NAME}"
         self.env = os.getenv("DEPLOYMENT_STAGE")
         self.validation_dataset_id = "3de0ad6d-4378-4f62-b37b-ec0b75a50d94"
-        self.MIN_CUBE_SIZE_GB = 1 if self.env == "prod" else 0.1
-        self.MIN_TISSUE_COUNT = 15 if self.env == "prod" else 2
-        self.MIN_SPECIES_COUNT = 2 if self.env == "prod" else 1
-        self.MIN_DATASET_COUNT = 50 if self.env == "prod" else 5
-        # These numbers should be generally consistent across datasets but we have some weird datasets in dev
-        # throwing the numbers off
-        self.MIN_MALAT1_GENE_EXPRESSION_CELL_COUNT_PERCENT = 80 if self.env == "prod" else 1
-        self.MIN_ACTB_GENE_EXPRESSION_CELL_COUNT_PERCENT = 60 if self.env == "prod" else 1
-        self.MIN_MALAT1_RANKIT_EXPRESSION = 4 if self.env == "prod" else 3
-        self.MIN_ACTB_RANKIT_EXPRESSION = 2.75 if self.env == "prod" else 2
+        self.MIN_CUBE_SIZE_GB = 1
+        self.MIN_TISSUE_COUNT = 15
+        self.MIN_SPECIES_COUNT = 2
+        self.MIN_DATASET_COUNT = 50
+        self.MIN_MALAT1_GENE_EXPRESSION_CELL_COUNT_PERCENT = 80
+        self.MIN_ACTB_GENE_EXPRESSION_CELL_COUNT_PERCENT = 60
+        self.MIN_MALAT1_RANKIT_EXPRESSION = 4
+        self.MIN_ACTB_RANKIT_EXPRESSION = 2.75
 
     def validate_cube(self):
         """
@@ -67,8 +65,7 @@ class Validation:
         self.validate_lung_cell_marker_genes()
         # check expression levels are correct for lung map dataset uuid 3de0ad6d-4378-4f62-b37b-ec0b75a50d94
         # genes ["MALAT1", "CCL5"]
-        if self.env == "prod":
-            self.validate_expression_levels_for_particular_gene_dataset()
+        self.validate_expression_levels_for_particular_gene_dataset()
 
         if len(self.errors) > 0:
             logger.info(f"Cube Validation Failed with {len(self.errors)} errors")
@@ -98,7 +95,9 @@ class Validation:
         size_gb = size_byte / GB
         logger.info(f"Expression summary cube is {size_gb:.2f}GB")
         if not size_gb > self.MIN_CUBE_SIZE_GB:
-            self.errors.append("Expression summary cube is smaller than expected")
+            self.errors.append(
+                f"Expression summary cube is {size_gb:.2f}GB which is smaller than expected {self.MIN_CUBE_SIZE_GB}GB"
+            )
 
     def validate_cube_species(self):
         with tiledb.open(self.expression_summary_path, "r") as cube:
@@ -108,11 +107,7 @@ class Validation:
                 self.errors.append(
                     f"Expression summary cube missing mandatory species. Only contains {species_count} species"
                 )
-            if self.env == "PROD":
-                mandatory_species = fixtures.validation_species_ontologies.values()
-            else:
-                mandatory_species = [fixtures.validation_species_ontologies["human"]]
-            for species in mandatory_species:
+            for species in fixtures.validation_species_ontologies.values():
                 if species not in species_list:
                     self.errors.append(f"Cube missing species: {species}")
             logger.info(f"{species_count} species included in cube")
@@ -126,11 +121,7 @@ class Validation:
             tissue_count = len(tissue_list)
             if self.MIN_TISSUE_COUNT > tissue_count:
                 self.errors.append(f"Only {tissue_count} tissues included in cube")
-            if self.env == "PROD":
-                mandatory_tissues = fixtures.validation_tissues_with_many_cell_types.values()
-            else:
-                mandatory_tissues = [fixtures.validation_tissues_with_many_cell_types["blood"]]
-            for tissue in mandatory_tissues:
+            for tissue in fixtures.validation_tissues_with_many_cell_types.values():
                 if tissue not in tissue_list:
                     self.errors.append(f"{tissue} missing from tissue list")
             logger.info(f"{tissue_count} tissues included in cube")

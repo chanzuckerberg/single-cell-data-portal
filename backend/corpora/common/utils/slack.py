@@ -82,3 +82,34 @@ def format_failed_batch_issue_slack_alert(data):
     data = batch_data | data
 
     return json.dumps(data, indent=2)
+
+
+def gen_wmg_pipeline_failure_message(failure_info: str) -> dict:
+    return {
+        "blocks": [
+            {
+                "type": "header",
+                "text": {
+                    "type": "plain_text",
+                    "text": f"WMG Corpus Asset Pipeline Failed:fire: \n{failure_info}",
+                    "emoji": True,
+                },
+            }
+        ]
+    }
+
+
+def gen_wmg_pipeline_success_message(snapshot_id: str) -> dict:
+    return {
+        "blocks": [
+            {
+                "type": "header",
+                "text": {
+                    "type": "plain_text",
+                    "text": f"Corpus Asset Pipeline Succeeded:tada: "
+                    f"\nWMG (prod) snapshot stored in 'cellxgene-wmg-prod' under: {snapshot_id}",
+                    "emoji": True,
+                },
+            }
+        ]
+    }

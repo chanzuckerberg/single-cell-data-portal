@@ -5,6 +5,8 @@ import base64
 import json
 import time
 
+from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.util import Retry
 from backend.corpora.common.corpora_config import CorporaAuthConfig
 
 API_URL = {
@@ -28,6 +30,9 @@ class BaseFunctionalTestCase(unittest.TestCase):
         super().setUpClass()
         cls.deployment_stage = os.environ["DEPLOYMENT_STAGE"]
         cls.config = CorporaAuthConfig()
+        cls.session = requests.Session()
+        retry_config = Retry(total=5, backoff_factor=2, status_forcelist=[500, 502, 503, 504])
+        cls.session.mount("https://", HTTPAdapter(max_retries=retry_config))
         token = cls.get_auth_token(cls.config.test_account_username, cls.config.test_account_password)
         cls.curator_cookie = cls.make_cookie(token)
 
@@ -47,7 +52,7 @@ class BaseFunctionalTestCase(unittest.TestCase):
             claims = " ".join(additional_claims)
         else:
             claims = standard_claims
-        response = requests.post(
+        response = cls.session.post(
             "https://czi-cellxgene-dev.us.auth0.com/oauth/token",
             headers={"content-type": "application/x-www-form-urlencoded"},
             data=dict(
@@ -74,12 +79,12 @@ class BaseFunctionalTestCase(unittest.TestCase):
         body = {"url": dropbox_url}
 
         if existing_dataset_id is None:
-            res = requests.post(
+            res = self.session.post(
                 f"{self.api}/dp/v1/collections/{collection_id}/upload-links", data=json.dumps(body), headers=headers
             )
         else:
             body["id"] = existing_dataset_id
-            res = requests.put(
+            res = self.session.put(
                 f"{self.api}/dp/v1/collections/{collection_id}/upload-links", data=json.dumps(body), headers=headers
             )
 
