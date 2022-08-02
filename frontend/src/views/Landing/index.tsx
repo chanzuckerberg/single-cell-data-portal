@@ -193,6 +193,7 @@ const LandingPage = (): JSX.Element => {
           property="og:description"
           content="Find, download and visually explore curated and standardized single-cell datasets"
         />
+        <meta property="twitter:card" content="summary" />
         <meta
           property="twitter:title"
           content="Chan Zuckerberg CELLxGENE Discover"
