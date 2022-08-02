@@ -222,7 +222,11 @@ const LandingPage = (): JSX.Element => {
         >
           <div className={styles.heroImgContainer}>
             <div className={styles.laptopImg}>
-              <Image src={LaptopImg} alt="laptop with cell data on screen" />
+              <Image
+                src={LaptopImg}
+                alt="laptop with cell data on screen"
+                priority
+              />
             </div>
           </div>
           <div className={styles.heroTextContainer}>

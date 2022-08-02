@@ -98,6 +98,7 @@
       width: 100%;
       min-width: 900px;
       z-index: 0;
+      max-width: 1200px;
 
       @media (max-width: 1199px) {
         left: 5%;
@@ -107,6 +108,10 @@
       @media (max-width: 999px) {
         position: relative;
         left: 0;
+      }
+
+      @media (min-width: 2000px) {
+        left: 50%;
       }
     }
   }
