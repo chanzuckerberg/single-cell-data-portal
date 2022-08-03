@@ -63,17 +63,19 @@ db/dump:
 	PGPASSWORD=${DB_PW} pg_dump -Fc --dbname=corpora_${DEPLOYMENT_STAGE} --file=$(OUTFILE) --host 0.0.0.0 --username corpora_${DEPLOYMENT_STAGE}
 	$(MAKE) db/tunnel/down
 
-db/load/local:
+db/local/load-data:
 	# Loads corpora_dev.sqlc into the local Docker env corpora database
-	# Usage: make db/load/local INFILE=<file>
-	docker-compose exec database pg_restore --clean --no-owner --username corpora --dbname corpora $(INFILE)
+	# Usage: make db/local/load-data INFILE=<file>
+	$(eval DB_PW = $(shell aws secretsmanager get-secret-value --secret-id corpora/backend/test/database --region us-west-2 | jq -r '.SecretString | match(":([^:]*)@").captures[0].string'))
+	PGPASSWORD=${DB_PW} pg_restore --clean --no-owner --host 0.0.0.0 --username corpora --dbname corpora $(INFILE)
 
-db/load/schema:
+db/local/load-schema:
     # Imports the corpora_dev.sqlc schema (schema ONLY) into the corpora_test database
-	# Usage: DEPLOYMENT_STAGE=test make db/import/schema
-	pg_restore --schema-only --clean --no-owner --dbname corpora_test corpora_$(DEPLOYMENT_STAGE).sqlc
+	# Usage: make db/local/load-schema INFILE=<file>
+    $(eval DB_PW = $(shell aws secretsmanager get-secret-value --secret-id corpora/backend/test/database --region us-west-2 | jq -r '.SecretString | match(":([^:]*)@").captures[0].string'))
+	PGPASSWORD=${DB_PW} pg_restore --schema-only --clean --no-owner --host 0.0.0.0 --dbname corpora $(INFILE)
 	# Also import alembic schema version
-	pg_restore --data-only --table=alembic_version --no-owner --dbname corpora_test corpora_$(DEPLOYMENT_STAGE).sqlc
+	PGPASSWORD=${DB_PW} pg_restore --data-only --table=alembic_version --no-owner --host 0.0.0.0 --dbname corpora $(INFILE)
 
 db/dump_schema:
 ifeq ($(DEPLOYMENT_STAGE),test)
