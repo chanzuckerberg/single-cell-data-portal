@@ -363,7 +363,10 @@ class TestPatchCollectionID(BaseAuthAPITest):
     def setUp(self):
         super().setUp()
         self.test_collection = dict(
-            name="collection", description="description", contact_name="john doe", contact_email="johndoe@email.com"
+            name="collection",
+            description="description",
+            contact_name="john doe",
+            contact_email="johndoe@email.com",
         )
         self.generate_collection(
             self.session,
@@ -408,17 +411,38 @@ class TestPatchCollectionID(BaseAuthAPITest):
         )
         self.assertEqual(200, response.status_code)
 
-    def test__update_collection_partial_data__OK(self):
-        collection_id = self.generate_collection(self.session).id
-        metadata = {"name": "A new name, and only a new name"}
-        response = self.app.patch(
-            f"/curation/v1/collections/{collection_id}",
-            data=json.dumps(metadata),
-            headers=self.make_owner_header(),
-        )
-        self.assertEqual(200, response.status_code)
-        response = self.app.get(f"curation/v1/collections/{collection_id}")
-        self.assertEqual(response.json["name"], metadata["name"])
+    @patch("backend.corpora.common.entities.Collection.get_doi")
+    def test__update_collection_partial_data__OK(self, get_doi: Mock):
+        get_doi.return_value = "stub:doi"
+        link = [{"link_name": None, "link_type": "RAW_DATA", "link_url": "http://test_link.place"}]
+        name = "partial updates test collection"
+        new_name = "partial updates 2"
+        collection = self.generate_collection(self.session, name=name, links=link)
+        collection_id = collection.id
+
+        with self.subTest("With one field; links persist"):
+            metadata = {"name": new_name}
+            response = self.app.patch(
+                f"/curation/v1/collections/{collection_id}",
+                data=json.dumps(metadata),
+                headers=self.make_owner_header(),
+            )
+            self.assertEqual(200, response.status_code)
+            response = self.app.get(f"curation/v1/collections/{collection_id}")
+            self.assertEqual(response.json["name"], metadata["name"])
+            self.assertEqual(response.json["links"], link)
+
+        with self.subTest("With no fields; links persist"):
+            metadata = {}
+            response = self.app.patch(
+                f"/curation/v1/collections/{collection_id}",
+                data=json.dumps(metadata),
+                headers=self.make_owner_header(),
+            )
+            self.assertEqual(200, response.status_code)
+            response = self.app.get(f"curation/v1/collections/{collection_id}")
+            self.assertEqual(response.json["name"], new_name)
+            self.assertEqual(response.json["links"], link)
 
     def test__update_collection__Not_Owner(self):
         collection_id = self.generate_collection(self.session, owner="someone else").id

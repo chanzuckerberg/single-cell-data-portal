@@ -264,7 +264,7 @@ def delete_collection(collection_id: str, token_info: dict):
 
 
 @dbconnect
-def update_collection(collection_id: str, body: dict, token_info: dict):
+def update_collection(collection_id: str, body: dict, token_info: dict, keep_links: bool = False):
     db_session = g.db_session
     errors = []
     verify_collection_body(body, errors, allow_none=True)
@@ -280,14 +280,14 @@ def update_collection(collection_id: str, body: dict, token_info: dict):
     new_doi = normalize_and_get_doi(body, errors)
     if old_doi and not new_doi:
         # If the DOI was deleted, remove the publisher_metadata field
-        collection.update(publisher_metadata=None)
+        collection.update(publisher_metadata=None, keep_links=keep_links)
     elif new_doi != old_doi:
         # If the DOI has changed, fetch and update the metadata
         publisher_metadata = get_publisher_metadata(new_doi, errors)
         body["publisher_metadata"] = publisher_metadata
     if errors:
         raise InvalidParametersHTTPException(detail=errors)
-    collection.update(**body)
+    collection.update(**body, keep_links=keep_links)
     result = collection.reshape_for_api(tombstoned_datasets=True)
     result["access_type"] = "WRITE"
     return make_response(jsonify(result), 200)
