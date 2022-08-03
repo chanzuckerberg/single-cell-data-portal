@@ -412,6 +412,7 @@ class TestPatchCollectionID(BaseAuthAPITest):
         self.assertEqual(200, response.status_code)
 
     @patch("backend.corpora.common.entities.Collection.get_doi")
+    # Patch Collection.get_doi to ensure the additional collection.update call is made in the update_collection method
     def test__update_collection_partial_data__OK(self, get_doi: Mock):
         get_doi.return_value = "stub:doi"
         link = [{"link_name": None, "link_type": "RAW_DATA", "link_url": "http://test_link.place"}]
