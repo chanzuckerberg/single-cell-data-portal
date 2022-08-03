@@ -96,6 +96,8 @@ jobs:
 
   smoke-test:
     runs-on: ubuntu-20.04
+    needs:
+      - upgrade
     steps:
       - name: Run Smoke Tests
         working-directory: frontend
