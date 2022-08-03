@@ -13,7 +13,7 @@ class CustomJSONEncoder(JSONEncoder):
         if isinstance(obj, datetime.timedelta):
             return str(obj)
         elif isinstance(obj, datetime.datetime):
-            return obj.timestamp()
+            return obj.isoformat()
         elif isinstance(obj, Enum):
             return str(obj.name)
         elif isinstance(obj, (Base, Entity)):
