@@ -51,7 +51,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Update deployment
-        uses: chanzuckerberg/github-actions/.github/actions/deploy-happy-stack@v1.7.2
+        uses: chanzuckerberg/github-actions/.github/actions/deploy-happy-stack@89b77fd9a74df0e29ed3cc2057c23b9d73011574
         with:
           tfe-token: ${{ secrets.TFE_TOKEN }}
           stack-name: ${{ github.event.deployment.environment }}stack
@@ -59,6 +59,7 @@ jobs:
           operation: update
           tag: ${{ github.event.deployment.payload.tag }}
           env: ${{ github.event.deployment.environment }}
+          skip-migrations: "true"
       - name: Invalidate CloudFront
         env:
           DEPLOYMENT_STAGE: ${{ github.event.deployment.environment }}
@@ -75,6 +76,27 @@ jobs:
           fi
           DISTRIBUTION_ID=$(aws cloudfront list-distributions --query "DistributionList.Items[*].{id:Id,domain_name:Origins.Items[*].DomainName,alias:Aliases.Items[0]}[?contains(domain_name,'${DOMAIN_NAME}')&&alias=='${ALIAS}'].id" --output text)
           aws cloudfront create-invalidation --distribution-id ${DISTRIBUTION_ID} --paths /index.html
+      ### Need to write success failure way because Github API doesn't allow doing
+      ### "if: always(), state: ${{ success() }}:
+      - name: Set deployment status to failure if errors
+        uses: avakar/set-deployment-status@v1
+        if: failure()
+        with:
+          state: failure
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          fields: repo,commit,author,eventName,workflow,job,mention
+          mention: "here"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+        if: failure() && github.ref == 'refs/heads/main'
+
+  smoke-test:
+    runs-on: ubuntu-20.04
+    steps:
       - name: Run Smoke Tests
         working-directory: frontend
         env:
@@ -87,6 +109,27 @@ jobs:
           fi
           cp src/configs/${DEPLOYMENT_STAGE}.js src/configs/configs.js
           DEBUG=pw:api npm run e2e-${DEPLOYMENT_STAGE}
+      ### Need to write success failure way because Github API doesn't allow doing
+      ### "if: always(), state: ${{ success() }}:
+      - name: Set deployment status to success if no errors
+        uses: avakar/set-deployment-status@v1
+        with:
+          state: success
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set deployment status to failure if errors
+        uses: avakar/set-deployment-status@v1
+        if: failure()
+        with:
+          state: failure
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  functional-test:
+    runs-on: ubuntu-20.04
+    needs:
+      - upgrade
+    steps:
       - name: Run functional test
         env:
           TFE_TOKEN: ${{ secrets.TFE_TOKEN }}
@@ -104,16 +147,6 @@ jobs:
           echo DEPLOYMENT_STAGE ${DEPLOYMENT_STAGE}
           docker-compose up --no-deps -d backend
           BOTO_ENDPOINT_URL= make local-functional-test
-      - name: Run performance test
-        env:
-          TFE_TOKEN: ${{ secrets.TFE_TOKEN }}
-          DEPLOYMENT_STAGE: ${{ github.event.deployment.environment }}
-        if: github.event.deployment.environment == 'prod'
-        run: |
-          echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
-          echo DEPLOYMENT_STAGE ${DEPLOYMENT_STAGE}
-          make prod-performance-test
-
       ### Need to write success failure way because Github API doesn't allow doing
       ### "if: always(), state: ${{ success() }}:
       - name: Set deployment status to success if no errors
@@ -129,6 +162,29 @@ jobs:
           state: failure
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  performance-test:
+    runs-on: ubuntu-20.04
+    needs:
+      - upgrade
+    steps:
+      - name: Run performance test
+        env:
+          TFE_TOKEN: ${{ secrets.TFE_TOKEN }}
+          DEPLOYMENT_STAGE: ${{ github.event.deployment.environment }}
+        if: github.event.deployment.environment == 'prod'
+        run: |
+          echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
+          echo DEPLOYMENT_STAGE ${DEPLOYMENT_STAGE}
+          make prod-performance-test
+
+  status:
+    runs-on: ubuntu-20.04
+    needs:
+      - performance-test
+      - smoke-test
+      - functional-test
+    steps:
       - uses: 8398a7/action-slack@v3
         with:
           status: ${{ job.status }}

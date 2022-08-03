@@ -4,7 +4,6 @@ import time
 import unittest
 import requests
 from requests import HTTPError
-
 from tests.functional.backend.common import BaseFunctionalTestCase
 
 
@@ -14,27 +13,27 @@ class TestApi(BaseFunctionalTestCase):
         super().setUpClass()
 
     def test_version(self):
-        res = requests.get(f"{self.api}/dp/v1/deployed_version")
+        res = self.session.get(f"{self.api}/dp/v1/deployed_version")
         res.raise_for_status()
         self.assertEqual(res.status_code, requests.codes.ok)
         self.assertIsNotNone(res.json()["Data Portal"])
 
     def test_auth(self):
         headers = {"Cookie": f"cxguser={self.curator_cookie}", "Content-Type": "application/json"}
-        res = requests.get(f"{self.api}/dp/v1/userinfo", headers=headers)
+        res = self.session.get(f"{self.api}/dp/v1/userinfo", headers=headers)
         res.raise_for_status()
         self.assertEqual(res.status_code, requests.codes.ok)
         data = json.loads(res.content)
         self.assertEqual(data["email"], "user@example.com")
 
     def test_root_route(self):
-        res = requests.get(f"{self.api}/")
+        res = self.session.get(f"{self.api}/")
 
         res.raise_for_status()
         self.assertEqual(res.status_code, requests.codes.ok)
 
     def test_get_collections(self):
-        res = requests.get(f"{self.api}/dp/v1/collections")
+        res = self.session.get(f"{self.api}/dp/v1/collections")
 
         res.raise_for_status()
         self.assertEqual(res.status_code, requests.codes.ok)
@@ -58,7 +57,7 @@ class TestApi(BaseFunctionalTestCase):
         }
 
         headers = {"Cookie": f"cxguser={self.curator_cookie}", "Content-Type": "application/json"}
-        res = requests.post(f"{self.api}/dp/v1/collections", data=json.dumps(data), headers=headers)
+        res = self.session.post(f"{self.api}/dp/v1/collections", data=json.dumps(data), headers=headers)
         res.raise_for_status()
         data = json.loads(res.content)
         collection_id = data["collection_id"]
@@ -66,7 +65,7 @@ class TestApi(BaseFunctionalTestCase):
         self.assertIn("collection_id", data)
 
         with self.subTest("Test created collection is private"):
-            res = requests.get(f"{self.api}/dp/v1/collections", headers=headers)
+            res = self.session.get(f"{self.api}/dp/v1/collections", headers=headers)
             data = json.loads(res.content)
             private_collection_ids = []
             for collection in data["collections"]:
@@ -84,7 +83,7 @@ class TestApi(BaseFunctionalTestCase):
                 ],
                 "name": "lots of cells",
             }
-            res = requests.put(
+            res = self.session.put(
                 f"{self.api}/dp/v1/collections/{collection_id}", data=json.dumps(updated_data), headers=headers
             )
             res.raise_for_status()
@@ -98,14 +97,14 @@ class TestApi(BaseFunctionalTestCase):
         # make collection public
         with self.subTest("Test make collection public"):
             body = {"data_submission_policy_version": "1.0"}
-            res = requests.post(
+            res = self.session.post(
                 f"{self.api}/dp/v1/collections/{collection_id}/publish", headers=headers, data=json.dumps(body)
             )
             res.raise_for_status()
             self.assertEqual(res.status_code, requests.codes.accepted)
 
             # check  collection returns as public
-            res = requests.get(f"{self.api}/dp/v1/collections", headers=headers)
+            res = self.session.get(f"{self.api}/dp/v1/collections", headers=headers)
             data = json.loads(res.content)
             public_collection_ids = []
             for collection in data["collections"]:
@@ -116,14 +115,14 @@ class TestApi(BaseFunctionalTestCase):
 
         with self.subTest("Test everyone can retrieve a public collection"):
             no_auth_headers = {"Content-Type": "application/json"}
-            res = requests.get(f"{self.api}/dp/v1/collections", headers=no_auth_headers)
+            res = self.session.get(f"{self.api}/dp/v1/collections", headers=no_auth_headers)
             data = json.loads(res.content)
             collection_ids = [x["id"] for x in data["collections"]]
             self.assertIn(collection_id, collection_ids)
 
         # can delete public collection
         with self.subTest("Test a public collection can not be deleted"):
-            res = requests.delete(f"{self.api}/dp/v1/collections/{collection_id}", headers=headers)
+            res = self.session.delete(f"{self.api}/dp/v1/collections/{collection_id}", headers=headers)
             self.assertEqual(res.status_code, requests.codes.no_content)
 
     def test_delete_private_collection(self):
@@ -139,16 +138,16 @@ class TestApi(BaseFunctionalTestCase):
         }
 
         headers = {"Cookie": f"cxguser={self.curator_cookie}", "Content-Type": "application/json"}
-        res = requests.post(f"{self.api}/dp/v1/collections", data=json.dumps(data), headers=headers)
+        res = self.session.post(f"{self.api}/dp/v1/collections", data=json.dumps(data), headers=headers)
         res.raise_for_status()
         data = json.loads(res.content)
         collection_id = data["collection_id"]
-        self.addCleanup(requests.delete, f"{self.api}/dp/v1/collections/{collection_id}", headers=headers)
+        self.addCleanup(self.session.delete, f"{self.api}/dp/v1/collections/{collection_id}", headers=headers)
         self.assertEqual(res.status_code, requests.codes.created)
         self.assertIn("collection_id", data)
 
         # check created collection returns as private
-        res = requests.get(f"{self.api}/dp/v1/collections", headers=headers)
+        res = self.session.get(f"{self.api}/dp/v1/collections", headers=headers)
         data = json.loads(res.content)
         private_collection_ids = []
         for collection in data["collections"]:
@@ -157,13 +156,13 @@ class TestApi(BaseFunctionalTestCase):
         self.assertIn(collection_id, private_collection_ids)
 
         # delete collection
-        res = requests.delete(f"{self.api}/dp/v1/collections/{collection_id}?visibility=PRIVATE", headers=headers)
+        res = self.session.delete(f"{self.api}/dp/v1/collections/{collection_id}?visibility=PRIVATE", headers=headers)
         res.raise_for_status()
         self.assertEqual(res.status_code, requests.codes.no_content)
 
         # check collection gone
         no_auth_headers = {"Content-Type": "application/json"}
-        res = requests.get(f"{self.api}/dp/v1/collections?visibility=PRIVATE", headers=no_auth_headers)
+        res = self.session.get(f"{self.api}/dp/v1/collections?visibility=PRIVATE", headers=no_auth_headers)
         data = json.loads(res.content)
         collection_ids = [x["id"] for x in data["collections"]]
         self.assertNotIn(collection_id, collection_ids)
@@ -181,26 +180,26 @@ class TestApi(BaseFunctionalTestCase):
         }
 
         headers = {"Cookie": f"cxguser={self.curator_cookie}", "Content-Type": "application/json"}
-        res = requests.post(f"{self.api}/dp/v1/collections", data=json.dumps(body), headers=headers)
+        res = self.session.post(f"{self.api}/dp/v1/collections", data=json.dumps(body), headers=headers)
         res.raise_for_status()
         data = json.loads(res.content)
         collection_id = data["collection_id"]
-        self.addCleanup(requests.delete, f"{self.api}/dp/v1/collections/{collection_id}", headers=headers)
+        self.addCleanup(self.session.delete, f"{self.api}/dp/v1/collections/{collection_id}", headers=headers)
         self.assertEqual(res.status_code, requests.codes.created)
         self.assertIn("collection_id", data)
 
         body = {"url": "https://www.dropbox.com/s/qiclvn1slmap351/example_valid.h5ad?dl=0"}
 
-        res = requests.post(
+        res = self.session.post(
             f"{self.api}/dp/v1/collections/{collection_id}/upload-links", data=json.dumps(body), headers=headers
         )
         res.raise_for_status()
         dataset_id = json.loads(res.content)["dataset_id"]
-        self.addCleanup(requests.delete, f"{self.api}/dp/v1/datasets/{dataset_id}", headers=headers)
+        self.addCleanup(self.session.delete, f"{self.api}/dp/v1/datasets/{dataset_id}", headers=headers)
 
         self.assertEqual(res.status_code, requests.codes.accepted)
 
-        res = requests.get(f"{self.api}/dp/v1/datasets/{dataset_id}/status", headers=headers)
+        res = self.session.get(f"{self.api}/dp/v1/datasets/{dataset_id}/status", headers=headers)
         res.raise_for_status()
         data = json.loads(res.content)
         self.assertEqual(res.status_code, requests.codes.ok)
@@ -214,7 +213,7 @@ class TestApi(BaseFunctionalTestCase):
             timer = time.time()
             while keep_trying:
                 data = None
-                res = requests.get(f"{self.api}/dp/v1/datasets/{dataset_id}/status", headers=headers)
+                res = self.session.get(f"{self.api}/dp/v1/datasets/{dataset_id}/status", headers=headers)
                 res.raise_for_status()
                 data = json.loads(res.content)
                 upload_status = data["upload_status"]
@@ -243,15 +242,15 @@ class TestApi(BaseFunctionalTestCase):
 
         with self.subTest("test non owner cant retrieve status"):
             no_auth_headers = {"Content-Type": "application/json"}
-            res = requests.get(f"{self.api}/dp/v1/datasets/{dataset_id}/status", headers=no_auth_headers)
+            res = self.session.get(f"{self.api}/dp/v1/datasets/{dataset_id}/status", headers=no_auth_headers)
             with self.assertRaises(HTTPError):
                 res.raise_for_status()
 
         with self.subTest("Test dataset deletion"):
-            res = requests.delete(f"{self.api}/dp/v1/datasets/{dataset_id}", headers=headers)
+            res = self.session.delete(f"{self.api}/dp/v1/datasets/{dataset_id}", headers=headers)
             res.raise_for_status()
             self.assertEqual(res.status_code, requests.codes.accepted)
 
             # Check that the dataset is gone
-            res = requests.get(f"{self.api}/dp/v1/datasets/{dataset_id}/status", headers=headers)
+            res = self.session.get(f"{self.api}/dp/v1/datasets/{dataset_id}/status", headers=headers)
             self.assertEqual(res.status_code, requests.codes.forbidden)

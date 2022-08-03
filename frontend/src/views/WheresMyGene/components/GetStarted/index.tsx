@@ -9,7 +9,7 @@ export default function GetStarted(): JSX.Element {
       <Details>
         Use the Add Tissue and Add Gene buttons to find where genes are
         expressed, powered by data from the{" "}
-        <Link href={ROUTES.HOMEPAGE} passHref>
+        <Link href={ROUTES.COLLECTIONS} passHref>
           <a href="passHref" rel="noopener" target="_blank">
             cellxgene Data Portal
           </a>
