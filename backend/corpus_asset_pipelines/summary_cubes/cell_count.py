@@ -31,6 +31,7 @@ def transform(obs: pd.DataFrame) -> pd.DataFrame:
                 "dataset_id",
                 "cell_type_ontology_term_id",
                 "tissue_ontology_term_id",
+                "tissue_original_ontology_term_id",
                 "assay_ontology_term_id",
                 "development_stage_ontology_term_id",
                 "disease_ontology_term_id",
