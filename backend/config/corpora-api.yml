@@ -497,7 +497,7 @@ paths:
         "400":
           $ref: "#/components/responses/400"
 
-  /v1/datasets/{dataset_id}/{collection_id}:
+  /v1/datasets/{collection_id}/{dataset_id}:
     delete:
       tags:
         - datasets
@@ -632,7 +632,7 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
-  /v1/datasets/{collection_id}/status/{dataset_id}:
+  /v1/datasets/{collection_id}/{dataset_id}/status:
     get:
       tags:
         - datasets

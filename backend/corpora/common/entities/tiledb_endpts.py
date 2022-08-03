@@ -1,4 +1,4 @@
-# Wraps tiledb_data.py to fit API expected responses
+# Wraps tiledb_data.py to interface with API
 import logging
 import time
 
@@ -12,11 +12,9 @@ from backend.corpora.lambdas.api.v1.authorization import is_user_owner_or_allowe
 
 from backend.corpora.common.utils.http_exceptions import InvalidParametersHTTPException, TooLargeHTTPException, ForbiddenHTTPException, MethodNotAllowedException, NotFoundHTTPException, ServerErrorHTTPException
 
-from backend.corpora.common.entities.tiledb_data import TileDBData
+from backend.corpora.common.entities.tiledb_data import db
 
 logger = logging.getLogger(__name__)
-
-db = TileDBData()
 
 def create_collection(body: dict, user: str):
     """/v1/collections POST"""
@@ -197,8 +195,8 @@ def upload_dataset(collection_id: str, body: dict, token_info: dict):
         return make_response({"detail": "Invalid processing status."}, 409)
     except NotFoundHTTPException:
         return make_response({"detail": "Non-existent dataset."}, 404)
-    except Exception:
-        return make_response({"detail": "Invalid dataset"}, 400)
+    except Exception as e:
+        return make_response({"detail": "Invalid dataset: " + str(e)}, 400)
 
 
 def replace_dataset(collection_id: str, body: dict, token_info: dict):

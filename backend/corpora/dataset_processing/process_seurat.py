@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import logging
 
-from backend.corpora.common.entities.tiledb_data import TileDBData
+from backend.corpora.common.entities.tiledb_data import db
 from backend.corpora.dataset_processing.process import (
     convert_file_ignore_exceptions,
     download_from_s3,
@@ -29,8 +29,6 @@ def process(dataset_id: str, artifact_bucket: str):
     :param local_filename:
     :return:
     """
-    db = TileDBData()
-
     # If the validator previously marked the dataset as rds_status.SKIPPED, do not start the Seurat processing
     dataset = db.get_dataset(dataset_id)
     if dataset['processing_status']['rds_status'] == ConversionStatus.SKIPPED.name:

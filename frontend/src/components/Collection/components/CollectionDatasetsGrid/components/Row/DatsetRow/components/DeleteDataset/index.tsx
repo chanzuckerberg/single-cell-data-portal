@@ -17,12 +17,14 @@ interface Props {
 }
 
 const DeleteDataset: FC<Props> = ({
-  id,
-  collectionId,
+  collectionId = "",
+  id = "",
   Button = DefaultButton,
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  const { mutateAsync: deleteDataset } = useDeleteDataset({collection_id: collectionId, dataset_id: id});
 
   const toggleAlert = () => {
     setIsOpen(!isOpen);
@@ -45,7 +47,7 @@ const DeleteDataset: FC<Props> = ({
           onCancel={toggleAlert}
           onConfirm={async () => {
             setIsLoading(true);
-            await useDeleteDataset(collectionId, id);
+            await deleteDataset({collection_id: collectionId, dataset_id: id});
             toggleAlert();
           }}
         >

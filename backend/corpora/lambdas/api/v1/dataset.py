@@ -13,13 +13,11 @@ from ....common.utils.http_exceptions import (
 from ....common.utils.exceptions import CorporaException
 from .authorization import owner_or_allowed
 
-from backend.corpora.common.entities.tiledb_data import TileDBData
+from backend.corpora.common.entities.tiledb_data import db
 
 
 def post_dataset_asset(dataset_id: str, asset_id: str):
     # retrieve the dataset
-    db = TileDBData()
-
     dataset = db.get_dataset(dataset_id)
     if not dataset:
         raise NotFoundHTTPException(detail=f"'dataset/{dataset_id}' not found.")

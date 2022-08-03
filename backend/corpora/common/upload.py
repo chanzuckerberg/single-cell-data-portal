@@ -2,7 +2,7 @@ import boto3
 import json
 import time
 
-from backend.corpora.common.entities.tiledb_data import TileDBData, Utils
+from backend.corpora.common.entities.tiledb_data import db, Utils
 
 from .corpora_config import CorporaConfig
 import os
@@ -16,6 +16,9 @@ from .utils.exceptions import (
     NonExistentDatasetException,
 )
 from .utils.math_utils import GB
+
+import logging
+logger = logging.getLogger(__name__)
 
 _stepfunctions_client = None
 
@@ -60,8 +63,6 @@ def upload(
     dataset_id: str = None,
     curator_tag: str = None,
 ) -> str:
-    db = TileDBData()
-
     max_file_size_gb = CorporaConfig().upload_max_file_size_gb * GB
     if file_size is not None and file_size > max_file_size_gb:
         raise MaxFileSizeExceededException(f"{url} exceeds the maximum allowed file size of {max_file_size_gb} Gb")
@@ -103,5 +104,5 @@ def upload(
 
     # Start processing link
     start_upload_sfn(collection_id, dataset_id, url)
-
+    
     return dataset_id

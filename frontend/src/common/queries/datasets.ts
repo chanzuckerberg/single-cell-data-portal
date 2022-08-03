@@ -18,9 +18,10 @@ export const USE_DATASET_STATUS = {
 };
 
 async function fetchDatasetStatus(
-  dataset_id: string
+  dataset_id: string,
+  collection_id: string
 ): Promise<DatasetUploadStatus> {
-  const url = apiTemplateToUrl(API_URL + API.DATASET_STATUS, { dataset_id });
+  const url = apiTemplateToUrl(API_URL + API.DATASET_STATUS, { collection_id: collection_id, dataset_id: dataset_id });
 
   return await (await fetch(url, DEFAULT_FETCH_OPTIONS)).json();
 }
@@ -29,11 +30,12 @@ const REFETCH_INTERVAL_MS = 10 * 1000;
 
 export function useDatasetStatus(
   dataset_id: string,
+  collection_id: string,
   shouldFetch: boolean
 ): UseQueryResult<DatasetUploadStatus> {
   return useQuery<DatasetUploadStatus>(
     [USE_DATASET_STATUS, dataset_id],
-    () => fetchDatasetStatus(dataset_id),
+    () => fetchDatasetStatus(dataset_id, collection_id),
     { enabled: shouldFetch, refetchInterval: REFETCH_INTERVAL_MS }
   );
 }
@@ -43,11 +45,11 @@ export const USE_DELETE_DATASET = {
   id: "dataset",
 };
 
-async function deleteDataset(collection_id = "", dataset_id = ""): Promise<DatasetUploadStatus> {
-  if (!dataset_id) throw new Error("No dataset id provided");
-  if (!collection_id) throw new Error("No collection id provided");
+async function deleteDataset(ids = {dataset_id: "", collection_id: ""}): Promise<DatasetUploadStatus> {
+  if (!ids.dataset_id || ids.dataset_id.length == 0) throw new Error("No dataset id provided");
+  if (!ids.collection_id || ids.collection_id.length == 0) throw new Error("No collection id provided");
 
-  const url = apiTemplateToUrl(API_URL + API.DATASET, { dataset_id, collection_id });
+  const url = apiTemplateToUrl(API_URL + API.DATASET, {collection_id: ids.collection_id, dataset_id: ids.dataset_id});
   const response = await fetch(url, DELETE_FETCH_OPTIONS);
 
   if (response.ok) return await response.json();
@@ -55,26 +57,20 @@ async function deleteDataset(collection_id = "", dataset_id = ""): Promise<Datas
   throw Error(response.statusText);
 }
 
-export function useDeleteDataset(collection_id = "", dataset_id = "") {
-  if (!collection_id) {
-    throw new Error("No collection id given");
-  }
-  if (!dataset_id) {
-    throw new Error("No dataset id given");
-  }
-  deleteDataset(collection_id, dataset_id)
-  return
+export function useDeleteDataset(ids = {dataset_id: "", collection_id: ""}) {
+  if (!ids.dataset_id || ids.dataset_id.length == 0) throw new Error("No dataset id provided");
+  if (!ids.collection_id || ids.collection_id.length == 0) throw new Error("No collection id provided");
 
   const queryClient = useQueryClient();
-
+  
   return useMutation(deleteDataset, {
     onSuccess: (uploadStatus: DatasetUploadStatus) => {
-      queryClient.invalidateQueries([USE_COLLECTION, collection_id]);
+      queryClient.invalidateQueries([USE_COLLECTION, ids.collection_id]);
 
       queryClient.cancelQueries([USE_DATASET_STATUS, uploadStatus.dataset_id]);
 
       queryClient.setQueryData(
-        [USE_DATASET_STATUS, uploadStatus.dataset_id],
+        [USE_DATASET_STATUS, ids.dataset_id],
         uploadStatus
       );
     },

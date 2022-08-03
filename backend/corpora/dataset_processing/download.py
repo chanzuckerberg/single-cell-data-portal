@@ -7,7 +7,7 @@ import requests
 from backend.corpora.common.corpora_orm import UploadStatus
 from backend.corpora.common.utils.math_utils import MB
 from backend.corpora.dataset_processing.exceptions import ProcessingFailed, ProcessingCancelled
-from backend.corpora.common.entities.tiledb_data import TileDBData
+from backend.corpora.common.entities.tiledb_data import db
 
 logger = logging.getLogger(__name__)
 
@@ -105,8 +105,6 @@ def updater(dataset_id, processing_status, tracker: ProgressTracker, frequency: 
     :param frequency: The frequency in which the database is updated in seconds
     :return:
     """
-    db = TileDBData()
-
     def _update():
         progress = tracker.progress()
         status = {}
@@ -163,8 +161,6 @@ def download(
 
     :return: The current dataset processing status.
     """
-    db = TileDBData()
-
     logger.info("Setting up download.")
     logger.info(f"file_size: {file_size}")
     if file_size and file_size >= shutil.disk_usage("/")[2]:

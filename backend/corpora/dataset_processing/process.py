@@ -149,7 +149,7 @@ from backend.corpora.dataset_processing.exceptions import (
     ValidationFailed,
 )
 from backend.corpora.dataset_processing.h5ad_data_file import H5ADDataFile
-from backend.corpora.common.entities.tiledb_data import TileDBData
+from backend.corpora.common.entities.tiledb_data import db, Utils
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -214,6 +214,7 @@ def create_artifact(
     try:
         s3_uri = upload(file_name, bucket_prefix, artifact_bucket)
         asset = {
+            "id": Utils.new_id(),
             "dataset_id": dataset_id,
             "filename": file_name,
             "filetype": artifact_type,
@@ -290,8 +291,6 @@ def create_artifacts(
 
 
 def update_db(dataset_id, metadata: dict = None, processing_status: dict = None, asset: dict = None):
-    db = TileDBData()
-
     if metadata:
         logger.debug("Updating metadata.")
         for key, val in metadata.items():

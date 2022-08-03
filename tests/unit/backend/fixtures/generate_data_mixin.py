@@ -1,4 +1,4 @@
-from backend.corpora.common.entities.tiledb_data import TileDBData, Utils
+from backend.corpora.common.entities.tiledb_data import db, Utils
 from backend.corpora.common.entities.collection_link import CollectionLink
 from tests.unit.backend.utils import (
     BogusCollectionParams,
@@ -14,11 +14,10 @@ class GenerateDataMixin:
     attrs = Utils.attrs
 
     def delete_collection(self, _id):
-        db = TileDBData()
         db.delete_collection(_id)
 
     def generate_collection(self, **params):
-        db = TileDBData()
+        
         data = dict(Utils.empty_collection)
         data.update(**BogusCollectionParams.get(**params))
         id = db.create_collection(data)
@@ -27,7 +26,7 @@ class GenerateDataMixin:
         return id, metadata
 
     def get_collection(self, coll_id: str):
-        db = TileDBData()
+        
         return db.get_collection(coll_id)
 
     def get_doi(self, links) -> str:
@@ -38,20 +37,20 @@ class GenerateDataMixin:
             return None
 
     def publish_collection(self, coll_id: str):
-        db = TileDBData()
+        
         db.publish_collection(coll_id)
 
     def revise_collection(self, coll_id: str):
-        db = TileDBData()
+        
         id = db.create_revision(coll_id)
         return id
 
     def delete_dataset(self, coll_id, dataset_id):
-        db = TileDBData()
+        
         db.delete_dataset(coll_id, dataset_id)
 
     def generate_dataset(self, coll_id: str, **params):
-        db = TileDBData()
+        
         data = dict(Utils.empty_dataset)
         data.update(**BogusDatasetParams.get(**params))
         dataset_id = db.add_dataset(coll_id, data)
@@ -60,11 +59,11 @@ class GenerateDataMixin:
         return dataset_id, dataset
     
     def get_dataset(self, dataset_id: str):
-        db = TileDBData()
+        
         return db.get_dataset(dataset_id)
 
     def update_processing(self, dataset_id: str, status: dict):
-        db = TileDBData()
+        
         db.edit_dataset(dataset_id, "processing_status", status)
 
     # @staticmethod

@@ -170,9 +170,9 @@ class Utils:
                 elif t == np.int32:
                     data[a] = int(data[a])
         if type(data['id']) == np.ndarray and len(data['id']) > 0:
-            data['id'] = data['id'][0].decode("utf-8") # TileDB stores the id index as byte string
-        elif len(data['id']) > 0:
-            data['id'] = data['id'].decode("utf-8")
+            data['id'] = data['id'][0]
+        if not isinstance(data['id'], str):
+            data['id'] = str(data['id'], "utf-8") # TileDB stores the id index as byte string
         return data
 
     @staticmethod
@@ -281,10 +281,9 @@ class TileDBData:
         return self.arr_datasets_w
 
     def consolidate(self, array: str):
-        """Consolidates TileDB fragments if there are too many"""
-        fragments_info = tiledb.array_fragments(self.location + "/" + array, ctx=self.ctx)
-        if len(fragments_info) > 10:
-            tiledb.consolidate(self.location + "/" + array, ctx=self.ctx)
+        """Consolidates TileDB fragments"""
+        tiledb.consolidate(self.location + "/" + array, ctx=self.ctx, config=tiledb.Config(params={"sm.consolidation.mode": "fragment_meta"}))
+        tiledb.consolidate(self.location + "/" + array, ctx=self.ctx, config=tiledb.Config(params={"sm.consolidation.mode": "commits"}))
 
     def get_attribute(self, id, attr):
         """Get the data stored in one field of a specific collection"""
@@ -316,11 +315,9 @@ class TileDBData:
         start = time.time()
         A = self.get_arr_collections_r()
         end = time.time()
-        logger.info("get_collection open: " + str(end - start))
         start = time.time()
         res = Utils.parse_stored_data(A[id], "collections")
         end = time.time()
-        logger.info("get_collection read and parse: " + str(end - start))
         n = res['id']
         return res if (type(n) == str and len(n) > 0) or (type(n) == np.ndarray and n.size > 0) else None
 
@@ -391,7 +388,6 @@ class TileDBData:
         if id not in datasets:
             datasets.append(id)
         self.edit_collection(coll_id, "datasets", datasets)
-
         data = Utils.empty_dataset
         for a in Utils.attrs['datasets']:
             if a in metadata and metadata[a]:
@@ -564,3 +560,5 @@ class TileDBData:
         """Mark a collection as deleted by its id"""
         self.edit_collection(id, "visibility", "DELETED")
 
+
+db = TileDBData()

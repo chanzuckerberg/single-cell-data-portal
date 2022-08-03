@@ -19,6 +19,9 @@ from .....common.utils.http_exceptions import (
     NotFoundHTTPException,
 )
 
+import logging
+logger = logging.getLogger(__name__)
+
 
 def link(collection_id: str, body: dict, token_info: dict):
     dataset_id = upload_from_link(collection_id, token_info, body["url"], curator_tag=body.get("curator_tag"))
@@ -39,7 +42,9 @@ def relink(collection_id: str, body: dict, token_info: dict):
 @dbconnect
 def upload_from_link(collection_id: str, token_info: dict, url: str, dataset_id: str = None, curator_tag: str = None):
     # Verify Dropbox URL
+    logger.info("Beginning upload_from_link " + collection_id + " " + url)
     valid_link = from_url(url)
+    logger.info("valid_link? : " + str(valid_link))
     if not valid_link:
         raise InvalidParametersHTTPException(detail="The dropbox shared link is invalid.")
 
@@ -50,11 +55,12 @@ def upload_from_link(collection_id: str, token_info: dict, url: str, dataset_id:
         raise InvalidParametersHTTPException(detail="The URL provided causes an error with Dropbox.")
     except MissingHeaderException as ex:
         raise InvalidParametersHTTPException(detail=ex.detail)
-
+    logger.info("Retrieved file info")
     file_size = resp.get("size")
     file_extension = resp["name"].rsplit(".")[-1].lower()
 
     try:
+        logger.info("trying upload")
         return upload(
             collection_id=collection_id,
             url=url,
@@ -75,5 +81,5 @@ def upload_from_link(collection_id: str, token_info: dict, url: str, dataset_id:
         raise MethodNotAllowedException()
     except NonExistentDatasetException:
         raise NotFoundHTTPException()
-    except:
-        raise Exception("Invalid dataset")
+    except Exception as e:
+        raise Exception(str(e))

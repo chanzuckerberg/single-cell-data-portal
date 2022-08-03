@@ -10,7 +10,7 @@ from backend.corpora.common.corpora_orm import (
 )
 from backend.scripts.create_db import create_db
 from tests.unit.backend.fixtures import config
-from backend.corpora.common.entities.tiledb_data import TileDBData
+from backend.corpora.common.entities.tiledb_data import db
 
 
 class TestDatabaseManager:
@@ -29,7 +29,7 @@ class TestDatabaseManager:
 class TestDatabase:
     def __init__(self, real_data=False):
         self.real_data = real_data
-        self.db = TileDBData()
+        self.db = db
 
     def create_db(self):
         create_db()
