@@ -1,7 +1,7 @@
 from flask import g, jsonify
 
 from backend.corpora.lambdas.api.v1.collection import update_collection
-from ..common import EntityColumns
+from ..common import EntityColumns, add_collection_level_processing_status
 from backend.corpora.api_server.db import dbconnect
 from backend.corpora.common.corpora_orm import CollectionVisibility
 from backend.corpora.common.entities import Collection
@@ -29,7 +29,7 @@ def get(collection_id: str, token_info: dict):
     if not collection:
         raise NotFoundHTTPException
     collection_response: dict = collection.to_dict_keep(EntityColumns.columns_for_collection_id)
-    collection_response["processing_status"] = collection.add_collection_level_processing_status(collection)
+    collection_response["processing_status"] = add_collection_level_processing_status(collection)
     reshape_for_curation_api_and_is_allowed(collection_response, token_info, id_provided=True)
 
     return jsonify(collection_response)
