@@ -468,12 +468,7 @@ class TestPatchCollectionID(BaseAuthAPITest):
             ("With links in place, empty array passed; BAD REQUEST 400", links, [], 400, links),
         )
 
-        for links_config in links_configurations:
-            test_title = links_config[0]
-            initial_links = links_config[1]
-            new_links = links_config[2]
-            expected_status_code = links_config[3]
-            expected_links = links_config[4]
+        for test_title, initial_links, new_links, expected_status_code, expected_links in links_configurations:
             with self.subTest(test_title):
                 collection_id = self.generate_collection(self.session, name=name, links=initial_links).id
                 original_collection = self.app.get(f"curation/v1/collections/{collection_id}").json
