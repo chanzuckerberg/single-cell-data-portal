@@ -552,6 +552,7 @@ def process_cxg(local_filename, dataset_id, cellxgene_bucket):
         bucket_prefix = get_bucket_prefix(dataset_id)
         s3_uri = f"s3://{cellxgene_bucket}/{bucket_prefix}.cxg/"
         asset = {
+            "id": Utils.new_id(),
             "dataset_id": dataset_id,
             "filename": bucket_prefix,
             "filetype": DatasetArtifactFileType.CXG.name,
