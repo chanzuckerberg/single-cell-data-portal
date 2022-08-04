@@ -316,7 +316,7 @@ export default function Datasets(): JSX.Element {
   return (
     <>
       <Head>
-        <title>cellxgene | Datasets</title>
+        <title>CELLxGENE | Datasets</title>
       </Head>
       {isError || isLoading ? null : (
         <>

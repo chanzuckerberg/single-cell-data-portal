@@ -168,7 +168,7 @@ const Collection: FC = () => {
   return (
     <>
       <Head>
-        <title>cellxgene | {collection.name}</title>
+        <title>CELLxGENE | {collection.name}</title>
       </Head>
       <ViewCollection>
         {/* Collection revision status callout */}

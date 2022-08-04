@@ -261,7 +261,7 @@ export default function Collections(): JSX.Element {
   return (
     <>
       <Head>
-        <title>cellxgene | Collections</title>
+        <title>CELLxGENE | Collections</title>
       </Head>
       {isError || isLoading ? null : (
         <>
