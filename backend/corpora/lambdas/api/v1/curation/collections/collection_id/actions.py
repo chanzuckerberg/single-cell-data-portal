@@ -1,6 +1,6 @@
 from flask import g, jsonify
 
-from backend.corpora.lambdas.api.v1.collection import update_collection
+from backend.corpora.lambdas.api.v1.collection import update_collection_common
 from ..common import EntityColumns
 from backend.corpora.api_server.db import dbconnect
 from backend.corpora.common.corpora_orm import CollectionVisibility
@@ -36,4 +36,4 @@ def get(collection_id: str, token_info: dict):
 
 
 def patch(collection_id: str, body: dict, token_info: dict):
-    return update_collection(collection_id, body, token_info, keep_links=True)
+    return update_collection_common(collection_id, body, token_info, keep_links=True)

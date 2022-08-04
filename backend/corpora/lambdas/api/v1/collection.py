@@ -263,8 +263,12 @@ def delete_collection(collection_id: str, token_info: dict):
     return "", 204
 
 
+def update_collection(collection_id: str, body: dict, token_info: dict):
+    return update_collection_common(collection_id, body, token_info, keep_links=False)
+
+
 @dbconnect
-def update_collection(collection_id: str, body: dict, token_info: dict, keep_links: bool = False):
+def update_collection_common(collection_id: str, body: dict, token_info: dict, keep_links: bool = True):
     db_session = g.db_session
     errors = []
     verify_collection_body(body, errors, allow_none=True)
