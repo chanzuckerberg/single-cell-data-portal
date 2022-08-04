@@ -1,5 +1,4 @@
 import unittest
-import requests
 
 from tests.functional.backend.common import BaseFunctionalTestCase
 
@@ -13,18 +12,18 @@ class TestApiKey(BaseFunctionalTestCase):
         headers = {"Cookie": f"cxguser={self.curator_cookie}", "Content-Type": "application/json"}
 
         def _cleanup():
-            requests.delete(f"{self.api}/dp/v1/auth/key", headers=headers)
+            self.session.delete(f"{self.api}/dp/v1/auth/key", headers=headers)
 
         self.addCleanup(_cleanup)
 
-        response = requests.get(f"{self.api}/dp/v1/auth/key", headers=headers)
+        response = self.session.get(f"{self.api}/dp/v1/auth/key", headers=headers)
         self.assertEqual(404, response.status_code)
 
-        response = requests.post(f"{self.api}/dp/v1/auth/key", headers=headers)
+        response = self.session.post(f"{self.api}/dp/v1/auth/key", headers=headers)
         self.assertEqual(201, response.status_code)
         key_1 = response.json()["key"]
 
-        response = requests.post(
+        response = self.session.post(
             f"{self.api}/curation/v1/auth/token",
             headers={"x-api-key": f"{key_1}", "Content-Type": "application/json"},
         )
@@ -32,24 +31,24 @@ class TestApiKey(BaseFunctionalTestCase):
         access_token = response.json()["access_token"]
         self.assertTrue(access_token)
 
-        response = requests.get(f"{self.api}/dp/v1/auth/key", headers=headers)
+        response = self.session.get(f"{self.api}/dp/v1/auth/key", headers=headers)
         self.assertEqual(200, response.status_code)
 
-        response = requests.post(f"{self.api}/dp/v1/auth/key", headers=headers)
+        response = self.session.post(f"{self.api}/dp/v1/auth/key", headers=headers)
         self.assertEqual(201, response.status_code)
         key_2 = response.json()["key"]
         self.assertNotEqual(key_1, key_2)
 
-        response = requests.get(f"{self.api}/dp/v1/auth/key", headers=headers)
+        response = self.session.get(f"{self.api}/dp/v1/auth/key", headers=headers)
         self.assertEqual(200, response.status_code)
 
-        response = requests.delete(f"{self.api}/dp/v1/auth/key", headers=headers)
+        response = self.session.delete(f"{self.api}/dp/v1/auth/key", headers=headers)
         self.assertEqual(202, response.status_code)
 
-        response = requests.delete(f"{self.api}/dp/v1/auth/key", headers=headers)
+        response = self.session.delete(f"{self.api}/dp/v1/auth/key", headers=headers)
         self.assertEqual(404, response.status_code)
 
-        response = requests.get(f"{self.api}/dp/v1/auth/key", headers=headers)
+        response = self.session.get(f"{self.api}/dp/v1/auth/key", headers=headers)
         self.assertEqual(404, response.status_code)
 
 
