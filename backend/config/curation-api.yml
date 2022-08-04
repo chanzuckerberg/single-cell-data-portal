@@ -98,6 +98,11 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/collection_form_metadata"
+              required:
+                - name
+                - description
+                - contact_name
+                - contact_email
       responses:
         "201":
           description: Created
@@ -587,6 +592,7 @@ components:
         all non-canonical (SECONDARY), or contain a mixture (BOTH).
       type: string
       enum: [PRIMARY, SECONDARY, BOTH]
+      nullable: true
     links:
       type: array
       items:
@@ -686,6 +692,7 @@ components:
     explorer_url:
       type: string
       description: The url at which a given Dataset may be explored using the cellxgene visualization tool
+      nullable: true
     ontology_element:
       type: object
       properties:
@@ -741,11 +748,6 @@ components:
     collection_form_metadata:
       type: object
       additionalProperties: false
-      required:
-        - name
-        - description
-        - contact_name
-        - contact_email
       properties:
         name:
           type: string

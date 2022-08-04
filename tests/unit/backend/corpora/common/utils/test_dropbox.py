@@ -65,18 +65,18 @@ class TestDropbox(unittest.TestCase):
         postive_test.file_info()
 
     def test__get_file_info__neg(self):
-        with self.subTest("404"):
-            negative_test = from_url("https://www.dropbox.com/s/12345678901234/test.h5ad?dl=1")
-            self.assertRaises(HTTPError, negative_test.file_info)
-
         with self.subTest("Missing Headers"):
+            negative_test = from_url("https://www.dropbox.com/s/12345678901234/test.h5ad?dl=1")
+            self.assertRaises(MissingHeaderException, negative_test.file_info)
+
+        with self.subTest("404"):
 
             def make_response():
                 response = requests.Response()
-                response.status_code = 200
+                response.status_code = 404
                 response.headers = {}
                 return response
 
             with mock.patch("requests.head", return_value=make_response()):
                 negative_test = from_url("https://www.dropbox.com/s/12345678901234/test.h5ad?dl=1")
-                self.assertRaises(MissingHeaderException, negative_test.file_info)
+                self.assertRaises(HTTPError, negative_test.file_info)

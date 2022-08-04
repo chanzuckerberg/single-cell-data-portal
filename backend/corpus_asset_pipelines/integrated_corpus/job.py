@@ -31,6 +31,12 @@ def build_integrated_corpus(dataset_directory: List, corpus_path: str):
     """
     Given the path to a directory containing one or more h5ad files and a group name, call the h5ad loading function
     on all files, loading/concatenating the datasets together under the group name
+
+    @mdunitz TODO: As the number of datasets grows this will become a bottleneck step.
+                    hopefully this code will be removed in the near future as we switch to SOMA
+                    if this becomes too slow before soma is ready for prod this step can be safely parallelized
+                    with some consideration given to the load step to avoid collisions of the feature (obs) indices
+                    in the integrated corpus
     """
     with tiledb.scope_ctx(create_ctx()):
         dataset_count = len(os.listdir(dataset_directory))
