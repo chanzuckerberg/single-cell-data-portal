@@ -11,8 +11,9 @@ ENV PIP_NO_CACHE_DIR=1
 
 WORKDIR /
 
-ADD backend/wmg/requirements.txt requirements.txt
-RUN pip3 install -r requirements.txt
+ADD backend/wmg/requirements.txt requirements.txt 
+ADD requirements.txt requirements-base.txt 
+RUN pip3 install -r requirements-base.txt -r requirements.txt 
 
 ADD backend/__init__.py backend/__init__.py
 ADD backend/wmg backend/wmg
