@@ -46,4 +46,6 @@ def patch(collection_id: str, body: dict, token_info: dict):
         keep_links = False  # links have been provided; replace all old links
     else:
         keep_links = True  # links have NOT been provided; keep existing links
-    return update_collection_common(collection_id, body, token_info, keep_links=keep_links)
+    collection = update_collection_common(collection_id, body, token_info, keep_links=keep_links)
+    columns_to_return = ("name", "description", "contact_name", "contact_email", "links")
+    return jsonify({k: collection[k] for k in columns_to_return})

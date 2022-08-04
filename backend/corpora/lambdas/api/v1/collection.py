@@ -264,7 +264,7 @@ def delete_collection(collection_id: str, token_info: dict):
 
 
 def update_collection(collection_id: str, body: dict, token_info: dict):
-    return update_collection_common(collection_id, body, token_info)
+    return jsonify(update_collection_common(collection_id, body, token_info))
 
 
 @dbconnect
@@ -294,4 +294,4 @@ def update_collection_common(collection_id: str, body: dict, token_info: dict, k
     collection.update(**body, keep_links=keep_links)
     result = collection.reshape_for_api(tombstoned_datasets=True)
     result["access_type"] = "WRITE"
-    return make_response(jsonify(result), 200)
+    return result

@@ -179,7 +179,16 @@ paths:
                   description: "New Collection description"
       responses:
         "200":
-          $ref: "#/components/responses/200"
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/collection_form_metadata"
+                required:
+                  - name
+                  - description
+                  - contact_name
+                  - contact_email
         "201":
           $ref: "#/components/responses/201"
         "400":
