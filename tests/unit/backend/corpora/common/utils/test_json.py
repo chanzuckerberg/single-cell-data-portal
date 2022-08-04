@@ -7,7 +7,7 @@ from sqlalchemy import Column, String
 
 from backend.corpora.common.corpora_orm import Base
 from backend.corpora.common.entities.entity import Entity
-from backend.corpora.common.utils.json import CustomJSONEncoder, CuratorJSONEncoder
+from backend.corpora.common.utils.json import CustomJSONEncoder, CurationJSONEncoder
 
 
 class DBTest(Base):
@@ -102,5 +102,5 @@ class TestCuratorJSONEncoder(unittest.TestCase):
         self._verify_json_encoding(test_datetime_value, expected_datetime)
 
     def _verify_json_encoding(self, test_value, expected_value):
-        actual_value = json.dumps(test_value, cls=CuratorJSONEncoder, sort_keys=True)
+        actual_value = json.dumps(test_value, cls=CurationJSONEncoder, sort_keys=True)
         self.assertEqual(expected_value, actual_value)

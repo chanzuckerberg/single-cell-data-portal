@@ -22,7 +22,7 @@ class CustomJSONEncoder(JSONEncoder):
             return super().default(obj)
 
 
-class CuratorJSONEncoder(CustomJSONEncoder):
+class CurationJSONEncoder(CustomJSONEncoder):
     "Add support for serializing DateTime into isoformat"
 
     def default(self, obj):

@@ -15,7 +15,7 @@ from flask_cors import CORS
 from swagger_ui_bundle import swagger_ui_path
 from backend.corpora.api_server.logger import configure_logging
 from backend.corpora.common.utils.aws import AwsSecret
-from backend.corpora.common.utils.json import CustomJSONEncoder, CuratorJSONEncoder
+from backend.corpora.common.utils.json import CustomJSONEncoder, CurationJSONEncoder
 
 DEPLOYMENT_STAGE = os.environ["DEPLOYMENT_STAGE"]
 APP_NAME = "{}-{}".format(os.environ["APP_NAME"], DEPLOYMENT_STAGE)
@@ -49,7 +49,7 @@ def create_flask_app():
 
     add_api(base_path="/dp", spec_file="corpora-api.yml")
     curation_api = add_api(base_path="/curation", spec_file="curation-api.yml")
-    curation_api.blueprint.json_encoder = CuratorJSONEncoder
+    curation_api.blueprint.json_encoder = CurationJSONEncoder
     add_api(base_path="/wmg", spec_file="wmg-api.yml")
     add_api(base_path="/gene_info", spec_file="gene-info-api.yml")
 
