@@ -149,6 +149,7 @@
       display: flex;
       flex-direction: column;
       justify-content: center;
+      width: 125px;
 
       &:nth-child(2) {
         border-left: 1px solid #545454;
@@ -156,6 +157,8 @@
         padding-left: 40px;
         padding-right: 54px;
         margin: 0 40px;
+        width: 65px;
+        box-sizing: content-box;
 
         @media (max-width: 500px) {
           margin: 0 20px;

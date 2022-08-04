@@ -1,13 +1,15 @@
 import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
+import { useCountUp } from "react-countup";
 import { useInView } from "react-intersection-observer";
 import TweetEmbed from "react-tweet-embed";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { ROUTES } from "src/common/constants/routes";
 import wordmark from "src/common/images/cellxgene-discover-wordmark.svg";
+import { useCorpusSummary } from "src/common/queries/filter";
 import AnalyzeDatasetsImg from "src/components/common/staticPages/analyze-datasets.jpg";
 import LaptopImg from "src/components/common/staticPages/cellxgene-laptop-updated.png";
 import HeroBg from "src/components/common/staticPages/cellxgene_hero_bg.png";
@@ -24,6 +26,76 @@ import GeneExpressionIcon from "./icons/gene-expression";
 import SingleCellDataIconActive from "./icons/single-cell-data-active";
 import SingleCellDataIconInactive from "./icons/single-cell-data-inactive";
 import styles from "./index.module.scss";
+
+const DEFAULT_NUM_CELLS = 33000000;
+const DEFAULT_NUM_DATASETS = 436;
+const DEFAULT_NUM_CELL_TYPES = 520;
+
+const COUNT_UP_DURATION = 1.5;
+
+const HeroStatsCounter = ({
+  className,
+}: {
+  className: string;
+}): JSX.Element => {
+  const [hasUpdated, setHasUpdated] = useState(false);
+  const corpusSummary = useCorpusSummary();
+  const formatNumber = useCallback((n: number): string => {
+    const formattedString = Intl.NumberFormat("en-US", {
+      maximumFractionDigits: 1,
+      notation: "compact",
+    }).format(n);
+    return `${formattedString}${formattedString !== n.toString() ? "+" : ""}`;
+  }, []);
+  const { update: updateCellCount } = useCountUp({
+    delay: 0,
+    duration: COUNT_UP_DURATION,
+    end: DEFAULT_NUM_CELLS,
+    formattingFn: formatNumber,
+    ref: "cellCounter",
+    start: 0,
+  });
+  const { update: updateDatasetCount } = useCountUp({
+    delay: 0,
+    duration: COUNT_UP_DURATION,
+    end: DEFAULT_NUM_DATASETS,
+    formattingFn: formatNumber,
+    ref: "datasetCounter",
+    start: 0,
+  });
+  const { update: updateCellTypesCount } = useCountUp({
+    delay: 0,
+    duration: COUNT_UP_DURATION,
+    end: DEFAULT_NUM_CELL_TYPES,
+    formattingFn: formatNumber,
+    ref: "cellTypesCounter",
+    start: 0,
+  });
+
+  if (!hasUpdated && !corpusSummary.isLoading && !corpusSummary.isError) {
+    setHasUpdated(true);
+    updateCellCount(corpusSummary.cellCount);
+    updateDatasetCount(corpusSummary.datasets);
+    updateCellTypesCount(corpusSummary.cellTypesCount);
+  }
+
+  return (
+    <div className={className}>
+      <div>
+        <span>Cells</span>
+        <p id="cellCounter" />
+      </div>
+      <div>
+        <span>datasets</span>
+        <p id="datasetCounter" />
+      </div>
+      <div>
+        <span>cell types</span>
+        <p id="cellTypesCounter" />
+      </div>
+    </div>
+  );
+};
 
 const LandingPage = (): JSX.Element => {
   const { ref: observerSection1, inView: inView1 } = useInView({
@@ -50,11 +122,6 @@ const LandingPage = (): JSX.Element => {
     rootMargin: "-50% 0px -50% 0px",
   });
   const scrollSection5 = useRef<HTMLDivElement>(null!);
-
-  // HERO NUMBERS. DUMMY DATA TO BE REPLACED.
-  const [cellsHeroNum] = useState("33M+");
-  const [datasetsHeroNum] = useState("436");
-  const [donorsHeroNum] = useState("2.7k+");
 
   const publications = [
     {
@@ -235,20 +302,7 @@ const LandingPage = (): JSX.Element => {
               the functionality of human tissues at the cellular level with Chan
               Zuckerberg CELL by GENE Discover (CZ CELLxGENE Discover).
             </p>
-            <div className={styles.heroStatsContainer}>
-              <div>
-                <span>Cells</span>
-                <p>{cellsHeroNum}</p>
-              </div>
-              <div>
-                <span>datasets</span>
-                <p>{datasetsHeroNum}</p>
-              </div>
-              <div>
-                <span>donors</span>
-                <p>{donorsHeroNum}</p>
-              </div>
-            </div>
+            <HeroStatsCounter className={styles.heroStatsContainer} />
           </div>
         </div>
         <div className={styles.main}>

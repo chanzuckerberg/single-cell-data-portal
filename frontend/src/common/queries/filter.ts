@@ -220,6 +220,45 @@ export function useFetchDatasetRows(): FetchCategoriesRows<DatasetRow> {
   };
 }
 
+interface CorpusSummary {
+  cellCount: number;
+  cellTypesCount: number;
+  datasets: number;
+  isError: boolean;
+  isLoading: boolean;
+}
+
+export function useCorpusSummary(): CorpusSummary {
+  const datasetRows = useFetchDatasetRows();
+  const summary = datasetRows.rows.reduce(
+    (acc, row) => {
+      const newCellTypes = row.cell_type.reduce((acc1, cellType) => {
+        if (acc.cellTypes.indexOf(cellType.ontology_term_id) === -1) {
+          acc1.push(cellType.ontology_term_id);
+        }
+        return acc1;
+      }, new Array<string>());
+      return {
+        ...acc,
+        cellCount: acc.cellCount + (row.cell_count || 0),
+        cellTypes: acc.cellTypes.concat(newCellTypes),
+        datasets: acc.datasets + 1,
+      };
+    },
+    {
+      cellCount: 0,
+      cellTypes: new Array<string>(),
+      datasets: 0,
+      isError: datasetRows.isError,
+      isLoading: datasetRows.isLoading,
+    }
+  );
+
+  const { cellTypes, ...ret } = summary;
+
+  return { ...ret, cellTypesCount: cellTypes.length };
+}
+
 /**
  * Cache-enabled hook for fetching public, non-tombstoned, datasets returning only filterable and sortable fields.
  * @returns Array of datasets - possible cached from previous request - containing filterable and sortable dataset
