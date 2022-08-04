@@ -284,7 +284,7 @@ def update_collection_common(collection_id: str, body: dict, token_info: dict, k
     new_doi = normalize_and_get_doi(body, errors)
     if old_doi and not new_doi:
         # If the DOI was deleted, remove the publisher_metadata field
-        collection.update(publisher_metadata=None, keep_links=keep_links, commit=False)
+        collection.update(publisher_metadata=None, keep_links=keep_links)
     elif new_doi != old_doi:
         # If the DOI has changed, fetch and update the metadata
         publisher_metadata = get_publisher_metadata(new_doi, errors)
