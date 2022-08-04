@@ -264,11 +264,11 @@ def delete_collection(collection_id: str, token_info: dict):
 
 
 def update_collection(collection_id: str, body: dict, token_info: dict):
-    return update_collection_common(collection_id, body, token_info, keep_links=False)
+    return update_collection_common(collection_id, body, token_info)
 
 
 @dbconnect
-def update_collection_common(collection_id: str, body: dict, token_info: dict, keep_links: bool = True):
+def update_collection_common(collection_id: str, body: dict, token_info: dict, keep_links: bool = False):
     db_session = g.db_session
     errors = []
     verify_collection_body(body, errors, allow_none=True)
@@ -284,7 +284,7 @@ def update_collection_common(collection_id: str, body: dict, token_info: dict, k
     new_doi = normalize_and_get_doi(body, errors)
     if old_doi and not new_doi:
         # If the DOI was deleted, remove the publisher_metadata field
-        collection.update(publisher_metadata=None, keep_links=keep_links)
+        collection.update(publisher_metadata=None, keep_links=keep_links, commit=False)
     elif new_doi != old_doi:
         # If the DOI has changed, fetch and update the metadata
         publisher_metadata = get_publisher_metadata(new_doi, errors)

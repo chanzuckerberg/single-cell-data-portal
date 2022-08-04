@@ -421,29 +421,58 @@ class TestPatchCollectionID(BaseAuthAPITest):
         collection = self.generate_collection(self.session, name=name, links=link)
         collection_id = collection.id
 
-        with self.subTest("With one field; links persist"):
-            metadata = {"name": new_name}
-            response = self.app.patch(
-                f"/curation/v1/collections/{collection_id}",
-                data=json.dumps(metadata),
-                headers=self.make_owner_header(),
-            )
-            self.assertEqual(200, response.status_code)
-            response = self.app.get(f"curation/v1/collections/{collection_id}")
-            self.assertEqual(response.json["name"], metadata["name"])
-            self.assertEqual(response.json["links"], link)
+        metadata = {"name": new_name}
+        response = self.app.patch(
+            f"/curation/v1/collections/{collection_id}",
+            data=json.dumps(metadata),
+            headers=self.make_owner_header(),
+        )
+        self.assertEqual(200, response.status_code)
+        response = self.app.get(f"curation/v1/collections/{collection_id}")
+        self.assertEqual(response.json["name"], metadata["name"])
+        self.assertEqual(response.json["links"], link)
 
-        with self.subTest("With no fields; links persist"):
-            metadata = {}
-            response = self.app.patch(
-                f"/curation/v1/collections/{collection_id}",
-                data=json.dumps(metadata),
-                headers=self.make_owner_header(),
-            )
-            self.assertEqual(200, response.status_code)
-            response = self.app.get(f"curation/v1/collections/{collection_id}")
-            self.assertEqual(response.json["name"], new_name)
-            self.assertEqual(response.json["links"], link)
+    @patch("backend.corpora.common.entities.Collection.get_doi")
+    # Patch Collection.get_doi to ensure the additional collection.update call is made in the update_collection method
+    def test__update_collection__links_management__OK(self, get_doi: Mock):
+        get_doi.return_value = "stub:doi"
+        links = [
+            {"link_name": None, "link_type": "RAW_DATA", "link_url": "http://test_link.place"},
+            {"link_name": "second link", "link_type": "RAW_DATA", "link_url": "http://other_test_link.place"},
+        ]
+        new_links = [
+            {"link_name": "new link", "link_type": "RAW_DATA", "link_url": "http://brand_new_link.place"},
+            {"link_name": "new link 2", "link_type": "RAW_DATA", "link_url": "http://brank_new_link_two.place"},
+        ]
+        name = "partial updates test collection"
+
+        links_configurations = (
+            # Columns:
+            # [0] test title
+            # [1] initial links
+            # [2] new links to replace old
+            # [3] status code for update
+            # [4] expected links after update
+            ("With links already in place; new links replace old", links, new_links, 200, new_links),
+            ("With no links in place; new links get added", None, new_links, 200, new_links),
+            ("With links in place, but empty request; links persist", links, None, 200, links),
+            ("With links in place, empty array passed; BAD REQUEST 400", links, [], 400, links),
+        )
+
+        for links_config in links_configurations:
+            with self.subTest(links_config[0]):
+                collection_id = self.generate_collection(self.session, name=name, links=links_config[1]).id
+                original_collection = self.app.get(f"curation/v1/collections/{collection_id}").json
+                self.assertEqual(links_config[1] if links_config[1] else [], original_collection["links"])
+                metadata = {"links": links_config[2]} if links_config[2] is not None else {}
+                response = self.app.patch(
+                    f"/curation/v1/collections/{collection_id}",
+                    data=json.dumps(metadata),
+                    headers=self.make_owner_header(),
+                )
+                self.assertEqual(links_config[3], response.status_code)
+                updated_collection = self.app.get(f"curation/v1/collections/{collection_id}").json
+                self.assertEqual(links_config[4], updated_collection["links"])
 
     def test__update_collection__Not_Owner(self):
         collection_id = self.generate_collection(self.session, owner="someone else").id
