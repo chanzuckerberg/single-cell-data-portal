@@ -224,6 +224,31 @@ interface CreateYAxisOptionsProps {
   cellTypeIdsToDelete: string[];
 }
 
+/**
+ * Used to calculate text pixel widths. Should be only created once.
+ */
+const CTX = document.createElement('canvas').getContext('2d'); 
+
+/**
+ * Truncates the string to a given pixel width.
+ * 
+ * @param text The text to truncate
+ * @param maxLength The max width in pixels the string should be
+ * @param font The font family and font size as a string. Ex. "12px sans-serif"
+ * @returns The string fixed to a certain pixel width
+ */
+export function getFixedWidth(text: string, maxLength: number, font = "12px sans-serif"): string {
+  CTX!.font = font;
+  for(let i = 0; i < text.length; i++) {
+    const substring = text.substring(0, i);
+    const textMetrics = CTX!.measureText(substring);
+    if(textMetrics!.width >= maxLength){
+      return substring + "...";
+    }
+  }
+  return text;
+} 
+
 export function createYAxisOptions({
   cellTypeMetadata,
   cellTypeIdsToDelete,
@@ -268,14 +293,13 @@ export function createYAxisOptions({
 
             const displayDepth = Math.min(depth, MAX_DEPTH);
 
-            const paddedName = " ".repeat(displayDepth * 8) + name;
+            const paddedName = getFixedWidth(" ".repeat(displayDepth * 8) + name, 200);
 
             return cellTypeIdsToDelete.includes(value as string)
-              ? `{selected|${paddedName}}`
+            // Cut first leading space when selected to reduce 'jumping' of text
+              ? `{selected|${displayDepth ? paddedName.substring(1) : paddedName}}`
               : paddedName;
           },
-          // Turn off type checking here, because ecahrts' type is wrong
-          ["overflow" as string]: "truncate",
           rich: {
             selected: SELECTED_STYLE,
           },
