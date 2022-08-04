@@ -245,10 +245,10 @@ export function getFixedWidth(
   CTX!.font = font;
   const ellipsisWidth = CTX!.measureText("...").width;
   for (let i = 0; i < text.length; i++) {
-    const substring = text.substring(0, i+1);
+    const substring = text.substring(0, i + 1);
     const textMetrics = CTX!.measureText(substring);
     if (textMetrics.width >= maxLength - ellipsisWidth) {
-      return text.substring(0, i) + "..."; 
+      return text.substring(0, i) + "...";
     }
   }
   return text;
