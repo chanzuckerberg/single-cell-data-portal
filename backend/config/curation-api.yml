@@ -152,7 +152,10 @@ paths:
       summary: Update a Collection's metadata.
       description: >-
         Update a private Collection or a Revision. If any Collection metadata fields are included in the body of the
-        request, these fields SHALL be updated for the specified Collection.
+        request, these fields SHALL be updated for the specified Collection. If the `links` field is included, all
+        of the Collection's existing links are removed and replaced with the new links. Passing an empty array `[]` as
+        the value of the `links` field is *not* accepted and returns `400`; in order to delete links without
+        replacement you must use the UI.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.actions.patch
       security:
         - curatorAccess: []
@@ -176,7 +179,17 @@ paths:
                   description: "New Collection description"
       responses:
         "200":
-          $ref: "#/components/responses/200"
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/collection_form_metadata"
+                required:
+                  - name
+                  - description
+                  - contact_name
+                  - contact_email
+                  - links
         "201":
           $ref: "#/components/responses/201"
         "400":
