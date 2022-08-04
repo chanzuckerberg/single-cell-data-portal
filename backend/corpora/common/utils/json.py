@@ -13,10 +13,20 @@ class CustomJSONEncoder(JSONEncoder):
         if isinstance(obj, datetime.timedelta):
             return str(obj)
         elif isinstance(obj, datetime.datetime):
-            return obj.isoformat()
+            return obj.timestamp()
         elif isinstance(obj, Enum):
             return str(obj.name)
         elif isinstance(obj, (Base, Entity)):
             return obj.to_dict()
+        else:
+            return super().default(obj)
+
+
+class CuratorJSONEncoder(CustomJSONEncoder):
+    "Add support for serializing DateTime into isoformat"
+
+    def default(self, obj):
+        if isinstance(obj, datetime.datetime):
+            return obj.isoformat()
         else:
             return super().default(obj)
