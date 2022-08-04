@@ -168,7 +168,7 @@ export function createXAxisOptions({
     ...COMMON_OPTIONS,
     grid: {
       bottom: "0",
-      left: "300px",
+      left: Y_AXIS_CHART_WIDTH_PX + "px",
       top: "300px",
     },
     series: [
@@ -243,11 +243,12 @@ export function getFixedWidth(
   font = "12px sans-serif"
 ): string {
   CTX!.font = font;
+  const ellipsisWidth = CTX!.measureText("...").width;
   for (let i = 0; i < text.length; i++) {
-    const substring = text.substring(0, i);
+    const substring = text.substring(0, i+1);
     const textMetrics = CTX!.measureText(substring);
-    if (textMetrics!.width >= maxLength) {
-      return substring + "...";
+    if (textMetrics.width >= maxLength - ellipsisWidth) {
+      return text.substring(0, i) + "..."; 
     }
   }
   return text;
@@ -299,12 +300,13 @@ export function createYAxisOptions({
 
             const paddedName = getFixedWidth(
               " ".repeat(displayDepth * 8) + name,
-              200
+              Y_AXIS_CHART_WIDTH_PX - 75, // scale based on y-axis width
+              "bold 12px sans-serif" // prevents selected style from overlapping count
             );
 
             return cellTypeIdsToDelete.includes(value as string)
-              ? // Cut first leading space when selected to reduce 'jumping' of text
-                `{selected|${
+              ? `{selected|${
+                  // Cut first leading space when selected to reduce 'jumping' of text
                   displayDepth ? paddedName.substring(1) : paddedName
                 }}`
               : paddedName;
@@ -426,7 +428,7 @@ export function dataToChartFormat({
   }
 }
 
-const HEAT_MAP_BASE_WIDTH_PX = 500;
+const HEAT_MAP_BASE_WIDTH_PX = 200 + Y_AXIS_CHART_WIDTH_PX;
 export const HEAT_MAP_BASE_HEIGHT_PX = 300;
 const HEAT_MAP_BASE_CELL_PX = 20;
 
