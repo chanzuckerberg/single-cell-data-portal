@@ -521,10 +521,10 @@ components:
           type: string
           nullable: true
         revised_at:
-          type: number
+          type: string
           nullable: true
         created_at:
-          type: number
+          type: string
         links:
           $ref: "#/components/schemas/links"
         access_type:
@@ -532,7 +532,7 @@ components:
           enum: [READ, WRITE]
           nullable: true
         published_at:
-          type: number
+          type: string
           nullable: true
         description:
           type: string
@@ -609,7 +609,7 @@ components:
               type: integer
               nullable: true
             revised_at:
-              type: number
+              type: string
               nullable: true
             is_primary_data:
               $ref: "#/components/schemas/is_primary_data"
