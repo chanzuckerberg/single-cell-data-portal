@@ -1,5 +1,5 @@
 import re
-from flask import g, make_response
+from flask import g, make_response, jsonify
 
 from backend.corpora.api_server.db import dbconnect
 from backend.corpora.common.corpora_orm import CollectionVisibility
@@ -7,7 +7,16 @@ from backend.corpora.common.entities import Dataset
 from backend.corpora.common.utils.http_exceptions import InvalidParametersHTTPException, ConflictException
 from backend.corpora.common.utils.regex import DATASET_ID_REGEX, CURATOR_TAG_PREFIX_REGEX, EXTENSION_REGEX
 from backend.corpora.lambdas.api.v1.authorization import owner_or_allowed
-from backend.corpora.lambdas.api.v1.common import get_dataset_else_error, get_collection_else_forbidden
+from backend.corpora.lambdas.api.v1.common import (
+    get_dataset_else_error,
+    get_collection_else_forbidden,
+    delete_dataset_common,
+)
+from backend.corpora.lambdas.api.v1.curation.collections.common import (
+    EntityColumns,
+    reshape_dataset_for_curation_api,
+    reshape_datasets_for_curation_api,
+)
 
 REGEX = f"^({DATASET_ID_REGEX}|{CURATOR_TAG_PREFIX_REGEX})\\.{EXTENSION_REGEX}$"
 
@@ -44,3 +53,37 @@ def patch(token_info: dict, collection_id: str, body: dict, curator_tag: str = N
         else:
             dataset.update(curator_tag=tag)
     return make_response("", 204)
+
+
+@dbconnect
+def get(token_info: dict, collection_id: str, curator_tag: str = None, dataset_id: str = None):
+    db_session = g.db_session
+    get_collection_else_forbidden(
+        db_session, collection_id, visibility=CollectionVisibility.PRIVATE, owner=owner_or_allowed(token_info)
+    )
+    if curator_tag or dataset_id:
+        response_body = get_dataset(db_session, collection_id, curator_tag, dataset_id)
+    else:
+        response_body = get_datasets(db_session, collection_id)
+    return make_response(jsonify(response_body), 200)
+
+
+def get_dataset(db_session, collection_id: str, curator_tag: str = None, dataset_id: str = None):
+    dataset = get_dataset_else_error(db_session, dataset_id, collection_id, curator_tag)
+    response_body = reshape_dataset_for_curation_api(dataset.to_dict_keep(EntityColumns.columns_for_dataset))
+    return response_body
+
+
+def get_datasets(db_session, collection_id: str):
+    datasets = [
+        dataset.to_dict_keep(EntityColumns.columns_for_dataset) for dataset in Dataset.list(db_session, collection_id)
+    ]
+    return {"datasets": reshape_datasets_for_curation_api(datasets)}
+
+
+@dbconnect
+def delete(token_info: dict, collection_id: str, curator_tag: str = None, dataset_id: str = None):
+    db_session = g.db_session
+    dataset = get_dataset_else_error(db_session, dataset_id, collection_id, curator_tag, include_tombstones=True)
+    delete_dataset_common(db_session, dataset, token_info)
+    return "", 202

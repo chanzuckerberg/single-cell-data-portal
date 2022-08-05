@@ -114,5 +114,17 @@ class TestPatchDataset(BaseAuthAPITest):
         self.assertIsNone(dataset_2.curator_tag)
 
 
+class TestGetDatasets(BaseAuthAPITest):
+    def test_get_dataset_in_a_collection(self):
+        collection = self.generate_collection(self.session, visibility=CollectionVisibility.PRIVATE.name)
+        self.generate_dataset(self.session, collection=collection)
+        self.generate_dataset(self.session, collection=collection)
+        test_url = f"/curation/v1/collections/{collection.id}/datasets"
+        headers = self.make_owner_header()
+        response = self.app.get(test_url, headers=headers)
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(2, len(response.json["datasets"]))
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -13,7 +13,7 @@ from tests.unit.backend.fixtures.config import fake_s3_file
 
 
 class TestAuthToken(BaseAuthAPITest):
-    @patch("backend.corpora.lambdas.api.v1.curation.collections.collection_id.dataset.sts_client")
+    @patch("backend.corpora.lambdas.api.v1.curation.collections.collection_id.datasets.upload_s3.sts_client")
     def test__generate_s3_credentials__OK(self, sts_client: Mock):
         def _test(token, is_super_curator: bool = False):
             sts_client.assume_role_with_web_identity = Mock(

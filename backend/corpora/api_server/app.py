@@ -154,6 +154,8 @@ def close_db(e=None):
 
 @app.errorhandler(ProblemException)
 def handle_corpora_error(exception):
+    if exception.status >= 500:
+        app.logger.error("InternalServerError", exc_info=exception)
     return FlaskApi.get_response(
         problem(
             exception.status,

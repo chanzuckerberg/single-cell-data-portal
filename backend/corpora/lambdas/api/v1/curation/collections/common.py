@@ -1,3 +1,5 @@
+import typing
+
 from ...authorization import is_user_owner_or_allowed
 from ......common.corpora_config import CorporaConfig
 from ......common.corpora_orm import (
@@ -45,29 +47,36 @@ def reshape_for_curation_api_and_is_allowed(collection, token_info, id_provided=
     collection["collection_url"] = f"{CorporaConfig().collections_base_url}/collections/{collection['id']}"
 
     if datasets := collection.get("datasets"):
-        active_datasets = []
-        for dataset in datasets:
-            if dataset.get("tombstone"):
-                continue  # Remove tombstoned Datasets
-            active_datasets.append(dataset)
-            if artifacts := dataset.get("artifacts"):
-                dataset["dataset_assets"] = []
-                for asset in artifacts:
-                    if asset["filetype"] in (DatasetArtifactFileType.H5AD, DatasetArtifactFileType.RDS):
-                        dataset["dataset_assets"].append(asset)
-                del dataset["artifacts"]
-            if dataset.get("processing_status"):
-                dataset["processing_status"] = dataset["processing_status"]["processing_status"]
-            for ontology_element in DATASET_ONTOLOGY_ELEMENTS:
-                if dataset_ontology_element := dataset.get(ontology_element):
-                    if not isinstance(dataset_ontology_element, list):
-                        # Package in array
-                        dataset[ontology_element] = [dataset_ontology_element]
-                else:
-                    dataset[ontology_element] = []
-        collection["datasets"] = active_datasets
-
+        collection["datasets"] = reshape_datasets_for_curation_api(datasets)
     return True
+
+
+def reshape_datasets_for_curation_api(datasets: typing.List[dict]) -> typing.List[dict]:
+    active_datasets = []
+    for dataset in datasets:
+        if dataset.get("tombstone"):
+            continue  # Remove tombstoned Datasets
+        active_datasets.append(reshape_dataset_for_curation_api(dataset))
+    return active_datasets
+
+
+def reshape_dataset_for_curation_api(dataset: dict) -> dict:
+    if artifacts := dataset.get("artifacts"):
+        dataset["dataset_assets"] = []
+        for asset in artifacts:
+            if asset["filetype"] in (DatasetArtifactFileType.H5AD, DatasetArtifactFileType.RDS):
+                dataset["dataset_assets"].append(asset)
+        del dataset["artifacts"]
+    if dataset.get("processing_status"):
+        dataset["processing_status"] = dataset["processing_status"]["processing_status"]
+    for ontology_element in DATASET_ONTOLOGY_ELEMENTS:
+        if dataset_ontology_element := dataset.get(ontology_element):
+            if not isinstance(dataset_ontology_element, list):
+                # Package in array
+                dataset[ontology_element] = [dataset_ontology_element]
+        else:
+            dataset[ontology_element] = []
+    return dataset
 
 
 class EntityColumns:
@@ -148,6 +157,12 @@ class EntityColumns:
     columns_for_collection_id = {
         DbCollectionLink: link_cols,
         DbCollection: collections_cols,
+        DbDataset: dataset_cols,
+        DbDatasetArtifact: dataset_asset_cols,
+        DbDatasetProcessingStatus: dataset_processing_status_cols,
+    }
+
+    columns_for_dataset = {
         DbDataset: dataset_cols,
         DbDatasetArtifact: dataset_asset_cols,
         DbDatasetProcessingStatus: dataset_processing_status_cols,

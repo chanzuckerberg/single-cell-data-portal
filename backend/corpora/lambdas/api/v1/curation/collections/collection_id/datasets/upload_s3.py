@@ -8,17 +8,7 @@ from backend.corpora.api_server.db import dbconnect
 from backend.corpora.common.corpora_config import CorporaConfig
 from backend.corpora.common.corpora_orm import CollectionVisibility
 from backend.corpora.lambdas.api.v1.authorization import owner_or_allowed, is_super_curator
-from backend.corpora.lambdas.api.v1.common import get_collection_else_forbidden, get_dataset_else_error
-from backend.corpora.lambdas.api.v1.dataset import delete_dataset_common
-
-
-@dbconnect
-def delete_dataset(token_info: dict, collection_id: str, curator_tag: str = None, dataset_id: str = None):
-    db_session = g.db_session
-    dataset = get_dataset_else_error(db_session, dataset_id, collection_id, curator_tag, include_tombstones=True)
-    delete_dataset_common(db_session, dataset, token_info)
-    return "", 202
-
+from backend.corpora.lambdas.api.v1.common import get_collection_else_forbidden
 
 sts_client = boto3.client("sts")
 logger = logging.getLogger(__name__)
@@ -26,7 +16,7 @@ duration = 43200
 
 
 @dbconnect
-def post_s3_credentials(collection_id: str, token_info: dict):
+def post(collection_id: str, token_info: dict):
     db_session = g.db_session
     config = CorporaConfig()
     # Raise an error if they are not allowed to modify the collection.
