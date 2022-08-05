@@ -16,11 +16,7 @@ from backend.corpora.lambdas.api.v1.common import (
     get_collection_else_forbidden,
     delete_dataset_common,
 )
-from backend.corpora.lambdas.api.v1.curation.collections.common import (
-    EntityColumns,
-    reshape_dataset_for_curation_api,
-    reshape_datasets_for_curation_api,
-)
+from backend.corpora.lambdas.api.v1.curation.collections.common import EntityColumns, reshape_dataset_for_curation_api
 
 REGEX = f"^({DATASET_ID_REGEX}|{CURATOR_TAG_PREFIX_REGEX})\\.{EXTENSION_REGEX}$"
 
@@ -64,24 +60,9 @@ def get(collection_id: str, curator_tag: str = None, dataset_id: str = None):
     db_session = g.db_session
     if not db_session.query(DbCollection.id).filter(DbCollection.id == collection_id).first():
         raise NotFoundHTTPException("Collection not found!")
-    if curator_tag or dataset_id:
-        response_body = get_dataset(db_session, collection_id, curator_tag, dataset_id)
-    else:
-        response_body = get_datasets(db_session, collection_id)
-    return make_response(jsonify(response_body), 200)
-
-
-def get_dataset(db_session, collection_id: str, curator_tag: str = None, dataset_id: str = None):
     dataset = get_dataset_else_error(db_session, dataset_id, collection_id, curator_tag)
     response_body = reshape_dataset_for_curation_api(dataset.to_dict_keep(EntityColumns.columns_for_dataset))
-    return response_body
-
-
-def get_datasets(db_session, collection_id: str):
-    datasets = [
-        dataset.to_dict_keep(EntityColumns.columns_for_dataset) for dataset in Dataset.list(db_session, collection_id)
-    ]
-    return {"datasets": reshape_datasets_for_curation_api(datasets)}
+    return make_response(jsonify(response_body), 200)
 
 
 @dbconnect
