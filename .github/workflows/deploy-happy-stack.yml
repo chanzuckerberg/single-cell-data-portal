@@ -102,6 +102,9 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: 15
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
       - uses: actions/checkout@v2
         with:
           ref: ${{ github.event.deployment.sha }}
@@ -124,15 +127,17 @@ jobs:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           role-duration-seconds: 2700
       - name: Run Smoke Tests
-        working-directory: frontend
         env:
           DEPLOYMENT_STAGE: ${{ github.event.deployment.environment }}
         run: |
-          npm ci
-          npx playwright install --with-deps
           if [ "${DEPLOYMENT_STAGE}" == "stage" ]; then
             export DEPLOYMENT_STAGE=staging
           fi
+          pip3 install -r scripts/smoke_tests/requirements.txt
+          python3 -m scripts.smoke_tests.setup
+          cd frontend
+          npm ci
+          npx playwright install --with-deps
           cp src/configs/${DEPLOYMENT_STAGE}.js src/configs/configs.js
           DEBUG=pw:api npm run e2e-${DEPLOYMENT_STAGE}
       ### Need to write success failure way because Github API doesn't allow doing
