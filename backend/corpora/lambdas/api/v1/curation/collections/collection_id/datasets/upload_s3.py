@@ -16,7 +16,7 @@ duration = 43200
 
 
 @dbconnect
-def post(collection_id: str, token_info: dict):
+def get(collection_id: str, token_info: dict):
     db_session = g.db_session
     config = CorporaConfig()
     # Raise an error if they are not allowed to modify the collection.

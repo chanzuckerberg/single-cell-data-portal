@@ -291,14 +291,13 @@ paths:
             application/json:
               schema:
                 oneOf:
-                  - $ref: "#/components/schemas/dataset"
                   - type: object
                     properties:
                       datasets:
                         type: array
                         items:
                           $ref: "#/components/schemas/dataset"
-        "400":
+                  - $ref: "#/components/schemas/dataset"
           $ref: "#/components/responses/400"
         "404":
           $ref: "#/components/responses/404"
@@ -388,7 +387,7 @@ paths:
           $ref: "#/components/responses/404"
 
   /v1/collections/{collection_id}/datasets/s3-upload-credentials:
-    post:
+    get:
       summary: Get credentials for uploading local files
       tags:
         - collection
@@ -424,7 +423,7 @@ paths:
 
       security:
         - curatorAccess: []
-      operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.datasets.upload_s3.post
+      operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.datasets.upload_s3.get
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       responses:
