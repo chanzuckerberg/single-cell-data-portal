@@ -275,7 +275,7 @@ paths:
     get:
       summary: Fetch a Dataset from a collection
       description: >-
-        Return a from a collection. If a dataset ID or a curator tag is provided as a query parameter
+        Fetch a Dataset from a collection. If a `dataset_id` or a `curator_tag` is provided as a query parameter
         the associated Dataset metadata is returned.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.datasets.actions.get
       tags:
