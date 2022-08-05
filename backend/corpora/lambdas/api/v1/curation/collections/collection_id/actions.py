@@ -1,15 +1,11 @@
 from flask import g, jsonify
 
-from backend.corpora.lambdas.api.v1.collection import update_collection_common
+from backend.corpora.lambdas.api.v1.collection import update_collection
 from ..common import EntityColumns
 from backend.corpora.api_server.db import dbconnect
 from backend.corpora.common.corpora_orm import CollectionVisibility
 from backend.corpora.common.entities import Collection
-from backend.corpora.common.utils.http_exceptions import (
-    InvalidParametersHTTPException,
-    MethodNotAllowedException,
-    NotFoundHTTPException,
-)
+from backend.corpora.common.utils.http_exceptions import MethodNotAllowedException, NotFoundHTTPException
 from backend.corpora.lambdas.api.v1.authorization import owner_or_allowed
 from backend.corpora.lambdas.api.v1.curation.collections.common import reshape_for_curation_api_and_is_allowed
 from backend.corpora.lambdas.api.v1.common import get_collection_else_forbidden
@@ -40,12 +36,4 @@ def get(collection_id: str, token_info: dict):
 
 
 def patch(collection_id: str, body: dict, token_info: dict):
-    if "links" in body:
-        if not body["links"]:
-            raise InvalidParametersHTTPException(detail="If provided, the 'links' array may not be empty")
-        keep_links = False  # links have been provided; replace all old links
-    else:
-        keep_links = True  # links have NOT been provided; keep existing links
-    collection = update_collection_common(collection_id, body, token_info, keep_links=keep_links)
-    columns_to_return = ("name", "description", "contact_name", "contact_email", "links")
-    return jsonify({k: collection[k] for k in columns_to_return})
+    return update_collection(collection_id, body, token_info)
