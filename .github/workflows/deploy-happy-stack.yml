@@ -55,11 +55,10 @@ jobs:
         with:
           tfe-token: ${{ secrets.TFE_TOKEN }}
           stack-name: ${{ github.event.deployment.environment }}stack
-          happy_version: "0.23.0"
+          happy_version: "0.28.0"
           operation: update
           tag: ${{ github.event.deployment.payload.tag }}
           env: ${{ github.event.deployment.environment }}
-          skip-migrations: "true"
       - name: Invalidate CloudFront
         env:
           DEPLOYMENT_STAGE: ${{ github.event.deployment.environment }}
@@ -96,7 +95,33 @@ jobs:
 
   smoke-test:
     runs-on: ubuntu-20.04
+    needs:
+      - upgrade
     steps:
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 15
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.deployment.sha }}
+      - name: Configure AWS Prod Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        if: github.event.deployment.environment == 'prod'
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_PROD_ROLE_TO_ASSUME }}
+          role-duration-seconds: 2700
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        if: github.event.deployment.environment != 'prod'
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 2700
       - name: Run Smoke Tests
         working-directory: frontend
         env:
@@ -130,6 +155,37 @@ jobs:
     needs:
       - upgrade
     steps:
+      - name: Configure AWS Prod Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        if: github.event.deployment.environment == 'prod'
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_PROD_ROLE_TO_ASSUME }}
+          role-duration-seconds: 2700
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        if: github.event.deployment.environment != 'prod'
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 2700
+      # Login to ECR needed solely to be able to retrieve cached layers
+      - name: Login to Prod ECR
+        uses: docker/login-action@v1
+        if: github.event.deployment.environment == 'prod'
+        with:
+          registry: ${{ secrets.ECR_REPO_PROD }}
+      - name: Login to ECR
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ secrets.ECR_REPO }}
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.deployment.sha }}
       - name: Run functional test
         env:
           TFE_TOKEN: ${{ secrets.TFE_TOKEN }}
@@ -168,6 +224,37 @@ jobs:
     needs:
       - upgrade
     steps:
+      - name: Configure AWS Prod Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        if: github.event.deployment.environment == 'prod'
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_PROD_ROLE_TO_ASSUME }}
+          role-duration-seconds: 2700
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        if: github.event.deployment.environment != 'prod'
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 2700
+      # Login to ECR needed solely to be able to retrieve cached layers
+      - name: Login to Prod ECR
+        uses: docker/login-action@v1
+        if: github.event.deployment.environment == 'prod'
+        with:
+          registry: ${{ secrets.ECR_REPO_PROD }}
+      - name: Login to ECR
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ secrets.ECR_REPO }}
+      - uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.deployment.sha }}
       - name: Run performance test
         env:
           TFE_TOKEN: ${{ secrets.TFE_TOKEN }}
