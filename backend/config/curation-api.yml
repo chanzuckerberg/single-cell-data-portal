@@ -263,14 +263,7 @@ paths:
           content:
             application/json:
               schema:
-                oneOf:
-                  - type: object
-                    properties:
-                      datasets:
-                        type: array
-                        items:
-                          $ref: "#/components/schemas/dataset"
-                  - $ref: "#/components/schemas/dataset"
+                type: string
         "400":
           $ref: "#/components/responses/400"
         "401":
@@ -287,32 +280,26 @@ paths:
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.datasets.actions.get
       tags:
         - collection
-      security:
-        - curatorAccess: []
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
         - $ref: "#/components/parameters/query_curator_tag"
         - $ref: "#/components/parameters/query_dataset_id"
       responses:
-        "202":
-          description: Accepted
+        "200":
+          description: OK
           content:
             application/json:
               schema:
                 oneOf:
+                  - $ref: "#/components/schemas/dataset"
                   - type: object
                     properties:
                       datasets:
                         type: array
                         items:
                           $ref: "#/components/schemas/dataset"
-                  - $ref: "#/components/schemas/dataset"
         "400":
           $ref: "#/components/responses/400"
-        "401":
-          $ref: "#/components/responses/401"
-        "403":
-          $ref: "#/components/responses/403"
         "404":
           $ref: "#/components/responses/404"
     patch:

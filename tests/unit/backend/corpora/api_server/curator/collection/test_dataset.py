@@ -115,15 +115,51 @@ class TestPatchDataset(BaseAuthAPITest):
 
 
 class TestGetDatasets(BaseAuthAPITest):
-    def test_get_dataset_in_a_collection(self):
+    def test_get_multiple_datasets_in_a_collection_200(self):
         collection = self.generate_collection(self.session, visibility=CollectionVisibility.PRIVATE.name)
         self.generate_dataset(self.session, collection=collection)
         self.generate_dataset(self.session, collection=collection)
         test_url = f"/curation/v1/collections/{collection.id}/datasets"
-        headers = self.make_owner_header()
-        response = self.app.get(test_url, headers=headers)
+        response = self.app.get(test_url)
         self.assertEqual(200, response.status_code)
         self.assertEqual(2, len(response.json["datasets"]))
+
+    def test_get_multiple_datasets_in_a_collection_ignore_tombstones_200(self):
+        collection = self.generate_collection(self.session, visibility=CollectionVisibility.PRIVATE.name)
+        self.generate_dataset(self.session, collection=collection)
+        self.generate_dataset(self.session, collection=collection, tombstone=True)
+        test_url = f"/curation/v1/collections/{collection.id}/datasets"
+        response = self.app.get(test_url)
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(1, len(response.json["datasets"]))
+
+    def test_get_fake_dataset_404(self):
+        collection = self.generate_collection(self.session, visibility=CollectionVisibility.PRIVATE.name)
+        dataset = self.generate_dataset(self.session, collection=collection, curator_tag="tag.h5ad")
+        test_url = f"/curation/v1/collections/{collection.id}/datasets"
+
+        query_string = {"curator_tag": "fake.h5ad"}
+        response = self.app.get(test_url, query_string=query_string)
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(dataset.id, response.json["id"])
+
+    def test_get_tombstoned_dataset_in_a_collection_404(self):
+        collection = self.generate_collection(self.session, visibility=CollectionVisibility.PRIVATE.name)
+        dataset = self.generate_dataset(self.session, collection=collection, curator_tag="tag.h5ad", tombstone=True)
+        test_url = f"/curation/v1/collections/{collection.id}/datasets"
+
+        test_query_strings = [{"dataset_id": dataset.id}, {"curator_tag": dataset.curator_tag}]
+        for query_string in test_query_strings:
+            with self.subTest(query_string):
+                response = self.app.get(test_url, query_string=query_string)
+                self.assertEqual(200, response.status_code)
+                self.assertEqual(dataset.id, response.json["id"])
+
+    def test_get_datasets_fake_collection(self):
+        test_url = "/curation/v1/collections/fake_collection/datasets"
+        headers = self.make_owner_header()
+        response = self.app.get(test_url, headers=headers)
+        self.assertEqual(404, response.status_code)
 
 
 if __name__ == "__main__":

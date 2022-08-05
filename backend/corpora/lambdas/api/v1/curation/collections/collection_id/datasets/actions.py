@@ -2,9 +2,13 @@ import re
 from flask import g, make_response, jsonify
 
 from backend.corpora.api_server.db import dbconnect
-from backend.corpora.common.corpora_orm import CollectionVisibility
+from backend.corpora.common.corpora_orm import CollectionVisibility, DbCollection
 from backend.corpora.common.entities import Dataset
-from backend.corpora.common.utils.http_exceptions import InvalidParametersHTTPException, ConflictException
+from backend.corpora.common.utils.http_exceptions import (
+    InvalidParametersHTTPException,
+    ConflictException,
+    NotFoundHTTPException,
+)
 from backend.corpora.common.utils.regex import DATASET_ID_REGEX, CURATOR_TAG_PREFIX_REGEX, EXTENSION_REGEX
 from backend.corpora.lambdas.api.v1.authorization import owner_or_allowed
 from backend.corpora.lambdas.api.v1.common import (
@@ -56,11 +60,10 @@ def patch(token_info: dict, collection_id: str, body: dict, curator_tag: str = N
 
 
 @dbconnect
-def get(token_info: dict, collection_id: str, curator_tag: str = None, dataset_id: str = None):
+def get(collection_id: str, curator_tag: str = None, dataset_id: str = None):
     db_session = g.db_session
-    get_collection_else_forbidden(
-        db_session, collection_id, visibility=CollectionVisibility.PRIVATE, owner=owner_or_allowed(token_info)
-    )
+    if not db_session.query(DbCollection.id).filter(DbCollection.id == collection_id).first():
+        raise NotFoundHTTPException("Collection not found!")
     if curator_tag or dataset_id:
         response_body = get_dataset(db_session, collection_id, curator_tag, dataset_id)
     else:
