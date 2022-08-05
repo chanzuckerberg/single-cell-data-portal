@@ -443,43 +443,6 @@ paths:
         "401":
           $ref: "#/components/responses/401"
 
-  /v1/collections/{collection_id}/datasets/status:
-    get:
-      summary: Get a Dataset's processing status
-      tags:
-        - collection
-      description: >-
-        Get the processing status for a Dataset. MUST indicate the Dataset by providing *one* of either the
-        **curator_tag** (non-null) OR the **dataset_id** parameters.
-      operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.datasets.status.get
-      parameters:
-        - $ref: "#/components/parameters/path_collection_id"
-        - $ref: "#/components/parameters/query_curator_tag"
-        - $ref: "#/components/parameters/query_dataset_id"
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    $ref: "#/components/schemas/processing_status"
-                  file_statuses:
-                    type: object
-                    properties:
-                      cxg:
-                        $ref: "#/components/schemas/conversion_status"
-                      h5ad:
-                        $ref: "#/components/schemas/conversion_status"
-                      rds:
-                        $ref: "#/components/schemas/conversion_status"
-        "400":
-          $ref: "#/components/responses/400"
-        "404":
-          $ref: "#/components/responses/404"
-
   /v1/collections/{collection_id}/assets:
     get:
       summary: Retrieve links for downloading a dataset
