@@ -1,4 +1,4 @@
-from flask import g, jsonify
+from flask import g, jsonify, Response
 
 from backend.corpora.lambdas.api.v1.collection import (
     get_collection_and_verify_body,
@@ -44,13 +44,15 @@ def get(collection_id: str, token_info: dict):
 
 
 @dbconnect
-def patch(collection_id: str, body: dict, token_info: dict):
+def patch(collection_id: str, body: dict, token_info: dict) -> Response:
     """
-
-    @param collection_id:
-    @param body:
-    @param token_info:
-    @return:
+    Curation API: update the metadata for a Collection. Only included field will be altered. If links are provided, all
+    existing links will be replaced EXCEPT for the doi, which will only be replaced if a new doi is provided. If a bad
+    doi is provided, none of the provided fields are updated, and the original doi (and published metadata) remain.
+    @param collection_id: the id of the Collection
+    @param body: dict with fields to update
+    @param token_info: the user's access token info
+    @return: an http Response
     """
     db_session = g.db_session
 
