@@ -273,7 +273,7 @@ paths:
         "404":
           $ref: "#/components/responses/404"
     get:
-      summary: Return a datasets from a collection
+      summary: Fetch a Dataset from a collection
       description: >-
         Return a from a collection. If a dataset ID or a curator tag is provided as a query parameter
         the associated dataset metadata is returned.
