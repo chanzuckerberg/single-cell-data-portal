@@ -273,10 +273,10 @@ paths:
         "404":
           $ref: "#/components/responses/404"
     get:
-      summary: Return one or more datasets from a collection
+      summary: Return a datasets from a collection
       description: >-
-        Return one or more datasets from a collection. If a dataset ID or a curator tag is provided as a query parameter
-        then only that dataset will be returned.
+        Return a from a collection. If a dataset ID or a curator tag is provided as a query parameter
+        the associated dataset metadata is returned.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.datasets.actions.get
       tags:
         - collection
