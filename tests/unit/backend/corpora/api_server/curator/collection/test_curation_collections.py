@@ -8,6 +8,7 @@ from backend.corpora.common.corpora_orm import (
     DatasetArtifactFileType,
     DbDataset,
 )
+from backend.corpora.common.providers.crossref_provider import CrossrefDOINotFoundException
 from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest, mock_assert_authorized_token
 from tests.unit.backend.fixtures.config import fake_s3_file
 
@@ -409,8 +410,21 @@ class TestPatchCollectionID(BaseAuthAPITest):
         self.assertEqual(200, response.status_code)
 
     def test__update_collection_partial_data__OK(self):
-        collection_id = self.generate_collection(self.session).id
-        metadata = {"name": "A new name, and only a new name"}
+        description = "a description"
+        contact_name = "first last"
+        contact_email = "name@server.domain"
+        links = [
+            {"link_name": "name", "link_type": "RAW_DATA", "link_url": "http://test_link.place"},
+        ]
+        collection_id = self.generate_collection(
+            self.session,
+            description=description,
+            contact_name=contact_name,
+            contact_email=contact_email,
+            links=links,
+        ).id
+        new_name = "A new name, and only a new name"
+        metadata = {"name": new_name}
         response = self.app.patch(
             f"/curation/v1/collections/{collection_id}",
             data=json.dumps(metadata),
@@ -418,7 +432,76 @@ class TestPatchCollectionID(BaseAuthAPITest):
         )
         self.assertEqual(200, response.status_code)
         response = self.app.get(f"curation/v1/collections/{collection_id}")
-        self.assertEqual(response.json["name"], metadata["name"])
+        self.assertEqual(response.json["name"], new_name)
+        self.assertEqual(response.json["description"], description)
+        self.assertEqual(response.json["contact_name"], contact_name)
+        self.assertEqual(response.json["contact_email"], contact_email)
+        self.assertEqual(response.json["links"], links)
+
+    def test__update_collection__links_and_doi_management__OK(self):
+        name = "partial updates test collection"
+        links = [
+            {"link_name": "name", "link_type": "RAW_DATA", "link_url": "http://test_link.place"},
+            {"link_name": "doi", "link_type": "DOI", "link_url": "http://doi.doi"},
+        ]
+        new_links = [
+            {"link_name": "new link", "link_type": "RAW_DATA", "link_url": "http://brand_new_link.place"},
+            {"link_name": "new doi", "link_type": "DOI", "link_url": "http://doi.org/10.1016"},  # a real DOI
+        ]
+
+        links_configurations = (
+            ("With links already in place; new links replace old", links, new_links, 200, new_links),
+            ("With no links in place; new links get added", None, new_links, 200, new_links),
+            ("With links in place, but empty request; no changes are made", links, None, 200, links),
+            ("With links in place, empty array passed; BAD REQUEST 400", links, [], 400, links),
+        )
+
+        for test_title, initial_links, new_links, expected_status_code, expected_links in links_configurations:
+            with self.subTest(test_title):
+                collection_id = self.generate_collection(self.session, name=name, links=initial_links).id
+                original_collection = self.app.get(f"curation/v1/collections/{collection_id}").json
+                self.assertEqual(initial_links if initial_links else [], original_collection["links"])
+                metadata = {"links": new_links} if new_links is not None else {}
+                response = self.app.patch(
+                    f"/curation/v1/collections/{collection_id}",
+                    data=json.dumps(metadata),
+                    headers=self.make_owner_header(),
+                )
+                print(f"\n\n{response.json}\n\n")
+                self.assertEqual(expected_status_code, response.status_code)
+                if expected_status_code == 200:
+                    self.assertEqual(name, response.json["name"])
+                    self.assertEqual(expected_links, response.json["links"])
+
+    def test__update_collection__doi_does_not_exist__BAD_REQUEST(self):
+        name = "bad doi update test collection"
+        links = [
+            {"link_name": "name", "link_type": "RAW_DATA", "link_url": "http://test_link.place"},
+            {"link_name": "doi", "link_type": "DOI", "link_url": "http://doi.doi"},
+        ]
+        new_links_bad_doi = [
+            {"link_name": "new link", "link_type": "RAW_DATA", "link_url": "http://brand_new_link.place"},
+            {"link_name": "new doi", "link_type": "DOI", "link_url": "http://a_bad_doi"},  # a bad DOI
+        ]
+        with patch(
+            "backend.corpora.common.providers.crossref_provider.CrossrefProvider.fetch_metadata",
+            side_effect=CrossrefDOINotFoundException(),
+        ):
+
+            collection_id = self.generate_collection(self.session, name=name, links=links).id
+            original_collection = self.app.get(f"curation/v1/collections/{collection_id}").json
+            self.assertEqual(links, original_collection["links"])
+            metadata = {"links": new_links_bad_doi}
+            response = self.app.patch(
+                f"/curation/v1/collections/{collection_id}",
+                data=json.dumps(metadata),
+                headers=self.make_owner_header(),
+            )
+            print(f"\n\n{response.json}\n\n")
+            self.assertEqual(400, response.status_code)
+            original_collection_unchanged = self.app.get(f"curation/v1/collections/{collection_id}").json
+            self.assertEqual(name, original_collection_unchanged["name"])
+            self.assertEqual(links, original_collection_unchanged["links"])
 
     def test__update_collection__Not_Owner(self):
         collection_id = self.generate_collection(self.session, owner="someone else").id
