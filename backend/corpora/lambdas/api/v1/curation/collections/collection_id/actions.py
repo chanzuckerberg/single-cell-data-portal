@@ -5,9 +5,13 @@ from backend.corpora.lambdas.api.v1.collection import (
     get_publisher_metadata,
     normalize_and_get_doi,
 )
-from ..common import EntityColumns
 from backend.corpora.api_server.db import dbconnect
-from backend.corpora.common.corpora_orm import CollectionVisibility, ProjectLinkType
+from backend.corpora.common.corpora_orm import (
+    CollectionVisibility,
+    ProjectLinkType,
+    CollectionLinkType,
+    DbCollectionLink,
+)
 from backend.corpora.common.entities import Collection
 from backend.corpora.common.utils.http_exceptions import (
     MethodNotAllowedException,
@@ -15,7 +19,10 @@ from backend.corpora.common.utils.http_exceptions import (
     InvalidParametersHTTPException,
 )
 from backend.corpora.lambdas.api.v1.authorization import owner_or_allowed
-from backend.corpora.lambdas.api.v1.curation.collections.common import reshape_for_curation_api_and_is_allowed
+from backend.corpora.lambdas.api.v1.curation.collections.common import (
+    reshape_for_curation_api_and_is_allowed,
+    EntityColumns,
+)
 from backend.corpora.lambdas.api.v1.common import get_collection_else_forbidden
 
 
@@ -66,7 +73,6 @@ def patch(collection_id: str, body: dict, token_info: dict) -> Response:
                 new_doi_provided = True
     else:
         keep_links = True  # links have NOT been provided; keep existing links
-
     collection, errors = get_collection_and_verify_body(db_session, collection_id, body, token_info)
 
     if new_doi_provided:
@@ -77,6 +83,16 @@ def patch(collection_id: str, body: dict, token_info: dict) -> Response:
             # If the DOI has changed, fetch and update the metadata
             publisher_metadata = get_publisher_metadata(new_doi, errors)
             body["publisher_metadata"] = publisher_metadata
+    else:
+        # re-add original doi link
+        if new_links := body.get("links"):
+            new_links.extend(
+                [
+                    link.to_dict_keep({DbCollectionLink: EntityColumns.link_cols})
+                    for link in collection.links
+                    if link.link_type == CollectionLinkType.DOI
+                ]
+            )
     if errors:
         raise InvalidParametersHTTPException(detail=errors)
 

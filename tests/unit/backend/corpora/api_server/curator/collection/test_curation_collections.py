@@ -448,12 +448,16 @@ class TestPatchCollectionID(BaseAuthAPITest):
             {"link_name": "new link", "link_type": "RAW_DATA", "link_url": "http://brand_new_link.place"},
             {"link_name": "new doi", "link_type": "DOI", "link_url": "http://doi.org/10.1016"},  # a real DOI
         ]
+        new_links_no_doi = [
+            {"link_name": "new link", "link_type": "RAW_DATA", "link_url": "http://brand_new_link.place"},
+        ]
 
         links_configurations = (
             ("With links already in place; new links replace old", links, new_links, 200, new_links),
             ("With no links in place; new links get added", None, new_links, 200, new_links),
             ("With links in place, but empty request; no changes are made", links, None, 200, links),
             ("With links in place, empty array passed; BAD REQUEST 400", links, [], 400, links),
+            ("With links but no doi; doi remains in place", links, new_links_no_doi, 200, new_links_no_doi + links[1:]),
         )
 
         for test_title, initial_links, new_links, expected_status_code, expected_links in links_configurations:
@@ -467,7 +471,6 @@ class TestPatchCollectionID(BaseAuthAPITest):
                     data=json.dumps(metadata),
                     headers=self.make_owner_header(),
                 )
-                print(f"\n\n{response.json}\n\n")
                 self.assertEqual(expected_status_code, response.status_code)
                 if expected_status_code == 200:
                     self.assertEqual(name, response.json["name"])
@@ -488,7 +491,12 @@ class TestPatchCollectionID(BaseAuthAPITest):
             side_effect=CrossrefDOINotFoundException(),
         ):
 
-            collection_id = self.generate_collection(self.session, name=name, links=links).id
+            collection = self.generate_collection(
+                self.session,
+                name=name,
+                links=links,
+            )
+            collection_id = collection.id
             original_collection = self.app.get(f"curation/v1/collections/{collection_id}").json
             self.assertEqual(links, original_collection["links"])
             metadata = {"links": new_links_bad_doi}
