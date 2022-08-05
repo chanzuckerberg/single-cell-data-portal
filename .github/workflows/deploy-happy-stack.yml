@@ -133,8 +133,10 @@ jobs:
           if [ "${DEPLOYMENT_STAGE}" == "stage" ]; then
             export DEPLOYMENT_STAGE=staging
           fi
-          pip3 install -r scripts/smoke_tests/requirements.txt
-          python3 -m scripts.smoke_tests.setup
+          if [ "${DEPLOYMENT_STAGE}" != "prod" ]; then
+            pip3 install -r scripts/smoke_tests/requirements.txt
+            python3 -m scripts.smoke_tests.setup
+          fi
           cd frontend
           npm ci
           npx playwright install --with-deps
