@@ -176,7 +176,23 @@ paths:
                   description: "New Collection description"
       responses:
         "200":
-          $ref: "#/components/responses/200"
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/collection_form_metadata"
+                  - type: object
+                    properties:
+                      publisher_metadata:
+                        nullable: true
+                        $ref: "#/components/schemas/publisher_metadata"
+                required:
+                  - name
+                  - description
+                  - contact_name
+                  - contact_email
+                  - publisher_metadata
         "201":
           $ref: "#/components/responses/201"
         "400":

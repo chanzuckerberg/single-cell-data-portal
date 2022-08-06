@@ -102,5 +102,5 @@ def patch(collection_id: str, body: dict, token_info: dict) -> Response:
         dict(link_url=link["link_url"], link_name=link.get("link_name", ""), link_type=link["link_type"])
         for link in collection_dict["links"]
     ]
-    columns_to_return = ("name", "description", "contact_name", "contact_email", "links")
+    columns_to_return = ("name", "description", "contact_name", "contact_email", "links", "publisher_metadata")
     return jsonify({k: collection_dict[k] for k in columns_to_return})
