@@ -97,6 +97,7 @@ paths:
         content:
           application/json:
             schema:
+              additionalProperties: false
               $ref: "#/components/schemas/collection_form_metadata"
               required:
                 - name
@@ -164,6 +165,7 @@ paths:
         content:
           application/json:
             schema:
+              additionalProperties: false
               $ref: "#/components/schemas/collection_form_metadata"
             examples:
               update_name:
@@ -185,9 +187,9 @@ paths:
                   - type: object
                     properties:
                       publisher_metadata:
-                        nullable: true
                         $ref: "#/components/schemas/publisher_metadata"
                 required:
+                  - links
                   - name
                   - description
                   - contact_name
@@ -763,7 +765,6 @@ components:
           type: number
     collection_form_metadata:
       type: object
-      additionalProperties: false
       properties:
         name:
           type: string

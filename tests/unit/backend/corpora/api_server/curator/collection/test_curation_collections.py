@@ -416,12 +416,19 @@ class TestPatchCollectionID(BaseAuthAPITest):
         links = [
             {"link_name": "name", "link_type": "RAW_DATA", "link_url": "http://test_link.place"},
         ]
+        publisher_metadata = {
+            "authors": [{"name": "First Last", "given": "First", "family": "Last"}],
+            "journal": "Journal of Anamolous Results",
+            "published_year": 2022,
+            "published_month": 1,
+        }
         collection_id = self.generate_collection(
             self.session,
             description=description,
             contact_name=contact_name,
             contact_email=contact_email,
             links=links,
+            publisher_metadata=publisher_metadata,
         ).id
         new_name = "A new name, and only a new name"
         metadata = {"name": new_name}
@@ -432,11 +439,12 @@ class TestPatchCollectionID(BaseAuthAPITest):
         )
         self.assertEqual(200, response.status_code)
         response = self.app.get(f"curation/v1/collections/{collection_id}")
-        self.assertEqual(response.json["name"], new_name)
-        self.assertEqual(response.json["description"], description)
-        self.assertEqual(response.json["contact_name"], contact_name)
-        self.assertEqual(response.json["contact_email"], contact_email)
-        self.assertEqual(response.json["links"], links)
+        self.assertEqual(new_name, response.json["name"])
+        self.assertEqual(description, response.json["description"])
+        self.assertEqual(contact_name, response.json["contact_name"])
+        self.assertEqual(contact_email, response.json["contact_email"])
+        self.assertEqual(links, response.json["links"])
+        self.assertEqual(publisher_metadata, response.json["publisher_metadata"])
 
     def test__update_collection__links_and_doi_management__OK(self):
         name = "partial updates test collection"
@@ -486,15 +494,19 @@ class TestPatchCollectionID(BaseAuthAPITest):
             {"link_name": "new link", "link_type": "RAW_DATA", "link_url": "http://brand_new_link.place"},
             {"link_name": "new doi", "link_type": "DOI", "link_url": "http://a_bad_doi"},  # a bad DOI
         ]
+        publisher_metadata = {
+            "authors": [{"name": "First Last", "given": "First", "family": "Last"}],
+            "journal": "Journal of Anamolous Results",
+            "published_year": 2022,
+            "published_month": 1,
+        }
         with patch(
             "backend.corpora.common.providers.crossref_provider.CrossrefProvider.fetch_metadata",
             side_effect=CrossrefDOINotFoundException(),
         ):
 
             collection = self.generate_collection(
-                self.session,
-                name=name,
-                links=links,
+                self.session, name=name, links=links, publisher_metadata=publisher_metadata
             )
             collection_id = collection.id
             original_collection = self.app.get(f"curation/v1/collections/{collection_id}").json
@@ -505,11 +517,11 @@ class TestPatchCollectionID(BaseAuthAPITest):
                 data=json.dumps(metadata),
                 headers=self.make_owner_header(),
             )
-            print(f"\n\n{response.json}\n\n")
             self.assertEqual(400, response.status_code)
             original_collection_unchanged = self.app.get(f"curation/v1/collections/{collection_id}").json
             self.assertEqual(name, original_collection_unchanged["name"])
             self.assertEqual(links, original_collection_unchanged["links"])
+            self.assertEqual(publisher_metadata, original_collection_unchanged["publisher_metadata"])
 
     def test__update_collection__Not_Owner(self):
         collection_id = self.generate_collection(self.session, owner="someone else").id
