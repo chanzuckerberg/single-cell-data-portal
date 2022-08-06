@@ -1,4 +1,5 @@
 import typing
+from sqlalchemy.orm import Session
 
 from ...authorization import is_user_owner_or_allowed
 from ......common.corpora_config import CorporaConfig
@@ -11,6 +12,7 @@ from ......common.corpora_orm import (
     DbDatasetArtifact,
     DatasetArtifactFileType,
 )
+from ......common.entities import Collection
 
 
 DATASET_ONTOLOGY_ELEMENTS = (
@@ -25,9 +27,12 @@ DATASET_ONTOLOGY_ELEMENTS = (
 )
 
 
-def reshape_for_curation_api_and_is_allowed(collection, token_info, id_provided=False):
+def reshape_for_curation_api_and_is_allowed(
+    db_session: Session, collection: dict, token_info: dict, id_provided: bool = False
+) -> bool:
     """
     Reshape Collection data for the Curation API response. Remove tombstoned Datasets.
+    :param db_session: the db Session
     :param collection: the Collection being returned in the API response
     :param token_info: user access token
     :param id_provided: bool - whether or not the collection uuid was provided by the user, for access purposes
@@ -43,12 +48,35 @@ def reshape_for_curation_api_and_is_allowed(collection, token_info, id_provided=
         # Access token was provided but user is not authorized
         collection["access_type"] = "READ"
 
+    set_revising_in(db_session, collection, token_info, owner)
+
     del collection["owner"]  # Don't actually want to return 'owner' in response
     collection["collection_url"] = f"{CorporaConfig().collections_base_url}/collections/{collection['id']}"
 
     if datasets := collection.get("datasets"):
         collection["datasets"] = reshape_datasets_for_curation_api(datasets)
     return True
+
+
+def set_revising_in(db_session: Session, collection: dict, token_info: dict, owner: str) -> None:
+    """
+    If the Collection is public AND the user is authorized use a database call to populate 'revising_in' attribute.
+    None -> revision does not exist OR the Collection is private
+    "<revision_id>" -> user is authorized and revision exists
+    "NOT AUTHORIZED" -> user is not authorized
+    :param db_session: the db Session
+    :param collection: the Collection
+    :param token_info: the user's access token info
+    :param owner: the owner of the Collection
+    :return: None
+    """
+    collection["revising_in"] = None
+    if collection["visibility"] == CollectionVisibility.PUBLIC:
+        if is_user_owner_or_allowed(token_info, owner):
+            if revising_in := Collection.get_collection(db_session, revision_of=collection["id"]):
+                collection["revising_in"] = revising_in.id
+        else:
+            collection["revising_in"] = "NOT AUTHORIZED"
 
 
 def reshape_datasets_for_curation_api(datasets: typing.List[dict]) -> typing.List[dict]:

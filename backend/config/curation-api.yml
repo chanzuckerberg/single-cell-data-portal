@@ -541,6 +541,9 @@ components:
         revision_of:
           type: string
           nullable: true
+        revising_in:
+          type: string
+          nullable: true
         tombstone:
           type: boolean
         processing_status:
