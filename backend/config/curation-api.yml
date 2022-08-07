@@ -458,7 +458,7 @@ paths:
         "404":
           $ref: "#/components/responses/404"
 
-  /v1/collections/{collection_id}/assets:
+  /v1/collections/{collection_id}/datasets/assets:
     get:
       summary: Retrieve links for downloading a dataset
       tags:
