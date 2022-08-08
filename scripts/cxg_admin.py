@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import json
 import logging
 import os
 import sys
@@ -17,6 +18,8 @@ from scripts.cxg_admin_scripts import tombstones
 from scripts.cxg_admin_scripts import migrate
 from scripts.cxg_admin_scripts import updates
 from scripts.cxg_admin_scripts import reprocess_datafile
+from scripts.cxg_admin_scripts import dataset_details
+
 from urllib.parse import urlparse
 
 logging.basicConfig()
@@ -278,6 +281,19 @@ def wmg_get_s3_uris(ctx):
 
     s3_uris = get_dataset_s3_uris()
     print(s3_uris)
+
+
+# Command to pull information from the db
+@cli.command()
+@click.pass_context
+def get_public_datasets(ctx):
+    """
+    Print id, name, organism, tissue, assay, sex, cell_count, explorer_url, and S3 uris for all public datasets
+    ./scripts/cxg_admin.py --deployment dev get-public-datasets
+    """
+    published_datasets = dataset_details.get_public_dataset_details()
+    print(json.dumps(published_datasets, indent=2))
+
 
 
 if __name__ == "__main__":
