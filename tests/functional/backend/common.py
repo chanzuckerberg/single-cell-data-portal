@@ -90,7 +90,7 @@ class BaseFunctionalTestCase(unittest.TestCase):
 
         res.raise_for_status()
         dataset_id = json.loads(res.content)["dataset_id"]
-        
+
         if cleanup:
             self.addCleanup(requests.delete, f"{self.api}/dp/v1/datasets/{dataset_id}", headers=headers)
 
