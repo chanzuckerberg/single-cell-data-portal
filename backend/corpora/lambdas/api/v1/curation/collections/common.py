@@ -11,6 +11,8 @@ from ......common.corpora_orm import (
     DbDatasetProcessingStatus,
     DbDatasetArtifact,
     DatasetArtifactFileType,
+    Base,
+    ProcessingStatus,
 )
 from ......common.entities import Collection
 
@@ -190,8 +192,46 @@ class EntityColumns:
         DbDatasetProcessingStatus: dataset_processing_status_cols,
     }
 
-    columns_for_dataset = {
-        DbDataset: dataset_cols,
-        DbDatasetArtifact: dataset_asset_cols,
-        DbDatasetProcessingStatus: dataset_processing_status_cols,
-    }
+
+def list_collections_curation(
+    session: Session, collection_columns: typing.Dict[Base, typing.List[str]], visibility: str = None
+) -> typing.List[dict]:
+    """
+    Get a subset of columns, in dict form, for all Collections with the specified visibility. If visibility is None,
+    return *all* Collections that are *not* tombstoned.
+    :param session: the SQLAlchemy session
+    :param collection_columns: the list of columns to be returned (see usage by TransformingBase::to_dict_keep)
+    :param visibility: the CollectionVisibility string name
+    @return: a list of dict representations of Collections
+    """
+    filters = [DbCollection.tombstone == False]  # noqa
+    if visibility == CollectionVisibility.PUBLIC.name:
+        filters.append(DbCollection.visibility == CollectionVisibility.PUBLIC)
+    elif visibility == CollectionVisibility.PRIVATE.name:
+        filters.append(DbCollection.visibility == CollectionVisibility.PRIVATE)
+
+    resp_collections = []
+    for collection in session.query(DbCollection).filter(*filters).all():
+        resp_collection = collection.to_dict_keep(collection_columns)
+        resp_collection["processing_status"] = add_collection_level_processing_status(collection)
+        resp_collections.append(resp_collection)
+    return resp_collections
+
+
+@staticmethod
+def add_collection_level_processing_status(collection: DbCollection):
+    # Add a Collection-level processing status
+    status = None
+    has_statuses = False
+    for dataset in collection.datasets:
+        processing_status = dataset.processing_status
+        if processing_status:
+            has_statuses = True
+            if processing_status.processing_status == ProcessingStatus.PENDING:
+                status = ProcessingStatus.PENDING
+            elif processing_status.processing_status == ProcessingStatus.FAILURE:
+                status = ProcessingStatus.FAILURE
+                break
+    if has_statuses and not status:  # At least one dataset processing status exists, and all were SUCCESS
+        status = ProcessingStatus.SUCCESS
+    return status

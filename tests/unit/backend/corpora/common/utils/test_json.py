@@ -98,7 +98,8 @@ class TestCustomJSONEncoder(unittest.TestCase):
 class TestCuratorJSONEncoder(unittest.TestCase):
     def test_datetime(self):
         test_datetime_value = datetime.datetime.fromtimestamp(0)
-        expected_datetime = f'"{test_datetime_value.isoformat()}"'
+        # ISO format with UTC time zone; will fail if testing environment time zone is *not* UTC
+        expected_datetime = '"1970-01-01T00:00:00+00:00"'
         self._verify_json_encoding(test_datetime_value, expected_datetime)
 
     def _verify_json_encoding(self, test_value, expected_value):

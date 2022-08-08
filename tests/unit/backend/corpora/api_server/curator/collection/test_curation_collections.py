@@ -302,6 +302,7 @@ class TestGetCollectionID(BaseAuthAPITest):
             },
         ],
         "name": "test_collection_name",
+        "processing_status": "PENDING",
         "published_at": None,
         "publisher_metadata": None,
         "revised_at": None,
