@@ -34,7 +34,7 @@ class SmokeTestsInitializer(BaseFunctionalTestCase):
 
     def create_and_publish_collection(self, dropbox_url):
         collection_id = self.create_collection()
-        self.upload_and_wait(collection_id, dropbox_url)
+        self.upload_and_wait(collection_id, dropbox_url, cleanup=False)
         self.publish_collection(collection_id)
         print(f"created and published collection {collection_id}")
 
@@ -58,35 +58,6 @@ class SmokeTestsInitializer(BaseFunctionalTestCase):
             f"{self.api}/dp/v1/collections/{collection_id}/publish", headers=self.headers, data=json.dumps(body)
         )
         res.raise_for_status()
-
-    # override
-    def upload_and_wait(self, collection_id, dropbox_url):
-        body = {"url": dropbox_url}
-        res = self.session.post(
-            f"{self.api}/dp/v1/collections/{collection_id}/upload-links", data=json.dumps(body), headers=self.headers
-        )
-        res.raise_for_status()
-        dataset_id = json.loads(res.content)["dataset_id"]
-        keep_trying = True
-        timer = time.time()
-        while keep_trying:
-            res = requests.get(f"{self.api}/dp/v1/datasets/{dataset_id}/status", headers=self.headers)
-            res.raise_for_status()
-            data = json.loads(res.content)
-            upload_status = data["upload_status"]
-            if upload_status == "UPLOADED":
-                cxg_status = data.get("cxg_status")
-                rds_status = data.get("rds_status")
-                h5ad_status = data.get("h5ad_status")
-                processing_status = data.get("processing_status")
-                if cxg_status == rds_status == h5ad_status == "UPLOADED" and processing_status == "SUCCESS":
-                    keep_trying = False
-            if time.time() >= timer + 600:
-                raise TimeoutError(
-                    f"Dataset upload or conversion timed out after 10 min. Check logs for dataset: {dataset_id}"
-                )
-            time.sleep(20)
-        return dataset_id
 
 
 if __name__ == "__main__":

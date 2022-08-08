@@ -74,7 +74,7 @@ class BaseFunctionalTestCase(unittest.TestCase):
     def make_cookie(token: dict) -> str:
         return base64.b64encode(json.dumps(dict(token)).encode("utf-8")).decode()
 
-    def upload_and_wait(self, collection_id, dropbox_url, existing_dataset_id=None):
+    def upload_and_wait(self, collection_id, dropbox_url, existing_dataset_id=None, cleanup=True):
         headers = {"Cookie": f"cxguser={self.curator_cookie}", "Content-Type": "application/json"}
         body = {"url": dropbox_url}
 
@@ -90,7 +90,9 @@ class BaseFunctionalTestCase(unittest.TestCase):
 
         res.raise_for_status()
         dataset_id = json.loads(res.content)["dataset_id"]
-        self.addCleanup(requests.delete, f"{self.api}/dp/v1/datasets/{dataset_id}", headers=headers)
+        
+        if cleanup:
+            self.addCleanup(requests.delete, f"{self.api}/dp/v1/datasets/{dataset_id}", headers=headers)
 
         keep_trying = True
         timer = time.time()
