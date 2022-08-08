@@ -52,8 +52,6 @@ jobs:
   
   smoke-test-dev:
     runs-on: ubuntu-20.04
-    needs:
-      - upgrade
     steps:
       - uses: actions/setup-node@v2
         with:
