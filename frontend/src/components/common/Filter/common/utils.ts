@@ -131,12 +131,26 @@ export function listOntologyTreeIds(
 }
 
 /**
- * Create function to be used by column.accessor in react-table column definition, for columns containing ontology
- * metadata (ontology label and key) values.
+ * Create function to be used by column.accessor in react-table column definition, for columns filtering on ontology
+ * term IDs.
  * @param categoryKey - Object key of value to display in cell.
- * @returns Function that returns value with the given key, to display in a cell.
+ * @returns Function that returns ID of ontology value with the given key, to display in a cell.
+ * TODO(cc) remove if not needed #2569
  */
-export function ontologyCellAccessorFn<
+export function ontologyIdCellAccessorFn<
+  K extends CategoriesKeyOfTypeOntologyArray
+>(categoryKey: K): OntologyCellAccessorFn {
+  return (categories: Categories) =>
+    categories[categoryKey].map((o: Ontology) => o.ontology_term_id);
+}
+
+/**
+ * Create function to be used by column.accessor in react-table column definition, for columns containing ontology
+ * metadata (ontology label) values.
+ * @param categoryKey - Object key of value to display in cell.
+ * @returns Function that returns label of ontology value with the given key, to display in a cell.
+ */
+export function ontologyLabelCellAccessorFn<
   K extends CategoriesKeyOfTypeOntologyArray
 >(categoryKey: K): OntologyCellAccessorFn {
   return (categories: Categories) =>

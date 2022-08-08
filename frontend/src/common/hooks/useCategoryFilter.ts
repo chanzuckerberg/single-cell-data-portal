@@ -522,6 +522,84 @@ function buildCategoryViews(filterState?: FilterState): CategoryViews[] {
 }
 
 /**
+ * Restrict related categories where applicable. For example, tissue system restricts selectable values in
+ * tissue organ and tissue.
+ * @param nextFilterState - Filter state currently being built due to change in filter.
+ * @param filters - Current set of selected category values (values) keyed by category (id).
+ */
+function applyCrossCategoryRestrictions<T extends Categories>(
+  nextFilterState: FilterState,
+  filters: Filters<T>
+) {
+  // First build up descendants for any selected category value where the category restricts another category.
+  // TODO(cc) generalize and move to function
+  const descendantsByCategoryKey = filters.reduce(
+    (accum, filterValue: FilterValue) => {
+      if (
+        filterValue.id === FILTER_CATEGORY_KEY.TISSUE_SYSTEM ||
+        filterValue.id === FILTER_CATEGORY_KEY.TISSUE_ORGAN_PART
+      ) {
+        accum.set(filterValue.id, ["UBERON:0000948", "heart left ventricle"]);
+      }
+      return accum;
+    },
+    new Map<FilterCategoryKey, string[]>()
+  );
+
+  // Apply restrictions to categories that are restricted by another category.
+  // TODO(cc) generalize and move to function
+  Object.keys(nextFilterState).forEach((categoryKey: string) => {
+    // Determine the set of categories that restrict this category
+    const restrictingCategories = [];
+    if (categoryKey === FILTER_CATEGORY_KEY.TISSUE) {
+      restrictingCategories.push(FILTER_CATEGORY_KEY.TISSUE_ORGAN_PART);
+      restrictingCategories.push(FILTER_CATEGORY_KEY.TISSUE_SYSTEM);
+    }
+    if (categoryKey === FILTER_CATEGORY_KEY.TISSUE_ORGAN_PART) {
+      restrictingCategories.push(FILTER_CATEGORY_KEY.TISSUE_SYSTEM);
+    }
+
+    // Ignore select categories that aren't restricted by another category.
+    if (restrictingCategories.length === 0) {
+      return;
+    }
+
+    // Grab the filter state for this category.
+    const categoryFilterState =
+      nextFilterState[categoryKey as FilterCategoryKey];
+
+    // Ignore range categories
+    if (!isSelectCategoryValue(categoryFilterState)) {
+      return;
+    }
+
+    // Get the set of allowed values from the descendant lists of the category
+    const allowedValues: string[] = [];
+    restrictingCategories.reduce((accum, restrictingCategoryKey) => {
+      accum.push(
+        ...(descendantsByCategoryKey.get(restrictingCategoryKey) ?? [])
+      );
+      return accum;
+    }, allowedValues);
+
+    // Don't attempt to restrict values if there are no allowed values.
+    if (allowedValues.length === 0) {
+      return; // Error state TODO(cc) revisit is this an error state?
+    }
+
+    // Remove any values that are not in the allowed set.
+    [...categoryFilterState.keys()].forEach(
+      (categoryValueKey: CategoryValueKey) => {
+        console.log(categoryValueKey);
+        if (!allowedValues.includes(categoryValueKey)) {
+          categoryFilterState.delete(categoryValueKey);
+        }
+      }
+    );
+  });
+}
+
+/**
  * Build categories, category values and counts for the updated filter. For each category, build up category values
  * counts by counting occurrences of category values across rows. Maintain selected category values state from filters.
  * Retain category values with 0 counts from given category set.
@@ -552,6 +630,10 @@ function buildNextFilterState<T extends Categories>(
 
   // Update selected flag for the selected category values, or selected ranged for range categories.
   setSelectedStates(nextFilterState, filters);
+
+  // Restrict related categories where applicable. For example, tissue system restricts selectable values in
+  // tissue organ and tissue.
+  applyCrossCategoryRestrictions(nextFilterState, filters);
 
   return nextFilterState;
 }
@@ -692,10 +774,19 @@ function buildQueries<T extends Categories>(
     (accum: Query<T>[], categoryKey: FilterCategoryKey) => {
       // Determine the filters that are applicable to this category.
       const filtersExcludingSelf = filters.filter((filter: CategoryFilter) => {
+        // TODO(cc) generalize. fix tissue organ part dupe check.
+        if (
+          (categoryKey === FILTER_CATEGORY_KEY.TISSUE_SYSTEM ||
+            categoryKey === FILTER_CATEGORY_KEY.TISSUE_ORGAN_PART) &&
+          (filter.id === FILTER_CATEGORY_KEY.TISSUE_ORGAN_PART ||
+            filter.id === FILTER_CATEGORY_KEY.TISSUE)
+        ) {
+          return false;
+        }
         return filter.id !== categoryKey;
       });
 
-      // Check if we have an existing query with an identical filter. If so, add category to that query. Otherwise
+      // Check if we have an existing query with an identical filter. If so, add category to that query. Otherwise,
       // create new query for this filter.
       const matchingQuery = accum.find((query: Query<T>) =>
         isFilterEqual(query.filters, filtersExcludingSelf)
@@ -849,7 +940,7 @@ function buildOntologyCategoryValueView(
     };
   }
 
-  // Otherwise build view models for child nodes.
+  // Otherwise, build view models for child nodes.
   const children = ontologyNode.children.map((childNode) =>
     buildOntologyCategoryValueView(childNode, categoryValueByValue)
   );

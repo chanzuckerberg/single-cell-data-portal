@@ -21,7 +21,7 @@ import {
   FILTER_CATEGORY_KEY,
   RowPropsValue,
 } from "src/components/common/Filter/common/entities";
-import { ontologyCellAccessorFn } from "src/components/common/Filter/common/utils";
+import { ontologyLabelCellAccessorFn } from "src/components/common/Filter/common/utils";
 import DiseaseCell from "src/components/common/Grid/components/DiseaseCell";
 import { GridHero } from "src/components/common/Grid/components/Hero";
 import LinkCell from "src/components/common/Grid/components/LinkCell";
@@ -92,7 +92,7 @@ export default function Collections(): JSX.Element {
           <NTagCell label={PLURALIZED_METADATA_LABEL.TISSUE} values={value} />
         ),
         Header: "Tissue",
-        accessor: ontologyCellAccessorFn("tissue"),
+        accessor: ontologyLabelCellAccessorFn("tissue"),
         filter: "includesSome",
         id: FILTER_CATEGORY_KEY.TISSUE_DEPRECATED,
       },
@@ -104,7 +104,7 @@ export default function Collections(): JSX.Element {
           />
         ),
         Header: "Disease",
-        accessor: ontologyCellAccessorFn("disease"),
+        accessor: ontologyLabelCellAccessorFn("disease"),
         filter: "includesSome",
         id: FILTER_CATEGORY_KEY.DISEASE,
       },
@@ -113,7 +113,7 @@ export default function Collections(): JSX.Element {
           <NTagCell label={PLURALIZED_METADATA_LABEL.ORGANISM} values={value} />
         ),
         Header: "Organism",
-        accessor: ontologyCellAccessorFn("organism"),
+        accessor: ontologyLabelCellAccessorFn("organism"),
         filter: "includesSome",
         id: FILTER_CATEGORY_KEY.ORGANISM,
       },
@@ -128,13 +128,13 @@ export default function Collections(): JSX.Element {
       },
       // Hidden, required for filter.
       {
-        accessor: ontologyCellAccessorFn("assay"),
+        accessor: ontologyLabelCellAccessorFn("assay"),
         filter: "includesSome",
         id: FILTER_CATEGORY_KEY.ASSAY,
       },
       // Hidden, required for filter.
       {
-        accessor: ontologyCellAccessorFn("cell_type"),
+        accessor: ontologyLabelCellAccessorFn("cell_type"),
         filter: "includesSome",
         id: FILTER_CATEGORY_KEY.CELL_TYPE_DEPRECATED,
       },
@@ -146,7 +146,7 @@ export default function Collections(): JSX.Element {
       },
       // Hidden, required for filter.
       {
-        accessor: ontologyCellAccessorFn("ethnicity"),
+        accessor: ontologyLabelCellAccessorFn("ethnicity"),
         filter: "includesSome",
         id: FILTER_CATEGORY_KEY.ETHNICITY,
       },
@@ -169,13 +169,13 @@ export default function Collections(): JSX.Element {
       },
       // Hidden, required for filter.
       {
-        accessor: ontologyCellAccessorFn("sex"),
+        accessor: ontologyLabelCellAccessorFn("sex"),
         filter: "includesSome",
         id: FILTER_CATEGORY_KEY.SEX,
       },
       // Hidden, required for filter.
       {
-        accessor: ontologyCellAccessorFn("tissue"),
+        accessor: ontologyLabelCellAccessorFn("tissue"),
         filter: "includesSome",
         id: FILTER_CATEGORY_KEY.TISSUE,
       },
