@@ -65,25 +65,36 @@ def patch(collection_id: str, body: dict, token_info: dict) -> Response:
     db_session = g.db_session
 
     new_doi_provided = False
+    delete_existing_doi = False
     if "links" in body:
         if not body["links"]:
             raise InvalidParametersHTTPException(detail="If provided, the 'links' array may not be empty")
         keep_links = False  # links have been provided; replace all old links
         for link in body["links"]:
             if link["link_type"] == ProjectLinkType.DOI.name:
+                if not link["link_url"]:
+                    delete_existing_doi = True
                 new_doi_provided = True
     else:
         keep_links = True  # links have NOT been provided; keep existing links
     collection, errors = get_collection_and_verify_body(db_session, collection_id, body, token_info)
 
     if new_doi_provided:
-        # Compute the diff between old and new DOI
-        old_doi = collection.get_doi()
-        new_doi = normalize_and_get_doi(body, errors)
-        if new_doi and new_doi != old_doi:
-            # If the DOI has changed, fetch and update the metadata
-            publisher_metadata = get_publisher_metadata(new_doi, errors)
-            body["publisher_metadata"] = publisher_metadata
+        if delete_existing_doi:
+            # Remove links
+            links_no_dois = []
+            for link in body["links"]:
+                if link["link_type"] != ProjectLinkType.DOI.name:
+                    links_no_dois.append(link)
+            body["links"] = links_no_dois
+        else:
+            # Compute the diff between old and new DOI
+            old_doi = collection.get_doi()
+            new_doi = normalize_and_get_doi(body, errors)
+            if new_doi and new_doi != old_doi:
+                # If the DOI has changed, fetch and update the metadata
+                publisher_metadata = get_publisher_metadata(new_doi, errors)
+                body["publisher_metadata"] = publisher_metadata
     else:
         # re-add original doi link
         if new_links := body.get("links"):
