@@ -49,6 +49,44 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
+  
+  smoke-test-dev:
+    runs-on: ubuntu-20.04
+    needs:
+      - upgrade
+    steps:
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 15
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      - uses: actions/checkout@v2
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        if: github.event.deployment.environment != 'prod'
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 2700
+      - name: Run Smoke Tests (Remote Dev)
+        env:
+          DEPLOYMENT_STAGE: dev
+        run: |
+          if [ "${DEPLOYMENT_STAGE}" == "stage" ]; then
+            export DEPLOYMENT_STAGE=staging
+          fi
+          if [ "${DEPLOYMENT_STAGE}" != "prod" ]; then
+            pip3 install -r scripts/smoke_tests/requirements.txt
+            python3 -m scripts.smoke_tests.setup
+          fi
+          cd frontend
+          npm ci
+          npx playwright install --with-deps
+          cp src/configs/${DEPLOYMENT_STAGE}.js src/configs/configs.js
+          DEBUG=pw:api npm run e2e-${DEPLOYMENT_STAGE}
 
   smoke-test:
     runs-on: ubuntu-20.04
