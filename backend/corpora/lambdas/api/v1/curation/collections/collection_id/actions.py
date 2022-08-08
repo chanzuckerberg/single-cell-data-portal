@@ -5,6 +5,11 @@ from backend.corpora.lambdas.api.v1.collection import (
     get_publisher_metadata,
     normalize_and_get_doi,
 )
+from ..common import (
+    add_collection_level_processing_status,
+    reshape_for_curation_api_and_is_allowed,
+    EntityColumns,
+)
 from backend.corpora.api_server.db import dbconnect
 from backend.corpora.common.corpora_orm import (
     CollectionVisibility,
@@ -19,10 +24,6 @@ from backend.corpora.common.utils.http_exceptions import (
     InvalidParametersHTTPException,
 )
 from backend.corpora.lambdas.api.v1.authorization import owner_or_allowed
-from backend.corpora.lambdas.api.v1.curation.collections.common import (
-    reshape_for_curation_api_and_is_allowed,
-    EntityColumns,
-)
 from backend.corpora.lambdas.api.v1.common import get_collection_else_forbidden
 
 
@@ -44,7 +45,7 @@ def get(collection_id: str, token_info: dict):
     if not collection:
         raise NotFoundHTTPException
     collection_response: dict = collection.to_dict_keep(EntityColumns.columns_for_collection_id)
-
+    collection_response["processing_status"] = add_collection_level_processing_status(collection)
     reshape_for_curation_api_and_is_allowed(collection_response, token_info, id_provided=True)
 
     return jsonify(collection_response)
