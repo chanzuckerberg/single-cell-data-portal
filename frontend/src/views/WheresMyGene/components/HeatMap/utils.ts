@@ -230,27 +230,72 @@ interface CreateYAxisOptionsProps {
 const CTX = document.createElement("canvas").getContext("2d");
 
 /**
- * Truncates the string to a given pixel width.
+ * Formats and truncates the cell type name to a given width
+ *
+ * @param name The text to truncate
+ * @param maxWidth The max width in pixels the string should be
+ * @param font The font family and font size as a string. Ex. "12px sans-serif"
+ * @returns The string fixed to a certain pixel width
+ */
+function formatCellLabel(
+  name: string,
+  maxWidth: number,
+  font: string,
+  displayDepth = 0
+): string {
+  CTX!.font = font;
+  const ellipsisWidth = CTX!.measureText("...").width;
+
+  const padding = " ".repeat(displayDepth * 8);
+  const paddingWidth = CTX!.measureText(padding).width;
+
+  if (CTX!.measureText(name).width + paddingWidth <= maxWidth) {
+    return padding + name;
+  }
+
+  const labelHalfWidth = (maxWidth - paddingWidth - ellipsisWidth) / 2;
+
+  const firstHalf = getFixedWidth(name, labelHalfWidth, font);
+  const secondHalf = getFixedWidth(name, labelHalfWidth, font, true);
+
+  return padding + firstHalf + "..." + secondHalf;
+}
+
+/**
+ * Truncates the string to a given width
  *
  * @param text The text to truncate
- * @param maxLength The max width in pixels the string should be
+ * @param maxWidth The max width in pixels the string should be
  * @param font The font family and font size as a string. Ex. "12px sans-serif"
+ * @param reverse Whether to truncate the end or beginning of the string
  * @returns The string fixed to a certain pixel width
  */
 export function getFixedWidth(
   text: string,
-  maxLength: number,
-  font = "12px sans-serif"
+  maxWidth: number,
+  font: string,
+  reverse = false
 ): string {
   CTX!.font = font;
-  const ellipsisWidth = CTX!.measureText("...").width;
-  for (let i = 0; i < text.length; i++) {
-    const substring = text.substring(0, i + 1);
-    const textMetrics = CTX!.measureText(substring);
-    if (textMetrics.width >= maxLength - ellipsisWidth) {
-      return text.substring(0, i) + "...";
+
+  if (reverse) {
+    for (let i = text.length; i >= 0; i--) {
+      const substring = text.substring(i - 1);
+      const textWidth = CTX!.measureText(substring).width;
+      if (textWidth > maxWidth) {
+        return text.substring(i);
+      }
+    }
+  } else {
+    for (let i = 0; i < text.length; i++) {
+      const substring = text.substring(0, i + 1);
+      const textWidth = CTX!.measureText(substring).width;
+      if (textWidth > maxWidth) {
+        return text.substring(0, i);
+      }
     }
   }
+
   return text;
 }
 
@@ -298,10 +343,11 @@ export function createYAxisOptions({
 
             const displayDepth = Math.min(depth, MAX_DEPTH);
 
-            const paddedName = getFixedWidth(
-              " ".repeat(displayDepth * 8) + name,
+            const paddedName = formatCellLabel(
+              name,
               Y_AXIS_CHART_WIDTH_PX - 75, // scale based on y-axis width
-              "bold 12px sans-serif" // prevents selected style from overlapping count
+              "bold 12px sans-serif", // prevents selected style from overlapping count
+              displayDepth
             );
 
             return cellTypeIdsToDelete.includes(value as string)
