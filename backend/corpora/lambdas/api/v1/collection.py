@@ -1,4 +1,5 @@
 import sqlalchemy
+from sqlalchemy.orm import Session
 from typing import Optional
 from backend.corpora.common.providers.crossref_provider import (
     CrossrefDOINotFoundException,
@@ -266,15 +267,7 @@ def delete_collection(collection_id: str, token_info: dict):
 @dbconnect
 def update_collection(collection_id: str, body: dict, token_info: dict):
     db_session = g.db_session
-    errors = []
-    verify_collection_body(body, errors, allow_none=True)
-    collection = get_collection_else_forbidden(
-        db_session,
-        collection_id,
-        visibility=CollectionVisibility.PRIVATE.name,
-        owner=owner_or_allowed(token_info),
-    )
-
+    collection, errors = get_collection_and_verify_body(db_session, collection_id, body, token_info)
     # Compute the diff between old and new DOI
     old_doi = collection.get_doi()
     new_doi = normalize_and_get_doi(body, errors)
@@ -291,3 +284,15 @@ def update_collection(collection_id: str, body: dict, token_info: dict):
     result = collection.reshape_for_api(tombstoned_datasets=True)
     result["access_type"] = "WRITE"
     return make_response(jsonify(result), 200)
+
+
+def get_collection_and_verify_body(db_session: Session, collection_id: str, body: dict, token_info: dict):
+    errors = []
+    verify_collection_body(body, errors, allow_none=True)
+    collection = get_collection_else_forbidden(
+        db_session,
+        collection_id,
+        visibility=CollectionVisibility.PRIVATE.name,
+        owner=owner_or_allowed(token_info),
+    )
+    return collection, errors
