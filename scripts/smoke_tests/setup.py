@@ -10,6 +10,7 @@ from tests.functional.backend.common import BaseFunctionalTestCase
 
 # Amount to reduce chance of collision where multiple test instances select the same collection to test against
 NUM_TEST_COLLECTIONS = 10
+TEST_ACCT_CONTACT_NAME = "Smoke Test User"
 
 
 class SmokeTestsInitializer(BaseFunctionalTestCase):
@@ -25,7 +26,7 @@ class SmokeTestsInitializer(BaseFunctionalTestCase):
         data = json.loads(res.content)
         num_collections = 0
         for collection in data['collections']:
-            if collection["contact_name"] == "Smoke Test User":
+            if collection["contact_name"] == TEST_ACCT_CONTACT_NAME:
                 num_collections += 1
             if num_collections == NUM_TEST_COLLECTIONS:
                 return num_collections
@@ -40,7 +41,7 @@ class SmokeTestsInitializer(BaseFunctionalTestCase):
     def create_collection(self):
         data = {
             "contact_email": "example@gmail.com",
-            "contact_name": "Smoke Test User",
+            "contact_name": TEST_ACCT_CONTACT_NAME,
             "description": "Well here are some words",
             "links": [{"link_name": "a link to somewhere", "link_type": "PROTOCOL", "link_url": "http://protocol.com"}],
             "name": "test collection",
