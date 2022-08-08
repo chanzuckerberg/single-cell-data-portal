@@ -13,7 +13,7 @@ from tests.unit.backend.fixtures.config import fake_s3_file
 
 
 class TestAuthToken(BaseAuthAPITest):
-    @patch("backend.corpora.lambdas.api.v1.curation.collections.collection_id.dataset.sts_client")
+    @patch("backend.corpora.lambdas.api.v1.curation.collections.collection_id.datasets.upload_s3.sts_client")
     def test__generate_s3_credentials__OK(self, sts_client: Mock):
         def _test(token, is_super_curator: bool = False):
             sts_client.assume_role_with_web_identity = Mock(
@@ -28,7 +28,7 @@ class TestAuthToken(BaseAuthAPITest):
             collection = self.generate_collection(self.session)
             headers = {"Authorization": f"Bearer {token}"}
 
-            response = self.app.post(
+            response = self.app.get(
                 f"/curation/v1/collections/{collection.id}/datasets/s3-upload-credentials", headers=headers
             )
             self.assertEqual(200, response.status_code)
@@ -47,21 +47,21 @@ class TestAuthToken(BaseAuthAPITest):
 
     def test__generate_s3_credentials__Not_Owner(self):
         collection = self.generate_collection(self.session, owner="not_test_user")
-        response = self.app.post(
+        response = self.app.get(
             f"/curation/v1/collections/{collection.id}/datasets/s3-upload-credentials", headers=self.make_owner_header()
         )
         self.assertEqual(403, response.status_code, msg=response.data)
 
     def test__generate_s3_credentials__Not_Private(self):
         collection = self.generate_collection(self.session, visibility=CollectionVisibility.PUBLIC.name)
-        response = self.app.post(
+        response = self.app.get(
             f"/curation/v1/collections/{collection.id}/datasets/s3-upload-credentials", headers=self.make_owner_header()
         )
         self.assertEqual(403, response.status_code)
 
     def test__generate_s3_credentials__No_Auth(self):
         collection = self.generate_collection(self.session, visibility=CollectionVisibility.PUBLIC.name)
-        response = self.app.post(f"/curation/v1/collections/{collection.id}/datasets/s3-upload-credentials")
+        response = self.app.get(f"/curation/v1/collections/{collection.id}/datasets/s3-upload-credentials")
         self.assertEqual(401, response.status_code)
 
 
