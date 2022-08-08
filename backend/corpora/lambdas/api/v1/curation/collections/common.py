@@ -192,6 +192,12 @@ class EntityColumns:
         DbDatasetProcessingStatus: dataset_processing_status_cols,
     }
 
+    columns_for_dataset = {
+        DbDataset: dataset_cols,
+        DbDatasetArtifact: dataset_asset_cols,
+        DbDatasetProcessingStatus: dataset_processing_status_cols,
+    }
+
 
 def list_collections_curation(
     session: Session, collection_columns: typing.Dict[Base, typing.List[str]], visibility: str = None
