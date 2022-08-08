@@ -12,7 +12,6 @@ def get_public_dataset_details():
     # id, name, organism, tissue, assay, sex, cell_count, explorer_url, and S3 uris
     with db_session_manager() as session:
 
-        dataset_ids = []
         published_datasets = (
             session.query(
                 Dataset.table.id,
@@ -24,31 +23,32 @@ def get_public_dataset_details():
                 Dataset.table.cell_count,
                 Dataset.table.explorer_url,
             )
-                .join(Dataset.table.collection)
-                .filter(
+            .join(Dataset.table.collection)
+            .filter(
                 Dataset.table.published == "TRUE",
                 Collection.table.visibility == "PUBLIC",
                 Dataset.table.tombstone == "FALSE",
             )
-                .all()
+            .all()
         )
         datasets = {}
         for dataset in published_datasets:
             dataset_data = {}
-            dataset_data['name'] = dataset[1]
-            dataset_data['organisms'] = [x['label'] for x in dataset[2]]
-            dataset_data['tissue'] = [x['label'] for x in dataset[3]]
-            dataset_data['assay'] = [x['label'] for x in dataset[4]]
-            dataset_data['sex'] = [x['label'] for x in dataset[5]]
-            dataset_data['cell_count'] = dataset[6]
-            dataset_data['explorer_url'] = dataset[7]
-            dataset_data['s3_uris'] = []
+            dataset_data["name"] = dataset[1]
+            dataset_data["organisms"] = [x["label"] for x in dataset[2]]
+            dataset_data["tissue"] = [x["label"] for x in dataset[3]]
+            dataset_data["assay"] = [x["label"] for x in dataset[4]]
+            dataset_data["sex"] = [x["label"] for x in dataset[5]]
+            dataset_data["cell_count"] = dataset[6]
+            dataset_data["explorer_url"] = dataset[7]
+            dataset_data["s3_uris"] = []
             datasets[dataset[0]] = dataset_data
 
         s3_uris = session.query(DatasetAsset.table.dataset_id, DatasetAsset.table.s3_uri).filter(
-            DatasetAsset.table.dataset_id.in_(datasets.keys()))
+            DatasetAsset.table.dataset_id.in_(datasets.keys())
+        )
 
         for s3_uri in s3_uris:
-            datasets[s3_uri[0]]['s3_uris'].append(s3_uri[1])
+            datasets[s3_uri[0]]["s3_uris"].append(s3_uri[1])
 
     return datasets
