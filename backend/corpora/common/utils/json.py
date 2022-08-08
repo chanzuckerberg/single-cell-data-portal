@@ -20,3 +20,13 @@ class CustomJSONEncoder(JSONEncoder):
             return obj.to_dict()
         else:
             return super().default(obj)
+
+
+class CurationJSONEncoder(CustomJSONEncoder):
+    "Add support for serializing DateTime into isoformat"
+
+    def default(self, obj):
+        if isinstance(obj, datetime.datetime):
+            return obj.isoformat()
+        else:
+            return super().default(obj)
