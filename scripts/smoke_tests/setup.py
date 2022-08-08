@@ -8,10 +8,8 @@ import requests
 
 from tests.functional.backend.common import BaseFunctionalTestCase
 
-# min amount of published collections expected by smoke tests
-MIN_TEST_COLLECTIONS = 4
-# amount advised by Timmy Huang to reduce flakiness
-MAX_TEST_COLLECTIONS = 10
+# Amount to reduce chance of collision where multiple test instances select the same collection to test against
+NUM_TEST_COLLECTIONS = 10
 
 
 class SmokeTestsInitializer(BaseFunctionalTestCase):
@@ -29,7 +27,7 @@ class SmokeTestsInitializer(BaseFunctionalTestCase):
         for collection in data['collections']:
             if collection["contact_name"] == "Smoke Test User":
                 num_collections += 1
-            if num_collections >= MIN_TEST_COLLECTIONS:
+            if num_collections == NUM_TEST_COLLECTIONS:
                 return num_collections
         return num_collections
 
@@ -94,12 +92,12 @@ if __name__ == "__main__":
     smoke_test_init = SmokeTestsInitializer()
     # check whether we need to create collections
     collection_count = smoke_test_init.get_collection_count()
-    if collection_count >= MIN_TEST_COLLECTIONS:
+    if collection_count >= NUM_TEST_COLLECTIONS:
         print("Found sufficient published collections for testing, exiting")
         sys.exit(0)
 
     dataset_dropbox_url = "https://www.dropbox.com/s/qiclvn1slmap351/example_valid.h5ad?dl=0"
-    num_to_create = MAX_TEST_COLLECTIONS - collection_count
+    num_to_create = NUM_TEST_COLLECTIONS - collection_count
     threads = []
     for i in range(num_to_create):
         thread = threading.Thread(target=smoke_test_init.create_and_publish_collection, args=(dataset_dropbox_url,))
