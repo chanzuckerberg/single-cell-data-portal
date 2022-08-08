@@ -248,7 +248,7 @@ paths:
         Delete a Dataset. The **collection_id** MUST reference either a private Collection OR a Revision. MUST
         indicate the Dataset by providing *one* of either the **curator_tag** (non-null) OR the **dataset_id**
         parameters.
-      operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.dataset.delete_dataset
+      operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.datasets.actions.delete
       tags:
         - collection
       security:
@@ -270,6 +270,28 @@ paths:
           $ref: "#/components/responses/401"
         "403":
           $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
+    get:
+      summary: Fetch a Dataset from a collection
+      description: >-
+        Fetch a Dataset from a collection. If a `dataset_id` or a `curator_tag` is provided as a query parameter
+        the associated Dataset metadata is returned.
+      operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.datasets.actions.get
+      tags:
+        - collection
+      parameters:
+        - $ref: "#/components/parameters/path_collection_id"
+        - $ref: "#/components/parameters/query_curator_tag"
+        - $ref: "#/components/parameters/query_dataset_id"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                - $ref: "#/components/schemas/dataset"
+          $ref: "#/components/responses/400"
         "404":
           $ref: "#/components/responses/404"
     patch:
@@ -358,7 +380,7 @@ paths:
           $ref: "#/components/responses/404"
 
   /v1/collections/{collection_id}/datasets/s3-upload-credentials:
-    post:
+    get:
       summary: Get credentials for uploading local files
       tags:
         - collection
@@ -394,7 +416,7 @@ paths:
 
       security:
         - curatorAccess: []
-      operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.dataset.post_s3_credentials
+      operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.datasets.upload_s3.get
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       responses:
@@ -420,43 +442,6 @@ paths:
                     type: string
         "401":
           $ref: "#/components/responses/401"
-
-  /v1/collections/{collection_id}/datasets/status:
-    get:
-      summary: Get a Dataset's processing status
-      tags:
-        - collection
-      description: >-
-        Get the processing status for a Dataset. MUST indicate the Dataset by providing *one* of either the
-        **curator_tag** (non-null) OR the **dataset_id** parameters.
-      operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.datasets.status.get
-      parameters:
-        - $ref: "#/components/parameters/path_collection_id"
-        - $ref: "#/components/parameters/query_curator_tag"
-        - $ref: "#/components/parameters/query_dataset_id"
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    $ref: "#/components/schemas/processing_status"
-                  file_statuses:
-                    type: object
-                    properties:
-                      cxg:
-                        $ref: "#/components/schemas/conversion_status"
-                      h5ad:
-                        $ref: "#/components/schemas/conversion_status"
-                      rds:
-                        $ref: "#/components/schemas/conversion_status"
-        "400":
-          $ref: "#/components/responses/400"
-        "404":
-          $ref: "#/components/responses/404"
 
   /v1/collections/{collection_id}/assets:
     get:
@@ -536,10 +521,10 @@ components:
           type: string
           nullable: true
         revised_at:
-          type: number
+          type: string
           nullable: true
         created_at:
-          type: number
+          type: string
         links:
           $ref: "#/components/schemas/links"
         access_type:
@@ -547,7 +532,7 @@ components:
           enum: [READ, WRITE]
           nullable: true
         published_at:
-          type: number
+          type: string
           nullable: true
         description:
           type: string
@@ -624,7 +609,7 @@ components:
               type: integer
               nullable: true
             revised_at:
-              type: number
+              type: string
               nullable: true
             is_primary_data:
               $ref: "#/components/schemas/is_primary_data"
