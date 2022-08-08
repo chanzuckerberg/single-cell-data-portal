@@ -28,15 +28,17 @@ DATASET_ONTOLOGY_ELEMENTS = (
 )
 
 
-def reshape_for_curation_api_and_is_allowed(collection, token_info, id_provided=False):
+def reshape_collection_for_curation_api_and_is_allowed(collection, token_info, id_provided=False, preview=False):
     """
     Reshape Collection data for the Curation API response. Remove tombstoned Datasets.
     :param collection: the Collection being returned in the API response
     :param token_info: user access token
     :param id_provided: bool - whether or not the collection uuid was provided by the user, for access purposes
+    :param preview: boool - whether the dataset is in preview form or not.
     :return: whether or not the Collection should be included in the response per ownership/access rules
     """
-    owner = collection["owner"]
+
+    owner = collection.pop("owner")  # Don't actually want to return 'owner' in response
     if is_user_owner_or_allowed(token_info, owner):
         collection["access_type"] = "WRITE"
     elif not id_provided and collection["visibility"] == CollectionVisibility.PRIVATE:
@@ -45,25 +47,23 @@ def reshape_for_curation_api_and_is_allowed(collection, token_info, id_provided=
     elif token_info:
         # Access token was provided but user is not authorized
         collection["access_type"] = "READ"
-
-    del collection["owner"]  # Don't actually want to return 'owner' in response
     collection["collection_url"] = f"{CorporaConfig().collections_base_url}/collections/{collection['id']}"
 
     if datasets := collection.get("datasets"):
-        collection["datasets"] = reshape_datasets_for_curation_api(datasets)
+        collection["datasets"] = reshape_datasets_for_curation_api(datasets, preview)
     return True
 
 
-def reshape_datasets_for_curation_api(datasets: typing.List[dict]) -> typing.List[dict]:
+def reshape_datasets_for_curation_api(datasets: typing.List[dict], preview=False) -> typing.List[dict]:
     active_datasets = []
     for dataset in datasets:
         if dataset.get("tombstone"):
             continue  # Remove tombstoned Datasets
-        active_datasets.append(reshape_dataset_for_curation_api(dataset))
+        active_datasets.append(reshape_dataset_for_curation_api(dataset, preview))
     return active_datasets
 
 
-def reshape_dataset_for_curation_api(dataset: dict) -> dict:
+def reshape_dataset_for_curation_api(dataset: dict, preview=False) -> dict:
     if artifacts := dataset.get("artifacts"):
         dataset["dataset_assets"] = []
         for asset in artifacts:
@@ -72,13 +72,14 @@ def reshape_dataset_for_curation_api(dataset: dict) -> dict:
         del dataset["artifacts"]
     if dataset.get("processing_status"):
         dataset["processing_status"] = dataset["processing_status"]["processing_status"]
-    for ontology_element in DATASET_ONTOLOGY_ELEMENTS:
-        if dataset_ontology_element := dataset.get(ontology_element):
-            if not isinstance(dataset_ontology_element, list):
-                # Package in array
-                dataset[ontology_element] = [dataset_ontology_element]
-        else:
-            dataset[ontology_element] = []
+    if not preview:
+        for ontology_element in DATASET_ONTOLOGY_ELEMENTS:
+            if dataset_ontology_element := dataset.get(ontology_element):
+                if not isinstance(dataset_ontology_element, list):
+                    # Package in array
+                    dataset[ontology_element] = [dataset_ontology_element]
+            else:
+                dataset[ontology_element] = []
     return dataset
 
 
@@ -107,7 +108,6 @@ def list_collections_curation(
     return resp_collections
 
 
-@staticmethod
 def add_collection_level_processing_status(collection: DbCollection):
     # Add a Collection-level processing status
     status = None
