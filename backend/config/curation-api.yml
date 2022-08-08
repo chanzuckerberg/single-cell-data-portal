@@ -97,6 +97,7 @@ paths:
         content:
           application/json:
             schema:
+              additionalProperties: false
               $ref: "#/components/schemas/collection_form_metadata"
               required:
                 - name
@@ -150,7 +151,8 @@ paths:
       summary: Update a Collection's metadata.
       description: >-
         Update a private Collection or a Revision. If any Collection metadata fields are included in the body of the
-        request, these fields SHALL be updated for the specified Collection.
+        request, these fields SHALL be updated for the specified Collection. If links are included, they will fully
+        replace all existing links. A DOI link that cannot be found at Crossref results in a 400 (BAD REQUEST).
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.actions.patch
       security:
         - curatorAccess: []
@@ -162,6 +164,7 @@ paths:
         content:
           application/json:
             schema:
+              additionalProperties: false
               $ref: "#/components/schemas/collection_form_metadata"
             examples:
               update_name:
@@ -174,7 +177,23 @@ paths:
                   description: "New Collection description"
       responses:
         "200":
-          $ref: "#/components/responses/200"
+          description: OK
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/collection_form_metadata"
+                  - type: object
+                    properties:
+                      publisher_metadata:
+                        $ref: "#/components/schemas/publisher_metadata"
+                required:
+                  - links
+                  - name
+                  - description
+                  - contact_name
+                  - contact_email
+                  - publisher_metadata
         "201":
           $ref: "#/components/responses/201"
         "400":
@@ -730,7 +749,6 @@ components:
           type: number
     collection_form_metadata:
       type: object
-      additionalProperties: false
       properties:
         name:
           type: string
