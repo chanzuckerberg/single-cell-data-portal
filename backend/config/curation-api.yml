@@ -156,8 +156,9 @@ paths:
         request, these fields SHALL be updated for the specified Collection. If links are included, they will fully
         replace all existing links *EXCEPT* for the case of DOI links; an existing DOI and its associated publisher
         metadata will not be deleted or replaced unless a new DOI link (`"link_type": "DOI"`) is provided under the
-        `"links"` attribute in the body of the request. In order to delete a DOI link without replacing it you must use
-        the UI.
+        `"links"` attribute in the body of the request. If a malformed or nonexistent doi is provided, none of the
+        fields included in the request are updated, and the original doi (and published metadata) remain. In order to
+        delete a DOI link without replacing it you must use the UI.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.actions.patch
       security:
         - curatorAccess: []
