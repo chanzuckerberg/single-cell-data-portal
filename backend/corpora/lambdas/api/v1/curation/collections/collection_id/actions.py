@@ -87,6 +87,7 @@ def patch(collection_id: str, body: dict, token_info: dict) -> Response:
                 if link["link_type"] != ProjectLinkType.DOI.name:
                     links_no_dois.append(link)
             body["links"] = links_no_dois
+            body["publisher_metadata"] = None
         else:
             # Compute the diff between old and new DOI
             old_doi = collection.get_doi()
