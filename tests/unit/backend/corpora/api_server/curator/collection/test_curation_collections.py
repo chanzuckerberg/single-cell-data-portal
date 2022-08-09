@@ -154,20 +154,6 @@ class TestGetCollections(BaseAuthAPITest):
         self.assertEqual(200, res_public.status_code)
         self.assertEqual(6, len(res_public.json["collections"]))
 
-    def test__get_owned_collections__OK(self):
-        params = {"owned": True}
-        response = self.app.get("/curation/v1/collections", query_string=params, headers=self.make_owner_header())
-        self.assertEqual(200, response.status_code)
-        for col in response.json["collections"]:
-            self.assertEqual("WRITE", col["access_type"])
-
-        # The super curator has no collections they own.
-        response = self.app.get(
-            "/curation/v1/collections", query_string=params, headers=self.make_super_curator_header()
-        )
-        self.assertEqual(200, response.status_code)
-        self.assertEqual(0, len(response.json["collections"]))
-
     def test__get_only_public_collections_with_auth__OK(self):
         params = {"visibility": "PUBLIC"}
         res = self.app.get("/curation/v1/collections", query_string=params, headers=self.make_owner_header())
