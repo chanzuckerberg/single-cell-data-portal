@@ -14,7 +14,7 @@ const ToS = (): JSX.Element => {
       <CommonStyle>
         <PrivacyStyle>
           <Head>
-            <title>CELLxGENE | Terms of Service</title>
+            <title>CELL&times;GENE | Terms of Service</title>
           </Head>
           <header>
             <Image

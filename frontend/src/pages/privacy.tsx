@@ -14,7 +14,7 @@ const Privacy = (): JSX.Element => {
       <CommonStyle>
         <PrivacyStyle>
           <Head>
-            <title>CELLxGENE | Privacy</title>
+            <title>CELL&times;GENE | Privacy</title>
           </Head>
           <header>
             <Image
