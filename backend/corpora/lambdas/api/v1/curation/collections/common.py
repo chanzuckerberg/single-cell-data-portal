@@ -14,6 +14,7 @@ from ......common.corpora_orm import (
     Base,
     ProcessingStatus,
 )
+from backend.corpora.common.entities import Collection
 
 
 DATASET_ONTOLOGY_ELEMENTS = (
@@ -35,9 +36,12 @@ DATASET_ONTOLOGY_ELEMENTS_PREVIEW = (
 )
 
 
-def reshape_for_curation_api_and_is_allowed(collection, token_info, id_provided=False, preview=False):
+def reshape_for_curation_api_and_is_allowed(
+    db_session: Session, collection: dict, token_info: dict, id_provided: bool = False, preview: bool = False
+) -> bool:
     """
     Reshape Collection data for the Curation API response. Remove tombstoned Datasets.
+    :param db_session: the db Session
     :param collection: the Collection being returned in the API response
     :param token_info: user access token
     :param id_provided: bool - whether or not the collection uuid was provided by the user, for access purposes
@@ -54,11 +58,31 @@ def reshape_for_curation_api_and_is_allowed(collection, token_info, id_provided=
     elif token_info:
         # Access token was provided but user is not authorized
         collection["access_type"] = "READ"
+
+    set_revising_in(db_session, collection, token_info, owner)
+
     collection["collection_url"] = f"{CorporaConfig().collections_base_url}/collections/{collection['id']}"
 
     if datasets := collection.get("datasets"):
         collection["datasets"] = reshape_datasets_for_curation_api(datasets, preview)
     return True
+
+
+def set_revising_in(db_session: Session, collection: dict, token_info: dict, owner: str) -> None:
+    """
+    If the Collection is public AND the user is authorized use a database call to populate 'revising_in' attribute.
+    None -> 1) revision does not exist, 2) the Collection is private, or 3) the user is not authorized
+    "<revision_id>" -> user is authorized and revision exists
+    :param db_session: the db Session
+    :param collection: the Collection
+    :param token_info: the user's access token info
+    :param owner: the owner of the Collection
+    :return: None
+    """
+    collection["revising_in"] = None
+    if collection["visibility"] == CollectionVisibility.PUBLIC and is_user_owner_or_allowed(token_info, owner):
+        if revision := Collection.get_collection(db_session, revision_of=collection["id"]):
+            collection["revising_in"] = revision.id
 
 
 def reshape_datasets_for_curation_api(datasets: typing.List[dict], preview=False) -> typing.List[dict]:
@@ -90,49 +114,6 @@ def reshape_dataset_for_curation_api(dataset: dict, preview=False) -> dict:
     return dataset
 
 
-def list_collections_curation(
-    session: Session, collection_columns: typing.Dict[Base, typing.List[str]], visibility: str = None
-) -> typing.List[dict]:
-    """
-    Get a subset of columns, in dict form, for all Collections with the specified visibility. If visibility is None,
-    return *all* Collections that are *not* tombstoned.
-    :param session: the SQLAlchemy session
-    :param collection_columns: the list of columns to be returned (see usage by TransformingBase::to_dict_keep)
-    :param visibility: the CollectionVisibility string name
-    @return: a list of dict representations of Collections
-    """
-    filters = [DbCollection.tombstone == False]  # noqa
-    if visibility == CollectionVisibility.PUBLIC.name:
-        filters.append(DbCollection.visibility == CollectionVisibility.PUBLIC)
-    elif visibility == CollectionVisibility.PRIVATE.name:
-        filters.append(DbCollection.visibility == CollectionVisibility.PRIVATE)
-
-    resp_collections = []
-    for collection in session.query(DbCollection).filter(*filters).all():
-        resp_collection = collection.to_dict_keep(collection_columns)
-        resp_collection["processing_status"] = add_collection_level_processing_status(collection)
-        resp_collections.append(resp_collection)
-    return resp_collections
-
-
-def add_collection_level_processing_status(collection: DbCollection):
-    # Add a Collection-level processing status
-    status = None
-    has_statuses = False
-    for dataset in collection.datasets:
-        processing_status = dataset.processing_status
-        if processing_status:
-            has_statuses = True
-            if processing_status.processing_status == ProcessingStatus.PENDING:
-                status = ProcessingStatus.PENDING
-            elif processing_status.processing_status == ProcessingStatus.FAILURE:
-                status = ProcessingStatus.FAILURE
-                break
-    if has_statuses and not status:  # At least one dataset processing status exists, and all were SUCCESS
-        status = ProcessingStatus.SUCCESS
-    return status
-
-
 class EntityColumns:
 
     collections_cols = [
@@ -153,6 +134,7 @@ class EntityColumns:
         "owner",  # Needed for determining view permissions
         "links",
         "datasets",
+        "revising_in",
     ]
 
     link_cols = [
@@ -221,3 +203,47 @@ class EntityColumns:
         DbDatasetArtifact: dataset_asset_cols,
         DbDatasetProcessingStatus: dataset_processing_status_cols,
     }
+
+
+def list_collections_curation(
+    session: Session, collection_columns: typing.Dict[Base, typing.List[str]], visibility: str = None
+) -> typing.List[dict]:
+    """
+    Get a subset of columns, in dict form, for all Collections with the specified visibility. If visibility is None,
+    return *all* Collections that are *not* tombstoned.
+    :param session: the SQLAlchemy session
+    :param collection_columns: the list of columns to be returned (see usage by TransformingBase::to_dict_keep)
+    :param visibility: the CollectionVisibility string name
+    @return: a list of dict representations of Collections
+    """
+    filters = [DbCollection.tombstone == False]  # noqa
+    if visibility == CollectionVisibility.PUBLIC.name:
+        filters.append(DbCollection.visibility == CollectionVisibility.PUBLIC)
+    elif visibility == CollectionVisibility.PRIVATE.name:
+        filters.append(DbCollection.visibility == CollectionVisibility.PRIVATE)
+
+    resp_collections = []
+    for collection in session.query(DbCollection).filter(*filters).all():
+        resp_collection = collection.to_dict_keep(collection_columns)
+        resp_collection["processing_status"] = add_collection_level_processing_status(collection)
+        resp_collections.append(resp_collection)
+    return resp_collections
+
+
+@staticmethod
+def add_collection_level_processing_status(collection: DbCollection):
+    # Add a Collection-level processing status
+    status = None
+    has_statuses = False
+    for dataset in collection.datasets:
+        processing_status = dataset.processing_status
+        if processing_status:
+            has_statuses = True
+            if processing_status.processing_status == ProcessingStatus.PENDING:
+                status = ProcessingStatus.PENDING
+            elif processing_status.processing_status == ProcessingStatus.FAILURE:
+                status = ProcessingStatus.FAILURE
+                break
+    if has_statuses and not status:  # At least one dataset processing status exists, and all were SUCCESS
+        status = ProcessingStatus.SUCCESS
+    return status
