@@ -64,6 +64,14 @@ paths:
         - collection
       parameters:
         - $ref: "#/components/parameters/query_visibility"
+        - name: owned
+          description: >-
+            Only show collections owned by the curator.
+          in: query
+          required: false
+          schema:
+            type: boolean
+            default: false
       responses:
         "200":
           description: OK
