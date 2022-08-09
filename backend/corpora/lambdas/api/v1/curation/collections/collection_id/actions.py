@@ -44,8 +44,9 @@ def get(collection_id: str, token_info: dict):
     if not collection:
         raise NotFoundHTTPException
     collection_response: dict = collection.to_dict_keep(EntityColumns.columns_for_collection_id)
+
     collection_response["processing_status"] = add_collection_level_processing_status(collection)
-    reshape_for_curation_api_and_is_allowed(collection_response, token_info, id_provided=True)
+    reshape_for_curation_api_and_is_allowed(db_session, collection_response, token_info, id_provided=True)
 
     return jsonify(collection_response)
 
