@@ -152,6 +152,8 @@ export function convertPercentageToDiameter(percentage: number): number {
 const SELECTED_STYLE = {
   backgroundColor: LIGHT_GRAY.D,
   fontWeight: "bold" as never,
+  fontFamily: "sans-serif",
+  fontSize: 12,
   padding: 4,
 };
 
@@ -234,7 +236,8 @@ const CTX = document.createElement("canvas").getContext("2d");
  *
  * @param name The text to truncate
  * @param maxWidth The max width in pixels the string should be
- * @param font The font family and font size as a string. Ex. "12px sans-serif"
+ * @param font The font family and font size as a string. Ex. "bold 12px sans-serif"
+ * @param displayDepth The depth of the cell type name (indentation/padding)
  * @returns The string fixed to a certain pixel width
  */
 function formatCellLabel(
@@ -266,7 +269,7 @@ function formatCellLabel(
  *
  * @param text The text to truncate
  * @param maxWidth The max width in pixels the string should be
- * @param font The font family and font size as a string. Ex. "12px sans-serif"
+ * @param font The font family and font size as a string. Ex. "bold 12px sans-serif"
  * @param reverse Whether to truncate the end or beginning of the string
  * @returns The string fixed to a certain pixel width
  */
@@ -343,10 +346,13 @@ export function createYAxisOptions({
 
             const displayDepth = Math.min(depth, MAX_DEPTH);
 
+            const { fontWeight, fontSize, fontFamily } = SELECTED_STYLE;
+            const selectedFont = `${fontWeight} ${fontSize}px ${fontFamily}`;
+
             const paddedName = formatCellLabel(
               name,
               Y_AXIS_CHART_WIDTH_PX - 75, // scale based on y-axis width
-              "bold 12px sans-serif", // prevents selected style from overlapping count
+              selectedFont, // prevents selected style from overlapping count
               displayDepth
             );
 
