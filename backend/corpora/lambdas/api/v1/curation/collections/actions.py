@@ -20,7 +20,7 @@ def get(visibility: str, token_info: dict):
     collections = list_collections_curation(g.db_session, EntityColumns.columns_for_collections, visibility)
     allowed_collections = []
     for collection in collections:
-        if reshape_for_curation_api_and_is_allowed(collection, token_info):
+        if reshape_for_curation_api_and_is_allowed(collection, token_info, preview=True):
             allowed_collections.append(collection)
 
     return jsonify({"collections": allowed_collections})
