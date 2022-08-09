@@ -64,10 +64,13 @@ def patch(collection_id: str, body: dict, token_info: dict) -> Response:
     try:
         collection, errors = get_collection_and_verify_body(db_session, collection_id, body, token_info)
     except ForbiddenHTTPException as err:
+        # If the Collection is public, the get_collection_and_verify_body method throws empty ForbiddenHTTPException
         if Collection.get_collection(
             db_session, collection_id, CollectionVisibility.PUBLIC, owner=owner_or_allowed(token_info)
         ):
-            err.detail = "Directly editing a public Collection is not allowed; you must create a revision."
+            raise MethodNotAllowedException(
+                detail="Directly editing a public Collection is not allowed; you must create a revision."
+            )
         raise err
 
     if not keep_links:
