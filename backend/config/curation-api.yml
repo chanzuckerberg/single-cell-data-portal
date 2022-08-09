@@ -218,8 +218,6 @@ paths:
       responses:
         "204":
           $ref: "#/components/responses/204"
-        "400":
-          $ref: "#/components/responses/400_multiple"
         "401":
           $ref: "#/components/responses/401"
         "403":
