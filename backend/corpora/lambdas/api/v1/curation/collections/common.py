@@ -14,7 +14,7 @@ from ......common.corpora_orm import (
     Base,
     ProcessingStatus,
 )
-from ......common.entities import Collection
+from backend.corpora.common.entities import Collection
 
 
 DATASET_ONTOLOGY_ELEMENTS = (
