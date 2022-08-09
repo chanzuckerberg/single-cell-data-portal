@@ -713,8 +713,6 @@ components:
       type: object
       description: Error message container for HTTP APIs.
       properties:
-        type:
-          type: string
         title:
           type: string
         detail:
@@ -823,17 +821,7 @@ components:
           schema:
             type: array
             items:
-              type: object
-              properties:
-                name:
-                  type: string
-                  description: the errant parameter
-                value:
-                  type: string
-                  description: the errant value
-                reason:
-                  type: string
-                  description: the specific problem with the parameter
+              $ref: "#/components/schemas/problem"
     401:
       description: Failed to authenticate
       content:
