@@ -27,6 +27,13 @@ DATASET_ONTOLOGY_ELEMENTS = (
     "organism",
 )
 
+DATASET_ONTOLOGY_ELEMENTS_PREVIEW = (
+    "tissue",
+    "assay",
+    "disease",
+    "organism",
+)
+
 
 def reshape_collection_for_curation_api_and_is_allowed(collection, token_info, id_provided=False, preview=False):
     """
@@ -72,14 +79,14 @@ def reshape_dataset_for_curation_api(dataset: dict, preview=False) -> dict:
         del dataset["artifacts"]
     if dataset.get("processing_status"):
         dataset["processing_status"] = dataset["processing_status"]["processing_status"]
-    if not preview:
-        for ontology_element in DATASET_ONTOLOGY_ELEMENTS:
-            if dataset_ontology_element := dataset.get(ontology_element):
-                if not isinstance(dataset_ontology_element, list):
-                    # Package in array
-                    dataset[ontology_element] = [dataset_ontology_element]
-            else:
-                dataset[ontology_element] = []
+    dataset_ontology_elements = DATASET_ONTOLOGY_ELEMENTS_PREVIEW if preview else DATASET_ONTOLOGY_ELEMENTS
+    for ontology_element in dataset_ontology_elements:
+        if dataset_ontology_element := dataset.get(ontology_element):
+            if not isinstance(dataset_ontology_element, list):
+                # Package in array
+                dataset[ontology_element] = [dataset_ontology_element]
+        else:
+            dataset[ontology_element] = []
     return dataset
 
 
