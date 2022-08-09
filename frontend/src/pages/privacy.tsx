@@ -148,15 +148,14 @@ const Privacy = (): JSX.Element => {
                         </li>
                         <li>
                           <h5>Cookies and Other Similar Technologies.</h5> For
-                          certain users that need to log into CELLxGENE
-                          Discover to publish data, we use essential cookies
-                          (small text files sent by your computer each time you
-                          access the Site that are unique to your account or
-                          your browser) to enable that use. For web analytics,
-                          we do not use Google Analytics. Instead, we use the
-                          privacy-friendly Plausible as our website analytic
-                          tool. Learn more about Plausible’s data and privacy
-                          practices{" "}
+                          certain users that need to log into CELLxGENE Discover
+                          to publish data, we use essential cookies (small text
+                          files sent by your computer each time you access the
+                          Site that are unique to your account or your browser)
+                          to enable that use. For web analytics, we do not use
+                          Google Analytics. Instead, we use the privacy-friendly
+                          Plausible as our website analytic tool. Learn more
+                          about Plausible’s data and privacy practices{" "}
                           <a
                             href="https://plausible.io/data-policy"
                             rel="noopener"
