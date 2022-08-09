@@ -21,6 +21,7 @@ from backend.corpora.common.utils.http_exceptions import (
     MethodNotAllowedException,
     NotFoundHTTPException,
     InvalidParametersHTTPException,
+    ForbiddenHTTPException,
 )
 from backend.corpora.lambdas.api.v1.authorization import owner_or_allowed
 from backend.corpora.lambdas.api.v1.common import get_collection_else_forbidden
@@ -61,7 +62,17 @@ def patch(collection_id: str, body: dict, token_info: dict) -> Response:
             raise InvalidParametersHTTPException(detail="If provided, the 'links' array may not be empty")
         keep_links = False  # links have been provided; replace all old links
 
-    collection, errors = get_collection_and_verify_body(db_session, collection_id, body, token_info)
+    try:
+        collection, errors = get_collection_and_verify_body(db_session, collection_id, body, token_info)
+    except ForbiddenHTTPException as err:
+        # If the Collection is public, the get_collection_and_verify_body method throws empty ForbiddenHTTPException
+        if Collection.get_collection(
+            db_session, collection_id, CollectionVisibility.PUBLIC, owner=owner_or_allowed(token_info)
+        ):
+            raise MethodNotAllowedException(
+                detail="Directly editing a public Collection is not allowed; you must create a revision."
+            )
+        raise err
 
     if not keep_links:
         # Compute the diff between old and new DOI

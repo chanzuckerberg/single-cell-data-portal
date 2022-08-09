@@ -639,6 +639,18 @@ class TestPatchCollectionID(BaseAuthAPITest):
         )
         self.assertEqual(200, response.status_code)
 
+    def test__update_public_collection_owner__405(self):
+        collection_id = self.generate_collection(self.session, visibility=CollectionVisibility.PUBLIC).id
+        headers = self.make_super_curator_header()
+        response = self.app.patch(
+            f"/curation/v1/collections/{collection_id}", data=json.dumps(self.test_collection), headers=headers
+        )
+        self.assertEqual(405, response.status_code)
+        self.assertEqual(
+            "Directly editing a public Collection is not allowed; you must create a revision.",
+            json.loads(response.text)["detail"],
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
