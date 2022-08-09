@@ -143,6 +143,25 @@ class TestGetCollections(BaseAuthAPITest):
         res_auth = self.app.get("/curation/v1/collections", headers=self.make_owner_header())
         self.assertEqual(200, res_auth.status_code)
         self.assertEqual(6, len(res_auth.json["collections"]))
+        with self.subTest("The 'revising_in' attribute is None for unauthorized public collections"):
+            for c in res_auth.json["collections"]:
+                if c["id"] in (
+                    "test_collection_id_public_for_revision_one",
+                    "test_collection_id_public_for_revision_two",
+                ):
+                    self.assertIsNone(c["revising_in"])
+        with self.subTest("The 'revising_in' attribute is None for collections which lack a revision"):
+            for c in res_auth.json["collections"]:
+                if c["id"] in (
+                    "test_collection_id_public",
+                    "test_collection_with_link",
+                    "test_collection_with_link_and_dataset_changes",
+                ):
+                    self.assertIsNone(c["revising_in"])
+        with self.subTest("The 'revising_in' attribute is equal to the id of the revision Collection"):
+            for c in res_auth.json["collections"]:
+                if c["id"] == "test_collection_id":
+                    self.assertEqual("test_collection_id_revision", c["revising_in"])
 
     def test__get_collections_no_auth_visibility_private__OK(self):
         params = {"visibility": "PRIVATE"}
@@ -371,6 +390,7 @@ class TestGetCollectionID(BaseAuthAPITest):
         "publisher_metadata": None,
         "revised_at": None,
         "revision_of": None,
+        "revising_in": None,
         "tombstone": False,
         "visibility": "PUBLIC",
     }
@@ -618,6 +638,18 @@ class TestPatchCollectionID(BaseAuthAPITest):
             f"/curation/v1/collections/{collection_id}", data=json.dumps(self.test_collection), headers=headers
         )
         self.assertEqual(200, response.status_code)
+
+    def test__update_public_collection_owner__405(self):
+        collection_id = self.generate_collection(self.session, visibility=CollectionVisibility.PUBLIC).id
+        headers = self.make_super_curator_header()
+        response = self.app.patch(
+            f"/curation/v1/collections/{collection_id}", data=json.dumps(self.test_collection), headers=headers
+        )
+        self.assertEqual(405, response.status_code)
+        self.assertEqual(
+            "Directly editing a public Collection is not allowed; you must create a revision.",
+            json.loads(response.text)["detail"],
+        )
 
 
 if __name__ == "__main__":
