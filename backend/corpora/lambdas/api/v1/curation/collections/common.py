@@ -71,9 +71,8 @@ def reshape_for_curation_api_and_is_allowed(
 def set_revising_in(db_session: Session, collection: dict, token_info: dict, owner: str) -> None:
     """
     If the Collection is public AND the user is authorized use a database call to populate 'revising_in' attribute.
-    None -> revision does not exist OR the Collection is private
+    None -> 1) revision does not exist, 2) the Collection is private, or 3) the user is not authorized
     "<revision_id>" -> user is authorized and revision exists
-    "NOT AUTHORIZED" -> user is not authorized
     :param db_session: the db Session
     :param collection: the Collection
     :param token_info: the user's access token info
@@ -81,12 +80,9 @@ def set_revising_in(db_session: Session, collection: dict, token_info: dict, own
     :return: None
     """
     collection["revising_in"] = None
-    if collection["visibility"] == CollectionVisibility.PUBLIC:
-        if is_user_owner_or_allowed(token_info, owner):
-            if revision := Collection.get_collection(db_session, revision_of=collection["id"]):
-                collection["revising_in"] = revision.id
-        else:
-            collection["revising_in"] = "NOT AUTHORIZED"
+    if collection["visibility"] == CollectionVisibility.PUBLIC and is_user_owner_or_allowed(token_info, owner):
+        if revision := Collection.get_collection(db_session, revision_of=collection["id"]):
+            collection["revising_in"] = revision.id
 
 
 def reshape_datasets_for_curation_api(datasets: typing.List[dict], preview=False) -> typing.List[dict]:
