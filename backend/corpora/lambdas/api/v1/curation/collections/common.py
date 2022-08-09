@@ -35,7 +35,7 @@ DATASET_ONTOLOGY_ELEMENTS_PREVIEW = (
 )
 
 
-def reshape_collection_for_curation_api_and_is_allowed(collection, token_info, id_provided=False, preview=False):
+def reshape_for_curation_api_and_is_allowed(collection, token_info, id_provided=False, preview=False):
     """
     Reshape Collection data for the Curation API response. Remove tombstoned Datasets.
     :param collection: the Collection being returned in the API response
