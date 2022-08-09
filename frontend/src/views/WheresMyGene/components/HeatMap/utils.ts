@@ -152,6 +152,8 @@ export function convertPercentageToDiameter(percentage: number): number {
 const SELECTED_STYLE = {
   backgroundColor: LIGHT_GRAY.D,
   fontWeight: "bold" as never,
+  fontFamily: "sans-serif",
+  fontSize: 12,
   padding: 4,
 };
 
@@ -168,7 +170,7 @@ export function createXAxisOptions({
     ...COMMON_OPTIONS,
     grid: {
       bottom: "0",
-      left: "300px",
+      left: Y_AXIS_CHART_WIDTH_PX + "px",
       top: "300px",
     },
     series: [
@@ -224,6 +226,82 @@ interface CreateYAxisOptionsProps {
   cellTypeIdsToDelete: string[];
 }
 
+/**
+ * Used to calculate text pixel widths. Should be only created once.
+ */
+const CTX = document.createElement("canvas").getContext("2d");
+
+/**
+ * Formats and truncates the cell type name to a given width
+ *
+ * @param name The text to truncate
+ * @param maxWidth The max width in pixels the string should be
+ * @param font The font family and font size as a string. Ex. "bold 12px sans-serif"
+ * @param displayDepth The depth of the cell type name (indentation/padding)
+ * @returns The string fixed to a certain pixel width
+ */
+function formatCellLabel(
+  name: string,
+  maxWidth: number,
+  font: string,
+  displayDepth = 0
+): string {
+  CTX!.font = font;
+  const ellipsisWidth = CTX!.measureText("...").width;
+
+  const padding = " ".repeat(displayDepth * 8);
+  const paddingWidth = CTX!.measureText(padding).width;
+
+  if (CTX!.measureText(name).width + paddingWidth <= maxWidth) {
+    return padding + name;
+  }
+
+  const labelHalfWidth = (maxWidth - paddingWidth - ellipsisWidth) / 2;
+
+  const firstHalf = getFixedWidth(name, labelHalfWidth, font);
+  const secondHalf = getFixedWidth(name, labelHalfWidth, font, true);
+
+  return padding + firstHalf + "..." + secondHalf;
+}
+
+/**
+ * Truncates the string to a given width
+ *
+ * @param text The text to truncate
+ * @param maxWidth The max width in pixels the string should be
+ * @param font The font family and font size as a string. Ex. "bold 12px sans-serif"
+ * @param reverse Whether to truncate the end or beginning of the string
+ * @returns The string fixed to a certain pixel width
+ */
+export function getFixedWidth(
+  text: string,
+  maxWidth: number,
+  font: string,
+  reverse = false
+): string {
+  CTX!.font = font;
+
+  if (reverse) {
+    for (let i = text.length; i >= 0; i--) {
+      const substring = text.substring(i - 1);
+      const textWidth = CTX!.measureText(substring).width;
+      if (textWidth > maxWidth) {
+        return text.substring(i);
+      }
+    }
+  } else {
+    for (let i = 0; i < text.length; i++) {
+      const substring = text.substring(0, i + 1);
+      const textWidth = CTX!.measureText(substring).width;
+      if (textWidth > maxWidth) {
+        return text.substring(0, i);
+      }
+    }
+  }
+
+  return text;
+}
+
 export function createYAxisOptions({
   cellTypeMetadata,
   cellTypeIdsToDelete,
@@ -268,14 +346,23 @@ export function createYAxisOptions({
 
             const displayDepth = Math.min(depth, MAX_DEPTH);
 
-            const paddedName = " ".repeat(displayDepth * 8) + name;
+            const { fontWeight, fontSize, fontFamily } = SELECTED_STYLE;
+            const selectedFont = `${fontWeight} ${fontSize}px ${fontFamily}`;
+
+            const paddedName = formatCellLabel(
+              name,
+              Y_AXIS_CHART_WIDTH_PX - 75, // scale based on y-axis width
+              selectedFont, // prevents selected style from overlapping count
+              displayDepth
+            );
 
             return cellTypeIdsToDelete.includes(value as string)
-              ? `{selected|${paddedName}}`
+              ? `{selected|${
+                  // Cut first leading space when selected to reduce 'jumping' of text
+                  displayDepth ? paddedName.substring(1) : paddedName
+                }}`
               : paddedName;
           },
-          // Turn off type checking here, because ecahrts' type is wrong
-          ["overflow" as string]: "truncate",
           rich: {
             selected: SELECTED_STYLE,
           },
@@ -393,7 +480,7 @@ export function dataToChartFormat({
   }
 }
 
-const HEAT_MAP_BASE_WIDTH_PX = 500;
+const HEAT_MAP_BASE_WIDTH_PX = 200 + Y_AXIS_CHART_WIDTH_PX;
 export const HEAT_MAP_BASE_HEIGHT_PX = 300;
 const HEAT_MAP_BASE_CELL_PX = 20;
 
