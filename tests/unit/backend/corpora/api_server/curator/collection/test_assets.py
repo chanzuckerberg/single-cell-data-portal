@@ -59,12 +59,12 @@ class TestAsset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
                 if dataset_id == "test_curator_tag":
                     expected_body["curator_tag"] = self.curator_tag
                     response = self.app.get(
-                        "/curation/v1/collections/test_curator_tag_collection_id/assets",
+                        "/curation/v1/collections/test_curator_tag_collection_id/datasets/assets",
                         query_string=dict(curator_tag=self.curator_tag),
                     )
                 else:
                     response = self.app.get(
-                        "/curation/v1/collections/test_collection_id/assets",
+                        "/curation/v1/collections/test_collection_id/datasets/assets",
                         query_string=dict(dataset_id=dataset_id),
                     )
                 self.assertEqual(200, response.status_code)
@@ -82,12 +82,12 @@ class TestAsset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
                 if dataset_id == "test_curator_tag":
                     expected_body["curator_tag"] = self.curator_tag
                     response = self.app.get(
-                        "/curation/v1/collections/test_curator_tag_collection_id/assets",
+                        "/curation/v1/collections/test_curator_tag_collection_id/datasets/assets",
                         query_string=dict(curator_tag=self.curator_tag),
                     )
                 else:
                     response = self.app.get(
-                        "/curation/v1/collections/test_collection_id/assets",
+                        "/curation/v1/collections/test_collection_id/datasets/assets",
                         query_string=dict(dataset_id=dataset_id),
                     )
                 self.assertEqual(202, response.status_code)
@@ -103,12 +103,13 @@ class TestAsset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
             with self.subTest(i):
                 if i == "tag":
                     response = self.app.get(
-                        "/curation/v1/collections/test_curator_tag_collection_id/assets",
+                        "/curation/v1/collections/test_curator_tag_collection_id/datasets/assets",
                         query_string=dict(curator_tag=id_or_tag),
                     )
                 else:
                     response = self.app.get(
-                        "/curation/v1/collections/test_collection_id/assets", query_string=dict(dataset_id=id_or_tag)
+                        "/curation/v1/collections/test_collection_id/datasets/assets",
+                        query_string=dict(dataset_id=id_or_tag),
                     )
                 self.assertEqual(404, response.status_code)
                 actual_body = response.json
@@ -117,7 +118,7 @@ class TestAsset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
     def test__get_dataset_asset__collection_dataset_NOT_FOUND(self):
         """Return Not found when the dataset is not part of the collection"""
         id_or_tag = "bad_id"
-        test_url = "/curation/v1/collections/test_collection_id/assets"
+        test_url = "/curation/v1/collections/test_collection_id/datasets/assets"
         for i in ["dataset_id", "curator_tag"]:
             with self.subTest(i):
                 query = {i: id_or_tag}
@@ -138,12 +139,12 @@ class TestAsset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
             with self.subTest(dataset_id):
                 if dataset_id == "test_curator_tag":
                     response = self.app.get(
-                        "/curation/v1/collections/test_curator_tag_collection_id/assets",
+                        "/curation/v1/collections/test_curator_tag_collection_id/datasets/assets",
                         query_string=dict(curator_tag="curator_tag"),
                     )
                 else:
                     response = self.app.get(
-                        "/curation/v1/collections/test_collection_id/assets",
+                        "/curation/v1/collections/test_collection_id/datasets/assets",
                         query_string=dict(dataset_id=dataset_id),
                     )
                 self.assertEqual(404, response.status_code)

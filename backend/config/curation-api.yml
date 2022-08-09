@@ -462,7 +462,7 @@ paths:
         "401":
           $ref: "#/components/responses/401"
 
-  /v1/collections/{collection_id}/assets:
+  /v1/collections/{collection_id}/datasets/assets:
     get:
       summary: Retrieve links for downloading a dataset
       tags:
