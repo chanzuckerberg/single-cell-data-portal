@@ -83,8 +83,8 @@ def set_revising_in(db_session: Session, collection: dict, token_info: dict, own
     collection["revising_in"] = None
     if collection["visibility"] == CollectionVisibility.PUBLIC:
         if is_user_owner_or_allowed(token_info, owner):
-            if revising_in := Collection.get_collection(db_session, revision_of=collection["id"]):
-                collection["revising_in"] = revising_in.id
+            if revision := Collection.get_collection(db_session, revision_of=collection["id"]):
+                collection["revising_in"] = revision.id
         else:
             collection["revising_in"] = "NOT AUTHORIZED"
 
