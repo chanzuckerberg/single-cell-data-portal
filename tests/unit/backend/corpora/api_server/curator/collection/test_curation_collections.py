@@ -8,12 +8,13 @@ from backend.corpora.common.corpora_orm import (
     DatasetArtifactFileType,
     DbDataset,
 )
+from backend.corpora.common.providers.crossref_provider import CrossrefDOINotFoundException
 from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest, mock_assert_authorized_token
 from tests.unit.backend.fixtures.config import fake_s3_file
 
 
 class TestAuthToken(BaseAuthAPITest):
-    @patch("backend.corpora.lambdas.api.v1.curation.collections.collection_id.dataset.sts_client")
+    @patch("backend.corpora.lambdas.api.v1.curation.collections.collection_id.datasets.upload_s3.sts_client")
     def test__generate_s3_credentials__OK(self, sts_client: Mock):
         def _test(token, is_super_curator: bool = False):
             sts_client.assume_role_with_web_identity = Mock(
@@ -28,7 +29,7 @@ class TestAuthToken(BaseAuthAPITest):
             collection = self.generate_collection(self.session)
             headers = {"Authorization": f"Bearer {token}"}
 
-            response = self.app.post(
+            response = self.app.get(
                 f"/curation/v1/collections/{collection.id}/datasets/s3-upload-credentials", headers=headers
             )
             self.assertEqual(200, response.status_code)
@@ -47,21 +48,21 @@ class TestAuthToken(BaseAuthAPITest):
 
     def test__generate_s3_credentials__Not_Owner(self):
         collection = self.generate_collection(self.session, owner="not_test_user")
-        response = self.app.post(
+        response = self.app.get(
             f"/curation/v1/collections/{collection.id}/datasets/s3-upload-credentials", headers=self.make_owner_header()
         )
         self.assertEqual(403, response.status_code, msg=response.data)
 
     def test__generate_s3_credentials__Not_Private(self):
         collection = self.generate_collection(self.session, visibility=CollectionVisibility.PUBLIC.name)
-        response = self.app.post(
+        response = self.app.get(
             f"/curation/v1/collections/{collection.id}/datasets/s3-upload-credentials", headers=self.make_owner_header()
         )
         self.assertEqual(403, response.status_code)
 
     def test__generate_s3_credentials__No_Auth(self):
         collection = self.generate_collection(self.session, visibility=CollectionVisibility.PUBLIC.name)
-        response = self.app.post(f"/curation/v1/collections/{collection.id}/datasets/s3-upload-credentials")
+        response = self.app.get(f"/curation/v1/collections/{collection.id}/datasets/s3-upload-credentials")
         self.assertEqual(401, response.status_code)
 
 
@@ -283,6 +284,7 @@ class TestGetCollectionID(BaseAuthAPITest):
             },
         ],
         "name": "test_collection_name",
+        "processing_status": "PENDING",
         "published_at": None,
         "publisher_metadata": None,
         "revised_at": None,
@@ -409,8 +411,28 @@ class TestPatchCollectionID(BaseAuthAPITest):
         self.assertEqual(200, response.status_code)
 
     def test__update_collection_partial_data__OK(self):
-        collection_id = self.generate_collection(self.session).id
-        metadata = {"name": "A new name, and only a new name"}
+        description = "a description"
+        contact_name = "first last"
+        contact_email = "name@server.domain"
+        links = [
+            {"link_name": "name", "link_type": "RAW_DATA", "link_url": "http://test_link.place"},
+        ]
+        publisher_metadata = {
+            "authors": [{"name": "First Last", "given": "First", "family": "Last"}],
+            "journal": "Journal of Anamolous Results",
+            "published_year": 2022,
+            "published_month": 1,
+        }
+        collection_id = self.generate_collection(
+            self.session,
+            description=description,
+            contact_name=contact_name,
+            contact_email=contact_email,
+            links=links,
+            publisher_metadata=publisher_metadata,
+        ).id
+        new_name = "A new name, and only a new name"
+        metadata = {"name": new_name}
         response = self.app.patch(
             f"/curation/v1/collections/{collection_id}",
             data=json.dumps(metadata),
@@ -418,7 +440,85 @@ class TestPatchCollectionID(BaseAuthAPITest):
         )
         self.assertEqual(200, response.status_code)
         response = self.app.get(f"curation/v1/collections/{collection_id}")
-        self.assertEqual(response.json["name"], metadata["name"])
+        self.assertEqual(new_name, response.json["name"])
+        self.assertEqual(description, response.json["description"])
+        self.assertEqual(contact_name, response.json["contact_name"])
+        self.assertEqual(contact_email, response.json["contact_email"])
+        self.assertEqual(links, response.json["links"])
+        self.assertEqual(publisher_metadata, response.json["publisher_metadata"])
+
+    def test__update_collection__links_and_doi_management__OK(self):
+        name = "partial updates test collection"
+        links = [
+            {"link_name": "name", "link_type": "RAW_DATA", "link_url": "http://test_link.place"},
+            {"link_name": "doi", "link_type": "DOI", "link_url": "http://doi.doi"},
+        ]
+        new_links = [
+            {"link_name": "new link", "link_type": "RAW_DATA", "link_url": "http://brand_new_link.place"},
+            {"link_name": "new doi", "link_type": "DOI", "link_url": "http://doi.org/10.1016"},  # a real DOI
+        ]
+
+        links_configurations = (
+            ("With links already in place; new links replace old", links, new_links, 200, new_links),
+            ("With no links in place; new links get added", None, new_links, 200, new_links),
+            ("With links in place, but empty request; no changes are made", links, None, 200, links),
+            ("With links in place, empty array passed; BAD REQUEST 400", links, [], 400, links),
+        )
+
+        for test_title, initial_links, new_links, expected_status_code, expected_links in links_configurations:
+            with self.subTest(test_title):
+                collection_id = self.generate_collection(self.session, name=name, links=initial_links).id
+                original_collection = self.app.get(f"curation/v1/collections/{collection_id}").json
+                self.assertEqual(initial_links if initial_links else [], original_collection["links"])
+                metadata = {"links": new_links} if new_links is not None else {}
+                response = self.app.patch(
+                    f"/curation/v1/collections/{collection_id}",
+                    data=json.dumps(metadata),
+                    headers=self.make_owner_header(),
+                )
+                self.assertEqual(expected_status_code, response.status_code)
+                if expected_status_code == 200:
+                    self.assertEqual(name, response.json["name"])
+                    self.assertEqual(expected_links, response.json["links"])
+
+    def test__update_collection__doi_does_not_exist__BAD_REQUEST(self):
+        name = "bad doi update test collection"
+        links = [
+            {"link_name": "name", "link_type": "RAW_DATA", "link_url": "http://test_link.place"},
+            {"link_name": "doi", "link_type": "DOI", "link_url": "http://doi.doi"},
+        ]
+        new_links_bad_doi = [
+            {"link_name": "new link", "link_type": "RAW_DATA", "link_url": "http://brand_new_link.place"},
+            {"link_name": "new doi", "link_type": "DOI", "link_url": "http://a_bad_doi"},  # a bad DOI
+        ]
+        publisher_metadata = {
+            "authors": [{"name": "First Last", "given": "First", "family": "Last"}],
+            "journal": "Journal of Anamolous Results",
+            "published_year": 2022,
+            "published_month": 1,
+        }
+        with patch(
+            "backend.corpora.common.providers.crossref_provider.CrossrefProvider.fetch_metadata",
+            side_effect=CrossrefDOINotFoundException(),
+        ):
+
+            collection = self.generate_collection(
+                self.session, name=name, links=links, publisher_metadata=publisher_metadata
+            )
+            collection_id = collection.id
+            original_collection = self.app.get(f"curation/v1/collections/{collection_id}").json
+            self.assertEqual(links, original_collection["links"])
+            metadata = {"links": new_links_bad_doi}
+            response = self.app.patch(
+                f"/curation/v1/collections/{collection_id}",
+                data=json.dumps(metadata),
+                headers=self.make_owner_header(),
+            )
+            self.assertEqual(400, response.status_code)
+            original_collection_unchanged = self.app.get(f"curation/v1/collections/{collection_id}").json
+            self.assertEqual(name, original_collection_unchanged["name"])
+            self.assertEqual(links, original_collection_unchanged["links"])
+            self.assertEqual(publisher_metadata, original_collection_unchanged["publisher_metadata"])
 
     def test__update_collection__Not_Owner(self):
         collection_id = self.generate_collection(self.session, owner="someone else").id
