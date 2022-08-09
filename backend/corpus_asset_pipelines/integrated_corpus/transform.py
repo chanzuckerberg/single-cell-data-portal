@@ -47,7 +47,7 @@ def create_high_level_tissue(anndata_object: anndata.AnnData):
 # TODO finalize this function
 def get_high_level_tissue(obs: DataFrame):
 
-    for i in range(obs):
+    for i in range(len(obs)):
 
         if "lung" in obs["tissue"][i]:
             obs["tissue_ontology_term_id"][i] = "UBERON:0002048"
