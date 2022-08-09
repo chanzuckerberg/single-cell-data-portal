@@ -403,7 +403,7 @@ DocPage.Layout = function DocLayout({
   return (
     <Layout>
       <Head>
-        <title>CELLxGENE | documentation</title>
+        <title>CELLxGENE | Documentation</title>
       </Head>
       <StyledDocsLayout>
         <main>{children}</main>

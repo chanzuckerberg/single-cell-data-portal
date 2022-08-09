@@ -385,7 +385,7 @@ const LandingPage = (): JSX.Element => {
                       <div className={styles.contentImage}>
                         <Image
                           src={SingleCellDataImg}
-                          alt="cellxgene collections page with sidebar for filtering through the table of data"
+                          alt="CELLxGENE Discover collections page with sidebar for filtering through the table of data"
                         />
                       </div>
                     </div>
