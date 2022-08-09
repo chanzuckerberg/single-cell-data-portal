@@ -559,6 +559,11 @@ components:
           $ref: "#/components/schemas/publisher_metadata"
         revision_of:
           type: string
+          description: the id of the published version of this Collection
+          nullable: true
+        revising_in:
+          type: string
+          description: the id of the associated revision Collection, if one exists and the user is authorized
           nullable: true
         tombstone:
           type: boolean
