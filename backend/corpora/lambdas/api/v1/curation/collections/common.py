@@ -28,9 +28,16 @@ DATASET_ONTOLOGY_ELEMENTS = (
     "organism",
 )
 
+DATASET_ONTOLOGY_ELEMENTS_PREVIEW = (
+    "tissue",
+    "assay",
+    "disease",
+    "organism",
+)
+
 
 def reshape_for_curation_api_and_is_allowed(
-    db_session: Session, collection: dict, token_info: dict, id_provided: bool = False
+    db_session: Session, collection: dict, token_info: dict, id_provided: bool = False, preview: bool = False
 ) -> bool:
     """
     Reshape Collection data for the Curation API response. Remove tombstoned Datasets.
@@ -38,9 +45,11 @@ def reshape_for_curation_api_and_is_allowed(
     :param collection: the Collection being returned in the API response
     :param token_info: user access token
     :param id_provided: bool - whether or not the collection uuid was provided by the user, for access purposes
+    :param preview: boool - whether the dataset is in preview form or not.
     :return: whether or not the Collection should be included in the response per ownership/access rules
     """
-    owner = collection["owner"]
+
+    owner = collection.pop("owner")  # Don't actually want to return 'owner' in response
     if is_user_owner_or_allowed(token_info, owner):
         collection["access_type"] = "WRITE"
     elif not id_provided and collection["visibility"] == CollectionVisibility.PRIVATE:
@@ -52,11 +61,10 @@ def reshape_for_curation_api_and_is_allowed(
 
     set_revising_in(db_session, collection, token_info, owner)
 
-    del collection["owner"]  # Don't actually want to return 'owner' in response
     collection["collection_url"] = f"{CorporaConfig().collections_base_url}/collections/{collection['id']}"
 
     if datasets := collection.get("datasets"):
-        collection["datasets"] = reshape_datasets_for_curation_api(datasets)
+        collection["datasets"] = reshape_datasets_for_curation_api(datasets, preview)
     return True
 
 
@@ -81,16 +89,16 @@ def set_revising_in(db_session: Session, collection: dict, token_info: dict, own
             collection["revising_in"] = "NOT AUTHORIZED"
 
 
-def reshape_datasets_for_curation_api(datasets: typing.List[dict]) -> typing.List[dict]:
+def reshape_datasets_for_curation_api(datasets: typing.List[dict], preview=False) -> typing.List[dict]:
     active_datasets = []
     for dataset in datasets:
         if dataset.get("tombstone"):
             continue  # Remove tombstoned Datasets
-        active_datasets.append(reshape_dataset_for_curation_api(dataset))
+        active_datasets.append(reshape_dataset_for_curation_api(dataset, preview))
     return active_datasets
 
 
-def reshape_dataset_for_curation_api(dataset: dict) -> dict:
+def reshape_dataset_for_curation_api(dataset: dict, preview=False) -> dict:
     if artifacts := dataset.get("artifacts"):
         dataset["dataset_assets"] = []
         for asset in artifacts:
@@ -99,7 +107,8 @@ def reshape_dataset_for_curation_api(dataset: dict) -> dict:
         del dataset["artifacts"]
     if dataset.get("processing_status"):
         dataset["processing_status"] = dataset["processing_status"]["processing_status"]
-    for ontology_element in DATASET_ONTOLOGY_ELEMENTS:
+    dataset_ontology_elements = DATASET_ONTOLOGY_ELEMENTS_PREVIEW if preview else DATASET_ONTOLOGY_ELEMENTS
+    for ontology_element in dataset_ontology_elements:
         if dataset_ontology_element := dataset.get(ontology_element):
             if not isinstance(dataset_ontology_element, list):
                 # Package in array
@@ -129,6 +138,7 @@ class EntityColumns:
         "owner",  # Needed for determining view permissions
         "links",
         "datasets",
+        "revising_in",
     ]
 
     link_cols = [
