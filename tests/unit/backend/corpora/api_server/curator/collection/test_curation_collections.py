@@ -8,6 +8,7 @@ from backend.corpora.common.corpora_orm import (
     DatasetArtifactFileType,
     DbDataset,
 )
+from backend.corpora.lambdas.api.v1.curation.collections.common import EntityColumns
 from backend.corpora.common.providers.crossref_provider import CrossrefDOINotFoundException
 from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest, mock_assert_authorized_token
 from tests.unit.backend.fixtures.config import fake_s3_file
@@ -180,6 +181,87 @@ class TestGetCollections(BaseAuthAPITest):
         self.assertEqual(200, res.status_code)
         self.assertEqual(2, len(res.json["collections"]))
         [self.assertEqual("PRIVATE", c["visibility"]) for c in res.json["collections"]]
+
+    def test__verify_expected_public_collection_fields(self):
+        collection = self.generate_collection(
+            self.session,
+            visibility=CollectionVisibility.PUBLIC.name,
+            links=[
+                {
+                    "link_name": "test_raw_data_link_name",
+                    "link_type": "RAW_DATA",
+                    "link_url": "http://test_raw_data_url.place",
+                }
+            ],
+        )
+        self.generate_dataset(self.session, collection=collection)
+        res = self.app.get("/curation/v1/collections")
+        self.assertEqual(200, res.status_code)
+        for resp_collection in res.json["collections"]:
+            if resp_collection["id"] is collection.id:
+                break
+
+        self.check_fields(EntityColumns.link_cols, resp_collection["links"][0], "links")
+        self.check_fields(EntityColumns.dataset_preview_cols, resp_collection["datasets"][0], "datasets")
+
+        collections_cols = EntityColumns.collections_cols.copy()
+        collections_cols.remove("owner")
+        collections_cols.remove("tombstone")
+        collections_cols.append("processing_status")
+        collections_cols.append("collection_url")
+        self.check_fields(collections_cols, resp_collection, "collection")
+
+    def test__verify_expected_private_collection_fields(self):
+        collection = self.generate_collection(
+            self.session,
+            visibility=CollectionVisibility.PUBLIC.name,
+            links=[
+                {
+                    "link_name": "test_raw_data_link_name",
+                    "link_type": "RAW_DATA",
+                    "link_url": "http://test_raw_data_url.place",
+                }
+            ],
+        )
+        self.generate_dataset(self.session, collection=collection)
+        params = {"visibility": "PUBLIC"}
+
+        def _test(owner):
+            if owner:
+                header = self.make_owner_header()
+                subtest_prefix = "owner"
+            else:
+                header = self.make_not_owner_header()
+                subtest_prefix = "not_owner"
+            res = self.app.get("/curation/v1/collections", query_string=params, headers=header)
+            self.assertEqual(200, res.status_code)
+            for resp_collection in res.json["collections"]:
+                if resp_collection["id"] is collection.id:
+                    break
+
+            self.check_fields(EntityColumns.link_cols, resp_collection["links"][0], f"{subtest_prefix}:links")
+            self.check_fields(
+                EntityColumns.dataset_preview_cols, resp_collection["datasets"][0], f"{subtest_prefix}:datasets"
+            )
+
+            collections_cols = EntityColumns.collections_cols.copy()
+            collections_cols.remove("tombstone")
+            collections_cols.remove("owner")
+            collections_cols.append("processing_status")
+            collections_cols.append("access_type")
+            collections_cols.append("collection_url")
+            self.check_fields(collections_cols, resp_collection, f"{subtest_prefix}:collection")
+
+        _test(True)
+        _test(False)
+
+    def check_fields(self, fields: list, response: dict, entity: str):
+        for key in fields:
+            with self.subTest(f"{entity}:{key}"):
+                self.assertIn(key, response.keys())
+                response.pop(key)
+        with self.subTest(f"No Extra fields in {entity}"):
+            self.assertFalse(response)
 
     def test__no_tombstoned_collections_or_datasets_included(self):
         second_collection = self.generate_collection(
