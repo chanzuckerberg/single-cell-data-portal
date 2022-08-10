@@ -145,8 +145,6 @@ paths:
                         type: array
                         items:
                           $ref: "#/components/schemas/dataset"
-        "400":
-          $ref: "#/components/responses/400"
         "404":
           $ref: "#/components/responses/404"
     patch:
@@ -220,8 +218,6 @@ paths:
       responses:
         "204":
           $ref: "#/components/responses/204"
-        "400":
-          $ref: "#/components/responses/400_multiple"
         "401":
           $ref: "#/components/responses/401"
         "403":
@@ -554,7 +550,12 @@ components:
         revised_at:
           nullable: true
           type: string
+        revising_in:
+          type: string
+          description: the id of the associated revision Collection, if one exists and the user is authorized
+          nullable: true
         revision_of:
+          description: the id of the published version of this Collection
           nullable: true
           type: string
         tombstone:

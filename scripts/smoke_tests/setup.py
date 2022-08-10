@@ -1,10 +1,8 @@
 #!/usr/bin/env python
 import sys
 import json
-import time
 import threading
 
-import requests
 
 from tests.functional.backend.common import BaseFunctionalTestCase
 
@@ -14,7 +12,6 @@ TEST_ACCT_CONTACT_NAME = "Smoke Test User"
 
 
 class SmokeTestsInitializer(BaseFunctionalTestCase):
-
     def __init__(self):
         super().setUpClass()
         super().setUp()
@@ -25,7 +22,7 @@ class SmokeTestsInitializer(BaseFunctionalTestCase):
         res.raise_for_status()
         data = json.loads(res.content)
         num_collections = 0
-        for collection in data['collections']:
+        for collection in data["collections"]:
             if collection["contact_name"] == TEST_ACCT_CONTACT_NAME:
                 num_collections += 1
             if num_collections == NUM_TEST_COLLECTIONS:
