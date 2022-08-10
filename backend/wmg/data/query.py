@@ -58,13 +58,18 @@ class WmgQuery:
 
         # Filter single-valued attribute criterion using TileDB filtering, using QueryCondition
         # TODO: Benchmark whether this is faster than just doing all the attribute filtering in Pandas
-        single_valued_attrs = {
-            depluralize(attr_name): vals[0]
-            for attr_name, vals in criteria.dict(exclude=set(indexed_dims)).items()
-            if len(vals) == 1
-        }
+
+        single_valued_attrs = {}
+        multi_valued_attrs = {}
+        for attr_name, vals in criteria.dict(exclude=set(indexed_dims)).items():
+            if len(vals) == 1:
+                single_valued_attrs[depluralize(attr_name)] = vals[0]
+            elif len(vals) > 1:
+                multi_valued_attrs[depluralize(attr_name)] = vals
         single_valued_attr_conds = [f"{k} == val('{v}')" for k, v in single_valued_attrs.items()]
-        query_cond_expr = " and ".join(single_valued_attr_conds)
+        multi_valued_attr_conds = [f"{k} in {v}" for k, v in multi_valued_attrs.items()]
+
+        query_cond_expr = " and ".join(single_valued_attr_conds) + " and " + " and ".join(multi_valued_attr_conds)
         attr_cond = tiledb.QueryCondition(query_cond_expr) if query_cond_expr else None
 
         tiledb_dims_query = tuple([criteria.dict()[dim_name] or EMPTY_DIM_VALUES for dim_name in indexed_dims])
@@ -83,19 +88,6 @@ class WmgQuery:
             return cube.query(attr_cond=attr_cond, use_arrow=False).df[tiledb_dims_query]
 
         query_result_df = cube.query(attr_cond=attr_cond, use_arrow=True).df[tiledb_dims_query]
-
-        # Filter multi-valued attribute criteria using Pandas filtering
-        multi_valued_attrs = {
-            depluralize(attr_name): vals
-            for attr_name, vals in criteria.dict(exclude=set(indexed_dims)).items()
-            if len(vals) > 1
-        }
-        if multi_valued_attrs:
-            # Note that this is a Pandas query expression, which happens to be very similar to TileDB Python
-            # QueryCondition expression. But don't confuse the two! Pandas query expressions _do_ support logical OR'ing
-            # in filtering expressions
-            multi_valued_attr_conds = [f"{k} in {v}" for k, v in multi_valued_attrs.items()]
-            query_result_df = query_result_df.query(" and ".join(multi_valued_attr_conds))
 
         return query_result_df
 
