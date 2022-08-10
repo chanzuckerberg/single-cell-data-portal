@@ -232,7 +232,7 @@ const LandingPage = (): JSX.Element => {
           </div>
           <div className={styles.heroTextContainer}>
             <div className={styles.heroLogo}>
-              <Image src={wordmark} alt="CZ CELLxGENE Discover" />
+              <Image src={wordmark} alt="CZ CELLxGENE Discover" priority />
             </div>
             <h1>Discover the mechanisms of human health</h1>
             <p>
