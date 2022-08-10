@@ -8,6 +8,8 @@ from backend.corpora.common.corpora_orm import (
     DatasetArtifactFileType,
     DbDataset,
 )
+from backend.corpora.lambdas.api.v1.curation.collections.common import EntityColumns
+from backend.corpora.common.providers.crossref_provider import CrossrefDOINotFoundException
 from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest, mock_assert_authorized_token
 from tests.unit.backend.fixtures.config import fake_s3_file
 
@@ -141,6 +143,25 @@ class TestGetCollections(BaseAuthAPITest):
         res_auth = self.app.get("/curation/v1/collections", headers=self.make_owner_header())
         self.assertEqual(200, res_auth.status_code)
         self.assertEqual(6, len(res_auth.json["collections"]))
+        with self.subTest("The 'revising_in' attribute is None for unauthorized public collections"):
+            for c in res_auth.json["collections"]:
+                if c["id"] in (
+                    "test_collection_id_public_for_revision_one",
+                    "test_collection_id_public_for_revision_two",
+                ):
+                    self.assertIsNone(c["revising_in"])
+        with self.subTest("The 'revising_in' attribute is None for collections which lack a revision"):
+            for c in res_auth.json["collections"]:
+                if c["id"] in (
+                    "test_collection_id_public",
+                    "test_collection_with_link",
+                    "test_collection_with_link_and_dataset_changes",
+                ):
+                    self.assertIsNone(c["revising_in"])
+        with self.subTest("The 'revising_in' attribute is equal to the id of the revision Collection"):
+            for c in res_auth.json["collections"]:
+                if c["id"] == "test_collection_id":
+                    self.assertEqual("test_collection_id_revision", c["revising_in"])
 
     def test__get_collections_no_auth_visibility_private__OK(self):
         params = {"visibility": "PRIVATE"}
@@ -179,6 +200,87 @@ class TestGetCollections(BaseAuthAPITest):
         self.assertEqual(200, res.status_code)
         self.assertEqual(2, len(res.json["collections"]))
         [self.assertEqual("PRIVATE", c["visibility"]) for c in res.json["collections"]]
+
+    def test__verify_expected_public_collection_fields(self):
+        collection = self.generate_collection(
+            self.session,
+            visibility=CollectionVisibility.PUBLIC.name,
+            links=[
+                {
+                    "link_name": "test_raw_data_link_name",
+                    "link_type": "RAW_DATA",
+                    "link_url": "http://test_raw_data_url.place",
+                }
+            ],
+        )
+        self.generate_dataset(self.session, collection=collection)
+        res = self.app.get("/curation/v1/collections")
+        self.assertEqual(200, res.status_code)
+        for resp_collection in res.json["collections"]:
+            if resp_collection["id"] is collection.id:
+                break
+
+        self.check_fields(EntityColumns.link_cols, resp_collection["links"][0], "links")
+        self.check_fields(EntityColumns.dataset_preview_cols, resp_collection["datasets"][0], "datasets")
+
+        collections_cols = EntityColumns.collections_cols.copy()
+        collections_cols.remove("owner")
+        collections_cols.remove("tombstone")
+        collections_cols.append("processing_status")
+        collections_cols.append("collection_url")
+        self.check_fields(collections_cols, resp_collection, "collection")
+
+    def test__verify_expected_private_collection_fields(self):
+        collection = self.generate_collection(
+            self.session,
+            visibility=CollectionVisibility.PUBLIC.name,
+            links=[
+                {
+                    "link_name": "test_raw_data_link_name",
+                    "link_type": "RAW_DATA",
+                    "link_url": "http://test_raw_data_url.place",
+                }
+            ],
+        )
+        self.generate_dataset(self.session, collection=collection)
+        params = {"visibility": "PUBLIC"}
+
+        def _test(owner):
+            if owner:
+                header = self.make_owner_header()
+                subtest_prefix = "owner"
+            else:
+                header = self.make_not_owner_header()
+                subtest_prefix = "not_owner"
+            res = self.app.get("/curation/v1/collections", query_string=params, headers=header)
+            self.assertEqual(200, res.status_code)
+            for resp_collection in res.json["collections"]:
+                if resp_collection["id"] is collection.id:
+                    break
+
+            self.check_fields(EntityColumns.link_cols, resp_collection["links"][0], f"{subtest_prefix}:links")
+            self.check_fields(
+                EntityColumns.dataset_preview_cols, resp_collection["datasets"][0], f"{subtest_prefix}:datasets"
+            )
+
+            collections_cols = EntityColumns.collections_cols.copy()
+            collections_cols.remove("tombstone")
+            collections_cols.remove("owner")
+            collections_cols.append("processing_status")
+            collections_cols.append("access_type")
+            collections_cols.append("collection_url")
+            self.check_fields(collections_cols, resp_collection, f"{subtest_prefix}:collection")
+
+        _test(True)
+        _test(False)
+
+    def check_fields(self, fields: list, response: dict, entity: str):
+        for key in fields:
+            with self.subTest(f"{entity}:{key}"):
+                self.assertIn(key, response.keys())
+                response.pop(key)
+        with self.subTest(f"No Extra fields in {entity}"):
+            self.assertFalse(response)
 
     def test__no_tombstoned_collections_or_datasets_included(self):
         second_collection = self.generate_collection(
@@ -288,6 +390,7 @@ class TestGetCollectionID(BaseAuthAPITest):
         "publisher_metadata": None,
         "revised_at": None,
         "revision_of": None,
+        "revising_in": None,
         "tombstone": False,
         "visibility": "PUBLIC",
     }
@@ -410,8 +513,28 @@ class TestPatchCollectionID(BaseAuthAPITest):
         self.assertEqual(200, response.status_code)
 
     def test__update_collection_partial_data__OK(self):
-        collection_id = self.generate_collection(self.session).id
-        metadata = {"name": "A new name, and only a new name"}
+        description = "a description"
+        contact_name = "first last"
+        contact_email = "name@server.domain"
+        links = [
+            {"link_name": "name", "link_type": "RAW_DATA", "link_url": "http://test_link.place"},
+        ]
+        publisher_metadata = {
+            "authors": [{"name": "First Last", "given": "First", "family": "Last"}],
+            "journal": "Journal of Anamolous Results",
+            "published_year": 2022,
+            "published_month": 1,
+        }
+        collection_id = self.generate_collection(
+            self.session,
+            description=description,
+            contact_name=contact_name,
+            contact_email=contact_email,
+            links=links,
+            publisher_metadata=publisher_metadata,
+        ).id
+        new_name = "A new name, and only a new name"
+        metadata = {"name": new_name}
         response = self.app.patch(
             f"/curation/v1/collections/{collection_id}",
             data=json.dumps(metadata),
@@ -419,7 +542,85 @@ class TestPatchCollectionID(BaseAuthAPITest):
         )
         self.assertEqual(200, response.status_code)
         response = self.app.get(f"curation/v1/collections/{collection_id}")
-        self.assertEqual(response.json["name"], metadata["name"])
+        self.assertEqual(new_name, response.json["name"])
+        self.assertEqual(description, response.json["description"])
+        self.assertEqual(contact_name, response.json["contact_name"])
+        self.assertEqual(contact_email, response.json["contact_email"])
+        self.assertEqual(links, response.json["links"])
+        self.assertEqual(publisher_metadata, response.json["publisher_metadata"])
+
+    def test__update_collection__links_and_doi_management__OK(self):
+        name = "partial updates test collection"
+        links = [
+            {"link_name": "name", "link_type": "RAW_DATA", "link_url": "http://test_link.place"},
+            {"link_name": "doi", "link_type": "DOI", "link_url": "http://doi.doi"},
+        ]
+        new_links = [
+            {"link_name": "new link", "link_type": "RAW_DATA", "link_url": "http://brand_new_link.place"},
+            {"link_name": "new doi", "link_type": "DOI", "link_url": "http://doi.org/10.1016"},  # a real DOI
+        ]
+
+        links_configurations = (
+            ("With links already in place; new links replace old", links, new_links, 200, new_links),
+            ("With no links in place; new links get added", None, new_links, 200, new_links),
+            ("With links in place, but empty request; no changes are made", links, None, 200, links),
+            ("With links in place, empty array passed; BAD REQUEST 400", links, [], 400, links),
+        )
+
+        for test_title, initial_links, new_links, expected_status_code, expected_links in links_configurations:
+            with self.subTest(test_title):
+                collection_id = self.generate_collection(self.session, name=name, links=initial_links).id
+                original_collection = self.app.get(f"curation/v1/collections/{collection_id}").json
+                self.assertEqual(initial_links if initial_links else [], original_collection["links"])
+                metadata = {"links": new_links} if new_links is not None else {}
+                response = self.app.patch(
+                    f"/curation/v1/collections/{collection_id}",
+                    data=json.dumps(metadata),
+                    headers=self.make_owner_header(),
+                )
+                self.assertEqual(expected_status_code, response.status_code)
+                if expected_status_code == 200:
+                    self.assertEqual(name, response.json["name"])
+                    self.assertEqual(expected_links, response.json["links"])
+
+    def test__update_collection__doi_does_not_exist__BAD_REQUEST(self):
+        name = "bad doi update test collection"
+        links = [
+            {"link_name": "name", "link_type": "RAW_DATA", "link_url": "http://test_link.place"},
+            {"link_name": "doi", "link_type": "DOI", "link_url": "http://doi.doi"},
+        ]
+        new_links_bad_doi = [
+            {"link_name": "new link", "link_type": "RAW_DATA", "link_url": "http://brand_new_link.place"},
+            {"link_name": "new doi", "link_type": "DOI", "link_url": "http://a_bad_doi"},  # a bad DOI
+        ]
+        publisher_metadata = {
+            "authors": [{"name": "First Last", "given": "First", "family": "Last"}],
+            "journal": "Journal of Anamolous Results",
+            "published_year": 2022,
+            "published_month": 1,
+        }
+        with patch(
+            "backend.corpora.common.providers.crossref_provider.CrossrefProvider.fetch_metadata",
+            side_effect=CrossrefDOINotFoundException(),
+        ):
+
+            collection = self.generate_collection(
+                self.session, name=name, links=links, publisher_metadata=publisher_metadata
+            )
+            collection_id = collection.id
+            original_collection = self.app.get(f"curation/v1/collections/{collection_id}").json
+            self.assertEqual(links, original_collection["links"])
+            metadata = {"links": new_links_bad_doi}
+            response = self.app.patch(
+                f"/curation/v1/collections/{collection_id}",
+                data=json.dumps(metadata),
+                headers=self.make_owner_header(),
+            )
+            self.assertEqual(400, response.status_code)
+            original_collection_unchanged = self.app.get(f"curation/v1/collections/{collection_id}").json
+            self.assertEqual(name, original_collection_unchanged["name"])
+            self.assertEqual(links, original_collection_unchanged["links"])
+            self.assertEqual(publisher_metadata, original_collection_unchanged["publisher_metadata"])
 
     def test__update_collection__Not_Owner(self):
         collection_id = self.generate_collection(self.session, owner="someone else").id
@@ -437,6 +638,18 @@ class TestPatchCollectionID(BaseAuthAPITest):
             f"/curation/v1/collections/{collection_id}", data=json.dumps(self.test_collection), headers=headers
         )
         self.assertEqual(200, response.status_code)
+
+    def test__update_public_collection_owner__405(self):
+        collection_id = self.generate_collection(self.session, visibility=CollectionVisibility.PUBLIC).id
+        headers = self.make_super_curator_header()
+        response = self.app.patch(
+            f"/curation/v1/collections/{collection_id}", data=json.dumps(self.test_collection), headers=headers
+        )
+        self.assertEqual(405, response.status_code)
+        self.assertEqual(
+            "Directly editing a public Collection is not allowed; you must create a revision.",
+            json.loads(response.text)["detail"],
+        )
 
 
 if __name__ == "__main__":
