@@ -22,7 +22,7 @@ for row in data:
         "esearchresult" not in result or 
         "idlist" not in result["esearchresult"] or 
         len(result["esearchresult"]["idlist"]) < 1
-        ):
+    ):
             print(f"failed on {row[0]}, {row[1]}")
             url = f'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=gene&term=${row[1]}&retmode=json'
             result = json.loads(urllib.request.urlopen(url).read())
