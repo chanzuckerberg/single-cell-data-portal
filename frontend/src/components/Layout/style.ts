@@ -7,7 +7,7 @@ export const Wrapper = styled.div`
   height: 100vh; /* required for content scroll */
   min-height: 100vh; /* required for full height flex on child */
   /* TODO(seve): #2755 */
-  overflow-x: hidden; /* responsive requirement; facilitates hiding of content when viewport is resized and layout min width is applied */
+  overflow-x: clip; /* responsive requirement; facilitates hiding of content when viewport is resized and layout min width is applied */
 `;
 
 export const contentWrapper = css`
