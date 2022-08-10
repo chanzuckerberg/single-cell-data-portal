@@ -267,7 +267,6 @@ class TestGetCollections(BaseAuthAPITest):
             collections_cols.remove("tombstone")
             collections_cols.remove("owner")
             collections_cols.append("processing_status")
-            collections_cols.append("access_type")
             collections_cols.append("collection_url")
             self.check_fields(collections_cols, resp_collection, f"{subtest_prefix}:collection")
 
@@ -414,14 +413,12 @@ class TestGetCollectionID(BaseAuthAPITest):
         self.assertEqual(200, res.status_code)
         res_body = res.json
         del res_body["created_at"]  # too finicky; ignore
-        self.assertTrue("access_type" not in res_body)
         self.assertDictEqual(self.expected_body, res_body)  # Confirm dict has been packaged in list
 
     def test__get_private_collection__OK(self):
         res = self.app.get("/curation/v1/collections/test_collection_id_revision")
         self.assertEqual(200, res.status_code)
         self.assertEqual("test_collection_id_revision", res.json["id"])
-        self.assertTrue("access_type" not in res.json)
 
     def test__get_nonexistent_collection__Not_Found(self):
         res = self.app.get("/curation/v1/collections/test_collection_id_nonexistent")
@@ -448,19 +445,16 @@ class TestGetCollectionID(BaseAuthAPITest):
         res = self.app.get("/curation/v1/collections/test_collection_id", headers=self.make_owner_header())
         self.assertEqual(200, res.status_code)
         self.assertEqual("test_collection_id", res.json["id"])
-        self.assertEqual("WRITE", res.json["access_type"])
 
     def test__get_public_collection_with_auth_access_type_read__OK(self):
         res = self.app.get("/curation/v1/collections/test_collection_id_not_owner", headers=self.make_owner_header())
         self.assertEqual(200, res.status_code)
         self.assertEqual("test_collection_id_not_owner", res.json["id"])
-        self.assertEqual("READ", res.json["access_type"])
 
     def test__get_private_collection_with_auth_access_type_write__OK(self):
         res = self.app.get("/curation/v1/collections/test_collection_id_revision", headers=self.make_owner_header())
         self.assertEqual(200, res.status_code)
         self.assertEqual("test_collection_id_revision", res.json["id"])
-        self.assertEqual("WRITE", res.json["access_type"])
 
 
 class TestPatchCollectionID(BaseAuthAPITest):

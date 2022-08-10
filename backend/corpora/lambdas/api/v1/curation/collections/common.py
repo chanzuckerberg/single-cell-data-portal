@@ -50,14 +50,9 @@ def reshape_for_curation_api_and_is_allowed(
     """
 
     owner = collection.pop("owner")  # Don't actually want to return 'owner' in response
-    if is_user_owner_or_allowed(token_info, owner):
-        collection["access_type"] = "WRITE"
-    elif not id_provided and collection["visibility"] == CollectionVisibility.PRIVATE:
+    if not id_provided and collection["visibility"] == CollectionVisibility.PRIVATE:
         # User neither provided the uuid for access nor are they authorized by their access token
         return False
-    elif token_info:
-        # Access token was provided but user is not authorized
-        collection["access_type"] = "READ"
 
     set_revising_in(db_session, collection, token_info, owner)
 

@@ -542,10 +542,6 @@ components:
           type: string
         links:
           $ref: "#/components/schemas/links"
-        access_type:
-          type: string
-          enum: [READ, WRITE]
-          nullable: true
         published_at:
           type: string
           nullable: true
