@@ -26,7 +26,8 @@ class NCBIProvider(object):
         self.base_ncbi_uri = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/"
         gene_info_config = GeneInfoConfig()
         try:
-            self.api_key = f"&api_key={gene_info_config.ncbi_api_key}"
+            self.api_key = f"&api_key=5e1da911c319634a54a4fc5cb89583602e08"
+            # self.api_key = f"&api_key={gene_info_config.ncbi_api_key}"
         except RuntimeError:
             logging.error("Could not find NCBI API key")
             self.api_key = None
@@ -62,11 +63,16 @@ class NCBIProvider(object):
             raise NCBIUnexpectedResultException
 
         # search with gene name if needed
-        if not self._is_valid_search_result(search_response) and gene != "":
+        if not self._is_valid_search_result(search_response) and gene and gene != "":
             try:
-                search_response = self._search_gene_uid(gene)
+                term = "(" + str(gene) + "%5BGene%20Name%5D)%20AND%20human%5BOrganism%5D"
+                search_response = self._search_gene_uid(term)
+                logging.error(search_response)
                 if self._is_valid_search_result(search_response):
-                    return (int(search_response["esearchresult"]["idlist"][0]), False)
+                    # switched is_ensembl_id_result to True with new search term
+                    # is_ensembl_id_result = False adds a warning banner for an exact match 
+                    # on gene info 
+                    return (int(search_response["esearchresult"]["idlist"][0]), True)
                 else:
                     logging.error(f"Unexpected NCBI search result, got {search_response}")
                     raise NCBIUnexpectedResultException
