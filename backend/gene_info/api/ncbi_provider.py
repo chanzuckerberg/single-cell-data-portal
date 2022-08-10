@@ -66,7 +66,6 @@ class NCBIProvider(object):
             try:
                 term = "(" + str(gene) + "%5BGene%20Name%5D)%20AND%20human%5BOrganism%5D"
                 search_response = self._search_gene_uid(term)
-                logging.error(search_response)
                 if self._is_valid_search_result(search_response):
                     # switched is_ensembl_id_result to True with new search term
                     # is_ensembl_id_result = False adds a warning banner for an exact match

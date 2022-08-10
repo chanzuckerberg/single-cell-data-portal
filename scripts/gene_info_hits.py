@@ -6,41 +6,42 @@ import csv
 import urllib.request
 import json
 
+
+def get_search_url(term):
+    return f"https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=gene&term=${term}&retmode=json"
+
+
+def write_row(writer, status, row, result):
+    writer.writerow([status, row[0], row[1], len(result["esearchresult"]["idlist"]), result])
+
+
 # open files
-file = open('./genes_homo_sapiens_copy.csv')
-counts = open('./counts.csv', 'a')
+file = open("./genes_homo_sapiens_copy.csv")
+counts = open("./counts.csv", "a")
 writer = csv.writer(counts)
 data = csv.reader(file)
 
-writer.writerow(['STATUS', 'ensembl ID', 'gene name', 'count', 'result'])
-for row in data:
-    url = f'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=gene&term=${row[0]}&retmode=json'
-    result = json.loads(urllib.request.urlopen(url).read())
+# write column names
+writer.writerow(["STATUS", "ensembl ID", "gene name", "count", "result"])
 
+for row in data:
+    result = json.loads(urllib.request.urlopen(get_search_url(row[0])).read())
     # unsuccessful search result (success is when the code returns one UID from NCBI)
     if (
-        "esearchresult" not in result or 
-        "idlist" not in result["esearchresult"] or 
-        len(result["esearchresult"]["idlist"]) < 1
+        "esearchresult" not in result
+        or "idlist" not in result["esearchresult"]
+        or len(result["esearchresult"]["idlist"]) < 1
     ):
-            print(f"failed on {row[0]}, {row[1]}")
-            url = f'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=gene&term=${row[1]}&retmode=json'
-            result = json.loads(urllib.request.urlopen(url).read())
-            try:
-                print(f'{len(result["esearchresult"]["idlist"])} id(s): {int(result["esearchresult"]["idlist"][0])}')
-                writer.writerow(['SUCCESS ON SECOND SEARCH', row[0], row[1], len(result["esearchresult"]["idlist"]), result])
-            except:
-                print(f'SEARCH 2 FAILED. {result}')
-                writer.writerow(['FAILED', row[0], row[1], 0, result])
+        result = json.loads(urllib.request.urlopen(get_search_url(row[1])).read())
+        try:
+            write_row(writer, "SUCCESS ON SECOND SEARCH", row, result)
+        except:
+            write_row(writer, "FAILED", row, result)
     else:
-        # successful search result
-        print(result)
         if len(result["esearchresult"]["idlist"]) == 1:
-            writer.writerow(['SUCCESS', row[0], row[1], len(result["esearchresult"]["idlist"]), result])
-
-        # too many ID results
+            write_row(writer, "SUCCESS", row, result)
         else:
-            writer.writerow(['TOO MANY RESULTS', row[0], row[1], len(result["esearchresult"]["idlist"]), result])
+            write_row(writer, "TOO MANY RESULTS", row, result)
 
 file.close()
 counts.close()
