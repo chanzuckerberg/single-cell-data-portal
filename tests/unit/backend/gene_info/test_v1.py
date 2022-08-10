@@ -74,7 +74,9 @@ class GeneInfoAPIv1Tests(unittest.TestCase):
         mock_is_valid_search_result.return_value = False
         self.app.get("/gene_info/v1/gene_info?geneID=ensembl&gene=name")
         self.assertEqual(mock_search_gene_uid.call_count, 2)
-        mock_search_gene_uid.assert_has_calls([call("ensembl"), call("(name%5BGene%20Name%5D)%20AND%20human%5BOrganism%5D")])
+        mock_search_gene_uid.assert_has_calls(
+            [call("ensembl"), call("(name%5BGene%20Name%5D)%20AND%20human%5BOrganism%5D")]
+        )
         self.assertEqual(mock_is_valid_search_result.call_count, 2)
         mock_is_valid_search_result.assert_has_calls([call("failed"), call("failed")])
         self.assertRaises(NotFoundHTTPException)
