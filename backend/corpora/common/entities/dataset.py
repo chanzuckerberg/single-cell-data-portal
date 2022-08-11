@@ -4,6 +4,8 @@ import typing
 from collections import OrderedDict
 from datetime import datetime
 from pathlib import PurePosixPath
+
+from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from urllib.parse import urlparse
@@ -128,6 +130,29 @@ class Dataset(Entity):
                 dataset = _get_by_explorer_url_query(f"{explorer_url}/")
 
         return dataset
+
+    @classmethod
+    def list(
+        cls, session: Session, collection_id: str = None, include_tombstones: bool = False
+    ) -> typing.List["Dataset"]:
+        """
+        Retrieves a list of Datasets from the database
+
+        :param session: an open database session
+        :param tombstones: True of to include tombstoned datasets
+        :return: A list of Datasets
+        """
+        filters = []
+
+        if not include_tombstones:
+            filters.append(or_(cls.table.tombstone == False, cls.table.tombstone == None))  # noqa
+        if collection_id:
+            filters.append(cls.table.collection_id == collection_id)
+
+        if filters:
+            return [cls(obj) for obj in session.query(cls.table).filter(*filters).all()]
+        else:
+            return [cls(obj) for obj in session.query(cls.table)]
 
     def get_asset(self, asset_id) -> typing.Union[DatasetAsset, None]:
         """

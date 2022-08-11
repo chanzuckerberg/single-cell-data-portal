@@ -6,15 +6,7 @@ from sqlalchemy.orm import Session
 from . import Dataset
 from .entity import Entity
 from .geneset import Geneset
-from ..corpora_orm import (
-    CollectionLinkType,
-    DbCollection,
-    DbCollectionLink,
-    CollectionVisibility,
-    generate_id,
-    ProcessingStatus,
-    Base,
-)
+from ..corpora_orm import CollectionLinkType, DbCollection, DbCollectionLink, CollectionVisibility, generate_id
 from ..utils.db_helpers import clone
 
 
@@ -151,45 +143,6 @@ class Collection(Entity):
         ]
 
         return results
-
-    @classmethod
-    def list_collections_curation(
-        cls, session: Session, collection_columns: typing.Dict[Base, typing.List[str]], visibility: str = None
-    ) -> typing.List[dict]:
-        """
-        Get a subset of columns, in dict form, for all Collections with the specified visibility. If visibility is None,
-        return *all* Collections that are *not* tombstoned.
-        :param session: the SQLAlchemy session
-        :param collection_columns: the list of columns to be returned (see usage by TransformingBase::to_dict_keep)
-        :param visibility: the CollectionVisibility string name
-        @return: a list of dict representations of Collections
-        """
-        filters = [DbCollection.tombstone == False]  # noqa
-        if visibility == CollectionVisibility.PUBLIC.name:
-            filters.append(DbCollection.visibility == CollectionVisibility.PUBLIC)
-        elif visibility == CollectionVisibility.PRIVATE.name:
-            filters.append(DbCollection.visibility == CollectionVisibility.PRIVATE)
-
-        resp_collections = []
-        for collection in session.query(cls.table).filter(*filters).all():
-            # Add a Collection-level processing status
-            status = None
-            has_statuses = False
-            for dataset in collection.datasets:
-                processing_status = dataset.processing_status
-                if processing_status:
-                    has_statuses = True
-                    if processing_status.processing_status == ProcessingStatus.PENDING:
-                        status = ProcessingStatus.PENDING
-                    elif processing_status.processing_status == ProcessingStatus.FAILURE:
-                        status = ProcessingStatus.FAILURE
-                        break
-            if has_statuses and not status:  # At least one dataset processing status exists, and all were SUCCESS
-                status = ProcessingStatus.SUCCESS
-            resp_collection = collection.to_dict_keep(collection_columns)
-            resp_collection["processing_status"] = status
-            resp_collections.append(resp_collection)
-        return resp_collections
 
     @classmethod
     def list_public_datasets_for_index(cls, session: Session) -> typing.List[typing.Dict]:
