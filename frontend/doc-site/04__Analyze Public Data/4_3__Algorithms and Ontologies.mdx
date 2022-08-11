@@ -12,7 +12,7 @@ We then sort genes by their associated `|t value|` and return the top 15 genes.
 
 ## Cell type ontology ordering
 
-Cell types in a dot plot can be ordered using lineage information to maximize the utility of scExpression for pattern discovery and readability. The cell ontology (CL) directed acyclic graph (DAG) provides a good approximation to biological lineages. Thus we have a developed a method to create an ordered list of cell types based on the information contained in the CL DAG.
+Cell types in a dot plot can be ordered using lineage information to maximize the utility of Gene Expression for pattern discovery and readability. The cell ontology (CL) directed acyclic graph (DAG) provides a good approximation to biological lineages. Thus we have a developed a method to create an ordered list of cell types based on the information contained in the CL DAG.
 
 The method traverses the DAG starting from the root until reaching the leftmost bottom node adding nodes present in the data along the way. Once it reaches the bottom, it recursively repeats the process for any siblings. After, it traverses back and repeats the sibling process until exhaustion.
 
