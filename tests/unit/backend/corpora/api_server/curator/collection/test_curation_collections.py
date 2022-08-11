@@ -208,6 +208,8 @@ class TestGetCollections(BaseAuthAPITest):
             )
             self.assertEqual(401, response.status_code)
 
+        with self.subTest("Searching for a curator that doesn't exists return 0 collections."):
+            _test({"curator": "Not A Curator"}, self.make_super_curator_header(), 0)
         with self.subTest("regular curators can search by curator for public collections"):
             _test({"curator": curator_name, "visibility": "PUBLIC"}, self.make_not_owner_header(), 1)
         with self.subTest("super curators can search collections by curator."):
