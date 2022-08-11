@@ -174,6 +174,47 @@ class TestGetCollections(BaseAuthAPITest):
         self.assertEqual(200, res_public.status_code)
         self.assertEqual(6, len(res_public.json["collections"]))
 
+    def test__get_own_collections__OK(self):
+        params = {"curator": "self"}
+        response = self.app.get("/curation/v1/collections", query_string=params, headers=self.make_owner_header())
+        self.assertEqual(200, response.status_code)
+        for col in response.json["collections"]:
+            self.assertEqual("WRITE", col["access_type"])
+
+        # The super curator has no collections they own.
+        response = self.app.get(
+            "/curation/v1/collections", query_string=params, headers=self.make_super_curator_header()
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(0, len(response.json["collections"]))
+
+    def test__get_a_curators_collections(self):
+        curator_name = "John Smith"
+        self.generate_collection(self.session, curator_name="Not Smith")
+        self.generate_collection(self.session, curator_name=curator_name, visibility=CollectionVisibility.PUBLIC)
+        self.generate_collection(self.session, curator_name=curator_name, visibility=CollectionVisibility.PRIVATE)
+
+        def _test(query_param, headers, expected_number_of_results):
+            response = self.app.get("/curation/v1/collections", query_string=query_param, headers=headers)
+            self.assertEqual(200, response.status_code)
+            self.assertEqual(expected_number_of_results, len(response.json["collections"]))
+            for collection in response.json["collections"]:
+                self.assertEqual(curator_name, collection["curator_name"])
+
+        with self.subTest("regular curators can't search by curator for private collections"):
+            params = {"curator": curator_name, "visibility": "PRIVATE"}
+            response = self.app.get(
+                "/curation/v1/collections", query_string=params, headers=self.make_not_owner_header()
+            )
+            self.assertEqual(401, response.status_code)
+
+        with self.subTest("regular curators can search by curator for public collections"):
+            _test({"curator": curator_name, "visibility": "PUBLIC"}, self.make_not_owner_header(), 1)
+        with self.subTest("super curators can search collections by curator."):
+            _test({"curator": curator_name}, self.make_super_curator_header(), 1)
+        with self.subTest("super curators can search private collections by curator"):
+            _test({"curator": curator_name, "visibility": "PRIVATE"}, self.make_super_curator_header(), 1)
+
     def test__get_only_public_collections_with_auth__OK(self):
         params = {"visibility": "PUBLIC"}
         res = self.app.get("/curation/v1/collections", query_string=params, headers=self.make_owner_header())
