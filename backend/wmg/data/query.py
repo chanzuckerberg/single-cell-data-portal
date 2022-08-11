@@ -60,30 +60,35 @@ class WmgQuery:
         # TODO: Benchmark whether this is faster than just doing all the attribute filtering in Pandas
 
         query_cond = ""
+        attrs = {}
         for attr_name, vals in criteria.dict(exclude=set(indexed_dims)).items():
-            if query_cond:
+            attr = depluralize(attr_name)
+            if query_cond and len(vals) > 0:
                 query_cond += " and "
             if len(vals) == 1:
-                query_cond += f"{depluralize(attr_name)} == val('{vals[0]}')"
+                attrs[attr] = vals[0]
+                query_cond += f"{attr} == val('{vals[0]}')"
             elif len(vals) > 1:
-                query_cond += f"{depluralize(attr_name)} in {vals}"
+                attrs[attr] = vals
+                query_cond += f"{attr} in {vals}"
 
         attr_cond = tiledb.QueryCondition(query_cond) if query_cond else None
 
         tiledb_dims_query = tuple([criteria.dict()[dim_name] or EMPTY_DIM_VALUES for dim_name in indexed_dims])
 
+
         # FIXME: HACK of the century. Prevent realloc() error & crash when query returns an empty result. This forces
         #  two queries when there should just one.
-        if (
-            len(
-                cube.query(
-                    attr_cond=attr_cond, dims=["organism_ontology_term_id"]
-                ).multi_index[tiledb_dims_query]["organism_ontology_term_id"]
-            )
-            == 0
-        ):
-            # Return an expected empty DataFrame, but without crashing, thanks to use_arrow=False
-            return cube.query(attr_cond=attr_cond, use_arrow=False).df[tiledb_dims_query]
+        # if (
+        #     len(
+        #         cube.query(
+        #             attr_cond=attr_cond, attrs=attrs, dims=["organism_ontology_term_id"]
+        #         ).multi_index[tiledb_dims_query]["organism_ontology_term_id"]
+        #     )
+        #     == 0
+        # ):
+        #     # Return an expected empty DataFrame, but without crashing, thanks to use_arrow=False
+        #     return cube.query(attr_cond=attr_cond, use_arrow=False).df[tiledb_dims_query]
 
         query_result_df = cube.query(attr_cond=attr_cond, use_arrow=True).df[tiledb_dims_query]
 
