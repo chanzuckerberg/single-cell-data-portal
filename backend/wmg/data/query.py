@@ -59,18 +59,16 @@ class WmgQuery:
         # Filter single-valued attribute criterion using TileDB filtering, using QueryCondition
         # TODO: Benchmark whether this is faster than just doing all the attribute filtering in Pandas
 
-        single_valued_attrs = {}
-        multi_valued_attrs = {}
+        query_cond = ""
         for attr_name, vals in criteria.dict(exclude=set(indexed_dims)).items():
+            if query_cond:
+                query_cond += " and "
             if len(vals) == 1:
-                single_valued_attrs[depluralize(attr_name)] = vals[0]
+                query_cond += f"{depluralize(attr_name)} == val('{vals[0]}')"
             elif len(vals) > 1:
-                multi_valued_attrs[depluralize(attr_name)] = vals
-        single_valued_attr_conds = [f"{k} == val('{v}')" for k, v in single_valued_attrs.items()]
-        multi_valued_attr_conds = [f"{k} in {v}" for k, v in multi_valued_attrs.items()]
+                query_cond += f"{depluralize(attr_name)} in {vals}"
 
-        query_cond_expr = " and ".join(single_valued_attr_conds) + " and " + " and ".join(multi_valued_attr_conds)
-        attr_cond = tiledb.QueryCondition(query_cond_expr) if query_cond_expr else None
+        attr_cond = tiledb.QueryCondition(query_cond) if query_cond else None
 
         tiledb_dims_query = tuple([criteria.dict()[dim_name] or EMPTY_DIM_VALUES for dim_name in indexed_dims])
 
@@ -79,7 +77,7 @@ class WmgQuery:
         if (
             len(
                 cube.query(
-                    attr_cond=attr_cond, attrs=single_valued_attrs, dims=["organism_ontology_term_id"]
+                    attr_cond=attr_cond, dims=["organism_ontology_term_id"]
                 ).multi_index[tiledb_dims_query]["organism_ontology_term_id"]
             )
             == 0
