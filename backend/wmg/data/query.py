@@ -48,17 +48,6 @@ class WmgQuery:
     #  /chanzuckerberg/single-cell-data-portal/2133
     @staticmethod
     def _query(cube: Array, criteria: WmgQueryCriteria, indexed_dims: List[str]) -> DataFrame:
-
-        # As TileDB API does not yet support logical OR'ing of attribute values in query conditions, the best we can do
-        # for a single TileDB query is to have TileDB perform the filtering for only the attributes that have
-        # a single criterion value specified by the user. We can then perform the filtering client-side for the
-        # multi-valued attributes, albeit at the cost of retrieving extra data from the TileDB engine. Note, however,
-        # that this extra data is always being retrieved by TileDB from the filesystem (and so across the network), so
-        # the performance impact should not be as bad as it may at first appear.
-
-        # Filter single-valued attribute criterion using TileDB filtering, using QueryCondition
-        # TODO: Benchmark whether this is faster than just doing all the attribute filtering in Pandas
-
         query_cond = ""
         attrs = {}
         for attr_name, vals in criteria.dict(exclude=set(indexed_dims)).items():
@@ -79,16 +68,16 @@ class WmgQuery:
 
         # FIXME: HACK of the century. Prevent realloc() error & crash when query returns an empty result. This forces
         #  two queries when there should just one.
-        # if (
-        #     len(
-        #         cube.query(
-        #             attr_cond=attr_cond, attrs=attrs, dims=["organism_ontology_term_id"]
-        #         ).multi_index[tiledb_dims_query]["organism_ontology_term_id"]
-        #     )
-        #     == 0
-        # ):
-        #     # Return an expected empty DataFrame, but without crashing, thanks to use_arrow=False
-        #     return cube.query(attr_cond=attr_cond, use_arrow=False).df[tiledb_dims_query]
+        if (
+            len(
+                cube.query(
+                    attr_cond=attr_cond, attrs=attrs, dims=["organism_ontology_term_id"]
+                ).multi_index[tiledb_dims_query]["organism_ontology_term_id"]
+            )
+            == 0
+        ):
+            # Return an expected empty DataFrame, but without crashing, thanks to use_arrow=False
+            return cube.query(attr_cond=attr_cond, use_arrow=False).df[tiledb_dims_query]
 
         query_result_df = cube.query(attr_cond=attr_cond, use_arrow=True).df[tiledb_dims_query]
 
