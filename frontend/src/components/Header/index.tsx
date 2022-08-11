@@ -83,7 +83,11 @@ const Header: FC = () => {
           <LinkWrapper>
             <AnchorButton
               active={isRouteActive(pathname, ROUTES.DOCS)}
-              href={isRouteActive(pathname, ROUTES.WHERE_IS_MY_GENE) ? ROUTES.WMG_DOCS : ROUTES.PUBLISHED_DATA_DOCS }
+              href={
+                isRouteActive(pathname, ROUTES.WHERE_IS_MY_GENE)
+                  ? ROUTES.WMG_DOCS
+                  : ROUTES.PUBLISHED_DATA_DOCS
+              }
               rel="noopener"
               target="_blank"
               minimal
