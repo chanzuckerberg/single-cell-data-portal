@@ -4,7 +4,7 @@ import {
   PopoverPosition,
 } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
-import { FC } from "react";
+import { FC, useEffect, useRef } from "react";
 import { GRAY } from "src/components/common/theme";
 import {
   BulletWrapper,
@@ -61,8 +61,17 @@ const CATEGORIES = [
 ];
 
 function Content() {
+  const contentWrapperRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (contentWrapperRef.current) {
+      contentWrapperRef.current.scrollTop = 1;
+      contentWrapperRef.current.scrollTop = 0;
+    }
+  });
+
   return (
-    <ContentWrapper>
+    <ContentWrapper ref={contentWrapperRef}>
       <div>
         <FirstSentence>
           <Text>
