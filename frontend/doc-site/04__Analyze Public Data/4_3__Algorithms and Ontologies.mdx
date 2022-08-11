@@ -1,8 +1,8 @@
 # Algorithms and Ontologies
 
-## Differential expression
+## Differential Expression
 
-Cellxgene's differential expression uses a [Welch's _t_-test](https://en.wikipedia.org/wiki/Welch%27s_t-test), which assumes that the two populations are normally distributed, but may have unequal variance. We use a two-sided t-test against the null hypothesis that the two populations have **equal** means. P-values are adjusted with the [Bonferroni corrrection](https://en.wikipedia.org/wiki/Bonferroni_correction).
+Differential expression calculated by CELLxGENE Annotate and CELLxGENE Explorer uses a [Welch's _t_-test](https://en.wikipedia.org/wiki/Welch%27s_t-test), which assumes that the two populations are normally distributed, but may have unequal variance. We use a two-sided t-test against the null hypothesis that the two populations have **equal** means. P-values are adjusted with the [Bonferroni correction](https://en.wikipedia.org/wiki/Bonferroni_correction).
 
 To help avoid spurious results, we only return genes with log fold change greater than 0.01:
 

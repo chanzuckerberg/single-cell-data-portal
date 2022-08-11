@@ -55,8 +55,8 @@ const DeleteCollectionButton = ({
             </H6>
             <p>
               Datasets in this collection will no longer be available for
-              download and associated cellxgene visualizations will be deleted.
-              You cannot undo this action.
+              download and associated CELLxGENE Discover visualizations will be
+              deleted. You cannot undo this action.
             </p>
           </>
         </AsyncAlert>
