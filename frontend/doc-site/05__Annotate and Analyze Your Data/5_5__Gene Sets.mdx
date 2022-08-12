@@ -1,8 +1,8 @@
 # Gene Sets
 
-Cellxgene Desktop enables cellxgene users to pre-load gene sets for exploration, and to create or modify gene sets while exploring data. This is particularly useful for recording cell type markers when annotating cells. This section explains how to format gene sets data for preloading of gene sets and where to find gene sets information after making changes in the explorer.
+CZ CELLxGENE Annotate enables CELLxGENE users to pre-load gene sets for exploration, and to create or modify gene sets while exploring data. This is particularly useful for recording cell type markers when annotating cells. This section explains how to format gene sets data for preloading of gene sets and where to find gene sets information after making changes in the explorer.
 
-To read more about how to use gene sets in the cellxgene interface, please see [Creating a Geneset](https://docs.google.com/presentation/d/1ihFrKRSxnfFNexctOZ0EkUow9SWgEr-9TOVKvVLE8ms/edit#slide=id.gf4b1a39681_0_0)
+To read more about how to use gene sets in the CELLxGENE Annotate and Explorer interfaces, please see [Creating a Geneset](https://docs.google.com/presentation/d/1ihFrKRSxnfFNexctOZ0EkUow9SWgEr-9TOVKvVLE8ms/edit#slide=id.gf4b1a39681_0_0)
 
 ## Gene Sets Requirements
 
@@ -10,13 +10,13 @@ A gene set must have a unique name. A given gene may be included in multiple gen
 
 ## `cellxgene` CLI Command
 
-Users MAY use `--gene-sets-file` `name_of_file.csv` to designate a CSV with preexisting gene sets you would like to view in cellxgene. The CSV MUST follow the format below.
+Users MAY use `--gene-sets-file` `name_of_file.csv` to designate a CSV with preexisting gene sets you would like to view in CELLxGENE Annotate. The CSV MUST follow the format below.
 
 Users MAY use `--user-generated-data-dir` `file_name` to designate a file where both gene sets and annotations CSVs will be saved. File names for gene sets and annotations will contain a pseudo-session ID by default. `--user-generated-data-dir` is incompatible with `--gene-sets-file` and `--annotations-file` and will error if used together. See `--help` for more details.
 
 ## `cellxgene` Gene Set CSV Data Format
 
-The cellxgene gene set data format is a Tidy CSV (comma-separated values) file using ASCII encoding. Multiple gene sets MAY be included in the file.
+The CELLxGENE gene set data format is a Tidy CSV (comma-separated values) file using ASCII encoding. Multiple gene sets MAY be included in the file.
 
 The first row MUST contain column headers in the following order:
 `gene_set_name`
@@ -67,7 +67,7 @@ Example:
   </tr>
 </table>
 
-Users MAY include additional columns. Once gene sets are edited from cellxgene, the additional columns will no longer be stored in the file designated using the command `--gene-sets-file`.
+Users MAY include additional columns. Once gene sets are edited from CELLxGENE Annotate, the additional columns will no longer be stored in the file designated using the command `--gene-sets-file`.
 
 ## `gene_set_name`
 
@@ -124,7 +124,7 @@ Note: If gene_symbol(s) for a gene_set_name exist on noncontiguous rows, they wi
 
 ## `gene_set_description`
 
-Populating `gene_set_description` is optional. The first instance where `gene_set_description` is populated for a specific `gene_set_name` will be surfaced when a user hovers over `gene_set_name` in cellxgene. All other instances are ignored in subsequent rows for the same `gene_set_name`.
+Populating `gene_set_description` is optional. The first instance where `gene_set_description` is populated for a specific `gene_set_name` will be surfaced when a user hovers over `gene_set_name` in CELLxGENE Annotate. All other instances are ignored in subsequent rows for the same `gene_set_name`.
 
 ## `gene_symbol`
 
@@ -132,4 +132,4 @@ A given `gene_symbol` may only be added once to a gene set and exist as a VAR in
 
 ## `gene_description`
 
-Populating `gene_description` is optional and will be surfaced when a user hovers on `gene_symbol` in cellxgene.
+Populating `gene_description` is optional and will be surfaced when a user hovers on `gene_symbol` in CELLxGENE Annotate or Explorer.
