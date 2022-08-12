@@ -737,7 +737,7 @@ const LandingPage = (): JSX.Element => {
                     >
                       <p className={styles.newsLinkTitle}>{link.title}</p>
                       <a
-                        class={styles.newsLink}
+                        className={styles.newsLink}
                         href={link.link}
                         target={link.newTab ? "_blank" : "_self"}
                         rel={link.newTab ? "noopener noreferrer" : ""}
