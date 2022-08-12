@@ -653,6 +653,50 @@
   }
 }
 
+.newsLink {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 24px;
+  letter-spacing: 0.3px;
+  color: #0073ff;
+  flex-shrink: 0;
+  transition: 0.3s;
+
+  &:hover {
+    color: #0056c6;
+    text-decoration: none;
+
+    .newsLinkArrow path {
+      stroke: #0056c6;
+    }
+  }
+
+  .newsLinkArrow {
+    margin-left: 4px;
+
+    & path {
+      transition: 0.3s;
+    }
+  }
+
+  &Item {
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid #e1e1e1;
+    padding: 50px 0;
+
+    &:last-of-type {
+      padding-bottom: 0;
+    }
+  }
+
+  &Title {
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 24px;
+  }
+}
+
 // END PUBLICATIONS SECTION
 
 // FOOTER
