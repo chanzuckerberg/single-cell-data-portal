@@ -21,7 +21,7 @@ class GeneInfoAPIv1Tests(unittest.TestCase):
             "summary": "",
             "ncbi_url": "https://www.ncbi.nlm.nih.gov/gene/1",
             "synonyms": [],
-            "is_ensembl_id_result": True,
+            "show_warning_banner": False,
         }
 
     @classmethod
@@ -101,7 +101,7 @@ class GeneInfoAPIv1Tests(unittest.TestCase):
         """
         Successfully calls NCBIProvider fetch and search functions with a parameter of only gene ID
         """
-        mock_fetch_gene_uid.return_value = (1, True)
+        mock_fetch_gene_uid.return_value = (1, False)
         mock_fetch_gene_info_tree.return_value = None
         mock_parse_gene_info_tree.return_value = self.final_gene_info_result
         mock_get_id.return_value = "ensembl1"
@@ -123,7 +123,7 @@ class GeneInfoAPIv1Tests(unittest.TestCase):
         """
         Successfully calls NCBIProvider fetch and search functions with both ID and name params
         """
-        mock_fetch_gene_uid.return_value = (1, True)
+        mock_fetch_gene_uid.return_value = (1, False)
         mock_fetch_gene_info_tree.return_value = None
         mock_parse_gene_info_tree.return_value = self.final_gene_info_result
         mock_get_id.return_value = "ensembl1"

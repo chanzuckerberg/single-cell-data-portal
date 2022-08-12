@@ -62,7 +62,7 @@ components:
             type: string
         ncbi_url:
           type: string
-        is_ensembl_id_result:
+        show_warning_banner:
           type: boolean
   
   parameters: 
