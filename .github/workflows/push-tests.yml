@@ -249,6 +249,7 @@ jobs:
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
           make local-init-test-data
           make local-unit-test-processing
+          make local-unit-test-wmg-processing
       - uses: 8398a7/action-slack@v3
         with:
           status: ${{ job.status }}
