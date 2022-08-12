@@ -230,7 +230,6 @@ def list_collections_curation(
     return resp_collections
 
 
-@staticmethod
 def add_collection_level_processing_status(collection: DbCollection):
     # Add a Collection-level processing status
     status = None
