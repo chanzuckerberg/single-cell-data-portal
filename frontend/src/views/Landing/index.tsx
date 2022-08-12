@@ -177,6 +177,19 @@ const LandingPage = (): JSX.Element => {
     },
   ];
 
+  const newsLinks = [
+    {
+      title: `Accelerating COVID-19 Research with New Single-Cell Technologies`,
+      link: `https://cziscience.medium.com/accelerating-covid-19-research-with-new-single-cell-technologies-7cefdfc54cbb`,
+      newTab: true,
+    },
+    {
+      title: `5 Ways Single-Cell Biology Is Advancing Our Understanding of Disease`,
+      link: `https://chanzuckerberg.com/blog/single-cell-biology-understanding-disease/`,
+      newTab: true,
+    },
+  ];
+
   return (
     <>
       <Head>
@@ -715,6 +728,29 @@ const LandingPage = (): JSX.Element => {
               <div className={styles.pubSectionImage}>
                 <TweetEmbed tweetId="1396854799908282376" />
               </div>
+              {newsLinks && (
+                <div className={styles.newsLinkContainer}>
+                  {newsLinks.map((link, index) => (
+                    <div
+                      className={styles.newsLinkItem}
+                      key={`news-link-${index}`}
+                    >
+                      <p className={styles.newsLinkTitle}>{link.title}</p>
+                      <a
+                        class={styles.newsLink}
+                        href={link.link}
+                        target={link.newTab ? "_blank" : "_self"}
+                        rel={link.newTab ? "noopener noreferrer" : ""}
+                      >
+                        Read More
+                        <span className={styles.newsLinkArrow}>
+                          <LinkArrow />
+                        </span>
+                      </a>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>
