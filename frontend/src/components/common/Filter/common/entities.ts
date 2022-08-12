@@ -1,7 +1,12 @@
 import { ChangeEvent, Dispatch, SetStateAction } from "react";
 import { CellValue, Row } from "react-table";
 import { EVENTS } from "src/common/analytics/events";
-import { Collection, Ontology, PublisherMetadata } from "src/common/entities";
+import {
+  Collection,
+  IS_PRIMARY_DATA,
+  Ontology,
+  PublisherMetadata,
+} from "src/common/entities";
 import { CategoryKey } from "src/common/hooks/useCategoryFilter";
 
 /**
@@ -598,6 +603,7 @@ export interface DatasetRow extends Categories, PublisherMetadataCategories {
   published_at: number;
   recency: number; // Used by sort
   revised_at?: number;
+  is_primary_data: IS_PRIMARY_DATA;
 }
 
 /**

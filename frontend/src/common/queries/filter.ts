@@ -238,9 +238,15 @@ export function useCorpusSummary(): CorpusSummary {
         }
         return acc1;
       }, new Array<string>());
+
+      const isPrimaryDataset = row.is_primary_data === IS_PRIMARY_DATA.PRIMARY;
+
+      const newCellCount =
+        acc.cellCount + (isPrimaryDataset ? row.cell_count ?? 0 : 0);
+
       return {
         ...acc,
-        cellCount: acc.cellCount + (row.cell_count || 0),
+        cellCount: newCellCount,
         cellTypes: acc.cellTypes.concat(newCellTypes),
         datasets: acc.datasets + 1,
       };
