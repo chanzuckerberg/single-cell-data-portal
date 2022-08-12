@@ -206,6 +206,7 @@ const LandingPage = (): JSX.Element => {
           property="og:description"
           content="Find, download and visually explore curated and standardized single-cell datasets"
         />
+        <meta property="twitter:card" content="summary" />
         <meta
           property="twitter:title"
           content="Chan Zuckerberg CELLxGENE Discover"
@@ -235,12 +236,16 @@ const LandingPage = (): JSX.Element => {
         >
           <div className={styles.heroImgContainer}>
             <div className={styles.laptopImg}>
-              <Image src={LaptopImg} alt="laptop with cell data on screen" />
+              <Image
+                src={LaptopImg}
+                alt="laptop with cell data on screen"
+                priority
+              />
             </div>
           </div>
           <div className={styles.heroTextContainer}>
             <div className={styles.heroLogo}>
-              <Image src={wordmark} alt="CZ CELLxGENE Discover" />
+              <Image src={wordmark} alt="CZ CELLxGENE Discover" priority />
             </div>
             <h1>Discover the mechanisms of human health</h1>
             <p>
