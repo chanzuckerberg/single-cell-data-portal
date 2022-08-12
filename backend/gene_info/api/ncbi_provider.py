@@ -64,12 +64,11 @@ class NCBIProvider(object):
         # search with gene name if needed
         if not self._is_valid_search_result(search_response) and gene and gene != "":
             try:
-                term = "(" + str(gene) + "%5BGene%20Name%5D)%20AND%20human%5BOrganism%5D"
-                search_response = self._search_gene_uid(term)
+                # to refine the search parameters, gene is searched with the label "Gene Name" and human "Organism"
+                gene_search_term = "(" + str(gene) + "%5BGene%20Name%5D)%20AND%20human%5BOrganism%5D"
+                search_response = self._search_gene_uid(gene_search_term)
                 if self._is_valid_search_result(search_response):
-                    # switched is_ensembl_id_result to True with new search term
-                    # is_ensembl_id_result = False adds a warning banner for an exact match
-                    # on gene info
+                    # is_ensembl_id_result = False adds a warning banner for an exact match on gene info
                     return (int(search_response["esearchresult"]["idlist"][0]), True)
                 else:
                     logging.error(f"Unexpected NCBI search result, got {search_response}")
