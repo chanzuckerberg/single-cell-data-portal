@@ -65,14 +65,13 @@ class WmgQuery:
 
         tiledb_dims_query = tuple([criteria.dict()[dim_name] or EMPTY_DIM_VALUES for dim_name in indexed_dims])
 
-
         # FIXME: HACK of the century. Prevent realloc() error & crash when query returns an empty result. This forces
         #  two queries when there should just one.
         if (
             len(
-                cube.query(
-                    attr_cond=attr_cond, attrs=attrs, dims=["organism_ontology_term_id"]
-                ).multi_index[tiledb_dims_query]["organism_ontology_term_id"]
+                cube.query(attr_cond=attr_cond, attrs=attrs, dims=["organism_ontology_term_id"]).multi_index[
+                    tiledb_dims_query
+                ]["organism_ontology_term_id"]
             )
             == 0
         ):
