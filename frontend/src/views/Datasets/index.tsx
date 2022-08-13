@@ -4,7 +4,7 @@ import { Column, Filters, useFilters, useSortBy, useTable } from "react-table";
 import { PLURALIZED_METADATA_LABEL } from "src/common/constants/metadata";
 import { FEATURES } from "src/common/featureFlags/features";
 import {
-  FilterCategoryKey,
+  CategoryFilterId,
   useCategoryFilter,
 } from "src/common/hooks/useCategoryFilter";
 import { useExplainNewTab } from "src/common/hooks/useExplainNewTab";
@@ -14,9 +14,9 @@ import { useFetchDatasetRows } from "src/common/queries/filter";
 import { KEYS } from "src/common/sessionStorage/set";
 import Filter from "src/components/common/Filter";
 import {
+  CATEGORY_FILTER_ID,
   CellPropsValue,
   DatasetRow,
-  FILTER_CATEGORY_KEY,
   RowPropsValue,
 } from "src/components/common/Filter/common/entities";
 import { ontologyLabelCellAccessorFn } from "src/components/common/Filter/common/utils";
@@ -103,7 +103,7 @@ export default function Datasets(): JSX.Element {
         Header: "Tissue",
         accessor: ontologyLabelCellAccessorFn("tissue"),
         filter: "includesSome", // TODO(cc) remove filter with 2569? but keep tissue column for display (tissue filter below will filter on term IDs but tissue column here will display labels)
-        id: FILTER_CATEGORY_KEY.TISSUE_DEPRECATED,
+        id: CATEGORY_FILTER_ID.TISSUE_DEPRECATED,
       },
       {
         Cell: ({ value }: CellPropsValue<string[]>) => (
@@ -115,7 +115,7 @@ export default function Datasets(): JSX.Element {
         Header: "Disease",
         accessor: ontologyLabelCellAccessorFn("disease"),
         filter: "includesSome",
-        id: FILTER_CATEGORY_KEY.DISEASE,
+        id: CATEGORY_FILTER_ID.DISEASE,
       },
       {
         Cell: ({ value }: CellPropsValue<string[]>) => (
@@ -124,7 +124,7 @@ export default function Datasets(): JSX.Element {
         Header: "Assay",
         accessor: ontologyLabelCellAccessorFn("assay"),
         filter: "includesSome",
-        id: FILTER_CATEGORY_KEY.ASSAY,
+        id: CATEGORY_FILTER_ID.ASSAY,
       },
       {
         Cell: ({ value }: CellPropsValue<string[]>) => (
@@ -133,7 +133,7 @@ export default function Datasets(): JSX.Element {
         Header: "Organism",
         accessor: ontologyLabelCellAccessorFn("organism"),
         filter: "includesSome",
-        id: FILTER_CATEGORY_KEY.ORGANISM,
+        id: CATEGORY_FILTER_ID.ORGANISM,
       },
       {
         Cell: ({ value }: CellPropsValue<number>) => (
@@ -144,7 +144,7 @@ export default function Datasets(): JSX.Element {
         Header: <RightAlignCell>Cells</RightAlignCell>,
         accessor: "cell_count",
         filter: "between",
-        id: FILTER_CATEGORY_KEY.CELL_COUNT,
+        id: CATEGORY_FILTER_ID.CELL_COUNT,
       },
       {
         Cell: ({ row: { values } }: RowPropsValue<DatasetRow>) => (
@@ -188,66 +188,66 @@ export default function Datasets(): JSX.Element {
       {
         accessor: ontologyLabelCellAccessorFn("cell_type"),
         filter: "includesSome",
-        id: FILTER_CATEGORY_KEY.CELL_TYPE_DEPRECATED,
+        id: CATEGORY_FILTER_ID.CELL_TYPE_DEPRECATED,
       },
       // Hidden, required for filter.
       {
         accessor: "cell_type_ancestors",
         filter: "includesSome",
-        id: FILTER_CATEGORY_KEY.CELL_TYPE,
+        id: CATEGORY_FILTER_ID.CELL_TYPE,
       },
       // Hidden, required for filter.
       {
         accessor: ontologyLabelCellAccessorFn("ethnicity"),
         filter: "includesSome",
-        id: FILTER_CATEGORY_KEY.ETHNICITY,
+        id: CATEGORY_FILTER_ID.ETHNICITY,
       },
       {
         accessor: "development_stage_ancestors",
         filter: "includesSome",
-        id: FILTER_CATEGORY_KEY.DEVELOPMENT_STAGE,
+        id: CATEGORY_FILTER_ID.DEVELOPMENT_STAGE,
       },
       // Hidden, required for filter.
       {
         accessor: "mean_genes_per_cell",
         filter: "between",
-        id: FILTER_CATEGORY_KEY.GENE_COUNT,
+        id: CATEGORY_FILTER_ID.GENE_COUNT,
       },
       // Hidden, required for filter.
       {
         accessor: "publicationAuthors",
         filter: "includesSome",
-        id: FILTER_CATEGORY_KEY.PUBLICATION_AUTHORS,
+        id: CATEGORY_FILTER_ID.PUBLICATION_AUTHORS,
       },
       // Hidden, required for filter.
       {
         accessor: "publicationDateValues",
         filter: "includesSome",
-        id: FILTER_CATEGORY_KEY.PUBLICATION_DATE_VALUES,
+        id: CATEGORY_FILTER_ID.PUBLICATION_DATE_VALUES,
       },
       // Hidden, required for filter.
       {
         accessor: ontologyLabelCellAccessorFn("sex"),
         filter: "includesSome",
-        id: FILTER_CATEGORY_KEY.SEX,
+        id: CATEGORY_FILTER_ID.SEX,
       },
       // Hidden, required for filter.
       {
         accessor: ontologyLabelCellAccessorFn("tissue"),
         filter: "includesSome",
-        id: FILTER_CATEGORY_KEY.TISSUE,
+        id: CATEGORY_FILTER_ID.TISSUE,
       },
       // Hidden, required for filter.
       {
         accessor: "tissue_ancestors",
         filter: "includesSome",
-        id: FILTER_CATEGORY_KEY.TISSUE_SYSTEM,
+        id: CATEGORY_FILTER_ID.TISSUE_SYSTEM,
       },
       // Hidden, required for filter.
       {
         accessor: "tissue_ancestors",
         filter: "includesSome",
-        id: FILTER_CATEGORY_KEY.TISSUE_ORGAN_PART,
+        id: CATEGORY_FILTER_ID.TISSUE_ORGAN,
       },
     ],
     []
@@ -271,17 +271,17 @@ export default function Datasets(): JSX.Element {
           COLLECTION_ID,
           COLLECTION_NAME,
           COLUMN_ID_RECENCY,
-          FILTER_CATEGORY_KEY.CELL_TYPE_DEPRECATED,
-          FILTER_CATEGORY_KEY.CELL_TYPE,
-          FILTER_CATEGORY_KEY.ETHNICITY,
-          FILTER_CATEGORY_KEY.DEVELOPMENT_STAGE,
-          FILTER_CATEGORY_KEY.GENE_COUNT,
-          FILTER_CATEGORY_KEY.PUBLICATION_AUTHORS,
-          FILTER_CATEGORY_KEY.PUBLICATION_DATE_VALUES,
-          FILTER_CATEGORY_KEY.SEX,
-          FILTER_CATEGORY_KEY.TISSUE,
-          FILTER_CATEGORY_KEY.TISSUE_SYSTEM,
-          FILTER_CATEGORY_KEY.TISSUE_ORGAN_PART,
+          CATEGORY_FILTER_ID.CELL_TYPE_DEPRECATED,
+          CATEGORY_FILTER_ID.CELL_TYPE,
+          CATEGORY_FILTER_ID.ETHNICITY,
+          CATEGORY_FILTER_ID.DEVELOPMENT_STAGE,
+          CATEGORY_FILTER_ID.GENE_COUNT,
+          CATEGORY_FILTER_ID.PUBLICATION_AUTHORS,
+          CATEGORY_FILTER_ID.PUBLICATION_DATE_VALUES,
+          CATEGORY_FILTER_ID.SEX,
+          CATEGORY_FILTER_ID.TISSUE,
+          CATEGORY_FILTER_ID.TISSUE_SYSTEM,
+          CATEGORY_FILTER_ID.TISSUE_ORGAN,
           EXPLORER_URL,
           IS_OVER_MAX_CELL_COUNT,
         ],
@@ -307,20 +307,20 @@ export default function Datasets(): JSX.Element {
 
   // Determine the set of categories to display for the datasets view.
   const isFilterEnabled = useFeatureFlag(FEATURES.FILTER); // TODO(cc) remove with #2569.
-  const categories = useMemo<Set<FILTER_CATEGORY_KEY>>(() => {
-    return Object.values(FILTER_CATEGORY_KEY)
+  const categories = useMemo<Set<CATEGORY_FILTER_ID>>(() => {
+    return Object.values(CATEGORY_FILTER_ID)
       .filter(
-        (categoryKey: FilterCategoryKey) =>
+        (categoryKey: CategoryFilterId) =>
           !(
-            (categoryKey === FILTER_CATEGORY_KEY.TISSUE ||
-              categoryKey === FILTER_CATEGORY_KEY.CELL_TYPE) &&
+            (categoryKey === CATEGORY_FILTER_ID.TISSUE ||
+              categoryKey === CATEGORY_FILTER_ID.CELL_TYPE) &&
             !isFilterEnabled
           )
       )
-      .reduce((accum, categoryKey: FilterCategoryKey) => {
+      .reduce((accum, categoryKey: CategoryFilterId) => {
         accum.add(categoryKey);
         return accum;
-      }, new Set<FILTER_CATEGORY_KEY>());
+      }, new Set<CATEGORY_FILTER_ID>());
   }, [isFilterEnabled]);
 
   // Set up filter instance.

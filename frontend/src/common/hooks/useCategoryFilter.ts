@@ -1,20 +1,21 @@
 // Display-optimized structure of category and corresponding category values and counts.
 import { useCallback, useEffect, useState } from "react";
 import { Filters, FilterValue, Row } from "react-table";
-import { COLLATOR_CASE_INSENSITIVE } from "src/components/common/Filter/common/constants";
+import {
+  CATEGORY_FILTER_CONFIGS_BY_ID,
+  CATEGORY_FILTER_UI_CONFIGS,
+  COLLATOR_CASE_INSENSITIVE,
+} from "src/components/common/Filter/common/constants";
 import {
   Categories,
-  CategoryConfig,
+  CategoryFilterConfig,
   CategoryValueKey,
   CategoryView,
   CategoryViews,
-  CATEGORY_CONFIGS_BY_FILTER_CATEGORY_KEY,
-  CATEGORY_FILTER_TYPE,
-  CATEGORY_UI_CONFIGS,
+  CATEGORY_FILTER_ID,
+  CuratedOntologyCategoryFilterConfig,
   ETHNICITY_UNSPECIFIED_LABEL,
-  FILTER_CATEGORY_KEY,
   OnFilterFn,
-  OntologyCategoryConfig,
   OntologyCategoryTreeNodeView,
   OntologyCategoryTreeView,
   OntologyCategoryView,
@@ -46,14 +47,14 @@ interface CategoryFilter {
 }
 
 /**
- * Filterable metadata object key. For example, "assay" or "cell_type". Used for object key lookups
+ * Filterable metadata object key. For example, "assay" or "cell_type". Used for object key lookups.
  */
-export type FilterCategoryKey = keyof Record<FILTER_CATEGORY_KEY, string>;
+export type CategoryFilterId = keyof Record<CATEGORY_FILTER_ID, string>;
 
 /*
  * Set of all category values in the full result set, keyed by their corresponding category.
  */
-type CategorySet = { [K in FILTER_CATEGORY_KEY]: CategorySetValue };
+type CategorySet = { [K in CATEGORY_FILTER_ID]: CategorySetValue };
 
 /**
  * Possible category set values, either a set of category key values (for single or multiselect categories, or ontology
@@ -89,7 +90,7 @@ export interface FilterInstance {
  * State backing filter functionality and calculations. Converted to view model for display.
  */
 type FilterState = {
-  [K in FILTER_CATEGORY_KEY]: RangeCategory | KeyedSelectCategoryValue;
+  [K in CATEGORY_FILTER_ID]: RangeCategory | KeyedSelectCategoryValue;
 };
 
 /**
@@ -97,7 +98,7 @@ type FilterState = {
  * Identical queries can be shared by categories to reduce the number of result set filtering.
  */
 interface Query<T extends Categories> {
-  categoryKeys: FilterCategoryKey[];
+  categoryFilterIds: CategoryFilterId[];
   filters: Filters<T>;
 }
 
@@ -128,7 +129,7 @@ const TOOLTIP_CATEGORY_DISABLED =
 /**
  * Faceted filter functionality over dataset metadata. "or" between values, "and" across categories.
  * @param originalRows - Original result set before filtering.
- * @param categoryKeys - Set of category keys to include for this filter instance.
+ * @param categoryFilterIds - Set of category IDs to include for this filter instance.
  * @param filters - Current set of selected category values (values) keyed by category (id).
  * @param setFilter - Function to update set of selected values for a category.
  * @returns Object containing filter accessor (view model of filter state) and filter mutator (function to modify react-
@@ -136,7 +137,7 @@ const TOOLTIP_CATEGORY_DISABLED =
  */
 export function useCategoryFilter<T extends Categories>(
   originalRows: Row<T>[],
-  categoryKeys: Set<FILTER_CATEGORY_KEY>,
+  categoryFilterIds: Set<CATEGORY_FILTER_ID>,
   filters: Filters<T>,
   setFilter: SetFilterFn
 ): FilterInstance {
@@ -154,8 +155,8 @@ export function useCategoryFilter<T extends Categories>(
       return;
     }
 
-    setCategorySet(buildCategorySet(originalRows, categoryKeys));
-  }, [originalRows, categoryKeys, categorySet]);
+    setCategorySet(buildCategorySet(originalRows, categoryFilterIds));
+  }, [originalRows, categoryFilterIds, categorySet]);
 
   // Build next filter state on change of filter.
   useEffect(() => {
@@ -165,17 +166,17 @@ export function useCategoryFilter<T extends Categories>(
     }
     const nextFilterState = buildNextFilterState(
       originalRows,
-      categoryKeys,
+      categoryFilterIds,
       filters,
       categorySet
     );
     setFilterState(nextFilterState);
-  }, [categoryKeys, categorySet, filters, originalRows]);
+  }, [categoryFilterIds, categorySet, filters, originalRows]);
 
   // Update set of filters on select of category value. Track selected category value.
   const onFilter = useCallback<OnFilterFn>(
     (
-      categoryKey: FilterCategoryKey,
+      categoryFilterId: CategoryFilterId,
       selectedValue: CategoryValueKey | Range
     ) => {
       if (!categorySet) {
@@ -183,7 +184,7 @@ export function useCategoryFilter<T extends Categories>(
       }
 
       // Grab the configuration model for the selected category.
-      const config = CATEGORY_CONFIGS_BY_FILTER_CATEGORY_KEY[categoryKey];
+      const config = CATEGORY_FILTER_CONFIGS_BY_ID[categoryFilterId];
 
       // Handle range categories.
       if (!isCategoryValueKey(selectedValue)) {
@@ -192,7 +193,7 @@ export function useCategoryFilter<T extends Categories>(
       }
 
       // Handle ontology categories.
-      if (isCategoryConfigOntology(config)) {
+      if (isCuratedOntologyCategoryFilterConfig(config)) {
         onFilterOntologyCategory(
           config,
           selectedValue,
@@ -225,7 +226,7 @@ function addEmptyCategoryValues(
   categorySet: CategorySet
 ) {
   // Check filter state for each category for missing (empty) category values.
-  for (const [categoryKey, categoryValuesByKey] of Object.entries(
+  for (const [categoryFilterId, categoryValuesByKey] of Object.entries(
     nextFilterState
   )) {
     // Adding back empty category values is only applicable to select or ontology category values.
@@ -234,7 +235,8 @@ function addEmptyCategoryValues(
     }
 
     // Grab the expected set of category values.
-    const allCategoryValueKeys = categorySet[categoryKey as FilterCategoryKey];
+    const allCategoryValueKeys =
+      categorySet[categoryFilterId as CategoryFilterId];
     if (
       !allCategoryValueKeys || // Error state - all category values for this category can't be found.
       !isCategorySetCategoryKeyValue(allCategoryValueKeys) // Error state - should be category key value.
@@ -291,16 +293,16 @@ function addOntologyDescendents(
 /**
  * Add range categories to the next filter state. Range categories are not summarized and must be explicitly added from
  * the original category set state.
+ * @param categoryFilterIds - Set of category IDs to include for this filter instance.
  * @param nextFilterState - Filter state currently being built due to change in filter.
- * @param categoryKeys - Set of category keys to include for this filter instance.
  * @param categorySet - Original, unfiltered sets of category values keyed by their category.
  */
 function addRangeCategories(
-  categoryKeys: Set<FILTER_CATEGORY_KEY>,
+  categoryFilterIds: Set<CATEGORY_FILTER_ID>,
   nextFilterState: FilterState,
   categorySet: CategorySet
 ) {
-  Array.from(categoryKeys.values()).forEach((categoryKey) => {
+  Array.from(categoryFilterIds.values()).forEach((categoryKey) => {
     // Grab the expected range for this category.
     const categorySetRange = categorySet[categoryKey];
     if (
@@ -338,7 +340,7 @@ function applyFilters<T extends Categories>(
     // "and" across categories.
     return filters.every((filter: CategoryFilter) => {
       const rowValue = row.values[filter.id];
-      if (isCategoryTypeBetween(filter.id as FilterCategoryKey)) {
+      if (isMatchKindBetween(filter.id as CategoryFilterId)) {
         return between(rowValue, filter);
       }
       return includesSome(rowValue, filter);
@@ -360,24 +362,24 @@ function between(rowValue: string | string[], filter: CategoryFilter): boolean {
 /**
  * Set up model of original, complete set of categories and their values.
  * @param originalRows - Original result set before filtering.
- * @param categoryKeys - Set of category keys to include for this filter instance.
+ * @param categoryFilterIds - Set of category filter IDs to include for this filter instance.
  * @returns Sets of category values keyed by their category.
  */
 function buildCategorySet<T extends Categories>(
   originalRows: Row<T>[],
-  categoryKeys: Set<FILTER_CATEGORY_KEY>
+  categoryFilterIds: Set<CATEGORY_FILTER_ID>
 ): CategorySet {
   // Build up category values for each category
-  return Array.from(categoryKeys.values()).reduce(
-    (accum: CategorySet, categoryKey: FilterCategoryKey) => {
+  return Array.from(categoryFilterIds.values()).reduce(
+    (accum: CategorySet, categoryFilterId: CategoryFilterId) => {
       // Calculate the initial state of range categories.
-      if (isCategoryTypeBetween(categoryKey)) {
+      if (isMatchKindBetween(categoryFilterId)) {
         const counts = originalRows
           // Use filterKey to pull value from original row
-          .map((originalRow) => originalRow.values[categoryKey])
+          .map((originalRow) => originalRow.values[categoryFilterId])
           .filter((count) => !!count || count === 0); // Remove bad data, just in case!
 
-        accum[categoryKey] = [
+        accum[categoryFilterId] = [
           counts.length ? Math.min(...counts) : 0,
           counts.length ? Math.max(...counts) : 0,
         ];
@@ -385,29 +387,29 @@ function buildCategorySet<T extends Categories>(
       }
 
       // Determine the set of ontology IDs in the ontology tree for this category, if applicable. There are possibly
-      // more ontology IDs listed for each row than we want to display (that is, a row can possible have a higher
+      // more ontology IDs listed for each row than we want to display (that is, a row can possibly have a higher
       // granularity of ontology IDs than the UI is to display). We'll use the ontology IDs of the ontology tree
       // to determine which row values are to be included in the category set.
-      const config = CATEGORY_CONFIGS_BY_FILTER_CATEGORY_KEY[categoryKey];
-      const isCategoryOntology = isCategoryConfigOntology(config);
+      const config = CATEGORY_FILTER_CONFIGS_BY_ID[categoryFilterId];
+      const isCategoryOntology = isCuratedOntologyCategoryFilterConfig(config);
       let categoryOntologyIds: Set<string>;
       if (isCategoryOntology) {
-        categoryOntologyIds = listOntologyTreeIds(config.ontologyTermSet);
+        categoryOntologyIds = listOntologyTreeIds(config.mask);
       }
 
       // Handle single or multi select categories. Check category value for this category, in every row.
       originalRows.forEach((originalRow: Row<T>) => {
         // Grab the category values already added for this category, create new set if it hasn't already been created.
-        let categoryValueSet = accum[categoryKey] as Set<CategoryValueKey>;
+        let categoryValueSet = accum[categoryFilterId] as Set<CategoryValueKey>;
         if (!categoryValueSet) {
           categoryValueSet = new Set<CategoryValueKey>();
-          accum[categoryKey] = categoryValueSet;
+          accum[categoryFilterId] = categoryValueSet;
         }
         // Add the category values for this row to the set.
         let values: CategoryValueKey | CategoryValueKey[] =
-          originalRow.values[categoryKey];
+          originalRow.values[categoryFilterId];
         if (typeof values === "undefined") {
-          console.log(`No values found for category "${categoryKey}".`);
+          console.log(`No values found for category "${categoryFilterId}".`);
           return accum;
         }
         if (!Array.isArray(values)) {
@@ -430,22 +432,22 @@ function buildCategorySet<T extends Categories>(
 
 /**
  * Build the display value for the given category and category value.
- * @param categoryKey - Category of category value (e.g. "disease").
+ * @param categoryFilterId - ID of category (e.g. "disease").
  * @param categoryValueKey - Category value to display (e.g. "normal").
  * @returns String to display as a label for the given category and category value.
  */
 function buildCategoryValueLabel(
-  categoryKey: FilterCategoryKey,
+  categoryFilterId: CategoryFilterId,
   categoryValueKey: CategoryValueKey
 ): string {
-  if (categoryKey === FILTER_CATEGORY_KEY.PUBLICATION_DATE_VALUES) {
+  if (categoryFilterId === CATEGORY_FILTER_ID.PUBLICATION_DATE_VALUES) {
     return PUBLICATION_DATE_LABELS[
       `LABEL_${categoryValueKey}` as keyof typeof PUBLICATION_DATE_LABELS
     ];
   }
 
   if (
-    categoryKey === FILTER_CATEGORY_KEY.ETHNICITY &&
+    categoryFilterId === CATEGORY_FILTER_ID.ETHNICITY &&
     !isEthnicitySpecified(categoryValueKey)
   ) {
     return ETHNICITY_UNSPECIFIED_LABEL[
@@ -468,16 +470,15 @@ function buildCategoryViews(filterState?: FilterState): CategoryViews[] {
   }
 
   // Build up view models for each UI config.
-  return CATEGORY_UI_CONFIGS.map((categoryUIConfig) => {
-    const { categoryConfigKeys, label } = categoryUIConfig;
+  return CATEGORY_FILTER_UI_CONFIGS.map((categoryFilterUIConfig) => {
+    const { categoryConfigKeys, label } = categoryFilterUIConfig;
     const categoryViews = categoryConfigKeys
       .map((categoryConfigKey) => {
-        const config =
-          CATEGORY_CONFIGS_BY_FILTER_CATEGORY_KEY[categoryConfigKey];
-        const { filterCategoryKey } = config;
+        const config = CATEGORY_FILTER_CONFIGS_BY_ID[categoryConfigKey];
+        const { categoryFilterId } = config;
 
         // Build category value view models for this category and sort.
-        const categoryValueByValue = filterState[filterCategoryKey];
+        const categoryValueByValue = filterState[categoryFilterId];
 
         // Return if there's no filter state for the UI config. This will be true for categories such as cell count and
         // gene count when viewing collections.
@@ -488,9 +489,9 @@ function buildCategoryViews(filterState?: FilterState): CategoryViews[] {
         // Handle single or multiselect categories, or ontology categories.
         if (isSelectCategoryValue(categoryValueByValue)) {
           // Handle ontology categories.
-          if (isCategoryConfigOntology(config)) {
+          if (isCuratedOntologyCategoryFilterConfig(config)) {
             return buildOntologyCategoryView(
-              filterCategoryKey,
+              categoryFilterId,
               config,
               categoryValueByValue,
               filterState
@@ -498,7 +499,7 @@ function buildCategoryViews(filterState?: FilterState): CategoryViews[] {
           }
 
           return buildSelectCategoryView(
-            filterCategoryKey,
+            categoryFilterId,
             config,
             categoryValueByValue,
             filterState
@@ -507,7 +508,7 @@ function buildCategoryViews(filterState?: FilterState): CategoryViews[] {
 
         // Handle range categories.
         return buildRangeCategoryView(
-          filterCategoryKey,
+          categoryFilterId,
           config,
           categoryValueByValue
         );
@@ -536,14 +537,14 @@ function applyCrossCategoryRestrictions<T extends Categories>(
   const descendantsByCategoryKey = filters.reduce(
     (accum, filterValue: FilterValue) => {
       if (
-        filterValue.id === FILTER_CATEGORY_KEY.TISSUE_SYSTEM ||
-        filterValue.id === FILTER_CATEGORY_KEY.TISSUE_ORGAN_PART
+        filterValue.id === CATEGORY_FILTER_ID.TISSUE_SYSTEM ||
+        filterValue.id === CATEGORY_FILTER_ID.TISSUE_ORGAN
       ) {
         accum.set(filterValue.id, ["UBERON:0000948", "heart left ventricle"]);
       }
       return accum;
     },
-    new Map<FilterCategoryKey, string[]>()
+    new Map<CategoryFilterId, string[]>()
   );
 
   // Apply restrictions to categories that are restricted by another category.
@@ -551,12 +552,12 @@ function applyCrossCategoryRestrictions<T extends Categories>(
   Object.keys(nextFilterState).forEach((categoryKey: string) => {
     // Determine the set of categories that restrict this category
     const restrictingCategories = [];
-    if (categoryKey === FILTER_CATEGORY_KEY.TISSUE) {
-      restrictingCategories.push(FILTER_CATEGORY_KEY.TISSUE_ORGAN_PART);
-      restrictingCategories.push(FILTER_CATEGORY_KEY.TISSUE_SYSTEM);
+    if (categoryKey === CATEGORY_FILTER_ID.TISSUE) {
+      restrictingCategories.push(CATEGORY_FILTER_ID.TISSUE_ORGAN);
+      restrictingCategories.push(CATEGORY_FILTER_ID.TISSUE_SYSTEM);
     }
-    if (categoryKey === FILTER_CATEGORY_KEY.TISSUE_ORGAN_PART) {
-      restrictingCategories.push(FILTER_CATEGORY_KEY.TISSUE_SYSTEM);
+    if (categoryKey === CATEGORY_FILTER_ID.TISSUE_ORGAN) {
+      restrictingCategories.push(CATEGORY_FILTER_ID.TISSUE_SYSTEM);
     }
 
     // Ignore select categories that aren't restricted by another category.
@@ -566,7 +567,7 @@ function applyCrossCategoryRestrictions<T extends Categories>(
 
     // Grab the filter state for this category.
     const categoryFilterState =
-      nextFilterState[categoryKey as FilterCategoryKey];
+      nextFilterState[categoryKey as CategoryFilterId];
 
     // Ignore range categories
     if (!isSelectCategoryValue(categoryFilterState)) {
@@ -604,19 +605,19 @@ function applyCrossCategoryRestrictions<T extends Categories>(
  * counts by counting occurrences of category values across rows. Maintain selected category values state from filters.
  * Retain category values with 0 counts from given category set.
  * @param originalRows - Original result set before filtering.
- * @param categoryKeys - Set of category keys to include for this filter instance.
+ * @param categoryFilterIds - Set of category IDs to include for this filter instance.
  * @param filters - Current set of selected category values (values) keyed by category (id).
  * @param categorySet - Original, unfiltered sets of category values keyed by their category.
  * @returns New filter state generated from the current set of selected category values.
  */
 function buildNextFilterState<T extends Categories>(
   originalRows: Row<T>[],
-  categoryKeys: Set<FILTER_CATEGORY_KEY>,
+  categoryFilterIds: Set<CATEGORY_FILTER_ID>,
   filters: Filters<T>,
   categorySet: CategorySet
 ): FilterState {
   // Build set of filters that are applicable to each category.
-  const queries = buildQueries(categoryKeys, filters);
+  const queries = buildQueries(categoryFilterIds, filters);
 
   // Build up base filter state of categories, category values and counts.
   const nextFilterState = summarizeCategories(originalRows, queries);
@@ -626,7 +627,7 @@ function buildNextFilterState<T extends Categories>(
   addEmptyCategoryValues(nextFilterState, categorySet);
 
   // Add range categories to next filter state.
-  addRangeCategories(categoryKeys, nextFilterState, categorySet);
+  addRangeCategories(categoryFilterIds, nextFilterState, categorySet);
 
   // Update selected flag for the selected category values, or selected ranged for range categories.
   setSelectedStates(nextFilterState, filters);
@@ -640,34 +641,34 @@ function buildNextFilterState<T extends Categories>(
 
 /**
  * Build updated set of selected filters for the given ontology tree category and the selected category value.
- * @param categoryKey - Category key (i.e. "development stage") of selected category value.
+ * @param categoryFilterId - Category ID (i.e. "development stage") of selected category value.
  * @param categoryValueKey - Selected category value key (e.g. "HsapDv:0000003") to update selected state of.
  * @param filters - Current set of selected category values.
  * @param categoryKeyValues - Original, full set of values for this category.
- * @param ontologyTermSet - View model of ontology for this category.
+ * @param mask - View model of ontology for this category.
  * @returns Array of selected category values for the given category.
  */
 export function buildNextOntologyCategoryFilters<T extends Categories>(
-  categoryKey: FilterCategoryKey,
+  categoryFilterId: CategoryFilterId,
   categoryValueKey: CategoryValueKey,
   filters: Filters<T>,
   categoryKeyValues: Set<CategoryValueKey>,
-  ontologyTermSet: OntologyTermSet
+  mask: OntologyTermSet
 ): CategoryValueKey[] {
   // Grab the current selected values for the category.
   const categoryFilters = new Set(
-    getCategoryFilter(categoryKey, filters)?.value as CategoryValueKey[]
+    getCategoryFilter(categoryFilterId, filters)?.value as CategoryValueKey[]
   );
 
   // TODO(cc) resolve with #2569 - will need to change OntologyView key or add "translate category value key" functionality to getOntologySpeciesKey (to handle "CL:xxx" for tissue)
   const speciesKey =
-    categoryKey === FILTER_CATEGORY_KEY.TISSUE
+    categoryFilterId === CATEGORY_FILTER_ID.TISSUE
       ? ONTOLOGY_VIEW_KEY.UBERON
       : categoryValueKey;
 
   // Find the selected and parent node, if any, for the selected value.
   const ontologySpeciesKey = getOntologySpeciesKey(speciesKey);
-  const ontologyRootNodes = ontologyTermSet[ontologySpeciesKey];
+  const ontologyRootNodes = mask[ontologySpeciesKey];
   if (!ontologyRootNodes) {
     return [...categoryFilters.values()]; // Error state - ontology does not exist.
   }
@@ -731,18 +732,18 @@ export function buildNextOntologyCategoryFilters<T extends Categories>(
 /**
  * Build updated set of selected filters for the given single or multiselect category and the selected category value.
  * Ontology categories are handled separately.
- * @param categoryKey - Category key (i.e. "disease") of selected category value.
+ * @param categoryFilterId - ID (i.e. "disease") of selected category value.
  * @param categoryValueKey - Category value key (e.g. "normal") to toggle selected state of.
  * @param filters - Current set of selected category values.
  * @returns Array of selected category values for the given category.
  */
 function buildNextSelectCategoryFilters<T extends Categories>(
-  categoryKey: FilterCategoryKey,
+  categoryFilterId: CategoryFilterId,
   categoryValueKey: CategoryValueKey,
   filters: Filters<T>
 ): CategoryValueKey[] {
   // Grab the current selected values for the category.
-  const categoryFilters = getCategoryFilter(categoryKey, filters);
+  const categoryFilters = getCategoryFilter(categoryFilterId, filters);
 
   // Currently, no filters already selected for this category; add category value as first.
   if (!categoryFilters) {
@@ -751,7 +752,7 @@ function buildNextSelectCategoryFilters<T extends Categories>(
 
   // Create new array of selected category value keys, with the selected state of the given category value toggled.
   const multiselect =
-    CATEGORY_CONFIGS_BY_FILTER_CATEGORY_KEY[categoryKey].multiselect;
+    CATEGORY_FILTER_CONFIGS_BY_ID[categoryFilterId].multiselect;
   return toggleCategoryValueSelected(
     categoryValueKey,
     categoryFilters.value,
@@ -762,28 +763,28 @@ function buildNextSelectCategoryFilters<T extends Categories>(
 /**
  * Determine the set of filters that are applicable to each category. That is, for a category, all selected filters
  * other than the selected filters for that category can be applied to the result set to determine the counts for.
- * @param categoriesKeys - Set of category keys to include for this filter instance.
+ * @param categoryFilterIds - Set of category IDs to include for this filter instance.
  * @param filters - Current set of selected category values (values) keyed by category (id).
  * @returns Array of query models representing of the selected filters applicable for each category.
  */
 function buildQueries<T extends Categories>(
-  categoriesKeys: Set<FILTER_CATEGORY_KEY>,
+  categoryFilterIds: Set<CATEGORY_FILTER_ID>,
   filters: Filters<T>
 ): Query<T>[] {
-  return Array.from(categoriesKeys.values()).reduce(
-    (accum: Query<T>[], categoryKey: FilterCategoryKey) => {
+  return Array.from(categoryFilterIds.values()).reduce(
+    (accum: Query<T>[], categoryFilterId: CategoryFilterId) => {
       // Determine the filters that are applicable to this category.
       const filtersExcludingSelf = filters.filter((filter: CategoryFilter) => {
         // TODO(cc) generalize. fix tissue organ part dupe check.
         if (
-          (categoryKey === FILTER_CATEGORY_KEY.TISSUE_SYSTEM ||
-            categoryKey === FILTER_CATEGORY_KEY.TISSUE_ORGAN_PART) &&
-          (filter.id === FILTER_CATEGORY_KEY.TISSUE_ORGAN_PART ||
-            filter.id === FILTER_CATEGORY_KEY.TISSUE)
+          (categoryFilterId === CATEGORY_FILTER_ID.TISSUE_SYSTEM ||
+            categoryFilterId === CATEGORY_FILTER_ID.TISSUE_ORGAN) &&
+          (filter.id === CATEGORY_FILTER_ID.TISSUE_ORGAN ||
+            filter.id === CATEGORY_FILTER_ID.TISSUE)
         ) {
           return false;
         }
-        return filter.id !== categoryKey;
+        return filter.id !== categoryFilterId;
       });
 
       // Check if we have an existing query with an identical filter. If so, add category to that query. Otherwise,
@@ -792,10 +793,10 @@ function buildQueries<T extends Categories>(
         isFilterEqual(query.filters, filtersExcludingSelf)
       );
       if (matchingQuery) {
-        (matchingQuery as Query<T>).categoryKeys.push(categoryKey);
+        (matchingQuery as Query<T>).categoryFilterIds.push(categoryFilterId);
       } else {
         accum.push({
-          categoryKeys: [categoryKey],
+          categoryFilterIds: [categoryFilterId],
           filters: filtersExcludingSelf,
         });
       }
@@ -807,40 +808,34 @@ function buildQueries<T extends Categories>(
 
 /**
  * Build view model of ontology category.
- * @param categoryKey - Key of category to find selected filters of.
- * @param categoryConfig - Config model of ontology category.
+ * @param categoryFilterId - ID of category to find selected filters of.
+ * @param config - Config model of a curated ontology category.
  * @param categoryValueByValue - Internal filter model of ontology category.
  * @param filterState - Categories, category value and their counts with the current filter applied. Required when
  * checking enabled state of view that is dependent on the state of another category.
  * @returns Ontology view model.
+ * TODO(cc) revisit naming - this is specific to curated ontologies
  */
 function buildOntologyCategoryView(
-  categoryKey: FilterCategoryKey,
-  categoryConfig: OntologyCategoryConfig,
+  categoryFilterId: CategoryFilterId,
+  config: CuratedOntologyCategoryFilterConfig,
   categoryValueByValue: KeyedSelectCategoryValue,
   filterState: FilterState
 ): OntologyCategoryView {
-  const {
-    isLabelVisible,
-    isSearchable,
-    isZerosVisible,
-    label,
-    ontologyTermSet,
-  } = categoryConfig;
+  const { isLabelVisible, isSearchable, isZerosVisible, label, mask } = config;
 
   // Build tree view models (e.g. individual tree structures for displaying different ontologies (e.g. human vs mouse
   // vs other for development stage, or just tissues for tissue).
-  const treeViews = Object.keys(ontologyTermSet).reduce(
+  const treeViews = Object.keys(mask).reduce(
     (accum, ontologyViewKey: string) => {
-      const ontologyNodes =
-        ontologyTermSet[ontologyViewKey as ONTOLOGY_VIEW_KEY];
+      const ontologyNodes = mask[ontologyViewKey as ONTOLOGY_VIEW_KEY];
       if (!ontologyNodes) {
         return accum; // Error state - ignore species view.
       }
 
       // Handle special cases where species is to be excluded.
       if (
-        categoryKey === FILTER_CATEGORY_KEY.DEVELOPMENT_STAGE &&
+        categoryFilterId === CATEGORY_FILTER_ID.DEVELOPMENT_STAGE &&
         !isDevelopmentStageSpeciesVisible(
           filterState,
           ontologyViewKey as ONTOLOGY_VIEW_KEY
@@ -886,7 +881,7 @@ function buildOntologyCategoryView(
   const ontologyView: OntologyCategoryView = {
     isSearchable,
     isZerosVisible,
-    key: categoryKey,
+    key: categoryFilterId,
     label,
     views: treeViews,
   };
@@ -956,20 +951,20 @@ function buildOntologyCategoryValueView(
 
 /**
  * Build view model of range category.
- * @param categoryKey - Key of category to find selected filters of.
- * @param categoryConfig - Config model of ontology category.
+ * @param categoryFilterId - ID of category to find selected filters of.
+ * @param config - Config model of ontology category.
  * @param rangeCategory - Internal filter model of range category.
  * @returns Range view model.
  */
 function buildRangeCategoryView(
-  categoryKey: FilterCategoryKey,
-  categoryConfig: CategoryConfig,
+  categoryFilterId: CategoryFilterId,
+  config: CategoryFilterConfig,
   rangeCategory: RangeCategory
 ): RangeCategoryView {
   // Build view model of range category.
   const rangeView: RangeCategoryView = {
-    key: categoryKey,
-    label: categoryConfig.label,
+    key: categoryFilterId,
+    label: config.label,
     max: rangeCategory.max,
     min: rangeCategory.min,
     selectedMax: rangeCategory.selectedMax,
@@ -987,38 +982,45 @@ function buildRangeCategoryView(
 
 /**
  * Build view model of single or multiselect category.
- * @param categoryKey - Key of category to find selected filters of.
- * @param categoryConfig - Config model of ontology category.
+ * @param categoryFilterId - ID of category to find selected filters of.
+ * @param config - Config model of ontology category.
  * @param categoryValueByValue - Internal filter model of single or multiselect category.
  * @param filterState - Categories, category value and their counts with the current filter applied. Required when
  * checking enabled state of view that is dependent on the state of another category.
  * @returns Select category view model.
  */
 function buildSelectCategoryView(
-  categoryKey: FilterCategoryKey,
-  categoryConfig: CategoryConfig,
+  categoryFilterId: CategoryFilterId,
+  config: CategoryFilterConfig,
   categoryValueByValue: KeyedSelectCategoryValue,
   filterState: FilterState
 ): SelectCategoryView {
-  // Grab the config for this category. TODO(cc) move earlier?
-  const { excludeTerms, pinnedCategoryValues, tooltip } =
-    CATEGORY_CONFIGS_BY_FILTER_CATEGORY_KEY[categoryKey];
+  // Grab the config for this category.
+  const { pinnedCategoryValues, tooltip } =
+    CATEGORY_FILTER_CONFIGS_BY_ID[categoryFilterId];
 
-  // Remove any excluded values from the filter. TODO(cc) clean up
-  let selectCategoryValues = [...categoryValueByValue.values()];
-  if (excludeTerms && excludeTerms.length) {
-    selectCategoryValues = selectCategoryValues.filter(
-      (selectCategoryValue) =>
-        !selectCategoryValue.ontologyTermId ||
-        !excludeTerms.includes(selectCategoryValue.ontologyTermId)
-    );
-  }
+  // Remove any excluded values from the filter.
+  // TODO(cc) add back exclude functionality
+  const selectCategoryValues = [...categoryValueByValue.values()];
+  //
+  //     // excludeTerms: [
+  //     //   ...listOntologyTreeIds(TISSUE_SYSTEM_ONTOLOGY_TERM_SET),
+  //     //   ...listOntologyTreeIds(TISSUE_ORGAN_PART_ONTOLOGY_TERM_SET),
+  //     // ],
+  //
+  // if (excludeTerms && excludeTerms.length) {
+  //   selectCategoryValues = selectCategoryValues.filter(
+  //     (selectCategoryValue) =>
+  //       !selectCategoryValue.ontologyTermId ||
+  //       !excludeTerms.includes(selectCategoryValue.ontologyTermId)
+  //   );
+  // }
 
   const allCategoryValueViews = selectCategoryValues
     .map(({ count, key, selected }: SelectCategoryValue) => ({
       count,
       key,
-      label: buildCategoryValueLabel(categoryKey, key),
+      label: buildCategoryValueLabel(categoryFilterId, key),
       selected: selected,
     }))
     .sort(sortCategoryValueViews);
@@ -1031,8 +1033,8 @@ function buildSelectCategoryView(
 
   // Build view model of select category.
   const selectView: SelectCategoryView = {
-    key: categoryKey,
-    label: categoryConfig.label,
+    key: categoryFilterId,
+    label: config.label,
     pinnedValues,
     unpinnedValues,
     values: allCategoryValueViews,
@@ -1040,7 +1042,7 @@ function buildSelectCategoryView(
 
   // Handle special cases where select category may be disabled.
   if (
-    categoryKey === FILTER_CATEGORY_KEY.ETHNICITY &&
+    categoryFilterId === CATEGORY_FILTER_ID.ETHNICITY &&
     !isEthnicityViewEnabled(filterState)
   ) {
     selectView.isDisabled = true;
@@ -1057,15 +1059,15 @@ function buildSelectCategoryView(
 
 /**
  * Find and return the selected values for the given category.
- * @param categoryKey - Key of category to find selected filters of.
+ * @param categoryFilterId - ID of category to find selected filters of.
  * @param filters - Current set of selected category values (values) keyed by category (id).
  * @returns Array of filters
  */
 function getCategoryFilter<T extends Categories>(
-  categoryKey: FilterCategoryKey,
+  categoryFilterId: CategoryFilterId,
   filters: Filters<T>
 ): CategoryFilter | undefined {
-  return filters.find((filter) => filter.id === categoryKey);
+  return filters.find((filter) => filter.id === categoryFilterId);
 }
 
 /**
@@ -1156,14 +1158,16 @@ function includesSome(
 }
 
 /**
- * Check if the given category's type is "between".
- * @param categoryKey - Key of category to check type of.
+ * Check if the given category filter's match (filter) type is "between".
+ * @param categoryFilterId - ID of category to check type of.
  * @returns True if the given category's type is "between".
+ * TODO(cc) revisit - this was never type narrowing? can we improve this?
  */
-export function isCategoryTypeBetween(categoryKey: FilterCategoryKey): boolean {
+export function isMatchKindBetween(
+  categoryFilterId: CategoryFilterId
+): boolean {
   return (
-    CATEGORY_CONFIGS_BY_FILTER_CATEGORY_KEY[categoryKey].categoryType ===
-    CATEGORY_FILTER_TYPE.BETWEEN
+    CATEGORY_FILTER_CONFIGS_BY_ID[categoryFilterId].matchKind === "BETWEEN"
   );
 }
 
@@ -1216,7 +1220,7 @@ function isEveryChildNodeSelected(
 function isEthnicityViewEnabled(filterState: FilterState) {
   // Check to see if there are Homo sapiens values in the result set.
   const organismCategoryValues = filterState[
-    FILTER_CATEGORY_KEY.ORGANISM
+    CATEGORY_FILTER_ID.ORGANISM
   ] as KeyedSelectCategoryValue;
   const count = organismCategoryValues.get(ORGANISM.HOMO_SAPIENS)?.count ?? 0;
   if (count === 0) {
@@ -1252,6 +1256,7 @@ function isFilterEqual<T extends Categories>(
  * Determine if the given selected value is a selected category value key (and not a range).
  * @param selectedValue - Selected filter value, either a category value key (e.g. "normal") or a range (e.g. [0, 10]).
  * @returns True if given selected value is a selected category value.
+ * TODO(cc) revisit
  */
 function isCategoryValueKey(
   selectedValue: CategoryValueKey | Range
@@ -1263,6 +1268,7 @@ function isCategoryValueKey(
  * Determine if the given category value is a select category value (and not a range category value).
  * @param categorySetValue - Range or category set value.
  * @returns True if category set value is a set of category value keys.
+ * TODO(cc) revisit
  */
 function isCategorySetCategoryKeyValue(
   categorySetValue: CategorySetValue
@@ -1272,12 +1278,13 @@ function isCategorySetCategoryKeyValue(
 
 /**
  * Determine if the given category config is an ontology (and not a "regular" category config).
- * @param categoryConfig - Config model of category, either an ontology category config or a base category config.
+ * @param config - Config model of category, either an ontology category config or a base category config.
+ * TODO(cc) revisit - naming, use etc
  */
-function isCategoryConfigOntology(
-  categoryConfig: CategoryConfig
-): categoryConfig is OntologyCategoryConfig {
-  return !!(categoryConfig as OntologyCategoryConfig).ontologyTermSet;
+function isCuratedOntologyCategoryFilterConfig(
+  config: CategoryFilterConfig
+): config is CuratedOntologyCategoryFilterConfig {
+  return config.maskKind == "CURATED";
 }
 
 /**
@@ -1342,7 +1349,7 @@ function isDevelopmentStageSpeciesVisible(
 ) {
   // Find the current selected values for organism.
   const organismCategoryValues = filterState[
-    FILTER_CATEGORY_KEY.ORGANISM
+    CATEGORY_FILTER_ID.ORGANISM
   ] as KeyedSelectCategoryValue;
   const selectedOrganisms = [...organismCategoryValues.values()]
     .filter((selectCategoryValue) => selectCategoryValue.selected)
@@ -1474,26 +1481,26 @@ function removeOntologyDescendents(
  * @param categorySet - Original, unfiltered sets of category values keyed by their category.
  */
 function onFilterOntologyCategory<T extends Categories>(
-  config: OntologyCategoryConfig,
+  config: CuratedOntologyCategoryFilterConfig, // TODO(cc) revisit this, should it be any ontology type?
   selectedValue: CategoryValueKey,
   setFilter: SetFilterFn,
   filters: Filters<T>,
   categorySet: CategorySet
 ) {
-  const { filterCategoryKey, ontologyTermSet } = config;
+  const { categoryFilterId, mask } = config;
 
   // Track selected category and value.
   trackOntologyCategoryValueSelected(config, selectedValue, filters);
 
   // Build and set next set of filters for this category.
   const nextCategoryFilters = buildNextOntologyCategoryFilters(
-    filterCategoryKey,
+    categoryFilterId,
     selectedValue,
     filters,
-    categorySet[filterCategoryKey] as Set<CategoryValueKey>,
-    ontologyTermSet
+    categorySet[categoryFilterId] as Set<CategoryValueKey>,
+    mask
   );
-  setFilter(filterCategoryKey, nextCategoryFilters);
+  setFilter(categoryFilterId, nextCategoryFilters);
 }
 
 /**
@@ -1503,11 +1510,11 @@ function onFilterOntologyCategory<T extends Categories>(
  * @param setFilter - Function to update set of selected values for a category.
  */
 function onFilterRangeCategory(
-  config: CategoryConfig,
+  config: CategoryFilterConfig,
   selectedValue: Range,
   setFilter: SetFilterFn
 ) {
-  const { analyticsEvent, filterCategoryKey } = config;
+  const { analyticsEvent, categoryFilterId } = config;
 
   // Track select of new range mim/max, ignoring any clear of selected range. Only track if event is specified on
   // configuration model
@@ -1520,7 +1527,7 @@ function onFilterRangeCategory(
   }
 
   // Update filters for this range category.
-  setFilter(filterCategoryKey, selectedValue);
+  setFilter(categoryFilterId, selectedValue);
 }
 
 /**
@@ -1531,23 +1538,23 @@ function onFilterRangeCategory(
  * @param filters - Current set of selected category values (values) or ranges keyed by category (id).
  */
 function onFilterSelectCategory<T extends Categories>(
-  config: CategoryConfig,
+  config: CategoryFilterConfig,
   selectedValue: CategoryValueKey,
   setFilter: SetFilterFn,
   filters: Filters<T>
 ) {
-  const { filterCategoryKey } = config;
+  const { categoryFilterId } = config;
 
   // Track selected category and value.
   trackSelectCategoryValueSelected(config, selectedValue, filters);
 
   // Build and set next set of filters for this category.
   const nextCategoryFilters = buildNextSelectCategoryFilters(
-    filterCategoryKey,
+    categoryFilterId,
     selectedValue,
     filters
   );
-  setFilter(filterCategoryKey, nextCategoryFilters);
+  setFilter(categoryFilterId, nextCategoryFilters);
 }
 
 /**
@@ -1562,11 +1569,11 @@ function setSelectedStates<T extends Categories>(
   Object.keys(nextFilterState).forEach((categoryKey: string) => {
     // Grab the filter state for this category.
     const categoryFilterState =
-      nextFilterState[categoryKey as FilterCategoryKey];
+      nextFilterState[categoryKey as CategoryFilterId];
 
     // Grab the filters for this category.
     const categoryFilter = getCategoryFilter(
-      categoryKey as FilterCategoryKey,
+      categoryKey as CategoryFilterId,
       filters
     );
     if (!categoryFilter || !categoryFilter.value) {
@@ -1637,9 +1644,12 @@ function summarizeCategories<T extends Categories>(
 
     // Count the category value occurrences in each category that shares this filter. Range categories are not
     // summarized; they always use the full range of the original result set.
-    query.categoryKeys.forEach((categoryKey: FilterCategoryKey) => {
-      if (!isCategoryTypeBetween(categoryKey)) {
-        accum[categoryKey] = summarizeSelectCategory(categoryKey, rows);
+    query.categoryFilterIds.forEach((categoryFilterId: CategoryFilterId) => {
+      if (!isMatchKindBetween(categoryFilterId)) {
+        accum[categoryFilterId] = summarizeSelectCategory(
+          categoryFilterId,
+          rows
+        );
       }
     });
     return accum;
@@ -1648,20 +1658,20 @@ function summarizeCategories<T extends Categories>(
 
 /**
  * Count occurrences of category values across the result set for the given single or multiselect category.
- * @param categoryKey - Category to count category values.
+ * @param categoryFilterId - ID of category to count category values of.
  * @param filteredRows - Array of rows containing category values to count.
  * @return Map of category values keyed by category value key.
  */
 function summarizeSelectCategory<T extends Categories>(
-  categoryKey: FilterCategoryKey,
+  categoryFilterId: CategoryFilterId,
   filteredRows: Row<T>[]
 ): KeyedSelectCategoryValue {
-  const config = CATEGORY_CONFIGS_BY_FILTER_CATEGORY_KEY[categoryKey]; // TODO(cc) revisit thin air
+  const config = CATEGORY_FILTER_CONFIGS_BY_ID[categoryFilterId]; // TODO(cc) revisit thin air
 
   // Aggregate category value counts for each row.
   return filteredRows.reduce((accum: KeyedSelectCategoryValue, row: Row<T>) => {
     // Grab the values of the category for this dataset row.
-    let categoryValues = row.values[categoryKey];
+    let categoryValues = row.values[categoryFilterId];
 
     if (!Array.isArray(categoryValues)) {
       categoryValues = [categoryValues];
@@ -1738,11 +1748,11 @@ function toggleCategoryValueSelected(
  * @param filters - Current set of selected category values (values) or ranges keyed by category (id).
  */
 function trackOntologyCategoryValueSelected<T extends Categories>(
-  config: OntologyCategoryConfig,
+  config: CuratedOntologyCategoryFilterConfig, // TODO(cc) - revisit type here
   categoryValueKey: CategoryValueKey,
   filters: Filters<T>
 ) {
-  const { analyticsEvent, filterCategoryKey, ontologyTermSet } = config;
+  const { analyticsEvent, categoryFilterId, mask } = config;
 
   // No tracking if event isn't specified on category config.
   if (!analyticsEvent) {
@@ -1751,14 +1761,14 @@ function trackOntologyCategoryValueSelected<T extends Categories>(
 
   // Only track the select (and not deselect) of category value.
   const categoryFilters = new Set(
-    getCategoryFilter(filterCategoryKey, filters)?.value as CategoryValueKey[]
+    getCategoryFilter(categoryFilterId, filters)?.value as CategoryValueKey[]
   );
   if (!categoryFilters.has(categoryValueKey)) {
     // Grab the analytics event for this category.
 
     // Find the node for the selected value.
     const ontologySpeciesKey = getOntologySpeciesKey(categoryValueKey);
-    const ontologyRootNodes = ontologyTermSet[ontologySpeciesKey];
+    const ontologyRootNodes = mask[ontologySpeciesKey];
     if (!ontologyRootNodes) {
       return; // Error state - ontology does not exist.
     }
@@ -1785,11 +1795,11 @@ function trackOntologyCategoryValueSelected<T extends Categories>(
  * @param filters - Current set of selected category values (values) or ranges keyed by category (id).
  */
 function trackSelectCategoryValueSelected<T extends Categories>(
-  config: CategoryConfig,
+  config: CategoryFilterConfig,
   categoryValueKey: CategoryValueKey,
   filters: Filters<T>
 ) {
-  const { analyticsEvent, filterCategoryKey } = config;
+  const { analyticsEvent, categoryFilterId } = config;
 
   // No tracking if event isn't specified on category config.
   if (!analyticsEvent) {
@@ -1798,7 +1808,7 @@ function trackSelectCategoryValueSelected<T extends Categories>(
 
   // Only track the select (and not deselect) of category value.
   const categoryFilters = new Set(
-    getCategoryFilter(filterCategoryKey, filters)?.value as CategoryValueKey[]
+    getCategoryFilter(categoryFilterId, filters)?.value as CategoryValueKey[]
   );
   if (!categoryFilters.has(categoryValueKey)) {
     // Build up payload for tracking event and send.

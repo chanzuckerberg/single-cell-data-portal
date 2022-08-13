@@ -1,7 +1,7 @@
 import { IconNames } from "@blueprintjs/icons";
 import { List } from "czifui";
 import React, { Fragment, ReactElement } from "react";
-import { FilterCategoryKey } from "src/common/hooks/useCategoryFilter";
+import { CategoryFilterId } from "src/common/hooks/useCategoryFilter";
 import {
   OnFilterFn,
   OntologyCategoryTreeNodeView,
@@ -16,7 +16,7 @@ import {
 } from "src/components/common/Filter/components/FilterViews/components/FilterViewList/style";
 
 interface Props {
-  categoryKey: FilterCategoryKey;
+  categoryKey: CategoryFilterId;
   isZerosVisible: boolean;
   nested?: boolean;
   onFilter: OnFilterFn;

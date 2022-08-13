@@ -1,5 +1,5 @@
 import React from "react";
-import { FilterCategoryKey } from "src/common/hooks/useCategoryFilter";
+import { CategoryFilterId } from "src/common/hooks/useCategoryFilter";
 import {
   isOntologyCategoryView,
   isRangeCategoryView,
@@ -15,7 +15,7 @@ import FilterViewList from "src/components/common/Filter/components/FilterViews/
 import { ViewHeader } from "../FilterView/style";
 
 interface Props {
-  categoryKey: FilterCategoryKey;
+  categoryKey: CategoryFilterId;
   categoryView: CategoryView;
   onFilter: OnFilterFn;
   viewListMaxHeight: number;
