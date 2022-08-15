@@ -257,6 +257,7 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
+
   wmg-processing-unit-test:
     runs-on: ubuntu-20.04
     steps:
@@ -293,7 +294,6 @@ jobs:
         run: |
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
           make local-init-test-data
-          make local-unit-test-processing
           make local-unit-test-wmg-processing
       - uses: 8398a7/action-slack@v3
         with:
