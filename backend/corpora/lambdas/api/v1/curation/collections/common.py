@@ -241,6 +241,5 @@ def add_collection_level_processing_status(collection: DbCollection) -> str:
             if status == ProcessingStatus.PENDING:
                 return_status = status
             elif status == ProcessingStatus.FAILURE:
-                return_status = status
-                break
+                return status
     return return_status
