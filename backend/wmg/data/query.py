@@ -65,12 +65,18 @@ class WmgQuery:
 
         attr_cond = tiledb.QueryCondition(query_cond) if query_cond else None
 
-        tiledb_dims_query = tuple([
-            [] if dim_name in INDEXED_DIMENSIONS_TO_IGNORE else
-            criteria.dict()[dim_name] or ""
-            for dim_name in indexed_dims
-        ])
-        #tiledb_dims_query = tuple([criteria.dict()[dim_name] or [] for dim_name in indexed_dims])
+        tiledb_dims_query = []
+        for dim_name in indexed_dims:
+            # Don't filter on this dimension but return all "original tissues" back
+            if dim_name == "tissue_original_ontology_term_ids":
+                tiledb_dims_query.append([])
+            elif criteria.dict()[dim_name]:
+                tiledb_dims_query.append(criteria.dict()[dim_name])
+            # If an "indexed" dimension is not included in the criteria, this will return an empty data frame
+            else:
+                tiledb_dims_query.append("")
+
+        tiledb_dims_query = tuple(tiledb_dims_query)
 
         # FIXME: HACK of the century. Prevent realloc() error & crash when query returns an empty result. This forces
         #  two queries when there should just one.
