@@ -166,8 +166,3 @@ class TestExtract(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
 
         s3_uris = set(backend.corpus_asset_pipelines.integrated_corpus.extract.get_dataset_s3_uris().values())
         self.assertEquals(set(expected_s3_uris), s3_uris)
-
-        @unittest.skip
-        def test_datasets_copied_to_correct_location(self):
-            # TODO implement with changes from @ebezzis pipeline work
-            raise NotImplementedError
