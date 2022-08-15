@@ -21,36 +21,27 @@ export interface ValueLabelKind {
   labelKind: "VALUE";
 }
 
-// ** Mask discriminating unions ** //
-
-/**
- * Model of a filter that uses the set of selected values in a parent filter to determine the filter category values
- * allowed for display. For example, tissue.
- */
-export interface ParentSelectedTermsMaskKind {
-  maskKind: "CHILDREN_OF_SELECTED_PARENT_TERMS";
-  parentCategoryFilterIds: CATEGORY_FILTER_ID[];
-}
+// ** Value source kind discriminating unions ** //
 
 /**
  * Model of a filter that uses a hand-curated set of terms to determine the filter category values allowed for display.
  * For example, development stage, tissue system and tissue organ.
  */
-export interface CuratedMaskKind {
+export interface CuratedValueSourceKind {
   // TODO(cc) - revisit booleans below, can we remove?
   isLabelVisible: boolean; // True if ontology label is to be displayed (e.g. "Other Organisms")
   isSearchable: boolean; // True if ontology category search box is displayed
   isZerosVisible: boolean; // True if zero values are to be displayed
-  mask: OntologyTermSet;
-  maskKind: "CURATED";
+  mask: OntologyTermSet; // TODO(cc) rename mask to valueSource? rename OntologyTermSet
+  valueSourceKind: "CURATED";
 }
 
 /**
- * Model of a filter that has no restrictions on the filter cateogry values allowed for display. For example, assay,
+ * Model of a filter that has no restrictions on the filter category values allowed for display. For example, assay,
  * publication date etc.
  */
-export interface NoneMaskKind {
-  maskKind: "NONE";
+export interface NoneValueSourceKind {
+  valueSourceKind: "NONE";
 }
 
 // ** Match discriminating unions ** //
@@ -91,6 +82,29 @@ export interface ExcludesSelfQueryKind {
 export interface ExcludesSelfAndChildrenQueryKind {
   childrenCategoryFilterIds: CATEGORY_FILTER_ID[];
   queryKind: "EXCLUDES_SELF_AND_CHILDREN";
+}
+
+// ** Value restriction discriminating unions ** //
+
+/**
+ * Model of a filter that uses the set of selected values in a parent filter to determine the filter category values
+ * allowed for display. For example, tissue. NOTE! The order of parents defined in parentCategoryFilterIds drives
+ * the order of the restrictions applied to the category filter. For example, for tissue, organ must be specified
+ * before system so that when restricting tissue values, if both system and organ have a selected value, then only the
+ * selected organ is applied as a restriction. If both selected system and selected organ were applied to tissue, the
+ * tissue values would over-show.
+ */
+export interface SelectedParentTermsValueRestrictionKind {
+  valueRestrictionKind: "CHILDREN_OF_SELECTED_PARENT_TERMS";
+  parentCategoryFilterIds: CATEGORY_FILTER_ID[];
+}
+
+/**
+ * Model of a filter that has no restrictions on the filter category values allowed for display. For example, assay,
+ * publication date etc.
+ */
+export interface NoneValueRestrictionKind {
+  valueRestrictionKind: "NONE";
 }
 
 // ** Category filter constants ** //
@@ -140,8 +154,9 @@ export interface BaseCategoryFilterConfig {
 export type CuratedOntologyCategoryFilterConfig = BaseCategoryFilterConfig &
   IncludesSomeMatchKind &
   LookupByTermIdLabelKind &
-  CuratedMaskKind &
-  ExcludesSelfQueryKind;
+  CuratedValueSourceKind &
+  ExcludesSelfQueryKind &
+  NoneValueRestrictionKind;
 
 /**
  * Filter category that uses checkboxes for filtering, is ontology-aware, and whose displayable values are determined
@@ -150,8 +165,9 @@ export type CuratedOntologyCategoryFilterConfig = BaseCategoryFilterConfig &
 export type LeafOntologyCategoryFilterConfig = BaseCategoryFilterConfig &
   IncludesSomeMatchKind &
   LookupByTermIdLabelKind &
-  ParentSelectedTermsMaskKind &
-  ExcludesSelfQueryKind;
+  NoneValueSourceKind &
+  ExcludesSelfQueryKind &
+  SelectedParentTermsValueRestrictionKind;
 
 /**
  * Filter category that uses checkboxes for filtering, is ontology-aware, and whose selected values restrict allowed
@@ -160,8 +176,21 @@ export type LeafOntologyCategoryFilterConfig = BaseCategoryFilterConfig &
 export type ParentOntologyCategoryFilterConfig = BaseCategoryFilterConfig &
   IncludesSomeMatchKind &
   LookupByTermIdLabelKind &
-  CuratedMaskKind &
-  ExcludesSelfAndChildrenQueryKind;
+  CuratedValueSourceKind &
+  ExcludesSelfAndChildrenQueryKind &
+  NoneValueRestrictionKind;
+
+/**
+ * Filter category that uses checkboxes for filtering, is ontology-aware, whose selected values restrict allowed
+ * displayable values in children category filters and whose displayable values are determined by parent category
+ * filters. For example, tissue organ.
+ */
+export type ChildOntologyCategoryFilterConfig = BaseCategoryFilterConfig &
+  IncludesSomeMatchKind &
+  LookupByTermIdLabelKind &
+  CuratedValueSourceKind &
+  ExcludesSelfAndChildrenQueryKind &
+  SelectedParentTermsValueRestrictionKind;
 
 /**
  * Filter category that a range slider for filtering. For example, cell count and gene count.
@@ -169,8 +198,9 @@ export type ParentOntologyCategoryFilterConfig = BaseCategoryFilterConfig &
 export type RangeCategoryFilterConfig = BaseCategoryFilterConfig &
   BetweenMatchKind &
   ValueLabelKind &
-  NoneMaskKind &
-  ExcludesSelfQueryKind;
+  NoneValueSourceKind &
+  ExcludesSelfQueryKind &
+  NoneValueRestrictionKind;
 
 /**
  * Filter category that uses checkboxes for filtering and is not ontology-aware. For example, publication date and
@@ -180,8 +210,9 @@ export type RangeCategoryFilterConfig = BaseCategoryFilterConfig &
 export type SelectCategoryFilterConfig = BaseCategoryFilterConfig &
   IncludesSomeMatchKind &
   ValueLabelKind &
-  NoneMaskKind &
-  ExcludesSelfQueryKind;
+  NoneValueSourceKind &
+  ExcludesSelfQueryKind &
+  NoneValueRestrictionKind;
 
 /**
  * Set of all possible filter category configuration types.
@@ -190,6 +221,7 @@ export type CategoryFilterConfig =
   | CuratedOntologyCategoryFilterConfig
   | LeafOntologyCategoryFilterConfig
   | ParentOntologyCategoryFilterConfig
+  | ChildOntologyCategoryFilterConfig
   | RangeCategoryFilterConfig
   | SelectCategoryFilterConfig;
 
@@ -197,7 +229,7 @@ export type CategoryFilterConfig =
  * UI configuration for each category.
  */
 export interface CategoryFilterUIConfig {
-  categoryConfigKeys: CATEGORY_FILTER_ID[];
+  categoryFilterConfigIds: CATEGORY_FILTER_ID[];
   label: string;
 }
 

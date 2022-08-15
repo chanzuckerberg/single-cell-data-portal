@@ -19,7 +19,10 @@ import {
   DatasetRow,
   RowPropsValue,
 } from "src/components/common/Filter/common/entities";
-import { ontologyLabelCellAccessorFn } from "src/components/common/Filter/common/utils";
+import {
+  ontologyIdCellAccessorFn,
+  ontologyLabelCellAccessorFn,
+} from "src/components/common/Filter/common/utils";
 import CountCell from "src/components/common/Grid/components/CountCell";
 import DiseaseCell from "src/components/common/Grid/components/DiseaseCell";
 import { GridHero } from "src/components/common/Grid/components/Hero";
@@ -233,7 +236,7 @@ export default function Datasets(): JSX.Element {
       },
       // Hidden, required for filter.
       {
-        accessor: ontologyLabelCellAccessorFn("tissue"),
+        accessor: ontologyIdCellAccessorFn("tissue"),
         filter: "includesSome",
         id: CATEGORY_FILTER_ID.TISSUE,
       },
