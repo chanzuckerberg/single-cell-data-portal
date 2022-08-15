@@ -21,7 +21,7 @@ class GeneInfoAPIv1Tests(unittest.TestCase):
             "summary": "",
             "ncbi_url": "https://www.ncbi.nlm.nih.gov/gene/1",
             "synonyms": [],
-            "is_ensembl_id_result": True,
+            "show_warning_banner": False,
         }
 
     @classmethod
@@ -74,7 +74,9 @@ class GeneInfoAPIv1Tests(unittest.TestCase):
         mock_is_valid_search_result.return_value = False
         self.app.get("/gene_info/v1/gene_info?geneID=ensembl&gene=name")
         self.assertEqual(mock_search_gene_uid.call_count, 2)
-        mock_search_gene_uid.assert_has_calls([call("ensembl"), call("name")])
+        mock_search_gene_uid.assert_has_calls(
+            [call("ensembl"), call("(name%5BGene%20Name%5D)%20AND%20human%5BOrganism%5D")]
+        )
         self.assertEqual(mock_is_valid_search_result.call_count, 2)
         mock_is_valid_search_result.assert_has_calls([call("failed"), call("failed")])
         self.assertRaises(NotFoundHTTPException)
@@ -99,7 +101,7 @@ class GeneInfoAPIv1Tests(unittest.TestCase):
         """
         Successfully calls NCBIProvider fetch and search functions with a parameter of only gene ID
         """
-        mock_fetch_gene_uid.return_value = (1, True)
+        mock_fetch_gene_uid.return_value = (1, False)
         mock_fetch_gene_info_tree.return_value = None
         mock_parse_gene_info_tree.return_value = self.final_gene_info_result
         mock_get_id.return_value = "ensembl1"
@@ -121,7 +123,7 @@ class GeneInfoAPIv1Tests(unittest.TestCase):
         """
         Successfully calls NCBIProvider fetch and search functions with both ID and name params
         """
-        mock_fetch_gene_uid.return_value = (1, True)
+        mock_fetch_gene_uid.return_value = (1, False)
         mock_fetch_gene_info_tree.return_value = None
         mock_parse_gene_info_tree.return_value = self.final_gene_info_result
         mock_get_id.return_value = "ensembl1"
