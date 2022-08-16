@@ -13,6 +13,8 @@ def get(visibility: str, token_info: dict, curator: str = None):
     Collections index endpoint for Curation API. Only return Collection data for which the curator is authorized.
     :param visibility: the CollectionVisibility in string form
     :param token_info: access token info
+    :param curator: the name of the curator to filter the collections by.
+
     @return: Response
     """
     if visibility == CollectionVisibility.PRIVATE.name:
