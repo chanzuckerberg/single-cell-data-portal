@@ -36,6 +36,9 @@ const Header: FC = () => {
             <LinkWrapper>
               <Link href={ROUTES.COLLECTIONS} passHref>
                 <AnchorButton
+                  onClick={() => {
+                    track(EVENTS.COLLECTIONS_CLICK_NAV);
+                  }}
                   active={isRouteActive(pathname, ROUTES.COLLECTIONS)}
                   href="passHref"
                   minimal
@@ -46,6 +49,9 @@ const Header: FC = () => {
             <LinkWrapper>
               <Link href={ROUTES.DATASETS} passHref>
                 <AnchorButton
+                  onClick={() => {
+                    track(EVENTS.DATASETS_CLICK_NAV);
+                  }}
                   active={isRouteActive(pathname, ROUTES.DATASETS)}
                   href="passHref"
                   minimal
@@ -82,8 +88,15 @@ const Header: FC = () => {
           )}
           <LinkWrapper>
             <AnchorButton
+              onClick={() => {
+                track(EVENTS.DOCUMENTATION_CLICK_NAV);
+              }}
               active={isRouteActive(pathname, ROUTES.DOCS)}
-              href={ROUTES.DOCS}
+              href={
+                isRouteActive(pathname, ROUTES.WHERE_IS_MY_GENE)
+                  ? ROUTES.WMG_DOCS
+                  : ROUTES.PUBLISHED_DATA_DOCS
+              }
               rel="noopener"
               target="_blank"
               minimal
