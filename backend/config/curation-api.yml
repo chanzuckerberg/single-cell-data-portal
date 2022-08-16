@@ -66,7 +66,8 @@ paths:
         - $ref: "#/components/parameters/query_visibility"
         - name: curator
           description: >-
-            Return collections owned by the specified curator.
+            Return collections owned by the specified curator. The use of this parameter is limited to curators 
+            with permission to query all collections.
           in: query
           required: false
           schema:
