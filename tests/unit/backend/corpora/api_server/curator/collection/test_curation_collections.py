@@ -415,7 +415,8 @@ class TestGetCollectionID(BaseAuthAPITest):
         res_body = res.json
         del res_body["created_at"]  # too finicky; ignore
         self.assertTrue("access_type" not in res_body)
-        self.assertDictEqual(self.expected_body, res_body)  # Confirm dict has been packaged in list
+        self.assertDictEqual(self.expected_body, res_body)
+        self.assertEqual(json.dumps(self.expected_body, sort_keys=True), json.dumps(res_body))
 
     def test__get_private_collection__OK(self):
         res = self.app.get("/curation/v1/collections/test_collection_id_revision")
