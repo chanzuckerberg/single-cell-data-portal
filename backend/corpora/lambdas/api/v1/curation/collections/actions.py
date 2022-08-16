@@ -17,18 +17,15 @@ def get(visibility: str, token_info: dict, curator: str = None):
 
     @return: Response
     """
-    if visibility == CollectionVisibility.PRIVATE.name:
-        if any((not token_info, not is_super_curator(token_info) and curator not in ("self", None))):
-            raise UnauthorizedError()
-
     filters = [DbCollection.tombstone == False]  # noqa
-    if visibility == CollectionVisibility.PUBLIC.name:
-        filters.append(DbCollection.visibility == CollectionVisibility.PUBLIC)
-    elif visibility == CollectionVisibility.PRIVATE.name:
-        filters.append(DbCollection.visibility == CollectionVisibility.PRIVATE)
 
-    if token_info and curator == "self":  # curator wants own collections
-        filters.append(DbCollection.owner == token_info["sub"])
+    if visibility == CollectionVisibility.PRIVATE.name and not token_info:
+        raise UnauthorizedError()
+    elif visibility:
+        filters.append(DbCollection.visibility == getattr(CollectionVisibility, visibility))
+
+    if curator and not is_super_curator(token_info):
+        raise UnauthorizedError()
     elif curator:  # user want collections from a specific curator
         filters.append(DbCollection.curator_name == curator)
 
