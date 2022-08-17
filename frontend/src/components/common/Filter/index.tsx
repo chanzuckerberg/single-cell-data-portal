@@ -56,6 +56,7 @@ export default function Filter({
               />
             }
             key={categoryViews.label}
+            flipEnabled={categoryViews.label !== "Tissue (Ontology)"}
             isDisabled={false} // TODO(cc) add category view isDisabled
             tags={undefined}
             target={buildFilterLabel(categoryViews.label, false)} // TODO(cc) add category view isDisabled
