@@ -180,7 +180,7 @@ class TestRevision(BaseRevisionTest):
         self.assertEqual("WRITE", res_get_json.pop("access_type"))
         self.verify_unauthed_get_revision(revision_id, res_get_json)
 
-    def test__revision__409(self):
+    def test__revision__403(self):
         """Starting a revision on a revision."""
         collection = self.generate_collection(self.session, visibility=CollectionVisibility.PUBLIC)
         test_url = f"/dp/v1/collections/{collection.id}"
@@ -191,7 +191,7 @@ class TestRevision(BaseRevisionTest):
 
         # Try to start a revision again
         response = self.app.post(test_url, headers=self.headers)
-        self.assertEqual(409, response.status_code)
+        self.assertEqual(403, response.status_code)
 
     def test__revision_nonexistent__403(self):
         """Start a revision on a non-existing collection."""
