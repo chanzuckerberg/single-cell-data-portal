@@ -105,7 +105,6 @@ def generate_cell_ordering(snapshot_path: str, cell_type_by_tissue: Dict) -> Non
 
 @log_func_runtime
 def generate_primary_filter_dimensions(snapshot_path: str, corpus_name: str, snapshot_id: int):
-
     def list_primary_filter_dimension_term_ids(cube, primary_dim_name: str):
         return cube.query(attrs=[], dims=[primary_dim_name]).df[:].groupby([primary_dim_name]).first().index.tolist()
 

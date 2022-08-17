@@ -3,7 +3,6 @@ import logging
 import pathlib
 import sys
 import time
-import tiledb
 
 from backend.corpora.common.utils.slack import (
     notify_slack,
@@ -15,7 +14,6 @@ from backend.corpus_asset_pipelines import integrated_corpus
 from backend.corpus_asset_pipelines import summary_cubes
 
 from backend.wmg.data.load_cube import upload_artifacts_to_s3, make_snapshot_active
-from backend.wmg.data.schemas.corpus_schema import create_tdb_integrated_corpus
 from backend.wmg.data.transform import (
     generate_primary_filter_dimensions,
     get_cell_types_by_tissue,
