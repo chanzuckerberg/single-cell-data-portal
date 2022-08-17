@@ -495,14 +495,19 @@ components:
       properties:
         assets:
           items:
-            allOf:
-              - "$ref": "#/components/schemas/dataset_asset"
-              - properties:
-                  file_size:
-                    type: number
-                  presigned_url:
-                    type: string
-                type: object
+            properties:
+              file_name:
+                type: string
+              file_size:
+                type: number
+              file_type:
+                enum:
+                  - H5AD
+                  - RDS
+                type: string
+              presigned_url:
+                type: string
+            type: object
           type: array
         curator_tag:
           "$ref": "#/components/schemas/curator_tag"
@@ -612,11 +617,16 @@ components:
             X_normalization:
               nullable: true
               type: string
+            assay:
+              "$ref": "#/components/schemas/ontology_elements"
             cell_count:
               nullable: true
               type: integer
             cell_type:
               "$ref": "#/components/schemas/ontology_elements"
+            curator_tag:
+              "$ref": "#/components/schemas/curator_tag"
+              nullable: true
             dataset_assets:
               items:
                 "$ref": "#/components/schemas/dataset_asset"
@@ -624,10 +634,14 @@ components:
             development_stage:
               "$ref": "#/components/schemas/ontology_elements"
               nullable: true
+            disease:
+              "$ref": "#/components/schemas/ontology_elements"
             ethnicity:
               "$ref": "#/components/schemas/ontology_elements"
             explorer_url:
               "$ref": "#/components/schemas/explorer_url"
+            id:
+              "$ref": "#/components/schemas/dataset_id"
             is_primary_data:
               "$ref": "#/components/schemas/is_primary_data"
             mean_genes_per_cell:
@@ -636,6 +650,8 @@ components:
             name:
               nullable: true
               type: string
+            organism:
+              "$ref": "#/components/schemas/ontology_elements"
             processing_status:
               "$ref": "#/components/schemas/processing_status"
             revised_at:
@@ -649,6 +665,10 @@ components:
               type: string
             sex:
               "$ref": "#/components/schemas/ontology_elements"
+            tissue:
+              "$ref": "#/components/schemas/ontology_elements"
+            tombstone:
+              type: boolean
           type: object
     dataset_asset:
       properties:
