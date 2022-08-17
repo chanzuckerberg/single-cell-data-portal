@@ -11,15 +11,17 @@ from backend.wmg.data.schemas.cube_schema import expression_summary_schema, cell
 class TestIntegratedCorpusSchema(unittest.TestCase):
     def test_integrated_corpus_var_schema_contain_correct_dimensions(self):
         with tempfile.TemporaryDirectory() as corpus_dir:
-            create_tdb_integrated_corpus(corpus_dir, "test_corpus")
-            var_schema = tiledb.ArraySchema.load(f"{corpus_dir}/test_corpus/var")
+            corpus_path = f"{corpus_dir}/test_corpus"
+            create_tdb_integrated_corpus(corpus_path)
+            var_schema = tiledb.ArraySchema.load(f"{corpus_path}/var")
             self.assertEqual(var_schema.domain.ndim, 1)
             self.assertTrue(var_schema.domain.has_dim("gene_ontology_term_id"))
 
     def test_integrated_corpus_var_schema_contain_correct_attributes(self):
         with tempfile.TemporaryDirectory() as corpus_dir:
-            create_tdb_integrated_corpus(corpus_dir, "test_corpus")
-            var_schema = tiledb.ArraySchema.load(f"{corpus_dir}/test_corpus/var")
+            corpus_path = f"{corpus_dir}/test_corpus"
+            create_tdb_integrated_corpus(corpus_path)
+            var_schema = tiledb.ArraySchema.load(f"{corpus_path}/var")
             self.assertEqual(var_schema.nattr, 3)
             self.assertTrue(var_schema.has_attr("var_idx"))
             self.assertTrue(var_schema.has_attr("feature_reference"))
@@ -27,8 +29,9 @@ class TestIntegratedCorpusSchema(unittest.TestCase):
 
     def test_integrated_corpus_obs_schema_contain_correct_dimensions(self):
         with tempfile.TemporaryDirectory() as corpus_dir:
-            create_tdb_integrated_corpus(corpus_dir, "test_corpus")
-            obs_schema = tiledb.ArraySchema.load(f"{corpus_dir}/test_corpus/obs")
+            corpus_path = f"{corpus_dir}/test_corpus"
+            create_tdb_integrated_corpus(corpus_path)
+            obs_schema = tiledb.ArraySchema.load(f"{corpus_path}/obs")
             self.assertEqual(obs_schema.domain.ndim, 3)
             self.assertTrue(obs_schema.domain.has_dim("dataset_id"))
             self.assertTrue(obs_schema.domain.has_dim("cell_type_ontology_term_id"))
@@ -36,8 +39,9 @@ class TestIntegratedCorpusSchema(unittest.TestCase):
 
     def test_integrated_corpus_obs_schema_contain_correct_attributes(self):
         with tempfile.TemporaryDirectory() as corpus_dir:
-            create_tdb_integrated_corpus(corpus_dir, "test_corpus")
-            obs_schema = tiledb.ArraySchema.load(f"{corpus_dir}/test_corpus/obs")
+            corpus_path = f"{corpus_dir}/test_corpus"
+            create_tdb_integrated_corpus(corpus_path)
+            obs_schema = tiledb.ArraySchema.load(f"{corpus_path}/obs")
             self.assertEqual(obs_schema.nattr, 15)
             self.assertTrue(obs_schema.has_attr("obs_idx"))
             self.assertTrue(obs_schema.has_attr("cell_type"))
