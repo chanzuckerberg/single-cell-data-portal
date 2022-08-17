@@ -63,7 +63,7 @@ class TestCorpusLoad(unittest.TestCase):
         self.corpus_name = "test-group"
         self.corpus_path = f"{self.tmp_dir}/{self.corpus_name}"
         if not tiledb.VFS().is_dir(self.corpus_path):
-            create_tdb_integrated_corpus(self.tmp_dir, self.corpus_name)
+            create_tdb_integrated_corpus(self.corpus_path)
             # self.pbmc3k_anndata_object = get_test_anndata_dataset()
 
     def tearDown(self) -> None:
