@@ -2772,8 +2772,8 @@ const CATEGORY_FILTER_CONFIGS: CategoryFilterConfig[] = [
     matchKind: "INCLUDES_SOME",
     multiselect: true,
     queryKind: "EXCLUDES_SELF",
-    valueRestrictionKind: "NONE",
     valueSourceKind: "NONE",
+    viewKind: "SELECT",
   },
   {
     analyticsEvent: EVENTS.FILTER_SELECT_CELL_COUNT,
@@ -2784,8 +2784,8 @@ const CATEGORY_FILTER_CONFIGS: CategoryFilterConfig[] = [
     matchKind: "BETWEEN",
     multiselect: false,
     queryKind: "EXCLUDES_SELF",
-    valueRestrictionKind: "NONE",
     valueSourceKind: "NONE",
+    viewKind: "RANGE",
   },
   {
     // TODO(cc) possibly remove with #2569.
@@ -2797,8 +2797,8 @@ const CATEGORY_FILTER_CONFIGS: CategoryFilterConfig[] = [
     matchKind: "INCLUDES_SOME",
     multiselect: true,
     queryKind: "EXCLUDES_SELF",
-    valueRestrictionKind: "NONE",
     valueSourceKind: "NONE",
+    viewKind: "SELECT",
   },
   {
     // TODO(cc) add analytics event with #2569.
@@ -2813,8 +2813,8 @@ const CATEGORY_FILTER_CONFIGS: CategoryFilterConfig[] = [
     matchKind: "INCLUDES_SOME",
     multiselect: true,
     queryKind: "EXCLUDES_SELF",
-    valueRestrictionKind: "NONE",
     valueSourceKind: "CURATED",
+    viewKind: "CURATED_ONTOLOGY",
   },
   {
     analyticsEvent: EVENTS.FILTER_SELECT_DEVELOPMENT_STAGE,
@@ -2829,8 +2829,8 @@ const CATEGORY_FILTER_CONFIGS: CategoryFilterConfig[] = [
     matchKind: "INCLUDES_SOME",
     multiselect: true,
     queryKind: "EXCLUDES_SELF",
-    valueRestrictionKind: "NONE",
     valueSourceKind: "CURATED",
+    viewKind: "CURATED_ONTOLOGY",
   },
   {
     analyticsEvent: EVENTS.FILTER_SELECT_DISEASE,
@@ -2842,8 +2842,8 @@ const CATEGORY_FILTER_CONFIGS: CategoryFilterConfig[] = [
     multiselect: true,
     pinnedCategoryValues: [CATEGORY_VALUE_KEY.NORMAL],
     queryKind: "EXCLUDES_SELF",
-    valueRestrictionKind: "NONE",
     valueSourceKind: "NONE",
+    viewKind: "SELECT",
   },
   {
     analyticsEvent: EVENTS.FILTER_SELECT_ETHNICITY,
@@ -2856,8 +2856,8 @@ const CATEGORY_FILTER_CONFIGS: CategoryFilterConfig[] = [
     queryKind: "EXCLUDES_SELF",
     tooltip:
       "Ethnicity only applies to Homo sapiens which is not selected in the Organism filter.",
-    valueRestrictionKind: "NONE",
     valueSourceKind: "NONE",
+    viewKind: "SELECT",
   },
   {
     analyticsEvent: EVENTS.FILTER_SELECT_GENE_COUNT,
@@ -2865,11 +2865,11 @@ const CATEGORY_FILTER_CONFIGS: CategoryFilterConfig[] = [
     filterOnKey: "mean_genes_per_cell",
     label: "Gene Count",
     labelKind: "VALUE",
-    matchKind: "INCLUDES_SOME",
+    matchKind: "BETWEEN",
     multiselect: false,
     queryKind: "EXCLUDES_SELF",
-    valueRestrictionKind: "NONE",
     valueSourceKind: "NONE",
+    viewKind: "RANGE",
   },
   {
     analyticsEvent: EVENTS.FILTER_SELECT_ORGANISM,
@@ -2880,8 +2880,8 @@ const CATEGORY_FILTER_CONFIGS: CategoryFilterConfig[] = [
     matchKind: "INCLUDES_SOME",
     multiselect: true,
     queryKind: "EXCLUDES_SELF",
-    valueRestrictionKind: "NONE",
     valueSourceKind: "NONE",
+    viewKind: "SELECT",
   },
   {
     analyticsEvent: EVENTS.FILTER_SELECT_AUTHORS,
@@ -2892,8 +2892,8 @@ const CATEGORY_FILTER_CONFIGS: CategoryFilterConfig[] = [
     matchKind: "INCLUDES_SOME",
     multiselect: true,
     queryKind: "EXCLUDES_SELF",
-    valueRestrictionKind: "NONE",
     valueSourceKind: "NONE",
+    viewKind: "SELECT",
   },
   {
     analyticsEvent: EVENTS.FILTER_SELECT_PUBLICATION_DATE,
@@ -2904,8 +2904,8 @@ const CATEGORY_FILTER_CONFIGS: CategoryFilterConfig[] = [
     matchKind: "INCLUDES_SOME",
     multiselect: true,
     queryKind: "EXCLUDES_SELF",
-    valueRestrictionKind: "NONE",
     valueSourceKind: "NONE",
+    viewKind: "SELECT",
   },
   {
     analyticsEvent: EVENTS.FILTER_SELECT_SEX,
@@ -2916,8 +2916,8 @@ const CATEGORY_FILTER_CONFIGS: CategoryFilterConfig[] = [
     matchKind: "INCLUDES_SOME",
     multiselect: true,
     queryKind: "EXCLUDES_SELF",
-    valueRestrictionKind: "NONE",
     valueSourceKind: "NONE",
+    viewKind: "SELECT",
   },
   {
     // TODO(cc) possibly remove with #2569.
@@ -2929,63 +2929,92 @@ const CATEGORY_FILTER_CONFIGS: CategoryFilterConfig[] = [
     matchKind: "INCLUDES_SOME",
     multiselect: true,
     queryKind: "EXCLUDES_SELF",
-    valueRestrictionKind: "NONE",
     valueSourceKind: "NONE",
+    viewKind: "SELECT",
   },
   {
     // TODO(cc) add analytics event with #2569.
-    categoryFilterId: CATEGORY_FILTER_ID.TISSUE_SYSTEM,
-    childrenCategoryFilterIds: [
-      CATEGORY_FILTER_ID.TISSUE_ORGAN,
-      CATEGORY_FILTER_ID.TISSUE,
-    ],
-    filterOnKey: "tissue_ancestors",
-    isLabelVisible: false,
-    isSearchable: false,
-    isZerosVisible: false,
-    label: "System",
-    labelKind: "LOOKUP_LABEL_BY_TERM_ID",
-    mask: TISSUE_SYSTEM_ONTOLOGY_TERM_SET,
-    matchKind: "INCLUDES_SOME",
-    multiselect: true,
-    queryKind: "EXCLUDES_SELF_AND_CHILDREN",
-    valueRestrictionKind: "NONE",
-    valueSourceKind: "CURATED",
-  },
-  {
-    // TODO(cc) add analytics event with #2569.
-    categoryFilterId: CATEGORY_FILTER_ID.TISSUE_ORGAN,
-    childrenCategoryFilterIds: [CATEGORY_FILTER_ID.TISSUE],
-    filterOnKey: "tissue_ancestors",
-    isLabelVisible: false,
-    isSearchable: false,
-    isZerosVisible: false,
-    label: "Organ",
-    labelKind: "LOOKUP_LABEL_BY_TERM_ID",
-    mask: TISSUE_ORGAN_ONTOLOGY_TERM_SET,
-    matchKind: "INCLUDES_SOME",
-    multiselect: true,
-    parentCategoryFilterIds: [CATEGORY_FILTER_ID.TISSUE_SYSTEM],
-    queryKind: "EXCLUDES_SELF_AND_CHILDREN",
-    valueRestrictionKind: "CHILDREN_OF_SELECTED_PARENT_TERMS",
-    valueSourceKind: "CURATED",
-  },
-  {
-    // TODO(cc) add analytics event with #2569.
-    categoryFilterId: CATEGORY_FILTER_ID.TISSUE,
-    filterOnKey: "tissue",
-    label: "Tissue",
+    categoryFilterId: CATEGORY_FILTER_ID.TISSUE_CALCULATED,
+    filterOnKey: "tissueCalculated",
+    label: "Tissue (Ontology)",
     labelKind: "LOOKUP_LABEL_BY_TERM_ID",
     matchKind: "INCLUDES_SOME",
     multiselect: true,
-    parentCategoryFilterIds: [
-      CATEGORY_FILTER_ID.TISSUE_ORGAN, // Organ must be defined before system. See SelectedParentTermsValueRestrictionKind. TODO(cc) check this is still required
-      CATEGORY_FILTER_ID.TISSUE_SYSTEM,
+    panels: [
+      {
+        label: "System",
+        mask: TISSUE_SYSTEM_ONTOLOGY_TERM_SET,
+        sourceKind: "ONLY_CURATED",
+      },
+      {
+        label: "Organ",
+        mask: TISSUE_ORGAN_ONTOLOGY_TERM_SET,
+        sourceKind: "ONLY_CURATED",
+      },
+      {
+        label: "Tissue",
+        sourceKind: "EXCEPT_CURATED",
+      },
     ],
     queryKind: "EXCLUDES_SELF",
-    valueRestrictionKind: "CHILDREN_OF_SELECTED_PARENT_TERMS",
     valueSourceKind: "NONE",
+    viewKind: "MULTI_PANEL",
   },
+  // TODO(cc) remove
+  // {
+  //   // TODO(cc) add analytics event with #2569.
+  //   categoryFilterId: CATEGORY_FILTER_ID.TISSUE_SYSTEM,
+  //   childrenCategoryFilterIds: [
+  //     CATEGORY_FILTER_ID.TISSUE_ORGAN,
+  //     CATEGORY_FILTER_ID.TISSUE,
+  //   ],
+  //   filterOnKey: "tissue_ancestors",
+  //   isLabelVisible: false,
+  //   isSearchable: false,
+  //   isZerosVisible: false,
+  //   label: "System",
+  //   labelKind: "LOOKUP_LABEL_BY_TERM_ID",
+  //   mask: TISSUE_SYSTEM_ONTOLOGY_TERM_SET,
+  //   matchKind: "INCLUDES_SOME",
+  //   multiselect: true,
+  //   queryKind: "EXCLUDES_SELF_AND_CHILDREN",
+  //   valueRestrictionKind: "NONE",
+  //   valueSourceKind: "CURATED",
+  // },
+  // {
+  //   // TODO(cc) add analytics event with #2569.
+  //   categoryFilterId: CATEGORY_FILTER_ID.TISSUE_ORGAN,
+  //   childrenCategoryFilterIds: [CATEGORY_FILTER_ID.TISSUE],
+  //   filterOnKey: "tissue_ancestors",
+  //   isLabelVisible: false,
+  //   isSearchable: false,
+  //   isZerosVisible: false,
+  //   label: "Organ",
+  //   labelKind: "LOOKUP_LABEL_BY_TERM_ID",
+  //   mask: TISSUE_ORGAN_ONTOLOGY_TERM_SET,
+  //   matchKind: "INCLUDES_SOME",
+  //   multiselect: true,
+  //   parentCategoryFilterIds: [CATEGORY_FILTER_ID.TISSUE_SYSTEM],
+  //   queryKind: "EXCLUDES_SELF_AND_CHILDREN",
+  //   valueRestrictionKind: "CHILDREN_OF_SELECTED_PARENT_TERMS",
+  //   valueSourceKind: "CURATED",
+  // },
+  // {
+  //   // TODO(cc) add analytics event with #2569.
+  //   categoryFilterId: CATEGORY_FILTER_ID.TISSUE,
+  //   filterOnKey: "tissue",
+  //   label: "Tissue",
+  //   labelKind: "LOOKUP_LABEL_BY_TERM_ID",
+  //   matchKind: "INCLUDES_SOME",
+  //   multiselect: true,
+  //   parentCategoryFilterIds: [
+  //     CATEGORY_FILTER_ID.TISSUE_ORGAN, // Organ must be defined before system. See SelectedParentTermsValueRestrictionKind. TODO(cc) check this is still required
+  //     CATEGORY_FILTER_ID.TISSUE_SYSTEM,
+  //   ],
+  //   queryKind: "EXCLUDES_SELF",
+  //   valueRestrictionKind: "CHILDREN_OF_SELECTED_PARENT_TERMS",
+  //   valueSourceKind: "NONE",
+  // },
 ];
 
 /**
@@ -3061,9 +3090,11 @@ export const CATEGORY_FILTER_UI_CONFIGS: CategoryFilterUIConfig[] = [
   },
   {
     categoryFilterConfigIds: [
-      CATEGORY_FILTER_ID.TISSUE_SYSTEM,
-      CATEGORY_FILTER_ID.TISSUE_ORGAN,
-      CATEGORY_FILTER_ID.TISSUE,
+      // TODO(cc) remove
+      // CATEGORY_FILTER_ID.TISSUE_SYSTEM,
+      // CATEGORY_FILTER_ID.TISSUE_ORGAN,
+      // CATEGORY_FILTER_ID.TISSUE,
+      CATEGORY_FILTER_ID.TISSUE_CALCULATED,
     ],
     label: "Tissue (Ontology)",
   },

@@ -108,7 +108,7 @@ export interface DatasetResponse {
  * functionality.
  */
 interface ProcessedDatasetResponse extends DatasetResponse {
-  tissueFilter: string[]; // Field to drive tissue system, tissue organ and tissue filter functionality.
+  tissueCalculated: string[]; // Field to drive tissue system, tissue organ and tissue filter functionality.
 }
 
 /**
@@ -772,7 +772,7 @@ function processDatasetResponse(
   ];
   return {
     ...dataset,
-    tissueFilter,
+    tissueCalculated: tissueFilter,
   };
 }
 
@@ -843,14 +843,16 @@ function sortOntologies(o0: Ontology, o1: Ontology): number {
 }
 
 /**
- * Convert each ancestor ontology term ID into one marked as "inferred", required for mimicking an "OR" style filter.
+ * Convert each ancestor ontology term ID into one marked as "inferred", required for filtering across ancestors and
+ * actual ontology terms within a filter.
  */
 function tagAncestorsAsInferred(ancestors: string[]): string[] {
   return ancestors.map((ancestor) => `${OrFilterPrefix.INFERRED}:${ancestor}`);
 }
 
 /**
- * Convert each ontology term ID into one marked as "explicit", required for mimicking an "OR" style filter.
+ * Convert each ontology term ID into one marked as "explicit", required for filtering across ancestors and
+ * actual ontology terms within a filter.
  */
 function tagOntologyTermsAsExplicit(ontologyTerms: Ontology[]): string[] {
   return ontologyTerms.map(

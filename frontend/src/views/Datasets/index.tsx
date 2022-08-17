@@ -19,10 +19,7 @@ import {
   DatasetRow,
   RowPropsValue,
 } from "src/components/common/Filter/common/entities";
-import {
-  ontologyIdCellAccessorFn,
-  ontologyLabelCellAccessorFn,
-} from "src/components/common/Filter/common/utils";
+import { ontologyLabelCellAccessorFn } from "src/components/common/Filter/common/utils";
 import CountCell from "src/components/common/Grid/components/CountCell";
 import DiseaseCell from "src/components/common/Grid/components/DiseaseCell";
 import { GridHero } from "src/components/common/Grid/components/Hero";
@@ -236,25 +233,26 @@ export default function Datasets(): JSX.Element {
       },
       // Hidden, required for filter. TODO(cc) do we need all of these tissue columns?
       {
-        accessor: "tissueFilter",
+        accessor: "tissueCalculated",
         filter: "includesSome",
-        id: "tissueFilter", // TODO(cc) revisit?
+        id: CATEGORY_FILTER_ID.TISSUE_CALCULATED, // TODO(cc) revisit?
       },
-      // Hidden, required for filter as part of tissue.
-      {
-        accessor: ontologyIdCellAccessorFn("tissue"),
-        id: CATEGORY_FILTER_ID.TISSUE,
-      },
-      // Hidden, required for filter as part of tissue.
-      {
-        accessor: "tissue_ancestors",
-        id: CATEGORY_FILTER_ID.TISSUE_SYSTEM,
-      },
-      // Hidden, required for filter as part of tissue.
-      {
-        accessor: "tissue_ancestors",
-        id: CATEGORY_FILTER_ID.TISSUE_ORGAN,
-      },
+      // TODO(cc) remove here and from hidden list
+      // // Hidden, required for filter as part of tissue.
+      // {
+      //   accessor: ontologyIdCellAccessorFn("tissue"),
+      //   id: CATEGORY_FILTER_ID.TISSUE,
+      // },
+      // // Hidden, required for filter as part of tissue.
+      // {
+      //   accessor: "tissue_ancestors",
+      //   id: CATEGORY_FILTER_ID.TISSUE_SYSTEM,
+      // },
+      // // Hidden, required for filter as part of tissue.
+      // {
+      //   accessor: "tissue_ancestors",
+      //   id: CATEGORY_FILTER_ID.TISSUE_ORGAN,
+      // },
     ],
     []
   );
@@ -285,10 +283,10 @@ export default function Datasets(): JSX.Element {
           CATEGORY_FILTER_ID.PUBLICATION_AUTHORS,
           CATEGORY_FILTER_ID.PUBLICATION_DATE_VALUES,
           CATEGORY_FILTER_ID.SEX,
-          "tissueFilter", // TODO(cc) revisit
-          CATEGORY_FILTER_ID.TISSUE,
-          CATEGORY_FILTER_ID.TISSUE_SYSTEM,
-          CATEGORY_FILTER_ID.TISSUE_ORGAN,
+          CATEGORY_FILTER_ID.TISSUE_CALCULATED, // TODO(cc) revisit
+          // CATEGORY_FILTER_ID.TISSUE,
+          // CATEGORY_FILTER_ID.TISSUE_SYSTEM,
+          // CATEGORY_FILTER_ID.TISSUE_ORGAN,
           EXPLORER_URL,
           IS_OVER_MAX_CELL_COUNT,
         ],
@@ -319,7 +317,7 @@ export default function Datasets(): JSX.Element {
       .filter(
         (categoryKey: CategoryFilterId) =>
           !(
-            (categoryKey === CATEGORY_FILTER_ID.TISSUE ||
+            (categoryKey === CATEGORY_FILTER_ID.TISSUE_CALCULATED ||
               categoryKey === CATEGORY_FILTER_ID.CELL_TYPE) &&
             !isFilterEnabled
           )
@@ -370,8 +368,12 @@ export default function Datasets(): JSX.Element {
                 <p>There are no datasets matching those filters.</p>
               </GridHero>
             ) : (
-              // @ts-expect-error -- revisit tableInstance typing
-              <DatasetsGrid tableInstance={tableInstance} />
+              <>
+                {/*TODO(cc) remove count and fragment and curly braces below around comment */}
+                <div>row count: {rows.length}</div>
+                {/*// @ts-expect-error -- revisit tableInstance typing*/}
+                <DatasetsGrid tableInstance={tableInstance} />
+              </>
             )}
           </View>
         </>
