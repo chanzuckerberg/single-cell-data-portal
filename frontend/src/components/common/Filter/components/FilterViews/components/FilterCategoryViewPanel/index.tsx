@@ -1,7 +1,7 @@
 import React, { ReactNode, useEffect, useRef, useState } from "react";
 import { useResizeObserver } from "src/common/hooks/useResizeObserver";
 import {
-  ViewPanel,
+  CategoryViewPanel,
   ViewPanelScroll,
 } from "src/components/common/Filter/components/FilterViews/components/FilterView/style";
 
@@ -27,7 +27,7 @@ export default function FilterCategoryViewPanel({
   }, [listScrollHeight, viewListMaxHeight]);
 
   return (
-    <ViewPanel>
+    <CategoryViewPanel>
       <ViewPanelScroll
         maxHeight={viewListMaxHeight}
         ref={listContainerRef}
@@ -35,6 +35,6 @@ export default function FilterCategoryViewPanel({
       >
         {children}
       </ViewPanelScroll>
-    </ViewPanel>
+    </CategoryViewPanel>
   );
 }
