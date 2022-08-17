@@ -18,6 +18,7 @@ import {
   CollectionRow,
   DatasetRow,
   ETHNICITY_DENY_LIST,
+  OrFilterPrefix,
   PUBLICATION_DATE_VALUES,
 } from "src/components/common/Filter/common/entities";
 import { checkIsOverMaxCellCount } from "src/components/common/Grid/common/utils";
@@ -100,6 +101,14 @@ export interface DatasetResponse {
   sex: Ontology[];
   tissue: Ontology[]; // TODO(cc) remove with #2569.
   tissue_ancestors: string[];
+}
+
+/**
+ * Model of /datasets/index JSON response that has been modified to include calculated fields that facilitate filter
+ * functionality.
+ */
+interface ProcessedDatasetResponse extends DatasetResponse {
+  tissueFilter: string[]; // Field to drive tissue system, tissue organ and tissue filter functionality.
 }
 
 /**
@@ -226,10 +235,14 @@ export function useFetchDatasetRows(): FetchCategoriesRows<DatasetRow> {
  * @returns Array of datasets - possible cached from previous request - containing filterable and sortable dataset
  * fields.
  */
-export function useFetchDatasets(): UseQueryResult<DatasetResponse[]> {
-  return useQuery<DatasetResponse[]>([USE_DATASETS_INDEX], fetchDatasets, {
-    ...DEFAULT_QUERY_OPTIONS,
-  });
+export function useFetchDatasets(): UseQueryResult<ProcessedDatasetResponse[]> {
+  return useQuery<ProcessedDatasetResponse[]>(
+    [USE_DATASETS_INDEX],
+    fetchDatasets,
+    {
+      ...DEFAULT_QUERY_OPTIONS,
+    }
+  );
 }
 
 /**
@@ -354,10 +367,10 @@ function buildCollectionRows(
  */
 function buildDatasetRows(
   collectionsById: Map<string, ProcessedCollectionResponse>,
-  datasets: DatasetResponse[]
+  datasets: ProcessedDatasetResponse[]
 ): DatasetRow[] {
   // Join collection and dataset information to create dataset rows.
-  return datasets.map((dataset: DatasetResponse) => {
+  return datasets.map((dataset: ProcessedDatasetResponse) => {
     const collection = collectionsById.get(dataset.collection_id);
     return buildDatasetRow(dataset, collection);
   });
@@ -372,7 +385,7 @@ function buildDatasetRows(
  * data primary values.
  */
 function buildDatasetRow(
-  dataset: DatasetResponse,
+  dataset: ProcessedDatasetResponse,
   collection?: ProcessedCollectionResponse
 ): DatasetRow {
   // Determine dataset's publication month and year.
@@ -567,7 +580,7 @@ async function fetchCollections(): Promise<
  * @returns Promise resolving to an array of datasets - possible cached from previous request - containing
  * filterable and sortable dataset fields.
  */
-async function fetchDatasets(): Promise<DatasetResponse[]> {
+async function fetchDatasets(): Promise<ProcessedDatasetResponse[]> {
   // TODO(cc) revert with #2569.
   // const datasets = await (
   //   await fetch(API_URL + API.DATASETS_INDEX, DEFAULT_FETCH_OPTIONS)
@@ -619,9 +632,13 @@ async function fetchDatasets(): Promise<DatasetResponse[]> {
   });
 
   // Correct any dirty data returned from endpoint.
-  return datasets.map((dataset: DatasetResponse) => {
+  const sanitizedDatasets = datasets.map((dataset: DatasetResponse) => {
     return sanitizeDatasetResponse(dataset);
   });
+
+  return sanitizedDatasets.map((dataset: DatasetResponse) =>
+    processDatasetResponse(dataset)
+  );
 }
 
 /**
@@ -715,7 +732,7 @@ function processCollectionResponse(
   todayMonth: number,
   todayYear: number
 ): ProcessedCollectionResponse {
-  // Determine the collections publication month and year.
+  // Determine the collection's publication month and year.
   const [publicationMonth, publicationYear] = getPublicationMonthYear(
     collection,
     collection.publisher_metadata
@@ -738,6 +755,24 @@ function processCollectionResponse(
     ...collection,
     publicationAuthors,
     publicationDateValues,
+  };
+}
+
+/**
+ * Add calculated fields to dataset response.
+ * @param dataset - Dataset response returned from collections endpoint.
+ */
+function processDatasetResponse(
+  dataset: DatasetResponse
+): ProcessedDatasetResponse {
+  // Build up value to facilitate ontology-aware tissue filtering.
+  const tissueFilter = [
+    ...tagAncestorsAsInferred(dataset.tissue_ancestors),
+    ...tagOntologyTermsAsExplicit(dataset.tissue),
+  ];
+  return {
+    ...dataset,
+    tissueFilter,
   };
 }
 
@@ -805,6 +840,23 @@ function sortCategoryValues<T extends Categories>(row: T): T {
  */
 function sortOntologies(o0: Ontology, o1: Ontology): number {
   return COLLATOR_CASE_INSENSITIVE.compare(o0.label, o1.label);
+}
+
+/**
+ * Convert each ancestor ontology term ID into one marked as "inferred", required for mimicking an "OR" style filter.
+ */
+function tagAncestorsAsInferred(ancestors: string[]): string[] {
+  return ancestors.map((ancestor) => `${OrFilterPrefix.INFERRED}:${ancestor}`);
+}
+
+/**
+ * Convert each ontology term ID into one marked as "explicit", required for mimicking an "OR" style filter.
+ */
+function tagOntologyTermsAsExplicit(ontologyTerms: Ontology[]): string[] {
+  return ontologyTerms.map(
+    (ontologyTerm) =>
+      `${OrFilterPrefix.EXPLICIT}:${ontologyTerm.ontology_term_id}`
+  );
 }
 
 /**

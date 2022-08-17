@@ -2979,7 +2979,7 @@ const CATEGORY_FILTER_CONFIGS: CategoryFilterConfig[] = [
     matchKind: "INCLUDES_SOME",
     multiselect: true,
     parentCategoryFilterIds: [
-      CATEGORY_FILTER_ID.TISSUE_ORGAN, // Organ must be defined before system. See SelectedParentTermsValueRestrictionKind.
+      CATEGORY_FILTER_ID.TISSUE_ORGAN, // Organ must be defined before system. See SelectedParentTermsValueRestrictionKind. TODO(cc) check this is still required
       CATEGORY_FILTER_ID.TISSUE_SYSTEM,
     ],
     queryKind: "EXCLUDES_SELF",

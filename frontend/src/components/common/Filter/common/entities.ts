@@ -78,6 +78,7 @@ export interface ExcludesSelfQueryKind {
  * itself on filter: it ignores its own selected values as well as selected values in its children category filters. For
  * example, the tissue system category filter should ignore selected tissue systems values as well as selected values
  * in tissue organ and tissue.
+ * TODO(cc) do we still need this?
  */
 export interface ExcludesSelfAndChildrenQueryKind {
   childrenCategoryFilterIds: CATEGORY_FILTER_ID[];
@@ -324,6 +325,7 @@ export interface DatasetRow extends Categories, PublisherMetadataCategories {
   published_at: number;
   recency: number; // Used by sort
   revised_at?: number;
+  tissueFilter: string[];
 }
 
 /**
@@ -433,6 +435,15 @@ export enum ONTOLOGY_VIEW_LABEL {
  * Ontology tree structures, keyed by view key. This is the allowed set of ontology values, configured per category.
  */
 export type OntologyTermSet = { [K in ONTOLOGY_VIEW_KEY]?: OntologyNode[] };
+
+/**
+ * Prefixes for indicating exact or inferred matches when filtering across category filters that require OR
+ * functionality.
+ */
+export enum OrFilterPrefix {
+  EXPLICIT = "E",
+  INFERRED = "I",
+}
 
 /**
  * Min and max values selected in range category. Empty array if no range is specified (e.g. on clear of range).

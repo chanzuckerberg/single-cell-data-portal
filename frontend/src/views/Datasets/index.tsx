@@ -234,22 +234,25 @@ export default function Datasets(): JSX.Element {
         filter: "includesSome",
         id: CATEGORY_FILTER_ID.SEX,
       },
-      // Hidden, required for filter.
+      // Hidden, required for filter. TODO(cc) do we need all of these tissue columns?
+      {
+        accessor: "tissueFilter",
+        filter: "includesSome",
+        id: "tissueFilter", // TODO(cc) revisit?
+      },
+      // Hidden, required for filter as part of tissue.
       {
         accessor: ontologyIdCellAccessorFn("tissue"),
-        filter: "includesSome",
         id: CATEGORY_FILTER_ID.TISSUE,
       },
-      // Hidden, required for filter.
+      // Hidden, required for filter as part of tissue.
       {
         accessor: "tissue_ancestors",
-        filter: "includesSome",
         id: CATEGORY_FILTER_ID.TISSUE_SYSTEM,
       },
-      // Hidden, required for filter.
+      // Hidden, required for filter as part of tissue.
       {
         accessor: "tissue_ancestors",
-        filter: "includesSome",
         id: CATEGORY_FILTER_ID.TISSUE_ORGAN,
       },
     ],
@@ -282,6 +285,7 @@ export default function Datasets(): JSX.Element {
           CATEGORY_FILTER_ID.PUBLICATION_AUTHORS,
           CATEGORY_FILTER_ID.PUBLICATION_DATE_VALUES,
           CATEGORY_FILTER_ID.SEX,
+          "tissueFilter", // TODO(cc) revisit
           CATEGORY_FILTER_ID.TISSUE,
           CATEGORY_FILTER_ID.TISSUE_SYSTEM,
           CATEGORY_FILTER_ID.TISSUE_ORGAN,

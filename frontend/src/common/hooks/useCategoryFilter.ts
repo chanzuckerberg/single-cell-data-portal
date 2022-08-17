@@ -25,6 +25,7 @@ import {
   OntologyTermSet,
   ONTOLOGY_VIEW_KEY,
   ONTOLOGY_VIEW_LABEL,
+  OrFilterPrefix,
   ORGANISM,
   PUBLICATION_DATE_LABELS,
   Range,
@@ -50,6 +51,7 @@ interface CategoryFilter {
 
 /**
  * Filterable metadata object key. For example, "assay" or "cell_type". Used for object key lookups.
+ * TODO(cc) move to entities or delete even? rename usages (ie variable names) to match
  */
 export type CategoryFilterId = keyof Record<CATEGORY_FILTER_ID, string>;
 
@@ -165,7 +167,7 @@ export function useCategoryFilter<T extends Categories>(
     setCategorySet(buildCategorySet(originalRows, categoryFilterIds));
   }, [originalRows, categoryFilterIds, categorySet]);
 
-  // Build up map of ontology term labels keyed by ID.
+  // Build up map of ontology term labels keyed by ID. TODO(cc) finalize (both curated and tissue)
   useEffect(() => {
     // Only build category set if there are rows to parse category values from. Only build category set once on load.
     if (!originalRows.length || ontologyTermLabelsById) {
@@ -183,6 +185,7 @@ export function useCategoryFilter<T extends Categories>(
     if (!categorySet) {
       return;
     }
+
     const nextFilterState = buildNextFilterState(
       originalRows,
       categoryFilterIds,
@@ -205,6 +208,32 @@ export function useCategoryFilter<T extends Categories>(
       // Grab the configuration model for the selected category.
       const config = CATEGORY_FILTER_CONFIGS_BY_ID[categoryFilterId];
 
+      // TODO(cc) revisit
+      if (
+        categoryFilterId === CATEGORY_FILTER_ID.TISSUE_SYSTEM ||
+        categoryFilterId === CATEGORY_FILTER_ID.TISSUE_ORGAN ||
+        categoryFilterId === CATEGORY_FILTER_ID.TISSUE
+      ) {
+        let calculatedValue;
+        if (
+          categoryFilterId === CATEGORY_FILTER_ID.TISSUE_SYSTEM ||
+          categoryFilterId === CATEGORY_FILTER_ID.TISSUE_ORGAN
+        ) {
+          calculatedValue = `${OrFilterPrefix.INFERRED}:${selectedValue}`; // TODO(cc) create encoder/decoder
+        } else {
+          calculatedValue = `${OrFilterPrefix.EXPLICIT}:${selectedValue}`;
+        }
+
+        // TODO(cc) note, this is bypassing tracking, update to use onFilterSelectCategory but with calculated filter ID
+        const nextCategoryFilters = buildNextSelectCategoryFilters(
+          "tissueFilter",
+          calculatedValue,
+          filters
+        );
+        setFilter("tissueFilter", nextCategoryFilters);
+        return;
+      }
+
       // Handle range categories.
       if (!isCategoryValueKey(selectedValue)) {
         onFilterRangeCategory(config, selectedValue, setFilter);
@@ -224,7 +253,12 @@ export function useCategoryFilter<T extends Categories>(
       }
 
       // Handle single or multiselect categories.
-      onFilterSelectCategory(config, selectedValue, setFilter, filters);
+      const nextCategoryFilters = onFilterSelectCategory(
+        config,
+        selectedValue,
+        filters
+      );
+      setFilter(categoryFilterId, nextCategoryFilters);
     },
     [categorySet, filters, setFilter]
   );
@@ -349,7 +383,7 @@ function addRangeCategories(
  */
 function applyFilters<T extends Categories>(
   originalRows: Row<T>[],
-  filters: CategoryFilter[]
+  filters: Filters<T>
 ): Row<T>[] {
   // Return all rows if there are no filters.
   if (filters.length === 0) {
@@ -652,8 +686,63 @@ function buildNextFilterState<T extends Categories>(
   filters: Filters<T>,
   categorySet: CategorySet
 ): FilterState {
+  // TODO(cc) - move this to before build.
+  const processedFilters = filters.reduce(
+    (accum: Filters<T>, filter: CategoryFilter) => {
+      if (filter.id !== "tissueFilter") {
+        accum.push(filter);
+        return accum;
+      }
+
+      const tissues: string[] = [];
+      const tissueOrgans: string[] = [];
+      const tissueSystems: string[] = [];
+      filter.value.forEach((prefixedSelectedValue: string) => {
+        const [prefix, selectedValue] = prefixedSelectedValue.split(/:(.*)/s);
+        if (prefix === OrFilterPrefix.INFERRED) {
+          // Check if selected value is a system or an organ.
+          const { mask } =
+            CATEGORY_FILTER_CONFIGS_BY_ID[CATEGORY_FILTER_ID.TISSUE_SYSTEM];
+          const node = findOntologyNodeById(
+            mask[ONTOLOGY_VIEW_KEY.UBERON],
+            selectedValue
+          );
+          console.log(node);
+          if (node) {
+            tissueSystems.push(selectedValue);
+          } else {
+            tissueOrgans.push(selectedValue);
+          }
+        } else {
+          tissues.push(selectedValue);
+        }
+      });
+
+      if (tissues.length) {
+        accum.push({ id: CATEGORY_FILTER_ID.TISSUE, value: tissues });
+      }
+
+      if (tissueOrgans.length) {
+        accum.push({
+          id: CATEGORY_FILTER_ID.TISSUE_ORGAN,
+          value: tissueOrgans,
+        });
+      }
+
+      if (tissueSystems.length) {
+        accum.push({
+          id: CATEGORY_FILTER_ID.TISSUE_SYSTEM,
+          value: tissueSystems,
+        });
+      }
+
+      return accum;
+    },
+    []
+  );
+
   // Build set of filters that are applicable to each category.
-  const queries = buildQueries(categoryFilterIds, filters);
+  const queries = buildQueries(categoryFilterIds, processedFilters);
 
   // Build up base filter state of categories, category values and counts.
   const nextFilterState = summarizeCategories(originalRows, queries);
@@ -666,11 +755,11 @@ function buildNextFilterState<T extends Categories>(
   addRangeCategories(categoryFilterIds, nextFilterState, categorySet);
 
   // Update selected flag for the selected category values, or selected ranged for range categories.
-  setSelectedStates(nextFilterState, filters);
+  setSelectedStates(nextFilterState, processedFilters);
 
   // Restrict related categories where applicable. For example, tissue system restricts selectable values in
   // tissue organ and tissue.
-  applyCrossCategoryRestrictions(nextFilterState, filters);
+  applyCrossCategoryRestrictions(nextFilterState, processedFilters);
 
   return nextFilterState;
 }
@@ -788,7 +877,7 @@ function buildNextSelectCategoryFilters<T extends Categories>(
 
   // Create new array of selected category value keys, with the selected state of the given category value toggled.
   const multiselect =
-    CATEGORY_FILTER_CONFIGS_BY_ID[categoryFilterId].multiselect;
+    CATEGORY_FILTER_CONFIGS_BY_ID[categoryFilterId]?.multiselect ?? true; // TODO(cc) adding ?. and ?? true as there is no filter config for "tissueFilter". remove.
   return toggleCategoryValueSelected(
     categoryValueKey,
     categoryFilters.value,
@@ -817,11 +906,11 @@ function buildQueries<T extends Categories>(
           return filter.id !== categoryFilterId;
         }
 
-        // TODO(cc) revisit
-        // Handle category filters that are not restricted by themselves as well as not restricted by their children.
+        // Handle category filters that are neither restricted by themselves nor restricted by their children.
         const { childrenCategoryFilterIds } = config;
-        return !childrenCategoryFilterIds.includes(
-          filter.id as CATEGORY_FILTER_ID
+        return (
+          filter.id !== categoryFilterId &&
+          !childrenCategoryFilterIds.includes(filter.id as CATEGORY_FILTER_ID)
         );
       });
 
@@ -1228,9 +1317,7 @@ function includesSome(
  * @returns True if the given category's type is "between".
  * TODO(cc) revisit - this was never type narrowing? can we improve this?
  */
-export function isMatchKindBetween(
-  categoryFilterId: CategoryFilterId
-): boolean {
+function isMatchKindBetween(categoryFilterId: CategoryFilterId): boolean {
   return (
     CATEGORY_FILTER_CONFIGS_BY_ID[categoryFilterId].matchKind === "BETWEEN"
   );
@@ -1672,25 +1759,25 @@ function onFilterRangeCategory(
  * @param selectedValue - Selected category value key (e.g. [1, 100]).
  * @param setFilter - Function to update set of selected values for a category.
  * @param filters - Current set of selected category values (values) or ranges keyed by category (id).
+ * TODO(cc) docs, change others to match
  */
 function onFilterSelectCategory<T extends Categories>(
   config: CategoryFilterConfig,
   selectedValue: CategoryValueKey,
-  setFilter: SetFilterFn,
+  // setFilter: SetFilterFn,
   filters: Filters<T>
-) {
+): string[] {
   const { categoryFilterId } = config;
 
   // Track selected category and value.
   trackSelectCategoryValueSelected(config, selectedValue, filters);
 
   // Build and set next set of filters for this category.
-  const nextCategoryFilters = buildNextSelectCategoryFilters(
+  return buildNextSelectCategoryFilters(
     categoryFilterId,
     selectedValue,
     filters
   );
-  setFilter(categoryFilterId, nextCategoryFilters);
 }
 
 /**
