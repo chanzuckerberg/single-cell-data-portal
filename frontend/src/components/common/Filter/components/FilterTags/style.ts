@@ -1,6 +1,6 @@
 import { Classes, Colors } from "@blueprintjs/core";
+import styled from "@emotion/styled";
 import { PRIMARY_BLUE } from "src/components/common/theme";
-import styled from "styled-components";
 
 export const SelectedTags = styled.span`
   display: flex;

@@ -1,4 +1,11 @@
-module.exports = {
+const nextJest = require("next/jest");
+
+const createJestConfig = nextJest({
+  // Provide the path to your Next.js app to load next.config.js and .env files in your test environment
+  dir: "./",
+});
+
+module.exports = createJestConfig({
   coverageDirectory: "<rootDir>/client-coverage",
   coveragePathIgnorePatterns: ["<rootDir>/node_modules/", "<rootDir>/build/"],
   coverageReporters: ["text-summary", "json", "html"],
@@ -29,4 +36,4 @@ module.exports = {
   transform: {
     "^.+\\.(js|ts)x?$": "babel-jest",
   },
-};
+});

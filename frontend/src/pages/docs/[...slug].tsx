@@ -1,3 +1,4 @@
+import styled from "@emotion/styled";
 import { Icon } from "czifui";
 import fs from "fs";
 import matter from "gray-matter";
@@ -14,7 +15,6 @@ import { noop } from "src/common/constants/utils";
 import EmbeddedGoogleSlides from "src/components/EmbeddedGoogleSlides";
 import Layout from "src/components/Layout";
 import { StyledDocsLayout } from "src/components/Layout/style";
-import styled from "styled-components";
 
 const DOC_SITE_FOLDER_NAME = "doc-site";
 
