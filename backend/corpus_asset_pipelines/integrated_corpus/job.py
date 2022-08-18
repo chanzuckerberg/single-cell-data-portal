@@ -27,7 +27,7 @@ def extract_datasets(dataset_directory: List):
 
 
 @log_func_runtime
-def build_integrated_corpus(dataset_directory: List, corpus_path: str):
+def build_integrated_corpus(dataset_directory: List, corpus_path: str) -> int:
     """
     Given the path to a directory containing one or more h5ad files and a group name, call the h5ad loading function
     on all files, loading/concatenating the datasets together under the group name
@@ -54,22 +54,7 @@ def build_integrated_corpus(dataset_directory: List, corpus_path: str):
             arr_path = f"{corpus_path}/{arr_name}"
             tiledb.consolidate(arr_path)
             tiledb.vacuum(arr_path)
-    return get_corpus_summary_statistics(corpus_path, dataset_count)
-
-
-def get_corpus_summary_statistics(corpus_path: str, dataset_count: int) -> dict:
-    var_array_path = f"{corpus_path}/{VAR_ARRAY_NAME}"
-    obs_array_path = f"{corpus_path}/{OBS_ARRAY_NAME}"
-
-    with tiledb.open(var_array_path, "r") as var:
-        var_df = var.df[:]
-        gene_count = var_df.shape[0]
-
-    with tiledb.open(obs_array_path, "r") as obs:
-        obs_df = obs.df[:]
-        cell_count = obs_df.shape[0]
-
-    return {"cell_count": cell_count, "gene_count": gene_count, "dataset_count": dataset_count}
+    return dataset_count
 
 
 def process_h5ad_for_corpus(h5ad_path: str, corpus_path: str):

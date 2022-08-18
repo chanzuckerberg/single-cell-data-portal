@@ -55,3 +55,4 @@ def create_expression_summary_cube(corpus_path: str):
         # transform
         cube_index, cube_sum, cube_nnz = transform(corpus_path, gene_ontology_term_ids, cube_dims)
         _load(uri, gene_ontology_term_ids, cube_index, cube_sum, cube_nnz)
+    return len(gene_ontology_term_ids)
