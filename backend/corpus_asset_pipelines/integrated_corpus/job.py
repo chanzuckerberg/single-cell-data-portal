@@ -63,11 +63,11 @@ def get_corpus_summary_statistics(corpus_path: str, dataset_count: int) -> dict:
 
     with tiledb.open(var_array_path, "r") as var:
         var_df = var.df[:]
-        gene_count = var_df.shape
+        gene_count = var_df.shape[0]
 
     with tiledb.open(obs_array_path, "r") as obs:
         obs_df = obs.df[:]
-        cell_count = obs_df.shape
+        cell_count = obs_df.shape[0]
 
     return {"cell_count": cell_count, "gene_count": gene_count, "dataset_count": dataset_count}
 
