@@ -170,15 +170,28 @@ class Dataset(Entity):
         return self.artifacts
 
     @staticmethod
+    def parse_version(version):
+        return [int(x, 10) for x in version.split('.')]
+
+    @staticmethod
     def transform_sex_for_schema_2_0_0(dataset):
-        # If schema_version is 1.1.0, convert sex to the new API format
-        if "sex" in dataset and dataset.get("schema_version") != "2.0.0":
+        schema_version = dataset.get("schema_version")
+        if schema_version is None:
+            major, minor, patch = 1, 0, 0
+        else:
+            major, minor, patch = Dataset.parse_version(schema_version)
+        if "sex" in dataset and major < 2:
             dataset["sex"] = [{"label": s, "sex_ontology_term_id": "unknown"} for s in dataset["sex"]]
 
     @staticmethod
     def transform_organism_for_schema_2_0_0(dataset):
+        schema_version = dataset.get("schema_version")
+        if schema_version is None:
+            major, minor, patch = 1, 0, 0
+        else:
+            major, minor, patch = Dataset.parse_version(schema_version)
         # If organism is an object (version 1.1.0), wrap it into an array to be 2.0.0 compliant
-        if "organism" in dataset and dataset.get("schema_version") != "2.0.0":
+        if "organism" in dataset and major < 2:
             dataset["organism"] = [dataset["organism"]]
 
     @staticmethod

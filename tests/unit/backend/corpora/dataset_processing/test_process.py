@@ -126,6 +126,7 @@ class TestDatasetProcessing(DataPortalTestCase):
                     numpy.random.choice([0], size=(50001, 1)),
                     numpy.random.choice(["liver"], size=(50001, 1)),
                     numpy.random.choice(["Hepatic-1A"], size=(50001, 1)),
+                    numpy.random.choice(["F1", "F2"], size=(50001, 1)),
                 ]
             ),
             columns=[
@@ -146,6 +147,7 @@ class TestDatasetProcessing(DataPortalTestCase):
                 "is_primary_data",
                 "cell_type",
                 "cell_type_ontology_term_id",
+                "donor_id",
             ],
             index=(str(i) for i in range(50001)),
         )
@@ -209,6 +211,12 @@ class TestDatasetProcessing(DataPortalTestCase):
             self.assertDictEqual,
         )
 
+        list_equal(
+            extracted_metadata["donor_id"],
+            ["F1", "F2"],
+            self.assertEqual,
+        )
+
         self.assertEqual(extracted_metadata["x_normalization"], "normal")
         self.assertEqual(extracted_metadata["x_approximate_distribution"], "NORMAL")
         self.assertEqual(extracted_metadata["batch_condition"], np.array({"batchA", "batchB"}))
@@ -252,6 +260,7 @@ class TestDatasetProcessing(DataPortalTestCase):
                     numpy.random.choice([0], size=(11, 1)),
                     numpy.random.choice(["liver"], size=(11, 1)),
                     numpy.random.choice(["Hepatic-1A"], size=(11, 1)),
+                    numpy.random.choice(["F1", "F2"], size=(11, 1)),
                 ]
             ),
             columns=[
@@ -272,6 +281,7 @@ class TestDatasetProcessing(DataPortalTestCase):
                 "is_primary_data",
                 "cell_type",
                 "cell_type_ontology_term_id",
+                "donor_id",
             ],
             index=(str(i) for i in range(11)),
         )

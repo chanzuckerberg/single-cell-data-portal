@@ -193,6 +193,7 @@ class TestCollection(BaseAuthAPITest):
                     "x_normalization": "test_x_normalization",
                     "x_approximate_distribution": "NORMAL",
                     "batch_condition": ["batchA", "batchB"],
+                    "donor_id": ["donor_1", "donor_2"]
                     "is_valid": False,
                     "revision": 0,
                     "sex": [
