@@ -30,7 +30,7 @@ def load_data_and_create_cube(
     snapshot_path=None,
     extract_data=True,
     validate_cube=True,
-):
+) -> (int, dict):
     """
     Function to copy H5AD datasets (from a preconfiugred s3 bucket) to the path given then,
     open, transform, normalize and concatenate them together as a tiledb object with a global gene index
@@ -45,7 +45,7 @@ def load_data_and_create_cube(
         snapshot_path = f"{pathlib.Path().resolve()}/{snapshot_id}"
     corpus_path = f"{snapshot_path}/{corpus_name}"
 
-    integrated_corpus.run(path_to_h5ad_datasets, corpus_path, extract_data)
+    stats = integrated_corpus.run(path_to_h5ad_datasets, corpus_path, extract_data)
     summary_cubes.run(corpus_path, validate_cube)
 
     cell_type_by_tissue = get_cell_types_by_tissue(corpus_path)
@@ -55,7 +55,7 @@ def load_data_and_create_cube(
     if validate_cube:
         make_snapshot_active(snapshot_id)
         logger.info(f"Updated latest_snapshot_identifier in s3. Current snapshot id is {snapshot_id}")
-        return snapshot_id
+        return snapshot_id, stats
 
 
 if __name__ == "__main__":
@@ -65,8 +65,8 @@ if __name__ == "__main__":
     """
     # todo pass in validate_cubes as env arg
     try:
-        snapshot_id = load_data_and_create_cube("datasets", ".")
-        pipeline_success_message = gen_wmg_pipeline_success_message(snapshot_id)
+        snapshot_id, stats = load_data_and_create_cube("datasets", ".")
+        pipeline_success_message = gen_wmg_pipeline_success_message(snapshot_id, stats)
         data = json.dumps(pipeline_success_message, indent=2)
         notify_slack(data)
     except Exception as e:

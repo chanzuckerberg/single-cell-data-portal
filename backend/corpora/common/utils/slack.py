@@ -99,7 +99,7 @@ def gen_wmg_pipeline_failure_message(failure_info: str) -> dict:
     }
 
 
-def gen_wmg_pipeline_success_message(snapshot_id: str) -> dict:
+def gen_wmg_pipeline_success_message(snapshot_id: str, stats: dict) -> dict:
     return {
         "blocks": [
             {
@@ -107,7 +107,10 @@ def gen_wmg_pipeline_success_message(snapshot_id: str) -> dict:
                 "text": {
                     "type": "plain_text",
                     "text": f"Corpus Asset Pipeline Succeeded:tada: "
-                    f"\nWMG (prod) snapshot stored in 'cellxgene-wmg-prod' under: {snapshot_id}",
+                    f"\nWMG (prod) snapshot stored in 'cellxgene-wmg-prod' under: {snapshot_id}"
+                            f"\n The cube contains {stats['cell_count']} cells, with expression scores across "
+                            f"{stats['gene_count']} genes. This data is pulled from {stats['dataset_count']} datasets "
+                            f"stored in the data portal",
                     "emoji": True,
                 },
             }
