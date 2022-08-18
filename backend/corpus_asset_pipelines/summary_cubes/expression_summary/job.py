@@ -37,7 +37,7 @@ def _load(
 
 
 @log_func_runtime
-def create_expression_summary_cube(corpus_path: str):
+def create_expression_summary_cube(corpus_path: str) -> int:
     """
     Create queryable cube and write to disk
     """

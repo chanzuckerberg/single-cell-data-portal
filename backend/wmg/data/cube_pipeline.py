@@ -47,9 +47,7 @@ def load_data_and_create_cube(
 
     dataset_count = integrated_corpus.run(path_to_h5ad_datasets, corpus_path, extract_data)
     stats = summary_cubes.run(corpus_path, validate_cube)
-    stats['dataset_count'] = dataset_count
-    pipeline_success_message = gen_wmg_pipeline_success_message(snapshot_id, stats)
-    logger.info(pipeline_success_message)
+    stats["dataset_count"] = dataset_count
     cell_type_by_tissue = get_cell_types_by_tissue(corpus_path)
     generate_cell_ordering(snapshot_path, cell_type_by_tissue)
     generate_primary_filter_dimensions(snapshot_path, corpus_name, snapshot_id)

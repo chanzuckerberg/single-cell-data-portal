@@ -56,7 +56,7 @@ def load(corpus_path: str, df: pd.DataFrame) -> str:
 
 
 @log_func_runtime
-def create_cell_count_cube(corpus_path: str):
+def create_cell_count_cube(corpus_path: str) -> int:
     """
     Create cell count cube and write to disk
     """
