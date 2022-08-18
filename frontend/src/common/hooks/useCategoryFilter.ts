@@ -84,7 +84,6 @@ type KeyedSelectCategoryValue = Map<CategoryValueKey, SelectCategoryValue>;
 export interface SelectCategoryValue {
   key: CategoryValueKey;
   count: number;
-  ontologyTermId?: string; // TODO(cc) - move to own type? also revisit adding back empty categories. rename.
   selected: boolean;
 }
 
@@ -2082,28 +2081,10 @@ function summarizeSelectCategory<T extends Categories>(
     // from the filter state at a later point).
     categoryValues.forEach((categoryValueKey: CategoryValueKey) => {
       let categoryValue = accum.get(categoryValueKey);
-
-      // TODO (cc) fix start
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore -- TODO (cc) resolve this ignore.
-      const originalValues = row.original[config.filterKey];
-      let ontologyTermId;
-      if (
-        Array.isArray(originalValues) &&
-        !!originalValues[0].ontology_term_id
-      ) {
-        const ontologyTerm = originalValues.find(
-          (originalValue) => originalValue.label === categoryValueKey
-        );
-        ontologyTermId = ontologyTerm?.ontology_term_id;
-      }
-      // TODO(cc) fix end
-
       if (!categoryValue) {
         categoryValue = {
           count: 0,
           key: categoryValueKey,
-          ontologyTermId,
           selected: false,
         };
         accum.set(categoryValueKey, categoryValue);
