@@ -1,4 +1,5 @@
 import { Icon } from "@blueprintjs/core";
+import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import { LIGHT_GRAY, PRIMARY_BLUE } from "src/components/common/theme";
 
@@ -29,16 +30,14 @@ export const SelectionIcon = styled(Icon)`
 }
 `;
 
-export function scrollbar(): string {
-  return `
-    &::-webkit-scrollbar {
-      width: 4px;
-    }
+export const scrollbar = css`
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
 
-    &::-webkit-scrollbar-thumb {
-      background-clip: content-box;
-      background-color: ${LIGHT_GRAY.A};
-      border-radius: 4px;
-    }
-  `;
-}
+  &::-webkit-scrollbar-thumb {
+    background-clip: content-box;
+    background-color: ${LIGHT_GRAY.A};
+    border-radius: 4px;
+  }
+`;

@@ -1,3 +1,4 @@
+import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import { HEADER_HEIGHT_PX } from "../Header/style";
 
@@ -10,11 +11,9 @@ export const Wrapper = styled.div`
   overflow-x: clip; /* responsive requirement; facilitates hiding of content when viewport is resized and layout min width is applied */
 `;
 
-export function contentWrapper(): string {
-  return `
-    padding: 24px 40px;
-  `;
-}
+export const contentWrapper = css`
+  padding: 24px 40px;
+`;
 
 export const MainWrapper = styled.div`
   display: grid; /* required: ensures any remaining viewport height allocated to main content is observed; ancestor component heights are unspecified and so any height specification will revert to "auto" */

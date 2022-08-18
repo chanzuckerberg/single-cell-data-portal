@@ -1,4 +1,5 @@
 import { Classes, Colors } from "@blueprintjs/core";
+import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import { Chip } from "czifui";
 import {
@@ -165,42 +166,38 @@ export const Nav = styled.span`
   }
 `;
 
-function button(): string {
-  return `
-    display: inline-block; /* Wrapper to mimic line height of children. */
+const button = css`
+  display: inline-block; /* Wrapper to mimic line height of children. */
 
-    .${Classes.BUTTON}.${Classes.MINIMAL} {
-      background: none;
-      border-radius: 0;
-      color: ${GRAY.D};
-      font-size: 13px;
-      font-weight: 500;
-      height: 22px;
-      letter-spacing: -0.1px;
-      line-height: 18px;
-      min-height: 22px;
-      padding: 0;
+  .${Classes.BUTTON}.${Classes.MINIMAL} {
+    background: none;
+    border-radius: 0;
+    color: ${GRAY.D};
+    font-size: 13px;
+    font-weight: 500;
+    height: 22px;
+    letter-spacing: -0.1px;
+    line-height: 18px;
+    min-height: 22px;
+    padding: 0;
 
-      &.${Classes.ACTIVE}, &:hover {
-        color: ${Colors.WHITE};
-      }
-
-      &:focus {
-        outline: none;
-      }
+    &.${Classes.ACTIVE}, &:hover {
+      color: ${Colors.WHITE};
     }
-  `;
-}
 
-function iconButton(): string {
-  return `
-    ${button}
-
-    .${Classes.ICON} {
-      color: inherit; /* Overrides BP button icon color rule by inheriting color from parent. */
+    &:focus {
+      outline: none;
     }
-  `;
-}
+  }
+`;
+
+const iconButton = css`
+  ${button}
+
+  .${Classes.ICON} {
+    color: inherit; /* Overrides BP button icon color rule by inheriting color from parent. */
+  }
+`;
 
 export const LinkWrapper = styled.span`
   ${button}

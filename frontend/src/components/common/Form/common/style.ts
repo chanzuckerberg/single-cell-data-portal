@@ -1,4 +1,5 @@
 import { Classes, Label } from "@blueprintjs/core";
+import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import {
   GRAY,
@@ -8,16 +9,14 @@ import {
   RED,
 } from "src/components/common/theme";
 
-export function formField(): string {
-  return `
-    border-radius: 3px;
-    color: ${PT_TEXT_COLOR};
-    height: auto; /* required; upholds line height and height specification (where padding and line height determine overall height) */
-    letter-spacing: -0.1px;
-    line-height: 18px;
-    padding: 6px 8px;
-  `;
-}
+export const formField = css`
+  border-radius: 3px;
+  color: ${PT_TEXT_COLOR};
+  height: auto; /* required; upholds line height and height specification (where padding and line height determine overall height) */
+  letter-spacing: -0.1px;
+  line-height: 18px;
+  padding: 6px 8px;
+`;
 
 /* Basic form field specification. */
 /* Form label styles with targeted shared styles for form field elements i.e. form group, input, textarea and adornments (danger icon). */

@@ -1,15 +1,14 @@
+import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import { LAYOUT } from "src/components/Collections/common/layout";
 import { fontStyle, OLD_BLUE } from "src/components/common/theme";
 
-export function columnStyle(): string {
-  return `
+export const columnStyle = css`
   align-items: center;
   display: flex;
   flex: ${LAYOUT.SMALL_COLUMN};
   justify-content: center;
 `;
-}
 
 export const SmallColumn = styled.div`
   ${columnStyle}

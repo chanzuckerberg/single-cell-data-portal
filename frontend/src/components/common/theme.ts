@@ -1,14 +1,14 @@
+import { css } from "@emotion/react";
+
 export const PT_GRID_SIZE_PX = 8;
 
 export const PT_TEXT_COLOR = "#10161A";
 
-export function fontStyle(): string {
-  return `
-    font-family: "Inter", sans-serif;
-    font-style: normal;
-    font-size: 14px;
-  `;
-}
+export const fontStyle = css`
+  font-family: "Inter", sans-serif;
+  font-style: normal;
+  font-size: 14px;
+`;
 
 export const OLD_BLUE = "#0076dc";
 
