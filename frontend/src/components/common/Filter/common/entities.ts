@@ -297,6 +297,23 @@ interface ExceptCuratedValueSourceKind {
   sourceKind: "EXCEPT_CURATED";
 }
 
+// ** Filter value kind discriminating unions ** //
+
+/**
+ * Model of a filter panel whose category filter values filter for both inferred and explicit values. For example, tissue
+ * system and tissue organ.
+ */
+interface InferredExplicitFilterValueKind {
+  filterValueKind: "INFERRED_EXPLICIT";
+}
+
+/**
+ * Model of a filter panel whose category filter values filter for only explicit values. For example, tissue.
+ */
+interface ExplicitOnlyFilterValueKind {
+  filterValueKind: "EXPLICIT_ONLY";
+}
+
 // ** Category filter panel types ** //
 
 /**
@@ -312,21 +329,24 @@ interface BaseCategoryFilterPanelConfig {
  * allowed displayable values in children category filters. For example, tissue system.
  */
 type ChildCategoryFilterPanelConfig = BaseCategoryFilterPanelConfig &
-  OnlyCuratedValueSourceKind;
+  OnlyCuratedValueSourceKind &
+  InferredExplicitFilterValueKind;
 
 /**
  * Filter category panel that uses checkboxes for filtering, is ontology-aware, and whose selected values restrict
  * allowed displayable values in children category filters. For example, tissue system.
  */
 type LeafCategoryFilterPanelConfig = BaseCategoryFilterPanelConfig &
-  ExceptCuratedValueSourceKind;
+  ExceptCuratedValueSourceKind &
+  ExplicitOnlyFilterValueKind;
 
 /**
  * Filter category panel that uses checkboxes for filtering, is ontology-aware, and whose selected values restrict
  * allowed displayable values in children category filters. For example, tissue system.
  */
 type ParentCategoryFilterPanelConfig = BaseCategoryFilterPanelConfig &
-  OnlyCuratedValueSourceKind;
+  OnlyCuratedValueSourceKind &
+  InferredExplicitFilterValueKind;
 
 export type CategoryFilterPanelConfig =
   | ChildCategoryFilterPanelConfig

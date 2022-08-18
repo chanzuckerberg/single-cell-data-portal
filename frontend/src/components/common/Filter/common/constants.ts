@@ -2942,11 +2942,13 @@ const CATEGORY_FILTER_CONFIGS: CategoryFilterConfig[] = [
     multiselect: true,
     panels: [
       {
+        filterValueKind: "INFERRED_EXPLICIT",
         label: "System",
         mask: TISSUE_SYSTEM_ONTOLOGY_TERM_SET,
         sourceKind: "ONLY_CURATED",
       },
       {
+        filterValueKind: "INFERRED_EXPLICIT",
         label: "Organ",
         mask: TISSUE_ORGAN_ONTOLOGY_TERM_SET,
         sourceKind: "ONLY_CURATED",
@@ -2956,6 +2958,7 @@ const CATEGORY_FILTER_CONFIGS: CategoryFilterConfig[] = [
           TISSUE_SYSTEM_ONTOLOGY_TERM_SET,
           TISSUE_ORGAN_ONTOLOGY_TERM_SET,
         ],
+        filterValueKind: "EXPLICIT_ONLY",
         label: "Tissue",
         sourceKind: "EXCEPT_CURATED",
       },
