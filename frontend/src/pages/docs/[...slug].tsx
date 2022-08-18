@@ -3,7 +3,11 @@ import { Icon } from "czifui";
 import fs from "fs";
 import matter from "gray-matter";
 import { GetStaticPaths } from "next";
-import { MDXRemote, MDXRemoteSerializeResult } from "next-mdx-remote";
+import {
+  MDXRemote,
+  MDXRemoteProps,
+  MDXRemoteSerializeResult,
+} from "next-mdx-remote";
 import { serialize } from "next-mdx-remote/serialize";
 import Head from "next/head";
 import Image, { ImageProps } from "next/image";
@@ -333,7 +337,7 @@ const DocContent = styled.div`
   }
 `;
 
-const StyledImage = styled(Image);
+const StyledImage = styled(Image)();
 
 const ImageContainer = styled.div`
   width: 100%;
@@ -381,7 +385,8 @@ const MDX_AVAILABLE_COMPONENTS = {
   p: styled.p`
     margin: 16px 0px;
   `,
-};
+} as MDXRemoteProps["components"];
+
 const DocPage = ({ activeFile, mdxSource, filePath }: Props): JSX.Element => {
   return (
     <>
