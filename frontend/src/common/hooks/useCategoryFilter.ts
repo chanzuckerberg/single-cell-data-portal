@@ -343,7 +343,7 @@ function addRangeCategories(
     }
 
     // Add range to next filter state.
-    const [originalMin, originalMax] = categorySetRange;
+    const { min: originalMin, max: originalMax } = categorySetRange;
     nextFilterState[categoryKey] = {
       key: categoryKey,
       max: originalMax ?? 0,
@@ -409,10 +409,10 @@ function buildCategorySet<T extends Categories>(
           .map((originalRow) => originalRow.values[categoryFilterId])
           .filter((count) => !!count || count === 0); // Remove bad data, just in case!
 
-        accum[categoryFilterId] = [
-          counts.length ? Math.min(...counts) : 0,
-          counts.length ? Math.max(...counts) : 0,
-        ];
+        accum[categoryFilterId] = {
+          max: counts.length ? Math.max(...counts) : 0,
+          min: counts.length ? Math.min(...counts) : 0,
+        };
         return accum;
       }
 
@@ -705,61 +705,6 @@ function buildNextFilterState<T extends Categories>(
   filters: Filters<T>,
   categorySet: CategorySet
 ): FilterState {
-  // TODO(cc) - move this to before build.
-  // const processedFilters = filters.reduce(
-  //   (accum: Filters<T>, filter: CategoryFilter) => {
-  //     if (filter.id !== "tissueFilter") {
-  //       accum.push(filter);
-  //       return accum;
-  //     }
-  //
-  //     const tissues: string[] = [];
-  //     const tissueOrgans: string[] = [];
-  //     const tissueSystems: string[] = [];
-  //     filter.value.forEach((prefixedSelectedValue: string) => {
-  //       const [prefix, selectedValue] = prefixedSelectedValue.split(/:(.*)/s);
-  //       if (prefix === OrFilterPrefix.INFERRED) {
-  //         // Check if selected value is a system or an organ.
-  //         const { mask } =
-  //           CATEGORY_FILTER_CONFIGS_BY_ID[CATEGORY_FILTER_ID.TISSUE_SYSTEM];
-  //         const node = findOntologyNodeById(
-  //           mask[ONTOLOGY_VIEW_KEY.UBERON],
-  //           selectedValue
-  //         );
-  //         console.log(node);
-  //         if (node) {
-  //           tissueSystems.push(selectedValue);
-  //         } else {
-  //           tissueOrgans.push(selectedValue);
-  //         }
-  //       } else {
-  //         tissues.push(selectedValue);
-  //       }
-  //     });
-  //
-  //     if (tissues.length) {
-  //       accum.push({ id: CATEGORY_FILTER_ID.TISSUE, value: tissues });
-  //     }
-  //
-  //     if (tissueOrgans.length) {
-  //       accum.push({
-  //         id: CATEGORY_FILTER_ID.TISSUE_ORGAN,
-  //         value: tissueOrgans,
-  //       });
-  //     }
-  //
-  //     if (tissueSystems.length) {
-  //       accum.push({
-  //         id: CATEGORY_FILTER_ID.TISSUE_SYSTEM,
-  //         value: tissueSystems,
-  //       });
-  //     }
-  //
-  //     return accum;
-  //   },
-  //   []
-  // );
-
   // Build set of filters that are applicable to each category.
   const queries = buildQueries(categoryFilterIds, filters);
 
@@ -778,7 +723,7 @@ function buildNextFilterState<T extends Categories>(
 
   // Restrict related categories where applicable. For example, tissue system restricts selectable values in
   // tissue organ and tissue.
-  // TODO(cc) remove
+  // TODO(cc) remove?
   // applyCrossCategoryRestrictions(nextFilterState, filters);
 
   return nextFilterState;
@@ -1567,14 +1512,17 @@ function isFilterEqual<T extends Categories>(
 
 /**
  * Determine if the given selected value is a selected category value key (and not a range).
- * @param selectedValue - Selected filter value, either a category value key (e.g. "normal") or a range (e.g. [0, 10]).
+ * @param selectedValue - Selected filter value, either a category value key (e.g. "normal") or a range (for example,
+ * {min: n, max: n}).
  * @returns True if given selected value is a selected category value.
  * TODO(cc) revisit
  */
 function isCategoryValueKey(
   selectedValue: CategoryValueKey | Range
 ): selectedValue is CategoryValueKey {
-  return !Array.isArray(selectedValue);
+  return !(
+    (selectedValue as Range).min >= 0 && (selectedValue as Range).max >= 0
+  );
 }
 
 /**
@@ -1915,19 +1863,19 @@ function onFilterRangeCategory(
   setFilter: SetFilterFn
 ) {
   const { analyticsEvent, categoryFilterId } = config;
-
+  const { max, min } = selectedValue;
+  console.log(max, min);
   // Track select of new range mim/max, ignoring any clear of selected range. Only track if event is specified on
   // configuration model
-  if (analyticsEvent && selectedValue.length > 0) {
-    const [min, max] = selectedValue;
+  if (analyticsEvent /* && selectedValue.length > 0*/) {
     track(analyticsEvent, {
       max,
       min,
     });
   }
 
-  // Update filters for this range category.
-  setFilter(categoryFilterId, selectedValue);
+  // Update filters for this range category. Convert range min/max object to tuple for react-table.
+  setFilter(categoryFilterId, [min, max]);
 }
 
 /**
@@ -2066,8 +2014,6 @@ function summarizeSelectCategory<T extends Categories>(
   categoryFilterId: CategoryFilterId,
   filteredRows: Row<T>[]
 ): KeyedSelectCategoryValue {
-  const config = CATEGORY_FILTER_CONFIGS_BY_ID[categoryFilterId]; // TODO(cc) revisit thin air
-
   // Aggregate category value counts for each row.
   return filteredRows.reduce((accum: KeyedSelectCategoryValue, row: Row<T>) => {
     // Grab the values of the category for this dataset row.

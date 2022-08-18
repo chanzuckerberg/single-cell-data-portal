@@ -577,7 +577,10 @@ export enum OrFilterPrefix {
 /**
  * Min and max values selected in range category. Empty array if no range is specified (e.g. on clear of range).
  */
-export type Range = [number, number] | [];
+export interface Range {
+  min: number;
+  max: number;
+}
 
 /**
  * View model of range metadata key.
