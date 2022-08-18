@@ -27,5 +27,5 @@ export const DescriptionText = styled.p<Props>`
         overflow: hidden;
       `
     );
-  }};
+  }}
 `;

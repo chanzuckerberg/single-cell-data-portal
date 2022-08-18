@@ -45,7 +45,7 @@ export const MenuItemsWrapper = styled.div<MenuListProps>`
       : `${MAX_MENU_HEIGHT_PX}px`};
   overflow-y: auto;
   padding-right: 6px;
-  ${scrollbar};
+  ${scrollbar}
 `;
 
 export const MenuDivider = styled(Divider)`

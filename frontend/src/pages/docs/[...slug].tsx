@@ -275,7 +275,7 @@ const StyledLeftNav = styled.div`
   ::-webkit-scrollbar-thumb {
     background-clip: padding-box;
     border-right: 4px #f8f8f8 solid;
-    background: grey;
+    background-color: grey;
   }
 `;
 
@@ -312,11 +312,11 @@ const DocContent = styled.div`
   }
 
   & h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
+  & h2,
+  & h3,
+  & h4,
+  & h5,
+  & h6 {
     margin-top: 24px;
     margin-bottom: 0px;
     & > code {
@@ -333,7 +333,7 @@ const DocContent = styled.div`
   }
 `;
 
-const StyledImage = styled(Image)``;
+const StyledImage = styled(Image);
 
 const ImageContainer = styled.div`
   width: 100%;

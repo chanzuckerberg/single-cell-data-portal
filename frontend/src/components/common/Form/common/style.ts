@@ -39,7 +39,7 @@ export const StyledFormLabel = styled(Label)`
 
   /* Input (shared styles for input and textarea) */
   .${Classes.INPUT} {
-    ${formField};
+    ${formField}
 
     &:focus {
       border: 1px solid ${PRIMARY_BLUE} !important; /* required; overrides global.scss input border specification with important style declaration */
@@ -95,7 +95,7 @@ export const StyledFormLabel = styled(Label)`
 /* Form label styles for select "button" (button to resemble basic form field specification). */
 export const SelectFormLabel = styled.div`
   .${Classes.BUTTON} {
-    ${formField};
+    ${formField}
     border: 1px solid ${LIGHT_GRAY.A}; /* mimics basic form field specification */
     display: flex;
     justify-content: space-between;
