@@ -5,6 +5,7 @@ import {
   CategoryViews,
   OnFilterFn,
   OntologyCategoryView,
+  OntologyMultiPanelCategoryView,
   RangeCategoryView,
   SelectCategoryValueView,
   SelectCategoryView,
@@ -18,6 +19,7 @@ import { MAX_DISPLAYABLE_MENU_ITEMS } from "src/components/common/Filter/compone
 import FilterRange from "src/components/common/Filter/components/FilterRange";
 import FilterViews from "src/components/common/Filter/components/FilterViews";
 import FilterCategoryViews from "src/components/common/Filter/components/FilterViews/components/FilterCategoryViews";
+import FilterMultiPanelCategoryView from "src/components/common/Filter/components/FilterViews/components/FilterMultiPanelCategoryView";
 import FilterTags, { CategoryTag } from "./components/FilterTags";
 
 interface Props {
@@ -38,6 +40,7 @@ export default function Filter({
           return (
             <BasicFilter
               content={buildBasicFilterContent(categoryView, onFilter)}
+              flipEnabled={categoryViews.label !== "Tissue (Ontology)"} // TODO(cc) review use of flipEnabled prop
               isDisabled={isDisabled}
               key={categoryViews.label}
               tags={
@@ -47,6 +50,7 @@ export default function Filter({
             />
           );
         }
+        // TODO(cc) deprecated FilterCategoryViews
         return (
           <BasicFilter
             content={
@@ -56,7 +60,7 @@ export default function Filter({
               />
             }
             key={categoryViews.label}
-            flipEnabled={categoryViews.label !== "Tissue (Ontology)"}
+            flipEnabled={categoryViews.label !== "Tissue (Ontology)"} // TODO(cc) review use of flipEnabled prop
             isDisabled={false} // TODO(cc) add category view isDisabled
             tags={undefined}
             target={buildFilterLabel(categoryViews.label, false)} // TODO(cc) add category view isDisabled
@@ -110,6 +114,16 @@ function buildBasicFilterContent(
     );
   }
 
+  // Handle ontology multi panel categories
+  if (isOntologyMultiPanelCategoryView(categoryView)) {
+    return (
+      <FilterMultiPanelCategoryView
+        categoryView={categoryView}
+        onFilter={onFilter}
+      />
+    );
+  }
+
   // Otherwise, handle range categories
   return <FilterRange categoryView={categoryView} onFilter={onFilter} />;
 }
@@ -153,6 +167,11 @@ function buildFilterTags(
     return buildSelectCategoryTags(categoryView, key, onFilter);
   }
 
+  // Handle ontology multi panel categories
+  if (isOntologyMultiPanelCategoryView(categoryView)) {
+    return buildOntologyMultiPanelCategoryTags(categoryView, key, onFilter);
+  }
+
   // Otherwise, handle range categories
   return buildRangeCategoryTag(categoryView, key, onFilter);
 }
@@ -172,6 +191,33 @@ function buildOntologyCategoryTags(
   return categoryView.views?.reduce((accum, species) => {
     species.selectedViews.forEach(({ key, label }) => {
       accum.push({ label: label, onRemove: () => onFilter(categoryKey, key) });
+    });
+    return accum;
+  }, [] as CategoryTag[]);
+}
+
+/**
+ * Returns ontology multi panel category tag with tag label and corresponding Tag onRemove function.
+ * TODO(cc) review code.
+ * @param categoryView
+ * @param categoryKey
+ * @param onFilter
+ * @returns ontology multi panel category tag.
+ */
+function buildOntologyMultiPanelCategoryTags(
+  categoryView: OntologyMultiPanelCategoryView,
+  categoryKey: CategoryFilterId,
+  onFilter: OnFilterFn
+): CategoryTag[] | undefined {
+  const { panels } = categoryView;
+  return panels.reduce((accum, ontologyCategoryView) => {
+    ontologyCategoryView.views.forEach(({ key, label, selected }) => {
+      if (selected) {
+        accum.push({
+          label: label,
+          onRemove: () => onFilter(categoryKey, key),
+        });
+      }
     });
     return accum;
   }, [] as CategoryTag[]);
@@ -249,7 +295,9 @@ function filterCategoryValuesWithCount(
 }
 
 /**
- * Determine if the given category view is an ontology category view and not a select or range category view.
+ * TODO(cc) review fn description with possible removal of ontology category view.
+ * TODO(cc) deprecated fn.
+ * Determine if the given category view is an ontology category view and not a select or range or ontology multi panel category view.
  * @param categoryView - Selected filter value, either a category value key (e.g. "normal"), range (e.g. [0, 10]) or
  * ontology tree.
  * @returns True if the given category view is a select category view.
@@ -261,7 +309,19 @@ export function isOntologyCategoryView(
 }
 
 /**
- * Determine if the given category view is a range category view and not a select or ontology category view.
+ * TODO(cc) review fn description with possible removal of ontology category view.
+ * Determine if the given category view is an ontology multi panel category view and not a select or range or ontology category view.
+ * @param categoryView
+ */
+export function isOntologyMultiPanelCategoryView(
+  categoryView: CategoryView
+): categoryView is OntologyMultiPanelCategoryView {
+  return (categoryView as OntologyMultiPanelCategoryView).panels !== undefined;
+}
+
+/**
+ * TODO(cc) review fn description with possible removal of ontology category view.
+ * Determine if the given category view is a range category view and not a select or ontology with or without multi panel category view.
  * @param categoryView - Selected filter value, either a category value key (e.g. "normal"), range (e.g. [0, 10]) or
  * ontology tree.
  * @returns True if the given category view is a range category view.
@@ -273,7 +333,8 @@ export function isRangeCategoryView(
 }
 
 /**
- * Determine if the given category view is a selected category view and not an ontology or range category view.
+ * TODO(cc) review fn description with possible removal of ontology category view.
+ * Determine if the given category view is a selected category view and not an ontology with or without multi panel or range category view.
  * @param categoryView - Selected filter value, either a category value key (e.g. "normal"), range (e.g. [0, 10]) or
  * ontology tree.
  * @returns True if the given category view is a select category view.

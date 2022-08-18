@@ -1,3 +1,4 @@
+// TODO(cc) deprecated FilterCategoryView.
 import React from "react";
 import { CategoryFilterId } from "src/common/hooks/useCategoryFilter";
 import {

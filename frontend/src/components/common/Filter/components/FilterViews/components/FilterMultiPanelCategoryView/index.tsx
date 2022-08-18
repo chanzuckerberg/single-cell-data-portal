@@ -1,9 +1,10 @@
-// TODO(cc) deprecated FilterCategoryViews.
 import React, { Fragment } from "react";
 import {
-  CategoryView,
   OnFilterFn,
+  OntologyMultiPanelCategoryView,
+  OntologyPanelCategoryView,
 } from "src/components/common/Filter/common/entities";
+import FilterSinglePanelCategoryView from "src/components/common/Filter/components/FilterViews/components/FilterSinglePanelCategoryView";
 import { MAX_DISPLAYABLE_LIST_ITEMS } from "src/components/common/Filter/components/FilterViews/components/FilterView";
 import {
   ViewDivider,
@@ -11,19 +12,20 @@ import {
   VIEW_LIST_SUBHEADER_HEIGHT,
 } from "src/components/common/Filter/components/FilterViews/components/FilterView/style";
 import { ViewsMenu } from "src/components/common/Filter/components/FilterViews/style";
-import FilterCategoryView from "../FilterCategoryView";
 
 interface Props {
-  categoryViews: CategoryView[];
+  categoryView: OntologyMultiPanelCategoryView;
   onFilter: OnFilterFn;
 }
 
 /**
  * Returns the maximum possible pixel height of any view list.
- * @param views - Array of category views objects.
+ * @param views - Array of views within an ontology-aware filter.
  * @return maximum possible view list height in pixels.
  */
-function calculateViewListMaxHeight(views: CategoryView[]): number {
+function calculateViewListMaxHeight(
+  views: OntologyPanelCategoryView[]
+): number {
   return views.reduce((acc, { label }) => {
     const listMaxHeight =
       (MAX_DISPLAYABLE_LIST_ITEMS.SINGLETON + 0.5) * VIEW_LIST_ITEM_HEIGHT +
@@ -32,20 +34,20 @@ function calculateViewListMaxHeight(views: CategoryView[]): number {
   }, 0);
 }
 
-export default function FilterCategoryViews({
-  categoryViews,
+export default function FilterMultiPanelCategoryView({
+  categoryView,
   onFilter,
 }: Props): JSX.Element {
-  // TODO(cc) filter category views to displayable views based on category view isDisabled, or OntologyCategoryTreeView has children.
-  const viewListMaxHeight = calculateViewListMaxHeight(categoryViews);
+  const { key, panels } = categoryView;
+  const viewListMaxHeight = calculateViewListMaxHeight(panels);
   return (
     <ViewsMenu>
-      {categoryViews.map((categoryView, i) => (
-        <Fragment key={`${categoryView.key}${i}`}>
+      {panels.map((ontologyCategoryView, i) => (
+        <Fragment key={`${ontologyCategoryView.label}${i}`}>
           {i !== 0 && <ViewDivider orientation="vertical" />}
-          <FilterCategoryView
-            categoryKey={categoryView.key}
-            categoryView={categoryView}
+          <FilterSinglePanelCategoryView
+            categoryKey={key}
+            categoryView={ontologyCategoryView}
             onFilter={onFilter}
             viewListMaxHeight={viewListMaxHeight}
           />
