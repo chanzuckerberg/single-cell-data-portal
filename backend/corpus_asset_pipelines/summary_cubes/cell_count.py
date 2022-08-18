@@ -63,7 +63,6 @@ def create_cell_count_cube(corpus_path: str):
     obs = extract(corpus_path)
     df = transform(obs)
     uri = load(corpus_path, df)
-    with tiledb.open(corpus_path, "r") as cell_count_cube:
-        cell_count = cell_count_cube.df[:].n_cells.sum()
+    cell_count = df.n_cells.sum()
     logger.info(f"Cell count cube created and stored at {uri}")
     return cell_count
