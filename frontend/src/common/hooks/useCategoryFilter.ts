@@ -6,6 +6,9 @@ import {
   CATEGORY_FILTER_CONFIGS_BY_ID,
   CATEGORY_FILTER_UI_CONFIGS,
   COLLATOR_CASE_INSENSITIVE,
+  DEVELOPMENT_STAGE_ONTOLOGY_TERM_SET,
+  TISSUE_ORGAN_ONTOLOGY_TERM_SET,
+  TISSUE_SYSTEM_ONTOLOGY_TERM_SET,
 } from "src/components/common/Filter/common/constants";
 import {
   Categories,
@@ -17,6 +20,7 @@ import {
   CATEGORY_FILTER_ID,
   CuratedOntologyCategoryFilterConfig,
   ETHNICITY_UNSPECIFIED_LABEL,
+  FilterKey,
   OnFilterFn,
   OntologyCategoryTreeNodeView,
   OntologyCategoryTreeView,
@@ -27,6 +31,7 @@ import {
   OntologyTermSet,
   ONTOLOGY_VIEW_KEY,
   ONTOLOGY_VIEW_LABEL,
+  OrFilterPrefix,
   ORGANISM,
   PUBLICATION_DATE_LABELS,
   Range,
@@ -168,16 +173,14 @@ export function useCategoryFilter<T extends Categories>(
     setCategorySet(buildCategorySet(originalRows, categoryFilterIds));
   }, [originalRows, categoryFilterIds, categorySet]);
 
-  // Build up map of ontology term labels keyed by ID. TODO(cc) finalize (both curated and tissue)
+  // Build up map of ontology term labels keyed by ID.
   useEffect(() => {
     // Only build category set if there are rows to parse category values from. Only build category set once on load.
     if (!originalRows.length || ontologyTermLabelsById) {
       return;
     }
 
-    setOntologyTermLabelsById(
-      keyOntologyTermLabelsById(originalRows, categoryFilterIds)
-    );
+    setOntologyTermLabelsById(keyOntologyTermLabelsById(originalRows));
   }, [originalRows, categoryFilterIds, ontologyTermLabelsById]);
 
   // Build next filter state on change of filter.
@@ -208,32 +211,6 @@ export function useCategoryFilter<T extends Categories>(
 
       // Grab the configuration model for the selected category.
       const config = CATEGORY_FILTER_CONFIGS_BY_ID[categoryFilterId];
-
-      // // TODO(cc) revisit
-      // if (
-      //   categoryFilterId === CATEGORY_FILTER_ID.TISSUE_SYSTEM ||
-      //   categoryFilterId === CATEGORY_FILTER_ID.TISSUE_ORGAN ||
-      //   categoryFilterId === CATEGORY_FILTER_ID.TISSUE
-      // ) {
-      //   let calculatedValue;
-      //   if (
-      //     categoryFilterId === CATEGORY_FILTER_ID.TISSUE_SYSTEM ||
-      //     categoryFilterId === CATEGORY_FILTER_ID.TISSUE_ORGAN
-      //   ) {
-      //     calculatedValue = `${OrFilterPrefix.INFERRED}:${selectedValue}`; // TODO(cc) create encoder/decoder
-      //   } else {
-      //     calculatedValue = `${OrFilterPrefix.EXPLICIT}:${selectedValue}`;
-      //   }
-      //
-      //   // TODO(cc) note, this is bypassing tracking, update to use onFilterSelectCategory but with calculated filter ID
-      //   const nextCategoryFilters = buildNextSelectCategoryFilters(
-      //     "tissueFilter",
-      //     calculatedValue,
-      //     filters
-      //   );
-      //   setFilter("tissueFilter", nextCategoryFilters);
-      //   return;
-      // }
 
       // Handle range categories.
       if (!isCategoryValueKey(selectedValue)) {
@@ -486,8 +463,9 @@ function buildCategorySet<T extends Categories>(
 
 /**
  * Build the display value for the given category and category value.
- * @param categoryFilterId - ID of category (e.g. "disease").
+ * @param config - Config model of category to build category value views for.
  * @param categoryValueKey - Category value to display (e.g. "normal").
+ * @param ontologyTermLabelsById - Set of ontology term labels keyed by term ID, used to determine labels for ontology
  * TODO(cc) docs, drilling
  * @returns String to display as a label for the given category and category value.
  */
@@ -514,7 +492,16 @@ function buildCategoryValueLabel(
 
   // TODO(cc) revisit this - needs drilling of config and ontology term labels
   if (config.labelKind === "LOOKUP_LABEL_BY_TERM_ID") {
-    return ontologyTermLabelsById.get(categoryValueKey) ?? categoryValueKey; // TODO(cc) error handling here?
+    // De-tag values. TODO(cc) add config for this. revisit logic.
+    let processedCategoryValueKey = categoryValueKey;
+    if (config.categoryFilterId === "TISSUE_CALCULATED") {
+      const tokens = categoryValueKey.split(/:(.*)/s);
+      processedCategoryValueKey = tokens[1];
+    }
+
+    return (
+      ontologyTermLabelsById.get(processedCategoryValueKey) ?? categoryValueKey
+    ); // TODO(cc) error handling here?
   }
 
   // Return all other category values as is.
@@ -604,7 +591,6 @@ function buildCategoryViews(
             categoryFilterId,
             config,
             rangeOrSelectValue,
-            filterState,
             ontologyTermLabelsById
           );
         }
@@ -1130,7 +1116,6 @@ function buildCuratedOntologyCategoryValueView(
  * @param categoryFilterId - ID of category to find selected filters of.
  * @param config - Config model of ontology category.
  * @param categoryValueByValue - Internal filter model of single or multiselect category.
- * @param filterState - Categories, category value and their counts with the current filter applied. Required when
  * checking enabled state of view that is dependent on the state of another category.
  * @param ontologyTermLabelsById - Set of ontology term labels keyed by term ID, used to determine labels for ontology
  * @returns Select category view model.
@@ -1139,22 +1124,33 @@ function buildMultiPanelCategoryView(
   categoryFilterId: CategoryFilterId,
   config: OntologyMultiPanelFilterConfig,
   categoryValueByValue: KeyedSelectCategoryValue,
-  filterState: FilterState,
   ontologyTermLabelsById: Map<string, string> // TODO(cc) revisit drilling
 ): OntologyMultiPanelCategoryView {
+  // Build select view models for all values to be displayed. TODO(cc) only build for I and then don't need dedupe?
+  const allSelectCategoryValueViews = buildSelectCategoryValueViews(
+    config,
+    [...categoryValueByValue.values()],
+    ontologyTermLabelsById
+  ).sort(sortCategoryValueViews);
+
+  // // Remove duplicated view models created from removal of inferred and explicit prefixes on filter values. Always
+  // // take the larger count when deduping view models as the larger count will include both inferred and explicit values.
+  // const selectCategoryValueViews = dedupePrefixedSelectCategoryValueViews(
+  //   allSelectCategoryValueViews
+  // );
+
   // Build up view model for each panel specified in config.
   const { panels } = config;
   const panelViews = panels.map((panel: CategoryFilterPanelConfig) => {
-    // Build select view models for panel.
-    const views = buildSelectCategoryValueViews(
-      config,
-      categoryValueByValue,
-      ontologyTermLabelsById
-    ).sort(sortCategoryValueViews);
-
     return {
       label: panel.label,
-      views,
+      views:
+        panel.sourceKind === "ONLY_CURATED"
+          ? maskOnlyCurated(panel.mask, allSelectCategoryValueViews)
+          : maskExcludingCurated(
+              panel.excludeMasks,
+              allSelectCategoryValueViews
+            ),
     };
   });
 
@@ -1169,37 +1165,72 @@ function buildMultiPanelCategoryView(
   // TODO(cc) check disabled state here
 
   return multiPanelView;
+}
 
-  // // Split values into pinned and unpinned.
-  // const [pinnedValues, unpinnedValues] = partitionSelectCategoryValueViews(
-  //   allCategoryValueViews,
-  //   pinnedCategoryValues
-  // );
-  //
-  // // Build view model of select category.
-  // const selectView: SelectCategoryView = {
-  //   key: categoryFilterId,
-  //   label: config.label,
-  //   pinnedValues,
-  //   unpinnedValues,
-  //   values: allCategoryValueViews,
-  // };
-  //
-  // // Handle special cases where select category may be disabled.
-  // if (
-  //   categoryFilterId === CATEGORY_FILTER_ID.ETHNICITY &&
-  //   !isEthnicityViewEnabled(filterState)
-  // ) {
-  //   selectView.isDisabled = true;
-  //   selectView.tooltip = tooltip;
-  // }
-  // // Otherwise, check generic case where category is disabled due to no values meeting current filter.
-  // else if (isSelectCategoryDisabled(selectView)) {
-  //   selectView.isDisabled = true;
-  //   selectView.tooltip = TOOLTIP_CATEGORY_DISABLED;
-  // }
-  //
-  // return selectView;
+/**
+ * Remove curated and left-over ancestors.
+ * TODO(cc) docs, location, name
+ */
+function maskExcludingCurated(
+  masks: OntologyTermSet[],
+  selectCategoryValueViews: SelectCategoryValueView[]
+): SelectCategoryValueView[] {
+  const excludeValues = masks.reduce((accum, mask) => {
+    accum.push(...[...listOntologyTreeIds(mask)]);
+    return accum;
+  }, [] as string[]);
+  return selectCategoryValueViews.filter((view) => {
+    const [prefix, processedKey] = view.key.split(/:(.*)/s); // TODO(cc) utils, revisit prefix
+    if (excludeValues.includes(processedKey)) {
+      return false;
+    }
+    return prefix !== OrFilterPrefix.INFERRED;
+  });
+}
+
+/**
+ * TODO(cc) docs, location, name
+ */
+function maskOnlyCurated(
+  mask: OntologyTermSet,
+  selectCategoryValueViews: SelectCategoryValueView[]
+): SelectCategoryValueView[] {
+  const allowedValues = [...listOntologyTreeIds(mask)];
+  return selectCategoryValueViews.filter((view) => {
+    const [, processedKey] = view.key.split(/:(.*)/s); // TODO(cc) utils
+    return allowedValues.includes(processedKey);
+  });
+}
+
+/**
+ * Remove duplicated view models created from removal of inferred and explicit prefixes on filter values. Always
+ * take the larger count when deduping view models as the larger count will include both inferred and explicit values.
+ * TODO(cc) only required for tissue and cell type, should we configure this? or just do it for all? docs plus location.
+ */
+function dedupePrefixedSelectCategoryValueViews(
+  selectCategoryValueViews: SelectCategoryValueView[]
+): SelectCategoryValueView[] {
+  const dedupedSelectCateogryValueViews = selectCategoryValueViews.reduce(
+    (accum, selectCategoryValueView) => {
+      const { key, count } = selectCategoryValueView;
+      const [, processedKey] = key.split(/:(.*)/s); // TODO(cc) utils
+      if (accum.has(processedKey)) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- using accum.has(key) above to ensure accum has value.
+        const addedSelectCategoryValueView = accum.get(processedKey)!;
+        const { count: currentCount } = addedSelectCategoryValueView;
+        const max = Math.max(currentCount, count);
+        if (max !== currentCount) {
+          addedSelectCategoryValueView.count = max;
+        }
+      } else {
+        accum.set(processedKey, selectCategoryValueView);
+      }
+      return accum;
+    },
+    new Map<string, SelectCategoryValueView>()
+  );
+
+  return [...dedupedSelectCateogryValueViews.values()];
 }
 
 /**
@@ -1235,20 +1266,23 @@ function buildRangeCategoryView(
 
 /**
  * Build select category value view models of the given selected values.
+ * @param config - Config model of category to build category value views for.
+ * @param categoryValues - Values to build view models from.
+ * @param ontologyTermLabelsById - Set of ontology term labels keyed by term ID, used to determine labels for ontology
  */
 function buildSelectCategoryValueViews(
   config: CategoryFilterConfig,
-  categoryValueByValue: KeyedSelectCategoryValue,
-  ontologyTermLabelsById: Map<string, string> // TODO(cc) revisit drilling
+  categoryValues: SelectCategoryValue[],
+  ontologyTermLabelsById: Map<string, string> // TODO(cc) revisit drilling, maybe have a format fn for label instead?
 ): SelectCategoryValueView[] {
-  return [...categoryValueByValue.values()].map(
-    ({ count, key, selected }: SelectCategoryValue) => ({
+  return categoryValues.map(({ count, key, selected }: SelectCategoryValue) => {
+    return {
       count,
       key,
       label: buildCategoryValueLabel(config, key, ontologyTermLabelsById),
       selected: selected,
-    })
-  );
+    };
+  });
 }
 
 /**
@@ -1300,7 +1334,7 @@ function buildSelectCategoryView(
 
   const allCategoryValueViews = buildSelectCategoryValueViews(
     config,
-    categoryValueByValue,
+    [...categoryValueByValue.values()],
     ontologyTermLabelsById
   ).sort(sortCategoryValueViews);
 
@@ -1657,63 +1691,9 @@ function isDevelopmentStageSpeciesVisible(
 }
 
 /**
- * Build map of ontology term labels keyed by ontology term IDs. This map is used to determine the display value for
- * ontology term-backed fields (e.g. tissue).
- * @param originalRows - Original result set before filtering.
- * @param categoryFilterIds - Set of category filter IDs to include for this filter instance.
- * @returns Map of ontology term labels keyed by ID.
- */
-function keyOntologyTermLabelsById<T extends Categories>(
-  originalRows: Row<T>[],
-  categoryFilterIds: Set<CATEGORY_FILTER_ID>
-): Map<string, string> {
-  // Build up category values for each category
-  return Array.from(categoryFilterIds.values()).reduce(
-    (accum: Map<string, string>, categoryFilterId: CategoryFilterId) => {
-      // Ignore category filters that don't require a lookup
-      const config = CATEGORY_FILTER_CONFIGS_BY_ID[categoryFilterId];
-      if (config.labelKind !== "LOOKUP_LABEL_BY_TERM_ID") {
-        return accum;
-      }
-
-      // TODO(cc) move below into functions
-      // // If this category filter is a curated ontology, use the specified mask to determine the label set.
-      // if (config.valueSourceKind === "CURATED") {
-      //   const { mask } = config;
-      //   Object.keys(mask).forEach((ontologyViewKey: string) => {
-      //     const ontologyNodes = mask[ontologyViewKey as ONTOLOGY_VIEW_KEY];
-      //     if (!ontologyNodes) {
-      //       return accum; // Error state - ignore species view.
-      //     }
-      //     keyMaskOntologyTermLabelsById(accum, ontologyNodes);
-      //   });
-      // }
-      // // Otherwise, there is no mask for this ontology; use the original rows to determine the label set.
-      // else {
-      const { filterOnKey } = config;
-      originalRows.forEach((originalRow: Row<T>) => {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment --- TODO(cc) revisit - different between FilterKey (any value from dataset or collection) vs T extends Categories, also see if type assertion can be resolved
-        // @ts-ignore -- as above
-        (originalRow.original[filterOnKey] as Ontology[]).forEach(
-          ({ label, ontology_term_id }) => {
-            if (!accum.has(ontology_term_id)) {
-              accum.set(ontology_term_id, label);
-            }
-          }
-        );
-      });
-      // }
-
-      return accum;
-    },
-    new Map<string, string>()
-  );
-}
-
-/**
  * TODO(cc) iterate through all nodes to add term ID/term label to map
  */
-function keyMaskOntologyTermLabelsById(
+function keyCuratedOntologyNodeTermLabelsById(
   labelsById: Map<string, string>,
   ontologyNodes: OntologyNode[]
 ) {
@@ -1721,10 +1701,80 @@ function keyMaskOntologyTermLabelsById(
     if (!labelsById.has(ontologyNode.label)) {
       labelsById.set(ontologyNode.ontology_term_id, ontologyNode.label);
       if (ontologyNode.children) {
-        keyMaskOntologyTermLabelsById(labelsById, ontologyNode.children);
+        keyCuratedOntologyNodeTermLabelsById(labelsById, ontologyNode.children);
       }
     }
   });
+}
+
+/**
+ * TODO(cc) key all values in curated ontology
+ */
+function keyCuratedOntologyTermLabelsById(
+  labelsById: Map<string, string>,
+  mask: OntologyTermSet
+) {
+  Object.keys(mask).forEach((ontologyViewKey: string) => {
+    const ontologyNodes = mask[ontologyViewKey as ONTOLOGY_VIEW_KEY];
+    if (!ontologyNodes) {
+      return labelsById; // Error state - ignore species view.
+    }
+    keyCuratedOntologyNodeTermLabelsById(labelsById, ontologyNodes);
+  });
+}
+
+/**
+ * TODO(cc) key row ontology term values
+ */
+function keyRowOntologyTermLabelsById<T extends Categories>(
+  labelsById: Map<string, string>,
+  rows: Row<T>[],
+  filterOnKey: FilterKey
+) {
+  rows.forEach((originalRow: Row<T>) => {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment --- TODO(cc) revisit - different between FilterKey (any value from dataset or collection) vs T extends Categories, also see if type assertion can be resolved
+    // @ts-ignore -- as above
+    (originalRow.original[filterOnKey] as Ontology[]).forEach(
+      ({ label, ontology_term_id }) => {
+        if (!labelsById.has(ontology_term_id)) {
+          labelsById.set(ontology_term_id, label);
+        }
+      }
+    );
+  });
+}
+
+/**
+ * Build map of ontology term labels keyed by ontology term IDs. This map is used to determine the display values for
+ * ontology term-backed fields (e.g. tissue).
+ * @param originalRows - Original result set before filtering.
+ * @returns Map of ontology term labels keyed by ID.
+ * TODO(cc) revisit this - need to do both top-level configs and panel configs. can we make this configurable?
+ */
+function keyOntologyTermLabelsById<T extends Categories>(
+  originalRows: Row<T>[]
+): Map<string, string> {
+  const labelsById = new Map<string, string>();
+
+  // Key curated term sets.
+  [
+    DEVELOPMENT_STAGE_ONTOLOGY_TERM_SET,
+    TISSUE_SYSTEM_ONTOLOGY_TERM_SET,
+    TISSUE_ORGAN_ONTOLOGY_TERM_SET,
+  ].forEach((termSet: OntologyTermSet) => {
+    keyCuratedOntologyTermLabelsById(labelsById, termSet);
+  });
+
+  // Key ontology terms from row values.
+  ["cell_type", "tissue"].forEach((filterOnKey) => {
+    keyRowOntologyTermLabelsById(
+      labelsById,
+      originalRows,
+      filterOnKey as FilterKey
+    );
+  });
+
+  return labelsById;
 }
 
 /**

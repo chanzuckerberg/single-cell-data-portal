@@ -767,7 +767,7 @@ function processDatasetResponse(
 ): ProcessedDatasetResponse {
   // Build up value to facilitate ontology-aware tissue filtering.
   const tissueFilter = [
-    ...tagAncestorsAsInferred(dataset.tissue_ancestors),
+    ...tagAncestorsAsInferred(dataset.tissue_ancestors, dataset.tissue),
     ...tagOntologyTermsAsExplicit(dataset.tissue),
   ];
   return {
@@ -845,14 +845,26 @@ function sortOntologies(o0: Ontology, o1: Ontology): number {
 /**
  * Convert each ancestor ontology term ID into one marked as "inferred", required for filtering across ancestors and
  * actual ontology terms within a filter.
+ * TODO(cc) docs
  */
-function tagAncestorsAsInferred(ancestors: string[]): string[] {
-  return ancestors.map((ancestor) => `${OrFilterPrefix.INFERRED}:${ancestor}`);
+function tagAncestorsAsInferred(
+  ancestors: string[],
+  excludeSelves: Ontology[]
+): string[] {
+  return ancestors
+    .filter(
+      (ancestor) =>
+        !excludeSelves.some(
+          (excludeSelf) => excludeSelf.ontology_term_id === ancestor
+        )
+    )
+    .map((ancestor) => `${OrFilterPrefix.INFERRED}:${ancestor}`);
 }
 
 /**
  * Convert each ontology term ID into one marked as "explicit", required for filtering across ancestors and
  * actual ontology terms within a filter.
+ * TODO(cc) docs
  */
 function tagOntologyTermsAsExplicit(ontologyTerms: Ontology[]): string[] {
   return ontologyTerms.map(

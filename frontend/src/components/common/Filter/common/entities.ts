@@ -293,6 +293,7 @@ interface OnlyCuratedValueSourceKind {
  * Model of a filter panel that displays any value not displayed in other panels. For example, tissue.
  */
 interface ExceptCuratedValueSourceKind {
+  excludeMasks: OntologyTermSet[]; // TODO(cc) rename mask to valueSource? rename OntologyTermSet same with cateogry source kind
   sourceKind: "EXCEPT_CURATED";
 }
 
@@ -333,7 +334,7 @@ export type CategoryFilterPanelConfig =
   | ParentCategoryFilterPanelConfig;
 
 /**
- * UI configuration for each category. TODO(cc) remove this?
+ * UI configuration for each category. TODO(cc) remove this? also, check if any corresponding view model can be removed/updates.
  */
 export interface CategoryFilterUIConfig {
   categoryFilterConfigIds: CATEGORY_FILTER_ID[];
@@ -380,7 +381,7 @@ export type CategoriesKeyOfTypeOntologyArray = {
  * panels (e.g. tissue).
  */
 export interface CategoryViews {
-  categoryViews: CategoryView[];
+  categoryViews: CategoryView[]; // TODO(cc) revert this back to singular?
   label: string;
 }
 

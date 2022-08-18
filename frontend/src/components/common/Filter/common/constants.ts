@@ -2952,6 +2952,10 @@ const CATEGORY_FILTER_CONFIGS: CategoryFilterConfig[] = [
         sourceKind: "ONLY_CURATED",
       },
       {
+        excludeMasks: [
+          TISSUE_SYSTEM_ONTOLOGY_TERM_SET,
+          TISSUE_ORGAN_ONTOLOGY_TERM_SET,
+        ],
         label: "Tissue",
         sourceKind: "EXCEPT_CURATED",
       },
