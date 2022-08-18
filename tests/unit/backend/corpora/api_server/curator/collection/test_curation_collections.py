@@ -415,7 +415,8 @@ class TestGetCollectionID(BaseAuthAPITest):
         res_body = res.json
         del res_body["created_at"]  # too finicky; ignore
         self.assertTrue("access_type" not in res_body)
-        self.assertDictEqual(self.expected_body, res_body)  # Confirm dict has been packaged in list
+        self.assertDictEqual(self.expected_body, res_body)
+        self.assertEqual(json.dumps(self.expected_body, sort_keys=True), json.dumps(res_body))
 
     def test__get_private_collection__OK(self):
         res = self.app.get("/curation/v1/collections/test_collection_id_revision")
@@ -434,6 +435,12 @@ class TestGetCollectionID(BaseAuthAPITest):
         self.generate_dataset(self.session, collection_id=tombstoned_collection.id, tombstone=True)
         res = self.app.get(f"/curation/v1/collections/{tombstoned_collection.id}")
         self.assertEqual(404, res.status_code)
+
+    def test_get_collection_with_no_datasets(self):
+        collection = self.generate_collection(self.session, name="No Datasets", visibility=CollectionVisibility.PUBLIC)
+        res = self.app.get(f"/curation/v1/collections/{collection.id}")
+        self.assertEqual(200, res.status_code)
+        self.assertEqual(res.json["processing_status"], None)
 
     def test__get_collection_with_tombstoned_datasets__OK(self):
         collection = self.generate_collection(
