@@ -157,10 +157,8 @@ class TestDatasetProcessing(DataPortalTestCase):
             ],
             index=(str(i) for i in range(50001)),
         )
-        obs = obs.astype({"suspension_type": "category", "donor_id": "category"})
         uns = {
             "title": "my test dataset",
-            "X_normalization": "normal",
             "X_approximate_distribution": "normal",
             "batch_condition": np.array({"batchA", "batchB"}),
             "schema_version": "3.0.0",
@@ -230,7 +228,6 @@ class TestDatasetProcessing(DataPortalTestCase):
             self.assertEqual,
         )
 
-        self.assertEqual(extracted_metadata["x_normalization"], "normal")
         self.assertEqual(extracted_metadata["x_approximate_distribution"], "NORMAL")
         self.assertEqual(extracted_metadata["batch_condition"], np.array({"batchA", "batchB"}))
         self.assertEqual(extracted_metadata["schema_version"], "3.0.0")
@@ -302,10 +299,8 @@ class TestDatasetProcessing(DataPortalTestCase):
             ],
             index=(str(i) for i in range(11)),
         )
-        obs = obs.astype({"suspension_type": "category", "donor_id": "category"})
         uns = {
             "title": "my test dataset",
-            "X_normalization": "normal",
             "X_approximate_distribution": "normal",
             "batch_condition": np.array({"batchA", "batchB"}),
             "schema_version": "3.0.0",
