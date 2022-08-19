@@ -63,12 +63,6 @@ def patch(collection_id: str, body: dict, token_info: dict) -> Response:
         keep_links = False  # links have been provided; replace all old links
 
     try:
-        collection = get_collection_else_forbidden(
-            db_session,
-            collection_id,
-            visibility=CollectionVisibility.PRIVATE.name,
-            owner=owner_or_allowed(token_info),
-        )
         collection, errors = get_collection_and_verify_body(db_session, collection_id, body, token_info)
     except ForbiddenHTTPException as err:
         # If the Collection is public, the get_collection_and_verify_body method throws empty ForbiddenHTTPException
