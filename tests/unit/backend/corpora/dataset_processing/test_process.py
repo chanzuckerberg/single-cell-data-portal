@@ -118,8 +118,12 @@ class TestDatasetProcessing(DataPortalTestCase):
                     numpy.random.choice(["MONDO:123"], size=(50001, 1)),
                     numpy.array([["male", "female", "fixed"][i] for i in sex]).reshape(50001, 1),
                     numpy.array([["M", "F", "MF"][i] for i in sex]).reshape(50001, 1),
-                    numpy.array([["solomon islander", "orcadian"][i] for i in self_reported_ethnicity]).reshape(50001, 1),
-                    numpy.array([["HANCESTRO:321", "HANCESTRO:456"][i] for i in self_reported_ethnicity]).reshape(50001, 1),
+                    numpy.array([["solomon islander", "orcadian"][i] for i in self_reported_ethnicity]).reshape(
+                        50001, 1
+                    ),
+                    numpy.array([["HANCESTRO:321", "HANCESTRO:456"][i] for i in self_reported_ethnicity]).reshape(
+                        50001, 1
+                    ),
                     numpy.array([["adult", "baby", "tween"][i] for i in development_stage]).reshape(50001, 1),
                     numpy.array([["HsapDv:0", "HsapDv:1", "HsapDv:2"][i] for i in development_stage]).reshape(50001, 1),
                     numpy.random.choice(["Homo sapiens"], size=(50001, 1)),
@@ -261,7 +265,9 @@ class TestDatasetProcessing(DataPortalTestCase):
                     numpy.array([["male", "female", "fixed"][i] for i in sex]).reshape(11, 1),
                     numpy.array([["M", "F", "MF"][i] for i in sex]).reshape(11, 1),
                     numpy.array([["solomon islander", "orcadian"][i] for i in self_reported_ethnicity]).reshape(11, 1),
-                    numpy.array([["HANCESTRO:321", "HANCESTRO:456"][i] for i in self_reported_ethnicity]).reshape(11, 1),
+                    numpy.array([["HANCESTRO:321", "HANCESTRO:456"][i] for i in self_reported_ethnicity]).reshape(
+                        11, 1
+                    ),
                     numpy.array([["adult", "baby", "tween"][i] for i in development_stage]).reshape(11, 1),
                     numpy.array([["HsapDv:0", "HsapDv:1", "HsapDv:2"][i] for i in development_stage]).reshape(11, 1),
                     numpy.random.choice(["Homo sapiens"], size=(11, 1)),
