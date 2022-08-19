@@ -15,36 +15,32 @@ export const SmallColumn = styled.div`
   ${fontStyle}
 `;
 
-export function buttonStyle(): string {
-  return `
-    ${fontStyle}
+export const buttonStyle = css`
+  ${fontStyle}
+  text-decoration: none;
+  color: ${OLD_BLUE};
+  background-color: white;
+  border: 1px solid ${OLD_BLUE};
+  border-radius: 3px;
+  appearance: none;
+  padding: 2px 20px;
+  text-align: center;
+  box-sizing: border-box;
+
+  &:hover {
+    background-color: ${OLD_BLUE};
+    color: white;
     text-decoration: none;
-    color: ${OLD_BLUE};
+    cursor: pointer;
+  }
+`;
+
+export const disabledButtonStyle = css`
+  color: rgb(0, 118, 220, 0.5);
+  border: 1px solid rgb(0, 118, 220, 0.2);
+
+  &:hover {
+    cursor: not-allowed;
     background-color: white;
-    border: 1px solid ${OLD_BLUE};
-    border-radius: 3px;
-    appearance: none;
-    padding: 2px 20px;
-    text-align: center;
-    box-sizing: border-box;
-
-    &:hover {
-      background-color: ${OLD_BLUE};
-      color: white;
-      text-decoration: none;
-      cursor: pointer;
-    }
+  }
 `;
-}
-
-export function disabledButtonStyle(): string {
-  return `
-    color: rgb(0, 118, 220, 0.5);
-    border: 1px solid rgb(0, 118, 220, 0.2);
-
-    &:hover {
-      cursor: not-allowed;
-      background-color: white;
-    }
-`;
-}
