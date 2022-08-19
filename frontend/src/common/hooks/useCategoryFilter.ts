@@ -43,10 +43,14 @@ import {
   SelectCategoryView,
 } from "src/components/common/Filter/common/entities";
 import {
+  buildExplicitOntologyTermId,
+  buildInferredOntologyTermId,
   findOntologyNodeById,
   findOntologyParentNode,
   getOntologySpeciesKey,
   listOntologyTreeIds,
+  removeOntologyTermIdPrefix,
+  splitOntologyTermIdAndPrefix,
 } from "src/components/common/Filter/common/utils";
 import { track } from "../analytics";
 
@@ -164,6 +168,13 @@ export function useCategoryFilter<T extends Categories>(
   // ontology term-backed fields.
   const [ontologyTermLabelsById, setOntologyTermLabelsById] =
     useState<Map<string, string>>();
+
+  // Internally saved selected values for each category filter; used to set selected state of values in ontology-aware
+  // category filters. This is required for category filters where cross-panel restrictions are applied (e.g. tissue
+  // system restricts tissue organ and tissue). We can not use react-table's filters as it only contains the most
+  // restrictive value (e.g. if renal system and kidney are both selected, only kidney is set as a selected value in
+  // react-table). We need a variable to save *all* selected values so this can be reflected in the view models.
+  // const [categoryFilters, setCategoryFilters] = useState<Filters<T>>();
 
   // Set up original, full set of categories and their values.
   useEffect(() => {
@@ -504,8 +515,7 @@ function buildCategoryValueLabel(
     // De-tag values. TODO(cc) add config for this. revisit logic.
     let processedCategoryValueKey = categoryValueKey;
     if (config.categoryFilterId === "TISSUE_CALCULATED") {
-      const tokens = categoryValueKey.split(/:(.*)/s);
-      processedCategoryValueKey = tokens[1];
+      processedCategoryValueKey = removeOntologyTermIdPrefix(categoryValueKey);
     }
 
     return (
@@ -850,21 +860,9 @@ function buildQueries<T extends Categories>(
   return Array.from(categoryFilterIds.values()).reduce(
     (accum: Query<T>[], categoryFilterId: CategoryFilterId) => {
       // Determine the filters that are applicable to this category.
-      const config = CATEGORY_FILTER_CONFIGS_BY_ID[categoryFilterId];
-      const applicableFilters = filters.filter((filter: CategoryFilter) => {
-        // Handle standard faceted search where filters are not filtered by their own selected values.
-        if (config.queryKind === "EXCLUDES_SELF") {
-          return filter.id !== categoryFilterId;
-        }
-
-        // TODO(cc) remove (and remove kind)?
-        // // Handle category filters that are neither restricted by themselves nor restricted by their children.
-        // const { childrenCategoryFilterIds } = config;
-        // return (
-        //   filter.id !== categoryFilterId &&
-        //   !childrenCategoryFilterIds.includes(filter.id as CATEGORY_FILTER_ID)
-        // );
-      });
+      const applicableFilters = filters.filter(
+        (filter: CategoryFilter) => filter.id !== categoryFilterId
+      );
 
       // Check if we have an existing query with an identical filter. If so, add category to that query. Otherwise,
       // create new query for this filter.
@@ -1093,10 +1091,12 @@ function buildMultiPanelCategoryView(
       const inferredAndExplicit = panel.filterValueKind === "INFERRED_EXPLICIT";
       const selectCategoryValueViews = panelViews.map(
         (selectCategoryValueView) => {
-          const [, processedKey] = selectCategoryValueView.key.split(/:(.*)/s); // TODO(cc) utils, revisit prefix
-          const values = [`${OrFilterPrefix.EXPLICIT}:${processedKey}`]; // TODO(cc) utils
+          const ontologyTermId = removeOntologyTermIdPrefix(
+            selectCategoryValueView.key
+          );
+          const values = [buildExplicitOntologyTermId(ontologyTermId)];
           if (inferredAndExplicit) {
-            values.push(`${OrFilterPrefix.INFERRED}:${processedKey}`);
+            values.push(buildInferredOntologyTermId(ontologyTermId));
           }
           return {
             ...selectCategoryValueView,
@@ -1108,10 +1108,9 @@ function buildMultiPanelCategoryView(
       // Remove I and E from key.
       const correctedSelectCategoryValueViews = selectCategoryValueViews.map(
         (selectCategoryValueView) => {
-          const [, processedKey] = selectCategoryValueView.key.split(/:(.*)/s); // TODO(cc) utils, revisit prefix
           return {
             ...selectCategoryValueView,
-            key: processedKey,
+            key: removeOntologyTermIdPrefix(selectCategoryValueView.key),
           };
         }
       );
@@ -1184,7 +1183,7 @@ function maskExcludingCurated(
     return accum;
   }, [] as string[]);
   return selectCategoryValueViews.filter((view) => {
-    const [prefix, processedKey] = view.key.split(/:(.*)/s); // TODO(cc) utils, revisit prefix
+    const [prefix, processedKey] = splitOntologyTermIdAndPrefix(view.key);
     if (excludeValues.includes(processedKey)) {
       return false;
     }
@@ -1201,8 +1200,7 @@ function maskOnlyCurated(
 ): SelectCategoryValueView[] {
   const allowedValues = [...listOntologyTreeIds(mask)];
   return selectCategoryValueViews.filter((view) => {
-    const [, processedKey] = view.key.split(/:(.*)/s); // TODO(cc) utils
-    return allowedValues.includes(processedKey);
+    return allowedValues.includes(removeOntologyTermIdPrefix(view.key));
   });
 }
 
@@ -1216,12 +1214,12 @@ function dedupePrefixedSelectCategoryValueViews(
   const dedupedSelectCateogryValueViews = selectCategoryValueViews.reduce(
     (accum, selectCategoryValueView) => {
       const { key, count } = selectCategoryValueView;
-      const [, processedKey] = key.split(/:(.*)/s); // TODO(cc) utils
-      if (accum.has(processedKey)) {
+      const ontologyTermId = removeOntologyTermIdPrefix(key);
+      if (accum.has(ontologyTermId)) {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- using accum.has(key) above to ensure accum has value.
-        accum.get(processedKey)!.count += count;
+        accum.get(ontologyTermId)!.count += count;
       } else {
-        accum.set(processedKey, selectCategoryValueView);
+        accum.set(ontologyTermId, selectCategoryValueView);
       }
       return accum;
     },

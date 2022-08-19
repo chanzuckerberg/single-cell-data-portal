@@ -18,9 +18,12 @@ import {
   CollectionRow,
   DatasetRow,
   ETHNICITY_DENY_LIST,
-  OrFilterPrefix,
   PUBLICATION_DATE_VALUES,
 } from "src/components/common/Filter/common/entities";
+import {
+  buildExplicitOntologyTermId,
+  buildInferredOntologyTermId,
+} from "src/components/common/Filter/common/utils";
 import { checkIsOverMaxCellCount } from "src/components/common/Grid/common/utils";
 
 /**
@@ -853,12 +856,12 @@ function tagAncestorsAsInferred(
 ): string[] {
   return ancestors
     .filter(
-      (ancestor) =>
+      (ancestorTermId) =>
         !excludeSelves.some(
-          (excludeSelf) => excludeSelf.ontology_term_id === ancestor
+          (excludeSelf) => excludeSelf.ontology_term_id === ancestorTermId
         )
     )
-    .map((ancestor) => `${OrFilterPrefix.INFERRED}:${ancestor}`);
+    .map((ancestorTermId) => buildInferredOntologyTermId(ancestorTermId));
 }
 
 /**
@@ -867,9 +870,8 @@ function tagAncestorsAsInferred(
  * TODO(cc) docs
  */
 function tagOntologyTermsAsExplicit(ontologyTerms: Ontology[]): string[] {
-  return ontologyTerms.map(
-    (ontologyTerm) =>
-      `${OrFilterPrefix.EXPLICIT}:${ontologyTerm.ontology_term_id}`
+  return ontologyTerms.map((ontologyTerm) =>
+    buildExplicitOntologyTermId(ontologyTerm.ontology_term_id)
   );
 }
 

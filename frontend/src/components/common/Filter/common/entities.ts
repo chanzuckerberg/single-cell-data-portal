@@ -62,30 +62,6 @@ export interface IncludesSomeMatchKind {
   matchKind: "INCLUDES_SOME";
 }
 
-// ** Query discriminating unions ** //
-
-/**
- * Model of a filter that uses a standard faceted search paradigm when determining the set of queries to apply to itself
- * on filter. That is, it uses all currently selected values - except its own selected values - to filter. For example,
- * publication date, assay etc.
- */
-export interface ExcludesSelfQueryKind {
-  queryKind: "EXCLUDES_SELF";
-}
-
-/**
- * Model of a filter that uses a modified faceted search paradigm when determining the set of queries to apply to
- * itself on filter: it ignores its own selected values as well as selected values in its children category filters. For
- * example, the tissue system category filter should ignore selected tissue systems values as well as selected values
- * in tissue organ and tissue.
- * TODO(cc) do we still need this?
- * TODO(cc) revisit export on Kind types.
- */
-export interface ExcludesSelfAndChildrenQueryKind {
-  childrenCategoryFilterIds: CATEGORY_FILTER_ID[];
-  queryKind: "EXCLUDES_SELF_AND_CHILDREN";
-}
-
 // ** View kind discriminating unions ** //
 
 /**
@@ -167,7 +143,6 @@ export type CuratedOntologyCategoryFilterConfig = BaseCategoryFilterConfig &
   IncludesSomeMatchKind &
   LookupByTermIdLabelKind &
   CuratedValueSourceKind &
-  ExcludesSelfQueryKind &
   CuratedOntologyViewKind;
 
 /**
@@ -177,7 +152,6 @@ export type OntologyMultiPanelFilterConfig = BaseCategoryFilterConfig &
   IncludesSomeMatchKind &
   LookupByTermIdLabelKind &
   NoneValueSourceKind &
-  ExcludesSelfQueryKind &
   MultiPanelViewKind;
 
 /**
@@ -187,7 +161,6 @@ export type RangeCategoryFilterConfig = BaseCategoryFilterConfig &
   BetweenMatchKind &
   ValueLabelKind &
   NoneValueSourceKind &
-  ExcludesSelfQueryKind &
   RangeViewKind;
 
 /**
@@ -199,7 +172,6 @@ export type SelectCategoryFilterConfig = BaseCategoryFilterConfig &
   IncludesSomeMatchKind &
   ValueLabelKind &
   NoneValueSourceKind &
-  ExcludesSelfQueryKind &
   SelectViewKind;
 
 /**
