@@ -19,7 +19,7 @@ export default function CollectionMigrationCallout({
     <MigrationCallout>
       <H5>Important Note</H5>
       <p>
-        The cellxgene Data Portal was migrated to an enhanced schema to optimize
+        CELLxGENE Discover was migrated to an enhanced schema to optimize
         reusability. Some genes from this dataset were eliminated in this
         process. The data can be used with confidence that the genes that are
         present are correctly mapped.

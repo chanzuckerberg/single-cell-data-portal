@@ -94,6 +94,7 @@ def configure_flask_app(flask_app):
         SESSION_COOKIE_SECURE=require_secure_cookies,
         SESSION_COOKIE_HTTPONLY=True,
         SESSION_COOKIE_SAMESITE="Lax",
+        JSON_SORT_KEYS=True,
     )
     flask_app.json_encoder = CustomJSONEncoder
     return flask_app
