@@ -110,7 +110,7 @@ class DropBoxURL(URL):
 class S3URL(URL):
     """Supports presigned URLs from an AWS S3 bucket."""
 
-    _netloc = "s3.amazonaws.com"
+    _netloc = "amazonaws.com"
     _scheme = "https"
 
     @classmethod
