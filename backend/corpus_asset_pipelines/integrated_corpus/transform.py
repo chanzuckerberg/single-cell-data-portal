@@ -6,6 +6,7 @@ import anndata
 import numpy
 import numpy as np
 from pandas import DataFrame
+from pandas import Series
 import scanpy
 import tiledb
 from scipy import sparse
@@ -18,6 +19,7 @@ from backend.wmg.data.constants import (
     INCLUDED_ASSAYS,
 )
 from backend.wmg.data.rankit import rankit
+from backend.wmg.data.tissue_mapper import TissueMapper
 from backend.wmg.data.schemas.corpus_schema import INTEGRATED_ARRAY_NAME
 
 logger = logging.getLogger(__name__)
@@ -44,22 +46,13 @@ def create_high_level_tissue(anndata_object: anndata.AnnData):
     anndata_object.obs = get_high_level_tissue(anndata_object.obs)
 
 
-# TODO finalize this function
-def get_high_level_tissue(obs: DataFrame):
+def get_high_level_tissue(obs: Series) -> Series:
+
+    tissue_mapper = TissueMapper()
 
     for i in range(len(obs)):
-
-        if "lung" in obs["tissue"][i]:
-            if "UBERON:0002048" not in obs["tissue_ontology_term_id"].cat.categories:
-                obs["tissue_ontology_term_id"].cat.add_categories("UBERON:0002048", inplace=True)
-                obs["tissue"].cat.add_categories("lung", inplace=True)
-
-            obs["tissue_ontology_term_id"][i] = "UBERON:0002048"
-            obs["tissue"][i] = "lung"
-            continue
-
-        obs["tissue_ontology_term_id"][i] = obs["tissue_original_ontology_term_id"][i]
-        obs["tissue"][i] = obs["tissue_original"][i]
+        obs["tissue_ontology_term_id"][i] = tissue_mapper.get_high_level_tissue(obs["tissue_ontology_term_id"][i])
+        obs["tissue"][i] = tissue_mapper.get_label_from_writable_id(obs["tissue_ontology_term_id"][i])
 
     return obs
 
