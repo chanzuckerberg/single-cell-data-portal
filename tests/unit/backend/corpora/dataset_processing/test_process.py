@@ -157,6 +157,8 @@ class TestDatasetProcessing(DataPortalTestCase):
             ],
             index=(str(i) for i in range(50001)),
         )
+        obs.loc[:, ["donor_id"]] = obs.astype("category")
+        obs.loc[:, ["suspension_type"]] = obs.astype("category")
         uns = {
             "title": "my test dataset",
             "X_normalization": "normal",
@@ -301,6 +303,8 @@ class TestDatasetProcessing(DataPortalTestCase):
             ],
             index=(str(i) for i in range(11)),
         )
+        obs.loc[:, ["donor_id"]] = obs.astype("category")
+        obs.loc[:, ["suspension_type"]] = obs.astype("category")
         uns = {
             "title": "my test dataset",
             "X_normalization": "normal",

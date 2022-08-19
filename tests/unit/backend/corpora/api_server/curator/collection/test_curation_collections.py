@@ -313,6 +313,7 @@ class TestGetCollectionID(BaseAuthAPITest):
         "datasets": [
             {
                 "assay": [{"label": "test_assay", "ontology_term_id": "test_obo"}],
+                "suspension_type": ["nucleus"],
                 "cell_count": None,
                 "cell_type": [{"label": "test_cell_type", "ontology_term_id": "test_opo"}],
                 "curator_tag": None,
