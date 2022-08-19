@@ -28,7 +28,7 @@ export const SelectedTags = styled.span`
       }
 
       .${Classes.ICON} {
-        color: inherit;
+        color: ${Colors.WHITE};
 
         svg {
           height: 16px;

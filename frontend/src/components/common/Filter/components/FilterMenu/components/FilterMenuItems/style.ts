@@ -21,5 +21,15 @@ export const MenuItemWrapper = styled.span<Props>`
     &:focus {
       outline: none;
     }
+
+    .${Classes.MENU_ITEM_ICON} {
+      height: 18px;
+      width: 14px;
+      margin-right: 8px;
+
+      .${Classes.ICON} {
+        width: 14px;
+      }
+    }
   }
 `;
