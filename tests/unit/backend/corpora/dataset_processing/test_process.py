@@ -113,7 +113,7 @@ class TestDatasetProcessing(DataPortalTestCase):
                     numpy.array([["UBERON:01", "UBERON:10"][i] for i in tissue]).reshape(50001, 1),
                     numpy.array([["10x", "smartseq", "cite-seq"][i] for i in assay]).reshape(50001, 1),
                     numpy.array([["EFO:001", "EFO:010", "EFO:011"][i] for i in assay]).reshape(50001, 1),
-                    numpy.array([["cell", "nucleus", "na"][i] for i in assay]).reshape(50001, 1),
+                    pandas.Categorical(numpy.array([["cell", "nucleus", "na"][i] for i in assay]).reshape(50001, 1)),
                     numpy.random.choice(["healthy"], size=(50001, 1)),
                     numpy.random.choice(["MONDO:123"], size=(50001, 1)),
                     numpy.array([["male", "female", "fixed"][i] for i in sex]).reshape(50001, 1),
@@ -131,7 +131,7 @@ class TestDatasetProcessing(DataPortalTestCase):
                     numpy.random.choice([0], size=(50001, 1)),
                     numpy.random.choice(["liver"], size=(50001, 1)),
                     numpy.random.choice(["Hepatic-1A"], size=(50001, 1)),
-                    numpy.random.choice(["F1", "F2"], size=(50001, 1)),
+                    pandas.Categorical(numpy.random.choice(["F1", "F2"], size=(50001, 1))),
                 ]
             ),
             columns=[
@@ -157,8 +157,6 @@ class TestDatasetProcessing(DataPortalTestCase):
             ],
             index=(str(i) for i in range(50001)),
         )
-        obs.loc[:, ["donor_id"]] = obs.astype("category")
-        obs.loc[:, ["suspension_type"]] = obs.astype("category")
         uns = {
             "title": "my test dataset",
             "X_normalization": "normal",
@@ -261,7 +259,7 @@ class TestDatasetProcessing(DataPortalTestCase):
                     numpy.array([["UBERON:01", "UBERON:10"][i] for i in tissue]).reshape(11, 1),
                     numpy.array([["10x", "smartseq", "cite-seq"][i] for i in assay]).reshape(11, 1),
                     numpy.array([["EFO:001", "EFO:010", "EFO:011"][i] for i in assay]).reshape(11, 1),
-                    numpy.array([["cell", "nucleus", "na"][i] for i in assay]).reshape(11, 1),
+                    pandas.Categorical(numpy.array([["cell", "nucleus", "na"][i] for i in assay]).reshape(11, 1)),
                     numpy.random.choice(["healthy"], size=(11, 1)),
                     numpy.random.choice(["MONDO:123"], size=(11, 1)),
                     numpy.array([["male", "female", "fixed"][i] for i in sex]).reshape(11, 1),
@@ -277,7 +275,7 @@ class TestDatasetProcessing(DataPortalTestCase):
                     numpy.random.choice([0], size=(11, 1)),
                     numpy.random.choice(["liver"], size=(11, 1)),
                     numpy.random.choice(["Hepatic-1A"], size=(11, 1)),
-                    numpy.random.choice(["F1", "F2"], size=(11, 1)),
+                    pandas.Categorical(numpy.random.choice(["F1", "F2"], size=(11, 1))),
                 ]
             ),
             columns=[
@@ -303,8 +301,6 @@ class TestDatasetProcessing(DataPortalTestCase):
             ],
             index=(str(i) for i in range(11)),
         )
-        obs.loc[:, ["donor_id"]] = obs.astype("category")
-        obs.loc[:, ["suspension_type"]] = obs.astype("category")
         uns = {
             "title": "my test dataset",
             "X_normalization": "normal",

@@ -41,7 +41,7 @@ def validate_dataset_properties(anndata_object: anndata.AnnData) -> bool:
     if not schema_version:
         logger.warning("Unknown schema, not loading")
         return False
-    if schema_version < "2.0.0" or schema_version >= "3.0.0":
+    if schema_version < "3.0.0":
         logger.warning("Invalid schema version, not loading")
         return False
     return True
