@@ -2,11 +2,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { Filters, FilterValue, Row } from "react-table";
 import { Ontology } from "src/common/entities";
+import { TISSUE_DESCENDANTS } from "src/common/queries/tissue-descendants";
 import {
   CATEGORY_FILTER_CONFIGS_BY_ID,
   CATEGORY_FILTER_UI_CONFIGS,
   COLLATOR_CASE_INSENSITIVE,
-  DESCENDANTS,
   DEVELOPMENT_STAGE_ONTOLOGY_TERM_SET,
   TISSUE_ORGAN_ONTOLOGY_TERM_SET,
   TISSUE_SYSTEM_ONTOLOGY_TERM_SET,
@@ -655,7 +655,7 @@ function applyCrossPanelRestrictions(
     // value has a descendant that is already in the allowed values. If we add both the parent selected value
     // (in addition to a descendant) then the allowed set of values will over-show.
     selectedViews.forEach((selectedView: SelectCategoryValueView) => {
-      const descendants = DESCENDANTS[selectedView.key] ?? [];
+      const descendants = TISSUE_DESCENDANTS[selectedView.key] ?? [];
       const isAnyDescendantSelected = descendants.some((descendant) =>
         selectedParentIds.includes(descendant)
       );
