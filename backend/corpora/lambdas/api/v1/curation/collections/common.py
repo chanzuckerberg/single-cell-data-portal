@@ -151,6 +151,7 @@ class EntityColumns:
         "disease",
         "organism",
         "tombstone",
+        "suspension_type",
     ]
 
     dataset_cols = [

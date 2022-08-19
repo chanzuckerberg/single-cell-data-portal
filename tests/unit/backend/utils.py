@@ -76,6 +76,7 @@ class BogusDatasetParams:
             x_approximate_distribution=XApproximateDistribution.NORMAL.name,
             batch_condition=np.array(["batchA", "batchB"], dtype="object"),
             donor_id=["donor_1", "donor_2"],
+            suspension_type=["cell"],
             schema_version="3.0.0",
         )
 

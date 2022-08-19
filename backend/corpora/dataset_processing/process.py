@@ -395,6 +395,9 @@ def extract_metadata(filename) -> dict:
             for k in adata.obs.groupby([base_term, base_term_id]).groups.keys()
         ]
 
+    def _get_categories(dataframe, categorical):
+        return dataframe[categorical].cat.categories.tolist()
+
     def _get_is_primary_data():
         is_primary_data = adata.obs["is_primary_data"]
         if all(is_primary_data):
@@ -416,9 +419,6 @@ def extract_metadata(filename) -> dict:
         else:
             return None
 
-    def _get_donor_id():
-        return adata.obs["donor_id"].cat.categories.tolist()
-
     metadata = {
         "name": adata.uns["title"],
         "organism": _get_term_pairs("organism"),
@@ -435,7 +435,8 @@ def extract_metadata(filename) -> dict:
         "x_approximate_distribution": _get_x_approximate_distribution(),
         "schema_version": adata.uns["schema_version"],
         "batch_condition": _get_batch_condition(),
-        "donor_id": _get_donor_id()
+        "donor_id": _get_categories(adata.obs, "donor_id"),
+        "suspension_type": _get_categories(adata.obs, "suspension_type"),
     }
     logger.info(f"Extract metadata: {metadata}")
     return metadata
