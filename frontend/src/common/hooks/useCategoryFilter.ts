@@ -6,6 +6,7 @@ import {
   CATEGORY_FILTER_CONFIGS_BY_ID,
   CATEGORY_FILTER_UI_CONFIGS,
   COLLATOR_CASE_INSENSITIVE,
+  DESCENDANTS,
   DEVELOPMENT_STAGE_ONTOLOGY_TERM_SET,
   TISSUE_ORGAN_ONTOLOGY_TERM_SET,
   TISSUE_SYSTEM_ONTOLOGY_TERM_SET,
@@ -18,6 +19,7 @@ import {
   CategoryView,
   CategoryViews,
   CATEGORY_FILTER_ID,
+  CATEGORY_FILTER_PANEL_ID,
   CuratedOntologyCategoryFilterConfig,
   ETHNICITY_UNSPECIFIED_LABEL,
   FilterKey,
@@ -28,6 +30,7 @@ import {
   OntologyMultiPanelCategoryView,
   OntologyMultiPanelFilterConfig,
   OntologyNode,
+  OntologyPanelCategoryView,
   OntologyTermSet,
   ONTOLOGY_VIEW_KEY,
   ONTOLOGY_VIEW_LABEL,
@@ -202,7 +205,8 @@ export function useCategoryFilter<T extends Categories>(
   const onFilter = useCallback<OnFilterFn>(
     (
       categoryFilterId: CategoryFilterId,
-      selectedValue: CategoryValueKey | Range
+      categoryValueKey: CategoryValueKey | null,
+      selectedValue: CategoryValueKey[] | Range
     ) => {
       if (!categorySet) {
         return; // Error state - category set should be set at this point.
@@ -212,15 +216,20 @@ export function useCategoryFilter<T extends Categories>(
       const config = CATEGORY_FILTER_CONFIGS_BY_ID[categoryFilterId];
 
       // Handle range categories.
-      if (!isCategoryValueKey(selectedValue)) {
+      if (isSelectedValueRange(selectedValue)) {
         onFilterRangeCategory(config, selectedValue, setFilter);
         return;
+      }
+
+      if (!categoryValueKey) {
+        return; // Error state - category value key must be defined for select and ontology categories.
       }
 
       // Handle ontology categories.
       if (isCuratedOntologyCategoryFilterConfig(config)) {
         onFilterOntologyCategory(
           config,
+          categoryValueKey,
           selectedValue,
           setFilter,
           filters,
@@ -230,12 +239,13 @@ export function useCategoryFilter<T extends Categories>(
       }
 
       // Handle single or multiselect categories.
-      const nextCategoryFilters = onFilterSelectCategory(
+      onFilterSelectCategory(
         config,
+        categoryValueKey,
         selectedValue,
+        setFilter,
         filters
       );
-      setFilter(categoryFilterId, nextCategoryFilters);
     },
     [categorySet, filters, setFilter]
   );
@@ -514,6 +524,7 @@ function buildCategoryValueLabel(
  * terms.
  * @returns Array of category views objects.
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity --- TODO(cc) revisit
 function buildCategoryViews(
   filterState?: FilterState,
   ontologyTermLabelsById?: Map<string, string>
@@ -608,86 +619,65 @@ function buildCategoryViews(
   }).sort(sortCategoryViews);
 }
 
-// /**
-//  * Restrict related categories where applicable. For example, tissue system restricts selectable values in
-//  * tissue organ and tissue.
-//  * @param nextFilterState - Filter state currently being built due to change in filter.
-//  * @param filters - Current set of selected category values (values) keyed by category (id).
-//  */
-// function applyCrossCategoryRestrictions<T extends Categories>(
-//   nextFilterState: FilterState,
-//   filters: Filters<T>
-// ) {
-//   return nextFilterState;
-//   // // Apply restrictions to categories that are restricted by another category.
-//   // // TODO(cc) generalize and move to function
-//   // Object.keys(nextFilterState).forEach((categoryFilterId: string) => {
-//   //   const config =
-//   //     CATEGORY_FILTER_CONFIGS_BY_ID[categoryFilterId as CategoryFilterId];
-//   //
-//   //   // Ignore category filters that are not restricted by a parent.
-//   //   if (config.valueRestrictionKind !== "CHILDREN_OF_SELECTED_PARENT_TERMS") {
-//   //     return;
-//   //   }
-//   //
-//   //   // If there are no selected values in parents, then there are no restrictions to be applied.
-//   //   const isAnyParentValueSelected = config.parentCategoryFilterIds.some(
-//   //     (parentCategoryFilterId) =>
-//   //       !!getCategoryFilter(parentCategoryFilterId, filters)
-//   //   );
-//   //   if (!isAnyParentValueSelected) {
-//   //     return;
-//   //   }
-//   //
-//   //   // Iterate through parent category filters and determine the set of allowed values.
-//   //   const includeValues = new Set();
-//   //   for (const parentCategoryFilterId of config.parentCategoryFilterIds) {
-//   //     // If there are no selected values for this category, check the next parent.
-//   //     const categoryFilter = getCategoryFilter(parentCategoryFilterId, filters);
-//   //     if (!categoryFilter) {
-//   //       continue;
-//   //     }
-//   //
-//   //     // Determine the set of allowed values; add the descendants for every selected value in parent category filter,
-//   //     // unless the selected value has a descendant that is already in the allowed values. If we add both the parent
-//   //     // selected value (in addition to a descendant) then the allowed set of values will over-show.
-//   //     categoryFilter.value.forEach((selectedValue: string) => {
-//   //       const descendants = DESCENDANTS[selectedValue] ?? [];
-//   //       const isAnyDescendantSelected = descendants.some((descendant) =>
-//   //         includeValues.has(descendant)
-//   //       );
-//   //       if (isAnyDescendantSelected) {
-//   //         return;
-//   //       }
-//   //
-//   //       // No descendant is already added to the set of allowed values; add all descendants as allowed values.
-//   //       descendants.forEach((descendant) => {
-//   //         includeValues.add(descendant);
-//   //       });
-//   //     });
-//   //   }
-//   //
-//   //   // Remove any values that are not in the allowed set.
-//   //   const categoryFilterState =
-//   //     nextFilterState[categoryFilterId as CategoryFilterId];
-//   //
-//   //   // TODO(cc) fix
-//   //   if (!isSelectCategoryValue(categoryFilterState)) {
-//   //     return;
-//   //   }
-//   //
-//   //   [...categoryFilterState.keys()].forEach(
-//   //     (categoryValueKey: CategoryValueKey) => {
-//   //       if (
-//   //         !includeValues.has(categoryValueKey) &&
-//   //         !categoryFilterState.get(categoryValueKey)?.selected // TODO(cc) revisit optional chaining
-//   //       ) {
-//   //         categoryFilterState.delete(categoryValueKey);
-//   //       }
-//   //     }
-//   //   );
-//   // });
-// }
+/**
+ * Restrict related panels where applicable. For example, tissue system restricts selectable values in
+ * tissue organ and tissue.
+ * TODO(cc) docs, redo, types, return type etc. remove order notes.
+ */
+function applyCrossPanelRestrictions(
+  panelView: OntologyPanelCategoryView,
+  parentViews: OntologyPanelCategoryView[]
+) {
+  // If there are no selected values in parents, then there are no restrictions to be applied.
+  const selectedParentIds = parentViews.reduce((accum, view) => {
+    view.views.forEach((v) => {
+      if (v.selected) {
+        accum.push(v.key);
+      }
+    });
+
+    return accum;
+  }, [] as string[]);
+  if (!selectedParentIds.length) {
+    return panelView;
+  }
+
+  // Iterate through parent category filters and determine the set of allowed values.
+  const includeValues = new Set();
+  for (const parentView of parentViews) {
+    // If there are no selected values for this category, check the next parent.
+    const selectedViews = parentView.views.filter((view) => view.selected);
+    if (!selectedViews.length) {
+      continue;
+    }
+
+    // Determine the set of allowed values; add the descendants for every selected value in parent unless the selected
+    // value has a descendant that is already in the allowed values. If we add both the parent selected value
+    // (in addition to a descendant) then the allowed set of values will over-show.
+    selectedViews.forEach((selectedView: SelectCategoryValueView) => {
+      const descendants = DESCENDANTS[selectedView.key] ?? [];
+      const isAnyDescendantSelected = descendants.some((descendant) =>
+        selectedParentIds.includes(descendant)
+      );
+      if (isAnyDescendantSelected) {
+        return panelView;
+      }
+
+      // No descendant is already added to the set of allowed values; add all descendants as allowed values.
+      descendants.forEach((descendant) => {
+        includeValues.add(descendant);
+      });
+    });
+  }
+
+  // Remove any views that are not in the allowed set.
+  return {
+    ...panelView,
+    views: panelView.views.filter((view) => {
+      return view.selected || includeValues.has(view.key);
+    }),
+  };
+}
 
 /**
  * Build categories, category values and counts for the updated filter. For each category, build up category values
@@ -721,18 +711,13 @@ function buildNextFilterState<T extends Categories>(
   // Update selected flag for the selected category values, or selected ranged for range categories.
   setSelectedStates(nextFilterState, filters);
 
-  // Restrict related categories where applicable. For example, tissue system restricts selectable values in
-  // tissue organ and tissue.
-  // TODO(cc) remove?
-  // applyCrossCategoryRestrictions(nextFilterState, filters);
-
   return nextFilterState;
 }
 
 /**
  * Build updated set of selected filters for the given ontology tree category and the selected category value.
  * @param categoryFilterId - Category ID (i.e. "development stage") of selected category value.
- * @param categoryValueKey - Selected category value key (e.g. "HsapDv:0000003") to update selected state of.
+ * @param selectedValues - Selected category value key (e.g. "HsapDv:0000003") to update selected state of.
  * @param filters - Current set of selected category values.
  * @param categoryKeyValues - Original, full set of values for this category.
  * @param mask - View model of ontology for this category.
@@ -740,7 +725,7 @@ function buildNextFilterState<T extends Categories>(
  */
 export function buildNextOntologyCategoryFilters<T extends Categories>(
   categoryFilterId: CategoryFilterId,
-  categoryValueKey: CategoryValueKey,
+  selectedValues: CategoryValueKey[],
   filters: Filters<T>,
   categoryKeyValues: Set<CategoryValueKey>,
   mask: OntologyTermSet
@@ -750,72 +735,72 @@ export function buildNextOntologyCategoryFilters<T extends Categories>(
     getCategoryFilter(categoryFilterId, filters)?.value as CategoryValueKey[]
   );
 
-  // TODO(cc) resolve with #2569 - will need to change OntologyView key or add "translate category value key" functionality to getOntologySpeciesKey (to handle "CL:xxx" for tissue)
-  // TODO(cc) do we still need this?
-  const speciesKey = /* categoryFilterId === CATEGORY_FILTER_ID.TISSUE
-      ? ONTOLOGY_VIEW_KEY.UBERON
-      :*/ categoryValueKey;
-
-  // Find the selected and parent node, if any, for the selected value.
-  const ontologySpeciesKey = getOntologySpeciesKey(speciesKey);
-  const ontologyRootNodes = mask[ontologySpeciesKey];
-  if (!ontologyRootNodes) {
-    return [...categoryFilters.values()]; // Error state - ontology does not exist.
-  }
-  const selectedOntologyNode = findOntologyNodeById(
-    ontologyRootNodes,
-    categoryValueKey
-  );
-  if (!selectedOntologyNode) {
-    return [...categoryFilters.values()]; // Error state - ontology node with given ID does not exist.
-  }
-  const parentNode = findOntologyParentNode(
-    ontologyRootNodes,
-    selectedOntologyNode
-  );
-
-  // Toggle selected state of selected category value.
-  if (categoryFilters.has(categoryValueKey)) {
-    // Selected value is already in the set of selected values, remove it.
-    categoryFilters.delete(categoryValueKey);
-
-    // Also remove any descendents from the selected set.
-    if (selectedOntologyNode.children) {
-      removeOntologyDescendents(selectedOntologyNode.children, categoryFilters);
+  selectedValues.forEach((selectedValue) => {
+    // Find the selected and parent node, if any, for the selected value.
+    const ontologySpeciesKey = getOntologySpeciesKey(selectedValue);
+    const ontologyRootNodes = mask[ontologySpeciesKey];
+    if (!ontologyRootNodes) {
+      return [...categoryFilters.values()]; // Error state - ontology does not exist.
     }
-
-    // Reevaluate selected state of parent. If all children were previously selected and now only some are selected,
-    // then parent should no longer be selected.
-    if (parentNode) {
-      handleOntologyChildRemoved(
-        ontologyRootNodes,
-        parentNode,
-        categoryFilters
-      );
+    const selectedOntologyNode = findOntologyNodeById(
+      ontologyRootNodes,
+      selectedValue
+    );
+    if (!selectedOntologyNode) {
+      return [...categoryFilters.values()]; // Error state - ontology node with given ID does not exist.
     }
-  } else {
-    // Add selected value to selected set.
-    categoryFilters.add(categoryValueKey);
+    const parentNode = findOntologyParentNode(
+      ontologyRootNodes,
+      selectedOntologyNode
+    );
 
-    // Add all descendents of selected value, if any.
-    if (selectedOntologyNode.children) {
-      addOntologyDescendents(
-        selectedOntologyNode.children,
-        categoryFilters,
-        categoryKeyValues
-      );
-    }
+    // Toggle selected state of selected category value.
+    if (categoryFilters.has(selectedValue)) {
+      // Selected value is already in the set of selected values, remove it.
+      categoryFilters.delete(selectedValue);
 
-    // Reevaluate selected state of parent. If all children are now selected, then parent should also be selected.
-    if (parentNode) {
-      handleOntologyChildAdded(
-        ontologyRootNodes,
-        parentNode,
-        categoryFilters,
-        categoryKeyValues
-      );
+      // Also remove any descendents from the selected set.
+      if (selectedOntologyNode.children) {
+        removeOntologyDescendents(
+          selectedOntologyNode.children,
+          categoryFilters
+        );
+      }
+
+      // Reevaluate selected state of parent. If all children were previously selected and now only some are selected,
+      // then parent should no longer be selected.
+      if (parentNode) {
+        handleOntologyChildRemoved(
+          ontologyRootNodes,
+          parentNode,
+          categoryFilters
+        );
+      }
+    } else {
+      // Add selected value to selected set.
+      categoryFilters.add(selectedValue);
+
+      // Add all descendents of selected value, if any.
+      if (selectedOntologyNode.children) {
+        addOntologyDescendents(
+          selectedOntologyNode.children,
+          categoryFilters,
+          categoryKeyValues
+        );
+      }
+
+      // Reevaluate selected state of parent. If all children are now selected, then parent should also be selected.
+      if (parentNode) {
+        handleOntologyChildAdded(
+          ontologyRootNodes,
+          parentNode,
+          categoryFilters,
+          categoryKeyValues
+        );
+      }
     }
-  }
+  });
+
   return [...categoryFilters.values()];
 }
 
@@ -823,14 +808,14 @@ export function buildNextOntologyCategoryFilters<T extends Categories>(
  * Build updated set of selected filters for the given single or multiselect category and the selected category value.
  * Ontology categories are handled separately.
  * @param categoryFilterId - ID (i.e. "disease") of selected category value.
- * @param categoryValueKey - Category value key (e.g. "normal") to toggle selected state of.
+ * @param selectedValues - Category value keys to toggle the selected state of.
  * @param filters - Current set of selected category values.
  * @returns Array of selected category values for the given category.
  * TODO(cc) revert?
  */
 function buildNextSelectCategoryFilters<T extends Categories>(
   categoryFilterId: CategoryFilterId,
-  categoryValueKey: CategoryValueKey,
+  selectedValues: CategoryValueKey[],
   filters: Filters<T>
 ): CategoryValueKey[] {
   // Grab the current selected values for the category.
@@ -838,14 +823,14 @@ function buildNextSelectCategoryFilters<T extends Categories>(
 
   // Currently, no filters already selected for this category; add category value as first.
   if (!categoryFilters) {
-    return [categoryValueKey];
+    return [...selectedValues];
   }
 
   // Create new array of selected category value keys, with the selected state of the given category value toggled.
   const multiselect =
     CATEGORY_FILTER_CONFIGS_BY_ID[categoryFilterId].multiselect;
   return toggleCategoryValueSelected(
-    categoryValueKey,
+    selectedValues,
     categoryFilters.value,
     multiselect
   );
@@ -999,6 +984,7 @@ function buildOntologyCategoryView(
  * Build view model of node of ontology tree to be displayed as a value in an ontology menu.
  * @param ontologyNode - Ontology node to build view model for.
  * @param categoryValueByValue - Internal filter model of ontology category.
+ * @param ontologyTermLabelsById - Set of ontology term labels keyed by term ID, used to determine labels for ontology.
  * @returns Ontology view model.
  * TODO(cc) docs, drilling
  */
@@ -1018,6 +1004,7 @@ function buildCuratedOntologyCategoryValueView(
       label: ontologyNode.label,
       selected: false,
       selectedPartial: false,
+      values: [categoryValueKey],
     };
   }
 
@@ -1026,6 +1013,7 @@ function buildCuratedOntologyCategoryValueView(
     count: categoryValue.count,
     key: categoryValueKey,
     label: ontologyTermLabelsById.get(categoryValueKey) ?? categoryValueKey,
+    values: [categoryValueKey],
   };
 
   // If this ontology node is a leaf, add its selected value and return.
@@ -1063,6 +1051,7 @@ function buildCuratedOntologyCategoryValueView(
  * checking enabled state of view that is dependent on the state of another category.
  * @param ontologyTermLabelsById - Set of ontology term labels keyed by term ID, used to determine labels for ontology
  * @returns Select category view model.
+ * TODO(cc) rewrite
  */
 function buildMultiPanelCategoryView(
   categoryFilterId: CategoryFilterId,
@@ -1077,32 +1066,103 @@ function buildMultiPanelCategoryView(
     ontologyTermLabelsById
   ).sort(sortCategoryValueViews);
 
-  // // Remove duplicated view models created from removal of inferred and explicit prefixes on filter values. Always
-  // // take the larger count when deduping view models as the larger count will include both inferred and explicit values.
-  // const selectCategoryValueViews = dedupePrefixedSelectCategoryValueViews(
-  //   allSelectCategoryValueViews
-  // );
+  // Remove duplicated view models created from removal of inferred and explicit prefixes on filter values. Always
+  // take the larger count when deduping view models as the larger count will include both inferred and explicit values.
+  const dedupedSelectCategoryValueViews =
+    dedupePrefixedSelectCategoryValueViews(allSelectCategoryValueViews);
 
   // Build up view model for each panel specified in config.
   const { panels } = config;
-  const panelViews = panels.map((panel: CategoryFilterPanelConfig) => {
-    return {
-      label: panel.label,
-      views:
-        panel.sourceKind === "ONLY_CURATED"
-          ? maskOnlyCurated(panel.mask, allSelectCategoryValueViews)
-          : maskExcludingCurated(
-              panel.excludeMasks,
-              allSelectCategoryValueViews
-            ),
-    };
+  const panelViewsByPanelId = panels.reduce(
+    (accum, panel: CategoryFilterPanelConfig) => {
+      // Find the set of values to be displayed for this panel.
+      let panelViews = [];
+      if (panel.sourceKind === "ONLY_CURATED") {
+        panelViews = maskOnlyCurated(
+          panel.mask,
+          dedupedSelectCategoryValueViews
+        );
+      } else {
+        panelViews = maskExcludingCurated(
+          panel.excludeMasks,
+          dedupedSelectCategoryValueViews
+        );
+      }
+
+      // Correct select values for each view.
+      const inferredAndExplicit = panel.filterValueKind === "INFERRED_EXPLICIT";
+      const selectCategoryValueViews = panelViews.map(
+        (selectCategoryValueView) => {
+          const [, processedKey] = selectCategoryValueView.key.split(/:(.*)/s); // TODO(cc) utils, revisit prefix
+          const values = [`${OrFilterPrefix.EXPLICIT}:${processedKey}`]; // TODO(cc) utils
+          if (inferredAndExplicit) {
+            values.push(`${OrFilterPrefix.INFERRED}:${processedKey}`);
+          }
+          return {
+            ...selectCategoryValueView,
+            values,
+          };
+        }
+      );
+
+      // Remove I and E from key.
+      const correctedSelectCategoryValueViews = selectCategoryValueViews.map(
+        (selectCategoryValueView) => {
+          const [, processedKey] = selectCategoryValueView.key.split(/:(.*)/s); // TODO(cc) utils, revisit prefix
+          return {
+            ...selectCategoryValueView,
+            key: processedKey,
+          };
+        }
+      );
+
+      accum.set(panel.id, {
+        label: panel.label,
+        views: correctedSelectCategoryValueViews,
+      });
+      return accum;
+    },
+    new Map<CATEGORY_FILTER_PANEL_ID, OntologyPanelCategoryView>()
+  );
+
+  [...panelViewsByPanelId.keys()].forEach((panelId) => {
+    // Get the panel config for this panel
+    const panelConfig = panels.find((panel) => panel.id === panelId);
+    if (!panelConfig) {
+      return;
+    }
+
+    if (panelConfig.valueRestrictionKind === "NONE") {
+      return;
+    }
+
+    const panelView = panelViewsByPanelId.get(panelId);
+    if (!panelView) {
+      return;
+    }
+
+    // Restrict related panels where applicable. For example, tissue system restricts selectable values in
+    // tissue organ and tissue.
+    const parentViews = (
+      panels.filter((panel) =>
+        panelConfig.parentCategoryPanelFilterIds.includes(panel.id)
+      ) ?? []
+    )
+      .map((parentPanelConfig) => panelViewsByPanelId.get(parentPanelConfig.id))
+      .filter((view): view is OntologyPanelCategoryView => !!view);
+
+    const updatedPanelView = applyCrossPanelRestrictions(
+      panelView,
+      parentViews
+    );
+    panelViewsByPanelId.set(panelId, updatedPanelView);
   });
 
   // Build view model of multi-panel category.
   const multiPanelView: OntologyMultiPanelCategoryView = {
     key: categoryFilterId,
     label: config.label,
-    panels: panelViews,
+    panels: [...panelViewsByPanelId.values()],
   };
 
   // TODO(cc) pinned values
@@ -1147,8 +1207,7 @@ function maskOnlyCurated(
 }
 
 /**
- * Remove duplicated view models created from removal of inferred and explicit prefixes on filter values. Always
- * take the larger count when deduping view models as the larger count will include both inferred and explicit values.
+ * Remove duplicated view models created from removal of inferred and explicit prefixes on filter values.
  * TODO(cc) only required for tissue and cell type, should we configure this? or just do it for all? docs plus location.
  */
 function dedupePrefixedSelectCategoryValueViews(
@@ -1160,12 +1219,7 @@ function dedupePrefixedSelectCategoryValueViews(
       const [, processedKey] = key.split(/:(.*)/s); // TODO(cc) utils
       if (accum.has(processedKey)) {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- using accum.has(key) above to ensure accum has value.
-        const addedSelectCategoryValueView = accum.get(processedKey)!;
-        const { count: currentCount } = addedSelectCategoryValueView;
-        const max = Math.max(currentCount, count);
-        if (max !== currentCount) {
-          addedSelectCategoryValueView.count = max;
-        }
+        accum.get(processedKey)!.count += count;
       } else {
         accum.set(processedKey, selectCategoryValueView);
       }
@@ -1225,6 +1279,7 @@ function buildSelectCategoryValueViews(
       key,
       label: buildCategoryValueLabel(config, key, ontologyTermLabelsById),
       selected: selected,
+      values: [key],
     };
   });
 }
@@ -1511,18 +1566,15 @@ function isFilterEqual<T extends Categories>(
 }
 
 /**
- * Determine if the given selected value is a selected category value key (and not a range).
- * @param selectedValue - Selected filter value, either a category value key (e.g. "normal") or a range (for example,
- * {min: n, max: n}).
- * @returns True if given selected value is a selected category value.
- * TODO(cc) revisit
+ * Determine if the given selected value is a range and not an array of selected category values.
+ * @param selectedValue - Selected filter value, either an array of category value keys (e.g. ["normal"]), or a
+ * range (e.g. {min: n, max: n}).
+ * @returns True if given selected value is a range.
  */
-function isCategoryValueKey(
-  selectedValue: CategoryValueKey | Range
-): selectedValue is CategoryValueKey {
-  return !(
-    (selectedValue as Range).min >= 0 && (selectedValue as Range).max >= 0
-  );
+function isSelectedValueRange(
+  selectedValue: CategoryValueKey[] | Range
+): selectedValue is Range {
+  return !Array.isArray(selectedValue);
 }
 
 /**
@@ -1823,14 +1875,16 @@ function removeOntologyDescendents(
 /**
  * Handle select of ontology value: build and set next set of filters for this category. Track selected ontology value.
  * @param config - Configuration model of selected category.
- * @param selectedValue - Selected category value key (e.g. [1, 100]).
+ * @param categoryValueKey - The selected category value.
+ * @param selectedValues - Selected category value keys to use as selected value.
  * @param setFilter - Function to update set of selected values for a category.
  * @param filters - Current set of selected category values (values) or ranges keyed by category (id).
  * @param categorySet - Original, unfiltered sets of category values keyed by their category.
  */
 function onFilterOntologyCategory<T extends Categories>(
   config: CuratedOntologyCategoryFilterConfig, // TODO(cc) revisit this, should it be any ontology type?
-  selectedValue: CategoryValueKey,
+  categoryValueKey: CategoryValueKey,
+  selectedValues: CategoryValueKey[],
   setFilter: SetFilterFn,
   filters: Filters<T>,
   categorySet: CategorySet
@@ -1838,12 +1892,12 @@ function onFilterOntologyCategory<T extends Categories>(
   const { categoryFilterId, mask } = config;
 
   // Track selected category and value.
-  trackOntologyCategoryValueSelected(config, selectedValue, filters);
+  trackOntologyCategoryValueSelected(config, categoryValueKey, filters);
 
   // Build and set next set of filters for this category.
   const nextCategoryFilters = buildNextOntologyCategoryFilters(
     categoryFilterId,
-    selectedValue,
+    selectedValues,
     filters,
     categorySet[categoryFilterId] as Set<CategoryValueKey>,
     mask
@@ -1864,7 +1918,7 @@ function onFilterRangeCategory(
 ) {
   const { analyticsEvent, categoryFilterId } = config;
   const { max, min } = selectedValue;
-  console.log(max, min);
+
   // Track select of new range mim/max, ignoring any clear of selected range. Only track if event is specified on
   // configuration model
   if (analyticsEvent /* && selectedValue.length > 0*/) {
@@ -1881,28 +1935,31 @@ function onFilterRangeCategory(
 /**
  * Handle select of select value: build and set next set of filters for this category. Track selected select value.
  * @param config - Configuration model of selected category.
- * @param selectedValue - Selected category value key (e.g. [1, 100]).
+ * @param categoryValueKey - The selected category value.
+ * @param selectedValue - Selected category value keys to use as selected value.
  * @param setFilter - Function to update set of selected values for a category.
  * @param filters - Current set of selected category values (values) or ranges keyed by category (id).
- * TODO(cc) docs, change others to match
  */
 function onFilterSelectCategory<T extends Categories>(
   config: CategoryFilterConfig,
-  selectedValue: CategoryValueKey,
-  // setFilter: SetFilterFn,
+  categoryValueKey: CategoryValueKey,
+  selectedValue: CategoryValueKey[],
+  setFilter: SetFilterFn,
   filters: Filters<T>
-): string[] {
+) {
   const { categoryFilterId } = config;
 
   // Track selected category and value.
-  trackSelectCategoryValueSelected(config, selectedValue, filters);
+  trackSelectCategoryValueSelected(config, categoryValueKey, filters);
 
   // Build and set next set of filters for this category.
-  return buildNextSelectCategoryFilters(
+  const nextFilters = buildNextSelectCategoryFilters(
     categoryFilterId,
     selectedValue,
     filters
   );
+
+  setFilter(categoryFilterId, nextFilters);
 }
 
 /**
@@ -1914,14 +1971,14 @@ function setSelectedStates<T extends Categories>(
   nextFilterState: FilterState,
   filters: Filters<T>
 ) {
-  Object.keys(nextFilterState).forEach((categoryKey: string) => {
+  Object.keys(nextFilterState).forEach((categoryFilterId: string) => {
     // Grab the filter state for this category.
     const categoryFilterState =
-      nextFilterState[categoryKey as CategoryFilterId];
+      nextFilterState[categoryFilterId as CategoryFilterId];
 
     // Grab the filters for this category.
     const categoryFilter = getCategoryFilter(
-      categoryKey as CategoryFilterId,
+      categoryFilterId as CategoryFilterId,
       filters
     );
     if (!categoryFilter || !categoryFilter.value) {
@@ -2045,27 +2102,32 @@ function summarizeSelectCategory<T extends Categories>(
 /**
  * Update category value as selected if it is not currently selected, otherwise remove the selected category value if
  * it's already selected.
- * @param selectedCategoryValueKey - Key of the selected category.
- * @param selectedCategoryValueKeys - Keys of the current set of selected category values.
+ * @param selectedValues - Keys of the selected category values.
+ * @param currentSelectedCategoryValueKeys - Keys of the current set of selected category values.
  * @param multiselect - True if category allows more than one selected value.
  * @returns Array of selected category values.
  */
 function toggleCategoryValueSelected(
-  selectedCategoryValueKey: CategoryValueKey,
-  selectedCategoryValueKeys: CategoryValueKey[],
+  selectedValues: CategoryValueKey[],
+  currentSelectedCategoryValueKeys: CategoryValueKey[],
   multiselect: boolean
 ): CategoryValueKey[] {
   // Convert to set for ease of lookup and lookup efficiency.
-  const selectedCategoryValueKeySet = new Set(selectedCategoryValueKeys);
-  if (selectedCategoryValueKeySet.has(selectedCategoryValueKey)) {
-    selectedCategoryValueKeySet.delete(selectedCategoryValueKey);
-  } else {
-    // If category only allows single selected value, clear all other values
-    if (!multiselect) {
-      selectedCategoryValueKeySet.clear();
+  const selectedCategoryValueKeySet = new Set(currentSelectedCategoryValueKeys);
+
+  // Toggle selected state of each selected value.
+  selectedValues.forEach((selectedValue) => {
+    if (selectedCategoryValueKeySet.has(selectedValue)) {
+      selectedCategoryValueKeySet.delete(selectedValue);
+    } else {
+      // If category only allows single selected value, clear all other values
+      if (!multiselect) {
+        selectedCategoryValueKeySet.clear();
+      }
+      selectedCategoryValueKeySet.add(selectedValue);
     }
-    selectedCategoryValueKeySet.add(selectedCategoryValueKey);
-  }
+  });
+
   return [...selectedCategoryValueKeySet.values()];
 }
 

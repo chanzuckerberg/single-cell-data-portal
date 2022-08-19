@@ -126,7 +126,7 @@ export interface SelectViewKind {
 /**
  * Complete set of category filter IDs that can possibly be included in filter.
  */
-export enum CATEGORY_FILTER_ID { // TODO(cc) rename usage (ie variables to match new name here)
+export enum CATEGORY_FILTER_ID {
   "ASSAY" = "ASSAY",
   "CELL_COUNT" = "CELL_COUNT",
   "CELL_TYPE_DEPRECATED" = "CELL_TYPE_DEPRECATED",
@@ -141,9 +141,6 @@ export enum CATEGORY_FILTER_ID { // TODO(cc) rename usage (ie variables to match
   "SEX" = "SEX",
   "TISSUE_DEPRECATED" = "TISSUE_DEPRECATED", // TODO(cc) remove with #2569.
   "TISSUE_CALCULATED" = "TISSUE_CALCULATED",
-  // "TISSUE_ORGAN" = "TISSUE_ORGAN", // TODO(cc) remove? or we need a different enum to handle these?
-  // "TISSUE_SYSTEM" = "TISSUE_SYSTEM",
-  // "TISSUE_CALCULATED" = "TISSUE_CALCULATED",
 }
 
 // ** Category filter types ** //
@@ -172,46 +169,6 @@ export type CuratedOntologyCategoryFilterConfig = BaseCategoryFilterConfig &
   CuratedValueSourceKind &
   ExcludesSelfQueryKind &
   CuratedOntologyViewKind;
-
-// /**
-//  * Filter category that uses checkboxes for filtering, is ontology-aware, and whose displayable values are determined
-//  * by parent category filters. For example, tissue.
-//  * // TODO(cc) remove this?
-//  */
-// export type LeafOntologyCategoryFilterConfig = BaseCategoryFilterConfig &
-//   IncludesSomeMatchKind &
-//   LookupByTermIdLabelKind &
-//   NoneValueSourceKind &
-//   ExcludesSelfQueryKind &
-//   SelectedParentTermsValueRestrictionKind &
-//   SelectViewKind;
-//
-// /**
-//  * Filter category that uses checkboxes for filtering, is ontology-aware, and whose selected values restrict allowed
-//  * displayable values in children category filters. For example, tissue system.
-//  * // TODO(cc) remove this?
-//  */
-// export type ParentOntologyCategoryFilterConfig = BaseCategoryFilterConfig &
-//   IncludesSomeMatchKind &
-//   LookupByTermIdLabelKind &
-//   CuratedValueSourceKind &
-//   ExcludesSelfAndChildrenQueryKind &
-//   NoneValueRestrictionKind &
-//   CuratedOntologyViewKind;
-//
-// /**
-//  * Filter category that uses checkboxes for filtering, is ontology-aware, whose selected values restrict allowed
-//  * displayable values in children category filters and whose displayable values are determined by parent category
-//  * filters. For example, tissue organ.
-//  * // TODO(cc) remove this?
-//  */
-// export type ChildOntologyCategoryFilterConfig = BaseCategoryFilterConfig &
-//   IncludesSomeMatchKind &
-//   LookupByTermIdLabelKind &
-//   CuratedValueSourceKind &
-//   ExcludesSelfAndChildrenQueryKind &
-//   SelectedParentTermsValueRestrictionKind &
-//   CuratedOntologyViewKind;
 
 /**
  * Filter category that is ontology-aware and displays a set of panels.
@@ -256,27 +213,26 @@ export type CategoryFilterConfig =
 
 // ** Panel value restriction discriminating unions ** //
 
-// TODO(cc) remove
-// /**
-//  * Model of a filter panel that uses the set of selected values in a parent filter to determine the filter panel
-//  * category values allowed for display. For example, the tissue panel inside the tissue filter. NOTE! The order of
-//  * parents defined in parentCategoryFilterIds drives the order of the restrictions applied to the filter panel. For
-//  * example, for tissue, organ must be specified before system so that when restricting tissue values, a selected organ
-//  * value can "override" a selected system value where the organ is part of the system.
-//  *
-//  */
-// export interface SelectedParentTermsValueRestrictionKind {
-//   valueRestrictionKind: "CHILDREN_OF_SELECTED_PARENT_TERMS";
-//   parentCategoryFilterIds: CATEGORY_FILTER_ID[];
-// }
-//
-// /**
-//  * Model of a filter that has no restrictions on the filter category values allowed for display. For example, assay,
-//  * publication date etc.
-//  */
-// export interface NoneValueRestrictionKind {
-//   valueRestrictionKind: "NONE";
-// }
+/**
+ * Model of a filter panel that uses the set of selected values in a parent filter to determine the filter panel
+ * category values allowed for display. For example, the tissue panel inside the tissue filter. NOTE! The order of
+ * parents defined in parentCategoryFilterIds drives the order of the restrictions applied to the filter panel. For
+ * example, for tissue, organ must be specified before system so that when restricting tissue values, a selected organ
+ * value can "override" a selected system value where the organ is part of the system.
+ *
+ */
+export interface SelectedParentTermsValueRestrictionKind {
+  valueRestrictionKind: "CHILDREN_OF_SELECTED_PARENT_TERMS";
+  parentCategoryPanelFilterIds: CATEGORY_FILTER_PANEL_ID[];
+}
+
+/**
+ * Model of a filter that has no restrictions on the filter category values allowed for display. For example, assay,
+ * publication date etc.
+ */
+export interface NoneValueRestrictionKind {
+  valueRestrictionKind: "NONE";
+}
 
 // ** Panel value source discriminating unions ** //
 
@@ -321,7 +277,17 @@ interface ExplicitOnlyFilterValueKind {
  * filter panels.
  */
 interface BaseCategoryFilterPanelConfig {
+  id: CATEGORY_FILTER_PANEL_ID;
   label: string;
+}
+
+/**
+ * Complete set of filter panel IDs.
+ */
+export enum CATEGORY_FILTER_PANEL_ID {
+  "TISSUE_SYSTEM" = "TISSUE_SYSTEM",
+  "TISSUE_ORGAN" = "TISSUE_ORGAN",
+  "TISSUE" = "TISSUE",
 }
 
 /**
@@ -330,7 +296,8 @@ interface BaseCategoryFilterPanelConfig {
  */
 type ChildCategoryFilterPanelConfig = BaseCategoryFilterPanelConfig &
   OnlyCuratedValueSourceKind &
-  InferredExplicitFilterValueKind;
+  InferredExplicitFilterValueKind &
+  SelectedParentTermsValueRestrictionKind;
 
 /**
  * Filter category panel that uses checkboxes for filtering, is ontology-aware, and whose selected values restrict
@@ -338,7 +305,8 @@ type ChildCategoryFilterPanelConfig = BaseCategoryFilterPanelConfig &
  */
 type LeafCategoryFilterPanelConfig = BaseCategoryFilterPanelConfig &
   ExceptCuratedValueSourceKind &
-  ExplicitOnlyFilterValueKind;
+  ExplicitOnlyFilterValueKind &
+  SelectedParentTermsValueRestrictionKind;
 
 /**
  * Filter category panel that uses checkboxes for filtering, is ontology-aware, and whose selected values restrict
@@ -346,7 +314,8 @@ type LeafCategoryFilterPanelConfig = BaseCategoryFilterPanelConfig &
  */
 type ParentCategoryFilterPanelConfig = BaseCategoryFilterPanelConfig &
   OnlyCuratedValueSourceKind &
-  InferredExplicitFilterValueKind;
+  InferredExplicitFilterValueKind &
+  NoneValueRestrictionKind;
 
 export type CategoryFilterPanelConfig =
   | ChildCategoryFilterPanelConfig
@@ -416,6 +385,7 @@ export type CategoryView =
 
 /**
  * Category values to be used as keys. For example, "Homo sapiens" or "10X 3' v2 sequencing".
+ * TOOD(cc) rename to category value ID?
  */
 export type CategoryValueKey = string;
 
@@ -485,11 +455,14 @@ export enum ORGANISM {
 }
 
 /**
- * Function invoked when selected state of a category value is toggled or range is selected.
+ * Function invoked when selected state of a category value is toggled or range is selected. Selected value is either
+ * a single category value key for non ontology-aware category filters, an array of category value keys for ontology-
+ * aware category filters or a range.
  */
 export type OnFilterFn = (
   categoryFilterId: CategoryFilterId,
-  selectedValue: CategoryValueKey | Range
+  categoryValueKey: CategoryValueKey | null, // null for ranges.
+  selectedValue: CategoryValueKey[] | Range
 ) => void;
 
 /**
@@ -654,6 +627,7 @@ export interface SelectCategoryValueView {
   count: number;
   label: string;
   selected: boolean;
+  values: string[]; // Set of values to mark as selected.
 }
 
 /**

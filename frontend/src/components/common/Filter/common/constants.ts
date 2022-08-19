@@ -3,6 +3,7 @@ import {
   CategoryFilterConfig,
   CategoryFilterUIConfig,
   CATEGORY_FILTER_ID,
+  CATEGORY_FILTER_PANEL_ID,
   CATEGORY_VALUE_KEY,
   KeyedCategoryFilterConfigs,
   OntologyTermSet,
@@ -2943,15 +2944,20 @@ const CATEGORY_FILTER_CONFIGS: CategoryFilterConfig[] = [
     panels: [
       {
         filterValueKind: "INFERRED_EXPLICIT",
+        id: CATEGORY_FILTER_PANEL_ID.TISSUE_SYSTEM,
         label: "System",
         mask: TISSUE_SYSTEM_ONTOLOGY_TERM_SET,
         sourceKind: "ONLY_CURATED",
+        valueRestrictionKind: "NONE",
       },
       {
         filterValueKind: "INFERRED_EXPLICIT",
+        id: CATEGORY_FILTER_PANEL_ID.TISSUE_ORGAN,
         label: "Organ",
         mask: TISSUE_ORGAN_ONTOLOGY_TERM_SET,
+        parentCategoryPanelFilterIds: [CATEGORY_FILTER_PANEL_ID.TISSUE_SYSTEM],
         sourceKind: "ONLY_CURATED",
+        valueRestrictionKind: "CHILDREN_OF_SELECTED_PARENT_TERMS",
       },
       {
         excludeMasks: [
@@ -2959,8 +2965,14 @@ const CATEGORY_FILTER_CONFIGS: CategoryFilterConfig[] = [
           TISSUE_ORGAN_ONTOLOGY_TERM_SET,
         ],
         filterValueKind: "EXPLICIT_ONLY",
+        id: CATEGORY_FILTER_PANEL_ID.TISSUE,
         label: "Tissue",
+        parentCategoryPanelFilterIds: [
+          CATEGORY_FILTER_PANEL_ID.TISSUE_ORGAN,
+          CATEGORY_FILTER_PANEL_ID.TISSUE_SYSTEM,
+        ],
         sourceKind: "EXCEPT_CURATED",
+        valueRestrictionKind: "CHILDREN_OF_SELECTED_PARENT_TERMS",
       },
     ],
     queryKind: "EXCLUDES_SELF",

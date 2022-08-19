@@ -189,8 +189,11 @@ function buildOntologyCategoryTags(
   onFilter: OnFilterFn
 ): CategoryTag[] | undefined {
   return categoryView.views?.reduce((accum, species) => {
-    species.selectedViews.forEach(({ key, label }) => {
-      accum.push({ label: label, onRemove: () => onFilter(categoryKey, key) });
+    species.selectedViews.forEach(({ key, label, values }) => {
+      accum.push({
+        label: label,
+        onRemove: () => onFilter(categoryKey, key, values),
+      });
     });
     return accum;
   }, [] as CategoryTag[]);
@@ -211,11 +214,11 @@ function buildOntologyMultiPanelCategoryTags(
 ): CategoryTag[] | undefined {
   const { panels } = categoryView;
   return panels.reduce((accum, ontologyCategoryView) => {
-    ontologyCategoryView.views.forEach(({ key, label, selected }) => {
+    ontologyCategoryView.views.forEach(({ key, label, selected, values }) => {
       if (selected) {
         accum.push({
           label: label,
-          onRemove: () => onFilter(categoryKey, key),
+          onRemove: () => onFilter(categoryKey, key, values),
         });
       }
     });
@@ -245,7 +248,7 @@ function buildRangeCategoryTag(
     return [
       {
         label: createRangeTagLabel(selectedMin, selectedMax),
-        onRemove: () => onFilter(categoryKey, []),
+        onRemove: () => onFilter(categoryKey, null, {}), // TODO(cc) revisit clear - how to indicate nothing?
       },
     ];
   }
@@ -266,8 +269,11 @@ function buildSelectCategoryTags(
   const { values } = categoryView;
   return values
     .filter((value) => value.selected)
-    .map(({ key, label }) => {
-      return { label: label, onRemove: () => onFilter(categoryKey, key) };
+    .map(({ key, label, values }) => {
+      return {
+        label: label,
+        onRemove: () => onFilter(categoryKey, key, values),
+      };
     });
 }
 
