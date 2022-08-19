@@ -6,9 +6,10 @@ on:
       - main
       - staging
       - prod
-      - feature/schema-3-0-0
   pull_request:
-    branches: "*"
+    branches: 
+      - "*"
+      - feature/schema-3-0-0
 
 env:
   CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
