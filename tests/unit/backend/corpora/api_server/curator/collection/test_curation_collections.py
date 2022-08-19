@@ -556,6 +556,19 @@ class TestPatchCollectionID(BaseAuthAPITest):
         self.assertEqual(links, response.json["links"])
         self.assertEqual(publisher_metadata, response.json["publisher_metadata"])
 
+    def test_update_collection_with_empty_required_fields(self):
+        tests = [dict(description=""), dict(contact_name=""), dict(contact_email=""), dict(name="")]
+
+        collection_id = self.generate_collection(self.session).id
+        for test in tests:
+            with self.subTest(test):
+                response = self.app.patch(
+                    f"/curation/v1/collections/{collection_id}",
+                    data=json.dumps(test),
+                    headers=self.make_owner_header(),
+                )
+                self.assertEqual(400, response.status_code)
+
     def test__update_collection__links_and_doi_management__OK(self):
         name = "partial updates test collection"
         links = [
