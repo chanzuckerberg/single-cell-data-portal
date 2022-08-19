@@ -229,7 +229,7 @@ class TestDatabase:
             x_approximate_distribution=XApproximateDistribution.NORMAL.name,
             batch_condition=np.array(["batchA", "batchB"], dtype="object"),
             donor_id=["donor_1", "donor_2"],
-            schema_version="2.0.0",
+            schema_version="3.0.0",
         )
         self.session.add(dataset)
         dataset = DbDataset(
@@ -253,7 +253,7 @@ class TestDatabase:
             donor_id=["donor_1", "donor_2"],
             collection_id="test_collection_id_public_for_revision_one",
             explorer_url="test_url",
-            schema_version="2.0.0",
+            schema_version="3.0.0",
         )
         self.session.add(dataset)
         dataset = DbDataset(
@@ -277,7 +277,7 @@ class TestDatabase:
             donor_id=["donor_1", "donor_2"],
             collection_id="test_collection_id_public_for_revision_two",
             explorer_url="test_url",
-            schema_version="2.0.0",
+            schema_version="3.0.0",
         )
         self.session.add(dataset)
         dataset = DbDataset(
@@ -305,7 +305,7 @@ class TestDatabase:
             is_primary_data=IsPrimaryData.PRIMARY.name,
             x_normalization="test_x_normalization",
             x_approximate_distribution=XApproximateDistribution.NORMAL.name,
-            schema_version="2.0.0",
+            schema_version="3.0.0",
         )
         self.session.add(dataset)
         dataset = DbDataset(
@@ -333,7 +333,7 @@ class TestDatabase:
             is_primary_data=IsPrimaryData.PRIMARY.name,
             x_normalization="test_x_normalization",
             x_approximate_distribution=XApproximateDistribution.NORMAL.name,
-            schema_version="2.0.0",
+            schema_version="3.0.0",
         )
         self.session.add(dataset)
         self.session.commit()

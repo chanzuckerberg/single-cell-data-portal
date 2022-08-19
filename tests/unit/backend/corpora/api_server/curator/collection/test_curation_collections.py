@@ -333,7 +333,7 @@ class TestGetCollectionID(BaseAuthAPITest):
                 "processing_status": "PENDING",
                 "revised_at": None,
                 "revision": 0,
-                "schema_version": "2.0.0",
+                "schema_version": "3.0.0",
                 "sex": [
                     {"label": "test_sex", "ontology_term_id": "test_obo"},
                     {"label": "test_sex2", "ontology_term_id": "test_obp"},
@@ -493,7 +493,7 @@ class TestPatchCollectionID(BaseAuthAPITest):
             curator_tag="curator_tag",
             revision=0,
             name="test_dataset_name",
-            schema_version="2.0.0",
+            schema_version="3.0.0",
             collection_id="test_curator_tag_collection_id",
             artifacts=[
                 dict(
