@@ -1303,32 +1303,6 @@ function buildSelectCategoryView(
   const { pinnedCategoryValues, tooltip } =
     CATEGORY_FILTER_CONFIGS_BY_ID[categoryFilterId];
 
-  // Remove any excluded values from the filter.
-  // TODO(cc) revisit location of this. move earlier? update comments here but essentially the prevents an organ from appearing in the "catch all" tissue.
-  // let selectCategoryValues = [...categoryValueByValue.values()];
-  // if (config.valueRestrictionKind === "CHILDREN_OF_SELECTED_PARENT_TERMS") {
-  //   const excludeTerms = config.parentCategoryFilterIds.reduce(
-  //     (accum: string[], parentCategoryFilterId) => {
-  //       const parentConfig =
-  //         CATEGORY_FILTER_CONFIGS_BY_ID[parentCategoryFilterId];
-  //       if (parentConfig.valueSourceKind !== "CURATED") {
-  //         return accum; // Error state - parent must be mask? TODO(cc) revisit does it have to be a mask? or can it be another field?
-  //       }
-  //       accum.push(...listOntologyTreeIds(parentConfig.mask));
-  //       return accum;
-  //     },
-  //     []
-  //   );
-  //
-  //   if (excludeTerms && excludeTerms.length) {
-  //     selectCategoryValues = selectCategoryValues.filter(
-  //       (selectCategoryValue) =>
-  //         !selectCategoryValue.key ||
-  //         !excludeTerms.includes(selectCategoryValue.key)
-  //     );
-  //   }
-  // }
-
   const allCategoryValueViews = buildSelectCategoryValueViews(
     config,
     [...categoryValueByValue.values()],
