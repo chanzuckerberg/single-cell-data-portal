@@ -157,7 +157,7 @@ class TestDatasetProcessing(DataPortalTestCase):
             ],
             index=(str(i) for i in range(50001)),
         )
-        obs = obs.astype({"suspension_type": 'category', "donor_id": 'category'})
+        obs = obs.astype({"suspension_type": "category", "donor_id": "category"})
         uns = {
             "title": "my test dataset",
             "X_normalization": "normal",
@@ -302,7 +302,7 @@ class TestDatasetProcessing(DataPortalTestCase):
             ],
             index=(str(i) for i in range(11)),
         )
-        obs = obs.astype({"suspension_type": 'category', "donor_id": 'category'})
+        obs = obs.astype({"suspension_type": "category", "donor_id": "category"})
         uns = {
             "title": "my test dataset",
             "X_normalization": "normal",
