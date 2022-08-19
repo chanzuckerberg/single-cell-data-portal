@@ -113,5 +113,4 @@ module.exports = {
       ),
     },
   },
-  swcMinify: true,
 };

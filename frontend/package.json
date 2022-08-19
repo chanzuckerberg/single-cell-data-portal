@@ -85,7 +85,7 @@
     "webpack": "^5.61.0"
   },
   "engines": {
-    "node": ">=16 <17"
+    "node": "v16.14.2"
   },
   "keywords": [
     "cellxgene",
