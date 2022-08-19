@@ -417,7 +417,7 @@ def extract_metadata(filename) -> dict:
             return None
 
     def _get_donor_id():
-        return adata.obs["donor_id"].cat.categories.tolist()
+        return adata.obs["donor_id"].unique()
 
     metadata = {
         "name": adata.uns["title"],

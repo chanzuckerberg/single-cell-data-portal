@@ -138,8 +138,8 @@ class TestDatasetProcessing(DataPortalTestCase):
                 "disease_ontology_term_id",
                 "sex",
                 "sex_ontology_term_id",
-                "ethnicity",
-                "ethnicity_ontology_term_id",
+                "self_reported_ethnicity",
+                "self_reported_ethnicity_ontology_term_id",
                 "development_stage",
                 "development_stage_ontology_term_id",
                 "organism",
@@ -217,7 +217,6 @@ class TestDatasetProcessing(DataPortalTestCase):
             self.assertEqual,
         )
 
-        self.assertEqual(extracted_metadata["x_normalization"], "normal")
         self.assertEqual(extracted_metadata["x_approximate_distribution"], "NORMAL")
         self.assertEqual(extracted_metadata["batch_condition"], np.array({"batchA", "batchB"}))
         self.assertEqual(extracted_metadata["schema_version"], "3.0.0")
@@ -272,8 +271,8 @@ class TestDatasetProcessing(DataPortalTestCase):
                 "disease_ontology_term_id",
                 "sex",
                 "sex_ontology_term_id",
-                "ethnicity",
-                "ethnicity_ontology_term_id",
+                "self_reported_ethnicity",
+                "self_reported_ethnicity_ontology_term_id",
                 "development_stage",
                 "development_stage_ontology_term_id",
                 "organism",
