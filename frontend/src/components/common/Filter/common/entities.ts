@@ -147,6 +147,7 @@ export type CuratedOntologyCategoryFilterConfig = BaseCategoryFilterConfig &
 
 /**
  * Filter category that is ontology-aware and displays a set of panels.
+ * TODO(cc) rename to MultiPanelOntology  (and corresponding view too)
  */
 export type OntologyMultiPanelFilterConfig = BaseCategoryFilterConfig &
   IncludesSomeMatchKind &

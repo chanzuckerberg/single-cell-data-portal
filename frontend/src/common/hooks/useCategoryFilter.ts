@@ -1,5 +1,11 @@
 // Display-optimized structure of category and corresponding category values and counts.
-import { useCallback, useEffect, useState } from "react";
+import {
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
 import { Filters, FilterValue, Row } from "react-table";
 import { Ontology } from "src/common/entities";
 import { TISSUE_DESCENDANTS } from "src/common/queries/tissue-descendants";
@@ -174,7 +180,7 @@ export function useCategoryFilter<T extends Categories>(
   // system restricts tissue organ and tissue). We can not use react-table's filters as it only contains the most
   // restrictive value (e.g. if renal system and kidney are both selected, only kidney is set as a selected value in
   // react-table). We need a variable to save *all* selected values so this can be reflected in the view models.
-  // const [categoryFilters, setCategoryFilters] = useState<Filters<T>>();
+  const [uiFilters, setUIFilters] = useState<Filters<T>>([]);
 
   // Set up original, full set of categories and their values.
   useEffect(() => {
@@ -207,10 +213,11 @@ export function useCategoryFilter<T extends Categories>(
       originalRows,
       categoryFilterIds,
       filters,
+      uiFilters,
       categorySet
     );
     setFilterState(nextFilterState);
-  }, [categoryFilterIds, categorySet, filters, originalRows]);
+  }, [categoryFilterIds, categorySet, filters, originalRows, uiFilters]);
 
   // Update set of filters on select of category value. Track selected category value.
   const onFilter = useCallback<OnFilterFn>(
@@ -249,6 +256,19 @@ export function useCategoryFilter<T extends Categories>(
         return;
       }
 
+      // Handle multi-panel categories.
+      if (isMultiPanelCategoryFilterConfig(config)) {
+        onFilterMultiPanelCategory(
+          config,
+          categoryValueKey,
+          selectedValue,
+          setFilter,
+          setUIFilters,
+          uiFilters
+        );
+        return;
+      }
+
       // Handle single or multiselect categories.
       onFilterSelectCategory(
         config,
@@ -258,7 +278,7 @@ export function useCategoryFilter<T extends Categories>(
         filters
       );
     },
-    [categorySet, filters, setFilter]
+    [categorySet, filters, setFilter, uiFilters]
   );
 
   return {
@@ -696,6 +716,7 @@ function applyCrossPanelRestrictions(
  * @param originalRows - Original result set before filtering.
  * @param categoryFilterIds - Set of category IDs to include for this filter instance.
  * @param filters - Current set of selected category values (values) keyed by category (id).
+ * TODO(cc) docs
  * @param categorySet - Original, unfiltered sets of category values keyed by their category.
  * @returns New filter state generated from the current set of selected category values.
  */
@@ -703,6 +724,7 @@ function buildNextFilterState<T extends Categories>(
   originalRows: Row<T>[],
   categoryFilterIds: Set<CATEGORY_FILTER_ID>,
   filters: Filters<T>,
+  uiFilters: Filters<T>,
   categorySet: CategorySet
 ): FilterState {
   // Build set of filters that are applicable to each category.
@@ -719,7 +741,7 @@ function buildNextFilterState<T extends Categories>(
   addRangeCategories(categoryFilterIds, nextFilterState, categorySet);
 
   // Update selected flag for the selected category values, or selected ranged for range categories.
-  setSelectedStates(nextFilterState, filters);
+  setSelectedStates(nextFilterState, filters, uiFilters);
 
   return nextFilterState;
 }
@@ -815,19 +837,19 @@ export function buildNextOntologyCategoryFilters<T extends Categories>(
 }
 
 /**
- * Build updated set of selected filters for the given single or multiselect category and the selected category value.
- * Ontology categories are handled separately.
- * @param categoryFilterId - ID (i.e. "disease") of selected category value.
+ * Build updated set of selected filters for the given single or multiselect category and the selected category values.
+ * @param config - Configuration model of selected category.
  * @param selectedValues - Category value keys to toggle the selected state of.
  * @param filters - Current set of selected category values.
  * @returns Array of selected category values for the given category.
- * TODO(cc) revert?
  */
 function buildNextSelectCategoryFilters<T extends Categories>(
-  categoryFilterId: CategoryFilterId,
+  config: CategoryFilterConfig,
   selectedValues: CategoryValueKey[],
   filters: Filters<T>
 ): CategoryValueKey[] {
+  const { categoryFilterId, multiselect } = config;
+
   // Grab the current selected values for the category.
   const categoryFilters = getCategoryFilter(categoryFilterId, filters);
 
@@ -837,8 +859,6 @@ function buildNextSelectCategoryFilters<T extends Categories>(
   }
 
   // Create new array of selected category value keys, with the selected state of the given category value toggled.
-  const multiselect =
-    CATEGORY_FILTER_CONFIGS_BY_ID[categoryFilterId].multiselect;
   return toggleCategoryValueSelected(
     selectedValues,
     categoryFilters.value,
@@ -889,6 +909,7 @@ function buildQueries<T extends Categories>(
  * @param config - Config model of a curated ontology category.
  * @param categoryValueByValue - Internal filter model of ontology category.
  * @param filterState - Categories, category value and their counts with the current filter applied. Required when
+ * @param ontologyTermLabelsById - Set of ontology term labels keyed by term ID, used to determine labels for ontology.
  * checking enabled state of view that is dependent on the state of another category.
  * @returns Ontology view model.
  * TODO(cc) revisit naming - this is specific to curated ontologies
@@ -1562,14 +1583,26 @@ function isCategorySetCategoryKeyValue(
 }
 
 /**
- * Determine if the given category config is an ontology (and not a "regular" category config).
+ * Determine if the given category config is for a curated ontology category filter.
  * @param config - Config model of category, either an ontology category config or a base category config.
+ * @returns True if category config is for a curated ontology category.
  * TODO(cc) revisit - naming, use etc
  */
 function isCuratedOntologyCategoryFilterConfig(
   config: CategoryFilterConfig
 ): config is CuratedOntologyCategoryFilterConfig {
   return config.valueSourceKind == "CURATED";
+}
+
+/**
+ * Determine if the given category config is a multi-panel category.
+ * @param config - Config model of category, either an ontology category config or a base category config.
+ * @returns True if category config is for a multi-panel category.
+ */
+function isMultiPanelCategoryFilterConfig(
+  config: CategoryFilterConfig
+): config is OntologyMultiPanelFilterConfig {
+  return config.viewKind === "MULTI_PANEL";
 }
 
 /**
@@ -1845,6 +1878,245 @@ function removeOntologyDescendents(
 }
 
 /**
+ * Handle select of mutli-panel value: build and set next set of filters for this category. Track selected select value.
+ * @param config - Configuration model of selected category.
+ * @param categoryValueKey - The selected category value.
+ * @param selectedValues - Selected category value keys to use as selected value.
+ * @param setFilter - Function to update set of selected values for a category.
+ * @param setUIFilters - React state mutator, used to set UI filter state.
+ * @param uiFilters - Current set of category values that the user has selected on the UI. This set can possibly have
+ * restrictions applied it and the subset is passed to react-table to execute the filter.
+ */
+function onFilterMultiPanelCategory<T extends Categories>(
+  config: OntologyMultiPanelFilterConfig,
+  categoryValueKey: CategoryValueKey,
+  selectedValues: CategoryValueKey[],
+  setFilter: SetFilterFn,
+  setUIFilters: Dispatch<SetStateAction<Filters<T>>>,
+  uiFilters: Filters<T>
+) {
+  const { categoryFilterId } = config;
+
+  // Track selected category and value. TODO(cc)
+  // trackSelectCategoryValueSelected(config, categoryValueKey, filters);
+
+  // TODO(cc) temp only - can we keep prefixes out of raw filter value and just apply here? (this might simplify the view code).
+  // Process the selected values: remove inferred and explicit prefixes, dedupe.
+  const selectedOntologyTermIds = [
+    ...new Set(
+      selectedValues.map((selectedValue) =>
+        removeOntologyTermIdPrefix(selectedValue)
+      )
+    ),
+  ];
+
+  // Determine selected set of values; toggle current selected values.
+  const nextUICategoryFilters = buildNextSelectCategoryFilters(
+    config,
+    selectedOntologyTermIds,
+    uiFilters
+  );
+
+  // Update internal UI filter state with the updated set of selected filters for this category.
+  const nextUIFilters =
+    uiFilters.length === 0
+      ? [{ id: categoryFilterId, value: nextUICategoryFilters }]
+      : uiFilters.map((uiFilter) => {
+          if (uiFilter.id !== categoryFilterId) {
+            return uiFilter;
+          }
+          return {
+            ...uiFilter,
+            value: nextUICategoryFilters,
+          };
+        });
+  setUIFilters(nextUIFilters);
+
+  // Apply restrictions across selected filter values.
+  const nextFilters = applyCrossFilterRestrictions(
+    config,
+    nextUICategoryFilters
+  );
+
+  // Trigger filter of rows.
+  setFilter(categoryFilterId, nextFilters);
+}
+
+/**
+ * TODO(cc) location, rename
+ */
+function applyCrossFilterRestrictions(
+  config: OntologyMultiPanelFilterConfig,
+  selectedValues: CategoryValueKey[]
+): CategoryValueKey[] {
+  // Key selected values by panel ID.
+  const selectedValuesByPanelId = keyCategoryValuesByPanelId(
+    config,
+    selectedValues
+  );
+
+  // Key restricted panels by their parent panel ID.
+  const restrictedPanelIdsByParentPanelId =
+    keyRestrictedPanelsByParentPanelId(config);
+
+  // If panel restricts other panels, remove any selected value for this panel if a descendant is selected in a
+  // restricted panel.
+  return [...selectedValuesByPanelId.keys()].reduce((accum, panelId) => {
+    // No action required if there are no selected values for this panel.
+    const panelSelectedValues = selectedValuesByPanelId.get(panelId);
+    if (!panelSelectedValues) {
+      return accum;
+    }
+
+    const panel = config.panels.find((panel) => panel.id === panelId);
+    // TODO(cc) fix error handling here
+    if (!panel) {
+      return accum;
+    }
+
+    // Get the set of panels that this panel restricts, if any.
+    const restrictedPanelIds = restrictedPanelIdsByParentPanelId.get(panelId);
+    if (!restrictedPanelIds) {
+      // Panel doesn't restrict any other panel. Add selected values as is.
+      const selectedValues = selectedValuesByPanelId.get(panelId) ?? [];
+      if (selectedValues.length) {
+        accum.push(
+          ...buildPrefixedFilterValues(
+            panel,
+            selectedValuesByPanelId.get(panelId) ?? []
+          )
+        );
+      }
+      return accum;
+    }
+
+    // Grab all selected values that this panel restricts.
+    const restrictedChildrenPanelSelectedValues = [
+      ...restrictedPanelIds,
+    ].reduce((selectedValuesAccum, restrictedPanelId) => {
+      (selectedValuesByPanelId.get(restrictedPanelId) ?? []).forEach(
+        (selectedValue) => selectedValuesAccum.add(selectedValue)
+      );
+      return selectedValuesAccum;
+    }, new Set<CategoryValueKey>());
+
+    // Ignore any selected value in this panel if there is a descendant selected value.
+    const restrictedPanelSelectedValues = panelSelectedValues.filter(
+      (selectedValue) => {
+        const descendants = TISSUE_DESCENDANTS[selectedValue];
+        if (!descendants || descendants.length === 0) {
+          return true;
+        }
+        return !descendants.some((descendant) =>
+          restrictedChildrenPanelSelectedValues.has(descendant)
+        );
+      }
+    );
+
+    // Add back prefixes for filter. TODO(cc) revisit - can we keep prefixes out of raw filter value and just apply here? (this might simplify the view code).
+    if (restrictedPanelSelectedValues.length) {
+      accum.push(
+        ...buildPrefixedFilterValues(panel, restrictedPanelSelectedValues)
+      );
+    }
+
+    return accum;
+  }, [] as CategoryValueKey[]);
+}
+
+/**
+ * TODO(cc) docs, location, etc.
+ */
+function buildPrefixedFilterValues(
+  panel: CategoryFilterPanelConfig,
+  ontologyTermIds: string[]
+): string[] {
+  const values: CategoryValueKey[] = [];
+  ontologyTermIds.forEach((value) => {
+    values.push(buildExplicitOntologyTermId(value));
+    if (panel.filterValueKind === "INFERRED_EXPLICIT") {
+      values.push(buildInferredOntologyTermId(value));
+    }
+  });
+  return values;
+}
+
+/**
+ * Key category values by panel ID.
+ * @param config - Configuration model of selected category.
+ * @param categoryValueKeys - Category values to group by panel ID.
+ * @returns Map of category values keyed by panel ID.
+ * TODO(cc) location
+ */
+function keyCategoryValuesByPanelId(
+  config: OntologyMultiPanelFilterConfig,
+  categoryValueKeys: CategoryValueKey[]
+): Map<CATEGORY_FILTER_PANEL_ID, CategoryValueKey[]> {
+  return config.panels.reduce((accum, panel) => {
+    // If panel is curated, only add selected values if they are in the mask.
+    if (panel.sourceKind === "ONLY_CURATED") {
+      const includeList = [...listOntologyTreeIds(panel.mask)];
+      const panelSelectedValues = categoryValueKeys.filter((categoryValueKey) =>
+        includeList.includes(categoryValueKey)
+      );
+      accum.set(panel.id, panelSelectedValues);
+    }
+    // Otherwise, panel includes all values other than those specified in masks.
+    else {
+      const excludeList = panel.excludeMasks
+        .map((excludeMask) => {
+          return [...listOntologyTreeIds(excludeMask)];
+        })
+        .flat();
+      const panelSelectedValues = categoryValueKeys.filter(
+        (categoryValueKey) => !excludeList.includes(categoryValueKey)
+      );
+      accum.set(panel.id, panelSelectedValues);
+    }
+    return accum;
+  }, new Map<CATEGORY_FILTER_PANEL_ID, CategoryValueKey[]>());
+}
+
+/**
+ * Key panels that are restricted by another panel.
+ * @param config - Configuration model of selected category.
+ * @returns Map of restricted panels keyed by parent panel ID.
+ * TODO(cc) location
+ */
+function keyRestrictedPanelsByParentPanelId(
+  config: OntologyMultiPanelFilterConfig
+): Map<CATEGORY_FILTER_PANEL_ID, Set<CATEGORY_FILTER_PANEL_ID>> {
+  return config.panels.reduce(
+    (
+      accum: Map<CATEGORY_FILTER_PANEL_ID, Set<CATEGORY_FILTER_PANEL_ID>>,
+      panel: CategoryFilterPanelConfig
+    ) => {
+      // Add panel to set of panels retricted by panel's parent.
+      if (panel.valueRestrictionKind === "CHILDREN_OF_SELECTED_PARENT_TERMS") {
+        panel.parentCategoryPanelFilterIds.forEach(
+          (parentCategoryPanelFilterId) => {
+            // Parent panel already has panels associated with it; add panel to parent panel.
+            if (accum.has(parentCategoryPanelFilterId)) {
+              // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- using accum.has() above to ensure accum has value.
+              accum.get(parentCategoryPanelFilterId)!.add(panel.id);
+            }
+            // Add panel keyed by parent panel to map.
+            else {
+              accum.set(
+                parentCategoryPanelFilterId,
+                new Set<CATEGORY_FILTER_PANEL_ID>([panel.id])
+              );
+            }
+          }
+        );
+      }
+      return accum;
+    },
+    new Map<CATEGORY_FILTER_PANEL_ID, Set<CATEGORY_FILTER_PANEL_ID>>()
+  );
+}
+
+/**
  * Handle select of ontology value: build and set next set of filters for this category. Track selected ontology value.
  * @param config - Configuration model of selected category.
  * @param categoryValueKey - The selected category value.
@@ -1908,14 +2180,14 @@ function onFilterRangeCategory(
  * Handle select of select value: build and set next set of filters for this category. Track selected select value.
  * @param config - Configuration model of selected category.
  * @param categoryValueKey - The selected category value.
- * @param selectedValue - Selected category value keys to use as selected value.
+ * @param selectedValues - Selected category value keys to use as selected value.
  * @param setFilter - Function to update set of selected values for a category.
  * @param filters - Current set of selected category values (values) or ranges keyed by category (id).
  */
 function onFilterSelectCategory<T extends Categories>(
   config: CategoryFilterConfig,
   categoryValueKey: CategoryValueKey,
-  selectedValue: CategoryValueKey[],
+  selectedValues: CategoryValueKey[],
   setFilter: SetFilterFn,
   filters: Filters<T>
 ) {
@@ -1926,8 +2198,8 @@ function onFilterSelectCategory<T extends Categories>(
 
   // Build and set next set of filters for this category.
   const nextFilters = buildNextSelectCategoryFilters(
-    categoryFilterId,
-    selectedValue,
+    config,
+    selectedValues,
     filters
   );
 
@@ -1938,20 +2210,27 @@ function onFilterSelectCategory<T extends Categories>(
  * Update selected state of categories to match the current set of selected filters.
  * @param nextFilterState - Filter state being built on select of filter.
  * @param filters - Current set of selected category values (values) or ranges keyed by category (id).
+ * TODO(cc) docs
  */
 function setSelectedStates<T extends Categories>(
   nextFilterState: FilterState,
-  filters: Filters<T>
+  filters: Filters<T>,
+  uiFilters: Filters<T>
 ) {
   Object.keys(nextFilterState).forEach((categoryFilterId: string) => {
     // Grab the filter state for this category.
     const categoryFilterState =
       nextFilterState[categoryFilterId as CategoryFilterId];
 
+    // Grab the config for this category.
+    const config =
+      CATEGORY_FILTER_CONFIGS_BY_ID[categoryFilterId as CATEGORY_FILTER_ID];
+    const isMultiPanel = isMultiPanelCategoryFilterConfig(config);
+
     // Grab the filters for this category.
     const categoryFilter = getCategoryFilter(
       categoryFilterId as CategoryFilterId,
-      filters
+      isMultiPanel ? uiFilters : filters
     );
     if (!categoryFilter || !categoryFilter.value) {
       // There are no selected values for this category
@@ -1968,7 +2247,11 @@ function setSelectedStates<T extends Categories>(
         categoryValueKey,
         categoryValue,
       ] of categoryFilterState.entries()) {
-        categoryValue.selected = selectedCategoryValues.has(categoryValueKey);
+        // TODO(cc) can we remove this if prefix is removed from view values?
+        const key = isMultiPanel
+          ? removeOntologyTermIdPrefix(categoryValueKey)
+          : categoryValueKey;
+        categoryValue.selected = selectedCategoryValues.has(key);
       }
       return;
     }

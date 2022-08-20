@@ -237,22 +237,6 @@ export default function Datasets(): JSX.Element {
         filter: "includesSome",
         id: CATEGORY_FILTER_ID.TISSUE_CALCULATED, // TODO(cc) revisit?
       },
-      // TODO(cc) remove here and from hidden list
-      // // Hidden, required for filter as part of tissue.
-      // {
-      //   accessor: ontologyIdCellAccessorFn("tissue"),
-      //   id: CATEGORY_FILTER_ID.TISSUE,
-      // },
-      // // Hidden, required for filter as part of tissue.
-      // {
-      //   accessor: "tissue_ancestors",
-      //   id: CATEGORY_FILTER_ID.TISSUE_SYSTEM,
-      // },
-      // // Hidden, required for filter as part of tissue.
-      // {
-      //   accessor: "tissue_ancestors",
-      //   id: CATEGORY_FILTER_ID.TISSUE_ORGAN,
-      // },
     ],
     []
   );
@@ -284,9 +268,6 @@ export default function Datasets(): JSX.Element {
           CATEGORY_FILTER_ID.PUBLICATION_DATE_VALUES,
           CATEGORY_FILTER_ID.SEX,
           CATEGORY_FILTER_ID.TISSUE_CALCULATED, // TODO(cc) revisit
-          // CATEGORY_FILTER_ID.TISSUE,
-          // CATEGORY_FILTER_ID.TISSUE_SYSTEM,
-          // CATEGORY_FILTER_ID.TISSUE_ORGAN,
           EXPLORER_URL,
           IS_OVER_MAX_CELL_COUNT,
         ],
@@ -338,7 +319,7 @@ export default function Datasets(): JSX.Element {
 
   // Store latest filter state.
   useEffect(() => {
-    storeFilters(filters);
+    // storeFilters(filters); // TODO(cc)
   }, [filters, storeFilters]);
 
   // Handle side bar open/closed state beyond scope of component.
