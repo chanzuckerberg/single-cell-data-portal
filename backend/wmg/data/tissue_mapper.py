@@ -96,6 +96,7 @@ class TissueMapper:
         self._uberon = owlready2.get_ontology(uberon_ontology)
         self._uberon.load()
         self._cached_tissues = {}
+        self._cached_labels = {}
 
     def get_high_level_tissue(self, tissue_ontology_term_id: str) -> str:
         """
@@ -152,11 +153,17 @@ class TissueMapper:
         Example: "UBERON_0002048" raises ValueError because the ID is not in writable form
         """
 
+        if ontology_term_id in self._cached_labels:
+            return self._cached_labels[ontology_term_id]
+
         entity = self._get_entity_from_id(self._make_id_readable(ontology_term_id))
         if entity:
-            return entity.label[0]
+            result = entity.label[0]
         else:
-            return ontology_term_id
+            result = ontology_term_id
+
+        self._cached_labels[ontology_term_id] = result
+        return result
 
     def _list_ancestors(self, entity: owlready2.entity.ThingClass, ancestors: List[str] = []) -> List[str]:
         """
