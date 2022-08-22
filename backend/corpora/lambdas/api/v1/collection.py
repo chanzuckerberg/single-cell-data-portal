@@ -200,22 +200,22 @@ def verify_collection_links(body: dict, errors: list) -> None:
 
 
 def verify_collection_body(body: dict, errors: list) -> None:
-    def _check_if_blank(key) -> bool:
+    def check_if_blank(key) -> bool:
         if key in body.keys():
             if not body[key]:
                 errors.append({"name": key, "reason": "Cannot be blank."})
             else:
                 return body[key]
 
-    contact_email = _check_if_blank("contact_email")
+    contact_email = check_if_blank("contact_email")
     if contact_email:
         result = email_regex.match(contact_email)
         if not result:
             errors.append({"name": "contact_email", "reason": "Invalid format."})
 
-    _check_if_blank("description")
-    _check_if_blank("name")
-    _check_if_blank("contact_name")
+    check_if_blank("description")
+    check_if_blank("name")
+    check_if_blank("contact_name")
 
     verify_collection_links(body, errors)
 
