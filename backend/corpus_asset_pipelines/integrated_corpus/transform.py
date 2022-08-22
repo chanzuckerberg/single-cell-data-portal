@@ -64,7 +64,7 @@ def get_high_level_tissue(obs: DataFrame) -> DataFrame:
         current_label = tissue_ids_and_labels["tissue"][i]
 
         new_tissue_ids[current_id] = tissue_mapper.get_high_level_tissue(current_id)
-        new_tissue_labels[current_label] = tissue_mapper.get_label_from_writable_id(current_label)
+        new_tissue_labels[current_label] = tissue_mapper.get_label_from_writable_id(new_tissue_ids[current_id])
 
         if new_tissue_ids[current_id] not in obs["tissue_ontology_term_id"].cat.categories:
             obs["tissue_ontology_term_id"] = obs["tissue_ontology_term_id"].cat.add_categories(
