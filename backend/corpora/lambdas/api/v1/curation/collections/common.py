@@ -151,7 +151,6 @@ class EntityColumns:
         "disease",
         "organism",
         "tombstone",
-        "donor_id",
     ]
 
     dataset_cols = [
@@ -173,6 +172,7 @@ class EntityColumns:
         "mean_genes_per_cell",
         "schema_version",
         "processing_status",
+        "donor_id",
     ]
 
     dataset_asset_cols = [

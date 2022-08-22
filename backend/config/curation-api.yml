@@ -633,6 +633,8 @@ components:
             mean_genes_per_cell:
               nullable: true
               type: number
+            donor_id:
+              "$ref": "#/components/schemas/donor_id"
             name:
               nullable: true
               type: string
@@ -679,8 +681,6 @@ components:
           "$ref": "#/components/schemas/ontology_elements"
         tissue:
           "$ref": "#/components/schemas/ontology_elements"
-        donor_id:
-          "$ref": "#/components/schemas/donor_id"
         tombstone:
           type: boolean
       type: object
