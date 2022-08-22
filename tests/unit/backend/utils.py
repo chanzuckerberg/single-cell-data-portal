@@ -66,7 +66,7 @@ class BogusDatasetParams:
                 {"ontology_term_id": "F", "label": "female"},
                 {"ontology_term_id": "MF", "label": "mixed"},
             ],
-            ethnicity=[{"ontology_term_id": "", "label": "unknown"}],
+            self_reported_ethnicity=[{"ontology_term_id": "", "label": "unknown"}],
             development_stage=[{"ontology_term_id": "HsapDv:0011", "label": "just a baby"}],
             cell_type=[{"ontology_term_id": "Hepatic-1A", "label": "liver"}],
             is_primary_data=IsPrimaryData.PRIMARY.name,
