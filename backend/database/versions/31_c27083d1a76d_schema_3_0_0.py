@@ -20,8 +20,10 @@ depends_on = None
 def upgrade():
     op.add_column("dataset", sa.Column("suspension_type", postgresql.ARRAY(sa.String()), nullable=True))
     op.add_column("dataset", sa.Column("donor_id", postgresql.ARRAY(sa.String()), nullable=True))
+    op.drop_column("dataset", "x_normalization")
 
 
 def downgrade():
     op.drop_column("dataset", "donor_id")
     op.drop_column("dataset", "suspension_type")
+    op.add_column("dataset", sa.Column("x_normalization", sa.String, nullable=True))

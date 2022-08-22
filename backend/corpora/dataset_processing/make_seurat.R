@@ -10,4 +10,4 @@ sceasy::convertFormat(h5adPath,
                       to="seurat",
                       outFile = gsub(".h5ad", ".rds", h5adPath),
                       main_layer = "data",
-                      target_uns_keys = c("schema_version", "title", "X_normalization", "batch_condition", "default_embedding", "X_approximate_distribution"))
+                      target_uns_keys = c("schema_version", "title", "batch_condition", "default_embedding", "X_approximate_distribution"))

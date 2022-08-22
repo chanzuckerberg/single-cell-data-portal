@@ -72,7 +72,6 @@ class BogusDatasetParams:
             is_primary_data=IsPrimaryData.PRIMARY.name,
             collection_id="test_collection_id",
             explorer_url="test_url",
-            x_normalization="normal",
             x_approximate_distribution=XApproximateDistribution.NORMAL.name,
             batch_condition=np.array(["batchA", "batchB"], dtype="object"),
             donor_id=["donor_1", "donor_2"],
