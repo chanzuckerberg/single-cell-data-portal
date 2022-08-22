@@ -679,6 +679,8 @@ components:
           "$ref": "#/components/schemas/ontology_elements"
         tissue:
           "$ref": "#/components/schemas/ontology_elements"
+        donor_id:
+          "$ref": "#/components/schemas/donor_id"
         tombstone:
           type: boolean
       type: object
@@ -708,6 +710,12 @@ components:
         - BOTH
       nullable: true
       type: string
+    donor_id:
+      description:
+          Free-text that identifies a unique individual that data were derived from.
+      type: array
+      items:
+        type: string
     links:
       items:
         additionalProperties: false
