@@ -64,6 +64,23 @@ paths:
         - collection
       parameters:
         - $ref: "#/components/parameters/query_visibility"
+        - name: curator
+          description: >-
+            Return collections owned by the specified curator. The use of this parameter is limited to curators 
+            with permission to query all collections.
+          in: query
+          required: false
+          schema:
+            type: string
+          examples:
+            current_curator:
+              summary: Return collections owned by current curator.
+              value:
+                name: "self"
+            specified_curator:
+              summary: Return collections owned by the specified curator
+              value:
+                name: "John Smith"
       responses:
         "200":
           description: OK
