@@ -69,7 +69,7 @@ def get_high_level_tissue(obs: DataFrame) -> DataFrame:
 
     # Use mapping dictionaries to obtain new values
     obs["tissue_ontology_term_id"] = obs["tissue_ontology_term_id"].map(new_tissue_ids).astype("category")
-    obs["tissue"] = obs["tissue"].map(new_tissue_labels).astype("categorye")
+    obs["tissue"] = obs["tissue"].map(new_tissue_labels).astype("category")
 
     return obs
 
