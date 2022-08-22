@@ -102,18 +102,17 @@ var_labels = [
 ]
 
 
-def create_tdb(corpus_location: str, tdb_group: str):
+def create_tdb_integrated_corpus(corpus_path: str):
     """
     Create the empty tiledb object for the integrated corpus
     """
-    uri = f"{corpus_location}/{tdb_group}"
-    pathlib.Path(uri).mkdir(parents=True, exist_ok=True)
-    tiledb.group_create(uri)
+    pathlib.Path(corpus_path).mkdir(parents=True, exist_ok=True)
+    tiledb.group_create(corpus_path)
 
     filters = tiledb.FilterList([tiledb.ZstdFilter(level=-22)])
-    create_integrated_expression_array(uri, filters)
-    create_obs_array(uri, filters)
-    create_var_array(uri, filters)
+    create_integrated_expression_array(corpus_path, filters)
+    create_obs_array(corpus_path, filters)
+    create_var_array(corpus_path, filters)
 
 
 def create_var_array(uri: str, filters: tiledb.filter.FilterList):

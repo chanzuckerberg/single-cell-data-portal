@@ -231,19 +231,16 @@ def list_collections_curation(
     return resp_collections
 
 
-def add_collection_level_processing_status(collection: DbCollection):
+def add_collection_level_processing_status(collection: DbCollection) -> str:
     # Add a Collection-level processing status
-    status = None
-    has_statuses = False
+    if not collection.datasets:  # Return None if the collection has no datasets.
+        return None
+    return_status = ProcessingStatus.SUCCESS
     for dataset in collection.datasets:
-        processing_status = dataset.processing_status
-        if processing_status:
-            has_statuses = True
-            if processing_status.processing_status == ProcessingStatus.PENDING:
-                status = ProcessingStatus.PENDING
-            elif processing_status.processing_status == ProcessingStatus.FAILURE:
-                status = ProcessingStatus.FAILURE
-                break
-    if has_statuses and not status:  # At least one dataset processing status exists, and all were SUCCESS
-        status = ProcessingStatus.SUCCESS
-    return status
+        if processing_status := dataset.processing_status:
+            status = processing_status.processing_status
+            if status == ProcessingStatus.PENDING:
+                return_status = status
+            elif status == ProcessingStatus.FAILURE:
+                return status
+    return return_status

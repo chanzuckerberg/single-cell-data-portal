@@ -469,6 +469,12 @@ class TestGetCollectionID(BaseAuthAPITest):
         res = self.app.get(f"/curation/v1/collections/{tombstoned_collection.id}")
         self.assertEqual(404, res.status_code)
 
+    def test_get_collection_with_no_datasets(self):
+        collection = self.generate_collection(self.session, name="No Datasets", visibility=CollectionVisibility.PUBLIC)
+        res = self.app.get(f"/curation/v1/collections/{collection.id}")
+        self.assertEqual(200, res.status_code)
+        self.assertEqual(res.json["processing_status"], None)
+
     def test__get_collection_with_tombstoned_datasets__OK(self):
         collection = self.generate_collection(
             self.session, tombstone=False, name="collection", visibility=CollectionVisibility.PUBLIC
@@ -582,6 +588,19 @@ class TestPatchCollectionID(BaseAuthAPITest):
         self.assertEqual(contact_email, response.json["contact_email"])
         self.assertEqual(links, response.json["links"])
         self.assertEqual(publisher_metadata, response.json["publisher_metadata"])
+
+    def test_update_collection_with_empty_required_fields(self):
+        tests = [dict(description=""), dict(contact_name=""), dict(contact_email=""), dict(name="")]
+
+        collection_id = self.generate_collection(self.session).id
+        for test in tests:
+            with self.subTest(test):
+                response = self.app.patch(
+                    f"/curation/v1/collections/{collection_id}",
+                    data=json.dumps(test),
+                    headers=self.make_owner_header(),
+                )
+                self.assertEqual(400, response.status_code)
 
     def test__update_collection__links_and_doi_management__OK(self):
         name = "partial updates test collection"

@@ -1333,27 +1333,28 @@ class TestCollectionsCurators:
 
 
 class TestVerifyCollection(unittest.TestCase):
-    def test_blank_body(self):
+    def test_empty_body(self):
         body = dict()
-        with self.subTest("allow_none=False"):
-            errors = []
-            verify_collection_body(body, errors)
-            self.assertIn({"name": "description", "reason": "Cannot be blank."}, errors)
-            self.assertIn({"name": "name", "reason": "Cannot be blank."}, errors)
-            self.assertIn({"name": "contact_name", "reason": "Cannot be blank."}, errors)
-            self.assertIn({"name": "contact_email", "reason": "Invalid format."}, errors)
-        with self.subTest("allow_none:True"):
-            errors = []
-            verify_collection_body(body, errors, allow_none=True)
-            self.assertFalse(errors)
+        errors = []
+        verify_collection_body(body, errors)
+        self.assertFalse(errors)
+
+    def test_blank_fields(self):
+        errors = []
+        body = dict(name="", contact_name="", description="", contact_email="")
+        verify_collection_body(body, errors)
+        self.assertIn({"name": "description", "reason": "Cannot be blank."}, errors)
+        self.assertIn({"name": "name", "reason": "Cannot be blank."}, errors)
+        self.assertIn({"name": "contact_name", "reason": "Cannot be blank."}, errors)
+        self.assertIn({"name": "contact_email", "reason": "Cannot be blank."}, errors)
 
     def test_invalid_email(self):
-        bad_emails = ["@.", "", "email@.", "@place.com", "email@.com", "email@place."]
-        body = dict(name="something", contact_name="a name", description="description")
+        bad_emails = ["@.", "email@.", "@place.com", "email@.com", "email@place."]
+        body = dict()
 
         for email in bad_emails:
             with self.subTest(email):
-                body["contect_email"] = email
+                body["contact_email"] = email
                 errors = []
                 verify_collection_body(body, errors)
                 self.assertEqual([{"name": "contact_email", "reason": "Invalid format."}], errors)
@@ -1374,7 +1375,7 @@ class TestVerifyCollection(unittest.TestCase):
                 with self.subTest(link_body):
                     errors = []
                     body = dict(links=link_body)
-                    verify_collection_body(body, errors, allow_none=True)
+                    verify_collection_body(body, errors)
                     expected_error = [dict(reason="Invalid URL.", name="links[0]", value=link_body[0]["link_url"])]
                     self.assertEqual(expected_error, errors)
 
@@ -1388,5 +1389,5 @@ class TestVerifyCollection(unittest.TestCase):
                 with self.subTest(link_body):
                     errors = []
                     body = dict(links=link_body)
-                    verify_collection_body(body, errors, allow_none=True)
+                    verify_collection_body(body, errors)
                     self.assertFalse(errors)
