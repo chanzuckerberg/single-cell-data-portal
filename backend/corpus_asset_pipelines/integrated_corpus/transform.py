@@ -46,7 +46,7 @@ def create_high_level_tissue(anndata_object: anndata.AnnData):
     anndata_object.obs = get_high_level_tissue(anndata_object.obs)
 
 
-def get_high_level_tissue(obs: Series) -> Series:
+def get_high_level_tissue(obs: DataFrame) -> DataFrame:
 
     tissue_mapper = TissueMapper()
 
