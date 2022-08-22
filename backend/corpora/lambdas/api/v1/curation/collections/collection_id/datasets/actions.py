@@ -28,8 +28,8 @@ def patch(token_info: dict, collection_id: str, body: dict, curator_tag: str = N
     tag = body["curator_tag"]
     try:
         validate_curator_tag(tag)
-    except ValueError:
-        raise InvalidParametersHTTPException(detail="Invalid Curator Tag.")
+    except ValueError as ex:
+        raise InvalidParametersHTTPException(detail=ex.args[0])
 
     # Check if the curator_tag is unique across datasets in the collection.
     if dataset.curator_tag != tag:

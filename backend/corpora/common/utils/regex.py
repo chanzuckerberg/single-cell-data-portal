@@ -17,6 +17,8 @@ def validate_curator_tag(curator_tag: str) -> bool:
     regex = f"^({DATASET_ID_REGEX}|{CURATOR_TAG_REGEX})$"
     matched = re.match(regex, curator_tag)
     if matched and (tag := matched.groupdict().get("tag")):
-        if not re.match(DATASET_ID_REGEX, tag):
+        if not re.search(ID_REGEX, tag):
             return
+        else:
+            ValueError("Curator tag cannot contain the same shape as a UUID.")
     raise ValueError("Invalid curator tag.")
