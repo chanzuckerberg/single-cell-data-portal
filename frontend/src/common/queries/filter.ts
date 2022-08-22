@@ -237,23 +237,23 @@ export function useCorpusSummary(): CorpusSummary {
           acc1.push(cellType.ontology_term_id);
         }
         return acc1;
-      }, new Array<string>());
+      }, [] as string[]);
 
       const isPrimaryDataset = row.is_primary_data === IS_PRIMARY_DATA.PRIMARY;
 
       const newCellCount =
-        acc.cellCount + (isPrimaryDataset ? row.cell_count ?? 0 : 0);
+        acc.cellCount + ((isPrimaryDataset && row.cell_count) || 0);
 
       return {
         ...acc,
         cellCount: newCellCount,
-        cellTypes: acc.cellTypes.concat(newCellTypes),
+        cellTypes: [...acc.cellTypes, ...newCellTypes],
         datasets: acc.datasets + 1,
       };
     },
     {
       cellCount: 0,
-      cellTypes: new Array<string>(),
+      cellTypes: [] as string[],
       datasets: 0,
       isError: datasetRows.isError,
       isLoading: datasetRows.isLoading,
