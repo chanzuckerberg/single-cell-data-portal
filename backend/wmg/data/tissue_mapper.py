@@ -95,6 +95,7 @@ class TissueMapper:
         # TODO: use the pinned ontology at `single-cell-curation`
         self._uberon = owlready2.get_ontology(uberon_ontology)
         self._uberon.load()
+        self._cached_tissues = {}
 
     def get_high_level_tissue(self, tissue_ontology_term_id: str) -> str:
         """
@@ -109,10 +110,17 @@ class TissueMapper:
 
         tissue_ontology_term_id = self._make_id_readable(tissue_ontology_term_id)
 
+        if tissue_ontology_term_id in self._cached_tissues:
+            # If we have looked this up already
+            return self._cached_tissues[tissue_ontology_term_id]
+
         entity = self._get_entity_from_id(tissue_ontology_term_id)
 
         if not entity:
-            return self._make_id_writable(tissue_ontology_term_id)
+            # If not found as an ontology ID return itself
+            result = self._make_id_writable(tissue_ontology_term_id)
+            self._cached_tissues[tissue_ontology_term_id] = result
+            return result
 
         # List ancestors for this entity, including itself. Ignore any ancestors that
         # are not descendents of UBERON_0000061 (anatomical structure).
@@ -133,7 +141,9 @@ class TissueMapper:
                 selected_tissue = high_level_tissue
                 break
 
-        return self._make_id_writable(selected_tissue)
+        result = self._make_id_writable(selected_tissue)
+        self._cached_tissues[tissue_ontology_term_id] = result
+        return result
 
     def get_label_from_writable_id(self, ontology_term_id: str):
         """

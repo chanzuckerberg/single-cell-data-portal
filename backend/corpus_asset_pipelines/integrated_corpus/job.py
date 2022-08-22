@@ -71,7 +71,6 @@ def process_h5ad_for_corpus(h5ad_path: str, corpus_path: str):
 
     # transform
     apply_pre_concatenation_filters(anndata_object)
-    logger.info(f"Obtaining high-level tissue for {h5ad_path}")
     create_high_level_tissue(anndata_object)
     logger.info(f"loaded: shape={anndata_object.shape}")
     if not validate_dataset_properties(anndata_object):
