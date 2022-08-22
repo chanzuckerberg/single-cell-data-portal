@@ -27,7 +27,7 @@ import SingleCellDataIconActive from "./icons/single-cell-data-active";
 import SingleCellDataIconInactive from "./icons/single-cell-data-inactive";
 import styles from "./index.module.scss";
 
-const DEFAULT_NUM_CELLS = 33000000;
+const DEFAULT_NUM_CELLS = 33_000_000;
 const DEFAULT_NUM_DATASETS = 436;
 const DEFAULT_NUM_CELL_TYPES = 520;
 
