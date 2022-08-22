@@ -48,5 +48,8 @@ def get_dataset_else_error(db_session, dataset_id, collection_id, curator_tag, *
     except ValueError:
         raise InvalidParametersHTTPException()
     if not dataset:
-        raise NotFoundHTTPException(detail="Dataset not found.")
+        if collection_id and not Collection.get(collection_id):
+            raise NotFoundHTTPException(detail="Collection not found.")
+        else:
+            raise NotFoundHTTPException(detail="Dataset not found.")
     return dataset

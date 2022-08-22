@@ -43,7 +43,7 @@ def get(collection_id: str, token_info: dict):
     db_session = g.db_session
     collection = Collection.get_collection(db_session, collection_id, include_tombstones=False)
     if not collection:
-        raise NotFoundHTTPException
+        raise NotFoundHTTPException("Collection not found.")
     collection_response: dict = collection.to_dict_keep(EntityColumns.columns_for_collection_id)
 
     collection_response["processing_status"] = add_collection_level_processing_status(collection)
