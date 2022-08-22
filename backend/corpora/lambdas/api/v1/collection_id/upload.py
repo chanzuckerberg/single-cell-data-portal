@@ -54,7 +54,6 @@ def upload_from_link(collection_id: str, token_info: dict, url: str, dataset_id:
         raise InvalidParametersHTTPException(detail=ex.detail)
 
     file_size = resp.get("size")
-    file_extension = resp["name"].rsplit(".")[-1].lower()
 
     try:
         return upload(
@@ -62,7 +61,6 @@ def upload_from_link(collection_id: str, token_info: dict, url: str, dataset_id:
             collection_id=collection_id,
             url=url,
             file_size=file_size,
-            file_extension=file_extension,
             user=token_info["sub"],
             scope=token_info["scope"],
             dataset_id=dataset_id,
