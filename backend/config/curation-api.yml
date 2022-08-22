@@ -685,6 +685,7 @@ components:
           type: array
           items:
             type: string
+          nullable: true
         tombstone:
           type: boolean
       type: object
@@ -720,6 +721,7 @@ components:
       type: array
       items:
         type: string
+      nullable: true
     links:
       items:
         additionalProperties: false
