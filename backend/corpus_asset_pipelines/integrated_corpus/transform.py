@@ -51,9 +51,20 @@ def get_high_level_tissue(obs: Series) -> Series:
     tissue_mapper = TissueMapper()
 
     for i in range(len(obs)):
+        new_tissue_id = tissue_mapper.get_high_level_tissue(obs["tissue_ontology_term_id"][i])
+        new_tissue_label = tissue_mapper.get_label_from_writable_id(new_tissue_id)
+
+        if new_tissue_id not in obs["tissue_ontology_term_id"].cat.categories:
+            obs["tissue_ontology_term_id"].cat.add_categories(new_tissue_id, inplace=True)
+
+        if new_tissue_label not in obs["tissue"].cat.categories:
+            obs["tissue"].cat.add_categories(new_tissue_label, inplace=True)
+
         obs["tissue_ontology_term_id"][i] = tissue_mapper.get_high_level_tissue(obs["tissue_ontology_term_id"][i])
         obs["tissue"][i] = tissue_mapper.get_label_from_writable_id(obs["tissue_ontology_term_id"][i])
 
+    obs["tissue_ontology_term_id"].cat.remove_unused_categories(inplace=True)
+    obs["tissue"].cat.remove_unused_categories(inplace=True)
     return obs
 
 
