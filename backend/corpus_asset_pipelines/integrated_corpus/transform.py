@@ -53,7 +53,7 @@ def get_high_level_tissue(obs: DataFrame) -> DataFrame:
 
     tissue_mapper = TissueMapper()
 
-    tissue_ids_and_labels = obs[["tissue_ontology_term_id", "tissue"]].drop_duplicates()
+    tissue_ids_and_labels = obs[["tissue_ontology_term_id", "tissue"]].drop_duplicates().astype(str)
     new_tissue_ids = {}
     new_tissue_labels = {}
 
@@ -66,21 +66,11 @@ def get_high_level_tissue(obs: DataFrame) -> DataFrame:
         new_tissue_ids[current_id] = tissue_mapper.get_high_level_tissue(current_id)
         new_tissue_labels[current_label] = tissue_mapper.get_label_from_writable_id(new_tissue_ids[current_id])
 
-        if new_tissue_ids[current_id] not in obs["tissue_ontology_term_id"].cat.categories:
-            obs["tissue_ontology_term_id"] = obs["tissue_ontology_term_id"].cat.add_categories(
-                new_tissue_ids[current_id]
-            )
-
-        if new_tissue_labels[current_label] not in obs["tissue"].cat.categories:
-            obs["tissue"] = obs["tissue"].cat.add_categories(new_tissue_labels[current_label])
 
     # Use mapping dictionaries to obtain new values
-    obs["tissue_ontology_term_id"] = obs["tissue_ontology_term_id"].map(new_tissue_ids)
-    obs["tissue"] = obs["tissue"].map(new_tissue_labels)
+    obs["tissue_ontology_term_id"] = obs["tissue_ontology_term_id"].map(new_tissue_ids).astype("category")
+    obs["tissue"] = obs["tissue"].map(new_tissue_labels).astype("categorye")
 
-    # Remove unused categories
-    obs["tissue_ontology_term_id"] = obs["tissue_ontology_term_id"].cat.remove_unused_categories()
-    obs["tissue"] = obs["tissue"].cat.remove_unused_categories()
     return obs
 
 
