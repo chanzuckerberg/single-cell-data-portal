@@ -19,7 +19,7 @@ from backend.corpora.common.entities import Collection
 
 DATASET_ONTOLOGY_ELEMENTS = (
     "sex",
-    "ethnicity",
+    "self_reported_ethnicity",
     "development_stage",
     "cell_type",
     "tissue",
@@ -163,7 +163,7 @@ class EntityColumns:
         "x_normalization",
         "artifacts",
         "sex",
-        "ethnicity",
+        "self_reported_ethnicity",
         "development_stage",
         "explorer_url",
         "cell_type",

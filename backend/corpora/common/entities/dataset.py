@@ -291,7 +291,7 @@ class Dataset(Entity):
             assay=None,
             disease=None,
             sex=None,
-            ethnicity=None,
+            self_reported_ethnicity=None,
             development_stage=None,
             cell_type=None,
             published=False,

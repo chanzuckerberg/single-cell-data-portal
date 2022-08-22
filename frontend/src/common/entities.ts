@@ -116,7 +116,7 @@ export interface Dataset {
   disease: Ontology[];
   cell_count: number | null;
   // sex: string;
-  ethnicity: Ontology;
+  self_reported_ethnicity: Ontology;
   organism: Ontology[];
   name: string;
   cell_type: Ontology[];

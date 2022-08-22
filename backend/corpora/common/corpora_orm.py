@@ -319,7 +319,7 @@ class DbDataset(Base, AuditMixin, TimestampMixin):
     assay = Column(JSONB)
     disease = Column(JSONB)
     sex = Column(JSONB)
-    ethnicity = Column(JSONB)
+    self_reported_ethnicity = Column(JSONB)
     development_stage = Column(JSONB)
     cell_type = Column(JSONB)
     cell_count = Column(Integer)

@@ -154,7 +154,7 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         self.assertEqual(actual_dataset["tissue"], dataset.tissue)
         self.assertEqual(actual_dataset["disease"], dataset.disease)
         self.assertEqual(actual_dataset["sex"], dataset.sex)
-        self.assertEqual(actual_dataset["ethnicity"], dataset.ethnicity)
+        self.assertEqual(actual_dataset["self_reported_ethnicity"], dataset.self_reported_ethnicity)
         self.assertEqual(actual_dataset["organism"], dataset.organism)
         self.assertEqual(actual_dataset["development_stage"], dataset.development_stage)
         self.assertEqual(actual_dataset["cell_count"], dataset.cell_count)

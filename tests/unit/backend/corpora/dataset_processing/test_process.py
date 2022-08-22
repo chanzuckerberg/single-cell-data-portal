@@ -205,7 +205,7 @@ class TestDatasetProcessing(DataPortalTestCase):
         )
 
         list_equal(
-            extracted_metadata["ethnicity"],
+            extracted_metadata["self_reported_ethnicity"],
             [{lab: "solomon islander", ont: "HANCESTRO:321"}, {lab: "orcadian", ont: "HANCESTRO:456"}],
             self.assertDictEqual,
         )

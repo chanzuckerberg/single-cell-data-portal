@@ -736,7 +736,7 @@ paths:
                       $ref: "#/components/schemas/ontology_element_array"
                     sex:
                       $ref: "#/components/schemas/ontology_element_array"
-                    ethnicity:
+                    self_reported_ethnicity:
                       $ref: "#/components/schemas/ontology_element_array"
                     organism:
                       $ref: "#/components/schemas/ontology_element_array"
@@ -1077,7 +1077,7 @@ components:
           $ref: "#/components/schemas/ontology_element_array"
         sex:
           $ref: "#/components/schemas/ontology_element_array"
-        ethnicity:
+        self_reported_ethnicity:
           $ref: "#/components/schemas/ontology_element_array"
         organism:
           $ref: "#/components/schemas/ontology_element_array"
