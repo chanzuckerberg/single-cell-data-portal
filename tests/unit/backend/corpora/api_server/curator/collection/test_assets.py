@@ -32,7 +32,7 @@ class TestAsset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
             curator_tag="curator_tag",
             revision=0,
             name="test_dataset_name",
-            schema_version="2.0.0",
+            schema_version="3.0.0",
             collection_id="test_curator_tag_collection_id",
             artifacts=[
                 dict(

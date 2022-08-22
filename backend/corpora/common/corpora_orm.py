@@ -323,6 +323,7 @@ class DbDataset(Base, AuditMixin, TimestampMixin):
     development_stage = Column(JSONB)
     cell_type = Column(JSONB)
     cell_count = Column(Integer)
+    donor_id = Column(ARRAY(String), nullable=True)
     is_valid = Column(Boolean, default=False)
     is_primary_data = Column(Enum(IsPrimaryData))
     collection_id = Column(String, ForeignKey("project.id"), nullable=False)

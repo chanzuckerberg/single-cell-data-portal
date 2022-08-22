@@ -75,7 +75,8 @@ class BogusDatasetParams:
             x_normalization="normal",
             x_approximate_distribution=XApproximateDistribution.NORMAL.name,
             batch_condition=np.array(["batchA", "batchB"], dtype="object"),
-            schema_version="2.0.0",
+            donor_id=["donor_1", "donor_2"],
+            schema_version="3.0.0",
         )
 
         bogus_data.update(**kwargs)

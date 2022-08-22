@@ -754,6 +754,10 @@ paths:
                       type: number
                     is_primary_data:
                       $ref: "#/components/schemas/is_primary_data"
+                    donor_id:
+                      type: array
+                      items:
+                        type: string
                     schema_version:
                       type: string
                     explorer_url:
@@ -1106,6 +1110,10 @@ components:
           type: string
         X_approximate_distribution:
           $ref: "#/components/schemas/distribution"
+        donor_id:
+          type: array
+          items:
+            type: string
         schema_version:
           type: string
         tombstone:

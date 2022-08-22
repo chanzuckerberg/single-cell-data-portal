@@ -126,6 +126,7 @@ class TestDatasetProcessing(DataPortalTestCase):
                     numpy.random.choice([0], size=(50001, 1)),
                     numpy.random.choice(["liver"], size=(50001, 1)),
                     numpy.random.choice(["Hepatic-1A"], size=(50001, 1)),
+                    numpy.random.choice(["F1", "F2"], size=(50001, 1)),
                 ]
             ),
             columns=[
@@ -137,8 +138,8 @@ class TestDatasetProcessing(DataPortalTestCase):
                 "disease_ontology_term_id",
                 "sex",
                 "sex_ontology_term_id",
-                "ethnicity",
-                "ethnicity_ontology_term_id",
+                "self_reported_ethnicity",
+                "self_reported_ethnicity_ontology_term_id",
                 "development_stage",
                 "development_stage_ontology_term_id",
                 "organism",
@@ -146,6 +147,7 @@ class TestDatasetProcessing(DataPortalTestCase):
                 "is_primary_data",
                 "cell_type",
                 "cell_type_ontology_term_id",
+                "donor_id",
             ],
             index=(str(i) for i in range(50001)),
         )
@@ -154,7 +156,7 @@ class TestDatasetProcessing(DataPortalTestCase):
             "X_normalization": "normal",
             "X_approximate_distribution": "normal",
             "batch_condition": np.array({"batchA", "batchB"}),
-            "schema_version": "2.0.0",
+            "schema_version": "3.0.0",
         }
 
         var = pandas.DataFrame(
@@ -209,10 +211,15 @@ class TestDatasetProcessing(DataPortalTestCase):
             self.assertDictEqual,
         )
 
-        self.assertEqual(extracted_metadata["x_normalization"], "normal")
+        list_equal(
+            extracted_metadata["donor_id"],
+            ["F1", "F2"],
+            self.assertEqual,
+        )
+
         self.assertEqual(extracted_metadata["x_approximate_distribution"], "NORMAL")
         self.assertEqual(extracted_metadata["batch_condition"], np.array({"batchA", "batchB"}))
-        self.assertEqual(extracted_metadata["schema_version"], "2.0.0")
+        self.assertEqual(extracted_metadata["schema_version"], "3.0.0")
 
         self.assertEqual(extracted_metadata["cell_count"], 50001)
 
@@ -252,6 +259,7 @@ class TestDatasetProcessing(DataPortalTestCase):
                     numpy.random.choice([0], size=(11, 1)),
                     numpy.random.choice(["liver"], size=(11, 1)),
                     numpy.random.choice(["Hepatic-1A"], size=(11, 1)),
+                    numpy.random.choice(["F1", "F2"], size=(11, 1)),
                 ]
             ),
             columns=[
@@ -263,8 +271,8 @@ class TestDatasetProcessing(DataPortalTestCase):
                 "disease_ontology_term_id",
                 "sex",
                 "sex_ontology_term_id",
-                "ethnicity",
-                "ethnicity_ontology_term_id",
+                "self_reported_ethnicity",
+                "self_reported_ethnicity_ontology_term_id",
                 "development_stage",
                 "development_stage_ontology_term_id",
                 "organism",
@@ -272,6 +280,7 @@ class TestDatasetProcessing(DataPortalTestCase):
                 "is_primary_data",
                 "cell_type",
                 "cell_type_ontology_term_id",
+                "donor_id",
             ],
             index=(str(i) for i in range(11)),
         )
@@ -280,7 +289,7 @@ class TestDatasetProcessing(DataPortalTestCase):
             "X_normalization": "normal",
             "X_approximate_distribution": "normal",
             "batch_condition": np.array({"batchA", "batchB"}),
-            "schema_version": "2.0.0",
+            "schema_version": "3.0.0",
         }
 
         var = pandas.DataFrame(
