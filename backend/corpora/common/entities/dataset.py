@@ -171,7 +171,7 @@ class Dataset(Entity):
 
     @staticmethod
     def parse_version(version):
-        return [int(x, 10) for x in version.split('.')]
+        return [int(x, 10) for x in version.split(".")]
 
     @staticmethod
     def transform_sex_for_schema_2_0_0(dataset):

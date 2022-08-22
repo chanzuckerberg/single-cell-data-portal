@@ -426,7 +426,7 @@ def extract_metadata(filename) -> dict:
         "assay": _get_term_pairs("assay"),
         "disease": _get_term_pairs("disease"),
         "sex": _get_term_pairs("sex"),
-        "ethnicity": _get_term_pairs("self_reported_ethnicity"), # TODO
+        "ethnicity": _get_term_pairs("self_reported_ethnicity"),  # TODO
         "development_stage": _get_term_pairs("development_stage"),
         "cell_count": adata.shape[0],
         "mean_genes_per_cell": numerator / denominator,
@@ -435,7 +435,7 @@ def extract_metadata(filename) -> dict:
         "x_approximate_distribution": _get_x_approximate_distribution(),
         "schema_version": adata.uns["schema_version"],
         "batch_condition": _get_batch_condition(),
-        "donor_id": _get_donor_id()
+        "donor_id": _get_donor_id(),
     }
     logger.info(f"Extract metadata: {metadata}")
     return metadata
