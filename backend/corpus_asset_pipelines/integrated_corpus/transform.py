@@ -53,19 +53,32 @@ def get_high_level_tissue(obs: DataFrame) -> DataFrame:
 
     tissue_mapper = TissueMapper()
 
-    for i in range(len(obs)):
-        new_tissue_id = tissue_mapper.get_high_level_tissue(obs["tissue_ontology_term_id"][i])
-        new_tissue_label = tissue_mapper.get_label_from_writable_id(new_tissue_id)
+    tissue_ids_and_labels = obs[["tissue_ontology_term_id", "tissue"]].drop_duplicates()
+    new_tissue_ids = {}
+    new_tissue_labels = {}
 
-        if new_tissue_id not in obs["tissue_ontology_term_id"].cat.categories:
-            obs["tissue_ontology_term_id"] = obs["tissue_ontology_term_id"].cat.add_categories(new_tissue_id)
+    # Create mapping dictionaries and if needed add new categories to obs.tissue and obs.tissue_ontology_term_id
+    for i in range(len(tissue_ids_and_labels)):
 
-        if new_tissue_label not in obs["tissue"].cat.categories:
-            obs["tissue"] = obs["tissue"].cat.add_categories(new_tissue_label)
+        current_id = tissue_ids_and_labels["tissue_ontology_term_id"][i]
+        current_label = tissue_ids_and_labels["tissue"][i]
 
-        obs["tissue_ontology_term_id"][i] = new_tissue_id
-        obs["tissue"][i] = new_tissue_label
+        new_tissue_ids[current_id] = tissue_mapper.get_high_level_tissue(current_id)
+        new_tissue_labels[current_label] = tissue_mapper.get_label_from_writable_id(current_label)
 
+        if new_tissue_ids[current_id] not in obs["tissue_ontology_term_id"].cat.categories:
+            obs["tissue_ontology_term_id"] = obs["tissue_ontology_term_id"].cat.add_categories(
+                new_tissue_ids[current_id]
+            )
+
+        if new_tissue_labels[current_label] not in obs["tissue"].cat.categories:
+            obs["tissue"] = obs["tissue"].cat.add_categories(new_tissue_labels[current_label])
+
+    # Use mapping dictionaries to obtain new values
+    obs["tissue_ontology_term_id"] = obs["tissue_ontology_term_id"].map(new_tissue_ids)
+    obs["tissue"] = obs["tissue"].map(new_tissue_labels)
+
+    # Remove unused categories
     obs["tissue_ontology_term_id"] = obs["tissue_ontology_term_id"].cat.remove_unused_categories()
     obs["tissue"] = obs["tissue"].cat.remove_unused_categories()
     return obs
