@@ -103,7 +103,7 @@ class TestDatasetProcessing(DataPortalTestCase):
             numpy.random.randint(10, size=(50001, 5)) * 50, columns=list("ABCDE"), index=(str(i) for i in range(50001))
         )
 
-        ethnicity = tissue = numpy.random.choice([0, 1], size=(50001))
+        self_reported_ethnicity = tissue = numpy.random.choice([0, 1], size=(50001))
         assay = development_stage = sex = numpy.random.choice([0, 1, 2], size=(50001))
 
         obs = pandas.DataFrame(
@@ -113,12 +113,17 @@ class TestDatasetProcessing(DataPortalTestCase):
                     numpy.array([["UBERON:01", "UBERON:10"][i] for i in tissue]).reshape(50001, 1),
                     numpy.array([["10x", "smartseq", "cite-seq"][i] for i in assay]).reshape(50001, 1),
                     numpy.array([["EFO:001", "EFO:010", "EFO:011"][i] for i in assay]).reshape(50001, 1),
+                    numpy.array([["cell", "nucleus", "na"][i] for i in assay]).reshape(50001, 1),
                     numpy.random.choice(["healthy"], size=(50001, 1)),
                     numpy.random.choice(["MONDO:123"], size=(50001, 1)),
                     numpy.array([["male", "female", "fixed"][i] for i in sex]).reshape(50001, 1),
                     numpy.array([["M", "F", "MF"][i] for i in sex]).reshape(50001, 1),
-                    numpy.array([["solomon islander", "orcadian"][i] for i in ethnicity]).reshape(50001, 1),
-                    numpy.array([["HANCESTRO:321", "HANCESTRO:456"][i] for i in ethnicity]).reshape(50001, 1),
+                    numpy.array([["solomon islander", "orcadian"][i] for i in self_reported_ethnicity]).reshape(
+                        50001, 1
+                    ),
+                    numpy.array([["HANCESTRO:321", "HANCESTRO:456"][i] for i in self_reported_ethnicity]).reshape(
+                        50001, 1
+                    ),
                     numpy.array([["adult", "baby", "tween"][i] for i in development_stage]).reshape(50001, 1),
                     numpy.array([["HsapDv:0", "HsapDv:1", "HsapDv:2"][i] for i in development_stage]).reshape(50001, 1),
                     numpy.random.choice(["Homo sapiens"], size=(50001, 1)),
@@ -134,6 +139,7 @@ class TestDatasetProcessing(DataPortalTestCase):
                 "tissue_ontology_term_id",
                 "assay",
                 "assay_ontology_term_id",
+                "suspension_type",
                 "disease",
                 "disease_ontology_term_id",
                 "sex",
@@ -153,7 +159,6 @@ class TestDatasetProcessing(DataPortalTestCase):
         )
         uns = {
             "title": "my test dataset",
-            "X_normalization": "normal",
             "X_approximate_distribution": "normal",
             "batch_condition": np.array({"batchA", "batchB"}),
             "schema_version": "3.0.0",
@@ -217,6 +222,12 @@ class TestDatasetProcessing(DataPortalTestCase):
             self.assertEqual,
         )
 
+        list_equal(
+            extracted_metadata["suspension_type"],
+            ["cell", "nucleus", "na"],
+            self.assertEqual,
+        )
+
         self.assertEqual(extracted_metadata["x_approximate_distribution"], "NORMAL")
         self.assertEqual(extracted_metadata["batch_condition"], np.array({"batchA", "batchB"}))
         self.assertEqual(extracted_metadata["schema_version"], "3.0.0")
@@ -236,7 +247,7 @@ class TestDatasetProcessing(DataPortalTestCase):
         )
         zeros_layer_df = pandas.DataFrame(numpy.zeros((11, 3)), columns=list("ABC"), index=(str(i) for i in range(11)))
 
-        ethnicity = tissue = numpy.random.choice([0, 1], size=(11))
+        self_reported_ethnicity = tissue = numpy.random.choice([0, 1], size=(11))
         assay = development_stage = sex = numpy.random.choice([0, 1, 2], size=(11))
 
         obs = pandas.DataFrame(
@@ -246,12 +257,15 @@ class TestDatasetProcessing(DataPortalTestCase):
                     numpy.array([["UBERON:01", "UBERON:10"][i] for i in tissue]).reshape(11, 1),
                     numpy.array([["10x", "smartseq", "cite-seq"][i] for i in assay]).reshape(11, 1),
                     numpy.array([["EFO:001", "EFO:010", "EFO:011"][i] for i in assay]).reshape(11, 1),
+                    numpy.array([["cell", "nucleus", "na"][i] for i in assay]).reshape(11, 1),
                     numpy.random.choice(["healthy"], size=(11, 1)),
                     numpy.random.choice(["MONDO:123"], size=(11, 1)),
                     numpy.array([["male", "female", "fixed"][i] for i in sex]).reshape(11, 1),
                     numpy.array([["M", "F", "MF"][i] for i in sex]).reshape(11, 1),
-                    numpy.array([["solomon islander", "orcadian"][i] for i in ethnicity]).reshape(11, 1),
-                    numpy.array([["HANCESTRO:321", "HANCESTRO:456"][i] for i in ethnicity]).reshape(11, 1),
+                    numpy.array([["solomon islander", "orcadian"][i] for i in self_reported_ethnicity]).reshape(11, 1),
+                    numpy.array([["HANCESTRO:321", "HANCESTRO:456"][i] for i in self_reported_ethnicity]).reshape(
+                        11, 1
+                    ),
                     numpy.array([["adult", "baby", "tween"][i] for i in development_stage]).reshape(11, 1),
                     numpy.array([["HsapDv:0", "HsapDv:1", "HsapDv:2"][i] for i in development_stage]).reshape(11, 1),
                     numpy.random.choice(["Homo sapiens"], size=(11, 1)),
@@ -267,6 +281,7 @@ class TestDatasetProcessing(DataPortalTestCase):
                 "tissue_ontology_term_id",
                 "assay",
                 "assay_ontology_term_id",
+                "suspension_type",
                 "disease",
                 "disease_ontology_term_id",
                 "sex",
@@ -286,7 +301,6 @@ class TestDatasetProcessing(DataPortalTestCase):
         )
         uns = {
             "title": "my test dataset",
-            "X_normalization": "normal",
             "X_approximate_distribution": "normal",
             "batch_condition": np.array({"batchA", "batchB"}),
             "schema_version": "3.0.0",

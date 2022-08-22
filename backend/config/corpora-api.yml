@@ -758,6 +758,10 @@ paths:
                       type: array
                       items:
                         type: string
+                    suspension_type:
+                      type: array
+                      items:
+                        type: string
                     schema_version:
                       type: string
                     explorer_url:
@@ -1111,6 +1115,10 @@ components:
         X_approximate_distribution:
           $ref: "#/components/schemas/distribution"
         donor_id:
+          type: array
+          items:
+            type: string
+        suspension_type:
           type: array
           items:
             type: string

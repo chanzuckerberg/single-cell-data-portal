@@ -324,6 +324,7 @@ class DbDataset(Base, AuditMixin, TimestampMixin):
     cell_type = Column(JSONB)
     cell_count = Column(Integer)
     donor_id = Column(ARRAY(String), nullable=True)
+    suspension_type = Column(ARRAY(String))
     is_valid = Column(Boolean, default=False)
     is_primary_data = Column(Enum(IsPrimaryData))
     collection_id = Column(String, ForeignKey("project.id"), nullable=False)

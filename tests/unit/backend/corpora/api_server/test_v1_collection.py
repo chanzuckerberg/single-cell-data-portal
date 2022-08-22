@@ -194,6 +194,7 @@ class TestCollection(BaseAuthAPITest):
                     "x_approximate_distribution": "NORMAL",
                     "batch_condition": ["batchA", "batchB"],
                     "donor_id": ["donor_1", "donor_2"],
+                    "suspension_type": ["nucleus"],
                     "is_valid": False,
                     "revision": 0,
                     "sex": [
