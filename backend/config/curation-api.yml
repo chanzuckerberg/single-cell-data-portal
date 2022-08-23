@@ -680,11 +680,6 @@ components:
       allOf:
         - "$ref": "#/components/schemas/dataset_preview"
         - properties:
-            X_approximate_distribution:
-              "$ref": "#/components/schemas/distribution"
-            X_normalization:
-              nullable: true
-              type: string
             assay:
               "$ref": "#/components/schemas/ontology_elements"
             cell_count:
@@ -737,6 +732,11 @@ components:
               "$ref": "#/components/schemas/ontology_elements"
             tombstone:
               type: boolean
+            x_approximate_distribution:
+              "$ref": "#/components/schemas/distribution"
+            x_normalization:
+              nullable: true
+              type: string
           type: object
     dataset_asset:
       properties:
