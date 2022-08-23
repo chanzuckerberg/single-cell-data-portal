@@ -609,9 +609,6 @@ components:
         - properties:
             X_approximate_distribution:
               "$ref": "#/components/schemas/distribution"
-            X_normalization:
-              nullable: true
-              type: string
             cell_count:
               nullable: true
               type: integer

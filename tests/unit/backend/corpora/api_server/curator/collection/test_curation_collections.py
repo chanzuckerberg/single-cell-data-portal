@@ -343,7 +343,6 @@ class TestGetCollectionID(BaseAuthAPITest):
                 "tissue": [{"label": "test_tissue", "ontology_term_id": "test_obo"}],
                 "tombstone": False,
                 "x_approximate_distribution": "NORMAL",
-                "x_normalization": "test_x_normalization",
             }
         ],
         "description": "test_description",

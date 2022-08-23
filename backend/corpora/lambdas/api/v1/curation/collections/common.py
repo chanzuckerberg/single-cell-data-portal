@@ -160,7 +160,6 @@ class EntityColumns:
         "revision",
         "revised_at",
         "is_primary_data",
-        "x_normalization",
         "artifacts",
         "sex",
         "ethnicity",

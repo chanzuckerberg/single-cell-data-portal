@@ -225,7 +225,6 @@ class TestDatabase:
             explorer_url="test_url",
             cell_type=[{"label": "test_cell_type", "ontology_term_id": "test_opo"}],
             is_primary_data=IsPrimaryData.PRIMARY.name,
-            x_normalization="test_x_normalization",
             x_approximate_distribution=XApproximateDistribution.NORMAL.name,
             batch_condition=np.array(["batchA", "batchB"], dtype="object"),
             donor_id=["donor_1", "donor_2"],
@@ -307,7 +306,6 @@ class TestDatabase:
             explorer_url="test_url",
             cell_type=[{"label": "test_cell_type", "ontology_term_id": "test_opo"}],
             is_primary_data=IsPrimaryData.PRIMARY.name,
-            x_normalization="test_x_normalization",
             x_approximate_distribution=XApproximateDistribution.NORMAL.name,
             schema_version="3.0.0",
         )
@@ -336,7 +334,6 @@ class TestDatabase:
             explorer_url="test_url_revised",
             cell_type=[{"label": "test_cell_type", "ontology_term_id": "test_opo"}],
             is_primary_data=IsPrimaryData.PRIMARY.name,
-            x_normalization="test_x_normalization",
             x_approximate_distribution=XApproximateDistribution.NORMAL.name,
             schema_version="3.0.0",
         )
