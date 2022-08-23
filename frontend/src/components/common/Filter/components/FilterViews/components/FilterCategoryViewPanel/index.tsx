@@ -1,4 +1,3 @@
-// TODO(cc) shared with FilterCategoryView, possibly rename to something more generic.
 import React, { ReactNode, useEffect, useRef, useState } from "react";
 import { useResizeObserver } from "src/common/hooks/useResizeObserver";
 import {
