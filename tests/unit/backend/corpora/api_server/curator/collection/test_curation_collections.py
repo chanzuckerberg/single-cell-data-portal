@@ -325,7 +325,7 @@ class TestGetCollectionID(BaseAuthAPITest):
                     {"label": "test_disease3", "ontology_term_id": "test_obq"},
                 ],
                 "donor_id": ["donor_1", "donor_2"],
-                "ethnicity": [{"label": "test_ethnicity", "ontology_term_id": "test_obo"}],
+                "self_reported_ethnicity": [{"label": "test_ethnicity", "ontology_term_id": "test_obo"}],
                 "explorer_url": "test_url",
                 "id": "test_dataset_id",
                 "is_primary_data": "PRIMARY",

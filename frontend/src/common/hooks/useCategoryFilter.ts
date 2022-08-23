@@ -11,7 +11,6 @@ import {
   CATEGORY_FILTER_TYPE,
   CATEGORY_KEY,
   CATEGORY_LABEL,
-  ETHNICITY_UNSPECIFIED_LABEL,
   OnFilterFn,
   OntologyCategoryConfig,
   OntologyCategoryTreeNodeView,
@@ -27,6 +26,7 @@ import {
   RangeCategoryView,
   SelectCategoryValueView,
   SelectCategoryView,
+  SELF_REPORTED_ETHNICITY_UNSPECIFIED_LABEL,
 } from "src/components/common/Filter/common/entities";
 import {
   findOntologyNodeById,
@@ -439,11 +439,11 @@ function buildCategoryValueLabel(
   }
 
   if (
-    categoryKey === CATEGORY_KEY.ETHNICITY &&
+    categoryKey === CATEGORY_KEY.SELF_REPORTED_ETHNICITY &&
     !isEthnicitySpecified(categoryValueKey)
   ) {
-    return ETHNICITY_UNSPECIFIED_LABEL[
-      categoryValueKey as keyof typeof ETHNICITY_UNSPECIFIED_LABEL
+    return SELF_REPORTED_ETHNICITY_UNSPECIFIED_LABEL[
+      categoryValueKey as keyof typeof SELF_REPORTED_ETHNICITY_UNSPECIFIED_LABEL
     ];
   }
 
@@ -896,7 +896,7 @@ function buildSelectCategoryView(
 
   // Handle special cases where select category may be disabled.
   if (
-    categoryKey === CATEGORY_KEY.ETHNICITY &&
+    categoryKey === CATEGORY_KEY.SELF_REPORTED_ETHNICITY &&
     !isEthnicityViewEnabled(filterState)
   ) {
     selectView.isDisabled = true;
@@ -1031,8 +1031,8 @@ export function isCategoryTypeBetween(categoryKey: CategoryKey): boolean {
 
 function isEthnicitySpecified(categoryValueKey: CategoryValueKey) {
   const label =
-    ETHNICITY_UNSPECIFIED_LABEL[
-      categoryValueKey as keyof typeof ETHNICITY_UNSPECIFIED_LABEL
+    SELF_REPORTED_ETHNICITY_UNSPECIFIED_LABEL[
+      categoryValueKey as keyof typeof SELF_REPORTED_ETHNICITY_UNSPECIFIED_LABEL
     ];
   return !label;
 }

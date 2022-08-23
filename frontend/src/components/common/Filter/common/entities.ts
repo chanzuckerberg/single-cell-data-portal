@@ -43,7 +43,7 @@ export enum CATEGORY_KEY {
   "CELL_TYPE" = "cell_type",
   "DEVELOPMENT_STAGE_ANCESTORS" = "development_stage_ancestors",
   "DISEASE" = "disease",
-  "ETHNICITY" = "ethnicity",
+  "SELF_REPORTED_ETHNICITY" = "self_reported_ethnicity",
   "MEAN_GENES_PER_CELL" = "mean_genes_per_cell",
   "ORGANISM" = "organism",
   "PUBLICATION_AUTHORS" = "publicationAuthors",
@@ -68,7 +68,7 @@ export interface Categories {
   cell_type: Ontology[];
   disease: Ontology[];
   development_stage_ancestors: string[];
-  ethnicity: Ontology[];
+  self_reported_ethnicity: Ontology[];
   organism: Ontology[];
   sex: Ontology[];
   tissue: Ontology[]; // TODO(cc) remove with #2569.
@@ -494,12 +494,12 @@ const CATEGORY_CONFIGS: (CategoryConfig | OntologyCategoryConfig)[] = [
     pinnedCategoryValues: [CATEGORY_VALUE_KEY.NORMAL],
   },
   {
-    analyticsEvent: EVENTS.FILTER_SELECT_ETHNICITY,
-    categoryKey: CATEGORY_KEY.ETHNICITY,
+    analyticsEvent: EVENTS.FILTER_SELECT_SELF_REPORTED_ETHNICITY,
+    categoryKey: CATEGORY_KEY.SELF_REPORTED_ETHNICITY,
     categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
     multiselect: true,
     tooltip:
-      "Ethnicity only applies to Homo sapiens which is not selected in the Organism filter.",
+      "Self-Reported Ethnicity only applies to Homo sapiens which is not selected in the Organism filter.",
   },
   {
     analyticsEvent: EVENTS.FILTER_SELECT_GENE_COUNT,
@@ -603,14 +603,14 @@ export interface DatasetRow extends Categories, PublisherMetadataCategories {
 /**
  * Display values of unspecified ethnicity labels.
  */
-export enum ETHNICITY_UNSPECIFIED_LABEL {
+export enum SELF_REPORTED_ETHNICITY_UNSPECIFIED_LABEL {
   "unknown" = "Unknown",
 }
 
 /**
  * List of ethnicity ontology labels to exclude from filter functionality.
  */
-export const ETHNICITY_DENY_LIST = ["na"];
+export const SELF_REPORTED_ETHNICITY_DENY_LIST = ["na"];
 
 /**
  * Model of category configs keyed by category key. Used instead of generic Map to prevent null checking when grabbing
@@ -648,7 +648,7 @@ export enum CATEGORY_LABEL {
   cell_type = "Cell Type",
   development_stage_ancestors = "Development Stage",
   disease = "Disease",
-  ethnicity = "Ethnicity",
+  self_reported_ethnicity = "Self-Reported Ethnicity",
   mean_genes_per_cell = "Gene Count",
   publicationAuthors = "Authors",
   publicationDateValues = "Publication Date",

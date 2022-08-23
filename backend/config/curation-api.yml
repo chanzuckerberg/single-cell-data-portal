@@ -621,7 +621,7 @@ components:
             development_stage:
               "$ref": "#/components/schemas/ontology_elements"
               nullable: true
-            ethnicity:
+            self_reported_ethnicity:
               "$ref": "#/components/schemas/ontology_elements"
             explorer_url:
               "$ref": "#/components/schemas/explorer_url"

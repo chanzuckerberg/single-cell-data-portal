@@ -140,9 +140,9 @@ export default function Collections(): JSX.Element {
       },
       // Hidden, required for filter.
       {
-        accessor: ontologyCellAccessorFn(CATEGORY_KEY.ETHNICITY),
+        accessor: ontologyCellAccessorFn(CATEGORY_KEY.SELF_REPORTED_ETHNICITY),
         filter: "includesSome",
-        id: CATEGORY_KEY.ETHNICITY,
+        id: CATEGORY_KEY.SELF_REPORTED_ETHNICITY,
       },
       {
         accessor: CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS,
@@ -193,7 +193,7 @@ export default function Collections(): JSX.Element {
           COLUMN_ID_RECENCY,
           CATEGORY_KEY.ASSAY,
           CATEGORY_KEY.CELL_TYPE,
-          CATEGORY_KEY.ETHNICITY,
+          CATEGORY_KEY.SELF_REPORTED_ETHNICITY,
           CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS,
           CATEGORY_KEY.PUBLICATION_AUTHORS,
           CATEGORY_KEY.PUBLICATION_DATE_VALUES,
