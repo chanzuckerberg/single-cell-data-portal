@@ -14,19 +14,17 @@ class TissueMapper:
     # then `self.get_high_level_tissue()` returns the one that appears first in th this list
     HIGH_LEVEL_TISSUES = [
         "UBERON_0000178",  # blood
-        "UBERON_0002106",  # spleen
-        "UBERON_0002107",  # liver
         "UBERON_0002048",  # lung
-        "UBERON_0001013",  # adipose tissue
-        "UBERON_0004023",  # ganglionic eminence --> this a part of the embryo, remove in case generality is desired
-        "UBERON_0000922",  # embryo
-        "UBERON_0002110",  # gall bladder
-        "UBERON_0001255",  # urinary bladder
-        "UBERON_0018707",  # bladder organ
+        "UBERON_0002106",  # spleen
+        "UBERON_0002371",  # bone marrow
+        "UBERON_0002107",  # liver
+        "UBERON_0002113",  # kidney
         "UBERON_0000955",  # brain
+        "UBERON_0002240",  # spinal cord
         "UBERON_0000310",  # breast
-        "UBERON_0000057",  # urethra
-        "UBERON_0000056",  # ureter
+        "UBERON_0000948",  # heart
+        "UBERON_0002097",  # skin of body
+        "UBERON_0000970",  # eye
         "UBERON_0001264",  # pancreas
         "UBERON_0001043",  # esophagus
         "UBERON_0001155",  # colon
@@ -34,32 +32,33 @@ class TissueMapper:
         "UBERON_0002108",  # small intestine
         "UBERON_0000160",  # intestine
         "UBERON_0000945",  # stomach
-        "UBERON_0000970",  # eye
-        "UBERON_0000948",  # heart
-        "UBERON_0002113",  # kidney
         "UBERON_0001836",  # saliva
-        "UBERON_0002097",  # skin of body
+        "UBERON_0001723",  # tongue
+        "UBERON_0001013",  # adipose tissue
         "UBERON_0000473",  # testis
-        "UBERON_0001465",  # knee
         "UBERON_0002367",  # prostate gland
+        "UBERON_0000057",  # urethra
+        "UBERON_0000056",  # ureter
         "UBERON_0003889",  # fallopian tube
         "UBERON_0000995",  # uterus
         "UBERON_0000992",  # ovary
+        "UBERON_0002110",  # gall bladder
+        "UBERON_0001255",  # urinary bladder
+        "UBERON_0018707",  # bladder organ
+        "UBERON_0000922",  # embryo
+        "UBERON_0004023",  # ganglionic eminence --> this a part of the embryo, remove in case generality is desired
+        "UBERON_0001987",  # placenta
         "UBERON_0007106",  # chorionic villus
         "UBERON_0002369",  # adrenal gland
         "UBERON_0002368",  # endocrine gland
         "UBERON_0002365",  # exocrine gland
-        "UBERON_0002371",  # bone marrow
         "UBERON_0000030",  # lamina propria
         "UBERON_0000029",  # lymph node
         "UBERON_0004536",  # lymph vasculature
         "UBERON_0001015",  # musculature
         "UBERON_0000004",  # nose
         "UBERON_0003688",  # omentum
-        "UBERON_0001987",  # placenta
         "UBERON_0000977",  # pleura
-        "UBERON_0002240",  # spinal cord
-        "UBERON_0001723",  # tongue
         "UBERON_0002370",  # thymus
         "UBERON_0002049",  # vasculature
         "UBERON_0009472",  # axilla
@@ -78,6 +77,23 @@ class TissueMapper:
         "UBERON_0001004",  # respiratory system
         "UBERON_0000010",  # peripheral nervous system
         "UBERON_0001032",  # sensory system
+        "UBERON_0002046",  # thyroid gland
+        "UBERON_0004535",  # cardiovascular system
+        "UBERON_0000949",  # endocrine system
+        "UBERON_0002330",  # exocrine system
+        "UBERON_0002390",  # hematopoietic system
+        "UBERON_0000383",  # musculature of body
+        "UBERON_0001465",  # knee
+        "UBERON_0001016",  # nervous system
+        "UBERON_0001348",  # brown adipose tissue
+        "UBERON_0015143",  # mesenteric fat pad
+        "UBERON_0000175",  # pleural effusion
+        "UBERON_0001416",  # skin of abdomen
+        "UBERON_0001868",  # skin of chest
+        "UBERON_0001511",  # skin of leg
+        "UBERON_0002190",  # subcutaneous adipose tissue
+        "UBERON_0035328",  # upper outer quadrant of breast
+        "UBERON_0000014",  # zone of skin
     ]
 
     # Terms to ignore when mapping
@@ -110,7 +126,7 @@ class TissueMapper:
                 - This could happen with something like "UBERON:0002048 (cell culture)"
         """
 
-        tissue_ontology_term_id = self._make_id_readable(tissue_ontology_term_id)
+        tissue_ontology_term_id = self.make_id_readable(tissue_ontology_term_id)
 
         if tissue_ontology_term_id in self._cached_tissues:
             # If we have looked this up already
@@ -120,7 +136,7 @@ class TissueMapper:
 
         if not entity:
             # If not found as an ontology ID return itself
-            result = self._make_id_writable(tissue_ontology_term_id)
+            result = self.make_id_writable(tissue_ontology_term_id)
             self._cached_tissues[tissue_ontology_term_id] = result
             return result
 
@@ -143,7 +159,7 @@ class TissueMapper:
                 selected_tissue = high_level_tissue
                 break
 
-        result = self._make_id_writable(selected_tissue)
+        result = self.make_id_writable(selected_tissue)
         self._cached_tissues[tissue_ontology_term_id] = result
         return result
 
@@ -157,7 +173,7 @@ class TissueMapper:
         if ontology_term_id in self._cached_labels:
             return self._cached_labels[ontology_term_id]
 
-        entity = self._get_entity_from_id(self._make_id_readable(ontology_term_id))
+        entity = self._get_entity_from_id(self.make_id_readable(ontology_term_id))
         if entity:
             result = entity.label[0]
         else:
@@ -165,6 +181,24 @@ class TissueMapper:
 
         self._cached_labels[ontology_term_id] = result
         return result
+
+    @staticmethod
+    def make_id_readable(ontology_term_id: str) -> str:
+        """
+        Converts ontology term id string from "UBERON:0002048" to "UBERON_0002048"
+        """
+        if ontology_term_id.count(":") != 1:
+            raise ValueError(f"{ontology_term_id} is an invalid ontology term id, it must contain exactly one ':'")
+        return ontology_term_id.replace(":", "_")
+
+    @staticmethod
+    def make_id_writable(ontology_term_id: str) -> str:
+        """
+        Converts ontology term id string from "UBERON_0002048" to "UBERON:0002048"
+        """
+        if ontology_term_id.count("_") != 1:
+            raise ValueError(f"{ontology_term_id} is an invalid ontology term id, it must contain exactly one '_'")
+        return ontology_term_id.replace("_", ":")
 
     def _list_ancestors(self, entity: owlready2.entity.ThingClass, ancestors: List[str] = []) -> List[str]:
         """
@@ -203,24 +237,6 @@ class TissueMapper:
         """
         # TODO: use the pinned ontology at `single-cell-curation`
         return self._uberon.search_one(iri=f"http://purl.obolibrary.org/obo/{ontology_term_id}")
-
-    @staticmethod
-    def _make_id_readable(ontology_term_id: str) -> str:
-        """
-        Converts ontology term id string from "UBERON:0002048" to "UBERON_0002048"
-        """
-        if ontology_term_id.count(":") != 1:
-            raise ValueError(f"{ontology_term_id} is an invalid ontology term id, it must contain exactly one ':'")
-        return ontology_term_id.replace(":", "_")
-
-    @staticmethod
-    def _make_id_writable(ontology_term_id: str) -> str:
-        """
-        Converts ontology term id string from "UBERON_0002048" to "UBERON:0002048"
-        """
-        if ontology_term_id.count("_") != 1:
-            raise ValueError(f"{ontology_term_id} is an invalid ontology term id, it must contain exactly one '_'")
-        return ontology_term_id.replace("_", ":")
 
     @staticmethod
     def _is_restriction(entity: owlready2.entity.ThingClass) -> bool:
