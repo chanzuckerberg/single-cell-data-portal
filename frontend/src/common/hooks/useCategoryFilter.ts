@@ -11,7 +11,6 @@ import {
   CATEGORY_FILTER_TYPE,
   CATEGORY_KEY,
   CATEGORY_LABEL,
-  SELF_REPORTED_ETHNICITY_UNSPECIFIED_LABEL,
   OnFilterFn,
   OntologyCategoryConfig,
   OntologyCategoryTreeNodeView,
@@ -27,6 +26,7 @@ import {
   RangeCategoryView,
   SelectCategoryValueView,
   SelectCategoryView,
+  SELF_REPORTED_ETHNICITY_UNSPECIFIED_LABEL,
 } from "src/components/common/Filter/common/entities";
 import {
   findOntologyNodeById,

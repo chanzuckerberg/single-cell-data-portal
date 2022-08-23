@@ -16,8 +16,11 @@ init:
 
 .PHONY: lint
 lint:
-	npm run prettier-check
-	npm run lint
+	npm run prettier-check & npm run lint
+
+.PHONY: format
+format:
+	npm run format
 
 .PHONY: clean
 clean:

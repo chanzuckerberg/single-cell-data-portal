@@ -16,8 +16,8 @@ import {
   CATEGORY_KEY,
   CollectionRow,
   DatasetRow,
-  SELF_REPORTED_ETHNICITY_DENY_LIST,
   PUBLICATION_DATE_VALUES,
+  SELF_REPORTED_ETHNICITY_DENY_LIST,
 } from "src/components/common/Filter/common/entities";
 import { checkIsOverMaxCellCount } from "src/components/common/Grid/common/utils";
 import { API_URL } from "src/configs/configs";
@@ -250,7 +250,10 @@ function aggregateCollectionDatasetRows(
           ...collectionDatasetRow.development_stage_ancestors,
         ],
         disease: [...accum.disease, ...collectionDatasetRow.disease],
-        self_reported_ethnicity: [...accum.self_reported_ethnicity, ...collectionDatasetRow.self_reported_ethnicity],
+        self_reported_ethnicity: [
+          ...accum.self_reported_ethnicity,
+          ...collectionDatasetRow.self_reported_ethnicity,
+        ],
         organism: [...accum.organism, ...collectionDatasetRow.organism],
         sex: [...accum.sex, ...collectionDatasetRow.sex],
         tissue: [...accum.tissue, ...collectionDatasetRow.tissue], // TODO(cc) remove with #2569.
@@ -281,7 +284,9 @@ function aggregateCollectionDatasetRows(
       ...new Set(aggregatedCategoryValues.development_stage_ancestors),
     ],
     disease: uniqueOntologies(aggregatedCategoryValues.disease),
-    self_reported_ethnicity: uniqueOntologies(aggregatedCategoryValues.self_reported_ethnicity),
+    self_reported_ethnicity: uniqueOntologies(
+      aggregatedCategoryValues.self_reported_ethnicity
+    ),
     organism: uniqueOntologies(aggregatedCategoryValues.organism),
     sex: uniqueOntologies(aggregatedCategoryValues.sex),
     tissue: uniqueOntologies(aggregatedCategoryValues.tissue), // TODO(cc) remove with #2569.
@@ -715,8 +720,13 @@ function sanitizeDataset(dataset: DatasetResponse): DatasetResponse {
       }
 
       if (categoryKey === CATEGORY_KEY.SELF_REPORTED_ETHNICITY) {
-        accum.self_reported_ethnicity = (dataset.self_reported_ethnicity ?? []).filter(
-          (self_reported_ethnicity) => !SELF_REPORTED_ETHNICITY_DENY_LIST.includes(self_reported_ethnicity.label)
+        accum.self_reported_ethnicity = (
+          dataset.self_reported_ethnicity ?? []
+        ).filter(
+          (self_reported_ethnicity) =>
+            !SELF_REPORTED_ETHNICITY_DENY_LIST.includes(
+              self_reported_ethnicity.label
+            )
         );
         return accum;
       }
