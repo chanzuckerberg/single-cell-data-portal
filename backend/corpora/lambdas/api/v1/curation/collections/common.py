@@ -96,12 +96,11 @@ def reshape_datasets_for_curation_api(datasets: typing.List[dict], preview=False
 
 
 def reshape_dataset_for_curation_api(dataset: dict, preview=False) -> dict:
-    if artifacts := dataset.get("artifacts"):
+    if artifacts := dataset.pop("artifacts", []):
         dataset["dataset_assets"] = []
         for asset in artifacts:
             if asset["filetype"] in (DatasetArtifactFileType.H5AD, DatasetArtifactFileType.RDS):
                 dataset["dataset_assets"].append(asset)
-        del dataset["artifacts"]
     if dataset.get("processing_status"):
         dataset["processing_status"] = dataset["processing_status"]["processing_status"]
     dataset_ontology_elements = DATASET_ONTOLOGY_ELEMENTS_PREVIEW if preview else DATASET_ONTOLOGY_ELEMENTS
