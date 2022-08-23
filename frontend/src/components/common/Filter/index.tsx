@@ -2,7 +2,6 @@ import { ChangeEvent, ReactNode } from "react";
 import { CategoryFilterId } from "src/common/hooks/useCategoryFilter";
 import {
   CategoryView,
-  CategoryViews,
   OnFilterFn,
   OntologyCategoryView,
   OntologyMultiPanelCategoryView,
@@ -22,25 +21,24 @@ import FilterMultiPanelCategoryView from "src/components/common/Filter/component
 import FilterTags, { CategoryTag } from "./components/FilterTags";
 
 interface Props {
-  categoryViews: CategoryViews[];
+  categoryViews: CategoryView[];
   onFilter: OnFilterFn;
 }
 
 export default function Filter({
-  categoryViews: allCategoryViews,
+  categoryViews,
   onFilter,
 }: Props): JSX.Element {
   return (
     <>
-      {allCategoryViews.map((categoryViews: CategoryViews) => {
-        const categoryView = categoryViews.categoryViews[0];
+      {categoryViews.map((categoryView: CategoryView) => {
         const { isDisabled = false, label, tooltip } = categoryView;
         return (
           <BasicFilter
             content={buildBasicFilterContent(categoryView, onFilter)}
-            flipEnabled={categoryViews.label !== "Tissue (Ontology)"} // TODO(cc) review use of flipEnabled prop
+            flipEnabled={categoryView.label !== "Tissue (Ontology)"} // TODO(cc) review use of flipEnabled prop
             isDisabled={isDisabled}
-            key={categoryViews.label}
+            key={categoryView.label}
             tags={<FilterTags tags={buildFilterTags(categoryView, onFilter)} />}
             target={buildFilterLabel(label, isDisabled, tooltip)}
           />
@@ -227,7 +225,9 @@ function buildRangeCategoryTag(
     return [
       {
         label: createRangeTagLabel(selectedMin, selectedMax),
-        onRemove: () => onFilter(categoryKey, null, {}), // TODO(cc) revisit clear - how to indicate nothing?
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment -- -- TODO(cc) revisit clear - how to indicate nothing?
+        // @ts-ignore
+        onRemove: () => onFilter(categoryKey, null, {}),
       },
     ];
   }

@@ -1,7 +1,6 @@
 import { EVENTS } from "src/common/analytics/events";
 import {
   CategoryFilterConfig,
-  CategoryFilterUIConfig,
   CATEGORY_FILTER_ID,
   CATEGORY_FILTER_PANEL_ID,
   CATEGORY_VALUE_KEY,
@@ -2950,68 +2949,68 @@ export const CATEGORY_FILTER_CONFIGS_BY_ID: KeyedCategoryFilterConfigs =
     {} as KeyedCategoryFilterConfigs
   );
 
-/**
- * UI configuration for each category filter.
- * TODO(cc) remove this?
- */
-export const CATEGORY_FILTER_UI_CONFIGS: CategoryFilterUIConfig[] = [
-  {
-    categoryFilterConfigIds: [CATEGORY_FILTER_ID.ASSAY],
-    label: "Assay",
-  },
-  {
-    categoryFilterConfigIds: [CATEGORY_FILTER_ID.CELL_COUNT],
-    label: "Cell Count",
-  },
-  {
-    categoryFilterConfigIds: [CATEGORY_FILTER_ID.CELL_TYPE_DEPRECATED],
-    label: "Cell Type",
-  },
-  {
-    categoryFilterConfigIds: [CATEGORY_FILTER_ID.CELL_TYPE],
-    label: "Cell Type (Ontology)",
-  },
-  {
-    categoryFilterConfigIds: [CATEGORY_FILTER_ID.DEVELOPMENT_STAGE],
-    label: "Development Stage",
-  },
-  {
-    categoryFilterConfigIds: [CATEGORY_FILTER_ID.DISEASE],
-    label: "Disease",
-  },
-  {
-    categoryFilterConfigIds: [CATEGORY_FILTER_ID.ETHNICITY],
-    label: "Ethnicity",
-  },
-  {
-    categoryFilterConfigIds: [CATEGORY_FILTER_ID.GENE_COUNT],
-    label: "Gene Count",
-  },
-  {
-    categoryFilterConfigIds: [CATEGORY_FILTER_ID.ORGANISM],
-    label: "Organism",
-  },
-  {
-    categoryFilterConfigIds: [CATEGORY_FILTER_ID.PUBLICATION_AUTHORS],
-    label: "Author",
-  },
-  {
-    categoryFilterConfigIds: [CATEGORY_FILTER_ID.PUBLICATION_DATE_VALUES],
-    label: "Publication Date",
-  },
-  {
-    categoryFilterConfigIds: [CATEGORY_FILTER_ID.SEX],
-    label: "Sex",
-  },
-  {
-    categoryFilterConfigIds: [CATEGORY_FILTER_ID.TISSUE_DEPRECATED],
-    label: "Tissue",
-  },
-  {
-    categoryFilterConfigIds: [CATEGORY_FILTER_ID.TISSUE_CALCULATED],
-    label: "Tissue (Ontology)",
-  },
-];
+// /**
+//  * UI configuration for each category filter.
+//  * TODO(cc) remove this?
+//  */
+// export const CATEGORY_FILTER_UI_CONFIGS: CategoryFilterUIConfig[] = [
+//   {
+//     categoryFilterConfigIds: [CATEGORY_FILTER_ID.ASSAY],
+//     label: "Assay",
+//   },
+//   {
+//     categoryFilterConfigIds: [CATEGORY_FILTER_ID.CELL_COUNT],
+//     label: "Cell Count",
+//   },
+//   {
+//     categoryFilterConfigIds: [CATEGORY_FILTER_ID.CELL_TYPE_DEPRECATED],
+//     label: "Cell Type",
+//   },
+//   {
+//     categoryFilterConfigIds: [CATEGORY_FILTER_ID.CELL_TYPE],
+//     label: "Cell Type (Ontology)",
+//   },
+//   {
+//     categoryFilterConfigIds: [CATEGORY_FILTER_ID.DEVELOPMENT_STAGE],
+//     label: "Development Stage",
+//   },
+//   {
+//     categoryFilterConfigIds: [CATEGORY_FILTER_ID.DISEASE],
+//     label: "Disease",
+//   },
+//   {
+//     categoryFilterConfigIds: [CATEGORY_FILTER_ID.ETHNICITY],
+//     label: "Ethnicity",
+//   },
+//   {
+//     categoryFilterConfigIds: [CATEGORY_FILTER_ID.GENE_COUNT],
+//     label: "Gene Count",
+//   },
+//   {
+//     categoryFilterConfigIds: [CATEGORY_FILTER_ID.ORGANISM],
+//     label: "Organism",
+//   },
+//   {
+//     categoryFilterConfigIds: [CATEGORY_FILTER_ID.PUBLICATION_AUTHORS],
+//     label: "Author",
+//   },
+//   {
+//     categoryFilterConfigIds: [CATEGORY_FILTER_ID.PUBLICATION_DATE_VALUES],
+//     label: "Publication Date",
+//   },
+//   {
+//     categoryFilterConfigIds: [CATEGORY_FILTER_ID.SEX],
+//     label: "Sex",
+//   },
+//   {
+//     categoryFilterConfigIds: [CATEGORY_FILTER_ID.TISSUE_DEPRECATED],
+//     label: "Tissue",
+//   },
+//   {
+//     categoryFilterConfigIds: [CATEGORY_FILTER_ID.TISSUE_CALCULATED],
+//     label: "Tissue (Ontology)",
+//   },
+// ];
 
 /**
  * Case insensitive sorter

@@ -11,7 +11,6 @@ import { Ontology } from "src/common/entities";
 import { TISSUE_DESCENDANTS } from "src/common/queries/tissue-descendants";
 import {
   CATEGORY_FILTER_CONFIGS_BY_ID,
-  CATEGORY_FILTER_UI_CONFIGS,
   COLLATOR_CASE_INSENSITIVE,
   DEVELOPMENT_STAGE_ONTOLOGY_TERM_SET,
   TISSUE_ORGAN_ONTOLOGY_TERM_SET,
@@ -23,7 +22,6 @@ import {
   CategoryFilterPanelConfig,
   CategoryValueKey,
   CategoryView,
-  CategoryViews,
   CATEGORY_FILTER_ID,
   CATEGORY_FILTER_PANEL_ID,
   CuratedOntologyCategoryFilterConfig,
@@ -104,7 +102,7 @@ export interface SelectCategoryValue {
  * Shape of return value from this useFilter hook.
  */
 export interface FilterInstance {
-  categoryViews: CategoryViews[];
+  categoryViews: CategoryView[];
   onFilter: OnFilterFn;
 }
 
@@ -548,105 +546,93 @@ function buildCategoryValueLabel(
 }
 
 /**
- * Build view-specific models from UI config and filter state, to facilitate easy rendering.
+ * Build view-specific models from filter state, to facilitate easy rendering.
  * @param filterState - Categories, category value and their counts with the current filter applied.
  * @param ontologyTermLabelsById - Set of ontology term labels keyed by term ID, used to determine labels for ontology
  * terms.
  * @returns Array of category views objects.
  */
-// eslint-disable-next-line sonarjs/cognitive-complexity --- TODO(cc) revisit
 function buildCategoryViews(
   filterState?: FilterState,
   ontologyTermLabelsById?: Map<string, string>
-): CategoryViews[] {
+): CategoryView[] {
   if (!filterState || !ontologyTermLabelsById) {
     return [];
   }
+  return Object.keys(filterState)
+    .map((strCategoryFilterId: string) => {
+      const categoryFilterId = strCategoryFilterId as CategoryFilterId;
 
-  // Build up view models for each UI config.
-  // TODO(cc) pass in original set of category IDs and build UI from that (rather than having to do truthy check for categoryValueByValue below)
-  return CATEGORY_FILTER_UI_CONFIGS.map((categoryFilterUIConfig) => {
-    const { categoryFilterConfigIds, label } = categoryFilterUIConfig;
-    const categoryViews = categoryFilterConfigIds
-      .map((categoryConfigKey) => {
-        const config = CATEGORY_FILTER_CONFIGS_BY_ID[categoryConfigKey];
-        const { categoryFilterId } = config;
+      // Return if there's no filter state for the UI config. This will be true for categories such as cell count and
+      // gene count when viewing collections.
+      const rangeOrSelectValue = filterState[categoryFilterId];
 
-        // Return if there's no filter state for the UI config. This will be true for categories such as cell count and
-        // gene count when viewing collections.
-        const rangeOrSelectValue = filterState[categoryFilterId];
-        if (!rangeOrSelectValue) {
-          return;
-        }
+      // Grab the config for this category filter.
+      const config = CATEGORY_FILTER_CONFIGS_BY_ID[categoryFilterId];
 
-        // Build view model for single or multiselect categories
-        // TODO(cc) remove need for multiple checks, can we get just kind to assert the category value type?
-        if (
-          config.viewKind === "SELECT" &&
-          isSelectCategoryValue(rangeOrSelectValue)
-        ) {
-          return buildSelectCategoryView(
-            categoryFilterId, // TODO(cc) remove id from params, here and others
-            config,
-            rangeOrSelectValue,
-            filterState,
-            ontologyTermLabelsById
-          );
-        }
-
-        // Build view model for curated ontology categories.
-        if (
-          config.viewKind === "CURATED_ONTOLOGY" &&
-          isSelectCategoryValue(rangeOrSelectValue) &&
-          isCuratedOntologyCategoryFilterConfig(config)
-        ) {
-          return buildOntologyCategoryView(
-            categoryFilterId,
-            config,
-            rangeOrSelectValue,
-            filterState,
-            ontologyTermLabelsById
-          );
-        }
-
-        // Build view model for range categories.
-        if (
-          config.viewKind === "RANGE" &&
-          !isSelectCategoryValue(rangeOrSelectValue)
-        ) {
-          return buildRangeCategoryView(
-            categoryFilterId,
-            config,
-            rangeOrSelectValue
-          );
-        }
-
-        // Build view model for multi-panel categories.
-        // TODO(cc)
-        if (
-          config.viewKind === "MULTI_PANEL" &&
-          isSelectCategoryValue(rangeOrSelectValue)
-        ) {
-          return buildMultiPanelCategoryView(
-            categoryFilterId,
-            config,
-            rangeOrSelectValue,
-            ontologyTermLabelsById
-          );
-        }
-
-        // Error - unknown view kind/category value.
-        console.log(
-          `Error attempting to build view model for category "${config.categoryFilterId}".`
+      // Build view model for single or multiselect categories
+      // TODO(cc) remove need for multiple checks, can we get just kind to assert the category value type?
+      if (
+        config.viewKind === "SELECT" &&
+        isSelectCategoryValue(rangeOrSelectValue)
+      ) {
+        return buildSelectCategoryView(
+          categoryFilterId, // TODO(cc) remove id from params, here and others
+          config,
+          rangeOrSelectValue,
+          filterState,
+          ontologyTermLabelsById
         );
-      })
-      .filter((categoryView): categoryView is CategoryView => !!categoryView);
+      }
 
-    return {
-      categoryViews,
-      label,
-    };
-  }).sort(sortCategoryViews);
+      // Build view model for curated ontology categories.
+      if (
+        config.viewKind === "CURATED_ONTOLOGY" &&
+        isSelectCategoryValue(rangeOrSelectValue) &&
+        isCuratedOntologyCategoryFilterConfig(config)
+      ) {
+        return buildOntologyCategoryView(
+          categoryFilterId,
+          config,
+          rangeOrSelectValue,
+          filterState,
+          ontologyTermLabelsById
+        );
+      }
+
+      // Build view model for range categories.
+      if (
+        config.viewKind === "RANGE" &&
+        !isSelectCategoryValue(rangeOrSelectValue)
+      ) {
+        return buildRangeCategoryView(
+          categoryFilterId,
+          config,
+          rangeOrSelectValue
+        );
+      }
+
+      // Build view model for multi-panel categories.
+      // TODO(cc)
+      if (
+        config.viewKind === "MULTI_PANEL" &&
+        isSelectCategoryValue(rangeOrSelectValue)
+      ) {
+        return buildMultiPanelCategoryView(
+          categoryFilterId,
+          config,
+          rangeOrSelectValue,
+          ontologyTermLabelsById
+        );
+      }
+
+      // Error - unknown view kind/category value.
+      console.log(
+        `Error attempting to build view model for category "${config.categoryFilterId}".`
+      );
+    })
+    .filter((categoryView): categoryView is CategoryView => !!categoryView)
+    .sort(sortCategoryViews);
 }
 
 /**
@@ -1897,8 +1883,8 @@ function onFilterMultiPanelCategory<T extends Categories>(
 ) {
   const { categoryFilterId } = config;
 
-  // Track selected category and value. TODO(cc)
-  // trackSelectCategoryValueSelected(config, categoryValueKey, filters);
+  // Track selected category and value. TODO(cc) revisit uiFilters here
+  trackSelectCategoryValueSelected(config, categoryValueKey, uiFilters);
 
   // TODO(cc) temp only - can we keep prefixes out of raw filter value and just apply here? (this might simplify the view code).
   // Process the selected values: remove inferred and explicit prefixes, dedupe.
@@ -2282,7 +2268,7 @@ function sortCategoryValueViews(
  * @param c1 - Second category views to compare.
  * @returns Number indicating sort precedence of c0 vs c1.
  */
-function sortCategoryViews(c0: CategoryViews, c1: CategoryViews): number {
+function sortCategoryViews(c0: CategoryView, c1: CategoryView): number {
   return COLLATOR_CASE_INSENSITIVE.compare(c0.label, c1.label);
 }
 

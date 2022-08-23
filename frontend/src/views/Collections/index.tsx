@@ -173,23 +173,11 @@ export default function Collections(): JSX.Element {
         filter: "includesSome",
         id: CATEGORY_FILTER_ID.SEX,
       },
-      // Hidden, required for filter.
+      // Hidden, required for filter. TODO(cc) do we need all of these tissue columns?
       {
-        accessor: ontologyLabelCellAccessorFn("tissue"),
+        accessor: "tissueCalculated",
         filter: "includesSome",
-        id: CATEGORY_FILTER_ID.TISSUE,
-      },
-      // Hidden, required for filter.
-      {
-        accessor: "tissue_ancestors",
-        filter: "includesSome",
-        id: CATEGORY_FILTER_ID.TISSUE_SYSTEM,
-      },
-      // Hidden, required for filter.
-      {
-        accessor: "tissue_ancestors",
-        filter: "includesSome",
-        id: CATEGORY_FILTER_ID.TISSUE_ORGAN,
+        id: CATEGORY_FILTER_ID.TISSUE_CALCULATED, // TODO(cc) revisit?
       },
     ],
     []
@@ -219,9 +207,7 @@ export default function Collections(): JSX.Element {
           CATEGORY_FILTER_ID.PUBLICATION_AUTHORS,
           CATEGORY_FILTER_ID.PUBLICATION_DATE_VALUES,
           CATEGORY_FILTER_ID.SEX,
-          CATEGORY_FILTER_ID.TISSUE,
-          CATEGORY_FILTER_ID.TISSUE_SYSTEM,
-          CATEGORY_FILTER_ID.TISSUE_ORGAN,
+          CATEGORY_FILTER_ID.TISSUE_CALCULATED, // TODO(cc) revisit
         ],
         sortBy: [
           {
@@ -247,7 +233,7 @@ export default function Collections(): JSX.Element {
           return false;
         }
         return !(
-          (categoryKey === CATEGORY_FILTER_ID.TISSUE ||
+          (categoryKey === CATEGORY_FILTER_ID.TISSUE_CALCULATED ||
             categoryKey === CATEGORY_FILTER_ID.CELL_TYPE) &&
           !isFilterEnabled
         );

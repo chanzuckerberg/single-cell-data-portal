@@ -329,6 +329,7 @@ export interface Categories {
   sex: Ontology[];
   tissue: Ontology[]; // TODO(cc) remove with #2569.
   tissue_ancestors: string[];
+  tissueCalculated: string[];
 }
 
 /**
@@ -338,14 +339,14 @@ export type CategoriesKeyOfTypeOntologyArray = {
   [K in keyof Categories]: Categories[K] extends Ontology[] ? K : never;
 }[keyof Categories];
 
-/**
- * View model of category view container, possibly containing more than one category to display in multiple filter
- * panels (e.g. tissue).
- */
-export interface CategoryViews {
-  categoryViews: CategoryView[]; // TODO(cc) revert this back to singular?
-  label: string;
-}
+// /**
+//  * View model of category view container, possibly containing more than one category to display in multiple filter
+//  * panels (e.g. tissue).
+//  */
+// export interface CategoryViews {
+//   categoryViews: CategoryView[]; // TODO(cc) revert this back to singular?
+//   label: string;
+// }
 
 /**
  * Possible category view model types.
@@ -371,7 +372,10 @@ export type CellPropsValue<T> = { value: CellValue<T> };
  * Join of collection, dataset and aggregated dataset information, optimized for filtering collections (that is,
  * datasets grouped by collection.
  */
-export interface CollectionRow extends Categories, PublisherMetadataCategories {
+export interface CollectionRow
+  extends Categories,
+    PublisherMetadataCategories,
+    TissueCategories {
   id: string;
   name: string;
   published_at: number;
@@ -384,7 +388,10 @@ export interface CollectionRow extends Categories, PublisherMetadataCategories {
 /**
  * Join of dataset and collection information, optimized for filtering datasets.
  */
-export interface DatasetRow extends Categories, PublisherMetadataCategories {
+export interface DatasetRow
+  extends Categories,
+    PublisherMetadataCategories,
+    TissueCategories {
   cell_count: number | null;
   collection_id: Collection["id"];
   collection_name: Collection["name"];
@@ -396,7 +403,6 @@ export interface DatasetRow extends Categories, PublisherMetadataCategories {
   published_at: number;
   recency: number; // Used by sort
   revised_at?: number;
-  tissueCalculated: string[];
 }
 
 /**
@@ -620,3 +626,11 @@ export interface SelectCategoryView {
  * Function invoked to update state for the filter category input value.
  */
 export type SetSearchValueFn = Dispatch<SetStateAction<string>>;
+
+/**
+ * Tissue-related filterable values of collections and datasets.
+ * TODO(cc) revisit
+ */
+export interface TissueCategories {
+  tissueCalculated: string[];
+}

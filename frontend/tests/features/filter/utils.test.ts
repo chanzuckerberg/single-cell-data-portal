@@ -2,7 +2,7 @@
  * Test suite for filter-related utils.
  */
 
-import { DEVELOPMENT_STAGE_ONTOLOGY_TERM_SET } from "src/components/common/Filter/common/entities";
+import { DEVELOPMENT_STAGE_ONTOLOGY_TERM_SET } from "src/components/common/Filter/common/constants";
 import {
   findOntologyNodeById,
   findOntologyParentNode,

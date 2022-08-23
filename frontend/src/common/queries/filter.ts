@@ -275,6 +275,10 @@ function aggregateCollectionDatasetRows(
         organism: [...accum.organism, ...collectionDatasetRow.organism],
         sex: [...accum.sex, ...collectionDatasetRow.sex],
         tissue: [...accum.tissue, ...collectionDatasetRow.tissue], // TODO(cc) remove with #2569.
+        tissueCalculated: [
+          ...accum.tissueCalculated,
+          ...collectionDatasetRow.tissueCalculated,
+        ],
         tissue_ancestors: [
           ...accum.tissue_ancestors,
           ...collectionDatasetRow.tissue_ancestors,
@@ -291,6 +295,7 @@ function aggregateCollectionDatasetRows(
       organism: [],
       sex: [],
       tissue: [], // TODO(cc) remove with #2569.
+      tissueCalculated: [],
       tissue_ancestors: [],
     }
   );
@@ -310,6 +315,7 @@ function aggregateCollectionDatasetRows(
     organism: uniqueOntologies(aggregatedCategoryValues.organism),
     sex: uniqueOntologies(aggregatedCategoryValues.sex),
     tissue: uniqueOntologies(aggregatedCategoryValues.tissue), // TODO(cc) remove with #2569.
+    tissueCalculated: [...new Set(aggregatedCategoryValues.tissueCalculated)],
     tissue_ancestors: [...new Set(aggregatedCategoryValues.tissue_ancestors)],
   };
 }
