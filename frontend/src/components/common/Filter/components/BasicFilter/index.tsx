@@ -1,9 +1,10 @@
 import { Popover, Position } from "@blueprintjs/core";
-import { ReactNode } from "react";
+import { ElementType, ReactNode } from "react";
+import { useFilterSearch } from "src/components/common/Filter/components/FilterSearch/common/useFilterSearch";
 import { Filter } from "../../common/style";
 
 interface Props {
-  content: ReactNode;
+  Content: ElementType;
   flipEnabled?: boolean;
   isDisabled: boolean;
   tags: ReactNode;
@@ -11,12 +12,14 @@ interface Props {
 }
 
 export default function BasicFilter({
-  content,
+  Content,
   flipEnabled = true,
   isDisabled,
   tags,
   target,
 }: Props): JSX.Element {
+  const filterSearchState = useFilterSearch();
+  const { clearSearchValueFn } = filterSearchState;
   return (
     <Filter>
       <Popover
@@ -27,10 +30,11 @@ export default function BasicFilter({
           flip: { enabled: flipEnabled },
           offset: { offset: "0, 4" },
         }}
+        onClosed={clearSearchValueFn}
         position={Position.BOTTOM_LEFT}
       >
         {target}
-        {content}
+        <Content {...filterSearchState} />
       </Popover>
       {tags}
     </Filter>

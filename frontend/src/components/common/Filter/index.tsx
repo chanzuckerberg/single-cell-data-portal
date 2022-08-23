@@ -1,10 +1,12 @@
 import { ChangeEvent, ReactNode } from "react";
 import { CategoryFilterId } from "src/common/hooks/useCategoryFilter";
 import {
+  CategoryValueKey,
   CategoryView,
   OnFilterFn,
   OntologyCategoryView,
   OntologyMultiPanelCategoryView,
+  Range,
   RangeCategoryView,
   SelectCategoryValueView,
   SelectCategoryView,
@@ -16,6 +18,7 @@ import FilterLabel from "src/components/common/Filter/components/FilterLabel";
 import FilterMenu from "src/components/common/Filter/components/FilterMenu";
 import { MAX_DISPLAYABLE_MENU_ITEMS } from "src/components/common/Filter/components/FilterMenu/style";
 import FilterRange from "src/components/common/Filter/components/FilterRange";
+import { FilterSearchState } from "src/components/common/Filter/components/FilterSearch/common/useFilterSearch";
 import FilterViews from "src/components/common/Filter/components/FilterViews";
 import FilterMultiPanelCategoryView from "src/components/common/Filter/components/FilterViews/components/FilterMultiPanelCategoryView";
 import FilterTags, { CategoryTag } from "./components/FilterTags";
@@ -35,8 +38,10 @@ export default function Filter({
         const { isDisabled = false, label, tooltip } = categoryView;
         return (
           <BasicFilter
-            content={buildBasicFilterContent(categoryView, onFilter)}
-            flipEnabled={categoryView.label !== "Tissue (Ontology)"} // TODO(cc) review use of flipEnabled prop
+            Content={(filterSearchState: FilterSearchState): JSX.Element =>
+              buildBasicFilterContent(categoryView, onFilter, filterSearchState)
+            }
+            flipEnabled={categoryViews.label !== "Tissue (Ontology)"} // TODO(cc) review use of flipEnabled prop
             isDisabled={isDisabled}
             key={categoryView.label}
             tags={<FilterTags tags={buildFilterTags(categoryView, onFilter)} />}
@@ -52,13 +57,26 @@ export default function Filter({
  * Build content model of basic filter depending on category type.
  * @param categoryView - View model of category to display.
  * @param onFilter - Function to execute on select of category value or remove of selected category value.
- * @returns React node representing content to display inside basic filter menu.
+ * @param filterSearchState - Filter search value and corresponding functions to clear or update search value.
+ * @returns Element representing content to display inside basic filter menu.
  */
 function buildBasicFilterContent(
   categoryView: CategoryView,
-  onFilter: OnFilterFn
-): ReactNode {
+  onFilter: OnFilterFn,
+  filterSearchState: FilterSearchState
+): JSX.Element {
   const { key } = categoryView;
+  const { clearSearchValueFn, searchValue, setSearchValue } = filterSearchState;
+
+  // Update onFilter function with clear search value function.
+  const onFilterWithClearSearch = (
+    categoryKey: CategoryFilterId,
+    key: CategoryValueKey | null, // null for ranges.
+    values: CategoryValueKey[] | Range
+  ) => {
+    onFilter(categoryKey, key, values);
+    clearSearchValueFn();
+  };
 
   // Handle ontology categories.
   if (isOntologyCategoryView(categoryView)) {
@@ -85,6 +103,8 @@ function buildBasicFilterContent(
         onFilter={onFilter}
         onUpdateSearchValue={onUpdateSearchValue}
         pinnedValues={filterCategoryValuesWithCount(pinnedValues)}
+        searchValue={searchValue}
+        setSearchValue={setSearchValue}
         unpinnedValues={filterCategoryValuesWithCount(unpinnedValues)}
         values={filterCategoryValuesWithCount(values)}
       />
@@ -96,7 +116,10 @@ function buildBasicFilterContent(
     return (
       <FilterMultiPanelCategoryView
         categoryView={categoryView}
-        onFilter={onFilter}
+        isSearchable={isFilterMultiPanelSearchable(categoryView)}
+        onFilter={onFilterWithClearSearch}
+        searchValue={searchValue}
+        setSearchValue={setSearchValue}
       />
     );
   }
@@ -179,9 +202,9 @@ function buildOntologyCategoryTags(
 /**
  * Returns ontology multi panel category tag with tag label and corresponding Tag onRemove function.
  * TODO(cc) review code.
- * @param categoryView
+ * @param categoryView - Ontology multi panel category view.
  * @param categoryKey
- * @param onFilter
+ * @param onFilter - Function to execute on select of category value or remove of selected category value.
  * @returns ontology multi panel category tag.
  */
 function buildOntologyMultiPanelCategoryTags(
@@ -280,6 +303,25 @@ function filterCategoryValuesWithCount(
 }
 
 /**
+ * Returns true if ontology multi panel is searchable.
+ * @param categoryView - Ontology multi panel category view.
+ * @returns true if ontology multi panel is searchable.
+ */
+function isFilterMultiPanelSearchable(
+  categoryView: OntologyMultiPanelCategoryView
+): boolean {
+  let isSearchable = false;
+  for (const panel of categoryView.panels) {
+    const { views } = panel;
+    if (views.length > MAX_DISPLAYABLE_MENU_ITEMS) {
+      isSearchable = true;
+      break;
+    }
+  }
+  return isSearchable;
+}
+
+/**
  * Determine if the given category view is an ontology category view and not a select or range or ontology multi panel category view.
  * @param categoryView - Selected filter value, either a category value key (e.g. "normal"), range (e.g. [0, 10]) or
  * ontology tree.
@@ -303,6 +345,7 @@ export function isOntologyMultiPanelCategoryView(
 
 /**
  * Determine if the given category view is a range category view and not a select or ontology with or without multi panel category view.
+ * TODO(cc) unused function.
  * @param categoryView - Selected filter value, either a category value key (e.g. "normal"), range (e.g. [0, 10]) or
  * ontology tree.
  * @returns True if the given category view is a range category view.

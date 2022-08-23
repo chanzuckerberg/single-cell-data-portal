@@ -3,7 +3,12 @@ import {
   OnFilterFn,
   OntologyMultiPanelCategoryView,
   OntologyPanelCategoryView,
+  SetSearchValueFn,
 } from "src/components/common/Filter/common/entities";
+import {
+  Search as FilterSearch,
+  Views,
+} from "src/components/common/Filter/components/FilterViews/components/FilterMultiPanelCategoryView/style";
 import FilterSinglePanelCategoryView from "src/components/common/Filter/components/FilterViews/components/FilterSinglePanelCategoryView";
 import { MAX_DISPLAYABLE_LIST_ITEMS } from "src/components/common/Filter/components/FilterViews/components/FilterView";
 import {
@@ -15,7 +20,10 @@ import { ViewsMenu } from "src/components/common/Filter/components/FilterViews/s
 
 interface Props {
   categoryView: OntologyMultiPanelCategoryView;
+  isSearchable: boolean;
   onFilter: OnFilterFn;
+  searchValue: string;
+  setSearchValue: SetSearchValueFn;
 }
 
 /**
@@ -36,23 +44,36 @@ function calculateViewListMaxHeight(
 
 export default function FilterMultiPanelCategoryView({
   categoryView,
+  isSearchable,
   onFilter,
+  searchValue,
+  setSearchValue,
 }: Props): JSX.Element {
   const { key, panels } = categoryView;
   const viewListMaxHeight = calculateViewListMaxHeight(panels);
   return (
-    <ViewsMenu>
-      {panels.map((ontologyCategoryView, i) => (
-        <Fragment key={`${ontologyCategoryView.label}${i}`}>
-          {i !== 0 && <ViewDivider orientation="vertical" />}
-          <FilterSinglePanelCategoryView
-            categoryKey={key}
-            categoryView={ontologyCategoryView}
-            onFilter={onFilter}
-            viewListMaxHeight={viewListMaxHeight}
-          />
-        </Fragment>
-      ))}
-    </ViewsMenu>
+    <Views>
+      {/* Optional search bar */}
+      {isSearchable && (
+        <FilterSearch
+          searchValue={searchValue}
+          setSearchValue={setSearchValue}
+        />
+      )}
+      <ViewsMenu>
+        {panels.map((ontologyCategoryView, i) => (
+          <Fragment key={`${ontologyCategoryView.label}${i}`}>
+            {i !== 0 && <ViewDivider orientation="vertical" />}
+            <FilterSinglePanelCategoryView
+              categoryKey={key}
+              categoryView={ontologyCategoryView}
+              onFilter={onFilter}
+              searchValue={searchValue}
+              viewListMaxHeight={viewListMaxHeight}
+            />
+          </Fragment>
+        ))}
+      </ViewsMenu>
+    </Views>
   );
 }

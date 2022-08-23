@@ -623,7 +623,8 @@ export interface SelectCategoryView {
 }
 
 /**
- * Function invoked to update state for the filter category input value.
+ * Function invoked to update state for the filter category search value.
+ * TODO(cc) relocate to useFilterSearch.
  */
 export type SetSearchValueFn = Dispatch<SetStateAction<string>>;
 
