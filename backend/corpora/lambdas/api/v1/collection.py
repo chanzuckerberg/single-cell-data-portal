@@ -19,7 +19,7 @@ from ....common.entities import Collection
 from .authorization import is_user_owner_or_allowed, owner_or_allowed
 from ....common.utils.http_exceptions import (
     InvalidParametersHTTPException,
-    ConflictException,
+    ForbiddenHTTPException,
 )
 from ....api_server.db import dbconnect
 
@@ -118,9 +118,9 @@ def post_collection_revision_common(collection_id: str, token_info: dict):
     )
     try:
         collection_revision = collection.create_revision()
-    except sqlalchemy.exc.IntegrityError as ex:
+    except sqlalchemy.exc.IntegrityError:
         db_session.rollback()
-        raise ConflictException() from ex
+        raise ForbiddenHTTPException("A revision is already in progess.")
     return collection_revision
 
 

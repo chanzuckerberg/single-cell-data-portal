@@ -259,8 +259,8 @@ paths:
                     $ref: "#/components/schemas/collection_id"
         "401":
           $ref: "#/components/responses/401"
-        "409":
-          $ref: "#/components/responses/409"
+        "403":
+          $ref: "#/components/responses/403"
 
   /v1/collections/{collection_id}/datasets:
     delete:
