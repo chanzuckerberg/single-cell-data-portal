@@ -1343,10 +1343,25 @@ class TestVerifyCollection(unittest.TestCase):
         errors = []
         body = dict(name="", contact_name="", description="", contact_email="")
         verify_collection_body(body, errors)
-        self.assertIn({"name": "description", "reason": "Cannot be blank."}, errors)
-        self.assertIn({"name": "name", "reason": "Cannot be blank."}, errors)
-        self.assertIn({"name": "contact_name", "reason": "Cannot be blank."}, errors)
-        self.assertIn({"name": "contact_email", "reason": "Cannot be blank."}, errors)
+        error_message = "Cannot be blank."
+        self.assertIn({"name": "description", "reason": error_message}, errors)
+        self.assertIn({"name": "name", "reason": error_message}, errors)
+        self.assertIn({"name": "contact_name", "reason": error_message}, errors)
+        self.assertIn({"name": "contact_email", "reason": error_message}, errors)
+
+    def test_invalid_characters_in_field(self):
+        errors = []
+        invalid_strings = [b"\x00some data", b"text\x1f", b"text\x01", b"\x7ftext"]
+        for test_string in invalid_strings:
+            with self.subTest(test_string):
+                string = test_string.decode(encoding="utf-8")
+                body = dict(name=string, contact_name=string, description=string, contact_email=string)
+                verify_collection_body(body, errors)
+                error_message = "Invalid characters detected."
+                self.assertIn({"name": "description", "reason": error_message}, errors)
+                self.assertIn({"name": "name", "reason": error_message}, errors)
+                self.assertIn({"name": "contact_name", "reason": error_message}, errors)
+                self.assertIn({"name": "contact_email", "reason": error_message}, errors)
 
     def test_invalid_email(self):
         bad_emails = ["@.", "email@.", "@place.com", "email@.com", "email@place."]

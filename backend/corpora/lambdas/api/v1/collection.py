@@ -22,6 +22,7 @@ from ....common.utils.http_exceptions import (
     ForbiddenHTTPException,
 )
 from ....api_server.db import dbconnect
+from ....common.utils.regex import CONTROL_CHARS
 
 
 @dbconnect
@@ -199,23 +200,28 @@ def verify_collection_links(body: dict, errors: list) -> None:
             errors.append(_error_message(index, url))
 
 
+control_char_re = re.compile(CONTROL_CHARS)
+
+
 def verify_collection_body(body: dict, errors: list) -> None:
-    def check_if_blank(key) -> bool:
+    def check(key) -> bool:
         if key in body.keys():
             if not body[key]:
                 errors.append({"name": key, "reason": "Cannot be blank."})
+            elif control_char_re.search(body[key]):
+                errors.append({"name": key, "reason": "Invalid characters detected."})
             else:
                 return body[key]
 
-    contact_email = check_if_blank("contact_email")
+    contact_email = check("contact_email")
     if contact_email:
         result = email_regex.match(contact_email)
         if not result:
             errors.append({"name": "contact_email", "reason": "Invalid format."})
 
-    check_if_blank("description")
-    check_if_blank("name")
-    check_if_blank("contact_name")
+    check("description")
+    check("name")
+    check("contact_name")
 
     verify_collection_links(body, errors)
 
