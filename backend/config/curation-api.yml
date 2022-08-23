@@ -780,6 +780,7 @@ components:
         - COUNT
         - NORMAL
       type: string
+      nullable: true
     explorer_url:
       description:
         The url at which a given Dataset may be explored using the cellxgene
