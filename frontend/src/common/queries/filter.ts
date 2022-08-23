@@ -16,7 +16,7 @@ import {
   CATEGORY_KEY,
   CollectionRow,
   DatasetRow,
-  ETHNICITY_DENY_LIST,
+  SELF_REPORTED_ETHNICITY_DENY_LIST,
   PUBLICATION_DATE_VALUES,
 } from "src/components/common/Filter/common/entities";
 import { checkIsOverMaxCellCount } from "src/components/common/Grid/common/utils";
@@ -714,9 +714,9 @@ function sanitizeDataset(dataset: DatasetResponse): DatasetResponse {
         return accum;
       }
 
-      if (categoryKey === CATEGORY_KEY.ETHNICITY) {
+      if (categoryKey === CATEGORY_KEY.SELF_REPORTED_ETHNICITY) {
         accum.self_reported_ethnicity = (dataset.self_reported_ethnicity ?? []).filter(
-          (self_reported_ethnicity) => !ETHNICITY_DENY_LIST.includes(self_reported_ethnicity.label)
+          (self_reported_ethnicity) => !SELF_REPORTED_ETHNICITY_DENY_LIST.includes(self_reported_ethnicity.label)
         );
         return accum;
       }
