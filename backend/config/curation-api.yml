@@ -734,7 +734,7 @@ components:
               type: boolean
             x_approximate_distribution:
               "$ref": "#/components/schemas/distribution"
-            x_normalization:
+            X_normalization:
               nullable: true
               type: string
           type: object
