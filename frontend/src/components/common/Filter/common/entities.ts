@@ -43,7 +43,7 @@ export enum CATEGORY_KEY {
   "CELL_TYPE" = "cell_type",
   "DEVELOPMENT_STAGE_ANCESTORS" = "development_stage_ancestors",
   "DISEASE" = "disease",
-  "ETHNICITY" = "ethnicity",
+  "ETHNICITY" = "self_reported_ethnicity",
   "MEAN_GENES_PER_CELL" = "mean_genes_per_cell",
   "ORGANISM" = "organism",
   "PUBLICATION_AUTHORS" = "publicationAuthors",
@@ -68,7 +68,7 @@ export interface Categories {
   cell_type: Ontology[];
   disease: Ontology[];
   development_stage_ancestors: string[];
-  ethnicity: Ontology[];
+  self_reported_ethnicity: Ontology[];
   organism: Ontology[];
   sex: Ontology[];
   tissue: Ontology[]; // TODO(cc) remove with #2569.
@@ -648,7 +648,7 @@ export enum CATEGORY_LABEL {
   cell_type = "Cell Type",
   development_stage_ancestors = "Development Stage",
   disease = "Disease",
-  ethnicity = "Ethnicity",
+  self_reported_ethnicity = "Self-Reported Ethnicity",
   mean_genes_per_cell = "Gene Count",
   publicationAuthors = "Authors",
   publicationDateValues = "Publication Date",
