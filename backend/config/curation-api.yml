@@ -64,6 +64,23 @@ paths:
         - collection
       parameters:
         - $ref: "#/components/parameters/query_visibility"
+        - name: curator
+          description: >-
+            Return collections owned by the specified curator. The use of this parameter is limited to curators 
+            with permission to query all collections.
+          in: query
+          required: false
+          schema:
+            type: string
+          examples:
+            current_curator:
+              summary: Return collections owned by current curator.
+              value:
+                name: "self"
+            specified_curator:
+              summary: Return collections owned by the specified curator
+              value:
+                name: "John Smith"
       responses:
         "200":
           description: OK
@@ -76,13 +93,7 @@ paths:
                     type: array
                     items:
                       allOf:
-                        - $ref: "#/components/schemas/collection_common"
-                        - type: object
-                          properties:
-                            datasets:
-                              type: array
-                              items:
-                                $ref: "#/components/schemas/dataset_preview"
+                        - $ref: "#/components/schemas/collection_list"
         "401":
           $ref: "#/components/responses/401"
     post:
@@ -138,13 +149,8 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/collection_common"
-                  - type: object
-                    properties:
-                      datasets:
-                        type: array
-                        items:
-                          $ref: "#/components/schemas/dataset"
+                  - $ref: "#/components/schemas/collection_get"
+
         "404":
           $ref: "#/components/responses/404"
     patch:
@@ -253,8 +259,8 @@ paths:
                     $ref: "#/components/schemas/collection_id"
         "401":
           $ref: "#/components/responses/401"
-        "409":
-          $ref: "#/components/responses/409"
+        "403":
+          $ref: "#/components/responses/403"
 
   /v1/collections/{collection_id}/datasets:
     delete:
@@ -495,21 +501,26 @@ components:
       properties:
         assets:
           items:
-            allOf:
-              - "$ref": "#/components/schemas/dataset_asset"
-              - properties:
-                  file_size:
-                    type: number
-                  presigned_url:
-                    type: string
-                type: object
+            properties:
+              file_name:
+                type: string
+              file_size:
+                type: number
+              file_type:
+                enum:
+                  - H5AD
+                  - RDS
+                type: string
+              presigned_url:
+                type: string
+            type: object
           type: array
         curator_tag:
           "$ref": "#/components/schemas/curator_tag"
         dataset_id:
           "$ref": "#/components/schemas/dataset_id"
       type: object
-    collection_common:
+    collection_list:
       description: Full Collection metadata
       properties:
         access_type:
@@ -531,6 +542,68 @@ components:
         curator_name:
           nullable: true
           type: string
+        datasets:
+          type: array
+          items:
+            $ref: "#/components/schemas/dataset_preview"
+        description:
+          type: string
+        id:
+          "$ref": "#/components/schemas/collection_id"
+        links:
+          "$ref": "#/components/schemas/links"
+        name:
+          nullable: true
+          type: string
+        processing_status:
+          "$ref": "#/components/schemas/processing_status"
+        published_at:
+          nullable: true
+          type: string
+        publisher_metadata:
+          "$ref": "#/components/schemas/publisher_metadata"
+        revised_at:
+          nullable: true
+          type: string
+        revising_in:
+          type: string
+          description: the id of the associated revision Collection, if one exists and the user is authorized
+          nullable: true
+        revision_of:
+          description: the id of the published version of this Collection
+          nullable: true
+          type: string
+        tombstone:
+          type: boolean
+        visibility:
+          "$ref": "#/components/schemas/visibility"
+      type: object
+    collection_get:
+      description: Full Collection metadata
+      properties:
+        access_type:
+          enum:
+            - READ
+            - WRITE
+          nullable: true
+          type: string
+        collection_url:
+          type: string
+        contact_email:
+          nullable: true
+          type: string
+        contact_name:
+          nullable: true
+          type: string
+        created_at:
+          type: string
+        curator_name:
+          nullable: true
+          type: string
+        datasets:
+          type: array
+          items:
+            $ref: "#/components/schemas/dataset"
         description:
           type: string
         id:
@@ -607,16 +680,16 @@ components:
       allOf:
         - "$ref": "#/components/schemas/dataset_preview"
         - properties:
-            X_approximate_distribution:
-              "$ref": "#/components/schemas/distribution"
-            X_normalization:
-              nullable: true
-              type: string
+            assay:
+              "$ref": "#/components/schemas/ontology_elements"
             cell_count:
               nullable: true
               type: integer
             cell_type:
               "$ref": "#/components/schemas/ontology_elements"
+            curator_tag:
+              "$ref": "#/components/schemas/curator_tag"
+              nullable: true
             dataset_assets:
               items:
                 "$ref": "#/components/schemas/dataset_asset"
@@ -624,10 +697,14 @@ components:
             development_stage:
               "$ref": "#/components/schemas/ontology_elements"
               nullable: true
+            disease:
+              "$ref": "#/components/schemas/ontology_elements"
             ethnicity:
               "$ref": "#/components/schemas/ontology_elements"
             explorer_url:
               "$ref": "#/components/schemas/explorer_url"
+            id:
+              "$ref": "#/components/schemas/dataset_id"
             is_primary_data:
               "$ref": "#/components/schemas/is_primary_data"
             mean_genes_per_cell:
@@ -636,6 +713,8 @@ components:
             name:
               nullable: true
               type: string
+            organism:
+              "$ref": "#/components/schemas/ontology_elements"
             processing_status:
               "$ref": "#/components/schemas/processing_status"
             revised_at:
@@ -649,6 +728,15 @@ components:
               type: string
             sex:
               "$ref": "#/components/schemas/ontology_elements"
+            tissue:
+              "$ref": "#/components/schemas/ontology_elements"
+            tombstone:
+              type: boolean
+            x_approximate_distribution:
+              "$ref": "#/components/schemas/distribution"
+            x_normalization:
+              nullable: true
+              type: string
           type: object
     dataset_asset:
       properties:
