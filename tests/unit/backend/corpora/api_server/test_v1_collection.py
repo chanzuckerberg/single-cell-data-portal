@@ -190,7 +190,6 @@ class TestCollection(BaseAuthAPITest):
                     "organism": [{"label": "test_organism", "ontology_term_id": "test_obo"}],
                     "collection_id": "test_collection_id",
                     "cell_type": [{"label": "test_cell_type", "ontology_term_id": "test_opo"}],
-                    "x_normalization": "test_x_normalization",
                     "x_approximate_distribution": "NORMAL",
                     "batch_condition": ["batchA", "batchB"],
                     "donor_id": ["donor_1", "donor_2"],
