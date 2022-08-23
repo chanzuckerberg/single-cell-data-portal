@@ -18,12 +18,14 @@ class TissueMapper:
         "UBERON_0002107",  # liver
         "UBERON_0002048",  # lung
         "UBERON_0001013",  # adipose tissue
+        "UBERON_0004023",  # ganglionic eminence --> this a part of the embryo, remove in case generality is desired
         "UBERON_0000922",  # embryo
+        "UBERON_0002110",  # gall bladder
+        "UBERON_0001255",  # urinary bladder
         "UBERON_0018707",  # bladder organ
         "UBERON_0000955",  # brain
         "UBERON_0000310",  # breast
         "UBERON_0000057",  # urethra
-        "UBERON_0001255",  # urinary bladder
         "UBERON_0000056",  # ureter
         "UBERON_0001264",  # pancreas
         "UBERON_0001043",  # esophagus
@@ -47,7 +49,6 @@ class TissueMapper:
         "UBERON_0002369",  # adrenal gland
         "UBERON_0002368",  # endocrine gland
         "UBERON_0002365",  # exocrine gland
-        "UBERON_0002110",  # gall bladder
         "UBERON_0002371",  # bone marrow
         "UBERON_0000030",  # lamina propria
         "UBERON_0000029",  # lymph node
@@ -57,8 +58,6 @@ class TissueMapper:
         "UBERON_0003688",  # omentum
         "UBERON_0001987",  # placenta
         "UBERON_0000977",  # pleura
-        "UBERON_0002228",  # rib
-        "UBERON_0003129",  # skull
         "UBERON_0002240",  # spinal cord
         "UBERON_0001723",  # tongue
         "UBERON_0002370",  # thymus
@@ -66,6 +65,9 @@ class TissueMapper:
         "UBERON_0009472",  # axilla
         "UBERON_0001087",  # pleural fluid
         "UBERON_0000344",  # mucosa
+        "UBERON_0001434",  # skeletal system
+        "UBERON_0002228",  # rib
+        "UBERON_0003129",  # skull
         "UBERON_0004537",  # blood vasculature
         "UBERON_0002405",  # immune system
         "UBERON_0001009",  # circulatory system
@@ -76,7 +78,6 @@ class TissueMapper:
         "UBERON_0001004",  # respiratory system
         "UBERON_0000010",  # peripheral nervous system
         "UBERON_0001032",  # sensory system
-        "UBERON_0001434",  # skeletal system
     ]
 
     # Terms to ignore when mapping
