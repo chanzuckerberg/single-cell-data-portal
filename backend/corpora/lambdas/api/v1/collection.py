@@ -22,6 +22,7 @@ from ....common.utils.http_exceptions import (
     ConflictException,
 )
 from ....api_server.db import dbconnect
+from ....common.utils.regex import CONTROL_CHARS
 
 
 @dbconnect
@@ -199,12 +200,15 @@ def verify_collection_links(body: dict, errors: list) -> None:
             errors.append(_error_message(index, url))
 
 
+control_char_re = re.compile(CONTROL_CHARS)
+
+
 def verify_collection_body(body: dict, errors: list) -> None:
     def check(key) -> bool:
         if key in body.keys():
             if not body[key]:
                 errors.append({"name": key, "reason": "Cannot be blank."})
-            elif re.search(r"[\x00-\x1f]", body[key]):
+            elif control_char_re.search(body[key]):
                 errors.append({"name": key, "reason": "Invalid characters detected."})
             else:
                 return body[key]
