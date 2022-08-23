@@ -423,7 +423,7 @@ def extract_metadata(filename) -> dict:
         "assay": _get_term_pairs("assay"),
         "disease": _get_term_pairs("disease"),
         "sex": _get_term_pairs("sex"),
-        "self_reported_ethnicity": _get_term_pairs("self_reported_ethnicity"),  # TODO
+        "self_reported_ethnicity": _get_term_pairs("self_reported_ethnicity"),
         "development_stage": _get_term_pairs("development_stage"),
         "cell_count": adata.shape[0],
         "mean_genes_per_cell": numerator / denominator,
