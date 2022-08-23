@@ -199,19 +199,23 @@ def verify_collection_links(body: dict, errors: list) -> None:
             errors.append(_error_message(index, url))
 
 
-def verify_collection_body(body: dict, errors: list, allow_none: bool = False) -> None:
-    result = email_regex.match(body.get("contact_email", ""))
-    if not result and not allow_none:
-        errors.append({"name": "contact_email", "reason": "Invalid format."})
+def verify_collection_body(body: dict, errors: list) -> None:
+    def check_if_blank(key) -> bool:
+        if key in body.keys():
+            if not body[key]:
+                errors.append({"name": key, "reason": "Cannot be blank."})
+            else:
+                return body[key]
 
-    if not body.get("description") and not allow_none:  # Check if description is None or 0 length
-        errors.append({"name": "description", "reason": "Cannot be blank."})
+    contact_email = check_if_blank("contact_email")
+    if contact_email:
+        result = email_regex.match(contact_email)
+        if not result:
+            errors.append({"name": "contact_email", "reason": "Invalid format."})
 
-    if not body.get("name") and not allow_none:  # Check if name is None or 0 length
-        errors.append({"name": "name", "reason": "Cannot be blank."})
-
-    if not body.get("contact_name") and not allow_none:  # Check if contact_name is None or 0 length
-        errors.append({"name": "contact_name", "reason": "Cannot be blank."})
+    check_if_blank("description")
+    check_if_blank("name")
+    check_if_blank("contact_name")
 
     verify_collection_links(body, errors)
 
@@ -288,7 +292,7 @@ def update_collection(collection_id: str, body: dict, token_info: dict):
 
 def get_collection_and_verify_body(db_session: Session, collection_id: str, body: dict, token_info: dict):
     errors = []
-    verify_collection_body(body, errors, allow_none=True)
+    verify_collection_body(body, errors)
     collection = get_collection_else_forbidden(
         db_session,
         collection_id,
