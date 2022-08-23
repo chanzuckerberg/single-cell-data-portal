@@ -18,7 +18,6 @@ import FilterMenu from "src/components/common/Filter/components/FilterMenu";
 import { MAX_DISPLAYABLE_MENU_ITEMS } from "src/components/common/Filter/components/FilterMenu/style";
 import FilterRange from "src/components/common/Filter/components/FilterRange";
 import FilterViews from "src/components/common/Filter/components/FilterViews";
-import FilterCategoryViews from "src/components/common/Filter/components/FilterViews/components/FilterCategoryViews";
 import FilterMultiPanelCategoryView from "src/components/common/Filter/components/FilterViews/components/FilterMultiPanelCategoryView";
 import FilterTags, { CategoryTag } from "./components/FilterTags";
 
@@ -34,36 +33,16 @@ export default function Filter({
   return (
     <>
       {allCategoryViews.map((categoryViews: CategoryViews) => {
-        if (categoryViews.categoryViews.length === 1) {
-          const categoryView = categoryViews.categoryViews[0];
-          const { isDisabled = false, label, tooltip } = categoryView;
-          return (
-            <BasicFilter
-              content={buildBasicFilterContent(categoryView, onFilter)}
-              flipEnabled={categoryViews.label !== "Tissue (Ontology)"} // TODO(cc) review use of flipEnabled prop
-              isDisabled={isDisabled}
-              key={categoryViews.label}
-              tags={
-                <FilterTags tags={buildFilterTags(categoryView, onFilter)} />
-              }
-              target={buildFilterLabel(label, isDisabled, tooltip)}
-            />
-          );
-        }
-        // TODO(cc) deprecated FilterCategoryViews
+        const categoryView = categoryViews.categoryViews[0];
+        const { isDisabled = false, label, tooltip } = categoryView;
         return (
           <BasicFilter
-            content={
-              <FilterCategoryViews
-                categoryViews={categoryViews.categoryViews}
-                onFilter={onFilter}
-              />
-            }
-            key={categoryViews.label}
+            content={buildBasicFilterContent(categoryView, onFilter)}
             flipEnabled={categoryViews.label !== "Tissue (Ontology)"} // TODO(cc) review use of flipEnabled prop
-            isDisabled={false} // TODO(cc) add category view isDisabled
-            tags={undefined}
-            target={buildFilterLabel(categoryViews.label, false)} // TODO(cc) add category view isDisabled
+            isDisabled={isDisabled}
+            key={categoryViews.label}
+            tags={<FilterTags tags={buildFilterTags(categoryView, onFilter)} />}
+            target={buildFilterLabel(label, isDisabled, tooltip)}
           />
         );
       })}
@@ -301,8 +280,6 @@ function filterCategoryValuesWithCount(
 }
 
 /**
- * TODO(cc) review fn description with possible removal of ontology category view.
- * TODO(cc) deprecated fn.
  * Determine if the given category view is an ontology category view and not a select or range or ontology multi panel category view.
  * @param categoryView - Selected filter value, either a category value key (e.g. "normal"), range (e.g. [0, 10]) or
  * ontology tree.
@@ -315,7 +292,6 @@ export function isOntologyCategoryView(
 }
 
 /**
- * TODO(cc) review fn description with possible removal of ontology category view.
  * Determine if the given category view is an ontology multi panel category view and not a select or range or ontology category view.
  * @param categoryView
  */
@@ -326,7 +302,6 @@ export function isOntologyMultiPanelCategoryView(
 }
 
 /**
- * TODO(cc) review fn description with possible removal of ontology category view.
  * Determine if the given category view is a range category view and not a select or ontology with or without multi panel category view.
  * @param categoryView - Selected filter value, either a category value key (e.g. "normal"), range (e.g. [0, 10]) or
  * ontology tree.
@@ -339,7 +314,6 @@ export function isRangeCategoryView(
 }
 
 /**
- * TODO(cc) review fn description with possible removal of ontology category view.
  * Determine if the given category view is a selected category view and not an ontology with or without multi panel or range category view.
  * @param categoryView - Selected filter value, either a category value key (e.g. "normal"), range (e.g. [0, 10]) or
  * ontology tree.
