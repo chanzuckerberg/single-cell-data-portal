@@ -355,6 +355,8 @@ paths:
         request body; if an existing Dataset has this tag, the existing Dataset SHALL be replaced, otherwise a new
         Dataset will be added. MAY include the **id** of an existing Dataset, in which case the existing Dataset
         SHALL be replaced.
+
+        Only presigned AWS S3 URLs and Dropbox shared file links are supported.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.datasets.upload_link.put
       tags:
         - collection
