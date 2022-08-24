@@ -3,6 +3,8 @@ import styled from "@emotion/styled";
 import FilterSearch from "src/components/common/Filter/components/FilterSearch";
 
 export const Views = styled("div")`
+  display: flex;
+  flex-direction: column;
   padding: 6px;
 `;
 

@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { CategoryFilterId } from "src/common/hooks/useCategoryFilter";
 import {
   isOntologyCategoryView,
@@ -21,6 +22,7 @@ import {
   FilterSearchState,
   useFilterSearch,
 } from "src/components/common/Filter/components/FilterSearch/common/useFilterSearch";
+import { FilterContent as Content } from "./style";
 
 interface Props {
   categoryView: CategoryView;
@@ -32,7 +34,21 @@ export default function FilterContent({
   onFilter,
 }: Props): JSX.Element {
   const filterSearchState = useFilterSearch();
-  return buildBasicFilterContent(categoryView, onFilter, filterSearchState);
+  const clientHeightRef = useRef<number>(0);
+  const filterRef = useRef<HTMLDivElement>(null);
+  const minHeight = clientHeightRef.current;
+
+  useEffect(() => {
+    if (filterRef.current) {
+      clientHeightRef.current = filterRef.current.clientHeight;
+    }
+  }, []);
+
+  return (
+    <Content minHeight={minHeight} ref={filterRef}>
+      {buildBasicFilterContent(categoryView, onFilter, filterSearchState)}
+    </Content>
+  );
 }
 
 /**
