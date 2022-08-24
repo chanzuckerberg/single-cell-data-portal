@@ -62,11 +62,14 @@ class NCBIProvider(object):
             raise NCBIUnexpectedResultException
 
         # search with gene name if needed
-        if not self._is_valid_search_result(search_response) and gene != "":
+        if not self._is_valid_search_result(search_response) and gene and gene != "":
             try:
-                search_response = self._search_gene_uid(gene)
+                # to refine the search parameters, gene is searched with the label "Gene Name" and human "Organism"
+                gene_search_term = "(" + str(gene) + "%5BGene%20Name%5D)%20AND%20human%5BOrganism%5D"
+                search_response = self._search_gene_uid(gene_search_term)
                 if self._is_valid_search_result(search_response):
-                    return (int(search_response["esearchresult"]["idlist"][0]), False)
+                    show_warning_banner = False
+                    return (int(search_response["esearchresult"]["idlist"][0]), show_warning_banner)
                 else:
                     logging.error(f"Unexpected NCBI search result, got {search_response}")
                     raise NCBIUnexpectedResultException
@@ -76,7 +79,8 @@ class NCBIProvider(object):
             logging.error(f"Unexpected NCBI search result, got {search_response}")
             raise NCBIUnexpectedResultException
         else:
-            return (int(search_response["esearchresult"]["idlist"][0]), True)
+            show_warning_banner = False
+            return (int(search_response["esearchresult"]["idlist"][0]), show_warning_banner)
 
     def _search_gene_uid(self, term):
         """

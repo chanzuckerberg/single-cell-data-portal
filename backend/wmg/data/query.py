@@ -48,24 +48,20 @@ class WmgQuery:
     #  /chanzuckerberg/single-cell-data-portal/2133
     @staticmethod
     def _query(cube: Array, criteria: WmgQueryCriteria, indexed_dims: List[str]) -> DataFrame:
+        query_cond = ""
+        attrs = {}
+        for attr_name, vals in criteria.dict(exclude=set(indexed_dims)).items():
+            attr = depluralize(attr_name)
+            if query_cond and len(vals) > 0:
+                query_cond += " and "
+            if len(vals) == 1:
+                attrs[attr] = vals[0]
+                query_cond += f"{attr} == val('{vals[0]}')"
+            elif len(vals) > 1:
+                attrs[attr] = vals
+                query_cond += f"{attr} in {vals}"
 
-        # As TileDB API does not yet support logical OR'ing of attribute values in query conditions, the best we can do
-        # for a single TileDB query is to have TileDB perform the filtering for only the attributes that have
-        # a single criterion value specified by the user. We can then perform the filtering client-side for the
-        # multi-valued attributes, albeit at the cost of retrieving extra data from the TileDB engine. Note, however,
-        # that this extra data is always being retrieved by TileDB from the filesystem (and so across the network), so
-        # the performance impact should not be as bad as it may at first appear.
-
-        # Filter single-valued attribute criterion using TileDB filtering, using QueryCondition
-        # TODO: Benchmark whether this is faster than just doing all the attribute filtering in Pandas
-        single_valued_attrs = {
-            depluralize(attr_name): vals[0]
-            for attr_name, vals in criteria.dict(exclude=set(indexed_dims)).items()
-            if len(vals) == 1
-        }
-        single_valued_attr_conds = [f"{k} == val('{v}')" for k, v in single_valued_attrs.items()]
-        query_cond_expr = " and ".join(single_valued_attr_conds)
-        attr_cond = tiledb.QueryCondition(query_cond_expr) if query_cond_expr else None
+        attr_cond = tiledb.QueryCondition(query_cond) if query_cond else None
 
         tiledb_dims_query = tuple([criteria.dict()[dim_name] or EMPTY_DIM_VALUES for dim_name in indexed_dims])
 
@@ -73,9 +69,9 @@ class WmgQuery:
         #  two queries when there should just one.
         if (
             len(
-                cube.query(
-                    attr_cond=attr_cond, attrs=single_valued_attrs, dims=["organism_ontology_term_id"]
-                ).multi_index[tiledb_dims_query]["organism_ontology_term_id"]
+                cube.query(attr_cond=attr_cond, attrs=attrs, dims=["organism_ontology_term_id"]).multi_index[
+                    tiledb_dims_query
+                ]["organism_ontology_term_id"]
             )
             == 0
         ):
@@ -83,19 +79,6 @@ class WmgQuery:
             return cube.query(attr_cond=attr_cond, use_arrow=False).df[tiledb_dims_query]
 
         query_result_df = cube.query(attr_cond=attr_cond, use_arrow=True).df[tiledb_dims_query]
-
-        # Filter multi-valued attribute criteria using Pandas filtering
-        multi_valued_attrs = {
-            depluralize(attr_name): vals
-            for attr_name, vals in criteria.dict(exclude=set(indexed_dims)).items()
-            if len(vals) > 1
-        }
-        if multi_valued_attrs:
-            # Note that this is a Pandas query expression, which happens to be very similar to TileDB Python
-            # QueryCondition expression. But don't confuse the two! Pandas query expressions _do_ support logical OR'ing
-            # in filtering expressions
-            multi_valued_attr_conds = [f"{k} in {v}" for k, v in multi_valued_attrs.items()]
-            query_result_df = query_result_df.query(" and ".join(multi_valued_attr_conds))
 
         return query_result_df
 

@@ -35,6 +35,12 @@ processing-unittest:
 	DEPLOYMENT_STAGE=test PYTHONWARNINGS=ignore:ResourceWarning python3 \
 		-m unittest discover --start-directory tests/unit/processing_container --top-level-directory . --verbose;
 
+.PHONY: wmg-processing-unittest
+wmg-processing-unittest:
+	# This target is intended to be run INSIDE a container
+	DEPLOYMENT_STAGE=test PYTHONWARNINGS=ignore:ResourceWarning python3 \
+		-m unittest discover --start-directory tests/unit/wmg_processing --top-level-directory . --verbose;
+
 .PHONY: functional-test
 functional-test: local-functional-test
 	# Keeping old target name for reverse compatibility
@@ -157,7 +163,7 @@ local-shell: ## Open a command shell in one of the dev containers. ex: make loca
 	docker-compose exec $(CONTAINER) bash
 
 .PHONY: local-unit-test
-local-unit-test: local-unit-test-backend local-unit-test-processing # Run all backend and processing unit tests in the dev environment, with code coverage
+local-unit-test: local-unit-test-backend local-unit-test-processing  local-unit-test-wmg-processing# Run all backend and processing unit tests in the dev environment, with code coverage
 
 # Note: If you are manually running this on localhost, you should run `local-rebuild` target first to test latest changes; this is not needed when running in Github Actions
 .PHONY: local-unit-test-backend
@@ -184,6 +190,13 @@ local-unit-test-processing: # Run processing-unittest target in `processing` Doc
 	echo "Running all processing unit tests"; \
 	docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -T processing \
 	bash -c "cd /single-cell-data-portal && make processing-unittest;"
+
+
+.PHONY: local-unit-test-wmg-processing
+local-unit-test-wmg-processing: # Run processing-unittest target in `wmg_processing` Docker container
+	echo "Running all wmg processing unit tests"; \
+	docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -T wmg_processing \
+	bash -c "cd /single-cell-data-portal && make wmg-processing-unittest;"
 
 # We optionally pass BOTO_ENDPOINT_URL if it is set, even if it is
 # set to be the empty string.
@@ -232,6 +245,11 @@ local-uploadjob: .env.ecr ## Run the upload task with a dataset_id and dropbox_u
 local-uploadfailure: .env.ecr ## Run the upload failure lambda with a dataset id and cause
 	docker-compose $(COMPOSE_OPTS) up -d upload_failures
 	curl -v -XPOST "http://127.0.0.1:9000/2015-03-31/functions/function/invocations" -d '{"dataset_id": "$(DATASET_ID)", "error": {"Cause": "$(CAUSE)"}}'
+
+.PHONY: local-uploadsuccess
+local-uploadsuccess: .env.ecr ## Run the upload success lambda with a dataset id and cause
+	docker-compose $(COMPOSE_OPTS) up -d upload_success
+	curl -v -XPOST "http://127.0.0.1:9001/2015-03-31/functions/function/invocations" -d '{"dataset_id": "$(DATASET_ID)"}'
 
 .PHONY: local-cxguser-cookie
 local-cxguser-cookie: ## Get cxguser-cookie
