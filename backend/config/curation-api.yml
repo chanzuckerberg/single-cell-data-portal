@@ -519,12 +519,6 @@ components:
     collection_list:
       description: Full Collection metadata
       properties:
-        access_type:
-          enum:
-            - READ
-            - WRITE
-          nullable: true
-          type: string
         collection_url:
           type: string
         contact_email:
@@ -577,12 +571,6 @@ components:
     collection_get:
       description: Full Collection metadata
       properties:
-        access_type:
-          enum:
-            - READ
-            - WRITE
-          nullable: true
-          type: string
         collection_url:
           type: string
         contact_email:
