@@ -313,7 +313,7 @@ class TestGetCollectionID(BaseAuthAPITest):
         "datasets": [
             {
                 "assay": [{"label": "test_assay", "ontology_term_id": "test_obo"}],
-                "batch_condition": ['batchA', 'batchB'],
+                "batch_condition": ["batchA", "batchB"],
                 "cell_count": None,
                 "cell_type": [{"label": "test_cell_type", "ontology_term_id": "test_opo"}],
                 "curator_tag": None,
