@@ -1,4 +1,3 @@
-import { ChangeEvent, Dispatch, SetStateAction } from "react";
 import { CellValue, Row } from "react-table";
 import { EVENTS } from "src/common/analytics/events";
 import { Collection, Ontology, PublisherMetadata } from "src/common/entities";
@@ -445,14 +444,6 @@ export type OnFilterFn = (
 ) => void;
 
 /**
- * Function invoked when filter category input value is changed.
- */
-export type OnUpdateSearchValueFn = (
-  changeEvent: ChangeEvent<HTMLInputElement>,
-  setSearchValue: SetSearchValueFn
-) => void;
-
-/**
  * Tree view model of ontology view. For example, development stage has three tree views (human, mouse and other)
  * whereas tissue has one tree view.
  */
@@ -621,12 +612,6 @@ export interface SelectCategoryView {
   unpinnedValues: SelectCategoryValueView[];
   values: SelectCategoryValueView[]; // both pinned and unpinned values
 }
-
-/**
- * Function invoked to update state for the filter category search value.
- * TODO(cc) relocate to useFilterSearch.
- */
-export type SetSearchValueFn = Dispatch<SetStateAction<string>>;
 
 /**
  * Tissue-related filterable values of collections and datasets.

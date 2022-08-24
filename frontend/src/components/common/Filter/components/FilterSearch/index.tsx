@@ -1,5 +1,5 @@
 import { IconNames } from "@blueprintjs/icons";
-import { SetSearchValueFn } from "src/components/common/Filter/common/entities";
+import { SetSearchValueFn } from "src/components/common/Filter/components/FilterSearch/common/useFilterSearch";
 import { ViewSearch } from "./style";
 
 interface Props {

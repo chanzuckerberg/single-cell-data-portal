@@ -3,12 +3,11 @@ import { Fragment, useEffect, useRef, useState } from "react";
 import { CategoryFilterId } from "src/common/hooks/useCategoryFilter";
 import {
   OnFilterFn,
-  OnUpdateSearchValueFn,
   SelectCategoryValueView,
-  SetSearchValueFn,
 } from "src/components/common/Filter/common/entities";
-import FilterMenuItems from "src/components/common/Filter/components/FilterMenu/components/FilterMenuItems";
+import FilterMenuItems from "src/components/common/Filter/components/FilterContent/components/FilterMenu/components/FilterMenuItems";
 import FilterSearch from "src/components/common/Filter/components/FilterSearch";
+import { SetSearchValueFn } from "src/components/common/Filter/components/FilterSearch/common/useFilterSearch";
 import {
   MAX_DISPLAYABLE_MENU_ITEMS,
   MenuDivider,
@@ -22,7 +21,6 @@ interface Props {
   isMultiselect: boolean;
   isSearchable: boolean;
   onFilter: OnFilterFn;
-  onUpdateSearchValue: OnUpdateSearchValueFn;
   pinnedValues: SelectCategoryValueView[];
   searchValue: string;
   setSearchValue: SetSearchValueFn;

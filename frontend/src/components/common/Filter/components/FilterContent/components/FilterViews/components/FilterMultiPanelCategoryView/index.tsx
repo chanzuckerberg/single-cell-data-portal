@@ -3,20 +3,20 @@ import {
   OnFilterFn,
   OntologyMultiPanelCategoryView,
   OntologyPanelCategoryView,
-  SetSearchValueFn,
 } from "src/components/common/Filter/common/entities";
 import {
   Search as FilterSearch,
   Views,
-} from "src/components/common/Filter/components/FilterViews/components/FilterMultiPanelCategoryView/style";
-import FilterSinglePanelCategoryView from "src/components/common/Filter/components/FilterViews/components/FilterSinglePanelCategoryView";
-import { MAX_DISPLAYABLE_LIST_ITEMS } from "src/components/common/Filter/components/FilterViews/components/FilterView";
+} from "src/components/common/Filter/components/FilterContent/components/FilterViews/components/FilterMultiPanelCategoryView/style";
+import FilterSinglePanelCategoryView from "src/components/common/Filter/components/FilterContent/components/FilterViews/components/FilterSinglePanelCategoryView";
+import { MAX_DISPLAYABLE_LIST_ITEMS } from "src/components/common/Filter/components/FilterContent/components/FilterViews/components/FilterView";
 import {
   ViewDivider,
   VIEW_LIST_ITEM_HEIGHT,
   VIEW_LIST_SUBHEADER_HEIGHT,
-} from "src/components/common/Filter/components/FilterViews/components/FilterView/style";
-import { ViewsMenu } from "src/components/common/Filter/components/FilterViews/style";
+} from "src/components/common/Filter/components/FilterContent/components/FilterViews/components/FilterView/style";
+import { ViewsMenu } from "src/components/common/Filter/components/FilterContent/components/FilterViews/style";
+import { SetSearchValueFn } from "src/components/common/Filter/components/FilterSearch/common/useFilterSearch";
 
 interface Props {
   categoryView: OntologyMultiPanelCategoryView;

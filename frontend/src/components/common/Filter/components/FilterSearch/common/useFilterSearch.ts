@@ -1,7 +1,14 @@
 // Core dependencies
-import { useState } from "react";
-import { SetSearchValueFn } from "src/components/common/Filter/common/entities";
+import { Dispatch, SetStateAction, useState } from "react";
 
+/**
+ * Function invoked to update state for the filter search value.
+ */
+export type SetSearchValueFn = Dispatch<SetStateAction<string>>;
+
+/**
+ * Function invoked to clear state for the filter search value.
+ */
 type ClearSearchValueFn = () => void;
 
 export interface FilterSearchState {
@@ -12,7 +19,7 @@ export interface FilterSearchState {
 
 /**
  * Faceted filter search functionality.
- * @returns a function to clear search value, the current search value, and the function to update current search value.
+ * @returns the current search value, a function to update current search value, and a function to clear search value.
  */
 export function useFilterSearch(): FilterSearchState {
   const [searchValue, setSearchValue] = useState<string>("");

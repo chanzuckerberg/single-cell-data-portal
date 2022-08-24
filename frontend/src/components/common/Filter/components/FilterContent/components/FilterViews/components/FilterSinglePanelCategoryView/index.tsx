@@ -5,8 +5,8 @@ import {
   OntologyPanelCategoryView,
   SelectCategoryValueView,
 } from "src/components/common/Filter/common/entities";
-import FilterCategoryViewPanel from "src/components/common/Filter/components/FilterViews/components/FilterCategoryViewPanel";
-import FilterViewList from "src/components/common/Filter/components/FilterViews/components/FilterViewList";
+import FilterCategoryViewPanel from "src/components/common/Filter/components/FilterContent/components/FilterViews/components/FilterCategoryViewPanel";
+import FilterViewList from "src/components/common/Filter/components/FilterContent/components/FilterViews/components/FilterViewList";
 import { ViewHeader } from "../FilterView/style";
 
 interface Props {

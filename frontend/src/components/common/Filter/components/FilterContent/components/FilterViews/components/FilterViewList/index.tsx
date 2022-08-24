@@ -13,7 +13,7 @@ import {
   ViewListItem,
   ViewListItemText,
   ViewSublist,
-} from "src/components/common/Filter/components/FilterViews/components/FilterViewList/style";
+} from "src/components/common/Filter/components/FilterContent/components/FilterViews/components/FilterViewList/style";
 
 interface Props {
   categoryKey: CategoryFilterId;

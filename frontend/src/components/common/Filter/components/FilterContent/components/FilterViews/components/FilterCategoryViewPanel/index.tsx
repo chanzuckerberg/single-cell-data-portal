@@ -3,7 +3,7 @@ import { useResizeObserver } from "src/common/hooks/useResizeObserver";
 import {
   CategoryViewPanel,
   ViewPanelScroll,
-} from "src/components/common/Filter/components/FilterViews/components/FilterView/style";
+} from "src/components/common/Filter/components/FilterContent/components/FilterViews/components/FilterView/style";
 
 interface Props {
   children: ReactNode;
