@@ -7,6 +7,6 @@ export enum ROUTES {
   TOS = "/tos/",
   PRIVACY = "/privacy/",
   PREVIEW_POLICIES = "/previewpolicies/",
-  WHERE_IS_MY_GENE = "/scExpression",
+  WHERE_IS_MY_GENE = "/gene-expression",
   DOCS = "/docs",
 }
