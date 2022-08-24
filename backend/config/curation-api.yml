@@ -683,8 +683,6 @@ components:
       allOf:
         - "$ref": "#/components/schemas/dataset_preview"
         - properties:
-            X_approximate_distribution:
-              "$ref": "#/components/schemas/distribution"
             batch_condition:
               "$ref": "#/components/schemas/batch_condition"
             assay:
