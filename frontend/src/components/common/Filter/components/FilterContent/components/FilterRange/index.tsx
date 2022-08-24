@@ -5,7 +5,7 @@ import {
   RangeCategoryView,
 } from "src/components/common/Filter/common/entities";
 import { formatNumberToScale } from "src/components/common/Filter/common/utils";
-import { useSliderStyles } from "src/components/common/Filter/components/FilterRange/style";
+import { useSliderStyles } from "src/components/common/Filter/components/FilterContent/components/FilterRange/style";
 
 /**
  * Value returned on change events from MUI Slider.

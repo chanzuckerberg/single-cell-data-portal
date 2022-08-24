@@ -3,11 +3,11 @@ import { Fragment, useEffect, useRef, useState } from "react";
 import { CategoryFilterId } from "src/common/hooks/useCategoryFilter";
 import {
   OnFilterFn,
-  OnUpdateSearchValueFn,
   SelectCategoryValueView,
 } from "src/components/common/Filter/common/entities";
-import FilterMenuItems from "src/components/common/Filter/components/FilterMenu/components/FilterMenuItems";
-import FilterViewSearch from "src/components/common/Filter/components/FilterViews/components/FilterViewSearch";
+import FilterMenuItems from "src/components/common/Filter/components/FilterContent/components/FilterMenu/components/FilterMenuItems";
+import FilterSearch from "src/components/common/Filter/components/FilterSearch";
+import { SetSearchValueFn } from "src/components/common/Filter/components/FilterSearch/common/useFilterSearch";
 import {
   MAX_DISPLAYABLE_MENU_ITEMS,
   MenuDivider,
@@ -21,8 +21,9 @@ interface Props {
   isMultiselect: boolean;
   isSearchable: boolean;
   onFilter: OnFilterFn;
-  onUpdateSearchValue: OnUpdateSearchValueFn;
   pinnedValues: SelectCategoryValueView[];
+  searchValue: string;
+  setSearchValue: SetSearchValueFn;
   unpinnedValues: SelectCategoryValueView[];
   values: SelectCategoryValueView[];
 }
@@ -34,14 +35,14 @@ export default function FilterMenu({
   isMultiselect,
   isSearchable,
   onFilter,
-  onUpdateSearchValue,
   pinnedValues,
+  searchValue,
+  setSearchValue,
   unpinnedValues,
   values,
 }: Props): JSX.Element {
   const menuRef = useRef<HTMLSpanElement>(null);
   const [menuWidth, setMenuWidth] = useState(0);
-  const [searchValue, setSearchValue] = useState<string>("");
   const filteredPinnedValues = filterCategoryValues(pinnedValues, searchValue);
   const filteredUnpinnedValues = filterCategoryValues(
     unpinnedValues,
@@ -69,8 +70,8 @@ export default function FilterMenu({
       <Menu>
         {/* Optional search bar */}
         {isSearchable && (
-          <FilterViewSearch
-            onUpdateSearchValue={onUpdateSearchValue}
+          <FilterSearch
+            searchValue={searchValue}
             setSearchValue={setSearchValue}
           />
         )}

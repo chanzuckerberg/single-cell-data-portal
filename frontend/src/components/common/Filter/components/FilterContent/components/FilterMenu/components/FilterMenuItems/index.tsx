@@ -5,7 +5,7 @@ import {
   OnFilterFn,
   SelectCategoryValueView,
 } from "src/components/common/Filter/common/entities";
-import { SelectionIcon } from "../../../../common/style";
+import { SelectionIcon } from "../../../../../../common/style";
 import { MenuItemWrapper } from "./style";
 
 interface Props {
