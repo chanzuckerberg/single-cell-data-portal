@@ -74,6 +74,19 @@ export function removeOntologyTermIdPrefix(
 }
 
 /**
+ * Returns the prefix of an ontology term ID that has been prefixed with an inferred or explicit identifier.
+ * @param prefixedOntologyTermId - Ontology term ID with either an inferred or explicit prefix.
+ * @return The prefix of the given ontology term ID that has been marked as inferred or explicit.
+ * TODO(cc) rename
+ */
+export function removeOntologyTermId(
+  prefixedOntologyTermId: string
+): OrFilterPrefix {
+  const [prefix] = splitOntologyTermIdAndPrefix(prefixedOntologyTermId);
+  return prefix;
+}
+
+/**
  * Returns the prefix and core ontology term ID of an ontology term ID that has been prefixed with an inferred or
  * explicit identifier.
  * @param prefixedOntologyTermId - Ontology term ID with either an inferred or explicit prefix.

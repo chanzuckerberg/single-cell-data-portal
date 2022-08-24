@@ -775,13 +775,13 @@ function processDatasetResponse(
   dataset: DatasetResponse
 ): ProcessedDatasetResponse {
   // Build up value to facilitate ontology-aware tissue filtering.
-  const tissueFilter = [
+  const tissueCalculated = [
     ...tagAncestorsAsInferred(dataset.tissue_ancestors, dataset.tissue),
     ...tagOntologyTermsAsExplicit(dataset.tissue),
   ];
   return {
     ...dataset,
-    tissueCalculated: tissueFilter,
+    tissueCalculated,
   };
 }
 
@@ -860,14 +860,16 @@ function tagAncestorsAsInferred(
   ancestors: string[],
   excludeSelves: Ontology[]
 ): string[] {
-  return ancestors
-    .filter(
-      (ancestorTermId) =>
-        !excludeSelves.some(
-          (excludeSelf) => excludeSelf.ontology_term_id === ancestorTermId
-        )
-    )
-    .map((ancestorTermId) => buildInferredOntologyTermId(ancestorTermId));
+  return (
+    ancestors
+      // .filter(
+      //   (ancestorTermId) =>
+      //     !excludeSelves.some(
+      //       (excludeSelf) => excludeSelf.ontology_term_id === ancestorTermId
+      //     )
+      // )
+      .map((ancestorTermId) => buildInferredOntologyTermId(ancestorTermId))
+  );
 }
 
 /**

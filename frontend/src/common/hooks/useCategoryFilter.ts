@@ -47,16 +47,17 @@ import {
   SelectCategoryView,
 } from "src/components/common/Filter/common/entities";
 import {
-  buildExplicitOntologyTermId,
-  buildInferredOntologyTermId,
   findOntologyNodeById,
   findOntologyParentNode,
   getOntologySpeciesKey,
   listOntologyTreeIds,
+  removeOntologyTermId,
   removeOntologyTermIdPrefix,
   splitOntologyTermIdAndPrefix,
 } from "src/components/common/Filter/common/utils";
 import { track } from "../analytics";
+
+// TODO(cc) separate to utils files.
 
 /**
  * Entry in react-table's filters arrays, models selected category values in a category.
@@ -640,57 +641,83 @@ function buildCategoryViews(
  * tissue organ and tissue.
  * TODO(cc) docs, redo, types, return type etc. remove order notes.
  */
-function applyCrossPanelRestrictions(
-  panelView: OntologyPanelCategoryView,
-  parentViews: OntologyPanelCategoryView[]
+function applyCrossPanelViewRestrictions(
+  panelCategoryView: OntologyPanelCategoryView,
+  parentCategoryViews: OntologyPanelCategoryView[]
 ) {
-  // If there are no selected values in parents, then there are no restrictions to be applied.
-  const selectedParentIds = parentViews.reduce((accum, view) => {
-    view.views.forEach((v) => {
-      if (v.selected) {
-        accum.push(v.key);
-      }
-    });
+  // Find the set of selected values in parents.
+  const selectedParentOntologyTermIds = parentCategoryViews.reduce(
+    (accum, parentCategoryView) => {
+      parentCategoryView.views.forEach((selectCategoryValueView) => {
+        if (selectCategoryValueView.selected) {
+          const ontologyTermId = removeOntologyTermIdPrefix(
+            selectCategoryValueView.key
+          );
+          accum.push(ontologyTermId);
+        }
+      });
 
-    return accum;
-  }, [] as string[]);
-  if (!selectedParentIds.length) {
-    return panelView;
+      return accum;
+    },
+    [] as string[]
+  );
+
+  // If there are no selected values in parents, there are no restrictions to be applied: all views can be displayed.
+  if (!selectedParentOntologyTermIds.length) {
+    return panelCategoryView;
   }
 
   // Iterate through parent category filters and determine the set of allowed values.
   const includeValues = new Set();
-  for (const parentView of parentViews) {
+  for (const parentCategoryView of parentCategoryViews) {
     // If there are no selected values for this category, check the next parent.
-    const selectedViews = parentView.views.filter((view) => view.selected);
-    if (!selectedViews.length) {
+    const parentSelectedValueViews = parentCategoryView.views.filter(
+      (view) => view.selected
+    );
+    if (!parentSelectedValueViews.length) {
       continue;
     }
 
-    // Determine the set of allowed values; add the descendants for every selected value in parent unless the selected
-    // value has a descendant that is already in the allowed values. If we add both the parent selected value
-    // (in addition to a descendant) then the allowed set of values will over-show.
-    selectedViews.forEach((selectedView: SelectCategoryValueView) => {
-      const descendants = TISSUE_DESCENDANTS[selectedView.key] ?? [];
-      const isAnyDescendantSelected = descendants.some((descendant) =>
-        selectedParentIds.includes(descendant)
-      );
-      if (isAnyDescendantSelected) {
-        return panelView;
-      }
+    // Parent has selected values; only add descendants of the selected parent values to include list.
+    parentSelectedValueViews.forEach(
+      (parentSelectedValueView: SelectCategoryValueView) => {
+        const parentOntologyTermId = removeOntologyTermIdPrefix(
+          parentSelectedValueView.key
+        );
 
-      // No descendant is already added to the set of allowed values; add all descendants as allowed values.
-      descendants.forEach((descendant) => {
-        includeValues.add(descendant);
-      });
-    });
+        // Add self to descendants to allow organs that also appear in tissues to be displayed.
+        includeValues.add(parentOntologyTermId);
+
+        // Find and add all descendants for this parent.
+        const parentTermDescendants =
+          TISSUE_DESCENDANTS[parentOntologyTermId] ?? [];
+
+        // Don't add any descendants for this parent if any of it's descendants are selected. For example, if both
+        // "digestive system" and "tongue" are selected, don't add descendants of "digestive system" as this will cause
+        // all descendant tissues of "digestive system" to be displayed in the Tissue panel whereas we want "digestive
+        // system" to be further restricted by "tongue".
+        const isAnyDescendantSelected = parentTermDescendants.some(
+          (parentTermDescendant) =>
+            selectedParentOntologyTermIds.includes(parentTermDescendant)
+        );
+        if (isAnyDescendantSelected) {
+          return;
+        }
+
+        // No descendant is already added to the set of allowed values; add all descendants as allowed values.
+        parentTermDescendants.forEach((descendant) => {
+          includeValues.add(descendant);
+        });
+      }
+    );
   }
 
   // Remove any views that are not in the allowed set.
   return {
-    ...panelView,
-    views: panelView.views.filter((view) => {
-      return view.selected || includeValues.has(view.key);
+    ...panelCategoryView,
+    views: panelCategoryView.views.filter((view) => {
+      const ontologyTermId = removeOntologyTermIdPrefix(view.key);
+      return view.selected || includeValues.has(ontologyTermId);
     }),
   };
 }
@@ -1064,176 +1091,136 @@ function buildMultiPanelCategoryView(
   categoryValueByValue: KeyedSelectCategoryValue,
   ontologyTermLabelsById: Map<string, string> // TODO(cc) revisit drilling
 ): OntologyMultiPanelCategoryView {
-  // Build select view models for all values to be displayed. TODO(cc) only build for I and then don't need dedupe?
-  const allSelectCategoryValueViews = buildSelectCategoryValueViews(
+  // Build select value views for every category value. Group category values by panel ID.
+  const selectCategoryValueViewsByPanelId = buildMultiPanelCategoryValueViews(
     config,
-    [...categoryValueByValue.values()],
+    categoryValueByValue,
     ontologyTermLabelsById
-  ).sort(sortCategoryValueViews);
-
-  // Remove duplicated view models created from removal of inferred and explicit prefixes on filter values. Always
-  // take the larger count when deduping view models as the larger count will include both inferred and explicit values.
-  const dedupedSelectCategoryValueViews =
-    dedupePrefixedSelectCategoryValueViews(allSelectCategoryValueViews);
-
-  // Build up view model for each panel specified in config.
-  const { panels } = config;
-  const panelViewsByPanelId = panels.reduce(
-    (accum, panel: CategoryFilterPanelConfig) => {
-      // Find the set of values to be displayed for this panel.
-      let panelViews = [];
-      if (panel.sourceKind === "ONLY_CURATED") {
-        panelViews = maskOnlyCurated(
-          panel.mask,
-          dedupedSelectCategoryValueViews
-        );
-      } else {
-        panelViews = maskExcludingCurated(
-          panel.excludeMasks,
-          dedupedSelectCategoryValueViews
-        );
-      }
-
-      // Correct select values for each view.
-      const inferredAndExplicit = panel.filterValueKind === "INFERRED_EXPLICIT";
-      const selectCategoryValueViews = panelViews.map(
-        (selectCategoryValueView) => {
-          const ontologyTermId = removeOntologyTermIdPrefix(
-            selectCategoryValueView.key
-          );
-          const values = [buildExplicitOntologyTermId(ontologyTermId)];
-          if (inferredAndExplicit) {
-            values.push(buildInferredOntologyTermId(ontologyTermId));
-          }
-          return {
-            ...selectCategoryValueView,
-            values,
-          };
-        }
-      );
-
-      // Remove I and E from key.
-      const correctedSelectCategoryValueViews = selectCategoryValueViews.map(
-        (selectCategoryValueView) => {
-          return {
-            ...selectCategoryValueView,
-            key: removeOntologyTermIdPrefix(selectCategoryValueView.key),
-          };
-        }
-      );
-
-      accum.set(panel.id, {
-        label: panel.label,
-        views: correctedSelectCategoryValueViews,
-      });
-      return accum;
-    },
-    new Map<CATEGORY_FILTER_PANEL_ID, OntologyPanelCategoryView>()
   );
 
-  [...panelViewsByPanelId.keys()].forEach((panelId) => {
+  // Apply cross-panel restrictions.
+  const { panels } = config;
+  [...selectCategoryValueViewsByPanelId.keys()].forEach((panelId) => {
     // Get the panel config for this panel
     const panelConfig = panels.find((panel) => panel.id === panelId);
     if (!panelConfig) {
       return;
     }
 
+    // No action required if this panel is not restricted by others.
     if (panelConfig.valueRestrictionKind === "NONE") {
       return;
     }
 
-    const panelView = panelViewsByPanelId.get(panelId);
-    if (!panelView) {
+    // Grab the selected value views for this panel
+    const panelCategoryView = selectCategoryValueViewsByPanelId.get(panelId);
+    if (!panelCategoryView) {
       return;
     }
 
-    // Restrict related panels where applicable. For example, tissue system restricts selectable values in
-    // tissue organ and tissue.
-    const parentViews = (
+    // Find the parent categories for this panel.
+    const parentCategoryViews = (
       panels.filter((panel) =>
         panelConfig.parentCategoryPanelFilterIds.includes(panel.id)
       ) ?? []
     )
-      .map((parentPanelConfig) => panelViewsByPanelId.get(parentPanelConfig.id))
+      .map((parentPanelConfig) =>
+        selectCategoryValueViewsByPanelId.get(parentPanelConfig.id)
+      )
       .filter((view): view is OntologyPanelCategoryView => !!view);
 
-    const updatedPanelView = applyCrossPanelRestrictions(
-      panelView,
-      parentViews
+    // Restrict related panels where applicable. For example, tissue system restricts selectable values in
+    // tissue organ and tissue.
+    const restrictedPanelCategoryView = applyCrossPanelViewRestrictions(
+      panelCategoryView,
+      parentCategoryViews
     );
-    panelViewsByPanelId.set(panelId, updatedPanelView);
+    selectCategoryValueViewsByPanelId.set(panelId, restrictedPanelCategoryView);
   });
 
-  // Build view model of multi-panel category.
-  const multiPanelView: OntologyMultiPanelCategoryView = {
-    key: categoryFilterId,
-    label: config.label,
-    panels: [...panelViewsByPanelId.values()],
-  };
-
-  // TODO(cc) pinned values
   // TODO(cc) check disabled state here
 
-  return multiPanelView;
+  // Build view model of multi-panel category.
+  return {
+    key: categoryFilterId,
+    label: config.label,
+    panels: [...selectCategoryValueViewsByPanelId.values()],
+  };
+}
+
+/**
+ * TODO(cc) docs, location
+ */
+function buildMultiPanelCategoryValueViews(
+  config: OntologyMultiPanelFilterConfig,
+  categoryValueByValue: KeyedSelectCategoryValue,
+  ontologyTermLabelsById: Map<string, string> // TODO(cc) revisit drilling
+) {
+  // Build select view models for all values to be displayed.
+  const allSelectCategoryValueViews = buildSelectCategoryValueViews(
+    config,
+    [...categoryValueByValue.values()],
+    ontologyTermLabelsById
+  ).sort(sortCategoryValueViews);
+
+  // For each panel, apply source kind
+  // -- system => pull out the view models that we need from the mask CURATED_CATEGORIES
+  // -- organ => as above
+  // -- tissue => ALL_EXACT
+  // TODO(cc) update sourceKind (CURATED_CATEGORIES, ALL_EXACT), remove masks ref for EXCLUDE_CURATED
+
+  // Don't need to update the "values" for each view as we only need to search for the single "key" value that
+  // is added above. TODO(cc) Possibly remove "values" and revert to key.
+
+  // Build up view model for each panel specified in config.
+  const { panels } = config;
+  return panels.reduce((accum, panel: CategoryFilterPanelConfig) => {
+    // Find the set of values to be displayed for this panel.
+    let panelSelectCategoryValueViews = [];
+    if (panel.sourceKind === "ONLY_CURATED") {
+      panelSelectCategoryValueViews = maskInferredCuratedCategories(
+        panel.mask,
+        allSelectCategoryValueViews
+      );
+    } else {
+      panelSelectCategoryValueViews = maskAllExact(allSelectCategoryValueViews);
+    }
+
+    accum.set(panel.id, {
+      label: panel.label,
+      views: panelSelectCategoryValueViews,
+    });
+    return accum;
+  }, new Map<CATEGORY_FILTER_PANEL_ID, OntologyPanelCategoryView>());
 }
 
 /**
  * Remove curated and left-over ancestors.
  * TODO(cc) docs, location, name
  */
-function maskExcludingCurated(
-  masks: OntologyTermSet[],
+function maskAllExact(
   selectCategoryValueViews: SelectCategoryValueView[]
 ): SelectCategoryValueView[] {
-  const excludeValues = masks.reduce((accum, mask) => {
-    accum.push(...[...listOntologyTreeIds(mask)]);
-    return accum;
-  }, [] as string[]);
   return selectCategoryValueViews.filter((view) => {
-    const [prefix, processedKey] = splitOntologyTermIdAndPrefix(view.key);
-    if (excludeValues.includes(processedKey)) {
-      return false;
-    }
-    return prefix !== OrFilterPrefix.INFERRED;
+    return removeOntologyTermId(view.key) === OrFilterPrefix.EXPLICIT;
   });
 }
 
 /**
  * TODO(cc) docs, location, name
  */
-function maskOnlyCurated(
+function maskInferredCuratedCategories(
   mask: OntologyTermSet,
   selectCategoryValueViews: SelectCategoryValueView[]
 ): SelectCategoryValueView[] {
   const allowedValues = [...listOntologyTreeIds(mask)];
   return selectCategoryValueViews.filter((view) => {
-    return allowedValues.includes(removeOntologyTermIdPrefix(view.key));
+    const [prefix, ontologyTermId] = splitOntologyTermIdAndPrefix(view.key);
+    return (
+      prefix === OrFilterPrefix.INFERRED &&
+      allowedValues.includes(ontologyTermId)
+    );
   });
-}
-
-/**
- * Remove duplicated view models created from removal of inferred and explicit prefixes on filter values.
- * TODO(cc) only required for tissue and cell type, should we configure this? or just do it for all? docs plus location.
- */
-function dedupePrefixedSelectCategoryValueViews(
-  selectCategoryValueViews: SelectCategoryValueView[]
-): SelectCategoryValueView[] {
-  const dedupedSelectCateogryValueViews = selectCategoryValueViews.reduce(
-    (accum, selectCategoryValueView) => {
-      const { key, count } = selectCategoryValueView;
-      const ontologyTermId = removeOntologyTermIdPrefix(key);
-      if (accum.has(ontologyTermId)) {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- using accum.has(key) above to ensure accum has value.
-        accum.get(ontologyTermId)!.count += count;
-      } else {
-        accum.set(ontologyTermId, selectCategoryValueView);
-      }
-      return accum;
-    },
-    new Map<string, SelectCategoryValueView>()
-  );
-
-  return [...dedupedSelectCateogryValueViews.values()];
 }
 
 /**
@@ -1886,34 +1873,24 @@ function onFilterMultiPanelCategory<T extends Categories>(
   // Track selected category and value. TODO(cc) revisit uiFilters here
   trackSelectCategoryValueSelected(config, categoryValueKey, uiFilters);
 
-  // TODO(cc) temp only - can we keep prefixes out of raw filter value and just apply here? (this might simplify the view code).
-  // Process the selected values: remove inferred and explicit prefixes, dedupe.
-  const selectedOntologyTermIds = [
-    ...new Set(
-      selectedValues.map((selectedValue) =>
-        removeOntologyTermIdPrefix(selectedValue)
-      )
-    ),
-  ];
-
   // Determine selected set of values; toggle current selected values.
-  const nextUICategoryFilters = buildNextSelectCategoryFilters(
+  const toggledCategoryFilters = buildNextSelectCategoryFilters(
     config,
-    selectedOntologyTermIds,
+    selectedValues,
     uiFilters
   );
 
-  // Update internal UI filter state with the updated set of selected filters for this category.
+  // Update internal UI filter state with the updated, toggled set of selected filters for this category.
   const nextUIFilters =
     uiFilters.length === 0
-      ? [{ id: categoryFilterId, value: nextUICategoryFilters }]
+      ? [{ id: categoryFilterId, value: toggledCategoryFilters }]
       : uiFilters.map((uiFilter) => {
           if (uiFilter.id !== categoryFilterId) {
             return uiFilter;
           }
           return {
             ...uiFilter,
-            value: nextUICategoryFilters,
+            value: toggledCategoryFilters,
           };
         });
   setUIFilters(nextUIFilters);
@@ -1921,7 +1898,7 @@ function onFilterMultiPanelCategory<T extends Categories>(
   // Apply restrictions across selected filter values.
   const nextFilters = applyCrossFilterRestrictions(
     config,
-    nextUICategoryFilters
+    toggledCategoryFilters
   );
 
   // Trigger filter of rows.
@@ -1936,7 +1913,7 @@ function applyCrossFilterRestrictions(
   selectedValues: CategoryValueKey[]
 ): CategoryValueKey[] {
   // Key selected values by panel ID.
-  const selectedValuesByPanelId = keyCategoryValuesByPanelId(
+  const selectedValuesByPanelId = keySelectedCategoryValuesByPanelId(
     config,
     selectedValues
   );
@@ -1950,7 +1927,7 @@ function applyCrossFilterRestrictions(
   return [...selectedValuesByPanelId.keys()].reduce((accum, panelId) => {
     // No action required if there are no selected values for this panel.
     const panelSelectedValues = selectedValuesByPanelId.get(panelId);
-    if (!panelSelectedValues) {
+    if (!panelSelectedValues || !panelSelectedValues.length) {
       return accum;
     }
 
@@ -1966,44 +1943,39 @@ function applyCrossFilterRestrictions(
       // Panel doesn't restrict any other panel. Add selected values as is.
       const selectedValues = selectedValuesByPanelId.get(panelId) ?? [];
       if (selectedValues.length) {
-        accum.push(
-          ...buildPrefixedFilterValues(
-            panel,
-            selectedValuesByPanelId.get(panelId) ?? []
-          )
-        );
+        accum.push(...(selectedValuesByPanelId.get(panelId) ?? []));
       }
       return accum;
     }
 
     // Grab all selected values that this panel restricts.
-    const restrictedChildrenPanelSelectedValues = [
+    const restrictedChildrenPanelSelectedOntologyTermIds = [
       ...restrictedPanelIds,
     ].reduce((selectedValuesAccum, restrictedPanelId) => {
       (selectedValuesByPanelId.get(restrictedPanelId) ?? []).forEach(
-        (selectedValue) => selectedValuesAccum.add(selectedValue)
+        (selectedValue) =>
+          selectedValuesAccum.add(removeOntologyTermIdPrefix(selectedValue))
       );
       return selectedValuesAccum;
     }, new Set<CategoryValueKey>());
 
-    // Ignore any selected value in this panel if there is a descendant selected value.
+    // Ignore any selected value in this panel if there is a descendant (or self) selected value.
     const restrictedPanelSelectedValues = panelSelectedValues.filter(
       (selectedValue) => {
-        const descendants = TISSUE_DESCENDANTS[selectedValue];
-        if (!descendants || descendants.length === 0) {
-          return true;
-        }
+        const selectedOntologyTermId =
+          removeOntologyTermIdPrefix(selectedValue);
+        const descendants = [
+          ...(TISSUE_DESCENDANTS[selectedOntologyTermId] ?? []),
+          selectedOntologyTermId,
+        ];
         return !descendants.some((descendant) =>
-          restrictedChildrenPanelSelectedValues.has(descendant)
+          restrictedChildrenPanelSelectedOntologyTermIds.has(descendant)
         );
       }
     );
 
-    // Add back prefixes for filter. TODO(cc) revisit - can we keep prefixes out of raw filter value and just apply here? (this might simplify the view code).
     if (restrictedPanelSelectedValues.length) {
-      accum.push(
-        ...buildPrefixedFilterValues(panel, restrictedPanelSelectedValues)
-      );
+      accum.push(...restrictedPanelSelectedValues);
     }
 
     return accum;
@@ -2011,51 +1983,37 @@ function applyCrossFilterRestrictions(
 }
 
 /**
- * TODO(cc) docs, location, etc.
- */
-function buildPrefixedFilterValues(
-  panel: CategoryFilterPanelConfig,
-  ontologyTermIds: string[]
-): string[] {
-  const values: CategoryValueKey[] = [];
-  ontologyTermIds.forEach((value) => {
-    values.push(buildExplicitOntologyTermId(value));
-    if (panel.filterValueKind === "INFERRED_EXPLICIT") {
-      values.push(buildInferredOntologyTermId(value));
-    }
-  });
-  return values;
-}
-
-/**
  * Key category values by panel ID.
  * @param config - Configuration model of selected category.
- * @param categoryValueKeys - Category values to group by panel ID.
+ * @param selectedCategoryValueKeys - Category values to group by panel ID.
  * @returns Map of category values keyed by panel ID.
  * TODO(cc) location
  */
-function keyCategoryValuesByPanelId(
+function keySelectedCategoryValuesByPanelId(
   config: OntologyMultiPanelFilterConfig,
-  categoryValueKeys: CategoryValueKey[]
+  selectedCategoryValueKeys: CategoryValueKey[]
 ): Map<CATEGORY_FILTER_PANEL_ID, CategoryValueKey[]> {
   return config.panels.reduce((accum, panel) => {
     // If panel is curated, only add selected values if they are in the mask.
     if (panel.sourceKind === "ONLY_CURATED") {
-      const includeList = [...listOntologyTreeIds(panel.mask)];
-      const panelSelectedValues = categoryValueKeys.filter((categoryValueKey) =>
-        includeList.includes(categoryValueKey)
+      const includeOntologyTermIds = [...listOntologyTreeIds(panel.mask)];
+      const panelSelectedValues = selectedCategoryValueKeys.filter(
+        (categoryValueKey) => {
+          const [prefix, ontologyTermId] =
+            splitOntologyTermIdAndPrefix(categoryValueKey);
+          return (
+            prefix === OrFilterPrefix.INFERRED &&
+            includeOntologyTermIds.includes(ontologyTermId)
+          );
+        }
       );
       accum.set(panel.id, panelSelectedValues);
     }
-    // Otherwise, panel includes all values other than those specified in masks.
+    // Otherwise, panel includes all explicit values only.
     else {
-      const excludeList = panel.excludeMasks
-        .map((excludeMask) => {
-          return [...listOntologyTreeIds(excludeMask)];
-        })
-        .flat();
-      const panelSelectedValues = categoryValueKeys.filter(
-        (categoryValueKey) => !excludeList.includes(categoryValueKey)
+      const panelSelectedValues = selectedCategoryValueKeys.filter(
+        (categoryValueKey) =>
+          removeOntologyTermId(categoryValueKey) === OrFilterPrefix.EXPLICIT
       );
       accum.set(panel.id, panelSelectedValues);
     }
@@ -2233,11 +2191,7 @@ function setSelectedStates<T extends Categories>(
         categoryValueKey,
         categoryValue,
       ] of categoryFilterState.entries()) {
-        // TODO(cc) can we remove this if prefix is removed from view values?
-        const key = isMultiPanel
-          ? removeOntologyTermIdPrefix(categoryValueKey)
-          : categoryValueKey;
-        categoryValue.selected = selectedCategoryValues.has(key);
+        categoryValue.selected = selectedCategoryValues.has(categoryValueKey);
       }
       return;
     }
