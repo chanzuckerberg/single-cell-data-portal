@@ -516,6 +516,13 @@ components:
         dataset_id:
           "$ref": "#/components/schemas/dataset_id"
       type: object
+    batch_condition:
+      description: These keys define the batches that a normalization or integration algorithm should be aware of
+      type: array
+      items:
+        type: string
+      nullable: true
+      example: ["patient", "seqBatch"]
     collection_list:
       description: Full Collection metadata
       properties:
@@ -676,6 +683,10 @@ components:
       allOf:
         - "$ref": "#/components/schemas/dataset_preview"
         - properties:
+            X_approximate_distribution:
+              "$ref": "#/components/schemas/distribution"
+            batch_condition:
+              "$ref": "#/components/schemas/batch_condition"
             assay:
               "$ref": "#/components/schemas/ontology_elements"
             cell_count:
