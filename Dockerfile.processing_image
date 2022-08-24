@@ -20,7 +20,7 @@ ADD requirements.txt requirements-base.txt
 ADD backend/corpora/dataset_processing/requirements.txt requirements-processing.txt
 RUN pip3 install -r requirements-base.txt -r requirements-processing.txt
 
-RUN wget "https://drive.google.com/u/0/uc?id=11agilM4MXzTEF7VBgF4HGtcWL1nV8zST&export=download" -O cellxgene-schema.tar.gz
+RUN wget "https://drive.google.com/u/0/uc?id=1RxbKLbVdmD40dk6DAz4CkpL0MgI4RSms&export=download" -O cellxgene-schema.tar.gz
 RUN pip install cellxgene-schema.tar.gz
 
 ADD tests /single-cell-data-portal/tests
