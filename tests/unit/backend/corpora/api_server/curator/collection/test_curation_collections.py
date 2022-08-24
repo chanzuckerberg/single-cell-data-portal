@@ -195,10 +195,11 @@ class TestGetCollections(BaseAuthAPITest):
                 response = self.app.get(
                     "/curation/v1/collections", query_string=params, headers=self.make_not_owner_header()
                 )
-                self.assertEqual(401, response.status_code)
+                self.assertEqual(403, response.status_code)
             with self.subTest(f"users can't search by curator {visibility}"):
+                expected_error = 401 if visibility == "PRIVATE" else 403
                 response = self.app.get("/curation/v1/collections", query_string=params)
-                self.assertEqual(401, response.status_code)
+                self.assertEqual(expected_error, response.status_code)
 
         with self.subTest("Searching for a curator that doesn't exists return 0 collections"):
             _test({"curator": "Not A Curator"}, self.make_super_curator_header(), 0)

@@ -3,7 +3,7 @@ from .common import add_collection_level_processing_status, reshape_for_curation
 from .common import EntityColumns
 from ...authorization import is_super_curator, owner_or_allowed
 from ......common.corpora_orm import CollectionVisibility, DbCollection
-from ......common.utils.http_exceptions import UnauthorizedError
+from ......common.utils.http_exceptions import UnauthorizedError, ForbiddenHTTPException
 from backend.corpora.api_server.db import dbconnect
 
 
@@ -30,7 +30,7 @@ def get(visibility: str, token_info: dict, curator: str = None):
 
     if curator:
         if not is_super_curator(token_info):
-            raise UnauthorizedError()
+            raise ForbiddenHTTPException(detail="User is not authorized to use the curator parameter.")
         else:
             filters.append(DbCollection.curator_name == curator)
 
