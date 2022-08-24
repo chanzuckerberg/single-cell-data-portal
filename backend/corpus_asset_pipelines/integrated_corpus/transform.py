@@ -5,6 +5,7 @@ import time
 import anndata
 import numpy
 import numpy as np
+from pandas import DataFrame
 import scanpy
 import tiledb
 from scipy import sparse
@@ -35,6 +36,32 @@ def apply_pre_concatenation_filters(
         anndata_object.obs["assay_ontology_term_id"].isin(included_assay_ontology_ids), :
     ].copy()
     return anndata_object
+
+
+def create_high_level_tissue(anndata_object: anndata.AnnData):
+    anndata_object.obs["tissue_original"] = anndata_object.obs["tissue"]
+    anndata_object.obs["tissue_original_ontology_term_id"] = anndata_object.obs["tissue_ontology_term_id"]
+    anndata_object.obs = get_high_level_tissue(anndata_object.obs)
+
+
+# TODO finalize this function
+def get_high_level_tissue(obs: DataFrame):
+
+    for i in range(len(obs)):
+
+        if "lung" in obs["tissue"][i]:
+            if "UBERON:0002048" not in obs["tissue_ontology_term_id"].cat.categories:
+                obs["tissue_ontology_term_id"].cat.add_categories("UBERON:0002048", inplace=True)
+                obs["tissue"].cat.add_categories("lung", inplace=True)
+
+            obs["tissue_ontology_term_id"][i] = "UBERON:0002048"
+            obs["tissue"][i] = "lung"
+            continue
+
+        obs["tissue_ontology_term_id"][i] = obs["tissue_original_ontology_term_id"][i]
+        obs["tissue"][i] = obs["tissue_original"][i]
+
+    return obs
 
 
 def transform_dataset_raw_counts_to_rankit(
