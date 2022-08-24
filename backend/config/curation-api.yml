@@ -73,10 +73,6 @@ paths:
           schema:
             type: string
           examples:
-            current_curator:
-              summary: Return collections owned by current curator.
-              value:
-                name: "self"
             specified_curator:
               summary: Return collections owned by the specified curator
               value:
