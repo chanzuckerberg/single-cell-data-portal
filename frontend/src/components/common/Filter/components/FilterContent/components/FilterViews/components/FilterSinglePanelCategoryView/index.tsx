@@ -51,9 +51,7 @@ export default function FilterSinglePanelCategoryView({
         isZerosVisible={false}
         onFilter={onFilter}
         values={filteredViews}
-        ViewHeader={
-          label ? <ViewHeader disableSticky>{label}</ViewHeader> : undefined
-        }
+        ViewHeader={label ? <ViewHeader>{label}</ViewHeader> : undefined}
       />
     </FilterCategoryViewPanel>
   );

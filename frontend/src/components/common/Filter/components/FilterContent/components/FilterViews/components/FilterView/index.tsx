@@ -88,9 +88,7 @@ export default function FilterView({
             isZerosVisible={isZerosVisible}
             onFilter={onFilter}
             values={filteredValues}
-            ViewHeader={
-              label ? <ViewHeader disableSticky>{label}</ViewHeader> : undefined
-            }
+            ViewHeader={label ? <ViewHeader>{label}</ViewHeader> : undefined}
           />
         </ViewPanelScroll>
       </ViewPanel>
