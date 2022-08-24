@@ -355,6 +355,8 @@ paths:
         request body; if an existing Dataset has this tag, the existing Dataset SHALL be replaced, otherwise a new
         Dataset will be added. MAY include the **id** of an existing Dataset, in which case the existing Dataset
         SHALL be replaced.
+
+        Only presigned AWS S3 URLs and Dropbox shared file links are supported.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.datasets.upload_link.put
       tags:
         - collection
@@ -427,9 +429,8 @@ paths:
 
         To upload the files to S3, use the Python boto3 package. Once a file is successfully uploaded, it wil be
         processed and added to the Collection (specified in the S3 key path) with no further user action required.
-        Include an email address in the S3 file upload metadata to receive processing and error notifications.
-        Alternatively, use `/curation/collections/{collection_id}/datasets/status` to check on the processing
-        status for a given Dataset.
+        Use `GET /curation/collections/{collection_id}/datasets/` with `curator_tag` or `id` query parameter  to check 
+        on the processing status for a given Dataset.
 
       security:
         - curatorAccess: []
@@ -466,7 +467,7 @@ paths:
       tags:
         - collection
       description: >-
-        Generate URLs to download the files associated with the dataset. MUST include *one* of the **curator_tag**
+        Generate Presigned S3 URLs to download the files associated with the dataset. MUST include *one* of the **curator_tag**
         and **dataset_id** parameters.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.assets.get
       parameters:
