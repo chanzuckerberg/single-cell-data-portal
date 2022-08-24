@@ -509,6 +509,13 @@ components:
         dataset_id:
           "$ref": "#/components/schemas/dataset_id"
       type: object
+    batch_condition:
+      description: These keys define the batches that a normalization or integration algorithm should be aware of
+      type: array
+      items:
+        type: string
+      nullable: true
+      example: ["patient", "seqBatch"]
     collection_common:
       description: Full Collection metadata
       properties:
@@ -609,6 +616,8 @@ components:
         - properties:
             X_approximate_distribution:
               "$ref": "#/components/schemas/distribution"
+            batch_condition:
+              "$ref": "#/components/schemas/batch_condition"
             cell_count:
               nullable: true
               type: integer
@@ -679,10 +688,7 @@ components:
         tissue:
           "$ref": "#/components/schemas/ontology_elements"
         suspension_type:
-          type: array
-          items:
-            type: string
-          nullable: true
+          "$ref": "#/components/schemas/suspension_type"
         tombstone:
           type: boolean
       type: object
@@ -799,6 +805,15 @@ components:
         published_year:
           type: number
       type: object
+    suspension_type:
+      description:
+        List of unique suspension types represented in the dataset, corresponding to dataset's assay(s). 
+        Possible item values are 'nucleus', 'cell', and/or 'na'.
+      type: array
+      items:
+        type: string
+      nullable: true
+      example: ["cell"]
     upload_link:
       description: A user-provided link to the dataset source file.
       type: string

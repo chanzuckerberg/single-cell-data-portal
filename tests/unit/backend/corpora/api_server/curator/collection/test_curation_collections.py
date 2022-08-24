@@ -313,7 +313,7 @@ class TestGetCollectionID(BaseAuthAPITest):
         "datasets": [
             {
                 "assay": [{"label": "test_assay", "ontology_term_id": "test_obo"}],
-                "suspension_type": ["nucleus"],
+                "batch_condition": ["batchA", "batchB"],
                 "cell_count": None,
                 "cell_type": [{"label": "test_cell_type", "ontology_term_id": "test_opo"}],
                 "curator_tag": None,
@@ -340,6 +340,7 @@ class TestGetCollectionID(BaseAuthAPITest):
                     {"label": "test_sex", "ontology_term_id": "test_obo"},
                     {"label": "test_sex2", "ontology_term_id": "test_obp"},
                 ],
+                "suspension_type": ["nucleus"],
                 "tissue": [{"label": "test_tissue", "ontology_term_id": "test_obo"}],
                 "tombstone": False,
                 "x_approximate_distribution": "NORMAL",
