@@ -4,7 +4,6 @@ import { Filter } from "../../common/style";
 
 interface Props {
   content: ReactNode;
-  flipEnabled?: boolean;
   isDisabled: boolean;
   tags: ReactNode;
   target: ReactNode;
@@ -12,7 +11,6 @@ interface Props {
 
 export default function BasicFilter({
   content,
-  flipEnabled = true,
   isDisabled,
   tags,
   target,
@@ -23,11 +21,8 @@ export default function BasicFilter({
         boundary="viewport"
         disabled={isDisabled}
         minimal
-        modifiers={{
-          flip: { enabled: flipEnabled },
-          offset: { offset: "0, 4" },
-        }}
-        position={Position.BOTTOM_LEFT}
+        modifiers={{ offset: { offset: "0, 5" } }}
+        position={Position.RIGHT}
       >
         {target}
         {content}

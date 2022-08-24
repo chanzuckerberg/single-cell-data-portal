@@ -31,7 +31,6 @@ export default function Filter({
             content={
               <FilterContent categoryView={categoryView} onFilter={onFilter} />
             }
-            flipEnabled={categoryView.label !== "Tissue (Ontology)"} // TODO(cc) review use of flipEnabled prop
             isDisabled={isDisabled}
             key={categoryView.label}
             tags={<FilterTags tags={buildFilterTags(categoryView, onFilter)} />}
