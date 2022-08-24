@@ -502,6 +502,13 @@ class TestGetCollectionID(BaseAuthAPITest):
         self.assertEqual("test_collection_id_revision", res.json["id"])
         self.assertEqual("WRITE", res.json["access_type"])
 
+    def test__get_collectoin_with_x_approximate_distribution_none__OK(self):
+        collection = self.generate_collection(self.session)
+        self.generate_dataset(self.session, x_approximate_distribution=None, collection=collection)
+        res = self.app.get(f"/curation/v1/collections/{collection.id}", headers=self.make_owner_header())
+        self.assertEqual(200, res.status_code)
+        self.assertIsNone(res.json["datasets"][0]["x_approximate_distribution"])
+
 
 class TestPatchCollectionID(BaseAuthAPITest):
     def setUp(self):
