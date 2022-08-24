@@ -37,31 +37,23 @@ DATASET_ONTOLOGY_ELEMENTS_PREVIEW = (
 )
 
 
-def reshape_for_curation_api_and_is_allowed(
-    db_session: Session, collection: dict, token_info: dict, id_provided: bool = False, preview: bool = False
-) -> bool:
+def reshape_for_curation_api(db_session: Session, collection: dict, token_info: dict, preview: bool = False) -> None:
     """
     Reshape Collection data for the Curation API response. Remove tombstoned Datasets.
     :param db_session: the db Session
     :param collection: the Collection being returned in the API response
     :param token_info: user access token
-    :param id_provided: bool - whether or not the collection uuid was provided by the user, for access purposes
     :param preview: boool - whether the dataset is in preview form or not.
     :return: whether or not the Collection should be included in the response per ownership/access rules
     """
 
     owner = collection.pop("owner")  # Don't actually want to return 'owner' in response
-    if not id_provided and collection["visibility"] == CollectionVisibility.PRIVATE:
-        # User neither provided the uuid for access nor are they authorized by their access token
-        return False
-
     set_revising_in(db_session, collection, token_info, owner)
 
     collection["collection_url"] = f"{CorporaConfig().collections_base_url}/collections/{collection['id']}"
 
     if datasets := collection.get("datasets"):
         collection["datasets"] = reshape_datasets_for_curation_api(datasets, preview)
-    return True
 
 
 def set_revising_in(db_session: Session, collection: dict, token_info: dict, owner: str) -> None:

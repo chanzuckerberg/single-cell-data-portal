@@ -7,7 +7,7 @@ from backend.corpora.lambdas.api.v1.collection import (
 )
 from ..common import (
     add_collection_level_processing_status,
-    reshape_for_curation_api_and_is_allowed,
+    reshape_for_curation_api,
     EntityColumns,
 )
 from backend.corpora.api_server.db import dbconnect
@@ -47,7 +47,7 @@ def get(collection_id: str, token_info: dict):
     collection_response: dict = collection.to_dict_keep(EntityColumns.columns_for_collection_id)
 
     collection_response["processing_status"] = add_collection_level_processing_status(collection)
-    reshape_for_curation_api_and_is_allowed(db_session, collection_response, token_info, id_provided=True)
+    reshape_for_curation_api(db_session, collection_response, token_info)
 
     return jsonify(collection_response)
 
