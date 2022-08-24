@@ -11,7 +11,7 @@ export default function GetStarted(): JSX.Element {
         expressed, powered by data from the{" "}
         <Link href={ROUTES.COLLECTIONS} passHref>
           <a href="passHref" rel="noopener" target="_blank">
-            cellxgene Data Portal
+            CELLxGENE Discover
           </a>
         </Link>
         .

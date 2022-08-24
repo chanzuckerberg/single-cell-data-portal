@@ -1,23 +1,23 @@
-# Self-Host CellxGene
+# Self-Host CELLxGENE
 
-## Hosting CellxGene Desktop on the Web
+## Hosting CZ CELLxGENE Annotate on the Web
 
-Cellxgene desktop is intended to be used by researchers on their local machines. In cases where collaborators are not comfortable installing cellxgene, it is possible to host cellxgene, so your collaborators only need to open the URL you send them.
+CZ CELLxGENE Annotate is intended to be used by researchers on their local machines. In cases where collaborators are not comfortable installing Annotate, it is possible to host Annotate, so your collaborators only need to open the URL you send them.
 
-We don't officially support web deployment, but we've offered some guidance in the following sections on ways to deploy cellxgene to the web.
+We don't officially support web deployment, but we've offered some guidance in the following sections on ways to deploy CELLxGENE Annotate to the web.
 
 ## General Notes and Cautions
 
-Please consider the following when deploying cellxgene in any "hosted" environment, especially where access from the broader Internet is possible:
+Please consider the following when deploying CELLxGENE Annotate in any "hosted" environment, especially where access from the broader Internet is possible:
 
 - Information security requires careful configuration of the host environment, including firewall, logging, etc - please follow best practices
-- Cellxgene includes features which may be inappropriate for a hosted deployment - you may wish to use the following command line option:`--disable-diffexp`
+- Annotate includes features which may be inappropriate for a hosted deployment - you may wish to use the following command line option:`--disable-diffexp`
 - `cellxgene launch` currently uses Flask's development server, which is not recommended for hosted deployment (see [the Flask documentation](https://flask.palletsprojects.com/en/2.1.x/tutorial/deploy/#run-with-a-production-server))
-- We have no testing or official support for deployments where multiple users are accessing the same cellxgene instance
-- Your cellxgene instance is likely to hang or crash if too many people access it at the same time, especially if they using functions that call the Python backend (such as differential expression, noted above)
-- Cellxgene only supports one instance per dataset
+- We have no testing or official support for deployments where multiple users are accessing the same Annotate instance
+- Your Annotate instance is likely to hang or crash if too many people access it at the same time, especially if they using functions that call the Python backend (such as differential expression, noted above)
+- Annotate only supports one instance per dataset
 
-If you believe you have found a security-related issue with cellxgene, please report the issue immediately to [security@chanzuckerberg.com](mailto:security@chanzuckerberg.com).
+If you believe you have found a security-related issue with CELLxGENE Annotate, please report the issue immediately to [security@chanzuckerberg.com](mailto:security@chanzuckerberg.com).
 
 ## Configuration Options
 
@@ -27,20 +27,20 @@ The following configuration options require special consideration in any multi-u
 
 `--disable-annotations`: annotations, which is enabled by default, may not be appropriate for hosted environments. It will write to the local file system, and in extreme cases could be used to abuse (or exceed) file system capacity on the hosting server. We recommend disabling this with this flag.
 
-`--annotations-file`: this specifies a single file for all end-user annotations, and is incompatible with hosted or multi-user use of cellxgene. Using it will cause loss of user annotation data (ie, the CSV file will be overwritten). If you wish to explore using the annotations feature in a multi-user environment, please refer to the [annotations documentation](/docs/05__Annotate%20and%20Analyze%20Your%20Data/5_4__Annotating%20Data), and in particular the `--annotations-dir` flag.
+`--annotations-file`: this specifies a single file for all end-user annotations, and is incompatible with hosted or multi-user use of Annotate. Using it will cause loss of user annotation data (ie, the CSV file will be overwritten). If you wish to explore using the annotations feature in a multi-user environment, please refer to the [annotations documentation](/docs/05__Annotate%20and%20Analyze%20Your%20Data/5_4__Annotating%20Data), and in particular the `--annotations-dir` flag.
 
 ## Community Software Projects
 
-There are a number of teams building tools or infrastructure to better utilize cellxgene in a multiple user environment. While we do not endorse any particular solution, you may find the following helpful.
+There are a number of teams building tools or infrastructure to better utilize Annotate in a multiple user environment. While we do not endorse any particular solution, you may find the following helpful.
 
-- [Novartis Cellxgene Gateway](https://github.com/Novartis/cellxgene-gateway) - a multiple-user and multiple-dataset gateway for cellxgene
+- [Novartis CELLxGENE Gateway](https://github.com/Novartis/cellxgene-gateway) - a multiple-user and multiple-dataset gateway for CELLxGENE Annotate
 - [Interactive Environment in the Galaxy Project](https://galaxyproject.org/) ([patch notes](https://docs.galaxyproject.org/en/release_19.05/releases/19.05_announce.html))
 
 If you know of other solutions, drop us a note and we'll add to this list.
 
 # Community Self-Hosting Approaches
 
-## Cellxgene Gateway/Apache2 Reverse Proxy with Authentication
+## CELLxGENE Annotate Gateway/Apache2 Reverse Proxy with Authentication
 
 ### Contributors
 
@@ -54,11 +54,11 @@ Fabian Rost and Alexandre Mestiashvili
 
 ### General Description
 
-Start multiple cellxgene-gateway instances for each of the different user groups and use a reverse proxy for authentication and forwarding to the different cellxgene instances.
+Start multiple cellxgene-gateway instances for each of the different user groups and use a reverse proxy for authentication and forwarding to the different CELLxGENE Annotate instances.
 
 ### Components
 
-[CellxGene Gateway](https://github.com/Novartis/cellxgene-gateway)
+[CELLxGENE Gateway](https://github.com/Novartis/cellxgene-gateway)
 
 - Application to be run
 
@@ -81,16 +81,16 @@ Lisa Sikkema and Thomas Walzthoeni
 
 ### Components:
 
-- [Cellxgene Desktop](https://github.com/chanzuckerberg/cellxgene): the application to be run
+- [CELLxGENE Annotate](https://github.com/chanzuckerberg/cellxgene): the application to be run
 - [Nginx](https://www.nginx.com/): used as a reverse proxy to redirect web requests to the WSGI
 - [uWSGI](https://uwsgi-docs.readthedocs.io/en/latest/): forwards requests from the Nginx web server to our python flask framework
 - [Htpasswd](https://httpd.apache.org/docs/2.4/programs/htpasswd.html): used to allow basic authentication for web requests
 
 ### References:
 
-For a general reference, you can [refer](https://hackersandslackers.com/deploy-flask-uwsgi-nginx/) to this article on how to deploy a flask application \(a.k.a. Cellxgene\) to an AWS EC2 instance - or a general linux server using Nginx for receiving web requests, uWSGI to redirect those requests to the python application and htpasswd to add a basic authentication layer over the server.
+For a general reference, you can [refer](https://hackersandslackers.com/deploy-flask-uwsgi-nginx/) to this article on how to deploy a flask application \(a.k.a. CELLxGENE Annotate\) to an AWS EC2 instance - or a general linux server using Nginx for receiving web requests, uWSGI to redirect those requests to the python application and htpasswd to add a basic authentication layer over the server.
 
-This general guide can be modified with a few components that would be specific to a cellxgene deployment. First, the flask application which is deployed on your server \(found in the ‘prep your project’ section of the linked article\) should be cellxgene with an appropriate wsgi.py file added as described in the article. Second, the Nginx config file needs to be modified, an example config file may look like the following:
+This general guide can be modified with a few components that would be specific to a CELLxGENE Annotate deployment. First, the flask application which is deployed on your server \(found in the ‘prep your project’ section of the linked article\) should be cellxgene with an appropriate wsgi.py file added as described in the article. Second, the Nginx config file needs to be modified, an example config file may look like the following:
 
 ```text
 # Default route to login
@@ -139,4 +139,4 @@ With respect to above Nginx config specification, one would start the browser us
 
 **Note regarding storage and memory on the EC2 instance \(if you implement using AWS\):**
 
-Since datasets will be loaded into the memory of your machine, ram costs could potentially be high, especially if you plan to host multiple large datasets. To avoid higher than necessary costs, you can store data on S3 and only pull the data onto the machine’s memory when the cellxgene explorer is launched. This should be compatible with the approach detailed above \(albeit by tweaking a config variable to point to where the data is located\).
+Since datasets will be loaded into the memory of your machine, ram costs could potentially be high, especially if you plan to host multiple large datasets. To avoid higher than necessary costs, you can store data on S3 and only pull the data onto the machine’s memory when the CELLxGENE Explorer is launched. This should be compatible with the approach detailed above \(albeit by tweaking a config variable to point to where the data is located\).

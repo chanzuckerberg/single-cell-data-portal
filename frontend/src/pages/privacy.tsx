@@ -14,13 +14,13 @@ const Privacy = (): JSX.Element => {
       <CommonStyle>
         <PrivacyStyle>
           <Head>
-            <title>cellxgene | Privacy</title>
+            <title>CELL&times;GENE | Privacy</title>
           </Head>
           <header>
             <Image
               data-test-id="cellxgene-logo"
               src={rawCellxgeneLogo}
-              alt="cellxgene logo"
+              alt="CELLxGENE logo"
               width="119"
               height="35"
             />
@@ -111,7 +111,7 @@ const Privacy = (): JSX.Element => {
                     <h4>Data You Provide To Us.</h4> We collect certain
                     information from you when you provide it to us directly.
                     Specifically, this includes data you submit for display in
-                    cellxgene (ex: single-cell .h5ad matrix files), data you
+                    CELLxGENE (ex: single-cell .h5ad matrix files), data you
                     provide you us as part of submission or registering for an
                     account (ex: name and email address), as well as if you
                     contact us for support or with information about a dataset
@@ -148,15 +148,14 @@ const Privacy = (): JSX.Element => {
                         </li>
                         <li>
                           <h5>Cookies and Other Similar Technologies.</h5> For
-                          certain users that need to log into the cellxgene
-                          portal to publish data, we use essential cookies
-                          (small text files sent by your computer each time you
-                          access the Site that are unique to your account or
-                          your browser) to enable that use. For web analytics,
-                          we do not use Google Analytics. Instead, we use the
-                          privacy-friendly Plausible as our website analytic
-                          tool. Learn more about Plausible’s data and privacy
-                          practices{" "}
+                          certain users that need to log into CELLxGENE Discover
+                          to publish data, we use essential cookies (small text
+                          files sent by your computer each time you access the
+                          Site that are unique to your account or your browser)
+                          to enable that use. For web analytics, we do not use
+                          Google Analytics. Instead, we use the privacy-friendly
+                          Plausible as our website analytic tool. Learn more
+                          about Plausible’s data and privacy practices{" "}
                           <a
                             href="https://plausible.io/data-policy"
                             rel="noopener"
@@ -350,7 +349,7 @@ const Privacy = (): JSX.Element => {
                   <p>
                     <h4>Consent.</h4> We rely on consent to engage in certain
                     data collection activities, like data you choose to submit
-                    to us for display on cellxgene.
+                    to us for display on CELLxGENE Discover.
                   </p>
                   <p>
                     <h4>Legitimate Interests.</h4> We rely on legitimate
@@ -364,7 +363,7 @@ const Privacy = (): JSX.Element => {
                     <h4>Contract.</h4> We rely on contract where processing is
                     necessary for the performance of a contract with you (e.g.
                     to make the data you submitted to us publicly available via
-                    cellxgene).
+                    CELLxGENE Discover).
                   </p>
                 </ol>
                 <p>

@@ -47,7 +47,7 @@ If you need to normalize your data and create an embedding, `cellxgene` can do t
 
 ## What is `cellxgene prepare`?
 
-`cellxgene prepare` offers an easy command line interface (CLI) to preliminarily wrangle your data into the required format for previewing it with cellxgene. It runs `scanpy` under the hood and can read in any format that is currently supported by `scanpy` , including mtx, loom, and more listed in the [scanpy documentation](https://scanpy.readthedocs.io/en/stable/generated/scanpy.read.html).
+`cellxgene prepare` offers an easy command line interface (CLI) to preliminarily wrangle your data into the required format for previewing it with CELLxGENE Annotate. It runs `scanpy` under the hood and can read in any format that is currently supported by `scanpy`, including mtx, loom, and more listed in the [scanpy documentation](https://scanpy.readthedocs.io/en/stable/generated/scanpy.read.html).
 
 `prepare` uses `scanpy` to:
 
@@ -73,7 +73,7 @@ This will load the input data, perform PCA and nearest neighbor calculations, co
 
 ## Example usage
 
-As a quick example, let's construct a command to use `prepare` to take a raw expression matrix and generate a processed `h5ad` ready to visualize with cellxgene.
+As a quick example, let's construct a command to use `prepare` to take a raw expression matrix and generate a processed `h5ad` ready to visualize with CELLxGENE Annotate.
 
 We'll start off using the raw data from the pbmc3k dataset. This dataset is described here, and is available as part of the scanpy package. For this example, we'll assume this raw data is stored in a file called `pbmc3k-raw.h5ad`.
 

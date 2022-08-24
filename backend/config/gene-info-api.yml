@@ -1,7 +1,7 @@
 openapi: 3.0.3
 info:
   version: "1.0.0"
-  title: Chan Zuckerburg Initiative cellxgene Gene Info API
+  title: Chan Zuckerberg Initiative cellxgene Gene Info API
   description: >-
     This API is for internal use to access information from NCBI's E-Utilities API about a given gene.
 servers:
@@ -62,7 +62,7 @@ components:
             type: string
         ncbi_url:
           type: string
-        is_ensembl_id_result:
+        show_warning_banner:
           type: boolean
   
   parameters: 

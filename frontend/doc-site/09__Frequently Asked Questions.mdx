@@ -2,23 +2,23 @@
 
 We’ve compiled a list of the questions we get most frequently. Check them out below:
 
-## Cellxgene Data Portal
+## CZ CELLxGENE Discover
 
 #### How can I find a dataset of interest?
 
-Refer to this [this tutorial](https://docs.google.com/presentation/d/1FFeHuca_pqOjmbV9H4MaoYhdspIahCNcUrVQrCdqK7I/edit#slide=id.gf21dcf0a61_1_0) to find out how the dataportal is organized and how you can search by dataset metadata.
+Refer to [this tutorial](https://docs.google.com/presentation/d/1FFeHuca_pqOjmbV9H4MaoYhdspIahCNcUrVQrCdqK7I/edit#slide=id.gf21dcf0a61_1_0) to find out how the dataportal is organized and how you can search by dataset metadata.
 
 #### How can I request a particular dataset to be on the portal?
 
-You can request a particular dataset by [filing a github issue](https://github.com/chanzuckerberg/single-cell-curation/issues/new) on the cellxgene single-cell-curation repo.
+You can request a particular dataset by [filing a github issue](https://github.com/chanzuckerberg/single-cell-curation/issues/new) on the CELLxGENE single-cell-curation repo.
 
-## Cellxgene hosted Explorer
+## CZ CELLxGENE Explorer
 
 #### Is there a way to shift the color scales for continuous variables?
 
 You can use the clipping feature to remove outliers (based on percentiles) and shift the color scale (see [this tutorial](https://docs.google.com/presentation/d/13c0Nj_kR32j0hNL0uZG_4cl646N_TH3ADaQzZFqDPBI/edit#slide=id.gee6c9f6165_0_18) for a demonstration of the feature on slide 8)
 
-#### If I have multiple levels of cell type annotations, how can I visualize cell type hierarchy within cellxgene?
+#### If I have multiple levels of cell type annotations, how can I visualize cell type hierarchy within CELLxGENE?
 
 While we don't offer this capability, you can make use of the subsetting feature to reduce the cells in view to just your major subtype of interest. See
 
@@ -28,25 +28,25 @@ While we don't offer this capability, you can make use of the subsetting feature
 
 Please see the [scExpression documentation](/docs/04__Analyze%20Public%20Data/4_2__scExpression%20Documentation/4_2_1__Get%20Started).
 
-## Cellxgene Desktop Explorer
+## CZ CELLxGENE Annotate
 
 #### I tried to `pip install cellxgene` and got a weird error I don't understand
 
 This may happen, especially as we work out bugs in our installation process! Please create a new [Github issue](https://github.com/chanzuckerberg/cellxgene/issues), explain what you did, and include all the error messages you saw. It'd also be super helpful if you call `pip freeze` and include the full output alongside your issue.
 
-#### What are the requirements for an anndata object to be consumed by cellxgene?
+#### What are the requirements for an anndata object to be consumed by CELLxGENE Annotate?
 
 Take a look at the [data format requirements](/docs/05__Annotate%20and%20Analyze%20Your%20Data/5_3__Preparing%20Data)
 
 #### How can I remove categorical metadata from my dataset that I do not wish to visualize?
 
-All metadata is read from `adata.obs`. Cellxgene detects columns in this table and displays them in the UI. To remove these categories from the interface, you simply need remove them form the `obs` dataframe.
+All metadata is read from `adata.obs`. CELLxGENE Annotate detects columns in this table and displays them in the UI. To remove these categories from the interface, you simply need remove them form the `obs` dataframe.
 
 #### Once loaded in and viewing the UMAP, one of my categories is failing to color the UMAP. In the drop down menu, it is showing that it assigns the colors to each observation, but over the UMAP it says "Failure loading umap". What is the problem?
 
 It may be that you have invalid values in your categorical metadata field of interest. Check for values such as `NULL` or `NA` and recast them as a string with the appropriate value (i.e. `'NA'`).
 
-#### I have a BIG dataset, how can I make cellxgene run as fast as possible?
+#### I have a BIG dataset, how can I make CELLxGENE Annotate run as fast as possible?
 
 If your dataset requires gigabytes of disk space, you may need to select an appropriate storage format in order to effectively utilize `cellxgene`. Tips and tricks:
 

@@ -2,7 +2,7 @@
 
 ## Install
 
-Cellxgene desktop has two parts:
+CZ CELLxGENE Annotate has two parts:
 
 `cellxgene` is the main explorer application, which takes an already-processed h5ad file as input. This is installed by default.
 
@@ -57,7 +57,7 @@ conda activate cellxgene
 pip install cellxgene
 ```
 
-To install` cellxgene` and the optional` cellxgene prepare`, run:
+To install `cellxgene` and the optional `cellxgene prepare`, run:
 
 ```
 conda create --yes -n cellxgene python=3.7
@@ -76,7 +76,7 @@ source ${ENV_NAME}/bin/activate
 pip install cellxgene
 ```
 
-To install cellxgene and cellxgene prepare, run:
+To install `cellxgene` and `cellxgene prepare`, run:
 
 ```
 ENV_NAME=cellxgene
@@ -101,7 +101,7 @@ docker run -v "$PWD/example-dataset/:/data/" -p 5005:5005 cellxgene launch --hos
 
 ## Launch
 
-### Launching cellxgene with your dataset
+### Launching CELLxGENE Annotate with your dataset
 
 Once you've [prepared](/docs/05__Annotate%20and%20Analyze%20Your%20Data/5_3__Preparing%20Data) your data for cellxgene, you can launch the app using:
 
@@ -130,7 +130,7 @@ pip install s3fs
 cellxgene launch s3://mybucket.s3-us-west-2.amazonaws.com/mydata.h5ad
 ```
 
-### Options for cellxgene launch
+### Options for `cellxgene launch`
 
 For the most up-to-date and comprehensive list of options, run cellxgene launch --help
 
@@ -162,15 +162,15 @@ By default, cellxgene will read the entire H5AD will be into memory at startup, 
 
 ### Overview
 
-Cellxgene Desktop Explorer is a tool in the cellxgene suite that enables collaborative exploratory analysis of single cell data and private data sharing.
+CELLxGENE Annotate is a tool in the CELLxGENE suite that enables collaborative exploratory analysis of single cell data and private data sharing.
 
-This page describes how to quickly get started with exploratory analysis on your local computer. Those interested in hosting cellxgene to enable your collaborators to explore data from their browser without needing to download the data file or install cellxgene should see [Self-Hosting CellxGene](/docs/04__Analyze%20Public%20Data/4_1__Hosted%20Tutorials).
+This page describes how to quickly get started with exploratory analysis on your local computer. Those interested in hosting CELLxGENE Annotate to enable your collaborators to explore data from their browser without needing to download the data file or install CELLxGENE should consider [submitting data to CELLxGENE Discover](/docs/032__Contribute%20and%20Publish%20Data) or see [Self-Hosting CELLxGENE Annotate](/docs/04__Analyze%20Public%20Data/4_1__Hosted%20Tutorials).
 
 ### Quick Start
 
-To [install CellxGene](/docs/05__Annotate%20and%20Analyze%20Your%20Data/5_1__Getting-Started%20Install%20Launch%20Quick-start#install), you need Python 3.6+. We recommend [installing cellxgene into a conda](/docs/05__Annotate%20and%20Analyze%20Your%20Data/5_1__Getting-Started%20Install%20Launch%20Quick-start#using-a-conda-environment) or [virtual environment](/docs/05__Annotate%20and%20Analyze%20Your%20Data/5_1__Getting-Started%20Install%20Launch%20Quick-start#using-a-virtual-environment).
+To [install CELLxGENE Annotate](/docs/05__Annotate%20and%20Analyze%20Your%20Data/5_1__Getting-Started%20Install%20Launch%20Quick-start#install), you need Python 3.6+. We recommend [installing CELLxGENE Annotate into a conda](/docs/05__Annotate%20and%20Analyze%20Your%20Data/5_1__Getting-Started%20Install%20Launch%20Quick-start#using-a-conda-environment) or [virtual environment](/docs/05__Annotate%20and%20Analyze%20Your%20Data/5_1__Getting-Started%20Install%20Launch%20Quick-start#using-a-virtual-environment).
 
-Install the package, then launch cellxgene with an example [AnnData](https://anndata.readthedocs.io/en/latest/) file.
+Install the package, then launch CELLxGENE Annotate with an example [AnnData](https://anndata.readthedocs.io/en/latest/) file.
 
 ### Example datasets
 

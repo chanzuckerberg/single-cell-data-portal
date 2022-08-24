@@ -1,4 +1,5 @@
 import typing
+
 from sqlalchemy.orm import Session
 
 from ...authorization import is_user_owner_or_allowed
@@ -11,8 +12,8 @@ from ......common.corpora_orm import (
     DbDatasetProcessingStatus,
     DbDatasetArtifact,
     DatasetArtifactFileType,
-    Base,
     ProcessingStatus,
+    Base,
 )
 from backend.corpora.common.entities import Collection
 
@@ -90,12 +91,11 @@ def reshape_datasets_for_curation_api(datasets: typing.List[dict], preview=False
 
 
 def reshape_dataset_for_curation_api(dataset: dict, preview=False) -> dict:
-    if artifacts := dataset.get("artifacts"):
+    if artifacts := dataset.pop("artifacts", []):
         dataset["dataset_assets"] = []
         for asset in artifacts:
             if asset["filetype"] in (DatasetArtifactFileType.H5AD, DatasetArtifactFileType.RDS):
                 dataset["dataset_assets"].append(asset)
-        del dataset["artifacts"]
     if dataset.get("processing_status"):
         dataset["processing_status"] = dataset["processing_status"]["processing_status"]
     dataset_ontology_elements = DATASET_ONTOLOGY_ELEMENTS_PREVIEW if preview else DATASET_ONTOLOGY_ELEMENTS
@@ -225,20 +225,16 @@ def list_collections_curation(
     return resp_collections
 
 
-@staticmethod
-def add_collection_level_processing_status(collection: DbCollection):
+def add_collection_level_processing_status(collection: DbCollection) -> str:
     # Add a Collection-level processing status
-    status = None
-    has_statuses = False
+    if not collection.datasets:  # Return None if the collection has no datasets.
+        return None
+    return_status = ProcessingStatus.SUCCESS
     for dataset in collection.datasets:
-        processing_status = dataset.processing_status
-        if processing_status:
-            has_statuses = True
-            if processing_status.processing_status == ProcessingStatus.PENDING:
-                status = ProcessingStatus.PENDING
-            elif processing_status.processing_status == ProcessingStatus.FAILURE:
-                status = ProcessingStatus.FAILURE
-                break
-    if has_statuses and not status:  # At least one dataset processing status exists, and all were SUCCESS
-        status = ProcessingStatus.SUCCESS
-    return status
+        if processing_status := dataset.processing_status:
+            status = processing_status.processing_status
+            if status == ProcessingStatus.PENDING:
+                return_status = status
+            elif status == ProcessingStatus.FAILURE:
+                return status
+    return return_status

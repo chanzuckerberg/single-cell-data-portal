@@ -6,7 +6,7 @@ const Footer: FC = () => {
   return (
     <Wrapper>
       <MainWrapper>
-        © {new Date().getFullYear()} cellxgene
+        © {new Date().getFullYear()} CELLxGENE
         <StyledAnchor
           href={"mailto:cellxgene@chanzuckerberg.com"}
           target="_blank"

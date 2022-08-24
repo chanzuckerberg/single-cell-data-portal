@@ -1,4 +1,4 @@
-# Contributing to Corpora Data Portal
+# Contributing to Single Cell Data Portal
 
 ## Pull Request Protocols
 

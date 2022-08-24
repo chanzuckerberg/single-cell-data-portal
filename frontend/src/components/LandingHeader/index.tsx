@@ -72,7 +72,7 @@ const LandingHeader: FC = () => {
                   <Link href={ROUTES.COLLECTIONS} passHref>
                     <AnchorButton
                       onClick={() => {
-                        track(EVENTS.DATASETS_CLICK_NAV);
+                        track(EVENTS.COLLECTIONS_CLICK_NAV);
                       }}
                       active={isRouteActive(pathname, ROUTES.COLLECTIONS)}
                       href="passHref"
@@ -85,7 +85,7 @@ const LandingHeader: FC = () => {
                   <Link href={ROUTES.DATASETS} passHref>
                     <AnchorButton
                       onClick={() => {
-                        track(EVENTS.COLLECTIONS_CLICK_NAV);
+                        track(EVENTS.DATASETS_CLICK_NAV);
                       }}
                       active={isRouteActive(pathname, ROUTES.DATASETS)}
                       href="passHref"
@@ -138,7 +138,7 @@ const LandingHeader: FC = () => {
               <LinkWrapper>
                 <AnchorButton
                   onClick={() => {
-                    track(EVENTS.BROWSE_DOCUMENTATION_CLICKED);
+                    track(EVENTS.DOCUMENTATION_CLICK_NAV);
                   }}
                   active={isRouteActive(pathname, ROUTES.DOCS)}
                   href={ROUTES.DOCS}

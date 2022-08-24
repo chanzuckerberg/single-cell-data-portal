@@ -15,7 +15,7 @@ import {
 
 export const POLICY_BULLETS = {
   items: [
-    "I give CZI permission to display, distribute, and create derivative works (e.g. visualizations) of this data for purposes of offering the cellxgene portal, and I have the authority to give this permission.",
+    "I give CZI permission to display, distribute, and create derivative works (e.g. visualizations) of this data for purposes of offering CELLxGENE Discover, and I have the authority to give this permission.",
     <div key="1">
       It is my responsibility to ensure that this data is not identifiable. In
       particular, I commit that I will remove any{" "}
@@ -28,15 +28,15 @@ export const POLICY_BULLETS = {
       if it believes more work is needed to de-identify it.
     </div>,
     <div key="2">
-      If I choose to publish this data <b>publicly</b> on the cellxgene portal,
-      I understand that (1) anyone will be able to access it subject to a CC-BY
+      If I choose to publish this data <b>publicly</b> on CELLxGENE Discover, I
+      understand that (1) anyone will be able to access it subject to a CC-BY
       license, meaning they can download, share, and use the data without
       restriction beyond providing attribution to the original data
       contributor(s) and (2) the Collection details (including collection name,
       description, my name, and the contact information for the datasets in this
-      Collection) will be made public on the cellxgene portal too.
+      Collection) will be made public on the CELLxGENE Discover as well.
     </div>,
-    "I understand that I have the ability to delete the data that I have published from the cellxgene portal if I later choose to. This however will not undo any prior downloads or shares of such data.",
+    "I understand that I have the ability to delete the data that I have published from CELLxGENE Discover if I later choose to. This however will not undo any prior downloads or shares of such data.",
   ],
   version: "2.0",
 };
@@ -46,7 +46,7 @@ const Policy: FC = () => {
 
   return (
     <Wrapper>
-      By publishing this collection, you agree to cellxgene&#39;s data
+      By publishing this collection, you agree to CELLxGENE&#39;s data
       submission policies.
       <Button minimal intent={Intent.PRIMARY} onClick={handleShowButtonClick}>
         {isOpen ? "Hide" : "Show"} Details

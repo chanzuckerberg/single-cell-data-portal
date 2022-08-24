@@ -14,13 +14,13 @@ const ToS = (): JSX.Element => {
       <CommonStyle>
         <PrivacyStyle>
           <Head>
-            <title>cellxgene | Terms of Service</title>
+            <title>CELL&times;GENE | Terms of Service</title>
           </Head>
           <header>
             <Image
               data-test-id="cellxgene-logo"
               src={rawCellxgeneLogo}
-              alt="cellxgene logo"
+              alt="CELLxGENE logo"
               width="119"
               height="35"
             />
@@ -45,14 +45,14 @@ const ToS = (): JSX.Element => {
 
           <p>
             These Terms of Use (the “<strong>Terms</strong>”) apply to everyone
-            who accesses and uses the version of cellxgene located at
+            who accesses and uses the version of CELLxGENE located at
             cellxgene.cziscience.com (the “<strong>Site</strong>”; those
             individuals who access and use it, “<strong>you</strong>”).
           </p>
 
           <p>
             The purpose of the Site is to provide a version of the interactive
-            data explorer called cellxgene that enables fast visualizations of
+            data explorer called CELLxGENE that enables fast visualizations of
             curated single-cell transcriptomics datasets (those datasets, the “
             <strong>Data</strong>”). By leveraging modern web development
             techniques to enable those visualizations, we hope to enable
@@ -162,7 +162,7 @@ const ToS = (): JSX.Element => {
                   action, suit or other proceeding (a “Claim”) to the extent
                   arising from: (1) your gross negligence, willful misconduct or
                   fraud; and/or (2) any misrepresentation you make regarding
-                  your permission to submit data to cellxgene for public use.
+                  your permission to submit data to CELLxGENE for public use.
                 </li>
                 <li>
                   Section 5.1 indemnification is conditioned upon, CZIF giving

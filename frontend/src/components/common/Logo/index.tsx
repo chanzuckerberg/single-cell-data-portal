@@ -5,7 +5,7 @@ import logo from "src/common/images/cellxgene-discover-logo.svg";
 export const Logo: FC = () => {
   return (
     <Image
-      alt="cellxgene logo"
+      alt="CELLxGENE logo"
       data-test-id="logo"
       height={23}
       src={logo}

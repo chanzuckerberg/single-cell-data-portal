@@ -23,7 +23,7 @@ const MyCollections: FC = () => {
   return (
     <>
       <Head>
-        <title>cellxgene | My Collections</title>
+        <title>CELL&times;GENE | My Collections</title>
       </Head>
       <ViewGrid>
         <TitleAndDescription>

@@ -83,7 +83,6 @@ services:
       - "9000:8080"
     volumes:
       - ./backend/corpora/upload_failures:/var/task
-      - ./backend/corpora/lambdas/upload_failures:/var/task/backend/corpora/upload_failures
       - ./backend/corpora/common:/var/task/backend/corpora/common
       - ./backend/corpora/dataset_processing:/var/task/backend/corpora/dataset_processing
     environment:
@@ -231,6 +230,9 @@ services:
       - DEPLOYMENT_STAGE=test
       - ARTIFACT_BUCKET=artifact-bucket
       - CELLXGENE_BUCKET=cellxgene-bucket
+    volumes:
+      # Mount dirs in a layout suitable for running tests.
+      - .:/single-cell-data-portal
     networks:
       corporanet:
         aliases:
