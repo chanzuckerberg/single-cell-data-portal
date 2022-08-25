@@ -2,6 +2,7 @@ import boto3
 import os
 import subprocess
 
+from backend.wmg.data.utils import log_func_runtime
 
 stack_name = os.environ.get("REMOTE_DEV_PREFIX")
 wmg_bucket_name = os.environ.get("WMG_BUCKET")
@@ -54,6 +55,7 @@ def remove_oldest_datasets(timestamp):
             object.delete()
 
 
+@log_func_runtime
 def upload_artifacts_to_s3(snapshot_path, timestamp):
     sync_command = ["aws", "s3", "sync", snapshot_path, f"{_get_wmg_bucket_path()}/{timestamp}"]
     subprocess.run(sync_command)

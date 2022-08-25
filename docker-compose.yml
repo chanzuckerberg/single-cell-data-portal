@@ -230,6 +230,9 @@ services:
       - DEPLOYMENT_STAGE=test
       - ARTIFACT_BUCKET=artifact-bucket
       - CELLXGENE_BUCKET=cellxgene-bucket
+    volumes:
+      # Mount dirs in a layout suitable for running tests.
+      - .:/single-cell-data-portal
     networks:
       corporanet:
         aliases:

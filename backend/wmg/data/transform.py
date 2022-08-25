@@ -10,8 +10,10 @@ from backend.wmg.data.snapshot import (
     EXPRESSION_SUMMARY_CUBE_NAME,
     PRIMARY_FILTER_DIMENSIONS_FILENAME,
 )
+from backend.wmg.data.utils import log_func_runtime
 
 
+@log_func_runtime
 def get_cell_types_by_tissue(corpus_group: str) -> Dict:
     """
     Return a list of all associated cell type ontologies for each tissue contained in the
@@ -34,6 +36,7 @@ def get_cell_types_by_tissue(corpus_group: str) -> Dict:
     return cell_type_by_tissue
 
 
+@log_func_runtime
 def generate_cell_ordering(snapshot_path: str, cell_type_by_tissue: Dict) -> None:
     """
     Use graphviz to map all the cells associated with a tissue to the ontology tree and return their correct order
@@ -100,9 +103,8 @@ def generate_cell_ordering(snapshot_path: str, cell_type_by_tissue: Dict) -> Non
     df.to_json(f"{snapshot_path}/{CELL_TYPE_ORDERINGS_FILENAME}")
 
 
+@log_func_runtime
 def generate_primary_filter_dimensions(snapshot_path: str, corpus_name: str, snapshot_id: int):
-
-    # TODO: remove them from WmgQuery (next 4 following functions)
     def list_primary_filter_dimension_term_ids(cube, primary_dim_name: str):
         return cube.query(attrs=[], dims=[primary_dim_name]).df[:].groupby([primary_dim_name]).first().index.tolist()
 
