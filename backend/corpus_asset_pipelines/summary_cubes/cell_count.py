@@ -34,7 +34,7 @@ def transform(obs: pd.DataFrame) -> pd.DataFrame:
                 "assay_ontology_term_id",
                 "development_stage_ontology_term_id",
                 "disease_ontology_term_id",
-                "ethnicity_ontology_term_id",
+                "self_reported_ethnicity_ontology_term_id",
                 "sex_ontology_term_id",
                 "organism_ontology_term_id",
             ],
