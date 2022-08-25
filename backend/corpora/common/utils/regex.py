@@ -22,5 +22,5 @@ def validate_curator_tag(curator_tag: str) -> bool:
         if not re.search(ID_REGEX, tag):
             return
         else:
-            ValueError("Curator tag cannot contain the same shape as a UUID.")
+            raise ValueError("Curator tag cannot contain the same shape as a UUID.")
     raise ValueError("Invalid curator tag.")
