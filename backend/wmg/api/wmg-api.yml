@@ -81,7 +81,7 @@ paths:
                       $ref: "#/components/schemas/wmg_ontology_term_id_list"
                     development_ontology_stage_term_ids:
                       $ref: "#/components/schemas/wmg_ontology_term_id_list"
-                    ethnicity_ontology_term_ids:
+                    self_reported_ethnicity_ontology_term_ids:
                       $ref: "#/components/schemas/wmg_ontology_term_id_list"
                 include_filter_dims:
                   type: boolean
