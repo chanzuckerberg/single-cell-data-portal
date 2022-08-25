@@ -341,7 +341,7 @@ class Validation:
             ccl5_expression_sum_by_cell_type = CCL5_expression.groupby("cell_type_ontology_term_id").sum()["sum"]
 
             expected_values = anndata.read_h5ad(
-                f"{pathlib.Path(__file__).parent.resolve()}/lung_map_3de0ad6d-4378-4f62-b37b-ec0b75a50d94.h5ad"
+                f"{pathlib.Path(__file__).parent.resolve()}/3_0_0_lung_map_3de0ad6d-4378-4f62-b37b-ec0b75a50d94.h5ad"
             )
             malat_expected = expected_values.obs.assign(MALAT1=expected_values.layers["rankit"].toarray()[:, 0])
             ccl5_expected = expected_values.obs.assign(CCL5=expected_values.layers["rankit"].toarray()[:, 1])
