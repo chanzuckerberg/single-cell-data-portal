@@ -90,8 +90,12 @@ paths:
                     items:
                       allOf:
                         - $ref: "#/components/schemas/collection_list"
+        "400":
+          $ref: "#/components/responses/400"
         "401":
           $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
     post:
       summary: Create a Collection
       description: Create a new Collection
@@ -527,12 +531,6 @@ components:
     collection_list:
       description: Full Collection metadata
       properties:
-        access_type:
-          enum:
-            - READ
-            - WRITE
-          nullable: true
-          type: string
         collection_url:
           type: string
         contact_email:
@@ -585,12 +583,6 @@ components:
     collection_get:
       description: Full Collection metadata
       properties:
-        access_type:
-          enum:
-            - READ
-            - WRITE
-          nullable: true
-          type: string
         collection_url:
           type: string
         contact_email:

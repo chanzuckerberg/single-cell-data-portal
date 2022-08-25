@@ -6,9 +6,7 @@ from backend.corpora.lambdas.api.v1.collection import (
     normalize_and_get_doi,
 )
 from ..common import (
-    add_collection_level_processing_status,
-    reshape_for_curation_api_and_is_allowed,
-    EntityColumns,
+    reshape_for_curation_api,
 )
 from backend.corpora.api_server.db import dbconnect
 from backend.corpora.common.corpora_orm import (
@@ -44,11 +42,7 @@ def get(collection_id: str, token_info: dict):
     collection = Collection.get_collection(db_session, collection_id, include_tombstones=False)
     if not collection:
         raise NotFoundHTTPException
-    collection_response: dict = collection.to_dict_keep(EntityColumns.columns_for_collection_id)
-
-    collection_response["processing_status"] = add_collection_level_processing_status(collection)
-    reshape_for_curation_api_and_is_allowed(db_session, collection_response, token_info, id_provided=True)
-
+    collection_response = reshape_for_curation_api(db_session, collection, token_info)
     return jsonify(collection_response)
 
 
