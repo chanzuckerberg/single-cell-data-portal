@@ -1,4 +1,5 @@
-import styled, { css } from "styled-components";
+import { css } from "@emotion/react";
+import styled from "@emotion/styled";
 import { HEADER_HEIGHT_PX } from "../Header/style";
 
 export const Wrapper = styled.div`

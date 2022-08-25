@@ -1,6 +1,7 @@
 import { Classes, Colors } from "@blueprintjs/core";
+import { css } from "@emotion/react";
+import styled from "@emotion/styled";
 import { Chip } from "czifui";
-import styled, { css } from "styled-components";
 import { GRAY, PT_GRID_SIZE_PX, PT_TEXT_COLOR } from "../common/theme";
 
 export const HEADER_HEIGHT_PX = 48;

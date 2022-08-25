@@ -1,6 +1,7 @@
 import { HTMLTable } from "@blueprintjs/core";
+import { css } from "@emotion/react";
+import styled from "@emotion/styled";
 import { PT_GRID_SIZE_PX } from "src/components/common/theme";
-import styled, { css } from "styled-components";
 
 export const textClippingCSS = css`
   white-space: nowrap;
