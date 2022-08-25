@@ -22,7 +22,7 @@ export default function BasicFilter({
         disabled={isDisabled}
         minimal
         modifiers={{ offset: { offset: "0, 5" } }}
-        position={Position.RIGHT}
+        position={Position.RIGHT_TOP}
       >
         {target}
         {content}
