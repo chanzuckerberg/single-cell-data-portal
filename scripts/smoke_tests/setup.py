@@ -65,7 +65,7 @@ if __name__ == "__main__":
         print("Found sufficient published collections for testing, exiting")
         sys.exit(0)
 
-    dataset_dropbox_url = "https://www.dropbox.com/s/qiclvn1slmap351/example_valid.h5ad?dl=0"
+    dataset_dropbox_url = "https://www.dropbox.com/s/ixhjslkiewpdtvz/3_0_0_valid.h5ad?dl=0"
     num_to_create = NUM_TEST_COLLECTIONS - collection_count
     threads = []
     for i in range(num_to_create):
