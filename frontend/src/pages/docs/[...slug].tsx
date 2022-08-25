@@ -1,8 +1,13 @@
+import styled from "@emotion/styled";
 import { Icon } from "czifui";
 import fs from "fs";
 import matter from "gray-matter";
 import { GetStaticPaths } from "next";
-import { MDXRemote, MDXRemoteSerializeResult } from "next-mdx-remote";
+import {
+  MDXRemote,
+  MDXRemoteProps,
+  MDXRemoteSerializeResult,
+} from "next-mdx-remote";
 import { serialize } from "next-mdx-remote/serialize";
 import Head from "next/head";
 import Image, { ImageProps } from "next/image";
@@ -14,7 +19,6 @@ import { noop } from "src/common/constants/utils";
 import EmbeddedGoogleSlides from "src/components/EmbeddedGoogleSlides";
 import Layout from "src/components/Layout";
 import { StyledDocsLayout } from "src/components/Layout/style";
-import styled from "styled-components";
 
 const DOC_SITE_FOLDER_NAME = "doc-site";
 
@@ -275,7 +279,7 @@ const StyledLeftNav = styled.div`
   ::-webkit-scrollbar-thumb {
     background-clip: padding-box;
     border-right: 4px #f8f8f8 solid;
-    background: grey;
+    background-color: grey;
   }
 `;
 
@@ -312,11 +316,11 @@ const DocContent = styled.div`
   }
 
   & h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
+  & h2,
+  & h3,
+  & h4,
+  & h5,
+  & h6 {
     margin-top: 24px;
     margin-bottom: 0px;
     & > code {
@@ -333,13 +337,13 @@ const DocContent = styled.div`
   }
 `;
 
-const StyledImage = styled(Image)``;
+const StyledImage = styled(Image)();
 
 const ImageContainer = styled.div`
   width: 100%;
   margin: 24px 0;
 
-  > div {
+  > span {
     position: unset !important;
   }
 
@@ -381,7 +385,8 @@ const MDX_AVAILABLE_COMPONENTS = {
   p: styled.p`
     margin: 16px 0px;
   `,
-};
+} as MDXRemoteProps["components"];
+
 const DocPage = ({ activeFile, mdxSource, filePath }: Props): JSX.Element => {
   return (
     <>

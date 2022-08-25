@@ -1,5 +1,5 @@
+import styled from "@emotion/styled";
 import { GRAY } from "src/components/common/theme";
-import styled from "styled-components";
 
 export const SubTitle = styled.div`
   color: ${GRAY.A};

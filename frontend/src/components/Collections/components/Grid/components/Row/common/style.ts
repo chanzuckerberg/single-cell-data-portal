@@ -1,6 +1,6 @@
 import { Classes } from "@blueprintjs/core";
+import styled from "@emotion/styled";
 import { GRAY, PT_GRID_SIZE_PX } from "src/components/common/theme";
-import styled from "styled-components";
 import { detailsColWidthCSS, textClippingCSS } from "../../../common/style";
 
 export const StyledCell = styled.td`

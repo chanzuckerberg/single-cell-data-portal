@@ -65,7 +65,7 @@ const Header: FC = () => {
                   active={isRouteActive(pathname, ROUTES.WHERE_IS_MY_GENE)}
                   href="passHref"
                   minimal
-                  text="scExpression"
+                  text="Gene Expression"
                   onClick={handleWMGClick}
                 />
               </Link>

@@ -19,7 +19,8 @@
     "target": "esnext",
     "types": ["jest-playwright-preset", "expect-playwright", "jest"],
     "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "incremental": true
   },
   "exclude": ["node_modules", "public", ".cache"],
   "include": [
