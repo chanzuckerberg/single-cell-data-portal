@@ -92,7 +92,7 @@ class TestApi(BaseFunctionalTestCase):
             for key in updated_data.keys():
                 self.assertEqual(updated_data[key], data[key])
 
-        self.upload_and_wait(collection_id, "https://www.dropbox.com/s/ixhjslkiewpdtvz/3_0_0_valid.h5ad?dl=0")
+        self.upload_and_wait(collection_id, "https://www.dropbox.com/s/m1ur46nleit8l3w/3_0_0_valid.h5ad?dl=0")
 
         # make collection public
         with self.subTest("Test make collection public"):
@@ -188,7 +188,7 @@ class TestApi(BaseFunctionalTestCase):
         self.assertEqual(res.status_code, requests.codes.created)
         self.assertIn("collection_id", data)
 
-        body = {"url": "https://www.dropbox.com/s/ixhjslkiewpdtvz/3_0_0_valid.h5ad?dl=0"}
+        body = {"url": "https://www.dropbox.com/s/m1ur46nleit8l3w/3_0_0_valid.h5ad?dl=0"}
 
         res = self.session.post(
             f"{self.api}/dp/v1/collections/{collection_id}/upload-links", data=json.dumps(body), headers=headers
