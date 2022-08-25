@@ -68,7 +68,7 @@ def format_dataset_processing_failure_slack_message(dataset_id):
     return batch_alert_data
 
 
-def format_failed_batch_issue_slack_alert(data):
+def format_failed_batch_issue_slack_alert(data: dict) -> str:
     aws_region = os.getenv("AWS_DEFAULT_REGION")
     job_id = os.getenv("AWS_BATCH_JOB_ID")
     job_url = f"https://{aws_region}.console.aws.amazon.com/batch/v2/home?region={aws_region}#jobs/detail/{job_id}"
@@ -79,7 +79,7 @@ def format_failed_batch_issue_slack_alert(data):
             "text": f"Batch processing job failed!\n" f"*Batch Job ID*:<{job_url}|{job_id}>\n",
         },
     }
-    data = batch_data | data
+    data.update(**batch_data)
 
     return json.dumps(data, indent=2)
 

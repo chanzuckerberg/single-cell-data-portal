@@ -64,6 +64,19 @@ paths:
         - collection
       parameters:
         - $ref: "#/components/parameters/query_visibility"
+        - name: curator
+          description: >-
+            Return collections owned by the specified curator. The use of this parameter is limited to curators 
+            with permission to query all collections.
+          in: query
+          required: false
+          schema:
+            type: string
+          examples:
+            specified_curator:
+              summary: Return collections owned by the specified curator
+              value:
+                name: "John Smith"
       responses:
         "200":
           description: OK
@@ -76,13 +89,7 @@ paths:
                     type: array
                     items:
                       allOf:
-                        - $ref: "#/components/schemas/collection_common"
-                        - type: object
-                          properties:
-                            datasets:
-                              type: array
-                              items:
-                                $ref: "#/components/schemas/dataset_preview"
+                        - $ref: "#/components/schemas/collection_list"
         "401":
           $ref: "#/components/responses/401"
     post:
@@ -138,13 +145,8 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/collection_common"
-                  - type: object
-                    properties:
-                      datasets:
-                        type: array
-                        items:
-                          $ref: "#/components/schemas/dataset"
+                  - $ref: "#/components/schemas/collection_get"
+
         "404":
           $ref: "#/components/responses/404"
     patch:
@@ -253,8 +255,8 @@ paths:
                     $ref: "#/components/schemas/collection_id"
         "401":
           $ref: "#/components/responses/401"
-        "409":
-          $ref: "#/components/responses/409"
+        "403":
+          $ref: "#/components/responses/403"
 
   /v1/collections/{collection_id}/datasets:
     delete:
@@ -353,6 +355,8 @@ paths:
         request body; if an existing Dataset has this tag, the existing Dataset SHALL be replaced, otherwise a new
         Dataset will be added. MAY include the **id** of an existing Dataset, in which case the existing Dataset
         SHALL be replaced.
+
+        Only presigned AWS S3 URLs and Dropbox shared file links are supported.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.datasets.upload_link.put
       tags:
         - collection
@@ -425,9 +429,8 @@ paths:
 
         To upload the files to S3, use the Python boto3 package. Once a file is successfully uploaded, it wil be
         processed and added to the Collection (specified in the S3 key path) with no further user action required.
-        Include an email address in the S3 file upload metadata to receive processing and error notifications.
-        Alternatively, use `/curation/collections/{collection_id}/datasets/status` to check on the processing
-        status for a given Dataset.
+        Use `GET /curation/collections/{collection_id}/datasets/` with `curator_tag` or `id` query parameter  to check 
+        on the processing status for a given Dataset.
 
       security:
         - curatorAccess: []
@@ -464,7 +467,7 @@ paths:
       tags:
         - collection
       description: >-
-        Generate URLs to download the files associated with the dataset. MUST include *one* of the **curator_tag**
+        Generate Presigned S3 URLs to download the files associated with the dataset. MUST include *one* of the **curator_tag**
         and **dataset_id** parameters.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.assets.get
       parameters:
@@ -495,14 +498,19 @@ components:
       properties:
         assets:
           items:
-            allOf:
-              - "$ref": "#/components/schemas/dataset_asset"
-              - properties:
-                  file_size:
-                    type: number
-                  presigned_url:
-                    type: string
-                type: object
+            properties:
+              file_name:
+                type: string
+              file_size:
+                type: number
+              file_type:
+                enum:
+                  - H5AD
+                  - RDS
+                type: string
+              presigned_url:
+                type: string
+            type: object
           type: array
         curator_tag:
           "$ref": "#/components/schemas/curator_tag"
@@ -516,7 +524,7 @@ components:
         type: string
       nullable: true
       example: ["patient", "seqBatch"]
-    collection_common:
+    collection_list:
       description: Full Collection metadata
       properties:
         access_type:
@@ -538,6 +546,68 @@ components:
         curator_name:
           nullable: true
           type: string
+        datasets:
+          type: array
+          items:
+            $ref: "#/components/schemas/dataset_preview"
+        description:
+          type: string
+        id:
+          "$ref": "#/components/schemas/collection_id"
+        links:
+          "$ref": "#/components/schemas/links"
+        name:
+          nullable: true
+          type: string
+        processing_status:
+          "$ref": "#/components/schemas/processing_status"
+        published_at:
+          nullable: true
+          type: string
+        publisher_metadata:
+          "$ref": "#/components/schemas/publisher_metadata"
+        revised_at:
+          nullable: true
+          type: string
+        revising_in:
+          type: string
+          description: the id of the associated revision Collection, if one exists and the user is authorized
+          nullable: true
+        revision_of:
+          description: the id of the published version of this Collection
+          nullable: true
+          type: string
+        tombstone:
+          type: boolean
+        visibility:
+          "$ref": "#/components/schemas/visibility"
+      type: object
+    collection_get:
+      description: Full Collection metadata
+      properties:
+        access_type:
+          enum:
+            - READ
+            - WRITE
+          nullable: true
+          type: string
+        collection_url:
+          type: string
+        contact_email:
+          nullable: true
+          type: string
+        contact_name:
+          nullable: true
+          type: string
+        created_at:
+          type: string
+        curator_name:
+          nullable: true
+          type: string
+        datasets:
+          type: array
+          items:
+            $ref: "#/components/schemas/dataset"
         description:
           type: string
         id:
@@ -614,8 +684,8 @@ components:
       allOf:
         - "$ref": "#/components/schemas/dataset_preview"
         - properties:
-            X_approximate_distribution:
-              "$ref": "#/components/schemas/distribution"
+            assay:
+              "$ref": "#/components/schemas/ontology_elements"
             batch_condition:
               "$ref": "#/components/schemas/batch_condition"
             cell_count:
@@ -623,6 +693,9 @@ components:
               type: integer
             cell_type:
               "$ref": "#/components/schemas/ontology_elements"
+            curator_tag:
+              "$ref": "#/components/schemas/curator_tag"
+              nullable: true
             dataset_assets:
               items:
                 "$ref": "#/components/schemas/dataset_asset"
@@ -630,10 +703,12 @@ components:
             development_stage:
               "$ref": "#/components/schemas/ontology_elements"
               nullable: true
-            self_reported_ethnicity:
+            disease:
               "$ref": "#/components/schemas/ontology_elements"
             explorer_url:
               "$ref": "#/components/schemas/explorer_url"
+            id:
+              "$ref": "#/components/schemas/dataset_id"
             is_primary_data:
               "$ref": "#/components/schemas/is_primary_data"
             mean_genes_per_cell:
@@ -644,6 +719,8 @@ components:
             name:
               nullable: true
               type: string
+            organism:
+              "$ref": "#/components/schemas/ontology_elements"
             processing_status:
               "$ref": "#/components/schemas/processing_status"
             revised_at:
@@ -655,8 +732,16 @@ components:
             schema_version:
               nullable: true
               type: string
+            self_reported_ethnicity:
+              "$ref": "#/components/schemas/ontology_elements"
             sex:
               "$ref": "#/components/schemas/ontology_elements"
+            tissue:
+              "$ref": "#/components/schemas/ontology_elements"
+            tombstone:
+              type: boolean
+            x_approximate_distribution:
+              "$ref": "#/components/schemas/distribution"
           type: object
     dataset_asset:
       properties:
@@ -702,6 +787,7 @@ components:
         - COUNT
         - NORMAL
       type: string
+      nullable: true
     explorer_url:
       description:
         The url at which a given Dataset may be explored using the cellxgene
