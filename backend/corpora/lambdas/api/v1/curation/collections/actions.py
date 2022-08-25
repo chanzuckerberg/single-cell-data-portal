@@ -1,6 +1,5 @@
 from flask import jsonify, g
-from .common import add_collection_level_processing_status, reshape_for_curation_api
-from .common import EntityColumns
+from .common import reshape_for_curation_api
 from ...authorization import is_super_curator, owner_or_allowed
 from ......common.corpora_orm import CollectionVisibility, DbCollection
 from ......common.utils.http_exceptions import ForbiddenHTTPException
@@ -24,9 +23,9 @@ def get(visibility: str, token_info: dict, curator: str = None):
             if not token_info:
                 raise ForbiddenHTTPException(detail="Not authorized to query for PRIVATE collection.")
             else:
-                result = owner_or_allowed(token_info)
-                if result:
-                    filters.append(DbCollection.owner == result)
+                owner_filter = owner_or_allowed(token_info)
+                if owner_filter:  # None means the user is a super curator and don't need to filter by owner.
+                    filters.append(DbCollection.owner == owner_filter)
 
     if curator:
         if not is_super_curator(token_info):
@@ -37,9 +36,7 @@ def get(visibility: str, token_info: dict, curator: str = None):
     db_session = g.db_session
     resp_collections = []
     for collection in db_session.query(DbCollection).filter(*filters).all():
-        resp_collection = collection.to_dict_keep(EntityColumns.columns_for_collections)
-        resp_collection["processing_status"] = add_collection_level_processing_status(collection)
-        reshape_for_curation_api(db_session, resp_collection, token_info, preview=True)
+        resp_collection = reshape_for_curation_api(db_session, collection, token_info, preview=True)
         resp_collections.append(resp_collection)
 
     return jsonify({"collections": resp_collections})

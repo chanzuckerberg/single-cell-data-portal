@@ -15,7 +15,6 @@ from ......common.corpora_orm import (
     ProcessingStatus,
     Base,
 )
-from backend.corpora.common.entities import Collection
 
 
 DATASET_ONTOLOGY_ELEMENTS = (
@@ -37,7 +36,9 @@ DATASET_ONTOLOGY_ELEMENTS_PREVIEW = (
 )
 
 
-def reshape_for_curation_api(db_session: Session, collection: dict, token_info: dict, preview: bool = False) -> None:
+def reshape_for_curation_api(
+    db_session: Session, collection: DbCollection, token_info: dict, preview: bool = False
+) -> dict:
     """
     Reshape Collection data for the Curation API response. Remove tombstoned Datasets.
     :param db_session: the db Session
@@ -46,17 +47,21 @@ def reshape_for_curation_api(db_session: Session, collection: dict, token_info: 
     :param preview: boool - whether the dataset is in preview form or not.
     :return: whether or not the Collection should be included in the response per ownership/access rules
     """
+    entity_columns = EntityColumns.columns_for_collections if preview else EntityColumns.columns_for_collection_id
+    resp_collection = collection.to_dict_keep(entity_columns)
+    resp_collection["processing_status"] = add_collection_level_processing_status(collection)
 
-    owner = collection.pop("owner")  # Don't actually want to return 'owner' in response
-    set_revising_in(db_session, collection, token_info, owner)
+    owner = resp_collection.pop("owner")  # Don't actually want to return 'owner' in response
+    resp_collection["revising_in"] = get_revising_in(db_session, collection, token_info, owner)
+    resp_collection["collection_url"] = f"{CorporaConfig().collections_base_url}/collections/{collection.id}"
+    if datasets := resp_collection.get("datasets"):
+        resp_collection["datasets"] = reshape_datasets_for_curation_api(datasets, preview)
+    return resp_collection
 
-    collection["collection_url"] = f"{CorporaConfig().collections_base_url}/collections/{collection['id']}"
 
-    if datasets := collection.get("datasets"):
-        collection["datasets"] = reshape_datasets_for_curation_api(datasets, preview)
-
-
-def set_revising_in(db_session: Session, collection: dict, token_info: dict, owner: str) -> None:
+def get_revising_in(
+    db_session: Session, collection: DbCollection, token_info: dict, owner: str
+) -> typing.Optional[str]:
     """
     If the Collection is public AND the user is authorized use a database call to populate 'revising_in' attribute.
     None -> 1) revision does not exist, 2) the Collection is private, or 3) the user is not authorized
@@ -67,10 +72,10 @@ def set_revising_in(db_session: Session, collection: dict, token_info: dict, own
     :param owner: the owner of the Collection
     :return: None
     """
-    collection["revising_in"] = None
-    if collection["visibility"] == CollectionVisibility.PUBLIC and is_user_owner_or_allowed(token_info, owner):
-        if revision := Collection.get_collection(db_session, revision_of=collection["id"]):
-            collection["revising_in"] = revision.id
+    if collection.visibility == CollectionVisibility.PUBLIC and is_user_owner_or_allowed(token_info, owner):
+        if result := db_session.query(DbCollection.id).filter(DbCollection.revision_of == collection.id).one_or_none():
+            return result.id
+    return None
 
 
 def reshape_datasets_for_curation_api(datasets: typing.List[dict], preview=False) -> typing.List[dict]:
