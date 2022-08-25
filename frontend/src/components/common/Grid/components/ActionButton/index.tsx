@@ -1,6 +1,8 @@
-import { AnchorButton } from "@blueprintjs/core";
-import React, { ReactElement } from "react";
-import { ActionButton as StyledActionButton } from "src/components/common/Grid/components/ActionButton/style";
+import { ReactElement } from "react";
+import {
+  StyledAnchorButton,
+  StyledButton,
+} from "src/components/common/Grid/components/ActionButton/style";
 
 interface Props {
   iconSvg: ReactElement;
@@ -12,12 +14,7 @@ export default function ActionButton({
   isAnchorButton = false,
   ...props /* Spread props to allow for data-test-id and button specific attributes e.g. "href", "target", or "disabled". */
 }: Props): JSX.Element {
-  return (
-    <StyledActionButton
-      as={isAnchorButton ? AnchorButton : undefined}
-      icon={iconSvg}
-      minimal
-      {...props}
-    />
-  );
+  const Component = isAnchorButton ? StyledAnchorButton : StyledButton;
+
+  return <Component icon={iconSvg} minimal {...props} />;
 }

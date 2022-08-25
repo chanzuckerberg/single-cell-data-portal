@@ -1,5 +1,5 @@
 import { Classes } from "@blueprintjs/core";
-import styled from "styled-components";
+import styled from "@emotion/styled";
 
 export const StatusTags = styled.div`
   display: flex;
