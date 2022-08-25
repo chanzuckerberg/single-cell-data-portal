@@ -576,7 +576,9 @@ class WmgApiV1Tests(unittest.TestCase):
                     {"development_stage_ontology_term_id_0": "development_stage_ontology_term_id_0_label"}
                 ],
                 "disease_terms": [{"disease_ontology_term_id_0": "disease_ontology_term_id_0_label"}],
-                "self_reported_ethnicity_terms": [{"self_reported_ethnicity_ontology_term_id_0": "self_reported_ethnicity_ontology_term_id_0_label"}],
+                "self_reported_ethnicity_terms": [
+                    {"self_reported_ethnicity_ontology_term_id_0": "self_reported_ethnicity_ontology_term_id_0_label"}
+                ],
                 "sex_terms": [{"sex_ontology_term_id_0": "sex_ontology_term_id_0_label"}],
             }
             self.assertEqual(json.loads(response.data)["filter_dims"], expected_filters)
@@ -656,7 +658,9 @@ class WmgApiV1Tests(unittest.TestCase):
                 # if no filter is passed in for dev stage
                 response = self.app.post("/wmg/v1/query", json=filter_0_request)
                 dev_stage_terms = json.loads(response.data)["filter_dims"]["development_stage_terms"]
-                self_reported_ethnicity_terms = json.loads(response.data)["filter_dims"]["self_reported_ethnicity_terms"]
+                self_reported_ethnicity_terms = json.loads(response.data)["filter_dims"][
+                    "self_reported_ethnicity_terms"
+                ]
 
                 no_dev_stage_filter_response = self.app.post("/wmg/v1/query", json=filter_0_no_dev_stage_request)
                 dev_stage_terms_if_no_dev_stage_filters = json.loads(no_dev_stage_filter_response.data)["filter_dims"][
@@ -664,9 +668,9 @@ class WmgApiV1Tests(unittest.TestCase):
                 ]
 
                 no_ethnicity_filter_response = self.app.post("/wmg/v1/query", json=filter_0_no_ethnicity_request)
-                self_reported_ethnicity_terms_if_no_dev_stage_filters = json.loads(no_ethnicity_filter_response.data)["filter_dims"][
-                    "self_reported_ethnicity_terms"
-                ]
+                self_reported_ethnicity_terms_if_no_dev_stage_filters = json.loads(no_ethnicity_filter_response.data)[
+                    "filter_dims"
+                ]["self_reported_ethnicity_terms"]
 
                 # filter options for dev_stage
                 self.assertEqual(dev_stage_terms, dev_stage_terms_if_no_dev_stage_filters)
@@ -703,10 +707,14 @@ class WmgApiV1Tests(unittest.TestCase):
                     {"self_reported_ethnicity_ontology_term_id_1": "self_reported_ethnicity_ontology_term_id_1_label"},
                     {"self_reported_ethnicity_ontology_term_id_2": "self_reported_ethnicity_ontology_term_id_2_label"},
                 ]
-                self_reported_ethnicity_0_request = dict(filter=self_reported_ethnicity_0_filter, include_filter_dims=True)
+                self_reported_ethnicity_0_request = dict(
+                    filter=self_reported_ethnicity_0_filter, include_filter_dims=True
+                )
                 response = self.app.post("/wmg/v1/query", json=self_reported_ethnicity_0_request)
                 dev_stage_terms = json.loads(response.data)["filter_dims"]["development_stage_terms"]
-                self_reported_ethnicity_terms = json.loads(response.data)["filter_dims"]["self_reported_ethnicity_terms"]
+                self_reported_ethnicity_terms = json.loads(response.data)["filter_dims"][
+                    "self_reported_ethnicity_terms"
+                ]
                 self.assertEqual(all_development_stage_terms, dev_stage_terms)
                 self.assertEqual(all_self_reported_ethnicity_terms, self_reported_ethnicity_terms)
 
@@ -725,11 +733,17 @@ class WmgApiV1Tests(unittest.TestCase):
                 expected_development_stage_terms = [
                     {"development_stage_ontology_term_id_0": "development_stage_ontology_term_id_0_label"},
                 ]
-                expected_self_reported_ethnicity_term = [{"self_reported_ethnicity_ontology_term_id_0": "self_reported_ethnicity_ontology_term_id_0_label"}]
-                self_reported_ethnicity_1_request = dict(filter=self_reported_ethnicity_1_filter, include_filter_dims=True)
+                expected_self_reported_ethnicity_term = [
+                    {"self_reported_ethnicity_ontology_term_id_0": "self_reported_ethnicity_ontology_term_id_0_label"}
+                ]
+                self_reported_ethnicity_1_request = dict(
+                    filter=self_reported_ethnicity_1_filter, include_filter_dims=True
+                )
                 response = self.app.post("/wmg/v1/query", json=self_reported_ethnicity_1_request)
                 dev_stage_terms_no_dev_filter = json.loads(response.data)["filter_dims"]["development_stage_terms"]
-                self_reported_ethnicity_terms_no_dev_filter = json.loads(response.data)["filter_dims"]["self_reported_ethnicity_terms"]
+                self_reported_ethnicity_terms_no_dev_filter = json.loads(response.data)["filter_dims"][
+                    "self_reported_ethnicity_terms"
+                ]
                 self.assertEqual(expected_development_stage_terms, dev_stage_terms_no_dev_filter)
                 self.assertEqual(all_self_reported_ethnicity_terms, self_reported_ethnicity_terms_no_dev_filter)
 
@@ -742,16 +756,22 @@ class WmgApiV1Tests(unittest.TestCase):
                     development_stage_ontology_term_ids=["development_stage_ontology_term_id_1"],
                     self_reported_ethnicity_ontology_term_ids=["self_reported_ethnicity_ontology_term_id_1"],
                 )
-                self_reported_ethnicity_1_dev_1_request = dict(filter=self_reported_ethnicity_1_dev_1_filter, include_filter_dims=True)
+                self_reported_ethnicity_1_dev_1_request = dict(
+                    filter=self_reported_ethnicity_1_dev_1_filter, include_filter_dims=True
+                )
 
                 response = self.app.post("/wmg/v1/query", json=self_reported_ethnicity_1_dev_1_request)
                 dev_stage_terms_dev_filter = json.loads(response.data)["filter_dims"]["development_stage_terms"]
-                self_reported_ethnicity_terms_dev_filter = json.loads(response.data)["filter_dims"]["self_reported_ethnicity_terms"]
+                self_reported_ethnicity_terms_dev_filter = json.loads(response.data)["filter_dims"][
+                    "self_reported_ethnicity_terms"
+                ]
 
                 self.assertEqual(expected_development_stage_terms, dev_stage_terms_dev_filter)
                 self.assertEqual(dev_stage_terms_no_dev_filter, dev_stage_terms_dev_filter)
                 self.assertEqual(expected_self_reported_ethnicity_term, self_reported_ethnicity_terms_dev_filter)
-                self.assertNotEqual(self_reported_ethnicity_terms_no_dev_filter, self_reported_ethnicity_terms_dev_filter)
+                self.assertNotEqual(
+                    self_reported_ethnicity_terms_no_dev_filter, self_reported_ethnicity_terms_dev_filter
+                )
 
                 # filtering for ethnicity_2 should return dev_stage_0 (even when filtering for dev_stage_1 or 2)
                 self_reported_ethnicity_2_filter = dict(
@@ -772,13 +792,17 @@ class WmgApiV1Tests(unittest.TestCase):
                     development_stage_ontology_term_ids=["development_stage_ontology_term_id_2"],
                     self_reported_ethnicity_ontology_term_ids=["self_reported_ethnicity_ontology_term_id_2"],
                 )
-                self_reported_ethnicity_2_request = dict(filter=self_reported_ethnicity_2_filter, include_filter_dims=True)
+                self_reported_ethnicity_2_request = dict(
+                    filter=self_reported_ethnicity_2_filter, include_filter_dims=True
+                )
                 eth_2_dev_2_request = dict(filter=self_reported_ethnicity_2_dev_2_filter, include_filter_dims=True)
                 response = self.app.post("/wmg/v1/query", json=self_reported_ethnicity_2_request)
                 dev_stage_terms_eth_2_no_dev_filter = json.loads(response.data)["filter_dims"][
                     "development_stage_terms"
                 ]
-                self_reported_ethnicity_terms_eth_2_no_dev_filter = json.loads(response.data)["filter_dims"]["self_reported_ethnicity_terms"]
+                self_reported_ethnicity_terms_eth_2_no_dev_filter = json.loads(response.data)["filter_dims"][
+                    "self_reported_ethnicity_terms"
+                ]
                 self.assertEqual(expected_development_stage_terms, dev_stage_terms_eth_2_no_dev_filter)
                 self.assertEqual(all_self_reported_ethnicity_terms, self_reported_ethnicity_terms_eth_2_no_dev_filter)
 

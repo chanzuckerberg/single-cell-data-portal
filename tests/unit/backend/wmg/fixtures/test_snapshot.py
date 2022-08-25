@@ -108,7 +108,10 @@ def exclude_random_coords_75pct(_) -> bool:
 
 def exclude_dev_stage_and_ethnicity_for_secondary_filter_test(coord) -> bool:
     dev_stages_to_exclude = ("development_stage_ontology_term_id_1", "development_stage_ontology_term_id_2")
-    self_reported_ethnicity_terms_to_exclude = ("self_reported_ethnicity_ontology_term_id_1", "self_reported_ethnicity_ontology_term_id_2")
+    self_reported_ethnicity_terms_to_exclude = (
+        "self_reported_ethnicity_ontology_term_id_1",
+        "self_reported_ethnicity_ontology_term_id_2",
+    )
     if coord.development_stage_ontology_term_id in dev_stages_to_exclude:
         if coord.self_reported_ethnicity_ontology_term_id in self_reported_ethnicity_terms_to_exclude:
             return True
