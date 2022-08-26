@@ -7,13 +7,12 @@ from tiledb import Array
 
 from backend.wmg.data.snapshot import WmgSnapshot
 
-EMPTY_DIM_VALUES = ""
-
 
 class WmgQueryCriteria(BaseModel):
     gene_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=1)
     organism_ontology_term_id: str  # required!
     tissue_ontology_term_ids: List[str] = Field(unique_items=True, min_items=1)  # required!
+    tissue_original_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
     dataset_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
     # excluded per product requirements, but keeping in, commented-out, to reduce future head-scratching
     # assay_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
@@ -32,14 +31,15 @@ class WmgQuery:
         return self._query(
             cube=self._snapshot.expression_summary_cube,
             criteria=criteria,
-            indexed_dims=["gene_ontology_term_ids", "tissue_ontology_term_ids", "organism_ontology_term_id"],
+            indexed_dims=["gene_ontology_term_ids", "tissue_ontology_term_ids", "tissue_original_ontology_term_ids",
+                          "organism_ontology_term_id"],
         )
 
     def cell_counts(self, criteria: WmgQueryCriteria) -> DataFrame:
         cell_counts = self._query(
             self._snapshot.cell_counts_cube,
             criteria.copy(exclude={"gene_ontology_term_ids"}),
-            indexed_dims=["tissue_ontology_term_ids", "organism_ontology_term_id"],
+            indexed_dims=["tissue_ontology_term_ids", "tissue_original_ontology_term_ids", "organism_ontology_term_id"],
         )
         cell_counts.rename(columns={"n_cells": "n_total_cells"}, inplace=True)  # expressed & non-expressed cells
         return cell_counts
@@ -63,7 +63,18 @@ class WmgQuery:
 
         attr_cond = tiledb.QueryCondition(query_cond) if query_cond else None
 
-        tiledb_dims_query = tuple([criteria.dict()[dim_name] or EMPTY_DIM_VALUES for dim_name in indexed_dims])
+        tiledb_dims_query = []
+        for dim_name in indexed_dims:
+            # Don't filter on this dimension but return all "original tissues" back
+            if dim_name == "tissue_original_ontology_term_ids":
+                tiledb_dims_query.append([])
+            elif criteria.dict()[dim_name]:
+                tiledb_dims_query.append(criteria.dict()[dim_name])
+            # If an "indexed" dimension is not included in the criteria, this will return an empty data frame
+            else:
+                tiledb_dims_query.append("")
+
+        tiledb_dims_query = tuple(tiledb_dims_query)
 
         # FIXME: HACK of the century. Prevent realloc() error & crash when query returns an empty result. This forces
         #  two queries when there should just one.
