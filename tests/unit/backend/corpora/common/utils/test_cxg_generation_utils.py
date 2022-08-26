@@ -16,6 +16,7 @@ from backend.corpora.common.utils.cxg_generation_utils import (
 )
 from tests.unit.backend.corpora.fixtures.environment_setup import fixture_file_path
 
+#TODO: (ALEC): update convert_matrix_to_cxg_array --> convert_matrices_to_cxg_arrays
 
 class TestCxgGenerationUtils(unittest.TestCase):
     def setUp(self):
