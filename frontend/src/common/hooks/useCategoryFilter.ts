@@ -61,6 +61,11 @@ import { track } from "../analytics";
 // TODO(cc) publication date sort order
 
 /**
+ * String value to append to labels in multi-panel categories if the value appears in more than one panel.
+ */
+const LABEL_SUFFIX_NON_SPECIFIC = ", non-specific";
+
+/**
  * Entry in react-table's filters arrays, models selected category values in a category.
  */
 interface CategoryFilter {
@@ -86,7 +91,7 @@ type CategorySetValue = Set<CategoryValueId> | Range;
 type KeyedSelectCategoryValue = Map<CategoryValueId, SelectCategoryValue>;
 
 /**
- * Internal filter model of a single or multiselect category, an ontology category or a multi-panel category.
+ * Internal filter model of a single or multiselect category, an ontology category or a multi-panel category. TODO(cc) export?
  */
 export interface SelectCategoryValue {
   key: CategoryValueId;
@@ -1033,11 +1038,9 @@ function buildMultiPanelCategoryView(
   // Build builders for each panel. TODO(cc)
   const { categoryFilterId, panels: panelConfigs } = config;
   const selectCategoryValues = [...categoryValueByValue.values()];
-  // const selectedValues =
-  //   getCategoryFilter(categoryFilterId, multiPanelFilters)?.value ?? [];
   const selectedValues =
     multiPanelUIState.get(categoryFilterId)?.selected ?? [];
-  const builders = buildBuilders(
+  const builders = buildParentPanelBuilders(
     panelConfigs,
     selectCategoryValues,
     selectedValues
@@ -1061,6 +1064,12 @@ function buildMultiPanelCategoryView(
           ontologyTermLabelsById
         );
 
+      // Apply non-specific labels to values that appear in this panel as well as parent panels. TODO(cc) add discriminating union for this as we only want it for tissue
+      const parentPanelView = accum.slice(0, index);
+      if (parentPanelView.length) {
+        applyNonSpecificLabel(parentPanelView, panelSelectCategoryValueViews);
+      }
+
       // Build panel view.
       accum.push({
         label: builder.panel.label,
@@ -1082,7 +1091,7 @@ function buildMultiPanelCategoryView(
 /**
  * TODO(cc) docs, location, name
  */
-function buildBuilders(
+function buildParentPanelBuilders(
   panelConfigs: CategoryFilterPanelConfig[],
   selectCategoryValues: SelectCategoryValue[],
   selectedValues: CategoryValueId[]
@@ -1113,7 +1122,36 @@ function buildBuilders(
 }
 
 /**
+ * Update label of values that also appear in parent panels.
+ * @param parentPaneView - Parent panel views.
+ * @param panelCategoryValueViews - Views to display in the current panel.
+ */
+function applyNonSpecificLabel(
+  parentPaneView: OntologyPanelCategoryView[],
+  panelCategoryValueViews: SelectCategoryValueView[]
+) {
+  // Get the set of all labels in the parent panels. We are looking to distinguish between label collisions.
+  const parentLabels = parentPaneView.reduce(
+    (accum: CategoryValueId[], parentPaneView) => {
+      parentPaneView.views.forEach((view) => accum.push(view.label));
+      return accum;
+    },
+    [] as CategoryValueId[]
+  );
+
+  // TODO(cc) immutable
+  panelCategoryValueViews.forEach((panelCategoryValueView) => {
+    const { label } = panelCategoryValueView;
+    if (parentLabels.includes(label)) {
+      panelCategoryValueView.label = `${label}${LABEL_SUFFIX_NON_SPECIFIC}`;
+    }
+  });
+}
+
+/**
  * TODO(cc) docs, location
+ * @param parentBuilders - "Intermediate" builder objects of parent panels
+ * @param builder - Builder object for the current panel.
  */
 function applySelectCategoryValueIncludeList(
   parentBuilders: OntologyPanelCategoryViewBuilder[],
