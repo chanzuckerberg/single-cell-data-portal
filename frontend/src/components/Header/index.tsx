@@ -65,7 +65,7 @@ const Header: FC = () => {
                   active={isRouteActive(pathname, ROUTES.WHERE_IS_MY_GENE)}
                   href="passHref"
                   minimal
-                  text="scExpression"
+                  text="Gene Expression"
                   onClick={handleWMGClick}
                 />
               </Link>
@@ -92,7 +92,11 @@ const Header: FC = () => {
                 track(EVENTS.DOCUMENTATION_CLICK_NAV);
               }}
               active={isRouteActive(pathname, ROUTES.DOCS)}
-              href={ROUTES.DOCS}
+              href={
+                isRouteActive(pathname, ROUTES.WHERE_IS_MY_GENE)
+                  ? ROUTES.WMG_DOCS
+                  : ROUTES.PUBLISHED_DATA_DOCS
+              }
               rel="noopener"
               target="_blank"
               minimal

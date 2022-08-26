@@ -1,11 +1,11 @@
 import { Intent, Spinner } from "@blueprintjs/core";
+import styled from "@emotion/styled";
 import {
   GRAY,
   LIGHT_GRAY,
   PT_GRID_SIZE_PX,
   RED,
 } from "src/components/common/theme";
-import styled from "styled-components";
 
 const intentColorSwitch = (intent: Intent, border?: boolean) => {
   switch (intent) {

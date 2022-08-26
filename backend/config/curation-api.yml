@@ -64,6 +64,19 @@ paths:
         - collection
       parameters:
         - $ref: "#/components/parameters/query_visibility"
+        - name: curator
+          description: >-
+            Return collections owned by the specified curator. The use of this parameter is limited to curators 
+            with permission to query all collections.
+          in: query
+          required: false
+          schema:
+            type: string
+          examples:
+            specified_curator:
+              summary: Return collections owned by the specified curator
+              value:
+                name: "John Smith"
       responses:
         "200":
           description: OK
@@ -76,15 +89,13 @@ paths:
                     type: array
                     items:
                       allOf:
-                        - $ref: "#/components/schemas/collection_common"
-                        - type: object
-                          properties:
-                            datasets:
-                              type: array
-                              items:
-                                $ref: "#/components/schemas/dataset_preview"
+                        - $ref: "#/components/schemas/collection_list"
+        "400":
+          $ref: "#/components/responses/400"
         "401":
           $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
     post:
       summary: Create a Collection
       description: Create a new Collection
@@ -138,13 +149,8 @@ paths:
             application/json:
               schema:
                 allOf:
-                  - $ref: "#/components/schemas/collection_common"
-                  - type: object
-                    properties:
-                      datasets:
-                        type: array
-                        items:
-                          $ref: "#/components/schemas/dataset"
+                  - $ref: "#/components/schemas/collection_get"
+
         "404":
           $ref: "#/components/responses/404"
     patch:
@@ -253,8 +259,8 @@ paths:
                     $ref: "#/components/schemas/collection_id"
         "401":
           $ref: "#/components/responses/401"
-        "409":
-          $ref: "#/components/responses/409"
+        "403":
+          $ref: "#/components/responses/403"
 
   /v1/collections/{collection_id}/datasets:
     delete:
@@ -353,6 +359,8 @@ paths:
         request body; if an existing Dataset has this tag, the existing Dataset SHALL be replaced, otherwise a new
         Dataset will be added. MAY include the **id** of an existing Dataset, in which case the existing Dataset
         SHALL be replaced.
+
+        Only presigned AWS S3 URLs and Dropbox shared file links are supported.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.datasets.upload_link.put
       tags:
         - collection
@@ -425,9 +433,8 @@ paths:
 
         To upload the files to S3, use the Python boto3 package. Once a file is successfully uploaded, it wil be
         processed and added to the Collection (specified in the S3 key path) with no further user action required.
-        Include an email address in the S3 file upload metadata to receive processing and error notifications.
-        Alternatively, use `/curation/collections/{collection_id}/datasets/status` to check on the processing
-        status for a given Dataset.
+        Use `GET /curation/collections/{collection_id}/datasets/` with `curator_tag` or `id` query parameter  to check 
+        on the processing status for a given Dataset.
 
       security:
         - curatorAccess: []
@@ -442,6 +449,8 @@ paths:
               schema:
                 type: object
                 properties:
+                  Bucket:
+                    type: string
                   credentials:
                     type: object
                     properties:
@@ -453,8 +462,6 @@ paths:
                         type: string
                   UploadKeyPrefix:
                     type: string
-                  Bucket:
-                    type: string
         "401":
           $ref: "#/components/responses/401"
 
@@ -464,7 +471,7 @@ paths:
       tags:
         - collection
       description: >-
-        Generate URLs to download the files associated with the dataset. MUST include *one* of the **curator_tag**
+        Generate Presigned S3 URLs to download the files associated with the dataset. MUST include *one* of the **curator_tag**
         and **dataset_id** parameters.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.assets.get
       parameters:
@@ -492,254 +499,368 @@ paths:
 components:
   schemas:
     asset_response:
-      type: object
       properties:
-        dataset_id:
-          $ref: "#/components/schemas/dataset_id"
-        curator_tag:
-          $ref: "#/components/schemas/curator_tag"
         assets:
-          type: array
           items:
-            allOf:
-              - $ref: "#/components/schemas/dataset_asset"
-              - type: object
-                properties:
-                  presigned_url:
-                    type: string
-                  file_size:
-                    type: number
-    collection_id:
-      description: A unique identifier of a Collection.
-      type: string
-      example: fedcba98-7654-3210-fedc-ba9876543210
-    collection_common:
-      description: Full Collection metadata
+            properties:
+              file_name:
+                type: string
+              file_size:
+                type: number
+              file_type:
+                enum:
+                  - H5AD
+                  - RDS
+                type: string
+              presigned_url:
+                type: string
+            type: object
+          type: array
+        curator_tag:
+          "$ref": "#/components/schemas/curator_tag"
+        dataset_id:
+          "$ref": "#/components/schemas/dataset_id"
       type: object
+    batch_condition:
+      description: These keys define the batches that a normalization or integration algorithm should be aware of
+      type: array
+      items:
+        type: string
+      nullable: true
+      example: ["patient", "seqBatch"]
+    collection_list:
+      description: Full Collection metadata
       properties:
-        id:
-          $ref: "#/components/schemas/collection_id"
-        name:
-          type: string
-          nullable: true
-        visibility:
-          $ref: "#/components/schemas/visibility"
         collection_url:
           type: string
-        contact_name:
-          type: string
-          nullable: true
         contact_email:
-          type: string
           nullable: true
-        curator_name:
           type: string
+        contact_name:
           nullable: true
-        revised_at:
           type: string
-          nullable: true
         created_at:
           type: string
-        links:
-          $ref: "#/components/schemas/links"
-        access_type:
-          type: string
-          enum: [READ, WRITE]
+        curator_name:
           nullable: true
-        published_at:
           type: string
-          nullable: true
+        datasets:
+          type: array
+          items:
+            $ref: "#/components/schemas/dataset_preview"
         description:
           type: string
-        publisher_metadata:
-          $ref: "#/components/schemas/publisher_metadata"
-        revision_of:
-          type: string
-          description: the id of the published version of this Collection
+        id:
+          "$ref": "#/components/schemas/collection_id"
+        links:
+          "$ref": "#/components/schemas/links"
+        name:
           nullable: true
+          type: string
+        processing_status:
+          "$ref": "#/components/schemas/processing_status"
+        published_at:
+          nullable: true
+          type: string
+        publisher_metadata:
+          "$ref": "#/components/schemas/publisher_metadata"
+        revised_at:
+          nullable: true
+          type: string
         revising_in:
           type: string
           description: the id of the associated revision Collection, if one exists and the user is authorized
           nullable: true
+        revision_of:
+          description: the id of the published version of this Collection
+          nullable: true
+          type: string
         tombstone:
           type: boolean
+        visibility:
+          "$ref": "#/components/schemas/visibility"
+      type: object
+    collection_get:
+      description: Full Collection metadata
+      properties:
+        collection_url:
+          type: string
+        contact_email:
+          nullable: true
+          type: string
+        contact_name:
+          nullable: true
+          type: string
+        created_at:
+          type: string
+        curator_name:
+          nullable: true
+          type: string
+        datasets:
+          type: array
+          items:
+            $ref: "#/components/schemas/dataset"
+        description:
+          type: string
+        id:
+          "$ref": "#/components/schemas/collection_id"
+        links:
+          "$ref": "#/components/schemas/links"
+        name:
+          nullable: true
+          type: string
         processing_status:
-          $ref: "#/components/schemas/processing_status"
+          "$ref": "#/components/schemas/processing_status"
+        published_at:
+          nullable: true
+          type: string
+        publisher_metadata:
+          "$ref": "#/components/schemas/publisher_metadata"
+        revised_at:
+          nullable: true
+          type: string
+        revising_in:
+          type: string
+          description: the id of the associated revision Collection, if one exists and the user is authorized
+          nullable: true
+        revision_of:
+          description: the id of the published version of this Collection
+          nullable: true
+          type: string
+        tombstone:
+          type: boolean
+        visibility:
+          "$ref": "#/components/schemas/visibility"
+      type: object
+    collection_form_metadata:
+      properties:
+        contact_email:
+          description: email of contact person for the collection
+          type: string
+        contact_name:
+          description: name of the primary person of contact for the collection
+          type: string
+        description:
+          description: description of the collection
+          type: string
+        links:
+          "$ref": "#/components/schemas/links"
+        name:
+          description: name of the collection
+          type: string
+      type: object
+    collection_id:
+      description: A unique identifier of a Collection.
+      example: fedcba98-7654-3210-fedc-ba9876543210
+      type: string
     conversion_status:
+      description:
+        Status for a Dataset asset generated during initial Dataset source
+        file processing
+      enum:
+        - CONVERTED
+        - CONVERTING
+        - FAILED
+        - NA
+        - UPLOADING
+        - UPLOADED
+        - SKIPPED
       type: string
-      description: Status for a Dataset asset generated during initial Dataset source file processing
-      enum: [CONVERTED, CONVERTING, FAILED, NA, UPLOADING, UPLOADED, SKIPPED]
     curator_tag:
-      description: A curator-provided tag for a Dataset that serves as a unique identifier *within a Collection*.
-      type: string
+      description:
+        A curator-provided tag for a Dataset that serves as a unique identifier
+        *within a Collection*.
       example: an/example/curator_tag.h5ad
+      type: string
+    dataset:
+      allOf:
+        - "$ref": "#/components/schemas/dataset_preview"
+        - properties:
+            batch_condition:
+              "$ref": "#/components/schemas/batch_condition"
+            assay:
+              "$ref": "#/components/schemas/ontology_elements"
+            cell_count:
+              nullable: true
+              type: integer
+            cell_type:
+              "$ref": "#/components/schemas/ontology_elements"
+            curator_tag:
+              "$ref": "#/components/schemas/curator_tag"
+              nullable: true
+            dataset_assets:
+              items:
+                "$ref": "#/components/schemas/dataset_asset"
+              type: array
+            development_stage:
+              "$ref": "#/components/schemas/ontology_elements"
+              nullable: true
+            disease:
+              "$ref": "#/components/schemas/ontology_elements"
+            ethnicity:
+              "$ref": "#/components/schemas/ontology_elements"
+            explorer_url:
+              "$ref": "#/components/schemas/explorer_url"
+            id:
+              "$ref": "#/components/schemas/dataset_id"
+            is_primary_data:
+              "$ref": "#/components/schemas/is_primary_data"
+            mean_genes_per_cell:
+              nullable: true
+              type: number
+            title:
+              nullable: true
+              type: string
+            organism:
+              "$ref": "#/components/schemas/ontology_elements"
+            processing_status:
+              "$ref": "#/components/schemas/processing_status"
+            revised_at:
+              nullable: true
+              type: string
+            revision:
+              nullable: true
+              type: integer
+            schema_version:
+              nullable: true
+              type: string
+            sex:
+              "$ref": "#/components/schemas/ontology_elements"
+            tissue:
+              "$ref": "#/components/schemas/ontology_elements"
+            tombstone:
+              type: boolean
+            x_approximate_distribution:
+              "$ref": "#/components/schemas/distribution"
+            x_normalization:
+              nullable: true
+              type: string
+          type: object
+    dataset_asset:
+      properties:
+        filename:
+          type: string
+        filetype:
+          enum:
+            - H5AD
+            - RDS
+          type: string
+      type: object
     dataset_id:
       description: A unique identifier of a Dataset.
-      type: string
       example: 01234567-89ab-cdef-0123-456789abcdef
-    visibility:
-      description: >-
-        Determines the visibility of the collection, that will either make the collection visible on the public
-        sites or only viewable through obfuscated URLs.
       type: string
-      enum: [PUBLIC, PRIVATE]
-      default: PUBLIC
+    dataset_preview:
+      properties:
+        assay:
+          "$ref": "#/components/schemas/ontology_elements"
+        curator_tag:
+          "$ref": "#/components/schemas/curator_tag"
+          nullable: true
+        disease:
+          "$ref": "#/components/schemas/ontology_elements"
+        id:
+          "$ref": "#/components/schemas/dataset_id"
+        organism:
+          "$ref": "#/components/schemas/ontology_elements"
+        tissue:
+          "$ref": "#/components/schemas/ontology_elements"
+        tombstone:
+          type: boolean
+      type: object
     distribution:
-      description: >-
-        Cellxgene runs a heuristic to detect the approximate distribution of the data in X so that it can accurately
-        calculate statistical properties of the data. This field enables the curator to override this heuristic
-        and specify the data distribution explicitly.
+      description:
+        Cellxgene runs a heuristic to detect the approximate distribution
+        of the data in X so that it can accurately calculate statistical properties
+        of the data. This field enables the curator to override this heuristic and
+        specify the data distribution explicitly.
+      enum:
+        - COUNT
+        - NORMAL
       type: string
-      enum: [COUNT, NORMAL]
-    is_primary_data:
-      description: >-
-        Describes whether cellular observations for this dataset are all canonical (PRIMARY),
-        all non-canonical (SECONDARY), or contain a mixture (BOTH).
-      type: string
-      enum: [PRIMARY, SECONDARY, BOTH]
       nullable: true
-    links:
-      type: array
+    explorer_url:
+      description:
+        The url at which a given Dataset may be explored using the cellxgene
+        visualization tool
+      nullable: true
+      type: string
+    is_primary_data:
+      description:
+        Describes whether cellular observations for this dataset are all
+        canonical (True), all non-canonical (False), or contain a mixture (True, False).
       items:
-        type: object
+        type: boolean
+      type: array
+    links:
+      items:
         additionalProperties: false
+        properties:
+          link_name:
+            nullable: true
+            type: string
+          link_type:
+            enum:
+              - PROTOCOL
+              - RAW_DATA
+              - DOI
+              - LAB_WEBSITE
+              - OTHER
+              - DATA_SOURCE
+            nullable: true
+            type: string
+          link_url:
+            nullable: true
+            type: string
         required:
           - link_url
           - link_type
-        properties:
-          link_name:
-            type: string
-            nullable: true
-          link_url:
-            type: string
-            nullable: true
-          link_type:
-            type: string
-            enum: [PROTOCOL, RAW_DATA, DOI, LAB_WEBSITE, OTHER, DATA_SOURCE]
-            nullable: true
-    dataset:
-      allOf:
-        - $ref: "#/components/schemas/dataset_preview"
-        - type: object
-          properties:
-            name:
-              type: string
-              nullable: true
-            revision:
-              type: integer
-              nullable: true
-            revised_at:
-              type: string
-              nullable: true
-            is_primary_data:
-              $ref: "#/components/schemas/is_primary_data"
-            X_normalization:
-              type: string
-              nullable: true
-            dataset_assets:
-              type: array
-              items:
-                $ref: "#/components/schemas/dataset_asset"
-            sex:
-              $ref: "#/components/schemas/ontology_elements"
-            ethnicity:
-              $ref: "#/components/schemas/ontology_elements"
-            development_stage:
-              $ref: "#/components/schemas/ontology_elements"
-              nullable: true
-            explorer_url:
-              $ref: "#/components/schemas/explorer_url"
-            cell_type:
-              $ref: "#/components/schemas/ontology_elements"
-            cell_count:
-              type: integer
-              nullable: true
-            X_approximate_distribution:
-              $ref: "#/components/schemas/distribution"
-            #            batch_condition:  # TODO: https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data-portal/1461  # noqa: E501
-            #              type: array
-            #              items:
-            #                type: string
-            mean_genes_per_cell:
-              type: number
-              nullable: true
-            schema_version:
-              type: string
-              nullable: true
-            processing_status:
-              $ref: "#/components/schemas/processing_status"
-    dataset_preview:
-      type: object
-      properties:
-        id:
-          $ref: "#/components/schemas/dataset_id"
-        curator_tag:
-          $ref: "#/components/schemas/curator_tag"
-          nullable: true
-        tissue:
-          $ref: "#/components/schemas/ontology_elements"
-        assay:
-          $ref: "#/components/schemas/ontology_elements"
-        disease:
-          $ref: "#/components/schemas/ontology_elements"
-        organism:
-          $ref: "#/components/schemas/ontology_elements"
-        tombstone:
-          type: boolean
-    dataset_asset:
-      type: object
-      properties:
-        filetype:
-          type: string
-          enum: [H5AD, RDS]
-        filename:
-          type: string
-    explorer_url:
-      type: string
-      description: The url at which a given Dataset may be explored using the cellxgene visualization tool
-      nullable: true
+        type: object
+      type: array
     ontology_element:
-      type: object
       properties:
-        ontology_term_id:
-          type: string
         label:
           type: string
+        ontology_term_id:
+          type: string
+      type: object
     ontology_elements:
-      type: array
       default: []
       items:
-        $ref: "#/components/schemas/ontology_element"
+        "$ref": "#/components/schemas/ontology_element"
+      type: array
     problem:
-      type: object
       description: Error message container for HTTP APIs.
       properties:
-        type:
+        detail:
           type: string
         title:
           type: string
-        detail:
+        type:
           type: string
-    processing_status:
-      type: string
-      description: Processing status for a Dataset or Collection
-      enum: [FAILURE, PENDING, SUCCESS]
-      nullable: true
-    publisher_metadata:
       type: object
+    processing_status:
+      description: Processing status for a Dataset or Collection
+      enum:
+        - FAILURE
+        - PENDING
+        - SUCCESS
+      nullable: true
+      type: string
+    publisher_metadata:
       nullable: true
       properties:
         authors:
-          type: array
           items:
-            type: object
             properties:
-              name:
+              family:
                 type: string
               given:
                 type: string
-              family:
+              name:
                 type: string
+            type: object
+          type: array
         is_preprint:
           type: boolean
         journal:
@@ -750,135 +871,129 @@ components:
           type: number
         published_year:
           type: number
-    collection_form_metadata:
       type: object
-      properties:
-        name:
-          type: string
-          description: name of the collection
-        description:
-          type: string
-          description: description of the collection
-        contact_name:
-          type: string
-          description: name of the primary person of contact for the collection
-        contact_email:
-          type: string
-          description: email of contact person for the collection
-        links:
-          $ref: "#/components/schemas/links"
     upload_link:
       description: A user-provided link to the dataset source file.
       type: string
-
+    visibility:
+      default: PUBLIC
+      description:
+        Determines the visibility of the collection, that will either make
+        the collection visible on the public sites or only viewable through obfuscated
+        URLs.
+      enum:
+        - PUBLIC
+        - PRIVATE
+      type: string
   parameters:
-    query_curator_tag:
-      name: curator_tag
-      description: >-
-        A curator-provided tag. MUST be unique within a given Collection. MAY be used to uniquely identify a Dataset
-        when using the Curator API. SHALL default to null for Datasets created using the Data Portal UI.
-      in: query
-      required: false
-      schema:
-        $ref: "#/components/schemas/curator_tag"
-    query_dataset_id:
-      name: dataset_id
-      description: The uuid of the Dataset.
-      in: query
-      required: false
-      schema:
-        $ref: "#/components/schemas/dataset_id"
     path_collection_id:
-      name: collection_id
       description: The uuid of a Collection.
       in: path
+      name: collection_id
       required: true
       schema:
-        $ref: "#/components/schemas/collection_id"
-    query_visibility:
-      name: visibility
-      description: The 'visibility' of a Collection (and its constituent Datasets).
+        "$ref": "#/components/schemas/collection_id"
+    query_curator_tag:
+      description:
+        A curator-provided tag. MUST be unique within a given Collection.
+        MAY be used to uniquely identify a Dataset when using the Curator API. SHALL
+        default to null for Datasets created using the Data Portal UI.
       in: query
+      name: curator_tag
       required: false
       schema:
-        $ref: "#/components/schemas/visibility"
+        "$ref": "#/components/schemas/curator_tag"
+    query_dataset_id:
+      description: The uuid of the Dataset.
+      in: query
+      name: dataset_id
+      required: false
+      schema:
+        "$ref": "#/components/schemas/dataset_id"
+    query_visibility:
+      description: The 'visibility' of a Collection (and its constituent Datasets).
+      in: query
+      name: visibility
+      required: false
+      schema:
+        "$ref": "#/components/schemas/visibility"
   responses:
-    200:
+    "200":
       description: OK
-    201:
+    "201":
       description: Created
-    202:
+    "202":
       description: Accepted
-    204:
+    "204":
       description: No content
-    400:
+    "400":
+      content:
+        application/problem+json:
+          schema:
+            "$ref": "#/components/schemas/problem"
       description: Invalid or missing parameter
-      content:
-        application/problem+json:
-          schema:
-            $ref: "#/components/schemas/problem"
     400_multiple:
-      description: Invalid or missing parameters
       content:
         application/problem+json:
           schema:
-            type: array
             items:
-              type: object
               properties:
                 name:
-                  type: string
                   description: the errant parameter
-                value:
                   type: string
-                  description: the errant value
                 reason:
-                  type: string
                   description: the specific problem with the parameter
-    401:
+                  type: string
+                value:
+                  description: the errant value
+                  type: string
+              type: object
+            type: array
+      description: Invalid or missing parameters
+    "401":
+      content:
+        application/problem+json:
+          schema:
+            "$ref": "#/components/schemas/problem"
       description: Failed to authenticate
+    "403":
       content:
         application/problem+json:
           schema:
-            $ref: "#/components/schemas/problem"
-    403:
+            "$ref": "#/components/schemas/problem"
       description: Forbidden
+    "404":
       content:
         application/problem+json:
           schema:
-            $ref: "#/components/schemas/problem"
-    404:
+            "$ref": "#/components/schemas/problem"
       description: Resource not found
+    "405":
       content:
         application/problem+json:
           schema:
-            $ref: "#/components/schemas/problem"
-    405:
+            "$ref": "#/components/schemas/problem"
       description: Method not allowed
+    "409":
       content:
         application/problem+json:
           schema:
-            $ref: "#/components/schemas/problem"
-    409:
+            "$ref": "#/components/schemas/problem"
       description: File conflict
+    "413":
       content:
         application/problem+json:
           schema:
-            $ref: "#/components/schemas/problem"
-    413:
+            "$ref": "#/components/schemas/problem"
       description: Exceed File Size Limit
-      content:
-        application/problem+json:
-          schema:
-            $ref: "#/components/schemas/problem"
   securitySchemes:
     curatorAccess:
-      type: http
-      scheme: bearer
       bearerFormat: JWT
+      scheme: bearer
+      type: http
       x-bearerInfoFunc: backend.corpora.lambdas.api.v1.authentication.curation_apikey_info_func
     curatorAccessLenient:
-      type: http
-      scheme: bearer
       bearerFormat: JWT
+      scheme: bearer
+      type: http
       x-bearerInfoFunc: backend.corpora.lambdas.api.v1.authentication.curation_apikey_info_func_lenient

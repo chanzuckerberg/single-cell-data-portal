@@ -19,9 +19,10 @@ from ....common.entities import Collection
 from .authorization import is_user_owner_or_allowed, owner_or_allowed
 from ....common.utils.http_exceptions import (
     InvalidParametersHTTPException,
-    ConflictException,
+    ForbiddenHTTPException,
 )
 from ....api_server.db import dbconnect
+from ....common.utils.regex import CONTROL_CHARS
 
 
 @dbconnect
@@ -118,9 +119,9 @@ def post_collection_revision_common(collection_id: str, token_info: dict):
     )
     try:
         collection_revision = collection.create_revision()
-    except sqlalchemy.exc.IntegrityError as ex:
+    except sqlalchemy.exc.IntegrityError:
         db_session.rollback()
-        raise ConflictException() from ex
+        raise ForbiddenHTTPException("A revision is already in progess.")
     return collection_revision
 
 
@@ -199,19 +200,28 @@ def verify_collection_links(body: dict, errors: list) -> None:
             errors.append(_error_message(index, url))
 
 
-def verify_collection_body(body: dict, errors: list, allow_none: bool = False) -> None:
-    result = email_regex.match(body.get("contact_email", ""))
-    if not result and not allow_none:
-        errors.append({"name": "contact_email", "reason": "Invalid format."})
+control_char_re = re.compile(CONTROL_CHARS)
 
-    if not body.get("description") and not allow_none:  # Check if description is None or 0 length
-        errors.append({"name": "description", "reason": "Cannot be blank."})
 
-    if not body.get("name") and not allow_none:  # Check if name is None or 0 length
-        errors.append({"name": "name", "reason": "Cannot be blank."})
+def verify_collection_body(body: dict, errors: list) -> None:
+    def check(key) -> bool:
+        if key in body.keys():
+            if not body[key]:
+                errors.append({"name": key, "reason": "Cannot be blank."})
+            elif control_char_re.search(body[key]):
+                errors.append({"name": key, "reason": "Invalid characters detected."})
+            else:
+                return body[key]
 
-    if not body.get("contact_name") and not allow_none:  # Check if contact_name is None or 0 length
-        errors.append({"name": "contact_name", "reason": "Cannot be blank."})
+    contact_email = check("contact_email")
+    if contact_email:
+        result = email_regex.match(contact_email)
+        if not result:
+            errors.append({"name": "contact_email", "reason": "Invalid format."})
+
+    check("description")
+    check("name")
+    check("contact_name")
 
     verify_collection_links(body, errors)
 
@@ -288,7 +298,7 @@ def update_collection(collection_id: str, body: dict, token_info: dict):
 
 def get_collection_and_verify_body(db_session: Session, collection_id: str, body: dict, token_info: dict):
     errors = []
-    verify_collection_body(body, errors, allow_none=True)
+    verify_collection_body(body, errors)
     collection = get_collection_else_forbidden(
         db_session,
         collection_id,
