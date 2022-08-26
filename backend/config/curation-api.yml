@@ -708,7 +708,7 @@ components:
             mean_genes_per_cell:
               nullable: true
               type: number
-            name:
+            title:
               nullable: true
               type: string
             organism:
@@ -788,13 +788,10 @@ components:
     is_primary_data:
       description:
         Describes whether cellular observations for this dataset are all
-        canonical (PRIMARY), all non-canonical (SECONDARY), or contain a mixture (BOTH).
-      enum:
-        - PRIMARY
-        - SECONDARY
-        - BOTH
-      nullable: true
-      type: string
+        canonical (True), all non-canonical (False), or contain a mixture (True, False).
+      items:
+        type: boolean
+      type: array
     links:
       items:
         additionalProperties: false

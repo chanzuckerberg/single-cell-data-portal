@@ -14,6 +14,7 @@ from ......common.corpora_orm import (
     DatasetArtifactFileType,
     ProcessingStatus,
     Base,
+    IsPrimaryData,
 )
 
 
@@ -103,7 +104,19 @@ def reshape_dataset_for_curation_api(dataset: dict, preview=False) -> dict:
                 dataset[ontology_element] = [dataset_ontology_element]
         else:
             dataset[ontology_element] = []
+
+    if value := dataset.pop("name", None):
+        dataset["title"] = value
+    if value := dataset.pop("is_primary_data", None):
+        dataset["is_primary_data"] = is_primary_data_mapping.get(value)
     return dataset
+
+
+is_primary_data_mapping = {
+    IsPrimaryData.PRIMARY: [True],
+    IsPrimaryData.SECONDARY: [False],
+    IsPrimaryData.BOTH: [True, False],
+}
 
 
 class EntityColumns:
