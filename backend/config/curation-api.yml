@@ -264,11 +264,14 @@ paths:
 
   /v1/collections/{collection_id}/datasets:
     delete:
-      summary: Delete a private Dataset
+      summary: Delete or cancel a Dataset in a private collection or revision.
       description: >-
-        Delete a Dataset. The **collection_id** MUST reference either a private Collection OR a Revision. MUST
-        indicate the Dataset by providing *one* of either the **curator_tag** (non-null) OR the **dataset_id**
+        Delete or cancel processing a Dataset. The **collection_id** MUST reference either a private Collection OR a 
+        Revision. MUST indicate the Dataset by providing *one* of either the **curator_tag** (non-null) OR the **dataset_id**
         parameters.
+
+        If the Dataset is being processed, then this endpoint will cancel processing and delete the Dataset. While 
+        canceling the Dataset may still appear as part of the Collection for a few minutes.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.datasets.actions.delete
       tags:
         - collection
@@ -312,6 +315,7 @@ paths:
             application/json:
               schema:
                 - $ref: "#/components/schemas/dataset"
+        "400":
           $ref: "#/components/responses/400"
         "404":
           $ref: "#/components/responses/404"
@@ -355,12 +359,11 @@ paths:
     put:
       summary: Upload a Dataset by providing a link
       description: >-
-        Upload a Dataset. The Dataset will be uploaded from the provided link. MUST include a **curator_tag** in the
-        request body; if an existing Dataset has this tag, the existing Dataset SHALL be replaced, otherwise a new
-        Dataset will be added. MAY include the **id** of an existing Dataset, in which case the existing Dataset
-        SHALL be replaced.
-
-        Only presigned AWS S3 URLs and Dropbox shared file links are supported.
+        Upload a Dataset. The Dataset will be uploaded from the provided `link` which MUST either be a presigned AWS S3 
+        URL or Dropbox shared file. MUST include a `curator_tag` in the request body; if an existing Dataset has this 
+        tag, the existing Dataset SHALL be replaced, otherwise a new Dataset will be added. MAY include the `datase_id` 
+        of an existing Dataset, in which case the existing Dataset SHALL be replaced and the `curator_tag` field
+        ignored.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.datasets.upload_link.put
       tags:
         - collection
@@ -436,6 +439,9 @@ paths:
         Use `GET /curation/collections/{collection_id}/datasets/` with `curator_tag` or `id` query parameter  to check 
         on the processing status for a given Dataset.
 
+        Datasets upload directly to S3 will not appear in the Collection immediatly. Once the Dataset has started
+        processing it will appear in the Collection.
+
       security:
         - curatorAccess: []
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.datasets.upload_s3.get
@@ -472,7 +478,8 @@ paths:
         - collection
       description: >-
         Generate Presigned S3 URLs to download the files associated with the dataset. MUST include *one* of the **curator_tag**
-        and **dataset_id** parameters.
+        and **dataset_id** parameters. Presigned S3 URLs have a limit lifespan and will expire within 1 hour. Therefore,
+        generate a presigned URL before each download to ensure it current.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.assets.get
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
@@ -588,6 +595,7 @@ components:
         contact_email:
           nullable: true
           type: string
+          description: Example email john.smith@email.com
         contact_name:
           nullable: true
           type: string
@@ -611,6 +619,12 @@ components:
           type: string
         processing_status:
           "$ref": "#/components/schemas/processing_status"
+          description: Processing status for datasets in a Collection
+
+            - _FAILURE:_ one or more datasets ran into an error during processing. The CELLxGENE team will reach out to help you.
+            - _PENDING:_ one or more datasets is still being processed.
+            - _SUCCESS:_ all datasets have successfuly been processed.
+            - _Null:_ no datasets in the collection.
         published_at:
           nullable: true
           type: string
@@ -714,6 +728,11 @@ components:
             organism:
               "$ref": "#/components/schemas/ontology_elements"
             processing_status:
+              description: Processing status for a Dataset or Collection
+
+                - _FAILURE:_ the dataset ran into an error during processing. The CELLxGENE team will reach out to help you.
+                - _PENDING:_ the dataset has is still being processed.
+                - _SUCCESS:_ the dataset has successfuly been processed.
               "$ref": "#/components/schemas/processing_status"
             revised_at:
               nullable: true
@@ -795,11 +814,13 @@ components:
     links:
       items:
         additionalProperties: false
+        description: A URL that links associated resources with the collection.
         properties:
           link_name:
             nullable: true
             type: string
           link_type:
+            description: If the link_type is DOI, then the `link_url` must ba a valid DOI link and the `link_name` will be ignored or overwritten if provided. Example of a DOI `link_url`, https://doi.org/00.0000/science.abc1234. All other links types can be any valid URL.
             enum:
               - PROTOCOL
               - RAW_DATA
@@ -840,7 +861,6 @@ components:
           type: string
       type: object
     processing_status:
-      description: Processing status for a Dataset or Collection
       enum:
         - FAILURE
         - PENDING
