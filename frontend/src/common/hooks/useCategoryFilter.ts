@@ -86,12 +86,13 @@ type CategorySetValue = Set<CategoryValueId> | Range;
 type KeyedSelectCategoryValue = Map<CategoryValueId, SelectCategoryValue>;
 
 /**
- * Internal filter model of a single or multiselect category, or an ontology category.
+ * Internal filter model of a single or multiselect category, an ontology category or a multi-panel category.
  */
 export interface SelectCategoryValue {
   key: CategoryValueId;
   count: number;
   selected: boolean;
+  selectedPartial: boolean; // Only applicable to multi-panel categories.
 }
 
 /**
@@ -347,6 +348,7 @@ function addEmptyCategoryValues(
             count: 0,
             key: categoryValueKey,
             selected: false,
+            selectedPartial: false,
           });
         }
       }
@@ -637,11 +639,10 @@ function buildCategoryViews(
         config.viewKind === "MULTI_PANEL" &&
         isSelectCategoryValue(rangeOrSelectValue)
       ) {
-        const multiPanelFilters = buildMultiPanelFilters(multiPanelUIState);
         return buildMultiPanelCategoryView(
           config,
           rangeOrSelectValue,
-          multiPanelFilters,
+          multiPanelUIState,
           ontologyTermLabelsById
         );
       }
@@ -688,8 +689,7 @@ function buildNextFilterState<T extends Categories>(
   addRangeCategories(categoryFilterIds, nextFilterState, categorySet);
 
   // Update selected flag for the selected category values, or selected ranged for range categories.
-  const multiPanelFilters = buildMultiPanelFilters(multiPanelUIState);
-  setSelectedStates(nextFilterState, filters, multiPanelFilters);
+  setSelectedStates(nextFilterState, filters, multiPanelUIState);
 
   return nextFilterState;
 }
@@ -1020,21 +1020,23 @@ interface OntologyPanelCategoryViewBuilder {
  * @param config - Config model of ontology category.
  * @param categoryValueByValue - Internal filter model of single or multiselect category.
  * checking enabled state of view that is dependent on the state of another category.
- * @param multiPanelFilters - Current set of category values that the user has selected in multi-panel category filters.
+ * @param multiPanelUIState - Current set of category values that the user has selected in multi-panel cateogry filters.
  * @param ontologyTermLabelsById - Set of ontology term labels keyed by term ID, used to determine labels for ontology
  * @returns Select category view model.
  */
-function buildMultiPanelCategoryView<T extends Categories>(
+function buildMultiPanelCategoryView(
   config: OntologyMultiPanelFilterConfig,
   categoryValueByValue: KeyedSelectCategoryValue,
-  multiPanelFilters: Filters<T>,
+  multiPanelUIState: MultiPanelUIState,
   ontologyTermLabelsById: Map<string, string>
 ): OntologyMultiPanelCategoryView {
   // Build builders for each panel. TODO(cc)
   const { categoryFilterId, panels: panelConfigs } = config;
   const selectCategoryValues = [...categoryValueByValue.values()];
+  // const selectedValues =
+  //   getCategoryFilter(categoryFilterId, multiPanelFilters)?.value ?? [];
   const selectedValues =
-    getCategoryFilter(categoryFilterId, multiPanelFilters)?.value ?? [];
+    multiPanelUIState.get(categoryFilterId)?.selected ?? [];
   const builders = buildBuilders(
     panelConfigs,
     selectCategoryValues,
@@ -1222,12 +1224,13 @@ function buildSelectCategoryValueViews(
   ontologyTermLabelsById: Map<string, string>
 ): SelectCategoryValueView[] {
   return selectCategoryValues.map(
-    ({ count, key, selected }: SelectCategoryValue) => {
+    ({ count, key, selected, selectedPartial }: SelectCategoryValue) => {
       return {
         count,
         key,
         label: buildCategoryValueLabel(config, key, ontologyTermLabelsById),
-        selected: selected,
+        selected,
+        selectedPartial,
         value: key,
       };
     }
@@ -1581,7 +1584,7 @@ function isSelectCategoryValue(
  * 1. There are no selected organisms or,
  * 2. The given species is selected.
  * @param filterState - Categories, category value and their counts with the current filter applied. Required to
- * determine if development stage species should be visible.
+ * determine if development stfage species should be visible.
  * @param speciesKey - The species to check if a corresponding organism has been selected for.
  * @returns True if given species is to be displayed.
  */
@@ -2037,38 +2040,43 @@ function onFilterSelectCategory<T extends Categories>(
  * Update selected state of categories to match the current set of selected filters.
  * @param nextFilterState - Filter state being built on select of filter.
  * @param filters - Current set of selected category values (values) or ranges keyed by category (id).
- * @param multiPanelFilters - Current set of category values that the user has selected in multi-panel category filters.
+ * @param multiPanelUIState - Current set of category values that the user has selected on the UI for all multi-
+ * panel category filters.
  */
 function setSelectedStates<T extends Categories>(
   nextFilterState: FilterState,
   filters: Filters<T>,
-  multiPanelFilters: Filters<T>
+  multiPanelUIState: MultiPanelUIState
 ) {
-  Object.keys(nextFilterState).forEach((categoryFilterId: string) => {
+  Object.keys(nextFilterState).forEach((strCategoryFilterId: string) => {
+    const categoryFilterId = strCategoryFilterId as CATEGORY_FILTER_ID;
+
     // Grab the filter state for this category.
-    const categoryFilterState =
-      nextFilterState[categoryFilterId as CATEGORY_FILTER_ID];
+    const categoryFilterState = nextFilterState[categoryFilterId];
 
-    // Grab the config for this category.
-    const config =
-      CATEGORY_FILTER_CONFIGS_BY_ID[categoryFilterId as CATEGORY_FILTER_ID];
+    // Grab the filters for this category, used to determine the selected values.
+    const categoryFilter = getCategoryFilter(categoryFilterId, filters);
+
+    // Grab the partially selected values if this is a multi-panel category.
+    const config = CATEGORY_FILTER_CONFIGS_BY_ID[categoryFilterId];
     const isMultiPanel = isMultiPanelCategoryFilterConfig(config);
+    const selectedPartials = isMultiPanel
+      ? multiPanelUIState.get(categoryFilterId)?.selectedPartial ?? []
+      : [];
 
-    // Grab the filters for this category. If the category is a multi-panel category, use the multi-panel UI filters.
-    // Otherwise use the regular (react-table) filters.
-    const categoryFilter = getCategoryFilter(
-      categoryFilterId as CATEGORY_FILTER_ID,
-      isMultiPanel ? multiPanelFilters : filters
-    );
-    if (!categoryFilter || !categoryFilter.value) {
-      // There are no selected values for this category
+    if (
+      !categoryFilter ||
+      (!categoryFilter.value && !selectedPartials.length)
+    ) {
+      // There are no selected or partially selected values for this category
       return;
     }
 
     // Handle single and multiselect categories, or ontology categories.
     if (isSelectCategoryValue(categoryFilterState)) {
-      // Create set for easy lookup of category values.
+      // Create sets for easy lookup of category values.
       const selectedCategoryValues = new Set(categoryFilter.value);
+      const selectedPartialCategoryValues = new Set(selectedPartials);
 
       // Check each category value in this category to see if it's selected.
       for (const [
@@ -2076,6 +2084,8 @@ function setSelectedStates<T extends Categories>(
         categoryValue,
       ] of categoryFilterState.entries()) {
         categoryValue.selected = selectedCategoryValues.has(categoryValueKey);
+        categoryValue.selectedPartial =
+          selectedPartialCategoryValues.has(categoryValueKey);
       }
       return;
     }
@@ -2159,8 +2169,8 @@ function summarizeSelectCategory<T extends Categories>(
       categoryValues = [categoryValues];
     }
 
-    // Init category value if it doesn't already exist. Default selected state to false (selected state is updated
-    // from the filter state at a later point).
+    // Init category value if it doesn't already exist. Default selected state to false (selected and selectedParital
+    // state is updated from the filter state at a later point).
     categoryValues.forEach((categoryValueKey: CategoryValueId) => {
       let categoryValue = accum.get(categoryValueKey);
       if (!categoryValue) {
@@ -2168,6 +2178,7 @@ function summarizeSelectCategory<T extends Categories>(
           count: 0,
           key: categoryValueKey,
           selected: false,
+          selectedPartial: false,
         };
         accum.set(categoryValueKey, categoryValue);
       }

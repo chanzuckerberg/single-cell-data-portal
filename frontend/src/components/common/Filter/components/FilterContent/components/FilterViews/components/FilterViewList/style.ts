@@ -69,7 +69,7 @@ export const ViewListItemText = styled(ListItemText)<Props>`
           font-weight: 500;
         `
       );
-    }};
+    }}
     margin-right: 8px;
   }
 

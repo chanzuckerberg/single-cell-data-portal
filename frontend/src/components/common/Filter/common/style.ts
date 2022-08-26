@@ -16,7 +16,7 @@ export const Filter = styled.div`
     margin-bottom: 0;
   }
 
-  // Filter open with "active" button.
+  /* Filter open with "active" button. */
   & .${Classes.POPOVER_OPEN} {
     .${Classes.BUTTON} {
       color: ${PT_TEXT_COLOR};
