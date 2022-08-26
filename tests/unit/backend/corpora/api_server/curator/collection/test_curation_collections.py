@@ -166,7 +166,7 @@ class TestGetCollections(BaseAuthAPITest):
     def test__get_collections_no_auth_visibility_private__OK(self):
         params = {"visibility": "PRIVATE"}
         res_private = self.app.get("/curation/v1/collections", query_string=params)
-        self.assertEqual(401, res_private.status_code)
+        self.assertEqual(403, res_private.status_code)
 
     def test__get_collections_no_auth_visibility_public__OK(self):
         params = {"visibility": "PUBLIC"}
@@ -195,10 +195,10 @@ class TestGetCollections(BaseAuthAPITest):
                 response = self.app.get(
                     "/curation/v1/collections", query_string=params, headers=self.make_not_owner_header()
                 )
-                self.assertEqual(401, response.status_code)
+                self.assertEqual(403, response.status_code)
             with self.subTest(f"users can't search by curator {visibility}"):
                 response = self.app.get("/curation/v1/collections", query_string=params)
-                self.assertEqual(401, response.status_code)
+                self.assertEqual(403, response.status_code)
 
         with self.subTest("Searching for a curator that doesn't exists return 0 collections"):
             _test({"curator": "Not A Curator"}, self.make_super_curator_header(), 0)
@@ -300,7 +300,6 @@ class TestGetCollections(BaseAuthAPITest):
             collections_cols.remove("tombstone")
             collections_cols.remove("owner")
             collections_cols.append("processing_status")
-            collections_cols.append("access_type")
             collections_cols.append("collection_url")
             self.check_fields(collections_cols, resp_collection, f"{subtest_prefix}:collection")
 
@@ -346,6 +345,7 @@ class TestGetCollectionID(BaseAuthAPITest):
         "datasets": [
             {
                 "assay": [{"label": "test_assay", "ontology_term_id": "test_obo"}],
+                "batch_condition": ["batchA", "batchB"],
                 "cell_count": None,
                 "cell_type": [{"label": "test_cell_type", "ontology_term_id": "test_opo"}],
                 "curator_tag": None,
@@ -447,15 +447,13 @@ class TestGetCollectionID(BaseAuthAPITest):
         self.assertEqual(200, res.status_code)
         res_body = res.json
         del res_body["created_at"]  # too finicky; ignore
-        self.assertTrue("access_type" not in res_body)
-        self.assertDictEqual(self.expected_body, res_body)
+        self.assertDictEqual(self.expected_body, res_body)  # Confirm dict has been packaged in list
         self.assertEqual(json.dumps(self.expected_body, sort_keys=True), json.dumps(res_body))
 
     def test__get_private_collection__OK(self):
         res = self.app.get("/curation/v1/collections/test_collection_id_revision")
         self.assertEqual(200, res.status_code)
         self.assertEqual("test_collection_id_revision", res.json["id"])
-        self.assertTrue("access_type" not in res.json)
 
     def test__get_nonexistent_collection__Not_Found(self):
         res = self.app.get("/curation/v1/collections/test_collection_id_nonexistent")
@@ -488,19 +486,16 @@ class TestGetCollectionID(BaseAuthAPITest):
         res = self.app.get("/curation/v1/collections/test_collection_id", headers=self.make_owner_header())
         self.assertEqual(200, res.status_code)
         self.assertEqual("test_collection_id", res.json["id"])
-        self.assertEqual("WRITE", res.json["access_type"])
 
     def test__get_public_collection_with_auth_access_type_read__OK(self):
         res = self.app.get("/curation/v1/collections/test_collection_id_not_owner", headers=self.make_owner_header())
         self.assertEqual(200, res.status_code)
         self.assertEqual("test_collection_id_not_owner", res.json["id"])
-        self.assertEqual("READ", res.json["access_type"])
 
     def test__get_private_collection_with_auth_access_type_write__OK(self):
         res = self.app.get("/curation/v1/collections/test_collection_id_revision", headers=self.make_owner_header())
         self.assertEqual(200, res.status_code)
         self.assertEqual("test_collection_id_revision", res.json["id"])
-        self.assertEqual("WRITE", res.json["access_type"])
 
     def test__get_collectoin_with_x_approximate_distribution_none__OK(self):
         collection = self.generate_collection(self.session)

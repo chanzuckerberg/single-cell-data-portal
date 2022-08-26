@@ -1,3 +1,4 @@
+import styled from "@emotion/styled";
 import {
   SideBar,
   SideBarPositioner as RawSideBarPositioner,
@@ -5,7 +6,6 @@ import {
 import { FOOTER_HEIGHT_PX } from "src/components/Footer/style";
 import { HEADER_HEIGHT_PX } from "src/components/Header/style";
 import { SidebarMainWrapper } from "src/components/Layout/style";
-import styled from "styled-components";
 
 // (thuang): This is needed to prevent the footer covering the heatmap when the
 // viewport height is shorter than the full height.

@@ -5,10 +5,10 @@ import {
   MenuItem,
 } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
+import styled from "@emotion/styled";
 import { Collection } from "src/common/entities";
 import DeleteCollection from "src/components/Collections/components/DeleteCollection";
 import CreateCollection from "src/components/CreateCollectionModal";
-import styled from "styled-components";
 
 const DeleteButton = ({
   isRevision,

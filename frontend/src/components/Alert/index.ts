@@ -1,6 +1,6 @@
 import { Alert, Classes } from "@blueprintjs/core";
+import styled from "@emotion/styled";
 import { DARK_GRAY, PT_GRID_SIZE_PX } from "src/components/common/theme";
-import styled from "styled-components";
 
 export default styled(Alert)`
   width: ${PT_GRID_SIZE_PX * 55}px;

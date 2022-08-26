@@ -1,10 +1,10 @@
 import { Classes, Dialog } from "@blueprintjs/core";
-import styled from "styled-components";
+import styled from "@emotion/styled";
 import { OLD_GRAY } from "../theme";
 
 export const StyledDialog = styled(Dialog)`
   && {
-    .bp3-heading {
+    .bp4-heading {
       font-size: 16px;
       height: 57px;
       display: flex;

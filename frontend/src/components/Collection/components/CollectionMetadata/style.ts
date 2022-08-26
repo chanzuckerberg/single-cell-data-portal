@@ -1,5 +1,5 @@
+import styled from "@emotion/styled";
 import { GRAY, PRIMARY_BLUE } from "src/components/common/theme";
-import styled from "styled-components";
 
 export const CollectionMetadata = styled.div`
   display: grid;

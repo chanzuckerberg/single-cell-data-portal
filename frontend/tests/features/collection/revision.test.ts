@@ -226,7 +226,7 @@ async function deleteRevision() {
 
   await page.click(getTestID(DROPDOWN_CANCEL_ID));
 
-  await page.click(".bp3-alert-footer >> text=Cancel Revision");
+  await page.click(".bp4-alert-footer >> text=Cancel Revision");
 
   await page.waitForURL(TEST_URL + ROUTES.MY_COLLECTIONS);
 }
