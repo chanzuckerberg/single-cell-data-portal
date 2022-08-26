@@ -6,7 +6,6 @@ import anndata
 import numpy
 import numpy as np
 from pandas import DataFrame
-from pandas import Series
 import scanpy
 import tiledb
 from scipy import sparse

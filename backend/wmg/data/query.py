@@ -7,8 +7,6 @@ from tiledb import Array
 
 from backend.wmg.data.snapshot import WmgSnapshot
 
-# ASK madison if there's a better way to do this
-INDEXED_DIMENSIONS_TO_IGNORE = ["tissue_original_ontology_term_ids"]
 
 class WmgQueryCriteria(BaseModel):
     gene_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=1)
