@@ -23,7 +23,7 @@ export default function FilterMenuItems({
 }: Props): JSX.Element {
   return (
     <>
-      {menuItems.map(({ key, count, label, selected, values }) => (
+      {menuItems.map(({ key, count, label, selected, value }) => (
         <MenuItemWrapper key={key} isSelected={selected}>
           <MenuItem
             icon={
@@ -32,7 +32,7 @@ export default function FilterMenuItems({
               />
             }
             labelElement={count}
-            onClick={() => onFilter(categoryFilterId, key, values)}
+            onClick={() => onFilter(categoryFilterId, key, value)}
             shouldDismissPopover={!isMultiselect}
             text={label}
           />

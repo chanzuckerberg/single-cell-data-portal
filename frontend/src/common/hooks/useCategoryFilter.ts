@@ -110,6 +110,22 @@ type FilterState = {
 };
 
 /**
+ * UI model of selected values in a multi-panel category filter. This model contains all selected and partial selected
+ * values in a multi-panel category filter and is required as a separate record from react-table's filters which
+ * only contains "overridden" selected values. For example, when "digestive system" and "tongue" are both selected in
+ * the UI, react-table will only know that "tongue" is selected.
+ */
+interface MultiPanelSelectedValues {
+  selected: CategoryValueId[];
+  selectedPartial: CategoryValueId[];
+}
+
+/**
+ * UI model of selected values across all multi-panel category filters.
+ */
+type MultiPanelUIState = Map<CATEGORY_FILTER_ID, MultiPanelSelectedValues>;
+
+/**
  * Selected filters applicable to a category; used when deriving category value counts from current set of filters.
  * Identical queries can be shared by categories to reduce the number of result set filtering.
  */
@@ -169,12 +185,16 @@ export function useCategoryFilter<T extends Categories>(
   const [ontologyTermLabelsById, setOntologyTermLabelsById] =
     useState<Map<string, string>>();
 
-  // Internally saved selected values for each category filter; used to set selected state of values in ontology-aware
-  // category filters. This is required for category filters where cross-panel restrictions are applied (e.g. tissue
-  // system restricts tissue organ and tissue). We can not use react-table's filters as it only contains the most
-  // restrictive value (e.g. if renal system and kidney are both selected, only kidney is set as a selected value in
-  // react-table). We need a variable to save *all* selected values so this can be reflected in the view models.
-  const [uiFilters, setUIFilters] = useState<Filters<T>>([]);
+  // Internally saved selected values for each multi-panel category filter; used to set selected state of values in
+  // ontology-aware category filters. This is required for category filters where cross-panel restrictions are applied
+  // (e.g. tissue system restricts tissue organ and tissue). We can not use react-table's filters as it only contains
+  // the most restrictive value (e.g. if "renal system" and "kidney" are both selected, only "kidney" is set as a
+  // selected value in react-table). We need a variable to save *all* selected values so this can be reflected in the
+  // view models. Also saved is the delta between the multi-panel selected values and the selected values passed to
+  // react-table, facilitating easy calculation of partially selected values and cross-category view restrictions.
+  const [multiPanelUIState, setMultiPanelUIState] = useState<
+    Map<CATEGORY_FILTER_ID, MultiPanelSelectedValues>
+  >(new Map());
 
   // Set up original, full set of categories and their values.
   useEffect(() => {
@@ -207,11 +227,17 @@ export function useCategoryFilter<T extends Categories>(
       originalRows,
       categoryFilterIds,
       filters,
-      uiFilters,
+      multiPanelUIState,
       categorySet
     );
     setFilterState(nextFilterState);
-  }, [categoryFilterIds, categorySet, filters, originalRows, uiFilters]);
+  }, [
+    categoryFilterIds,
+    categorySet,
+    filters,
+    originalRows,
+    multiPanelUIState,
+  ]);
 
   // Update set of filters on select of category value. Track selected category value.
   const onFilter = useCallback<OnFilterFn>(
@@ -243,22 +269,22 @@ export function useCategoryFilter<T extends Categories>(
           config,
           categoryValueKey,
           selectedValue,
-          setFilter,
           filters,
+          setFilter,
           categorySet
         );
         return;
       }
 
-      // Handle multi-panel categories. TODO(cc) don't pass in setFilter, here and for others. re-order accessor/mutator for filters and ui filters/
+      // Handle multi-panel categories. TODO(cc) don't pass in setFilter, here and for others.
       if (isMultiPanelCategoryFilterConfig(config)) {
         onFilterMultiPanelCategory(
           config,
           categoryValueKey,
           selectedValue,
           setFilter,
-          setUIFilters,
-          uiFilters
+          multiPanelUIState,
+          setMultiPanelUIState
         );
         return;
       }
@@ -268,17 +294,17 @@ export function useCategoryFilter<T extends Categories>(
         config,
         categoryValueKey,
         selectedValue,
-        setFilter,
-        filters
+        filters,
+        setFilter
       );
     },
-    [categorySet, filters, setFilter, uiFilters]
+    [categorySet, filters, setFilter, multiPanelUIState]
   );
 
   return {
     categoryViews: buildCategoryViews(
       filterState,
-      uiFilters,
+      multiPanelUIState,
       ontologyTermLabelsById
     ),
     onFilter,
@@ -546,19 +572,17 @@ function buildCategoryValueLabel(
 /**
  * Build view-specific models from filter state, to facilitate easy rendering.
  * @param filterState - Categories, category value and their counts with the current filter applied.
- * @param uiFilters - Current set of category values that the user has selected in multi-panel cateogry filters. This
- * set can possibly have cross-filter restrictions applied it and is a superset of the values passed to react-table to
- * execute the filter.
+ * @param multiPanelUIState - Current set of category values that the user has selected in multi-panel cateogry filters.
  * @param ontologyTermLabelsById - Set of ontology term labels keyed by term ID, used to determine labels for ontology
  * terms.
  * @returns Array of category views objects.
  */
-function buildCategoryViews<T extends Categories>(
+function buildCategoryViews(
   filterState?: FilterState,
-  uiFilters?: Filters<T>,
+  multiPanelUIState?: MultiPanelUIState,
   ontologyTermLabelsById?: Map<string, string>
 ): CategoryView[] {
-  if (!filterState || !uiFilters || !ontologyTermLabelsById) {
+  if (!filterState || !multiPanelUIState || !ontologyTermLabelsById) {
     return [];
   }
   return Object.keys(filterState)
@@ -613,10 +637,11 @@ function buildCategoryViews<T extends Categories>(
         config.viewKind === "MULTI_PANEL" &&
         isSelectCategoryValue(rangeOrSelectValue)
       ) {
+        const multiPanelFilters = buildMultiPanelFilters(multiPanelUIState);
         return buildMultiPanelCategoryView(
           config,
           rangeOrSelectValue,
-          uiFilters,
+          multiPanelFilters,
           ontologyTermLabelsById
         );
       }
@@ -637,9 +662,8 @@ function buildCategoryViews<T extends Categories>(
  * @param originalRows - Original result set before filtering.
  * @param categoryFilterIds - Set of category IDs to include for this filter instance.
  * @param filters - Current set of selected category values (values) keyed by category (id).
- * @param uiFilters - Current set of category values that the user has selected in multi-panel cateogry filters. This
- * set can possibly have cross-filter restrictions applied it and is a superset of the values passed to react-table to
- * execute the filter.
+ * @param multiPanelUIState - Current set of category values that the user has selected on the UI for all multi-
+ * panel category filters.
  * @param categorySet - Original, unfiltered sets of category values keyed by their category.
  * @returns New filter state generated from the current set of selected category values.
  */
@@ -647,7 +671,7 @@ function buildNextFilterState<T extends Categories>(
   originalRows: Row<T>[],
   categoryFilterIds: Set<CATEGORY_FILTER_ID>,
   filters: Filters<T>,
-  uiFilters: Filters<T>,
+  multiPanelUIState: MultiPanelUIState,
   categorySet: CategorySet
 ): FilterState {
   // Build set of filters that are applicable to each category.
@@ -664,7 +688,8 @@ function buildNextFilterState<T extends Categories>(
   addRangeCategories(categoryFilterIds, nextFilterState, categorySet);
 
   // Update selected flag for the selected category values, or selected ranged for range categories.
-  setSelectedStates(nextFilterState, filters, uiFilters);
+  const multiPanelFilters = buildMultiPanelFilters(multiPanelUIState);
+  setSelectedStates(nextFilterState, filters, multiPanelFilters);
 
   return nextFilterState;
 }
@@ -944,7 +969,7 @@ function buildCuratedOntologyCategoryValueView(
       label: ontologyNode.label,
       selected: false,
       selectedPartial: false,
-      values: categoryValueKey,
+      value: categoryValueKey,
     };
   }
 
@@ -953,7 +978,7 @@ function buildCuratedOntologyCategoryValueView(
     count: categoryValue.count,
     key: categoryValueKey,
     label: ontologyTermLabelsById.get(categoryValueKey) ?? categoryValueKey,
-    values: categoryValueKey,
+    value: categoryValueKey,
   };
 
   // If this ontology node is a leaf, add its selected value and return.
@@ -995,23 +1020,21 @@ interface OntologyPanelCategoryViewBuilder {
  * @param config - Config model of ontology category.
  * @param categoryValueByValue - Internal filter model of single or multiselect category.
  * checking enabled state of view that is dependent on the state of another category.
- * @param uiFilters - Current set of category values that the user has selected in multi-panel cateogry filters. This
- * set can possibly have cross-filter restrictions applied it and is a superset of the values passed to react-table to
- * execute the filter.
+ * @param multiPanelFilters - Current set of category values that the user has selected in multi-panel category filters.
  * @param ontologyTermLabelsById - Set of ontology term labels keyed by term ID, used to determine labels for ontology
  * @returns Select category view model.
  */
 function buildMultiPanelCategoryView<T extends Categories>(
   config: OntologyMultiPanelFilterConfig,
   categoryValueByValue: KeyedSelectCategoryValue,
-  uiFilters: Filters<T>,
+  multiPanelFilters: Filters<T>,
   ontologyTermLabelsById: Map<string, string>
 ): OntologyMultiPanelCategoryView {
   // Build builders for each panel. TODO(cc)
   const { categoryFilterId, panels: panelConfigs } = config;
   const selectCategoryValues = [...categoryValueByValue.values()];
   const selectedValues =
-    getCategoryFilter(categoryFilterId, uiFilters)?.value ?? [];
+    getCategoryFilter(categoryFilterId, multiPanelFilters)?.value ?? [];
   const builders = buildBuilders(
     panelConfigs,
     selectCategoryValues,
@@ -1205,7 +1228,7 @@ function buildSelectCategoryValueViews(
         key,
         label: buildCategoryValueLabel(config, key, ontologyTermLabelsById),
         selected: selected,
-        values: key,
+        value: key,
       };
     }
   );
@@ -1794,74 +1817,86 @@ function removeOntologyDescendents(
  * @param categoryValueKey - The selected category value.
  * @param selectedValue - Selected category value ID to use as selected value.
  * @param setFilter - Function to update set of selected values for a category.
- * @param setUIFilters - React state mutator, used to set UI filter state.
- * @param uiFilters - Current set of category values that the user has selected on the UI. This set can possibly have
- * restrictions applied it and the subset is passed to react-table to execute the filter.
+ * @param multiPanelUIState - Current set of category values that the user has selected on the UI for all multi-
+ * panel category filters.
+ * @param setMultiPanelUIState - React state mutator for setting multi-panel UI state.
  */
-function onFilterMultiPanelCategory<T extends Categories>(
+function onFilterMultiPanelCategory(
   config: OntologyMultiPanelFilterConfig,
   categoryValueKey: CategoryValueId,
   selectedValue: CategoryValueId,
   setFilter: SetFilterFn,
-  setUIFilters: Dispatch<SetStateAction<Filters<T>>>,
-  uiFilters: Filters<T>
+  multiPanelUIState: MultiPanelUIState,
+  setMultiPanelUIState: Dispatch<SetStateAction<MultiPanelUIState>>
 ) {
   const { categoryFilterId } = config;
 
-  // Track selected category and value. TODO(cc) revisit uiFilters here
-  trackSelectCategoryValueSelected(config, categoryValueKey, uiFilters);
+  // Grab the selected values for this category filter.
+  const multiPanelFilters = buildMultiPanelFilters(multiPanelUIState);
 
-  // Determine selected set of values for this category filter; toggle current selected values.
-  // TODO(cc) only pass in category from uiFilters (and for select) rather than all filters. convert uiFilters to map.
-  const nextCategoryFilters = buildNextSelectCategoryFilters(
+  // Track selected category and value. TODO(cc) revisit categoryFilters here
+  trackSelectCategoryValueSelected(config, categoryValueKey, multiPanelFilters);
+
+  // Determine selected set of values for this category filter based on the current selected values for this multi-panel
+  // category filter; toggle current selected values.
+  const allSelectedCategoryFilters = buildNextSelectCategoryFilters(
     config,
     selectedValue,
-    uiFilters
+    multiPanelFilters
   );
 
-  // Update internal UI filter state with the updated, toggled set of selected filters for this category.
-  updateUIFilter(
-    categoryFilterId,
-    nextCategoryFilters,
-    uiFilters,
-    setUIFilters
+  // Determine the selected values to pass to react-table to filter the rows by applying restrictions across selected
+  // filter values. For example, even if "digestive system" and "tongue" are both selected in the UI, we only want to
+  // pass the more restrictive "tongue" to react-table as we only want to show rows that match "tongue".
+  const overriddenSelectedCategoryFilters = overrideSelectedParents(
+    allSelectedCategoryFilters
   );
 
-  // Apply restrictions across selected filter values.
-  const overriddenCategoryFilters =
-    overrideSelectedParents(nextCategoryFilters);
+  // Determine the selected values which are now partially selected, if any. For example, if "digestive system" and
+  // "tongue" are both selected in the UI, internally we record "digestive system" as partially selected and "tongue"
+  // as selected.
+  const selectedPartialCategoryFilters = allSelectedCategoryFilters.filter(
+    (selectedCategoryValue) =>
+      !overriddenSelectedCategoryFilters.includes(selectedCategoryValue)
+  );
+
+  // Update internal multi-panel filter state with the updated, toggled set of selected filters for this category as
+  // well as the partially (overridden) selected values.
+  multiPanelUIState.set(categoryFilterId, {
+    selected: allSelectedCategoryFilters,
+    selectedPartial: selectedPartialCategoryFilters,
+  });
+  setMultiPanelUIState(multiPanelUIState);
 
   // Trigger filter of rows in react-table.
-  setFilter(categoryFilterId, overriddenCategoryFilters);
+  setFilter(categoryFilterId, overriddenSelectedCategoryFilters);
 }
 
 /**
- * Update the set of selected values for the given multi-panel category filter.
- * @param categoryFilterId - ID of the mutli-panel category filter to update selected state of.
- * @param selectedValues - Selected category value keys to use as selected value.
- * @param uiFilters - Current set of category values that the user has selected on the UI. This set can possibly have
- * restrictions applied it and the subset is passed to react-table to execute the filter.
- * @param setUIFilters - React state mutator, used to set UI filter state.
+ * Build up react-table filters model from the given multi-panel UI state.
+ * @param multiPanelUIState - ID of category filter to filters.
  */
-function updateUIFilter<T extends Categories>(
-  categoryFilterId: CATEGORY_FILTER_ID,
-  selectedValues: CategoryValueId[],
-  uiFilters: Filters<T>,
-  setUIFilters: Dispatch<SetStateAction<Filters<T>>>
-) {
-  const nextUIFilters =
-    uiFilters.length === 0
-      ? [{ id: categoryFilterId, value: selectedValues }]
-      : uiFilters.map((uiFilter) => {
-          if (uiFilter.id !== categoryFilterId) {
-            return uiFilter;
-          }
-          return {
-            ...uiFilter,
-            value: selectedValues,
-          };
-        });
-  setUIFilters(nextUIFilters);
+function buildMultiPanelFilters<T extends Categories>(
+  multiPanelUIState: MultiPanelUIState
+): Filters<T> {
+  return [...multiPanelUIState.keys()].reduce(
+    (accum: CategoryFilter[], categoryFilterId: CATEGORY_FILTER_ID) => {
+      // Don't add category to filters if it has no selected values.
+      const selectedCategoryValues =
+        multiPanelUIState.get(categoryFilterId)?.selected;
+      if (!selectedCategoryValues || !selectedCategoryValues.length) {
+        return accum;
+      }
+
+      // Otherwise, this category has selected values: add them!
+      accum.push({
+        id: categoryFilterId,
+        value: selectedCategoryValues,
+      });
+      return accum;
+    },
+    [] as CategoryFilter[]
+  );
 }
 
 /**
@@ -1913,16 +1948,16 @@ function overrideSelectedParents(
  * @param config - Configuration model of selected category.
  * @param categoryValueKey - The selected category value.
  * @param selectedValue - Selected category value ID to use as selected value.
- * @param setFilter - Function to update set of selected values for a category.
  * @param filters - Current set of selected category values (values) or ranges keyed by category (id).
+ * @param setFilter - Function to update set of selected values for a category.
  * @param categorySet - Original, unfiltered sets of category values keyed by their category.
  */
 function onFilterCuratedOntologyCategory<T extends Categories>(
   config: CuratedOntologyCategoryFilterConfig,
   categoryValueKey: CategoryValueId,
   selectedValue: CategoryValueId,
-  setFilter: SetFilterFn,
   filters: Filters<T>,
+  setFilter: SetFilterFn,
   categorySet: CategorySet
 ) {
   const { categoryFilterId, mask } = config;
@@ -1973,15 +2008,15 @@ function onFilterRangeCategory(
  * @param config - Configuration model of selected category.
  * @param categoryValueKey - The selected category value.
  * @param selectedValue - Category value ID to use as selected value.
- * @param setFilter - Function to update set of selected values for a category.
  * @param filters - Current set of selected category values (values) or ranges keyed by category (id).
+ * @param setFilter - Function to update set of selected values for a category.
  */
 function onFilterSelectCategory<T extends Categories>(
   config: CategoryFilterConfig,
   categoryValueKey: CategoryValueId,
   selectedValue: CategoryValueId,
-  setFilter: SetFilterFn,
-  filters: Filters<T>
+  filters: Filters<T>,
+  setFilter: SetFilterFn
 ) {
   const { categoryFilterId } = config;
 
@@ -2002,14 +2037,12 @@ function onFilterSelectCategory<T extends Categories>(
  * Update selected state of categories to match the current set of selected filters.
  * @param nextFilterState - Filter state being built on select of filter.
  * @param filters - Current set of selected category values (values) or ranges keyed by category (id).
- * @param uiFilters - Current set of category values that the user has selected in multi-panel cateogry filters. This
- * set can possibly have cross-filter restrictions applied it and is a superset of the values passed to react-table to
- * execute the filter.
+ * @param multiPanelFilters - Current set of category values that the user has selected in multi-panel category filters.
  */
 function setSelectedStates<T extends Categories>(
   nextFilterState: FilterState,
   filters: Filters<T>,
-  uiFilters: Filters<T>
+  multiPanelFilters: Filters<T>
 ) {
   Object.keys(nextFilterState).forEach((categoryFilterId: string) => {
     // Grab the filter state for this category.
@@ -2025,7 +2058,7 @@ function setSelectedStates<T extends Categories>(
     // Otherwise use the regular (react-table) filters.
     const categoryFilter = getCategoryFilter(
       categoryFilterId as CATEGORY_FILTER_ID,
-      isMultiPanel ? uiFilters : filters
+      isMultiPanel ? multiPanelFilters : filters
     );
     if (!categoryFilter || !categoryFilter.value) {
       // There are no selected values for this category
@@ -2242,7 +2275,7 @@ function trackSelectCategoryValueSelected<T extends Categories>(
 
   // Only track the select (and not deselect) of category value.
   const categoryFilters = new Set(
-    getCategoryFilter(categoryFilterId, filters)?.value as CategoryValueId[]
+    getCategoryFilter(categoryFilterId, filters)?.value as CategoryValueId
   );
   if (!categoryFilters.has(categoryValueKey)) {
     // Build up payload for tracking event and send.

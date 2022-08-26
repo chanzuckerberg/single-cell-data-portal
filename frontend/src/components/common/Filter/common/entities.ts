@@ -316,8 +316,8 @@ export interface Categories {
   ethnicity: Ontology[];
   organism: Ontology[];
   sex: Ontology[];
-  tissue: Ontology[]; // TODO(cc) remove with #2569.
-  tissue_ancestors: string[];
+  tissue: Ontology[]; // TODO(cc) revisit with #2569. don't need in catgories as we no longer filter on tissue?
+  tissue_ancestors: string[]; // TODO(cc) revisit with #2569. don't need in catgories as we no longer filter on tissue_ancestors?
   tissueCalculated: string[];
 }
 
@@ -574,7 +574,7 @@ export interface SelectCategoryValueView {
   count: number;
   label: string;
   selected: boolean;
-  values: string; // Set of values to mark as selected.
+  value: string; // Value to mark as selected.
 }
 
 /**
