@@ -1,5 +1,5 @@
+import styled from "@emotion/styled";
 import { OLD_GRAY } from "src/components/common/theme";
-import styled from "styled-components";
 
 export const CodeWrapper = styled.div`
   position: relative;

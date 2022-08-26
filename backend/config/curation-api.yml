@@ -73,10 +73,6 @@ paths:
           schema:
             type: string
           examples:
-            current_curator:
-              summary: Return collections owned by current curator.
-              value:
-                name: "self"
             specified_curator:
               summary: Return collections owned by the specified curator
               value:
@@ -94,8 +90,12 @@ paths:
                     items:
                       allOf:
                         - $ref: "#/components/schemas/collection_list"
+        "400":
+          $ref: "#/components/responses/400"
         "401":
           $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
     post:
       summary: Create a Collection
       description: Create a new Collection
@@ -359,6 +359,8 @@ paths:
         request body; if an existing Dataset has this tag, the existing Dataset SHALL be replaced, otherwise a new
         Dataset will be added. MAY include the **id** of an existing Dataset, in which case the existing Dataset
         SHALL be replaced.
+
+        Only presigned AWS S3 URLs and Dropbox shared file links are supported.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.datasets.upload_link.put
       tags:
         - collection
@@ -431,9 +433,8 @@ paths:
 
         To upload the files to S3, use the Python boto3 package. Once a file is successfully uploaded, it wil be
         processed and added to the Collection (specified in the S3 key path) with no further user action required.
-        Include an email address in the S3 file upload metadata to receive processing and error notifications.
-        Alternatively, use `/curation/collections/{collection_id}/datasets/status` to check on the processing
-        status for a given Dataset.
+        Use `GET /curation/collections/{collection_id}/datasets/` with `curator_tag` or `id` query parameter  to check 
+        on the processing status for a given Dataset.
 
       security:
         - curatorAccess: []
@@ -470,7 +471,7 @@ paths:
       tags:
         - collection
       description: >-
-        Generate URLs to download the files associated with the dataset. MUST include *one* of the **curator_tag**
+        Generate Presigned S3 URLs to download the files associated with the dataset. MUST include *one* of the **curator_tag**
         and **dataset_id** parameters.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.assets.get
       parameters:
@@ -520,15 +521,16 @@ components:
         dataset_id:
           "$ref": "#/components/schemas/dataset_id"
       type: object
+    batch_condition:
+      description: These keys define the batches that a normalization or integration algorithm should be aware of
+      type: array
+      items:
+        type: string
+      nullable: true
+      example: ["patient", "seqBatch"]
     collection_list:
       description: Full Collection metadata
       properties:
-        access_type:
-          enum:
-            - READ
-            - WRITE
-          nullable: true
-          type: string
         collection_url:
           type: string
         contact_email:
@@ -581,12 +583,6 @@ components:
     collection_get:
       description: Full Collection metadata
       properties:
-        access_type:
-          enum:
-            - READ
-            - WRITE
-          nullable: true
-          type: string
         collection_url:
           type: string
         contact_email:
@@ -680,6 +676,8 @@ components:
       allOf:
         - "$ref": "#/components/schemas/dataset_preview"
         - properties:
+            batch_condition:
+              "$ref": "#/components/schemas/batch_condition"
             assay:
               "$ref": "#/components/schemas/ontology_elements"
             cell_count:
@@ -710,7 +708,7 @@ components:
             mean_genes_per_cell:
               nullable: true
               type: number
-            name:
+            title:
               nullable: true
               type: string
             organism:
@@ -790,13 +788,10 @@ components:
     is_primary_data:
       description:
         Describes whether cellular observations for this dataset are all
-        canonical (PRIMARY), all non-canonical (SECONDARY), or contain a mixture (BOTH).
-      enum:
-        - PRIMARY
-        - SECONDARY
-        - BOTH
-      nullable: true
-      type: string
+        canonical (True), all non-canonical (False), or contain a mixture (True, False).
+      items:
+        type: boolean
+      type: array
     links:
       items:
         additionalProperties: false

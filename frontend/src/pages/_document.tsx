@@ -1,53 +1,8 @@
-import RawDocument, {
-  DocumentContext,
-  DocumentInitialProps,
-  Head,
-  Html,
-  Main,
-  NextScript,
-} from "next/document";
-import { ServerStyleSheet } from "styled-components";
+import RawDocument, { Head, Html, Main, NextScript } from "next/document";
 
 const OG_PAGE_TITLE = "Cellxgene Data Portal";
 
 export default class Document extends RawDocument {
-  static async getInitialProps(
-    context: DocumentContext
-  ): Promise<DocumentInitialProps> {
-    const sheet = new ServerStyleSheet();
-    const originalRenderPage = context.renderPage;
-
-    try {
-      context.renderPage = () => {
-        return originalRenderPage({
-          enhanceApp: (App) => {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const EnhancedApp = (props: any) =>
-              sheet.collectStyles(<App {...props} />);
-
-            EnhancedApp.displayName = "EnhancedApp";
-
-            return EnhancedApp;
-          },
-        });
-      };
-
-      const initialProps = await RawDocument.getInitialProps(context);
-
-      return {
-        ...initialProps,
-        styles: (
-          <>
-            {initialProps.styles}
-            {sheet.getStyleElement()}
-          </>
-        ),
-      };
-    } finally {
-      sheet.seal();
-    }
-  }
-
   render(): JSX.Element {
     return (
       <Html>

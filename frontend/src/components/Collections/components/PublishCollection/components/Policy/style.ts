@@ -1,11 +1,11 @@
 import { Icon } from "@blueprintjs/core";
+import styled from "@emotion/styled";
 import {
   BLUE,
   GRAY,
   LIGHT_GRAY,
   PT_GRID_SIZE_PX,
 } from "src/components/common/theme";
-import styled from "styled-components";
 
 export const StyledIcon = styled(Icon)`
   margin: 6px;
@@ -34,7 +34,7 @@ export const ContentWrapper = styled.div`
 `;
 
 export const ButtonWrapper = styled.span`
-  .bp3-button.bp3-small {
+  .bp4-button.bp4-small {
     padding: 0;
   }
 `;
