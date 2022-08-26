@@ -316,7 +316,7 @@ export default function Datasets(): JSX.Element {
 
   // Store latest filter state.
   useEffect(() => {
-    storeFilters(filters);
+    // storeFilters(filters); // TODO(cc)
   }, [filters, storeFilters]);
 
   // Handle side bar open/closed state beyond scope of component.

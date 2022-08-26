@@ -42,17 +42,17 @@ export default function FilterViewList({
       {filteredValues.length === 0 ? (
         <NoMatches>No items found</NoMatches>
       ) : (
-        filteredValues.map((value) => {
-          const { key, count, label, selected, values } = value;
+        filteredValues.map((filteredValue) => {
+          const { key, count, label, selected, value } = filteredValue;
           const { children, selectedPartial } =
-            value as OntologyCategoryTreeNodeView; // TODO(cc) review destructure with SelectCategoryValueView or OntologyCategoryTreeNodeView.
+            filteredValue as OntologyCategoryTreeNodeView; // TODO(cc) review destructure with SelectCategoryValueView or OntologyCategoryTreeNodeView.
           return (
             <Fragment key={key}>
               {/* List item */}
               <ViewListItem
                 button
                 disabled={!count}
-                onClick={() => onFilter(categoryFilterId, key, values)}
+                onClick={() => onFilter(categoryFilterId, key, value)}
               >
                 {/* Icon - bp icon to uphold ui consistency between filter menu and filter views */}
                 <SelectionIcon

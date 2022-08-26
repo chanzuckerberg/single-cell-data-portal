@@ -92,10 +92,10 @@ function buildOntologyCategoryTags(
   onFilter: OnFilterFn
 ): CategoryTag[] | undefined {
   return categoryView.views?.reduce((accum, species) => {
-    species.selectedViews.forEach(({ key, label, values }) => {
+    species.selectedViews.forEach(({ key, label, value }) => {
       accum.push({
         label: label,
-        onRemove: () => onFilter(categoryFilterId, key, values),
+        onRemove: () => onFilter(categoryFilterId, key, value),
       });
     });
     return accum;
@@ -117,11 +117,11 @@ function buildOntologyMultiPanelCategoryTags(
 ): CategoryTag[] | undefined {
   const { panels } = categoryView;
   return panels.reduce((accum, ontologyCategoryView) => {
-    ontologyCategoryView.views.forEach(({ key, label, selected, values }) => {
+    ontologyCategoryView.views.forEach(({ key, label, selected, value }) => {
       if (selected) {
         accum.push({
           label: label,
-          onRemove: () => onFilter(categoryFilterId, key, values),
+          onRemove: () => onFilter(categoryFilterId, key, value),
         });
       }
     });
@@ -172,10 +172,10 @@ function buildSelectCategoryTags(
   const { values } = categoryView;
   return values
     .filter((value) => value.selected)
-    .map(({ key, label, values }) => {
+    .map(({ key, label, value }) => {
       return {
         label: label,
-        onRemove: () => onFilter(categoryFilterId, key, values),
+        onRemove: () => onFilter(categoryFilterId, key, value),
       };
     });
 }
