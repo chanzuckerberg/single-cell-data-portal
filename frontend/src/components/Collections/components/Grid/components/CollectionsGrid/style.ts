@@ -1,5 +1,5 @@
+import styled from "@emotion/styled";
 import Grid from "src/components/common/Grid";
-import styled from "styled-components";
 
 export const CollectionsGrid = styled(Grid)`
   grid-template-columns:

@@ -1,6 +1,6 @@
 import { Icon } from "@blueprintjs/core";
+import styled from "@emotion/styled";
 import { GRAY, PT_GRID_SIZE_PX } from "src/components/common/theme";
-import styled from "styled-components";
 
 export const ContentWrapper = styled.div`
   font-size: 12px;

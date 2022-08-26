@@ -1,6 +1,6 @@
 import { Classes, Divider, H4 } from "@blueprintjs/core";
+import styled from "@emotion/styled";
 import { PT_TEXT_COLOR } from "src/components/common/theme";
-import styled from "styled-components";
 
 export const Form = styled.form`
   margin: 0;
