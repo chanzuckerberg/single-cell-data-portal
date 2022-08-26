@@ -1,5 +1,5 @@
+import styled from "@emotion/styled";
 import { fontStyle, OLD_BLUE } from "src/components/common/theme";
-import styled from "styled-components";
 import { layout } from "../common/layout";
 
 export const FOOTER_HEIGHT_PX = 56;

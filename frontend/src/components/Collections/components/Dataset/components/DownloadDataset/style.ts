@@ -1,4 +1,4 @@
-import styled from "styled-components";
+import styled from "@emotion/styled";
 import { buttonStyle, disabledButtonStyle } from "../../common/style";
 
 export const StyledButton = styled.button`

@@ -229,7 +229,10 @@ interface CreateYAxisOptionsProps {
 /**
  * Used to calculate text pixel widths. Should be only created once.
  */
-const CTX = document.createElement("canvas").getContext("2d");
+const CTX =
+  (typeof document !== "undefined" &&
+    document.createElement("canvas").getContext("2d")) ||
+  null;
 
 /**
  * Formats and truncates the cell type name to a given width

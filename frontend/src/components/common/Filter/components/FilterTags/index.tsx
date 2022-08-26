@@ -1,5 +1,4 @@
 import { Tag } from "@blueprintjs/core";
-import React from "react";
 import { SelectedTags } from "./style";
 
 type OnRemoveFn = () => void;

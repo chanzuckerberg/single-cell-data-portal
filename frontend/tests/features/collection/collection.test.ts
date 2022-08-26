@@ -49,7 +49,7 @@ describe("Collection", () => {
 
       await Promise.all([
         page.waitForNavigation({ waitUntil: "load" }),
-        page.click(".bp3-alert-footer >> text=Delete Collection"),
+        page.click(".bp4-alert-footer >> text=Delete Collection"),
       ]);
 
       await tryUntil(async () => {
@@ -57,7 +57,7 @@ describe("Collection", () => {
       }, 50);
     });
 
-    describe("dataset order", () => {
+    test("dataset order", () => {
       let lastValue = 1_000_000_000;
       sortByCellCountDescending(datasets).forEach((dataset) => {
         expect(dataset.cell_count).toBeLessThanOrEqual(lastValue);

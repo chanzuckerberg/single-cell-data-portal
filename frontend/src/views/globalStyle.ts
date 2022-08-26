@@ -1,6 +1,6 @@
+import styled from "@emotion/styled";
 import { layout } from "src/components/common/layout";
 import { contentWrapper } from "src/components/Layout/style";
-import styled from "styled-components";
 
 export const ViewGrid = styled.div`
   ${layout}
