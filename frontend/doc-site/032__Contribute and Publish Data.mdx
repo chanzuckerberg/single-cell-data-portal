@@ -38,8 +38,8 @@ Datasets need the following information added to a single h5ad (AnnData 0.8) for
 
 - **Dataset-level metadata in uns**:
   - schema_version: `3.0.0`
-  - title: title of the individual dataset visualization
-  - optional: batch_condition: list of obs fields that define that “batches” that a normalization or integration algorithm should be aware of
+  - title: title of the individual dataset
+  - optional: batch_condition: list of obs fields that define “batches” that a normalization or integration algorithm should be aware of
 - **Data in .X and raw.X**:
   - raw counts are required
   - normalized counts are strongly recommended
@@ -54,7 +54,7 @@ Datasets need the following information added to a single h5ad (AnnData 0.8) for
   - self_reported_ethnicity_ontology_term_id: [HANCESTRO](https://www.ebi.ac.uk/ols/ontologies/hancestro) if human, `multiethnic` if more than one ethnicity is reported, `unknown` if information unavailable. `na` if non-human.
   - development_stage_ontology_term_id: [HsapDv](https://www.ebi.ac.uk/ols/ontologies/hsapdv) if human, [MmusDv](https://www.ebi.ac.uk/ols/ontologies/mmusdv) if mouse, `unknown` if information unavailable
   - sex_ontology_term_id: `PATO:0000384` for male, `PATO:0000383` for female, or `unknown` if unavailable
-  - donor_id: free-text identifier that distinguishes the unique individual that data were derived from. ID should be unique within the collection of datasets submitted.
+  - donor_id: free-text identifier that distinguishes the unique individual that data were derived from. It is encouraged to be something not likely to be used in other studies (eg donor_1 is likely to not be unique in the data corpus)
   - suspension_type: `cell`, `nucleus`, or `na`, as corresponding to assay. Use [this table](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#suspension_type) defined in the data schema for guidance. If the assay does not appear in this table, the most appropriate value MUST be selected and the [curation team informed](mailto:cellxgene@chanzuckerberg.com) during submission so that the assay can be added to the table.
 - **Embeddings in obsm**:
   - One or more two-dimensional embeddings, prefixed with 'X\_'
