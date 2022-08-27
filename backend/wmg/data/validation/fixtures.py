@@ -14,8 +14,6 @@ validation_tissues_with_many_cell_types = {
     "blood": "UBERON:0000178",
     "lymph node": "UBERON:0000029",
     "eye": "UBERON:0000970",
-    "renal medulla": "UBERON:0000362",
-    "nasal cavity": "UBERON:0001707",
 }
 validation_cell_types = {
     "intermediate monocytes": "CL:0002393",

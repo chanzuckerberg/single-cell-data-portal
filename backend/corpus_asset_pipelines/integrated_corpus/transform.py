@@ -6,6 +6,7 @@ import anndata
 import numpy
 import numpy as np
 from pandas import DataFrame
+from pandas import Series
 import scanpy
 import tiledb
 from scipy import sparse
@@ -18,6 +19,7 @@ from backend.wmg.data.constants import (
     INCLUDED_ASSAYS,
 )
 from backend.wmg.data.rankit import rankit
+from backend.wmg.data.tissue_mapper import TissueMapper
 from backend.wmg.data.schemas.corpus_schema import INTEGRATED_ARRAY_NAME
 
 logger = logging.getLogger(__name__)
@@ -27,6 +29,8 @@ logging.basicConfig(level=logging.INFO)
 def apply_pre_concatenation_filters(
     anndata_object: anndata.AnnData, min_genes: int = GENE_EXPRESSION_COUNT_MIN_THRESHOLD
 ) -> anndata.AnnData:
+
+    logger.info(f"Applying filters: assay, and lowly-covered cells")
     # Filter out cells with low coverage (less than GENE_EXPRESSION_COUNT_MIN_THRESHOLD unique genes expressed)
     scanpy.pp.filter_cells(anndata_object, min_genes=min_genes)
 
@@ -39,27 +43,33 @@ def apply_pre_concatenation_filters(
 
 
 def create_high_level_tissue(anndata_object: anndata.AnnData):
+    logger.info(f"Obtaining high-level tissues")
     anndata_object.obs["tissue_original"] = anndata_object.obs["tissue"]
     anndata_object.obs["tissue_original_ontology_term_id"] = anndata_object.obs["tissue_ontology_term_id"]
     anndata_object.obs = get_high_level_tissue(anndata_object.obs)
 
 
-# TODO finalize this function
-def get_high_level_tissue(obs: DataFrame):
+def get_high_level_tissue(obs: DataFrame) -> DataFrame:
 
-    for i in range(len(obs)):
+    tissue_mapper = TissueMapper()
 
-        if "lung" in obs["tissue"][i]:
-            if "UBERON:0002048" not in obs["tissue_ontology_term_id"].cat.categories:
-                obs["tissue_ontology_term_id"].cat.add_categories("UBERON:0002048", inplace=True)
-                obs["tissue"].cat.add_categories("lung", inplace=True)
+    tissue_ids_and_labels = obs[["tissue_ontology_term_id", "tissue"]].drop_duplicates().astype(str)
+    new_tissue_ids = {}
+    new_tissue_labels = {}
 
-            obs["tissue_ontology_term_id"][i] = "UBERON:0002048"
-            obs["tissue"][i] = "lung"
-            continue
+    # Create mapping dictionaries and if needed add new categories to obs.tissue and obs.tissue_ontology_term_id
+    for i in range(len(tissue_ids_and_labels)):
 
-        obs["tissue_ontology_term_id"][i] = obs["tissue_original_ontology_term_id"][i]
-        obs["tissue"][i] = obs["tissue_original"][i]
+        current_id = tissue_ids_and_labels["tissue_ontology_term_id"][i]
+        current_label = tissue_ids_and_labels["tissue"][i]
+
+        new_tissue_ids[current_id] = tissue_mapper.get_high_level_tissue(current_id)
+        new_tissue_labels[current_label] = tissue_mapper.get_label_from_writable_id(new_tissue_ids[current_id])
+
+
+    # Use mapping dictionaries to obtain new values
+    obs["tissue_ontology_term_id"] = obs["tissue_ontology_term_id"].map(new_tissue_ids).astype("category")
+    obs["tissue"] = obs["tissue"].map(new_tissue_labels).astype("category")
 
     return obs
 

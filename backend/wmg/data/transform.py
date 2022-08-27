@@ -2,6 +2,7 @@ import tiledb
 import pandas as pd
 
 from backend.wmg.data.ontology_labels import ontology_term_label, gene_term_label
+from backend.wmg.data.tissue_mapper import TissueMapper
 from typing import Dict, List, Iterable, Set
 import json
 
@@ -129,6 +130,24 @@ def generate_primary_filter_dimensions(snapshot_path: str, corpus_name: str, sna
     def build_ontology_term_id_label_mapping(ontology_term_ids: Iterable[str]) -> List[dict]:
         return [{ontology_term_id: ontology_term_label(ontology_term_id)} for ontology_term_id in ontology_term_ids]
 
+    def order_tissues(ontology_term_ids: Iterable[str]) -> Iterable[str]:
+        """
+        Order tissues based on appearance in TissueMapper.HIGH_LEVEL_TISSUES
+        """
+        ontology_term_ids = set(ontology_term_ids)
+        ordered_ontology_term_ids = []
+        for tissue in TissueMapper.HIGH_LEVEL_TISSUES:
+            tissue = TissueMapper.make_id_writable(tissue)
+            if tissue in ontology_term_ids:
+                ontology_term_ids.remove(tissue)
+                ordered_ontology_term_ids.append(tissue)
+
+        if ontology_term_ids:
+            ordered_ontology_term_ids = ordered_ontology_term_ids + list(ontology_term_ids)
+
+        return ordered_ontology_term_ids
+
+
     with tiledb.open(f"{snapshot_path}/{corpus_name}/{EXPRESSION_SUMMARY_CUBE_NAME}") as cube:
 
         # gene terms are grouped by organism, and represented as a nested lists in dict, keyed by organism
@@ -145,7 +164,7 @@ def generate_primary_filter_dimensions(snapshot_path: str, corpus_name: str, sna
             cube, "tissue_ontology_term_id", group_by_dim="organism_ontology_term_id"
         )
         organism_tissue_terms = {
-            organism_term_id: build_ontology_term_id_label_mapping(tissue_term_ids)
+            organism_term_id: build_ontology_term_id_label_mapping(order_tissues(tissue_term_ids))
             for organism_term_id, tissue_term_ids in organism_tissue_ids.items()
         }
 
