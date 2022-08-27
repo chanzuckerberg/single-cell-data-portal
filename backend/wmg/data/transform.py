@@ -132,7 +132,9 @@ def generate_primary_filter_dimensions(snapshot_path: str, corpus_name: str, sna
 
     def order_tissues(ontology_term_ids: Iterable[str]) -> Iterable[str]:
         """
-        Order tissues based on appearance in TissueMapper.HIGH_LEVEL_TISSUES
+        Order tissues based on appearance in TissueMapper.HIGH_LEVEL_TISSUES. This will maintain the priority set in
+        that class which is intended to keep most relevant tissues on top and tissues that are related to be placed
+        sequentially
         """
         ontology_term_ids = set(ontology_term_ids)
         ordered_ontology_term_ids = []
