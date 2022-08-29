@@ -1,6 +1,5 @@
 import enum
 
-import logging
 import os
 import pathlib
 import shutil
@@ -26,7 +25,7 @@ from backend.corpora.common.corpora_orm import (
 from backend.corpora.common.entities.collection import Collection
 from backend.corpora.common.entities.dataset import Dataset
 from backend.corpora.common.utils.exceptions import CorporaException
-from backend.corpora.dataset_processing.exceptions import ProcessingCancelled
+from backend.corpora.dataset_processing.exceptions import ProcessingCancelled, ConversionFailed
 from backend.corpora.dataset_processing import process
 from backend.corpora.dataset_processing.process import (
     convert_file,
