@@ -92,7 +92,7 @@ If a conversion fails the processing_status will indicated it as follow:
     processing_status = ProcessingStatus.PENDING
     upload_status = UploadStatus.UPLOADED
     upload_progress = 1.0
-    validation_status = ValidationStatus
+    validation_status = ValidationStatus,VALID
     rds_status = ConversionStatus.FAILED
     cxg_status = ConversionStatus.UPLOADED
     h5ad_status = ConversionStatus.UPLOADED
@@ -100,11 +100,22 @@ If a conversion fails the processing_status will indicated it as follow:
 
 Once all conversion are complete, the conversion status for each file will be either UPLOADED or FAILED:
 {
+    processing_status = ProcessingStatus.FAILURE
+    upload_status = UploadStatus.UPLOADED
+    upload_progress = 1.0
+    validation_status = ValidationStatus.VALID
+    rds_status = ConversionStatus.FAILED
+    cxg_status = ConversionStatus.UPLOADED
+    h5ad_status = ConversionStatus.UPLOADED
+}
+
+# If upload, validation, and all conversions succeed, the overall dataset processing status will be set to SUCCESS:
+{
     processing_status = ProcessingStatus.SUCCESS
     upload_status = UploadStatus.UPLOADED
     upload_progress = 1.0
-    validation_status = ValidationStatus
-    rds_status = ConversionStatus.FAILED
+    validation_status = ValidationStatus.VALID
+    rds_status = ConversionStatus.UPLOADED
     cxg_status = ConversionStatus.UPLOADED
     h5ad_status = ConversionStatus.UPLOADED
 }
@@ -145,11 +156,13 @@ from backend.corpora.common.utils.db_helpers import processing_status_updater
 from backend.corpora.common.utils.db_session import db_session_manager
 from backend.corpora.common.utils.dl_sources.url import from_url
 from backend.corpora.common.utils.s3_buckets import buckets
+from backend.corpora.common.utils.slack import dataset_processing_slack_notification
 from backend.corpora.dataset_processing.download import download
 from backend.corpora.dataset_processing.exceptions import (
     ProcessingCancelled,
     ProcessingFailed,
     ValidationFailed,
+    ConversionFailed,
 )
 from backend.corpora.dataset_processing.h5ad_data_file import H5ADDataFile
 
@@ -251,7 +264,7 @@ def create_artifacts(
 
     if can_convert_to_seurat:
         # Convert to Seurat and upload
-        seurat_filename = convert_file_ignore_exceptions(
+        seurat_filename = convert_file(
             make_seurat,
             local_filename,
             "Issue creating seurat.",
@@ -501,7 +514,7 @@ def copy_cxg_files_to_cxg_bucket(cxg_dir, s3_uri):
     )
 
 
-def convert_file_ignore_exceptions(
+def convert_file(
     converter: typing.Callable,
     local_filename: str,
     error_message: str,
@@ -521,13 +534,10 @@ def convert_file_ignore_exceptions(
             processing_status={processing_status_type: ConversionStatus.CONVERTED},
         )
         logger.info(f"Finished converting {converter} in {datetime.now()- start}")
-    except Exception:
-        file_dir = None
-        update_db(
-            dataset_id,
-            processing_status={processing_status_type: ConversionStatus.FAILED},
-        )
-        logger.exception(error_message)
+    except Exception as e:
+        logger.exception(f"{error_message}: {e}")
+        status = {processing_status_type: ConversionStatus.FAILED}
+        raise ConversionFailed(status)
     return file_dir
 
 
@@ -540,7 +550,7 @@ def get_bucket_prefix(identifier):
 
 
 def process_cxg(local_filename, dataset_id, cellxgene_bucket):
-    cxg_dir = convert_file_ignore_exceptions(make_cxg, local_filename, "Issue creating cxg.", dataset_id, "cxg_status")
+    cxg_dir = convert_file(make_cxg, local_filename, "Issue creating cxg.", dataset_id, "cxg_status")
     if cxg_dir:
         with db_session_manager() as session:
             asset = DatasetAsset.create(
@@ -692,7 +702,7 @@ def main():
 
     except ProcessingCancelled:
         cancel_dataset(dataset_id)
-    except (ValidationFailed, ProcessingFailed) as e:
+    except (ValidationFailed, ProcessingFailed, ConversionFailed) as e:
         (status,) = e.args
         if is_last_attempt:
             update_db(dataset_id, processing_status=status)

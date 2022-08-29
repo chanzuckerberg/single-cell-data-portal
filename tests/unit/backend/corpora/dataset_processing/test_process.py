@@ -29,7 +29,7 @@ from backend.corpora.common.utils.exceptions import CorporaException
 from backend.corpora.dataset_processing.exceptions import ProcessingCancelled
 from backend.corpora.dataset_processing import process
 from backend.corpora.dataset_processing.process import (
-    convert_file_ignore_exceptions,
+    convert_file,
     download_from_source_uri,
 )
 from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
@@ -525,12 +525,12 @@ class TestDatasetProcessing(DataPortalTestCase):
         self.assertEqual(ConversionStatus.FAILED, processing_status.cxg_status)
 
     @patch("backend.corpora.dataset_processing.process.update_db")
-    def test__convert_file_ignore_exceptions__fail(self, mock_update_db):
+    def test__convert_file__fail(self, mock_update_db):
         def converter(_file):
             raise RuntimeError("conversion_failed")
 
         with self.assertLogs(process.logger, logging.ERROR):
-            filename = convert_file_ignore_exceptions(converter, self.h5ad_filename, "error", "fake_id", "h5ad_status")
+            filename = convert_file(converter, self.h5ad_filename, "error", "fake_id", "h5ad_status")
         self.assertIsNone(filename)
 
     def mock_downloader_function(self, url, local_path, tracker, chunk_size):
