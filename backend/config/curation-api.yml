@@ -687,74 +687,72 @@ components:
       example: an/example/curator_tag.h5ad
       type: string
     dataset:
-      allOf:
-        - "$ref": "#/components/schemas/dataset_preview"
-        - properties:
-            batch_condition:
-              "$ref": "#/components/schemas/batch_condition"
-            assay:
-              "$ref": "#/components/schemas/ontology_elements"
-            cell_count:
-              nullable: true
-              type: integer
-            cell_type:
-              "$ref": "#/components/schemas/ontology_elements"
-            curator_tag:
-              "$ref": "#/components/schemas/curator_tag"
-              nullable: true
-            dataset_assets:
-              items:
-                "$ref": "#/components/schemas/dataset_asset"
-              type: array
-            development_stage:
-              "$ref": "#/components/schemas/ontology_elements"
-              nullable: true
-            disease:
-              "$ref": "#/components/schemas/ontology_elements"
-            ethnicity:
-              "$ref": "#/components/schemas/ontology_elements"
-            explorer_url:
-              "$ref": "#/components/schemas/explorer_url"
-            id:
-              "$ref": "#/components/schemas/dataset_id"
-            is_primary_data:
-              "$ref": "#/components/schemas/is_primary_data"
-            mean_genes_per_cell:
-              nullable: true
-              type: number
-            title:
-              nullable: true
-              type: string
-            organism:
-              "$ref": "#/components/schemas/ontology_elements"
-            processing_status:
-              description: Processing status for a Dataset or Collection
+      properties:
+        assay:
+          "$ref": "#/components/schemas/ontology_elements"
+        batch_condition:
+          "$ref": "#/components/schemas/batch_condition"
+        cell_count:
+          nullable: true
+          type: integer
+        cell_type:
+          "$ref": "#/components/schemas/ontology_elements"
+        curator_tag:
+          "$ref": "#/components/schemas/curator_tag"
+          nullable: true
+        dataset_assets:
+          items:
+            "$ref": "#/components/schemas/dataset_asset"
+          type: array
+        development_stage:
+          "$ref": "#/components/schemas/ontology_elements"
+          nullable: true
+        disease:
+          "$ref": "#/components/schemas/ontology_elements"
+        ethnicity:
+          "$ref": "#/components/schemas/ontology_elements"
+        explorer_url:
+          "$ref": "#/components/schemas/explorer_url"
+        id:
+          "$ref": "#/components/schemas/dataset_id"
+        is_primary_data:
+          "$ref": "#/components/schemas/is_primary_data"
+        mean_genes_per_cell:
+          nullable: true
+          type: number
+        title:
+          nullable: true
+          type: string
+        organism:
+          "$ref": "#/components/schemas/ontology_elements"
+        processing_status:
+          description: Processing status for a Dataset or Collection
 
-                - _FAILURE:_ the dataset ran into an error during processing. The CELLxGENE team will reach out to help you.
-                - _PENDING:_ the dataset has is still being processed.
-                - _SUCCESS:_ the dataset has successfuly been processed.
-              "$ref": "#/components/schemas/processing_status"
-            revised_at:
-              nullable: true
-              type: string
-            revision:
-              nullable: true
-              type: integer
-            schema_version:
-              nullable: true
-              type: string
-            sex:
-              "$ref": "#/components/schemas/ontology_elements"
-            tissue:
-              "$ref": "#/components/schemas/ontology_elements"
-            tombstone:
-              type: boolean
-            x_approximate_distribution:
-              "$ref": "#/components/schemas/distribution"
-            x_normalization:
-              nullable: true
-              type: string
-          type: object
+            - _FAILURE:_ the dataset ran into an error during processing. The CELLxGENE team will reach out to help you.
+            - _PENDING:_ the dataset has is still being processed.
+            - _SUCCESS:_ the dataset has successfuly been processed.
+          "$ref": "#/components/schemas/processing_status"
+        revised_at:
+          nullable: true
+          type: string
+        revision:
+          nullable: true
+          type: integer
+        schema_version:
+          nullable: true
+          type: string
+        sex:
+          "$ref": "#/components/schemas/ontology_elements"
+        tissue:
+          "$ref": "#/components/schemas/ontology_elements"
+        tombstone:
+          type: boolean
+        x_approximate_distribution:
+          "$ref": "#/components/schemas/distribution"
+        x_normalization:
+          nullable: true
+          type: string
+      type: object
     dataset_asset:
       properties:
         filename:
