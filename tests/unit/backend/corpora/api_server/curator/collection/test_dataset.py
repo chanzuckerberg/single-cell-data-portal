@@ -88,7 +88,7 @@ class TestPatchDataset(BaseAuthAPITest):
             self.assertIsNone(_dataset.curator_tag)
 
         dataset = self.generate_dataset(self.session, collection=collection)
-        tests = [dataset.id, "prefix" + dataset.id, dataset.id + "suffix", "prefix" + dataset.id + "suffix"]
+        tests = [dataset.id, ""]
         for tag_name in tests:
             with self.subTest(tag_name):
                 _test(tag_name, dataset)
