@@ -87,15 +87,10 @@ class TestPatchDataset(BaseAuthAPITest):
             self.session.expire_all()
             self.assertIsNone(_dataset.curator_tag)
 
-        tests = [("new", "bad"), ("id", "h5ad"), ("id", "bad")]
-        for tag_name, tag_extension in tests:
+        dataset = self.generate_dataset(self.session, collection=collection)
+        tests = [dataset.id, "prefix" + dataset.id, dataset.id + "suffix", "prefix" + dataset.id + "suffix"]
+        for tag_name in tests:
             with self.subTest(tag_name):
-                dataset = self.generate_dataset(self.session, collection=collection)
-                _test(tag_name, dataset)
-            with self.subTest([tag_name, tag_extension]):
-                dataset = self.generate_dataset(self.session, collection=collection)
-                name = dataset.id if tag_name == "id" else tag_extension
-                tag_name = f"{name}.{tag_extension}"
                 _test(tag_name, dataset)
 
     def test___conflict_curator_tag(self):
