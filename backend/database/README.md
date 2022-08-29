@@ -58,7 +58,7 @@ cd $REPO_ROOT/backend
 AWS_PROFILE=single-cell-{dev,prod} DEPLOYMENT_STAGE={dev,staging,prod} make db/dump OUTFILE=corpora_dev.sqlc
 ```
 
-This will download the database into the `$REPO_ROOT/backend/` directory in a file named `corpora_dev.sqlc`.
+This will download the database to `$REPO_ROOT/backend/corpora_dev.sqlc`.
 
 3. The tunnel to dev should close automatically (but worth verifying `ps ax | grep ssh`)
 4. Start the local database environment:
