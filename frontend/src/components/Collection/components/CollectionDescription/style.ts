@@ -1,5 +1,5 @@
+import styled from "@emotion/styled";
 import { PT_TEXT_COLOR } from "src/components/common/theme";
-import styled, { css } from "styled-components";
 
 export const DESCRIPTION_LINE_HEIGHT_PX = 18;
 export const MAX_LINE_COUNT = 6;
@@ -20,12 +20,12 @@ export const DescriptionText = styled.p<Props>`
   ${(props) => {
     return (
       props.isEllipsis &&
-      css`
+      `
         -webkit-box-orient: vertical;
         display: -webkit-box;
         -webkit-line-clamp: ${MAX_LINE_COUNT};
         overflow: hidden;
       `
     );
-  }};
+  }}
 `;

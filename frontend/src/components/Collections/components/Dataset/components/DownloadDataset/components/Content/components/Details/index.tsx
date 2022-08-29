@@ -1,3 +1,4 @@
+import { SpinnerSize } from "@blueprintjs/core";
 import { FC } from "react";
 import { Section, Text, Title } from "../common/style";
 import { Spinner } from "./style";
@@ -20,7 +21,7 @@ const Details: FC<Props> = ({
 }) => {
   function renderContent() {
     if (isLoading) {
-      return <Spinner size={Spinner.SIZE_SMALL} />;
+      return <Spinner size={SpinnerSize.SMALL} />;
     }
 
     if (!selected) {

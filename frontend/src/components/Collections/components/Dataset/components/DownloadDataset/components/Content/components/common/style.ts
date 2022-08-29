@@ -1,5 +1,5 @@
+import styled from "@emotion/styled";
 import { OLD_BLUE } from "src/components/common/theme";
-import styled from "styled-components";
 
 export const Title = styled.div`
   font-weight: 700;

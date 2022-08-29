@@ -141,3 +141,6 @@ dmypy.json
 .envrc
 .env.ecr
 *.sqlc
+
+# Typescript
+tsconfig.tsbuildinfo

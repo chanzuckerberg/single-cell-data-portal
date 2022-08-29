@@ -1,5 +1,5 @@
+import styled from "@emotion/styled";
 import DatasetsGrid from "src/components/Collection/components/CollectionDatasetsGrid/components/DatasetsGrid";
-import styled from "styled-components";
 
 export const CollectionDatasetsGrid = styled(DatasetsGrid)`
   grid-template-columns: 12fr 5fr 4fr repeat(2, 3fr) 2fr auto;
