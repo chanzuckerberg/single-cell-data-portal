@@ -150,9 +150,8 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/collection_get"
-
-        "404":
-          $ref: "#/components/responses/404"
+        "403":
+          $ref: "#/components/responses/403"
     patch:
       summary: Update a Collection's metadata.
       description: >-
@@ -200,16 +199,14 @@ paths:
                   - contact_name
                   - contact_email
                   - publisher_metadata
-        "201":
-          $ref: "#/components/responses/201"
         "400":
           $ref: "#/components/responses/400_multiple"
         "401":
           $ref: "#/components/responses/401"
         "403":
           $ref: "#/components/responses/403"
-        "404":
-          $ref: "#/components/responses/404"
+        "405":
+          $ref: "#/components/responses/405"
     delete:
       summary: Delete a private collection.
       description: >-
@@ -296,6 +293,8 @@ paths:
           $ref: "#/components/responses/403"
         "404":
           $ref: "#/components/responses/404"
+        "405":
+          $ref: "#/components/responses/405"
     get:
       summary: Fetch a Dataset from a collection
       description: >-
@@ -352,8 +351,12 @@ paths:
           $ref: "#/components/responses/400_multiple"
         "401":
           $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
         "404":
           $ref: "#/components/responses/404"
+        "409":
+          $ref: "#/components/responses/409"
 
   /v1/collections/{collection_id}/datasets/upload-link:
     put:
@@ -402,8 +405,14 @@ paths:
           $ref: "#/components/responses/400_multiple"
         "401":
           $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "405":
+          $ref: "#/components/responses/405"
         "404":
           $ref: "#/components/responses/404"
+        "413":
+          $ref: "#/components/responses/413"
 
   /v1/collections/{collection_id}/datasets/s3-upload-credentials:
     get:
