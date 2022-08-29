@@ -156,7 +156,6 @@ from backend.corpora.common.utils.db_helpers import processing_status_updater
 from backend.corpora.common.utils.db_session import db_session_manager
 from backend.corpora.common.utils.dl_sources.url import from_url
 from backend.corpora.common.utils.s3_buckets import buckets
-from backend.corpora.common.utils.slack import dataset_processing_slack_notification
 from backend.corpora.dataset_processing.download import download
 from backend.corpora.dataset_processing.exceptions import (
     ProcessingCancelled,
