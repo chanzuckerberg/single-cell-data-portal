@@ -492,10 +492,14 @@ class TestDatasetProcessing(DataPortalTestCase):
             self.session,
         ).id
         artifact_bucket = "test-artifact-bucket"
+        self.setup_s3_bucket(artifact_bucket)
         with self.assertRaises(ConversionFailed):
             process.create_artifacts(
                 str(self.h5ad_filename), test_dataset_id, artifact_bucket, can_convert_to_seurat=True
             )
+
+        # cleanup
+        self.delete_s3_bucket(artifact_bucket)
 
     @patch("backend.corpora.dataset_processing.process.make_cxg")
     def test_process_with_cxg_conversion_failures(self, mock_cxg):
