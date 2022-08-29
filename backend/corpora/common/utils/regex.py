@@ -5,7 +5,7 @@ ID_REGEX = r"[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-f
 DATASET_ID_REGEX = f"(?P<dataset_id>{ID_REGEX})"
 COLLECTION_ID_REGEX = f"(?P<collection_id>{ID_REGEX})"
 CONTROL_CHARS = r"[\x00-\x1f\x7f-\xa0]"
-CURATOR_TAG_REGEX = r"(?P<tag>.*)"
+CURATOR_TAG_REGEX = r"(?P<tag>.+)"
 
 
 def validate_curator_tag(curator_tag: str) -> bool:
@@ -17,7 +17,10 @@ def validate_curator_tag(curator_tag: str) -> bool:
     """
     regex = f"^({DATASET_ID_REGEX}|{CURATOR_TAG_REGEX})$"
     matched = re.match(regex, curator_tag)
-    if matched and matched.groupdict().get("tag"):
-        return True
-    else:
-        raise ValueError("Curator tag cannot assume UUID format.")
+    if matched:
+        matches = matched.groupdict()
+        if matches.get("tag"):
+            return True
+        elif matches.get("dataset_id"):
+            raise ValueError("Curator tag cannot assume UUID format.")
+    raise ValueError("Curator tag cannot be empty.")
