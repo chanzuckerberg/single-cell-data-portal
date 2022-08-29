@@ -362,7 +362,7 @@ paths:
       summary: Upload a Dataset by providing a link
       description: >-
         Upload a Dataset. The Dataset will be uploaded from the provided `link` which MUST either be a presigned AWS S3 
-        URL or Dropbox shared file. MUST include a `curator_tag` in the request body; if an existing Dataset has this 
+        URL or Dropbox shared file URL. MUST include a `curator_tag` in the request body; if an existing Dataset has this 
         tag, the existing Dataset SHALL be replaced, otherwise a new Dataset will be added. MAY include the `datase_id` 
         of an existing Dataset, in which case the existing Dataset SHALL be replaced and the `curator_tag` field
         will be ignored.
@@ -447,8 +447,8 @@ paths:
         Use `GET /curation/collections/{collection_id}/datasets/` with `curator_tag` or `id` query parameter  to check 
         on the processing status for a given Dataset.
 
-        Datasets upload directly to S3 will not appear in the Collection immediatly. Once the Dataset has started
-        processing it will appear in the Collection.
+        A Dataset uploaded directly to S3 will appear in the Collection only once the Dataset has started
+        processing.
 
       security:
         - curatorAccess: []
@@ -486,7 +486,7 @@ paths:
         - collection
       description: >-
         Generate Presigned S3 URLs to download the files associated with the dataset. MUST include *one* of the **curator_tag**
-        and **dataset_id** parameters. Presigned S3 URLs have a limit lifespan and will expire within 1 hour. Therefore,
+        and **dataset_id** parameters. Pre-signed S3 URLs have a life span of up to 1 hour. Therefore,
         generate a presigned URL before each download to ensure it is current.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.assets.get
       parameters:
@@ -630,10 +630,10 @@ components:
           "$ref": "#/components/schemas/processing_status"
           description: Processing status for datasets in a Collection
 
-            - _FAILURE:_ one or more datasets ran into an error during processing. The CELLxGENE team will reach out to help you.
-            - _PENDING:_ one or more datasets is still being processed.
-            - _SUCCESS:_ all datasets have successfuly been processed.
-            - _Null:_ no datasets in the collection.
+            - **"FAILURE"**: one or more Datasets ran into an error during processing. The CELLxGENE team will reach out to help you.
+            - **"PENDING"**: one or more Datasets are still being processed.
+            - **"SUCCESS"**: all Datasets have been processed successfully.
+            - **null**: the Collection has no Datasets.
         published_at:
           nullable: true
           type: string
@@ -827,7 +827,7 @@ components:
             nullable: true
             type: string
           link_type:
-            description: If the link_type is DOI, then the `link_url` must ba a valid DOI link and the `link_name` will be ignored or overwritten if provided. Example of a DOI `link_url`, https://doi.org/00.0000/science.abc1234. All other links types can be any valid URL.
+            description: If the link_type is DOI, then the `link_url` must be a valid DOI link and the `link_name` will be ignored or overwritten if provided. For example, https://doi.org/00.0000/science.abc1234 is a valid DOI `link_url`. All other links types can be any valid URL.
             enum:
               - PROTOCOL
               - RAW_DATA
