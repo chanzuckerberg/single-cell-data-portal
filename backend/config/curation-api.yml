@@ -487,7 +487,7 @@ paths:
       description: >-
         Generate Presigned S3 URLs to download the files associated with the dataset. MUST include *one* of the **curator_tag**
         and **dataset_id** parameters. Pre-signed S3 URLs have a life span of up to 1 hour. Therefore,
-        generate a presigned URL before each download to ensure it is current.
+        generate a presigned URL immediately before each download to ensure it is current.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.assets.get
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
