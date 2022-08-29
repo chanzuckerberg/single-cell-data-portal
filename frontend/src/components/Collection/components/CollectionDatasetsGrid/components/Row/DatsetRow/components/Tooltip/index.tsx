@@ -41,15 +41,15 @@ const ERROR_TO_CONTENT: { [key: string]: Content } = {
     intent: Intent.DANGER,
   },
   [FAILED_RETURN_TYPE.CONVERSION + CONVERSION_STATUS.FAILED]: {
-    color: ORANGE.C,
+    color: RED.C,
     content: (
       <span>
-        The dataset was uploaded successfully, but one or more conversions from
+        The dataset was validated successfully, but one or more conversions from
         .h5ad failed. We&apos;ll attempt to fix this manually and follow-up in
         an email after we&apos;ve investigated.
       </span>
     ),
-    intent: Intent.WARNING,
+    intent: Intent.DANGER,
   },
   [FAILED_RETURN_TYPE.UPLOAD + UPLOAD_STATUS.FAILED]: {
     color: RED.C,
