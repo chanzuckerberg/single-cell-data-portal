@@ -11,7 +11,7 @@ import {
   UPLOAD_STATUS,
   VALIDATION_STATUS,
 } from "src/common/entities";
-import { ORANGE, RED } from "src/components/common/theme";
+import { RED } from "src/components/common/theme";
 import { FAILED_RETURN_TYPE, FailReturn } from "../../utils";
 import { StyledAnchor } from "./style";
 
