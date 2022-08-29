@@ -336,7 +336,8 @@ paths:
               type: object
               additionalProperties: false
               properties:
-                $ref: "#/components/schemas/curator_tag"
+                curator_tag:
+                  $ref: "#/components/schemas/curator_tag"
             example:
               curator_tag: "new/curator_tag"
       responses:
