@@ -12,12 +12,12 @@ from .entities import Collection, Dataset
 from .utils.authorization_checks import owner_or_allowed
 from .utils.exceptions import (
     MaxFileSizeExceededException,
-    InvalidFileFormatException,
     NonExistentCollectionException,
     InvalidProcessingStateException,
     NonExistentDatasetException,
 )
 from .utils.math_utils import GB
+from .utils.regex import validate_curator_tag
 
 _stepfunctions_client = None
 
@@ -49,7 +49,6 @@ def upload(
     collection_id: str,
     url: str,
     file_size: int,
-    file_extension: str,
     user: str,
     scope: str = None,
     dataset_id: str = None,
@@ -59,9 +58,8 @@ def upload(
     if file_size is not None and file_size > max_file_size_gb:
         raise MaxFileSizeExceededException(f"{url} exceeds the maximum allowed file size of {max_file_size_gb} Gb")
 
-    allowed_file_formats = CorporaConfig().upload_file_formats
-    if file_extension not in allowed_file_formats:
-        raise InvalidFileFormatException(f"{url} must be in the file format(s): {allowed_file_formats}")
+    if curator_tag:
+        validate_curator_tag(curator_tag)
 
     # Check if datasets can be added to the collection
     collection = Collection.get_collection(

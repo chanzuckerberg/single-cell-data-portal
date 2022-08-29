@@ -73,18 +73,6 @@ class TestCollectionPostUploadLink(BaseAuthAPITest):
             )
 
     @patch(
-        "backend.corpora.common.utils.dl_sources.url.DropBoxURL.file_info", return_value={"size": 1, "name": "file.txt"}
-    )
-    def test__unsupported_format__400(self, mock_func):
-        path = "/dp/v1/collections/test_collection_id_revision/upload-links"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_cxguser_token()}
-        body = {"url": self.dummy_link}
-
-        test_url = furl(path=path)
-        response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
-        self.assertEqual(400, response.status_code)
-
-    @patch(
         "backend.corpora.common.utils.dl_sources.url.DropBoxURL.file_info",
         return_value={"size": 31 * GB, "name": "file.txt"},
     )

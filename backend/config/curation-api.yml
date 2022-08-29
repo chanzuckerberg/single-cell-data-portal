@@ -340,8 +340,7 @@ paths:
               additionalProperties: false
               properties:
                 curator_tag:
-                  type: string
-                  description: curator-provided tag
+                  $ref: "#/components/schemas/curator_tag"
             example:
               curator_tag: "new/curator_tag"
       responses:
@@ -382,7 +381,7 @@ paths:
               additionalProperties: false
               properties:
                 curator_tag:
-                  type: string
+                  $ref: "#/components/schemas/curator_tag"
                 id:
                   $ref: "#/components/schemas/dataset_id"
                 link:
@@ -534,6 +533,7 @@ components:
           type: array
         curator_tag:
           "$ref": "#/components/schemas/curator_tag"
+          nullable: true
         dataset_id:
           "$ref": "#/components/schemas/dataset_id"
       type: object
