@@ -630,10 +630,10 @@ components:
           "$ref": "#/components/schemas/processing_status"
           description: Processing status for datasets in a Collection
 
-            - **"FAILURE"**: one or more Datasets ran into an error during processing. The CELLxGENE team will reach out to help you.
-            - **"PENDING"**: one or more Datasets are still being processed.
-            - **"SUCCESS"**: all Datasets have been processed successfully.
-            - **null**: the Collection has no Datasets.
+            - **"FAILURE":** one or more Datasets ran into an error during processing. The CELLxGENE team will reach out to help you.
+            - **"PENDING":** one or more Datasets are still being processed.
+            - **"SUCCESS":** all Datasets have been processed successfully.
+            - **null:** the Collection has no Datasets.
         published_at:
           nullable: true
           type: string
