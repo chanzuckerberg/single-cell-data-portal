@@ -261,14 +261,14 @@ paths:
 
   /v1/collections/{collection_id}/datasets:
     delete:
-      summary: Delete or cancel a Dataset in a private collection or revision.
+      summary: Delete a Dataset or cancel processing for a Dataset in a private Collection or revision.
       description: >-
-        Delete or cancel processing a Dataset. The **collection_id** MUST reference either a private Collection OR a 
+        Delete a Dataset or cancel processing for a Dataset. The **collection_id** MUST reference either a private Collection OR a 
         Revision. MUST indicate the Dataset by providing *one* of either the **curator_tag** (non-null) OR the **dataset_id**
         parameters.
 
         If the Dataset is being processed, then this endpoint will cancel processing and delete the Dataset. While 
-        canceling the Dataset may still appear as part of the Collection for a few minutes.
+        the cancellation process is occurring, the Dataset may still appear as part of the Collection for a few minutes, but will eventually be removed.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.datasets.actions.delete
       tags:
         - collection
@@ -365,7 +365,7 @@ paths:
         URL or Dropbox shared file. MUST include a `curator_tag` in the request body; if an existing Dataset has this 
         tag, the existing Dataset SHALL be replaced, otherwise a new Dataset will be added. MAY include the `datase_id` 
         of an existing Dataset, in which case the existing Dataset SHALL be replaced and the `curator_tag` field
-        ignored.
+        will be ignored.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.datasets.upload_link.put
       tags:
         - collection
