@@ -55,7 +55,7 @@ The following steps will test that a migration script works on a local database 
 
 ```shell
 cd $REPO_ROOT/backend
-AWS_PROFILE=single-cell-dev DEPLOYMENT_STAGE=dev make db/dump OUTFILE=corpora_dev.sqlc
+AWS_PROFILE=single-cell-{dev,prod} DEPLOYMENT_STAGE={dev,staging,prod} make db/dump OUTFILE=corpora_dev.sqlc
 ```
 
 This will download the database into the `$REPO_ROOT/backend/` directory in a file named `corpora_dev.sqlc`.
@@ -80,9 +80,6 @@ where the `INFILE` parameter is the base name of the `.sqlc` file downloaded fro
 ```shell
 make db/local/load-schema INFILE=corpora_dev.sqlc
 ```
-
-- Note: The file is stored locally under `$REPO_ROOT/backend/database/corpora_${DEPLOYMENT_STAGE}-<YYYYmmddHHMM>.sqlc`
-  but the `make db/import` command retrieves it from `/import/$(FROM).sqlc` due to the way [the local paths are mapped to the Docker container](https://github.com/chanzuckerberg/single-cell-data-portal/blob/ffca067b9e4aea237fa2bd7c7a9cbc5813ebd449/docker-compose.yml#L13)
 
 You may need to run this a few times, until there are no significant errors.
 
