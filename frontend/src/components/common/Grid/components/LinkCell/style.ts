@@ -1,5 +1,5 @@
+import styled from "@emotion/styled";
 import { PRIMARY_BLUE, PRIMARY_BLUE_500 } from "src/components/common/theme";
-import styled from "styled-components";
 
 export const StyledAnchor = styled.a`
   color: ${PRIMARY_BLUE};

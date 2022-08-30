@@ -14,8 +14,8 @@ from ......common.corpora_orm import (
     DatasetArtifactFileType,
     ProcessingStatus,
     Base,
+    IsPrimaryData,
 )
-from backend.corpora.common.entities import Collection
 
 
 DATASET_ONTOLOGY_ELEMENTS = (
@@ -37,39 +37,32 @@ DATASET_ONTOLOGY_ELEMENTS_PREVIEW = (
 )
 
 
-def reshape_for_curation_api_and_is_allowed(
-    db_session: Session, collection: dict, token_info: dict, id_provided: bool = False, preview: bool = False
-) -> bool:
+def reshape_for_curation_api(
+    db_session: Session, collection: DbCollection, token_info: dict, preview: bool = False
+) -> dict:
     """
     Reshape Collection data for the Curation API response. Remove tombstoned Datasets.
     :param db_session: the db Session
     :param collection: the Collection being returned in the API response
     :param token_info: user access token
-    :param id_provided: bool - whether or not the collection uuid was provided by the user, for access purposes
     :param preview: boool - whether the dataset is in preview form or not.
     :return: whether or not the Collection should be included in the response per ownership/access rules
     """
+    entity_columns = EntityColumns.columns_for_collections if preview else EntityColumns.columns_for_collection_id
+    resp_collection = collection.to_dict_keep(entity_columns)
+    resp_collection["processing_status"] = add_collection_level_processing_status(collection)
 
-    owner = collection.pop("owner")  # Don't actually want to return 'owner' in response
-    if is_user_owner_or_allowed(token_info, owner):
-        collection["access_type"] = "WRITE"
-    elif not id_provided and collection["visibility"] == CollectionVisibility.PRIVATE:
-        # User neither provided the uuid for access nor are they authorized by their access token
-        return False
-    elif token_info:
-        # Access token was provided but user is not authorized
-        collection["access_type"] = "READ"
-
-    set_revising_in(db_session, collection, token_info, owner)
-
-    collection["collection_url"] = f"{CorporaConfig().collections_base_url}/collections/{collection['id']}"
-
-    if datasets := collection.get("datasets"):
-        collection["datasets"] = reshape_datasets_for_curation_api(datasets, preview)
-    return True
+    owner = resp_collection.pop("owner")  # Don't actually want to return 'owner' in response
+    resp_collection["revising_in"] = get_revising_in(db_session, collection, token_info, owner)
+    resp_collection["collection_url"] = f"{CorporaConfig().collections_base_url}/collections/{collection.id}"
+    if datasets := resp_collection.get("datasets"):
+        resp_collection["datasets"] = reshape_datasets_for_curation_api(datasets, preview)
+    return resp_collection
 
 
-def set_revising_in(db_session: Session, collection: dict, token_info: dict, owner: str) -> None:
+def get_revising_in(
+    db_session: Session, collection: DbCollection, token_info: dict, owner: str
+) -> typing.Optional[str]:
     """
     If the Collection is public AND the user is authorized use a database call to populate 'revising_in' attribute.
     None -> 1) revision does not exist, 2) the Collection is private, or 3) the user is not authorized
@@ -80,10 +73,10 @@ def set_revising_in(db_session: Session, collection: dict, token_info: dict, own
     :param owner: the owner of the Collection
     :return: None
     """
-    collection["revising_in"] = None
-    if collection["visibility"] == CollectionVisibility.PUBLIC and is_user_owner_or_allowed(token_info, owner):
-        if revision := Collection.get_collection(db_session, revision_of=collection["id"]):
-            collection["revising_in"] = revision.id
+    if collection.visibility == CollectionVisibility.PUBLIC and is_user_owner_or_allowed(token_info, owner):
+        if result := db_session.query(DbCollection.id).filter(DbCollection.revision_of == collection.id).one_or_none():
+            return result.id
+    return None
 
 
 def reshape_datasets_for_curation_api(datasets: typing.List[dict], preview=False) -> typing.List[dict]:
@@ -111,7 +104,19 @@ def reshape_dataset_for_curation_api(dataset: dict, preview=False) -> dict:
                 dataset[ontology_element] = [dataset_ontology_element]
         else:
             dataset[ontology_element] = []
+
+    if value := dataset.pop("name", None):
+        dataset["title"] = value
+    if value := dataset.pop("is_primary_data", None):
+        dataset["is_primary_data"] = is_primary_data_mapping.get(value)
     return dataset
+
+
+is_primary_data_mapping = {
+    IsPrimaryData.PRIMARY: [True],
+    IsPrimaryData.SECONDARY: [False],
+    IsPrimaryData.BOTH: [True, False],
+}
 
 
 class EntityColumns:
@@ -168,7 +173,7 @@ class EntityColumns:
         "cell_type",
         "cell_count",
         "x_approximate_distribution",
-        # "batch_condition",  # TODO: https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data-portal/1461  # noqa: E501
+        "batch_condition",
         "mean_genes_per_cell",
         "schema_version",
         "processing_status",

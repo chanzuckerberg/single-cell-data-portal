@@ -1,5 +1,5 @@
+import styled from "@emotion/styled";
 import { GRAY } from "src/components/common/theme";
-import styled from "styled-components";
 
 export const CenterAlignedDiv = styled.div`
   display: flex;

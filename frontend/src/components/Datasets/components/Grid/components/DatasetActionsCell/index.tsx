@@ -1,5 +1,4 @@
 import { Intent, Position, Tooltip } from "@blueprintjs/core";
-import React from "react";
 import DownloadDataset from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DownloadDataset";
 import { OVER_MAX_CELL_COUNT_TOOLTIP } from "src/components/common/Grid/common/constants";
 import ActionButton from "src/components/common/Grid/components/ActionButton";

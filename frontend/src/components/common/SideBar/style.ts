@@ -1,7 +1,7 @@
 import { Classes } from "@blueprintjs/core";
+import styled from "@emotion/styled";
 import { LIGHT_GRAY, PT_TEXT_COLOR } from "src/components/common/theme";
 import { HEADER_HEIGHT_PX } from "src/components/Header/style";
-import styled from "styled-components";
 
 export enum Position {
   LEFT = "left",
@@ -60,7 +60,7 @@ const SideBarToggleButtonWrapper = styled.span`
     font-weight: 500;
     letter-spacing: -0.1px;
     line-height: 18px;
-    min-height: 20px; /* overrides specificity of bp3 button min height rule */
+    min-height: 20px; /* overrides specificity of bp4 button min height rule */
 
     &:hover {
       background: none;
@@ -99,7 +99,7 @@ export const SideBarOpenButtonWrapper = styled(SideBarToggleButtonWrapper)`
   margin-bottom: 12px;
 
   .${Classes.BUTTON} {
-    height: 20px; /* overrides specificity of bp3 button height rule */
+    height: 20px; /* overrides specificity of bp4 button height rule */
     justify-content: space-between;
     padding: 0;
     width: 100%;

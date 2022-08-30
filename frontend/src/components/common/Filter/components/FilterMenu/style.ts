@@ -1,7 +1,7 @@
 import { Classes, MenuItem } from "@blueprintjs/core";
+import styled from "@emotion/styled";
 import { Divider } from "@material-ui/core";
 import { GRAY, PT_TEXT_COLOR } from "src/components/common/theme";
-import styled from "styled-components";
 import { scrollbar } from "../../common/style";
 
 export const MAX_DISPLAYABLE_MENU_ITEMS = 9;
@@ -45,7 +45,7 @@ export const MenuItemsWrapper = styled.div<MenuListProps>`
       : `${MAX_MENU_HEIGHT_PX}px`};
   overflow-y: auto;
   padding-right: 6px;
-  ${scrollbar};
+  ${scrollbar}
 `;
 
 export const MenuDivider = styled(Divider)`
