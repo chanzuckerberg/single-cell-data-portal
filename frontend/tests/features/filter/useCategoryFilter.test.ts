@@ -3,15 +3,198 @@
  */
 
 // App dependencies
-import { buildNextOntologyCategoryFilters } from "src/common/hooks/useCategoryFilter";
+import {
+  buildNextOntologyCategoryFilters,
+  buildUINodesByCategoryValueId,
+  MultiPanelUINode,
+} from "src/common/hooks/useCategoryFilter";
 import { CATEGORY_FILTER_CONFIGS_BY_ID } from "src/components/common/Filter/common/constants";
 import {
+  CategoryValueId,
   CATEGORY_FILTER_ID,
   CuratedOntologyCategoryFilterConfig,
+  OrFilterPrefix,
 } from "src/components/common/Filter/common/entities";
 
 describe("useCategoryFilter", () => {
-  describe("Ontology Category", () => {
+  describe("Multi-Panel Category", () => {
+    const TERM_ID_BLADDER_LUMEN = "UBERON:0009958";
+    const TERM_ID_BLADDER_ORGAN = "UBERON:0018707";
+    const TERM_ID_BLOOD = "UBERON:0000178";
+    const TERM_ID_BONE_MARROW = "UBERON:0002371";
+    const TERM_ID_HEMATOPOIETIC_SYSTEM = "UBERON:0002390";
+    const TERM_ID_KIDNEY = "UBERON:0002113";
+    const TERM_ID_SPLEEN = "UBERON:0002106";
+    const TERM_ID_THYMUS = "UBERON:0002370";
+    const TERM_ID_RENAL_MEDULLA = "UBERON:0000362";
+    const TERM_ID_RENAL_SYSTEM = "UBERON:0001008";
+    const TERM_ID_UMBILICAL_CORD_BLOOD = "UBERON:0012168";
+    const TERM_ID_URETER = "UBERON:0000056";
+    const TERM_ID_URETHRA = "UBERON:0000057";
+    const TERM_ID_VENOUS_BLOOD = "UBERON:0013756";
+
+    const INFERRED_HEMATOPOIETIC_SYSTEM = `${OrFilterPrefix.INFERRED}:${TERM_ID_HEMATOPOIETIC_SYSTEM}`;
+    const INFERRED_RENAL_SYSTEM = `${OrFilterPrefix.INFERRED}:${TERM_ID_RENAL_SYSTEM}`;
+    const INFERRED_BLADDER_ORGAN = `${OrFilterPrefix.INFERRED}:${TERM_ID_BLADDER_ORGAN}`;
+    const INFERRED_BLOOD = `${OrFilterPrefix.INFERRED}:${TERM_ID_BLOOD}`;
+    const INFERRED_BONE_MARROW = `${OrFilterPrefix.INFERRED}:${TERM_ID_BONE_MARROW}`;
+    const INFERRED_KIDNEY = `${OrFilterPrefix.INFERRED}:${TERM_ID_KIDNEY}`;
+    const INFERRED_SPLEEN = `${OrFilterPrefix.INFERRED}:${TERM_ID_SPLEEN}`;
+    const INFERRED_THYYMUS = `${OrFilterPrefix.INFERRED}:${TERM_ID_THYMUS}`;
+
+    const EXPLICIT_BLADDER_LUMEN = `${OrFilterPrefix.EXPLICIT}:${TERM_ID_BLADDER_LUMEN}`;
+    const EXPLICIT_BLOOD = `${OrFilterPrefix.EXPLICIT}:${TERM_ID_BLOOD}`;
+    const EXPLICIT_BONE_MARROW = `${OrFilterPrefix.EXPLICIT}:${TERM_ID_BONE_MARROW}`;
+    const EXPLICIT_KIDNEY = `${OrFilterPrefix.EXPLICIT}:${TERM_ID_KIDNEY}`;
+    const EXPLICIT_RENAL_MEDULLA = `${OrFilterPrefix.EXPLICIT}:${TERM_ID_RENAL_MEDULLA}`;
+    const EXPLICIT_SPLEEN = `${OrFilterPrefix.EXPLICIT}:${TERM_ID_SPLEEN}`;
+    const EXPLICIT_THYMUS = `${OrFilterPrefix.EXPLICIT}:${TERM_ID_THYMUS}`;
+    const EXPLICIT_UMBILICAL_CORD_BLOOD = `${OrFilterPrefix.EXPLICIT}:${TERM_ID_UMBILICAL_CORD_BLOOD}`;
+    const EXPLICIT_URETER = `${OrFilterPrefix.EXPLICIT}:${TERM_ID_URETER}`;
+    const EXPLICIT_URETHRA = `${OrFilterPrefix.EXPLICIT}:${TERM_ID_URETHRA}`;
+    const EXPLICIT_VENOUS_BLOOD = `${OrFilterPrefix.EXPLICIT}:${TERM_ID_VENOUS_BLOOD}`;
+
+    const TISSUE_SYSTEMS = [
+      INFERRED_HEMATOPOIETIC_SYSTEM,
+      INFERRED_RENAL_SYSTEM,
+    ];
+    const TISSUE_ORGANS = [
+      INFERRED_BLADDER_ORGAN,
+      INFERRED_BLOOD,
+      INFERRED_BONE_MARROW,
+      INFERRED_KIDNEY,
+      INFERRED_SPLEEN,
+      INFERRED_THYYMUS,
+    ];
+    const TISSUES = [
+      EXPLICIT_BLADDER_LUMEN,
+      EXPLICIT_BLOOD,
+      EXPLICIT_BONE_MARROW,
+      EXPLICIT_KIDNEY,
+      EXPLICIT_RENAL_MEDULLA,
+      EXPLICIT_SPLEEN,
+      EXPLICIT_THYMUS,
+      EXPLICIT_UMBILICAL_CORD_BLOOD,
+      EXPLICIT_URETER,
+      EXPLICIT_URETHRA,
+      EXPLICIT_VENOUS_BLOOD,
+    ];
+
+    const CATEGORY_VALUE_IDS_BY_PANEL = [
+      TISSUE_SYSTEMS,
+      TISSUE_ORGANS,
+      TISSUES,
+    ];
+
+    describe("buildUINodesByCategoryValueId", () => {
+      let uiNodesByCategoryValueId: Map<CategoryValueId, MultiPanelUINode>;
+      beforeAll(() => {
+        uiNodesByCategoryValueId = buildUINodesByCategoryValueId(
+          CATEGORY_VALUE_IDS_BY_PANEL
+        );
+      });
+
+      /**
+       * Build parent child relationships for hematopoietic system. hematopoietic system has "UI" children in both organ
+       * and tissue panels.
+       * - Parents: -
+       * - Children: blood non-specific, umbilical cord blood, venous blood
+       */
+      it("builds parent child relationships for hematopoietic system", () => {
+        const uiNode = uiNodesByCategoryValueId?.get(
+          INFERRED_HEMATOPOIETIC_SYSTEM
+        );
+
+        const uiParents = uiNode?.uiParents;
+        expect(uiParents?.length).toEqual(0);
+
+        const uiChildren = uiNode?.uiChildren;
+        expect(uiChildren?.length).toEqual(4);
+        expect(uiChildren?.includes(INFERRED_BLOOD)).toBeTruthy();
+        expect(uiChildren?.includes(INFERRED_BONE_MARROW)).toBeTruthy();
+        expect(uiChildren?.includes(INFERRED_SPLEEN)).toBeTruthy();
+        expect(uiChildren?.includes(INFERRED_THYYMUS)).toBeTruthy();
+      });
+
+      /**
+       * Build parent child relationships for renal system. renal system only has organs as direct "UI" children.
+       * - Parents: -
+       * - Children: kidney, urethra, bladder lumen, ureter
+       */
+      it("builds parent child relationships for renal system", () => {
+        const uiNode = uiNodesByCategoryValueId?.get(INFERRED_RENAL_SYSTEM);
+
+        const uiParents = uiNode?.uiParents;
+        expect(uiParents?.length).toEqual(0);
+
+        const uiChildren = uiNode?.uiChildren;
+        expect(uiChildren?.length).toEqual(4);
+        expect(uiChildren?.includes(INFERRED_KIDNEY)).toBeTruthy();
+        expect(uiChildren?.includes(EXPLICIT_URETHRA)).toBeTruthy();
+        expect(uiChildren?.includes(EXPLICIT_BLADDER_LUMEN)).toBeTruthy();
+        expect(uiChildren?.includes(EXPLICIT_URETER)).toBeTruthy();
+      });
+
+      /**
+       * Build parent child relationships for blood. blood has a combination of a non-specific values as well as is_a
+       * or part_of values.
+       * - Parents: renal system
+       * - Children: blood non-specific, umbilical cord blood, venous blood
+       */
+      it("builds parent child relationships for blood", () => {
+        const uiNode = uiNodesByCategoryValueId?.get(INFERRED_BLOOD);
+
+        const uiParents = uiNode?.uiParents;
+        expect(uiParents?.length).toEqual(1);
+        expect(uiParents?.includes(INFERRED_HEMATOPOIETIC_SYSTEM)).toBeTruthy();
+
+        const uiChildren = uiNode?.uiChildren;
+        expect(uiChildren?.length).toEqual(3);
+        expect(uiChildren?.includes(EXPLICIT_BLOOD)).toBeTruthy();
+        expect(
+          uiChildren?.includes(EXPLICIT_UMBILICAL_CORD_BLOOD)
+        ).toBeTruthy();
+        expect(uiChildren?.includes(EXPLICIT_VENOUS_BLOOD)).toBeTruthy();
+      });
+
+      /**
+       * Build parent child relationships for bladder lumen. bladder lumen has "UI" parents in both the organ and
+       * system panels.
+       * - Parents: renal system, bladder organ
+       * - Children: -
+       */
+      it("builds parent child relationships for bladder lumen", () => {
+        const uiNode = uiNodesByCategoryValueId?.get(EXPLICIT_BLADDER_LUMEN);
+
+        const uiParents = uiNode?.uiParents;
+        expect(uiParents?.length).toEqual(2);
+        expect(uiParents?.includes(INFERRED_RENAL_SYSTEM)).toBeTruthy();
+        expect(uiParents?.includes(INFERRED_BLADDER_ORGAN)).toBeTruthy();
+
+        const uiChildren = uiNode?.uiChildren;
+        expect(uiChildren?.length).toEqual(0);
+      });
+
+      /**
+       * Build parent child relationships for ureter. ureter only has systems as direct "UI" parents.
+       * - Parents: renal system
+       * - Children: -
+       */
+      it("builds parent child relationships for ureter", () => {
+        const uiNode = uiNodesByCategoryValueId?.get(EXPLICIT_URETER);
+
+        const uiParents = uiNode?.uiParents;
+        expect(uiParents?.length).toEqual(1);
+        expect(uiParents?.includes(INFERRED_RENAL_SYSTEM)).toBeTruthy();
+
+        const uiChildren = uiNode?.uiChildren;
+        expect(uiChildren?.length).toEqual(0);
+      });
+    });
+  });
+
+  // TODO(cc) remove skip
+  describe.skip("Curated Ontology Category", () => {
     const ONTOLOGY_ID_HUMAN_PRENATAL = "HsapDv:0000045";
     const ONTOLOGY_ID_HUMAN_EMBRYONIC_HUMAN = "HsapDv:0000002";
     const ONTOLOGY_ID_HUMAN_CARNEGIE_CS1 = "HsapDv:0000003";

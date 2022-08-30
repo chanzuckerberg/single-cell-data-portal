@@ -463,8 +463,9 @@ export interface OntologyMultiPanelCategoryView {
   isDisabled?: boolean;
   key: CATEGORY_FILTER_ID;
   label: string;
-  tooltip?: string;
   panels: OntologyPanelCategoryView[];
+  selectedViews: SelectCategoryValueView[];
+  tooltip?: string;
 }
 
 /**

@@ -47,6 +47,7 @@ import {
 } from "src/components/common/Filter/common/entities";
 import {
   buildExplicitOntologyTermId,
+  buildInferredOntologyTermId,
   findOntologyNodeById,
   findOntologyParentNode,
   getOntologySpeciesKey,
@@ -91,9 +92,9 @@ type CategorySetValue = Set<CategoryValueId> | Range;
 type KeyedSelectCategoryValue = Map<CategoryValueId, SelectCategoryValue>;
 
 /**
- * Internal filter model of a single or multiselect category, an ontology category or a multi-panel category. TODO(cc) export?
+ * Internal filter model of a single or multiselect category, an ontology category or a multi-panel category.
  */
-export interface SelectCategoryValue {
+interface SelectCategoryValue {
   key: CategoryValueId;
   count: number;
   selected: boolean;
@@ -120,10 +121,19 @@ type FilterState = {
  * values in a multi-panel category filter and is required as a separate record from react-table's filters which
  * only contains "overridden" selected values. For example, when "digestive system" and "tongue" are both selected in
  * the UI, react-table will only know that "tongue" is selected.
+ * TODO(cc) rename, docs
  */
 interface MultiPanelSelectedValues {
   selected: CategoryValueId[];
   selectedPartial: CategoryValueId[];
+  uiHierarchyByCategoryValueId: Map<CategoryValueId, MultiPanelUINode>;
+}
+
+// TODO(cc) - move to, export here and throughout
+export interface MultiPanelUINode {
+  categoryValueId: CategoryValueId;
+  uiChildren: CategoryValueId[];
+  uiParents: CategoryValueId[];
 }
 
 /**
@@ -221,6 +231,19 @@ export function useCategoryFilter<T extends Categories>(
 
     setOntologyTermLabelsById(keyOntologyTermLabelsById(originalRows));
   }, [originalRows, categoryFilterIds, ontologyTermLabelsById]);
+
+  // Build up UI hierarchies for each multi-panel category filter, used to facilitate easy calculation of selected
+  // and partially selected states.
+  useEffect(() => {
+    // Only set multi-panel state if there are rows to parse category values from. TODO(cc) check only called once
+    if (!originalRows.length) {
+      return;
+    }
+
+    setMultiPanelUIState(
+      buildMultiPanelUIState(originalRows, categoryFilterIds)
+    );
+  }, [categoryFilterIds, originalRows]);
 
   // Build next filter state on change of filter.
   useEffect(() => {
@@ -662,6 +685,252 @@ function buildCategoryViews(
 }
 
 /**
+ * TODO(cc) docs, location, separate functions
+ */
+function buildMultiPanelUIState<T extends Categories>(
+  originalRows: Row<T>[],
+  categoryFilterIds: Set<CATEGORY_FILTER_ID>
+): MultiPanelUIState {
+  return Array.from(categoryFilterIds.values()).reduce(
+    (
+      accum: Map<CATEGORY_FILTER_ID, MultiPanelSelectedValues>,
+      categoryFilterId: CATEGORY_FILTER_ID
+    ) => {
+      // Ignore categories that are not multi-panels.
+      const config = CATEGORY_FILTER_CONFIGS_BY_ID[categoryFilterId];
+      if (!isMultiPanelCategoryFilterConfig(config)) {
+        return accum;
+      }
+
+      // Determine the set of values for each panel.
+      const categoryValueIdsByPanel = keyCategoryValueIdsByPanel(
+        config,
+        originalRows
+      );
+
+      // Iterate over each set of panel values and build up parents and children for each value.
+      const uiHierarchyByCategoryValue = buildUINodesByCategoryValueId(
+        categoryValueIdsByPanel
+      );
+      console.log(uiHierarchyByCategoryValue.get("I:UBERON:0001008")); // renal system (above kidney (I 0002113) and bladder lumen (E 0009958))
+
+      accum.set(categoryFilterId, {
+        selected: [],
+        selectedPartial: [],
+        uiHierarchyByCategoryValueId: uiHierarchyByCategoryValue,
+      });
+
+      return accum;
+    },
+    new Map<CATEGORY_FILTER_ID, MultiPanelSelectedValues>()
+  );
+}
+
+/**
+ * TODO(cc)
+ */
+export function buildUINodesByCategoryValueId(
+  categoryValueIdsByPanel: CategoryValueId[][]
+): Map<CategoryValueId, MultiPanelUINode> {
+  return categoryValueIdsByPanel.reduce(
+    (
+      uiAccum: Map<CategoryValueId, MultiPanelUINode>,
+      categoryValueIds: CategoryValueId[],
+      index: number
+    ) => {
+      // Add all values in this panel to the map of values.
+      categoryValueIds.forEach((categoryValueId) =>
+        uiAccum.set(categoryValueId, {
+          categoryValueId: categoryValueId,
+          uiChildren: [],
+          uiParents: [],
+        })
+      );
+
+      // Build parent child relationships for each value in this panel.
+      const parentCategoryValueIdsByPanel = categoryValueIdsByPanel.slice(
+        0,
+        index
+      );
+      categoryValueIds.forEach((categoryValueId) => {
+        linkParentsAndChildren(
+          categoryValueId,
+          parentCategoryValueIdsByPanel,
+          uiAccum
+        );
+      });
+
+      return uiAccum;
+    },
+    new Map<CategoryValueId, MultiPanelUINode>()
+  );
+}
+
+/**
+ * TODO(cc)
+ */
+export function keyCategoryValueIdsByPanel<T extends Categories>(
+  config: OntologyMultiPanelFilterConfig,
+  originalRows: Row<T>[]
+): CategoryValueId[][] {
+  const { panels: panelConfigs } = config;
+  return panelConfigs.reduce(
+    (uiAccum: CategoryValueId[][], panelConfig: CategoryFilterPanelConfig) => {
+      let prefixedOntologyTermIds;
+
+      // Determine the set of values for curated ontology panels.
+      if (panelConfig.sourceKind === "CURATED_CATEGORIES") {
+        prefixedOntologyTermIds = [
+          ...listOntologyTreeIds(panelConfig.mask),
+        ].map((ontologyTermId) => buildInferredOntologyTermId(ontologyTermId));
+      }
+      // Otherwise, build up the set of values for this panel from the original rows.
+      else {
+        // TODO(cc) reduce rather than create and set/array
+        prefixedOntologyTermIds = [
+          ...new Set(
+            originalRows
+              .map((originalRow) => originalRow.original[config.filterOnKey]) // TODO(cc)
+              .flat()
+              .filter(
+                (value) =>
+                  removeOntologyTermId(value) === OrFilterPrefix.EXPLICIT
+              )
+          ),
+        ];
+      }
+
+      uiAccum.push(prefixedOntologyTermIds);
+
+      return uiAccum;
+    },
+    [] as CategoryValueId[][]
+  );
+}
+
+/**
+ * TODO(cc)
+ */
+function linkParentsAndChildren(
+  categoryValueId: CategoryValueId,
+  parentCategoryValueIdsByPanel: CategoryValueId[][],
+  uiNodesByCategoryValueId: Map<CategoryValueId, MultiPanelUINode>
+) {
+  // Link parent and children between this panel and the parent panel if:
+  // 1. Child value is a descendant of the parent value and,
+  // 2. Child value is not a descendant of any children already added to parent.
+  parentCategoryValueIdsByPanel.forEach((parentCategoryValueIds) => {
+    parentCategoryValueIds.forEach((panelCategoryValueId) => {
+      // Check if value is a descendant of panel value.
+      const isDescendantOfPanelValue = isDescendant(
+        categoryValueId,
+        panelCategoryValueId,
+        TISSUE_DESCENDANTS
+      );
+
+      // If value isn't a descendant, there's no parent child relationship to link here.
+      if (!isDescendantOfPanelValue) {
+        return;
+      }
+
+      // Value is a descendant, check it is not "blocked". That is, the value is not a descendant of any children of
+      // the panel value.
+      // Note: the logic here possibly might need revisiting if more than three panels are added. For example, is it
+      // possible that the children list is ever incomplete at this point?
+      // TODO(cc) revisit chaining here and below
+      const panelCategoryValueUIChildren =
+        uiNodesByCategoryValueId.get(panelCategoryValueId)?.uiChildren ?? [];
+      const isDescendantOfUIChild = panelCategoryValueUIChildren.some(
+        (panelCategoryValueUIChild) => {
+          // There are no descendants of explicit values; value can't be a descendant if child is explicit.
+          if (isExplicitOntologyTermId(panelCategoryValueUIChild)) {
+            return false;
+          }
+
+          // Check if value is a descendant of panel children.
+          return isDescendant(
+            categoryValueId,
+            panelCategoryValueUIChild,
+            TISSUE_DESCENDANTS
+          );
+        }
+      );
+
+      // Only add value if it's not "blocked".
+      if (!isDescendantOfUIChild) {
+        linkParentAndChild(
+          categoryValueId,
+          panelCategoryValueId,
+          uiNodesByCategoryValueId
+        );
+      }
+    });
+  });
+}
+
+/**
+ * TODO(cc) optional chaining
+ */
+function linkParentAndChild(
+  categoryValueId: CategoryValueId,
+  parentCategoryValueId: CategoryValueId,
+  uiNodesByCategoryValueId: Map<CategoryValueId, MultiPanelUINode>
+) {
+  uiNodesByCategoryValueId
+    .get(parentCategoryValueId)
+    ?.uiChildren?.push(categoryValueId);
+  uiNodesByCategoryValueId
+    ?.get(categoryValueId)
+    ?.uiParents.push(parentCategoryValueId);
+}
+
+/**
+ * TODO(cc) check strings here, check usages of TISSUE_DESCENDANTS (can we put the stripping of the prefix in here?), type for descendants here and below
+ */
+function isDescendant(
+  categoryValueId: CategoryValueId,
+  panelCategoryValueId: CategoryValueId,
+  descendants: { [p: string]: string[] }
+): boolean {
+  const ontologyTermId = removeOntologyTermIdPrefix(categoryValueId);
+  const panelOntologyTermId = removeOntologyTermIdPrefix(panelCategoryValueId);
+  const isDescendantTerm = (descendants[panelOntologyTermId] ?? []).includes(
+    ontologyTermId
+  );
+
+  const isExplicitTerm = isExplicitTermOfInferredTerm(
+    categoryValueId,
+    panelCategoryValueId
+  );
+
+  return isDescendantTerm || isExplicitTerm;
+}
+
+/**
+ * TODO(cc) move to utils?
+ */
+function isExplicitTermOfInferredTerm(
+  categoryValueId: CategoryValueId,
+  panelCategoryValueId: CategoryValueId
+): boolean {
+  const ontologyTermId = removeOntologyTermIdPrefix(categoryValueId);
+  const panelOntologyTermId = removeOntologyTermIdPrefix(panelCategoryValueId);
+  return (
+    isExplicitOntologyTermId(categoryValueId) &&
+    !isExplicitOntologyTermId(panelCategoryValueId) &&
+    ontologyTermId === panelOntologyTermId
+  );
+}
+
+/**
+ * TODO(cc) move to utils?
+ */
+function isExplicitOntologyTermId(categoryValueId: CategoryValueId): boolean {
+  const prefix = removeOntologyTermId(categoryValueId);
+  return prefix === OrFilterPrefix.EXPLICIT;
+}
+
+/**
  * Build categories, category values and counts for the updated filter. For each category, build up category values
  * counts by counting occurrences of category values across rows. Maintain selected category values state from filters.
  * Retain category values with 0 counts from given category set.
@@ -1035,11 +1304,13 @@ function buildMultiPanelCategoryView(
   multiPanelUIState: MultiPanelUIState,
   ontologyTermLabelsById: Map<string, string>
 ): OntologyMultiPanelCategoryView {
-  // Build builders for each panel. TODO(cc)
+  // Build builders for each panel. TODO(cc) remove now that we have ui state?
   const { categoryFilterId, panels: panelConfigs } = config;
   const selectCategoryValues = [...categoryValueByValue.values()];
   const selectedValues =
     multiPanelUIState.get(categoryFilterId)?.selected ?? [];
+  const uiNodesByCategoryValueId =
+    multiPanelUIState.get(categoryFilterId)?.uiHierarchyByCategoryValueId;
   const builders = buildParentPanelBuilders(
     panelConfigs,
     selectCategoryValues,
@@ -1047,10 +1318,11 @@ function buildMultiPanelCategoryView(
   );
 
   // Build value view models for each panel.
+  const selectedViews = [];
   const ontologyPanelCategoryViews = builders.reduce(
     (accum, builder, index) => {
       // Determine the set of selected values that could possibly restrict the include list for this panel. That is,
-      // find the selected values of panels that are parents to this panel
+      // find the selected values of panels that are parents to this panel.
       const parentBuilders = builders.slice(0, index);
       const visibleSelectCategoryValues = parentBuilders.length
         ? applySelectCategoryValueIncludeList(parentBuilders, builder)
@@ -1070,6 +1342,9 @@ function buildMultiPanelCategoryView(
         applyNonSpecificLabel(parentPanelView, panelSelectCategoryValueViews);
       }
 
+      // Check if we can add any views to the select set, used to display selected tags.
+      // panelSelectCategoryValueViews.forEach((selectCategoryValueView) => {});
+
       // Build panel view.
       accum.push({
         label: builder.panel.label,
@@ -1085,6 +1360,7 @@ function buildMultiPanelCategoryView(
     key: categoryFilterId,
     label: config.label,
     panels: ontologyPanelCategoryViews,
+    selectedViews: [],
   };
 }
 
@@ -1853,7 +2129,7 @@ function removeOntologyDescendents(
 }
 
 /**
- * Handle select of mutli-panel value: build and set next set of filters for this category. Track selected select value.
+ * Handle select of multi-panel value: build and set next set of filters for this category. Track selected select value.
  * @param config - Configuration model of selected category.
  * @param categoryValueKey - The selected category value.
  * @param selectedValue - Selected category value ID to use as selected value.
@@ -1896,16 +2172,66 @@ function onFilterMultiPanelCategory(
   // Determine the selected values which are now partially selected, if any. For example, if "digestive system" and
   // "tongue" are both selected in the UI, internally we record "digestive system" as partially selected and "tongue"
   // as selected.
-  const selectedPartialCategoryFilters = allSelectedCategoryFilters.filter(
-    (selectedCategoryValue) =>
-      !overriddenSelectedCategoryFilters.includes(selectedCategoryValue)
+  // TODO(cc) move to function
+  const multiPanelSelectedValues = multiPanelUIState.get(categoryFilterId); // TODO(cc) rename
+  if (!multiPanelSelectedValues) {
+    console.log(
+      `Selected values not found for category filter ID ${categoryFilterId}`
+    );
+    return;
+  }
+  const { uiHierarchyByCategoryValueId } = multiPanelSelectedValues;
+  const selectedPartial: CategoryValueId[] = [];
+  allSelectedCategoryFilters.forEach(
+    (selectedCategoryFilter: CategoryValueId) => {
+      // If value is still identified as selected after overrides have been applied, leave as is.
+      if (overriddenSelectedCategoryFilters.includes(selectedCategoryFilter)) {
+        return;
+      }
+      // Otherwise, value has been blocked by a more "precise" value. If all children of the blocked value are selected,
+      // leave as is. If only some children of the blocked value are selected, add value to partial list.
+      const uiNode = uiHierarchyByCategoryValueId.get(selectedCategoryFilter);
+      if (!uiNode) {
+        // TODO(cc) is this even possible?
+        return;
+      }
+
+      const isEveryChildSelected = uiNode.uiChildren.every((uiChild) => {
+        const isChildSelected = allSelectedCategoryFilters.includes(uiChild);
+        if (isChildSelected) {
+          return true;
+        }
+
+        // If the child is not explicitly selected and it's an exact value, exit here.
+        // TODO(cc) add isInferred etc methods so we don't have to pull off index and check
+        const prefix = removeOntologyTermId(uiChild);
+        if (prefix === OrFilterPrefix.EXPLICIT) {
+          return false;
+        }
+
+        // Otherwise, if child is not explicitly selected and it's an inferred value, check if it's inferred selected.
+        const uiGrandchildren =
+          uiHierarchyByCategoryValueId.get(uiChild)?.uiChildren;
+        if (!uiGrandchildren) {
+          return false; // If there are no grandchildren then the value is not inferred selected.
+        }
+        return uiGrandchildren.every((uiGrandchild) => {
+          return allSelectedCategoryFilters.includes(uiGrandchild);
+        });
+      });
+
+      if (!isEveryChildSelected) {
+        selectedPartial.push(selectedCategoryFilter);
+      }
+    }
   );
 
   // Update internal multi-panel filter state with the updated, toggled set of selected filters for this category as
   // well as the partially (overridden) selected values.
   multiPanelUIState.set(categoryFilterId, {
     selected: allSelectedCategoryFilters,
-    selectedPartial: selectedPartialCategoryFilters,
+    selectedPartial,
+    uiHierarchyByCategoryValueId,
   });
   setMultiPanelUIState(multiPanelUIState);
 
@@ -1916,6 +2242,7 @@ function onFilterMultiPanelCategory(
 /**
  * Build up react-table filters model from the given multi-panel UI state.
  * @param multiPanelUIState - ID of category filter to filters.
+ * @returns Set of selected values in the format expected by react-table.
  */
 function buildMultiPanelFilters<T extends Categories>(
   multiPanelUIState: MultiPanelUIState
@@ -1941,7 +2268,7 @@ function buildMultiPanelFilters<T extends Categories>(
 }
 
 /**
- * TODO(cc) location, rename
+ * TODO(cc) location, rename, can we remove this and use the partial state instead
  */
 function overrideSelectedParents(
   selectedValues: CategoryValueId[]
@@ -2093,11 +2420,16 @@ function setSelectedStates<T extends Categories>(
     const categoryFilterState = nextFilterState[categoryFilterId];
 
     // Grab the filters for this category, used to determine the selected values.
-    const categoryFilter = getCategoryFilter(categoryFilterId, filters);
-
-    // Grab the partially selected values if this is a multi-panel category.
     const config = CATEGORY_FILTER_CONFIGS_BY_ID[categoryFilterId];
     const isMultiPanel = isMultiPanelCategoryFilterConfig(config);
+    const categoryFilter = isMultiPanel
+      ? getCategoryFilter(
+          categoryFilterId,
+          buildMultiPanelFilters(multiPanelUIState)
+        )
+      : getCategoryFilter(categoryFilterId, filters);
+
+    // Grab the partially selected values if this is a multi-panel category.
     const selectedPartials = isMultiPanel
       ? multiPanelUIState.get(categoryFilterId)?.selectedPartial ?? []
       : [];
@@ -2121,9 +2453,11 @@ function setSelectedStates<T extends Categories>(
         categoryValueKey,
         categoryValue,
       ] of categoryFilterState.entries()) {
-        categoryValue.selected = selectedCategoryValues.has(categoryValueKey);
-        categoryValue.selectedPartial =
+        const selectedPartial =
           selectedPartialCategoryValues.has(categoryValueKey);
+        categoryValue.selected =
+          selectedCategoryValues.has(categoryValueKey) && !selectedPartial;
+        categoryValue.selectedPartial = selectedPartial;
       }
       return;
     }

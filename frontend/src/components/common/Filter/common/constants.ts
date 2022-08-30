@@ -2618,6 +2618,7 @@ const CATEGORY_FILTER_CONFIGS: CategoryFilterConfig[] = [
         id: CATEGORY_FILTER_PANEL_ID.TISSUE,
         label: "Tissue",
         parentCategoryPanelFilterIds: [
+          // TODO(cc) remove this, remove filterValueKind as well? filterValueKind should at least be updated to "INFERRED" and "EXPLICIT"
           CATEGORY_FILTER_PANEL_ID.TISSUE_ORGAN,
           CATEGORY_FILTER_PANEL_ID.TISSUE_SYSTEM,
         ],
