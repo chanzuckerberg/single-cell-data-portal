@@ -19,7 +19,7 @@ def handle_failure(event: dict, context) -> None:
     # clean up artifacts depending on error
     if error_step_name == "download-validate":
         delete_many_from_s3(os.environ["ARTIFACT_BUCKET"], object_key)
-    if error_step_name == "cxg":
+    elif error_step_name == "cxg":
         cellxgene_bucket = f"hosted-cellxgene-{os.environ['DEPLOYMENT_STAGE']}"
         if os.getenv("CELLXGENE_BUCKET"):
             cellxgene_bucket = os.getenv("CELLXGENE_BUCKET")
