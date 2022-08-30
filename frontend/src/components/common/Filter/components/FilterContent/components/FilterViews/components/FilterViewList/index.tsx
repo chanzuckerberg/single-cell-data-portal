@@ -24,6 +24,33 @@ interface Props {
   ViewHeader?: ReactElement;
 }
 
+/**
+ * Returns metadata values with a count, or all metadata values if zero count is specified as visible.
+ * @param values - Metadata values for single or multiselect category.
+ * @param isZerosVisible - Metadata value with a zero count are visible.
+ * @returns metadata values for single or multiselect categories with a count and values without a count if specified.
+ */
+function filterCategoryValues(
+  values: OntologyCategoryTreeNodeView[] | SelectCategoryValueView[],
+  isZerosVisible: boolean
+): OntologyCategoryTreeNodeView[] | SelectCategoryValueView[] {
+  if (isZerosVisible) {
+    return values;
+  }
+  return values.filter((value) => value.count);
+}
+
+/**
+ * Determine if the given category value is an ontology category value and not a select value.
+ * @param value - Metadata value for single or multiselect category.
+ * @returns True if the given category value is an ontology category value.
+ */
+function isOntologyCategoryTreeNodeView(
+  value: OntologyCategoryTreeNodeView | SelectCategoryValueView
+): value is OntologyCategoryTreeNodeView {
+  return (value as OntologyCategoryTreeNodeView).selectedPartial !== undefined;
+}
+
 export default function FilterViewList({
   categoryFilterId,
   isZerosVisible,
@@ -32,9 +59,7 @@ export default function FilterViewList({
   values,
   ViewHeader = undefined,
 }: Props): JSX.Element {
-  const filteredValues = values.filter(
-    (value) => isZerosVisible || value.count
-  );
+  const filteredValues = filterCategoryValues(values, isZerosVisible);
   const ViewList = nested ? ViewSublist : List;
   return (
     <ViewList dense disablePadding subheader={ViewHeader}>
@@ -44,8 +69,11 @@ export default function FilterViewList({
       ) : (
         filteredValues.map((filteredValue) => {
           const { key, count, label, selected, value } = filteredValue;
-          const { children, selectedPartial } =
-            filteredValue as OntologyCategoryTreeNodeView; // TODO(cc) review destructure with SelectCategoryValueView or OntologyCategoryTreeNodeView.
+          let children, selectedPartial;
+          if (isOntologyCategoryTreeNodeView(filteredValue)) {
+            children = filteredValue.children;
+            selectedPartial = filteredValue.selectedPartial;
+          }
           return (
             <Fragment key={key}>
               {/* List item */}

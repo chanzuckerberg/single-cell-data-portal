@@ -113,7 +113,7 @@ export default function FilterMenu({
  * Returns filtered category values where category key includes search value.
  * @param categoryValues - Category value view models for a given category.
  * @param searchValue - Search string to filters category values.
- * @returns array of category values filtered by the given search value
+ * @returns array of category values filtered by the given search value.
  */
 function filterCategoryValues(
   categoryValues: SelectCategoryValueView[],
