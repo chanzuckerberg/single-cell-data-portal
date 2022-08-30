@@ -92,7 +92,7 @@ If a conversion fails the processing_status will indicated it as follow:
     processing_status = ProcessingStatus.PENDING
     upload_status = UploadStatus.UPLOADED
     upload_progress = 1.0
-    validation_status = ValidationStatus,VALID
+    validation_status = ValidationStatus.VALID
     rds_status = ConversionStatus.FAILED
     cxg_status = ConversionStatus.UPLOADED
     h5ad_status = ConversionStatus.UPLOADED
