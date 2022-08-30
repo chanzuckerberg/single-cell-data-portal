@@ -44,7 +44,7 @@ const ERROR_TO_CONTENT: { [key: string]: Content } = {
     color: RED.C,
     content: (
       <span>
-        The dataset was validated successfully, but one or more conversions from
+        The dataset was uploaded successfully, but one or more conversions from
         .h5ad failed. We&apos;ll attempt to fix this manually and follow-up in
         an email after we&apos;ve investigated.
       </span>
