@@ -51,6 +51,8 @@ def create_high_level_tissue(anndata_object: anndata.AnnData):
 
 def get_high_level_tissue(obs: DataFrame) -> DataFrame:
 
+    obs = obs.copy()
+
     tissue_mapper = TissueMapper()
 
     tissue_ids_and_labels = obs[["tissue_ontology_term_id", "tissue"]].drop_duplicates().astype(str)
@@ -58,10 +60,10 @@ def get_high_level_tissue(obs: DataFrame) -> DataFrame:
     new_tissue_labels = {}
 
     # Create mapping dictionaries and if needed add new categories to obs.tissue and obs.tissue_ontology_term_id
-    for i in range(len(tissue_ids_and_labels)):
+    for row in tissue_ids_and_labels.iterrows():
 
-        current_id = tissue_ids_and_labels["tissue_ontology_term_id"][i]
-        current_label = tissue_ids_and_labels["tissue"][i]
+        current_id = row[1]["tissue_ontology_term_id"]
+        current_label = row[1]["tissue"]
 
         new_tissue_ids[current_id] = tissue_mapper.get_high_level_tissue(current_id)
         new_tissue_labels[current_label] = tissue_mapper.get_label_from_writable_id(new_tissue_ids[current_id])
