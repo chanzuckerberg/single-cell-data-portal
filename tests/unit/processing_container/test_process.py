@@ -4,8 +4,9 @@ from unittest.mock import patch
 
 import requests
 
-from backend.corpora.dataset_processing import process
+from backend.corpora.dataset_processing.process import main
 from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
+from unit.backend.corpora.fixtures.environment_setup import EnvironmentSetup
 
 
 class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
@@ -59,15 +60,32 @@ class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
         functionality.  Dropbox I/O is mocked to prevent dependency on remote services (non-Dockerized).
         """
         mock_download_from_source_uri.return_value = self.h5ad_raw
-
         dataset = self.generate_dataset(self.session, collection_id="test_collection_id")
+        test_environment = {
+            "STEP_NAME": "cxg",
+            "DROPBOX_URL": "https://www.dropbox.com/IGNORED",
+            "ARTIFACT_BUCKET": self.corpora_config.bucket_name,
+            "CELLXGENE_BUCKET": self.corpora_config.bucket_name,
+            "DATASET_ID": dataset.id,
+            "DEPLOYMENT_STAGE": "test",
+            "MAX_ATTEMPTS": 1,
+        }
 
-        process.process(
-            dataset.id,
-            "https://www.dropbox.com/IGNORED",
-            self.corpora_config.bucket_name,
-            self.corpora_config.bucket_name,
-        )
+        test_environment["STEP_NAME"] = "download-validate"
+        with EnvironmentSetup(test_environment):
+            main()
+
+        test_environment["STEP_NAME"] = "cxg"
+        with EnvironmentSetup(test_environment):
+            main()
+
+        test_environment["STEP_NAME"] = "seurat"
+        with EnvironmentSetup(test_environment):
+            main()
+
+        test_environment["STEP_NAME"] = "cxg_remaster"
+        with EnvironmentSetup(test_environment):
+            main()
 
         # TODO: add assertions. See https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data-portal/1449 # noqa: E501
         # 1. H5AD has annotation labels added and uploaded to S3
