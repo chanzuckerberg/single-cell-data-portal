@@ -8,3 +8,7 @@ class ProcessingFailed(Exception):
 
 class ProcessingCancelled(Exception):
     pass
+
+
+class ConversionFailed(Exception):
+    pass

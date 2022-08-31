@@ -136,16 +136,16 @@ class TestGetCollections(BaseAuthAPITest):
     def test__get_collections_no_auth__OK(self):
         res_no_auth = self.app.get("/curation/v1/collections")
         self.assertEqual(200, res_no_auth.status_code)
-        self.assertEqual(6, len(res_no_auth.json["collections"]))
-        [self.assertEqual("PUBLIC", c["visibility"]) for c in res_no_auth.json["collections"]]
+        self.assertEqual(6, len(res_no_auth.json))
+        [self.assertEqual("PUBLIC", c["visibility"]) for c in res_no_auth.json]
 
     def test__get_collections_with_auth__OK(self):
         res_auth = self.app.get("/curation/v1/collections", headers=self.make_owner_header())
         self.assertEqual(200, res_auth.status_code)
-        self.assertEqual(6, len(res_auth.json["collections"]))
+        self.assertEqual(6, len(res_auth.json))
         with self.subTest("The 'revising_in' attribute is None for unauthorized public collections"):
             conditions_tested = 0
-            for c in res_auth.json["collections"]:
+            for c in res_auth.json:
                 if c["id"] in (
                     "test_collection_id_public_for_revision_one",
                     "test_collection_id_public_for_revision_two",
@@ -155,7 +155,7 @@ class TestGetCollections(BaseAuthAPITest):
             self.assertEqual(2, conditions_tested)
         with self.subTest("The 'revising_in' attribute is None for collections which lack a revision"):
             conditions_tested = 0
-            for c in res_auth.json["collections"]:
+            for c in res_auth.json:
                 if c["id"] in (
                     "test_collection_id_public",
                     "test_collection_with_link",
@@ -166,14 +166,14 @@ class TestGetCollections(BaseAuthAPITest):
             self.assertEqual(3, conditions_tested)
         with self.subTest("The 'revising_in' attribute is equal to the id of the revision Collection"):
             conditions_tested = 0
-            for c in res_auth.json["collections"]:
+            for c in res_auth.json:
                 if c["id"] == "test_collection_id":
                     conditions_tested += 1
                     self.assertEqual("test_collection_id_revision", c["revising_in"])
             self.assertTrue(1, conditions_tested)
-        with self.subTest(""):
+        with self.subTest("Datasets in a revision contain a reference to their published counterpart, if it exists"):
             conditions_tested = 0
-            for c in res_auth.json["collections"]:
+            for c in res_auth.json:
                 if c["id"] == "test_collection_id_revision":
                     for d in c["datasets"]:
                         if d["id"] == "test_publish_revision_with_links__revision_dataset":
@@ -190,7 +190,7 @@ class TestGetCollections(BaseAuthAPITest):
         params = {"visibility": "PUBLIC"}
         res_public = self.app.get("/curation/v1/collections", query_string=params)
         self.assertEqual(200, res_public.status_code)
-        self.assertEqual(6, len(res_public.json["collections"]))
+        self.assertEqual(6, len(res_public.json))
 
     def test__get_a_curators_collections(self):
         curator_name = "John Smith"
@@ -201,11 +201,10 @@ class TestGetCollections(BaseAuthAPITest):
         def _test(query_param, headers, expected_number_of_results):
             response = self.app.get("/curation/v1/collections", query_string=query_param, headers=headers)
             self.assertEqual(200, response.status_code)
-            self.assertEqual(expected_number_of_results, len(response.json["collections"]))
-            for collection in response.json["collections"]:
+            self.assertEqual(expected_number_of_results, len(response.json))
+            for collection in response.json:
                 self.assertEqual(curator_name, collection["curator_name"])
 
-        params = {"curator": curator_name, "visibility": "PRIVATE"}
         visibilities = ["PUBLIC", "PRIVATE"]
         for visibility in visibilities:
             params = {"curator": curator_name, "visibility": visibility}
@@ -229,8 +228,8 @@ class TestGetCollections(BaseAuthAPITest):
         params = {"visibility": "PUBLIC"}
         res = self.app.get("/curation/v1/collections", query_string=params, headers=self.make_owner_header())
         self.assertEqual(200, res.status_code)
-        self.assertEqual(6, len(res.json["collections"]))
-        [self.assertEqual("PUBLIC", c["visibility"]) for c in res.json["collections"]]
+        self.assertEqual(6, len(res.json))
+        [self.assertEqual("PUBLIC", c["visibility"]) for c in res.json]
 
     def test__get_only_private_collections_with_auth__OK(self):
         second_collection = self.generate_collection(self.session)
@@ -243,14 +242,14 @@ class TestGetCollections(BaseAuthAPITest):
         params = {"visibility": "PRIVATE"}
         res = self.app.get("/curation/v1/collections", query_string=params, headers=self.make_owner_header())
         with self.subTest("Summary collection-level processing statuses are accurate"):
-            for collection in res.json["collections"]:
+            for collection in res.json:
                 if collection["id"] == second_collection.id:
                     self.assertEqual(collection["processing_status"], "PENDING")
                 else:
                     self.assertEqual(collection["processing_status"], "SUCCESS")
         self.assertEqual(200, res.status_code)
-        self.assertEqual(2, len(res.json["collections"]))
-        [self.assertEqual("PRIVATE", c["visibility"]) for c in res.json["collections"]]
+        self.assertEqual(2, len(res.json))
+        [self.assertEqual("PRIVATE", c["visibility"]) for c in res.json]
 
     def test__verify_expected_public_collection_fields(self):
         collection = self.generate_collection(
@@ -267,7 +266,7 @@ class TestGetCollections(BaseAuthAPITest):
         self.generate_dataset(self.session, collection=collection)
         res = self.app.get("/curation/v1/collections")
         self.assertEqual(200, res.status_code)
-        for resp_collection in res.json["collections"]:
+        for resp_collection in res.json:
             if resp_collection["id"] is collection.id:
                 break
 
@@ -305,7 +304,7 @@ class TestGetCollections(BaseAuthAPITest):
                 subtest_prefix = "not_owner"
             res = self.app.get("/curation/v1/collections", query_string=params, headers=header)
             self.assertEqual(200, res.status_code)
-            for resp_collection in res.json["collections"]:
+            for resp_collection in res.json:
                 if resp_collection["id"] is collection.id:
                     break
 
@@ -346,7 +345,7 @@ class TestGetCollections(BaseAuthAPITest):
         res = self.app.get("/curation/v1/collections", headers=self.make_owner_header())
 
         contains_tombstoned_collection_flag = False
-        for collection in res.json["collections"]:
+        for collection in res.json:
             if collection["id"] == second_collection.id:
                 self.assertEqual(1, len(collection["datasets"]))
             if collection["id"] == tombstoned_collection.id:
@@ -474,17 +473,17 @@ class TestGetCollectionID(BaseAuthAPITest):
         self.assertEqual(200, res.status_code)
         self.assertEqual("test_collection_id_revision", res.json["id"])
 
-    def test__get_nonexistent_collection__Not_Found(self):
+    def test__get_nonexistent_collection__403(self):
         res = self.app.get("/curation/v1/collections/test_collection_id_nonexistent")
-        self.assertEqual(404, res.status_code)
+        self.assertEqual(403, res.status_code)
 
-    def test__get_tombstoned_collection__Not_Found(self):
+    def test__get_tombstoned_collection__403(self):
         tombstoned_collection = self.generate_collection(
             self.session, tombstone=True, name="tombstoned collection", visibility=CollectionVisibility.PUBLIC
         )
         self.generate_dataset(self.session, collection_id=tombstoned_collection.id, tombstone=True)
         res = self.app.get(f"/curation/v1/collections/{tombstoned_collection.id}")
-        self.assertEqual(404, res.status_code)
+        self.assertEqual(403, res.status_code)
 
     def test_get_collection_with_no_datasets(self):
         collection = self.generate_collection(self.session, name="No Datasets", visibility=CollectionVisibility.PUBLIC)
