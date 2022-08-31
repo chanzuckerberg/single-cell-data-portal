@@ -149,7 +149,7 @@ class TissueMapper:
 
         # Include this branch of ancestors is under anatomical structure
         if self.ANATOMICAL_STRUCTURE_NAME in branch_ancestors:
-            ancestors = ancestors + branch_ancestors
+            ancestors.extend(branch_ancestors)
 
         # Check if there's at least one top-level entity in the list of ancestors
         # for this entity
