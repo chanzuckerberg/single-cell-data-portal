@@ -4,7 +4,7 @@ import logging
 from backend.corpora.common.entities.dataset import Dataset
 from backend.corpora.common.utils.db_session import db_session_manager
 from backend.corpora.dataset_processing.process import (
-    convert_file_ignore_exceptions,
+    convert_file,
     download_from_s3,
     make_seurat,
     create_artifact,
@@ -58,7 +58,7 @@ def process(dataset_id: str, artifact_bucket: str):
             object_key = f"{bucket_prefix}/{labeled_h5ad_filename}"
             download_from_s3(artifact_bucket, object_key, labeled_h5ad_filename)
 
-            seurat_filename = convert_file_ignore_exceptions(
+            seurat_filename = convert_file(
                 make_seurat,
                 labeled_h5ad_filename,
                 "Failed to convert dataset to Seurat format.",
@@ -82,7 +82,7 @@ def process(dataset_id: str, artifact_bucket: str):
             object_key = f"{bucket_prefix}/{labeled_h5ad_filename}"
             download_from_s3(artifact_bucket, object_key, labeled_h5ad_filename)
 
-            seurat_filename = convert_file_ignore_exceptions(
+            seurat_filename = convert_file(
                 make_seurat,
                 labeled_h5ad_filename,
                 "Failed to convert dataset to Seurat format.",
@@ -101,7 +101,7 @@ def process(dataset_id: str, artifact_bucket: str):
             object_key = f"{bucket_prefix}/{labeled_h5ad_filename}"
             download_from_s3(artifact_bucket, object_key, labeled_h5ad_filename)
 
-            seurat_filename = convert_file_ignore_exceptions(
+            seurat_filename = convert_file(
                 make_seurat,
                 labeled_h5ad_filename,
                 "Failed to convert dataset to Seurat format.",
@@ -126,7 +126,7 @@ def process(dataset_id: str, artifact_bucket: str):
             object_key = f"{bucket_prefix}/{labeled_h5ad_filename}"
             download_from_s3(artifact_bucket, object_key, labeled_h5ad_filename)
 
-            seurat_filename = convert_file_ignore_exceptions(
+            seurat_filename = convert_file(
                 make_seurat,
                 labeled_h5ad_filename,
                 "Failed to convert dataset to Seurat format.",
