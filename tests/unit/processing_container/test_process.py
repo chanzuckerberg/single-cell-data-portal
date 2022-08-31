@@ -52,7 +52,7 @@ class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
             if os.path.exists(f):
                 os.remove(f)
 
-    @patch("backend.corpora.dataset_processing.process.download_from_source_uri")
+    @patch("backend.corpora.dataset_processing.process_download_validate.download_from_source_uri")
     def test_main(self, mock_download_from_source_uri):
         """
         Tests full pipeline for processing an uploaded H5AD file, including database updates
