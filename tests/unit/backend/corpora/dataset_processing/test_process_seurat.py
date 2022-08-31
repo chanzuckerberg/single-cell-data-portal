@@ -10,7 +10,7 @@ from backend.corpora.common.corpora_orm import (
 
 from backend.corpora.dataset_processing.exceptions import ConversionFailed
 from backend.corpora.dataset_processing.process_seurat import process
-from unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
+from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
 
 
 class TestProcessSeurat(CorporaTestCaseUsingMockAWS):

@@ -6,7 +6,7 @@ import requests
 
 from backend.corpora.dataset_processing.process import main
 from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
-from unit.backend.corpora.fixtures.environment_setup import EnvironmentSetup
+from tests.unit.backend.corpora.fixtures.environment_setup import EnvironmentSetup
 
 
 class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
