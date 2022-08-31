@@ -1,6 +1,5 @@
 import enum
 
-import logging
 import os
 import pathlib
 import shutil
@@ -26,10 +25,10 @@ from backend.corpora.common.corpora_orm import (
 from backend.corpora.common.entities.collection import Collection
 from backend.corpora.common.entities.dataset import Dataset
 from backend.corpora.common.utils.exceptions import CorporaException
-from backend.corpora.dataset_processing.exceptions import ProcessingCancelled
+from backend.corpora.dataset_processing.exceptions import ProcessingCancelled, ConversionFailed
 from backend.corpora.dataset_processing import process
 from backend.corpora.dataset_processing.process import (
-    convert_file_ignore_exceptions,
+    convert_file,
     download_from_source_uri,
 )
 from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
@@ -487,51 +486,38 @@ class TestDatasetProcessing(DataPortalTestCase):
         self.delete_s3_bucket(artifact_bucket)
 
     @patch("backend.corpora.dataset_processing.process.make_seurat")
-    def test_process_continues_with_seurat_conversion_failures(self, mock_seurat):
+    def test_process_with_seurat_conversion_failures(self, mock_seurat):
         mock_seurat.side_effect = RuntimeError("seurat conversion failed")
         test_dataset_id = self.generate_dataset(
             self.session,
         ).id
-        bucket_prefix = process.get_bucket_prefix(test_dataset_id)
         artifact_bucket = "test-artifact-bucket"
-        s3 = self.setup_s3_bucket(artifact_bucket)
-        process.create_artifacts(str(self.h5ad_filename), test_dataset_id, artifact_bucket, can_convert_to_seurat=True)
-        dataset = Dataset.get(self.session, test_dataset_id)
-        artifacts = dataset.artifacts
-        processing_status = dataset.processing_status
-
-        self.assertEqual(ConversionStatus.FAILED, processing_status.rds_status)
-        self.assertEqual(ConversionStatus.UPLOADED, processing_status.h5ad_status)
-
-        self.assertEqual(len(artifacts), 1)
-        resp = s3.list_objects_v2(Bucket=artifact_bucket, Prefix=bucket_prefix)
-        s3_filenames = [os.path.basename(c["Key"]) for c in resp["Contents"]]
-        self.assertEqual(len(s3_filenames), 1)
-        self.assertNotIn(str(self.seurat_filename.parts[-1]), s3_filenames)
+        self.setup_s3_bucket(artifact_bucket)
+        with self.assertRaises(ConversionFailed):
+            process.create_artifacts(
+                str(self.h5ad_filename), test_dataset_id, artifact_bucket, can_convert_to_seurat=True
+            )
 
         # cleanup
         self.delete_s3_bucket(artifact_bucket)
 
     @patch("backend.corpora.dataset_processing.process.make_cxg")
-    def test_process_continues_with_cxg_conversion_failures(self, mock_cxg):
+    def test_process_with_cxg_conversion_failures(self, mock_cxg):
         mock_cxg.side_effect = RuntimeError("cxg conversion failed")
         test_dataset_id = self.generate_dataset(
             self.session,
         ).id
         artifact_bucket = "test-artifact-bucket"
-        process.process_cxg(str(self.h5ad_filename), test_dataset_id, artifact_bucket)
-        dataset = Dataset.get(self.session, test_dataset_id)
-        processing_status = dataset.processing_status
-        self.assertEqual(ConversionStatus.FAILED, processing_status.cxg_status)
+        with self.assertRaises(ConversionFailed):
+            process.process_cxg(str(self.h5ad_filename), test_dataset_id, artifact_bucket)
 
     @patch("backend.corpora.dataset_processing.process.update_db")
-    def test__convert_file_ignore_exceptions__fail(self, mock_update_db):
+    def test__convert_file__fail(self, mock_update_db):
         def converter(_file):
             raise RuntimeError("conversion_failed")
 
-        with self.assertLogs(process.logger, logging.ERROR):
-            filename = convert_file_ignore_exceptions(converter, self.h5ad_filename, "error", "fake_id", "h5ad_status")
-        self.assertIsNone(filename)
+        with self.assertRaises(ConversionFailed):
+            convert_file(converter, self.h5ad_filename, "error", "fake_id", "h5ad_status")
 
     def mock_downloader_function(self, url, local_path, tracker, chunk_size):
         time.sleep(1)

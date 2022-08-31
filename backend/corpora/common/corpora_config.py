@@ -25,7 +25,6 @@ class CorporaConfig(SecretConfig):
                 collections_base_url = f"https://cellxgene.{deployment_stage}.single-cell.czi.technology"
 
         template = {
-            "upload_file_formats": ["h5ad"],
             "upload_max_file_size_gb": 30,
             "submission_bucket": os.getenv("DATASET_SUBMISSIONS_BUCKET", "cellxgene-dataset-submissions-test"),
             "collections_base_url": collections_base_url,

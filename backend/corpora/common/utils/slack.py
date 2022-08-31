@@ -48,7 +48,7 @@ def format_dataset_processing_failure_slack_message(dataset_id):
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f"Dataset processing job failed!\n"
+                    "text": f"Dataset processing job failed! @sc-oncall-eng\n"
                     f"*Owner*: {collection_owner}\n"
                     f"*Collection*: https://cellxgene.cziscience.com/collections/{collection_id}/private\n"
                     f"*Processing Status*:\n",
@@ -76,7 +76,7 @@ def format_failed_batch_issue_slack_alert(data: dict) -> str:
         "type": "section",
         "text": {
             "type": "mrkdwn",
-            "text": f"Batch processing job failed!\n" f"*Batch Job ID*:<{job_url}|{job_id}>\n",
+            "text": f"Batch processing job failed! @sc-oncall-eng\n" f"*Batch Job ID*:<{job_url}|{job_id}>\n",
         },
     }
     data.update(**batch_data)
@@ -91,7 +91,7 @@ def gen_wmg_pipeline_failure_message(failure_info: str) -> dict:
                 "type": "header",
                 "text": {
                     "type": "plain_text",
-                    "text": f"WMG Corpus Asset Pipeline Failed:fire: \n{failure_info}",
+                    "text": f"WMG Corpus Asset Pipeline Failed:fire: @sc-oncall-eng \n{failure_info}",
                     "emoji": True,
                 },
             }
