@@ -366,6 +366,7 @@ class TestGetCollectionID(BaseAuthAPITest):
                 "processing_status": "PENDING",
                 "revised_at": None,
                 "revision": 0,
+                "revision_of": None,
                 "schema_version": "2.0.0",
                 "sex": [
                     {"label": "test_sex", "ontology_term_id": "test_obo"},

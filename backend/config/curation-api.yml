@@ -721,6 +721,10 @@ components:
             revision:
               nullable: true
               type: integer
+            revision_of:
+              description: the id of the published version of this Dataset
+              nullable: true
+              type: string
             schema_version:
               nullable: true
               type: string
