@@ -454,17 +454,17 @@ class TestGetCollectionID(BaseAuthAPITest):
         self.assertEqual(200, res.status_code)
         self.assertEqual("test_collection_id_revision", res.json["id"])
 
-    def test__get_nonexistent_collection__Not_Found(self):
+    def test__get_nonexistent_collection__403(self):
         res = self.app.get("/curation/v1/collections/test_collection_id_nonexistent")
-        self.assertEqual(404, res.status_code)
+        self.assertEqual(403, res.status_code)
 
-    def test__get_tombstoned_collection__Not_Found(self):
+    def test__get_tombstoned_collection__403(self):
         tombstoned_collection = self.generate_collection(
             self.session, tombstone=True, name="tombstoned collection", visibility=CollectionVisibility.PUBLIC
         )
         self.generate_dataset(self.session, collection_id=tombstoned_collection.id, tombstone=True)
         res = self.app.get(f"/curation/v1/collections/{tombstoned_collection.id}")
-        self.assertEqual(404, res.status_code)
+        self.assertEqual(403, res.status_code)
 
     def test_get_collection_with_no_datasets(self):
         collection = self.generate_collection(self.session, name="No Datasets", visibility=CollectionVisibility.PUBLIC)

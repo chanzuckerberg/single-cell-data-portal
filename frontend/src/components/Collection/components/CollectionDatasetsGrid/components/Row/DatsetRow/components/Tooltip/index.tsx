@@ -11,7 +11,7 @@ import {
   UPLOAD_STATUS,
   VALIDATION_STATUS,
 } from "src/common/entities";
-import { ORANGE, RED } from "src/components/common/theme";
+import { RED } from "src/components/common/theme";
 import { FAILED_RETURN_TYPE, FailReturn } from "../../utils";
 import { StyledAnchor } from "./style";
 
@@ -41,7 +41,7 @@ const ERROR_TO_CONTENT: { [key: string]: Content } = {
     intent: Intent.DANGER,
   },
   [FAILED_RETURN_TYPE.CONVERSION + CONVERSION_STATUS.FAILED]: {
-    color: ORANGE.C,
+    color: RED.C,
     content: (
       <span>
         The dataset was uploaded successfully, but one or more conversions from
@@ -49,7 +49,7 @@ const ERROR_TO_CONTENT: { [key: string]: Content } = {
         an email after we&apos;ve investigated.
       </span>
     ),
-    intent: Intent.WARNING,
+    intent: Intent.DANGER,
   },
   [FAILED_RETURN_TYPE.UPLOAD + UPLOAD_STATUS.FAILED]: {
     color: RED.C,
