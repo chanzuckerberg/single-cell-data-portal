@@ -1330,9 +1330,6 @@ function buildMultiPanelCategoryView(
   );
 
   // Build value view models for each panel.
-  const { selected, selectedPartial, uiNodesByCategoryValueId } =
-    categoryFilterUIState;
-  const selectedViews = new Set<SelectCategoryValueView>();
   const ontologyPanelCategoryViews = builders.reduce(
     (accum, builder, index) => {
       // Determine the set of selected values that could possibly restrict the include list for this panel. That is,
@@ -1356,23 +1353,6 @@ function buildMultiPanelCategoryView(
         applyNonSpecificLabel(parentPanelView, panelSelectCategoryValueViews);
       }
 
-      // Check if we can add any views to the select set, used to display selected tags.
-      panelSelectCategoryValueViews.forEach((selectCategoryValueView) => {
-        if (!selectCategoryValueView.selected) {
-          return;
-        }
-        const uiParents =
-          uiNodesByCategoryValueId.get(selectCategoryValueView.key)
-            ?.uiParents ?? []; // TODO(cc)
-        uiParents.forEach((uiParent) => {
-          const isParentSelected =
-            selected.includes(uiParent) && !selectedPartial.includes(uiParent);
-          if (!isParentSelected) {
-            selectedViews.add(selectCategoryValueView);
-          }
-        });
-      });
-
       // Build panel view.
       accum.push({
         label: builder.panel.label,
@@ -1383,6 +1363,15 @@ function buildMultiPanelCategoryView(
     [] as OntologyPanelCategoryView[]
   );
 
+  // Determine set of selected values for this multi-panel category
+  const allCategoryValueViews = ontologyPanelCategoryViews
+    .map((ontologyPanelCategoryView) => ontologyPanelCategoryView.views)
+    .flat();
+  const selectedViews = buildSelectedViews(
+    allCategoryValueViews,
+    categoryFilterUIState
+  );
+
   // Build view model of multi-panel category.
   return {
     key: categoryFilterId,
@@ -1390,6 +1379,45 @@ function buildMultiPanelCategoryView(
     panels: ontologyPanelCategoryViews,
     selectedViews: [...selectedViews],
   };
+}
+
+/**
+ * TODO(cc)
+ */
+function buildSelectedViews(
+  categoryValueViews: SelectCategoryValueView[],
+  categoryFilterUIState: MultiPanelCategoryFilterUIState
+): SelectCategoryValueView[] {
+  const { selected, selectedPartial, uiNodesByCategoryValueId } =
+    categoryFilterUIState;
+
+  // Check if we can add any views to the select set, used to display selected tags.
+  return categoryValueViews
+    .filter((categoryValueView) => categoryValueView.selected)
+    .reduce((accum, categoryValueView) => {
+      // Grab the parents for this selected view.
+      const uiParents = uiNodesByCategoryValueId.get(
+        categoryValueView.key
+      )?.uiParents; // TODO(cc)
+
+      // If there are no parents, add the selected view.
+      if (!uiParents || !uiParents.length) {
+        accum.push(categoryValueView);
+        return accum;
+      }
+
+      // Don't add selected view if all parents are selected.
+      const isEveryParentSelected = uiParents.every(
+        (uiParent) =>
+          selected.includes(uiParent) && !selectedPartial.includes(uiParent)
+      );
+
+      if (!isEveryParentSelected) {
+        accum.push(categoryValueView);
+      }
+
+      return accum;
+    }, [] as SelectCategoryValueView[]);
 }
 
 /**
