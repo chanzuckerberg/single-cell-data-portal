@@ -16,13 +16,11 @@ def handle_failure(event: dict, context) -> None:
 
     error_step_name = get_error_step_name(event)
     object_key = os.path.join(os.environ.get("REMOTE_DEV_PREFIX", ""), dataset_id).strip("/")
-    # clean up artifacts depending on error
-    if error_step_name == "download-validate":
+    # clean up artifacts depending on error; default to full clean-up if error step is unknown
+    if not error_step_name or error_step_name == "download-validate":
         delete_many_from_s3(os.environ["ARTIFACT_BUCKET"], object_key)
-    elif error_step_name == "cxg":
-        cellxgene_bucket = f"hosted-cellxgene-{os.environ['DEPLOYMENT_STAGE']}"
-        if os.getenv("CELLXGENE_BUCKET"):
-            cellxgene_bucket = os.getenv("CELLXGENE_BUCKET")
+    if not error_step_name or error_step_name == "cxg":
+        cellxgene_bucket = os.getenv("CELLXGENE_BUCKET", default=f"hosted-cellxgene-{os.environ['DEPLOYMENT_STAGE']}")
         delete_many_from_s3(cellxgene_bucket, object_key)
 
 
@@ -47,5 +45,8 @@ def get_error_step_name(event: dict) -> str:
     """
     This function derives the name of the step that failed
     """
-    error_cause_json = json.loads(event["error"]["Cause"])
-    return error_cause_json["JobName"]
+    error_cause_dict = json.loads(event["error"]["Cause"])
+    error_job_name = None
+    if "JobName" in error_cause_dict:
+        error_job_name = error_cause_dict["JobName"]
+    return error_job_name
