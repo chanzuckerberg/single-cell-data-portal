@@ -218,7 +218,7 @@ paths:
         "405":
           $ref: "#/components/responses/405"
     delete:
-      summary: Delete a private collection.
+      summary: Delete a private Collection.
       description: >-
         Delete a private collection or cancel a revision.
 
