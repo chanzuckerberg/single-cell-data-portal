@@ -114,18 +114,13 @@ function buildOntologyMultiPanelCategoryTags(
   categoryFilterId: CATEGORY_FILTER_ID,
   onFilter: OnFilterFn
 ): CategoryTag[] | undefined {
-  const { panels } = categoryView;
-  return panels.reduce((accum, ontologyCategoryView) => {
-    ontologyCategoryView.views.forEach(({ key, label, selected, value }) => {
-      if (selected) {
-        accum.push({
-          label: label,
-          onRemove: () => onFilter(categoryFilterId, key, value),
-        });
-      }
-    });
-    return accum;
-  }, [] as CategoryTag[]);
+  const { selectedViews } = categoryView;
+  return selectedViews.map(({ key, label, value }) => {
+    return {
+      label,
+      onRemove: () => onFilter(categoryFilterId, key, value),
+    };
+  });
 }
 
 /**
