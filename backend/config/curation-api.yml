@@ -83,13 +83,10 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  collections:
-                    type: array
-                    items:
-                      allOf:
-                        - $ref: "#/components/schemas/collection_list"
+                type: array
+                items:
+                  allOf:
+                    - $ref: "#/components/schemas/collection_list"
         "400":
           $ref: "#/components/responses/400"
         "401":
