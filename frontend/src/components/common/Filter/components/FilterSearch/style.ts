@@ -1,4 +1,3 @@
-// TODO(cc) shared styles with FilterViewSearch - refactor or reuse FilterSearch.
 import { Classes, InputGroup } from "@blueprintjs/core";
 import styled from "@emotion/styled";
 import { GRAY, LIGHT_GRAY, PT_TEXT_COLOR } from "src/components/common/theme";

@@ -127,7 +127,7 @@ function buildBasicFilterContent(
 /**
  * Returns filtered category values where category count is greater than zero.
  * @param categoryValues - Category value view models for a given category.
- * @returns category values with a count
+ * @returns category values with a count.
  */
 function filterCategoryValuesWithCount(
   categoryValues: SelectCategoryValueView[]

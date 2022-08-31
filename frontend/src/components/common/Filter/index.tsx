@@ -81,9 +81,9 @@ function buildFilterTags(
 
 /**
  * Returns ontology category tag with tag label and corresponding Tag onRemove function.
- * @param categoryView
- * @param categoryFilterId
- * @param onFilter
+ * @param categoryView - Ontology multi panel category view.
+ * @param categoryFilterId - Category filter ID.
+ * @param onFilter - Function to execute on select of category value or remove of selected category value.
  * @returns ontology category tag.
  */
 function buildOntologyCategoryTags(
@@ -104,9 +104,8 @@ function buildOntologyCategoryTags(
 
 /**
  * Returns ontology multi panel category tag with tag label and corresponding Tag onRemove function.
- * TODO(cc) review code.
  * @param categoryView - Ontology multi panel category view.
- * @param categoryFilterId
+ * @param categoryFilterId - Category filter ID.
  * @param onFilter - Function to execute on select of category value or remove of selected category value.
  * @returns ontology multi panel category tag.
  */
@@ -131,9 +130,9 @@ function buildOntologyMultiPanelCategoryTags(
 
 /**
  * Returns range category tag with tag label (the selected range) and corresponding Tag onRemove function.
- * @param categoryView
- * @param categoryFilterId
- * @param onFilter
+ * @param categoryView - View model of category to display.
+ * @param categoryFilterId - Category filter ID.
+ * @param onFilter - Function to execute on select of category value or remove of selected category value.
  * @returns range category tag.
  */
 function buildRangeCategoryTag(
@@ -159,9 +158,9 @@ function buildRangeCategoryTag(
 
 /**
  * Returns selected category tags with tag label (the selected metadata label) and corresponding Tag onRemove function.
- * @param categoryView
- * @param categoryFilterId
- * @param onFilter
+ * @param categoryView - View model of category to display.
+ * @param categoryFilterId - Category filter ID.
+ * @param onFilter - Function to execute on select of category value or remove of selected category value.
  * @returns selected category tags.
  */
 function buildSelectCategoryTags(
@@ -182,8 +181,8 @@ function buildSelectCategoryTags(
 
 /**
  * Returns filter tag label for the selected range of the slider.
- * @param min
- * @param max
+ * @param min - The minimum selected value of the slider.
+ * @param max - The maximum selected value of the slider.
  * @returns string portraying the selected range of the slider.
  */
 function createRangeTagLabel(min: number, max: number): [string, string] {
@@ -194,9 +193,8 @@ function createRangeTagLabel(min: number, max: number): [string, string] {
 
 /**
  * Determine if the given category view is an ontology category view and not a select or range or ontology multi panel category view.
- * @param categoryView - Selected filter value, either a category value key (e.g. "normal"), range (e.g. [0, 10]) or
- * ontology tree.
- * @returns True if the given category view is a select category view.
+ * @param categoryView - View model of category to display.
+ * @returns True if the given category view is an ontology category view.
  */
 export function isOntologyCategoryView(
   categoryView: CategoryView
@@ -206,7 +204,8 @@ export function isOntologyCategoryView(
 
 /**
  * Determine if the given category view is an ontology multi panel category view and not a select or range or ontology category view.
- * @param categoryView
+ * @param categoryView - View model of category to display.
+ * @returns True if the given category view is an ontology multi panel category view.
  */
 export function isOntologyMultiPanelCategoryView(
   categoryView: CategoryView
@@ -216,8 +215,7 @@ export function isOntologyMultiPanelCategoryView(
 
 /**
  * Determine if the given category view is a selected category view and not an ontology with or without multi panel or range category view.
- * @param categoryView - Selected filter value, either a category value key (e.g. "normal"), range (e.g. [0, 10]) or
- * ontology tree.
+ * @param categoryView - View model of category to display.
  * @returns True if the given category view is a select category view.
  */
 export function isSelectCategoryView(
