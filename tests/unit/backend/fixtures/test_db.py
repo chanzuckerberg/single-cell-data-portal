@@ -306,6 +306,7 @@ class TestDatabase:
         self.session.add(dataset)
         dataset = DbDataset(
             id="test_publish_revision_with_links__revision_dataset",
+            original_id=test_dataset_id,
             revision=0,
             name="test_dataset_name_revised",
             organism=[{"ontology_term_id": "test_obo", "label": "test_organism"}],
