@@ -312,7 +312,7 @@ paths:
         "405":
           $ref: "#/components/responses/405"
     get:
-      summary: Fetch a Dataset from a collection
+      summary: Fetch a Dataset from a Collection
       description: >-
         Fetch a Dataset from a collection. If a `dataset_id` or a `curator_tag` is provided as a query parameter
         the associated Dataset metadata is returned.
@@ -506,7 +506,7 @@ paths:
       tags:
         - collection
       description: >-
-        Generate Presigned S3 URLs to download the files associated with the dataset. MUST include *one* of the **curator_tag**
+        Generate Presigned S3 URLs to download the files associated with the Dataset. MUST include *one* of the **curator_tag**
         and **dataset_id** parameters. Pre-signed S3 URLs have a life span of up to 1 hour. Therefore,
         generate a presigned URL immediately before each download to ensure it is current.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.assets.get
@@ -649,7 +649,7 @@ components:
           type: string
         processing_status:
           "$ref": "#/components/schemas/processing_status"
-          description: Processing status for datasets in a Collection
+          description: Processing status for Datasets in a Collection
 
             - **"FAILURE":** one or more Datasets ran into an error during processing. The CELLxGENE team will reach out to help you.
             - **"PENDING":** one or more Datasets are still being processed.
@@ -758,9 +758,9 @@ components:
         processing_status:
           description: Processing status for a Dataset or Collection
 
-            - _FAILURE:_ the dataset ran into an error during processing. The CELLxGENE team will reach out to help you.
-            - _PENDING:_ the dataset has is still being processed.
-            - _SUCCESS:_ the dataset has successfuly been processed.
+            - _FAILURE:_ the Dataset ran into an error during processing. The CELLxGENE team will reach out to help you.
+            - _PENDING:_ the Dataset has is still being processed.
+            - _SUCCESS:_ the Dataset has successfuly been processed.
           "$ref": "#/components/schemas/processing_status"
         revised_at:
           nullable: true
