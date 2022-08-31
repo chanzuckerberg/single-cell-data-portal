@@ -123,10 +123,10 @@ type FilterState = {
  * the UI, react-table will only know that "tongue" is selected.
  * TODO(cc) rename, docs
  */
-interface MultiPanelSelectedValues {
+interface MultiPanelCategoryFilterUIState {
   selected: CategoryValueId[];
   selectedPartial: CategoryValueId[];
-  uiHierarchyByCategoryValueId: Map<CategoryValueId, MultiPanelUINode>;
+  uiNodesByCategoryValueId: Map<CategoryValueId, MultiPanelUINode>;
 }
 
 // TODO(cc) - move to, export here and throughout
@@ -139,7 +139,10 @@ export interface MultiPanelUINode {
 /**
  * UI model of selected values across all multi-panel category filters.
  */
-type MultiPanelUIState = Map<CATEGORY_FILTER_ID, MultiPanelSelectedValues>;
+type MultiPanelUIState = Map<
+  CATEGORY_FILTER_ID,
+  MultiPanelCategoryFilterUIState
+>;
 
 /**
  * Selected filters applicable to a category; used when deriving category value counts from current set of filters.
@@ -209,7 +212,7 @@ export function useCategoryFilter<T extends Categories>(
   // view models. Also saved is the delta between the multi-panel selected values and the selected values passed to
   // react-table, facilitating easy calculation of partially selected values and cross-category view restrictions.
   const [multiPanelUIState, setMultiPanelUIState] = useState<
-    Map<CATEGORY_FILTER_ID, MultiPanelSelectedValues>
+    Map<CATEGORY_FILTER_ID, MultiPanelCategoryFilterUIState>
   >(new Map());
 
   // Set up original, full set of categories and their values.
@@ -693,7 +696,7 @@ function buildMultiPanelUIState<T extends Categories>(
 ): MultiPanelUIState {
   return Array.from(categoryFilterIds.values()).reduce(
     (
-      accum: Map<CATEGORY_FILTER_ID, MultiPanelSelectedValues>,
+      accum: Map<CATEGORY_FILTER_ID, MultiPanelCategoryFilterUIState>,
       categoryFilterId: CATEGORY_FILTER_ID
     ) => {
       // Ignore categories that are not multi-panels.
@@ -712,17 +715,16 @@ function buildMultiPanelUIState<T extends Categories>(
       const uiHierarchyByCategoryValue = buildUINodesByCategoryValueId(
         categoryValueIdsByPanel
       );
-      console.log(uiHierarchyByCategoryValue.get("I:UBERON:0001008")); // renal system (above kidney (I 0002113) and bladder lumen (E 0009958))
 
       accum.set(categoryFilterId, {
         selected: [],
         selectedPartial: [],
-        uiHierarchyByCategoryValueId: uiHierarchyByCategoryValue,
+        uiNodesByCategoryValueId: uiHierarchyByCategoryValue,
       });
 
       return accum;
     },
-    new Map<CATEGORY_FILTER_ID, MultiPanelSelectedValues>()
+    new Map<CATEGORY_FILTER_ID, MultiPanelCategoryFilterUIState>()
   );
 }
 
@@ -1304,13 +1306,23 @@ function buildMultiPanelCategoryView(
   multiPanelUIState: MultiPanelUIState,
   ontologyTermLabelsById: Map<string, string>
 ): OntologyMultiPanelCategoryView {
-  // Build builders for each panel. TODO(cc) remove now that we have ui state?
   const { categoryFilterId, panels: panelConfigs } = config;
+  const categoryFilterUIState = multiPanelUIState.get(categoryFilterId);
+  if (!categoryFilterUIState) {
+    console.log(
+      `Multi-panel category filter state not found for category ${categoryFilterId}`
+    );
+    return {
+      key: categoryFilterId,
+      label: config.label,
+      panels: [],
+      selectedViews: [],
+    };
+  }
+
+  // Build builders for each panel. TODO(cc) remove now that we have ui state?
   const selectCategoryValues = [...categoryValueByValue.values()];
-  const selectedValues =
-    multiPanelUIState.get(categoryFilterId)?.selected ?? [];
-  const uiNodesByCategoryValueId =
-    multiPanelUIState.get(categoryFilterId)?.uiHierarchyByCategoryValueId;
+  const selectedValues = categoryFilterUIState.selected;
   const builders = buildParentPanelBuilders(
     panelConfigs,
     selectCategoryValues,
@@ -1318,7 +1330,9 @@ function buildMultiPanelCategoryView(
   );
 
   // Build value view models for each panel.
-  const selectedViews = [];
+  const { selected, selectedPartial, uiNodesByCategoryValueId } =
+    categoryFilterUIState;
+  const selectedViews = new Set<SelectCategoryValueView>();
   const ontologyPanelCategoryViews = builders.reduce(
     (accum, builder, index) => {
       // Determine the set of selected values that could possibly restrict the include list for this panel. That is,
@@ -1343,7 +1357,21 @@ function buildMultiPanelCategoryView(
       }
 
       // Check if we can add any views to the select set, used to display selected tags.
-      // panelSelectCategoryValueViews.forEach((selectCategoryValueView) => {});
+      panelSelectCategoryValueViews.forEach((selectCategoryValueView) => {
+        if (!selectCategoryValueView.selected) {
+          return;
+        }
+        const uiParents =
+          uiNodesByCategoryValueId.get(selectCategoryValueView.key)
+            ?.uiParents ?? []; // TODO(cc)
+        uiParents.forEach((uiParent) => {
+          const isParentSelected =
+            selected.includes(uiParent) && !selectedPartial.includes(uiParent);
+          if (!isParentSelected) {
+            selectedViews.add(selectCategoryValueView);
+          }
+        });
+      });
 
       // Build panel view.
       accum.push({
@@ -1360,7 +1388,7 @@ function buildMultiPanelCategoryView(
     key: categoryFilterId,
     label: config.label,
     panels: ontologyPanelCategoryViews,
-    selectedViews: [],
+    selectedViews: [...selectedViews],
   };
 }
 
@@ -2180,7 +2208,7 @@ function onFilterMultiPanelCategory(
     );
     return;
   }
-  const { uiHierarchyByCategoryValueId } = multiPanelSelectedValues;
+  const { uiNodesByCategoryValueId } = multiPanelSelectedValues;
   const selectedPartial: CategoryValueId[] = [];
   allSelectedCategoryFilters.forEach(
     (selectedCategoryFilter: CategoryValueId) => {
@@ -2190,7 +2218,7 @@ function onFilterMultiPanelCategory(
       }
       // Otherwise, value has been blocked by a more "precise" value. If all children of the blocked value are selected,
       // leave as is. If only some children of the blocked value are selected, add value to partial list.
-      const uiNode = uiHierarchyByCategoryValueId.get(selectedCategoryFilter);
+      const uiNode = uiNodesByCategoryValueId.get(selectedCategoryFilter);
       if (!uiNode) {
         // TODO(cc) is this even possible?
         return;
@@ -2211,7 +2239,7 @@ function onFilterMultiPanelCategory(
 
         // Otherwise, if child is not explicitly selected and it's an inferred value, check if it's inferred selected.
         const uiGrandchildren =
-          uiHierarchyByCategoryValueId.get(uiChild)?.uiChildren;
+          uiNodesByCategoryValueId.get(uiChild)?.uiChildren;
         if (!uiGrandchildren) {
           return false; // If there are no grandchildren then the value is not inferred selected.
         }
@@ -2231,7 +2259,7 @@ function onFilterMultiPanelCategory(
   multiPanelUIState.set(categoryFilterId, {
     selected: allSelectedCategoryFilters,
     selectedPartial,
-    uiHierarchyByCategoryValueId,
+    uiNodesByCategoryValueId,
   });
   setMultiPanelUIState(multiPanelUIState);
 
