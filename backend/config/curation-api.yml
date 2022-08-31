@@ -78,11 +78,7 @@ paths:
           required: false
           schema:
             type: string
-          examples:
-            specified_curator:
-              summary: Return collections owned by the specified curator
-              value:
-                name: "John Smith"
+          example: "John Smith"
       responses:
         "200":
           description: OK
