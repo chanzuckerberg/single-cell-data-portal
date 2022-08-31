@@ -27,7 +27,7 @@ from backend.corpora.dataset_processing.common import convert_file, create_artif
 from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 
 
-class TestDatasetProcessing(DataPortalTestCase):
+class TestCommon(DataPortalTestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()

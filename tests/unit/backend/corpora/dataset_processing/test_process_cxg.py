@@ -12,7 +12,7 @@ from backend.corpora.dataset_processing.process_cxg import process_cxg
 from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 
 
-class TestDatasetProcessing(DataPortalTestCase):
+class TestProcessingCXG(DataPortalTestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()

@@ -13,7 +13,7 @@ from backend.corpora.dataset_processing.process_seurat import process
 from unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
 
 
-class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
+class TestProcessSeurat(CorporaTestCaseUsingMockAWS):
     @patch("backend.corpora.dataset_processing.process_seurat.download_from_s3")
     @patch("backend.corpora.dataset_processing.process_seurat.make_seurat")
     def test_process_with_seurat_conversion_failures(self, mock_seurat, mock_download_from_s3):
