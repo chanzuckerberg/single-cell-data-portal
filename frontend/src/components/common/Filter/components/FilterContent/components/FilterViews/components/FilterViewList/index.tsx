@@ -68,11 +68,12 @@ export default function FilterViewList({
         <NoMatches>No items found</NoMatches>
       ) : (
         filteredValues.map((filteredValue) => {
-          const { key, count, label, selected, value } = filteredValue;
-          let children, selectedPartial;
+          const { key, count, label, selected, selectedPartial, value } =
+            filteredValue;
+          let children;
+          // TODO(cc) revisit type predicate
           if (isOntologyCategoryTreeNodeView(filteredValue)) {
             children = filteredValue.children;
-            selectedPartial = filteredValue.selectedPartial;
           }
           return (
             <Fragment key={key}>

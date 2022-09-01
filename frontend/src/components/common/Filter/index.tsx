@@ -4,6 +4,7 @@ import {
   OnFilterFn,
   OntologyCategoryView,
   OntologyMultiPanelCategoryView,
+  ON_FILTER_SOURCE,
   RangeCategoryView,
   SelectCategoryView,
 } from "src/components/common/Filter/common/entities";
@@ -95,7 +96,8 @@ function buildOntologyCategoryTags(
     species.selectedViews.forEach(({ key, label, value }) => {
       accum.push({
         label: label,
-        onRemove: () => onFilter(categoryFilterId, key, value),
+        onRemove: () =>
+          onFilter(categoryFilterId, key, value, ON_FILTER_SOURCE.TAG),
       });
     });
     return accum;
@@ -118,7 +120,8 @@ function buildOntologyMultiPanelCategoryTags(
   return selectedViews.map(({ key, label, value }) => {
     return {
       label,
-      onRemove: () => onFilter(categoryFilterId, key, value),
+      onRemove: () =>
+        onFilter(categoryFilterId, key, value, ON_FILTER_SOURCE.TAG),
     };
   });
 }
@@ -145,7 +148,8 @@ function buildRangeCategoryTag(
     return [
       {
         label: createRangeTagLabel(selectedMin, selectedMax),
-        onRemove: () => onFilter(categoryFilterId, null, []),
+        onRemove: () =>
+          onFilter(categoryFilterId, null, [], ON_FILTER_SOURCE.TAG),
       },
     ];
   }
@@ -169,7 +173,8 @@ function buildSelectCategoryTags(
     .map(({ key, label, value }) => {
       return {
         label: label,
-        onRemove: () => onFilter(categoryFilterId, key, value),
+        onRemove: () =>
+          onFilter(categoryFilterId, key, value, ON_FILTER_SOURCE.TAG),
       };
     });
 }

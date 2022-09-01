@@ -420,9 +420,18 @@ export enum ORGANISM {
  */
 export type OnFilterFn = (
   categoryFilterId: CATEGORY_FILTER_ID,
-  categoryValueKey: CategoryValueId | null, // null for ranges.
-  selectedValue: CategoryValueId | Range
+  categoryValueKey: CategoryValueId | null, // null for ranges. TODO(cc) remove?
+  selectedValue: CategoryValueId | Range,
+  source?: ON_FILTER_SOURCE
 ) => void;
+
+/**
+ * Location of click triggering filter action, either a value in a filter menu or the "x" in a selected tag.
+ */
+export enum ON_FILTER_SOURCE {
+  FILTER = "FILTER",
+  TAG = "TAG",
+}
 
 /**
  * Tree view model of ontology view. For example, development stage has three tree views (human, mouse and other)
@@ -575,6 +584,7 @@ export interface SelectCategoryValueView {
   count: number;
   label: string;
   selected: boolean;
+  selectedPartial: boolean;
   value: string; // Value to mark as selected.
 }
 
