@@ -39,4 +39,4 @@ def get(visibility: str, token_info: dict, curator: str = None):
         resp_collection = reshape_for_curation_api(db_session, collection, token_info, preview=True)
         resp_collections.append(resp_collection)
 
-    return jsonify({"collections": resp_collections})
+    return jsonify(resp_collections)
