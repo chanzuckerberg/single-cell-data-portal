@@ -139,7 +139,7 @@ def generate_primary_filter_dimensions(snapshot_path: str, corpus_name: str, sna
         ontology_term_ids = set(ontology_term_ids)
         ordered_ontology_term_ids = []
         for tissue in TissueMapper.HIGH_LEVEL_TISSUES:
-            tissue = TissueMapper.make_id_writable(tissue)
+            tissue = TissueMapper.reformat_ontology_term_id(tissue, to_writable=True)
             if tissue in ontology_term_ids:
                 ontology_term_ids.remove(tissue)
                 ordered_ontology_term_ids.append(tissue)

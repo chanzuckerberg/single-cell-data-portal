@@ -30,13 +30,13 @@ class TissueMapperTest(unittest.TestCase):
         tissue = "UBERON_0008951"
         expected_tissue = "UBERON:0008951"
 
-        self.assertEqual(self.tissue_mapper.make_id_writable(tissue), expected_tissue)
+        self.assertEqual(self.tissue_mapper.reformat_ontology_term_id(tissue, to_writable=True), expected_tissue)
 
     def test__making_ontology_id_readable(self):
         tissue = "UBERON:0008951"
         expected_tissue = "UBERON_0008951"
 
-        self.assertEqual(self.tissue_mapper.make_id_readable(tissue), expected_tissue)
+        self.assertEqual(self.tissue_mapper.reformat_ontology_term_id(tissue, to_writable=False), expected_tissue)
 
     def test__get_label_from_id(self):
         tissue = "UBERON:0008951"

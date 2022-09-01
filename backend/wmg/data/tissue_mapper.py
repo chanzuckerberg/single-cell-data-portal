@@ -4,8 +4,6 @@ from typing import List
 
 class TissueMapper:
 
-    #TODO: Look for other TODOs: main one is to used the pinned UBERON ontology instead of grabbing it online
-
     # Name of anatomical structure, used to determine the set of ancestors for a given
     # entity that we"re interested in.
     ANATOMICAL_STRUCTURE_NAME = "UBERON_0000061"
@@ -126,7 +124,7 @@ class TissueMapper:
                 - This could happen with something like "UBERON:0002048 (cell culture)"
         """
 
-        tissue_ontology_term_id = self.make_id_readable(tissue_ontology_term_id)
+        tissue_ontology_term_id = self.reformat_ontology_term_id(tissue_ontology_term_id, to_writable=False)
 
         if tissue_ontology_term_id in self._cached_tissues:
             # If we have looked this up already
@@ -136,7 +134,7 @@ class TissueMapper:
 
         if not entity:
             # If not found as an ontology ID return itself
-            result = self.make_id_writable(tissue_ontology_term_id)
+            result = self.reformat_ontology_term_id(tissue_ontology_term_id, to_writable=True)
             self._cached_tissues[tissue_ontology_term_id] = result
             return result
 
@@ -159,7 +157,7 @@ class TissueMapper:
                 selected_tissue = high_level_tissue
                 break
 
-        result = self.make_id_writable(selected_tissue)
+        result = self.reformat_ontology_term_id(selected_tissue, to_writable=True)
         self._cached_tissues[tissue_ontology_term_id] = result
         return result
 
@@ -173,7 +171,7 @@ class TissueMapper:
         if ontology_term_id in self._cached_labels:
             return self._cached_labels[ontology_term_id]
 
-        entity = self._get_entity_from_id(self.make_id_readable(ontology_term_id))
+        entity = self._get_entity_from_id(self.reformat_ontology_term_id(ontology_term_id, to_writable=False))
         if entity:
             result = entity.label[0]
         else:
@@ -183,22 +181,21 @@ class TissueMapper:
         return result
 
     @staticmethod
-    def make_id_readable(ontology_term_id: str) -> str:
+    def reformat_ontology_term_id(ontology_term_id: str, to_writable: bool = True):
         """
-        Converts ontology term id string from "UBERON:0002048" to "UBERON_0002048"
+        Converts ontology term id string between two formats:
+            - `to_writable == True`: from "UBERON_0002048" to "UBERON:0002048"
+            - `to_writable == False`: from "UBERON:0002048" to "UBERON_0002048"
         """
-        if ontology_term_id.count(":") != 1:
-            raise ValueError(f"{ontology_term_id} is an invalid ontology term id, it must contain exactly one ':'")
-        return ontology_term_id.replace(":", "_")
 
-    @staticmethod
-    def make_id_writable(ontology_term_id: str) -> str:
-        """
-        Converts ontology term id string from "UBERON_0002048" to "UBERON:0002048"
-        """
-        if ontology_term_id.count("_") != 1:
-            raise ValueError(f"{ontology_term_id} is an invalid ontology term id, it must contain exactly one '_'")
-        return ontology_term_id.replace("_", ":")
+        if to_writable:
+            if ontology_term_id.count("_") != 1:
+                raise ValueError(f"{ontology_term_id} is an invalid ontology term id, it must contain exactly one '_'")
+            return ontology_term_id.replace("_", ":")
+        else:
+            if ontology_term_id.count(":") != 1:
+                raise ValueError(f"{ontology_term_id} is an invalid ontology term id, it must contain exactly one ':'")
+            return ontology_term_id.replace(":", "_")
 
     def _list_ancestors(self, entity: owlready2.entity.ThingClass, ancestors: List[str] = []) -> List[str]:
         """
