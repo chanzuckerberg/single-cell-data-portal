@@ -141,27 +141,43 @@ class TestGetCollections(BaseAuthAPITest):
 
     def test__get_collections_with_auth__OK(self):
         res_auth = self.app.get("/curation/v1/collections", headers=self.make_owner_header())
-        self.assertEqual(200, res_auth.status_code)
-        self.assertEqual(6, len(res_auth.json))
         with self.subTest("The 'revising_in' attribute is None for unauthorized public collections"):
+            conditions_tested = 0
             for c in res_auth.json:
                 if c["id"] in (
                     "test_collection_id_public_for_revision_one",
                     "test_collection_id_public_for_revision_two",
                 ):
+                    conditions_tested += 1
                     self.assertIsNone(c["revising_in"])
+            self.assertEqual(2, conditions_tested)
         with self.subTest("The 'revising_in' attribute is None for collections which lack a revision"):
+            conditions_tested = 0
             for c in res_auth.json:
                 if c["id"] in (
                     "test_collection_id_public",
                     "test_collection_with_link",
                     "test_collection_with_link_and_dataset_changes",
                 ):
+                    conditions_tested += 1
                     self.assertIsNone(c["revising_in"])
+            self.assertEqual(3, conditions_tested)
         with self.subTest("The 'revising_in' attribute is equal to the id of the revision Collection"):
+            conditions_tested = 0
             for c in res_auth.json:
                 if c["id"] == "test_collection_id":
+                    conditions_tested += 1
                     self.assertEqual("test_collection_id_revision", c["revising_in"])
+            self.assertTrue(1, conditions_tested)
+        with self.subTest("Datasets in a revision contain a reference to their published counterpart, if it exists"):
+            conditions_tested = 0
+            for c in res_auth.json:
+                if c["id"] == "test_collection_id_revision":
+                    for d in c["datasets"]:
+                        if d["id"] == "test_publish_revision_with_links__revision_dataset":
+                            conditions_tested += 1
+                            self.assertEqual("test_dataset_id", d["revision_of"])
+            self.assertTrue(1, conditions_tested)
 
     def test__get_collections_no_auth_visibility_private__OK(self):
         params = {"visibility": "PRIVATE"}
@@ -365,6 +381,7 @@ class TestGetCollectionID(BaseAuthAPITest):
                 "processing_status": "PENDING",
                 "revised_at": None,
                 "revision": 0,
+                "revision_of": None,
                 "schema_version": "2.0.0",
                 "sex": [
                     {"label": "test_sex", "ontology_term_id": "test_obo"},
