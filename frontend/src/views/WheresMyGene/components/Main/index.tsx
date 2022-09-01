@@ -1,5 +1,5 @@
 import Head from "next/head";
-import { useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { EMPTY_ARRAY, EMPTY_OBJECT } from "src/common/constants/utils";
 import {
   CellTypeByTissueName,
@@ -8,7 +8,6 @@ import {
   useGeneExpressionSummariesByTissueName,
 } from "src/common/queries/wheresMyGene";
 import SideBar from "src/components/common/SideBar";
-import { Position } from "src/components/common/SideBar/style";
 import { View } from "../../../globalStyle";
 import { DispatchContext, StateContext } from "../../common/store";
 import {
@@ -22,11 +21,9 @@ import Filters from "../Filters";
 import GeneSearchBar from "../GeneSearchBar";
 import GetStarted from "../GetStarted";
 import HeatMap from "../HeatMap";
-import InfoPanel from "../InfoPanel";
+import Legend from "../InfoPanel/components/Legend";
 import Loader from "../Loader";
 import { SideBarLabel } from "./style";
-
-const INFO_PANEL_WIDTH_PX = 320;
 
 export default function WheresMyGene(): JSX.Element {
   const state = useContext(StateContext);
@@ -34,7 +31,7 @@ export default function WheresMyGene(): JSX.Element {
 
   const { selectedGenes, selectedCellTypeIds, selectedTissues, sortBy } = state;
 
-  const [isScaled, setIsScaled] = useState(true);
+  const [isScaled] = useState(true);
 
   const {
     data: rawCellTypesByTissueName,
@@ -230,10 +227,6 @@ export default function WheresMyGene(): JSX.Element {
     return hasSelectedTissues && hasSelectedGenes;
   }, [hasSelectedTissues, hasSelectedGenes]);
 
-  const handleIsScaledChange = useCallback(() => {
-    setIsScaled((prevIsScaled) => !prevIsScaled);
-  }, [setIsScaled]);
-
   return (
     <>
       <Head>
@@ -252,30 +245,16 @@ export default function WheresMyGene(): JSX.Element {
         <Filters />
       </SideBar>
 
-      <SideBar
-        width={INFO_PANEL_WIDTH_PX}
-        label={<SideBarLabel>Info</SideBarLabel>}
-        position={Position.RIGHT}
-        SideBarWrapperComponent={SideBarWrapper}
-        SideBarPositionerComponent={SideBarPositioner}
-        disabled={!shouldEnableSidebars}
-        forceToggle={shouldEnableSidebars}
-        wmgSideBar
-      >
-        <InfoPanel
-          isScaled={isScaled}
-          handleIsScaledChange={handleIsScaledChange}
-        />
-      </SideBar>
-
       <View hideOverflow>
         <Wrapper>
           {isLoading && !shouldShowHeatMap && <Loader />}
 
           <Top>
             <GeneSearchBar />
-            <Beta />
+            <Legend />
           </Top>
+
+          <Beta />
 
           {shouldShowHeatMap ? (
             <HeatMap

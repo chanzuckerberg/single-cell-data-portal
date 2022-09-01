@@ -1,28 +1,17 @@
-import { Checkbox, Icon, Tooltip } from "czifui";
 import Image from "next/image";
-import { Content, Header, LowHigh } from "../../common/style";
+import { Content, LowHigh, Label } from "../../common/style";
 import plasmaImage from "./plasma.png";
 import {
   ContentWrapper,
-  FlexDiv,
-  LabelWrapper,
-  StyledFormControlLabel,
   Wrapper,
 } from "./style";
 
-const CONTENT_WIDTH_PX = 100;
+const CONTENT_WIDTH_PX = 120;
 
-interface Props {
-  handleIsScaledChange: () => void;
-  isScaled: boolean;
-}
-export default function RelativeGeneExpression({
-  handleIsScaledChange,
-  isScaled,
-}: Props): JSX.Element {
+export default function RelativeGeneExpression(): JSX.Element {
   return (
     <Wrapper>
-      <Header>Gene Expression</Header>
+      <Label>Gene Expression</Label>
       <ContentWrapper>
         <Content>
           <Image
@@ -31,34 +20,10 @@ export default function RelativeGeneExpression({
             width={CONTENT_WIDTH_PX}
           />
           <LowHigh>
-            <span>0.0</span>
-            <span>{isScaled ? "1.0" : "6.0"}</span>
+            <span>0</span>
+            <span>1</span>
           </LowHigh>
         </Content>
-        <StyledFormControlLabel
-          control={
-            <Checkbox
-              inputProps={{
-                "aria-label":
-                  "is scaled? " + isScaled ? "checked" : "unchecked",
-                checked: isScaled,
-                hidden: true,
-              }}
-              onChange={handleIsScaledChange}
-              stage={isScaled ? "checked" : "unchecked"}
-            />
-          }
-          label={
-            <LabelWrapper>
-              <span>Scaled</span>
-              <Tooltip title="Expression is scaled to the range [0,1]. Scaling is done by assigning the minimum value in the current view to 0 and the max is assigned to 1.">
-                <FlexDiv>
-                  <Icon sdsIcon="infoCircle" sdsSize="s" sdsType="static" />
-                </FlexDiv>
-              </Tooltip>
-            </LabelWrapper>
-          }
-        />
       </ContentWrapper>
     </Wrapper>
   );
