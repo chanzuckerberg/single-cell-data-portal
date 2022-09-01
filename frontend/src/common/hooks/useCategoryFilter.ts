@@ -2348,6 +2348,8 @@ function onFilterMultiPanelCategory(
 }
 
 /**
+ * We need to know are you blocked by some of your children being selected (partially selected), or by all of your
+ * children being selected (not partially selected).
  * TODO(cc) location, name, rename tests
  */
 export function listPartiallySelectedCategoryValueIds(
@@ -2357,14 +2359,16 @@ export function listPartiallySelectedCategoryValueIds(
 ): CategoryValueId[] {
   const selectedPartial: CategoryValueId[] = [];
 
-  selectedCategoryValueIds.forEach(
-    (selectedCategoryFilter: CategoryValueId) => {
-      // If value is still identified as selected after overrides have been applied, leave as is.
-      if (overriddenSelectedCategoryValueIds.includes(selectedCategoryFilter)) {
-        return;
-      }
-      // Otherwise, value has been blocked by a more "precise" value. If all children of the blocked value are selected,
-      // leave as is. If only some children of the blocked value are selected, add value to partial list.
+  selectedCategoryValueIds
+    // Ignore values that are in the override list; these values are still selected and don't need to be identified
+    // as partially selected.
+    .filter(
+      (selectedCategoryFilter) =>
+        !overriddenSelectedCategoryValueIds.includes(selectedCategoryFilter)
+    )
+    // Otherwise, value has been blocked by a more "precise" value. If all children of the blocked value are selected,
+    // leave as is. If only some children of the blocked value are selected, add selected value to partial list.
+    .forEach((selectedCategoryFilter: CategoryValueId) => {
       const uiNode = uiNodesByCategoryValueId.get(selectedCategoryFilter);
       if (!uiNode) {
         // TODO(cc) is this even possible?
@@ -2386,6 +2390,7 @@ export function listPartiallySelectedCategoryValueIds(
         }
 
         // Otherwise, if child is not explicitly selected and it's an inferred value, check if it's inferred selected.
+        // TODO(cc) can we move this to a format similar to buildSelectedViews (ie recursive?)
         const uiGrandchildren =
           uiNodesByCategoryValueId.get(uiChild)?.uiChildren;
         if (!uiGrandchildren) {
@@ -2399,8 +2404,7 @@ export function listPartiallySelectedCategoryValueIds(
       if (!isEveryChildSelected) {
         selectedPartial.push(selectedCategoryFilter);
       }
-    }
-  );
+    });
 
   return selectedPartial;
 }
