@@ -2,6 +2,7 @@ import tiledb
 import pandas as pd
 
 from backend.wmg.data.ontology_labels import ontology_term_label, gene_term_label
+from backend.wmg.data.tissue_mapper import TissueMapper
 from typing import Dict, List, Iterable, Set
 import json
 
@@ -145,7 +146,7 @@ def generate_primary_filter_dimensions(snapshot_path: str, corpus_name: str, sna
             cube, "tissue_ontology_term_id", group_by_dim="organism_ontology_term_id"
         )
         organism_tissue_terms = {
-            organism_term_id: build_ontology_term_id_label_mapping(tissue_term_ids)
+            organism_term_id: build_ontology_term_id_label_mapping(order_tissues(tissue_term_ids))
             for organism_term_id, tissue_term_ids in organism_tissue_ids.items()
         }
 
@@ -160,3 +161,25 @@ def generate_primary_filter_dimensions(snapshot_path: str, corpus_name: str, sna
 
         with open(f"{snapshot_path}/{PRIMARY_FILTER_DIMENSIONS_FILENAME}", "w") as f:
             json.dump(result, f)
+
+
+def order_tissues(ontology_term_ids: Iterable[str]) -> Iterable[str]:
+    """
+    Order tissues based on appearance in TissueMapper.HIGH_LEVEL_TISSUES. This will maintain the priority set in
+    that class which is intended to keep most relevant tissues on top and tissues that are related to be placed
+    sequentially
+    """
+    ontology_term_ids = set(ontology_term_ids)
+    ordered_ontology_term_ids = []
+    for tissue in TissueMapper.HIGH_LEVEL_TISSUES:
+        tissue = TissueMapper.reformat_ontology_term_id(tissue, to_writable=True)
+        if tissue in ontology_term_ids:
+            ontology_term_ids.remove(tissue)
+            ordered_ontology_term_ids.append(tissue)
+
+    if ontology_term_ids:
+        ordered_ontology_term_ids = ordered_ontology_term_ids + list(ontology_term_ids)
+
+    return ordered_ontology_term_ids
+
+
