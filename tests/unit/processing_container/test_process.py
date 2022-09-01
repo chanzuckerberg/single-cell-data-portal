@@ -68,7 +68,7 @@ class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
             "CELLXGENE_BUCKET": self.corpora_config.bucket_name,
             "DATASET_ID": dataset.id,
             "DEPLOYMENT_STAGE": "test",
-            "MAX_ATTEMPTS": "1",
+            "AWS_BATCH_JOB_ATTEMPT": "1",
         }
 
         test_environment["STEP_NAME"] = "download-validate"
