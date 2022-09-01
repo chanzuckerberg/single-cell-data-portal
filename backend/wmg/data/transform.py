@@ -181,5 +181,3 @@ def order_tissues(ontology_term_ids: Iterable[str]) -> Iterable[str]:
         ordered_ontology_term_ids = ordered_ontology_term_ids + list(ontology_term_ids)
 
     return ordered_ontology_term_ids
-
-

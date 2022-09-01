@@ -213,11 +213,15 @@ class Validation:
         # other cell types
         with tiledb.open(self.expression_summary_path) as cube:
             FCN1_ont_id = fixtures.validation_gene_ontologies["FCN1"]
-            FCN1_human_lung_cube = cube.df[FCN1_ont_id:FCN1_ont_id, lung_ont_id:lung_ont_id, :, human_ont_id:human_ont_id]
+            FCN1_human_lung_cube = cube.df[
+                FCN1_ont_id:FCN1_ont_id, lung_ont_id:lung_ont_id, :, human_ont_id:human_ont_id
+            ]
             self.validate_FCN1(FCN1_human_lung_cube)
 
             TUBB4B_ont_id = fixtures.validation_gene_ontologies["TUBB4B"]
-            TUBB4B_human_lung = cube.df[TUBB4B_ont_id:TUBB4B_ont_id, lung_ont_id:lung_ont_id, :, human_ont_id:human_ont_id]
+            TUBB4B_human_lung = cube.df[
+                TUBB4B_ont_id:TUBB4B_ont_id, lung_ont_id:lung_ont_id, :, human_ont_id:human_ont_id
+            ]
             self.validate_TUBB4B(TUBB4B_human_lung)
 
             CD68_ont_id = fixtures.validation_gene_ontologies["CD68"]

@@ -11,8 +11,12 @@ from tests.unit.backend.wmg.fixtures.test_snapshot import (
     all_X_cell_counts_values,
 )
 
-ALL_INDEXED_DIMS_FOR_QUERY = ["gene_ontology_term_ids", "tissue_ontology_term_ids",
-                              "tissue_original_ontology_term_ids", "organism_ontology_term_id"]
+ALL_INDEXED_DIMS_FOR_QUERY = [
+    "gene_ontology_term_ids",
+    "tissue_ontology_term_ids",
+    "tissue_original_ontology_term_ids",
+    "organism_ontology_term_id",
+]
 
 # TODO: Test build_* methods separately in test_v1.py.  This package's unit tests need only test the raw results of
 #  WmgQuery methods
@@ -65,11 +69,13 @@ class QueryTest(unittest.TestCase):
         # has changed
         not_used_cube_indexed_dims = [0 if criteria.dict()[dim_name] else 1 for dim_name in ALL_INDEXED_DIMS_FOR_QUERY]
 
-        expected_cell_count_per_cell_type = dim_size ** (len(cube_non_indexed_dims) +
-                                                         sum(not_used_cube_indexed_dims) - 1)
+        expected_cell_count_per_cell_type = dim_size ** (
+            len(cube_non_indexed_dims) + sum(not_used_cube_indexed_dims) - 1
+        )
 
-        expected_cell_count_per_tissue = 10 * (dim_size ** (len(cube_non_indexed_dims) +
-                                                            sum(not_used_cube_indexed_dims)))
+        expected_cell_count_per_tissue = 10 * (
+            dim_size ** (len(cube_non_indexed_dims) + sum(not_used_cube_indexed_dims))
+        )
 
         assert expected_cell_count_per_cell_type == 2187
         assert expected_cell_count_per_tissue == 65610
@@ -83,7 +89,7 @@ class QueryTest(unittest.TestCase):
                 "n_cells_cell_type": 21870,
                 "n_cells_tissue": 65610,
                 "nnz": 2187,
-                "sum": 2187.0
+                "sum": 2187.0,
             },
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_0",
@@ -93,7 +99,7 @@ class QueryTest(unittest.TestCase):
                 "n_cells_cell_type": 21870,
                 "n_cells_tissue": 65610,
                 "nnz": 2187,
-                "sum": 2187.0
+                "sum": 2187.0,
             },
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_0",
@@ -103,7 +109,7 @@ class QueryTest(unittest.TestCase):
                 "n_cells_cell_type": 21870,
                 "n_cells_tissue": 65610,
                 "nnz": 2187,
-                "sum": 2187.0
+                "sum": 2187.0,
             },
         ]
 
@@ -140,7 +146,9 @@ class QueryTest(unittest.TestCase):
         # has changed
         not_used_cube_indexed_dims = [0 if criteria.dict()[dim_name] else 1 for dim_name in ALL_INDEXED_DIMS_FOR_QUERY]
         expected_cell_count_per_cell_type = dim_size ** (len(cube_non_indexed_dims) - 1 + 1)
-        expected_cell_count_per_tissue = 10 * (dim_size ** (len(cube_non_indexed_dims) + sum(not_used_cube_indexed_dims)))
+        expected_cell_count_per_tissue = 10 * (
+            dim_size ** (len(cube_non_indexed_dims) + sum(not_used_cube_indexed_dims))
+        )
 
         assert expected_cell_count_per_cell_type == 2187
         assert expected_cell_count_per_tissue == 65610
@@ -308,11 +316,7 @@ class QueryTest(unittest.TestCase):
 
         # after aggregating, we will get three tissues, and three cell types per tissue,
         # with 729 * expected_count total cells
-        expected = (
-            [{"n_cells_cell_type": 2187 * expected_count}]
-            * len(criteria.tissue_ontology_term_ids)
-            * dim_size
-        )
+        expected = [{"n_cells_cell_type": 2187 * expected_count}] * len(criteria.tissue_ontology_term_ids) * dim_size
 
         self.assertEqual(expected, result.to_dict("records"))
 
@@ -344,9 +348,7 @@ class QueryTest(unittest.TestCase):
 
         # after aggregating, we will get three tissues,
         # with 729 * expected_count * (# cell types per tissue = 3) total cells
-        expected = [{"n_cells_tissue": 2187 * expected_count * dim_size}] * len(
-            criteria.tissue_ontology_term_ids
-        )
+        expected = [{"n_cells_tissue": 2187 * expected_count * dim_size}] * len(criteria.tissue_ontology_term_ids)
         self.assertEqual(expected, result.to_dict("records"))
 
     @classmethod
@@ -376,10 +378,12 @@ class QueryTest(unittest.TestCase):
         # has changed
 
         not_used_cube_indexed_dims = [0 if criteria.dict()[dim_name] else 1 for dim_name in ALL_INDEXED_DIMS_FOR_QUERY]
-        expected_cell_count_per_cell_type = dim_size ** (len(cube_non_indexed_dims) - 2 +
-                                                         sum(not_used_cube_indexed_dims))
-        expected_cell_count_per_tissue = 10 * (dim_size ** (len(cube_non_indexed_dims) - 1 +
-                                                            sum(not_used_cube_indexed_dims)))
+        expected_cell_count_per_cell_type = dim_size ** (
+            len(cube_non_indexed_dims) - 2 + sum(not_used_cube_indexed_dims)
+        )
+        expected_cell_count_per_tissue = 10 * (
+            dim_size ** (len(cube_non_indexed_dims) - 1 + sum(not_used_cube_indexed_dims))
+        )
 
         assert expected_cell_count_per_cell_type == 729
         assert expected_cell_count_per_tissue == 21870
@@ -450,11 +454,13 @@ class QueryTest(unittest.TestCase):
         # cube test fixture may have changed (e.g. TileDB Array schema) or the logic for creating the test cube fixture
         # has changed
         not_used_cube_indexed_dims = [0 if criteria.dict()[dim_name] else 1 for dim_name in ALL_INDEXED_DIMS_FOR_QUERY]
-        expected_cell_count_per_cell_type = dim_size ** (len(cube_non_indexed_dims) - 2 +
-                                                         sum(not_used_cube_indexed_dims)) * 2
+        expected_cell_count_per_cell_type = (
+            dim_size ** (len(cube_non_indexed_dims) - 2 + sum(not_used_cube_indexed_dims)) * 2
+        )
 
-        expected_cell_count_per_tissue = 10 * (dim_size ** (len(cube_non_indexed_dims) - 1 +
-                                                            sum(not_used_cube_indexed_dims)) * 2)
+        expected_cell_count_per_tissue = 10 * (
+            dim_size ** (len(cube_non_indexed_dims) - 1 + sum(not_used_cube_indexed_dims)) * 2
+        )
 
         assert expected_cell_count_per_cell_type == 1458
         assert expected_cell_count_per_tissue == 43740
@@ -526,10 +532,12 @@ class QueryTest(unittest.TestCase):
         # cube test fixture may have changed (e.g. TileDB Array schema) or the logic for creating the test cube fixture
         # has changed
         not_used_cube_indexed_dims = [0 if criteria.dict()[dim_name] else 1 for dim_name in ALL_INDEXED_DIMS_FOR_QUERY]
-        expected_cell_count_per_cell_type = dim_size ** (len(cube_non_indexed_dims) - 3 +
-                                                         sum(not_used_cube_indexed_dims)) * 1 * 2
-        expected_cell_count_per_tissue = 10 * (dim_size ** (len(cube_non_indexed_dims) - 2 +
-                                                            sum(not_used_cube_indexed_dims)) * 1 * 2)
+        expected_cell_count_per_cell_type = (
+            dim_size ** (len(cube_non_indexed_dims) - 3 + sum(not_used_cube_indexed_dims)) * 1 * 2
+        )
+        expected_cell_count_per_tissue = 10 * (
+            dim_size ** (len(cube_non_indexed_dims) - 2 + sum(not_used_cube_indexed_dims)) * 1 * 2
+        )
 
         assert expected_cell_count_per_cell_type == 486
         assert expected_cell_count_per_tissue == 14580
