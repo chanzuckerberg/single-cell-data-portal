@@ -1,5 +1,5 @@
 import Head from "next/head";
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { EMPTY_ARRAY, EMPTY_OBJECT } from "src/common/constants/utils";
 import {
   CellTypeByTissueName,
@@ -31,7 +31,7 @@ export default function WheresMyGene(): JSX.Element {
 
   const { selectedGenes, selectedCellTypeIds, selectedTissues, sortBy } = state;
 
-  const [isScaled] = useState(true);
+  const [isScaled, setIsScaled] = useState(true);
 
   const {
     data: rawCellTypesByTissueName,
@@ -227,6 +227,10 @@ export default function WheresMyGene(): JSX.Element {
     return hasSelectedTissues && hasSelectedGenes;
   }, [hasSelectedTissues, hasSelectedGenes]);
 
+  const handleIsScaledChange = useCallback(() => {
+    setIsScaled((prevIsScaled) => !prevIsScaled);
+  }, [setIsScaled]);
+
   return (
     <>
       <Head>
@@ -251,7 +255,11 @@ export default function WheresMyGene(): JSX.Element {
 
           <Top>
             <GeneSearchBar />
-            <Legend />
+            <Legend
+              isScaled={isScaled}
+              handleIsScaledChange={handleIsScaledChange}
+              showScaled={false}
+            />
           </Top>
 
           <Beta />

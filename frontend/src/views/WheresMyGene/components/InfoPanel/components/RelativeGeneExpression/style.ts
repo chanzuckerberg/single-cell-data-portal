@@ -31,7 +31,7 @@ export const ContentWrapper = styled.div`
 
 export const StyledFormControlLabel = styled(FormControlLabel)`
   position: absolute;
-  left: 110px;
+  left: -120px;
   top: -10px;
 `;
 
