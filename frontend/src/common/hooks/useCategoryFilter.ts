@@ -1357,6 +1357,9 @@ function buildMultiPanelCategoryView(
         applyNonSpecificLabel(parentPanelView, panelSelectCategoryValueViews);
       }
 
+      // Sort views.
+      panelSelectCategoryValueViews.sort(sortCategoryValueViews);
+
       // Build panel view.
       accum.push({
         label: builder.panel.label,
