@@ -2266,6 +2266,10 @@ export const DEVELOPMENT_STAGE_ONTOLOGY_TERM_SET: OntologyTermSet = {
 export const TISSUE_ORGAN_ONTOLOGY_TERM_SET: OntologyTermSet = {
   [ONTOLOGY_VIEW_KEY.UBERON]: [
     {
+      label: "adipose tissue",
+      ontology_term_id: "UBERON:0001013",
+    },
+    {
       label: "bladder organ",
       ontology_term_id: "UBERON:0018707",
     },
@@ -2286,8 +2290,20 @@ export const TISSUE_ORGAN_ONTOLOGY_TERM_SET: OntologyTermSet = {
       ontology_term_id: "UBERON:0000310",
     },
     {
+      label: "esophagus",
+      ontology_term_id: "UBERON:0001043",
+    },
+    {
       label: "eye",
       ontology_term_id: "UBERON:0000970",
+    },
+    {
+      label: "fallopian tube",
+      ontology_term_id: "UBERON:0003889",
+    },
+    {
+      label: "gall bladder",
+      ontology_term_id: "UBERON:0002110",
     },
     {
       label: "heart",
@@ -2306,8 +2322,20 @@ export const TISSUE_ORGAN_ONTOLOGY_TERM_SET: OntologyTermSet = {
       ontology_term_id: "UBERON:0002107",
     },
     {
+      label: "lung",
+      ontology_term_id: "UBERON:0002048",
+    },
+    {
+      label: "lymph node",
+      ontology_term_id: "UBERON:0000029",
+    },
+    {
       label: "nose",
       ontology_term_id: "UBERON:0000004",
+    },
+    {
+      label: "ovary",
+      ontology_term_id: "UBERON:0000992",
     },
     {
       label: "pancreas",

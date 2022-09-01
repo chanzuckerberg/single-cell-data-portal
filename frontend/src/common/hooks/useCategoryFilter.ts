@@ -2643,7 +2643,8 @@ function setSelectedStates<T extends Categories>(
 }
 
 /**
- * Sort category value views by the given key, ascending.
+ * Sort category value views by the given key, ascending. Sort can be by either the key (required for values such
+ * as publication date) or label (required for values such as tissue that are backed by an ontology term ID).
  * @param key - Value to sort category value views by.
  * @returns Function that returns a number indicating sort precedence of cv0 vs cv1.
  */
