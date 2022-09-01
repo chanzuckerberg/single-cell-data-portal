@@ -22,5 +22,5 @@ RUN apt-get update && apt-get -yq install \
   #       See https://github.com/cellgeni/sceasy#installation
   R -e "BiocManager::install('LoomExperiment')" && \
   R -e "install.packages(c('devtools', 'igraph'));" && \
-  R -e "library(devtools); devtools::install_github('cellgeni/sceasy')" && \
+  R -e "library(devtools); devtools::install_github('cellgeni/sceasy@v0.0.7')" && \
   R -e "install.packages('Seurat',dependencies=TRUE, repos='http://cran.rstudio.com/', version='4.1.1')"
