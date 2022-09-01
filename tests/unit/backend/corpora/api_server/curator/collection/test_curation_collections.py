@@ -141,8 +141,6 @@ class TestGetCollections(BaseAuthAPITest):
 
     def test__get_collections_with_auth__OK(self):
         res_auth = self.app.get("/curation/v1/collections", headers=self.make_owner_header())
-        self.assertEqual(200, res_auth.status_code)
-        self.assertEqual(6, len(res_auth.json))
         with self.subTest("The 'revising_in' attribute is None for unauthorized public collections"):
             conditions_tested = 0
             for c in res_auth.json:
