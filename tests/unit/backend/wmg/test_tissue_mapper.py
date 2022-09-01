@@ -5,7 +5,6 @@ from backend.wmg.data.transform import order_tissues
 
 
 class TissueMapperTest(unittest.TestCase):
-
     def setUp(self) -> None:
         self.tissue_mapper = TissueMapper()
 
