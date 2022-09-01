@@ -1358,7 +1358,7 @@ function buildMultiPanelCategoryView(
       }
 
       // Sort views.
-      panelSelectCategoryValueViews.sort(sortCategoryValueViews);
+      panelSelectCategoryValueViews.sort(sortCategoryValueViews("label"));
 
       // Build panel view.
       accum.push({
@@ -1676,7 +1676,7 @@ function buildSelectCategoryView(
     config,
     [...categoryValueByValue.values()],
     ontologyTermLabelsById
-  ).sort(sortCategoryValueViews);
+  ).sort(sortCategoryValueViews("key"));
 
   // Split values into pinned and unpinned.
   const [pinnedValues, unpinnedValues] = partitionSelectCategoryValueViews(
@@ -2643,16 +2643,17 @@ function setSelectedStates<T extends Categories>(
 }
 
 /**
- * Sort category value views by key, ascending.
- * @param cvv0 - First category value view to compare.
- * @param cvv1 - Second category value view to compare.
- * @returns Number indicating sort precedence of cv0 vs cv1.
+ * Sort category value views by the given key, ascending.
+ * @param key - Value to sort category value views by.
+ * @returns Function that returns a number indicating sort precedence of cv0 vs cv1.
  */
-function sortCategoryValueViews(
-  cvv0: SelectCategoryValueView,
-  cvv1: SelectCategoryValueView
-): number {
-  return COLLATOR_CASE_INSENSITIVE.compare(cvv0.label, cvv1.label);
+function sortCategoryValueViews(key: "key" | "label") {
+  return (
+    cvv0: SelectCategoryValueView,
+    cvv1: SelectCategoryValueView
+  ): number => {
+    return COLLATOR_CASE_INSENSITIVE.compare(cvv0[key], cvv1[key]);
+  };
 }
 
 /**
