@@ -34,26 +34,28 @@ We need the following collection metadata (i.e. details associated with your pub
   - Publication/preprint DOI: can be added later
   - URLs: any additional URLs for related data or resources, such as GEO or protocols.io - can be added later
 
-Datasets need the following information added to a single h5ad (AnnData 0.7) format file per CELLxGENE visualization:
+Each dataset needs the following information added to a single h5ad (AnnData 0.8) format file:
 
 - **Dataset-level metadata in uns**:
-  - schema_version: `2.0.0`
-  - title: title of the individual dataset visualization
-  - optional: batch_condition: list of obs fields that define that “batches” that a normalization or integration algorithm should be aware of
+  - schema_version: `3.0.0`
+  - title: title of the individual dataset
+  - optional: batch_condition: list of obs fields that define “batches” that a normalization or integration algorithm should be aware of
 - **Data in .X and raw.X**:
   - raw counts are required
   - normalized counts are strongly recommended
   - raw counts should be in raw.X if normalized counts are in .X
   - if there is no normalized matrix, raw counts should be in .X
-- **Cell metadata in obs (the values MUST be the most specific specific term available from the specified ontology)**:
+- **Cell metadata in obs (for ontology term IDs, the values MUST be the most specific term available from the specified ontology)**:
   - organism_ontology_term_id: [NCBITaxon](https://www.ncbi.nlm.nih.gov/taxonomy) (`NCBITaxon:9606` for human, `NCBITaxon:10090` for mouse)
-  - tissue_ontology_term_id: [UBERON](https://www.ebi.ac.uk/ols/ontologies/uberon)
-  - assay_ontology_term_id: [EFO](https://www.ebi.ac.uk/ols/ontologies/efo)
-  - disease_ontology_term_id: [MONDO](https://www.ebi.ac.uk/ols/ontologies/mondo) or `PATO:0000461` for 'normal'
-  - cell_type_ontology_term_id: [CL](https://www.ebi.ac.uk/ols/ontologies/cl)
-  - self_reported_ethnicity_ontology_term_id: [HANCESTRO](https://www.ebi.ac.uk/ols/ontologies/hancestro) if human, `unknown` if information unavailable, `na` if non-human
+  - donor_id: free-text identifier that distinguishes the unique individual that data were derived from. It is encouraged to be something not likely to be used in other studies (e.g. donor_1 is likely to not be unique in the data corpus)
   - development_stage_ontology_term_id: [HsapDv](https://www.ebi.ac.uk/ols/ontologies/hsapdv) if human, [MmusDv](https://www.ebi.ac.uk/ols/ontologies/mmusdv) if mouse, `unknown` if information unavailable
   - sex_ontology_term_id: `PATO:0000384` for male, `PATO:0000383` for female, or `unknown` if unavailable
+  - self_reported_ethnicity_ontology_term_id: [HANCESTRO](https://www.ebi.ac.uk/ols/ontologies/hancestro) use `multiethnic` if more than one ethnicity is reported. If human and information unavailable, use `unknown`. Use `na` if non-human.
+  - disease_ontology_term_id: [MONDO](https://www.ebi.ac.uk/ols/ontologies/mondo) or `PATO:0000461` for 'normal'
+  - tissue_ontology_term_id: [UBERON](https://www.ebi.ac.uk/ols/ontologies/uberon)
+  - cell_type_ontology_term_id: [CL](https://www.ebi.ac.uk/ols/ontologies/cl)
+  - assay_ontology_term_id: [EFO](https://www.ebi.ac.uk/ols/ontologies/efo)
+  - suspension_type: `cell`, `nucleus`, or `na`, as corresponding to assay. Use [this table](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#suspension_type) defined in the data schema for guidance. If the assay does not appear in this table, the most appropriate value MUST be selected and the [curation team informed](mailto:cellxgene@chanzuckerberg.com) during submission so that the assay can be added to the table.
 - **Embeddings in obsm**:
   - One or more two-dimensional embeddings, prefixed with 'X\_'
 - **Features in var & raw.var (if present)**:
