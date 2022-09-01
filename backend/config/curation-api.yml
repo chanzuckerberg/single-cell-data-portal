@@ -49,16 +49,16 @@ paths:
       summary: Fetch Collections metadata.
       description: >-
         * When the visibility parameter is unspecified or set to `PUBLIC`, a list of all public collections is returned.
-        The Authorization header is not required. If a collection in the list has been deleted, then it is annotated
+        The Authorization header is not required. If a Collection in the list has been deleted, then it is annotated
         with tombstone set to True.
 
-        * When the visibility parameter is set to `PRIVATE`, a list of all private collections that the user is
-        authorized to access is returned. The Authorization header is required. If a collection in the list is a private
+        * When the visibility parameter is set to `PRIVATE`, a list of all private Collections that the user is
+        authorized to access is returned. The Authorization header is required. If a Collection in the list is a private
         revision of a public collection, then it is annotated with revision_of.
 
-        * Each collection in the list contains a subset of collection metadata as a preview.
+        * Each Collection in the list contains a subset of Collection metadata as a preview.
 
-        * To retrieve full collection metadata for a specific collection, `GET /v1/collections/{collection_id}`
+        * To retrieve full Collection metadata for a specific Collection, `GET /v1/collections/{collection_id}`
         must be used.
 
         * Optional: provide your access token in the request header as `Authentication: bearer <access_token>`.
@@ -217,7 +217,7 @@ paths:
     delete:
       summary: Delete a private Collection.
       description: >-
-        Delete a private collection or cancel a revision.
+        Delete a private Collection or cancel a revision.
 
         * Required: provide your access token in the request header as `Authentication: bearer <access_token>`.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.actions.delete
@@ -410,7 +410,7 @@ paths:
                   curator_tag: "<new_or_existing_tag>"
                   link: "<download_link_for_data_source_file>"
               id:
-                summary: Using the dataset uuid
+                summary: Using the Dataset uuid
                 value:
                   id: "<existing_dataset_id>"
                   link: "<download_link_for_data_source_file>"
@@ -499,7 +499,7 @@ paths:
 
   /v1/collections/{collection_id}/datasets/assets:
     get:
-      summary: Retrieve links for downloading a dataset
+      summary: Retrieve links for downloading a Dataset
       tags:
         - collection
       description: >-
@@ -807,7 +807,7 @@ components:
       type: string
     is_primary_data:
       description:
-        Describes whether cellular observations for this dataset are all
+        Describes whether cellular observations for this Dataset are all
         canonical (True), all non-canonical (False), or contain a mixture (True, False).
       items:
         type: boolean
@@ -914,13 +914,13 @@ components:
           type: number
       type: object
     upload_link:
-      description: A user-provided link to the dataset source file.
+      description: A user-provided link to the Dataset source file.
       type: string
     visibility:
       default: PUBLIC
       description:
-        Determines the visibility of the collection, that will either make
-        the collection visible on the public sites or only viewable through obfuscated
+        Determines the visibility of the Collection, that will either make
+        the Collection visible on the public sites or only viewable through obfuscated
         URLs.
       enum:
         - PUBLIC
