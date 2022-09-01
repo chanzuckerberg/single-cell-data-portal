@@ -592,7 +592,7 @@ components:
           nullable: true
           type: string
         processing_status:
-          "$ref": "#/components/schemas/processing_status"
+          "$ref": "#/components/schemas/processing_status_collection"
         published_at:
           nullable: true
           type: string
@@ -645,14 +645,7 @@ components:
           nullable: true
           type: string
         processing_status:
-          "$ref": "#/components/schemas/processing_status"
-          description: >-
-            Processing status for Datasets in a Collection
-
-            * `"FAILURE"`: one or more Datasets ran into an error during processing. The CELLxGENE team will reach out to help you.
-            * `"PENDING"`: one or more Datasets are still being processed.
-            * `"SUCCESS"`: all Datasets have been processed successfully.
-            * `null`: the Collection has no Datasets.
+          "$ref": "#/components/schemas/processing_status_collection"
         published_at:
           nullable: true
           type: string
@@ -741,13 +734,7 @@ components:
         organism:
           "$ref": "#/components/schemas/ontology_elements"
         processing_status:
-          description: >-
-            Processing status for a Dataset or Collection
-
-            * `"FAILURE"`: the Dataset ran into an error during processing. The CELLxGENE team will reach out to help you.
-            * `"PENDING"`: the Dataset has is still being processed.
-            * `"SUCCESS"`: the Dataset has successfuly been processed.
-          "$ref": "#/components/schemas/processing_status"
+          "$ref": "#/components/schemas/processing_status_dataset"
         revised_at:
           nullable: true
           type: string
@@ -874,7 +861,27 @@ components:
         type:
           type: string
       type: object
-    processing_status:
+    processing_status_collection:
+      description: >-
+        Processing status for a Collection
+
+        * `"FAILURE"`: one or more Datasets ran into an error during processing. The CELLxGENE team will reach out to help you.
+        * `"PENDING"`: one or more Datasets are still being processed.
+        * `"SUCCESS"`: all Datasets have been processed successfully.
+        * `null`: the Collection has no Datasets.
+      enum:
+        - FAILURE
+        - PENDING
+        - SUCCESS
+      nullable: true
+      type: string
+    processing_status_dataset:
+      description: >-
+        Processing status for a Dataset
+
+          * `"FAILURE"`: the Dataset ran into an error during processing. The CELLxGENE team will reach out to help you.
+          * `"PENDING"`: the Dataset has is still being processed.
+          * `"SUCCESS"`: the Dataset has successfully been processed.
       enum:
         - FAILURE
         - PENDING
@@ -929,8 +936,8 @@ components:
         "$ref": "#/components/schemas/collection_id"
     query_curator_tag:
       description:
-        A curator-provided tag. MUST be unique within a given Collection.
-        MAY be used to uniquely identify a Dataset when using the Curator API. SHALL
+        A curator-provided tag. **MUST** be unique within a given Collection.
+        **MAY** be used to uniquely identify a Dataset when using the Curator API. **SHALL**
         default to null for Datasets created using the Data Portal UI.
       in: query
       name: curator_tag
