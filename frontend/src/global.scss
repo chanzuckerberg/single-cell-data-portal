@@ -19,7 +19,6 @@ $pt-font-size-large: $pt-grid-size * 2 !default;
 $pt-font-size-small: $pt-grid-size * 1.5 !default;
 
 @import "@blueprintjs/core/src/blueprint.scss";
-@import "@blueprintjs/icons/lib/css/blueprint-icons.css";
 
 :focus {
   outline: 0;
@@ -29,46 +28,46 @@ $pt-font-size-small: $pt-grid-size * 1.5 !default;
   @include focus-outline();
 }
 
-.bp3-button {
+.bp4-button {
   box-shadow: inset 0px -1px 1px rgba(16, 22, 26, 0.1) !important;
   padding: 6px 12px;
   height: 30px;
 }
 
-.bp3-button.bp3-minimal {
+.bp4-button.bp4-minimal {
   box-shadow: none !important;
 }
 
-.bp3-input {
+.bp4-input {
   border: 1px solid $light-gray1 !important;
   box-shadow: none;
   height: 34px;
 }
 
-.bp3-input:focus {
+.bp4-input:focus {
   border: 2px solid $pt-intent-primary !important;
   box-shadow: none;
 }
 
-.bp3-input.bp3-intent-danger,
-.bp3-intent-danger .bp3-input {
+.bp4-input.bp4-intent-danger,
+.bp4-intent-danger .bp4-input {
   box-shadow: none;
   border: 2px solid $pt-intent-danger !important;
 }
 
-.bp3-input-group.bp3-intent-danger .bp3-input {
+.bp4-input-group.bp4-intent-danger .bp4-input {
   box-shadow: none;
 }
 
-.bp3-input-group .bp3-input-action,
-.bp3-input-group > .bp3-input-left-container,
-.bp3-input-group > .bp3-button,
-.bp3-input-group > .bp3-icon {
+.bp4-input-group .bp4-input-action,
+.bp4-input-group > .bp4-input-left-container,
+.bp4-input-group > .bp4-button,
+.bp4-input-group > .bp4-icon {
   position: absolute;
   top: $pt-grid-size;
 }
 
-.bp3-dialog {
+.bp4-dialog {
   max-width: unset;
   width: unset;
   background-color: white;
@@ -78,31 +77,31 @@ $pt-font-size-small: $pt-grid-size * 1.5 !default;
   border-radius: 6px;
 }
 
-.bp3-dialog-header {
+.bp4-dialog-header {
   box-shadow: none;
 }
 
-.bp3-dialog-header .bp3-heading {
+.bp4-dialog-header .bp4-heading {
   line-height: normal;
 }
 
-.bp3-tag {
+.bp4-tag {
   padding: 2px 6px;
   background: $gray1;
-  .bp3-minimal {
+  .bp4-minimal {
     background: $gray5;
     color: $black;
   }
-  .bp3-intent-success {
+  .bp4-intent-success {
     background: $green3;
-    .bp3-minimal {
+    .bp4-minimal {
       color: $blue2;
       background: $green6;
     }
   }
-  .bp3-intent-primary {
+  .bp4-intent-primary {
     background: $blue3;
-    .bp3-minimal {
+    .bp4-minimal {
       color: $blue2;
       background: $blue6;
     }
@@ -111,12 +110,12 @@ $pt-font-size-small: $pt-grid-size * 1.5 !default;
 
 // Temp fix for checkbox
 // https://github.com/palantir/blueprint/issues/2821#issuecomment-414645690
-.bp3-control.bp3-checkbox input:checked ~ .bp3-control-indicator:before {
+.bp4-control.bp4-checkbox input:checked ~ .bp4-control-indicator:before {
   background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill-rule='evenodd' clip-rule='evenodd' d='M12 5c-.28 0-.53.11-.71.29L7 9.59l-2.29-2.3a1.003 1.003 0 0 0-1.42 1.42l3 3c.18.18.43.29.71.29s.53-.11.71-.29l5-5A1.003 1.003 0 0 0 12 5z' fill='rgba(255,255,255,1)'/%3E%3C/svg%3E");
 }
 
 // Remove box shadow and vertical separators on HTMLTable cells when bordered prop is present
-table.bp3-html-table.bp3-html-table-bordered {
+table.bp4-html-table.bp4-html-table-bordered {
   tbody tr td,
   th,
   tbody tr td:not(:first-child),

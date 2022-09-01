@@ -1,6 +1,6 @@
 import { Tag } from "@blueprintjs/core";
+import styled from "@emotion/styled";
 import { PT_GRID_SIZE_PX } from "src/components/common/theme";
-import styled from "styled-components";
 
 export const StyledTag = styled(Tag)`
   width: max-content;

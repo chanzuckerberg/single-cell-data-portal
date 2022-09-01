@@ -1,12 +1,12 @@
 import { Button, Classes } from "@blueprintjs/core";
+import styled from "@emotion/styled";
 import { BLUE, PRIMARY_BLUE, PT_TEXT_COLOR } from "src/components/common/theme";
-import styled from "styled-components";
 
 /* Basic styled button. */
 const StyledButton = styled(Button)`
   &.${Classes.BUTTON} {
     border-radius: 3px;
-    box-shadow: none !important; /* required; overrides specificity of bp3 button box shadow rule with important style declaration. */
+    box-shadow: none !important; /* required; overrides specificity of bp4 button box shadow rule with important style declaration. */
     font-weight: 500;
     letter-spacing: -0.1px;
     line-height: 18px;

@@ -13,13 +13,12 @@ from backend.corpora.common.utils.exceptions import CorporaException
 from backend.corpora.common.utils.regex import (
     USERNAME_REGEX,
     COLLECTION_ID_REGEX,
-    EXTENSION_REGEX,
     DATASET_ID_REGEX,
-    CURATOR_TAG_PREFIX_REGEX,
+    CURATOR_TAG_REGEX,
 )
 
 logger = logging.getLogger(__name__)
-REGEX = f"^{USERNAME_REGEX}/{COLLECTION_ID_REGEX}/({DATASET_ID_REGEX}|{CURATOR_TAG_PREFIX_REGEX})\\.{EXTENSION_REGEX}$"
+REGEX = f"^{USERNAME_REGEX}/{COLLECTION_ID_REGEX}/({DATASET_ID_REGEX}|{CURATOR_TAG_REGEX})$"
 
 
 def dataset_submissions_handler(s3_event: dict, unused_context) -> None:
@@ -39,8 +38,6 @@ def dataset_submissions_handler(s3_event: dict, unused_context) -> None:
         parsed = parse_key(key)
         if not parsed:
             raise CorporaException(f"Missing collection ID, curator tag, and/or dataset ID for {key=}")
-        if parsed["tag_prefix"]:
-            parsed["tag"] = f"{parsed['tag_prefix']}.{parsed['extension']}"
         logger.debug(parsed)
 
         with db_session_manager() as session:
@@ -66,7 +63,6 @@ def dataset_submissions_handler(s3_event: dict, unused_context) -> None:
                 user=collection_owner,
                 url=s3_uri,
                 file_size=size,
-                file_extension=parsed["extension"],
                 dataset_id=dataset_id,
                 curator_tag=parsed.get("tag"),
             )
@@ -111,12 +107,14 @@ def get_dataset_info(
 ) -> Tuple[Optional[str], Optional[str]]:
     if dataset_id:  # If a dataset uuid was provided
         dataset = Dataset.get(session, dataset_id)
-    else:  # if incoming_curator_tag
+    elif incoming_curator_tag:  # if incoming_curator_tag
         dataset = Dataset.get_dataset_from_curator_tag(session, collection_id, incoming_curator_tag)
         if not dataset:  # New dataset
             collection = Collection.get_collection(session, collection_id)
             if collection:
                 return collection.owner, None
+    else:
+        raise CorporaException("No dataset identifier provided")
     if dataset:
         return dataset.collection.owner, dataset.id
     return None, None
