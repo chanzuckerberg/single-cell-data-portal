@@ -6,7 +6,6 @@ import anndata
 import numpy
 import numpy as np
 from pandas import DataFrame
-from pandas import Series
 import scanpy
 import tiledb
 from scipy import sparse
@@ -30,7 +29,7 @@ def apply_pre_concatenation_filters(
     anndata_object: anndata.AnnData, min_genes: int = GENE_EXPRESSION_COUNT_MIN_THRESHOLD
 ) -> anndata.AnnData:
 
-    logger.info(f"Applying filters: assay, and lowly-covered cells")
+    logger.info("Applying filters: assay, and lowly-covered cells")
     # Filter out cells with low coverage (less than GENE_EXPRESSION_COUNT_MIN_THRESHOLD unique genes expressed)
     scanpy.pp.filter_cells(anndata_object, min_genes=min_genes)
 
@@ -43,7 +42,7 @@ def apply_pre_concatenation_filters(
 
 
 def create_high_level_tissue(anndata_object: anndata.AnnData):
-    logger.info(f"Obtaining high-level tissues")
+    logger.info("Obtaining high-level tissues")
     anndata_object.obs["tissue_original"] = anndata_object.obs["tissue"]
     anndata_object.obs["tissue_original_ontology_term_id"] = anndata_object.obs["tissue_ontology_term_id"]
     anndata_object.obs = get_high_level_tissue(anndata_object.obs)
@@ -67,7 +66,6 @@ def get_high_level_tissue(obs: DataFrame) -> DataFrame:
 
         new_tissue_ids[current_id] = tissue_mapper.get_high_level_tissue(current_id)
         new_tissue_labels[current_label] = tissue_mapper.get_label_from_writable_id(new_tissue_ids[current_id])
-
 
     # Use mapping dictionaries to obtain new values
     obs["tissue_ontology_term_id"] = obs["tissue_ontology_term_id"].map(new_tissue_ids).astype("category")
