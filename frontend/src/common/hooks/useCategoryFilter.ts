@@ -2298,13 +2298,16 @@ function onFilterMultiPanelCategory(
       if (!uiParents || !uiParents.length) {
         filteredSelectedCategoryFilters.delete(selectedDescendant);
       } else {
-        // Don't delete selected descendant if any parent is partially/selected.
-        // TODO(cc) have to filter here as UI state hasn't been updated yet
+        // Don't delete selected descendant if any parent is partially/selected
         const isAnyParentSelected = uiParents
-          .filter((uiParent) => uiParent !== categoryValueId)
+          .filter(
+            (uiParent) =>
+              uiParent !== categoryValueId &&
+              !selectedDescendants.includes(uiParent)
+          )
           .some(
             (uiParent) =>
-              selected.includes(uiParent) && !selectedPartial.includes(uiParent)
+              selected.includes(uiParent) || selectedPartial.includes(uiParent)
           );
         if (!isAnyParentSelected) {
           filteredSelectedCategoryFilters.delete(selectedDescendant);
