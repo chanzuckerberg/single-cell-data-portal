@@ -130,26 +130,6 @@ def generate_primary_filter_dimensions(snapshot_path: str, corpus_name: str, sna
     def build_ontology_term_id_label_mapping(ontology_term_ids: Iterable[str]) -> List[dict]:
         return [{ontology_term_id: ontology_term_label(ontology_term_id)} for ontology_term_id in ontology_term_ids]
 
-    def order_tissues(ontology_term_ids: Iterable[str]) -> Iterable[str]:
-        """
-        Order tissues based on appearance in TissueMapper.HIGH_LEVEL_TISSUES. This will maintain the priority set in
-        that class which is intended to keep most relevant tissues on top and tissues that are related to be placed
-        sequentially
-        """
-        ontology_term_ids = set(ontology_term_ids)
-        ordered_ontology_term_ids = []
-        for tissue in TissueMapper.HIGH_LEVEL_TISSUES:
-            tissue = TissueMapper.reformat_ontology_term_id(tissue, to_writable=True)
-            if tissue in ontology_term_ids:
-                ontology_term_ids.remove(tissue)
-                ordered_ontology_term_ids.append(tissue)
-
-        if ontology_term_ids:
-            ordered_ontology_term_ids = ordered_ontology_term_ids + list(ontology_term_ids)
-
-        return ordered_ontology_term_ids
-
-
     with tiledb.open(f"{snapshot_path}/{corpus_name}/{EXPRESSION_SUMMARY_CUBE_NAME}") as cube:
 
         # gene terms are grouped by organism, and represented as a nested lists in dict, keyed by organism
@@ -181,3 +161,25 @@ def generate_primary_filter_dimensions(snapshot_path: str, corpus_name: str, sna
 
         with open(f"{snapshot_path}/{PRIMARY_FILTER_DIMENSIONS_FILENAME}", "w") as f:
             json.dump(result, f)
+
+
+def order_tissues(ontology_term_ids: Iterable[str]) -> Iterable[str]:
+    """
+    Order tissues based on appearance in TissueMapper.HIGH_LEVEL_TISSUES. This will maintain the priority set in
+    that class which is intended to keep most relevant tissues on top and tissues that are related to be placed
+    sequentially
+    """
+    ontology_term_ids = set(ontology_term_ids)
+    ordered_ontology_term_ids = []
+    for tissue in TissueMapper.HIGH_LEVEL_TISSUES:
+        tissue = TissueMapper.reformat_ontology_term_id(tissue, to_writable=True)
+        if tissue in ontology_term_ids:
+            ontology_term_ids.remove(tissue)
+            ordered_ontology_term_ids.append(tissue)
+
+    if ontology_term_ids:
+        ordered_ontology_term_ids = ordered_ontology_term_ids + list(ontology_term_ids)
+
+    return ordered_ontology_term_ids
+
+
