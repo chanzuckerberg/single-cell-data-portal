@@ -1,10 +1,7 @@
 import Image from "next/image";
-import { Content, LowHigh, Label } from "../../common/style";
+import { Content, Label, LowHigh } from "../../common/style";
 import plasmaImage from "./plasma.png";
-import {
-  ContentWrapper,
-  Wrapper,
-} from "./style";
+import { ContentWrapper, Wrapper } from "./style";
 
 const CONTENT_WIDTH_PX = 120;
 

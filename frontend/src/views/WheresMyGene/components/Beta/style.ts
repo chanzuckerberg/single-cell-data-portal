@@ -4,7 +4,7 @@ import { getColors, Notification } from "czifui";
 export const StyledNotification = styled(Notification)`
   ${(props) => {
     const colors = getColors(props);
-    
+
     return `
     .elevated {
       border-color: ${colors?.beta[400]} !important;

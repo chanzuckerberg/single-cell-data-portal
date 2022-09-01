@@ -4,10 +4,10 @@ import RelativeGeneExpression from "../RelativeGeneExpression";
 import { LegendWrapper } from "./style";
 
 export default memo(function Legend(): JSX.Element {
-    return (
-      <LegendWrapper>
-        <RelativeGeneExpression />
-        <ExpressedInCells />
-      </LegendWrapper>
-    );
-  });
+  return (
+    <LegendWrapper>
+      <RelativeGeneExpression />
+      <ExpressedInCells />
+    </LegendWrapper>
+  );
+});
