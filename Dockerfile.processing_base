@@ -12,8 +12,9 @@ RUN apt-get update && apt-get -yq install \
       libcurl4-openssl-dev \
       libglpk-dev \
       libxml2-dev \
+      libgeos-dev \
+      libcairo2-dev \
       wget \
-      rgeos \
 
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/* && \
