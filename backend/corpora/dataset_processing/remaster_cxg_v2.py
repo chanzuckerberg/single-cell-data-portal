@@ -127,7 +127,7 @@ def compute(**kwargs):
                 capacity,
             )
             logger.info("created, starting to read...")
-            with tiledb.open(f"{cxg}/{target_array}r", "w") as new_X_r:
+            with tiledb.open(f"{cxg}/{target_array}", "w") as new_X_r:
                 with tiledb.open(f"{cxg}/{target_array}c", "w") as new_X_c:
                     i, chunk = 0, 200_000
                     while i < old_X.shape[0]:
