@@ -695,19 +695,6 @@ components:
       description: A unique identifier of a Collection.
       example: fedcba98-7654-3210-fedc-ba9876543210
       type: string
-    conversion_status:
-      description:
-        Status for a Dataset asset generated during initial Dataset source
-        file processing
-      enum:
-        - CONVERTED
-        - CONVERTING
-        - FAILED
-        - NA
-        - UPLOADING
-        - UPLOADED
-        - SKIPPED
-      type: string
     curator_tag:
       description:
         A curator-provided tag for a Dataset that serves as a unique identifier
