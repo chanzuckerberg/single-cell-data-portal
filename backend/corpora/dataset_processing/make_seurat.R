@@ -1,6 +1,7 @@
 library(sceasy)
 
 require(devtools)
+install_version("SeuratObject", version = "4.0.2", repos = "http://cran.rstudio.com/")
 
 h5adPath <- commandArgs(trailingOnly = TRUE)[1]
 

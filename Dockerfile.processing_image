@@ -1,6 +1,7 @@
 ARG BASE_TAG=branch-main
 
-FROM ghcr.io/chanzuckerberg/corpora-upload-base:$BASE_TAG
+# TODO: use BASE_TAG; temp to test with new processing base image
+FROM ghcr.io/chanzuckerberg/corpora-upload-base:branch-nayib-patch-sceasy
 
 # Install cellxgene so we get the remote server that has the converter in it
 # The cellxgene install script expects executables named python and pip, not python3 and pip3
