@@ -16,6 +16,8 @@ RUN apt-get update && apt-get -yq install \
       libharfbuzz-dev \
       libfribidi-dev \
       libpng-dev \
+      libtiff5-dev \
+      libfreetype6-dev \
       wget \
 
   && apt-get clean \
