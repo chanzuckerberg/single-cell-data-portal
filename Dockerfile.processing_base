@@ -13,6 +13,8 @@ RUN apt-get update && apt-get -yq install \
       libglpk-dev \
       libxml2-dev \
       libfontconfig1-dev \
+      libharfbuzz-dev \
+      libfribidi-dev \
       wget \
 
   && apt-get clean \
