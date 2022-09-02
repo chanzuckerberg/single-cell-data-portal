@@ -105,10 +105,12 @@ def reshape_dataset_for_curation_api(dataset: dict, preview=False) -> dict:
         else:
             dataset[ontology_element] = []
 
-    if value := dataset.pop("name", None):
-        dataset["title"] = value
-    if value := dataset.pop("is_primary_data", None):
-        dataset["is_primary_data"] = is_primary_data_mapping.get(value)
+    if not preview:  # Add these fields only to full (and not preview) Dataset metadata response
+        dataset["revision_of"] = dataset.pop("original_id", None)
+        dataset["title"] = dataset.pop("name", None)
+        if value := dataset.pop("is_primary_data", None):
+            dataset["is_primary_data"] = is_primary_data_mapping.get(value, [])
+
     return dataset
 
 
@@ -160,6 +162,7 @@ class EntityColumns:
 
     dataset_cols = [
         *dataset_preview_cols,
+        "original_id",
         "name",
         "revision",
         "revised_at",
