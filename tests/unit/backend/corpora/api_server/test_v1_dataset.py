@@ -192,13 +192,13 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
             dataset["tissue_ancestors"],
             [
                 "UBERON:0001004",
-                "UBERON:0002048",
-                "UBERON:0000171",
-                "UBERON:0000072",
-                "UBERON:0000170",
-                "UBERON:0000065",
-                "UBERON:0001558",
                 "UBERON:0001005",
+                "UBERON:0000065",
+                "UBERON:0000170",
+                "UBERON:0002048",
+                "UBERON:0001558",
+                "UBERON:0000072",
+                "UBERON:0000171",
             ],
         )
 
@@ -248,13 +248,13 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
             actual_dataset["tissue_ancestors"],
             [
                 "UBERON:0001004",
-                "UBERON:0002048",
-                "UBERON:0000171",
-                "UBERON:0000072",
-                "UBERON:0000170",
-                "UBERON:0000065",
-                "UBERON:0001558",
                 "UBERON:0001005",
+                "UBERON:0000065",
+                "UBERON:0000170",
+                "UBERON:0002048",
+                "UBERON:0001558",
+                "UBERON:0000072",
+                "UBERON:0000171",
             ],
         )
 
