@@ -1,7 +1,7 @@
 openapi: 3.0.0
 info:
   version: "1.0.0"
-  title: Chan Zuckerberg Initiative CELLxGENE Data Portal Curator API
+  title: Chan Zuckerberg Initiative CELLxGENE Discover Curator API
   termsOfService: https://cellxgene.cziscience.com/tos
   contact:
     name: API Support
@@ -11,6 +11,9 @@ info:
     * [Python Notebooks](https://github.com/chanzuckerberg/single-cell-curation/tree/main/notebooks/curation_api/python_raw)
     * [R Notebooks](https://github.com/chanzuckerberg/single-cell-curation/tree/main/notebooks/curation_api/R)
 servers:
+  # Added by API Auto Mocking Plugin
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/Bento007/Curator_API/1.0.0
   - description: Production environment
     url: https://api.cellxgene.cziscience.com/
   - description: Development environment
@@ -34,7 +37,7 @@ paths:
             type: string
             example: "<YOUR-CURATOR-API-KEY>"
           required: true
-          description: Your curation API key. A curator key can be generated using the Data Portal web interface.
+          description: Your curation API key. A curator key can be generated using the CELLxGENE Discover UI.
       responses:
         "201":
           description: Created
@@ -52,7 +55,7 @@ paths:
     get:
       summary: List Collections' metadata.
       description: |
-        List a summary Collections. For each collection in the list, the datasets for that collection include a 
+        ListCollections. For each collection in the list, the datasets for that collection include a 
         subset of dataset metadata as a preview. To retrieve full dataset metadata for a specific collection, 
         _GET /v1/collections/{collection_id}_ must be used.
 
@@ -70,7 +73,7 @@ paths:
             | visibility | description | Authorization Required |
             | ---------- | ----------- | -------------- |
             | PUBLIC   | All public Collections are returned. | Yes |
-            | PRIVATE  | All private Collections that the user is authorized to access is returned. If a Collection in the list is a private revision of a public collection, then it is annotated with revision_of. | No |
+            | PRIVATE  | All private Collections that the user is authorized to access is returned. If a Collection in the list is a private Revision of a public collection, then it is annotated with revision_of. | No |
           in: query
           name: visibility
           required: false
@@ -142,7 +145,7 @@ paths:
     get:
       summary: Fetch a Collection with Datasets
       description: >
-        Fetch full Collection metadata and associated Datasets.
+        Fetch full metadata for the Collection and its Datasets.
 
         * Optional: provide your access token in the request header as `Authentication: bearer <access_token>`.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.actions.get
@@ -223,7 +226,7 @@ paths:
     delete:
       summary: Delete a private Collection.
       description: |
-        Delete a private Collection or cancel a revision.
+        Delete a private Collection or cancel a Revision.
 
         * Required: provide your access token in the request header as `Authentication: bearer <access_token>`.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.actions.delete
@@ -245,7 +248,7 @@ paths:
 
   /v1/collections/{collection_id}/revision:
     post:
-      summary: Start a revision of a published Collection
+      summary: Start a Revision of a published Collection
       description: |
         This starts a Revision of a published Collection. A Revision is a private Collection that is a copy of a
         published Collection. When published, a Revision replaces the original published Collection in-place. Only one
@@ -278,10 +281,10 @@ paths:
 
   /v1/collections/{collection_id}/datasets:
     delete:
-      summary: Delete a Dataset or cancel processing for a Dataset in a private Collection or revision.
+      summary: Delete a Dataset or cancel processing for a Dataset in a private Collection or Revision.
       description: |
         Delete a Dataset or cancel processing for a Dataset. The **collection_id** MUST reference either a private Collection OR a 
-        Revision. MUST indicate the Dataset by providing *one* of either the **curator_tag** (non-null) OR the **dataset_id**
+        Revision. MUST indicate the Dataset by providing *one* of either the `curator_tag` (non-null) OR the `dataset_id`
         parameters.
 
         If the Dataset is being processed, then this endpoint will cancel processing and delete the Dataset. While 
@@ -317,7 +320,7 @@ paths:
     get:
       summary: Fetch a Dataset from a Collection
       description: |
-        Fetch a Dataset from a collection. If a `dataset_id` or a `curator_tag` is provided as a query parameter
+        Fetch a Dataset from a collection. If a `dataset_id` or a `curator_tag` is provided as a query,
         the associated Dataset metadata is returned.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.datasets.actions.get
       tags:
@@ -342,8 +345,9 @@ paths:
       tags:
         - collection
       description: |
-        Update a Dataset's curator-provided tag. The Dataset MUST NOT belong to a published Collection. MUST indicate
-        the Dataset by providing *one* of either the **curator_tag** (non-null) OR the **dataset_id** parameters.
+        Update a Dataset's curator-provided tag. The Dataset MUST belong to a either a private Collection OR a Revision. 
+        MUST indicate the Dataset by providing *one* of either the `curator_tag` (non-null) OR the `dataset_id` 
+        parameters.
 
         * Required: provide your access token in the request header as `Authentication: bearer <access_token>`.
       security:
@@ -384,7 +388,7 @@ paths:
       description: |
         Upload a Dataset. The Dataset will be uploaded from the provided `link` which MUST either be a presigned AWS S3 
         URL or Dropbox shared file URL. MAY include a `curator_tag` in the request body; if an existing Dataset has this 
-        tag, the existing Dataset SHALL be replaced, otherwise a new Dataset will be added. MAY include the `datase_id` 
+        tag, the existing Dataset SHALL be replaced, otherwise a new Dataset will be added. MAY include the `dataset_id` 
         of an existing Dataset, in which case the existing Dataset SHALL be replaced and the `curator_tag` field
         will be ignored.
 
@@ -516,8 +520,8 @@ paths:
       tags:
         - collection
       description: |
-        Generate Presigned S3 URLs to download the files associated with the Dataset. MUST include *one* of the **curator_tag**
-        and **dataset_id** parameters. Pre-signed S3 URLs have a life span of up to 1 hour. Therefore,
+        Generate Presigned S3 URLs to download the files associated with the Dataset. MUST include *one* of the `curator_tag`
+        and `dataset_id` parameters. Pre-signed S3 URLs have a life span of up to 1 hour. Therefore,
         generate a presigned URL immediately before each download to ensure it is current.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.assets.get
       parameters:
@@ -590,7 +594,7 @@ components:
       description: Collection metadata
       properties:
         collection_url:
-          description: The Data Portal URL for the collection.
+          description: The CELLxGENE Discover URL for the Collection.
           type: string
         contact_email:
           "$ref": "#/components/schemas/contact_email"
@@ -620,7 +624,7 @@ components:
         publisher_metadata:
           "$ref": "#/components/schemas/publisher_metadata"
         revised_at:
-          "$ref": "#/components/schemas/revised_at"
+          "$ref": "#/components/schemas/collection_revised_at"
         revising_in:
           "$ref": "#/components/schemas/collection_revising_in"
         revision_of:
@@ -631,13 +635,13 @@ components:
           "$ref": "#/components/schemas/visibility"
       type: object
     collection_url:
-      description: The Data Portal URL for the collection.
+      description: The CELLxGENE Discover URL for the Collection.
       type: string
     contact_email:
       description: The email of contact person for the collection. Example email john.smith@email.com
       type: string
     contact_name:
-      description: The name of the primary person of contact for the collection
+      description: The name of the primary contact for the collection
       type: string
     created_at:
       description: A timestamp of when the resource was created.
@@ -654,26 +658,30 @@ components:
       description: A timestamp of when the Collection was first published.
       nullable: true
       type: string
-    revised_at:
-      description: A timestamp indicating the last time a revision for this Collection was published.
+    collection_revised_at:
+      description: A timestamp indicating the last time a Revision for this Collection was published.
+      nullable: true
+      type: string
+    dataset_revised_at:
+      description: A timestamp indicating the last time a Revision for this Dataset was published.
       nullable: true
       type: string
     collection_revising_in:
       type: string
       description: >
-        If there is a private revision for a public Collection, then `revising_in` is set to the id of 
-        the private revision in the metadata of the public collection. The value is `None` if the user is not 
-        authorized or no private revision exists.
+        If there is a private Revision for a public Collection, then `revising_in` is set to the id of 
+        the private Revision in the metadata of the public collection. The value is `None` if the user is not 
+        authorized or no private Revision exists.
       nullable: true
     collection_revision_of:
       description: |
-        If a private collection is a revision of a public collection, then `revision_of` is set to the id of the 
-        public collection in the metadata of the private collection. The value is `None` if no private revision 
+        If a private collection is a Revision of a public collection, then `revision_of` is set to the id of the 
+        public collection in the metadata of the private collection. The value is `None` if no private Revision 
         exists.
       nullable: true
       type: string
     collection_tombstone:
-      description: If this is True, then the Collection has been delete from the Data Portal.
+      description: If this is True, then the Collection has been delete from CELLxGENE Discover.
       type: boolean
     collection_description:
       description: A description of the collection.
@@ -711,7 +719,7 @@ components:
         publisher_metadata:
           "$ref": "#/components/schemas/publisher_metadata"
         revised_at:
-          "$ref": "#/components/schemas/revised_at"
+          "$ref": "#/components/schemas/collection_revised_at"
         revising_in:
           "$ref": "#/components/schemas/collection_revising_in"
         revision_of:
@@ -810,7 +818,7 @@ components:
         processing_status:
           "$ref": "#/components/schemas/processing_status_dataset"
         revised_at:
-          "$ref": "#/components/schemas/revised_at"
+          "$ref": "#/components/schemas/dataset_revised_at"
         revision:
           description: The number of times the Dataset has been revised.
           nullable: true
@@ -903,8 +911,7 @@ components:
       nullable: true
     explorer_url:
       description: |
-        The url at which a given Dataset may be explored using the cellxgene
-        visualization tool
+        The URL at which a given Dataset may be explored using CELLxGENE Explorer.
       nullable: true
       type: string
     is_primary_data:
@@ -970,7 +977,7 @@ components:
         Processing status for a Collection
         | `processing_status` | Description |
         | ------------------- | ----------- |
-        | `"FAILURE"` | one or more Datasets ran into an error during processing. The CELLxGENE team will reach out to help you. |
+        | `"FAILURE"` | one or more Datasets ran into an error during processing. More information can be found in the Dataset processing_status logs. |
         | `"PENDING"` | one or more Datasets are still being processed. |
         | `"SUCCESS"` | all Datasets have been processed successfully. |
         | `null` | the Collection has no Datasets. |
@@ -985,7 +992,7 @@ components:
         Processing status for a Dataset
         | `processing_status` | Description |
         | ------------------- | ----------- |
-        | `"FAILURE"` | the Dataset ran into an error during processing. The CELLxGENE team will reach out to help you. |
+        | `"FAILURE"` | the Dataset ran into an error during processing. See processing_status logs for more info. |
         | `"PENDING"` | the Dataset has is still being processed. |
         | `"SUCCESS"` | the Dataset has successfully been processed. |
       enum:
@@ -1026,8 +1033,8 @@ components:
 
         | visibility | description |
         | ---------- | ----------- | 
-        | PUBLIC   | published and visible to the publics on the Data Portal |
-        | PRIVATE  | unpublished private collection or a private revision of a public Collection |
+        | PUBLIC   | The Collection is published and accessible to all users of CELLxGENE Discover |
+        | PRIVATE  | The Collection is in private review, either as a new Collection that has not been published or a Revision of a previously published Collection. |
       enum:
         - PUBLIC
         - PRIVATE
@@ -1043,7 +1050,7 @@ components:
     query_curator_tag:
       description: |
         A curator-provided tag **MUST** be unique within a given Collection. **MAY** be used to uniquely identify a 
-        Dataset when using the Curator API. **SHALL** default to null for Datasets created using the Data Portal UI.
+        Dataset when using the Curator API. **SHALL** default to null for Datasets created using the CELLxGENE Discover UI.
       in: query
       name: curator_tag
       required: false
