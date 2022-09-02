@@ -4,7 +4,7 @@ import json
 import pathlib
 from typing import IO, Dict, Optional
 
-# TODO: Place this module into a common ontology util package with ontology_mapping.py and
+# TODO: Place this module into a common ontology util package with development_stage_ontology_mapping.py and
 #  extract_ontology_terms_from_owl.py. https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues
 #  /chanzuckerberg/single-cell-data-portal/2133
 
