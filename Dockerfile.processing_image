@@ -1,5 +1,4 @@
-# ARG BASE_TAG=branch-main TODO: re-add after testing
-ARG BASE_TAG=branch-nayib-patch-sceasy
+ARG BASE_TAG=branch-main
 
 FROM ghcr.io/chanzuckerberg/corpora-upload-base:$BASE_TAG
 
