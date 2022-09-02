@@ -900,7 +900,7 @@ components:
         Cellxgene runs a heuristic to detect the approximate distribution
         of the data in X so that it can accurately calculate statistical properties
         of the data. This field enables the curator to override this heuristic and
-        specify the data distribution explicitly.
+        specify the data distribution explicitly. [x_approximate_distribution](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#x_approximate_distribution)
       enum:
         - COUNT
         - NORMAL
