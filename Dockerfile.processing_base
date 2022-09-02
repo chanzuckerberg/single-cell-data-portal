@@ -1,6 +1,6 @@
 FROM satijalab/seurat:4.1.0
 
-# Most of these are required for SCE
+# Most of these are required for SCE or R packages
 RUN apt-get update && apt-get -yq install \
       cpio \
       git \
