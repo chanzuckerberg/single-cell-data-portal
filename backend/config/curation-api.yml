@@ -825,7 +825,7 @@ components:
           type: integer
         schema_version:
           description: |
-            The schema Dataset uses. [Schemas](https://github.com/chanzuckerberg/single-cell-curation/tree/main/schema)
+            The version of the CELLxGENE schema that the Dataset complies to. [Schemas](https://github.com/chanzuckerberg/single-cell-curation/tree/main/schema)
           nullable: true
           type: string
         sex:
