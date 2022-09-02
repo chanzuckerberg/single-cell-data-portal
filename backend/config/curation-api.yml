@@ -841,9 +841,6 @@ components:
           "$ref": "#/components/schemas/dataset_tombstone"
         x_approximate_distribution:
           "$ref": "#/components/schemas/distribution"
-        x_normalization:
-          nullable: true
-          type: string
       type: object
     dataset_assay:
       description: |
