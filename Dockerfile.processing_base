@@ -15,6 +15,7 @@ RUN apt-get update && apt-get -yq install \
       libfontconfig1-dev \
       libharfbuzz-dev \
       libfribidi-dev \
+      libpng-dev \
       wget \
 
   && apt-get clean \
