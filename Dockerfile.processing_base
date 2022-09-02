@@ -12,6 +12,7 @@ RUN apt-get update && apt-get -yq install \
       libcurl4-openssl-dev \
       libglpk-dev \
       libxml2-dev \
+      libfontconfig1-dev \
       wget \
 
   && apt-get clean \
