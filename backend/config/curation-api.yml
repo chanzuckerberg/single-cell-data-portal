@@ -874,7 +874,7 @@ components:
         "$ref": "#/components/schemas/ontology_element"
       type: array
     dataset_tombstone:
-      description: If the Dataset has been delete from the Collection, this will be True.
+      description: When True, this Dataset was withdrawn from the Data Portal at the request of its submitter.
       type: boolean
     dataset_id:
       description: A unique identifier of a Dataset.
