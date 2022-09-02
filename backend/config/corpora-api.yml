@@ -732,6 +732,10 @@ paths:
                       $ref: "#/components/schemas/ontology_element_array"
                     tissue:
                       $ref: "#/components/schemas/ontology_element_array"
+                    tissue_ancestors:
+                      type: array
+                      items:
+                        type: string
                     disease:
                       $ref: "#/components/schemas/ontology_element_array"
                     sex:
