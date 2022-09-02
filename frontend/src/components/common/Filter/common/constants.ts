@@ -2404,6 +2404,10 @@ export const TISSUE_SYSTEM_ONTOLOGY_TERM_SET: OntologyTermSet = {
       ontology_term_id: "UBERON:0001007",
     },
     {
+      label: "embryo",
+      ontology_term_id: "UBERON:0000922",
+    },
+    {
       label: "endocrine system",
       ontology_term_id: "UBERON:0000949",
     },
