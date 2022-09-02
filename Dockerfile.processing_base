@@ -1,4 +1,4 @@
-FROM rocker/r-ver:4.0.3
+FROM satijalab/seurat:4.1.0
 
 # Most of these are required for SCE
 RUN apt-get update && apt-get -yq install \
@@ -12,8 +12,6 @@ RUN apt-get update && apt-get -yq install \
       libcurl4-openssl-dev \
       libglpk-dev \
       libxml2-dev \
-      libgeos-dev \
-      libcairo2-dev \
       wget \
 
   && apt-get clean \
@@ -24,6 +22,5 @@ RUN apt-get update && apt-get -yq install \
   # note: Loom format has been deprecated from cellxgene but cellgeni/sceasy has a dependency on LoomExperiment
   #       See https://github.com/cellgeni/sceasy#installation
   R -e "BiocManager::install('LoomExperiment')" && \
-  R -e "install.packages(c('devtools', 'igraph', 'vctrs'));" && \
-  R -e "library(devtools); devtools::install_github('cellgeni/sceasy@v0.0.7')" && \
-  R -e "install.packages('Seurat',dependencies=TRUE, repos='http://cran.rstudio.com/', version='4.1.1')"
+  R -e "install.packages(c('devtools', 'igraph'));" && \
+  R -e "library(devtools); devtools::install_github('cellgeni/sceasy@v0.0.7')"
