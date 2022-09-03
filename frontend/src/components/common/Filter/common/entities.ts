@@ -205,7 +205,22 @@ export interface NoneValueRestrictionKind {
   valueRestrictionKind: "NONE";
 }
 
-// ** Panel value source discriminating unions ** //
+// ** Panel search discriminating unions ** //
+
+/**
+ * Model of filter that when a search term is selected, the search input is cleared. For example, system or organ.
+ * TODO(cc) naming of this and below
+ */
+export interface SearchSingleSelectKind {
+  searchKind: "SEARCH_SINGLE_SELECT";
+}
+
+/**
+ * Model of filter that when a search term is selected, the search input is not cleared. For example, tissue.
+ */
+export interface SearchMultiSelect {
+  searchKind: "SEARCH_MULTI_SELECT";
+}
 
 /**
  * Model of a filter panel that uses a hand-curated set of terms to determine the filter category values allowed for
@@ -267,7 +282,8 @@ export enum CATEGORY_FILTER_PANEL_ID {
 type ChildCategoryFilterPanelConfig = BaseCategoryFilterPanelConfig &
   OnlyCuratedValueSourceKind &
   InferredExplicitFilterValueKind &
-  SelectedParentTermsValueRestrictionKind;
+  SelectedParentTermsValueRestrictionKind &
+  SearchSingleSelectKind;
 
 /**
  * Filter category panel that uses checkboxes for filtering, is ontology-aware, and whose selected values restrict
@@ -276,7 +292,8 @@ type ChildCategoryFilterPanelConfig = BaseCategoryFilterPanelConfig &
 type LeafCategoryFilterPanelConfig = BaseCategoryFilterPanelConfig &
   ExceptCuratedValueSourceKind &
   ExplicitOnlyFilterValueKind &
-  SelectedParentTermsValueRestrictionKind;
+  SelectedParentTermsValueRestrictionKind &
+  SearchMultiSelect;
 
 /**
  * Filter category panel that uses checkboxes for filtering, is ontology-aware, and whose selected values restrict
@@ -285,7 +302,8 @@ type LeafCategoryFilterPanelConfig = BaseCategoryFilterPanelConfig &
 type ParentCategoryFilterPanelConfig = BaseCategoryFilterPanelConfig &
   OnlyCuratedValueSourceKind &
   InferredExplicitFilterValueKind &
-  NoneValueRestrictionKind;
+  NoneValueRestrictionKind &
+  SearchSingleSelectKind;
 
 export type CategoryFilterPanelConfig =
   | ChildCategoryFilterPanelConfig
@@ -483,6 +501,7 @@ export interface OntologyMultiPanelCategoryView {
  */
 export interface OntologyPanelCategoryView {
   label: string;
+  isSearchMultiselect: boolean;
   views: SelectCategoryValueView[];
 }
 

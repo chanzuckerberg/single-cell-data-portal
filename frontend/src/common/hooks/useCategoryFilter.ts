@@ -1362,6 +1362,7 @@ function buildMultiPanelCategoryView(
 
       // Build panel view.
       accum.push({
+        isSearchMultiselect: builder.panel.searchKind === "SEARCH_MULTI_SELECT",
         label: builder.panel.label,
         views: panelSelectCategoryValueViews,
       });

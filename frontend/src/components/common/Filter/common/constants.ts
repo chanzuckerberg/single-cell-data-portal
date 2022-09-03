@@ -2263,6 +2263,7 @@ export const DEVELOPMENT_STAGE_ONTOLOGY_TERM_SET: OntologyTermSet = {
  * Tissues to be included for display in tissue system ontology tree.
  */
 /* eslint-disable sort-keys -- disabling key order for readability. */
+/* eslint-disable sonarjs/no-duplicate-string -- disable no dupes, this value is hand-curated */
 export const TISSUE_ORGAN_ONTOLOGY_TERM_SET: OntologyTermSet = {
   [ONTOLOGY_VIEW_KEY.UBERON]: [
     {
@@ -2379,6 +2380,7 @@ export const TISSUE_ORGAN_ONTOLOGY_TERM_SET: OntologyTermSet = {
     },
   ],
 };
+/* eslint-enable sonarjs/no-duplicate-string -- disable no dupes, this value is hand-curated */
 /* eslint-enable sort-keys -- disabling key order for readability. */
 
 /**
@@ -2633,6 +2635,7 @@ const CATEGORY_FILTER_CONFIGS: CategoryFilterConfig[] = [
         id: CATEGORY_FILTER_PANEL_ID.TISSUE_SYSTEM,
         label: "System",
         mask: TISSUE_SYSTEM_ONTOLOGY_TERM_SET,
+        searchKind: "SEARCH_SINGLE_SELECT",
         sourceKind: "CURATED_CATEGORIES",
         valueRestrictionKind: "NONE",
       },
@@ -2642,6 +2645,7 @@ const CATEGORY_FILTER_CONFIGS: CategoryFilterConfig[] = [
         label: "Organ",
         mask: TISSUE_ORGAN_ONTOLOGY_TERM_SET,
         parentCategoryPanelFilterIds: [CATEGORY_FILTER_PANEL_ID.TISSUE_SYSTEM],
+        searchKind: "SEARCH_SINGLE_SELECT",
         sourceKind: "CURATED_CATEGORIES",
         valueRestrictionKind: "CHILDREN_OF_SELECTED_PARENT_TERMS",
       },
@@ -2654,6 +2658,7 @@ const CATEGORY_FILTER_CONFIGS: CategoryFilterConfig[] = [
           CATEGORY_FILTER_PANEL_ID.TISSUE_ORGAN,
           CATEGORY_FILTER_PANEL_ID.TISSUE_SYSTEM,
         ],
+        searchKind: "SEARCH_MULTI_SELECT",
         sourceKind: "EXCEPT_CURATED",
         valueRestrictionKind: "CHILDREN_OF_SELECTED_PARENT_TERMS",
       },
@@ -2687,7 +2692,7 @@ export const COLLATOR_CASE_INSENSITIVE = new Intl.Collator("en", {
 });
 
 /* eslint-disable sort-keys -- disable key order, contents of this file are generated */
-/* eslint-disable sonarjs/no-duplicate-string -- disable no dupes, contents of this file are generated */
+/* eslint-disable sonarjs/no-duplicate-string -- disable no dupes, this value is generated */
 export const TISSUE_DESCENDANTS: { [key: string]: string[] } = {
   "UBERON:0001017": [
     "UBERON:0002811",
@@ -3133,5 +3138,5 @@ export const TISSUE_DESCENDANTS: { [key: string]: string[] } = {
     "UBERON:0001348",
   ],
 };
-/* eslint-enable sonarjs/no-duplicate-string -- disable no dupes, contents of this file are generated */
+/* eslint-enable sonarjs/no-duplicate-string -- disable no dupes, this value is generated */
 /* eslint-enable sort-keys -- disable key order, contents of this file are generated */
