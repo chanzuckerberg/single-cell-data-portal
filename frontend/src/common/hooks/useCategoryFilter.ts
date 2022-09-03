@@ -7,11 +7,11 @@ import {
 } from "react";
 import { Filters, FilterValue, Row } from "react-table";
 import { Ontology } from "src/common/entities";
-import { TISSUE_DESCENDANTS } from "src/common/queries/tissue-descendants";
 import {
   CATEGORY_FILTER_CONFIGS_BY_ID,
   COLLATOR_CASE_INSENSITIVE,
   DEVELOPMENT_STAGE_ONTOLOGY_TERM_SET,
+  TISSUE_DESCENDANTS,
   TISSUE_ORGAN_ONTOLOGY_TERM_SET,
   TISSUE_SYSTEM_ONTOLOGY_TERM_SET,
 } from "src/components/common/Filter/common/constants";
