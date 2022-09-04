@@ -3111,7 +3111,7 @@ const CATEGORY_FILTER_CONFIGS: CategoryFilterConfig[] = [
           CATEGORY_FILTER_PANEL_ID.TISSUE_SYSTEM,
         ],
         searchKind: "SEARCH_MULTI_SELECT",
-        sourceKind: "EXCEPT_CURATED",
+        sourceKind: "EXPLICIT_ONLY",
         valueRestrictionKind: "CHILDREN_OF_SELECTED_PARENT_TERMS",
       },
     ],

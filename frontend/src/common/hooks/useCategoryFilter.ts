@@ -60,7 +60,6 @@ import {
 import { track } from "../analytics";
 
 // TODO(cc) separate to utils files.
-// TODO(cc) publication date sort order
 
 /**
  * String value to append to labels in multi-panel categories if the value appears in more than one panel.
@@ -121,8 +120,9 @@ type FilterState = {
  * UI model of selected values in a multi-panel category filter. This model contains all selected and partial selected
  * values in a multi-panel category filter and is required as a separate record from react-table's filters which
  * only contains "overridden" selected values. For example, when "digestive system" and "tongue" are both selected in
- * the UI, react-table will only know that "tongue" is selected.
- * TODO(cc) rename, docs
+ * the UI, react-table will only know that "tongue" is selected. It also contains a model of the cross-panel ancestor/
+ * descendant relationships.
+ * TODO(cc) rename
  */
 export interface MultiPanelCategoryFilterUIState {
   selected: CategoryValueId[];
@@ -130,7 +130,12 @@ export interface MultiPanelCategoryFilterUIState {
   uiNodesByCategoryValueId: Map<CategoryValueId, MultiPanelUINode>;
 }
 
-// TODO(cc) - move to, export here and throughout
+/**
+ * Model of the cross-panel ancestor/descendant relationships. For example, blood has:
+ * - One UI parent (hematopoietic system),
+ * - Three UI children (blood non-specific, umbilical cord blood, venous blood).
+ * This model facilitates easy traversal and and lookup of ancestor/descendant relationships.
+ */
 export interface MultiPanelUINode {
   categoryValueId: CategoryValueId;
   uiChildren: CategoryValueId[];
@@ -239,7 +244,7 @@ export function useCategoryFilter<T extends Categories>(
   // Build up UI hierarchies for each multi-panel category filter, used to facilitate easy calculation of selected
   // and partially selected states.
   useEffect(() => {
-    // Only set multi-panel state if there are rows to parse category values from. TODO(cc) check only called once
+    // Only set multi-panel state if there are rows to parse category values from.
     if (!originalRows.length) {
       return;
     }
@@ -691,7 +696,10 @@ function buildCategoryViews(
 }
 
 /**
- * TODO(cc) docs, location, separate functions
+ * Build up the base UI model for each category filter.
+ * @param originalRows - Original result set before filtering.
+ * @param categoryFilterIds - Set of category IDs to include for this filter instance.
+ * @returns Map of UI nodes keyed by category value, facilitates easy lookups of UI node state.
  */
 function buildMultiPanelUIState<T extends Categories>(
   originalRows: Row<T>[],
@@ -714,7 +722,7 @@ function buildMultiPanelUIState<T extends Categories>(
         originalRows
       );
 
-      // Iterate over each set of panel values and build up parents and children for each value.
+      // Build up parent/children relationships for each category value.
       const uiHierarchyByCategoryValue = buildUINodesByCategoryValueId(
         categoryValueIdsByPanel
       );
@@ -774,7 +782,11 @@ export function buildUINodesByCategoryValueId(
 }
 
 /**
- * TODO(cc)
+ * Group all values from the original rows for the given category filter and group by panel.
+ * @param config - Configuration model of selected category.
+ * @param originalRows - Original result set before filtering.
+ * @returns Array of arrays, one outer array for each panel in the multi-panel category filter, and in inner array
+ * containing the category values for the panel.
  */
 export function keyCategoryValueIdsByPanel<T extends Categories>(
   config: OntologyMultiPanelFilterConfig,
@@ -782,36 +794,33 @@ export function keyCategoryValueIdsByPanel<T extends Categories>(
 ): CategoryValueId[][] {
   const { panels: panelConfigs } = config;
   return panelConfigs.reduce(
-    (uiAccum: CategoryValueId[][], panelConfig: CategoryFilterPanelConfig) => {
-      let prefixedOntologyTermIds;
-
+    (accum: CategoryValueId[][], panelConfig: CategoryFilterPanelConfig) => {
       // Determine the set of values for curated ontology panels.
       if (panelConfig.sourceKind === "CURATED_CATEGORIES") {
-        prefixedOntologyTermIds = [
-          ...listOntologyTreeIds(panelConfig.mask),
-        ].map((ontologyTermId) => buildInferredOntologyTermId(ontologyTermId));
-      }
-      // Otherwise, build up the set of values for this panel from the original rows.
-      else {
-        // TODO(cc) reduce rather than create and set/array
-        prefixedOntologyTermIds = [
-          ...new Set(
-            originalRows
-              // eslint-disable-next-line @typescript-eslint/ban-ts-comment --- TODO(cc) revisit - different between FilterKey (any value from dataset or collection) vs T extends Categories, also see if type assertion can be resolved
-              // @ts-ignore
-              .map((originalRow) => originalRow.original[config.filterOnKey]) // TODO(cc)
-              .flat()
-              .filter(
-                (value) =>
-                  removeOntologyTermId(value) === OrFilterPrefix.EXPLICIT
-              )
-          ),
-        ];
+        const categoryValueIds = [...listOntologyTreeIds(panelConfig.mask)].map(
+          (ontologyTermId) => buildInferredOntologyTermId(ontologyTermId)
+        );
+        accum.push(categoryValueIds);
+        return accum;
       }
 
-      uiAccum.push(prefixedOntologyTermIds);
-
-      return uiAccum;
+      // Otherwise, build up the set of values for this panel from the original rows: only include explicit values.
+      const { filterOnKey } = config;
+      const categoryValueIds = originalRows.reduce(
+        (explicitAccum, originalRow) => {
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment --- TODO(cc) revisit - different between FilterKey (any value from dataset or collection) vs T extends Categories, also see if type assertion can be resolved
+          // @ts-ignore
+          originalRow.original[filterOnKey].forEach((categoryValueId) => {
+            if (isExplicitOntologyTermId(categoryValueId)) {
+              explicitAccum.add(categoryValueId);
+            }
+          });
+          return explicitAccum;
+        },
+        new Set<CategoryValueId>()
+      );
+      accum.push([...categoryValueIds]);
+      return accum;
     },
     [] as CategoryValueId[][]
   );

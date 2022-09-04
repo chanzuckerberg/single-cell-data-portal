@@ -233,10 +233,10 @@ interface OnlyCuratedValueSourceKind {
 }
 
 /**
- * Model of a filter panel that displays any value not displayed in other panels. For example, tissue.
+ * Model of a filter panel that displays any value that is explicit only. For example, tissue.
  */
 interface ExceptCuratedValueSourceKind {
-  sourceKind: "EXCEPT_CURATED";
+  sourceKind: "EXPLICIT_ONLY";
 }
 
 // ** Filter value kind discriminating unions ** //

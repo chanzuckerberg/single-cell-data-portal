@@ -43,7 +43,8 @@ export const SYMBOL_THOUSAND = "k";
  * Build filter value with an inferred prefix. Used by ontology-aware filter categories that require filtering by both
  * inferred and explicit values (e.g. tissue).
  * @param ontologyTermId - The term ID to prefix with inferred.
- * @returns String containing inferred prefix pre-prended to the given ontology term ID.
+ * @returns String containing explicit prefix prepended to the given ontology term ID.
+ * TODO(cc) move to multi-panel utils
  */
 export function buildExplicitOntologyTermId(ontologyTermId: string): string {
   return `${OrFilterPrefix.EXPLICIT}:${ontologyTermId}`;
@@ -53,7 +54,7 @@ export function buildExplicitOntologyTermId(ontologyTermId: string): string {
  * Build filter value with an explicit prefix. Used by ontology-aware filter categories that require filtering by both
  * inferred and explicit values (e.g. tissue).
  * @param ontologyTermId - The term ID to prefix with inferred.
- * @returns String containing explicit prefix pre-prended to the given ontology term ID.
+ * @returns String containing inferred prefix prepended to the given ontology term ID.
  */
 export function buildInferredOntologyTermId(ontologyTermId: string): string {
   return `${OrFilterPrefix.INFERRED}:${ontologyTermId}`;

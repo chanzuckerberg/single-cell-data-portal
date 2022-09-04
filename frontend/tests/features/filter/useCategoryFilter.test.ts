@@ -3,10 +3,12 @@
  */
 
 // App dependencies
+import { Row } from "react-table";
 import {
   buildNextOntologyCategoryFilters,
   buildSelectedViews,
   buildUINodesByCategoryValueId,
+  keyCategoryValueIdsByPanel,
   listPartiallySelectedCategoryValueIds,
   MultiPanelCategoryFilterUIState,
   MultiPanelUINode,
@@ -15,14 +17,18 @@ import {
 import {
   CATEGORY_FILTER_CONFIGS_BY_ID,
   TISSUE_DESCENDANTS,
+  TISSUE_SYSTEM_ONTOLOGY_TERM_SET,
 } from "src/components/common/Filter/common/constants";
 import {
   CategoryValueId,
   CATEGORY_FILTER_ID,
   CuratedOntologyCategoryFilterConfig,
+  DatasetRow,
+  OntologyMultiPanelFilterConfig,
   OrFilterPrefix,
   SelectCategoryValueView,
 } from "src/components/common/Filter/common/entities";
+import { buildInferredOntologyTermId } from "src/components/common/Filter/common/utils";
 
 describe("useCategoryFilter", () => {
   describe("Multi-Panel Category", () => {
@@ -357,6 +363,75 @@ describe("useCategoryFilter", () => {
       [EXPLICIT_VENOUS_BLOOD, EXPLICIT_VENOUS_BLOOD_CATEGORY_VALUE_VIEW],
       [EXPLICIT_THORACIC_LYMPH_NODE, EXPLICIT_THORACIC_LYMPH_NODE_VALUE_VIEW],
     ]);
+
+    describe.only("keyCategoryValueIdsByPanel", () => {
+      /**
+       * Panels: curated, curated, explicit.
+       */
+      it("keys panels", () => {
+        const config =
+          CATEGORY_FILTER_CONFIGS_BY_ID[CATEGORY_FILTER_ID.TISSUE_CALCULATED];
+        const categoryValueIdsByPanel = keyCategoryValueIdsByPanel(
+          config as OntologyMultiPanelFilterConfig,
+          []
+        );
+        expect(categoryValueIdsByPanel.length).toEqual(3);
+      });
+
+      /**
+       * Curated panel: system
+       */
+      it("keys curated panel", () => {
+        const config =
+          CATEGORY_FILTER_CONFIGS_BY_ID[CATEGORY_FILTER_ID.TISSUE_CALCULATED];
+        const categoryValueIdsByPanel = keyCategoryValueIdsByPanel(
+          config as OntologyMultiPanelFilterConfig,
+          []
+        );
+
+        const systemPanel = categoryValueIdsByPanel[0];
+        expect(systemPanel).toBeTruthy();
+
+        const systems = TISSUE_SYSTEM_ONTOLOGY_TERM_SET["UBERON"];
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- truthy check above
+        expect(systemPanel.length).toEqual(systems!.length);
+
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- truthy check above
+        const isEverySystemIncluded = systems!.every((system) =>
+          systemPanel.includes(
+            buildInferredOntologyTermId(system.ontology_term_id)
+          )
+        );
+        expect(isEverySystemIncluded).toBeTruthy();
+      });
+
+      /**
+       * Explicit panel: tissue
+       */
+      it("keys curated panel", () => {
+        const config =
+          CATEGORY_FILTER_CONFIGS_BY_ID[CATEGORY_FILTER_ID.TISSUE_CALCULATED];
+        const categoryValueIdsByPanel = keyCategoryValueIdsByPanel(
+          config as OntologyMultiPanelFilterConfig,
+          [
+            {
+              original: { tissueCalculated: [EXPLICIT_BLOOD] },
+            } as unknown as Row<DatasetRow>,
+            {
+              original: { tissueCalculated: [EXPLICIT_BLOOD, EXPLICIT_SPLEEN] },
+            } as unknown as Row<DatasetRow>,
+          ]
+        );
+        console.log(categoryValueIdsByPanel);
+
+        const tissuePanel = categoryValueIdsByPanel[2];
+        expect(tissuePanel).toBeTruthy();
+
+        expect(tissuePanel.length).toEqual(2);
+        expect(tissuePanel.includes(EXPLICIT_BLOOD)).toBeTruthy();
+        expect(tissuePanel.includes(EXPLICIT_SPLEEN)).toBeTruthy();
+      });
+    });
 
     describe("onRemoveMultiPanelCategoryValueTag", () => {
       /**
