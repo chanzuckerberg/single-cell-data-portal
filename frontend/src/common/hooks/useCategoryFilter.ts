@@ -94,7 +94,7 @@ type KeyedSelectCategoryValue = Map<CategoryValueId, SelectCategoryValue>;
 /**
  * Internal filter model of a single or multiselect category, an ontology category or a multi-panel category.
  */
-interface SelectCategoryValue {
+export interface SelectCategoryValue {
   key: CategoryValueId;
   count: number;
   selected: boolean;
@@ -145,7 +145,7 @@ export interface MultiPanelUINode {
 /**
  * UI model of selected values across all multi-panel category filters.
  */
-type MultiPanelUIState = Map<
+export type MultiPanelUIState = Map<
   CATEGORY_FILTER_ID,
   MultiPanelCategoryFilterUIState
 >;
@@ -1367,15 +1367,14 @@ interface OntologyPanelCategoryViewBuilder {
 /**
  * Build view model of multi-panel category.
  * @param config - Config model of ontology category.
- * @param categoryValueByValue - Internal filter model of single or multiselect category.
- * checking enabled state of view that is dependent on the state of another category.
- * @param multiPanelUIState - Current set of category values that the user has selected in multi-panel cateogry filters.
+ * @param categoryValuesByValue - Internal filter model of single or multiselect category.
+ * @param multiPanelUIState - Current set of category values that the user has selected in multi-panel category filters.
  * @param ontologyTermLabelsById - Set of ontology term labels keyed by term ID, used to determine labels for ontology
- * @returns Select category view model.
+ * @returns Multi-panel category view model.
  */
-function buildMultiPanelCategoryView(
+export function buildMultiPanelCategoryView(
   config: OntologyMultiPanelFilterConfig,
-  categoryValueByValue: KeyedSelectCategoryValue,
+  categoryValuesByValue: KeyedSelectCategoryValue,
   multiPanelUIState: MultiPanelUIState,
   ontologyTermLabelsById: Map<string, string>
 ): OntologyMultiPanelCategoryView {
@@ -1394,7 +1393,7 @@ function buildMultiPanelCategoryView(
   }
 
   // Build builders for each panel. TODO(cc) remove now that we have ui state?
-  const selectCategoryValues = [...categoryValueByValue.values()];
+  const selectCategoryValues = [...categoryValuesByValue.values()];
   const selectedValues = categoryFilterUIState.selected;
   const builders = buildParentPanelBuilders(
     panelConfigs,
@@ -1403,48 +1402,17 @@ function buildMultiPanelCategoryView(
   );
 
   // Build value view models for each panel.
-  const ontologyPanelCategoryViews = builders.reduce(
-    (accum, builder, index) => {
-      // Determine the set of selected values that could possibly restrict the include list for this panel. That is,
-      // find the selected values of panels that are parents to this panel.
-      const parentBuilders = builders.slice(0, index);
-      const visibleSelectCategoryValues = parentBuilders.length
-        ? applySelectCategoryValueIncludeList(parentBuilders, builder)
-        : builder.selectCategoryValues;
-
-      // Build up view models for each select category value.
-      const panelSelectCategoryValueViews: SelectCategoryValueView[] =
-        buildSelectCategoryValueViews(
-          config,
-          visibleSelectCategoryValues,
-          ontologyTermLabelsById
-        );
-
-      // Apply non-specific labels to values that appear in this panel as well as parent panels. TODO(cc) add discriminating union for this as we only want it for tissue
-      const parentPanelView = accum.slice(0, index);
-      if (parentPanelView.length) {
-        applyNonSpecificLabel(parentPanelView, panelSelectCategoryValueViews);
-      }
-
-      // Sort views.
-      panelSelectCategoryValueViews.sort(sortCategoryValueViews("label"));
-
-      // Build panel view.
-      accum.push({
-        isSearchMultiselect: builder.panel.searchKind === "SEARCH_MULTI_SELECT",
-        label: builder.panel.label,
-        views: panelSelectCategoryValueViews,
-      });
-      return accum;
-    },
-    [] as OntologyPanelCategoryView[]
+  const ontologyPanelCategoryViews = buildOntologyPanelCategoryViews(
+    config,
+    builders,
+    ontologyTermLabelsById
   );
 
   // Determine set of selected values for this multi-panel category
   const allCategoryValueViews = ontologyPanelCategoryViews
     .map((ontologyPanelCategoryView) => ontologyPanelCategoryView.views)
     .flat();
-  const selectedViews = buildSelectedViews(
+  const selectedViews = listMultiPanelSelectedViews(
     allCategoryValueViews,
     categoryFilterUIState
   );
@@ -1459,10 +1427,53 @@ function buildMultiPanelCategoryView(
 }
 
 /**
+ * TODO(cc)
+ */
+export function buildOntologyPanelCategoryViews(
+  config: OntologyMultiPanelFilterConfig,
+  builders: OntologyPanelCategoryViewBuilder[],
+  ontologyTermLabelsById: Map<string, string>
+): OntologyPanelCategoryView[] {
+  return builders.reduce((accum, builder, index) => {
+    // Determine the set of selected values that could possibly restrict the include list for this panel. That is,
+    // find the selected values of panels that are parents to this panel.
+    const parentBuilders = builders.slice(0, index);
+    const visibleSelectCategoryValues = parentBuilders.length
+      ? applySelectCategoryValueIncludeList(parentBuilders, builder)
+      : builder.selectCategoryValues;
+
+    // Build up view models for each select category value.
+    const panelSelectCategoryValueViews: SelectCategoryValueView[] =
+      buildSelectCategoryValueViews(
+        config,
+        visibleSelectCategoryValues,
+        ontologyTermLabelsById
+      );
+
+    // Apply non-specific labels to values that appear in this panel as well as parent panels. TODO(cc) add discriminating union for this as we only want it for tissue
+    const parentPanelView = accum.slice(0, index);
+    if (parentPanelView.length) {
+      applyNonSpecificLabel(parentPanelView, panelSelectCategoryValueViews);
+    }
+
+    // Sort views.
+    panelSelectCategoryValueViews.sort(sortCategoryValueViews("label"));
+
+    // Build panel view.
+    accum.push({
+      isSearchMultiselect: builder.panel.searchKind === "SEARCH_MULTI_SELECT",
+      label: builder.panel.label,
+      views: panelSelectCategoryValueViews,
+    });
+    return accum;
+  }, [] as OntologyPanelCategoryView[]);
+}
+
+/**
  * TODO(cc) on rename, rename tests, can we run this off just categoryFilterUIState (and just pull the labels from keyed categoryValueViews)
  *
  */
-export function buildSelectedViews(
+export function listMultiPanelSelectedViews(
   categoryValueViews: SelectCategoryValueView[],
   categoryFilterUIState: MultiPanelCategoryFilterUIState
 ): SelectCategoryValueView[] {

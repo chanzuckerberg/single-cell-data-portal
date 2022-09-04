@@ -1,19 +1,50 @@
 /**
  * Test suite for category filter hook.
+ *
+ * Multi-panel tests are based on the following hierarchy:
+ *
+ * hematopoietic system
+ * -- blood
+ * ---- blood, non-specific
+ * ---- umbilical cord blood
+ * ---- venous blood
+ * -- bone marrow
+ * ---- bone marrow, non-specific
+ * -- spleen
+ * ---- spleen, non-specific
+ * -- thymus
+ * ---- thymus, non-specific
+ *
+ * immune system
+ * -- bone marrow
+ * ---- bone marrow, non-specific
+ * -- lymph node
+ * -- spleen
+ * ---- spleen, non-specific
+ * -- thymus
+ * ---- thymus, non-specific
+ *
+ * renal system
+ * ---- ureter
+ * ---- urethra
+ * -- kidney
  */
 
 // App dependencies
 import { Row } from "react-table";
 import {
+  buildMultiPanelCategoryView,
   buildNextOntologyCategoryFilters,
-  buildSelectedViews,
   buildUINodesByCategoryValueId,
   keyCategoryValueIdsByPanel,
+  listMultiPanelSelectedViews,
   listPartiallySelectedCategoryValues,
   MultiPanelCategoryFilterUIState,
   MultiPanelUINode,
+  MultiPanelUIState,
   onRemoveMultiPanelCategoryValueTag,
   overrideSelectedParents,
+  SelectCategoryValue,
 } from "src/common/hooks/useCategoryFilter";
 import {
   CATEGORY_FILTER_CONFIGS_BY_ID,
@@ -40,6 +71,7 @@ describe("useCategoryFilter", () => {
     const TERM_ID_HEMATOPOIETIC_SYSTEM = "UBERON:0002390";
     const TERM_ID_IMMUNE_SYSTEM = "UBERON:0002405";
     const TERM_ID_KIDNEY = "UBERON:0002113";
+    const TERM_ID_LYMPH_NODE = "UBERON:0000029";
     const TERM_ID_SPLEEN = "UBERON:0002106";
     const TERM_ID_RENAL_MEDULLA = "UBERON:0000362";
     const TERM_ID_RENAL_SYSTEM = "UBERON:0001008";
@@ -56,6 +88,7 @@ describe("useCategoryFilter", () => {
     const INFERRED_HEMATOPOIETIC_SYSTEM = `${OrFilterPrefix.INFERRED}:${TERM_ID_HEMATOPOIETIC_SYSTEM}`;
     const INFERRED_IMMUNE_SYSTEM = `${OrFilterPrefix.INFERRED}:${TERM_ID_IMMUNE_SYSTEM}`;
     const INFERRED_KIDNEY = `${OrFilterPrefix.INFERRED}:${TERM_ID_KIDNEY}`;
+    const INFERRED_LYMPH_NODE = `${OrFilterPrefix.INFERRED}:${TERM_ID_LYMPH_NODE}`;
     const INFERRED_RENAL_SYSTEM = `${OrFilterPrefix.INFERRED}:${TERM_ID_RENAL_SYSTEM}`;
     const INFERRED_SPLEEN = `${OrFilterPrefix.INFERRED}:${TERM_ID_SPLEEN}`;
     const INFERRED_THYMUS = `${OrFilterPrefix.INFERRED}:${TERM_ID_THYMUS}`;
@@ -72,6 +105,145 @@ describe("useCategoryFilter", () => {
     const EXPLICIT_URETER = `${OrFilterPrefix.EXPLICIT}:${TERM_ID_URETER}`;
     const EXPLICIT_URETHRA = `${OrFilterPrefix.EXPLICIT}:${TERM_ID_URETHRA}`;
     const EXPLICIT_VENOUS_BLOOD = `${OrFilterPrefix.EXPLICIT}:${TERM_ID_VENOUS_BLOOD}`;
+
+    const INFERRED_HEMATOPOIETIC_SYSTEM_CATEGORY_VALUE = {
+      count: 0,
+      key: INFERRED_HEMATOPOIETIC_SYSTEM,
+      selected: false,
+      selectedPartial: false,
+    };
+
+    const INFERRED_IMMUNE_SYSTEM_CATEGORY_VALUE = {
+      count: 0,
+      key: INFERRED_IMMUNE_SYSTEM,
+      selected: false,
+      selectedPartial: false,
+    };
+
+    const INFERRED_RENAL_SYSTEM_CATEGORY_VALUE = {
+      count: 0,
+      key: INFERRED_RENAL_SYSTEM,
+      selected: false,
+      selectedPartial: false,
+    };
+
+    const INFERRED_BLOOD_CATEGORY_VALUE = {
+      count: 0,
+      key: INFERRED_BLOOD,
+      selected: false,
+      selectedPartial: false,
+    };
+
+    const INFERRED_BONE_MARROW_CATEGORY_VALUE = {
+      count: 0,
+      key: INFERRED_BONE_MARROW,
+      selected: false,
+      selectedPartial: false,
+    };
+
+    const INFERRED_LYMPH_NODE_CATEGORY_VALUE = {
+      count: 0,
+      key: INFERRED_LYMPH_NODE,
+      selected: false,
+      selectedPartial: false,
+    };
+
+    const INFERRED_SPLEEN_CATEGORY_VALUE = {
+      count: 0,
+      key: INFERRED_SPLEEN,
+      selected: false,
+      selectedPartial: false,
+    };
+
+    const INFERRED_THYMUS_CATEGORY_VALUE = {
+      count: 0,
+      key: INFERRED_THYMUS,
+      selected: false,
+      selectedPartial: false,
+    };
+
+    const EXPLICIT_BLOOD_CATEGORY_VALUE = {
+      count: 0,
+      key: EXPLICIT_BLOOD,
+      selected: false,
+      selectedPartial: false,
+    };
+
+    const EXPLICIT_BONE_MARROW_CATEGORY_VALUE = {
+      count: 0,
+      key: EXPLICIT_BONE_MARROW,
+      selected: false,
+      selectedPartial: false,
+    };
+
+    const EXPLICIT_SPLEEN_CATEGORY_VALUE = {
+      count: 0,
+      key: EXPLICIT_SPLEEN,
+      selected: false,
+      selectedPartial: false,
+    };
+
+    const EXPLICIT_THYMUS_CATEGORY_VALUE = {
+      count: 0,
+      key: EXPLICIT_THYMUS,
+      selected: false,
+      selectedPartial: false,
+    };
+
+    const EXPLICIT_UMBILICAL_CORD_BLOOD_CATEGORY_VALUE = {
+      count: 0,
+      key: EXPLICIT_UMBILICAL_CORD_BLOOD,
+      selected: false,
+      selectedPartial: false,
+    };
+
+    const EXPLICIT_URETER_CATEGORY_VALUE = {
+      count: 0,
+      key: EXPLICIT_URETER,
+      selected: false,
+      selectedPartial: false,
+    };
+
+    const EXPLICIT_URETHRA_CATEGORY_VALUE = {
+      count: 0,
+      key: EXPLICIT_URETHRA,
+      selected: false,
+      selectedPartial: false,
+    };
+
+    const EXPLICIT_VENOUS_BLOOD_CATEGORY_VALUE = {
+      count: 0,
+      key: EXPLICIT_VENOUS_BLOOD,
+      selected: false,
+      selectedPartial: false,
+    };
+
+    const KEYED_CATEGORY_VALUES = new Map<CategoryValueId, SelectCategoryValue>(
+      [
+        [
+          INFERRED_HEMATOPOIETIC_SYSTEM,
+          INFERRED_HEMATOPOIETIC_SYSTEM_CATEGORY_VALUE,
+        ],
+        [INFERRED_IMMUNE_SYSTEM, INFERRED_IMMUNE_SYSTEM_CATEGORY_VALUE],
+        [INFERRED_RENAL_SYSTEM, INFERRED_RENAL_SYSTEM_CATEGORY_VALUE],
+        [INFERRED_BLOOD, INFERRED_BLOOD_CATEGORY_VALUE],
+        [INFERRED_BONE_MARROW, INFERRED_BONE_MARROW_CATEGORY_VALUE],
+        [INFERRED_LYMPH_NODE, INFERRED_LYMPH_NODE_CATEGORY_VALUE],
+        [INFERRED_SPLEEN, INFERRED_SPLEEN_CATEGORY_VALUE],
+        [INFERRED_THYMUS, INFERRED_THYMUS_CATEGORY_VALUE],
+        [EXPLICIT_BLOOD, EXPLICIT_BLOOD_CATEGORY_VALUE],
+        [EXPLICIT_BONE_MARROW, EXPLICIT_BONE_MARROW_CATEGORY_VALUE],
+        [EXPLICIT_SPLEEN, EXPLICIT_SPLEEN_CATEGORY_VALUE],
+        [EXPLICIT_THYMUS, EXPLICIT_THYMUS_CATEGORY_VALUE],
+        [
+          EXPLICIT_UMBILICAL_CORD_BLOOD,
+          EXPLICIT_UMBILICAL_CORD_BLOOD_CATEGORY_VALUE,
+        ],
+        [EXPLICIT_URETER, EXPLICIT_URETER_CATEGORY_VALUE],
+        [EXPLICIT_URETHRA, EXPLICIT_URETHRA_CATEGORY_VALUE],
+        [EXPLICIT_VENOUS_BLOOD, EXPLICIT_VENOUS_BLOOD_CATEGORY_VALUE],
+      ]
+    );
 
     const TISSUE_SYSTEMS = [
       INFERRED_HEMATOPOIETIC_SYSTEM,
@@ -144,6 +316,12 @@ describe("useCategoryFilter", () => {
       uiParents: [INFERRED_HEMATOPOIETIC_SYSTEM, INFERRED_IMMUNE_SYSTEM],
     };
 
+    const INFERRED_LYMPH_NODE_UI_NODE = {
+      categoryValueId: INFERRED_LYMPH_NODE,
+      uiChildren: [], // Does not match UBERON
+      uiParents: [INFERRED_IMMUNE_SYSTEM],
+    };
+
     const INFERRED_SPLEEN_UI_NODE = {
       categoryValueId: INFERRED_SPLEEN,
       uiChildren: [EXPLICIT_SPLEEN],
@@ -206,6 +384,7 @@ describe("useCategoryFilter", () => {
       [INFERRED_IMMUNE_SYSTEM, INFERRED_IMMUNE_SYSTEM_UI_NODE],
       [INFERRED_BLOOD, INFERRED_BLOOD_UI_NODE],
       [INFERRED_BONE_MARROW, INFERRED_BONE_MARROW_UI_NODE],
+      [INFERRED_LYMPH_NODE, INFERRED_LYMPH_NODE_UI_NODE],
       [INFERRED_SPLEEN, INFERRED_SPLEEN_UI_NODE],
       [INFERRED_THYMUS, INFERRED_THYMUS_UI_NODE],
       [EXPLICIT_BLOOD, EXPLICIT_BLOOD_UI_NODE],
@@ -257,6 +436,15 @@ describe("useCategoryFilter", () => {
       selected: false,
       selectedPartial: false,
       value: INFERRED_BONE_MARROW,
+    };
+
+    const INFERRED_LYMPH_NODE_CATEGORY_VALUE_VIEW = {
+      count: 0,
+      key: INFERRED_LYMPH_NODE,
+      label: "lymph node",
+      selected: false,
+      selectedPartial: false,
+      value: INFERRED_LYMPH_NODE,
     };
 
     const INFERRED_SPLEEN_CATEGORY_VALUE_VIEW = {
@@ -313,7 +501,7 @@ describe("useCategoryFilter", () => {
       value: EXPLICIT_THYMUS,
     };
 
-    const EXPLICIT_UMBIILCAL_CORD_CATEGORY_VALUE_VIEW = {
+    const EXPLICIT_UMBILICAL_CORD_CATEGORY_VALUE_VIEW = {
       count: 0,
       key: EXPLICIT_UMBILICAL_CORD_BLOOD,
       label: "umbilical cord blood",
@@ -351,6 +539,7 @@ describe("useCategoryFilter", () => {
       [INFERRED_IMMUNE_SYSTEM, INFERRED_IMMUNE_CATEGORY_VALUE_VIEW],
       [INFERRED_BLOOD, INFERRED_BLOOD_CATEGORY_VALUE_VIEW],
       [INFERRED_BONE_MARROW, INFERRED_BONE_MARROW_CATEGORY_VALUE_VIEW],
+      [INFERRED_LYMPH_NODE, INFERRED_LYMPH_NODE_CATEGORY_VALUE_VIEW],
       [INFERRED_SPLEEN, INFERRED_SPLEEN_CATEGORY_VALUE_VIEW],
       [INFERRED_THYMUS, INFERRED_THYMUS_CATEGORY_VALUE_VIEW],
       [EXPLICIT_BLOOD, EXPLICIT_BLOOD_CATEGORY_VALUE_VIEW],
@@ -359,7 +548,7 @@ describe("useCategoryFilter", () => {
       [EXPLICIT_THYMUS, EXPLICIT_THYMUS_CATEGORY_VALUE_VIEW],
       [
         EXPLICIT_UMBILICAL_CORD_BLOOD,
-        EXPLICIT_UMBIILCAL_CORD_CATEGORY_VALUE_VIEW,
+        EXPLICIT_UMBILICAL_CORD_CATEGORY_VALUE_VIEW,
       ],
       [EXPLICIT_VENOUS_BLOOD, EXPLICIT_VENOUS_BLOOD_CATEGORY_VALUE_VIEW],
       [EXPLICIT_THORACIC_LYMPH_NODE, EXPLICIT_THORACIC_LYMPH_NODE_VALUE_VIEW],
@@ -433,7 +622,7 @@ describe("useCategoryFilter", () => {
       });
     });
 
-    describe.only("overrideSelectedParents", () => {
+    describe("overrideSelectedParents", () => {
       /**
        * Selected: blood non-specific
        * Post-overrides: blood non-specific
@@ -970,7 +1159,7 @@ describe("useCategoryFilter", () => {
       });
     });
 
-    describe("buildSelectedViews", () => {
+    describe("listMultiPanelSelectedViews", () => {
       /**
        * Selected - blood non-specific
        * Selected partial - none
@@ -991,7 +1180,7 @@ describe("useCategoryFilter", () => {
           false
         );
 
-        const selectedViews = buildSelectedViews(
+        const selectedViews = listMultiPanelSelectedViews(
           [...valueViews.values()],
           categoryFilterUIState
         );
@@ -1026,7 +1215,7 @@ describe("useCategoryFilter", () => {
           false
         );
 
-        const selectedViews = buildSelectedViews(
+        const selectedViews = listMultiPanelSelectedViews(
           [...valueViews.values()],
           categoryFilterUIState
         );
@@ -1071,15 +1260,13 @@ describe("useCategoryFilter", () => {
           false
         );
 
-        const selectedViews = buildSelectedViews(
+        const selectedViews = listMultiPanelSelectedViews(
           [...valueViews.values()],
           categoryFilterUIState
         );
 
         expect(selectedViews.length).toEqual(3);
-        const selectedKeys = selectedViews.map(
-          (selectedView) => selectedView.key
-        );
+        const selectedKeys = listCategoryValueIds(selectedViews);
         expect(selectedKeys.includes(EXPLICIT_BLOOD)).toBeTruthy();
         expect(
           selectedKeys.includes(EXPLICIT_UMBILICAL_CORD_BLOOD)
@@ -1113,7 +1300,7 @@ describe("useCategoryFilter", () => {
           true
         );
 
-        const selectedViews = buildSelectedViews(
+        const selectedViews = listMultiPanelSelectedViews(
           [...valueViews.values()],
           categoryFilterUIState
         );
@@ -1165,7 +1352,7 @@ describe("useCategoryFilter", () => {
           false
         );
 
-        const selectedViews = buildSelectedViews(
+        const selectedViews = listMultiPanelSelectedViews(
           [...valueViews.values()],
           categoryFilterUIState
         );
@@ -1224,7 +1411,7 @@ describe("useCategoryFilter", () => {
           false
         );
 
-        const selectedViews = buildSelectedViews(
+        const selectedViews = listMultiPanelSelectedViews(
           [...valueViews.values()],
           categoryFilterUIState
         );
@@ -1290,16 +1477,14 @@ describe("useCategoryFilter", () => {
           false
         );
 
-        const selectedViews = buildSelectedViews(
+        const selectedViews = listMultiPanelSelectedViews(
           [...valueViews.values()],
           categoryFilterUIState
         );
 
         expect(selectedViews.length).toEqual(4);
 
-        const selectedKeys = selectedViews.map(
-          (selectedView) => selectedView.key
-        );
+        const selectedKeys = listCategoryValueIds(selectedViews);
         expect(
           selectedKeys.includes(INFERRED_HEMATOPOIETIC_SYSTEM)
         ).toBeTruthy();
@@ -1372,7 +1557,7 @@ describe("useCategoryFilter", () => {
           false
         );
 
-        const selectedViews = buildSelectedViews(
+        const selectedViews = listMultiPanelSelectedViews(
           [...valueViews.values()],
           categoryFilterUIState
         );
@@ -1436,25 +1621,19 @@ describe("useCategoryFilter", () => {
           false
         );
 
-        const selectedViews = buildSelectedViews(
+        const selectedViews = listMultiPanelSelectedViews(
           [...valueViews.values()],
           categoryFilterUIState
         );
 
         expect(selectedViews.length).toEqual(4);
 
-        const selectedKeys = selectedViews.map(
-          (selectedView) => selectedView.key
-        );
+        const selectedKeys = listCategoryValueIds(selectedViews);
         expect(selectedKeys.includes(INFERRED_BONE_MARROW)).toBeTruthy();
         expect(selectedKeys.includes(INFERRED_SPLEEN)).toBeTruthy();
         expect(selectedKeys.includes(INFERRED_THYMUS)).toBeTruthy();
         expect(selectedKeys.includes(EXPLICIT_BLOOD)).toBeTruthy();
       });
-
-      // TODO(cc)
-      // no parents
-      // selected organ, selected tissue (with no relationship between the two)
     });
 
     describe("buildUINodesByCategoryValueId", () => {
@@ -1561,6 +1740,448 @@ describe("useCategoryFilter", () => {
 
         const uiChildren = uiNode?.uiChildren;
         expect(uiChildren?.length).toEqual(0);
+      });
+    });
+
+    describe("buildMultiPanelCategoryView", () => {
+      let multiPanelUIState: MultiPanelUIState;
+      beforeAll(() => {
+        const uiNodesByCategoryValueId = buildUINodesByCategoryValueId(
+          CATEGORY_VALUE_IDS_BY_PANEL,
+          TISSUE_DESCENDANTS
+        );
+
+        const categoryFilterUISTate = {
+          selected: [],
+          selectedPartial: [],
+          uiNodesByCategoryValueId,
+        };
+
+        multiPanelUIState = new Map<
+          CATEGORY_FILTER_ID,
+          MultiPanelCategoryFilterUIState
+        >([[CATEGORY_FILTER_ID.TISSUE_CALCULATED, categoryFilterUISTate]]);
+      });
+
+      /**
+       * Selected: none
+       * Views: all
+       */
+      it("displays all views when nothing selected", () => {
+        const categoryView = buildMultiPanelCategoryView(
+          CATEGORY_FILTER_CONFIGS_BY_ID[
+            CATEGORY_FILTER_ID.TISSUE_CALCULATED
+          ] as OntologyMultiPanelFilterConfig,
+          KEYED_CATEGORY_VALUES,
+          multiPanelUIState,
+          new Map<string, string>()
+        );
+
+        expect(categoryView.panels.length).toEqual(3);
+
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
+        const systemPanelViews = categoryView.panels[0]!.views;
+        expect(systemPanelViews.length).toEqual(3);
+        const systemCategoryValueIds = listCategoryValueIds(systemPanelViews);
+        expect(
+          systemCategoryValueIds.includes(INFERRED_HEMATOPOIETIC_SYSTEM)
+        ).toBeTruthy();
+        expect(
+          systemCategoryValueIds.includes(INFERRED_IMMUNE_SYSTEM)
+        ).toBeTruthy();
+        expect(
+          systemCategoryValueIds.includes(INFERRED_RENAL_SYSTEM)
+        ).toBeTruthy();
+
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
+        const organPanelViews = categoryView.panels[1]!.views;
+        expect(organPanelViews.length).toEqual(5);
+        const organCategoryValueIds = listCategoryValueIds(organPanelViews);
+        expect(organCategoryValueIds.includes(INFERRED_BLOOD)).toBeTruthy();
+        expect(
+          organCategoryValueIds.includes(INFERRED_BONE_MARROW)
+        ).toBeTruthy();
+        expect(
+          organCategoryValueIds.includes(INFERRED_LYMPH_NODE)
+        ).toBeTruthy();
+        expect(organCategoryValueIds.includes(INFERRED_SPLEEN)).toBeTruthy();
+        expect(organCategoryValueIds.includes(INFERRED_THYMUS)).toBeTruthy();
+
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
+        const tissuePanelViews = categoryView.panels[2]!.views;
+        expect(tissuePanelViews.length).toEqual(8);
+        const tissueCategoryValueIds = listCategoryValueIds(tissuePanelViews);
+        expect(tissueCategoryValueIds.includes(EXPLICIT_BLOOD)).toBeTruthy();
+        expect(
+          tissueCategoryValueIds.includes(EXPLICIT_BONE_MARROW)
+        ).toBeTruthy();
+        expect(tissueCategoryValueIds.includes(EXPLICIT_SPLEEN)).toBeTruthy();
+        expect(tissueCategoryValueIds.includes(EXPLICIT_THYMUS)).toBeTruthy();
+        expect(tissueCategoryValueIds.includes(EXPLICIT_URETER)).toBeTruthy();
+        expect(tissueCategoryValueIds.includes(EXPLICIT_URETHRA)).toBeTruthy();
+        expect(
+          tissueCategoryValueIds.includes(EXPLICIT_UMBILICAL_CORD_BLOOD)
+        ).toBeTruthy();
+        expect(
+          tissueCategoryValueIds.includes(EXPLICIT_VENOUS_BLOOD)
+        ).toBeTruthy();
+      });
+
+      /**
+       * Selected: blood non-specific
+       * Views: all systems, all organs, all tissues
+       */
+      it("doesn't filter systems, organs or tissues when tissue selected", () => {
+        const updatedKeyedCategoryValues = new Map(KEYED_CATEGORY_VALUES);
+        updateSelectCategoryValueSelected(
+          updatedKeyedCategoryValues,
+          EXPLICIT_BLOOD,
+          true,
+          false
+        );
+
+        const updatedMultiPanelUIState = new Map(multiPanelUIState);
+        updateCategoryFilterUIStateSelected(
+          updatedMultiPanelUIState,
+          CATEGORY_FILTER_ID.TISSUE_CALCULATED,
+          [EXPLICIT_BLOOD],
+          []
+        );
+
+        const categoryView = buildMultiPanelCategoryView(
+          CATEGORY_FILTER_CONFIGS_BY_ID[
+            CATEGORY_FILTER_ID.TISSUE_CALCULATED
+          ] as OntologyMultiPanelFilterConfig,
+          updatedKeyedCategoryValues,
+          updatedMultiPanelUIState,
+          new Map<string, string>()
+        );
+
+        expect(categoryView.panels.length).toEqual(3);
+
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
+        const systemPanelViews = categoryView.panels[0]!.views;
+        expect(systemPanelViews.length).toEqual(3);
+        const systemCategoryValueIds = listCategoryValueIds(systemPanelViews);
+        expect(
+          systemCategoryValueIds.includes(INFERRED_HEMATOPOIETIC_SYSTEM)
+        ).toBeTruthy();
+        expect(
+          systemCategoryValueIds.includes(INFERRED_IMMUNE_SYSTEM)
+        ).toBeTruthy();
+        expect(
+          systemCategoryValueIds.includes(INFERRED_RENAL_SYSTEM)
+        ).toBeTruthy();
+
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
+        const organPanelViews = categoryView.panels[1]!.views;
+        expect(organPanelViews.length).toEqual(5);
+        const organCategoryValueIds = listCategoryValueIds(organPanelViews);
+        expect(organCategoryValueIds.includes(INFERRED_BLOOD)).toBeTruthy();
+        expect(
+          organCategoryValueIds.includes(INFERRED_BONE_MARROW)
+        ).toBeTruthy();
+        expect(
+          organCategoryValueIds.includes(INFERRED_LYMPH_NODE)
+        ).toBeTruthy();
+        expect(organCategoryValueIds.includes(INFERRED_SPLEEN)).toBeTruthy();
+        expect(organCategoryValueIds.includes(INFERRED_THYMUS)).toBeTruthy();
+
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
+        const tissuePanelViews = categoryView.panels[2]!.views;
+        expect(tissuePanelViews.length).toEqual(8);
+        const tissueCategoryValueIds = listCategoryValueIds(tissuePanelViews);
+        expect(tissueCategoryValueIds.includes(EXPLICIT_BLOOD)).toBeTruthy();
+        expect(
+          tissueCategoryValueIds.includes(EXPLICIT_BONE_MARROW)
+        ).toBeTruthy();
+        expect(tissueCategoryValueIds.includes(EXPLICIT_SPLEEN)).toBeTruthy();
+        expect(tissueCategoryValueIds.includes(EXPLICIT_THYMUS)).toBeTruthy();
+        expect(tissueCategoryValueIds.includes(EXPLICIT_URETER)).toBeTruthy();
+        expect(tissueCategoryValueIds.includes(EXPLICIT_URETHRA)).toBeTruthy();
+        expect(
+          tissueCategoryValueIds.includes(EXPLICIT_UMBILICAL_CORD_BLOOD)
+        ).toBeTruthy();
+        expect(
+          tissueCategoryValueIds.includes(EXPLICIT_VENOUS_BLOOD)
+        ).toBeTruthy();
+      });
+
+      /**
+       * Selected: blood
+       * Views: all systems, all organs, blood non-specific, umbilical cord blood, venous blood
+       */
+      it("filters tissue views (and not system views) when organ selected", () => {
+        const updatedKeyedCategoryValues = new Map(KEYED_CATEGORY_VALUES);
+        updateSelectCategoryValueSelected(
+          updatedKeyedCategoryValues,
+          INFERRED_BLOOD,
+          true,
+          false
+        );
+
+        const updatedMultiPanelUIState = new Map(multiPanelUIState);
+        updateCategoryFilterUIStateSelected(
+          updatedMultiPanelUIState,
+          CATEGORY_FILTER_ID.TISSUE_CALCULATED,
+          [INFERRED_BLOOD],
+          []
+        );
+
+        const categoryView = buildMultiPanelCategoryView(
+          CATEGORY_FILTER_CONFIGS_BY_ID[
+            CATEGORY_FILTER_ID.TISSUE_CALCULATED
+          ] as OntologyMultiPanelFilterConfig,
+          updatedKeyedCategoryValues,
+          updatedMultiPanelUIState,
+          new Map<string, string>()
+        );
+
+        expect(categoryView.panels.length).toEqual(3);
+
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
+        const systemPanelViews = categoryView.panels[0]!.views;
+        expect(systemPanelViews.length).toEqual(3);
+        const systemCategoryValueIds = listCategoryValueIds(systemPanelViews);
+        expect(
+          systemCategoryValueIds.includes(INFERRED_HEMATOPOIETIC_SYSTEM)
+        ).toBeTruthy();
+        expect(
+          systemCategoryValueIds.includes(INFERRED_IMMUNE_SYSTEM)
+        ).toBeTruthy();
+        expect(
+          systemCategoryValueIds.includes(INFERRED_RENAL_SYSTEM)
+        ).toBeTruthy();
+
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
+        const organPanelViews = categoryView.panels[1]!.views;
+        expect(organPanelViews.length).toEqual(5);
+        const organCategoryValueIds = listCategoryValueIds(organPanelViews);
+        expect(organCategoryValueIds.includes(INFERRED_BLOOD)).toBeTruthy();
+        expect(
+          organCategoryValueIds.includes(INFERRED_BONE_MARROW)
+        ).toBeTruthy();
+        expect(
+          organCategoryValueIds.includes(INFERRED_LYMPH_NODE)
+        ).toBeTruthy();
+        expect(organCategoryValueIds.includes(INFERRED_SPLEEN)).toBeTruthy();
+        expect(organCategoryValueIds.includes(INFERRED_THYMUS)).toBeTruthy();
+
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
+        const tissuePanelViews = categoryView.panels[2]!.views;
+        expect(tissuePanelViews.length).toEqual(3);
+        const tissueCategoryValueIds = listCategoryValueIds(tissuePanelViews);
+        expect(tissueCategoryValueIds.includes(EXPLICIT_BLOOD)).toBeTruthy();
+        expect(
+          tissueCategoryValueIds.includes(EXPLICIT_UMBILICAL_CORD_BLOOD)
+        ).toBeTruthy();
+        expect(
+          tissueCategoryValueIds.includes(EXPLICIT_VENOUS_BLOOD)
+        ).toBeTruthy();
+      });
+
+      /**
+       * Selected: immune system
+       * Views: all systems, organs under immune system, tissues under immune system
+       */
+      it("filters organ and tissue views when system selected", () => {
+        const updatedKeyedCategoryValues = new Map(KEYED_CATEGORY_VALUES);
+        updateSelectCategoryValueSelected(
+          updatedKeyedCategoryValues,
+          INFERRED_IMMUNE_SYSTEM,
+          true,
+          false
+        );
+
+        const updatedMultiPanelUIState = new Map(multiPanelUIState);
+        updateCategoryFilterUIStateSelected(
+          updatedMultiPanelUIState,
+          CATEGORY_FILTER_ID.TISSUE_CALCULATED,
+          [INFERRED_IMMUNE_SYSTEM],
+          []
+        );
+
+        const categoryView = buildMultiPanelCategoryView(
+          CATEGORY_FILTER_CONFIGS_BY_ID[
+            CATEGORY_FILTER_ID.TISSUE_CALCULATED
+          ] as OntologyMultiPanelFilterConfig,
+          updatedKeyedCategoryValues,
+          updatedMultiPanelUIState,
+          new Map<string, string>()
+        );
+
+        expect(categoryView.panels.length).toEqual(3);
+
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
+        const systemPanelViews = categoryView.panels[0]!.views;
+        expect(systemPanelViews.length).toEqual(3);
+        const systemCategoryValueIds = listCategoryValueIds(systemPanelViews);
+        expect(
+          systemCategoryValueIds.includes(INFERRED_HEMATOPOIETIC_SYSTEM)
+        ).toBeTruthy();
+        expect(
+          systemCategoryValueIds.includes(INFERRED_IMMUNE_SYSTEM)
+        ).toBeTruthy();
+        expect(
+          systemCategoryValueIds.includes(INFERRED_RENAL_SYSTEM)
+        ).toBeTruthy();
+
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
+        const organPanelViews = categoryView.panels[1]!.views;
+        expect(organPanelViews.length).toEqual(4);
+        const organCategoryValueIds = listCategoryValueIds(organPanelViews);
+        expect(
+          organCategoryValueIds.includes(INFERRED_BONE_MARROW)
+        ).toBeTruthy();
+        expect(
+          organCategoryValueIds.includes(INFERRED_LYMPH_NODE)
+        ).toBeTruthy();
+        expect(organCategoryValueIds.includes(INFERRED_SPLEEN)).toBeTruthy();
+        expect(organCategoryValueIds.includes(INFERRED_THYMUS)).toBeTruthy();
+
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
+        const tissuePanelViews = categoryView.panels[2]!.views;
+        expect(tissuePanelViews.length).toEqual(3);
+        const tissueCategoryValueIds = listCategoryValueIds(tissuePanelViews);
+        expect(
+          tissueCategoryValueIds.includes(EXPLICIT_BONE_MARROW)
+        ).toBeTruthy();
+        expect(tissueCategoryValueIds.includes(EXPLICIT_SPLEEN)).toBeTruthy();
+        expect(tissueCategoryValueIds.includes(EXPLICIT_THYMUS)).toBeTruthy();
+      });
+
+      /**
+       * Selected: hematopoietic system, blood
+       * Views: all systems, organs under hematopoietic system, tissues under blood
+       */
+      it("filters organ and tissue views when system and organ selected", () => {
+        const updatedKeyedCategoryValues = new Map(KEYED_CATEGORY_VALUES);
+        updateSelectCategoryValueSelected(
+          updatedKeyedCategoryValues,
+          INFERRED_HEMATOPOIETIC_SYSTEM,
+          false,
+          true
+        );
+        updateSelectCategoryValueSelected(
+          updatedKeyedCategoryValues,
+          INFERRED_BLOOD,
+          true,
+          false
+        );
+
+        const updatedMultiPanelUIState = new Map(multiPanelUIState);
+        updateCategoryFilterUIStateSelected(
+          updatedMultiPanelUIState,
+          CATEGORY_FILTER_ID.TISSUE_CALCULATED,
+          [INFERRED_HEMATOPOIETIC_SYSTEM, INFERRED_BLOOD],
+          [INFERRED_HEMATOPOIETIC_SYSTEM]
+        );
+
+        const categoryView = buildMultiPanelCategoryView(
+          CATEGORY_FILTER_CONFIGS_BY_ID[
+            CATEGORY_FILTER_ID.TISSUE_CALCULATED
+          ] as OntologyMultiPanelFilterConfig,
+          updatedKeyedCategoryValues,
+          updatedMultiPanelUIState,
+          new Map<string, string>()
+        );
+
+        expect(categoryView.panels.length).toEqual(3);
+
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
+        const systemPanelViews = categoryView.panels[0]!.views;
+        expect(systemPanelViews.length).toEqual(3);
+        const systemCategoryValueIds = listCategoryValueIds(systemPanelViews);
+        expect(
+          systemCategoryValueIds.includes(INFERRED_HEMATOPOIETIC_SYSTEM)
+        ).toBeTruthy();
+        expect(
+          systemCategoryValueIds.includes(INFERRED_IMMUNE_SYSTEM)
+        ).toBeTruthy();
+        expect(
+          systemCategoryValueIds.includes(INFERRED_RENAL_SYSTEM)
+        ).toBeTruthy();
+
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
+        const organPanelViews = categoryView.panels[1]!.views;
+        expect(organPanelViews.length).toEqual(4);
+        const organCategoryValueIds = listCategoryValueIds(organPanelViews);
+        expect(organCategoryValueIds.includes(INFERRED_BLOOD)).toBeTruthy();
+        expect(
+          organCategoryValueIds.includes(INFERRED_BONE_MARROW)
+        ).toBeTruthy();
+        expect(organCategoryValueIds.includes(INFERRED_SPLEEN)).toBeTruthy();
+        expect(organCategoryValueIds.includes(INFERRED_THYMUS)).toBeTruthy();
+
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
+        const tissuePanelViews = categoryView.panels[2]!.views;
+        expect(tissuePanelViews.length).toEqual(3);
+        const tissueCategoryValueIds = listCategoryValueIds(tissuePanelViews);
+        expect(tissueCategoryValueIds.includes(EXPLICIT_BLOOD)).toBeTruthy();
+        expect(
+          tissueCategoryValueIds.includes(EXPLICIT_UMBILICAL_CORD_BLOOD)
+        ).toBeTruthy();
+        expect(
+          tissueCategoryValueIds.includes(EXPLICIT_VENOUS_BLOOD)
+        ).toBeTruthy();
+      });
+
+      /**
+       * Selected: renal system
+       * Views: all systems, all organs under renal system, tissues under renal system
+       */
+      it("filters organ-less tissue views when system selected", () => {
+        const updatedKeyedCategoryValues = new Map(KEYED_CATEGORY_VALUES);
+        updateSelectCategoryValueSelected(
+          updatedKeyedCategoryValues,
+          INFERRED_RENAL_SYSTEM,
+          true,
+          false
+        );
+
+        const updatedMultiPanelUIState = new Map(multiPanelUIState);
+        updateCategoryFilterUIStateSelected(
+          updatedMultiPanelUIState,
+          CATEGORY_FILTER_ID.TISSUE_CALCULATED,
+          [INFERRED_RENAL_SYSTEM],
+          []
+        );
+
+        const categoryView = buildMultiPanelCategoryView(
+          CATEGORY_FILTER_CONFIGS_BY_ID[
+            CATEGORY_FILTER_ID.TISSUE_CALCULATED
+          ] as OntologyMultiPanelFilterConfig,
+          updatedKeyedCategoryValues,
+          updatedMultiPanelUIState,
+          new Map<string, string>()
+        );
+
+        expect(categoryView.panels.length).toEqual(3);
+
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
+        const systemPanelViews = categoryView.panels[0]!.views;
+        expect(systemPanelViews.length).toEqual(3);
+        const systemCategoryValueIds = listCategoryValueIds(systemPanelViews);
+        expect(
+          systemCategoryValueIds.includes(INFERRED_HEMATOPOIETIC_SYSTEM)
+        ).toBeTruthy();
+        expect(
+          systemCategoryValueIds.includes(INFERRED_IMMUNE_SYSTEM)
+        ).toBeTruthy();
+        expect(
+          systemCategoryValueIds.includes(INFERRED_RENAL_SYSTEM)
+        ).toBeTruthy();
+
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
+        const organPanelViews = categoryView.panels[1]!.views;
+        expect(organPanelViews.length).toEqual(0);
+
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
+        const tissuePanelViews = categoryView.panels[2]!.views;
+        expect(tissuePanelViews.length).toEqual(2);
+        const tissueCategoryValueIds = listCategoryValueIds(tissuePanelViews);
+        expect(tissueCategoryValueIds.includes(EXPLICIT_URETER)).toBeTruthy();
+        expect(tissueCategoryValueIds.includes(EXPLICIT_URETHRA)).toBeTruthy();
       });
     });
   });
@@ -2024,6 +2645,16 @@ describe("useCategoryFilter", () => {
 });
 
 /**
+ * Return the category value IDs for the given array of multi-panel views.
+ * @param views - Array of select category value views to map category value IDs from.
+ */
+function listCategoryValueIds(
+  views: SelectCategoryValueView[]
+): CategoryValueId[] {
+  return views.map((view) => view.key);
+}
+
+/**
  * Update the selected and selected partial values for the category value view with the given key.
  * @param valueViews - Map of select category value views keyed by category value ID.
  * @param categoryValueId - ID of category value view to update.
@@ -2042,4 +2673,53 @@ function updateCategoryValueViewSelected(
   valueView.selected = selected;
   valueView.selectedPartial = selectedPartial;
   valueViews.set(categoryValueId, valueView);
+}
+
+/**
+ * Update the selected and selected partial values for the category value view with the given key.
+ * @param multiPanelUIState - Complete multi-panel UI state.
+ * @param categoryFilterId - The category filter to update.
+ * @param selected - True if category value view is to be updated to selected.
+ * @param selectedPartial - True if category value view is to be updated to selected partial.
+ */
+function updateCategoryFilterUIStateSelected(
+  multiPanelUIState: MultiPanelUIState,
+  categoryFilterId: CATEGORY_FILTER_ID,
+  selected: CategoryValueId[],
+  selectedPartial: CategoryValueId[]
+) {
+  const categoryFilterUIState = multiPanelUIState.get(categoryFilterId);
+  if (!categoryFilterUIState) {
+    console.error(
+      `MultiPanelCategoryFilterUIState not found for ${categoryFilterId}`
+    );
+    return;
+  }
+  const updatedCategoryFilterUIState = {
+    ...categoryFilterUIState,
+  };
+  updatedCategoryFilterUIState.selected = selected;
+  updatedCategoryFilterUIState.selectedPartial = selectedPartial;
+  multiPanelUIState.set(categoryFilterId, updatedCategoryFilterUIState);
+}
+
+/**
+ * Update the selected and selected partial values for the category value with the given key.
+ * @param selectCategoryValues - Map of select category value keyed by category value ID.
+ * @param categoryValueId - ID of category value view to update.
+ * @param selected - True if category value is to be updated to selected.
+ * @param selectedPartial - True if category value is to be updated to selected partial.
+ */
+function updateSelectCategoryValueSelected(
+  selectCategoryValues: Map<CategoryValueId, SelectCategoryValue>,
+  categoryValueId: CategoryValueId,
+  selected: boolean,
+  selectedPartial: boolean
+) {
+  const selectCategoryValue = {
+    ...selectCategoryValues.get(categoryValueId),
+  } as SelectCategoryValue;
+  selectCategoryValue.selected = selected;
+  selectCategoryValue.selectedPartial = selectedPartial;
+  selectCategoryValues.set(categoryValueId, selectCategoryValue);
 }
