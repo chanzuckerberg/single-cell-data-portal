@@ -1,6 +1,8 @@
 /* eslint-disable sort-keys -- disable key order, contents of this file are generated */
 /* eslint-disable sonarjs/no-duplicate-string -- disable no dupes, contents of this file are generated */
-export const TISSUE_ANCESTORS_BY_DATASET_ID: { [key: string]: string[] } = {
+import { OntologyDescendants } from "src/components/common/Filter/common/entities";
+
+export const TISSUE_ANCESTORS_BY_DATASET_ID: OntologyDescendants = {
   "dd018fc0-8da7-4033-a2ba-6b47de8ebb4f": [
     "UBERON:0002367",
     "UBERON:0010147",

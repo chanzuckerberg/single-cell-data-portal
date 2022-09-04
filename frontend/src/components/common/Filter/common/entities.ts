@@ -67,6 +67,7 @@ export interface IncludesSomeMatchKind {
  * menu items. For example, tissue.
  */
 export interface MultiPanelViewKind {
+  descendants: OntologyDescendants;
   panels: CategoryFilterPanelConfig[];
   viewKind: "MULTI_PANEL";
 }
@@ -536,6 +537,12 @@ export enum ONTOLOGY_VIEW_LABEL {
  * Ontology tree structures, keyed by view key. This is the allowed set of ontology values, configured per category.
  */
 export type OntologyTermSet = { [K in ONTOLOGY_VIEW_KEY]?: OntologyNode[] };
+
+/**
+ * Model of ontology-aware ancestor/descendant relationships; descandant ontology term IDs keyed by ancestor ontology
+ * term ID.
+ */
+export type OntologyDescendants = { [key: string]: string[] };
 
 /**
  * Prefixes for indicating exact or inferred matches when filtering across category filters that require OR

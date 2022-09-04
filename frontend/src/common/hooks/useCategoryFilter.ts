@@ -29,6 +29,7 @@ import {
   OntologyCategoryTreeNodeView,
   OntologyCategoryTreeView,
   OntologyCategoryView,
+  OntologyDescendants,
   OntologyMultiPanelCategoryView,
   OntologyMultiPanelFilterConfig,
   OntologyNode,
@@ -731,7 +732,9 @@ function buildMultiPanelUIState<T extends Categories>(
 }
 
 /**
- * TODO(cc)
+ * Build up the base UI nodes for each category value. This base model is updated as the UI state changes.
+ * @param categoryValueIdsByPanel - Category values grouped by panel.
+ * @returns Map of UI nodes keyed by category value, facilitates easy lookups of UI node state.
  */
 export function buildUINodesByCategoryValueId(
   categoryValueIdsByPanel: CategoryValueId[][]
@@ -891,40 +894,56 @@ function linkParentAndChild(
 }
 
 /**
- * TODO(cc) check strings here, check usages of TISSUE_DESCENDANTS (can we put the stripping of the prefix in here?), type for descendants here and below
+ * Determine if there is a ancestor/descendant relationship between the given category values. A descendant can
+ * also be an explicit ontology term ID.
+ * @param descendantCategoryValueId - Category value to check if it's a descendant.
+ * @param ancestorCategoryValueId - Category value to check if it's an ancestor.
+ * @param descendants - Map of descendants keyed by ancestor.
+ * @returns True if there is an ancestor/descendant relationship or inferred/explicit relationship between the given
+ * category IDs.
  */
 function isDescendant(
-  categoryValueId: CategoryValueId,
-  panelCategoryValueId: CategoryValueId,
-  descendants: { [p: string]: string[] }
+  descendantCategoryValueId: CategoryValueId,
+  ancestorCategoryValueId: CategoryValueId,
+  descendants: OntologyDescendants
 ): boolean {
-  const ontologyTermId = removeOntologyTermIdPrefix(categoryValueId);
-  const panelOntologyTermId = removeOntologyTermIdPrefix(panelCategoryValueId);
-  const isDescendantTerm = (descendants[panelOntologyTermId] ?? []).includes(
+  // Check ancestor/descendant relationship.
+  const ontologyTermId = removeOntologyTermIdPrefix(descendantCategoryValueId);
+  const ancestorOntologyTermId = removeOntologyTermIdPrefix(
+    ancestorCategoryValueId
+  );
+  const isDescendantTerm = (descendants[ancestorOntologyTermId] ?? []).includes(
     ontologyTermId
   );
 
+  // Check inferred/explicit relationship.
   const isExplicitTerm = isExplicitTermOfInferredTerm(
-    categoryValueId,
-    panelCategoryValueId
+    descendantCategoryValueId,
+    ancestorCategoryValueId
   );
 
   return isDescendantTerm || isExplicitTerm;
 }
 
 /**
- * TODO(cc) move to utils?
+ * Determine if there is an inferred/explicit relationship between the given category values. For example, "E:UBERON:X"
+ * is an explicit version of "I:UBERON:X". Specifically, "blood, non-specific" is an explicit version of "blood".
+ * @param explicitCategoryValueId - Category value to check if it's an explicit version of the inferred category value.
+ * @param inferredCategoryValueId - Category value to check if it's an inferred version of the explicit category value.
+ * @returns True if there is an inferred/explicit relationship between the given category values.
  */
 function isExplicitTermOfInferredTerm(
-  categoryValueId: CategoryValueId,
-  panelCategoryValueId: CategoryValueId
+  explicitCategoryValueId: CategoryValueId,
+  inferredCategoryValueId: CategoryValueId
 ): boolean {
-  const ontologyTermId = removeOntologyTermIdPrefix(categoryValueId);
-  const panelOntologyTermId = removeOntologyTermIdPrefix(panelCategoryValueId);
+  const ontologyTermId = removeOntologyTermIdPrefix(explicitCategoryValueId);
+  const inferredOntologyTermId = removeOntologyTermIdPrefix(
+    inferredCategoryValueId
+  );
   return (
-    isExplicitOntologyTermId(categoryValueId) &&
-    !isExplicitOntologyTermId(panelCategoryValueId) &&
-    ontologyTermId === panelOntologyTermId
+    isExplicitOntologyTermId(explicitCategoryValueId) &&
+    !isExplicitOntologyTermId(inferredCategoryValueId) &&
+    ontologyTermId === inferredOntologyTermId
   );
 }
 
@@ -2234,13 +2253,12 @@ function removeOntologyDescendents(
  * @param config - Configuration model of selected category.
  * @param categoryValueId - The selected category value.
  * @param selectedValue - Selected category value ID to use as selected value.
- * @param source - TODO(cc)
+ * @param source - Location where select/remove was triggered, either filter menu or selected tag.
  * @param setFilter - Function to update set of selected values for a category.
  * @param multiPanelUIState - Current set of category values that the user has selected on the UI for all multi-
  * panel category filters.
  * @param setMultiPanelUIState - React state mutator for setting multi-panel UI state.
  */
-// eslint-disable-next-line sonarjs/cognitive-complexity -- TODO(cc) revisit
 function onFilterMultiPanelCategory(
   config: OntologyMultiPanelFilterConfig,
   categoryValueId: CategoryValueId,
@@ -2250,8 +2268,6 @@ function onFilterMultiPanelCategory(
   multiPanelUIState: MultiPanelUIState,
   setMultiPanelUIState: Dispatch<SetStateAction<MultiPanelUIState>>
 ) {
-  const { categoryFilterId } = config;
-
   // Grab the selected values for this category filter.
   const multiPanelFilters = buildMultiPanelFilters(multiPanelUIState);
 
@@ -2259,84 +2275,35 @@ function onFilterMultiPanelCategory(
   trackSelectCategoryValueSelected(config, categoryValueId, multiPanelFilters);
 
   // Determine selected set of values for this category filter based on the current selected values for this multi-panel
-  // category filter; toggle current selected values.
-  const allSelectedCategoryFilters = buildNextSelectCategoryFilters(
+  // category filter; toggle current selected values. If this is a remove action, remove descendants of fully-selected
+  // ancestors.
+  const { categoryFilterId } = config;
+  const categoryFilterUIState = multiPanelUIState.get(categoryFilterId);
+  if (!categoryFilterUIState) {
+    return; // Error state
+  }
+  const selectedCategoryFilters = buildNextMultiPanelCategoryFilters(
     config,
+    categoryValueId,
     selectedValue,
+    source,
+    categoryFilterUIState,
     multiPanelFilters
   );
-
-  // If the source of the filter action was a selected tag, we know a remove action has occurred. Clear out any
-  // children of the removed tag unless the children themselves have another that is partially/selected.
-  // TODO(cc) move to function with buildNextSelectCategoryFilters above, have a single return value of allSelectedCategoryFilters then remove ref's to this set
-  const filteredSelectedCategoryFilters = new Set<CategoryValueId>(
-    allSelectedCategoryFilters
-  );
-  if (source === ON_FILTER_SOURCE.TAG) {
-    // Grab all selected descendants of the removed value.
-    const selectedDescendants = allSelectedCategoryFilters.filter(
-      (selectedCategoryValueId) =>
-        isDescendant(
-          selectedCategoryValueId,
-          categoryValueId,
-          TISSUE_DESCENDANTS
-        )
-    );
-
-    // Remove the selected descendant unless the descendant has another parent that is partially/selected.
-    // TODO(cc) handle undefined's here and optional chaining here
-    const categoryFilterUIState =
-      multiPanelUIState.get(categoryFilterId) ??
-      ({} as MultiPanelCategoryFilterUIState);
-    const { selected, selectedPartial, uiNodesByCategoryValueId } =
-      categoryFilterUIState;
-
-    selectedDescendants.forEach((selectedDescendant) => {
-      const uiParents =
-        uiNodesByCategoryValueId.get(selectedDescendant)?.uiParents; // TODO(cc) chaining
-
-      // If there are no parents, remove the descendant from the selected list.
-      if (!uiParents || !uiParents.length) {
-        filteredSelectedCategoryFilters.delete(selectedDescendant);
-      } else {
-        // Don't delete selected descendant if any parent is partially/selected
-        const isAnyParentSelected = uiParents
-          .filter(
-            (uiParent) =>
-              uiParent !== categoryValueId &&
-              !selectedDescendants.includes(uiParent)
-          )
-          .some(
-            (uiParent) =>
-              selected.includes(uiParent) || selectedPartial.includes(uiParent)
-          );
-        if (!isAnyParentSelected) {
-          filteredSelectedCategoryFilters.delete(selectedDescendant);
-        }
-      }
-    });
-  }
 
   // Determine the selected values to pass to react-table to filter the rows by applying restrictions across selected
   // filter values. For example, even if "digestive system" and "tongue" are both selected in the UI, we only want to
   // pass the more restrictive "tongue" to react-table as we only want to show rows that match "tongue".
-  const overriddenSelectedCategoryFilters = overrideSelectedParents([
-    ...filteredSelectedCategoryFilters,
-  ]);
+  const overriddenSelectedCategoryFilters = overrideSelectedParents(
+    selectedCategoryFilters
+  );
 
   // Determine the selected values which are now partially selected, if any. For example, if "digestive system" and
   // "tongue" are both selected in the UI, internally we record "digestive system" as partially selected and "tongue"
   // as selected.
-  const multiPanelSelectedValues = multiPanelUIState.get(categoryFilterId); // TODO(cc) rename
-  if (!multiPanelSelectedValues) {
-    console.log(
-      `Selected values not found for category filter ID ${categoryFilterId}`
-    );
-    return;
-  }
-  const { uiNodesByCategoryValueId } = multiPanelSelectedValues;
+  const { uiNodesByCategoryValueId } = categoryFilterUIState;
   const selectedPartial = listPartiallySelectedCategoryValueIds(
-    [...filteredSelectedCategoryFilters],
+    selectedCategoryFilters,
     overriddenSelectedCategoryFilters,
     uiNodesByCategoryValueId
   );
@@ -2344,14 +2311,114 @@ function onFilterMultiPanelCategory(
   // Update internal multi-panel filter state with the updated, toggled set of selected filters for this category as
   // well as the partially (overridden) selected values.
   multiPanelUIState.set(categoryFilterId, {
-    selected: [...filteredSelectedCategoryFilters],
+    ...categoryFilterUIState,
+    selected: selectedCategoryFilters,
     selectedPartial,
-    uiNodesByCategoryValueId,
   });
   setMultiPanelUIState(multiPanelUIState);
 
   // Trigger filter of rows in react-table.
   setFilter(categoryFilterId, overriddenSelectedCategoryFilters);
+}
+
+/**
+ * Build updated set of selected filters for the given single or multiselect category and the selected category values.
+ * If this is a remove action from a tag, remove selected descendants as well, if applicable.
+ * @param config - Configuration model of selected category.
+ * @param categoryValueId - The selected category value.
+ * @param selectedValue - Selected category value ID to use as selected value.
+ * @param source - Location where select/remove was triggered, either filter menu or selected tag.
+ * @param categoryFilterUIState - UI model of partially/selected values in the category filter.
+ * @param multiPanelFilters - Set of selected values in categor filter with no overrides/filtering/partial logic applied.
+ */
+function buildNextMultiPanelCategoryFilters<T extends Categories>(
+  config: OntologyMultiPanelFilterConfig,
+  categoryValueId: CategoryValueId,
+  selectedValue: CategoryValueId,
+  source: ON_FILTER_SOURCE,
+  categoryFilterUIState: MultiPanelCategoryFilterUIState,
+  multiPanelFilters: Filters<T>
+): CategoryValueId[] {
+  // Determine selected set of values for this category filter based on the current selected values for this multi-panel
+  // category filter; toggle current selected values.
+  const selectedCategoryFilters = buildNextSelectCategoryFilters(
+    config,
+    selectedValue,
+    multiPanelFilters
+  );
+
+  // If the source of the filter action wasn't a tag, we can simply toggle the value and exit here.
+  if (source !== ON_FILTER_SOURCE.TAG) {
+    return selectedCategoryFilters;
+  }
+
+  // If the source of the filter action was a selected tag, we know a remove action has occurred. Clear out any
+  // children of the removed tag unless the children themselves have another that is partially/selected.
+  return onRemoveMultiPanelCategoryValueTag(
+    categoryValueId,
+    selectedCategoryFilters,
+    categoryFilterUIState,
+    config.descendants
+  );
+}
+
+/**
+ * Handle remove of a category value from a multi-panel from a selected tag. If a category value is selected (and
+ * not partially selected) then remove any selected descendant terms. Also allow tags to "unravel" such as if
+ * hematopoietic system and blood non-specific are selected and blood non-specific is removed, hematopoietic system
+ * remains selected.
+ * @param removedCategoryValueId - The selected value to remove.
+ * @param selectedCategoryValueIds - The set of selected values after the selected value has been toggled.
+ * @param categoryFilterUIState - UI model of selected values for the multi-panel category filter.
+ * @param descendants - Map of descendants keyed by ancestor.
+ * @returns An array of selected values with descendant-related removal rules applied.
+ */
+export function onRemoveMultiPanelCategoryValueTag(
+  removedCategoryValueId: CategoryValueId,
+  selectedCategoryValueIds: CategoryValueId[],
+  categoryFilterUIState: MultiPanelCategoryFilterUIState,
+  descendants: OntologyDescendants
+): CategoryValueId[] {
+  const filteredSelectedCategoryFilters = new Set<CategoryValueId>(
+    selectedCategoryValueIds
+  );
+
+  // Grab all selected descendants of the removed value.
+  const selectedDescendants = selectedCategoryValueIds.filter(
+    (selectedCategoryValueId) =>
+      isDescendant(selectedCategoryValueId, removedCategoryValueId, descendants)
+  );
+
+  // Remove the selected descendant unless the descendant has another parent that is partially/selected.
+  const { selected, selectedPartial, uiNodesByCategoryValueId } =
+    categoryFilterUIState;
+
+  selectedDescendants.forEach((selectedDescendant) => {
+    const uiParents =
+      uiNodesByCategoryValueId.get(selectedDescendant)?.uiParents; // TODO(cc) chaining
+
+    // If there are no parents, remove the descendant from the selected list.
+    if (!uiParents || !uiParents.length) {
+      filteredSelectedCategoryFilters.delete(selectedDescendant);
+    } else {
+      // Don't delete selected descendant if any parent is partially/selected
+      const isAnyParentSelected = uiParents
+        .filter(
+          (uiParent) =>
+            uiParent !== removedCategoryValueId &&
+            !selectedDescendants.includes(uiParent)
+        )
+        .some(
+          (uiParent) =>
+            selected.includes(uiParent) || selectedPartial.includes(uiParent)
+        );
+      if (!isAnyParentSelected) {
+        filteredSelectedCategoryFilters.delete(selectedDescendant);
+      }
+    }
+  });
+
+  return [...filteredSelectedCategoryFilters];
 }
 
 /**
@@ -2445,6 +2512,9 @@ function buildMultiPanelFilters<T extends Categories>(
 }
 
 /**
+ * Determine the selected values to pass to react-table to filter the rows by applying restrictions across selected
+ * filter values. For example, even if "digestive system" and "tongue" are both selected in the UI, we only want to
+ * pass the more restrictive "tongue" to react-table as we only want to show rows that match "tongue".
  * TODO(cc) location, rename, can we remove this and use the partial state instead
  */
 function overrideSelectedParents(

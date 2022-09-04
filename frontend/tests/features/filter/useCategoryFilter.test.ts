@@ -10,8 +10,12 @@ import {
   listPartiallySelectedCategoryValueIds,
   MultiPanelCategoryFilterUIState,
   MultiPanelUINode,
+  onRemoveMultiPanelCategoryValueTag,
 } from "src/common/hooks/useCategoryFilter";
-import { CATEGORY_FILTER_CONFIGS_BY_ID } from "src/components/common/Filter/common/constants";
+import {
+  CATEGORY_FILTER_CONFIGS_BY_ID,
+  TISSUE_DESCENDANTS,
+} from "src/components/common/Filter/common/constants";
 import {
   CategoryValueId,
   CATEGORY_FILTER_ID,
@@ -354,7 +358,291 @@ describe("useCategoryFilter", () => {
       [EXPLICIT_THORACIC_LYMPH_NODE, EXPLICIT_THORACIC_LYMPH_NODE_VALUE_VIEW],
     ]);
 
-    describe.only("listPartiallySelectedCategoryValueIds", () => {
+    describe("onRemoveMultiPanelCategoryValueTag", () => {
+      /**
+       * Currently selected - blood non-specific
+       * Remove - blood non-specific
+       * Still selected - none
+       */
+      it("removes tissue", () => {
+        const categoryFilterUIState = {
+          ...BASE_CATEGORY_FILTER_UI_STATE,
+          selected: [EXPLICIT_BLOOD],
+          selectedPartial: [],
+        };
+
+        const selectedCategoryValueIds = onRemoveMultiPanelCategoryValueTag(
+          EXPLICIT_BLOOD,
+          [],
+          categoryFilterUIState,
+          TISSUE_DESCENDANTS
+        );
+        expect(selectedCategoryValueIds.length).toEqual(0);
+      });
+
+      /**
+       * Currently selected - blood
+       * Remove - blood
+       * Still selected - none
+       */
+      it("removes organ", () => {
+        const categoryFilterUIState = {
+          ...BASE_CATEGORY_FILTER_UI_STATE,
+          selected: [INFERRED_BLOOD],
+          selectedPartial: [],
+        };
+
+        const selectedCategoryValueIds = onRemoveMultiPanelCategoryValueTag(
+          INFERRED_BLOOD,
+          [],
+          categoryFilterUIState,
+          TISSUE_DESCENDANTS
+        );
+        expect(selectedCategoryValueIds.length).toEqual(0);
+      });
+
+      /**
+       * Currently selected - hematopoietic system
+       * Remove - hematopoietic system
+       * Still selected - none
+       */
+      it("removes system", () => {
+        const categoryFilterUIState = {
+          ...BASE_CATEGORY_FILTER_UI_STATE,
+          selected: [INFERRED_HEMATOPOIETIC_SYSTEM],
+          selectedPartial: [],
+        };
+
+        const selectedCategoryValueIds = onRemoveMultiPanelCategoryValueTag(
+          INFERRED_HEMATOPOIETIC_SYSTEM,
+          [],
+          categoryFilterUIState,
+          TISSUE_DESCENDANTS
+        );
+
+        expect(selectedCategoryValueIds.length).toEqual(0);
+      });
+
+      /**
+       * Currently selected - blood, blood no-specific, umbilical cord blood, venous blood
+       * Remove - blood
+       * Still selected - none
+       */
+      it("removes organ and all descendants of organ", () => {
+        const categoryFilterUIState = {
+          ...BASE_CATEGORY_FILTER_UI_STATE,
+          selected: [
+            INFERRED_BLOOD,
+            EXPLICIT_BLOOD,
+            EXPLICIT_UMBILICAL_CORD_BLOOD,
+            EXPLICIT_VENOUS_BLOOD,
+          ],
+          selectedPartial: [],
+        };
+
+        const selectedCategoryValueIds = onRemoveMultiPanelCategoryValueTag(
+          INFERRED_BLOOD,
+          [
+            EXPLICIT_BLOOD,
+            EXPLICIT_UMBILICAL_CORD_BLOOD,
+            EXPLICIT_VENOUS_BLOOD,
+          ],
+          categoryFilterUIState,
+          TISSUE_DESCENDANTS
+        );
+
+        expect(selectedCategoryValueIds.length).toEqual(0);
+      });
+
+      /**
+       * Currently selected - hematopoietic system, blood, bone marrow spleen, thymus
+       * Remove - hematopoietic system
+       * Still selected - none
+       */
+      it("removes system and all descendant organs of system", () => {
+        const categoryFilterUIState = {
+          ...BASE_CATEGORY_FILTER_UI_STATE,
+          selected: [
+            INFERRED_HEMATOPOIETIC_SYSTEM,
+            INFERRED_BLOOD,
+            INFERRED_BONE_MARROW,
+            INFERRED_SPLEEN,
+            INFERRED_THYMUS,
+          ],
+          selectedPartial: [],
+        };
+
+        const selectedCategoryValueIds = onRemoveMultiPanelCategoryValueTag(
+          INFERRED_HEMATOPOIETIC_SYSTEM,
+          [
+            INFERRED_BLOOD,
+            INFERRED_BONE_MARROW,
+            INFERRED_SPLEEN,
+            INFERRED_THYMUS,
+          ],
+          categoryFilterUIState,
+          TISSUE_DESCENDANTS
+        );
+
+        expect(selectedCategoryValueIds.length).toEqual(0);
+      });
+
+      /**
+       * Currently selected - hematopoietic system, bone marrow spleen, thymus, blood non-specific, umbilical cord
+       * blood, venous blood
+       * Remove - hematopoietic system
+       * Still selected - none
+       */
+      it("removes system and all descendants of system", () => {
+        const categoryFilterUIState = {
+          ...BASE_CATEGORY_FILTER_UI_STATE,
+          selected: [
+            INFERRED_HEMATOPOIETIC_SYSTEM,
+            INFERRED_BONE_MARROW,
+            INFERRED_SPLEEN,
+            INFERRED_THYMUS,
+            EXPLICIT_BLOOD,
+            EXPLICIT_UMBILICAL_CORD_BLOOD,
+            EXPLICIT_VENOUS_BLOOD,
+          ],
+          selectedPartial: [],
+        };
+
+        const selectedCategoryValueIds = onRemoveMultiPanelCategoryValueTag(
+          INFERRED_HEMATOPOIETIC_SYSTEM,
+          [
+            INFERRED_BONE_MARROW,
+            INFERRED_SPLEEN,
+            INFERRED_THYMUS,
+            EXPLICIT_BLOOD,
+            EXPLICIT_UMBILICAL_CORD_BLOOD,
+            EXPLICIT_VENOUS_BLOOD,
+          ],
+          categoryFilterUIState,
+          TISSUE_DESCENDANTS
+        );
+
+        expect(selectedCategoryValueIds.length).toEqual(0);
+      });
+
+      /**
+       * Currently selected - immune system, hematopoietic system, blood, bone marrow, spleen, thymus
+       * Remove - hematopoietic system
+       * Still selected - immune system, bone marrow, spleen, thymus
+       */
+      it("removes system and all selected descendants of system that are not children of another selected system", () => {
+        const categoryFilterUIState = {
+          ...BASE_CATEGORY_FILTER_UI_STATE,
+          selected: [
+            INFERRED_IMMUNE_SYSTEM,
+            INFERRED_HEMATOPOIETIC_SYSTEM,
+            INFERRED_BLOOD,
+            INFERRED_BONE_MARROW,
+            INFERRED_SPLEEN,
+            INFERRED_THYMUS,
+          ],
+          selectedPartial: [INFERRED_IMMUNE_SYSTEM],
+        };
+
+        const selectedCategoryValueIds = onRemoveMultiPanelCategoryValueTag(
+          INFERRED_HEMATOPOIETIC_SYSTEM,
+          [
+            INFERRED_IMMUNE_SYSTEM,
+            INFERRED_BLOOD,
+            INFERRED_BONE_MARROW,
+            INFERRED_SPLEEN,
+            INFERRED_THYMUS,
+          ],
+          categoryFilterUIState,
+          TISSUE_DESCENDANTS
+        );
+
+        expect(selectedCategoryValueIds.length).toEqual(4);
+        expect(
+          selectedCategoryValueIds.includes(INFERRED_IMMUNE_SYSTEM)
+        ).toBeTruthy();
+        expect(
+          selectedCategoryValueIds.includes(INFERRED_BONE_MARROW)
+        ).toBeTruthy();
+        expect(selectedCategoryValueIds.includes(INFERRED_SPLEEN)).toBeTruthy();
+        expect(selectedCategoryValueIds.includes(INFERRED_THYMUS)).toBeTruthy();
+      });
+
+      /**
+       * Currently selected - blood, blood non-specific
+       * Remove - blood non-specific
+       * Still selected - blood
+       */
+      it("unravels to partially selected organ on remove of tissue", () => {
+        const categoryFilterUIState = {
+          ...BASE_CATEGORY_FILTER_UI_STATE,
+          selected: [INFERRED_BLOOD, EXPLICIT_BLOOD],
+          selectedPartial: [],
+        };
+
+        const selectedCategoryValueIds = onRemoveMultiPanelCategoryValueTag(
+          EXPLICIT_BLOOD,
+          [INFERRED_BLOOD],
+          categoryFilterUIState,
+          TISSUE_DESCENDANTS
+        );
+
+        expect(selectedCategoryValueIds.length).toEqual(1);
+        expect(selectedCategoryValueIds.includes(INFERRED_BLOOD)).toBeTruthy();
+      });
+
+      /**
+       * Currently selected - hematopoietic system, blood
+       * Remove - blood
+       * Still selected - hematopoietic system
+       */
+      it("unravels to partially selected system on remove of organ", () => {
+        const categoryFilterUIState = {
+          ...BASE_CATEGORY_FILTER_UI_STATE,
+          selected: [INFERRED_HEMATOPOIETIC_SYSTEM, INFERRED_BLOOD],
+          selectedPartial: [],
+        };
+
+        const selectedCategoryValueIds = onRemoveMultiPanelCategoryValueTag(
+          INFERRED_BLOOD,
+          [INFERRED_HEMATOPOIETIC_SYSTEM],
+          categoryFilterUIState,
+          TISSUE_DESCENDANTS
+        );
+
+        expect(selectedCategoryValueIds.length).toEqual(1);
+        expect(
+          selectedCategoryValueIds.includes(INFERRED_HEMATOPOIETIC_SYSTEM)
+        ).toBeTruthy();
+      });
+
+      /**
+       * Currently selected - hematopoietic system, blood non-specifc
+       * Remove - blood non-specifc
+       * Still selected - hematopoietic system
+       */
+      it("unravels to partially selected system on remove of tissue", () => {
+        const categoryFilterUIState = {
+          ...BASE_CATEGORY_FILTER_UI_STATE,
+          selected: [INFERRED_HEMATOPOIETIC_SYSTEM, EXPLICIT_BLOOD],
+          selectedPartial: [],
+        };
+
+        const selectedCategoryValueIds = onRemoveMultiPanelCategoryValueTag(
+          EXPLICIT_BLOOD,
+          [INFERRED_HEMATOPOIETIC_SYSTEM],
+          categoryFilterUIState,
+          TISSUE_DESCENDANTS
+        );
+
+        expect(selectedCategoryValueIds.length).toEqual(1);
+        expect(
+          selectedCategoryValueIds.includes(INFERRED_HEMATOPOIETIC_SYSTEM)
+        ).toBeTruthy();
+      });
+    });
+
+    describe("listPartiallySelectedCategoryValueIds", () => {
       /**
        * Selected - blood non-specific
        * Selected partial - none
