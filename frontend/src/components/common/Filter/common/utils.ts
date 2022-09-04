@@ -44,7 +44,7 @@ export const SYMBOL_THOUSAND = "k";
  * inferred and explicit values (e.g. tissue).
  * @param ontologyTermId - The term ID to prefix with inferred.
  * @returns String containing explicit prefix prepended to the given ontology term ID.
- * TODO(cc) move to multi-panel utils
+ * TODO(cc) move to multi-panel utils here and throughout
  */
 export function buildExplicitOntologyTermId(ontologyTermId: string): string {
   return `${OrFilterPrefix.EXPLICIT}:${ontologyTermId}`;

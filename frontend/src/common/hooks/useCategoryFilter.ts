@@ -724,7 +724,8 @@ function buildMultiPanelUIState<T extends Categories>(
 
       // Build up parent/children relationships for each category value.
       const uiHierarchyByCategoryValue = buildUINodesByCategoryValueId(
-        categoryValueIdsByPanel
+        categoryValueIdsByPanel,
+        config.descendants
       );
 
       accum.set(categoryFilterId, {
@@ -742,10 +743,12 @@ function buildMultiPanelUIState<T extends Categories>(
 /**
  * Build up the base UI nodes for each category value. This base model is updated as the UI state changes.
  * @param categoryValueIdsByPanel - Category values grouped by panel.
+ * @param descendants - Map of descendants keyed by ancestor.
  * @returns Map of UI nodes keyed by category value, facilitates easy lookups of UI node state.
  */
 export function buildUINodesByCategoryValueId(
-  categoryValueIdsByPanel: CategoryValueId[][]
+  categoryValueIdsByPanel: CategoryValueId[][],
+  descendants: OntologyDescendants
 ): Map<CategoryValueId, MultiPanelUINode> {
   return categoryValueIdsByPanel.reduce(
     (
@@ -771,7 +774,8 @@ export function buildUINodesByCategoryValueId(
         linkParentsAndChildren(
           categoryValueId,
           parentCategoryValueIdsByPanel,
-          uiAccum
+          uiAccum,
+          descendants
         );
       });
 
@@ -792,7 +796,7 @@ export function keyCategoryValueIdsByPanel<T extends Categories>(
   config: OntologyMultiPanelFilterConfig,
   originalRows: Row<T>[]
 ): CategoryValueId[][] {
-  const { panels: panelConfigs } = config;
+  const { filterOnKey, panels: panelConfigs } = config;
   return panelConfigs.reduce(
     (accum: CategoryValueId[][], panelConfig: CategoryFilterPanelConfig) => {
       // Determine the set of values for curated ontology panels.
@@ -805,7 +809,6 @@ export function keyCategoryValueIdsByPanel<T extends Categories>(
       }
 
       // Otherwise, build up the set of values for this panel from the original rows: only include explicit values.
-      const { filterOnKey } = config;
       const categoryValueIds = originalRows.reduce(
         (explicitAccum, originalRow) => {
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment --- TODO(cc) revisit - different between FilterKey (any value from dataset or collection) vs T extends Categories, also see if type assertion can be resolved
@@ -827,12 +830,20 @@ export function keyCategoryValueIdsByPanel<T extends Categories>(
 }
 
 /**
- * TODO(cc)
+ * Create parent/child relationships between the given values. This is a not an ancestor/descendant relations but a UI-
+ * specific parent/child relationship. For example, "blood, non-specific" is a descendant of both "hematopoietic system"
+ * and "blood" but is only a child of "blood".
+ * @param categoryValueId - Category value to build parent/child relationships for.
+ * @param parentCategoryValueIdsByPanel - Category values of the panel that is an ancestor panel of the category
+ * value's panel.
+ * @param uiNodesByCategoryValueId - UI model to update with parent/child relationships.
+ * @param descendants - Map of descendants keyed by ancestor.
  */
 function linkParentsAndChildren(
   categoryValueId: CategoryValueId,
   parentCategoryValueIdsByPanel: CategoryValueId[][],
-  uiNodesByCategoryValueId: Map<CategoryValueId, MultiPanelUINode>
+  uiNodesByCategoryValueId: Map<CategoryValueId, MultiPanelUINode>,
+  descendants: OntologyDescendants
 ) {
   // Link parent and children between this panel and the parent panel if:
   // 1. Child value is a descendant of the parent value and,
@@ -843,7 +854,7 @@ function linkParentsAndChildren(
       const isDescendantOfPanelValue = isDescendant(
         categoryValueId,
         panelCategoryValueId,
-        TISSUE_DESCENDANTS
+        descendants
       );
 
       // If value isn't a descendant, there's no parent child relationship to link here.
@@ -855,9 +866,10 @@ function linkParentsAndChildren(
       // the panel value.
       // Note: the logic here possibly might need revisiting if more than three panels are added. For example, is it
       // possible that the children list is ever incomplete at this point?
-      // TODO(cc) revisit chaining here and below
-      const panelCategoryValueUIChildren =
-        uiNodesByCategoryValueId.get(panelCategoryValueId)?.uiChildren ?? [];
+      const panelCategoryValueUIChildren = getUIChildren(
+        panelCategoryValueId,
+        uiNodesByCategoryValueId
+      );
       const isDescendantOfUIChild = panelCategoryValueUIChildren.some(
         (panelCategoryValueUIChild) => {
           // There are no descendants of explicit values; value can't be a descendant if child is explicit.
@@ -869,7 +881,7 @@ function linkParentsAndChildren(
           return isDescendant(
             categoryValueId,
             panelCategoryValueUIChild,
-            TISSUE_DESCENDANTS
+            descendants
           );
         }
       );
@@ -887,19 +899,48 @@ function linkParentsAndChildren(
 }
 
 /**
- * TODO(cc) optional chaining
+ * Create parent/child relationship between the given values.
+ * @param categoryValueId - Category value to add as a child.
+ * @param parentCategoryValueId - Category value to add as a parent.
+ * @param uiNodesByCategoryValueId - UI model to update with parent/child relationships.
  */
 function linkParentAndChild(
   categoryValueId: CategoryValueId,
   parentCategoryValueId: CategoryValueId,
   uiNodesByCategoryValueId: Map<CategoryValueId, MultiPanelUINode>
 ) {
-  uiNodesByCategoryValueId
-    .get(parentCategoryValueId)
-    ?.uiChildren?.push(categoryValueId);
-  uiNodesByCategoryValueId
-    ?.get(categoryValueId)
-    ?.uiParents.push(parentCategoryValueId);
+  getUIChildren(parentCategoryValueId, uiNodesByCategoryValueId).push(
+    categoryValueId
+  );
+  getUIParents(categoryValueId, uiNodesByCategoryValueId).push(
+    parentCategoryValueId
+  );
+}
+
+/**
+ * Return the UI children for the given node. UI children are initialized to an empty array on hook init but require
+ * truthy checking due to model being backed by a Map. Encapsulate the truthy checking here.
+ * @param categoryValueId - Category value to return UI children of.
+ * @param uiNodesByCategoryValueId - UI model containing parent/child relationships.
+ */
+function getUIChildren(
+  categoryValueId: CategoryValueId,
+  uiNodesByCategoryValueId: Map<CategoryValueId, MultiPanelUINode>
+): CategoryValueId[] {
+  return uiNodesByCategoryValueId.get(categoryValueId)?.uiChildren ?? [];
+}
+
+/**
+ * Return the UI parents for the given node. UI parents are initialized to an empty array on hook init but require
+ * truthy checking due to model being backed by a Map. Encapsulate the truthy checking here.
+ * @param categoryValueId - Category value to return UI parents of.
+ * @param uiNodesByCategoryValueId - UI model containing parent/child relationships.
+ */
+function getUIParents(
+  categoryValueId: CategoryValueId,
+  uiNodesByCategoryValueId: Map<CategoryValueId, MultiPanelUINode>
+): CategoryValueId[] {
+  return uiNodesByCategoryValueId.get(categoryValueId)?.uiParents ?? [];
 }
 
 /**
@@ -1486,16 +1527,6 @@ function isSelectedViewTagVisible(
 /**
  * TODO(cc) docs, location, name
  */
-function getUIParents(
-  categoryValueId: CategoryValueId,
-  uiNodesByCategoryValueId: Map<CategoryValueId, MultiPanelUINode>
-): CategoryValueId[] {
-  return uiNodesByCategoryValueId.get(categoryValueId)?.uiParents ?? [];
-}
-
-/**
- * TODO(cc) docs, location, name
- */
 function buildParentPanelBuilders(
   panelConfigs: CategoryFilterPanelConfig[],
   selectCategoryValues: SelectCategoryValue[],
@@ -1570,7 +1601,10 @@ function applySelectCategoryValueIncludeList(
     return builder.selectCategoryValues;
   }
 
-  const selectedValues = overrideSelectedParents(allSelectedValues);
+  const selectedValues = overrideSelectedParents(
+    allSelectedValues,
+    TISSUE_DESCENDANTS
+  );
 
   // Otherwise, only include values that are either selected or descendants of selected values, or if the value itself
   // is selected.
@@ -2304,14 +2338,15 @@ function onFilterMultiPanelCategory(
   // filter values. For example, even if "digestive system" and "tongue" are both selected in the UI, we only want to
   // pass the more restrictive "tongue" to react-table as we only want to show rows that match "tongue".
   const overriddenSelectedCategoryFilters = overrideSelectedParents(
-    selectedCategoryFilters
+    selectedCategoryFilters,
+    config.descendants
   );
 
   // Determine the selected values which are now partially selected, if any. For example, if "digestive system" and
   // "tongue" are both selected in the UI, internally we record "digestive system" as partially selected and "tongue"
   // as selected.
   const { uiNodesByCategoryValueId } = categoryFilterUIState;
-  const selectedPartial = listPartiallySelectedCategoryValueIds(
+  const selectedPartial = listPartiallySelectedCategoryValues(
     selectedCategoryFilters,
     overriddenSelectedCategoryFilters,
     uiNodesByCategoryValueId
@@ -2431,11 +2466,16 @@ export function onRemoveMultiPanelCategoryValueTag(
 }
 
 /**
- * We need to know are you blocked by some of your children being selected (partially selected), or by all of your
- * children being selected (not partially selected).
- * TODO(cc) location, name, rename tests
+ * Determine the selected values which are now partially selected, if any. For example, if "digestive system" and
+ * "tongue" are both selected in the UI, internally we record "digestive system" as selected and partially selected
+ * and "tongue" as selected. If all children of the given selected values are selected then the selected values are not
+ * marked as partial.
+ * @param selectedCategoryValueIds - All currently selected values.
+ * @param overriddenSelectedCategoryValueIds - The "effective" set of selected values. For example, if both "digestive
+ * system" and "tongue" are selected, only "tongue" is included in this set.
+ * @param uiNodesByCategoryValueId - UI model to containing with parent/child relationships.
  */
-export function listPartiallySelectedCategoryValueIds(
+export function listPartiallySelectedCategoryValues(
   selectedCategoryValueIds: CategoryValueId[],
   overriddenSelectedCategoryValueIds: CategoryValueId[],
   uiNodesByCategoryValueId: Map<CategoryValueId, MultiPanelUINode>
@@ -2452,13 +2492,10 @@ export function listPartiallySelectedCategoryValueIds(
     // Otherwise, value has been blocked by a more "precise" value. If all children of the blocked value are selected,
     // leave as is. If only some children of the blocked value are selected, add selected value to partial list.
     .forEach((selectedCategoryFilter: CategoryValueId) => {
-      const uiNode = uiNodesByCategoryValueId.get(selectedCategoryFilter);
-      if (!uiNode) {
-        // TODO(cc) is this even possible?
-        return;
-      }
-
-      const isEveryChildSelected = uiNode.uiChildren.every((uiChild) => {
+      const isEveryChildSelected = getUIChildren(
+        selectedCategoryFilter,
+        uiNodesByCategoryValueId
+      ).every((uiChild) => {
         // Confirm child is selected and not overridden.
         const isChildSelected =
           selectedCategoryValueIds.includes(uiChild) &&
@@ -2474,8 +2511,10 @@ export function listPartiallySelectedCategoryValueIds(
 
         // Otherwise, if child is not explicitly selected and it's an inferred value, check if it's inferred selected.
         // TODO(cc) can we move this to a format similar to buildSelectedViews (ie recursive?)
-        const uiGrandchildren =
-          uiNodesByCategoryValueId.get(uiChild)?.uiChildren;
+        const uiGrandchildren = getUIChildren(
+          uiChild,
+          uiNodesByCategoryValueId
+        );
         if (!uiGrandchildren) {
           return false; // If there are no grandchildren then the value is not inferred selected.
         }
@@ -2524,20 +2563,23 @@ function buildMultiPanelFilters<T extends Categories>(
  * Determine the selected values to pass to react-table to filter the rows by applying restrictions across selected
  * filter values. For example, even if "digestive system" and "tongue" are both selected in the UI, we only want to
  * pass the more restrictive "tongue" to react-table as we only want to show rows that match "tongue".
+ * @param selectedValues - Set of currently selected values.
+ * @param descendants - Map of descendants keyed by ancestor.
+ * @returns The "effective" set of selected terms to pass to react-table.
  * TODO(cc) location, rename, can we remove this and use the partial state instead
  */
-function overrideSelectedParents(
-  selectedValues: CategoryValueId[]
+export function overrideSelectedParents(
+  selectedValues: CategoryValueId[],
+  descendants: OntologyDescendants
 ): CategoryValueId[] {
   const selectedOntologyTermIds = selectedValues.map((selectedValue) =>
     removeOntologyTermIdPrefix(selectedValue)
   );
   return selectedValues.reduce((accum, selectedValue: CategoryValueId) => {
-    const [selectedPrefix, selectedOntologyId] =
-      splitOntologyTermIdAndPrefix(selectedValue);
+    const selectedOntologyId = removeOntologyTermIdPrefix(selectedValue);
 
     // If the selected value is an explicit value, always include it in the selected set of values.
-    if (selectedPrefix === OrFilterPrefix.EXPLICIT) {
+    if (isExplicitOntologyTermId(selectedValue)) {
       accum.push(selectedValue);
       return accum;
     }
@@ -2553,10 +2595,10 @@ function overrideSelectedParents(
 
     // Otherwise, if any descendant of the selected value is selected, do not include the selected value in the set of
     // selected values.
-    const descendants = TISSUE_DESCENDANTS[selectedOntologyId] ?? [];
+    const descendantsOfSelected = descendants[selectedOntologyId] ?? [];
 
     // Check if any descendant is selected.
-    const isAnyDescendantSelected = descendants.some((descendant) =>
+    const isAnyDescendantSelected = descendantsOfSelected.some((descendant) =>
       selectedOntologyTermIds.includes(descendant)
     );
     if (!isAnyDescendantSelected) {

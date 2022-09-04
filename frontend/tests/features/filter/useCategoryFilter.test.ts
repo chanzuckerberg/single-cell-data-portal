@@ -9,10 +9,11 @@ import {
   buildSelectedViews,
   buildUINodesByCategoryValueId,
   keyCategoryValueIdsByPanel,
-  listPartiallySelectedCategoryValueIds,
+  listPartiallySelectedCategoryValues,
   MultiPanelCategoryFilterUIState,
   MultiPanelUINode,
   onRemoveMultiPanelCategoryValueTag,
+  overrideSelectedParents,
 } from "src/common/hooks/useCategoryFilter";
 import {
   CATEGORY_FILTER_CONFIGS_BY_ID,
@@ -364,7 +365,7 @@ describe("useCategoryFilter", () => {
       [EXPLICIT_THORACIC_LYMPH_NODE, EXPLICIT_THORACIC_LYMPH_NODE_VALUE_VIEW],
     ]);
 
-    describe.only("keyCategoryValueIdsByPanel", () => {
+    describe("keyCategoryValueIdsByPanel", () => {
       /**
        * Panels: curated, curated, explicit.
        */
@@ -422,7 +423,6 @@ describe("useCategoryFilter", () => {
             } as unknown as Row<DatasetRow>,
           ]
         );
-        console.log(categoryValueIdsByPanel);
 
         const tissuePanel = categoryValueIdsByPanel[2];
         expect(tissuePanel).toBeTruthy();
@@ -430,6 +430,91 @@ describe("useCategoryFilter", () => {
         expect(tissuePanel.length).toEqual(2);
         expect(tissuePanel.includes(EXPLICIT_BLOOD)).toBeTruthy();
         expect(tissuePanel.includes(EXPLICIT_SPLEEN)).toBeTruthy();
+      });
+    });
+
+    describe.only("overrideSelectedParents", () => {
+      /**
+       * Selected: blood non-specific
+       * Post-overrides: blood non-specific
+       */
+      it("doesn't override tissue", () => {
+        const overriddenSelectedValues = overrideSelectedParents(
+          [EXPLICIT_BLOOD],
+          TISSUE_DESCENDANTS
+        );
+        expect(overriddenSelectedValues.length).toEqual(1);
+      });
+
+      /**
+       * Selected: blood, blood non-specific
+       * Post-overrides: blood non-specific
+       */
+      it("overrides inferred organ with explicit tissue", () => {
+        const overriddenSelectedValues = overrideSelectedParents(
+          [INFERRED_BLOOD, EXPLICIT_BLOOD],
+          TISSUE_DESCENDANTS
+        );
+        expect(overriddenSelectedValues.length).toEqual(1);
+        expect(overriddenSelectedValues[0]).toEqual(EXPLICIT_BLOOD);
+      });
+
+      /**
+       * Selected: blood, umbilical cord blood
+       * Post-overrides: umbilical cord blood
+       */
+      it("overrides organ with tissue", () => {
+        const overriddenSelectedValues = overrideSelectedParents(
+          [INFERRED_BLOOD, EXPLICIT_UMBILICAL_CORD_BLOOD],
+          TISSUE_DESCENDANTS
+        );
+        expect(overriddenSelectedValues.length).toEqual(1);
+        expect(overriddenSelectedValues[0]).toEqual(
+          EXPLICIT_UMBILICAL_CORD_BLOOD
+        );
+      });
+
+      /**
+       * Selected: hematopoietic system, blood
+       * Post-overrides: blood
+       */
+      it("overrides system with organ", () => {
+        const overriddenSelectedValues = overrideSelectedParents(
+          [INFERRED_HEMATOPOIETIC_SYSTEM, INFERRED_BLOOD],
+          TISSUE_DESCENDANTS
+        );
+        expect(overriddenSelectedValues.length).toEqual(1);
+        expect(overriddenSelectedValues[0]).toEqual(INFERRED_BLOOD);
+      });
+
+      /**
+       * Selected: hematopoietic system, blood non-specific
+       * Post-overrides: blood non-specific
+       */
+      it("overrides system with tissue", () => {
+        const overriddenSelectedValues = overrideSelectedParents(
+          [INFERRED_HEMATOPOIETIC_SYSTEM, EXPLICIT_BLOOD],
+          TISSUE_DESCENDANTS
+        );
+        expect(overriddenSelectedValues.length).toEqual(1);
+        expect(overriddenSelectedValues[0]).toEqual(EXPLICIT_BLOOD);
+      });
+
+      /**
+       * Selected: hematopoietic system, immune system, spleen
+       * Post-overrides: spleen
+       */
+      it("overrides multiple systems with organ", () => {
+        const overriddenSelectedValues = overrideSelectedParents(
+          [
+            INFERRED_HEMATOPOIETIC_SYSTEM,
+            INFERRED_IMMUNE_SYSTEM,
+            INFERRED_SPLEEN,
+          ],
+          TISSUE_DESCENDANTS
+        );
+        expect(overriddenSelectedValues.length).toEqual(1);
+        expect(overriddenSelectedValues[0]).toEqual(INFERRED_SPLEEN);
       });
     });
 
@@ -717,13 +802,13 @@ describe("useCategoryFilter", () => {
       });
     });
 
-    describe("listPartiallySelectedCategoryValueIds", () => {
+    describe("listPartiallySelectedCategoryValues", () => {
       /**
        * Selected - blood non-specific
        * Selected partial - none
        */
       it("doesn't lists tissue as partially selected if only tissue is selected", () => {
-        const selectedPartial = listPartiallySelectedCategoryValueIds(
+        const selectedPartial = listPartiallySelectedCategoryValues(
           [EXPLICIT_BLOOD],
           [EXPLICIT_BLOOD],
           UI_NODES_BY_CATEGORY_VALUE_ID
@@ -737,7 +822,7 @@ describe("useCategoryFilter", () => {
        * Selected partial - blood
        */
       it("lists organ as partially selected when tissue is selected", () => {
-        const selectedPartial = listPartiallySelectedCategoryValueIds(
+        const selectedPartial = listPartiallySelectedCategoryValues(
           [INFERRED_BLOOD, EXPLICIT_BLOOD],
           [EXPLICIT_BLOOD],
           UI_NODES_BY_CATEGORY_VALUE_ID
@@ -752,7 +837,7 @@ describe("useCategoryFilter", () => {
        * Selected partial - none
        */
       it("doesn't lists organ as partially selected if all children tissue are also selected", () => {
-        const selectedPartial = listPartiallySelectedCategoryValueIds(
+        const selectedPartial = listPartiallySelectedCategoryValues(
           [
             INFERRED_BLOOD,
             EXPLICIT_BLOOD,
@@ -775,7 +860,7 @@ describe("useCategoryFilter", () => {
        * Selected partial - none
        */
       it("doesn't list organ as partially selected when single child tissue is selected", () => {
-        const selectedPartial = listPartiallySelectedCategoryValueIds(
+        const selectedPartial = listPartiallySelectedCategoryValues(
           [INFERRED_SPLEEN, EXPLICIT_SPLEEN],
           [EXPLICIT_SPLEEN],
           UI_NODES_BY_CATEGORY_VALUE_ID
@@ -789,7 +874,7 @@ describe("useCategoryFilter", () => {
        * Selected partial - hematopoietic system
        */
       it("lists system as partially selected when not all children organs are selected", () => {
-        const selectedPartial = listPartiallySelectedCategoryValueIds(
+        const selectedPartial = listPartiallySelectedCategoryValues(
           [INFERRED_HEMATOPOIETIC_SYSTEM, INFERRED_BLOOD],
           [INFERRED_BLOOD],
           UI_NODES_BY_CATEGORY_VALUE_ID
@@ -804,7 +889,7 @@ describe("useCategoryFilter", () => {
        * Selected partial - none
        */
       it("doesn't lists system as partially selected if all children organs are also selected", () => {
-        const selectedPartial = listPartiallySelectedCategoryValueIds(
+        const selectedPartial = listPartiallySelectedCategoryValues(
           [
             INFERRED_HEMATOPOIETIC_SYSTEM,
             INFERRED_BLOOD,
@@ -830,7 +915,7 @@ describe("useCategoryFilter", () => {
        * Selected partial - none
        */
       it("doesn't lists system as partially selected if all children organs or children tissues are selected", () => {
-        const selectedPartial = listPartiallySelectedCategoryValueIds(
+        const selectedPartial = listPartiallySelectedCategoryValues(
           [
             INFERRED_HEMATOPOIETIC_SYSTEM,
             INFERRED_BONE_MARROW,
@@ -859,7 +944,7 @@ describe("useCategoryFilter", () => {
        * Selected partial - hematopoietic system, blood
        */
       it("lists system as partially selected if not all children organs or children tissues are selected", () => {
-        const selectedPartial = listPartiallySelectedCategoryValueIds(
+        const selectedPartial = listPartiallySelectedCategoryValues(
           [
             INFERRED_HEMATOPOIETIC_SYSTEM,
             INFERRED_BLOOD,
@@ -1376,7 +1461,8 @@ describe("useCategoryFilter", () => {
       let uiNodesByCategoryValueId: Map<CategoryValueId, MultiPanelUINode>;
       beforeAll(() => {
         uiNodesByCategoryValueId = buildUINodesByCategoryValueId(
-          CATEGORY_VALUE_IDS_BY_PANEL
+          CATEGORY_VALUE_IDS_BY_PANEL,
+          TISSUE_DESCENDANTS
         );
       });
 
