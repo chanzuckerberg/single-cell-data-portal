@@ -5,12 +5,9 @@ import {
   isSelectCategoryView,
 } from "src/components/common/Filter";
 import {
-  CategoryValueId,
   CategoryView,
-  CATEGORY_FILTER_ID,
   OnFilterFn,
   OntologyMultiPanelCategoryView,
-  Range,
   SelectCategoryValueView,
 } from "src/components/common/Filter/common/entities";
 import FilterMenu from "src/components/common/Filter/components/FilterContent/components/FilterMenu";
@@ -66,16 +63,6 @@ function buildBasicFilterContent(
   const { key } = categoryView;
   const { clearSearchValueFn, searchValue, setSearchValue } = filterSearchState;
 
-  // Update onFilter function with clear search value function.
-  const onFilterWithClearSearch = (
-    categoryFilterId: CATEGORY_FILTER_ID,
-    key: CategoryValueId | null, // null for ranges.
-    value: CategoryValueId | Range
-  ) => {
-    onFilter(categoryFilterId, key, value);
-    clearSearchValueFn();
-  };
-
   // Handle ontology categories.
   if (isOntologyCategoryView(categoryView)) {
     return (
@@ -112,8 +99,9 @@ function buildBasicFilterContent(
     return (
       <FilterMultiPanelCategoryView
         categoryView={categoryView}
+        clearSearchValueFn={clearSearchValueFn}
         isSearchable={isFilterMultiPanelSearchable(categoryView)}
-        onFilter={onFilterWithClearSearch}
+        onFilter={onFilter}
         searchValue={searchValue}
         setSearchValue={setSearchValue}
       />

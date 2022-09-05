@@ -9,7 +9,7 @@ export type SetSearchValueFn = Dispatch<SetStateAction<string>>;
 /**
  * Function invoked to clear state for the filter search value.
  */
-type ClearSearchValueFn = () => void;
+export type ClearSearchValueFn = () => void;
 
 /**
  * Model of the filter search state value and the corresponding functions to update the value.
