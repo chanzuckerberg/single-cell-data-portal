@@ -108,8 +108,7 @@ export default function Datasets(): JSX.Element {
         ),
         Header: "Tissue",
         accessor: ontologyLabelCellAccessorFn("tissue"),
-        filter: "includesSome", // TODO(cc) remove filter with 2569? but keep tissue column for display (tissue filter below will filter on term IDs but tissue column here will display labels)
-        id: CATEGORY_FILTER_ID.TISSUE_DEPRECATED,
+        id: "tissue",
       },
       {
         Cell: ({ value }: CellPropsValue<string[]>) => (
@@ -304,8 +303,7 @@ export default function Datasets(): JSX.Element {
       .filter(
         (categoryFilterId: CATEGORY_FILTER_ID) =>
           !(
-            (categoryFilterId === CATEGORY_FILTER_ID.TISSUE_CALCULATED ||
-              categoryFilterId === CATEGORY_FILTER_ID.CELL_TYPE) &&
+            categoryFilterId === CATEGORY_FILTER_ID.CELL_TYPE &&
             !isFilterEnabled
           )
       )

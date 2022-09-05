@@ -2940,7 +2940,6 @@ const CATEGORY_FILTER_CONFIGS: CategoryFilterConfig[] = [
   },
   {
     // TODO(cc) possibly remove with #2569.
-    analyticsEvent: EVENTS.FILTER_SELECT_CELL_TYPE,
     categoryFilterId: CATEGORY_FILTER_ID.CELL_TYPE_DEPRECATED,
     filterOnKey: "cell_type",
     label: "Cell Type",
@@ -2952,6 +2951,7 @@ const CATEGORY_FILTER_CONFIGS: CategoryFilterConfig[] = [
   },
   {
     // TODO(cc) add analytics event with #2569.
+    // analyticsEvent: EVENTS.FILTER_SELECT_CELL_TYPE,
     categoryFilterId: CATEGORY_FILTER_ID.CELL_TYPE,
     filterOnKey: "cell_type_ancestors",
     isLabelVisible: false,
@@ -3061,23 +3061,11 @@ const CATEGORY_FILTER_CONFIGS: CategoryFilterConfig[] = [
     viewKind: "SELECT",
   },
   {
-    // TODO(cc) possibly remove with #2569.
     analyticsEvent: EVENTS.FILTER_SELECT_TISSUE,
-    categoryFilterId: CATEGORY_FILTER_ID.TISSUE_DEPRECATED,
-    filterOnKey: "tissue",
-    label: "Tissue",
-    labelKind: "VALUE",
-    matchKind: "INCLUDES_SOME",
-    multiselect: true,
-    valueSourceKind: "NONE",
-    viewKind: "SELECT",
-  },
-  {
-    // TODO(cc) add analytics event with #2569.
     categoryFilterId: CATEGORY_FILTER_ID.TISSUE_CALCULATED,
     descendants: TISSUE_DESCENDANTS,
     filterOnKey: "tissueCalculated",
-    label: "Tissue (Ontology)",
+    label: "Tissue",
     labelKind: "LOOKUP_LABEL_BY_TERM_ID",
     matchKind: "INCLUDES_SOME",
     multiselect: true,

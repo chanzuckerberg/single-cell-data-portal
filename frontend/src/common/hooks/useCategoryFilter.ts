@@ -285,8 +285,8 @@ export function useCategoryFilter<T extends Categories>(
       selectedValue: CategoryValueId | Range,
       source: ON_FILTER_SOURCE = ON_FILTER_SOURCE.FILTER
     ) => {
-      if (!categorySet) {
-        return; // Error state - category set should be set at this point.
+      if (!categorySet || !ontologyTermLabelsById) {
+        return; // Error state - category set and ontology labels map should be set at this point.
       }
 
       // Grab the configuration model for the selected category.
@@ -324,7 +324,8 @@ export function useCategoryFilter<T extends Categories>(
           source,
           setFilter,
           multiPanelUIState,
-          setMultiPanelUIState
+          setMultiPanelUIState,
+          ontologyTermLabelsById
         );
         return;
       }
@@ -2312,6 +2313,7 @@ function removeOntologyDescendents(
  * @param multiPanelUIState - Current set of category values that the user has selected on the UI for all multi-
  * panel category filters.
  * @param setMultiPanelUIState - React state mutator for setting multi-panel UI state.
+ * @param ontologyTermLabelsById - Set of ontology term labels keyed by term ID, used to determine labels for ontology
  */
 function onFilterMultiPanelCategory(
   config: OntologyMultiPanelFilterConfig,
@@ -2320,13 +2322,19 @@ function onFilterMultiPanelCategory(
   source: ON_FILTER_SOURCE,
   setFilter: SetFilterFn,
   multiPanelUIState: MultiPanelUIState,
-  setMultiPanelUIState: Dispatch<SetStateAction<MultiPanelUIState>>
+  setMultiPanelUIState: Dispatch<SetStateAction<MultiPanelUIState>>,
+  ontologyTermLabelsById: Map<string, string>
 ) {
   // Grab the selected values for this category filter.
   const multiPanelFilters = buildMultiPanelFilters(multiPanelUIState);
 
-  // Track selected category and value. TODO(cc) revisit categoryFilters here
-  trackSelectCategoryValueSelected(config, categoryValueId, multiPanelFilters);
+  // Track selected category and value.
+  trackMultiPanelCategoryValueSelected(
+    config,
+    categoryValueId,
+    multiPanelFilters,
+    ontologyTermLabelsById
+  );
 
   // Determine selected set of values for this category filter based on the current selected values for this multi-panel
   // category filter; toggle current selected values. If this is a remove action, remove descendants of fully-selected
@@ -2946,6 +2954,41 @@ function trackCuratedOntologyCategoryValueSelected<T extends Categories>(
       label: selectedOntologyNode.label,
       ontologyTermId: selectedOntologyNode.ontology_term_id,
     });
+  }
+}
+
+/**
+ * Track select of the given multi-panel category and category value.
+ * @param config - Configuration model of selected category.
+ * @param categoryValueId - Selected category value (e.g. "hematopoietic system").
+ * @param filters - Current set of selected category values.
+ * @param ontologyTermLabelsById - Set of ontology term labels keyed by term ID, used to determine labels for ontology
+ */
+function trackMultiPanelCategoryValueSelected<T extends Categories>(
+  config: CategoryFilterConfig,
+  categoryValueId: CategoryValueId,
+  filters: Filters<T>,
+  ontologyTermLabelsById: Map<string, string>
+) {
+  const { analyticsEvent, categoryFilterId } = config;
+
+  // No tracking if event isn't specified on category config.
+  if (!analyticsEvent) {
+    return;
+  }
+
+  // Only track the select (and not deselect) of category value.
+  const categoryFilters = new Set(
+    getCategoryFilter(categoryFilterId, filters)?.value as CategoryValueId
+  );
+  if (!categoryFilters.has(categoryValueId)) {
+    // Build up payload for tracking event and send.
+    const ontologyTermId = removeOntologyTermIdPrefix(categoryValueId);
+    const payload = {
+      label: ontologyTermLabelsById.get(ontologyTermId) ?? ontologyTermId,
+      ontologyTermId: ontologyTermId,
+    };
+    track(analyticsEvent, { payload });
   }
 }
 

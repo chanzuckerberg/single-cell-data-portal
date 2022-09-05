@@ -99,8 +99,7 @@ export default function Collections(): JSX.Element {
         ),
         Header: "Tissue",
         accessor: ontologyLabelCellAccessorFn("tissue"),
-        filter: "includesSome", // TODO(cc) remove filter with 2569? but keep tissue column for display (tissue filter below will filter on term IDs but tissue column here will display labels)
-        id: CATEGORY_FILTER_ID.TISSUE_DEPRECATED,
+        id: "tissue",
       },
       {
         Cell: ({ value }: CellPropsValue<string[]>) => (
@@ -239,9 +238,7 @@ export default function Collections(): JSX.Element {
           return false;
         }
         return !(
-          (categoryFilterId === CATEGORY_FILTER_ID.TISSUE_CALCULATED ||
-            categoryFilterId === CATEGORY_FILTER_ID.CELL_TYPE) &&
-          !isFilterEnabled
+          categoryFilterId === CATEGORY_FILTER_ID.CELL_TYPE && !isFilterEnabled
         );
       })
       .reduce((accum, categoryFilterId: CATEGORY_FILTER_ID) => {

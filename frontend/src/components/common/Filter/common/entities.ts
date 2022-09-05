@@ -114,7 +114,6 @@ export enum CATEGORY_FILTER_ID {
   "PUBLICATION_AUTHORS" = "PUBLICATION_AUTHORS",
   "PUBLICATION_DATE_VALUES" = "PUBLICATION_DATE_VALUES",
   "SEX" = "SEX",
-  "TISSUE_DEPRECATED" = "TISSUE_DEPRECATED", // TODO(cc) remove with #2569.
   "TISSUE_CALCULATED" = "TISSUE_CALCULATED",
 }
 
@@ -335,8 +334,8 @@ export interface Categories {
   ethnicity: Ontology[];
   organism: Ontology[];
   sex: Ontology[];
-  tissue: Ontology[]; // TODO(cc) revisit with #2569. don't need in catgories as we no longer filter on tissue?
-  tissue_ancestors: string[]; // TODO(cc) revisit with #2569. don't need in catgories as we no longer filter on tissue_ancestors?
+  tissue: Ontology[];
+  tissue_ancestors: string[];
   tissueCalculated: string[];
 }
 

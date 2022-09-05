@@ -102,7 +102,7 @@ export interface DatasetResponse {
   published_at: number;
   revised_at?: number;
   sex: Ontology[];
-  tissue: Ontology[]; // TODO(cc) remove with #2569.
+  tissue: Ontology[];
   tissue_ancestors: string[];
 }
 
