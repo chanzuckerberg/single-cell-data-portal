@@ -97,11 +97,10 @@ function buildOntologyCategoryTags(
   onFilter: OnFilterFn
 ): CategoryTag[] | undefined {
   return categoryView.views?.reduce((accum, species) => {
-    species.selectedViews.forEach(({ key, label, value }) => {
+    species.selectedViews.forEach(({ label, value }) => {
       accum.push({
         label: label,
-        onRemove: () =>
-          onFilter(categoryFilterId, key, value, ON_FILTER_SOURCE.TAG),
+        onRemove: () => onFilter(categoryFilterId, value, ON_FILTER_SOURCE.TAG),
       });
     });
     return accum;
@@ -121,11 +120,10 @@ function buildOntologyMultiPanelCategoryTags(
   onFilter: OnFilterFn
 ): CategoryTag[] | undefined {
   const { selectedViews } = categoryView;
-  return selectedViews.map(({ key, label, value }) => {
+  return selectedViews.map(({ label, value }) => {
     return {
       label,
-      onRemove: () =>
-        onFilter(categoryFilterId, key, value, ON_FILTER_SOURCE.TAG),
+      onRemove: () => onFilter(categoryFilterId, value, ON_FILTER_SOURCE.TAG),
     };
   });
 }
@@ -152,8 +150,7 @@ function buildRangeCategoryTag(
     return [
       {
         label: createRangeTagLabel(selectedMin, selectedMax),
-        onRemove: () =>
-          onFilter(categoryFilterId, null, [], ON_FILTER_SOURCE.TAG),
+        onRemove: () => onFilter(categoryFilterId, [], ON_FILTER_SOURCE.TAG),
       },
     ];
   }
@@ -174,11 +171,10 @@ function buildSelectCategoryTags(
   const { values } = categoryView;
   return values
     .filter((value) => value.selected)
-    .map(({ key, label, value }) => {
+    .map(({ label, value }) => {
       return {
         label: label,
-        onRemove: () =>
-          onFilter(categoryFilterId, key, value, ON_FILTER_SOURCE.TAG),
+        onRemove: () => onFilter(categoryFilterId, value, ON_FILTER_SOURCE.TAG),
       };
     });
 }

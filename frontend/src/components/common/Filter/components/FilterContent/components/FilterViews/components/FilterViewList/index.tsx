@@ -81,7 +81,7 @@ export default function FilterViewList({
               <ViewListItem
                 button
                 disabled={!count}
-                onClick={() => onFilter(categoryFilterId, key, value)}
+                onClick={() => onFilter(categoryFilterId, value)}
               >
                 {/* Icon - bp icon to uphold ui consistency between filter menu and filter views */}
                 <SelectionIcon

@@ -281,8 +281,7 @@ export function useCategoryFilter<T extends Categories>(
   const onFilter = useCallback<OnFilterFn>(
     (
       categoryFilterId: CATEGORY_FILTER_ID,
-      categoryValueKey: CategoryValueId | null, // TODO(cc) is this still necessary
-      selectedValue: CategoryValueId | Range,
+      selectedCategoryValue: CategoryValueId | Range,
       source: ON_FILTER_SOURCE = ON_FILTER_SOURCE.FILTER
     ) => {
       if (!categorySet || !ontologyTermLabelsById) {
@@ -293,21 +292,20 @@ export function useCategoryFilter<T extends Categories>(
       const config = CATEGORY_FILTER_CONFIGS_BY_ID[categoryFilterId];
 
       // Handle range categories.
-      if (isSelectedValueRange(selectedValue)) {
-        onFilterRangeCategory(config, selectedValue, setFilter);
+      if (isSelectedValueRange(selectedCategoryValue)) {
+        onFilterRangeCategory(config, selectedCategoryValue, setFilter);
         return;
       }
 
-      if (!categoryValueKey) {
-        return; // Error state - category value key must be defined for select and ontology categories.
+      if (!selectedCategoryValue) {
+        return; // Error state - selected value must be defined for select and ontology categories.
       }
 
       // Handle ontology categories.
       if (isCuratedOntologyCategoryFilterConfig(config)) {
         onFilterCuratedOntologyCategory(
           config,
-          categoryValueKey,
-          selectedValue,
+          selectedCategoryValue,
           filters,
           setFilter,
           categorySet
@@ -319,8 +317,7 @@ export function useCategoryFilter<T extends Categories>(
       if (isMultiPanelCategoryFilterConfig(config)) {
         onFilterMultiPanelCategory(
           config,
-          categoryValueKey,
-          selectedValue,
+          selectedCategoryValue,
           source,
           setFilter,
           multiPanelUIState,
@@ -331,15 +328,9 @@ export function useCategoryFilter<T extends Categories>(
       }
 
       // Handle single or multiselect categories.
-      onFilterSelectCategory(
-        config,
-        categoryValueKey,
-        selectedValue,
-        filters,
-        setFilter
-      );
+      onFilterSelectCategory(config, selectedCategoryValue, filters, setFilter);
     },
-    [categorySet, filters, setFilter, multiPanelUIState]
+    [categorySet, filters, ontologyTermLabelsById, setFilter, multiPanelUIState]
   );
 
   return {
@@ -531,7 +522,7 @@ function buildCategorySet<T extends Categories>(
       const isCategoryOntology = isCuratedOntologyCategoryFilterConfig(config);
       let categoryOntologyIds: Set<string>;
       if (isCategoryOntology) {
-        categoryOntologyIds = listOntologyTreeIds(config.mask);
+        categoryOntologyIds = listOntologyTreeIds(config.source);
       }
 
       // Handle single or multi select categories. Check category value for this category, in every row.
@@ -1217,14 +1208,14 @@ function buildCuratedOntologyCategoryView(
     isSearchable,
     isZerosVisible,
     label,
-    mask,
+    source,
   } = config;
 
   // Build tree view models (e.g. individual tree structures for displaying different ontologies (e.g. human vs mouse
   // vs other for development stage, or just tissues for tissue).
-  const treeViews = Object.keys(mask).reduce(
+  const treeViews = Object.keys(source).reduce(
     (accum, ontologyViewKey: string) => {
-      const ontologyNodes = mask[ontologyViewKey as ONTOLOGY_VIEW_KEY];
+      const ontologyNodes = source[ontologyViewKey as ONTOLOGY_VIEW_KEY];
       if (!ontologyNodes) {
         return accum; // Error state - ignore species view.
       }
@@ -1279,9 +1270,9 @@ function buildCuratedOntologyCategoryView(
 
   // Build up the ontology category view model.
   const ontologyView: OntologyCategoryView = {
+    categoryFilterId,
     isSearchable,
     isZerosVisible,
-    categoryFilterId: categoryFilterId,
     label,
     views: treeViews,
   };
@@ -2309,7 +2300,6 @@ function removeOntologyDescendents(
 /**
  * Handle select of multi-panel value: build and set next set of filters for this category. Track selected select value.
  * @param config - Configuration model of selected category.
- * @param categoryValueId - The selected category value.
  * @param selectedValue - Selected category value ID to use as selected value.
  * @param source - Location where select/remove was triggered, either filter menu or selected tag.
  * @param setFilter - Function to update set of selected values for a category.
@@ -2320,7 +2310,6 @@ function removeOntologyDescendents(
  */
 function onFilterMultiPanelCategory(
   config: MultiPanelOntologyFilterConfig,
-  categoryValueId: CategoryValueId,
   selectedValue: CategoryValueId,
   source: ON_FILTER_SOURCE,
   setFilter: SetFilterFn,
@@ -2334,7 +2323,7 @@ function onFilterMultiPanelCategory(
   // Track selected category and value.
   trackMultiPanelCategoryValueSelected(
     config,
-    categoryValueId,
+    selectedValue,
     multiPanelFilters,
     ontologyTermLabelsById
   );
@@ -2349,7 +2338,6 @@ function onFilterMultiPanelCategory(
   }
   const selectedCategoryFilters = buildNextMultiPanelCategoryFilters(
     config,
-    categoryValueId,
     selectedValue,
     source,
     categoryFilterUIState,
@@ -2391,7 +2379,6 @@ function onFilterMultiPanelCategory(
  * Build updated set of selected filters for the given single or multiselect category and the selected category values.
  * If this is a remove action from a tag, remove selected descendants as well, if applicable.
  * @param config - Configuration model of selected category.
- * @param categoryValueId - The selected category value.
  * @param selectedValue - Selected category value ID to use as selected value.
  * @param source - Location where select/remove was triggered, either filter menu or selected tag.
  * @param categoryFilterUIState - UI model of partially/selected values in the category filter.
@@ -2399,7 +2386,6 @@ function onFilterMultiPanelCategory(
  */
 function buildNextMultiPanelCategoryFilters<T extends Categories>(
   config: MultiPanelOntologyFilterConfig,
-  categoryValueId: CategoryValueId,
   selectedValue: CategoryValueId,
   source: ON_FILTER_SOURCE,
   categoryFilterUIState: MultiPanelCategoryFilterUIState,
@@ -2421,7 +2407,7 @@ function buildNextMultiPanelCategoryFilters<T extends Categories>(
   // If the source of the filter action was a selected tag, we know a remove action has occurred. Clear out any
   // children of the removed tag unless the children themselves have another that is partially/selected.
   return onRemoveMultiPanelCategoryValueTag(
-    categoryValueId,
+    selectedValue,
     selectedCategoryFilters,
     categoryFilterUIState,
     config.descendants
@@ -2634,7 +2620,6 @@ export function overrideSelectedParents(
 /**
  * Handle select of ontology value: build and set next set of filters for this category. Track selected ontology value.
  * @param config - Configuration model of selected category.
- * @param categoryValueKey - The selected category value.
  * @param selectedValue - Selected category value ID to use as selected value.
  * @param filters - Current set of selected category values (values) or ranges keyed by category (id).
  * @param setFilter - Function to update set of selected values for a category.
@@ -2642,16 +2627,15 @@ export function overrideSelectedParents(
  */
 function onFilterCuratedOntologyCategory<T extends Categories>(
   config: CuratedOntologyCategoryFilterConfig,
-  categoryValueKey: CategoryValueId,
   selectedValue: CategoryValueId,
   filters: Filters<T>,
   setFilter: SetFilterFn,
   categorySet: CategorySet
 ) {
-  const { categoryFilterId, mask } = config;
+  const { categoryFilterId, source } = config;
 
   // Track selected category and value.
-  trackCuratedOntologyCategoryValueSelected(config, categoryValueKey, filters);
+  trackCuratedOntologyCategoryValueSelected(config, selectedValue, filters);
 
   // Build and set next set of filters for this category.
   const nextCategoryFilters = buildNextOntologyCategoryFilters(
@@ -2659,7 +2643,7 @@ function onFilterCuratedOntologyCategory<T extends Categories>(
     selectedValue,
     filters,
     categorySet[categoryFilterId] as Set<CategoryValueId>,
-    mask
+    source
   );
   setFilter(categoryFilterId, nextCategoryFilters);
 }
@@ -2694,14 +2678,12 @@ function onFilterRangeCategory(
 /**
  * Handle select of select value: build and set next set of filters for this category. Track selected select value.
  * @param config - Configuration model of selected category.
- * @param categoryValueKey - The selected category value.
  * @param selectedValue - Category value ID to use as selected value.
  * @param filters - Current set of selected category values (values) or ranges keyed by category (id).
  * @param setFilter - Function to update set of selected values for a category.
  */
 function onFilterSelectCategory<T extends Categories>(
   config: CategoryFilterConfig,
-  categoryValueKey: CategoryValueId,
   selectedValue: CategoryValueId,
   filters: Filters<T>,
   setFilter: SetFilterFn
@@ -2709,7 +2691,7 @@ function onFilterSelectCategory<T extends Categories>(
   const { categoryFilterId } = config;
 
   // Track selected category and value.
-  trackSelectCategoryValueSelected(config, categoryValueKey, filters);
+  trackSelectCategoryValueSelected(config, selectedValue, filters);
 
   // Build and set next set of filters for this category.
   const nextFilters = buildNextSelectCategoryFilters(
@@ -2924,7 +2906,7 @@ function trackCuratedOntologyCategoryValueSelected<T extends Categories>(
   categoryValueKey: CategoryValueId,
   filters: Filters<T>
 ) {
-  const { analyticsEvent, categoryFilterId, mask } = config;
+  const { analyticsEvent, categoryFilterId, source } = config;
 
   // No tracking if event isn't specified on category config.
   if (!analyticsEvent) {
@@ -2940,7 +2922,7 @@ function trackCuratedOntologyCategoryValueSelected<T extends Categories>(
 
     // Find the node for the selected value.
     const ontologySpeciesKey = getOntologySpeciesKey(categoryValueKey);
-    const ontologyRootNodes = mask[ontologySpeciesKey];
+    const ontologyRootNodes = source[ontologySpeciesKey];
     if (!ontologyRootNodes) {
       return; // Error state - ontology does not exist.
     }

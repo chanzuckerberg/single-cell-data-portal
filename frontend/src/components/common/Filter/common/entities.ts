@@ -30,7 +30,7 @@ export interface CuratedValueSourceKind {
   isLabelVisible: boolean; // True if ontology label is to be displayed (e.g. "Other Organisms")
   isSearchable: boolean; // True if ontology category search box is displayed
   isZerosVisible: boolean; // True if zero values are to be displayed
-  mask: OntologyTermSet; // TODO(cc) rename mask to valueSource? rename OntologyTermSet
+  source: OntologyTermSet;
   valueSourceKind: "CURATED";
 }
 
@@ -436,7 +436,6 @@ export enum ORGANISM {
  */
 export type OnFilterFn = (
   categoryFilterId: CATEGORY_FILTER_ID,
-  categoryValueKey: CategoryValueId | null, // null for ranges. TODO(cc) remove?
   selectedValue: CategoryValueId | Range,
   source?: ON_FILTER_SOURCE
 ) => void;
@@ -473,6 +472,7 @@ export interface OntologyCategoryTreeNodeView extends SelectCategoryValueView {
  */
 export interface OntologyCategoryView {
   isDisabled?: boolean;
+  // TODO(cc) - revisit booleans below, can we remove?
   isSearchable: boolean;
   isZerosVisible: boolean;
   categoryFilterId: CATEGORY_FILTER_ID;

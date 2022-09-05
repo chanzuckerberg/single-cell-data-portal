@@ -32,7 +32,7 @@ export default function FilterMenuItems({
               />
             }
             labelElement={count}
-            onClick={() => onFilter(categoryFilterId, key, value)}
+            onClick={() => onFilter(categoryFilterId, value)}
             shouldDismissPopover={!isMultiselect}
             text={label}
           />

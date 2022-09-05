@@ -2763,7 +2763,7 @@ describe("useCategoryFilter", () => {
             CATEGORY_FILTER_CONFIGS_BY_ID[
               CATEGORY_FILTER_ID.DEVELOPMENT_STAGE
             ] as CuratedOntologyCategoryFilterConfig
-          ).mask
+          ).source
         );
         expect(nextFilters.length).toEqual(0);
       });
@@ -2796,7 +2796,7 @@ describe("useCategoryFilter", () => {
             CATEGORY_FILTER_CONFIGS_BY_ID[
               CATEGORY_FILTER_ID.DEVELOPMENT_STAGE
             ] as CuratedOntologyCategoryFilterConfig
-          ).mask
+          ).source
         );
         expect(nextFilters.length).toEqual(1);
         expect(
@@ -2834,7 +2834,7 @@ describe("useCategoryFilter", () => {
             CATEGORY_FILTER_CONFIGS_BY_ID[
               CATEGORY_FILTER_ID.DEVELOPMENT_STAGE
             ] as CuratedOntologyCategoryFilterConfig
-          ).mask
+          ).source
         );
         expect(nextFilters.length).toEqual(0);
       });
@@ -2871,7 +2871,7 @@ describe("useCategoryFilter", () => {
             CATEGORY_FILTER_CONFIGS_BY_ID[
               CATEGORY_FILTER_ID.DEVELOPMENT_STAGE
             ] as CuratedOntologyCategoryFilterConfig
-          ).mask
+          ).source
         );
         expect(nextFilters.length).toEqual(1);
         expect(nextFilters.includes(ONTOLOGY_ID_HUMAN_FETAL)).toBeTruthy();
@@ -2895,7 +2895,7 @@ describe("useCategoryFilter", () => {
             CATEGORY_FILTER_CONFIGS_BY_ID[
               CATEGORY_FILTER_ID.DEVELOPMENT_STAGE
             ] as CuratedOntologyCategoryFilterConfig
-          ).mask
+          ).source
         );
         expect(nextFilters.length).toEqual(1);
         expect(nextFilters[0]).toEqual(idToSelect);
@@ -2925,7 +2925,7 @@ describe("useCategoryFilter", () => {
             CATEGORY_FILTER_CONFIGS_BY_ID[
               CATEGORY_FILTER_ID.DEVELOPMENT_STAGE
             ] as CuratedOntologyCategoryFilterConfig
-          ).mask
+          ).source
         );
         expect(nextFilters.length).toEqual(2);
         expect(nextFilters.includes(ONTOLOGY_ID_HUMAN_NEWBORN)).toBeTruthy();
@@ -2956,7 +2956,7 @@ describe("useCategoryFilter", () => {
             CATEGORY_FILTER_CONFIGS_BY_ID[
               CATEGORY_FILTER_ID.DEVELOPMENT_STAGE
             ] as CuratedOntologyCategoryFilterConfig
-          ).mask
+          ).source
         );
         expect(nextFilters.length).toEqual(4);
         expect(nextFilters.includes(ONTOLOGY_ID_HUMAN_NEWBORN)).toBeTruthy();
@@ -2989,7 +2989,7 @@ describe("useCategoryFilter", () => {
             CATEGORY_FILTER_CONFIGS_BY_ID[
               CATEGORY_FILTER_ID.DEVELOPMENT_STAGE
             ] as CuratedOntologyCategoryFilterConfig
-          ).mask
+          ).source
         );
         expect(nextFilters.length).toEqual(5);
         expect(nextFilters.includes(ONTOLOGY_ID_HUMAN_PRENATAL)).toBeTruthy();
@@ -3024,7 +3024,7 @@ describe("useCategoryFilter", () => {
             CATEGORY_FILTER_CONFIGS_BY_ID[
               CATEGORY_FILTER_ID.DEVELOPMENT_STAGE
             ] as CuratedOntologyCategoryFilterConfig
-          ).mask
+          ).source
         );
         expect(nextFilters.length).toEqual(3);
         expect(
@@ -3062,7 +3062,7 @@ describe("useCategoryFilter", () => {
             CATEGORY_FILTER_CONFIGS_BY_ID[
               CATEGORY_FILTER_ID.DEVELOPMENT_STAGE
             ] as CuratedOntologyCategoryFilterConfig
-          ).mask
+          ).source
         );
         expect(nextFilters.length).toEqual(3);
         expect(
@@ -3102,7 +3102,7 @@ describe("useCategoryFilter", () => {
             CATEGORY_FILTER_CONFIGS_BY_ID[
               CATEGORY_FILTER_ID.DEVELOPMENT_STAGE
             ] as CuratedOntologyCategoryFilterConfig
-          ).mask
+          ).source
         );
         expect(nextFilters.length).toEqual(5);
         expect(nextFilters.includes(ONTOLOGY_ID_HUMAN_PRENATAL)).toBeTruthy();
@@ -3148,7 +3148,7 @@ describe("useCategoryFilter", () => {
             CATEGORY_FILTER_CONFIGS_BY_ID[
               CATEGORY_FILTER_ID.DEVELOPMENT_STAGE
             ] as CuratedOntologyCategoryFilterConfig
-          ).mask
+          ).source
         );
         expect(nextFilters.length).toEqual(2);
         expect(

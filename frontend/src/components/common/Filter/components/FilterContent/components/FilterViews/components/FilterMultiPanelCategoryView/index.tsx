@@ -62,10 +62,9 @@ export default function FilterMultiPanelCategoryView({
   // Update onFilter function with clear search value function.
   const onFilterWithClearSearch = (
     categoryFilterId: CATEGORY_FILTER_ID,
-    key: CategoryValueId | null, // null for ranges.
     value: CategoryValueId | Range
   ) => {
-    onFilter(categoryFilterId, key, value);
+    onFilter(categoryFilterId, value);
     clearSearchValueFn();
   };
   return (

@@ -60,7 +60,7 @@ export default function FilterRange({
     committedRange: SliderRange
   ): void => {
     const [min, max] = committedRange as number[]; // Always expecting a min/max array here.
-    onFilter(categoryFilterId, null, [min, max]);
+    onFilter(categoryFilterId, [min, max]);
   };
 
   return (
