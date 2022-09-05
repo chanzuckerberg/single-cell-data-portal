@@ -34,6 +34,7 @@ export const Grid = styled.table`
   th {
     color: ${GRAY.A};
     font-weight: 500;
+    line-height: 20px;
     padding: 0 0 14px 0;
   }
 
