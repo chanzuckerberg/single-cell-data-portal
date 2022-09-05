@@ -1,5 +1,5 @@
 import Head from "next/head";
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Column, Filters, useFilters, useSortBy, useTable } from "react-table";
 import { PLURALIZED_METADATA_LABEL } from "src/common/constants/metadata";
 import { ROUTES } from "src/common/constants/routes";
@@ -20,6 +20,7 @@ import {
 } from "src/components/common/Filter/common/entities";
 import { ontologyLabelCellAccessorFn } from "src/components/common/Filter/common/utils";
 import DiseaseCell from "src/components/common/Grid/components/DiseaseCell";
+import HeaderCell from "src/components/common/Grid/components/HeaderCell";
 import { GridHero } from "src/components/common/Grid/components/Hero";
 import LinkCell from "src/components/common/Grid/components/LinkCell";
 import NTagCell from "src/components/common/Grid/components/NTagCell";
@@ -58,6 +59,8 @@ export default function Collections(): JSX.Element {
 
   // Filterable collection datasets joined from datasets index and collections index responses.
   const { isError, isLoading, rows: collectionRows } = useFetchCollectionRows();
+  const [rowCount, setRowCount] = useState<number>();
+  const totalCount = collectionRows.length;
 
   // Column configuration backing table.
   const columnConfig: Column<CollectionRow>[] = useMemo(
@@ -74,7 +77,13 @@ export default function Collections(): JSX.Element {
             </Title>
           );
         },
-        Header: "Collection",
+        Header: (
+          <HeaderCell
+            label={"Collections"}
+            rowCount={rowCount}
+            totalCount={totalCount}
+          />
+        ),
         accessor: COLLECTION_NAME,
       },
       {
@@ -177,7 +186,7 @@ export default function Collections(): JSX.Element {
         id: CATEGORY_FILTER_ID.TISSUE_CALCULATED,
       },
     ],
-    []
+    [rowCount, totalCount]
   );
 
   // Handle initial filter state and save of filter state beyond component scope.
@@ -259,6 +268,13 @@ export default function Collections(): JSX.Element {
   useEffect(() => {
     storeFilters(filters);
   }, [filters, storeFilters]);
+
+  // Set row count.
+  useEffect(() => {
+    if (rows && rows.length) {
+      setRowCount(rows.length);
+    }
+  }, [rows]);
 
   // Handle side bar open/closed state beyond scope of component.
   const [isSideBarOpen, storeIsSideBarOpen] = useSessionStorage<boolean>(
