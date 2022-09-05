@@ -145,9 +145,8 @@ export type CuratedOntologyCategoryFilterConfig = BaseCategoryFilterConfig &
 
 /**
  * Filter category that is ontology-aware and displays a set of panels.
- * TODO(cc) rename to MultiPanelOntology  (and corresponding view too)
  */
-export type OntologyMultiPanelFilterConfig = BaseCategoryFilterConfig &
+export type MultiPanelOntologyFilterConfig = BaseCategoryFilterConfig &
   IncludesSomeMatchKind &
   LookupByTermIdLabelKind &
   NoneValueSourceKind &
@@ -178,7 +177,7 @@ export type SelectCategoryFilterConfig = BaseCategoryFilterConfig &
  */
 export type CategoryFilterConfig =
   | CuratedOntologyCategoryFilterConfig
-  | OntologyMultiPanelFilterConfig
+  | MultiPanelOntologyFilterConfig
   | RangeCategoryFilterConfig
   | SelectCategoryFilterConfig;
 
@@ -209,7 +208,6 @@ export interface NoneValueRestrictionKind {
 
 /**
  * Model of filter that when a search term is selected, the search input is cleared. For example, system or organ.
- * TODO(cc) naming of this and below
  */
 export interface SearchSingleSelectKind {
   searchKind: "SEARCH_SINGLE_SELECT";
@@ -227,7 +225,7 @@ export interface SearchMultiSelect {
  * display. For example, tissue system and tissue organ.
  */
 interface OnlyCuratedValueSourceKind {
-  mask: OntologyTermSet; // TODO(cc) rename mask to valueSource? rename OntologyTermSet same with cateogry source kind
+  source: OntologyTermSet;
   sourceKind: "CURATED_CATEGORIES";
 }
 
@@ -351,7 +349,7 @@ export type CategoriesKeyOfTypeOntologyArray = {
  */
 export type CategoryView =
   | OntologyCategoryView
-  | OntologyMultiPanelCategoryView
+  | MultiPanelOntologyCategoryView
   | RangeCategoryView
   | SelectCategoryView;
 
@@ -477,18 +475,18 @@ export interface OntologyCategoryView {
   isDisabled?: boolean;
   isSearchable: boolean;
   isZerosVisible: boolean;
-  key: CATEGORY_FILTER_ID; // TODO(cc) rename to categoryFilterId
+  categoryFilterId: CATEGORY_FILTER_ID;
   label: string;
   views: OntologyCategoryTreeView[];
   tooltip?: string;
 }
 
 /**
- * View model of an ontology-aware filter that contains multiple panels. For example, the overall tissue filter category.
+ * View model of an ontology-aware filter that contains multiple panels. For example, tissue.
  */
-export interface OntologyMultiPanelCategoryView {
+export interface MultiPanelOntologyCategoryView {
   isDisabled?: boolean;
-  key: CATEGORY_FILTER_ID;
+  categoryFilterId: CATEGORY_FILTER_ID;
   label: string;
   panels: OntologyPanelCategoryView[];
   selectedViews: SelectCategoryValueView[];
@@ -562,7 +560,7 @@ export type Range = [number, number] | [];
  */
 export interface RangeCategoryView {
   isDisabled?: boolean;
-  key: CATEGORY_FILTER_ID;
+  categoryFilterId: CATEGORY_FILTER_ID;
   label: string;
   max: number;
   min: number;
@@ -618,7 +616,7 @@ export interface SelectCategoryValueView {
  */
 export interface SelectCategoryView {
   isDisabled?: boolean;
-  key: CATEGORY_FILTER_ID;
+  categoryFilterId: CATEGORY_FILTER_ID;
   label: string;
   pinnedValues: SelectCategoryValueView[];
   tooltip?: string;

@@ -2,8 +2,8 @@ import React, { Fragment } from "react";
 import {
   CategoryValueId,
   CATEGORY_FILTER_ID,
+  MultiPanelOntologyCategoryView,
   OnFilterFn,
-  OntologyMultiPanelCategoryView,
   OntologyPanelCategoryView,
   Range,
 } from "src/components/common/Filter/common/entities";
@@ -25,7 +25,7 @@ import {
 } from "src/components/common/Filter/components/FilterSearch/common/useFilterSearch";
 
 interface Props {
-  categoryView: OntologyMultiPanelCategoryView;
+  categoryView: MultiPanelOntologyCategoryView;
   clearSearchValueFn: ClearSearchValueFn;
   isSearchable: boolean;
   onFilter: OnFilterFn;
@@ -57,7 +57,7 @@ export default function FilterMultiPanelCategoryView({
   searchValue,
   setSearchValue,
 }: Props): JSX.Element {
-  const { key, panels } = categoryView;
+  const { categoryFilterId, panels } = categoryView;
   const viewListMaxHeight = calculateViewListMaxHeight(panels);
   // Update onFilter function with clear search value function.
   const onFilterWithClearSearch = (
@@ -87,7 +87,7 @@ export default function FilterMultiPanelCategoryView({
             <Fragment key={`${ontologyCategoryView.label}${i}`}>
               {i !== 0 && <ViewDivider orientation="vertical" />}
               <FilterSinglePanelCategoryView
-                categoryFilterId={key}
+                categoryFilterId={categoryFilterId}
                 categoryView={ontologyCategoryView}
                 onFilter={onFilterFn}
                 searchValue={searchValue}

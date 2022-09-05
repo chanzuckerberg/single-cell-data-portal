@@ -11,7 +11,7 @@ export const HeaderCell = styled.span`
 `;
 
 export const CountAndTotal = styled.span`
-  ${fontBodyXxs};
+  ${fontBodyXxs}
   ${(props) => {
     const colors = getColors(props);
     return `

@@ -6,8 +6,8 @@ import {
 } from "src/components/common/Filter";
 import {
   CategoryView,
+  MultiPanelOntologyCategoryView,
   OnFilterFn,
-  OntologyMultiPanelCategoryView,
   SelectCategoryValueView,
 } from "src/components/common/Filter/common/entities";
 import FilterMenu from "src/components/common/Filter/components/FilterContent/components/FilterMenu";
@@ -60,14 +60,14 @@ function buildBasicFilterContent(
   onFilter: OnFilterFn,
   filterSearchState: FilterSearchState
 ): JSX.Element {
-  const { key } = categoryView;
+  const { categoryFilterId } = categoryView;
   const { clearSearchValueFn, searchValue, setSearchValue } = filterSearchState;
 
   // Handle ontology categories.
   if (isOntologyCategoryView(categoryView)) {
     return (
       <FilterViews
-        categoryFilterId={key}
+        categoryFilterId={categoryFilterId}
         isSearchable={categoryView.isSearchable}
         isZerosVisible={categoryView.isZerosVisible}
         onFilter={onFilter}
@@ -81,7 +81,7 @@ function buildBasicFilterContent(
     const { pinnedValues, unpinnedValues, values } = categoryView;
     return (
       <FilterMenu
-        categoryFilterId={key}
+        categoryFilterId={categoryFilterId}
         isMultiselect // Can possibly be single select with future filter types
         isSearchable={values.length > MAX_DISPLAYABLE_MENU_ITEMS}
         onFilter={onFilter}
@@ -129,7 +129,7 @@ function filterCategoryValuesWithCount(
  * @returns true if ontology multi panel is searchable.
  */
 function isFilterMultiPanelSearchable(
-  categoryView: OntologyMultiPanelCategoryView
+  categoryView: MultiPanelOntologyCategoryView
 ): boolean {
   let isSearchable = false;
   for (const panel of categoryView.panels) {

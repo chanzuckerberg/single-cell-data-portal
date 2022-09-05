@@ -56,8 +56,8 @@ import {
   CATEGORY_FILTER_ID,
   CuratedOntologyCategoryFilterConfig,
   DatasetRow,
-  OntologyMultiPanelCategoryView,
-  OntologyMultiPanelFilterConfig,
+  MultiPanelOntologyCategoryView,
+  MultiPanelOntologyFilterConfig,
   OrFilterPrefix,
   SelectCategoryValueView,
 } from "src/components/common/Filter/common/entities";
@@ -567,7 +567,7 @@ describe("useCategoryFilter", () => {
         const config =
           CATEGORY_FILTER_CONFIGS_BY_ID[CATEGORY_FILTER_ID.TISSUE_CALCULATED];
         const categoryValueIdsByPanel = keyCategoryValueIdsByPanel(
-          config as OntologyMultiPanelFilterConfig,
+          config as MultiPanelOntologyFilterConfig,
           []
         );
         expect(categoryValueIdsByPanel.length).toEqual(3);
@@ -580,7 +580,7 @@ describe("useCategoryFilter", () => {
         const config =
           CATEGORY_FILTER_CONFIGS_BY_ID[CATEGORY_FILTER_ID.TISSUE_CALCULATED];
         const categoryValueIdsByPanel = keyCategoryValueIdsByPanel(
-          config as OntologyMultiPanelFilterConfig,
+          config as MultiPanelOntologyFilterConfig,
           []
         );
 
@@ -607,7 +607,7 @@ describe("useCategoryFilter", () => {
         const config =
           CATEGORY_FILTER_CONFIGS_BY_ID[CATEGORY_FILTER_ID.TISSUE_CALCULATED];
         const categoryValueIdsByPanel = keyCategoryValueIdsByPanel(
-          config as OntologyMultiPanelFilterConfig,
+          config as MultiPanelOntologyFilterConfig,
           [
             {
               original: { tissueCalculated: [EXPLICIT_BLOOD] },
@@ -1772,12 +1772,12 @@ describe("useCategoryFilter", () => {
        * Selected: none
        */
       describe("nothing selected", () => {
-        let categoryView: OntologyMultiPanelCategoryView;
+        let categoryView: MultiPanelOntologyCategoryView;
         beforeAll(() => {
           categoryView = buildMultiPanelCategoryView(
             CATEGORY_FILTER_CONFIGS_BY_ID[
               CATEGORY_FILTER_ID.TISSUE_CALCULATED
-            ] as OntologyMultiPanelFilterConfig,
+            ] as MultiPanelOntologyFilterConfig,
             KEYED_CATEGORY_VALUES,
             multiPanelUIState,
             new Map<string, string>()
@@ -1859,7 +1859,7 @@ describe("useCategoryFilter", () => {
        * Selected: blood non-specific
        */
       describe("tissue selected", () => {
-        let categoryView: OntologyMultiPanelCategoryView;
+        let categoryView: MultiPanelOntologyCategoryView;
         beforeAll(() => {
           const updatedKeyedCategoryValues = new Map(KEYED_CATEGORY_VALUES);
           updateSelectCategoryValueSelected(
@@ -1880,7 +1880,7 @@ describe("useCategoryFilter", () => {
           categoryView = buildMultiPanelCategoryView(
             CATEGORY_FILTER_CONFIGS_BY_ID[
               CATEGORY_FILTER_ID.TISSUE_CALCULATED
-            ] as OntologyMultiPanelFilterConfig,
+            ] as MultiPanelOntologyFilterConfig,
             updatedKeyedCategoryValues,
             updatedMultiPanelUIState,
             new Map<string, string>()
@@ -1963,7 +1963,7 @@ describe("useCategoryFilter", () => {
        * Selected: blood
        */
       describe("organ selected", () => {
-        let categoryView: OntologyMultiPanelCategoryView;
+        let categoryView: MultiPanelOntologyCategoryView;
         beforeAll(() => {
           const updatedKeyedCategoryValues = new Map(KEYED_CATEGORY_VALUES);
           updateSelectCategoryValueSelected(
@@ -1984,7 +1984,7 @@ describe("useCategoryFilter", () => {
           categoryView = buildMultiPanelCategoryView(
             CATEGORY_FILTER_CONFIGS_BY_ID[
               CATEGORY_FILTER_ID.TISSUE_CALCULATED
-            ] as OntologyMultiPanelFilterConfig,
+            ] as MultiPanelOntologyFilterConfig,
             updatedKeyedCategoryValues,
             updatedMultiPanelUIState,
             new Map<string, string>()
@@ -2055,7 +2055,7 @@ describe("useCategoryFilter", () => {
       });
 
       describe("system selected", () => {
-        let categoryView: OntologyMultiPanelCategoryView;
+        let categoryView: MultiPanelOntologyCategoryView;
         beforeAll(() => {
           const updatedKeyedCategoryValues = new Map(KEYED_CATEGORY_VALUES);
           updateSelectCategoryValueSelected(
@@ -2076,7 +2076,7 @@ describe("useCategoryFilter", () => {
           categoryView = buildMultiPanelCategoryView(
             CATEGORY_FILTER_CONFIGS_BY_ID[
               CATEGORY_FILTER_ID.TISSUE_CALCULATED
-            ] as OntologyMultiPanelFilterConfig,
+            ] as MultiPanelOntologyFilterConfig,
             updatedKeyedCategoryValues,
             updatedMultiPanelUIState,
             new Map<string, string>()
@@ -2148,7 +2148,7 @@ describe("useCategoryFilter", () => {
        * Selected: blood, blood non-specific
        */
       describe("organ and tissue selected", () => {
-        let categoryView: OntologyMultiPanelCategoryView;
+        let categoryView: MultiPanelOntologyCategoryView;
         beforeAll(() => {
           const updatedKeyedCategoryValues = new Map(KEYED_CATEGORY_VALUES);
           updateSelectCategoryValueSelected(
@@ -2175,7 +2175,7 @@ describe("useCategoryFilter", () => {
           categoryView = buildMultiPanelCategoryView(
             CATEGORY_FILTER_CONFIGS_BY_ID[
               CATEGORY_FILTER_ID.TISSUE_CALCULATED
-            ] as OntologyMultiPanelFilterConfig,
+            ] as MultiPanelOntologyFilterConfig,
             updatedKeyedCategoryValues,
             updatedMultiPanelUIState,
             new Map<string, string>()
@@ -2251,7 +2251,7 @@ describe("useCategoryFilter", () => {
        * Selected: hematopoietic system, blood
        */
       describe("system and organ selected", () => {
-        let categoryView: OntologyMultiPanelCategoryView;
+        let categoryView: MultiPanelOntologyCategoryView;
         beforeAll(() => {
           const updatedKeyedCategoryValues = new Map(KEYED_CATEGORY_VALUES);
           updateSelectCategoryValueSelected(
@@ -2278,7 +2278,7 @@ describe("useCategoryFilter", () => {
           categoryView = buildMultiPanelCategoryView(
             CATEGORY_FILTER_CONFIGS_BY_ID[
               CATEGORY_FILTER_ID.TISSUE_CALCULATED
-            ] as OntologyMultiPanelFilterConfig,
+            ] as MultiPanelOntologyFilterConfig,
             updatedKeyedCategoryValues,
             updatedMultiPanelUIState,
             new Map<string, string>()
@@ -2352,7 +2352,7 @@ describe("useCategoryFilter", () => {
        * Selected: renal system
        */
       describe("system (containing no organs) selected", () => {
-        let categoryView: OntologyMultiPanelCategoryView;
+        let categoryView: MultiPanelOntologyCategoryView;
         beforeAll(() => {
           const updatedKeyedCategoryValues = new Map(KEYED_CATEGORY_VALUES);
           updateSelectCategoryValueSelected(
@@ -2373,7 +2373,7 @@ describe("useCategoryFilter", () => {
           categoryView = buildMultiPanelCategoryView(
             CATEGORY_FILTER_CONFIGS_BY_ID[
               CATEGORY_FILTER_ID.TISSUE_CALCULATED
-            ] as OntologyMultiPanelFilterConfig,
+            ] as MultiPanelOntologyFilterConfig,
             updatedKeyedCategoryValues,
             updatedMultiPanelUIState,
             new Map<string, string>()
@@ -2435,7 +2435,7 @@ describe("useCategoryFilter", () => {
        */
       describe("organ and all organ's tissues selected", () => {
         let selectedCategoryValueIds: CategoryValueId[];
-        let categoryView: OntologyMultiPanelCategoryView;
+        let categoryView: MultiPanelOntologyCategoryView;
         beforeAll(() => {
           selectedCategoryValueIds = [
             INFERRED_BLOOD,
@@ -2465,7 +2465,7 @@ describe("useCategoryFilter", () => {
           categoryView = buildMultiPanelCategoryView(
             CATEGORY_FILTER_CONFIGS_BY_ID[
               CATEGORY_FILTER_ID.TISSUE_CALCULATED
-            ] as OntologyMultiPanelFilterConfig,
+            ] as MultiPanelOntologyFilterConfig,
             updatedKeyedCategoryValues,
             updatedMultiPanelUIState,
             new Map<string, string>()
@@ -2492,7 +2492,7 @@ describe("useCategoryFilter", () => {
        */
       describe("system and a mix of system's organs and tissues all selected", () => {
         let selectedCategoryValueIds: CategoryValueId[];
-        let categoryView: OntologyMultiPanelCategoryView;
+        let categoryView: MultiPanelOntologyCategoryView;
         beforeAll(() => {
           selectedCategoryValueIds = [
             INFERRED_HEMATOPOIETIC_SYSTEM,
@@ -2525,7 +2525,7 @@ describe("useCategoryFilter", () => {
           categoryView = buildMultiPanelCategoryView(
             CATEGORY_FILTER_CONFIGS_BY_ID[
               CATEGORY_FILTER_ID.TISSUE_CALCULATED
-            ] as OntologyMultiPanelFilterConfig,
+            ] as MultiPanelOntologyFilterConfig,
             updatedKeyedCategoryValues,
             updatedMultiPanelUIState,
             new Map<string, string>()
@@ -2555,7 +2555,7 @@ describe("useCategoryFilter", () => {
        */
       describe("system and a mix of system's organs and tissues all selected with one tissue not selected", () => {
         let selectedCategoryValueIds: CategoryValueId[];
-        let categoryView: OntologyMultiPanelCategoryView;
+        let categoryView: MultiPanelOntologyCategoryView;
         beforeAll(() => {
           selectedCategoryValueIds = [
             INFERRED_BONE_MARROW,
@@ -2593,7 +2593,7 @@ describe("useCategoryFilter", () => {
           categoryView = buildMultiPanelCategoryView(
             CATEGORY_FILTER_CONFIGS_BY_ID[
               CATEGORY_FILTER_ID.TISSUE_CALCULATED
-            ] as OntologyMultiPanelFilterConfig,
+            ] as MultiPanelOntologyFilterConfig,
             updatedKeyedCategoryValues,
             updatedMultiPanelUIState,
             new Map<string, string>()
@@ -2627,7 +2627,7 @@ describe("useCategoryFilter", () => {
       describe("system, all system's organs and tissues selected with one tissue not selected", () => {
         let selectedCategoryValueIds: CategoryValueId[];
         let selectedPartialCategoryValueIds: CategoryValueId[];
-        let categoryView: OntologyMultiPanelCategoryView;
+        let categoryView: MultiPanelOntologyCategoryView;
         beforeAll(() => {
           selectedCategoryValueIds = [
             INFERRED_BONE_MARROW,
@@ -2672,7 +2672,7 @@ describe("useCategoryFilter", () => {
           categoryView = buildMultiPanelCategoryView(
             CATEGORY_FILTER_CONFIGS_BY_ID[
               CATEGORY_FILTER_ID.TISSUE_CALCULATED
-            ] as OntologyMultiPanelFilterConfig,
+            ] as MultiPanelOntologyFilterConfig,
             updatedKeyedCategoryValues,
             updatedMultiPanelUIState,
             new Map<string, string>()

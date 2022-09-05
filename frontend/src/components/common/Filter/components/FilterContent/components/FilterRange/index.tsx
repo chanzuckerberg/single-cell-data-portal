@@ -37,7 +37,7 @@ export default function FilterRange({
   categoryView,
   onFilter,
 }: Props): JSX.Element {
-  const { key, max, min, selectedMax, selectedMin } = categoryView;
+  const { categoryFilterId, max, min, selectedMax, selectedMin } = categoryView;
   const classes = useSliderStyles();
   const [range, setRange] = useState<SliderRange>([
     selectedMin || min,
@@ -60,7 +60,7 @@ export default function FilterRange({
     committedRange: SliderRange
   ): void => {
     const [min, max] = committedRange as number[]; // Always expecting a min/max array here.
-    onFilter(key, null, [min, max]);
+    onFilter(categoryFilterId, null, [min, max]);
   };
 
   return (

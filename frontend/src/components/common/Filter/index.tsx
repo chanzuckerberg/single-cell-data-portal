@@ -1,9 +1,9 @@
 import {
   CategoryView,
   CATEGORY_FILTER_ID,
+  MultiPanelOntologyCategoryView,
   OnFilterFn,
   OntologyCategoryView,
-  OntologyMultiPanelCategoryView,
   ON_FILTER_SOURCE,
   RangeCategoryView,
   SelectCategoryView,
@@ -59,25 +59,29 @@ function buildFilterTags(
   categoryView: CategoryView,
   onFilter: OnFilterFn
 ): CategoryTag[] | undefined {
-  const { key } = categoryView;
+  const { categoryFilterId } = categoryView;
 
   // Handle ontology categories
   if (isOntologyCategoryView(categoryView)) {
-    return buildOntologyCategoryTags(categoryView, key, onFilter);
+    return buildOntologyCategoryTags(categoryView, categoryFilterId, onFilter);
   }
 
   // Handle select categories
   if (isSelectCategoryView(categoryView)) {
-    return buildSelectCategoryTags(categoryView, key, onFilter);
+    return buildSelectCategoryTags(categoryView, categoryFilterId, onFilter);
   }
 
   // Handle ontology multi panel categories
   if (isOntologyMultiPanelCategoryView(categoryView)) {
-    return buildOntologyMultiPanelCategoryTags(categoryView, key, onFilter);
+    return buildOntologyMultiPanelCategoryTags(
+      categoryView,
+      categoryFilterId,
+      onFilter
+    );
   }
 
   // Otherwise, handle range categories
-  return buildRangeCategoryTag(categoryView, key, onFilter);
+  return buildRangeCategoryTag(categoryView, categoryFilterId, onFilter);
 }
 
 /**
@@ -112,7 +116,7 @@ function buildOntologyCategoryTags(
  * @returns ontology multi panel category tag.
  */
 function buildOntologyMultiPanelCategoryTags(
-  categoryView: OntologyMultiPanelCategoryView,
+  categoryView: MultiPanelOntologyCategoryView,
   categoryFilterId: CATEGORY_FILTER_ID,
   onFilter: OnFilterFn
 ): CategoryTag[] | undefined {
@@ -209,8 +213,8 @@ export function isOntologyCategoryView(
  */
 export function isOntologyMultiPanelCategoryView(
   categoryView: CategoryView
-): categoryView is OntologyMultiPanelCategoryView {
-  return (categoryView as OntologyMultiPanelCategoryView).panels !== undefined;
+): categoryView is MultiPanelOntologyCategoryView {
+  return (categoryView as MultiPanelOntologyCategoryView).panels !== undefined;
 }
 
 /**

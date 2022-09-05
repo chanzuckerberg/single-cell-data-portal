@@ -25,13 +25,13 @@ import {
   CuratedOntologyCategoryFilterConfig,
   ETHNICITY_UNSPECIFIED_LABEL,
   FilterKey,
+  MultiPanelOntologyCategoryView,
+  MultiPanelOntologyFilterConfig,
   OnFilterFn,
   OntologyCategoryTreeNodeView,
   OntologyCategoryTreeView,
   OntologyCategoryView,
   OntologyDescendants,
-  OntologyMultiPanelCategoryView,
-  OntologyMultiPanelFilterConfig,
   OntologyNode,
   OntologyPanelCategoryView,
   OntologyTermSet,
@@ -794,7 +794,7 @@ export function buildUINodesByCategoryValueId(
  * containing the category values for the panel.
  */
 export function keyCategoryValueIdsByPanel<T extends Categories>(
-  config: OntologyMultiPanelFilterConfig,
+  config: MultiPanelOntologyFilterConfig,
   originalRows: Row<T>[]
 ): CategoryValueId[][] {
   const { filterOnKey, panels: panelConfigs } = config;
@@ -802,9 +802,9 @@ export function keyCategoryValueIdsByPanel<T extends Categories>(
     (accum: CategoryValueId[][], panelConfig: CategoryFilterPanelConfig) => {
       // Determine the set of values for curated ontology panels.
       if (panelConfig.sourceKind === "CURATED_CATEGORIES") {
-        const categoryValueIds = [...listOntologyTreeIds(panelConfig.mask)].map(
-          (ontologyTermId) => buildInferredOntologyTermId(ontologyTermId)
-        );
+        const categoryValueIds = [
+          ...listOntologyTreeIds(panelConfig.source),
+        ].map((ontologyTermId) => buildInferredOntologyTermId(ontologyTermId));
         accum.push(categoryValueIds);
         return accum;
       }
@@ -1281,7 +1281,7 @@ function buildCuratedOntologyCategoryView(
   const ontologyView: OntologyCategoryView = {
     isSearchable,
     isZerosVisible,
-    key: categoryFilterId,
+    categoryFilterId: categoryFilterId,
     label,
     views: treeViews,
   };
@@ -1374,11 +1374,11 @@ interface OntologyPanelCategoryViewBuilder {
  * @returns Multi-panel category view model.
  */
 export function buildMultiPanelCategoryView(
-  config: OntologyMultiPanelFilterConfig,
+  config: MultiPanelOntologyFilterConfig,
   categoryValuesByValue: KeyedSelectCategoryValue,
   multiPanelUIState: MultiPanelUIState,
   ontologyTermLabelsById: Map<string, string>
-): OntologyMultiPanelCategoryView {
+): MultiPanelOntologyCategoryView {
   const { categoryFilterId, panels: panelConfigs } = config;
   const categoryFilterUIState = multiPanelUIState.get(categoryFilterId);
   if (!categoryFilterUIState) {
@@ -1386,7 +1386,7 @@ export function buildMultiPanelCategoryView(
       `Multi-panel category filter state not found for category ${categoryFilterId}`
     );
     return {
-      key: categoryFilterId,
+      categoryFilterId: categoryFilterId,
       label: config.label,
       panels: [],
       selectedViews: [],
@@ -1420,7 +1420,7 @@ export function buildMultiPanelCategoryView(
 
   // Build view model of multi-panel category.
   return {
-    key: categoryFilterId,
+    categoryFilterId: categoryFilterId,
     label: config.label,
     panels: ontologyPanelCategoryViews,
     selectedViews: [...selectedViews],
@@ -1431,7 +1431,7 @@ export function buildMultiPanelCategoryView(
  * TODO(cc)
  */
 export function buildOntologyPanelCategoryViews(
-  config: OntologyMultiPanelFilterConfig,
+  config: MultiPanelOntologyFilterConfig,
   builders: OntologyPanelCategoryViewBuilder[],
   ontologyTermLabelsById: Map<string, string>
 ): OntologyPanelCategoryView[] {
@@ -1547,7 +1547,10 @@ function buildParentPanelBuilders(
   return panelConfigs.reduce((accum, panelConfig) => {
     const panelSelectCategoryValues =
       panelConfig.sourceKind === "CURATED_CATEGORIES"
-        ? maskInferredCuratedCategories(panelConfig.mask, selectCategoryValues)
+        ? maskInferredCuratedCategories(
+            panelConfig.source,
+            selectCategoryValues
+          )
         : maskAllExact(selectCategoryValues);
 
     // Determine the set of selected values for this panel.
@@ -1684,7 +1687,7 @@ function buildRangeCategoryView(
 
   // Build view model of range category.
   const rangeView: RangeCategoryView = {
-    key: categoryFilterId,
+    categoryFilterId: categoryFilterId,
     label: config.label,
     max: rangeCategory.max,
     min: rangeCategory.min,
@@ -1761,7 +1764,7 @@ function buildSelectCategoryView(
 
   // Build view model of select category.
   const selectView: SelectCategoryView = {
-    key: categoryFilterId,
+    categoryFilterId: categoryFilterId,
     label: config.label,
     pinnedValues,
     unpinnedValues,
@@ -2017,7 +2020,7 @@ function isCuratedOntologyCategoryFilterConfig(
  */
 function isMultiPanelCategoryFilterConfig(
   config: CategoryFilterConfig
-): config is OntologyMultiPanelFilterConfig {
+): config is MultiPanelOntologyFilterConfig {
   return config.viewKind === "MULTI_PANEL";
 }
 
@@ -2316,7 +2319,7 @@ function removeOntologyDescendents(
  * @param ontologyTermLabelsById - Set of ontology term labels keyed by term ID, used to determine labels for ontology
  */
 function onFilterMultiPanelCategory(
-  config: OntologyMultiPanelFilterConfig,
+  config: MultiPanelOntologyFilterConfig,
   categoryValueId: CategoryValueId,
   selectedValue: CategoryValueId,
   source: ON_FILTER_SOURCE,
@@ -2395,7 +2398,7 @@ function onFilterMultiPanelCategory(
  * @param multiPanelFilters - Set of selected values in categor filter with no overrides/filtering/partial logic applied.
  */
 function buildNextMultiPanelCategoryFilters<T extends Categories>(
-  config: OntologyMultiPanelFilterConfig,
+  config: MultiPanelOntologyFilterConfig,
   categoryValueId: CategoryValueId,
   selectedValue: CategoryValueId,
   source: ON_FILTER_SOURCE,
