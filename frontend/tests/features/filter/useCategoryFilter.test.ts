@@ -56,6 +56,7 @@ import {
   CATEGORY_FILTER_ID,
   CuratedOntologyCategoryFilterConfig,
   DatasetRow,
+  OntologyMultiPanelCategoryView,
   OntologyMultiPanelFilterConfig,
   OrFilterPrefix,
   SelectCategoryValueView,
@@ -244,6 +245,10 @@ describe("useCategoryFilter", () => {
         [EXPLICIT_VENOUS_BLOOD, EXPLICIT_VENOUS_BLOOD_CATEGORY_VALUE],
       ]
     );
+
+    const PANEL_INDEX_SYSTEM = 0;
+    const PANEL_INDEX_ORGAN = 1;
+    const PANEL_INDEX_TISSUE = 2;
 
     const TISSUE_SYSTEMS = [
       INFERRED_HEMATOPOIETIC_SYSTEM,
@@ -1765,423 +1770,934 @@ describe("useCategoryFilter", () => {
 
       /**
        * Selected: none
-       * Views: all
        */
-      it("displays all views when nothing selected", () => {
-        const categoryView = buildMultiPanelCategoryView(
-          CATEGORY_FILTER_CONFIGS_BY_ID[
-            CATEGORY_FILTER_ID.TISSUE_CALCULATED
-          ] as OntologyMultiPanelFilterConfig,
-          KEYED_CATEGORY_VALUES,
-          multiPanelUIState,
-          new Map<string, string>()
-        );
+      describe("nothing selected", () => {
+        let categoryView: OntologyMultiPanelCategoryView;
+        beforeAll(() => {
+          categoryView = buildMultiPanelCategoryView(
+            CATEGORY_FILTER_CONFIGS_BY_ID[
+              CATEGORY_FILTER_ID.TISSUE_CALCULATED
+            ] as OntologyMultiPanelFilterConfig,
+            KEYED_CATEGORY_VALUES,
+            multiPanelUIState,
+            new Map<string, string>()
+          );
+        });
 
-        expect(categoryView.panels.length).toEqual(3);
+        /**
+         * Views: all
+         */
+        it("includes all views", () => {
+          expect(categoryView.panels.length).toEqual(3);
 
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
-        const systemPanelViews = categoryView.panels[0]!.views;
-        expect(systemPanelViews.length).toEqual(3);
-        const systemCategoryValueIds = listCategoryValueIds(systemPanelViews);
-        expect(
-          systemCategoryValueIds.includes(INFERRED_HEMATOPOIETIC_SYSTEM)
-        ).toBeTruthy();
-        expect(
-          systemCategoryValueIds.includes(INFERRED_IMMUNE_SYSTEM)
-        ).toBeTruthy();
-        expect(
-          systemCategoryValueIds.includes(INFERRED_RENAL_SYSTEM)
-        ).toBeTruthy();
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
+          const systemPanelViews =
+            categoryView.panels[PANEL_INDEX_SYSTEM]!.views;
+          expect(systemPanelViews.length).toEqual(3);
+          const systemCategoryValueIds = listCategoryValueIds(systemPanelViews);
+          expect(
+            systemCategoryValueIds.includes(INFERRED_HEMATOPOIETIC_SYSTEM)
+          ).toBeTruthy();
+          expect(
+            systemCategoryValueIds.includes(INFERRED_IMMUNE_SYSTEM)
+          ).toBeTruthy();
+          expect(
+            systemCategoryValueIds.includes(INFERRED_RENAL_SYSTEM)
+          ).toBeTruthy();
 
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
-        const organPanelViews = categoryView.panels[1]!.views;
-        expect(organPanelViews.length).toEqual(5);
-        const organCategoryValueIds = listCategoryValueIds(organPanelViews);
-        expect(organCategoryValueIds.includes(INFERRED_BLOOD)).toBeTruthy();
-        expect(
-          organCategoryValueIds.includes(INFERRED_BONE_MARROW)
-        ).toBeTruthy();
-        expect(
-          organCategoryValueIds.includes(INFERRED_LYMPH_NODE)
-        ).toBeTruthy();
-        expect(organCategoryValueIds.includes(INFERRED_SPLEEN)).toBeTruthy();
-        expect(organCategoryValueIds.includes(INFERRED_THYMUS)).toBeTruthy();
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
+          const organPanelViews = categoryView.panels[PANEL_INDEX_ORGAN]!.views;
+          expect(organPanelViews.length).toEqual(5);
+          const organCategoryValueIds = listCategoryValueIds(organPanelViews);
+          expect(organCategoryValueIds.includes(INFERRED_BLOOD)).toBeTruthy();
+          expect(
+            organCategoryValueIds.includes(INFERRED_BONE_MARROW)
+          ).toBeTruthy();
+          expect(
+            organCategoryValueIds.includes(INFERRED_LYMPH_NODE)
+          ).toBeTruthy();
+          expect(organCategoryValueIds.includes(INFERRED_SPLEEN)).toBeTruthy();
+          expect(organCategoryValueIds.includes(INFERRED_THYMUS)).toBeTruthy();
 
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
-        const tissuePanelViews = categoryView.panels[2]!.views;
-        expect(tissuePanelViews.length).toEqual(8);
-        const tissueCategoryValueIds = listCategoryValueIds(tissuePanelViews);
-        expect(tissueCategoryValueIds.includes(EXPLICIT_BLOOD)).toBeTruthy();
-        expect(
-          tissueCategoryValueIds.includes(EXPLICIT_BONE_MARROW)
-        ).toBeTruthy();
-        expect(tissueCategoryValueIds.includes(EXPLICIT_SPLEEN)).toBeTruthy();
-        expect(tissueCategoryValueIds.includes(EXPLICIT_THYMUS)).toBeTruthy();
-        expect(tissueCategoryValueIds.includes(EXPLICIT_URETER)).toBeTruthy();
-        expect(tissueCategoryValueIds.includes(EXPLICIT_URETHRA)).toBeTruthy();
-        expect(
-          tissueCategoryValueIds.includes(EXPLICIT_UMBILICAL_CORD_BLOOD)
-        ).toBeTruthy();
-        expect(
-          tissueCategoryValueIds.includes(EXPLICIT_VENOUS_BLOOD)
-        ).toBeTruthy();
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
+          const tissuePanelViews =
+            categoryView.panels[PANEL_INDEX_TISSUE]!.views;
+          expect(tissuePanelViews.length).toEqual(8);
+          const tissueCategoryValueIds = listCategoryValueIds(tissuePanelViews);
+          expect(tissueCategoryValueIds.includes(EXPLICIT_BLOOD)).toBeTruthy();
+          expect(
+            tissueCategoryValueIds.includes(EXPLICIT_BONE_MARROW)
+          ).toBeTruthy();
+          expect(tissueCategoryValueIds.includes(EXPLICIT_SPLEEN)).toBeTruthy();
+          expect(tissueCategoryValueIds.includes(EXPLICIT_THYMUS)).toBeTruthy();
+          expect(tissueCategoryValueIds.includes(EXPLICIT_URETER)).toBeTruthy();
+          expect(
+            tissueCategoryValueIds.includes(EXPLICIT_URETHRA)
+          ).toBeTruthy();
+          expect(
+            tissueCategoryValueIds.includes(EXPLICIT_UMBILICAL_CORD_BLOOD)
+          ).toBeTruthy();
+          expect(
+            tissueCategoryValueIds.includes(EXPLICIT_VENOUS_BLOOD)
+          ).toBeTruthy();
+        });
+
+        /**
+         * Selected - none
+         */
+        it("includes no selected values", () => {
+          categoryView.panels.forEach((panel) => {
+            panel.views.forEach((view) => {
+              expect(view.selected).toBeFalsy();
+              expect(view.selectedPartial).toBeFalsy();
+            });
+          });
+        });
       });
 
       /**
        * Selected: blood non-specific
-       * Views: all systems, all organs, all tissues
        */
-      it("doesn't filter systems, organs or tissues when tissue selected", () => {
-        const updatedKeyedCategoryValues = new Map(KEYED_CATEGORY_VALUES);
-        updateSelectCategoryValueSelected(
-          updatedKeyedCategoryValues,
-          EXPLICIT_BLOOD,
-          true,
-          false
-        );
+      describe("tissue selected", () => {
+        let categoryView: OntologyMultiPanelCategoryView;
+        beforeAll(() => {
+          const updatedKeyedCategoryValues = new Map(KEYED_CATEGORY_VALUES);
+          updateSelectCategoryValueSelected(
+            updatedKeyedCategoryValues,
+            EXPLICIT_BLOOD,
+            true,
+            false
+          );
 
-        const updatedMultiPanelUIState = new Map(multiPanelUIState);
-        updateCategoryFilterUIStateSelected(
-          updatedMultiPanelUIState,
-          CATEGORY_FILTER_ID.TISSUE_CALCULATED,
-          [EXPLICIT_BLOOD],
-          []
-        );
+          const updatedMultiPanelUIState = new Map(multiPanelUIState);
+          updateCategoryFilterUIStateSelected(
+            updatedMultiPanelUIState,
+            CATEGORY_FILTER_ID.TISSUE_CALCULATED,
+            [EXPLICIT_BLOOD],
+            []
+          );
 
-        const categoryView = buildMultiPanelCategoryView(
-          CATEGORY_FILTER_CONFIGS_BY_ID[
-            CATEGORY_FILTER_ID.TISSUE_CALCULATED
-          ] as OntologyMultiPanelFilterConfig,
-          updatedKeyedCategoryValues,
-          updatedMultiPanelUIState,
-          new Map<string, string>()
-        );
+          categoryView = buildMultiPanelCategoryView(
+            CATEGORY_FILTER_CONFIGS_BY_ID[
+              CATEGORY_FILTER_ID.TISSUE_CALCULATED
+            ] as OntologyMultiPanelFilterConfig,
+            updatedKeyedCategoryValues,
+            updatedMultiPanelUIState,
+            new Map<string, string>()
+          );
+        });
 
-        expect(categoryView.panels.length).toEqual(3);
+        /**
+         * Views: all systems, all organs, all tissues
+         */
+        it("includes all systems, organs and tissue views", () => {
+          expect(categoryView.panels.length).toEqual(3);
 
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
-        const systemPanelViews = categoryView.panels[0]!.views;
-        expect(systemPanelViews.length).toEqual(3);
-        const systemCategoryValueIds = listCategoryValueIds(systemPanelViews);
-        expect(
-          systemCategoryValueIds.includes(INFERRED_HEMATOPOIETIC_SYSTEM)
-        ).toBeTruthy();
-        expect(
-          systemCategoryValueIds.includes(INFERRED_IMMUNE_SYSTEM)
-        ).toBeTruthy();
-        expect(
-          systemCategoryValueIds.includes(INFERRED_RENAL_SYSTEM)
-        ).toBeTruthy();
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
+          const systemPanelViews =
+            categoryView.panels[PANEL_INDEX_SYSTEM]!.views;
+          expect(systemPanelViews.length).toEqual(3);
+          const systemCategoryValueIds = listCategoryValueIds(systemPanelViews);
+          expect(
+            systemCategoryValueIds.includes(INFERRED_HEMATOPOIETIC_SYSTEM)
+          ).toBeTruthy();
+          expect(
+            systemCategoryValueIds.includes(INFERRED_IMMUNE_SYSTEM)
+          ).toBeTruthy();
+          expect(
+            systemCategoryValueIds.includes(INFERRED_RENAL_SYSTEM)
+          ).toBeTruthy();
 
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
-        const organPanelViews = categoryView.panels[1]!.views;
-        expect(organPanelViews.length).toEqual(5);
-        const organCategoryValueIds = listCategoryValueIds(organPanelViews);
-        expect(organCategoryValueIds.includes(INFERRED_BLOOD)).toBeTruthy();
-        expect(
-          organCategoryValueIds.includes(INFERRED_BONE_MARROW)
-        ).toBeTruthy();
-        expect(
-          organCategoryValueIds.includes(INFERRED_LYMPH_NODE)
-        ).toBeTruthy();
-        expect(organCategoryValueIds.includes(INFERRED_SPLEEN)).toBeTruthy();
-        expect(organCategoryValueIds.includes(INFERRED_THYMUS)).toBeTruthy();
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
+          const organPanelViews = categoryView.panels[PANEL_INDEX_ORGAN]!.views;
+          expect(organPanelViews.length).toEqual(5);
+          const organCategoryValueIds = listCategoryValueIds(organPanelViews);
+          expect(organCategoryValueIds.includes(INFERRED_BLOOD)).toBeTruthy();
+          expect(
+            organCategoryValueIds.includes(INFERRED_BONE_MARROW)
+          ).toBeTruthy();
+          expect(
+            organCategoryValueIds.includes(INFERRED_LYMPH_NODE)
+          ).toBeTruthy();
+          expect(organCategoryValueIds.includes(INFERRED_SPLEEN)).toBeTruthy();
+          expect(organCategoryValueIds.includes(INFERRED_THYMUS)).toBeTruthy();
 
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
-        const tissuePanelViews = categoryView.panels[2]!.views;
-        expect(tissuePanelViews.length).toEqual(8);
-        const tissueCategoryValueIds = listCategoryValueIds(tissuePanelViews);
-        expect(tissueCategoryValueIds.includes(EXPLICIT_BLOOD)).toBeTruthy();
-        expect(
-          tissueCategoryValueIds.includes(EXPLICIT_BONE_MARROW)
-        ).toBeTruthy();
-        expect(tissueCategoryValueIds.includes(EXPLICIT_SPLEEN)).toBeTruthy();
-        expect(tissueCategoryValueIds.includes(EXPLICIT_THYMUS)).toBeTruthy();
-        expect(tissueCategoryValueIds.includes(EXPLICIT_URETER)).toBeTruthy();
-        expect(tissueCategoryValueIds.includes(EXPLICIT_URETHRA)).toBeTruthy();
-        expect(
-          tissueCategoryValueIds.includes(EXPLICIT_UMBILICAL_CORD_BLOOD)
-        ).toBeTruthy();
-        expect(
-          tissueCategoryValueIds.includes(EXPLICIT_VENOUS_BLOOD)
-        ).toBeTruthy();
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
+          const tissuePanelViews =
+            categoryView.panels[PANEL_INDEX_TISSUE]!.views;
+          expect(tissuePanelViews.length).toEqual(8);
+          const tissueCategoryValueIds = listCategoryValueIds(tissuePanelViews);
+          expect(tissueCategoryValueIds.includes(EXPLICIT_BLOOD)).toBeTruthy();
+          expect(
+            tissueCategoryValueIds.includes(EXPLICIT_BONE_MARROW)
+          ).toBeTruthy();
+          expect(tissueCategoryValueIds.includes(EXPLICIT_SPLEEN)).toBeTruthy();
+          expect(tissueCategoryValueIds.includes(EXPLICIT_THYMUS)).toBeTruthy();
+          expect(tissueCategoryValueIds.includes(EXPLICIT_URETER)).toBeTruthy();
+          expect(
+            tissueCategoryValueIds.includes(EXPLICIT_URETHRA)
+          ).toBeTruthy();
+          expect(
+            tissueCategoryValueIds.includes(EXPLICIT_UMBILICAL_CORD_BLOOD)
+          ).toBeTruthy();
+          expect(
+            tissueCategoryValueIds.includes(EXPLICIT_VENOUS_BLOOD)
+          ).toBeTruthy();
+        });
+
+        /**
+         * Selected - blood non-specific
+         */
+        it("includes blood non-specific selected only", () => {
+          categoryView.panels.forEach((panel) => {
+            panel.views.forEach((view) => {
+              const selected = view.key === EXPLICIT_BLOOD;
+              expect(view.selected).toEqual(selected);
+              expect(view.selectedPartial).toBeFalsy();
+            });
+          });
+        });
       });
 
       /**
        * Selected: blood
-       * Views: all systems, all organs, blood non-specific, umbilical cord blood, venous blood
        */
-      it("filters tissue views (and not system views) when organ selected", () => {
-        const updatedKeyedCategoryValues = new Map(KEYED_CATEGORY_VALUES);
-        updateSelectCategoryValueSelected(
-          updatedKeyedCategoryValues,
-          INFERRED_BLOOD,
-          true,
-          false
-        );
+      describe("organ selected", () => {
+        let categoryView: OntologyMultiPanelCategoryView;
+        beforeAll(() => {
+          const updatedKeyedCategoryValues = new Map(KEYED_CATEGORY_VALUES);
+          updateSelectCategoryValueSelected(
+            updatedKeyedCategoryValues,
+            INFERRED_BLOOD,
+            true,
+            false
+          );
 
-        const updatedMultiPanelUIState = new Map(multiPanelUIState);
-        updateCategoryFilterUIStateSelected(
-          updatedMultiPanelUIState,
-          CATEGORY_FILTER_ID.TISSUE_CALCULATED,
-          [INFERRED_BLOOD],
-          []
-        );
+          const updatedMultiPanelUIState = new Map(multiPanelUIState);
+          updateCategoryFilterUIStateSelected(
+            updatedMultiPanelUIState,
+            CATEGORY_FILTER_ID.TISSUE_CALCULATED,
+            [INFERRED_BLOOD],
+            []
+          );
 
-        const categoryView = buildMultiPanelCategoryView(
-          CATEGORY_FILTER_CONFIGS_BY_ID[
-            CATEGORY_FILTER_ID.TISSUE_CALCULATED
-          ] as OntologyMultiPanelFilterConfig,
-          updatedKeyedCategoryValues,
-          updatedMultiPanelUIState,
-          new Map<string, string>()
-        );
+          categoryView = buildMultiPanelCategoryView(
+            CATEGORY_FILTER_CONFIGS_BY_ID[
+              CATEGORY_FILTER_ID.TISSUE_CALCULATED
+            ] as OntologyMultiPanelFilterConfig,
+            updatedKeyedCategoryValues,
+            updatedMultiPanelUIState,
+            new Map<string, string>()
+          );
+        });
 
-        expect(categoryView.panels.length).toEqual(3);
+        /**
+         * Views: all systems, all organs, blood non-specific, umbilical cord blood, venous blood
+         */
+        it("includes all systems, all organs and filtered tissues", () => {
+          expect(categoryView.panels.length).toEqual(3);
 
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
-        const systemPanelViews = categoryView.panels[0]!.views;
-        expect(systemPanelViews.length).toEqual(3);
-        const systemCategoryValueIds = listCategoryValueIds(systemPanelViews);
-        expect(
-          systemCategoryValueIds.includes(INFERRED_HEMATOPOIETIC_SYSTEM)
-        ).toBeTruthy();
-        expect(
-          systemCategoryValueIds.includes(INFERRED_IMMUNE_SYSTEM)
-        ).toBeTruthy();
-        expect(
-          systemCategoryValueIds.includes(INFERRED_RENAL_SYSTEM)
-        ).toBeTruthy();
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
+          const systemPanelViews =
+            categoryView.panels[PANEL_INDEX_SYSTEM]!.views;
+          expect(systemPanelViews.length).toEqual(3);
+          const systemCategoryValueIds = listCategoryValueIds(systemPanelViews);
+          expect(
+            systemCategoryValueIds.includes(INFERRED_HEMATOPOIETIC_SYSTEM)
+          ).toBeTruthy();
+          expect(
+            systemCategoryValueIds.includes(INFERRED_IMMUNE_SYSTEM)
+          ).toBeTruthy();
+          expect(
+            systemCategoryValueIds.includes(INFERRED_RENAL_SYSTEM)
+          ).toBeTruthy();
 
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
-        const organPanelViews = categoryView.panels[1]!.views;
-        expect(organPanelViews.length).toEqual(5);
-        const organCategoryValueIds = listCategoryValueIds(organPanelViews);
-        expect(organCategoryValueIds.includes(INFERRED_BLOOD)).toBeTruthy();
-        expect(
-          organCategoryValueIds.includes(INFERRED_BONE_MARROW)
-        ).toBeTruthy();
-        expect(
-          organCategoryValueIds.includes(INFERRED_LYMPH_NODE)
-        ).toBeTruthy();
-        expect(organCategoryValueIds.includes(INFERRED_SPLEEN)).toBeTruthy();
-        expect(organCategoryValueIds.includes(INFERRED_THYMUS)).toBeTruthy();
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
+          const organPanelViews = categoryView.panels[PANEL_INDEX_ORGAN]!.views;
+          expect(organPanelViews.length).toEqual(5);
+          const organCategoryValueIds = listCategoryValueIds(organPanelViews);
+          expect(organCategoryValueIds.includes(INFERRED_BLOOD)).toBeTruthy();
+          expect(
+            organCategoryValueIds.includes(INFERRED_BONE_MARROW)
+          ).toBeTruthy();
+          expect(
+            organCategoryValueIds.includes(INFERRED_LYMPH_NODE)
+          ).toBeTruthy();
+          expect(organCategoryValueIds.includes(INFERRED_SPLEEN)).toBeTruthy();
+          expect(organCategoryValueIds.includes(INFERRED_THYMUS)).toBeTruthy();
 
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
-        const tissuePanelViews = categoryView.panels[2]!.views;
-        expect(tissuePanelViews.length).toEqual(3);
-        const tissueCategoryValueIds = listCategoryValueIds(tissuePanelViews);
-        expect(tissueCategoryValueIds.includes(EXPLICIT_BLOOD)).toBeTruthy();
-        expect(
-          tissueCategoryValueIds.includes(EXPLICIT_UMBILICAL_CORD_BLOOD)
-        ).toBeTruthy();
-        expect(
-          tissueCategoryValueIds.includes(EXPLICIT_VENOUS_BLOOD)
-        ).toBeTruthy();
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
+          const tissuePanelViews =
+            categoryView.panels[PANEL_INDEX_TISSUE]!.views;
+          expect(tissuePanelViews.length).toEqual(3);
+          const tissueCategoryValueIds = listCategoryValueIds(tissuePanelViews);
+          expect(tissueCategoryValueIds.includes(EXPLICIT_BLOOD)).toBeTruthy();
+          expect(
+            tissueCategoryValueIds.includes(EXPLICIT_UMBILICAL_CORD_BLOOD)
+          ).toBeTruthy();
+          expect(
+            tissueCategoryValueIds.includes(EXPLICIT_VENOUS_BLOOD)
+          ).toBeTruthy();
+        });
+
+        /**
+         * Selected - blood
+         */
+        it("includes blood selected only", () => {
+          categoryView.panels.forEach((panel) => {
+            panel.views.forEach((view) => {
+              const selected = view.key === INFERRED_BLOOD;
+              expect(view.selected).toEqual(selected);
+              expect(view.selectedPartial).toBeFalsy();
+            });
+          });
+        });
+      });
+
+      describe("system selected", () => {
+        let categoryView: OntologyMultiPanelCategoryView;
+        beforeAll(() => {
+          const updatedKeyedCategoryValues = new Map(KEYED_CATEGORY_VALUES);
+          updateSelectCategoryValueSelected(
+            updatedKeyedCategoryValues,
+            INFERRED_IMMUNE_SYSTEM,
+            true,
+            false
+          );
+
+          const updatedMultiPanelUIState = new Map(multiPanelUIState);
+          updateCategoryFilterUIStateSelected(
+            updatedMultiPanelUIState,
+            CATEGORY_FILTER_ID.TISSUE_CALCULATED,
+            [INFERRED_IMMUNE_SYSTEM],
+            []
+          );
+
+          categoryView = buildMultiPanelCategoryView(
+            CATEGORY_FILTER_CONFIGS_BY_ID[
+              CATEGORY_FILTER_ID.TISSUE_CALCULATED
+            ] as OntologyMultiPanelFilterConfig,
+            updatedKeyedCategoryValues,
+            updatedMultiPanelUIState,
+            new Map<string, string>()
+          );
+        });
+
+        /**
+         * Selected: immune system
+         * Views: all systems, organs under immune system, tissues under immune system
+         */
+        it("includes all systems and filtered organs and tissues", () => {
+          expect(categoryView.panels.length).toEqual(3);
+
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
+          const systemPanelViews =
+            categoryView.panels[PANEL_INDEX_SYSTEM]!.views;
+          expect(systemPanelViews.length).toEqual(3);
+          const systemCategoryValueIds = listCategoryValueIds(systemPanelViews);
+          expect(
+            systemCategoryValueIds.includes(INFERRED_HEMATOPOIETIC_SYSTEM)
+          ).toBeTruthy();
+          expect(
+            systemCategoryValueIds.includes(INFERRED_IMMUNE_SYSTEM)
+          ).toBeTruthy();
+          expect(
+            systemCategoryValueIds.includes(INFERRED_RENAL_SYSTEM)
+          ).toBeTruthy();
+
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
+          const organPanelViews = categoryView.panels[PANEL_INDEX_ORGAN]!.views;
+          expect(organPanelViews.length).toEqual(4);
+          const organCategoryValueIds = listCategoryValueIds(organPanelViews);
+          expect(
+            organCategoryValueIds.includes(INFERRED_BONE_MARROW)
+          ).toBeTruthy();
+          expect(
+            organCategoryValueIds.includes(INFERRED_LYMPH_NODE)
+          ).toBeTruthy();
+          expect(organCategoryValueIds.includes(INFERRED_SPLEEN)).toBeTruthy();
+          expect(organCategoryValueIds.includes(INFERRED_THYMUS)).toBeTruthy();
+
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
+          const tissuePanelViews =
+            categoryView.panels[PANEL_INDEX_TISSUE]!.views;
+          expect(tissuePanelViews.length).toEqual(3);
+          const tissueCategoryValueIds = listCategoryValueIds(tissuePanelViews);
+          expect(
+            tissueCategoryValueIds.includes(EXPLICIT_BONE_MARROW)
+          ).toBeTruthy();
+          expect(tissueCategoryValueIds.includes(EXPLICIT_SPLEEN)).toBeTruthy();
+          expect(tissueCategoryValueIds.includes(EXPLICIT_THYMUS)).toBeTruthy();
+        });
+
+        /**
+         * Selected - immune system
+         */
+        it("includes immune system selected only", () => {
+          categoryView.panels.forEach((panel) => {
+            panel.views.forEach((view) => {
+              const selected = view.key === INFERRED_IMMUNE_SYSTEM;
+              expect(view.selected).toEqual(selected);
+              expect(view.selectedPartial).toBeFalsy();
+            });
+          });
+        });
       });
 
       /**
-       * Selected: immune system
-       * Views: all systems, organs under immune system, tissues under immune system
+       * Selected: blood, blood non-specific
        */
-      it("filters organ and tissue views when system selected", () => {
-        const updatedKeyedCategoryValues = new Map(KEYED_CATEGORY_VALUES);
-        updateSelectCategoryValueSelected(
-          updatedKeyedCategoryValues,
-          INFERRED_IMMUNE_SYSTEM,
-          true,
-          false
-        );
+      describe("organ and tissue selected", () => {
+        let categoryView: OntologyMultiPanelCategoryView;
+        beforeAll(() => {
+          const updatedKeyedCategoryValues = new Map(KEYED_CATEGORY_VALUES);
+          updateSelectCategoryValueSelected(
+            updatedKeyedCategoryValues,
+            INFERRED_BLOOD,
+            false,
+            true
+          );
+          updateSelectCategoryValueSelected(
+            updatedKeyedCategoryValues,
+            EXPLICIT_BLOOD,
+            true,
+            false
+          );
 
-        const updatedMultiPanelUIState = new Map(multiPanelUIState);
-        updateCategoryFilterUIStateSelected(
-          updatedMultiPanelUIState,
-          CATEGORY_FILTER_ID.TISSUE_CALCULATED,
-          [INFERRED_IMMUNE_SYSTEM],
-          []
-        );
+          const updatedMultiPanelUIState = new Map(multiPanelUIState);
+          updateCategoryFilterUIStateSelected(
+            updatedMultiPanelUIState,
+            CATEGORY_FILTER_ID.TISSUE_CALCULATED,
+            [INFERRED_BLOOD, EXPLICIT_BLOOD],
+            [INFERRED_BLOOD]
+          );
 
-        const categoryView = buildMultiPanelCategoryView(
-          CATEGORY_FILTER_CONFIGS_BY_ID[
-            CATEGORY_FILTER_ID.TISSUE_CALCULATED
-          ] as OntologyMultiPanelFilterConfig,
-          updatedKeyedCategoryValues,
-          updatedMultiPanelUIState,
-          new Map<string, string>()
-        );
+          categoryView = buildMultiPanelCategoryView(
+            CATEGORY_FILTER_CONFIGS_BY_ID[
+              CATEGORY_FILTER_ID.TISSUE_CALCULATED
+            ] as OntologyMultiPanelFilterConfig,
+            updatedKeyedCategoryValues,
+            updatedMultiPanelUIState,
+            new Map<string, string>()
+          );
+        });
 
-        expect(categoryView.panels.length).toEqual(3);
+        /**
+         * Views: all systems, all organs, tissues under blood
+         */
+        it("includes all systems and organs and filtered tissues", () => {
+          expect(categoryView.panels.length).toEqual(3);
 
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
-        const systemPanelViews = categoryView.panels[0]!.views;
-        expect(systemPanelViews.length).toEqual(3);
-        const systemCategoryValueIds = listCategoryValueIds(systemPanelViews);
-        expect(
-          systemCategoryValueIds.includes(INFERRED_HEMATOPOIETIC_SYSTEM)
-        ).toBeTruthy();
-        expect(
-          systemCategoryValueIds.includes(INFERRED_IMMUNE_SYSTEM)
-        ).toBeTruthy();
-        expect(
-          systemCategoryValueIds.includes(INFERRED_RENAL_SYSTEM)
-        ).toBeTruthy();
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
+          const systemPanelViews =
+            categoryView.panels[PANEL_INDEX_SYSTEM]!.views;
+          expect(systemPanelViews.length).toEqual(3);
+          const systemCategoryValueIds = listCategoryValueIds(systemPanelViews);
+          expect(
+            systemCategoryValueIds.includes(INFERRED_HEMATOPOIETIC_SYSTEM)
+          ).toBeTruthy();
+          expect(
+            systemCategoryValueIds.includes(INFERRED_IMMUNE_SYSTEM)
+          ).toBeTruthy();
+          expect(
+            systemCategoryValueIds.includes(INFERRED_RENAL_SYSTEM)
+          ).toBeTruthy();
 
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
-        const organPanelViews = categoryView.panels[1]!.views;
-        expect(organPanelViews.length).toEqual(4);
-        const organCategoryValueIds = listCategoryValueIds(organPanelViews);
-        expect(
-          organCategoryValueIds.includes(INFERRED_BONE_MARROW)
-        ).toBeTruthy();
-        expect(
-          organCategoryValueIds.includes(INFERRED_LYMPH_NODE)
-        ).toBeTruthy();
-        expect(organCategoryValueIds.includes(INFERRED_SPLEEN)).toBeTruthy();
-        expect(organCategoryValueIds.includes(INFERRED_THYMUS)).toBeTruthy();
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
+          const organPanelViews = categoryView.panels[PANEL_INDEX_ORGAN]!.views;
+          expect(organPanelViews.length).toEqual(5);
+          const organCategoryValueIds = listCategoryValueIds(organPanelViews);
+          expect(organCategoryValueIds.includes(INFERRED_BLOOD)).toBeTruthy();
+          expect(
+            organCategoryValueIds.includes(INFERRED_BONE_MARROW)
+          ).toBeTruthy();
+          expect(
+            organCategoryValueIds.includes(INFERRED_LYMPH_NODE)
+          ).toBeTruthy();
+          expect(organCategoryValueIds.includes(INFERRED_SPLEEN)).toBeTruthy();
+          expect(organCategoryValueIds.includes(INFERRED_THYMUS)).toBeTruthy();
 
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
-        const tissuePanelViews = categoryView.panels[2]!.views;
-        expect(tissuePanelViews.length).toEqual(3);
-        const tissueCategoryValueIds = listCategoryValueIds(tissuePanelViews);
-        expect(
-          tissueCategoryValueIds.includes(EXPLICIT_BONE_MARROW)
-        ).toBeTruthy();
-        expect(tissueCategoryValueIds.includes(EXPLICIT_SPLEEN)).toBeTruthy();
-        expect(tissueCategoryValueIds.includes(EXPLICIT_THYMUS)).toBeTruthy();
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
+          const tissuePanelViews =
+            categoryView.panels[PANEL_INDEX_TISSUE]!.views;
+          expect(tissuePanelViews.length).toEqual(3);
+          const tissueCategoryValueIds = listCategoryValueIds(tissuePanelViews);
+          expect(tissueCategoryValueIds.includes(EXPLICIT_BLOOD)).toBeTruthy();
+          expect(
+            tissueCategoryValueIds.includes(EXPLICIT_UMBILICAL_CORD_BLOOD)
+          ).toBeTruthy();
+          expect(
+            tissueCategoryValueIds.includes(EXPLICIT_VENOUS_BLOOD)
+          ).toBeTruthy();
+        });
+
+        /**
+         * Selected - blood
+         * Selected partial - hematopoietic system
+         */
+        it("includes blood partially selected, blood non-specific selected", () => {
+          categoryView.panels.forEach((panel) => {
+            panel.views.forEach((view) => {
+              const selected = view.key === EXPLICIT_BLOOD;
+              const selectedPartial = view.key === INFERRED_BLOOD;
+              expect(view.selected).toEqual(selected);
+              expect(view.selectedPartial).toEqual(selectedPartial);
+            });
+          });
+        });
       });
 
       /**
        * Selected: hematopoietic system, blood
-       * Views: all systems, organs under hematopoietic system, tissues under blood
        */
-      it("filters organ and tissue views when system and organ selected", () => {
-        const updatedKeyedCategoryValues = new Map(KEYED_CATEGORY_VALUES);
-        updateSelectCategoryValueSelected(
-          updatedKeyedCategoryValues,
-          INFERRED_HEMATOPOIETIC_SYSTEM,
-          false,
-          true
-        );
-        updateSelectCategoryValueSelected(
-          updatedKeyedCategoryValues,
-          INFERRED_BLOOD,
-          true,
-          false
-        );
+      describe("system and organ selected", () => {
+        let categoryView: OntologyMultiPanelCategoryView;
+        beforeAll(() => {
+          const updatedKeyedCategoryValues = new Map(KEYED_CATEGORY_VALUES);
+          updateSelectCategoryValueSelected(
+            updatedKeyedCategoryValues,
+            INFERRED_HEMATOPOIETIC_SYSTEM,
+            false,
+            true
+          );
+          updateSelectCategoryValueSelected(
+            updatedKeyedCategoryValues,
+            INFERRED_BLOOD,
+            true,
+            false
+          );
 
-        const updatedMultiPanelUIState = new Map(multiPanelUIState);
-        updateCategoryFilterUIStateSelected(
-          updatedMultiPanelUIState,
-          CATEGORY_FILTER_ID.TISSUE_CALCULATED,
-          [INFERRED_HEMATOPOIETIC_SYSTEM, INFERRED_BLOOD],
-          [INFERRED_HEMATOPOIETIC_SYSTEM]
-        );
+          const updatedMultiPanelUIState = new Map(multiPanelUIState);
+          updateCategoryFilterUIStateSelected(
+            updatedMultiPanelUIState,
+            CATEGORY_FILTER_ID.TISSUE_CALCULATED,
+            [INFERRED_HEMATOPOIETIC_SYSTEM, INFERRED_BLOOD],
+            [INFERRED_HEMATOPOIETIC_SYSTEM]
+          );
 
-        const categoryView = buildMultiPanelCategoryView(
-          CATEGORY_FILTER_CONFIGS_BY_ID[
-            CATEGORY_FILTER_ID.TISSUE_CALCULATED
-          ] as OntologyMultiPanelFilterConfig,
-          updatedKeyedCategoryValues,
-          updatedMultiPanelUIState,
-          new Map<string, string>()
-        );
+          categoryView = buildMultiPanelCategoryView(
+            CATEGORY_FILTER_CONFIGS_BY_ID[
+              CATEGORY_FILTER_ID.TISSUE_CALCULATED
+            ] as OntologyMultiPanelFilterConfig,
+            updatedKeyedCategoryValues,
+            updatedMultiPanelUIState,
+            new Map<string, string>()
+          );
+        });
 
-        expect(categoryView.panels.length).toEqual(3);
+        /**
+         * Views: all systems, organs under hematopoietic system, tissues under blood
+         */
+        it("includes all systems and filtered organs and tissues", () => {
+          expect(categoryView.panels.length).toEqual(3);
 
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
-        const systemPanelViews = categoryView.panels[0]!.views;
-        expect(systemPanelViews.length).toEqual(3);
-        const systemCategoryValueIds = listCategoryValueIds(systemPanelViews);
-        expect(
-          systemCategoryValueIds.includes(INFERRED_HEMATOPOIETIC_SYSTEM)
-        ).toBeTruthy();
-        expect(
-          systemCategoryValueIds.includes(INFERRED_IMMUNE_SYSTEM)
-        ).toBeTruthy();
-        expect(
-          systemCategoryValueIds.includes(INFERRED_RENAL_SYSTEM)
-        ).toBeTruthy();
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
+          const systemPanelViews =
+            categoryView.panels[PANEL_INDEX_SYSTEM]!.views;
+          expect(systemPanelViews.length).toEqual(3);
+          const systemCategoryValueIds = listCategoryValueIds(systemPanelViews);
+          expect(
+            systemCategoryValueIds.includes(INFERRED_HEMATOPOIETIC_SYSTEM)
+          ).toBeTruthy();
+          expect(
+            systemCategoryValueIds.includes(INFERRED_IMMUNE_SYSTEM)
+          ).toBeTruthy();
+          expect(
+            systemCategoryValueIds.includes(INFERRED_RENAL_SYSTEM)
+          ).toBeTruthy();
 
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
-        const organPanelViews = categoryView.panels[1]!.views;
-        expect(organPanelViews.length).toEqual(4);
-        const organCategoryValueIds = listCategoryValueIds(organPanelViews);
-        expect(organCategoryValueIds.includes(INFERRED_BLOOD)).toBeTruthy();
-        expect(
-          organCategoryValueIds.includes(INFERRED_BONE_MARROW)
-        ).toBeTruthy();
-        expect(organCategoryValueIds.includes(INFERRED_SPLEEN)).toBeTruthy();
-        expect(organCategoryValueIds.includes(INFERRED_THYMUS)).toBeTruthy();
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
+          const organPanelViews = categoryView.panels[PANEL_INDEX_ORGAN]!.views;
+          expect(organPanelViews.length).toEqual(4);
+          const organCategoryValueIds = listCategoryValueIds(organPanelViews);
+          expect(organCategoryValueIds.includes(INFERRED_BLOOD)).toBeTruthy();
+          expect(
+            organCategoryValueIds.includes(INFERRED_BONE_MARROW)
+          ).toBeTruthy();
+          expect(organCategoryValueIds.includes(INFERRED_SPLEEN)).toBeTruthy();
+          expect(organCategoryValueIds.includes(INFERRED_THYMUS)).toBeTruthy();
 
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
-        const tissuePanelViews = categoryView.panels[2]!.views;
-        expect(tissuePanelViews.length).toEqual(3);
-        const tissueCategoryValueIds = listCategoryValueIds(tissuePanelViews);
-        expect(tissueCategoryValueIds.includes(EXPLICIT_BLOOD)).toBeTruthy();
-        expect(
-          tissueCategoryValueIds.includes(EXPLICIT_UMBILICAL_CORD_BLOOD)
-        ).toBeTruthy();
-        expect(
-          tissueCategoryValueIds.includes(EXPLICIT_VENOUS_BLOOD)
-        ).toBeTruthy();
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
+          const tissuePanelViews =
+            categoryView.panels[PANEL_INDEX_TISSUE]!.views;
+          expect(tissuePanelViews.length).toEqual(3);
+          const tissueCategoryValueIds = listCategoryValueIds(tissuePanelViews);
+          expect(tissueCategoryValueIds.includes(EXPLICIT_BLOOD)).toBeTruthy();
+          expect(
+            tissueCategoryValueIds.includes(EXPLICIT_UMBILICAL_CORD_BLOOD)
+          ).toBeTruthy();
+          expect(
+            tissueCategoryValueIds.includes(EXPLICIT_VENOUS_BLOOD)
+          ).toBeTruthy();
+        });
+
+        /**
+         * Selected - blood
+         * Selected partial - hematopoietic system
+         */
+        it("includes hematopoietic system partially selected, blood selected", () => {
+          categoryView.panels.forEach((panel) => {
+            panel.views.forEach((view) => {
+              const selected = view.key === INFERRED_BLOOD;
+              const selectedPartial =
+                view.key === INFERRED_HEMATOPOIETIC_SYSTEM;
+              expect(view.selected).toEqual(selected);
+              expect(view.selectedPartial).toEqual(selectedPartial);
+            });
+          });
+        });
       });
 
       /**
        * Selected: renal system
-       * Views: all systems, all organs under renal system, tissues under renal system
        */
-      it("filters organ-less tissue views when system selected", () => {
-        const updatedKeyedCategoryValues = new Map(KEYED_CATEGORY_VALUES);
-        updateSelectCategoryValueSelected(
-          updatedKeyedCategoryValues,
-          INFERRED_RENAL_SYSTEM,
-          true,
-          false
+      describe("system (containing no organs) selected", () => {
+        let categoryView: OntologyMultiPanelCategoryView;
+        beforeAll(() => {
+          const updatedKeyedCategoryValues = new Map(KEYED_CATEGORY_VALUES);
+          updateSelectCategoryValueSelected(
+            updatedKeyedCategoryValues,
+            INFERRED_RENAL_SYSTEM,
+            true,
+            false
+          );
+
+          const updatedMultiPanelUIState = new Map(multiPanelUIState);
+          updateCategoryFilterUIStateSelected(
+            updatedMultiPanelUIState,
+            CATEGORY_FILTER_ID.TISSUE_CALCULATED,
+            [INFERRED_RENAL_SYSTEM],
+            []
+          );
+
+          categoryView = buildMultiPanelCategoryView(
+            CATEGORY_FILTER_CONFIGS_BY_ID[
+              CATEGORY_FILTER_ID.TISSUE_CALCULATED
+            ] as OntologyMultiPanelFilterConfig,
+            updatedKeyedCategoryValues,
+            updatedMultiPanelUIState,
+            new Map<string, string>()
+          );
+        });
+
+        /**
+         * Views: all systems, all organs under renal system, tissues under renal system
+         */
+        it("includes all systems, no organs and filtered tissues", () => {
+          expect(categoryView.panels.length).toEqual(3);
+
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
+          const systemPanelViews =
+            categoryView.panels[PANEL_INDEX_SYSTEM]!.views;
+          expect(systemPanelViews.length).toEqual(3);
+          const systemCategoryValueIds = listCategoryValueIds(systemPanelViews);
+          expect(
+            systemCategoryValueIds.includes(INFERRED_HEMATOPOIETIC_SYSTEM)
+          ).toBeTruthy();
+          expect(
+            systemCategoryValueIds.includes(INFERRED_IMMUNE_SYSTEM)
+          ).toBeTruthy();
+          expect(
+            systemCategoryValueIds.includes(INFERRED_RENAL_SYSTEM)
+          ).toBeTruthy();
+
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
+          const organPanelViews = categoryView.panels[PANEL_INDEX_ORGAN]!.views;
+          expect(organPanelViews.length).toEqual(0);
+
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
+          const tissuePanelViews =
+            categoryView.panels[PANEL_INDEX_TISSUE]!.views;
+          expect(tissuePanelViews.length).toEqual(2);
+          const tissueCategoryValueIds = listCategoryValueIds(tissuePanelViews);
+          expect(tissueCategoryValueIds.includes(EXPLICIT_URETER)).toBeTruthy();
+          expect(
+            tissueCategoryValueIds.includes(EXPLICIT_URETHRA)
+          ).toBeTruthy();
+        });
+
+        /**
+         * Selected - renal system
+         */
+        it("includes renal system partially selected, blood selected", () => {
+          categoryView.panels.forEach((panel) => {
+            panel.views.forEach((view) => {
+              const selected = view.key === INFERRED_RENAL_SYSTEM;
+              expect(view.selected).toEqual(selected);
+              expect(view.selectedPartial).toBeFalsy();
+            });
+          });
+        });
+      });
+
+      /**
+       * Selected: blood, blood non-specific, umbilical cord blood, venous blood
+       */
+      describe("organ and all organ's tissues selected", () => {
+        let selectedCategoryValueIds: CategoryValueId[];
+        let categoryView: OntologyMultiPanelCategoryView;
+        beforeAll(() => {
+          selectedCategoryValueIds = [
+            INFERRED_BLOOD,
+            EXPLICIT_BLOOD,
+            EXPLICIT_UMBILICAL_CORD_BLOOD,
+            EXPLICIT_VENOUS_BLOOD,
+          ];
+
+          const updatedKeyedCategoryValues = new Map(KEYED_CATEGORY_VALUES);
+          selectedCategoryValueIds.forEach((categoryValueId) =>
+            updateSelectCategoryValueSelected(
+              updatedKeyedCategoryValues,
+              categoryValueId,
+              true,
+              false
+            )
+          );
+
+          const updatedMultiPanelUIState = new Map(multiPanelUIState);
+          updateCategoryFilterUIStateSelected(
+            updatedMultiPanelUIState,
+            CATEGORY_FILTER_ID.TISSUE_CALCULATED,
+            selectedCategoryValueIds,
+            []
+          );
+
+          categoryView = buildMultiPanelCategoryView(
+            CATEGORY_FILTER_CONFIGS_BY_ID[
+              CATEGORY_FILTER_ID.TISSUE_CALCULATED
+            ] as OntologyMultiPanelFilterConfig,
+            updatedKeyedCategoryValues,
+            updatedMultiPanelUIState,
+            new Map<string, string>()
+          );
+        });
+
+        /**
+         * Selected - blood, blood non-specific, umbilical cord blood, venous blood
+         */
+        it("includes blood, blood non-specific, umbilical cord blood, venous blood selected", () => {
+          categoryView.panels.forEach((panel) => {
+            panel.views.forEach((view) => {
+              const selected = selectedCategoryValueIds.includes(view.key);
+              expect(view.selected).toEqual(selected);
+              expect(view.selectedPartial).toBeFalsy();
+            });
+          });
+        });
+      });
+
+      /**
+       * Selected: hematopoietic system, bone marrow, spleen, thymus, blood non-specific, umbilical cord blood,
+       * venous blood
+       */
+      describe("system and a mix of system's organs and tissues all selected", () => {
+        let selectedCategoryValueIds: CategoryValueId[];
+        let categoryView: OntologyMultiPanelCategoryView;
+        beforeAll(() => {
+          selectedCategoryValueIds = [
+            INFERRED_HEMATOPOIETIC_SYSTEM,
+            INFERRED_BONE_MARROW,
+            INFERRED_SPLEEN,
+            INFERRED_THYMUS,
+            EXPLICIT_BLOOD,
+            EXPLICIT_UMBILICAL_CORD_BLOOD,
+            EXPLICIT_VENOUS_BLOOD,
+          ];
+
+          const updatedKeyedCategoryValues = new Map(KEYED_CATEGORY_VALUES);
+          selectedCategoryValueIds.forEach((categoryValueId) =>
+            updateSelectCategoryValueSelected(
+              updatedKeyedCategoryValues,
+              categoryValueId,
+              true,
+              false
+            )
+          );
+
+          const updatedMultiPanelUIState = new Map(multiPanelUIState);
+          updateCategoryFilterUIStateSelected(
+            updatedMultiPanelUIState,
+            CATEGORY_FILTER_ID.TISSUE_CALCULATED,
+            selectedCategoryValueIds,
+            []
+          );
+
+          categoryView = buildMultiPanelCategoryView(
+            CATEGORY_FILTER_CONFIGS_BY_ID[
+              CATEGORY_FILTER_ID.TISSUE_CALCULATED
+            ] as OntologyMultiPanelFilterConfig,
+            updatedKeyedCategoryValues,
+            updatedMultiPanelUIState,
+            new Map<string, string>()
+          );
+        });
+
+        /**
+         * Selected - hematopoietic system, blood non-specific, umbilical cord blood, venous blood
+         */
+        it(
+          "includes hematopoietic system, bone marrow, spleen, thymus, blood non-specific, umbilical cord " +
+            "blood, venous blood selected",
+          () => {
+            categoryView.panels.forEach((panel) => {
+              panel.views.forEach((view) => {
+                const selected = selectedCategoryValueIds.includes(view.key);
+                expect(view.selected).toEqual(selected);
+                expect(view.selectedPartial).toBeFalsy();
+              });
+            });
+          }
         );
+      });
 
-        const updatedMultiPanelUIState = new Map(multiPanelUIState);
-        updateCategoryFilterUIStateSelected(
-          updatedMultiPanelUIState,
-          CATEGORY_FILTER_ID.TISSUE_CALCULATED,
-          [INFERRED_RENAL_SYSTEM],
-          []
+      /**
+       * Selected: hematopoietic system, bone marrow, spleen, thymus, blood non-specific, umbilical cord blood
+       */
+      describe("system and a mix of system's organs and tissues all selected with one tissue not selected", () => {
+        let selectedCategoryValueIds: CategoryValueId[];
+        let categoryView: OntologyMultiPanelCategoryView;
+        beforeAll(() => {
+          selectedCategoryValueIds = [
+            INFERRED_BONE_MARROW,
+            INFERRED_SPLEEN,
+            INFERRED_THYMUS,
+            EXPLICIT_BLOOD,
+            EXPLICIT_UMBILICAL_CORD_BLOOD,
+          ];
+
+          const updatedKeyedCategoryValues = new Map(KEYED_CATEGORY_VALUES);
+          selectedCategoryValueIds.forEach((categoryValueId) =>
+            updateSelectCategoryValueSelected(
+              updatedKeyedCategoryValues,
+              categoryValueId,
+              true,
+              false
+            )
+          );
+
+          updateSelectCategoryValueSelected(
+            updatedKeyedCategoryValues,
+            INFERRED_HEMATOPOIETIC_SYSTEM,
+            false,
+            true
+          );
+
+          const updatedMultiPanelUIState = new Map(multiPanelUIState);
+          updateCategoryFilterUIStateSelected(
+            updatedMultiPanelUIState,
+            CATEGORY_FILTER_ID.TISSUE_CALCULATED,
+            [INFERRED_HEMATOPOIETIC_SYSTEM, ...selectedCategoryValueIds],
+            [INFERRED_HEMATOPOIETIC_SYSTEM]
+          );
+
+          categoryView = buildMultiPanelCategoryView(
+            CATEGORY_FILTER_CONFIGS_BY_ID[
+              CATEGORY_FILTER_ID.TISSUE_CALCULATED
+            ] as OntologyMultiPanelFilterConfig,
+            updatedKeyedCategoryValues,
+            updatedMultiPanelUIState,
+            new Map<string, string>()
+          );
+        });
+
+        /**
+         * Selected - blood, blood non-specific, umbilical cord blood, venous blood
+         * Selected partial - hematopoietic system
+         */
+        it(
+          "includes hematopoietic system partially selected and bone marrow, spleen, thymus, blood " +
+            "non-specific, umbilical cord blood selected",
+          () => {
+            categoryView.panels.forEach((panel) => {
+              panel.views.forEach((view) => {
+                const selected = selectedCategoryValueIds.includes(view.key);
+                const selectedPartial =
+                  view.key === INFERRED_HEMATOPOIETIC_SYSTEM;
+                expect(view.selected).toEqual(selected);
+                expect(view.selectedPartial).toEqual(selectedPartial);
+              });
+            });
+          }
         );
+      });
 
-        const categoryView = buildMultiPanelCategoryView(
-          CATEGORY_FILTER_CONFIGS_BY_ID[
-            CATEGORY_FILTER_ID.TISSUE_CALCULATED
-          ] as OntologyMultiPanelFilterConfig,
-          updatedKeyedCategoryValues,
-          updatedMultiPanelUIState,
-          new Map<string, string>()
+      /**
+       * Selected: hematopoietic system, blood, bone marrow, spleen, thymus, blood non-specific, umbilical cord blood
+       */
+      describe("system, all system's organs and tissues selected with one tissue not selected", () => {
+        let selectedCategoryValueIds: CategoryValueId[];
+        let selectedPartialCategoryValueIds: CategoryValueId[];
+        let categoryView: OntologyMultiPanelCategoryView;
+        beforeAll(() => {
+          selectedCategoryValueIds = [
+            INFERRED_BONE_MARROW,
+            INFERRED_SPLEEN,
+            INFERRED_THYMUS,
+            EXPLICIT_BLOOD,
+            EXPLICIT_UMBILICAL_CORD_BLOOD,
+          ];
+
+          selectedPartialCategoryValueIds = [
+            INFERRED_HEMATOPOIETIC_SYSTEM,
+            INFERRED_BLOOD,
+          ];
+
+          const updatedKeyedCategoryValues = new Map(KEYED_CATEGORY_VALUES);
+          selectedCategoryValueIds.forEach((categoryValueId) =>
+            updateSelectCategoryValueSelected(
+              updatedKeyedCategoryValues,
+              categoryValueId,
+              true,
+              false
+            )
+          );
+
+          selectedPartialCategoryValueIds.forEach((categoryValueId) =>
+            updateSelectCategoryValueSelected(
+              updatedKeyedCategoryValues,
+              categoryValueId,
+              false,
+              true
+            )
+          );
+
+          const updatedMultiPanelUIState = new Map(multiPanelUIState);
+          updateCategoryFilterUIStateSelected(
+            updatedMultiPanelUIState,
+            CATEGORY_FILTER_ID.TISSUE_CALCULATED,
+            [...selectedPartialCategoryValueIds, ...selectedCategoryValueIds],
+            [...selectedPartialCategoryValueIds]
+          );
+
+          categoryView = buildMultiPanelCategoryView(
+            CATEGORY_FILTER_CONFIGS_BY_ID[
+              CATEGORY_FILTER_ID.TISSUE_CALCULATED
+            ] as OntologyMultiPanelFilterConfig,
+            updatedKeyedCategoryValues,
+            updatedMultiPanelUIState,
+            new Map<string, string>()
+          );
+        });
+
+        /**
+         * Selected - blood, blood non-specific, umbilical cord blood, venous blood
+         * Selected partial - hematopoietic system
+         */
+        it(
+          "includes hematopoietic system and blood partially selected and bone marrow, spleen, thymus, blood " +
+            "non-specific, umbilical cord blood selected",
+          () => {
+            categoryView.panels.forEach((panel) => {
+              panel.views.forEach((view) => {
+                const selected = selectedCategoryValueIds.includes(view.key);
+                const selectedPartial =
+                  selectedPartialCategoryValueIds.includes(view.key);
+                expect(view.selected).toEqual(selected);
+                expect(view.selectedPartial).toEqual(selectedPartial);
+              });
+            });
+          }
         );
-
-        expect(categoryView.panels.length).toEqual(3);
-
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
-        const systemPanelViews = categoryView.panels[0]!.views;
-        expect(systemPanelViews.length).toEqual(3);
-        const systemCategoryValueIds = listCategoryValueIds(systemPanelViews);
-        expect(
-          systemCategoryValueIds.includes(INFERRED_HEMATOPOIETIC_SYSTEM)
-        ).toBeTruthy();
-        expect(
-          systemCategoryValueIds.includes(INFERRED_IMMUNE_SYSTEM)
-        ).toBeTruthy();
-        expect(
-          systemCategoryValueIds.includes(INFERRED_RENAL_SYSTEM)
-        ).toBeTruthy();
-
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
-        const organPanelViews = categoryView.panels[1]!.views;
-        expect(organPanelViews.length).toEqual(0);
-
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
-        const tissuePanelViews = categoryView.panels[2]!.views;
-        expect(tissuePanelViews.length).toEqual(2);
-        const tissueCategoryValueIds = listCategoryValueIds(tissuePanelViews);
-        expect(tissueCategoryValueIds.includes(EXPLICIT_URETER)).toBeTruthy();
-        expect(tissueCategoryValueIds.includes(EXPLICIT_URETHRA)).toBeTruthy();
       });
     });
   });
