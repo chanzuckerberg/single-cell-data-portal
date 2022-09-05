@@ -181,29 +181,6 @@ export type CategoryFilterConfig =
   | RangeCategoryFilterConfig
   | SelectCategoryFilterConfig;
 
-// ** Panel value restriction discriminating unions ** //
-
-/**
- * Model of a filter panel that uses the set of selected values in a parent filter to determine the filter panel
- * category values allowed for display. For example, the tissue panel inside the tissue filter. NOTE! The order of
- * parents defined in parentCategoryFilterIds drives the order of the restrictions applied to the filter panel. For
- * example, for tissue, organ must be specified before system so that when restricting tissue values, a selected organ
- * value can "override" a selected system value where the organ is part of the system.
- *
- */
-export interface SelectedParentTermsValueRestrictionKind {
-  valueRestrictionKind: "CHILDREN_OF_SELECTED_PARENT_TERMS";
-  parentCategoryPanelFilterIds: CATEGORY_FILTER_PANEL_ID[];
-}
-
-/**
- * Model of a filter that has no restrictions on the filter category values allowed for display. For example, assay,
- * publication date etc.
- */
-export interface NoneValueRestrictionKind {
-  valueRestrictionKind: "NONE";
-}
-
 // ** Panel search discriminating unions ** //
 
 /**
@@ -280,7 +257,6 @@ export enum CATEGORY_FILTER_PANEL_ID {
 type ChildCategoryFilterPanelConfig = BaseCategoryFilterPanelConfig &
   OnlyCuratedValueSourceKind &
   InferredExplicitFilterValueKind &
-  SelectedParentTermsValueRestrictionKind &
   SearchSingleSelectKind;
 
 /**
@@ -290,7 +266,6 @@ type ChildCategoryFilterPanelConfig = BaseCategoryFilterPanelConfig &
 type LeafCategoryFilterPanelConfig = BaseCategoryFilterPanelConfig &
   ExceptCuratedValueSourceKind &
   ExplicitOnlyFilterValueKind &
-  SelectedParentTermsValueRestrictionKind &
   SearchMultiSelect;
 
 /**
@@ -300,7 +275,6 @@ type LeafCategoryFilterPanelConfig = BaseCategoryFilterPanelConfig &
 type ParentCategoryFilterPanelConfig = BaseCategoryFilterPanelConfig &
   OnlyCuratedValueSourceKind &
   InferredExplicitFilterValueKind &
-  NoneValueRestrictionKind &
   SearchSingleSelectKind;
 
 export type CategoryFilterPanelConfig =
