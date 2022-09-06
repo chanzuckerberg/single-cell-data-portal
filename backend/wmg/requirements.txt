@@ -76,7 +76,7 @@ s3transfer==0.5.2
 sarif-om==1.0.4
 scanpy==1.9.1
 scikit-learn==1.0.2
-scipy==1.7.3
+scipy==1.9.1
 six==1.16.0
 SQLAlchemy==1.4.31
 stack-data==0.2.0
