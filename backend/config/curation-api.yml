@@ -107,7 +107,7 @@ paths:
     post:
       summary: Create a Collection
       description: >
-        Create a new Collection
+        Create a new private Collection
 
         * Required: provide your access token in the request header as `Authentication: bearer <access_token>`.
       operationId: backend.corpora.lambdas.api.v1.collection.create_collection
@@ -170,8 +170,10 @@ paths:
       summary: Update a Collection's metadata.
       description: |
         Update a private Collection or a Revision. If any Collection metadata fields are included in the body of the
-        request, these fields SHALL be updated for the specified Collection. If links are included, they will fully
-        replace all existing links. A DOI link that cannot be found at Crossref results in a 400 (BAD REQUEST).
+        request, these fields will be updated for the specified Collection. If links are included, they will fully
+        replace all existing links. CELLxGENE Discovery queries **Crossref** (link to their site) for the publication 
+        metadata of the DOI such as the list of authors. If the DOI has not been submitted to Crossref by its 
+        publisher, then the request returns a 400 (BAD REQUEST.
 
         * Optional: provide your access token in the request header as `Authentication: bearer <access_token>`.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.actions.patch
@@ -318,9 +320,9 @@ paths:
         "405":
           $ref: "#/components/responses/405"
     get:
-      summary: Fetch a Dataset from a Collection
+      summary: Fetch Dataset metadata from a Collection.
       description: |
-        Fetch a Dataset from a collection. If a `dataset_id` or a `curator_tag` is provided as a query,
+        Fetch Dataset metadata from a Collection. If a `dataset_id` or a `curator_tag` is provided as a query,
         the associated Dataset metadata is returned.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.datasets.actions.get
       tags:
@@ -747,7 +749,9 @@ components:
       example: fedcba98-7654-3210-fedc-ba9876543210
       type: string
     curator_tag:
-      description: A curator-provided tag for a Dataset that serves as a unique identifier *within a Collection*.
+      description: |
+        A curator-provided tag for a Dataset that serves as a unique identifier *within a Collection*. A timestamp or
+        the original file name can be used as the `curator_tag`. The curator tag **cannot** be in UUID 4 format.
       example: an/example/curator_tag
       type: string
     dataset:
@@ -762,7 +766,7 @@ components:
           type: integer
         cell_type:
           description: |
-            [cell type schema](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#cell_type)
+            [cell type label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#cell_type)
           default: []
           items:
             "$ref": "#/components/schemas/ontology_element"
@@ -784,7 +788,7 @@ components:
           type: array
         development_stage:
           description: |
-            [development stage schema](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#development_stage_ontology_term_id)
+            [development stage label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#development_stage)
           default: []
           items:
             "$ref": "#/components/schemas/ontology_element"
@@ -794,7 +798,7 @@ components:
           "$ref": "#/components/schemas/dataset_disease"
         ethnicity:
           description: |
-            [ethnicity schema](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#self_reported_ethnicity_ontology_term_id)
+            [self reported ethnicity label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#self_reported_ethnicity)
           default: []
           items:
             "$ref": "#/components/schemas/ontology_element"
@@ -810,7 +814,7 @@ components:
           type: number
         title:
           description: |
-            [title schema](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#title)
+            [title](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#title)
           nullable: true
           type: string
         organism:
@@ -830,7 +834,7 @@ components:
           type: string
         sex:
           description: |
-            [sex schema](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#sex_ontology_term_id)
+            [sex label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#sex)
           default: []
           items:
             "$ref": "#/components/schemas/ontology_element"
@@ -844,28 +848,28 @@ components:
       type: object
     dataset_assay:
       description: |
-        [assay schema](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#assay)
+        [assay label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#assay)
       default: []
       items:
         "$ref": "#/components/schemas/ontology_element"
       type: array
     dataset_disease:
       description: |
-        [disease schema](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#disease_ontology_term_id)
+        [disease label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#disease)
       default: []
       items:
         "$ref": "#/components/schemas/ontology_element"
       type: array
     dataset_organism:
       description: |
-        [organism schema](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#organism_ontology_term_id)
+        [organism label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#organism)
       default: []
       items:
         "$ref": "#/components/schemas/ontology_element"
       type: array
     dataset_tissue:
       description: |
-        [tissue schema](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#tissue_ontology_term_id)
+        [tissue label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#tissue)
       default: []
       items:
         "$ref": "#/components/schemas/ontology_element"
@@ -913,7 +917,7 @@ components:
       type: string
     is_primary_data:
       description: |
-        [is_primary_data schema](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#is_primary_data)
+        [is_primary_data boolean](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#is_primary_data)
 
         Describes whether cellular observations for this Dataset are all
         canonical (True), all non-canonical (False), or contain a mixture (True, False).
