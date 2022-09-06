@@ -886,6 +886,8 @@ components:
         - FAILURE
         - PENDING
         - SUCCESS
+        - VALIDATION_FAILURE
+        - PIPELINE_FAILURE
       nullable: true
       type: string
     publisher_metadata:

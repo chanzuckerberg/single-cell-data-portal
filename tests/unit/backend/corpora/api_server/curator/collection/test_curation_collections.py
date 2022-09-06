@@ -7,6 +7,7 @@ from backend.corpora.common.corpora_orm import (
     ProcessingStatus,
     DatasetArtifactFileType,
     DbDataset,
+    ValidationStatus,
 )
 from backend.corpora.lambdas.api.v1.curation.collections.common import EntityColumns
 from backend.corpora.common.providers.crossref_provider import CrossrefDOINotFoundException
@@ -281,7 +282,7 @@ class TestGetCollections(BaseAuthAPITest):
     def test__verify_expected_private_collection_fields(self):
         collection = self.generate_collection(
             self.session,
-            visibility=CollectionVisibility.PUBLIC.name,
+            visibility=CollectionVisibility.PRIVATE.name,
             links=[
                 {
                     "link_name": "test_raw_data_link_name",
@@ -291,7 +292,7 @@ class TestGetCollections(BaseAuthAPITest):
             ],
         )
         self.generate_dataset(self.session, collection=collection)
-        params = {"visibility": "PUBLIC"}
+        params = {"visibility": "PRIVATE"}
 
         def _test(owner):
             if owner:
@@ -470,6 +471,47 @@ class TestGetCollectionID(BaseAuthAPITest):
         res = self.app.get("/curation/v1/collections/test_collection_id_revision")
         self.assertEqual(200, res.status_code)
         self.assertEqual("test_collection_id_revision", res.json["id"])
+
+    def test__get_collection_with_dataset_failing_validation(self):
+        collection = self.generate_collection(
+            self.session,
+            visibility=CollectionVisibility.PRIVATE.name,
+        )
+        dataset = self.generate_dataset(
+            self.session,
+            collection=collection,
+            processing_status={
+                "processing_status": ProcessingStatus.FAILURE,
+                "validation_status": ValidationStatus.INVALID,
+                "validation_message": "test message",
+            },
+        )
+        res = self.app.get(f"/curation/v1/collections/{collection.id}")
+        self.assertEqual("FAILURE", res.json["processing_status"])
+        for resp_dataset in res.json["datasets"]:
+            if dataset.id == resp_dataset["id"]:
+                self.assertEqual("VALIDATION_FAILURE", resp_dataset["processing_status"])
+                self.assertEqual("test message", resp_dataset["processing_status_detail"])
+                break
+
+    def test__get_collection_with_dataset_failing_pipeline(self):
+        collection = self.generate_collection(
+            self.session,
+            visibility=CollectionVisibility.PRIVATE.name,
+        )
+        dataset = self.generate_dataset(
+            self.session, collection=collection, processing_status={"processing_status": ProcessingStatus.FAILURE}
+        )
+        res = self.app.get(f"/curation/v1/collections/{collection.id}")
+        self.assertEqual("FAILURE", res.json["processing_status"])
+        for resp_dataset in res.json["datasets"]:
+            if dataset.id == resp_dataset["id"]:
+                self.assertEqual("PIPELINE_FAILURE", resp_dataset["processing_status"])
+                self.assertEqual(
+                    "Someone from the CELLxGENE support team will reach out to you.",
+                    resp_dataset["processing_status_detail"],
+                )
+                break
 
     def test__get_nonexistent_collection__403(self):
         res = self.app.get("/curation/v1/collections/test_collection_id_nonexistent")
