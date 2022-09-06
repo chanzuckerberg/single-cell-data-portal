@@ -184,6 +184,34 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         Dataset.enrich_development_stage_with_ancestors(dataset)
         self.assertNotIn("development_stage_ancestors", dataset)
 
+    def test__enrich_tissue_with_ancestors_expands_correctly(self):
+        dataset = {"tissue": [{"ontology_term_id": "UBERON:0002048", "label": "Test"}]}
+        Dataset.enrich_tissue_with_ancestors(dataset)
+        self.assertIn("tissue_ancestors", dataset)
+        self.assertEqual(
+            dataset["tissue_ancestors"],
+            [
+                "UBERON:0001004",
+                "UBERON:0001005",
+                "UBERON:0000065",
+                "UBERON:0000170",
+                "UBERON:0002048",
+                "UBERON:0001558",
+                "UBERON:0000072",
+                "UBERON:0000171",
+            ],
+        )
+
+    def test__enrich_tissue_with_ancestors_empty_key_ok(self):
+        dataset = {}
+        Dataset.enrich_tissue_with_ancestors(dataset)
+        self.assertEqual(dataset, {})
+
+    def test__enrich_tissue_with_ancestors_missing_key_ok(self):
+        dataset = {"tissue": [{"ontology_term_id": "UBERON:non_existent", "label": "Test"}]}
+        Dataset.enrich_tissue_with_ancestors(dataset)
+        self.assertNotIn("tissue_ancestors", dataset)
+
     def test__get_all_datasets_for_index_with_ontology_expansion(self):
         test_dataset_id = "test_dataset_id_for_index_2"
         dataset = self.generate_dataset(
@@ -191,6 +219,7 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
             id=test_dataset_id,
             cell_count=42,
             development_stage=[{"ontology_term_id": "HsapDv:0000008", "label": "Test"}],
+            tissue=[{"ontology_term_id": "UBERON:0002048", "label": "Test"}],
             published_at=datetime.now(),
             revised_at=datetime.now(),
         )
@@ -212,6 +241,21 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         self.assertEqual(
             actual_dataset["development_stage_ancestors"],
             ["HsapDv:0000008", "HsapDv:0000006", "HsapDv:0000002", "HsapDv:0000045", "HsapDv:0000001"],
+        )
+
+        self.assertEqual(actual_dataset["tissue"], dataset.tissue)
+        self.assertEqual(
+            actual_dataset["tissue_ancestors"],
+            [
+                "UBERON:0001004",
+                "UBERON:0001005",
+                "UBERON:0000065",
+                "UBERON:0000170",
+                "UBERON:0002048",
+                "UBERON:0001558",
+                "UBERON:0000072",
+                "UBERON:0000171",
+            ],
         )
 
     def test__get_dataset_assets(self):

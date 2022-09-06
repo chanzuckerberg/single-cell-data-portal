@@ -1,5 +1,5 @@
+import styled from "@emotion/styled";
 import { GRAY, PT_TEXT_COLOR } from "src/components/common/theme";
-import styled from "styled-components";
 
 export const Grid = styled.table`
   display: grid;

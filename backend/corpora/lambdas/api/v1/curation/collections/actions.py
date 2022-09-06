@@ -1,9 +1,8 @@
 from flask import jsonify, g
-from .common import reshape_for_curation_api_and_is_allowed, add_collection_level_processing_status
-from .common import EntityColumns
-from ...authorization import is_super_curator
+from .common import reshape_for_curation_api
+from ...authorization import is_super_curator, owner_or_allowed
 from ......common.corpora_orm import CollectionVisibility, DbCollection
-from ......common.utils.http_exceptions import UnauthorizedError
+from ......common.utils.http_exceptions import ForbiddenHTTPException
 from backend.corpora.api_server.db import dbconnect
 
 
@@ -18,23 +17,26 @@ def get(visibility: str, token_info: dict, curator: str = None):
     @return: Response
     """
     filters = [DbCollection.tombstone == False]  # noqa
-
-    if visibility == CollectionVisibility.PRIVATE.name and not token_info:
-        raise UnauthorizedError()
-    elif visibility:
+    if visibility:
         filters.append(DbCollection.visibility == getattr(CollectionVisibility, visibility))
+        if visibility == CollectionVisibility.PRIVATE.name:
+            if not token_info:
+                raise ForbiddenHTTPException(detail="Not authorized to query for PRIVATE collection.")
+            else:
+                owner_filter = owner_or_allowed(token_info)
+                if owner_filter:  # None means the user is a super curator and don't need to filter by owner.
+                    filters.append(DbCollection.owner == owner_filter)
 
-    if curator and not is_super_curator(token_info):
-        raise UnauthorizedError()
-    elif curator:  # user want collections from a specific curator
-        filters.append(DbCollection.curator_name == curator)
+    if curator:
+        if not is_super_curator(token_info):
+            raise ForbiddenHTTPException(detail="Not authorized to use the curator query parameter.")
+        else:
+            filters.append(DbCollection.curator_name == curator)
 
     db_session = g.db_session
     resp_collections = []
     for collection in db_session.query(DbCollection).filter(*filters).all():
-        resp_collection = collection.to_dict_keep(EntityColumns.columns_for_collections)
-        resp_collection["processing_status"] = add_collection_level_processing_status(collection)
-        if reshape_for_curation_api_and_is_allowed(db_session, resp_collection, token_info, preview=True):
-            resp_collections.append(resp_collection)
+        resp_collection = reshape_for_curation_api(db_session, collection, token_info, preview=True)
+        resp_collections.append(resp_collection)
 
-    return jsonify({"collections": resp_collections})
+    return jsonify(resp_collections)

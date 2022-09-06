@@ -1,9 +1,9 @@
 import { Classes } from "@blueprintjs/core";
-import { ActionButton } from "src/components/common/Grid/components/ActionButton/style";
+import styled from "@emotion/styled";
+import { StyledButton } from "src/components/common/Grid/components/ActionButton/style";
 import { GRAY } from "src/components/common/theme";
-import styled from "styled-components";
 
-export const MoreButton = styled(ActionButton)`
+export const MoreButton = styled(StyledButton)`
   &.${Classes.BUTTON}.${Classes.MINIMAL} svg {
     fill: ${GRAY.A};
   }

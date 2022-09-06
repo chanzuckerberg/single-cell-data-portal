@@ -1,4 +1,4 @@
-import styled from "styled-components";
+import styled from "@emotion/styled";
 import CreateCollection from "../../components/CreateCollectionModal";
 
 export const TitleAndDescription = styled.div`
