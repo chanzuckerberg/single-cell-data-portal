@@ -569,6 +569,19 @@ export interface PublisherMetadataCategories {
 }
 
 /**
+ * React table count summary values.
+ */
+export interface TableCountSummary {
+  row: number;
+  total: number;
+}
+
+/**
+ * "tableCountSummary" prop passed to react-table's Header function.
+ */
+export type HeaderPropsValue = { tableCountSummary?: TableCountSummary };
+
+/**
  * "row" prop passed to react-table's Cell function.
  */
 export type RowPropsValue<T extends Categories> = { row: Row<T> };

@@ -1,5 +1,5 @@
 import Head from "next/head";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo } from "react";
 import { Column, Filters, useFilters, useSortBy, useTable } from "react-table";
 import { PLURALIZED_METADATA_LABEL } from "src/common/constants/metadata";
 import { FEATURES } from "src/common/featureFlags/features";
@@ -14,9 +14,11 @@ import {
   CATEGORY_FILTER_ID,
   CellPropsValue,
   DatasetRow,
+  HeaderPropsValue,
   RowPropsValue,
 } from "src/components/common/Filter/common/entities";
 import { ontologyLabelCellAccessorFn } from "src/components/common/Filter/common/utils";
+import { buildTableCountSummary } from "src/components/common/Grid/common/utils";
 import CountCell from "src/components/common/Grid/components/CountCell";
 import DiseaseCell from "src/components/common/Grid/components/DiseaseCell";
 import HeaderCell from "src/components/common/Grid/components/HeaderCell";
@@ -77,8 +79,6 @@ export default function Datasets(): JSX.Element {
 
   // Filterable datasets joined from datasets and collections responses.
   const { isError, isLoading, rows: datasetRows } = useFetchDatasetRows();
-  const [rowCount, setRowCount] = useState<number>();
-  const totalCount = datasetRows.length;
 
   // Column configuration backing table.
   const columnConfig: Column<DatasetRow>[] = useMemo(
@@ -93,13 +93,14 @@ export default function Datasets(): JSX.Element {
             />
           );
         },
-        Header: (
-          <HeaderCell
-            label={"Datasets"}
-            rowCount={rowCount}
-            totalCount={totalCount}
-          />
-        ),
+        Header: ({ tableCountSummary }: HeaderPropsValue) => {
+          return (
+            <HeaderCell
+              label={"Datasets"}
+              tableCountSummary={tableCountSummary}
+            />
+          );
+        },
         accessor: DATASET_NAME,
       },
       {
@@ -243,7 +244,7 @@ export default function Datasets(): JSX.Element {
         id: CATEGORY_FILTER_ID.TISSUE_CALCULATED,
       },
     ],
-    [rowCount, totalCount]
+    []
   );
 
   // Handle initial filter state and save of filter state beyond component scope.
@@ -326,13 +327,6 @@ export default function Datasets(): JSX.Element {
     // storeFilters(filters); // TODO(cc)
   }, [filters, storeFilters]);
 
-  // Set row count.
-  useEffect(() => {
-    if (rows && rows.length) {
-      setRowCount(rows.length);
-    }
-  }, [rows]);
-
   // Handle side bar open/closed state beyond scope of component.
   const [isSideBarOpen, storeIsSideBarOpen] = useSessionStorage<boolean>(
     KEYS.SIDE_BAR_DATASETS,
@@ -360,8 +354,14 @@ export default function Datasets(): JSX.Element {
                 <p>There are no datasets matching those filters.</p>
               </GridHero>
             ) : (
-              /*// @ts-expect-error -- revisit tableInstance typing*/
-              <DatasetsGrid tableInstance={tableInstance} />
+              <DatasetsGrid
+                tableCountSummary={buildTableCountSummary(
+                  rows,
+                  preFilteredRows
+                )}
+                // @ts-expect-error -- revisit tableInstance typing
+                tableInstance={tableInstance}
+              />
             )}
           </View>
         </>

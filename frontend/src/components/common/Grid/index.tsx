@@ -1,14 +1,19 @@
 import { TableInstance } from "react-table";
-import { Categories } from "src/components/common/Filter/common/entities";
+import {
+  Categories,
+  TableCountSummary,
+} from "src/components/common/Filter/common/entities";
 import { Grid as StyledGrid } from "./style";
 
 interface Props<T extends Categories> {
   className?: string;
+  tableCountSummary?: TableCountSummary;
   tableInstance: TableInstance<T>;
 }
 
 export default function Grid<T extends Categories>({
   className,
+  tableCountSummary,
   tableInstance,
 }: Props<T>): JSX.Element {
   const { getTableProps, getTableBodyProps, headerGroups, rows, prepareRow } =
@@ -26,7 +31,7 @@ export default function Grid<T extends Categories>({
                   column.getHeaderProps();
                 return (
                   <th key={key} {...restColumnHeaderProps}>
-                    {column.render("Header")}
+                    {column.render("Header", { tableCountSummary })}
                   </th>
                 );
               })}

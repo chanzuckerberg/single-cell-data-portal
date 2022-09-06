@@ -1,4 +1,5 @@
 import React from "react";
+import { TableCountSummary } from "src/components/common/Filter/common/entities";
 import {
   CountAndTotal,
   HeaderCell as Cell,
@@ -6,15 +7,15 @@ import {
 
 interface Props {
   label: string;
-  rowCount?: number;
-  totalCount?: number;
+  tableCountSummary?: TableCountSummary;
 }
 
 export default function HeaderCell({
   label,
-  rowCount,
-  totalCount,
+  tableCountSummary,
 }: Props): JSX.Element {
+  const rowCount = tableCountSummary?.row;
+  const totalCount = tableCountSummary?.total;
   const countAndTotal =
     rowCount && totalCount ? `${rowCount} of ${totalCount}` : "";
   return (
