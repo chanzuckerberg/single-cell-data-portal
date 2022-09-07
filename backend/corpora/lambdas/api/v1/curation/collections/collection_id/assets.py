@@ -8,9 +8,9 @@ from backend.corpora.lambdas.api.v1.common import get_dataset_else_error
 
 
 @dbconnect
-def get(collection_id: str, curator_tag: str = None, dataset_id=None):
+def get(collection_id: str, dataset_id=None):
     db_session = g.db_session
-    dataset = get_dataset_else_error(db_session, dataset_id, collection_id, curator_tag)
+    dataset = get_dataset_else_error(db_session, dataset_id, collection_id)
 
     # retrieve the artifact
     assets = dataset.get_assets()
@@ -45,7 +45,5 @@ def get(collection_id: str, curator_tag: str = None, dataset_id=None):
         asset_list.append(result)
 
     response = dict(dataset_id=dataset.id, assets=asset_list)
-    if dataset.curator_tag:
-        response["curator_tag"] = dataset.curator_tag
     status_code = 202 if error_flag else 200
     return make_response(jsonify(**response), status_code)

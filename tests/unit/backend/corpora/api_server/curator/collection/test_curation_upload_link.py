@@ -37,7 +37,7 @@ class TestPutLink(BaseAuthAPITest):
         response = self._test_new(
             dict(visibility=CollectionVisibility.PUBLIC.name),
             self.make_owner_header(),
-            body={"curator_tag": "test", "link": self.dummy_link},
+            body={"link": self.dummy_link},
         )
         self.assertEqual(403, response.status_code)
 
@@ -45,32 +45,27 @@ class TestPutLink(BaseAuthAPITest):
         response = self._test_new(
             dict(owner="someone else"),
             self.make_not_owner_header(),
-            body={"curator_tag": "test", "link": self.dummy_link},
+            body={"link": self.dummy_link},
         )
         self.assertEqual(403, response.status_code)
 
     def test__new_from_link__OK(self, *mocks):
         headers = self.make_owner_header()
-        response = self._test_new({}, headers, body={"curator_tag": "test", "link": self.good_link})
+        response = self._test_new({}, headers, body={"link": self.good_link})
         self.assertEqual(202, response.status_code)
 
     def test__new_from_link__Super_Curator(self, *mocks):
         headers = self.make_super_curator_header()
-        response = self._test_new({}, headers, body={"curator_tag": "test", "link": self.good_link})
+        response = self._test_new({}, headers, body={"link": self.good_link})
         self.assertEqual(202, response.status_code)
 
     def _test_existing(self, headers: dict = None, use_curator_tag=False):
-        curator_tag = "test.h5ad"
         headers = headers if headers else {}
         headers["Content-Type"] = "application/json"
         collection = self.generate_collection(self.session)
         processing_status = dict(processing_status=ProcessingStatus.SUCCESS)
-        dataset = self.generate_dataset(
-            self.session, collection_id=collection.id, curator_tag=curator_tag, processing_status=processing_status
-        )
+        dataset = self.generate_dataset(self.session, collection_id=collection.id, processing_status=processing_status)
         body = {"id": dataset.id, "link": self.good_link}
-        if use_curator_tag:
-            body["curator_tag"] = curator_tag
         response = self.app.put(
             f"/curation/v1/collections/{collection.id}/datasets/upload-link", data=json.dumps(body), headers=headers
         )
@@ -80,30 +75,21 @@ class TestPutLink(BaseAuthAPITest):
         with self.subTest("dataset_id"):
             response = self._test_existing(self.make_owner_header())
             self.assertEqual(202, response.status_code)
-        with self.subTest("curator_tag"):
-            response = self._test_existing(self.make_owner_header(), use_curator_tag=True)
-            self.assertEqual(202, response.status_code)
 
     def test__existing_from_link__Super_Curator(self, *mocks):
         headers = self.make_super_curator_header()
         with self.subTest("dataset_id"):
             response = self._test_existing(headers, use_curator_tag=True)
             self.assertEqual(202, response.status_code)
-        with self.subTest("curator_tag"):
-            response = self._test_existing(headers, use_curator_tag=True)
-            self.assertEqual(202, response.status_code)
 
     def test__curator_tag_ignored_when_dataset_id_is_present__OK(self, *mocks):
-        curator_tag = "test.h5ad"
         headers = self.make_owner_header()
         headers["Content-Type"] = "application/json"
         collection = self.generate_collection(self.session)
         processing_status = dict(processing_status=ProcessingStatus.SUCCESS)
-        dataset = self.generate_dataset(
-            self.session, collection_id=collection.id, curator_tag=curator_tag, processing_status=processing_status
-        )
+        dataset = self.generate_dataset(self.session, collection_id=collection.id, processing_status=processing_status)
 
-        body = {"id": dataset.id, "link": self.good_link, "curator_tag": "different_tag"}
+        body = {"id": dataset.id, "link": self.good_link}
         response = self.app.put(
             f"/curation/v1/collections/{collection.id}/datasets/upload-link", data=json.dumps(body), headers=headers
         )

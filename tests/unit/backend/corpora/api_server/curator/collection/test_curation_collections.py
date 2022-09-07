@@ -363,7 +363,6 @@ class TestGetCollectionID(BaseAuthAPITest):
                 "batch_condition": ["batchA", "batchB"],
                 "cell_count": None,
                 "cell_type": [{"label": "test_cell_type", "ontology_term_id": "test_opo"}],
-                "curator_tag": None,
                 "dataset_assets": [{"filename": "test_filename", "filetype": "H5AD"}],
                 "development_stage": [{"label": "test_development_stage", "ontology_term_id": "test_obo"}],
                 "disease": [
@@ -541,7 +540,6 @@ class TestPatchCollectionID(BaseAuthAPITest):
         self.generate_dataset(
             self.session,
             id="test_curator_tag",
-            curator_tag="curator_tag",
             revision=0,
             name="test_dataset_name",
             schema_version="2.0.0",

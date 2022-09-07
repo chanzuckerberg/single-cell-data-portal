@@ -64,7 +64,6 @@ def dataset_submissions_handler(s3_event: dict, unused_context) -> None:
                 url=s3_uri,
                 file_size=size,
                 dataset_id=dataset_id,
-                curator_tag=parsed.get("tag"),
             )
 
 
@@ -83,9 +82,6 @@ def parse_s3_event_record(s3_event_record: dict) -> Tuple[str, str, int]:
 def parse_key(key: str) -> Optional[dict]:
     """
     Parses the S3 object key to extract the collection ID and curator tag, ignoring the REMOTE_DEV_PREFIX
-
-    Example of key with only curator_tag:
-    s3://<dataset submissions bucket>/<user_id>/<collection_id>/<curator_tag>
 
     Example of key with dataset id:
     s3://<dataset submissions bucket>/<user_id>/<collection_id>/<dataset_id>

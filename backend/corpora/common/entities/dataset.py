@@ -89,27 +89,15 @@ class Dataset(Entity):
         super().update(commit=commit, **kwargs)
 
     @classmethod
-    def get(
-        cls, session: Session, dataset_id=None, include_tombstones=False, collection_id=None, curator_tag=None
-    ) -> typing.Optional["Dataset"]:
-        if not (dataset_id or (curator_tag and collection_id)):
-            raise ValueError("Not enough information to query")
+    def get(cls, session: Session, dataset_id, include_tombstones=False) -> typing.Optional["Dataset"]:
         filters = []
         if not include_tombstones:
             filters.append(cls.table.tombstone != True)  # noqa
-        if collection_id:
-            filters.append(cls.table.collection_id == collection_id)
-        if curator_tag:
-            filters.append(cls.table.curator_tag == curator_tag)
         if dataset_id:
             filters.append(cls.table.id == dataset_id)
         result = session.query(cls.table).filter(*filters).one_or_none()
         dataset = cls(result) if result else None
         return dataset
-
-    @classmethod
-    def get_dataset_from_curator_tag(cls, session: Session, collection_id, curator_tag, **kwargs) -> "Dataset":
-        return cls.get(session, collection_id=collection_id, curator_tag=curator_tag, **kwargs)
 
     @classmethod
     def get_by_explorer_url(cls, session: Session, explorer_url):
