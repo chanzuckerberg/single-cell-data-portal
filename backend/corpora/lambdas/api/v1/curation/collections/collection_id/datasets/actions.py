@@ -1,13 +1,17 @@
 from flask import g, make_response, jsonify
 
 from backend.corpora.api_server.db import dbconnect
-from backend.corpora.common.corpora_orm import DbCollection
+from backend.corpora.common.corpora_orm import DbCollection, CollectionVisibility
+from backend.corpora.common.entities import Dataset
 from backend.corpora.common.utils.http_exceptions import (
     NotFoundHTTPException,
+    MethodNotAllowedException,
 )
+from backend.corpora.lambdas.api.v1.authorization import owner_or_allowed
 from backend.corpora.lambdas.api.v1.common import (
     get_dataset_else_error,
     delete_dataset_common,
+    get_collection_else_forbidden,
 )
 from backend.corpora.lambdas.api.v1.curation.collections.common import EntityColumns, reshape_dataset_for_curation_api
 
@@ -28,3 +32,13 @@ def delete(token_info: dict, collection_id: str, dataset_id: str = None):
     dataset = get_dataset_else_error(db_session, dataset_id, collection_id, include_tombstones=True)
     delete_dataset_common(db_session, dataset, token_info)
     return "", 202
+
+
+@dbconnect
+def post(token_info: dict, collection_id: str):
+    db_session = g.db_session
+    collection = get_collection_else_forbidden(db_session, collection_id, owner=owner_or_allowed(token_info))
+    if collection.visibility != CollectionVisibility.PRIVATE:
+        raise MethodNotAllowedException("Collection must be PRIVATE Collection, or a revision of a PUBLIC Collection.")
+    dataset = Dataset.create(db_session, collection=collection)
+    return make_response(jsonify({"dataset_id": dataset.id}), 201)

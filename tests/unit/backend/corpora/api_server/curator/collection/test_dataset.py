@@ -93,5 +93,48 @@ class TestGetDatasets(BaseAuthAPITest):
         self.assertEqual(404, response.status_code)
 
 
+class TestPostDataset(BaseAuthAPITest):
+    def test_post_datasets_nonexistent_collection_403(self):
+        test_url = "/curation/v1/collections/nonexistent/datasets"
+        headers = self.make_owner_header()
+        response = self.app.post(test_url, headers=headers)
+        self.assertEqual(403, response.status_code)
+
+    def test_post_datasets_201(self):
+        collection = self.generate_collection(self.session)
+        test_url = f"/curation/v1/collections/{collection.id}/datasets"
+        headers = self.make_owner_header()
+        response = self.app.post(test_url, headers=headers)
+        self.assertEqual(201, response.status_code)
+        self.assertTrue(response.json["dataset_id"])
+
+    def test_post_datasets_super(self):
+        collection = self.generate_collection(self.session)
+        test_url = f"/curation/v1/collections/{collection.id}/datasets"
+        headers = self.make_super_curator_header()
+        response = self.app.post(test_url, headers=headers)
+        self.assertEqual(201, response.status_code)
+
+    def test_post_datasets_not_owner_201(self):
+        collection = self.generate_collection(self.session)
+        test_url = f"/curation/v1/collections/{collection.id}/datasets"
+        headers = self.make_not_owner_header()
+        response = self.app.post(test_url, headers=headers)
+        self.assertEqual(403, response.status_code)
+
+    def test_post_datasets_public_collection_405(self):
+        collection = self.generate_collection(self.session, visibility="PUBLIC")
+        test_url = f"/curation/v1/collections/{collection.id}/datasets"
+        headers = self.make_owner_header()
+        response = self.app.post(test_url, headers=headers)
+        self.assertEqual(405, response.status_code)
+
+    def test_post_datasets_no_auth_401(self):
+        collection = self.generate_collection(self.session, visibility="PUBLIC")
+        test_url = f"/curation/v1/collections/{collection.id}/datasets"
+        response = self.app.post(test_url)
+        self.assertEqual(401, response.status_code)
+
+
 if __name__ == "__main__":
     unittest.main()

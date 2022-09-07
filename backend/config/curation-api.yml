@@ -328,7 +328,34 @@ paths:
           $ref: "#/components/responses/400"
         "404":
           $ref: "#/components/responses/404"
-
+    post:
+      summary: Create a dataset_id to be use in a future upload.
+      description: |
+        Create an new empty Dataset and return the `dataset_id`. The `dataset_id` is used when uploading a Dataset file 
+        to S3 to idenifty what Dataset the file belongs too.
+      operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.datasets.actions.post
+      security:
+        - curatorAccess: []
+      tags:
+        - collection
+      parameters:
+        - $ref: "#/components/parameters/path_collection_id"
+      responses:
+        "201":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  dataset_id:
+                    "$ref": "#/components/schemas/dataset_id"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "405":
+          $ref: "#/components/responses/405"
   /v1/collections/{collection_id}/datasets/upload-link:
     put:
       summary: Upload a Dataset by providing a link
