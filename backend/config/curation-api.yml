@@ -584,6 +584,8 @@ components:
             $ref: "#/components/schemas/dataset_preview"
         description:
           type: string
+        doi:
+          "$ref": "#/components/schemas/doi"
         id:
           "$ref": "#/components/schemas/collection_id"
         links:
@@ -637,6 +639,8 @@ components:
             $ref: "#/components/schemas/dataset"
         description:
           type: string
+        doi:
+          "$ref": "#/components/schemas/doi"
         id:
           "$ref": "#/components/schemas/collection_id"
         links:
@@ -678,6 +682,8 @@ components:
         description:
           description: description of the collection
           type: string
+        doi:
+          "$ref": "#/components/schemas/doi"
         links:
           "$ref": "#/components/schemas/links"
         name:
@@ -799,6 +805,11 @@ components:
         - NORMAL
       type: string
       nullable: true
+    doi:
+      description: Document Object Identifier (DOI). Specifically, only the _CURIE reference_.
+      type: string
+      nullable: true
+      example: "10.1093/ajae/aaq063"
     explorer_url:
       description:
         The url at which a given Dataset may be explored using the cellxgene
@@ -821,11 +832,9 @@ components:
             nullable: true
             type: string
           link_type:
-            description: If the link_type is DOI, then the `link_url` must be a valid DOI link and the `link_name` will be ignored or overwritten if provided. For example, https://doi.org/00.0000/science.abc1234 is a valid DOI `link_url`. All other links types can be any valid URL.
             enum:
               - PROTOCOL
               - RAW_DATA
-              - DOI
               - LAB_WEBSITE
               - OTHER
               - DATA_SOURCE

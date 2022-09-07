@@ -160,7 +160,7 @@ def normalize_and_get_doi(body: dict, errors: list, curie_reference_format_requi
         # Regex below is adapted from https://bioregistry.io/registry/doi 'Pattern for CURIES'
         curie_reference_regex = r"^\d{2}\.\d{4}.*$"
         if not re.match(curie_reference_regex, doi):
-            errors.append({"link_type": ProjectLinkType.DOI.name, "reason": "DOI must be a CURIE reference."})
+            errors.append({"name": "doi", "reason": "DOI must be a CURIE reference."})
             return None
         return f"https://doi.org/{doi}"
 
@@ -234,11 +234,23 @@ def verify_collection_body(body: dict, errors: list) -> None:
     verify_collection_links(body, errors)
 
 
+def handle_curation_doi(body):
+    """
+    Move doi from body to links array to permit processing by legacy pipeline code used by Corpora API
+    :param body: the request body
+    :return: None
+    """
+    if body.get("doi"):
+        links = body.get("links", [])
+        links.append({"link_type": "DOI", "link_url": body.pop("doi")})
+
+
 def create_collection(body: dict, user: str):
     return create_collection_common(body, user)
 
 
 def create_collection_curation(body: dict, user: str):
+    handle_curation_doi(body)
     return create_collection_common(body, user, curie_reference_format_required=True)
 
 
@@ -290,23 +302,13 @@ def delete_collection(collection_id: str, token_info: dict):
     return "", 204
 
 
-def update_collection(collection_id: str, body: dict, token_info: dict):
-    return update_collection_common(collection_id, body, token_info)
-
-
-def update_collection_curation(collection_id: str, body: dict, token_info: dict):
-    return update_collection_common(collection_id, body, token_info, curie_reference_format_required=True)
-
-
 @dbconnect
-def update_collection_common(
-    collection_id: str, body: dict, token_info: dict, curie_reference_format_required: bool = False
-):
+def update_collection(collection_id: str, body: dict, token_info: dict):
     db_session = g.db_session
     collection, errors = get_collection_and_verify_body(db_session, collection_id, body, token_info)
     # Compute the diff between old and new DOI
     old_doi = collection.get_doi()
-    new_doi = normalize_and_get_doi(body, errors, curie_reference_format_required)
+    new_doi = normalize_and_get_doi(body, errors, curie_reference_format_required=False)
     if old_doi and not new_doi:
         # If the DOI was deleted, remove the publisher_metadata field
         collection.update(publisher_metadata=None)
