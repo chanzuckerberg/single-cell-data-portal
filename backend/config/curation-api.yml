@@ -1001,7 +1001,7 @@ components:
         | `"PENDING"` | the Dataset has is still being processed. |
         | `"SUCCESS"` | the Dataset has successfully been processed. |
         | `"VALIDATION_FAILURE"` | An error occured during validation. See `processing_status_detail`|
-        | `"PIPELINE_FAILURE"`| An error occured during processing. See `processing_status_detail` |
+        | `"PIPELINE_FAILURE"`| An error occured during processing. |
       enum:
         - FAILURE
         - PENDING
