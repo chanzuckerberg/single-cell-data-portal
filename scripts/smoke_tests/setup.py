@@ -22,7 +22,7 @@ class SmokeTestsInitializer(BaseFunctionalTestCase):
         res.raise_for_status()
         data = json.loads(res.content)
         num_collections = 0
-        for collection in data["collections"]:
+        for collection in data:
             if collection["contact_name"] == TEST_ACCT_CONTACT_NAME:
                 num_collections += 1
             if num_collections == NUM_TEST_COLLECTIONS:
