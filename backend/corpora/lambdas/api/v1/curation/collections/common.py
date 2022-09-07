@@ -102,7 +102,6 @@ def reshape_dataset_for_curation_api(dataset: dict, preview=False) -> dict:
                 dataset["processing_status"] = "VALIDATION_FAILURE"
             else:
                 dataset["processing_status"] = "PIPELINE_FAILURE"
-                dataset["processing_status_detail"] = "Someone from the CELLxGENE support team will reach out to you."
         else:
             dataset["processing_status"] = processing_status["processing_status"]
     dataset_ontology_elements = DATASET_ONTOLOGY_ELEMENTS_PREVIEW if preview else DATASET_ONTOLOGY_ELEMENTS

@@ -506,10 +506,6 @@ class TestGetCollectionID(BaseAuthAPITest):
         for resp_dataset in res.json["datasets"]:
             if dataset.id == resp_dataset["id"]:
                 self.assertEqual("PIPELINE_FAILURE", resp_dataset["processing_status"])
-                self.assertEqual(
-                    "Someone from the CELLxGENE support team will reach out to you.",
-                    resp_dataset["processing_status_detail"],
-                )
                 break
 
     def test__get_nonexistent_collection__403(self):
