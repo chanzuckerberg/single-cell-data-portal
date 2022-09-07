@@ -379,8 +379,8 @@ paths:
       summary: Upload a Dataset by providing a link
       description: |
         Upload a Dataset. The Dataset will be uploaded from the provided `link` which MUST either be a presigned AWS S3 
-        URL or Dropbox shared file URL.  MAY include the `dataset_id` of an existing Dataset, in which case the 
-        existing Dataset SHALL be replaced and the `curator_tag` field will be ignored.
+        URL or Dropbox shared file URL. MAY include the `dataset_id` of an existing Dataset, in which case the 
+        existing Dataset SHALL be replaced.
 
         * Required: provide your access token in the request header as `Authentication: bearer <access_token>`.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.datasets.upload_link.put
@@ -851,9 +851,6 @@ components:
       properties:
         assay:
           "$ref": "#/components/schemas/dataset_assay"
-        curator_tag:
-          "$ref": "#/components/schemas/curator_tag"
-          nullable: true
         disease:
           "$ref": "#/components/schemas/dataset_disease"
         id:
