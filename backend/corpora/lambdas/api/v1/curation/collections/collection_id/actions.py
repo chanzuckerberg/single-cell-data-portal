@@ -68,7 +68,7 @@ def patch(collection_id: str, body: dict, token_info: dict) -> Response:
     if not keep_links:
         # Compute the diff between old and new DOI
         old_doi = collection.get_doi()
-        new_doi = normalize_and_get_doi(body, errors)
+        new_doi = normalize_and_get_doi(body, errors, curie_reference_format_required=True)
         if new_doi and new_doi != old_doi:
             # If the DOI has changed, fetch and update the metadata
             publisher_metadata = get_publisher_metadata(new_doi, errors)

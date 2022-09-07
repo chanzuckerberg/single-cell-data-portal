@@ -136,7 +136,7 @@ def post_collection_revision(collection_id: str, token_info: dict):
 doi_regex = re.compile(r"^10.\d{4,9}/[-._;()/:A-Z0-9]+$", flags=re.I)
 
 
-def normalize_and_get_doi(body: dict, errors: list) -> Optional[str]:
+def normalize_and_get_doi(body: dict, errors: list, curie_reference_format_required: bool) -> Optional[str]:
     """
     1. Check for DOI uniqueness in the payload
     2. Normalizes it so that the DOI is always a link (starts with https://doi.org)
@@ -155,6 +155,14 @@ def normalize_and_get_doi(body: dict, errors: list) -> Optional[str]:
 
     doi_node = dois[0]
     doi = doi_node["link_url"]
+
+    if curie_reference_format_required:
+        # Regex below is adapted from https://bioregistry.io/registry/doi 'Pattern for CURIES'
+        curie_reference_regex = r"^\d{2}\.\d{4}.*$"
+        if not re.match(curie_reference_regex, doi):
+            errors.append({"link_type": ProjectLinkType.DOI.name, "reason": "DOI must be a CURIE reference."})
+            return None
+        return f"https://doi.org/{doi}"
 
     parsed = urlparse(doi)
     if not parsed.scheme and not parsed.netloc:
@@ -226,12 +234,20 @@ def verify_collection_body(body: dict, errors: list) -> None:
     verify_collection_links(body, errors)
 
 
-@dbconnect
 def create_collection(body: dict, user: str):
+    return create_collection_common(body, user)
+
+
+def create_collection_curation(body: dict, user: str):
+    return create_collection_common(body, user, curie_reference_format_required=True)
+
+
+@dbconnect
+def create_collection_common(body: dict, user: str, curie_reference_format_required: bool = False):
     db_session = g.db_session
     errors = []
     verify_collection_body(body, errors)
-    doi = normalize_and_get_doi(body, errors)
+    doi = normalize_and_get_doi(body, errors, curie_reference_format_required)
     if doi is not None:
         publisher_metadata = get_publisher_metadata(doi, errors)
     else:
@@ -274,13 +290,23 @@ def delete_collection(collection_id: str, token_info: dict):
     return "", 204
 
 
-@dbconnect
 def update_collection(collection_id: str, body: dict, token_info: dict):
+    return update_collection_common(collection_id, body, token_info)
+
+
+def update_collection_curation(collection_id: str, body: dict, token_info: dict):
+    return update_collection_common(collection_id, body, token_info, curie_reference_format_required=True)
+
+
+@dbconnect
+def update_collection_common(
+    collection_id: str, body: dict, token_info: dict, curie_reference_format_required: bool = False
+):
     db_session = g.db_session
     collection, errors = get_collection_and_verify_body(db_session, collection_id, body, token_info)
     # Compute the diff between old and new DOI
     old_doi = collection.get_doi()
-    new_doi = normalize_and_get_doi(body, errors)
+    new_doi = normalize_and_get_doi(body, errors, curie_reference_format_required)
     if old_doi and not new_doi:
         # If the DOI was deleted, remove the publisher_metadata field
         collection.update(publisher_metadata=None)

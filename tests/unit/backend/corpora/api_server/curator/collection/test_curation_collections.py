@@ -92,14 +92,15 @@ class TestPostCollection(BaseAuthAPITest):
                     description="",
                     contact_name="",
                     contact_email="@email.com",
-                    links=[{"link_type": "DOI", "link_url": "bad_doi"}],
+                    # links=[{"link_type": "DOI", "link_url": "bad_doi"}],
+                    links=[{"link_type": "DOI", "link_url": "10.111/not_curie_reference_format"}],
                 ),
                 [
                     {"name": "contact_email", "reason": "Invalid format."},
                     {"name": "description", "reason": "Cannot be blank."},
                     {"name": "name", "reason": "Cannot be blank."},
                     {"name": "contact_name", "reason": "Cannot be blank."},
-                    {"link_type": "DOI", "reason": "Invalid DOI"},
+                    {"link_type": "DOI", "reason": "DOI must be a CURIE reference."},
                 ],
             ),
             (
@@ -628,7 +629,7 @@ class TestPatchCollectionID(BaseAuthAPITest):
         ]
         new_links = [
             {"link_name": "new link", "link_type": "RAW_DATA", "link_url": "http://brand_new_link.place"},
-            {"link_name": "new doi", "link_type": "DOI", "link_url": "http://doi.org/10.1016"},  # a real DOI
+            {"link_name": "new doi", "link_type": "DOI", "link_url": "10.1016"},  # a real DOI (CURIE reference)
         ]
 
         links_configurations = (
