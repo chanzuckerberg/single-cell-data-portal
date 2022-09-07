@@ -4,6 +4,7 @@ from backend.corpora.lambdas.api.v1.collection import (
     get_collection_and_verify_body,
     get_publisher_metadata,
     normalize_and_get_doi,
+    handle_curation_doi,
 )
 from ..common import (
     reshape_for_curation_api,
@@ -68,6 +69,7 @@ def patch(collection_id: str, body: dict, token_info: dict) -> Response:
     if not keep_links:
         # Compute the diff between old and new DOI
         old_doi = collection.get_doi()
+        handle_curation_doi(body)
         new_doi = normalize_and_get_doi(body, errors, curie_reference_format_required=True)
         if new_doi and new_doi != old_doi:
             # If the DOI has changed, fetch and update the metadata
