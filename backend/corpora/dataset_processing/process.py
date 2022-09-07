@@ -711,8 +711,10 @@ def main():
             update_db(dataset_id, processing_status=status)
         else:
             if step_name == "download-validate":
-                update_db(dataset_id, processing_status={"validation_status": ValidationStatus.INVALID,
-                                                         "validation_message": e})
+                update_db(
+                    dataset_id,
+                    processing_status={"validation_status": ValidationStatus.INVALID, "validation_message": e},
+                )
             elif step_name == "seurat":
                 update_db(dataset_id, processing_status={"rds_status": ConversionStatus.FAILED})
             elif step_name == "cxg":
