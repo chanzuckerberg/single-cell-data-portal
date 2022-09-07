@@ -729,7 +729,6 @@ components:
           nullable: true
           type: integer
         cell_type:
-          "$ref": "#/components/schemas/ontology_elements"
           description: |
             [cell type label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#cell_type)
           default: []
