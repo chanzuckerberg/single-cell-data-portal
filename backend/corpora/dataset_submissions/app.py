@@ -10,15 +10,10 @@ from backend.corpora.common.entities import Dataset, Collection
 from backend.corpora.common.upload import upload
 from backend.corpora.common.utils.db_session import db_session_manager
 from backend.corpora.common.utils.exceptions import CorporaException
-from backend.corpora.common.utils.regex import (
-    USERNAME_REGEX,
-    COLLECTION_ID_REGEX,
-    DATASET_ID_REGEX,
-    CURATOR_TAG_REGEX,
-)
+from backend.corpora.common.utils.regex import USERNAME_REGEX, COLLECTION_ID_REGEX, DATASET_ID_REGEX
 
 logger = logging.getLogger(__name__)
-REGEX = f"^{USERNAME_REGEX}/{COLLECTION_ID_REGEX}/({DATASET_ID_REGEX}|{CURATOR_TAG_REGEX})$"
+REGEX = f"^{USERNAME_REGEX}/{COLLECTION_ID_REGEX}/{DATASET_ID_REGEX}$"
 
 
 def dataset_submissions_handler(s3_event: dict, unused_context) -> None:

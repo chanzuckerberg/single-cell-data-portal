@@ -53,21 +53,6 @@ class TestDatasetSubmissions(TestCase):
         mock_dataset_get.return_value = make_dataset_mock("now_owner", self.dataset_id)
         self._test_types()
 
-    @patch("backend.corpora.dataset_submissions.app.Dataset.get_dataset_from_curator_tag")
-    def test__upload_new_tag__OK(self, mock_get_dataset_from_curator_tag: Mock):
-        """processing starts when a new dataset is upload using a curator tag."""
-        tag = self.incoming_curator_tag
-        mock_dataset = make_dataset_mock(self.user_name, self.dataset_id)
-        mock_get_dataset_from_curator_tag.return_value = mock_dataset
-        with self.subTest("owner"), patch("backend.corpora.dataset_submissions.app.upload") as mock_upload:
-            s3_event = create_s3_event(key=f"{self.user_name}/{self.collection_id}/{tag}")
-            dataset_submissions_handler(s3_event, None)
-            mock_upload.assert_called()
-        with self.subTest("super"), patch("backend.corpora.dataset_submissions.app.upload") as mock_upload:
-            s3_event = create_s3_event(key=f"super/{self.collection_id}/{tag}")
-            dataset_submissions_handler(s3_event, None)
-            mock_upload.assert_called()
-
     @patch("backend.corpora.dataset_submissions.app.Dataset.get")
     def test__upload_new_by_dataset_id__Error(self, mock_get_dataset: Mock):
         """processing fails when a new dataset is uploaded using a dataset uuid that is not part of the collection."""
@@ -88,20 +73,6 @@ class TestDatasetSubmissions(TestCase):
             mock_upload.assert_called()
         with self.subTest("super"), patch("backend.corpora.dataset_submissions.app.upload") as mock_upload:
             s3_event = create_s3_event(key=f"super/{self.collection_id}/{self.dataset_id_in_s3}")
-            dataset_submissions_handler(s3_event, None)
-            mock_upload.assert_called()
-
-    @patch("backend.corpora.dataset_submissions.app.Dataset.get_dataset_from_curator_tag")
-    def test__upload_update_by_tag__OK(self, mock_get_dataset_from_curator_tag):
-        """processing starts when an update of a dataset is uploaded by its tag."""
-        mock_dataset = make_dataset_mock(self.user_name, self.dataset_id)
-        mock_get_dataset_from_curator_tag.return_value = mock_dataset
-        with self.subTest("owner"), patch("backend.corpora.dataset_submissions.app.upload") as mock_upload:
-            s3_event = create_s3_event(key=f"{self.user_name}/{self.collection_id}/{self.incoming_curator_tag}")
-            dataset_submissions_handler(s3_event, None)
-            mock_upload.assert_called()
-        with self.subTest("super"), patch("backend.corpora.dataset_submissions.app.upload") as mock_upload:
-            s3_event = create_s3_event(key=f"super/{self.collection_id}/{self.incoming_curator_tag}")
             dataset_submissions_handler(s3_event, None)
             mock_upload.assert_called()
 

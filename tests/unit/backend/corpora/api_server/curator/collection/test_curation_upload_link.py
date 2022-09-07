@@ -82,19 +82,6 @@ class TestPutLink(BaseAuthAPITest):
             response = self._test_existing(headers, use_curator_tag=True)
             self.assertEqual(202, response.status_code)
 
-    def test__curator_tag_ignored_when_dataset_id_is_present__OK(self, *mocks):
-        headers = self.make_owner_header()
-        headers["Content-Type"] = "application/json"
-        collection = self.generate_collection(self.session)
-        processing_status = dict(processing_status=ProcessingStatus.SUCCESS)
-        dataset = self.generate_dataset(self.session, collection_id=collection.id, processing_status=processing_status)
-
-        body = {"id": dataset.id, "link": self.good_link}
-        response = self.app.put(
-            f"/curation/v1/collections/{collection.id}/datasets/upload-link", data=json.dumps(body), headers=headers
-        )
-        self.assertEqual(202, response.status_code)
-
 
 if __name__ == "__main__":
     unittest.main()
