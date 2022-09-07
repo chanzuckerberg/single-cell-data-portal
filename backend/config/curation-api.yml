@@ -34,7 +34,7 @@ paths:
             type: string
             example: "<YOUR-CURATOR-API-KEY>"
           required: true
-          description: Your curation API key. A curator key can be generated using the CELLxGENE Discover UI.
+          description: Your curation API key.```
       responses:
         "201":
           description: Created
