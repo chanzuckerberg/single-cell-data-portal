@@ -827,7 +827,8 @@ components:
         processing_status_detail:
           type: string
           description: |
-            This field will be populated if an error that prevents the Dataset from being fully processed.
+            When `processing_status` is set to VALIDATION_FAILURE, further details about the validation failures for 
+            the dataset can be found in `processing_status_detail`.
           nullable: true
         revised_at:
           "$ref": "#/components/schemas/dataset_revised_at"
