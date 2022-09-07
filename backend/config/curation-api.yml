@@ -998,13 +998,11 @@ components:
         Processing status for a Dataset
         | `processing_status` | Description |
         | ------------------- | ----------- |
-        | `"FAILURE"` | the Dataset ran into an error during processing. See processing_status logs for more info. |
         | `"PENDING"` | the Dataset has is still being processed. |
         | `"SUCCESS"` | the Dataset has successfully been processed. |
         | `"VALIDATION_FAILURE"` | An error occured during validation. See `processing_status_detail`|
         | `"PIPELINE_FAILURE"`| An error occured during processing. |
       enum:
-        - FAILURE
         - PENDING
         - SUCCESS
         - VALIDATION_FAILURE
