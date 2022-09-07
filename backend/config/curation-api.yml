@@ -52,7 +52,7 @@ paths:
     get:
       summary: List Collections' metadata.
       description: |
-        For each Collection in the list, the datasets for that Collection include a subset of Dataset metadata as a 
+        For each Collection in the list, the Datasets for that Collection include a subset of Dataset metadata as a 
         preview. To retrieve full Dataset metadata for a specific Collection, GET /v1/collections/{collection_id} must 
         be used.
 
