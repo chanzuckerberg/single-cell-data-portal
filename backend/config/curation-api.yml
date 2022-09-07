@@ -831,6 +831,11 @@ components:
           "$ref": "#/components/schemas/dataset_organism"
         processing_status:
           "$ref": "#/components/schemas/processing_status_dataset"
+        processing_status_detail:
+          type: string
+          description: |
+            This field will be populated if an error that prevents the dataset from being fully processed.
+          nullable: true
         revised_at:
           "$ref": "#/components/schemas/dataset_revised_at"
         revision:
@@ -1006,6 +1011,8 @@ components:
         | `"FAILURE"` | the Dataset ran into an error during processing. See processing_status logs for more info. |
         | `"PENDING"` | the Dataset has is still being processed. |
         | `"SUCCESS"` | the Dataset has successfully been processed. |
+        | `"VALIDATION_FAILURE"` | An error occured during validation. See `processing_status_detail`|
+        | `"PIPELINE_FAILURE"`| An error occured during processing. See `processing_status_detail` |
       enum:
         - FAILURE
         - PENDING
