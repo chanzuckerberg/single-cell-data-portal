@@ -32,7 +32,7 @@ class TestIntegratedCorpusSchema(unittest.TestCase):
             corpus_path = f"{corpus_dir}/test_corpus"
             create_tdb_integrated_corpus(corpus_path)
             obs_schema = tiledb.ArraySchema.load(f"{corpus_path}/obs")
-            self.assertEqual(obs_schema.domain.ndim, 3)
+            self.assertEqual(obs_schema.domain.ndim, 4)
             self.assertTrue(obs_schema.domain.has_dim("dataset_id"))
             self.assertTrue(obs_schema.domain.has_dim("cell_type_ontology_term_id"))
             self.assertTrue(obs_schema.domain.has_dim("tissue_ontology_term_id"))
@@ -42,7 +42,7 @@ class TestIntegratedCorpusSchema(unittest.TestCase):
             corpus_path = f"{corpus_dir}/test_corpus"
             create_tdb_integrated_corpus(corpus_path)
             obs_schema = tiledb.ArraySchema.load(f"{corpus_path}/obs")
-            self.assertEqual(obs_schema.nattr, 15)
+            self.assertEqual(obs_schema.nattr, 16)
             self.assertTrue(obs_schema.has_attr("obs_idx"))
             self.assertTrue(obs_schema.has_attr("cell_type"))
             self.assertTrue(obs_schema.has_attr("assay"))
