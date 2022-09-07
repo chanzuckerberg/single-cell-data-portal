@@ -34,7 +34,7 @@ paths:
             type: string
             example: "<YOUR-CURATOR-API-KEY>"
           required: true
-          description: Your curation API key. A curator key can be generated using the CELLxGENE Discover UI.
+          description: Your curation API key.```
       responses:
         "201":
           description: Created
@@ -52,15 +52,12 @@ paths:
     get:
       summary: List Collections' metadata.
       description: |
-        For each Collection in the list, the datasets for that Collection include a subset of dataset metadata as a 
-        preview.To retrieve full dataset metadata for a specific Collection, GET /v1/collections/{collection_id} must 
+        For each Collection in the list, the Datasets for that Collection include a subset of Dataset metadata as a 
+        preview. To retrieve full Dataset metadata for a specific Collection, GET /v1/collections/{collection_id} must 
         be used.
 
         The default `visibility` is PUBLIC. When visibility is PUBLIC, then a list of all public Collections is 
         returned. 
-
-        If a Collection was published and then deleted, then it is annotated with `tombstone` set to True.
-        An access token MAY be set in the request header as:
 
         When the visibility parameter is set to PRIVATE, a list of all private Collections or private revisions of 
         public Collections that the user is authorized to access is returned. An access token MUST be set in the request
@@ -183,7 +180,7 @@ paths:
         request, these fields will be updated for the specified Collection. If links are included, they will fully
         replace all existing links. CELLxGENE Discover queries **Crossref** (link to their site) for the publication 
         metadata of the DOI such as the list of authors. If the DOI has not been submitted to Crossref by its 
-        publisher, then the request returns a 400 (BAD REQUEST.
+        publisher, then the request returns a 400 (BAD REQUEST).
 
         * Optional: provide your access token in the request header as `Authentication: bearer <access_token>`.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.actions.patch
@@ -641,8 +638,6 @@ components:
           "$ref": "#/components/schemas/collection_revising_in"
         revision_of:
           "$ref": "#/components/schemas/collection_revision_of"
-        tombstone:
-          "$ref": "#/components/schemas/collection_tombstone"
         visibility:
           "$ref": "#/components/schemas/visibility"
       type: object
@@ -736,8 +731,6 @@ components:
           "$ref": "#/components/schemas/collection_revising_in"
         revision_of:
           "$ref": "#/components/schemas/collection_revision_of"
-        tombstone:
-          "$ref": "#/components/schemas/collection_tombstone"
         visibility:
           "$ref": "#/components/schemas/visibility"
       type: object
@@ -834,7 +827,8 @@ components:
         processing_status_detail:
           type: string
           description: |
-            This field will be populated if an error that prevents the dataset from being fully processed.
+            When `processing_status` is set to VALIDATION_FAILURE, further details about the validation failures for 
+            the dataset can be found in `processing_status_detail`.
           nullable: true
         revised_at:
           "$ref": "#/components/schemas/dataset_revised_at"
@@ -856,8 +850,6 @@ components:
           type: array
         tissue:
           "$ref": "#/components/schemas/dataset_tissue"
-        tombstone:
-          "$ref": "#/components/schemas/dataset_tombstone"
         x_approximate_distribution:
           "$ref": "#/components/schemas/distribution"
       type: object
@@ -911,8 +903,6 @@ components:
           "$ref": "#/components/schemas/dataset_organism"
         tissue:
           "$ref": "#/components/schemas/dataset_tissue"
-        tombstone:
-          "$ref": "#/components/schemas/dataset_tombstone"
       type: object
     distribution:
       description:
@@ -1012,7 +1002,7 @@ components:
         | `"PENDING"` | the Dataset has is still being processed. |
         | `"SUCCESS"` | the Dataset has successfully been processed. |
         | `"VALIDATION_FAILURE"` | An error occured during validation. See `processing_status_detail`|
-        | `"PIPELINE_FAILURE"`| An error occured during processing. See `processing_status_detail` |
+        | `"PIPELINE_FAILURE"`| An error occured during processing. |
       enum:
         - FAILURE
         - PENDING
