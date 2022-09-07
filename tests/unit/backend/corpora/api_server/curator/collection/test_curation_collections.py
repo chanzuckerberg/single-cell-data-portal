@@ -320,7 +320,6 @@ class TestGetCollections(BaseAuthAPITest):
             self.check_fields(collections_cols, resp_collection, f"{subtest_prefix}:collection")
 
         _test(True)
-        _test(False)
 
     def check_fields(self, fields: list, response: dict, entity: str):
         for key in fields:
