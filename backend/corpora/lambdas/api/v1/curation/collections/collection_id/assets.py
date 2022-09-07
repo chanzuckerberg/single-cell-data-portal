@@ -23,17 +23,17 @@ def get(collection_id: str, dataset_id=None):
         asset = DatasetAsset(a)
         if asset.filetype == DatasetArtifactFileType.CXG:
             continue
-        result = dict(file_type=asset.filetype, file_name=asset.filename)
+        result = dict(filetype=asset.filetype, filename=asset.filename)
 
         # Retrieve S3 metadata
-        file_size = asset.get_file_size()
-        if not file_size:
-            result["file_size"] = -1
+        filesize = asset.get_file_size()
+        if not filesize:
+            result["filesize"] = -1
             asset_list.append(result)
             error_flag = True
             continue
         else:
-            result["file_size"] = file_size
+            result["filesize"] = filesize
 
         # Generate pre-signed URL
         presigned_url = asset.generate_file_url()
