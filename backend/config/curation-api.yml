@@ -52,8 +52,8 @@ paths:
     get:
       summary: List Collections' metadata.
       description: |
-        For each Collection in the list, the datasets for that Collection include a subset of dataset metadata as a 
-        preview.To retrieve full dataset metadata for a specific Collection, GET /v1/collections/{collection_id} must 
+        For each Collection in the list, the datasets for that Collection include a subset of Dataset metadata as a 
+        preview.To retrieve full Dataset metadata for a specific Collection, GET /v1/collections/{collection_id} must 
         be used.
 
         The default `visibility` is PUBLIC. When visibility is PUBLIC, then a list of all public Collections is 
