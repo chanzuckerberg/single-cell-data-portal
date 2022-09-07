@@ -59,9 +59,6 @@ paths:
         The default `visibility` is PUBLIC. When visibility is PUBLIC, then a list of all public Collections is 
         returned. 
 
-        If a Collection was published and then deleted, then it is annotated with `tombstone` set to True.
-        An access token MAY be set in the request header as:
-
         When the visibility parameter is set to PRIVATE, a list of all private Collections or private revisions of 
         public Collections that the user is authorized to access is returned. An access token MUST be set in the request
         header as: `Authentication: bearer <access_token>`
@@ -641,8 +638,6 @@ components:
           "$ref": "#/components/schemas/collection_revising_in"
         revision_of:
           "$ref": "#/components/schemas/collection_revision_of"
-        tombstone:
-          "$ref": "#/components/schemas/collection_tombstone"
         visibility:
           "$ref": "#/components/schemas/visibility"
       type: object
@@ -736,8 +731,6 @@ components:
           "$ref": "#/components/schemas/collection_revising_in"
         revision_of:
           "$ref": "#/components/schemas/collection_revision_of"
-        tombstone:
-          "$ref": "#/components/schemas/collection_tombstone"
         visibility:
           "$ref": "#/components/schemas/visibility"
       type: object
@@ -831,6 +824,11 @@ components:
           "$ref": "#/components/schemas/dataset_organism"
         processing_status:
           "$ref": "#/components/schemas/processing_status_dataset"
+        processing_status_detail:
+          type: string
+          description: |
+            This field will be populated if an error that prevents the dataset from being fully processed.
+          nullable: true
         revised_at:
           "$ref": "#/components/schemas/dataset_revised_at"
         revision:
@@ -851,8 +849,6 @@ components:
           type: array
         tissue:
           "$ref": "#/components/schemas/dataset_tissue"
-        tombstone:
-          "$ref": "#/components/schemas/dataset_tombstone"
         x_approximate_distribution:
           "$ref": "#/components/schemas/distribution"
       type: object
@@ -906,8 +902,6 @@ components:
           "$ref": "#/components/schemas/dataset_organism"
         tissue:
           "$ref": "#/components/schemas/dataset_tissue"
-        tombstone:
-          "$ref": "#/components/schemas/dataset_tombstone"
       type: object
     distribution:
       description:
@@ -1006,6 +1000,8 @@ components:
         | `"FAILURE"` | the Dataset ran into an error during processing. See processing_status logs for more info. |
         | `"PENDING"` | the Dataset has is still being processed. |
         | `"SUCCESS"` | the Dataset has successfully been processed. |
+        | `"VALIDATION_FAILURE"` | An error occured during validation. See `processing_status_detail`|
+        | `"PIPELINE_FAILURE"`| An error occured during processing. See `processing_status_detail` |
       enum:
         - FAILURE
         - PENDING
