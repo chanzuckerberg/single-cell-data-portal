@@ -180,7 +180,7 @@ paths:
         request, these fields will be updated for the specified Collection. If links are included, they will fully
         replace all existing links. CELLxGENE Discover queries **Crossref** (link to their site) for the publication 
         metadata of the DOI such as the list of authors. If the DOI has not been submitted to Crossref by its 
-        publisher, then the request returns a 400 (BAD REQUEST.
+        publisher, then the request returns a 400 (BAD REQUEST).
 
         * Optional: provide your access token in the request header as `Authentication: bearer <access_token>`.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.actions.patch
