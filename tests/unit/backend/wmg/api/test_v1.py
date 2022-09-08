@@ -184,16 +184,16 @@ class WmgApiV1Tests(unittest.TestCase):
             expected_cell_count_per_cell_type = dim_size ** len(
                 set(cube_non_indexed_dims).difference({"cell_type_ontology_term_id"})
             )
-            assert expected_cell_count_per_cell_type == 2187
+            assert expected_cell_count_per_cell_type == 729
 
-            # there are 2187 possible combinations per tissue-cell type given the above filtering criteria,
-            # and 10 cells per type in the cell counts cube, so we expect 21870 total cells per tissue-cell type
+            # there are 729 possible combinations per tissue-cell type given the above filtering criteria,
+            # and 10 cells per type in the cell counts cube, so we expect 7290 total cells per tissue-cell type
 
             expected_combinations_per_cell_type = dim_size ** len(
                 set(cube_non_indexed_dims).difference({"cell_type_ontology_term_id"})
             )
             expected_n_cells_per_cell_type = expected_combinations_per_cell_type * 10
-            assert expected_n_cells_per_cell_type == 21870
+            assert expected_n_cells_per_cell_type == 7290
 
             expected = {
                 "snapshot_id": "dummy-snapshot",
@@ -458,7 +458,7 @@ class WmgApiV1Tests(unittest.TestCase):
                     {
                         "cell_type": "cell_type_ontology_term_id_0_label",
                         "cell_type_ontology_term_id": "cell_type_ontology_term_id_0",
-                        "total_count": expected_count * 128, # this number needs to be 128
+                        "total_count": expected_count * 128,
                         "depth": 0,
                     },
                     {
