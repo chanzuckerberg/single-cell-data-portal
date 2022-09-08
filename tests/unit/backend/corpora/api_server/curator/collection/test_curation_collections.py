@@ -85,46 +85,24 @@ class TestPostCollection(BaseAuthAPITest):
         self.assertEqual(201, response.status_code)
 
     def test__create_collection__InvalidParameters(self):
-        tests = [
-            (
-                dict(
-                    name="",
-                    description="",
-                    contact_name="",
-                    contact_email="@email.com",
-                    # links=[{"link_type": "DOI", "link_url": "bad_doi"}],
-                    links=[{"link_type": "DOI", "link_url": "10.111/not_curie_reference_format"}],
-                ),
-                [
-                    {"name": "contact_email", "reason": "Invalid format."},
-                    {"name": "description", "reason": "Cannot be blank."},
-                    {"name": "name", "reason": "Cannot be blank."},
-                    {"name": "contact_name", "reason": "Cannot be blank."},
-                    {"link_type": "DOI", "reason": "DOI must be a CURIE reference."},
-                ],
-            ),
-            (
-                dict(
-                    name="not blank",
-                    description="description",
-                    contact_name="some name",
-                    contact_email="robot@email.com",
-                    links=[
-                        {"link_type": "DOI", "link_url": "doi:duplicated"},
-                        {"link_type": "DOI", "link_url": "doi:duplicated"},
-                    ],
-                ),
-                [{"link_type": "DOI", "reason": "Can only specify a single DOI"}],
-            ),
+        body = dict(
+            name="",
+            description="",
+            contact_name="",
+            contact_email="@email.com",
+            doi="10.111/not_curie_reference_format",
+        )
+        expected_errors = [
+            {"name": "contact_email", "reason": "Invalid format."},
+            {"name": "description", "reason": "Cannot be blank."},
+            {"name": "name", "reason": "Cannot be blank."},
+            {"name": "contact_name", "reason": "Cannot be blank."},
+            {"name": "doi", "reason": "DOI must be a CURIE reference."},
         ]
-        for body, expected_errors in tests:
-            with self.subTest(body):
-                response = self.app.post(
-                    "/curation/v1/collections", headers=self.make_owner_header(), data=json.dumps(body)
-                )
-                self.assertEqual(400, response.status_code)
-                for error in expected_errors:
-                    self.assertIn(error, response.json["detail"])
+        response = self.app.post("/curation/v1/collections", headers=self.make_owner_header(), data=json.dumps(body))
+        self.assertEqual(400, response.status_code)
+        for error in expected_errors:
+            self.assertIn(error, response.json["detail"])
 
 
 class TestGetCollections(BaseAuthAPITest):
@@ -277,6 +255,7 @@ class TestGetCollections(BaseAuthAPITest):
         collections_cols.remove("tombstone")
         collections_cols.append("processing_status")
         collections_cols.append("collection_url")
+        collections_cols.append("doi")
         self.check_fields(collections_cols, resp_collection, "collection")
 
     def test__verify_expected_private_collection_fields(self):
@@ -317,6 +296,7 @@ class TestGetCollections(BaseAuthAPITest):
             collections_cols.remove("owner")
             collections_cols.append("processing_status")
             collections_cols.append("collection_url")
+            collections_cols.append("doi")
             self.check_fields(collections_cols, resp_collection, f"{subtest_prefix}:collection")
 
         _test(True)
@@ -395,10 +375,11 @@ class TestGetCollectionID(BaseAuthAPITest):
             }
         ],
         "description": "test_description",
+        "doi": "",
         "id": "test_collection_id",
         "links": [
-            {"link_name": "test_doi_link_name", "link_type": "DOI", "link_url": "http://test_doi_url.place"},
-            {"link_name": None, "link_type": "DOI", "link_url": "http://test_no_link_name_doi_url.place"},
+            # {"link_name": "test_doi_link_name", "link_type": "DOI", "link_url": "http://test_doi_url.place"},
+            # {"link_name": None, "link_type": "DOI", "link_url": "http://test_no_link_name_doi_url.place"},
             {
                 "link_name": "test_raw_data_link_name",
                 "link_type": "RAW_DATA",
@@ -621,15 +602,15 @@ class TestPatchCollectionID(BaseAuthAPITest):
                 )
                 self.assertEqual(400, response.status_code)
 
-    def test__update_collection__links_and_doi_management__OK(self):
+    def test__update_collection__links__OK(self):
         name = "partial updates test collection"
         links = [
             {"link_name": "name", "link_type": "RAW_DATA", "link_url": "http://test_link.place"},
-            {"link_name": "doi", "link_type": "DOI", "link_url": "http://doi.doi"},
+            # {"link_name": "doi", "link_type": "DOI", "link_url": "http://doi.doi"},
         ]
         new_links = [
             {"link_name": "new link", "link_type": "RAW_DATA", "link_url": "http://brand_new_link.place"},
-            {"link_name": "new doi", "link_type": "DOI", "link_url": "10.1016"},  # a real DOI (CURIE reference)
+            # {"link_name": "new doi", "link_type": "DOI", "link_url": "10.1016"},  # a real DOI (CURIE reference)
         ]
 
         links_configurations = (
@@ -659,11 +640,11 @@ class TestPatchCollectionID(BaseAuthAPITest):
         name = "bad doi update test collection"
         links = [
             {"link_name": "name", "link_type": "RAW_DATA", "link_url": "http://test_link.place"},
-            {"link_name": "doi", "link_type": "DOI", "link_url": "http://doi.doi"},
+            {"link_name": "doi", "link_type": "DOI", "link_url": "http://doi.doi/10.1011/something"},
         ]
-        new_links_bad_doi = [
+        new_links = [
             {"link_name": "new link", "link_type": "RAW_DATA", "link_url": "http://brand_new_link.place"},
-            {"link_name": "new doi", "link_type": "DOI", "link_url": "http://a_bad_doi"},  # a bad DOI
+            # {"link_name": "new doi", "link_type": "DOI", "link_url": "http://a_bad_doi"},  # a bad DOI
         ]
         publisher_metadata = {
             "authors": [{"name": "First Last", "given": "First", "family": "Last"}],
@@ -681,8 +662,10 @@ class TestPatchCollectionID(BaseAuthAPITest):
             )
             collection_id = collection.id
             original_collection = self.app.get(f"curation/v1/collections/{collection_id}").json
-            self.assertEqual(links, original_collection["links"])
-            metadata = {"links": new_links_bad_doi}
+
+            # Only compare to first item in links list because "DOI" type gets removed from Curator API response
+            self.assertEqual(links[:1], original_collection["links"])
+            metadata = {"links": new_links, "doi": "10.1016/bad_doi"}
             response = self.app.patch(
                 f"/curation/v1/collections/{collection_id}",
                 data=json.dumps(metadata),
@@ -691,7 +674,8 @@ class TestPatchCollectionID(BaseAuthAPITest):
             self.assertEqual(400, response.status_code)
             original_collection_unchanged = self.app.get(f"curation/v1/collections/{collection_id}").json
             self.assertEqual(name, original_collection_unchanged["name"])
-            self.assertEqual(links, original_collection_unchanged["links"])
+            # Only compare to first item in links list because "DOI" type gets removed from Curator API response
+            self.assertEqual(links[:1], original_collection_unchanged["links"])
             self.assertEqual(publisher_metadata, original_collection_unchanged["publisher_metadata"])
 
     def test__update_collection__Not_Owner(self):

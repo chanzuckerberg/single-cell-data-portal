@@ -1,6 +1,7 @@
 import typing
 
 from sqlalchemy.orm import Session
+from urllib.parse import urlparse
 
 from ...authorization import is_user_owner_or_allowed
 from ......common.corpora_config import CorporaConfig
@@ -15,6 +16,7 @@ from ......common.corpora_orm import (
     ProcessingStatus,
     Base,
     IsPrimaryData,
+    ProjectLinkType,
 )
 
 
@@ -57,6 +59,21 @@ def reshape_for_curation_api(
     resp_collection["collection_url"] = f"{CorporaConfig().collections_base_url}/collections/{collection.id}"
     if datasets := resp_collection.get("datasets"):
         resp_collection["datasets"] = reshape_datasets_for_curation_api(datasets, preview)
+
+    resp_collection["doi"] = None
+    if links := resp_collection.get("links"):
+        resp_links = []
+        found_doi_flag = False
+        for link in links:
+            if link["link_type"] == ProjectLinkType.DOI:
+                if not found_doi_flag:  # Legacy, handle situation where Collection has multiple DOI links
+                    doi = link["link_url"]
+                    found_doi_flag = True
+                    resp_collection["doi"] = urlparse(doi).path.strip("/")
+            else:
+                resp_links.append(link)
+        resp_collection["links"] = resp_links
+
     return resp_collection
 
 

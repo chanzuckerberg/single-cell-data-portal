@@ -160,7 +160,7 @@ def normalize_and_get_doi(body: dict, errors: list, curie_reference_format_requi
         # Regex below is adapted from https://bioregistry.io/registry/doi 'Pattern for CURIES'
         curie_reference_regex = r"^\d{2}\.\d{4}.*$"
         if not re.match(curie_reference_regex, doi):
-            errors.append({"name": "doi", "reason": "DOI must be a CURIE reference."})
+            errors.append({"name": ProjectLinkType.DOI.value, "reason": "DOI must be a CURIE reference."})
             return None
         return f"https://doi.org/{doi}"
 
@@ -242,7 +242,8 @@ def handle_curation_doi(body):
     """
     if body.get("doi"):
         links = body.get("links", [])
-        links.append({"link_type": "DOI", "link_url": body.pop("doi")})
+        links.append({"link_type": ProjectLinkType.DOI.name, "link_url": body.pop("doi")})
+        body["links"] = links
 
 
 def create_collection(body: dict, user: str):
