@@ -132,14 +132,14 @@ class Validation:
     def validate_housekeeping_gene_expression_levels(self, path_to_cell_count_cube):
         with tiledb.open(path_to_cell_count_cube, "r") as cell_count_cube:
             human_ontology_id = fixtures.validation_species_ontologies["human"]
-            cell_count_human = cell_count_cube.df[:, human_ontology_id:human_ontology_id].n_cells.sum()
+            cell_count_human = cell_count_cube.df[:, :, human_ontology_id:human_ontology_id].n_cells.sum()
             with tiledb.open(self.expression_summary_path) as cube:
                 MALAT1_ont_id = fixtures.validation_gene_ontologies["MALAT1"]
                 MALAT1_human_expression_cube = cube.df[
-                    MALAT1_ont_id:MALAT1_ont_id, :, human_ontology_id:human_ontology_id
+                    MALAT1_ont_id:MALAT1_ont_id, :, :, human_ontology_id:human_ontology_id
                 ]
                 ACTB_ont_id = fixtures.validation_gene_ontologies["ACTB"]
-                ACTB_human_expression_cube = cube.df[ACTB_ont_id:ACTB_ont_id, :, human_ontology_id:human_ontology_id]
+                ACTB_human_expression_cube = cube.df[ACTB_ont_id:ACTB_ont_id, :, :, human_ontology_id:human_ontology_id]
                 MALAT1_cell_count = MALAT1_human_expression_cube.nnz.sum()
                 ACTB_cell_count = ACTB_human_expression_cube.nnz.sum()
                 # Most cells should express both genes, more cells should express MALAT1
@@ -168,10 +168,10 @@ class Validation:
             female_ontology_id = fixtures.validation_sex_ontologies["female"]
             male_ontology_id = fixtures.validation_sex_ontologies["male"]
             MALAT1_ont_id = fixtures.validation_gene_ontologies["MALAT1"]
-            human_malat1_cube = cube.df[MALAT1_ont_id:MALAT1_ont_id, :, human_ontology_id:human_ontology_id]
+            human_malat1_cube = cube.df[MALAT1_ont_id:MALAT1_ont_id, :, :, human_ontology_id:human_ontology_id]
             # slice cube by dimensions             gene_ontology      organ (all)          species
             human_XIST_cube = cube.df[
-                sex_marker_gene_ontology_id:sex_marker_gene_ontology_id, :, human_ontology_id:human_ontology_id
+                sex_marker_gene_ontology_id:sex_marker_gene_ontology_id, :, :, human_ontology_id:human_ontology_id
             ]
 
             female_xist_cube = human_XIST_cube.query(f"sex_ontology_term_id == '{female_ontology_id}'")
@@ -213,19 +213,23 @@ class Validation:
         # other cell types
         with tiledb.open(self.expression_summary_path) as cube:
             FCN1_ont_id = fixtures.validation_gene_ontologies["FCN1"]
-            FCN1_human_lung_cube = cube.df[FCN1_ont_id:FCN1_ont_id, lung_ont_id:lung_ont_id, human_ont_id:human_ont_id]
+            FCN1_human_lung_cube = cube.df[
+                FCN1_ont_id:FCN1_ont_id, lung_ont_id:lung_ont_id, :, human_ont_id:human_ont_id
+            ]
             self.validate_FCN1(FCN1_human_lung_cube)
 
             TUBB4B_ont_id = fixtures.validation_gene_ontologies["TUBB4B"]
-            TUBB4B_human_lung = cube.df[TUBB4B_ont_id:TUBB4B_ont_id, lung_ont_id:lung_ont_id, human_ont_id:human_ont_id]
+            TUBB4B_human_lung = cube.df[
+                TUBB4B_ont_id:TUBB4B_ont_id, lung_ont_id:lung_ont_id, :, human_ont_id:human_ont_id
+            ]
             self.validate_TUBB4B(TUBB4B_human_lung)
 
             CD68_ont_id = fixtures.validation_gene_ontologies["CD68"]
-            CD68_human_lung = cube.df[CD68_ont_id:CD68_ont_id, lung_ont_id:lung_ont_id, human_ont_id:human_ont_id]
+            CD68_human_lung = cube.df[CD68_ont_id:CD68_ont_id, lung_ont_id:lung_ont_id, :, human_ont_id:human_ont_id]
             self.validate_CD68(CD68_human_lung)
 
             AQP5_ont_id = fixtures.validation_gene_ontologies["AQP5"]
-            AQP5_human_lung = cube.df[AQP5_ont_id:AQP5_ont_id, lung_ont_id:lung_ont_id, human_ont_id:human_ont_id]
+            AQP5_human_lung = cube.df[AQP5_ont_id:AQP5_ont_id, lung_ont_id:lung_ont_id, :, human_ont_id:human_ont_id]
             self.validate_AQP5(AQP5_human_lung)
 
     def validate_FCN1(self, FCN1_human_lung_cube):
@@ -328,10 +332,10 @@ class Validation:
         CCL5_ont_id = fixtures.validation_gene_ontologies["CCL5"]
         with tiledb.open(self.expression_summary_path) as cube:
             MALAT1_human_lung_cube = cube.df[
-                MALAT1_ont_id:MALAT1_ont_id, human_lung_int:human_lung_int, human_ont_id:human_ont_id
+                MALAT1_ont_id:MALAT1_ont_id, human_lung_int:human_lung_int, :, human_ont_id:human_ont_id
             ]
             CCL5_human_lung_cube = cube.df[
-                CCL5_ont_id:CCL5_ont_id, human_lung_int:human_lung_int, human_ont_id:human_ont_id
+                CCL5_ont_id:CCL5_ont_id, human_lung_int:human_lung_int, :, human_ont_id:human_ont_id
             ]
 
             MALAT1_expression = MALAT1_human_lung_cube.query(f"dataset_id == '{self.validation_dataset_id}'")
