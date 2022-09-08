@@ -1,7 +1,7 @@
 from flask import g, make_response, jsonify
 
 from backend.corpora.api_server.db import dbconnect
-from backend.corpora.common.corpora_orm import DbCollection, CollectionVisibility
+from backend.corpora.common.corpora_orm import DbCollection, CollectionVisibility, ProcessingStatus
 from backend.corpora.common.entities import Dataset
 from backend.corpora.common.utils.http_exceptions import (
     NotFoundHTTPException,
@@ -40,5 +40,7 @@ def post(token_info: dict, collection_id: str):
     collection = get_collection_else_forbidden(db_session, collection_id, owner=owner_or_allowed(token_info))
     if collection.visibility != CollectionVisibility.PRIVATE:
         raise MethodNotAllowedException("Collection must be PRIVATE Collection, or a revision of a PUBLIC Collection.")
-    dataset = Dataset.create(db_session, collection=collection)
+    dataset = Dataset.create(
+        db_session, collection=collection, processing_status={"processing_status": ProcessingStatus.PENDING}
+    )
     return make_response(jsonify({"dataset_id": dataset.id}), 201)
