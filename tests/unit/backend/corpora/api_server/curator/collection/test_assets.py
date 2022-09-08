@@ -54,7 +54,7 @@ class TestAsset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
             with self.subTest(dataset_id):
                 expected_body = dict(
                     dataset_id=dataset_id,
-                    assets=[dict(file_name="test_filename", file_size=len(content), file_type="H5AD")],
+                    assets=[dict(filename="test_filename", filesize=len(content), filetype="H5AD")],
                 )
                 if dataset_id == "test_curator_tag":
                     expected_body["curator_tag"] = self.curator_tag
@@ -77,7 +77,7 @@ class TestAsset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         for dataset_id in self.test_dataset_id:
             with self.subTest(dataset_id):
                 expected_body = dict(
-                    dataset_id=dataset_id, assets=[dict(file_name="test_filename", file_size=-1, file_type="H5AD")]
+                    dataset_id=dataset_id, assets=[dict(filename="test_filename", filesize=-1, filetype="H5AD")]
                 )
                 if dataset_id == "test_curator_tag":
                     expected_body["curator_tag"] = self.curator_tag
