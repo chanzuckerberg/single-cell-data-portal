@@ -5,6 +5,7 @@ import time
 import anndata
 import numpy
 import numpy as np
+from pandas import DataFrame
 import scanpy
 import tiledb
 from scipy import sparse
@@ -17,6 +18,7 @@ from backend.wmg.data.constants import (
     INCLUDED_ASSAYS,
 )
 from backend.wmg.data.rankit import rankit
+from backend.wmg.data.tissue_mapper import TissueMapper
 from backend.wmg.data.schemas.corpus_schema import INTEGRATED_ARRAY_NAME
 
 logger = logging.getLogger(__name__)
@@ -26,6 +28,8 @@ logging.basicConfig(level=logging.INFO)
 def apply_pre_concatenation_filters(
     anndata_object: anndata.AnnData, min_genes: int = GENE_EXPRESSION_COUNT_MIN_THRESHOLD
 ) -> anndata.AnnData:
+
+    logger.info("Applying filters: assay, and lowly-covered cells")
     # Filter out cells with low coverage (less than GENE_EXPRESSION_COUNT_MIN_THRESHOLD unique genes expressed)
     scanpy.pp.filter_cells(anndata_object, min_genes=min_genes)
 
@@ -35,6 +39,39 @@ def apply_pre_concatenation_filters(
         anndata_object.obs["assay_ontology_term_id"].isin(included_assay_ontology_ids), :
     ].copy()
     return anndata_object
+
+
+def create_high_level_tissue(anndata_object: anndata.AnnData):
+    logger.info("Obtaining high-level tissues")
+    anndata_object.obs["tissue_original"] = anndata_object.obs["tissue"]
+    anndata_object.obs["tissue_original_ontology_term_id"] = anndata_object.obs["tissue_ontology_term_id"]
+    anndata_object.obs = get_high_level_tissue(anndata_object.obs)
+
+
+def get_high_level_tissue(obs: DataFrame) -> DataFrame:
+
+    obs = obs.copy()
+
+    tissue_mapper = TissueMapper()
+
+    tissue_ids_and_labels = obs[["tissue_ontology_term_id", "tissue"]].drop_duplicates().astype(str)
+    new_tissue_ids = {}
+    new_tissue_labels = {}
+
+    # Create mapping dictionaries and if needed add new categories to obs.tissue and obs.tissue_ontology_term_id
+    for row in tissue_ids_and_labels.iterrows():
+
+        current_id = row[1]["tissue_ontology_term_id"]
+        current_label = row[1]["tissue"]
+
+        new_tissue_ids[current_id] = tissue_mapper.get_high_level_tissue(current_id)
+        new_tissue_labels[current_label] = tissue_mapper.get_label_from_writable_id(new_tissue_ids[current_id])
+
+    # Use mapping dictionaries to obtain new values
+    obs["tissue_ontology_term_id"] = obs["tissue_ontology_term_id"].map(new_tissue_ids).astype("category")
+    obs["tissue"] = obs["tissue"].map(new_tissue_labels).astype("category")
+
+    return obs
 
 
 def transform_dataset_raw_counts_to_rankit(
