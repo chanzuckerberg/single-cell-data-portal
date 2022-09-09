@@ -877,7 +877,7 @@ components:
       type: string
     is_primary_data:
       description: |
-        [is_primary_data boolean](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#is_primary_data)
+        [is_primary_data](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#is_primary_data)
 
         Describes whether cellular observations for this Dataset are all
         canonical (True), all non-canonical (False), or contain a mixture (True, False).
