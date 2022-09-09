@@ -41,6 +41,6 @@ def post(token_info: dict, collection_id: str):
     if collection.visibility != CollectionVisibility.PRIVATE:
         raise MethodNotAllowedException("Collection must be PRIVATE Collection, or a revision of a PUBLIC Collection.")
     dataset = Dataset.create(
-        db_session, collection=collection, processing_status={"processing_status": ProcessingStatus.PENDING}
+        db_session, collection=collection, processing_status={"processing_status": ProcessingStatus.INITIALIZED}
     )
     return make_response(jsonify({"dataset_id": dataset.id}), 201)

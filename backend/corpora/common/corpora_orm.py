@@ -435,11 +435,13 @@ class ProcessingStatus(enum.Enum):
     """
     Enumerates the status of processing a dataset.
 
+    INITIALIZED = Dataset id created, and awaiting upload.
     PENDING = Processing has not started
-    SUCCESS - Processing succeeded
-    FAILURE - Processing failed
+    SUCCESS = Processing succeeded
+    FAILURE = Processing failed
     """
 
+    INITIALIZED = "INITIALIZED"
     PENDING = "PENDING"
     SUCCESS = "SUCCESS"
     FAILURE = "FAILURE"
