@@ -360,20 +360,21 @@ class Collection(Entity):
         :param keep_links: boolean - whether or not links need to be preserved. Links are preserved if True.
         :param kwargs: Any other fields in the dataset that will be replaced.
         """
-        links = links if links else []
+        new_links = links if links else []
 
         if not keep_links:
-            for link in self.links:
-                if link.link_type != ProjectLinkType.DOI:
-                    self.session.delete(link)
+            for old_link in self.links:
+                if old_link.link_type != ProjectLinkType.DOI:
+                    self.session.delete(old_link)
 
-        for link in links:
-            if link["link_type"] == ProjectLinkType.DOI.name:
-                for link in self.links:
-                    if link.link_type == ProjectLinkType.DOI:
-                        self.session.delete(link)
+        for new_link in new_links:
+            if new_link["link_type"] == ProjectLinkType.DOI.name:
+                # A new DOI is being introduced so we delete existing DOI(s)
+                for old_link in self.links:
+                    if old_link.link_type == ProjectLinkType.DOI:
+                        self.session.delete(old_link)
 
-        new_objs = [DbCollectionLink(collection_id=self.id, **link) for link in links]
+        new_objs = [DbCollectionLink(collection_id=self.id, **link) for link in new_links]
         self.session.add_all(new_objs)
 
         super().update(**kwargs)
