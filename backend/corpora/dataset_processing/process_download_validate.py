@@ -76,7 +76,15 @@ def validate_h5ad_file_and_add_labels(dataset_id: str, local_filename: str) -> t
         processing_status=dict(validation_status=ValidationStatus.VALIDATING),
     )
     output_filename = LABELED_H5AD_FILENAME
-    is_valid, errors, can_convert_to_seurat = validate.validate(local_filename, output_filename)
+    try:
+        is_valid, errors, can_convert_to_seurat = validate.validate(local_filename, output_filename)
+    except Exception as e:
+        logger.error(f"Validation failed with exception: {e}!")
+        status = dict(
+            validation_status=ValidationStatus.INVALID,
+            validation_message=str(e),
+        )
+        raise ValidationFailed(status)
 
     if not is_valid:
         logger.error(f"Validation failed with {len(errors)} errors!")
