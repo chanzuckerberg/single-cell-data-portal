@@ -378,8 +378,6 @@ class TestGetCollectionID(BaseAuthAPITest):
         "doi": "",
         "id": "test_collection_id",
         "links": [
-            # {"link_name": "test_doi_link_name", "link_type": "DOI", "link_url": "http://test_doi_url.place"},
-            # {"link_name": None, "link_type": "DOI", "link_url": "http://test_no_link_name_doi_url.place"},
             {
                 "link_name": "test_raw_data_link_name",
                 "link_type": "RAW_DATA",
