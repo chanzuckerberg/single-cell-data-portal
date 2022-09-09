@@ -136,6 +136,10 @@ state that mimics the Conversion step of the main step function.
 import os
 import sys
 
+from backend.corpora.common.corpora_orm import (
+    ConversionStatus,
+    UploadStatus,
+)
 from backend.corpora.common.entities import Dataset
 from backend.corpora.common.utils.db_session import db_session_manager
 from backend.corpora.dataset_processing.common import update_db
@@ -222,7 +226,7 @@ def main():
             if step_name == "download-validate":
                 update_db(
                     dataset_id,
-                    processing_status={"validation_status": ValidationStatus.INVALID, "validation_message": e},
+                    processing_status={"upload_status": UploadStatus.FAILED, "upload_message": str(e)},
                 )
             elif step_name == "seurat":
                 update_db(dataset_id, processing_status={"rds_status": ConversionStatus.FAILED})
