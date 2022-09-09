@@ -1,6 +1,6 @@
 """remove_curator_tag and add ProcessingStatus Initialize
 
-Revision ID: 253d1d67ea4a
+Revision ID: 31_253d1d67ea4a
 Revises: 30_26c54abcaac9
 Create Date: 2022-09-07 13:39:39.401203
 
@@ -28,7 +28,7 @@ def upgrade():
     op.execute(f"CREATE TYPE {name} AS ENUM('PENDING', 'SUCCESS', 'FAILURE', 'INITIALIZED');")
     op.execute(
         f"ALTER TABLE dataset_processing_status ALTER COLUMN processing_status TYPE {name} USING "
-        f"filetype::text::{name}"
+        f"processing_status::text::{name}"
     )
     op.execute(f"DROP TYPE {temp_name};")
 
@@ -43,7 +43,7 @@ def downgrade():
     op.execute(f"CREATE TYPE {name} AS ENUM('PENDING', 'SUCCESS', 'FAILURE');")
     op.execute(
         f"ALTER TABLE dataset_processing_status ALTER COLUMN processing_status TYPE {name} USING "
-        f"filetype::text::{name}"
+        f"processing_status::text::{name}"
     )
     op.execute(f"DROP TYPE {temp_name};")
 
