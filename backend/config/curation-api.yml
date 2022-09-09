@@ -117,7 +117,7 @@ paths:
         Create a new private Collection
 
         * Required: provide your access token in the request header as `Authentication: bearer <access_token>`.
-      operationId: backend.corpora.lambdas.api.v1.collection.create_collection_curation
+      operationId: backend.corpora.lambdas.api.v1.curation.collections.actions.post
       tags:
         - collection
       security:

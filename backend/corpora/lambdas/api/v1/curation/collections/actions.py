@@ -1,6 +1,7 @@
 from flask import jsonify, g
 from .common import reshape_for_curation_api
 from ...authorization import is_super_curator, owner_or_allowed
+from ...collection import create_collection_common, handle_curation_doi
 from ......common.corpora_orm import CollectionVisibility, DbCollection
 from ......common.utils.http_exceptions import ForbiddenHTTPException
 from backend.corpora.api_server.db import dbconnect
@@ -40,3 +41,8 @@ def get(visibility: str, token_info: dict, curator: str = None):
         resp_collections.append(resp_collection)
 
     return jsonify(resp_collections)
+
+
+def post(body: dict, user: str):
+    handle_curation_doi(body)
+    return create_collection_common(body, user, curie_reference_format_required=True)

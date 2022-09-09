@@ -250,11 +250,6 @@ def create_collection(body: dict, user: str):
     return create_collection_common(body, user)
 
 
-def create_collection_curation(body: dict, user: str):
-    handle_curation_doi(body)
-    return create_collection_common(body, user, curie_reference_format_required=True)
-
-
 @dbconnect
 def create_collection_common(body: dict, user: str, curie_reference_format_required: bool = False):
     db_session = g.db_session
