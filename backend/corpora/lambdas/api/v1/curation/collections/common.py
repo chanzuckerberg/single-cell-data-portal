@@ -39,6 +39,27 @@ DATASET_ONTOLOGY_ELEMENTS_PREVIEW = (
 )
 
 
+def reshape_doi(collection: dict):
+    """
+    Move the doi from an item in the 'links' attribute to a top-level field
+    :param collection: the Collection
+    :return: None
+    """
+    collection["doi"] = None
+    if links := collection.get("links"):
+        resp_links = []
+        found_doi_flag = False
+        for link in links:
+            if link["link_type"] == ProjectLinkType.DOI:
+                if not found_doi_flag:  # Legacy, handle situation where Collection has multiple DOI links
+                    doi = link["link_url"]
+                    found_doi_flag = True
+                    collection["doi"] = urlparse(doi).path.strip("/")
+            else:
+                resp_links.append(link)
+        collection["links"] = resp_links
+
+
 def reshape_for_curation_api(
     db_session: Session, collection: DbCollection, token_info: dict, preview: bool = False
 ) -> dict:
@@ -60,19 +81,7 @@ def reshape_for_curation_api(
     if datasets := resp_collection.get("datasets"):
         resp_collection["datasets"] = reshape_datasets_for_curation_api(datasets, preview)
 
-    resp_collection["doi"] = None
-    if links := resp_collection.get("links"):
-        resp_links = []
-        found_doi_flag = False
-        for link in links:
-            if link["link_type"] == ProjectLinkType.DOI:
-                if not found_doi_flag:  # Legacy, handle situation where Collection has multiple DOI links
-                    doi = link["link_url"]
-                    found_doi_flag = True
-                    resp_collection["doi"] = urlparse(doi).path.strip("/")
-            else:
-                resp_links.append(link)
-        resp_collection["links"] = resp_links
+    reshape_doi(resp_collection)
 
     return resp_collection
 

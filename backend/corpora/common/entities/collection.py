@@ -6,7 +6,14 @@ from sqlalchemy.orm import Session
 from . import Dataset
 from .entity import Entity
 from .geneset import Geneset
-from ..corpora_orm import CollectionLinkType, DbCollection, DbCollectionLink, CollectionVisibility, generate_id
+from ..corpora_orm import (
+    CollectionLinkType,
+    DbCollection,
+    DbCollectionLink,
+    CollectionVisibility,
+    generate_id,
+    ProjectLinkType,
+)
 from ..utils.db_helpers import clone
 
 
@@ -338,6 +345,32 @@ class Collection(Entity):
         if not keep_links:
             for link in self.links:
                 self.session.delete(link)
+
+        new_objs = [DbCollectionLink(collection_id=self.id, **link) for link in links]
+        self.session.add_all(new_objs)
+
+        super().update(**kwargs)
+
+    def update_curation(self, links: list = None, keep_links=False, **kwargs) -> None:
+        """
+        Update an existing collection to match provided the parameters. The specified columns are replaced.
+        :param links: links to create and connect to the collection. If present, the existing attached entries will
+         be removed and replaced with new entries.
+        :param keep_links: boolean - whether or not links need to be preserved. Links are preserved if True.
+        :param kwargs: Any other fields in the dataset that will be replaced.
+        """
+        links = links if links else []
+
+        if not keep_links:
+            for link in self.links:
+                if link.link_type != ProjectLinkType.DOI:
+                    self.session.delete(link)
+
+        for link in links:
+            if link["link_type"] == ProjectLinkType.DOI.name:
+                for link in self.links:
+                    if link.link_type == ProjectLinkType.DOI:
+                        self.session.delete(link)
 
         new_objs = [DbCollectionLink(collection_id=self.id, **link) for link in links]
         self.session.add_all(new_objs)

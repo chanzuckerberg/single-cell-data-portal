@@ -200,6 +200,7 @@ paths:
                       publisher_metadata:
                         $ref: "#/components/schemas/publisher_metadata"
                 required:
+                  - doi
                   - links
                   - name
                   - description

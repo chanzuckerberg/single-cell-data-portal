@@ -7,6 +7,7 @@ from backend.corpora.lambdas.api.v1.collection import (
     handle_curation_doi,
 )
 from ..common import (
+    reshape_doi,
     reshape_for_curation_api,
 )
 from backend.corpora.api_server.db import dbconnect
@@ -66,25 +67,26 @@ def patch(collection_id: str, body: dict, token_info: dict) -> Response:
             )
         raise err
 
-    if not keep_links:
-        # Compute the diff between old and new DOI
-        old_doi = collection.get_doi()
-        handle_curation_doi(body)
-        new_doi = normalize_and_get_doi(body, errors, curie_reference_format_required=True)
-        if new_doi and new_doi != old_doi:
-            # If the DOI has changed, fetch and update the metadata
-            publisher_metadata = get_publisher_metadata(new_doi, errors)
-            body["publisher_metadata"] = publisher_metadata
+    # Compute the diff between old and new DOI
+    old_doi = collection.get_doi()
+    handle_curation_doi(body)
+    new_doi = normalize_and_get_doi(body, errors, curie_reference_format_required=True)
+    if new_doi and new_doi != old_doi:
+        # If the DOI has changed, fetch and update the metadata
+        publisher_metadata = get_publisher_metadata(new_doi, errors)
+        body["publisher_metadata"] = publisher_metadata
 
     if errors:
         raise InvalidParametersHTTPException(detail=errors)
 
-    collection.update(**body, keep_links=keep_links)
+    collection.update_curation(**body, keep_links=keep_links)
     collection_dict = collection.to_dict_keep(
         {
             DbCollection: ["name", "description", "contact_name", "contact_email", "links", "publisher_metadata"],
             DbCollectionLink: ["link_url", "link_name", "link_type"],
         }
     )
+
+    reshape_doi(collection_dict)
 
     return jsonify(collection_dict)

@@ -606,11 +606,9 @@ class TestPatchCollectionID(BaseAuthAPITest):
         name = "partial updates test collection"
         links = [
             {"link_name": "name", "link_type": "RAW_DATA", "link_url": "http://test_link.place"},
-            # {"link_name": "doi", "link_type": "DOI", "link_url": "http://doi.doi"},
         ]
         new_links = [
             {"link_name": "new link", "link_type": "RAW_DATA", "link_url": "http://brand_new_link.place"},
-            # {"link_name": "new doi", "link_type": "DOI", "link_url": "10.1016"},  # a real DOI (CURIE reference)
         ]
 
         links_configurations = (
@@ -636,6 +634,42 @@ class TestPatchCollectionID(BaseAuthAPITest):
                     self.assertEqual(name, response.json["name"])
                     self.assertEqual(expected_links, response.json["links"])
 
+    def test__update_collection__doi__OK(self):
+        initial_doi = "12.3456/doi_curie_reference"
+        links = [
+            {"link_name": "new doi", "link_type": "DOI", "link_url": initial_doi},  # a real DOI (CURIE reference)
+        ]
+        new_doi = "10.1016"  # a real DOI (CURIE reference)
+        collection_id = self.generate_collection(self.session, links=links).id
+        original_collection = self.app.get(f"curation/v1/collections/{collection_id}").json
+        self.assertEqual(initial_doi, original_collection["doi"])
+        metadata = {"doi": new_doi}
+        response = self.app.patch(
+            f"/curation/v1/collections/{collection_id}",
+            json=metadata,
+            headers=self.make_owner_header(),
+        )
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(new_doi, response.json["doi"])
+
+    def test__update_collection__doi_is_not_CURIE_reference__BAD_REQUEST(self):
+        links = [
+            {"link_name": "doi", "link_type": "DOI", "link_url": "http://doi.doi/10.1011/something"},
+        ]
+        collection = self.generate_collection(self.session, links=links)
+        collection_id = collection.id
+        original_collection = self.app.get(f"curation/v1/collections/{collection_id}").json
+
+        metadata = {"doi": "https://doi.org/10.1016"}
+        response = self.app.patch(
+            f"/curation/v1/collections/{collection_id}",
+            json=metadata,
+            headers=self.make_owner_header(),
+        )
+        self.assertEqual(400, response.status_code)
+        original_collection_unchanged = self.app.get(f"curation/v1/collections/{collection_id}").json
+        self.assertEqual(original_collection["doi"], original_collection_unchanged["doi"])
+
     def test__update_collection__doi_does_not_exist__BAD_REQUEST(self):
         name = "bad doi update test collection"
         links = [
@@ -644,7 +678,6 @@ class TestPatchCollectionID(BaseAuthAPITest):
         ]
         new_links = [
             {"link_name": "new link", "link_type": "RAW_DATA", "link_url": "http://brand_new_link.place"},
-            # {"link_name": "new doi", "link_type": "DOI", "link_url": "http://a_bad_doi"},  # a bad DOI
         ]
         publisher_metadata = {
             "authors": [{"name": "First Last", "given": "First", "family": "Last"}],
