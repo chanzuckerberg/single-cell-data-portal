@@ -108,25 +108,27 @@ class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
     @patch("backend.corpora.dataset_processing.process_seurat.process")
     @patch("backend.corpora.dataset_processing.process_download_validate.process")
     def test_main__Exceptions(self, mock_process_download_validate, mock_process_seurat, mock_process_cxg):
-        dataset = self.generate_dataset(self.session, collection_id="test_collection_id")
         test_environment = {
             "DROPBOX_URL": "https://www.dropbox.com/IGNORED",
             "ARTIFACT_BUCKET": self.corpora_config.bucket_name,
             "CELLXGENE_BUCKET": self.corpora_config.bucket_name,
-            "DATASET_ID": dataset.id,
             "DEPLOYMENT_STAGE": "test",
         }
-        with self.subTest("download-validate unknown exceptions"):
+
+        test_environment["STEP_NAME"] = "download-validate"
+        with self.subTest("process step raises unknown exception with status dict"):
             mock_process_download_validate.side_effect = Exception(
                 {"validation_status": ValidationStatus.INVALID, "validation_message": "Anndata could not open raw.h5ad"}
             )
-            test_environment["STEP_NAME"] = "download-validate"
+            dataset = self.generate_dataset(self.session, collection_id="test_collection_id")
+            test_environment["DATASET_ID"] = dataset.id
             with EnvironmentSetup(test_environment):
                 main()
                 expected_dataset = Dataset.get(self.session, test_environment["DATASET_ID"]).processing_status
                 self.assertEqual(expected_dataset.validation_status, ValidationStatus.INVALID)
                 self.assertEqual(expected_dataset.validation_message, "Anndata could not open raw.h5ad")
 
+        with self.subTest("download-validate step raises unknown exception"):
             mock_process_download_validate.side_effect = Exception("unknown failure")
             dataset = self.generate_dataset(self.session, collection_id="test_collection_id")
             test_environment["DATASET_ID"] = dataset.id
@@ -136,7 +138,7 @@ class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
                 self.assertEqual(expected_dataset.upload_status, UploadStatus.FAILED)
                 self.assertEqual(expected_dataset.upload_message, "unknown failure")
 
-        with self.subTest("download-validate known exceptions"):
+        with self.subTest("download-validate step raises ValidationFailed"):
             mock_process_download_validate.side_effect = ValidationFailed(
                 {"validation_status": ValidationStatus.INVALID, "validation_message": "Schema version is not supported"}
             )
@@ -148,6 +150,7 @@ class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
                 self.assertEqual(expected_dataset.validation_status, ValidationStatus.INVALID)
                 self.assertEqual(expected_dataset.validation_message, "Schema version is not supported")
 
+        with self.subTest("download-validate step raises ProcessingFailed"):
             mock_process_download_validate.side_effect = ProcessingFailed(
                 {"upload_status": UploadStatus.FAILED, "upload_message": "Insufficient disk space"}
             )
@@ -159,7 +162,7 @@ class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
                 self.assertEqual(expected_dataset.upload_status, UploadStatus.FAILED)
                 self.assertEqual(expected_dataset.upload_message, "Insufficient disk space")
 
-        with self.subTest("conversion steps unknown exceptions"):
+        with self.subTest("seurat step raises unknown exception"):
             mock_process_seurat.side_effect = Exception("unknown failure")
             dataset = self.generate_dataset(self.session, collection_id="test_collection_id")
             test_environment["DATASET_ID"] = dataset.id
@@ -169,6 +172,7 @@ class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
                 expected_dataset = Dataset.get(self.session, test_environment["DATASET_ID"]).processing_status
                 self.assertEqual(expected_dataset.rds_status, ConversionStatus.FAILED)
 
+        with self.subTest("cxg step raises unknown exception"):
             mock_process_cxg.side_effect = Exception("unknown failure")
             dataset = self.generate_dataset(self.session, collection_id="test_collection_id")
             test_environment["DATASET_ID"] = dataset.id
@@ -178,7 +182,7 @@ class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
                 expected_dataset = Dataset.get(self.session, test_environment["DATASET_ID"]).processing_status
                 self.assertEqual(expected_dataset.cxg_status, ConversionStatus.FAILED)
 
-        with self.subTest("conversion steps known exceptions"):
+        with self.subTest("conversion step raises ConversionFailed"):
             mock_process_cxg.side_effect = ConversionFailed({"cxg_status": ConversionStatus.FAILED})
             dataset = self.generate_dataset(self.session, collection_id="test_collection_id")
             test_environment["DATASET_ID"] = dataset.id
