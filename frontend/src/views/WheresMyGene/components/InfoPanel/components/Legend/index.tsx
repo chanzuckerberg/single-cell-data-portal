@@ -4,23 +4,13 @@ import RelativeGeneExpression from "../RelativeGeneExpression";
 import { LegendWrapper } from "./style";
 
 interface Props {
-  handleIsScaledChange: () => void;
   isScaled: boolean;
-  showScaled?: boolean;
 }
 
-export default memo(function InfoPanel({
-  handleIsScaledChange,
-  isScaled,
-  showScaled,
-}: Props): JSX.Element {
+export default memo(function InfoPanel({ isScaled }: Props): JSX.Element {
   return (
     <LegendWrapper>
-      <RelativeGeneExpression
-        isScaled={isScaled}
-        handleIsScaledChange={handleIsScaledChange}
-        showScaled={showScaled}
-      />
+      <RelativeGeneExpression isScaled={isScaled} />
       <ExpressedInCells />
     </LegendWrapper>
   );

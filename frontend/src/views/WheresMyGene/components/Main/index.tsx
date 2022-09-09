@@ -21,6 +21,7 @@ import Filters from "../Filters";
 import GeneSearchBar from "../GeneSearchBar";
 import GetStarted from "../GetStarted";
 import HeatMap from "../HeatMap";
+import ColorScale from "../InfoPanel/components/ColorScale";
 import Legend from "../InfoPanel/components/Legend";
 import Loader from "../Loader";
 import { SideBarLabel } from "./style";
@@ -247,6 +248,8 @@ export default function WheresMyGene(): JSX.Element {
         wmgSideBar
       >
         <Filters />
+
+        <ColorScale handleIsScaledChange={handleIsScaledChange} />
       </SideBar>
 
       <View hideOverflow>
@@ -255,11 +258,7 @@ export default function WheresMyGene(): JSX.Element {
 
           <Top>
             <GeneSearchBar />
-            <Legend
-              isScaled={isScaled}
-              handleIsScaledChange={handleIsScaledChange}
-              showScaled={false}
-            />
+            <Legend isScaled={isScaled} />
           </Top>
 
           <Beta />
