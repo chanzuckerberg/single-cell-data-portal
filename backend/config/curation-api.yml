@@ -350,7 +350,7 @@ paths:
       summary: Create a dataset_id to be use in a future upload.
       description: |
         Create an new empty Dataset and return the `dataset_id`. The `dataset_id` is used when uploading a Dataset file 
-        to S3 to idenifty what Dataset the file belongs too.
+        to S3 to identify what Dataset the file belongs to.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.datasets.actions.post
       security:
         - curatorAccess: []
