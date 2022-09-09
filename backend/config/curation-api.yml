@@ -347,7 +347,7 @@ paths:
         "404":
           $ref: "#/components/responses/404"
     post:
-      summary: Create a dataset_id to be use in a future upload.
+      summary: Create a Dataset ID to be used in a future upload.
       description: |
         Create an new empty Dataset and return the `dataset_id`. The `dataset_id` is used when uploading a Dataset file 
         to S3 to identify what Dataset the file belongs to.
