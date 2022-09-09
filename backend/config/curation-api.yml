@@ -85,7 +85,7 @@ paths:
           name: visibility
           required: false
           schema:
-            "$ref": "#/components/schemas/visibility"
+            $ref: "#/components/schemas/visibility"
         - name: curator
           description: |
             Return Collections owned by the specified curator. The use of this parameter is limited to curators 
@@ -563,22 +563,22 @@ components:
           items:
             properties:
               filename:
-                "$ref": "#/components/schemas/asset_filename"
+                $ref: "#/components/schemas/asset_filename"
               filesize:
                 description: the size of the file in bytes.
                 type: number
               filetype:
-                "$ref": "#/components/schemas/asset_filetype"
+                $ref: "#/components/schemas/asset_filetype"
               presigned_url:
                 description: A URL to download this asset.
                 type: string
             type: object
           type: array
         curator_tag:
-          "$ref": "#/components/schemas/curator_tag"
+          $ref: "#/components/schemas/curator_tag"
           nullable: true
         dataset_id:
-          "$ref": "#/components/schemas/dataset_id"
+          $ref: "#/components/schemas/dataset_id"
       type: object
     asset_filetype:
       enum:
@@ -606,40 +606,40 @@ components:
           description: The CELLxGENE Discover URL for the Collection.
           type: string
         contact_email:
-          "$ref": "#/components/schemas/contact_email"
+          $ref: "#/components/schemas/contact_email"
         contact_name:
-          "$ref": "#/components/schemas/contact_name"
+          $ref: "#/components/schemas/contact_name"
         created_at:
           type: string
         curator_name:
-          "$ref": "#/components/schemas/curator_name"
+          $ref: "#/components/schemas/curator_name"
         datasets:
           type: array
           description: A preview of the metadata for each Dataset in the Collection.
           items:
             $ref: "#/components/schemas/dataset_preview"
         description:
-          "$ref": "#/components/schemas/collection_description"
+          $ref: "#/components/schemas/collection_description"
         id:
-          "$ref": "#/components/schemas/collection_id"
+          $ref: "#/components/schemas/collection_id"
         links:
-          "$ref": "#/components/schemas/links"
+          $ref: "#/components/schemas/links"
         name:
-          "$ref": "#/components/schemas/collection_name"
+          $ref: "#/components/schemas/collection_name"
         processing_status:
-          "$ref": "#/components/schemas/processing_status_collection"
+          $ref: "#/components/schemas/processing_status_collection"
         published_at:
-          "$ref": "#/components/schemas/published_at"
+          $ref: "#/components/schemas/published_at"
         publisher_metadata:
-          "$ref": "#/components/schemas/publisher_metadata"
+          $ref: "#/components/schemas/publisher_metadata"
         revised_at:
-          "$ref": "#/components/schemas/collection_revised_at"
+          $ref: "#/components/schemas/collection_revised_at"
         revising_in:
-          "$ref": "#/components/schemas/collection_revising_in"
+          $ref: "#/components/schemas/collection_revising_in"
         revision_of:
-          "$ref": "#/components/schemas/collection_revision_of"
+          $ref: "#/components/schemas/collection_revision_of"
         visibility:
-          "$ref": "#/components/schemas/visibility"
+          $ref: "#/components/schemas/visibility"
       type: object
     collection_url:
       description: The CELLxGENE Discover URL for the Collection.
@@ -697,15 +697,15 @@ components:
       description: Collection metadata
       properties:
         collection_url:
-          "$ref": "#/components/schemas/collection_url"
+          $ref: "#/components/schemas/collection_url"
         contact_email:
-          "$ref": "#/components/schemas/contact_email"
+          $ref: "#/components/schemas/contact_email"
         contact_name:
-          "$ref": "#/components/schemas/contact_name"
+          $ref: "#/components/schemas/contact_name"
         created_at:
-          "$ref": "#/components/schemas/created_at"
+          $ref: "#/components/schemas/created_at"
         curator_name:
-          "$ref": "#/components/schemas/curator_name"
+          $ref: "#/components/schemas/curator_name"
         datasets:
           type: array
           description: A list of Dataset metadata associated with the Collection
@@ -714,25 +714,25 @@ components:
         description:
           $ref: "#/components/schemas/collection_description"
         id:
-          "$ref": "#/components/schemas/collection_id"
+          $ref: "#/components/schemas/collection_id"
         links:
-          "$ref": "#/components/schemas/links"
+          $ref: "#/components/schemas/links"
         name:
-          "$ref": "#/components/schemas/collection_name"
+          $ref: "#/components/schemas/collection_name"
         processing_status:
-          "$ref": "#/components/schemas/processing_status_collection"
+          $ref: "#/components/schemas/processing_status_collection"
         published_at:
           $ref: "#/components/schemas/published_at"
         publisher_metadata:
-          "$ref": "#/components/schemas/publisher_metadata"
+          $ref: "#/components/schemas/publisher_metadata"
         revised_at:
-          "$ref": "#/components/schemas/collection_revised_at"
+          $ref: "#/components/schemas/collection_revised_at"
         revising_in:
-          "$ref": "#/components/schemas/collection_revising_in"
+          $ref: "#/components/schemas/collection_revising_in"
         revision_of:
-          "$ref": "#/components/schemas/collection_revision_of"
+          $ref: "#/components/schemas/collection_revision_of"
         visibility:
-          "$ref": "#/components/schemas/visibility"
+          $ref: "#/components/schemas/visibility"
       type: object
     collection_form_metadata:
       properties:
@@ -743,7 +743,7 @@ components:
         description:
           $ref: "#/components/schemas/collection_description"
         links:
-          "$ref": "#/components/schemas/links"
+          $ref: "#/components/schemas/links"
         name:
           $ref: "#/components/schemas/collection_name"
       type: object
@@ -760,9 +760,9 @@ components:
     dataset:
       properties:
         assay:
-          "$ref": "#/components/schemas/dataset_assay"
+          $ref: "#/components/schemas/dataset_assay"
         batch_condition:
-          "$ref": "#/components/schemas/batch_condition"
+          $ref: "#/components/schemas/batch_condition"
         cell_count:
           description: The number of cells in the Dataset.
           nullable: true
@@ -772,10 +772,10 @@ components:
             [cell type label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#cell_type)
           default: []
           items:
-            "$ref": "#/components/schemas/ontology_element"
+            $ref: "#/components/schemas/ontology_element"
           type: array
         curator_tag:
-          "$ref": "#/components/schemas/curator_tag"
+          $ref: "#/components/schemas/curator_tag"
           nullable: true
         dataset_assets:
           description: |
@@ -784,9 +784,9 @@ components:
           items:
             properties:
               filename:
-                "$ref": "#/components/schemas/asset_filename"
+                $ref: "#/components/schemas/asset_filename"
               filetype:
-                "$ref": "#/components/schemas/asset_filetype"
+                $ref: "#/components/schemas/asset_filetype"
             type: object
           type: array
         development_stage:
@@ -794,24 +794,24 @@ components:
             [development stage label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#development_stage)
           default: []
           items:
-            "$ref": "#/components/schemas/ontology_element"
+            $ref: "#/components/schemas/ontology_element"
           type: array
           nullable: true
         disease:
-          "$ref": "#/components/schemas/dataset_disease"
+          $ref: "#/components/schemas/dataset_disease"
         ethnicity:
           description: |
             [self reported ethnicity label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#self_reported_ethnicity)
           default: []
           items:
-            "$ref": "#/components/schemas/ontology_element"
+            $ref: "#/components/schemas/ontology_element"
           type: array
         explorer_url:
-          "$ref": "#/components/schemas/explorer_url"
+          $ref: "#/components/schemas/explorer_url"
         id:
-          "$ref": "#/components/schemas/dataset_id"
+          $ref: "#/components/schemas/dataset_id"
         is_primary_data:
-          "$ref": "#/components/schemas/is_primary_data"
+          $ref: "#/components/schemas/is_primary_data"
         mean_genes_per_cell:
           nullable: true
           type: number
@@ -821,9 +821,9 @@ components:
           nullable: true
           type: string
         organism:
-          "$ref": "#/components/schemas/dataset_organism"
+          $ref: "#/components/schemas/dataset_organism"
         processing_status:
-          "$ref": "#/components/schemas/processing_status_dataset"
+          $ref: "#/components/schemas/processing_status_dataset"
         processing_status_detail:
           type: string
           description: |
@@ -831,7 +831,7 @@ components:
             the dataset can be found in `processing_status_detail`.
           nullable: true
         revised_at:
-          "$ref": "#/components/schemas/dataset_revised_at"
+          $ref: "#/components/schemas/dataset_revised_at"
         revision:
           description: The number of times the Dataset has been revised.
           nullable: true
@@ -846,40 +846,40 @@ components:
             [sex label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#sex)
           default: []
           items:
-            "$ref": "#/components/schemas/ontology_element"
+            $ref: "#/components/schemas/ontology_element"
           type: array
         tissue:
-          "$ref": "#/components/schemas/dataset_tissue"
+          $ref: "#/components/schemas/dataset_tissue"
         x_approximate_distribution:
-          "$ref": "#/components/schemas/distribution"
+          $ref: "#/components/schemas/distribution"
       type: object
     dataset_assay:
       description: |
         [assay label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#assay)
       default: []
       items:
-        "$ref": "#/components/schemas/ontology_element"
+        $ref: "#/components/schemas/ontology_element"
       type: array
     dataset_disease:
       description: |
         [disease label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#disease)
       default: []
       items:
-        "$ref": "#/components/schemas/ontology_element"
+        $ref: "#/components/schemas/ontology_element"
       type: array
     dataset_organism:
       description: |
         [organism label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#organism)
       default: []
       items:
-        "$ref": "#/components/schemas/ontology_element"
+        $ref: "#/components/schemas/ontology_element"
       type: array
     dataset_tissue:
       description: |
         [tissue label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#tissue)
       default: []
       items:
-        "$ref": "#/components/schemas/ontology_element"
+        $ref: "#/components/schemas/ontology_element"
       type: array
     dataset_tombstone:
       description: When True, this Dataset was withdrawn from the Data Portal at the request of its submitter.
@@ -891,18 +891,18 @@ components:
     dataset_preview:
       properties:
         assay:
-          "$ref": "#/components/schemas/dataset_assay"
+          $ref: "#/components/schemas/dataset_assay"
         curator_tag:
-          "$ref": "#/components/schemas/curator_tag"
+          $ref: "#/components/schemas/curator_tag"
           nullable: true
         disease:
-          "$ref": "#/components/schemas/dataset_disease"
+          $ref: "#/components/schemas/dataset_disease"
         id:
-          "$ref": "#/components/schemas/dataset_id"
+          $ref: "#/components/schemas/dataset_id"
         organism:
-          "$ref": "#/components/schemas/dataset_organism"
+          $ref: "#/components/schemas/dataset_organism"
         tissue:
-          "$ref": "#/components/schemas/dataset_tissue"
+          $ref: "#/components/schemas/dataset_tissue"
       type: object
     distribution:
       description:
@@ -1055,7 +1055,7 @@ components:
       name: collection_id
       required: true
       schema:
-        "$ref": "#/components/schemas/collection_id"
+        $ref: "#/components/schemas/collection_id"
     query_curator_tag:
       description: |
         A curator-provided tag **MUST** be unique within a given Collection. **MAY** be used to uniquely identify a 
@@ -1064,14 +1064,14 @@ components:
       name: curator_tag
       required: false
       schema:
-        "$ref": "#/components/schemas/curator_tag"
+        $ref: "#/components/schemas/curator_tag"
     query_dataset_id:
       description: The uuid of the Dataset.
       in: query
       name: dataset_id
       required: false
       schema:
-        "$ref": "#/components/schemas/dataset_id"
+        $ref: "#/components/schemas/dataset_id"
   responses:
     "200":
       description: OK
@@ -1085,7 +1085,7 @@ components:
       content:
         application/problem+json:
           schema:
-            "$ref": "#/components/schemas/problem"
+            $ref: "#/components/schemas/problem"
       description: Invalid or missing parameter
     400_multiple:
       content:
@@ -1109,37 +1109,37 @@ components:
       content:
         application/problem+json:
           schema:
-            "$ref": "#/components/schemas/problem"
+            $ref: "#/components/schemas/problem"
       description: Failed to authenticate
     "403":
       content:
         application/problem+json:
           schema:
-            "$ref": "#/components/schemas/problem"
+            $ref: "#/components/schemas/problem"
       description: Forbidden
     "404":
       content:
         application/problem+json:
           schema:
-            "$ref": "#/components/schemas/problem"
+            $ref: "#/components/schemas/problem"
       description: Resource not found
     "405":
       content:
         application/problem+json:
           schema:
-            "$ref": "#/components/schemas/problem"
+            $ref: "#/components/schemas/problem"
       description: Method not allowed
     "409":
       content:
         application/problem+json:
           schema:
-            "$ref": "#/components/schemas/problem"
+            $ref: "#/components/schemas/problem"
       description: File conflict
     "413":
       content:
         application/problem+json:
           schema:
-            "$ref": "#/components/schemas/problem"
+            $ref: "#/components/schemas/problem"
       description: Exceed File Size Limit
   securitySchemes:
     curatorAccess:
