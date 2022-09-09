@@ -353,7 +353,8 @@ class Collection(Entity):
 
     def update_curation(self, links: list = None, keep_links=False, **kwargs) -> None:
         """
-        Update an existing collection to match provided the parameters. The specified columns are replaced.
+        Update an existing collection to match provided the parameters. The specified columns are replaced. The DOI is
+        handled as a link for legacy reasons (for consistency with Corpora API), but independently of the other links.
         :param links: links to create and connect to the collection. If present, the existing attached entries will
          be removed and replaced with new entries.
         :param keep_links: boolean - whether or not links need to be preserved. Links are preserved if True.
