@@ -4,6 +4,17 @@ from unittest.mock import patch
 
 import requests
 
+from backend.corpora.common.corpora_orm import (
+    ConversionStatus,
+    UploadStatus,
+    ValidationStatus,
+)
+from backend.corpora.common.entities import Dataset
+from backend.corpora.dataset_processing.exceptions import (
+    ProcessingFailed,
+    ValidationFailed,
+    ConversionFailed,
+)
 from backend.corpora.dataset_processing.process import main
 from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
 from tests.unit.backend.corpora.fixtures.environment_setup import EnvironmentSetup
@@ -69,7 +80,6 @@ class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
             "CELLXGENE_BUCKET": self.corpora_config.bucket_name,
             "DATASET_ID": dataset.id,
             "DEPLOYMENT_STAGE": "test",
-            "AWS_BATCH_JOB_ATTEMPT": "1",
         }
 
         test_environment["STEP_NAME"] = "download-validate"
@@ -93,3 +103,91 @@ class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
         # 1. H5AD has annotation labels added and uploaded to S3
         # 2. cxg, rds uploaded to s3
         # 3. databases metadata updated and showing successful status
+
+    @patch("backend.corpora.dataset_processing.process_cxg.process")
+    @patch("backend.corpora.dataset_processing.process_seurat.process")
+    @patch("backend.corpora.dataset_processing.process_download_validate.process")
+    def test_main__Exceptions(self, mock_process_download_validate, mock_process_seurat, mock_process_cxg):
+        test_environment = {
+            "DROPBOX_URL": "https://www.dropbox.com/IGNORED",
+            "ARTIFACT_BUCKET": self.corpora_config.bucket_name,
+            "CELLXGENE_BUCKET": self.corpora_config.bucket_name,
+            "DEPLOYMENT_STAGE": "test",
+        }
+
+        test_environment["STEP_NAME"] = "download-validate"
+        with self.subTest("process step raises unknown exception with status dict"):
+            mock_process_download_validate.side_effect = Exception(
+                {"validation_status": ValidationStatus.INVALID, "validation_message": "Anndata could not open raw.h5ad"}
+            )
+            dataset = self.generate_dataset(self.session, collection_id="test_collection_id")
+            test_environment["DATASET_ID"] = dataset.id
+            with EnvironmentSetup(test_environment):
+                main()
+                expected_dataset = Dataset.get(self.session, test_environment["DATASET_ID"]).processing_status
+                self.assertEqual(expected_dataset.validation_status, ValidationStatus.INVALID)
+                self.assertEqual(expected_dataset.validation_message, "Anndata could not open raw.h5ad")
+
+        with self.subTest("download-validate step raises unknown exception"):
+            mock_process_download_validate.side_effect = Exception("unknown failure")
+            dataset = self.generate_dataset(self.session, collection_id="test_collection_id")
+            test_environment["DATASET_ID"] = dataset.id
+            with EnvironmentSetup(test_environment):
+                main()
+                expected_dataset = Dataset.get(self.session, test_environment["DATASET_ID"]).processing_status
+                self.assertEqual(expected_dataset.upload_status, UploadStatus.FAILED)
+                self.assertEqual(expected_dataset.upload_message, "unknown failure")
+
+        with self.subTest("download-validate step raises ValidationFailed"):
+            mock_process_download_validate.side_effect = ValidationFailed(
+                {"validation_status": ValidationStatus.INVALID, "validation_message": "Schema version is not supported"}
+            )
+            dataset = self.generate_dataset(self.session, collection_id="test_collection_id")
+            test_environment["DATASET_ID"] = dataset.id
+            with EnvironmentSetup(test_environment):
+                main()
+                expected_dataset = Dataset.get(self.session, test_environment["DATASET_ID"]).processing_status
+                self.assertEqual(expected_dataset.validation_status, ValidationStatus.INVALID)
+                self.assertEqual(expected_dataset.validation_message, "Schema version is not supported")
+
+        with self.subTest("download-validate step raises ProcessingFailed"):
+            mock_process_download_validate.side_effect = ProcessingFailed(
+                {"upload_status": UploadStatus.FAILED, "upload_message": "Insufficient disk space"}
+            )
+            dataset = self.generate_dataset(self.session, collection_id="test_collection_id")
+            test_environment["DATASET_ID"] = dataset.id
+            with EnvironmentSetup(test_environment):
+                main()
+                expected_dataset = Dataset.get(self.session, test_environment["DATASET_ID"]).processing_status
+                self.assertEqual(expected_dataset.upload_status, UploadStatus.FAILED)
+                self.assertEqual(expected_dataset.upload_message, "Insufficient disk space")
+
+        with self.subTest("seurat step raises unknown exception"):
+            mock_process_seurat.side_effect = Exception("unknown failure")
+            dataset = self.generate_dataset(self.session, collection_id="test_collection_id")
+            test_environment["DATASET_ID"] = dataset.id
+            test_environment["STEP_NAME"] = "seurat"
+            with EnvironmentSetup(test_environment):
+                main()
+                expected_dataset = Dataset.get(self.session, test_environment["DATASET_ID"]).processing_status
+                self.assertEqual(expected_dataset.rds_status, ConversionStatus.FAILED)
+
+        with self.subTest("cxg step raises unknown exception"):
+            mock_process_cxg.side_effect = Exception("unknown failure")
+            dataset = self.generate_dataset(self.session, collection_id="test_collection_id")
+            test_environment["DATASET_ID"] = dataset.id
+            test_environment["STEP_NAME"] = "cxg"
+            with EnvironmentSetup(test_environment):
+                main()
+                expected_dataset = Dataset.get(self.session, test_environment["DATASET_ID"]).processing_status
+                self.assertEqual(expected_dataset.cxg_status, ConversionStatus.FAILED)
+
+        with self.subTest("conversion step raises ConversionFailed"):
+            mock_process_cxg.side_effect = ConversionFailed({"cxg_status": ConversionStatus.FAILED})
+            dataset = self.generate_dataset(self.session, collection_id="test_collection_id")
+            test_environment["DATASET_ID"] = dataset.id
+            test_environment["STEP_NAME"] = "cxg"
+            with EnvironmentSetup(test_environment):
+                main()
+                expected_dataset = Dataset.get(self.session, test_environment["DATASET_ID"]).processing_status
+                self.assertEqual(expected_dataset.cxg_status, ConversionStatus.FAILED)
