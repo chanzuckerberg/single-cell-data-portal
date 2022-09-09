@@ -957,12 +957,14 @@ components:
         | `"SUCCESS"` | the Dataset has successfully been processed. |
         | `"VALIDATION_FAILURE"` | An error occured during validation. See `processing_status_detail`|
         | `"PIPELINE_FAILURE"`| An error occured during processing. |
+        | `"INITIALIZED"` | Dataset id created, and awaiting upload. |
       enum:
         - FAILURE
         - PENDING
         - SUCCESS
         - VALIDATION_FAILURE
         - PIPELINE_FAILURE
+        - INITIALIZED
       nullable: true
       type: string
     publisher_metadata:
