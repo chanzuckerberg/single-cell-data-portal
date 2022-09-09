@@ -55,6 +55,8 @@ def semi_real_dimension_values_generator(dimension_name: str, dim_size: int) -> 
         return list(sorted(ontology_labels.gene_term_id_labels.keys()))[:dim_size]
     if dimension_name == "tissue_ontology_term_id":
         return [term_id for term_id in deterministic_term_ids if term_id.startswith("UBERON")][:dim_size]
+    if dimension_name == "tissue_original_ontology_term_id":
+        return [term_id for term_id in deterministic_term_ids if term_id.startswith("UBERON")][:dim_size]
     if dimension_name == "organism_ontology_term_id":
         return [term_id for term_id in deterministic_term_ids if term_id.startswith("NCBITaxon")][:dim_size]
     if dimension_name == "cell_type_ontology_term_id":
