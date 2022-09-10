@@ -13,6 +13,7 @@ from ..corpora_orm import (
     CollectionVisibility,
     generate_id,
     ProjectLinkType,
+    DbProjectLink,
 )
 from ..utils.db_helpers import clone
 
@@ -370,9 +371,9 @@ class Collection(Entity):
         for new_link in new_links:
             if new_link["link_type"] == ProjectLinkType.DOI.name:
                 # A new DOI is being introduced so we delete existing DOI(s)
-                for old_link in self.links:
-                    if old_link.link_type == ProjectLinkType.DOI:
-                        self.session.delete(old_link)
+                self.session.query(DbCollectionLink).filter(
+                    DbProjectLink.collection_id == self.id, DbCollectionLink.link_type == ProjectLinkType.DOI
+                ).delete()
                 break
 
         new_objs = [DbCollectionLink(collection_id=self.id, **link) for link in new_links]
