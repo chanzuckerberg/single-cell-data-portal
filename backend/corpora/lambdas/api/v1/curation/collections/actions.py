@@ -1,8 +1,8 @@
 from flask import jsonify, g
 from .common import reshape_for_curation_api
 from ...authorization import is_super_curator, owner_or_allowed
-from ...collection import create_collection_common, handle_curation_doi
-from ......common.corpora_orm import CollectionVisibility, DbCollection
+from ...collection import create_collection_common, curation_normalize_doi
+from ......common.corpora_orm import CollectionVisibility, DbCollection, ProjectLinkType
 from ......common.utils.http_exceptions import ForbiddenHTTPException
 from backend.corpora.api_server.db import dbconnect
 
@@ -44,5 +44,10 @@ def get(visibility: str, token_info: dict, curator: str = None):
 
 
 def post(body: dict, user: str):
-    handle_curation_doi(body)
-    return create_collection_common(body, user, curie_reference_format_required=True)
+    errors = []
+    if doi := body.get("doi"):
+        new_doi_url = curation_normalize_doi(doi, errors)
+        links = body.get("links", [])
+        links.append({"link_type": ProjectLinkType.DOI.name, "link_url": new_doi_url})
+        body["links"] = links
+    return create_collection_common(body, user, doi, errors)

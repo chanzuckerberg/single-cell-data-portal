@@ -635,7 +635,7 @@ class TestPatchCollectionID(BaseAuthAPITest):
     def test__update_collection__doi__OK(self):
         initial_doi = "12.3456/doi_curie_reference"
         links = [
-            {"link_name": "new doi", "link_type": "DOI", "link_url": initial_doi},  # a real DOI (CURIE reference)
+            {"link_name": "new doi", "link_type": "DOI", "link_url": initial_doi},
         ]
         new_doi = "10.1016"  # a real DOI (CURIE reference)
         collection_id = self.generate_collection(self.session, links=links).id

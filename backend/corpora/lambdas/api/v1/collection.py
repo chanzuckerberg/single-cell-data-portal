@@ -136,45 +136,6 @@ def post_collection_revision(collection_id: str, token_info: dict):
 doi_regex = re.compile(r"^10.\d{4,9}/[-._;()/:A-Z0-9]+$", flags=re.I)
 
 
-def normalize_and_get_doi(body: dict, errors: list, curie_reference_format_required: bool) -> Optional[str]:
-    """
-    1. Check for DOI uniqueness in the payload
-    2. Normalizes it so that the DOI is always a link (starts with https://doi.org)
-    3. Returns the newly normalized DOI
-    """
-    links = body.get("links", [])
-    dois = [link for link in links if link["link_type"] == ProjectLinkType.DOI.name]
-
-    if not dois:
-        return None
-
-    # Verify that a single DOI exists
-    if len(dois) > 1:
-        errors.append({"link_type": ProjectLinkType.DOI.name, "reason": "Can only specify a single DOI"})
-        return None
-
-    doi_node = dois[0]
-    doi = doi_node["link_url"]
-
-    if curie_reference_format_required:
-        # Regex below is adapted from https://bioregistry.io/registry/doi 'Pattern for CURIES'
-        curie_reference_regex = r"^\d{2}\.\d{4}.*$"
-        if not re.match(curie_reference_regex, doi):
-            errors.append({"name": ProjectLinkType.DOI.value, "reason": "DOI must be a CURIE reference."})
-            return None
-        return f"https://doi.org/{doi}"
-
-    parsed = urlparse(doi)
-    if not parsed.scheme and not parsed.netloc:
-        parsed_doi = parsed.path
-        if not doi_regex.match(parsed_doi):
-            errors.append({"link_type": ProjectLinkType.DOI.name, "reason": "Invalid DOI"})
-            return None
-        doi_node["link_url"] = f"https://doi.org/{parsed_doi}"
-
-    return doi
-
-
 def get_publisher_metadata(doi: str, errors: list) -> Optional[dict]:
     """
     Retrieves publisher metadata from Crossref.
@@ -234,28 +195,59 @@ def verify_collection_body(body: dict, errors: list) -> None:
     verify_collection_links(body, errors)
 
 
-def handle_curation_doi(body):
+def get_doi_link_node(body: dict, errors: list) -> Optional[dict]:
+    links = body.get("links", [])
+    dois = [link for link in links if link["link_type"] == ProjectLinkType.DOI.name]
+
+    if not dois:
+        return None
+
+    # Verify that a single DOI exists
+    if len(dois) > 1:
+        errors.append({"link_type": ProjectLinkType.DOI.name, "reason": "Can only specify a single DOI"})
+        return None
+
+    return dois[0]
+
+
+def curation_normalize_doi(doi: str, errors: list) -> Optional[str]:
+    # Regex below is adapted from https://bioregistry.io/registry/doi 'Pattern for CURIES'
+    curie_reference_regex = r"^\d{2}\.\d{4}.*$"
+    if not re.match(curie_reference_regex, doi):
+        errors.append({"name": ProjectLinkType.DOI.value, "reason": "DOI must be a CURIE reference."})
+        return None
+    return f"https://doi.org/{doi}"
+
+
+def corpora_normalize_doi(doi_node: dict, errors: list) -> Optional[str]:
     """
-    Move doi from body to links array to permit processing by legacy pipeline code used by Corpora API
-    :param body: the request body
-    :return: None
+    1. Check for DOI uniqueness in the payload
+    2. Normalizes it so that the DOI is always a link (starts with https://doi.org)
+    3. Returns the newly normalized DOI
     """
-    if body.get("doi"):
-        links = body.get("links", [])
-        links.append({"link_type": ProjectLinkType.DOI.name, "link_url": body.pop("doi")})
-        body["links"] = links
+    doi = doi_node["link_url"]
+    parsed = urlparse(doi)
+    if not parsed.scheme and not parsed.netloc:
+        parsed_doi = parsed.path
+        if not doi_regex.match(parsed_doi):
+            errors.append({"link_type": ProjectLinkType.DOI.name, "reason": "Invalid DOI"})
+            return None
+        doi_node["link_url"] = f"https://doi.org/{parsed_doi}"
+
+    return doi
 
 
 def create_collection(body: dict, user: str):
-    return create_collection_common(body, user)
+    errors = []
+    doi_node = get_doi_link_node(body, errors)
+    doi = corpora_normalize_doi(doi_node, errors)
+    return create_collection_common(body, user, doi, errors)
 
 
 @dbconnect
-def create_collection_common(body: dict, user: str, curie_reference_format_required: bool = False):
+def create_collection_common(body: dict, user: str, doi: str, errors: list):
     db_session = g.db_session
-    errors = []
     verify_collection_body(body, errors)
-    doi = normalize_and_get_doi(body, errors, curie_reference_format_required)
     if doi is not None:
         publisher_metadata = get_publisher_metadata(doi, errors)
     else:
@@ -304,7 +296,8 @@ def update_collection(collection_id: str, body: dict, token_info: dict):
     collection, errors = get_collection_and_verify_body(db_session, collection_id, body, token_info)
     # Compute the diff between old and new DOI
     old_doi = collection.get_doi()
-    new_doi = normalize_and_get_doi(body, errors, curie_reference_format_required=False)
+    new_doi_node = get_doi_link_node(body, errors)
+    new_doi = corpora_normalize_doi(new_doi_node, errors)
     if old_doi and not new_doi:
         # If the DOI was deleted, remove the publisher_metadata field
         collection.update(publisher_metadata=None)

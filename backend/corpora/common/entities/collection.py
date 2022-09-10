@@ -373,6 +373,7 @@ class Collection(Entity):
                 for old_link in self.links:
                     if old_link.link_type == ProjectLinkType.DOI:
                         self.session.delete(old_link)
+                break
 
         new_objs = [DbCollectionLink(collection_id=self.id, **link) for link in new_links]
         self.session.add_all(new_objs)
