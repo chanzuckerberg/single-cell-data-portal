@@ -6,7 +6,7 @@ from backend.corpora.lambdas.api.v1.collection import (
     curation_normalize_doi,
 )
 from ..common import (
-    reshape_doi,
+    extract_doi_from_links,
     reshape_for_curation_api,
 )
 from backend.corpora.api_server.db import dbconnect
@@ -91,6 +91,6 @@ def patch(collection_id: str, body: dict, token_info: dict) -> Response:
         }
     )
 
-    reshape_doi(collection_dict)
+    collection_dict["doi"], collection_dict["links"] = extract_doi_from_links(collection_dict)
 
     return jsonify(collection_dict)

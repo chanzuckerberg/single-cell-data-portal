@@ -39,25 +39,21 @@ DATASET_ONTOLOGY_ELEMENTS_PREVIEW = (
 )
 
 
-def reshape_doi(collection: dict):
+def extract_doi_from_links(collection: dict):
     """
-    Move the doi from an item in the 'links' attribute to a top-level field
+    Pull out the DOI from the 'links' array and return it along with the altered links array
     :param collection: the Collection
     :return: None
     """
-    collection["doi"] = None
+    doi, resp_links = None, []
     if links := collection.get("links"):
-        resp_links = []
-        found_doi_flag = False
         for link in links:
             if link["link_type"] == ProjectLinkType.DOI:
-                if not found_doi_flag:  # Legacy, handle situation where Collection has multiple DOI links
-                    doi = link["link_url"]
-                    found_doi_flag = True
-                    collection["doi"] = urlparse(doi).path.strip("/")
+                doi = urlparse(link["link_url"]).path.strip("/")
             else:
                 resp_links.append(link)
-        collection["links"] = resp_links
+
+    return doi, resp_links
 
 
 def reshape_for_curation_api(
@@ -81,7 +77,7 @@ def reshape_for_curation_api(
     if datasets := resp_collection.get("datasets"):
         resp_collection["datasets"] = reshape_datasets_for_curation_api(datasets, preview)
 
-    reshape_doi(resp_collection)
+    resp_collection["doi"], resp_collection["links"] = extract_doi_from_links(resp_collection)
 
     return resp_collection
 
