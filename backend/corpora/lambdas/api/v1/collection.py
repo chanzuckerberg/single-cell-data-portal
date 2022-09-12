@@ -210,7 +210,7 @@ def get_doi_link_node(body: dict, errors: list) -> Optional[dict]:
     return dois[0]
 
 
-def curation_normalize_doi(doi: str, errors: list) -> Optional[str]:
+def curation_get_normalized_doi_url(doi: str, errors: list) -> Optional[str]:
     # Regex below is adapted from https://bioregistry.io/registry/doi 'Pattern for CURIES'
     curie_reference_regex = r"^\d{2}\.\d{4}.*$"
     if not re.match(curie_reference_regex, doi):
@@ -219,29 +219,30 @@ def curation_normalize_doi(doi: str, errors: list) -> Optional[str]:
     return f"https://doi.org/{doi}"
 
 
-def corpora_normalize_doi(doi_node: dict, errors: list) -> Optional[str]:
+def corpora_get_normalized_doi_url(doi_node: dict, errors: list) -> Optional[str]:
     """
     1. Check for DOI uniqueness in the payload
     2. Normalizes it so that the DOI is always a link (starts with https://doi.org)
     3. Returns the newly normalized DOI
     """
-    doi = doi_node["link_url"]
-    parsed = urlparse(doi)
+    doi_url = doi_node["link_url"]
+    parsed = urlparse(doi_url)
     if not parsed.scheme and not parsed.netloc:
         parsed_doi = parsed.path
         if not doi_regex.match(parsed_doi):
             errors.append({"link_type": ProjectLinkType.DOI.name, "reason": "Invalid DOI"})
             return None
-        doi_node["link_url"] = f"https://doi.org/{parsed_doi}"
-
-    return doi
+        doi_url = f"https://doi.org/{parsed_doi}"
+    return doi_url
 
 
 def create_collection(body: dict, user: str):
     errors = []
-    doi_node = get_doi_link_node(body, errors)
-    doi = corpora_normalize_doi(doi_node, errors)
-    return create_collection_common(body, user, doi, errors)
+    doi_url = None
+    if doi_node := get_doi_link_node(body, errors):
+        if doi_url := corpora_get_normalized_doi_url(doi_node, errors):
+            doi_node["link_url"] = doi_url
+    return create_collection_common(body, user, doi_url, errors)
 
 
 @dbconnect
@@ -296,14 +297,16 @@ def update_collection(collection_id: str, body: dict, token_info: dict):
     collection, errors = get_collection_and_verify_body(db_session, collection_id, body, token_info)
     # Compute the diff between old and new DOI
     old_doi = collection.get_doi()
-    new_doi_node = get_doi_link_node(body, errors)
-    new_doi = corpora_normalize_doi(new_doi_node, errors)
-    if old_doi and not new_doi:
+    new_doi_url = None
+    if new_doi_node := get_doi_link_node(body, errors):
+        if new_doi_url := corpora_get_normalized_doi_url(new_doi_node, errors):
+            new_doi_node["link_url"] = new_doi_url
+    if old_doi and not new_doi_url:
         # If the DOI was deleted, remove the publisher_metadata field
         collection.update(publisher_metadata=None)
-    elif new_doi != old_doi:
+    elif new_doi_url != old_doi:
         # If the DOI has changed, fetch and update the metadata
-        publisher_metadata = get_publisher_metadata(new_doi, errors)
+        publisher_metadata = get_publisher_metadata(new_doi_url, errors)
         body["publisher_metadata"] = publisher_metadata
     if errors:
         raise InvalidParametersHTTPException(detail=errors)

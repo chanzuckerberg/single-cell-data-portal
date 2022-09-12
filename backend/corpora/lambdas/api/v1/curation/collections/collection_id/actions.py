@@ -3,7 +3,7 @@ from flask import g, jsonify, Response
 from backend.corpora.lambdas.api.v1.collection import (
     get_collection_and_verify_body,
     get_publisher_metadata,
-    curation_normalize_doi,
+    curation_get_normalized_doi_url,
 )
 from ..common import (
     extract_doi_from_links,
@@ -68,17 +68,17 @@ def patch(collection_id: str, body: dict, token_info: dict) -> Response:
         raise err
 
     if new_doi := body.get("doi"):
-        new_doi_url = curation_normalize_doi(new_doi, errors)
-        links = body.get("links", [])
-        links.append({"link_type": ProjectLinkType.DOI.name, "link_url": new_doi_url})
-        body["links"] = links
+        if new_doi_url := curation_get_normalized_doi_url(new_doi, errors):
+            links = body.get("links", [])
+            links.append({"link_type": ProjectLinkType.DOI.name, "link_url": new_doi_url})
+            body["links"] = links
 
-        # Compute the diff between old and new DOI
-        old_doi = collection.get_doi()
-        if new_doi_url and new_doi_url != old_doi:
-            # If the DOI has changed, fetch and update the metadata
-            publisher_metadata = get_publisher_metadata(new_doi_url, errors)
-            body["publisher_metadata"] = publisher_metadata
+            # Compute the diff between old and new DOI
+            old_doi = collection.get_doi()
+            if new_doi_url != old_doi:
+                # If the DOI has changed, fetch and update the metadata
+                publisher_metadata = get_publisher_metadata(new_doi_url, errors)
+                body["publisher_metadata"] = publisher_metadata
 
     if errors:
         raise InvalidParametersHTTPException(detail=errors)
