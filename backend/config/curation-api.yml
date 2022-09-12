@@ -293,7 +293,7 @@ paths:
       summary: Delete a Dataset or cancel processing for a Dataset in a private Collection or Revision.
       description: >-
         Delete a Dataset or cancel processing for a Dataset. The **collection_id** MUST reference either a private Collection OR a 
-        Revision. MUST indicate the Dataset by providing the **dataset_id** parameters.
+        Revision. MUST indicate the Dataset by providing the **dataset_id** parameter.
 
         If the Dataset is being processed, then this endpoint will cancel processing and delete the Dataset. While 
         the cancellation process is occurring, the Dataset may still appear as part of the Collection for a few minutes, but will eventually be removed.
@@ -347,9 +347,9 @@ paths:
         "404":
           $ref: "#/components/responses/404"
     post:
-      summary: Create a Dataset ID to be used in a future upload.
+      summary: Create an empty Dataset and return the `id` to be used in a future upload.
       description: |
-        Create an new empty Dataset and return the `dataset_id`. The `dataset_id` is used when uploading a Dataset file 
+        Create a new empty Dataset and return the `id`. The `id` is used when uploading a Dataset file 
         to S3 to identify what Dataset the file belongs to.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.datasets.actions.post
       security:
@@ -366,7 +366,7 @@ paths:
               schema:
                 type: object
                 properties:
-                  dataset_id:
+                  id:
                     $ref: "#/components/schemas/dataset_id"
         "401":
           $ref: "#/components/responses/401"
