@@ -16,6 +16,7 @@ from backend.corpora.common.utils.cxg_generation_utils import (
 )
 from tests.unit.backend.corpora.fixtures.environment_setup import fixture_file_path
 
+
 class TestCxgGenerationUtils(unittest.TestCase):
     def setUp(self):
         self.testing_cxg_temp_directory = fixture_file_path(str(uuid4()))
@@ -95,9 +96,9 @@ class TestCxgGenerationUtils(unittest.TestCase):
 
         convert_matrices_to_cxg_arrays(matrix_name, matrix, True, tiledb.Ctx())
 
-        for suffix in ['','c']:
-            actual_stored_array = tiledb.open(matrix_name+suffix)
-            self.assertTrue(path.isdir(matrix_name+suffix))
+        for suffix in ["", "c"]:
+            actual_stored_array = tiledb.open(matrix_name + suffix)
+            self.assertTrue(path.isdir(matrix_name + suffix))
             self.assertTrue(isinstance(actual_stored_array, tiledb.SparseArray))
             self.assertTrue(actual_stored_array[:][""].size == 0)
 
@@ -111,14 +112,14 @@ class TestCxgGenerationUtils(unittest.TestCase):
         convert_matrices_to_cxg_arrays(matrix_name, matrix, True, tiledb.Ctx())
 
         def get_value_at_coord(array, coord, attr):
-            x,y = coord
-            return array[x][""][array[x][attr]==y][0]
+            x, y = coord
+            return array[x][""][array[x][attr] == y][0]
 
-        for suffix,attr_dim in zip(['','c'],['var','obs']):
-            actual_stored_array = tiledb.open(matrix_name+suffix)
-            self.assertTrue(path.isdir(matrix_name+suffix))
+        for suffix, attr_dim in zip(["", "c"], ["var", "obs"]):
+            actual_stored_array = tiledb.open(matrix_name + suffix)
+            self.assertTrue(path.isdir(matrix_name + suffix))
             self.assertTrue(isinstance(actual_stored_array, tiledb.SparseArray))
-            self.assertTrue(get_value_at_coord(actual_stored_array,(0,0),attr_dim) == 1)
-            self.assertTrue(get_value_at_coord(actual_stored_array,(1,1),attr_dim) == 1)
-            self.assertTrue(get_value_at_coord(actual_stored_array,(2,2),attr_dim) == 2)
+            self.assertTrue(get_value_at_coord(actual_stored_array, (0, 0), attr_dim) == 1)
+            self.assertTrue(get_value_at_coord(actual_stored_array, (1, 1), attr_dim) == 1)
+            self.assertTrue(get_value_at_coord(actual_stored_array, (2, 2), attr_dim) == 2)
             self.assertTrue(actual_stored_array[:][""].size == 3)
