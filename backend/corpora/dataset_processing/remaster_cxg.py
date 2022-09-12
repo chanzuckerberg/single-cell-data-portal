@@ -1,20 +1,13 @@
 #!/usr/bin/env python3
-import logging
 import subprocess
 
-from backend.corpora.dataset_processing.process import (
-    get_bucket_prefix,
-)
-
+from backend.corpora.dataset_processing.common import get_bucket_prefix
+from backend.corpora.dataset_processing.logger import logger
 import time
 
 import numpy as np
 import psutil
 import tiledb
-
-
-logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
 
 
 def process(dataset_id: str, cellxgene_bucket: str, prefix=None, dry_run=True):
