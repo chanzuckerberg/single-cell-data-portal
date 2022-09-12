@@ -48,5 +48,5 @@ def post(body: dict, user: str):
         return create_collection(body, user)
     except InvalidParametersHTTPException as ex:
         ex.ext = dict(invalid_parameters=ex.detail)
-        ex.detail = InvalidParametersHTTPException.__default_detail
+        ex.detail = InvalidParametersHTTPException._default_detail
         raise ex
