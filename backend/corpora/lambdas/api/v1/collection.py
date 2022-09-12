@@ -215,7 +215,7 @@ def curation_get_normalized_doi_url(doi: str, errors: list) -> Optional[str]:
     return f"https://doi.org/{doi}"
 
 
-def corpora_get_normalized_doi_url(doi_node: dict, errors: list) -> Optional[str]:
+def portal_get_normalized_doi_url(doi_node: dict, errors: list) -> Optional[str]:
     """
     1. Check for DOI uniqueness in the payload
     2. Normalizes it so that the DOI is always a link (starts with https://doi.org)
@@ -236,7 +236,7 @@ def create_collection(body: dict, user: str):
     errors = []
     doi_url = None
     if doi_node := get_doi_link_node(body, errors):
-        if doi_url := corpora_get_normalized_doi_url(doi_node, errors):
+        if doi_url := portal_get_normalized_doi_url(doi_node, errors):
             doi_node["link_url"] = doi_url
     return create_collection_common(body, user, doi_url, errors)
 
@@ -295,7 +295,7 @@ def update_collection(collection_id: str, body: dict, token_info: dict):
     old_doi = collection.get_doi()
     new_doi_url = None
     if new_doi_node := get_doi_link_node(body, errors):
-        if new_doi_url := corpora_get_normalized_doi_url(new_doi_node, errors):
+        if new_doi_url := portal_get_normalized_doi_url(new_doi_node, errors):
             new_doi_node["link_url"] = new_doi_url
     if old_doi and not new_doi_url:
         # If the DOI was deleted, remove the publisher_metadata field
