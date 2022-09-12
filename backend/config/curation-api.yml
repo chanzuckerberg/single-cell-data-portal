@@ -334,7 +334,7 @@ paths:
         - curatorAccess: []
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
-        - $ref: "#/components/parameters/path_dataset_id_id"
+        - $ref: "#/components/parameters/path_dataset_id"
       responses:
         "202":
           description: Accepted
@@ -362,7 +362,7 @@ paths:
         - collection
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
-        - $ref: "#/components/parameters/path_dataset_id_id"
+        - $ref: "#/components/parameters/path_dataset_id"
       responses:
         "200":
           description: OK
@@ -374,7 +374,7 @@ paths:
           $ref: "#/components/responses/400"
         "404":
           $ref: "#/components/responses/404"
-  /v1/collections/{collection_id}/datasets/{dataset_id}/upload-link:
+  /v1/collections/{collection_id}/datasets/upload-link:
     put:
       summary: Upload a Dataset by providing a link
       description: |
@@ -390,7 +390,6 @@ paths:
         - curatorAccess: []
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
-        - $ref: "#/components/parameters/path_dataset_id_id"
       requestBody:
         content:
           application/json:
@@ -398,11 +397,19 @@ paths:
               type: object
               additionalProperties: false
               properties:
+                id:
+                  $ref: "#/components/schemas/dataset_id"
                 link:
                   description: |
                     A user-provided link to the Dataset source file. The Dataset will be uploaded from the provided 
                     `link` which MUST either be a presigned AWS S3  or Dropbox shared file URL.
                   type: string
+            examples:
+              id:
+                summary: Using the Dataset uuid
+                value:
+                  id: "<existing_dataset_id>"
+                  link: "<download_link_for_data_source_file>"
       responses:
         "202":
           $ref: "#/components/responses/202"

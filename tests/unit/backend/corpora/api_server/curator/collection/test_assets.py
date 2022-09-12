@@ -55,10 +55,7 @@ class TestAsset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
                     assets=[dict(filename="test_filename", filesize=len(content), filetype="H5AD")],
                 )
 
-                response = self.app.get(
-                    "/curation/v1/collections/test_collection_id/datasets/assets",
-                    query_string=dict(dataset_id=dataset_id),
-                )
+                response = self.app.get(f"/curation/v1/collections/test_collection_id/datasets/{dataset_id}/assets")
                 self.assertEqual(200, response.status_code)
                 actual_body = response.json
                 presign_url = actual_body["assets"][0].pop("presigned_url")
@@ -73,8 +70,7 @@ class TestAsset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
                 )
 
                 response = self.app.get(
-                    "/curation/v1/collections/test_collection_id/datasets/assets",
-                    query_string=dict(dataset_id=dataset_id),
+                    f"/curation/v1/collections/test_collection_id/datasets/{dataset_id}/assets",
                 )
                 self.assertEqual(202, response.status_code)
                 actual_body = response.json
@@ -118,8 +114,7 @@ class TestAsset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         for dataset_id in self.test_dataset_id:
             with self.subTest(dataset_id):
                 response = self.app.get(
-                    "/curation/v1/collections/test_collection_id/datasets/assets",
-                    query_string=dict(dataset_id=dataset_id),
+                    f"/curation/v1/collections/test_collection_id/datasets/{dataset_id}/assets",
                 )
                 self.assertEqual(404, response.status_code)
                 actual_body = response.json
