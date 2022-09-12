@@ -287,65 +287,7 @@ paths:
           $ref: "#/components/responses/401"
         "403":
           $ref: "#/components/responses/403"
-
   /v1/collections/{collection_id}/datasets:
-    delete:
-      summary: Delete a Dataset or cancel processing for a Dataset in a private Collection or Revision.
-      description: >-
-        Delete a Dataset or cancel processing for a Dataset. The **collection_id** MUST reference either a private Collection OR a 
-        Revision. MUST indicate the Dataset by providing the **dataset_id** parameters.
-
-        If the Dataset is being processed, then this endpoint will cancel processing and delete the Dataset. While 
-        the cancellation process is occurring, the Dataset may still appear as part of the Collection for a few minutes, but will eventually be removed.
-
-        * Required: provide your access token in the request header as `Authentication: bearer <access_token>`.
-      operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.datasets.actions.delete
-      tags:
-        - collection
-      security:
-        - curatorAccess: []
-      parameters:
-        - $ref: "#/components/parameters/path_collection_id"
-        - $ref: "#/components/parameters/query_dataset_id"
-      responses:
-        "202":
-          description: Accepted
-          content:
-            application/json:
-              schema:
-                type: string
-        "400":
-          $ref: "#/components/responses/400"
-        "401":
-          $ref: "#/components/responses/401"
-        "403":
-          $ref: "#/components/responses/403"
-        "404":
-          $ref: "#/components/responses/404"
-        "405":
-          $ref: "#/components/responses/405"
-    get:
-      summary: Fetch Dataset metadata from a Collection.
-      description: |
-        Fetch Dataset metadata from a Collection. If a `dataset_id` is provided as a query,
-        the associated Dataset metadata is returned.
-      operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.datasets.actions.get
-      tags:
-        - collection
-      parameters:
-        - $ref: "#/components/parameters/path_collection_id"
-        - $ref: "#/components/parameters/query_dataset_id"
-      responses:
-        "200":
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/dataset"
-        "400":
-          $ref: "#/components/responses/400"
-        "404":
-          $ref: "#/components/responses/404"
     post:
       summary: Create a Dataset ID to be used in a future upload.
       description: |
@@ -374,7 +316,65 @@ paths:
           $ref: "#/components/responses/403"
         "405":
           $ref: "#/components/responses/405"
-  /v1/collections/{collection_id}/datasets/upload-link:
+  /v1/collections/{collection_id}/datasets/{dataset_id}:
+    delete:
+      summary: Delete a Dataset or cancel processing for a Dataset in a private Collection or Revision.
+      description: >-
+        Delete a Dataset or cancel processing for a Dataset. The **collection_id** MUST reference either a private Collection OR a 
+        Revision. MUST indicate the Dataset by providing the **dataset_id** parameters.
+
+        If the Dataset is being processed, then this endpoint will cancel processing and delete the Dataset. While 
+        the cancellation process is occurring, the Dataset may still appear as part of the Collection for a few minutes, but will eventually be removed.
+
+        * Required: provide your access token in the request header as `Authentication: bearer <access_token>`.
+      operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.datasets.actions.delete
+      tags:
+        - collection
+      security:
+        - curatorAccess: []
+      parameters:
+        - $ref: "#/components/parameters/path_collection_id"
+        - $ref: "#/components/parameters/path_dataset_id_id"
+      responses:
+        "202":
+          description: Accepted
+          content:
+            application/json:
+              schema:
+                type: string
+        "400":
+          $ref: "#/components/responses/400"
+        "401":
+          $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "404":
+          $ref: "#/components/responses/404"
+        "405":
+          $ref: "#/components/responses/405"
+    get:
+      summary: Fetch Dataset metadata from a Collection.
+      description: |
+        Fetch Dataset metadata from a Collection. If a `dataset_id` is provided as a query,
+        the associated Dataset metadata is returned.
+      operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.datasets.actions.get
+      tags:
+        - collection
+      parameters:
+        - $ref: "#/components/parameters/path_collection_id"
+        - $ref: "#/components/parameters/path_dataset_id_id"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/dataset"
+        "400":
+          $ref: "#/components/responses/400"
+        "404":
+          $ref: "#/components/responses/404"
+  /v1/collections/{collection_id}/datasets/{dataset_id}/upload-link:
     put:
       summary: Upload a Dataset by providing a link
       description: |
@@ -390,6 +390,7 @@ paths:
         - curatorAccess: []
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
+        - $ref: "#/components/parameters/path_dataset_id_id"
       requestBody:
         content:
           application/json:
@@ -397,19 +398,11 @@ paths:
               type: object
               additionalProperties: false
               properties:
-                id:
-                  $ref: "#/components/schemas/dataset_id"
                 link:
                   description: |
                     A user-provided link to the Dataset source file. The Dataset will be uploaded from the provided 
                     `link` which MUST either be a presigned AWS S3  or Dropbox shared file URL.
                   type: string
-            examples:
-              id:
-                summary: Using the Dataset uuid
-                value:
-                  id: "<existing_dataset_id>"
-                  link: "<download_link_for_data_source_file>"
       responses:
         "202":
           $ref: "#/components/responses/202"
@@ -426,7 +419,7 @@ paths:
         "413":
           $ref: "#/components/responses/413"
 
-  /v1/collections/{collection_id}/datasets/s3-upload-credentials:
+  /v1/collections/{collection_id}/s3-upload-credentials:
     get:
       summary: Get credentials for uploading local files
       tags:
@@ -494,7 +487,7 @@ paths:
         "401":
           $ref: "#/components/responses/401"
 
-  /v1/collections/{collection_id}/datasets/assets:
+  /v1/collections/{collection_id}/datasets/{dataset_id}/assets:
     get:
       summary: Retrieve links for downloading a Dataset
       tags:
@@ -506,7 +499,7 @@ paths:
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.assets.get
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
-        - $ref: "#/components/parameters/query_dataset_id"
+        - $ref: "#/components/parameters/path_dataset_id"
       responses:
         "200":
           description: OK
@@ -1013,11 +1006,11 @@ components:
       required: true
       schema:
         $ref: "#/components/schemas/collection_id"
-    query_dataset_id:
+    path_dataset_id:
       description: The uuid of the Dataset.
-      in: query
+      in: path
       name: dataset_id
-      required: false
+      required: true
       schema:
         $ref: "#/components/schemas/dataset_id"
   responses:
