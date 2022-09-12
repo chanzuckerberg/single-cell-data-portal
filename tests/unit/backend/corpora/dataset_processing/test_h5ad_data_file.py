@@ -226,7 +226,9 @@ class TestH5ADDataFile(unittest.TestCase):
             expected_x_data = anndata_object.X
             with tiledb.open(main_x_array_location, mode="r") as x_array:
                 if is_sparse:
-                    actual_x_data = np.reshape(x_array[:, :][""], expected_x_data.shape)
+                    actual_x_data = np.zeros_like(expected_x_data)
+                    data = x_array[:]
+                    actual_x_data[data['obs'],data['var']] = data['data']
                 else:
                     actual_x_data = x_array[:, :]
                 self.assertTrue(np.array_equal(expected_x_data, actual_x_data))
