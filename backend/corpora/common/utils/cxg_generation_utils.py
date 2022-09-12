@@ -121,7 +121,9 @@ def convert_matrices_to_cxg_arrays(matrix_name, matrix, encode_as_sparse_array, 
     number of elements in the matrix, only the number of nonzero elements.
     """
 
-    def create_matrix_array(matrix_name, number_of_rows, number_of_columns, encode_as_sparse_array, compression=22, row=True):
+    def create_matrix_array(
+        matrix_name, number_of_rows, number_of_columns, encode_as_sparse_array, compression=22, row=True
+    ):
         dim_filters = tiledb.FilterList([tiledb.ByteShuffleFilter(), tiledb.ZstdFilter(level=compression)])
         if not encode_as_sparse_array:
             attrs = [tiledb.Attr(dtype=np.float32, filters=tiledb.FilterList([tiledb.ZstdFilter(level=compression)]))]
@@ -163,8 +165,8 @@ def convert_matrices_to_cxg_arrays(matrix_name, matrix, encode_as_sparse_array, 
                         filters=dim_filters,
                     )
                 )
-                attrs.append(tiledb.Attr(name="var",dtype=np.uint32, filters=dim_filters))
-            else:                
+                attrs.append(tiledb.Attr(name="var", dtype=np.uint32, filters=dim_filters))
+            else:
                 domain = tiledb.Domain(
                     tiledb.Dim(
                         name="var",
@@ -174,7 +176,7 @@ def convert_matrices_to_cxg_arrays(matrix_name, matrix, encode_as_sparse_array, 
                         filters=dim_filters,
                     ),
                 )
-                attrs.append(tiledb.Attr(name="obs",dtype=np.uint32, filters=dim_filters))
+                attrs.append(tiledb.Attr(name="obs", dtype=np.uint32, filters=dim_filters))
 
             schema = tiledb.ArraySchema(
                 domain=domain,
@@ -184,11 +186,8 @@ def convert_matrices_to_cxg_arrays(matrix_name, matrix, encode_as_sparse_array, 
                 cell_order="row-major",
                 tile_order="row-major",
                 capacity=1024000,
-            )                
+            )
             tiledb.Array.create(matrix_name, schema)
-        
-
-
 
     number_of_rows = matrix.shape[0]
     number_of_columns = matrix.shape[1]
@@ -202,26 +201,24 @@ def convert_matrices_to_cxg_arrays(matrix_name, matrix, encode_as_sparse_array, 
                 matrix_subset = matrix[start_row_index:end_row_index, :]
                 if not isinstance(matrix_subset, np.ndarray):
                     matrix_subset = matrix_subset.toarray()
-                    array[start_row_index:end_row_index, :] = matrix_subset        
+                    array[start_row_index:end_row_index, :] = matrix_subset
     else:
         create_matrix_array(matrix_name, number_of_rows, number_of_columns, True, row=True)
-        create_matrix_array(matrix_name+'c', number_of_rows, number_of_columns, True, row=False)
+        create_matrix_array(matrix_name + "c", number_of_rows, number_of_columns, True, row=False)
         array_r = tiledb.open(matrix_name, mode="w", ctx=ctx)
-        array_c = tiledb.open(matrix_name+'c', mode="w", ctx=ctx)
-        
+        array_c = tiledb.open(matrix_name + "c", mode="w", ctx=ctx)
+
         for start_row_index in range(0, number_of_rows, stride):
             end_row_index = min(start_row_index + stride, number_of_rows)
             matrix_subset = matrix[start_row_index:end_row_index, :]
             if not isinstance(matrix_subset, np.ndarray):
                 matrix_subset = matrix_subset.toarray()
-        
+
             indices = np.nonzero(matrix_subset)
             trow = indices[0] + start_row_index
             t_data = matrix_subset[indices[0], indices[1]]
             array_r[trow] = {"var": indices[1], "": t_data}
             array_c[indices[1]] = {"obs": trow, "": t_data}
-        
+
         array_r.close()
         array_c.close()
-
-

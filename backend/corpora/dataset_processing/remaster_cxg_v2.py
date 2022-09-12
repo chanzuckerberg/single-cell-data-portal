@@ -55,15 +55,15 @@ def process(dataset_id: str, cellxgene_bucket: str, prefix=None, dry_run=True):
         "source_array": "X_old",
     }
 
-    executed = compute(cxg=local_path, **params) #executed is true if a sparse array was upgraded
+    executed = compute(cxg=local_path, **params)  # executed is true if a sparse array was upgraded
     if executed:
         logger.info(f"Dataset at {path} computed successfully")
     else:
         logger.info(f"Dataset was dense, nothing to be done")
-        
+
     if not dry_run and executed:
-        for suffix in ['','c']:
-            upload_command = ["aws", "s3", "sync", "--delete", f"{local_path}/X_new"+suffix, path+suffix]
+        for suffix in ["", "c"]:
+            upload_command = ["aws", "s3", "sync", "--delete", f"{local_path}/X_new" + suffix, path + suffix]
             subprocess.run(upload_command, check=True)
 
     # Cleanup
@@ -73,6 +73,7 @@ def process(dataset_id: str, cellxgene_bucket: str, prefix=None, dry_run=True):
     shutil.rmtree(f"{local_path}/X_old")
     if executed:
         shutil.rmtree(f"{local_path}/X_new")
+
 
 def compute(**kwargs):
     """
@@ -113,7 +114,7 @@ def compute(**kwargs):
     with tiledb.scope_ctx(ctx):
         with tiledb.open(f"{cxg}/{source_array}", "r") as old_X:
             in_sparse = old_X.schema.sparse
-            if not in_sparse: # exit early, nothing to be done
+            if not in_sparse:  # exit early, nothing to be done
                 return False
 
             create_new_X(
@@ -139,7 +140,7 @@ def compute(**kwargs):
                         i += chunk
 
             logger.info("consolidating...")
-            for suffix in ['','c']:
+            for suffix in ["", "c"]:
                 tiledb.consolidate(f"{cxg}/{target_array}{suffix}")
                 tiledb.vacuum(f"{cxg}/{target_array}{suffix}")
 
@@ -148,6 +149,7 @@ def compute(**kwargs):
     logger.info("done.")
     return True
 
+
 def create_new_X(cxg, target_array, compression, X_extent, old_schema, cell_order, tile_order, capacity):
     logger.info(f"create_new_X: {True}")
     attr_filters = tiledb.FilterList([tiledb.ZstdFilter(level=compression)])
@@ -155,7 +157,7 @@ def create_new_X(cxg, target_array, compression, X_extent, old_schema, cell_orde
     old_dims = [old_schema.domain.dim(d) for d in range(old_schema.domain.ndim)]
     old_attr = old_schema.attr(0)
 
-    for it,suffix, name_dim, name_attr in zip([0,1],['','c'],['obs','var'],['var','obs']):
+    for it, suffix, name_dim, name_attr in zip([0, 1], ["", "c"], ["obs", "var"], ["var", "obs"]):
         tiledb.Array.create(
             f"{cxg}/{target_array}{suffix}",
             tiledb.ArraySchema(
@@ -172,13 +174,16 @@ def create_new_X(cxg, target_array, compression, X_extent, old_schema, cell_orde
                 ),
                 sparse=True,
                 allows_duplicates=True,
-                attrs=[tiledb.Attr(name="", dtype=old_attr.dtype, filters=attr_filters),
-                        tiledb.Attr(name=name_attr, dtype=old_dims[1-it].dtype, filters=dim_filters)],
+                attrs=[
+                    tiledb.Attr(name="", dtype=old_attr.dtype, filters=attr_filters),
+                    tiledb.Attr(name=name_attr, dtype=old_dims[1 - it].dtype, filters=dim_filters),
+                ],
                 cell_order=f"{cell_order}-major",
                 tile_order=f"{tile_order}-major",
                 capacity=capacity,
             ),
         )
+
 
 def create_ctx(config: dict = {}) -> tiledb.Ctx:
     cfg = tiledb.Config(config)

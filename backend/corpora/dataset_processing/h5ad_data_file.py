@@ -95,11 +95,11 @@ class H5ADDataFile:
 
         convert_matrices_to_cxg_arrays(matrix_container, x_matrix_data, is_sparse, ctx)
 
-        suffixes = ['', 'c'] if is_sparse else ['']
+        suffixes = ["", "c"] if is_sparse else [""]
         for suffix in suffixes:
-            tiledb.consolidate(matrix_container+suffix, ctx=ctx)
+            tiledb.consolidate(matrix_container + suffix, ctx=ctx)
             if hasattr(tiledb, "vacuum"):
-                tiledb.vacuum(matrix_container+suffix)
+                tiledb.vacuum(matrix_container + suffix)
 
     def write_anndata_embeddings_to_cxg(self, output_cxg_directory, ctx):
         def is_valid_embedding(adata, embedding_name, embedding_array):
