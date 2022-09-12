@@ -48,7 +48,7 @@ def extract_doi_from_links(collection: dict):
     """
     doi, resp_links = None, []
     if links := collection.get("links"):
-        for link in links:
+        for link in collection.get("links", []):
             if link["link_type"] == ProjectLinkType.DOI:
                 doi = urlparse(link["link_url"]).path.strip("/")
             else:
