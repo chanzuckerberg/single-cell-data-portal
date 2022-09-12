@@ -22,7 +22,7 @@ from ....common.utils.http_exceptions import (
     ForbiddenHTTPException,
 )
 from ....api_server.db import dbconnect
-from ....common.utils.regex import CONTROL_CHARS
+from ....common.utils.regex import CONTROL_CHARS, DOI_REGEX_COMPILED, CURIE_REFERENCE_REGEX
 
 
 @dbconnect
@@ -133,9 +133,6 @@ def post_collection_revision(collection_id: str, token_info: dict):
     return make_response(jsonify(result), 201)
 
 
-doi_regex = re.compile(r"^10.\d{4,9}/[-._;()/:A-Z0-9]+$", flags=re.I)
-
-
 def get_publisher_metadata(doi: str, errors: list) -> Optional[dict]:
     """
     Retrieves publisher metadata from Crossref.
@@ -212,8 +209,7 @@ def get_doi_link_node(body: dict, errors: list) -> Optional[dict]:
 
 def curation_get_normalized_doi_url(doi: str, errors: list) -> Optional[str]:
     # Regex below is adapted from https://bioregistry.io/registry/doi 'Pattern for CURIES'
-    curie_reference_regex = r"^\d{2}\.\d{4}.*$"
-    if not re.match(curie_reference_regex, doi):
+    if not re.match(CURIE_REFERENCE_REGEX, doi):
         errors.append({"name": ProjectLinkType.DOI.value, "reason": "DOI must be a CURIE reference."})
         return None
     return f"https://doi.org/{doi}"
@@ -229,7 +225,7 @@ def corpora_get_normalized_doi_url(doi_node: dict, errors: list) -> Optional[str
     parsed = urlparse(doi_url)
     if not parsed.scheme and not parsed.netloc:
         parsed_doi = parsed.path
-        if not doi_regex.match(parsed_doi):
+        if not DOI_REGEX_COMPILED.match(parsed_doi):
             errors.append({"link_type": ProjectLinkType.DOI.name, "reason": "Invalid DOI"})
             return None
         doi_url = f"https://doi.org/{parsed_doi}"
