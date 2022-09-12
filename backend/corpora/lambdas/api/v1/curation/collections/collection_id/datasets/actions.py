@@ -1,4 +1,3 @@
-import re
 from flask import g, make_response, jsonify
 
 from backend.corpora.api_server.db import dbconnect
@@ -9,27 +8,14 @@ from backend.corpora.common.utils.http_exceptions import (
     ConflictException,
     NotFoundHTTPException,
 )
-from backend.corpora.common.utils.regex import DATASET_ID_REGEX, CURATOR_TAG_PREFIX_REGEX, EXTENSION_REGEX
+from backend.corpora.common.utils.regex import validate_curator_tag
 from backend.corpora.lambdas.api.v1.authorization import owner_or_allowed
 from backend.corpora.lambdas.api.v1.common import (
     get_dataset_else_error,
-    get_collection_else_forbidden,
     delete_dataset_common,
+    get_collection_else_forbidden,
 )
 from backend.corpora.lambdas.api.v1.curation.collections.common import EntityColumns, reshape_dataset_for_curation_api
-
-REGEX = f"^({DATASET_ID_REGEX}|{CURATOR_TAG_PREFIX_REGEX})\\.{EXTENSION_REGEX}$"
-
-
-def validate_curator_tag(curator_tag: str) -> bool:
-    """
-    Verify the correct curator tag format is obeyed.
-
-    :param curator_tag: the tag name to validate.
-    :return: True if CURATOR_TAG_PREFIX_REGEX is matched.
-    """
-    matched = re.match(REGEX, curator_tag)
-    return True if matched and matched.groupdict().get("tag_prefix") else False
 
 
 @dbconnect
@@ -40,8 +26,10 @@ def patch(token_info: dict, collection_id: str, body: dict, curator_tag: str = N
         db_session, collection_id, visibility=CollectionVisibility.PRIVATE, owner=owner_or_allowed(token_info)
     )
     tag = body["curator_tag"]
-    if not validate_curator_tag(tag):
-        raise InvalidParametersHTTPException(detail="Invalid Curator Tag")
+    try:
+        validate_curator_tag(tag)
+    except ValueError as ex:
+        raise InvalidParametersHTTPException(detail=ex.args[0])
 
     # Check if the curator_tag is unique across datasets in the collection.
     if dataset.curator_tag != tag:

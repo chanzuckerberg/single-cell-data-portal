@@ -9,6 +9,7 @@ from backend.corpus_asset_pipelines.integrated_corpus import extract
 from backend.corpus_asset_pipelines.integrated_corpus import load
 from backend.corpus_asset_pipelines.integrated_corpus.transform import (
     apply_pre_concatenation_filters,
+    create_high_level_tissue,
 )
 from backend.corpus_asset_pipelines.integrated_corpus.validate import should_load_dataset, validate_dataset_properties
 from backend.wmg.data.schemas.corpus_schema import INTEGRATED_ARRAY_NAME, OBS_ARRAY_NAME, VAR_ARRAY_NAME
@@ -72,6 +73,7 @@ def process_h5ad_for_corpus(h5ad_path: str, corpus_path: str):
 
     # transform
     apply_pre_concatenation_filters(anndata_object)
+    create_high_level_tissue(anndata_object)
     logger.info(f"loaded: shape={anndata_object.shape}")
     if not validate_dataset_properties(anndata_object):
         return

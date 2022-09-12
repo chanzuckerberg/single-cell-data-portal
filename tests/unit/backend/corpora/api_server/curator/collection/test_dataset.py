@@ -1,5 +1,5 @@
 import unittest
-from backend.corpora.common.corpora_orm import CollectionVisibility, UploadStatus
+from backend.corpora.common.corpora_orm import CollectionVisibility, UploadStatus, IsPrimaryData
 from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest
 
 
@@ -87,15 +87,10 @@ class TestPatchDataset(BaseAuthAPITest):
             self.session.expire_all()
             self.assertIsNone(_dataset.curator_tag)
 
-        tests = [("new", "bad"), ("id", "h5ad"), ("id", "bad")]
-        for tag_name, tag_extension in tests:
+        dataset = self.generate_dataset(self.session, collection=collection)
+        tests = [dataset.id, ""]
+        for tag_name in tests:
             with self.subTest(tag_name):
-                dataset = self.generate_dataset(self.session, collection=collection)
-                _test(tag_name, dataset)
-            with self.subTest([tag_name, tag_extension]):
-                dataset = self.generate_dataset(self.session, collection=collection)
-                name = dataset.id if tag_name == "id" else tag_extension
-                tag_name = f"{name}.{tag_extension}"
                 _test(tag_name, dataset)
 
     def test___conflict_curator_tag(self):
@@ -117,7 +112,7 @@ class TestPatchDataset(BaseAuthAPITest):
 class TestGetDatasets(BaseAuthAPITest):
     def test_get_dataset_in_a_collection_200(self):
         collection = self.generate_collection(self.session, visibility=CollectionVisibility.PRIVATE.name)
-        dataset = self.generate_dataset(self.session, collection=collection, curator_tag="tag.h5ad")
+        dataset = self.generate_dataset(self.session, collection=collection, curator_tag="tag.h5ad", name="test")
         test_url = f"/curation/v1/collections/{collection.id}/datasets"
 
         test_query_strings = [{"dataset_id": dataset.id}, {"curator_tag": dataset.curator_tag}]
@@ -126,6 +121,30 @@ class TestGetDatasets(BaseAuthAPITest):
                 response = self.app.get(test_url, query_string=query_string)
                 self.assertEqual(200, response.status_code)
                 self.assertEqual(dataset.id, response.json["id"])
+
+    def test_get_dataset_shape(self):
+        collection = self.generate_collection(self.session, visibility=CollectionVisibility.PRIVATE.name)
+        test_url = f"/curation/v1/collections/{collection.id}/datasets"
+
+        with self.subTest("name to title"):
+            dataset = self.generate_dataset(self.session, collection=collection, name="test")
+            response = self.app.get(test_url, query_string={"dataset_id": dataset.id})
+            self.assertEqual(dataset.name, response.json["title"])
+
+    def test_get_dataset_is_primary_data_shape(self):
+        collection = self.generate_collection(self.session, visibility=CollectionVisibility.PRIVATE.name)
+        test_url = f"/curation/v1/collections/{collection.id}/datasets"
+
+        tests = [
+            (IsPrimaryData.PRIMARY, [True]),
+            (IsPrimaryData.SECONDARY, [False]),
+            (IsPrimaryData.BOTH, [True, False]),
+        ]
+        for is_primary_data, result in tests:
+            with self.subTest(f"{is_primary_data}=={result}"):
+                dataset = self.generate_dataset(self.session, collection=collection, is_primary_data=is_primary_data)
+                response = self.app.get(test_url, query_string={"dataset_id": dataset.id})
+                self.assertEqual(result, response.json["is_primary_data"])
 
     def test_get_nonexistent_dataset_404(self):
         collection = self.generate_collection(self.session, visibility=CollectionVisibility.PRIVATE.name)
