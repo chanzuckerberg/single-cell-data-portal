@@ -59,7 +59,7 @@ def process(dataset_id: str, cellxgene_bucket: str, prefix=None, dry_run=True):
     if executed:
         logger.info(f"Dataset at {path} computed successfully")
     else:
-        logger.info(f"Dataset was dense, nothing to be done")
+        logger.info("Dataset was dense, nothing to be done")
 
     if not dry_run and executed:
         for suffix in ["", "c"]:
