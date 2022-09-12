@@ -487,11 +487,10 @@ class TestGetCollectionID(BaseAuthAPITest):
         )
         res = self.app.get(f"/curation/v1/collections/{collection.id}")
         self.assertEqual("FAILURE", res.json["processing_status"])
-        for resp_dataset in res.json["datasets"]:
-            if dataset.id == resp_dataset["id"]:
-                self.assertEqual("VALIDATION_FAILURE", resp_dataset["processing_status"])
-                self.assertEqual("test message", resp_dataset["processing_status_detail"])
-                break
+        actual_dataset = res.json["datasets"][0]
+        self.assertEqual(dataset.id, actual_dataset["id"])
+        self.assertEqual("VALIDATION_FAILURE", actual_dataset["processing_status"])
+        self.assertEqual("test message", actual_dataset["processing_status_detail"])
 
     def test__get_collection_with_dataset_failing_pipeline(self):
         collection = self.generate_collection(
@@ -503,10 +502,9 @@ class TestGetCollectionID(BaseAuthAPITest):
         )
         res = self.app.get(f"/curation/v1/collections/{collection.id}")
         self.assertEqual("FAILURE", res.json["processing_status"])
-        for resp_dataset in res.json["datasets"]:
-            if dataset.id == resp_dataset["id"]:
-                self.assertEqual("PIPELINE_FAILURE", resp_dataset["processing_status"])
-                break
+        actual_dataset = res.json["datasets"][0]
+        self.assertEqual(dataset.id, actual_dataset["id"])
+        self.assertEqual("PIPELINE_FAILURE", actual_dataset["processing_status"])
 
     def test__get_nonexistent_collection__403(self):
         res = self.app.get("/curation/v1/collections/test_collection_id_nonexistent")
