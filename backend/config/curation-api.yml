@@ -1014,7 +1014,6 @@ components:
         | `"VALIDATION_FAILURE"` | An error occured during validation. See `processing_status_detail`|
         | `"PIPELINE_FAILURE"`| An error occured during processing. |
       enum:
-        - FAILURE
         - PENDING
         - SUCCESS
         - VALIDATION_FAILURE
