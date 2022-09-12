@@ -201,7 +201,7 @@ def convert_matrices_to_cxg_arrays(matrix_name, matrix, encode_as_sparse_array, 
                 matrix_subset = matrix[start_row_index:end_row_index, :]
                 if not isinstance(matrix_subset, np.ndarray):
                     matrix_subset = matrix_subset.toarray()
-                    array[start_row_index:end_row_index, :] = matrix_subset
+                array[start_row_index:end_row_index, :] = matrix_subset
     else:
         create_matrix_array(matrix_name, number_of_rows, number_of_columns, True, row=True)
         create_matrix_array(matrix_name + "c", number_of_rows, number_of_columns, True, row=False)
