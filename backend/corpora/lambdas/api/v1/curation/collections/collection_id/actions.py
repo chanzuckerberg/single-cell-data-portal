@@ -17,7 +17,6 @@ from backend.corpora.common.corpora_orm import (
 from backend.corpora.common.entities import Collection
 from backend.corpora.common.utils.http_exceptions import (
     MethodNotAllowedException,
-    NotFoundHTTPException,
     InvalidParametersHTTPException,
     ForbiddenHTTPException,
 )
@@ -39,9 +38,7 @@ def delete(collection_id: str, token_info: dict):
 @dbconnect
 def get(collection_id: str, token_info: dict):
     db_session = g.db_session
-    collection = Collection.get_collection(db_session, collection_id, include_tombstones=False)
-    if not collection:
-        raise NotFoundHTTPException
+    collection = get_collection_else_forbidden(db_session, collection_id, include_tombstones=False)
     collection_response = reshape_for_curation_api(db_session, collection, token_info)
     return jsonify(collection_response)
 

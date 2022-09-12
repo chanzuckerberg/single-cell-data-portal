@@ -25,7 +25,8 @@ from ..corpora_orm import (
     ConversionStatus,
 )
 from ..utils.db_helpers import clone
-from ..utils.ontology_mapping import ontology_mapping
+from ..utils.development_stage_ontology_mapping import development_stage_ontology_mapping
+from ..utils.tissue_ontology_mapping import tissue_ontology_mapping
 from ..utils.s3_buckets import buckets
 
 
@@ -183,19 +184,32 @@ class Dataset(Entity):
 
     @staticmethod
     def enrich_development_stage_with_ancestors(dataset):
-        if "development_stage" not in dataset:
+        Dataset._enrich_with_ancestors(dataset, "development_stage", development_stage_ontology_mapping)
+
+    @staticmethod
+    def enrich_tissue_with_ancestors(dataset):
+        """
+        Tag dataset with ancestors for all tissues in the given dataset, if any.
+        """
+        Dataset._enrich_with_ancestors(dataset, "tissue", tissue_ontology_mapping)
+
+    def _enrich_with_ancestors(dataset, key, ontology_mapping):
+        """
+        Tag dataset with ancestors for all values of the given key, if any.
+        """
+        if key not in dataset:
             return
 
-        leaves = [e["ontology_term_id"] for e in dataset["development_stage"]]
+        terms = [e["ontology_term_id"] for e in dataset[key]]
 
-        if not leaves:
+        if not terms:
             return
 
-        ancestors = [ontology_mapping.get(leaf) for leaf in leaves]
+        ancestors = [ontology_mapping.get(term) for term in terms]
         flattened_ancestors = [item for sublist in ancestors if sublist for item in sublist]
         unique_ancestors = list(OrderedDict.fromkeys(flattened_ancestors))
         if unique_ancestors:
-            dataset["development_stage_ancestors"] = unique_ancestors
+            dataset[f"{key}_ancestors"] = unique_ancestors
 
     def _create_new_explorer_url(self, new_id: str) -> str:
         if self.explorer_url is None:

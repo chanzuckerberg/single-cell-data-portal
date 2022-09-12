@@ -1,6 +1,6 @@
-FROM rocker/r-ver:4.0.3
+FROM satijalab/seurat:4.1.0
 
-# Most of these are required for SCE
+# Most of these are required for SCE or R packages
 RUN apt-get update && apt-get -yq install \
       cpio \
       git \
@@ -12,7 +12,14 @@ RUN apt-get update && apt-get -yq install \
       libcurl4-openssl-dev \
       libglpk-dev \
       libxml2-dev \
+      libfontconfig1-dev \
+      libharfbuzz-dev \
+      libfribidi-dev \
+      libpng-dev \
+      libtiff5-dev \
+      libfreetype6-dev \
       wget \
+
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/* && \
   # Install R dependencies
@@ -22,5 +29,5 @@ RUN apt-get update && apt-get -yq install \
   #       See https://github.com/cellgeni/sceasy#installation
   R -e "BiocManager::install('LoomExperiment')" && \
   R -e "install.packages(c('devtools', 'igraph'));" && \
-  R -e "library(devtools); devtools::install_github('cellgeni/sceasy')" && \
-  R -e "install.packages('Seurat',dependencies=TRUE, repos='http://cran.rstudio.com/')"
+  R -e "library(devtools); devtools::install_github('cellgeni/sceasy@v0.0.7')" && \
+  R -e "devtools::install_version('SeuratObject', version = '4.1.1', repos = 'http://cran.rstudio.com/')"

@@ -1,7 +1,15 @@
 openapi: 3.0.0
 info:
   version: "1.0.0"
-  title: Chan Zuckerberg Initiative cellxgene Data Portal Curator API
+  title: Chan Zuckerberg Initiative CELLxGENE Discover API
+  termsOfService: https://cellxgene.cziscience.com/tos
+  contact:
+    name: API Support
+    email: cellxgene@chanzuckerberg.com
+  description: |
+    ## For Examples
+    * [Python Notebooks](https://github.com/chanzuckerberg/single-cell-curation/tree/main/notebooks/curation_api/python_raw)
+    * [R Notebooks](https://github.com/chanzuckerberg/single-cell-curation/tree/main/notebooks/curation_api/R)
 servers:
   - description: Production environment
     url: https://api.cellxgene.cziscience.com/
@@ -15,8 +23,8 @@ paths:
       summary: Generate an access token
       tags:
         - authentication
-      description: >-
-        Returns a bearer access token that must be passed as a parameter to requests that
+      description: |
+        Returns a bearer access token that must be passed in an Authentication header to requests that
         require authorization such as creating a new Collection.
       operationId: backend.corpora.lambdas.api.v1.curation.auth.token.post
       parameters:
@@ -26,7 +34,7 @@ paths:
             type: string
             example: "<YOUR-CURATOR-API-KEY>"
           required: true
-          description: Your curation API key.
+          description: Your curation API key.```
       responses:
         "201":
           description: Created
@@ -42,20 +50,23 @@ paths:
 
   /v1/collections:
     get:
-      summary: Fetch Collections metadata.
-      description: >-
-        * When the visibility parameter is unspecified or set to `PUBLIC`, a list of all public collections is returned.
-        The Authorization header is not required. If a collection in the list has been deleted, then it is annotated
-        with tombstone set to True.
+      summary: List Collections' metadata.
+      description: |
+        For each Collection in the list, the Datasets for that Collection include a subset of Dataset metadata as a 
+        preview. To retrieve full Dataset metadata for a specific Collection, GET /v1/collections/{collection_id} must 
+        be used.
 
-        * When the visibility parameter is set to `PRIVATE`, a list of all private collections that the user is
-        authorized to access is returned. The Authorization header is required. If a collection in the list is a private
-        revision of a public collection, then it is annotated with revision_of.
+        The default `visibility` is PUBLIC. When visibility is PUBLIC, then a list of all public Collections is 
+        returned. 
 
-        * Each collection in the list contains a subset of collection metadata as a preview.
+        When the visibility parameter is set to PRIVATE, a list of all private Collections or private revisions of 
+        public Collections that the user is authorized to access is returned. An access token MUST be set in the request
+        header as: `Authentication: bearer <access_token>`
 
-        * To retrieve full collection metadata for a specific collection, `GET /v1/collections/{collection_id}`
-        must be used.
+        If a Collection in the list is a private revision of a public Collection, then it is annotated with 
+        `revision_of`.
+
+        * Optional: provide your access token in the request header as `Authentication: bearer <access_token>`.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.actions.get
       security:
         - curatorAccessLenient: []
@@ -63,33 +74,37 @@ paths:
       tags:
         - collection
       parameters:
-        - $ref: "#/components/parameters/query_visibility"
+        - description: |
+            The visibility of the Collections to query for (and its constituent Datasets).
+
+            | visibility | description | Authorization Required |
+            | ---------- | ----------- | -------------- |
+            | PUBLIC   | All public Collections are returned. | No |
+            | PRIVATE  | All private Collections that the user is authorized to access are returned. If a Collection in the list is a private Revision of a public Collection, then it is annotated with revision_of. | Yes |
+          in: query
+          name: visibility
+          required: false
+          schema:
+            $ref: "#/components/schemas/visibility"
         - name: curator
-          description: >-
-            Return collections owned by the specified curator. The use of this parameter is limited to curators 
-            with permission to query all collections.
+          description: |
+            Return Collections owned by the specified curator. The use of this parameter is limited to curators 
+            with permission to query all Collections.
           in: query
           required: false
           schema:
             type: string
-          examples:
-            specified_curator:
-              summary: Return collections owned by the specified curator
-              value:
-                name: "John Smith"
+          example: "John Smith"
       responses:
         "200":
           description: OK
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  collections:
-                    type: array
-                    items:
-                      allOf:
-                        - $ref: "#/components/schemas/collection_list"
+                type: array
+                items:
+                  allOf:
+                    - $ref: "#/components/schemas/collection_list"
         "400":
           $ref: "#/components/responses/400"
         "401":
@@ -98,7 +113,10 @@ paths:
           $ref: "#/components/responses/403"
     post:
       summary: Create a Collection
-      description: Create a new Collection
+      description: >
+        Create a new private Collection
+
+        * Required: provide your access token in the request header as `Authentication: bearer <access_token>`.
       operationId: backend.corpora.lambdas.api.v1.collection.create_collection
       tags:
         - collection
@@ -133,7 +151,10 @@ paths:
   /v1/collections/{collection_id}:
     get:
       summary: Fetch a Collection with Datasets
-      description: Fetch full Collection metadata and associated Datasets.
+      description: >
+        Fetch full metadata for the Collection and its Datasets.
+
+        * Optional: provide your access token in the request header as `Authentication: bearer <access_token>`.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.actions.get
       security:
         - curatorAccessLenient: []
@@ -150,15 +171,18 @@ paths:
               schema:
                 allOf:
                   - $ref: "#/components/schemas/collection_get"
-
-        "404":
-          $ref: "#/components/responses/404"
+        "403":
+          $ref: "#/components/responses/403"
     patch:
       summary: Update a Collection's metadata.
-      description: >-
+      description: |
         Update a private Collection or a Revision. If any Collection metadata fields are included in the body of the
-        request, these fields SHALL be updated for the specified Collection. If links are included, they will fully
-        replace all existing links. A DOI link that cannot be found at Crossref results in a 400 (BAD REQUEST).
+        request, these fields will be updated for the specified Collection. If links are included, they will fully
+        replace all existing links. CELLxGENE Discover queries **Crossref** (link to their site) for the publication 
+        metadata of the DOI such as the list of authors. If the DOI has not been submitted to Crossref by its 
+        publisher, then the request returns a 400 (BAD REQUEST).
+
+        * Optional: provide your access token in the request header as `Authentication: bearer <access_token>`.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.actions.patch
       security:
         - curatorAccess: []
@@ -200,20 +224,20 @@ paths:
                   - contact_name
                   - contact_email
                   - publisher_metadata
-        "201":
-          $ref: "#/components/responses/201"
         "400":
           $ref: "#/components/responses/400_multiple"
         "401":
           $ref: "#/components/responses/401"
         "403":
           $ref: "#/components/responses/403"
-        "404":
-          $ref: "#/components/responses/404"
+        "405":
+          $ref: "#/components/responses/405"
     delete:
-      summary: Delete a private collection.
-      description: >-
-        Delete a private collection or cancel a revision.
+      summary: Delete a private Collection.
+      description: |
+        Delete a private Collection or cancel a Revision.
+
+        * Required: provide your access token in the request header as `Authentication: bearer <access_token>`.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.actions.delete
       security:
         - curatorAccess: []
@@ -233,13 +257,15 @@ paths:
 
   /v1/collections/{collection_id}/revision:
     post:
-      summary: Start a revision of a published Collection
-      description: >-
+      summary: Start a Revision of a published Collection
+      description: |
         This starts a Revision of a published Collection. A Revision is a private Collection that is a copy of a
         published Collection. When published, a Revision replaces the original published Collection in-place. Only one
         ongoing Revision may exist per published Collection at any given time.
 
         All methods of updating or adding Datasets and metadata to a Revision work the same as for a private Collection.
+
+        * Required: provide your access token in the request header as `Authentication: bearer <access_token>`.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.revision.post_collection_revision
       security:
         - curatorAccess: []
@@ -264,11 +290,16 @@ paths:
 
   /v1/collections/{collection_id}/datasets:
     delete:
-      summary: Delete a private Dataset
-      description: >-
-        Delete a Dataset. The **collection_id** MUST reference either a private Collection OR a Revision. MUST
-        indicate the Dataset by providing *one* of either the **curator_tag** (non-null) OR the **dataset_id**
+      summary: Delete a Dataset or cancel processing for a Dataset in a private Collection or Revision.
+      description: |
+        Delete a Dataset or cancel processing for a Dataset. The **Collection_id** MUST reference either a private Collection OR a 
+        Revision. MUST indicate the Dataset by providing *one* of either the `curator_tag` (non-null) OR the `dataset_id`
         parameters.
+
+        If the Dataset is being processed, then this endpoint will cancel processing and delete the Dataset. While 
+        the cancellation process is occurring, the Dataset may still appear as part of the Collection for a few minutes, but will eventually be removed.
+
+        * Required: provide your access token in the request header as `Authentication: bearer <access_token>`.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.datasets.actions.delete
       tags:
         - collection
@@ -293,10 +324,12 @@ paths:
           $ref: "#/components/responses/403"
         "404":
           $ref: "#/components/responses/404"
+        "405":
+          $ref: "#/components/responses/405"
     get:
-      summary: Fetch a Dataset from a collection
-      description: >-
-        Fetch a Dataset from a collection. If a `dataset_id` or a `curator_tag` is provided as a query parameter
+      summary: Fetch Dataset metadata from a Collection.
+      description: |
+        Fetch Dataset metadata from a Collection. If a `dataset_id` or a `curator_tag` is provided as a query,
         the associated Dataset metadata is returned.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.datasets.actions.get
       tags:
@@ -311,7 +344,8 @@ paths:
           content:
             application/json:
               schema:
-                - $ref: "#/components/schemas/dataset"
+                $ref: "#/components/schemas/dataset"
+        "400":
           $ref: "#/components/responses/400"
         "404":
           $ref: "#/components/responses/404"
@@ -319,9 +353,12 @@ paths:
       summary: Update a Dataset's curator tag.
       tags:
         - collection
-      description: >-
-        Update a Dataset's curator-provided tag. The Dataset MUST NOT belong to a published Collection. MUST indicate
-        the Dataset by providing *one* of either the **curator_tag** (non-null) OR the **dataset_id** parameters.
+      description: |
+        Update a Dataset's curator-provided tag. The Dataset MUST belong to a either a private Collection OR a Revision. 
+        MUST indicate the Dataset by providing *one* of either the `curator_tag` (non-null) OR the `dataset_id` 
+        parameters.
+
+        * Required: provide your access token in the request header as `Authentication: bearer <access_token>`.
       security:
         - curatorAccess: []
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.datasets.actions.patch
@@ -347,19 +384,24 @@ paths:
           $ref: "#/components/responses/400_multiple"
         "401":
           $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
         "404":
           $ref: "#/components/responses/404"
+        "409":
+          $ref: "#/components/responses/409"
 
   /v1/collections/{collection_id}/datasets/upload-link:
     put:
       summary: Upload a Dataset by providing a link
-      description: >-
-        Upload a Dataset. The Dataset will be uploaded from the provided link. MUST include a **curator_tag** in the
-        request body; if an existing Dataset has this tag, the existing Dataset SHALL be replaced, otherwise a new
-        Dataset will be added. MAY include the **id** of an existing Dataset, in which case the existing Dataset
-        SHALL be replaced.
+      description: |
+        Upload a Dataset. The Dataset will be uploaded from the provided `link` which MUST either be a presigned AWS S3 
+        URL or Dropbox shared file URL. MAY include a `curator_tag` in the request body; if an existing Dataset has this 
+        tag, the existing Dataset SHALL be replaced, otherwise a new Dataset will be added. MAY include the `dataset_id` 
+        of an existing Dataset, in which case the existing Dataset SHALL be replaced and the `curator_tag` field
+        will be ignored.
 
-        Only presigned AWS S3 URLs and Dropbox shared file links are supported.
+        * Required: provide your access token in the request header as `Authentication: bearer <access_token>`.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.datasets.upload_link.put
       tags:
         - collection
@@ -379,7 +421,10 @@ paths:
                 id:
                   $ref: "#/components/schemas/dataset_id"
                 link:
-                  $ref: "#/components/schemas/upload_link"
+                  description: |
+                    A user-provided link to the Dataset source file. The Dataset will be uploaded from the provided 
+                    `link` which MUST either be a presigned AWS S3  or Dropbox shared file URL.
+                  type: string
             examples:
               tag:
                 summary: Using the tag
@@ -387,7 +432,7 @@ paths:
                   curator_tag: "<new_or_existing_tag>"
                   link: "<download_link_for_data_source_file>"
               id:
-                summary: Using the dataset uuid
+                summary: Using the Dataset uuid
                 value:
                   id: "<existing_dataset_id>"
                   link: "<download_link_for_data_source_file>"
@@ -398,15 +443,21 @@ paths:
           $ref: "#/components/responses/400_multiple"
         "401":
           $ref: "#/components/responses/401"
+        "403":
+          $ref: "#/components/responses/403"
+        "405":
+          $ref: "#/components/responses/405"
         "404":
           $ref: "#/components/responses/404"
+        "413":
+          $ref: "#/components/responses/413"
 
   /v1/collections/{collection_id}/datasets/s3-upload-credentials:
     get:
       summary: Get credentials for uploading local files
       tags:
         - collection
-      description: >-
+      description: |
         Retrieve temporary AWS credentials for uploading Dataset source files to S3 to create
         or update Datasets for the specified Collection.
 
@@ -435,6 +486,10 @@ paths:
         Use `GET /curation/collections/{collection_id}/datasets/` with `curator_tag` or `id` query parameter  to check 
         on the processing status for a given Dataset.
 
+        A Dataset uploaded directly to S3 will appear in the Collection only once the Dataset has started
+        processing.
+
+        * Required: provide your access token in the request header as `Authentication: bearer <access_token>`.
       security:
         - curatorAccess: []
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.datasets.upload_s3.get
@@ -449,6 +504,7 @@ paths:
                 type: object
                 properties:
                   Bucket:
+                    description: The AWS S3 bucket to upload to.
                     type: string
                   credentials:
                     type: object
@@ -460,18 +516,22 @@ paths:
                       SessionToken:
                         type: string
                   UploadKeyPrefix:
+                    description: |
+                      Use this as a prefix to the S3 Key used to upload the file to S3. This will help ensure that it is
+                      processed correctly.
                     type: string
         "401":
           $ref: "#/components/responses/401"
 
   /v1/collections/{collection_id}/datasets/assets:
     get:
-      summary: Retrieve links for downloading a dataset
+      summary: Retrieve links for downloading a Dataset
       tags:
         - collection
-      description: >-
-        Generate Presigned S3 URLs to download the files associated with the dataset. MUST include *one* of the **curator_tag**
-        and **dataset_id** parameters.
+      description: |
+        Generate Presigned S3 URLs to download the files associated with the Dataset. MUST include *one* of the `curator_tag`
+        and `dataset_id` parameters. Pre-signed S3 URLs have a life span of up to 1 hour. Therefore,
+        generate a presigned URL immediately before each download to ensure it is current.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.assets.get
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
@@ -502,250 +562,328 @@ components:
         assets:
           items:
             properties:
-              file_name:
-                type: string
-              file_size:
+              filename:
+                $ref: "#/components/schemas/asset_filename"
+              filesize:
+                description: the size of the file in bytes.
                 type: number
-              file_type:
-                enum:
-                  - H5AD
-                  - RDS
-                type: string
+              filetype:
+                $ref: "#/components/schemas/asset_filetype"
               presigned_url:
+                description: A URL to download this asset.
                 type: string
             type: object
           type: array
         curator_tag:
-          "$ref": "#/components/schemas/curator_tag"
+          $ref: "#/components/schemas/curator_tag"
           nullable: true
         dataset_id:
-          "$ref": "#/components/schemas/dataset_id"
+          $ref: "#/components/schemas/dataset_id"
       type: object
+    asset_filetype:
+      enum:
+        - H5AD
+        - RDS
+      type: string
+      description: the file type of the asset.
+    asset_filename:
+      type: string
+      description: the file name of the asset.
     batch_condition:
-      description: These keys define the batches that a normalization or integration algorithm should be aware of
+      description: |
+        These keys define the batches that a normalization or integration algorithm should be aware of.
+        [batch condition schema](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#batch_condition)
+
       type: array
       items:
         type: string
       nullable: true
       example: ["patient", "seqBatch"]
     collection_list:
-      description: Full Collection metadata
+      description: Collection metadata
       properties:
         collection_url:
+          description: The CELLxGENE Discover URL for the Collection.
           type: string
         contact_email:
-          nullable: true
-          type: string
+          $ref: "#/components/schemas/contact_email"
         contact_name:
-          nullable: true
-          type: string
+          $ref: "#/components/schemas/contact_name"
         created_at:
           type: string
         curator_name:
-          nullable: true
-          type: string
+          $ref: "#/components/schemas/curator_name"
         datasets:
           type: array
+          description: A preview of the metadata for each Dataset in the Collection.
           items:
             $ref: "#/components/schemas/dataset_preview"
         description:
-          type: string
+          $ref: "#/components/schemas/collection_description"
         id:
-          "$ref": "#/components/schemas/collection_id"
+          $ref: "#/components/schemas/collection_id"
         links:
-          "$ref": "#/components/schemas/links"
+          $ref: "#/components/schemas/links"
         name:
-          nullable: true
-          type: string
+          $ref: "#/components/schemas/collection_name"
         processing_status:
-          "$ref": "#/components/schemas/processing_status"
+          $ref: "#/components/schemas/processing_status_collection"
         published_at:
-          nullable: true
-          type: string
+          $ref: "#/components/schemas/published_at"
         publisher_metadata:
-          "$ref": "#/components/schemas/publisher_metadata"
+          $ref: "#/components/schemas/publisher_metadata"
         revised_at:
-          nullable: true
-          type: string
+          $ref: "#/components/schemas/collection_revised_at"
         revising_in:
-          type: string
-          description: the id of the associated revision Collection, if one exists and the user is authorized
-          nullable: true
+          $ref: "#/components/schemas/collection_revising_in"
         revision_of:
-          description: the id of the published version of this Collection
-          nullable: true
-          type: string
-        tombstone:
-          type: boolean
+          $ref: "#/components/schemas/collection_revision_of"
         visibility:
-          "$ref": "#/components/schemas/visibility"
+          $ref: "#/components/schemas/visibility"
       type: object
+    collection_url:
+      description: The CELLxGENE Discover URL for the Collection.
+      type: string
+    contact_email:
+      description: The email of contact person for the Collection. Example email john.smith@email.com
+      type: string
+    contact_name:
+      description: The name of the primary contact for the Collection
+      type: string
+    created_at:
+      description: A timestamp of when the resource was created.
+      type: string
+    curator_name:
+      description: The name of the curator for the Collection.
+      nullable: true
+      type: string
+    collection_name:
+      description: The name of the Collection.
+      nullable: true
+      type: string
+    published_at:
+      description: A timestamp of when the Collection was first published.
+      nullable: true
+      type: string
+    collection_revised_at:
+      description: A timestamp indicating the last time a Revision for this Collection was published.
+      nullable: true
+      type: string
+    dataset_revised_at:
+      description: A timestamp indicating the last time a Revision for this Dataset was published.
+      nullable: true
+      type: string
+    collection_revising_in:
+      type: string
+      description: >
+        If there is a private Revision for a public Collection, then `revising_in` is set to the id of 
+        the private Revision in the metadata of the public Collection. The value is `None` if the user is not 
+        authorized or no private Revision exists.
+      nullable: true
+    collection_revision_of:
+      description: |
+        If a private Collection is a Revision of a public Collection, then `revision_of` is set to the id of the 
+        public Collection in the metadata of the private Collection. The value is `None` if no private Revision 
+        exists.
+      nullable: true
+      type: string
+    collection_tombstone:
+      description: If this is True, then the Collection has been deleted from CELLxGENE Discover.
+      type: boolean
+    collection_description:
+      description: A description of the Collection.
+      type: string
     collection_get:
-      description: Full Collection metadata
+      description: Collection metadata
       properties:
         collection_url:
-          type: string
+          $ref: "#/components/schemas/collection_url"
         contact_email:
-          nullable: true
-          type: string
+          $ref: "#/components/schemas/contact_email"
         contact_name:
-          nullable: true
-          type: string
+          $ref: "#/components/schemas/contact_name"
         created_at:
-          type: string
+          $ref: "#/components/schemas/created_at"
         curator_name:
-          nullable: true
-          type: string
+          $ref: "#/components/schemas/curator_name"
         datasets:
           type: array
+          description: A list of Dataset metadata associated with the Collection
           items:
             $ref: "#/components/schemas/dataset"
         description:
-          type: string
+          $ref: "#/components/schemas/collection_description"
         id:
-          "$ref": "#/components/schemas/collection_id"
+          $ref: "#/components/schemas/collection_id"
         links:
-          "$ref": "#/components/schemas/links"
+          $ref: "#/components/schemas/links"
         name:
-          nullable: true
-          type: string
+          $ref: "#/components/schemas/collection_name"
         processing_status:
-          "$ref": "#/components/schemas/processing_status"
+          $ref: "#/components/schemas/processing_status_collection"
         published_at:
-          nullable: true
-          type: string
+          $ref: "#/components/schemas/published_at"
         publisher_metadata:
-          "$ref": "#/components/schemas/publisher_metadata"
+          $ref: "#/components/schemas/publisher_metadata"
         revised_at:
-          nullable: true
-          type: string
+          $ref: "#/components/schemas/collection_revised_at"
         revising_in:
-          type: string
-          description: the id of the associated revision Collection, if one exists and the user is authorized
-          nullable: true
+          $ref: "#/components/schemas/collection_revising_in"
         revision_of:
-          description: the id of the published version of this Collection
-          nullable: true
-          type: string
-        tombstone:
-          type: boolean
+          $ref: "#/components/schemas/collection_revision_of"
         visibility:
-          "$ref": "#/components/schemas/visibility"
+          $ref: "#/components/schemas/visibility"
       type: object
     collection_form_metadata:
       properties:
         contact_email:
-          description: email of contact person for the collection
-          type: string
+          $ref: "#/components/schemas/contact_email"
         contact_name:
-          description: name of the primary person of contact for the collection
-          type: string
+          $ref: "#/components/schemas/contact_name"
         description:
-          description: description of the collection
-          type: string
+          $ref: "#/components/schemas/collection_description"
         links:
-          "$ref": "#/components/schemas/links"
+          $ref: "#/components/schemas/links"
         name:
-          description: name of the collection
-          type: string
+          $ref: "#/components/schemas/collection_name"
       type: object
     collection_id:
       description: A unique identifier of a Collection.
       example: fedcba98-7654-3210-fedc-ba9876543210
       type: string
-    conversion_status:
-      description:
-        Status for a Dataset asset generated during initial Dataset source
-        file processing
-      enum:
-        - CONVERTED
-        - CONVERTING
-        - FAILED
-        - NA
-        - UPLOADING
-        - UPLOADED
-        - SKIPPED
-      type: string
     curator_tag:
-      description:
-        A curator-provided tag for a Dataset that serves as a unique identifier
-        *within a Collection*.
-      example: an/example/curator_tag.h5ad
+      description: |
+        A curator-provided tag for a Dataset that serves as a unique identifier *within a Collection*. A timestamp or
+        the original file name can be used as the `curator_tag`. The curator tag **cannot** be in UUID format.
+      example: an/example/curator_tag
       type: string
     dataset:
-      allOf:
-        - "$ref": "#/components/schemas/dataset_preview"
-        - properties:
-            batch_condition:
-              "$ref": "#/components/schemas/batch_condition"
-            assay:
-              "$ref": "#/components/schemas/ontology_elements"
-            cell_count:
-              nullable: true
-              type: integer
-            cell_type:
-              "$ref": "#/components/schemas/ontology_elements"
-            curator_tag:
-              "$ref": "#/components/schemas/curator_tag"
-              nullable: true
-            dataset_assets:
-              items:
-                "$ref": "#/components/schemas/dataset_asset"
-              type: array
-            development_stage:
-              "$ref": "#/components/schemas/ontology_elements"
-              nullable: true
-            disease:
-              "$ref": "#/components/schemas/ontology_elements"
-            ethnicity:
-              "$ref": "#/components/schemas/ontology_elements"
-            explorer_url:
-              "$ref": "#/components/schemas/explorer_url"
-            id:
-              "$ref": "#/components/schemas/dataset_id"
-            is_primary_data:
-              "$ref": "#/components/schemas/is_primary_data"
-            mean_genes_per_cell:
-              nullable: true
-              type: number
-            title:
-              nullable: true
-              type: string
-            organism:
-              "$ref": "#/components/schemas/ontology_elements"
-            processing_status:
-              "$ref": "#/components/schemas/processing_status"
-            revised_at:
-              nullable: true
-              type: string
-            revision:
-              nullable: true
-              type: integer
-            schema_version:
-              nullable: true
-              type: string
-            sex:
-              "$ref": "#/components/schemas/ontology_elements"
-            tissue:
-              "$ref": "#/components/schemas/ontology_elements"
-            tombstone:
-              type: boolean
-            x_approximate_distribution:
-              "$ref": "#/components/schemas/distribution"
-            x_normalization:
-              nullable: true
-              type: string
-          type: object
-    dataset_asset:
       properties:
-        filename:
+        assay:
+          $ref: "#/components/schemas/dataset_assay"
+        batch_condition:
+          $ref: "#/components/schemas/batch_condition"
+        cell_count:
+          description: The number of cells in the Dataset.
+          nullable: true
+          type: integer
+        cell_type:
+          description: |
+            [cell type label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#cell_type)
+          default: []
+          items:
+            $ref: "#/components/schemas/ontology_element"
+          type: array
+        curator_tag:
+          $ref: "#/components/schemas/curator_tag"
+          nullable: true
+        dataset_assets:
+          description: |
+            The assets associated with the Dataset. Links to download the files can be generated using
+            *GET /v1/collections/{collection_id}/datasets/assets*
+          items:
+            properties:
+              filename:
+                $ref: "#/components/schemas/asset_filename"
+              filetype:
+                $ref: "#/components/schemas/asset_filetype"
+            type: object
+          type: array
+        development_stage:
+          description: |
+            [development stage label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#development_stage)
+          default: []
+          items:
+            $ref: "#/components/schemas/ontology_element"
+          type: array
+          nullable: true
+        disease:
+          $ref: "#/components/schemas/dataset_disease"
+        ethnicity:
+          description: |
+            [self reported ethnicity label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#self_reported_ethnicity)
+          default: []
+          items:
+            $ref: "#/components/schemas/ontology_element"
+          type: array
+        explorer_url:
+          $ref: "#/components/schemas/explorer_url"
+        id:
+          $ref: "#/components/schemas/dataset_id"
+        is_primary_data:
+          $ref: "#/components/schemas/is_primary_data"
+        mean_genes_per_cell:
+          nullable: true
+          type: number
+        title:
+          description: |
+            [title](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#title)
+          nullable: true
           type: string
-        filetype:
-          enum:
-            - H5AD
-            - RDS
+        organism:
+          $ref: "#/components/schemas/dataset_organism"
+        processing_status:
+          $ref: "#/components/schemas/processing_status_dataset"
+        processing_status_detail:
           type: string
+          description: |
+            When `processing_status` is set to VALIDATION_FAILURE, further details about the validation failures for 
+            the dataset can be found in `processing_status_detail`.
+          nullable: true
+        revised_at:
+          $ref: "#/components/schemas/dataset_revised_at"
+        revision:
+          description: The number of times the Dataset has been revised.
+          nullable: true
+          type: integer
+        schema_version:
+          description: |
+            The version of the CELLxGENE schema with which the Dataset complies to. [Schemas](https://github.com/chanzuckerberg/single-cell-curation/tree/main/schema)
+          nullable: true
+          type: string
+        sex:
+          description: |
+            [sex label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#sex)
+          default: []
+          items:
+            $ref: "#/components/schemas/ontology_element"
+          type: array
+        tissue:
+          $ref: "#/components/schemas/dataset_tissue"
+        x_approximate_distribution:
+          $ref: "#/components/schemas/distribution"
       type: object
+    dataset_assay:
+      description: |
+        [assay label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#assay)
+      default: []
+      items:
+        $ref: "#/components/schemas/ontology_element"
+      type: array
+    dataset_disease:
+      description: |
+        [disease label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#disease)
+      default: []
+      items:
+        $ref: "#/components/schemas/ontology_element"
+      type: array
+    dataset_organism:
+      description: |
+        [organism label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#organism)
+      default: []
+      items:
+        $ref: "#/components/schemas/ontology_element"
+      type: array
+    dataset_tissue:
+      description: |
+        [tissue label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#tissue)
+      default: []
+      items:
+        $ref: "#/components/schemas/ontology_element"
+      type: array
+    dataset_tombstone:
+      description: When True, this Dataset was withdrawn from the Data Portal at the request of its submitter.
+      type: boolean
     dataset_id:
       description: A unique identifier of a Dataset.
       example: 01234567-89ab-cdef-0123-456789abcdef
@@ -753,41 +891,40 @@ components:
     dataset_preview:
       properties:
         assay:
-          "$ref": "#/components/schemas/ontology_elements"
+          $ref: "#/components/schemas/dataset_assay"
         curator_tag:
-          "$ref": "#/components/schemas/curator_tag"
+          $ref: "#/components/schemas/curator_tag"
           nullable: true
         disease:
-          "$ref": "#/components/schemas/ontology_elements"
+          $ref: "#/components/schemas/dataset_disease"
         id:
-          "$ref": "#/components/schemas/dataset_id"
+          $ref: "#/components/schemas/dataset_id"
         organism:
-          "$ref": "#/components/schemas/ontology_elements"
+          $ref: "#/components/schemas/dataset_organism"
         tissue:
-          "$ref": "#/components/schemas/ontology_elements"
-        tombstone:
-          type: boolean
+          $ref: "#/components/schemas/dataset_tissue"
       type: object
     distribution:
       description:
-        Cellxgene runs a heuristic to detect the approximate distribution
+        CELLxGENE Discover runs a heuristic to detect the approximate distribution
         of the data in X so that it can accurately calculate statistical properties
         of the data. This field enables the curator to override this heuristic and
-        specify the data distribution explicitly.
+        specify the data distribution explicitly. [x_approximate_distribution](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#x_approximate_distribution)
       enum:
         - COUNT
         - NORMAL
       type: string
       nullable: true
     explorer_url:
-      description:
-        The url at which a given Dataset may be explored using the cellxgene
-        visualization tool
+      description: |
+        The URL at which a given Dataset may be explored using CELLxGENE Explorer.
       nullable: true
       type: string
     is_primary_data:
-      description:
-        Describes whether cellular observations for this dataset are all
+      description: |
+        [is_primary_data boolean](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#is_primary_data)
+
+        Describes whether cellular observations for this Dataset are all
         canonical (True), all non-canonical (False), or contain a mixture (True, False).
       items:
         type: boolean
@@ -795,11 +932,17 @@ components:
     links:
       items:
         additionalProperties: false
+        description: A URL that links associated resources with the Collection.
         properties:
           link_name:
+            description: A brief description of the URL.
             nullable: true
             type: string
           link_type:
+            description: |
+              If the link_type is DOI, then the `link_url` must be a valid DOI link; the `link_name` will be ignored 
+              or overwritten if provided. For example, https://doi.org/00.0000/science.abc1234 is a valid DOI 
+              `link_url`. All other links types can be any valid URL.
             enum:
               - PROTOCOL
               - RAW_DATA
@@ -810,6 +953,7 @@ components:
             nullable: true
             type: string
           link_url:
+            description: The URL of the link.
             nullable: true
             type: string
         required:
@@ -824,11 +968,6 @@ components:
         ontology_term_id:
           type: string
       type: object
-    ontology_elements:
-      default: []
-      items:
-        "$ref": "#/components/schemas/ontology_element"
-      type: array
     problem:
       description: Error message container for HTTP APIs.
       properties:
@@ -839,12 +978,36 @@ components:
         type:
           type: string
       type: object
-    processing_status:
-      description: Processing status for a Dataset or Collection
+    processing_status_collection:
+      description: |
+        Processing status for a Collection
+        | `processing_status` | Description |
+        | ------------------- | ----------- |
+        | `"FAILURE"` | one or more Datasets ran into an error during processing. More information can be found in the Dataset processing_status logs. |
+        | `"PENDING"` | one or more Datasets are still being processed. |
+        | `"SUCCESS"` | all Datasets have been processed successfully. |
+        | `null` | the Collection has no Datasets. |
       enum:
         - FAILURE
         - PENDING
         - SUCCESS
+      nullable: true
+      type: string
+    processing_status_dataset:
+      description: |
+        Processing status for a Dataset
+        | `processing_status` | Description |
+        | ------------------- | ----------- |
+        | `"PENDING"` | the Dataset has is still being processed. |
+        | `"SUCCESS"` | the Dataset has successfully been processed. |
+        | `"VALIDATION_FAILURE"` | An error occured during validation. See `processing_status_detail`|
+        | `"PIPELINE_FAILURE"`| An error occured during processing. |
+      enum:
+        - FAILURE
+        - PENDING
+        - SUCCESS
+        - VALIDATION_FAILURE
+        - PIPELINE_FAILURE
       nullable: true
       type: string
     publisher_metadata:
@@ -872,15 +1035,15 @@ components:
         published_year:
           type: number
       type: object
-    upload_link:
-      description: A user-provided link to the dataset source file.
-      type: string
     visibility:
       default: PUBLIC
-      description:
-        Determines the visibility of the collection, that will either make
-        the collection visible on the public sites or only viewable through obfuscated
-        URLs.
+      description: |
+        The visibility of the Collection.
+
+        | visibility | description |
+        | ---------- | ----------- | 
+        | PUBLIC   | The Collection is published and accessible to all users of CELLxGENE Discover |
+        | PRIVATE  | The Collection is in private review, either as a new Collection that has not been published or a Revision of a previously published Collection. |
       enum:
         - PUBLIC
         - PRIVATE
@@ -892,31 +1055,23 @@ components:
       name: collection_id
       required: true
       schema:
-        "$ref": "#/components/schemas/collection_id"
+        $ref: "#/components/schemas/collection_id"
     query_curator_tag:
-      description:
-        A curator-provided tag. MUST be unique within a given Collection.
-        MAY be used to uniquely identify a Dataset when using the Curator API. SHALL
-        default to null for Datasets created using the Data Portal UI.
+      description: |
+        A curator-provided tag **MUST** be unique within a given Collection. **MAY** be used to uniquely identify a 
+        Dataset when using the Curator API. **SHALL** default to null for Datasets created using the CELLxGENE Discover UI.
       in: query
       name: curator_tag
       required: false
       schema:
-        "$ref": "#/components/schemas/curator_tag"
+        $ref: "#/components/schemas/curator_tag"
     query_dataset_id:
       description: The uuid of the Dataset.
       in: query
       name: dataset_id
       required: false
       schema:
-        "$ref": "#/components/schemas/dataset_id"
-    query_visibility:
-      description: The 'visibility' of a Collection (and its constituent Datasets).
-      in: query
-      name: visibility
-      required: false
-      schema:
-        "$ref": "#/components/schemas/visibility"
+        $ref: "#/components/schemas/dataset_id"
   responses:
     "200":
       description: OK
@@ -930,7 +1085,7 @@ components:
       content:
         application/problem+json:
           schema:
-            "$ref": "#/components/schemas/problem"
+            $ref: "#/components/schemas/problem"
       description: Invalid or missing parameter
     400_multiple:
       content:
@@ -954,37 +1109,37 @@ components:
       content:
         application/problem+json:
           schema:
-            "$ref": "#/components/schemas/problem"
+            $ref: "#/components/schemas/problem"
       description: Failed to authenticate
     "403":
       content:
         application/problem+json:
           schema:
-            "$ref": "#/components/schemas/problem"
+            $ref: "#/components/schemas/problem"
       description: Forbidden
     "404":
       content:
         application/problem+json:
           schema:
-            "$ref": "#/components/schemas/problem"
+            $ref: "#/components/schemas/problem"
       description: Resource not found
     "405":
       content:
         application/problem+json:
           schema:
-            "$ref": "#/components/schemas/problem"
+            $ref: "#/components/schemas/problem"
       description: Method not allowed
     "409":
       content:
         application/problem+json:
           schema:
-            "$ref": "#/components/schemas/problem"
+            $ref: "#/components/schemas/problem"
       description: File conflict
     "413":
       content:
         application/problem+json:
           schema:
-            "$ref": "#/components/schemas/problem"
+            $ref: "#/components/schemas/problem"
       description: Exceed File Size Limit
   securitySchemes:
     curatorAccess:

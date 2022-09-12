@@ -202,47 +202,47 @@ class WmgApiV1Tests(unittest.TestCase):
                         "tissue_ontology_term_id_1": [
                             {
                                 "id": "cell_type_ontology_term_id_0",
-                                "n": 729,
+                                "n": 2187,
                                 "me": 1.0,
                                 "pc": 0.1,
-                                "tpc": 729 / (10 * (3**7)),
+                                "tpc": 2187 / (10 * (3**8)),
                             },
                             {
                                 "id": "cell_type_ontology_term_id_1",
-                                "n": 729,
+                                "n": 2187,
                                 "me": 1.0,
                                 "pc": 0.1,
-                                "tpc": 729 / (10 * (3**7)),
+                                "tpc": 2187 / (10 * (3**8)),
                             },
                             {
                                 "id": "cell_type_ontology_term_id_2",
-                                "n": 729,
+                                "n": 2187,
                                 "me": 1.0,
                                 "pc": 0.1,
-                                "tpc": 729 / (10 * (3**7)),
+                                "tpc": 2187 / (10 * (3**8)),
                             },
                         ],
                         "tissue_ontology_term_id_2": [
                             {
                                 "id": "cell_type_ontology_term_id_0",
-                                "n": 729,
+                                "n": 2187,
                                 "me": 1.0,
                                 "pc": 0.1,
-                                "tpc": 729 / (10 * (3**7)),
+                                "tpc": 2187 / (10 * (3**8)),
                             },
                             {
                                 "id": "cell_type_ontology_term_id_1",
-                                "n": 729,
+                                "n": 2187,
                                 "me": 1.0,
                                 "pc": 0.1,
-                                "tpc": 729 / (10 * (3**7)),
+                                "tpc": 2187 / (10 * (3**8)),
                             },
                             {
                                 "id": "cell_type_ontology_term_id_2",
-                                "n": 729,
+                                "n": 2187,
                                 "me": 1.0,
                                 "pc": 0.1,
-                                "tpc": 729 / (10 * (3**7)),
+                                "tpc": 2187 / (10 * (3**8)),
                             },
                         ],
                     },
@@ -250,47 +250,47 @@ class WmgApiV1Tests(unittest.TestCase):
                         "tissue_ontology_term_id_1": [
                             {
                                 "id": "cell_type_ontology_term_id_0",
-                                "n": 729,
+                                "n": 2187,
                                 "me": 1.0,
                                 "pc": 0.1,
-                                "tpc": 729 / (10 * (3**7)),
+                                "tpc": 2187 / (10 * (3**8)),
                             },
                             {
                                 "id": "cell_type_ontology_term_id_1",
-                                "n": 729,
+                                "n": 2187,
                                 "me": 1.0,
                                 "pc": 0.1,
-                                "tpc": 729 / (10 * (3**7)),
+                                "tpc": 2187 / (10 * (3**8)),
                             },
                             {
                                 "id": "cell_type_ontology_term_id_2",
-                                "n": 729,
+                                "n": 2187,
                                 "me": 1.0,
                                 "pc": 0.1,
-                                "tpc": 729 / (10 * (3**7)),
+                                "tpc": 2187 / (10 * (3**8)),
                             },
                         ],
                         "tissue_ontology_term_id_2": [
                             {
                                 "id": "cell_type_ontology_term_id_0",
-                                "n": 729,
+                                "n": 2187,
                                 "me": 1.0,
                                 "pc": 0.1,
-                                "tpc": 729 / (10 * (3**7)),
+                                "tpc": 2187 / (10 * (3**8)),
                             },
                             {
                                 "id": "cell_type_ontology_term_id_1",
-                                "n": 729,
+                                "n": 2187,
                                 "me": 1.0,
                                 "pc": 0.1,
-                                "tpc": 729 / (10 * (3**7)),
+                                "tpc": 2187 / (10 * (3**8)),
                             },
                             {
                                 "id": "cell_type_ontology_term_id_2",
-                                "n": 729,
+                                "n": 2187,
                                 "me": 1.0,
                                 "pc": 0.1,
-                                "tpc": 729 / (10 * (3**7)),
+                                "tpc": 2187 / (10 * (3**8)),
                             },
                         ],
                     },
@@ -301,19 +301,19 @@ class WmgApiV1Tests(unittest.TestCase):
                             {
                                 "cell_type": "cell_type_ontology_term_id_0_label",
                                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_0",
-                                "total_count": 7290,
+                                "total_count": 21870,
                                 "depth": 0,
                             },
                             {
                                 "cell_type": "cell_type_ontology_term_id_1_label",
                                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_1",
-                                "total_count": 7290,
+                                "total_count": 21870,
                                 "depth": 1,
                             },
                             {
                                 "cell_type": "cell_type_ontology_term_id_2_label",
                                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_2",
-                                "total_count": 7290,
+                                "total_count": 21870,
                                 "depth": 2,
                             },
                         ],
@@ -321,19 +321,19 @@ class WmgApiV1Tests(unittest.TestCase):
                             {
                                 "cell_type": "cell_type_ontology_term_id_0_label",
                                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_0",
-                                "total_count": 7290,
+                                "total_count": 21870,
                                 "depth": 0,
                             },
                             {
                                 "cell_type": "cell_type_ontology_term_id_1_label",
                                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_1",
-                                "total_count": 7290,
+                                "total_count": 21870,
                                 "depth": 1,
                             },
                             {
                                 "cell_type": "cell_type_ontology_term_id_2_label",
                                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_2",
-                                "total_count": 7290,
+                                "total_count": 21870,
                                 "depth": 2,
                             },
                         ],
@@ -387,13 +387,13 @@ class WmgApiV1Tests(unittest.TestCase):
                     {
                         "cell_type": "cell_type_ontology_term_id_0_label",
                         "cell_type_ontology_term_id": "cell_type_ontology_term_id_0",
-                        "total_count": 640,
+                        "total_count": 1280,
                         "depth": 0,
                     },
                     {
                         "cell_type": "cell_type_ontology_term_id_1_label",
                         "cell_type_ontology_term_id": "cell_type_ontology_term_id_1",
-                        "total_count": 640,
+                        "total_count": 1280,
                         "depth": 1,
                     },
                 ],
@@ -401,13 +401,13 @@ class WmgApiV1Tests(unittest.TestCase):
                     {
                         "cell_type": "cell_type_ontology_term_id_0_label",
                         "cell_type_ontology_term_id": "cell_type_ontology_term_id_0",
-                        "total_count": 640,
+                        "total_count": 1280,
                         "depth": 0,
                     },
                     {
                         "cell_type": "cell_type_ontology_term_id_1_label",
                         "cell_type_ontology_term_id": "cell_type_ontology_term_id_1",
-                        "total_count": 640,
+                        "total_count": 1280,
                         "depth": 1,
                     },
                 ],
@@ -449,21 +449,22 @@ class WmgApiV1Tests(unittest.TestCase):
             self.assertEqual(200, response.status_code)
 
             # each cell type has `expected_count` cells for each possible combination of secondary filters
-            # given the present constraints (1 organism, both tissues). There are 2**8=256 possible combinations
+            # given the present constraints (1 organism, both tissues). There are 2**9=512 possible combinations
             # of filters. After aggregating the counts across two tissues and two cell types per tissue,
-            # there are 64 entries per cell type-tissue combination. Hence, the toal count will be expected_count * 64
+            # there are 128 entries per cell type-tissue combination. Hence, the toal count will be
+            # expected_count * 128
             expected = {
                 "tissue_ontology_term_id_0": [
                     {
                         "cell_type": "cell_type_ontology_term_id_0_label",
                         "cell_type_ontology_term_id": "cell_type_ontology_term_id_0",
-                        "total_count": expected_count * 64,
+                        "total_count": expected_count * 128,
                         "depth": 0,
                     },
                     {
                         "cell_type": "cell_type_ontology_term_id_1_label",
                         "cell_type_ontology_term_id": "cell_type_ontology_term_id_1",
-                        "total_count": expected_count * 64,
+                        "total_count": expected_count * 128,
                         "depth": 1,
                     },
                 ],
@@ -471,13 +472,13 @@ class WmgApiV1Tests(unittest.TestCase):
                     {
                         "cell_type": "cell_type_ontology_term_id_0_label",
                         "cell_type_ontology_term_id": "cell_type_ontology_term_id_0",
-                        "total_count": expected_count * 64,
+                        "total_count": expected_count * 128,
                         "depth": 0,
                     },
                     {
                         "cell_type": "cell_type_ontology_term_id_1_label",
                         "cell_type_ontology_term_id": "cell_type_ontology_term_id_1",
-                        "total_count": expected_count * 64,
+                        "total_count": expected_count * 128,
                         "depth": 1,
                     },
                 ],
