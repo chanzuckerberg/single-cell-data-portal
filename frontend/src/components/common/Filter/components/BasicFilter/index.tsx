@@ -20,9 +20,10 @@ export default function BasicFilter({
       <Popover
         boundary="viewport"
         disabled={isDisabled}
+        hasBackdrop
         minimal
-        modifiers={{ offset: { offset: "0, 4" } }}
-        position={Position.BOTTOM_LEFT}
+        modifiers={{ offset: { offset: "0, 5" } }}
+        position={Position.RIGHT_TOP}
       >
         {target}
         {content}
