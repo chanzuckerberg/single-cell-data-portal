@@ -5,13 +5,11 @@ from unittest.mock import patch, Mock
 from backend.corpora.common.corpora_orm import (
     CollectionVisibility,
     ProcessingStatus,
-    DatasetArtifactFileType,
     DbDataset,
 )
 from backend.corpora.lambdas.api.v1.curation.collections.common import EntityColumns
 from backend.corpora.common.providers.crossref_provider import CrossrefDOINotFoundException
 from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest, mock_assert_authorized_token
-from tests.unit.backend.fixtures.config import fake_s3_file
 
 
 class TestAuthToken(BaseAuthAPITest):
@@ -525,33 +523,6 @@ class TestPatchCollectionID(BaseAuthAPITest):
         super().setUp()
         self.test_collection = dict(
             name="collection", description="description", contact_name="john doe", contact_email="johndoe@email.com"
-        )
-        self.generate_collection(
-            self.session,
-            id="test_curator_tag_collection_id",
-            visibility=CollectionVisibility.PUBLIC.name,
-            owner="owner",
-            name="test_collection_name",
-            description="test_description",
-            data_submission_policy_version="0",
-            contact_name="Some Body",
-            contact_email="somebody@chanzuckerberg.com",
-        )
-        self.generate_dataset(
-            self.session,
-            id="test_curator_tag",
-            revision=0,
-            name="test_dataset_name",
-            schema_version="2.0.0",
-            collection_id="test_curator_tag_collection_id",
-            artifacts=[
-                dict(
-                    filename="test_filename",
-                    filetype=DatasetArtifactFileType.H5AD.name,
-                    user_submitted=True,
-                    s3_uri=fake_s3_file,
-                )
-            ],
         )
 
     def test__update_collection__no_auth(self):
