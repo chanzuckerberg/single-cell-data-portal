@@ -390,7 +390,11 @@ export function createYAxisOptions({
             const { total_count } = deserializeCellTypeMetadata(
               value as CellTypeMetadata
             );
-            return total_count > 10000 ? ">10k" : `${total_count}`;
+            let formattedCount = `${total_count}`;
+            if (total_count > 10000) {
+              formattedCount = `${Math.round(total_count / 1000)}k`;
+            }
+            return formattedCount;
           },
 
           rich: {
