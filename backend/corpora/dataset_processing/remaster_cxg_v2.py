@@ -85,16 +85,15 @@ def process(dataset_id: str, cellxgene_bucket: str, prefix=None, dry_run=True):
     shutil.rmtree(f"{local_path}/old_obs")
     shutil.rmtree(f"{local_path}/new_obs")        
 
-def evolve_obs(cxg):
+def evolve_obs(cxg, array_name="old_obs"):
     """
     Creates a new obs array with the new schema
     :param X: the old obs tiledb array
     """
-    with tiledb.open(f"{cxg}/old_obs", "r") as X:
+    with tiledb.open(f"{cxg}/{array_name}", "r") as X:
         # load cxg schema
         schema = json.loads(X.meta['cxg_schema'])
-        # get list of attributes excluding index key
-        attrs = [x for x in list(schema.keys()) if x!='index']
+
         # get all data in the old obs array
         data = X.query().multi_index[:]
 
@@ -102,12 +101,13 @@ def evolve_obs(cxg):
         # dictionary in type_hint["categories"]
         tdb_attrs=[]
         new_data = {}
-        for a in attrs:
-            type_hint = schema[a]
+        for attr in X.schema:
+            a = attr.name
+            type_hint = schema.get(a,{})
             if "categories" in type_hint and len(type_hint.get("categories", [])) > 0.75 * X.shape[0]:
                 schema[a]["type"]='string'
                 del schema[a]['categories']
-                tdb_attrs.append(X.schema.attr(a)) 
+                tdb_attrs.append(attr) 
                 new_data[a]=data[a]
             elif "categories" in type_hint:
                 cat = pd.Categorical(data[a])
@@ -117,10 +117,9 @@ def evolve_obs(cxg):
                 schema[a]['categories'] = list(categories)
                 
                 dtype = str(cat.codes.dtype)
-                attr=X.schema.attr(a)
                 tdb_attrs.append(tiledb.Attr(name=a,dtype=dtype,filters=attr.filters))
             else:
-                tdb_attrs.append(X.schema.attr(a)) 
+                tdb_attrs.append(attr) 
                 new_data[a]=data[a]
                 
         new_schema = tiledb.ArraySchema(domain=X.schema.domain,
