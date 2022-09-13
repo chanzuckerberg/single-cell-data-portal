@@ -1,5 +1,6 @@
 import { Filters, Row } from "react-table";
 import { track } from "src/common/analytics";
+import { EMPTY_ARRAY } from "src/common/constants/utils";
 import {
   buildNextSelectCategoryFilters,
   buildSelectCategoryValueViews,
@@ -118,8 +119,8 @@ export function buildMultiPanelCategoryView(
     return {
       categoryFilterId: categoryFilterId,
       label: config.label,
-      panels: [],
-      selectedViews: [],
+      panels: EMPTY_ARRAY,
+      selectedViews: EMPTY_ARRAY,
     };
   }
 
@@ -148,7 +149,7 @@ export function buildMultiPanelCategoryView(
     categoryFilterId: categoryFilterId,
     label: config.label,
     panels: ontologyPanelCategoryViews,
-    selectedViews: [...selectedViews],
+    selectedViews: selectedViews,
   };
 }
 
@@ -1017,29 +1018,16 @@ export function listMultiPanelSelectedViews(
   const { selected, selectedPartial, uiNodesByCategoryValueId } =
     categoryFilterUIState;
   // Check if we can add any views to the select set, used to display selected tags.
-  return categoryValueViews
-    .filter(
-      (categoryValueView: SelectCategoryValueView) => categoryValueView.selected
-    )
-    .reduce(
-      (
-        accum: SelectCategoryValueView[],
-        categoryValueView: SelectCategoryValueView
-      ) => {
-        if (
-          isSelectedViewTagVisible(
-            categoryValueView.categoryValueId,
-            selected,
-            selectedPartial,
-            uiNodesByCategoryValueId
-          )
-        ) {
-          accum.push(categoryValueView);
-        }
-        return accum;
-      },
-      [] as SelectCategoryValueView[]
-    );
+  return categoryValueViews.filter(
+    (categoryValueView: SelectCategoryValueView) =>
+      categoryValueView.selected &&
+      isSelectedViewTagVisible(
+        categoryValueView.categoryValueId,
+        selected,
+        selectedPartial,
+        uiNodesByCategoryValueId
+      )
+  );
 }
 
 /**
