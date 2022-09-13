@@ -117,7 +117,7 @@ def evolve_obs(cxg):
                 codes = cat.codes
                 new_data[a]=codes
                 categories = cat.categories
-                schema[a]['categories'] = dict(zip(range(len(categories)),categories))
+                schema[a]['categories'] = categories
                 
                 dtype = str(cat.codes.dtype)
                 attr=X.schema.attr(a)
