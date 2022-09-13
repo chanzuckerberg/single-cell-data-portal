@@ -32,6 +32,7 @@ def process(dataset_id: str, cellxgene_bucket: str, prefix=None, dry_run=True):
         object_key = f"{dataset_path}.cxg"
     path = f"s3://{cellxgene_bucket}/{object_key}/X"
     obs_path = f"s3://{cellxgene_bucket}/{object_key}/obs"
+    meta_path = f"s3://{cellxgene_bucket}/{object_key}/cxg_group_metadata"
 
     logger.info(f"Processing dataset at path {path}, dry run {dry_run}")
 
@@ -46,8 +47,17 @@ def process(dataset_id: str, cellxgene_bucket: str, prefix=None, dry_run=True):
     # Let errors fail the pipeline
     subprocess.run(download_command, check=True)
 
+    logger.info(f"Downloading {meta_path} to {local_path}/cxg_group_metadata")
+    download_command = ["aws", "s3", "sync", meta_path, f"{local_path}/cxg_group_metadata"]
+    # Let errors fail the pipeline
+    subprocess.run(download_command, check=True)    
+
     evolve_obs(local_path)
     upload_command = ["aws", "s3", "sync", "--delete", f"{local_path}/new_obs", obs_path]
+    subprocess.run(upload_command, check=True)
+
+    increment_version(local_path)
+    upload_command = ["aws", "s3", "sync", "--delete", f"{local_path}/cxg_group_metadata", meta_path]
     subprocess.run(upload_command, check=True)
 
     params = {
@@ -84,6 +94,13 @@ def process(dataset_id: str, cellxgene_bucket: str, prefix=None, dry_run=True):
     shutil.rmtree(f"{local_path}/old_obs")
     shutil.rmtree(f"{local_path}/new_obs")
 
+def increment_version(cxg):
+    """
+    Increments the version number of the CXG
+    :param cxg: the path to the CXG
+    """
+    with tiledb.open(f"{cxg}/cxg_group_metadata", "w") as X:
+        X.meta['version'] = '0.3.0'
 
 def evolve_obs(cxg, array_name="old_obs"):
     """
