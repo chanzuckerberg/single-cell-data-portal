@@ -101,9 +101,10 @@ class TestPostCollection(BaseAuthAPITest):
             {"name": "doi", "reason": "DOI must be a CURIE reference."},
         ]
         response = self.app.post("/curation/v1/collections", headers=self.make_owner_header(), data=json.dumps(body))
+        print(response.json)
         self.assertEqual(400, response.status_code)
         for error in expected_errors:
-            self.assertIn(error, response.json["detail"])
+            self.assertIn(error, response.json["invalid_parameters"])
 
 
 class TestGetCollections(BaseAuthAPITest):
