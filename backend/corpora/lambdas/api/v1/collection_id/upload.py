@@ -21,7 +21,7 @@ from .....common.utils.http_exceptions import (
 
 
 def link(collection_id: str, body: dict, token_info: dict):
-    dataset_id = upload_from_link(collection_id, token_info, body["url"], curator_tag=body.get("curator_tag"))
+    dataset_id = upload_from_link(collection_id, token_info, body["url"])
     return make_response({"dataset_id": dataset_id}, 202)
 
 
@@ -31,13 +31,12 @@ def relink(collection_id: str, body: dict, token_info: dict):
         token_info,
         body.get("url", body.get("link")),
         body.get("id"),
-        curator_tag=body.get("curator_tag"),
     )
     return make_response({"dataset_id": dataset_id}, 202)
 
 
 @dbconnect
-def upload_from_link(collection_id: str, token_info: dict, url: str, dataset_id: str = None, curator_tag: str = None):
+def upload_from_link(collection_id: str, token_info: dict, url: str, dataset_id: str = None):
     db_session = g.db_session
 
     # Verify Dropbox URL
@@ -64,7 +63,6 @@ def upload_from_link(collection_id: str, token_info: dict, url: str, dataset_id:
             user=token_info["sub"],
             scope=token_info["scope"],
             dataset_id=dataset_id,
-            curator_tag=curator_tag,
         )
     except MaxFileSizeExceededException:
         raise TooLargeHTTPException()

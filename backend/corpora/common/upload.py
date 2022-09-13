@@ -17,7 +17,6 @@ from .utils.exceptions import (
     NonExistentDatasetException,
 )
 from .utils.math_utils import GB
-from .utils.regex import validate_curator_tag
 
 _stepfunctions_client = None
 
@@ -52,14 +51,10 @@ def upload(
     user: str,
     scope: str = None,
     dataset_id: str = None,
-    curator_tag: str = None,
 ) -> str:
     max_file_size_gb = CorporaConfig().upload_max_file_size_gb * GB
     if file_size is not None and file_size > max_file_size_gb:
         raise MaxFileSizeExceededException(f"{url} exceeds the maximum allowed file size of {max_file_size_gb} Gb")
-
-    if curator_tag:
-        validate_curator_tag(curator_tag)
 
     # Check if datasets can be added to the collection
     collection = Collection.get_collection(
@@ -76,8 +71,6 @@ def upload(
         dataset = Dataset.get(db_session, dataset_id, collection_id=collection_id)
         if not dataset:
             raise NonExistentDatasetException(f"Dataset {dataset_id} does not exist")
-    elif curator_tag:
-        dataset = Dataset.get_dataset_from_curator_tag(db_session, collection_id, curator_tag)
     else:
         dataset = None
 
@@ -95,7 +88,7 @@ def upload(
 
     else:
         # Add new dataset
-        dataset = Dataset.create(db_session, collection=collection, curator_tag=curator_tag)
+        dataset = Dataset.create(db_session, collection=collection)
 
     dataset.update(processing_status=dataset.new_processing_status())
 

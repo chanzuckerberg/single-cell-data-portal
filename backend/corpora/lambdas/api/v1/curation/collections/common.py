@@ -181,7 +181,6 @@ class EntityColumns:
 
     dataset_preview_cols = [
         "id",
-        "curator_tag",
         "tissue",
         "assay",
         "disease",
