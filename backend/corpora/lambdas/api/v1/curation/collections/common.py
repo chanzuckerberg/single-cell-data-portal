@@ -47,12 +47,11 @@ def extract_doi_from_links(collection: dict):
     :return: None
     """
     doi, resp_links = None, []
-    if links := collection.get("links"):
-        for link in collection.get("links", []):
-            if link["link_type"] == ProjectLinkType.DOI:
-                doi = urlparse(link["link_url"]).path.strip("/")
-            else:
-                resp_links.append(link)
+    for link in collection.get("links", []):
+        if link["link_type"] == ProjectLinkType.DOI:
+            doi = urlparse(link["link_url"]).path.strip("/")
+        else:
+            resp_links.append(link)
 
     return doi, resp_links
 
