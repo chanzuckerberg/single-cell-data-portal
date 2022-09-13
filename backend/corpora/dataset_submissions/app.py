@@ -6,7 +6,7 @@ from urllib.parse import unquote_plus
 
 from sqlalchemy.orm import Session
 
-from backend.corpora.common.entities import Dataset, Collection
+from backend.corpora.common.entities import Dataset
 from backend.corpora.common.upload import upload
 from backend.corpora.common.utils.db_session import db_session_manager
 from backend.corpora.common.utils.exceptions import CorporaException
@@ -32,13 +32,11 @@ def dataset_submissions_handler(s3_event: dict, unused_context) -> None:
 
         parsed = parse_key(key)
         if not parsed:
-            raise CorporaException(f"Missing collection ID, curator tag, and/or dataset ID for {key=}")
+            raise CorporaException(f"Missing Collection ID and/or Dataset ID for {key=}")
         logger.debug(parsed)
 
         with db_session_manager() as session:
-            collection_owner, dataset_id = get_dataset_info(
-                session, parsed["collection_id"], parsed["dataset_id"], parsed.get("tag")
-            )
+            collection_owner, dataset_id = get_dataset_info(session, parsed["dataset_id"])
 
             logger.info(f"{collection_owner=}, {dataset_id=}")
             if not collection_owner:
@@ -76,7 +74,7 @@ def parse_s3_event_record(s3_event_record: dict) -> Tuple[str, str, int]:
 
 def parse_key(key: str) -> Optional[dict]:
     """
-    Parses the S3 object key to extract the collection ID and curator tag, ignoring the REMOTE_DEV_PREFIX
+    Parses the S3 object key to extract the Collection ID and Dataset ID, ignoring the REMOTE_DEV_PREFIX
 
     Example of key with dataset id:
     s3://<dataset submissions bucket>/<user_id>/<collection_id>/<dataset_id>
@@ -93,19 +91,12 @@ def parse_key(key: str) -> Optional[dict]:
         return matched.groupdict()
 
 
-def get_dataset_info(
-    session: Session, collection_id: str, dataset_id: str, incoming_curator_tag: str
-) -> Tuple[Optional[str], Optional[str]]:
+def get_dataset_info(session: Session, dataset_id: str) -> Tuple[Optional[str], Optional[str]]:
+
     if dataset_id:  # If a dataset uuid was provided
-        dataset = Dataset.get(session, dataset_id)
-    elif incoming_curator_tag:  # if incoming_curator_tag
-        dataset = Dataset.get_dataset_from_curator_tag(session, collection_id, incoming_curator_tag)
-        if not dataset:  # New dataset
-            collection = Collection.get_collection(session, collection_id)
-            if collection:
-                return collection.owner, None
+        if dataset := Dataset.get(session, dataset_id):
+            return dataset.collection.owner, dataset.id
     else:
-        raise CorporaException("No dataset identifier provided")
-    if dataset:
-        return dataset.collection.owner, dataset.id
+        raise CorporaException("No dataset_id provided")
+
     return None, None
