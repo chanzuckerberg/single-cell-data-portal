@@ -45,7 +45,7 @@ def process(dataset_id: str, cellxgene_bucket: str, prefix=None, dry_run=True):
     logger.info(f"Downloading {obs_path} to {local_path}/old_obs")
     download_command = ["aws", "s3", "sync", obs_path, f"{local_path}/old_obs"]
     # Let errors fail the pipeline
-    subprocess.run(download_command, check=True)    
+    subprocess.run(download_command, check=True)
 
     evolve_obs(local_path)
     upload_command = ["aws", "s3", "sync", "--delete", f"{local_path}/new_obs", obs_path]
@@ -83,7 +83,8 @@ def process(dataset_id: str, cellxgene_bucket: str, prefix=None, dry_run=True):
         shutil.rmtree(f"{local_path}/X_new")
 
     shutil.rmtree(f"{local_path}/old_obs")
-    shutil.rmtree(f"{local_path}/new_obs")        
+    shutil.rmtree(f"{local_path}/new_obs")
+
 
 def evolve_obs(cxg, array_name="old_obs"):
     """
@@ -92,46 +93,46 @@ def evolve_obs(cxg, array_name="old_obs"):
     """
     with tiledb.open(f"{cxg}/{array_name}", "r") as X:
         # load cxg schema
-        schema = json.loads(X.meta['cxg_schema'])
+        schema = json.loads(X.meta["cxg_schema"])
 
         # get all data in the old obs array
         data = X.query().multi_index[:]
 
         # adjust the schema to expect codes where applicable and store code-to-value mapping
         # dictionary in type_hint["categories"]
-        tdb_attrs=[]
+        tdb_attrs = []
         new_data = {}
         for attr in X.schema:
             a = attr.name
-            type_hint = schema.get(a,{})
+            type_hint = schema.get(a, {})
             if "categories" in type_hint and len(type_hint.get("categories", [])) > 0.75 * X.shape[0]:
-                schema[a]["type"]='string'
-                del schema[a]['categories']
-                tdb_attrs.append(attr) 
-                new_data[a]=data[a]
+                schema[a]["type"] = "string"
+                del schema[a]["categories"]
+                tdb_attrs.append(attr)
+                new_data[a] = data[a]
             elif "categories" in type_hint:
                 cat = pd.Categorical(data[a])
                 codes = cat.codes
-                new_data[a]=codes
+                new_data[a] = codes
                 categories = cat.categories
-                schema[a]['categories'] = list(categories)
-                
+                schema[a]["categories"] = list(categories)
+
                 dtype = str(cat.codes.dtype)
-                tdb_attrs.append(tiledb.Attr(name=a,dtype=dtype,filters=attr.filters))
+                tdb_attrs.append(tiledb.Attr(name=a, dtype=dtype, filters=attr.filters))
             else:
-                tdb_attrs.append(attr) 
-                new_data[a]=data[a]
-                
-        new_schema = tiledb.ArraySchema(domain=X.schema.domain,
-                                        attrs = tdb_attrs)
+                tdb_attrs.append(attr)
+                new_data[a] = data[a]
+
+        new_schema = tiledb.ArraySchema(domain=X.schema.domain, attrs=tdb_attrs)
         tiledb.Array.create(
             f"{cxg}/new_obs",
             new_schema,
         )
         with tiledb.open(f"{cxg}/new_obs", "w") as new_X:
-            new_X[:]=new_data
-            new_X.meta['cxg_schema']=json.dumps(schema)           
-    
+            new_X[:] = new_data
+            new_X.meta["cxg_schema"] = json.dumps(schema)
+
+
 def evolve_X(**kwargs):
     """
     Computes the evolved cxg from the sparse source_array and saves it to the target_array destination
@@ -205,6 +206,7 @@ def evolve_X(**kwargs):
 
     logger.info("done.")
     return True
+
 
 def create_new_X(cxg, target_array, compression, X_extent, old_schema, cell_order, tile_order, capacity):
     logger.info(f"create_new_X: {True}")

@@ -48,7 +48,7 @@ def convert_dataframe_to_cxg_array(cxg_container, dataframe_name, dataframe, ind
             # other non-float data.
             tiledb.ZstdFilter(level=22),
         ]
-    )    
+    )
     data = {}
     schema_hints = {}
     tdb_attrs = []
@@ -56,20 +56,20 @@ def convert_dataframe_to_cxg_array(cxg_container, dataframe_name, dataframe, ind
     for column_name, column_values in dataframe.items():
         dtype, hints = get_dtype_and_schema_of_array(column_values)
         if "categories" in hints and len(hints.get("categories", [])) > 0.75 * dataframe.shape[0]:
-            hints["type"]='string'
-            del hints['categories']
-            data[column_name]=column_values.to_numpy(dtype=dtype)
+            hints["type"] = "string"
+            del hints["categories"]
+            data[column_name] = column_values.to_numpy(dtype=dtype)
         elif "categories" in hints:
             cat = pd.Categorical(column_values)
             codes = cat.codes
-            data[column_name]=codes
+            data[column_name] = codes
             categories = list(cat.categories)
-            hints['categories'] = dict(zip(range(len(categories)),categories))
+            hints["categories"] = dict(zip(range(len(categories)), categories))
             dtype = str(cat.codes.dtype)
         else:
-            data[column_name]=column_values.to_numpy(dtype=dtype)
-        
-        tdb_attrs.append(tiledb.Attr(name=column_name,dtype=dtype,filters=tiledb_filter))
+            data[column_name] = column_values.to_numpy(dtype=dtype)
+
+        tdb_attrs.append(tiledb.Attr(name=column_name, dtype=dtype, filters=tiledb_filter))
         schema_hints.update({column_name: hints})
 
     def create_dataframe_array(array_name, dataframe, attrs):
