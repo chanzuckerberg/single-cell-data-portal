@@ -4,10 +4,7 @@ import subprocess
 import json
 import numpy as np
 import pandas as pd
-from backend.corpora.dataset_processing.process import (
-    get_bucket_prefix,
-)
-
+from backend.corpora.dataset_processing.common import get_bucket_prefix
 import time
 
 import psutil
@@ -117,7 +114,7 @@ def evolve_obs(cxg):
                 codes = cat.codes
                 new_data[a]=codes
                 categories = cat.categories
-                schema[a]['categories'] = categories
+                schema[a]['categories'] = list(categories)
                 
                 dtype = str(cat.codes.dtype)
                 attr=X.schema.attr(a)
