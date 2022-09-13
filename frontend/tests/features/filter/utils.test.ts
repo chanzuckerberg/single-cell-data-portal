@@ -2,7 +2,7 @@
  * Test suite for filter-related utils.
  */
 
-import { DEVELOPMENT_STAGE_ONTOLOGY_VIEW } from "src/components/common/Filter/common/entities";
+import { DEVELOPMENT_STAGE_ONTOLOGY_TERM_SET } from "src/components/common/Filter/common/constants";
 import {
   findOntologyNodeById,
   findOntologyParentNode,
@@ -154,7 +154,7 @@ describe("filter", () => {
         it(`finds ontology node with ID ${ontologyId}`, () => {
           const ontologyKey = getOntologySpeciesKey(ontologyId);
           const ontologyRootNodes =
-            DEVELOPMENT_STAGE_ONTOLOGY_VIEW[ontologyKey];
+            DEVELOPMENT_STAGE_ONTOLOGY_TERM_SET[ontologyKey];
           expect(ontologyRootNodes).toBeTruthy();
           const ontologyNode = findOntologyNodeById(
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- truthy check above
@@ -171,7 +171,8 @@ describe("filter", () => {
       it(`finds parent of ${ONTOLOGY_ID_HUMAN_EMBRYONIC_HUMAN}`, () => {
         const ontologyId = ONTOLOGY_ID_HUMAN_EMBRYONIC_HUMAN;
         const ontologyKey = getOntologySpeciesKey(ontologyId);
-        const ontologyRootNodes = DEVELOPMENT_STAGE_ONTOLOGY_VIEW[ontologyKey];
+        const ontologyRootNodes =
+          DEVELOPMENT_STAGE_ONTOLOGY_TERM_SET[ontologyKey];
         expect(ontologyRootNodes).toBeTruthy();
         const ontologyNode = findOntologyNodeById(
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- truthy check above
@@ -191,7 +192,8 @@ describe("filter", () => {
       it(`finds parent of ${ONTOLOGY_ID_HUMAN_CARNEGIE_CS1}`, () => {
         const ontologyId = ONTOLOGY_ID_HUMAN_CARNEGIE_CS1;
         const ontologyKey = getOntologySpeciesKey(ontologyId);
-        const ontologyRootNodes = DEVELOPMENT_STAGE_ONTOLOGY_VIEW[ontologyKey];
+        const ontologyRootNodes =
+          DEVELOPMENT_STAGE_ONTOLOGY_TERM_SET[ontologyKey];
         expect(ontologyRootNodes).toBeTruthy();
         const ontologyNode = findOntologyNodeById(
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- truthy check above
@@ -213,7 +215,8 @@ describe("filter", () => {
       it(`doesn't find parent of ${ONTOLOGY_ID_HUMAN_PRENATAL}`, () => {
         const ontologyId = ONTOLOGY_ID_HUMAN_PRENATAL;
         const ontologyKey = getOntologySpeciesKey(ontologyId);
-        const ontologyRootNodes = DEVELOPMENT_STAGE_ONTOLOGY_VIEW[ontologyKey];
+        const ontologyRootNodes =
+          DEVELOPMENT_STAGE_ONTOLOGY_TERM_SET[ontologyKey];
         expect(ontologyRootNodes).toBeTruthy();
         const ontologyNode = findOntologyNodeById(
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- truthy check above

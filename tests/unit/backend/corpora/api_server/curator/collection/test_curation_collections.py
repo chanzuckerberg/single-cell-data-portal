@@ -6,6 +6,7 @@ from backend.corpora.common.corpora_orm import (
     CollectionVisibility,
     ProcessingStatus,
     DbDataset,
+    ValidationStatus,
 )
 from backend.corpora.lambdas.api.v1.curation.collections.common import EntityColumns
 from backend.corpora.common.providers.crossref_provider import CrossrefDOINotFoundException
@@ -92,13 +93,18 @@ class TestPostCollection(BaseAuthAPITest):
                     contact_email="@email.com",
                     links=[{"link_type": "DOI", "link_url": "bad_doi"}],
                 ),
-                [
-                    {"name": "contact_email", "reason": "Invalid format."},
-                    {"name": "description", "reason": "Cannot be blank."},
-                    {"name": "name", "reason": "Cannot be blank."},
-                    {"name": "contact_name", "reason": "Cannot be blank."},
-                    {"link_type": "DOI", "reason": "Invalid DOI"},
-                ],
+                dict(
+                    detail="One or more parameters is invalid.",
+                    title="Bad Request",
+                    type="about:blank",
+                    invalid_parameters=[
+                        {"name": "contact_email", "reason": "Invalid format."},
+                        {"name": "description", "reason": "Cannot be blank."},
+                        {"name": "name", "reason": "Cannot be blank."},
+                        {"name": "contact_name", "reason": "Cannot be blank."},
+                        {"link_type": "DOI", "reason": "Invalid DOI"},
+                    ],
+                ),
             ),
             (
                 dict(
@@ -111,7 +117,12 @@ class TestPostCollection(BaseAuthAPITest):
                         {"link_type": "DOI", "link_url": "doi:duplicated"},
                     ],
                 ),
-                [{"link_type": "DOI", "reason": "Can only specify a single DOI"}],
+                dict(
+                    detail="One or more parameters is invalid.",
+                    title="Bad Request",
+                    type="about:blank",
+                    invalid_parameters=[{"link_type": "DOI", "reason": "Can only specify a single DOI"}],
+                ),
             ),
         ]
         for body, expected_errors in tests:
@@ -121,7 +132,7 @@ class TestPostCollection(BaseAuthAPITest):
                 )
                 self.assertEqual(400, response.status_code)
                 for error in expected_errors:
-                    self.assertIn(error, response.json["detail"])
+                    self.assertIn(error, response.json)
 
 
 class TestGetCollections(BaseAuthAPITest):
@@ -279,7 +290,7 @@ class TestGetCollections(BaseAuthAPITest):
     def test__verify_expected_private_collection_fields(self):
         collection = self.generate_collection(
             self.session,
-            visibility=CollectionVisibility.PUBLIC.name,
+            visibility=CollectionVisibility.PRIVATE.name,
             links=[
                 {
                     "link_name": "test_raw_data_link_name",
@@ -289,7 +300,7 @@ class TestGetCollections(BaseAuthAPITest):
             ],
         )
         self.generate_dataset(self.session, collection=collection)
-        params = {"visibility": "PUBLIC"}
+        params = {"visibility": "PRIVATE"}
 
         def _test(owner):
             if owner:
@@ -317,7 +328,6 @@ class TestGetCollections(BaseAuthAPITest):
             self.check_fields(collections_cols, resp_collection, f"{subtest_prefix}:collection")
 
         _test(True)
-        _test(False)
 
     def check_fields(self, fields: list, response: dict, entity: str):
         for key in fields:
@@ -467,6 +477,41 @@ class TestGetCollectionID(BaseAuthAPITest):
         res = self.app.get("/curation/v1/collections/test_collection_id_revision")
         self.assertEqual(200, res.status_code)
         self.assertEqual("test_collection_id_revision", res.json["id"])
+
+    def test__get_collection_with_dataset_failing_validation(self):
+        collection = self.generate_collection(
+            self.session,
+            visibility=CollectionVisibility.PRIVATE.name,
+        )
+        dataset = self.generate_dataset(
+            self.session,
+            collection=collection,
+            processing_status={
+                "processing_status": ProcessingStatus.FAILURE,
+                "validation_status": ValidationStatus.INVALID,
+                "validation_message": "test message",
+            },
+        )
+        res = self.app.get(f"/curation/v1/collections/{collection.id}")
+        self.assertEqual("FAILURE", res.json["processing_status"])
+        actual_dataset = res.json["datasets"][0]
+        self.assertEqual(dataset.id, actual_dataset["id"])
+        self.assertEqual("VALIDATION_FAILURE", actual_dataset["processing_status"])
+        self.assertEqual("test message", actual_dataset["processing_status_detail"])
+
+    def test__get_collection_with_dataset_failing_pipeline(self):
+        collection = self.generate_collection(
+            self.session,
+            visibility=CollectionVisibility.PRIVATE.name,
+        )
+        dataset = self.generate_dataset(
+            self.session, collection=collection, processing_status={"processing_status": ProcessingStatus.FAILURE}
+        )
+        res = self.app.get(f"/curation/v1/collections/{collection.id}")
+        self.assertEqual("FAILURE", res.json["processing_status"])
+        actual_dataset = res.json["datasets"][0]
+        self.assertEqual(dataset.id, actual_dataset["id"])
+        self.assertEqual("PIPELINE_FAILURE", actual_dataset["processing_status"])
 
     def test__get_nonexistent_collection__403(self):
         res = self.app.get("/curation/v1/collections/test_collection_id_nonexistent")

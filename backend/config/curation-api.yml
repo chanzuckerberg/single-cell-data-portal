@@ -117,7 +117,7 @@ paths:
         Create a new private Collection
 
         * Required: provide your access token in the request header as `Authentication: bearer <access_token>`.
-      operationId: backend.corpora.lambdas.api.v1.collection.create_collection
+      operationId: backend.corpora.lambdas.api.v1.curation.collections.actions.post
       tags:
         - collection
       security:
@@ -144,7 +144,7 @@ paths:
                   collection_id:
                     $ref: "#/components/schemas/collection_id"
         "400":
-          $ref: "#/components/responses/400_multiple"
+          $ref: "#/components/responses/400"
         "401":
           $ref: "#/components/responses/401"
 
@@ -225,7 +225,7 @@ paths:
                   - contact_email
                   - publisher_metadata
         "400":
-          $ref: "#/components/responses/400_multiple"
+          $ref: "#/components/responses/400"
         "401":
           $ref: "#/components/responses/401"
         "403":
@@ -414,7 +414,7 @@ paths:
         "202":
           $ref: "#/components/responses/202"
         "400":
-          $ref: "#/components/responses/400_multiple"
+          $ref: "#/components/responses/400"
         "401":
           $ref: "#/components/responses/401"
         "403":
@@ -959,7 +959,6 @@ components:
         | `"PIPELINE_FAILURE"`| An error occured during processing. |
         | `"INITIALIZED"` | Dataset id created, and awaiting upload. |
       enum:
-        - FAILURE
         - PENDING
         - SUCCESS
         - VALIDATION_FAILURE
@@ -1033,26 +1032,30 @@ components:
       content:
         application/problem+json:
           schema:
-            $ref: "#/components/schemas/problem"
+            type: object
+            properties:
+              detail:
+                type: string
+              invalid_parameters:
+                nullable: true
+                type: array
+                items:
+                  type: object
+                  properties:
+                    name:
+                      description: the errant parameter
+                      type: string
+                    reason:
+                      description: the specific problem with the parameter
+                      type: string
+                    value:
+                      description: the errant value
+                      type: string
+              title:
+                type: string
+              type:
+                type: string
       description: Invalid or missing parameter
-    400_multiple:
-      content:
-        application/problem+json:
-          schema:
-            items:
-              properties:
-                name:
-                  description: the errant parameter
-                  type: string
-                reason:
-                  description: the specific problem with the parameter
-                  type: string
-                value:
-                  description: the errant value
-                  type: string
-              type: object
-            type: array
-      description: Invalid or missing parameters
     "401":
       content:
         application/problem+json:

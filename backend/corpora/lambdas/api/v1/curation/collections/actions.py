@@ -1,8 +1,9 @@
 from flask import jsonify, g
 from .common import reshape_for_curation_api
 from ...authorization import is_super_curator, owner_or_allowed
+from ...collection import create_collection
 from ......common.corpora_orm import CollectionVisibility, DbCollection
-from ......common.utils.http_exceptions import ForbiddenHTTPException
+from ......common.utils.http_exceptions import ForbiddenHTTPException, InvalidParametersHTTPException
 from backend.corpora.api_server.db import dbconnect
 
 
@@ -40,3 +41,12 @@ def get(visibility: str, token_info: dict, curator: str = None):
         resp_collections.append(resp_collection)
 
     return jsonify(resp_collections)
+
+
+def post(body: dict, user: str):
+    try:
+        return create_collection(body, user)
+    except InvalidParametersHTTPException as ex:
+        ex.ext = dict(invalid_parameters=ex.detail)
+        ex.detail = InvalidParametersHTTPException._default_detail
+        raise ex
