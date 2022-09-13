@@ -218,6 +218,7 @@ paths:
                       publisher_metadata:
                         $ref: "#/components/schemas/publisher_metadata"
                 required:
+                  - doi
                   - links
                   - name
                   - description
@@ -620,6 +621,8 @@ components:
             $ref: "#/components/schemas/dataset_preview"
         description:
           $ref: "#/components/schemas/collection_description"
+        doi:
+          $ref: "#/components/schemas/doi"
         id:
           $ref: "#/components/schemas/collection_id"
         links:
@@ -713,6 +716,8 @@ components:
             $ref: "#/components/schemas/dataset"
         description:
           $ref: "#/components/schemas/collection_description"
+        doi:
+          $ref: "#/components/schemas/doi"
         id:
           $ref: "#/components/schemas/collection_id"
         links:
@@ -742,6 +747,8 @@ components:
           $ref: "#/components/schemas/contact_name"
         description:
           $ref: "#/components/schemas/collection_description"
+        doi:
+          $ref: "#/components/schemas/doi"
         links:
           $ref: "#/components/schemas/links"
         name:
@@ -915,6 +922,11 @@ components:
         - NORMAL
       type: string
       nullable: true
+    doi:
+      description: Document Object Identifier (DOI). Specifically, only the _CURIE reference_.
+      type: string
+      nullable: true
+      example: "10.1093/ajae/aaq063"
     explorer_url:
       description: |
         The URL at which a given Dataset may be explored using CELLxGENE Explorer.
@@ -946,7 +958,6 @@ components:
             enum:
               - PROTOCOL
               - RAW_DATA
-              - DOI
               - LAB_WEBSITE
               - OTHER
               - DATA_SOURCE
