@@ -2,7 +2,6 @@
 import logging
 import subprocess
 import json
-import numpy as np
 import pandas as pd
 from backend.corpora.dataset_processing.common import get_bucket_prefix
 import time
