@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 import logging
 import subprocess
-
+import json
+import numpy as np
+import pandas as pd
 from backend.corpora.dataset_processing.process import (
     get_bucket_prefix,
 )
@@ -33,15 +35,24 @@ def process(dataset_id: str, cellxgene_bucket: str, prefix=None, dry_run=True):
         dataset_path = get_bucket_prefix(dataset_id)
         object_key = f"{dataset_path}.cxg"
     path = f"s3://{cellxgene_bucket}/{object_key}/X"
+    obs_path = f"s3://{cellxgene_bucket}/{object_key}/obs"
 
     logger.info(f"Processing dataset at path {path}, dry run {dry_run}")
 
     local_path = "/cxg"
     logger.info(f"Downloading {path} to {local_path}/X_old")
-
     download_command = ["aws", "s3", "sync", path, f"{local_path}/X_old"]
     # Let errors fail the pipeline
     subprocess.run(download_command, check=True)
+
+    logger.info(f"Downloading {obs_path} to {local_path}/old_obs")
+    download_command = ["aws", "s3", "sync", obs_path, f"{local_path}/old_obs"]
+    # Let errors fail the pipeline
+    subprocess.run(download_command, check=True)    
+
+    evolve_obs(local_path)
+    upload_command = ["aws", "s3", "sync", "--delete", f"{local_path}/new_obs", obs_path]
+    subprocess.run(upload_command, check=True)
 
     params = {
         "kind": "auto",
@@ -55,7 +66,7 @@ def process(dataset_id: str, cellxgene_bucket: str, prefix=None, dry_run=True):
         "source_array": "X_old",
     }
 
-    executed = compute(cxg=local_path, **params)  # executed is true if a sparse array was upgraded
+    executed = evolve_X(cxg=local_path, **params)  # executed is true if a sparse array was upgraded
     if executed:
         logger.info(f"Dataset at {path} computed successfully")
     else:
@@ -74,8 +85,58 @@ def process(dataset_id: str, cellxgene_bucket: str, prefix=None, dry_run=True):
     if executed:
         shutil.rmtree(f"{local_path}/X_new")
 
+    shutil.rmtree(f"{local_path}/old_obs")
+    shutil.rmtree(f"{local_path}/new_obs")        
 
-def compute(**kwargs):
+def evolve_obs(cxg):
+    """
+    Creates a new obs array with the new schema
+    :param X: the old obs tiledb array
+    """
+    with tiledb.open(f"{cxg}/old_obs", "r") as X:
+        # load cxg schema
+        schema = json.loads(X.meta['cxg_schema'])
+        # get list of attributes excluding index key
+        attrs = [x for x in list(schema.keys()) if x!='index']
+        # get all data in the old obs array
+        data = X.query().multi_index[:]
+
+        # adjust the schema to expect codes where applicable and store code-to-value mapping
+        # dictionary in type_hint["categories"]
+        tdb_attrs=[]
+        new_data = {}
+        for a in attrs:
+            type_hint = schema[a]
+            if "categories" in type_hint and len(type_hint.get("categories", [])) > 0.75 * X.shape[0]:
+                schema[a]["type"]='string'
+                del schema[a]['categories']
+                tdb_attrs.append(X.schema.attr(a)) 
+                new_data[a]=data[a]
+            elif "categories" in type_hint:
+                cat = pd.Categorical(data[a])
+                codes = cat.codes
+                new_data[a]=codes
+                categories = cat.categories
+                schema[a]['categories'] = dict(zip(range(len(categories)),categories))
+                
+                dtype = str(cat.codes.dtype)
+                attr=X.schema.attr(a)
+                tdb_attrs.append(tiledb.Attr(name=a,dtype=dtype,filters=attr.filters))
+            else:
+                tdb_attrs.append(X.schema.attr(a)) 
+                new_data[a]=data[a]
+                
+        new_schema = tiledb.ArraySchema(domain=X.schema.domain,
+                                        attrs = tdb_attrs)
+        tiledb.Array.create(
+            f"{cxg}/new_obs",
+            new_schema,
+        )
+        with tiledb.open(f"{cxg}/new_obs", "w") as new_X:
+            new_X[:]=new_data
+            new_X.meta['cxg_schema']=json.dumps(schema)           
+    
+def evolve_X(**kwargs):
     """
     Computes the evolved cxg from the sparse source_array and saves it to the target_array destination
     :param cxg:
@@ -148,7 +209,6 @@ def compute(**kwargs):
 
     logger.info("done.")
     return True
-
 
 def create_new_X(cxg, target_array, compression, X_extent, old_schema, cell_order, tile_order, capacity):
     logger.info(f"create_new_X: {True}")

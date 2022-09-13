@@ -2,6 +2,7 @@ import json
 
 import numpy as np
 import tiledb
+import pandas as pd
 
 from backend.corpora.common.utils.type_conversion_utils import (
     get_encoding_dtype_of_array,
@@ -32,6 +33,56 @@ def convert_dictionary_to_cxg_group(cxg_container, metadata_dict, group_metadata
             metadata_array.meta[key] = value
 
 
+
+def evolve_obs(cxg):
+    """
+    Creates a new obs array with the new schema
+    :param X: the old obs tiledb array
+    """
+    with tiledb.open(f"{cxg}/old_obs", "r") as X:
+        # load cxg schema
+        schema = json.loads(X.meta['cxg_schema'])
+        # get list of attributes excluding index key
+        attrs = [x for x in list(schema.keys()) if x!='index']
+        # get all data in the old obs array
+        data = X.query().multi_index[:]
+
+        # adjust the schema to expect codes where applicable and store code-to-value mapping
+        # dictionary in type_hint["categories"]
+        tdb_attrs=[]
+        new_data = {}
+        for a in attrs:
+            type_hint = schema[a]
+            if "categories" in type_hint and len(type_hint.get("categories", [])) > 0.75 * X.shape[0]:
+                schema[a]["type"]='string'
+                del schema[a]['categories']
+                tdb_attrs.append(X.schema.attr(a)) 
+                new_data[a]=data[a]
+            elif "categories" in type_hint:
+                cat = pd.Categorical(data[a])
+                codes = cat.codes
+                new_data[a]=codes
+                categories = cat.categories
+                schema[a]['categories'] = dict(zip(range(len(categories)),categories))
+                
+                dtype = str(cat.codes.dtype)
+                attr=X.schema.attr(a)
+                tdb_attrs.append(tiledb.Attr(name=a,dtype=dtype,filters=attr.filters))
+            else:
+                tdb_attrs.append(X.schema.attr(a)) 
+                new_data[a]=data[a]
+                
+        new_schema = tiledb.ArraySchema(domain=X.schema.domain,
+                                        attrs = tdb_attrs)
+        tiledb.Array.create(
+            f"{cxg}/new_obs",
+            new_schema,
+        )
+        with tiledb.open(f"{cxg}/new_obs", "w") as new_X:
+            new_X[:]=new_data
+            new_X.meta['cxg_schema']=json.dumps(schema)           
+    
+
 def convert_dataframe_to_cxg_array(cxg_container, dataframe_name, dataframe, index_column_name, ctx):
     """
     Saves the contents of the dataframe to the CXG output directory specified.
@@ -41,18 +92,37 @@ def convert_dataframe_to_cxg_array(cxg_container, dataframe_name, dataframe, ind
     size (1000) and very aggressive compression levels.
     """
 
-    def create_dataframe_array(array_name, dataframe):
-        tiledb_filter = tiledb.FilterList(
-            [
-                # Attempt aggressive compression as many of these dataframes are very repetitive strings, bools and
-                # other non-float data.
-                tiledb.ZstdFilter(level=22),
-            ]
-        )
-        attrs = [
-            tiledb.Attr(name=column, dtype=get_encoding_dtype_of_array(dataframe[column]), filters=tiledb_filter)
-            for column in dataframe
+    tiledb_filter = tiledb.FilterList(
+        [
+            # Attempt aggressive compression as many of these dataframes are very repetitive strings, bools and
+            # other non-float data.
+            tiledb.ZstdFilter(level=22),
         ]
+    )    
+    data = {}
+    schema_hints = {}
+    tdb_attrs = []
+
+    for column_name, column_values in dataframe.items():
+        dtype, hints = get_dtype_and_schema_of_array(column_values)
+        if "categories" in hints and len(hints.get("categories", [])) > 0.75 * dataframe.shape[0]:
+            hints["type"]='string'
+            del hints['categories']
+            data[column_name]=column_values.to_numpy(dtype=dtype)
+        elif "categories" in hints:
+            cat = pd.Categorical(column_values)
+            codes = cat.codes
+            data[column_name]=codes
+            categories = cat.categories
+            hints['categories'] = dict(zip(range(len(categories)),categories))
+            dtype = str(cat.codes.dtype)
+        else:
+            data[column_name]=column_values.to_numpy(dtype=dtype)
+        
+        tdb_attrs.append(tiledb.Attr(name=column_name,dtype=dtype,filters=tiledb_filter))
+        schema_hints.update({column_name: hints})
+
+    def create_dataframe_array(array_name, dataframe, attrs):
         domain = tiledb.Domain(
             tiledb.Dim(domain=(0, dataframe.shape[0] - 1), tile=min(dataframe.shape[0], 1000), dtype=np.uint32)
         )
@@ -63,19 +133,11 @@ def convert_dataframe_to_cxg_array(cxg_container, dataframe_name, dataframe, ind
 
     array_name = f"{cxg_container}/{dataframe_name}"
 
-    create_dataframe_array(array_name, dataframe)
+    create_dataframe_array(array_name, dataframe, tdb_attrs)
 
     with tiledb.open(array_name, mode="w", ctx=ctx) as array:
-        value = {}
-        schema_hints = {}
-        for column_name, column_values in dataframe.items():
-            dtype, hints = get_dtype_and_schema_of_array(column_values)
-            value[column_name] = column_values.to_numpy(dtype=dtype)
-            if hints:
-                schema_hints.update({column_name: hints})
-
         schema_hints.update({"index": index_column_name})
-        array[:] = value
+        array[:] = data
         array.meta["cxg_schema"] = json.dumps(schema_hints)
 
     tiledb.consolidate(array_name, ctx=ctx)
