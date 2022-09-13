@@ -349,7 +349,7 @@ paths:
     post:
       summary: Create an empty Dataset and return the `id` to be used in a future upload.
       description: |
-        Create a new empty Dataset and return the `id`. The `id` is used when uploading a Dataset file 
+        Create a new empty Dataset and return the `id`. The `id` is used when uploading a datafile 
         to S3 to identify what Dataset the file belongs to.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.datasets.actions.post
       security:
