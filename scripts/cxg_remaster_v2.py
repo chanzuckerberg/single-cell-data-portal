@@ -10,7 +10,7 @@ from backend.corpora.dataset_processing.remaster_cxg_v2 import compute
 
 """
 Re-master an existing "X" tiledb array in a CXG
-Creates two new arrays (Xr and Xc) with the same data but row- and column-optimized schemas
+Creates two new arrays (X and Xc) with the same data but row- and column-optimized schemas
 """
 
 X_extent = None
