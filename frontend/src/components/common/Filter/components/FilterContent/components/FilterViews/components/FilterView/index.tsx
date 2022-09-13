@@ -1,19 +1,19 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useResizeObserver } from "src/common/hooks/useResizeObserver";
 import {
-  CATEGORY_KEY,
+  CATEGORY_FILTER_ID,
   OnFilterFn,
   OntologyCategoryTreeNodeView,
-  OnUpdateSearchValueFn,
 } from "src/components/common/Filter/common/entities";
 import {
   ViewDivider,
   ViewHeader,
   ViewPanel,
   ViewPanelScroll,
-} from "src/components/common/Filter/components/FilterViews/components/FilterView/style";
-import FilterViewList from "src/components/common/Filter/components/FilterViews/components/FilterViewList";
-import FilterViewSearch from "src/components/common/Filter/components/FilterViews/components/FilterViewSearch";
+} from "src/components/common/Filter/components/FilterContent/components/FilterViews/components/FilterView/style";
+import FilterViewList from "src/components/common/Filter/components/FilterContent/components/FilterViews/components/FilterViewList";
+import FilterSearch from "src/components/common/Filter/components/FilterSearch";
+import { useFilterSearch } from "src/components/common/Filter/components/FilterSearch/common/useFilterSearch";
 
 const ADDITIONAL_PANEL_WIDTH = 8;
 
@@ -23,34 +23,32 @@ export const MAX_DISPLAYABLE_LIST_ITEMS = {
 };
 
 interface Props {
-  categoryKey: CATEGORY_KEY;
+  categoryFilterId: CATEGORY_FILTER_ID;
   label?: string;
   isSearchable: boolean;
   isZerosVisible: boolean;
   onFilter: OnFilterFn;
-  onUpdateSearchValue: OnUpdateSearchValueFn;
   showViewDivider: boolean;
   values: OntologyCategoryTreeNodeView[];
   viewListMaxHeight: number;
 }
 
 export default function FilterView({
-  categoryKey,
+  categoryFilterId,
   label,
   isSearchable,
   isZerosVisible,
   onFilter,
-  onUpdateSearchValue,
   showViewDivider,
   values,
   viewListMaxHeight,
 }: Props): JSX.Element {
+  const { searchValue, setSearchValue } = useFilterSearch();
   const panelRef = useRef<HTMLDivElement>(null);
   const listContainerRef = useRef<HTMLDivElement>(null);
   const listContainerRect = useResizeObserver(listContainerRef);
   const [panelScrollable, setPanelScrollable] = useState(false);
   const [panelWidth, setPanelWidth] = useState<number>(0);
-  const [searchValue, setSearchValue] = useState<string>("");
   const { scrollHeight: listScrollHeight } = listContainerRect || {};
   const filteredValues = filterViewValues(values, searchValue);
 
@@ -75,8 +73,8 @@ export default function FilterView({
       <ViewPanel panelWidth={panelWidth} ref={panelRef}>
         {/* Optional search bar */}
         {isSearchable && (
-          <FilterViewSearch
-            onUpdateSearchValue={onUpdateSearchValue}
+          <FilterSearch
+            searchValue={searchValue}
             setSearchValue={setSearchValue}
           />
         )}
@@ -86,13 +84,11 @@ export default function FilterView({
           scrollable={panelScrollable}
         >
           <FilterViewList
-            categoryKey={categoryKey}
+            categoryFilterId={categoryFilterId}
             isZerosVisible={isZerosVisible}
             onFilter={onFilter}
             values={filteredValues}
-            ViewHeader={
-              label ? <ViewHeader disableSticky>{label}</ViewHeader> : undefined
-            }
+            ViewHeader={label ? <ViewHeader>{label}</ViewHeader> : undefined}
           />
         </ViewPanelScroll>
       </ViewPanel>
