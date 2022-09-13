@@ -96,7 +96,7 @@ class TestCxgGenerationUtils(unittest.TestCase):
 
         convert_matrices_to_cxg_arrays(matrix_name, matrix, True, tiledb.Ctx())
 
-        for suffix in ["", "c"]:
+        for suffix in ["r", "c"]:
             actual_stored_array = tiledb.open(matrix_name + suffix)
             self.assertTrue(path.isdir(matrix_name + suffix))
             self.assertTrue(isinstance(actual_stored_array, tiledb.SparseArray))
@@ -115,7 +115,7 @@ class TestCxgGenerationUtils(unittest.TestCase):
             x, y = coord
             return array[x][""][array[x][attr] == y][0]
 
-        for suffix, attr_dim in zip(["", "c"], ["var", "obs"]):
+        for suffix, attr_dim in zip(["r", "c"], ["var", "obs"]):
             actual_stored_array = tiledb.open(matrix_name + suffix)
             self.assertTrue(path.isdir(matrix_name + suffix))
             self.assertTrue(isinstance(actual_stored_array, tiledb.SparseArray))

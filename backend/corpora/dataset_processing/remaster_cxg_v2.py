@@ -73,7 +73,7 @@ def process(dataset_id: str, cellxgene_bucket: str, prefix=None, dry_run=True):
         logger.info("Dataset was dense, nothing to be done")
 
     if not dry_run and executed:
-        for suffix in ["", "c"]:
+        for suffix in ["r", "c"]:
             upload_command = ["aws", "s3", "sync", "--delete", f"{local_path}/X_new" + suffix, path + suffix]
             subprocess.run(upload_command, check=True)
 
@@ -201,7 +201,7 @@ def evolve_X(**kwargs):
                         i += chunk
 
             logger.info("consolidating...")
-            for suffix in ["", "c"]:
+            for suffix in ["r", "c"]:
                 tiledb.consolidate(f"{cxg}/{target_array}{suffix}")
                 tiledb.vacuum(f"{cxg}/{target_array}{suffix}")
 
@@ -217,7 +217,7 @@ def create_new_X(cxg, target_array, compression, X_extent, old_schema, cell_orde
     old_dims = [old_schema.domain.dim(d) for d in range(old_schema.domain.ndim)]
     old_attr = old_schema.attr(0)
 
-    for it, suffix, name_dim, name_attr in zip([0, 1], ["", "c"], ["obs", "var"], ["var", "obs"]):
+    for it, suffix, name_dim, name_attr in zip([0, 1], ["r", "c"], ["obs", "var"], ["var", "obs"]):
         tiledb.Array.create(
             f"{cxg}/{target_array}{suffix}",
             tiledb.ArraySchema(
