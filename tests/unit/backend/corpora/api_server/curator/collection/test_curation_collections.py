@@ -95,13 +95,18 @@ class TestPostCollection(BaseAuthAPITest):
                     contact_email="@email.com",
                     links=[{"link_type": "DOI", "link_url": "bad_doi"}],
                 ),
-                [
-                    {"name": "contact_email", "reason": "Invalid format."},
-                    {"name": "description", "reason": "Cannot be blank."},
-                    {"name": "name", "reason": "Cannot be blank."},
-                    {"name": "contact_name", "reason": "Cannot be blank."},
-                    {"link_type": "DOI", "reason": "Invalid DOI"},
-                ],
+                dict(
+                    detail="One or more parameters is invalid.",
+                    title="Bad Request",
+                    type="about:blank",
+                    invalid_parameters=[
+                        {"name": "contact_email", "reason": "Invalid format."},
+                        {"name": "description", "reason": "Cannot be blank."},
+                        {"name": "name", "reason": "Cannot be blank."},
+                        {"name": "contact_name", "reason": "Cannot be blank."},
+                        {"link_type": "DOI", "reason": "Invalid DOI"},
+                    ],
+                ),
             ),
             (
                 dict(
@@ -114,7 +119,12 @@ class TestPostCollection(BaseAuthAPITest):
                         {"link_type": "DOI", "link_url": "doi:duplicated"},
                     ],
                 ),
-                [{"link_type": "DOI", "reason": "Can only specify a single DOI"}],
+                dict(
+                    detail="One or more parameters is invalid.",
+                    title="Bad Request",
+                    type="about:blank",
+                    invalid_parameters=[{"link_type": "DOI", "reason": "Can only specify a single DOI"}],
+                ),
             ),
         ]
         for body, expected_errors in tests:
@@ -124,7 +134,7 @@ class TestPostCollection(BaseAuthAPITest):
                 )
                 self.assertEqual(400, response.status_code)
                 for error in expected_errors:
-                    self.assertIn(error, response.json["detail"])
+                    self.assertIn(error, response.json)
 
 
 class TestGetCollections(BaseAuthAPITest):
