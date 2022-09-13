@@ -63,7 +63,7 @@ def convert_dataframe_to_cxg_array(cxg_container, dataframe_name, dataframe, ind
             codes = cat.codes
             data[column_name] = codes
             categories = list(cat.categories)
-            hints["categories"] = dict(zip(range(len(categories)), categories))
+            hints["categories"] = categories
             dtype = str(cat.codes.dtype)
         else:
             data[column_name] = column_values.to_numpy(dtype=dtype)
