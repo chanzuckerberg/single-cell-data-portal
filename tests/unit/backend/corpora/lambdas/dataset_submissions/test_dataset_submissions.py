@@ -31,8 +31,9 @@ class TestDatasetSubmissions(TestCase):
     def test__missing_username__raises_error(self):
         self._test_missing_fields(key=f"{self.collection_id}/{self.incoming_curator_tag}")
 
-    def test__non_existent_collection__raises_error(self, mock_collection_get):
-        mock_collection_get.return_value = None
+    @patch("backend.corpora.dataset_submissions.app.Dataset.get")
+    def test__nonexistent_dataset__raises_error(self, mock_dataset_get):
+        mock_dataset_get.return_value = None
         s3_event = create_s3_event(key=f"{self.user_name}/{self.collection_id}/{self.dataset_id}")
         with self.assertRaises(CorporaException):
             dataset_submissions_handler(s3_event, None)

@@ -36,7 +36,7 @@ def dataset_submissions_handler(s3_event: dict, unused_context) -> None:
         logger.debug(parsed)
 
         with db_session_manager() as session:
-            collection_owner, dataset_id = get_dataset_info(session, parsed["dataset_id"])
+            collection_owner, dataset_id = get_dataset_info(session, parsed["collection_id"], parsed["dataset_id"])
 
             logger.info(f"{collection_owner=}, {dataset_id=}")
             if not collection_owner:
@@ -91,12 +91,8 @@ def parse_key(key: str) -> Optional[dict]:
         return matched.groupdict()
 
 
-def get_dataset_info(session: Session, dataset_id: str) -> Tuple[Optional[str], Optional[str]]:
-
-    if dataset_id:  # If a dataset uuid was provided
-        if dataset := Dataset.get(session, dataset_id):
-            return dataset.collection.owner, dataset.id
+def get_dataset_info(session: Session, collection_id: str, dataset_id: str) -> Tuple[Optional[str], Optional[str]]:
+    if dataset := Dataset.get(session, dataset_id=dataset_id, collection_id=collection_id):
+        return dataset.collection.owner, dataset.id
     else:
-        raise CorporaException("No dataset_id provided")
-
-    return None, None
+        raise CorporaException(f"No Dataset with id {dataset_id} in Collection {collection_id}")
