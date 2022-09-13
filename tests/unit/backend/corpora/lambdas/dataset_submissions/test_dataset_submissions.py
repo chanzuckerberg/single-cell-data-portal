@@ -31,7 +31,6 @@ class TestDatasetSubmissions(TestCase):
     def test__missing_username__raises_error(self):
         self._test_missing_fields(key=f"{self.collection_id}/{self.incoming_curator_tag}")
 
-    @patch("backend.corpora.dataset_submissions.app.Collection.get")
     def test__non_existent_collection__raises_error(self, mock_collection_get):
         mock_collection_get.return_value = None
         s3_event = create_s3_event(key=f"{self.user_name}/{self.collection_id}/{self.dataset_id}")
