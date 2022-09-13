@@ -3,7 +3,7 @@ from .common import reshape_for_curation_api
 from ...authorization import is_super_curator, owner_or_allowed
 from ...collection import create_collection_common, curation_get_normalized_doi_url
 from ......common.corpora_orm import CollectionVisibility, DbCollection, ProjectLinkType
-from ......common.utils.http_exceptions import ForbiddenHTTPException
+from ......common.utils.http_exceptions import ForbiddenHTTPException, InvalidParametersHTTPException
 from backend.corpora.api_server.db import dbconnect
 
 
@@ -51,4 +51,9 @@ def post(body: dict, user: str):
             links = body.get("links", [])
             links.append({"link_type": ProjectLinkType.DOI.name, "link_url": doi_url})
             body["links"] = links
-    return create_collection_common(body, user, doi_url, errors)
+    try:
+        return create_collection_common(body, user, doi_url, errors)
+    except InvalidParametersHTTPException as ex:
+        ex.ext = dict(invalid_parameters=ex.detail)
+        ex.detail = InvalidParametersHTTPException._default_detail
+        raise ex

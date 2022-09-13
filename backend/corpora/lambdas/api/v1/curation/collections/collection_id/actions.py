@@ -81,7 +81,7 @@ def patch(collection_id: str, body: dict, token_info: dict) -> Response:
                 body["publisher_metadata"] = publisher_metadata
 
     if errors:
-        raise InvalidParametersHTTPException(detail=errors)
+        raise InvalidParametersHTTPException(ext=dict(invalid_parameters=errors))
 
     collection.update_curation(**body, keep_links=keep_links)
     collection_dict = collection.to_dict_keep(
