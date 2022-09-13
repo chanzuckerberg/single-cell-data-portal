@@ -9,6 +9,5 @@ def put(collection_id: str, body: dict, token_info: dict):
         token_info,
         body.get("url", body.get("link")),
         body.get("id"),
-        curator_tag=body.get("curator_tag"),
     )
     return make_response({"dataset_id": dataset_id}, 202)

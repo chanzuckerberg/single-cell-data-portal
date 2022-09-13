@@ -1,8 +1,9 @@
 from flask import jsonify, g
 from .common import reshape_for_curation_api
 from ...authorization import is_super_curator, owner_or_allowed
-from ......common.corpora_orm import CollectionVisibility, DbCollection
-from ......common.utils.http_exceptions import ForbiddenHTTPException
+from ...collection import create_collection_common, curation_get_normalized_doi_url
+from ......common.corpora_orm import CollectionVisibility, DbCollection, ProjectLinkType
+from ......common.utils.http_exceptions import ForbiddenHTTPException, InvalidParametersHTTPException
 from backend.corpora.api_server.db import dbconnect
 
 
@@ -40,3 +41,19 @@ def get(visibility: str, token_info: dict, curator: str = None):
         resp_collections.append(resp_collection)
 
     return jsonify(resp_collections)
+
+
+def post(body: dict, user: str):
+    errors = []
+    doi_url = None
+    if doi := body.get("doi"):
+        if doi_url := curation_get_normalized_doi_url(doi, errors):
+            links = body.get("links", [])
+            links.append({"link_type": ProjectLinkType.DOI.name, "link_url": doi_url})
+            body["links"] = links
+    try:
+        return create_collection_common(body, user, doi_url, errors)
+    except InvalidParametersHTTPException as ex:
+        ex.ext = dict(invalid_parameters=ex.detail)
+        ex.detail = InvalidParametersHTTPException._default_detail
+        raise ex
