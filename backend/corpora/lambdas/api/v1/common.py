@@ -40,9 +40,9 @@ def delete_dataset_common(db_session: Session, dataset: Dataset, token_info: dic
             dataset.delete()  # Delete the dataset row.
 
 
-def get_dataset_else_error(db_session, dataset_id, collection_id, curator_tag, **kwargs) -> Dataset:
+def get_dataset_else_error(db_session, dataset_id, collection_id, **kwargs) -> Dataset:
     try:
-        dataset = Dataset.get(db_session, dataset_id, collection_id=collection_id, curator_tag=curator_tag, **kwargs)
+        dataset = Dataset.get(db_session, dataset_id, **kwargs)
     except ValueError:
         raise InvalidParametersHTTPException()
     if not dataset:
