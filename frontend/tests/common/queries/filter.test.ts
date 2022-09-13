@@ -11,7 +11,7 @@ import {
   CollectionResponse,
   createPublicationDateValues,
 } from "src/common/queries/filter";
-import { PUBLICATION_DATE_VALUES } from "src/components/common/Filter/common/entities";
+import { PUBLICATION_DATE_VALUES } from "src/components/common/Filter/common/constants";
 
 describe("filter", () => {
   describe("Calculate Months Since Publication", () => {
