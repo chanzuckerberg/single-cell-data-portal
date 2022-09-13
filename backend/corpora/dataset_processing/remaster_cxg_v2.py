@@ -50,7 +50,7 @@ def process(dataset_id: str, cellxgene_bucket: str, prefix=None, dry_run=True):
     logger.info(f"Downloading {meta_path} to {local_path}/cxg_group_metadata")
     download_command = ["aws", "s3", "sync", meta_path, f"{local_path}/cxg_group_metadata"]
     # Let errors fail the pipeline
-    subprocess.run(download_command, check=True)    
+    subprocess.run(download_command, check=True)
 
     evolve_obs(local_path)
     upload_command = ["aws", "s3", "sync", "--delete", f"{local_path}/new_obs", obs_path]
@@ -94,13 +94,15 @@ def process(dataset_id: str, cellxgene_bucket: str, prefix=None, dry_run=True):
     shutil.rmtree(f"{local_path}/old_obs")
     shutil.rmtree(f"{local_path}/new_obs")
 
+
 def increment_version(cxg):
     """
     Increments the version number of the CXG
     :param cxg: the path to the CXG
     """
     with tiledb.open(f"{cxg}/cxg_group_metadata", "w") as X:
-        X.meta['version'] = '0.3.0'
+        X.meta["version"] = "0.3.0"
+
 
 def evolve_obs(cxg, array_name="old_obs"):
     """
