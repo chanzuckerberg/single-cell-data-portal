@@ -380,7 +380,7 @@ paths:
       description: |
         Upload a Dataset. The Dataset will be uploaded from the provided `link` which MUST either be a presigned AWS S3 
         URL or Dropbox shared file URL. MAY include the `dataset_id` of an existing Dataset, in which case the 
-        existing Dataset SHALL be replaced.
+        existing Dataset SHALL be replaced. Otherwise a new Dataset will be created.
 
         * Required: provide your access token in the request header as `Authentication: bearer <access_token>`.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.datasets.upload_link.put
