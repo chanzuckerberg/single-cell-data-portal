@@ -1160,7 +1160,9 @@ export function onRemoveMultiPanelCategoryValueTag(
     selectedCategoryValueIds
   );
 
-  // Grab all selected descendants of the removed value.
+  // Grab all selected descendants of the removed value. Ignore descendants that are in the same panel as the removed
+  // value (for example "leukocyte" and "T cell") as we don't want to remove descendants in the same panel as the value
+  // to remove.
   const selectedDescendants = selectedCategoryValueIds.filter(
     (selectedCategoryValueId) =>
       isDescendant(
