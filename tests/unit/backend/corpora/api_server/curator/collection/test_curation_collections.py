@@ -29,9 +29,7 @@ class TestAuthToken(BaseAuthAPITest):
             collection = self.generate_collection(self.session)
             headers = {"Authorization": f"Bearer {token}"}
 
-            response = self.app.get(
-                f"/curation/v1/collections/{collection.id}/datasets/s3-upload-credentials", headers=headers
-            )
+            response = self.app.get(f"/curation/v1/collections/{collection.id}/s3-upload-credentials", headers=headers)
             self.assertEqual(200, response.status_code)
             token_sub = mock_assert_authorized_token(token)["sub"]
             self.assertEqual(response.json["Bucket"], "cellxgene-dataset-submissions-test")
@@ -49,20 +47,20 @@ class TestAuthToken(BaseAuthAPITest):
     def test__generate_s3_credentials__Not_Owner(self):
         collection = self.generate_collection(self.session, owner="not_test_user")
         response = self.app.get(
-            f"/curation/v1/collections/{collection.id}/datasets/s3-upload-credentials", headers=self.make_owner_header()
+            f"/curation/v1/collections/{collection.id}/s3-upload-credentials", headers=self.make_owner_header()
         )
         self.assertEqual(403, response.status_code, msg=response.data)
 
     def test__generate_s3_credentials__Not_Private(self):
         collection = self.generate_collection(self.session, visibility=CollectionVisibility.PUBLIC.name)
         response = self.app.get(
-            f"/curation/v1/collections/{collection.id}/datasets/s3-upload-credentials", headers=self.make_owner_header()
+            f"/curation/v1/collections/{collection.id}/s3-upload-credentials", headers=self.make_owner_header()
         )
         self.assertEqual(403, response.status_code)
 
     def test__generate_s3_credentials__No_Auth(self):
         collection = self.generate_collection(self.session, visibility=CollectionVisibility.PUBLIC.name)
-        response = self.app.get(f"/curation/v1/collections/{collection.id}/datasets/s3-upload-credentials")
+        response = self.app.get(f"/curation/v1/collections/{collection.id}/s3-upload-credentials")
         self.assertEqual(401, response.status_code)
 
 
