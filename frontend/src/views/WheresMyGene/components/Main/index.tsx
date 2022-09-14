@@ -1,3 +1,5 @@
+import { Button } from "czifui";
+import { toPng } from "html-to-image";
 import Head from "next/head";
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { EMPTY_ARRAY, EMPTY_OBJECT } from "src/common/constants/utils";
@@ -25,6 +27,11 @@ import ColorScale from "../InfoPanel/components/ColorScale";
 import Legend from "../InfoPanel/components/Legend";
 import Loader from "../Loader";
 import { SideBarLabel } from "./style";
+
+const EXCLUDE_IN_SCREENSHOT_CLASS_NAME = "screenshot-exclude";
+const screenshotFilter = (domNode: HTMLElement): boolean => {
+  return !domNode.classList?.contains(EXCLUDE_IN_SCREENSHOT_CLASS_NAME);
+};
 
 export default function WheresMyGene(): JSX.Element {
   const state = useContext(StateContext);
@@ -232,6 +239,30 @@ export default function WheresMyGene(): JSX.Element {
     setIsScaled((prevIsScaled) => !prevIsScaled);
   }, [setIsScaled]);
 
+  console.log(cellTypesByTissueName);
+
+  const saveImage = async () => {
+    try {
+      const heatmapNode = document.getElementById("view") as HTMLCanvasElement;
+      const imageURL = await toPng(heatmapNode, {
+        backgroundColor: "white",
+        clonedClassName: "CLONED",
+        filter: screenshotFilter,
+        style: {
+          width: "min-content",
+        },
+      });
+      const image = new Image();
+      image.src = imageURL;
+      image.style.border = "1px solid pink";
+      document.body.appendChild(image);
+
+      // download(imageURL, `CELLxGENE_gene_expression_${Date.now()}.png`);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return (
     <>
       <Head>
@@ -251,17 +282,17 @@ export default function WheresMyGene(): JSX.Element {
 
         <ColorScale handleIsScaledChange={handleIsScaledChange} />
       </SideBar>
-
-      <View hideOverflow>
+      <Button onClick={saveImage}>Save Image</Button>
+      <View id="view" hideOverflow>
         <Wrapper>
           {isLoading && !shouldShowHeatMap && <Loader />}
 
           <Top>
-            <GeneSearchBar />
+            <GeneSearchBar className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME} />
             <Legend isScaled={isScaled} />
           </Top>
 
-          <Beta />
+          <Beta className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME} />
 
           {shouldShowHeatMap ? (
             <HeatMap

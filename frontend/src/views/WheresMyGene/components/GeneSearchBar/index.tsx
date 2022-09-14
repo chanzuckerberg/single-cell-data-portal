@@ -15,7 +15,11 @@ interface Tissue {
   name: string;
 }
 
-export default function GeneSearchBar(): JSX.Element {
+export default function GeneSearchBar({
+  className,
+}: {
+  className?: string;
+}): JSX.Element {
   const dispatch = useContext(DispatchContext);
   const { selectedGenes, selectedTissues, selectedOrganismId } =
     useContext(StateContext);
@@ -78,7 +82,7 @@ export default function GeneSearchBar(): JSX.Element {
   }, []);
 
   return (
-    <Container>
+    <Container {...{ className }}>
       <ActionWrapper>
         <Organism isLoading={isLoading} />
 
