@@ -469,7 +469,7 @@ paths:
 
         Once a file is successfully uploaded, it wil be processed and added to the Collection that you specified in your
         initial request to this endpoint, with no further user action required. Use
-        `GET /curation/collections/{collection_id}/datasets/` with the `id` query parameter to retrieve metadata for the
+        `GET /curation/collections/{collection_id}/datasets/{dataset_id}` to retrieve metadata for the
         Dataset in question in order to check on its processing status.
 
         A Dataset uploaded directly to S3 in this manner will appear in the Collection only once the Dataset has started
