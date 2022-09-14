@@ -112,7 +112,8 @@ export interface SelectViewKind {
 export enum CATEGORY_FILTER_ID {
   "ASSAY" = "ASSAY",
   "CELL_COUNT" = "CELL_COUNT",
-  "CELL_TYPE_DEPRECATED" = "CELL_TYPE_DEPRECATED",
+  "CELL_TYPE_CALCULATED" = "CELL_TYPE_CALCULATED",
+  "CELL_TYPE_DEPRECATED" = "CELL_TYPE_DEPRECATED", // TODO(cc) remove with #2569/#3138
   "DEVELOPMENT_STAGE" = "DEVELOPMENT_STAGE",
   "DISEASE" = "DISEASE",
   "ETHNICITY" = "ETHNICITY",
@@ -254,6 +255,9 @@ interface BaseCategoryFilterPanelConfig {
  * Complete set of filter panel IDs.
  */
 export enum CATEGORY_FILTER_PANEL_ID {
+  "CELL_TYPE_CELL_CLASS" = "CELL_TYPE_CELL_CLASS",
+  "CELL_TYPE_LEVEL_1" = "CELL_TYPE_LEVEL_1",
+  "CELL_TYPE_LEVEL_2" = "CELL_TYPE_LEVEL_2",
   "TISSUE_SYSTEM" = "TISSUE_SYSTEM",
   "TISSUE_ORGAN" = "TISSUE_ORGAN",
   "TISSUE" = "TISSUE",
@@ -310,6 +314,7 @@ export interface Categories {
   assay: Ontology[];
   cell_type: Ontology[];
   cell_type_ancestors: string[];
+  cellTypeCalculated: string[];
   disease: Ontology[];
   development_stage_ancestors: string[];
   ethnicity: Ontology[];

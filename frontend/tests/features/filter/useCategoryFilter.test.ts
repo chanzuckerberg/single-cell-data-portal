@@ -689,6 +689,14 @@ describe("useCategoryFilter", () => {
     });
 
     describe("overrideSelectedParents", () => {
+      let uiNodesByCategoryValueId: Map<CategoryValueId, MultiPanelUINode>;
+      beforeAll(() => {
+        uiNodesByCategoryValueId = buildUINodesByCategoryValueId(
+          CATEGORY_VALUE_IDS_BY_PANEL,
+          TISSUE_DESCENDANTS
+        );
+      });
+
       /**
        * Selected: blood non-specific
        * Post-overrides: blood non-specific
@@ -696,7 +704,8 @@ describe("useCategoryFilter", () => {
       it("doesn't override tissue", () => {
         const overriddenSelectedValues = overrideSelectedParents(
           [EXPLICIT_BLOOD],
-          TISSUE_DESCENDANTS
+          TISSUE_DESCENDANTS,
+          uiNodesByCategoryValueId
         );
         expect(overriddenSelectedValues.length).toEqual(1);
       });
@@ -708,7 +717,8 @@ describe("useCategoryFilter", () => {
       it("overrides inferred organ with explicit tissue", () => {
         const overriddenSelectedValues = overrideSelectedParents(
           [INFERRED_BLOOD, EXPLICIT_BLOOD],
-          TISSUE_DESCENDANTS
+          TISSUE_DESCENDANTS,
+          uiNodesByCategoryValueId
         );
         expect(overriddenSelectedValues.length).toEqual(1);
         expect(overriddenSelectedValues[0]).toEqual(EXPLICIT_BLOOD);
@@ -721,7 +731,8 @@ describe("useCategoryFilter", () => {
       it("overrides organ with tissue", () => {
         const overriddenSelectedValues = overrideSelectedParents(
           [INFERRED_BLOOD, EXPLICIT_UMBILICAL_CORD_BLOOD],
-          TISSUE_DESCENDANTS
+          TISSUE_DESCENDANTS,
+          uiNodesByCategoryValueId
         );
         expect(overriddenSelectedValues.length).toEqual(1);
         expect(overriddenSelectedValues[0]).toEqual(
@@ -736,7 +747,8 @@ describe("useCategoryFilter", () => {
       it("overrides system with organ", () => {
         const overriddenSelectedValues = overrideSelectedParents(
           [INFERRED_HEMATOPOIETIC_SYSTEM, INFERRED_BLOOD],
-          TISSUE_DESCENDANTS
+          TISSUE_DESCENDANTS,
+          uiNodesByCategoryValueId
         );
         expect(overriddenSelectedValues.length).toEqual(1);
         expect(overriddenSelectedValues[0]).toEqual(INFERRED_BLOOD);
@@ -749,7 +761,8 @@ describe("useCategoryFilter", () => {
       it("overrides system with tissue", () => {
         const overriddenSelectedValues = overrideSelectedParents(
           [INFERRED_HEMATOPOIETIC_SYSTEM, EXPLICIT_BLOOD],
-          TISSUE_DESCENDANTS
+          TISSUE_DESCENDANTS,
+          uiNodesByCategoryValueId
         );
         expect(overriddenSelectedValues.length).toEqual(1);
         expect(overriddenSelectedValues[0]).toEqual(EXPLICIT_BLOOD);
@@ -766,7 +779,8 @@ describe("useCategoryFilter", () => {
             INFERRED_IMMUNE_SYSTEM,
             INFERRED_SPLEEN,
           ],
-          TISSUE_DESCENDANTS
+          TISSUE_DESCENDANTS,
+          uiNodesByCategoryValueId
         );
         expect(overriddenSelectedValues.length).toEqual(1);
         expect(overriddenSelectedValues[0]).toEqual(INFERRED_SPLEEN);
@@ -2061,7 +2075,7 @@ describe("useCategoryFilter", () => {
          * Selected: immune system
          * Views: all systems, organs under immune system, tissues under immune system
          */
-        it("includes all systems and filtered organs and tissues", () => {
+        it("includes all systems and filtered organs and tissues for immune system", () => {
           expect(categoryView.panels.length).toEqual(3);
 
           const systemPanelViews =
@@ -2243,7 +2257,7 @@ describe("useCategoryFilter", () => {
         /**
          * Views: all systems, organs under hematopoietic system, tissues under blood
          */
-        it("includes all systems and filtered organs and tissues", () => {
+        it.only("includes all systems and filtered organs and tissues for hematopoietic system", () => {
           expect(categoryView.panels.length).toEqual(3);
 
           const systemPanelViews =
@@ -2271,6 +2285,7 @@ describe("useCategoryFilter", () => {
           const tissuePanelViews =
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
             categoryView.panels[PANEL_INDEX_TISSUE]!.views;
+          console.log(tissuePanelViews);
           expect(tissuePanelViews.length).toEqual(3);
           const tissueCategoryValueIds = listCategoryValueIds(tissuePanelViews);
           [

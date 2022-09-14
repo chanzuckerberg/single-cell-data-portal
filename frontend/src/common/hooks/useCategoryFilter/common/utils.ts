@@ -61,7 +61,11 @@ export function buildCategoryValueLabel(
   // Look up labels for ontology term IDs.
   if (config.labelKind === "LOOKUP_LABEL_BY_TERM_ID") {
     let processedCategoryValueKey = categoryValueId;
-    if (config.categoryFilterId === "TISSUE_CALCULATED") {
+    // TODO(cc) revisit this
+    if (
+      config.categoryFilterId === CATEGORY_FILTER_ID.TISSUE_CALCULATED ||
+      config.categoryFilterId === CATEGORY_FILTER_ID.CELL_TYPE_CALCULATED
+    ) {
       processedCategoryValueKey = removeOntologyTermIdPrefix(categoryValueId);
     }
 

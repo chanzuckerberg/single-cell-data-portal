@@ -197,6 +197,12 @@ export default function Datasets(): JSX.Element {
       },
       // Hidden, required for filter.
       {
+        accessor: "cellTypeCalculated",
+        filter: "includesSome",
+        id: CATEGORY_FILTER_ID.CELL_TYPE_CALCULATED,
+      },
+      // Hidden, required for filter.
+      {
         accessor: ontologyLabelCellAccessorFn("ethnicity"),
         filter: "includesSome",
         id: CATEGORY_FILTER_ID.ETHNICITY,
@@ -266,6 +272,7 @@ export default function Datasets(): JSX.Element {
           COLLECTION_NAME,
           COLUMN_ID_RECENCY,
           CATEGORY_FILTER_ID.CELL_TYPE_DEPRECATED,
+          CATEGORY_FILTER_ID.CELL_TYPE_CALCULATED,
           CATEGORY_FILTER_ID.ETHNICITY,
           CATEGORY_FILTER_ID.DEVELOPMENT_STAGE,
           CATEGORY_FILTER_ID.GENE_COUNT,

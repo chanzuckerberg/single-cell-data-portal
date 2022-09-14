@@ -1,6 +1,5 @@
 import { useMemo } from "react";
 import { useQuery, UseQueryResult } from "react-query";
-import { API } from "src/common/API";
 import {
   Author,
   Consortium,
@@ -12,7 +11,9 @@ import {
   buildExplicitOntologyTermId,
   buildInferredOntologyTermId,
 } from "src/common/hooks/useCategoryFilter/common/multiPanelOntologyUtils";
-import { DEFAULT_FETCH_OPTIONS } from "src/common/queries/common";
+import { CELL_TYPE_ANCESTORS } from "src/common/queries/cell-type-ancestors";
+import { COLLECTIONS_RESPONSE } from "src/common/queries/collections-response";
+import { DATASETS_RESPONSE } from "src/common/queries/datasets-response";
 import { ENTITIES } from "src/common/queries/entities";
 import {
   COLLATOR_CASE_INSENSITIVE,
@@ -25,7 +26,6 @@ import {
   DatasetRow,
 } from "src/components/common/Filter/common/entities";
 import { checkIsOverMaxCellCount } from "src/components/common/Grid/common/utils";
-import { API_URL } from "src/configs/configs";
 
 /**
  * Never expire cached collections and datasets. TODO revisit once state management approach is confirmed (#1809).
@@ -112,6 +112,7 @@ export interface DatasetResponse {
  * functionality.
  */
 interface ProcessedDatasetResponse extends DatasetResponse {
+  cellTypeCalculated: string[]; // Field to drive cell class, cell type level 1 and cell type level 2 filter functionality.
   tissueCalculated: string[]; // Field to drive tissue system, tissue organ and tissue filter functionality.
 }
 
@@ -262,6 +263,10 @@ function aggregateCollectionDatasetRows(
     (accum: Categories, collectionDatasetRow: DatasetRow) => {
       return {
         assay: [...accum.assay, ...collectionDatasetRow.assay],
+        cellTypeCalculated: [
+          ...accum.cellTypeCalculated,
+          ...collectionDatasetRow.cellTypeCalculated,
+        ],
         cell_type: [...accum.cell_type, ...collectionDatasetRow.cell_type],
         cell_type_ancestors: [
           ...accum.cell_type_ancestors,
@@ -288,6 +293,7 @@ function aggregateCollectionDatasetRows(
     },
     {
       assay: [],
+      cellTypeCalculated: [],
       cell_type: [],
       cell_type_ancestors: [],
       development_stage_ancestors: [],
@@ -304,6 +310,9 @@ function aggregateCollectionDatasetRows(
   // De-dupe aggregated category values.
   return {
     assay: uniqueOntologies(aggregatedCategoryValues.assay),
+    cellTypeCalculated: [
+      ...new Set(aggregatedCategoryValues.cellTypeCalculated),
+    ],
     cell_type: uniqueOntologies(aggregatedCategoryValues.cell_type),
     cell_type_ancestors: [
       ...new Set(aggregatedCategoryValues.cell_type_ancestors),
@@ -566,9 +575,11 @@ function expandPublicationDateValues(
 async function fetchCollections(): Promise<
   Map<string, ProcessedCollectionResponse>
 > {
-  const collections = await (
-    await fetch(API_URL + API.COLLECTIONS_INDEX, DEFAULT_FETCH_OPTIONS)
-  ).json();
+  // TODO(cc) revert with #2569.
+  // const collections = await (
+  //   await fetch(API_URL + API.COLLECTIONS_INDEX, DEFAULT_FETCH_OPTIONS)
+  // ).json();
+  const collections = COLLECTIONS_RESPONSE as unknown as CollectionResponse[];
 
   // Calculate the number of months since publication for each collection.
   const [todayMonth, todayYear] = getMonthYear(new Date());
@@ -589,9 +600,31 @@ async function fetchCollections(): Promise<
  * filterable and sortable dataset fields.
  */
 async function fetchDatasets(): Promise<ProcessedDatasetResponse[]> {
-  const datasets = await (
-    await fetch(API_URL + API.DATASETS_INDEX, DEFAULT_FETCH_OPTIONS)
-  ).json();
+  // TODO(cc) revert with #2569.
+  // const datasets = await (
+  //   await fetch(API_URL + API.DATASETS_INDEX, DEFAULT_FETCH_OPTIONS)
+  // ).json();
+  const datasets = DATASETS_RESPONSE as unknown as DatasetResponse[];
+
+  // TODO(cc) remove with #2569 - list all cell types
+  // const cellTypes = new Set();
+  // datasets.forEach((d) =>
+  //   d.cell_type.forEach((c) =>
+  //     cellTypes.add(`"${c.ontology_term_id.replace(/:/, "_")}"`)
+  //   )
+  // );
+  // console.log([...cellTypes].join(","));
+
+  // TODO(cc remove with #2569 - link datasets and cell type ancestors
+  datasets.forEach((d) => {
+    const ancestors = new Set<string>();
+    d.cell_type.forEach((cellType) => {
+      (CELL_TYPE_ANCESTORS[cellType.ontology_term_id] ?? []).forEach(
+        (ancestor: string) => ancestors.add(ancestor)
+      );
+      d.cell_type_ancestors = [...ancestors];
+    });
+  });
 
   // Correct any dirty data returned from endpoint.
   const sanitizedDatasets = datasets.map((dataset: DatasetResponse) => {
@@ -727,13 +760,18 @@ function processCollectionResponse(
 function processDatasetResponse(
   dataset: DatasetResponse
 ): ProcessedDatasetResponse {
-  // Build up value to facilitate ontology-aware tissue filtering.
+  // Build up values to facilitate ontology-aware cel type and tissue filtering.
+  const cellTypeCalculated = [
+    ...tagAncestorsAsInferred(dataset.cell_type_ancestors),
+    ...tagOntologyTermsAsExplicit(dataset.cell_type),
+  ];
   const tissueCalculated = [
     ...tagAncestorsAsInferred(dataset.tissue_ancestors),
     ...tagOntologyTermsAsExplicit(dataset.tissue),
   ];
   return {
     ...dataset,
+    cellTypeCalculated,
     tissueCalculated,
   };
 }
