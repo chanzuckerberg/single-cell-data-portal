@@ -26,8 +26,6 @@ export const Grid = styled.table`
   th,
   td {
     border: none;
-    -moz-font-feature-settings: normal;
-    -webkit-font-feature-settings: normal;
     font-feature-settings: normal; /* required; overrides layout.css specification */
     font-size: 14px;
     letter-spacing: -0.1px;
