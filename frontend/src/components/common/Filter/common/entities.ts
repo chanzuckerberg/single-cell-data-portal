@@ -6,6 +6,9 @@ import { Collection, Ontology, PublisherMetadata } from "src/common/entities";
  * Payload key when tracking select of category values. For example, "organ" in FILTER_SELECT_ORGAN : {organ: "brain"}.
  */
 export enum ANALYTICS_PAYLOAD_KEY {
+  CELL_CLASS = "cellClass",
+  CELL_SUBCLASS = "cellSubclass",
+  CELL_TYPE = "cellType",
   ORGAN = "organ",
   SYSTEM = "system",
   TISSUE = "tissue",
@@ -113,7 +116,6 @@ export enum CATEGORY_FILTER_ID {
   "ASSAY" = "ASSAY",
   "CELL_COUNT" = "CELL_COUNT",
   "CELL_TYPE_CALCULATED" = "CELL_TYPE_CALCULATED",
-  "CELL_TYPE_DEPRECATED" = "CELL_TYPE_DEPRECATED", // TODO(cc) remove with #2569/#3138
   "DEVELOPMENT_STAGE" = "DEVELOPMENT_STAGE",
   "DISEASE" = "DISEASE",
   "ETHNICITY" = "ETHNICITY",

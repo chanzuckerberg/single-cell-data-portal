@@ -139,12 +139,6 @@ export default function Collections(): JSX.Element {
       },
       // Hidden, required for filter.
       {
-        accessor: ontologyLabelCellAccessorFn("cell_type"),
-        filter: "includesSome", // TODO(cc) remove filter and id values with #2569/#3138
-        id: CATEGORY_FILTER_ID.CELL_TYPE_DEPRECATED,
-      },
-      // Hidden, required for filter.
-      {
         accessor: "cellTypeCalculated",
         filter: "includesSome",
         id: CATEGORY_FILTER_ID.CELL_TYPE_CALCULATED,
@@ -213,7 +207,6 @@ export default function Collections(): JSX.Element {
           COLUMN_ID_RECENCY,
           CATEGORY_FILTER_ID.ASSAY,
           CATEGORY_FILTER_ID.CELL_TYPE_CALCULATED,
-          CATEGORY_FILTER_ID.CELL_TYPE_DEPRECATED,
           CATEGORY_FILTER_ID.ETHNICITY,
           CATEGORY_FILTER_ID.DEVELOPMENT_STAGE,
           CATEGORY_FILTER_ID.PUBLICATION_AUTHORS,

@@ -2705,30 +2705,17 @@ const CATEGORY_FILTER_CONFIGS: CategoryFilterConfig[] = [
     viewKind: "RANGE",
   },
   {
-    // TODO(cc) remove with #2569/#3138.
-    analyticsEvent: EVENTS.FILTER_SELECT_CELL_TYPE,
-    categoryFilterId: CATEGORY_FILTER_ID.CELL_TYPE_DEPRECATED,
-    filterOnKey: "cell_type",
-    label: "Cell Type",
-    labelKind: "VALUE",
-    matchKind: "INCLUDES_SOME",
-    multiselect: true,
-    valueSourceKind: "NONE",
-    viewKind: "SELECT",
-  },
-  {
     categoryFilterId: CATEGORY_FILTER_ID.CELL_TYPE_CALCULATED,
     descendants: CELL_TYPE_DESCENDANTS,
     filterOnKey: "cellTypeCalculated",
-    label: "Cell Type (Ontology)", // TODO(cc) rename
+    label: "Cell Type",
     labelKind: "LOOKUP_LABEL_BY_TERM_ID",
     matchKind: "INCLUDES_SOME",
     multiselect: true,
     panels: [
       {
-        // TODO(cc)
-        // analyticsEvent: EVENTS.FILTER_SELECT_SYSTEM,
-        // analyticsPayloadKey: ANALYTICS_PAYLOAD_KEY.SYSTEM,
+        analyticsEvent: EVENTS.FILTER_SELECT_CELL_CLASS,
+        analyticsPayloadKey: ANALYTICS_PAYLOAD_KEY.CELL_CLASS,
         filterValueKind: "INFERRED_EXPLICIT",
         id: CATEGORY_FILTER_PANEL_ID.CELL_TYPE_CELL_CLASS,
         label: "Cell Class",
@@ -2737,9 +2724,8 @@ const CATEGORY_FILTER_CONFIGS: CategoryFilterConfig[] = [
         sourceKind: "CURATED",
       },
       {
-        // TODO(cc)
-        // analyticsEvent: EVENTS.FILTER_SELECT_ORGAN,
-        // analyticsPayloadKey: ANALYTICS_PAYLOAD_KEY.ORGAN,
+        analyticsEvent: EVENTS.FILTER_SELECT_CELL_SUBCLASS,
+        analyticsPayloadKey: ANALYTICS_PAYLOAD_KEY.CELL_SUBCLASS,
         filterValueKind: "INFERRED_EXPLICIT",
         id: CATEGORY_FILTER_PANEL_ID.CELL_TYPE_LEVEL_1,
         label: "Cell Subclass",
@@ -2748,9 +2734,8 @@ const CATEGORY_FILTER_CONFIGS: CategoryFilterConfig[] = [
         sourceKind: "CURATED",
       },
       {
-        // TODO(cc)
-        // analyticsEvent: EVENTS.FILTER_SELECT_TISSUE,
-        // analyticsPayloadKey: ANALYTICS_PAYLOAD_KEY.TISSUE,
+        analyticsEvent: EVENTS.FILTER_SELECT_CELL_TYPE,
+        analyticsPayloadKey: ANALYTICS_PAYLOAD_KEY.CELL_TYPE,
         filterValueKind: "EXPLICIT_ONLY",
         id: CATEGORY_FILTER_PANEL_ID.CELL_TYPE_LEVEL_2,
         label: "Cell Type",
