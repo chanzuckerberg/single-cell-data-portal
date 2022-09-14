@@ -1,7 +1,10 @@
 /**
  * Test suite for category filter hook.
  *
- * Multi-panel tests are based on the following hierarchy:
+ * Multi-Panel Tests
+ * *****************
+ *
+ * The majority of the multi-panel tests are based on the following tissue-specific hierarchy:
  *
  * -- bladder organ
  * ---- bladder lumen
@@ -33,6 +36,13 @@
  * ---- bladder lumen
  * -- kidney
  *
+ * For tests specific to cell type, the following hierarchy is used:
+ *
+ * hematopoietic cell
+ * -- leukocyte
+ * -- T cell
+ * ------ alpha-beta T cell
+ *
  */
 
 // App dependencies
@@ -50,6 +60,7 @@ import {
 } from "src/common/hooks/useCategoryFilter/common/multiPanelOntologyUtils";
 import {
   CATEGORY_FILTER_CONFIGS_BY_ID,
+  CELL_TYPE_DESCENDANTS,
   TISSUE_DESCENDANTS,
   TISSUE_SYSTEM_ONTOLOGY_TERM_SET,
 } from "src/components/common/Filter/common/constants";
@@ -323,7 +334,7 @@ describe("useCategoryFilter", () => {
       EXPLICIT_VENOUS_BLOOD,
     ];
 
-    const CATEGORY_VALUE_IDS_BY_PANEL = [
+    const TISSUE_CATEGORY_VALUE_IDS_BY_PANEL = [
       TISSUE_SYSTEMS,
       TISSUE_ORGANS,
       TISSUES,
@@ -620,6 +631,27 @@ describe("useCategoryFilter", () => {
       [EXPLICIT_THORACIC_LYMPH_NODE, EXPLICIT_THORACIC_LYMPH_NODE_VALUE_VIEW],
     ]);
 
+    const TERM_ID_HEMATOPOIETIC_CELL = "CL:0000988";
+    const TERM_ID_LEUKOCYTE = "CL:0000738";
+    const TERM_ID_T_CELL = "CL:0000084";
+    const TERM_ID_ALPHA_BETA_T_CELL = "CL:0000789";
+
+    const INFERRED_HEMATOPOIETIC_CELL = `${OrFilterPrefix.INFERRED}:${TERM_ID_HEMATOPOIETIC_CELL}`;
+    const INFERRED_LEUKOCYTE = `${OrFilterPrefix.INFERRED}:${TERM_ID_LEUKOCYTE}`;
+    const INFERRED_T_CELL = `${OrFilterPrefix.INFERRED}:${TERM_ID_T_CELL}`;
+
+    const EXPLICIT_ALPHA_BETA_T_CELL = `${OrFilterPrefix.EXPLICIT}:${TERM_ID_ALPHA_BETA_T_CELL}`;
+
+    const CELL_CLASSES = [INFERRED_HEMATOPOIETIC_CELL];
+    const CELL_SUBCLASSES = [INFERRED_LEUKOCYTE, INFERRED_T_CELL];
+    const CELL_TYPES = [EXPLICIT_ALPHA_BETA_T_CELL];
+
+    const CELL_TYPE_CATEGORY_VALUE_IDS_BY_PANEL = [
+      CELL_CLASSES,
+      CELL_SUBCLASSES,
+      CELL_TYPES,
+    ];
+
     describe("keyCategoryValueIdsByPanel", () => {
       /**
        * Panels: curated, curated, explicit.
@@ -692,7 +724,7 @@ describe("useCategoryFilter", () => {
       let uiNodesByCategoryValueId: Map<CategoryValueId, MultiPanelUINode>;
       beforeAll(() => {
         uiNodesByCategoryValueId = buildUINodesByCategoryValueId(
-          CATEGORY_VALUE_IDS_BY_PANEL,
+          TISSUE_CATEGORY_VALUE_IDS_BY_PANEL,
           TISSUE_DESCENDANTS
         );
       });
@@ -784,6 +816,91 @@ describe("useCategoryFilter", () => {
         );
         expect(overriddenSelectedValues.length).toEqual(1);
         expect(overriddenSelectedValues[0]).toEqual(INFERRED_SPLEEN);
+      });
+
+      describe("cell type", () => {
+        let cellTypeUINodesByCategoryValueId: Map<
+          CategoryValueId,
+          MultiPanelUINode
+        >;
+        beforeAll(() => {
+          cellTypeUINodesByCategoryValueId = buildUINodesByCategoryValueId(
+            CELL_TYPE_CATEGORY_VALUE_IDS_BY_PANEL,
+            CELL_TYPE_DESCENDANTS
+          );
+        });
+
+        /**
+         * Selected: leukocyte, T cell
+         * Post-overrides: leukocyte, T cell
+         */
+        it("doesn't override within cell subclasses", () => {
+          const overriddenSelectedValues = overrideSelectedParents(
+            [INFERRED_LEUKOCYTE, INFERRED_T_CELL],
+            CELL_TYPE_DESCENDANTS,
+            cellTypeUINodesByCategoryValueId
+          );
+          expect(overriddenSelectedValues.length).toEqual(2);
+          expect(
+            overriddenSelectedValues.includes(INFERRED_LEUKOCYTE)
+          ).toBeTruthy();
+          expect(
+            overriddenSelectedValues.includes(INFERRED_T_CELL)
+          ).toBeTruthy();
+        });
+
+        /**
+         * Selected: leukocyte, T cell, alpha-beta T cell
+         * Post-overrides: alpha-beta T cell
+         */
+        it("overrides cell subclasses with selected cell type", () => {
+          const overriddenSelectedValues = overrideSelectedParents(
+            [INFERRED_LEUKOCYTE, INFERRED_T_CELL, EXPLICIT_ALPHA_BETA_T_CELL],
+            CELL_TYPE_DESCENDANTS,
+            cellTypeUINodesByCategoryValueId
+          );
+          expect(overriddenSelectedValues.length).toEqual(1);
+          expect(
+            overriddenSelectedValues.includes(EXPLICIT_ALPHA_BETA_T_CELL)
+          ).toBeTruthy();
+        });
+
+        /**
+         * Selected: hemtapoietic cell, leukocyte, T cell, alpha-beta T cell
+         * Post-overrides: alpha-beta T cell
+         */
+        it("overrides cell classes and subclasses with selected cell type", () => {
+          const overriddenSelectedValues = overrideSelectedParents(
+            [
+              INFERRED_HEMATOPOIETIC_CELL,
+              INFERRED_LEUKOCYTE,
+              INFERRED_T_CELL,
+              EXPLICIT_ALPHA_BETA_T_CELL,
+            ],
+            CELL_TYPE_DESCENDANTS,
+            cellTypeUINodesByCategoryValueId
+          );
+          expect(overriddenSelectedValues.length).toEqual(1);
+          expect(
+            overriddenSelectedValues.includes(EXPLICIT_ALPHA_BETA_T_CELL)
+          ).toBeTruthy();
+        });
+
+        /**
+         * Selected: hemtapoietic cell, alpha-beta T cell
+         * Post-overrides: alpha-beta T cell
+         */
+        it("overrides cell classes with selected cell type", () => {
+          const overriddenSelectedValues = overrideSelectedParents(
+            [INFERRED_HEMATOPOIETIC_CELL, EXPLICIT_ALPHA_BETA_T_CELL],
+            CELL_TYPE_DESCENDANTS,
+            cellTypeUINodesByCategoryValueId
+          );
+          expect(overriddenSelectedValues.length).toEqual(1);
+          expect(
+            overriddenSelectedValues.includes(EXPLICIT_ALPHA_BETA_T_CELL)
+          ).toBeTruthy();
+        });
       });
     });
 
@@ -1695,7 +1812,7 @@ describe("useCategoryFilter", () => {
       let uiNodesByCategoryValueId: Map<CategoryValueId, MultiPanelUINode>;
       beforeAll(() => {
         uiNodesByCategoryValueId = buildUINodesByCategoryValueId(
-          CATEGORY_VALUE_IDS_BY_PANEL,
+          TISSUE_CATEGORY_VALUE_IDS_BY_PANEL,
           TISSUE_DESCENDANTS
         );
       });
@@ -1802,7 +1919,7 @@ describe("useCategoryFilter", () => {
       let multiPanelUIState: MultiPanelUIState;
       beforeAll(() => {
         const uiNodesByCategoryValueId = buildUINodesByCategoryValueId(
-          CATEGORY_VALUE_IDS_BY_PANEL,
+          TISSUE_CATEGORY_VALUE_IDS_BY_PANEL,
           TISSUE_DESCENDANTS
         );
 
@@ -2257,7 +2374,7 @@ describe("useCategoryFilter", () => {
         /**
          * Views: all systems, organs under hematopoietic system, tissues under blood
          */
-        it.only("includes all systems and filtered organs and tissues for hematopoietic system", () => {
+        it("includes all systems and filtered organs and tissues for hematopoietic system", () => {
           expect(categoryView.panels.length).toEqual(3);
 
           const systemPanelViews =
@@ -2285,7 +2402,6 @@ describe("useCategoryFilter", () => {
           const tissuePanelViews =
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
             categoryView.panels[PANEL_INDEX_TISSUE]!.views;
-          console.log(tissuePanelViews);
           expect(tissuePanelViews.length).toEqual(3);
           const tissueCategoryValueIds = listCategoryValueIds(tissuePanelViews);
           [

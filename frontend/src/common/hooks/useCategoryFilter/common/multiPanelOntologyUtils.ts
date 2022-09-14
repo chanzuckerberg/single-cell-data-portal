@@ -560,6 +560,31 @@ function isExplicitOntologyTermId(categoryValueId: CategoryValueId): boolean {
 }
 
 /**
+ * Determine if the given category values are in the same panel.
+ * @param categoryValueId - First category value to check panel index of.
+ * @param compareToCategoryValueId - Second category value to check panel index of.
+ * @param uiNodesByCategoryValueId - Map of category value ID to UI parents, UI children and panel index.
+ * @returns True if the given category values are in the same panel.
+ */
+function isInSamePanel(
+  categoryValueId: CategoryValueId,
+  compareToCategoryValueId: CategoryValueId,
+  uiNodesByCategoryValueId: Map<CategoryValueId, MultiPanelUINode>
+): boolean {
+  const categoryValueUINode = uiNodesByCategoryValueId.get(categoryValueId);
+  if (!categoryValueUINode) {
+    return false;
+  }
+  const compareToUINode = uiNodesByCategoryValueId.get(
+    compareToCategoryValueId
+  );
+  if (!compareToUINode) {
+    return false;
+  }
+  return categoryValueUINode.panelIndex === compareToUINode.panelIndex;
+}
+
+/**
  * Determine if the category value ID also exists in the parent set of category value IDs.
  * @param categoryValueId - Category value to check for against parent category value IDs.
  * @param parentCategoryValueIds - All category values in the parent panels.
@@ -966,32 +991,6 @@ function listSelectedParentUINodes(
 }
 
 /**
- * TODO(cc)
- */
-function isInSamePanel(
-  categoryValueId: CategoryValueId,
-  compareToCategoryValueId: CategoryValueId,
-  uiNodesByCategoryValueId: Map<CategoryValueId, MultiPanelUINode>
-): boolean {
-  const categoryValueUINode = uiNodesByCategoryValueId.get(categoryValueId);
-  if (!categoryValueUINode) {
-    return false;
-  }
-  const compareToUINode = uiNodesByCategoryValueId.get(
-    compareToCategoryValueId
-  );
-  if (!compareToUINode) {
-    return false;
-  }
-  console.log(
-    categoryValueUINode,
-    compareToUINode,
-    categoryValueUINode.panelIndex === compareToUINode.panelIndex
-  );
-  return categoryValueUINode.panelIndex === compareToUINode.panelIndex;
-}
-
-/**
  * Determine the indices of the panels that are parent to the given panel, if any.
  * @param panelIndex - Index of the panel to list parent panel indices for.
  * @param panelCount - Total number of panels.
@@ -1247,13 +1246,15 @@ export function overrideSelectedParents(
 
     // Otherwise, if any descendant of the selected value is selected, do not include the selected value in the set of
     // selected values. Ignore descendants that are in the same panel as the selected value (for example, "leukocyte"
-    // and "T cell"); we want to always execute an "or" within a panel.
+    // and "T cell"); we want to always execute an "or" within a panel so both ancestor/descendant selected values must
+    // be included in this case.
     const descendantsOfSelected = (
       descendants[selectedOntologyId] ?? []
     ).filter((descendant) => {
       return !isInSamePanel(
         selectedValue,
-        buildInferredOntologyTermId(descendant), // TODO(cc)
+        // Explicit values are handled above; we only want to check for inferred terms.
+        buildInferredOntologyTermId(descendant),
         uiNodesByCategoryValueId
       );
     });
