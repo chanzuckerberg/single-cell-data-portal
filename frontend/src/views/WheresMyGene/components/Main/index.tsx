@@ -8,7 +8,6 @@ import {
   useGeneExpressionSummariesByTissueName,
 } from "src/common/queries/wheresMyGene";
 import SideBar from "src/components/common/SideBar";
-import { Position } from "src/components/common/SideBar/style";
 import { View } from "../../../globalStyle";
 import { DispatchContext, StateContext } from "../../common/store";
 import {
@@ -22,11 +21,10 @@ import Filters from "../Filters";
 import GeneSearchBar from "../GeneSearchBar";
 import GetStarted from "../GetStarted";
 import HeatMap from "../HeatMap";
-import InfoPanel from "../InfoPanel";
+import ColorScale from "../InfoPanel/components/ColorScale";
+import Legend from "../InfoPanel/components/Legend";
 import Loader from "../Loader";
 import { SideBarLabel } from "./style";
-
-const INFO_PANEL_WIDTH_PX = 320;
 
 export default function WheresMyGene(): JSX.Element {
   const state = useContext(StateContext);
@@ -250,22 +248,8 @@ export default function WheresMyGene(): JSX.Element {
         wmgSideBar
       >
         <Filters />
-      </SideBar>
 
-      <SideBar
-        width={INFO_PANEL_WIDTH_PX}
-        label={<SideBarLabel>Info</SideBarLabel>}
-        position={Position.RIGHT}
-        SideBarWrapperComponent={SideBarWrapper}
-        SideBarPositionerComponent={SideBarPositioner}
-        disabled={!shouldEnableSidebars}
-        forceToggle={shouldEnableSidebars}
-        wmgSideBar
-      >
-        <InfoPanel
-          isScaled={isScaled}
-          handleIsScaledChange={handleIsScaledChange}
-        />
+        <ColorScale handleIsScaledChange={handleIsScaledChange} />
       </SideBar>
 
       <View hideOverflow>
@@ -274,8 +258,10 @@ export default function WheresMyGene(): JSX.Element {
 
           <Top>
             <GeneSearchBar />
-            <Beta />
+            <Legend isScaled={isScaled} />
           </Top>
+
+          <Beta />
 
           {shouldShowHeatMap ? (
             <HeatMap
