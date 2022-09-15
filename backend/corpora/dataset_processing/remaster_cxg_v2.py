@@ -80,7 +80,7 @@ def process(dataset_id: str, cellxgene_bucket: str, prefix=None, dry_run=True, l
 
             if not dry_run and executed:
                 for suffix in ["r", "c"]:
-                    upload_command = ["aws", "s3", "sync", "--delete", f"{local_path}/X_new" + suffix, path + suffix]
+                    upload_command = ["aws", "s3", "sync", "--delete", f"{local_path}/X_new" + suffix, path + suffix, "--quiet"]
                     subprocess.run(upload_command, check=True)
         else:
             logger.info("Dataset was already upgraded")
