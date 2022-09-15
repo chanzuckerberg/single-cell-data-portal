@@ -1,6 +1,7 @@
 import typing
 
 from sqlalchemy.orm import Session
+from urllib.parse import urlparse
 
 from ...authorization import is_user_owner_or_allowed
 from ......common.corpora_config import CorporaConfig
@@ -15,6 +16,8 @@ from ......common.corpora_orm import (
     ProcessingStatus,
     Base,
     IsPrimaryData,
+    ProjectLinkType,
+    ValidationStatus,
 )
 
 
@@ -37,6 +40,22 @@ DATASET_ONTOLOGY_ELEMENTS_PREVIEW = (
 )
 
 
+def extract_doi_from_links(collection: dict):
+    """
+    Pull out the DOI from the 'links' array and return it along with the altered links array
+    :param collection: the Collection
+    :return: None
+    """
+    doi, resp_links = None, []
+    for link in collection.get("links", []):
+        if link["link_type"] == ProjectLinkType.DOI:
+            doi = urlparse(link["link_url"]).path.strip("/")
+        else:
+            resp_links.append(link)
+
+    return doi, resp_links
+
+
 def reshape_for_curation_api(
     db_session: Session, collection: DbCollection, token_info: dict, preview: bool = False
 ) -> dict:
@@ -57,6 +76,9 @@ def reshape_for_curation_api(
     resp_collection["collection_url"] = f"{CorporaConfig().collections_base_url}/collections/{collection.id}"
     if datasets := resp_collection.get("datasets"):
         resp_collection["datasets"] = reshape_datasets_for_curation_api(datasets, preview)
+
+    resp_collection["doi"], resp_collection["links"] = extract_doi_from_links(resp_collection)
+
     return resp_collection
 
 
@@ -94,8 +116,15 @@ def reshape_dataset_for_curation_api(dataset: dict, preview=False) -> dict:
         for asset in artifacts:
             if asset["filetype"] in (DatasetArtifactFileType.H5AD, DatasetArtifactFileType.RDS):
                 dataset["dataset_assets"].append(asset)
-    if dataset.get("processing_status"):
-        dataset["processing_status"] = dataset["processing_status"]["processing_status"]
+    if processing_status := dataset.pop("processing_status", None):
+        if processing_status["processing_status"] == ProcessingStatus.FAILURE:
+            if processing_status["validation_status"] == ValidationStatus.INVALID:
+                dataset["processing_status_detail"] = processing_status["validation_message"]
+                dataset["processing_status"] = "VALIDATION_FAILURE"
+            else:
+                dataset["processing_status"] = "PIPELINE_FAILURE"
+        else:
+            dataset["processing_status"] = processing_status["processing_status"]
     dataset_ontology_elements = DATASET_ONTOLOGY_ELEMENTS_PREVIEW if preview else DATASET_ONTOLOGY_ELEMENTS
     for ontology_element in dataset_ontology_elements:
         if dataset_ontology_element := dataset.get(ontology_element):
@@ -152,7 +181,6 @@ class EntityColumns:
 
     dataset_preview_cols = [
         "id",
-        "curator_tag",
         "tissue",
         "assay",
         "disease",
@@ -187,9 +215,7 @@ class EntityColumns:
         "filename",
     ]
 
-    dataset_processing_status_cols = [
-        "processing_status",
-    ]
+    dataset_processing_status_cols = ["processing_status", "validation_message", "validation_status"]
 
     columns_for_collections = {
         DbCollectionLink: link_cols,

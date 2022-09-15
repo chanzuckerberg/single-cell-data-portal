@@ -1,108 +1,51 @@
-import { ChangeEvent, ReactNode } from "react";
-import { CategoryKey } from "src/common/hooks/useCategoryFilter";
 import {
   CategoryView,
+  CATEGORY_FILTER_ID,
+  MultiPanelOntologyCategoryView,
   OnFilterFn,
   OntologyCategoryView,
+  ON_FILTER_SOURCE,
   RangeCategoryView,
-  SelectCategoryValueView,
   SelectCategoryView,
-  SetSearchValueFn,
 } from "src/components/common/Filter/common/entities";
 import { formatNumberToScale } from "src/components/common/Filter/common/utils";
+import BasicFilter from "src/components/common/Filter/components/BasicFilter";
 import FilterLabel from "src/components/common/Filter/components/FilterLabel";
-import FilterMenu from "src/components/common/Filter/components/FilterMenu";
-import { MAX_DISPLAYABLE_MENU_ITEMS } from "src/components/common/Filter/components/FilterMenu/style";
-import FilterRange from "src/components/common/Filter/components/FilterRange";
-import FilterViews from "src/components/common/Filter/components/FilterViews";
-import BasicFilter from "./components/BasicFilter";
+import FilterContent from "./components/FilterContent";
 import FilterTags, { CategoryTag } from "./components/FilterTags";
 
 interface Props {
-  categories: CategoryView[];
+  categoryViews: CategoryView[];
   onFilter: OnFilterFn;
 }
 
-export default function Filter({ categories, onFilter }: Props): JSX.Element {
+export default function Filter({
+  categoryViews,
+  onFilter,
+}: Props): JSX.Element {
   return (
     <>
-      {categories.map((categoryView: CategoryView) => {
-        const { isDisabled = false, key } = categoryView;
+      {categoryViews.map((categoryView: CategoryView) => {
+        const { isDisabled = false, label, tooltip } = categoryView;
         return (
           <BasicFilter
-            content={buildBasicFilterContent(categoryView, onFilter)}
+            content={
+              <FilterContent categoryView={categoryView} onFilter={onFilter} />
+            }
             isDisabled={isDisabled}
-            key={key}
+            key={categoryView.label}
             tags={<FilterTags tags={buildFilterTags(categoryView, onFilter)} />}
-            target={buildFilterLabel(categoryView, isDisabled)}
+            target={
+              <FilterLabel
+                isDisabled={isDisabled}
+                label={label}
+                tooltip={tooltip}
+              />
+            }
           />
         );
       })}
     </>
-  );
-}
-
-/**
- * Build content model of basic filter depending on category type.
- * @param categoryView - View model of category to display.
- * @param onFilter - Function to execute on select of category value or remove of selected category value.
- * @returns React node representing content to display inside basic filter menu.
- */
-function buildBasicFilterContent(
-  categoryView: CategoryView,
-  onFilter: OnFilterFn
-): ReactNode {
-  const { key } = categoryView;
-
-  // Handle ontology categories.
-  if (isOntologyCategoryView(categoryView)) {
-    return (
-      <FilterViews
-        categoryKey={key}
-        isSearchable={categoryView.isSearchable}
-        isZerosVisible={categoryView.isZerosVisible}
-        onFilter={onFilter}
-        onUpdateSearchValue={onUpdateSearchValue}
-        views={categoryView.views}
-      />
-    );
-  }
-
-  // Handle select categories
-  if (isSelectCategoryView(categoryView)) {
-    const { pinnedValues, unpinnedValues, values } = categoryView;
-    return (
-      <FilterMenu
-        categoryKey={key}
-        isMultiselect // Can possibly be single select with future filter types
-        isSearchable={values.length > MAX_DISPLAYABLE_MENU_ITEMS}
-        onFilter={onFilter}
-        onUpdateSearchValue={onUpdateSearchValue}
-        pinnedValues={filterCategoryValuesWithCount(pinnedValues)}
-        unpinnedValues={filterCategoryValuesWithCount(unpinnedValues)}
-        values={filterCategoryValuesWithCount(values)}
-      />
-    );
-  }
-
-  // Otherwise, handle range categories
-  return <FilterRange categoryView={categoryView} onFilter={onFilter} />;
-}
-
-/**
- * Build the filter label for the given category.
- * @param categoryView - View model of category to display.
- * @param isDisabled - True if this category is currently disabled.
- * @returns React node representing content to display as filter label.
- */
-function buildFilterLabel(
-  categoryView: CategoryView,
-  isDisabled: boolean
-): ReactNode {
-  const { label, tooltip } = categoryView;
-
-  return (
-    <FilterLabel isDisabled={isDisabled} label={label} tooltip={tooltip} />
   );
 }
 
@@ -116,52 +59,97 @@ function buildFilterTags(
   categoryView: CategoryView,
   onFilter: OnFilterFn
 ): CategoryTag[] | undefined {
-  const { key } = categoryView;
+  const { categoryFilterId } = categoryView;
 
   // Handle ontology categories
   if (isOntologyCategoryView(categoryView)) {
-    return buildOntologyCategoryTags(categoryView, key, onFilter);
+    return buildOntologyCategoryTags(categoryView, categoryFilterId, onFilter);
   }
 
   // Handle select categories
   if (isSelectCategoryView(categoryView)) {
-    return buildSelectCategoryTags(categoryView, key, onFilter);
+    return buildSelectCategoryTags(categoryView, categoryFilterId, onFilter);
+  }
+
+  // Handle ontology multi panel categories
+  if (isOntologyMultiPanelCategoryView(categoryView)) {
+    return buildOntologyMultiPanelCategoryTags(
+      categoryView,
+      categoryFilterId,
+      onFilter
+    );
   }
 
   // Otherwise, handle range categories
-  return buildRangeCategoryTag(categoryView, key, onFilter);
+  return buildRangeCategoryTag(categoryView, categoryFilterId, onFilter);
 }
 
 /**
  * Returns ontology category tag with tag label and corresponding Tag onRemove function.
- * @param categoryView
- * @param categoryKey
- * @param onFilter
+ * @param categoryView - Ontology multi panel category view.
+ * @param categoryFilterId - Category filter ID.
+ * @param onFilter - Function to execute on select of category value or remove of selected category value.
  * @returns ontology category tag.
  */
 function buildOntologyCategoryTags(
   categoryView: OntologyCategoryView,
-  categoryKey: CategoryKey,
+  categoryFilterId: CATEGORY_FILTER_ID,
   onFilter: OnFilterFn
 ): CategoryTag[] | undefined {
   return categoryView.views?.reduce((accum, species) => {
-    species.selectedViews.forEach(({ key, label }) => {
-      accum.push({ label: label, onRemove: () => onFilter(categoryKey, key) });
+    species.selectedViews.forEach(({ categoryValueId, label }) => {
+      accum.push({
+        label: label,
+        onRemove: () =>
+          onFilter(
+            categoryFilterId,
+            categoryValueId,
+            label,
+            ON_FILTER_SOURCE.TAG
+          ),
+      });
     });
     return accum;
   }, [] as CategoryTag[]);
 }
 
 /**
+ * Returns ontology multi panel category tag with tag label and corresponding Tag onRemove function.
+ * @param categoryView - Ontology multi panel category view.
+ * @param categoryFilterId - Category filter ID.
+ * @param onFilter - Function to execute on select of category value or remove of selected category value.
+ * @returns ontology multi panel category tag.
+ */
+function buildOntologyMultiPanelCategoryTags(
+  categoryView: MultiPanelOntologyCategoryView,
+  categoryFilterId: CATEGORY_FILTER_ID,
+  onFilter: OnFilterFn
+): CategoryTag[] | undefined {
+  const { selectedViews } = categoryView;
+  return selectedViews.map(({ categoryValueId, label }) => {
+    return {
+      label,
+      onRemove: () =>
+        onFilter(
+          categoryFilterId,
+          categoryValueId,
+          label,
+          ON_FILTER_SOURCE.TAG
+        ),
+    };
+  });
+}
+
+/**
  * Returns range category tag with tag label (the selected range) and corresponding Tag onRemove function.
- * @param categoryView
- * @param categoryKey
- * @param onFilter
+ * @param categoryView - View model of category to display.
+ * @param categoryFilterId - Category filter ID.
+ * @param onFilter - Function to execute on select of category value or remove of selected category value.
  * @returns range category tag.
  */
 function buildRangeCategoryTag(
   categoryView: RangeCategoryView,
-  categoryKey: CategoryKey,
+  categoryFilterId: CATEGORY_FILTER_ID,
   onFilter: OnFilterFn
 ): CategoryTag[] | undefined {
   const { selectedMax, selectedMin } = categoryView;
@@ -174,7 +162,8 @@ function buildRangeCategoryTag(
     return [
       {
         label: createRangeTagLabel(selectedMin, selectedMax),
-        onRemove: () => onFilter(categoryKey, []),
+        onRemove: () =>
+          onFilter(categoryFilterId, [], [], ON_FILTER_SOURCE.TAG),
       },
     ];
   }
@@ -182,28 +171,37 @@ function buildRangeCategoryTag(
 
 /**
  * Returns selected category tags with tag label (the selected metadata label) and corresponding Tag onRemove function.
- * @param categoryView
- * @param categoryKey
- * @param onFilter
+ * @param categoryView - View model of category to display.
+ * @param categoryFilterId - Category filter ID.
+ * @param onFilter - Function to execute on select of category value or remove of selected category value.
  * @returns selected category tags.
  */
 function buildSelectCategoryTags(
   categoryView: SelectCategoryView,
-  categoryKey: CategoryKey,
+  categoryFilterId: CATEGORY_FILTER_ID,
   onFilter: OnFilterFn
 ): CategoryTag[] {
   const { values } = categoryView;
   return values
     .filter((value) => value.selected)
-    .map(({ key, label }) => {
-      return { label: label, onRemove: () => onFilter(categoryKey, key) };
+    .map(({ categoryValueId, label }) => {
+      return {
+        label: label,
+        onRemove: () =>
+          onFilter(
+            categoryFilterId,
+            categoryValueId,
+            label,
+            ON_FILTER_SOURCE.TAG
+          ),
+      };
     });
 }
 
 /**
  * Returns filter tag label for the selected range of the slider.
- * @param min
- * @param max
+ * @param min - The minimum selected value of the slider.
+ * @param max - The maximum selected value of the slider.
  * @returns string portraying the selected range of the slider.
  */
 function createRangeTagLabel(min: number, max: number): [string, string] {
@@ -213,48 +211,34 @@ function createRangeTagLabel(min: number, max: number): [string, string] {
 }
 
 /**
- * Returns filtered category values where category count is greater than zero.
- * @param categoryValues - Category value view models for a given category.
- * @returns category values with a count
+ * Determine if the given category view is an ontology category view and not a select or range or ontology multi panel category view.
+ * @param categoryView - View model of category to display.
+ * @returns True if the given category view is an ontology category view.
  */
-function filterCategoryValuesWithCount(
-  categoryValues: SelectCategoryValueView[]
-): SelectCategoryValueView[] {
-  return categoryValues.filter(({ count }) => count > 0);
-}
-
-/**
- * Determine if the given category view is an ontology category view and not a select or range category view.
- * @param categoryView - Selected filter value, either a category value key (e.g. "normal"), range (e.g. [0, 10]) or
- * ontology tree.
- * @returns True if the given category view is a select category view.
- */
-function isOntologyCategoryView(
+export function isOntologyCategoryView(
   categoryView: CategoryView
 ): categoryView is OntologyCategoryView {
   return (categoryView as OntologyCategoryView).views !== undefined;
 }
 
 /**
- * Determine if the given category view is a selected category view and not an ontology or range category view.
- * @param categoryView - Selected filter value, either a category value key (e.g. "normal"), range (e.g. [0, 10]) or
- * ontology tree.
- * @returns True if the given category view is a select category view.
+ * Determine if the given category view is an ontology multi panel category view and not a select or range or ontology category view.
+ * @param categoryView - View model of category to display.
+ * @returns True if the given category view is an ontology multi panel category view.
  */
-function isSelectCategoryView(
+export function isOntologyMultiPanelCategoryView(
   categoryView: CategoryView
-): categoryView is SelectCategoryView {
-  return (categoryView as SelectCategoryView).values !== undefined;
+): categoryView is MultiPanelOntologyCategoryView {
+  return (categoryView as MultiPanelOntologyCategoryView).panels !== undefined;
 }
 
 /**
- * Sets state searchValue with updated search value.
- * @param changeEvent
- * @param setSearchValue
+ * Determine if the given category view is a selected category view and not an ontology with or without multi panel or range category view.
+ * @param categoryView - View model of category to display.
+ * @returns True if the given category view is a select category view.
  */
-function onUpdateSearchValue(
-  changeEvent: ChangeEvent<HTMLInputElement>,
-  setSearchValue: SetSearchValueFn
-): void {
-  setSearchValue(changeEvent.target.value.toLowerCase());
+export function isSelectCategoryView(
+  categoryView: CategoryView
+): categoryView is SelectCategoryView {
+  return (categoryView as SelectCategoryView).values !== undefined;
 }
