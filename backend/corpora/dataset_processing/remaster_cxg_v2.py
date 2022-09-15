@@ -37,26 +37,26 @@ def process(dataset_id: str, cellxgene_bucket: str, prefix=None, dry_run=True, l
     logger.info(f"Processing dataset at path {path}, dry run {dry_run}")
 
     logger.info(f"Downloading {path} to {local_path}/X_old")
-    download_command = ["aws", "s3", "sync", path, f"{local_path}/X_old"]
+    download_command = ["aws", "s3", "sync", path, f"{local_path}/X_old", "--quiet"]
     # Let errors fail the pipeline
     subprocess.run(download_command, check=True)
 
     logger.info(f"Downloading {obs_path} to {local_path}/old_obs")
-    download_command = ["aws", "s3", "sync", obs_path, f"{local_path}/old_obs"]
+    download_command = ["aws", "s3", "sync", obs_path, f"{local_path}/old_obs", "--quiet"]
     # Let errors fail the pipeline
     subprocess.run(download_command, check=True)
 
     logger.info(f"Downloading {meta_path} to {local_path}/cxg_group_metadata")
-    download_command = ["aws", "s3", "sync", meta_path, f"{local_path}/cxg_group_metadata"]
+    download_command = ["aws", "s3", "sync", meta_path, f"{local_path}/cxg_group_metadata", "--quiet"]
     # Let errors fail the pipeline
     subprocess.run(download_command, check=True)
 
     evolve_obs(local_path)
-    upload_command = ["aws", "s3", "sync", "--delete", f"{local_path}/new_obs", obs_path]
+    upload_command = ["aws", "s3", "sync", "--delete", f"{local_path}/new_obs", obs_path, "--quiet"]
     subprocess.run(upload_command, check=True)
 
     increment_version(local_path)
-    upload_command = ["aws", "s3", "sync", "--delete", f"{local_path}/cxg_group_metadata", meta_path]
+    upload_command = ["aws", "s3", "sync", "--delete", f"{local_path}/cxg_group_metadata", meta_path, "--quiet"]
     subprocess.run(upload_command, check=True)
 
     params = {
@@ -75,7 +75,7 @@ def process(dataset_id: str, cellxgene_bucket: str, prefix=None, dry_run=True, l
     if executed:
         logger.info(f"Dataset at {path} computed successfully")
     else:
-        logger.info("Dataset was dense, nothing to be done")
+        logger.info("Dataset was dense, X was not upgraded")
 
     if not dry_run and executed:
         for suffix in ["r", "c"]:
@@ -148,7 +148,7 @@ def evolve_obs(cxg, array_name="old_obs"):
         with tiledb.open(f"{cxg}/new_obs", "w") as new_X:
             new_X[:] = new_data
             new_X.meta["cxg_schema"] = json.dumps(schema)
-
+        tiledb.consolidate(f"{cxg}/new_obs")
 
 def evolve_X(**kwargs):
     """
