@@ -51,13 +51,13 @@ def process(dataset_id: str, cellxgene_bucket: str, prefix=None, dry_run=True, l
     # Let errors fail the pipeline
     subprocess.run(download_command, check=True)
     with tiledb.open(f"{local_path}/cxg_group_metadata",'w') as X:
-        if not X.meta.get("cxg_remastered"):
+        if not X.meta.get("cxg_remastered_v0.3.0"):
             evolve_obs(local_path)
             upload_command = ["aws", "s3", "sync", "--delete", f"{local_path}/new_obs", obs_path, "--quiet"]
             subprocess.run(upload_command, check=True)
 
             X.meta["cxg_version"] = "0.3.0"
-            X.meta["cxg_remastered"] = True
+            X.meta["cxg_remastered_v0.3.0"] = True
 
             upload_command = ["aws", "s3", "sync", "--delete", f"{local_path}/cxg_group_metadata", meta_path, "--quiet"]
             subprocess.run(upload_command, check=True)
