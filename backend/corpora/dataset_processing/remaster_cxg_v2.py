@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
-def process(dataset_id: str, cellxgene_bucket: str, prefix=None, dry_run=True):
+def process(dataset_id: str, cellxgene_bucket: str, prefix=None, dry_run=True, local_path="/cxg"):
     """
     Converts an existing CXG to the new schema with row- and column-oriented arrays
     :param dataset_id: The id of the dataset to reprocess.
@@ -36,7 +36,6 @@ def process(dataset_id: str, cellxgene_bucket: str, prefix=None, dry_run=True):
 
     logger.info(f"Processing dataset at path {path}, dry run {dry_run}")
 
-    local_path = "/cxg"
     logger.info(f"Downloading {path} to {local_path}/X_old")
     download_command = ["aws", "s3", "sync", path, f"{local_path}/X_old"]
     # Let errors fail the pipeline
