@@ -61,12 +61,12 @@ paths:
 
         When the visibility parameter is set to PRIVATE, a list of all private Collections or private revisions of 
         public Collections that the user is authorized to access is returned. An access token MUST be set in the request
-        header as: `Authentication: bearer <access_token>`
+        header as: `Authentication: Bearer <access_token>`
 
         If a Collection in the list is a private revision of a public Collection, then it is annotated with 
         `revision_of`.
 
-        * Optional: provide your access token in the request header as `Authentication: bearer <access_token>`.
+        * Optional: provide your access token in the request header as `Authentication: Bearer <access_token>`.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.actions.get
       security:
         - curatorAccessLenient: []
@@ -116,7 +116,7 @@ paths:
       description: >
         Create a new private Collection
 
-        * Required: provide your access token in the request header as `Authentication: bearer <access_token>`.
+        * Required: provide your access token in the request header as `Authentication: Bearer <access_token>`.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.actions.post
       tags:
         - collection
@@ -154,7 +154,7 @@ paths:
       description: >
         Fetch full metadata for the Collection and its Datasets.
 
-        * Optional: provide your access token in the request header as `Authentication: bearer <access_token>`.
+        * Optional: provide your access token in the request header as `Authentication: Bearer <access_token>`.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.actions.get
       security:
         - curatorAccessLenient: []
@@ -182,7 +182,7 @@ paths:
         metadata of the DOI such as the list of authors. If the DOI has not been submitted to Crossref by its 
         publisher, then the request returns a 400 (BAD REQUEST).
 
-        * Optional: provide your access token in the request header as `Authentication: bearer <access_token>`.
+        * Optional: provide your access token in the request header as `Authentication: Bearer <access_token>`.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.actions.patch
       security:
         - curatorAccess: []
@@ -238,7 +238,7 @@ paths:
       description: |
         Delete a private Collection or cancel a Revision.
 
-        * Required: provide your access token in the request header as `Authentication: bearer <access_token>`.
+        * Required: provide your access token in the request header as `Authentication: Bearer <access_token>`.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.actions.delete
       security:
         - curatorAccess: []
@@ -266,7 +266,7 @@ paths:
 
         All methods of updating or adding Datasets and metadata to a Revision work the same as for a private Collection.
 
-        * Required: provide your access token in the request header as `Authentication: bearer <access_token>`.
+        * Required: provide your access token in the request header as `Authentication: Bearer <access_token>`.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.revision.post_collection_revision
       security:
         - curatorAccess: []
@@ -318,6 +318,7 @@ paths:
           $ref: "#/components/responses/403"
         "405":
           $ref: "#/components/responses/405"
+
   /v1/collections/{collection_id}/datasets/{dataset_id}:
     delete:
       summary: Delete a Dataset or cancel processing for a Dataset in a private Collection or Revision.
@@ -376,6 +377,7 @@ paths:
           $ref: "#/components/responses/400"
         "404":
           $ref: "#/components/responses/404"
+
   /v1/collections/{collection_id}/datasets/upload-link:
     put:
       summary: Upload a Dataset by providing a link
@@ -384,7 +386,7 @@ paths:
         URL or Dropbox shared file URL. MAY include the `dataset_id` of an existing Dataset, in which case the 
         existing Dataset SHALL be replaced. Otherwise a new Dataset will be created.
 
-        * Required: provide your access token in the request header as `Authentication: bearer <access_token>`.
+        * Required: provide your access token in the request header as `Authentication: Bearer <access_token>`.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.datasets.upload_link.put
       tags:
         - collection
@@ -454,15 +456,29 @@ paths:
         * session_token
 
 
-        To upload the files to S3, use the Python boto3 package. Once a file is successfully uploaded, it wil be
-        processed and added to the Collection (specified in the S3 key path) with no further user action required.
-        Use `GET /curation/collections/{collection_id}/datasets/` with `id` query parameter  to check 
-        on the processing status for a given Dataset.
+        We recommend using an AWS SDK in your preferred language to perform the s3 upload, such as `boto3` in Python or
+        `aws.s3` in R. To upload a datafile to a Dataset, the id of the Dataset (`<dataset_id>`) must be appended to the
+        s3 key prefix (`<UploadKeyPrefix>`) that is returned in the response body from this endpoint. You must also
+        retrieve the `Bucket` attribute on the response body. These values must be applied accordingly to the
+        'upload file' (or equivalent) function in the s3 module of whichever AWS SDK you choose to use. Generally,
+        these functions take a 'key' or 'object' argument in addition to a 'bucket' argument. Taking the values from the
+        aforementioned `"UploadKeyPrefix"` and `"Bucket"` attributes that are returned on the response to this endpoint,
+        this resolves to the following:
 
-        A Dataset uploaded directly to S3 will appear in the Collection only once the Dataset has started
+        * the object or key: `<UploadKeyPrefix>/<dataset_id>` (note: you must include the joining slash `/`)
+
+        * the bucket: `<Bucket>`
+
+
+        Once a file is successfully uploaded, it wil be processed and added to the Collection that you specified in your
+        initial request to this endpoint, with no further user action required. Use
+        `GET /curation/collections/{collection_id}/datasets/{dataset_id}` to retrieve metadata for the
+        Dataset in question in order to check on its processing status.
+
+        A Dataset uploaded directly to S3 in this manner will appear in the Collection only once the Dataset has started
         processing.
 
-        * Required: provide your access token in the request header as `Authentication: bearer <access_token>`.
+        * Required: provide your access token in the request header as `Authentication: Bearer <access_token>`.
       security:
         - curatorAccess: []
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.datasets.upload_s3.get
