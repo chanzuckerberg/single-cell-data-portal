@@ -29,12 +29,13 @@ def create_artifact(
     bucket_prefix: str,
     dataset_id: str,
     artifact_bucket: str,
-    processing_status_type: str,
+    processing_status_type: str = None,
 ):
-    update_db(
-        dataset_id,
-        processing_status={processing_status_type: ConversionStatus.UPLOADING},
-    )
+    if processing_status_type:
+        update_db(
+            dataset_id,
+            processing_status={processing_status_type: ConversionStatus.UPLOADING},
+        )
     logger.info(f"Uploading [{dataset_id}/{file_name}] to S3 bucket: [{artifact_bucket}].")
     try:
         s3_uri = DatasetAsset.upload(file_name, bucket_prefix, artifact_bucket)
@@ -48,10 +49,11 @@ def create_artifact(
                 user_submitted=True,
                 s3_uri=s3_uri,
             )
-        update_db(
-            dataset_id,
-            processing_status={processing_status_type: ConversionStatus.UPLOADED},
-        )
+        if processing_status_type:
+            update_db(
+                dataset_id,
+                processing_status={processing_status_type: ConversionStatus.UPLOADED},
+            )
 
     except Exception as e:
         logger.error(e)
@@ -74,9 +76,11 @@ def update_db(dataset_id, metadata: dict = None, processing_status: dict = None)
             processing_status_updater(session, dataset.processing_status.id, processing_status)
 
 
-def download_from_s3(bucket_name: str, object_key: str, local_filename: str):
+def download_from_s3(
+    bucket_name: str, object_key: str, local_filename: str, callback: typing.Optional[typing.Callable[int]] = None
+):
     logger.info(f"Downloading file {local_filename} from bucket {bucket_name} with object key {object_key}")
-    buckets.portal_client.download_file(bucket_name, object_key, local_filename)
+    buckets.portal_client.download_file(bucket_name, object_key, local_filename, callback=None)
 
 
 def convert_file(
