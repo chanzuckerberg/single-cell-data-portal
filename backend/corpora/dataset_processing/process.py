@@ -223,6 +223,7 @@ def main():
         logger.exception("An Error occurred while processing.")
         return_value = 1
     except Exception as e:
+        logger.exception(f"An unexpected error occurred while processing the data set: {e}")
         (status,) = e.args
         if isinstance(status, dict):
             update_db(dataset_id, processing_status=status)
@@ -236,7 +237,6 @@ def main():
                 update_db(dataset_id, processing_status={"rds_status": ConversionStatus.FAILED})
             elif step_name == "cxg":
                 update_db(dataset_id, processing_status={"cxg_status": ConversionStatus.FAILED})
-        logger.exception(f"An unexpected error occurred while processing the data set: {e}")
         return_value = 1
 
     return return_value

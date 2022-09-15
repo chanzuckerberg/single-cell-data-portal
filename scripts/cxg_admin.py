@@ -35,7 +35,12 @@ def get_database_uri() -> str:
 
 
 @click.group()
-@click.option("--deployment", default="test", show_default=True, help="The name of the deployment to target.")
+@click.option(
+    "--deployment",
+    default=lambda: os.environ.get("DEPLOYMENT_STAGE", "test"),
+    show_default=True,
+    help="The name of the deployment to target.",
+)
 @click.pass_context
 def cli(ctx, deployment):
     """
