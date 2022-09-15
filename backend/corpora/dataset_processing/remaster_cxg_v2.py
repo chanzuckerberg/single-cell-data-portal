@@ -50,7 +50,7 @@ def process(dataset_id: str, cellxgene_bucket: str, prefix=None, dry_run=True, l
     download_command = ["aws", "s3", "sync", meta_path, f"{local_path}/cxg_group_metadata", "--quiet"]
     # Let errors fail the pipeline
     subprocess.run(download_command, check=True)
-    with tiledb.open(f"{local_path}/cxg_group_metadata",'r') as X:
+    with tiledb.open(f"{local_path}/cxg_group_metadata", "r") as X:
         if not X.meta.get("cxg_remastered_v0.3.0"):
             evolve_obs(local_path)
             upload_command = ["aws", "s3", "sync", "--delete", f"{local_path}/new_obs", obs_path, "--quiet"]
@@ -74,8 +74,8 @@ def process(dataset_id: str, cellxgene_bucket: str, prefix=None, dry_run=True, l
             try:
                 executed = evolve_X(cxg=local_path, **params)  # executed is true if a sparse array was upgraded
             except:
-                executed=False
-                
+                executed = False
+
             if executed:
                 logger.info(f"Dataset at {path} computed successfully")
             else:
@@ -83,7 +83,15 @@ def process(dataset_id: str, cellxgene_bucket: str, prefix=None, dry_run=True, l
 
             if not dry_run and executed:
                 for suffix in ["r", "c"]:
-                    upload_command = ["aws", "s3", "sync", "--delete", f"{local_path}/X_new" + suffix, path + suffix, "--quiet"]
+                    upload_command = [
+                        "aws",
+                        "s3",
+                        "sync",
+                        "--delete",
+                        f"{local_path}/X_new" + suffix,
+                        path + suffix,
+                        "--quiet",
+                    ]
                     subprocess.run(upload_command, check=True)
         else:
             logger.info("Dataset was already upgraded")
@@ -97,12 +105,15 @@ def process(dataset_id: str, cellxgene_bucket: str, prefix=None, dry_run=True, l
     _try_to_delete(f"{local_path}/new_obs")
     _try_to_delete(f"{local_path}/cxg_group_metadata")
 
+
 def _try_to_delete(path):
     import shutil
+
     try:
-        shutil.rmtree(path)    
+        shutil.rmtree(path)
     except FileNotFoundError:
         pass
+
 
 def increment_version(cxg):
     """
@@ -160,6 +171,7 @@ def evolve_obs(cxg, array_name="old_obs"):
             new_X[:] = new_data
             new_X.meta["cxg_schema"] = json.dumps(schema)
         tiledb.consolidate(f"{cxg}/new_obs")
+
 
 def evolve_X(**kwargs):
     """
