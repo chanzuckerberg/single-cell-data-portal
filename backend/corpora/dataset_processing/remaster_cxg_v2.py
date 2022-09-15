@@ -50,7 +50,6 @@ def process(dataset_id: str, cellxgene_bucket: str, prefix=None, dry_run=True, l
     download_command = ["aws", "s3", "sync", meta_path, f"{local_path}/cxg_group_metadata", "--quiet"]
     # Let errors fail the pipeline
     subprocess.run(download_command, check=True)
-    executed=False
     with tiledb.open(f"{local_path}/cxg_group_metadata",'r') as X:
         if X.meta["cxg_version"] != "0.3.0":
             evolve_obs(local_path)
@@ -88,16 +87,18 @@ def process(dataset_id: str, cellxgene_bucket: str, prefix=None, dry_run=True, l
 
     # Cleanup
     logger.info("Cleaning up local files")
+    _try_to_delete(f"{local_path}/X_old")
+    _try_to_delete(f"{local_path}/X_newr")
+    _try_to_delete(f"{local_path}/X_newc")
+    _try_to_delete(f"{local_path}/old_obs")
+    _try_to_delete(f"{local_path}/new_obs")
+
+def _try_to_delete(path):
     import shutil
-
-    shutil.rmtree(f"{local_path}/X_old")
-    if executed:
-        shutil.rmtree(f"{local_path}/X_newr")
-        shutil.rmtree(f"{local_path}/X_newc")
-
-    shutil.rmtree(f"{local_path}/old_obs")
-    shutil.rmtree(f"{local_path}/new_obs")
-
+    try:
+        shutil.rmtree(path)    
+    except FileNotFoundError:
+        pass
 
 def increment_version(cxg):
     """
