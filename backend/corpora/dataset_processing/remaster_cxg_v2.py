@@ -71,8 +71,11 @@ def process(dataset_id: str, cellxgene_bucket: str, prefix=None, dry_run=True, l
                 "target_array": "X_new",
                 "source_array": "X_old",
             }
-
-            executed = evolve_X(cxg=local_path, **params)  # executed is true if a sparse array was upgraded
+            try:
+                executed = evolve_X(cxg=local_path, **params)  # executed is true if a sparse array was upgraded
+            except:
+                executed=False
+                
             if executed:
                 logger.info(f"Dataset at {path} computed successfully")
             else:
