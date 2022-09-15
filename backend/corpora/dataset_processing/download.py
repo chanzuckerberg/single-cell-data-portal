@@ -20,6 +20,7 @@ class ProgressTracker:
         self.file_size: int = file_size
         self._progress: int = 0
         self.error: Exception = None  # Track errors
+        self.tombstoned = False
 
     def progress(self):
         return self._progress / self.file_size
@@ -31,28 +32,28 @@ class ProgressTracker:
 
 class ProgressTrackerS3URI(ProgressTracker):
     def __init__(self, file_size: int):
-        super(self).__init__(file_size)
+        super().__init__(file_size)
         self.count = 0  # controls update frequency.
 
     def update(self, progress):
-        super(self).update(progress)
+        super().update(progress)
         self.count += 1
 
 
 class ProgressTrackerThreaded(ProgressTracker):
     def __init__(self, file_size: int):
-        super(self).__init__(file_size)
+        super().__init__(file_size)
         self.progress_lock: threading.Lock = threading.Lock()  # prevent concurrent access of ProgressTracker._progress
         self.stop_updater: threading.Event = threading.Event()  # Stops the update_progress thread
         self.stop_downloader: threading.Event = threading.Event()  # Stops the downloader threads
 
     def progress(self):
         with self.progress_lock:
-            return super(self).progress()
+            return super().progress()
 
     def update(self, progress):
         with self.progress_lock:
-            super(self).update(progress)
+            super().update(progress)
 
 
 class NoOpProgressTrackerThreaded(ProgressTrackerThreaded):
@@ -63,7 +64,7 @@ class NoOpProgressTrackerThreaded(ProgressTrackerThreaded):
     """
 
     def __init__(self) -> None:
-        super(self).__init__(0)
+        super().__init__(0)
 
     def progress(self):
         if self.error:
@@ -121,6 +122,7 @@ def updater(processing_status: DbDatasetProcessingStatus, tracker: ProgressTrack
         progress = tracker.progress()
         dataset = Dataset.get(db_session, processing_status.dataset_id, include_tombstones=True)
         if dataset.tombstone:
+            progress.tombstone = True
             return
         elif tracker.stop_updater.is_set():
             if progress > 1:
@@ -255,6 +257,7 @@ def download_s3_uri(
             if not processing_status.count % update_frequency:
                 dataset = Dataset.get(session, processing_status.dataset_id, include_tombstones=True)
                 if dataset.tombstone:
+                    progress_tracker.tombstone = True
                     raise ProcessingCancelled()
                 else:
                     status = {"upload_progress": progress_tracker.progress()}

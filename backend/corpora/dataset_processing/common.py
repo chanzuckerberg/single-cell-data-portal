@@ -77,7 +77,10 @@ def update_db(dataset_id, metadata: dict = None, processing_status: dict = None)
 
 
 def download_from_s3(
-    bucket_name: str, object_key: str, local_filename: str, callback: typing.Optional[typing.Callable[int]] = None
+    bucket_name: str,
+    object_key: str,
+    local_filename: str,
+    callback: typing.Optional[typing.Callable[[int], None]] = None,
 ):
     logger.info(f"Downloading file {local_filename} from bucket {bucket_name} with object key {object_key}")
     buckets.portal_client.download_file(bucket_name, object_key, local_filename, callback=None)
