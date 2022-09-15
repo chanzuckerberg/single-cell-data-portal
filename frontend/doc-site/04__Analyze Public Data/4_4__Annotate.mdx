@@ -1,6 +1,6 @@
 # Automated Annotation of Single Cell Data (EXPERIMENTAL)
 
-CZ CELLxGENE Annotate enables label transfer and reference mapping from expertly curated reference atlases to your newly generated and QC'd single cell datasets. Your data can be annotated using CELLxGENE Desktop along with any of our available label transfer and reference mapping models. CELLxGENE annotation augments your dataset with the following new information:
+CZ CELLxGENE Annotate enables label transfer and reference mapping from expertly curated reference atlases to your newly generated and QC'd single cell datasets. Your data can be annotated using CELLxGENE Desktop along with any of our available models. CELLxGENE annotation augments your dataset with the following new information:
 - transferred cell type labels (a.k.a. the most probable cell type)
 - uncertainty scores (measure of the confidence of the predicted label - takes on a value between 0 and 1 [0 = confident, 1 = uncertain])
 - a projection of the query dataset into the reference embedding, and a newly computed UMAP based on that projection
@@ -22,7 +22,7 @@ You can install the latest experimental release of CELLxGENE to gain access to t
 
 ### venv setup
 
-For an overview of `venv`, refer [here](https://docs.python.org/3/tutorial/venv.html)
+For an overview of `venv`, refer [here](https://docs.python.org/3/tutorial/venv.html), for installation guidance refer [here](https://github.com/pyenv/pyenv#installation)
 
 ```
 brew install pyenv  # used by MLflow
@@ -62,27 +62,27 @@ In this quickstart, we will use our lung model (trained on the [Integrated Human
 
 #### venv
 ```
-mkdir annotations #create a directory to download data, run annotation pipeline and store annotated object
+mkdir annotations  # create a directory to download data, run annotation pipeline and store annotated object
 
-cd annotations #navigate to newly created directory
+cd annotations  # navigate to newly created directory
 
-wget https://cellxgene-annotation-public.s3.us-west-2.amazonaws.com/cell_type/tutorial/minilung.h5ad ### retrieve sample dataset
+wget https://cellxgene-annotation-public.s3.us-west-2.amazonaws.com/cell_type/tutorial/minilung.h5ad  # retrieve sample dataset
 
-cellxgene annotate -i minilung.h5ad  -m https://cellxgene-annotation-public.s3.us-west-2.amazonaws.com/cell_type/models/hlca_20220728144320_venv.zip -o minilungAnnotated.h5ad --mlflow-env-manager venv --no-use-gpu --gene-column-name feature_name # generate annotations
+cellxgene annotate -i minilung.h5ad  -m https://cellxgene-annotation-public.s3.us-west-2.amazonaws.com/cell_type/models/hlca_20220728144320_venv.zip -o minilungAnnotated.h5ad --mlflow-env-manager venv --no-use-gpu --gene-column-name feature_name  # generate annotations
 
-cellxgene launch minilungAnnotated.h5ad #launch cellxgene explorer
+cellxgene launch minilungAnnotated.h5ad  # launch cellxgene explorer
 ```
 
 #### conda
 
 ```
-mkdir annotations #create a directory to download data, run annotation pipeline and store annotated object
+mkdir annotations  # create a directory to download data, run annotation pipeline and store annotated object
 
-cd annotations #navigate to newly created directory
+cd annotations  # navigate to newly created directory
 
-wget https://cellxgene-annotation-public.s3.us-west-2.amazonaws.com/cell_type/tutorial/minilung.h5ad ### retrieve sample dataset
+wget https://cellxgene-annotation-public.s3.us-west-2.amazonaws.com/cell_type/tutorial/minilung.h5ad  # retrieve sample dataset
 
-cellxgene annotate -i minilung.h5ad  -m https://cellxgene-annotation-public.s3.us-west-2.amazonaws.com/cell_type/models/hlca_20220728144320_conda.zip -o minilungAnnotated.h5ad --mlflow-env-manager conda --no-use-gpu --gene-column-name feature_name # generate annotations
+cellxgene annotate -i minilung.h5ad  -m https://cellxgene-annotation-public.s3.us-west-2.amazonaws.com/cell_type/models/hlca_20220728144320_conda.zip -o minilungAnnotated.h5ad --mlflow-env-manager conda --no-use-gpu --gene-column-name feature_name  # generate annotations
 
 cellxgene launch minilungAnnotated.h5ad #launch cellxgene explorer
 ```
