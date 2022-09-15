@@ -53,12 +53,7 @@ def process(dataset_id: str, cellxgene_bucket: str, prefix=None, dry_run=True, l
     with tiledb.open(f"{local_path}/cxg_group_metadata", "r") as X:
         if not X.meta.get("cxg_remastered_v0.3.0"):
             evolve_obs(local_path)
-            upload_command = ["aws", "s3", "sync", "--delete", f"{local_path}/new_obs", obs_path, "--quiet"]
-            subprocess.run(upload_command, check=True)
-
             increment_version(local_path)
-            upload_command = ["aws", "s3", "sync", "--delete", f"{local_path}/cxg_group_metadata", meta_path, "--quiet"]
-            subprocess.run(upload_command, check=True)
 
             params = {
                 "kind": "auto",
@@ -73,7 +68,7 @@ def process(dataset_id: str, cellxgene_bucket: str, prefix=None, dry_run=True, l
             }
             try:
                 executed = evolve_X(cxg=local_path, **params)  # executed is true if a sparse array was upgraded
-            except:
+            except Exception:
                 executed = False
 
             if executed:
@@ -93,15 +88,12 @@ def process(dataset_id: str, cellxgene_bucket: str, prefix=None, dry_run=True, l
                         "--quiet",
                     ]
                     subprocess.run(upload_command, check=True)
-                    delete_command = [
-                        "aws",
-                        "s3",
-                        "rm",
-                        f"{path}",
-                        "--recursive",
-                        "--quiet"
-                    ]
+                    delete_command = ["aws", "s3", "rm", f"{path}", "--recursive", "--quiet"]
                     subprocess.run(delete_command, check=True)
+            upload_command = ["aws", "s3", "sync", "--delete", f"{local_path}/new_obs", obs_path, "--quiet"]
+            subprocess.run(upload_command, check=True)
+            upload_command = ["aws", "s3", "sync", "--delete", f"{local_path}/cxg_group_metadata", meta_path, "--quiet"]
+            subprocess.run(upload_command, check=True)
         else:
             logger.info("Dataset was already upgraded")
 
