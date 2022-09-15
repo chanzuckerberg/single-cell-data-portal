@@ -50,15 +50,13 @@ def process(dataset_id: str, cellxgene_bucket: str, prefix=None, dry_run=True, l
     download_command = ["aws", "s3", "sync", meta_path, f"{local_path}/cxg_group_metadata", "--quiet"]
     # Let errors fail the pipeline
     subprocess.run(download_command, check=True)
-    with tiledb.open(f"{local_path}/cxg_group_metadata",'w') as X:
+    with tiledb.open(f"{local_path}/cxg_group_metadata",'r') as X:
         if not X.meta.get("cxg_remastered_v0.3.0"):
             evolve_obs(local_path)
             upload_command = ["aws", "s3", "sync", "--delete", f"{local_path}/new_obs", obs_path, "--quiet"]
             subprocess.run(upload_command, check=True)
 
-            X.meta["cxg_version"] = "0.3.0"
-            X.meta["cxg_remastered_v0.3.0"] = True
-
+            increment_version(local_path)
             upload_command = ["aws", "s3", "sync", "--delete", f"{local_path}/cxg_group_metadata", meta_path, "--quiet"]
             subprocess.run(upload_command, check=True)
 
@@ -101,6 +99,16 @@ def _try_to_delete(path):
         shutil.rmtree(path)    
     except FileNotFoundError:
         pass
+
+def increment_version(cxg):
+    """
+    Increments the version number of the CXG
+    :param cxg: the path to the CXG
+    """
+    with tiledb.open(f"{cxg}/cxg_group_metadata", "w") as X:
+        X.meta["cxg_version"] = "0.3.0"
+        X.meta["cxg_remastered_v0.3.0"] = True
+
 
 def evolve_obs(cxg, array_name="old_obs"):
     """
