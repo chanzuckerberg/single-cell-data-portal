@@ -1,5 +1,6 @@
 import { useMemo } from "react";
 import { useQuery, UseQueryResult } from "react-query";
+import { API } from "src/common/API";
 import {
   Author,
   Consortium,
@@ -11,9 +12,7 @@ import {
   buildExplicitOntologyTermId,
   buildInferredOntologyTermId,
 } from "src/common/hooks/useCategoryFilter/common/multiPanelOntologyUtils";
-import { CELL_TYPE_ANCESTORS } from "src/common/queries/cell-type-ancestors";
-import { COLLECTIONS_RESPONSE } from "src/common/queries/collections-response";
-import { DATASETS_RESPONSE } from "src/common/queries/datasets-response";
+import { DEFAULT_FETCH_OPTIONS } from "src/common/queries/common";
 import { ENTITIES } from "src/common/queries/entities";
 import {
   COLLATOR_CASE_INSENSITIVE,
@@ -26,6 +25,7 @@ import {
   DatasetRow,
 } from "src/components/common/Filter/common/entities";
 import { checkIsOverMaxCellCount } from "src/components/common/Grid/common/utils";
+import { API_URL } from "src/configs/configs";
 
 /**
  * Never expire cached collections and datasets. TODO revisit once state management approach is confirmed (#1809).
@@ -575,11 +575,9 @@ function expandPublicationDateValues(
 async function fetchCollections(): Promise<
   Map<string, ProcessedCollectionResponse>
 > {
-  // TODO(cc) revert with #2569.
-  // const collections = await (
-  //   await fetch(API_URL + API.COLLECTIONS_INDEX, DEFAULT_FETCH_OPTIONS)
-  // ).json();
-  const collections = COLLECTIONS_RESPONSE as unknown as CollectionResponse[];
+  const collections = await (
+    await fetch(API_URL + API.COLLECTIONS_INDEX, DEFAULT_FETCH_OPTIONS)
+  ).json();
 
   // Calculate the number of months since publication for each collection.
   const [todayMonth, todayYear] = getMonthYear(new Date());
@@ -600,31 +598,9 @@ async function fetchCollections(): Promise<
  * filterable and sortable dataset fields.
  */
 async function fetchDatasets(): Promise<ProcessedDatasetResponse[]> {
-  // TODO(cc) revert with #2569.
-  // const datasets = await (
-  //   await fetch(API_URL + API.DATASETS_INDEX, DEFAULT_FETCH_OPTIONS)
-  // ).json();
-  const datasets = DATASETS_RESPONSE as unknown as DatasetResponse[];
-
-  // TODO(cc) remove with #2569 - list all cell types
-  // const cellTypes = new Set();
-  // datasets.forEach((d) =>
-  //   d.cell_type.forEach((c) =>
-  //     cellTypes.add(`"${c.ontology_term_id.replace(/:/, "_")}"`)
-  //   )
-  // );
-  // console.log([...cellTypes].join(","));
-
-  // TODO(cc remove with #2569 - link datasets and cell type ancestors
-  datasets.forEach((d) => {
-    const ancestors = new Set<string>();
-    d.cell_type.forEach((cellType) => {
-      (CELL_TYPE_ANCESTORS[cellType.ontology_term_id] ?? []).forEach(
-        (ancestor: string) => ancestors.add(ancestor)
-      );
-      d.cell_type_ancestors = [...ancestors];
-    });
-  });
+  const datasets = await (
+    await fetch(API_URL + API.DATASETS_INDEX, DEFAULT_FETCH_OPTIONS)
+  ).json();
 
   // Correct any dirty data returned from endpoint.
   const sanitizedDatasets = datasets.map((dataset: DatasetResponse) => {
