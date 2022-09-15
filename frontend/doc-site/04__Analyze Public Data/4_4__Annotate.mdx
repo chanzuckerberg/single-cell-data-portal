@@ -22,6 +22,8 @@ You can install the latest experimental release of CELLxGENE to gain access to t
 
 ### venv setup
 
+For an overview of `venv`, refer [here](https://docs.python.org/3/tutorial/venv.html)
+
 ```
 brew install pyenv  # used by MLflow
 
@@ -33,8 +35,10 @@ virtualenv --python python3.8 /path/to/venv
 
 ### conda setup
 
+To install `conda`, refer [here](https://www.anaconda.com/products/distribution)
+
 ```
-conda create -n cellxgene 'python=3.8'
+conda create -n cellxgene 'python=3.9'
 
 conda activate cellxgene
 ```
@@ -42,11 +46,7 @@ conda activate cellxgene
 ### pip install
 Once your virtual environment is installed and activated, install the `annotate` feature using pip using the following command:
 
-`pip install cellxgene[annotate]`
-
-you may also install from our test PyPi release:
-
-`pip install --no-cache-dir --index-url https://test.pypi.org/simple/ --extra-index-url https://pypi.org/simple 'cellxgene[annotate]==1.1.0.dev4'`
+`pip install 'cellxgene[annotate]'`
 
 You can run the following to test the success of your installation:
 
@@ -68,9 +68,9 @@ cd annotations #navigate to newly created directory
 
 wget https://github.com/chanzuckerberg/cellxgene/raw/main/example-dataset/pbmc3k.h5ad # retrieve sample dataset
 
-cellxgene annotate -i pbmc3k.h5ad  -m https://s3.console.aws.amazon.com/s3/object/cellxgene-annotation-public?region=us-west-2&prefix=cell_type/models/immune_ref_20220728145305_venv.zip -o pbmc3kannotated.h5ad # generate annotations
+cellxgene annotate -i minilung.h5ad  -m https://cellxgene-annotation-public.s3.us-west-2.amazonaws.com/cell_type/models/hlca_ref_20220728145305_conda.zip -o miniLungAnnotated.h5ad --gene-column-name feature_name --mlflow-env-manager conda --no-use-gpu # generate annotations
 
-cellxgene launch pbmc3kannotated.h5ad #launch cellxgene explorer
+cellxgene launch miniLungAnnotated.h5ad #launch cellxgene explorer
 ```
 
 #### conda
@@ -80,11 +80,11 @@ mkdir annotations #create a directory to download data, run annotation pipeline 
 
 cd annotations #navigate to newly created directory
 
-wget https://github.com/chanzuckerberg/cellxgene/raw/main/example-dataset/pbmc3k.h5ad # retrieve sample dataset
+wget https://github.com/chanzuckerberg/cellxgene/raw/main/example-dataset/pbmc3k.h5ad ### TODO - wget command for s3 hosted minilung dataset
 
-cellxgene annotate -i pbmc3k.h5ad  -m https://cellxgene-annotation-public.s3.us-west-2.amazonaws.com/cell_type/models/immune_ref_20220728145305_conda.zip -o pbmc3kannotated.h5ad # generate annotations
+cellxgene annotate -i minilung.h5ad  -m https://cellxgene-annotation-public.s3.us-west-2.amazonaws.com/cell_type/models/hlca_ref_20220728145305_conda.zip -o miniLungAnnotated.h5ad --gene-column-name feature_name --mlflow-env-manager conda --no-use-gpu # generate annotations
 
-cellxgene launch pbmc3kannotated.h5ad #launch cellxgene explorer
+cellxgene launch miniLungAnnotated.h5ad #launch cellxgene explorer
 ```
 
 ### Step 0: Annotation workflow inputs
