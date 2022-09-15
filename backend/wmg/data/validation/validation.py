@@ -57,8 +57,12 @@ class Validation:
         # todo list size of tissues?
         self.validate_tissues_in_cube()
 
+        # check tissue roll up
+        self.validate_tissue_rollup_cell_count()
+        self.validate_tissue_rollup_expression()
+
         # check MALAT1 and ACTB
-        self.validate_housekeeping_gene_expression_levels(f"{self.corpus_path}/{CELL_COUNTS_CUBE_NAME}")
+        self.validate_housekeeping_gene_expression_levels()
 
         # check XIST appears in women but not men
         self.validate_sex_specific_marker_gene()
@@ -140,7 +144,7 @@ class Validation:
                 logger.error(f"Tissue roll up error, cell counts for lung subparts ({original_tissues_cell_count}) "
                              f"is not equal to cell counts for rolled-up lung ({rollup_tissues_cell_count})")
 
-    def validate_tissue_rollup_cell_count(self):
+    def validate_tissue_rollup_expression(self):
         """
         Validates that tissues rolled up in the axis "tissue_ontology_term_id" was correctly done from
         attribute "tissue_original_ontology_term_id".
