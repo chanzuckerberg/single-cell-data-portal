@@ -92,6 +92,7 @@ def process(dataset_id: str, cellxgene_bucket: str, prefix=None, dry_run=True, l
     _try_to_delete(f"{local_path}/X_newc")
     _try_to_delete(f"{local_path}/old_obs")
     _try_to_delete(f"{local_path}/new_obs")
+    _try_to_delete(f"{local_path}/cxg_group_metadata")
 
 def _try_to_delete(path):
     import shutil
