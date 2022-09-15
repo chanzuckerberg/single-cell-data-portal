@@ -211,42 +211,6 @@ resource "aws_sfn_state_machine" "state_machine_seurat" {
 EOF
 }
 
-resource "aws_sfn_state_machine" "state_machine_cxg_remaster" {
-  name     = "dp-${var.deployment_stage}-${var.custom_stack_name}-cxg-remaster-sfn"
-  role_arn = var.role_arn
-
-  definition = <<EOF
-{
-  "StartAt": "CxgRemaster",
-  "States": {
-    "CxgRemaster": {
-      "Type": "Task",
-      "End": true,
-      "Resource": "arn:aws:states:::batch:submitJob.sync",
-      "Parameters": {
-        "JobDefinition": "${var.job_definition_arn}",
-        "JobName": "cxg_remaster",
-        "JobQueue": "arn:aws:batch:us-west-2:699936264352:job-queue/dp-dev",
-        "ContainerOverrides": {
-          "Environment": [
-            {
-              "Name": "DATASET_ID",
-              "Value.$": "$.dataset_id"
-            },
-            {
-              "Name": "STEP_NAME",
-              "Value": "cxg_remaster"
-            }
-          ]
-        }
-      },
-      "TimeoutSeconds": 36000
-    }
-  }
-}
-EOF
-}
-
 resource "aws_sfn_state_machine" "state_machine_cxg_remaster_v2" {
   name     = "dp-${var.deployment_stage}-${var.custom_stack_name}-cxg-remaster-v2-sfn"
   role_arn = var.role_arn

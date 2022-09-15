@@ -204,10 +204,6 @@ def main():
             from backend.corpora.dataset_processing.process_seurat import process
 
             process(dataset_id, os.environ["ARTIFACT_BUCKET"])
-        elif step_name == "cxg_remaster":
-            from backend.corpora.dataset_processing.remaster_cxg import process
-
-            process(dataset_id, os.environ["CELLXGENE_BUCKET"], dry_run=False)
         elif step_name == "cxg_remaster_v2":
             from backend.corpora.dataset_processing.remaster_cxg_v2 import process
 
