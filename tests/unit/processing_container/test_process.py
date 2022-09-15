@@ -64,7 +64,7 @@ class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
                 os.remove(f)
 
     @patch("backend.corpora.dataset_processing.process_download_validate.download_from_source_uri")
-    @patch("backend.corpora.dataset_processing.remaster_cxg.process")  # TODO: provide test data to properly test this.
+    @patch("backend.corpora.dataset_processing.remaster_cxg_v2.process")  # TODO: provide test data to properly test this.
     def test_main(self, mock_rematser_cxg_process, mock_download_from_source_uri):
         """
         Tests full pipeline for processing an uploaded H5AD file, including database updates
@@ -94,7 +94,7 @@ class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
         with EnvironmentSetup(test_environment):
             main()
 
-        test_environment["STEP_NAME"] = "cxg_remaster"
+        test_environment["STEP_NAME"] = "cxg_remaster_v2"
         with EnvironmentSetup(test_environment):
             main()
             mock_rematser_cxg_process.assert_called()

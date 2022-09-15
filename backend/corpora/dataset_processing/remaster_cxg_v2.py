@@ -230,9 +230,7 @@ def evolve_X(**kwargs):
                 with tiledb.open(f"{cxg}/{target_array}c", "w") as new_X_c:
                     i, chunk = 0, 200_000
                     while i < old_X.shape[0]:
-                        logger.info(f"Chunk {i}")
                         dat = old_X[i : i + chunk]
-                        logger.info("Got dat")
                         new_X_r[dat["obs"]] = {"var": dat["var"], "": dat[""]}
                         new_X_c[dat["var"]] = {"obs": dat["obs"], "": dat[""]}
                         i += chunk
