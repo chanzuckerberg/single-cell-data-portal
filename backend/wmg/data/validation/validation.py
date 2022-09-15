@@ -173,7 +173,7 @@ class Validation:
             original_tissues_expression = original_tissues_expression.groupby("cell_type_ontology_term_id").sum()
             rollup_tissues_expression = rollup_tissues_expression.groupby("cell_type_ontology_term_id").sum()
 
-            if not original_tissues_expression["sum"].equal(rollup_tissues_expression["sum"]):
+            if not original_tissues_expression["sum"].equals(rollup_tissues_expression["sum"]):
                 logger.error(f"Tissue roll up error, cell expresion for lung subparts ({original_tissues_expression}) "
                              f"is not equal to expression for rolled-up lung ({rollup_tissues_expression})")
 
