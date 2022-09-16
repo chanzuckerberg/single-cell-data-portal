@@ -86,9 +86,9 @@ class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
         test_environment["STEP_NAME"] = "download-validate"
         with EnvironmentSetup(test_environment):
             main()
-            artifacts = [(artifact.filetype, artifact.filename) for artifact in dataset.artifacts]
-            self.assertIn((DatasetArtifactFileType.H5AD, "local.h5ad"), artifacts)
-            self.assertIn((DatasetArtifactFileType.H5AD, "raw.h5ad"), artifacts)
+            artifacts = [artifact.filetype == DatasetArtifactFileType.H5AD for artifact in dataset.artifacts]
+            self.assertTrue(all(artifacts), "Assert all H5AD")
+            self.assertEqual(2, len(artifacts), "Assert 2 H5ADs")
 
         test_environment["STEP_NAME"] = "cxg"
         with EnvironmentSetup(test_environment):
