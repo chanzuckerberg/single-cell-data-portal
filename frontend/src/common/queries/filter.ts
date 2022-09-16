@@ -112,7 +112,7 @@ export interface DatasetResponse {
  * functionality.
  */
 interface ProcessedDatasetResponse extends DatasetResponse {
-  cellTypeCalculated: string[]; // Field to drive cell class, cell type level 1 and cell type level 2 filter functionality.
+  cellTypeCalculated: string[]; // Field to drive cell class, cell subclass and cell type filter functionality.
   tissueCalculated: string[]; // Field to drive tissue system, tissue organ and tissue filter functionality.
 }
 
