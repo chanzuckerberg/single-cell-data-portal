@@ -4,8 +4,9 @@ import subprocess
 import json
 import pandas as pd
 from backend.corpora.dataset_processing.common import get_bucket_prefix
+from backend.corpora.common.utils.cxg_constants import CxgConstants
 import time
-
+from packaging import version
 import psutil
 import tiledb
 
@@ -51,7 +52,7 @@ def process(dataset_id: str, cellxgene_bucket: str, prefix=None, dry_run=True, l
     # Let errors fail the pipeline
     subprocess.run(download_command, check=True)
     with tiledb.open(f"{local_path}/cxg_group_metadata", "r") as X:
-        if X.meta["cxg_version"] != "0.3.0":
+        if version.parse(X.meta["cxg_version"]) < version.parse(CxgConstants.CXG_VERSION):
             evolve_obs(local_path)
             increment_version(local_path)
 
@@ -122,7 +123,7 @@ def increment_version(cxg):
     :param cxg: the path to the CXG
     """
     with tiledb.open(f"{cxg}/cxg_group_metadata", "w") as X:
-        X.meta["cxg_version"] = "0.3.0"
+        X.meta["cxg_version"] = CxgConstants.CXG_VERSION
 
 
 def evolve_obs(cxg, array_name="old_obs"):
