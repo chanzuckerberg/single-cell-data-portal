@@ -8,6 +8,7 @@ from backend.corpora.common.corpora_orm import (
     ConversionStatus,
     UploadStatus,
     ValidationStatus,
+    DatasetArtifactFileType,
 )
 from backend.corpora.common.entities import Dataset
 from backend.corpora.dataset_processing.exceptions import (
@@ -85,6 +86,9 @@ class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
         test_environment["STEP_NAME"] = "download-validate"
         with EnvironmentSetup(test_environment):
             main()
+            artifacts = [(artifact.filetype, artifact.filename) for artifact in dataset.artifacts]
+            self.assertIn((DatasetArtifactFileType.H5AD, "local.h5ad"), artifacts)
+            self.assertIn((DatasetArtifactFileType.H5AD, "raw.h5ad"), artifacts)
 
         test_environment["STEP_NAME"] = "cxg"
         with EnvironmentSetup(test_environment):
