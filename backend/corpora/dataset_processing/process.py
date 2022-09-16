@@ -166,7 +166,7 @@ def log_batch_environment():
         "AWS_BATCH_JOB_ATTEMPT",
         "AWS_BATCH_JOB_ID",
         "STEP_NAME",
-        "DROPBOX_URL",  # TODO: Change to SOURCE_URI
+        "DROPBOX_URL",
         "ARTIFACT_BUCKET",
         "CELLXGENE_BUCKET",
         "DATASET_ID",

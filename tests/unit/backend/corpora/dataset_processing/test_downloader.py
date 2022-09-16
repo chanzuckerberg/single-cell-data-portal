@@ -22,7 +22,7 @@ def start_server(path, port):
     httpd.serve_forever()
 
 
-class TestDownloadURL(DataPortalTestCase):
+class TestDownload(DataPortalTestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -48,7 +48,7 @@ class TestDownloadURL(DataPortalTestCase):
         self.addCleanup(self.cleanup_local_file, local_file)
         url = f"http://localhost:{self.port}/upload_test_file.txt"
         file_size = int(requests.head(url).headers["content-length"])
-        status = download.download_url(
+        status = download.download(
             "test_dataset_id",
             url,
             local_file,
@@ -71,7 +71,7 @@ class TestDownloadURL(DataPortalTestCase):
 
         with self.subTest("Bigger"):
             with self.assertRaises(ProcessingFailed):
-                download.download_url(
+                download.download(
                     "test_dataset_id",
                     url,
                     local_file,
@@ -82,7 +82,7 @@ class TestDownloadURL(DataPortalTestCase):
 
         with self.subTest("Smaller"):
             with self.assertRaises(ProcessingFailed):
-                download.download_url(
+                download.download(
                     "test_dataset_id",
                     url,
                     local_file,
@@ -96,7 +96,7 @@ class TestDownloadURL(DataPortalTestCase):
         self.addCleanup(self.cleanup_local_file, local_file)
         url = f"http://localhost:{self.port}/upload_test_file.txt"
 
-        progress_tracker = download.ProgressTrackerThreaded(
+        progress_tracker = download.ProgressTracker(
             1,
         )
         progress_tracker.stop_downloader.set()
@@ -109,7 +109,7 @@ class TestDownloadURL(DataPortalTestCase):
         self.addCleanup(self.cleanup_local_file, local_file)
         url = f"http://localhost:{self.port}/fake.txt"
         with self.assertRaises(ProcessingFailed):
-            download.download_url(
+            download.download(
                 "test_dataset_id",
                 url,
                 local_file,
@@ -124,7 +124,7 @@ class TestDownloadURL(DataPortalTestCase):
         url = f"http://localhost:{self.port}/upload_test_file.txt"
         file_size = int(requests.head(url).headers["content-length"])
         with self.assertRaises(AttributeError):
-            download.download_url(
+            download.download(
                 "test_dataset_id_fake",
                 url,
                 local_file,
@@ -141,4 +141,4 @@ class TestDownloadURL(DataPortalTestCase):
         url = f"http://localhost:{self.port}/upload_test_file.txt"
         file_size = int(requests.head(url).headers["content-length"])
         with self.assertRaises(ProcessingFailed):
-            download.download_url("test_dataset_id_fake", url, local_file, file_size)
+            download.download("test_dataset_id_fake", url, local_file, file_size)

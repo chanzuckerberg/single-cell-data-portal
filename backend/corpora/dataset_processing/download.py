@@ -9,7 +9,6 @@ from backend.corpora.common.corpora_orm import DbDatasetProcessingStatus, Upload
 from backend.corpora.common.entities import Dataset
 from backend.corpora.common.utils.db_session import db_session_manager
 from backend.corpora.common.utils.math_utils import MB
-from backend.corpora.dataset_processing.common import download_from_s3
 from backend.corpora.dataset_processing.exceptions import ProcessingFailed, ProcessingCancelled
 
 logger = logging.getLogger(__name__)
@@ -19,44 +18,27 @@ class ProgressTracker:
     def __init__(self, file_size: int):
         self.file_size: int = file_size
         self._progress: int = 0
-        self.error: Exception = None  # Track errors
-        self.tombstoned = False
-
-    def progress(self):
-        return self._progress / self.file_size
-
-    def update(self, progress):
-        self._progress += progress
-        self.count += 1
-
-
-class ProgressTrackerS3URI(ProgressTracker):
-    def __init__(self, file_size: int):
-        super().__init__(file_size)
-        self.count = 0  # controls update frequency.
-
-    def update(self, progress):
-        super().update(progress)
-        self.count += 1
-
-
-class ProgressTrackerThreaded(ProgressTracker):
-    def __init__(self, file_size: int):
-        super().__init__(file_size)
         self.progress_lock: threading.Lock = threading.Lock()  # prevent concurrent access of ProgressTracker._progress
         self.stop_updater: threading.Event = threading.Event()  # Stops the update_progress thread
         self.stop_downloader: threading.Event = threading.Event()  # Stops the downloader threads
+        self.error: Exception = None  # Track errors
+        self.tombstoned: bool = False  # Track if dataset tombstoned
 
     def progress(self):
         with self.progress_lock:
-            return super().progress()
+            return self._progress / self.file_size
 
     def update(self, progress):
         with self.progress_lock:
-            super().update(progress)
+            self._progress += progress
+
+    def cancel(self):
+        self.tombstoned = True
+        self.stop_downloader.set()
+        self.stop_updater.set()
 
 
-class NoOpProgressTrackerThreaded(ProgressTrackerThreaded):
+class NoOpProgressTracker:
     """
     This progress tracker should be used if file_size isn't available.
     It will return a progress of 1 if no errors occurred
@@ -64,7 +46,11 @@ class NoOpProgressTrackerThreaded(ProgressTrackerThreaded):
     """
 
     def __init__(self) -> None:
-        super().__init__(0)
+        self.progress_lock: threading.Lock = threading.Lock()  # prevent concurrent access of ProgressTracker._progress
+        self.stop_updater: threading.Event = threading.Event()  # Stops the update_progress thread
+        self.stop_downloader: threading.Event = threading.Event()  # Stops the downloader threads
+        self.error: Exception = None  # Track errors
+        self.tombstoned: bool = False  # Track if dataset tombstoned
 
     def progress(self):
         if self.error:
@@ -74,6 +60,11 @@ class NoOpProgressTrackerThreaded(ProgressTrackerThreaded):
 
     def update(self, progress):
         pass
+
+    def cancel(self):
+        self.tombstoned = True
+        self.stop_downloader.set()
+        self.stop_updater.set()
 
 
 def downloader(url: str, local_path: str, tracker: ProgressTracker, chunk_size: int):
@@ -156,43 +147,14 @@ def _processing_status_updater(processing_status: DbDatasetProcessingStatus, upd
         setattr(processing_status, key, value)
 
 
-def setup_download(session, dataset_id: str, file_size: int):
-    logger.info("Setting up download.")
-    logger.info(f"file_size: {file_size}")
-    if file_size and file_size >= shutil.disk_usage("/")[2]:
-        status_dict = {
-            "upload_status": UploadStatus.FAILED,
-            "upload_message": "Insufficient disk space.",
-        }
-        logger.error(f"Upload failed: {status_dict}")
-        raise ProcessingFailed(status_dict)
-    processing_status = Dataset.get(session, dataset_id).processing_status
-    processing_status.upload_status = UploadStatus.UPLOADING
-    processing_status.upload_progress = 0
-    return processing_status
-
-
-def finish_download(progress_tracker, processing_status):
-    if progress_tracker.tombstoned:
-        raise ProcessingCancelled
-    if progress_tracker.error:
-        status = {
-            "upload_status": UploadStatus.FAILED,
-            "upload_message": str(progress_tracker.error),
-        }
-        _processing_status_updater(processing_status, status)
-
-    status_dict = processing_status.to_dict()
-    if processing_status.upload_status == UploadStatus.FAILED:
-        logger.error(f"Upload failed: {status_dict}")
-        raise ProcessingFailed(status_dict)
-    else:
-        return status_dict
-
-
-def download_url(
-    dataset_id: str, url: str, local_path: str, file_size: int, chunk_size: int = 10 * MB, update_frequency=3
-):
+def download(
+    dataset_id: str,
+    url: str,
+    local_path: str,
+    file_size: int,
+    chunk_size: int = 10 * MB,
+    update_frequency=3,
+) -> dict:
     """
     Download a file from a url and update the processing_status upload fields in the database
 
@@ -206,11 +168,22 @@ def download_url(
     :return: The current dataset processing status.
     """
     with db_session_manager() as session:
-        processing_status = setup_download(session, dataset_id, file_size)
+        logger.info("Setting up download.")
+        logger.info(f"file_size: {file_size}")
+        if file_size and file_size >= shutil.disk_usage("/")[2]:
+            status_dict = {
+                "upload_status": UploadStatus.FAILED,
+                "upload_message": "Insufficient disk space.",
+            }
+            logger.error(f"Upload failed: {status_dict}")
+            raise ProcessingFailed(status_dict)
+        processing_status = Dataset.get(session, dataset_id).processing_status
+        processing_status.upload_status = UploadStatus.UPLOADING
+        processing_status.upload_progress = 0
         if file_size is not None:
-            progress_tracker = ProgressTrackerThreaded(file_size)
+            progress_tracker = ProgressTracker(file_size)
         else:
-            progress_tracker = NoOpProgressTrackerThreaded()
+            progress_tracker = NoOpProgressTracker()
 
         progress_thread = threading.Thread(
             target=updater,
@@ -224,48 +197,18 @@ def download_url(
         download_thread.start()
         download_thread.join()  # Wait for the download thread to complete
         progress_thread.join()  # Wait for the progress thread to complete
+        if progress_tracker.tombstoned:
+            raise ProcessingCancelled
+        if progress_tracker.error:
+            status = {
+                "upload_status": UploadStatus.FAILED,
+                "upload_message": str(progress_tracker.error),
+            }
+            _processing_status_updater(processing_status, status)
 
-        return finish_download(progress_tracker, processing_status)
-
-
-def download_s3_uri(
-    dataset_id: str,
-    bucket_name: str,
-    object_key: str,
-    local_path: str,
-    file_size: int,
-    update_frequency=5,
-) -> dict:
-    """
-    Download a file from a url and update the processing_status upload fields in the database
-
-    :param dataset_id: The uuid of the dataset the download will be associated with.
-    :param bucket_name: The bucket where the object exists.
-    :param object_key: The key the object exists at.
-    :param local_path: The local name of the file be downloaded.
-    :param file_size: The size of the file in bytes.
-    :param update_frequency: The frequency in which to update the database in number of chunks read.
-
-    :return: The current dataset processing status.
-    """
-    with db_session_manager() as session:
-        processing_status = setup_download(session, dataset_id, file_size)
-        progress_tracker = ProgressTracker(file_size)
-
-        def update_progress(chunk_size):
-            progress_tracker.update(chunk_size)
-            if not processing_status.count % update_frequency:
-                dataset = Dataset.get(session, processing_status.dataset_id, include_tombstones=True)
-                if dataset.tombstone:
-                    progress_tracker.tombstone = True
-                    raise ProcessingCancelled()
-                else:
-                    status = {"upload_progress": progress_tracker.progress()}
-                logger.debug("Updating processing_status")
-                _processing_status_updater(processing_status, status)
-                session.commit()
-
-        download_from_s3(
-            bucket_name=bucket_name, object_key=object_key, local_filename=local_path, callback=update_progress
-        )
-        return finish_download(progress_tracker, processing_status)
+        status_dict = processing_status.to_dict()
+        if processing_status.upload_status == UploadStatus.FAILED:
+            logger.error(f"Upload failed: {status_dict}")
+            raise ProcessingFailed(status_dict)
+        else:
+            return status_dict

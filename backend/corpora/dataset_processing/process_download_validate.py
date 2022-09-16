@@ -4,11 +4,13 @@ import typing
 import numpy
 import scanpy
 
+from backend.corpora.common.entities import Dataset
+from backend.corpora.common.utils.db_session import db_session_manager
 from backend.corpora.common.utils.dl_sources.url import from_url
-from backend.corpora.dataset_processing.download import download_url, download_s3_uri
+from backend.corpora.dataset_processing.download import download
 
 from backend.corpora.dataset_processing.exceptions import ValidationFailed
-from backend.corpora.dataset_processing.common import create_artifact, update_db, get_bucket_prefix
+from backend.corpora.dataset_processing.common import create_artifact, update_db, download_from_s3, get_bucket_prefix
 from backend.corpora.dataset_processing.logger import logger
 
 from backend.corpora.common.corpora_orm import (
@@ -16,10 +18,11 @@ from backend.corpora.common.corpora_orm import (
     ProcessingStatus,
     DatasetArtifactFileType,
     ValidationStatus,
+    UploadStatus,
 )
 
 
-def process(dataset_id: str, source_uri: str, artifact_bucket: str):
+def process(dataset_id: str, dropbox_url: str, artifact_bucket: str):
     """
     1. Download the original dataset from Dropbox
     2. Validate and label it
@@ -35,8 +38,8 @@ def process(dataset_id: str, source_uri: str, artifact_bucket: str):
     # Download the original dataset from Dropbox
     local_filename = download_from_source_uri(
         dataset_id=dataset_id,
-        source_uri=source_uri,
-        local_path="original.h5ad",
+        source_uri=dropbox_url,
+        local_path="raw.h5ad",
     )
 
     # Validate and label the dataset
@@ -181,6 +184,26 @@ def extract_metadata(filename) -> dict:
     return metadata
 
 
+def wrapped_download_from_s3(dataset_id: str, bucket_name: str, object_key: str, local_filename: str):
+    """
+    Wraps download_from_s3() to update the dataset's upload status
+    :param dataset_id:
+    :param bucket_name:
+    :param object_key:
+    :param local_filename:
+    :return:
+    """
+    with db_session_manager() as session:
+        processing_status = Dataset.get(session, dataset_id).processing_status
+        processing_status.upload_status = UploadStatus.UPLOADING
+        download_from_s3(
+            bucket_name=bucket_name,
+            object_key=object_key,
+            local_filename=local_filename,
+        )
+        processing_status.upload_status = UploadStatus.UPLOADED
+
+
 def download_from_source_uri(dataset_id: str, source_uri: str, local_path: str) -> str:
     """Given a source URI, download it to local_path.
     Handles fixing the url so it downloads directly.
@@ -189,15 +212,21 @@ def download_from_source_uri(dataset_id: str, source_uri: str, local_path: str) 
     file_url = from_url(source_uri)
     if not file_url:
         raise ValueError(f"Malformed source URI: {source_uri}")
-    file_info = file_url.file_info()
+
     # This is a bit ugly and should be done polymorphically instead, but Dropbox support will be dropped soon
     if file_url.scheme == "https":
-        status = download_url(dataset_id, file_url.url, local_path, file_info["size"])
+        file_info = file_url.file_info()
+        status = download(dataset_id, file_url.url, local_path, file_info["size"])
         logger.info(status)
     elif file_url.scheme == "s3":
         bucket_name = file_url.netloc
-        object_key = remove_prefix(file_url.path, "/")
-        download_s3_uri(dataset_id, bucket_name, object_key, local_path, file_info["size"])
+        key = remove_prefix(file_url.path, "/")
+        wrapped_download_from_s3(
+            dataset_id=dataset_id,
+            bucket_name=bucket_name,
+            object_key=key,
+            local_filename=local_path,
+        )
     else:
         raise ValueError(f"Download for URI scheme '{file_url.scheme}' not implemented")
 
