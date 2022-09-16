@@ -65,7 +65,7 @@ class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
 
     @patch("backend.corpora.dataset_processing.process_download_validate.download_from_source_uri")
     @patch(
-        "backend.corpora.dataset_processing.remaster_cxg_v2.process"
+        "backend.corpora.dataset_processing.remaster_cxg.process"
     )  # TODO: provide test data to properly test this.
     def test_main(self, mock_rematser_cxg_process, mock_download_from_source_uri):
         """
