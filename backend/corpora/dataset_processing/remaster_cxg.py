@@ -173,16 +173,17 @@ def evolve_obs(cxg, array_name="old_obs"):
             new_X.meta["cxg_schema"] = json.dumps(schema)
         tiledb.consolidate(f"{cxg}/new_obs")
 
+
 def _sort_by_primary_var_and_secondary_obs(data_dict):
-    ix = np.argsort(data_dict['var'])
-    x = data_dict['obs'][ix]
-    y = data_dict['var'][ix]    
-    d = data_dict[''][ix]
+    ix = np.argsort(data_dict["var"])
+    x = data_dict["obs"][ix]
+    y = data_dict["var"][ix]
+    d = data_dict[""][ix]
 
     df = pd.DataFrame()
-    df["x"]=x
-    df["y"]=y
-    df["d"]=d
+    df["x"] = x
+    df["y"] = y
+    df["d"] = d
 
     gb = df.groupby("y")
 
@@ -191,21 +192,22 @@ def _sort_by_primary_var_and_secondary_obs(data_dict):
     for k in gb.groups:
         ix = np.argsort(x[gb.groups[k]])
         xs.extend(x[gb.groups[k]][ix])
-        ds.extend(d[gb.groups[k]][ix])    
+        ds.extend(d[gb.groups[k]][ix])
     xs = np.array(xs)
     ds = np.array(ds)
-    return xs,y,ds
-    
+    return xs, y, ds
+
+
 def _sort_by_primary_obs_and_secondary_var(data_dict):
-    ix = np.argsort(data_dict['obs'])
-    x = data_dict['obs'][ix]
-    y = data_dict['var'][ix]    
-    d = data_dict[''][ix]
+    ix = np.argsort(data_dict["obs"])
+    x = data_dict["obs"][ix]
+    y = data_dict["var"][ix]
+    d = data_dict[""][ix]
 
     df = pd.DataFrame()
-    df["x"]=x
-    df["y"]=y
-    df["d"]=d
+    df["x"] = x
+    df["y"] = y
+    df["d"] = d
 
     gb = df.groupby("x")
 
@@ -214,10 +216,11 @@ def _sort_by_primary_obs_and_secondary_var(data_dict):
     for k in gb.groups:
         ix = np.argsort(y[gb.groups[k]])
         ys.extend(y[gb.groups[k]][ix])
-        ds.extend(d[gb.groups[k]][ix])    
+        ds.extend(d[gb.groups[k]][ix])
     ys = np.array(ys)
     ds = np.array(ds)
-    return x,ys,ds
+    return x, ys, ds
+
 
 def evolve_X(**kwargs):
     """
@@ -249,8 +252,8 @@ def evolve_X(**kwargs):
 
     ctx = create_fast_ctx(
         {
-            "py.init_buffer_bytes": 4 * 1024**3,
-            "sm.tile_cache_size": 1 * 1024**3,
+            "py.init_buffer_bytes": 4 * 1024 ** 3,
+            "sm.tile_cache_size": 1 * 1024 ** 3,
         }
     )
 
@@ -277,19 +280,19 @@ def evolve_X(**kwargs):
 
                     i, chunk = 0, 200_000
                     while i < old_X.shape[0]:
-                        print(f"Row chunk {i}...")                        
+                        print(f"Row chunk {i}...")
                         dat = old_X[i : i + chunk]
-                        obs,var,data = _sort_by_primary_obs_and_secondary_var(dat)                      
+                        obs, var, data = _sort_by_primary_obs_and_secondary_var(dat)
                         new_X_r[obs] = {"var": var, "": data}
                         i += chunk
 
                     i, chunk = 0, 2_000
                     while i < old_X.shape[1]:
                         print(f"Column chunk {i}...")
-                        dat = old_X[:,i : i + chunk]
-                        obs,var,data = _sort_by_primary_var_and_secondary_obs(dat)                                           
+                        dat = old_X[:, i : i + chunk]
+                        obs, var, data = _sort_by_primary_var_and_secondary_obs(dat)
                         new_X_c[var] = {"obs": obs, "": data}
-                        i += chunk                        
+                        i += chunk
 
             logger.info("consolidating...")
             for suffix in ["r", "c"]:
@@ -345,17 +348,17 @@ def create_ctx(config: dict = {}) -> tiledb.Ctx:
 
 def frac_mem(f):
     mem_size = psutil.virtual_memory().total
-    return int(f * mem_size) // (1024**2) * (1024**2)
+    return int(f * mem_size) // (1024 ** 2) * (1024 ** 2)
 
 
 def fast_config(config_overrides: dict = {}) -> dict:
     # consolidation buffer heuristic to prevent thrashing: total_mem/io_concurrency_level, rounded to GB
     io_concurrency_level = int(tiledb.Config()["sm.io_concurrency_level"])
     consolidation_buffer_size = (
-        (int(frac_mem(0.1) / io_concurrency_level) + (1024**3 - 1)) // (1024**3) * (1024**3)
+        (int(frac_mem(0.1) / io_concurrency_level) + (1024 ** 3 - 1)) // (1024 ** 3) * (1024 ** 3)
     )
     config = {
-        "py.init_buffer_bytes": 16 * 1024**3,
+        "py.init_buffer_bytes": 16 * 1024 ** 3,
         "sm.tile_cache_size": frac_mem(0.5),
         "sm.consolidation.buffer_size": consolidation_buffer_size,
     }
