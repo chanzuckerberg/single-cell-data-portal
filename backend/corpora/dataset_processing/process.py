@@ -223,19 +223,15 @@ def main():
         return_value = 1
     except Exception as e:
         logger.exception(f"An unexpected error occurred while processing the data set: {e}")
-        (status,) = e.args
-        if isinstance(status, dict):
-            update_db(dataset_id, processing_status=status)
-        else:
-            if step_name == "download-validate":
-                update_db(
-                    dataset_id,
-                    processing_status={"upload_status": UploadStatus.FAILED, "upload_message": str(e)},
-                )
-            elif step_name == "seurat":
-                update_db(dataset_id, processing_status={"rds_status": ConversionStatus.FAILED})
-            elif step_name == "cxg":
-                update_db(dataset_id, processing_status={"cxg_status": ConversionStatus.FAILED})
+        if step_name == "download-validate":
+            update_db(
+                dataset_id,
+                processing_status={"upload_status": UploadStatus.FAILED, "upload_message": str(e)},
+            )
+        elif step_name == "seurat":
+            update_db(dataset_id, processing_status={"rds_status": ConversionStatus.FAILED})
+        elif step_name == "cxg":
+            update_db(dataset_id, processing_status={"cxg_status": ConversionStatus.FAILED})
         return_value = 1
 
     return return_value
