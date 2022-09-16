@@ -134,7 +134,7 @@ class Validation:
 
         with tiledb.open(self.cell_count_path, "r") as cell_count_cube:
             human_ontology_id = fixtures.validation_species_ontologies["human"]
-            all_lung_tissues = fixtures.validation_all_lung_tisuses
+            all_lung_tissues = fixtures.validation_all_lung_tissues
             lung_high_level_tissue = fixtures.validation_lung_high_level
 
             original_tissues_cell_count = cell_count_cube.df[:, all_lung_tissues, human_ontology_id].n_cells.sum()
@@ -161,7 +161,7 @@ class Validation:
         with tiledb.open(self.expression_summary_path, "r") as cube:
             human_ontology_id = fixtures.validation_species_ontologies["human"]
             MALAT1_ont_id = fixtures.validation_gene_ontologies["MALAT1"]
-            all_lung_tissues = fixtures.validation_all_lung_tisuses
+            all_lung_tissues = fixtures.validation_all_lung_tissues
             lung_high_level_tissue = fixtures.validation_lung_high_level
 
             original_tissues_expression = cube.df[MALAT1_ont_id, :, all_lung_tissues, human_ontology_id]

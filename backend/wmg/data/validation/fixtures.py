@@ -32,7 +32,7 @@ validation_cell_types = {
 }
 validation_sex_ontologies = {"female": "PATO:0000383", "male": "PATO:0000384", "unknown": "unknown"}
 validation_lung_high_level = "UBERON:0002048"
-validation_all_lung_tisuses = [
+validation_lung_low_level = [
     "UBERON:0002048",
     "UBERON:0008951",
     "UBERON:0002174",
@@ -173,3 +173,4 @@ validation_all_lung_tisuses = [
     "UBERON:0018227",
     "UBERON:0008870",
 ]
+validation_all_lung_tissues = validation_lung_high_level + validation_lung_low_level
