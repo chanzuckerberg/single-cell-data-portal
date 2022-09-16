@@ -1,13 +1,13 @@
 import { Menu } from "@blueprintjs/core";
 import { Fragment, useEffect, useRef, useState } from "react";
 import {
-  CATEGORY_KEY,
+  CATEGORY_FILTER_ID,
   OnFilterFn,
-  OnUpdateSearchValueFn,
   SelectCategoryValueView,
 } from "src/components/common/Filter/common/entities";
-import FilterMenuItems from "src/components/common/Filter/components/FilterMenu/components/FilterMenuItems";
-import FilterViewSearch from "src/components/common/Filter/components/FilterViews/components/FilterViewSearch";
+import FilterMenuItems from "src/components/common/Filter/components/FilterContent/components/FilterMenu/components/FilterMenuItems";
+import FilterSearch from "src/components/common/Filter/components/FilterSearch";
+import { SetSearchValueFn } from "src/components/common/Filter/components/FilterSearch/common/useFilterSearch";
 import {
   MAX_DISPLAYABLE_MENU_ITEMS,
   MenuDivider,
@@ -17,12 +17,13 @@ import {
 } from "./style";
 
 interface Props {
-  categoryKey: CATEGORY_KEY;
+  categoryFilterId: CATEGORY_FILTER_ID;
   isMultiselect: boolean;
   isSearchable: boolean;
   onFilter: OnFilterFn;
-  onUpdateSearchValue: OnUpdateSearchValueFn;
   pinnedValues: SelectCategoryValueView[];
+  searchValue: string;
+  setSearchValue: SetSearchValueFn;
   unpinnedValues: SelectCategoryValueView[];
   values: SelectCategoryValueView[];
 }
@@ -30,18 +31,18 @@ interface Props {
 const ADDITIONAL_MENU_WIDTH = 8;
 
 export default function FilterMenu({
-  categoryKey,
+  categoryFilterId,
   isMultiselect,
   isSearchable,
   onFilter,
-  onUpdateSearchValue,
   pinnedValues,
+  searchValue,
+  setSearchValue,
   unpinnedValues,
   values,
 }: Props): JSX.Element {
   const menuRef = useRef<HTMLSpanElement>(null);
   const [menuWidth, setMenuWidth] = useState(0);
-  const [searchValue, setSearchValue] = useState<string>("");
   const filteredPinnedValues = filterCategoryValues(pinnedValues, searchValue);
   const filteredUnpinnedValues = filterCategoryValues(
     unpinnedValues,
@@ -69,8 +70,8 @@ export default function FilterMenu({
       <Menu>
         {/* Optional search bar */}
         {isSearchable && (
-          <FilterViewSearch
-            onUpdateSearchValue={onUpdateSearchValue}
+          <FilterSearch
+            searchValue={searchValue}
             setSearchValue={setSearchValue}
           />
         )}
@@ -86,7 +87,7 @@ export default function FilterMenu({
             {/* Pinned values */}
             {filteredPinnedValues.length > 0 && (
               <FilterMenuItems
-                categoryKey={categoryKey}
+                categoryFilterId={categoryFilterId}
                 isMultiselect={isMultiselect}
                 menuItems={filteredPinnedValues}
                 onFilter={onFilter}
@@ -96,7 +97,7 @@ export default function FilterMenu({
             {isMenuDivided && <MenuDivider />}
             {/* Unpinned values */}
             <FilterMenuItems
-              categoryKey={categoryKey}
+              categoryFilterId={categoryFilterId}
               isMultiselect={isMultiselect}
               menuItems={filteredUnpinnedValues}
               onFilter={onFilter}
@@ -112,15 +113,15 @@ export default function FilterMenu({
  * Returns filtered category values where category key includes search value.
  * @param categoryValues - Category value view models for a given category.
  * @param searchValue - Search string to filters category values.
- * @returns array of category values filtered by the given search value
+ * @returns array of category values filtered by the given search value.
  */
 function filterCategoryValues(
   categoryValues: SelectCategoryValueView[],
   searchValue: string
 ): SelectCategoryValueView[] {
   if (searchValue) {
-    return categoryValues.filter(({ key }) =>
-      key.toLowerCase().includes(searchValue)
+    return categoryValues.filter(({ categoryValueId }) =>
+      categoryValueId.toLowerCase().includes(searchValue)
     );
   }
   return categoryValues;

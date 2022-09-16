@@ -13,7 +13,6 @@ class TestDatasetSubmissions(TestCase):
         cls.incoming_curator_tag = "my_dataset.h5ad"
         cls.user_name = "user_name"
         cls.dataset_id = "12341234-1234-1234-1234-123412341234"
-        cls.dataset_id_in_s3 = f"{cls.dataset_id}.h5ad"
 
     def _test_missing_fields(self, **kwargs):
         s3_event = create_s3_event(**kwargs)
@@ -27,46 +26,24 @@ class TestDatasetSubmissions(TestCase):
         self._test_missing_fields(key=f"{self.user_name}/{self.collection_id}/{self.dataset_id}")
 
     def test__missing_collection_id__raises_error(self):
-        self._test_missing_fields(key=f"{self.user_name}/should_have_been_a_id/{self.incoming_curator_tag}")
+        self._test_missing_fields(key=f"{self.user_name}/should_have_been_a_id/{self.dataset_id}")
 
     def test__missing_username__raises_error(self):
         self._test_missing_fields(key=f"{self.collection_id}/{self.incoming_curator_tag}")
 
-    def test__bad_extension__raises_error(self):
-        self._test_missing_fields(key=f"{self.user_name}/{self.collection_id}/{self.dataset_id}$h5ad")
-
-    def _test_types(self):
-        types = [f"{self.incoming_curator_tag}", f"{self.dataset_id_in_s3}"]
-        for t in types:
-            with self.subTest(t):
-                s3_event = create_s3_event(key=f"{self.user_name}/{self.collection_id}/{t}")
-                with self.assertRaises(CorporaException):
-                    dataset_submissions_handler(s3_event, None)
-
-    @patch("backend.corpora.dataset_submissions.app.Collection.get")
-    def test__non_existent_collection__raises_error(self, mock_collection_get):
-        mock_collection_get.return_value = None
-        self._test_types()
+    @patch("backend.corpora.dataset_submissions.app.Dataset.get")
+    def test__nonexistent_dataset__raises_error(self, mock_dataset_get):
+        mock_dataset_get.return_value = None
+        s3_event = create_s3_event(key=f"{self.user_name}/{self.collection_id}/{self.dataset_id}")
+        with self.assertRaises(CorporaException):
+            dataset_submissions_handler(s3_event, None)
 
     @patch("backend.corpora.dataset_submissions.app.Dataset.get")
     def test__non_owner__raises_error(self, mock_dataset_get):
         mock_dataset_get.return_value = make_dataset_mock("now_owner", self.dataset_id)
-        self._test_types()
-
-    @patch("backend.corpora.dataset_submissions.app.Dataset.get_dataset_from_curator_tag")
-    def test__upload_new_tag__OK(self, mock_get_dataset_from_curator_tag: Mock):
-        """processing starts when a new dataset is upload using a curator tag."""
-        tag = self.incoming_curator_tag
-        mock_dataset = make_dataset_mock(self.user_name, self.dataset_id)
-        mock_get_dataset_from_curator_tag.return_value = mock_dataset
-        with self.subTest("owner"), patch("backend.corpora.dataset_submissions.app.upload") as mock_upload:
-            s3_event = create_s3_event(key=f"{self.user_name}/{self.collection_id}/{tag}")
+        s3_event = create_s3_event(key=f"{self.user_name}/{self.collection_id}/{self.dataset_id}")
+        with self.assertRaises(CorporaException):
             dataset_submissions_handler(s3_event, None)
-            mock_upload.assert_called()
-        with self.subTest("super"), patch("backend.corpora.dataset_submissions.app.upload") as mock_upload:
-            s3_event = create_s3_event(key=f"super/{self.collection_id}/{tag}")
-            dataset_submissions_handler(s3_event, None)
-            mock_upload.assert_called()
 
     @patch("backend.corpora.dataset_submissions.app.Dataset.get")
     def test__upload_new_by_dataset_id__Error(self, mock_get_dataset: Mock):
@@ -83,25 +60,11 @@ class TestDatasetSubmissions(TestCase):
         mock_dataset = make_dataset_mock(self.user_name, self.dataset_id)
         mock_get_dataset.return_value = mock_dataset
         with self.subTest("owner"), patch("backend.corpora.dataset_submissions.app.upload") as mock_upload:
-            s3_event = create_s3_event(key=f"{self.user_name}/{self.collection_id}/{self.dataset_id_in_s3}")
+            s3_event = create_s3_event(key=f"{self.user_name}/{self.collection_id}/{self.dataset_id}")
             dataset_submissions_handler(s3_event, None)
             mock_upload.assert_called()
         with self.subTest("super"), patch("backend.corpora.dataset_submissions.app.upload") as mock_upload:
-            s3_event = create_s3_event(key=f"super/{self.collection_id}/{self.dataset_id_in_s3}")
-            dataset_submissions_handler(s3_event, None)
-            mock_upload.assert_called()
-
-    @patch("backend.corpora.dataset_submissions.app.Dataset.get_dataset_from_curator_tag")
-    def test__upload_update_by_tag__OK(self, mock_get_dataset_from_curator_tag):
-        """processing starts when an update of a dataset is uploaded by its tag."""
-        mock_dataset = make_dataset_mock(self.user_name, self.dataset_id)
-        mock_get_dataset_from_curator_tag.return_value = mock_dataset
-        with self.subTest("owner"), patch("backend.corpora.dataset_submissions.app.upload") as mock_upload:
-            s3_event = create_s3_event(key=f"{self.user_name}/{self.collection_id}/{self.incoming_curator_tag}")
-            dataset_submissions_handler(s3_event, None)
-            mock_upload.assert_called()
-        with self.subTest("super"), patch("backend.corpora.dataset_submissions.app.upload") as mock_upload:
-            s3_event = create_s3_event(key=f"super/{self.collection_id}/{self.incoming_curator_tag}")
+            s3_event = create_s3_event(key=f"super/{self.collection_id}/{self.dataset_id}")
             dataset_submissions_handler(s3_event, None)
             mock_upload.assert_called()
 

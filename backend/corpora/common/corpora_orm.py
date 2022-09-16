@@ -334,7 +334,6 @@ class DbDataset(Base, AuditMixin, TimestampMixin):
     x_approximate_distribution = Column(Enum(XApproximateDistribution))
     mean_genes_per_cell = Column(Float, default=0.0)
     schema_version = Column(String)
-    curator_tag = Column(String)
     batch_condition = Column(ARRAY(String))
 
     # Relationships
@@ -344,9 +343,6 @@ class DbDataset(Base, AuditMixin, TimestampMixin):
         "DbDatasetProcessingStatus", back_populates="dataset", cascade="all, delete-orphan", uselist=False
     )
     genesets = relationship("DbGeneset", secondary="geneset_dataset_link", back_populates="datasets")
-
-    # Composite FK
-    __table_args__ = (UniqueConstraint("collection_id", "curator_tag", name="_dataset__collection_id_curator_tag"),)
 
     def to_dict(self, *args, **kwargs):
         kwargs["remove_attr"] = kwargs.get("remove_attr", []) + ["genesets"]
@@ -439,11 +435,13 @@ class ProcessingStatus(enum.Enum):
     """
     Enumerates the status of processing a dataset.
 
+    INITIALIZED = Dataset id created, and awaiting upload.
     PENDING = Processing has not started
-    SUCCESS - Processing succeeded
-    FAILURE - Processing failed
+    SUCCESS = Processing succeeded
+    FAILURE = Processing failed
     """
 
+    INITIALIZED = "INITIALIZED"
     PENDING = "PENDING"
     SUCCESS = "SUCCESS"
     FAILURE = "FAILURE"

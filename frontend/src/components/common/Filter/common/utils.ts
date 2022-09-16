@@ -2,9 +2,9 @@
 import { Ontology } from "src/common/entities";
 import {
   Categories,
-  OntologyCategoryKey,
+  CategoriesKeyOfTypeOntologyArray,
   OntologyNode,
-  OntologyView,
+  OntologyTermSet,
   ONTOLOGY_VIEW_KEY,
 } from "src/components/common/Filter/common/entities";
 
@@ -118,11 +118,13 @@ function listOntologyNodeIds(ontologyIds: Set<string>, node: OntologyNode) {
 
 /**
  * List all ontology IDs in the given ontology tree.
- * @param ontology - Ontology view model to list ontology IDs of.
+ * @param ontologyTermSet - Ontology view model to list ontology IDs of.
  * @returns Set of all ontology IDs present in the given ontology tree.
  */
-export function listOntologyTreeIds(ontology: OntologyView): Set<string> {
-  return Object.values(ontology).reduce((accum, node) => {
+export function listOntologyTreeIds(
+  ontologyTermSet: OntologyTermSet
+): Set<string> {
+  return Object.values(ontologyTermSet).reduce((accum, node) => {
     node.forEach((node) => listOntologyNodeIds(accum, node));
     return accum;
   }, new Set<string>());
@@ -130,13 +132,13 @@ export function listOntologyTreeIds(ontology: OntologyView): Set<string> {
 
 /**
  * Create function to be used by column.accessor in react-table column definition, for columns containing ontology
- * metadata (ontology label and key) values.
+ * metadata (ontology label) values.
  * @param categoryKey - Object key of value to display in cell.
- * @returns Function that returns value with the given key, to display in a cell.
+ * @returns Function that returns label of ontology value with the given key, to display in a cell.
  */
-export function ontologyCellAccessorFn(
-  categoryKey: OntologyCategoryKey
-): OntologyCellAccessorFn {
+export function ontologyLabelCellAccessorFn<
+  K extends CategoriesKeyOfTypeOntologyArray
+>(categoryKey: K): OntologyCellAccessorFn {
   return (categories: Categories) =>
     categories[categoryKey].map((o: Ontology) => o.label);
 }
