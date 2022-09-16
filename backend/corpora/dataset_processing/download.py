@@ -113,8 +113,9 @@ def updater(processing_status: DbDatasetProcessingStatus, tracker: ProgressTrack
         progress = tracker.progress()
         dataset = Dataset.get(db_session, processing_status.dataset_id, include_tombstones=True)
         if dataset.tombstone:
-            progress.tombstone = True
+            tracker.cancel()
             return
+
         elif tracker.stop_updater.is_set():
             if progress > 1:
                 tracker.stop_downloader.set()
