@@ -116,18 +116,6 @@ class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
         }
 
         test_environment["STEP_NAME"] = "download-validate"
-        with self.subTest("process step raises unknown exception with status dict"):
-            mock_process_download_validate.side_effect = Exception(
-                {"validation_status": ValidationStatus.INVALID, "validation_message": "Anndata could not open raw.h5ad"}
-            )
-            dataset = self.generate_dataset(self.session, collection_id="test_collection_id")
-            test_environment["DATASET_ID"] = dataset.id
-            with EnvironmentSetup(test_environment):
-                main()
-                expected_dataset = Dataset.get(self.session, test_environment["DATASET_ID"]).processing_status
-                self.assertEqual(expected_dataset.validation_status, ValidationStatus.INVALID)
-                self.assertEqual(expected_dataset.validation_message, "Anndata could not open raw.h5ad")
-
         with self.subTest("download-validate step raises unknown exception"):
             mock_process_download_validate.side_effect = Exception("unknown failure")
             dataset = self.generate_dataset(self.session, collection_id="test_collection_id")
