@@ -58,7 +58,7 @@ def load_data_and_create_cube(
         return snapshot_id, stats
 
 
-if __name__ == "__main__":
+def main():
     """
     To trigger the batch process in prod via the cli run
     AWS_PROFILE=single-cell-prod aws batch submit-job --job-name $JOB_NAME --job-queue dp-prod --job-definition dp-prod-prodstack-wmg-processing # noqa E501
@@ -70,9 +70,14 @@ if __name__ == "__main__":
         data = json.dumps(pipeline_success_message, indent=2)
         notify_slack(data)
     except Exception as e:
+        logger.exception("Pipeline failed")
         pipeline_failure_message = gen_wmg_pipeline_failure_message(
             f"Issue with cube creation pipeline: {e}. See logs for more detail"
         )
         data = format_failed_batch_issue_slack_alert(pipeline_failure_message)
         notify_slack(data)
+
+
+if __name__ == "__main__":
+    main()
     sys.exit()
