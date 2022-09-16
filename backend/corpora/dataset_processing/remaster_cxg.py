@@ -9,7 +9,7 @@ import time
 from packaging import version
 import psutil
 import tiledb
-
+import numpy as np
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -173,6 +173,51 @@ def evolve_obs(cxg, array_name="old_obs"):
             new_X.meta["cxg_schema"] = json.dumps(schema)
         tiledb.consolidate(f"{cxg}/new_obs")
 
+def _sort_by_primary_var_and_secondary_obs(data_dict):
+    ix = np.argsort(data_dict['var'])
+    x = data_dict['obs'][ix]
+    y = data_dict['var'][ix]    
+    d = data_dict[''][ix]
+
+    df = pd.DataFrame()
+    df["x"]=x
+    df["y"]=y
+    df["d"]=d
+
+    gb = df.groupby("y")
+
+    xs = []
+    ds = []
+    for k in gb.groups:
+        ix = np.argsort(x[gb.groups[k]])
+        xs.extend(x[gb.groups[k]][ix])
+        ds.extend(d[gb.groups[k]][ix])    
+    xs = np.array(xs)
+    ds = np.array(ds)
+    return xs,y,ds
+    
+def _sort_by_primary_obs_and_secondary_var(data_dict):
+    ix = np.argsort(data_dict['obs'])
+    x = data_dict['obs'][ix]
+    y = data_dict['var'][ix]    
+    d = data_dict[''][ix]
+
+    df = pd.DataFrame()
+    df["x"]=x
+    df["y"]=y
+    df["d"]=d
+
+    gb = df.groupby("x")
+
+    ys = []
+    ds = []
+    for k in gb.groups:
+        ix = np.argsort(y[gb.groups[k]])
+        ys.extend(y[gb.groups[k]][ix])
+        ds.extend(d[gb.groups[k]][ix])    
+    ys = np.array(ys)
+    ds = np.array(ds)
+    return x,ys,ds
 
 def evolve_X(**kwargs):
     """
@@ -229,12 +274,22 @@ def evolve_X(**kwargs):
             logger.info("created, starting to read...")
             with tiledb.open(f"{cxg}/{target_array}r", "w") as new_X_r:
                 with tiledb.open(f"{cxg}/{target_array}c", "w") as new_X_c:
+
                     i, chunk = 0, 200_000
                     while i < old_X.shape[0]:
+                        print(f"Row chunk {i}...")                        
                         dat = old_X[i : i + chunk]
-                        new_X_r[dat["obs"]] = {"var": dat["var"], "": dat[""]}
-                        new_X_c[dat["var"]] = {"obs": dat["obs"], "": dat[""]}
+                        obs,var,data = _sort_by_primary_obs_and_secondary_var(dat)                      
+                        new_X_r[obs] = {"var": var, "": data}
                         i += chunk
+
+                    i, chunk = 0, 2_000
+                    while i < old_X.shape[1]:
+                        print(f"Column chunk {i}...")
+                        dat = old_X[:,i : i + chunk]
+                        obs,var,data = _sort_by_primary_var_and_secondary_obs(dat)                                           
+                        new_X_c[var] = {"obs": obs, "": data}
+                        i += chunk                        
 
             logger.info("consolidating...")
             for suffix in ["r", "c"]:
