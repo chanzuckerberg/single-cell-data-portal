@@ -211,7 +211,7 @@ resource "aws_sfn_state_machine" "state_machine_seurat" {
 EOF
 }
 
-resource "aws_sfn_state_machine" "state_machine_cxg_remaster_v2" {
+resource "aws_sfn_state_machine" "state_machine_cxg_remaster" {
   name     = "dp-${var.deployment_stage}-${var.custom_stack_name}-cxg-remaster-v2-sfn"
   role_arn = var.role_arn
 
@@ -225,7 +225,7 @@ resource "aws_sfn_state_machine" "state_machine_cxg_remaster_v2" {
       "Resource": "arn:aws:states:::batch:submitJob.sync",
       "Parameters": {
         "JobDefinition": "${var.job_definition_arn}",
-        "JobName": "cxg_remaster_v2",
+        "JobName": "cxg_remaster",
         "JobQueue": "arn:aws:batch:us-west-2:699936264352:job-queue/dp-dev",
         "ContainerOverrides": {
           "Environment": [
@@ -235,7 +235,7 @@ resource "aws_sfn_state_machine" "state_machine_cxg_remaster_v2" {
             },
             {
               "Name": "STEP_NAME",
-              "Value": "cxg_remaster_v2"
+              "Value": "cxg_remaster"
             }
           ]
         }
