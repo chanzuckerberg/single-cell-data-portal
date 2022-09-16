@@ -17,12 +17,6 @@ export const Wrapper = styled.div`
   flex: 1;
   height: calc(100vh - ${HEADER_HEIGHT_PX}px - ${FOOTER_HEIGHT_PX}px);
   padding-bottom: ${WRAPPER_BOTTOM_OFFSET_PX}px;
-  & * {
-    outline: pink dotted 4px;
-    width: fit-content !important;
-    height: fit-content !important;
-    overflow: hidden !important;
-  }
 `;
 
 export const Gap = styled.div`

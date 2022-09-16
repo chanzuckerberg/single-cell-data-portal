@@ -283,7 +283,7 @@ export default function WheresMyGene(): JSX.Element {
         <ColorScale handleIsScaledChange={handleIsScaledChange} />
       </SideBar>
       <Button onClick={saveImage}>Save Image</Button>
-      <View id="view" hideOverflow>
+      <View id="view" overflow="hidden">
         <Wrapper>
           {isLoading && !shouldShowHeatMap && <Loader />}
 
