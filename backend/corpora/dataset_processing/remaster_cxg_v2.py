@@ -51,7 +51,7 @@ def process(dataset_id: str, cellxgene_bucket: str, prefix=None, dry_run=True, l
     # Let errors fail the pipeline
     subprocess.run(download_command, check=True)
     with tiledb.open(f"{local_path}/cxg_group_metadata", "r") as X:
-        if not X.meta.get("cxg_remastered_v0.3.0"):
+        if X.meta["cxg_version"] != "0.3.0":
             evolve_obs(local_path)
             increment_version(local_path)
 
@@ -123,7 +123,6 @@ def increment_version(cxg):
     """
     with tiledb.open(f"{cxg}/cxg_group_metadata", "w") as X:
         X.meta["cxg_version"] = "0.3.0"
-        X.meta["cxg_remastered_v0.3.0"] = True
 
 
 def evolve_obs(cxg, array_name="old_obs"):
