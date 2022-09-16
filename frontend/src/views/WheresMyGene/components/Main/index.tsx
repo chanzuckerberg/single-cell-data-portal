@@ -1,5 +1,3 @@
-import { Button } from "czifui";
-import { toPng } from "html-to-image";
 import Head from "next/head";
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { EMPTY_ARRAY, EMPTY_OBJECT } from "src/common/constants/utils";
@@ -21,17 +19,13 @@ import { SideBarPositioner, SideBarWrapper, Top, Wrapper } from "../../style";
 import Beta from "../Beta";
 import Filters from "../Filters";
 import GeneSearchBar from "../GeneSearchBar";
+import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../GeneSearchBar/components/SaveImage";
 import GetStarted from "../GetStarted";
 import HeatMap from "../HeatMap";
 import ColorScale from "../InfoPanel/components/ColorScale";
 import Legend from "../InfoPanel/components/Legend";
 import Loader from "../Loader";
 import { SideBarLabel } from "./style";
-
-const EXCLUDE_IN_SCREENSHOT_CLASS_NAME = "screenshot-exclude";
-const screenshotFilter = (domNode: HTMLElement): boolean => {
-  return !domNode.classList?.contains(EXCLUDE_IN_SCREENSHOT_CLASS_NAME);
-};
 
 export default function WheresMyGene(): JSX.Element {
   const state = useContext(StateContext);
@@ -241,28 +235,6 @@ export default function WheresMyGene(): JSX.Element {
 
   console.log(cellTypesByTissueName);
 
-  const saveImage = async () => {
-    try {
-      const heatmapNode = document.getElementById("view") as HTMLCanvasElement;
-      const imageURL = await toPng(heatmapNode, {
-        backgroundColor: "white",
-        clonedClassName: "CLONED",
-        filter: screenshotFilter,
-        style: {
-          width: "min-content",
-        },
-      });
-      const image = new Image();
-      image.src = imageURL;
-      image.style.border = "1px solid pink";
-      document.body.appendChild(image);
-
-      // download(imageURL, `CELLxGENE_gene_expression_${Date.now()}.png`);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
   return (
     <>
       <Head>
@@ -282,13 +254,16 @@ export default function WheresMyGene(): JSX.Element {
 
         <ColorScale handleIsScaledChange={handleIsScaledChange} />
       </SideBar>
-      <Button onClick={saveImage}>Save Image</Button>
+
       <View id="view" overflow="hidden">
         <Wrapper>
           {isLoading && !shouldShowHeatMap && <Loader />}
 
           <Top>
-            <GeneSearchBar className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME} />
+            <GeneSearchBar
+              className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}
+              selectedTissues={selectedTissues}
+            />
             <Legend isScaled={isScaled} />
           </Top>
 

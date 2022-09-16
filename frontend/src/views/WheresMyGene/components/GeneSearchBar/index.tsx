@@ -1,5 +1,5 @@
 import { Intent } from "@blueprintjs/core";
-import { LoadingIndicator } from "czifui";
+import { Button, LoadingIndicator } from "czifui";
 import React, { useCallback, useContext, useMemo } from "react";
 import { EVENTS } from "src/common/analytics/events";
 import { usePrimaryFilterDimensions } from "src/common/queries/wheresMyGene";
@@ -9,6 +9,7 @@ import { selectGenes, selectTissues } from "../../common/store/actions";
 import { Gene } from "../../common/types";
 import Organism from "./components/Organism";
 import QuickSelect from "./components/QuickSelect";
+import SaveImage from "./components/SaveImage";
 import { ActionWrapper, Container, LoadingIndicatorWrapper } from "./style";
 
 interface Tissue {
@@ -81,6 +82,10 @@ export default function GeneSearchBar({
     });
   }, []);
 
+  const copyGenes = useCallback(() => {
+    navigator.clipboard.writeText(selectedGenes.join(", "));
+  }, [selectedGenes]);
+
   return (
     <Container {...{ className }}>
       <ActionWrapper>
@@ -111,6 +116,11 @@ export default function GeneSearchBar({
           placeholder="Search or paste comma separated gene names"
           isLoading={isLoading}
           analyticsEvent={EVENTS.WMG_SELECT_GENE}
+        />
+        <Button onClick={copyGenes}>Copy Genes</Button>
+        <SaveImage
+          selectedTissues={selectedTissues}
+          selectedGenes={selectedGenes}
         />
 
         {isLoading && (
