@@ -173,4 +173,4 @@ validation_lung_low_level = [
     "UBERON:0018227",
     "UBERON:0008870",
 ]
-validation_all_lung_tissues = validation_lung_high_level + validation_lung_low_level
+validation_all_lung_tissues = [validation_lung_high_level] + validation_lung_low_level
