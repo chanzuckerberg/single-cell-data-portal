@@ -70,7 +70,7 @@ cd annotations  # navigate to newly created directory
 
 wget https://cellxgene-annotation-public.s3.us-west-2.amazonaws.com/cell_type/tutorial/minilung.h5ad  # retrieve sample dataset
 
-cellxgene annotate -i minilung.h5ad  -m https://cellxgene-annotation-public.s3.us-west-2.amazonaws.com/cell_type/models/hlca_20220728144320_venv.zip -o minilungAnnotated.h5ad --mlflow-env-manager venv --no-use-gpu --gene-column-name feature_name  # generate annotations
+cellxgene annotate minilung.h5ad  -m https://cellxgene-annotation-public.s3.us-west-2.amazonaws.com/cell_type/models/hlca_20220728144320_venv.zip -o minilungAnnotated.h5ad --mlflow-env-manager venv --no-use-gpu --gene-column-name feature_name  # generate annotations
 
 cellxgene launch minilungAnnotated.h5ad  # launch cellxgene explorer
 ```
