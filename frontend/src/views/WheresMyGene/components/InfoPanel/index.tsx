@@ -5,20 +5,13 @@ import RelativeGeneExpression from "./components/RelativeGeneExpression";
 import SourceData from "./components/SourceData";
 
 interface Props {
-  handleIsScaledChange: () => void;
   isScaled: boolean;
 }
 
-export default memo(function InfoPanel({
-  handleIsScaledChange,
-  isScaled,
-}: Props): JSX.Element {
+export default memo(function InfoPanel({ isScaled }: Props): JSX.Element {
   return (
     <>
-      <RelativeGeneExpression
-        isScaled={isScaled}
-        handleIsScaledChange={handleIsScaledChange}
-      />
+      <RelativeGeneExpression isScaled={isScaled} />
       <ExpressedInCells />
       <Methodology />
       <SourceData />
