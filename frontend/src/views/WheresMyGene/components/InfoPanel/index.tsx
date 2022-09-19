@@ -9,19 +9,11 @@ interface Props {
   isScaled: boolean;
 }
 
-export default memo(function InfoPanel({
-  handleIsScaledChange,
-  isScaled,
-}: Props): JSX.Element {
+export default memo(function InfoPanel(): JSX.Element {
   return (
     <>
-      <RelativeGeneExpression
-        isScaled={isScaled}
-        handleIsScaledChange={handleIsScaledChange}
-      />
-      <ExpressedInCells />
-      <Methodology />
       <SourceData />
+      <Methodology />
     </>
   );
 });

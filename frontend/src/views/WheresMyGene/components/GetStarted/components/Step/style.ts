@@ -1,28 +1,34 @@
 import styled from "@emotion/styled";
-import { fontBodyS, fontHeaderS, getColors } from "czifui";
+import { fontBodyS, fontCapsXxs, fontHeaderL, fontHeaderS, fontHeaderXl, getColors } from "czifui";
 
 export const Wrapper = styled.div`
-  display: flex;
   /* Number is 40px wide, gap: 16px, Content: 200px */
-  width: 256px;
   gap: 16px;
+  height: 100%;
+  // padding: 10px;
+
+  border-radius: 4px;
+
+  ${(props) => {
+    const colors = getColors(props);
+
+    return `
+      background: ${colors?.gray[200]};
+    `;
+  }}
 `;
 
 export const Content = styled.div`
-  width: 200px;
+
 `;
 
-export const Header = styled.h6`
-  ${fontHeaderS}
+export const Header = styled.span`
+  ${fontCapsXxs}
 
+  display: block;
+
+  padding: 24px 0 0 24px;
   margin-bottom: 8px;
-`;
-
-export const Details = styled.p`
-  ${fontBodyS}
-
-  letter-spacing: 0;
-  line-height: 18px;
 
   ${(props) => {
     const colors = getColors(props);
@@ -31,6 +37,16 @@ export const Details = styled.p`
       color: ${colors?.gray[500]};
     `;
   }}
+`;
+
+export const Details = styled.span`
+  ${fontHeaderL}
+
+  letter-spacing: 0;
+
+  padding-left: 24px;
+
+  color: black;
 `;
 
 export const Number = styled.span`

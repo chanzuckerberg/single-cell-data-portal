@@ -221,7 +221,7 @@ export default function WheresMyGene(): JSX.Element {
   const hasSelectedGenes = selectedGenes.length > 0;
 
   const shouldShowHeatMap = useMemo(() => {
-    return hasSelectedTissues || hasSelectedGenes;
+    return hasSelectedTissues;
   }, [hasSelectedTissues, hasSelectedGenes]);
 
   const shouldEnableSidebars = useMemo(() => {
@@ -263,6 +263,12 @@ export default function WheresMyGene(): JSX.Element {
 
           <Beta />
 
+          <GetStarted
+            tissueSelected={hasSelectedTissues}
+            isLoading={isLoading}
+            geneSelected={hasSelectedGenes}
+          />
+
           {shouldShowHeatMap ? (
             <HeatMap
               cellTypeSortBy={sortBy.cellTypes}
@@ -281,7 +287,7 @@ export default function WheresMyGene(): JSX.Element {
               scaledMeanExpressionMin={scaledMeanExpressionMin}
             />
           ) : (
-            <GetStarted />
+            ""
           )}
         </Wrapper>
       </View>

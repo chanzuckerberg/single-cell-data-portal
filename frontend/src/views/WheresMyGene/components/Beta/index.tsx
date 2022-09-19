@@ -6,7 +6,7 @@ export default function Beta(): JSX.Element {
     position: "absolute",
     bottom: "60px",
     right: "15px",
-    "z-index": "1",
+    "z-index": "10",
   } as React.CSSProperties;
 
   return (
