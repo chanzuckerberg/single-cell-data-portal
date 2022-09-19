@@ -1,7 +1,6 @@
 import json
 import os
 import unittest
-from backend.corpora.common.entities.dataset import Dataset
 
 from furl import furl
 
@@ -13,6 +12,8 @@ from backend.corpora.common.corpora_orm import (
     generate_id,
     DatasetArtifactFileType,
 )
+from backend.corpora.common.entities.dataset import Dataset
+from backend.corpora.common.utils.corpora_constants import CorporaConstants
 from backend.corpora.common.utils.db_helpers import processing_status_updater
 from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest, get_cxguser_token
 from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
@@ -271,7 +272,13 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
             user_submitted=True,
             s3_uri="s3://mock-bucket/mock-key.h5ad",
         )
-        dataset = self.generate_dataset(self.session, id="test_dataset", artifacts=[artifact_0, artifact_1])
+        artifact_2 = dict(
+            filename=CorporaConstants.ORIGINAL_H5AD_ARTIFACT_FILENAME,
+            filetype=DatasetArtifactFileType.H5AD,
+            user_submitted=True,
+            s3_uri="s3://mock-bucket/mock-key.h5ad",
+        )
+        dataset = self.generate_dataset(self.session, id="test_dataset", artifacts=[artifact_0, artifact_1, artifact_2])
 
         test_url = furl(path=f"/dp/v1/datasets/{dataset.id}/assets")
         headers = {"host": "localhost", "Content-Type": "application/json"}

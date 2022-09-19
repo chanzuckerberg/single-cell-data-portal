@@ -24,6 +24,7 @@ from ..corpora_orm import (
     DatasetArtifactFileType,
     ConversionStatus,
 )
+from ..utils.corpora_constants import CorporaConstants
 from ..utils.db_helpers import clone
 from ..utils.development_stage_ontology_mapping import development_stage_ontology_mapping
 from ..utils.tissue_ontology_mapping import tissue_ontology_mapping
@@ -160,7 +161,10 @@ class Dataset(Entity):
         """
         Retrieve all the assets for the dataset
         """
-        return self.artifacts
+        assets = [
+            asset for asset in self.artifacts if asset.filename != CorporaConstants.ORIGINAL_H5AD_ARTIFACT_FILENAME
+        ]
+        return assets
 
     @staticmethod
     def transform_sex_for_schema_2_0_0(dataset):
