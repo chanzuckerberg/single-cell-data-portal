@@ -22,7 +22,7 @@ import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { noop } from "src/common/constants/utils";
 import { Label } from "../../style";
-import { ButtonWrapper, StyledIconButton, StyledMenuItem } from "./style";
+import { ButtonWrapper, StyledButtonText, StyledIconButton, StyledMenuItem } from "./style";
 
 const MAX_ITEMS_TO_SHOW = 9.5;
 const LISTBOX_ITEM_HEIGHT_PX = 48;
@@ -93,6 +93,7 @@ interface Props<T, Multiple> {
   itemsByName: Map<string, T>;
   onItemNotFound?: (item: string) => void;
   label: string;
+  text: string;
   dataTestId: string;
   placeholder?: string;
   analyticsEvent: EVENTS;
@@ -112,6 +113,7 @@ export default function QuickSelect<
   itemsByName,
   onItemNotFound,
   label,
+  text,
   dataTestId,
   placeholder,
   analyticsEvent,
@@ -239,8 +241,12 @@ export default function QuickSelect<
           onClick={handleClick}
           sdsType="primary"
           sdsSize="medium"
+          sdsStyle="square"
         >
-          <Icon sdsIcon="plusCircle" sdsSize="s" sdsType="iconButton" />
+          <StyledButtonText>
+            <Icon sdsIcon="plus" sdsSize="s" sdsType="button" />
+          </StyledButtonText>
+           {text}
         </StyledIconButton>
       </ButtonWrapper>
       <Popper open={open} className={classes.popper} anchorEl={ref.current}>

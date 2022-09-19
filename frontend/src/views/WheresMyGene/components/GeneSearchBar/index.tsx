@@ -86,7 +86,8 @@ export default function GeneSearchBar(): JSX.Element {
           multiple
           selected={selectedTissueOptions}
           setSelected={handleSelectTissues}
-          label="Add Tissue"
+          label="Tissues"
+          text="Tissue"
           dataTestId="add-tissue"
           placeholder="Search"
           isLoading={isLoading}
@@ -100,7 +101,8 @@ export default function GeneSearchBar(): JSX.Element {
           multiple
           setSelected={handleSelectGenes}
           onItemNotFound={handleGeneNotFound}
-          label="Add Gene"
+          label="Genes"
+          text="Gene"
           dataTestId="add-gene"
           placeholder="Search or paste comma separated gene names"
           isLoading={isLoading}
