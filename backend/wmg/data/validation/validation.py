@@ -141,8 +141,10 @@ class Validation:
             rollup_tissues_cell_count = cell_count_cube.df[lung_high_level_tissue, :, human_ontology_id].n_cells.sum()
 
             if original_tissues_cell_count != rollup_tissues_cell_count:
-                logger.error(f"Tissue roll up error, cell counts for lung subparts ({original_tissues_cell_count}) "
-                             f"is not equal to cell counts for rolled-up lung ({rollup_tissues_cell_count})")
+                logger.error(
+                    f"Tissue roll up error, cell counts for lung subparts ({original_tissues_cell_count}) "
+                    f"is not equal to cell counts for rolled-up lung ({rollup_tissues_cell_count})"
+                )
 
     def validate_tissue_rollup_expression(self):
         """
@@ -174,8 +176,10 @@ class Validation:
             rollup_tissues_expression = rollup_tissues_expression.groupby("cell_type_ontology_term_id").sum()
 
             if not original_tissues_expression["sum"].equals(rollup_tissues_expression["sum"]):
-                logger.error(f"Tissue roll up error, cell expresion for lung subparts ({original_tissues_expression}) "
-                             f"is not equal to expression for rolled-up lung ({rollup_tissues_expression})")
+                logger.error(
+                    f"Tissue roll up error, cell expresion for lung subparts ({original_tissues_expression}) "
+                    f"is not equal to expression for rolled-up lung ({rollup_tissues_expression})"
+                )
 
     def validate_tissues_in_cube(self):
         with tiledb.open(self.expression_summary_path, "r") as cube:
