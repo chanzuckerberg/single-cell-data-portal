@@ -224,6 +224,7 @@ export default memo(function Filters(): JSX.Element {
             InputDropdownProps={InputDropdownProps}
           />
         </div>
+
         <Sort areFiltersDisabled={areFiltersDisabled} />
       </Wrapper>
     </TooltipWrapper>
