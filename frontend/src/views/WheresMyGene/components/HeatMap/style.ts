@@ -55,7 +55,6 @@ export const ChartWrapper = styled.div`
   flex-direction: column;
   position: absolute;
   top: 0;
-  /* background: white; */
 `;
 
 function xAxisWidth({ width }: { width: number }) {

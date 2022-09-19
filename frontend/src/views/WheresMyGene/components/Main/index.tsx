@@ -233,8 +233,6 @@ export default function WheresMyGene(): JSX.Element {
     setIsScaled((prevIsScaled) => !prevIsScaled);
   }, [setIsScaled]);
 
-  console.log(cellTypesByTissueName);
-
   return (
     <>
       <Head>

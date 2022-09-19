@@ -63,8 +63,6 @@ export default function SaveImage({
     }
   }, [fileType, selectedTissues]);
 
-  console.log(selectedTissues, selectedGenes);
-
   return (
     <>
       <ButtonWrapper>
