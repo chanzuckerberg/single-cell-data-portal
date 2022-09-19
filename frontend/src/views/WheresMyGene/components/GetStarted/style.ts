@@ -14,8 +14,7 @@ export const Wrapper = styled.div`
   top:150px;
   z-index: 3;
   margin-left: -10px;
-  width: calc(100vw - ${EXPANDED_WIDTH_PX}px);
-  height: calc(80vh - ${FOOTER_HEIGHT_PX}px);
+  width: calc(97vw - ${EXPANDED_WIDTH_PX}px);
 `;
 
 export const Content = styled.div`
@@ -24,14 +23,14 @@ export const Content = styled.div`
 `;
 
 export const ColumnOne = styled.div`
-  flex: 0 0 350px;
+  flex: 0 1 350px;
 
   display: flex;
   flex-direction: column;
 `;
 
 export const ColumnTwo = styled.div`
-  flex: 1 3;
+  flex: 1 2 calc(10vw);
 
   display: flex;
   flex-direction: column;
@@ -41,6 +40,7 @@ export const ColumnTwo = styled.div`
 export const StyledStepOne = styled.div`
   flex: 1;
   margin: 10px;
+  flex: 0 1 calc(76vh - ${FOOTER_HEIGHT_PX}px);
 `;
 
 

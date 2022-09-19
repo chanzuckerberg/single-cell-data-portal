@@ -1,20 +1,21 @@
 import styled from "@emotion/styled";
-import { fontBodyS, getFontWeights } from "czifui";
+import { fontBodyXxxs, getColors, getFontWeights } from "czifui";
 
 export const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
-  padding-top: 15px;
 `;
 
 export const Label = styled("span")`
-  ${fontBodyS};
+  ${fontBodyXxxs};
 
   ${(props) => {
+    const colors = getColors(props);
     const fontWeights = getFontWeights(props);
 
     return `
-      font-weight: ${fontWeights?.semibold};
+      color: ${colors?.gray["500"]};
+      font-weight: ${fontWeights?.medium};
     `;
   }}
 `;

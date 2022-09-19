@@ -224,10 +224,6 @@ export default function WheresMyGene(): JSX.Element {
     return hasSelectedTissues;
   }, [hasSelectedTissues, hasSelectedGenes]);
 
-  const shouldEnableSidebars = useMemo(() => {
-    return hasSelectedTissues && hasSelectedGenes;
-  }, [hasSelectedTissues, hasSelectedGenes]);
-
   const handleIsScaledChange = useCallback(() => {
     setIsScaled((prevIsScaled) => !prevIsScaled);
   }, [setIsScaled]);
@@ -243,11 +239,11 @@ export default function WheresMyGene(): JSX.Element {
         SideBarWrapperComponent={SideBarWrapper}
         SideBarPositionerComponent={SideBarPositioner}
         testId="filters-panel"
-        disabled={!shouldEnableSidebars}
-        forceToggle={shouldEnableSidebars}
+        disabled={false}
+        forceToggle={true}
         wmgSideBar
       >
-        <Filters />
+        <Filters isLoading={isLoading} />
 
         <ColorScale handleIsScaledChange={handleIsScaledChange} />
       </SideBar>

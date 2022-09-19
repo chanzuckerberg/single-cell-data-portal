@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { fontBodyXxs, getColors } from "czifui";
+import { fontBodyS, fontBodyXxs, getColors, getFontWeights } from "czifui";
 
 export const Container = styled.div`
   width: 80vw;
@@ -21,6 +21,18 @@ export const Label = styled.label`
       color: ${colors?.gray[500]}
     `;
   }}
+`;
+
+export const OrganismLabel = styled.label`
+  ${fontBodyS};
+
+  ${(props) => {
+    const fontWeights = getFontWeights(props);
+
+    return `
+      font-weight: ${fontWeights?.semibold};
+    `;
+  }};
 `;
 
 export const LoadingIndicatorWrapper = styled.div`

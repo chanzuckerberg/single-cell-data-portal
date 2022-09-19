@@ -23,7 +23,7 @@ export const FilterLabel = styled("label")`
 
     return `
       color: ${colors?.gray["500"]};
-      font-weight: ${fontWeights?.semibold};
+      font-weight: ${fontWeights?.medium};
     `;
   }}
 `;

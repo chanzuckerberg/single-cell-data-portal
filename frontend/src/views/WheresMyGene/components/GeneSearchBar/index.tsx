@@ -7,7 +7,6 @@ import Toast from "src/views/Collection/components/Toast";
 import { DispatchContext, StateContext } from "../../common/store";
 import { selectGenes, selectTissues } from "../../common/store/actions";
 import { Gene } from "../../common/types";
-import Organism from "./components/Organism";
 import QuickSelect from "./components/QuickSelect";
 import { ActionWrapper, Container, LoadingIndicatorWrapper } from "./style";
 
@@ -80,7 +79,6 @@ export default function GeneSearchBar(): JSX.Element {
   return (
     <Container>
       <ActionWrapper>
-        <Organism isLoading={isLoading} />
 
         <QuickSelect
           items={tissues}
