@@ -66,7 +66,7 @@ class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
 
     @patch("backend.corpora.dataset_processing.process_download_validate.download_from_source_uri")
     @patch("backend.corpora.dataset_processing.remaster_cxg.process")  # TODO: provide test data to properly test this.
-    def test_main(self, mock_rematser_cxg_process, mock_download_from_source_uri):
+    def test_main(self, mock_remaster_cxg_process, mock_download_from_source_uri):
         """
         Tests full pipeline for processing an uploaded H5AD file, including database updates
         generation and upload of all artifacts to S3 (localstack), but excluding the Dropbox download
@@ -101,7 +101,7 @@ class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
         test_environment["STEP_NAME"] = "cxg_remaster"
         with EnvironmentSetup(test_environment):
             main()
-            mock_rematser_cxg_process.assert_called()
+            mock_remaster_cxg_process.assert_called()
 
         # TODO: add assertions. See https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data-portal/1449 # noqa: E501
         # 1. H5AD has annotation labels added and uploaded to S3
@@ -120,18 +120,6 @@ class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
         }
 
         test_environment["STEP_NAME"] = "download-validate"
-        with self.subTest("process step raises unknown exception with status dict"):
-            mock_process_download_validate.side_effect = Exception(
-                {"validation_status": ValidationStatus.INVALID, "validation_message": "Anndata could not open raw.h5ad"}
-            )
-            dataset = self.generate_dataset(self.session, collection_id="test_collection_id")
-            test_environment["DATASET_ID"] = dataset.id
-            with EnvironmentSetup(test_environment):
-                main()
-                expected_dataset = Dataset.get(self.session, test_environment["DATASET_ID"]).processing_status
-                self.assertEqual(expected_dataset.validation_status, ValidationStatus.INVALID)
-                self.assertEqual(expected_dataset.validation_message, "Anndata could not open raw.h5ad")
-
         with self.subTest("download-validate step raises unknown exception"):
             mock_process_download_validate.side_effect = Exception("unknown failure")
             dataset = self.generate_dataset(self.session, collection_id="test_collection_id")

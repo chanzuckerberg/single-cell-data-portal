@@ -6,7 +6,7 @@ from uuid import uuid4
 
 import anndata
 import numpy as np
-from pandas import Series, DataFrame
+from pandas import Series, DataFrame, Categorical
 import tiledb
 
 from backend.corpora.common.utils.corpora_constants import CorporaConstants
@@ -170,6 +170,8 @@ class TestH5ADDataFile(unittest.TestCase):
         # Array locations
         metadata_array_location = f"{cxg_directory}/cxg_group_metadata"
         main_x_array_location = f"{cxg_directory}/X"
+        main_xr_array_location = f"{cxg_directory}/Xr"
+        main_xc_array_location = f"{cxg_directory}/Xc"
         embedding_array_location = f"{cxg_directory}/emb"
         specific_embedding_array_location = f"{self.sample_output_directory}/emb/awesome_embedding"
         obs_array_location = f"{cxg_directory}/obs"
@@ -179,7 +181,11 @@ class TestH5ADDataFile(unittest.TestCase):
         self.assertEqual(tiledb.object_type(cxg_directory), "group")
         self.assertEqual(tiledb.object_type(obs_array_location), "array")
         self.assertEqual(tiledb.object_type(var_array_location), "array")
-        self.assertEqual(tiledb.object_type(main_x_array_location), "array")
+        if is_sparse:
+            self.assertEqual(tiledb.object_type(main_xr_array_location), "array")
+            self.assertEqual(tiledb.object_type(main_xc_array_location), "array")
+        else:
+            self.assertEqual(tiledb.object_type(main_x_array_location), "array")
         self.assertEqual(tiledb.object_type(embedding_array_location), "group")
         self.assertEqual(tiledb.object_type(specific_embedding_array_location), "array")
 
@@ -190,16 +196,31 @@ class TestH5ADDataFile(unittest.TestCase):
         # Validate obs index
         with tiledb.open(obs_array_location, mode="r") as obs_array:
             expected_index_data = anndata_object.obs.index.to_numpy()
-            index_name = json.loads(obs_array.meta["cxg_schema"])["index"]
+            obs_array_schema = json.loads(obs_array.meta["cxg_schema"])
+            index_name = obs_array_schema["index"]
             actual_index_data = obs_array.query(attrs=[index_name])[:][index_name]
             self.assertTrue(np.array_equal(expected_index_data, actual_index_data))
 
             # Validate obs columns
             expected_columns = list(anndata_object.obs.columns.values)
             for column_name in expected_columns:
-                expected_data = anndata_object.obs[column_name].to_numpy()
-                actual_data = obs_array.query(attrs=[column_name])[:][column_name]
-                self.assertTrue(np.array_equal(expected_data, actual_data))
+                if obs_array_schema.get(column_name, {}).get("type", "") == "categorical":
+                    categories = obs_array_schema[column_name]["categories"]
+                    mapping = dict(zip(range(len(categories)), categories))
+                    # Validate values
+                    expected_data = anndata_object.obs[column_name].to_numpy()
+                    actual_data = obs_array.query(attrs=[column_name])[:][column_name]
+                    actual_data = np.array([mapping[i] for i in actual_data], dtype=expected_data.dtype)
+                    self.assertTrue(np.array_equal(expected_data, actual_data))
+
+                    # Validate codes
+                    expected_data = Categorical(anndata_object.obs[column_name].to_numpy()).codes
+                    actual_data = obs_array.query(attrs=[column_name])[:][column_name]
+                    self.assertTrue(np.array_equal(expected_data, actual_data))
+                else:
+                    expected_data = anndata_object.obs[column_name].to_numpy()
+                    actual_data = obs_array.query(attrs=[column_name])[:][column_name]
+                    self.assertTrue(np.array_equal(expected_data, actual_data))
 
         # Validate var index
         with tiledb.open(var_array_location, mode="r") as var_array:
@@ -222,13 +243,28 @@ class TestH5ADDataFile(unittest.TestCase):
             self.assertTrue(np.array_equal(expected_embedding_data, actual_embedding_data))
 
         # Validate X matrix if not column shifted
-        if not has_column_encoding:
+        if not has_column_encoding and not is_sparse:
             expected_x_data = anndata_object.X
             with tiledb.open(main_x_array_location, mode="r") as x_array:
                 if is_sparse:
-                    actual_x_data = np.reshape(x_array[:, :][""], expected_x_data.shape)
+                    actual_x_data = np.zeros_like(expected_x_data)
+                    data = x_array[:]
+                    actual_x_data[data["obs"], data["var"]] = data[""]
                 else:
                     actual_x_data = x_array[:, :]
+                self.assertTrue(np.array_equal(expected_x_data, actual_x_data))
+        elif not has_column_encoding:
+            expected_x_data = anndata_object.X
+            with tiledb.open(main_xr_array_location, mode="r") as x_array:
+                actual_x_data = np.zeros_like(expected_x_data)
+                data = x_array[:]
+                actual_x_data[data["obs"], data["var"]] = data[""]
+                self.assertTrue(np.array_equal(expected_x_data, actual_x_data))
+
+            with tiledb.open(main_xc_array_location, mode="r") as x_array:
+                actual_x_data = np.zeros_like(expected_x_data)
+                data = x_array[:]
+                actual_x_data[data["obs"], data["var"]] = data[""]
                 self.assertTrue(np.array_equal(expected_x_data, actual_x_data))
 
     def _validate_cxg_var_index_column_match(self, cxg_directory, expected_index_name):
