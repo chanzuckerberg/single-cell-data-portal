@@ -12,7 +12,7 @@ from backend.corpora.common.utils.cxg_generation_utils import (
     convert_dictionary_to_cxg_group,
     convert_dataframe_to_cxg_array,
     convert_ndarray_to_cxg_dense_array,
-    convert_matrix_to_cxg_array,
+    convert_matrices_to_cxg_arrays,
 )
 from tests.unit.backend.corpora.fixtures.environment_setup import fixture_file_path
 
@@ -80,44 +80,46 @@ class TestCxgGenerationUtils(unittest.TestCase):
         self.assertTrue(isinstance(actual_stored_array, tiledb.DenseArray))
         self.assertTrue((actual_stored_array[:, :] == ndarray).all())
 
-    def test__convert_matrix_to_cxg_array__dense_array_writes_successfully(self):
+    def test__convert_matrices_to_cxg_arrays__dense_array_writes_successfully(self):
         matrix = np.float32(np.random.rand(3, 2))
         matrix_name = f"{self.testing_cxg_temp_directory}/awesome_matrix_{uuid4()}"
 
-        convert_matrix_to_cxg_array(matrix_name, matrix, False, tiledb.Ctx())
-
+        convert_matrices_to_cxg_arrays(matrix_name, matrix, False, tiledb.Ctx())
         actual_stored_array = tiledb.open(matrix_name)
-
         self.assertTrue(path.isdir(matrix_name))
         self.assertTrue(isinstance(actual_stored_array, tiledb.DenseArray))
         self.assertTrue((actual_stored_array[:, :] == matrix).all())
 
-    def test__convert_matrix_to_cxg_array__sparse_array_only_store_nonzeros_empty_array(self):
+    def test__convert_matrices_to_cxg_arrays__sparse_array_only_store_nonzeros_empty_array(self):
         matrix = np.zeros([3, 2])
         matrix_name = f"{self.testing_cxg_temp_directory}/awesome_zero_matrix_{uuid4()}"
 
-        convert_matrix_to_cxg_array(matrix_name, matrix, True, tiledb.Ctx())
+        convert_matrices_to_cxg_arrays(matrix_name, matrix, True, tiledb.Ctx())
 
-        actual_stored_array = tiledb.open(matrix_name)
+        for suffix in ["r", "c"]:
+            actual_stored_array = tiledb.open(matrix_name + suffix)
+            self.assertTrue(path.isdir(matrix_name + suffix))
+            self.assertTrue(isinstance(actual_stored_array, tiledb.SparseArray))
+            self.assertTrue(actual_stored_array[:][""].size == 0)
 
-        self.assertTrue(path.isdir(matrix_name))
-        self.assertTrue(isinstance(actual_stored_array, tiledb.SparseArray))
-        self.assertTrue(actual_stored_array[:, :][""].size == 0)
-
-    def test__convert_matrix_to_cxg_array__sparse_array_only_store_nonzeros(self):
+    def test__convert_matrices_to_cxg_arrays__sparse_array_only_store_nonzeros(self):
         matrix = np.zeros([3, 3])
         matrix[0, 0] = 1
         matrix[1, 1] = 1
         matrix[2, 2] = 2
         matrix_name = f"{self.testing_cxg_temp_directory}/awesome_sparse_matrix_{uuid4()}"
 
-        convert_matrix_to_cxg_array(matrix_name, matrix, True, tiledb.Ctx())
+        convert_matrices_to_cxg_arrays(matrix_name, matrix, True, tiledb.Ctx())
 
-        actual_stored_array = tiledb.open(matrix_name)
+        def get_value_at_coord(array, coord, attr):
+            x, y = coord
+            return array[x][""][array[x][attr] == y][0]
 
-        self.assertTrue(path.isdir(matrix_name))
-        self.assertTrue(isinstance(actual_stored_array, tiledb.SparseArray))
-        self.assertTrue(actual_stored_array[0, 0][""] == 1)
-        self.assertTrue(actual_stored_array[1, 1][""] == 1)
-        self.assertTrue(actual_stored_array[2, 2][""] == 2)
-        self.assertTrue(actual_stored_array[:, :][""].size == 3)
+        for suffix, attr_dim in zip(["r", "c"], ["var", "obs"]):
+            actual_stored_array = tiledb.open(matrix_name + suffix)
+            self.assertTrue(path.isdir(matrix_name + suffix))
+            self.assertTrue(isinstance(actual_stored_array, tiledb.SparseArray))
+            self.assertTrue(get_value_at_coord(actual_stored_array, (0, 0), attr_dim) == 1)
+            self.assertTrue(get_value_at_coord(actual_stored_array, (1, 1), attr_dim) == 1)
+            self.assertTrue(get_value_at_coord(actual_stored_array, (2, 2), attr_dim) == 2)
+            self.assertTrue(actual_stored_array[:][""].size == 3)
