@@ -31,7 +31,7 @@ export interface State {
    * FE needs refresh the queries
    */
   snapshotId: string | null;
-  sortBy: { cellTypes: SORT_BY; genes: SORT_BY };
+  sortBy: { cellTypes: SORT_BY; genes: SORT_BY; scaled: SORT_BY };
 }
 
 // (thuang): If you have derived states based on the state, use `useMemo`
@@ -45,7 +45,11 @@ export const INITIAL_STATE: State = {
   selectedOrganismId: null,
   selectedTissues: [],
   snapshotId: null,
-  sortBy: { cellTypes: SORT_BY.CELL_ONTOLOGY, genes: SORT_BY.USER_ENTERED },
+  sortBy: {
+    cellTypes: SORT_BY.CELL_ONTOLOGY,
+    genes: SORT_BY.USER_ENTERED,
+    scaled: SORT_BY.COLOR_SCALED,
+  },
 };
 
 export const REDUCERS = {
