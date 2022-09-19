@@ -8,7 +8,7 @@ export const Wrapper = styled.div`
 `;
 
 export const Label = styled("span")`
-  ${fontBodyS};
+  ${fontBodyS}
 
   ${(props) => {
     const fontWeights = getFontWeights(props);
