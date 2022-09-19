@@ -5,7 +5,6 @@ import RelativeGeneExpression from "./components/RelativeGeneExpression";
 import SourceData from "./components/SourceData";
 
 interface Props {
-  handleIsScaledChange: () => void;
   isScaled: boolean;
 }
 

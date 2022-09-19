@@ -1,9 +1,9 @@
 from flask import jsonify, g
-from .common import reshape_for_curation_api_and_is_allowed, add_collection_level_processing_status
-from .common import EntityColumns
-from ...authorization import is_super_curator
-from ......common.corpora_orm import CollectionVisibility, DbCollection
-from ......common.utils.http_exceptions import UnauthorizedError
+from .common import reshape_for_curation_api
+from ...authorization import is_super_curator, owner_or_allowed
+from ...collection import create_collection_common, curation_get_normalized_doi_url
+from ......common.corpora_orm import CollectionVisibility, DbCollection, ProjectLinkType
+from ......common.utils.http_exceptions import ForbiddenHTTPException, InvalidParametersHTTPException
 from backend.corpora.api_server.db import dbconnect
 
 
@@ -18,23 +18,42 @@ def get(visibility: str, token_info: dict, curator: str = None):
     @return: Response
     """
     filters = [DbCollection.tombstone == False]  # noqa
-
-    if visibility == CollectionVisibility.PRIVATE.name and not token_info:
-        raise UnauthorizedError()
-    elif visibility:
+    if visibility:
         filters.append(DbCollection.visibility == getattr(CollectionVisibility, visibility))
+        if visibility == CollectionVisibility.PRIVATE.name:
+            if not token_info:
+                raise ForbiddenHTTPException(detail="Not authorized to query for PRIVATE collection.")
+            else:
+                owner_filter = owner_or_allowed(token_info)
+                if owner_filter:  # None means the user is a super curator and don't need to filter by owner.
+                    filters.append(DbCollection.owner == owner_filter)
 
-    if curator and not is_super_curator(token_info):
-        raise UnauthorizedError()
-    elif curator:  # user want collections from a specific curator
-        filters.append(DbCollection.curator_name == curator)
+    if curator:
+        if not is_super_curator(token_info):
+            raise ForbiddenHTTPException(detail="Not authorized to use the curator query parameter.")
+        else:
+            filters.append(DbCollection.curator_name == curator)
 
     db_session = g.db_session
     resp_collections = []
     for collection in db_session.query(DbCollection).filter(*filters).all():
-        resp_collection = collection.to_dict_keep(EntityColumns.columns_for_collections)
-        resp_collection["processing_status"] = add_collection_level_processing_status(collection)
-        if reshape_for_curation_api_and_is_allowed(db_session, resp_collection, token_info, preview=True):
-            resp_collections.append(resp_collection)
+        resp_collection = reshape_for_curation_api(db_session, collection, token_info, preview=True)
+        resp_collections.append(resp_collection)
 
-    return jsonify({"collections": resp_collections})
+    return jsonify(resp_collections)
+
+
+def post(body: dict, user: str):
+    errors = []
+    doi_url = None
+    if doi := body.get("doi"):
+        if doi_url := curation_get_normalized_doi_url(doi, errors):
+            links = body.get("links", [])
+            links.append({"link_type": ProjectLinkType.DOI.name, "link_url": doi_url})
+            body["links"] = links
+    try:
+        return create_collection_common(body, user, doi_url, errors)
+    except InvalidParametersHTTPException as ex:
+        ex.ext = dict(invalid_parameters=ex.detail)
+        ex.detail = InvalidParametersHTTPException._default_detail
+        raise ex

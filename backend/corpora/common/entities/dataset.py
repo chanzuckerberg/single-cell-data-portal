@@ -25,7 +25,8 @@ from ..corpora_orm import (
     ConversionStatus,
 )
 from ..utils.db_helpers import clone
-from ..utils.ontology_mapping import ontology_mapping
+from ..utils.development_stage_ontology_mapping import development_stage_ontology_mapping
+from ..utils.tissue_ontology_mapping import tissue_ontology_mapping
 from ..utils.s3_buckets import buckets
 
 
@@ -89,26 +90,18 @@ class Dataset(Entity):
 
     @classmethod
     def get(
-        cls, session: Session, dataset_id=None, include_tombstones=False, collection_id=None, curator_tag=None
+        cls, session: Session, dataset_id=None, include_tombstones=False, collection_id=None
     ) -> typing.Optional["Dataset"]:
-        if not (dataset_id or (curator_tag and collection_id)):
-            raise ValueError("Not enough information to query")
         filters = []
         if not include_tombstones:
             filters.append(cls.table.tombstone != True)  # noqa
         if collection_id:
             filters.append(cls.table.collection_id == collection_id)
-        if curator_tag:
-            filters.append(cls.table.curator_tag == curator_tag)
         if dataset_id:
             filters.append(cls.table.id == dataset_id)
         result = session.query(cls.table).filter(*filters).one_or_none()
         dataset = cls(result) if result else None
         return dataset
-
-    @classmethod
-    def get_dataset_from_curator_tag(cls, session: Session, collection_id, curator_tag, **kwargs) -> "Dataset":
-        return cls.get(session, collection_id=collection_id, curator_tag=curator_tag, **kwargs)
 
     @classmethod
     def get_by_explorer_url(cls, session: Session, explorer_url):
@@ -183,19 +176,32 @@ class Dataset(Entity):
 
     @staticmethod
     def enrich_development_stage_with_ancestors(dataset):
-        if "development_stage" not in dataset:
+        Dataset._enrich_with_ancestors(dataset, "development_stage", development_stage_ontology_mapping)
+
+    @staticmethod
+    def enrich_tissue_with_ancestors(dataset):
+        """
+        Tag dataset with ancestors for all tissues in the given dataset, if any.
+        """
+        Dataset._enrich_with_ancestors(dataset, "tissue", tissue_ontology_mapping)
+
+    def _enrich_with_ancestors(dataset, key, ontology_mapping):
+        """
+        Tag dataset with ancestors for all values of the given key, if any.
+        """
+        if key not in dataset:
             return
 
-        leaves = [e["ontology_term_id"] for e in dataset["development_stage"]]
+        terms = [e["ontology_term_id"] for e in dataset[key]]
 
-        if not leaves:
+        if not terms:
             return
 
-        ancestors = [ontology_mapping.get(leaf) for leaf in leaves]
+        ancestors = [ontology_mapping.get(term) for term in terms]
         flattened_ancestors = [item for sublist in ancestors if sublist for item in sublist]
         unique_ancestors = list(OrderedDict.fromkeys(flattened_ancestors))
         if unique_ancestors:
-            dataset["development_stage_ancestors"] = unique_ancestors
+            dataset[f"{key}_ancestors"] = unique_ancestors
 
     def _create_new_explorer_url(self, new_id: str) -> str:
         if self.explorer_url is None:

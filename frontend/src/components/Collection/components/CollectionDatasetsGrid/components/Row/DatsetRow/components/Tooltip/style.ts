@@ -1,5 +1,5 @@
+import styled from "@emotion/styled";
 import { fontStyle } from "src/components/common/theme";
-import styled from "styled-components";
 
 export const StyledAnchor = styled.a`
   ${fontStyle}

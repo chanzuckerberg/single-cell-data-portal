@@ -5,10 +5,10 @@ import {
   MenuItem,
 } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
+import styled from "@emotion/styled";
 import DropboxChooser, {
   Props as ChooserProps,
 } from "src/components/DropboxChooser";
-import styled from "styled-components";
 import DeleteDataset from "../../../DeleteDataset";
 
 const DeleteButton = (props: IMenuItemProps) => {

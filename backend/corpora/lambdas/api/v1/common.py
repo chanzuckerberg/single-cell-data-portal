@@ -21,13 +21,11 @@ def get_collection_else_forbidden(db_session, collection_id, **kwargs):
 def delete_dataset_common(db_session: Session, dataset: Dataset, token_info: dict):
     if not dataset:
         raise ForbiddenHTTPException()
-    collection = Collection.get_collection(
+    get_collection_else_forbidden(
         db_session,
         dataset.collection.id,
         owner=owner_or_allowed(token_info),
     )
-    if not collection:
-        raise ForbiddenHTTPException()
     if dataset.collection.visibility == CollectionVisibility.PUBLIC:
         raise MethodNotAllowedException(detail="Cannot delete a public Dataset")
     if dataset.tombstone is False:
@@ -42,11 +40,12 @@ def delete_dataset_common(db_session: Session, dataset: Dataset, token_info: dic
             dataset.delete()  # Delete the dataset row.
 
 
-def get_dataset_else_error(db_session, dataset_id, collection_id, curator_tag, **kwargs) -> Dataset:
+def get_dataset_else_error(db_session, dataset_id, collection_id, **kwargs) -> Dataset:
     try:
-        dataset = Dataset.get(db_session, dataset_id, collection_id=collection_id, curator_tag=curator_tag, **kwargs)
+        dataset = Dataset.get(db_session, dataset_id, **kwargs)
     except ValueError:
         raise InvalidParametersHTTPException()
     if not dataset:
+        get_collection_else_forbidden(db_session, collection_id)  # if dataset not found, check if the collection exists
         raise NotFoundHTTPException(detail="Dataset not found.")
     return dataset

@@ -6,7 +6,15 @@ from sqlalchemy.orm import Session
 from . import Dataset
 from .entity import Entity
 from .geneset import Geneset
-from ..corpora_orm import CollectionLinkType, DbCollection, DbCollectionLink, CollectionVisibility, generate_id
+from ..corpora_orm import (
+    CollectionLinkType,
+    DbCollection,
+    DbCollectionLink,
+    CollectionVisibility,
+    generate_id,
+    ProjectLinkType,
+    DbProjectLink,
+)
 from ..utils.db_helpers import clone
 
 
@@ -192,6 +200,7 @@ class Collection(Entity):
             Dataset.transform_organism_for_schema_2_0_0(result)
             Dataset.transform_sex_for_schema_2_0_0(result)
             Dataset.enrich_development_stage_with_ancestors(result)
+            Dataset.enrich_tissue_with_ancestors(result)
 
         return results
 
@@ -339,6 +348,35 @@ class Collection(Entity):
                 self.session.delete(link)
 
         new_objs = [DbCollectionLink(collection_id=self.id, **link) for link in links]
+        self.session.add_all(new_objs)
+
+        super().update(**kwargs)
+
+    def update_curation(self, links: list = None, keep_links=False, **kwargs) -> None:
+        """
+        Update an existing collection to match provided the parameters. The specified columns are replaced. The DOI is
+        handled as a link for legacy reasons (for consistency with Corpora API), but independently of the other links.
+        :param links: links to create and connect to the collection. If present, the existing attached entries will
+         be removed and replaced with new entries.
+        :param keep_links: boolean - whether or not links need to be preserved. Links are preserved if True.
+        :param kwargs: Any other fields in the dataset that will be replaced.
+        """
+        new_links = links if links else []
+
+        if not keep_links:
+            for old_link in self.links:
+                if old_link.link_type != ProjectLinkType.DOI:
+                    self.session.delete(old_link)
+
+        for new_link in new_links:
+            if new_link["link_type"] == ProjectLinkType.DOI.name:
+                # A new DOI is being introduced so we delete existing DOI(s)
+                self.session.query(DbCollectionLink).filter(
+                    DbProjectLink.collection_id == self.id, DbCollectionLink.link_type == ProjectLinkType.DOI
+                ).delete()
+                break
+
+        new_objs = [DbCollectionLink(collection_id=self.id, **link) for link in new_links]
         self.session.add_all(new_objs)
 
         super().update(**kwargs)

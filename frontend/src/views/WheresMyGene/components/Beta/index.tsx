@@ -1,7 +1,11 @@
 import { noop } from "src/common/constants/utils";
 import { StyledNotification, SubmitIssue } from "./style";
 
-export default function Beta(): JSX.Element {
+export default function Beta({
+  className,
+}: {
+  className?: string;
+}): JSX.Element {
   const position = {
     position: "absolute",
     bottom: "60px",
@@ -16,7 +20,7 @@ export default function Beta(): JSX.Element {
       dismissDirection="left"
       onClose={noop}
       style={position}
-      className="elevated"
+      className={"elevated " + className}
     >
       This feature is in beta. We would appreciate your feedback, please fill
       out a{" "}

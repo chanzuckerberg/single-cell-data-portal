@@ -1,6 +1,6 @@
 import { Icon } from "@blueprintjs/core";
+import styled from "@emotion/styled";
 import { GRAY, RED } from "src/components/common/theme";
-import styled from "styled-components";
 
 interface Props {
   warning?: boolean;

@@ -1,20 +1,14 @@
 #!/usr/bin/env python3
-import logging
+import os
+import subprocess
 
+from backend.corpora.common.entities import DatasetAsset
 from backend.corpora.common.entities.dataset import Dataset
 from backend.corpora.common.utils.db_session import db_session_manager
-from backend.corpora.dataset_processing.process import (
-    convert_file_ignore_exceptions,
-    download_from_s3,
-    make_seurat,
-    create_artifact,
-    get_bucket_prefix,
-    replace_artifact,
-)
+from backend.corpora.dataset_processing.logger import logger
+from backend.corpora.dataset_processing.common import create_artifact, download_from_s3, convert_file, get_bucket_prefix
 from datetime import datetime
 
-logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
 
 from backend.corpora.common.corpora_orm import ConversionStatus, DatasetArtifactFileType
 
@@ -26,8 +20,6 @@ def process(dataset_id: str, artifact_bucket: str):
     3. Upload the Seurat file to the artifact bucket
     :param artifact_bucket:
     :param dataset_id:
-    :param labeled_h5ad_filename:
-    :param local_filename:
     :return:
     """
 
@@ -58,7 +50,7 @@ def process(dataset_id: str, artifact_bucket: str):
             object_key = f"{bucket_prefix}/{labeled_h5ad_filename}"
             download_from_s3(artifact_bucket, object_key, labeled_h5ad_filename)
 
-            seurat_filename = convert_file_ignore_exceptions(
+            seurat_filename = convert_file(
                 make_seurat,
                 labeled_h5ad_filename,
                 "Failed to convert dataset to Seurat format.",
@@ -82,7 +74,7 @@ def process(dataset_id: str, artifact_bucket: str):
             object_key = f"{bucket_prefix}/{labeled_h5ad_filename}"
             download_from_s3(artifact_bucket, object_key, labeled_h5ad_filename)
 
-            seurat_filename = convert_file_ignore_exceptions(
+            seurat_filename = convert_file(
                 make_seurat,
                 labeled_h5ad_filename,
                 "Failed to convert dataset to Seurat format.",
@@ -101,7 +93,7 @@ def process(dataset_id: str, artifact_bucket: str):
             object_key = f"{bucket_prefix}/{labeled_h5ad_filename}"
             download_from_s3(artifact_bucket, object_key, labeled_h5ad_filename)
 
-            seurat_filename = convert_file_ignore_exceptions(
+            seurat_filename = convert_file(
                 make_seurat,
                 labeled_h5ad_filename,
                 "Failed to convert dataset to Seurat format.",
@@ -126,7 +118,7 @@ def process(dataset_id: str, artifact_bucket: str):
             object_key = f"{bucket_prefix}/{labeled_h5ad_filename}"
             download_from_s3(artifact_bucket, object_key, labeled_h5ad_filename)
 
-            seurat_filename = convert_file_ignore_exceptions(
+            seurat_filename = convert_file(
                 make_seurat,
                 labeled_h5ad_filename,
                 "Failed to convert dataset to Seurat format.",
@@ -138,3 +130,33 @@ def process(dataset_id: str, artifact_bucket: str):
                 replace_artifact(seurat_filename, bucket_prefix, artifact_bucket)
                 rds_artifact = rds_artifacts[0]  # Only one RDS artifact for dataset will ever exist
                 rds_artifact.updated_at = datetime.utcnow()
+
+
+def make_seurat(local_filename):
+    """Create a Seurat rds file from the AnnData file."""
+
+    try:
+        subprocess.run(
+            [
+                "Rscript",
+                os.path.join(os.path.abspath(os.path.dirname(__file__)), "make_seurat.R"),
+                local_filename,
+            ],
+            capture_output=True,
+            check=True,
+        )
+    except subprocess.CalledProcessError as ex:
+        msg = f"Seurat conversion failed: {ex.output} {ex.stderr}"
+        logger.exception(msg)
+        raise RuntimeError(msg) from ex
+
+    return local_filename.replace(".h5ad", ".rds")
+
+
+def replace_artifact(
+    file_name: str,
+    bucket_prefix: str,
+    artifact_bucket: str,
+):
+    logger.info(f"Uploading [{bucket_prefix}/{file_name}] to S3 bucket: [{artifact_bucket}].")
+    DatasetAsset.upload(file_name, bucket_prefix, artifact_bucket)

@@ -1,5 +1,5 @@
+import styled from "@emotion/styled";
 import { GRAY, PT_TEXT_COLOR } from "src/components/common/theme";
-import styled from "styled-components";
 
 export const Grid = styled.table`
   display: grid;
@@ -26,6 +26,7 @@ export const Grid = styled.table`
   th,
   td {
     border: none;
+    font-feature-settings: normal; /* required; overrides layout.css specification */
     font-size: 14px;
     letter-spacing: -0.1px;
     line-height: 18px;
@@ -34,6 +35,7 @@ export const Grid = styled.table`
   th {
     color: ${GRAY.A};
     font-weight: 500;
+    line-height: 20px;
     padding: 0 0 14px 0;
   }
 

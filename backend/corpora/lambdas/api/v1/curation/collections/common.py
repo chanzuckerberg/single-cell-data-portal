@@ -1,6 +1,7 @@
 import typing
 
 from sqlalchemy.orm import Session
+from urllib.parse import urlparse
 
 from ...authorization import is_user_owner_or_allowed
 from ......common.corpora_config import CorporaConfig
@@ -14,8 +15,10 @@ from ......common.corpora_orm import (
     DatasetArtifactFileType,
     ProcessingStatus,
     Base,
+    IsPrimaryData,
+    ProjectLinkType,
+    ValidationStatus,
 )
-from backend.corpora.common.entities import Collection
 
 
 DATASET_ONTOLOGY_ELEMENTS = (
@@ -37,39 +40,51 @@ DATASET_ONTOLOGY_ELEMENTS_PREVIEW = (
 )
 
 
-def reshape_for_curation_api_and_is_allowed(
-    db_session: Session, collection: dict, token_info: dict, id_provided: bool = False, preview: bool = False
-) -> bool:
+def extract_doi_from_links(collection: dict):
+    """
+    Pull out the DOI from the 'links' array and return it along with the altered links array
+    :param collection: the Collection
+    :return: None
+    """
+    doi, resp_links = None, []
+    for link in collection.get("links", []):
+        if link["link_type"] == ProjectLinkType.DOI:
+            doi = urlparse(link["link_url"]).path.strip("/")
+        else:
+            resp_links.append(link)
+
+    return doi, resp_links
+
+
+def reshape_for_curation_api(
+    db_session: Session, collection: DbCollection, token_info: dict, preview: bool = False
+) -> dict:
     """
     Reshape Collection data for the Curation API response. Remove tombstoned Datasets.
     :param db_session: the db Session
     :param collection: the Collection being returned in the API response
     :param token_info: user access token
-    :param id_provided: bool - whether or not the collection uuid was provided by the user, for access purposes
     :param preview: boool - whether the dataset is in preview form or not.
     :return: whether or not the Collection should be included in the response per ownership/access rules
     """
+    entity_columns = EntityColumns.columns_for_collections if preview else EntityColumns.columns_for_collection_id
+    resp_collection = collection.to_dict_keep(entity_columns)
+    resp_collection["processing_status"] = add_collection_level_processing_status(collection)
 
-    owner = collection.pop("owner")  # Don't actually want to return 'owner' in response
-    if is_user_owner_or_allowed(token_info, owner):
-        collection["access_type"] = "WRITE"
-    elif not id_provided and collection["visibility"] == CollectionVisibility.PRIVATE:
-        # User neither provided the uuid for access nor are they authorized by their access token
-        return False
-    elif token_info:
-        # Access token was provided but user is not authorized
-        collection["access_type"] = "READ"
+    owner = resp_collection.pop("owner")  # Don't actually want to return 'owner' in response
+    resp_collection["revising_in"] = get_revising_in(db_session, collection, token_info, owner)
+    resp_collection["collection_url"] = f"{CorporaConfig().collections_base_url}/collections/{collection.id}"
+    if datasets := resp_collection.get("datasets"):
+        resp_collection["datasets"] = reshape_datasets_for_curation_api(datasets, preview)
 
-    set_revising_in(db_session, collection, token_info, owner)
+    resp_collection["doi"], resp_collection["links"] = extract_doi_from_links(resp_collection)
 
-    collection["collection_url"] = f"{CorporaConfig().collections_base_url}/collections/{collection['id']}"
-
-    if datasets := collection.get("datasets"):
-        collection["datasets"] = reshape_datasets_for_curation_api(datasets, preview)
-    return True
+    return resp_collection
 
 
-def set_revising_in(db_session: Session, collection: dict, token_info: dict, owner: str) -> None:
+def get_revising_in(
+    db_session: Session, collection: DbCollection, token_info: dict, owner: str
+) -> typing.Optional[str]:
     """
     If the Collection is public AND the user is authorized use a database call to populate 'revising_in' attribute.
     None -> 1) revision does not exist, 2) the Collection is private, or 3) the user is not authorized
@@ -80,10 +95,10 @@ def set_revising_in(db_session: Session, collection: dict, token_info: dict, own
     :param owner: the owner of the Collection
     :return: None
     """
-    collection["revising_in"] = None
-    if collection["visibility"] == CollectionVisibility.PUBLIC and is_user_owner_or_allowed(token_info, owner):
-        if revision := Collection.get_collection(db_session, revision_of=collection["id"]):
-            collection["revising_in"] = revision.id
+    if collection.visibility == CollectionVisibility.PUBLIC and is_user_owner_or_allowed(token_info, owner):
+        if result := db_session.query(DbCollection.id).filter(DbCollection.revision_of == collection.id).one_or_none():
+            return result.id
+    return None
 
 
 def reshape_datasets_for_curation_api(datasets: typing.List[dict], preview=False) -> typing.List[dict]:
@@ -101,8 +116,15 @@ def reshape_dataset_for_curation_api(dataset: dict, preview=False) -> dict:
         for asset in artifacts:
             if asset["filetype"] in (DatasetArtifactFileType.H5AD, DatasetArtifactFileType.RDS):
                 dataset["dataset_assets"].append(asset)
-    if dataset.get("processing_status"):
-        dataset["processing_status"] = dataset["processing_status"]["processing_status"]
+    if processing_status := dataset.pop("processing_status", None):
+        if processing_status["processing_status"] == ProcessingStatus.FAILURE:
+            if processing_status["validation_status"] == ValidationStatus.INVALID:
+                dataset["processing_status_detail"] = processing_status["validation_message"]
+                dataset["processing_status"] = "VALIDATION_FAILURE"
+            else:
+                dataset["processing_status"] = "PIPELINE_FAILURE"
+        else:
+            dataset["processing_status"] = processing_status["processing_status"]
     dataset_ontology_elements = DATASET_ONTOLOGY_ELEMENTS_PREVIEW if preview else DATASET_ONTOLOGY_ELEMENTS
     for ontology_element in dataset_ontology_elements:
         if dataset_ontology_element := dataset.get(ontology_element):
@@ -111,7 +133,21 @@ def reshape_dataset_for_curation_api(dataset: dict, preview=False) -> dict:
                 dataset[ontology_element] = [dataset_ontology_element]
         else:
             dataset[ontology_element] = []
+
+    if not preview:  # Add these fields only to full (and not preview) Dataset metadata response
+        dataset["revision_of"] = dataset.pop("original_id", None)
+        dataset["title"] = dataset.pop("name", None)
+        if value := dataset.pop("is_primary_data", None):
+            dataset["is_primary_data"] = is_primary_data_mapping.get(value, [])
+
     return dataset
+
+
+is_primary_data_mapping = {
+    IsPrimaryData.PRIMARY: [True],
+    IsPrimaryData.SECONDARY: [False],
+    IsPrimaryData.BOTH: [True, False],
+}
 
 
 class EntityColumns:
@@ -145,7 +181,6 @@ class EntityColumns:
 
     dataset_preview_cols = [
         "id",
-        "curator_tag",
         "tissue",
         "assay",
         "disease",
@@ -155,6 +190,7 @@ class EntityColumns:
 
     dataset_cols = [
         *dataset_preview_cols,
+        "original_id",
         "name",
         "revision",
         "revised_at",
@@ -179,9 +215,7 @@ class EntityColumns:
         "filename",
     ]
 
-    dataset_processing_status_cols = [
-        "processing_status",
-    ]
+    dataset_processing_status_cols = ["processing_status", "validation_message", "validation_status"]
 
     columns_for_collections = {
         DbCollectionLink: link_cols,

@@ -1,20 +1,27 @@
 import { Intent } from "@blueprintjs/core";
-import { LoadingIndicator } from "czifui";
+import { Button, LoadingIndicator } from "czifui";
 import React, { useCallback, useContext, useMemo } from "react";
 import { EVENTS } from "src/common/analytics/events";
+import { get } from "src/common/featureFlags";
+import { FEATURES } from "src/common/featureFlags/features";
 import { usePrimaryFilterDimensions } from "src/common/queries/wheresMyGene";
 import Toast from "src/views/Collection/components/Toast";
 import { DispatchContext, StateContext } from "../../common/store";
 import { selectGenes, selectTissues } from "../../common/store/actions";
 import { Gene } from "../../common/types";
 import QuickSelect from "./components/QuickSelect";
+import SaveImage from "./components/SaveImage";
 import { ActionWrapper, Container, LoadingIndicatorWrapper } from "./style";
 
 interface Tissue {
   name: string;
 }
 
-export default function GeneSearchBar(): JSX.Element {
+export default function GeneSearchBar({
+  className,
+}: {
+  className?: string;
+}): JSX.Element {
   const dispatch = useContext(DispatchContext);
   const { selectedGenes, selectedTissues, selectedOrganismId } =
     useContext(StateContext);
@@ -76,8 +83,14 @@ export default function GeneSearchBar(): JSX.Element {
     });
   }, []);
 
+  const copyGenes = useCallback(() => {
+    navigator.clipboard.writeText(selectedGenes.join(", "));
+  }, [selectedGenes]);
+
+  const downloadFeat = get(FEATURES.DOWNLOAD_WMG);
+
   return (
-    <Container>
+    <Container {...{ className }}>
       <ActionWrapper>
 
         <QuickSelect
@@ -108,6 +121,15 @@ export default function GeneSearchBar(): JSX.Element {
           isLoading={isLoading}
           analyticsEvent={EVENTS.WMG_SELECT_GENE}
         />
+        {downloadFeat && (
+          <>
+            <Button onClick={copyGenes}>Copy Genes</Button>
+            <SaveImage
+              selectedTissues={selectedTissues}
+              selectedGenes={selectedGenes}
+            />
+          </>
+        )}
 
         {isLoading && (
           <LoadingIndicatorWrapper>
