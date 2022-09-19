@@ -19,6 +19,7 @@ import { SideBarPositioner, SideBarWrapper, Top, Wrapper } from "../../style";
 import Beta from "../Beta";
 import Filters from "../Filters";
 import GeneSearchBar from "../GeneSearchBar";
+import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../GeneSearchBar/components/SaveImage";
 import GetStarted from "../GetStarted";
 import HeatMap from "../HeatMap";
 import ColorScale from "../InfoPanel/components/ColorScale";
@@ -252,16 +253,19 @@ export default function WheresMyGene(): JSX.Element {
         <ColorScale handleIsScaledChange={handleIsScaledChange} />
       </SideBar>
 
-      <View hideOverflow>
+      <View id="view" overflow="hidden">
         <Wrapper>
           {isLoading && !shouldShowHeatMap && <Loader />}
 
           <Top>
-            <GeneSearchBar />
+            <GeneSearchBar
+              className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}
+              selectedTissues={selectedTissues}
+            />
             <Legend isScaled={isScaled} />
           </Top>
 
-          <Beta />
+          <Beta className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME} />
 
           {shouldShowHeatMap ? (
             <HeatMap
