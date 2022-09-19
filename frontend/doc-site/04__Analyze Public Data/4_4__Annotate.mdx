@@ -24,7 +24,7 @@ CELLxGENE[annotate] is currently only supported on OS X.
 
 ### venv setup
 
-For an overview of `venv`, refer [here](https://docs.python.org/3/tutorial/venv.html), for installation guidance refer [here](https://github.com/pyenv/pyenv#installation)
+For an overview of `venv`, refer [here](https://docs.python.org/3/tutorial/venv.html), for installation guidance refer [here](https://github.com/pyenv/pyenv#installation). If you are on an apple silicon machine (i.e mac with M1/M2 processor), you must use conda as an environment manager (refer to the section directly below).
 
 ```
 brew install pyenv  # used by MLflow
@@ -37,7 +37,9 @@ source .cxg_annotate/bin/activate
 
 ### conda setup
 
-To install `conda`, refer [here](https://www.anaconda.com/products/distribution)
+To install `conda`, refer [here](https://www.anaconda.com/products/distribution).
+
+**Note:** You must use a conda environment to run the annotation tool if you are using an apple silicon machine (i.e. macs with M1/M2 processors).
 
 ```
 conda create -n cellxgene 'python=3.9'
