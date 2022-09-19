@@ -212,14 +212,14 @@ EOF
 }
 
 resource "aws_sfn_state_machine" "state_machine_cxg_remaster" {
-  name     = "dp-${var.deployment_stage}-${var.custom_stack_name}-cxg-remaster-sfn"
+  name     = "dp-${var.deployment_stage}-${var.custom_stack_name}-cxg-remaster-v2-sfn"
   role_arn = var.role_arn
 
   definition = <<EOF
 {
-  "StartAt": "CxgRemaster",
+  "StartAt": "CxgRemasterV2",
   "States": {
-    "CxgRemaster": {
+    "CxgRemasterV2": {
       "Type": "Task",
       "End": true,
       "Resource": "arn:aws:states:::batch:submitJob.sync",

@@ -51,10 +51,9 @@ const LandingPage = (): JSX.Element => {
   });
   const scrollSection5 = useRef<HTMLDivElement>(null!);
 
-  // HERO NUMBERS. DUMMY DATA TO BE REPLACED.
   const [cellsHeroNum] = useState("33M+");
-  const [datasetsHeroNum] = useState("436");
-  const [donorsHeroNum] = useState("2.7k+");
+  const [datasetsHeroNum] = useState("500+");
+  const [cellTypesHeroNum] = useState("550+");
 
   const publications = [
     {
@@ -263,8 +262,8 @@ const LandingPage = (): JSX.Element => {
                 <p>{datasetsHeroNum}</p>
               </div>
               <div>
-                <span>donors</span>
-                <p>{donorsHeroNum}</p>
+                <span>cell types</span>
+                <p>{cellTypesHeroNum}</p>
               </div>
             </div>
           </div>
