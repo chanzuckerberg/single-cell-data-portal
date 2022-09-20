@@ -1,14 +1,4 @@
 import { ReactNode } from "react";
-import Step from "../Step";
-import {
-  Column,
-  ColumnOne,
-  ColumnTwo,
-  StepOne,
-  StepThree,
-  StepTwo,
-  Wrapper,
-} from "./style";
 
 interface Props {
   step: number;
@@ -17,9 +7,5 @@ interface Props {
 }
 
 export default function Steps(): JSX.Element {
-  return (
-    <>
-
-    </>
-  );
+  return <></>;
 }

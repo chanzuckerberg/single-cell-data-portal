@@ -1,7 +1,12 @@
-import Link from "next/link";
-import { ROUTES } from "src/common/constants/routes";
 import Step from "./components/Step";
-import { ColumnOne, ColumnTwo, Details, Header, StepThree, StepTwo, StyledStepOne, StyledStepThree, StyledStepTwo, Wrapper} from "./style";
+import {
+  ColumnOne,
+  ColumnTwo,
+  StyledStepOne,
+  StyledStepThree,
+  StyledStepTwo,
+  Wrapper,
+} from "./style";
 
 interface Props {
   tissueSelected: boolean;
@@ -12,23 +17,30 @@ interface Props {
 let tissueHasLoadedOnce = false;
 let geneHasLoadedOnce = false;
 
-export default function GetStarted({ tissueSelected, isLoading, geneSelected }: Props): JSX.Element {
-  if(!tissueHasLoadedOnce && tissueSelected && !isLoading){
+export default function GetStarted({
+  tissueSelected,
+  isLoading,
+  geneSelected,
+}: Props): JSX.Element {
+  if (!tissueHasLoadedOnce && tissueSelected && !isLoading) {
     tissueHasLoadedOnce = true;
   }
-  if(!geneHasLoadedOnce && geneSelected && !isLoading){
+  if (!geneHasLoadedOnce && geneSelected && !isLoading) {
     geneHasLoadedOnce = true;
   }
   return (
-    <Wrapper style={ tissueHasLoadedOnce && geneHasLoadedOnce ? {display: "none"} : {}}>
-
-      <ColumnOne style={ tissueHasLoadedOnce ? { visibility: "hidden"} : {} }>
+    <Wrapper
+      style={
+        tissueHasLoadedOnce && geneHasLoadedOnce ? { display: "none" } : {}
+      }
+    >
+      <ColumnOne style={tissueHasLoadedOnce ? { visibility: "hidden" } : {}}>
         <StyledStepOne>
           <Step step={1} details="Add Tissues" />
         </StyledStepOne>
       </ColumnOne>
 
-      <ColumnTwo style={ geneHasLoadedOnce ? { visibility: "hidden"} : {} }>
+      <ColumnTwo style={geneHasLoadedOnce ? { visibility: "hidden" } : {}}>
         <StyledStepTwo>
           <Step step={2} details="Add Genes" />
         </StyledStepTwo>
@@ -36,7 +48,6 @@ export default function GetStarted({ tissueSelected, isLoading, geneSelected }: 
           <Step step={3} details="Explore Gene Expression" />
         </StyledStepThree>
       </ColumnTwo>
-
 
       {/* <Header>Getting Started</Header> */}
       {/* <Details>

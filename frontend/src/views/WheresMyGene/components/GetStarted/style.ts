@@ -11,7 +11,7 @@ export const Header = styled.h1`
 export const Wrapper = styled.div`
   display: flex;
   position: absolute;
-  top:150px;
+  top: 150px;
   z-index: 3;
   margin-left: -10px;
   width: calc(94vw - ${EXPANDED_WIDTH_PX}px);
@@ -43,7 +43,6 @@ export const StyledStepOne = styled.div`
   flex: 0 1 calc(76vh - ${FOOTER_HEIGHT_PX}px);
 `;
 
-
 export const StyledStepTwo = styled.div`
   height: 100px !important;
   margin: 10px;
@@ -53,5 +52,3 @@ export const StyledStepThree = styled.div`
   flex: 1;
   margin: 10px;
 `;
-
-

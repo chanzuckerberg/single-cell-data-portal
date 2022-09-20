@@ -40,10 +40,10 @@ const MenuSelectProps = {
 };
 
 export interface Props {
-  isLoading: boolean
+  isLoading: boolean;
 }
 
-export default memo(function Filters({isLoading}: Props): JSX.Element {
+export default memo(function Filters({ isLoading }: Props): JSX.Element {
   const readyFilterCount = useRef(0);
   const dispatch = useContext(DispatchContext);
   const state = useContext(StateContext);

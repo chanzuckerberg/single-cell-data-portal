@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { fontBodyS, fontCapsXxs, fontHeaderL, fontHeaderS, fontHeaderXl, getColors } from "czifui";
+import { fontCapsXxs, fontHeaderL, getColors } from "czifui";
 
 export const Wrapper = styled.div`
   /* Number is 40px wide, gap: 16px, Content: 200px */
@@ -18,9 +18,7 @@ export const Wrapper = styled.div`
   }}
 `;
 
-export const Content = styled.div`
-
-`;
+export const Content = styled.div``;
 
 export const Header = styled.span`
   ${fontCapsXxs}

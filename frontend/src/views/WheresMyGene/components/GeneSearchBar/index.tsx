@@ -92,7 +92,6 @@ export default function GeneSearchBar({
   return (
     <Container {...{ className }}>
       <ActionWrapper>
-
         <QuickSelect
           items={tissues}
           itemsByName={tissuesByName}
