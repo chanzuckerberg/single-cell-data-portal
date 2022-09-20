@@ -213,6 +213,34 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         Dataset.enrich_tissue_with_ancestors(dataset)
         self.assertNotIn("tissue_ancestors", dataset)
 
+    def test__enrich_cell_type_with_ancestors_expands_correctly(self):
+        dataset = {"cell_type": [{"ontology_term_id": "CL:0000738", "label": "Test"}]}
+        Dataset.enrich_cell_type_with_ancestors(dataset)
+        self.assertIn("cell_type_ancestors", dataset)
+        self.assertEqual(
+            dataset["cell_type_ancestors"],
+            [
+                "CL:0000255",
+                "CL:0002371",
+                "CL:0000988",
+                "CL:0000738",
+                "CL:0000548",
+                "CL:0000219",
+                "CL:0000003",
+                "CL:0002242",
+            ],
+        )
+
+    def test__enrich_cell_type_with_ancestors_empty_key_ok(self):
+        dataset = {}
+        Dataset.enrich_cell_type_with_ancestors(dataset)
+        self.assertEqual(dataset, {})
+
+    def test__enrich_cell_type_with_ancestors_missing_key_ok(self):
+        dataset = {"cell_type": [{"ontology_term_id": "CL:non_existent", "label": "Test"}]}
+        Dataset.enrich_cell_type_with_ancestors(dataset)
+        self.assertNotIn("cell_type_ancestors", dataset)
+
     def test__get_all_datasets_for_index_with_ontology_expansion(self):
         test_dataset_id = "test_dataset_id_for_index_2"
         dataset = self.generate_dataset(
@@ -221,6 +249,7 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
             cell_count=42,
             development_stage=[{"ontology_term_id": "HsapDv:0000008", "label": "Test"}],
             tissue=[{"ontology_term_id": "UBERON:0002048", "label": "Test"}],
+            cell_type=[{"ontology_term_id": "CL:0000738", "label": "Test"}],
             published_at=datetime.now(),
             revised_at=datetime.now(),
         )
@@ -256,6 +285,21 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
                 "UBERON:0001558",
                 "UBERON:0000072",
                 "UBERON:0000171",
+            ],
+        )
+
+        self.assertEqual(actual_dataset["cell_type"], dataset.cell_type)
+        self.assertEqual(
+            actual_dataset["cell_type_ancestors"],
+            [
+                "CL:0000255",
+                "CL:0002371",
+                "CL:0000988",
+                "CL:0000738",
+                "CL:0000548",
+                "CL:0000219",
+                "CL:0000003",
+                "CL:0002242",
             ],
         )
 

@@ -28,6 +28,7 @@ from ..utils.corpora_constants import CorporaConstants
 from ..utils.db_helpers import clone
 from ..utils.development_stage_ontology_mapping import development_stage_ontology_mapping
 from ..utils.tissue_ontology_mapping import tissue_ontology_mapping
+from ..utils.cell_type_ontology_mapping import cell_type_ontology_mapping
 from ..utils.s3_buckets import buckets
 
 
@@ -188,6 +189,13 @@ class Dataset(Entity):
         Tag dataset with ancestors for all tissues in the given dataset, if any.
         """
         Dataset._enrich_with_ancestors(dataset, "tissue", tissue_ontology_mapping)
+
+    @staticmethod
+    def enrich_cell_type_with_ancestors(dataset):
+        """
+        Tag dataset with ancestors for all cell types in the given dataset, if any.
+        """
+        Dataset._enrich_with_ancestors(dataset, "cell_type", cell_type_ontology_mapping)
 
     def _enrich_with_ancestors(dataset, key, ontology_mapping):
         """
