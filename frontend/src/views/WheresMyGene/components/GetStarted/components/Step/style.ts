@@ -14,6 +14,8 @@ export const Wrapper = styled.div`
 
     return `
       background: ${colors?.gray[200]};
+
+      border-radius: 5px;
     `;
   }}
 `;
