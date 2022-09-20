@@ -22,7 +22,7 @@ import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { noop } from "src/common/constants/utils";
 import { Label } from "../../style";
-import { ButtonWrapper, StyledButtonText, StyledIconButton, StyledMenuItem } from "./style";
+import { ButtonWrapper, StyledButtonText, StyledMenuItem, StyledSelectButton } from "./style";
 
 const MAX_ITEMS_TO_SHOW = 9.5;
 const LISTBOX_ITEM_HEIGHT_PX = 48;
@@ -233,7 +233,7 @@ export default function QuickSelect<
     <>
       <ButtonWrapper>
         <Label>{label}</Label>
-        <StyledIconButton
+        <StyledSelectButton
           disabled={isLoading}
           id={`${dataTestId}-id`}
           data-test-id={dataTestId}
@@ -247,7 +247,7 @@ export default function QuickSelect<
             <Icon sdsIcon="plus" sdsSize="s" sdsType="button" />
           </StyledButtonText>
            {text}
-        </StyledIconButton>
+        </StyledSelectButton>
       </ButtonWrapper>
       <Popper open={open} className={classes.popper} anchorEl={ref.current}>
         <MenuSelect

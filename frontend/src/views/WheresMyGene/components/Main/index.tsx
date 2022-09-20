@@ -8,6 +8,7 @@ import {
   useGeneExpressionSummariesByTissueName,
 } from "src/common/queries/wheresMyGene";
 import SideBar from "src/components/common/SideBar";
+import { Position } from "src/components/common/SideBar/style";
 import { View } from "../../../globalStyle";
 import { DispatchContext, StateContext } from "../../common/store";
 import {
@@ -22,10 +23,13 @@ import GeneSearchBar from "../GeneSearchBar";
 import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../GeneSearchBar/components/SaveImage";
 import GetStarted from "../GetStarted";
 import HeatMap from "../HeatMap";
+import InfoPanel from "../InfoPanel";
 import ColorScale from "../InfoPanel/components/ColorScale";
 import Legend from "../InfoPanel/components/Legend";
 import Loader from "../Loader";
 import { SideBarLabel } from "./style";
+
+export const INFO_PANEL_WIDTH_PX = 320;
 
 export default function WheresMyGene(): JSX.Element {
   const state = useContext(StateContext);
@@ -225,6 +229,10 @@ export default function WheresMyGene(): JSX.Element {
     return hasSelectedTissues;
   }, [hasSelectedTissues, hasSelectedGenes]);
 
+  const shouldEnableSidebars = useMemo(() => {
+    return hasSelectedTissues && hasSelectedGenes;
+  }, [hasSelectedTissues, hasSelectedGenes]);
+
   const handleIsScaledChange = useCallback(() => {
     setIsScaled((prevIsScaled) => !prevIsScaled);
   }, [setIsScaled]);
@@ -249,6 +257,19 @@ export default function WheresMyGene(): JSX.Element {
         <ColorScale handleIsScaledChange={handleIsScaledChange} />
       </SideBar>
 
+      <SideBar
+        width={INFO_PANEL_WIDTH_PX}
+        label={<SideBarLabel>Info</SideBarLabel>}
+        position={Position.RIGHT}
+        SideBarWrapperComponent={SideBarWrapper}
+        SideBarPositionerComponent={SideBarPositioner}
+        disabled={!shouldEnableSidebars}
+        forceToggle={false}
+        wmgSideBar
+      >
+        <InfoPanel />
+      </SideBar>
+
       <View id="view" overflow="hidden">
         <Wrapper>
           {isLoading && !shouldShowHeatMap && <Loader />}
@@ -257,6 +278,14 @@ export default function WheresMyGene(): JSX.Element {
             <GeneSearchBar className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME} />
             <Legend isScaled={isScaled} />
           </Top>
+
+          <Beta className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME} />
+
+          <GetStarted
+            tissueSelected={hasSelectedTissues}
+            isLoading={isLoading}
+            geneSelected={hasSelectedGenes}
+          />
 
           {shouldShowHeatMap ? (
             <HeatMap

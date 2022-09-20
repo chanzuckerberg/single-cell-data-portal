@@ -14,7 +14,7 @@ export const Wrapper = styled.div`
   top:150px;
   z-index: 3;
   margin-left: -10px;
-  width: calc(97vw - ${EXPANDED_WIDTH_PX}px);
+  width: calc(94vw - ${EXPANDED_WIDTH_PX}px);
 `;
 
 export const Content = styled.div`
