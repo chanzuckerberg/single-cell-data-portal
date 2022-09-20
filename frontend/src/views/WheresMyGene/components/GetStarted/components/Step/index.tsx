@@ -8,7 +8,6 @@ interface Props {
 
 export default function Step({
   step,
-  header = "",
   details,
 }: Props): JSX.Element {
   return (
