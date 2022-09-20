@@ -41,7 +41,7 @@ The examples in Figure 3 have a relatively constant percentage of cells expressi
 
 ### How to Navigate Cell Types
 
-Cell types in the dot plot (rows) are ordered by default with an <NextLink href="#cell-type-ordering">algorithm</NextLink> that preserves relationships in the Cell Type ontology (CL). Child cell types are represented by indentation with a maximum depth of 2, any cell types with higher depth than that get truncated to 2.
+Cell types in the dot plot (rows) are ordered by default with an <NextLink href="./04__Analyze%20Public%20Data/4_2__Gene%20Expression%20Documentation/4_2_2__Cell%20Type%20and%20Gene%20Ordering">algorithm</NextLink> that preserves relationships in the Cell Type ontology (CL). Child cell types are represented by indentation with a maximum depth of 2, any cell types with higher depth than that get truncated to 2.
 
 All cell types from a given tissue are shown as originally annotated in the dataset-of-origin. This leads to scenarios where parent and children cell types may be present in the dot plot, but they are independent observations and the former is not a superset of the latter (Figure 4).
 
@@ -51,7 +51,7 @@ All cell types from a given tissue are shown as originally annotated in the data
 
 ### Caveats of Normalization
 
-Given that data are <NextLink href="#Data-normalization">quantile normalized</NextLink> all expression is relative to the cells it is measured in. As such comparisons of absolute expression across cell types could be made if the number of genes measured is equal across all cells. While this assumption is violated, we attempt to minimize negative effects by <NextLink href="#removal-of-low-coverage-cells">excluding cells with low gene coverage</NextLink> thus reducing the variance in the number of genes measured across cells.
+Given that data are <NextLink href="./04__Analyze%20Public%20Data/4_2__Gene%20Expression%20Documentation/4_2_3__Gene%20Expression%20Data%20Processing/#data-normalization">quantile normalized</NextLink> all expression is relative to the cells it is measured in. As such comparisons of absolute expression across cell types could be made if the number of genes measured is equal across all cells. While this assumption is violated, we attempt to minimize negative effects by <NextLink href="./04__Analyze%20Public%20Data/4_2__Gene%20Expression%20Documentation/4_2_3__Gene%20Expression%20Data%20Processing/#removal-of-low-coverage-cells">excluding cells with low gene coverage</NextLink> thus reducing the variance in the number of genes measured across cells.
 
 Nonetheless, caution is advised when finding subtle differences in the dot plot across cell types.
 
