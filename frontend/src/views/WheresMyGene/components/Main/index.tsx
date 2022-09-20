@@ -258,14 +258,6 @@ export default function WheresMyGene(): JSX.Element {
             <Legend isScaled={isScaled} />
           </Top>
 
-          <Beta className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME} />
-
-          <GetStarted
-            tissueSelected={hasSelectedTissues}
-            isLoading={isLoading}
-            geneSelected={hasSelectedGenes}
-          />
-
           {shouldShowHeatMap ? (
             <HeatMap
               cellTypeSortBy={sortBy.cellTypes}
