@@ -6,6 +6,9 @@ import { Collection, Ontology, PublisherMetadata } from "src/common/entities";
  * Payload key when tracking select of category values. For example, "organ" in FILTER_SELECT_ORGAN : {organ: "brain"}.
  */
 export enum ANALYTICS_PAYLOAD_KEY {
+  CELL_CLASS = "cellClass",
+  CELL_SUBCLASS = "cellSubclass",
+  CELL_TYPE = "cellType",
   ORGAN = "organ",
   SYSTEM = "system",
   TISSUE = "tissue",
@@ -112,7 +115,7 @@ export interface SelectViewKind {
 export enum CATEGORY_FILTER_ID {
   "ASSAY" = "ASSAY",
   "CELL_COUNT" = "CELL_COUNT",
-  "CELL_TYPE_DEPRECATED" = "CELL_TYPE_DEPRECATED",
+  "CELL_TYPE_CALCULATED" = "CELL_TYPE_CALCULATED",
   "DEVELOPMENT_STAGE" = "DEVELOPMENT_STAGE",
   "DISEASE" = "DISEASE",
   "ETHNICITY" = "ETHNICITY",
@@ -254,6 +257,9 @@ interface BaseCategoryFilterPanelConfig {
  * Complete set of filter panel IDs.
  */
 export enum CATEGORY_FILTER_PANEL_ID {
+  "CELL_TYPE_CELL_CLASS" = "CELL_TYPE_CELL_CLASS",
+  "CELL_TYPE_CELL_SUBCLASS" = "CELL_TYPE_CELL_SUBCLASS",
+  "CELL_TYPE" = "CELL_TYPE",
   "TISSUE_SYSTEM" = "TISSUE_SYSTEM",
   "TISSUE_ORGAN" = "TISSUE_ORGAN",
   "TISSUE" = "TISSUE",
@@ -310,6 +316,7 @@ export interface Categories {
   assay: Ontology[];
   cell_type: Ontology[];
   cell_type_ancestors: string[];
+  cellTypeCalculated: string[];
   disease: Ontology[];
   development_stage_ancestors: string[];
   ethnicity: Ontology[];
