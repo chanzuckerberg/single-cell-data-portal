@@ -1,22 +1,24 @@
 import styled from "@emotion/styled";
-import { Callout, getColors } from "czifui";
+import { getColors, Notification } from "czifui";
 
-export const StyledCallout = styled(Callout)`
-  width: 650px;
-  height: fit-content;
-  margin-top: 0;
-
+export const StyledNotification = styled(Notification)`
   ${(props) => {
     const colors = getColors(props);
 
     return `
-      background: ${colors?.beta[100]};
+    .elevated {
+      border-color: ${colors?.beta[400]} !important;
+    }
+
+    .MuiAlert-root {
+      background-color: ${colors?.beta[100]};
 
       .MuiAlert-icon {
         path {
           fill: ${colors?.beta[600]};
         }
       }
+    }
     `;
   }}
 `;

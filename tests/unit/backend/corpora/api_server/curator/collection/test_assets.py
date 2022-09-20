@@ -22,7 +22,7 @@ class TestAsset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         )
 
         response = self.app.get(
-            "/curation/v1/collections/test_collection_id/datasets/assets",
+            f"/curation/v1/collections/test_collection_id/datasets/{self.test_dataset_id}/assets",
             query_string=dict(dataset_id=self.test_dataset_id),
         )
         self.assertEqual(200, response.status_code)
@@ -37,8 +37,7 @@ class TestAsset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         )
 
         response = self.app.get(
-            "/curation/v1/collections/test_collection_id/datasets/assets",
-            query_string=dict(dataset_id=self.test_dataset_id),
+            f"/curation/v1/collections/test_collection_id/datasets/{self.test_dataset_id}/assets",
         )
         self.assertEqual(202, response.status_code)
         actual_body = response.json
@@ -50,8 +49,7 @@ class TestAsset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         bad_id = "bad_id"
 
         response = self.app.get(
-            "/curation/v1/collections/test_collection_id/datasets/assets",
-            query_string=dict(dataset_id=bad_id),
+            f"/curation/v1/collections/test_collection_id/datasets/{bad_id}/assets",
         )
         self.assertEqual(404, response.status_code)
         actual_body = response.json
@@ -60,9 +58,8 @@ class TestAsset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
     def test__get_dataset_asset__collection_dataset_NOT_FOUND(self):
         """Return Not found when the dataset is not part of the collection"""
         bad_id = "bad_id"
-        test_url = "/curation/v1/collections/test_collection_id/datasets/assets"
-        query = {"dataset_id": bad_id}
-        response = self.app.get(test_url, query_string=query)
+        test_url = f"/curation/v1/collections/test_collection_id/datasets/{bad_id}/assets"
+        response = self.app.get(test_url)
         self.assertEqual(404, response.status_code)
         actual_body = response.json
         self.assertEqual("Dataset not found.", actual_body["detail"])
@@ -75,10 +72,7 @@ class TestAsset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         mocked_dataset = Mock()
         mocked_dataset.get_assets.return_value = None
         get_dataset_else_error.return_value = mocked_dataset
-        response = self.app.get(
-            "/curation/v1/collections/test_collection_id/datasets/assets",
-            query_string=dict(dataset_id=self.test_dataset_id),
-        )
+        response = self.app.get(f"/curation/v1/collections/test_collection_id/datasets/{self.test_dataset_id}/assets")
         self.assertEqual(404, response.status_code)
         actual_body = response.json
         self.assertEqual("No assets found. The dataset may still be processing.", actual_body["detail"])

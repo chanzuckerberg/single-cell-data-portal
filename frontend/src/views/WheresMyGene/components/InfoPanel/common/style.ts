@@ -12,10 +12,22 @@ export const Header = styled.h5`
   margin-bottom: 10px;
 `;
 
+export const Label = styled.label`
+  ${fontBodyXxs}
+
+  ${(props) => {
+    const colors = getColors(props);
+
+    return `
+      color: ${colors?.gray[500]}
+    `;
+  }}
+`;
+
 export const Content = styled.div`
   ${fontBodyXxs}
 
-  width: 100px;
+  width: 120px;
 
   ${(props) => {
     const colors = getColors(props);

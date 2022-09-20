@@ -23,6 +23,7 @@ import { ChartWrapper, Container, YAxisWrapper } from "./style";
 import { X_AXIS_CHART_HEIGHT_PX } from "./utils";
 
 interface Props {
+  className?: string;
   selectedTissues: string[];
   cellTypes: { [tissue: Tissue]: CellType[] };
   genes: State["selectedGenes"];
@@ -40,6 +41,7 @@ interface Props {
 }
 
 export default memo(function HeatMap({
+  className,
   selectedTissues,
   cellTypes,
   genes,
@@ -109,7 +111,7 @@ export default memo(function HeatMap({
   }, [selectedGeneExpressionSummariesByTissueName, geneNameToIndex]);
 
   return (
-    <Container>
+    <Container {...{ className }}>
       {isLoadingAPI || isAnyTissueLoading(isLoading) ? <Loader /> : null}
 
       <XAxisChart geneNames={sortedGeneNames} />
