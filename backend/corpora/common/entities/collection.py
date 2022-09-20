@@ -201,6 +201,7 @@ class Collection(Entity):
             Dataset.transform_sex_for_schema_2_0_0(result)
             Dataset.enrich_development_stage_with_ancestors(result)
             Dataset.enrich_tissue_with_ancestors(result)
+            Dataset.enrich_cell_type_with_ancestors(result)
 
         return results
 
