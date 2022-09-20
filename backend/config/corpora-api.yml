@@ -754,6 +754,10 @@ paths:
                       type: integer
                     cell_type:
                       $ref: "#/components/schemas/ontology_element_array"
+                    cell_type_ancestors:
+                      type: array
+                      items:
+                        type: string                      
                     mean_genes_per_cell:
                       type: number
                     is_primary_data:

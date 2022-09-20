@@ -2,9 +2,9 @@ import json
 
 import numpy as np
 import tiledb
+import pandas as pd
 
 from backend.corpora.common.utils.type_conversion_utils import (
-    get_encoding_dtype_of_array,
     get_dtype_and_schema_of_array,
 )
 
@@ -41,18 +41,37 @@ def convert_dataframe_to_cxg_array(cxg_container, dataframe_name, dataframe, ind
     size (1000) and very aggressive compression levels.
     """
 
-    def create_dataframe_array(array_name, dataframe):
-        tiledb_filter = tiledb.FilterList(
-            [
-                # Attempt aggressive compression as many of these dataframes are very repetitive strings, bools and
-                # other non-float data.
-                tiledb.ZstdFilter(level=22),
-            ]
-        )
-        attrs = [
-            tiledb.Attr(name=column, dtype=get_encoding_dtype_of_array(dataframe[column]), filters=tiledb_filter)
-            for column in dataframe
+    tiledb_filter = tiledb.FilterList(
+        [
+            # Attempt aggressive compression as many of these dataframes are very repetitive strings, bools and
+            # other non-float data.
+            tiledb.ZstdFilter(level=22),
         ]
+    )
+    data = {}
+    schema_hints = {}
+    tdb_attrs = []
+
+    for column_name, column_values in dataframe.items():
+        dtype, hints = get_dtype_and_schema_of_array(column_values)
+        if "categories" in hints and len(hints.get("categories", [])) > 0.75 * dataframe.shape[0]:
+            hints["type"] = "string"
+            del hints["categories"]
+            data[column_name] = column_values.to_numpy(dtype=dtype)
+        elif "categories" in hints:
+            cat = pd.Categorical(column_values)
+            codes = cat.codes
+            data[column_name] = codes
+            categories = list(cat.categories)
+            hints["categories"] = categories
+            dtype = str(cat.codes.dtype)
+        else:
+            data[column_name] = column_values.to_numpy(dtype=dtype)
+
+        tdb_attrs.append(tiledb.Attr(name=column_name, dtype=dtype, filters=tiledb_filter))
+        schema_hints.update({column_name: hints})
+
+    def create_dataframe_array(array_name, dataframe, attrs):
         domain = tiledb.Domain(
             tiledb.Dim(domain=(0, dataframe.shape[0] - 1), tile=min(dataframe.shape[0], 1000), dtype=np.uint32)
         )
@@ -63,19 +82,11 @@ def convert_dataframe_to_cxg_array(cxg_container, dataframe_name, dataframe, ind
 
     array_name = f"{cxg_container}/{dataframe_name}"
 
-    create_dataframe_array(array_name, dataframe)
+    create_dataframe_array(array_name, dataframe, tdb_attrs)
 
     with tiledb.open(array_name, mode="w", ctx=ctx) as array:
-        value = {}
-        schema_hints = {}
-        for column_name, column_values in dataframe.items():
-            dtype, hints = get_dtype_and_schema_of_array(column_values)
-            value[column_name] = column_values.to_numpy(dtype=dtype)
-            if hints:
-                schema_hints.update({column_name: hints})
-
         schema_hints.update({"index": index_column_name})
-        array[:] = value
+        array[:] = data
         array.meta["cxg_schema"] = json.dumps(schema_hints)
 
     tiledb.consolidate(array_name, ctx=ctx)
@@ -113,7 +124,55 @@ def convert_ndarray_to_cxg_dense_array(ndarray_name, ndarray, ctx):
     tiledb.consolidate(ndarray_name, ctx=ctx)
 
 
-def convert_matrix_to_cxg_array(matrix_name, matrix, encode_as_sparse_array, ctx):
+def _sort_by_primary_var_and_secondary_obs(data_dict):
+    ix = np.argsort(data_dict["var"])
+    x = data_dict["obs"][ix]
+    y = data_dict["var"][ix]
+    d = data_dict[""][ix]
+
+    df = pd.DataFrame()
+    df["x"] = x
+    df["y"] = y
+    df["d"] = d
+
+    gb = df.groupby("y")
+
+    xs = []
+    ds = []
+    for k in gb.groups:
+        ix = np.argsort(x[gb.groups[k]])
+        xs.extend(x[gb.groups[k]][ix])
+        ds.extend(d[gb.groups[k]][ix])
+    xs = np.array(xs)
+    ds = np.array(ds)
+    return xs, y, ds
+
+
+def _sort_by_primary_obs_and_secondary_var(data_dict):
+    ix = np.argsort(data_dict["obs"])
+    x = data_dict["obs"][ix]
+    y = data_dict["var"][ix]
+    d = data_dict[""][ix]
+
+    df = pd.DataFrame()
+    df["x"] = x
+    df["y"] = y
+    df["d"] = d
+
+    gb = df.groupby("x")
+
+    ys = []
+    ds = []
+    for k in gb.groups:
+        ix = np.argsort(y[gb.groups[k]])
+        ys.extend(y[gb.groups[k]][ix])
+        ds.extend(d[gb.groups[k]][ix])
+    ys = np.array(ys)
+    ds = np.array(ds)
+    return x, ys, ds
+
+
+def convert_matrices_to_cxg_arrays(matrix_name, matrix, encode_as_sparse_array, ctx):
     """
     Converts a numpy array matrix into a TileDB SparseArray of DenseArray based on whether `encode_as_sparse_array`
     is true or not. Note that when the matrix is encoded as a SparseArray, it only writes the values that are
@@ -121,51 +180,119 @@ def convert_matrix_to_cxg_array(matrix_name, matrix, encode_as_sparse_array, ctx
     number of elements in the matrix, only the number of nonzero elements.
     """
 
-    def create_matrix_array(matrix_name, number_of_rows, number_of_columns, encode_as_sparse_array, compression=22):
-        attrs = [tiledb.Attr(dtype=np.float32, filters=tiledb.FilterList([tiledb.ZstdFilter(level=compression)]))]
+    def create_matrix_array(
+        matrix_name, number_of_rows, number_of_columns, encode_as_sparse_array, compression=22, row=True
+    ):
         dim_filters = tiledb.FilterList([tiledb.ByteShuffleFilter(), tiledb.ZstdFilter(level=compression)])
-        domain = tiledb.Domain(
-            tiledb.Dim(
-                name="obs",
-                domain=(0, number_of_rows - 1),
-                tile=min(number_of_rows, 256),
-                dtype=np.uint32,
-                filters=dim_filters,
-            ),
-            tiledb.Dim(
-                name="var",
-                domain=(0, number_of_columns - 1),
-                tile=min(number_of_columns, 2048),
-                dtype=np.uint32,
-                filters=dim_filters,
-            ),
-        )
-        schema = tiledb.ArraySchema(
-            domain=domain,
-            sparse=encode_as_sparse_array,
-            allows_duplicates=True if encode_as_sparse_array else False,
-            attrs=attrs,
-            cell_order="row-major",
-            tile_order="col-major",
-            capacity=128000 if encode_as_sparse_array else 0,
-        )
-        tiledb.Array.create(matrix_name, schema)
+        if not encode_as_sparse_array:
+            attrs = [tiledb.Attr(dtype=np.float32, filters=tiledb.FilterList([tiledb.ZstdFilter(level=compression)]))]
+            domain = tiledb.Domain(
+                tiledb.Dim(
+                    name="obs",
+                    domain=(0, number_of_rows - 1),
+                    tile=min(number_of_rows, 256),
+                    dtype=np.uint32,
+                    filters=dim_filters,
+                ),
+                tiledb.Dim(
+                    name="var",
+                    domain=(0, number_of_columns - 1),
+                    tile=min(number_of_columns, 2048),
+                    dtype=np.uint32,
+                    filters=dim_filters,
+                ),
+            )
+            schema = tiledb.ArraySchema(
+                domain=domain,
+                sparse=False,
+                allows_duplicates=False,
+                attrs=attrs,
+                cell_order="row-major",
+                tile_order="col-major",
+                capacity=0,
+            )
+            tiledb.Array.create(matrix_name, schema)
+        else:
+            attrs = [tiledb.Attr(dtype=np.float32, filters=tiledb.FilterList([tiledb.ZstdFilter(level=compression)]))]
+            if row:
+                domain = tiledb.Domain(
+                    tiledb.Dim(
+                        name="obs",
+                        domain=(0, number_of_rows - 1),
+                        tile=min(number_of_rows, 256),
+                        dtype=np.uint32,
+                        filters=dim_filters,
+                    )
+                )
+                attrs.append(tiledb.Attr(name="var", dtype=np.uint32, filters=dim_filters))
+            else:
+                domain = tiledb.Domain(
+                    tiledb.Dim(
+                        name="var",
+                        domain=(0, number_of_columns - 1),
+                        tile=min(number_of_columns, 256),
+                        dtype=np.uint32,
+                        filters=dim_filters,
+                    ),
+                )
+                attrs.append(tiledb.Attr(name="obs", dtype=np.uint32, filters=dim_filters))
+
+            schema = tiledb.ArraySchema(
+                domain=domain,
+                sparse=True,
+                allows_duplicates=True,
+                attrs=attrs,
+                cell_order="row-major",
+                tile_order="row-major",
+                capacity=1024000,
+            )
+            tiledb.Array.create(matrix_name, schema)
 
     number_of_rows = matrix.shape[0]
     number_of_columns = matrix.shape[1]
-    stride = min(int(np.power(10, np.around(np.log10(1e9 / number_of_columns)))), 10_000)
+    stride_rows = min(int(np.power(10, np.around(np.log10(1e9 / number_of_columns)))), 10_000)
+    stride_columns = min(int(np.power(10, np.around(np.log10(1e9 / number_of_rows)))), 2_000)
 
-    create_matrix_array(matrix_name, number_of_rows, number_of_columns, encode_as_sparse_array)
+    if not encode_as_sparse_array:
+        create_matrix_array(matrix_name, number_of_rows, number_of_columns, False)
+        with tiledb.open(matrix_name, mode="w", ctx=ctx) as array:
+            for start_row_index in range(0, number_of_rows, stride_rows):
+                end_row_index = min(start_row_index + stride_rows, number_of_rows)
+                matrix_subset = matrix[start_row_index:end_row_index, :]
+                if not isinstance(matrix_subset, np.ndarray):
+                    matrix_subset = matrix_subset.toarray()
+                array[start_row_index:end_row_index, :] = matrix_subset
+    else:
+        create_matrix_array(matrix_name + "r", number_of_rows, number_of_columns, True, row=True)
+        create_matrix_array(matrix_name + "c", number_of_rows, number_of_columns, True, row=False)
+        array_r = tiledb.open(matrix_name + "r", mode="w", ctx=ctx)
+        array_c = tiledb.open(matrix_name + "c", mode="w", ctx=ctx)
 
-    with tiledb.open(matrix_name, mode="w", ctx=ctx) as array:
-        for start_row_index in range(0, number_of_rows, stride):
-            end_row_index = min(start_row_index + stride, number_of_rows)
+        for start_row_index in range(0, number_of_rows, stride_rows):
+            end_row_index = min(start_row_index + stride_rows, number_of_rows)
             matrix_subset = matrix[start_row_index:end_row_index, :]
             if not isinstance(matrix_subset, np.ndarray):
                 matrix_subset = matrix_subset.toarray()
-            if encode_as_sparse_array:
-                indices = np.nonzero(matrix_subset)
-                trow = indices[0] + start_row_index
-                array[trow, indices[1]] = matrix_subset[indices[0], indices[1]]
-            else:
-                array[start_row_index:end_row_index, :] = matrix_subset
+
+            indices = np.nonzero(matrix_subset)
+            trow = indices[0] + start_row_index
+            t_data = matrix_subset[indices[0], indices[1]]
+            data_dict = {"obs": trow, "var": indices[1], "": t_data}
+            obs, var, data = _sort_by_primary_obs_and_secondary_var(data_dict)
+            array_r[obs] = {"var": var, "": data}
+
+        for start_col_index in range(0, number_of_columns, stride_columns):
+            end_col_index = min(start_col_index + stride_columns, number_of_columns)
+            matrix_subset = matrix[:, start_col_index:end_col_index]
+            if not isinstance(matrix_subset, np.ndarray):
+                matrix_subset = matrix_subset.toarray()
+
+            indices = np.nonzero(matrix_subset)
+            tcol = indices[1] + start_col_index
+            t_data = matrix_subset[indices[0], indices[1]]
+            data_dict = {"obs": indices[0], "var": tcol, "": t_data}
+            obs, var, data = _sort_by_primary_var_and_secondary_obs(data_dict)
+            array_c[var] = {"obs": obs, "": data}
+
+        array_r.close()
+        array_c.close()

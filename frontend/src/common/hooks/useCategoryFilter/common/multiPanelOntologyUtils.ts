@@ -560,6 +560,31 @@ function isExplicitOntologyTermId(categoryValueId: CategoryValueId): boolean {
 }
 
 /**
+ * Determine if the given category values are in the same panel.
+ * @param categoryValueId - First category value to check panel index of.
+ * @param compareToCategoryValueId - Second category value to check panel index of.
+ * @param uiNodesByCategoryValueId - Map of category value ID to UI parents, UI children and panel index.
+ * @returns True if the given category values are in the same panel.
+ */
+function isInSamePanel(
+  categoryValueId: CategoryValueId,
+  compareToCategoryValueId: CategoryValueId,
+  uiNodesByCategoryValueId: Map<CategoryValueId, MultiPanelUINode>
+): boolean {
+  const categoryValueUINode = uiNodesByCategoryValueId.get(categoryValueId);
+  if (!categoryValueUINode) {
+    return false;
+  }
+  const compareToUINode = uiNodesByCategoryValueId.get(
+    compareToCategoryValueId
+  );
+  if (!compareToUINode) {
+    return false;
+  }
+  return categoryValueUINode.panelIndex === compareToUINode.panelIndex;
+}
+
+/**
  * Determine if the category value ID also exists in the parent set of category value IDs.
  * @param categoryValueId - Category value to check for against parent category value IDs.
  * @param parentCategoryValueIds - All category values in the parent panels.
@@ -578,7 +603,7 @@ function isLabelCollision(
  * Determine if a category value should be marked as selected or partially selected.
  * @param categoryValueId - The category value we are working on.
  * @param selectedCategoryValueIds - All explicitly selected category value ids in all panels.
- * @param uiNodesByCategoryValueId - Map of categoryValueID to UI patents and children.
+ * @param uiNodesByCategoryValueId - Map of categoryValueID to UI parents and children.
  * @returns True if category value is partially selected.
  */
 function isPartiallySelectedCategoryValue(
@@ -597,7 +622,7 @@ function isPartiallySelectedCategoryValue(
  * Recursive function used when determining if a category value should be marked as selected or partially selected.
  * @param categoryValueId - The category value we are working on.
  * @param selectedCategoryValueIds - All explicitly selected category value ids in all panels.
- * @param uiNodesByCategoryValueId - Map of categoryValueID to UI patents and children.
+ * @param uiNodesByCategoryValueId - Map of categoryValueID to UI parents and children.
  * @returns Model of selected state for the given category value.
  */
 function isPartiallySelectedCategoryValueInternal(
@@ -728,7 +753,7 @@ function isSelectedOrImplied(
  * @param categoryValueId - Category value to check if it can be included as a selected tag.
  * @param selected - Array of category values that are selected.
  * @param selectedPartial - Array of category values that are partially selected.
- * @param uiNodesByCategoryValueId - Map of categoryValueID to UI patents and children.
+ * @param uiNodesByCategoryValueId - Map of categoryValueID to UI parents and children.
  * @returns True if category value is to be included as a selected tag.
  */
 function isSelectedViewTagVisible(
@@ -900,7 +925,7 @@ function linkParentAndChild(
 /**
  * Determine the partially selected category values from the given selected values.
  * @param selectedCategoryValueIds - All explicitly selected category value ids in all panels.
- * @param uiNodesByCategoryValueId - Map of categoryValueID to UI patents and children.
+ * @param uiNodesByCategoryValueId - Map of categoryValueID to UI parents and children.
  * @return Array of category values that are partially selected.
  */
 export function listPartiallySelectedCategoryValues(
@@ -944,16 +969,24 @@ function listSelectedParentUINodes(
 
   // If any selected value has a descendant that is selected, remove the value from the set of selected values. For
   // example, if "digestive system" and "tongue" are both selected, we only want to include "tongue" as a selected value
-  // otherwise the panel will show descendants for both "digestive system" and "tongue".
+  // otherwise the panel will show descendants for both "digestive system" and "tongue". Do not exclude descendants that
+  // are in the same panel, for example "leukocyte" and "T cell": we always want to execute an "or" within a panel.
   return selectedParentUINodes.filter(
     (selectedParentUINode: MultiPanelUINode) =>
-      !selectedParentUINodes.some((otherSelectedParentUINode) =>
-        isDescendant(
-          otherSelectedParentUINode.categoryValueId,
-          selectedParentUINode.categoryValueId,
-          descendants
-        )
-      )
+      !selectedParentUINodes.some((otherSelectedParentUINode) => {
+        return (
+          !isInSamePanel(
+            otherSelectedParentUINode.categoryValueId,
+            selectedParentUINode.categoryValueId,
+            categoryFilterUIState.uiNodesByCategoryValueId
+          ) &&
+          isDescendant(
+            otherSelectedParentUINode.categoryValueId,
+            selectedParentUINode.categoryValueId,
+            descendants
+          )
+        );
+      })
   );
 }
 
@@ -1090,7 +1123,8 @@ export function onFilterMultiPanelCategory(
   // pass the more restrictive "tongue" to react-table as we only want to show rows that match "tongue".
   const overriddenNextFilters = overrideSelectedParents(
     nextFilters,
-    config.descendants
+    config.descendants,
+    uiNodesByCategoryValueId
   );
 
   // Update internal multi-panel filter state with the updated, toggled set of selected filters for this category as
@@ -1126,10 +1160,21 @@ export function onRemoveMultiPanelCategoryValueTag(
     selectedCategoryValueIds
   );
 
-  // Grab all selected descendants of the removed value.
+  // Grab all selected descendants of the removed value. Ignore descendants that are in the same panel as the removed
+  // value (for example "leukocyte" and "T cell") as we don't want to remove descendants in the same panel as the value
+  // to remove.
   const selectedDescendants = selectedCategoryValueIds.filter(
     (selectedCategoryValueId) =>
-      isDescendant(selectedCategoryValueId, removedCategoryValueId, descendants)
+      isDescendant(
+        selectedCategoryValueId,
+        removedCategoryValueId,
+        descendants
+      ) &&
+      !isInSamePanel(
+        selectedCategoryValueId,
+        removedCategoryValueId,
+        categoryFilterUIState.uiNodesByCategoryValueId
+      )
   );
 
   // Remove the selected descendant unless the descendant has another parent that is partially/selected.
@@ -1172,11 +1217,13 @@ export function onRemoveMultiPanelCategoryValueTag(
  * pass the more restrictive "tongue" to react-table as we only want to show rows that match "tongue".
  * @param selectedValues - Set of currently selected values.
  * @param descendants - Map of descendants keyed by ancestor.
+ * @param uiNodesByCategoryValueId - Map of categoryValueID to UI parents and children.
  * @returns The "effective" set of selected terms to pass to react-table.
  */
 export function overrideSelectedParents(
   selectedValues: CategoryValueId[],
-  descendants: OntologyDescendants
+  descendants: OntologyDescendants,
+  uiNodesByCategoryValueId: Map<CategoryValueId, MultiPanelUINode>
 ): CategoryValueId[] {
   const selectedOntologyTermIds = selectedValues.map((selectedValue) =>
     removeOntologyTermIdPrefix(selectedValue)
@@ -1200,8 +1247,19 @@ export function overrideSelectedParents(
     }
 
     // Otherwise, if any descendant of the selected value is selected, do not include the selected value in the set of
-    // selected values.
-    const descendantsOfSelected = descendants[selectedOntologyId] ?? [];
+    // selected values. Ignore descendants that are in the same panel as the selected value (for example, "leukocyte"
+    // and "T cell"); we want to always execute an "or" within a panel so both ancestor/descendant selected values must
+    // be included in this case.
+    const descendantsOfSelected = (
+      descendants[selectedOntologyId] ?? []
+    ).filter((descendant) => {
+      return !isInSamePanel(
+        selectedValue,
+        // Explicit values are handled above; we only want to check for inferred terms.
+        buildInferredOntologyTermId(descendant),
+        uiNodesByCategoryValueId
+      );
+    });
 
     // Check if any descendant is selected.
     const isAnyDescendantSelected = descendantsOfSelected.some((descendant) =>
