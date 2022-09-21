@@ -229,10 +229,6 @@ export default function WheresMyGene(): JSX.Element {
     return hasSelectedTissues;
   }, [hasSelectedTissues, hasSelectedGenes]);
 
-  const shouldEnableSidebars = useMemo(() => {
-    return hasSelectedTissues && hasSelectedGenes;
-  }, [hasSelectedTissues, hasSelectedGenes]);
-
   const handleIsScaledChange = useCallback(() => {
     setIsScaled((prevIsScaled) => !prevIsScaled);
   }, [setIsScaled]);
@@ -263,7 +259,7 @@ export default function WheresMyGene(): JSX.Element {
         position={Position.RIGHT}
         SideBarWrapperComponent={SideBarWrapper}
         SideBarPositionerComponent={SideBarPositioner}
-        disabled={!shouldEnableSidebars}
+        disabled={!(hasSelectedTissues && hasSelectedGenes && !isLoading)}
         forceToggle={false}
         wmgSideBar
       >

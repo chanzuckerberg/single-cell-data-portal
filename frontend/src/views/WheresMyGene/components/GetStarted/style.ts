@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
 import { EXPANDED_WIDTH_PX } from "src/components/common/SideBar";
-import { FOOTER_HEIGHT_PX } from "src/components/Footer/style";
+import { HEADER_HEIGHT_PX } from "src/components/Header/style";
 
 export const Header = styled.h1`
   margin-bottom: 12px;
@@ -15,6 +15,7 @@ export const Wrapper = styled.div`
   z-index: 3;
   margin-left: -10px;
   width: calc(94vw - ${EXPANDED_WIDTH_PX}px);
+  height: calc(85vh - ${HEADER_HEIGHT_PX}px);
 `;
 
 export const Content = styled.div`
@@ -38,9 +39,8 @@ export const ColumnTwo = styled.div`
 `;
 
 export const StyledStepOne = styled.div`
-  flex: 1;
+  flex: 1 0;
   margin: 10px;
-  flex: 0 1 calc(76vh - ${FOOTER_HEIGHT_PX}px);
 `;
 
 export const StyledStepTwo = styled.div`

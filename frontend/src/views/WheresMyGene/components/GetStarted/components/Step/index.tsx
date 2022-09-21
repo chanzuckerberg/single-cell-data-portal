@@ -6,11 +6,7 @@ interface Props {
   details: ReactNode;
 }
 
-export default function Step({
-  step,
-  header = "",
-  details,
-}: Props): JSX.Element {
+export default function Step({ step, details }: Props): JSX.Element {
   return (
     <Wrapper>
       <Header>STEP {step}</Header>

@@ -48,18 +48,6 @@ export default function GetStarted({
           <Step step={3} details="Explore Gene Expression" />
         </StyledStepThree>
       </ColumnTwo>
-
-      {/* <Header>Getting Started</Header> */}
-      {/* <Details>
-        Use the Add Tissue and Add Gene buttons to find where genes are
-        expressed, powered by data from the{" "}
-        <Link href={ROUTES.COLLECTIONS} passHref>
-          <a href="passHref" rel="noopener" target="_blank">
-            CELLxGENE Discover
-          </a>
-        </Link>
-        .
-      </Details> */}
     </Wrapper>
   );
 }
