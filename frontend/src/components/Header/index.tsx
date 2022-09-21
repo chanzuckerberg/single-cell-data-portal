@@ -46,6 +46,7 @@ const Header: FC = () => {
 
   const StyledPopper = styled(Popper)`
     height: 300px;
+    z-index: 99;
   `;
 
   return (
