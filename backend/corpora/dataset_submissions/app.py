@@ -4,15 +4,26 @@ import re
 from typing import Tuple, Optional
 from urllib.parse import unquote_plus
 
+from pythonjsonlogger import jsonlogger
 from sqlalchemy.orm import Session
 
-from backend.corpora.common.entities import Dataset
+from backend.corpora.common.entities import Dataset, Collection
+from backend.corpora.common.logging_config import DATETIME_FORMAT, LOG_FORMAT
 from backend.corpora.common.upload import upload
 from backend.corpora.common.utils.db_session import db_session_manager
-from backend.corpora.common.utils.exceptions import CorporaException
+from backend.corpora.common.utils.exceptions import (
+    CorporaException,
+    NonExistentCollectionException,
+    NonExistentDatasetException,
+)
 from backend.corpora.common.utils.regex import USERNAME_REGEX, COLLECTION_ID_REGEX, DATASET_ID_REGEX
 
+log_handler = logging.StreamHandler()
+formatter = jsonlogger.JsonFormatter(LOG_FORMAT, timestamp=DATETIME_FORMAT)
+log_handler.setFormatter(formatter)
+logging.basicConfig(level=logging.INFO, handlers=[log_handler])
 logger = logging.getLogger(__name__)
+
 REGEX = f"^{USERNAME_REGEX}/{COLLECTION_ID_REGEX}/{DATASET_ID_REGEX}$"
 
 
@@ -23,8 +34,8 @@ def dataset_submissions_handler(s3_event: dict, unused_context) -> None:
     :param unused_context: Lambda's context object
     :return:
     """
-    logger.debug(f"{s3_event=}")
-    logger.debug(f"{os.environ.get('REMOTE_DEV_PREFIX', '')=}")
+    logger.info(dict(message="s3_event", **s3_event))
+    logger.debug(dict(REMOTE_DEV_PREFIX=os.environ.get("REMOTE_DEV_PREFIX", "")))
 
     for record in s3_event["Records"]:
         bucket, key, size = parse_s3_event_record(record)
@@ -38,7 +49,7 @@ def dataset_submissions_handler(s3_event: dict, unused_context) -> None:
         with db_session_manager() as session:
             collection_owner, dataset_id = get_dataset_info(session, parsed["collection_id"], parsed["dataset_id"])
 
-            logger.info(f"{collection_owner=}, {dataset_id=}")
+            logger.info(dict(collection_owner=collection_owner, dataset_id=dataset_id))
             if not collection_owner:
                 raise CorporaException(f"Collection {parsed['collection_id']} does not exist")
             elif parsed["username"] == "super":
@@ -95,4 +106,6 @@ def get_dataset_info(session: Session, collection_id: str, dataset_id: str) -> T
     if dataset := Dataset.get(session, dataset_id=dataset_id, collection_id=collection_id):
         return dataset.collection.owner, dataset.id
     else:
-        raise CorporaException(f"No Dataset with id {dataset_id} in Collection {collection_id}")
+        if not Collection.get(session, collection_id):
+            raise NonExistentCollectionException(f"No Collection with {collection_id=} found")
+        raise NonExistentDatasetException(f"No Dataset with {dataset_id=} in Collection {collection_id}")
