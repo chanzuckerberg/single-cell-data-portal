@@ -121,54 +121,29 @@ const Header: FC = () => {
 
           <StyledPopper
             ref={dropdownRef}
-            onBlur={handleHelpClose}
             open={dropdownOpen}
             anchorEl={anchorEl}
           >
             <MenuSelect
               search={false}
               options={FOOTER_OPTIONS}
-              onMouseUp={handleHelpClose}
               onChange={handleHelpClick}
             />
           </StyledPopper>
 
-          {/* <LinkWrapper>
-            <AnchorButton
-              onClick={() => {
-                track(EVENTS.DOCUMENTATION_CLICK_NAV);
-              }}
-              active={isRouteActive(pathname, ROUTES.DOCS)}
-              href={
-                isRouteActive(pathname, ROUTES.WHERE_IS_MY_GENE)
-                  ? ROUTES.WMG_DOCS
-                  : ROUTES.PUBLISHED_DATA_DOCS
-              }
-              rel="noopener"
-              target="_blank"
-              minimal
-              text="Help & Documentation"
-            />
-          </LinkWrapper> */}
           <AuthButtons />
         </Right>
-      </MainWrapper>
+      </MainWrapper> 
     </Wrapper>
   );
-
-  function handleHelpClose() {
-    if (dropdownOpen) {
-      setDropdownOpen(false);
-    }
-  }
 
   function handleHelpOpen(event: React.MouseEvent<HTMLElement>) {
     if (!anchorEl) {
       setAnchorEl(event.currentTarget);
     }
 
-    if (dropdownOpen) {
-      handleHelpClose();
+    if(dropdownOpen){
+      setDropdownOpen(false);
     } else {
       setDropdownOpen(true);
     }
@@ -177,7 +152,7 @@ const Header: FC = () => {
   function handleHelpClick(
     _: React.ChangeEvent<unknown>,
     newValue:
-      | (DefaultMenuSelectOption & { id: number; name: string; value: string })
+      | (DefaultMenuSelectOption & { id: number; value: string })
       | null
   ) {
     let link = newValue!.value;
