@@ -320,7 +320,7 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
             filename=CorporaConstants.ORIGINAL_H5AD_ARTIFACT_FILENAME,
             filetype=DatasetArtifactFileType.H5AD,
             user_submitted=True,
-            s3_uri="s3://mock-bucket/mock-key.h5ad",
+            s3_uri="s3://mock-bucket/raw.h5ad",
         )
         dataset = self.generate_dataset(self.session, id="test_dataset", artifacts=[artifact_0, artifact_1, artifact_2])
 
