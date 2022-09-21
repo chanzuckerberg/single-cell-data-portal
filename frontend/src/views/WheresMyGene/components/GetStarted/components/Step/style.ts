@@ -5,7 +5,6 @@ export const Wrapper = styled.div`
   /* Number is 40px wide, gap: 16px, Content: 200px */
   gap: 16px;
   height: 100%;
-  // padding: 10px;
 
   border-radius: 4px;
 
@@ -19,8 +18,6 @@ export const Wrapper = styled.div`
     `;
   }}
 `;
-
-export const Content = styled.div``;
 
 export const Header = styled.span`
   ${fontCapsXxs}
