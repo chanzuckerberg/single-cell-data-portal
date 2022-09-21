@@ -20,21 +20,12 @@ After you successfully complete the automatic annotation workflow, you can explo
 
 ## Installation of CELLxGENE[annotate]
 
-You can install the latest experimental release of CELLxGENE Annotate to gain access to the automatic annotation subcommand. It is highly recommended to perform installation in a clean virtual environment using [Conda](https://docs.conda.io/en/latest/) or [venv](https://docs.python.org/3/library/venv.html) with Python version 3.9+. Find examples of virtual environment setup using venv and conda below.
+You can install the latest experimental release of CELLxGENE Annotate to gain access to the automatic annotation subcommand. It is highly recommended to perform installation in a clean Python environment using [Conda](https://docs.conda.io/en/latest/) or [venv](https://docs.python.org/3/library/venv.html) with Python version 3.9+. Find examples of virtual environment setup using venv and conda below.
 
 CELLxGENE[annotate] is currently only tested on OS X and Ubuntu operating systems.
 
-### virtualenv setup
 
-For an overview of `venv`, refer to the link in the above section.
-
-```
-python3 -m venv cxg_annotate  # create a virtual environment in a new the current directory
-
-source cxg_annotate/bin/activate
-```
-
-### conda setup
+### Option 1: conda setup
 
 To install `conda`, download and install from one of the distributions:
 
@@ -46,19 +37,36 @@ To install `conda`, download and install from one of the distributions:
 conda create -n cellxgene 'python=3.9'
 
 conda activate cellxgene
+
+pip install 'cellxgene[annotate]'
 ```
 
-### pip install
+To test the success of your installation, run:
 
-Once your virtual environment is installed and activated, install the `annotate` feature using pip with the following command:
+```
+cellxgene annotate --help
 
-`pip install 'cellxgene[annotate]'`
+```
+
+### Option 2: venv setup
+
+For an overview of `venv`, refer to the link in the above section.
+
+```
+python3 -m venv cxg_annotate  # create a virtual environment in a new the current directory
+
+source cxg_annotate/bin/activate
+
+pip install 'cellxgene[annotate]'
+```
 
 If `conda` is not installed on your system, install these additional packages:
-`pip install scvi-tools==0.16.2 'scanpy[leiden]==1.9.1' xgboost==1.6.1 torch==1.11.0`
-If this fails, we recommend you use a Conda environment (see the [conda setup](#conda-setup) section, above)
+```
+pip install scvi-tools==0.16.2 'scanpy[leiden]==1.9.1' xgboost==1.6.1 torch==1.11.0
+```
+If this fails, we recommend you use a Conda environment (see the [conda setup](#option-1-conda-setup) section, above)
 
-You can run the following to test the success of your installation:
+To test the success of your installation, run:
 
 `cellxgene annotate --help`
 
