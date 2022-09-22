@@ -933,11 +933,9 @@ components:
               - LAB_WEBSITE
               - OTHER
               - DATA_SOURCE
-            nullable: true
             type: string
           link_url:
             description: The URL of the link.
-            nullable: true
             type: string
         required:
           - link_url
