@@ -52,11 +52,15 @@ describeIfDevStagingProd("Where's My Gene", () => {
     await expect(filtersPanel).toHaveSelector(getText("Ethnicity"));
     await expect(filtersPanel).toHaveSelector(getText("Sex"));
 
-    // Info Panel
-    const InfoPanel = await page.$("*css=div >> text=Info");
+    // Legend
+    const Legend = await page.$("*css=div >> text=Gene Expression");
 
-    await expect(InfoPanel).toHaveSelector(getText("Gene Expression"));
-    await expect(InfoPanel).toHaveSelector(getText("Expressed in Cells (%)"));
+    await expect(Legend).toHaveSelector(getText("Gene Expression"));
+    await expect(Legend).toHaveSelector(getText("Expressed in Cells (%)"));
+
+    // Info Panel
+    const InfoPanel = await page.$("*css=div >> text=Filters");
+
     await expect(InfoPanel).toHaveSelector(getText("Methodology"));
     await expect(InfoPanel).toHaveSelector(
       getText("After filtering cells with low coverage ")
