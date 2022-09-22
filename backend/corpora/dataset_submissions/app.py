@@ -1,6 +1,7 @@
 import logging
 import os
 import re
+import sys
 from typing import Tuple, Optional
 from urllib.parse import unquote_plus
 
@@ -18,11 +19,13 @@ from backend.corpora.common.utils.exceptions import (
 )
 from backend.corpora.common.utils.regex import USERNAME_REGEX, COLLECTION_ID_REGEX, DATASET_ID_REGEX
 
-log_handler = logging.StreamHandler()
-formatter = jsonlogger.JsonFormatter(LOG_FORMAT, timestamp=DATETIME_FORMAT)
+log_handler = logging.StreamHandler(stream=sys.stdout)
+formatter = jsonlogger.JsonFormatter(LOG_FORMAT, DATETIME_FORMAT)
 log_handler.setFormatter(formatter)
-logging.basicConfig(level=logging.INFO, handlers=[log_handler])
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+logger.addHandler(log_handler)
+logger.propagate = False
 
 REGEX = f"^{USERNAME_REGEX}/{COLLECTION_ID_REGEX}/{DATASET_ID_REGEX}$"
 
