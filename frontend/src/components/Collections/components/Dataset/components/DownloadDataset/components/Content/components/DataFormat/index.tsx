@@ -45,7 +45,7 @@ const DataFormat: FC<Props> = ({
     return (
       <Radio
         disabled={!availableFormats.includes(DATASET_ASSET_FORMAT.RDS)}
-        label=".rds (Seurat v3)"
+        label=".rds (Seurat v4)"
         value={DATASET_ASSET_FORMAT.RDS}
       />
     );
@@ -56,7 +56,7 @@ const DataFormat: FC<Props> = ({
       <Tooltip
         disabled={false}
         interactionKind={PopoverInteractionKind.HOVER}
-        content="A .rds (Seurat v3) download is unavailable due to limitations in the R dgCMatrix sparse matrix class."
+        content="A .rds (Seurat v4) download is unavailable due to limitations in the R dgCMatrix sparse matrix class."
         intent={Intent.DANGER}
         position={Position.TOP}
       >
