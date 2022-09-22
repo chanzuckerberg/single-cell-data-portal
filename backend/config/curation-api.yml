@@ -328,7 +328,7 @@ paths:
       summary: Delete a Dataset or cancel processing for a Dataset in a private Collection or Revision.
       description: >-
         Delete or cancel processing for a Dataset with `dataset_id` in `collection_id`. 
-        The **collection_id** MUST reference either a private Collection OR a 
+        The `collection_id` MUST reference either a private Collection OR a 
         Revision.
 
         If the Dataset is being processed, then this endpoint will cancel processing and delete the Dataset. While 
@@ -523,8 +523,8 @@ paths:
         - collection
       description: |
         Generate Presigned S3 URLs to download the files associated with the `dataset_id`. 
-        Pre-signed S3 URLs have a life span of up to 1 hour. Therefore,
-        generate a presigned URL immediately before each download to ensure it is current.
+        Pre-signed S3 URLs have a life span of up to 1 hour. You should
+        generate a pre-signed URL immediately before each download to ensure it is current.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.assets.get
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
