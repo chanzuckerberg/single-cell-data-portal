@@ -4,7 +4,7 @@ import pathlib
 import sys
 import time
 
-from backend.corpora.common.utils.slack import (
+from backend.corpora.common.utils.result_notification import (
     notify_slack,
     format_failed_batch_issue_slack_alert,
     gen_wmg_pipeline_success_message,
@@ -13,7 +13,7 @@ from backend.corpora.common.utils.slack import (
 from backend.corpus_asset_pipelines import integrated_corpus
 from backend.corpus_asset_pipelines import summary_cubes
 
-from backend.wmg.data.load_cube import upload_artifacts_to_s3, make_snapshot_active
+from backend.wmg.data.load_cube import upload_artifacts_to_s3, make_snapshot_active, _get_wmg_bucket_path
 from backend.wmg.data.transform import (
     generate_primary_filter_dimensions,
     get_cell_types_by_tissue,
@@ -55,7 +55,7 @@ def load_data_and_create_cube(
     if validate_cube:
         make_snapshot_active(snapshot_id)
         logger.info(f"Updated latest_snapshot_identifier in s3. Current snapshot id is {snapshot_id}")
-        return snapshot_id, stats
+    return snapshot_path, stats
 
 
 def main():
@@ -65,17 +65,17 @@ def main():
     """
     # todo pass in validate_cubes as env arg
     try:
-        snapshot_id, stats = load_data_and_create_cube("datasets", ".")
-        pipeline_success_message = gen_wmg_pipeline_success_message(snapshot_id, stats)
-        data = json.dumps(pipeline_success_message, indent=2)
-        notify_slack(data)
+        snapshot_path, stats = load_data_and_create_cube("datasets", ".")
+        success_message = gen_wmg_pipeline_success_message(snapshot_path, stats)
+        notify_slack(success_message)
     except Exception as e:
         logger.exception("Pipeline failed")
-        pipeline_failure_message = gen_wmg_pipeline_failure_message(
-            f"Issue with cube creation pipeline: {e}. See logs for more detail"
+        failure_message = format_failed_batch_issue_slack_alert(
+                gen_wmg_pipeline_failure_message(
+                        f"Issue with WMG snapshot generation pipeline: {e}. See logs for more detail."
+                )
         )
-        data = format_failed_batch_issue_slack_alert(pipeline_failure_message)
-        notify_slack(data)
+        notify_slack(failure_message)
 
 
 if __name__ == "__main__":

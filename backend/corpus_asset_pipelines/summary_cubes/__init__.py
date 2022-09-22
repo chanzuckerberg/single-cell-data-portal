@@ -1,6 +1,6 @@
 import sys
 
-from backend.corpora.common.utils.slack import (
+from backend.corpora.common.utils.result_notification import (
     format_failed_batch_issue_slack_alert,
     notify_slack,
     gen_wmg_pipeline_failure_message,
