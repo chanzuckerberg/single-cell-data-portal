@@ -49,7 +49,7 @@ def generate_cell_ordering(snapshot_path: str, cell_type_by_tissue: Dict) -> Non
 
     onto = Ontology.from_obo_library("cl-basic.obo")
 
-    def compute_ordering(cells, root):
+    def compute_ordering(cells: Set[str], root: str):
         ancestors = [list(onto[t].superclasses()) for t in cells if t in onto]
         ancestors = [i for s in ancestors for i in s]
         ancestors = set(ancestors)
@@ -69,14 +69,19 @@ def generate_cell_ordering(snapshot_path: str, cell_type_by_tissue: Dict) -> Non
 
         ancestor_ids = [a.id for a in ancestors]
 
-        def recurse(node: Set[str], depth=0):
+        def cell_entity(node, depth):
+            return {"id": node, "depth": depth}
+
+        def recurse(node: str, depth=0):
 
             if node in cells:
 
                 cells.remove(node)
-                yield {"id": node, "depth": depth}
+                yield cell_entity(node, depth)
 
-                if node != "CL:0000003":
+                # Make the root stay in the same level. Avoids creating
+                # a situation where only the root is at lowest level
+                if node != root:
                     depth += 1
 
             children = [
@@ -86,22 +91,70 @@ def generate_cell_ordering(snapshot_path: str, cell_type_by_tissue: Dict) -> Non
             for child in sorted_children:
                 yield from recurse(child[0].id, depth=depth)
 
-        ordered_list = recurse(root)
-        return list(ordered_list)
+        # Apply recursion to create ordered list of cells present in set "cells"
+        ordered_list = list(recurse(root))
 
-    mapping = {}
-    for tissue, cell_df in cell_type_by_tissue.items():
-        cells = list(cell_df)
-        ordered_cells = compute_ordering(cells, "CL:0000003")
-        mapping[tissue] = ordered_cells
+        # If there are any cells left in set "cells", it means that either those cell types
+        # don't exist in the ontology or they are above the root ("CL:0000003")
+        # Add these "orphan" cells at end of list
+        while cells:
+            ordered_list.append(cell_entity(cells.pop(), depth=0))
 
-    data = []
-    for tissue, cells in mapping.items():
-        for i, cell in enumerate(cells):
-            data.append((tissue, cell["id"], cell["depth"], i))
+        # Arranges data into DF
+        # Comment these lines out if the desired return object is:
+        # [{id:cell_type_1, depth:0}, ... ]
+        ordered_df = []
+        for cell in ordered_list:
+            ordered_df.append([cell["id"], cell["depth"]])
+        ordered_df = pd.DataFrame(ordered_df, columns=["cell_type_ontology_term_id", "depth"])
+        return ordered_df
 
-    df = pd.DataFrame(data, columns=["tissue_ontology_term_id", "cell_type_ontology_term_id", "depth", "order"])
+    def create_tissue_cell_type_df(data_cells: pd.DataFrame, target_cells: list, tissue):
+
+        tissue_cells = data_cells.copy()
+        tissue_cells["is_in_tissue"] = [cell in target_cells for cell in tissue_cells["cell_type_ontology_term_id"]]
+
+        depth_col = tissue_cells.columns.get_loc("depth")
+
+        # Place holder column for row that belong to tissue
+        is_in_tissue_col = tissue_cells.columns.get_loc("is_in_tissue")
+
+        # Re arranged depths based on the rows that belong to tissue
+        for i in range(len(tissue_cells)):
+            if not tissue_cells.iloc[i, is_in_tissue_col]:
+                original_depth = tissue_cells.iloc[i, depth_col]
+                for j in range(i + 1, len(tissue_cells)):
+                    if original_depth < tissue_cells.iloc[j, depth_col]:
+                        tissue_cells.iloc[j, depth_col] -= 1
+                    else:
+                        break
+
+        # Remove placeholder column
+        tissue_cells = tissue_cells[tissue_cells["is_in_tissue"]]
+        del tissue_cells["is_in_tissue"]
+
+        # Insert first column as tissue
+        tissue_cells.insert(0, "tissue_ontology_term_id", tissue)
+        # Insert last column as order
+        tissue_cells["order"] = range(len(tissue_cells))
+
+        return tissue_cells
+
+    # Generates ordering for ALL cell types
+    all_cells = {cell for cell_df in cell_type_by_tissue.values() for cell in cell_df}
+    ordered_cells = compute_ordering(all_cells, "CL:0000003")
+
+    # Create individual data frames per tissue
+    ordered_cells_by_tissue = []
+    for tissue, target_cells in cell_type_by_tissue.items():
+        target_cells = list(target_cells)
+        ordered_cells_by_tissue.append(create_tissue_cell_type_df(ordered_cells, target_cells, tissue))
+
+    df = pd.concat(ordered_cells_by_tissue).reset_index(drop=True)
+
     df.to_json(f"{snapshot_path}/{CELL_TYPE_ORDERINGS_FILENAME}")
+
+
 
 
 @log_func_runtime
