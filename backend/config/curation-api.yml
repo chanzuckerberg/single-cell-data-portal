@@ -377,8 +377,6 @@ paths:
           $ref: "#/components/responses/400"
         "404":
           $ref: "#/components/responses/404"
-
-  /v1/collections/{collection_id}/datasets/upload-link:
     put:
       summary: Upload a Dataset by providing a link
       description: |
@@ -387,13 +385,14 @@ paths:
         existing Dataset SHALL be replaced. Otherwise a new Dataset will be created.
 
         * Required: provide your access token in the request header as `Authentication: Bearer <access_token>`.
-      operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.datasets.upload_link.put
+      operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.datasets.actions.put
       tags:
         - collection
       security:
         - curatorAccess: []
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
+        - $ref: "#/components/parameters/path_dataset_id"
       requestBody:
         content:
           application/json:
@@ -401,19 +400,11 @@ paths:
               type: object
               additionalProperties: false
               properties:
-                id:
-                  $ref: "#/components/schemas/dataset_id"
                 link:
                   description: |
                     A user-provided link to the Dataset source file. The Dataset will be uploaded from the provided 
                     `link` which MUST either be a presigned AWS S3  or Dropbox shared file URL.
                   type: string
-            examples:
-              id:
-                summary: Using the Dataset uuid
-                value:
-                  id: "<existing_dataset_id>"
-                  link: "<download_link_for_data_source_file>"
       responses:
         "202":
           $ref: "#/components/responses/202"

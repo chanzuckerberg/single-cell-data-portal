@@ -18,56 +18,60 @@ class TestPutLink(BaseAuthAPITest):
         cls.good_link = "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"
         cls.dummy_link = "https://www.dropbox.com/s/12345678901234/test.h5ad?dl=0"
 
-    def _test_new(self, collection_params: dict = None, headers: dict = None, body: dict = None):
+    def _test_new(self, headers: dict = None, body: dict = None):
         headers = headers if headers else {}
-        collection_params = collection_params if collection_params else {}
+        collection = self.generate_collection(self.session)
+        dataset_resp = self.app.post(
+            f"/curation/v1/collections/{collection.id}/datasets", headers=self.make_owner_header()
+        )
+        dataset_id = dataset_resp.json["dataset_id"]
         body = body if body else ""
         headers["Content-Type"] = "application/json"
-        collection = self.generate_collection(self.session, **collection_params)
         response = self.app.put(
-            f"/curation/v1/collections/{collection.id}/datasets/upload-link", data=json.dumps(body), headers=headers
+            f"/curation/v1/collections/{collection.id}/datasets/{dataset_id}", json=body, headers=headers
         )
         return response
 
     def test__from_link__no_auth(self, *mocks):
-        response = self._test_new()
+        response = self._test_new(body={"link": self.good_link})
         self.assertEqual(401, response.status_code)
 
     def test__from_link__Not_Public(self, *mocks):
-        response = self._test_new(
-            dict(visibility=CollectionVisibility.PUBLIC.name),
-            self.make_owner_header(),
-            body={"link": self.dummy_link},
+        headers = self.make_owner_header()
+        collection = self.generate_collection(self.session)
+        dataset_resp = self.app.post(f"/curation/v1/collections/{collection.id}/datasets", headers=headers)
+        dataset_id = dataset_resp.json["dataset_id"]
+        collection.update(visibility=CollectionVisibility.PUBLIC, keep_links=True)
+        response = self.app.put(
+            f"/curation/v1/collections/{collection.id}/datasets/{dataset_id}",
+            json={"link": self.good_link},
+            headers=headers,
         )
         self.assertEqual(403, response.status_code)
 
     def test__from_link__Not_Owner(self, *mocks):
-        response = self._test_new(
-            dict(owner="someone else"),
-            self.make_not_owner_header(),
-            body={"link": self.dummy_link},
-        )
+        response = self._test_new(self.make_not_owner_header(), body={"link": self.dummy_link})
         self.assertEqual(403, response.status_code)
 
     def test__new_from_link__OK(self, *mocks):
         headers = self.make_owner_header()
-        response = self._test_new({}, headers, body={"link": self.good_link})
+        response = self._test_new(headers, body={"link": self.good_link})
         self.assertEqual(202, response.status_code)
 
     def test__new_from_link__Super_Curator(self, *mocks):
         headers = self.make_super_curator_header()
-        response = self._test_new({}, headers, body={"link": self.good_link})
+        response = self._test_new(headers, body={"link": self.good_link})
         self.assertEqual(202, response.status_code)
 
-    def _test_existing(self, headers: dict = None, use_curator_tag=False):
+    def _test_existing(self, headers: dict = None):
         headers = headers if headers else {}
         headers["Content-Type"] = "application/json"
         collection = self.generate_collection(self.session)
         processing_status = dict(processing_status=ProcessingStatus.SUCCESS)
         dataset = self.generate_dataset(self.session, collection_id=collection.id, processing_status=processing_status)
-        body = {"id": dataset.id, "link": self.good_link}
+        body = {"link": self.good_link}
         response = self.app.put(
-            f"/curation/v1/collections/{collection.id}/datasets/upload-link", data=json.dumps(body), headers=headers
+            f"/curation/v1/collections/{collection.id}/datasets/{dataset.id}", data=json.dumps(body), headers=headers
         )
         return response
 
@@ -79,7 +83,7 @@ class TestPutLink(BaseAuthAPITest):
     def test__existing_from_link__Super_Curator(self, *mocks):
         headers = self.make_super_curator_header()
         with self.subTest("dataset_id"):
-            response = self._test_existing(headers, use_curator_tag=True)
+            response = self._test_existing(headers)
             self.assertEqual(202, response.status_code)
 
 
