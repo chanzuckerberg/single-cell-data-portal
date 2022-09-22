@@ -22,10 +22,9 @@ from backend.corpora.common.utils.regex import USERNAME_REGEX, COLLECTION_ID_REG
 log_handler = logging.StreamHandler(stream=sys.stdout)
 formatter = jsonlogger.JsonFormatter(LOG_FORMAT, DATETIME_FORMAT)
 log_handler.setFormatter(formatter)
-logger = logging.getLogger(__name__)
+logger = logging.getLogger()
 logger.setLevel(logging.INFO)
-logger.addHandler(log_handler)
-logger.propagate = False
+logger.handlers = [log_handler]
 
 REGEX = f"^{USERNAME_REGEX}/{COLLECTION_ID_REGEX}/{DATASET_ID_REGEX}$"
 
