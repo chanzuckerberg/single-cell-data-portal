@@ -133,7 +133,7 @@ const Header: FC = () => {
 
           <AuthButtons />
         </Right>
-      </MainWrapper> 
+      </MainWrapper>
     </Wrapper>
   );
 
@@ -142,7 +142,7 @@ const Header: FC = () => {
       setAnchorEl(event.currentTarget);
     }
 
-    if(dropdownOpen){
+    if (dropdownOpen) {
       setDropdownOpen(false);
     } else {
       setDropdownOpen(true);
@@ -151,9 +151,7 @@ const Header: FC = () => {
 
   function handleHelpClick(
     _: React.ChangeEvent<unknown>,
-    newValue:
-      | (DefaultMenuSelectOption & { id: number; value: string })
-      | null
+    newValue: (DefaultMenuSelectOption & { id: number; value: string }) | null
   ) {
     let link = newValue!.value;
 
