@@ -154,7 +154,7 @@ paths:
       description: >
         Fetch full metadata for the Collection and its Datasets.
 
-        If an Authentication token is provided and the curator is allowed, then revision-related fields will also be returned.
+        An Authentication token must be provided in order to retrieve the id of an associated Revision for this Collection (the `revising_in` field), if such a Revision currently exists.
 
         * Optional: provide your access token in the request header as `Authentication: Bearer <access_token>`.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.actions.get
