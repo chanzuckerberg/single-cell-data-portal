@@ -50,7 +50,7 @@ if __name__ == "__main__":
     print(q._snapshot.expression_summary_cube.query().multi_index[genes, tissues, [], organism])
     print(pd.DataFrame(q._snapshot.expression_summary_cube.multi_index[genes, tissues, [], organism]))
     print(
-        q._snapshot.expression_summary_cube.query(use_arrow=False, attrs=["n_cells"]).df[genes, tissues, :, organism].shape
+        q._snapshot.expression_summary_cube.query(attrs=["n_cells"]).df[genes, tissues, :, organism].shape
     )
     # print(q._snapshot.expression_summary_cube.df[genes, tissues, :, organism])
 
