@@ -236,7 +236,7 @@ export default memo(function Chart({
       ((dataPoint.tissuePercentage || 0) * 100).toFixed(2)
     );
 
-    const totalCellCount = Math.round((expressedCellCount / percentage) * 100);
+    const totalCellCount = cellType.total_count;
 
     const data = [
       {
