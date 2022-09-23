@@ -11,6 +11,12 @@ from tests.unit.backend.wmg.fixtures.test_snapshot import (
     all_X_cell_counts_values,
 )
 
+ALL_INDEXED_DIMS_FOR_QUERY = [
+    "gene_ontology_term_ids",
+    "tissue_ontology_term_ids",
+    "tissue_original_ontology_term_ids",
+    "organism_ontology_term_id",
+]
 
 # TODO: Test build_* methods separately in test_v1.py.  This package's unit tests need only test the raw results of
 #  WmgQuery methods
@@ -61,39 +67,49 @@ class QueryTest(unittest.TestCase):
         # sanity check the expected value of the stats (n_cells, nnz, sum) for each data viz point; if this fails, the
         # cube test fixture may have changed (e.g. TileDB Array schema) or the logic for creating the test cube fixture
         # has changed
-        expected_cell_count_per_cell_type = dim_size ** (len(cube_non_indexed_dims) - 1)
-        assert expected_cell_count_per_cell_type == 729
+        not_used_cube_indexed_dims = [0 if criteria.dict()[dim_name] else 1 for dim_name in ALL_INDEXED_DIMS_FOR_QUERY]
+
+        expected_cell_count_per_cell_type = dim_size ** (
+            len(cube_non_indexed_dims) + sum(not_used_cube_indexed_dims) - 1
+        )
+
+        expected_cell_count_per_tissue = 10 * (
+            dim_size ** (len(cube_non_indexed_dims) + sum(not_used_cube_indexed_dims))
+        )
+
+        assert expected_cell_count_per_cell_type == 2187
+        assert expected_cell_count_per_tissue == 65610
 
         expected = [
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_0",
                 "tissue_ontology_term_id": "tissue_ontology_term_id_2",
                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_0",
-                "n_cells": 729,
-                "n_cells_cell_type": 7290,
-                "n_cells_tissue": 21870,
-                "nnz": 729,
-                "sum": 729.0,
+                "n_cells": 2187,
+                "n_cells_cell_type": 21870,
+                "n_cells_tissue": 65610,
+                "nnz": 2187,
+                "sum": 2187.0,
             },
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_0",
                 "tissue_ontology_term_id": "tissue_ontology_term_id_2",
                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_1",
-                "n_cells": 729,
-                "n_cells_cell_type": 7290,
-                "n_cells_tissue": 21870,
-                "nnz": 729,
-                "sum": 729.0,
+                "n_cells": 2187,
+                "n_cells_cell_type": 21870,
+                "n_cells_tissue": 65610,
+                "nnz": 2187,
+                "sum": 2187.0,
             },
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_0",
                 "tissue_ontology_term_id": "tissue_ontology_term_id_2",
                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_2",
-                "n_cells": 729,
-                "n_cells_cell_type": 7290,
-                "n_cells_tissue": 21870,
-                "nnz": 729,
-                "sum": 729.0,
+                "n_cells": 2187,
+                "n_cells_cell_type": 21870,
+                "n_cells_tissue": 65610,
+                "nnz": 2187,
+                "sum": 2187.0,
             },
         ]
 
@@ -128,132 +144,135 @@ class QueryTest(unittest.TestCase):
         # sanity check the expected value of the stats (n_cells, nnz, sum) for each data viz point; if this fails, the
         # cube test fixture may have changed (e.g. TileDB Array schema) or the logic for creating the test cube fixture
         # has changed
-        expected_cell_count_per_cell_type = dim_size ** (len(cube_non_indexed_dims) - 1)
-        assert expected_cell_count_per_cell_type == 729
+        not_used_cube_indexed_dims = [0 if criteria.dict()[dim_name] else 1 for dim_name in ALL_INDEXED_DIMS_FOR_QUERY]
+        expected_cell_count_per_cell_type = dim_size ** (len(cube_non_indexed_dims) - 1 + 1)
+        expected_cell_count_per_tissue = 10 * (
+            dim_size ** (len(cube_non_indexed_dims) + sum(not_used_cube_indexed_dims))
+        )
 
-        expected_cell_count_per_tissue = 10 * (dim_size ** len(cube_non_indexed_dims))
-        assert expected_cell_count_per_tissue == 21870
+        assert expected_cell_count_per_cell_type == 2187
+        assert expected_cell_count_per_tissue == 65610
 
         expected = [
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_0",
                 "tissue_ontology_term_id": "tissue_ontology_term_id_1",
                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_0",
-                "n_cells": 729,
-                "n_cells_cell_type": 7290,
-                "n_cells_tissue": 21870,
-                "nnz": 729,
-                "sum": 729.0,
+                "n_cells": 2187,
+                "n_cells_cell_type": 21870,
+                "n_cells_tissue": 65610,
+                "nnz": 2187,
+                "sum": 2187.0,
             },
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_0",
                 "tissue_ontology_term_id": "tissue_ontology_term_id_1",
                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_1",
-                "n_cells": 729,
-                "n_cells_cell_type": 7290,
-                "n_cells_tissue": 21870,
-                "nnz": 729,
-                "sum": 729.0,
+                "n_cells": 2187,
+                "n_cells_cell_type": 21870,
+                "n_cells_tissue": 65610,
+                "nnz": 2187,
+                "sum": 2187.0,
             },
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_0",
                 "tissue_ontology_term_id": "tissue_ontology_term_id_1",
                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_2",
-                "n_cells": 729,
-                "n_cells_cell_type": 7290,
-                "n_cells_tissue": 21870,
-                "nnz": 729,
-                "sum": 729.0,
+                "n_cells": 2187,
+                "n_cells_cell_type": 21870,
+                "n_cells_tissue": 65610,
+                "nnz": 2187,
+                "sum": 2187.0,
             },
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_0",
                 "tissue_ontology_term_id": "tissue_ontology_term_id_2",
                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_0",
-                "n_cells": 729,
-                "n_cells_cell_type": 7290,
-                "n_cells_tissue": 21870,
-                "nnz": 729,
-                "sum": 729.0,
+                "n_cells": 2187,
+                "n_cells_cell_type": 21870,
+                "n_cells_tissue": 65610,
+                "nnz": 2187,
+                "sum": 2187.0,
             },
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_0",
                 "tissue_ontology_term_id": "tissue_ontology_term_id_2",
                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_1",
-                "n_cells": 729,
-                "n_cells_cell_type": 7290,
-                "n_cells_tissue": 21870,
-                "nnz": 729,
-                "sum": 729.0,
+                "n_cells": 2187,
+                "n_cells_cell_type": 21870,
+                "n_cells_tissue": 65610,
+                "nnz": 2187,
+                "sum": 2187.0,
             },
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_0",
                 "tissue_ontology_term_id": "tissue_ontology_term_id_2",
                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_2",
-                "n_cells": 729,
-                "n_cells_cell_type": 7290,
-                "n_cells_tissue": 21870,
-                "nnz": 729,
-                "sum": 729.0,
+                "n_cells": 2187,
+                "n_cells_cell_type": 21870,
+                "n_cells_tissue": 65610,
+                "nnz": 2187,
+                "sum": 2187.0,
             },
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_2",
                 "tissue_ontology_term_id": "tissue_ontology_term_id_1",
                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_0",
-                "n_cells": 729,
-                "n_cells_cell_type": 7290,
-                "n_cells_tissue": 21870,
-                "nnz": 729,
-                "sum": 729.0,
+                "n_cells": 2187,
+                "n_cells_cell_type": 21870,
+                "n_cells_tissue": 65610,
+                "nnz": 2187,
+                "sum": 2187.0,
             },
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_2",
                 "tissue_ontology_term_id": "tissue_ontology_term_id_1",
                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_1",
-                "n_cells": 729,
-                "n_cells_cell_type": 7290,
-                "n_cells_tissue": 21870,
-                "nnz": 729,
-                "sum": 729.0,
+                "n_cells": 2187,
+                "n_cells_cell_type": 21870,
+                "n_cells_tissue": 65610,
+                "nnz": 2187,
+                "sum": 2187.0,
             },
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_2",
                 "tissue_ontology_term_id": "tissue_ontology_term_id_1",
                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_2",
-                "n_cells": 729,
-                "n_cells_cell_type": 7290,
-                "n_cells_tissue": 21870,
-                "nnz": 729,
-                "sum": 729.0,
+                "n_cells": 2187,
+                "n_cells_cell_type": 21870,
+                "n_cells_tissue": 65610,
+                "nnz": 2187,
+                "sum": 2187.0,
             },
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_2",
                 "tissue_ontology_term_id": "tissue_ontology_term_id_2",
                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_0",
-                "n_cells": 729,
-                "n_cells_cell_type": 7290,
-                "n_cells_tissue": 21870,
-                "nnz": 729,
-                "sum": 729.0,
+                "n_cells": 2187,
+                "n_cells_cell_type": 21870,
+                "n_cells_tissue": 65610,
+                "nnz": 2187,
+                "sum": 2187.0,
             },
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_2",
                 "tissue_ontology_term_id": "tissue_ontology_term_id_2",
                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_1",
-                "n_cells": 729,
-                "n_cells_cell_type": 7290,
-                "n_cells_tissue": 21870,
-                "nnz": 729,
-                "sum": 729.0,
+                "n_cells": 2187,
+                "n_cells_cell_type": 21870,
+                "n_cells_tissue": 65610,
+                "nnz": 2187,
+                "sum": 2187.0,
             },
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_2",
                 "tissue_ontology_term_id": "tissue_ontology_term_id_2",
                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_2",
-                "n_cells": 729,
-                "n_cells_cell_type": 7290,
-                "n_cells_tissue": 21870,
-                "nnz": 729,
-                "sum": 729.0,
+                "n_cells": 2187,
+                "n_cells_cell_type": 21870,
+                "n_cells_tissue": 65610,
+                "nnz": 2187,
+                "sum": 2187.0,
             },
         ]
 
@@ -290,16 +309,14 @@ class QueryTest(unittest.TestCase):
             query = WmgQuery(snapshot)
             result = agg_cell_type_counts(query.cell_counts(criteria))
 
-        expected_n_combinations = dim_size ** (len(cube_non_indexed_dims) - 1)
-        assert expected_n_combinations == 729
+        not_used_cube_indexed_dims = [0 if criteria.dict()[dim_name] else 1 for dim_name in ALL_INDEXED_DIMS_FOR_QUERY]
+        expected_n_combinations = dim_size ** (len(cube_non_indexed_dims) + sum(not_used_cube_indexed_dims) - 1)
+
+        assert expected_n_combinations == 2187
 
         # after aggregating, we will get three tissues, and three cell types per tissue,
         # with 729 * expected_count total cells
-        expected = (
-            [{"n_cells_cell_type": expected_n_combinations * expected_count}]
-            * len(criteria.tissue_ontology_term_ids)
-            * dim_size
-        )
+        expected = [{"n_cells_cell_type": 2187 * expected_count}] * len(criteria.tissue_ontology_term_ids) * dim_size
 
         self.assertEqual(expected, result.to_dict("records"))
 
@@ -324,14 +341,14 @@ class QueryTest(unittest.TestCase):
             query = WmgQuery(snapshot)
             result = agg_tissue_counts(query.cell_counts(criteria))
 
-        expected_n_combinations = dim_size ** (len(cube_non_indexed_dims) - 1)
-        assert expected_n_combinations == 729
+        not_used_cube_indexed_dims = [0 if criteria.dict()[dim_name] else 1 for dim_name in ALL_INDEXED_DIMS_FOR_QUERY]
+        expected_n_combinations = dim_size ** (len(cube_non_indexed_dims) + sum(not_used_cube_indexed_dims) - 1)
+
+        assert expected_n_combinations == 2187
 
         # after aggregating, we will get three tissues,
         # with 729 * expected_count * (# cell types per tissue = 3) total cells
-        expected = [{"n_cells_tissue": expected_n_combinations * expected_count * dim_size}] * len(
-            criteria.tissue_ontology_term_ids
-        )
+        expected = [{"n_cells_tissue": 2187 * expected_count * dim_size}] * len(criteria.tissue_ontology_term_ids)
         self.assertEqual(expected, result.to_dict("records"))
 
     @classmethod
@@ -359,42 +376,48 @@ class QueryTest(unittest.TestCase):
         # sanity check the expected value of the stats (n_cells, nnz, sum) for each data viz point; if this fails, the
         # cube test fixture may have changed (e.g. TileDB Array schema) or the logic for creating the test cube fixture
         # has changed
-        expected_cell_count_per_cell_type = dim_size ** (len(cube_non_indexed_dims) - 2)
-        assert expected_cell_count_per_cell_type == 243
 
-        expected_cell_count_per_tissue = 10 * (dim_size ** (len(cube_non_indexed_dims) - 1))
-        assert expected_cell_count_per_tissue == 7290
+        not_used_cube_indexed_dims = [0 if criteria.dict()[dim_name] else 1 for dim_name in ALL_INDEXED_DIMS_FOR_QUERY]
+        expected_cell_count_per_cell_type = dim_size ** (
+            len(cube_non_indexed_dims) - 2 + sum(not_used_cube_indexed_dims)
+        )
+        expected_cell_count_per_tissue = 10 * (
+            dim_size ** (len(cube_non_indexed_dims) - 1 + sum(not_used_cube_indexed_dims))
+        )
+
+        assert expected_cell_count_per_cell_type == 729
+        assert expected_cell_count_per_tissue == 21870
 
         expected = [
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_0",
                 "tissue_ontology_term_id": "tissue_ontology_term_id_0",
                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_0",
-                "n_cells": 243,
-                "n_cells_cell_type": 2430,
-                "n_cells_tissue": 7290,
-                "nnz": 243,
-                "sum": 243.0,
+                "n_cells": 729,
+                "n_cells_cell_type": 7290,
+                "n_cells_tissue": 21870,
+                "nnz": 729,
+                "sum": 729.0,
             },
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_0",
                 "tissue_ontology_term_id": "tissue_ontology_term_id_0",
                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_1",
-                "n_cells": 243,
-                "n_cells_cell_type": 2430,
-                "n_cells_tissue": 7290,
-                "nnz": 243,
-                "sum": 243.0,
+                "n_cells": 729,
+                "n_cells_cell_type": 7290,
+                "n_cells_tissue": 21870,
+                "nnz": 729,
+                "sum": 729.0,
             },
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_0",
                 "tissue_ontology_term_id": "tissue_ontology_term_id_0",
                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_2",
-                "n_cells": 243,
-                "n_cells_cell_type": 2430,
-                "n_cells_tissue": 7290,
-                "nnz": 243,
-                "sum": 243.0,
+                "n_cells": 729,
+                "n_cells_cell_type": 7290,
+                "n_cells_tissue": 21870,
+                "nnz": 729,
+                "sum": 729.0,
             },
         ]
 
@@ -430,42 +453,48 @@ class QueryTest(unittest.TestCase):
         # sanity check the expected value of the stats (n_cells, nnz, sum) for each data viz point; if this fails, the
         # cube test fixture may have changed (e.g. TileDB Array schema) or the logic for creating the test cube fixture
         # has changed
-        expected_cell_count_per_cell_type = dim_size ** (len(cube_non_indexed_dims) - 2) * 2
-        assert expected_cell_count_per_cell_type == 486
+        not_used_cube_indexed_dims = [0 if criteria.dict()[dim_name] else 1 for dim_name in ALL_INDEXED_DIMS_FOR_QUERY]
+        expected_cell_count_per_cell_type = (
+            dim_size ** (len(cube_non_indexed_dims) - 2 + sum(not_used_cube_indexed_dims)) * 2
+        )
 
-        expected_cell_count_per_tissue = 10 * (dim_size ** (len(cube_non_indexed_dims) - 1) * 2)
-        assert expected_cell_count_per_tissue == 14580
+        expected_cell_count_per_tissue = 10 * (
+            dim_size ** (len(cube_non_indexed_dims) - 1 + sum(not_used_cube_indexed_dims)) * 2
+        )
+
+        assert expected_cell_count_per_cell_type == 1458
+        assert expected_cell_count_per_tissue == 43740
 
         expected = [
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_0",
                 "tissue_ontology_term_id": "tissue_ontology_term_id_0",
                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_0",
-                "n_cells": 486,
-                "n_cells_cell_type": 4860,
-                "n_cells_tissue": 14580,
-                "nnz": 486,
-                "sum": 486.0,
+                "n_cells": 1458,
+                "n_cells_cell_type": 14580,
+                "n_cells_tissue": 43740,
+                "nnz": 1458,
+                "sum": 1458.0,
             },
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_0",
                 "tissue_ontology_term_id": "tissue_ontology_term_id_0",
                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_1",
-                "n_cells": 486,
-                "n_cells_cell_type": 4860,
-                "n_cells_tissue": 14580,
-                "nnz": 486,
-                "sum": 486.0,
+                "n_cells": 1458,
+                "n_cells_cell_type": 14580,
+                "n_cells_tissue": 43740,
+                "nnz": 1458,
+                "sum": 1458.0,
             },
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_0",
                 "tissue_ontology_term_id": "tissue_ontology_term_id_0",
                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_2",
-                "n_cells": 486,
-                "n_cells_cell_type": 4860,
-                "n_cells_tissue": 14580,
-                "nnz": 486,
-                "sum": 486.0,
+                "n_cells": 1458,
+                "n_cells_cell_type": 14580,
+                "n_cells_tissue": 43740,
+                "nnz": 1458,
+                "sum": 1458.0,
             },
         ]
 
@@ -502,42 +531,47 @@ class QueryTest(unittest.TestCase):
         # sanity check the expected value of the stats (n_cells, nnz, sum) for each data viz point; if this fails, the
         # cube test fixture may have changed (e.g. TileDB Array schema) or the logic for creating the test cube fixture
         # has changed
-        expected_cell_count_per_cell_type = dim_size ** (len(cube_non_indexed_dims) - 3) * 1 * 2
-        assert expected_cell_count_per_cell_type == 162
+        not_used_cube_indexed_dims = [0 if criteria.dict()[dim_name] else 1 for dim_name in ALL_INDEXED_DIMS_FOR_QUERY]
+        expected_cell_count_per_cell_type = (
+            dim_size ** (len(cube_non_indexed_dims) - 3 + sum(not_used_cube_indexed_dims)) * 1 * 2
+        )
+        expected_cell_count_per_tissue = 10 * (
+            dim_size ** (len(cube_non_indexed_dims) - 2 + sum(not_used_cube_indexed_dims)) * 1 * 2
+        )
 
-        expected_cell_count_per_tissue = 10 * (dim_size ** (len(cube_non_indexed_dims) - 2) * 1 * 2)
-        assert expected_cell_count_per_tissue == 4860
+        assert expected_cell_count_per_cell_type == 486
+        assert expected_cell_count_per_tissue == 14580
 
         expected = [
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_0",
                 "tissue_ontology_term_id": "tissue_ontology_term_id_0",
                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_0",
-                "n_cells": 162,
-                "n_cells_cell_type": 1620,
-                "n_cells_tissue": 4860,
-                "nnz": 162,
-                "sum": 162.0,
+                "n_cells": 486,
+                "n_cells_cell_type": 4860,
+                "n_cells_tissue": 14580,
+                "nnz": 486,
+                "sum": 486.0,
             },
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_0",
                 "tissue_ontology_term_id": "tissue_ontology_term_id_0",
                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_1",
-                "n_cells": 162,
-                "n_cells_cell_type": 1620,
-                "n_cells_tissue": 4860,
-                "nnz": 162,
-                "sum": 162.0,
+                "n_cells": 486,
+                "n_cells_cell_type": 4860,
+                "n_cells_tissue": 14580,
+                "nnz": 486,
+                "sum": 486.0,
             },
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_0",
                 "tissue_ontology_term_id": "tissue_ontology_term_id_0",
                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_2",
-                "n_cells": 162,
-                "n_cells_cell_type": 1620,
-                "n_cells_tissue": 4860,
-                "nnz": 162,
-                "sum": 162.0,
+                "n_cells": 486,
+                "n_cells_cell_type": 4860,
+                "n_cells_tissue": 14580,
+                "nnz": 486,
+                "sum": 486.0,
             },
         ]
 

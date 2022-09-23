@@ -22,7 +22,10 @@ class TooLargeHTTPException(ProblemException):
 
 
 class InvalidParametersHTTPException(ProblemException):
-    def __init__(self, detail: str = "One or more parameters is invalid.", *args, **kwargs) -> None:
+    _default_detail = "One or more parameters is invalid."
+
+    def __init__(self, detail: str = None, *args, **kwargs) -> None:
+        detail = detail if detail else self._default_detail
         super().__init__(status=400, title="Bad Request", detail=detail, *args, **kwargs)
 
 

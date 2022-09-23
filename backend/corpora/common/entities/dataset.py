@@ -24,9 +24,11 @@ from ..corpora_orm import (
     DatasetArtifactFileType,
     ConversionStatus,
 )
+from ..utils.corpora_constants import CorporaConstants
 from ..utils.db_helpers import clone
 from ..utils.development_stage_ontology_mapping import development_stage_ontology_mapping
 from ..utils.tissue_ontology_mapping import tissue_ontology_mapping
+from ..utils.cell_type_ontology_mapping import cell_type_ontology_mapping
 from ..utils.s3_buckets import buckets
 
 
@@ -90,26 +92,18 @@ class Dataset(Entity):
 
     @classmethod
     def get(
-        cls, session: Session, dataset_id=None, include_tombstones=False, collection_id=None, curator_tag=None
+        cls, session: Session, dataset_id=None, include_tombstones=False, collection_id=None
     ) -> typing.Optional["Dataset"]:
-        if not (dataset_id or (curator_tag and collection_id)):
-            raise ValueError("Not enough information to query")
         filters = []
         if not include_tombstones:
             filters.append(cls.table.tombstone != True)  # noqa
         if collection_id:
             filters.append(cls.table.collection_id == collection_id)
-        if curator_tag:
-            filters.append(cls.table.curator_tag == curator_tag)
         if dataset_id:
             filters.append(cls.table.id == dataset_id)
         result = session.query(cls.table).filter(*filters).one_or_none()
         dataset = cls(result) if result else None
         return dataset
-
-    @classmethod
-    def get_dataset_from_curator_tag(cls, session: Session, collection_id, curator_tag, **kwargs) -> "Dataset":
-        return cls.get(session, collection_id=collection_id, curator_tag=curator_tag, **kwargs)
 
     @classmethod
     def get_by_explorer_url(cls, session: Session, explorer_url):
@@ -168,7 +162,10 @@ class Dataset(Entity):
         """
         Retrieve all the assets for the dataset
         """
-        return self.artifacts
+        assets = [
+            asset for asset in self.artifacts if asset.filename != CorporaConstants.ORIGINAL_H5AD_ARTIFACT_FILENAME
+        ]
+        return assets
 
     @staticmethod
     def transform_sex_for_schema_2_0_0(dataset):
@@ -192,6 +189,13 @@ class Dataset(Entity):
         Tag dataset with ancestors for all tissues in the given dataset, if any.
         """
         Dataset._enrich_with_ancestors(dataset, "tissue", tissue_ontology_mapping)
+
+    @staticmethod
+    def enrich_cell_type_with_ancestors(dataset):
+        """
+        Tag dataset with ancestors for all cell types in the given dataset, if any.
+        """
+        Dataset._enrich_with_ancestors(dataset, "cell_type", cell_type_ontology_mapping)
 
     def _enrich_with_ancestors(dataset, key, ontology_mapping):
         """

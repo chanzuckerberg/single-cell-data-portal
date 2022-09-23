@@ -1,15 +1,14 @@
 from flask import g, make_response, jsonify
 
 from backend.corpora.api_server.db import dbconnect
-from backend.corpora.common.corpora_orm import CollectionVisibility, DbCollection
+from backend.corpora.common.corpora_orm import DbCollection, CollectionVisibility, ProcessingStatus
 from backend.corpora.common.entities import Dataset
 from backend.corpora.common.utils.http_exceptions import (
-    InvalidParametersHTTPException,
-    ConflictException,
     NotFoundHTTPException,
+    MethodNotAllowedException,
 )
-from backend.corpora.common.utils.regex import validate_curator_tag
 from backend.corpora.lambdas.api.v1.authorization import owner_or_allowed
+from backend.corpora.lambdas.api.v1.collection_id.upload import upload_from_link
 from backend.corpora.lambdas.api.v1.common import (
     get_dataset_else_error,
     delete_dataset_common,
@@ -19,43 +18,40 @@ from backend.corpora.lambdas.api.v1.curation.collections.common import EntityCol
 
 
 @dbconnect
-def patch(token_info: dict, collection_id: str, body: dict, curator_tag: str = None, dataset_id: str = None):
-    db_session = g.db_session
-    dataset = get_dataset_else_error(db_session, dataset_id, collection_id, curator_tag)
-    get_collection_else_forbidden(
-        db_session, collection_id, visibility=CollectionVisibility.PRIVATE, owner=owner_or_allowed(token_info)
-    )
-    tag = body["curator_tag"]
-    try:
-        validate_curator_tag(tag)
-    except ValueError as ex:
-        raise InvalidParametersHTTPException(detail=ex.args[0])
-
-    # Check if the curator_tag is unique across datasets in the collection.
-    if dataset.curator_tag != tag:
-        if conflict := Dataset.get(db_session, collection_id=collection_id, curator_tag=tag):
-            raise ConflictException(
-                detail=f"Curator_tags must be unique within a collection. Dataset={conflict.id} is using "
-                f"curator_tag={tag}"
-            )
-        else:
-            dataset.update(curator_tag=tag)
-    return make_response("", 204)
-
-
-@dbconnect
-def get(collection_id: str, curator_tag: str = None, dataset_id: str = None):
+def get(collection_id: str, dataset_id: str = None):
     db_session = g.db_session
     if not db_session.query(DbCollection.id).filter(DbCollection.id == collection_id).first():
         raise NotFoundHTTPException("Collection not found!")
-    dataset = get_dataset_else_error(db_session, dataset_id, collection_id, curator_tag)
+    dataset = get_dataset_else_error(db_session, dataset_id, collection_id)
     response_body = reshape_dataset_for_curation_api(dataset.to_dict_keep(EntityColumns.columns_for_dataset))
     return make_response(jsonify(response_body), 200)
 
 
 @dbconnect
-def delete(token_info: dict, collection_id: str, curator_tag: str = None, dataset_id: str = None):
+def delete(token_info: dict, collection_id: str, dataset_id: str = None):
     db_session = g.db_session
-    dataset = get_dataset_else_error(db_session, dataset_id, collection_id, curator_tag, include_tombstones=True)
+    dataset = get_dataset_else_error(db_session, dataset_id, collection_id, include_tombstones=True)
     delete_dataset_common(db_session, dataset, token_info)
+    return "", 202
+
+
+@dbconnect
+def post(token_info: dict, collection_id: str):
+    db_session = g.db_session
+    collection = get_collection_else_forbidden(db_session, collection_id, owner=owner_or_allowed(token_info))
+    if collection.visibility != CollectionVisibility.PRIVATE:
+        raise MethodNotAllowedException("Collection must be PRIVATE Collection, or a revision of a PUBLIC Collection.")
+    dataset = Dataset.create(
+        db_session, collection=collection, processing_status={"processing_status": ProcessingStatus.INITIALIZED}
+    )
+    return make_response(jsonify({"dataset_id": dataset.id}), 201)
+
+
+def put(collection_id: str, dataset_id: str, body: dict, token_info: dict):
+    upload_from_link(
+        collection_id,
+        token_info,
+        body.get("url", body.get("link")),
+        dataset_id,
+    )
     return "", 202

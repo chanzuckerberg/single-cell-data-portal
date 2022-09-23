@@ -136,6 +136,10 @@ state that mimics the Conversion step of the main step function.
 import os
 import sys
 
+from backend.corpora.common.corpora_orm import (
+    ConversionStatus,
+    UploadStatus,
+)
 from backend.corpora.common.entities import Dataset
 from backend.corpora.common.utils.db_session import db_session_manager
 from backend.corpora.dataset_processing.common import update_db
@@ -179,7 +183,6 @@ def main():
     log_batch_environment()
     dataset_id = os.environ["DATASET_ID"]
     step_name = os.environ["STEP_NAME"]
-    is_last_attempt = os.environ["AWS_BATCH_JOB_ATTEMPT"] == os.getenv("MAX_ATTEMPTS", "1")
     return_value = 0
     logger.info(f"Processing dataset {dataset_id}")
     try:
@@ -202,9 +205,12 @@ def main():
 
             process(dataset_id, os.environ["ARTIFACT_BUCKET"])
         elif step_name == "cxg_remaster":
-            from backend.corpora.dataset_processing.remaster_cxg import process
+            try:
+                from backend.corpora.dataset_processing.remaster_cxg import process
 
-            process(dataset_id, os.environ["CELLXGENE_BUCKET"], dry_run=False)
+                process(dataset_id, os.environ["CELLXGENE_BUCKET"], dry_run=False)
+            except Exception as e:
+                print(f"Dataset {dataset_id} failed to remaster: {e}")
         else:
             logger.error(f"Step function configuration error: Unexpected STEP_NAME '{step_name}'")
 
@@ -212,15 +218,20 @@ def main():
         cancel_dataset(dataset_id)
     except (ValidationFailed, ProcessingFailed, ConversionFailed) as e:
         (status,) = e.args
-        if is_last_attempt:
-            update_db(dataset_id, processing_status=status)
+        update_db(dataset_id, processing_status=status)
         logger.exception("An Error occurred while processing.")
         return_value = 1
     except Exception as e:
-        (status,) = e.args
-        if is_last_attempt and isinstance(status, dict):
-            update_db(dataset_id, processing_status=status)
         logger.exception(f"An unexpected error occurred while processing the data set: {e}")
+        if step_name == "download-validate":
+            update_db(
+                dataset_id,
+                processing_status={"upload_status": UploadStatus.FAILED, "upload_message": str(e)},
+            )
+        elif step_name == "seurat":
+            update_db(dataset_id, processing_status={"rds_status": ConversionStatus.FAILED})
+        elif step_name == "cxg":
+            update_db(dataset_id, processing_status={"cxg_status": ConversionStatus.FAILED})
         return_value = 1
 
     return return_value

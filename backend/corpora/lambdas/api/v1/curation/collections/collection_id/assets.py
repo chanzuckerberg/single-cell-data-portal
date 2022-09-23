@@ -8,9 +8,9 @@ from backend.corpora.lambdas.api.v1.common import get_dataset_else_error
 
 
 @dbconnect
-def get(collection_id: str, curator_tag: str = None, dataset_id=None):
+def get(collection_id: str, dataset_id=None):
     db_session = g.db_session
-    dataset = get_dataset_else_error(db_session, dataset_id, collection_id, curator_tag)
+    dataset = get_dataset_else_error(db_session, dataset_id, collection_id)
 
     # retrieve the artifact
     assets = dataset.get_assets()
@@ -23,17 +23,17 @@ def get(collection_id: str, curator_tag: str = None, dataset_id=None):
         asset = DatasetAsset(a)
         if asset.filetype == DatasetArtifactFileType.CXG:
             continue
-        result = dict(file_type=asset.filetype, file_name=asset.filename)
+        result = dict(filetype=asset.filetype, filename=asset.filename)
 
         # Retrieve S3 metadata
-        file_size = asset.get_file_size()
-        if not file_size:
-            result["file_size"] = -1
+        filesize = asset.get_file_size()
+        if not filesize:
+            result["filesize"] = -1
             asset_list.append(result)
             error_flag = True
             continue
         else:
-            result["file_size"] = file_size
+            result["filesize"] = filesize
 
         # Generate pre-signed URL
         presigned_url = asset.generate_file_url()
@@ -45,7 +45,5 @@ def get(collection_id: str, curator_tag: str = None, dataset_id=None):
         asset_list.append(result)
 
     response = dict(dataset_id=dataset.id, assets=asset_list)
-    if dataset.curator_tag:
-        response["curator_tag"] = dataset.curator_tag
     status_code = 202 if error_flag else 200
     return make_response(jsonify(**response), status_code)

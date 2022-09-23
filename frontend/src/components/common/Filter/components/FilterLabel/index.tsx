@@ -1,12 +1,11 @@
 import { Button } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
-import { CATEGORY_LABEL } from "src/components/common/Filter/common/entities";
 import FilterLabelTooltip from "src/components/common/Filter/components/FilterLabel/components/FilterLabelTooltip";
 import { CategoryButton } from "./style";
 
 interface Props {
   isDisabled: boolean;
-  label: CATEGORY_LABEL;
+  label: string;
   tooltip?: string;
 }
 

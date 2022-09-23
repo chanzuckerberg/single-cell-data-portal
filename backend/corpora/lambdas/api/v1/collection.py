@@ -22,7 +22,7 @@ from ....common.utils.http_exceptions import (
     ForbiddenHTTPException,
 )
 from ....api_server.db import dbconnect
-from ....common.utils.regex import CONTROL_CHARS
+from ....common.utils.regex import CONTROL_CHARS, DOI_REGEX_COMPILED, CURIE_REFERENCE_REGEX
 
 
 @dbconnect
@@ -133,40 +133,6 @@ def post_collection_revision(collection_id: str, token_info: dict):
     return make_response(jsonify(result), 201)
 
 
-doi_regex = re.compile(r"^10.\d{4,9}/[-._;()/:A-Z0-9]+$", flags=re.I)
-
-
-def normalize_and_get_doi(body: dict, errors: list) -> Optional[str]:
-    """
-    1. Check for DOI uniqueness in the payload
-    2. Normalizes it so that the DOI is always a link (starts with https://doi.org)
-    3. Returns the newly normalized DOI
-    """
-    links = body.get("links", [])
-    dois = [link for link in links if link["link_type"] == ProjectLinkType.DOI.name]
-
-    if not dois:
-        return None
-
-    # Verify that a single DOI exists
-    if len(dois) > 1:
-        errors.append({"link_type": ProjectLinkType.DOI.name, "reason": "Can only specify a single DOI"})
-        return None
-
-    doi_node = dois[0]
-    doi = doi_node["link_url"]
-
-    parsed = urlparse(doi)
-    if not parsed.scheme and not parsed.netloc:
-        parsed_doi = parsed.path
-        if not doi_regex.match(parsed_doi):
-            errors.append({"link_type": ProjectLinkType.DOI.name, "reason": "Invalid DOI"})
-            return None
-        doi_node["link_url"] = f"https://doi.org/{parsed_doi}"
-
-    return doi
-
-
 def get_publisher_metadata(doi: str, errors: list) -> Optional[dict]:
     """
     Retrieves publisher metadata from Crossref.
@@ -208,7 +174,7 @@ def verify_collection_body(body: dict, errors: list) -> None:
         if key in body.keys():
             if not body[key]:
                 errors.append({"name": key, "reason": "Cannot be blank."})
-            elif control_char_re.search(body[key]):
+            elif key == "name" and control_char_re.search(body[key]):
                 errors.append({"name": key, "reason": "Invalid characters detected."})
             else:
                 return body[key]
@@ -226,12 +192,59 @@ def verify_collection_body(body: dict, errors: list) -> None:
     verify_collection_links(body, errors)
 
 
-@dbconnect
+def get_doi_link_node(body: dict, errors: list) -> Optional[dict]:
+    links = body.get("links", [])
+    dois = [link for link in links if link["link_type"] == ProjectLinkType.DOI.name]
+
+    if not dois:
+        return None
+
+    # Verify that a single DOI exists
+    if len(dois) > 1:
+        errors.append({"link_type": ProjectLinkType.DOI.name, "reason": "Can only specify a single DOI"})
+        return None
+
+    return dois[0]
+
+
+def curation_get_normalized_doi_url(doi: str, errors: list) -> Optional[str]:
+    # Regex below is adapted from https://bioregistry.io/registry/doi 'Pattern for CURIES'
+    if not re.match(CURIE_REFERENCE_REGEX, doi):
+        errors.append({"name": ProjectLinkType.DOI.value, "reason": "DOI must be a CURIE reference."})
+        return None
+    return f"https://doi.org/{doi}"
+
+
+def portal_get_normalized_doi_url(doi_node: dict, errors: list) -> Optional[str]:
+    """
+    1. Check for DOI uniqueness in the payload
+    2. Normalizes it so that the DOI is always a link (starts with https://doi.org)
+    3. Returns the newly normalized DOI
+    """
+    doi_url = doi_node["link_url"]
+    parsed = urlparse(doi_url)
+    if not parsed.scheme and not parsed.netloc:
+        parsed_doi = parsed.path
+        if not DOI_REGEX_COMPILED.match(parsed_doi):
+            errors.append({"link_type": ProjectLinkType.DOI.name, "reason": "Invalid DOI"})
+            return None
+        doi_url = f"https://doi.org/{parsed_doi}"
+    return doi_url
+
+
 def create_collection(body: dict, user: str):
-    db_session = g.db_session
     errors = []
+    doi_url = None
+    if doi_node := get_doi_link_node(body, errors):
+        if doi_url := portal_get_normalized_doi_url(doi_node, errors):
+            doi_node["link_url"] = doi_url
+    return create_collection_common(body, user, doi_url, errors)
+
+
+@dbconnect
+def create_collection_common(body: dict, user: str, doi: str, errors: list):
+    db_session = g.db_session
     verify_collection_body(body, errors)
-    doi = normalize_and_get_doi(body, errors)
     if doi is not None:
         publisher_metadata = get_publisher_metadata(doi, errors)
     else:
@@ -280,13 +293,16 @@ def update_collection(collection_id: str, body: dict, token_info: dict):
     collection, errors = get_collection_and_verify_body(db_session, collection_id, body, token_info)
     # Compute the diff between old and new DOI
     old_doi = collection.get_doi()
-    new_doi = normalize_and_get_doi(body, errors)
-    if old_doi and not new_doi:
+    new_doi_url = None
+    if new_doi_node := get_doi_link_node(body, errors):
+        if new_doi_url := portal_get_normalized_doi_url(new_doi_node, errors):
+            new_doi_node["link_url"] = new_doi_url
+    if old_doi and not new_doi_url:
         # If the DOI was deleted, remove the publisher_metadata field
         collection.update(publisher_metadata=None)
-    elif new_doi != old_doi:
+    elif new_doi_url != old_doi:
         # If the DOI has changed, fetch and update the metadata
-        publisher_metadata = get_publisher_metadata(new_doi, errors)
+        publisher_metadata = get_publisher_metadata(new_doi_url, errors)
         body["publisher_metadata"] = publisher_metadata
     if errors:
         raise InvalidParametersHTTPException(detail=errors)
