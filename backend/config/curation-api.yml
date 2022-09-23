@@ -154,6 +154,8 @@ paths:
       description: >
         Fetch full metadata for the Collection and its Datasets.
 
+        An Authentication token must be provided in order to retrieve the id of an associated Revision for this Collection (the `revising_in` field), if such a Revision currently exists.
+
         * Optional: provide your access token in the request header as `Authentication: Bearer <access_token>`.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.actions.get
       security:
@@ -182,7 +184,7 @@ paths:
         metadata of the DOI such as the list of authors. If the DOI has not been submitted to Crossref by its 
         publisher, then the request returns a 400 (BAD REQUEST).
 
-        * Optional: provide your access token in the request header as `Authentication: Bearer <access_token>`.
+        * Required: provide your access token in the request header as `Authentication: Bearer <access_token>`.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.actions.patch
       security:
         - curatorAccess: []
@@ -295,6 +297,8 @@ paths:
       description: |
         Create a new empty Dataset and return the `id`. The `id` is used when uploading a datafile 
         to S3 to identify what Dataset the file belongs to.
+
+        * Required: provide your access token in the request header as `Authentication: bearer <access_token>`.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.datasets.actions.post
       security:
         - curatorAccess: []
@@ -323,8 +327,9 @@ paths:
     delete:
       summary: Delete a Dataset or cancel processing for a Dataset in a private Collection or Revision.
       description: >-
-        Delete a Dataset or cancel processing for a Dataset. The **collection_id** MUST reference either a private Collection OR a 
-        Revision. MUST indicate the Dataset by providing the **dataset_id** parameter.
+        Delete or cancel processing for a Dataset with `dataset_id` in `collection_id`. 
+        The `collection_id` MUST reference either a private Collection OR a 
+        Revision.
 
         If the Dataset is being processed, then this endpoint will cancel processing and delete the Dataset. While 
         the cancellation process is occurring, the Dataset may still appear as part of the Collection for a few minutes, but will eventually be removed.
@@ -358,8 +363,7 @@ paths:
     get:
       summary: Fetch Dataset metadata from a Collection.
       description: |
-        Fetch Dataset metadata from a Collection. If a `dataset_id` is provided as a query,
-        the associated Dataset metadata is returned.
+        Fetch Dataset metadata for `dataset_id` in a `collection_id`.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.datasets.actions.get
       tags:
         - collection
@@ -509,9 +513,9 @@ paths:
       tags:
         - collection
       description: |
-        Generate Presigned S3 URLs to download the files associated with the Dataset. MUST include 
-        `dataset_id` parameters. Pre-signed S3 URLs have a life span of up to 1 hour. Therefore,
-        generate a presigned URL immediately before each download to ensure it is current.
+        Generate Presigned S3 URLs to download the files associated with the `dataset_id`. 
+        Pre-signed S3 URLs have a life span of up to 1 hour. You should
+        generate a pre-signed URL immediately before each download to ensure it is current.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.assets.get
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
