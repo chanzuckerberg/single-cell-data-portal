@@ -22,7 +22,6 @@ from backend.wmg.data.tissue_mapper import TissueMapper
 from backend.wmg.data.schemas.corpus_schema import INTEGRATED_ARRAY_NAME
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
 
 
 def apply_pre_concatenation_filters(

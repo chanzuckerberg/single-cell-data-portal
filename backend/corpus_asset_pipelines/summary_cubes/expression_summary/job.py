@@ -14,7 +14,6 @@ from backend.wmg.data.utils import log_func_runtime, create_empty_cube
 from backend.wmg.data.schemas.cube_schema import cube_non_indexed_dims, cube_indexed_dims_no_gene_ontology
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
 
 
 def _load(

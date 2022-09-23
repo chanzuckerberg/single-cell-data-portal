@@ -17,7 +17,6 @@ from backend.wmg.data.tiledb import create_ctx
 from backend.wmg.data.utils import log_func_runtime
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
 
 
 @log_func_runtime

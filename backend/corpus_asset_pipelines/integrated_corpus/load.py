@@ -10,7 +10,6 @@ from backend.wmg.data.schemas.corpus_schema import obs_labels, var_labels, VAR_A
 from backend.wmg.data.utils import log_func_runtime
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
 
 
 @log_func_runtime
