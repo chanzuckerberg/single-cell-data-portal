@@ -7,26 +7,28 @@ import pandas as pd
 from backend.wmg.data import query
 from backend.wmg.data.snapshot import (
     EXPRESSION_SUMMARY_CUBE_NAME,
-    WmgSnapshot, _read_s3obj,
+    WmgSnapshot,
+    _read_s3obj,
 )
 from backend.wmg.data.snapshot import _open_cube
 
-pd.set_option('max_columns', 10)
-pd.set_option('display.width', 256)
+pd.set_option("max_columns", 10)
+pd.set_option("display.width", 256)
 
 # used by _read_s3_obj() and _open_cube()
-os.environ['DEPLOYMENT_STAGE'] = 'dev'
+os.environ["DEPLOYMENT_STAGE"] = "dev"
 
 
 def load_snapshot(snapshot_id) -> WmgSnapshot:
     cube = _open_cube(
-        f's3://cellxgene-wmg-{os.environ["DEPLOYMENT_STAGE"]}/{snapshot_id}/{EXPRESSION_SUMMARY_CUBE_NAME}/')
+        f's3://cellxgene-wmg-{os.environ["DEPLOYMENT_STAGE"]}/{snapshot_id}/{EXPRESSION_SUMMARY_CUBE_NAME}/'
+    )
     return WmgSnapshot(
         snapshot_identifier=snapshot_id,
         expression_summary_cube=cube,
         cell_counts_cube=None,  # _open_cube(f"{snapshot_base_uri}/{CELL_COUNTS_CUBE_NAME}"),
         cell_type_orderings=pd.DataFrame(),
-        primary_filter_dimensions=pd.DataFrame()
+        primary_filter_dimensions=pd.DataFrame(),
     )
 
 
@@ -49,9 +51,7 @@ if __name__ == "__main__":
     # print(q._snapshot.expression_summary_cube.multi_index[genes, tissues, [], organism])
     print(q._snapshot.expression_summary_cube.query().multi_index[genes, tissues, [], organism])
     print(pd.DataFrame(q._snapshot.expression_summary_cube.multi_index[genes, tissues, [], organism]))
-    print(
-        q._snapshot.expression_summary_cube.query(attrs=["n_cells"]).df[genes, tissues, :, organism].shape
-    )
+    print(q._snapshot.expression_summary_cube.query(attrs=["n_cells"]).df[genes, tissues, :, organism].shape)
     # print(q._snapshot.expression_summary_cube.df[genes, tissues, :, organism])
 
     # res = q.expression_summary(
