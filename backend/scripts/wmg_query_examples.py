@@ -8,7 +8,6 @@ from backend.wmg.data import query
 from backend.wmg.data.snapshot import (
     EXPRESSION_SUMMARY_CUBE_NAME,
     WmgSnapshot,
-    _read_s3obj,
 )
 from backend.wmg.data.snapshot import _open_cube
 

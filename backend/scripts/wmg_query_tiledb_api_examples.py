@@ -2,10 +2,9 @@
 
 import os
 
-import boto
 import pandas as pd
 
-from backend.wmg.data.snapshot import _open_cube, EXPRESSION_SUMMARY_CUBE_NAME, _read_s3obj
+from backend.wmg.data.snapshot import _open_cube, EXPRESSION_SUMMARY_CUBE_NAME
 
 pd.set_option("max_columns", 10)
 pd.set_option("display.width", 256)
@@ -21,13 +20,15 @@ if __name__ == "__main__":
 
     # "dims" and "attrs" are the logical schema, other stuff is TileDB-specific config
     # "dims" are akin to indexed columns (efficiently retrieves data from disk for queried values)
-    # "attrs" are akin to non-indexed columns (cannot efficiently retrieve data from disk for queried values; performs filtering in caller process)
+    # "attrs" are akin to non-indexed columns (cannot efficiently retrieve data from disk for queried values; performs
+    # filtering in caller process)
     # print(cube.schema)
 
     # query on gene, tissue, organism
     # dimension order matters!
 
-    # "raw" tiledb object query (no Pandas); returns OrderDict with dict keys as column names and dict values as column arrays
+    # "raw" tiledb object query (no Pandas); returns OrderDict with dict keys as column names and dict values as column
+    # arrays
     print(cube["ENSG00000182149", "UBERON:0000160", :, "NCBITaxon:9606"])
 
     # Pandas-based tiledb query; limit to 10 rows
