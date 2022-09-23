@@ -2,17 +2,20 @@
 
 import os
 
+import boto
 import pandas as pd
 
-from backend.wmg.data.snapshot import _open_cube, EXPRESSION_SUMMARY_CUBE_NAME
+from backend.wmg.data.snapshot import _open_cube, EXPRESSION_SUMMARY_CUBE_NAME, _read_s3obj
 
 pd.set_option('max_columns', 10)
 pd.set_option('display.width', 256)
 
+# used by _read_s3_obj() and _open_cube()
 os.environ['DEPLOYMENT_STAGE'] = 'dev'
 
 if __name__ == '__main__':
-    cube = _open_cube(f's3://cellxgene-wmg-dev/1662103227/{EXPRESSION_SUMMARY_CUBE_NAME}/')
+    snapshot_id = 1662103227 #_read_s3obj("latest_snapshot_identifier")
+    cube = _open_cube(f's3://cellxgene-wmg-{os.environ["DEPLOYMENT_STAGE"]}/{snapshot_id}/{EXPRESSION_SUMMARY_CUBE_NAME}/')
 
     # "dims" and "attrs" are the logical schema, other stuff is TileDB-specific config
     # "dims" are akin to indexed columns (efficiently retrieves data from disk for queried values)
@@ -22,7 +25,7 @@ if __name__ == '__main__':
     # query on gene, tissue, organism
     # dimension order matters!
 
-    "raw" tiledb object query (no Pandas); returns OrderDict with dict keys as column names and dict values as column arrays
+    # "raw" tiledb object query (no Pandas); returns OrderDict with dict keys as column names and dict values as column arrays
     print(cube["ENSG00000182149", "UBERON:0000160", :, "NCBITaxon:9606"])
 
     # Pandas-based tiledb query; limit to 10 rows

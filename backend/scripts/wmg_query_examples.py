@@ -7,21 +7,23 @@ import pandas as pd
 from backend.wmg.data import query
 from backend.wmg.data.snapshot import (
     EXPRESSION_SUMMARY_CUBE_NAME,
-    WmgSnapshot,
+    WmgSnapshot, _read_s3obj,
 )
 from backend.wmg.data.snapshot import _open_cube
-
-os.environ['DEPLOYMENT_STAGE'] = 'dev'
 
 pd.set_option('max_columns', 10)
 pd.set_option('display.width', 256)
 
+# used by _read_s3_obj() and _open_cube()
+os.environ['DEPLOYMENT_STAGE'] = 'dev'
 
-def load_snapshot(snapshot_identifier) -> WmgSnapshot:
-    snapshot_base_uri = f"s3://cellxgene-wmg-dev/{snapshot_identifier}/"
+
+def load_snapshot(snapshot_id) -> WmgSnapshot:
+    cube = _open_cube(
+        f's3://cellxgene-wmg-{os.environ["DEPLOYMENT_STAGE"]}/{snapshot_id}/{EXPRESSION_SUMMARY_CUBE_NAME}/')
     return WmgSnapshot(
-        snapshot_identifier=snapshot_identifier,
-        expression_summary_cube= _open_cube(f"{snapshot_base_uri}/{EXPRESSION_SUMMARY_CUBE_NAME}"),
+        snapshot_identifier=snapshot_id,
+        expression_summary_cube=cube,
         cell_counts_cube=None,  # _open_cube(f"{snapshot_base_uri}/{CELL_COUNTS_CUBE_NAME}"),
         cell_type_orderings=pd.DataFrame(),
         primary_filter_dimensions=pd.DataFrame()
@@ -29,7 +31,8 @@ def load_snapshot(snapshot_identifier) -> WmgSnapshot:
 
 
 def wmg_query() -> query.WmgQuery:
-    snapshot = load_snapshot("1662103227")
+    snapshot_id = 1662103227  # _read_s3obj("latest_snapshot_identifier")
+    snapshot = load_snapshot(snapshot_id)
     return query.WmgQuery(snapshot)
 
 
