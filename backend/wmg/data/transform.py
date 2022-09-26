@@ -69,8 +69,6 @@ def cell_type_ordering_create_file(snapshot_path: str, cell_type_by_tissue: Dict
 
     df.to_json(f"{snapshot_path}/{CELL_TYPE_ORDERINGS_FILENAME}")
 
-    return None
-
 
 def _cell_type_ordering_compute(cells: Set[str], root: str) -> pd.DataFrame:
     """
@@ -80,7 +78,7 @@ def _cell_type_ordering_compute(cells: Set[str], root: str) -> pd.DataFrame:
     DAG using a depth-first approach. Children cell types are represented with a number `depth`, which is 0-based
     and increases as going down through children cell types.
 
-    Any orphan cell types are added at the of table with 0 depth.
+    Any orphan cell types are added at the end of table with depth 0.
 
     :param Set[str] cells: Set of cell type ontology term ids
     :param str root: Root of the tree, usually CL:0000003
@@ -138,14 +136,13 @@ def _cell_type_ordering_compute(cells: Set[str], root: str) -> pd.DataFrame:
         for child in sorted_children:
             yield from recurse(child[0].id, depth=depth)
 
-    # Apply recursion to create ordered list of cells present in set "cells"
+    # Apply recursion to create an ordered list of cells present in set "cells"
     ordered_list = list(recurse(root))
 
     # If there are any cells left in set "cells", it means that either those cell types
     # don't exist in the ontology or they are above the root ("CL:0000003")
     # Add these "orphan" cells at end of list
-    while cells:
-        ordered_list.append(cell_entity(cells.pop(), depth=0))
+    ordered_list.extend([cell_entity(cell, depth=0) for cell in cells])
 
     # Arranges data into DF
     # Comment these lines out if the desired return object is:
