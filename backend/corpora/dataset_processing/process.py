@@ -205,9 +205,12 @@ def main():
 
             process(dataset_id, os.environ["ARTIFACT_BUCKET"])
         elif step_name == "cxg_remaster":
-            from backend.corpora.dataset_processing.remaster_cxg import process
+            try:
+                from backend.corpora.dataset_processing.remaster_cxg import process
 
-            process(dataset_id, os.environ["CELLXGENE_BUCKET"], dry_run=False)
+                process(dataset_id, os.environ["CELLXGENE_BUCKET"], dry_run=False)
+            except Exception as e:
+                print(f"Dataset {dataset_id} failed to remaster: {e}")
         else:
             logger.error(f"Step function configuration error: Unexpected STEP_NAME '{step_name}'")
 

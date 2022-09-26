@@ -269,7 +269,7 @@ def reprocess_seurat(ctx: Context, dataset_id: str) -> None:
 @cli.command()
 @click.pass_context
 def cxg_remaster(ctx):
-    """Cxg remaster"""
+    """Cxg remaster v2"""
     reprocess_datafile.cxg_remaster(ctx)
 
 
