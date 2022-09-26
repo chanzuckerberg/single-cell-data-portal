@@ -1118,9 +1118,9 @@ components:
       bearerFormat: JWT
       scheme: bearer
       type: http
-      x-bearerInfoFunc: backend.corpora.lambdas.api.v1.authentication.curation_apikey_info_func
+      x-bearerInfoFunc: backend.corpora.lambdas.api.v1.authentication.curation_access_token_func
     curatorAccessLenient:
       bearerFormat: JWT
       scheme: bearer
       type: http
-      x-bearerInfoFunc: backend.corpora.lambdas.api.v1.authentication.curation_apikey_info_func_lenient
+      x-bearerInfoFunc: backend.corpora.lambdas.api.v1.authentication.curation_access_token_func_lenient
