@@ -1,5 +1,6 @@
 import { ElementHandle } from "playwright";
 import { ROUTES } from "src/common/constants/routes";
+import { RawPrimaryFilterDimensionsResponse } from "src/common/queries/wheresMyGene";
 import {
   describeIfDevStagingProd,
   goToPage,
@@ -7,6 +8,9 @@ import {
 } from "tests/utils/helpers";
 import { TEST_URL } from "../common/constants";
 import { getTestID, getText } from "../utils/selectors";
+import { TISSUE_DENY_LIST } from "./fixtures/wheresMyGene/tissueRollup";
+
+const HOMO_SAPIENS_TERM_ID = "NCBITaxon:9606";
 
 const GENE_LABELS_ID = "gene-labels";
 const CELL_TYPE_LABELS_ID = "cell-type-labels";
@@ -256,6 +260,31 @@ describeIfDevStagingProd("Where's My Gene", () => {
 
       expect(afterCellTypeNames.length).toBe(beforeCellTypeNames.length);
       expect(afterCellTypeNames).toEqual(beforeCellTypeNames);
+    });
+  });
+
+  describe("tissue rollup", () => {
+    test("does NOT show tissues on the deny list", async () => {
+      const [response] = await Promise.all([
+        page.waitForResponse("**/primary_filter_dimensions"),
+        goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`),
+      ]);
+
+      const primaryFilterDimensions =
+        (await response.json()) as RawPrimaryFilterDimensionsResponse;
+
+      const humanTissues =
+        primaryFilterDimensions.tissue_terms[HOMO_SAPIENS_TERM_ID];
+
+      const tissueIds = new Set(
+        humanTissues.map((tissue) => Object.keys(tissue)[0])
+      );
+
+      const hasDeniedTissue = TISSUE_DENY_LIST.some((deniedTissueId) =>
+        tissueIds.has(deniedTissueId)
+      );
+
+      expect(hasDeniedTissue).toBe(false);
     });
   });
 });

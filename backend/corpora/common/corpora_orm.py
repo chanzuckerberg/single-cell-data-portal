@@ -21,6 +21,7 @@ from sqlalchemy.orm import relationship
 from typing import Optional, List, Dict
 from uuid import uuid4
 
+from .utils.corpora_constants import CorporaConstants
 from .utils.exceptions import CorporaException
 
 
@@ -109,7 +110,12 @@ class TransformingBase(object):
                 elif isinstance(value.__class__, DeclarativeMeta):
                     result[relation.key] = value.to_dict(backref=backref, remove_none=remove_none)
                 elif isinstance(value, list):
-                    result[relation.key] = [i.to_dict(backref=backref, remove_none=remove_none) for i in value]
+                    temp_list = []
+                    for i in value:
+                        r = i.to_dict(backref=backref, remove_none=remove_none)
+                        if r:
+                            temp_list.append(r)
+                    result[relation.key] = temp_list
                 else:
                     raise CorporaException(f"Unable to convert to dictionary. Unexpected type: {type(value)}.")
             backref.pop()
@@ -151,7 +157,12 @@ class TransformingBase(object):
                 elif isinstance(value.__class__, DeclarativeMeta):
                     result[relation.key] = value.to_dict_keep(keep=keep, backref=backref)
                 elif isinstance(value, list):
-                    result[relation.key] = [i.to_dict_keep(keep=keep, backref=backref) for i in value]
+                    temp_list = []
+                    for i in value:
+                        r = i.to_dict_keep(keep=keep, backref=backref)
+                        if r:
+                            temp_list.append(r)
+                    result[relation.key] = temp_list
                 else:
                     raise CorporaException(f"Unable to convert to dictionary. Unexpected type: {type(value)}.")
         backref.pop()
@@ -368,6 +379,24 @@ class DbDatasetArtifact(Base, AuditMixin):
 
     # Relationships
     dataset = relationship("DbDataset", uselist=False, back_populates="artifacts")
+
+    def to_dict(self, *args, **kwargs):
+        """
+        Removing the original artifact file from the dictionary.
+        """
+        result = None
+        if self.filename != CorporaConstants.ORIGINAL_H5AD_ARTIFACT_FILENAME:
+            result = super(Base, self).to_dict(*args, **kwargs)
+        return result
+
+    def to_dict_keep(self, *args, **kwargs):
+        """
+        Removing the original artifact file from the dictionary.
+        """
+        result = None
+        if self.filename != CorporaConstants.ORIGINAL_H5AD_ARTIFACT_FILENAME:
+            result = super(Base, self).to_dict_keep(*args, **kwargs)
+        return result
 
 
 class UploadStatus(enum.Enum):
