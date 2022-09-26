@@ -48,7 +48,10 @@ def assert_authorized_token(token: str, audience: str = None) -> dict:
                 token, public_key, algorithms=algorithms, audience=use_audience, issuer=issuer, options=options
             )
         except ExpiredSignatureError:
-            raise
+            raise UnauthorizedError(
+                detail="Your authentication credentials have expired. Please provide updated "
+                "credentials before trying again."
+            )
         except JWTClaimsError:
             raise UnauthorizedError(detail="Incorrect claims, please check the audience and issuer.")
         except Exception:
