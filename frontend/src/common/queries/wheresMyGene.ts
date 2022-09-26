@@ -26,7 +26,7 @@ interface RawOntologyTerm {
 interface RawOntologyTermsByOrganism {
   [organismId: string]: Array<RawOntologyTerm>;
 }
-interface RawPrimaryFilterDimensionsResponse {
+export interface RawPrimaryFilterDimensionsResponse {
   gene_terms: RawOntologyTermsByOrganism;
   organism_terms: Array<RawOntologyTerm>;
   snapshot_id: string;
