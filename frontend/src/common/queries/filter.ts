@@ -112,6 +112,7 @@ export interface DatasetResponse {
  * functionality.
  */
 interface ProcessedDatasetResponse extends DatasetResponse {
+  cellTypeCalculated: string[]; // Field to drive cell class, cell subclass and cell type filter functionality.
   tissueCalculated: string[]; // Field to drive tissue system, tissue organ and tissue filter functionality.
 }
 
@@ -262,6 +263,10 @@ function aggregateCollectionDatasetRows(
     (accum: Categories, collectionDatasetRow: DatasetRow) => {
       return {
         assay: [...accum.assay, ...collectionDatasetRow.assay],
+        cellTypeCalculated: [
+          ...accum.cellTypeCalculated,
+          ...collectionDatasetRow.cellTypeCalculated,
+        ],
         cell_type: [...accum.cell_type, ...collectionDatasetRow.cell_type],
         cell_type_ancestors: [
           ...accum.cell_type_ancestors,
@@ -288,6 +293,7 @@ function aggregateCollectionDatasetRows(
     },
     {
       assay: [],
+      cellTypeCalculated: [],
       cell_type: [],
       cell_type_ancestors: [],
       development_stage_ancestors: [],
@@ -304,6 +310,9 @@ function aggregateCollectionDatasetRows(
   // De-dupe aggregated category values.
   return {
     assay: uniqueOntologies(aggregatedCategoryValues.assay),
+    cellTypeCalculated: [
+      ...new Set(aggregatedCategoryValues.cellTypeCalculated),
+    ],
     cell_type: uniqueOntologies(aggregatedCategoryValues.cell_type),
     cell_type_ancestors: [
       ...new Set(aggregatedCategoryValues.cell_type_ancestors),
@@ -727,13 +736,18 @@ function processCollectionResponse(
 function processDatasetResponse(
   dataset: DatasetResponse
 ): ProcessedDatasetResponse {
-  // Build up value to facilitate ontology-aware tissue filtering.
+  // Build up values to facilitate ontology-aware cel type and tissue filtering.
+  const cellTypeCalculated = [
+    ...tagAncestorsAsInferred(dataset.cell_type_ancestors),
+    ...tagOntologyTermsAsExplicit(dataset.cell_type),
+  ];
   const tissueCalculated = [
     ...tagAncestorsAsInferred(dataset.tissue_ancestors),
     ...tagOntologyTermsAsExplicit(dataset.tissue),
   ];
   return {
     ...dataset,
+    cellTypeCalculated,
     tissueCalculated,
   };
 }

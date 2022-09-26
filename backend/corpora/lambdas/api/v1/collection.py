@@ -174,7 +174,7 @@ def verify_collection_body(body: dict, errors: list) -> None:
         if key in body.keys():
             if not body[key]:
                 errors.append({"name": key, "reason": "Cannot be blank."})
-            elif control_char_re.search(body[key]):
+            elif key == "name" and control_char_re.search(body[key]):
                 errors.append({"name": key, "reason": "Invalid characters detected."})
             else:
                 return body[key]

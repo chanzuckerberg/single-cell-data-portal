@@ -38,6 +38,7 @@ def get_happy_stack_name(deployment) -> str:
     """
     return f"{deployment}-{deployment}stack"
 
+
 def cxg_remaster(ctx):
     """Cxg remaster v2"""
 
