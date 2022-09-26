@@ -2,7 +2,11 @@ from unittest import TestCase
 from unittest.mock import patch, Mock
 
 from backend.corpora.common.corpora_orm import generate_id
-from backend.corpora.common.utils.exceptions import CorporaException
+from backend.corpora.common.utils.exceptions import (
+    CorporaException,
+    NonExistentCollectionException,
+    NonExistentDatasetException,
+)
 from backend.corpora.dataset_submissions.app import dataset_submissions_handler
 
 
@@ -10,7 +14,6 @@ class TestDatasetSubmissions(TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.collection_id = generate_id()
-        cls.incoming_curator_tag = "my_dataset.h5ad"
         cls.user_name = "user_name"
         cls.dataset_id = "12341234-1234-1234-1234-123412341234"
 
@@ -22,20 +25,18 @@ class TestDatasetSubmissions(TestCase):
     def test__missing_curator_file_name__raises_error(self):
         self._test_missing_fields(key=f"{self.user_name}/{self.collection_id}/")
 
-    def test__missing_extension__raise_error(self):
-        self._test_missing_fields(key=f"{self.user_name}/{self.collection_id}/{self.dataset_id}")
-
-    def test__missing_collection_id__raises_error(self):
-        self._test_missing_fields(key=f"{self.user_name}/should_have_been_a_id/{self.dataset_id}")
-
-    def test__missing_username__raises_error(self):
-        self._test_missing_fields(key=f"{self.collection_id}/{self.incoming_curator_tag}")
-
     @patch("backend.corpora.dataset_submissions.app.Dataset.get")
-    def test__nonexistent_dataset__raises_error(self, mock_dataset_get):
+    def test__missing_collection_id__raises_error(self, mock_dataset_get):
         mock_dataset_get.return_value = None
         s3_event = create_s3_event(key=f"{self.user_name}/{self.collection_id}/{self.dataset_id}")
-        with self.assertRaises(CorporaException):
+        with self.assertRaises(NonExistentCollectionException):
+            dataset_submissions_handler(s3_event, None)
+
+    @patch("backend.corpora.dataset_submissions.app.Collection.get")
+    def test__nonexistent_dataset__raises_error(self, mock_collection_get):
+        mock_collection_get.return_value = True
+        s3_event = create_s3_event(key=f"{self.user_name}/{self.collection_id}/{self.dataset_id}")
+        with self.assertRaises(NonExistentDatasetException):
             dataset_submissions_handler(s3_event, None)
 
     @patch("backend.corpora.dataset_submissions.app.Dataset.get")
