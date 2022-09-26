@@ -164,6 +164,8 @@ const Header: FC = () => {
     }
 
     window.open(link, "_blank", "noopener,noreferrer");
+
+    setDropdownOpen(false);
   }
 
   function handleWMGClick() {
