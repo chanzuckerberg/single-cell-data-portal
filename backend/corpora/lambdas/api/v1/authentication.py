@@ -8,14 +8,13 @@ import requests
 from authlib.integrations.flask_client import OAuth
 from authlib.integrations.flask_client.remote_app import FlaskRemoteApp
 from flask import make_response, jsonify, current_app, request, redirect, after_this_request, g, Response, session
-from jose.exceptions import ExpiredSignatureError
 
 
 from ....common.authorizer import assert_authorized_token, get_userinfo_from_auth0
 from ....common.corpora_config import CorporaAuthConfig
 
 # global oauth client
-from ....common.utils.http_exceptions import UnauthorizedError
+from ....common.utils.http_exceptions import UnauthorizedError, ExpiredCredentialsError
 
 oauth_client = None
 
@@ -180,7 +179,7 @@ def check_token(token: dict) -> dict:
     """
     try:
         payload = assert_authorized_token(token.get("access_token"))
-    except ExpiredSignatureError:
+    except ExpiredCredentialsError:
         # attempt to refresh the token
         auth_config = CorporaAuthConfig()
         try:
@@ -190,9 +189,9 @@ def check_token(token: dict) -> dict:
             payload = assert_authorized_token(token.get("access_token"))
             # update the cookie with then refreshed token
             save_token(auth_config.cookie_name, token)
-        except ExpiredSignatureError:
+        except ExpiredCredentialsError:
             remove_token(auth_config.cookie_name)
-            raise UnauthorizedError(detail="Token is expired.")
+            raise
 
     return payload
 

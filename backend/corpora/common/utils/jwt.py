@@ -1,14 +1,14 @@
 from jose import ExpiredSignatureError, jwt
 from jose.exceptions import JWTClaimsError, JWTError
 
-from backend.corpora.common.utils.http_exceptions import UnauthorizedError
+from backend.corpora.common.utils.http_exceptions import UnauthorizedError, ExpiredCredentialsError
 
 
 def jwt_decode(*args, **kwargs) -> dict:
     try:
         return jwt.decode(*args, **kwargs)
     except ExpiredSignatureError:
-        raise UnauthorizedError(
+        raise ExpiredCredentialsError(
             detail="Your authentication credentials have expired. Please provide updated "
             "credentials before trying again."
         )
