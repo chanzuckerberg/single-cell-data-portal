@@ -1,4 +1,3 @@
-import json
 import logging
 import pathlib
 import sys
@@ -13,7 +12,7 @@ from backend.corpora.common.utils.result_notification import (
 from backend.corpus_asset_pipelines import integrated_corpus
 from backend.corpus_asset_pipelines import summary_cubes
 
-from backend.wmg.data.load_cube import upload_artifacts_to_s3, make_snapshot_active, _get_wmg_bucket_path
+from backend.wmg.data.load_cube import upload_artifacts_to_s3, make_snapshot_active
 from backend.wmg.data.transform import (
     generate_primary_filter_dimensions,
     get_cell_types_by_tissue,
@@ -71,9 +70,9 @@ def main():
     except Exception as e:
         logger.exception("Pipeline failed")
         failure_message = format_failed_batch_issue_slack_alert(
-                gen_wmg_pipeline_failure_message(
-                        f"Issue with WMG snapshot generation pipeline: {e}. See logs for more detail."
-                )
+            gen_wmg_pipeline_failure_message(
+                f"Issue with WMG snapshot generation pipeline: {e}. See logs for more detail."
+            )
         )
         notify_slack(failure_message)
 
