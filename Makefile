@@ -104,7 +104,7 @@ local-ecr-login:
 
 .PHONY: local-init-test-data
 local-init-test-data:
-	docker-compose $(COMPOSE_OPTS) run --rm -T backend /bin/bash -c "pip3 install awscli && cd /single-cell-data-portal && scripts/setup_dev_data.sh"
+	docker compose $(COMPOSE_OPTS) run --rm -T backend /bin/bash -c "pip3 install awscli && cd /single-cell-data-portal && scripts/setup_dev_data.sh"
 
 .PHONY: local-init-host
 local-init-host: oauth/pkcs12/certificate.pfx .env.ecr local-ecr-login local-start
@@ -118,25 +118,25 @@ local-status: ## Show the status of the containers in the dev environment.
 
 .PHONY: local-rebuild
 local-rebuild: .env.ecr local-ecr-login ## Rebuild local dev without re-importing data
-	docker-compose $(COMPOSE_OPTS) build frontend backend processing
-	docker-compose $(COMPOSE_OPTS) up -d frontend backend processing database oidc localstack
+	docker compose $(COMPOSE_OPTS) build frontend backend processing
+	docker compose $(COMPOSE_OPTS) up -d frontend backend processing database oidc localstack
 
 local-rebuild-backend: .env.ecr local-ecr-login
-	docker-compose $(COMPOSE_OPTS) build backend
+	docker compose $(COMPOSE_OPTS) build backend
 
 local-rebuild-processing: .env.ecr local-ecr-login
-	docker-compose $(COMPOSE_OPTS) build processing
+	docker compose $(COMPOSE_OPTS) build processing
 
 .PHONY: local-sync
 local-sync: local-rebuild local-init  ## Re-sync the local-environment state after modifying library deps or docker configs
 
 .PHONY: local-start
 local-start: .env.ecr ## Start a local dev environment that's been stopped.
-	docker-compose $(COMPOSE_OPTS) up -d
+	docker compose $(COMPOSE_OPTS) up -d
 
 .PHONY: local-stop
 local-stop: ## Stop the local dev environment.
-	docker-compose stop
+	docker compose stop
 
 .PHONY: local-clean
 local-clean: ## Remove everything related to the local dev environment (including db data!)
@@ -148,7 +148,7 @@ local-clean: ## Remove everything related to the local dev environment (includin
 	fi;
 	-rm -rf ./oauth/pkcs12/server*
 	-rm -rf ./oauth/pkcs12/certificate*
-	docker-compose rm -sf
+	docker compose rm -sf
 	-docker volume rm single-cell-data-portal_database
 	-docker volume rm single-cell-data-portal_localstack
 	-docker network rm single-cell-data-portal_corporanet
@@ -156,11 +156,11 @@ local-clean: ## Remove everything related to the local dev environment (includin
 
 .PHONY: local-logs
 local-logs: ## Tail the logs of the dev env containers. ex: make local-logs CONTAINER=backend
-	docker-compose logs -f $(CONTAINER)
+	docker compose logs -f $(CONTAINER)
 
 .PHONY: local-shell
 local-shell: ## Open a command shell in one of the dev containers. ex: make local-shell CONTAINER=frontend
-	docker-compose exec $(CONTAINER) bash
+	docker compose exec $(CONTAINER) bash
 
 .PHONY: local-unit-test
 local-unit-test: local-unit-test-backend local-unit-test-processing  local-unit-test-wmg-processing# Run all backend and processing unit tests in the dev environment, with code coverage
@@ -170,40 +170,40 @@ local-unit-test: local-unit-test-backend local-unit-test-processing  local-unit-
 local-unit-test-backend: # Run container-unittest target in `backend` Docker container.  If path arg provided, just run those specific backend tests
 	@if [ -z "$(path)" ]; then \
             echo "Running all backend unit tests"; \
-            docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -T backend \
+            docker compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -T backend \
             bash -c "cd /single-cell-data-portal && make container-unittest;"; \
 	else \
             echo "Running specified backend unit test(s): $(path)"; \
-            docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -T backend \
+            docker compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -T backend \
             bash -c "cd /single-cell-data-portal && python3 -m unittest $(path)"; \
 	fi
 
 .PHONY: all-local-unit-test-backend
 all-local-unit-test-backend: # Run container-unittest target in `backend` Docker container.  If path arg provided, just run those specific backend tests
 	echo "Running all backend unit tests"; \
-	docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -T backend \
+	docker compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -T backend \
 	bash -c "cd /single-cell-data-portal && make container-unittest;"
 
 # Note: If you are manually running this on localhost, you should run `local-rebuild` target first to test latest changes; this is not needed when running in Github Actions
 .PHONY: local-unit-test-processing
 local-unit-test-processing: # Run processing-unittest target in `processing` Docker container
 	echo "Running all processing unit tests"; \
-	docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -T processing \
+	docker compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -T processing \
 	bash -c "cd /single-cell-data-portal && make processing-unittest;"
 
 
 .PHONY: local-unit-test-wmg-processing
 local-unit-test-wmg-processing: # Run processing-unittest target in `wmg_processing` Docker container
 	echo "Running all wmg processing unit tests"; \
-	docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -T wmg_processing \
+	docker compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -T wmg_processing \
 	bash -c "cd /single-cell-data-portal && make wmg-processing-unittest;"
 
 # We optionally pass BOTO_ENDPOINT_URL if it is set, even if it is
 # set to be the empty string.
 # Note that there is a distinction between BOTO_ENDPOINT_URL being
 # the empty string (in which case we override the existing variable
-# defined in docker-compose.yml to be empty string), and not being
-# set (in which case the default from docker-compose is untouched)
+# defined in docker compose.yml to be empty string), and not being
+# set (in which case the default from docker compose is untouched)
 #
 # Unfortunately, this isn't working properly if DEPLOYMENT_STAGE is not test.
 # If you want to run this locally against staging, use the following mouthful of a
@@ -219,19 +219,19 @@ local-functional-test: ## Run functional tests in the dev environment
 		EXTRA_ARGS="-e BOTO_ENDPOINT_URL"; \
 	fi; \
 	chamber -b secretsmanager exec corpora/backend/$${DEPLOYMENT_STAGE}/auth0-secret -- \
-		docker-compose $(COMPOSE_OPTS) run --rm -T -e CLIENT_ID -e CLIENT_SECRET -e TEST_ACCOUNT_USERNAME -e TEST_ACCOUNT_PASSWORD -e DEPLOYMENT_STAGE -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e AWS_SESSION_TOKEN $${EXTRA_ARGS} \
+		docker compose $(COMPOSE_OPTS) run --rm -T -e CLIENT_ID -e CLIENT_SECRET -e TEST_ACCOUNT_USERNAME -e TEST_ACCOUNT_PASSWORD -e DEPLOYMENT_STAGE -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e AWS_SESSION_TOKEN $${EXTRA_ARGS} \
 		backend bash -c "cd /single-cell-data-portal && make container-functionaltest"
 
 .PHONY: local-smoke-test
 local-smoke-test: ## Run frontend/e2e tests in the dev environment
-	docker-compose $(COMPOSE_OPTS) run --rm -T frontend make smoke-test-with-local-dev
+	docker compose $(COMPOSE_OPTS) run --rm -T frontend make smoke-test-with-local-dev
 
 .PHONY: local-e2e
 local-e2e: ## Run frontend/e2e tests
 	if [ -n "$${BOTO_ENDPOINT_URL+set}" ]; then \
 		EXTRA_ARGS="-e BOTO_ENDPOINT_URL"; \
 	fi; \
-	docker-compose $(COMPOSE_OPTS) run --no-deps -e DEPLOYMENT_STAGE -e AWS_REGION -e AWS_DEFAULT_REGION -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e AWS_SESSION_TOKEN $${EXTRA_ARGS} -T frontend make e2e
+	docker compose $(COMPOSE_OPTS) run --no-deps -e DEPLOYMENT_STAGE -e AWS_REGION -e AWS_DEFAULT_REGION -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e AWS_SESSION_TOKEN $${EXTRA_ARGS} -T frontend make e2e
 
 .PHONY: local-dbconsole
 local-dbconsole: ## Connect to the local postgres database.
@@ -239,18 +239,18 @@ local-dbconsole: ## Connect to the local postgres database.
 
 .PHONY: local-uploadjob
 local-uploadjob: .env.ecr ## Run the upload task with a dataset_id and dropbox_url
-	docker-compose $(COMPOSE_OPTS) run --rm -T -e DATASET_ID=$(DATASET_ID) -e DROPBOX_URL=$(DROPBOX_URL) processing sh -c "rm -rf /local.* && python3 -m backend.corpora.dataset_processing.process"
+	docker compose $(COMPOSE_OPTS) run --rm -T -e DATASET_ID=$(DATASET_ID) -e DROPBOX_URL=$(DROPBOX_URL) processing sh -c "rm -rf /local.* && python3 -m backend.corpora.dataset_processing.process"
 
 .PHONY: local-uploadfailure
 local-uploadfailure: .env.ecr ## Run the upload failure lambda with a dataset id and cause
-	docker-compose $(COMPOSE_OPTS) up -d upload_failures
+	docker compose $(COMPOSE_OPTS) up -d upload_failures
 	curl -v -XPOST "http://127.0.0.1:9000/2015-03-31/functions/function/invocations" -d '{"dataset_id": "$(DATASET_ID)", "error": {"Cause": "$(CAUSE)"}}'
 
 .PHONY: local-uploadsuccess
 local-uploadsuccess: .env.ecr ## Run the upload success lambda with a dataset id and cause
-	docker-compose $(COMPOSE_OPTS) up -d upload_success
+	docker compose $(COMPOSE_OPTS) up -d upload_success
 	curl -v -XPOST "http://127.0.0.1:9001/2015-03-31/functions/function/invocations" -d '{"dataset_id": "$(DATASET_ID)"}'
 
 .PHONY: local-cxguser-cookie
 local-cxguser-cookie: ## Get cxguser-cookie
-	docker-compose $(COMPOSE_OPTS) run --rm backend bash -c "cd /single-cell-data-portal && python login.py"
+	docker compose $(COMPOSE_OPTS) run --rm backend bash -c "cd /single-cell-data-portal && python login.py"

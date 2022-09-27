@@ -47,7 +47,7 @@ e2e:
 
 .PHONY: e2e-on-local-dev
 e2e-on-local-dev:
-	docker-compose exec frontend make smoke-test-with-local-dev
+	docker compose exec frontend make smoke-test-with-local-dev
 
 .PHONY: smoke-test-with-local-dev
 smoke-test-with-local-dev:

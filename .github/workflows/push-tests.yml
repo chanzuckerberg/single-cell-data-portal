@@ -37,10 +37,10 @@ jobs:
       - uses: actions/checkout@v2
       - name: Lint Python
         run: |
-          docker-compose run --no-deps --rm backend make -C /single-cell-data-portal lint
+          docker compose run --no-deps --rm backend make -C /single-cell-data-portal lint
       - name: Lint frontend
         run: |
-          docker-compose run --no-deps --rm frontend make lint
+          docker compose run --no-deps --rm frontend make lint
       - uses: 8398a7/action-slack@v3
         with:
           status: ${{ job.status }}
@@ -198,7 +198,7 @@ jobs:
         run: |
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
           make local-rebuild-backend
-      - name: Run tests in docker-compose
+      - name: Run tests in docker compose
         run: |
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
           make local-init-test-data
@@ -244,7 +244,7 @@ jobs:
         run: |
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
           make local-rebuild-processing
-      - name: Run tests in docker-compose
+      - name: Run tests in docker compose
         run: |
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
           make local-init-test-data
@@ -290,7 +290,7 @@ jobs:
         run: |
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
           make local-rebuild-processing
-      - name: Run tests in docker-compose
+      - name: Run tests in docker compose
         run: |
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
           make local-unit-test-wmg-processing

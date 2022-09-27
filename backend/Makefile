@@ -79,7 +79,7 @@ db/local/load-schema:
 
 db/dump_schema:
 ifeq ($(DEPLOYMENT_STAGE),test)
-	docker-compose exec database pg_dump --schema-only --dbname=corpora --username corpora
+	docker compose exec database pg_dump --schema-only --dbname=corpora --username corpora
 else
 	$(eval DB_PW = $(shell aws secretsmanager get-secret-value --secret-id corpora/backend/${DEPLOYMENT_STAGE}/database --region us-west-2 | jq -r '.SecretString | match(":([^:]*)@").captures[0].string'))
 	$(MAKE) db/tunnel/up

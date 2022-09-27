@@ -208,7 +208,7 @@ jobs:
             export DEPLOYMENT_STAGE=staging
           fi
           echo DEPLOYMENT_STAGE ${DEPLOYMENT_STAGE}
-          docker-compose up --no-deps -d backend
+          docker compose up --no-deps -d backend
           BOTO_ENDPOINT_URL= make local-functional-test
       ### Need to write success failure way because Github API doesn't allow doing
       ### "if: always(), state: ${{ success() }}:

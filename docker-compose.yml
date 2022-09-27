@@ -143,8 +143,8 @@ services:
     image: "${DOCKER_REPO}dataset-submissions"
     platform: linux/amd64
     build:
-      platforms:
-        - linux/amd64
+        platforms:
+          - linux/amd64
       context: .
       cache_from:
         - "${DOCKER_REPO}dataset-submissions:branch-main"
