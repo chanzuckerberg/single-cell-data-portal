@@ -99,7 +99,6 @@ function buildBasicFilterContent(
       <FilterMultiPanelCategoryView
         categoryView={categoryView}
         clearSearchValueFn={clearSearchValueFn}
-        isSearchable={true}
         onFilter={onFilter}
         searchValue={searchValue}
         setSearchValue={setSearchValue}
