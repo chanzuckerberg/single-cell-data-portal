@@ -272,6 +272,7 @@ def cxg_remaster(ctx):
     """Cxg remaster v2"""
     reprocess_datafile.cxg_remaster(ctx)
 
+
 # Command to pull information from the db
 @cli.command()
 @click.pass_context
