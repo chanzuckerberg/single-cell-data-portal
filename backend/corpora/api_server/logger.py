@@ -3,10 +3,10 @@ from logging.config import dictConfig
 
 from pythonjsonlogger import jsonlogger
 
+from backend.corpora.common.logging_config import LOG_FORMAT, DATETIME_FORMAT
+
 
 # The fields to log using the json logger.
-LOGGED_FIELDS = ["levelname", "asctime", "name", "message", "lineno", "pathname"]
-LOG_FORMAT = " ".join([f"%({field})" for field in LOGGED_FIELDS])
 
 
 def configure_logging(app_name):
@@ -16,7 +16,7 @@ def configure_logging(app_name):
         {
             "version": 1,  # The version of dictConfig to use. This must be 1.
             "formatters": {
-                "default": {"format": LOG_FORMAT, "()": jsonlogger.JsonFormatter, "datefmt": "%Y-%m-%dT%H:%M:%S.%03dZ"}
+                "default": {"format": LOG_FORMAT, "()": jsonlogger.JsonFormatter, "datefmt": DATETIME_FORMAT}
             },
             "handlers": {
                 "wsgi": {

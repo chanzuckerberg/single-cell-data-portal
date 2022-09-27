@@ -7,10 +7,10 @@ export default function Beta({
   className?: string;
 }): JSX.Element {
   const position = {
-    bottom: "60px",
     position: "absolute",
-    right: "15px",
-    zIndex: "1",
+    bottom: "10px",
+    right: "50px",
+    zIndex: "99",
   } as React.CSSProperties;
 
   return (

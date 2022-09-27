@@ -79,6 +79,7 @@ def upload(
         if dataset.processing_status.processing_status not in [
             ProcessingStatus.SUCCESS,
             ProcessingStatus.FAILURE,
+            ProcessingStatus.INITIALIZED,
         ]:
             raise InvalidProcessingStateException(
                 f"Unable to reprocess dataset {dataset_id}: {dataset.processing_status.processing_status=}"

@@ -31,7 +31,7 @@ class BaseFunctionalTestCase(unittest.TestCase):
         cls.deployment_stage = os.environ["DEPLOYMENT_STAGE"]
         cls.config = CorporaAuthConfig()
         cls.session = requests.Session()
-        retry_config = Retry(total=5, backoff_factor=2, status_forcelist=[500, 502, 503, 504])
+        retry_config = Retry(total=7, backoff_factor=2, status_forcelist=[500, 502, 503, 504])
         cls.session.mount("https://", HTTPAdapter(max_retries=retry_config))
         token = cls.get_auth_token(cls.config.test_account_username, cls.config.test_account_password)
         cls.curator_cookie = cls.make_cookie(token)
