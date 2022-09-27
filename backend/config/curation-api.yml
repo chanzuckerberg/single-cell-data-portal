@@ -557,8 +557,6 @@ components:
                 type: string
             type: object
           type: array
-        dataset_id:
-          $ref: "#/components/schemas/dataset_id"
       type: object
     asset_filetype:
       enum:
