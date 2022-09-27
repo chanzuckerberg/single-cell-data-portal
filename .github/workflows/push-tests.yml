@@ -84,7 +84,7 @@ jobs:
         with:
           happy_version: "0.23.0"
       - name: Push images
-        #if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod' )
+        if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod' )
         run: |
           echo "HAPPY_COMMIT=$(git rev-parse --verify HEAD)" >> envfile
           echo "HAPPY_BRANCH=$(git branch --show-current)" >> envfile
@@ -100,7 +100,7 @@ jobs:
 
   build-extra-images:
     runs-on: ubuntu-20.04
-    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod' )
+    #if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod' )
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
