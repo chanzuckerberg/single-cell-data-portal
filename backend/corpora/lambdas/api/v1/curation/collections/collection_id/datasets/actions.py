@@ -44,7 +44,7 @@ def post(token_info: dict, collection_id: str):
     dataset = Dataset.create(
         db_session, collection=collection, processing_status={"processing_status": ProcessingStatus.INITIALIZED}
     )
-    return make_response(jsonify({"dataset_id": dataset.id}), 201)
+    return make_response(jsonify({"id": dataset.id}), 201)
 
 
 def put(collection_id: str, dataset_id: str, body: dict, token_info: dict):

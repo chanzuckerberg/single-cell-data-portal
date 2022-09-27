@@ -4,12 +4,10 @@ from functools import lru_cache
 import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util import Retry
-from jose import jwt
-from jose.exceptions import ExpiredSignatureError, JWTError, JWTClaimsError
 
 from .corpora_config import CorporaAuthConfig
 from backend.corpora.common.utils.http_exceptions import UnauthorizedError
-
+from .utils.jwt import jwt_decode, get_unverified_header
 
 auth0_session_with_retry = requests.Session()
 retry_config = Retry(total=3, backoff_factor=1, status_forcelist=CorporaAuthConfig().retry_status_forcelist)
@@ -22,10 +20,7 @@ def assert_authorized_token(token: str, audience: str = None) -> dict:
     :param token: The token
     :return: The decoded access token and userinfo.
     """
-    try:
-        unverified_header = jwt.get_unverified_header(token)
-    except JWTError:
-        raise UnauthorizedError(detail="Unable to parse authentication token.")
+    unverified_header = get_unverified_header(token)
     auth_config = CorporaAuthConfig()
     auth0_domain = auth_config.internal_url
     # If we're using an id_token (for userinfo), we need a difference audience, which gets passed in.
@@ -43,17 +38,9 @@ def assert_authorized_token(token: str, audience: str = None) -> dict:
             os.environ.get("DEPLOYMENT_STAGE") == "test" and (not public_key.get("n") or not public_key.get("e"))
         ):
             options = {"verify_signature": False, "verify_iss": False, "verify_at_hash": False}
-        try:
-            payload = jwt.decode(
-                token, public_key, algorithms=algorithms, audience=use_audience, issuer=issuer, options=options
-            )
-        except ExpiredSignatureError:
-            raise
-        except JWTClaimsError:
-            raise UnauthorizedError(detail="Incorrect claims, please check the audience and issuer.")
-        except Exception:
-            raise UnauthorizedError(detail="Unable to parse authentication token.")
-
+        payload = jwt_decode(
+            token, public_key, algorithms=algorithms, audience=use_audience, issuer=issuer, options=options
+        )
         return payload
 
     raise UnauthorizedError(detail="Unable to find appropriate key")

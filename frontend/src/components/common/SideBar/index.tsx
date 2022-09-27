@@ -10,7 +10,7 @@ import {
 } from "src/components/common/SideBar/style";
 
 const COLLAPSED_WIDTH_PX = 36;
-const EXPANDED_WIDTH_PX = 240;
+export const EXPANDED_WIDTH_PX = 240;
 
 /**
  * Function prop called on toggle of side bar expanded state, if specified.

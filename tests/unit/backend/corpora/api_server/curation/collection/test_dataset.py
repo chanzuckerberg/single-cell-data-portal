@@ -90,7 +90,7 @@ class TestPostDataset(BaseAuthAPITest):
         headers = self.make_owner_header()
         response = self.app.post(test_url, headers=headers)
         self.assertEqual(201, response.status_code)
-        self.assertTrue(response.json["dataset_id"])
+        self.assertTrue(response.json["id"])
 
     def test_post_datasets_super(self):
         collection = self.generate_collection(self.session)
