@@ -9,7 +9,6 @@ import Toast from "src/views/Collection/components/Toast";
 import { DispatchContext, StateContext } from "../../common/store";
 import { selectGenes, selectTissues } from "../../common/store/actions";
 import { Gene } from "../../common/types";
-import Organism from "./components/Organism";
 import QuickSelect from "./components/QuickSelect";
 import SaveImage from "./components/SaveImage";
 import { ActionWrapper, Container, LoadingIndicatorWrapper } from "./style";
@@ -93,15 +92,14 @@ export default function GeneSearchBar({
   return (
     <Container {...{ className }}>
       <ActionWrapper>
-        <Organism isLoading={isLoading} />
-
         <QuickSelect
           items={tissues}
           itemsByName={tissuesByName}
           multiple
           selected={selectedTissueOptions}
           setSelected={handleSelectTissues}
-          label="Add Tissue"
+          label="Tissues"
+          text="Tissue"
           dataTestId="add-tissue"
           placeholder="Search"
           isLoading={isLoading}
@@ -115,7 +113,8 @@ export default function GeneSearchBar({
           multiple
           setSelected={handleSelectGenes}
           onItemNotFound={handleGeneNotFound}
-          label="Add Gene"
+          label="Genes"
+          text="Gene"
           dataTestId="add-gene"
           placeholder="Search or paste comma separated gene names"
           isLoading={isLoading}

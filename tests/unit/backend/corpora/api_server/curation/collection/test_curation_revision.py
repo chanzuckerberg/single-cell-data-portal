@@ -31,11 +31,11 @@ class TestPostRevision(BaseAuthAPITest):
             headers=self.make_owner_header(),
         )
         self.assertEqual(201, response.status_code)
-        self.assertNotEqual(collection_id, response.json["revision_id"])
+        self.assertNotEqual(collection_id, response.json["id"])
 
     def test__post_revision__Super_Curator(self):
         collection_id = self.generate_collection(self.session, visibility=CollectionVisibility.PUBLIC.name).id
         headers = self.make_super_curator_header()
         response = self.app.post(f"/curation/v1/collections/{collection_id}/revision", headers=headers)
         self.assertEqual(201, response.status_code)
-        self.assertNotEqual(collection_id, response.json["revision_id"])
+        self.assertNotEqual(collection_id, response.json["id"])
