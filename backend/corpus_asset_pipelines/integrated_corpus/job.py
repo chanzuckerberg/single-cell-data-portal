@@ -40,9 +40,10 @@ def build_integrated_corpus(dataset_directory: List, corpus_path: str) -> int:
     """
     with tiledb.scope_ctx(create_ctx()):
         dataset_count = len(os.listdir(dataset_directory))
-        for dataset in enumerate(os.listdir(dataset_directory)):
-            logger.info(f"Processing dataset {dataset[0] + 1} of {dataset_count}")
-            h5ad_file_path = f"{dataset_directory}/{dataset[1]}/local.h5ad"
+        for index, dataset in enumerate(os.listdir(dataset_directory)):
+            logger.info(f"Processing dataset {index + 1} of {dataset_count}")
+            h5ad_file_path = f"{dataset_directory}/{dataset}/local.h5ad"
+            logger.info(f"{h5ad_file_path=}")
             process_h5ad_for_corpus(
                 h5ad_file_path, corpus_path
             )  # TODO Can this be parallelized? need to be careful handling global indexes but tiledb has a lock I think

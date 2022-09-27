@@ -19,7 +19,7 @@ def should_load_dataset(h5ad_path: str, corpus_path: str) -> str:
 
 def is_dataset_already_loaded(corpus_path: str, dataset_id: str) -> bool:
     if dataset_id in get_all_dataset_ids(corpus_path):
-        logger.info("oops, that dataset is already loaded!")
+        logger.info(f"oops, {dataset_id=} is already loaded!")
         return True
     return False
 
