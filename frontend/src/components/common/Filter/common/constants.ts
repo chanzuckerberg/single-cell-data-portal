@@ -250,7 +250,7 @@ export const DEVELOPMENT_STAGE_ONTOLOGY_TERM_SET: OntologyTermSet = {
 /**
  * List of ethnicity ontology labels to exclude from filter functionality.
  */
-export const ETHNICITY_DENY_LIST = ["na"];
+export const SELF_REPORTED_ETHNICITY_DENY_LIST = ["na"];
 
 /**
  * String value to append to labels in multi-panel categories if the value appears in more than one panel.
