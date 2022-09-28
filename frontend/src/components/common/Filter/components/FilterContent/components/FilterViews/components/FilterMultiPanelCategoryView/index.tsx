@@ -27,7 +27,6 @@ import {
 interface Props {
   categoryView: MultiPanelOntologyCategoryView;
   clearSearchValueFn: ClearSearchValueFn;
-  isSearchable: boolean;
   onFilter: OnFilterFn;
   searchValue: string;
   setSearchValue: SetSearchValueFn;
@@ -52,7 +51,6 @@ function calculateViewListMaxHeight(
 export default function FilterMultiPanelCategoryView({
   categoryView,
   clearSearchValueFn,
-  isSearchable,
   onFilter,
   searchValue,
   setSearchValue,
@@ -70,13 +68,7 @@ export default function FilterMultiPanelCategoryView({
   };
   return (
     <Views>
-      {/* Optional search bar */}
-      {isSearchable && (
-        <FilterSearch
-          searchValue={searchValue}
-          setSearchValue={setSearchValue}
-        />
-      )}
+      <FilterSearch searchValue={searchValue} setSearchValue={setSearchValue} />
       <ViewsMenu>
         {panels.map((ontologyCategoryView, i) => {
           const { isSearchMultiselect } = ontologyCategoryView;

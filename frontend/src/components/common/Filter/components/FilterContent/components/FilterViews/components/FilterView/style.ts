@@ -1,7 +1,8 @@
 import styled from "@emotion/styled";
 import { Divider } from "@material-ui/core";
 import { ListSubheader } from "czifui";
-import { GRAY, LIGHT_GRAY } from "src/components/common/theme";
+import { scrollbar } from "src/components/common/Filter/common/style";
+import { GRAY } from "src/components/common/theme";
 
 export const VIEW_LIST_ITEM_HEIGHT = 32;
 export const VIEW_LIST_SUBHEADER_HEIGHT = 23;
@@ -28,17 +29,7 @@ export const ViewPanelScroll = styled.div<ScrollProps>`
   max-height: ${({ maxHeight }) => `${maxHeight}px`};
   overflow-y: auto;
   padding-right: ${({ scrollable }) => (scrollable ? "8px" : undefined)};
-
-  /* TODO(cc) use scrollbar from frontend/src/components/common/Filter/common/style.ts when FilterMenu components are upgraded to SDS. */
-  &::-webkit-scrollbar {
-    width: 4px;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background-clip: content-box;
-    background-color: ${LIGHT_GRAY.A};
-    border-radius: 4px;
-  }
+  ${scrollbar}
 `;
 
 export const ViewDivider = styled(Divider)`
