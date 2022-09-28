@@ -54,9 +54,9 @@ export default function Sort({ areFiltersDisabled }: Props): JSX.Element {
 
   return (
     <div>
-      <Label>Sort</Label>
+      <Label>View Options</Label>
       <FilterWrapper>
-        <FilterLabel>Cell Types</FilterLabel>
+        <FilterLabel>Sort Cell Types</FilterLabel>
         <Dropdown
           data-test-id="cell-type-sort-dropdown"
           onChange={cellTypesOnChange}
@@ -66,7 +66,7 @@ export default function Sort({ areFiltersDisabled }: Props): JSX.Element {
         />
       </FilterWrapper>
       <FilterWrapper>
-        <FilterLabel>Genes</FilterLabel>
+        <FilterLabel>Sort Genes</FilterLabel>
         <Dropdown
           data-test-id="gene-sort-dropdown"
           onChange={genesOnChange}

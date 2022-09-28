@@ -1,8 +1,27 @@
-import { StyledCallout, SubmitIssue } from "./style";
+import { noop } from "src/common/constants/utils";
+import { StyledNotification, SubmitIssue } from "./style";
 
-export default function Beta(): JSX.Element {
+export default function Beta({
+  className,
+}: {
+  className?: string;
+}): JSX.Element {
+  const position = {
+    position: "absolute",
+    bottom: "10px",
+    right: "50px",
+    zIndex: "99",
+  } as React.CSSProperties;
+
   return (
-    <StyledCallout intent="info" dismissed={false}>
+    <StyledNotification
+      intent="info"
+      autoDismiss={false}
+      dismissDirection="left"
+      onClose={noop}
+      style={position}
+      className={"elevated " + className}
+    >
       This feature is in beta. We would appreciate your feedback, please fill
       out a{" "}
       <SubmitIssue
@@ -13,6 +32,6 @@ export default function Beta(): JSX.Element {
         quick survey
       </SubmitIssue>
       .
-    </StyledCallout>
+    </StyledNotification>
   );
 }

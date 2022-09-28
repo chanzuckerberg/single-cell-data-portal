@@ -8,16 +8,21 @@ import {
   Ontology,
   PublisherMetadata,
 } from "src/common/entities";
+import {
+  buildExplicitOntologyTermId,
+  buildInferredOntologyTermId,
+} from "src/common/hooks/useCategoryFilter/common/multiPanelOntologyUtils";
 import { DEFAULT_FETCH_OPTIONS } from "src/common/queries/common";
 import { ENTITIES } from "src/common/queries/entities";
-import { COLLATOR_CASE_INSENSITIVE } from "src/components/common/Filter/common/constants";
+import {
+  COLLATOR_CASE_INSENSITIVE,
+  SELF_REPORTED_ETHNICITY_DENY_LIST,
+  PUBLICATION_DATE_VALUES,
+} from "src/components/common/Filter/common/constants";
 import {
   Categories,
-  CATEGORY_KEY,
   CollectionRow,
   DatasetRow,
-  PUBLICATION_DATE_VALUES,
-  SELF_REPORTED_ETHNICITY_DENY_LIST,
 } from "src/components/common/Filter/common/entities";
 import { checkIsOverMaxCellCount } from "src/components/common/Grid/common/utils";
 import { API_URL } from "src/configs/configs";
@@ -84,6 +89,7 @@ export interface DatasetResponse {
   assay: Ontology[];
   cell_count: number | null;
   cell_type: Ontology[];
+  cell_type_ancestors: string[];
   collection_id: string;
   development_stage_ancestors: string[];
   disease: Ontology[];
@@ -97,8 +103,17 @@ export interface DatasetResponse {
   published_at: number;
   revised_at?: number;
   sex: Ontology[];
-  tissue: Ontology[]; // TODO(cc) remove with #2569.
+  tissue: Ontology[];
   tissue_ancestors: string[];
+}
+
+/**
+ * Model of /datasets/index JSON response that has been modified to include calculated fields that facilitate filter
+ * functionality.
+ */
+interface ProcessedDatasetResponse extends DatasetResponse {
+  cellTypeCalculated: string[]; // Field to drive cell class, cell subclass and cell type filter functionality.
+  tissueCalculated: string[]; // Field to drive tissue system, tissue organ and tissue filter functionality.
 }
 
 /**
@@ -225,10 +240,14 @@ export function useFetchDatasetRows(): FetchCategoriesRows<DatasetRow> {
  * @returns Array of datasets - possible cached from previous request - containing filterable and sortable dataset
  * fields.
  */
-export function useFetchDatasets(): UseQueryResult<DatasetResponse[]> {
-  return useQuery<DatasetResponse[]>([USE_DATASETS_INDEX], fetchDatasets, {
-    ...DEFAULT_QUERY_OPTIONS,
-  });
+export function useFetchDatasets(): UseQueryResult<ProcessedDatasetResponse[]> {
+  return useQuery<ProcessedDatasetResponse[]>(
+    [USE_DATASETS_INDEX],
+    fetchDatasets,
+    {
+      ...DEFAULT_QUERY_OPTIONS,
+    }
+  );
 }
 
 /**
@@ -244,7 +263,15 @@ function aggregateCollectionDatasetRows(
     (accum: Categories, collectionDatasetRow: DatasetRow) => {
       return {
         assay: [...accum.assay, ...collectionDatasetRow.assay],
+        cellTypeCalculated: [
+          ...accum.cellTypeCalculated,
+          ...collectionDatasetRow.cellTypeCalculated,
+        ],
         cell_type: [...accum.cell_type, ...collectionDatasetRow.cell_type],
+        cell_type_ancestors: [
+          ...accum.cell_type_ancestors,
+          ...collectionDatasetRow.cell_type_ancestors,
+        ],
         development_stage_ancestors: [
           ...accum.development_stage_ancestors,
           ...collectionDatasetRow.development_stage_ancestors,
@@ -256,22 +283,29 @@ function aggregateCollectionDatasetRows(
         ],
         organism: [...accum.organism, ...collectionDatasetRow.organism],
         sex: [...accum.sex, ...collectionDatasetRow.sex],
-        tissue: [...accum.tissue, ...collectionDatasetRow.tissue], // TODO(cc) remove with #2569.
+        tissue: [...accum.tissue, ...collectionDatasetRow.tissue],
+        tissueCalculated: [
+          ...accum.tissueCalculated,
+          ...collectionDatasetRow.tissueCalculated,
+        ],
         tissue_ancestors: [
-          ...accum.development_stage_ancestors,
-          ...collectionDatasetRow.development_stage_ancestors,
+          ...accum.tissue_ancestors,
+          ...collectionDatasetRow.tissue_ancestors,
         ],
       };
     },
     {
       assay: [],
+      cellTypeCalculated: [],
       cell_type: [],
+      cell_type_ancestors: [],
       development_stage_ancestors: [],
       disease: [],
       self_reported_ethnicity: [],
       organism: [],
       sex: [],
-      tissue: [], // TODO(cc) remove with #2569.
+      tissue: [],
+      tissueCalculated: [],
       tissue_ancestors: [],
     }
   );
@@ -279,7 +313,13 @@ function aggregateCollectionDatasetRows(
   // De-dupe aggregated category values.
   return {
     assay: uniqueOntologies(aggregatedCategoryValues.assay),
+    cellTypeCalculated: [
+      ...new Set(aggregatedCategoryValues.cellTypeCalculated),
+    ],
     cell_type: uniqueOntologies(aggregatedCategoryValues.cell_type),
+    cell_type_ancestors: [
+      ...new Set(aggregatedCategoryValues.cell_type_ancestors),
+    ],
     development_stage_ancestors: [
       ...new Set(aggregatedCategoryValues.development_stage_ancestors),
     ],
@@ -289,7 +329,8 @@ function aggregateCollectionDatasetRows(
     ),
     organism: uniqueOntologies(aggregatedCategoryValues.organism),
     sex: uniqueOntologies(aggregatedCategoryValues.sex),
-    tissue: uniqueOntologies(aggregatedCategoryValues.tissue), // TODO(cc) remove with #2569.
+    tissue: uniqueOntologies(aggregatedCategoryValues.tissue),
+    tissueCalculated: [...new Set(aggregatedCategoryValues.tissueCalculated)],
     tissue_ancestors: [...new Set(aggregatedCategoryValues.tissue_ancestors)],
   };
 }
@@ -350,10 +391,10 @@ function buildCollectionRows(
  */
 function buildDatasetRows(
   collectionsById: Map<string, ProcessedCollectionResponse>,
-  datasets: DatasetResponse[]
+  datasets: ProcessedDatasetResponse[]
 ): DatasetRow[] {
   // Join collection and dataset information to create dataset rows.
-  return datasets.map((dataset: DatasetResponse) => {
+  return datasets.map((dataset: ProcessedDatasetResponse) => {
     const collection = collectionsById.get(dataset.collection_id);
     return buildDatasetRow(dataset, collection);
   });
@@ -368,7 +409,7 @@ function buildDatasetRows(
  * data primary values.
  */
 function buildDatasetRow(
-  dataset: DatasetResponse,
+  dataset: ProcessedDatasetResponse,
   collection?: ProcessedCollectionResponse
 ): DatasetRow {
   // Determine dataset's publication month and year.
@@ -561,15 +602,19 @@ async function fetchCollections(): Promise<
  * @returns Promise resolving to an array of datasets - possible cached from previous request - containing
  * filterable and sortable dataset fields.
  */
-async function fetchDatasets(): Promise<DatasetResponse[]> {
+async function fetchDatasets(): Promise<ProcessedDatasetResponse[]> {
   const datasets = await (
     await fetch(API_URL + API.DATASETS_INDEX, DEFAULT_FETCH_OPTIONS)
   ).json();
 
   // Correct any dirty data returned from endpoint.
-  return datasets.map((dataset: DatasetResponse) => {
-    return sanitizeDataset(dataset);
+  const sanitizedDatasets = datasets.map((dataset: DatasetResponse) => {
+    return sanitizeDatasetResponse(dataset);
   });
+
+  return sanitizedDatasets.map((dataset: DatasetResponse) =>
+    processDatasetResponse(dataset)
+  );
 }
 
 /**
@@ -663,7 +708,7 @@ function processCollectionResponse(
   todayMonth: number,
   todayYear: number
 ): ProcessedCollectionResponse {
-  // Determine the collections publication month and year.
+  // Determine the collection's publication month and year.
   const [publicationMonth, publicationYear] = getPublicationMonthYear(
     collection,
     collection.publisher_metadata
@@ -690,52 +735,65 @@ function processCollectionResponse(
 }
 
 /**
+ * Add calculated fields to dataset response.
+ * @param dataset - Dataset response returned from collections endpoint.
+ */
+function processDatasetResponse(
+  dataset: DatasetResponse
+): ProcessedDatasetResponse {
+  // Build up values to facilitate ontology-aware cel type and tissue filtering.
+  const cellTypeCalculated = [
+    ...tagAncestorsAsInferred(dataset.cell_type_ancestors),
+    ...tagOntologyTermsAsExplicit(dataset.cell_type),
+  ];
+  const tissueCalculated = [
+    ...tagAncestorsAsInferred(dataset.tissue_ancestors),
+    ...tagOntologyTermsAsExplicit(dataset.tissue),
+  ];
+  return {
+    ...dataset,
+    cellTypeCalculated,
+    tissueCalculated,
+  };
+}
+
+/**
  * Add defaults for missing filterable values, e.g. convert missing ontology values to empty array.
- * Remove any ethnicity values on the deny list.
- * @param dataset - Dataset to check for missing values.
+ * Remove any self-reported ethnicity values on the deny list.
+ * @param datasetResponse - Dataset to check for missing values.
  * @returns Corrected dataset response.
  */
-function sanitizeDataset(dataset: DatasetResponse): DatasetResponse {
-  return Object.values(CATEGORY_KEY).reduce(
-    (accum: DatasetResponse, categoryKey: CATEGORY_KEY) => {
-      // Check for fields that don't require sanitizing.
-      if (
-        categoryKey === CATEGORY_KEY.CELL_COUNT ||
-        categoryKey === CATEGORY_KEY.MEAN_GENES_PER_CELL ||
-        categoryKey === CATEGORY_KEY.PUBLICATION_AUTHORS ||
-        categoryKey === CATEGORY_KEY.PUBLICATION_DATE_VALUES
-      ) {
-        return accum;
-      }
+function sanitizeDatasetResponse(
+  datasetResponse: DatasetResponse
+): DatasetResponse {
+  const sanitizedDatasetResponse = { ...datasetResponse };
 
-      if (categoryKey === CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS) {
-        accum.development_stage_ancestors =
-          dataset.development_stage_ancestors ?? [];
-        return accum;
-      }
-
-      if (categoryKey === CATEGORY_KEY.TISSUE_ANCESTORS) {
-        accum.tissue_ancestors = dataset.tissue_ancestors ?? [];
-        return accum;
-      }
-
-      if (categoryKey === CATEGORY_KEY.SELF_REPORTED_ETHNICITY) {
-        accum.self_reported_ethnicity = (
-          dataset.self_reported_ethnicity ?? []
-        ).filter(
-          (self_reported_ethnicity) =>
-            !SELF_REPORTED_ETHNICITY_DENY_LIST.includes(
-              self_reported_ethnicity.label
-            )
-        );
-        return accum;
-      }
-
-      accum[categoryKey] = dataset[categoryKey] ?? [];
-      return accum;
-    },
-    { ...dataset }
+  sanitizedDatasetResponse.self_reported_ethnicity = (datasetResponse.self_reported_ethnicity ?? []).filter(
+    (self_reported_ethnicity) => !SELF_REPORTED_ETHNICITY_DENY_LIST.includes(self_reported_ethnicity.label)
   );
+
+  sanitizedDatasetResponse.assay = datasetResponse.assay ?? [];
+
+  sanitizedDatasetResponse.cell_type = datasetResponse.cell_type ?? [];
+
+  sanitizedDatasetResponse.cell_type_ancestors =
+    datasetResponse.cell_type_ancestors ?? [];
+
+  sanitizedDatasetResponse.development_stage_ancestors =
+    datasetResponse.development_stage_ancestors ?? [];
+
+  sanitizedDatasetResponse.disease = datasetResponse.disease ?? [];
+
+  sanitizedDatasetResponse.organism = datasetResponse.organism ?? [];
+
+  sanitizedDatasetResponse.sex = datasetResponse.sex ?? [];
+
+  sanitizedDatasetResponse.tissue = datasetResponse.tissue ?? [];
+
+  sanitizedDatasetResponse.tissue_ancestors =
+    datasetResponse.tissue_ancestors ?? [];
+
+  return sanitizedDatasetResponse;
 }
 
 /**
@@ -763,6 +821,33 @@ function sortCategoryValues<T extends Categories>(row: T): T {
  */
 function sortOntologies(o0: Ontology, o1: Ontology): number {
   return COLLATOR_CASE_INSENSITIVE.compare(o0.label, o1.label);
+}
+
+/**
+ * Convert each ontology term ID into one marked as "inferred", use by tissue multi-panel category filter. For example,
+ * both the tissue system and the tissue organ panels contain inferred values and allow us to execute an "includes"
+ * filter in tissue ancestors rather than an exact match. So, selecting blood (in the tissue organ panel) returns
+ * values that are exactly blood, or that have blood as an ancestor.
+ * @param ontologyTermIds - Array of ontology term IDs to convert to an "inferred" format.
+ * @returns An array of ontology terms prefixed with the "inferred" indicator.
+ */
+function tagAncestorsAsInferred(ontologyTermIds: string[]): string[] {
+  return ontologyTermIds.map((ontologyTermId) =>
+    buildInferredOntologyTermId(ontologyTermId)
+  );
+}
+
+/**
+ * Convert each ontology term ID into one marked as "explicit", use by tissue multi-panel category filter. For example,
+ * the tissue panel contains explicit values and allow us to execute an exact filter. So, selecting blood non specific
+ * (in the tissue panel) returns only values that are exactly blood.
+ * @param ontologyTermIds - Array of ontology term IDs to convert to an "explicit" format.
+ * @returns An array of ontology terms prefixed with the "inferred" indicator.
+ */
+function tagOntologyTermsAsExplicit(ontologyTermIds: Ontology[]): string[] {
+  return ontologyTermIds.map((ontologyTermId) =>
+    buildExplicitOntologyTermId(ontologyTermId.ontology_term_id)
+  );
 }
 
 /**

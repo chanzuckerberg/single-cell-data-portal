@@ -47,6 +47,10 @@ def create_anndata_test_object(num_genes: int = 3, num_cells: int = 5):
     adata.obs["cell_type"] = pd.Categorical(cell_type)  # Categoricals are preferred for efficiency
     assay_ontologies = np.random.choice(list(INCLUDED_ASSAYS.keys()), size=(adata.n_obs,))
     adata.obs["assay_ontology_term_id"] = pd.Categorical(assay_ontologies)
+    adata.obs["tissue_ontology_term_id"] = "UBERON:0000101"
+    adata.obs["tissue"] = "lobe of lung"
+    adata.obs["tissue_ontology_term_id"] = pd.Categorical(adata.obs["tissue_ontology_term_id"])
+    adata.obs["tissue"] = pd.Categorical(adata.obs["tissue"])
 
     # Add cell level metadata matrices
     # matrix umap embeding

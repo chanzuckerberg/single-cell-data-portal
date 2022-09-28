@@ -1,24 +1,32 @@
 import logging
 import os
 import re
+import sys
 from typing import Tuple, Optional
 from urllib.parse import unquote_plus
 
+from pythonjsonlogger import jsonlogger
 from sqlalchemy.orm import Session
 
 from backend.corpora.common.entities import Dataset, Collection
+from backend.corpora.common.logging_config import DATETIME_FORMAT, LOG_FORMAT
 from backend.corpora.common.upload import upload
 from backend.corpora.common.utils.db_session import db_session_manager
-from backend.corpora.common.utils.exceptions import CorporaException
-from backend.corpora.common.utils.regex import (
-    USERNAME_REGEX,
-    COLLECTION_ID_REGEX,
-    DATASET_ID_REGEX,
-    CURATOR_TAG_REGEX,
+from backend.corpora.common.utils.exceptions import (
+    CorporaException,
+    NonExistentCollectionException,
+    NonExistentDatasetException,
 )
+from backend.corpora.common.utils.regex import USERNAME_REGEX, COLLECTION_ID_REGEX, DATASET_ID_REGEX
 
-logger = logging.getLogger(__name__)
-REGEX = f"^{USERNAME_REGEX}/{COLLECTION_ID_REGEX}/({DATASET_ID_REGEX}|{CURATOR_TAG_REGEX})$"
+log_handler = logging.StreamHandler(stream=sys.stdout)
+formatter = jsonlogger.JsonFormatter(LOG_FORMAT, DATETIME_FORMAT)
+log_handler.setFormatter(formatter)
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+logger.handlers = [log_handler]
+
+REGEX = f"^{USERNAME_REGEX}/{COLLECTION_ID_REGEX}/{DATASET_ID_REGEX}$"
 
 
 def dataset_submissions_handler(s3_event: dict, unused_context) -> None:
@@ -28,8 +36,8 @@ def dataset_submissions_handler(s3_event: dict, unused_context) -> None:
     :param unused_context: Lambda's context object
     :return:
     """
-    logger.debug(f"{s3_event=}")
-    logger.debug(f"{os.environ.get('REMOTE_DEV_PREFIX', '')=}")
+    logger.info(dict(message="s3_event", **s3_event))
+    logger.debug(dict(REMOTE_DEV_PREFIX=os.environ.get("REMOTE_DEV_PREFIX", "")))
 
     for record in s3_event["Records"]:
         bucket, key, size = parse_s3_event_record(record)
@@ -37,15 +45,13 @@ def dataset_submissions_handler(s3_event: dict, unused_context) -> None:
 
         parsed = parse_key(key)
         if not parsed:
-            raise CorporaException(f"Missing collection ID, curator tag, and/or dataset ID for {key=}")
+            raise CorporaException(f"Missing Collection ID and/or Dataset ID for {key=}")
         logger.debug(parsed)
 
         with db_session_manager() as session:
-            collection_owner, dataset_id = get_dataset_info(
-                session, parsed["collection_id"], parsed["dataset_id"], parsed.get("tag")
-            )
+            collection_owner, dataset_id = get_dataset_info(session, parsed["collection_id"], parsed["dataset_id"])
 
-            logger.info(f"{collection_owner=}, {dataset_id=}")
+            logger.info(dict(collection_owner=collection_owner, dataset_id=dataset_id))
             if not collection_owner:
                 raise CorporaException(f"Collection {parsed['collection_id']} does not exist")
             elif parsed["username"] == "super":
@@ -64,7 +70,6 @@ def dataset_submissions_handler(s3_event: dict, unused_context) -> None:
                 url=s3_uri,
                 file_size=size,
                 dataset_id=dataset_id,
-                curator_tag=parsed.get("tag"),
             )
 
 
@@ -82,10 +87,7 @@ def parse_s3_event_record(s3_event_record: dict) -> Tuple[str, str, int]:
 
 def parse_key(key: str) -> Optional[dict]:
     """
-    Parses the S3 object key to extract the collection ID and curator tag, ignoring the REMOTE_DEV_PREFIX
-
-    Example of key with only curator_tag:
-    s3://<dataset submissions bucket>/<user_id>/<collection_id>/<curator_tag>
+    Parses the S3 object key to extract the Collection ID and Dataset ID, ignoring the REMOTE_DEV_PREFIX
 
     Example of key with dataset id:
     s3://<dataset submissions bucket>/<user_id>/<collection_id>/<dataset_id>
@@ -102,19 +104,10 @@ def parse_key(key: str) -> Optional[dict]:
         return matched.groupdict()
 
 
-def get_dataset_info(
-    session: Session, collection_id: str, dataset_id: str, incoming_curator_tag: str
-) -> Tuple[Optional[str], Optional[str]]:
-    if dataset_id:  # If a dataset uuid was provided
-        dataset = Dataset.get(session, dataset_id)
-    elif incoming_curator_tag:  # if incoming_curator_tag
-        dataset = Dataset.get_dataset_from_curator_tag(session, collection_id, incoming_curator_tag)
-        if not dataset:  # New dataset
-            collection = Collection.get_collection(session, collection_id)
-            if collection:
-                return collection.owner, None
-    else:
-        raise CorporaException("No dataset identifier provided")
-    if dataset:
+def get_dataset_info(session: Session, collection_id: str, dataset_id: str) -> Tuple[Optional[str], Optional[str]]:
+    if dataset := Dataset.get(session, dataset_id=dataset_id, collection_id=collection_id):
         return dataset.collection.owner, dataset.id
-    return None, None
+    else:
+        if not Collection.get(session, collection_id):
+            raise NonExistentCollectionException(f"No Collection with {collection_id=} found")
+        raise NonExistentDatasetException(f"No Dataset with {dataset_id=} in Collection {collection_id}")
