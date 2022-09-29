@@ -26,9 +26,11 @@ from ..corpora_orm import (
 )
 from ..utils.corpora_constants import CorporaConstants
 from ..utils.db_helpers import clone
-from ..utils.development_stage_ontology_mapping import development_stage_ontology_mapping
-from ..utils.tissue_ontology_mapping import tissue_ontology_mapping
-from ..utils.cell_type_ontology_mapping import cell_type_ontology_mapping
+from ..utils.ontology_mappings.constants import (
+    cell_type_ontology_mapping,
+    development_stage_ontology_mapping,
+    tissue_ontology_mapping,
+)
 from ..utils.s3_buckets import buckets
 
 
