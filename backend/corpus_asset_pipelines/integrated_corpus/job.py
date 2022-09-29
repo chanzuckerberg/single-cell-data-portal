@@ -53,7 +53,7 @@ def build_integrated_corpus(dataset_directory: List, corpus_path: str) -> int:
 
         for arr_name in [OBS_ARRAY_NAME, VAR_ARRAY_NAME, INTEGRATED_ARRAY_NAME]:
             arr_path = f"{corpus_path}/{arr_name}"
-            tiledb.consolidate(arr_path)
+            tiledb.consolidate(arr_path)  # TODO: figure out why this crashes
             tiledb.vacuum(arr_path)
     return dataset_count
 
