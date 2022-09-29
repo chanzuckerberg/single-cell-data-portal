@@ -37,7 +37,9 @@ class TestProcessingDownloadValidate(DataPortalTestCase):
                     np.array([["male", "female", "fixed"][i] for i in sex]).reshape(50001, 1),
                     np.array([["M", "F", "MF"][i] for i in sex]).reshape(50001, 1),
                     np.array([["solomon islander", "orcadian"][i] for i in self_reported_ethnicity]).reshape(50001, 1),
-                    np.array([["HANCESTRO:321", "HANCESTRO:456"][i] for i in self_reported_ethnicity]).reshape(50001, 1),
+                    np.array([["HANCESTRO:321", "HANCESTRO:456"][i] for i in self_reported_ethnicity]).reshape(
+                        50001, 1
+                    ),
                     np.array([["adult", "baby", "tween"][i] for i in development_stage]).reshape(50001, 1),
                     np.array([["HsapDv:0", "HsapDv:1", "HsapDv:2"][i] for i in development_stage]).reshape(50001, 1),
                     np.random.choice(["Homo sapiens"], size=(50001, 1)),
