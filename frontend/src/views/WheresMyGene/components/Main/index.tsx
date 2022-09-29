@@ -1,3 +1,4 @@
+import { Drawer, DrawerSize } from "@blueprintjs/core";
 import Head from "next/head";
 import { useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { EMPTY_ARRAY, EMPTY_OBJECT } from "src/common/constants/utils";
@@ -8,7 +9,6 @@ import {
   useGeneExpressionSummariesByTissueName,
 } from "src/common/queries/wheresMyGene";
 import SideBar from "src/components/common/SideBar";
-import { Position } from "src/components/common/SideBar/style";
 import { View } from "../../../globalStyle";
 import { DispatchContext, StateContext } from "../../common/store";
 import {
@@ -233,6 +233,11 @@ export default function WheresMyGene(): JSX.Element {
     setIsScaled((prevIsScaled) => !prevIsScaled);
   }, [setIsScaled]);
 
+  const [isRightSidebarOpen, setRightSidebarOpen] = useState(false);
+  const handleRightSidebarButtonClick = useCallback(() => {
+    setRightSidebarOpen(!isRightSidebarOpen);
+  }, [isRightSidebarOpen]);
+
   return (
     <>
       <Head>
@@ -253,26 +258,18 @@ export default function WheresMyGene(): JSX.Element {
         <ColorScale handleIsScaledChange={handleIsScaledChange} />
       </SideBar>
 
-      <SideBar
-        width={INFO_PANEL_WIDTH_PX}
-        label={<SideBarLabel>Info</SideBarLabel>}
-        position={Position.RIGHT}
-        SideBarWrapperComponent={SideBarWrapper}
-        SideBarPositionerComponent={SideBarPositioner}
-        disabled={!(hasSelectedTissues && hasSelectedGenes && !isLoading)}
-        forceToggle={false}
-        wmgSideBar
-      >
-        <InfoPanel />
-      </SideBar>
-
       <View id="view" overflow="hidden">
         <Wrapper>
           {isLoading && !shouldShowHeatMap && <Loader />}
 
           <Top>
             <GeneSearchBar className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME} />
-            <Legend isScaled={isScaled} />
+            <Legend
+              selectedGenes={selectedGenes}
+              selectedTissues={selectedTissues}
+              isScaled={isScaled}
+              handleRightSidebarButtonClick={handleRightSidebarButtonClick}
+            />
           </Top>
 
           <Beta className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME} />
@@ -282,6 +279,18 @@ export default function WheresMyGene(): JSX.Element {
             isLoading={isLoading}
             geneSelected={hasSelectedGenes}
           />
+
+          <Drawer
+            position="right"
+            isOpen={isRightSidebarOpen}
+            title="Source Data"
+            canEscapeKeyClose={true}
+            canOutsideClickClose={true}
+            onClose={handleRightSidebarButtonClick}
+            size={DrawerSize.SMALL}
+          >
+            <InfoPanel />
+          </Drawer>
 
           {shouldShowHeatMap ? (
             <HeatMap

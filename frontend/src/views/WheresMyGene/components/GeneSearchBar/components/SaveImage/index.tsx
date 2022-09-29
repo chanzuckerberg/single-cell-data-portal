@@ -65,7 +65,11 @@ export default function SaveImage({
 
   return (
     <>
-      <ButtonWrapper>
+      <ButtonWrapper
+        style={
+          { "align-items": "center", padding: "0 15px" } as React.CSSProperties
+        }
+      >
         <Label>Download</Label>
         <StyledIconButton
           disabled={selectedTissues.length !== 1 || selectedGenes.length === 0}

@@ -10,7 +10,6 @@ import { DispatchContext, StateContext } from "../../common/store";
 import { selectGenes, selectTissues } from "../../common/store/actions";
 import { Gene } from "../../common/types";
 import QuickSelect from "./components/QuickSelect";
-import SaveImage from "./components/SaveImage";
 import { ActionWrapper, Container, LoadingIndicatorWrapper } from "./style";
 
 interface Tissue {
@@ -123,10 +122,6 @@ export default function GeneSearchBar({
         {downloadFeat && (
           <>
             <Button onClick={copyGenes}>Copy Genes</Button>
-            <SaveImage
-              selectedTissues={selectedTissues}
-              selectedGenes={selectedGenes}
-            />
           </>
         )}
 
