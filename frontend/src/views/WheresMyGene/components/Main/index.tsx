@@ -8,6 +8,7 @@ import {
   useGeneExpressionSummariesByTissueName,
 } from "src/common/queries/wheresMyGene";
 import SideBar from "src/components/common/SideBar";
+import { Position } from "src/components/common/SideBar/style";
 import { View } from "../../../globalStyle";
 import { DispatchContext, StateContext } from "../../common/store";
 import {
@@ -22,10 +23,13 @@ import GeneSearchBar from "../GeneSearchBar";
 import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../GeneSearchBar/components/SaveImage";
 import GetStarted from "../GetStarted";
 import HeatMap from "../HeatMap";
+import InfoPanel from "../InfoPanel";
 import ColorScale from "../InfoPanel/components/ColorScale";
 import Legend from "../InfoPanel/components/Legend";
 import Loader from "../Loader";
 import { SideBarLabel } from "./style";
+
+export const INFO_PANEL_WIDTH_PX = 320;
 
 export default function WheresMyGene(): JSX.Element {
   const state = useContext(StateContext);
@@ -222,11 +226,7 @@ export default function WheresMyGene(): JSX.Element {
   const hasSelectedGenes = selectedGenes.length > 0;
 
   const shouldShowHeatMap = useMemo(() => {
-    return hasSelectedTissues || hasSelectedGenes;
-  }, [hasSelectedTissues, hasSelectedGenes]);
-
-  const shouldEnableSidebars = useMemo(() => {
-    return hasSelectedTissues && hasSelectedGenes;
+    return hasSelectedTissues;
   }, [hasSelectedTissues, hasSelectedGenes]);
 
   const handleIsScaledChange = useCallback(() => {
@@ -244,13 +244,26 @@ export default function WheresMyGene(): JSX.Element {
         SideBarWrapperComponent={SideBarWrapper}
         SideBarPositionerComponent={SideBarPositioner}
         testId="filters-panel"
-        disabled={!shouldEnableSidebars}
-        forceToggle={shouldEnableSidebars}
+        disabled={false}
+        forceToggle={true}
         wmgSideBar
       >
-        <Filters />
+        <Filters isLoading={isLoading} />
 
         <ColorScale handleIsScaledChange={handleIsScaledChange} />
+      </SideBar>
+
+      <SideBar
+        width={INFO_PANEL_WIDTH_PX}
+        label={<SideBarLabel>Info</SideBarLabel>}
+        position={Position.RIGHT}
+        SideBarWrapperComponent={SideBarWrapper}
+        SideBarPositionerComponent={SideBarPositioner}
+        disabled={!(hasSelectedTissues && hasSelectedGenes && !isLoading)}
+        forceToggle={false}
+        wmgSideBar
+      >
+        <InfoPanel />
       </SideBar>
 
       <View id="view" overflow="hidden">
@@ -263,6 +276,12 @@ export default function WheresMyGene(): JSX.Element {
           </Top>
 
           <Beta className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME} />
+
+          <GetStarted
+            tissueSelected={hasSelectedTissues}
+            isLoading={isLoading}
+            geneSelected={hasSelectedGenes}
+          />
 
           {shouldShowHeatMap ? (
             <HeatMap
@@ -282,7 +301,7 @@ export default function WheresMyGene(): JSX.Element {
               scaledMeanExpressionMin={scaledMeanExpressionMin}
             />
           ) : (
-            <GetStarted />
+            ""
           )}
         </Wrapper>
       </View>

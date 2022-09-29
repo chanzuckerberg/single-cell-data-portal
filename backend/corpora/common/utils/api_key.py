@@ -1,7 +1,8 @@
 import time
-from jose import jws, jwt
+from jose import jws
 from jose.constants import ALGORITHMS
 
+from backend.corpora.common.utils.jwt import jwt_decode
 
 seconds_in_day = 86400
 
@@ -14,4 +15,4 @@ def generate(user_id: str, secret: str, days_to_live: int = 1) -> str:
 
 
 def verify(token: str, secret: str):
-    return jwt.decode(token, secret, algorithms=["HS256"])
+    return jwt_decode(token, secret, algorithms=["HS256"])

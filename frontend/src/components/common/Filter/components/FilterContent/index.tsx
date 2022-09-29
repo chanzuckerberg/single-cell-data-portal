@@ -6,7 +6,6 @@ import {
 } from "src/components/common/Filter";
 import {
   CategoryView,
-  MultiPanelOntologyCategoryView,
   OnFilterFn,
   SelectCategoryValueView,
 } from "src/components/common/Filter/common/entities";
@@ -100,7 +99,6 @@ function buildBasicFilterContent(
       <FilterMultiPanelCategoryView
         categoryView={categoryView}
         clearSearchValueFn={clearSearchValueFn}
-        isSearchable={isFilterMultiPanelSearchable(categoryView)}
         onFilter={onFilter}
         searchValue={searchValue}
         setSearchValue={setSearchValue}
@@ -121,23 +119,4 @@ function filterCategoryValuesWithCount(
   categoryValues: SelectCategoryValueView[]
 ): SelectCategoryValueView[] {
   return categoryValues.filter(({ count }) => count > 0);
-}
-
-/**
- * Returns true if ontology multi panel is searchable.
- * @param categoryView - Ontology multi panel category view.
- * @returns true if ontology multi panel is searchable.
- */
-function isFilterMultiPanelSearchable(
-  categoryView: MultiPanelOntologyCategoryView
-): boolean {
-  let isSearchable = false;
-  for (const panel of categoryView.panels) {
-    const { views } = panel;
-    if (views.length > MAX_DISPLAYABLE_MENU_ITEMS) {
-      isSearchable = true;
-      break;
-    }
-  }
-  return isSearchable;
 }

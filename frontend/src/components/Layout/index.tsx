@@ -1,7 +1,6 @@
 import { useRouter } from "next/router";
 import { FC } from "react";
 import { ROUTES } from "src/common/constants/routes";
-import Footer from "../Footer";
 import Header from "../Header";
 import LandingFooter from "../LandingFooter";
 import LandingHeader from "../LandingHeader";
@@ -23,7 +22,7 @@ const Layout: FC = ({ children }) => {
       <Wrapper>
         <Header />
         {children}
-        <Footer />
+        {/* <Footer /> */}
       </Wrapper>
     );
   }

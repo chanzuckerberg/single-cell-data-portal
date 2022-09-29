@@ -50,7 +50,7 @@ def format_dataset_processing_failure_slack_message(dataset_id):
                     "type": "mrkdwn",
                     "text": f"Dataset processing job failed! @sc-oncall-eng\n"
                     f"*Owner*: {collection_owner}\n"
-                    f"*Collection*: https://cellxgene.cziscience.com/collections/{collection_id}/private\n"
+                    f"*Collection*: https://cellxgene.cziscience.com/collections/{collection_id}\n"
                     f"*Processing Status*:\n",
                 },
             },

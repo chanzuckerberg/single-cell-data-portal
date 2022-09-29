@@ -1,4 +1,4 @@
-from flask import jsonify, g
+from flask import jsonify, g, make_response
 from .common import reshape_for_curation_api
 from ...authorization import is_super_curator, owner_or_allowed
 from ...collection import create_collection_common, curation_get_normalized_doi_url
@@ -52,7 +52,8 @@ def post(body: dict, user: str):
             links.append({"link_type": ProjectLinkType.DOI.name, "link_url": doi_url})
             body["links"] = links
     try:
-        return create_collection_common(body, user, doi_url, errors)
+        collection_id = create_collection_common(body, user, doi_url, errors)
+        return make_response(jsonify({"id": collection_id}), 201)
     except InvalidParametersHTTPException as ex:
         ex.ext = dict(invalid_parameters=ex.detail)
         ex.detail = InvalidParametersHTTPException._default_detail

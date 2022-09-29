@@ -8,6 +8,7 @@ from backend.corpora.common.utils.http_exceptions import (
     MethodNotAllowedException,
 )
 from backend.corpora.lambdas.api.v1.authorization import owner_or_allowed
+from backend.corpora.lambdas.api.v1.collection_id.upload import upload_from_link
 from backend.corpora.lambdas.api.v1.common import (
     get_dataset_else_error,
     delete_dataset_common,
@@ -43,4 +44,14 @@ def post(token_info: dict, collection_id: str):
     dataset = Dataset.create(
         db_session, collection=collection, processing_status={"processing_status": ProcessingStatus.INITIALIZED}
     )
-    return make_response(jsonify({"dataset_id": dataset.id}), 201)
+    return make_response(jsonify({"id": dataset.id}), 201)
+
+
+def put(collection_id: str, dataset_id: str, body: dict, token_info: dict):
+    upload_from_link(
+        collection_id,
+        token_info,
+        body.get("url", body.get("link")),
+        dataset_id,
+    )
+    return "", 202
