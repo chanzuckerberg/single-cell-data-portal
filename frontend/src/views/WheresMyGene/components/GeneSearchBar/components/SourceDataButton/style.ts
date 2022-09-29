@@ -5,6 +5,7 @@ export const StyledButtonDiv = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding: 0 10px;
 `;
 
 export const StyledLabel = styled.div`
