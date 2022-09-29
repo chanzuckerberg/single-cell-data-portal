@@ -22,7 +22,7 @@ class TestProcessingDownloadValidate(DataPortalTestCase):
             np.random.randint(10, size=(50001, 5)) * 50, columns=list("ABCDE"), index=(str(i) for i in range(50001))
         )
 
-        ethnicity = tissue = np.random.choice([0, 1], size=(50001))
+        self_reported_ethnicity = tissue = np.random.choice([0, 1], size=(50001))
         assay = development_stage = sex = np.random.choice([0, 1, 2], size=(50001))
 
         obs = pandas.DataFrame(
@@ -36,8 +36,8 @@ class TestProcessingDownloadValidate(DataPortalTestCase):
                     np.random.choice(["MONDO:123"], size=(50001, 1)),
                     np.array([["male", "female", "fixed"][i] for i in sex]).reshape(50001, 1),
                     np.array([["M", "F", "MF"][i] for i in sex]).reshape(50001, 1),
-                    np.array([["solomon islander", "orcadian"][i] for i in ethnicity]).reshape(50001, 1),
-                    np.array([["HANCESTRO:321", "HANCESTRO:456"][i] for i in ethnicity]).reshape(50001, 1),
+                    np.array([["solomon islander", "orcadian"][i] for i in self_reported_ethnicity]).reshape(50001, 1),
+                    np.array([["HANCESTRO:321", "HANCESTRO:456"][i] for i in self_reported_ethnicity]).reshape(50001, 1),
                     np.array([["adult", "baby", "tween"][i] for i in development_stage]).reshape(50001, 1),
                     np.array([["HsapDv:0", "HsapDv:1", "HsapDv:2"][i] for i in development_stage]).reshape(50001, 1),
                     np.random.choice(["Homo sapiens"], size=(50001, 1)),
@@ -120,7 +120,7 @@ class TestProcessingDownloadValidate(DataPortalTestCase):
         )
 
         list_equal(
-            extracted_metadata["ethnicity"],
+            extracted_metadata["self_reported_ethnicity"],
             [{lab: "solomon islander", ont: "HANCESTRO:321"}, {lab: "orcadian", ont: "HANCESTRO:456"}],
             self.assertDictEqual,
         )
@@ -129,6 +129,18 @@ class TestProcessingDownloadValidate(DataPortalTestCase):
             extracted_metadata["development_stage"],
             [{lab: "adult", ont: "HsapDv:0"}, {lab: "baby", ont: "HsapDv:1"}, {lab: "tween", ont: "HsapDv:2"}],
             self.assertDictEqual,
+        )
+
+        list_equal(
+            extracted_metadata["suspension_type"],
+            ["cell", "nucleus", "na"],
+            self.assertEqual,
+        )
+
+        list_equal(
+            extracted_metadata["donor_id"],
+            ["F1", "F2"],
+            self.assertEqual,
         )
 
         self.assertEqual(extracted_metadata["x_approximate_distribution"], "NORMAL")
@@ -148,7 +160,7 @@ class TestProcessingDownloadValidate(DataPortalTestCase):
         )
         zeros_layer_df = pandas.DataFrame(np.zeros((11, 3)), columns=list("ABC"), index=(str(i) for i in range(11)))
 
-        ethnicity = tissue = np.random.choice([0, 1], size=(11))
+        self_reported_ethnicity = tissue = np.random.choice([0, 1], size=(11))
         assay = development_stage = sex = np.random.choice([0, 1, 2], size=(11))
 
         obs = pandas.DataFrame(
@@ -162,8 +174,8 @@ class TestProcessingDownloadValidate(DataPortalTestCase):
                     np.random.choice(["MONDO:123"], size=(11, 1)),
                     np.array([["male", "female", "fixed"][i] for i in sex]).reshape(11, 1),
                     np.array([["M", "F", "MF"][i] for i in sex]).reshape(11, 1),
-                    np.array([["solomon islander", "orcadian"][i] for i in ethnicity]).reshape(11, 1),
-                    np.array([["HANCESTRO:321", "HANCESTRO:456"][i] for i in ethnicity]).reshape(11, 1),
+                    np.array([["solomon islander", "orcadian"][i] for i in self_reported_ethnicity]).reshape(11, 1),
+                    np.array([["HANCESTRO:321", "HANCESTRO:456"][i] for i in self_reported_ethnicity]).reshape(11, 1),
                     np.array([["adult", "baby", "tween"][i] for i in development_stage]).reshape(11, 1),
                     np.array([["HsapDv:0", "HsapDv:1", "HsapDv:2"][i] for i in development_stage]).reshape(11, 1),
                     np.random.choice(["Homo sapiens"], size=(11, 1)),
