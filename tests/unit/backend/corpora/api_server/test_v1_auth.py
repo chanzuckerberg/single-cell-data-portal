@@ -66,7 +66,7 @@ class TestAuth(AuthServerAPITest):
 
         # check the userinfo again (token has now expired, make sure it is refreshed)
         response = self.app.get("/dp/v1/userinfo", headers=dict(host="localhost", Cookie=cxguser_cookie))
-        self.assertEqual(200, response.status_code)
+        self.assertEqual(200, response.status_code, msg=response.data)
         body = json.loads(response.data)
         self.check_user_info(body)
         self.assertIn("Set-Cookie", response.headers)

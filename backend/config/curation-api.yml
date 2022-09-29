@@ -141,7 +141,7 @@ paths:
               schema:
                 type: object
                 properties:
-                  collection_id:
+                  id:
                     $ref: "#/components/schemas/collection_id"
         "400":
           $ref: "#/components/responses/400"
@@ -284,7 +284,7 @@ paths:
               schema:
                 type: object
                 properties:
-                  revision_id:
+                  id:
                     $ref: "#/components/schemas/collection_id"
         "401":
           $ref: "#/components/responses/401"
@@ -557,8 +557,6 @@ components:
                 type: string
             type: object
           type: array
-        dataset_id:
-          $ref: "#/components/schemas/dataset_id"
       type: object
     asset_filetype:
       enum:
@@ -1118,9 +1116,9 @@ components:
       bearerFormat: JWT
       scheme: bearer
       type: http
-      x-bearerInfoFunc: backend.corpora.lambdas.api.v1.authentication.curation_apikey_info_func
+      x-bearerInfoFunc: backend.corpora.lambdas.api.v1.authentication.curation_access_token_func
     curatorAccessLenient:
       bearerFormat: JWT
       scheme: bearer
       type: http
-      x-bearerInfoFunc: backend.corpora.lambdas.api.v1.authentication.curation_apikey_info_func_lenient
+      x-bearerInfoFunc: backend.corpora.lambdas.api.v1.authentication.curation_access_token_func_lenient
