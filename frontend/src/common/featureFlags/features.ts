@@ -1,6 +1,6 @@
 export enum FEATURES {
   GENE_SETS = "gs",
   CURATOR = "curator",
-  CURATOR_API = "curator-api",
+  FILTER = "filter",
   DOWNLOAD_WMG = "moose",
 }
