@@ -180,8 +180,9 @@ class Dataset(Entity):
 
     @staticmethod
     def enrich_development_stage_with_ancestors(dataset):
-        Dataset._enrich_with_ancestors(dataset, "development_stage",
-                                       ontology_mappings.development_stage_ontology_mapping)
+        Dataset._enrich_with_ancestors(
+            dataset, "development_stage", ontology_mappings.development_stage_ontology_mapping
+        )
 
     @staticmethod
     def enrich_tissue_with_ancestors(dataset):
