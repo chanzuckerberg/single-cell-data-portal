@@ -57,7 +57,7 @@ def load(corpus_path: str, df: pd.DataFrame) -> str:
 
 
 @log_func_runtime
-def create_cell_count_cube(corpus_path: str) -> int:
+def create_cell_count_cube(corpus_path: str):
     """
     Create cell count cube and write to disk
     """
@@ -65,5 +65,5 @@ def create_cell_count_cube(corpus_path: str) -> int:
     df = transform(obs)
     uri = load(corpus_path, df)
     cell_count = df.n_cells.sum()
+    logger.info(f"{cell_count=}")
     logger.info(f"Cell count cube created and stored at {uri}")
-    return cell_count

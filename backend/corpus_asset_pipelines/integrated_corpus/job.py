@@ -53,9 +53,13 @@ def build_integrated_corpus(dataset_directory: List, corpus_path: str) -> int:
 
         for arr_name in [OBS_ARRAY_NAME, VAR_ARRAY_NAME, INTEGRATED_ARRAY_NAME]:
             arr_path = f"{corpus_path}/{arr_name}"
-            tiledb.consolidate(arr_path)  # TODO: figure out why this crashes
+            tiledb.consolidate(arr_path)
             tiledb.vacuum(arr_path)
-    return dataset_count
+        with tiledb.open(f"{corpus_path}/{VAR_ARRAY_NAME}") as var:
+            gene_count = len(var.query().df[:])
+        with tiledb.open(f"{corpus_path}/{OBS_ARRAY_NAME}") as var:
+            cell_count = len(var.query().df[:])
+    logger.info(f"{dataset_count=}, {gene_count=}, {cell_count=}")
 
 
 def process_h5ad_for_corpus(h5ad_path: str, corpus_path: str):

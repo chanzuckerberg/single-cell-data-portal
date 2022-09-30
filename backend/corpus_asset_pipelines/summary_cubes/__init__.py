@@ -18,8 +18,8 @@ def run(corpus_path: str, validate_cube: bool) -> dict:
     validate expression summary cube based on biological expectations
     if indicated by param
     """
-    gene_count = create_expression_summary_cube(corpus_path)
-    cell_count = create_cell_count_cube(corpus_path)
+    create_expression_summary_cube(corpus_path)
+    create_cell_count_cube(corpus_path)
     if validate_cube:
         if Validation(corpus_path).validate_cube() is False:
             pipeline_failure_message = gen_wmg_pipeline_failure_message(
@@ -28,4 +28,3 @@ def run(corpus_path: str, validate_cube: bool) -> dict:
             data = format_failed_batch_issue_slack_alert(pipeline_failure_message)
             notify_slack(data)
             sys.exit("Exiting due to cube validation failure")
-    return {"cell_count": cell_count, "gene_count": gene_count}

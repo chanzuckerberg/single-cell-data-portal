@@ -4,7 +4,7 @@ from backend.corpus_asset_pipelines.integrated_corpus.job import build_integrate
 from backend.wmg.data.schemas.corpus_schema import create_tdb_integrated_corpus
 
 
-def run(dataset_directory: list, corpus_path: str, extract_data: bool) -> int:
+def run(dataset_directory: list, corpus_path: str, extract_data: bool):
     """
     Copy relevant datasets and integrate cells into data corpus matrix
     """
@@ -12,5 +12,4 @@ def run(dataset_directory: list, corpus_path: str, extract_data: bool) -> int:
         create_tdb_integrated_corpus(corpus_path)
     if extract_data:
         extract_datasets(dataset_directory)
-    dataset_count = build_integrated_corpus(dataset_directory, corpus_path)
-    return dataset_count
+    build_integrated_corpus(dataset_directory, corpus_path)

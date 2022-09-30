@@ -36,7 +36,7 @@ def _load(
 
 
 @log_func_runtime
-def create_expression_summary_cube(corpus_path: str) -> int:
+def create_expression_summary_cube(corpus_path: str):
     """
     Create queryable cube and write to disk
     """
@@ -54,4 +54,5 @@ def create_expression_summary_cube(corpus_path: str) -> int:
         # transform
         cube_index, cube_sum, cube_nnz = transform(corpus_path, gene_ontology_term_ids, cube_dims)
         _load(uri, gene_ontology_term_ids, cube_index, cube_sum, cube_nnz)
-    return len(gene_ontology_term_ids)
+    gene_count = len(gene_ontology_term_ids)
+    logger.info(f"create_expression_summary_cube: {gene_count=}")

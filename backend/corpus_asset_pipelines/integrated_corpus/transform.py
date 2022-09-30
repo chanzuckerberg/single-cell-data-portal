@@ -49,7 +49,7 @@ def get_high_level_tissue(obs: DataFrame) -> DataFrame:
 
     obs = obs.copy()
 
-    tissue_mapper = TissueMapper()
+    tissue_mapper = TissueMapper()  # TODO: Slow
 
     tissue_ids_and_labels = obs[["tissue_ontology_term_id", "tissue"]].drop_duplicates().astype(str)
     new_tissue_ids = {}
