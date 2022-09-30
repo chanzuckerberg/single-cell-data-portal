@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 
 
 def apply_pre_concatenation_filters(anndata_object: anndata.AnnData, min_genes: int = None) -> anndata.AnnData:
-    min_genes = min_genes if min_genes else GENE_EXPRESSION_COUNT_MIN_THRESHOLD
+    min_genes = min_genes if min_genes is not None else GENE_EXPRESSION_COUNT_MIN_THRESHOLD
     logger.info("Applying filters: assay, and lowly-covered cells")
     # Filter out cells with low coverage (less than GENE_EXPRESSION_COUNT_MIN_THRESHOLD unique genes expressed)
     scanpy.pp.filter_cells(anndata_object, min_genes=min_genes)

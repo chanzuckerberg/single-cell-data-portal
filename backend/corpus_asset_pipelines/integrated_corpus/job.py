@@ -27,7 +27,7 @@ def extract_datasets(dataset_directory: List):
 
 
 @log_func_runtime
-def build_integrated_corpus(dataset_directory: List, corpus_path: str) -> int:
+def build_integrated_corpus(dataset_directory: List, corpus_path: str):
     """
     Given the path to a directory containing one or more h5ad files and a group name, call the h5ad loading function
     on all files, loading/concatenating the datasets together under the group name

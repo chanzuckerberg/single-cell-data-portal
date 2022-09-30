@@ -34,7 +34,7 @@ class TestCorpusLoad(unittest.TestCase):
 
     @staticmethod
     def create_anndata_test_object(path, dataset_name, num_genes=1000, num_cells=5000):
-        test_anndata_object = create_anndata_test_object(num_genes=1000, num_cells=5000)
+        test_anndata_object = create_anndata_test_object(num_genes=num_genes, num_cells=num_cells)
         dataset_path = f"{path}/{dataset_name}"
         os.mkdir(dataset_path)
         test_anndata_file_name = pathlib.Path(dataset_path, "local.h5ad")
@@ -46,9 +46,12 @@ class TestCorpusLoad(unittest.TestCase):
     def setUpClass(cls) -> None:
         super().setUp(cls)
         cls.tmp_dir = tempfile.mkdtemp()
-        os.mkdir(f"{cls.tmp_dir}/datasets")
-        cls.small_anndata_filename = cls.create_anndata_test_object(cls.tmp_dir, "basic_test_dataset", 3, 5)
-        cls.large_anndata_filename = cls.create_anndata_test_object(cls.tmp_dir, "large_test_dataset", 3, 5)
+        cls.path_to_datasets = pathlib.Path(cls.tmp_dir, "datasets")
+        os.mkdir(cls.path_to_datasets)
+        cls.small_anndata_filename = cls.create_anndata_test_object(cls.path_to_datasets, "basic_test_dataset", 3, 5)
+        cls.large_anndata_filename = cls.create_anndata_test_object(
+            cls.path_to_datasets, "large_test_dataset", 1000, 5000
+        )
 
     @classmethod
     def tearDownClass(cls) -> None:
