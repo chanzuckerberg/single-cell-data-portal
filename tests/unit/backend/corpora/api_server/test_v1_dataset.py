@@ -170,7 +170,7 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         dataset = {"development_stage": [{"ontology_term_id": "HsapDv:0000008", "label": "Test"}]}
         Dataset.enrich_development_stage_with_ancestors(dataset)
         self.assertIn("development_stage_ancestors", dataset)
-        self.assertEqual(
+        self.assertCountEqual(
             dataset["development_stage_ancestors"],
             ["HsapDv:0000008", "HsapDv:0000006", "HsapDv:0000002", "HsapDv:0000045", "HsapDv:0000001"],
         )
@@ -189,7 +189,7 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         dataset = {"tissue": [{"ontology_term_id": "UBERON:0002048", "label": "Test"}]}
         Dataset.enrich_tissue_with_ancestors(dataset)
         self.assertIn("tissue_ancestors", dataset)
-        self.assertEqual(
+        self.assertCountEqual(
             dataset["tissue_ancestors"],
             [
                 "UBERON:0001004",
@@ -217,7 +217,7 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         dataset = {"cell_type": [{"ontology_term_id": "CL:0000738", "label": "Test"}]}
         Dataset.enrich_cell_type_with_ancestors(dataset)
         self.assertIn("cell_type_ancestors", dataset)
-        self.assertEqual(
+        self.assertCountEqual(
             dataset["cell_type_ancestors"],
             [
                 "CL:0000255",
@@ -274,7 +274,7 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         )
 
         self.assertEqual(actual_dataset["tissue"], dataset.tissue)
-        self.assertEqual(
+        self.assertCountEqual(
             actual_dataset["tissue_ancestors"],
             [
                 "UBERON:0001004",
@@ -289,7 +289,7 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         )
 
         self.assertEqual(actual_dataset["cell_type"], dataset.cell_type)
-        self.assertEqual(
+        self.assertCountEqual(
             actual_dataset["cell_type_ancestors"],
             [
                 "CL:0000255",
