@@ -1,7 +1,7 @@
 """schema 3.0.0
 
-Revision ID: c27083d1a76d
-Revises: 30_26c54abcaac9
+Revision ID: 32_c27083d1a76d
+Revises: 31_253d1d67ea4a
 Create Date: 2022-08-18 11:15:51.141347
 
 """
@@ -11,8 +11,8 @@ from sqlalchemy.dialects import postgresql
 
 
 # revision identifiers, used by Alembic.
-revision = "31_c27083d1a76d"
-down_revision = "30_26c54abcaac9"
+revision = "32_c27083d1a76d"
+down_revision = "31_253d1d67ea4a"
 branch_labels = None
 depends_on = None
 
