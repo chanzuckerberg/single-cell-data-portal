@@ -11,7 +11,10 @@ from backend.wmg.data.schemas.cube_schema import expression_summary_schema
 from backend.wmg.data.snapshot import EXPRESSION_SUMMARY_CUBE_NAME
 from backend.wmg.data.tiledb import create_ctx
 from backend.wmg.data.utils import log_func_runtime, create_empty_cube
-from backend.wmg.data.schemas.cube_schema import cube_non_indexed_dims, cube_indexed_dims_no_gene_ontology
+from backend.wmg.data.schemas.cube_schema import (
+    expression_summary_non_indexed_dims,
+    expression_summary_indexed_dims_no_gene_ontology,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +25,9 @@ def _load(
     """
     Build expression summary cube in memory and write to disk
     """
-    dims, vals = build_in_mem_cube(gene_ontology_term_ids, cube_index, cube_non_indexed_dims, cube_sum, cube_nnz)
+    dims, vals = build_in_mem_cube(
+        gene_ontology_term_ids, cube_index, expression_summary_non_indexed_dims, cube_sum, cube_nnz
+    )
 
     logger.debug("Saving cube to tiledb")
     with tiledb.open(uri, "w") as cube:
@@ -42,7 +47,7 @@ def create_expression_summary_cube(corpus_path: str):
     """
     uri = f"{corpus_path}/{EXPRESSION_SUMMARY_CUBE_NAME}"
     ctx = create_ctx()
-    cube_dims = cube_indexed_dims_no_gene_ontology + cube_non_indexed_dims
+    cube_dims = expression_summary_indexed_dims_no_gene_ontology + expression_summary_non_indexed_dims
 
     with tiledb.scope_ctx(ctx):
         # Create cube
