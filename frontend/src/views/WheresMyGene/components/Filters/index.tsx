@@ -25,6 +25,7 @@ import {
 import { DispatchContext, StateContext } from "../../common/store";
 import { selectFilters } from "../../common/store/actions";
 import { Filters as IFilters } from "../../common/types";
+import Organism from "../GeneSearchBar/components/Organism";
 import Sort from "./components/Sort";
 import { StyledComplexFilterInputDropdown, Wrapper } from "./style";
 
@@ -38,7 +39,11 @@ const MenuSelectProps = {
   getOptionSelected,
 };
 
-export default memo(function Filters(): JSX.Element {
+export interface Props {
+  isLoading: boolean;
+}
+
+export default memo(function Filters({ isLoading }: Props): JSX.Element {
   const readyFilterCount = useRef(0);
   const dispatch = useContext(DispatchContext);
   const state = useContext(StateContext);
@@ -224,6 +229,8 @@ export default memo(function Filters(): JSX.Element {
             InputDropdownProps={InputDropdownProps}
           />
         </div>
+
+        <Organism isLoading={isLoading} />
 
         <Sort areFiltersDisabled={areFiltersDisabled} />
       </Wrapper>

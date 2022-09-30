@@ -79,28 +79,51 @@ class TestPostCollection(BaseAuthAPITest):
         response = self.app.post(
             "/curation/v1/collections", headers=self.make_owner_header(), data=json.dumps(self.test_collection)
         )
+        self.assertIn("id", response.json.keys())
         self.assertEqual(201, response.status_code)
 
     def test__create_collection__InvalidParameters(self):
-        body = dict(
-            name="",
-            description="",
-            contact_name="",
-            contact_email="@email.com",
-            doi="10.111/not_curie_reference_format",
-        )
-        expected_errors = [
-            {"name": "contact_email", "reason": "Invalid format."},
-            {"name": "description", "reason": "Cannot be blank."},
-            {"name": "name", "reason": "Cannot be blank."},
-            {"name": "contact_name", "reason": "Cannot be blank."},
-            {"name": "doi", "reason": "DOI must be a CURIE reference."},
+        requests = [
+            (
+                dict(
+                    name="",
+                    description="",
+                    contact_name="",
+                    contact_email="@email.com",
+                    doi="10.111/not_curie_reference_format",
+                ),
+                [
+                    {"name": "contact_email", "reason": "Invalid format."},
+                    {"name": "description", "reason": "Cannot be blank."},
+                    {"name": "name", "reason": "Cannot be blank."},
+                    {"name": "contact_name", "reason": "Cannot be blank."},
+                    {"name": "doi", "reason": "DOI must be a CURIE reference."},
+                ],
+                5,
+            ),
+            (
+                dict(
+                    name="Nonprintable\x0acharacters\x0bare_NOT_allowed_in_name",
+                    description="But\x0anonprintable\x0acharacters\x0bARE_allowed_in_description",
+                    contact_name="And\x0ain_contact_name",
+                    contact_email="somebody@email.com",
+                    doi="10.111/not_curie_reference_format",
+                ),
+                [
+                    {"name": "name", "reason": "Invalid characters detected."},
+                    {"name": "doi", "reason": "DOI must be a CURIE reference."},
+                ],
+                2,
+            ),
         ]
-        response = self.app.post("/curation/v1/collections", headers=self.make_owner_header(), data=json.dumps(body))
-        print(response.json)
-        self.assertEqual(400, response.status_code)
-        for error in expected_errors:
-            self.assertIn(error, response.json["invalid_parameters"])
+        for body, expected_errors, num_expected_errors in requests:
+            response = self.app.post(
+                "/curation/v1/collections", headers=self.make_owner_header(), data=json.dumps(body)
+            )
+            self.assertEqual(400, response.status_code)
+            for error in expected_errors:
+                self.assertIn(error, response.json["invalid_parameters"])
+            self.assertEqual(len(response.json["invalid_parameters"]), num_expected_errors)
 
 
 class TestGetCollections(BaseAuthAPITest):

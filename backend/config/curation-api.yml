@@ -141,7 +141,7 @@ paths:
               schema:
                 type: object
                 properties:
-                  collection_id:
+                  id:
                     $ref: "#/components/schemas/collection_id"
         "400":
           $ref: "#/components/responses/400"
@@ -153,6 +153,8 @@ paths:
       summary: Fetch a Collection with Datasets
       description: >
         Fetch full metadata for the Collection and its Datasets.
+
+        An Authentication token must be provided in order to retrieve the id of an associated Revision for this Collection (the `revising_in` field), if such a Revision currently exists.
 
         * Optional: provide your access token in the request header as `Authentication: Bearer <access_token>`.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.actions.get
@@ -182,7 +184,7 @@ paths:
         metadata of the DOI such as the list of authors. If the DOI has not been submitted to Crossref by its 
         publisher, then the request returns a 400 (BAD REQUEST).
 
-        * Optional: provide your access token in the request header as `Authentication: Bearer <access_token>`.
+        * Required: provide your access token in the request header as `Authentication: Bearer <access_token>`.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.actions.patch
       security:
         - curatorAccess: []
@@ -282,7 +284,7 @@ paths:
               schema:
                 type: object
                 properties:
-                  revision_id:
+                  id:
                     $ref: "#/components/schemas/collection_id"
         "401":
           $ref: "#/components/responses/401"
@@ -295,6 +297,8 @@ paths:
       description: |
         Create a new empty Dataset and return the `id`. The `id` is used when uploading a datafile 
         to S3 to identify what Dataset the file belongs to.
+
+        * Required: provide your access token in the request header as `Authentication: bearer <access_token>`.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.datasets.actions.post
       security:
         - curatorAccess: []
@@ -323,8 +327,9 @@ paths:
     delete:
       summary: Delete a Dataset or cancel processing for a Dataset in a private Collection or Revision.
       description: >-
-        Delete a Dataset or cancel processing for a Dataset. The **collection_id** MUST reference either a private Collection OR a 
-        Revision. MUST indicate the Dataset by providing the **dataset_id** parameter.
+        Delete or cancel processing for a Dataset with `dataset_id` in `collection_id`. 
+        The `collection_id` MUST reference either a private Collection OR a 
+        Revision.
 
         If the Dataset is being processed, then this endpoint will cancel processing and delete the Dataset. While 
         the cancellation process is occurring, the Dataset may still appear as part of the Collection for a few minutes, but will eventually be removed.
@@ -358,8 +363,7 @@ paths:
     get:
       summary: Fetch Dataset metadata from a Collection.
       description: |
-        Fetch Dataset metadata from a Collection. If a `dataset_id` is provided as a query,
-        the associated Dataset metadata is returned.
+        Fetch Dataset metadata for `dataset_id` in a `collection_id`.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.datasets.actions.get
       tags:
         - collection
@@ -377,23 +381,22 @@ paths:
           $ref: "#/components/responses/400"
         "404":
           $ref: "#/components/responses/404"
-
-  /v1/collections/{collection_id}/datasets/upload-link:
     put:
       summary: Upload a Dataset by providing a link
       description: |
-        Upload a Dataset. The Dataset will be uploaded from the provided `link` which MUST either be a presigned AWS S3 
-        URL or Dropbox shared file URL. MAY include the `dataset_id` of an existing Dataset, in which case the 
-        existing Dataset SHALL be replaced. Otherwise a new Dataset will be created.
+        Upload a datafile to become a Dataset. MUST use an existing Dataset id for the `dataset_id` path parameter. The
+        Dataset will be uploaded from the provided `link` which MUST either be a presigned AWS S3 URL or Dropbox shared
+        file URL.
 
         * Required: provide your access token in the request header as `Authentication: Bearer <access_token>`.
-      operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.datasets.upload_link.put
+      operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.datasets.actions.put
       tags:
         - collection
       security:
         - curatorAccess: []
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
+        - $ref: "#/components/parameters/path_dataset_id"
       requestBody:
         content:
           application/json:
@@ -401,19 +404,11 @@ paths:
               type: object
               additionalProperties: false
               properties:
-                id:
-                  $ref: "#/components/schemas/dataset_id"
                 link:
                   description: |
                     A user-provided link to the Dataset source file. The Dataset will be uploaded from the provided 
                     `link` which MUST either be a presigned AWS S3  or Dropbox shared file URL.
                   type: string
-            examples:
-              id:
-                summary: Using the Dataset uuid
-                value:
-                  id: "<existing_dataset_id>"
-                  link: "<download_link_for_data_source_file>"
       responses:
         "202":
           $ref: "#/components/responses/202"
@@ -518,9 +513,9 @@ paths:
       tags:
         - collection
       description: |
-        Generate Presigned S3 URLs to download the files associated with the Dataset. MUST include 
-        `dataset_id` parameters. Pre-signed S3 URLs have a life span of up to 1 hour. Therefore,
-        generate a presigned URL immediately before each download to ensure it is current.
+        Generate Presigned S3 URLs to download the files associated with the `dataset_id`. 
+        Pre-signed S3 URLs have a life span of up to 1 hour. You should
+        generate a pre-signed URL immediately before each download to ensure it is current.
       operationId: backend.corpora.lambdas.api.v1.curation.collections.collection_id.assets.get
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
@@ -562,8 +557,6 @@ components:
                 type: string
             type: object
           type: array
-        dataset_id:
-          $ref: "#/components/schemas/dataset_id"
       type: object
     asset_filetype:
       enum:
@@ -933,11 +926,9 @@ components:
               - LAB_WEBSITE
               - OTHER
               - DATA_SOURCE
-            nullable: true
             type: string
           link_url:
             description: The URL of the link.
-            nullable: true
             type: string
         required:
           - link_url
@@ -1125,9 +1116,9 @@ components:
       bearerFormat: JWT
       scheme: bearer
       type: http
-      x-bearerInfoFunc: backend.corpora.lambdas.api.v1.authentication.curation_apikey_info_func
+      x-bearerInfoFunc: backend.corpora.lambdas.api.v1.authentication.curation_access_token_func
     curatorAccessLenient:
       bearerFormat: JWT
       scheme: bearer
       type: http
-      x-bearerInfoFunc: backend.corpora.lambdas.api.v1.authentication.curation_apikey_info_func_lenient
+      x-bearerInfoFunc: backend.corpora.lambdas.api.v1.authentication.curation_access_token_func_lenient
