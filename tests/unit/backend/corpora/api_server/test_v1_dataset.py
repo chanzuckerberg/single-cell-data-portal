@@ -167,12 +167,12 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         self.assertEqual(actual_dataset["revised_at"], dataset.revised_at.timestamp())
 
     def test__enrich_development_stage_with_ancestors_expands_correctly(self):
-        dataset = {"development_stage": [{"ontology_term_id": "HsapDv:0000008", "label": "Test"}]}
+        dataset = {"development_stage": [{"ontology_term_id": "HsapDv_0000008", "label": "Test"}]}
         Dataset.enrich_development_stage_with_ancestors(dataset)
         self.assertIn("development_stage_ancestors", dataset)
         self.assertCountEqual(
             dataset["development_stage_ancestors"],
-            ["HsapDv:0000008", "HsapDv:0000006", "HsapDv:0000002", "HsapDv:0000045", "HsapDv:0000001"],
+            ["HsapDv_0000008", "HsapDv_0000006", "HsapDv_0000002", "HsapDv_0000045", "HsapDv_0000001"],
         )
 
     def test__enrich_development_stage_with_ancestors_empty_key_ok(self):
@@ -247,7 +247,7 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
             self.session,
             id=test_dataset_id,
             cell_count=42,
-            development_stage=[{"ontology_term_id": "HsapDv:0000008", "label": "Test"}],
+            development_stage=[{"ontology_term_id": "HsapDv_0000008", "label": "Test"}],
             tissue=[{"ontology_term_id": "UBERON:0002048", "label": "Test"}],
             cell_type=[{"ontology_term_id": "CL:0000738", "label": "Test"}],
             published_at=datetime.now(),
@@ -270,7 +270,7 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         self.assertEqual(actual_dataset["development_stage"], dataset.development_stage)
         self.assertEqual(
             actual_dataset["development_stage_ancestors"],
-            ["HsapDv:0000008", "HsapDv:0000006", "HsapDv:0000002", "HsapDv:0000045", "HsapDv:0000001"],
+            ["HsapDv_0000008", "HsapDv_0000006", "HsapDv_0000002", "HsapDv_0000045", "HsapDv_0000001"],
         )
 
         self.assertEqual(actual_dataset["tissue"], dataset.tissue)
