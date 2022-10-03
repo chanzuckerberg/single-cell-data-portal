@@ -8,7 +8,8 @@ import { usePrimaryFilterDimensions } from "src/common/queries/wheresMyGene";
 import Toast from "src/views/Collection/components/Toast";
 import { DispatchContext, StateContext } from "../../common/store";
 import { selectGenes, selectTissues } from "../../common/store/actions";
-import { Gene } from "../../common/types";
+import { CellType, Gene } from "../../common/types";
+import Organism from "./components/Organism";
 import QuickSelect from "./components/QuickSelect";
 import SaveImage from "./components/SaveImage";
 import { ActionWrapper, Container, LoadingIndicatorWrapper } from "./style";
@@ -19,8 +20,10 @@ interface Tissue {
 
 export default function GeneSearchBar({
   className,
+  selectedCellTypes,
 }: {
   className?: string;
+  selectedCellTypes: { [tissue: string]: CellType[] };
 }): JSX.Element {
   const dispatch = useContext(DispatchContext);
   const { selectedGenes, selectedTissues, selectedOrganismId } =
@@ -124,8 +127,11 @@ export default function GeneSearchBar({
           <>
             <Button onClick={copyGenes}>Copy Genes</Button>
             <SaveImage
-              selectedTissues={selectedTissues}
-              selectedGenes={selectedGenes}
+              {...{
+                selectedCellTypes,
+                selectedGenes,
+                selectedTissues,
+              }}
             />
           </>
         )}

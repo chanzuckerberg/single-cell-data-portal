@@ -17,6 +17,7 @@
     "@material-ui/lab": "latest",
     "@types/d3-scale-chromatic": "^3.0.0",
     "@vgrid/sass-inline-svg": "^1.0.1",
+    "client-zip": "^2.2.2",
     "clipboard-copy": "^4.0.1",
     "czifui": "^5.0.0",
     "d3-scale-chromatic": "^3.0.0",
