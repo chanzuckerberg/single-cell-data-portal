@@ -3,8 +3,6 @@ import os
 import time
 from urllib.parse import urlparse
 
-from werkzeug.exceptions import InternalServerError
-
 import connexion
 
 from connexion import FlaskApi, ProblemException, problem
@@ -174,7 +172,7 @@ def handle_corpora_error(exception):
     )
 
 
-@app.errorhandler(InternalServerError)
+@app.errorhandler(Exception)
 def handle_internal_server_error(exception):
     app.logger.exception("InternalServerError", exc_info=exception.original_exception)
     return FlaskApi.get_response(problem(500, "Internal Server Error"))
