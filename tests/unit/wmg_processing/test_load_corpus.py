@@ -126,6 +126,7 @@ class TestCorpusLoad(unittest.TestCase):
     @patch("backend.corpus_asset_pipelines.integrated_corpus.job.tiledb.consolidate", new=Mock())  # Slow
     @patch("backend.corpus_asset_pipelines.integrated_corpus.job.tiledb.vacuum", new=Mock())  # Slow
     @patch("backend.wmg.data.cube_pipeline.upload_artifacts_to_s3", new=Mock())  # Don't upload the cube.
+    @patch("backend.wmg.data.cube_pipeline.extract.get_dataset_s3_uris", new=Mock(return_value={}))
     def test_corpus_creation_works_as_expected(self):
         generate_cells = 5000
         expected_datasets = 2
