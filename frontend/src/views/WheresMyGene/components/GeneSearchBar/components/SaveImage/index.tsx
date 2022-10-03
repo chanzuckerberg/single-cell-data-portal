@@ -78,7 +78,7 @@ export default function SaveImage({
             backgroundColor: "white",
             filter: screenshotFilter(tissue),
             height: getHeatmapHeight(selectedCellTypes[tissue]) + 200,
-            pixelRatio: 1,
+            pixelRatio: 2,
             width: getHeatmapWidth(selectedGenes) + 200,
           });
 
@@ -95,7 +95,7 @@ export default function SaveImage({
       const blob = await downloadZip(images).blob();
       const link = document.createElement("a");
       link.href = URL.createObjectURL(blob);
-      link.download = `CELLxGENE_1PX_gene_expression.zip`;
+      link.download = `CELLxGENE_gene_expression.zip`;
       link.click();
       link.remove();
     } catch (error) {
