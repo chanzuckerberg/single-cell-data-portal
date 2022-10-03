@@ -22,12 +22,15 @@ describeIfDevStagingProd("Where's My Gene", () => {
     await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`);
 
     // Getting Started section
-    await expect(page).toHaveSelector(getText("Getting Started"));
-    await expect(page).toHaveSelector(
-      getText(
-        "Use the Add Tissue and Add Gene buttons to find where genes are expressed, powered by data from the"
-      )
-    );
+    await expect(page).toHaveSelector(getText("STEP 1"));
+    await expect(page).toHaveSelector(getText("Add Tissues"));
+
+    await expect(page).toHaveSelector(getText("STEP 2"));
+    await expect(page).toHaveSelector(getText("Add Genes"));
+
+    await expect(page).toHaveSelector(getText("STEP 3"));
+    await expect(page).toHaveSelector(getText("Explore Gene Expression"));
+
     // Beta callout
     await expect(page).toHaveSelector(getText("This feature is in beta"));
 
@@ -56,11 +59,15 @@ describeIfDevStagingProd("Where's My Gene", () => {
     await expect(filtersPanel).toHaveSelector(getText("Ethnicity"));
     await expect(filtersPanel).toHaveSelector(getText("Sex"));
 
-    // Info Panel
-    const InfoPanel = await page.$("*css=div >> text=Info");
+    // Legend
+    const Legend = await page.$("*css=div >> text=Gene Expression");
 
-    await expect(InfoPanel).toHaveSelector(getText("Gene Expression"));
-    await expect(InfoPanel).toHaveSelector(getText("Expressed in Cells (%)"));
+    await expect(Legend).toHaveSelector(getText("Gene Expression"));
+    await expect(Legend).toHaveSelector(getText("Expressed in Cells (%)"));
+
+    // Info Panel
+    const InfoPanel = await page.$("*css=div >> text=Filters");
+
     await expect(InfoPanel).toHaveSelector(getText("Methodology"));
     await expect(InfoPanel).toHaveSelector(
       getText("After filtering cells with low coverage ")

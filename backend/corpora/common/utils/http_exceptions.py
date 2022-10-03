@@ -16,6 +16,18 @@ class UnauthorizedError(ProblemException):
         super().__init__(status=401, title="Invalid Authentication Credentials", detail=detail, *args, **kwargs)
 
 
+class ExpiredCredentialsError(ProblemException):
+    def __init__(self, detail: str = "Invalid Authentication Credentials", *args, **kwargs) -> None:
+        super().__init__(
+            status=401,
+            title="Invalid Authentication Credentials",
+            detail="Your authentication credentials have expired. Please provide updated "
+            "credentials before trying again.",
+            *args,
+            **kwargs,
+        )
+
+
 class TooLargeHTTPException(ProblemException):
     def __init__(self, detail: str = "The file requested is too large to process.", *args, **kwargs) -> None:
         super().__init__(status=413, title="Request Entity Too Large", detail=detail, *args, **kwargs)

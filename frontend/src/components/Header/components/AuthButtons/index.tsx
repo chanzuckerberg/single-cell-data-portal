@@ -60,7 +60,7 @@ function LoggedInButtons({ name, email }: { name?: string; email?: string }) {
   );
 
   function Content() {
-    const curatorAPIFeature = get(FEATURES.CURATOR_API);
+    const curatorAPIFeature = get(FEATURES.CURATOR);
     return (
       <Menu
         anchorEl={anchorEl}

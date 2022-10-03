@@ -7,7 +7,7 @@ interface Props {
   isScaled: boolean;
 }
 
-export default memo(function InfoPanel({ isScaled }: Props): JSX.Element {
+export default memo(function Legend({ isScaled }: Props): JSX.Element {
   return (
     <LegendWrapper>
       <RelativeGeneExpression isScaled={isScaled} />

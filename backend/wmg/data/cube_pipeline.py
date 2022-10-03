@@ -17,7 +17,7 @@ from backend.wmg.data.snapshot import EXPRESSION_SUMMARY_CUBE_NAME, CELL_COUNTS_
 from backend.wmg.data.transform import (
     generate_primary_filter_dimensions,
     get_cell_types_by_tissue,
-    generate_cell_ordering,
+    cell_type_ordering_create_file,
 )
 from backend.wmg.data.utils import (
     get_all_dataset_ids,
@@ -58,7 +58,7 @@ def load_data_and_create_cube(
         cell_count=get_cell_count_cube_count(f"{corpus_path}/{CELL_COUNTS_CUBE_NAME}"),
     )
     cell_type_by_tissue = get_cell_types_by_tissue(corpus_path)
-    generate_cell_ordering(snapshot_path, cell_type_by_tissue)
+    cell_type_ordering_create_file(snapshot_path, cell_type_by_tissue)
     generate_primary_filter_dimensions(snapshot_path, corpus_name, snapshot_id)
     upload_artifacts_to_s3(snapshot_path, snapshot_id)
     if validate_cube:
