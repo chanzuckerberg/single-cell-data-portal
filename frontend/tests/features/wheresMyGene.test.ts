@@ -22,12 +22,15 @@ describeIfDevStagingProd("Where's My Gene", () => {
     await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`);
 
     // Getting Started section
-    await expect(page).toHaveSelector(getText("Getting Started"));
-    await expect(page).toHaveSelector(
-      getText(
-        "Use the Add Tissue and Add Gene buttons to find where genes are expressed, powered by data from the"
-      )
-    );
+    await expect(page).toHaveSelector(getText("STEP 1"));
+    await expect(page).toHaveSelector(getText("Add Tissues"));
+
+    await expect(page).toHaveSelector(getText("STEP 2"));
+    await expect(page).toHaveSelector(getText("Add Genes"));
+
+    await expect(page).toHaveSelector(getText("STEP 3"));
+    await expect(page).toHaveSelector(getText("Explore Gene Expression"));
+
     // Beta callout
     await expect(page).toHaveSelector(getText("This feature is in beta"));
 
