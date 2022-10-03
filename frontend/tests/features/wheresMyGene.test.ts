@@ -1,5 +1,6 @@
 import { ElementHandle } from "playwright";
 import { ROUTES } from "src/common/constants/routes";
+import { RawPrimaryFilterDimensionsResponse } from "src/common/queries/wheresMyGene";
 import {
   describeIfDevStagingProd,
   goToPage,
@@ -7,6 +8,9 @@ import {
 } from "tests/utils/helpers";
 import { TEST_URL } from "../common/constants";
 import { getTestID, getText } from "../utils/selectors";
+import { TISSUE_DENY_LIST } from "./fixtures/wheresMyGene/tissueRollup";
+
+const HOMO_SAPIENS_TERM_ID = "NCBITaxon:9606";
 
 const GENE_LABELS_ID = "gene-labels";
 const CELL_TYPE_LABELS_ID = "cell-type-labels";
@@ -18,12 +22,15 @@ describeIfDevStagingProd("Where's My Gene", () => {
     await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`);
 
     // Getting Started section
-    await expect(page).toHaveSelector(getText("Getting Started"));
-    await expect(page).toHaveSelector(
-      getText(
-        "Use the Add Tissue and Add Gene buttons to find where genes are expressed, powered by data from the"
-      )
-    );
+    await expect(page).toHaveSelector(getText("STEP 1"));
+    await expect(page).toHaveSelector(getText("Add Tissues"));
+
+    await expect(page).toHaveSelector(getText("STEP 2"));
+    await expect(page).toHaveSelector(getText("Add Genes"));
+
+    await expect(page).toHaveSelector(getText("STEP 3"));
+    await expect(page).toHaveSelector(getText("Explore Gene Expression"));
+
     // Beta callout
     await expect(page).toHaveSelector(getText("This feature is in beta"));
 
@@ -52,11 +59,15 @@ describeIfDevStagingProd("Where's My Gene", () => {
     await expect(filtersPanel).toHaveSelector(getText("Ethnicity"));
     await expect(filtersPanel).toHaveSelector(getText("Sex"));
 
-    // Info Panel
-    const InfoPanel = await page.$("*css=div >> text=Info");
+    // Legend
+    const Legend = await page.$("*css=div >> text=Gene Expression");
 
-    await expect(InfoPanel).toHaveSelector(getText("Gene Expression"));
-    await expect(InfoPanel).toHaveSelector(getText("Expressed in Cells (%)"));
+    await expect(Legend).toHaveSelector(getText("Gene Expression"));
+    await expect(Legend).toHaveSelector(getText("Expressed in Cells (%)"));
+
+    // Info Panel
+    const InfoPanel = await page.$("*css=div >> text=Filters");
+
     await expect(InfoPanel).toHaveSelector(getText("Methodology"));
     await expect(InfoPanel).toHaveSelector(
       getText("After filtering cells with low coverage ")
@@ -256,6 +267,31 @@ describeIfDevStagingProd("Where's My Gene", () => {
 
       expect(afterCellTypeNames.length).toBe(beforeCellTypeNames.length);
       expect(afterCellTypeNames).toEqual(beforeCellTypeNames);
+    });
+  });
+
+  describe("tissue rollup", () => {
+    test("does NOT show tissues on the deny list", async () => {
+      const [response] = await Promise.all([
+        page.waitForResponse("**/primary_filter_dimensions"),
+        goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`),
+      ]);
+
+      const primaryFilterDimensions =
+        (await response.json()) as RawPrimaryFilterDimensionsResponse;
+
+      const humanTissues =
+        primaryFilterDimensions.tissue_terms[HOMO_SAPIENS_TERM_ID];
+
+      const tissueIds = new Set(
+        humanTissues.map((tissue) => Object.keys(tissue)[0])
+      );
+
+      const hasDeniedTissue = TISSUE_DENY_LIST.some((deniedTissueId) =>
+        tissueIds.has(deniedTissueId)
+      );
+
+      expect(hasDeniedTissue).toBe(false);
     });
   });
 });

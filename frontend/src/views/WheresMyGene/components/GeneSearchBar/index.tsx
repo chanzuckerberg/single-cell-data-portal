@@ -1,21 +1,27 @@
 import { Intent } from "@blueprintjs/core";
-import { LoadingIndicator } from "czifui";
+import { Button, LoadingIndicator } from "czifui";
 import React, { useCallback, useContext, useMemo } from "react";
 import { EVENTS } from "src/common/analytics/events";
+import { get } from "src/common/featureFlags";
+import { FEATURES } from "src/common/featureFlags/features";
 import { usePrimaryFilterDimensions } from "src/common/queries/wheresMyGene";
 import Toast from "src/views/Collection/components/Toast";
 import { DispatchContext, StateContext } from "../../common/store";
 import { selectGenes, selectTissues } from "../../common/store/actions";
 import { Gene } from "../../common/types";
-import Organism from "./components/Organism";
 import QuickSelect from "./components/QuickSelect";
+import SaveImage from "./components/SaveImage";
 import { ActionWrapper, Container, LoadingIndicatorWrapper } from "./style";
 
 interface Tissue {
   name: string;
 }
 
-export default function GeneSearchBar(): JSX.Element {
+export default function GeneSearchBar({
+  className,
+}: {
+  className?: string;
+}): JSX.Element {
   const dispatch = useContext(DispatchContext);
   const { selectedGenes, selectedTissues, selectedOrganismId } =
     useContext(StateContext);
@@ -77,18 +83,23 @@ export default function GeneSearchBar(): JSX.Element {
     });
   }, []);
 
-  return (
-    <Container>
-      <ActionWrapper>
-        <Organism isLoading={isLoading} />
+  const copyGenes = useCallback(() => {
+    navigator.clipboard.writeText(selectedGenes.join(", "));
+  }, [selectedGenes]);
 
+  const downloadFeat = get(FEATURES.DOWNLOAD_WMG);
+
+  return (
+    <Container {...{ className }}>
+      <ActionWrapper>
         <QuickSelect
           items={tissues}
           itemsByName={tissuesByName}
           multiple
           selected={selectedTissueOptions}
           setSelected={handleSelectTissues}
-          label="Add Tissue"
+          label="Tissues"
+          text="Tissue"
           dataTestId="add-tissue"
           placeholder="Search"
           isLoading={isLoading}
@@ -102,12 +113,22 @@ export default function GeneSearchBar(): JSX.Element {
           multiple
           setSelected={handleSelectGenes}
           onItemNotFound={handleGeneNotFound}
-          label="Add Gene"
+          label="Genes"
+          text="Gene"
           dataTestId="add-gene"
           placeholder="Search or paste comma separated gene names"
           isLoading={isLoading}
           analyticsEvent={EVENTS.WMG_SELECT_GENE}
         />
+        {downloadFeat && (
+          <>
+            <Button onClick={copyGenes}>Copy Genes</Button>
+            <SaveImage
+              selectedTissues={selectedTissues}
+              selectedGenes={selectedGenes}
+            />
+          </>
+        )}
 
         {isLoading && (
           <LoadingIndicatorWrapper>

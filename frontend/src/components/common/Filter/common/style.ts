@@ -1,11 +1,8 @@
 import { Classes, Icon } from "@blueprintjs/core";
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
-import {
-  LIGHT_GRAY,
-  PRIMARY_BLUE,
-  PT_TEXT_COLOR,
-} from "src/components/common/theme";
+import { CommonThemeProps, getColors } from "czifui";
+import { PRIMARY_BLUE, PT_TEXT_COLOR } from "src/components/common/theme";
 
 export const Filter = styled.div`
   display: grid;
@@ -41,14 +38,21 @@ export const SelectionIcon = styled(Icon)`
 }
 `;
 
-export const scrollbar = css`
-  &::-webkit-scrollbar {
-    width: 4px;
-  }
+export const scrollbar = (props: CommonThemeProps) => {
+  const colors = getColors(props);
+  return css`
+    &::-webkit-scrollbar {
+      width: 4px;
+    }
 
-  &::-webkit-scrollbar-thumb {
-    background-clip: content-box;
-    background-color: ${LIGHT_GRAY.A};
-    border-radius: 4px;
-  }
-`;
+    &::-webkit-scrollbar-thumb {
+      background-clip: content-box;
+      background-color: ${colors?.gray["200"]};
+      border-radius: 4px;
+
+      &:hover {
+        background-color: ${colors?.gray["300"]};
+      }
+    }
+  `;
+};

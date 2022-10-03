@@ -5,6 +5,7 @@ import numpy
 import scanpy
 
 from backend.corpora.common.entities import Dataset
+from backend.corpora.common.utils.corpora_constants import CorporaConstants
 from backend.corpora.common.utils.db_session import db_session_manager
 from backend.corpora.common.utils.dl_sources.url import from_url
 from backend.corpora.dataset_processing.download import download
@@ -39,7 +40,7 @@ def process(dataset_id: str, dropbox_url: str, artifact_bucket: str):
     local_filename = download_from_source_uri(
         dataset_id=dataset_id,
         source_uri=dropbox_url,
-        local_path="raw.h5ad",
+        local_path=CorporaConstants.ORIGINAL_H5AD_ARTIFACT_FILENAME,
     )
 
     # Validate and label the dataset
@@ -52,14 +53,15 @@ def process(dataset_id: str, dropbox_url: str, artifact_bucket: str):
         update_db(dataset_id, processing_status=dict(rds_status=ConversionStatus.SKIPPED))
         logger.info(f"Skipping Seurat conversion for dataset {dataset_id}")
 
-    # Upload the labeled dataset to the artifact bucket
     bucket_prefix = get_bucket_prefix(dataset_id)
+    # Upload the original dataset to the artifact bucket
+    create_artifact(
+        local_filename, DatasetArtifactFileType.H5AD, bucket_prefix, dataset_id, artifact_bucket, "h5ad_status"
+    )
+    # Upload the labeled dataset to the artifact bucket
     create_artifact(
         file_with_labels, DatasetArtifactFileType.H5AD, bucket_prefix, dataset_id, artifact_bucket, "h5ad_status"
     )
-
-
-LABELED_H5AD_FILENAME = "local.h5ad"
 
 
 def validate_h5ad_file_and_add_labels(dataset_id: str, local_filename: str) -> typing.Tuple[str, bool]:
@@ -75,7 +77,7 @@ def validate_h5ad_file_and_add_labels(dataset_id: str, local_filename: str) -> t
         dataset_id,
         processing_status=dict(validation_status=ValidationStatus.VALIDATING),
     )
-    output_filename = LABELED_H5AD_FILENAME
+    output_filename = CorporaConstants.LABELED_H5AD_ARTIFACT_FILENAME
     try:
         is_valid, errors, can_convert_to_seurat = validate.validate(local_filename, output_filename)
     except Exception as e:

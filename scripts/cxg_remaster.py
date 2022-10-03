@@ -10,7 +10,7 @@ from backend.corpora.dataset_processing.remaster_cxg import compute
 
 """
 Re-master an existing "X" tiledb array in a CXG
-Creates a new array with the same data but a different tdb schema
+Creates two new arrays (X and Xc) with the same data but row- and column-optimized schemas
 """
 
 X_extent = None
@@ -24,14 +24,13 @@ def main():
         "--kind", choices=["auto", "sparse", "dense"], type=str, help="target: auto, sparse or dense", default="auto"
     )
     parser.add_argument("--obs-extent", type=int, help="obs extent", default=256)
-    parser.add_argument("--var-extent", type=int, help="var extent", default=2048)
+    parser.add_argument("--var-extent", type=int, help="var extent", default=256)
     parser.add_argument("--cell-order", choices=["row", "col"], type=str, default="row")
-    parser.add_argument("--tile-order", choices=["row", "col"], type=str, default="col")
-    parser.add_argument("--capacity", type=int, default=128000)
+    parser.add_argument("--tile-order", choices=["row", "col"], type=str, default="row")
+    parser.add_argument("--capacity", type=int, default=1024000)
     parser.add_argument("--compression", type=int, default=22)
     parser.add_argument("--target-array", type=str, default="X_new")
     parser.add_argument("--source-array", type=str, default="X")
-    parser.add_argument("--sparse-threshold", type=float, default=25.0, help="sparse encoding threshold")
     args = parser.parse_args()
 
     compute(**vars(args))

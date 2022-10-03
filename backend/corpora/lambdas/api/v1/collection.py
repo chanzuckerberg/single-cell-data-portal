@@ -174,7 +174,7 @@ def verify_collection_body(body: dict, errors: list) -> None:
         if key in body.keys():
             if not body[key]:
                 errors.append({"name": key, "reason": "Cannot be blank."})
-            elif control_char_re.search(body[key]):
+            elif key == "name" and control_char_re.search(body[key]):
                 errors.append({"name": key, "reason": "Invalid characters detected."})
             else:
                 return body[key]
@@ -238,7 +238,8 @@ def create_collection(body: dict, user: str):
     if doi_node := get_doi_link_node(body, errors):
         if doi_url := portal_get_normalized_doi_url(doi_node, errors):
             doi_node["link_url"] = doi_url
-    return create_collection_common(body, user, doi_url, errors)
+    collection_id = create_collection_common(body, user, doi_url, errors)
+    return make_response(jsonify({"collection_id": collection_id}), 201)
 
 
 @dbconnect
@@ -266,7 +267,7 @@ def create_collection_common(body: dict, user: str, doi: str, errors: list):
         publisher_metadata=publisher_metadata,
     )
 
-    return make_response(jsonify({"collection_id": collection.id}), 201)
+    return collection.id
 
 
 @dbconnect

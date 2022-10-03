@@ -1,22 +1,25 @@
 import logging
 from logging.config import dictConfig
-
 from pythonjsonlogger import jsonlogger
 
-
-# The fields to log using the json logger.
-LOGGED_FIELDS = ["levelname", "asctime", "name", "message", "lineno", "pathname"]
-LOG_FORMAT = " ".join([f"%({field})" for field in LOGGED_FIELDS])
+from backend.corpora.common.logging_config import format_log_string, DATETIME_FORMAT, LOGGED_FIELDS
 
 
 def configure_logging(app_name):
     """https://docs.python.org/3/library/logging.config.html"""
     gunicorn_logger = logging.getLogger("gunicorn.error")
+    # The fields to log using the json logger.
+    log_format = format_log_string(LOGGED_FIELDS + ["request_id"])
     dictConfig(
         {
             "version": 1,  # The version of dictConfig to use. This must be 1.
+            "filters": {
+                "request_id": {
+                    "()": "backend.corpora.api_server.request_id.RequestIdFilter",
+                },
+            },
             "formatters": {
-                "default": {"format": LOG_FORMAT, "()": jsonlogger.JsonFormatter, "datefmt": "%Y-%m-%dT%H:%M:%S.%03dZ"}
+                "default": {"format": log_format, "()": jsonlogger.JsonFormatter, "datefmt": DATETIME_FORMAT}
             },
             "handlers": {
                 "wsgi": {
@@ -24,6 +27,7 @@ def configure_logging(app_name):
                     "stream": "ext://flask.logging.wsgi_errors_stream",
                     "formatter": "default",
                     "level": gunicorn_logger.level,
+                    "filters": ["request_id"],
                 }
             },
             "loggers": {
