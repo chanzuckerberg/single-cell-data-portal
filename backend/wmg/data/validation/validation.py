@@ -20,6 +20,7 @@ class Validation:
         self.errors = []
         self.corpus_path = corpus_path
         self.expression_summary_path = f"{corpus_path}/{EXPRESSION_SUMMARY_CUBE_NAME}"
+        self.cell_count_path = f"{corpus_path}/{CELL_COUNTS_CUBE_NAME}"
         self.env = os.getenv("DEPLOYMENT_STAGE")
         self.validation_dataset_id = "3de0ad6d-4378-4f62-b37b-ec0b75a50d94"
         self.MIN_CUBE_SIZE_GB = 1
@@ -56,8 +57,12 @@ class Validation:
         # todo list size of tissues?
         self.validate_tissues_in_cube()
 
+        # check tissue roll up
+        self.validate_tissue_rollup_cell_count()
+        self.validate_tissue_rollup_expression()
+
         # check MALAT1 and ACTB
-        self.validate_housekeeping_gene_expression_levels(f"{self.corpus_path}/{CELL_COUNTS_CUBE_NAME}")
+        self.validate_housekeeping_gene_expression_levels()
 
         # check XIST appears in women but not men
         self.validate_sex_specific_marker_gene()
@@ -115,6 +120,67 @@ class Validation:
 
             # todo check/log cell type per species
 
+    def validate_tissue_rollup_cell_count(self):
+        """
+        Validates that tissues rolled up in the axis "tissue_ontology_term_id" was correctly done from
+        attribute "tissue_original_ontology_term_id".
+
+        The way this validation works is by creating two cell count tables:
+            1. Create cell count tables for Lung using "tissue_ontology_term_id"
+            2. Create cell count tables for all Lung parts using "tissue_original_ontology_term_id"
+
+        The two should be identical
+        """
+
+        with tiledb.open(self.cell_count_path, "r") as cell_count_cube:
+            human_ontology_id = fixtures.validation_species_ontologies["human"]
+            all_lung_tissues = fixtures.validation_all_lung_tissues
+            lung_high_level_tissue = fixtures.validation_lung_high_level
+
+            original_tissues_cell_count = cell_count_cube.df[:, all_lung_tissues, human_ontology_id].n_cells.sum()
+            rollup_tissues_cell_count = cell_count_cube.df[lung_high_level_tissue, :, human_ontology_id].n_cells.sum()
+
+            if original_tissues_cell_count != rollup_tissues_cell_count:
+                logger.error(
+                    f"Tissue roll up error, cell counts for lung subparts ({original_tissues_cell_count}) "
+                    f"is not equal to cell counts for rolled-up lung ({rollup_tissues_cell_count})"
+                )
+
+    def validate_tissue_rollup_expression(self):
+        """
+        Validates that tissues rolled up in the axis "tissue_ontology_term_id" was correctly done from
+        attribute "tissue_original_ontology_term_id".
+
+        The way this validation works is by creating two cell type EXPRESISION tables:
+            1. Create cell type EXPRESSION tables for Lung using "tissue_ontology_term_id"
+            2. Create cell type EXPRESSION tables for all Lung parts using "tissue_original_ontology_term_id"
+
+        Expression is checked on MALAT1 gene only
+
+        The two should be identical
+        """
+
+        with tiledb.open(self.expression_summary_path, "r") as cube:
+            human_ontology_id = fixtures.validation_species_ontologies["human"]
+            MALAT1_ont_id = fixtures.validation_gene_ontologies["MALAT1"]
+            all_lung_tissues = fixtures.validation_all_lung_tissues
+            lung_high_level_tissue = fixtures.validation_lung_high_level
+
+            original_tissues_expression = cube.df[MALAT1_ont_id, :, all_lung_tissues, human_ontology_id]
+            rollup_tissues_expression = cube.df[MALAT1_ont_id, lung_high_level_tissue, :, human_ontology_id]
+
+            original_tissues_expression = original_tissues_expression[["cell_type_ontology_term_id", "sum"]]
+            rollup_tissues_expression = rollup_tissues_expression[["cell_type_ontology_term_id", "sum"]]
+
+            original_tissues_expression = original_tissues_expression.groupby("cell_type_ontology_term_id").sum()
+            rollup_tissues_expression = rollup_tissues_expression.groupby("cell_type_ontology_term_id").sum()
+
+            if not original_tissues_expression["sum"].equals(rollup_tissues_expression["sum"]):
+                logger.error(
+                    f"Tissue roll up error, cell expresion for lung subparts ({original_tissues_expression}) "
+                    f"is not equal to expression for rolled-up lung ({rollup_tissues_expression})"
+                )
+
     def validate_tissues_in_cube(self):
         with tiledb.open(self.expression_summary_path, "r") as cube:
             tissue_list = cube.df[:].tissue_ontology_term_id.drop_duplicates().to_list()
@@ -129,8 +195,8 @@ class Validation:
 
             # todo check/log cell type per tissue
 
-    def validate_housekeeping_gene_expression_levels(self, path_to_cell_count_cube):
-        with tiledb.open(path_to_cell_count_cube, "r") as cell_count_cube:
+    def validate_housekeeping_gene_expression_levels(self):
+        with tiledb.open(self.cell_count_path, "r") as cell_count_cube:
             human_ontology_id = fixtures.validation_species_ontologies["human"]
             cell_count_human = cell_count_cube.df[:, :, human_ontology_id:human_ontology_id].n_cells.sum()
             with tiledb.open(self.expression_summary_path) as cube:
