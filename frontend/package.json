@@ -23,7 +23,7 @@
     "d3-scale-chromatic": "^3.0.0",
     "downloadjs": "^1.4.7",
     "echarts": "^5.2.2",
-    "html-to-image": "github:seve/html-to-image#seve/add-cloned-tag",
+    "html-to-image": "^1.10.8",
     "jschardet": "^2.3.0",
     "lodash": "^4.17.20",
     "ml-hclust": "^3.1.0",
