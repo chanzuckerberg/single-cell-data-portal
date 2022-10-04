@@ -1,5 +1,5 @@
 import { Intent } from "@blueprintjs/core";
-import { Button, LoadingIndicator } from "czifui";
+import { LoadingIndicator } from "czifui";
 import React, { useCallback, useContext, useMemo } from "react";
 import { EVENTS } from "src/common/analytics/events";
 import { get } from "src/common/featureFlags";
@@ -8,7 +8,7 @@ import { usePrimaryFilterDimensions } from "src/common/queries/wheresMyGene";
 import Toast from "src/views/Collection/components/Toast";
 import { DispatchContext, StateContext } from "../../common/store";
 import { selectGenes, selectTissues } from "../../common/store/actions";
-import { Gene } from "../../common/types";
+import { CellType, Gene } from "../../common/types";
 import QuickSelect from "./components/QuickSelect";
 import SaveImage from "./components/SaveImage";
 import { ActionWrapper, Container, LoadingIndicatorWrapper } from "./style";
@@ -19,8 +19,10 @@ interface Tissue {
 
 export default function GeneSearchBar({
   className,
+  selectedCellTypes,
 }: {
   className?: string;
+  selectedCellTypes: { [tissue: string]: CellType[] };
 }): JSX.Element {
   const dispatch = useContext(DispatchContext);
   const { selectedGenes, selectedTissues, selectedOrganismId } =
@@ -83,10 +85,6 @@ export default function GeneSearchBar({
     });
   }, []);
 
-  const copyGenes = useCallback(() => {
-    navigator.clipboard.writeText(selectedGenes.join(", "));
-  }, [selectedGenes]);
-
   const downloadFeat = get(FEATURES.DOWNLOAD_WMG);
 
   return (
@@ -121,13 +119,11 @@ export default function GeneSearchBar({
           analyticsEvent={EVENTS.WMG_SELECT_GENE}
         />
         {downloadFeat && (
-          <>
-            <Button onClick={copyGenes}>Copy Genes</Button>
-            <SaveImage
-              selectedTissues={selectedTissues}
-              selectedGenes={selectedGenes}
-            />
-          </>
+          <SaveImage
+            selectedCellTypes={selectedCellTypes}
+            selectedGenes={selectedGenes}
+            selectedTissues={selectedTissues}
+          />
         )}
 
         {isLoading && (
