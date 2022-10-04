@@ -273,8 +273,8 @@ def add_collection_level_processing_status(collection: DbCollection) -> str:
     for dataset in collection.datasets:
         if processing_status := dataset.processing_status:
             status = processing_status.processing_status
-            if status == ProcessingStatus.PENDING:
-                return_status = status
+            if status in (ProcessingStatus.PENDING, ProcessingStatus.INITIALIZED):
+                return_status = ProcessingStatus.PENDING
             elif status == ProcessingStatus.FAILURE:
                 return status
     return return_status

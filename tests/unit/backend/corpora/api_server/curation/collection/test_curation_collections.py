@@ -237,16 +237,26 @@ class TestGetCollections(BaseAuthAPITest):
                 collection_id=second_collection.id,
                 processing_status={"processing_status": status},
             ).id
+        third_collection = self.generate_collection(self.session)
+        for status in (ProcessingStatus.INITIALIZED, ProcessingStatus.SUCCESS):
+            self.generate_dataset(
+                self.session,
+                collection_id=third_collection.id,
+                processing_status={"processing_status": status},
+            ).id
         params = {"visibility": "PRIVATE"}
         res = self.app.get("/curation/v1/collections", query_string=params, headers=self.make_owner_header())
+        conditions_tested = 0
         with self.subTest("Summary collection-level processing statuses are accurate"):
             for collection in res.json:
-                if collection["id"] == second_collection.id:
+                if collection["id"] in (second_collection.id, third_collection.id):
                     self.assertEqual(collection["processing_status"], "PENDING")
+                    conditions_tested += 1
                 else:
                     self.assertEqual(collection["processing_status"], "SUCCESS")
+        self.assertEqual(2, conditions_tested)
         self.assertEqual(200, res.status_code)
-        self.assertEqual(2, len(res.json))
+        self.assertEqual(3, len(res.json))
         [self.assertEqual("PRIVATE", c["visibility"]) for c in res.json]
 
     def test__verify_expected_public_collection_fields(self):

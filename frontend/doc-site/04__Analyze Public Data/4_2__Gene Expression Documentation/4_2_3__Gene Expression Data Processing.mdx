@@ -12,9 +12,70 @@ Some data on CELLxGENE Discover is duplicated due to independent submissions, fo
 
 Any cell that has less than 500 genes expressed is excluded, this filters out about 8% of all data and does not eliminate any cell type in its entirety. This filter enables more consistent quantile vectors used for the normalization step.
 
+## Removal of Cells Based on Sequencing Assay
+
+Only cells from sequencing assays that measure gene expression and don't require gene-length normalization are included.
+
+**Cells from the following assays are included**:
+
+<table>
+  <tr>
+    <th>Assay</th>
+    <th>EFO ontology term ID</th>
+  </tr>
+  <tr>
+    <td>sci-RNA-seq</td>
+    <td>EFO:0010550</td>
+  </tr>
+  <tr>
+    <td>10x 3' v1</td>
+    <td>EFO:0009901</td>
+  </tr>
+  <tr>
+    <td>10x 5' v1</td>
+    <td>EFO:0011025</td>
+  </tr>
+  <tr>
+    <td>10x 3' v2</td>
+    <td>EFO:0009899</td>
+  </tr>
+  <tr>
+    <td>10x 5' v2</td>
+    <td>EFO:0009900</td>
+  </tr>
+  <tr>
+    <td>10x 3' v3</td>
+    <td>EFO:0009922</td>
+  </tr>
+  <tr>
+    <td>10x 3' transcription profiling</td>
+    <td>EFO:0030003</td>
+  </tr>
+  <tr>
+    <td>10x 5' transcription profiling</td>
+    <td>EFO:0030004</td>
+  </tr>
+  <tr>
+    <td>10x technology</td>
+    <td>EFO:0008995</td>
+  </tr>
+  <tr>
+    <td>Seq-Well</td>
+    <td>EFO:0008919</td>
+  </tr>
+  <tr>
+    <td>Drop-seq</td>
+    <td>EFO:0008722</td>
+  </tr>
+  <tr>
+    <td>CEL-seq2</td>
+    <td>EFO:0010010</td>
+  </tr>
+</table>
+
 ## Gene-length Pre-normalization
 
-WARNING - The following process has not been implemented as the feature **currently only includes data that does not require gene-length normalization.**
+**WARNING** - The following process has not been implemented as the feature **currently only includes data that does not require gene-length normalization.**
 
 In platforms that sequence full RNA molecules, such as Smart-seq, gene counts are directly correlated with gene length. To account for this, gene counts from these technologies are divided by the corresponding gene length prior to normalization.
 
