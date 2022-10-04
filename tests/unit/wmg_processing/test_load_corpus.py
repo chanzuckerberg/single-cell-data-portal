@@ -21,7 +21,7 @@ from backend.corpus_asset_pipelines.integrated_corpus.transform import (
 )
 from backend.wmg.data.constants import RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD
 from backend.wmg.data.schemas.corpus_schema import create_tdb_integrated_corpus, OBS_ARRAY_NAME, VAR_ARRAY_NAME
-from tests.unit.backend.wmg.fixtures.test_anndata_object import create_anndata_test_object
+from tests.unit.backend.wmg.fixtures.test_anndata_object import create_anndata_test_object, create_anndata_test_fixture
 
 
 class TestCorpusLoad(unittest.TestCase):
@@ -32,26 +32,14 @@ class TestCorpusLoad(unittest.TestCase):
         parent_dir_of_curr_file = "/".join(os.path.dirname(__file__).split("/")[:-1])
         return os.path.abspath(os.path.join(parent_dir_of_curr_file, relative_filename))
 
-    @staticmethod
-    def create_anndata_test_object(path, dataset_name, num_genes=1000, num_cells=5000):
-        test_anndata_object = create_anndata_test_object(num_genes=num_genes, num_cells=num_cells)
-        dataset_path = f"{path}/{dataset_name}"
-        os.mkdir(dataset_path)
-        test_anndata_file_name = pathlib.Path(dataset_path, "local.h5ad")
-        test_anndata_file_name.touch()
-        test_anndata_object.write(test_anndata_file_name, compression="gzip")
-        return test_anndata_file_name
-
     @classmethod
     def setUpClass(cls) -> None:
         super().setUp(cls)
         cls.tmp_dir = tempfile.mkdtemp()
         cls.path_to_datasets = pathlib.Path(cls.tmp_dir, "datasets")
         os.mkdir(cls.path_to_datasets)
-        cls.small_anndata_filename = cls.create_anndata_test_object(cls.path_to_datasets, "basic_test_dataset", 3, 5)
-        cls.large_anndata_filename = cls.create_anndata_test_object(
-            cls.path_to_datasets, "large_test_dataset", 1000, 5000
-        )
+        cls.small_anndata_filename = create_anndata_test_fixture(cls.path_to_datasets, "basic_test_dataset", 3, 5)
+        cls.large_anndata_filename = create_anndata_test_fixture(cls.path_to_datasets, "large_test_dataset", 1000, 5000)
 
     @classmethod
     def tearDownClass(cls) -> None:
@@ -127,7 +115,7 @@ class TestCorpusLoad(unittest.TestCase):
     @patch("backend.corpus_asset_pipelines.integrated_corpus.job.tiledb.vacuum", new=Mock())  # Slow
     @patch("backend.wmg.data.cube_pipeline.upload_artifacts_to_s3", new=Mock())  # Don't upload the cube.
     @patch("backend.wmg.data.cube_pipeline.extract.get_dataset_s3_uris", new=Mock(return_value={}))
-    def test_corpus_creation_works_as_expected(self):
+    def test_snapshot_creation_works_as_expected(self):
         generate_cells = 5000
         expected_datasets = 2
         expected_genes = 1000
@@ -137,11 +125,15 @@ class TestCorpusLoad(unittest.TestCase):
             path_to_datasets = f"{temp_dir}/datasets"
             os.mkdir(path_to_datasets)
             for i in range(expected_datasets):
-                self.create_anndata_test_object(path_to_datasets, f"dataset_{i}", expected_genes, generate_cells)
+                create_anndata_test_fixture(path_to_datasets, f"dataset_{i}", expected_genes, generate_cells)
                 expected_cell_count = expected_cell_count + generate_cells
+
+            # Run
             snapshot_path, stats = load_data_and_create_cube(
                 path_to_datasets, self.corpus_name, self.tmp_dir, validate_cube=False
             )
+
+            # Verify
             self.assertEqual(stats["cell_count"], expected_cell_count)
             self.assertEqual(stats["gene_count"], expected_genes)
             self.assertEqual(stats["dataset_count"], expected_datasets)
@@ -163,7 +155,7 @@ class TestCorpusLoad(unittest.TestCase):
                 self.assertTrue(expected_obs_df.dataset_id.equals(actual_obs_df.dataset_id))
                 self.assertTrue(expected_obs_df.dataset_local_cell_id.equals(actual_obs_df.dataset_local_cell_id))
 
-                # check vars
+                # check var
                 with tiledb.open(f"{self.corpus_path}/var", "r") as var:
                     actual_var_df = var.df[:]
                 with tiledb.open(self.fixture_file_path("fixtures/small-corpus/var"), "r") as var:
