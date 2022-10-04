@@ -2,8 +2,6 @@ import { Intent } from "@blueprintjs/core";
 import { LoadingIndicator } from "czifui";
 import React, { useCallback, useContext, useMemo } from "react";
 import { EVENTS } from "src/common/analytics/events";
-import { get } from "src/common/featureFlags";
-import { FEATURES } from "src/common/featureFlags/features";
 import { usePrimaryFilterDimensions } from "src/common/queries/wheresMyGene";
 import Toast from "src/views/Collection/components/Toast";
 import { DispatchContext, StateContext } from "../../common/store";
@@ -85,8 +83,6 @@ export default function GeneSearchBar({
     });
   }, []);
 
-  const downloadFeat = get(FEATURES.DOWNLOAD_WMG);
-
   return (
     <Container {...{ className }}>
       <ActionWrapper>
@@ -118,14 +114,11 @@ export default function GeneSearchBar({
           isLoading={isLoading}
           analyticsEvent={EVENTS.WMG_SELECT_GENE}
         />
-        {downloadFeat && (
-          <SaveImage
-            selectedCellTypes={selectedCellTypes}
-            selectedGenes={selectedGenes}
-            selectedTissues={selectedTissues}
-          />
-        )}
-
+        <SaveImage
+          selectedCellTypes={selectedCellTypes}
+          selectedGenes={selectedGenes}
+          selectedTissues={selectedTissues}
+        />
         {isLoading && (
           <LoadingIndicatorWrapper>
             <LoadingIndicator sdsStyle="tag" />
