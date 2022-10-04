@@ -1,6 +1,5 @@
 import { Classes, Dialog } from "@blueprintjs/core";
 import styled from "@emotion/styled";
-import { OLD_GRAY } from "../theme";
 
 export const StyledDialog = styled(Dialog)`
   && {
