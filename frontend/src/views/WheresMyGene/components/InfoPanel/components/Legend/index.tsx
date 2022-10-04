@@ -23,12 +23,11 @@ export default memo(function Legend({
 }: Props): JSX.Element {
   return (
     <LegendWrapper>
-
-        <SaveImage
-          selectedTissues={selectedTissues}
-          selectedGenes={selectedGenes} 
-          selectedCellTypes={selectedCellTypes}        
-        />
+      <SaveImage
+        selectedTissues={selectedTissues}
+        selectedGenes={selectedGenes}
+        selectedCellTypes={selectedCellTypes}
+      />
 
       <SourceDataButton
         handleRightSidebarButtonClick={handleRightSidebarButtonClick}
