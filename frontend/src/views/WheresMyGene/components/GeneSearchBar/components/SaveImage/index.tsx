@@ -61,7 +61,7 @@ export default function SaveImage({
   const [isOpen, setIsOpen] = useState(false);
   const [fileType, setFileType] = useState<"png" | "svg">("png");
   const handleButtonClick = useCallback(() => {
-    if (!isOpen) track(EVENTS.WMG_DOWNLOAD_INITIATED);
+    if (!isOpen) track(EVENTS.WMG_DOWNLOAD_CLICKED);
     setIsOpen(!isOpen);
   }, [isOpen]);
 
@@ -108,7 +108,7 @@ export default function SaveImage({
       }
       link.click();
       link.remove();
-      track(EVENTS.WMG_DOWNLOAD_SUCCESS, { format: fileType });
+      track(EVENTS.WMG_DOWNLOAD_COMPLETE, { file_type: fileType });
     } catch (error) {
       console.error(error);
     }
