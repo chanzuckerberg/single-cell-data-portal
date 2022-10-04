@@ -24,7 +24,7 @@ def create_invalidation(paths: List[str]):
 def _create_invalidation(distribution: str, paths: List[str]):
     invalidation_id = str(uuid.uuid4())
     logging.info(f"Requesting invalidation {invalidation_id} for distribution {distribution}")
-    return client.create_invalidation(
+    response = client.create_invalidation(
         DistributionId=distribution,
         InvalidationBatch={
             "Paths": {
@@ -34,6 +34,7 @@ def _create_invalidation(distribution: str, paths: List[str]):
             "CallerReference": invalidation_id,
         },
     )
+    logging.info(**response.json, status_code=response.status_code)
 
 
 def create_invalidation_for_index_paths():
