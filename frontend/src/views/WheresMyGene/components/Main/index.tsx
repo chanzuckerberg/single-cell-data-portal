@@ -1,6 +1,12 @@
-import { Drawer, DrawerSize } from "@blueprintjs/core";
+import { DrawerSize } from "@blueprintjs/core";
 import Head from "next/head";
-import { useCallback, useContext, useEffect, useMemo, useState } from "react";
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { EMPTY_ARRAY, EMPTY_OBJECT } from "src/common/constants/utils";
 import {
   CellTypeByTissueName,
@@ -27,7 +33,7 @@ import InfoPanel from "../InfoPanel";
 import ColorScale from "../InfoPanel/components/ColorScale";
 import Legend from "../InfoPanel/components/Legend";
 import Loader from "../Loader";
-import { SideBarLabel } from "./style";
+import { SideBarLabel, StyledSidebarDrawer } from "./style";
 
 export const INFO_PANEL_WIDTH_PX = 320;
 
@@ -281,7 +287,7 @@ export default function WheresMyGene(): JSX.Element {
             geneSelected={hasSelectedGenes}
           />
 
-          <Drawer
+          <StyledSidebarDrawer
             position="right"
             isOpen={isRightSidebarOpen}
             title="Source Data"
@@ -291,7 +297,7 @@ export default function WheresMyGene(): JSX.Element {
             size={DrawerSize.SMALL}
           >
             <InfoPanel />
-          </Drawer>
+          </StyledSidebarDrawer>
 
           {shouldShowHeatMap ? (
             <HeatMap
