@@ -22,13 +22,10 @@ from backend.wmg.data.tissue_mapper import TissueMapper
 from backend.wmg.data.schemas.corpus_schema import INTEGRATED_ARRAY_NAME
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
 
 
-def apply_pre_concatenation_filters(
-    anndata_object: anndata.AnnData, min_genes: int = GENE_EXPRESSION_COUNT_MIN_THRESHOLD
-) -> anndata.AnnData:
-
+def apply_pre_concatenation_filters(anndata_object: anndata.AnnData, min_genes: int = None) -> anndata.AnnData:
+    min_genes = min_genes if min_genes is not None else GENE_EXPRESSION_COUNT_MIN_THRESHOLD
     logger.info("Applying filters: assay, and lowly-covered cells")
     # Filter out cells with low coverage (less than GENE_EXPRESSION_COUNT_MIN_THRESHOLD unique genes expressed)
     scanpy.pp.filter_cells(anndata_object, min_genes=min_genes)
@@ -52,7 +49,7 @@ def get_high_level_tissue(obs: DataFrame) -> DataFrame:
 
     obs = obs.copy()
 
-    tissue_mapper = TissueMapper()
+    tissue_mapper = TissueMapper()  # TODO: Slow. Try to speed up.
 
     tissue_ids_and_labels = obs[["tissue_ontology_term_id", "tissue"]].drop_duplicates().astype(str)
     new_tissue_ids = {}

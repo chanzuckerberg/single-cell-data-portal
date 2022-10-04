@@ -12,7 +12,6 @@ from backend.corpora.common.utils.math_utils import GB
 from backend.wmg.data.validation import fixtures
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
 
 
 class Validation:

@@ -10,7 +10,6 @@ from backend.wmg.data.schemas.corpus_schema import obs_labels, var_labels, VAR_A
 from backend.wmg.data.utils import log_func_runtime
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
 
 
 @log_func_runtime
@@ -30,7 +29,7 @@ def load_dataset(corpus_path: str, anndata_object: pd.DataFrame, dataset_id: str
         global_var_index[idx] = global_coord
 
     first_obs_idx = update_corpus_obs(corpus_path, anndata_object, dataset_id)
-    # todo refactor: separate rankit transformation from loading the tiledb object when working with the x matrices
+    # TODO refactor: separate rankit transformation from loading the tiledb object when working with the x matrices
     transform_dataset_raw_counts_to_rankit(anndata_object, corpus_path, global_var_index, first_obs_idx)
 
 

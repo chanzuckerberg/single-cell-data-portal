@@ -4,7 +4,7 @@ from unittest.mock import patch
 
 from backend.corpora.api_server.app import app
 from backend.wmg.api.v1 import find_dim_option_values
-from backend.wmg.data.schemas.cube_schema import cube_non_indexed_dims
+from backend.wmg.data.schemas.cube_schema import expression_summary_non_indexed_dims
 from tests.unit.backend.corpora.fixtures.environment_setup import EnvironmentSetup
 from tests.unit.backend.wmg.fixtures.test_primary_filters import (
     test_snapshot_id,
@@ -182,7 +182,7 @@ class WmgApiV1Tests(unittest.TestCase):
             # fixture may have changed (e.g. TileDB Array schema) or the logic for creating the test cube fixture has
             # changed
             expected_cell_count_per_cell_type = dim_size ** len(
-                set(cube_non_indexed_dims).difference({"cell_type_ontology_term_id"})
+                set(expression_summary_non_indexed_dims).difference({"cell_type_ontology_term_id"})
             )
             assert expected_cell_count_per_cell_type == 729
 
@@ -190,7 +190,7 @@ class WmgApiV1Tests(unittest.TestCase):
             # and 10 cells per type in the cell counts cube, so we expect 7290 total cells per tissue-cell type
 
             expected_combinations_per_cell_type = dim_size ** len(
-                set(cube_non_indexed_dims).difference({"cell_type_ontology_term_id"})
+                set(expression_summary_non_indexed_dims).difference({"cell_type_ontology_term_id"})
             )
             expected_n_cells_per_cell_type = expected_combinations_per_cell_type * 10
             assert expected_n_cells_per_cell_type == 7290
