@@ -3,6 +3,8 @@ import { FormControlLabel } from "@material-ui/core";
 import { Icon, RadioButton } from "czifui";
 import { toPng, toSvg } from "html-to-image";
 import { useCallback, useState } from "react";
+import { track } from "src/common/analytics";
+import { EVENTS } from "src/common/analytics/events";
 import {
   Section,
   Title,
@@ -59,6 +61,7 @@ export default function SaveImage({
   const [isOpen, setIsOpen] = useState(false);
   const [fileType, setFileType] = useState<"png" | "svg">("png");
   const handleButtonClick = useCallback(() => {
+    if (!isOpen) track(EVENTS.WMG_DOWNLOAD_CLICKED);
     setIsOpen(!isOpen);
   }, [isOpen]);
 
@@ -105,6 +108,7 @@ export default function SaveImage({
       }
       link.click();
       link.remove();
+      track(EVENTS.WMG_DOWNLOAD_COMPLETE, { file_type: fileType });
     } catch (error) {
       console.error(error);
     }
