@@ -118,14 +118,11 @@ export default function GeneSearchBar({
           isLoading={isLoading}
           analyticsEvent={EVENTS.WMG_SELECT_GENE}
         />
-        {downloadFeat && (
-          <SaveImage
-            selectedCellTypes={selectedCellTypes}
-            selectedGenes={selectedGenes}
-            selectedTissues={selectedTissues}
-          />
-        )}
-
+        <SaveImage
+          selectedCellTypes={selectedCellTypes}
+          selectedGenes={selectedGenes}
+          selectedTissues={selectedTissues}
+        />
         {isLoading && (
           <LoadingIndicatorWrapper>
             <LoadingIndicator sdsStyle="tag" />
