@@ -1,5 +1,4 @@
-import { Button as BPButton, Classes, Intent } from "@blueprintjs/core";
-import styled from "@emotion/styled";
+import { Classes, Intent } from "@blueprintjs/core";
 import { FormControlLabel } from "@material-ui/core";
 import { Icon, RadioButton } from "czifui";
 import { toPng, toSvg } from "html-to-image";
@@ -9,11 +8,11 @@ import {
   Title,
 } from "src/components/Collections/components/Dataset/components/DownloadDataset/components/Content/components/common/style";
 import Modal from "src/components/common/Modal";
-import { PT_GRID_SIZE_PX } from "src/components/common/theme";
 import { CellType } from "src/views/WheresMyGene/common/types";
 import { getHeatmapHeight, getHeatmapWidth } from "../../../HeatMap/utils";
 import { Label } from "../../style";
 import { ButtonWrapper, StyledIconButton } from "../QuickSelect/style";
+import { DownloadButton, StyledDiv } from "./style";
 
 export const EXCLUDE_IN_SCREENSHOT_CLASS_NAME = "screenshot-exclude";
 const screenshotFilter =
@@ -36,9 +35,6 @@ const screenshotFilter =
     );
   };
 
-const DownloadButton = styled(BPButton)`
-  margin-right: ${PT_GRID_SIZE_PX}px;
-`;
 function base64URLToArrayBuffer(url: string) {
   // parse dataURL to base64 string
   const base64 = url.split(",")[1];
@@ -123,29 +119,32 @@ export default function SaveImage({
         isOpen={isOpen}
         title="Download Figure"
         onClose={handleButtonClick}
+        isCloseButtonShown={false}
       >
         <div className={Classes.DIALOG_BODY}>
           <Section>
             <Title>Image Format</Title>
-            <FormControlLabel
-              control={
-                <RadioButton
-                  stage={fileType === "png" ? "checked" : "unchecked"}
-                />
-              }
-              label=".png"
-              onChange={() => setFileType("png")}
-            />
+            <StyledDiv>
+              <FormControlLabel
+                control={
+                  <RadioButton
+                    stage={fileType === "png" ? "checked" : "unchecked"}
+                  />
+                }
+                label="PNG"
+                onChange={() => setFileType("png")}
+              />
 
-            <FormControlLabel
-              control={
-                <RadioButton
-                  stage={fileType === "svg" ? "checked" : "unchecked"}
-                />
-              }
-              label=".svg"
-              onChange={() => setFileType("svg")}
-            />
+              <FormControlLabel
+                control={
+                  <RadioButton
+                    stage={fileType === "svg" ? "checked" : "unchecked"}
+                  />
+                }
+                label="SVG"
+                onChange={() => setFileType("svg")}
+              />
+            </StyledDiv>
           </Section>
         </div>
 
