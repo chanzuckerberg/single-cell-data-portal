@@ -3,7 +3,7 @@ import pathlib
 import shutil
 import tempfile
 import unittest
-from unittest.mock import patch
+from unittest.mock import patch, Mock
 
 import anndata
 import numpy as np
@@ -21,7 +21,7 @@ from backend.corpus_asset_pipelines.integrated_corpus.transform import (
 )
 from backend.wmg.data.constants import RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD
 from backend.wmg.data.schemas.corpus_schema import create_tdb_integrated_corpus, OBS_ARRAY_NAME, VAR_ARRAY_NAME
-from tests.unit.backend.wmg.fixtures.test_anndata_object import create_anndata_test_object
+from tests.unit.backend.wmg.fixtures.test_anndata_object import create_anndata_test_object, create_anndata_test_fixture
 
 
 class TestCorpusLoad(unittest.TestCase):
@@ -36,21 +36,10 @@ class TestCorpusLoad(unittest.TestCase):
     def setUpClass(cls) -> None:
         super().setUp(cls)
         cls.tmp_dir = tempfile.mkdtemp()
-
-        basic_test_anndata_object = create_anndata_test_object(num_genes=3, num_cells=5)
-        larger_test_anndata_object = create_anndata_test_object(num_genes=1000, num_cells=5000)
-        os.mkdir(f"{cls.tmp_dir}/datasets")
-        os.mkdir(f"{cls.tmp_dir}/datasets/basic_test_dataset")
-        os.mkdir(f"{cls.tmp_dir}/datasets/larger_test_dataset")
-
-        cls.small_anndata_filename = pathlib.Path(cls.tmp_dir, "datasets/basic_test_dataset/local.h5ad")
-        cls.large_anndata_filename = pathlib.Path(cls.tmp_dir, "datasets/larger_test_dataset/local.h5ad")
-
-        cls.small_anndata_filename.touch()
-        cls.large_anndata_filename.touch()
-
-        basic_test_anndata_object.write(cls.small_anndata_filename, compression="gzip")
-        larger_test_anndata_object.write(cls.large_anndata_filename, compression="gzip")
+        cls.path_to_datasets = pathlib.Path(cls.tmp_dir, "datasets")
+        os.mkdir(cls.path_to_datasets)
+        cls.small_anndata_filename = create_anndata_test_fixture(cls.path_to_datasets, "basic_test_dataset", 3, 5)
+        cls.large_anndata_filename = create_anndata_test_fixture(cls.path_to_datasets, "large_test_dataset", 1000, 5000)
 
     @classmethod
     def tearDownClass(cls) -> None:
@@ -121,40 +110,68 @@ class TestCorpusLoad(unittest.TestCase):
     def test_raw_expression_matrix_normalized_by_rankit(self):
         pass
 
-    @unittest.skip("removed corpus fixture")
-    @patch("backend.wmg.data.cube_pipeline.extract.copy_datasets_to_instance")
-    @patch("backend.wmg.data.cube_pipeline.extract.get_dataset_s3_uris")
-    def test_corpus_creation_works_as_expected(self, mock_get_uris, mock_copy):
-        load_data_and_create_cube(self.path_to_datasets, self.corpus_name, self.tmp_dir)
+    @patch("backend.corpus_asset_pipelines.integrated_corpus.transform.GENE_EXPRESSION_COUNT_MIN_THRESHOLD", 1)
+    @patch("backend.corpus_asset_pipelines.integrated_corpus.job.tiledb.consolidate", new=Mock())  # Slow
+    @patch("backend.corpus_asset_pipelines.integrated_corpus.job.tiledb.vacuum", new=Mock())  # Slow
+    @patch("backend.wmg.data.cube_pipeline.upload_artifacts_to_s3", new=Mock())  # Don't upload the cube.
+    @patch(
+        "backend.corpus_asset_pipelines.integrated_corpus.job.extract.get_dataset_s3_uris", new=Mock(return_value={})
+    )
+    def test_snapshot_creation_works_as_expected(self):
+        generate_cells = 5000
+        expected_datasets = 2
+        expected_genes = 1000
+        expected_cell_count = 0
 
-        # check obs
-        with tiledb.open(f"{self.corpus_path}/obs", "r") as obs:
-            actual_obs_df = obs.df[:]
-        with tiledb.open(self.fixture_file_path("fixtures/small-corpus/obs"), "r") as obs:
-            expected_obs_df = obs.df[:]
+        with tempfile.TemporaryDirectory() as temp_dir:
+            path_to_datasets = f"{temp_dir}/datasets"
+            os.mkdir(path_to_datasets)
+            for i in range(expected_datasets):
+                create_anndata_test_fixture(path_to_datasets, f"dataset_{i}", expected_genes, generate_cells)
+                expected_cell_count = expected_cell_count + generate_cells
 
-        self.assertTrue(
-            expected_obs_df.development_stage_ontology_term_id.equals(actual_obs_df.development_stage_ontology_term_id)
-        )
-        self.assertTrue(expected_obs_df.obs_idx.equals(actual_obs_df.obs_idx))
-        self.assertTrue(expected_obs_df.dataset_id.equals(actual_obs_df.dataset_id))
-        self.assertTrue(expected_obs_df.dataset_local_cell_id.equals(actual_obs_df.dataset_local_cell_id))
+            # Run
+            snapshot_path, stats = load_data_and_create_cube(
+                path_to_datasets, self.corpus_name, self.tmp_dir, validate_cube=False
+            )
 
-        # check vars
-        with tiledb.open(f"{self.corpus_path}/var", "r") as var:
-            actual_var_df = var.df[:]
-        with tiledb.open(self.fixture_file_path("fixtures/small-corpus/var"), "r") as var:
-            expected_var_df = var.df[:]
+            # Verify
+            self.assertEqual(stats["cell_count"], expected_cell_count)
+            self.assertEqual(stats["gene_count"], expected_genes)
+            self.assertEqual(stats["dataset_count"], expected_datasets)
 
-        self.assertTrue(expected_var_df.equals(actual_var_df))
+            cube_fixture = False  # TODO: generate a cube fixture for testing
+            if cube_fixture:
+                # check obs
+                with tiledb.open(f"{snapshot_path}/obs", "r") as obs:
+                    actual_obs_df = obs.df[:]
+                with tiledb.open(self.fixture_file_path("fixtures/small-corpus/obs"), "r") as obs:
+                    expected_obs_df = obs.df[:]
 
-        # check expression matrix
-        with tiledb.open(f"{self.corpus_path}/X", "r") as x:
-            actual_x_df = x.df[:]
-        with tiledb.open(self.fixture_file_path("fixtures/small-corpus/X"), "r") as x:
-            expected_x_df = x.df[:]
+                self.assertTrue(
+                    expected_obs_df.development_stage_ontology_term_id.equals(
+                        actual_obs_df.development_stage_ontology_term_id
+                    )
+                )
+                self.assertTrue(expected_obs_df.obs_idx.equals(actual_obs_df.obs_idx))
+                self.assertTrue(expected_obs_df.dataset_id.equals(actual_obs_df.dataset_id))
+                self.assertTrue(expected_obs_df.dataset_local_cell_id.equals(actual_obs_df.dataset_local_cell_id))
 
-        self.assertTrue(expected_x_df.equals(actual_x_df))
+                # check var
+                with tiledb.open(f"{self.corpus_path}/var", "r") as var:
+                    actual_var_df = var.df[:]
+                with tiledb.open(self.fixture_file_path("fixtures/small-corpus/var"), "r") as var:
+                    expected_var_df = var.df[:]
+
+                self.assertTrue(expected_var_df.equals(actual_var_df))
+
+                # check expression matrix
+                with tiledb.open(f"{self.corpus_path}/X", "r") as x:
+                    actual_x_df = x.df[:]
+                with tiledb.open(self.fixture_file_path("fixtures/small-corpus/X"), "r") as x:
+                    expected_x_df = x.df[:]
+
+                self.assertTrue(expected_x_df.equals(actual_x_df))
 
     def test__filter_out_rankits_with_low_expression_counts__boundaries(self):
         row = [0, 1, 2]

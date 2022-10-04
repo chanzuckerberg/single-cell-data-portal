@@ -4,7 +4,6 @@ import numpy as np
 import pandas as pd
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
 
 
 def build_in_mem_cube(

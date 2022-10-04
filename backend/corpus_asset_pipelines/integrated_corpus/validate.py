@@ -1,6 +1,6 @@
 import logging
 import os
-
+from functools import cache
 import anndata
 from scipy import sparse
 
@@ -8,7 +8,6 @@ from backend.corpus_asset_pipelines.integrated_corpus.extract import get_X_raw
 from backend.wmg.data.utils import get_all_dataset_ids
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
 
 
 def should_load_dataset(h5ad_path: str, corpus_path: str) -> str:
@@ -18,9 +17,10 @@ def should_load_dataset(h5ad_path: str, corpus_path: str) -> str:
     return dataset_id
 
 
+@cache
 def is_dataset_already_loaded(corpus_path: str, dataset_id: str) -> bool:
     if dataset_id in get_all_dataset_ids(corpus_path):
-        logger.info("oops, that dataset is already loaded!")
+        logger.info(f"oops, {dataset_id=} is already loaded!")
         return True
     return False
 
