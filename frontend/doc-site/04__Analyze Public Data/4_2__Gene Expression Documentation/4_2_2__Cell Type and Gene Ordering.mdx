@@ -4,7 +4,7 @@ Cell types and genes shown in a dot plot can be arranged in different ways as de
 
 # Cell Type Ordering
 
-Cell types are annotated by the original data contributors and mapped to the closest cell ontology (CL) term as defined in the [data schema](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/2.0.0/schema.md#cell_type_ontology_term_id).
+Cell types are annotated by the original data contributors and mapped to the closest cell ontology (CL) term as defined in the [data schema](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#cell_type_ontology_term_id).
 
 In some cases there are cell types annotated with a high-level term whereas in some other cases they can be very granularly annotated. For example, there are some cells annotated as "T cells" and others annotated with children terms like "effector CD8-positive, alpha-beta T cell". All of these cell types are shown in the dot plot and they should not be interpreted as one being a subset of the other.
 
@@ -20,7 +20,7 @@ This method groups cell types together based on their ontological relationships 
 
 ### Algorithm
 
-1. Load the CL ontology, using either the cl.obo or cl.owl from the source file [here](https://github.com/obophenotype/cell-ontology/releases/tag/v2021-08-10).
+1. Load the CL ontology, using either the cl.obo or cl.owl from the source file [here](https://github.com/obophenotype/cell-ontology/releases/tag/v2022-06-18).
 1. Subset the ontology to only contain the cell types of interest along with their ancestors.
 1. Create a 2-dimensional representation of the DAG using the `dot` method of `graphiz`. See [here](http://www.graphviz.org/pdf/dotguide.pdf) for a full description of this method.
 1. Initialize an empty tree

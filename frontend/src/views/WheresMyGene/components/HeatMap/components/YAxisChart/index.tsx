@@ -115,7 +115,7 @@ export default memo(function YAxisChart({
   });
 
   return (
-    <Wrapper>
+    <Wrapper id={`${tissue}-y-axis`}>
       <TissueWrapper height={heatmapHeight}>
         <TissueName>{capitalize(tissue)}</TissueName>
         {hasDeletedCellTypes && (
