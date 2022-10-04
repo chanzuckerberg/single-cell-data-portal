@@ -77,21 +77,32 @@ export default function SaveImage({
             pixelRatio: 2,
             width: getHeatmapWidth(selectedGenes) + 200,
           });
+          // raw URI if only one tissue is selected
+          const input =
+            selectedTissues.length === 1
+              ? imageURL
+              : isPNG // otherwise, convert to array buffer if PNG
+              ? base64URLToArrayBuffer(imageURL)
+              : decodeURIComponent(imageURL.split(",")[1]);
 
           return {
-            input: isPNG
-              ? base64URLToArrayBuffer(imageURL)
-              : decodeURIComponent(imageURL.split(",")[1]),
+            input,
             name: `${tissue}.${fileType}`,
           };
         })
       );
       heatmapNode.classList.remove("CLONED");
-      const { downloadZip } = await import("client-zip");
-      const blob = await downloadZip(images).blob();
       const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = `CELLxGENE_gene_expression.zip`;
+
+      if (images.length > 1) {
+        const { downloadZip } = await import("client-zip");
+        const blob = await downloadZip(images).blob();
+        link.href = URL.createObjectURL(blob);
+        link.download = `CELLxGENE_gene_expression.zip`;
+      } else {
+        link.href = images[0].input as string;
+        link.download = images[0].name;
+      }
       link.click();
       link.remove();
     } catch (error) {
