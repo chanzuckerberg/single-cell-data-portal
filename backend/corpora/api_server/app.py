@@ -118,6 +118,13 @@ def apis_landing_page() -> str:
     """
 
 
+if DEPLOYMENT_STAGE == "test":
+
+    @app.route("/exception")
+    def raise_exception():
+        raise Exception("testing")
+
+
 @app.before_request
 def before_request():
     g.start = time.time()
