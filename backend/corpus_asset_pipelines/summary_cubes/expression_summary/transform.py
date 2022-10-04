@@ -13,6 +13,7 @@ from backend.corpus_asset_pipelines.summary_cubes.expression_summary.extract imp
 from backend.wmg.data.schemas.corpus_schema import INTEGRATED_ARRAY_NAME
 from backend.wmg.data.tiledb import create_ctx
 from backend.wmg.data.utils import log_func_runtime
+from typing import Tuple
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -20,7 +21,7 @@ logging.basicConfig(level=logging.INFO)
 
 def transform(
     corpus_path: str, gene_ontology_term_ids: list, cube_dims: list
-) -> (pd.DataFrame, np.ndarray, np.ndarray):
+) -> Tuple[pd.DataFrame, np.ndarray, np.ndarray, np.ndarray]:
     """
     Build the summary cube with rankit expression sum, nnz (num cells with non zero expression) values for
     each gene for each possible group of cell attributes (cube row)
@@ -31,14 +32,15 @@ def transform(
     n_genes = len(gene_ontology_term_ids)
 
     cube_sum = np.zeros((n_groups, n_genes), dtype=np.float32)
+    cube_sq_sum = np.zeros((n_groups, n_genes), dtype=np.float32)
     cube_nnz = np.zeros((n_groups, n_genes), dtype=np.uint64)
 
-    reduce_X(corpus_path, cell_labels.cube_idx.values, cube_sum, cube_nnz)
-    return cube_index, cube_sum, cube_nnz
+    reduce_X(corpus_path, cell_labels.cube_idx.values, cube_sum, cube_sq_sum, cube_nnz)
+    return cube_index, cube_sum, cube_sq_sum, cube_nnz
 
 
 @log_func_runtime
-def reduce_X(tdb_group: str, cube_indices: np.ndarray, cube_sum: np.ndarray, cube_nnz: np.ndarray):
+def reduce_X(tdb_group: str, cube_indices: np.ndarray, cube_sum: np.ndarray, cube_sq_sum: np.ndarray, cube_nnz: np.ndarray):
     """
     Reduce the expression data stored in the integrated corpus by summing it by gene for each cube row (unique combo
     of cell attributes)
@@ -62,6 +64,7 @@ def reduce_X(tdb_group: str, cube_indices: np.ndarray, cube_sum: np.ndarray, cub
                     result["var_idx"].values,
                     cube_indices,
                     cube_sum,
+                    cube_sq_sum,
                     cube_nnz,
                 )
 
@@ -74,6 +77,7 @@ def gene_expression_sum_x_cube_dimension(
     var_idx: np.ndarray,
     cube_indices: np.ndarray,
     sum_into: np.ndarray,
+    sum_sq_into: np.ndarray,
     nnz_into: np.ndarray,
 ):
     """
@@ -86,6 +90,7 @@ def gene_expression_sum_x_cube_dimension(
             cidx = var_idx[k]
             grp_idx = cube_indices[obs_idxs[k]]
             sum_into[grp_idx, cidx] += val
+            sum_sq_into[grp_idx, cidx] += val**2
             nnz_into[grp_idx, cidx] += 1
 
 

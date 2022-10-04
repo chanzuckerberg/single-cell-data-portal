@@ -48,6 +48,7 @@ cube_logical_attrs = [
     tiledb.Attr(name="n_cells", dtype=np.uint32, filters=filters),
     tiledb.Attr(name="nnz", dtype=np.uint64, filters=filters),  # TODO: Why uint64?
     tiledb.Attr(name="sum", dtype=np.float32, filters=filters),
+    tiledb.Attr(name="sq_sum", dtype=np.float32, filters=filters),
 ]
 
 # The TileDB `Attr`s of the cube TileDB Array. This includes the
@@ -60,7 +61,7 @@ cube_physical_attrs = [
 
 expression_summary_schema = tiledb.ArraySchema(
     domain=domain,
-    sparse=True,
+    sparse=True, # TODO: (atarashansky) Why sparse? What are the fraction of non-zero values?
     allows_duplicates=True,
     attrs=cube_physical_attrs,
     cell_order="row-major",

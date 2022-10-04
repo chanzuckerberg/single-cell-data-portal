@@ -8,7 +8,7 @@ logging.basicConfig(level=logging.INFO)
 
 
 def build_in_mem_cube(
-    gene_ids: pd.DataFrame, cube_index: pd.DataFrame, other_cube_attrs: list, cube_sum: np.ndarray, cube_nnz: np.ndarray
+    gene_ids: pd.DataFrame, cube_index: pd.DataFrame, other_cube_attrs: list, cube_sum: np.ndarray, cube_sq_sum: np.ndarray, cube_nnz: np.ndarray
 ):
     """
     Build the cube in memory, calculating the gene expression value for each combination of attributes
@@ -30,6 +30,7 @@ def build_in_mem_cube(
     ]
     vals = {
         "sum": np.empty((total_vals,)),
+        "sq_sum": np.empty((total_vals,)),
         "nnz": np.empty((total_vals,), dtype=np.uint64),
         "n_cells": np.empty((total_vals,), dtype=np.uint32),
         **{k: np.empty((total_vals,), dtype=object) for k in other_cube_attrs},
@@ -60,6 +61,7 @@ def build_in_mem_cube(
         dims[3][idx : idx + n_vals] = organism_ontology_term_id
 
         vals["sum"][idx : idx + n_vals] = cube_sum[cube_idx, mask]
+        vals["sq_sum"][idx : idx + n_vals] = cube_sq_sum[cube_idx, mask]
         vals["nnz"][idx : idx + n_vals] = cube_nnz[cube_idx, mask]
         vals["n_cells"][idx : idx + n_vals] = n  # wasteful
 
