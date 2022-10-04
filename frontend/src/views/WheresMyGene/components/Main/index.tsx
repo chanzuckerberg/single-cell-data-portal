@@ -265,6 +265,7 @@ export default function WheresMyGene(): JSX.Element {
           <Top>
             <GeneSearchBar className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME} />
             <Legend
+              selectedCellTypes={selectedCellTypes}
               selectedGenes={selectedGenes}
               selectedTissues={selectedTissues}
               isScaled={isScaled}

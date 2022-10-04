@@ -78,7 +78,7 @@ export default function SaveImage({
             filter: screenshotFilter(tissue),
             height: getHeatmapHeight(selectedCellTypes[tissue]) + 200,
             pixelRatio: 2,
-            width: getHeatmapWidth(selectedGenes) + 200,
+            width: getHeatmapWidth(selectedGenes) + 250,
           });
           // raw URI if only one tissue is selected
           const input =
@@ -117,6 +117,7 @@ export default function SaveImage({
   return (
     <>
       <ButtonWrapper
+        className="screenshot-exclude"
         style={
           { "align-items": "center", padding: "0 15px" } as React.CSSProperties
         }

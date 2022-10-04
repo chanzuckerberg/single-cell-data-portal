@@ -9,7 +9,7 @@ export default function SourceDataButton({
   handleRightSidebarButtonClick: MouseEventHandler<HTMLButtonElement>;
 }): JSX.Element {
   return (
-    <StyledButtonDiv>
+    <StyledButtonDiv className="screenshot-exclude">
       <StyledLabel>Source Data</StyledLabel>
 
       <StyledIconButton

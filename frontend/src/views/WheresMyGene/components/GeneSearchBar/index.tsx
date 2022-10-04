@@ -1,5 +1,5 @@
 import { Intent } from "@blueprintjs/core";
-import { Button, LoadingIndicator } from "czifui";
+import { LoadingIndicator } from "czifui";
 import React, { useCallback, useContext, useMemo } from "react";
 import { EVENTS } from "src/common/analytics/events";
 import { usePrimaryFilterDimensions } from "src/common/queries/wheresMyGene";
@@ -111,11 +111,7 @@ export default function GeneSearchBar({
           isLoading={isLoading}
           analyticsEvent={EVENTS.WMG_SELECT_GENE}
         />
-        <SaveImage
-          selectedCellTypes={selectedCellTypes}
-          selectedGenes={selectedGenes}
-          selectedTissues={selectedTissues}
-        />
+
         {isLoading && (
           <LoadingIndicatorWrapper>
             <LoadingIndicator sdsStyle="tag" />
