@@ -2,8 +2,6 @@ import { Intent } from "@blueprintjs/core";
 import { LoadingIndicator } from "czifui";
 import React, { useCallback, useContext, useMemo } from "react";
 import { EVENTS } from "src/common/analytics/events";
-import { get } from "src/common/featureFlags";
-import { FEATURES } from "src/common/featureFlags/features";
 import { usePrimaryFilterDimensions } from "src/common/queries/wheresMyGene";
 import Toast from "src/views/Collection/components/Toast";
 import { DispatchContext, StateContext } from "../../common/store";
@@ -84,8 +82,6 @@ export default function GeneSearchBar({
       message: `Gene not found: ${geneName}`,
     });
   }, []);
-
-  const downloadFeat = get(FEATURES.DOWNLOAD_WMG);
 
   return (
     <Container {...{ className }}>
