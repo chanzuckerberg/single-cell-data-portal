@@ -120,11 +120,9 @@ export default function GeneSearchBar({
         />
         {downloadFeat && (
           <SaveImage
-            {...{
-              selectedCellTypes,
-              selectedGenes,
-              selectedTissues,
-            }}
+            selectedCellTypes={selectedCellTypes}
+            selectedGenes={selectedGenes}
+            selectedTissues={selectedTissues}
           />
         )}
 

@@ -107,8 +107,6 @@ export default function SaveImage({
       link.remove();
     } catch (error) {
       console.error(error);
-      // this could probably be handled better
-      return { input: "", name: "" };
     }
   }, [fileType, selectedCellTypes, selectedTissues, selectedGenes]);
 
