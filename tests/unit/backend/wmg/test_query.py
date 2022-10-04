@@ -3,7 +3,7 @@ from typing import NamedTuple
 
 from backend.wmg.api.v1 import get_dot_plot_data, agg_cell_type_counts, agg_tissue_counts
 from backend.wmg.data.query import WmgQueryCriteria, WmgQuery
-from backend.wmg.data.schemas.cube_schema import cube_non_indexed_dims
+from backend.wmg.data.schemas.cube_schema import expression_summary_non_indexed_dims
 from tests.unit.backend.wmg.fixtures.test_snapshot import (
     create_temp_wmg_snapshot,
     all_ones_expression_summary_values,
@@ -70,11 +70,11 @@ class QueryTest(unittest.TestCase):
         not_used_cube_indexed_dims = [0 if criteria.dict()[dim_name] else 1 for dim_name in ALL_INDEXED_DIMS_FOR_QUERY]
 
         expected_cell_count_per_cell_type = dim_size ** (
-            len(cube_non_indexed_dims) + sum(not_used_cube_indexed_dims) - 1
+            len(expression_summary_non_indexed_dims) + sum(not_used_cube_indexed_dims) - 1
         )
 
         expected_cell_count_per_tissue = 10 * (
-            dim_size ** (len(cube_non_indexed_dims) + sum(not_used_cube_indexed_dims))
+            dim_size ** (len(expression_summary_non_indexed_dims) + sum(not_used_cube_indexed_dims))
         )
 
         assert expected_cell_count_per_cell_type == 2187
@@ -145,9 +145,9 @@ class QueryTest(unittest.TestCase):
         # cube test fixture may have changed (e.g. TileDB Array schema) or the logic for creating the test cube fixture
         # has changed
         not_used_cube_indexed_dims = [0 if criteria.dict()[dim_name] else 1 for dim_name in ALL_INDEXED_DIMS_FOR_QUERY]
-        expected_cell_count_per_cell_type = dim_size ** (len(cube_non_indexed_dims) - 1 + 1)
+        expected_cell_count_per_cell_type = dim_size ** (len(expression_summary_non_indexed_dims) - 1 + 1)
         expected_cell_count_per_tissue = 10 * (
-            dim_size ** (len(cube_non_indexed_dims) + sum(not_used_cube_indexed_dims))
+            dim_size ** (len(expression_summary_non_indexed_dims) + sum(not_used_cube_indexed_dims))
         )
 
         assert expected_cell_count_per_cell_type == 2187
@@ -310,7 +310,9 @@ class QueryTest(unittest.TestCase):
             result = agg_cell_type_counts(query.cell_counts(criteria))
 
         not_used_cube_indexed_dims = [0 if criteria.dict()[dim_name] else 1 for dim_name in ALL_INDEXED_DIMS_FOR_QUERY]
-        expected_n_combinations = dim_size ** (len(cube_non_indexed_dims) + sum(not_used_cube_indexed_dims) - 1)
+        expected_n_combinations = dim_size ** (
+            len(expression_summary_non_indexed_dims) + sum(not_used_cube_indexed_dims) - 1
+        )
 
         assert expected_n_combinations == 2187
 
@@ -342,7 +344,9 @@ class QueryTest(unittest.TestCase):
             result = agg_tissue_counts(query.cell_counts(criteria))
 
         not_used_cube_indexed_dims = [0 if criteria.dict()[dim_name] else 1 for dim_name in ALL_INDEXED_DIMS_FOR_QUERY]
-        expected_n_combinations = dim_size ** (len(cube_non_indexed_dims) + sum(not_used_cube_indexed_dims) - 1)
+        expected_n_combinations = dim_size ** (
+            len(expression_summary_non_indexed_dims) + sum(not_used_cube_indexed_dims) - 1
+        )
 
         assert expected_n_combinations == 2187
 
@@ -379,10 +383,10 @@ class QueryTest(unittest.TestCase):
 
         not_used_cube_indexed_dims = [0 if criteria.dict()[dim_name] else 1 for dim_name in ALL_INDEXED_DIMS_FOR_QUERY]
         expected_cell_count_per_cell_type = dim_size ** (
-            len(cube_non_indexed_dims) - 2 + sum(not_used_cube_indexed_dims)
+            len(expression_summary_non_indexed_dims) - 2 + sum(not_used_cube_indexed_dims)
         )
         expected_cell_count_per_tissue = 10 * (
-            dim_size ** (len(cube_non_indexed_dims) - 1 + sum(not_used_cube_indexed_dims))
+            dim_size ** (len(expression_summary_non_indexed_dims) - 1 + sum(not_used_cube_indexed_dims))
         )
 
         assert expected_cell_count_per_cell_type == 729
@@ -455,11 +459,11 @@ class QueryTest(unittest.TestCase):
         # has changed
         not_used_cube_indexed_dims = [0 if criteria.dict()[dim_name] else 1 for dim_name in ALL_INDEXED_DIMS_FOR_QUERY]
         expected_cell_count_per_cell_type = (
-            dim_size ** (len(cube_non_indexed_dims) - 2 + sum(not_used_cube_indexed_dims)) * 2
+            dim_size ** (len(expression_summary_non_indexed_dims) - 2 + sum(not_used_cube_indexed_dims)) * 2
         )
 
         expected_cell_count_per_tissue = 10 * (
-            dim_size ** (len(cube_non_indexed_dims) - 1 + sum(not_used_cube_indexed_dims)) * 2
+            dim_size ** (len(expression_summary_non_indexed_dims) - 1 + sum(not_used_cube_indexed_dims)) * 2
         )
 
         assert expected_cell_count_per_cell_type == 1458
@@ -533,10 +537,10 @@ class QueryTest(unittest.TestCase):
         # has changed
         not_used_cube_indexed_dims = [0 if criteria.dict()[dim_name] else 1 for dim_name in ALL_INDEXED_DIMS_FOR_QUERY]
         expected_cell_count_per_cell_type = (
-            dim_size ** (len(cube_non_indexed_dims) - 3 + sum(not_used_cube_indexed_dims)) * 1 * 2
+            dim_size ** (len(expression_summary_non_indexed_dims) - 3 + sum(not_used_cube_indexed_dims)) * 1 * 2
         )
         expected_cell_count_per_tissue = 10 * (
-            dim_size ** (len(cube_non_indexed_dims) - 2 + sum(not_used_cube_indexed_dims)) * 1 * 2
+            dim_size ** (len(expression_summary_non_indexed_dims) - 2 + sum(not_used_cube_indexed_dims)) * 1 * 2
         )
 
         assert expected_cell_count_per_cell_type == 486
