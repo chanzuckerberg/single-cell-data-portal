@@ -34,7 +34,7 @@ def _create_invalidation(distribution: str, paths: List[str]):
             "CallerReference": invalidation_id,
         },
     )
-    logging.info(dict(body=response.json, status_code=response.status_code))
+    logging.info(response)
 
 
 def create_invalidation_for_index_paths():
