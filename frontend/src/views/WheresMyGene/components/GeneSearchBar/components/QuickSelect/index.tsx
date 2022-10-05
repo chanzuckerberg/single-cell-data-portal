@@ -234,6 +234,7 @@ export default function QuickSelect<
       setHasComma(false);
     }
   };
+  const itemOptions = [...new Set(selected.concat(items))];
   return (
     <>
       <ButtonWrapper>
@@ -271,7 +272,7 @@ export default function QuickSelect<
           disableCloseOnSelect
           disableListWrap
           onKeyDownCapture={multiple ? handleEnter : undefined}
-          options={items}
+          options={itemOptions}
           ListboxComponent={
             ListboxComponent as React.ComponentType<
               React.HTMLAttributes<HTMLElement>
