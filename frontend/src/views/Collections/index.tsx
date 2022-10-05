@@ -1,5 +1,5 @@
 import Head from "next/head";
-import React, { useEffect, useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { Column, Filters, useFilters, useSortBy, useTable } from "react-table";
 import { PLURALIZED_METADATA_LABEL } from "src/common/constants/metadata";
 import { ROUTES } from "src/common/constants/routes";

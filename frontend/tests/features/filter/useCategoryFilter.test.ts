@@ -46,6 +46,7 @@
  */
 
 // App dependencies
+import { expect, test } from "@playwright/test";
 import { Row } from "react-table";
 import { buildNextOntologyCategoryFilters } from "src/common/hooks/useCategoryFilter/common/curatedOntologyUtils";
 import {
@@ -78,6 +79,8 @@ import {
   SelectCategoryValue,
   SelectCategoryValueView,
 } from "src/components/common/Filter/common/entities";
+
+const { describe } = test;
 
 describe("useCategoryFilter", () => {
   describe("Multi-Panel Category", () => {
@@ -656,7 +659,7 @@ describe("useCategoryFilter", () => {
       /**
        * Panels: curated, curated, explicit.
        */
-      it("keys panels", () => {
+      test("keys panels", () => {
         const config =
           CATEGORY_FILTER_CONFIGS_BY_ID[CATEGORY_FILTER_ID.TISSUE_CALCULATED];
         const categoryValueIdsByPanel = keyCategoryValueIdsByPanel(
@@ -669,7 +672,7 @@ describe("useCategoryFilter", () => {
       /**
        * Curated panel: system
        */
-      it("keys curated panel", () => {
+      test("keys curated panel - Curated panel: system", () => {
         const config =
           CATEGORY_FILTER_CONFIGS_BY_ID[CATEGORY_FILTER_ID.TISSUE_CALCULATED];
         const categoryValueIdsByPanel = keyCategoryValueIdsByPanel(
@@ -696,7 +699,7 @@ describe("useCategoryFilter", () => {
       /**
        * Explicit panel: tissue
        */
-      it("keys curated panel", () => {
+      test("keys curated panel - Explicit panel: tissue", () => {
         const config =
           CATEGORY_FILTER_CONFIGS_BY_ID[CATEGORY_FILTER_ID.TISSUE_CALCULATED];
         const categoryValueIdsByPanel = keyCategoryValueIdsByPanel(
@@ -722,7 +725,7 @@ describe("useCategoryFilter", () => {
 
     describe("overrideSelectedParents", () => {
       let uiNodesByCategoryValueId: Map<CategoryValueId, MultiPanelUINode>;
-      beforeAll(() => {
+      test.beforeAll(() => {
         uiNodesByCategoryValueId = buildUINodesByCategoryValueId(
           TISSUE_CATEGORY_VALUE_IDS_BY_PANEL,
           TISSUE_DESCENDANTS
@@ -733,7 +736,7 @@ describe("useCategoryFilter", () => {
        * Selected: blood non-specific
        * Post-overrides: blood non-specific
        */
-      it("doesn't override tissue", () => {
+      test("doesn't override tissue", () => {
         const overriddenSelectedValues = overrideSelectedParents(
           [EXPLICIT_BLOOD],
           TISSUE_DESCENDANTS,
@@ -746,7 +749,7 @@ describe("useCategoryFilter", () => {
        * Selected: blood, blood non-specific
        * Post-overrides: blood non-specific
        */
-      it("overrides inferred organ with explicit tissue", () => {
+      test("overrides inferred organ with explicit tissue", () => {
         const overriddenSelectedValues = overrideSelectedParents(
           [INFERRED_BLOOD, EXPLICIT_BLOOD],
           TISSUE_DESCENDANTS,
@@ -760,7 +763,7 @@ describe("useCategoryFilter", () => {
        * Selected: blood, umbilical cord blood
        * Post-overrides: umbilical cord blood
        */
-      it("overrides organ with tissue", () => {
+      test("overrides organ with tissue", () => {
         const overriddenSelectedValues = overrideSelectedParents(
           [INFERRED_BLOOD, EXPLICIT_UMBILICAL_CORD_BLOOD],
           TISSUE_DESCENDANTS,
@@ -776,7 +779,7 @@ describe("useCategoryFilter", () => {
        * Selected: hematopoietic system, blood
        * Post-overrides: blood
        */
-      it("overrides system with organ", () => {
+      test("overrides system with organ", () => {
         const overriddenSelectedValues = overrideSelectedParents(
           [INFERRED_HEMATOPOIETIC_SYSTEM, INFERRED_BLOOD],
           TISSUE_DESCENDANTS,
@@ -790,7 +793,7 @@ describe("useCategoryFilter", () => {
        * Selected: hematopoietic system, blood non-specific
        * Post-overrides: blood non-specific
        */
-      it("overrides system with tissue", () => {
+      test("overrides system with tissue", () => {
         const overriddenSelectedValues = overrideSelectedParents(
           [INFERRED_HEMATOPOIETIC_SYSTEM, EXPLICIT_BLOOD],
           TISSUE_DESCENDANTS,
@@ -804,7 +807,7 @@ describe("useCategoryFilter", () => {
        * Selected: hematopoietic system, immune system, spleen
        * Post-overrides: spleen
        */
-      it("overrides multiple systems with organ", () => {
+      test("overrides multiple systems with organ", () => {
         const overriddenSelectedValues = overrideSelectedParents(
           [
             INFERRED_HEMATOPOIETIC_SYSTEM,
@@ -823,7 +826,7 @@ describe("useCategoryFilter", () => {
           CategoryValueId,
           MultiPanelUINode
         >;
-        beforeAll(() => {
+        test.beforeAll(() => {
           cellTypeUINodesByCategoryValueId = buildUINodesByCategoryValueId(
             CELL_TYPE_CATEGORY_VALUE_IDS_BY_PANEL,
             CELL_TYPE_DESCENDANTS
@@ -834,7 +837,7 @@ describe("useCategoryFilter", () => {
          * Selected: leukocyte, T cell
          * Post-overrides: leukocyte, T cell
          */
-        it("doesn't override within cell subclasses", () => {
+        test("doesn't override within cell subclasses", () => {
           const overriddenSelectedValues = overrideSelectedParents(
             [INFERRED_LEUKOCYTE, INFERRED_T_CELL],
             CELL_TYPE_DESCENDANTS,
@@ -853,7 +856,7 @@ describe("useCategoryFilter", () => {
          * Selected: leukocyte, T cell, alpha-beta T cell
          * Post-overrides: alpha-beta T cell
          */
-        it("overrides cell subclasses with selected cell type", () => {
+        test("overrides cell subclasses with selected cell type", () => {
           const overriddenSelectedValues = overrideSelectedParents(
             [INFERRED_LEUKOCYTE, INFERRED_T_CELL, EXPLICIT_ALPHA_BETA_T_CELL],
             CELL_TYPE_DESCENDANTS,
@@ -869,7 +872,7 @@ describe("useCategoryFilter", () => {
          * Selected: hemtapoietic cell, leukocyte, T cell, alpha-beta T cell
          * Post-overrides: alpha-beta T cell
          */
-        it("overrides cell classes and subclasses with selected cell type", () => {
+        test("overrides cell classes and subclasses with selected cell type", () => {
           const overriddenSelectedValues = overrideSelectedParents(
             [
               INFERRED_HEMATOPOIETIC_CELL,
@@ -890,7 +893,7 @@ describe("useCategoryFilter", () => {
          * Selected: hemtapoietic cell, alpha-beta T cell
          * Post-overrides: alpha-beta T cell
          */
-        it("overrides cell classes with selected cell type", () => {
+        test("overrides cell classes with selected cell type", () => {
           const overriddenSelectedValues = overrideSelectedParents(
             [INFERRED_HEMATOPOIETIC_CELL, EXPLICIT_ALPHA_BETA_T_CELL],
             CELL_TYPE_DESCENDANTS,
@@ -910,7 +913,7 @@ describe("useCategoryFilter", () => {
        * Remove - blood non-specific
        * Still selected - none
        */
-      it("removes tissue", () => {
+      test("removes tissue", () => {
         const categoryFilterUIState = {
           ...BASE_CATEGORY_FILTER_UI_STATE,
           selected: [EXPLICIT_BLOOD],
@@ -931,7 +934,7 @@ describe("useCategoryFilter", () => {
        * Remove - blood
        * Still selected - none
        */
-      it("removes organ", () => {
+      test("removes organ", () => {
         const categoryFilterUIState = {
           ...BASE_CATEGORY_FILTER_UI_STATE,
           selected: [INFERRED_BLOOD],
@@ -952,7 +955,7 @@ describe("useCategoryFilter", () => {
        * Remove - hematopoietic system
        * Still selected - none
        */
-      it("removes system", () => {
+      test("removes system", () => {
         const categoryFilterUIState = {
           ...BASE_CATEGORY_FILTER_UI_STATE,
           selected: [INFERRED_HEMATOPOIETIC_SYSTEM],
@@ -974,7 +977,7 @@ describe("useCategoryFilter", () => {
        * Remove - blood
        * Still selected - none
        */
-      it("removes organ and all descendants of organ", () => {
+      test("removes organ and all descendants of organ", () => {
         const categoryFilterUIState = {
           ...BASE_CATEGORY_FILTER_UI_STATE,
           selected: [
@@ -1005,7 +1008,7 @@ describe("useCategoryFilter", () => {
        * Remove - hematopoietic system
        * Still selected - none
        */
-      it("removes system and all descendant organs of system", () => {
+      test("removes system and all descendant organs of system", () => {
         const categoryFilterUIState = {
           ...BASE_CATEGORY_FILTER_UI_STATE,
           selected: [
@@ -1039,7 +1042,7 @@ describe("useCategoryFilter", () => {
        * Remove - hematopoietic system
        * Still selected - none
        */
-      it("removes system and all descendants of system", () => {
+      test("removes system and all descendants of system", () => {
         const categoryFilterUIState = {
           ...BASE_CATEGORY_FILTER_UI_STATE,
           selected: [
@@ -1076,7 +1079,7 @@ describe("useCategoryFilter", () => {
        * Remove - hematopoietic system
        * Still selected - immune system, bone marrow, spleen, thymus
        */
-      it("removes system and all selected descendants of system that are not children of another selected system", () => {
+      test("removes system and all selected descendants of system that are not children of another selected system", () => {
         const categoryFilterUIState = {
           ...BASE_CATEGORY_FILTER_UI_STATE,
           selected: [
@@ -1119,7 +1122,7 @@ describe("useCategoryFilter", () => {
        * Remove - blood non-specific
        * Still selected - blood
        */
-      it("unravels to partially selected organ on remove of tissue", () => {
+      test("unravels to partially selected organ on remove of tissue", () => {
         const categoryFilterUIState = {
           ...BASE_CATEGORY_FILTER_UI_STATE,
           selected: [INFERRED_BLOOD, EXPLICIT_BLOOD],
@@ -1142,7 +1145,7 @@ describe("useCategoryFilter", () => {
        * Remove - blood
        * Still selected - hematopoietic system
        */
-      it("unravels to partially selected system on remove of organ", () => {
+      test("unravels to partially selected system on remove of organ", () => {
         const categoryFilterUIState = {
           ...BASE_CATEGORY_FILTER_UI_STATE,
           selected: [INFERRED_HEMATOPOIETIC_SYSTEM, INFERRED_BLOOD],
@@ -1167,7 +1170,7 @@ describe("useCategoryFilter", () => {
        * Remove - blood non-specifc
        * Still selected - hematopoietic system
        */
-      it("unravels to partially selected system on remove of tissue", () => {
+      test("unravels to partially selected system on remove of tissue", () => {
         const categoryFilterUIState = {
           ...BASE_CATEGORY_FILTER_UI_STATE,
           selected: [INFERRED_HEMATOPOIETIC_SYSTEM, EXPLICIT_BLOOD],
@@ -1193,7 +1196,7 @@ describe("useCategoryFilter", () => {
        * Selected - blood non-specific
        * Selected partial - none
        */
-      it("doesn't lists tissue as partially selected if only tissue is selected", () => {
+      test("doesn't lists tissue as partially selected if only tissue is selected", () => {
         const selectedPartial = listPartiallySelectedCategoryValues(
           [EXPLICIT_BLOOD],
           UI_NODES_BY_CATEGORY_VALUE_ID
@@ -1206,7 +1209,7 @@ describe("useCategoryFilter", () => {
        * Selected - blood, blood non-specific
        * Selected partial - blood
        */
-      it("lists organ as partially selected when tissue is selected", () => {
+      test("lists organ as partially selected when tissue is selected", () => {
         const selectedPartial = listPartiallySelectedCategoryValues(
           [INFERRED_BLOOD, EXPLICIT_BLOOD],
           UI_NODES_BY_CATEGORY_VALUE_ID
@@ -1220,7 +1223,7 @@ describe("useCategoryFilter", () => {
        * Selected - blood, blood non-specific, umbilical cord blood, venous blood
        * Selected partial - none
        */
-      it("doesn't lists organ as partially selected if all children tissue are also selected", () => {
+      test("doesn't lists organ as partially selected if all children tissue are also selected", () => {
         const selectedPartial = listPartiallySelectedCategoryValues(
           [
             INFERRED_BLOOD,
@@ -1238,7 +1241,7 @@ describe("useCategoryFilter", () => {
        * Selected - spleen, spleen non-specific
        * Selected partial - none
        */
-      it("doesn't list organ as partially selected when single child tissue is selected", () => {
+      test("doesn't list organ as partially selected when single child tissue is selected", () => {
         const selectedPartial = listPartiallySelectedCategoryValues(
           [INFERRED_SPLEEN, EXPLICIT_SPLEEN],
           UI_NODES_BY_CATEGORY_VALUE_ID
@@ -1251,7 +1254,7 @@ describe("useCategoryFilter", () => {
        * Selected - hematopoietic system, blood
        * Selected partial - hematopoietic system
        */
-      it("lists system as partially selected when not all children organs are selected", () => {
+      test("lists system as partially selected when not all children organs are selected", () => {
         const selectedPartial = listPartiallySelectedCategoryValues(
           [INFERRED_HEMATOPOIETIC_SYSTEM, INFERRED_BLOOD],
           UI_NODES_BY_CATEGORY_VALUE_ID
@@ -1265,7 +1268,7 @@ describe("useCategoryFilter", () => {
        * Selected - hematopoietic system, blood, bone marrow, spleen, thymus
        * Selected partial - none
        */
-      it("doesn't list system as partially selected if all children organs are also selected", () => {
+      test("doesn't list system as partially selected if all children organs are also selected", () => {
         const selectedPartial = listPartiallySelectedCategoryValues(
           [
             INFERRED_HEMATOPOIETIC_SYSTEM,
@@ -1285,7 +1288,7 @@ describe("useCategoryFilter", () => {
        * venous blood.
        * Selected partial - none
        */
-      it("doesn't lists system as partially selected if all children organs or children tissues are selected", () => {
+      test("doesn't lists system as partially selected if all children organs or children tissues are selected", () => {
         const selectedPartial = listPartiallySelectedCategoryValues(
           [
             INFERRED_HEMATOPOIETIC_SYSTEM,
@@ -1306,7 +1309,7 @@ describe("useCategoryFilter", () => {
        * Selected - hematopoietic system, blood, bone marrow, spleen, thymus, blood non-specific
        * Selected partial - hematopoietic system, blood
        */
-      it("lists system as partially selected if not all children organs or children tissues are selected", () => {
+      test("lists system as partially selected if not all children organs or children tissues are selected", () => {
         const selectedPartial = listPartiallySelectedCategoryValues(
           [
             INFERRED_HEMATOPOIETIC_SYSTEM,
@@ -1333,7 +1336,7 @@ describe("useCategoryFilter", () => {
        * Selected partial - none
        * Selected values - blood non-specific
        */
-      it("builds selected views for tissue", () => {
+      test("builds selected views for tissue", () => {
         const categoryFilterUIState = {
           ...BASE_CATEGORY_FILTER_UI_STATE,
           selected: [EXPLICIT_BLOOD],
@@ -1362,7 +1365,7 @@ describe("useCategoryFilter", () => {
        * Selected partial - none
        * Selected values - spleen
        */
-      it("builds selected views for selected organ with single selected tissue", () => {
+      test("builds selected views for selected organ with single selected tissue", () => {
         const categoryFilterUIState = {
           ...BASE_CATEGORY_FILTER_UI_STATE,
           selected: [INFERRED_SPLEEN, EXPLICIT_SPLEEN],
@@ -1397,7 +1400,7 @@ describe("useCategoryFilter", () => {
        * Selected partial - none
        * Selected values - blood non-specific, umbilical cord blood, venous blood
        */
-      it("builds selected views for all children of blood selected", () => {
+      test("builds selected views for all children of blood selected", () => {
         const categoryFilterUIState = {
           ...BASE_CATEGORY_FILTER_UI_STATE,
           selected: [
@@ -1447,7 +1450,7 @@ describe("useCategoryFilter", () => {
        * Selected partial - blood
        * Selected values - blood non-specific
        */
-      it("builds selected views for organ and corresponding specific tissue selected", () => {
+      test("builds selected views for organ and corresponding specific tissue selected", () => {
         const categoryFilterUIState = {
           ...BASE_CATEGORY_FILTER_UI_STATE,
           selected: [INFERRED_BLOOD, EXPLICIT_BLOOD],
@@ -1482,7 +1485,7 @@ describe("useCategoryFilter", () => {
        * Selected partial - none
        * Selected values - blood
        */
-      it("rolls up selected organ and all selected organ's tissues to just organ", () => {
+      test("rolls up selected organ and all selected organ's tissues to just organ", () => {
         const categoryFilterUIState = {
           ...BASE_CATEGORY_FILTER_UI_STATE,
           selected: [
@@ -1534,7 +1537,7 @@ describe("useCategoryFilter", () => {
        * Selected partial - none
        * Selected values - hematopoietic system
        */
-      it("rolls up selected system and all selected system's organs to just system", () => {
+      test("rolls up selected system and all selected system's organs to just system", () => {
         const categoryFilterUIState = {
           ...BASE_CATEGORY_FILTER_UI_STATE,
           selected: [
@@ -1595,7 +1598,7 @@ describe("useCategoryFilter", () => {
        * Selected partial - immune system
        * Selected values - hematopoietic system, bone marrow, spleen, thymus
        */
-      it("builds selected views for one selected system and one partially selected system, with shared selected organs", () => {
+      test("builds selected views for one selected system and one partially selected system, with shared selected organs", () => {
         const categoryFilterUIState = {
           ...BASE_CATEGORY_FILTER_UI_STATE,
           selected: [
@@ -1668,7 +1671,7 @@ describe("useCategoryFilter", () => {
        * Selected partial - none
        * Selected values - hematopoietic system
        */
-      it("builds selected views for selected system and selected organs except those for a selected tissue", () => {
+      test("builds selected views for selected system and selected organs except those for a selected tissue", () => {
         const categoryFilterUIState = {
           ...BASE_CATEGORY_FILTER_UI_STATE,
           selected: [
@@ -1743,7 +1746,7 @@ describe("useCategoryFilter", () => {
        * Selected partial - hematopoietic system, blood
        * Selected values - bone marrow, spleen, thymus, blood non-specific
        */
-      it("builds selected views for selected system, partially selected organs, selected tissue", () => {
+      test("builds selected views for selected system, partially selected organs, selected tissue", () => {
         const categoryFilterUIState = {
           ...BASE_CATEGORY_FILTER_UI_STATE,
           selected: [
@@ -1810,7 +1813,7 @@ describe("useCategoryFilter", () => {
 
     describe("buildUINodesByCategoryValueId", () => {
       let uiNodesByCategoryValueId: Map<CategoryValueId, MultiPanelUINode>;
-      beforeAll(() => {
+      test.beforeAll(() => {
         uiNodesByCategoryValueId = buildUINodesByCategoryValueId(
           TISSUE_CATEGORY_VALUE_IDS_BY_PANEL,
           TISSUE_DESCENDANTS
@@ -1823,7 +1826,7 @@ describe("useCategoryFilter", () => {
        * - Parents: -
        * - Children: blood non-specific, umbilical cord blood, venous blood
        */
-      it("builds parent child relationships for hematopoietic system", () => {
+      test("builds parent child relationships for hematopoietic system", () => {
         const uiNode = uiNodesByCategoryValueId?.get(
           INFERRED_HEMATOPOIETIC_SYSTEM
         );
@@ -1844,7 +1847,7 @@ describe("useCategoryFilter", () => {
        * - Parents: -
        * - Children: kidney, urethra, bladder lumen, ureter
        */
-      it("builds parent child relationships for renal system", () => {
+      test("builds parent child relationships for renal system", () => {
         const uiNode = uiNodesByCategoryValueId?.get(INFERRED_RENAL_SYSTEM);
 
         const uiParents = uiNode?.uiParents;
@@ -1864,7 +1867,7 @@ describe("useCategoryFilter", () => {
        * - Parents: renal system
        * - Children: blood non-specific, umbilical cord blood, venous blood
        */
-      it("builds parent child relationships for blood", () => {
+      test("builds parent child relationships for blood", () => {
         const uiNode = uiNodesByCategoryValueId?.get(INFERRED_BLOOD);
 
         const uiParents = uiNode?.uiParents;
@@ -1886,7 +1889,7 @@ describe("useCategoryFilter", () => {
        * - Parents: renal system, bladder organ
        * - Children: -
        */
-      it("builds parent child relationships for bladder lumen", () => {
+      test("builds parent child relationships for bladder lumen", () => {
         const uiNode = uiNodesByCategoryValueId?.get(EXPLICIT_BLADDER_LUMEN);
 
         const uiParents = uiNode?.uiParents;
@@ -1903,7 +1906,7 @@ describe("useCategoryFilter", () => {
        * - Parents: renal system
        * - Children: -
        */
-      it("builds parent child relationships for ureter", () => {
+      test("builds parent child relationships for ureter", () => {
         const uiNode = uiNodesByCategoryValueId?.get(EXPLICIT_URETER);
 
         const uiParents = uiNode?.uiParents;
@@ -1917,7 +1920,7 @@ describe("useCategoryFilter", () => {
 
     describe("buildMultiPanelCategoryView", () => {
       let multiPanelUIState: MultiPanelUIState;
-      beforeAll(() => {
+      test.beforeAll(() => {
         const uiNodesByCategoryValueId = buildUINodesByCategoryValueId(
           TISSUE_CATEGORY_VALUE_IDS_BY_PANEL,
           TISSUE_DESCENDANTS
@@ -1940,7 +1943,7 @@ describe("useCategoryFilter", () => {
        */
       describe("nothing selected", () => {
         let categoryView: MultiPanelOntologyCategoryView;
-        beforeAll(() => {
+        test.beforeAll(() => {
           categoryView = buildMultiPanelCategoryView(
             CATEGORY_FILTER_CONFIGS_BY_ID[
               CATEGORY_FILTER_ID.TISSUE_CALCULATED
@@ -1954,7 +1957,7 @@ describe("useCategoryFilter", () => {
         /**
          * Views: all
          */
-        it("includes all views", () => {
+        test("includes all views", () => {
           expect(categoryView.panels.length).toEqual(3);
 
           const systemPanelViews =
@@ -1987,7 +1990,7 @@ describe("useCategoryFilter", () => {
         /**
          * Selected - none
          */
-        it("includes no selected values", () => {
+        test("includes no selected values", () => {
           categoryView.panels.forEach((panel) => {
             panel.views.forEach((view) => {
               expect(view.selected).toBeFalsy();
@@ -2002,7 +2005,7 @@ describe("useCategoryFilter", () => {
        */
       describe("tissue selected", () => {
         let categoryView: MultiPanelOntologyCategoryView;
-        beforeAll(() => {
+        test.beforeAll(() => {
           const updatedKeyedCategoryValues = new Map(KEYED_CATEGORY_VALUES);
           updateSelectCategoryValueSelected(
             updatedKeyedCategoryValues,
@@ -2032,7 +2035,7 @@ describe("useCategoryFilter", () => {
         /**
          * Views: all systems, all organs, all tissues
          */
-        it("includes all systems, organs and tissue views", () => {
+        test("includes all systems, organs and tissue views", () => {
           expect(categoryView.panels.length).toEqual(3);
 
           const systemPanelViews =
@@ -2065,7 +2068,7 @@ describe("useCategoryFilter", () => {
         /**
          * Selected - blood non-specific
          */
-        it("includes blood non-specific selected only", () => {
+        test("includes blood non-specific selected only", () => {
           categoryView.panels.forEach((panel) => {
             panel.views.forEach((view) => {
               const selected = view.categoryValueId === EXPLICIT_BLOOD;
@@ -2081,7 +2084,7 @@ describe("useCategoryFilter", () => {
        */
       describe("organ selected", () => {
         let categoryView: MultiPanelOntologyCategoryView;
-        beforeAll(() => {
+        test.beforeAll(() => {
           const updatedKeyedCategoryValues = new Map(KEYED_CATEGORY_VALUES);
           updateSelectCategoryValueSelected(
             updatedKeyedCategoryValues,
@@ -2111,7 +2114,7 @@ describe("useCategoryFilter", () => {
         /**
          * Views: all systems, all organs, blood non-specific, umbilical cord blood, venous blood
          */
-        it("includes all systems, all organs and filtered tissues", () => {
+        test("includes all systems, all organs and filtered tissues", () => {
           expect(categoryView.panels.length).toEqual(3);
 
           const systemPanelViews =
@@ -2148,7 +2151,7 @@ describe("useCategoryFilter", () => {
         /**
          * Selected - blood
          */
-        it("includes blood selected only", () => {
+        test("includes blood selected only", () => {
           categoryView.panels.forEach((panel) => {
             panel.views.forEach((view) => {
               const selected = view.categoryValueId === INFERRED_BLOOD;
@@ -2161,7 +2164,7 @@ describe("useCategoryFilter", () => {
 
       describe("system selected", () => {
         let categoryView: MultiPanelOntologyCategoryView;
-        beforeAll(() => {
+        test.beforeAll(() => {
           const updatedKeyedCategoryValues = new Map(KEYED_CATEGORY_VALUES);
           updateSelectCategoryValueSelected(
             updatedKeyedCategoryValues,
@@ -2192,7 +2195,7 @@ describe("useCategoryFilter", () => {
          * Selected: immune system
          * Views: all systems, organs under immune system, tissues under immune system
          */
-        it("includes all systems and filtered organs and tissues for immune system", () => {
+        test("includes all systems and filtered organs and tissues for immune system", () => {
           expect(categoryView.panels.length).toEqual(3);
 
           const systemPanelViews =
@@ -2231,7 +2234,7 @@ describe("useCategoryFilter", () => {
         /**
          * Selected - immune system
          */
-        it("includes immune system selected only", () => {
+        test("includes immune system selected only", () => {
           categoryView.panels.forEach((panel) => {
             panel.views.forEach((view) => {
               const selected = view.categoryValueId === INFERRED_IMMUNE_SYSTEM;
@@ -2247,7 +2250,7 @@ describe("useCategoryFilter", () => {
        */
       describe("organ and tissue selected", () => {
         let categoryView: MultiPanelOntologyCategoryView;
-        beforeAll(() => {
+        test.beforeAll(() => {
           const updatedKeyedCategoryValues = new Map(KEYED_CATEGORY_VALUES);
           updateSelectCategoryValueSelected(
             updatedKeyedCategoryValues,
@@ -2283,7 +2286,7 @@ describe("useCategoryFilter", () => {
         /**
          * Views: all systems, all organs, tissues under blood
          */
-        it("includes all systems and organs and filtered tissues", () => {
+        test("includes all systems and organs and filtered tissues", () => {
           expect(categoryView.panels.length).toEqual(3);
 
           const systemPanelViews =
@@ -2321,7 +2324,7 @@ describe("useCategoryFilter", () => {
          * Selected - blood
          * Selected partial - hematopoietic system
          */
-        it("includes blood partially selected, blood non-specific selected", () => {
+        test("includes blood partially selected, blood non-specific selected", () => {
           categoryView.panels.forEach((panel) => {
             panel.views.forEach((view) => {
               const selected = view.categoryValueId === EXPLICIT_BLOOD;
@@ -2338,7 +2341,7 @@ describe("useCategoryFilter", () => {
        */
       describe("system and organ selected", () => {
         let categoryView: MultiPanelOntologyCategoryView;
-        beforeAll(() => {
+        test.beforeAll(() => {
           const updatedKeyedCategoryValues = new Map(KEYED_CATEGORY_VALUES);
           updateSelectCategoryValueSelected(
             updatedKeyedCategoryValues,
@@ -2374,7 +2377,7 @@ describe("useCategoryFilter", () => {
         /**
          * Views: all systems, organs under hematopoietic system, tissues under blood
          */
-        it("includes all systems and filtered organs and tissues for hematopoietic system", () => {
+        test("includes all systems and filtered organs and tissues for hematopoietic system", () => {
           expect(categoryView.panels.length).toEqual(3);
 
           const systemPanelViews =
@@ -2417,7 +2420,7 @@ describe("useCategoryFilter", () => {
          * Selected - blood
          * Selected partial - hematopoietic system
          */
-        it("includes hematopoietic system partially selected, blood selected", () => {
+        test("includes hematopoietic system partially selected, blood selected", () => {
           categoryView.panels.forEach((panel) => {
             panel.views.forEach((view) => {
               const selected = view.categoryValueId === INFERRED_BLOOD;
@@ -2435,7 +2438,7 @@ describe("useCategoryFilter", () => {
        */
       describe("unrelated organ and tissue selected", () => {
         let categoryView: MultiPanelOntologyCategoryView;
-        beforeAll(() => {
+        test.beforeAll(() => {
           const updatedKeyedCategoryValues = new Map(KEYED_CATEGORY_VALUES);
           updateSelectCategoryValueSelected(
             updatedKeyedCategoryValues,
@@ -2471,7 +2474,7 @@ describe("useCategoryFilter", () => {
         /**
          * Views: all systems, all organs, tissues under kidney as well as blood specific
          */
-        it("includes all systems and organs, filtered tissues and blood non specific", () => {
+        test("includes all systems and organs, filtered tissues and blood non specific", () => {
           expect(categoryView.panels.length).toEqual(3);
 
           const systemPanelViews =
@@ -2507,7 +2510,7 @@ describe("useCategoryFilter", () => {
        */
       describe("system (containing no organs) selected", () => {
         let categoryView: MultiPanelOntologyCategoryView;
-        beforeAll(() => {
+        test.beforeAll(() => {
           const updatedKeyedCategoryValues = new Map(KEYED_CATEGORY_VALUES);
           updateSelectCategoryValueSelected(
             updatedKeyedCategoryValues,
@@ -2537,7 +2540,7 @@ describe("useCategoryFilter", () => {
         /**
          * Views: all systems, all organs under renal system, tissues under renal system
          */
-        it("includes all systems, no organs and filtered tissues", () => {
+        test("includes all systems, no organs and filtered tissues", () => {
           expect(categoryView.panels.length).toEqual(3);
 
           const systemPanelViews =
@@ -2574,7 +2577,7 @@ describe("useCategoryFilter", () => {
         /**
          * Selected - renal system
          */
-        it("includes renal system partially selected, blood selected", () => {
+        test("includes renal system partially selected, blood selected", () => {
           categoryView.panels.forEach((panel) => {
             panel.views.forEach((view) => {
               const selected = view.categoryValueId === INFERRED_RENAL_SYSTEM;
@@ -2591,7 +2594,7 @@ describe("useCategoryFilter", () => {
       describe("organ and all organ's tissues selected", () => {
         let selectedCategoryValueIds: CategoryValueId[];
         let categoryView: MultiPanelOntologyCategoryView;
-        beforeAll(() => {
+        test.beforeAll(() => {
           selectedCategoryValueIds = [
             INFERRED_BLOOD,
             EXPLICIT_BLOOD,
@@ -2630,7 +2633,7 @@ describe("useCategoryFilter", () => {
         /**
          * Selected - blood, blood non-specific, umbilical cord blood, venous blood
          */
-        it("includes blood, blood non-specific, umbilical cord blood, venous blood selected", () => {
+        test("includes blood, blood non-specific, umbilical cord blood, venous blood selected", () => {
           categoryView.panels.forEach((panel) => {
             panel.views.forEach((view) => {
               const selected = selectedCategoryValueIds.includes(
@@ -2650,7 +2653,7 @@ describe("useCategoryFilter", () => {
       describe("system and a mix of system's organs and tissues all selected", () => {
         let selectedCategoryValueIds: CategoryValueId[];
         let categoryView: MultiPanelOntologyCategoryView;
-        beforeAll(() => {
+        test.beforeAll(() => {
           selectedCategoryValueIds = [
             INFERRED_HEMATOPOIETIC_SYSTEM,
             INFERRED_BONE_MARROW,
@@ -2692,7 +2695,7 @@ describe("useCategoryFilter", () => {
         /**
          * Selected - hematopoietic system, blood non-specific, umbilical cord blood, venous blood
          */
-        it(
+        test(
           "includes hematopoietic system, bone marrow, spleen, thymus, blood non-specific, umbilical cord " +
             "blood, venous blood selected",
           () => {
@@ -2715,7 +2718,7 @@ describe("useCategoryFilter", () => {
       describe("system and a mix of system's organs and tissues all selected with one tissue not selected", () => {
         let selectedCategoryValueIds: CategoryValueId[];
         let categoryView: MultiPanelOntologyCategoryView;
-        beforeAll(() => {
+        test.beforeAll(() => {
           selectedCategoryValueIds = [
             INFERRED_BONE_MARROW,
             INFERRED_SPLEEN,
@@ -2763,7 +2766,7 @@ describe("useCategoryFilter", () => {
          * Selected - blood, blood non-specific, umbilical cord blood, venous blood
          * Selected partial - hematopoietic system
          */
-        it(
+        test(
           "includes hematopoietic system partially selected and bone marrow, spleen, thymus, blood " +
             "non-specific, umbilical cord blood selected",
           () => {
@@ -2789,7 +2792,7 @@ describe("useCategoryFilter", () => {
         let selectedCategoryValueIds: CategoryValueId[];
         let selectedPartialCategoryValueIds: CategoryValueId[];
         let categoryView: MultiPanelOntologyCategoryView;
-        beforeAll(() => {
+        test.beforeAll(() => {
           selectedCategoryValueIds = [
             INFERRED_BONE_MARROW,
             INFERRED_SPLEEN,
@@ -2844,7 +2847,7 @@ describe("useCategoryFilter", () => {
          * Selected - blood, blood non-specific, umbilical cord blood, venous blood
          * Selected partial - hematopoietic system
          */
-        it(
+        test(
           "includes hematopoietic system and blood partially selected and bone marrow, spleen, thymus, blood " +
             "non-specific, umbilical cord blood selected",
           () => {
@@ -2910,7 +2913,7 @@ describe("useCategoryFilter", () => {
        *
        * - Selected value: Neurula
        */
-      it(`de-selects leaf ${ONTOLOGY_ID_HUMAN_CARNEGIE_CS1}, no siblings`, () => {
+      test(`de-selects leaf ${ONTOLOGY_ID_HUMAN_CARNEGIE_CS1}, no siblings`, () => {
         const idToDeselect = ONTOLOGY_ID_HUMAN_CARNEGIE_CS1;
         const filters = [
           {
@@ -2940,7 +2943,7 @@ describe("useCategoryFilter", () => {
        *
        * - Selected value: Neurula
        */
-      it(`de-selects leaf ${ONTOLOGY_ID_HUMAN_CARNEGIE_CS1}, with siblings`, () => {
+      test(`de-selects leaf ${ONTOLOGY_ID_HUMAN_CARNEGIE_CS1}, with siblings`, () => {
         const idToDeselect = ONTOLOGY_ID_HUMAN_CARNEGIE_CS1;
         const filters = [
           {
@@ -2978,7 +2981,7 @@ describe("useCategoryFilter", () => {
        *
        * - Expected selected set: []
        */
-      it(`de-selects node ${ONTOLOGY_ID_HUMAN_EMBRYONIC_HUMAN}, sibling unselected`, () => {
+      test(`de-selects node ${ONTOLOGY_ID_HUMAN_EMBRYONIC_HUMAN}, sibling unselected`, () => {
         const idToDeselect = ONTOLOGY_ID_HUMAN_EMBRYONIC_HUMAN;
         const filters = [
           {
@@ -3013,7 +3016,7 @@ describe("useCategoryFilter", () => {
        *
        * - Expected selected set: [Fetal]
        */
-      it(`de-selects node ${ONTOLOGY_ID_HUMAN_EMBRYONIC_HUMAN}, sibling selected`, () => {
+      test(`de-selects node ${ONTOLOGY_ID_HUMAN_EMBRYONIC_HUMAN}, sibling selected`, () => {
         const idToDeselect = ONTOLOGY_ID_HUMAN_EMBRYONIC_HUMAN;
         const filters = [
           {
@@ -3049,7 +3052,7 @@ describe("useCategoryFilter", () => {
        *
        * - Expected selected set: Carnegie (CS1) HsapDv:0000003
        */
-      it(`selects leaf ${ONTOLOGY_ID_HUMAN_CARNEGIE_CS1}, no siblings currently selected`, () => {
+      test(`selects leaf ${ONTOLOGY_ID_HUMAN_CARNEGIE_CS1}, no siblings currently selected`, () => {
         const idToSelect = ONTOLOGY_ID_HUMAN_CARNEGIE_CS1;
         const nextFilters = buildNextOntologyCategoryFilters(
           CATEGORY_FILTER_ID.DEVELOPMENT_STAGE,
@@ -3075,7 +3078,7 @@ describe("useCategoryFilter", () => {
        *
        * - Expected selected set: Newborn, Infant
        */
-      it(`selects leaf ${ONTOLOGY_ID_HUMAN_INFANT}, some siblings currently selected`, () => {
+      test(`selects leaf ${ONTOLOGY_ID_HUMAN_INFANT}, some siblings currently selected`, () => {
         const nextFilters = buildNextOntologyCategoryFilters(
           CATEGORY_FILTER_ID.DEVELOPMENT_STAGE,
           ONTOLOGY_ID_HUMAN_INFANT,
@@ -3106,7 +3109,7 @@ describe("useCategoryFilter", () => {
        *
        * - Expected selected set: Immature, Newborn, Infant, Child
        */
-      it(`selects leaf ${ONTOLOGY_ID_HUMAN_CHILD}, all siblings currently selected`, () => {
+      test(`selects leaf ${ONTOLOGY_ID_HUMAN_CHILD}, all siblings currently selected`, () => {
         const nextFilters = buildNextOntologyCategoryFilters(
           CATEGORY_FILTER_ID.DEVELOPMENT_STAGE,
           ONTOLOGY_ID_HUMAN_CHILD,
@@ -3139,7 +3142,7 @@ describe("useCategoryFilter", () => {
        *
        * - Expected selected set: Prenatal, Embryonic, Neurula, Carnegie and Fetal
        */
-      it(`selects leaf ${ONTOLOGY_ID_HUMAN_CARNEGIE_CS1}, all siblings and aunt currently selected`, () => {
+      test(`selects leaf ${ONTOLOGY_ID_HUMAN_CARNEGIE_CS1}, all siblings and aunt currently selected`, () => {
         const nextFilters = buildNextOntologyCategoryFilters(
           CATEGORY_FILTER_ID.DEVELOPMENT_STAGE,
           ONTOLOGY_ID_HUMAN_CARNEGIE_CS1,
@@ -3179,7 +3182,7 @@ describe("useCategoryFilter", () => {
        *
        * - Expected selected set: Embryonic human, Carnegie, Neurula
        */
-      it(`selects node ${ONTOLOGY_ID_HUMAN_EMBRYONIC_HUMAN}, nothing currently selected`, () => {
+      test(`selects node ${ONTOLOGY_ID_HUMAN_EMBRYONIC_HUMAN}, nothing currently selected`, () => {
         const nextFilters = buildNextOntologyCategoryFilters(
           CATEGORY_FILTER_ID.DEVELOPMENT_STAGE,
           ONTOLOGY_ID_HUMAN_EMBRYONIC_HUMAN,
@@ -3212,7 +3215,7 @@ describe("useCategoryFilter", () => {
        *
        * - Expected selected set: Embryonic human, Carnegie, Neurula
        */
-      it(`selects node ${ONTOLOGY_ID_HUMAN_EMBRYONIC_HUMAN}, child currently selected`, () => {
+      test(`selects node ${ONTOLOGY_ID_HUMAN_EMBRYONIC_HUMAN}, child currently selected`, () => {
         const nextFilters = buildNextOntologyCategoryFilters(
           CATEGORY_FILTER_ID.DEVELOPMENT_STAGE,
           ONTOLOGY_ID_HUMAN_EMBRYONIC_HUMAN,
@@ -3250,7 +3253,7 @@ describe("useCategoryFilter", () => {
        *
        * - Expected selected set: Prenatal human, Embryonic, Carnegie, Neurula, Fetal
        */
-      it(`selects node ${ONTOLOGY_ID_HUMAN_EMBRYONIC_HUMAN}, sibling currently selected`, () => {
+      test(`selects node ${ONTOLOGY_ID_HUMAN_EMBRYONIC_HUMAN}, sibling currently selected`, () => {
         const nextFilters = buildNextOntologyCategoryFilters(
           CATEGORY_FILTER_ID.DEVELOPMENT_STAGE,
           ONTOLOGY_ID_HUMAN_EMBRYONIC_HUMAN,
@@ -3292,7 +3295,7 @@ describe("useCategoryFilter", () => {
        *
        * - Expected selected set: Neurula, Fetal
        */
-      it(`de-selects leaf ${ONTOLOGY_ID_HUMAN_CARNEGIE_CS1}, ancestor currently selected`, () => {
+      test(`de-selects leaf ${ONTOLOGY_ID_HUMAN_CARNEGIE_CS1}, ancestor currently selected`, () => {
         const nextFilters = buildNextOntologyCategoryFilters(
           CATEGORY_FILTER_ID.DEVELOPMENT_STAGE,
           ONTOLOGY_ID_HUMAN_CARNEGIE_CS1,

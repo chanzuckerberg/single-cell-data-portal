@@ -7,7 +7,7 @@ on:
       - staging
       - prod
   pull_request:
-    branches: 
+    branches:
       - "*"
       - feature/schema-3-0-0
 
