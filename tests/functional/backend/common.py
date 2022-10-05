@@ -5,7 +5,7 @@ import base64
 import json
 import time
 
-from requests.adapters import HTTPAdapter
+from requests.adapters import HTTPAdapter, Response
 from requests.packages.urllib3.util import Retry
 from backend.corpora.common.corpora_config import CorporaAuthConfig
 
@@ -114,3 +114,7 @@ class BaseFunctionalTestCase(unittest.TestCase):
                 )
             time.sleep(10)
         return dataset_id
+
+    def assertStatusCode(self, actual: int, expected_response: Response):
+        request_id = expected_response.headers.get("X-Request-Id")
+        self.assertEqual(actual, expected_response.status_code, msg=f"{request_id=}")
