@@ -28,6 +28,7 @@ export default function GetStarted({
   if (!geneHasLoadedOnce && geneSelected && !isLoading) {
     geneHasLoadedOnce = true;
   }
+
   return (
     <Wrapper
       style={
@@ -40,11 +41,11 @@ export default function GetStarted({
         </StyledStepOne>
       </ColumnOne>
 
-      <ColumnTwo style={geneHasLoadedOnce ? { visibility: "hidden" } : {}}>
-        <StyledStepTwo>
+      <ColumnTwo>
+        <StyledStepTwo style={geneHasLoadedOnce ? { visibility: "hidden" } : {}}>
           <Step step={2} details="Add Genes" />
         </StyledStepTwo>
-        <StyledStepThree>
+        <StyledStepThree style={geneHasLoadedOnce && tissueHasLoadedOnce ? { visibility: "hidden" } : {}}>
           <Step step={3} details="Explore Gene Expression" />
         </StyledStepThree>
       </ColumnTwo>

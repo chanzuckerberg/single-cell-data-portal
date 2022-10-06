@@ -109,7 +109,7 @@ export default memo(function HeatMap({
 
     return result;
   }, [selectedGeneExpressionSummariesByTissueName, geneNameToIndex]);
-
+  console.log(sortedGeneNames)
   return (
     <Container {...{ className }}>
       {isLoadingAPI || isAnyTissueLoading(isLoading) ? <Loader /> : null}
