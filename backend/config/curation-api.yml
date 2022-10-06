@@ -541,23 +541,20 @@ paths:
 components:
   schemas:
     asset_response:
-      properties:
-        assets:
-          items:
-            properties:
-              filename:
-                $ref: "#/components/schemas/asset_filename"
-              filesize:
-                description: the size of the file in bytes.
-                type: number
-              filetype:
-                $ref: "#/components/schemas/asset_filetype"
-              presigned_url:
-                description: A URL to download this asset.
-                type: string
-            type: object
-          type: array
-      type: object
+      items:
+        properties:
+          filename:
+            $ref: "#/components/schemas/asset_filename"
+          filesize:
+            description: the size of the file in bytes.
+            type: number
+          filetype:
+            $ref: "#/components/schemas/asset_filetype"
+          presigned_url:
+            description: A URL to download this asset.
+            type: string
+        type: object
+      type: array
     asset_filetype:
       enum:
         - H5AD

@@ -44,6 +44,6 @@ def get(collection_id: str, dataset_id=None):
             result["presigned_url"] = presigned_url
         asset_list.append(result)
 
-    response = dict(dataset_id=dataset.id, assets=asset_list)
+    response = asset_list
     status_code = 202 if error_flag else 200
-    return make_response(jsonify(**response), status_code)
+    return make_response(jsonify(response), status_code)

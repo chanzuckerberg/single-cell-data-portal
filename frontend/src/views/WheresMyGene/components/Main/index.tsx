@@ -226,7 +226,7 @@ export default function WheresMyGene(): JSX.Element {
   const hasSelectedGenes = selectedGenes.length > 0;
 
   const shouldShowHeatMap = useMemo(() => {
-    return hasSelectedTissues;
+    return hasSelectedTissues || hasSelectedGenes;
   }, [hasSelectedTissues, hasSelectedGenes]);
 
   const handleIsScaledChange = useCallback(() => {
@@ -271,7 +271,10 @@ export default function WheresMyGene(): JSX.Element {
           {isLoading && !shouldShowHeatMap && <Loader />}
 
           <Top>
-            <GeneSearchBar className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME} />
+            <GeneSearchBar
+              className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}
+              selectedCellTypes={selectedCellTypes}
+            />
             <Legend isScaled={isScaled} />
           </Top>
 

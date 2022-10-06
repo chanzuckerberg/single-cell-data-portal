@@ -1,6 +1,6 @@
 import sys
 
-from backend.corpora.common.utils.slack import (
+from backend.corpora.common.utils.result_notification import (
     format_failed_batch_issue_slack_alert,
     notify_slack,
     gen_wmg_pipeline_failure_message,
@@ -11,7 +11,7 @@ from backend.wmg.data.validation.validation import Validation
 from backend.corpus_asset_pipelines.summary_cubes.cell_count import create_cell_count_cube
 
 
-def run(corpus_path: str, validate_cube: bool):
+def run(corpus_path: str, validate_cube: bool) -> dict:
     """
     Build expression summary cube and cell count cube based
     on cell data stored in integrated corpus
