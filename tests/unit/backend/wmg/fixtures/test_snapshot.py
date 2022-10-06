@@ -16,9 +16,9 @@ from backend.corpora.common.corpora_orm import DbDataset, CollectionVisibility, 
 from backend.corpora.common.entities import Collection
 from backend.corpora.common.utils.db_session import db_session_manager
 from backend.wmg.data.schemas.cube_schema import (
-    cube_indexed_dims,
-    cube_logical_attrs,
-    cube_logical_dims,
+    expression_summary_indexed_dims,
+    expression_summary_logical_attrs,
+    expression_summary_logical_dims,
     expression_summary_schema,
     cell_counts_logical_attrs,
     cell_counts_schema,
@@ -219,7 +219,7 @@ def create_cubes(
     cell_counts_fn: Callable[[List[Tuple]], List[int]] = random_cell_counts_values,
 ) -> Tuple[str, str]:
     coords, dim_values = build_coords(
-        cube_logical_dims, dim_size, dim_ontology_term_ids_generator_fn, exclude_logical_coord_fn
+        expression_summary_logical_dims, dim_size, dim_ontology_term_ids_generator_fn, exclude_logical_coord_fn
     )
     expression_summary_cube_dir = create_expression_summary_cube(
         data_dir, coords, dim_values, expression_summary_vals_fn=expression_summary_vals_fn
@@ -264,11 +264,12 @@ def create_expression_summary_cube(
 
     with tiledb.open(cube_dir, mode="w") as cube:
         logical_attr_values = expression_summary_vals_fn(coords)
-        assert all([len(logical_attr_values[attr.name]) == len(coords) for attr in cube_logical_attrs])
+        assert all([len(logical_attr_values[attr.name]) == len(coords) for attr in expression_summary_logical_attrs])
 
-        physical_dim_values = dim_values[: len(cube_indexed_dims)]
+        physical_dim_values = dim_values[: len(expression_summary_indexed_dims)]
         physical_attr_values = {
-            cube_logical_dims[i]: dim_values[i] for i in range(len(cube_indexed_dims), len(cube_logical_dims))
+            expression_summary_logical_dims[i]: dim_values[i]
+            for i in range(len(expression_summary_indexed_dims), len(expression_summary_logical_dims))
         }
         physical_attr_values.update(logical_attr_values)
         cube[tuple(physical_dim_values)] = physical_attr_values

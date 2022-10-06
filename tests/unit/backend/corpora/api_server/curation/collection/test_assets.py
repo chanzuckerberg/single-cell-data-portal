@@ -16,32 +16,26 @@ class TestAsset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         content = "Hello world!"
         self.create_s3_object(s3_file_name, bucket, content=content)
 
-        expected_body = dict(
-            dataset_id=self.test_dataset_id,
-            assets=[dict(filename="test_filename", filesize=len(content), filetype="H5AD")],
-        )
+        expected_body = [dict(filename="test_filename", filesize=len(content), filetype="H5AD")]
 
         response = self.app.get(
             f"/curation/v1/collections/test_collection_id/datasets/{self.test_dataset_id}/assets",
-            query_string=dict(dataset_id=self.test_dataset_id),
         )
         self.assertEqual(200, response.status_code)
         actual_body = response.json
-        presign_url = actual_body["assets"][0].pop("presigned_url")
+        presign_url = actual_body[0].pop("presigned_url")
         self.assertIsNotNone(presign_url)
         self.assertEqual(expected_body, actual_body)
 
     def test__get_dataset_asset__file_error(self):
-        expected_body = dict(
-            dataset_id=self.test_dataset_id, assets=[dict(filename="test_filename", filesize=-1, filetype="H5AD")]
-        )
+        expected_body = [dict(filename="test_filename", filesize=-1, filetype="H5AD")]
 
         response = self.app.get(
             f"/curation/v1/collections/test_collection_id/datasets/{self.test_dataset_id}/assets",
         )
         self.assertEqual(202, response.status_code)
         actual_body = response.json
-        presign_url = actual_body["assets"][0].pop("presigned_url", None)
+        presign_url = actual_body[0].pop("presigned_url", None)
         self.assertIsNone(presign_url)
         self.assertEqual(expected_body, actual_body)
 

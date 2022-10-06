@@ -13,7 +13,7 @@ pd.set_option("display.width", 256)
 os.environ["DEPLOYMENT_STAGE"] = "dev"
 
 if __name__ == "__main__":
-    snapshot_id = 1662103227  # _read_s3obj("latest_snapshot_identifier")
+    snapshot_id = "test/1662103227"  # _read_s3obj("latest_snapshot_identifier")
     cube = _open_cube(
         f's3://cellxgene-wmg-{os.environ["DEPLOYMENT_STAGE"]}/{snapshot_id}/{EXPRESSION_SUMMARY_CUBE_NAME}/'
     )

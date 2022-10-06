@@ -24,7 +24,7 @@ export const Label = styled.label`
 `;
 
 export const OrganismLabel = styled.label`
-  ${fontBodyS};
+  ${fontBodyS}
 
   ${(props) => {
     const fontWeights = getFontWeights(props);
@@ -32,7 +32,7 @@ export const OrganismLabel = styled.label`
     return `
       font-weight: ${fontWeights?.semibold};
     `;
-  }};
+  }}
 `;
 
 export const LoadingIndicatorWrapper = styled.div`

@@ -3,10 +3,6 @@ import os
 import time
 from urllib.parse import urlparse
 
-from werkzeug.exceptions import InternalServerError
-
-from backend.gene_info.api.ensembl_ids import GeneChecker
-
 import connexion
 
 from connexion import FlaskApi, ProblemException, problem
@@ -16,6 +12,8 @@ from swagger_ui_bundle import swagger_ui_path
 from backend.corpora.api_server.logger import configure_logging
 from backend.corpora.common.utils.aws import AwsSecret
 from backend.corpora.common.utils.json import CustomJSONEncoder, CurationJSONEncoder
+from backend.corpora.api_server.request_id import get_request_id, generate_request_id
+from backend.gene_info.api.ensembl_ids import GeneChecker
 
 DEPLOYMENT_STAGE = os.environ["DEPLOYMENT_STAGE"]
 APP_NAME = "{}-{}".format(os.environ["APP_NAME"], DEPLOYMENT_STAGE)
@@ -120,9 +118,17 @@ def apis_landing_page() -> str:
     """
 
 
+if DEPLOYMENT_STAGE == "test":
+
+    @app.route("/exception")
+    def raise_exception():
+        raise Exception("testing")
+
+
 @app.before_request
 def before_request():
     g.start = time.time()
+    g.request_id = generate_request_id()
     app.logger.info(
         dict(
             type="REQUEST",
@@ -147,6 +153,7 @@ def after_request(response: Response):
             ),
         )
     )
+    response.headers["X-Request-Id"] = get_request_id()
     return response
 
 
@@ -172,10 +179,10 @@ def handle_corpora_error(exception):
     )
 
 
-@app.errorhandler(InternalServerError)
+@app.errorhandler(Exception)
 def handle_internal_server_error(exception):
-    app.logger.exception("InternalServerError", exc_info=exception.original_exception)
-    return FlaskApi.get_response(problem(500, "Internal Server Error"))
+    app.logger.exception("InternalServerError", exc_info=exception)
+    return FlaskApi.get_response(problem(500, "Internal Server Error", "Internal Server Error"))
 
 
 if __name__ == "__main__":
