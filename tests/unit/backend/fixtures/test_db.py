@@ -219,16 +219,17 @@ class TestDatabase:
                 {"label": "test_sex", "ontology_term_id": "test_obo"},
                 {"label": "test_sex2", "ontology_term_id": "test_obp"},
             ],
-            ethnicity=[{"ontology_term_id": "test_obo", "label": "test_ethnicity"}],
+            self_reported_ethnicity=[{"ontology_term_id": "test_obo", "label": "test_ethnicity"}],
             development_stage=[{"ontology_term_id": "test_obo", "label": "test_development_stage"}],
             collection_id="test_collection_id",
             explorer_url="test_url",
             cell_type=[{"label": "test_cell_type", "ontology_term_id": "test_opo"}],
             is_primary_data=IsPrimaryData.PRIMARY.name,
-            x_normalization="test_x_normalization",
             x_approximate_distribution=XApproximateDistribution.NORMAL.name,
             batch_condition=np.array(["batchA", "batchB"], dtype="object"),
-            schema_version="2.0.0",
+            donor_id=["donor_1", "donor_2"],
+            suspension_type=["nucleus"],
+            schema_version="3.0.0",
         )
         self.session.add(dataset)
         dataset = DbDataset(
@@ -247,11 +248,13 @@ class TestDatabase:
                 {"label": "test_sex", "ontology_term_id": "test_obo"},
                 {"label": "test_sex2", "ontology_term_id": "test_obp"},
             ],
-            ethnicity=[{"ontology_term_id": "test_obo", "label": "test_ethnicity"}],
+            self_reported_ethnicity=[{"ontology_term_id": "test_obo", "label": "test_ethnicity"}],
             development_stage=[{"ontology_term_id": "test_obo", "label": "test_development_stage"}],
+            donor_id=["donor_1", "donor_2"],
+            suspension_type=["nucleus"],
             collection_id="test_collection_id_public_for_revision_one",
             explorer_url="test_url",
-            schema_version="2.0.0",
+            schema_version="3.0.0",
         )
         self.session.add(dataset)
         dataset = DbDataset(
@@ -270,11 +273,13 @@ class TestDatabase:
                 {"label": "test_sex", "ontology_term_id": "test_obo"},
                 {"label": "test_sex2", "ontology_term_id": "test_obp"},
             ],
-            ethnicity=[{"ontology_term_id": "test_obo", "label": "test_ethnicity"}],
+            self_reported_ethnicity=[{"ontology_term_id": "test_obo", "label": "test_ethnicity"}],
             development_stage=[{"ontology_term_id": "test_obo", "label": "test_development_stage"}],
+            donor_id=["donor_1", "donor_2"],
+            suspension_type=["nucleus"],
             collection_id="test_collection_id_public_for_revision_two",
             explorer_url="test_url",
-            schema_version="2.0.0",
+            schema_version="3.0.0",
         )
         self.session.add(dataset)
         dataset = DbDataset(
@@ -293,15 +298,16 @@ class TestDatabase:
                 {"label": "test_sex", "ontology_term_id": "test_obo"},
                 {"label": "test_sex2", "ontology_term_id": "test_obp"},
             ],
-            ethnicity=[{"ontology_term_id": "test_obo", "label": "test_ethnicity"}],
+            self_reported_ethnicity=[{"ontology_term_id": "test_obo", "label": "test_ethnicity"}],
             development_stage=[{"ontology_term_id": "test_obo", "label": "test_development_stage"}],
+            donor_id=["donor_1", "donor_2"],
+            suspension_type=["nucleus"],
             collection_id="test_collection_id_not_owner",
             explorer_url="test_url",
             cell_type=[{"label": "test_cell_type", "ontology_term_id": "test_opo"}],
             is_primary_data=IsPrimaryData.PRIMARY.name,
-            x_normalization="test_x_normalization",
             x_approximate_distribution=XApproximateDistribution.NORMAL.name,
-            schema_version="2.0.0",
+            schema_version="3.0.0",
         )
         self.session.add(dataset)
         dataset = DbDataset(
@@ -321,15 +327,16 @@ class TestDatabase:
                 {"label": "test_sex", "ontology_term_id": "test_obo"},
                 {"label": "test_sex2", "ontology_term_id": "test_obp"},
             ],
-            ethnicity=[{"ontology_term_id": "test_obo", "label": "test_ethnicity"}],
+            self_reported_ethnicity=[{"ontology_term_id": "test_obo", "label": "test_ethnicity"}],
             development_stage=[{"ontology_term_id": "test_obo", "label": "test_development_stage"}],
+            donor_id=["donor_1", "donor_2"],
+            suspension_type=["nucleus"],
             collection_id="test_collection_id_revision",
             explorer_url="test_url_revised",
             cell_type=[{"label": "test_cell_type", "ontology_term_id": "test_opo"}],
             is_primary_data=IsPrimaryData.PRIMARY.name,
-            x_normalization="test_x_normalization",
             x_approximate_distribution=XApproximateDistribution.NORMAL.name,
-            schema_version="2.0.0",
+            schema_version="3.0.0",
         )
         self.session.add(dataset)
         self.session.commit()

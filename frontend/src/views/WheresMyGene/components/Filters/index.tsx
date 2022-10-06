@@ -206,7 +206,7 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
           />
           <ComplexFilter
             multiple
-            label="Ethnicity"
+            label="Self-Reported Ethnicity"
             options={ethnicity_terms}
             onChange={handleEthnicitiesChange}
             value={selectedEthnicities}
