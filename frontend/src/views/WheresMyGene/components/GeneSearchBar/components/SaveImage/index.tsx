@@ -119,11 +119,16 @@ export default function SaveImage({
       <ButtonWrapper className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}>
         <Label>Download</Label>
         <StyledIconButton
-          disabled={selectedTissues.length === 0 || selectedGenes.length === 0}
-          data-test-id={"download-button"}
+          data-test-id="download-button"
           onClick={handleButtonClick}
-          sdsType="primary"
-          sdsSize="medium"
+          {...{
+            // (thuang): Move this back to explicit prop={value} after
+            // upgrading SDS to enable type checking again
+            disabled:
+              selectedTissues.length === 0 || selectedGenes.length === 0,
+            sdsSize: "medium",
+            sdsType: "primary",
+          }}
         >
           <Icon sdsIcon="download" sdsSize="l" sdsType="iconButton" />
         </StyledIconButton>
