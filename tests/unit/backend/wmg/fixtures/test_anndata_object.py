@@ -62,7 +62,7 @@ def create_anndata_test_object(num_genes: int = 3, num_cells: int = 5):
     adata.varm["gene_stuff"] = np.random.normal(0, 1, size=(adata.n_vars, 5))
 
     # unstructured metadata attached to the whole, schema version required
-    adata.uns["schema_version"] = "2.0.0"
+    adata.uns["schema_version"] = "3.0.0"
 
     # Add layers
     adata.layers["log_transformed"] = np.log1p(adata.X)

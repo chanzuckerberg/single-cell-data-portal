@@ -35,7 +35,7 @@ const DataFormat: FC<Props> = ({
     return (
       <Radio
         disabled={!availableFormats.includes(DATASET_ASSET_FORMAT.H5AD)}
-        label=".h5ad (AnnData v0.7)"
+        label=".h5ad (AnnData v0.8)"
         value={DATASET_ASSET_FORMAT.H5AD}
       />
     );
