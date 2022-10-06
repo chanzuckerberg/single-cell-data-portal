@@ -13,8 +13,8 @@ import Modal from "src/components/common/Modal";
 import { CellType } from "src/views/WheresMyGene/common/types";
 import { getHeatmapHeight, getHeatmapWidth } from "../../../HeatMap/utils";
 import { Label } from "../../style";
-import { ButtonWrapper, StyledIconButton } from "../QuickSelect/style";
-import { DownloadButton, StyledDiv } from "./style";
+import { StyledIconButton } from "../QuickSelect/style";
+import { ButtonWrapper, DownloadButton, StyledDiv } from "./style";
 
 export const EXCLUDE_IN_SCREENSHOT_CLASS_NAME = "screenshot-exclude";
 const screenshotFilter =
@@ -116,12 +116,7 @@ export default function SaveImage({
 
   return (
     <>
-      <ButtonWrapper
-        className="screenshot-exclude"
-        style={
-          { "align-items": "center", padding: "0 15px" } as React.CSSProperties
-        }
-      >
+      <ButtonWrapper className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}>
         <Label>Download</Label>
         <StyledIconButton
           disabled={selectedTissues.length === 0 || selectedGenes.length === 0}

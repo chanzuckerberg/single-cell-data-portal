@@ -10,3 +10,10 @@ export const StyledDiv = styled.div`
   flex-direction: column;
   margin: 0;
 `;
+
+export const ButtonWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 15px;
+`;
