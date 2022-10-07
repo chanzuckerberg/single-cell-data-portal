@@ -1,20 +1,20 @@
-import { Classes, Intent } from "@blueprintjs/core";
-import { FormControlLabel } from "@material-ui/core";
-import { Icon, RadioButton } from "czifui";
+// import { Classes, Intent } from "@blueprintjs/core";
+// import { FormControlLabel } from "@material-ui/core";
+import { Icon } from "czifui";
 import { toPng, toSvg } from "html-to-image";
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
-import {
-  Section,
-  Title,
-} from "src/components/Collections/components/Dataset/components/DownloadDataset/components/Content/components/common/style";
-import Modal from "src/components/common/Modal";
+// import {
+//   Section,
+//   Title,
+// } from "src/components/Collections/components/Dataset/components/DownloadDataset/components/Content/components/common/style";
+// import Modal from "src/components/common/Modal";
 import { CellType } from "src/views/WheresMyGene/common/types";
 import { getHeatmapHeight, getHeatmapWidth } from "../../../HeatMap/utils";
 import { Label } from "../../style";
 import { ButtonWrapper, StyledIconButton } from "../QuickSelect/style";
-import { DownloadButton, StyledDiv } from "./style";
+//import { DownloadButton, StyledDiv } from "./style";
 
 export const EXCLUDE_IN_SCREENSHOT_CLASS_NAME = "screenshot-exclude";
 const screenshotFilter =
