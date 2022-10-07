@@ -35,17 +35,17 @@ export default function GetStarted({
         tissueHasLoadedOnce && geneHasLoadedOnce ? { display: "none" } : {}
       }
     >
-      <ColumnOne style={tissueHasLoadedOnce ? { visibility: "hidden" } : {}}>
+      <ColumnOne isHidden={tissueHasLoadedOnce}>
         <StyledStepOne>
           <Step step={1} details="Add Tissues" />
         </StyledStepOne>
       </ColumnOne>
 
       <ColumnTwo>
-        <StyledStepTwo style={geneHasLoadedOnce ? { visibility: "hidden" } : {}}>
+        <StyledStepTwo isHidden={geneHasLoadedOnce}>
           <Step step={2} details="Add Genes" />
         </StyledStepTwo>
-        <StyledStepThree style={geneHasLoadedOnce && tissueHasLoadedOnce ? { visibility: "hidden" } : {}}>
+        <StyledStepThree isHidden={geneHasLoadedOnce && tissueHasLoadedOnce}>
           <Step step={3} details="Explore Gene Expression" />
         </StyledStepThree>
       </ColumnTwo>
