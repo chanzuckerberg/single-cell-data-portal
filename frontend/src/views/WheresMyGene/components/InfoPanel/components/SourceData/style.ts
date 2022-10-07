@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { fontBodyXxxs, getColors } from "czifui";
+import { fontBodyS, fontBodyXxxs, getColors } from "czifui";
 import {
   Content as CommonContent,
   Header as CommonHeader,
@@ -10,12 +10,22 @@ export const Wrapper = styled.div`
 `;
 
 export const Header = styled(CommonHeader)`
+  ${fontBodyS}
+
   padding-bottom: 4px;
-  border-bottom: 1px solid rgba(16, 22, 26, 0.15);
+
+  ${(props) => {
+    const colors = getColors(props);
+
+    return `
+      color: ${colors?.gray[600]};
+    `;
+  }}
 `;
 
 export const Content = styled(CommonContent)`
   width: unset;
+  padding: 0 16px;
 `;
 
 export const ListSubheader = styled.li`
