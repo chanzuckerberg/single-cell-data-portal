@@ -58,11 +58,10 @@ export default function SaveImage({
   selectedGenes: Array<string>;
   selectedCellTypes: { [tissue: string]: CellType[] };
 }): JSX.Element {
-  // DISABLED UNTIL SVG IS FIXED
-  // const [isOpen, setIsOpen] = useState(false);
-  // const [fileType, _setFileType] = useState<"png" | "svg">("png");
   const fileType = "png";
   /* DISABLED UNTIL SVG IS FIXED
+  const [isOpen, setIsOpen] = useState(false);
+  const [fileType, setFileType] = useState<"png" | "svg">("png");
   const handleButtonClick = useCallback(() => {
     if (!isOpen) track(EVENTS.WMG_DOWNLOAD_CLICKED);
     setIsOpen(!isOpen);
