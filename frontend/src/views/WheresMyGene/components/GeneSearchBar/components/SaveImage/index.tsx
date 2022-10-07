@@ -58,12 +58,16 @@ export default function SaveImage({
   selectedGenes: Array<string>;
   selectedCellTypes: { [tissue: string]: CellType[] };
 }): JSX.Element {
-  const [isOpen, setIsOpen] = useState(false);
-  const [fileType, setFileType] = useState<"png" | "svg">("png");
+  // DISABLED UNTIL SVG IS FIXED
+  // const [isOpen, setIsOpen] = useState(false);
+  // const [fileType, _setFileType] = useState<"png" | "svg">("png");
+  const fileType = "png";
+  /* DISABLED UNTIL SVG IS FIXED
   const handleButtonClick = useCallback(() => {
     if (!isOpen) track(EVENTS.WMG_DOWNLOAD_CLICKED);
     setIsOpen(!isOpen);
   }, [isOpen]);
+  */
 
   const handleDownload = useCallback(async () => {
     try {
@@ -121,13 +125,14 @@ export default function SaveImage({
         <StyledIconButton
           disabled={selectedTissues.length === 0 || selectedGenes.length === 0}
           data-test-id={"download-button"}
-          onClick={handleButtonClick}
+          onClick={handleDownload}
           sdsType="primary"
           sdsSize="medium"
         >
           <Icon sdsIcon="download" sdsSize="l" sdsType="iconButton" />
         </StyledIconButton>
       </ButtonWrapper>
+      {/* DISABLED UNTIL SVG IS FIXED
       <Modal
         isOpen={isOpen}
         title="Download Figure"
@@ -170,6 +175,7 @@ export default function SaveImage({
           </DownloadButton>
         </div>
       </Modal>
+      */}
     </>
   );
 }
