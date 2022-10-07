@@ -276,7 +276,7 @@ export default function QuickSelect<
           disableCloseOnSelect
           disableListWrap
           onKeyDownCapture={multiple ? handleEnter : undefined}
-          options={itemOptions}
+          options={itemOptionsWithSelectedOnTop}
           ListboxComponent={
             ListboxComponent as React.ComponentType<
               React.HTMLAttributes<HTMLElement>
