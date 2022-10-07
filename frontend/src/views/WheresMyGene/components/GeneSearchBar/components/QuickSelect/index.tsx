@@ -234,7 +234,11 @@ export default function QuickSelect<
       setHasComma(false);
     }
   };
-  const itemOptions = [...new Set(selected.concat(items))];
+  const selectedAsArray = Array.isArray(selected) ? selected : [selected];
+
+  const itemOptionsWithSelectedOnTop = [
+    ...new Set([...selectedAsArray, ...items]),
+  ];
   return (
     <>
       <ButtonWrapper>
