@@ -41,7 +41,7 @@ class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.h5ad_raw = cls.fixture_file_path("fixtures/2_0_0_raw_valid.h5ad")
+        cls.h5ad_raw = cls.fixture_file_path("fixtures/3_0_0_valid.h5ad")
 
     @staticmethod
     def download(url, local_filename):

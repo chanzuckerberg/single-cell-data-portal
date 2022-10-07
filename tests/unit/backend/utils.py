@@ -66,16 +66,17 @@ class BogusDatasetParams:
                 {"ontology_term_id": "F", "label": "female"},
                 {"ontology_term_id": "MF", "label": "mixed"},
             ],
-            ethnicity=[{"ontology_term_id": "", "label": "unknown"}],
+            self_reported_ethnicity=[{"ontology_term_id": "", "label": "unknown"}],
             development_stage=[{"ontology_term_id": "HsapDv:0011", "label": "just a baby"}],
             cell_type=[{"ontology_term_id": "Hepatic-1A", "label": "liver"}],
             is_primary_data=IsPrimaryData.PRIMARY.name,
             collection_id="test_collection_id",
             explorer_url="test_url",
-            x_normalization="normal",
             x_approximate_distribution=XApproximateDistribution.NORMAL.name,
             batch_condition=np.array(["batchA", "batchB"], dtype="object"),
-            schema_version="2.0.0",
+            donor_id=["donor_1", "donor_2"],
+            suspension_type=["nucleus"],
+            schema_version="3.0.0",
         )
 
         bogus_data.update(**kwargs)

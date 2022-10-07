@@ -23,7 +23,7 @@ from ......common.corpora_orm import (
 
 DATASET_ONTOLOGY_ELEMENTS = (
     "sex",
-    "ethnicity",
+    "self_reported_ethnicity",
     "development_stage",
     "cell_type",
     "tissue",
@@ -186,6 +186,7 @@ class EntityColumns:
         "disease",
         "organism",
         "tombstone",
+        "suspension_type",
     ]
 
     dataset_cols = [
@@ -195,10 +196,9 @@ class EntityColumns:
         "revision",
         "revised_at",
         "is_primary_data",
-        "x_normalization",
         "artifacts",
         "sex",
-        "ethnicity",
+        "self_reported_ethnicity",
         "development_stage",
         "explorer_url",
         "cell_type",
@@ -208,6 +208,7 @@ class EntityColumns:
         "mean_genes_per_cell",
         "schema_version",
         "processing_status",
+        "donor_id",
     ]
 
     dataset_asset_cols = [

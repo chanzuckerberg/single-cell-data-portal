@@ -197,9 +197,9 @@ export default function Datasets(): JSX.Element {
       },
       // Hidden, required for filter.
       {
-        accessor: ontologyLabelCellAccessorFn("ethnicity"),
+        accessor: ontologyLabelCellAccessorFn("self_reported_ethnicity"),
         filter: "includesSome",
-        id: CATEGORY_FILTER_ID.ETHNICITY,
+        id: CATEGORY_FILTER_ID.SELF_REPORTED_ETHNICITY,
       },
       {
         accessor: "development_stage_ancestors",
@@ -266,7 +266,7 @@ export default function Datasets(): JSX.Element {
           COLLECTION_NAME,
           COLUMN_ID_RECENCY,
           CATEGORY_FILTER_ID.CELL_TYPE_CALCULATED,
-          CATEGORY_FILTER_ID.ETHNICITY,
+          CATEGORY_FILTER_ID.SELF_REPORTED_ETHNICITY,
           CATEGORY_FILTER_ID.DEVELOPMENT_STAGE,
           CATEGORY_FILTER_ID.GENE_COUNT,
           CATEGORY_FILTER_ID.PUBLICATION_AUTHORS,
