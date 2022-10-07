@@ -16,7 +16,7 @@ import { DEFAULT_FETCH_OPTIONS } from "src/common/queries/common";
 import { ENTITIES } from "src/common/queries/entities";
 import {
   COLLATOR_CASE_INSENSITIVE,
-  ETHNICITY_DENY_LIST,
+  SELF_REPORTED_ETHNICITY_DENY_LIST,
   PUBLICATION_DATE_VALUES,
 } from "src/components/common/Filter/common/constants";
 import {
@@ -93,7 +93,7 @@ export interface DatasetResponse {
   collection_id: string;
   development_stage_ancestors: string[];
   disease: Ontology[];
-  ethnicity: Ontology[];
+  self_reported_ethnicity: Ontology[];
   explorer_url: string;
   id: string;
   is_primary_data: IS_PRIMARY_DATA;
@@ -277,7 +277,10 @@ function aggregateCollectionDatasetRows(
           ...collectionDatasetRow.development_stage_ancestors,
         ],
         disease: [...accum.disease, ...collectionDatasetRow.disease],
-        ethnicity: [...accum.ethnicity, ...collectionDatasetRow.ethnicity],
+        self_reported_ethnicity: [
+          ...accum.self_reported_ethnicity,
+          ...collectionDatasetRow.self_reported_ethnicity,
+        ],
         organism: [...accum.organism, ...collectionDatasetRow.organism],
         sex: [...accum.sex, ...collectionDatasetRow.sex],
         tissue: [...accum.tissue, ...collectionDatasetRow.tissue],
@@ -298,7 +301,7 @@ function aggregateCollectionDatasetRows(
       cell_type_ancestors: [],
       development_stage_ancestors: [],
       disease: [],
-      ethnicity: [],
+      self_reported_ethnicity: [],
       organism: [],
       sex: [],
       tissue: [],
@@ -321,7 +324,9 @@ function aggregateCollectionDatasetRows(
       ...new Set(aggregatedCategoryValues.development_stage_ancestors),
     ],
     disease: uniqueOntologies(aggregatedCategoryValues.disease),
-    ethnicity: uniqueOntologies(aggregatedCategoryValues.ethnicity),
+    self_reported_ethnicity: uniqueOntologies(
+      aggregatedCategoryValues.self_reported_ethnicity
+    ),
     organism: uniqueOntologies(aggregatedCategoryValues.organism),
     sex: uniqueOntologies(aggregatedCategoryValues.sex),
     tissue: uniqueOntologies(aggregatedCategoryValues.tissue),
@@ -754,7 +759,7 @@ function processDatasetResponse(
 
 /**
  * Add defaults for missing filterable values, e.g. convert missing ontology values to empty array.
- * Remove any ethnicity values on the deny list.
+ * Remove any self-reported ethnicity values on the deny list.
  * @param datasetResponse - Dataset to check for missing values.
  * @returns Corrected dataset response.
  */
@@ -763,8 +768,8 @@ function sanitizeDatasetResponse(
 ): DatasetResponse {
   const sanitizedDatasetResponse = { ...datasetResponse };
 
-  sanitizedDatasetResponse.ethnicity = (datasetResponse.ethnicity ?? []).filter(
-    (ethnicity) => !ETHNICITY_DENY_LIST.includes(ethnicity.label)
+  sanitizedDatasetResponse.self_reported_ethnicity = (datasetResponse.self_reported_ethnicity ?? []).filter(
+    (self_reported_ethnicity) => !SELF_REPORTED_ETHNICITY_DENY_LIST.includes(self_reported_ethnicity.label)
   );
 
   sanitizedDatasetResponse.assay = datasetResponse.assay ?? [];

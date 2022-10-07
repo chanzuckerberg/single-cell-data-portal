@@ -168,16 +168,17 @@ def extract_metadata(filename) -> dict:
         "assay": _get_term_pairs("assay"),
         "disease": _get_term_pairs("disease"),
         "sex": _get_term_pairs("sex"),
-        "ethnicity": _get_term_pairs("ethnicity"),
+        "self_reported_ethnicity": _get_term_pairs("self_reported_ethnicity"),
         "development_stage": _get_term_pairs("development_stage"),
         "cell_count": adata.shape[0],
         "mean_genes_per_cell": numerator / denominator,
         "is_primary_data": _get_is_primary_data(),
         "cell_type": _get_term_pairs("cell_type"),
-        "x_normalization": adata.uns["X_normalization"],
         "x_approximate_distribution": _get_x_approximate_distribution(),
         "schema_version": adata.uns["schema_version"],
         "batch_condition": _get_batch_condition(),
+        "donor_id": adata.obs["donor_id"].unique(),
+        "suspension_type": adata.obs["suspension_type"].unique(),
     }
     logger.info(f"Extract metadata: {metadata}")
     return metadata

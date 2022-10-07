@@ -26,9 +26,7 @@ from ..corpora_orm import (
 )
 from ..utils.corpora_constants import CorporaConstants
 from ..utils.db_helpers import clone
-from ..utils.development_stage_ontology_mapping import development_stage_ontology_mapping
-from ..utils.tissue_ontology_mapping import tissue_ontology_mapping
-from ..utils.cell_type_ontology_mapping import cell_type_ontology_mapping
+from ..utils.ontology_mappings.ontology_map_loader import ontology_mappings
 from ..utils.s3_buckets import buckets
 
 
@@ -169,33 +167,36 @@ class Dataset(Entity):
 
     @staticmethod
     def transform_sex_for_schema_2_0_0(dataset):
-        # If schema_version is 1.1.0, convert sex to the new API format
-        if "sex" in dataset and dataset.get("schema_version") != "2.0.0":
+        schema_version = dataset.get("schema_version")
+        if "sex" in dataset and (schema_version is None or schema_version < "2.0.0"):
             dataset["sex"] = [{"label": s, "sex_ontology_term_id": "unknown"} for s in dataset["sex"]]
 
     @staticmethod
     def transform_organism_for_schema_2_0_0(dataset):
+        schema_version = dataset.get("schema_version")
         # If organism is an object (version 1.1.0), wrap it into an array to be 2.0.0 compliant
-        if "organism" in dataset and dataset.get("schema_version") != "2.0.0":
+        if "organism" in dataset and (schema_version is None or schema_version < "2.0.0"):
             dataset["organism"] = [dataset["organism"]]
 
     @staticmethod
     def enrich_development_stage_with_ancestors(dataset):
-        Dataset._enrich_with_ancestors(dataset, "development_stage", development_stage_ontology_mapping)
+        Dataset._enrich_with_ancestors(
+            dataset, "development_stage", ontology_mappings.development_stage_ontology_mapping
+        )
 
     @staticmethod
     def enrich_tissue_with_ancestors(dataset):
         """
         Tag dataset with ancestors for all tissues in the given dataset, if any.
         """
-        Dataset._enrich_with_ancestors(dataset, "tissue", tissue_ontology_mapping)
+        Dataset._enrich_with_ancestors(dataset, "tissue", ontology_mappings.tissue_ontology_mapping)
 
     @staticmethod
     def enrich_cell_type_with_ancestors(dataset):
         """
         Tag dataset with ancestors for all cell types in the given dataset, if any.
         """
-        Dataset._enrich_with_ancestors(dataset, "cell_type", cell_type_ontology_mapping)
+        Dataset._enrich_with_ancestors(dataset, "cell_type", ontology_mappings.cell_type_ontology_mapping)
 
     def _enrich_with_ancestors(dataset, key, ontology_mapping):
         """
@@ -308,7 +309,7 @@ class Dataset(Entity):
             assay=None,
             disease=None,
             sex=None,
-            ethnicity=None,
+            self_reported_ethnicity=None,
             development_stage=None,
             cell_type=None,
             published=False,

@@ -170,7 +170,7 @@ class Collection(Entity):
             Dataset.table.cell_count,
             Dataset.table.cell_type,
             Dataset.table.sex,
-            Dataset.table.ethnicity,
+            Dataset.table.self_reported_ethnicity,
             Dataset.table.development_stage,
             Dataset.table.is_primary_data,
             Dataset.table.mean_genes_per_cell,
