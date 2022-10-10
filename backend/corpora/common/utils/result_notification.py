@@ -81,7 +81,7 @@ def format_failed_batch_issue_slack_alert(data: dict) -> dict:
             "text": f"Batch processing job failed! @sc-oncall-eng\n" f"*Batch Job ID*:<{job_url}|{job_id}>\n",
         },
     }
-    data.update(**batch_data)
+    data["blocks"].append(batch_data)
 
     return data
 
