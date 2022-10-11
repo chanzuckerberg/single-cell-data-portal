@@ -4,7 +4,7 @@ import {
   PopoverPosition,
 } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
-import { FC, useEffect, useRef } from "react";
+import { FC, ReactNode, useEffect, useRef } from "react";
 import { GRAY } from "src/components/common/theme";
 import {
   BulletWrapper,
@@ -14,7 +14,11 @@ import {
   Text,
 } from "./style";
 
-const DirectIdentifiers: FC = ({ children }) => {
+interface Props {
+  children: ReactNode;
+}
+
+const DirectIdentifiers: FC<Props> = ({ children }) => {
   return (
     <Popover
       minimal

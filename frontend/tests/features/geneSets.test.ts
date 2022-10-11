@@ -1,68 +1,81 @@
+import { expect, Page, test } from "@playwright/test";
 import { goToPage } from "tests/utils/helpers";
 import { getTestID } from "tests/utils/selectors";
 
+const { describe, skip } = test;
+
 // Excluding gene sets test suite on go live of filter (#2391 and 1718) as the original Portal homepage that contained
 // the gene sets upload functionality will no longer available to users. Remove this test suite with #2121.
-describe.skip("Gene sets", () => {
+skip("Gene sets", () => {
   describe("CSV Validation", () => {
     describe("Given a non-UTF CSV", () => {
-      it("returns an error message", async () => {
+      test("returns an error message", async ({ page }) => {
         await assertCsvResult(
-          "/fixtures/geneSets/Tidy CSV With Comments non-UTF.csv"
+          "/fixtures/geneSets/Tidy CSV With Comments non-UTF.csv",
+          page
         );
       });
     });
 
     describe("Given a UTF-16 CSV", () => {
-      it("returns no error message and no comments in the result", async () => {
+      test("returns no error message and no comments in the result", async ({
+        page,
+      }) => {
         await assertCsvResult(
-          "/fixtures/geneSets/Tidy CSV With Comments UTF16.csv"
+          "/fixtures/geneSets/Tidy CSV With Comments UTF16.csv",
+          page
         );
       });
     });
 
     describe("Given a UTF-8 CSV", () => {
-      it("returns no error message", async () => {
-        await assertCsvResult("/fixtures/geneSets/Tidy CSV UTF8.csv");
+      test("returns no error message", async ({ page }) => {
+        await assertCsvResult("/fixtures/geneSets/Tidy CSV UTF8.csv", page);
       });
 
       describe("with comments", () => {
-        it("returns no error message and no comments in the result", async () => {
+        test("returns no error message and no comments in the result", async ({
+          page,
+        }) => {
           await assertCsvResult(
-            "/fixtures/geneSets/Tidy CSV With Comments UTF8.csv"
+            "/fixtures/geneSets/Tidy CSV With Comments UTF8.csv",
+            page
           );
         });
       });
     });
 
     describe("Given a UTF-8 with comments, empty gene set name, empty gene set description, empty gene symbol, empty gene description, duplicate gene set name, and duplicate gene symbol", () => {
-      it("returns multiple errors", async () => {
+      test("returns multiple errors", async ({ page }) => {
         await assertCsvResult(
-          "/fixtures/geneSets/Tidy CSV With Comments, empty gene set name, empty gene set description, empty gene symbol, empty gene description, duplicate gene set name, and duplicate gene symbol UTF8.csv"
+          "/fixtures/geneSets/Tidy CSV With Comments, empty gene set name, empty gene set description, empty gene symbol, empty gene description, duplicate gene set name, and duplicate gene symbol UTF8.csv",
+          page
         );
       });
     });
 
     describe("Given a UTF-8 with comments and existing gene set name in database", () => {
-      it("returns one error", async () => {
+      test("returns one error", async ({ page }) => {
         await assertCsvResult(
-          "/fixtures/geneSets/Tidy CSV With Comments and existing gene set name in database UTF8.csv"
+          "/fixtures/geneSets/Tidy CSV With Comments and existing gene set name in database UTF8.csv",
+          page
         );
       });
     });
 
     describe("Given a UTF-8 with illegal whitespace", () => {
-      it("returns multiple error", async () => {
+      test("returns multiple error", async ({ page }) => {
         await assertCsvResult(
-          "/fixtures/geneSets/Tidy CSV With Whitespace UTF8.csv"
+          "/fixtures/geneSets/Tidy CSV With Whitespace UTF8.csv",
+          page
         );
       });
     });
   });
 });
 
-async function assertCsvResult(filename: string) {
-  await goToPage();
+async function assertCsvResult(filename: string, page: Page) {
+  await goToPage(undefined, page);
 
   await Promise.all([
     page.on("filechooser", async (fileChooser) => {
@@ -74,5 +87,5 @@ async function assertCsvResult(filename: string) {
 
   const csvResult = await page.innerText(getTestID("csv-result"));
 
-  expect(csvResult).toMatchSnapshot();
+  await expect(csvResult).toMatchSnapshot();
 }
