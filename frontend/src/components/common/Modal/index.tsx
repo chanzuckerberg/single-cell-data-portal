@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, ReactNode } from "react";
 import { StyledDialog } from "./style";
 
 interface Props {
@@ -7,6 +7,7 @@ interface Props {
   isOpen: boolean;
   title: string;
   isCloseButtonShown?: boolean;
+  children: ReactNode;
 }
 
 const Modal: FC<Props> = ({
