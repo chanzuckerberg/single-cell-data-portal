@@ -26,7 +26,7 @@ export const View = styled.div`
       : "auto"}; /* facilitates independent content scrolling for sidebar layout */
 
   &.CLONED {
-    overflow: auto;
+    overflow: hidden;
     height: fit-content;
     width: fit-content;
     & ${Wrapper}, ${Container} {

@@ -8,7 +8,7 @@ import {
   CategorySetValue,
   CategoryValueId,
   CATEGORY_FILTER_ID,
-  ETHNICITY_UNSPECIFIED_LABEL,
+  SELF_REPORTED_ETHNICITY_UNSPECIFIED_LABEL,
   PUBLICATION_DATE_LABELS,
   SelectCategoryValueView,
 } from "src/components/common/Filter/common/entities";
@@ -50,11 +50,11 @@ export function buildCategoryValueLabel(
   }
 
   if (
-    categoryFilterId === CATEGORY_FILTER_ID.ETHNICITY &&
-    !isEthnicitySpecified(categoryValueId)
+    categoryFilterId === CATEGORY_FILTER_ID.SELF_REPORTED_ETHNICITY &&
+    !isSelfReportedEthnicitySpecified(categoryValueId)
   ) {
-    return ETHNICITY_UNSPECIFIED_LABEL[
-      categoryValueId as keyof typeof ETHNICITY_UNSPECIFIED_LABEL
+    return SELF_REPORTED_ETHNICITY_UNSPECIFIED_LABEL[
+      categoryValueId as keyof typeof SELF_REPORTED_ETHNICITY_UNSPECIFIED_LABEL
     ];
   }
 
@@ -89,14 +89,14 @@ export function isCategoryValueIdSet(
 }
 
 /**
- * Determine if the given ethnicity is considered unspecified (that is, na or unknown).
- * @param categoryValueKey - Ethnicity value to check if it's specified.
- * @returns True if ethnicity is either na or unknown.
+ * Determine if the given self-reported ethnicity is considered unspecified (that is, na or unknown).
+ * @param categoryValueKey - Self-Reported Ethnicity value to check if it's specified.
+ * @returns True if self-reported ethnicity is either na or unknown.
  */
-function isEthnicitySpecified(categoryValueKey: CategoryValueId) {
+function isSelfReportedEthnicitySpecified(categoryValueKey: CategoryValueId) {
   const label =
-    ETHNICITY_UNSPECIFIED_LABEL[
-      categoryValueKey as keyof typeof ETHNICITY_UNSPECIFIED_LABEL
+    SELF_REPORTED_ETHNICITY_UNSPECIFIED_LABEL[
+      categoryValueKey as keyof typeof SELF_REPORTED_ETHNICITY_UNSPECIFIED_LABEL
     ];
   return !label;
 }

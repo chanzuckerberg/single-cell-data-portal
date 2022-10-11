@@ -7,7 +7,9 @@ on:
       - staging
       - prod
   pull_request:
-    branches: "*"
+    branches:
+      - "*"
+      - feature/schema-3-0-0
 
 env:
   CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
@@ -51,6 +53,7 @@ jobs:
         if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
 
   smoke-test:
+    timeout-minutes: 60
     runs-on: ubuntu-20.04
     defaults:
       run:
@@ -58,7 +61,7 @@ jobs:
     steps:
       - uses: actions/setup-node@v2
         with:
-          node-version: 15
+          node-version: "16.14.2"
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -72,12 +75,20 @@ jobs:
         with:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v2
-      - run: |
+      - name: Install dependencies
+        run: |
           npm ci
           npx playwright install --with-deps
           cp src/configs/dev.js src/configs/configs.js
           npm run dev&
-      - run: DEBUG=pw:api npm run e2e
+      - name: Run E2E tests
+        run: DEBUG=pw:api npm run e2e
+      - uses: actions/upload-artifact@v2
+        if: always()
+        with:
+          name: test-results
+          path: frontend/playwright-report/
+          retention-days: 30
       - name: Install happy
         uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.2.1
         with:

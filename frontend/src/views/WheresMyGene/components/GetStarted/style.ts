@@ -14,7 +14,7 @@ export const Wrapper = styled.div`
   top: 150px;
   z-index: 3;
   margin-left: -10px;
-  width: calc(94vw - ${EXPANDED_WIDTH_PX}px);
+  width: calc(96vw - ${EXPANDED_WIDTH_PX}px);
   height: calc(85vh - ${HEADER_HEIGHT_PX}px);
 `;
 
@@ -24,6 +24,8 @@ export const Content = styled.div`
 `;
 
 export const ColumnOne = styled.div`
+  ${isHidden}
+
   flex: 0 1 350px;
 
   display: flex;
@@ -44,11 +46,23 @@ export const StyledStepOne = styled.div`
 `;
 
 export const StyledStepTwo = styled.div`
+  ${isHidden}
   height: 100px !important;
   margin: 10px;
 `;
 
 export const StyledStepThree = styled.div`
+  ${isHidden}
   flex: 1;
   margin: 10px;
 `;
+
+interface IsHiddenProps {
+  isHidden?: boolean;
+}
+
+function isHidden({ isHidden }: IsHiddenProps) {
+  if (!isHidden) return null;
+
+  return "visibility: hidden;";
+}

@@ -740,7 +740,7 @@ paths:
                       $ref: "#/components/schemas/ontology_element_array"
                     sex:
                       $ref: "#/components/schemas/ontology_element_array"
-                    ethnicity:
+                    self_reported_ethnicity:
                       $ref: "#/components/schemas/ontology_element_array"
                     organism:
                       $ref: "#/components/schemas/ontology_element_array"
@@ -762,6 +762,14 @@ paths:
                       type: number
                     is_primary_data:
                       $ref: "#/components/schemas/is_primary_data"
+                    donor_id:
+                      type: array
+                      items:
+                        type: string
+                    suspension_type:
+                      type: array
+                      items:
+                        type: string
                     schema_version:
                       type: string
                     explorer_url:
@@ -1077,7 +1085,7 @@ components:
           $ref: "#/components/schemas/ontology_element_array"
         sex:
           $ref: "#/components/schemas/ontology_element_array"
-        ethnicity:
+        self_reported_ethnicity:
           $ref: "#/components/schemas/ontology_element_array"
         organism:
           $ref: "#/components/schemas/ontology_element_array"
@@ -1110,10 +1118,16 @@ components:
           $ref: "#/components/schemas/ontology_element_array"
         cell_count:
           type: integer
-        X_normalization:
-          type: string
         X_approximate_distribution:
           $ref: "#/components/schemas/distribution"
+        donor_id:
+          type: array
+          items:
+            type: string
+        suspension_type:
+          type: array
+          items:
+            type: string
         schema_version:
           type: string
         tombstone:
