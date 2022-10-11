@@ -14,11 +14,15 @@ export default function SourceDataButton({
       <StyledLabel>Source Data</StyledLabel>
 
       <StyledIconButton
-        disabled={false}
         data-test-id={"download-button"}
         onClick={handleRightSidebarButtonClick}
-        sdsType="primary"
-        sdsSize="medium"
+        {...{
+          // (thuang): Move this back to explicit prop={value} after
+          // upgrading SDS to enable type checking again
+          disabled: false,
+          sdsSize: "medium",
+          sdsType: "primary",
+        }}
       >
         <Icon sdsIcon="infoCircle" sdsSize="l" sdsType="iconButton" />
       </StyledIconButton>

@@ -1,6 +1,14 @@
 import Head from "next/head";
-import React, { useEffect, useMemo } from "react";
-import { Column, Filters, useFilters, useSortBy, useTable } from "react-table";
+import { useEffect, useMemo } from "react";
+import {
+  Column,
+  Filters,
+  HeaderProps,
+  Renderer,
+  useFilters,
+  useSortBy,
+  useTable,
+} from "react-table";
 import { PLURALIZED_METADATA_LABEL } from "src/common/constants/metadata";
 import { ROUTES } from "src/common/constants/routes";
 import { useCategoryFilter } from "src/common/hooks/useCategoryFilter/useCategoryFilter";
@@ -76,14 +84,14 @@ export default function Collections(): JSX.Element {
             </Title>
           );
         },
-        Header: ({ tableCountSummary }: HeaderPropsValue) => {
+        Header: (({ tableCountSummary }: HeaderPropsValue) => {
           return (
             <HeaderCell
               label={"Collections"}
               tableCountSummary={tableCountSummary}
             />
           );
-        },
+        }) as Renderer<HeaderProps<CollectionRow>>,
         accessor: COLLECTION_NAME,
       },
       {
