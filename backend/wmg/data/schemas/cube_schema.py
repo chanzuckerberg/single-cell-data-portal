@@ -5,23 +5,23 @@ import tiledb
 # TileDB `Dim`s and thus can be used for _efficiently_ querying
 # (slicing) the TileDB array. Order matters here!
 expression_summary_indexed_dims = [
-    "gene_ontology_term_id",
+    "organism_ontology_term_id",    
     "tissue_ontology_term_id",
-    "tissue_original_ontology_term_id",
-    "organism_ontology_term_id",
+    "cell_type_ontology_term_id",    
+    "gene_ontology_term_id",
 ]
 
 expression_summary_indexed_dims_no_gene_ontology = [
-    "tissue_ontology_term_id",
-    "tissue_original_ontology_term_id",
     "organism_ontology_term_id",
+    "tissue_ontology_term_id",
+    "cell_type_ontology_term_id",
 ]
 
 # These are the queryable cube dimensions that will be modeled as
 # TileDB `Attrs` (i.e. (non-indexed") and thus will require
 # client-side filtering, which may result in less efficient querying.
 expression_summary_non_indexed_dims = [
-    "cell_type_ontology_term_id",
+    "tissue_original_ontology_term_id",
     "dataset_id",
     "assay_ontology_term_id",
     "development_stage_ontology_term_id",
@@ -71,9 +71,9 @@ expression_summary_schema = tiledb.ArraySchema(
 # Cell Counts Array
 
 cell_counts_indexed_dims = [
-    "tissue_ontology_term_id",
-    "tissue_original_ontology_term_id",
     "organism_ontology_term_id",
+    "tissue_ontology_term_id",
+    "cell_type_ontology_term_id",
 ]
 cell_counts_non_indexed_dims = expression_summary_non_indexed_dims
 
