@@ -2,8 +2,7 @@ import styled from "@emotion/styled";
 import { FormControlLabel } from "@material-ui/core";
 
 export const Wrapper = styled.div`
-  padding-left: 20px;
-  padding-right: 20px;
+  padding: 0 10px;
 `;
 
 export const Dot = styled.span`

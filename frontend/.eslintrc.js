@@ -12,7 +12,6 @@ module.exports = {
     "prettier",
     "plugin:prettier/recommended",
     "plugin:sonarjs/recommended",
-    "plugin:jest-playwright/recommended",
     "plugin:mdx/recommended",
     "next",
   ],

@@ -4,7 +4,6 @@ import numpy as np
 import pandas as pd
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
 
 
 def build_in_mem_cube(
@@ -41,9 +40,9 @@ def build_in_mem_cube(
 
     for grp in cube_index.to_records():
         (
-            tissue_ontology_term_id,
-            tissue_original_ontology_term_id,
             organism_ontology_term_id,
+            tissue_ontology_term_id,
+            cell_type_ontology_term_id,
             *attr_values,
             n,
             cube_idx,
@@ -55,10 +54,11 @@ def build_in_mem_cube(
 
         logger.debug(grp)
 
-        dims[0][idx : idx + n_vals] = gene_ids.gene_ontology_term_id.values[mask]
+        dims[0][idx : idx + n_vals] = organism_ontology_term_id
         dims[1][idx : idx + n_vals] = tissue_ontology_term_id
-        dims[2][idx : idx + n_vals] = tissue_original_ontology_term_id
-        dims[3][idx : idx + n_vals] = organism_ontology_term_id
+        dims[2][idx : idx + n_vals] = cell_type_ontology_term_id
+        dims[3][idx : idx + n_vals] = gene_ids.gene_ontology_term_id.values[mask]
+
 
         vals["sum"][idx : idx + n_vals] = cube_sum[cube_idx, mask]
         vals["sq_sum"][idx : idx + n_vals] = cube_sq_sum[cube_idx, mask]

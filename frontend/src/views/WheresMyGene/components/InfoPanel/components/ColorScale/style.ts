@@ -7,7 +7,7 @@ export const Wrapper = styled.div`
 `;
 
 export const Label = styled("span")`
-  ${fontBodyXxxs};
+  ${fontBodyXxxs}
 
   ${(props) => {
     const colors = getColors(props);

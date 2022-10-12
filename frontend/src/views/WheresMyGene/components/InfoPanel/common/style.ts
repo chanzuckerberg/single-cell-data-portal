@@ -15,6 +15,8 @@ export const Header = styled.h5`
 export const Label = styled.label`
   ${fontBodyXxs}
 
+  white-space: nowrap;
+
   ${(props) => {
     const colors = getColors(props);
 

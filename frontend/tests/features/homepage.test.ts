@@ -1,10 +1,13 @@
+import { expect, test } from "@playwright/test";
 import { goToPage } from "tests/utils/helpers";
 import { getTestID } from "../utils/selectors";
 
+const { describe } = test;
+
 describe("Homepage", () => {
-  it("renders the expected elements", async () => {
-    await goToPage();
-    await expect(page).toHaveSelector(getTestID("logo"));
+  test("renders the expected elements", async ({ page }) => {
+    await goToPage(undefined, page);
+    await expect(page).toHaveSelectorCount(getTestID("logo"), 2);
     await expect(page).toHaveSelector(getTestID("collection-link"));
 
     await Promise.all([

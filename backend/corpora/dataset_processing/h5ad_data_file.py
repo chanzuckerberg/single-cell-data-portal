@@ -275,4 +275,4 @@ class H5ADDataFile:
             return schema_version
 
     def corpora_is_schema_version_supported(self, schema_version):
-        return schema_version and schema_version.startswith("2.")
+        return schema_version and schema_version.startswith("3.")

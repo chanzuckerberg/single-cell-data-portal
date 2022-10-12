@@ -3,8 +3,6 @@ import os
 import time
 from urllib.parse import urlparse
 
-from werkzeug.exceptions import InternalServerError
-
 import connexion
 
 from connexion import FlaskApi, ProblemException, problem
@@ -120,6 +118,13 @@ def apis_landing_page() -> str:
     """
 
 
+if DEPLOYMENT_STAGE == "test":
+
+    @app.route("/exception")
+    def raise_exception():
+        raise Exception("testing")
+
+
 @app.before_request
 def before_request():
     g.start = time.time()
@@ -174,10 +179,10 @@ def handle_corpora_error(exception):
     )
 
 
-@app.errorhandler(InternalServerError)
+@app.errorhandler(Exception)
 def handle_internal_server_error(exception):
-    app.logger.exception("InternalServerError", exc_info=exception.original_exception)
-    return FlaskApi.get_response(problem(500, "Internal Server Error"))
+    app.logger.exception("InternalServerError", exc_info=exception)
+    return FlaskApi.get_response(problem(500, "Internal Server Error", "Internal Server Error"))
 
 
 if __name__ == "__main__":

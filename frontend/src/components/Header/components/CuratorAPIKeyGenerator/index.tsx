@@ -4,6 +4,7 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
+  DialogProps,
   DialogTitle,
   MenuItem,
 } from "czifui";
@@ -15,6 +16,8 @@ import {
 } from "src/common/queries/curation";
 import Toast from "src/views/Collection/components/Toast";
 import { APIDisclaimerP, FullWidthCallout, StyledInputGroup } from "./style";
+
+type DialogOnCloseParams = Parameters<NonNullable<DialogProps["onClose"]>>;
 
 export default function CuratorAPIKeyGenerator(): JSX.Element {
   const { data: apiKeyID } = useCuratorAuthKeyID();
@@ -35,11 +38,15 @@ export default function CuratorAPIKeyGenerator(): JSX.Element {
       });
     }
   }, [isOpen]);
-  const handleClose = useCallback((_, reason) => {
-    if (reason === "backdropClick") return;
 
-    setIsOpen(false);
-  }, []);
+  const handleClose = useCallback(
+    (_: DialogOnCloseParams[0], reason: DialogOnCloseParams[1]) => {
+      if (reason === "backdropClick") return;
+
+      setIsOpen(false);
+    },
+    []
+  );
 
   const copyAPIKey = useCallback(() => {
     navigator.clipboard.writeText(apiKeyResponse.current.key || "");

@@ -13,7 +13,6 @@ from backend.corpora.common.utils.db_session import db_session_manager
 from backend.wmg.data.constants import INCLUDED_ASSAYS
 
 logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
 
 
 def get_X_raw(anndata_object: anndata.AnnData) -> Union[np.ndarray, sparse.spmatrix, ArrayView]:

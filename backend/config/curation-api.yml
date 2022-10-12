@@ -541,23 +541,20 @@ paths:
 components:
   schemas:
     asset_response:
-      properties:
-        assets:
-          items:
-            properties:
-              filename:
-                $ref: "#/components/schemas/asset_filename"
-              filesize:
-                description: the size of the file in bytes.
-                type: number
-              filetype:
-                $ref: "#/components/schemas/asset_filetype"
-              presigned_url:
-                description: A URL to download this asset.
-                type: string
-            type: object
-          type: array
-      type: object
+      items:
+        properties:
+          filename:
+            $ref: "#/components/schemas/asset_filename"
+          filesize:
+            description: the size of the file in bytes.
+            type: number
+          filetype:
+            $ref: "#/components/schemas/asset_filetype"
+          presigned_url:
+            description: A URL to download this asset.
+            type: string
+        type: object
+      type: array
     asset_filetype:
       enum:
         - H5AD
@@ -774,13 +771,8 @@ components:
           nullable: true
         disease:
           $ref: "#/components/schemas/dataset_disease"
-        ethnicity:
-          description: |
-            [self reported ethnicity label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#self_reported_ethnicity)
-          default: []
-          items:
-            $ref: "#/components/schemas/ontology_element"
-          type: array
+        donor_id:
+          $ref: "#/components/schemas/donor_id"
         explorer_url:
           $ref: "#/components/schemas/explorer_url"
         id:
@@ -816,6 +808,13 @@ components:
             The version of the CELLxGENE schema with which the Dataset complies to. [Schemas](https://github.com/chanzuckerberg/single-cell-curation/tree/main/schema)
           nullable: true
           type: string
+        self_reported_ethnicity:
+          description: |
+            [self reported ethnicity label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#self_reported_ethnicity)
+          default: [ ]
+          items:
+            $ref: "#/components/schemas/ontology_element"
+          type: array
         sex:
           description: |
             [sex label](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#sex)
@@ -823,6 +822,8 @@ components:
           items:
             $ref: "#/components/schemas/ontology_element"
           type: array
+        suspension_type:
+          $ref: "#/components/schemas/suspension_type"
         tissue:
           $ref: "#/components/schemas/dataset_tissue"
         x_approximate_distribution:
@@ -875,6 +876,8 @@ components:
           $ref: "#/components/schemas/dataset_organism"
         tissue:
           $ref: "#/components/schemas/dataset_tissue"
+        suspension_type:
+          $ref: "#/components/schemas/suspension_type"
       type: object
     distribution:
       description:
@@ -897,6 +900,13 @@ components:
         The URL at which a given Dataset may be explored using CELLxGENE Explorer.
       nullable: true
       type: string
+    donor_id:
+      description:
+        Free-text that identifies a unique individual that data were derived from.
+      type: array
+      items:
+        type: string
+      nullable: true
     is_primary_data:
       description: |
         [is_primary_data](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#is_primary_data)
@@ -1010,6 +1020,15 @@ components:
         published_year:
           type: number
       type: object
+    suspension_type:
+      description:
+        List of unique suspension types represented in the dataset, corresponding to dataset's assay(s). 
+        Possible item values are 'nucleus', 'cell', and/or 'na'.
+      type: array
+      items:
+        type: string
+      nullable: true
+      example: ["cell"]
     visibility:
       default: PUBLIC
       description: |

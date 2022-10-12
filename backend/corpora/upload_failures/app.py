@@ -6,7 +6,7 @@ from backend.corpora.common.entities import Dataset
 from backend.corpora.common.utils.aws import delete_many_from_s3
 from backend.corpora.common.utils.db_helpers import processing_status_updater
 from backend.corpora.common.utils.db_session import db_session_manager
-from backend.corpora.common.utils.slack import dataset_processing_slack_notification
+from backend.corpora.common.utils.result_notification import dataset_processing_slack_notification
 
 
 def handle_failure(event: dict, context) -> None:
