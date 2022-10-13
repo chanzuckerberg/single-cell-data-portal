@@ -394,7 +394,9 @@ export function createYAxisOptions({
               maximumFractionDigits: 1,
               notation: "compact",
             }).format(total_count);
-            return `${formattedString}${formattedString !== total_count.toString() ? "+" : ""}`;
+            return `${formattedString}${
+              formattedString !== total_count.toString() ? "+" : ""
+            }`;
           },
 
           rich: {

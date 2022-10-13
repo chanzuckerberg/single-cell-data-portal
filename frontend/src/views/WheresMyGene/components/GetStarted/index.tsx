@@ -28,23 +28,24 @@ export default function GetStarted({
   if (!geneHasLoadedOnce && geneSelected && !isLoading) {
     geneHasLoadedOnce = true;
   }
+
   return (
     <Wrapper
       style={
         tissueHasLoadedOnce && geneHasLoadedOnce ? { display: "none" } : {}
       }
     >
-      <ColumnOne style={tissueHasLoadedOnce ? { visibility: "hidden" } : {}}>
+      <ColumnOne isHidden={tissueHasLoadedOnce}>
         <StyledStepOne>
           <Step step={1} details="Add Tissues" />
         </StyledStepOne>
       </ColumnOne>
 
-      <ColumnTwo style={geneHasLoadedOnce ? { visibility: "hidden" } : {}}>
-        <StyledStepTwo>
+      <ColumnTwo>
+        <StyledStepTwo isHidden={geneHasLoadedOnce}>
           <Step step={2} details="Add Genes" />
         </StyledStepTwo>
-        <StyledStepThree>
+        <StyledStepThree isHidden={geneHasLoadedOnce && tissueHasLoadedOnce}>
           <Step step={3} details="Explore Gene Expression" />
         </StyledStepThree>
       </ColumnTwo>

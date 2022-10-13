@@ -13,8 +13,8 @@ import Modal from "src/components/common/Modal";
 import { CellType } from "src/views/WheresMyGene/common/types";
 import { getHeatmapHeight, getHeatmapWidth } from "../../../HeatMap/utils";
 import { Label } from "../../style";
-import { ButtonWrapper, StyledIconButton } from "../QuickSelect/style";
-import { DownloadButton, StyledDiv } from "./style";
+import { StyledIconButton } from "../QuickSelect/style";
+import { ButtonWrapper, DownloadButton, StyledDiv } from "./style";
 
 export const EXCLUDE_IN_SCREENSHOT_CLASS_NAME = "screenshot-exclude";
 const screenshotFilter =
@@ -116,15 +116,20 @@ export default function SaveImage({
 
   return (
     <>
-      <ButtonWrapper>
+      <ButtonWrapper className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}>
         <Label>Download</Label>
         <StyledIconButton
-          disabled={selectedTissues.length === 0 || selectedGenes.length === 0}
-          data-test-id={"download-button"}
+          data-test-id="download-button"
           // TODO: put handleButtonClick when svgs are fixed
           onClick={handleDownload}
-          sdsType="primary"
-          sdsSize="medium"
+          {...{
+            // (thuang): Move this back to explicit prop={value} after
+            // upgrading SDS to enable type checking again
+            disabled:
+              selectedTissues.length === 0 || selectedGenes.length === 0,
+            sdsSize: "medium",
+            sdsType: "primary",
+          }}
         >
           <Icon sdsIcon="download" sdsSize="l" sdsType="iconButton" />
         </StyledIconButton>

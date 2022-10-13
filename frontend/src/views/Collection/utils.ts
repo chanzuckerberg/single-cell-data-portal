@@ -9,7 +9,18 @@ import {
   VISIBILITY_TYPE,
 } from "src/common/entities";
 import { getUrlHost } from "src/common/utils/getUrlHost";
-import { CollectionMetadataLink } from "src/components/Collection/components/CollectionMetadata";
+
+/**
+ * Copied from src/components/Collection/components/CollectionMetadata
+ * Playwright Test doesn't support .tsx import
+ * @see: https://github.com/microsoft/playwright/issues/13422
+ */
+export interface CollectionMetadataLink {
+  label: string;
+  testId: string;
+  url: string;
+  value: string;
+}
 
 const LINK_ORDER: COLLECTION_LINK_TYPE[] = [
   COLLECTION_LINK_TYPE.DOI,

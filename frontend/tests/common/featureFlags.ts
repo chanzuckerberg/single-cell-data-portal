@@ -1,8 +1,8 @@
-const TEST_URL = require("../tests/common/constants").TEST_URL;
-const COOKIE_SESSION = require("../tests/common/constants").COOKIE_SESSION;
-const COOKIE_CXG_USER = require("../tests/common/constants").COOKIE_CXG_USER;
+import { COOKIE_CXG_USER, COOKIE_SESSION, TEST_URL } from "./constants";
 
 const cookies = [];
+
+type SameSite = "Strict" | "Lax" | "None";
 
 if (COOKIE_SESSION) {
   cookies.push({
@@ -11,7 +11,7 @@ if (COOKIE_SESSION) {
     httpOnly: true,
     name: "session",
     path: "/",
-    sameSite: "None",
+    sameSite: "None" as SameSite,
     secure: true,
     session: true,
     size: 106,
@@ -26,7 +26,7 @@ if (COOKIE_CXG_USER) {
     httpOnly: true,
     name: "cxguser",
     path: "/",
-    sameSite: "None",
+    sameSite: "None" as SameSite,
     secure: true,
     session: false,
     size: 1711,
@@ -34,7 +34,7 @@ if (COOKIE_CXG_USER) {
   });
 }
 
-module.exports = {
+const featureFlags = {
   cookies: [
     ...cookies,
     // (thuang) Uncomment and add your staging cookies here to skip login when
@@ -45,7 +45,7 @@ module.exports = {
     //   httpOnly: true,
     //   name: "cxguser",
     //   path: "/",
-    //   sameSite: "None",
+    //   sameSite: "None" as SameSite,
     //   secure: true,
     //   session: false,
     //   size: 1711,
@@ -58,7 +58,7 @@ module.exports = {
     //   httpOnly: true,
     //   name: "session",
     //   path: "/",
-    //   sameSite: "None",
+    //   sameSite: "None" as SameSite,
     //   secure: true,
     //   session: true,
     //   size: 106,
@@ -77,3 +77,5 @@ module.exports = {
     },
   ],
 };
+
+export default featureFlags;

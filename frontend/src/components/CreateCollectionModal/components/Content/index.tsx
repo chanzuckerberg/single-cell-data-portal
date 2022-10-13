@@ -21,6 +21,7 @@ import Input from "src/components/common/Form/Input";
 import TextArea from "src/components/common/Form/TextArea";
 import { isLinkTypeDOI } from "src/components/CreateCollectionModal/components/Content/common/utils";
 import { getDOIPath } from "src/views/Collection/utils";
+import { INVALID_DOI_ERROR_MESSAGE } from "./common/constants";
 import AddLink from "./components/AddLink";
 import LinkInput, { LinkValue } from "./components/LinkInput";
 import {
@@ -33,12 +34,6 @@ import {
 } from "./style";
 
 const REQUIRED_FIELD_TEXT = "Required";
-
-/**
- * Text displayed when BE has identified DOI as invalid.
- */
-export const INVALID_DOI_ERROR_MESSAGE =
-  "This DOI could not be found. Please correct or remove it.";
 
 interface Props {
   onClose: () => void;
