@@ -77,8 +77,8 @@ export default function SaveImage({
             backgroundColor: "white",
             filter: screenshotFilter(tissue),
             height: getHeatmapHeight(selectedCellTypes[tissue]) + 200,
-            pixelRatio: 2,
-            width: getHeatmapWidth(selectedGenes) + 250,
+            pixelRatio: 4,
+            width: getHeatmapWidth(selectedGenes) + 200,
           });
           // raw URI if only one tissue is selected
           const input =
@@ -120,7 +120,8 @@ export default function SaveImage({
         <Label>Download</Label>
         <StyledIconButton
           data-test-id="download-button"
-          onClick={handleButtonClick}
+          // TODO: put handleButtonClick when svgs are fixed
+          onClick={handleDownload}
           {...{
             // (thuang): Move this back to explicit prop={value} after
             // upgrading SDS to enable type checking again
