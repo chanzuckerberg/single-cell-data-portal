@@ -234,6 +234,11 @@ export default function QuickSelect<
       setHasComma(false);
     }
   };
+  const selectedAsArray = Array.isArray(selected) ? selected : [selected];
+
+  const itemOptionsWithSelectedOnTop = [
+    ...new Set([...selectedAsArray, ...items]),
+  ];
   return (
     <>
       <ButtonWrapper>
@@ -271,7 +276,7 @@ export default function QuickSelect<
           disableCloseOnSelect
           disableListWrap
           onKeyDownCapture={multiple ? handleEnter : undefined}
-          options={items}
+          options={itemOptionsWithSelectedOnTop}
           ListboxComponent={
             ListboxComponent as React.ComponentType<
               React.HTMLAttributes<HTMLElement>

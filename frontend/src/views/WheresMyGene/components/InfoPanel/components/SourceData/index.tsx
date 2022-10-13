@@ -4,7 +4,7 @@ import {
   aggregateCollectionsFromDatasets,
   useFilterDimensions,
 } from "src/common/queries/wheresMyGene";
-import { Content, Header, ListSubheader, Wrapper } from "./style";
+import { Content, ListSubheader, Wrapper } from "./style";
 
 interface Collection {
   name: string;
@@ -26,7 +26,6 @@ export default function SourceData(): JSX.Element {
 
   return (
     <Wrapper>
-      <Header>Source Data</Header>
       <Content>
         <List ordered>
           {Object.values(collections).map(({ name, url, datasets }) => {

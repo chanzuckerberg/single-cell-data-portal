@@ -7,6 +7,7 @@ import { RightAlignCell } from "src/components/common/Grid/components/RightAlign
 import { Grid as StyledGrid } from "src/components/common/Grid/style";
 import { Props as ChooserProps } from "src/components/DropboxChooser/index";
 import { UploadedFiles } from "src/views/Collection/components/ActionButtons";
+import { sortByCellCountDescending } from "./common/util";
 
 interface Props {
   className?: string;
@@ -76,11 +77,5 @@ const DatasetsGrid: FC<Props> = ({
     </StyledGrid>
   );
 };
-
-export function sortByCellCountDescending(datasets: Dataset[]): Dataset[] {
-  return (
-    datasets?.sort((a, b) => (b.cell_count ?? 0) - (a.cell_count ?? 0)) || []
-  );
-}
 
 export default DatasetsGrid;

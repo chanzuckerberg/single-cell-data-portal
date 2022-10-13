@@ -1,39 +1,41 @@
-import { ElementHandle } from "playwright";
-import { ROUTES } from "src/common/constants/routes";
+import { ElementHandle, expect, Page, test } from "@playwright/test";
 import { TEST_ENV } from "tests/common/constants";
 import { TEST_PASSWORD, TEST_URL, TEST_USERNAME } from "../common/constants";
 import { getText } from "./selectors";
 
+const { describe, skip } = test;
+
 export const TIMEOUT_MS = 3 * 1000;
 
 export const describeIfDeployed =
-  TEST_ENV.includes("local") || TEST_ENV === "prod" ? describe.skip : describe;
+  TEST_ENV.includes("local") || TEST_ENV === "prod" ? skip : describe;
 
 //(thuang): BE API doesn't work in local happy
 const TEST_ENVS = ["dev", "staging", "prod"];
 export const describeIfDevStagingProd = TEST_ENVS.includes(TEST_ENV)
   ? describe
-  : describe.skip;
+  : skip;
 
 // Skip tests unless environment is dev or staging; used by tests that require a deployed environment but also modify
 // environment data (e.g. creating collections, which should be avoided in prod).
 const TEST_ENVS_DEV_STAGING = ["dev", "staging"];
 export const describeIfDevStaging = TEST_ENVS_DEV_STAGING.includes(TEST_ENV)
   ? describe
-  : describe.skip;
+  : skip;
 
-const DEFAULT_LINK = `${TEST_URL}${ROUTES.DATASETS}`;
-
-export async function goToPage(url: string = DEFAULT_LINK): Promise<void> {
+export async function goToPage(
+  url: string = TEST_URL,
+  page: Page
+): Promise<void> {
   await page.goto(url);
 }
 
-export async function login(): Promise<void> {
-  await goToPage();
+export async function login(page: Page): Promise<void> {
+  await goToPage(undefined, page);
 
   expect(process.env.TEST_ACCOUNT_PASS).toBeDefined();
 
-  const cookies = await context.cookies();
+  const cookies = await (await page.context()).cookies();
 
   if (cookies.length) return;
 
@@ -46,14 +48,22 @@ export async function login(): Promise<void> {
 
   await page.click('[value="login"], [name="submit"]');
 
-  await tryUntil(() => {
-    expect(page.url()).toContain(TEST_URL);
-  });
+  await tryUntil(
+    () => {
+      expect(page.url()).toContain(TEST_URL);
+    },
+    { page }
+  );
+}
+
+interface TryUntilConfigs {
+  maxRetry?: number;
+  page: Page;
 }
 
 export async function tryUntil(
   assert: () => void,
-  maxRetry = 50
+  { maxRetry = 50, page }: TryUntilConfigs
 ): Promise<void> {
   const WAIT_FOR_MS = 200;
 
@@ -79,8 +89,11 @@ export async function tryUntil(
   }
 }
 
-export async function getInnerText(selector: string): Promise<string> {
-  await tryUntil(() => page.waitForSelector(selector));
+export async function getInnerText(
+  selector: string,
+  page: Page
+): Promise<string> {
+  await tryUntil(() => page.waitForSelector(selector), { page });
 
   const element = (await page.$(selector)) as ElementHandle<
     SVGElement | HTMLElement
