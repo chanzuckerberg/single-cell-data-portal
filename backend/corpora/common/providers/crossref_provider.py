@@ -1,5 +1,5 @@
 import requests
-from ..corpora_config import CorporaConfig
+from backend.corpora.common.corpora_config import CorporaConfig
 from urllib.parse import urlparse
 from datetime import datetime
 

@@ -4,19 +4,19 @@ import time
 
 from sqlalchemy.orm import Session
 
-from .corpora_config import CorporaConfig
+from backend.corpora.common.corpora_config import CorporaConfig
 import os
 
-from .corpora_orm import CollectionVisibility, ProcessingStatus
-from .entities import Collection, Dataset
-from .utils.authorization_checks import owner_or_allowed
-from .utils.exceptions import (
+from backend.corpora.common.corpora_orm import CollectionVisibility, ProcessingStatus
+from backend.corpora.common.entities import Collection, Dataset
+from backend.corpora.common.utils.authorization_checks import owner_or_allowed
+from backend.corpora.common.utils.exceptions import (
     MaxFileSizeExceededException,
     NonExistentCollectionException,
     InvalidProcessingStateException,
     NonExistentDatasetException,
 )
-from .utils.math_utils import GB
+from backend.corpora.common.utils.math_utils import GB
 
 _stepfunctions_client = None
 

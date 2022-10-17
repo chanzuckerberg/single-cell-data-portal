@@ -1,9 +1,9 @@
 from flask import jsonify, g, make_response
-from .common import reshape_for_curation_api
-from ...authorization import is_super_curator, owner_or_allowed
-from ...collection import create_collection_common, curation_get_normalized_doi_url
-from ......common.corpora_orm import CollectionVisibility, DbCollection, ProjectLinkType
-from ......common.utils.http_exceptions import ForbiddenHTTPException, InvalidParametersHTTPException
+from backend.corpora.lambdas.api.v1.curation.collections.common import reshape_for_curation_api
+from backend.corpora.lambdas.api.v1.authorization import is_super_curator, owner_or_allowed
+from backend.corpora.lambdas.api.v1.collection import create_collection_common, curation_get_normalized_doi_url
+from backend.corpora.common.corpora_orm import CollectionVisibility, DbCollection, ProjectLinkType
+from backend.corpora.common.utils.http_exceptions import ForbiddenHTTPException, InvalidParametersHTTPException
 from backend.corpora.api_server.db import dbconnect
 
 
