@@ -5,7 +5,7 @@ from backend.corpora.lambdas.api.v1.collection import (
     get_publisher_metadata,
     curation_get_normalized_doi_url,
 )
-from ..common import (
+from backend.corpora.common import (
     extract_doi_from_links,
     reshape_for_curation_api,
 )

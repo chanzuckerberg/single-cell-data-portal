@@ -2,8 +2,8 @@ from datetime import datetime, timedelta, timezone
 from enum import Enum
 from json import JSONEncoder
 
-from ..entities.entity import Entity
-from ..corpora_orm import Base
+from backend.corpora.common.entities.entity import Entity
+from backend.corpora.common.corpora_orm import Base
 
 
 time_zone_info = datetime.now(timezone.utc).astimezone().tzinfo  # Get AWS env time zone info

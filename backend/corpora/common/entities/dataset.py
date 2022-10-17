@@ -10,10 +10,10 @@ from sqlalchemy.orm import Session
 
 from urllib.parse import urlparse
 
-from .dataset_asset import DatasetAsset
-from .entity import Entity
-from .geneset import Geneset
-from ..corpora_orm import (
+from backend.corpora.common.entities.dataset_asset import DatasetAsset
+from backend.corpora.common.entities.entity import Entity
+from backend.corpora.common.entities.geneset import Geneset
+from backend.corpora.common.corpora_orm import (
     DbDataset,
     DbDatasetArtifact,
     DbDatasetProcessingStatus,
@@ -24,10 +24,10 @@ from ..corpora_orm import (
     DatasetArtifactFileType,
     ConversionStatus,
 )
-from ..utils.corpora_constants import CorporaConstants
-from ..utils.db_helpers import clone
-from ..utils.ontology_mappings.ontology_map_loader import ontology_mappings
-from ..utils.s3_buckets import buckets
+from backend.corpora.common.utils.corpora_constants import CorporaConstants
+from backend.corpora.common.utils.db_helpers import clone
+from backend.corpora.common.utils.ontology_mappings.ontology_map_loader import ontology_mappings
+from backend.corpora.common.utils.s3_buckets import buckets
 
 
 class Dataset(Entity):

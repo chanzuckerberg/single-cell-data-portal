@@ -6,8 +6,8 @@ from sqlalchemy import event
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import sessionmaker, session as sql_session
 
-from .exceptions import CorporaException
-from ..corpora_config import CorporaDbConfig
+from backend.corpora.common.utils.exceptions import CorporaException
+from backend.corpora.common.corpora_config import CorporaDbConfig
 
 logger = logging.getLogger(__name__)
 
