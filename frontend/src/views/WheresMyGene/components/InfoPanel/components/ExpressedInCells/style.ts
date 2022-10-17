@@ -6,9 +6,7 @@ interface DotProps extends CommonThemeProps {
 }
 
 export const Wrapper = styled.div`
-  padding-left: 20px;
-  padding-right: 20px;
-  width: 200px;
+  padding: 0 10px;
 `;
 
 export const Dot = styled.span`

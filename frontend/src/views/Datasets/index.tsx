@@ -1,6 +1,15 @@
 import Head from "next/head";
 import React, { useEffect, useMemo } from "react";
-import { Column, Filters, useFilters, useSortBy, useTable } from "react-table";
+import {
+  CellProps,
+  Column,
+  Filters,
+  HeaderProps,
+  Renderer,
+  useFilters,
+  useSortBy,
+  useTable,
+} from "react-table";
 import { PLURALIZED_METADATA_LABEL } from "src/common/constants/metadata";
 import { useCategoryFilter } from "src/common/hooks/useCategoryFilter/useCategoryFilter";
 import { useExplainNewTab } from "src/common/hooks/useExplainNewTab";
@@ -92,20 +101,20 @@ export default function Datasets(): JSX.Element {
             />
           );
         },
-        Header: ({ tableCountSummary }: HeaderPropsValue) => {
+        Header: (({ tableCountSummary }: HeaderPropsValue) => {
           return (
             <HeaderCell
               label={"Datasets"}
               tableCountSummary={tableCountSummary}
             />
           );
-        },
+        }) as Renderer<HeaderProps<DatasetRow>>,
         accessor: DATASET_NAME,
       },
       {
-        Cell: ({ value }: CellPropsValue<string[]>) => (
+        Cell: (({ value }: CellPropsValue<string[]>) => (
           <NTagCell label={PLURALIZED_METADATA_LABEL.TISSUE} values={value} />
-        ),
+        )) as Renderer<CellProps<DatasetRow>>,
         Header: "Tissue",
         accessor: ontologyLabelCellAccessorFn("tissue"),
         id: "tissue",
@@ -141,7 +150,7 @@ export default function Datasets(): JSX.Element {
         id: CATEGORY_FILTER_ID.ORGANISM,
       },
       {
-        Cell: ({ value }: CellPropsValue<number>) => (
+        Cell: ({ value }: CellPropsValue<number | null>) => (
           <RightAlignCell>
             <CountCell cellCount={value || 0} />
           </RightAlignCell>
