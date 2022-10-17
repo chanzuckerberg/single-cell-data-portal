@@ -5,10 +5,7 @@ from backend.corpora.lambdas.api.v1.collection import (
     get_publisher_metadata,
     curation_get_normalized_doi_url,
 )
-from backend.corpora.common import (
-    extract_doi_from_links,
-    reshape_for_curation_api,
-)
+
 from backend.corpora.api_server.db import dbconnect
 from backend.corpora.common.corpora_orm import (
     CollectionVisibility,
@@ -24,6 +21,7 @@ from backend.corpora.common.utils.http_exceptions import (
 )
 from backend.corpora.lambdas.api.v1.authorization import owner_or_allowed
 from backend.corpora.lambdas.api.v1.common import get_collection_else_forbidden
+from backend.corpora.lambdas.api.v1.curation.collections.common import extract_doi_from_links, reshape_for_curation_api
 
 
 @dbconnect
