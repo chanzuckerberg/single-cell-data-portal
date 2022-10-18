@@ -1,5 +1,5 @@
 from backend.common.corpora_orm import CollectionVisibility
-from unit.backend.api_server.base_api_test import BaseAuthAPITest
+from tests.unit.backend.api_server.base_api_test import BaseAuthAPITest
 
 
 class TestPostRevision(BaseAuthAPITest):

@@ -10,7 +10,7 @@ from backend.common.corpora_orm import (
 )
 from backend.portal.api.v1.curation.collections.common import EntityColumns
 from backend.common.providers.crossref_provider import CrossrefDOINotFoundException
-from unit.backend.api_server.base_api_test import BaseAuthAPITest, mock_assert_authorized_token
+from tests.unit.backend.api_server.base_api_test import BaseAuthAPITest, mock_assert_authorized_token
 
 
 class TestAuthToken(BaseAuthAPITest):

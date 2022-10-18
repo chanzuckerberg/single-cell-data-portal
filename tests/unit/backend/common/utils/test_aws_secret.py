@@ -6,7 +6,7 @@ import boto3
 from unittest.mock import patch
 
 from backend.common.utils.aws import AwsSecret
-from unit.backend.fixtures.existing_aws_secret_test_fixture import ExistingAwsSecretTestFixture
+from tests.unit.backend.fixtures.existing_aws_secret_test_fixture import ExistingAwsSecretTestFixture
 
 
 class TestAwsSecret(unittest.TestCase):

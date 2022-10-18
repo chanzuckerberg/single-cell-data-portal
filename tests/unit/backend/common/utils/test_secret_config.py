@@ -7,8 +7,8 @@ from unittest.mock import PropertyMock, patch
 
 import boto3
 
-from unit.backend.fixtures.environment_setup import EnvironmentSetup, fixture_file_path
-from unit.backend.fixtures.existing_aws_secret_test_fixture import ExistingAwsSecretTestFixture
+from tests.unit.backend.fixtures.environment_setup import EnvironmentSetup, fixture_file_path
+from tests.unit.backend.fixtures.existing_aws_secret_test_fixture import ExistingAwsSecretTestFixture
 
 from backend.common.utils.secret_config import SecretConfig
 from backend.common.utils.aws import AwsSecret

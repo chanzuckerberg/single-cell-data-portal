@@ -1,6 +1,6 @@
 import logging
 
-from unit.backend.api_server.base_api_test import BaseAPITest
+from tests.unit.backend.api_server.base_api_test import BaseAPITest
 
 
 class TestAPI(BaseAPITest):

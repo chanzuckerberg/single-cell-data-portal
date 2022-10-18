@@ -15,7 +15,7 @@ from backend.common.corpora_orm import (
 from backend.common.entities.dataset import Dataset
 from backend.common.utils.corpora_constants import CorporaConstants
 from backend.common.utils.db_helpers import processing_status_updater
-from unit.backend.api_server.base_api_test import BaseAuthAPITest, get_cxguser_token
+from tests.unit.backend.api_server.base_api_test import BaseAuthAPITest, get_cxguser_token
 from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
 
 

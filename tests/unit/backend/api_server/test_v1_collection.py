@@ -17,7 +17,7 @@ from backend.common.entities import Collection
 from backend.common.providers.crossref_provider import CrossrefDOINotFoundException, CrossrefFetchException
 from backend.common.utils.corpora_constants import CorporaConstants
 from backend.portal.api.v1.collection import verify_collection_body
-from unit.backend.api_server.base_api_test import BaseAuthAPITest, get_cxguser_token
+from tests.unit.backend.api_server.base_api_test import BaseAuthAPITest, get_cxguser_token
 from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
 
 

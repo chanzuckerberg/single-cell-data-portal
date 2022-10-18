@@ -8,7 +8,7 @@ from multiprocessing import Process
 
 # seconds until the token expires
 from jose import jwt
-from unit.backend.api_server.config import TOKEN_EXPIRES
+from tests.unit.backend.api_server.config import TOKEN_EXPIRES
 
 
 # A mocked out oauth server, which serves all the endpoints needed by the oauth type.

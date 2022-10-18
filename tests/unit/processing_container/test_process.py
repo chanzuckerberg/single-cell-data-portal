@@ -18,7 +18,7 @@ from backend.dataset_processing.exceptions import (
 )
 from backend.dataset_processing.process import main
 from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
-from unit.backend.fixtures.environment_setup import EnvironmentSetup
+from tests.unit.backend.fixtures.environment_setup import EnvironmentSetup
 
 
 class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):

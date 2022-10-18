@@ -4,7 +4,7 @@ from backend.common.corpora_orm import (
     ValidationStatus,
 )
 from backend.common.entities import Dataset
-from unit.backend.common.entities.datasets import TestDataset
+from tests.unit.backend.common.entities.datasets import TestDataset
 from tests.unit.backend.utils import BogusDatasetParams
 
 

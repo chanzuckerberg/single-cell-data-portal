@@ -2,7 +2,7 @@ import json
 
 from backend.common.corpora_orm import CollectionVisibility
 from backend.common.entities.geneset import GenesetDatasetLink
-from unit.backend.api_server.base_api_test import BaseAuthAPITest, get_cxguser_token
+from tests.unit.backend.api_server.base_api_test import BaseAuthAPITest, get_cxguser_token
 from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
 
 

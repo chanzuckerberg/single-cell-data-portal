@@ -1,7 +1,7 @@
 import json
 from backend.common.corpora_orm import CollectionVisibility, generate_id
 from backend.common.entities.geneset import Geneset
-from unit.backend.api_server.base_api_test import BaseAuthAPITest, get_cxguser_token
+from tests.unit.backend.api_server.base_api_test import BaseAuthAPITest, get_cxguser_token
 
 
 class TestGenesetCreation(BaseAuthAPITest):

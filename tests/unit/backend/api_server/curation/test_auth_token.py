@@ -2,7 +2,7 @@ import unittest
 from unittest.mock import patch, Mock
 
 from backend.common.utils.api_key import generate
-from unit.backend.api_server.base_api_test import BaseAPITest
+from tests.unit.backend.api_server.base_api_test import BaseAPITest
 
 
 class TestAuthToken(BaseAPITest):

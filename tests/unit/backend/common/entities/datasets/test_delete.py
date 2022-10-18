@@ -7,7 +7,7 @@ from backend.common.corpora_orm import (
 from backend.common.entities import Dataset
 from backend.common.entities.dataset import get_cxg_bucket_path
 from backend.common.entities.geneset import GenesetDatasetLink, Geneset
-from unit.backend.common.entities.datasets import TestDataset
+from tests.unit.backend.common.entities.datasets import TestDataset
 from tests.unit.backend.utils import BogusDatasetParams
 
 

@@ -14,7 +14,7 @@ from backend.common.utils.cxg_generation_utils import (
     convert_ndarray_to_cxg_dense_array,
     convert_matrices_to_cxg_arrays,
 )
-from unit.backend.fixtures.environment_setup import fixture_file_path
+from tests.unit.backend.fixtures.environment_setup import fixture_file_path
 
 
 class TestCxgGenerationUtils(unittest.TestCase):

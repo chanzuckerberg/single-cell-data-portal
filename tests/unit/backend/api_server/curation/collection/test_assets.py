@@ -1,6 +1,6 @@
 from unittest.mock import patch, Mock
 
-from unit.backend.api_server.base_api_test import BaseAuthAPITest
+from tests.unit.backend.api_server.base_api_test import BaseAuthAPITest
 from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
 
 
