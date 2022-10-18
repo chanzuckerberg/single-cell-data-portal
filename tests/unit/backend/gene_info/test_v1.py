@@ -5,7 +5,7 @@ from backend.common.utils.http_exceptions import NotFoundHTTPException
 
 from backend.gene_info.api import ncbi_provider, ensembl_ids
 from tests.unit.backend.fixtures.environment_setup import EnvironmentSetup
-from backend.api_server import app
+from backend.api_server.app import app
 import xml.etree.ElementTree as ET
 from unittest.mock import patch, call
 
