@@ -52,7 +52,7 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
 
-  smoke-test:
+  e2e-test:
     timeout-minutes: 60
     runs-on: ubuntu-20.04
     defaults:
@@ -319,7 +319,7 @@ jobs:
       - backend-unit-test
       - processing-unit-test
       - wmg-processing-unit-test
-      - smoke-test
+      - e2e-test
       - lint
       - build-extra-images
     runs-on: ubuntu-20.04
