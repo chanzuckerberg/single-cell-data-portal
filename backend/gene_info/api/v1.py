@@ -1,7 +1,7 @@
 import string
 from flask import jsonify, make_response
 from backend.gene_info.api.ncbi_provider import NCBIAPIException, NCBIProvider, NCBIUnexpectedResultException
-from backend.common import (
+from backend.common.utils.http_exceptions import (
     NotFoundHTTPException,
     ForbiddenHTTPException,
 )

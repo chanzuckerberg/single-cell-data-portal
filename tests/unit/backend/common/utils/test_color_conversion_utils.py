@@ -6,7 +6,7 @@ from backend.common.utils.color_conversion_utils import (
     convert_color_to_hex_format,
     convert_anndata_category_colors_to_cxg_category_colors,
 )
-from backend.common.utils.exceptions import ColorFormatException
+from backend.common.utils.color_conversion_utils import ColorFormatException
 from unit.backend.fixtures.environment_setup import fixture_file_path
 
 

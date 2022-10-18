@@ -1,6 +1,6 @@
 import os
 
-from backend.common import SecretConfig
+from backend.common.utils.secret_config import SecretConfig
 
 
 class WmgConfig(SecretConfig):

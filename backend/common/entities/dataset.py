@@ -132,7 +132,7 @@ class Dataset(Entity):
         Retrieves a list of Datasets from the database
 
         :param session: an open database session
-        :param tombstones: True of to include tombstoned datasets
+        :param include_tombstones: True of to include tombstoned datasets
         :return: A list of Datasets
         """
         filters = []

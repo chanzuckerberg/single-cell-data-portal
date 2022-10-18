@@ -1,4 +1,5 @@
 import requests
+
 from backend.common.corpora_config import CorporaConfig
 from urllib.parse import urlparse
 from datetime import datetime
@@ -59,8 +60,8 @@ class CrossrefProvider(object):
                 headers={"Crossref-Plus-API-Token": f"Bearer {self.crossref_api_key}"},
             )
             res.raise_for_status()
-        except Exception as e:
-            if res.status_code == 404:
+        except requests.RequestException as e:
+            if e.response is not None and e.response.status_code == 404:
                 raise CrossrefDOINotFoundException from e
             else:
                 raise CrossrefFetchException("Cannot fetch metadata from Crossref") from e
@@ -75,6 +76,8 @@ class CrossrefProvider(object):
         """
 
         res = self._fetch_crossref_payload(doi)
+        if not res:
+            return
 
         try:
             message = res.json()["message"]

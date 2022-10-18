@@ -1,6 +1,8 @@
 import unittest
 from unittest.mock import patch
-from requests.models import Response
+
+from requests import RequestException
+from requests.models import Response, HTTPError
 import json
 
 from backend.common.providers.crossref_provider import (
@@ -8,6 +10,7 @@ from backend.common.providers.crossref_provider import (
     CrossrefFetchException,
     CrossrefProvider,
     CrossrefParseException,
+    CrossrefDOINotFoundException,
 )
 
 
@@ -45,7 +48,7 @@ class TestCrossrefProvider(unittest.TestCase):
                                 "sequence": "additional",
                             },
                         ],
-                        "published-online": {"date-parts": [[2021, 11, 18]]},
+                        "published-online": {"date-parts": [[2021, 11, 10]]},
                         "container-title": ["Nature"],
                     },
                 }
@@ -62,7 +65,7 @@ class TestCrossrefProvider(unittest.TestCase):
             "published_year": 2021,
             "published_month": 11,
             "published_day": 10,
-            "published_at": 1636520400.0,
+            "published_at": 1636502400.0,
             "journal": "Nature",
             "is_preprint": False,
         }
@@ -128,7 +131,7 @@ class TestCrossrefProvider(unittest.TestCase):
             "published_year": 2021,
             "published_month": 11,
             "published_day": 1,
-            "published_at": 1635739200.0,
+            "published_at": 1635724800.0,
             "journal": "Nature",
             "is_preprint": False,
         }
@@ -141,7 +144,7 @@ class TestCrossrefProvider(unittest.TestCase):
         """
         Asserts a CrossrefFetchException if the GET request fails for any reason
         """
-        mock_get.side_effect = Exception("Mocked CrossrefFetchException")
+        mock_get.side_effect = RequestException("Mocked CrossrefFetchException")
 
         provider = CrossrefProvider()
 
@@ -150,6 +153,21 @@ class TestCrossrefProvider(unittest.TestCase):
 
         # Make sure that the parent CrossrefException will also be caught
         with self.assertRaises(CrossrefException):
+            provider.fetch_metadata("test_doi")
+
+    @patch("backend.common.providers.crossref_provider.requests.get")
+    @patch("backend.common.providers.crossref_provider.CorporaConfig")
+    def test__provider_throws_exception_if_request_fails_with_404(self, mock_config, mock_get):
+        """
+        Asserts a CrossrefFetchException if the GET request fails for any reason
+        """
+        response_404 = Response()
+        response_404.status_code = 404
+        mock_get.side_effect = HTTPError(response=response_404)
+
+        provider = CrossrefProvider()
+
+        with self.assertRaises(CrossrefDOINotFoundException):
             provider.fetch_metadata("test_doi")
 
     @patch("backend.common.providers.crossref_provider.requests.get")
