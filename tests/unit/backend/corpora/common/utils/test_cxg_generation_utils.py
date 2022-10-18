@@ -8,7 +8,7 @@ import numpy as np
 import tiledb
 from pandas import Series, DataFrame
 
-from backend.corpora.common.utils.cxg_generation_utils import (
+from backend.common.utils.cxg_generation_utils import (
     convert_dictionary_to_cxg_group,
     convert_dataframe_to_cxg_array,
     convert_ndarray_to_cxg_dense_array,

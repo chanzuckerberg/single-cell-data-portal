@@ -2,11 +2,11 @@ import unittest
 
 import anndata
 
-from backend.corpora.common.utils.color_conversion_utils import (
+from backend.common import (
     convert_color_to_hex_format,
     convert_anndata_category_colors_to_cxg_category_colors,
 )
-from backend.corpora.common.utils.color_conversion_utils import ColorFormatException
+from backend.common import ColorFormatException
 from tests.unit.backend.corpora.fixtures.environment_setup import fixture_file_path
 
 

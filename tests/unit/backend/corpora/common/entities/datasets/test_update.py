@@ -1,12 +1,12 @@
-from backend.corpora.common.corpora_orm import (
+from backend.common.corpora_orm import (
     DatasetArtifactFileType,
     DbDatasetProcessingStatus,
     UploadStatus,
     ProcessingStatus,
 )
-from backend.corpora.common.entities import Dataset
-from backend.corpora.common.utils.db_helpers import processing_status_updater
-from backend.corpora.upload_failures.app import update_dataset_processing_status_to_failed
+from backend.common.entities import Dataset
+from backend.common.utils.db_helpers import processing_status_updater
+from backend.upload_failures import update_dataset_processing_status_to_failed
 from tests.unit.backend.corpora.common.entities.datasets import TestDataset
 from tests.unit.backend.utils import BogusProcessingStatusParams, BogusDatasetParams
 

@@ -2,13 +2,13 @@ import pathlib
 import tempfile
 from unittest.mock import patch
 
-from backend.corpora.common.corpora_orm import (
+from backend.common.corpora_orm import (
     DatasetArtifactFileType,
 )
 
-from backend.corpora.common.entities.dataset import Dataset
-from backend.corpora.dataset_processing.exceptions import ConversionFailed
-from backend.corpora.dataset_processing.process_cxg import process_cxg
+from backend.common.entities.dataset import Dataset
+from backend.dataset_processing.exceptions import ConversionFailed
+from backend.dataset_processing.process_cxg import process_cxg
 from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 
 
@@ -23,8 +23,8 @@ class TestProcessingCXG(DataPortalTestCase):
         cls.h5ad_filename.touch()
         cls.cxg_filename.touch()
 
-    @patch("backend.corpora.dataset_processing.process_cxg.make_cxg")
-    @patch("backend.corpora.dataset_processing.process_cxg.subprocess.run")
+    @patch("backend.dataset_processing.process_cxg.make_cxg")
+    @patch("backend.dataset_processing.process_cxg.subprocess.run")
     def test_create_explorer_cxg(self, mock_subprocess, mock_cxg):
         mock_cxg.return_value = str(self.cxg_filename)
         dataset = self.generate_dataset(self.session)
@@ -42,7 +42,7 @@ class TestProcessingCXG(DataPortalTestCase):
         self.assertEqual(artifacts[0].s3_uri, f"s3://{explorer_bucket}/{artifacts[0].id}.cxg/")
         self.assertEqual(artifacts[0].filetype, DatasetArtifactFileType.CXG)
 
-    @patch("backend.corpora.dataset_processing.process_cxg.make_cxg")
+    @patch("backend.dataset_processing.process_cxg.make_cxg")
     def test_process_with_cxg_conversion_failures(self, mock_cxg):
         mock_cxg.side_effect = RuntimeError("cxg conversion failed")
         test_dataset_id = self.generate_dataset(

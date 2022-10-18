@@ -9,8 +9,8 @@ import numpy as np
 from pandas import Series, DataFrame, Categorical
 import tiledb
 
-from backend.corpora.common.utils.corpora_constants import CorporaConstants
-from backend.corpora.dataset_processing.h5ad_data_file import H5ADDataFile
+from backend.common.utils.corpora_constants import CorporaConstants
+from backend.dataset_processing.h5ad_data_file import H5ADDataFile
 
 from tests.unit.backend.corpora.fixtures.environment_setup import fixture_file_path
 

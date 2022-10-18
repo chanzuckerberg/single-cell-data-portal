@@ -2,8 +2,8 @@ from sqlalchemy import Column, String, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
-from backend.corpora.common.corpora_orm import TransformingBase
-from backend.corpora.common.utils.db_session import DBSessionMaker, db_session_manager
+from backend.common.corpora_orm import TransformingBase
+from backend.common.utils.db_session import DBSessionMaker, db_session_manager
 from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 
 Test_Base = declarative_base(cls=TransformingBase)

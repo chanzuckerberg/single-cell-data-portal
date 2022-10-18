@@ -2,20 +2,20 @@ import logging
 from unittest.mock import patch
 from unittest import mock
 
-from backend.corpora.common.corpora_orm import (
+from backend.common.corpora_orm import (
     DatasetArtifactFileType,
     ConversionStatus,
 )
 
 
-from backend.corpora.dataset_processing.exceptions import ConversionFailed
-from backend.corpora.dataset_processing.process_seurat import process
+from backend.dataset_processing.exceptions import ConversionFailed
+from backend.dataset_processing.process_seurat import process
 from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
 
 
 class TestProcessSeurat(CorporaTestCaseUsingMockAWS):
-    @patch("backend.corpora.dataset_processing.process_seurat.download_from_s3")
-    @patch("backend.corpora.dataset_processing.process_seurat.make_seurat")
+    @patch("backend.dataset_processing.process_seurat.download_from_s3")
+    @patch("backend.dataset_processing.process_seurat.make_seurat")
     def test_process_with_seurat_conversion_failures(self, mock_seurat, mock_download_from_s3):
         mock_seurat.side_effect = RuntimeError("seurat conversion failed")
         # given
@@ -25,7 +25,7 @@ class TestProcessSeurat(CorporaTestCaseUsingMockAWS):
         with self.assertRaises(ConversionFailed):
             process(dataset.id, self.bucket.name)
 
-    @patch("backend.corpora.dataset_processing.process_seurat.make_seurat")
+    @patch("backend.dataset_processing.process_seurat.make_seurat")
     def test__process_skips_seurat_conversion_when_unconvertible_dataset_detected(self, mock_make_seurat):
         # given
         dataset = self.generate_dataset(self.session, processing_status={"rds_status": ConversionStatus.SKIPPED})
@@ -36,9 +36,9 @@ class TestProcessSeurat(CorporaTestCaseUsingMockAWS):
         # then
         mock_make_seurat.assert_not_called()
 
-    @patch("backend.corpora.dataset_processing.process_seurat.make_seurat")
-    @patch("backend.corpora.dataset_processing.process_seurat.download_from_s3")
-    @patch("backend.corpora.dataset_processing.process_seurat.create_artifact")
+    @patch("backend.dataset_processing.process_seurat.make_seurat")
+    @patch("backend.dataset_processing.process_seurat.download_from_s3")
+    @patch("backend.dataset_processing.process_seurat.create_artifact")
     def test__process_runs_seurat_conversion_when_convertible_dataset_detected_1(
         self,
         mock_download_from_s3,
@@ -56,9 +56,9 @@ class TestProcessSeurat(CorporaTestCaseUsingMockAWS):
         mock_make_seurat.assert_called()
         mock_create_artifact.assert_called()
 
-    @patch("backend.corpora.dataset_processing.process_seurat.make_seurat")
-    @patch("backend.corpora.dataset_processing.process_seurat.download_from_s3")
-    @patch("backend.corpora.dataset_processing.process_seurat.replace_artifact")
+    @patch("backend.dataset_processing.process_seurat.make_seurat")
+    @patch("backend.dataset_processing.process_seurat.download_from_s3")
+    @patch("backend.dataset_processing.process_seurat.replace_artifact")
     def test__process_runs_seurat_conversion_when_convertible_dataset_detected_2(
         self,
         mock_replace_artifact,
@@ -79,9 +79,9 @@ class TestProcessSeurat(CorporaTestCaseUsingMockAWS):
         mock_make_seurat.assert_called()
         mock_replace_artifact.assert_called()
 
-    @patch("backend.corpora.dataset_processing.process_seurat.make_seurat")
-    @patch("backend.corpora.dataset_processing.process_seurat.download_from_s3")
-    @patch("backend.corpora.dataset_processing.process_seurat.create_artifact")
+    @patch("backend.dataset_processing.process_seurat.make_seurat")
+    @patch("backend.dataset_processing.process_seurat.download_from_s3")
+    @patch("backend.dataset_processing.process_seurat.create_artifact")
     def test__process_runs_seurat_conversion_when_convertible_dataset_detected_3(
         self,
         mock_download_from_s3,
@@ -107,9 +107,9 @@ class TestProcessSeurat(CorporaTestCaseUsingMockAWS):
         mock_make_seurat.assert_called()
         mock_create_artifact.assert_called()
 
-    @patch("backend.corpora.dataset_processing.process_seurat.make_seurat")
-    @patch("backend.corpora.dataset_processing.process_seurat.download_from_s3")
-    @patch("backend.corpora.dataset_processing.process_seurat.replace_artifact")
+    @patch("backend.dataset_processing.process_seurat.make_seurat")
+    @patch("backend.dataset_processing.process_seurat.download_from_s3")
+    @patch("backend.dataset_processing.process_seurat.replace_artifact")
     def test__process_runs_seurat_conversion_when_convertible_dataset_detected_4(
         self,
         mock_replace_artifact,

@@ -1,6 +1,6 @@
 import typing
 
-from backend.corpora.common.corpora_orm import (
+from backend.common.corpora_orm import (
     Base,
     DatasetArtifactFileType,
     UploadStatus,

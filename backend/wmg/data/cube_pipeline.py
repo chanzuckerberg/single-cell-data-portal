@@ -3,7 +3,7 @@ import pathlib
 import sys
 import time
 
-from backend.corpora.common.utils.result_notification import (
+from backend.common.utils.result_notification import (
     notify_slack,
     format_failed_batch_issue_slack_alert,
     gen_wmg_pipeline_success_message,

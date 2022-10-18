@@ -2,9 +2,9 @@ import json
 from furl import furl
 from unittest.mock import patch
 
-from backend.corpora.common.corpora_orm import CollectionVisibility, ProcessingStatus
-from backend.corpora.common.entities import Dataset
-from backend.corpora.common.utils.math_utils import GB
+from backend.common.corpora_orm import CollectionVisibility, ProcessingStatus
+from backend.common.entities import Dataset
+from backend.common.utils.math_utils import GB
 from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest, get_cxguser_token
 from tests.unit.backend.corpora.fixtures.environment_setup import EnvironmentSetup, fixture_file_path
 from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
@@ -16,7 +16,7 @@ class TestCollectionPostUploadLink(BaseAuthAPITest):
         self.good_link = "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"
         self.dummy_link = "https://www.dropbox.com/s/12345678901234/test.h5ad?dl=0"
 
-    @patch("backend.corpora.common.upload.start_upload_sfn")
+    @patch("backend.common.upload.start_upload_sfn")
     def test__link__202(self, mocked):
         with EnvironmentSetup({"CORPORA_CONFIG": fixture_file_path("bogo_config.js")}):
             path = "/dp/v1/collections/test_collection_id_revision/upload-links"
@@ -38,7 +38,7 @@ class TestCollectionPostUploadLink(BaseAuthAPITest):
         self.assertEqual(401, response.status_code)
 
     @patch(
-        "backend.corpora.common.utils.dl_sources.url.DropBoxURL.file_info",
+        "backend.common.utils.dl_sources.url.DropBoxURL.file_info",
         return_value={"size": 1, "name": "file.h5ad"},
     )
     def test__link_not_owner__403(self, mock_get_file_info):
@@ -73,7 +73,7 @@ class TestCollectionPostUploadLink(BaseAuthAPITest):
             )
 
     @patch(
-        "backend.corpora.common.utils.dl_sources.url.DropBoxURL.file_info",
+        "backend.common.utils.dl_sources.url.DropBoxURL.file_info",
         return_value={"size": 31 * GB, "name": "file.txt"},
     )
     def test__oversized__413(self, mock_func):
@@ -86,7 +86,7 @@ class TestCollectionPostUploadLink(BaseAuthAPITest):
         self.assertEqual(413, response.status_code)
 
     @patch(
-        "backend.corpora.common.utils.dl_sources.url.DropBoxURL.file_info",
+        "backend.common.utils.dl_sources.url.DropBoxURL.file_info",
         return_value={"size": 1, "name": "file.h5ad"},
     )
     def test__link_fake_collection__403(self, *mocked):
@@ -99,7 +99,7 @@ class TestCollectionPostUploadLink(BaseAuthAPITest):
         self.assertEqual(403, response.status_code)
 
     @patch(
-        "backend.corpora.common.utils.dl_sources.url.DropBoxURL.file_info",
+        "backend.common.utils.dl_sources.url.DropBoxURL.file_info",
         return_value={"size": 1, "name": "file.h5ad"},
     )
     def test_link_public_collection__403(self, *mocked):
@@ -113,7 +113,7 @@ class TestCollectionPostUploadLink(BaseAuthAPITest):
 
 
 @patch(
-    "backend.corpora.common.utils.dl_sources.url.DropBoxURL.file_info",
+    "backend.common.utils.dl_sources.url.DropBoxURL.file_info",
     return_value={"size": 1, "name": "file.h5ad"},
 )
 class TestCollectionPutUploadLink(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
@@ -122,7 +122,7 @@ class TestCollectionPutUploadLink(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         self.good_link = "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"
         self.headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_cxguser_token()}
 
-    @patch("backend.corpora.common.upload.start_upload_sfn")
+    @patch("backend.common.upload.start_upload_sfn")
     def test__reupload_published_dataset_during_revision__202(self, *mocked):
         """reupload a published dataset during a revision"""
         pub_collection = self.generate_collection(self.session, visibility=CollectionVisibility.PUBLIC.name)
@@ -145,7 +145,7 @@ class TestCollectionPutUploadLink(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
             for s3_object in pub_s3_objects:
                 self.assertS3FileExists(*s3_object)
 
-    @patch("backend.corpora.common.upload.start_upload_sfn")
+    @patch("backend.common.upload.start_upload_sfn")
     def test__reupload_unpublished_dataset__202(self, *mocked):
         """reupload a unpublished dataset, this removes the old s3 assets. A new uuid is generated"""
         collection = self.generate_collection(self.session, visibility=CollectionVisibility.PRIVATE.name)
@@ -168,7 +168,7 @@ class TestCollectionPutUploadLink(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
             for s3_object in s3_objects:
                 self.assertS3FileDoesNotExist(*s3_object)
 
-    @patch("backend.corpora.common.upload.start_upload_sfn")
+    @patch("backend.common.upload.start_upload_sfn")
     def test__reupload_unpublished_dataset_during_revision_202(self, *mock):
         """reupload a unpublished dataset during a revision, this removes the old s3 assets. A new uuid is generated"""
         collection = self.generate_collection(self.session)
@@ -261,7 +261,7 @@ class TestCollectionPutUploadLink(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
 
 
 @patch(
-    "backend.corpora.common.utils.dl_sources.url.DropBoxURL.file_info",
+    "backend.common.utils.dl_sources.url.DropBoxURL.file_info",
     return_value={"size": 1, "name": "file.h5ad"},
 )
 class TestCollectionUploadLinkCurators(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
@@ -269,7 +269,7 @@ class TestCollectionUploadLinkCurators(BaseAuthAPITest, CorporaTestCaseUsingMock
         super().setUp()
         self.good_link = "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"
 
-    @patch("backend.corpora.common.upload.start_upload_sfn")
+    @patch("backend.common.upload.start_upload_sfn")
     def test__can_upload_dataset_to_non_owned_collection_as_super_curator(self, *mocked):
         with EnvironmentSetup({"CORPORA_CONFIG": fixture_file_path("bogo_config.js")}):
             collection = self.generate_collection(self.session, visibility=CollectionVisibility.PRIVATE.name)
@@ -283,7 +283,7 @@ class TestCollectionUploadLinkCurators(BaseAuthAPITest, CorporaTestCaseUsingMock
             self.assertEqual(202, response.status_code)
             self.assertIn("dataset_id", json.loads(response.data).keys())
 
-    @patch("backend.corpora.common.upload.start_upload_sfn")
+    @patch("backend.common.upload.start_upload_sfn")
     def test__can_reupload_dataset_as_super_curator(self, *mocked):
         collection = self.generate_collection(
             self.session, visibility=CollectionVisibility.PRIVATE.name, owner="someone else"

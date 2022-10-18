@@ -1,12 +1,12 @@
-from backend.corpora.common.corpora_orm import (
+from backend.common.corpora_orm import (
     DbDataset,
     DbDatasetArtifact,
     DbCollection,
     UploadStatus,
 )
-from backend.corpora.common.entities import Dataset
-from backend.corpora.common.entities.dataset import get_cxg_bucket_path
-from backend.corpora.common.entities.geneset import GenesetDatasetLink, Geneset
+from backend.common.entities import Dataset
+from backend.common.entities.dataset import get_cxg_bucket_path
+from backend.common.entities.geneset import GenesetDatasetLink, Geneset
 from tests.unit.backend.corpora.common.entities.datasets import TestDataset
 from tests.unit.backend.utils import BogusDatasetParams
 

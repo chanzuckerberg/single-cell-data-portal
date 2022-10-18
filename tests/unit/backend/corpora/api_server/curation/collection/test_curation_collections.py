@@ -2,19 +2,19 @@ import json
 import unittest
 from unittest.mock import patch, Mock
 
-from backend.corpora.common.corpora_orm import (
+from backend.common.corpora_orm import (
     CollectionVisibility,
     ProcessingStatus,
     DbDataset,
     ValidationStatus,
 )
-from backend.corpora.lambdas.api.v1.curation.collections.common import EntityColumns
-from backend.corpora.common.providers.crossref_provider import CrossrefDOINotFoundException
+from backend.lambdas.api.v1.curation.collections.common import EntityColumns
+from backend.common.providers.crossref_provider import CrossrefDOINotFoundException
 from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest, mock_assert_authorized_token
 
 
 class TestAuthToken(BaseAuthAPITest):
-    @patch("backend.corpora.lambdas.api.v1.curation.collections.collection_id.datasets.upload_s3.sts_client")
+    @patch("backend.lambdas.api.v1.curation.collections.collection_id.datasets.upload_s3.sts_client")
     def test__generate_s3_credentials__OK(self, sts_client: Mock):
         def _test(token, is_super_curator: bool = False):
             sts_client.assume_role_with_web_identity = Mock(
@@ -721,7 +721,7 @@ class TestPatchCollectionID(BaseAuthAPITest):
             "published_month": 1,
         }
         with patch(
-            "backend.corpora.common.providers.crossref_provider.CrossrefProvider.fetch_metadata",
+            "backend.common.providers.crossref_provider.CrossrefProvider.fetch_metadata",
             side_effect=CrossrefDOINotFoundException(),
         ):
 

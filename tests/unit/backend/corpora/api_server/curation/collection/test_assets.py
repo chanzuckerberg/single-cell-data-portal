@@ -59,7 +59,7 @@ class TestAsset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         self.assertEqual("Dataset not found.", actual_body["detail"])
 
     @patch(
-        "backend.corpora.lambdas.api.v1.curation.collections.collection_id.assets.get_dataset_else_error",
+        "backend.lambdas.api.v1.curation.collections.collection_id.assets.get_dataset_else_error",
         return_value=None,
     )
     def test__get_dataset_asset__asset_NOT_FOUND(self, get_dataset_else_error: Mock):

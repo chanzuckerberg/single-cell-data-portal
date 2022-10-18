@@ -6,17 +6,17 @@ from unittest.mock import patch
 
 from furl import furl
 
-from backend.corpora.common.corpora_orm import (
+from backend.common.corpora_orm import (
     CollectionVisibility,
     UploadStatus,
     generate_id,
     ProjectLinkType,
     DatasetArtifactFileType,
 )
-from backend.corpora.common.entities import Collection
-from backend.corpora.common.providers.crossref_provider import CrossrefDOINotFoundException, CrossrefFetchException
-from backend.corpora.common.utils.corpora_constants import CorporaConstants
-from backend.corpora.lambdas.api.v1.collection import verify_collection_body
+from backend.common.entities import Collection
+from backend.common.providers.crossref_provider import CrossrefDOINotFoundException, CrossrefFetchException
+from backend.common.utils.corpora_constants import CorporaConstants
+from backend.lambdas.api.v1.collection import verify_collection_body
 from tests.unit.backend.corpora.api_server.base_api_test import BaseAuthAPITest, get_cxguser_token
 from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
 
@@ -536,7 +536,7 @@ class TestCollection(BaseAuthAPITest):
         )
         self.assertEqual(400, response.status_code)
 
-    @patch("backend.corpora.common.providers.crossref_provider.CrossrefProvider.fetch_metadata")
+    @patch("backend.common.providers.crossref_provider.CrossrefProvider.fetch_metadata")
     def test__post_collection_rejects_doi_not_in_crossref(self, mock_provider):
         mock_provider.side_effect = CrossrefDOINotFoundException("Mocked CrossrefDOINotFoundException")
         test_url = furl(path="/dp/v1/collections")
@@ -576,7 +576,7 @@ class TestCollection(BaseAuthAPITest):
         error_payload = json.loads(response.data)
         self.assertEqual([{"link_type": "DOI", "reason": "Invalid DOI"}], error_payload["detail"])
 
-    @patch("backend.corpora.common.providers.crossref_provider.CrossrefProvider.fetch_metadata")
+    @patch("backend.common.providers.crossref_provider.CrossrefProvider.fetch_metadata")
     def test__post_collection_ignores_metadata_if_crossref_exception(self, mock_provider):
         mock_provider.side_effect = CrossrefFetchException("Mocked CrossrefFetchException")
         test_url = furl(path="/dp/v1/collections")
@@ -621,7 +621,7 @@ class TestCollection(BaseAuthAPITest):
         )
         self.assertIsNone(collection.publisher_metadata)
 
-    @patch("backend.corpora.common.providers.crossref_provider.CrossrefProvider.fetch_metadata")
+    @patch("backend.common.providers.crossref_provider.CrossrefProvider.fetch_metadata")
     def test__post_collection_adds_publisher_metadata(self, mock_provider):
 
         mock_provider.return_value = generate_mock_publisher_metadata()
@@ -1230,7 +1230,7 @@ class TestUpdateCollection(BaseAuthAPITest):
         self.assertEqual(200, response.status_code)
         self.assertEqual(links, json.loads(response.data)["links"])
 
-    @patch("backend.corpora.common.providers.crossref_provider.CrossrefProvider.fetch_metadata")
+    @patch("backend.common.providers.crossref_provider.CrossrefProvider.fetch_metadata")
     def test__update_collection_new_doi_updates_metadata(self, mock_provider):
         # The Crossref provider will always return "New Journal"
         mock_provider.return_value = generate_mock_publisher_metadata("New Journal")
@@ -1256,7 +1256,7 @@ class TestUpdateCollection(BaseAuthAPITest):
         self.assertIsNotNone(actual_body["publisher_metadata"]["journal"])
         self.assertEqual("New Journal", actual_body["publisher_metadata"]["journal"])
 
-    @patch("backend.corpora.common.providers.crossref_provider.CrossrefProvider.fetch_metadata")
+    @patch("backend.common.providers.crossref_provider.CrossrefProvider.fetch_metadata")
     def test__update_collection_remove_doi_deletes_metadata(self, mock_provider):
         mock_provider.return_value = generate_mock_publisher_metadata("New Journal")
         collection = self.generate_collection(
@@ -1282,7 +1282,7 @@ class TestUpdateCollection(BaseAuthAPITest):
         actual_body = json.loads(response.data)
         self.assertNotIn("publisher_metadata", actual_body)
 
-    @patch("backend.corpora.common.providers.crossref_provider.CrossrefProvider.fetch_metadata")
+    @patch("backend.common.providers.crossref_provider.CrossrefProvider.fetch_metadata")
     def test__update_collection_same_doi_does_not_update_metadata(self, mock_provider):
         mock_provider.return_value = generate_mock_publisher_metadata("New Journal")
         collection = self.generate_collection(

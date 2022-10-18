@@ -10,19 +10,19 @@ from unittest.mock import patch
 import boto3
 from moto import mock_s3
 
-import backend.corpora.dataset_processing.common
-import backend.corpora.dataset_processing.process_download_validate
-from backend.corpora.common.corpora_orm import (
+import backend.dataset_processing.common
+import backend.dataset_processing.process_download_validate
+from backend.common.corpora_orm import (
     CollectionVisibility,
     DatasetArtifactFileType,
     UploadStatus,
     ValidationStatus,
 )
-from backend.corpora.common.entities.collection import Collection
-from backend.corpora.common.entities.dataset import Dataset
-from backend.corpora.common.utils.exceptions import CorporaException
-from backend.corpora.dataset_processing.exceptions import ProcessingCancelled, ConversionFailed
-from backend.corpora.dataset_processing.common import convert_file, create_artifact, get_bucket_prefix
+from backend.common.entities.collection import Collection
+from backend.common.entities.dataset import Dataset
+from backend.common import CorporaException
+from backend.dataset_processing.exceptions import ProcessingCancelled, ConversionFailed
+from backend.dataset_processing.common import convert_file, create_artifact, get_bucket_prefix
 
 from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 
@@ -82,7 +82,7 @@ class TestCommon(DataPortalTestCase):
         fake_env = patch.dict(os.environ, {"DATASET_ID": dataset_id, "DEPLOYMENT_STAGE": "test"})
         fake_env.start()
 
-        backend.corpora.dataset_processing.common.update_db(
+        backend.dataset_processing.common.update_db(
             dataset_id, metadata={"sex": ["male", "female"], "explorer_url": "https://cellxgene.com/data"}
         )
         self.session.expire(dataset)
@@ -94,13 +94,13 @@ class TestCommon(DataPortalTestCase):
             "user_submitted": True,
             "s3_uri": "s3://test_uri",
         }
-        backend.corpora.dataset_processing.common.update_db(dataset_id, metadata={"artifacts": [artifact]})
+        backend.dataset_processing.common.update_db(dataset_id, metadata={"artifacts": [artifact]})
         self.session.expire(dataset)
         self.assertEqual(len(Dataset.get(self.session, dataset_id).artifacts), 1)
         self.assertEqual(Dataset.get(self.session, dataset_id).artifacts[0].filename, "test_filename")
         self.assertEqual(Dataset.get(self.session, dataset_id).explorer_url, "https://cellxgene.com/data")
 
-        backend.corpora.dataset_processing.common.update_db(
+        backend.dataset_processing.common.update_db(
             dataset_id, processing_status={"upload_status": UploadStatus.UPLOADING, "upload_progress": 0.5}
         )
         self.session.expire(dataset)
@@ -108,7 +108,7 @@ class TestCommon(DataPortalTestCase):
         self.assertEqual(Dataset.get(self.session, dataset_id).processing_status.upload_progress, 0.5)
         self.assertIsNone(Dataset.get(self.session, dataset_id).processing_status.validation_status)
 
-        backend.corpora.dataset_processing.common.update_db(
+        backend.dataset_processing.common.update_db(
             dataset_id,
             processing_status={
                 "upload_status": UploadStatus.UPLOADED,
@@ -133,21 +133,21 @@ class TestCommon(DataPortalTestCase):
         fake_env.start()
 
         with self.assertRaises(ProcessingCancelled):
-            backend.corpora.dataset_processing.common.update_db(dataset_id, metadata={"sex": ["male", "female"]})
+            backend.dataset_processing.common.update_db(dataset_id, metadata={"sex": ["male", "female"]})
 
-    @patch("backend.corpora.dataset_processing.process.update_db")
+    @patch("backend.dataset_processing.process.update_db")
     def test__create_artifact__negative(self, mock_update_db):
         artifact_bucket = "test-artifact-bucket"
         test_dataset = self.generate_dataset(
             self.session,
         )
-        bucket_prefix = backend.corpora.dataset_processing.common.get_bucket_prefix(test_dataset.id)
+        bucket_prefix = backend.dataset_processing.common.get_bucket_prefix(test_dataset.id)
         self.setup_s3_bucket(artifact_bucket)
 
         with self.subTest("file does not exist"):
             self.assertRaises(
                 TypeError,
-                backend.corpora.dataset_processing.common.create_artifact,
+                backend.dataset_processing.common.create_artifact,
                 None,
                 DatasetArtifactFileType.H5AD,
                 bucket_prefix,
@@ -199,7 +199,7 @@ class TestCommon(DataPortalTestCase):
         # cleanup
         self.delete_s3_bucket(artifact_bucket)
 
-    @patch("backend.corpora.dataset_processing.process.update_db")
+    @patch("backend.dataset_processing.process.update_db")
     def test__convert_file__fail(self, mock_update_db):
         def converter(_file):
             raise RuntimeError("conversion_failed")

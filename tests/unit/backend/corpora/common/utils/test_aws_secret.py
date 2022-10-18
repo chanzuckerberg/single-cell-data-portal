@@ -5,7 +5,7 @@ from time import sleep
 import boto3
 from unittest.mock import patch
 
-from backend.corpora.common.utils.aws import AwsSecret
+from backend.common.utils.aws import AwsSecret
 from tests.unit.backend.corpora.fixtures.existing_aws_secret_test_fixture import ExistingAwsSecretTestFixture
 
 
@@ -19,7 +19,7 @@ class TestAwsSecret(unittest.TestCase):
         super().setUpClass()
         # To reduce eventual consistency issues, get everyone using the same Secrets Manager session
         cls.secrets_mgr = boto3.client("secretsmanager", endpoint_url=os.getenv("BOTO_ENDPOINT_URL") or None)
-        cls.patcher = patch("backend.corpora.common.utils.aws.boto3.client")
+        cls.patcher = patch("backend.common.utils.aws.boto3.client")
         boto3_client = cls.patcher.start()
         boto3_client.return_value = cls.secrets_mgr
 

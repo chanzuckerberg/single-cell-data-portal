@@ -1,9 +1,9 @@
 from sqlalchemy.exc import IntegrityError
 
-from backend.corpora.common.corpora_orm import DbCollection, generate_id
-from backend.corpora.common.entities import Dataset
-from backend.corpora.common.entities.geneset import Geneset, GenesetDatasetLink
-from backend.corpora.common.utils.exceptions import CorporaException
+from backend.common.corpora_orm import DbCollection, generate_id
+from backend.common.entities import Dataset
+from backend.common.entities.geneset import Geneset, GenesetDatasetLink
+from backend.common import CorporaException
 from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 
 

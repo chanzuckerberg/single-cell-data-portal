@@ -1,6 +1,6 @@
 import unittest
 
-from backend.corpora.common.utils.semvar_utils import validate_version_str
+from backend.common.utils.semvar_utils import validate_version_str
 
 
 class TestSemvarUtils(unittest.TestCase):

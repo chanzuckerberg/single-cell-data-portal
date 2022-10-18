@@ -8,10 +8,10 @@ from unittest.mock import patch
 import requests
 import socketserver
 
-from backend.corpora.common.entities import Dataset
-from backend.corpora.common.utils.math_utils import MB
-from backend.corpora.dataset_processing import download
-from backend.corpora.dataset_processing.exceptions import ProcessingFailed
+from backend.common.entities import Dataset
+from backend.common.utils.math_utils import MB
+from backend.dataset_processing import download
+from backend.dataset_processing.exceptions import ProcessingFailed
 from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 
 

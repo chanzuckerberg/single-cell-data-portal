@@ -5,9 +5,9 @@ from enum import Enum
 
 from sqlalchemy import Column, String
 
-from backend.corpora.common.corpora_orm import Base
-from backend.corpora.common.entities.entity import Entity
-from backend.corpora.common.utils.json import CustomJSONEncoder, CurationJSONEncoder
+from backend.common.corpora_orm import Base
+from backend.common.entities import Entity
+from backend.common.utils.json import CustomJSONEncoder, CurationJSONEncoder
 
 
 class DBTest(Base):

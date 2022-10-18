@@ -10,8 +10,8 @@ import boto3
 from tests.unit.backend.corpora.fixtures.environment_setup import EnvironmentSetup, fixture_file_path
 from tests.unit.backend.corpora.fixtures.existing_aws_secret_test_fixture import ExistingAwsSecretTestFixture
 
-from backend.corpora.common.utils.secret_config import SecretConfig
-from backend.corpora.common.utils.aws import AwsSecret
+from backend.common import SecretConfig
+from backend.common.utils.aws import AwsSecret
 
 
 class BogoComponentConfig(SecretConfig):
@@ -26,7 +26,7 @@ class TestSecretConfig(unittest.TestCase):
         # AwsSecret.debug_logging = True
         # To reduce eventual consistency issues, get everyone using the same Secrets Manager session
         cls.secrets_mgr = boto3.client("secretsmanager", endpoint_url=os.getenv("BOTO_ENDPOINT_URL") or None)
-        cls.patcher = patch("backend.corpora.common.utils.aws.boto3.client")
+        cls.patcher = patch("backend.common.utils.aws.boto3.client")
         boto3_client = cls.patcher.start()
         boto3_client.return_value = cls.secrets_mgr
 
@@ -69,9 +69,7 @@ class TestSecretConfig(unittest.TestCase):
             self.assertEqual("custom", config.secret1)
 
     def test_singletonness(self):
-        with patch(
-            "backend.corpora.common.utils.aws.AwsSecret.value", new_callable=PropertyMock
-        ) as mock_aws_secret_value:
+        with patch("backend.common.utils.aws.AwsSecret.value", new_callable=PropertyMock) as mock_aws_secret_value:
             mock_aws_secret_value.return_value = '{"secret2": "foo"}'
 
             config1 = BogoComponentConfig(deployment=self.deployment_env, source="aws")

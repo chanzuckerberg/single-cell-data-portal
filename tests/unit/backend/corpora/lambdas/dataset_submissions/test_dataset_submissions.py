@@ -1,13 +1,13 @@
 from unittest import TestCase
 from unittest.mock import patch, Mock
 
-from backend.corpora.common.corpora_orm import generate_id
-from backend.corpora.common.utils.exceptions import (
+from backend.common.corpora_orm import generate_id
+from backend.common import (
     CorporaException,
     NonExistentCollectionException,
     NonExistentDatasetException,
 )
-from backend.corpora.dataset_submissions.app import dataset_submissions_handler
+from backend.dataset_submissions import dataset_submissions_handler
 
 
 class TestDatasetSubmissions(TestCase):
@@ -25,28 +25,28 @@ class TestDatasetSubmissions(TestCase):
     def test__missing_curator_file_name__raises_error(self):
         self._test_missing_fields(key=f"{self.user_name}/{self.collection_id}/")
 
-    @patch("backend.corpora.dataset_submissions.app.Dataset.get")
+    @patch("backend.dataset_submissions.app.Dataset.get")
     def test__missing_collection_id__raises_error(self, mock_dataset_get):
         mock_dataset_get.return_value = None
         s3_event = create_s3_event(key=f"{self.user_name}/{self.collection_id}/{self.dataset_id}")
         with self.assertRaises(NonExistentCollectionException):
             dataset_submissions_handler(s3_event, None)
 
-    @patch("backend.corpora.dataset_submissions.app.Collection.get")
+    @patch("backend.dataset_submissions.app.Collection.get")
     def test__nonexistent_dataset__raises_error(self, mock_collection_get):
         mock_collection_get.return_value = True
         s3_event = create_s3_event(key=f"{self.user_name}/{self.collection_id}/{self.dataset_id}")
         with self.assertRaises(NonExistentDatasetException):
             dataset_submissions_handler(s3_event, None)
 
-    @patch("backend.corpora.dataset_submissions.app.Dataset.get")
+    @patch("backend.dataset_submissions.app.Dataset.get")
     def test__non_owner__raises_error(self, mock_dataset_get):
         mock_dataset_get.return_value = make_dataset_mock("now_owner", self.dataset_id)
         s3_event = create_s3_event(key=f"{self.user_name}/{self.collection_id}/{self.dataset_id}")
         with self.assertRaises(CorporaException):
             dataset_submissions_handler(s3_event, None)
 
-    @patch("backend.corpora.dataset_submissions.app.Dataset.get")
+    @patch("backend.dataset_submissions.app.Dataset.get")
     def test__upload_new_by_dataset_id__Error(self, mock_get_dataset: Mock):
         """processing fails when a new dataset is uploaded using a dataset uuid that is not part of the collection."""
         uuid = self.dataset_id
@@ -55,16 +55,16 @@ class TestDatasetSubmissions(TestCase):
             s3_event = create_s3_event(key=f"{self.user_name}/{self.collection_id}/{uuid}")
             dataset_submissions_handler(s3_event, None)
 
-    @patch("backend.corpora.dataset_submissions.app.Dataset.get")
+    @patch("backend.dataset_submissions.app.Dataset.get")
     def test__upload_update_by_dataset_id__OK(self, mock_get_dataset):
         """processing starts when an update of a dataset is uploaded by its ID."""
         mock_dataset = make_dataset_mock(self.user_name, self.dataset_id)
         mock_get_dataset.return_value = mock_dataset
-        with self.subTest("owner"), patch("backend.corpora.dataset_submissions.app.upload") as mock_upload:
+        with self.subTest("owner"), patch("backend.dataset_submissions.app.upload") as mock_upload:
             s3_event = create_s3_event(key=f"{self.user_name}/{self.collection_id}/{self.dataset_id}")
             dataset_submissions_handler(s3_event, None)
             mock_upload.assert_called()
-        with self.subTest("super"), patch("backend.corpora.dataset_submissions.app.upload") as mock_upload:
+        with self.subTest("super"), patch("backend.dataset_submissions.app.upload") as mock_upload:
             s3_event = create_s3_event(key=f"super/{self.collection_id}/{self.dataset_id}")
             dataset_submissions_handler(s3_event, None)
             mock_upload.assert_called()

@@ -1,5 +1,5 @@
 import backend.corpus_asset_pipelines.integrated_corpus.extract
-from backend.corpora.common.corpora_orm import DatasetArtifactFileType
+from backend.common.corpora_orm import DatasetArtifactFileType
 from backend.wmg.data.constants import INCLUDED_ASSAYS
 from tests.unit.backend.fixtures.generate_data_mixin import GenerateDataMixin
 from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS

@@ -7,10 +7,10 @@ import numpy as np
 import pandas
 from moto import mock_s3
 
-from backend.corpora.common.corpora_orm import UploadStatus
-from backend.corpora.common.entities.dataset import Dataset
-from backend.corpora.dataset_processing.exceptions import ProcessingCancelled
-from backend.corpora.dataset_processing.process_download_validate import download_from_source_uri, extract_metadata
+from backend.common.corpora_orm import UploadStatus
+from backend.common.entities.dataset import Dataset
+from backend.dataset_processing.exceptions import ProcessingCancelled
+from backend.dataset_processing.process_download_validate import download_from_source_uri, extract_metadata
 from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 
 
@@ -247,8 +247,8 @@ class TestProcessingDownloadValidate(DataPortalTestCase):
                 return
             time.sleep(3)
 
-    @patch("backend.corpora.dataset_processing.download.downloader")
-    @patch("backend.corpora.dataset_processing.process_download_validate.from_url")
+    @patch("backend.dataset_processing.download.downloader")
+    @patch("backend.dataset_processing.process_download_validate.from_url")
     def test__dataset_tombstoned_while_uploading(self, mock_from_url, mock_downloader):
         class file_url:
             scheme = "https"
@@ -281,7 +281,7 @@ class TestProcessingDownloadValidate(DataPortalTestCase):
             download_from_source_uri(self.dataset_id, unhandled_uri, "raw.h5ad")
 
     @mock_s3
-    @patch("backend.corpora.dataset_processing.process_download_validate.download_from_s3")
+    @patch("backend.dataset_processing.process_download_validate.download_from_s3")
     def test__download_from_source_uri_with_s3_scheme__downloads_from_s3(self, mock_download_from_s3):
         test_dataset_id = self.generate_dataset(self.session).id
 

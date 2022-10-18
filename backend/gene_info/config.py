@@ -1,4 +1,4 @@
-from backend.corpora.common.utils.secret_config import SecretConfig
+from backend.common import SecretConfig
 
 
 class GeneInfoConfig(SecretConfig):

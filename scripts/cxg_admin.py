@@ -10,8 +10,8 @@ from click import Context
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
 
-from backend.corpora.common.corpora_config import CorporaDbConfig
-from backend.corpora.common.utils.db_session import DBSessionMaker
+from backend.common.corpora_config import CorporaDbConfig
+from backend.common.utils.db_session import DBSessionMaker
 
 from scripts.cxg_admin_scripts import deletions
 from scripts.cxg_admin_scripts import tombstones

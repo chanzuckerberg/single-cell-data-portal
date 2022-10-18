@@ -13,7 +13,7 @@ RUN apt-get update && \
 # Don't re-run pip install unless either requirements.txt has changed.
 WORKDIR /single-cell-data-portal
 ADD requirements.txt requirements-base.txt
-ADD backend/corpora/api_server/requirements.txt requirements-api.txt
+ADD backend/api_server/requirements.txt requirements-api.txt
 RUN python3 -m pip install -r requirements-base.txt -r requirements-api.txt
 EXPOSE 5000
 

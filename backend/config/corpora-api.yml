@@ -24,7 +24,7 @@ paths:
       description: >-
         This lists all collections and their IDs that currently exist in the corpora. If a parameter is specified as
         a filter, then only collections that meet the status criteria will be outputted.
-      operationId: backend.corpora.lambdas.api.v1.collection.get_collections_list
+      operationId: backend.lambdas.api.v1.collection.get_collections_list
       parameters:
         - $ref: "#/components/parameters/query_user_id"
         - name: from_date
@@ -73,7 +73,7 @@ paths:
         - cxguserCookie: []
       description: >-
         Creates a new collection in corpora. Once a collection is created it can be linked to datasets.
-      operationId: backend.corpora.lambdas.api.v1.collection.create_collection
+      operationId: backend.lambdas.api.v1.collection.create_collection
       requestBody:
         content:
           application/json:
@@ -128,7 +128,7 @@ paths:
         - {}
       description: >-
         This will return all datasets and associated attributes.
-      operationId: backend.corpora.lambdas.api.v1.collection.get_collection_details
+      operationId: backend.lambdas.api.v1.collection.get_collection_details
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       responses:
@@ -156,7 +156,7 @@ paths:
       description: >-
         This will return a private version of the public collection with all datasets and assoicated attributes of the
         public collection.
-      operationId: backend.corpora.lambdas.api.v1.collection.post_collection_revision
+      operationId: backend.lambdas.api.v1.collection.post_collection_revision
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       responses:
@@ -183,7 +183,7 @@ paths:
         - cxguserCookie: []
       description: >-
         Update a private collection's summary, links, contact info, and description details.
-      operationId: backend.corpora.lambdas.api.v1.collection.update_collection
+      operationId: backend.lambdas.api.v1.collection.update_collection
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       requestBody:
@@ -230,7 +230,7 @@ paths:
       description: >-
         Deletes an entire private collection from cellxgene data-portal, including any generated artifacts/assets and
         deployments.
-      operationId: backend.corpora.lambdas.api.v1.collection.delete_collection
+      operationId: backend.lambdas.api.v1.collection.delete_collection
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       responses:
@@ -249,7 +249,7 @@ paths:
         An authenticated user can upload a file from a shared link to add a dataset into their collection.
       security:
         - cxguserCookie: []
-      operationId: backend.corpora.lambdas.api.v1.collection_id.upload.link
+      operationId: backend.lambdas.api.v1.collection_id.upload.link
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       requestBody:
@@ -297,7 +297,7 @@ paths:
         collection revision is published.
       security:
         - cxguserCookie: []
-      operationId: backend.corpora.lambdas.api.v1.collection_id.upload.relink
+      operationId: backend.lambdas.api.v1.collection_id.upload.relink
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       requestBody:
@@ -347,7 +347,7 @@ paths:
         - cxguserCookie: []
       description: >-
         Add genesets to a private collection
-      operationId: backend.corpora.lambdas.api.v1.collection_id.gene_set.post
+      operationId: backend.lambdas.api.v1.collection_id.gene_set.post
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       requestBody:
@@ -386,7 +386,7 @@ paths:
 
         If publishing modification to a previously published collection, this will replace the old collection with the new
         published collection. The old collection will no longer be accessible.
-      operationId: backend.corpora.lambdas.api.v1.collection_id.publish.post
+      operationId: backend.lambdas.api.v1.collection_id.publish.post
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       requestBody:
@@ -424,7 +424,7 @@ paths:
       summary: >-
         Returns all public, non tombstoned collections. This endpoint is meant to be used for displaying collections
         in a compact view. It doesn't return all the fields, so it is not suitable for general usage.
-      operationId: backend.corpora.lambdas.api.v1.collection.get_collections_index
+      operationId: backend.lambdas.api.v1.collection.get_collections_index
       responses:
         "200":
           description: OK
@@ -460,7 +460,7 @@ paths:
         Cancels the in process upload of a dataset to the data portal and cleans up (removes) any artifacts created
         in the upload process. If the dataset has already been uploaded and converted, this endpoint deletes it from
         the data portal and removes associated artifacts
-      operationId: backend.corpora.lambdas.api.v1.dataset.delete_dataset
+      operationId: backend.lambdas.api.v1.dataset.delete_dataset
       security:
         - cxguserCookie: []
       parameters:
@@ -484,7 +484,7 @@ paths:
         Given a cellxgene Explorer url return some basic metadata about the dataset it represent in the cellxgene
         Portal data model including its associated dataset id, the s3_uri of the dataset, its tombstone status and
         the associated parent collection ID.
-      operationId: backend.corpora.lambdas.api.v1.dataset.get_dataset_identifiers
+      operationId: backend.lambdas.api.v1.dataset.get_dataset_identifiers
       parameters:
         - in: query
           required: true
@@ -511,7 +511,7 @@ paths:
       summary: Dataset assets
       description: >-
         Return a list of all the dataset's assets
-      operationId: backend.corpora.lambdas.api.v1.dataset.get_dataset_assets
+      operationId: backend.lambdas.api.v1.dataset.get_dataset_assets
       parameters:
         - $ref: "#/components/parameters/path_dataset_id"
       responses:
@@ -535,7 +535,7 @@ paths:
       summary: Request to download a dataset
       description: >-
         Request to download a file which on success will generate a pre-signed URL to download the dataset.
-      operationId: backend.corpora.lambdas.api.v1.dataset.post_dataset_asset
+      operationId: backend.lambdas.api.v1.dataset.post_dataset_asset
       parameters:
         - $ref: "#/components/parameters/path_dataset_id"
         - name: asset_id
@@ -577,7 +577,7 @@ paths:
       description: >-
         Request to update (add or remove) linkages between a dataset and gene sets. The request must be made by the
         collection owner and the dataset and gene sets must all belong to the same private collection
-      operationId: backend.corpora.lambdas.api.v1.dataset.post_dataset_gene_sets
+      operationId: backend.lambdas.api.v1.dataset.post_dataset_gene_sets
       parameters:
         - $ref: "#/components/parameters/path_dataset_id"
       requestBody:
@@ -616,7 +616,7 @@ paths:
       tags:
         - datasets
       summary: Get the status of a dataset upload.
-      operationId: backend.corpora.lambdas.api.v1.dataset.get_status
+      operationId: backend.lambdas.api.v1.dataset.get_status
       security:
         - cxguserCookie: []
       parameters:
@@ -711,7 +711,7 @@ paths:
       description: >-
         Returns all datasets that belong to public, non tombstoned collections. This endpoint is meant to be used 
         for displaying datasets in a compact view. It doesn't return all the fields, so it is not suitable for general usage.
-      operationId: backend.corpora.lambdas.api.v1.dataset.get_datasets_index
+      operationId: backend.lambdas.api.v1.dataset.get_datasets_index
       responses:
         "200":
           description: OK
@@ -757,7 +757,7 @@ paths:
                     cell_type_ancestors:
                       type: array
                       items:
-                        type: string                      
+                        type: string
                     mean_genes_per_cell:
                       type: number
                     is_primary_data:
@@ -790,7 +790,7 @@ paths:
         - cxguserCookie: []
       description: >-
         Delete a gene by set removing it from a collection and any data sets it was linked to.
-      operationId: backend.corpora.lambdas.api.v1.gene_sets.delete
+      operationId: backend.lambdas.api.v1.gene_sets.delete
       parameters:
         - $ref: "#/components/parameters/path_geneset_id"
       responses:
@@ -806,7 +806,7 @@ paths:
       tags:
         - authentication
       summary: login to the system
-      operationId: backend.corpora.lambdas.api.v1.authentication.login
+      operationId: backend.lambdas.api.v1.authentication.login
       responses:
         "200":
           $ref: "#/components/responses/200"
@@ -820,7 +820,7 @@ paths:
       tags:
         - authentication
       summary: logout of the system
-      operationId: backend.corpora.lambdas.api.v1.authentication.logout
+      operationId: backend.lambdas.api.v1.authentication.logout
       responses:
         "200":
           $ref: "#/components/responses/200"
@@ -834,7 +834,7 @@ paths:
       tags:
         - authentication
       summary: retrieve user information if the user is logged in
-      operationId: backend.corpora.lambdas.api.v1.authentication.userinfo
+      operationId: backend.lambdas.api.v1.authentication.userinfo
       security:
         - cxguserCookie: []
       responses:
@@ -855,7 +855,7 @@ paths:
       tags:
         - authentication
       summary: callback function from auth server after login
-      operationId: backend.corpora.lambdas.api.v1.authentication.oauth2_callback
+      operationId: backend.lambdas.api.v1.authentication.oauth2_callback
       responses:
         "200":
           $ref: "#/components/responses/200"
@@ -866,7 +866,7 @@ paths:
   /v1/auth/key:
     get:
       summary: Fetch the identifier of the curator's active API key -- for use with Data Portal UI
-      operationId: backend.corpora.lambdas.api.v1.auth.keys.get
+      operationId: backend.lambdas.api.v1.auth.keys.get
       security:
         - cxguserCookie: []
       responses:
@@ -881,7 +881,7 @@ paths:
       description: >-
         Generate and return a curator API key for the user. If there is already a key associated with the
         user's curator profile, replace it with the new key.
-      operationId: backend.corpora.lambdas.api.v1.auth.keys.post
+      operationId: backend.lambdas.api.v1.auth.keys.post
       security:
         - cxguserCookie: []
       responses:
@@ -900,7 +900,7 @@ paths:
           $ref: "#/components/responses/400"
     delete:
       summary: Delete the curator's API key -- for use with Data Portal UI
-      operationId: backend.corpora.lambdas.api.v1.auth.keys.delete
+      operationId: backend.lambdas.api.v1.auth.keys.delete
       security:
         - cxguserCookie: []
       responses:
@@ -913,7 +913,7 @@ paths:
   /v1/deployed_version:
     get:
       summary: Returns version information
-      operationId: backend.corpora.lambdas.api.v1.version.get
+      operationId: backend.lambdas.api.v1.version.get
       responses:
         "200":
           $ref: "#/components/responses/200"
@@ -1301,9 +1301,9 @@ components:
       type: apiKey
       in: cookie
       name: cxguser
-      x-apikeyInfoFunc: backend.corpora.lambdas.api.v1.authentication.apikey_info_func
+      x-apikeyInfoFunc: backend.lambdas.api.v1.authentication.apikey_info_func
     cxguserCookieLenient:
       type: apiKey
       in: cookie
       name: cxguser
-      x-apikeyInfoFunc: backend.corpora.lambdas.api.v1.authentication.apikey_info_func_lenient
+      x-apikeyInfoFunc: backend.lambdas.api.v1.authentication.apikey_info_func_lenient
