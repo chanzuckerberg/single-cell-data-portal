@@ -4,7 +4,7 @@ from backend.common.auth0_manager import auth0_management_session
 from backend.common.corpora_config import CorporaAuthConfig
 from backend.common.utils.api_key import generate
 from backend.common.utils.http_exceptions import NotFoundHTTPException
-from backend.lambdas.api.v1.authentication import get_userinfo
+from backend.portal.api.v1.authentication import get_userinfo
 
 
 def get(user: str):

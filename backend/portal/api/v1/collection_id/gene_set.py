@@ -6,7 +6,7 @@ from backend.common.entities import Collection
 from backend.common.entities.geneset import Geneset
 from backend.api_server.db import dbconnect
 from backend.common.utils.http_exceptions import ForbiddenHTTPException, InvalidParametersHTTPException
-from backend.lambdas.api.v1.authorization import owner_or_allowed
+from backend.portal.api.v1.authorization import owner_or_allowed
 
 
 @dbconnect

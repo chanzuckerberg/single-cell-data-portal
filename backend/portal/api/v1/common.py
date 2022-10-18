@@ -8,7 +8,7 @@ from backend.common.utils.http_exceptions import (
     InvalidParametersHTTPException,
     NotFoundHTTPException,
 )
-from backend.lambdas.api.v1.authorization import owner_or_allowed
+from backend.portal.api.v1.authorization import owner_or_allowed
 
 
 def get_collection_else_forbidden(db_session, collection_id, **kwargs):

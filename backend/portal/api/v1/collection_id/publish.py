@@ -6,7 +6,7 @@ from backend.common.utils.http_exceptions import ConflictException
 
 from backend.api_server.db import dbconnect
 from backend.common.utils.http_exceptions import ForbiddenHTTPException
-from backend.lambdas.api.v1.authorization import owner_or_allowed
+from backend.portal.api.v1.authorization import owner_or_allowed
 
 from backend.common.utils import cloudfront
 

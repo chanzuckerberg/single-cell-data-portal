@@ -1,6 +1,6 @@
 from flask import g, jsonify, Response
 
-from backend.lambdas.api.v1.collection import (
+from backend.portal.api.v1.collection import (
     get_collection_and_verify_body,
     get_publisher_metadata,
     curation_get_normalized_doi_url,
@@ -19,9 +19,9 @@ from backend.common.utils.http_exceptions import (
     InvalidParametersHTTPException,
     ForbiddenHTTPException,
 )
-from backend.lambdas.api.v1.authorization import owner_or_allowed
-from backend.lambdas.api.v1.common import get_collection_else_forbidden
-from backend.lambdas.api.v1.curation.collections.common import extract_doi_from_links, reshape_for_curation_api
+from backend.portal.api.v1.authorization import owner_or_allowed
+from backend.portal.api.v1.common import get_collection_else_forbidden
+from backend.portal.api.v1.curation.collections.common import extract_doi_from_links, reshape_for_curation_api
 
 
 @dbconnect

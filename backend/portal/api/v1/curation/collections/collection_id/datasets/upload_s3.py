@@ -7,8 +7,8 @@ from flask import g, request, make_response, jsonify
 from backend.api_server.db import dbconnect
 from backend.common.corpora_config import CorporaConfig
 from backend.common.corpora_orm import CollectionVisibility
-from backend.lambdas.api.v1.authorization import owner_or_allowed, is_super_curator
-from backend.lambdas.api.v1.common import get_collection_else_forbidden
+from backend.portal.api.v1.authorization import owner_or_allowed, is_super_curator
+from backend.portal.api.v1.common import get_collection_else_forbidden
 
 sts_client = boto3.client("sts")
 logger = logging.getLogger(__name__)

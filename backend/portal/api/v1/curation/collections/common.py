@@ -3,7 +3,7 @@ import typing
 from sqlalchemy.orm import Session
 from urllib.parse import urlparse
 
-from backend.lambdas.api.v1.authorization import is_user_owner_or_allowed
+from backend.portal.api.v1.authorization import is_user_owner_or_allowed
 from backend.common.corpora_config import CorporaConfig
 from backend.common.corpora_orm import (
     CollectionVisibility,

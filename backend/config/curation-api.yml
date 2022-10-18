@@ -26,7 +26,7 @@ paths:
       description: |
         Returns a bearer access token that must be passed in an Authorization header to requests that
         require authorization such as creating a new Collection.
-      operationId: backend.lambdas.api.v1.curation.auth.token.post
+      operationId: backend.portal.api.v1.curation.auth.token.post
       parameters:
         - in: header
           name: x-api-key
@@ -67,7 +67,7 @@ paths:
         `revision_of`.
 
         * Optional: provide your access token in the request header as `Authorization: Bearer <access_token>`.
-      operationId: backend.lambdas.api.v1.curation.collections.actions.get
+      operationId: backend.portal.api.v1.curation.collections.actions.get
       security:
         - curatorAccessLenient: []
         - {}
@@ -117,7 +117,7 @@ paths:
         Create a new private Collection
 
         * Required: provide your access token in the request header as `Authorization: Bearer <access_token>`.
-      operationId: backend.lambdas.api.v1.curation.collections.actions.post
+      operationId: backend.portal.api.v1.curation.collections.actions.post
       tags:
         - collection
       security:
@@ -157,7 +157,7 @@ paths:
         An Authorization token must be provided in order to retrieve the id of an associated Revision for this Collection (the `revising_in` field), if such a Revision currently exists.
 
         * Optional: provide your access token in the request header as `Authorization: Bearer <access_token>`.
-      operationId: backend.lambdas.api.v1.curation.collections.collection_id.actions.get
+      operationId: backend.portal.api.v1.curation.collections.collection_id.actions.get
       security:
         - curatorAccessLenient: []
         - {}
@@ -185,7 +185,7 @@ paths:
         publisher, then the request returns a 400 (BAD REQUEST).
 
         * Required: provide your access token in the request header as `Authorization: Bearer <access_token>`.
-      operationId: backend.lambdas.api.v1.curation.collections.collection_id.actions.patch
+      operationId: backend.portal.api.v1.curation.collections.collection_id.actions.patch
       security:
         - curatorAccess: []
       tags:
@@ -241,7 +241,7 @@ paths:
         Delete a private Collection or cancel a Revision.
 
         * Required: provide your access token in the request header as `Authorization: Bearer <access_token>`.
-      operationId: backend.lambdas.api.v1.curation.collections.collection_id.actions.delete
+      operationId: backend.portal.api.v1.curation.collections.collection_id.actions.delete
       security:
         - curatorAccess: []
       tags:
@@ -269,7 +269,7 @@ paths:
         All methods of updating or adding Datasets and metadata to a Revision work the same as for a private Collection.
 
         * Required: provide your access token in the request header as `Authorization: Bearer <access_token>`.
-      operationId: backend.lambdas.api.v1.curation.collections.collection_id.revision.post_collection_revision
+      operationId: backend.portal.api.v1.curation.collections.collection_id.revision.post_collection_revision
       security:
         - curatorAccess: []
       tags:
@@ -299,7 +299,7 @@ paths:
         to S3 to identify what Dataset the file belongs to.
 
         * Required: provide your access token in the request header as `Authorization: bearer <access_token>`.
-      operationId: backend.lambdas.api.v1.curation.collections.collection_id.datasets.actions.post
+      operationId: backend.portal.api.v1.curation.collections.collection_id.datasets.actions.post
       security:
         - curatorAccess: []
       tags:
@@ -335,7 +335,7 @@ paths:
         the cancellation process is occurring, the Dataset may still appear as part of the Collection for a few minutes, but will eventually be removed.
 
         * Required: provide your access token in the request header as `Authorization: bearer <access_token>`.
-      operationId: backend.lambdas.api.v1.curation.collections.collection_id.datasets.actions.delete
+      operationId: backend.portal.api.v1.curation.collections.collection_id.datasets.actions.delete
       tags:
         - collection
       security:
@@ -364,7 +364,7 @@ paths:
       summary: Fetch Dataset metadata from a Collection.
       description: |
         Fetch Dataset metadata for `dataset_id` in a `collection_id`.
-      operationId: backend.lambdas.api.v1.curation.collections.collection_id.datasets.actions.get
+      operationId: backend.portal.api.v1.curation.collections.collection_id.datasets.actions.get
       tags:
         - collection
       parameters:
@@ -389,7 +389,7 @@ paths:
         file URL.
 
         * Required: provide your access token in the request header as `Authorization: Bearer <access_token>`.
-      operationId: backend.lambdas.api.v1.curation.collections.collection_id.datasets.actions.put
+      operationId: backend.portal.api.v1.curation.collections.collection_id.datasets.actions.put
       tags:
         - collection
       security:
@@ -476,7 +476,7 @@ paths:
         * Required: provide your access token in the request header as `Authorization: Bearer <access_token>`.
       security:
         - curatorAccess: []
-      operationId: backend.lambdas.api.v1.curation.collections.collection_id.datasets.upload_s3.get
+      operationId: backend.portal.api.v1.curation.collections.collection_id.datasets.upload_s3.get
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       responses:
@@ -516,7 +516,7 @@ paths:
         Generate Presigned S3 URLs to download the files associated with the `dataset_id`. 
         Pre-signed S3 URLs have a life span of up to 1 hour. You should
         generate a pre-signed URL immediately before each download to ensure it is current.
-      operationId: backend.lambdas.api.v1.curation.collections.collection_id.assets.get
+      operationId: backend.portal.api.v1.curation.collections.collection_id.assets.get
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
         - $ref: "#/components/parameters/path_dataset_id"
@@ -1134,9 +1134,9 @@ components:
       bearerFormat: JWT
       scheme: bearer
       type: http
-      x-bearerInfoFunc: backend.lambdas.api.v1.authentication.curation_access_token_func
+      x-bearerInfoFunc: backend.portal.api.v1.authentication.curation_access_token_func
     curatorAccessLenient:
       bearerFormat: JWT
       scheme: bearer
       type: http
-      x-bearerInfoFunc: backend.lambdas.api.v1.authentication.curation_access_token_func_lenient
+      x-bearerInfoFunc: backend.portal.api.v1.authentication.curation_access_token_func_lenient

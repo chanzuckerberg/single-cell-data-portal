@@ -13,10 +13,10 @@ import re
 
 import logging
 
-from backend.lambdas.api.v1.common import get_collection_else_forbidden
+from backend.portal.api.v1.common import get_collection_else_forbidden
 from backend.common.corpora_orm import DbCollection, CollectionVisibility, ProjectLinkType
 from backend.common.entities import Collection
-from backend.lambdas.api.v1.authorization import is_user_owner_or_allowed, owner_or_allowed
+from backend.portal.api.v1.authorization import is_user_owner_or_allowed, owner_or_allowed
 from backend.common.utils.http_exceptions import (
     InvalidParametersHTTPException,
     ForbiddenHTTPException,

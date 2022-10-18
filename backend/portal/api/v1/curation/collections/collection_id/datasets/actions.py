@@ -7,14 +7,14 @@ from backend.common.utils.http_exceptions import (
     NotFoundHTTPException,
     MethodNotAllowedException,
 )
-from backend.lambdas.api.v1.authorization import owner_or_allowed
-from backend.lambdas.api.v1.collection_id.upload import upload_from_link
-from backend.lambdas.api.v1.common import (
+from backend.portal.api.v1.authorization import owner_or_allowed
+from backend.portal.api.v1.collection_id.upload import upload_from_link
+from backend.portal.api.v1.common import (
     get_dataset_else_error,
     delete_dataset_common,
     get_collection_else_forbidden,
 )
-from backend.lambdas.api.v1.curation.collections.common import EntityColumns, reshape_dataset_for_curation_api
+from backend.portal.api.v1.curation.collections.common import EntityColumns, reshape_dataset_for_curation_api
 
 
 @dbconnect

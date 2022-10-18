@@ -1,7 +1,7 @@
 from flask import make_response, jsonify
 
 from backend.api_server.db import dbconnect
-from backend.lambdas.api.v1.collection import post_collection_revision_common
+from backend.portal.api.v1.collection import post_collection_revision_common
 
 
 @dbconnect
