@@ -16,14 +16,14 @@ RUN pip3 install scanpy==1.6.0 python-igraph==0.8.3 louvain==0.7.0 packaging==21
 
 
 ADD requirements.txt requirements-base.txt
-ADD backend/corpora/dataset_processing/requirements.txt requirements-processing.txt
+ADD backend/dataset_processing/requirements.txt requirements-processing.txt
 RUN pip3 install -r requirements-base.txt -r requirements-processing.txt
 
 ADD tests /single-cell-data-portal/tests
 ADD backend/__init__.py backend/__init__.py
-ADD backend/corpora/__init__.py backend/corpora/__init__.py
-ADD backend/corpora/dataset_processing backend/corpora/dataset_processing
-ADD backend/corpora/common backend/corpora/common
+ADD backend/__init__.py backend/__init__.py
+ADD backend/dataset_processing backend/dataset_processing
+ADD backend/common backend/common
 
 ARG HAPPY_BRANCH="unknown"
 ARG HAPPY_COMMIT=""
