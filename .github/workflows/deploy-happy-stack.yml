@@ -93,7 +93,7 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: failure() && github.ref == 'refs/heads/main'
 
-  smoke-test:
+  e2e-test:
     timeout-minutes: 60
     runs-on: ubuntu-20.04
     needs:
@@ -283,7 +283,7 @@ jobs:
     runs-on: ubuntu-20.04
     needs:
       - performance-test
-      - smoke-test
+      - e2e-test
       - functional-test
     steps:
       - uses: 8398a7/action-slack@v3
