@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from backend.common.corpora_config import CorporaConfig
 import os
 
-from backend.common.corpora_orm import CollectionVisibility, ProcessingStatus
+from backend.common.corpora_orm import CollectionVisibility, ProcessingStatus, ValidationStatus
 from backend.common.entities import Collection, Dataset
 from backend.common.utils.authorization_checks import owner_or_allowed
 from backend.common.utils.exceptions import (
@@ -52,9 +52,26 @@ def upload(
     scope: str = None,
     dataset_id: str = None,
 ) -> str:
-    max_file_size_gb = CorporaConfig().upload_max_file_size_gb * GB
-    if file_size is not None and file_size > max_file_size_gb:
-        raise MaxFileSizeExceededException(f"{url} exceeds the maximum allowed file size of {max_file_size_gb} Gb")
+    # Check if a dataset already exists
+    if dataset_id:
+        dataset = Dataset.get(db_session, dataset_id, collection_id=collection_id)
+        if not dataset:
+            raise NonExistentDatasetException(f"Dataset {dataset_id} does not exist")
+    else:
+        dataset = None
+
+    # Check if file size is within max size limit
+    max_file_size_gb = CorporaConfig().upload_max_file_size_gb
+    if file_size is not None and file_size > max_file_size_gb * GB:
+        error_message = f"The file exceeds the maximum allowed size of {max_file_size_gb} GB"
+        if dataset:
+            dataset.update(
+                processing_status={
+                    "validation_status": ValidationStatus.INVALID,
+                    "validation_message": error_message,
+                }
+            )
+        raise MaxFileSizeExceededException(error_message)
 
     # Check if datasets can be added to the collection
     collection = Collection.get_collection(
@@ -65,14 +82,6 @@ def upload(
     )
     if not collection:
         raise NonExistentCollectionException(f"Collection {collection_id} does not exist")
-
-    # Check if a dataset already exists
-    if dataset_id:
-        dataset = Dataset.get(db_session, dataset_id, collection_id=collection_id)
-        if not dataset:
-            raise NonExistentDatasetException(f"Dataset {dataset_id} does not exist")
-    else:
-        dataset = None
 
     if dataset:
         # Update dataset
