@@ -121,10 +121,10 @@ class TestCrossrefProvider(unittest.TestCase):
 
         expected_response = {
             "authors": [
-                {"name": "A Consortium"},
+                {"name": "A consortium"},
                 {"name": "Foo consortium"},
                 {"name": "Smith"},
-                {"name": "Baz Consortium"},
+                {"name": "Baz consortium"},
                 {"given": "John", "family": "Doe"},
                 {"given": "Jane", "family": "Doe"},
             ],
