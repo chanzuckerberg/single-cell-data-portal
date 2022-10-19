@@ -6,7 +6,7 @@ from uuid import uuid4
 
 import numpy as np
 import tiledb
-from pandas import Series, DataFrame
+from pandas import Series, DataFrame, Categorical
 
 from backend.common.utils.cxg_generation_utils import (
     convert_dictionary_to_cxg_group,
@@ -45,8 +45,15 @@ class TestCxgGenerationUtils(unittest.TestCase):
     def test__convert_dataframe_to_cxg_array__writes_successfully(self):
         random_int_category = Series(data=[3, 1, 2, 4], dtype=np.int64)
         random_bool_category = Series(data=[True, True, False, True], dtype=np.bool_)
+        random_nan_category = Categorical(Series(data=["A", "B", np.nan, "D"]))
         random_dataframe_name = f"random_dataframe_{uuid4()}"
-        random_dataframe = DataFrame(data={"int_category": random_int_category, "bool_category": random_bool_category})
+        random_dataframe = DataFrame(
+            data={
+                "int_category": random_int_category,
+                "bool_category": random_bool_category,
+                "nan_category": random_nan_category,
+            }
+        )
 
         convert_dataframe_to_cxg_array(
             self.testing_cxg_temp_directory, random_dataframe_name, random_dataframe, "int_category", tiledb.Ctx()
@@ -55,7 +62,12 @@ class TestCxgGenerationUtils(unittest.TestCase):
         expected_array_directory = f"{self.testing_cxg_temp_directory}/{random_dataframe_name}"
         expected_array_metadata = {
             "cxg_schema": json.dumps(
-                {"int_category": {"type": "int32"}, "bool_category": {"type": "boolean"}, "index": "int_category"}
+                {
+                    "int_category": {"type": "int32"},
+                    "bool_category": {"type": "boolean"},
+                    "nan_category": {"type": "categorical", "categories": ["A", "B", "D", "nan"]},
+                    "index": "int_category",
+                }
             )
         }
 

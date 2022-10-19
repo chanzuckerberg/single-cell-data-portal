@@ -59,7 +59,7 @@ def convert_dataframe_to_cxg_array(cxg_container, dataframe_name, dataframe, ind
             del hints["categories"]
             data[column_name] = column_values.to_numpy(dtype=dtype)
         elif "categories" in hints:
-            cat = pd.Categorical(column_values)
+            cat = pd.Categorical(column_values.astype("str"))
             codes = cat.codes
             data[column_name] = codes
             categories = list(cat.categories)
