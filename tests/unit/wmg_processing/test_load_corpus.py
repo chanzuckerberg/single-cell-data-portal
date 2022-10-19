@@ -11,7 +11,7 @@ import tiledb
 from scipy import sparse
 from scipy.sparse import coo_matrix, csr_matrix
 
-from backend.corpus_asset_pipelines import build_integrated_corpus
+from backend.corpus_asset_pipelines.integrated_corpus import build_integrated_corpus
 from backend.corpus_asset_pipelines.integrated_corpus.load import load_dataset
 from backend.corpus_asset_pipelines.integrated_corpus.transform import (
     filter_out_rankits_with_low_expression_counts,
@@ -117,7 +117,7 @@ class TestCorpusLoad(unittest.TestCase):
     @patch("backend.corpus_asset_pipelines.integrated_corpus.transform.GENE_EXPRESSION_COUNT_MIN_THRESHOLD", 1)
     @patch("backend.corpus_asset_pipelines.integrated_corpus.job.tiledb.consolidate", new=Mock())  # Slow
     @patch("backend.corpus_asset_pipelines.integrated_corpus.job.tiledb.vacuum", new=Mock())  # Slow
-    @patch("backend.wmg.data.cube_pipeline.upload_artifacts_to_s3", new=Mock())  # Don't upload the cube.
+    @patch("backend.corpus_asset_pipelines.cube_pipeline.upload_artifacts_to_s3", new=Mock())  # Don't upload the cube.
     @patch(
         "backend.corpus_asset_pipelines.integrated_corpus.job.extract.get_dataset_s3_uris", new=Mock(return_value={})
     )

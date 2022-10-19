@@ -19,8 +19,11 @@ def change_directory(path):
 
 
 class TestCubePipe(unittest.TestCase):
-    @mock.patch("backend.wmg.data.cube_pipeline.notify_slack")
-    @mock.patch("backend.wmg.data.cube_pipeline.load_data_and_create_cube", new=Mock(side_effect=Exception("testing")))
+    @mock.patch("backend.corpus_asset_pipelines.cube_pipeline.notify_slack")
+    @mock.patch(
+        "backend.corpus_asset_pipelines.cube_pipeline.load_data_and_create_cube",
+        new=Mock(side_effect=Exception("testing")),
+    )
     def test_exception_handle_catches_errors(self, mock_notify_slack: Mock):
         with tempfile.TemporaryDirectory() as tempdir:
             last_wd = os.getcwd()
