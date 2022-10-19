@@ -18,9 +18,12 @@ from backend.corpora.common.corpora_orm import (
     UploadStatus,
     ValidationStatus,
 )
+from backend.corpora.common.corpora_config import CorporaConfig
 from backend.corpora.common.entities.collection import Collection
 from backend.corpora.common.entities.dataset import Dataset
-from backend.corpora.common.utils.exceptions import CorporaException
+from backend.corpora.common.upload import upload
+from backend.corpora.common.utils.exceptions import CorporaException, MaxFileSizeExceededException
+from backend.corpora.common.utils.math_utils import GB
 from backend.corpora.dataset_processing.exceptions import ProcessingCancelled, ConversionFailed
 from backend.corpora.dataset_processing.common import convert_file, create_artifact, get_bucket_prefix
 
@@ -206,3 +209,22 @@ class TestCommon(DataPortalTestCase):
 
         with self.assertRaises(ConversionFailed):
             convert_file(converter, self.h5ad_filename, "error", "fake_id", "h5ad_status")
+
+    def test__filesize_exceeds_limit(self):
+        collection = self.generate_collection(self.session)
+        dataset = self.generate_dataset(self.session, collection_id=collection.id)
+        max_file_size_gb = CorporaConfig().upload_max_file_size_gb
+        with self.assertRaises(MaxFileSizeExceededException):
+            upload(
+                self.session,
+                collection.id,
+                "download_url_placeholder",
+                max_file_size_gb * GB + 1,  # Purport to exceed the max file size
+                "test_user",
+                dataset_id=dataset.id,
+            )
+        self.assertEqual(dataset.processing_status.validation_status, ValidationStatus.INVALID)
+        self.assertEqual(
+            dataset.processing_status.validation_message,
+            f"The file exceeds the maximum allowed size of {max_file_size_gb} GB",
+        )
