@@ -21,7 +21,7 @@ from backend.common.utils.http_exceptions import (
 )
 from backend.portal.api.v1.authorization import owner_or_allowed
 from backend.portal.api.v1.common import get_collection_else_forbidden
-from backend.portal.api.v1.curation.collections.common import extract_doi_from_links, reshape_for_curation_api
+from backend.curation.api.v1.curation.collections.common import extract_doi_from_links, reshape_for_curation_api
 
 
 @dbconnect

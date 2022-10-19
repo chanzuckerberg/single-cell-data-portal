@@ -1,5 +1,5 @@
 from flask import jsonify, g, make_response
-from backend.portal.api.v1.curation.collections.common import reshape_for_curation_api
+from backend.curation.api.v1.curation.collections.common import reshape_for_curation_api
 from backend.portal.api.v1.authorization import is_super_curator, owner_or_allowed
 from backend.portal.api.v1.collection import create_collection_common, curation_get_normalized_doi_url
 from backend.common.corpora_orm import CollectionVisibility, DbCollection, ProjectLinkType

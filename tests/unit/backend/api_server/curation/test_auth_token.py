@@ -6,8 +6,8 @@ from tests.unit.backend.api_server.base_api_test import BaseAPITest
 
 
 class TestAuthToken(BaseAPITest):
-    @patch("backend.portal.api.v1.curation.auth.token.CorporaAuthConfig")
-    @patch("backend.portal.api.v1.curation.auth.token.auth0_management_session")
+    @patch("backend.curation.api.v1.curation.auth.token.CorporaAuthConfig")
+    @patch("backend.curation.api.v1.curation.auth.token.auth0_management_session")
     def test__post_token__201(self, auth0_management_session: Mock, CorporaAuthConfig: Mock):
         test_secret = "password1234"
         test_email = "user@email.com"
@@ -22,7 +22,7 @@ class TestAuthToken(BaseAPITest):
         self.assertEqual("OK", token)
         auth0_management_session.get_user_api_key_identity.assert_called_once_with(test_user_id)
 
-    @patch("backend.portal.api.v1.curation.auth.token.CorporaAuthConfig")
+    @patch("backend.curation.api.v1.curation.auth.token.CorporaAuthConfig")
     def test__post_token__401(self, CorporaAuthConfig):
         test_secret = "password1234"
         test_user_id = "test_user_id"
@@ -31,8 +31,8 @@ class TestAuthToken(BaseAPITest):
         response = self.app.post("/curation/v1/auth/token", headers={"x-api-key": user_api_key})
         self.assertEqual(401, response.status_code)
 
-    @patch("backend.portal.api.v1.curation.auth.token.CorporaAuthConfig")
-    @patch("backend.portal.api.v1.curation.auth.token.auth0_management_session")
+    @patch("backend.curation.api.v1.curation.auth.token.CorporaAuthConfig")
+    @patch("backend.curation.api.v1.curation.auth.token.auth0_management_session")
     def test__post_token__404(self, auth0_management_session, CorporaAuthConfig):
         test_secret = "password1234"
         test_user_id = "test_user_id"

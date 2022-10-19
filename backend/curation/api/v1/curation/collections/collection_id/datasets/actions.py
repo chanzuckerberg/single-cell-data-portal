@@ -14,7 +14,7 @@ from backend.portal.api.v1.common import (
     delete_dataset_common,
     get_collection_else_forbidden,
 )
-from backend.portal.api.v1.curation.collections.common import EntityColumns, reshape_dataset_for_curation_api
+from backend.curation.api.v1.curation.collections.common import EntityColumns, reshape_dataset_for_curation_api
 
 
 @dbconnect
