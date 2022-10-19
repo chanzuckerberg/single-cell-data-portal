@@ -63,7 +63,7 @@ def upload(
     # Check if file size is within max size limit
     max_file_size_gb = CorporaConfig().upload_max_file_size_gb * GB
     if file_size is not None and file_size > max_file_size_gb:
-        error_message = f"The file exceeds the maximum allowed size of {max_file_size_gb} GB"
+        error_message = f"The file exceeds the maximum allowed size of {max_file_size_gb} bytes"
         if dataset:
             dataset.update(
                 processing_status={
