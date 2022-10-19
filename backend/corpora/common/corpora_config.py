@@ -1,6 +1,6 @@
 import os
 
-from .utils.secret_config import SecretConfig
+from backend.corpora.common.utils.secret_config import SecretConfig
 
 
 class CorporaConfig(SecretConfig):

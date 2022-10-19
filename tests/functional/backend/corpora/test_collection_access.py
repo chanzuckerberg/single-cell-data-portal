@@ -34,7 +34,7 @@ class TestCollectionAccess(BaseFunctionalTestCase):
         # get collections for nocollection user
         headers = {"Cookie": f"cxguser={self.nocollection_cookie}", "Content-Type": "application/json"}
         res = self.session.get(f"{self.api}/dp/v1/collections", headers=headers)
-        self.assertEqual(res.status_code, requests.codes.ok)
+        self.assertStatusCode(requests.codes.ok, res)
         # length should be 0
         collections = res.json()["collections"]
         private_collections = [c for c in collections if c["visibility"] == "PRIVATE"]
@@ -43,14 +43,14 @@ class TestCollectionAccess(BaseFunctionalTestCase):
         # get collection for supercurator user
         headers = {"Cookie": f"cxguser={self.supercurator_cookie}", "Content-Type": "application/json"}
         res = self.session.get(f"{self.api}/dp/v1/collections", headers=headers)
-        self.assertEqual(res.status_code, requests.codes.ok)
+        self.assertStatusCode(requests.codes.ok, res)
         # len should be a lot
         superuser_collections = [c for c in res.json()["collections"] if c["visibility"] == "PRIVATE"]
 
         # get collection for curator user
         headers = {"Cookie": f"cxguser={self.curator_cookie}", "Content-Type": "application/json"}
         res = self.session.get(f"{self.api}/dp/v1/collections", headers=headers)
-        self.assertEqual(res.status_code, requests.codes.ok)
+        self.assertStatusCode(requests.codes.ok, res)
 
         # len should be less than super curator
         curator_collections = [c for c in res.json()["collections"] if c["visibility"] == "PRIVATE"]

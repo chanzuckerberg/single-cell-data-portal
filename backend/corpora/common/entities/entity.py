@@ -5,7 +5,7 @@ from sqlalchemy import inspect
 from sqlalchemy.orm import Session
 
 
-from ..corpora_orm import Base
+from backend.corpora.common.corpora_orm import Base
 
 
 class Entity:

@@ -6,9 +6,9 @@ from urllib.parse import urlparse
 
 from botocore.exceptions import ClientError
 
-from .entity import Entity
-from ..corpora_orm import DbDatasetArtifact, DatasetArtifactFileType
-from ..utils.s3_buckets import buckets
+from backend.corpora.common.entities.entity import Entity
+from backend.corpora.common.corpora_orm import DbDatasetArtifact, DatasetArtifactFileType
+from backend.corpora.common.utils.s3_buckets import buckets
 
 
 class DatasetAsset(Entity):

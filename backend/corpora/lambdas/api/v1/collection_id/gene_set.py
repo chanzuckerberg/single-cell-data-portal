@@ -1,12 +1,12 @@
 from flask import make_response, g, jsonify
 from sqlalchemy.exc import IntegrityError
 
-from .....common.corpora_orm import CollectionVisibility
-from .....common.entities import Collection
-from .....common.entities.geneset import Geneset
-from .....api_server.db import dbconnect
-from .....common.utils.http_exceptions import ForbiddenHTTPException, InvalidParametersHTTPException
-from ..authorization import owner_or_allowed
+from backend.corpora.common.corpora_orm import CollectionVisibility
+from backend.corpora.common.entities import Collection
+from backend.corpora.common.entities.geneset import Geneset
+from backend.corpora.api_server.db import dbconnect
+from backend.corpora.common.utils.http_exceptions import ForbiddenHTTPException, InvalidParametersHTTPException
+from backend.corpora.lambdas.api.v1.authorization import owner_or_allowed
 
 
 @dbconnect

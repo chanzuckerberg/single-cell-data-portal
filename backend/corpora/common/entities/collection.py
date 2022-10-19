@@ -3,10 +3,10 @@ from datetime import datetime
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
-from . import Dataset
-from .entity import Entity
-from .geneset import Geneset
-from ..corpora_orm import (
+from backend.corpora.common.entities import Dataset
+from backend.corpora.common.entities.entity import Entity
+from backend.corpora.common.entities.geneset import Geneset
+from backend.corpora.common.corpora_orm import (
     CollectionLinkType,
     DbCollection,
     DbCollectionLink,
@@ -15,7 +15,7 @@ from ..corpora_orm import (
     ProjectLinkType,
     DbProjectLink,
 )
-from ..utils.db_helpers import clone
+from backend.corpora.common.utils.db_helpers import clone
 
 
 class Collection(Entity):
