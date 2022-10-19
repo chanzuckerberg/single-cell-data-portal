@@ -80,7 +80,7 @@ services:
     ports:
       - "9000:8080"
     volumes:
-      - ./backend/upload_failures:/var/task
+      - ./backend/dataset_upload_failures:/var/task
       - ./backend/common:/var/task/backend/common
       - ./backend/dataset_processing:/var/task/backend/dataset_processing
     environment:
@@ -114,7 +114,7 @@ services:
     ports:
       - "9001:8080"
     volumes:
-      - ./backend/upload_success:/var/task
+      - ./backend/dataset_upload_success:/var/task
       - ./backend/common:/var/task/backend/common
       - ./backend/dataset_processing:/var/task/backend/dataset_processing
     environment:

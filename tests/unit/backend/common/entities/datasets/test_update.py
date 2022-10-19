@@ -6,7 +6,7 @@ from backend.common.corpora_orm import (
 )
 from backend.common.entities import Dataset
 from backend.common.utils.db_helpers import processing_status_updater
-from backend.upload_failures.app import update_dataset_processing_status_to_failed
+from backend.dataset_upload_failures.app import update_dataset_processing_status_to_failed
 from tests.unit.backend.common.entities.datasets import TestDataset
 from tests.unit.backend.utils import BogusProcessingStatusParams, BogusDatasetParams
 
