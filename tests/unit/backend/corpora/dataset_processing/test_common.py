@@ -213,18 +213,18 @@ class TestCommon(DataPortalTestCase):
     def test__filesize_exceeds_limit(self):
         collection = self.generate_collection(self.session)
         dataset = self.generate_dataset(self.session, collection_id=collection.id)
-        max_file_size = CorporaConfig().upload_max_file_size_gb * GB
+        max_file_size_gb = CorporaConfig().upload_max_file_size_gb
         with self.assertRaises(MaxFileSizeExceededException):
             upload(
                 self.session,
                 collection.id,
                 "download_url_placeholder",
-                max_file_size + 1,  # Purport to exceed the max file size
+                max_file_size_gb * GB + 1,  # Purport to exceed the max file size
                 "test_user",
                 dataset_id=dataset.id,
             )
         self.assertEqual(dataset.processing_status.validation_status, ValidationStatus.INVALID)
         self.assertEqual(
             dataset.processing_status.validation_message,
-            f"The file exceeds the maximum allowed size of {max_file_size} bytes",
+            f"The file exceeds the maximum allowed size of {max_file_size_gb} GB",
         )
