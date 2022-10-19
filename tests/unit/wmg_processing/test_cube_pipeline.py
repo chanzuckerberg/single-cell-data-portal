@@ -5,7 +5,7 @@ import tempfile
 from unittest import mock
 from unittest.mock import Mock
 import contextlib
-from backend.wmg.data.cube_pipeline import main, logger
+from backend.corpus_asset_pipelines.cube_pipeline import main, logger
 
 
 @contextlib.contextmanager

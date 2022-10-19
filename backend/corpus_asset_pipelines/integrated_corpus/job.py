@@ -5,13 +5,15 @@ from typing import List
 
 import tiledb
 
-from backend.corpus_asset_pipelines.integrated_corpus import extract
-from backend.corpus_asset_pipelines.integrated_corpus import load
+from backend.corpus_asset_pipelines.integrated_corpus import load, extract
 from backend.corpus_asset_pipelines.integrated_corpus.transform import (
     apply_pre_concatenation_filters,
     create_high_level_tissue,
 )
-from backend.corpus_asset_pipelines.integrated_corpus.validate import should_load_dataset, validate_dataset_properties
+from backend.corpus_asset_pipelines.integrated_corpus.validate import (
+    should_load_dataset,
+    validate_dataset_properties,
+)
 from backend.wmg.data.schemas.corpus_schema import INTEGRATED_ARRAY_NAME, OBS_ARRAY_NAME, VAR_ARRAY_NAME
 from backend.wmg.data.tiledb import create_ctx
 from backend.wmg.data.utils import log_func_runtime

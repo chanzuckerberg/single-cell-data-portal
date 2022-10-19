@@ -9,8 +9,8 @@ from backend.common.utils.result_notification import (
     gen_wmg_pipeline_success_message,
     gen_wmg_pipeline_failure_message,
 )
-from backend.corpus_asset_pipelines import integrated_corpus
 from backend.corpus_asset_pipelines import summary_cubes
+from backend.corpus_asset_pipelines import integrated_corpus
 
 from backend.wmg.data.load_cube import upload_artifacts_to_s3, make_snapshot_active
 from backend.wmg.data.snapshot import EXPRESSION_SUMMARY_CUBE_NAME, CELL_COUNTS_CUBE_NAME
