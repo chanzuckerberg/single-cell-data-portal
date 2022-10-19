@@ -64,4 +64,5 @@ class DatabaseProviderInterface:
     def delete_dataset_from_collection_version(self, collection_version_id: str, dataset_version_id: str) -> None:
         pass
 
-    def replace_dataset_in_collection_version(
+    def replace_dataset_in_collection_version(self, collection_version_id: str, old_dataset_version_id: str, dataset_metadata: DatasetMetadata) -> None:
+        pass
