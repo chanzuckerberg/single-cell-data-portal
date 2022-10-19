@@ -33,7 +33,11 @@ export async function goToPage(
 export async function login(page: Page): Promise<void> {
   await goToPage(undefined, page);
 
-  expect(process.env.TEST_ACCOUNT_PASS).toBeDefined();
+  // (thuang): Testing a deployed environment requires a test password as env
+  // var `TEST_ACCOUNT_PASS`
+  if (!TEST_ENV.includes("local") || !TEST_ENV.includes("happy")) {
+    expect(process.env.TEST_ACCOUNT_PASS).toBeDefined();
+  }
 
   const cookies = await (await page.context()).cookies();
 

@@ -5,7 +5,6 @@ import { sortByCellCountDescending } from "src/components/Collection/components/
 import { INVALID_DOI_ERROR_MESSAGE } from "src/components/CreateCollectionModal/components/Content/common/constants";
 import { BLUEPRINT_SAFE_TYPE_OPTIONS, TEST_URL } from "tests/common/constants";
 import {
-  describeIfDeployed,
   describeIfDevStaging,
   goToPage,
   login,
@@ -37,7 +36,7 @@ type CollectionFormInput = Pick<
 >;
 
 describe("Collection", () => {
-  describeIfDeployed("Logged In Tests", () => {
+  describe("Logged In Tests", () => {
     test("creates and deletes a collection", async ({ page }) => {
       const timestamp = Date.now();
       await login(page);

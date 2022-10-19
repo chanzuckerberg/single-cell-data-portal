@@ -20,11 +20,27 @@ const TEST_ENV_TO_TEST_URL = {
 };
 
 export const TEST_URL = TEST_ENV_TO_TEST_URL[TEST_ENV];
-export const TEST_USERNAME =
-  TEST_ENV === "happy"
-    ? (process.env.TEST_ACCOUNT_USER as string)
-    : "user@example.com";
-export const TEST_PASSWORD = process.env.TEST_ACCOUNT_PASS || "";
+
+// (thuang): From oauth/users.json
+const LOCAL_TEST_USERNAME = "User1";
+const LOCAL_TEST_PASSWORD = "pwd";
+
+const DEPLOYED_TEST_USERNAME = "user@example.com";
+
+const USERNAMES = {
+  dev: DEPLOYED_TEST_USERNAME,
+  happy: LOCAL_TEST_USERNAME,
+  local: LOCAL_TEST_USERNAME,
+  localProd: LOCAL_TEST_USERNAME,
+  prod: DEPLOYED_TEST_USERNAME,
+  rdev: DEPLOYED_TEST_USERNAME,
+  staging: DEPLOYED_TEST_USERNAME,
+};
+
+export const TEST_USERNAME = USERNAMES[TEST_ENV] || DEPLOYED_TEST_USERNAME;
+
+export const TEST_PASSWORD =
+  process.env.TEST_ACCOUNT_PASS || LOCAL_TEST_PASSWORD;
 
 export const BLUEPRINT_SAFE_TYPE_OPTIONS = { delay: 50 };
 

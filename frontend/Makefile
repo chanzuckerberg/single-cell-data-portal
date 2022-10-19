@@ -55,7 +55,7 @@ e2e-on-local-dev:
 
 .PHONY: smoke-test-with-local-dev
 smoke-test-with-local-dev:
-	npm run e2e-happy; \
+	DEBUG=pw:api npm run e2e-happy; \
 	test_result=$$?; \
 	cp src/configs/local.js src/configs/configs.js; \
 	exit $$test_result
