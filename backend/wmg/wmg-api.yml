@@ -36,8 +36,8 @@ paths:
                   organism_terms:
                     $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
                   tissue_terms:
-                  # TODO: specify further: https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data-portal/1967
-                  # {"organism_ontology_term_id_0": [ {"tissue_ontology_term_id_0": "tissue_ontology_term_id_0_label"}],}
+                    # TODO: specify further: https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data-portal/1967
+                    # {"organism_ontology_term_id_0": [ {"tissue_ontology_term_id_0": "tissue_ontology_term_id_0_label"}],}
                     type: object
                   gene_terms:
                     # TODO: specify further: https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data-portal/1967
@@ -64,25 +64,25 @@ paths:
                     - organism_ontology_term_id
                     - tissue_ontology_term_ids
                   properties:
-                      gene_ontology_term_ids:
-                        $ref: "#/components/schemas/wmg_ontology_term_id_list"
-                      organism_ontology_term_id:
+                    gene_ontology_term_ids:
+                      $ref: "#/components/schemas/wmg_ontology_term_id_list"
+                    organism_ontology_term_id:
+                      type: string
+                    tissue_ontology_term_ids:
+                      $ref: "#/components/schemas/wmg_ontology_term_id_list"
+                    dataset_ids:
+                      type: array
+                      items:
                         type: string
-                      tissue_ontology_term_ids:
-                        $ref: "#/components/schemas/wmg_ontology_term_id_list"
-                      dataset_ids:
-                        type: array
-                        items:
-                          type: string
-                          format: uuid
-                      disease_ontology_term_ids:
-                        $ref: "#/components/schemas/wmg_ontology_term_id_list"
-                      sex_ontology_term_ids:
-                        $ref: "#/components/schemas/wmg_ontology_term_id_list"
-                      development_ontology_stage_term_ids:
-                        $ref: "#/components/schemas/wmg_ontology_term_id_list"
-                      ethnicity_ontology_term_ids:
-                        $ref: "#/components/schemas/wmg_ontology_term_id_list"
+                        format: uuid
+                    disease_ontology_term_ids:
+                      $ref: "#/components/schemas/wmg_ontology_term_id_list"
+                    sex_ontology_term_ids:
+                      $ref: "#/components/schemas/wmg_ontology_term_id_list"
+                    development_ontology_stage_term_ids:
+                      $ref: "#/components/schemas/wmg_ontology_term_id_list"
+                    ethnicity_ontology_term_ids:
+                      $ref: "#/components/schemas/wmg_ontology_term_id_list"
                 include_filter_dims:
                   type: boolean
                   default: false
@@ -95,44 +95,126 @@ paths:
             application/json:
               example:
                 {
-                  'snapshot_id': '8ce15034-162a-4e2e-9987-eb1af08bd4d4',
-                  'expression_summary': {
-                    'gene1': {
-                      'tissuetype1': [
-                        { 'id': 'CL00000', 'me': 0.0, 'n': 0, 'pc': 0.0, 'tpc': 0.0 },
-                        { 'id': 'CL00001', 'me': 0.0, 'n': 0, 'pc': 0.0, 'tpc': 0.0 },
-                        { 'id': 'CL00002', 'me': 0.0, 'n': 0, 'pc': 0.0, 'tpc': 0.0 }
-                      ],
-                      'tissuetype2': [
-                        { 'id': 'CL00000', 'me': 0.0, 'n': 0, 'pc': 0.0, 'tpc': 0.0 },
-                        { 'id': 'CL00001', 'me': 0.0, 'n': 0, 'pc': 0.0, 'tpc': 0.0 },
-                        { 'id': 'CL00002', 'me': 0.0, 'n': 0, 'pc': 0.0, 'tpc': 0.0 }
-                      ]
+                  "snapshot_id": "8ce15034-162a-4e2e-9987-eb1af08bd4d4",
+                  "expression_summary":
+                    {
+                      "gene1":
+                        {
+                          "tissuetype1":
+                            [
+                              {
+                                "id": "CL00000",
+                                "me": 0.0,
+                                "n": 0,
+                                "pc": 0.0,
+                                "tpc": 0.0,
+                              },
+                              {
+                                "id": "CL00001",
+                                "me": 0.0,
+                                "n": 0,
+                                "pc": 0.0,
+                                "tpc": 0.0,
+                              },
+                              {
+                                "id": "CL00002",
+                                "me": 0.0,
+                                "n": 0,
+                                "pc": 0.0,
+                                "tpc": 0.0,
+                              },
+                            ],
+                          "tissuetype2":
+                            [
+                              {
+                                "id": "CL00000",
+                                "me": 0.0,
+                                "n": 0,
+                                "pc": 0.0,
+                                "tpc": 0.0,
+                              },
+                              {
+                                "id": "CL00001",
+                                "me": 0.0,
+                                "n": 0,
+                                "pc": 0.0,
+                                "tpc": 0.0,
+                              },
+                              {
+                                "id": "CL00002",
+                                "me": 0.0,
+                                "n": 0,
+                                "pc": 0.0,
+                                "tpc": 0.0,
+                              },
+                            ],
+                        },
+                      "gene2":
+                        {
+                          "tissuetype1":
+                            [
+                              {
+                                "id": "CL00000",
+                                "me": 0.0,
+                                "n": 0,
+                                "pc": 0.0,
+                                "tpc": 0.0,
+                              },
+                              {
+                                "id": "CL00001",
+                                "me": 0.0,
+                                "n": 0,
+                                "pc": 0.0,
+                                "tpc": 0.0,
+                              },
+                              {
+                                "id": "CL00002",
+                                "me": 0.0,
+                                "n": 0,
+                                "pc": 0.0,
+                                "tpc": 0.0,
+                              },
+                            ],
+                          "tissuetype2":
+                            [
+                              {
+                                "id": "CL00000",
+                                "me": 0.0,
+                                "n": 0,
+                                "pc": 0.0,
+                                "tpc": 0.0,
+                              },
+                              {
+                                "id": "CL00001",
+                                "me": 0.0,
+                                "n": 0,
+                                "pc": 0.0,
+                                "tpc": 0.0,
+                              },
+                              {
+                                "id": "CL00002",
+                                "me": 0.0,
+                                "n": 0,
+                                "pc": 0.0,
+                                "tpc": 0.0,
+                              },
+                            ],
+                        },
                     },
-                    'gene2': {
-                      'tissuetype1': [
-                        { 'id': 'CL00000', 'me': 0.0, 'n': 0, 'pc': 0.0, 'tpc': 0.0 },
-                        { 'id': 'CL00001', 'me': 0.0, 'n': 0, 'pc': 0.0, 'tpc': 0.0 },
-                        { 'id': 'CL00002', 'me': 0.0, 'n': 0, 'pc': 0.0, 'tpc': 0.0 }
-                      ],
-                      'tissuetype2': [
-                        { 'id': 'CL00000', 'me': 0.0, 'n': 0, 'pc': 0.0, 'tpc': 0.0 },
-                        { 'id': 'CL00001', 'me': 0.0, 'n': 0, 'pc': 0.0, 'tpc': 0.0 },
-                        { 'id': 'CL00002', 'me': 0.0, 'n': 0, 'pc': 0.0, 'tpc': 0.0 }
-                      ]
-                    }
-                  },
-                  'term_id_labels': {
-                    'cell_types': [
-                      { 'CL00000': 'CL00000_label' },
-                      { 'CL00001': 'CL00001_label' },
-                      { 'CL00002': 'CL00002_label' }
-                    ],
-                    'genes': [
-                      { 'gene1': 'gene1_label' },
-                      { 'gene2': 'gene2_label' }
-                    ]
-                  }
+                  "term_id_labels":
+                    {
+                      "cell_types":
+                        [
+                          { "CL00000": "CL00000_label" },
+                          { "CL00001": "CL00001_label" },
+                          { "CL00002": "CL00002_label" },
+                        ],
+                      "genes":
+                        [
+                          { "gene1": "gene1_label" },
+                          { "gene2": "gene2_label" },
+                        ],
+                    },
                 }
               schema:
                 type: object
@@ -200,8 +282,8 @@ paths:
                       cell_types:
                         type: object
                         # TODO: specify further (grouped by tissue now): https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data-portal/1967
-#                        items:
-#                        $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
+                  #                        items:
+                  #                        $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
                   filter_dimensions:
                     type: object
                     properties:
@@ -253,9 +335,9 @@ components:
         type: object
         # TODO: fix: https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data-portal/1967
         # `{"<ontology_term_id>": "<ontology_term_label"}`
-#        maxProperties: 1
-#        additionalProperties:
-#          type: string
+    #        maxProperties: 1
+    #        additionalProperties:
+    #          type: string
     wmg_ontology_term_id_list:
       type: array
       items:
@@ -263,7 +345,7 @@ components:
     wmg_snapshot_id:
       type: string
       format: uuid
-  
+
   parameters: {}
 
   responses:

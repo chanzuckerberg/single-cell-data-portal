@@ -22,16 +22,16 @@ paths:
       tags:
         - gene_info
       operationId: backend.gene_info.api.v1.gene_info
-      parameters: 
-        - $ref: '#/components/parameters/Gene'
-        - $ref: '#/components/parameters/GeneID'
+      parameters:
+        - $ref: "#/components/parameters/Gene"
+        - $ref: "#/components/parameters/GeneID"
       responses:
         "200":
           description: OK
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/GeneInfo'
+                $ref: "#/components/schemas/GeneInfo"
         "403":
           $ref: "#/components/responses/403"
         "404":
@@ -64,8 +64,8 @@ components:
           type: string
         show_warning_banner:
           type: boolean
-  
-  parameters: 
+
+  parameters:
     Gene:
       name: gene
       in: query
