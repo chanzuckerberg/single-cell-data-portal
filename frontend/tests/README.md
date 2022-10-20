@@ -4,7 +4,7 @@
 
 ### What
 
-Running E2E tests locally means the tests are run in your local machine against the web app that's either running locally as well (localhost, docker) OR a deployed environment (dev, staging, prod)
+Running E2E tests locally means the tests are run in your local machine against the web app that's either running locally as well (localhost, docker) OR a deployed environment (dev, staging, prod, and rdev)
 
 ### When
 
@@ -18,7 +18,7 @@ There are a few scenarios you might want to run tests locally:
 
    E.g., there are two ways to run your FE app locally, either in a Docker container through make commands (`make local-init`) or straight up using `npm run dev` in the `/frontend` directory. PR E2E test runs against local app in a Docker container, so if you run local tests against `npm run dev` started local app and everything is passing, but failing against `make` started Docker container local app, then likely the issue is related to the FE app inside a Docker container.
 
-3. A GHA E2E test against a deployed environment (dev, staging, prod) failed, and you want to see if the test failure is environment dependent.
+3. A GHA E2E test against a deployed environment (dev, staging, prod, rdev) failed, and you want to see if the test failure is environment dependent.
 
    E.g., when a test fails against a deployed environment, it's helpful to run the same test locally against your local app to see if it's passing. Because if it is passing, the test failure could be environment dependent, such as env dependent data, data size, AWS machine size, third party rate limiting and/or outage
 
@@ -42,7 +42,7 @@ All the E2E test commands can be found in `frontend/Makefile` and `frontend/pack
 
    1. In `frontend/` directory, run `npm i`
 
-1. local -> local `npm run dev`
+1. local -> local (app started with `npm run dev`)
 
    1. Make sure your local app is connected to a working BE API service.
 
@@ -54,7 +54,7 @@ All the E2E test commands can be found in `frontend/Makefile` and `frontend/pack
 
    1. In `frontend/` directory, run `npm run e2e`
 
-1. local -> local container `make local-init`
+1. local -> local container (app started with `make local-init`)
 
    1. Make sure you have your local app running already on http://frontend.corporanet.local:3000. If not, in the root directory of the repo, run `make local-init` to start all containers
    1. In `frontend/` directory, run `npm run e2e`
@@ -62,20 +62,30 @@ All the E2E test commands can be found in `frontend/Makefile` and `frontend/pack
 1. local -> dev
 
    1. Manually check https://cellxgene.dev.single-cell.czi.technology is working
-   1. Ask the team what the `TEST_ACCOUNT_PASS` is
    1. In `frontend/` directory, run `TEST_ACCOUNT_PASS=PUT_PASSWORD_HERE npm run e2e-dev`
+
+   - NOTE: Replace `PUT_PASSWORD_HERE` with `corpora/backend/dev/auth0-secret.test_account_password` in AWS Secret Manager
 
 1. local -> staging
 
    1. Manually check https://cellxgene.staging.single-cell.czi.technology is working
-   1. Ask the team what the `TEST_ACCOUNT_PASS` is
    1. In `frontend/` directory, run `TEST_ACCOUNT_PASS=PUT_PASSWORD_HERE npm run e2e-staging`
 
+   - NOTE: Replace `PUT_PASSWORD_HERE` with `corpora/backend/staging/auth0-secret.test_account_password` in AWS Secret Manager
+
 1. local -> prod
+
    1. Manually check https://cellxgene.cziscience.com is working
    1. In `frontend/` directory, run `npm run e2e-prod`
+
    - NOTE: we don't run logged in tests in prod, since we don't want to accidentally
      add test data to prod database
+
+1. local -> rdev
+   1. Manually check your rdev link is working. E.g., https://thuang-nav-explorer.rdev.single-cell.czi.technology
+   1. In `frontend/` directory, run `RDEV_LINK=YOUR_RDEV_LINK_HERE TEST_ACCOUNT_PASS=PUT_PASSWORD_HERE npm run e2e-rdev`.
+   - NOTE: Replace `YOUR_RDEV_LINK_HERE` with your rdev link. E.g., `https://thuang-nav-explorer.rdev.single-cell.czi.technology`
+   - NOTE: Replace `PUT_PASSWORD_HERE` with `corpora/backend/rdev/auth0-secret.test_account_password` in AWS Secret Manager
 
 ## How to debug Github action failed E2E tests
 
