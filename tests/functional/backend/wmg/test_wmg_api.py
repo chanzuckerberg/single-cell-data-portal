@@ -1,10 +1,8 @@
 import json
-import os
-import unittest
 
 import requests
 
-from tests.functional.backend.common import API_URL
+from tests.functional.backend.common import API_URL, BaseFunctionalTestCase
 from tests.functional.backend.wmg.fixtures import (
     secondary_filter_common_case_request_data,
     secondary_filter_extreme_case_request_data,
@@ -13,10 +11,10 @@ from tests.functional.backend.wmg.fixtures import (
 # Note that these tests share fixtures and general test paths with the wmg api performance tests
 
 
-class TestWmgApi(unittest.TestCase):
+class TestWmgApi(BaseFunctionalTestCase):
     @classmethod
     def setUpClass(cls):
-        cls.deployment_stage = os.environ["DEPLOYMENT_STAGE"]
+        super().setUpClass()
         cls.api = API_URL.get(cls.deployment_stage)
         cls.api = f"{cls.api}/wmg/v1"
 
@@ -28,8 +26,8 @@ class TestWmgApi(unittest.TestCase):
         """
         Load primary filters in less than 1.5 seconds
         """
-        res = requests.get(f"{self.api}/primary_filter_dimensions")
-        self.assertEqual(res.status_code, requests.codes.ok)
+        res = self.session.get(f"{self.api}/primary_filter_dimensions")
+        self.assertStatusCode(requests.codes.ok, res)
         self.assertGreater(len(res.content), 10)
 
     def test_secondary_filters_common_case(self):
@@ -41,8 +39,8 @@ class TestWmgApi(unittest.TestCase):
 
         data = secondary_filter_common_case_request_data.copy()
         data["snapshot_id"] = self.data["snapshot_id"]
-        res = requests.post(f"{self.api}/query", data=json.dumps(data), headers=headers)
-        self.assertEqual(res.status_code, requests.codes.ok)
+        res = self.session.post(f"{self.api}/query", data=json.dumps(data), headers=headers)
+        self.assertStatusCode(requests.codes.ok, res)
         self.assertGreater(len(res.content), 10)
 
     def test_secondary_filters_extreme_case(self):
@@ -53,6 +51,6 @@ class TestWmgApi(unittest.TestCase):
         headers = {"Content-Type": "application/json"}
         data = secondary_filter_extreme_case_request_data.copy()
         data["snapshot_id"] = self.data["snapshot_id"]
-        res = requests.post(f"{self.api}/query", data=json.dumps(data), headers=headers)
-        self.assertEqual(res.status_code, requests.codes.ok)
+        res = self.session.post(f"{self.api}/query", data=json.dumps(data), headers=headers)
+        self.assertStatusCode(requests.codes.ok, res)
         self.assertGreater(len(res.content), 10)

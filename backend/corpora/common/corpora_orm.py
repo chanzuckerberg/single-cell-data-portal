@@ -21,8 +21,8 @@ from sqlalchemy.orm import relationship
 from typing import Optional, List, Dict
 from uuid import uuid4
 
-from .utils.corpora_constants import CorporaConstants
-from .utils.exceptions import CorporaException
+from backend.corpora.common.utils.corpora_constants import CorporaConstants
+from backend.corpora.common.utils.exceptions import CorporaException
 
 
 def generate_id():

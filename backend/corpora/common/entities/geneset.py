@@ -2,9 +2,9 @@ import typing
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
-from ..corpora_orm import DbGeneset, DbGenesetDatasetLink
-from .entity import Entity
-from ..utils.exceptions import CorporaException
+from backend.corpora.common.corpora_orm import DbGeneset, DbGenesetDatasetLink
+from backend.corpora.common.entities.entity import Entity
+from backend.corpora.common.utils.exceptions import CorporaException
 
 
 class Geneset(Entity):

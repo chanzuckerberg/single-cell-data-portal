@@ -5,9 +5,9 @@ import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util import Retry
 
-from .corpora_config import CorporaAuthConfig
+from backend.corpora.common.corpora_config import CorporaAuthConfig
 from backend.corpora.common.utils.http_exceptions import UnauthorizedError
-from .utils.jwt import jwt_decode, get_unverified_header
+from backend.corpora.common.utils.jwt import jwt_decode, get_unverified_header
 
 auth0_session_with_retry = requests.Session()
 retry_config = Retry(total=3, backoff_factor=1, status_forcelist=CorporaAuthConfig().retry_status_forcelist)
