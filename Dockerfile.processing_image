@@ -16,13 +16,13 @@ RUN pip3 install scanpy==1.6.0 python-igraph==0.8.3 louvain==0.7.0 packaging==21
 
 
 ADD requirements.txt requirements-base.txt
-ADD backend/dataset_pipeline/processing/requirements.txt requirements-processing.txt
+ADD backend/portal/pipeline/processing/requirements.txt requirements-processing.txt
 RUN pip3 install -r requirements-base.txt -r requirements-processing.txt
 
 ADD tests /single-cell-data-portal/tests
 ADD backend/__init__.py backend/__init__.py
-ADD backend/dataset_pipeline/__init__.py backend/dataset_pipeline/__init__.py
-ADD backend/dataset_pipeline/processing backend/dataset_pipeline/processing
+ADD backend/portal/pipeline/__init__.py backend/portal/pipeline/__init__.py
+ADD backend/portal/pipeline/processing backend/portal/pipeline/processing
 ADD backend/common backend/common
 
 ARG HAPPY_BRANCH="unknown"

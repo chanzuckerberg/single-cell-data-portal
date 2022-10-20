@@ -89,7 +89,7 @@ class BaseAuthAPITest(BaseAPITest):
     def setUp(self):
         super().setUp()
         self.mock_assert_authorized_token = patch(
-            "backend.portal.api.v1.authentication.assert_authorized_token",
+            "backend.portal.api.app.v1.authentication.assert_authorized_token",
             side_effect=mock_assert_authorized_token,
         )
         self.mock_assert_authorized_token.start()

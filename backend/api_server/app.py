@@ -46,7 +46,7 @@ def create_flask_app():
         return api
 
     add_api(base_path="/dp", spec_file="portal/portal-api.yml")
-    curation_api = add_api(base_path="/curation", spec_file="curation/curation-api.yml")
+    curation_api = add_api(base_path="/curation", spec_file="portal/curation-api.yml")
     curation_api.blueprint.json_encoder = CurationJSONEncoder
     add_api(base_path="/wmg", spec_file="wmg/wmg-api.yml")
     add_api(base_path="/gene_info", spec_file="gene_info/gene-info-api.yml")
