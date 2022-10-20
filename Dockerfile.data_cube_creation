@@ -19,7 +19,6 @@ ADD backend/__init__.py backend/__init__.py
 ADD backend/wmg/__init__.py backend/wmg/__init__.py
 ADD backend/wmg/data backend/wmg/data
 ADD backend/wmg/pipeline backend/wmg/pipeline
-ADD backend/ontology_files backend/ontology_files
 ADD backend/common backend/common
 
 ARG HAPPY_BRANCH="unknown"

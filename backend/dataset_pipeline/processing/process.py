@@ -206,7 +206,7 @@ def main():
             process(dataset_id, os.environ["ARTIFACT_BUCKET"])
         elif step_name == "cxg_remaster":
             try:
-                from backend.dataset_pipeline.processing import process
+                from backend.dataset_pipeline.processing.remaster_cxg import process
 
                 process(dataset_id, os.environ["CELLXGENE_BUCKET"], dry_run=False)
             except Exception as e:
