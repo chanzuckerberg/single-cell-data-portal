@@ -5,8 +5,13 @@ import subprocess
 from backend.common.entities import DatasetAsset
 from backend.common.entities.dataset import Dataset
 from backend.common.utils.db_session import db_session_manager
-from backend.dataset_processing.logger import logger
-from backend.dataset_processing.common import create_artifact, download_from_s3, convert_file, get_bucket_prefix
+from backend.dataset_pipeline.processing.logger import logger
+from backend.dataset_pipeline.processing.common import (
+    create_artifact,
+    download_from_s3,
+    convert_file,
+    get_bucket_prefix,
+)
 from datetime import datetime
 
 

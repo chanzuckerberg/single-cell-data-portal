@@ -11,7 +11,7 @@ import tiledb
 from scipy import sparse
 from scipy.sparse import csr_matrix, coo_matrix
 
-from backend.corpus_asset_pipelines.integrated_corpus.extract import get_X_raw
+from backend.wmg.pipeline.integrated_corpus.extract import get_X_raw
 from backend.wmg.data.constants import (
     RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD,
     GENE_EXPRESSION_COUNT_MIN_THRESHOLD,

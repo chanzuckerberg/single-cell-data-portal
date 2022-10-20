@@ -6,9 +6,9 @@ from os.path import join
 from backend.common.corpora_orm import DatasetArtifactFileType, ConversionStatus
 from backend.common.entities import DatasetAsset
 from backend.common.utils.db_session import db_session_manager
-from backend.dataset_processing.h5ad_data_file import H5ADDataFile
-from backend.dataset_processing.logger import logger
-from backend.dataset_processing.common import (
+from backend.dataset_pipeline.processing.h5ad_data_file import H5ADDataFile
+from backend.dataset_pipeline.processing.logger import logger
+from backend.dataset_pipeline.processing.common import (
     download_from_s3,
     get_bucket_prefix,
     update_db,

@@ -10,8 +10,8 @@ import socketserver
 
 from backend.common.entities import Dataset
 from backend.common.utils.math_utils import MB
-from backend.dataset_processing import download
-from backend.dataset_processing.exceptions import ProcessingFailed
+from backend.dataset_pipeline.processing import download
+from backend.dataset_pipeline.processing.exceptions import ProcessingFailed
 from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 
 

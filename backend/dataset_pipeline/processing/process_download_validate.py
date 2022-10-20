@@ -8,11 +8,11 @@ from backend.common.entities import Dataset
 from backend.common.utils.corpora_constants import CorporaConstants
 from backend.common.utils.db_session import db_session_manager
 from backend.common.utils.dl_sources.url import from_url
-from backend.dataset_processing.download import download
+from backend.dataset_pipeline.processing.download import download
 
-from backend.dataset_processing.exceptions import ValidationFailed
-from backend.dataset_processing.common import create_artifact, update_db, download_from_s3, get_bucket_prefix
-from backend.dataset_processing.logger import logger
+from backend.dataset_pipeline.processing.exceptions import ValidationFailed
+from backend.dataset_pipeline.processing.common import create_artifact, update_db, download_from_s3, get_bucket_prefix
+from backend.dataset_pipeline.processing.logger import logger
 
 from backend.common.corpora_orm import (
     ConversionStatus,

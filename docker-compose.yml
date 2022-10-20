@@ -80,9 +80,9 @@ services:
     ports:
       - "9000:8080"
     volumes:
-      - ./backend/dataset_upload_failures:/var/task
+      - ./backend/dataset_pipeline/upload_failures:/var/task
       - ./backend/common:/var/task/backend/common
-      - ./backend/dataset_processing:/var/task/backend/dataset_processing
+      - ./backend/dataset_pipelines/processing:/var/task/backend/dataset_pipelines/processing
     environment:
       - PYTHONUNBUFFERED=1
       - CORPORA_LOCAL_DEV=true
@@ -104,7 +104,7 @@ services:
       context: .
       cache_from:
         - "${DOCKER_REPO}corpora-upload-success:branch-main"
-      dockerfile: Dockerfile.handle_success
+      dockerfile: Dockerfile.upload_success
       args:
         - BUILDKIT_INLINE_CACHE=1
         - HAPPY_COMMIT
@@ -114,9 +114,9 @@ services:
     ports:
       - "9001:8080"
     volumes:
-      - ./backend/dataset_upload_success:/var/task
+      - ./backend/dataset_pipelines/upload_success:/var/task
       - ./backend/common:/var/task/backend/common
-      - ./backend/dataset_processing:/var/task/backend/dataset_processing
+      - ./backend/dataset_pipelines/processing:/var/task/backend/dataset_pipelines/processing
     environment:
       - PYTHONUNBUFFERED=1
       - CORPORA_LOCAL_DEV=true
@@ -138,7 +138,7 @@ services:
       context: .
       cache_from:
         - "${DOCKER_REPO}dataset-submissions:branch-main"
-      dockerfile: Dockerfile.handle_dataset_submissions
+      dockerfile: Dockerfile.dataset_submissions
       args:
         - BUILDKIT_INLINE_CACHE=1
         - HAPPY_COMMIT
@@ -148,7 +148,7 @@ services:
     ports:
       - "9002:8080"
     volumes:
-      - ./backend/dataset_submissions:/var/task
+      - ./backend/dataset_pipelines/submissions:/var/task
       - ./backend/common:/var/task/backend/common
     environment:
       - PYTHONUNBUFFERED=1
@@ -179,7 +179,7 @@ services:
         - HAPPY_TAG
     restart: "no"
     volumes:
-      - ./backend/dataset_processing:/backend/dataset_processing
+      - ./backend/dataset_pipeline/processing:/backend/dataset_pipeline/processing
       - ./backend/common:/backend/common
       # Mount dirs in a layout suitable for running tests.
       - .:/single-cell-data-portal

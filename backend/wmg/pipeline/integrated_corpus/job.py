@@ -5,12 +5,12 @@ from typing import List
 
 import tiledb
 
-from backend.corpus_asset_pipelines.integrated_corpus import load, extract
-from backend.corpus_asset_pipelines.integrated_corpus.transform import (
+from backend.wmg.pipeline.integrated_corpus import load, extract
+from backend.wmg.pipeline.integrated_corpus.transform import (
     apply_pre_concatenation_filters,
     create_high_level_tissue,
 )
-from backend.corpus_asset_pipelines.integrated_corpus.validate import (
+from backend.wmg.pipeline.integrated_corpus.validate import (
     should_load_dataset,
     validate_dataset_properties,
 )

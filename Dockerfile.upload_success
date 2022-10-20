@@ -1,13 +1,11 @@
 FROM public.ecr.aws/lambda/python:3.8
 
-COPY backend/upload_success .
+COPY backend/dataset_pipeline/upload_success .
 
 RUN pip3 install -r requirements.txt
 
 COPY backend/__init__.py ./backend/__init__.py
-COPY backend/__init__.py ./backend/__init__.py
 COPY backend/common ./backend/common
-COPY backend/dataset_processing ./backend/dataset_processing
 
 ARG HAPPY_BRANCH="unknown"
 ARG HAPPY_COMMIT=""

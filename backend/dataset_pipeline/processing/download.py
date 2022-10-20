@@ -9,7 +9,7 @@ from backend.common.corpora_orm import DbDatasetProcessingStatus, UploadStatus
 from backend.common.entities import Dataset
 from backend.common.utils.db_session import db_session_manager
 from backend.common.utils.math_utils import MB
-from backend.dataset_processing.exceptions import ProcessingFailed, ProcessingCancelled
+from backend.dataset_pipeline.processing.exceptions import ProcessingFailed, ProcessingCancelled
 
 logger = logging.getLogger(__name__)
 

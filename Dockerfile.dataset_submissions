@@ -1,6 +1,6 @@
 FROM public.ecr.aws/lambda/python:3.9
 
-COPY backend/dataset_submissions .
+COPY backend/dataset_pipeline/submissions .
 
 # For lighter weight Docker images
 ENV PIP_NO_CACHE_DIR=1
@@ -8,7 +8,6 @@ ENV PIP_NO_CACHE_DIR=1
 RUN pip3 install -r requirements.txt
 
 COPY backend/__init__.py ./backend/__init.py
-COPY backend/__init__.py ./backend/__init__.py
 COPY backend/common ./backend/common
 
 ARG HAPPY_BRANCH="unknown"

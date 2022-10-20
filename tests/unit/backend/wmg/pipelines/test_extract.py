@@ -1,4 +1,4 @@
-import backend.corpus_asset_pipelines.integrated_corpus.extract
+import backend.wmg.pipeline.integrated_corpus.extract
 from backend.common.corpora_orm import DatasetArtifactFileType
 from backend.wmg.data.constants import INCLUDED_ASSAYS
 from tests.unit.backend.fixtures.generate_data_mixin import GenerateDataMixin
@@ -162,5 +162,5 @@ class TestExtract(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
                 if asset.filetype == DatasetArtifactFileType.H5AD:
                     expected_s3_uris.append(asset.s3_uri)
 
-        s3_uris = set(backend.corpus_asset_pipelines.integrated_corpus.extract.get_dataset_s3_uris().values())
+        s3_uris = set(backend.wmg.pipeline.integrated_corpus.extract.get_dataset_s3_uris().values())
         self.assertEquals(set(expected_s3_uris), s3_uris)

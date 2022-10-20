@@ -8,7 +8,7 @@ import pandas as pd
 import tiledb
 
 from backend.common.utils.math_utils import MB
-from backend.corpus_asset_pipelines.summary_cubes.expression_summary.extract import extract_obs_data
+from backend.wmg.pipeline.summary_cubes.expression_summary.extract import extract_obs_data
 
 from backend.wmg.data.schemas.corpus_schema import INTEGRATED_ARRAY_NAME
 from backend.wmg.data.tiledb import create_ctx

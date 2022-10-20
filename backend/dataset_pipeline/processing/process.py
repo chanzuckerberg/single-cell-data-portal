@@ -142,14 +142,14 @@ from backend.common.corpora_orm import (
 )
 from backend.common.entities import Dataset
 from backend.common.utils.db_session import db_session_manager
-from backend.dataset_processing.common import update_db
-from backend.dataset_processing.exceptions import (
+from backend.dataset_pipeline.processing.common import update_db
+from backend.dataset_pipeline.processing.exceptions import (
     ProcessingCancelled,
     ProcessingFailed,
     ValidationFailed,
     ConversionFailed,
 )
-from backend.dataset_processing.logger import logger
+from backend.dataset_pipeline.processing.logger import logger
 
 
 def cancel_dataset(dataset_id):
@@ -187,13 +187,13 @@ def main():
     logger.info(f"Processing dataset {dataset_id}")
     try:
         if step_name == "download-validate":
-            from backend.dataset_processing.process_download_validate import (
+            from backend.dataset_pipeline.processing.process_download_validate import (
                 process,
             )
 
             process(dataset_id, os.environ["DROPBOX_URL"], os.environ["ARTIFACT_BUCKET"])
         elif step_name == "cxg":
-            from backend.dataset_processing.process_cxg import process
+            from backend.dataset_pipeline.processing.process_cxg import process
 
             process(
                 dataset_id,
@@ -201,12 +201,12 @@ def main():
                 os.environ["CELLXGENE_BUCKET"],
             )
         elif step_name == "seurat":
-            from backend.dataset_processing.process_seurat import process
+            from backend.dataset_pipeline.processing.process_seurat import process
 
             process(dataset_id, os.environ["ARTIFACT_BUCKET"])
         elif step_name == "cxg_remaster":
             try:
-                from backend.dataset_processing.remaster_cxg import process
+                from backend.dataset_pipeline.processing import process
 
                 process(dataset_id, os.environ["CELLXGENE_BUCKET"], dry_run=False)
             except Exception as e:

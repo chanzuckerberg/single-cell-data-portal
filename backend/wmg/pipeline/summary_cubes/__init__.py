@@ -6,9 +6,9 @@ from backend.common.utils.result_notification import (
     gen_wmg_pipeline_failure_message,
 )
 
-from backend.corpus_asset_pipelines.summary_cubes.expression_summary.job import create_expression_summary_cube
+from backend.wmg.pipeline.summary_cubes.expression_summary.job import create_expression_summary_cube
 from backend.wmg.data.validation.validation import Validation
-from backend.corpus_asset_pipelines.summary_cubes.cell_count import create_cell_count_cube
+from backend.wmg.pipeline.summary_cubes.cell_count import create_cell_count_cube
 
 
 def run(corpus_path: str, validate_cube: bool) -> dict:

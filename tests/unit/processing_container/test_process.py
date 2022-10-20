@@ -11,12 +11,12 @@ from backend.common.corpora_orm import (
     DatasetArtifactFileType,
 )
 from backend.common.entities import Dataset
-from backend.dataset_processing.exceptions import (
+from backend.dataset_pipeline.processing.exceptions import (
     ProcessingFailed,
     ValidationFailed,
     ConversionFailed,
 )
-from backend.dataset_processing.process import main
+from backend.dataset_pipeline.processing.process import main
 from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
 from tests.unit.backend.fixtures.environment_setup import EnvironmentSetup
 
@@ -64,8 +64,8 @@ class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
             if os.path.exists(f):
                 os.remove(f)
 
-    @patch("backend.dataset_processing.process_download_validate.download_from_source_uri")
-    @patch("backend.dataset_processing.remaster_cxg.process")  # TODO: provide test data to properly test this.
+    @patch("backend.dataset_pipeline.processing.process_download_validate.download_from_source_uri")
+    @patch("backend.dataset_pipeline.processing.remaster_cxg.process")  # TODO: provide test data to properly test this.
     def test_main(self, mock_remaster_cxg_process, mock_download_from_source_uri):
         """
         Tests full pipeline for processing an uploaded H5AD file, including database updates
@@ -108,9 +108,9 @@ class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
         # 2. cxg, rds uploaded to s3
         # 3. databases metadata updated and showing successful status
 
-    @patch("backend.dataset_processing.process_cxg.process")
-    @patch("backend.dataset_processing.process_seurat.process")
-    @patch("backend.dataset_processing.process_download_validate.process")
+    @patch("backend.dataset_pipeline.processing.process_cxg.process")
+    @patch("backend.dataset_pipeline.processing.process_seurat.process")
+    @patch("backend.dataset_pipeline.processing.process_download_validate.process")
     def test_main__Exceptions(self, mock_process_download_validate, mock_process_seurat, mock_process_cxg):
         test_environment = {
             "DROPBOX_URL": "https://www.dropbox.com/IGNORED",

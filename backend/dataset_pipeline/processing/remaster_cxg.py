@@ -3,7 +3,7 @@ import logging
 import subprocess
 import json
 import pandas as pd
-from backend.dataset_processing.common import get_bucket_prefix
+from backend.dataset_pipeline.processing.common import get_bucket_prefix
 from backend.common.utils.cxg_constants import CxgConstants
 import time
 from packaging import version

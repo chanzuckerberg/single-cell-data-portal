@@ -282,7 +282,7 @@ def wmg_get_s3_uris(ctx):
     ./scripts/cxg_admin.py --deployment dev wmg-get-s3-uris
     """
 
-    from backend.corpus_asset_pipelines import get_dataset_s3_uris
+    from backend.wmg.pipeline.integrated_corpus.extract import get_dataset_s3_uris
 
     s3_uris = get_dataset_s3_uris()
     print(s3_uris)

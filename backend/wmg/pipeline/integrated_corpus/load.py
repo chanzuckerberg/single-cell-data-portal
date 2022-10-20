@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import tiledb
 
-from backend.corpus_asset_pipelines.integrated_corpus.transform import transform_dataset_raw_counts_to_rankit
+from backend.wmg.pipeline.integrated_corpus.transform import transform_dataset_raw_counts_to_rankit
 from backend.wmg.data.schemas.corpus_schema import obs_labels, var_labels, VAR_ARRAY_NAME, OBS_ARRAY_NAME
 from backend.wmg.data.utils import log_func_runtime
 

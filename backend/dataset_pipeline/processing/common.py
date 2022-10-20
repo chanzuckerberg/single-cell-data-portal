@@ -8,8 +8,8 @@ from backend.common.entities import DatasetAsset, Dataset
 from backend.common.utils.db_helpers import processing_status_updater
 from backend.common.utils.db_session import db_session_manager
 from backend.common.utils.s3_buckets import buckets
-from backend.dataset_processing.exceptions import ProcessingCancelled, ConversionFailed
-from backend.dataset_processing.logger import logger
+from backend.dataset_pipeline.processing.exceptions import ProcessingCancelled, ConversionFailed
+from backend.dataset_pipeline.processing.logger import logger
 
 
 # This is unfortunate, but this information doesn't appear to live anywhere
