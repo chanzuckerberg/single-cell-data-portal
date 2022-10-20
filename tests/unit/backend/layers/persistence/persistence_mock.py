@@ -39,7 +39,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
 
     @staticmethod
     def _id():
-        return uuid.uuid4()
+        return str(uuid.uuid4())
 
     def create_collection(self, collection_metadata: CollectionMetadata):
         collection_id = self._id()

@@ -36,6 +36,12 @@ class Dataset:
 
 
 @dataclass
+class DatasetVersion:
+    version_id: str
+    dataset: Dataset
+
+
+@dataclass
 class CollectionMetadata:
     name: str
     description: str
@@ -49,8 +55,8 @@ class CollectionMetadata:
 class Collection:
     id: str
     metadata: CollectionMetadata
-    publisher_metadata: dict # TODO: use a dataclass
-    datasets: List[Dataset]
+    publisher_metadata: dict  # TODO: use a dataclass
+    datasets: List[DatasetVersion]
 
 
 @dataclass
@@ -58,8 +64,3 @@ class CollectionVersion:
     version_id: str
     collection: Collection
     published_at: datetime
-
-@dataclass
-class DatasetVersion:
-    version_id: str
-    dataset: Dataset
