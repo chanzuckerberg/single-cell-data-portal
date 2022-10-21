@@ -12,9 +12,9 @@ import tiledb
 from numpy.random import random, randint
 from pandas import DataFrame
 
-from backend.corpora.common.corpora_orm import DbDataset, CollectionVisibility, DbCollection
-from backend.corpora.common.entities import Collection
-from backend.corpora.common.utils.db_session import db_session_manager
+from backend.common.corpora_orm import DbDataset, CollectionVisibility, DbCollection
+from backend.common.entities import Collection
+from backend.common.utils.db_session import db_session_manager
 from backend.wmg.data.schemas.cube_schema import (
     expression_summary_indexed_dims,
     expression_summary_logical_attrs,
