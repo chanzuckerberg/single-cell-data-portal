@@ -216,8 +216,9 @@ class TestRevisions(BaseFunctionalTestCase):
 
         @retry(wait=wait_fixed(1), stop=stop_after_attempt(50))
         def get_schema(s3_path):
-            schema_res = self.session.get(f"{self.api}/cellxgene/s3_uri/{s3_path}/api/v0.3/schema",
-                                          allow_redirects=False)
+            schema_res = self.session.get(
+                f"{self.api}/cellxgene/s3_uri/{s3_path}/api/v0.3/schema", allow_redirects=False
+            )
             if schema_res.status_code != desired_http_status_code:
                 raise UndesiredHttpStatusCodeError
             return schema_res
