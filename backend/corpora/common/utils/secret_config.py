@@ -1,7 +1,7 @@
 import json
 import os
 
-from .aws import AwsSecret
+from backend.corpora.common.utils.aws import AwsSecret
 
 
 class SecretConfig:
