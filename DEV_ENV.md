@@ -3,7 +3,6 @@
 ## Development quickstart
 
 1. [install docker](https://docs.docker.com/get-docker/). If brew is installed run `brew install docker`. If you have a Mac, [install Docker Desktop](https://www.docker.com/products/docker-desktop) and open it so it's running on your machine. Note: If you have a Mac M1 (arm64 CPU), follow instructions in [`docker-compose.yml`](docker-compose.yml) under `oidc` service, for manually building the oidc-server-mock images for the M1 architecture.
-1. Install the Python package dependencies to run Happy Path by running `pip install -r ./.happy/requirements.txt`.
 1. [install chamber](https://github.com/segmentio/chamber). If brew is installed run `brew install chamber`. (This is needed for running functional tests.)
 1. From the root of this repository, run `make local-init` to build and run the dev environment. The first build takes awhile, but subsequent runs will use cached artifacts. Note: If Docker reports a conflict for port 5000, and you are on a Mac, you should turn off Control Center's "Airplay Receiver" in the "Sharing" System Preferences ([details](https://developer.apple.com/forums/thread/682332)).
 1. Visit [http://backend.corporanet.local:5000](http://backend.corporanet.local:5000) to view the backend, and [http://frontend.corporanet.local:3000](http://frontend.corporanet.local:3000) for the frontend.
