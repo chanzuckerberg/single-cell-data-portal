@@ -7,7 +7,7 @@ import time
 
 from requests.adapters import HTTPAdapter, Response
 from requests.packages.urllib3.util import Retry
-from backend.corpora.common.corpora_config import CorporaAuthConfig
+from backend.common.corpora_config import CorporaAuthConfig
 
 API_URL = {
     "prod": "https://api.cellxgene.cziscience.com",
