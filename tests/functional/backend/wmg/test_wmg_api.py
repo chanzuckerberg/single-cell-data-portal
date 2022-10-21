@@ -2,7 +2,7 @@ import json
 
 import requests
 
-from tests.functional.backend.common import API_URL, BaseFunctionalTestCase
+from tests.functional.backend.common import BaseFunctionalTestCase
 from tests.functional.backend.wmg.fixtures import (
     secondary_filter_common_case_request_data,
     secondary_filter_extreme_case_request_data,
@@ -15,7 +15,6 @@ class TestWmgApi(BaseFunctionalTestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.api = API_URL.get(cls.deployment_stage)
         cls.api = f"{cls.api}/wmg/v1"
 
         # get snapshot id
