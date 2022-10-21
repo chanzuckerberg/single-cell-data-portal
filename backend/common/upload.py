@@ -67,6 +67,7 @@ def upload(
         if dataset:
             dataset.update(
                 processing_status={
+                    "processing_status": ProcessingStatus.FAILURE,
                     "validation_status": ValidationStatus.INVALID,
                     "validation_message": error_message,
                 }
