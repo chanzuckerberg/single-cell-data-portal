@@ -209,7 +209,7 @@ class TestRevisions(BaseFunctionalTestCase):
     def get_schema_with_retries(self, dataset_id, desired_http_status_code=requests.codes.ok):
         @retry(wait=wait_fixed(1), stop=stop_after_attempt(50))
         def get_s3_uri():
-            s3_uri_res = self.session.get(f"{self.api}/cellxgene/e/{dataset_id}.cxg/v0.3/s3_uri")
+            s3_uri_res = self.session.get(f"{self.api}/cellxgene/e/{dataset_id}.cxg/api/v0.3/s3_uri")
             if s3_uri_res.status_code != requests.codes.ok:
                 raise UndesiredHttpStatusCodeError
             return s3_uri_res.content
