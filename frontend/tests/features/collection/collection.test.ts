@@ -1,6 +1,7 @@
 import { expect, Page, test } from "@playwright/test";
 import { ROUTES } from "src/common/constants/routes";
 import { Collection } from "src/common/entities";
+import { API_URL } from "src/configs/configs";
 import { sortByCellCountDescending } from "src/components/Collection/components/CollectionDatasetsGrid/components/DatasetsGrid/common/util";
 import { INVALID_DOI_ERROR_MESSAGE } from "src/components/CreateCollectionModal/components/Content/common/constants";
 import { BLUEPRINT_SAFE_TYPE_OPTIONS, TEST_URL } from "tests/common/constants";
@@ -114,7 +115,7 @@ describe("Collection", () => {
         await populatePublicationDOI("INVALID_FORMAT", page);
 
         // Attempt submit, confirm error message is displayed.
-        const [response] = await submitCreateForm(page);
+        const [response] = await submitCreateFormInvalid(page);
         expect(response.status()).toEqual(400);
         await expect(page).toHaveSelector(getText(INVALID_DOI_ERROR_MESSAGE));
       });
@@ -139,7 +140,7 @@ describe("Collection", () => {
         await populatePublicationDOI(VALID_FORMAT_BUT_NON_EXISTENT_DOI, page);
 
         // Attempt submit, confirm error message is displayed.
-        const [response] = await submitCreateForm(page);
+        const [response] = await submitCreateFormInvalid(page);
         expect(response.status()).toEqual(400);
         await expect(page).toHaveSelector(getText(INVALID_DOI_ERROR_MESSAGE));
       });
@@ -180,12 +181,23 @@ async function showCreateForm(page: Page) {
 }
 
 /**
+ * Submit create invalid collection form.
+ * @returns Form submit invalid parameters error response (400).
+ */
+async function submitCreateFormInvalid(page: Page) {
+  return await Promise.all([
+    page.waitForResponse(response => response.url() === `${API_URL}/dp/v1/collections` && response.status() === 400),
+    page.click(getTestID("create-button")),
+  ]);
+}
+
+/**
  * Submit create collection form.
  * @returns Form submit response.
  */
 async function submitCreateForm(page: Page) {
   return await Promise.all([
-    page.waitForEvent("response"),
+    page.waitForResponse(response => response.url() === `${API_URL}/dp/v1/collections` && response.status() === 200),
     page.click(getTestID("create-button")),
   ]);
 }
