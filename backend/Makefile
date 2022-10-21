@@ -1,6 +1,6 @@
 .PHONY: db/migrate
 db/migrate:
-	PYTHONPATH=.. alembic -x db=${DEPLOYMENT_STAGE} -c=./config/database.ini upgrade head
+	PYTHONPATH=.. alembic -x db=${DEPLOYMENT_STAGE} -c=./database/database.ini upgrade head
 
 .PHONY: db/remote_migration_init
 db/remote_migration_init:
@@ -26,7 +26,7 @@ db/init_remote_dev: db/remote_migration_init
 			python3 -m scripts.populate_db --populate-data --skip-recreate-db; \
 		fi
 
-	PYTHONPATH=.. alembic -x db=${DEPLOYMENT_STAGE} -c=./config/database.ini upgrade head
+	PYTHONPATH=.. alembic -x db=${DEPLOYMENT_STAGE} -c=./database/database.ini upgrade head
 
 .PHONY: db/delete_remote_dev
 db/delete_remote_dev: db/remote_migration_init
@@ -36,15 +36,15 @@ db/delete_remote_dev: db/remote_migration_init
 		python3 -m scripts.populate_db --drop-db
 
 db/rollback:
-	PYTHONPATH=.. alembic -x db=${DEPLOYMENT_STAGE}  -c=./config/database.ini downgrade -1
+	PYTHONPATH=.. alembic -x db=${DEPLOYMENT_STAGE}  -c=./database/database.ini downgrade -1
 
 db/new_migration:
 	# Usage: make db/new_migration MESSAGE="purpose_of_migration"
-	PYTHONPATH=.. alembic -c=./config/database.ini revision --message "$(MESSAGE)"
+	PYTHONPATH=.. alembic -c=./database/database.ini revision --message "$(MESSAGE)"
 
 db/new_migration_auto:
 	# Usage: make db/new_migration_auto MESSAGE="purpose_of_migration"
-	PYTHONPATH=.. alembic -c=./config/database.ini revision --autogenerate --message "$(MESSAGE)"
+	PYTHONPATH=.. alembic -c=./database/database.ini revision --autogenerate --message "$(MESSAGE)"
 
 # interactive mode usage: AWS_PROFILE=single-cell-dev DEPLOYMENT_STAGE=dev make db/connect
 # ARGS usage: AWS_PROFILE=single-cell-dev DEPLOYMENT_STAGE=dev make db/connect ARGS="-c \"select * from dataset_artifact where filetype='CXG'\""

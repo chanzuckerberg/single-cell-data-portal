@@ -10,8 +10,8 @@ from click import Context
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
 
-from backend.corpora.common.corpora_config import CorporaDbConfig
-from backend.corpora.common.utils.db_session import DBSessionMaker
+from backend.common.corpora_config import CorporaDbConfig
+from backend.common.utils.db_session import DBSessionMaker
 
 from scripts.cxg_admin_scripts import deletions
 from scripts.cxg_admin_scripts import tombstones
@@ -282,7 +282,7 @@ def wmg_get_s3_uris(ctx):
     ./scripts/cxg_admin.py --deployment dev wmg-get-s3-uris
     """
 
-    from backend.corpus_asset_pipelines.integrated_corpus.extract import get_dataset_s3_uris
+    from backend.wmg.pipeline.integrated_corpus.extract import get_dataset_s3_uris
 
     s3_uris = get_dataset_s3_uris()
     print(s3_uris)

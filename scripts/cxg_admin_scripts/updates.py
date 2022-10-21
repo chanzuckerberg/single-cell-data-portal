@@ -12,16 +12,16 @@ import traceback
 
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..."))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
-from backend.corpora.common.corpora_orm import (
+from backend.common.corpora_orm import (
     CollectionLinkType,
     CollectionVisibility,
     DbCollection,
     DbCollectionLink,
     DbDataset,
 )
-from backend.corpora.common.entities.collection import Collection
-from backend.corpora.common.providers import crossref_provider
-from backend.corpora.common.utils.db_session import db_session_manager
+from backend.common.entities.collection import Collection
+from backend.common.providers import crossref_provider
+from backend.common.utils.db_session import db_session_manager
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)

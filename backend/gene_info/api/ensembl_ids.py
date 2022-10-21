@@ -12,7 +12,7 @@ class SupportedOrganisms(enum.Enum):
 class GeneChecker:
     """Handles checking gene ids, retrieves symbols"""
 
-    base_prefix = "backend/ontology_files/"
+    base_prefix = "backend/common/ontology_files/"
     GENE_FILES = {
         SupportedOrganisms.HOMO_SAPIENS: base_prefix + "genes_homo_sapiens.csv.gz",
         SupportedOrganisms.MUS_MUSCULUS: base_prefix + "genes_mus_musculus.csv.gz",
