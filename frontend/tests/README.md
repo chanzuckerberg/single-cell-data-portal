@@ -41,14 +41,14 @@ All the E2E test commands can be found in `frontend/Makefile` and `frontend/pack
 1. Set up your local FE environment before running any `npm` commands:
 
    1. In `frontend/` directory, run `npm i`
+   2. Ensure your playwright config is connected to a working BE API service.
+
+      1. For BE running in Docker containers, `frontend/src/configs/configs.js` should point to `API_URL: "http://backend.corporanet.local:5000"`
+
+      2. To run against Deployed BEs,`frontend/src/configs/configs.js` should point to `API_URL: "https://api.cellxgene.dev.single-cell.czi.technology"`, or any other deployed BE API base url
+
 
 1. local -> local (app started with `npm run dev`)
-
-   1. Make sure your local app is connected to a working BE API service.
-
-      1. If your `frontend/src/configs/configs.js` is pointing to `API_URL: "http://backend.corporanet.local:5000"`, you need BE running in Docker containers
-
-      1. If your `frontend/src/configs/configs.js` is pointing to `API_URL: "https://api.cellxgene.dev.single-cell.czi.technology"`, or any other deployed BE environments, make sure they are working
 
    1. Make sure you have your local app running already on http://localhost:3000. If not, in `frontend/` directory, run `npm run dev`
 
@@ -119,7 +119,7 @@ All the E2E test commands can be found in `frontend/Makefile` and `frontend/pack
 
    1. Since we're debugging Dev environment, we need to use the `local -> dev` command as shown in the [How](#how) section above.
 
-   1. In `single-cell-data-portal/frontend/`, run `TEST_ACCOUNT_PASS=PUT_PASSWORD_HERE npm run e2e-dev -- /YOUR_DIRECTORY_PATH/single-cell-data-portal/frontend/tests/features/collection/collection.test.ts -- --debug`.
+   1. In `single-cell-data-portal/frontend/`, run `TEST_ACCOUNT_PASS=PUT_PASSWORD_HERE npm run e2e-dev --/YOUR_DIRECTORY_PATH/single-cell-data-portal/frontend/tests/features/collection/collection.test.ts -- -- --debug`.
 
       NOTE: `PUT_PASSWORD_HERE` needs to be replaced with the actual test account Auth0 password, and `YOUR_DIRECTORY_PATH` needs to be where your `single-cell-data-portal` directory lives
 
