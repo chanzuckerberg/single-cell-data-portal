@@ -15,7 +15,6 @@ class TestWmgApi(BaseFunctionalTestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.api = API_URL.get(cls.deployment_stage)
         cls.api = f"{cls.api}/wmg/v1"
 
         # get snapshot id
