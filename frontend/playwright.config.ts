@@ -86,8 +86,8 @@ const config: PlaywrightTestConfig = {
     viewport: VIEWPORT,
   },
 
-  /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
+  /* Opt out of parallel tests. */
+  workers: 1,
 
   /* Run your local dev server before starting the tests */
   // webServer: {

@@ -94,7 +94,7 @@ class TestRevisions(BaseFunctionalTestCase):
             # Check that the published dataset is still the same
             meta_payload_after_revision = self.session.get(f"{self.api}/dp/v1/datasets/meta?url={explorer_url}").json()
             self.assertDictEqual(meta_payload_before_revision, meta_payload_after_revision)
-            schema_after_revision = self.session.get(f"{self.api}/cellxgene/e/{dataset_id}.cxg/api/v0.2/schema").json()
+            schema_after_revision = self.get_schema_with_retries(dataset_id).json()
             self.assertDictEqual(schema_before_revision, schema_after_revision)
 
         with self.subTest("Publishing a revised dataset replaces the original dataset"):
@@ -206,11 +206,22 @@ class TestRevisions(BaseFunctionalTestCase):
             res = self.get_schema_with_retries(original_dataset_id, desired_http_status_code=302)
             self.assertStatusCode(302, res)
 
-    @retry(wait=wait_fixed(1), stop=stop_after_attempt(50))
     def get_schema_with_retries(self, dataset_id, desired_http_status_code=requests.codes.ok):
-        schema_res = self.session.get(f"{self.api}/cellxgene/e/{dataset_id}.cxg/api/v0.2/schema", allow_redirects=False)
+        @retry(wait=wait_fixed(1), stop=stop_after_attempt(50))
+        def get_s3_uri():
+            s3_uri_res = self.session.get(f"{self.api}/cellxgene/e/{dataset_id}.cxg/v0.3/s3_uri")
+            if s3_uri_res.status_code != requests.codes.ok:
+                raise UndesiredHttpStatusCodeError
+            return s3_uri_res.content
 
-        if schema_res.status_code != desired_http_status_code:
-            raise UndesiredHttpStatusCodeError
+        @retry(wait=wait_fixed(1), stop=stop_after_attempt(50))
+        def get_schema(s3_path):
+            schema_res = self.session.get(
+                f"{self.api}/cellxgene/s3_uri/{s3_path}/api/v0.3/schema", allow_redirects=False
+            )
+            if schema_res.status_code != desired_http_status_code:
+                raise UndesiredHttpStatusCodeError
+            return schema_res
 
-        return schema_res
+        s3_uri = get_s3_uri()
+        return get_schema(s3_uri)
