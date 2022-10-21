@@ -223,5 +223,5 @@ class TestRevisions(BaseFunctionalTestCase):
                 raise UndesiredHttpStatusCodeError
             return schema_res
 
-        s3_uri = get_s3_uri(dataset_id)
+        s3_uri = get_s3_uri()
         return get_schema(s3_uri)
