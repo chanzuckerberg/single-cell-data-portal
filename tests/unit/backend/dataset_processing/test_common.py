@@ -17,6 +17,7 @@ from backend.common.corpora_orm import (
     DatasetArtifactFileType,
     UploadStatus,
     ValidationStatus,
+    ProcessingStatus,
 )
 from backend.common.corpora_config import CorporaConfig
 from backend.common.entities.collection import Collection
@@ -224,6 +225,7 @@ class TestCommon(DataPortalTestCase):
                 dataset_id=dataset.id,
             )
         self.assertEqual(dataset.processing_status.validation_status, ValidationStatus.INVALID)
+        self.assertEqual(dataset.processing_status.processing_status, ProcessingStatus.FAILURE)
         self.assertEqual(
             dataset.processing_status.validation_message,
             f"The file exceeds the maximum allowed size of {max_file_size_gb} GB",
