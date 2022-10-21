@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 
 @dataclass
@@ -28,17 +28,12 @@ class DatasetMetadata:
 
 
 @dataclass
-class Dataset:
+class DatasetVersion:
     id: str
-    status: DatasetStatus
+    version_id: str
+    processing_status: Optional[DatasetStatus]
     metadata: DatasetMetadata
     artifacts: List[DatasetArtifact]
-
-
-@dataclass
-class DatasetVersion:
-    version_id: str
-    dataset: Dataset
 
 
 @dataclass
@@ -52,15 +47,11 @@ class CollectionMetadata:
 
 
 @dataclass
-class Collection:
-    id: str
-    metadata: CollectionMetadata
-    publisher_metadata: dict  # TODO: use a dataclass
-    datasets: List[DatasetVersion]
-
-
-@dataclass
 class CollectionVersion:
+    collection_id: str
     version_id: str
-    collection: Collection
-    published_at: datetime
+    owner: str
+    metadata: CollectionMetadata
+    publisher_metadata: Optional[dict]  # TODO: use a dataclass
+    datasets: List[DatasetVersion] 
+    published_at: Optional[datetime]
