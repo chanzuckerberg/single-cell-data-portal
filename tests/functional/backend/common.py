@@ -35,11 +35,11 @@ class BaseFunctionalTestCase(unittest.TestCase):
         cls.session.mount("https://", HTTPAdapter(max_retries=retry_config))
         token = cls.get_auth_token(cls.config.test_account_username, cls.config.test_account_password)
         cls.curator_cookie = cls.make_cookie(token)
-        self.api = API_URL.get(self.deployment_stage)
-        self.test_collection_id = "005d611a-14d5-4fbf-846e-571a1f874f70"
-        self.test_file_id = "7c93775542b056e048aa474535b8e5c2"
-        self.bad_collection_id = "DNE"
-        self.bad_file_id = "DNE"
+        cls.api = API_URL.get(self.deployment_stage)
+        cls.test_collection_id = "005d611a-14d5-4fbf-846e-571a1f874f70"
+        cls.test_file_id = "7c93775542b056e048aa474535b8e5c2"
+        cls.bad_collection_id = "DNE"
+        cls.bad_file_id = "DNE"
 
     @classmethod
     def get_auth_token(cls, username: str, password: str, additional_claims: list = None):
