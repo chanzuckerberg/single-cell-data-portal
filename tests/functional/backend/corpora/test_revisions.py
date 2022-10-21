@@ -94,7 +94,7 @@ class TestRevisions(BaseFunctionalTestCase):
             # Check that the published dataset is still the same
             meta_payload_after_revision = self.session.get(f"{self.api}/dp/v1/datasets/meta?url={explorer_url}").json()
             self.assertDictEqual(meta_payload_before_revision, meta_payload_after_revision)
-            schema_after_revision = self.session.get(f"{self.api}/cellxgene/e/{dataset_id}.cxg/api/v0.2/schema").json()
+            schema_after_revision = self.get_schema_with_retries(dataset_id).json()
             self.assertDictEqual(schema_before_revision, schema_after_revision)
 
         with self.subTest("Publishing a revised dataset replaces the original dataset"):
