@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import List
 from backend.corpora.common.entities.dataset import Dataset
-from backend.layers.common.entities import CollectionMetadata, CollectionVersion, DatasetArtifact, DatasetMetadata, DatasetStatus
+from backend.layers.common.entities import CollectionMetadata, CollectionVersion, DatasetArtifact, DatasetMetadata, DatasetStatus, DatasetVersion
 
 
 class DatabaseProviderInterface:
@@ -84,35 +84,70 @@ class DatabaseProviderInterface:
         """
         pass
 
-    def get_dataset(self, dataset_id: str) -> DatasetVersion:
+    def get_dataset_version(self, dataset_version_id: str) -> DatasetVersion:
+        """
+        Returns a dataset version by id.
+        """
         pass
 
-    def get_dataset_version(self, version_id: str) -> DatasetVersion:
+    def get_all_versions_for_dataset(self, dataset_id: str) -> List[DatasetVersion]:
+        """
+        Returns all dataset versions for a canonical dataset_id
+        """
         pass
 
     def get_all_datasets(self) -> Iterable[DatasetVersion]:  # TODO: add filters if needed
+        """
+        Returns all dataset versions.
+        # TODO: Add filtering
+        """
         pass
 
-    def get_dataset_artifacts(self, dataset_id: str) -> List[DatasetArtifact]:
+    def get_dataset_artifacts(self, dataset_version_id: str) -> List[DatasetArtifact]:
+        """
+        Returns all the artifacts for a specific dataset version
+        """
         pass
 
-    def create_dataset(self, collection_version_id: str, dataset_metadata: DatasetMetadata) -> None:
+    def inizialize_canonical_dataset(self, collection_version_id: str, dataset_metadata: DatasetMetadata) -> DatasetVersion:
+        """
+        Initializes a canonical dataset, generating a dataset_id and a dataset_version_id.
+        Returns the newly created DatasetVersion.
+        """
         pass
 
-    def create_dataset_version(self, dataset_id: str, dataset_metadata: DatasetMetadata) -> str:
+    def add_dataset_version(self, dataset_id: str, dataset_metadata: DatasetMetadata) -> DatasetVersion:
+        """
+        Adds a new dataset version to a canonical dataset.
+        Returns the newly created DatasetVersion.
+        """
         pass
 
-    def create_dataset_artifact(self, version_id: str, artifact: DatasetArtifact) -> None:
+    def add_dataset_artifact(self, version_id: str, artifact: DatasetArtifact) -> None:
+        """
+        Adds a dataset artifact to an existing dataset version.
+        """
         pass
 
     def update_dataset_processing_status(self, version_id: str, status: DatasetStatus) -> None:
-        pass
+        """
+        Updates the processing status for a dataset version.
+        """
 
-    def add_dataset_to_collection_version(self, version_id: str, dataset_id: str) -> None:
+    def add_dataset_to_collection_version_mapping(self, collection_version_id: str, dataset_version_id: str) -> None:
+        """
+        Adds a mapping between an existing collection version and a dataset version
+        """
         pass
 
     def delete_dataset_from_collection_version(self, collection_version_id: str, dataset_version_id: str) -> None:
+        """
+        Removes a mapping between a collection version and a dataset version
+        """
         pass
 
     def replace_dataset_in_collection_version(self, collection_version_id: str, old_dataset_version_id: str, dataset_metadata: DatasetMetadata) -> None:
+        """
+        Replaces an existing mapping between a collection version and a dataset version
+        """
         pass
