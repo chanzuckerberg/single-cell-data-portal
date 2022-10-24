@@ -29,7 +29,7 @@ class DatasetMetadata:
 
 @dataclass
 class DatasetVersion:
-    id: str
+    dataset_id: str
     version_id: str
     processing_status: Optional[DatasetStatus]
     metadata: DatasetMetadata

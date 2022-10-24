@@ -42,7 +42,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         return str(uuid.uuid4())
 
     # TODO: add publisher_metadata here?
-    def create_collection(self, owner: str, collection_metadata: CollectionMetadata):
+    def create_collection(self, owner: str, collection_metadata: CollectionMetadata) -> str:
         collection_id = self._id()
         version_id = self._id()
         version = CollectionVersion(collection_id, version_id, owner, collection_metadata, None, [], None)
@@ -92,7 +92,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         return self.collections_versions[version_id]
 
     # MAYBE
-    def publish_collection(self, collection_id: str, version_id: str) -> None:
+    def publish_collection_version(self, collection_id: str, version_id: str) -> None:
         self.collections[collection_id] = version_id
         self.collections_versions[version_id].published_at = datetime.utcnow()
 
@@ -100,7 +100,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
     def update_collection_version_mapping(self, collection_id: str, version_id: str) -> None:
         self.collections[collection_id] = version_id
 
-    def set_collection_version_published_at(self, version_id):
+    def set_collection_version_published_at(self, version_id) -> None:
         self.collections_versions[version_id].published_at = datetime.utcnow()
 
     # END OR
@@ -137,7 +137,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         # Register the dataset to the original collection
         self.collections_versions[collection_version_id].datasets.append(version)
 
-    def create_dataset_version(self, dataset_id: str, dataset_metadata: DatasetMetadata):
+    def create_dataset_version(self, dataset_id: str, dataset_metadata: DatasetMetadata) -> str:
         # Unused for now
         pass
 
