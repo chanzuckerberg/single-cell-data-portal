@@ -21,6 +21,7 @@ from unittest.mock import Mock
 from backend.corpora.common.providers.crossref_provider import CrossrefException, CrossrefProvider
 from backend.layers.business.business import BusinessLogic, UserInfo
 from backend.layers.common.entities import CollectionMetadata, Link
+from backend.layers.persistence.persistence import DatabaseProviderInterface
 from backend.layers.thirdparty.crossref_provider import CrossrefProviderInterface
 from tests.unit.backend.layers.persistence.persistence_mock import DatabaseProviderMock
 
@@ -45,7 +46,7 @@ user_info = UserInfo(
 class BaseBusinessLogicTestCase(unittest.TestCase):
 
     def setUp(self) -> None:
-        self.database_provider = DatabaseProviderMock()
+        self.database_provider = DatabaseProviderInterface() # replace with DatabaseProviderMock()
 
         # By default does nothing. Can be mocked by single test cases.
         self.crossref_provider = CrossrefProviderInterface()
@@ -55,6 +56,20 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
             crossref_provider=self.crossref_provider
         )
         return super().setUp()
+
+    def initialize_private_collection(self) -> None:
+        version = self.database_provider.initialize_canonical_collection(
+            "test collection 1", # TODO: name not required?
+            metadata1,
+        )
+        self.database_provider.inizialize_canonical_dataset
+        
+
+    def initialize_public_collection(self) -> None:
+        self.database_provider.initialize_canonical_collection(
+            "test collection 1", # TODO: name not required?
+            metadata1,
+        )
 
 
 class TestCreateCollection(BaseBusinessLogicTestCase):
