@@ -4,8 +4,8 @@ import sys
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..."))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
 
-from backend.corpora.common.entities import Dataset, Collection, DatasetAsset
-from backend.corpora.common.utils.db_session import db_session_manager
+from backend.common.entities import Dataset, Collection, DatasetAsset
+from backend.common.utils.db_session import db_session_manager
 
 
 def get_public_dataset_details():
