@@ -1,9 +1,14 @@
 from ast import Str
+from dataclasses import dataclass
 from typing import Iterable, Optional
+from backend.corpora.common.providers.crossref_provider import CrossrefProvider
 
 from backend.layers.common.entities import CollectionMetadata, CollectionVersion, DatasetArtifact, DatasetStatus, DatasetVersion
+from backend.layers.persistence.persistence import DatabaseProviderInterface
+from backend.layers.thirdparty.crossref_provider import CrossrefProviderInterface
 
 
+@dataclass
 class CollectionQueryFilter:
     from_date: Optional[str]
     to_date: Optional[str]
@@ -11,12 +16,13 @@ class CollectionQueryFilter:
     owner: Optional[str]
     # TODO: add list of fields to be returned (if needed)
 
+@dataclass
 class UserInfo:
     user_id: str
     token: str
 
 
-class BusinessLogic:
+class BusinessLogicInterface:
 
     # Get_collections
     # Replaces get_collections_list and get_collections_index
@@ -54,7 +60,7 @@ class BusinessLogic:
     # Should call CrossrefProvider to retrieve publisher metadata information
     # This method currently collects errors in a list, which will be piped upstream to the API response. This is a good idea but it should be refactor into a generalized pattern (otherwise we’ll “pollute” the business layer with logic specific to the API layer).
 
-    def create_collection(self, collection_metadata: CollectionMetadata, user_info: UserInfo) -> str:
+    def create_collection(self, collection_metadata: CollectionMetadata, user_info: UserInfo) -> CollectionVersion:
         pass
 
     # Delete_collection
@@ -157,3 +163,14 @@ class BusinessLogic:
     def get_dataset_status(self, dataset_id: str) -> DatasetStatus:
         pass
 
+
+# TODO: move it to a separate file
+class BusinessLogic(BusinessLogicInterface):
+
+    database_provider: DatabaseProviderInterface
+    crossref_provider: CrossrefProviderInterface
+
+    def __init__(self, database_provider: DatabaseProviderInterface, crossref_provider: CrossrefProviderInterface) -> None:
+        self.crossref_provider = crossref_provider
+        self.database_provider = database_provider
+        super().__init__()

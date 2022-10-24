@@ -37,13 +37,19 @@ class DatasetVersion:
 
 
 @dataclass
+class Link:
+    name: str
+    type: str
+    uri: str
+    
+@dataclass
 class CollectionMetadata:
     name: str
     description: str
     owner: str
     contact_name: str
     contact_email: str
-    links: List[dict]  # TODO: use a dataclass
+    links: List[Link]  # TODO: use a dataclass
 
 
 @dataclass
