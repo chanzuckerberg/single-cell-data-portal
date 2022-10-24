@@ -20,7 +20,7 @@ class DatabaseProviderInterface:
         """
         pass
 
-    def get_all_version_for_collection(self, collection_id: str) -> List[CollectionVersion]:
+    def get_all_versions_for_collection(self, collection_id: str) -> List[CollectionVersion]:
         """
         Retrieves all versions for a specific collections, without filtering
         """
