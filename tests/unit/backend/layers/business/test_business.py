@@ -409,7 +409,7 @@ class TestUpdateCollection(BaseBusinessLogicTestCase):
         # TODO: AUTHORIZATION
         pass
 
-class TestAddDataset(BaseBusinessLogicTestCase):
+class TestAddUpdateRemoveReplaceDataset(BaseBusinessLogicTestCase):
 
     def add_dataset_to_collection_ok(self):
         """
@@ -433,34 +433,76 @@ class TestAddDataset(BaseBusinessLogicTestCase):
         with self.assertRaises(DatasetIngestException):
             self.business_logic.ingest_dataset(version.version_id, url, None, self.user_info)
 
-class TestUpdateRemoveDataset(BaseBusinessLogicTestCase):
-
     def remove_dataset_from_collection_ok(self):
         """
-        A dataset can be removed from a collection version using `delete_dataset`
+        A dataset can be removed from a collection version using `delete_dataset`.
+        This should NOT delete the dataset but rather just update the collection_version -> dataset_version mapping
         """
         version = self.initialize_private_collection()
         self.assertEqual(1, len(version.datasets))
-        self.business_logic.delete_dataset(version.version_id)
+        dataset_version_to_delete_id = version.datasets[0].version_id
+        self.business_logic.delete_dataset(dataset_version_to_delete_id)
+
+        new_version = self.database_provider.get_collection_version(version.version_id)
+        self.assertEqual(0, len(new_version.datasets))
+
+        # The dataset should still be present in the persistence store
+        deleted_dataset = self.database_provider.get_dataset_version(dataset_version_to_delete_id)
+        self.assertIsNotNone(deleted_dataset)
 
     def remove_dataset_from_public_collection_fail(self):
         """
         Removing a dataset from a published collection should fail
         """
-        pass
+        version = self.initialize_public_collection()
+        self.assertEqual(1, len(version.datasets))
+        dataset_version_to_delete_id = version.datasets[0].version_id
+
+        with self.assertRaises(CollectionUpdateException):
+            self.business_logic.delete_dataset(dataset_version_to_delete_id)
 
     def replace_dataset_in_collection_ok(self):
         """
         A dataset can be replaced from a collection version by calling `ingest_dataset`
         and specifying an existing dataset_version_id
         """
-        pass
+        version = self.initialize_private_collection()
+        dataset_version_to_replace_id = version.datasets[0].version_id
+        url = "http://test/dataset.url"
+
+        new_dataset_version_id = self.business_logic.ingest_dataset(
+            version.version_id, 
+            url, 
+            dataset_version_to_replace_id, 
+            self.user_info
+        )
+
+        # Verify that the replaced dataset is in the right status
+        new_dataset_version = self.database_provider.get_dataset_version(new_dataset_version_id)
+        self.assertIsNotNone(new_dataset_version)
+        self.assertIsNone(new_dataset_version.metadata)
+        self.assertEqual(new_dataset_version.processing_status, DatasetStatus.WAITING)
+
+        # Verify that the old dataset is still existent
+        old_dataset_version = self.database_provider.get_dataset_version(dataset_version_to_replace_id)
+        self.assertIsNotNone(old_dataset_version)
+
 
     def replace_dataset_in_public_collection_fail(self):
         """
         Replacing a dataset that belongs to a published collection should fail
         """
-        pass
+        version = self.initialize_public_collection()
+        dataset_version_to_replace_id = version.datasets[0].version_id
+        url = "http://test/dataset.url"
+
+        with self.assertRaises(CollectionUpdateException):
+            self.business_logic.ingest_dataset(
+                version.version_id, 
+                url, 
+                dataset_version_to_replace_id, 
+                self.user_info
+            )
 
 class TestGetDataset(BaseBusinessLogicTestCase):
 
@@ -487,33 +529,69 @@ class TestDatasetStatus(BaseBusinessLogicTestCase):
 class TestNewCollectionVersion(BaseBusinessLogicTestCase):
 
     def create_collection_version_ok(self):
+        """
+        A collection version can be created using `create_collection_version`
+        """
         pass
 
     def create_collection_version_unauthorized_fail(self):
+        """
+        A collection version can only be created by an authorized user (super curator or owner)
+        """
         pass
 
     def delete_collection_version_ok(self):
+        """
+        A collection version can be deleted using `delete_collection_version`
+        """
         pass
 
     def delete_collection_version_unauthorized_fail(self):
+        """
+        A collection version can only be deleted by an authorized user (super curator or owner)
+        """
         pass
 
     def publish_version_ok(self):
+        """
+        A collection version can be published using `publish_collection`
+        """
+        pass
+
+    def publish_collection_with_no_datasets_fail(self):
+        """
+        Publishing a collection version with no datasets should fail
+        """
         pass
 
     def publish_version_with_updated_metadata_ok(self):
+        """
+        Publishing a collection with updated metadata should succeed
+        """
         pass
 
     def publish_version_with_removed_dataset_ok(self):
+        """
+        Publishing a version with a dataset removed should succeed
+        """
         pass
 
     def publish_version_with_added_dataset_ok(self):
+        """
+        Publishing a version with a dataset added should succeed
+        """
         pass
 
-    def publish_version_with_updated_dataset_ok(self):
+    def publish_version_with_replaced_dataset_ok(self):
+        """
+        Publishing a version with a dataset replaced should succeed
+        """
         pass
 
     def publish_version_unauthorized_fail(self):
+        """
+        Publishing a version should fail if the user is not authorized
+        """
         pass
 
 
