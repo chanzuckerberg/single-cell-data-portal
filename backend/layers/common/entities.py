@@ -1,12 +1,16 @@
 from dataclasses import dataclass
 from datetime import datetime
 from typing import List, Optional
+from enum import Enum
 
-
-@dataclass
-class DatasetStatus:
-    status: str  # TODO: use an enum
-
+class DatasetStatus(Enum):
+    NA = "N/A"
+    WAITING = "Waiting"
+    UPLOADING = "Uploading"
+    UPLOADED = "Uploaded"
+    FAILED = "Failed"
+    CANCEL_PENDING = "Cancel pending"
+    CANCELED = "Canceled"
 
 @dataclass
 class DatasetArtifact:
@@ -31,7 +35,7 @@ class DatasetMetadata:
 class DatasetVersion:
     dataset_id: str
     version_id: str
-    processing_status: Optional[DatasetStatus]
+    processing_status: DatasetStatus
     metadata: DatasetMetadata
     artifacts: List[DatasetArtifact]
 

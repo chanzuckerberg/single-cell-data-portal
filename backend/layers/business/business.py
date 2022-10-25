@@ -6,6 +6,7 @@ from backend.corpora.common.providers.crossref_provider import CrossrefProvider
 from backend.layers.common.entities import CollectionMetadata, CollectionVersion, DatasetArtifact, DatasetStatus, DatasetVersion
 from backend.layers.persistence.persistence import DatabaseProviderInterface
 from backend.layers.thirdparty.crossref_provider import CrossrefProviderInterface
+from backend.layers.thirdparty.step_function_provider import StepFunctionProviderInterface
 
 
 @dataclass
@@ -130,7 +131,7 @@ class BusinessLogicInterface:
     # Should handle exceptions from all providers:
     # Should only raise custom exceptions
 
-    def ingest_dataset(self, collection_id: str, url: str, dataset_id: Optional[str], user_info: UserInfo) -> None:
+    def ingest_dataset(self, dataset_version_id: str, url: str, existing_dataset_version_id: Optional[str], user_info: UserInfo) -> str:
         pass
 
     # Get_all_datasets
@@ -142,7 +143,7 @@ class BusinessLogicInterface:
     # Delete_dataset
     # Replaces delete_dataset
 
-    def delete_dataset(self, dataset_id: str) -> None:
+    def delete_dataset(self, dataset_version_id: str) -> None:
         pass
 
 
@@ -172,8 +173,15 @@ class BusinessLogic(BusinessLogicInterface):
 
     database_provider: DatabaseProviderInterface
     crossref_provider: CrossrefProviderInterface
+    step_function_provider: StepFunctionProviderInterface
 
-    def __init__(self, database_provider: DatabaseProviderInterface, crossref_provider: CrossrefProviderInterface) -> None:
+    def __init__(
+        self, 
+        database_provider: DatabaseProviderInterface, 
+        crossref_provider: CrossrefProviderInterface,
+        step_function_provider: StepFunctionProviderInterface,
+    ) -> None:
         self.crossref_provider = crossref_provider
         self.database_provider = database_provider
+        self.step_function_provider = step_function_provider
         super().__init__()

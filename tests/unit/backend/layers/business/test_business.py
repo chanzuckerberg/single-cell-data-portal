@@ -21,9 +21,10 @@ import copy
 from unittest.mock import Mock
 from backend.corpora.common.providers.crossref_provider import CrossrefException, CrossrefProvider
 from backend.layers.business.business import BusinessLogic, CollectionQueryFilter, UserInfo
-from backend.layers.common.entities import CollectionMetadata, CollectionVersion, DatasetMetadata, Link
+from backend.layers.common.entities import CollectionMetadata, CollectionVersion, DatasetMetadata, DatasetStatus, Link
 from backend.layers.persistence.persistence import DatabaseProviderInterface
 from backend.layers.thirdparty.crossref_provider import CrossrefProviderInterface
+from backend.layers.thirdparty.step_function_provider import StepFunctionProviderInterface
 from tests.unit.backend.layers.persistence.persistence_mock import DatabaseProviderMock
 
 # test fixtures 
@@ -68,10 +69,12 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
 
         # By default does nothing. Can be mocked by single test cases.
         self.crossref_provider = CrossrefProviderInterface()
+        self.step_function_provider = StepFunctionProviderInterface()
 
         self.business_logic = BusinessLogic(
             database_provider=self.database_provider, 
-            crossref_provider=self.crossref_provider
+            crossref_provider=self.crossref_provider,
+            step_function_provider=self.step_function_provider,
         )
         return super().setUp()
 
@@ -339,6 +342,9 @@ class TestUpdateCollection(BaseBusinessLogicTestCase):
         self.assertEqual(updated_version.metadata.owner, self.sample_collection_metadata.owner)
 
     def update_collection_wrong_params_fail(self):
+        """
+        Updating a collection with a payload with missing fields should fail
+        """
         version = self.initialize_private_collection()
         body = {
             "name": "new collection name",
@@ -430,18 +436,41 @@ class TestUpdateCollection(BaseBusinessLogicTestCase):
 class TestAddDataset(BaseBusinessLogicTestCase):
 
     def add_dataset_to_collection_ok(self):
-        pass
+        """
+        A dataset can be added to a collection when `ingest_dataset` is called.
+        The resulting dataset should be empty and in a state ready for processing.
+        """
+        version = self.initialize_empty_private_collection()
+        url = "http://test/dataset.url"
+        new_dataset_version_id = self.business_logic.ingest_dataset(version.version_id, url, None, self.user_info)
+        new_dataset_version = self.database_provider.get_dataset_version(new_dataset_version_id)
+        self.assertIsNotNone(new_dataset_version)
+        self.assertIsNone(new_dataset_version.metadata)
+        self.assertEqual(new_dataset_version.processing_status, DatasetStatus.WAITING)
 
-    def add_dataset_to_collection_fail(self):
-        # TODO: are there failures to be tested here?
-        pass
+    def add_dataset_to_public_collection_fail(self):
+        """
+        Adding a dataset to a public collection should result in a failure
+        """
+        version = self.initialize_public_collection()
+        url = "http://test/dataset.url"
+        with self.assertRaises(DatasetIngestException):
+            self.business_logic.ingest_dataset(version.version_id, url, None, self.user_info)
 
 class TestUpdateRemoveDataset(BaseBusinessLogicTestCase):
 
     def remove_dataset_from_collection_ok(self):
+        version = self.initialize_private_collection()
+        self.assertEqual(1, len(version.datasets))
+        self.business_logic.delete_dataset(version.version_id)
+
+    def remove_dataset_from_public_collection_fail(self):
         pass
 
     def replace_dataset_in_collection_ok(self):
+        pass
+
+    def replace_dataset_in_public_collection_fail(self):
         pass
 
 class TestGetDataset(BaseBusinessLogicTestCase):
