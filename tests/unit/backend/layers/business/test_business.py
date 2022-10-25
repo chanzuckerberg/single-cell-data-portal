@@ -1,20 +1,3 @@
-# from datetime import datetime
-
-# from backend.corpora.common.corpora_orm import CollectionLinkType, DbCollectionLink, CollectionVisibility, DbDataset
-# from backend.corpora.common.entities import Dataset
-# from backend.corpora.common.entities.collection import Collection
-# from backend.corpora.common.entities.geneset import Geneset, GenesetDatasetLink
-# from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
-# from tests.unit.backend.utils import BogusCollectionParams, BogusDatasetParams
-
-
-
-    # def setUp(self) -> None:
-    #     self.database_provider = DatabaseProviderMock()
-    #     return super().setUp()
-
-
-
 from datetime import datetime
 import unittest
 import copy
@@ -26,13 +9,6 @@ from backend.layers.persistence.persistence import DatabaseProviderInterface
 from backend.layers.thirdparty.crossref_provider import CrossrefProviderInterface
 from backend.layers.thirdparty.step_function_provider import StepFunctionProviderInterface
 from tests.unit.backend.layers.persistence.persistence_mock import DatabaseProviderMock
-
-# test fixtures 
-# TODO move them to a fixture
-# TODO: move them as member of BaseBusinessLogicTestCase
-
-
-# end fixtures
 
 class BaseBusinessLogicTestCase(unittest.TestCase):
 
@@ -460,25 +436,44 @@ class TestAddDataset(BaseBusinessLogicTestCase):
 class TestUpdateRemoveDataset(BaseBusinessLogicTestCase):
 
     def remove_dataset_from_collection_ok(self):
+        """
+        A dataset can be removed from a collection version using `delete_dataset`
+        """
         version = self.initialize_private_collection()
         self.assertEqual(1, len(version.datasets))
         self.business_logic.delete_dataset(version.version_id)
 
     def remove_dataset_from_public_collection_fail(self):
+        """
+        Removing a dataset from a published collection should fail
+        """
         pass
 
     def replace_dataset_in_collection_ok(self):
+        """
+        A dataset can be replaced from a collection version by calling `ingest_dataset`
+        and specifying an existing dataset_version_id
+        """
         pass
 
     def replace_dataset_in_public_collection_fail(self):
+        """
+        Replacing a dataset that belongs to a published collection should fail
+        """
         pass
 
 class TestGetDataset(BaseBusinessLogicTestCase):
 
     def get_all_datasets_ok(self):
+        """
+        All dataset that belong to a published collection can be retrieved with `get_all_datasets`
+        """
         pass
 
     def get_dataset_artifacts_ok(self):
+        """
+        Artifacts belonging to a dataset can be obtained with `get_dataset_artifacts`
+        """
         pass
 
 class TestDatasetStatus(BaseBusinessLogicTestCase):
@@ -489,7 +484,7 @@ class TestDatasetStatus(BaseBusinessLogicTestCase):
     def get_dataset_status_ok(self):
         pass
 
-class TestCreateCollectionVersion(BaseBusinessLogicTestCase):
+class TestNewCollectionVersion(BaseBusinessLogicTestCase):
 
     def create_collection_version_ok(self):
         pass
@@ -497,14 +492,11 @@ class TestCreateCollectionVersion(BaseBusinessLogicTestCase):
     def create_collection_version_unauthorized_fail(self):
         pass
 
-class TestDeleteCollectionVersion(BaseBusinessLogicTestCase):
-
     def delete_collection_version_ok(self):
         pass
 
     def delete_collection_version_unauthorized_fail(self):
         pass
-class TestPublishCollectionVersion(BaseBusinessLogicTestCase):
 
     def publish_version_ok(self):
         pass
