@@ -6,7 +6,7 @@ from backend.layers.common.entities import CollectionMetadata, CollectionVersion
 
 class DatabaseProviderInterface:
         
-    def initialize_canonical_collection(self, owner: str, collection_metadata: CollectionMetadata) -> CollectionVersion:
+    def create_canonical_collection(self, owner: str, collection_metadata: CollectionMetadata) -> CollectionVersion:
         """
         Initializes a canonical collection, generating a canonical collection_id and a new version_id.
         Returns the newly created CollectionVersion
