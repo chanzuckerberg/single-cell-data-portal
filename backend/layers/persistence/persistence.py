@@ -1,5 +1,5 @@
-from datetime import datetime
-from typing import List
+from datetime import date, datetime
+from typing import List, Optional
 from backend.corpora.common.entities.dataset import Dataset
 from backend.layers.common.entities import CollectionMetadata, CollectionVersion, DatasetArtifact, DatasetMetadata, DatasetStatus, DatasetVersion
 
@@ -64,7 +64,7 @@ class DatabaseProviderInterface:
         """
         pass
 
-    def finalize_collection_version(self, collection_id: str, version_id: str) -> None:
+    def finalize_collection_version(self, collection_id: str, version_id: str, published_at: Optional[datetime]) -> None:
         """
         Finalizes a collection version. This is equivalent to calling:
         1. update_collection_version_mapping

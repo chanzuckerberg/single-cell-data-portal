@@ -51,6 +51,9 @@ class BusinessLogicInterface:
     def get_collection(self, collection_id: str, user_info: UserInfo) -> CollectionVersion:
         pass
 
+    def get_collection_version(self, version_id: str, user_info: UserInfo) -> CollectionVersion
+        pass
+
     # Create_collection
     # Replaces the current create_collection
     # Accepts:
@@ -84,7 +87,7 @@ class BusinessLogicInterface:
     # Can either return nothing or the metadata of the updated collection
 
     # TODO: body should be a dataclass?
-    def update_collection(self, collection_id: str, body: dict, user_info: UserInfo) -> None:
+    def update_collection_version(self, version_id: str, body: dict, user_info: UserInfo) -> None:
         pass
 
     # Create_collection_version
