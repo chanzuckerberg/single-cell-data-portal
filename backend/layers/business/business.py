@@ -1,7 +1,5 @@
-from ast import Str
 from dataclasses import dataclass
 from typing import Iterable, Optional
-from backend.corpora.common.providers.crossref_provider import CrossrefProvider
 
 from backend.layers.common.entities import CollectionMetadata, CollectionVersion, DatasetArtifact, DatasetStatus, DatasetVersion
 from backend.layers.persistence.persistence import DatabaseProviderInterface
@@ -11,8 +9,6 @@ from backend.layers.thirdparty.step_function_provider import StepFunctionProvide
 
 @dataclass
 class CollectionQueryFilter:
-    from_date: Optional[str]
-    to_date: Optional[str]
     visibility: Optional[str] # Use an enum
     owner: Optional[str]
     # TODO: add list of fields to be returned (if needed)
