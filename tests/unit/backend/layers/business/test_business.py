@@ -66,17 +66,18 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
 
     def initialize_private_collection(self, owner: str = test_user_name, metadata = sample_collection_metadata) -> CollectionVersion:
         """
-        Initializes a private collection to be used for testing, with a single dataset
+        Initializes a private collection to be used for testing, with two datasets
         """
-        version = self.initialize_empty_private_collection()
-        dataset_version = self.database_provider.initialize_canonical_dataset(
-            version.version_id, 
-            dataset_metadata=self.sample_dataset_metadata
-        )
-        self.database_provider.add_dataset_to_collection_version_mapping(
-            version.version_id, 
-            dataset_version.version_id
-        )
+        version = self.initialize_empty_private_collection(owner, metadata)
+        for i in range(2):
+            dataset_version = self.database_provider.initialize_canonical_dataset(
+                version.version_id, 
+                dataset_metadata=self.sample_dataset_metadata
+            )
+            self.database_provider.add_dataset_to_collection_version_mapping(
+                version.version_id, 
+                dataset_version.version_id
+            )
         return version
         
 
@@ -439,7 +440,7 @@ class TestAddUpdateRemoveReplaceDataset(BaseBusinessLogicTestCase):
         This should NOT delete the dataset but rather just update the collection_version -> dataset_version mapping
         """
         version = self.initialize_private_collection()
-        self.assertEqual(1, len(version.datasets))
+        self.assertEqual(2, len(version.datasets))
         dataset_version_to_delete_id = version.datasets[0].version_id
         self.business_logic.delete_dataset(dataset_version_to_delete_id)
 
@@ -455,7 +456,7 @@ class TestAddUpdateRemoveReplaceDataset(BaseBusinessLogicTestCase):
         Removing a dataset from a published collection should fail
         """
         version = self.initialize_public_collection()
-        self.assertEqual(1, len(version.datasets))
+        self.assertEqual(2, len(version.datasets))
         dataset_version_to_delete_id = version.datasets[0].version_id
 
         with self.assertRaises(CollectionUpdateException):
@@ -532,66 +533,267 @@ class TestNewCollectionVersion(BaseBusinessLogicTestCase):
         """
         A collection version can be created using `create_collection_version`
         """
-        pass
+        public_collection = self.initialize_public_collection()
+        new_version = self.business_logic.create_collection_version(public_collection.collection_id, self.user_info)
+
+        # The new version has a different version_id
+        self.assertNotEqual(public_collection.version_id, new_version.version_id)
+
+        # The new version has the same collection_id, collection metadata, and datasets
+        self.assertEqual(public_collection.collection_id, new_version.collection_id)
+        self.assertEqual(public_collection.metadata, new_version.metadata)
+        self.assertEqual(public_collection.datasets, new_version.datasets)
+
+        # get_collection still retrieves the original version
+        version = self.business_logic.get_collection(public_collection.collection_id, self.user_info)
+        self.assertEqual(version.version_id, public_collection.version_id)
+        self.assertNotEqual(version.version_id, new_version.version_id)
+
+        # TODO: assert visibility
 
     def create_collection_version_unauthorized_fail(self):
         """
         A collection version can only be created by an authorized user (super curator or owner)
         """
+        # TODO: AUTHORIZATION
         pass
 
     def delete_collection_version_ok(self):
         """
         A collection version can be deleted using `delete_collection_version`
         """
-        pass
+        public_collection = self.initialize_public_collection()
+        new_version = self.business_logic.create_collection_version(public_collection.collection_id, self.user_info)
+
+        self.business_logic.delete_collection_version(new_version.version_id, self.user_info)
+
+        # The version should no longer exist
+        deleted_version = self.database_provider.get_collection_version(new_version.version_id)
+        self.assertIsNone(deleted_version)
+
+        # The original version should not be affected
+        original_version = self.database_provider.get_collection_version(public_collection.version_id)
+        self.assertIsNotNone(original_version)
+        self.assertEqual(public_collection, original_version)
+
+        # get_collection still retrieves the original version
+        version = self.business_logic.get_collection(public_collection.collection_id, self.user_info)
+        self.assertEqual(version.version_id, public_collection.version_id)
+        self.assertNotEqual(version.version_id, new_version.version_id)
+
 
     def delete_collection_version_unauthorized_fail(self):
         """
         A collection version can only be deleted by an authorized user (super curator or owner)
         """
+        # TODO: AUTHORIZATION
         pass
+
+    def publish_version_fails_on_published_collection(self):
+        """
+        `publish_collection_version` should fail if called on a collection version that is already published.
+        """
+        public_collection = self.initialize_public_collection()
+        self.assertIsNotNone(public_collection.published_at)
+
+        # TODO: define CollectionPublishException
+        with self.assertRaises(CollectionPublishException):
+            self.business_logic.publish_collection_version(public_collection.version_id, self.user_info)
+
 
     def publish_version_ok(self):
         """
         A collection version can be published using `publish_collection`
         """
-        pass
+        private_collection = self.initialize_private_collection()
+        self.business_logic.publish_collection_version(private_collection.version_id, self.user_info)
+
+        published_version = self.database_provider.get_collection_version(private_collection.version_id)
+        self.assertIsNotNone(published_version.published_at) # TODO: ideally, do a date assertion here (requires mocking)
+        self.assertEqual(published_version.collection_id, private_collection.version_id)
+
+        # get_collection retrieves the new version
+        version = self.business_logic.get_collection(private_collection.collection_id, self.user_info)
+        self.assertEqual(version.version_id, published_version.version_id)
+        self.assertNotEqual(version.version_id, private_collection.version_id)
+
 
     def publish_collection_with_no_datasets_fail(self):
         """
         Publishing a collection version with no datasets should fail
         """
-        pass
+        private_collection = self.initialize_empty_private_collection()
+
+        # TODO: define CollectionPublishException
+        with self.assertRaises(CollectionPublishException):
+            self.business_logic.publish_collection_version(private_collection.version_id, self.user_info)
 
     def publish_version_with_updated_metadata_ok(self):
         """
         Publishing a collection with updated metadata should succeed
         """
-        pass
+        public_collection = self.initialize_public_collection()
+        new_version = self.business_logic.create_collection_version(public_collection.collection_id, self.user_info)
+
+        body = {
+            "name": "new collection name",
+            "description": "new collection description",
+            "contact_name": "new contact name",
+            "contact_email": "new_email@czi.com",
+        }
+
+        self.business_logic.update_collection_version(new_version.version_id, body, self.user_info)
+        self.business_logic.publish_collection_version(new_version.version_id, self.user_info)
+
+        new_version_from_db = self.database_provider.get_collection_version(new_version.version_id)
+        self.assertIsNone(new_version_from_db.published_at)
+        self.assertEqual(new_version.collection_id, new_version_from_db.collection_id)
+        self.assertEqual(new_version.version_id, new_version_from_db.version_id)
+        self.assertEqual(new_version.datasets, new_version_from_db.datasets)
 
     def publish_version_with_removed_dataset_ok(self):
         """
         Publishing a version with a dataset removed should succeed
         """
-        pass
+        public_collection = self.initialize_public_collection()
+        new_version = self.business_logic.create_collection_version(public_collection.collection_id, self.user_info)
+
+        dataset_version_to_remove = new_version.datasets[0].version_id
+        dataset_version_to_keep = new_version.datasets[1].version_id
+
+        self.business_logic.delete_dataset(dataset_version_to_remove)
+
+        # The new version should have only one dataset (before publishing)
+        version_from_db = self.database_provider.get_collection_version(new_version.version_id)
+        self.assertEqual(1, len(version_from_db.datasets))
+
+        # The original version should still have two datasets (before publishing)
+        version_from_db = self.database_provider.get_collection_version(public_collection.version_id)
+        self.assertEqual(2, len(version_from_db.datasets))
+
+        # Get collection retrieves the original version (with two datasets)
+        version = self.business_logic.get_collection(public_collection.collection_id, self.user_info)
+        self.assertEqual(version.version_id, public_collection.version_id)
+        self.assertEqual(2, len(version.datasets))
+
+        self.business_logic.publish_collection_version(new_version.version_id, self.user_info)
+
+        # The new version should have only one dataset (after publishing)
+        version_from_db = self.database_provider.get_collection_version(new_version.version_id)
+        self.assertEqual(1, len(version_from_db.datasets))
+
+        # The old version should still have two datasets (after publishing)
+        version_from_db = self.database_provider.get_collection_version(public_collection.version_id)
+        self.assertEqual(2, len(version_from_db.datasets))
+
+        # Get collection retrieves the new version (with one datasets)
+        version = self.business_logic.get_collection(public_collection.collection_id, self.user_info)
+        self.assertEqual(version.version_id, new_version.version_id)
+        self.assertEqual(1, len(version.datasets))
+        self.assertEqual(version.datasets[0].version_id, dataset_version_to_keep)
+
 
     def publish_version_with_added_dataset_ok(self):
         """
         Publishing a version with a dataset added should succeed
         """
-        pass
+        public_collection = self.initialize_public_collection()
+        new_version = self.business_logic.create_collection_version(public_collection.collection_id, self.user_info)
+
+        added_dataset_version_id = self.business_logic.ingest_dataset(new_version.version_id, "http://fake.url", None, self.user_info)
+
+        # TODO: mock StepFunctionClient so that it also updates the dataset accordingly
+        # Otherwise, set the artifacts and the processing status manually (less elegant)
+
+        # The new version should have three datasets (before publishing)
+        version_from_db = self.database_provider.get_collection_version(new_version.version_id)
+        self.assertEqual(3, len(version_from_db.datasets))
+
+        # The original version should still have two datasets (before publishing)
+        version_from_db = self.database_provider.get_collection_version(public_collection.version_id)
+        self.assertEqual(2, len(version_from_db.datasets))
+
+        # Get collection retrieves the original version (with two datasets)
+        version = self.business_logic.get_collection(public_collection.collection_id, self.user_info)
+        self.assertEqual(version.version_id, public_collection.version_id)
+        self.assertEqual(2, len(version.datasets))
+
+        self.business_logic.publish_collection_version(new_version.version_id, self.user_info)
+
+        # The new version should have three datasets (after publishing)
+        version_from_db = self.database_provider.get_collection_version(new_version.version_id)
+        self.assertEqual(3, len(version_from_db.datasets))
+
+        # The old version should still have two datasets (after publishing)
+        version_from_db = self.database_provider.get_collection_version(public_collection.version_id)
+        self.assertEqual(2, len(version_from_db.datasets))
+
+        # Get collection retrieves the new version (with three datasets, including the new one)
+        version = self.business_logic.get_collection(public_collection.collection_id, self.user_info)
+        self.assertEqual(version.version_id, new_version.version_id)
+        self.assertEqual(3, len(version.datasets))
+        self.assertIn(added_dataset_version_id, [d.version_id for d in version.datasets])
 
     def publish_version_with_replaced_dataset_ok(self):
         """
         Publishing a version with a dataset replaced should succeed
         """
-        pass
+        public_collection = self.initialize_public_collection()
+        new_version = self.business_logic.create_collection_version(public_collection.collection_id, self.user_info)
+
+        # We will replace the first dataset
+        dataset_id_to_replace = public_collection.datasets[0].version_id
+        dataset_id_to_keep = public_collection.datasets[1].version_id
+
+        replaced_dataset_version_id = self.business_logic.ingest_dataset(
+            new_version.version_id, 
+            "http://fake.url", 
+            dataset_id_to_replace, 
+            self.user_info
+        )
+
+        # TODO: mock StepFunctionClient so that it also updates the dataset accordingly
+        # Otherwise, set the artifacts and the processing status manually (less elegant)
+
+        # The new version should have the correct datasets (before publishing)
+        version_from_db = self.database_provider.get_collection_version(new_version.version_id)
+        self.assertEqual(2, len(version_from_db.datasets))
+        self.assertCountEqual([replaced_dataset_version_id, dataset_id_to_keep], [d.version_id for d in version_from_db.datasets])
+
+        # The original version should have the correct datasets (before publishing)
+        version_from_db = self.database_provider.get_collection_version(public_collection.version_id)
+        self.assertEqual(2, len(version_from_db.datasets))
+        self.assertCountEqual([dataset_id_to_replace, dataset_id_to_keep], [d.version_id for d in version_from_db.datasets])
+
+        # Get collection retrieves the original version (with two datasets)
+        version = self.business_logic.get_collection(public_collection.collection_id, self.user_info)
+        self.assertEqual(version.version_id, public_collection.version_id)
+        self.assertEqual(2, len(version.datasets))
+        self.assertCountEqual([dataset_id_to_replace, dataset_id_to_keep], [d.version_id for d in version.datasets])
+
+        self.business_logic.publish_collection_version(new_version.version_id, self.user_info)
+
+        # The new version should have the correct datasets (after publishing)
+        version_from_db = self.database_provider.get_collection_version(new_version.version_id)
+        self.assertEqual(2, len(version_from_db.datasets))
+        self.assertCountEqual([replaced_dataset_version_id, dataset_id_to_keep], [d.version_id for d in version_from_db.datasets])
+
+        # The old version should have the correct datasets (after publishing)
+        version_from_db = self.database_provider.get_collection_version(public_collection.version_id)
+        self.assertEqual(2, len(version_from_db.datasets))
+        self.assertCountEqual([dataset_id_to_replace, dataset_id_to_keep], [d.version_id for d in version_from_db.datasets])
+
+        # Get collection retrieves the new version (with two datasets, including the replaced one)
+        version = self.business_logic.get_collection(public_collection.collection_id, self.user_info)
+        self.assertEqual(version.version_id, new_version.version_id)
+        self.assertEqual(3, len(version.datasets))
+        self.assertCountEqual([replaced_dataset_version_id, dataset_id_to_keep], [d.version_id for d in version_from_db.datasets])
 
     def publish_version_unauthorized_fail(self):
         """
         Publishing a version should fail if the user is not authorized
         """
+        # TODO: AUTHORIZATION
         pass
 
 

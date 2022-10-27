@@ -100,7 +100,10 @@ class BusinessLogicInterface:
     # Since revision logic is database specific, it delegates to the underlying layer
     # Returns a handle to the revised collection (either id or the full collection metadata)
 
-    def create_collection_version(self, collection_id: str, user_info: UserInfo) -> str:
+    def create_collection_version(self, collection_id: str, user_info: UserInfo) -> CollectionVersion:
+        pass
+
+    def delete_collection_version(self, version_id: str, user_info: UserInfo) -> None:
         pass
 
 
@@ -114,7 +117,7 @@ class BusinessLogicInterface:
     # [Currently] triggers Cloudfront invalidation for the index endpoints. This should arguably NOT be done here but by the API layer
     # Since revision logic is database specific, it delegates to the underlying layer
 
-    def publish_collection(self, collection_id: str, user_info: UserInfo) -> None:
+    def publish_collection_version(self, version_id: str, user_info: UserInfo) -> None:
         pass
 
     # Ingest_dataset
@@ -131,7 +134,7 @@ class BusinessLogicInterface:
     # Should handle exceptions from all providers:
     # Should only raise custom exceptions
 
-    def ingest_dataset(self, dataset_version_id: str, url: str, existing_dataset_version_id: Optional[str], user_info: UserInfo) -> str:
+    def ingest_dataset(self, collection_version_id: str, url: str, existing_dataset_version_id: Optional[str], user_info: UserInfo) -> str:
         pass
 
     # Get_all_datasets
