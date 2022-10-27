@@ -52,7 +52,6 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
             crossref_provider=self.crossref_provider,
             step_function_provider=self.step_function_provider,
         )
-        return super().setUp()
 
     def initialize_empty_private_collection(self, owner: str = test_user_name, metadata = sample_collection_metadata) -> CollectionVersion:
         """
@@ -97,9 +96,9 @@ class TestCreateCollection(BaseBusinessLogicTestCase):
         """
         A collection can be created using `create_collection`
         """
-        cv = self.business_logic.create_collection(self.sample_collection_metadata, self.user_info)
-        cv_from_database = self.database_provider.get_collection_version(cv.version_id)
-        self.assertEqual(cv, cv_from_database)
+        collection = self.business_logic.create_collection(self.sample_collection_metadata, self.user_info)
+        collection_from_database = self.database_provider.get_collection_version(collection.version_id)
+        self.assertEqual(collection, collection_from_database)
 
     def test_create_collection_with_links_ok(self):
         """
@@ -110,9 +109,9 @@ class TestCreateCollection(BaseBusinessLogicTestCase):
             Link("test link 2", "other", "http://example.com/other"),
         ]
         self.sample_collection_metadata.links = good_links
-        cv = self.business_logic.create_collection(self.sample_collection_metadata, self.user_info)
-        cv_from_database = self.database_provider.get_collection_version(cv.version_id)
-        self.assertEqual(cv.metadata.links, cv_from_database.metadata.links)
+        collection = self.business_logic.create_collection(self.sample_collection_metadata, self.user_info)
+        collection_from_database = self.database_provider.get_collection_version(collection.version_id)
+        self.assertEqual(collection.metadata.links, collection_from_database.metadata.links)
 
     def test_create_collection_with_bad_links_fail(self):
         """
@@ -140,15 +139,15 @@ class TestCreateCollection(BaseBusinessLogicTestCase):
         expected_publiser_metadata = {"authors": ["Test Author"]}
         self.crossref_provider.fetch_metadata = Mock(return_value=expected_publiser_metadata)
 
-        cv = self.business_logic.create_collection(self.sample_collection_metadata, self.user_info)
+        collection = self.business_logic.create_collection(self.sample_collection_metadata, self.user_info)
 
         self.crossref_provider.fetch_metadata.assert_called_with("http://good.doi")
 
-        cv_from_database = self.database_provider.get_collection_version(cv.version_id)
-        self.assertEqual(1, len(cv_from_database.metadata.links))
-        self.assertEqual(cv_from_database.metadata.links[0].uri, "http://good.doi")
-        self.assertIsNotNone(cv_from_database.publisher_metadata)
-        self.assertEqual(cv_from_database.publisher_metadata, expected_publiser_metadata)
+        collection_from_database = self.database_provider.get_collection_version(collection.version_id)
+        self.assertEqual(1, len(collection_from_database.metadata.links))
+        self.assertEqual(collection_from_database.metadata.links[0].uri, "http://good.doi")
+        self.assertIsNotNone(collection_from_database.publisher_metadata)
+        self.assertEqual(collection_from_database.publisher_metadata, expected_publiser_metadata)
 
 
     def test_create_collection_with_invalid_doi_fail(self):
@@ -164,24 +163,24 @@ class TestCreateCollection(BaseBusinessLogicTestCase):
         # TODO: make sure that we don't need different actions depending on which exception
         self.crossref_provider.fetch_metadata = Mock(side_effect=CrossrefException("Error!"))
 
-        cv = self.business_logic.create_collection(self.sample_collection_metadata, self.user_info)
+        self.business_logic.create_collection(self.sample_collection_metadata, self.user_info)
         # TODO: create CollectionCreationException
         with self.assertRaises(CollectionCreationException):
             self.business_logic.create_collection(self.sample_collection_metadata, self.user_info)
 
     def test_create_collection_unauthorized_fail(self):
         # TODO: AUTHORIZATION
-        pass
+        return NotImplemented
 
 class TestDeleteCollection(BaseBusinessLogicTestCase):
 
     def test_delete_collection_ok(self):
         # TODO: verify how the current support for collection deletion is
-        pass
+        return NotImplemented
 
     def test_delete_collection_unauthorized_fail(self):
         # TODO: AUTHORIZATION
-        pass
+        return NotImplemented
 
 class TestGetCollection(BaseBusinessLogicTestCase):
 
@@ -228,8 +227,6 @@ class TestGetAllCollections(BaseBusinessLogicTestCase):
         """
         # TODO: this method should NOT be used without at least one filter. Maybe add an assertion to block it?
         filter = CollectionQueryFilter(
-            from_date = None,
-            to_date = None,
             visibility=None,
             owner = None
         )
@@ -241,8 +238,6 @@ class TestGetAllCollections(BaseBusinessLogicTestCase):
         Only collection versions with the right owner should be returned
         """
         filter = CollectionQueryFilter(
-            from_date = None,
-            to_date = None,
             visibility=None,
             owner = "test_user_2"
         )
@@ -251,29 +246,12 @@ class TestGetAllCollections(BaseBusinessLogicTestCase):
         self.assertEqual(1, len(versions))
         self.assertEqual(versions[0].version_id, self.collection2.version_id)
         
-
-    def test_get_all_collections_with_date_range_ok(self):
-        """
-        Only collection versions where `published_at` is within the date range should be returned
-        """
-        filter = CollectionQueryFilter(
-            from_date = "2020-12-01",
-            to_date = "2021-12-01",
-            visibility=None,
-            owner = None
-        )
-        versions = list(self.business_logic.get_collections(filter, self.user_info))
-        self.assertEqual(1, len(versions))
-        self.assertEqual(versions[0].version_id, self.collection4.version_id)
-
     def test_get_all_collections_visibility_ok(self):
         """
         If visibility = "PRIVATE", only unpublished collections should be returned
         If visibility = "PUBLIC", only published collections should be returned
         """
         filter = CollectionQueryFilter(
-            from_date = None,
-            to_date = None,
             visibility="PRIVATE",
             owner = None
         )
@@ -283,8 +261,6 @@ class TestGetAllCollections(BaseBusinessLogicTestCase):
             self.assertIsNone(version.published_at)
 
         filter = CollectionQueryFilter(
-            from_date = None,
-            to_date = None,
             visibility="PUBLIC",
             owner = None
         )
@@ -408,7 +384,7 @@ class TestUpdateCollection(BaseBusinessLogicTestCase):
         An unauthorized attempt to update a collection should be rejected
         """
         # TODO: AUTHORIZATION
-        pass
+        return NotImplemented
 
 class TestAddUpdateRemoveReplaceDataset(BaseBusinessLogicTestCase):
 
@@ -511,21 +487,21 @@ class TestGetDataset(BaseBusinessLogicTestCase):
         """
         All dataset that belong to a published collection can be retrieved with `get_all_datasets`
         """
-        pass
+        return NotImplemented
 
     def test_get_dataset_artifacts_ok(self):
         """
         Artifacts belonging to a dataset can be obtained with `get_dataset_artifacts`
         """
-        pass
+        return NotImplemented
 
 class TestDatasetStatus(BaseBusinessLogicTestCase):
 
     def test_update_dataset_status_ok(self):
-        pass
+        return NotImplemented
 
     def test_get_dataset_status_ok(self):
-        pass
+        return NotImplemented
 
 class TestNewCollectionVersion(BaseBusinessLogicTestCase):
 
@@ -556,7 +532,7 @@ class TestNewCollectionVersion(BaseBusinessLogicTestCase):
         A collection version can only be created by an authorized user (super curator or owner)
         """
         # TODO: AUTHORIZATION
-        pass
+        return NotImplemented
 
     def test_delete_collection_version_ok(self):
         """
@@ -587,7 +563,7 @@ class TestNewCollectionVersion(BaseBusinessLogicTestCase):
         A collection version can only be deleted by an authorized user (super curator or owner)
         """
         # TODO: AUTHORIZATION
-        pass
+        return NotImplemented
 
     def test_publish_version_fails_on_published_collection(self):
         """
@@ -794,7 +770,7 @@ class TestNewCollectionVersion(BaseBusinessLogicTestCase):
         Publishing a version should fail if the user is not authorized
         """
         # TODO: AUTHORIZATION
-        pass
+        return NotImplemented
 
 
 if __name__ == '__main__':
