@@ -6,10 +6,10 @@ import connexion
 from flask import jsonify
 from pandas import DataFrame
 
-from backend.corpora.common.entities import Dataset
-from backend.corpora.common.utils.db_session import db_session_manager
+from backend.common.entities import Dataset
+from backend.common.utils.db_session import db_session_manager
 from backend.wmg.data.ontology_labels import ontology_term_label, gene_term_label
-from backend.wmg.data.query import (
+from backend.wmg.api.query import (
     WmgQuery,
     WmgQueryCriteria,
 )

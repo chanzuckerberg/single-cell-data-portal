@@ -4,7 +4,7 @@ import os
 
 import pandas as pd
 
-from backend.wmg.data import query
+from backend.wmg.api import query
 from backend.wmg.data.snapshot import (
     EXPRESSION_SUMMARY_CUBE_NAME,
     WmgSnapshot,
