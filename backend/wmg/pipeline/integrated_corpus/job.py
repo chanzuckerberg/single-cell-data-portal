@@ -2,6 +2,7 @@ import gc
 import logging
 import os
 from typing import List
+import json
 
 import tiledb
 
@@ -42,25 +43,31 @@ def build_integrated_corpus(dataset_directory: List, corpus_path: str):
     """
     with tiledb.scope_ctx(create_ctx()):
         dataset_count = len(os.listdir(dataset_directory))
+        dataset_gene_mapping={}
         for index, dataset in enumerate(os.listdir(dataset_directory)):
             logger.info(f"Processing dataset {index + 1} of {dataset_count}")
             h5ad_file_path = f"{dataset_directory}/{dataset}/local.h5ad"
             logger.info(f"{h5ad_file_path=}")
-            process_h5ad_for_corpus(
+            dataset_id, gene_ids = process_h5ad_for_corpus(
                 h5ad_file_path, corpus_path
             )  # TODO Can this be parallelized? need to be careful handling global indexes but tiledb has a lock I think
             gc.collect()
+            if dataset_id and gene_ids:
+                print("Processed",dataset_id)
+                dataset_gene_mapping[dataset_id]=gene_ids
 
         logger.info("all loaded, now consolidating.")
-
         for arr_name in [OBS_ARRAY_NAME, VAR_ARRAY_NAME, INTEGRATED_ARRAY_NAME]:
             arr_path = f"{corpus_path}/{arr_name}"
             tiledb.consolidate(arr_path)
             tiledb.vacuum(arr_path)
         with tiledb.open(f"{corpus_path}/{VAR_ARRAY_NAME}") as var:
             gene_count = len(var.query().df[:])
-        with tiledb.open(f"{corpus_path}/{OBS_ARRAY_NAME}") as var:
-            cell_count = len(var.query().df[:])
+        with tiledb.open(f"{corpus_path}/{OBS_ARRAY_NAME}") as obs:
+            cell_count = len(obs.query().df[:])
+        with tiledb.open(f"{corpus_path}/{INTEGRATED_ARRAY_NAME}","w") as integrated:
+            integrated.meta["dataset_gene_mapping"] = json.dumps(dataset_gene_mapping)
+
     logger.info(f"{dataset_count=}, {gene_count=}, {cell_count=}")
 
 
@@ -72,7 +79,7 @@ def process_h5ad_for_corpus(h5ad_path: str, corpus_path: str):
     """
     dataset_id = should_load_dataset(h5ad_path, corpus_path)
     if not dataset_id:
-        return
+        return None, None
 
     # extract
     anndata_object = extract.extract_h5ad(h5ad_path=h5ad_path)
@@ -82,7 +89,8 @@ def process_h5ad_for_corpus(h5ad_path: str, corpus_path: str):
     create_high_level_tissue(anndata_object)
     logger.info(f"loaded: shape={anndata_object.shape}")
     if not validate_dataset_properties(anndata_object):
-        return
+        return None,None
 
     # load
     load.load_dataset(corpus_path, anndata_object, dataset_id)
+    return dataset_id, list(anndata_object.var_names)

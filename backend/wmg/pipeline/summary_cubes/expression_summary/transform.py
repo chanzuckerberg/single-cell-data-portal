@@ -8,7 +8,7 @@ import pandas as pd
 import tiledb
 
 from backend.common.utils.math_utils import MB
-from backend.wmg.pipeline.summary_cubes.expression_summary.extract import extract_obs_data
+from backend.wmg.pipeline.summary_cubes.extract import extract_obs_data
 
 from backend.wmg.data.schemas.corpus_schema import INTEGRATED_ARRAY_NAME
 from backend.wmg.data.tiledb import create_ctx
@@ -95,6 +95,7 @@ def make_cube_index(tdb_group: str, cube_dims: list) -> (pd.DataFrame, pd.DataFr
     cell_labels = extract_obs_data(tdb_group, cube_dims)
     # number of cells with specific tuple of dims
     cube_index = pd.DataFrame(cell_labels.value_counts(), columns=["n"])
+    print(cube_index)
     cube_index["cube_idx"] = range(len(cube_index))
 
     cell_labels = cell_labels.join(cube_index.cube_idx, on=cube_dims)

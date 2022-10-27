@@ -17,6 +17,7 @@ from backend.wmg.data.tiledb import create_ctx
 CELL_TYPE_ORDERINGS_FILENAME = "cell_type_orderings.json"
 PRIMARY_FILTER_DIMENSIONS_FILENAME = "primary_filter_dimensions.json"
 EXPRESSION_SUMMARY_CUBE_NAME = "expression_summary"
+EXPRESSION_SUMMARY_FMG_CUBE_NAME = "expression_summary_fmg"
 CELL_COUNTS_CUBE_NAME = "cell_counts"
 
 logger = logging.getLogger("wmg")
@@ -35,6 +36,7 @@ class WmgSnapshot:
     # etc.) aggregated by multiple cell metadata dimensions and genes. See the full schema at
     # backend/wmg/data/schemas/cube_schema.py.
     expression_summary_cube: Array
+    expression_summary_fmg_cube: Array
 
     # TileDB array containing the total cell counts (expressed gene count, non-expressed mean, etc.) aggregated by
     # multiple cell metadata dimensions (but no gene dimension). See the full schema at
@@ -76,6 +78,7 @@ def _load_snapshot(new_snapshot_identifier) -> WmgSnapshot:
     return WmgSnapshot(
         snapshot_identifier=new_snapshot_identifier,
         expression_summary_cube=_open_cube(f"{snapshot_base_uri}/{EXPRESSION_SUMMARY_CUBE_NAME}"),
+        expression_summary_fmg_cube=_open_cube(f"{snapshot_base_uri}/{EXPRESSION_SUMMARY_FMG_CUBE_NAME}"),
         cell_counts_cube=_open_cube(f"{snapshot_base_uri}/{CELL_COUNTS_CUBE_NAME}"),
         cell_type_orderings=_load_cell_type_order(new_snapshot_identifier),
         primary_filter_dimensions=_load_primary_filter_data(new_snapshot_identifier),

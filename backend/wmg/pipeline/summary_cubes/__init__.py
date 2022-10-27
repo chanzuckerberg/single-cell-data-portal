@@ -7,6 +7,7 @@ from backend.common.utils.result_notification import (
 )
 
 from backend.wmg.pipeline.summary_cubes.expression_summary.job import create_expression_summary_cube
+from backend.wmg.pipeline.summary_cubes.expression_summary_fmg.job import create_expression_summary_fmg_cube
 from backend.wmg.data.validation.validation import Validation
 from backend.wmg.pipeline.summary_cubes.cell_count import create_cell_count_cube
 
@@ -19,6 +20,7 @@ def run(corpus_path: str, validate_cube: bool) -> dict:
     if indicated by param
     """
     create_expression_summary_cube(corpus_path)
+    create_expression_summary_fmg_cube(corpus_path)
     create_cell_count_cube(corpus_path)
     if validate_cube:
         if Validation(corpus_path).validate_cube() is False:
