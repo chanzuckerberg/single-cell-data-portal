@@ -53,7 +53,6 @@ def build_integrated_corpus(dataset_directory: List, corpus_path: str):
             )  # TODO Can this be parallelized? need to be careful handling global indexes but tiledb has a lock I think
             gc.collect()
             if dataset_id and gene_ids:
-                print("Processed",dataset_id)
                 dataset_gene_mapping[dataset_id]=gene_ids
 
         logger.info("all loaded, now consolidating.")
@@ -65,8 +64,8 @@ def build_integrated_corpus(dataset_directory: List, corpus_path: str):
             gene_count = len(var.query().df[:])
         with tiledb.open(f"{corpus_path}/{OBS_ARRAY_NAME}") as obs:
             cell_count = len(obs.query().df[:])
-        with tiledb.open(f"{corpus_path}/{INTEGRATED_ARRAY_NAME}","w") as integrated:
-            integrated.meta["dataset_gene_mapping"] = json.dumps(dataset_gene_mapping)
+        with tiledb.open(f"{corpus_path}/{OBS_ARRAY_NAME}","w") as obs:
+            obs.meta["dataset_gene_mapping"] = json.dumps(dataset_gene_mapping)
 
     logger.info(f"{dataset_count=}, {gene_count=}, {cell_count=}")
 
