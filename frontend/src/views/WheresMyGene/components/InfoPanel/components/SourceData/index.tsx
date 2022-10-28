@@ -23,7 +23,7 @@ export default function SourceData(): JSX.Element {
   } = useContext(StateContext);  
   const { data: filterDimensions } = useFilterDimensions();
   let { datasets = [] } = filterDimensions;
-  datasets = datasets.filter((dataset) => selectedFilters.datasets.includes(dataset.id));
+  if (selectedFilters.datasets.length > 0) datasets = datasets.filter((dataset) => selectedFilters.datasets.includes(dataset.id));
   const collections: Collections = useMemo(() => {
     return aggregateCollectionsFromDatasets(datasets);
   }, [datasets]);
