@@ -5,10 +5,10 @@ from backend.layers.common.entities import CollectionMetadata, CollectionVersion
 
 
 class DatabaseProviderInterface:
-
-    def initialize_canonical_collection(self, owner: str, collection_metadata: CollectionMetadata) -> CollectionVersion:
+        
+    def create_canonical_collection(self, owner: str, collection_metadata: CollectionMetadata) -> CollectionVersion:
         """
-        Initializes a canonical collection, generating a canonical collection_id and a new version_id.
+        Creates a new canonical collection, generating a canonical collection_id and a new version_id.
         Returns the newly created CollectionVersion
         """
         pass
@@ -20,7 +20,7 @@ class DatabaseProviderInterface:
         """
         pass
 
-    def get_all_version_for_collection(self, collection_id: str) -> List[CollectionVersion]:
+    def get_all_versions_for_collection(self, collection_id: str) -> List[CollectionVersion]:
         """
         Retrieves all versions for a specific collections, without filtering
         """
@@ -110,7 +110,7 @@ class DatabaseProviderInterface:
         """
         pass
 
-    def initialize_canonical_dataset(self, collection_version_id: str, dataset_metadata: DatasetMetadata) -> DatasetVersion:
+    def create_canonical_dataset(self, collection_version_id: str, dataset_metadata: DatasetMetadata) -> DatasetVersion:
         """
         Initializes a canonical dataset, generating a dataset_id and a dataset_version_id.
         Returns the newly created DatasetVersion.
