@@ -59,7 +59,7 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         """
         Initializes an unpublished collection to be used for testing, with no datasets
         """
-        version = self.database_provider.initialize_canonical_collection(
+        version = self.database_provider.create_canonical_collection(
             owner,
             metadata,
         )
@@ -71,7 +71,7 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         """
         version = self.initialize_empty_unpublished_collection(owner, metadata)
         for i in range(2):
-            dataset_version = self.database_provider.initialize_canonical_dataset(
+            dataset_version = self.database_provider.create_canonical_dataset(
                 version.version_id, 
                 dataset_metadata=self.sample_dataset_metadata
             )
