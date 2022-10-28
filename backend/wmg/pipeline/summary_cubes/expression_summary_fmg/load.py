@@ -29,6 +29,7 @@ def build_in_mem_cube(
     vals = {
         "sum": np.empty((total_vals,)),
         "sqsum": np.empty((total_vals,)),
+        "nnz": np.empty((total_vals,)),
         **{k: np.empty((total_vals,), dtype=object) for k in other_cube_attrs},
     }
 
@@ -56,13 +57,12 @@ def build_in_mem_cube(
         dims[2][idx : idx + n_vals] = cell_type_ontology_term_id
 
         vals["sum"][idx : idx + n_vals] = cube_sum[cube_idx, mask]
-        vals["sq_sum"][idx : idx + n_vals] = cube_sqsum[cube_idx, mask]
+        vals["sqsum"][idx : idx + n_vals] = cube_sqsum[cube_idx, mask]            
+        vals["nnz"][idx : idx + n_vals] = cube_nnz[cube_idx, mask]
+        vals["gene_ontology_term_id"][idx : idx + n_vals] = gene_ids.gene_ontology_term_id.values[mask]
 
-        for i, k in enumerate(other_cube_attrs):
-            if k == "gene_ontology_term_id":
-                vals[k][idx : idx + n_vals] = gene_ids.gene_ontology_term_id.values[mask]
-            else:
-                vals[k][idx : idx + n_vals] = attr_values[i]
+        for i, k in enumerate(other_cube_attrs[1:]):
+            vals[k][idx : idx + n_vals] = attr_values[i]
 
         idx += n_vals
 

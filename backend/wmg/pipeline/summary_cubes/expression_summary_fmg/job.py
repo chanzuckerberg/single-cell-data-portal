@@ -13,6 +13,7 @@ from backend.wmg.data.tiledb import create_ctx
 from backend.wmg.data.utils import log_func_runtime, create_empty_cube
 from backend.wmg.data.schemas.cube_schema import (
     expression_summary_fmg_non_indexed_dims,
+    expression_summary_fmg_non_indexed_dims_no_gene_ontology,
     expression_summary_fmg_indexed_dims,
 )
 
@@ -26,7 +27,7 @@ def _load(
     Build expression summary fmg cube in memory and write to disk
     """
     dims, vals = build_in_mem_cube(
-        gene_ontology_term_ids, cube_index, expression_summary_non_indexed_dims, cube_sum, cube_sqsum, cube_nnz
+        gene_ontology_term_ids, cube_index, expression_summary_fmg_non_indexed_dims, cube_sum, cube_sqsum, cube_nnz
     )
 
     logger.debug("Saving cube to tiledb")
@@ -47,7 +48,7 @@ def create_expression_summary_fmg_cube(corpus_path: str):
     """
     uri = f"{corpus_path}/{EXPRESSION_SUMMARY_FMG_CUBE_NAME}"
     ctx = create_ctx()
-    cube_dims = expression_summary_fmg_indexed_dims + expression_summary_fmg_non_indexed_dims
+    cube_dims = expression_summary_fmg_indexed_dims + expression_summary_fmg_non_indexed_dims_no_gene_ontology
 
     with tiledb.scope_ctx(ctx):
         # Create cube

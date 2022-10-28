@@ -47,6 +47,16 @@ expression_summary_fmg_non_indexed_dims = [
     "sex_ontology_term_id",
 ]
 
+expression_summary_fmg_non_indexed_dims_no_gene_ontology = [
+    "tissue_original_ontology_term_id",
+    "dataset_id",
+    "assay_ontology_term_id",
+    "development_stage_ontology_term_id",
+    "disease_ontology_term_id",
+    "ethnicity_ontology_term_id",
+    "sex_ontology_term_id",
+]
+
 # The full set of logical cube dimensions by which the cube can be queried.
 expression_summary_logical_dims = expression_summary_indexed_dims + expression_summary_non_indexed_dims
 
@@ -77,6 +87,7 @@ expression_summary_logical_attrs = [
 expression_summary_fmg_logical_attrs = [
     tiledb.Attr(name="sum", dtype=np.float32, filters=filters),
     tiledb.Attr(name="sqsum", dtype=np.float32, filters=filters),    
+    tiledb.Attr(name="nnz", dtype=np.uint64, filters=filters),
 ]
 
 # The TileDB `Attr`s of the cube TileDB Array. This includes the
