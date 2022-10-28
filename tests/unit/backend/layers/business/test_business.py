@@ -213,7 +213,7 @@ class TestGetCollection(BaseBusinessLogicTestCase):
 
 class TestGetAllCollections(BaseBusinessLogicTestCase):
 
-    def test_setUp(self) -> None:
+    def setUp(self) -> None:
         self.collection1 = self.initialize_private_collection(owner="test_user_1")
         self.collection2 = self.initialize_private_collection(owner="test_user_2")
         self.collection3 = self.initialize_public_collection(published_at=datetime(2022, 1, 1))
