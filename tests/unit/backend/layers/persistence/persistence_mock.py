@@ -53,7 +53,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         version_id = self.collections[collection_id]
         return self.collections_versions[version_id]
 
-    def get_all_collections(self) -> Iterable[CollectionVersion]:  # TODO: add filters if needed
+    def get_all_collections_versions(self) -> Iterable[CollectionVersion]:  # TODO: add filters if needed
         for version_id, collection_version in self.collections_versions.items():
             if version_id in self.collections.values():
                 yield collection_version

@@ -9,8 +9,8 @@ from backend.layers.thirdparty.step_function_provider import StepFunctionProvide
 
 @dataclass
 class CollectionQueryFilter:
-    visibility: Optional[str] # Use an enum
-    owner: Optional[str]
+    is_published: Optional[bool] = None
+    owner: Optional[str] = None
     # TODO: add list of fields to be returned (if needed)
 
 @dataclass
@@ -45,7 +45,7 @@ class BusinessLogicInterface:
     # UserInfo for validation
     # Should reuse most of of the code from the method above
 
-    def get_collection(self, collection_id: str, user_info: UserInfo) -> CollectionVersion:
+    def get_published_collection_version(self, collection_id: str, user_info: UserInfo) -> CollectionVersion:
         pass
 
     def get_collection_version(self, version_id: str, user_info: UserInfo) -> CollectionVersion
