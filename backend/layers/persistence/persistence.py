@@ -1,11 +1,11 @@
 from datetime import date, datetime
-from typing import List, Optional
+from typing import List, Optional, Iterable
 from backend.corpora.common.entities.dataset import Dataset
 from backend.layers.common.entities import CollectionMetadata, CollectionVersion, DatasetArtifact, DatasetMetadata, DatasetStatus, DatasetVersion
 
 
 class DatabaseProviderInterface:
-        
+
     def initialize_canonical_collection(self, owner: str, collection_metadata: CollectionMetadata) -> CollectionVersion:
         """
         Initializes a canonical collection, generating a canonical collection_id and a new version_id.
@@ -26,9 +26,9 @@ class DatabaseProviderInterface:
         """
         pass
 
-    def get_all_collections(self) -> Iterable[CollectionVersion]:
+    def get_all_collections_versions(self) -> Iterable[CollectionVersion]:
         """
-        Retrieves all collections.
+        Retrieves all versions of all collections.
         # TODO: add a filtering object.
         """
         pass
@@ -53,7 +53,8 @@ class DatabaseProviderInterface:
 
     def add_collection_version(self, collection_id: str) -> CollectionVersion:
         """
-        Adds a collection version to an existing canonical collection.
+        Adds a collection version to an existing canonical collection. The new version copies the following data from
+         the previous version: owner, metadata, publisher_metadata, datasets (IDs).
         Returns the new version.
         """
         pass
