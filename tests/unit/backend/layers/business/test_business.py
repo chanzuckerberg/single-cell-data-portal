@@ -122,7 +122,6 @@ class TestCreateCollection(BaseBusinessLogicTestCase):
             Link("test bad link", "other", "incorrect_url")
         ]
         self.sample_collection_metadata.links = bad_links
-        # TODO: Create InvalidLinkException
         # TODO: the current method has error message validation - implement a more sophisticate version
         with self.assertRaises(InvalidLinkException):
             self.business_logic.create_collection(self.sample_collection_metadata, self.user_info)
@@ -164,27 +163,12 @@ class TestCreateCollection(BaseBusinessLogicTestCase):
         self.crossref_provider.fetch_metadata = Mock(side_effect=CrossrefException("Error!"))
 
         self.business_logic.create_collection(self.sample_collection_metadata, self.user_info)
-        # TODO: create CollectionCreationException
         with self.assertRaises(CollectionCreationException):
             self.business_logic.create_collection(self.sample_collection_metadata, self.user_info)
 
     def test_create_collection_unauthorized_fail(self):
         # TODO: AUTHORIZATION
         return NotImplemented
-
-
-# TODO: Remove this, since it seems to be tested in TestCollectionOperations
-# class TestDeleteCollection(BaseBusinessLogicTestCase):
-#
-#     def test_delete_collection_ok(self):
-#         # TODO: verify how the current support for collection deletion is
-#         return NotImplemented
-#
-#     def test_delete_collection_unauthorized_fail(self):
-#         # TODO: AUTHORIZATION
-#         return NotImplemented
-
-
 class TestGetCollectionVersion(BaseBusinessLogicTestCase):
 
     def test_get_published_collection_version_for_published_collection_ok(self):
