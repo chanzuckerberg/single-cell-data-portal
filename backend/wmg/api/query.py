@@ -1,4 +1,4 @@
-from typing import List, Dict
+from typing import List, Dict, Union
 
 import tiledb
 from pandas import DataFrame
@@ -21,6 +21,18 @@ class WmgQueryCriteria(BaseModel):
     ethnicity_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
     sex_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
 
+class FmgQueryCriteria(BaseModel):
+    organism_ontology_term_id: str  # required!
+    tissue_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0),
+    cell_type_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0),
+    tissue_original_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
+    dataset_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
+    # excluded per product requirements, but keeping in, commented-out, to reduce future head-scratching
+    # assay_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
+    development_stage_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
+    disease_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
+    ethnicity_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
+    sex_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
 
 class WmgQuery:
     def __init__(self, snapshot: WmgSnapshot) -> None:
@@ -39,6 +51,17 @@ class WmgQuery:
             ],
         )
 
+    def expression_summary_fmg(self, criteria: FmgQueryCriteria) -> DataFrame:
+        return self._query(
+            cube=self._snapshot.expression_summary_cube,
+            criteria=criteria,
+            indexed_dims=[
+                "tissue_ontology_term_ids",
+                "organism_ontology_term_id",
+                "cell_type_ontology_term_ids",
+            ],
+        )
+
     def cell_counts(self, criteria: WmgQueryCriteria) -> DataFrame:
         cell_counts = self._query(
             self._snapshot.cell_counts_cube,
@@ -51,7 +74,7 @@ class WmgQuery:
     # TODO: refactor for readability: https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues
     #  /chanzuckerberg/single-cell-data-portal/2133
     @staticmethod
-    def _query(cube: Array, criteria: WmgQueryCriteria, indexed_dims: List[str]) -> DataFrame:
+    def _query(cube: Array, criteria: Union[WmgQueryCriteria,FmgQueryCriteria], indexed_dims: List[str]) -> DataFrame:
         query_cond = ""
         attrs = {}
         for attr_name, vals in criteria.dict(exclude=set(indexed_dims)).items():
@@ -123,7 +146,6 @@ class WmgQuery:
             .agg(list)
             .to_dict()[primary_dim_name]
         )
-
 
 def depluralize(attr_name):
     return attr_name[:-1]

@@ -55,6 +55,155 @@ def query():
     )
 
 
+def fmg_query():
+    request = connexion.request.json
+    target_filters = FmgQueryCriteria(**request["target_filters"])
+    context_filters = FmgQueryCriteria(**request["context_filters"])
+
+    snapshot: WmgSnapshot = load_snapshot()
+    query = WmgQuery(snapshot)
+    
+    target_query = query.expression_summary_fmg(target_filters)
+    context_query = query.expression_summary_fmg(context_filters)
+    target_cell_counts_query = query.cell_counts(target_filters)
+    context_cell_counts_query = query.cell_counts(context_filters)
+
+    gb_dims_es = ['gene_ontology_term_id']+list(target_filters.keys())
+    context_agg = context_query.groupby(gb_dims_es).sum()
+    target_agg = target_query.groupby(gb_dims_es).sum()
+
+    genes = list(target_agg.index.levels[0])
+    genes_indexer = pd.Series(index=genes,data=range(len(genes)))
+
+    filt = np.in1d(np.array(list(context_agg.index.get_level_values(0))),genes)
+    context_agg = context_agg[filt]
+
+    gb_dims = ['dataset_id']+list(target_filters.keys())
+    n_cells_target = target_cell_counts_query.groupby(gb_dims).sum()['n_cells']
+    n_cells_context = context_cell_counts_query.groupby(gb_dims).sum()['n_cells']
+
+    dataset_to_genes_present = {}
+    for i in set(n_cells_target.index.levels[0]).union(n_cells_context.index.levels[0]):
+        dataset_to_genes_present[i] = list(set(dataset_to_genes[i]).intersection(genes))
+        
+    desired_levels = [i.name for i in target_agg.index.levels][1:]
+
+    def fill_in_n_cells(n_cells, agg):
+        t_n_cells = np.zeros((n_cells.shape[0],len(genes)))
+        
+        for i, index in enumerate(n_cells.index):
+            n = n_cells[index]
+            dataset_id = index[0]
+            t_n_cells[i,genes_indexer[dataset_to_genes_present[dataset_id]]]=n
+        
+        ixs = []
+        level_names = [i.name for i in n_cells.index.levels]
+        for d in desired_levels:
+            for i,level in enumerate(level_names):
+                if level == d:
+                    ixs.append(i)
+        
+        groups = list(zip(*[n_cells.index.get_level_values(i) for i in ixs]))
+
+        t_n_cells_sum = {}
+        for i,k in enumerate(groups):
+            summer = t_n_cells_sum.get(k, np.zeros(t_n_cells.shape[1]))
+            summer += t_n_cells[i]
+            t_n_cells_sum[k] = summer
+            
+        ns = []
+        for index in agg.index:
+            try:
+                ns.append(
+                    t_n_cells_sum[tuple(index[1:])][genes_indexer[index[0]]]
+                )
+            except KeyError:
+                ns.append(0)
+        agg['n_cells'] = ns
+        return list(t_n_cells_sum.keys()), t_n_cells_sum
+        
+    groups_target_uniq, t_n_cells_sum_target = fill_in_n_cells(n_cells_target, target_agg)
+    groups_context_uniq, t_n_cells_sum_context = fill_in_n_cells(n_cells_context, context_agg)
+
+    target_agg = target_agg.groupby("gene_ontology_term_id").sum()
+
+    for df in [target_agg,context_agg]:
+        df['mean'] = df['sum'] / df['n_cells']
+        df['mean_sq'] = df['sqsum'] / df['n_cells']
+
+    genes_target = genes
+    genes_uniq = genes
+
+    genes_context = list(context_agg.index.get_level_values(0))
+    groups_context = [i[1:] for i in context_agg.index]
+
+    nc_context = np.array(context_agg['n_cells'])
+
+    groups_indexer = pd.Series(index=groups_context_uniq,data=range(len(groups_context_uniq)))
+    genes_indexer = pd.Series(index=genes_uniq,data=np.arange(len(genes_uniq)))
+
+    groups_indices_context = list(groups_indexer[groups_context])
+    genes_indices_context = list(genes_indexer[genes_context])
+    genes_indices_target = list(genes_indexer[genes_target])
+
+    #context_data_nnz = np.zeros((len(x_context_uniq),len(y_uniq)))
+    #context_data_nnz[x_indices_context,y_indices_context]=list(context_agg['nnz'])
+
+    context_data_mean = np.zeros((len(groups_context_uniq),len(genes_uniq)))
+    context_data_mean[groups_indices_context,genes_indices_context]=list(context_agg['mean'])
+
+    context_data_meansq = np.zeros((len(groups_context_uniq),len(genes_uniq)))
+    context_data_meansq[groups_indices_context,genes_indices_context]=list(context_agg['mean_sq'])
+    context_data_var = context_data_meansq - context_data_mean**2
+    context_data_var[context_data_var<0]=0
+
+    target_data_nnz = np.zeros((1,len(genes_uniq)))
+    target_data_nnz[0,genes_indices_target]=list(target_agg['nnz'])
+
+    target_data_mean = np.zeros((1,len(genes_uniq)))
+    target_data_mean[0,genes_indices_target]=list(target_agg['mean'])
+
+    target_data_meansq = np.zeros((1,len(genes_uniq)))
+    target_data_meansq[0,genes_indices_target]=list(target_agg['mean_sq'])
+    target_data_var = target_data_meansq - target_data_mean**2
+    target_data_var[target_data_var<0]=0
+
+    n1 = np.vstack(list(t_n_cells_sum_target.values()))
+    n2 = np.vstack(list(t_n_cells_sum_context.values()))
+
+    with np.errstate(divide="ignore", invalid="ignore"):
+        target_data_var_n = target_data_var / n1
+        context_data_var_n = context_data_var / n2
+        sum_data_var_n = target_data_var_n + context_data_var_n    
+        dof = sum_data_var_n**2 / (target_data_var_n**2 / (n1 - 1) + context_data_var_n**2 / (n2 - 1))
+        dof[np.isnan(dof)] = 1
+        tscores = (target_data_mean - context_data_mean) / np.sqrt(sum_data_var_n)
+        effects = (target_data_mean - context_data_mean) / np.sqrt( ((n1 - 1) * target_data_var + (n2 - 1) * context_data_var) / (n1+n2-1))
+        
+    tscores[np.isnan(tscores)] = 0
+    effects[np.isnan(effects)] = 0
+    pvals = stats.t.sf(tscores, dof)
+    zero_out = target_data_nnz.flatten() < 50
+
+    tscores[:,zero_out]=0
+    effects[:,zero_out]=0
+    pvals[:,zero_out]=1
+
+    pvals_adj = pvals * target_data_var.size
+    pvals_adj[pvals_adj > 1] = 1  # cap adjusted p-value at 1
+
+    # aggregate
+    tscores = np.sort(tscores,axis=0)[:N_BOTTOM_COMPARISONS].mean(0)
+    effects = np.sort(effects,axis=0)[:N_BOTTOM_COMPARISONS].mean(0)
+    #todo: fix p-value aggregation
+    pvals_adj = np.sort(pvals_adj,axis=0)[:N_BOTTOM_COMPARISONS].mean(0)
+
+    markers = np.array(genes_uniq)[np.argsort(-effects)[:N_MARKERS]]
+    p = pvals_adj[np.argsort(-effects)[:N_MARKERS]]    
+    effects = effects[np.argsort(-effects)][:N_MARKERS]
+    
+    return jsonify(dict(zip(markers,list(zip(p,effects)))))
+
 # TODO: Read this from generated data artifact instead of DB.
 #  https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data
 #  -portal/2086. This code is without a unit test, but we are intending to replace it.
