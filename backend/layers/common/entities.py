@@ -50,7 +50,6 @@ class Link:
 class CollectionMetadata:
     name: str
     description: str
-    owner: str
     contact_name: str
     contact_email: str
     links: List[Link]  # TODO: use a dataclass

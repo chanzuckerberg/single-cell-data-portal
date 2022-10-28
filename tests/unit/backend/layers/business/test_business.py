@@ -18,7 +18,6 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
     sample_collection_metadata = CollectionMetadata(
         "test collection 1", 
         "description of test collection 1",
-        "test_user_1",
         "scientist",
         "scientist@czi.com",
         []
@@ -312,7 +311,6 @@ class TestUpdateCollection(BaseBusinessLogicTestCase):
         self.assertEqual(updated_version.metadata.description, body["description"])
         self.assertEqual(updated_version.metadata.contact_name, body["contact_name"])
         self.assertEqual(updated_version.metadata.contact_email, body["contact_email"])
-        self.assertEqual(updated_version.metadata.owner, self.sample_collection_metadata.owner)
 
     def test_update_collection_wrong_params_fail(self):
         """
