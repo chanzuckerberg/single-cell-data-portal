@@ -347,7 +347,7 @@ paths:
         - cxguserCookie: []
       description: >-
         Add genesets to a private collection
-      operationId: backend.portal.api.app.v1.collection_id.gene_set.post
+      operationId: backend.portal.api.app.v1.collection_id.genesets.post
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       requestBody:
