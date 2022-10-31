@@ -1,3 +1,4 @@
+from audioop import add
 import unittest
 from datetime import datetime
 from unittest.mock import Mock
@@ -9,8 +10,9 @@ from backend.corpora.common.providers.crossref_provider import CrossrefException
 from backend.layers.business.business import BusinessLogic, CollectionQueryFilter, UserInfo
 from backend.layers.business.exceptions import CollectionUpdateException, InvalidLinkException, \
     CollectionCreationException, DatasetIngestException, CollectionPublishException
-from backend.layers.common.entities import CollectionMetadata, CollectionVersion, DatasetMetadata, DatasetStatus, Link
+from backend.layers.common.entities import CollectionMetadata, CollectionVersion, DatasetArtifact, DatasetMetadata, DatasetStatus, Link
 from backend.layers.persistence.persistence import DatabaseProviderInterface
+from tests.unit.backend.layers.persistence.persistence_mock import DatabaseProviderMock
 
 
 class BaseBusinessLogicTestCase(unittest.TestCase):
@@ -43,7 +45,7 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
     )
 
     def setUp(self) -> None:
-        self.database_provider = DatabaseProviderInterface() # replace with DatabaseProviderMock()
+        self.database_provider = DatabaseProviderMock()
 
         # By default does nothing. Can be mocked by single test cases.
         self.crossref_provider = CrossrefProviderInterface()
@@ -89,6 +91,17 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         self.database_provider.finalize_collection_version(version.collection_id, version.version_id, published_at)
         return version
 
+    def complete_dataset_processing_with_success(self, dataset_version_id: str) -> None:
+        """
+        Test method that "completes" a dataset processing. This is necessary since dataset ingestion
+        is a complex process which happens asynchronously.
+        """
+        self.database_provider.add_dataset_artifact(dataset_version_id, DatasetArtifact("H5AD", "s3://fake-bucket/artifact.h5ad"))
+        self.database_provider.add_dataset_artifact(dataset_version_id, DatasetArtifact("CXG", "s3://fake-bucket/artifact.cxg"))
+        self.database_provider.add_dataset_artifact(dataset_version_id, DatasetArtifact("RDS", "s3://fake-bucket/artifact.rds"))
+        self.database_provider.update_dataset_processing_status(dataset_version_id, DatasetStatus.UPLOADED)
+
+
 
 class TestCreateCollection(BaseBusinessLogicTestCase):
 
@@ -111,7 +124,7 @@ class TestCreateCollection(BaseBusinessLogicTestCase):
         self.sample_collection_metadata.links = good_links
         collection = self.business_logic.create_collection(self.sample_collection_metadata, self.user_info)
         collection_from_database = self.database_provider.get_collection_version(collection.version_id)
-        self.assertEqual(collection.metadata.links, collection_from_database.metadata.links)
+        self.assertEqual(collection.metadata.links, good_links)
 
     def test_create_collection_with_bad_links_fail(self):
         """
@@ -168,6 +181,8 @@ class TestCreateCollection(BaseBusinessLogicTestCase):
     def test_create_collection_unauthorized_fail(self):
         # TODO: AUTHORIZATION
         return NotImplemented
+
+
 class TestGetCollectionVersion(BaseBusinessLogicTestCase):
 
     def test_get_published_collection_version_for_published_collection_ok(self):
@@ -301,8 +316,6 @@ class TestUpdateCollection(BaseBusinessLogicTestCase):
             "contact_name": "new contact name",
             "contact_email": "new_email@czi.com",
         }
-
-        # TODO: can `owner` be modified by any role?
 
         self.business_logic.update_collection_version(version.version_id, body, self.user_info)
 
@@ -695,9 +708,7 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         new_version = self.business_logic.create_collection_version(published_collection.collection_id, self.user_info)
 
         added_dataset_version_id = self.business_logic.ingest_dataset(new_version.version_id, "http://fake.url", None, self.user_info)
-
-        # TODO: mock StepFunctionClient so that it also updates the dataset accordingly
-        # Otherwise, set the artifacts and the processing status manually (less elegant)
+        self.complete_dataset_processing_with_success(added_dataset_version_id)
 
         # The new version should have three datasets (before publishing)
         version_from_db = self.database_provider.get_collection_version(new_version.version_id)
@@ -746,8 +757,7 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
             self.user_info
         )
 
-        # TODO: mock StepFunctionClient so that it also updates the dataset accordingly
-        # Otherwise, set the artifacts and the processing status manually (less elegant)
+        self.complete_dataset_processing_with_success(replaced_dataset_version_id)
 
         # The new version should have the correct datasets (before publishing)
         version_from_db = self.database_provider.get_collection_version(new_version.version_id)

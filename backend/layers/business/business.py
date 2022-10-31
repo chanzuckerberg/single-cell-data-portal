@@ -48,7 +48,7 @@ class BusinessLogicInterface:
     def get_published_collection_version(self, collection_id: str, user_info: UserInfo) -> CollectionVersion:
         pass
 
-    def get_collection_version(self, version_id: str, user_info: UserInfo) -> CollectionVersion
+    def get_collection_version(self, version_id: str, user_info: UserInfo) -> CollectionVersion:
         pass
 
     # Create_collection

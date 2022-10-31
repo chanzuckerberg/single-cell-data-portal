@@ -4,7 +4,7 @@ from nntplib import ArticleInfo
 import uuid
 from backend.corpora.common.entities import dataset
 from backend.layers.persistence.persistence import DatabaseProviderInterface
-from typing import Dict, Iterable, List
+from typing import Dict, Iterable, List, Optional
 from backend.layers.common.entities import (
     CollectionMetadata,
     CollectionVersion,
@@ -42,12 +42,13 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         return str(uuid.uuid4())
 
     # TODO: add publisher_metadata here?
-    def create_collection(self, owner: str, collection_metadata: CollectionMetadata) -> str:
+    def create_canonical_collection(self, owner: str, collection_metadata: CollectionMetadata) -> CollectionVersion:
         collection_id = self._id()
         version_id = self._id()
         version = CollectionVersion(collection_id, version_id, owner, collection_metadata, None, [], None)
         self.collections_versions[version_id] = version
         self.collections[collection_id] = version_id
+        return version
 
     def get_collection(self, collection_id: str) -> CollectionVersion:
         version_id = self.collections[collection_id]
@@ -67,7 +68,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
     def save_collection_publisher_metadata(self, version_id: str, publisher_metadata: dict) -> None:
         self.collections_versions[version_id].publisher_metadata = publisher_metadata
 
-    def create_collection_version(self, collection_id: str) -> str:
+    def add_collection_version(self, collection_id: str) -> str:
         current_version_id = self.collections[collection_id]
         current_version = self.collections_versions[current_version_id]
         new_version_id = self._id()
@@ -92,7 +93,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         return self.collections_versions[version_id]
 
     # MAYBE
-    def publish_collection_version(self, collection_id: str, version_id: str) -> None:
+    def finalize_collection_version(self, collection_id: str, version_id: str, published_at: Optional[datetime]) -> None:
         self.collections[collection_id] = version_id
         self.collections_versions[version_id].published_at = datetime.utcnow()
 
@@ -121,14 +122,14 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         dataset = self.get_dataset(dataset_id)
         return dataset.artifacts
 
-    def create_dataset(self, collection_version_id: str, dataset_metadata: DatasetMetadata) -> None:
+    def create_canonical_dataset(self, collection_version_id: str, dataset_metadata: DatasetMetadata) -> DatasetVersion:
         # Creates a dataset and initializes it with one version
         dataset_id = self._id()
         version_id = self._id()
         version = DatasetVersion(
-            id=dataset_id,
+            dataset_id=dataset_id,
             version_id=version_id,
-            processing_status=None,
+            processing_status=DatasetStatus.WAITING,
             metadata=dataset_metadata,
             artifacts=[]
         )
@@ -136,8 +137,9 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         self.datasets[dataset_id] = version_id
         # Register the dataset to the original collection
         self.collections_versions[collection_version_id].datasets.append(version)
+        return version
 
-    def create_dataset_version(self, dataset_id: str, dataset_metadata: DatasetMetadata) -> str:
+    def add_dataset_version(self, dataset_id: str, dataset_metadata: DatasetMetadata) -> str:
         # Unused for now
         pass
 
@@ -164,9 +166,9 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         new_version_id = self._id()
         old_version = self.get_dataset_version(old_dataset_version_id)
         new_version = DatasetVersion(
-            id=old_version.id,
+            dataset_id=old_version.dataset_id,
             version_id=new_version_id,
-            processing_status=None,
+            processing_status=DatasetStatus.WAITING,
             metadata=dataset_metadata,
             artifacts=[]
         )
