@@ -81,7 +81,7 @@ paths:
                       $ref: "#/components/schemas/wmg_ontology_term_id_list"
                     development_ontology_stage_term_ids:
                       $ref: "#/components/schemas/wmg_ontology_term_id_list"
-                    self_reported_ethnicity_ontology_term_ids:
+                    ethnicity_ontology_term_ids:
                       $ref: "#/components/schemas/wmg_ontology_term_id_list"
                 include_filter_dims:
                   type: boolean
@@ -308,7 +308,7 @@ paths:
                         $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
                       development_stage_terms:
                         $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
-                      self_reported_ethnicity_terms:
+                      ethnicity_terms:
                         $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
 
 components:

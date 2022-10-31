@@ -18,7 +18,7 @@ class WmgQueryCriteria(BaseModel):
     # assay_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
     development_stage_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
     disease_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
-    self_reported_ethnicity_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
+    ethnicity_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
     sex_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
 
 
