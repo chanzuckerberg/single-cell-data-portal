@@ -13,12 +13,6 @@ class CollectionQueryFilter:
     owner: Optional[str] = None
     # TODO: add list of fields to be returned (if needed)
 
-@dataclass
-class UserInfo:
-    user_id: str
-    token: str
-
-
 class BusinessLogicInterface:
 
     # Get_collections
@@ -33,7 +27,7 @@ class BusinessLogicInterface:
     # It should NOT add any information that is required by the current API for compatibility reasons (e.g. access_write). These will be delegated to the upper layer
     # It should NOT do any operation that is required by Curation API assumptions (e.g. remove None values)
 
-    def get_collections(self, filter: CollectionQueryFilter, user_info: UserInfo) -> Iterable[CollectionVersion]:
+    def get_collections(self, filter: CollectionQueryFilter) -> Iterable[CollectionVersion]:
         pass
 
 
@@ -45,10 +39,10 @@ class BusinessLogicInterface:
     # UserInfo for validation
     # Should reuse most of of the code from the method above
 
-    def get_published_collection_version(self, collection_id: str, user_info: UserInfo) -> CollectionVersion:
+    def get_published_collection_version(self, collection_id: str) -> CollectionVersion:
         pass
 
-    def get_collection_version(self, version_id: str, user_info: UserInfo) -> CollectionVersion:
+    def get_collection_version(self, version_id: str) -> CollectionVersion:
         pass
 
     # Create_collection
@@ -60,7 +54,7 @@ class BusinessLogicInterface:
     # Should call CrossrefProvider to retrieve publisher metadata information
     # This method currently collects errors in a list, which will be piped upstream to the API response. This is a good idea but it should be refactor into a generalized pattern (otherwise we’ll “pollute” the business layer with logic specific to the API layer).
 
-    def create_collection(self, collection_metadata: CollectionMetadata, user_info: UserInfo) -> CollectionVersion:
+    def create_collection(self, collection_metadata: CollectionMetadata) -> CollectionVersion:
         pass
 
     # Delete_collection
@@ -70,7 +64,7 @@ class BusinessLogicInterface:
     # UserInfo
     # Performs authorization on user/collection
 
-    def delete_collection(self, collection_id: str, user_info: UserInfo) -> None:
+    def delete_collection(self, collection_id: str) -> None:
         pass
 
     # Update_collection
@@ -84,7 +78,7 @@ class BusinessLogicInterface:
     # Can either return nothing or the metadata of the updated collection
 
     # TODO: body should be a dataclass?
-    def update_collection_version(self, version_id: str, body: dict, user_info: UserInfo) -> None:
+    def update_collection_version(self, version_id: str, body: dict) -> None:
         pass
 
     # Create_collection_version
@@ -96,10 +90,10 @@ class BusinessLogicInterface:
     # Since revision logic is database specific, it delegates to the underlying layer
     # Returns a handle to the revised collection (either id or the full collection metadata)
 
-    def create_collection_version(self, collection_id: str, user_info: UserInfo) -> CollectionVersion:
+    def create_collection_version(self, collection_id: str) -> CollectionVersion:
         pass
 
-    def delete_collection_version(self, version_id: str, user_info: UserInfo) -> None:
+    def delete_collection_version(self, version_id: str) -> None:
         pass
 
 
@@ -113,7 +107,7 @@ class BusinessLogicInterface:
     # [Currently] triggers Cloudfront invalidation for the index endpoints. This should arguably NOT be done here but by the API layer
     # Since revision logic is database specific, it delegates to the underlying layer
 
-    def publish_collection_version(self, version_id: str, user_info: UserInfo) -> None:
+    def publish_collection_version(self, version_id: str) -> None:
         pass
 
     # Ingest_dataset
@@ -130,7 +124,7 @@ class BusinessLogicInterface:
     # Should handle exceptions from all providers:
     # Should only raise custom exceptions
 
-    def ingest_dataset(self, collection_version_id: str, url: str, existing_dataset_version_id: Optional[str], user_info: UserInfo) -> str:
+    def ingest_dataset(self, collection_version_id: str, url: str, existing_dataset_version_id: Optional[str]) -> str:
         pass
 
     # Get_all_datasets
