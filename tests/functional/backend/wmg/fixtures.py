@@ -436,7 +436,7 @@ secondary_filter_common_case_request_data = {
     "filter": {
         "dataset_ids": [],
         "disease_ontology_term_ids": ["MONDO:0005812", "MONDO:0100096", "PATO:0000461"],
-        "self_reported_ethnicity_ontology_term_ids": ["HANCESTRO:0010", "HANCESTRO:0014"],
+        "ethnicity_ontology_term_ids": ["HANCESTRO:0010", "HANCESTRO:0014"],
         "gene_ontology_term_ids": list(genes_20_count.keys()),
         "organism_ontology_term_id": "NCBITaxon:9606",
         "sex_ontology_term_ids": ["PATO:0000383"],
@@ -448,7 +448,7 @@ secondary_filter_extreme_case_request_data = {
     "filter": {
         "dataset_ids": [],
         "disease_ontology_term_ids": [],
-        "self_reported_ethnicity_ontology_term_ids": [],
+        "ethnicity_ontology_term_ids": [],
         "gene_ontology_term_ids": list(genes_400_count.keys()),
         "organism_ontology_term_id": "NCBITaxon:9606",
         "sex_ontology_term_ids": [],
