@@ -8,7 +8,7 @@ from backend.common.utils.http_exceptions import (
     MethodNotAllowedException,
 )
 from backend.portal.api.app.v1.authorization import owner_or_allowed
-from backend.portal.api.app.v1.collection_id.upload import upload_from_link
+from backend.portal.api.app.v1.collection_id.upload_links import upload_from_link
 from backend.portal.api.app.v1.common import (
     get_dataset_else_error,
     delete_dataset_common,

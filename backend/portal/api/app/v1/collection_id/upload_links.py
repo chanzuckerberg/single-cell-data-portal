@@ -78,3 +78,11 @@ def upload_from_link(collection_id: str, token_info: dict, url: str, dataset_id:
         )
     except NonExistentDatasetException:
         raise NotFoundHTTPException()
+
+
+def post(collection_id: str, body: dict, token_info: dict):
+    return link(collection_id, body, token_info)
+
+
+def put(collection_id: str, body: dict, token_info: dict):
+    return relink(collection_id, body, token_info)

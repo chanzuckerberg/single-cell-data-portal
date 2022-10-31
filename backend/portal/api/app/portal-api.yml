@@ -249,7 +249,7 @@ paths:
         An authenticated user can upload a file from a shared link to add a dataset into their collection.
       security:
         - cxguserCookie: []
-      operationId: backend.portal.api.app.v1.collection_id.upload.link
+      operationId: backend.portal.api.app.v1.collection_id.upload_links.post
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       requestBody:
@@ -297,7 +297,7 @@ paths:
         collection revision is published.
       security:
         - cxguserCookie: []
-      operationId: backend.portal.api.app.v1.collection_id.upload.relink
+      operationId: backend.portal.api.app.v1.collection_id.upload_links.put
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       requestBody:
