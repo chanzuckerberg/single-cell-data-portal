@@ -308,7 +308,7 @@ paths:
                         $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
                       development_stage_terms:
                         $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
-                      ethnicity_terms:
+                      self_reported_ethnicity_terms:
                         $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
 
 components:
