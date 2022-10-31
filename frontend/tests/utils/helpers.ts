@@ -7,6 +7,9 @@ const { describe, skip } = test;
 
 export const TIMEOUT_MS = 3 * 1000;
 
+// (seve): We use TEST_ENV to describe the environment that playwright is running against. Sometimes the FE tests are run against a local instance of the app which points at a deployed instance of the backend.
+// We might want to rename some of these functions to better convey this.
+
 export const describeIfDeployed =
   TEST_ENV.includes("local") || TEST_ENV === "prod" ? skip : describe;
 

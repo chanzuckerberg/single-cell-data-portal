@@ -46,7 +46,7 @@ smoke-test-with-local-backend:
 	npm run smoke-test-with-local-backend
 
 .PHONY: e2e
-e2e:
+e2e: ## only used by make local-e2e
 	TEST_ENV=$(DEPLOYMENT_STAGE) npm run e2e
 
 .PHONY: e2e-on-local-dev

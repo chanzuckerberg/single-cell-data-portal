@@ -47,7 +47,6 @@ All the E2E test commands can be found in `frontend/Makefile` and `frontend/pack
 
       2. To run against Deployed BEs,`frontend/src/configs/configs.js` should point to `API_URL: "https://api.cellxgene.dev.single-cell.czi.technology"`, or any other deployed BE API base url
 
-
 1. local -> local (app started with `npm run dev`)
 
    1. Make sure you have your local app running already on http://localhost:3000. If not, in `frontend/` directory, run `npm run dev`
@@ -129,3 +128,103 @@ All the E2E test commands can be found in `frontend/Makefile` and `frontend/pack
       1. For more information, visit [Playwright Inspector](https://playwright.dev/docs/debug)
 
       ![Playwright Inspector](https://user-images.githubusercontent.com/6309723/196775284-81bd4853-b4c6-45c4-827b-22e97b97ee06.png)
+
+---
+
+# Test/Env Differential
+
+Where tests are skipped vs. run in different environments.
+
+<table >
+<colgroup>
+<col >
+<col >
+<col >
+<col >
+<col >
+<col >
+<col >
+<col >
+</colgroup>
+<thead>
+  <tr>
+    <th></th>
+    <th colspan="7">TEST_ENV (defaults to local)</th>
+  </tr>
+  <tr>
+    <th></th>
+    <th>local</th>
+    <th>localProd</th>
+    <th>staging</th>
+    <th>prod</th>
+    <th>rdev</th>
+    <th>happy</th>
+    <th>dev</th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td>`describeIfDeployed`</td>
+    <td>skip</td>
+    <td>describe</td>
+    <td>describe</td>
+    <td>skip</td>
+    <td>describe</td>
+    <td>describe</td>
+    <td>describe</td>
+  </tr>
+  <tr>
+    <td>`describeIfDevStagingProd`</td>
+    <td>skip</td>
+    <td>skip</td>
+    <td>describe</td>
+    <td>describe</td>
+    <td>skip</td>
+    <td>skip</td>
+    <td>describe</td>
+  </tr>
+  <tr>
+    <td>`describeIfDevStaging`</td>
+    <td>skip</td>
+    <td>skip</td>
+    <td>describe</td>
+    <td>skip</td>
+    <td>skip</td>
+    <td>skip</td>
+    <td>describe</td>
+  </tr>
+
+  <tr>
+    <td>
+      <ul>
+         <li>`./features/wheresMyGene.test.ts`</li>
+         <li>"invalid DOIs"</li>
+      </ul>
+   </td>
+    <td>skip</td>
+    <td>skip</td>
+    <td>describe</td>
+    <td>describe</td>
+    <td>skip</td>
+    <td>skip</td>
+    <td>describe</td>
+  </tr>
+  <tr>
+    <td>
+      <ul>
+         <li>"creates and deletes a collection"</li>
+         <li>"dataset order"</li>
+         <li>"publish a collection"</li>
+         <li>"Collection Revision"</li>
+      </ul>
+   </td>
+    <td>skip<br></td>
+    <td>describe<br></td>
+    <td>describe</td>
+    <td>skip<br></td>
+    <td>describe</td>
+    <td>describe</td>
+    <td>describe</td>
+  </tr>
+</tbody>
+</table>

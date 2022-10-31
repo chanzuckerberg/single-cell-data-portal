@@ -227,7 +227,7 @@ local-smoke-test: ## Run frontend/e2e tests in the dev environment
 	docker-compose $(COMPOSE_OPTS) run --rm -T frontend make smoke-test-with-local-dev
 
 .PHONY: local-e2e
-local-e2e: ## Run frontend/e2e tests
+local-e2e: ## Run frontend/e2e tests (no upstream calls)
 	if [ -n "$${BOTO_ENDPOINT_URL+set}" ]; then \
 		EXTRA_ARGS="-e BOTO_ENDPOINT_URL"; \
 	fi; \
