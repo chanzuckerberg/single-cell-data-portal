@@ -1,6 +1,6 @@
 from flask import g, jsonify, Response
 
-from backend.portal.api.app.v1.collection import (
+from backend.portal.api.app.v1.collections import (
     get_collection_and_verify_body,
     get_publisher_metadata,
     curation_get_normalized_doi_url,
