@@ -130,9 +130,13 @@ class TestCreateCollection(BaseBusinessLogicTestCase):
             Link("test bad link", "other", "incorrect_url")
         ]
         self.sample_collection_metadata.links = bad_links
-        # TODO: the current method has error message validation - implement a more sophisticate version
-        with self.assertRaises(InvalidLinkException):
+
+        with self.assertRaises(InvalidLinkException) as ex:
             self.business_logic.create_collection(self.sample_collection_metadata)
+
+        self.assertEqual(ex.exception.errors, [
+            {"name": f"links[0]", "reason": "Invalid URL.", "value": "incorrect_url"}
+        ])
 
     def test_create_collection_with_valid_doi_ok(self):
         """
@@ -323,10 +327,17 @@ class TestUpdateCollection(BaseBusinessLogicTestCase):
             "name": "new collection name",
         }
 
-        # TODO: Add more update failure cases?
-        # TODO: Check the returned error messages
-        with self.assertRaises(CollectionUpdateException):
+        with self.assertRaises(CollectionUpdateException) as ex:
             self.business_logic.update_collection_version(version.version_id, body)
+
+        self.assertEqual(ex.exception.errors, [
+            {"name": "description", "reason": "Cannot be blank."},
+            {"name": "contact_name", "reason": "Cannot be blank."},
+            {"name": "contact_email", "reason": "Cannot be blank."},
+        ])
+
+        # TODO: I would recommend adding more validation logic testing (see existing TestVerifyCollection)
+        # in a separate unit test case later
 
     def test_update_published_collection_fail(self):
         """
@@ -536,12 +547,13 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         self.assertEqual(published_collection.metadata, new_version.metadata)
         self.assertEqual(published_collection.datasets, new_version.datasets)
 
+        # The new version should not be published (aka Private)
+        self.assertIsNone(new_version.published_at)
+
         # get_collection still retrieves the original version
         version = self.business_logic.get_published_collection_version(published_collection.collection_id)
         self.assertEqual(version.version_id, published_collection.version_id)
         self.assertNotEqual(version.version_id, new_version.version_id)
-
-        # TODO: assert visibility
 
 
     def test_delete_collection_version_ok(self):
@@ -600,7 +612,6 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         """
         unpublished_collection = self.initialize_empty_unpublished_collection()
 
-        # TODO: define CollectionPublishException
         with self.assertRaises(CollectionPublishException):
             self.business_logic.publish_collection_version(unpublished_collection.version_id)
 

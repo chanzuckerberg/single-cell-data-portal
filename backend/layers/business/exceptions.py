@@ -1,18 +1,32 @@
+from typing import List, Optional
+
+
 class BusinessException(Exception):
     # TODO maybe useful as a base class, maybe not
     pass
 
 
+# TODO: possibly merge the following 3 classes? They all refer to the same action (validating the collection metadata)
 class CollectionCreationException(BusinessException):
     pass
 
 
 class CollectionUpdateException(BusinessException):
-    pass
+
+    errors: Optional[List[str]]
+
+    def __init__(self, errors: Optional[List[str]] = None) -> None:
+        self.errors = errors
+        super().__init__()
 
 
 class InvalidLinkException(BusinessException):
-    pass
+    
+    errors: Optional[List[str]]
+
+    def __init__(self, errors: Optional[List[str]] = None) -> None:
+        self.errors = errors
+        super().__init__()
 
 
 class DatasetIngestException(BusinessException):
