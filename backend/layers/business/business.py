@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Iterable, Optional
 
-from backend.layers.common.entities import CollectionMetadata, CollectionVersion, DatasetArtifact, DatasetStatus, DatasetVersion
+from backend.layers.common.entities import CollectionId, CollectionMetadata, CollectionVersion, CollectionVersionId, DatasetArtifact, DatasetId, DatasetStatus, DatasetVersion, DatasetVersionId
 from backend.layers.persistence.persistence import DatabaseProviderInterface
 from backend.layers.thirdparty.crossref_provider import CrossrefProviderInterface
 from backend.layers.thirdparty.step_function_provider import StepFunctionProviderInterface
@@ -44,10 +44,10 @@ class BusinessLogicInterface:
     # Collection_id
     # Should reuse most of of the code from the method above
 
-    def get_published_collection_version(self, collection_id: str) -> CollectionVersion:
+    def get_published_collection_version(self, collection_id: CollectionId) -> CollectionVersion:
         pass
 
-    def get_collection_version(self, version_id: str) -> CollectionVersion:
+    def get_collection_version(self, version_id: CollectionVersionId) -> CollectionVersion:
         pass
 
     # Create_collection
@@ -67,7 +67,7 @@ class BusinessLogicInterface:
     # Collection_id
     # Performs authorization on user/collection
 
-    def delete_collection(self, collection_id: str) -> None:
+    def delete_collection(self, collection_id: CollectionId) -> None:
         pass
 
     # Update_collection
@@ -80,7 +80,7 @@ class BusinessLogicInterface:
     # Can either return nothing or the metadata of the updated collection
 
     # TODO: body should be a dataclass?
-    def update_collection_version(self, version_id: str, body: dict) -> None:
+    def update_collection_version(self, version_id: CollectionVersionId, body: dict) -> None:
         pass
 
     # Create_collection_version
@@ -91,10 +91,10 @@ class BusinessLogicInterface:
     # Since revision logic is database specific, it delegates to the underlying layer
     # Returns a handle to the revised collection (either id or the full collection metadata)
 
-    def create_collection_version(self, collection_id: str) -> CollectionVersion:
+    def create_collection_version(self, collection_id: CollectionId) -> CollectionVersion:
         pass
 
-    def delete_collection_version(self, version_id: str) -> None:
+    def delete_collection_version(self, version_id: CollectionVersionId) -> None:
         pass
 
 
@@ -107,7 +107,7 @@ class BusinessLogicInterface:
     # [Currently] triggers Cloudfront invalidation for the index endpoints. This should arguably NOT be done here but by the API layer
     # Since revision logic is database specific, it delegates to the underlying layer
 
-    def publish_collection_version(self, version_id: str) -> None:
+    def publish_collection_version(self, version_id: CollectionVersionId) -> None:
         pass
 
     # Ingest_dataset
@@ -123,7 +123,7 @@ class BusinessLogicInterface:
     # Should handle exceptions from all providers:
     # Should only raise custom exceptions
 
-    def ingest_dataset(self, collection_version_id: str, url: str, existing_dataset_version_id: Optional[str]) -> str:
+    def ingest_dataset(self, collection_version_id: CollectionVersionId, url: str, existing_dataset_version_id: Optional[DatasetVersionId]) -> DatasetVersionId:
         pass
 
     # Get_all_datasets
@@ -135,14 +135,14 @@ class BusinessLogicInterface:
     # Delete_dataset
     # Replaces delete_dataset
 
-    def delete_dataset(self, dataset_version_id: str) -> None:
+    def delete_dataset(self, dataset_version_id: DatasetVersionId) -> None:
         pass
 
 
     # get_dataset_assets
     # Replaces get_dataset_assets
 
-    def get_dataset_artifacts(self, dataset_id: str) -> Iterable[DatasetArtifact]:
+    def get_dataset_artifacts(self, dataset_id: DatasetId) -> Iterable[DatasetArtifact]:
         pass
 
 
@@ -150,21 +150,21 @@ class BusinessLogicInterface:
     # Replaces post_dataset_asset
 
 
-    def get_dataset_artifact_download_data(self, dataset_id: str, artifact_id: str) -> DatasetArtifactDownloadData:
+    def get_dataset_artifact_download_data(self, dataset_id: DatasetId, artifact_id: str) -> DatasetArtifactDownloadData:
         pass
 
 
-    def update_dataset_version_status(self, dataset_version_id: str, new_dataset_status: DatasetStatus) -> None:
+    def update_dataset_version_status(self, dataset_version_id: DatasetVersionId, new_dataset_status: DatasetStatus) -> None:
         pass
 
-    def add_dataset_artifact(self, dataset_version_id: str, artifact_type: str, artifact_uri: str) -> None:
+    def add_dataset_artifact(self, dataset_version_id: DatasetVersionId, artifact_type: str, artifact_uri: str) -> None:
         pass
 
 
     # Get_dataset_status
     # Replaces get_status
 
-    def get_dataset_status(self, dataset_id: str) -> DatasetStatus:
+    def get_dataset_status(self, dataset_id: DatasetId) -> DatasetStatus:
         pass
 
 

@@ -7,10 +7,10 @@ from backend.layers.thirdparty.crossref_provider import CrossrefProviderInterfac
 from backend.layers.thirdparty.step_function_provider import StepFunctionProviderInterface
 
 from backend.corpora.common.providers.crossref_provider import CrossrefException
-from backend.layers.business.business import BusinessLogic, CollectionQueryFilter, DatasetArtifactDownloadData, UserInfo
+from backend.layers.business.business import BusinessLogic, CollectionQueryFilter, DatasetArtifactDownloadData
 from backend.layers.business.exceptions import CollectionUpdateException, InvalidLinkException, \
     CollectionCreationException, DatasetIngestException, CollectionPublishException
-from backend.layers.common.entities import CollectionMetadata, CollectionVersion, DatasetArtifact, DatasetMetadata, DatasetStatus, Link
+from backend.layers.common.entities import CollectionMetadata, CollectionVersion, DatasetArtifact, DatasetMetadata, DatasetStatus, DatasetVersionId, Link
 from backend.layers.persistence.persistence import DatabaseProviderInterface
 from tests.unit.backend.layers.persistence.persistence_mock import DatabaseProviderMock
 
@@ -94,7 +94,7 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         self.database_provider.finalize_collection_version(version.collection_id, version.version_id, published_at)
         return self.database_provider.get_collection_version(version.version_id)
 
-    def complete_dataset_processing_with_success(self, dataset_version_id: str) -> None:
+    def complete_dataset_processing_with_success(self, dataset_version_id: DatasetVersionId) -> None:
         """
         Test method that "completes" a dataset processing. This is necessary since dataset ingestion
         is a complex process which happens asynchronously, and cannot be easily mocked.

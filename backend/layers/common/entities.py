@@ -13,6 +13,21 @@ class DatasetStatus(Enum):
     CANCELED = "Canceled"
 
 @dataclass
+class CollectionId:
+    id: str
+@dataclass
+class CollectionVersionId:
+    id: str
+
+@dataclass
+class DatasetId:
+    id: str
+
+@dataclass
+class DatasetVersionId:
+    id: str
+
+@dataclass
 class DatasetArtifact:
     id: str
     type: str
@@ -34,8 +49,8 @@ class DatasetMetadata:
 
 @dataclass
 class DatasetVersion:
-    dataset_id: str
-    version_id: str
+    dataset_id: DatasetId
+    version_id: DatasetVersionId
     processing_status: DatasetStatus
     metadata: DatasetMetadata
     artifacts: List[DatasetArtifact]
@@ -58,8 +73,8 @@ class CollectionMetadata:
 
 @dataclass
 class CollectionVersion:
-    collection_id: str
-    version_id: str
+    collection_id: CollectionId
+    version_id: CollectionVersionId
     owner: str
     metadata: CollectionMetadata
     publisher_metadata: Optional[dict]  # TODO: use a dataclass
