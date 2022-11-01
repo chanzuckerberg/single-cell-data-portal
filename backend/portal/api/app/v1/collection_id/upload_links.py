@@ -20,21 +20,6 @@ from backend.common.utils.http_exceptions import (
 )
 
 
-def link(collection_id: str, body: dict, token_info: dict):
-    dataset_id = upload_from_link(collection_id, token_info, body["url"])
-    return make_response({"dataset_id": dataset_id}, 202)
-
-
-def relink(collection_id: str, body: dict, token_info: dict):
-    dataset_id = upload_from_link(
-        collection_id,
-        token_info,
-        body.get("url", body.get("link")),
-        body.get("id"),
-    )
-    return make_response({"dataset_id": dataset_id}, 202)
-
-
 @dbconnect
 def upload_from_link(collection_id: str, token_info: dict, url: str, dataset_id: str = None):
     db_session = g.db_session
@@ -81,8 +66,15 @@ def upload_from_link(collection_id: str, token_info: dict, url: str, dataset_id:
 
 
 def post(collection_id: str, body: dict, token_info: dict):
-    return link(collection_id, body, token_info)
+    dataset_id = upload_from_link(collection_id, token_info, body["url"])
+    return make_response({"dataset_id": dataset_id}, 202)
 
 
 def put(collection_id: str, body: dict, token_info: dict):
-    return relink(collection_id, body, token_info)
+    dataset_id = upload_from_link(
+        collection_id,
+        token_info,
+        body.get("url", body.get("link")),
+        body.get("id"),
+    )
+    return make_response({"dataset_id": dataset_id}, 202)
