@@ -356,29 +356,6 @@ class TestUpdateCollection(BaseBusinessLogicTestCase):
         self.assertEqual(updated_version.metadata.contact_email, version.metadata.contact_email)
         self.assertEqual(updated_version.metadata.links, version.metadata.links)
 
-
-    def test_update_collection_wrong_params_fail(self):
-        """
-        Updating a collection with a payload with missing fields should fail
-        """
-        version = self.initialize_unpublished_collection()
-        body = CollectionMetadataUpdate(
-            name="new collection name",
-            description="new collection description",
-            contact_name=None,
-            contact_email=None,
-            links=None,
-        )
-
-        with self.assertRaises(CollectionUpdateException) as ex:
-            self.business_logic.update_collection_version(version.version_id, body)
-
-        self.assertEqual(ex.exception.errors, [
-            {"name": "description", "reason": "Cannot be blank."},
-            {"name": "contact_name", "reason": "Cannot be blank."},
-            {"name": "contact_email", "reason": "Cannot be blank."},
-        ])
-
     def test_update_published_collection_fail(self):
         """
         Updating a collection version that is published should fail
@@ -389,6 +366,7 @@ class TestUpdateCollection(BaseBusinessLogicTestCase):
             description="new collection description",
             contact_name="new contact name",
             contact_email="new_email@czi.com",
+            links=None,
         )
 
         with self.assertRaises(CollectionUpdateException):
