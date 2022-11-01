@@ -166,7 +166,7 @@ Where tests are skipped vs. run in different environments.
   <tr>
     <td>`describeIfDeployed`</td>
     <td>skip</td>
-    <td>describe</td>
+    <td>skip</td>
     <td>describe</td>
     <td>skip</td>
     <td>describe</td>
@@ -219,7 +219,7 @@ Where tests are skipped vs. run in different environments.
       </ul>
    </td>
     <td>skip<br></td>
-    <td>describe<br></td>
+    <td>skip<br></td>
     <td>describe</td>
     <td>skip<br></td>
     <td>describe</td>
