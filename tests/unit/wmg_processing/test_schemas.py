@@ -103,7 +103,7 @@ class TestFmgSummaryCubeSchema(unittest.TestCase):
 
     def test_fmg_summary_cube_schema_contains_correct_attrs(self):
         with tempfile.TemporaryDirectory() as summary_cube_dir:
-            create_empty_cube(uri=f"{summary_cube_dir}/cube", schema=expression_summary_schema)
+            create_empty_cube(uri=f"{summary_cube_dir}/cube", schema=expression_summary_fmg_schema)
             summary_cube_schema = tiledb.ArraySchema.load(f"{summary_cube_dir}/cube")
             self.assertEqual(summary_cube_schema.nattr, 12)
             self.assertTrue(summary_cube_schema.has_attr("gene_ontology_term_id"))
