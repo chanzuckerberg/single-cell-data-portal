@@ -14,7 +14,7 @@ expression_summary_indexed_dims = [
 expression_summary_fmg_indexed_dims = [
     "tissue_ontology_term_id",
     "organism_ontology_term_id",
-    "cell_type_ontology_term_id",    
+    "cell_type_ontology_term_id",
 ]
 
 expression_summary_indexed_dims_no_gene_ontology = [
@@ -86,7 +86,7 @@ expression_summary_logical_attrs = [
 
 expression_summary_fmg_logical_attrs = [
     tiledb.Attr(name="sum", dtype=np.float32, filters=filters),
-    tiledb.Attr(name="sqsum", dtype=np.float32, filters=filters),    
+    tiledb.Attr(name="sqsum", dtype=np.float32, filters=filters),
     tiledb.Attr(name="nnz", dtype=np.uint64, filters=filters),
     tiledb.Attr(name="nnz_thr", dtype=np.uint64, filters=filters),
 ]

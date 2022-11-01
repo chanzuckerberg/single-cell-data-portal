@@ -7,7 +7,13 @@ logger = logging.getLogger(__name__)
 
 
 def build_in_mem_cube(
-    gene_ids: pd.DataFrame, cube_index: pd.DataFrame, other_cube_attrs: list, cube_sum: np.ndarray, cube_sqsum: np.ndarray, cube_nnz: np.ndarray, cube_nnz_thr: np.ndarray
+    gene_ids: pd.DataFrame,
+    cube_index: pd.DataFrame,
+    other_cube_attrs: list,
+    cube_sum: np.ndarray,
+    cube_sqsum: np.ndarray,
+    cube_nnz: np.ndarray,
+    cube_nnz_thr: np.ndarray,
 ):
     """
     Build the cube in memory, calculating the gene expression value for each combination of attributes
@@ -58,7 +64,7 @@ def build_in_mem_cube(
         dims[2][idx : idx + n_vals] = cell_type_ontology_term_id
 
         vals["sum"][idx : idx + n_vals] = cube_sum[cube_idx, mask]
-        vals["sqsum"][idx : idx + n_vals] = cube_sqsum[cube_idx, mask]            
+        vals["sqsum"][idx : idx + n_vals] = cube_sqsum[cube_idx, mask]
         vals["nnz"][idx : idx + n_vals] = cube_nnz[cube_idx, mask]
         vals["nnz_thr"][idx : idx + n_vals] = cube_nnz_thr[cube_idx, mask]
         vals["gene_ontology_term_id"][idx : idx + n_vals] = gene_ids.gene_ontology_term_id.values[mask]

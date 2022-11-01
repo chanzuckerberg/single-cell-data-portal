@@ -54,6 +54,7 @@ def query():
         )
     )
 
+
 # TODO: Read this from generated data artifact instead of DB.
 #  https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data
 #  -portal/2086. This code is without a unit test, but we are intending to replace it.

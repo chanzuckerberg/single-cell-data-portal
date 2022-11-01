@@ -21,6 +21,7 @@ class WmgQueryCriteria(BaseModel):
     ethnicity_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
     sex_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
 
+
 class WmgQuery:
     def __init__(self, snapshot: WmgSnapshot) -> None:
         super().__init__()
@@ -122,6 +123,7 @@ class WmgQuery:
             .agg(list)
             .to_dict()[primary_dim_name]
         )
+
 
 def depluralize(attr_name):
     return attr_name[:-1]

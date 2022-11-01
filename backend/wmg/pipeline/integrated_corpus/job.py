@@ -15,7 +15,12 @@ from backend.wmg.pipeline.integrated_corpus.validate import (
     should_load_dataset,
     validate_dataset_properties,
 )
-from backend.wmg.data.schemas.corpus_schema import INTEGRATED_ARRAY_NAME, OBS_ARRAY_NAME, VAR_ARRAY_NAME
+from backend.wmg.data.schemas.corpus_schema import (
+    INTEGRATED_ARRAY_NAME,
+    OBS_ARRAY_NAME,
+    VAR_ARRAY_NAME,
+    DATASET_GENE_JSON_NAME,
+)
 from backend.wmg.data.tiledb import create_ctx
 from backend.wmg.data.utils import log_func_runtime
 
@@ -43,7 +48,7 @@ def build_integrated_corpus(dataset_directory: List, corpus_path: str):
     """
     with tiledb.scope_ctx(create_ctx()):
         dataset_count = len(os.listdir(dataset_directory))
-        dataset_gene_mapping={}
+        dataset_gene_mapping = {}
         for index, dataset in enumerate(os.listdir(dataset_directory)):
             logger.info(f"Processing dataset {index + 1} of {dataset_count}")
             h5ad_file_path = f"{dataset_directory}/{dataset}/local.h5ad"
@@ -53,7 +58,7 @@ def build_integrated_corpus(dataset_directory: List, corpus_path: str):
             )  # TODO Can this be parallelized? need to be careful handling global indexes but tiledb has a lock I think
             gc.collect()
             if dataset_id and gene_ids:
-                dataset_gene_mapping[dataset_id]=gene_ids
+                dataset_gene_mapping[dataset_id] = gene_ids
 
         logger.info("all loaded, now consolidating.")
         for arr_name in [OBS_ARRAY_NAME, VAR_ARRAY_NAME, INTEGRATED_ARRAY_NAME]:
@@ -64,8 +69,8 @@ def build_integrated_corpus(dataset_directory: List, corpus_path: str):
             gene_count = len(var.query().df[:])
         with tiledb.open(f"{corpus_path}/{OBS_ARRAY_NAME}") as obs:
             cell_count = len(obs.query().df[:])
-        with tiledb.open(f"{corpus_path}/{OBS_ARRAY_NAME}","w") as obs:
-            obs.meta["dataset_gene_mapping"] = json.dumps(dataset_gene_mapping)
+        with open(f"{corpus_path}/{DATASET_GENE_JSON_NAME}.json", "w") as d2g:
+            json.dump(dataset_gene_mapping, d2g)
 
     logger.info(f"{dataset_count=}, {gene_count=}, {cell_count=}")
 
@@ -88,7 +93,7 @@ def process_h5ad_for_corpus(h5ad_path: str, corpus_path: str):
     create_high_level_tissue(anndata_object)
     logger.info(f"loaded: shape={anndata_object.shape}")
     if not validate_dataset_properties(anndata_object):
-        return None,None
+        return None, None
 
     # load
     load.load_dataset(corpus_path, anndata_object, dataset_id)

@@ -20,6 +20,7 @@ uint32_domain = (np.iinfo(np.uint32).min, np.iinfo(np.uint32).max - 1)
 INTEGRATED_ARRAY_NAME = "integrated"
 OBS_ARRAY_NAME = "obs"
 VAR_ARRAY_NAME = "var"
+DATASET_GENE_JSON_NAME = "dataset_to_gene_ids"
 
 
 class LabelType(
