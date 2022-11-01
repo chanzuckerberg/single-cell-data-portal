@@ -5,7 +5,11 @@ import tiledb
 
 from backend.wmg.data.schemas.corpus_schema import create_tdb_integrated_corpus
 from backend.wmg.data.utils import create_empty_cube
-from backend.wmg.data.schemas.cube_schema import expression_summary_schema, expression_summary_fmg_schema, cell_counts_schema
+from backend.wmg.data.schemas.cube_schema import (
+    expression_summary_schema,
+    expression_summary_fmg_schema,
+    cell_counts_schema,
+)
 
 
 class TestIntegratedCorpusSchema(unittest.TestCase):
@@ -87,6 +91,7 @@ class TestSummaryCubeSchema(unittest.TestCase):
             self.assertTrue(summary_cube_schema.has_attr("nnz"))
             self.assertTrue(summary_cube_schema.has_attr("sum"))
 
+
 class TestFmgSummaryCubeSchema(unittest.TestCase):
     def test_fmg_summary_cube_schema_contains_correct_dimensions(self):
         with tempfile.TemporaryDirectory() as summary_cube_dir:
@@ -115,6 +120,7 @@ class TestFmgSummaryCubeSchema(unittest.TestCase):
             self.assertTrue(summary_cube_schema.has_attr("sum"))
             self.assertTrue(summary_cube_schema.has_attr("sqsum"))
             self.assertTrue(summary_cube_schema.has_attr("nnz_thr"))
+
 
 class TestCellCountCubeSchema(unittest.TestCase):
     def test_cell_count_cube_schema_contains_correct_dimensions(self):
