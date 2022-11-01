@@ -51,12 +51,13 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         version_id = CollectionVersionId(self._id())
         version = CollectionVersion(collection_id, version_id, owner, collection_metadata, None, [], None)
         self.collections_versions[version_id.id] = version
-        self.collections[collection_id.id] = version_id.id
+        # Don't set mappings here - those will be set when publishing the collection!
         return version
 
-    def get_collection(self, collection_id: CollectionId) -> CollectionVersion:
-        version_id = self.collections[collection_id.id]
-        return self.collections_versions[version_id]
+    def get_collection_mapped_version(self, collection_id: CollectionId) -> Optional[CollectionVersion]:
+        version_id = self.collections.get(collection_id.id)
+        if version_id is not None:
+            return self.collections_versions[version_id]
 
     def get_all_collections_versions(self) -> Iterable[CollectionVersion]:  # TODO: add filters if needed
         for version_id, collection_version in self.collections_versions.items():

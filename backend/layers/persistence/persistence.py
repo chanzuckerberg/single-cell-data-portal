@@ -28,6 +28,12 @@ class DatabaseProviderInterface:
         """
         pass
 
+    def get_collection_mapped_version(self, collection_id: CollectionId) -> Optional[CollectionVersion]:
+        """
+        Retrieves the latest mapped version for a collection
+        """
+        pass
+
     def get_all_versions_for_collection(self, collection_id: CollectionId) -> List[CollectionVersion]:
         """
         Retrieves all versions for a specific collections, without filtering

@@ -3,7 +3,19 @@ from typing import Iterable, Optional
 from backend.corpora.common.providers.crossref_provider import CrossrefDOINotFoundException, CrossrefException
 from backend.layers.business.exceptions import CollectionCreationException
 
-from backend.layers.common.entities import CollectionId, CollectionLinkType, CollectionMetadata, CollectionVersion, CollectionVersionId, DatasetArtifact, DatasetId, DatasetStatus, DatasetVersion, DatasetVersionId, Link
+from backend.layers.common.entities import (
+    CollectionId,
+    CollectionLinkType,
+    CollectionMetadata,
+    CollectionVersion,
+    CollectionVersionId,
+    DatasetArtifact,
+    DatasetId,
+    DatasetStatus,
+    DatasetVersion,
+    DatasetVersionId,
+    Link,
+)
 from backend.layers.common.regex import CURIE_REFERENCE_REGEX, DOI_REGEX_COMPILED
 from backend.layers.persistence.persistence import DatabaseProviderInterface
 from backend.layers.thirdparty.crossref_provider import CrossrefProviderInterface
@@ -21,12 +33,14 @@ class CollectionQueryFilter:
     owner: Optional[str] = None
     # TODO: add list of fields to be returned (if needed)
 
+
 @dataclass
 class DatasetArtifactDownloadData:
     file_name: str
     file_type: str
     file_size: int
     presigned_url: str
+
 
 class BusinessLogicInterface:
 
@@ -43,7 +57,6 @@ class BusinessLogicInterface:
 
     def get_collections(self, filter: CollectionQueryFilter) -> Iterable[CollectionVersion]:
         pass
-
 
     # Get_collection
     # Replaces get_collection_details
@@ -105,7 +118,6 @@ class BusinessLogicInterface:
     def delete_collection_version(self, version_id: CollectionVersionId) -> None:
         pass
 
-
     # Publish_collection
     # Replaces post (in publish.py)
     # Accepts:
@@ -131,7 +143,12 @@ class BusinessLogicInterface:
     # Should handle exceptions from all providers:
     # Should only raise custom exceptions
 
-    def ingest_dataset(self, collection_version_id: CollectionVersionId, url: str, existing_dataset_version_id: Optional[DatasetVersionId]) -> DatasetVersionId:
+    def ingest_dataset(
+        self,
+        collection_version_id: CollectionVersionId,
+        url: str,
+        existing_dataset_version_id: Optional[DatasetVersionId],
+    ) -> DatasetVersionId:
         pass
 
     # Get_all_datasets
@@ -146,28 +163,27 @@ class BusinessLogicInterface:
     def delete_dataset(self, dataset_version_id: DatasetVersionId) -> None:
         pass
 
-
     # get_dataset_assets
     # Replaces get_dataset_assets
 
     def get_dataset_artifacts(self, dataset_id: DatasetId) -> Iterable[DatasetArtifact]:
         pass
 
-
     # Download_dataset_asset
     # Replaces post_dataset_asset
 
-
-    def get_dataset_artifact_download_data(self, dataset_id: DatasetId, artifact_id: str) -> DatasetArtifactDownloadData:
+    def get_dataset_artifact_download_data(
+        self, dataset_id: DatasetId, artifact_id: str
+    ) -> DatasetArtifactDownloadData:
         pass
 
-
-    def update_dataset_version_status(self, dataset_version_id: DatasetVersionId, new_dataset_status: DatasetStatus) -> None:
+    def update_dataset_version_status(
+        self, dataset_version_id: DatasetVersionId, new_dataset_status: DatasetStatus
+    ) -> None:
         pass
 
     def add_dataset_artifact(self, dataset_version_id: DatasetVersionId, artifact_type: str, artifact_uri: str) -> None:
         pass
-
 
     # Get_dataset_status
     # Replaces get_status
@@ -184,8 +200,8 @@ class BusinessLogic(BusinessLogicInterface):
     step_function_provider: StepFunctionProviderInterface
 
     def __init__(
-        self, 
-        database_provider: DatabaseProviderInterface, 
+        self,
+        database_provider: DatabaseProviderInterface,
         crossref_provider: CrossrefProviderInterface,
         step_function_provider: StepFunctionProviderInterface,
     ) -> None:
@@ -233,3 +249,16 @@ class BusinessLogic(BusinessLogicInterface):
             self.database_provider.save_collection_publisher_metadata(created_version.version_id, publisher_metadata)
 
         return created_version
+
+    def get_published_collection_version(self, collection_id: CollectionId) -> Optional[CollectionVersion]:
+        """
+        Returns the published collection version that belongs to a canonical collection.
+        Returns None if no published collection exists
+        """
+        return self.database_provider.get_collection_mapped_version(collection_id)
+
+    def get_collection_version(self, version_id: CollectionVersionId) -> CollectionVersion:
+        """
+        Returns a specific collection version
+        """
+        return self.database_provider.get_collection_version(version_id)

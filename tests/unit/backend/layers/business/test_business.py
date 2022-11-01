@@ -206,6 +206,7 @@ class TestGetCollectionVersion(BaseBusinessLogicTestCase):
 
         fetched_version = self.business_logic.get_published_collection_version(version.collection_id)
 
+        self.assertIsNotNone(fetched_version)
         self.assertIsNotNone(fetched_version.published_at)
         self.assertEqual(fetched_version.metadata, version.metadata)
 
@@ -226,7 +227,7 @@ class TestGetCollectionVersion(BaseBusinessLogicTestCase):
 
         fetched_version = self.business_logic.get_collection_version(version.version_id)
 
-        self.assertIsNotNone(fetched_version.published_at)
+        self.assertIsNone(fetched_version.published_at)
         self.assertEqual(fetched_version.metadata, version.metadata)
 
     def test_get_collection_version_for_published_collection_ok(self):
