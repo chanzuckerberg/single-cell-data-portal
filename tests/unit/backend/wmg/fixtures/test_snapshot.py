@@ -22,7 +22,7 @@ from backend.wmg.data.schemas.cube_schema import (
     expression_summary_schema,
     expression_summary_fmg_indexed_dims,
     expression_summary_fmg_logical_attrs,
-    expression_summary_fmg_logical_dims,    
+    expression_summary_fmg_logical_dims,
     expression_summary_fmg_schema,
     cell_counts_logical_attrs,
     cell_counts_schema,
@@ -88,6 +88,7 @@ def random_expression_summary_values(coords):
         "sum": random(size=len(coords)) * 10,
     }
 
+
 def random_expression_summary_fmg_values(coords):
     return {
         "nnz": randint(size=len(coords), low=0, high=100),
@@ -95,6 +96,7 @@ def random_expression_summary_fmg_values(coords):
         "sqsum": random(size=len(coords)) * 10,
         "nnz_thr": randint(size=len(coords), low=0, high=100),
     }
+
 
 def all_ones_expression_summary_values(coords):
     return {"nnz": np.ones(len(coords)), "n_cells": np.ones(len(coords)), "sum": np.ones(len(coords))}
@@ -178,12 +180,14 @@ def create_temp_wmg_snapshot(
                         cell_counts_cube=cell_counts_cube,
                         cell_type_orderings=cell_type_orderings,
                         primary_filter_dimensions=primary_filter_dimensions,
-                        dataset_to_gene_ids=dataset_to_gene_ids,                        
+                        dataset_to_gene_ids=dataset_to_gene_ids,
                     )
+
 
 def build_dataset_to_gene_ids():
     # TODO
     return {}
+
 
 def build_cell_orderings(cell_counts_cube_dir_, cell_ordering_generator_fn) -> DataFrame:
     cell_type_orderings = []
@@ -247,7 +251,7 @@ def create_cubes(
 
     expression_summary_fmg_cube_dir = create_expression_summary_fmg_cube(
         data_dir, coords, dim_values, expression_summary_fmg_vals_fn=expression_summary_fmg_vals_fn
-    )    
+    )
 
     coords, dim_values = build_coords(
         cell_counts_logical_dims, dim_size, dim_ontology_term_ids_generator_fn, exclude_logical_coord_fn
@@ -300,6 +304,7 @@ def create_expression_summary_cube(
 
     return cube_dir
 
+
 def create_expression_summary_fmg_cube(
     data_dir,
     coords,
@@ -311,7 +316,9 @@ def create_expression_summary_fmg_cube(
 
     with tiledb.open(cube_dir, mode="w") as cube:
         logical_attr_values = expression_summary_fmg_vals_fn(coords)
-        assert all([len(logical_attr_values[attr.name]) == len(coords) for attr in expression_summary_fmg_logical_attrs])
+        assert all(
+            [len(logical_attr_values[attr.name]) == len(coords) for attr in expression_summary_fmg_logical_attrs]
+        )
 
         physical_dim_values = dim_values[: len(expression_summary_fmg_indexed_dims)]
         physical_attr_values = {
