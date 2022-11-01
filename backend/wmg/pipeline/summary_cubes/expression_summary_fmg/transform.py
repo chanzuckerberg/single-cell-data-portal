@@ -23,8 +23,9 @@ def transform(
     corpus_path: str, gene_ontology_term_ids: list, cube_dims: list
 ) -> (pd.DataFrame, np.ndarray, np.ndarray):
     """
-    Build the summary cube with rankit expression sum & sum of squares, nnz (num cells with non zero expression) values for
-    each gene for each possible group of cell attributes (cube row)
+    Build the summary cube with rankit expression sum & sum of squares, nnz
+    (num cells with non zero expression) values for each gene for each possible
+    group of cell attributes (cube row).
     """
 
     cell_labels, cube_index = make_cube_index(corpus_path, cube_dims)
