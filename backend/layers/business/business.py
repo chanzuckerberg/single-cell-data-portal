@@ -215,9 +215,8 @@ class BusinessLogic(BusinessLogicInterface):
         errors = []
         validation.verify_collection_metadata(collection_metadata, errors)
 
-        doi = next((link.uri for link in collection_metadata.links if link.type == CollectionLinkType.DOI), None)
-
-        print(f"doi: {[link.uri for link in collection_metadata.links if link.type == CollectionLinkType.DOI]}")
+        # TODO: Maybe switch link.type to be an enum
+        doi = next((link.uri for link in collection_metadata.links if link.type == "doi"), None)
 
         if doi is not None:
             publisher_metadata = self._get_publisher_metadata(doi, errors)

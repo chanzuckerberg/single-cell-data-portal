@@ -6,7 +6,7 @@ from unittest.mock import Mock
 from backend.layers.thirdparty.crossref_provider import CrossrefProviderInterface
 from backend.layers.thirdparty.step_function_provider import StepFunctionProviderInterface
 
-from backend.corpora.common.providers.crossref_provider import CrossrefException
+from backend.corpora.common.providers.crossref_provider import CrossrefDOINotFoundException, CrossrefException
 from backend.layers.business.business import BusinessLogic, CollectionQueryFilter, DatasetArtifactDownloadData
 from backend.layers.business.exceptions import CollectionUpdateException, InvalidLinkException, \
     CollectionCreationException, DatasetIngestException, CollectionPublishException
@@ -168,9 +168,9 @@ class TestCreateCollection(BaseBusinessLogicTestCase):
         self.assertIsNotNone(collection_from_database.publisher_metadata)
         self.assertEqual(collection_from_database.publisher_metadata, expected_publiser_metadata)
 
-    def test_create_collection_with_invalid_doi_fail(self):
+    def test_create_collection_with_not_found_doi_fail(self):
         """
-        A collection with an invalid DOI will not be created
+        A collection with a DOI that cannot be found on Crossref will not be created
         """
         links_with_doi = [
             Link("test doi", "doi", "http://bad.doi")
@@ -178,12 +178,23 @@ class TestCreateCollection(BaseBusinessLogicTestCase):
 
         self.sample_collection_metadata.links = links_with_doi
 
-        # TODO: make sure that we don't need different actions depending on which exception
-        self.crossref_provider.fetch_metadata = Mock(side_effect=CrossrefException("Error!"))
+        self.crossref_provider.fetch_metadata = Mock(side_effect=CrossrefDOINotFoundException("Error!"))
 
-        self.business_logic.create_collection(self.test_user_name, self.sample_collection_metadata)
         with self.assertRaises(CollectionCreationException):
             self.business_logic.create_collection(self.test_user_name, self.sample_collection_metadata)
+
+    def test_create_collection_with_doi_error_ignores_metadata_ok(self):
+        """
+        A collection with an invalid DOI will be created with empty publisher metadata
+        """
+        links_with_doi = [
+            Link("test doi", "doi", "http://bad.doi")
+        ]
+
+        self.sample_collection_metadata.links = links_with_doi
+
+        self.crossref_provider.fetch_metadata = Mock(side_effect=CrossrefException("Error!"))
+        
         
 class TestGetCollectionVersion(BaseBusinessLogicTestCase):
 
