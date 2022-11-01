@@ -138,7 +138,7 @@ class TestCreateCollection(BaseBusinessLogicTestCase):
         ]
         self.sample_collection_metadata.links = bad_links
 
-        with self.assertRaises(InvalidLinkException) as ex:
+        with self.assertRaises(CollectionCreationException) as ex:
             self.business_logic.create_collection(self.test_user_name, self.sample_collection_metadata)
 
         self.assertEqual(ex.exception.errors, [

@@ -1,10 +1,9 @@
 from dataclasses import dataclass
 from typing import Iterable, Optional
-from backend.corpora.common.corpora_orm import CollectionLinkType
 from backend.corpora.common.providers.crossref_provider import CrossrefDOINotFoundException, CrossrefException
 from backend.layers.business.exceptions import CollectionCreationException
 
-from backend.layers.common.entities import CollectionId, CollectionMetadata, CollectionVersion, CollectionVersionId, DatasetArtifact, DatasetId, DatasetStatus, DatasetVersion, DatasetVersionId, Link
+from backend.layers.common.entities import CollectionId, CollectionLinkType, CollectionMetadata, CollectionVersion, CollectionVersionId, DatasetArtifact, DatasetId, DatasetStatus, DatasetVersion, DatasetVersionId, Link
 from backend.layers.common.regex import CURIE_REFERENCE_REGEX, DOI_REGEX_COMPILED
 from backend.layers.persistence.persistence import DatabaseProviderInterface
 from backend.layers.thirdparty.crossref_provider import CrossrefProviderInterface
@@ -214,8 +213,11 @@ class BusinessLogic(BusinessLogicInterface):
         """
 
         errors = []
+        validation.verify_collection_metadata(collection_metadata, errors)
 
         doi = next((link.uri for link in collection_metadata.links if link.type == CollectionLinkType.DOI), None)
+
+        print(f"doi: {[link.uri for link in collection_metadata.links if link.type == CollectionLinkType.DOI]}")
 
         if doi is not None:
             publisher_metadata = self._get_publisher_metadata(doi, errors)
