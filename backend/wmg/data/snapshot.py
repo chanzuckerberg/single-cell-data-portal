@@ -19,6 +19,7 @@ PRIMARY_FILTER_DIMENSIONS_FILENAME = "primary_filter_dimensions.json"
 EXPRESSION_SUMMARY_CUBE_NAME = "expression_summary"
 EXPRESSION_SUMMARY_FMG_CUBE_NAME = "expression_summary_fmg"
 CELL_COUNTS_CUBE_NAME = "cell_counts"
+DATASET_TO_GENE_IDS_FILENAME = "dataset_to_gene_ids.json"
 
 logger = logging.getLogger("wmg")
 
@@ -36,6 +37,8 @@ class WmgSnapshot:
     # etc.) aggregated by multiple cell metadata dimensions and genes. See the full schema at
     # backend/wmg/data/schemas/cube_schema.py.
     expression_summary_cube: Array
+
+    # TileDB array containing expression summary statistics optimized for marker gene computation.
     expression_summary_fmg_cube: Array
 
     # TileDB array containing the total cell counts (expressed gene count, non-expressed mean, etc.) aggregated by
@@ -49,6 +52,9 @@ class WmgSnapshot:
 
     # precomputed list of ids for all gene and tissue ontology term ids per organism
     primary_filter_dimensions: Dict
+
+    # dictionary of gene IDs mapped to dataset IDs
+    dataset_to_gene_ids: Dict
 
 
 # Cached data
@@ -82,6 +88,7 @@ def _load_snapshot(new_snapshot_identifier) -> WmgSnapshot:
         cell_counts_cube=_open_cube(f"{snapshot_base_uri}/{CELL_COUNTS_CUBE_NAME}"),
         cell_type_orderings=_load_cell_type_order(new_snapshot_identifier),
         primary_filter_dimensions=_load_primary_filter_data(new_snapshot_identifier),
+        dataset_to_gene_ids=_load_dataset_to_gene_ids_data(new_snapshot_identifier),
     )
 
 
@@ -95,6 +102,10 @@ def _load_cell_type_order(snapshot_identifier: str) -> DataFrame:
 
 def _load_primary_filter_data(snapshot_identifier: str) -> Dict:
     return json.loads(_read_s3obj(f"{snapshot_identifier}/{PRIMARY_FILTER_DIMENSIONS_FILENAME}"))
+
+
+def _load_dataset_to_gene_ids_data(snapshot_identifier: str) -> Dict:
+    return json.loads(_read_s3obj(f"{snapshot_identifier}/{DATASET_TO_GENE_IDS_FILENAME}"))
 
 
 def _read_s3obj(relative_path: str) -> str:

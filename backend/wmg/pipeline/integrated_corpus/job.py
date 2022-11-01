@@ -19,7 +19,7 @@ from backend.wmg.data.schemas.corpus_schema import (
     INTEGRATED_ARRAY_NAME,
     OBS_ARRAY_NAME,
     VAR_ARRAY_NAME,
-    DATASET_GENE_JSON_NAME,
+    DATASET_TO_GENE_IDS_NAME,
 )
 from backend.wmg.data.tiledb import create_ctx
 from backend.wmg.data.utils import log_func_runtime
@@ -69,7 +69,7 @@ def build_integrated_corpus(dataset_directory: List, corpus_path: str):
             gene_count = len(var.query().df[:])
         with tiledb.open(f"{corpus_path}/{OBS_ARRAY_NAME}") as obs:
             cell_count = len(obs.query().df[:])
-        with open(f"{corpus_path}/{DATASET_GENE_JSON_NAME}.json", "w") as d2g:
+        with open(f"{corpus_path}/{DATASET_TO_GENE_IDS_NAME}.json", "w") as d2g:
             json.dump(dataset_gene_mapping, d2g)
 
     logger.info(f"{dataset_count=}, {gene_count=}, {cell_count=}")
