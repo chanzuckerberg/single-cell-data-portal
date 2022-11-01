@@ -88,6 +88,7 @@ expression_summary_fmg_logical_attrs = [
     tiledb.Attr(name="sum", dtype=np.float32, filters=filters),
     tiledb.Attr(name="sqsum", dtype=np.float32, filters=filters),    
     tiledb.Attr(name="nnz", dtype=np.uint64, filters=filters),
+    tiledb.Attr(name="nnz_thr", dtype=np.uint64, filters=filters),
 ]
 
 # The TileDB `Attr`s of the cube TileDB Array. This includes the
