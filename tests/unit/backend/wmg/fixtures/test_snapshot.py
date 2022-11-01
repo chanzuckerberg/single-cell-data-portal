@@ -300,6 +300,7 @@ def create_expression_summary_cube(
             for i in range(len(expression_summary_indexed_dims), len(expression_summary_logical_dims))
         }
         physical_attr_values.update(logical_attr_values)
+        print(len(physical_attr_values))
         cube[tuple(physical_dim_values)] = physical_attr_values
 
     return cube_dir
