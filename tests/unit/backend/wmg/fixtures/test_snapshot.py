@@ -151,7 +151,7 @@ def create_temp_wmg_snapshot(
     dim_size=3,
     snapshot_name="dummy-snapshot",
     expression_summary_vals_fn: Callable[[List[Tuple]], Dict[str, List]] = random_expression_summary_values,
-    expression_summary_fmg_vals_fn: Callable[[List[Tuple]], Dict[str, List]] = random_expression_summary_values,
+    expression_summary_fmg_vals_fn: Callable[[List[Tuple]], Dict[str, List]] = random_expression_summary_fmg_values,
     exclude_logical_coord_fn: Callable[[NamedTuple], bool] = None,
     cell_counts_generator_fn: Callable[[List[Tuple]], List] = random_cell_counts_values,
     cell_ordering_generator_fn: Callable[[List[str]], List[int]] = forward_cell_type_ordering,
