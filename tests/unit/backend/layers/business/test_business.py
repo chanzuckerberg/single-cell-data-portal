@@ -387,9 +387,8 @@ class TestUpdateCollection(BaseBusinessLogicTestCase):
         body = CollectionMetadataUpdate(
             name="new collection name",
             description="new collection description",
-            contact_name=None,
-            contact_email=None,
-            links=None,
+            contact_name="new contact name",
+            contact_email="new_email@czi.com",
         )
 
         with self.assertRaises(CollectionUpdateException):
