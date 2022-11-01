@@ -75,7 +75,7 @@ TODO
 
 - ##### `e2e-test`:
 
-  - Installs dependencies and runs frontend server pointing at dev env BE API:
+  - Installs dependencies and runs local frontend server pointing at dev env BE API:
     - `npm ci &&npx playwright install --with-deps && cp src/configs/dev.js src/configs/configs.js && npm run dev&`
   - Runs e2e tests:
     - `npm run e2e` ->`playwright test`
