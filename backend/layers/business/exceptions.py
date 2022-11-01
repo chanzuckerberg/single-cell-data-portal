@@ -8,7 +8,12 @@ class BusinessException(Exception):
 
 # TODO: possibly merge the following 3 classes? They all refer to the same action (validating the collection metadata)
 class CollectionCreationException(BusinessException):
-    pass
+    
+    errors: Optional[List[str]]
+
+    def __init__(self, errors: Optional[List[str]] = None) -> None:
+        self.errors = errors
+        super().__init__()
 
 
 class CollectionUpdateException(BusinessException):

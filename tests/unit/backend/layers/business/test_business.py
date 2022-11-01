@@ -112,7 +112,7 @@ class TestCreateCollection(BaseBusinessLogicTestCase):
         """
         A collection can be created using `create_collection`
         """
-        collection = self.business_logic.create_collection(self.sample_collection_metadata)
+        collection = self.business_logic.create_collection(self.test_user_name, self.sample_collection_metadata)
         collection_from_database = self.database_provider.get_collection_version(collection.version_id)
         self.assertEqual(collection, collection_from_database)
 
@@ -125,7 +125,7 @@ class TestCreateCollection(BaseBusinessLogicTestCase):
             Link("test link 2", "other", "http://example.com/other"),
         ]
         self.sample_collection_metadata.links = good_links
-        collection = self.business_logic.create_collection(self.sample_collection_metadata)
+        collection = self.business_logic.create_collection(self.test_user_name, self.sample_collection_metadata)
         collection_from_database = self.database_provider.get_collection_version(collection.version_id)
         self.assertEqual(good_links, collection_from_database.metadata.links)
 
@@ -139,7 +139,7 @@ class TestCreateCollection(BaseBusinessLogicTestCase):
         self.sample_collection_metadata.links = bad_links
 
         with self.assertRaises(InvalidLinkException) as ex:
-            self.business_logic.create_collection(self.sample_collection_metadata)
+            self.business_logic.create_collection(self.test_user_name, self.sample_collection_metadata)
 
         self.assertEqual(ex.exception.errors, [
             {"name": f"links[0]", "reason": "Invalid URL.", "value": "incorrect_url"}
@@ -158,7 +158,7 @@ class TestCreateCollection(BaseBusinessLogicTestCase):
         expected_publiser_metadata = {"authors": ["Test Author"]}
         self.crossref_provider.fetch_metadata = Mock(return_value=expected_publiser_metadata)
 
-        collection = self.business_logic.create_collection(self.sample_collection_metadata)
+        collection = self.business_logic.create_collection(self.test_user_name, self.sample_collection_metadata)
 
         self.crossref_provider.fetch_metadata.assert_called_with("http://good.doi")
 
@@ -181,9 +181,9 @@ class TestCreateCollection(BaseBusinessLogicTestCase):
         # TODO: make sure that we don't need different actions depending on which exception
         self.crossref_provider.fetch_metadata = Mock(side_effect=CrossrefException("Error!"))
 
-        self.business_logic.create_collection(self.sample_collection_metadata)
+        self.business_logic.create_collection(self.test_user_name, self.sample_collection_metadata)
         with self.assertRaises(CollectionCreationException):
-            self.business_logic.create_collection(self.sample_collection_metadata)
+            self.business_logic.create_collection(self.test_user_name, self.sample_collection_metadata)
         
 class TestGetCollectionVersion(BaseBusinessLogicTestCase):
 

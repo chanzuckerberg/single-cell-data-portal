@@ -1,10 +1,19 @@
 from dataclasses import dataclass
 from typing import Iterable, Optional
+from backend.corpora.common.corpora_orm import CollectionLinkType
+from backend.corpora.common.providers.crossref_provider import CrossrefDOINotFoundException, CrossrefException
+from backend.layers.business.exceptions import CollectionCreationException
 
-from backend.layers.common.entities import CollectionId, CollectionMetadata, CollectionVersion, CollectionVersionId, DatasetArtifact, DatasetId, DatasetStatus, DatasetVersion, DatasetVersionId
+from backend.layers.common.entities import CollectionId, CollectionMetadata, CollectionVersion, CollectionVersionId, DatasetArtifact, DatasetId, DatasetStatus, DatasetVersion, DatasetVersionId, Link
+from backend.layers.common.regex import CURIE_REFERENCE_REGEX, DOI_REGEX_COMPILED
 from backend.layers.persistence.persistence import DatabaseProviderInterface
 from backend.layers.thirdparty.crossref_provider import CrossrefProviderInterface
 from backend.layers.thirdparty.step_function_provider import StepFunctionProviderInterface
+
+import re
+from urllib.parse import urlparse
+from backend.layers.common import validation
+import logging
 
 
 @dataclass
@@ -185,3 +194,41 @@ class BusinessLogic(BusinessLogicInterface):
         self.database_provider = database_provider
         self.step_function_provider = step_function_provider
         super().__init__()
+
+    def _get_publisher_metadata(self, doi: str, errors: list) -> Optional[dict]:
+        """
+        Retrieves publisher metadata from Crossref.
+        """
+        try:
+            return self.crossref_provider.fetch_metadata(doi)
+        except CrossrefDOINotFoundException:
+            errors.append({"link_type": CollectionLinkType.DOI, "reason": "DOI cannot be found on Crossref"})
+        except CrossrefException as e:
+            logging.warning(f"CrossrefException on create_collection: {e}. Will ignore metadata.")
+            return None
+
+    def create_collection(self, owner: str, collection_metadata: CollectionMetadata) -> CollectionVersion:
+        """
+        Creates a collection using the specified metadata. If a DOI is defined, will also
+        retrieve publisher metadata from Crossref and add it to the collection.
+        """
+
+        errors = []
+
+        doi = next((link.uri for link in collection_metadata.links if link.type == CollectionLinkType.DOI), None)
+
+        if doi is not None:
+            publisher_metadata = self._get_publisher_metadata(doi, errors)
+        else:
+            publisher_metadata = None
+
+        if errors:
+            raise CollectionCreationException(errors)
+
+        created_version = self.database_provider.create_canonical_collection(owner, collection_metadata)
+
+        # TODO: can collapse with `create_canonical_collection`
+        if publisher_metadata:
+            self.database_provider.save_collection_publisher_metadata(created_version.version_id, publisher_metadata)
+
+        return created_version

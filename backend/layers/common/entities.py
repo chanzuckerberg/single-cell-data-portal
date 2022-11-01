@@ -80,3 +80,11 @@ class CollectionVersion:
     publisher_metadata: Optional[dict]  # TODO: use a dataclass
     datasets: List[DatasetVersion] 
     published_at: Optional[datetime]
+
+class CollectionLinkType(Enum):
+    DOI = "doi"
+    RAW_DATA = "raw_data"
+    PROTOCOL = "protocol"
+    LAB_WEBSITE = "lab_website"
+    OTHER = "other"
+    DATA_SOURCE = "data_source"
