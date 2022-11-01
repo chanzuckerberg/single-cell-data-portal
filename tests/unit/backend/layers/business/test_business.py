@@ -7,7 +7,7 @@ from backend.layers.thirdparty.crossref_provider import CrossrefProviderInterfac
 from backend.layers.thirdparty.step_function_provider import StepFunctionProviderInterface
 
 from backend.corpora.common.providers.crossref_provider import CrossrefException
-from backend.layers.business.business import BusinessLogic, CollectionQueryFilter, UserInfo
+from backend.layers.business.business import BusinessLogic, CollectionQueryFilter, DatasetArtifactDownloadData, UserInfo
 from backend.layers.business.exceptions import CollectionUpdateException, InvalidLinkException, \
     CollectionCreationException, DatasetIngestException, CollectionPublishException
 from backend.layers.common.entities import CollectionMetadata, CollectionVersion, DatasetArtifact, DatasetMetadata, DatasetStatus, Link
@@ -62,9 +62,15 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         )
         return version
 
-    def initialize_unpublished_collection(self, owner: str = test_user_name, metadata = sample_collection_metadata) -> CollectionVersion:
+    def initialize_unpublished_collection(self, 
+        owner: str = test_user_name, 
+        metadata = sample_collection_metadata, 
+        complete_dataset_ingestion: bool = True
+    ) -> CollectionVersion:
         """
-        Initializes an unpublished collection to be used for testing, with two datasets
+        Initializes an unpublished collection to be used for testing, with two datasets.
+        By default also completes dataset ingestion (normally, a process that would be done asynchonously).
+        Pass `complete_dataset_ingestion=False` if you want to initialize datasets only.
         """
         version = self.initialize_empty_unpublished_collection(owner, metadata)
         for i in range(2):
@@ -76,8 +82,9 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
                 version.version_id, 
                 dataset_version.version_id
             )
-            # TODO: call complete_dataset_processing_with_success
-        return version
+            if complete_dataset_ingestion:
+                self.complete_dataset_processing_with_success(dataset_version.version_id)
+        return self.database_provider.get_collection_version(version.version_id)
         
     def initialize_published_collection(self, owner: str = test_user_name, published_at: datetime = datetime.utcnow(), metadata = sample_collection_metadata) -> CollectionVersion:
         """
@@ -85,16 +92,16 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         """
         version = self.initialize_unpublished_collection(owner, metadata)
         self.database_provider.finalize_collection_version(version.collection_id, version.version_id, published_at)
-        return version
+        return self.database_provider.get_collection_version(version.version_id)
 
     def complete_dataset_processing_with_success(self, dataset_version_id: str) -> None:
         """
         Test method that "completes" a dataset processing. This is necessary since dataset ingestion
-        is a complex process which happens asynchronously.
+        is a complex process which happens asynchronously, and cannot be easily mocked.
         """
-        self.database_provider.add_dataset_artifact(dataset_version_id, DatasetArtifact("H5AD", "s3://fake-bucket/artifact.h5ad"))
-        self.database_provider.add_dataset_artifact(dataset_version_id, DatasetArtifact("CXG", "s3://fake-bucket/artifact.cxg"))
-        self.database_provider.add_dataset_artifact(dataset_version_id, DatasetArtifact("RDS", "s3://fake-bucket/artifact.rds"))
+        self.database_provider.add_dataset_artifact(dataset_version_id, "H5AD", "s3://fake-bucket/artifact.h5ad")
+        self.database_provider.add_dataset_artifact(dataset_version_id, "CXG", "s3://fake-bucket/artifact.cxg")
+        self.database_provider.add_dataset_artifact(dataset_version_id, "RDS", "s3://fake-bucket/artifact.rds")
         self.database_provider.update_dataset_processing_status(dataset_version_id, DatasetStatus.UPLOADED)
 
 
@@ -512,22 +519,96 @@ class TestGetDataset(BaseBusinessLogicTestCase):
         """
         All dataset that belong to a published collection can be retrieved with `get_all_datasets`
         """
-        return NotImplemented
+        # This will add 4 datasets, but only 2 should be retrieved by `get_all_datasets`
+        published_version = self.initialize_published_collection() 
+        unpublished_version = self.initialize_unpublished_collection()
+
+        datasets = list(self.business_logic.get_all_datasets())
+        self.assertEqual(2, len(datasets))
+        self.assertCountEqual([d.version_id for d in datasets], [d.version_id for d in published_version.datasets])
+        
 
     def test_get_dataset_artifacts_ok(self):
         """
         Artifacts belonging to a dataset can be obtained with `get_dataset_artifacts`
         """
-        return NotImplemented
+        published_version = self.initialize_published_collection()
+        dataset_id = published_version.datasets[0].dataset_id
+
+        artifacts = list(self.business_logic.get_dataset_artifacts(dataset_id))
+        self.assertEqual(3, len(artifacts))
+        self.assertCountEqual([a.type for a in artifacts], ["H5AD", "CXG", "RDS"])
+
+    def test_get_dataset_artifact_download_data_ok(self):
+        """
+        Calling `get_dataset_artifact_download_data` should yield downloadable data
+        """
+        published_version = self.initialize_published_collection()
+        dataset = published_version.datasets[0]
+        artifact = next(artifact for artifact in dataset.artifacts if artifact.type == "H5AD")
+        self.assertIsNotNone(artifact)
+
+        # TODO: requires mocking of the S3 provider. implement later
+        download_data = self.business_logic.get_dataset_artifact_download_data(dataset.dataset_id, artifact.id)
+        expected_download_data = DatasetArtifactDownloadData(
+            "local.h5ad",
+            "H5AD",
+            0,
+            ""
+            )
+        self.assertEqual(download_data, expected_download_data)
 
 
-class TestDatasetStatus(BaseBusinessLogicTestCase):
+    def test_get_dataset_status_for_uploaded_dataset_ok(self):
+        """
+        Calling `get_dataset_status` should yield the processing status
+        """
+        published_version = self.initialize_published_collection()
+        dataset = published_version.datasets[0]
+        status = self.business_logic.get_dataset_status(dataset.dataset_id)
+        self.assertEqual(status, DatasetStatus.UPLOADED)
+
+
+class TestUpdateDataset(BaseBusinessLogicTestCase):
 
     def test_update_dataset_status_ok(self):
-        return NotImplemented
+        """
+        The dataset processing status can be updated using `update_dataset_status`
+        """
+        unpublished_collection = self.initialize_unpublished_collection(complete_dataset_ingestion=False)
+        self.assertEqual(2, len(unpublished_collection.datasets))
+        for dataset in unpublished_collection.datasets:
+            self.business_logic.update_dataset_version_status(dataset.version_id, DatasetStatus.UPLOADED)
+            version_from_db = self.database_provider.get_dataset_version(dataset.version_id)
+            self.assertEqual(version_from_db.processing_status, DatasetStatus.UPLOADED)
 
-    def test_get_dataset_status_ok(self):
-        return NotImplemented
+    def test_add_dataset_artifact_ok(self):
+        """
+        A dataset artifact can be added using `add_dataset_artifact`
+        """
+        unpublished_collection = self.initialize_unpublished_collection(complete_dataset_ingestion=False)
+        self.assertEqual(2, len(unpublished_collection.datasets))
+        for dataset in unpublished_collection.datasets:
+            self.assertEqual(dataset.artifacts, [])
+            self.business_logic.add_dataset_artifact(dataset.version_id, "H5AD", "http://fake.uri/artifact.h5ad")
+
+            version_from_db = self.database_provider.get_dataset_version(dataset.version_id)
+            self.assertEqual(1, len(version_from_db.artifacts))
+            self.assertEqual(version_from_db.artifacts[0].type, "H5AD")
+            self.assertEqual(version_from_db.artifacts[0].uri, "http://fake.uri/artifact.h5ad")
+
+        
+
+    def test_add_dataset_artifact_wrong_type_fail(self):
+        """
+        Adding a dataset artifact with an unsupported type should fail
+        """
+        unpublished_collection = self.initialize_unpublished_collection(complete_dataset_ingestion=False)
+        self.assertEqual(2, len(unpublished_collection.datasets))
+        for dataset in unpublished_collection.datasets:
+            self.assertEqual(dataset.artifacts, [])
+            with self.assertRaises(DatasetIngestException):
+                self.business_logic.add_dataset_artifact(dataset.version_id, "BAD_TYPE", "http://fake.uri/artifact.h5ad")
 
 
 class TestCollectionOperations(BaseBusinessLogicTestCase):

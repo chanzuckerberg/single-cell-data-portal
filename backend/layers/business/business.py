@@ -13,6 +13,13 @@ class CollectionQueryFilter:
     owner: Optional[str] = None
     # TODO: add list of fields to be returned (if needed)
 
+@dataclass
+class DatasetArtifactDownloadData:
+    file_name: str
+    file_type: str
+    file_size: int
+    presigned_url: str
+
 class BusinessLogicInterface:
 
     # Get_collections
@@ -22,7 +29,6 @@ class BusinessLogicInterface:
     # Visibility
     # Ownership
     # List of fields to be returned
-    # Accepts an UserInfo object
     # Returns a list of dictionaries that only includes the selected fields for each collection
     # It should NOT add any information that is required by the current API for compatibility reasons (e.g. access_write). These will be delegated to the upper layer
     # It should NOT do any operation that is required by Curation API assumptions (e.g. remove None values)
@@ -36,7 +42,6 @@ class BusinessLogicInterface:
     # Returns a single collection, with no filtering options
     # Accepts:
     # Collection_id
-    # UserInfo for validation
     # Should reuse most of of the code from the method above
 
     def get_published_collection_version(self, collection_id: str) -> CollectionVersion:
@@ -49,7 +54,6 @@ class BusinessLogicInterface:
     # Replaces the current create_collection
     # Accepts:
     # A dictionary (or Class) with the body of the collection to be created
-    # UserInfo
     # Should validate the body accepted as param (see existing verify_collection_body)
     # Should call CrossrefProvider to retrieve publisher metadata information
     # This method currently collects errors in a list, which will be piped upstream to the API response. This is a good idea but it should be refactor into a generalized pattern (otherwise we’ll “pollute” the business layer with logic specific to the API layer).
@@ -61,7 +65,6 @@ class BusinessLogicInterface:
     # Replaces the current delete_collection
     # Accepts:
     # Collection_id
-    # UserInfo
     # Performs authorization on user/collection
 
     def delete_collection(self, collection_id: str) -> None:
@@ -71,7 +74,6 @@ class BusinessLogicInterface:
     # Replaces the current update_collection
     # Accepts:
     # Collection_id
-    # UserInfo
     # A dataclass with the body to be updated
     # Should validate the body
     # Should handle DOI updates (re-use the existing logic with minimal refactors)
@@ -85,7 +87,6 @@ class BusinessLogicInterface:
     # Replaces the current post_collection_revision
     # Accepts:
     # Collection_id
-    # UserInfo
     # Performs authorization on the collection
     # Since revision logic is database specific, it delegates to the underlying layer
     # Returns a handle to the revised collection (either id or the full collection metadata)
@@ -101,7 +102,6 @@ class BusinessLogicInterface:
     # Replaces post (in publish.py)
     # Accepts:
     # Collection_id
-    # UserInfo
     # Performs validation to make sure that the collection can be published
     # [Currently] accepts data_submission_policy_version: what is this for?
     # [Currently] triggers Cloudfront invalidation for the index endpoints. This should arguably NOT be done here but by the API layer
@@ -115,7 +115,6 @@ class BusinessLogicInterface:
     # Potentially, also replaces relink (I am not sure why they are 2 separate functions)
     # Accepts:
     # Collection_id
-    # UserInfo
     # URL of the uploadable dataset
     # [Optional] a dataset_id to be replaced
     # This is one of the most complex functions. Other than the database provider, It will need two additional providers:
@@ -151,8 +150,16 @@ class BusinessLogicInterface:
     # Replaces post_dataset_asset
 
 
-    def download_dataset_asset(self, dataset_id: str) -> str:
+    def get_dataset_artifact_download_data(self, dataset_id: str, artifact_id: str) -> DatasetArtifactDownloadData:
         pass
+
+
+    def update_dataset_version_status(self, dataset_version_id: str, new_dataset_status: DatasetStatus) -> None:
+        pass
+
+    def add_dataset_artifact(self, dataset_version_id: str, artifact_type: str, artifact_uri: str) -> None:
+        pass
+
 
     # Get_dataset_status
     # Replaces get_status

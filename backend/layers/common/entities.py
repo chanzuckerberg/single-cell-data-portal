@@ -14,6 +14,7 @@ class DatasetStatus(Enum):
 
 @dataclass
 class DatasetArtifact:
+    id: str
     type: str
     uri: str
 

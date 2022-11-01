@@ -124,7 +124,7 @@ class DatabaseProviderInterface:
         """
         pass
 
-    def add_dataset_artifact(self, version_id: str, artifact: DatasetArtifact) -> None:
+    def add_dataset_artifact(self, version_id: str, artifact_type: str, artifact_uri: str) -> None:
         """
         Adds a dataset artifact to an existing dataset version.
         """
