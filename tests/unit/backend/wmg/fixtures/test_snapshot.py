@@ -157,7 +157,7 @@ def create_temp_wmg_snapshot(
     cell_ordering_generator_fn: Callable[[List[str]], List[int]] = forward_cell_type_ordering,
 ) -> WmgSnapshot:
     with tempfile.TemporaryDirectory() as cube_dir:
-        expression_summary_cube_dir, expression_summary_cube_fmg_dir, cell_counts_cube_dir = create_cubes(
+        expression_summary_cube_dir, expression_summary_fmg_cube_dir, cell_counts_cube_dir = create_cubes(
             cube_dir,
             dim_size,
             exclude_logical_coord_fn=exclude_logical_coord_fn,
@@ -176,7 +176,7 @@ def create_temp_wmg_snapshot(
                     yield WmgSnapshot(
                         snapshot_identifier=snapshot_name,
                         expression_summary_cube=expression_summary_cube,
-                        expression_summary_fmg_cube=expression_summary_cube,
+                        expression_summary_fmg_cube=expression_summary_fmg_cube,
                         cell_counts_cube=cell_counts_cube,
                         cell_type_orderings=cell_type_orderings,
                         primary_filter_dimensions=primary_filter_dimensions,
