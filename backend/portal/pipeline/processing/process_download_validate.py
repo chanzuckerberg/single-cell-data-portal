@@ -177,8 +177,8 @@ def extract_metadata(filename) -> dict:
         "x_approximate_distribution": _get_x_approximate_distribution(),
         "schema_version": adata.uns["schema_version"],
         "batch_condition": _get_batch_condition(),
-        "donor_id": adata.obs["donor_id"].unique(),
-        "suspension_type": adata.obs["suspension_type"].unique(),
+        "donor_id": adata.obs["donor_id"].unique().tolist(),
+        "suspension_type": adata.obs["suspension_type"].unique().tolist(),
     }
     logger.info(f"Extract metadata: {metadata}")
     return metadata
