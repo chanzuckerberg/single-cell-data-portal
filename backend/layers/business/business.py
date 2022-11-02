@@ -403,118 +403,117 @@ class BusinessLogic(BusinessLogicInterface):
 
 
 
-    def start_upload_sfn(collection_id, dataset_id, url):
-        input_parameters = {
-            "collection_id": collection_id,
-            "url": url,
-            "dataset_id": dataset_id,
-        }
-        sfn_name = f"{dataset_id}_{int(time.time())}"
-        response = get_stepfunctions_client().start_execution(
-            stateMachineArn=CorporaConfig().upload_sfn_arn,
-            name=sfn_name,
-            input=json.dumps(input_parameters),
-        )
-        return response
+    # def start_upload_sfn(collection_id, dataset_id, url):
+    #     input_parameters = {
+    #         "collection_id": collection_id,
+    #         "url": url,
+    #         "dataset_id": dataset_id,
+    #     }
+    #     sfn_name = f"{dataset_id}_{int(time.time())}"
+    #     response = get_stepfunctions_client().start_execution(
+    #         stateMachineArn=CorporaConfig().upload_sfn_arn,
+    #         name=sfn_name,
+    #         input=json.dumps(input_parameters),
+    #     )
+    #     return response
 
 
 
-    @dbconnect
-    def upload_from_link(collection_id: str, token_info: dict, url: str, dataset_id: str = None):
-        db_session = g.db_session
+    # def upload_from_link(collection_id: str, token_info: dict, url: str, dataset_id: str = None):
+    #     db_session = g.db_session
 
-        # Verify Dropbox URL
-        valid_link = from_url(url)
-        if not valid_link:
-            raise InvalidParametersHTTPException(detail="The dropbox shared link is invalid.")
+    #     # Verify Dropbox URL
+    #     valid_link = from_url(url)
+    #     if not valid_link:
+    #         raise InvalidParametersHTTPException(detail="The dropbox shared link is invalid.")
 
-        # Get file info
-        try:
-            resp = valid_link.file_info()
-        except requests.HTTPError:
-            raise InvalidParametersHTTPException(detail="The URL provided causes an error with Dropbox.")
-        except MissingHeaderException as ex:
-            raise InvalidParametersHTTPException(detail=ex.detail)
+    #     # Get file info
+    #     try:
+    #         resp = valid_link.file_info()
+    #     except requests.HTTPError:
+    #         raise InvalidParametersHTTPException(detail="The URL provided causes an error with Dropbox.")
+    #     except MissingHeaderException as ex:
+    #         raise InvalidParametersHTTPException(detail=ex.detail)
 
-        file_size = resp.get("size")
+    #     file_size = resp.get("size")
 
-        try:
-            return upload(
-                db_session,
-                collection_id=collection_id,
-                url=url,
-                file_size=file_size,
-                user=token_info["sub"],
-                scope=token_info["scope"],
-                dataset_id=dataset_id,
-            )
-        except MaxFileSizeExceededException:
-            raise TooLargeHTTPException()
-        except InvalidFileFormatException:
-            raise InvalidParametersHTTPException(detail="The file referred to by the link is not a support file format.")
-        except NonExistentCollectionException:
-            raise ForbiddenHTTPException()
-        except InvalidProcessingStateException:
-            raise MethodNotAllowedException(
-                detail="Submission failed. A dataset cannot be updated while a previous update for the same dataset is in "
-                "progress. Please cancel the current submission by deleting the dataset, or wait until the submission has "
-                "finished processing.",
-            )
-        except NonExistentDatasetException:
-            raise NotFoundHTTPException()
+    #     try:
+    #         return upload(
+    #             db_session,
+    #             collection_id=collection_id,
+    #             url=url,
+    #             file_size=file_size,
+    #             user=token_info["sub"],
+    #             scope=token_info["scope"],
+    #             dataset_id=dataset_id,
+    #         )
+    #     except MaxFileSizeExceededException:
+    #         raise TooLargeHTTPException()
+    #     except InvalidFileFormatException:
+    #         raise InvalidParametersHTTPException(detail="The file referred to by the link is not a support file format.")
+    #     except NonExistentCollectionException:
+    #         raise ForbiddenHTTPException()
+    #     except InvalidProcessingStateException:
+    #         raise MethodNotAllowedException(
+    #             detail="Submission failed. A dataset cannot be updated while a previous update for the same dataset is in "
+    #             "progress. Please cancel the current submission by deleting the dataset, or wait until the submission has "
+    #             "finished processing.",
+    #         )
+    #     except NonExistentDatasetException:
+    #         raise NotFoundHTTPException()
 
 
-    def upload(
-        db_session: Session,
-        collection_id: str,
-        url: str,
-        file_size: int,
-        user: str,
-        scope: str = None,
-        dataset_id: str = None,
-    ) -> str:
-        max_file_size_gb = CorporaConfig().upload_max_file_size_gb * GB
-        if file_size is not None and file_size > max_file_size_gb:
-            raise MaxFileSizeExceededException(f"{url} exceeds the maximum allowed file size of {max_file_size_gb} Gb")
+    # def upload(
+    #     db_session: Session,
+    #     collection_id: str,
+    #     url: str,
+    #     file_size: int,
+    #     user: str,
+    #     scope: str = None,
+    #     dataset_id: str = None,
+    # ) -> str:
+    #     max_file_size_gb = CorporaConfig().upload_max_file_size_gb * GB
+    #     if file_size is not None and file_size > max_file_size_gb:
+    #         raise MaxFileSizeExceededException(f"{url} exceeds the maximum allowed file size of {max_file_size_gb} Gb")
 
-        # Check if datasets can be added to the collection
-        collection = Collection.get_collection(
-            db_session,
-            collection_id,
-            visibility=CollectionVisibility.PRIVATE,  # Do not allow changes to public Collections
-            owner=owner_or_allowed(user, scope) if scope else user,
-        )
-        if not collection:
-            raise NonExistentCollectionException(f"Collection {collection_id} does not exist")
+    #     # Check if datasets can be added to the collection
+    #     collection = Collection.get_collection(
+    #         db_session,
+    #         collection_id,
+    #         visibility=CollectionVisibility.PRIVATE,  # Do not allow changes to public Collections
+    #         owner=owner_or_allowed(user, scope) if scope else user,
+    #     )
+    #     if not collection:
+    #         raise NonExistentCollectionException(f"Collection {collection_id} does not exist")
 
-        # Check if a dataset already exists
-        if dataset_id:
-            dataset = Dataset.get(db_session, dataset_id, collection_id=collection_id)
-            if not dataset:
-                raise NonExistentDatasetException(f"Dataset {dataset_id} does not exist")
-        else:
-            dataset = None
+    #     # Check if a dataset already exists
+    #     if dataset_id:
+    #         dataset = Dataset.get(db_session, dataset_id, collection_id=collection_id)
+    #         if not dataset:
+    #             raise NonExistentDatasetException(f"Dataset {dataset_id} does not exist")
+    #     else:
+    #         dataset = None
 
-        if dataset:
-            # Update dataset
-            if dataset.processing_status.processing_status not in [
-                ProcessingStatus.SUCCESS,
-                ProcessingStatus.FAILURE,
-                ProcessingStatus.INITIALIZED,
-            ]:
-                raise InvalidProcessingStateException(
-                    f"Unable to reprocess dataset {dataset_id}: {dataset.processing_status.processing_status=}"
-                )
-            else:
-                dataset.reprocess()
+    #     if dataset:
+    #         # Update dataset
+    #         if dataset.processing_status.processing_status not in [
+    #             ProcessingStatus.SUCCESS,
+    #             ProcessingStatus.FAILURE,
+    #             ProcessingStatus.INITIALIZED,
+    #         ]:
+    #             raise InvalidProcessingStateException(
+    #                 f"Unable to reprocess dataset {dataset_id}: {dataset.processing_status.processing_status=}"
+    #             )
+    #         else:
+    #             dataset.reprocess()
 
-        else:
-            # Add new dataset
-            dataset = Dataset.create(db_session, collection=collection)
+    #     else:
+    #         # Add new dataset
+    #         dataset = Dataset.create(db_session, collection=collection)
 
-        dataset.update(processing_status=dataset.new_processing_status())
+    #     dataset.update(processing_status=dataset.new_processing_status())
 
-        # Start processing link
-        start_upload_sfn(collection_id, dataset.id, url)
+    #     # Start processing link
+    #     start_upload_sfn(collection_id, dataset.id, url)
 
-        return dataset.id
+    #     return dataset.id

@@ -8,6 +8,7 @@ from enum import Enum
 
 class DatasetStatusGeneric:
     pass
+
 class DatasetUploadStatus(DatasetStatusGeneric, Enum):
     NA = "N/A"
     WAITING = "Waiting"
