@@ -6,9 +6,13 @@ from backend.layers.common.entities import (
     CollectionVersion,
     CollectionVersionId,
     DatasetArtifact,
+    DatasetConversionStatus,
     DatasetId,
     DatasetMetadata,
+    DatasetProcessingStatus,
     DatasetStatus,
+    DatasetUploadStatus,
+    DatasetValidationStatus,
     DatasetVersion,
     DatasetVersionId,
 )
@@ -67,9 +71,9 @@ class DatabaseProviderInterface:
         """
         pass
 
-    def save_collection_publisher_metadata(self, version_id: CollectionVersionId, publisher_metadata: dict) -> None:
+    def save_collection_publisher_metadata(self, version_id: CollectionVersionId, publisher_metadata: Optional[dict]) -> None:
         """
-        Saves publisher metadata for a collection version
+        Saves publisher metadata for a collection version. Specify None to remove it
         """
         pass
 
@@ -156,10 +160,29 @@ class DatabaseProviderInterface:
         """
         pass
 
-    def update_dataset_processing_status(self, version_id: DatasetVersionId, status: DatasetStatus) -> None:
+    def update_dataset_processing_status(self, version_id: DatasetVersionId, status: DatasetProcessingStatus) -> None:
         """
         Updates the processing status for a dataset version.
         """
+        pass
+
+    def update_dataset_validation_status(self, version_id: DatasetVersionId, status: DatasetValidationStatus) -> None:
+        """
+        Updates the validation status for a dataset version.
+        """
+        pass
+
+    def update_dataset_upload_status(self, version_id: DatasetVersionId, status: DatasetUploadStatus) -> None:
+        """
+        Updates the upload status for a dataset version.
+        """
+        pass
+
+    def update_dataset_conversion_status(self, version_id: DatasetVersionId, status_type: str, status: DatasetConversionStatus) -> None:
+        """
+        Updates the conversion status for a dataset version and for `status_type`
+        """
+        pass
 
     def add_dataset_to_collection_version_mapping(
         self, collection_version_id: CollectionVersionId, dataset_version_id: DatasetVersionId

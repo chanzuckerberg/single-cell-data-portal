@@ -3,7 +3,12 @@ from datetime import datetime
 from typing import List, Optional
 from enum import Enum
 
-class DatasetStatus(Enum):
+
+# TODO: copy and paste the docs for these
+
+class DatasetStatusGeneric:
+    pass
+class DatasetUploadStatus(Enum, DatasetStatusGeneric):
     NA = "N/A"
     WAITING = "Waiting"
     UPLOADING = "Uploading"
@@ -11,6 +16,36 @@ class DatasetStatus(Enum):
     FAILED = "Failed"
     CANCEL_PENDING = "Cancel pending"
     CANCELED = "Canceled"
+
+class DatasetValidationStatus(Enum, DatasetStatusGeneric):
+    NA = "N/A"
+    VALIDATING = "Validating"
+    VALID = "Valid"
+    INVALID = "Invalid"
+
+class DatasetConversionStatus(Enum, DatasetStatusGeneric):
+    NA = "N/A"
+    CONVERTING = "Converting"
+    CONVERTED = "Converted"
+    UPLOADING = "Uploading"
+    UPLOADED = "Uploaded"
+    FAILED = "Failed"
+    SKIPPED = "Skipped"
+
+class DatasetProcessingStatus(Enum, DatasetStatusGeneric):
+    INITIALIZED = "INITIALIZED"
+    PENDING = "PENDING"
+    SUCCESS = "SUCCESS"
+    FAILURE = "FAILURE"
+
+@dataclass
+class DatasetStatus:
+    upload_status: DatasetUploadStatus
+    validation_status: DatasetValidationStatus
+    cxg_status: DatasetConversionStatus
+    rds_status: DatasetConversionStatus
+    h5ad_status: DatasetConversionStatus
+    processing_status: DatasetProcessingStatus
 
 @dataclass
 class CollectionId:
@@ -51,7 +86,7 @@ class DatasetMetadata:
 class DatasetVersion:
     dataset_id: DatasetId
     version_id: DatasetVersionId
-    processing_status: DatasetStatus
+    status: DatasetStatus
     metadata: DatasetMetadata
     artifacts: List[DatasetArtifact]
 

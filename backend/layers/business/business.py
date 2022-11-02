@@ -1,7 +1,8 @@
 from dataclasses import dataclass
 from typing import Iterable, Optional
 from backend.corpora.common.providers.crossref_provider import CrossrefDOINotFoundException, CrossrefException
-from backend.layers.business.exceptions import CollectionCreationException
+from backend.layers.business.entities import CollectionMetadataUpdate, CollectionQueryFilter, DatasetArtifactDownloadData
+from backend.layers.business.exceptions import CollectionCreationException, CollectionUpdateException, DatasetIngestException
 
 from backend.layers.common.entities import (
     CollectionId,
@@ -12,11 +13,11 @@ from backend.layers.common.entities import (
     DatasetArtifact,
     DatasetId,
     DatasetStatus,
+    DatasetStatusGeneric,
     DatasetVersion,
     DatasetVersionId,
     Link,
 )
-from backend.layers.common.regex import CURIE_REFERENCE_REGEX, DOI_REGEX_COMPILED
 from typing import Iterable, List, Optional
 
 from backend.layers.common.entities import CollectionId, CollectionMetadata, CollectionVersion, CollectionVersionId, DatasetArtifact, DatasetId, DatasetStatus, DatasetVersion, DatasetVersionId, Link
@@ -29,33 +30,6 @@ from urllib.parse import urlparse
 from backend.layers.common import validation
 import logging
 
-
-@dataclass
-class CollectionQueryFilter:
-    is_published: Optional[bool] = None
-    owner: Optional[str] = None
-    # TODO: add list of fields to be returned (if needed)
-
-
-@dataclass
-class DatasetArtifactDownloadData:
-    file_name: str
-    file_type: str
-    file_size: int
-    presigned_url: str
-
-@dataclass
-class CollectionMetadataUpdate:
-    """
-    This class can be used to issue an update to the collection metadata.
-    Since we support partial updates, i.e. missing fields will be ignored, 
-    all the fields are marked an optional
-    """
-    name: Optional[str]
-    description: Optional[str]
-    contact_name: Optional[str]
-    contact_email: Optional[str]
-    links: Optional[List[Link]]
 
 class BusinessLogicInterface:
 
@@ -193,7 +167,7 @@ class BusinessLogicInterface:
         pass
 
     def update_dataset_version_status(
-        self, dataset_version_id: DatasetVersionId, new_dataset_status: DatasetStatus
+        self, dataset_version_id: DatasetVersionId, new_dataset_status: DatasetStatusGeneric
     ) -> None:
         pass
 
@@ -290,7 +264,7 @@ class BusinessLogic(BusinessLogicInterface):
             iterable = self.database_provider.get_all_collections_versions()
 
         def predicate(version: CollectionVersion):
-            # If filter.is_published is either None or
+            # Combines all the filters into a single predicate, so that filtering can happen in a single iteration
             published = (
                 filter.is_published is None or 
                 (filter.is_published is True and version.published_at is not None) or 
@@ -305,5 +279,242 @@ class BusinessLogic(BusinessLogicInterface):
             if predicate(collection_version):
                 yield collection_version
 
-    def update_collection_version(self, version_id: CollectionVersionId, body: dict) -> None:
+    def update_collection_version(self, version_id: CollectionVersionId, body: CollectionMetadataUpdate) -> None:
+        """
+        Updates a collection version by replacing parts of its metadata. If the DOI in the links changed,
+        it should also update its publisher metadata
+        """
+
+        # TODO: we could collect all the changes and issue a single update at the end
+        # TODO: CollectionMetadataUpdate should probably be used for collection creation as well
+        # TODO: link.type should DEFINITELY move to an enum. pylance will help with the refactor
+
+        errors = []
+        validation.verify_collection_metadata_update(body, errors)
+
+        current_version = self.get_collection_version(version_id)
+        if current_version.published_at is not None:
+            raise CollectionUpdateException(["Cannot update a published collection"])
+        
+        # Determine if the DOI has changed
+        old_doi = next((link.uri for link in current_version.metadata.links if link.type == "doi"), None)
+        if body.links is None:
+            new_doi = None
+        else:
+            new_doi = next((link.uri for link in body.links if link.type == "doi"), None)
+
+        if old_doi and new_doi is None:
+            # If the DOI was deleted, remove the publisher_metadata field
+            self.database_provider.save_collection_publisher_metadata(version_id, None)
+        elif (new_doi is not None) and new_doi != old_doi:
+            # If the DOI has changed, fetch and update the metadata
+            publisher_metadata = self._get_publisher_metadata(new_doi, errors)
+            self.database_provider.save_collection_publisher_metadata(version_id, publisher_metadata)
+
+        if errors:
+            raise CollectionUpdateException(errors)
+
+        # Merge the updated fields in the existing metadata object
+        current_metadata = current_version.metadata
+        for field in vars(body):
+            if hasattr(body, field):
+                setattr(current_metadata, field, getattr(body, field))
+
+        self.database_provider.save_collection_metadata(version_id, current_metadata)
+
+    def ingest_dataset(
+        self,
+        collection_version_id: CollectionVersionId,
+        url: str,
+        existing_dataset_version_id: Optional[DatasetVersionId]) -> DatasetVersionId:
+        """
+        Creates a canonical dataset and starts its ingestion by invoking the step function
+        """
+
+        # TODO: add link validation
+
+        # Verify Dropbox URL
+        # valid_link = from_url(url)
+        # if not valid_link:
+        #     raise InvalidParametersHTTPException(detail="The dropbox shared link is invalid.")
+
+        # TODO: add file_info through a provider
+        # Get file info
+        # try:
+        #     resp = valid_link.file_info()
+        # except requests.HTTPError:
+        #     raise InvalidParametersHTTPException(detail="The URL provided causes an error with Dropbox.")
+        # except MissingHeaderException as ex:
+        #     raise InvalidParametersHTTPException(detail=ex.detail)
+
+        # file_size = resp.get("size")
+
+        collection_version = self.database_provider.get_collection_version(collection_version_id)
+        if collection_version is None:
+            raise DatasetIngestException(f"Collection version {collection_version_id} does not exist")
+
+        if existing_dataset_version_id is not None:
+            dataset_version = self.database_provider.get_dataset_version(existing_dataset_version_id)
+            if dataset_version is not None:
+                raise DatasetIngestException(f"Trying to replace non existant dataset {existing_dataset_version_id}")
+
+        
+
+
+        # Check if a dataset already exists
+        if dataset_id:
+            dataset = Dataset.get(db_session, dataset_id, collection_id=collection_id)
+            if not dataset:
+                raise NonExistentDatasetException(f"Dataset {dataset_id} does not exist")
+        else:
+            dataset = None
+
+        if dataset:
+            # Update dataset
+            if dataset.processing_status.processing_status not in [
+                ProcessingStatus.SUCCESS,
+                ProcessingStatus.FAILURE,
+                ProcessingStatus.INITIALIZED,
+            ]:
+                raise InvalidProcessingStateException(
+                    f"Unable to reprocess dataset {dataset_id}: {dataset.processing_status.processing_status=}"
+                )
+            else:
+                dataset.reprocess()
+
+        else:
+            # Add new dataset
+            dataset = Dataset.create(db_session, collection=collection)
+
+        dataset.update(processing_status=dataset.new_processing_status())
+
+        # Start processing link
+        start_upload_sfn(collection_id, dataset.id, url)
+
+        return dataset.id
+
+
+    def get_all_datasets(self) -> Iterable[DatasetVersion]:
         pass
+
+    def delete_dataset(self, dataset_version_id: DatasetVersionId) -> None:
+        pass
+
+
+
+
+    def start_upload_sfn(collection_id, dataset_id, url):
+        input_parameters = {
+            "collection_id": collection_id,
+            "url": url,
+            "dataset_id": dataset_id,
+        }
+        sfn_name = f"{dataset_id}_{int(time.time())}"
+        response = get_stepfunctions_client().start_execution(
+            stateMachineArn=CorporaConfig().upload_sfn_arn,
+            name=sfn_name,
+            input=json.dumps(input_parameters),
+        )
+        return response
+
+
+
+    @dbconnect
+    def upload_from_link(collection_id: str, token_info: dict, url: str, dataset_id: str = None):
+        db_session = g.db_session
+
+        # Verify Dropbox URL
+        valid_link = from_url(url)
+        if not valid_link:
+            raise InvalidParametersHTTPException(detail="The dropbox shared link is invalid.")
+
+        # Get file info
+        try:
+            resp = valid_link.file_info()
+        except requests.HTTPError:
+            raise InvalidParametersHTTPException(detail="The URL provided causes an error with Dropbox.")
+        except MissingHeaderException as ex:
+            raise InvalidParametersHTTPException(detail=ex.detail)
+
+        file_size = resp.get("size")
+
+        try:
+            return upload(
+                db_session,
+                collection_id=collection_id,
+                url=url,
+                file_size=file_size,
+                user=token_info["sub"],
+                scope=token_info["scope"],
+                dataset_id=dataset_id,
+            )
+        except MaxFileSizeExceededException:
+            raise TooLargeHTTPException()
+        except InvalidFileFormatException:
+            raise InvalidParametersHTTPException(detail="The file referred to by the link is not a support file format.")
+        except NonExistentCollectionException:
+            raise ForbiddenHTTPException()
+        except InvalidProcessingStateException:
+            raise MethodNotAllowedException(
+                detail="Submission failed. A dataset cannot be updated while a previous update for the same dataset is in "
+                "progress. Please cancel the current submission by deleting the dataset, or wait until the submission has "
+                "finished processing.",
+            )
+        except NonExistentDatasetException:
+            raise NotFoundHTTPException()
+
+
+    def upload(
+        db_session: Session,
+        collection_id: str,
+        url: str,
+        file_size: int,
+        user: str,
+        scope: str = None,
+        dataset_id: str = None,
+    ) -> str:
+        max_file_size_gb = CorporaConfig().upload_max_file_size_gb * GB
+        if file_size is not None and file_size > max_file_size_gb:
+            raise MaxFileSizeExceededException(f"{url} exceeds the maximum allowed file size of {max_file_size_gb} Gb")
+
+        # Check if datasets can be added to the collection
+        collection = Collection.get_collection(
+            db_session,
+            collection_id,
+            visibility=CollectionVisibility.PRIVATE,  # Do not allow changes to public Collections
+            owner=owner_or_allowed(user, scope) if scope else user,
+        )
+        if not collection:
+            raise NonExistentCollectionException(f"Collection {collection_id} does not exist")
+
+        # Check if a dataset already exists
+        if dataset_id:
+            dataset = Dataset.get(db_session, dataset_id, collection_id=collection_id)
+            if not dataset:
+                raise NonExistentDatasetException(f"Dataset {dataset_id} does not exist")
+        else:
+            dataset = None
+
+        if dataset:
+            # Update dataset
+            if dataset.processing_status.processing_status not in [
+                ProcessingStatus.SUCCESS,
+                ProcessingStatus.FAILURE,
+                ProcessingStatus.INITIALIZED,
+            ]:
+                raise InvalidProcessingStateException(
+                    f"Unable to reprocess dataset {dataset_id}: {dataset.processing_status.processing_status=}"
+                )
+            else:
+                dataset.reprocess()
+
+        else:
+            # Add new dataset
+            dataset = Dataset.create(db_session, collection=collection)
+
+        dataset.update(processing_status=dataset.new_processing_status())
+
+        # Start processing link
+        start_upload_sfn(collection_id, dataset.id, url)
+
+        return dataset.id

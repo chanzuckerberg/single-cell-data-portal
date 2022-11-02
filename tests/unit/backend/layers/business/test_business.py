@@ -12,32 +12,14 @@ from backend.corpora.common.providers.crossref_provider import CrossrefException
 from backend.layers.business.business import BusinessLogic, CollectionMetadataUpdate, CollectionQueryFilter, DatasetArtifactDownloadData
 from backend.layers.business.exceptions import CollectionUpdateException, InvalidLinkException, \
     CollectionCreationException, DatasetIngestException, CollectionPublishException
-from backend.layers.common.entities import CollectionMetadata, CollectionVersion, DatasetArtifact, DatasetMetadata, DatasetStatus, DatasetVersionId, Link
+from backend.layers.common.entities import CollectionMetadata, CollectionVersion, CollectionVersionId, DatasetArtifact, DatasetMetadata, DatasetProcessingStatus, DatasetStatus, DatasetUploadStatus, DatasetValidationStatus, DatasetVersionId, Link
 from backend.layers.persistence.persistence import DatabaseProviderInterface
 from tests.unit.backend.layers.persistence.persistence_mock import DatabaseProviderMock
 
-
 class BaseBusinessLogicTestCase(unittest.TestCase):
 
-    sample_collection_metadata = CollectionMetadata(
-        "test collection 1", 
-        "description of test collection 1",
-        "scientist",
-        "scientist@czi.com",
-        []
-    )
-
-    sample_dataset_metadata = DatasetMetadata(
-        "test_organism",
-        "test_tissue",
-        "test_assay",
-        "test_disease", 
-        "test_sex",
-        "test_self_reported_ethnicity",
-        "test_development_stage",
-        "test_cell_type",
-        10
-    )
+    sample_collection_metadata: CollectionMetadata 
+    sample_dataset_metadata: DatasetMetadata
 
     test_user_name = "test_user_1"
 
@@ -54,19 +36,38 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
             step_function_provider=self.step_function_provider,
         )
 
-    def initialize_empty_unpublished_collection(self, owner: str = test_user_name, metadata = sample_collection_metadata) -> CollectionVersion:
+        self.sample_collection_metadata = CollectionMetadata(
+            "test collection 1", 
+            "description of test collection 1",
+            "scientist",
+            "scientist@czi.com",
+            []
+        )
+
+        self.sample_dataset_metadata = DatasetMetadata(
+            "test_organism",
+            "test_tissue",
+            "test_assay",
+            "test_disease", 
+            "test_sex",
+            "test_self_reported_ethnicity",
+            "test_development_stage",
+            "test_cell_type",
+            10
+        )
+
+    def initialize_empty_unpublished_collection(self, owner: str = test_user_name) -> CollectionVersion:
         """
         Initializes an unpublished collection to be used for testing, with no datasets
         """
         version = self.database_provider.create_canonical_collection(
             owner,
-            metadata,
+            self.sample_collection_metadata,
         )
         return version
 
     def initialize_unpublished_collection(self, 
         owner: str = test_user_name, 
-        metadata = sample_collection_metadata, 
         complete_dataset_ingestion: bool = True
     ) -> CollectionVersion:
         """
@@ -74,7 +75,7 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         By default also completes dataset ingestion (normally, a process that would be done asynchonously).
         Pass `complete_dataset_ingestion=False` if you want to initialize datasets only.
         """
-        version = self.initialize_empty_unpublished_collection(owner, metadata)
+        version = self.initialize_empty_unpublished_collection(owner)
         for i in range(2):
             dataset_version = self.database_provider.create_canonical_dataset(
                 version.version_id, 
@@ -88,11 +89,11 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
                 self.complete_dataset_processing_with_success(dataset_version.version_id)
         return self.database_provider.get_collection_version(version.version_id)
         
-    def initialize_published_collection(self, owner: str = test_user_name, published_at: datetime = datetime.utcnow(), metadata = sample_collection_metadata) -> CollectionVersion:
+    def initialize_published_collection(self, owner: str = test_user_name, published_at: datetime = datetime.utcnow()) -> CollectionVersion:
         """
         Initializes a published collection to be used for testing, with a single dataset
         """
-        version = self.initialize_unpublished_collection(owner, metadata)
+        version = self.initialize_unpublished_collection(owner)
         self.database_provider.finalize_collection_version(version.collection_id, version.version_id, published_at)
         return self.database_provider.get_collection_version(version.version_id)
 
@@ -104,9 +105,10 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         self.database_provider.add_dataset_artifact(dataset_version_id, "H5AD", "s3://fake-bucket/artifact.h5ad")
         self.database_provider.add_dataset_artifact(dataset_version_id, "CXG", "s3://fake-bucket/artifact.cxg")
         self.database_provider.add_dataset_artifact(dataset_version_id, "RDS", "s3://fake-bucket/artifact.rds")
-        self.database_provider.update_dataset_processing_status(dataset_version_id, DatasetStatus.UPLOADED)
-
-
+        self.database_provider.update_dataset_upload_status(dataset_version_id, DatasetUploadStatus.UPLOADED)
+        self.database_provider.update_dataset_validation_status(dataset_version_id, DatasetValidationStatus.VALID)
+        self.database_provider.update_dataset_processing_status(dataset_version_id, DatasetProcessingStatus.SUCCESS)
+        # TODO: if required, set the conversion status as well
 
 class TestCreateCollection(BaseBusinessLogicTestCase):
 
@@ -383,13 +385,14 @@ class TestUpdateCollection(BaseBusinessLogicTestCase):
         A collection updated with the same DOI should not trigger a Crossref call
         """
         metadata = self.sample_collection_metadata
-        links = [Link("test doi", "DOI", "http://test.doi")]
+        links = [Link("test doi", "doi", "http://test.doi")]
         metadata.links = links
 
         expected_publiser_metadata = {"authors": ["Test Author"]}
         self.crossref_provider.fetch_metadata = Mock(return_value=expected_publiser_metadata)
 
-        version = self.initialize_unpublished_collection(metadata=metadata)
+        # We need to call `business_logic.create_collection` so that the publisher metadata is populated
+        version = self.business_logic.create_collection(self.test_user_name, metadata)
         self.crossref_provider.fetch_metadata.assert_called_once()
         self.crossref_provider.fetch_metadata.reset_mock()
 
@@ -412,12 +415,13 @@ class TestUpdateCollection(BaseBusinessLogicTestCase):
         A collection updated with a new DOI should get new publisher metadata from Crossref
         """
         metadata = self.sample_collection_metadata
-        links = [Link("test doi", "DOI", "http://test.doi")]
+        links = [Link("test doi", "doi", "http://test.doi")]
         metadata.links = links
 
         self.crossref_provider.fetch_metadata = Mock(return_value={"authors": ["Test Author"]})
-
-        version = self.initialize_unpublished_collection(metadata=metadata)
+        
+        # We need to call `business_logic.create_collection` so that the publisher metadata is populated
+        version = self.business_logic.create_collection(self.test_user_name, metadata)
         self.crossref_provider.fetch_metadata.assert_called_once()
         self.crossref_provider.fetch_metadata.reset_mock()
 
@@ -426,7 +430,7 @@ class TestUpdateCollection(BaseBusinessLogicTestCase):
             description=None,
             contact_name=None,
             contact_email=None,
-            links=[Link("new test doi", "DOI", "http://new.test.doi")],
+            links=[Link("new test doi", "doi", "http://new.test.doi")],
         )
 
         expected_updated_publisher_metadata = {"authors": ["New Test Author"]}
@@ -454,7 +458,20 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         new_dataset_version = self.database_provider.get_dataset_version(new_dataset_version_id)
         self.assertIsNotNone(new_dataset_version)
         self.assertIsNone(new_dataset_version.metadata)
-        self.assertEqual(new_dataset_version.processing_status, DatasetStatus.WAITING)
+        self.assertEqual(new_dataset_version.status.upload_status, DatasetUploadStatus.WAITING)
+        self.assertEqual(new_dataset_version.status.processing_status, DatasetProcessingStatus.PENDING)
+
+    def test_add_dataset_to_non_existing_collection_ok(self):
+        """
+        Calling `ingest_dataset` on a collection that does not exist should fail
+        """
+        url = "http://test/dataset.url"
+        fake_collection_version_id = CollectionVersionId("fake_id")
+
+        with self.assertRaises(DatasetIngestException) as ex:
+            self.business_logic.ingest_dataset(fake_collection_version_id, url, None)
+        self.assertEqual(str(ex.exception), "Collection fake_id does not exist")
+
 
     def test_add_dataset_to_published_collection_fail(self):
         """
@@ -514,7 +531,8 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         new_dataset_version = self.database_provider.get_dataset_version(new_dataset_version_id)
         self.assertIsNotNone(new_dataset_version)
         self.assertIsNone(new_dataset_version.metadata)
-        self.assertEqual(new_dataset_version.processing_status, DatasetStatus.WAITING)
+        self.assertEqual(new_dataset_version.status.upload_status, DatasetUploadStatus.WAITING)
+        self.assertEqual(new_dataset_version.status.processing_status, DatasetProcessingStatus.PENDING)
 
         # Verify that the old dataset is still existent
         old_dataset_version = self.database_provider.get_dataset_version(dataset_version_to_replace_id)
@@ -534,6 +552,25 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
                 url, 
                 dataset_version_to_replace_id
             )
+
+    def test_replace_dataset_on_non_existing_dataset_fail(self):
+        """
+        Calling `ingest_dataset` and specifying a non existant dataset_version_id should fail
+        """
+        version = self.initialize_unpublished_collection()
+        url = "http://test/dataset.url"
+
+        with self.assertRaises(DatasetIngestException) as ex:
+            self.business_logic.ingest_dataset(version.version_id, url, DatasetVersionId("fake_id"))
+        self.assertEqual(str(ex.exception), "Trying to replace non existant dataset fake_id")
+
+    def test_replace_dataset_in_wrong_status_fail(self):
+        """
+        Calling `ingest_dataset` and specifying an existing dataset should fail if the dataset is not in the
+        final status
+        """
+        version = self.initialize_unpublished_collection()
+        url = "http://test/dataset.url"
 
 
 class TestGetDataset(BaseBusinessLogicTestCase):
@@ -589,7 +626,9 @@ class TestGetDataset(BaseBusinessLogicTestCase):
         published_version = self.initialize_published_collection()
         dataset = published_version.datasets[0]
         status = self.business_logic.get_dataset_status(dataset.dataset_id)
-        self.assertEqual(status, DatasetStatus.UPLOADED)
+        self.assertEqual(status.processing_status, DatasetProcessingStatus.SUCCESS)
+        self.assertEqual(status.upload_status, DatasetUploadStatus.UPLOADED)
+        self.assertEqual(status.validation_status, DatasetValidationStatus.VALID)
 
 
 class TestUpdateDataset(BaseBusinessLogicTestCase):
@@ -601,9 +640,9 @@ class TestUpdateDataset(BaseBusinessLogicTestCase):
         unpublished_collection = self.initialize_unpublished_collection(complete_dataset_ingestion=False)
         self.assertEqual(2, len(unpublished_collection.datasets))
         for dataset in unpublished_collection.datasets:
-            self.business_logic.update_dataset_version_status(dataset.version_id, DatasetStatus.UPLOADED)
+            self.business_logic.update_dataset_version_status(dataset.version_id, DatasetUploadStatus.UPLOADED)
             version_from_db = self.database_provider.get_dataset_version(dataset.version_id)
-            self.assertEqual(version_from_db.processing_status, DatasetStatus.UPLOADED)
+            self.assertEqual(version_from_db.status.upload_status, DatasetUploadStatus.UPLOADED)
 
     def test_add_dataset_artifact_ok(self):
         """

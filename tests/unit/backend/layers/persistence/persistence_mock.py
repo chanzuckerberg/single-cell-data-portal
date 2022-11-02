@@ -11,9 +11,13 @@ from backend.layers.common.entities import (
     CollectionVersion,
     CollectionVersionId,
     DatasetArtifact,
+    DatasetConversionStatus,
     DatasetId,
     DatasetMetadata,
+    DatasetProcessingStatus,
     DatasetStatus,
+    DatasetUploadStatus,
+    DatasetValidationStatus,
     DatasetVersion,
     DatasetVersionId,
 )
@@ -80,7 +84,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
     def save_collection_metadata(self, version_id: CollectionVersionId, collection_metadata: CollectionMetadata) -> None:
         self.collections_versions[version_id.id].metadata = collection_metadata
 
-    def save_collection_publisher_metadata(self, version_id: CollectionVersionId, publisher_metadata: dict) -> None:
+    def save_collection_publisher_metadata(self, version_id: CollectionVersionId, publisher_metadata: Optional[dict]) -> None:
         self.collections_versions[version_id.id].publisher_metadata = publisher_metadata
 
     def add_collection_version(self, collection_id: CollectionId) -> str:
@@ -162,9 +166,22 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         version = self.datasets_versions[version_id.id]
         version.artifacts.append(artifact)
 
-    def update_dataset_processing_status(self, version_id: DatasetVersionId, status: DatasetStatus) -> None:
+    def update_dataset_processing_status(self, version_id: DatasetVersionId, status: DatasetProcessingStatus) -> None:
         dataset_version = self.datasets_versions[version_id.id]
-        dataset_version.processing_status = status
+        dataset_version.status.processing_status = status
+
+    def update_dataset_validation_status(self, version_id: DatasetVersionId, status: DatasetValidationStatus) -> None:
+        dataset_version = self.datasets_versions[version_id.id]
+        dataset_version.status.validation_status = status
+
+    def update_dataset_upload_status(self, version_id: DatasetVersionId, status: DatasetUploadStatus) -> None:
+        dataset_version = self.datasets_versions[version_id.id]
+        dataset_version.status.upload_status = status
+
+    def update_dataset_conversion_status(self, version_id: DatasetVersionId, status_type: str, status: DatasetConversionStatus) -> None:
+        dataset_version = self.datasets_versions[version_id.id]
+        existing_status = dataset_version.status
+        setattr(existing_status, status_type, status)
 
     def add_dataset_to_collection_version(self, version_id: CollectionVersionId, dataset_id: DatasetId) -> None:
         # Not needed for now - create_dataset does this
