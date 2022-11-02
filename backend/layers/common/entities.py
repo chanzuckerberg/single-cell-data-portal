@@ -68,7 +68,7 @@ class CollectionMetadata:
     description: str
     contact_name: str
     contact_email: str
-    links: List[Link]  # TODO: use a dataclass
+    links: List[Link]
 
 
 @dataclass

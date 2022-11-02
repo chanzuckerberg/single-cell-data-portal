@@ -17,6 +17,9 @@ from backend.layers.common.entities import (
     Link,
 )
 from backend.layers.common.regex import CURIE_REFERENCE_REGEX, DOI_REGEX_COMPILED
+from typing import Iterable, List, Optional
+
+from backend.layers.common.entities import CollectionId, CollectionMetadata, CollectionVersion, CollectionVersionId, DatasetArtifact, DatasetId, DatasetStatus, DatasetVersion, DatasetVersionId, Link
 from backend.layers.persistence.persistence import DatabaseProviderInterface
 from backend.layers.thirdparty.crossref_provider import CrossrefProviderInterface
 from backend.layers.thirdparty.step_function_provider import StepFunctionProviderInterface
@@ -41,6 +44,18 @@ class DatasetArtifactDownloadData:
     file_size: int
     presigned_url: str
 
+@dataclass
+class CollectionMetadataUpdate:
+    """
+    This class can be used to issue an update to the collection metadata.
+    Since we support partial updates, i.e. missing fields will be ignored, 
+    all the fields are marked an optional
+    """
+    name: Optional[str]
+    description: Optional[str]
+    contact_name: Optional[str]
+    contact_email: Optional[str]
+    links: Optional[List[Link]]
 
 class BusinessLogicInterface:
 
@@ -101,7 +116,7 @@ class BusinessLogicInterface:
     # Can either return nothing or the metadata of the updated collection
 
     # TODO: body should be a dataclass?
-    def update_collection_version(self, version_id: CollectionVersionId, body: dict) -> None:
+    def update_collection_version(self, version_id: CollectionVersionId, body: CollectionMetadataUpdate) -> None:
         pass
 
     # Create_collection_version

@@ -8,6 +8,8 @@ from backend.layers.thirdparty.step_function_provider import StepFunctionProvide
 
 from backend.corpora.common.providers.crossref_provider import CrossrefDOINotFoundException, CrossrefException
 from backend.layers.business.business import BusinessLogic, CollectionQueryFilter, DatasetArtifactDownloadData
+from backend.corpora.common.providers.crossref_provider import CrossrefException
+from backend.layers.business.business import BusinessLogic, CollectionMetadataUpdate, CollectionQueryFilter, DatasetArtifactDownloadData
 from backend.layers.business.exceptions import CollectionUpdateException, InvalidLinkException, \
     CollectionCreationException, DatasetIngestException, CollectionPublishException
 from backend.layers.common.entities import CollectionMetadata, CollectionVersion, DatasetArtifact, DatasetMetadata, DatasetStatus, DatasetVersionId, Link
@@ -314,50 +316,67 @@ class TestUpdateCollection(BaseBusinessLogicTestCase):
         A collection version should be updated when using `update_collection`
         """
         version = self.initialize_unpublished_collection()
-        body = {
-            "name": "new collection name",
-            "description": "new collection description",
-            "contact_name": "new contact name",
-            "contact_email": "new_email@czi.com",
-        }
+
+        body = CollectionMetadataUpdate(
+            name="new collection name",
+            description="new collection description",
+            contact_name="new contact name",
+            contact_email="new_email@czi.com",
+            links=[Link("test link 2", "other", "http://example.com/other")],
+        )
 
         self.business_logic.update_collection_version(version.version_id, body)
 
         updated_version = self.database_provider.get_collection_version(version.version_id)
-        self.assertEqual(updated_version.metadata.name, body["name"])
-        self.assertEqual(updated_version.metadata.description, body["description"])
-        self.assertEqual(updated_version.metadata.contact_name, body["contact_name"])
-        self.assertEqual(updated_version.metadata.contact_email, body["contact_email"])
+        self.assertEqual(updated_version.metadata.name, body.name)
+        self.assertEqual(updated_version.metadata.description, body.description)
+        self.assertEqual(updated_version.metadata.contact_name, body.contact_name)
+        self.assertEqual(updated_version.metadata.contact_email, body.contact_email)
+        self.assertEqual(updated_version.metadata.links, body.links)
 
-    def test_update_collection_wrong_params_fail(self):
+    def test_update_collection_partial_ok(self):
         """
-        Updating a collection with a payload with missing fields should fail
+        `update_collection` should support partial updates: if only a subset of the fields are specified,
+        the previous field should not be modified
         """
         version = self.initialize_unpublished_collection()
-        body = {
-            "name": "new collection name",
-        }
 
-        with self.assertRaises(CollectionUpdateException) as ex:
-            self.business_logic.update_collection_version(version.version_id, body)
+        body = CollectionMetadataUpdate(
+            name="new collection name",
+            description="new collection description",
+            contact_name=None,
+            contact_email=None,
+            links=None,
+        )
 
-        self.assertEqual(ex.exception.errors, [
-            {"name": "description", "reason": "Cannot be blank."},
-            {"name": "contact_name", "reason": "Cannot be blank."},
-            {"name": "contact_email", "reason": "Cannot be blank."},
-        ])
+        self.business_logic.update_collection_version(version.version_id, body)
 
-        # TODO: I would recommend adding more validation logic testing (see existing TestVerifyCollection)
-        # in a separate unit test case later
+        updated_version = self.database_provider.get_collection_version(version.version_id)
+
+        # These two fields should be updated
+        self.assertEqual(updated_version.metadata.name, body.name)
+        self.assertEqual(updated_version.metadata.description, body.description)
+
+        # These three fields should remain the same
+        self.assertEqual(updated_version.metadata.contact_name, version.metadata.contact_name)
+        self.assertEqual(updated_version.metadata.contact_email, version.metadata.contact_email)
+        self.assertEqual(updated_version.metadata.links, version.metadata.links)
 
     def test_update_published_collection_fail(self):
         """
         Updating a collection version that is published should fail
         """
         version = self.initialize_published_collection()
+        body = CollectionMetadataUpdate(
+            name="new collection name",
+            description="new collection description",
+            contact_name="new contact name",
+            contact_email="new_email@czi.com",
+            links=None,
+        )
 
         with self.assertRaises(CollectionUpdateException):
-            self.business_logic.update_collection_version(version.version_id, {"name": "test"})
+            self.business_logic.update_collection_version(version.version_id, body)
 
     def test_update_collection_same_doi(self):
         """
@@ -374,13 +393,13 @@ class TestUpdateCollection(BaseBusinessLogicTestCase):
         self.crossref_provider.fetch_metadata.assert_called_once()
         self.crossref_provider.fetch_metadata.reset_mock()
 
-        body = {
-            "name": "new collection name",
-            "description": "new collection description",
-            "contact_name": "new contact name",
-            "contact_email": "new_email@czi.com",
-            "links": links
-        }
+        body = CollectionMetadataUpdate(
+            name=None,
+            description=None,
+            contact_name=None,
+            contact_email=None,
+            links=links,
+        )
 
         self.business_logic.update_collection_version(version.version_id, body)
 
@@ -402,13 +421,13 @@ class TestUpdateCollection(BaseBusinessLogicTestCase):
         self.crossref_provider.fetch_metadata.assert_called_once()
         self.crossref_provider.fetch_metadata.reset_mock()
 
-        body = {
-            "name": "new collection name",
-            "description": "new collection description",
-            "contact_name": "new contact name",
-            "contact_email": "new_email@czi.com",
-            "links": [Link("new test doi", "DOI", "http://new.test.doi")]
-        }
+        body = CollectionMetadataUpdate(
+            name=None,
+            description=None,
+            contact_name=None,
+            contact_email=None,
+            links=[Link("new test doi", "DOI", "http://new.test.doi")],
+        )
 
         expected_updated_publisher_metadata = {"authors": ["New Test Author"]}
         self.crossref_provider.fetch_metadata = Mock(return_value=expected_updated_publisher_metadata)
@@ -707,12 +726,13 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         published_collection = self.initialize_published_collection()
         new_version = self.business_logic.create_collection_version(published_collection.collection_id)
 
-        body = {
-            "name": "new collection name",
-            "description": "new collection description",
-            "contact_name": "new contact name",
-            "contact_email": "new_email@czi.com",
-        }
+        body = CollectionMetadataUpdate(
+            name="new collection name",
+            description="new collection description",
+            contact_name="new contact name",
+            contact_email="new_email@czi.com",
+            links=None,
+        )
 
         self.business_logic.update_collection_version(new_version.version_id, body)
         self.business_logic.publish_collection_version(new_version.version_id)
