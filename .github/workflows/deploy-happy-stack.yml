@@ -140,7 +140,6 @@ jobs:
           cd frontend
           npm ci
           npx playwright install --with-deps
-          cp src/configs/${DEPLOYMENT_STAGE}.js src/configs/configs.js
           DEBUG=pw:api npm run e2e-${DEPLOYMENT_STAGE}
       - uses: actions/upload-artifact@v2
         if: always()
