@@ -41,12 +41,16 @@ class DatasetProcessingStatus(DatasetStatusGeneric, Enum):
 
 @dataclass
 class DatasetStatus:
-    upload_status: DatasetUploadStatus
-    validation_status: DatasetValidationStatus
-    cxg_status: DatasetConversionStatus
-    rds_status: DatasetConversionStatus
-    h5ad_status: DatasetConversionStatus
-    processing_status: DatasetProcessingStatus
+    upload_status: Optional[DatasetUploadStatus]
+    validation_status: Optional[DatasetValidationStatus]
+    cxg_status: Optional[DatasetConversionStatus]
+    rds_status: Optional[DatasetConversionStatus]
+    h5ad_status: Optional[DatasetConversionStatus]
+    processing_status: Optional[DatasetProcessingStatus]
+
+    @staticmethod 
+    def empty():
+        return DatasetStatus(None, None, None, None, None, None)
 
 @dataclass
 class CollectionId:

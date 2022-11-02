@@ -12,6 +12,8 @@ from backend.layers.common.entities import (
     CollectionVersionId,
     DatasetArtifact,
     DatasetId,
+    DatasetMetadata,
+    DatasetProcessingStatus,
     DatasetStatus,
     DatasetStatusGeneric,
     DatasetVersion,
@@ -353,51 +355,60 @@ class BusinessLogic(BusinessLogicInterface):
         if collection_version is None:
             raise DatasetIngestException(f"Collection version {collection_version_id} does not exist")
 
+
+        new_dataset_version: DatasetVersion
+
         if existing_dataset_version_id is not None:
             dataset_version = self.database_provider.get_dataset_version(existing_dataset_version_id)
-            if dataset_version is not None:
+            if dataset_version is None:
                 raise DatasetIngestException(f"Trying to replace non existant dataset {existing_dataset_version_id}")
 
-        
-
-
-        # Check if a dataset already exists
-        if dataset_id:
-            dataset = Dataset.get(db_session, dataset_id, collection_id=collection_id)
-            if not dataset:
-                raise NonExistentDatasetException(f"Dataset {dataset_id} does not exist")
-        else:
-            dataset = None
-
-        if dataset:
-            # Update dataset
-            if dataset.processing_status.processing_status not in [
-                ProcessingStatus.SUCCESS,
-                ProcessingStatus.FAILURE,
-                ProcessingStatus.INITIALIZED,
+            if dataset_version.status.processing_status not in [
+                DatasetProcessingStatus.SUCCESS,
+                DatasetProcessingStatus.FAILURE,
+                DatasetProcessingStatus.INITIALIZED,
             ]:
-                raise InvalidProcessingStateException(
-                    f"Unable to reprocess dataset {dataset_id}: {dataset.processing_status.processing_status=}"
+                raise DatasetIngestException(
+                    f"Unable to reprocess dataset {existing_dataset_version_id}: {dataset_version.status.processing_status=}"
                 )
-            else:
-                dataset.reprocess()
 
+            # TODO: `add_dataset_version` should not take metadata, since it will be replaced by the processing pipeline
+            new_dataset_version = self.database_provider.add_dataset_version(dataset_version.dataset_id, dataset_version.metadata)
         else:
-            # Add new dataset
-            dataset = Dataset.create(db_session, collection=collection)
+            self.database_provider.create_canonical_dataset(collection_version.version_id)
 
-        dataset.update(processing_status=dataset.new_processing_status())
+        # if dataset:
+        #     # Update dataset
+        #     if dataset.processing_status.processing_status not in [
+        #         ProcessingStatus.SUCCESS,
+        #         ProcessingStatus.FAILURE,
+        #         ProcessingStatus.INITIALIZED,
+        #     ]:
+        #         raise InvalidProcessingStateException(
+        #             f"Unable to reprocess dataset {dataset_id}: {dataset.processing_status.processing_status=}"
+        #         )
+        #     else:
+        #         dataset.reprocess()
 
-        # Start processing link
-        start_upload_sfn(collection_id, dataset.id, url)
+        # else:
+        #     # Add new dataset
+        #     dataset = Dataset.create(db_session, collection=collection)
 
-        return dataset.id
+        # dataset.update(processing_status=dataset.new_processing_status())
+
+        # # Start processing link
+        # start_upload_sfn(collection_id, dataset.id, url)
+
+        # return dataset.id
 
 
     def get_all_datasets(self) -> Iterable[DatasetVersion]:
         pass
 
     def delete_dataset(self, dataset_version_id: DatasetVersionId) -> None:
+        pass
+
+    def set_dataset_metadata(self, dataset_version_id: DatasetVersionId, metadata: DatasetMetadata) -> None:
         pass
 
 

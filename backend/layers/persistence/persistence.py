@@ -139,7 +139,7 @@ class DatabaseProviderInterface:
         pass
 
     def create_canonical_dataset(
-        self, collection_version_id: CollectionVersionId, dataset_metadata: DatasetMetadata
+        self, collection_version_id: CollectionVersionId
     ) -> DatasetVersion:
         """
         Initializes a canonical dataset, generating a dataset_id and a dataset_version_id.
@@ -147,7 +147,7 @@ class DatabaseProviderInterface:
         """
         pass
 
-    def add_dataset_version(self, dataset_id: DatasetId, dataset_metadata: DatasetMetadata) -> DatasetVersion:
+    def add_dataset_version(self, dataset_id: DatasetId) -> DatasetVersion:
         """
         Adds a new dataset version to a canonical dataset.
         Returns the newly created DatasetVersion.
@@ -184,6 +184,12 @@ class DatabaseProviderInterface:
         """
         pass
 
+    def set_dataset_metadata(self, version_id: DatasetVersionId, metadata: DatasetMetadata) -> None:
+        """
+        Sets the metadata for a dataset version
+        """
+        pass
+
     def add_dataset_to_collection_version_mapping(
         self, collection_version_id: CollectionVersionId, dataset_version_id: DatasetVersionId
     ) -> None:
@@ -203,8 +209,7 @@ class DatabaseProviderInterface:
     def replace_dataset_in_collection_version(
         self,
         collection_version_id: CollectionVersionId,
-        old_dataset_version_id: DatasetVersionId,
-        dataset_metadata: DatasetMetadata,
+        old_dataset_version_id: DatasetVersionId
     ) -> None:
         """
         Replaces an existing mapping between a collection version and a dataset version

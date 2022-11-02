@@ -79,8 +79,8 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         for i in range(2):
             dataset_version = self.database_provider.create_canonical_dataset(
                 version.version_id, 
-                dataset_metadata=self.sample_dataset_metadata
             )
+            self.database_provider.set_dataset_metadata(dataset_version.version_id, self.sample_dataset_metadata)
             self.database_provider.add_dataset_to_collection_version_mapping(
                 version.version_id, 
                 dataset_version.version_id
@@ -572,6 +572,14 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         version = self.initialize_unpublished_collection()
         url = "http://test/dataset.url"
 
+        dataset_version = version.datasets[0]
+        self.database_provider.update_dataset_processing_status(dataset_version.version_id, DatasetProcessingStatus.PENDING)
+
+        with self.assertRaises(DatasetIngestException) as ex:
+            self.business_logic.ingest_dataset(version.version_id, url, dataset_version.version_id)
+        self.assertEqual(str(ex.exception), "Unable to reprocess dataset {existing_dataset_version_id}: {dataset_version.status.processing_status=}")
+
+
 
 class TestGetDataset(BaseBusinessLogicTestCase):
 
@@ -659,8 +667,6 @@ class TestUpdateDataset(BaseBusinessLogicTestCase):
             self.assertEqual(version_from_db.artifacts[0].type, "H5AD")
             self.assertEqual(version_from_db.artifacts[0].uri, "http://fake.uri/artifact.h5ad")
 
-        
-
     def test_add_dataset_artifact_wrong_type_fail(self):
         """
         Adding a dataset artifact with an unsupported type should fail
@@ -672,6 +678,16 @@ class TestUpdateDataset(BaseBusinessLogicTestCase):
             with self.assertRaises(DatasetIngestException):
                 self.business_logic.add_dataset_artifact(dataset.version_id, "BAD_TYPE", "http://fake.uri/artifact.h5ad")
 
+    def test_set_dataset_metadata_ok(self):
+        """
+        The dataset metadata can be set using `set_dataset_metadata`
+        """
+        unpublished_collection = self.initialize_unpublished_collection(complete_dataset_ingestion=False)
+        self.assertEqual(2, len(unpublished_collection.datasets))
+        for dataset in unpublished_collection.datasets:
+            self.business_logic.set_dataset_metadata(dataset.version_id, self.sample_dataset_metadata)
+            version_from_db = self.database_provider.get_dataset_version(dataset.version_id)
+            self.assertEqual(version_from_db.metadata, self.sample_collection_metadata)
 
 class TestCollectionOperations(BaseBusinessLogicTestCase):
 

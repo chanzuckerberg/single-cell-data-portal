@@ -141,15 +141,15 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         dataset = self.get_dataset(dataset_id)
         return dataset.artifacts
 
-    def create_canonical_dataset(self, collection_version_id: CollectionVersionId, dataset_metadata: DatasetMetadata) -> DatasetVersion:
+    def create_canonical_dataset(self, collection_version_id: CollectionVersionId) -> DatasetVersion:
         # Creates a dataset and initializes it with one version
         dataset_id = DatasetId(self._id())
         version_id = DatasetVersionId(self._id())
         version = DatasetVersion(
             dataset_id=dataset_id,
             version_id=version_id,
-            processing_status=DatasetStatus.WAITING,
-            metadata=dataset_metadata,
+            status=DatasetStatus.empty(),
+            metadata=None,
             artifacts=[]
         )
         self.datasets_versions[version_id.id] = version
@@ -158,7 +158,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         self.collections_versions[collection_version_id.id].datasets.append(version)
         return version
 
-    def add_dataset_version(self, dataset_id: DatasetId, dataset_metadata: DatasetMetadata) -> str:
+    def add_dataset_version(self, dataset_id: DatasetId) -> str:
         # Unused for now
         raise NotImplementedError
 
@@ -193,15 +193,15 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         version.datasets = [d for d in version.datasets if d.version_id != dataset_version_id]
 
     def replace_dataset_in_collection_version(
-        self, collection_version_id: CollectionVersionId, old_dataset_version_id: DatasetVersionId, dataset_metadata: DatasetMetadata
+        self, collection_version_id: CollectionVersionId, old_dataset_version_id: DatasetVersionId
     ) -> None:
         new_version_id = DatasetVersionId(self._id())
         old_version = self.get_dataset_version(old_dataset_version_id)
         new_version = DatasetVersion(
             dataset_id=old_version.dataset_id,
             version_id=new_version_id,
-            processing_status=DatasetStatus.WAITING,
-            metadata=dataset_metadata,
+            status=DatasetStatus.empty(),
+            metadata=None,
             artifacts=[]
         )
         self.datasets_versions[new_version_id.id] = new_version
