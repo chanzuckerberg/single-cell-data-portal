@@ -857,6 +857,22 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         self.assertCountEqual([replaced_dataset_version_id, dataset_id_to_keep], [d.version_id for d in version_from_db.datasets])
 
 
+    def test_get_all_collections_published_does_not_retrieve_old_versions(self):
+        """
+        `get_collections` with is_published=True should not return versions that were previously
+        published but have a new version
+        """
+        first_version = self.initialize_published_collection()
+        second_version = self.business_logic.create_collection_version(first_version.collection_id)
+        self.business_logic.publish_collection_version(second_version.version_id)
+
+        filter = CollectionQueryFilter(is_published=True)
+        all_collections = list(self.business_logic.get_collections(filter))
+
+        self.assertEqual(1, len(all_collections))
+        self.assertEqual(all_collections[0].version_id, second_version.version_id)
+
+
 if __name__ == '__main__':
     unittest.main()
 
