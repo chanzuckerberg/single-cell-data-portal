@@ -8,7 +8,7 @@ from enum import Enum
 
 class DatasetStatusGeneric:
     pass
-class DatasetUploadStatus(Enum, DatasetStatusGeneric):
+class DatasetUploadStatus(DatasetStatusGeneric, Enum):
     NA = "N/A"
     WAITING = "Waiting"
     UPLOADING = "Uploading"
@@ -17,13 +17,13 @@ class DatasetUploadStatus(Enum, DatasetStatusGeneric):
     CANCEL_PENDING = "Cancel pending"
     CANCELED = "Canceled"
 
-class DatasetValidationStatus(Enum, DatasetStatusGeneric):
+class DatasetValidationStatus(DatasetStatusGeneric, Enum):
     NA = "N/A"
     VALIDATING = "Validating"
     VALID = "Valid"
     INVALID = "Invalid"
 
-class DatasetConversionStatus(Enum, DatasetStatusGeneric):
+class DatasetConversionStatus(DatasetStatusGeneric, Enum):
     NA = "N/A"
     CONVERTING = "Converting"
     CONVERTED = "Converted"
@@ -32,7 +32,7 @@ class DatasetConversionStatus(Enum, DatasetStatusGeneric):
     FAILED = "Failed"
     SKIPPED = "Skipped"
 
-class DatasetProcessingStatus(Enum, DatasetStatusGeneric):
+class DatasetProcessingStatus(DatasetStatusGeneric, Enum):
     INITIALIZED = "INITIALIZED"
     PENDING = "PENDING"
     SUCCESS = "SUCCESS"
