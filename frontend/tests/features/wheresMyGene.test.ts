@@ -58,7 +58,7 @@ describeIfDevStagingProd("Where's My Gene", () => {
 
     await expect(filtersPanel).toHaveSelector(getText("Dataset"));
     await expect(filtersPanel).toHaveSelector(getText("Disease"));
-    await expect(filtersPanel).toHaveSelector(getText("Ethnicity"));
+    await expect(filtersPanel).toHaveSelector(getText("Self-Reported Ethnicity"));
     await expect(filtersPanel).toHaveSelector(getText("Sex"));
 
     // Legend
