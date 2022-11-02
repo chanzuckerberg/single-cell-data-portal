@@ -29,9 +29,16 @@ class DatabaseProviderMock(DatabaseProviderInterface):
     should NOT use this mock.
     """
 
+    # A mapping between canonical collection ids and collection versions.
     collections: Dict[str, str]
+
+    # All the collection versions
     collections_versions: Dict[str, CollectionVersion]
+
+    # A mapping between canonical dataset ids and dataset versions.
     datasets: Dict[str, str]
+
+    # All the dataset versions
     datasets_versions: Dict[str, DatasetVersion]
 
     def __init__(self) -> None:
@@ -60,6 +67,9 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             return self.collections_versions[version_id]
 
     def get_all_collections_versions(self) -> Iterable[CollectionVersion]:  # TODO: add filters if needed
+        return self.collections_versions.values()
+
+    def get_all_mapped_collection_versions(self) -> Iterable[CollectionVersion]:  # TODO: add filters if needed
         for version_id, collection_version in self.collections_versions.items():
             if version_id in self.collections.values():
                 yield collection_version

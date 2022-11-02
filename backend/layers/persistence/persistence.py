@@ -43,7 +43,13 @@ class DatabaseProviderInterface:
     def get_all_collections_versions(self) -> Iterable[CollectionVersion]:
         """
         Retrieves all versions of all collections.
-        # TODO: add a filtering object.
+        TODO: for performance reasons, it might be necessary to add a filtering parameter here.
+        """
+        pass
+
+    def get_all_mapped_collection_versions(self) -> Iterable[CollectionVersion]:
+        """
+        Retrieves all the collection versions that are mapped to a canonical collection.
         """
         pass
 

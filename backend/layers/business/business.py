@@ -262,3 +262,30 @@ class BusinessLogic(BusinessLogicInterface):
         Returns a specific collection version
         """
         return self.database_provider.get_collection_version(version_id)
+
+    def get_collections(self, filter: CollectionQueryFilter) -> Iterable[CollectionVersion]:
+        """
+        Returns an iterable with all the collections matching `filter`
+        """
+        
+        # TODO: instead of `is_published`, we should probably call this `is_active_and_published`
+        if filter.is_published is True:
+            iterable = self.database_provider.get_all_mapped_collection_versions()
+        else:
+            iterable = self.database_provider.get_all_collections_versions()
+
+        def predicate(version: CollectionVersion):
+            # If filter.is_published is either None or
+            published = (
+                filter.is_published is None or 
+                (filter.is_published is True and version.published_at is not None) or 
+                (filter.is_published is False and version.published_at is None)
+            )
+            owner = (
+                filter.owner is None or filter.owner == version.owner
+            )
+            return published and owner
+
+        for collection_version in iterable:
+            if predicate(collection_version):
+                yield collection_version

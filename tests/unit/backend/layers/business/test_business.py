@@ -303,14 +303,6 @@ class TestGetAllCollections(BaseBusinessLogicTestCase):
         for version in versions:
             self.assertIsNone(version.published_at)
 
-        filter = CollectionQueryFilter(is_published=True)
-
-        versions = list(self.business_logic.get_collections(filter))
-        self.assertEqual(2, len(versions))
-        for version in versions:
-            self.assertIsNotNone(version.published_at)
-
-
 class TestUpdateCollection(BaseBusinessLogicTestCase):
     """
     Tests operations that can update an unpublished collection version. Also tests that these operations cannot be
