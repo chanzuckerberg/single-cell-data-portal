@@ -468,9 +468,9 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         url = "http://test/dataset.url"
         fake_collection_version_id = CollectionVersionId("fake_id")
 
-        with self.assertRaises(DatasetIngestException) as ex:
+        with self.assertRaises(CollectionUpdateException) as ex:
             self.business_logic.ingest_dataset(fake_collection_version_id, url, None)
-        self.assertEqual(str(ex.exception), "Collection fake_id does not exist")
+        self.assertEqual(ex.exception.errors, ["Collection version fake_id does not exist"])
 
 
     def test_add_dataset_to_published_collection_fail(self):
@@ -480,8 +480,9 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         version = self.initialize_published_collection()
         url = "http://test/dataset.url"
 
-        with self.assertRaises(DatasetIngestException):
+        with self.assertRaises(CollectionUpdateException) as ex:
             self.business_logic.ingest_dataset(version.version_id, url, None)
+        self.assertEqual(ex.exception.errors, [f"Collection version {version.version_id.id} is published"])
 
     def test_remove_dataset_from_unpublished_collection_ok(self):
         """
@@ -492,10 +493,10 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         self.assertEqual(2, len(version.datasets))
         dataset_version_to_delete_id = version.datasets[0].version_id
 
-        self.business_logic.delete_dataset(dataset_version_to_delete_id)
+        self.business_logic.remove_dataset_version(version.version_id, dataset_version_to_delete_id)
 
         new_version = self.database_provider.get_collection_version(version.version_id)
-        self.assertEqual(0, len(new_version.datasets))
+        self.assertEqual(1, len(new_version.datasets))
 
         # The dataset should still be present in the persistence store
         deleted_dataset = self.database_provider.get_dataset_version(dataset_version_to_delete_id)
@@ -510,7 +511,7 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         dataset_version_to_delete_id = version.datasets[0].version_id
 
         with self.assertRaises(CollectionUpdateException):
-            self.business_logic.delete_dataset(dataset_version_to_delete_id)
+            self.business_logic.remove_dataset_version(version.version_id, dataset_version_to_delete_id)
 
     def test_replace_dataset_in_unpublished_collection_ok(self):
         """
@@ -577,7 +578,7 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
 
         with self.assertRaises(DatasetIngestException) as ex:
             self.business_logic.ingest_dataset(version.version_id, url, dataset_version.version_id)
-        self.assertEqual(str(ex.exception), "Unable to reprocess dataset {existing_dataset_version_id}: {dataset_version.status.processing_status=}")
+        self.assertEqual(str(ex.exception), f"Unable to reprocess dataset {dataset_version.version_id}: processing status is PENDING")
 
 
 

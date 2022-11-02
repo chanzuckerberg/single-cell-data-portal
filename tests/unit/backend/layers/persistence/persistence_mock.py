@@ -109,7 +109,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         del self.collections_versions[version_id.id]
 
     def get_collection_version(self, version_id: CollectionVersionId) -> CollectionVersion:
-        return self.collections_versions[version_id.id]
+        return self.collections_versions.get(version_id.id)
 
     # MAYBE
     def finalize_collection_version(self, collection_id: CollectionId, version_id: CollectionVersionId, published_at: Optional[datetime]) -> None:
@@ -130,7 +130,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         return self.datasets_versions[version_id]
 
     def get_dataset_version(self, version_id: DatasetVersionId) -> DatasetVersion:
-        return self.datasets_versions[version_id.id]
+        return self.datasets_versions.get(version_id.id)
 
     def get_all_datasets(self) -> Iterable[DatasetVersion]:  # TODO: add filters if needed
         for version_id, dataset_version in self.datasets_versions.items():
@@ -194,7 +194,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
 
     def replace_dataset_in_collection_version(
         self, collection_version_id: CollectionVersionId, old_dataset_version_id: DatasetVersionId
-    ) -> None:
+    ) -> DatasetVersion:
         new_version_id = DatasetVersionId(self._id())
         old_version = self.get_dataset_version(old_dataset_version_id)
         new_version = DatasetVersion(
@@ -208,3 +208,4 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         collection_version = self.collections_versions[collection_version_id.id]
         idx = next(i for i, e in enumerate(collection_version.datasets) if e.version_id == old_dataset_version_id)
         collection_version.datasets[idx] = new_version
+        return new_version

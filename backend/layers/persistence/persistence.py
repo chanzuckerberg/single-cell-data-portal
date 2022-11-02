@@ -210,7 +210,7 @@ class DatabaseProviderInterface:
         self,
         collection_version_id: CollectionVersionId,
         old_dataset_version_id: DatasetVersionId
-    ) -> None:
+    ) -> DatasetVersion:
         """
         Replaces an existing mapping between a collection version and a dataset version
         """

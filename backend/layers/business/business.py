@@ -16,6 +16,7 @@ from backend.layers.common.entities import (
     DatasetProcessingStatus,
     DatasetStatus,
     DatasetStatusGeneric,
+    DatasetUploadStatus,
     DatasetVersion,
     DatasetVersionId,
     Link,
@@ -151,7 +152,7 @@ class BusinessLogicInterface:
     # Delete_dataset
     # Replaces delete_dataset
 
-    def delete_dataset(self, dataset_version_id: DatasetVersionId) -> None:
+    def remove_dataset_version(self, dataset_version_id: DatasetVersionId) -> None:
         pass
 
     # get_dataset_assets
@@ -324,6 +325,18 @@ class BusinessLogic(BusinessLogicInterface):
 
         self.database_provider.save_collection_metadata(version_id, current_metadata)
 
+    def _assert_collection_version_unpublished(self, collection_version_id: CollectionVersionId) -> None:
+        """
+        Ensures a collection version exists and is unpublished.
+        This method should be called every time an update to a collection version is requested,
+        since published collection versions are not allowed any changes.
+        """
+        collection_version = self.database_provider.get_collection_version(collection_version_id)
+        if collection_version is None:
+            raise CollectionUpdateException([f"Collection version {collection_version_id.id} does not exist"])
+        if collection_version.published_at is not None:
+            raise CollectionUpdateException([f"Collection version {collection_version_id.id} is published"])
+
     def ingest_dataset(
         self,
         collection_version_id: CollectionVersionId,
@@ -351,17 +364,16 @@ class BusinessLogic(BusinessLogicInterface):
 
         # file_size = resp.get("size")
 
-        collection_version = self.database_provider.get_collection_version(collection_version_id)
-        if collection_version is None:
-            raise DatasetIngestException(f"Collection version {collection_version_id} does not exist")
+        # Ensure that the collection exists and is not published
+        self._assert_collection_version_unpublished(collection_version_id)
 
-
+        # Creates a dataset version that the processing pipeline will point to
         new_dataset_version: DatasetVersion
 
         if existing_dataset_version_id is not None:
             dataset_version = self.database_provider.get_dataset_version(existing_dataset_version_id)
             if dataset_version is None:
-                raise DatasetIngestException(f"Trying to replace non existant dataset {existing_dataset_version_id}")
+                raise DatasetIngestException(f"Trying to replace non existant dataset {existing_dataset_version_id.id}")
 
             if dataset_version.status.processing_status not in [
                 DatasetProcessingStatus.SUCCESS,
@@ -369,47 +381,43 @@ class BusinessLogic(BusinessLogicInterface):
                 DatasetProcessingStatus.INITIALIZED,
             ]:
                 raise DatasetIngestException(
-                    f"Unable to reprocess dataset {existing_dataset_version_id}: {dataset_version.status.processing_status=}"
+                    f"Unable to reprocess dataset {existing_dataset_version_id}: processing status is {dataset_version.status.processing_status.name}"
                 )
 
-            # TODO: `add_dataset_version` should not take metadata, since it will be replaced by the processing pipeline
-            new_dataset_version = self.database_provider.add_dataset_version(dataset_version.dataset_id, dataset_version.metadata)
+            # TODO: this method could very well be called `add_dataset_version`
+            new_dataset_version = self.database_provider.replace_dataset_in_collection_version(collection_version_id, existing_dataset_version_id)
         else:
-            self.database_provider.create_canonical_dataset(collection_version.version_id)
+            new_dataset_version = self.database_provider.create_canonical_dataset(collection_version_id)
 
-        # if dataset:
-        #     # Update dataset
-        #     if dataset.processing_status.processing_status not in [
-        #         ProcessingStatus.SUCCESS,
-        #         ProcessingStatus.FAILURE,
-        #         ProcessingStatus.INITIALIZED,
-        #     ]:
-        #         raise InvalidProcessingStateException(
-        #             f"Unable to reprocess dataset {dataset_id}: {dataset.processing_status.processing_status=}"
-        #         )
-        #     else:
-        #         dataset.reprocess()
+        # Sets an initial processing status for the new dataset version
+        self.database_provider.update_dataset_upload_status(new_dataset_version.version_id, DatasetUploadStatus.WAITING)
+        self.database_provider.update_dataset_processing_status(new_dataset_version.version_id, DatasetProcessingStatus.PENDING)
 
-        # else:
-        #     # Add new dataset
-        #     dataset = Dataset.create(db_session, collection=collection)
+        # Starts the step function process
+        self.step_function_provider.start_step_function(collection_version_id, new_dataset_version.version_id, url)
 
-        # dataset.update(processing_status=dataset.new_processing_status())
-
-        # # Start processing link
-        # start_upload_sfn(collection_id, dataset.id, url)
-
-        # return dataset.id
+        return new_dataset_version.version_id
 
 
-    def get_all_datasets(self) -> Iterable[DatasetVersion]:
-        pass
-
-    def delete_dataset(self, dataset_version_id: DatasetVersionId) -> None:
-        pass
+    def remove_dataset_version(self, collection_version_id: CollectionVersionId, dataset_version_id: DatasetVersionId) -> None:
+        """
+        Removes a dataset version from an existing collection version
+        """
+        self._assert_collection_version_unpublished(collection_version_id)
+        self.database_provider.delete_dataset_from_collection_version(collection_version_id, dataset_version_id)
 
     def set_dataset_metadata(self, dataset_version_id: DatasetVersionId, metadata: DatasetMetadata) -> None:
-        pass
+        """
+        Sets the metadata for a dataset version
+        """
+        self.database_provider.set_dataset_metadata(dataset_version_id, metadata)
+
+    def get_all_datasets(self) -> Iterable[DatasetVersion]:
+        """
+        Retrieves all the datasets from the database
+        """
+        return self.database_provider.get_all_datasets()
+        
 
 
 
