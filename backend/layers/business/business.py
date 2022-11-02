@@ -289,3 +289,6 @@ class BusinessLogic(BusinessLogicInterface):
         for collection_version in iterable:
             if predicate(collection_version):
                 yield collection_version
+
+    def update_collection_version(self, version_id: CollectionVersionId, body: dict) -> None:
+        pass
