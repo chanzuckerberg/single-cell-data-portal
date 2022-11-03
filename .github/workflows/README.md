@@ -15,26 +15,14 @@
 - ##### `upgrade`: TODO
 - ##### `e2e-test`:
   - Runs playwright against deployed frontend app uploading any artifacts
-    - ```bash
-            if [ "${DEPLOYMENT_STAGE}" == "stage" ]; then
-            export DEPLOYMENT_STAGE=staging
-          fi
-          if [ "${DEPLOYMENT_STAGE}" != "prod" ]; then
-            pip3 install -r scripts/smoke_tests/requirements.txt
-            python3 -m scripts.smoke_tests.setup
-          fi
-          cd frontend
-          npm ci
-          npx playwright install --with-deps
-          cp src/configs/${DEPLOYMENT_STAGE}.js src/configs/configs.js
-          DEBUG=pw:api npm run e2e-${DEPLOYMENT_STAGE}
-      ```
+    - https://github.com/chanzuckerberg/single-cell-data-portal/blob/main/.github/workflows/deploy-happy-stack.yml#L133-L144
 - ##### `functional-test`:
   - If environment is not `prod` start up backend container and run `make local-functional-test`
-  - `make local-functional-test` -> `python3 -m unittest discover --start-directory tests/functional --top-level-directory . --verbose`
+  - https://github.com/chanzuckerberg/single-cell-data-portal/blob/main/Makefile#L215-L223
+    - https://github.com/chanzuckerberg/single-cell-data-portal/blob/main/Makefile#L49-L51
 - ##### `performance-test`:
   - If environment is `prod` run `make prod-performance-test`
-  - `make prod-performance-test` -> `python3 -m unittest discover --start-directory tests/performance --top-level-directory . --verbose`
+  - https://github.com/chanzuckerberg/single-cell-data-portal/blob/main/Makefile#L54-L55
 
 ### Workflow: `lint-pr.yml`
 
@@ -44,7 +32,7 @@
 
   - opening, editing, and syncing a pull request
 
-  #### Summary: Runs a GitHub action that lints the PR commit message
+  #### Summary: Runs a GitHub action that lints the PR commit message according to conventional commit standards
 
 ### Workflow: `push-processing-base.yml`
 
@@ -65,18 +53,20 @@ TODO
 
 - ##### `lint`:
 
-  - Inside backend container: `make lint` -> `flake8 backend tests`
-  - Inside frontend container: (frontend/Makefile)`make lint` -> `npm run prettier-check & npm run lint`
-    - `npm run prettier-check` -> `prettier --check .`
-    - `npm run lint` -> `concurrently \"node_modules/.bin/next lint\" \"node_modules/.bin/stylelint --fix '**/*.{js,ts,tsx,css}'\" \"npm run type-check\"`
-      - `node_modules/.bin/next lint` -> runs eslint with config [next.js docs](https://nextjs.org/docs/basic-features/eslint)
-      - `node_modules/.bin/stylelint --fix '**/*.{js,ts,tsx,css}'` -> runs stylelint with config
-      - `npm run type-check` -> `tsc --noEmit`
+  - Inside backend container: `make lint`
+    - https://github.com/chanzuckerberg/single-cell-data-portal/blob/main/Makefile#L19-L20
+  - Inside frontend container: (frontend/Makefile)`make lint`
+    - https://github.com/chanzuckerberg/single-cell-data-portal/blob/main/frontend/Makefile#L18-L19
+      - https://github.com/chanzuckerberg/single-cell-data-portal/blob/main/frontend/package.json#L111
+      - https://github.com/chanzuckerberg/single-cell-data-portal/blob/main/frontend/package.json#L110
+        - `node_modules/.bin/next lint` -> runs eslint with config [next.js docs](https://nextjs.org/docs/basic-features/eslint)
+        - `node_modules/.bin/stylelint --fix '**/*.{js,ts,tsx,css}'` -> runs stylelint with config
+        - https://github.com/chanzuckerberg/single-cell-data-portal/blob/main/frontend/package.json#L109
 
 - ##### `e2e-test`:
 
   - Installs dependencies and runs local frontend server pointing at dev env BE API:
-    - `npm ci &&npx playwright install --with-deps && cp src/configs/dev.js src/configs/configs.js && npm run dev&`
+    - https://github.com/chanzuckerberg/single-cell-data-portal/blob/main/.github/workflows/push-tests.yml#L80-L83
   - Runs e2e tests:
     - `npm run e2e` ->`playwright test`
       - runs all tests in `frontend/tests` using playwright config, no TEST_ENV provided defaults to `local`
@@ -89,25 +79,25 @@ TODO
 - ##### `backend-unit-test`:
 
   - Checks if containers need to be rebuilt based on diffs on docker + requirements files
-  - Runs tests in docker-compose: `make local-init-test-data & make all-local-unit-test-backend`
-    - `make local-init-test-data` -> `docker-compose $(COMPOSE_OPTS) run --rm -T backend /bin/bash -c "pip3 install awscli && cd /single-cell-data-portal && scripts/setup_dev_data.sh"`
-    - `make all-local-unit-test-backend` -> (inside backend container) `make container-unittest;`
-      - `make container-unittest` -> `DEPLOYMENT_STAGE=test PYTHONWARNINGS=ignore:ResourceWarning python3 \ -m unittest discover --start-directory tests/unit/backend --top-level-directory . --verbose;`
+  - Runs tests in docker-compose: https://github.com/chanzuckerberg/single-cell-data-portal/blob/main/.github/workflows/push-tests.yml#L214-L216
+    - https://github.com/chanzuckerberg/single-cell-data-portal/blob/main/Makefile#L106-L107
+    - https://github.com/chanzuckerberg/single-cell-data-portal/blob/main/Makefile#L182-L185
+      - https://github.com/chanzuckerberg/single-cell-data-portal/blob/main/Makefile#L27-L30
 
 - ##### `processing-unit-test`:
 
   - Checks if containers need to be rebuilt based on diffs on docker + requirements files
-  - Runs tests in docker-compose
-    - `make local-init-test-data` -> `docker-compose $(COMPOSE_OPTS) run --rm -T backend /bin/bash -c "pip3 install awscli && cd /single-cell-data-portal && scripts/setup_dev_data.sh"`
-    - `make local-unit-test-processing` -> (inside processing container) `make processing-unittest;`
-      - `make processing-unittest` -> `DEPLOYMENT_STAGE=test PYTHONWARNINGS=ignore:ResourceWarning python3 \ -m unittest discover --start-directory tests/unit/processing_container --top-level-directory . --verbose;`
+  - Runs tests in docker-compose: https://github.com/chanzuckerberg/single-cell-data-portal/blob/main/.github/workflows/push-tests.yml#L260-L262
+    - https://github.com/chanzuckerberg/single-cell-data-portal/blob/main/Makefile#L106-L107
+    - https://github.com/chanzuckerberg/single-cell-data-portal/blob/main/Makefile#L189-L192
+      - https://github.com/chanzuckerberg/single-cell-data-portal/blob/main/Makefile#L33-L36
 
 - ##### `wmg-processing-unit-test`:
 
   - Checks if containers need to be rebuilt based on diffs on docker + requirements files
-  - Runs tests in docker-compose:
-    - `make local-unit-test-wmg-processing` -> (inside wmg_processing container)`make wmg-processing-unittest`
-      - `make wmg-processing-unittest` -> `DEPLOYMENT_STAGE=test PYTHONWARNINGS=ignore:ResourceWarning python3 \ -m unittest discover --start-directory tests/unit/wmg_processing --top-level-directory . --verbose;`
+  - Runs tests in docker-compose: https://github.com/chanzuckerberg/single-cell-data-portal/blob/main/.github/workflows/push-tests.yml#L306-L307
+    - `https://github.com/chanzuckerberg/single-cell-data-portal/blob/main/Makefile#L196-L199
+      - https://github.com/chanzuckerberg/single-cell-data-portal/blob/main/Makefile#L39-L42
 
 - ##### `push-image`: TODO
 - ##### `create_deployment`: TODO
