@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import Iterable, Optional
 from backend.corpora.common.providers.crossref_provider import CrossrefDOINotFoundException, CrossrefException
+from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.business.entities import CollectionMetadataUpdate, CollectionQueryFilter, DatasetArtifactDownloadData
 from backend.layers.business.exceptions import ArtifactNotFoundException, CollectionCreationException, CollectionPublishException, CollectionUpdateException, DatasetIngestException, DatasetUpdateException
 
@@ -25,7 +26,6 @@ from backend.layers.common.entities import (
 )
 from typing import Iterable, List, Optional
 
-from backend.layers.common.entities import CollectionId, CollectionMetadata, CollectionVersion, CollectionVersionId, DatasetArtifact, DatasetId, DatasetStatus, DatasetVersion, DatasetVersionId, Link
 from backend.layers.persistence.persistence import DatabaseProviderInterface
 from backend.layers.thirdparty.crossref_provider import CrossrefProviderInterface
 from backend.layers.thirdparty.s3_provider import S3Provider
@@ -38,71 +38,6 @@ import logging
 
 from backend.layers.thirdparty.uri_provider import UriProvider, UriProviderInterface
 
-
-class BusinessLogicInterface:
-
-    def get_collections(self, filter: CollectionQueryFilter) -> Iterable[CollectionVersion]:
-        pass
-
-    def get_published_collection_version(self, collection_id: CollectionId) -> CollectionVersion:
-        pass
-
-    def get_collection_version(self, version_id: CollectionVersionId) -> CollectionVersion:
-        pass
-
-    def create_collection(self, collection_metadata: CollectionMetadata) -> CollectionVersion:
-        pass
-
-    def delete_collection(self, collection_id: CollectionId) -> None:
-        pass
-
-    def update_collection_version(self, version_id: CollectionVersionId, body: CollectionMetadataUpdate) -> None:
-        pass
-
-    def create_collection_version(self, collection_id: CollectionId) -> CollectionVersion:
-        pass
-
-    def delete_collection_version(self, version_id: CollectionVersionId) -> None:
-        pass
-
-    def publish_collection_version(self, version_id: CollectionVersionId) -> None:
-        pass
-
-    def ingest_dataset(
-        self,
-        collection_version_id: CollectionVersionId,
-        url: str,
-        existing_dataset_version_id: Optional[DatasetVersionId],
-    ) -> DatasetVersionId:
-        pass
-
-    def get_all_published_datasets(self) -> Iterable[DatasetVersion]:
-        pass
-
-    def remove_dataset_version(self, dataset_version_id: DatasetVersionId) -> None:
-        pass
-
-    def get_dataset_artifacts(self, dataset_version_id: DatasetVersionId) -> Iterable[DatasetArtifact]:
-        pass
-
-    def get_dataset_artifact_download_data(
-        self, dataset_version_id: DatasetId, artifact_id: str
-    ) -> DatasetArtifactDownloadData:
-        pass
-
-    def update_dataset_version_status(
-        self, dataset_version_id: DatasetVersionId, status_key: str, new_dataset_status: DatasetStatusGeneric
-    ) -> None:
-        pass
-
-    def add_dataset_artifact(self, dataset_version_id: DatasetVersionId, artifact_type: str, artifact_uri: str) -> None:
-        pass
-
-    def get_dataset_status(self, dataset_version_id: DatasetVersionId) -> DatasetStatus:
-        pass
-
-
-# TODO: move it to a separate file
 class BusinessLogic(BusinessLogicInterface):
 
     database_provider: DatabaseProviderInterface
