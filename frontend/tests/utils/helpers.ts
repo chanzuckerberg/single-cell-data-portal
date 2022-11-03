@@ -1,29 +1,23 @@
-import { ElementHandle, expect, Page, test } from "@playwright/test";
+import { ElementHandle, expect, Page } from "@playwright/test";
 import { TEST_ENV } from "tests/common/constants";
 import { TEST_PASSWORD, TEST_URL, TEST_USERNAME } from "../common/constants";
 import { getText } from "./selectors";
 
-const { describe, skip } = test;
-
 export const TIMEOUT_MS = 3 * 1000;
+
 
 // (seve): We use TEST_ENV to describe the environment that playwright is running against. Sometimes the FE tests are run against a local instance of the app which points at a deployed instance of the backend.
 
-export const describeIfDeployed =
-  TEST_ENV.includes("local") || TEST_ENV === "prod" ? skip : describe;
-
 //(thuang): BE API doesn't work in local happy
-const TEST_ENVS = ["dev", "staging", "prod"];
-export const describeIfDevStagingProd = TEST_ENVS.includes(TEST_ENV)
-  ? describe
-  : skip;
+const TEST_ENVS_DEV_STAGING_PROD = ["dev", "staging", "prod"];
+
+export const isDevStagingProd = TEST_ENVS_DEV_STAGING_PROD.includes(TEST_ENV);
 
 // Skip tests unless environment is dev or staging; used by tests that require a deployed environment but also modify
 // environment data (e.g. creating collections, which should be avoided in prod).
 const TEST_ENVS_DEV_STAGING = ["dev", "staging"];
-export const describeIfDevStaging = TEST_ENVS_DEV_STAGING.includes(TEST_ENV)
-  ? describe
-  : skip;
+
+export const isDevStaging = TEST_ENVS_DEV_STAGING.includes(TEST_ENV);
 
 export async function goToPage(
   url: string = TEST_URL,
