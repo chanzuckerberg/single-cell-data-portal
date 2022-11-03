@@ -1,4 +1,5 @@
 from datetime import datetime
+from ensurepip import version
 from importlib.metadata import metadata
 from nntplib import ArticleInfo
 import uuid
@@ -132,13 +133,26 @@ class DatabaseProviderMock(DatabaseProviderInterface):
     def get_dataset_version(self, version_id: DatasetVersionId) -> DatasetVersion:
         return self.datasets_versions.get(version_id.id)
 
-    def get_all_datasets(self) -> Iterable[DatasetVersion]:  # TODO: add filters if needed
+    def get_all_datasets(self) -> Iterable[DatasetVersion]:  
+        """
+        For now, this only returns all the active datasets, i.e. the datasets that belong to a published collection
+        """
+        active_collections = self.get_all_mapped_collection_versions()
+        active_datasets = [i.version_id.id for s in [c.datasets for c in active_collections] for i in s]
+        for version_id, dataset_version in self.datasets_versions.items():
+            if version_id in active_datasets:
+                yield dataset_version
+
+    def _get_all_datasets(self) -> Iterable[DatasetVersion]:  
+        """
+        Returns all the mapped datasets. Currently unused
+        """
         for version_id, dataset_version in self.datasets_versions.items():
             if version_id in self.datasets.values():
                 yield dataset_version
 
-    def get_dataset_artifacts(self, dataset_id: DatasetId) -> List[DatasetArtifact]:
-        dataset = self.get_dataset(dataset_id)
+    def get_dataset_artifacts(self, dataset_version_id: DatasetId) -> List[DatasetArtifact]:
+        dataset = self.datasets_versions[dataset_version_id.id]
         return dataset.artifacts
 
     def create_canonical_dataset(self, collection_version_id: CollectionVersionId) -> DatasetVersion:
@@ -162,9 +176,10 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         # Unused for now
         raise NotImplementedError
 
-    def create_dataset_artifact(self, version_id: DatasetVersionId, artifact: DatasetArtifact) -> None:
+    def add_dataset_artifact(self, version_id: DatasetVersionId, artifact_type: str, artifact_uri: str) -> None:
         version = self.datasets_versions[version_id.id]
-        version.artifacts.append(artifact)
+        artifact_id = self._id()
+        version.artifacts.append(DatasetArtifact(artifact_id, artifact_type, artifact_uri))
 
     def update_dataset_processing_status(self, version_id: DatasetVersionId, status: DatasetProcessingStatus) -> None:
         dataset_version = self.datasets_versions[version_id.id]
@@ -209,3 +224,6 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         idx = next(i for i, e in enumerate(collection_version.datasets) if e.version_id == old_dataset_version_id)
         collection_version.datasets[idx] = new_version
         return new_version
+
+    def get_dataset_version_status(self, version_id: DatasetVersionId) -> DatasetStatus:
+        return self.datasets_versions[version_id.id].status

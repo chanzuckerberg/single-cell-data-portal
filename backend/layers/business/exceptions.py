@@ -43,3 +43,6 @@ class DatasetIngestException(BusinessException):
 
 class CollectionPublishException(BusinessException):
     pass
+
+class ArtifactNotFoundException(BusinessException):
+    pass

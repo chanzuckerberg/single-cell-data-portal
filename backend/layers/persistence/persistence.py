@@ -184,6 +184,12 @@ class DatabaseProviderInterface:
         """
         pass
 
+    def get_dataset_version_status(self, version_id: DatasetVersionId) -> DatasetStatus:
+        """
+        Returns the status for a dataset version
+        """
+        pass
+
     def set_dataset_metadata(self, version_id: DatasetVersionId, metadata: DatasetMetadata) -> None:
         """
         Sets the metadata for a dataset version

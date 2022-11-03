@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Iterable, Optional
 from backend.corpora.common.providers.crossref_provider import CrossrefDOINotFoundException, CrossrefException
 from backend.layers.business.entities import CollectionMetadataUpdate, CollectionQueryFilter, DatasetArtifactDownloadData
-from backend.layers.business.exceptions import CollectionCreationException, CollectionUpdateException, DatasetIngestException
+from backend.layers.business.exceptions import ArtifactNotFoundException, CollectionCreationException, CollectionUpdateException, DatasetIngestException
 
 from backend.layers.common.entities import (
     CollectionId,
@@ -26,6 +26,7 @@ from typing import Iterable, List, Optional
 from backend.layers.common.entities import CollectionId, CollectionMetadata, CollectionVersion, CollectionVersionId, DatasetArtifact, DatasetId, DatasetStatus, DatasetVersion, DatasetVersionId, Link
 from backend.layers.persistence.persistence import DatabaseProviderInterface
 from backend.layers.thirdparty.crossref_provider import CrossrefProviderInterface
+from backend.layers.thirdparty.s3_provider import S3Provider
 from backend.layers.thirdparty.step_function_provider import StepFunctionProviderInterface
 
 import re
@@ -146,7 +147,7 @@ class BusinessLogicInterface:
     # Get_all_datasets
     # Replaces get_dataset_index
 
-    def get_all_datasets(self) -> Iterable[DatasetVersion]:
+    def get_all_published_datasets(self) -> Iterable[DatasetVersion]:
         pass
 
     # Delete_dataset
@@ -158,14 +159,14 @@ class BusinessLogicInterface:
     # get_dataset_assets
     # Replaces get_dataset_assets
 
-    def get_dataset_artifacts(self, dataset_id: DatasetId) -> Iterable[DatasetArtifact]:
+    def get_dataset_artifacts(self, dataset_version_id: DatasetVersionId) -> Iterable[DatasetArtifact]:
         pass
 
     # Download_dataset_asset
     # Replaces post_dataset_asset
 
     def get_dataset_artifact_download_data(
-        self, dataset_id: DatasetId, artifact_id: str
+        self, dataset_version_id: DatasetId, artifact_id: str
     ) -> DatasetArtifactDownloadData:
         pass
 
@@ -180,7 +181,7 @@ class BusinessLogicInterface:
     # Get_dataset_status
     # Replaces get_status
 
-    def get_dataset_status(self, dataset_id: DatasetId) -> DatasetStatus:
+    def get_dataset_status(self, dataset_version_id: DatasetVersionId) -> DatasetStatus:
         pass
 
 
@@ -190,16 +191,19 @@ class BusinessLogic(BusinessLogicInterface):
     database_provider: DatabaseProviderInterface
     crossref_provider: CrossrefProviderInterface
     step_function_provider: StepFunctionProviderInterface
+    s3_provider: S3Provider
 
     def __init__(
         self,
         database_provider: DatabaseProviderInterface,
         crossref_provider: CrossrefProviderInterface,
         step_function_provider: StepFunctionProviderInterface,
+        s3_provider: S3Provider,
     ) -> None:
         self.crossref_provider = crossref_provider
         self.database_provider = database_provider
         self.step_function_provider = step_function_provider
+        self.s3_provider = s3_provider
         super().__init__()
 
     def _get_publisher_metadata(self, doi: str, errors: list) -> Optional[dict]:
@@ -412,14 +416,42 @@ class BusinessLogic(BusinessLogicInterface):
         """
         self.database_provider.set_dataset_metadata(dataset_version_id, metadata)
 
-    def get_all_datasets(self) -> Iterable[DatasetVersion]:
+    def get_all_published_datasets(self) -> Iterable[DatasetVersion]:
         """
-        Retrieves all the datasets from the database
+        Retrieves all the datasets from the database that belong to a published collection
         """
         return self.database_provider.get_all_datasets()
-        
 
+    def get_dataset_artifacts(self, dataset_version_id: DatasetVersionId) -> Iterable[DatasetArtifact]:
+        """
+        Returns all the artifacts for a dataset
+        """
+        return self.database_provider.get_dataset_artifacts(dataset_version_id)
 
+    def get_dataset_artifact_download_data(self, dataset_version_id: DatasetVersionId, artifact_id: str) -> DatasetArtifactDownloadData:
+        """
+        Returns download data for an artifact, including a presigned URL
+        """
+        artifacts = self.get_dataset_artifacts(dataset_version_id)
+        artifact = next((a for a in artifacts if a.id == artifact_id), None)
+
+        if not artifact:
+            raise ArtifactNotFoundException(f"Artifact {artifact_id} not found in dataset {dataset_version_id}")
+
+        artifact_url = urlparse(artifact.uri)
+
+        file_name = artifact_url.path[1:]
+        file_type = artifact.type
+        file_size = self.s3_provider.get_file_size(artifact.uri)
+        presigned_url = self.s3_provider.generate_presigned_url(artifact.uri)
+
+        return DatasetArtifactDownloadData(file_name, file_type, file_size, presigned_url)
+
+    def get_dataset_status(self, dataset_version_id: DatasetVersionId) -> DatasetStatus:
+        """
+        Returns the dataset status for a specific dataset version
+        """
+        return self.database_provider.get_dataset_version_status(dataset_version_id)
 
 
     # def start_upload_sfn(collection_id, dataset_id, url):

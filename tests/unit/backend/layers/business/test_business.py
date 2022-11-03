@@ -4,6 +4,7 @@ from datetime import datetime
 from unittest.mock import Mock
 
 from backend.layers.thirdparty.crossref_provider import CrossrefProviderInterface
+from backend.layers.thirdparty.s3_provider import S3Provider
 from backend.layers.thirdparty.step_function_provider import StepFunctionProviderInterface
 
 from backend.corpora.common.providers.crossref_provider import CrossrefDOINotFoundException, CrossrefException
@@ -29,11 +30,13 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         # By default does nothing. Can be mocked by single test cases.
         self.crossref_provider = CrossrefProviderInterface()
         self.step_function_provider = StepFunctionProviderInterface()
+        self.s3_provider = S3Provider()
 
         self.business_logic = BusinessLogic(
             database_provider=self.database_provider, 
             crossref_provider=self.crossref_provider,
             step_function_provider=self.step_function_provider,
+            s3_provider=self.s3_provider
         )
 
         self.sample_collection_metadata = CollectionMetadata(
@@ -586,13 +589,13 @@ class TestGetDataset(BaseBusinessLogicTestCase):
 
     def test_get_all_datasets_ok(self):
         """
-        All dataset that belong to a published collection can be retrieved with `get_all_datasets`
+        All dataset that belong to a published collection can be retrieved with `get_all_published_datasets`
         """
         # This will add 4 datasets, but only 2 should be retrieved by `get_all_datasets`
         published_version = self.initialize_published_collection() 
         unpublished_version = self.initialize_unpublished_collection()
 
-        datasets = list(self.business_logic.get_all_datasets())
+        datasets = list(self.business_logic.get_all_published_datasets())
         self.assertEqual(2, len(datasets))
         self.assertCountEqual([d.version_id for d in datasets], [d.version_id for d in published_version.datasets])
         
@@ -602,9 +605,9 @@ class TestGetDataset(BaseBusinessLogicTestCase):
         Artifacts belonging to a dataset can be obtained with `get_dataset_artifacts`
         """
         published_version = self.initialize_published_collection()
-        dataset_id = published_version.datasets[0].dataset_id
+        dataset_version_id = published_version.datasets[0].version_id
 
-        artifacts = list(self.business_logic.get_dataset_artifacts(dataset_id))
+        artifacts = list(self.business_logic.get_dataset_artifacts(dataset_version_id))
         self.assertEqual(3, len(artifacts))
         self.assertCountEqual([a.type for a in artifacts], ["H5AD", "CXG", "RDS"])
 
@@ -617,13 +620,19 @@ class TestGetDataset(BaseBusinessLogicTestCase):
         artifact = next(artifact for artifact in dataset.artifacts if artifact.type == "H5AD")
         self.assertIsNotNone(artifact)
 
+        expected_file_size = 12345
+        expected_presigned_url = "http://fake.presigned/url"
+
+        self.s3_provider.get_file_size = Mock(return_value=expected_file_size)
+        self.s3_provider.generate_presigned_url = Mock(return_value=expected_presigned_url)
+
         # TODO: requires mocking of the S3 provider. implement later
-        download_data = self.business_logic.get_dataset_artifact_download_data(dataset.dataset_id, artifact.id)
+        download_data = self.business_logic.get_dataset_artifact_download_data(dataset.version_id, artifact.id)
         expected_download_data = DatasetArtifactDownloadData(
-            "local.h5ad",
+            "artifact.h5ad",
             "H5AD",
-            0,
-            ""
+            expected_file_size,
+            expected_presigned_url
             )
         self.assertEqual(download_data, expected_download_data)
 
@@ -634,7 +643,7 @@ class TestGetDataset(BaseBusinessLogicTestCase):
         """
         published_version = self.initialize_published_collection()
         dataset = published_version.datasets[0]
-        status = self.business_logic.get_dataset_status(dataset.dataset_id)
+        status = self.business_logic.get_dataset_status(dataset.version_id)
         self.assertEqual(status.processing_status, DatasetProcessingStatus.SUCCESS)
         self.assertEqual(status.upload_status, DatasetUploadStatus.UPLOADED)
         self.assertEqual(status.validation_status, DatasetValidationStatus.VALID)
