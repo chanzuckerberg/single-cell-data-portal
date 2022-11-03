@@ -137,14 +137,14 @@ Where tests are skipped vs. run in different environments.
 
 <table >
 <colgroup>
-<col >
-<col >
-<col >
-<col >
-<col >
-<col >
-<col >
-<col >
+<col />
+<col />
+<col />
+<col />
+<col />
+<col />
+<col />
+<col />
 </colgroup>
 <thead>
   <tr>
@@ -164,27 +164,11 @@ Where tests are skipped vs. run in different environments.
 </thead>
 <tbody>
   <tr>
-    <td>`describeIfDeployed`</td>
-    <td>skip</td>
-    <td>skip</td>
-    <td>describe</td>
-    <td>skip</td>
-    <td>describe</td>
-    <td>describe</td>
-    <td>describe</td>
-  </tr>
-  <tr>
-    <td>`describeIfDevStagingProd`</td>
-    <td>skip</td>
-    <td>skip</td>
-    <td>describe</td>
-    <td>describe</td>
-    <td>skip</td>
-    <td>skip</td>
-    <td>describe</td>
-  </tr>
-  <tr>
-    <td>`describeIfDevStaging`</td>
+    <td>
+      <ul>
+         <li>"Collection Revision"</li>
+      </ul>
+   </td>
     <td>skip</td>
     <td>skip</td>
     <td>describe</td>
@@ -193,37 +177,23 @@ Where tests are skipped vs. run in different environments.
     <td>skip</td>
     <td>describe</td>
   </tr>
-
   <tr>
     <td>
       <ul>
          <li>`./features/wheresMyGene.test.ts`</li>
-         <li>"invalid DOIs"</li>
-      </ul>
-   </td>
-    <td>skip</td>
-    <td>skip</td>
-    <td>describe</td>
-    <td>describe</td>
-    <td>skip</td>
-    <td>skip</td>
-    <td>describe</td>
-  </tr>
-  <tr>
-    <td>
-      <ul>
          <li>"creates and deletes a collection"</li>
          <li>"dataset order"</li>
          <li>"publish a collection"</li>
-         <li>"Collection Revision"</li>
+         <li>"invalid DOIs"</li>
       </ul>
+
    </td>
     <td>skip<br></td>
     <td>skip<br></td>
     <td>describe</td>
-    <td>skip<br></td>
-    <td>describe</td>
-    <td>describe</td>
+    <td>describe<br></td>
+    <td>skip</td>
+    <td>skip</td>
     <td>describe</td>
   </tr>
 </tbody>
