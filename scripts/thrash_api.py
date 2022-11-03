@@ -1,5 +1,8 @@
 # Authored by Bruce Martin
-# https://czi-sci.slack.com/archives/C023Q1APASK/p1667438044981199?thread_ts=1667431712.857239&cid=C023Q1APASK
+# The script is used for checking if our /curation/* endpoints stay performant
+# after being hit concurrently in a short period of time
+# Context: https://czi-sci.slack.com/archives/C023Q1APASK/p1667438044981199?thread_ts=1667431712.857239&cid=C023Q1APASK
+# Note: The Slack link will expire around 11/2/2023 or whatever CZI's Slack retention policy entails
 
 import argparse
 import concurrent.futures
