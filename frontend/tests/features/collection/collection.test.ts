@@ -4,7 +4,6 @@ import { ROUTES } from "src/common/constants/routes";
 import { Collection } from "src/common/entities";
 import { sortByCellCountDescending } from "src/components/Collection/components/CollectionDatasetsGrid/components/DatasetsGrid/common/util";
 import { INVALID_DOI_ERROR_MESSAGE } from "src/components/CreateCollectionModal/components/Content/common/constants";
-import { API_URL } from "src/configs/configs";
 import { BLUEPRINT_SAFE_TYPE_OPTIONS, TEST_URL } from "tests/common/constants";
 import {
   goToPage,
@@ -187,7 +186,7 @@ async function showCreateForm(page: Page) {
   await page.click(getText("Create Collection"));
 }
 
-const collectionEndpoint = `${API_URL}/dp/v1/collections`;
+const collectionEndpointPath = `/dp/v1/collections`;
 
 /**
  * Submit create invalid collection form.
@@ -197,7 +196,7 @@ async function submitCreateFormInvalid(page: Page) {
   return await Promise.all([
     page.waitForResponse(
       (response) =>
-        response.url() === collectionEndpoint &&
+        response.url().includes(collectionEndpointPath) &&
         response.status() === HTTP_STATUS_CODE.BAD_REQUEST
     ),
     page.click(getTestID("create-button")),
@@ -212,7 +211,7 @@ async function submitCreateForm(page: Page) {
   return await Promise.all([
     page.waitForResponse(
       (response) =>
-        response.url() === collectionEndpoint &&
+        response.url().includes(collectionEndpointPath) &&
         response.status() === HTTP_STATUS_CODE.OK
     ),
     page.click(getTestID("create-button")),
