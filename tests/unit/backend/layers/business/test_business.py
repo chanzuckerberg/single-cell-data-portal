@@ -768,12 +768,14 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
 
         published_version = self.database_provider.get_collection_version(unpublished_collection.version_id)
         self.assertIsNotNone(published_version.published_at) # TODO: ideally, do a date assertion here (requires mocking)
-        self.assertEqual(published_version.collection_id, unpublished_collection.version_id)
 
-        # get_collection retrieves the new version
+        # The published and unpublished collection have the same collection_id and version_id
+        self.assertEqual(published_version.collection_id, unpublished_collection.collection_id)
+        self.assertEqual(published_version.version_id, unpublished_collection.version_id)
+
+        # get_collection retrieves the correct version
         version = self.business_logic.get_published_collection_version(unpublished_collection.collection_id)
         self.assertEqual(version.version_id, published_version.version_id)
-        self.assertNotEqual(version.version_id, unpublished_collection.version_id)
 
     def test_publish_collection_with_no_datasets_fail(self):
         """
@@ -799,14 +801,21 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
             links=None,
         )
 
+        self.assertIsNone(new_version.published_at)
+
         self.business_logic.update_collection_version(new_version.version_id, body)
         self.business_logic.publish_collection_version(new_version.version_id)
 
         new_version_from_db = self.database_provider.get_collection_version(new_version.version_id)
-        self.assertIsNone(new_version_from_db.published_at)
-        self.assertEqual(new_version.collection_id, new_version_from_db.collection_id)
+        self.assertIsNotNone(new_version_from_db.published_at)
+        self.assertEqual(published_collection.collection_id, new_version_from_db.collection_id)
         self.assertEqual(new_version.version_id, new_version_from_db.version_id)
         self.assertEqual(new_version.datasets, new_version_from_db.datasets)
+
+        self.assertEqual(new_version_from_db.metadata.name, body.name)
+        self.assertEqual(new_version_from_db.metadata.description, body.description)
+        self.assertEqual(new_version_from_db.metadata.contact_name, body.contact_name)
+        self.assertEqual(new_version_from_db.metadata.contact_email, body.contact_email)
 
     def test_publish_version_with_removed_dataset_ok(self):
         """
@@ -818,7 +827,7 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         dataset_version_to_remove = new_version.datasets[0].version_id
         dataset_version_to_keep = new_version.datasets[1].version_id
 
-        self.business_logic.delete_dataset(dataset_version_to_remove)
+        self.business_logic.remove_dataset_version(new_version.version_id, dataset_version_to_remove)
 
         # The new version should have only one dataset (before publishing)
         version_from_db = self.database_provider.get_collection_version(new_version.version_id)
@@ -938,8 +947,8 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         # Get collection retrieves the new version (with two datasets, including the replaced one)
         version = self.business_logic.get_published_collection_version(published_collection.collection_id)
         self.assertEqual(version.version_id, new_version.version_id)
-        self.assertEqual(3, len(version.datasets))
-        self.assertCountEqual([replaced_dataset_version_id, dataset_id_to_keep], [d.version_id for d in version_from_db.datasets])
+        self.assertEqual(2, len(version.datasets))
+        self.assertCountEqual([replaced_dataset_version_id, dataset_id_to_keep], [d.version_id for d in version.datasets])
 
 
     def test_get_all_collections_published_does_not_retrieve_old_versions(self):

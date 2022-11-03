@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Iterable, Optional
 from backend.corpora.common.providers.crossref_provider import CrossrefDOINotFoundException, CrossrefException
 from backend.layers.business.entities import CollectionMetadataUpdate, CollectionQueryFilter, DatasetArtifactDownloadData
-from backend.layers.business.exceptions import ArtifactNotFoundException, CollectionCreationException, CollectionUpdateException, DatasetIngestException, DatasetUpdateException
+from backend.layers.business.exceptions import ArtifactNotFoundException, CollectionCreationException, CollectionPublishException, CollectionUpdateException, DatasetIngestException, DatasetUpdateException
 
 from backend.layers.common.entities import (
     CollectionId,
@@ -486,6 +486,25 @@ class BusinessLogic(BusinessLogicInterface):
             raise DatasetIngestException(f"Wrong artifact type for {dataset_version_id}: {artifact_type}")
 
         self.database_provider.add_dataset_artifact(dataset_version_id, artifact_type, artifact_uri)
+
+
+    def create_collection_version(self, collection_id: CollectionId) -> CollectionVersion:
+        new_version = self.database_provider.add_collection_version(collection_id)
+        return new_version
+
+    def delete_collection_version(self, version_id: CollectionVersionId) -> None:
+        self.database_provider.delete_collection_version(version_id)
+
+    def publish_collection_version(self, version_id: CollectionVersionId) -> None:
+        version = self.database_provider.get_collection_version(version_id)
+
+        if version.published_at is not None:
+            raise CollectionPublishException("Cannot publish an already published collection")
+
+        if len(version.datasets) == 0:
+            raise CollectionPublishException("Cannot publish a collection with no datasets")
+
+        self.database_provider.finalize_collection_version(version.collection_id, version_id, None)
 
 
 

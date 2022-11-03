@@ -88,22 +88,26 @@ class DatabaseProviderMock(DatabaseProviderInterface):
     def save_collection_publisher_metadata(self, version_id: CollectionVersionId, publisher_metadata: Optional[dict]) -> None:
         self.collections_versions[version_id.id].publisher_metadata = publisher_metadata
 
-    def add_collection_version(self, collection_id: CollectionId) -> str:
+    def add_collection_version(self, collection_id: CollectionId) -> CollectionVersion:
         current_version_id = self.collections[collection_id.id]
         current_version = self.collections_versions[current_version_id]
         new_version_id = CollectionVersionId(self._id())
-        # Note: since datasets are immutable, there is no need to clone datasets here.
+        # Note: since datasets are immutable, there is no need to clone datasets here, 
+        # but the list that contains datasets needs to be copied, since it's a pointer.
+        import copy
+        new_dataset_list = copy.copy(current_version.datasets)
+
         collection_version = CollectionVersion(
             collection_id=current_version.collection_id,
             version_id = new_version_id,
             owner = current_version.owner,
             metadata=current_version.metadata,
             publisher_metadata=current_version.publisher_metadata,
-            datasets=current_version.datasets,
+            datasets=new_dataset_list,
             published_at=None
         )
         self.collections_versions[new_version_id.id] = collection_version
-        return new_version_id.id
+        return collection_version
 
     def delete_collection_version(self, version_id: CollectionVersionId) -> None:
         # Can only delete an unpublished collection
