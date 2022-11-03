@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Iterable, Optional
 from backend.corpora.common.providers.crossref_provider import CrossrefDOINotFoundException, CrossrefException
 from backend.layers.business.entities import CollectionMetadataUpdate, CollectionQueryFilter, DatasetArtifactDownloadData
-from backend.layers.business.exceptions import ArtifactNotFoundException, CollectionCreationException, CollectionUpdateException, DatasetIngestException
+from backend.layers.business.exceptions import ArtifactNotFoundException, CollectionCreationException, CollectionUpdateException, DatasetIngestException, DatasetUpdateException
 
 from backend.layers.common.entities import (
     CollectionId,
@@ -11,12 +11,14 @@ from backend.layers.common.entities import (
     CollectionVersion,
     CollectionVersionId,
     DatasetArtifact,
+    DatasetConversionStatus,
     DatasetId,
     DatasetMetadata,
     DatasetProcessingStatus,
     DatasetStatus,
     DatasetStatusGeneric,
     DatasetUploadStatus,
+    DatasetValidationStatus,
     DatasetVersion,
     DatasetVersionId,
     Link,
@@ -171,7 +173,7 @@ class BusinessLogicInterface:
         pass
 
     def update_dataset_version_status(
-        self, dataset_version_id: DatasetVersionId, new_dataset_status: DatasetStatusGeneric
+        self, dataset_version_id: DatasetVersionId, status_key: str, new_dataset_status: DatasetStatusGeneric
     ) -> None:
         pass
 
@@ -452,6 +454,39 @@ class BusinessLogic(BusinessLogicInterface):
         Returns the dataset status for a specific dataset version
         """
         return self.database_provider.get_dataset_version_status(dataset_version_id)
+
+    def update_dataset_version_status(self, dataset_version_id: DatasetVersionId, status_key: str, new_dataset_status: DatasetStatusGeneric) -> None:
+        """
+        Updates the status of a dataset version. 
+        status_key can be one of: [upload_status, validation_status, cxg_status, rds_status, h5ad_status, processing_status]
+        """
+        if status_key == "upload_status" and isinstance(new_dataset_status, DatasetUploadStatus):
+            self.database_provider.update_dataset_upload_status(dataset_version_id, new_dataset_status)
+        elif status_key == "processing_status" and isinstance(new_dataset_status, DatasetProcessingStatus):
+            self.database_provider.update_dataset_processing_status(dataset_version_id, new_dataset_status)
+        elif status_key == "validation_status" and isinstance(new_dataset_status, DatasetValidationStatus):
+            self.database_provider.update_dataset_validation_status(dataset_version_id, new_dataset_status)
+        elif status_key == "cxg_status" and isinstance(new_dataset_status, DatasetConversionStatus):
+            self.database_provider.update_dataset_conversion_status(dataset_version_id, "cxg_status", new_dataset_status)
+        elif status_key == "rds_status" and isinstance(new_dataset_status, DatasetConversionStatus):
+            self.database_provider.update_dataset_conversion_status(dataset_version_id, "rds_status", new_dataset_status)
+        elif status_key == "h5ad_status" and isinstance(new_dataset_status, DatasetConversionStatus):
+            self.database_provider.update_dataset_conversion_status(dataset_version_id, "h5ad_status", new_dataset_status)
+        else:
+            raise DatasetUpdateException(f"Invalid status update for dataset {dataset_version_id}: cannot set {status_key} to {new_dataset_status}")
+
+    def add_dataset_artifact(self, dataset_version_id: DatasetVersionId, artifact_type: str, artifact_uri: str) -> None:
+        """
+        Registers an artifact to a dataset version.
+        """
+        
+        # TODO: we should probably validate that artifact_uri is a valid S3 URI
+
+        if artifact_type not in ["H5AD", "CXG", "RDS"]:
+            raise DatasetIngestException(f"Wrong artifact type for {dataset_version_id}: {artifact_type}")
+
+        self.database_provider.add_dataset_artifact(dataset_version_id, artifact_type, artifact_uri)
+
 
 
     # def start_upload_sfn(collection_id, dataset_id, url):

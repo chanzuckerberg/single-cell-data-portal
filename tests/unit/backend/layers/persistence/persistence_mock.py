@@ -181,6 +181,10 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         artifact_id = self._id()
         version.artifacts.append(DatasetArtifact(artifact_id, artifact_type, artifact_uri))
 
+    def set_dataset_metadata(self, version_id: DatasetVersionId, metadata: DatasetMetadata) -> None:
+        version = self.datasets_versions[version_id.id]
+        version.metadata = metadata
+
     def update_dataset_processing_status(self, version_id: DatasetVersionId, status: DatasetProcessingStatus) -> None:
         dataset_version = self.datasets_versions[version_id.id]
         dataset_version.status.processing_status = status

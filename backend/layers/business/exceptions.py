@@ -40,6 +40,9 @@ class ImmutableCollectionException(BusinessException):
 class DatasetIngestException(BusinessException):
     pass
 
+class DatasetUpdateException(BusinessException):
+    pass
+
 
 class CollectionPublishException(BusinessException):
     pass
