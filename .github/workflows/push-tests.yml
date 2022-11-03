@@ -358,7 +358,7 @@ jobs:
   create_deployment:
     if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod' )
     needs:
-      - push-image
+      - push-prod-images
     runs-on: ubuntu-20.04
     steps:
       - name: Generate payload
