@@ -1,6 +1,7 @@
 import json
 import os
 import unittest
+from urllib.parse import quote
 import requests
 from tenacity import retry, stop_after_attempt, wait_fixed
 
@@ -94,7 +95,7 @@ class TestRevisions(BaseFunctionalTestCase):
             # Check that the published dataset is still the same
             meta_payload_after_revision = self.session.get(f"{self.api}/dp/v1/datasets/meta?url={explorer_url}").json()
             self.assertDictEqual(meta_payload_before_revision, meta_payload_after_revision)
-            schema_after_revision = self.session.get(f"{self.api}/cellxgene/e/{dataset_id}.cxg/api/v0.2/schema").json()
+            schema_after_revision = self.get_schema_with_retries(dataset_id).json()
             self.assertDictEqual(schema_before_revision, schema_after_revision)
 
         with self.subTest("Publishing a revised dataset replaces the original dataset"):
@@ -206,11 +207,30 @@ class TestRevisions(BaseFunctionalTestCase):
             res = self.get_schema_with_retries(original_dataset_id, desired_http_status_code=302)
             self.assertStatusCode(302, res)
 
-    @retry(wait=wait_fixed(1), stop=stop_after_attempt(50))
     def get_schema_with_retries(self, dataset_id, desired_http_status_code=requests.codes.ok):
-        schema_res = self.session.get(f"{self.api}/cellxgene/e/{dataset_id}.cxg/api/v0.2/schema", allow_redirects=False)
+        @retry(wait=wait_fixed(1), stop=stop_after_attempt(50))
+        def get_s3_uri():
+            s3_uri_res = self.session.get(
+                f"{self.api}/cellxgene/e/{dataset_id}.cxg/api/v0.3/s3_uri", allow_redirects=False
+            )
+            if s3_uri_res.status_code != desired_http_status_code:
+                raise UndesiredHttpStatusCodeError
+            return s3_uri_res
 
-        if schema_res.status_code != desired_http_status_code:
-            raise UndesiredHttpStatusCodeError
+        @retry(wait=wait_fixed(1), stop=stop_after_attempt(50))
+        def get_schema(s3_uri_response_object):
+            # parse s3_uri_response_object content
+            s3_path = s3_uri_response_object.content.decode("utf-8").strip().strip('"')
+            # s3_uri endpoints use double-encoded s3 uri path parameters
+            s3_path_url = quote(quote(s3_path, safe=""))
+            schema_res = self.session.get(
+                f"{self.api}/cellxgene/s3_uri/{s3_path_url}/api/v0.3/schema", allow_redirects=False
+            )
+            if schema_res.status_code != requests.codes.ok:
+                raise UndesiredHttpStatusCodeError
+            return schema_res
 
-        return schema_res
+        s3_uri_response = get_s3_uri()
+        if desired_http_status_code != requests.codes.ok:
+            return s3_uri_response
+        return get_schema(s3_uri_response)

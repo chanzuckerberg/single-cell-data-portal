@@ -2,10 +2,10 @@ import json
 import unittest
 from unittest.mock import patch
 
-from backend.corpora.api_server.app import app
+from backend.api_server.app import app
 from backend.wmg.api.v1 import find_dim_option_values
 from backend.wmg.data.schemas.cube_schema import expression_summary_non_indexed_dims
-from tests.unit.backend.corpora.fixtures.environment_setup import EnvironmentSetup
+from tests.unit.backend.fixtures.environment_setup import EnvironmentSetup
 from tests.unit.backend.wmg.fixtures.test_primary_filters import (
     test_snapshot_id,
     test_organism_terms,
