@@ -15,6 +15,7 @@ from backend.layers.business.exceptions import CollectionUpdateException, Invali
     CollectionCreationException, DatasetIngestException, CollectionPublishException
 from backend.layers.common.entities import CollectionMetadata, CollectionVersion, CollectionVersionId, DatasetArtifact, DatasetMetadata, DatasetProcessingStatus, DatasetStatus, DatasetUploadStatus, DatasetValidationStatus, DatasetVersionId, Link
 from backend.layers.persistence.persistence import DatabaseProviderInterface
+from backend.layers.thirdparty.uri_provider import UriProviderInterface
 from tests.unit.backend.layers.persistence.persistence_mock import DatabaseProviderMock
 
 class BaseBusinessLogicTestCase(unittest.TestCase):
@@ -27,16 +28,19 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
     def setUp(self) -> None:
         self.database_provider = DatabaseProviderMock()
 
-        # By default does nothing. Can be mocked by single test cases.
+        # By default these do nothing. They can be mocked by single test cases.
         self.crossref_provider = CrossrefProviderInterface()
         self.step_function_provider = StepFunctionProviderInterface()
         self.s3_provider = S3Provider()
+        self.uri_provider = UriProviderInterface()
+        self.uri_provider.validate = Mock(return_value=True) # By default, every link should be valid
 
         self.business_logic = BusinessLogic(
             database_provider=self.database_provider, 
             crossref_provider=self.crossref_provider,
             step_function_provider=self.step_function_provider,
-            s3_provider=self.s3_provider
+            s3_provider=self.s3_provider,
+            uri_provider=self.uri_provider,
         )
 
         self.sample_collection_metadata = CollectionMetadata(
@@ -486,6 +490,20 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         with self.assertRaises(CollectionUpdateException) as ex:
             self.business_logic.ingest_dataset(version.version_id, url, None)
         self.assertEqual(ex.exception.errors, [f"Collection version {version.version_id.id} is published"])
+
+    def test_add_dataset_with_invalid_link_fail(self):
+        """
+        Adding a dataset with a wrong link should result in a failure
+        """
+        version = self.initialize_published_collection()
+        url = "http://bad.url"
+
+        self.uri_provider.validate = Mock(return_value=False)
+
+        with self.assertRaises(DatasetIngestException) as ex:
+            self.business_logic.ingest_dataset(version.version_id, url, None)
+        self.assertEqual(str(ex.exception), f"Trying to upload invalid URI: http://bad.url")
+    
 
     def test_remove_dataset_from_unpublished_collection_ok(self):
         """
