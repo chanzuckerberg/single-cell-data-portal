@@ -128,7 +128,7 @@ paths:
         - {}
       description: >-
         This will return all datasets and associated attributes.
-      operationId: backend.portal.api.app.v1.collections.get_collection_details
+      operationId: backend.portal.api.app.v1.collections_test.collection_id.get
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       responses:
@@ -156,7 +156,7 @@ paths:
       description: >-
         This will return a private version of the public collection with all datasets and assoicated attributes of the
         public collection.
-      operationId: backend.portal.api.app.v1.collections.post_collection_revision
+      operationId: backend.portal.api.app.v1.collections_test.collection_id.post
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       responses:
@@ -174,7 +174,6 @@ paths:
           $ref: "#/components/responses/404"
         "409":
           $ref: "#/components/responses/409"
-
     put:
       tags:
         - collections
@@ -183,7 +182,7 @@ paths:
         - cxguserCookie: []
       description: >-
         Update a private collection's summary, links, contact info, and description details.
-      operationId: backend.portal.api.app.v1.collections.update_collection
+      operationId: backend.portal.api.app.v1.collections_test.collection_id.put
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       requestBody:
@@ -220,7 +219,6 @@ paths:
           $ref: "#/components/responses/401"
         "403":
           $ref: "#/components/responses/403"
-
     delete:
       tags:
         - collections
@@ -230,7 +228,7 @@ paths:
       description: >-
         Deletes an entire private collection from cellxgene data-portal, including any generated artifacts/assets and
         deployments.
-      operationId: backend.portal.api.app.v1.collections.delete_collection
+      operationId: backend.portal.api.app.v1.collections_test.collection_id.delete
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       responses:

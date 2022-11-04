@@ -67,24 +67,6 @@ def get(from_date: int = None, to_date: int = None, token_info: Optional[dict] =
 
 
 @dbconnect
-def get_collection_details(collection_id: str, token_info: dict):
-    db_session = g.db_session
-    collection = get_collection_else_forbidden(db_session, collection_id, include_tombstones=True)
-    if collection.tombstone:
-        result = ""
-        response = 410
-    else:
-        get_tombstone_datasets = (
-            is_user_owner_or_allowed(token_info, collection.owner)
-            and collection.visibility == CollectionVisibility.PRIVATE
-        )
-        result = collection.reshape_for_api(get_tombstone_datasets)
-        response = 200
-        result["access_type"] = "WRITE" if is_user_owner_or_allowed(token_info, collection.owner) else "READ"
-    return make_response(jsonify(result), response)
-
-
-@dbconnect
 def get_collections_index():
     # TODO (ebezzi): this is very similar to `get` above. Eventually they should be consolidated
     db_session = g.db_session
@@ -125,12 +107,7 @@ def post_collection_revision_common(collection_id: str, token_info: dict):
     return collection_revision
 
 
-@dbconnect
-def post_collection_revision(collection_id: str, token_info: dict):
-    collection_revision = post_collection_revision_common(collection_id, token_info)
-    result = collection_revision.reshape_for_api()
-    result["access_type"] = "WRITE"
-    return make_response(jsonify(result), 201)
+
 
 
 def get_publisher_metadata(doi: str, errors: list) -> Optional[dict]:
@@ -268,49 +245,6 @@ def create_collection_common(body: dict, user: str, doi: str, errors: list):
     )
 
     return collection.id
-
-
-@dbconnect
-def delete_collection(collection_id: str, token_info: dict):
-    db_session = g.db_session
-    collection = get_collection_else_forbidden(db_session, collection_id, owner=owner_or_allowed(token_info))
-    if collection.visibility == CollectionVisibility.PUBLIC:
-        revision = Collection.get_collection(
-            db_session,
-            revision_of=collection_id,
-            owner=owner_or_allowed(token_info),
-        )
-        if revision:
-            revision.delete()
-        collection.tombstone_collection()
-    else:
-        collection.delete()
-    return "", 204
-
-
-@dbconnect
-def update_collection(collection_id: str, body: dict, token_info: dict):
-    db_session = g.db_session
-    collection, errors = get_collection_and_verify_body(db_session, collection_id, body, token_info)
-    # Compute the diff between old and new DOI
-    old_doi = collection.get_doi()
-    new_doi_url = None
-    if new_doi_node := get_doi_link_node(body, errors):
-        if new_doi_url := portal_get_normalized_doi_url(new_doi_node, errors):
-            new_doi_node["link_url"] = new_doi_url
-    if old_doi and not new_doi_url:
-        # If the DOI was deleted, remove the publisher_metadata field
-        collection.update(publisher_metadata=None)
-    elif new_doi_url != old_doi:
-        # If the DOI has changed, fetch and update the metadata
-        publisher_metadata = get_publisher_metadata(new_doi_url, errors)
-        body["publisher_metadata"] = publisher_metadata
-    if errors:
-        raise InvalidParametersHTTPException(detail=errors)
-    collection.update(**body)
-    result = collection.reshape_for_api(tombstoned_datasets=True)
-    result["access_type"] = "WRITE"
-    return make_response(jsonify(result), 200)
 
 
 def get_collection_and_verify_body(db_session: Session, collection_id: str, body: dict, token_info: dict):
