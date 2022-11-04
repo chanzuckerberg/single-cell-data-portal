@@ -7,10 +7,9 @@ from backend.wmg.data.schemas.corpus_schema import create_tdb_integrated_corpus
 from backend.wmg.data.utils import create_empty_cube
 from backend.wmg.data.schemas.cube_schema import (
     expression_summary_schema,
-    expression_summary_fmg_schema,
     cell_counts_schema,
 )
-
+from backend.wmg.data.schemas.marker_genes_cube_schema import expression_summary_fmg_schema
 
 class TestIntegratedCorpusSchema(unittest.TestCase):
     def test_integrated_corpus_var_schema_contain_correct_dimensions(self):

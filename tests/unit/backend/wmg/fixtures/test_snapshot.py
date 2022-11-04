@@ -20,14 +20,16 @@ from backend.wmg.data.schemas.cube_schema import (
     expression_summary_logical_attrs,
     expression_summary_logical_dims,
     expression_summary_schema,
-    expression_summary_fmg_indexed_dims,
-    expression_summary_fmg_logical_attrs,
-    expression_summary_fmg_logical_dims,
-    expression_summary_fmg_schema,
     cell_counts_logical_attrs,
     cell_counts_schema,
     cell_counts_indexed_dims,
     cell_counts_logical_dims,
+)
+from backend.wmg.data.schemas.marker_genes_cube_schema import (
+    expression_summary_fmg_indexed_dims,
+    expression_summary_fmg_logical_attrs,
+    expression_summary_fmg_logical_dims,
+    expression_summary_fmg_schema,
 )
 from backend.wmg.data.snapshot import WmgSnapshot, CELL_TYPE_ORDERINGS_FILENAME
 from backend.wmg.data.tiledb import create_ctx
