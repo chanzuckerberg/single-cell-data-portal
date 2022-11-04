@@ -1,7 +1,7 @@
 import gc
 import logging
 import os
-from typing import List
+from typing import List, Union, Tuple
 import json
 
 import tiledb
@@ -53,15 +53,11 @@ def build_integrated_corpus(dataset_directory: List, corpus_path: str):
             logger.info(f"Processing dataset {index + 1} of {dataset_count}")
             h5ad_file_path = f"{dataset_directory}/{dataset}/local.h5ad"
             logger.info(f"{h5ad_file_path=}")
-            try:
-                dataset_id, gene_ids = process_h5ad_for_corpus(h5ad_file_path, corpus_path)
-                # (mdunitz) TODO Can the above be parallelized? need to be careful handling
-                # global indexes but tiledb has a lock I think
-                gc.collect()
-            except ValueError:
-                # this is needed for a test to pass, otherwise "process_h5ad_for_corpus"
-                # returns nothing for some reason
-                dataset_id = gene_ids = None
+            dataset_id, gene_ids = process_h5ad_for_corpus(h5ad_file_path, corpus_path)
+            # (mdunitz) TODO Can the above be parallelized? need to be careful handling
+            # global indexes but tiledb has a lock I think
+            gc.collect()
+
             if dataset_id and gene_ids:
                 dataset_gene_mapping[dataset_id] = gene_ids
 
@@ -80,11 +76,14 @@ def build_integrated_corpus(dataset_directory: List, corpus_path: str):
     logger.info(f"{dataset_count=}, {gene_count=}, {cell_count=}")
 
 
-def process_h5ad_for_corpus(h5ad_path: str, corpus_path: str):
+def process_h5ad_for_corpus(h5ad_path: str, corpus_path: str) -> Union[Tuple[str, dict], Tuple[None, None]]:
     """
     Given the location of a h5ad dataset and a group name, check the dataset is not already loaded
     then read the dataset into the tiledb object (under group name), updating the var and feature indexes
     to avoid collisions within the larger tiledb object
+
+    Returns a tuple of (dataset_id: str, gene_ids: list) if the dataset is loaded and validated. Otherwise,
+    returns a tuple of (None, None).
     """
     dataset_id = should_load_dataset(h5ad_path, corpus_path)
     if not dataset_id:
