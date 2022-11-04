@@ -144,7 +144,7 @@ jobs:
 
   push-prod-images:
     needs:
-      - push-image
+      - add-image-tags
     runs-on: ubuntu-20.04
     if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
     steps:
@@ -314,7 +314,7 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
 
-  push-image:
+  add-image-tags:
     needs:
       - backend-unit-test
       - processing-unit-test
@@ -342,7 +342,7 @@ jobs:
         uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.2.1
         with:
           happy_version: "0.23.0"
-      - name: Docker build, push, and tag
+      - name: Docker re-tag
         shell: bash
         run: |
           happy addtags --aws-profile "" --source-tag sha-${GITHUB_SHA:0:8} --dest-tag branch-$(echo ${GITHUB_REF#refs/heads/} | sed 's/[\+\/]/-/g')
