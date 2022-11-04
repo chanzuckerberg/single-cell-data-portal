@@ -65,7 +65,7 @@ class TestCorpusLoad(unittest.TestCase):
 
     @patch("backend.wmg.pipeline.integrated_corpus.job.tiledb.consolidate")
     @patch("backend.wmg.pipeline.integrated_corpus.job.tiledb.vacuum")
-    @patch("backend.wmg.pipeline.integrated_corpus.job.process_h5ad_for_corpus", new=Mock(return_value=(None, None)))
+    @patch("backend.wmg.pipeline.integrated_corpus.job.process_h5ad_for_corpus")
     def test__load_loads_all_datasets_in_directory(self, mock_process_h5ad, mock_vacuum, mock_consolidate):
         build_integrated_corpus(self.path_to_datasets, self.corpus_path)
         self.assertEqual(mock_process_h5ad.call_count, 2)
