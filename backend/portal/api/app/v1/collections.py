@@ -26,7 +26,7 @@ from backend.common.utils.regex import CONTROL_CHARS, DOI_REGEX_COMPILED, CURIE_
 
 
 @dbconnect
-def get_collections_list(from_date: int = None, to_date: int = None, token_info: Optional[dict] = None):
+def get(from_date: int = None, to_date: int = None, token_info: Optional[dict] = None):
     db_session = g.db_session
     all_collections = Collection.list_attributes_in_time_range(
         db_session,
@@ -86,7 +86,7 @@ def get_collection_details(collection_id: str, token_info: dict):
 
 @dbconnect
 def get_collections_index():
-    # TODO (ebezzi): this is very similar to `get_collections_list` above. Eventually they should be consolidated
+    # TODO (ebezzi): this is very similar to `get` above. Eventually they should be consolidated
     db_session = g.db_session
 
     filtered_collection = Collection.list_attributes_in_time_range(
@@ -232,7 +232,7 @@ def portal_get_normalized_doi_url(doi_node: dict, errors: list) -> Optional[str]
     return doi_url
 
 
-def create_collection(body: dict, user: str):
+def post(body: dict, user: str):
     errors = []
     doi_url = None
     if doi_node := get_doi_link_node(body, errors):

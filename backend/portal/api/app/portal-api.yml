@@ -24,7 +24,7 @@ paths:
       description: >-
         This lists all collections and their IDs that currently exist in the corpora. If a parameter is specified as
         a filter, then only collections that meet the status criteria will be outputted.
-      operationId: backend.portal.api.app.v1.collections.get_collections_list
+      operationId: backend.portal.api.app.v1.collections.get
       parameters:
         - $ref: "#/components/parameters/query_user_id"
         - name: from_date
@@ -73,7 +73,7 @@ paths:
         - cxguserCookie: []
       description: >-
         Creates a new collection in corpora. Once a collection is created it can be linked to datasets.
-      operationId: backend.portal.api.app.v1.collections.create_collection
+      operationId: backend.portal.api.app.v1.collections.post
       requestBody:
         content:
           application/json:
