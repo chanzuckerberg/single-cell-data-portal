@@ -54,9 +54,7 @@ def build_integrated_corpus(dataset_directory: List, corpus_path: str):
             h5ad_file_path = f"{dataset_directory}/{dataset}/local.h5ad"
             logger.info(f"{h5ad_file_path=}")
             try:
-                dataset_id, gene_ids = process_h5ad_for_corpus(
-                    h5ad_file_path, corpus_path
-                )  
+                dataset_id, gene_ids = process_h5ad_for_corpus(h5ad_file_path, corpus_path)
                 # (mdunitz) TODO Can the above be parallelized? need to be careful handling
                 # global indexes but tiledb has a lock I think
                 gc.collect()

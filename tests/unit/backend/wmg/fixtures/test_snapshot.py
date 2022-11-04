@@ -99,7 +99,7 @@ def random_expression_summary_fmg_values(coords):
 
 
 def all_ones_expression_summary_values(coords):
-    return {"nnz": np.ones(len(coords)), "n_cells": np.ones(len(coords)), "sum": np.ones(len(coords))}
+    return {"nnz": np.ones(len(coords)), "sum": np.ones(len(coords))}
 
 
 def all_tens_cell_counts_values(coords) -> List[int]:
@@ -300,7 +300,6 @@ def create_expression_summary_cube(
             for i in range(len(expression_summary_indexed_dims), len(expression_summary_logical_dims))
         }
         physical_attr_values.update(logical_attr_values)
-        print(len(physical_attr_values))
         cube[tuple(physical_dim_values)] = physical_attr_values
 
     return cube_dir
