@@ -34,6 +34,25 @@ resource aws_ecs_task_definition task_definition {
   container_definitions = <<EOF
 [
   {
+    "name": "datadog-agent",
+    "essential": true,
+    "image": "public.ecr.aws/datadog/agent:latest",
+    "environment": [
+      {
+        "name": "DD_API_KEY",
+        "value": "arn:aws:secretsmanager:us-west-2:699936264352:secret:dd_api_key-nGPNwx"
+      },
+      {
+        "name": "ECS_FARGATE",
+        "value": "true"
+      },
+      {
+        "name": "DD_SITE",
+        "value": "datadoghq.com"
+      }
+    ]
+  },
+  {
     "name": "web",
     "essential": true,
     "image": "${var.image}",
