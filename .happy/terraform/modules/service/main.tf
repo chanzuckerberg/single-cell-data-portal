@@ -20,6 +20,8 @@ resource aws_ecs_service service {
     assign_public_ip = false
   }
 
+  enable_execute_command = true
+
   wait_for_steady_state = var.wait_for_steady_state
 }
 
@@ -40,7 +42,7 @@ resource aws_ecs_task_definition task_definition {
     "environment": [
       {
         "name": "DD_API_KEY",
-        "value": "arn:aws:secretsmanager:us-west-2:699936264352:secret:dd_api_key-nGPNwx"
+        "valueFrom": "arn:aws:secretsmanager:us-west-2:699936264352:secret:dd_api_key-nGPNwx"
       },
       {
         "name": "ECS_FARGATE",
@@ -50,7 +52,15 @@ resource aws_ecs_task_definition task_definition {
         "name": "DD_SITE",
         "value": "datadoghq.com"
       }
-    ]
+    ],
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-stream-prefix" : "fargate",
+        "awslogs-group": "${aws_cloudwatch_log_group.cloud_watch_logs_group.id}",
+        "awslogs-region": "${data.aws_region.current.name}"
+      }
+    }
   },
   {
     "name": "web",
