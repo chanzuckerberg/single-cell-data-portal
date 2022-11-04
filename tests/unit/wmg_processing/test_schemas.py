@@ -11,6 +11,7 @@ from backend.wmg.data.schemas.cube_schema import (
 )
 from backend.wmg.data.schemas.marker_genes_cube_schema import expression_summary_fmg_schema
 
+
 class TestIntegratedCorpusSchema(unittest.TestCase):
     def test_integrated_corpus_var_schema_contain_correct_dimensions(self):
         with tempfile.TemporaryDirectory() as corpus_dir:

@@ -37,6 +37,8 @@ expression_summary_fmg_non_indexed_dims_no_gene_ontology = [
 # The full set of logical cube dimensions by which the cube can be queried.
 expression_summary_fmg_logical_dims = expression_summary_fmg_indexed_dims + expression_summary_fmg_non_indexed_dims
 
+filters = [tiledb.ZstdFilter(level=+22)]
+
 expression_summary_fmg_domain = tiledb.Domain(
     [
         tiledb.Dim(name=cube_indexed_dim, domain=None, tile=None, dtype="ascii", filters=filters)
