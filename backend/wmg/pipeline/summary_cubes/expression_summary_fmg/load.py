@@ -49,7 +49,7 @@ def build_in_mem_cube(
             organism_ontology_term_id,
             cell_type_ontology_term_id,
             *attr_values,
-            _n,
+            _,
             cube_idx,
         ) = grp.tolist()
         mask = cube_nnz[cube_idx] != 0

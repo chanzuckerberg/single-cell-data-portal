@@ -1,4 +1,3 @@
-import concurrent
 import logging
 
 import numba as nb
@@ -54,29 +53,24 @@ def reduce_X(
     Reduce the expression data stored in the integrated corpus by summing it by gene for each cube row (unique combo
     of cell attributes)
     """
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        cfg = {
-            "py.init_buffer_bytes": 512 * MB,
-            "py.exact_init_buffer_bytes": "true",
-        }
-        with tiledb.open(f"{tdb_group}/{INTEGRATED_ARRAY_NAME}", ctx=create_ctx(config_overrides=cfg)) as expression:
-            iterable = expression.query(return_incomplete=True, order="U", attrs=["rankit"])
-            future = None
-            for i, result in enumerate(iterable.df[:]):
-                logger.info(f"reduce integrated expression data, iter {i}")
-                if future is not None:
-                    future.result()  # forces a wait
-                future = executor.submit(
-                    gene_expression_sum_x_cube_dimension,
-                    result["rankit"].values,
-                    result["obs_idx"].values,
-                    result["var_idx"].values,
-                    cube_indices,
-                    cube_sum,
-                    cube_sqsum,
-                    cube_nnz,
-                    cube_nnz_thr,
-                )
+    cfg = {
+        "py.init_buffer_bytes": 512 * MB,
+        "py.exact_init_buffer_bytes": "true",
+    }
+    with tiledb.open(f"{tdb_group}/{INTEGRATED_ARRAY_NAME}", ctx=create_ctx(config_overrides=cfg)) as expression:
+        query_results = expression.query(return_incomplete=True, order="U", attrs=["rankit"])
+        for i, result in enumerate(query_results.df[:]):
+            logger.info(f"reduce integrated expression data, i={i}")
+            gene_expression_sum_x_cube_dimension(
+                result["rankit"].values,
+                result["obs_idx"].values,
+                result["var_idx"].values,
+                cube_indices,
+                cube_sum,
+                cube_sqsum,
+                cube_nnz,
+                cube_nnz_thr,
+            )
 
 
 # TODO: this could be further optimize by parallel chunking.  Might help large arrays if compute ends up being a bottleneck. # noqa E501
