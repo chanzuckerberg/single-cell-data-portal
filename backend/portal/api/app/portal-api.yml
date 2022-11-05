@@ -383,7 +383,7 @@ paths:
 
         If publishing modification to a previously published collection, this will replace the old collection with the new
         published collection. The old collection will no longer be accessible.
-      operationId: backend.portal.api.app.v1.collection_id.publish.post
+      operationId: backend.portal.api.app.v1.collections.collection_id.publish.post
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       requestBody:
