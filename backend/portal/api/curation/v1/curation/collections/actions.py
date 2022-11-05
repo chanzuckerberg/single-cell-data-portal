@@ -1,8 +1,9 @@
 from flask import jsonify, g, make_response
+
+from backend.portal.api.collections_common import create_collection_common
 from backend.portal.api.curation.v1.curation.collections.common import reshape_for_curation_api, \
     curation_get_normalized_doi_url
 from backend.portal.api.app.v1.authorization import is_super_curator, owner_or_allowed
-from backend.portal.api.app.v1.collections import create_collection_common
 from backend.common.corpora_orm import CollectionVisibility, DbCollection, ProjectLinkType
 from backend.common.utils.http_exceptions import ForbiddenHTTPException, InvalidParametersHTTPException
 from backend.api_server.db import dbconnect

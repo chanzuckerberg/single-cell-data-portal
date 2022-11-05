@@ -24,7 +24,7 @@ paths:
       description: >-
         This lists all collections and their IDs that currently exist in the corpora. If a parameter is specified as
         a filter, then only collections that meet the status criteria will be outputted.
-      operationId: backend.portal.api.app.v1.collections.get
+      operationId: backend.portal.api.app.v1.collections.actions.get
       parameters:
         - $ref: "#/components/parameters/query_user_id"
         - name: from_date
@@ -73,7 +73,7 @@ paths:
         - cxguserCookie: []
       description: >-
         Creates a new collection in corpora. Once a collection is created it can be linked to datasets.
-      operationId: backend.portal.api.app.v1.collections.post
+      operationId: backend.portal.api.app.v1.collections.actions.post
       requestBody:
         content:
           application/json:
@@ -128,7 +128,7 @@ paths:
         - {}
       description: >-
         This will return all datasets and associated attributes.
-      operationId: backend.portal.api.app.v1.collections_test.collection_id.get
+      operationId: backend.portal.api.app.v1.collections.collection_id.get
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       responses:
@@ -156,7 +156,7 @@ paths:
       description: >-
         This will return a private version of the public collection with all datasets and assoicated attributes of the
         public collection.
-      operationId: backend.portal.api.app.v1.collections_test.collection_id.post
+      operationId: backend.portal.api.app.v1.collections.collection_id.post
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       responses:
@@ -182,7 +182,7 @@ paths:
         - cxguserCookie: []
       description: >-
         Update a private collection's summary, links, contact info, and description details.
-      operationId: backend.portal.api.app.v1.collections_test.collection_id.put
+      operationId: backend.portal.api.app.v1.collections.collection_id.put
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       requestBody:
@@ -228,7 +228,7 @@ paths:
       description: >-
         Deletes an entire private collection from cellxgene data-portal, including any generated artifacts/assets and
         deployments.
-      operationId: backend.portal.api.app.v1.collections_test.collection_id.delete
+      operationId: backend.portal.api.app.v1.collections.collection_id.delete
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       responses:
