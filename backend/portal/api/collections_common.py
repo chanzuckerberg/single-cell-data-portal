@@ -11,8 +11,12 @@ from backend.api_server.db import dbconnect
 from backend.common.corpora_orm import ProjectLinkType, CollectionVisibility
 from backend.common.entities import Dataset, Collection
 from backend.common.providers.crossref_provider import CrossrefProvider, CrossrefDOINotFoundException, CrossrefException
-from backend.common.utils.http_exceptions import ForbiddenHTTPException, MethodNotAllowedException, \
-    InvalidParametersHTTPException, NotFoundHTTPException
+from backend.common.utils.http_exceptions import (
+    ForbiddenHTTPException,
+    MethodNotAllowedException,
+    InvalidParametersHTTPException,
+    NotFoundHTTPException,
+)
 from backend.common.utils.regex import CONTROL_CHARS
 from backend.portal.api.app.v1.authorization import owner_or_allowed
 

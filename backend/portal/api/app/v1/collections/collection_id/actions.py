@@ -7,8 +7,11 @@ from backend.common.utils.http_exceptions import InvalidParametersHTTPException
 from backend.portal.api.app.v1.authorization import is_user_owner_or_allowed, owner_or_allowed
 from backend.portal.api.app.v1.collections.actions import get_doi_link_node
 from backend.portal.api.app.v1.common import portal_get_normalized_doi_url
-from backend.portal.api.collections_common import get_collection_else_forbidden, post_collection_revision_common, \
-    get_collection_and_verify_body
+from backend.portal.api.collections_common import (
+    get_collection_else_forbidden,
+    post_collection_revision_common,
+    get_collection_and_verify_body,
+)
 from backend.portal.api.collections_common import get_publisher_metadata
 
 

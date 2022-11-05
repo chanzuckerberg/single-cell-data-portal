@@ -1,4 +1,4 @@
-from flask import make_response, jsonify
+from flask import make_response, jsonify, g
 
 from backend.api_server.db import dbconnect
 from backend.common.corpora_orm import DbCollection, CollectionVisibility

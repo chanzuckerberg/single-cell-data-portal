@@ -1,18 +1,8 @@
 from typing import Optional
 from urllib.parse import urlparse
 
-from sqlalchemy.orm import Session
-
-from backend.common.corpora_orm import CollectionVisibility, ProjectLinkType
-from backend.common.entities import Collection, Dataset
-from backend.common.utils.http_exceptions import (
-    ForbiddenHTTPException,
-    MethodNotAllowedException,
-    InvalidParametersHTTPException,
-    NotFoundHTTPException,
-)
+from backend.common.corpora_orm import ProjectLinkType
 from backend.common.utils.regex import DOI_REGEX_COMPILED
-from backend.portal.api.app.v1.authorization import owner_or_allowed
 
 
 def portal_get_normalized_doi_url(doi_node: dict, errors: list) -> Optional[str]:

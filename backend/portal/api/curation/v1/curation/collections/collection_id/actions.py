@@ -15,10 +15,16 @@ from backend.common.utils.http_exceptions import (
 )
 from backend.portal.api.app.v1.authorization import owner_or_allowed
 
-from backend.portal.api.collections_common import get_publisher_metadata, get_collection_else_forbidden, \
-    get_collection_and_verify_body
-from backend.portal.api.curation.v1.curation.collections.common import extract_doi_from_links, reshape_for_curation_api, \
-    curation_get_normalized_doi_url
+from backend.portal.api.collections_common import (
+    get_publisher_metadata,
+    get_collection_else_forbidden,
+    get_collection_and_verify_body,
+)
+from backend.portal.api.curation.v1.curation.collections.common import (
+    extract_doi_from_links,
+    reshape_for_curation_api,
+    curation_get_normalized_doi_url,
+)
 
 
 @dbconnect
