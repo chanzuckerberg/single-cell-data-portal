@@ -457,7 +457,7 @@ paths:
         Cancels the in process upload of a dataset to the data portal and cleans up (removes) any artifacts created
         in the upload process. If the dataset has already been uploaded and converted, this endpoint deletes it from
         the data portal and removes associated artifacts
-      operationId: backend.portal.api.app.v1.datasets.delete_dataset
+      operationId: backend.portal.api.app.v1.datasets.dataset_id.actions.delete
       security:
         - cxguserCookie: []
       parameters:
@@ -481,7 +481,7 @@ paths:
         Given a cellxgene Explorer url return some basic metadata about the dataset it represent in the cellxgene
         Portal data model including its associated dataset id, the s3_uri of the dataset, its tombstone status and
         the associated parent collection ID.
-      operationId: backend.portal.api.app.v1.datasets.get_dataset_identifiers
+      operationId: backend.portal.api.app.v1.datasets.meta.get
       parameters:
         - in: query
           required: true
@@ -508,7 +508,7 @@ paths:
       summary: Dataset assets
       description: >-
         Return a list of all the dataset's assets
-      operationId: backend.portal.api.app.v1.datasets.get_dataset_assets
+      operationId: backend.portal.api.app.v1.datasets.dataset_id.assets.get
       parameters:
         - $ref: "#/components/parameters/path_dataset_id"
       responses:
@@ -532,7 +532,7 @@ paths:
       summary: Request to download a dataset
       description: >-
         Request to download a file which on success will generate a pre-signed URL to download the dataset.
-      operationId: backend.portal.api.app.v1.datasets.post_dataset_asset
+      operationId: backend.portal.api.app.v1.datasets.dataset_id.asset.asset_id.post
       parameters:
         - $ref: "#/components/parameters/path_dataset_id"
         - name: asset_id
@@ -574,7 +574,7 @@ paths:
       description: >-
         Request to update (add or remove) linkages between a dataset and gene sets. The request must be made by the
         collection owner and the dataset and gene sets must all belong to the same private collection
-      operationId: backend.portal.api.app.v1.datasets.post_dataset_gene_sets
+      operationId: backend.portal.api.app.v1.datasets.dataset_id.gene_sets.post
       parameters:
         - $ref: "#/components/parameters/path_dataset_id"
       requestBody:
@@ -613,7 +613,7 @@ paths:
       tags:
         - datasets
       summary: Get the status of a dataset upload.
-      operationId: backend.portal.api.app.v1.datasets.get_status
+      operationId: backend.portal.api.app.v1.datasets.dataset_id.status.get
       security:
         - cxguserCookie: []
       parameters:
@@ -708,7 +708,7 @@ paths:
       description: >-
         Returns all datasets that belong to public, non tombstoned collections. This endpoint is meant to be used 
         for displaying datasets in a compact view. It doesn't return all the fields, so it is not suitable for general usage.
-      operationId: backend.portal.api.app.v1.datasets.get_datasets_index
+      operationId: backend.portal.api.app.v1.datasets.index.get
       responses:
         "200":
           description: OK
