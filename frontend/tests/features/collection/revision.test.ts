@@ -2,17 +2,24 @@ import { ElementHandle, expect, Page, test } from "@playwright/test";
 import { ROUTES } from "src/common/constants/routes";
 import { TEST_URL } from "tests/common/constants";
 import {
-  describeIfDeployed,
   getInnerText,
   goToPage,
+  isDevStaging,
   login,
   tryUntil,
 } from "tests/utils/helpers";
 import { getTestID, getText } from "tests/utils/selectors";
 
+const { describe, skip } = test;
+
 const COLLECTION_ROW_ID = "collection-row";
 
-describeIfDeployed("Collection Revision", () => {
+describe("Collection Revision", () => {
+  skip(
+    !isDevStaging,
+    "We only seed published collections for revision test in dev and staging"
+  );
+
   test("starts a revision", async ({ page }) => {
     await login(page);
 

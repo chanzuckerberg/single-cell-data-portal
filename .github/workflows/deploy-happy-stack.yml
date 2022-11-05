@@ -129,6 +129,7 @@ jobs:
       - name: Run E2E tests
         env:
           DEPLOYMENT_STAGE: ${{ github.event.deployment.environment }}
+        ### config.js set-up required due to transient test dependencies on API_URL
         run: |
           if [ "${DEPLOYMENT_STAGE}" == "stage" ]; then
             export DEPLOYMENT_STAGE=staging
