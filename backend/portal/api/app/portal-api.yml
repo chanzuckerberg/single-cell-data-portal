@@ -787,7 +787,7 @@ paths:
         - cxguserCookie: []
       description: >-
         Delete a gene by set removing it from a collection and any data sets it was linked to.
-      operationId: backend.portal.api.app.v1.genesets.delete
+      operationId: backend.portal.api.app.v1.genesets.geneset_id.delete
       parameters:
         - $ref: "#/components/parameters/path_geneset_id"
       responses:
@@ -860,7 +860,20 @@ paths:
           $ref: "#/components/responses/401"
         "403":
           $ref: "#/components/responses/403"
+
   /v1/auth/key:
+    delete:
+      summary: Delete the curator's API key -- for use with Data Portal UI
+      operationId: backend.portal.api.app.v1.auth.keys.delete
+      security:
+        - cxguserCookie: [ ]
+      responses:
+        "202":
+          $ref: "#/components/responses/202"
+        "401":
+          $ref: "#/components/responses/401"
+        "404":
+          $ref: "#/components/responses/404"
     get:
       summary: Fetch the identifier of the curator's active API key -- for use with Data Portal UI
       operationId: backend.portal.api.app.v1.auth.keys.get
@@ -895,18 +908,7 @@ paths:
           $ref: "#/components/responses/401"
         "400":
           $ref: "#/components/responses/400"
-    delete:
-      summary: Delete the curator's API key -- for use with Data Portal UI
-      operationId: backend.portal.api.app.v1.auth.keys.delete
-      security:
-        - cxguserCookie: []
-      responses:
-        "202":
-          $ref: "#/components/responses/202"
-        "401":
-          $ref: "#/components/responses/401"
-        "404":
-          $ref: "#/components/responses/404"
+
   /v1/deployed_version:
     get:
       summary: Returns version information
