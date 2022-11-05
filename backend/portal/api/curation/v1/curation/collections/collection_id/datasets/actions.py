@@ -9,11 +9,8 @@ from backend.common.utils.http_exceptions import (
 )
 from backend.portal.api.app.v1.authorization import owner_or_allowed
 from backend.portal.api.app.v1.collection_id.upload_links import upload_from_link
-from backend.portal.api.app.v1.common import (
-    get_dataset_else_error,
-    delete_dataset_common,
-    get_collection_else_forbidden,
-)
+from backend.portal.api.collections_common import get_dataset_else_error, delete_dataset_common, \
+    get_collection_else_forbidden
 from backend.portal.api.curation.v1.curation.collections.common import EntityColumns, reshape_dataset_for_curation_api
 
 

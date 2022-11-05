@@ -1,6 +1,5 @@
 from flask import make_response, jsonify, g
 
-from backend.portal.api.app.v1.common import delete_dataset_common, get_collection_else_forbidden
 from backend.common.corpora_orm import CollectionVisibility, DatasetArtifactFileType
 from backend.common.entities import Dataset, Collection
 from backend.common.entities.geneset import GenesetDatasetLink
@@ -12,6 +11,7 @@ from backend.common.utils.http_exceptions import (
 )
 from backend.common.utils.exceptions import CorporaException
 from backend.portal.api.app.v1.authorization import owner_or_allowed
+from backend.portal.api.collections_common import get_collection_else_forbidden, delete_dataset_common
 
 
 @dbconnect
