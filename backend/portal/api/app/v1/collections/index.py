@@ -1,10 +1,12 @@
+from flask import make_response, jsonify
+
 from backend.api_server.db import dbconnect
 from backend.common.corpora_orm import DbCollection, CollectionVisibility
 from backend.common.entities import Collection
 
 
 @dbconnect
-def get_collections_index():
+def get():
     # TODO (ebezzi): this is very similar to `get` above. Eventually they should be consolidated
     db_session = g.db_session
 

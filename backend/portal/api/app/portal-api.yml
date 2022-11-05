@@ -119,6 +119,23 @@ paths:
           $ref: "#/components/responses/401"
 
   /v1/collections/{collection_id}:
+    delete:
+      tags:
+        - collections
+      summary: Delete a collection
+      security:
+        - cxguserCookie: [ ]
+      description: >-
+        Deletes an entire private collection from cellxgene data-portal, including any generated artifacts/assets and
+        deployments.
+      operationId: backend.portal.api.app.v1.collections.collection_id.actions.delete
+      parameters:
+        - $ref: "#/components/parameters/path_collection_id"
+      responses:
+        "204":
+          $ref: "#/components/responses/204"
+        "401":
+          $ref: "#/components/responses/401"
     get:
       tags:
         - collections
@@ -128,7 +145,7 @@ paths:
         - {}
       description: >-
         This will return all datasets and associated attributes.
-      operationId: backend.portal.api.app.v1.collections.collection_id.get
+      operationId: backend.portal.api.app.v1.collections.collection_id.actions.get
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       responses:
@@ -156,7 +173,7 @@ paths:
       description: >-
         This will return a private version of the public collection with all datasets and assoicated attributes of the
         public collection.
-      operationId: backend.portal.api.app.v1.collections.collection_id.post
+      operationId: backend.portal.api.app.v1.collections.collection_id.actions.post
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       responses:
@@ -182,7 +199,7 @@ paths:
         - cxguserCookie: []
       description: >-
         Update a private collection's summary, links, contact info, and description details.
-      operationId: backend.portal.api.app.v1.collections.collection_id.put
+      operationId: backend.portal.api.app.v1.collections.collection_id.actions.put
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       requestBody:
@@ -219,23 +236,6 @@ paths:
           $ref: "#/components/responses/401"
         "403":
           $ref: "#/components/responses/403"
-    delete:
-      tags:
-        - collections
-      summary: Delete a collection
-      security:
-        - cxguserCookie: []
-      description: >-
-        Deletes an entire private collection from cellxgene data-portal, including any generated artifacts/assets and
-        deployments.
-      operationId: backend.portal.api.app.v1.collections.collection_id.delete
-      parameters:
-        - $ref: "#/components/parameters/path_collection_id"
-      responses:
-        "204":
-          $ref: "#/components/responses/204"
-        "401":
-          $ref: "#/components/responses/401"
 
   /v1/collections/{collection_id}/upload-links:
     post:
@@ -247,7 +247,7 @@ paths:
         An authenticated user can upload a file from a shared link to add a dataset into their collection.
       security:
         - cxguserCookie: []
-      operationId: backend.portal.api.app.v1.collection_id.upload_links.post
+      operationId: backend.portal.api.app.v1.collections.collection_id.upload_links.post
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       requestBody:
@@ -279,7 +279,6 @@ paths:
           $ref: "#/components/responses/409"
         "413":
           $ref: "#/components/responses/413"
-
     put:
       summary: Replace an existing dataset.
       tags:
@@ -295,7 +294,7 @@ paths:
         collection revision is published.
       security:
         - cxguserCookie: []
-      operationId: backend.portal.api.app.v1.collection_id.upload_links.put
+      operationId: backend.portal.api.app.v1.collections.collection_id.upload_links.put
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       requestBody:
