@@ -422,7 +422,7 @@ paths:
       summary: >-
         Returns all public, non tombstoned collections. This endpoint is meant to be used for displaying collections
         in a compact view. It doesn't return all the fields, so it is not suitable for general usage.
-      operationId: backend.portal.api.app.v1.collections.get_collections_index
+      operationId: backend.portal.api.app.v1.collections.index.get
       responses:
         "200":
           description: OK

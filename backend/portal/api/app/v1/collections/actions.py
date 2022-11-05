@@ -51,31 +51,6 @@ def get(from_date: int = None, to_date: int = None, token_info: Optional[dict] =
     return make_response(jsonify(result), 200)
 
 
-@dbconnect
-def get_collections_index():
-    # TODO (ebezzi): this is very similar to `get` above. Eventually they should be consolidated
-    db_session = g.db_session
-
-    filtered_collection = Collection.list_attributes_in_time_range(
-        db_session,
-        filters=[DbCollection.visibility == CollectionVisibility.PUBLIC],
-        list_attributes=[
-            DbCollection.id,
-            DbCollection.name,
-            DbCollection.published_at,
-            DbCollection.revised_at,
-            DbCollection.publisher_metadata,
-        ],
-    )
-
-    # Remove entries where the value is None
-    updated_collection = []
-    for d in filtered_collection:
-        updated_collection.append({k: v for k, v in d.items() if v is not None})
-
-    return make_response(jsonify(updated_collection), 200)
-
-
 def get_doi_link_node(body: dict, errors: list) -> Optional[dict]:
     links = body.get("links", [])
     dois = [link for link in links if link["link_type"] == ProjectLinkType.DOI.name]
