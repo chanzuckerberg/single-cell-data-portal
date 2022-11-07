@@ -3,7 +3,7 @@ import logging
 import os
 from dataclasses import dataclass
 from typing import Optional, Dict
-
+from botocore.exceptions import ClientError
 import pandas as pd
 import tiledb
 from pandas import DataFrame
@@ -112,7 +112,7 @@ def _load_primary_filter_data(snapshot_identifier: str) -> Dict:
 def _load_dataset_to_gene_ids_data(snapshot_identifier: str) -> Dict:
     try:
         return json.loads(_read_s3obj(f"{snapshot_identifier}/{DATASET_TO_GENE_IDS_FILENAME}"))
-    except:
+    except ClientError:
         logger.error("Dataset-to-gene IDs JSON does not exist in the snapshot. Setting it to an empty dictionary.")
         return {}
 
