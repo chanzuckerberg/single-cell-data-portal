@@ -6,3 +6,4 @@
 !/backend/**
 !/tests/**
 !/scripts/**
+!entrypoint.sh
