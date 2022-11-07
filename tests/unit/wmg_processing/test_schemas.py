@@ -112,7 +112,7 @@ class TestFmgSummaryCubeSchema(unittest.TestCase):
             self.assertTrue(summary_cube_schema.has_attr("assay_ontology_term_id"))
             self.assertTrue(summary_cube_schema.has_attr("development_stage_ontology_term_id"))
             self.assertTrue(summary_cube_schema.has_attr("disease_ontology_term_id"))
-            self.assertTrue(summary_cube_schema.has_attr("ethnicity_ontology_term_id"))
+            self.assertTrue(summary_cube_schema.has_attr("self_reported_ethnicity_ontology_term_id"))
             self.assertTrue(summary_cube_schema.has_attr("sex_ontology_term_id"))
             self.assertTrue(summary_cube_schema.has_attr("nnz"))
             self.assertTrue(summary_cube_schema.has_attr("sum"))
