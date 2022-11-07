@@ -22,6 +22,7 @@ EXPOSE 5000
 ADD tests /single-cell-data-portal/tests
 ADD scripts /single-cell-data-portal/scripts
 ADD backend /single-cell-data-portal/backend
+ADD entrypoint.sh .
 
 ARG HAPPY_BRANCH="unknown"
 ARG HAPPY_COMMIT=""
