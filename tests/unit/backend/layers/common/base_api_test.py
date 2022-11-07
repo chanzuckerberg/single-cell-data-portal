@@ -1,4 +1,5 @@
 import base64
+from dataclasses import dataclass
 import json
 import os
 import time
@@ -9,20 +10,47 @@ from unittest.mock import Mock, patch
 
 from backend.corpora.common.corpora_config import CorporaAuthConfig
 from backend.layers.business.business import BusinessLogic
+from backend.layers.persistence.persistence import DatabaseProviderInterface
 from backend.layers.thirdparty.crossref_provider import CrossrefProviderInterface
 from backend.layers.thirdparty.s3_provider import S3Provider
 from backend.layers.thirdparty.step_function_provider import StepFunctionProviderInterface
 from backend.layers.thirdparty.uri_provider import UriProviderInterface
-from backend.layers.common.entities import CollectionMetadata, CollectionVersion, DatasetMetadata
+from backend.layers.common.entities import CollectionMetadata, CollectionVersion, CollectionVersionId, DatasetMetadata, DatasetStatusGeneric, Link
 from tests.unit.backend.corpora.api_server.mock_auth import MockOauthServer
 from tests.unit.backend.corpora.api_server.config import TOKEN_EXPIRES
 from tests.unit.backend.corpora.fixtures.environment_setup import EnvironmentSetup
 from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 from tests.unit.backend.layers.persistence.persistence_mock import DatabaseProviderMock
 
+from typing import List, Optional
+
+@dataclass
+class DatasetStatusUpdate:
+    status_key: str
+    status: DatasetStatusGeneric
+
+@dataclass
+class DatasetArtifactUpdate:
+    type: str
+    uri: str
+
+@dataclass
+class DatasetData:
+    """
+    Convenience class that returns all the information required by the tests.
+    The ids are already stringified for convenience, since the API layer
+    will work with strings (at least for now)
+    """
+    dataset_version_id: str
+    dataset_id: str
+    explorer_url: str
+    collection_version_id: str
+    collection_id: str
+
 class NewBaseTest(unittest.TestCase):
 
     business_logic: BusinessLogic
+    crossref_provider: CrossrefProviderInterface # Can be mocked from the tests
     
     def setUp(self):
         super().setUp()
@@ -41,17 +69,24 @@ class NewBaseTest(unittest.TestCase):
 
         self.business_logic = BusinessLogic(database_provider, crossref_provider, step_function_provider, s3_provider, uri_provider)
 
-    def generate_unpublished_collection(self, owner = "test_user_id") -> CollectionVersion:
+    def generate_unpublished_collection(self, owner = "test_user_id", links: List[Link] = []) -> CollectionVersion:
 
         metadata = CollectionMetadata(
             "test_collection",
             "described",
             "john doe",
-            "john.due@email.com",
-            []
+            "john.due@email.com", # typo is on purpose
+            links
         )
 
-        return self.business_logic.create_collection(owner, metadata)
+        collection = self.business_logic.create_collection(owner, metadata)
+
+        return collection
+
+    def generate_unpublished_collection_with_publisher_metadata(self, publisher_metadata: dict):
+        # TODO: trickier
+        pass
+
 
     # TODO: public collections need to have at least one dataset!
     def generate_published_collection(self, owner = "test_user_id", datasets: typing.List[DatasetMetadata] = []):
@@ -62,6 +97,45 @@ class NewBaseTest(unittest.TestCase):
             # TODO: set a proper dataset status
         self.business_logic.publish_collection_version(unpublished_collection.version_id)
         return self.business_logic.get_collection_version(unpublished_collection.version_id)
+
+    # TODO: move to entities.py
+
+
+
+    def generate_dataset(
+        self, 
+        owner: str = "test_user_id", 
+        # collection_version_id: Optional[CollectionVersionId] = None, # TODO: probably remove
+        metadata: Optional[DatasetMetadata] = None, 
+        statuses: List[DatasetStatusUpdate] = [], 
+        artifacts: List[DatasetArtifactUpdate] = [],
+        publish: bool = False,
+    ):
+        """
+        Convenience method for generating a dataset. Also generates an unpublished collection if needed.
+        """
+        # if not collection_version_id:
+        collection = self.generate_unpublished_collection(owner)
+        dataset_version_id = self.business_logic.ingest_dataset(collection.version_id, "http://fake.url", None)
+        if not metadata:
+            metadata = DatasetMetadata("test_organism","test_tissue","test_assay","test_disease","test_sex","test_self_reported_ethnicity","test_development_stage","test_cell_type", 10)
+        self.business_logic.set_dataset_metadata(dataset_version_id, metadata)
+        for status in statuses:
+            self.business_logic.update_dataset_version_status(dataset_version_id, status.status_key, status.status)
+        for artifact in artifacts:
+            self.business_logic.add_dataset_artifact(dataset_version_id, artifact.type, artifact.uri)
+        if publish:
+            self.business_logic.publish_collection_version(collection.version_id)
+        # TODO: `ingest_dataset` should return the dataset_id as well, because we'll need it here
+        dataset_id = "TODO"
+        explorer_url = f"http://base.url/{dataset_id}"
+        return DatasetData(
+            dataset_version_id.id, 
+            dataset_id, 
+            explorer_url, 
+            collection.version_id.id, 
+            collection.collection_id.id,
+        )
 
 
     def remove_timestamps(self, body: dict, remove: typing.List[str] = None) -> dict:
