@@ -94,7 +94,11 @@ def _load_snapshot(new_snapshot_identifier) -> WmgSnapshot:
 
 
 def _open_cube(cube_uri) -> Array:
-    return tiledb.open(cube_uri, ctx=create_ctx(json.loads(WmgConfig().tiledb_config_overrides)))
+    try:
+        return tiledb.open(cube_uri, ctx=create_ctx(json.loads(WmgConfig().tiledb_config_overrides)))
+    except tiledb.TileDBError:
+        logger.error("Cube does not exist in the snapshot. Setting the cube value to None.")
+        return None
 
 
 def _load_cell_type_order(snapshot_identifier: str) -> DataFrame:
@@ -106,7 +110,11 @@ def _load_primary_filter_data(snapshot_identifier: str) -> Dict:
 
 
 def _load_dataset_to_gene_ids_data(snapshot_identifier: str) -> Dict:
-    return json.loads(_read_s3obj(f"{snapshot_identifier}/{DATASET_TO_GENE_IDS_FILENAME}"))
+    try:
+        return json.loads(_read_s3obj(f"{snapshot_identifier}/{DATASET_TO_GENE_IDS_FILENAME}"))
+    except:
+        logger.error("Dataset-to-gene IDs JSON does not exist in the snapshot. Setting it to an empty dictionary.")
+        return {}
 
 
 def _read_s3obj(relative_path: str) -> str:
