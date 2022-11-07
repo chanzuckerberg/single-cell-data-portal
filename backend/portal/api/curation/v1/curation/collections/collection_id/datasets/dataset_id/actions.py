@@ -1,18 +1,14 @@
 from flask import g, make_response, jsonify
 
 from backend.api_server.db import dbconnect
-from backend.common.corpora_orm import DbCollection, CollectionVisibility, ProcessingStatus
-from backend.common.entities import Dataset
+from backend.common.corpora_orm import DbCollection
 from backend.common.utils.http_exceptions import (
     NotFoundHTTPException,
-    MethodNotAllowedException,
 )
-from backend.portal.api.app.v1.authorization import owner_or_allowed
 from backend.portal.api.app.v1.collections.collection_id.upload_links import upload_from_link
 from backend.portal.api.collections_common import (
     get_dataset_else_error,
     delete_dataset_common,
-    get_collection_else_forbidden,
 )
 from backend.portal.api.curation.v1.curation.collections.common import EntityColumns, reshape_dataset_for_curation_api
 
@@ -33,18 +29,6 @@ def delete(token_info: dict, collection_id: str, dataset_id: str = None):
     dataset = get_dataset_else_error(db_session, dataset_id, collection_id, include_tombstones=True)
     delete_dataset_common(db_session, dataset, token_info)
     return "", 202
-
-
-@dbconnect
-def post(token_info: dict, collection_id: str):
-    db_session = g.db_session
-    collection = get_collection_else_forbidden(db_session, collection_id, owner=owner_or_allowed(token_info))
-    if collection.visibility != CollectionVisibility.PRIVATE:
-        raise MethodNotAllowedException("Collection must be PRIVATE Collection, or a revision of a PUBLIC Collection.")
-    dataset = Dataset.create(
-        db_session, collection=collection, processing_status={"processing_status": ProcessingStatus.INITIALIZED}
-    )
-    return make_response(jsonify({"id": dataset.id}), 201)
 
 
 def put(collection_id: str, dataset_id: str, body: dict, token_info: dict):
