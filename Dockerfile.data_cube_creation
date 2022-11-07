@@ -17,6 +17,7 @@ RUN pip3 install -r requirements-base.txt -r requirements.txt
 
 ADD backend/__init__.py backend/__init__.py
 ADD backend/wmg/__init__.py backend/wmg/__init__.py
+ADD backend/wmg/config.py backend/wmg/config.py
 ADD backend/wmg/data backend/wmg/data
 ADD backend/wmg/pipeline backend/wmg/pipeline
 ADD backend/common backend/common
