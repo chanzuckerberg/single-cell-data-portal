@@ -15,13 +15,16 @@ from backend.wmg.data.utils import log_func_runtime
 
 logger = logging.getLogger(__name__)
 
+BINOMIAL_NNZ_RANKIT_THR = 1
+
 
 def transform(
     corpus_path: str, gene_ontology_term_ids: list, cube_dims: list
 ) -> (pd.DataFrame, np.ndarray, np.ndarray):
     """
-    Build the summary cube with rankit expression sum, nnz (num cells with non zero expression) values for
-    each gene for each possible group of cell attributes (cube row)
+    Build the summary cube with rankit expression sum & sum of squares, nnz
+    (num cells with non zero expression) values for each gene for each possible
+    group of cell attributes (cube row).
     """
 
     cell_labels, cube_index = make_cube_index(corpus_path, cube_dims)
@@ -29,14 +32,23 @@ def transform(
     n_genes = len(gene_ontology_term_ids)
 
     cube_sum = np.zeros((n_groups, n_genes), dtype=np.float32)
+    cube_sqsum = np.zeros((n_groups, n_genes), dtype=np.float32)
     cube_nnz = np.zeros((n_groups, n_genes), dtype=np.uint64)
+    cube_nnz_thr = np.zeros((n_groups, n_genes), dtype=np.uint64)
 
-    reduce_X(corpus_path, cell_labels.cube_idx.values, cube_sum, cube_nnz)
-    return cube_index, cube_sum, cube_nnz
+    reduce_X(corpus_path, cell_labels.cube_idx.values, cube_sum, cube_sqsum, cube_nnz, cube_nnz_thr)
+    return cube_index, cube_sum, cube_sqsum, cube_nnz, cube_nnz_thr
 
 
 @log_func_runtime
-def reduce_X(tdb_group: str, cube_indices: np.ndarray, cube_sum: np.ndarray, cube_nnz: np.ndarray):
+def reduce_X(
+    tdb_group: str,
+    cube_indices: np.ndarray,
+    cube_sum: np.ndarray,
+    cube_sqsum: np.ndarray,
+    cube_nnz: np.ndarray,
+    cube_nnz_thr: np.ndarray,
+):
     """
     Reduce the expression data stored in the integrated corpus by summing it by gene for each cube row (unique combo
     of cell attributes)
@@ -55,7 +67,9 @@ def reduce_X(tdb_group: str, cube_indices: np.ndarray, cube_sum: np.ndarray, cub
                 result["var_idx"].values,
                 cube_indices,
                 cube_sum,
+                cube_sqsum,
                 cube_nnz,
+                cube_nnz_thr,
             )
 
 
@@ -67,7 +81,9 @@ def gene_expression_sum_x_cube_dimension(
     var_idx: np.ndarray,
     cube_indices: np.ndarray,
     sum_into: np.ndarray,
+    sqsum_into: np.ndarray,
     nnz_into: np.ndarray,
+    nnz_thr_into: np.ndarray,
 ):
     """
     Sum the rankit values for each gene (for each cube row/combo of cell attributes)
@@ -79,7 +95,9 @@ def gene_expression_sum_x_cube_dimension(
             cidx = var_idx[k]
             grp_idx = cube_indices[obs_idxs[k]]
             sum_into[grp_idx, cidx] += val
+            sqsum_into[grp_idx, cidx] += val**2
             nnz_into[grp_idx, cidx] += 1
+            nnz_thr_into[grp_idx, cidx] += val >= BINOMIAL_NNZ_RANKIT_THR
 
 
 def make_cube_index(tdb_group: str, cube_dims: list) -> (pd.DataFrame, pd.DataFrame):
@@ -92,7 +110,6 @@ def make_cube_index(tdb_group: str, cube_dims: list) -> (pd.DataFrame, pd.DataFr
     cube_index["cube_idx"] = range(len(cube_index))
 
     cell_labels = cell_labels.join(cube_index.cube_idx, on=cube_dims)
-
     # we failed to correctly create the corpus if these are false
     assert len(cell_labels.index) == cell_labels.index[-1] + 1
     assert cell_labels.index[0] == 0
