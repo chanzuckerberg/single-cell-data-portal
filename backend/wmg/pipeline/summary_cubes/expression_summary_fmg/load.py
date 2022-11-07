@@ -7,7 +7,13 @@ logger = logging.getLogger(__name__)
 
 
 def build_in_mem_cube(
-    gene_ids: pd.DataFrame, cube_index: pd.DataFrame, other_cube_attrs: list, cube_sum: np.ndarray, cube_nnz: np.ndarray
+    gene_ids: pd.DataFrame,
+    cube_index: pd.DataFrame,
+    other_cube_attrs: list,
+    cube_sum: np.ndarray,
+    cube_sqsum: np.ndarray,
+    cube_nnz: np.ndarray,
+    cube_nnz_thr: np.ndarray,
 ):
     """
     Build the cube in memory, calculating the gene expression value for each combination of attributes
@@ -25,11 +31,12 @@ def build_in_mem_cube(
         np.empty((total_vals,), dtype=object),
         np.empty((total_vals,), dtype=object),
         np.empty((total_vals,), dtype=object),
-        np.empty((total_vals,), dtype=object),
     ]
     vals = {
         "sum": np.empty((total_vals,)),
-        "nnz": np.empty((total_vals,), dtype=np.uint64),
+        "sqsum": np.empty((total_vals,)),
+        "nnz": np.empty((total_vals,)),
+        "nnz_thr": np.empty((total_vals,)),
         **{k: np.empty((total_vals,), dtype=object) for k in other_cube_attrs},
     }
 
@@ -39,8 +46,8 @@ def build_in_mem_cube(
     for grp in cube_index.to_records():
         (
             tissue_ontology_term_id,
-            tissue_original_ontology_term_id,
             organism_ontology_term_id,
+            cell_type_ontology_term_id,
             *attr_values,
             _,
             cube_idx,
@@ -52,15 +59,17 @@ def build_in_mem_cube(
 
         logger.debug(grp)
 
-        dims[0][idx : idx + n_vals] = gene_ids.gene_ontology_term_id.values[mask]
-        dims[1][idx : idx + n_vals] = tissue_ontology_term_id
-        dims[2][idx : idx + n_vals] = tissue_original_ontology_term_id
-        dims[3][idx : idx + n_vals] = organism_ontology_term_id
+        dims[0][idx : idx + n_vals] = tissue_ontology_term_id
+        dims[1][idx : idx + n_vals] = organism_ontology_term_id
+        dims[2][idx : idx + n_vals] = cell_type_ontology_term_id
 
         vals["sum"][idx : idx + n_vals] = cube_sum[cube_idx, mask]
+        vals["sqsum"][idx : idx + n_vals] = cube_sqsum[cube_idx, mask]
         vals["nnz"][idx : idx + n_vals] = cube_nnz[cube_idx, mask]
+        vals["nnz_thr"][idx : idx + n_vals] = cube_nnz_thr[cube_idx, mask]
+        vals["gene_ontology_term_id"][idx : idx + n_vals] = gene_ids.gene_ontology_term_id.values[mask]
 
-        for i, k in enumerate(other_cube_attrs):
+        for i, k in enumerate(other_cube_attrs[1:]):
             vals[k][idx : idx + n_vals] = attr_values[i]
 
         idx += n_vals
