@@ -144,7 +144,12 @@ jobs:
 
   push-prod-images:
     needs:
-      - add-image-tags
+      - backend-unit-test
+      - processing-unit-test
+      - wmg-processing-unit-test
+      - e2e-test
+      - lint
+      - build-extra-images
     runs-on: ubuntu-20.04
     if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
     steps:
@@ -164,7 +169,8 @@ jobs:
         uses: docker/login-action@v1
         with:
           registry: ${{ secrets.ECR_REPO_PROD }}
-      - name: push lambda upload image
+      - name: push docker images to prod ecr repo
+        if: ( github.ref == 'refs/heads/prod' )
         shell: bash
         run: |
           docker pull ${{ secrets.ECR_REPO }}/corpora-upload-failures:sha-${GITHUB_SHA:0:8}
