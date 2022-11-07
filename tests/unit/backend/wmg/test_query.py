@@ -497,7 +497,9 @@ class QueryTest(unittest.TestCase):
             gene_ontology_term_ids=["gene_ontology_term_id_0"],
             organism_ontology_term_id="organism_ontology_term_id_0",
             tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
-            ethnicity_ontology_term_ids=["ethnicity_ontology_term_id_1"],  # <-- non-indexed dim, single-valued
+            self_reported_ethnicity_ontology_term_ids=[
+                "self_reported_ethnicity_ontology_term_id_1"
+            ],  # <-- non-indexed dim, single-valued
             dataset_ids=["dataset_id_1", "dataset_id_0"],  # <-- non-indexed dim, multi-valued
         )
 

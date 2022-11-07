@@ -77,7 +77,7 @@ def semi_real_dimension_values_generator(dimension_name: str, dim_size: int) -> 
         ][:dim_size]
     if dimension_name == "disease_ontology_term_id":
         return [term_id for term_id in deterministic_term_ids if term_id.startswith("MONDO")][:dim_size]
-    if dimension_name == "ethnicity_ontology_term_id":
+    if dimension_name == "self_reported_ethnicity_ontology_term_id":
         return [term_id for term_id in deterministic_term_ids if term_id.startswith("HANCESTRO")][:dim_size]
     if dimension_name == "sex_ontology_term_id":
         return [term_id for term_id in deterministic_term_ids if term_id.startswith("PATO")][:dim_size]
@@ -122,9 +122,12 @@ def exclude_random_coords_75pct(_) -> bool:
 
 def exclude_dev_stage_and_ethnicity_for_secondary_filter_test(coord) -> bool:
     dev_stages_to_exclude = ("development_stage_ontology_term_id_1", "development_stage_ontology_term_id_2")
-    ethnicity_terms_to_exclude = ("ethnicity_ontology_term_id_1", "ethnicity_ontology_term_id_2")
+    self_reported_ethnicity_terms_to_exclude = (
+        "self_reported_ethnicity_ontology_term_id_1",
+        "self_reported_ethnicity_ontology_term_id_2",
+    )
     if coord.development_stage_ontology_term_id in dev_stages_to_exclude:
-        if coord.ethnicity_ontology_term_id in ethnicity_terms_to_exclude:
+        if coord.self_reported_ethnicity_ontology_term_id in self_reported_ethnicity_terms_to_exclude:
             return True
     return False
 
