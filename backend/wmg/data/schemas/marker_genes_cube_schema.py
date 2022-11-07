@@ -20,7 +20,7 @@ expression_summary_fmg_non_indexed_dims = [
     "assay_ontology_term_id",
     "development_stage_ontology_term_id",
     "disease_ontology_term_id",
-    "ethnicity_ontology_term_id",
+    "self_reported_ethnicity_ontology_term_id",
     "sex_ontology_term_id",
 ]
 
@@ -30,7 +30,7 @@ expression_summary_fmg_non_indexed_dims_no_gene_ontology = [
     "assay_ontology_term_id",
     "development_stage_ontology_term_id",
     "disease_ontology_term_id",
-    "ethnicity_ontology_term_id",
+    "self_reported_ethnicity_ontology_term_id",
     "sex_ontology_term_id",
 ]
 
