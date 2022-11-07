@@ -5,6 +5,6 @@ from backend.portal.api.collections_common import post_collection_revision_commo
 
 
 @dbconnect
-def post_collection_revision(collection_id: str, token_info: dict):
+def post(collection_id: str, token_info: dict):
     collection_revision = post_collection_revision_common(collection_id, token_info)
     return make_response(jsonify({"id": collection_revision.id}), 201)
