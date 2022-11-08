@@ -589,6 +589,7 @@ class TestCollection(NewBaseTest):
         self.assertEqual(201, response.status_code)
         collection_id = json.loads(response.data)["collection_id"]
         collection = self.business_logic.get_collection_version(CollectionVersionId(collection_id))
+        self.assertIsNotNone(collection.publisher_metadata)
         self.assertEqual(collection.publisher_metadata, generate_mock_publisher_metadata())
 
     # ✅
