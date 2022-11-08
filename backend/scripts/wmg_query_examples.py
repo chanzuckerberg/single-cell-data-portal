@@ -7,6 +7,7 @@ import pandas as pd
 from backend.wmg.api import query
 from backend.wmg.data.snapshot import (
     EXPRESSION_SUMMARY_CUBE_NAME,
+    EXPRESSION_SUMMARY_FMG_CUBE_NAME,
     WmgSnapshot,
 )
 from backend.wmg.data.snapshot import _open_cube
@@ -22,12 +23,17 @@ def load_snapshot(snapshot_id) -> WmgSnapshot:
     cube = _open_cube(
         f's3://cellxgene-wmg-{os.environ["DEPLOYMENT_STAGE"]}/{snapshot_id}/{EXPRESSION_SUMMARY_CUBE_NAME}/'
     )
+    cube_fmg = _open_cube(
+        f's3://cellxgene-wmg-{os.environ["DEPLOYMENT_STAGE"]}/{snapshot_id}/{EXPRESSION_SUMMARY_FMG_CUBE_NAME}/'
+    )
     return WmgSnapshot(
         snapshot_identifier=snapshot_id,
         expression_summary_cube=cube,
         cell_counts_cube=None,  # _open_cube(f"{snapshot_base_uri}/{CELL_COUNTS_CUBE_NAME}"),
         cell_type_orderings=pd.DataFrame(),
         primary_filter_dimensions=pd.DataFrame(),
+        expression_summary_fmg_cube=cube_fmg,
+        dataset_to_gene_ids={},
     )
 
 
