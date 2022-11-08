@@ -7,7 +7,7 @@ import {
   DESCRIPTION_LINE_HEIGHT_PX,
   MAX_LINE_COUNT,
 } from "src/components/Collection/components/CollectionDescription/style";
-import { StyledPrimaryAnchorButton } from "src/components/common/Button/common/style";
+import { StyledPrimaryMinimalButton } from "src/components/common/Button/common/style";
 
 enum EllipsisMode {
   "NONE" = "NONE",
@@ -57,7 +57,7 @@ export default function CollectionDescription({
         {description}
       </DescriptionText>
       {isModeActivated(ellipsisMode) && (
-        <StyledPrimaryAnchorButton
+        <StyledPrimaryMinimalButton
           intent={Intent.PRIMARY}
           minimal
           onClick={onToggleMode}

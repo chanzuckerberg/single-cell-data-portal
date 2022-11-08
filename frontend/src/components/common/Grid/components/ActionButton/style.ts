@@ -1,4 +1,4 @@
-import { AnchorButton, Button, Classes } from "@blueprintjs/core";
+import { Button, Classes } from "@blueprintjs/core";
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
 import { PRIMARY_BLUE } from "src/components/common/theme";
@@ -28,9 +28,5 @@ const buttonStyle = css`
 `;
 
 export const StyledButton = styled(Button)`
-  ${buttonStyle}
-`;
-
-export const StyledAnchorButton = styled(AnchorButton)`
   ${buttonStyle}
 `;
