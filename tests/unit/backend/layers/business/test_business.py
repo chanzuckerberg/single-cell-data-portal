@@ -141,6 +141,7 @@ class TestCreateCollection(BaseBusinessLogicTestCase):
         good_links = [
             Link("test link 1", "protocol", "http://example.com/protocol"),
             Link("test link 2", "other", "http://example.com/other"),
+            Link(None, "other", "http://example.com/other"), # names can be optional
         ]
         self.sample_collection_metadata.links = good_links
         collection = self.business_logic.create_collection(self.test_user_name, self.sample_collection_metadata)
