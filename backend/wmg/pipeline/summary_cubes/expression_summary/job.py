@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import tiledb
 
-from backend.wmg.pipeline.summary_cubes.expression_summary.extract import extract_var_data
+from backend.wmg.pipeline.summary_cubes.extract import extract_var_data
 from backend.wmg.pipeline.summary_cubes.expression_summary.load import build_in_mem_cube
 from backend.wmg.pipeline.summary_cubes.expression_summary.transform import transform
 from backend.wmg.data.schemas.cube_schema import expression_summary_schema
