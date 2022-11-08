@@ -13,8 +13,7 @@ from backend.corpora.common.providers.crossref_provider import CrossrefException
 from backend.layers.business.business import BusinessLogic, CollectionMetadataUpdate, CollectionQueryFilter, DatasetArtifactDownloadData
 from backend.layers.business.exceptions import CollectionUpdateException, InvalidLinkException, \
     CollectionCreationException, DatasetIngestException, CollectionPublishException
-from backend.layers.common.entities import CollectionMetadata, CollectionVersion, CollectionVersionId, DatasetArtifact, DatasetMetadata, DatasetProcessingStatus, DatasetStatus, DatasetUploadStatus, DatasetValidationStatus, DatasetVersionId, Link
-from backend.layers.persistence.persistence import DatabaseProviderInterface
+from backend.layers.common.entities import CollectionMetadata, CollectionVersion, CollectionVersionId, DatasetArtifact, DatasetMetadata, DatasetProcessingStatus, DatasetStatus, DatasetUploadStatus, DatasetValidationStatus, DatasetVersionId, Link, OntologyTermId
 from backend.layers.thirdparty.uri_provider import UriProviderInterface
 from tests.unit.backend.layers.persistence.persistence_mock import DatabaseProviderMock
 
@@ -52,15 +51,21 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         )
 
         self.sample_dataset_metadata = DatasetMetadata(
-            "test_organism",
-            "test_tissue",
-            "test_assay",
-            "test_disease", 
-            "test_sex",
-            "test_self_reported_ethnicity",
-            "test_development_stage",
-            "test_cell_type",
-            10
+            organism = [OntologyTermId(label="test_organism_label", ontology_term_id="test_organism_term_id")],
+            tissue = [OntologyTermId(label="test_tissue_label", ontology_term_id="test_tissue_term_id")],
+            assay = [OntologyTermId(label="test_assay_label", ontology_term_id="test_assay_term_id")],
+            disease = [OntologyTermId(label="test_disease_label", ontology_term_id="test_disease_term_id")],
+            sex = [OntologyTermId(label="test_sex_label", ontology_term_id="test_sex_term_id")],
+            self_reported_ethnicity = [OntologyTermId(label="test_self_reported_ethnicity_label", ontology_term_id="test_self_reported_ethnicity_term_id")],
+            development_stage = [OntologyTermId(label="test_development_stage_label", ontology_term_id="test_development_stage_term_id")],
+            cell_type = [OntologyTermId(label="test_cell_type_label", ontology_term_id="test_cell_type_term_id")],
+            cell_count = 10,
+            schema_version = "3.0.0",
+            mean_genes_per_cell = 0.5,
+            batch_condition = ["test_batch_1", "test_batch_2"],
+            suspension_type = ["test_suspension_type"],
+            donor_id = ["test_donor_1"],
+            is_primary_data = "BOTH",
         )
 
     def initialize_empty_unpublished_collection(self, owner: str = test_user_name) -> CollectionVersion:
