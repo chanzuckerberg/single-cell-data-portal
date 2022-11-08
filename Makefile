@@ -58,14 +58,6 @@ prod-performance-test:
 local-backend:
 	$(MAKE) local-server -C ./backend/api_server
 
-.PHONY: smoke-test-prod-build
-smoke-test-prod-build:
-	$(MAKE) smoke-test-prod-build -C ./frontend
-
-.PHONY: smoke-test-with-local-backend
-smoke-test-with-local-backend:
-	$(MAKE) smoke-test-with-local-backend -C ./frontend
-
 .PHONY: e2e
 e2e:
 	$(MAKE) e2e -C ./frontend DEPLOYMENT_STAGE=$(DEPLOYMENT_STAGE)
@@ -225,13 +217,6 @@ local-functional-test: ## Run functional tests in the dev environment
 .PHONY: local-smoke-test
 local-smoke-test: ## Run frontend/e2e tests in the dev environment
 	docker-compose $(COMPOSE_OPTS) run --rm -T frontend make smoke-test-with-local-dev
-
-.PHONY: local-e2e
-local-e2e: ## Run frontend/e2e tests
-	if [ -n "$${BOTO_ENDPOINT_URL+set}" ]; then \
-		EXTRA_ARGS="-e BOTO_ENDPOINT_URL"; \
-	fi; \
-	docker-compose $(COMPOSE_OPTS) run --no-deps -e DEPLOYMENT_STAGE -e AWS_REGION -e AWS_DEFAULT_REGION -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e AWS_SESSION_TOKEN $${EXTRA_ARGS} -T frontend make e2e
 
 .PHONY: local-dbconsole
 local-dbconsole: ## Connect to the local postgres database.
