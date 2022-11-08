@@ -80,6 +80,7 @@ class OntologyTermId:
 
 @dataclass
 class DatasetMetadata:
+    name: str
     organism: List[OntologyTermId]
     tissue: List[OntologyTermId]
     assay: List[OntologyTermId]
@@ -95,6 +96,7 @@ class DatasetMetadata:
     suspension_type: List[str]
     donor_id: List[str]
     is_primary_data: str
+    x_approximate_distribution: str
 
 @dataclass
 class DatasetVersion:

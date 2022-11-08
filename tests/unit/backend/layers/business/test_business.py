@@ -51,6 +51,7 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         )
 
         self.sample_dataset_metadata = DatasetMetadata(
+            name = "test_dataset_name",
             organism = [OntologyTermId(label="test_organism_label", ontology_term_id="test_organism_term_id")],
             tissue = [OntologyTermId(label="test_tissue_label", ontology_term_id="test_tissue_term_id")],
             assay = [OntologyTermId(label="test_assay_label", ontology_term_id="test_assay_term_id")],
@@ -66,6 +67,7 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
             suspension_type = ["test_suspension_type"],
             donor_id = ["test_donor_1"],
             is_primary_data = "BOTH",
+            x_approximate_distribution="normal",
         )
 
     def initialize_empty_unpublished_collection(self, owner: str = test_user_name) -> CollectionVersion:
