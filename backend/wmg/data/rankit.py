@@ -28,13 +28,13 @@ def rankit(Xraw: sc.sparse.spmatrix, offset: float = 3.0) -> sc.sparse.csr_matri
     indptr = X.indptr  # get row count
     for row in range(0, indptr.shape[0] - 1):
         data = X.data[indptr[row] : indptr[row + 1]]
+        if len(data) > 0:
+            # Assign ranks to data, assigning the same value to ties
+            ranks = sc.stats.rankdata(data, method="dense")
 
-        # Assign ranks to data, assigning the same value to ties
-        ranks = sc.stats.rankdata(data, method="dense")
+            max_rank = max(ranks)
+            prob_level = quantiles(max_rank, ranks)
 
-        max_rank = max(ranks)
-        prob_level = quantiles(max_rank, ranks)
-
-        normal_quantiles = sc.stats.norm.ppf(prob_level, loc=offset)
-        X.data[indptr[row] : indptr[row + 1]] = normal_quantiles
+            normal_quantiles = sc.stats.norm.ppf(prob_level, loc=offset)
+            X.data[indptr[row] : indptr[row + 1]] = normal_quantiles
     return X
