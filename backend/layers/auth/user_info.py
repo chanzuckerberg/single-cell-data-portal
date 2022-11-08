@@ -35,6 +35,11 @@ class UserInfo:
             raise Exception("Bad") # TODO: improve
         return self.token_info.get("sub")
 
+    def is_user_owner_or_allowed(self, owner: str) -> bool:
+        if self.is_none():
+            return False
+        return self.user_id() == owner or self.is_super_curator()
+
     # def get_collection_query_filter_for_owner(self, is_published: Optional[bool] = None):
     #     if self.is_super_curator():
     #         return CollectionQueryFilter(is_published, None)

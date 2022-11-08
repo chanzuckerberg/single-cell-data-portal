@@ -339,11 +339,12 @@ class TestCollection(NewBaseTest):
         test_cases = [params for params in itertools.product(authenticated, owns, visibility)]
 
         # Generate test collection
+        # Note: for private collections, you want to use version_id
         test_collections = dict(
             public_not_owner=self.generate_published_collection(owner="someone else").collection_id.id,
             public_owned=self.generate_published_collection(owner="test_user_id").collection_id.id,
-            private_not_owner=self.generate_unpublished_collection(owner="someone else").collection_id.id,
-            private_owned=self.generate_unpublished_collection(owner="test_user_id").collection_id.id,
+            private_not_owner=self.generate_unpublished_collection(owner="someone else").version_id.id,
+            private_owned=self.generate_unpublished_collection(owner="test_user_id").version_id.id,
         )
 
         # run
@@ -353,16 +354,13 @@ class TestCollection(NewBaseTest):
             test_collection_id = test_collections["_".join([visi, "owned" if owns else "not_owner"])]
             expected_access_type = "WRITE" if owns and auth else "READ"
 
-            print(test_collection_id)
-
             with self.subTest(f"auth:{auth}, owns:{owns}, visi:{visi}, acc:{expected_access_type}"):
                 test_url = furl(path=f"/dp/v1/collections/{test_collection_id}")
-                if visi:
-                    test_url.add(query_params=dict(visibility=visi.upper()))
 
                 headers = dict(host="localhost")
                 if auth:
                     headers["Cookie"] = self.get_cxguser_token()
+                print("headers - ", headers)
                 response = self.app.get(test_url.url, headers=headers)
                 # print(response.data)
                 self.assertEqual(expected_response_code, response.status_code)

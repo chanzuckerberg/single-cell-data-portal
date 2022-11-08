@@ -18,7 +18,7 @@ from backend.layers.thirdparty.crossref_provider import CrossrefProviderInterfac
 from backend.layers.thirdparty.s3_provider import S3Provider
 from backend.layers.thirdparty.step_function_provider import StepFunctionProviderInterface
 from backend.layers.thirdparty.uri_provider import UriProviderInterface
-from backend.layers.common.entities import CollectionMetadata, CollectionVersion, CollectionVersionId, DatasetMetadata, DatasetStatusGeneric, Link
+from backend.layers.common.entities import CollectionMetadata, CollectionVersion, CollectionVersionId, DatasetMetadata, DatasetStatusGeneric, Link, OntologyTermId
 from tests.unit.backend.corpora.api_server.mock_auth import MockOauthServer
 from tests.unit.backend.corpora.api_server.config import TOKEN_EXPIRES
 from tests.unit.backend.corpora.fixtures.environment_setup import EnvironmentSetup
@@ -74,11 +74,12 @@ class NewBaseTest(unittest.TestCase):
         import backend.layers.api.router
         backend.layers.api.router.portal_api = Mock(return_value=pa)
 
-        # from backend.corpora.api_server.app import app
-        from backend.corpora.api_server.app import configure_flask_app, create_flask_app
+        from backend.corpora.api_server.app import app
+        # from backend.corpora.api_server.app import configure_flask_app, create_flask_app
         # with EnvironmentSetup(dict(APP_NAME="corpora-api")):
-        flask_app = configure_flask_app(create_flask_app())
-        self.app = flask_app.test_client(use_cookies=False)
+        # flask_app = configure_flask_app(create_flask_app())
+        # self.app = flask_app.test_client(use_cookies=False)
+        self.app = app.test_client(use_cookies=False)
 
     def generate_unpublished_collection(self, owner = "test_user_id", links: List[Link] = []) -> CollectionVersion:
 
@@ -105,7 +106,27 @@ class NewBaseTest(unittest.TestCase):
 
         # TODO: generate a real dataset, with artifact and processing status
         if datasets is None:
-            datasets = [DatasetMetadata("test_organism","test_tissue","test_assay","test_disease","test_sex","test_self_reported_ethnicity","test_development_stage","test_cell_type", 10)]
+            datasets = [
+                DatasetMetadata(
+                    name = "test_dataset_name",
+                    organism = [OntologyTermId(label="test_organism_label", ontology_term_id="test_organism_term_id")],
+                    tissue = [OntologyTermId(label="test_tissue_label", ontology_term_id="test_tissue_term_id")],
+                    assay = [OntologyTermId(label="test_assay_label", ontology_term_id="test_assay_term_id")],
+                    disease = [OntologyTermId(label="test_disease_label", ontology_term_id="test_disease_term_id")],
+                    sex = [OntologyTermId(label="test_sex_label", ontology_term_id="test_sex_term_id")],
+                    self_reported_ethnicity = [OntologyTermId(label="test_self_reported_ethnicity_label", ontology_term_id="test_self_reported_ethnicity_term_id")],
+                    development_stage = [OntologyTermId(label="test_development_stage_label", ontology_term_id="test_development_stage_term_id")],
+                    cell_type = [OntologyTermId(label="test_cell_type_label", ontology_term_id="test_cell_type_term_id")],
+                    cell_count = 10,
+                    schema_version = "3.0.0",
+                    mean_genes_per_cell = 0.5,
+                    batch_condition = ["test_batch_1", "test_batch_2"],
+                    suspension_type = ["test_suspension_type"],
+                    donor_id = ["test_donor_1"],
+                    is_primary_data = "BOTH",
+                    x_approximate_distribution="normal",
+                )
+            ]
         for dataset in datasets:
             dataset_version_id = self.business_logic.ingest_dataset(unpublished_collection.version_id, "http://fake.url", None)
             self.business_logic.set_dataset_metadata(dataset_version_id, dataset)

@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import List, Optional
 from unittest.mock import Mock
 
 from flask import jsonify, make_response
@@ -9,7 +9,7 @@ from backend.layers.business.business import BusinessLogic
 
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.business.entities import CollectionQueryFilter
-from backend.layers.common.entities import CollectionId, CollectionVersionId, DatasetArtifact, DatasetStatus, DatasetVersion, Link
+from backend.layers.common.entities import CollectionId, CollectionVersionId, DatasetArtifact, DatasetStatus, DatasetVersion, Link, OntologyTermId
 
 from backend.corpora.common.utils import authorization_checks as auth
 import itertools
@@ -93,34 +93,43 @@ class PortalApi:
             "user_submitted": True,
         }
 
+    def _ontology_term_id_to_response(self, ontology_term_id: OntologyTermId):
+        return {
+            "label": ontology_term_id.label,
+            "ontology_term_id": ontology_term_id.ontology_term_id,
+        }
+
+    def _ontology_term_ids_to_response(self, ontology_term_ids: List[OntologyTermId]):
+        return [self._ontology_term_id_to_response(otid) for otid in ontology_term_ids]
+
     def _dataset_to_response(self, dataset: DatasetVersion):
         return {
-            "assay": dataset.metadata.assay,
+            "assay": self._ontology_term_ids_to_response(dataset.metadata.assay),
             "batch_condition": dataset.metadata.batch_condition,
             "cell_count": dataset.metadata.cell_count,
-            "cell_type": dataset.metadata.cell_type,
+            "cell_type": self._ontology_term_ids_to_response(dataset.metadata.cell_type),
             "collection_id": "TODO", # TODO
             "created_at": 1234, # TODO
             "dataset_assets": [self._dataset_asset_to_response(a, dataset.dataset_id.id) for a in dataset.artifacts],
-            "dataset_deployments": dataset.metadata.explorer_url,
-            "development_stage": dataset.metadata.development_stage,
-            "disease": dataset.metadata.disease,
+            "dataset_deployments": [{"url": "TODO"}], # TODO: dataset.metadata.explorer_url,
+            "development_stage": self._ontology_term_ids_to_response(dataset.metadata.development_stage),
+            "disease": self._ontology_term_ids_to_response(dataset.metadata.disease),
             "donor_id": dataset.metadata.donor_id,
             "id": dataset.dataset_id.id,
             "is_primary_data": dataset.metadata.is_primary_data,
             "is_valid": True, # why do we have this
             "mean_genes_per_cell": dataset.metadata.mean_genes_per_cell,
-            "name": dataset.name,
-            "organism": dataset.metadata.organism,
+            "name": dataset.metadata.name,
+            "organism": self._ontology_term_ids_to_response(dataset.metadata.organism),
             "processing_status": self._dataset_processing_status_to_response(dataset.status, dataset.dataset_id.id),
             "published": True,
             "published_at": 1234,
             "revision": 1234,
             "schema_version": "3.0.0",
-            "self_reported_ethnicity": dataset.metadata.self_reported_ethnicity,
-            "sex": dataset.metadata.sex,
+            "self_reported_ethnicity": self._ontology_term_ids_to_response(dataset.metadata.self_reported_ethnicity),
+            "sex": self._ontology_term_ids_to_response(dataset.metadata.sex),
             "suspension_type": dataset.metadata.suspension_type,
-            "tissue": dataset.metadata.tissue,
+            "tissue": self._ontology_term_ids_to_response(dataset.metadata.tissue),
             "tombstone": False,
             "updated_at": 1234,
             "x_approximate_distribution": dataset.metadata.x_approximate_distribution,
@@ -135,19 +144,17 @@ class PortalApi:
         version = self.business_logic.get_published_collection_version(CollectionId(collection_id))
         if version is None:
             version = self.business_logic.get_collection_version(CollectionVersionId(collection_id))
-
-        print(version)
-
         if version is None:
-            raise ForbiddenHTTPException() # TODO: maybe remake this collection
+            raise ForbiddenHTTPException() # TODO: maybe remake this exception
 
         # TODO: handle tombstoning
 
-        # TODO: handle access type as follows
-        #result["access_type"] = "WRITE" if is_user_owner_or_allowed(token_info, collection.owner) else "READ"
+        user_info = UserInfo(token_info)
+        print(token_info, user_info.user_id(), version.owner)
+        access_type = "WRITE" if user_info.is_user_owner_or_allowed(version.owner) else "READ"
 
         response = {
-            "access_type": "TODO", # TODO
+            "access_type": access_type,
             "contact_email": "example@gmail.com",
             "contact_name": "Smoke Test User",
             "created_at": 1234,
@@ -155,7 +162,7 @@ class PortalApi:
             "data_submission_policy_version": "1.0", # TODO
             "datasets": [self._dataset_to_response(d) for d in version.datasets],
             "description": version.metadata.description,
-            "id": version.collection_id,
+            "id": version.collection_id.id,
             "links": [self._link_to_response(l) for l in version.metadata.links],
             "name": version.metadata.name,
             "published_at": 1234,
