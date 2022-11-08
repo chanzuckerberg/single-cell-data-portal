@@ -109,7 +109,7 @@ class DatasetVersion:
 
 @dataclass
 class Link:
-    name: str
+    name: Optional[str]
     type: str
     uri: str
     
