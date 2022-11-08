@@ -331,6 +331,7 @@ class TestCollection(NewBaseTest):
 
             self.assertEqual(expected_body, actual_body)
 
+    # ✅
     def test__get_collection__ok(self):
         # Generate test cases
         authenticated = [True, False]

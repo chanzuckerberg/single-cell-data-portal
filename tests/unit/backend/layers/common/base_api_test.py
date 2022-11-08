@@ -50,7 +50,31 @@ class DatasetData:
     collection_version_id: str
     collection_id: str
 
-class NewBaseTest(unittest.TestCase):
+
+class BaseAuthAPITest(unittest.TestCase):
+    def setUp(self):
+        super().setUp()
+        self.mock_assert_authorized_token = patch(
+            "backend.corpora.lambdas.api.v1.authentication.assert_authorized_token",
+            side_effect=mock_assert_authorized_token,
+        )
+        self.mock_assert_authorized_token.start()
+
+    def tearDown(self):
+        super().tearDown()
+        self.mock_assert_authorized_token.stop()
+
+    def make_owner_header(self):
+        return {"Authorization": "Bearer " + "owner", "Content-Type": "application/json"}
+
+    def make_super_curator_header(self):
+        return {"Authorization": "Bearer " + "super", "Content-Type": "application/json"}
+
+    def make_not_owner_header(self):
+        return {"Authorization": "Bearer " + "not_owner", "Content-Type": "application/json"}
+
+
+class NewBaseTest(BaseAuthAPITest):
 
     business_logic: BusinessLogic
     crossref_provider: CrossrefProviderInterface # Can be mocked from the tests
@@ -273,28 +297,6 @@ def get_cxguser_token(user="owner"):
     ).decode("utf8")
     return f"cxguser={cxguser}"
 
-
-class BaseAuthAPITest(BaseAPITest):
-    def setUp(self):
-        super().setUp()
-        self.mock_assert_authorized_token = patch(
-            "backend.corpora.lambdas.api.v1.authentication.assert_authorized_token",
-            side_effect=mock_assert_authorized_token,
-        )
-        self.mock_assert_authorized_token.start()
-
-    def tearDown(self):
-        super().tearDown()
-        self.mock_assert_authorized_token.stop()
-
-    def make_owner_header(self):
-        return {"Authorization": "Bearer " + "owner", "Content-Type": "application/json"}
-
-    def make_super_curator_header(self):
-        return {"Authorization": "Bearer " + "super", "Content-Type": "application/json"}
-
-    def make_not_owner_header(self):
-        return {"Authorization": "Bearer " + "not_owner", "Content-Type": "application/json"}
 
 
 class AuthServerAPITest(BaseAPITest):
