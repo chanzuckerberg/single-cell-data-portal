@@ -33,7 +33,7 @@ class BusinessLogicInterface:
     def get_collection_version(self, version_id: CollectionVersionId) -> CollectionVersion:
         pass
 
-    def create_collection(self, collection_metadata: CollectionMetadata) -> CollectionVersion:
+    def create_collection(self, owner: str, collection_metadata: CollectionMetadata) -> CollectionVersion:
         pass
 
     def delete_collection(self, collection_id: CollectionId) -> None:

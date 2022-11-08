@@ -3,23 +3,19 @@ from unittest.mock import Mock
 
 from flask import jsonify, make_response
 from backend.corpora.common.utils.authorization_checks import is_user_owner_or_allowed
-from backend.corpora.common.utils.http_exceptions import ForbiddenHTTPException
+from backend.corpora.common.utils.http_exceptions import ForbiddenHTTPException, InvalidParametersHTTPException
 from backend.layers.auth.user_info import UserInfo
 from backend.layers.business.business import BusinessLogic
 
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.business.entities import CollectionQueryFilter
-from backend.layers.common.entities import CollectionId, CollectionVersionId, DatasetArtifact, DatasetStatus, DatasetVersion, Link, OntologyTermId
+from backend.layers.business.exceptions import CollectionCreationException
+from backend.layers.common.entities import CollectionId, CollectionMetadata, CollectionVersionId, DatasetArtifact, DatasetStatus, DatasetVersion, Link, OntologyTermId
 
 from backend.corpora.common.utils import authorization_checks as auth
 import itertools
 
-from backend.layers.thirdparty.crossref_provider import CrossrefProviderInterface
-from backend.layers.thirdparty.s3_provider import S3Provider
-from backend.layers.thirdparty.step_function_provider import StepFunctionProviderInterface
-from backend.layers.thirdparty.uri_provider import UriProviderInterface
-from tests.unit.backend.layers.persistence.persistence_mock import DatabaseProviderMock
-
+from backend.layers.common import doi
 
 class PortalApi:
 
@@ -172,30 +168,50 @@ class PortalApi:
  
         return make_response(jsonify(response), 200)
 
-        
-        # db_session = g.db_session
-        # collection = get_collection_else_forbidden(db_session, collection_id, include_tombstones=True)
-        # if collection.tombstone:
-        #     result = ""
-        #     response = 410
-        # else:
-        #     get_tombstone_datasets = (
-        #         is_user_owner_or_allowed(token_info, collection.owner)
-        #         and collection.visibility == CollectionVisibility.PRIVATE
-        #     )
-        #     result = collection.reshape_for_api(get_tombstone_datasets)
-        #     response = 200
-        #     result["access_type"] = "WRITE" if is_user_owner_or_allowed(token_info, collection.owner) else "READ"
-        # return make_response(jsonify(result), response)
-
     def get_collections_index(self):
         pass
 
     def post_collection_revision(self, collection_id: str, token_info: dict):
         pass
 
+    def _link_from_request(self, body: dict):
+        return Link(
+            body["link_name"],
+            body["link_type"],
+            body["link_url"],
+        )
+
+    # TODO: why do we have `user` and not `token_info`? This seems weird
     def create_collection(self, body: dict, user: str):
-        pass
+        """
+        Creates a collection. Will also perform DOI normalization: if the DOI is specified in `links`
+        as a CURIE (i.e., without the https://doi.org prefix), it will be normalized.
+        All exceptions are caught and raised as an InvalidParametersHTTPException.
+        """
+
+        errors = []
+        doi_url = None
+        if doi_node := doi.get_doi_link_node(body, errors):
+            if doi_url := doi.portal_get_normalized_doi_url(doi_node, errors):
+                doi_node["link_url"] = doi_url
+
+        if errors:
+            raise InvalidParametersHTTPException(detail=errors) # TODO: rewrite this exception?
+
+        metadata = CollectionMetadata(
+            body["name"],
+            body["description"],
+            body["contact_name"],
+            body["contact_email"],
+            [self._link_from_request(node) for node in body.get("links", [])],
+        )
+
+        try:
+            version = self.business_logic.create_collection(user, metadata)
+        except CollectionCreationException as ex:
+            raise InvalidParametersHTTPException(detail=ex.errors)
+
+        return make_response(jsonify({"collection_id": version.version_id.id}), 201)
 
     def delete_collection(self, collection_id: str, token_info: dict):
         pass

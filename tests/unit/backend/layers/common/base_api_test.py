@@ -83,15 +83,20 @@ class NewBaseTest(BaseAuthAPITest):
         super().setUp()
         os.environ.setdefault("APP_NAME", "corpora-api")
 
-
         database_provider = DatabaseProviderMock()
-        crossref_provider = CrossrefProviderInterface()
+        self.crossref_provider = CrossrefProviderInterface()
         step_function_provider = StepFunctionProviderInterface()
         s3_provider = S3Provider()
         uri_provider = UriProviderInterface()
         uri_provider.validate = Mock(return_value=True) # By default, every link should be valid
 
-        self.business_logic = BusinessLogic(database_provider, crossref_provider, step_function_provider, s3_provider, uri_provider)
+        self.business_logic = BusinessLogic(
+            database_provider, 
+            self.crossref_provider, 
+            step_function_provider, 
+            s3_provider, 
+            uri_provider
+        )
 
         pa = PortalApi(self.business_logic)
 

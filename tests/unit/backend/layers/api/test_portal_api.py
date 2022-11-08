@@ -363,13 +363,13 @@ class TestCollection(NewBaseTest):
                     headers["Cookie"] = self.get_cxguser_token()
                 print("headers - ", headers)
                 response = self.app.get(test_url.url, headers=headers)
-                # print(response.data)
+
                 self.assertEqual(expected_response_code, response.status_code)
                 if expected_response_code == 200:
                     actual_body = json.loads(response.data)
                     self.assertEqual(expected_access_type, actual_body["access_type"])
     
-    # TODO: review this test
+    # TODO: 🔴 review this test
     def test_get_collection_with_original_asset_ok(self):
         """The original asset should not be in the list of assets."""
         artifact_1 = dict(
@@ -396,12 +396,14 @@ class TestCollection(NewBaseTest):
         self.assertEqual(len(assets), 1)
         self.assertEqual(assets[0]["s3_uri"], "s3://mock-bucket/mock-key.h5ad")
 
+    # ✅
     def test__get_collection_id__403_not_found(self):
         """Verify the test collection exists and the expected fields exist."""
         test_url = furl(path="/dp/v1/collections/AAAA-BBBB-CCCC-DDDD", query_params=dict(visibility="PUBLIC"))
         response = self.app.get(test_url.url, headers=dict(host="localhost"))
         self.assertEqual(403, response.status_code)
 
+    # ✅, but this test should do more assertions
     def test__post_collection_returns_id_on_success(self):
         test_url = furl(path="/dp/v1/collections")
         data = {
@@ -429,6 +431,7 @@ class TestCollection(NewBaseTest):
         )
         self.assertEqual(201, response.status_code)
 
+    # ✅
     def test__post_collection_normalizes_doi(self):
         test_url = furl(path="/dp/v1/collections")
         data = {
@@ -449,9 +452,11 @@ class TestCollection(NewBaseTest):
         self.assertEqual(201, response.status_code)
         collection_id = json.loads(response.data)["collection_id"]
         collection = self.business_logic.get_collection_version(CollectionVersionId(collection_id))
-        doi = next(link.uri for link in collection.metadata.links if link.type == "doi")
+        print(collection)
+        doi = next(link.uri for link in collection.metadata.links if link.type == "DOI") # TODO: careful
         self.assertEquals(doi, "https://doi.org/10.1016/foo")
 
+    # ✅
     def test__post_collection_rejects_two_dois(self):
         test_url = furl(path="/dp/v1/collections")
         data = {
@@ -472,10 +477,11 @@ class TestCollection(NewBaseTest):
         )
         self.assertEqual(400, response.status_code)
 
-    # TODO: possibly, rewrite the mock
-    @patch("backend.corpora.common.providers.crossref_provider.CrossrefProvider.fetch_metadata")
-    def test__post_collection_rejects_doi_not_in_crossref(self, mock_provider):
-        mock_provider.side_effect = CrossrefDOINotFoundException("Mocked CrossrefDOINotFoundException")
+    # ✅
+    def test__post_collection_rejects_doi_not_in_crossref(self):
+        self.crossref_provider.fetch_metadata = Mock(
+            side_effect=CrossrefDOINotFoundException("Mocked CrossrefDOINotFoundException")
+        )
         test_url = furl(path="/dp/v1/collections")
         data = {
             "name": "collection name",
@@ -495,6 +501,7 @@ class TestCollection(NewBaseTest):
         self.assertEqual(error_payload["detail"][0], {"link_type": "DOI", "reason": "DOI cannot be found on Crossref"})
 
 
+    # ✅
     def test__post_collection_rejects_invalid_doi(self):
         test_url = furl(path="/dp/v1/collections")
         data = {
@@ -514,10 +521,11 @@ class TestCollection(NewBaseTest):
         error_payload = json.loads(response.data)
         self.assertEqual([{"link_type": "DOI", "reason": "Invalid DOI"}], error_payload["detail"])
 
-    # TODO: possibly, rewrite the mock
-    @patch("backend.corpora.common.providers.crossref_provider.CrossrefProvider.fetch_metadata")
-    def test__post_collection_ignores_metadata_if_crossref_exception(self, mock_provider):
-        mock_provider.side_effect = CrossrefFetchException("Mocked CrossrefFetchException")
+    # ✅
+    def test__post_collection_ignores_metadata_if_crossref_exception(self):
+        self.crossref_provider.fetch_metadata = Mock(
+            side_effect=CrossrefFetchException("Mocked CrossrefFetchException")
+        )
         test_url = furl(path="/dp/v1/collections")
         data = {
             "name": "collection name",
@@ -537,6 +545,7 @@ class TestCollection(NewBaseTest):
         collection = self.business_logic.get_collection_version(CollectionVersionId(collection_id))
         self.assertIsNone(collection.publisher_metadata)
 
+    # ✅
     def test__post_collection_ignores_metadata_if_no_doi(self):
         test_url = furl(path="/dp/v1/collections")
         data = {
@@ -556,10 +565,12 @@ class TestCollection(NewBaseTest):
         collection = self.business_logic.get_collection_version(CollectionVersionId(collection_id))
         self.assertIsNone(collection.publisher_metadata)
 
-    @patch("backend.corpora.common.providers.crossref_provider.CrossrefProvider.fetch_metadata")
-    def test__post_collection_adds_publisher_metadata(self, mock_provider):
+    # ✅
+    def test__post_collection_adds_publisher_metadata(self):
 
-        mock_provider.return_value = generate_mock_publisher_metadata()
+        self.crossref_provider.fetch_metadata = Mock(
+            return_value=generate_mock_publisher_metadata()
+        )
 
         test_url = furl(path="/dp/v1/collections")
         data = {
@@ -580,6 +591,7 @@ class TestCollection(NewBaseTest):
         collection = self.business_logic.get_collection_version(CollectionVersionId(collection_id))
         self.assertEqual(collection.publisher_metadata, generate_mock_publisher_metadata())
 
+    # ✅
     def test__post_collection_fails_with_extra_fields(self):
         test_url = furl(path="/dp/v1/collections")
         test_data = [
@@ -624,6 +636,7 @@ class TestCollection(NewBaseTest):
                 )
                 self.assertEqual(400, response.status_code)
 
+    # ✅
     def test__post_collection_fails_if_data_missing(self):
         test_url = furl(path="/dp/v1/collections")
         data = json.dumps({"name": "bkjbjbjmbjm"})
@@ -634,6 +647,7 @@ class TestCollection(NewBaseTest):
         )
         self.assertEqual(400, response.status_code)
 
+    # TODO: 🔴 review this test
     def test__can_retrieve_created_collection(self):
         test_url = furl(path="/dp/v1/collections")
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
@@ -704,6 +718,7 @@ class TestCollection(NewBaseTest):
             self.assertEqual(link["link_url"], link["link_url"].strip())
 
     # TODO: double check ids
+    # 🔴
     def test__list_collection__check_owner(self):
 
         # Generate test collection
