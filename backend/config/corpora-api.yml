@@ -24,7 +24,7 @@ paths:
       description: >-
         This lists all collections and their IDs that currently exist in the corpora. If a parameter is specified as
         a filter, then only collections that meet the status criteria will be outputted.
-      operationId: backend.corpora.lambdas.api.v1.collection.get_collections_list
+      operationId: backend.layers.api.router.get_collections_list
       parameters:
         - $ref: "#/components/parameters/query_user_id"
         - name: from_date
@@ -73,7 +73,7 @@ paths:
         - cxguserCookie: []
       description: >-
         Creates a new collection in corpora. Once a collection is created it can be linked to datasets.
-      operationId: backend.corpora.lambdas.api.v1.collection.create_collection
+      operationId: backend.layers.api.router.create_collection
       requestBody:
         content:
           application/json:
@@ -128,7 +128,7 @@ paths:
         - {}
       description: >-
         This will return all datasets and associated attributes.
-      operationId: backend.corpora.lambdas.api.v1.collection.get_collection_details
+      operationId: backend.layers.api.router.get_collection_details
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       responses:
@@ -156,7 +156,7 @@ paths:
       description: >-
         This will return a private version of the public collection with all datasets and assoicated attributes of the
         public collection.
-      operationId: backend.corpora.lambdas.api.v1.collection.post_collection_revision
+      operationId: backend.layers.api.router.post_collection_revision
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       responses:
@@ -183,7 +183,7 @@ paths:
         - cxguserCookie: []
       description: >-
         Update a private collection's summary, links, contact info, and description details.
-      operationId: backend.corpora.lambdas.api.v1.collection.update_collection
+      operationId: backend.layers.api.router.update_collection
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       requestBody:
@@ -230,7 +230,7 @@ paths:
       description: >-
         Deletes an entire private collection from cellxgene data-portal, including any generated artifacts/assets and
         deployments.
-      operationId: backend.corpora.lambdas.api.v1.collection.delete_collection
+      operationId: backend.layers.api.router.delete_collection
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       responses:
@@ -424,7 +424,7 @@ paths:
       summary: >-
         Returns all public, non tombstoned collections. This endpoint is meant to be used for displaying collections
         in a compact view. It doesn't return all the fields, so it is not suitable for general usage.
-      operationId: backend.corpora.lambdas.api.v1.collection.get_collections_index
+      operationId: backend.layers.api.router.get_collections_index
       responses:
         "200":
           description: OK

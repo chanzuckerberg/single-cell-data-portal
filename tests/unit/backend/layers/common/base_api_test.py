@@ -8,7 +8,10 @@ import unittest
 
 from unittest.mock import Mock, patch
 
+
 from backend.corpora.common.corpora_config import CorporaAuthConfig
+from backend.layers.api.portal_api import PortalApi
+from backend.layers.api.router import portal_api
 from backend.layers.business.business import BusinessLogic
 from backend.layers.persistence.persistence import DatabaseProviderInterface
 from backend.layers.thirdparty.crossref_provider import CrossrefProviderInterface
@@ -55,9 +58,7 @@ class NewBaseTest(unittest.TestCase):
     def setUp(self):
         super().setUp()
         os.environ.setdefault("APP_NAME", "corpora-api")
-        from backend.corpora.api_server.app import app
-        with EnvironmentSetup(dict(APP_NAME="corpora-api")):
-            self.app = app.test_client(use_cookies=False)
+
 
         database_provider = DatabaseProviderMock()
         crossref_provider = CrossrefProviderInterface()
@@ -66,8 +67,18 @@ class NewBaseTest(unittest.TestCase):
         uri_provider = UriProviderInterface()
         uri_provider.validate = Mock(return_value=True) # By default, every link should be valid
 
-
         self.business_logic = BusinessLogic(database_provider, crossref_provider, step_function_provider, s3_provider, uri_provider)
+
+        pa = PortalApi(self.business_logic)
+
+        import backend.layers.api.router
+        backend.layers.api.router.portal_api = Mock(return_value=pa)
+
+        # from backend.corpora.api_server.app import app
+        from backend.corpora.api_server.app import configure_flask_app, create_flask_app
+        # with EnvironmentSetup(dict(APP_NAME="corpora-api")):
+        flask_app = configure_flask_app(create_flask_app())
+        self.app = flask_app.test_client(use_cookies=False)
 
     def generate_unpublished_collection(self, owner = "test_user_id", links: List[Link] = []) -> CollectionVersion:
 
@@ -89,8 +100,12 @@ class NewBaseTest(unittest.TestCase):
 
 
     # TODO: public collections need to have at least one dataset!
-    def generate_published_collection(self, owner = "test_user_id", datasets: typing.List[DatasetMetadata] = []):
+    def generate_published_collection(self, owner = "test_user_id", datasets: Optional[typing.List[DatasetMetadata]] = None):
         unpublished_collection = self.generate_unpublished_collection(owner)
+
+        # TODO: generate a real dataset, with artifact and processing status
+        if datasets is None:
+            datasets = [DatasetMetadata("test_organism","test_tissue","test_assay","test_disease","test_sex","test_self_reported_ethnicity","test_development_stage","test_cell_type", 10)]
         for dataset in datasets:
             dataset_version_id = self.business_logic.ingest_dataset(unpublished_collection.version_id, "http://fake.url", None)
             self.business_logic.set_dataset_metadata(dataset_version_id, dataset)
