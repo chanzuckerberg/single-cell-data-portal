@@ -73,19 +73,28 @@ class DatasetArtifact:
     type: str
     uri: str
 
+@dataclass
+class OntologyTermId:
+    label: str
+    ontology_term_id: str
 
 @dataclass
 class DatasetMetadata:
-    organism: str
-    tissue: str
-    assay: str
-    disease: str
-    sex: str
-    self_reported_ethnicity: str
-    development_stage: str
-    cell_type: str
+    organism: List[OntologyTermId]
+    tissue: List[OntologyTermId]
+    assay: List[OntologyTermId]
+    disease: List[OntologyTermId]
+    sex: List[OntologyTermId]
+    self_reported_ethnicity: List[OntologyTermId]
+    development_stage: List[OntologyTermId]
+    cell_type: List[OntologyTermId]
     cell_count: int
-
+    schema_version: str
+    mean_genes_per_cell: float
+    batch_condition: List[str]
+    suspension_type: List[str]
+    donor_id: List[str]
+    is_primary_data: str
 
 @dataclass
 class DatasetVersion:
