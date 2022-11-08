@@ -336,27 +336,26 @@ class TestCollection(NewBaseTest):
         authenticated = [True, False]
         owns = [True, False]
         visibility = ["public", "private"]
-        obfuscated = [False]  # TODO: Once obfuscated uuid are support add True.
-        test_cases = [params for params in itertools.product(authenticated, owns, visibility, obfuscated)]
+        test_cases = [params for params in itertools.product(authenticated, owns, visibility)]
 
         # Generate test collection
         test_collections = dict(
-            public_not_owner=self.generate_published_collection(owner="someone else").collection_id,
-            public_owned=self.generate_published_collection(owner="test_user_id").collection_id,
-            private_not_owner=self.generate_unpublished_collection(owner="someone else").collection_id,
-            private_owned=self.generate_unpublished_collection(owner="test_user_id").collection_id,
+            public_not_owner=self.generate_published_collection(owner="someone else").collection_id.id,
+            public_owned=self.generate_published_collection(owner="test_user_id").collection_id.id,
+            private_not_owner=self.generate_unpublished_collection(owner="someone else").collection_id.id,
+            private_owned=self.generate_unpublished_collection(owner="test_user_id").collection_id.id,
         )
 
         # run
-        for auth, owns, visi, obfu in test_cases:
+        for auth, owns, visi in test_cases:
             expected_response_code = 200
 
             test_collection_id = test_collections["_".join([visi, "owned" if owns else "not_owner"])]
             expected_access_type = "WRITE" if owns and auth else "READ"
 
-            with self.subTest(f"auth:{auth}, owns:{owns}, visi:{visi}, obfu:{obfu}, acc:{expected_access_type}"):
-                if obfu:
-                    raise NotImplementedError()
+            print(test_collection_id)
+
+            with self.subTest(f"auth:{auth}, owns:{owns}, visi:{visi}, acc:{expected_access_type}"):
                 test_url = furl(path=f"/dp/v1/collections/{test_collection_id}")
                 if visi:
                     test_url.add(query_params=dict(visibility=visi.upper()))
@@ -365,6 +364,7 @@ class TestCollection(NewBaseTest):
                 if auth:
                     headers["Cookie"] = self.get_cxguser_token()
                 response = self.app.get(test_url.url, headers=headers)
+                # print(response.data)
                 self.assertEqual(expected_response_code, response.status_code)
                 if expected_response_code == 200:
                     actual_body = json.loads(response.data)

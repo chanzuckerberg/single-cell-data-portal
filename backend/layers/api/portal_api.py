@@ -3,12 +3,13 @@ from unittest.mock import Mock
 
 from flask import jsonify, make_response
 from backend.corpora.common.utils.authorization_checks import is_user_owner_or_allowed
+from backend.corpora.common.utils.http_exceptions import ForbiddenHTTPException
 from backend.layers.auth.user_info import UserInfo
 from backend.layers.business.business import BusinessLogic
 
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.business.entities import CollectionQueryFilter
-from backend.layers.common.entities import CollectionId
+from backend.layers.common.entities import CollectionId, CollectionVersionId, DatasetArtifact, DatasetStatus, DatasetVersion, Link
 
 from backend.corpora.common.utils import authorization_checks as auth
 import itertools
@@ -58,8 +59,111 @@ class PortalApi:
         result = {"collections": collections}
         return make_response(jsonify(result), 200)
 
+    def _dataset_processing_status_to_response(self, status: DatasetStatus, dataset_id: str):
+        return {
+            "created_at": 1234,
+            "cxg_status": status.cxg_status,
+            "dataset_id": dataset_id,
+            "h5ad_status": status.h5ad_status,
+            "id": "TODO", # TODO can we purge?
+            "processing_status": status.processing_status,
+            "rds_status": status.rds_status,
+            "updated_at": 1234,
+            "upload_progress": 1234,
+            "upload_status": status.upload_status,
+            "validation_status": status.validation_status,
+        }
+
+    def _link_to_response(self, link: Link):
+        return {
+            "link_name": link.name,
+            "link_type": link.type,
+            "link_url": link.uri,
+        }
+
+    def _dataset_asset_to_response(self, dataset_artifact: DatasetArtifact, dataset_id: str):
+        return {
+            "created_at": 1234,
+            "dataset_id": dataset_id,
+            "filename": "TODO",
+            "filetype": dataset_artifact.type,
+            "id": dataset_artifact.id,
+            "s3_uri": dataset_artifact.uri,
+            "updated_at": 1234,
+            "user_submitted": True,
+        }
+
+    def _dataset_to_response(self, dataset: DatasetVersion):
+        return {
+            "assay": dataset.metadata.assay,
+            "batch_condition": dataset.metadata.batch_condition,
+            "cell_count": dataset.metadata.cell_count,
+            "cell_type": dataset.metadata.cell_type,
+            "collection_id": "TODO", # TODO
+            "created_at": 1234, # TODO
+            "dataset_assets": [self._dataset_asset_to_response(a, dataset.dataset_id) for a in dataset.artifacts],
+            "dataset_deployments": dataset.metadata.explorer_url,
+            "development_stage": dataset.metadata.deployment_stage,
+            "disease": dataset.metadata.disease,
+            "donor_id": dataset.metadata.donor_id,
+            "id": dataset.id,
+            "is_primary_data": dataset.metadata.is_primary_data,
+            "is_valid": True, # why do we have this
+            "mean_genes_per_cell": dataset.metadata.mean_genes_per_cell,
+            "name": dataset.metadata.name,
+            "organism": dataset.metadata.organism,
+            "processing_status": self._dataset_processing_status_to_response(dataset.status, dataset.dataset_id),
+            "published": True,
+            "published_at": 1234,
+            "revision": 1234,
+            "schema_version": "3.0.0",
+            "self_reported_ethnicity": dataset.metadata.self_reported_ethnicity,
+            "sex": dataset.metadata.sex,
+            "suspension_type": dataset.metadata.suspension_type,
+            "tissue": dataset.metadata.tissue,
+            "tombstone": False,
+            "updated_at": 1234,
+            "x_approximate_distribution": dataset.metadata.x_approximate_distribution,
+        }
+
     def get_collection_details(self, collection_id: str, token_info: dict):
+        """
+        Retrieves the collection information. Will look up for a published collection first,
+        and then looks up for a collection version
+        """
+        # TODO: this logic might belong to the business layer?
         version = self.business_logic.get_published_collection_version(CollectionId(collection_id))
+        if version is None:
+            version = self.business_logic.get_collection_version(CollectionVersionId(collection_id))
+
+        print(version)
+        
+        if version is None:
+            raise ForbiddenHTTPException() # TODO: maybe remake this collection
+
+        # TODO: handle tombstoning
+
+        # TODO: handle access type as follows
+        #result["access_type"] = "WRITE" if is_user_owner_or_allowed(token_info, collection.owner) else "READ"
+
+        response = {
+            "access_type": "TODO", # TODO
+            "contact_email": "example@gmail.com",
+            "contact_name": "Smoke Test User",
+            "created_at": 1234,
+            "curator_name": "", # TODO
+            "data_submission_policy_version": "1.0", # TODO
+            "datasets": [self._dataset_to_response(d) for d in version.datasets],
+            "description": version.metadata.description,
+            "id": version.collection_id,
+            "links": [self._link_to_response(l) for l in version.metadata.links],
+            "name": version.metadata.name,
+            "published_at": 1234,
+            "updated_at": 1234,
+            "visibility": "PUBLIC" if version.published_at is not None else "PRIVATE",
+        }
+ 
+        return make_response(jsonify(response), 200)
 
         
         # db_session = g.db_session
