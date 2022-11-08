@@ -51,7 +51,7 @@ def get_dataset_s3_uris() -> Dict:
                 if len(organisms) < 2:
                     dataset_ids.append(dataset_id)
 
-        s3_uris = DatasetAsset.s3_uris_for_datasets(session, dataset_ids, DatasetArtifactFileType.H5AD)
+        s3_uris = DatasetAsset.s3_uris_for_datasets(session, dataset_ids, DatasetArtifactFileType.H5AD, "local.h5ad")
     return s3_uris
 
 
