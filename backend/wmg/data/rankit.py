@@ -2,6 +2,7 @@ import numba as nb
 import numpy as np
 import scipy as sc
 import logging
+
 logger = logging.getLogger("wmg")
 
 
@@ -42,6 +43,6 @@ def rankit(Xraw: sc.sparse.spmatrix, offset: float = 3.0) -> sc.sparse.csr_matri
             X.data[indptr[row] : indptr[row + 1]] = normal_quantiles
         elif not warning_raised:
             logging.warn("This dataset has at least one row of all zero expressions")
-            warning_raised=True
+            warning_raised = True
 
     return X
