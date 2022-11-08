@@ -101,18 +101,18 @@ class PortalApi:
             "cell_type": dataset.metadata.cell_type,
             "collection_id": "TODO", # TODO
             "created_at": 1234, # TODO
-            "dataset_assets": [self._dataset_asset_to_response(a, dataset.dataset_id) for a in dataset.artifacts],
+            "dataset_assets": [self._dataset_asset_to_response(a, dataset.dataset_id.id) for a in dataset.artifacts],
             "dataset_deployments": dataset.metadata.explorer_url,
-            "development_stage": dataset.metadata.deployment_stage,
+            "development_stage": dataset.metadata.development_stage,
             "disease": dataset.metadata.disease,
             "donor_id": dataset.metadata.donor_id,
-            "id": dataset.id,
+            "id": dataset.dataset_id.id,
             "is_primary_data": dataset.metadata.is_primary_data,
             "is_valid": True, # why do we have this
             "mean_genes_per_cell": dataset.metadata.mean_genes_per_cell,
-            "name": dataset.metadata.name,
+            "name": dataset.name,
             "organism": dataset.metadata.organism,
-            "processing_status": self._dataset_processing_status_to_response(dataset.status, dataset.dataset_id),
+            "processing_status": self._dataset_processing_status_to_response(dataset.status, dataset.dataset_id.id),
             "published": True,
             "published_at": 1234,
             "revision": 1234,
@@ -137,7 +137,7 @@ class PortalApi:
             version = self.business_logic.get_collection_version(CollectionVersionId(collection_id))
 
         print(version)
-        
+
         if version is None:
             raise ForbiddenHTTPException() # TODO: maybe remake this collection
 
