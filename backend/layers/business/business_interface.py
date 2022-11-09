@@ -1,5 +1,5 @@
 
-from typing import Iterable, Optional
+from typing import Iterable, Optional, Tuple
 from backend.layers.business.entities import CollectionMetadataUpdate, CollectionQueryFilter, DatasetArtifactDownloadData
 
 from backend.layers.common.entities import (
@@ -57,7 +57,7 @@ class BusinessLogicInterface:
         collection_version_id: CollectionVersionId,
         url: str,
         existing_dataset_version_id: Optional[DatasetVersionId],
-    ) -> DatasetVersionId:
+    ) -> Tuple[DatasetVersionId, DatasetId]:
         pass
 
     def get_all_published_datasets(self) -> Iterable[DatasetVersion]:

@@ -468,7 +468,7 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         version = self.initialize_empty_unpublished_collection()
         url = "http://test/dataset.url"
 
-        new_dataset_version_id = self.business_logic.ingest_dataset(version.version_id, url, None)
+        new_dataset_version_id, _ = self.business_logic.ingest_dataset(version.version_id, url, None)
 
         new_dataset_version = self.database_provider.get_dataset_version(new_dataset_version_id)
         self.assertIsNotNone(new_dataset_version)
@@ -551,7 +551,7 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         dataset_version_to_replace_id = version.datasets[0].version_id
         url = "http://test/dataset.url"
 
-        new_dataset_version_id = self.business_logic.ingest_dataset(
+        new_dataset_version_id, _ = self.business_logic.ingest_dataset(
             version.version_id, 
             url, 
             dataset_version_to_replace_id
@@ -891,7 +891,7 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         published_collection = self.initialize_published_collection()
         new_version = self.business_logic.create_collection_version(published_collection.collection_id)
 
-        added_dataset_version_id = self.business_logic.ingest_dataset(new_version.version_id, "http://fake.url", None)
+        added_dataset_version_id, _ = self.business_logic.ingest_dataset(new_version.version_id, "http://fake.url", None)
         self.complete_dataset_processing_with_success(added_dataset_version_id)
 
         # The new version should have three datasets (before publishing)
@@ -934,7 +934,7 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         dataset_id_to_replace = published_collection.datasets[0].version_id
         dataset_id_to_keep = published_collection.datasets[1].version_id
 
-        replaced_dataset_version_id = self.business_logic.ingest_dataset(
+        replaced_dataset_version_id, _ = self.business_logic.ingest_dataset(
             new_version.version_id, 
             "http://fake.url", 
             dataset_id_to_replace
