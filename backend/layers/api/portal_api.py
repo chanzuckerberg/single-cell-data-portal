@@ -332,7 +332,15 @@ class PortalApi:
 
     def get_status(self, dataset_id: str, token_info: dict):
 
-        status = self.business_logic.get_dataset_status(DatasetVersionId(dataset_id))
+        # version = self.business_logic.get_dataset_version(DatasetVersionId(dataset_id))
+        # collection_version = self.business_logic.get_collection_version(version)
+
+        # if version is None:
+            # return 
+
+        # TODO: needs a review
+        # TODO: this needs to access the collection that owns this dataset - but we don't have that key right now...
+
         response = {
             "cxg_status": status.cxg_status or "NA",
             "rds_status": status.rds_status or "NA",
@@ -348,7 +356,12 @@ class PortalApi:
         return make_response(response, 200)
 
     def get_datasets_index(self):
-        pass
+
+        response = []
+        for dataset in self.business_logic.get_all_published_datasets():
+            response.append(self._dataset_to_response(dataset))
+
+        return make_response(jsonify(response), 200)
 
     def delete_dataset(self, dataset_id: str, token_info: dict):
         pass
