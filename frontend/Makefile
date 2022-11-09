@@ -38,7 +38,7 @@ upload-vars:
 	aws s3 cp .env.production $(S3_ENVIRONMENT_FILE)
 
 .PHONY: e2e
-e2e:
+e2e: ## only used by make local-e2e
 	TEST_ENV=$(DEPLOYMENT_STAGE) npm run e2e
 
 .PHONY: smoke-test-with-local-dev

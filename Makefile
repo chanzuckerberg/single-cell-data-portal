@@ -218,6 +218,7 @@ local-functional-test: ## Run functional tests in the dev environment
 local-smoke-test: ## Run frontend/e2e tests in the dev environment
 	docker-compose $(COMPOSE_OPTS) run --rm -T frontend make smoke-test-with-local-dev
 
+
 .PHONY: local-dbconsole
 local-dbconsole: ## Connect to the local postgres database.
 	psql "postgresql://corpora:test_pw@localhost:5432"
