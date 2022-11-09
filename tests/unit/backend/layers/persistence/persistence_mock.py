@@ -241,3 +241,8 @@ class DatabaseProviderMock(DatabaseProviderInterface):
 
     def get_dataset_version_status(self, version_id: DatasetVersionId) -> DatasetStatus:
         return copy.deepcopy(self.datasets_versions[version_id.id].status)
+
+    def get_dataset_mapped_version(self, dataset_id: DatasetId) -> Optional[DatasetVersion]:
+        version_id = self.datasets.get(dataset_id.id)
+        if version_id is not None:
+            return copy.deepcopy(self.datasets_versions[version_id])

@@ -355,8 +355,8 @@ class BusinessLogic(BusinessLogicInterface):
 
         self.database_provider.finalize_collection_version(version.collection_id, version_id, None)
 
-    def get_dataset_version(self, dataset_version_id: DatasetVersionId) -> DatasetVersion:
+    def get_dataset_version(self, dataset_version_id: DatasetVersionId) -> Optional[DatasetVersion]:
         return self.database_provider.get_dataset_version(dataset_version_id)
 
-    def get_dataset_version_from_canonical(self, dataset_id: DatasetId) -> DatasetVersion:
-        self.database_provider.get_da
+    def get_dataset_version_from_canonical(self, dataset_id: DatasetId) -> Optional[DatasetVersion]:
+        return self.database_provider.get_dataset_mapped_version(dataset_id)
