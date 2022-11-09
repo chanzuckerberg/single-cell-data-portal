@@ -9,6 +9,7 @@ from backend.common.utils.result_notification import (
     gen_wmg_pipeline_success_message,
     gen_wmg_pipeline_failure_message,
 )
+from backend.common.utils.exceptions import CubeValidationException
 from backend.wmg.pipeline import integrated_corpus, summary_cubes
 
 from backend.wmg.data.load_cube import upload_artifacts_to_s3, make_snapshot_active
@@ -53,7 +54,7 @@ def load_data_and_create_cube(
     try:
         summary_cubes.run(corpus_path, validate_cube)
     except CubeValidationException as e:
-        upload_artifacts_to_s3(snapshot_path, 'latest_validation_failed_snapshot')
+        upload_artifacts_to_s3(snapshot_path, "latest_validation_failed_snapshot")
         logger.exception(e)
         sys.exit("Exiting due to cube validation failure")
 
