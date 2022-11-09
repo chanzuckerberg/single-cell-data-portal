@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Iterable, Optional
+from typing import Iterable, Optional, Tuple
 from backend.corpora.common.providers.crossref_provider import CrossrefDOINotFoundException, CrossrefException
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.business.entities import CollectionMetadataUpdate, CollectionQueryFilter, DatasetArtifactDownloadData
@@ -200,11 +200,12 @@ class BusinessLogic(BusinessLogicInterface):
         if collection_version.published_at is not None:
             raise CollectionUpdateException([f"Collection version {collection_version_id.id} is published"])
 
+    # TODO: Alternatives: 1) return DatasetVersion 2) Return a new class
     def ingest_dataset(
         self,
         collection_version_id: CollectionVersionId,
         url: str,
-        existing_dataset_version_id: Optional[DatasetVersionId]) -> DatasetVersionId:
+        existing_dataset_version_id: Optional[DatasetVersionId]) -> Tuple[DatasetVersionId, DatasetId]:
         """
         Creates a canonical dataset and starts its ingestion by invoking the step function
         """
@@ -251,7 +252,7 @@ class BusinessLogic(BusinessLogicInterface):
         # Starts the step function process
         self.step_function_provider.start_step_function(collection_version_id, new_dataset_version.version_id, url)
 
-        return new_dataset_version.version_id
+        return (new_dataset_version.version_id, new_dataset_version.dataset_id)
 
 
     def remove_dataset_version(self, collection_version_id: CollectionVersionId, dataset_version_id: DatasetVersionId) -> None:
