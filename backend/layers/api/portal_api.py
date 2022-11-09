@@ -4,6 +4,7 @@ from unittest.mock import Mock
 from flask import jsonify, make_response
 from backend.corpora.common.utils.authorization_checks import is_user_owner_or_allowed
 from backend.corpora.common.utils.http_exceptions import ForbiddenHTTPException, InvalidParametersHTTPException, NotFoundHTTPException, ServerErrorHTTPException
+from backend.layers.api.enrichment import enrich_dataset_with_ancestors
 from backend.layers.auth.user_info import UserInfo
 from backend.layers.business.business import BusinessLogic
 
@@ -13,6 +14,7 @@ from backend.layers.business.exceptions import ArtifactNotFoundException, Collec
 from backend.layers.common.entities import CollectionId, CollectionMetadata, CollectionVersion, CollectionVersionId, DatasetArtifact, DatasetId, DatasetStatus, DatasetVersion, DatasetVersionId, Link, OntologyTermId
 
 from backend.corpora.common.utils import authorization_checks as auth
+from backend.corpora.common.utils.ontology_mappings.ontology_map_loader import ontology_mappings
 import itertools
 
 from backend.layers.common import doi
@@ -359,7 +361,11 @@ class PortalApi:
 
         response = []
         for dataset in self.business_logic.get_all_published_datasets():
-            response.append(self._dataset_to_response(dataset))
+            payload = self._dataset_to_response(dataset)
+            enrich_dataset_with_ancestors(payload, "development_stage", ontology_mappings.development_stage_ontology_mapping)
+            enrich_dataset_with_ancestors(payload, "tissue", ontology_mappings.tissue_ontology_mapping)
+            enrich_dataset_with_ancestors(payload, "cell_type", ontology_mappings.cell_type_ontology_mapping)
+            response.append(payload)
 
         return make_response(jsonify(response), 200)
 

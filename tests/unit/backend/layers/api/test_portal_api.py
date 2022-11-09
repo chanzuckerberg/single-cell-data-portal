@@ -1,9 +1,10 @@
+import dataclasses
 import itertools
 import json
 import unittest
 from datetime import datetime
 from unittest.mock import Mock, patch
-from backend.layers.common.entities import CollectionVersionId, DatasetMetadata, DatasetProcessingStatus, DatasetUploadStatus, Link
+from backend.layers.common.entities import CollectionVersionId, DatasetMetadata, DatasetProcessingStatus, DatasetUploadStatus, DatasetVersionId, Link, OntologyTermId
 
 from furl import furl
 
@@ -1493,6 +1494,7 @@ class TestDataset(NewBaseTest):
             response = self.app.get(test_url.url, headers=headers)
             self.assertEqual(json.loads(response.data)["upload_status"], status.name)
 
+    # 💛, passes, but review the assertions
     def test__get_all_datasets_for_index(self):
         # TODO: here we probably don't need to test the logic - needs to simplify this
 
@@ -1513,95 +1515,99 @@ class TestDataset(NewBaseTest):
         for d in body:
             if d["id"] == public_dataset.dataset_id:
                 actual_dataset = d
+
+        persisted_dataset = self.business_logic.get_dataset_version(DatasetVersionId(public_dataset.dataset_version_id))
         self.assertIsNotNone(actual_dataset)
+        self.assertIsNotNone(persisted_dataset)
 
-        # TODO: need something to retrieve the dataset metadata from the database
+        def convert_ontology(ontologies):
+            return [dataclasses.asdict(o) for o in ontologies]
 
-        if actual_dataset is not None: #pylance
+        if actual_dataset is not None and persisted_dataset is not None: #pylance
 
-            print(actual_dataset)
+            self.assertNotIn("description", actual_dataset)
+            self.assertEqual(actual_dataset["id"], persisted_dataset.dataset_id.id)
+            self.assertEqual(actual_dataset["name"], persisted_dataset.metadata.name)
+            # self.assertEqual(actual_dataset["collection_id"], persisted_dataset.collection_id)
+            self.assertEqual(actual_dataset["assay"], convert_ontology(persisted_dataset.metadata.assay))
+            self.assertEqual(actual_dataset["tissue"], convert_ontology(persisted_dataset.metadata.tissue))
+            self.assertEqual(actual_dataset["disease"], convert_ontology(persisted_dataset.metadata.disease))
+            self.assertEqual(actual_dataset["sex"], convert_ontology(persisted_dataset.metadata.sex))
+            self.assertEqual(actual_dataset["self_reported_ethnicity"], convert_ontology(persisted_dataset.metadata.self_reported_ethnicity))
+            self.assertEqual(actual_dataset["organism"], convert_ontology(persisted_dataset.metadata.organism))
+            self.assertEqual(actual_dataset["development_stage"], convert_ontology(persisted_dataset.metadata.development_stage))
+            self.assertEqual(actual_dataset["cell_count"], persisted_dataset.metadata.cell_count)
+            self.assertEqual(actual_dataset["cell_type"], convert_ontology(persisted_dataset.metadata.cell_type))
+            self.assertEqual(actual_dataset["is_primary_data"], persisted_dataset.metadata.is_primary_data)
+            self.assertEqual(actual_dataset["mean_genes_per_cell"], persisted_dataset.metadata.mean_genes_per_cell)
+            # self.assertEqual(actual_dataset["explorer_url"], persisted_dataset.explorer_url)
+            # self.assertEqual(actual_dataset["published_at"], persisted_dataset.published_at.timestamp())
+            # self.assertEqual(actual_dataset["revised_at"], persisted_dataset.revised_at.timestamp())
 
-            # self.assertNotIn("description", actual_dataset)
-            # self.assertEqual(actual_dataset["id"], public_dataset.dataset_id)
-            # self.assertEqual(actual_dataset["name"], public_dataset.name)
-            # self.assertEqual(actual_dataset["collection_id"], public_dataset.collection_id)
-            # self.assertEqual(actual_dataset["assay"], public_dataset.assay)
-            # self.assertEqual(actual_dataset["tissue"], public_dataset.tissue)
-            # self.assertEqual(actual_dataset["disease"], public_dataset.disease)
-            # self.assertEqual(actual_dataset["sex"], public_dataset.sex)
-            # self.assertEqual(actual_dataset["self_reported_ethnicity"], public_dataset.self_reported_ethnicity)
-            # self.assertEqual(actual_dataset["organism"], public_dataset.organism)
-            # self.assertEqual(actual_dataset["development_stage"], public_dataset.development_stage)
-            # self.assertEqual(actual_dataset["cell_count"], public_dataset.cell_count)
-            # self.assertEqual(actual_dataset["cell_type"], public_dataset.cell_type)
-            # self.assertEqual(actual_dataset["is_primary_data"], public_dataset.is_primary_data.name)
-            # self.assertEqual(actual_dataset["mean_genes_per_cell"], public_dataset.mean_genes_per_cell)
-            # self.assertEqual(actual_dataset["explorer_url"], public_dataset.explorer_url)
-            # self.assertEqual(actual_dataset["published_at"], public_dataset.published_at.timestamp())
-            # self.assertEqual(actual_dataset["revised_at"], public_dataset.revised_at.timestamp())
-
+    # ✅
     def test__get_all_datasets_for_index_with_ontology_expansion(self):
-        # TODO: same as above
-        test_dataset_id = "test_dataset_id_for_index_2"
-        dataset = self.generate_dataset(
-            self.session,
-            id=test_dataset_id,
-            cell_count=42,
-            development_stage=[{"ontology_term_id": "HsapDv:0000008", "label": "Test"}],
-            tissue=[{"ontology_term_id": "UBERON:0002048", "label": "Test"}],
-            cell_type=[{"ontology_term_id": "CL:0000738", "label": "Test"}],
-            published_at=datetime.now(),
-            revised_at=datetime.now(),
-        )
+
+        import copy
+        modified_metadata = copy.deepcopy(self.sample_dataset_metadata)
+        modified_metadata.development_stage = [OntologyTermId("Test", "HsapDv:0000008")]
+        modified_metadata.tissue = [OntologyTermId("Test", "UBERON:0002048")]
+        modified_metadata.cell_type = [OntologyTermId("Test", "CL:0000738")]
+
+        dataset = self.generate_dataset(metadata=modified_metadata, publish=True)
 
         test_url = furl(path="/dp/v1/datasets/index")
 
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_cxguser_token()}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
         response = self.app.get(test_url.url, headers=headers)
         self.assertEqual(200, response.status_code)
         body = json.loads(response.data)
 
         actual_dataset = None
         for d in body:
-            if d["id"] == test_dataset_id:
+            if d["id"] == dataset.dataset_id:
                 actual_dataset = d
         self.assertIsNotNone(actual_dataset)
 
-        self.assertEqual(actual_dataset["development_stage"], dataset.development_stage)
-        self.assertEqual(
-            actual_dataset["development_stage_ancestors"],
-            ["HsapDv:0000008", "HsapDv:0000006", "HsapDv:0000002", "HsapDv:0000045", "HsapDv:0000001"],
-        )
+        def convert_ontology(ontologies):
+            return [dataclasses.asdict(o) for o in ontologies]
 
-        self.assertEqual(actual_dataset["tissue"], dataset.tissue)
-        self.assertCountEqual(
-            actual_dataset["tissue_ancestors"],
-            [
-                "UBERON:0001004",
-                "UBERON:0001005",
-                "UBERON:0000065",
-                "UBERON:0000170",
-                "UBERON:0002048",
-                "UBERON:0001558",
-                "UBERON:0000072",
-                "UBERON:0000171",
-            ],
-        )
+        if actual_dataset is not None: # pylance
 
-        self.assertEqual(actual_dataset["cell_type"], dataset.cell_type)
-        self.assertCountEqual(
-            actual_dataset["cell_type_ancestors"],
-            [
-                "CL:0000255",
-                "CL:0002371",
-                "CL:0000988",
-                "CL:0000738",
-                "CL:0000548",
-                "CL:0000219",
-                "CL:0000003",
-                "CL:0002242",
-            ],
-        )
+            self.assertEqual(actual_dataset["development_stage"], convert_ontology(modified_metadata.development_stage))
+            self.assertEqual(
+                actual_dataset["development_stage_ancestors"],
+                ["HsapDv:0000008", "HsapDv:0000006", "HsapDv:0000002", "HsapDv:0000045", "HsapDv:0000001"],
+            )
+
+            self.assertEqual(actual_dataset["tissue"], convert_ontology(modified_metadata.tissue))
+            self.assertCountEqual(
+                actual_dataset["tissue_ancestors"],
+                [
+                    "UBERON:0001004",
+                    "UBERON:0001005",
+                    "UBERON:0000065",
+                    "UBERON:0000170",
+                    "UBERON:0002048",
+                    "UBERON:0001558",
+                    "UBERON:0000072",
+                    "UBERON:0000171",
+                ],
+            )
+
+            self.assertEqual(actual_dataset["cell_type"], convert_ontology(modified_metadata.cell_type))
+            self.assertCountEqual(
+                actual_dataset["cell_type_ancestors"],
+                [
+                    "CL:0000255",
+                    "CL:0002371",
+                    "CL:0000988",
+                    "CL:0000738",
+                    "CL:0000548",
+                    "CL:0000219",
+                    "CL:0000003",
+                    "CL:0002242",
+                ],
+            )
 
     def test__get_dataset_assets(self):
         # TODO: I don't think `filename` is relevant - review

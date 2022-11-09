@@ -79,6 +79,8 @@ class NewBaseTest(BaseAuthAPITest):
 
     business_logic: BusinessLogic
     crossref_provider: CrossrefProviderInterface # Can be mocked from the tests
+
+    sample_dataset_metadata: DatasetMetadata
     
     def setUp(self):
         super().setUp()
@@ -90,6 +92,26 @@ class NewBaseTest(BaseAuthAPITest):
         s3_provider = S3Provider()
         uri_provider = UriProviderInterface()
         uri_provider.validate = Mock(return_value=True) # By default, every link should be valid
+
+        self.sample_dataset_metadata = DatasetMetadata(
+            name = "test_dataset_name",
+            organism = [OntologyTermId(label="test_organism_label", ontology_term_id="test_organism_term_id")],
+            tissue = [OntologyTermId(label="test_tissue_label", ontology_term_id="test_tissue_term_id")],
+            assay = [OntologyTermId(label="test_assay_label", ontology_term_id="test_assay_term_id")],
+            disease = [OntologyTermId(label="test_disease_label", ontology_term_id="test_disease_term_id")],
+            sex = [OntologyTermId(label="test_sex_label", ontology_term_id="test_sex_term_id")],
+            self_reported_ethnicity = [OntologyTermId(label="test_self_reported_ethnicity_label", ontology_term_id="test_self_reported_ethnicity_term_id")],
+            development_stage = [OntologyTermId(label="test_development_stage_label", ontology_term_id="test_development_stage_term_id")],
+            cell_type = [OntologyTermId(label="test_cell_type_label", ontology_term_id="test_cell_type_term_id")],
+            cell_count = 10,
+            schema_version = "3.0.0",
+            mean_genes_per_cell = 0.5,
+            batch_condition = ["test_batch_1", "test_batch_2"],
+            suspension_type = ["test_suspension_type"],
+            donor_id = ["test_donor_1"],
+            is_primary_data = "BOTH",
+            x_approximate_distribution="normal",
+        )
 
         self.business_logic = BusinessLogic(
             database_provider, 
@@ -159,7 +181,7 @@ class NewBaseTest(BaseAuthAPITest):
                 )
             ]
         for dataset in datasets:
-            dataset_version_id = self.business_logic.ingest_dataset(unpublished_collection.version_id, "http://fake.url", None)
+            dataset_version_id, _ = self.business_logic.ingest_dataset(unpublished_collection.version_id, "http://fake.url", None)
             self.business_logic.set_dataset_metadata(dataset_version_id, dataset)
             # TODO: set a proper dataset status
         self.business_logic.publish_collection_version(unpublished_collection.version_id)
@@ -183,7 +205,7 @@ class NewBaseTest(BaseAuthAPITest):
         """
         # if not collection_version_id:
         collection = self.generate_unpublished_collection(owner)
-        dataset_version_id = self.business_logic.ingest_dataset(collection.version_id, "http://fake.url", None)
+        dataset_version_id, dataset_id = self.business_logic.ingest_dataset(collection.version_id, "http://fake.url", None)
         if not metadata:
             # TODO: put this in the main class and deepcopy it
             metadata = DatasetMetadata(
@@ -214,11 +236,10 @@ class NewBaseTest(BaseAuthAPITest):
         if publish:
             self.business_logic.publish_collection_version(collection.version_id)
         # TODO: `ingest_dataset` should return the dataset_id as well, because we'll need it here
-        dataset_id = "TODO"
         explorer_url = f"http://base.url/{dataset_id}"
         return DatasetData(
             dataset_version_id.id, 
-            dataset_id, 
+            dataset_id.id, 
             explorer_url, 
             collection.version_id.id, 
             collection.collection_id.id,
