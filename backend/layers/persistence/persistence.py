@@ -6,6 +6,7 @@ from backend.layers.common.entities import (
     CollectionVersion,
     CollectionVersionId,
     DatasetArtifact,
+    DatasetArtifactId,
     DatasetConversionStatus,
     DatasetId,
     DatasetMetadata,
@@ -154,7 +155,7 @@ class DatabaseProviderInterface:
         """
         pass
 
-    def add_dataset_artifact(self, version_id: DatasetVersionId, artifact_type: str, artifact_uri: str) -> None:
+    def add_dataset_artifact(self, version_id: DatasetVersionId, artifact_type: str, artifact_uri: str) -> DatasetArtifactId:
         """
         Adds a dataset artifact to an existing dataset version.
         """
