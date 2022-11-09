@@ -208,8 +208,9 @@ class NewBaseTest(BaseAuthAPITest):
         self.business_logic.set_dataset_metadata(dataset_version_id, metadata)
         for status in statuses:
             self.business_logic.update_dataset_version_status(dataset_version_id, status.status_key, status.status)
+        artifact_ids = []
         for artifact in artifacts:
-            self.business_logic.add_dataset_artifact(dataset_version_id, artifact.type, artifact.uri)
+            artifact_ids.append(self.business_logic.add_dataset_artifact(dataset_version_id, artifact.type, artifact.uri))
         if publish:
             self.business_logic.publish_collection_version(collection.version_id)
         # TODO: `ingest_dataset` should return the dataset_id as well, because we'll need it here
@@ -221,7 +222,7 @@ class NewBaseTest(BaseAuthAPITest):
             explorer_url, 
             collection.version_id.id, 
             collection.collection_id.id,
-            
+            [a.id for a in artifact_ids],
         )
 
 

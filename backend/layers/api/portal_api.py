@@ -10,7 +10,7 @@ from backend.layers.business.business import BusinessLogic
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.business.entities import CollectionMetadataUpdate, CollectionQueryFilter
 from backend.layers.business.exceptions import ArtifactNotFoundException, CollectionCreationException
-from backend.layers.common.entities import CollectionId, CollectionMetadata, CollectionVersion, CollectionVersionId, DatasetArtifact, DatasetId, DatasetStatus, DatasetVersion, Link, OntologyTermId
+from backend.layers.common.entities import CollectionId, CollectionMetadata, CollectionVersion, CollectionVersionId, DatasetArtifact, DatasetId, DatasetStatus, DatasetVersion, DatasetVersionId, Link, OntologyTermId
 
 from backend.corpora.common.utils import authorization_checks as auth
 import itertools
@@ -301,7 +301,8 @@ class PortalApi:
 
     def post_dataset_asset(self, dataset_id: str, asset_id: str):
         """
-        Requests to download a dataset asset, by generating a presigned_url
+        Requests to download a dataset asset, by generating a presigned_url.
+        This method will accept a canonical dataset_id
         """
 
         # TODO: if dataset not found, raise NotFoundHTTPException(detail=f"'dataset/{dataset_id}' not found.")
@@ -330,7 +331,21 @@ class PortalApi:
         pass
 
     def get_status(self, dataset_id: str, token_info: dict):
-        pass
+
+        status = self.business_logic.get_dataset_status(DatasetVersionId(dataset_id))
+        response = {
+            "cxg_status": status.cxg_status or "NA",
+            "rds_status": status.rds_status or "NA",
+            "h5ad_status": status.h5ad_status or "NA",
+            "processing_status": status.processing_status or "NA",
+            "dataset_id": dataset_id,
+            "id": "NA",
+            "upload_progress": 12345,
+            "upload_status": status.upload_status or "NA",
+            "validation_status": status.validation_status or "NA",
+        }
+
+        return make_response(response, 200)
 
     def get_datasets_index(self):
         pass

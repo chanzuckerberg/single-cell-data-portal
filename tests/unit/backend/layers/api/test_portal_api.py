@@ -1309,7 +1309,7 @@ class TestCollectionsCurators(NewBaseTest):
         self.assertEqual(204, response.status_code)
 
 
-# TODO: Not an API test, but still valuable. Figure out where to put it. Maybe create a test_validation.py?
+# TODO: 🔴 Not an API test, but still valuable. Figure out where to put it. Maybe create a test_validation.py?
 class TestVerifyCollection(unittest.TestCase):
     def test_empty_body(self):
         body = dict()
@@ -1397,8 +1397,8 @@ class TestDataset(NewBaseTest):
         # expected_body = dict(dataset_id="test_dataset_id", file_name="test_filename", file_size=len(content))
         version = self.generate_dataset(artifacts=[DatasetArtifactUpdate("H5AD", "http://mock.uri/asset.h5ad")])
         dataset_id = version.dataset_version_id
-        artifact_id = version.
-        test_url = furl(path="/dp/v1/datasets/{test_dataset_id}/asset/test_dataset_artifact_id")
+        artifact_id = version.artifact_ids[0]
+        test_url = furl(path=f"/dp/v1/datasets/{dataset_id}/asset/{artifact_id}")
         response = self.app.post(test_url.url, headers=dict(host="localhost"))
         self.assertEqual(200, response.status_code)
         actual_body = json.loads(response.data)
@@ -1406,7 +1406,7 @@ class TestDataset(NewBaseTest):
         self.assertIsNotNone(actual_body["presigned_url"])
         # self.assertEqual(expected_body, actual_body)
 
-    # TODO: 🔴 How is this supposed to work? We should never return 500 errors
+    # TODO: 🔴 It is not clear what this test is testing.
     def test__post_dataset_asset__file_SERVER_ERROR(self):
         test_url = furl(path="/dp/v1/datasets/test_dataset_id/asset/test_dataset_artifact_id")
         response = self.app.post(test_url.url, headers=dict(host="localhost"))
@@ -1414,6 +1414,7 @@ class TestDataset(NewBaseTest):
         body = json.loads(response.data)
         self.assertEqual("An internal server error has occurred. Please try again later.", body["detail"])
 
+    # 🔴
     def test__post_dataset_asset__dataset_NOT_FOUND(self):
         test_url = furl(path="/dp/v1/datasets/test_user_id/asset/test_dataset_artifact_id")
         response = self.app.post(test_url.url, headers=dict(host="localhost"))
@@ -1422,6 +1423,7 @@ class TestDataset(NewBaseTest):
         self.assertEqual("'dataset/test_user_id' not found.", body["detail"])
         print(body)
 
+    # 🔴
     def test__post_dataset_asset__asset_NOT_FOUND(self):
         test_url = furl(path="/dp/v1/datasets/test_dataset_id/asset/fake_asset")
         response = self.app.post(test_url.url, headers=dict(host="localhost"))
@@ -1429,6 +1431,7 @@ class TestDataset(NewBaseTest):
         body = json.loads(response.data)
         self.assertEqual("'dataset/test_dataset_id/asset/fake_asset' not found.", body["detail"])
 
+    # 💛 TODO: figure out `upload_progress`
     def test__get_status__ok(self):
         dataset = self.generate_dataset(
             owner="test_user_1",
@@ -1449,7 +1452,7 @@ class TestDataset(NewBaseTest):
             "h5ad_status": "NA",
             "processing_status": "PENDING",
             "dataset_id": dataset.dataset_version_id,
-            "id": "test_dataset_processing_status_id",
+            "id": "NA", # TODO: I am deprecating this, I don't think it has any use.
             "upload_progress": 0.4444444444444444,
             "upload_status": "UPLOADING",
             "validation_status": "NA",
@@ -1465,9 +1468,9 @@ class TestDataset(NewBaseTest):
         response = self.app.get(test_url.url, headers=headers)
         self.assertEqual(403, response.status_code)
 
+    # 🔴 TODO: processing_status_updater needs to be rewritten - think about it 
     def test__minimal_status__ok(self):
         # TODO: why do we need a processing status id?
-        # TODO: processing_status_updater needs to be rewritten - think about it
         dataset = self.generate_dataset(statuses = [DatasetStatusUpdate("upload_status", DatasetUploadStatus.WAITING)])
         processing_status_id = "NA"
         test_url = furl(path=f"/dp/v1/datasets/{dataset.dataset_version_id}/status")
