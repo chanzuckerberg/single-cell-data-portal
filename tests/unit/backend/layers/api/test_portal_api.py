@@ -1609,11 +1609,12 @@ class TestDataset(NewBaseTest):
                 ],
             )
 
+    # ✅
     def test__get_dataset_assets(self):
         # TODO: I don't think `filename` is relevant - review
         dataset = self.generate_dataset(artifacts=[
-            DatasetArtifactUpdate("cxg", "s3://mock-bucket/mock-key.cxg"),
-            DatasetArtifactUpdate("h5ad", "s3://mock-bucket/mock-key.h5ad"),
+            DatasetArtifactUpdate("CXG", "s3://mock-bucket/mock-key.cxg"),
+            DatasetArtifactUpdate("H5AD", "s3://mock-bucket/mock-key.h5ad"),
         ])
 
         test_url = furl(path=f"/dp/v1/datasets/{dataset.dataset_version_id}/assets")

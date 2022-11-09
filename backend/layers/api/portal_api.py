@@ -330,7 +330,21 @@ class PortalApi:
         
 
     def get_dataset_assets(self, dataset_id: str):
-        pass
+        """
+        Returns a list of all the artifacts registered to a dataset.
+        TODO: not sure where this is used and what the response should be
+        """
+
+        artifacts = []
+        for artifact in self.business_logic.get_dataset_artifacts(DatasetVersionId(dataset_id)):
+            artifacts.append({
+                "id": artifact.id.id,
+                "type": artifact.type,
+                "s3_uri": artifact.uri
+            })
+        response = {"assets": artifacts}
+
+        return make_response(jsonify(response), 200)
 
     def get_status(self, dataset_id: str, token_info: dict):
 
