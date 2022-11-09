@@ -375,9 +375,9 @@ class TestUpdateCollection(BaseBusinessLogicTestCase):
         self.assertEqual(updated_version.metadata.description, body.description)
 
         # These three fields should remain the same
-        self.assertEqual(updated_version.metadata.contact_name, version.metadata.contact_name)
-        self.assertEqual(updated_version.metadata.contact_email, version.metadata.contact_email)
-        self.assertEqual(updated_version.metadata.links, version.metadata.links)
+        self.assertEqual(updated_version.metadata.contact_name, self.sample_collection_metadata.contact_name)
+        self.assertEqual(updated_version.metadata.contact_email, self.sample_collection_metadata.contact_email)
+        self.assertEqual(updated_version.metadata.links, self.sample_collection_metadata.links)
 
     def test_update_published_collection_fail(self):
         """
