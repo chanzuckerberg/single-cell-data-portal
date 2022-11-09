@@ -1,4 +1,4 @@
-import { Position, Spinner, Tooltip } from "@blueprintjs/core";
+import { Spinner } from "@blueprintjs/core";
 import * as React from "react";
 import { FC, useCallback } from "react";
 import { useDatasetAssets } from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DownloadDataset/util";
@@ -42,19 +42,11 @@ const DownloadDataset: FC<Props> = ({
 
   return (
     <>
-      <Tooltip
-        boundary="viewport"
-        content="Download"
+      <Button
         disabled={isDisabled}
-        position={Position.TOP}
-      >
-        <Button
-          disabled={isDisabled}
-          onClick={toggleOpen}
-          data-test-id="dataset-download-button"
-        />
-      </Tooltip>
-
+        onClick={toggleOpen}
+        data-test-id="dataset-download-button"
+      />
       <Modal
         title="Download Dataset"
         isOpen={isOpen}

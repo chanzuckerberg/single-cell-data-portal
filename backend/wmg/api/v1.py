@@ -95,7 +95,7 @@ def build_filter_dims_values(criteria: WmgQueryCriteria, query: WmgQuery, expres
         "disease_ontology_term_id": "",
         "sex_ontology_term_id": "",
         "development_stage_ontology_term_id": "",
-        "ethnicity_ontology_term_id": "",
+        "self_reported_ethnicity_ontology_term_id": "",
     }
     for dim in dims:
         if len(criteria.dict()[dim + "s"]) == 0:
@@ -108,7 +108,9 @@ def build_filter_dims_values(criteria: WmgQueryCriteria, query: WmgQuery, expres
         disease_terms=build_ontology_term_id_label_mapping(dims["disease_ontology_term_id"]),
         sex_terms=build_ontology_term_id_label_mapping(dims["sex_ontology_term_id"]),
         development_stage_terms=build_ontology_term_id_label_mapping(dims["development_stage_ontology_term_id"]),
-        ethnicity_terms=build_ontology_term_id_label_mapping(dims["ethnicity_ontology_term_id"]),
+        self_reported_ethnicity_terms=build_ontology_term_id_label_mapping(
+            dims["self_reported_ethnicity_ontology_term_id"]
+        ),
     )
 
     return response_filter_dims_values

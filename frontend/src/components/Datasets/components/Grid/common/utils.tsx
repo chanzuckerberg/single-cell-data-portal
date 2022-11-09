@@ -1,7 +1,6 @@
 import { IButtonProps, Intent } from "@blueprintjs/core";
 import React from "react";
-import ActionButton from "src/components/common/Grid/components/ActionButton";
-import DatasetDownloadSvg from "src/components/Datasets/components/Grid/components/DatasetDownloadSvg";
+import { StyledOutlineButton } from "src/components/common/Button/common/style";
 
 /**
  * Returns dataset download action button.
@@ -10,9 +9,10 @@ import DatasetDownloadSvg from "src/components/Datasets/components/Grid/componen
  */
 export function DownloadButton(downloadProps: IButtonProps): JSX.Element {
   return (
-    <ActionButton
-      iconSvg={<DatasetDownloadSvg />}
-      intent={Intent.PRIMARY} // required for BP primary hover state
+    <StyledOutlineButton
+      intent={Intent.PRIMARY}
+      outlined
+      text="Download"
       {...downloadProps}
     />
   );

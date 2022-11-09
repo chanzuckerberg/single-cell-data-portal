@@ -30,7 +30,6 @@ def build_in_mem_cube(
     vals = {
         "sum": np.empty((total_vals,)),
         "nnz": np.empty((total_vals,), dtype=np.uint64),
-        "n_cells": np.empty((total_vals,), dtype=np.uint32),
         **{k: np.empty((total_vals,), dtype=object) for k in other_cube_attrs},
     }
 
@@ -43,7 +42,7 @@ def build_in_mem_cube(
             tissue_original_ontology_term_id,
             organism_ontology_term_id,
             *attr_values,
-            n,
+            _,
             cube_idx,
         ) = grp.tolist()
         mask = cube_nnz[cube_idx] != 0
@@ -60,7 +59,6 @@ def build_in_mem_cube(
 
         vals["sum"][idx : idx + n_vals] = cube_sum[cube_idx, mask]
         vals["nnz"][idx : idx + n_vals] = cube_nnz[cube_idx, mask]
-        vals["n_cells"][idx : idx + n_vals] = n  # wasteful
 
         for i, k in enumerate(other_cube_attrs):
             vals[k][idx : idx + n_vals] = attr_values[i]

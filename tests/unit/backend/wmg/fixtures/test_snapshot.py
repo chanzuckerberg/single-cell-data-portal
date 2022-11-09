@@ -25,6 +25,12 @@ from backend.wmg.data.schemas.cube_schema import (
     cell_counts_indexed_dims,
     cell_counts_logical_dims,
 )
+from backend.wmg.data.schemas.marker_genes_cube_schema import (
+    expression_summary_fmg_indexed_dims,
+    expression_summary_fmg_logical_attrs,
+    expression_summary_fmg_logical_dims,
+    expression_summary_fmg_schema,
+)
 from backend.wmg.data.snapshot import WmgSnapshot, CELL_TYPE_ORDERINGS_FILENAME
 from backend.wmg.data.tiledb import create_ctx
 from tests.unit.backend.wmg.fixtures.test_primary_filters import build_precomputed_primary_filters
@@ -71,7 +77,7 @@ def semi_real_dimension_values_generator(dimension_name: str, dim_size: int) -> 
         ][:dim_size]
     if dimension_name == "disease_ontology_term_id":
         return [term_id for term_id in deterministic_term_ids if term_id.startswith("MONDO")][:dim_size]
-    if dimension_name == "ethnicity_ontology_term_id":
+    if dimension_name == "self_reported_ethnicity_ontology_term_id":
         return [term_id for term_id in deterministic_term_ids if term_id.startswith("HANCESTRO")][:dim_size]
     if dimension_name == "sex_ontology_term_id":
         return [term_id for term_id in deterministic_term_ids if term_id.startswith("PATO")][:dim_size]
@@ -81,13 +87,21 @@ def semi_real_dimension_values_generator(dimension_name: str, dim_size: int) -> 
 def random_expression_summary_values(coords):
     return {
         "nnz": randint(size=len(coords), low=0, high=100),
-        "n_cells": randint(size=len(coords), low=0, high=1000),
         "sum": random(size=len(coords)) * 10,
     }
 
 
+def random_expression_summary_fmg_values(coords):
+    return {
+        "nnz": randint(size=len(coords), low=0, high=100),
+        "sum": random(size=len(coords)) * 10,
+        "sqsum": random(size=len(coords)) * 10,
+        "nnz_thr": randint(size=len(coords), low=0, high=100),
+    }
+
+
 def all_ones_expression_summary_values(coords):
-    return {"nnz": np.ones(len(coords)), "n_cells": np.ones(len(coords)), "sum": np.ones(len(coords))}
+    return {"nnz": np.ones(len(coords)), "sum": np.ones(len(coords))}
 
 
 def all_tens_cell_counts_values(coords) -> List[int]:
@@ -108,9 +122,12 @@ def exclude_random_coords_75pct(_) -> bool:
 
 def exclude_dev_stage_and_ethnicity_for_secondary_filter_test(coord) -> bool:
     dev_stages_to_exclude = ("development_stage_ontology_term_id_1", "development_stage_ontology_term_id_2")
-    ethnicity_terms_to_exclude = ("ethnicity_ontology_term_id_1", "ethnicity_ontology_term_id_2")
+    self_reported_ethnicity_terms_to_exclude = (
+        "self_reported_ethnicity_ontology_term_id_1",
+        "self_reported_ethnicity_ontology_term_id_2",
+    )
     if coord.development_stage_ontology_term_id in dev_stages_to_exclude:
-        if coord.ethnicity_ontology_term_id in ethnicity_terms_to_exclude:
+        if coord.self_reported_ethnicity_ontology_term_id in self_reported_ethnicity_terms_to_exclude:
             return True
     return False
 
@@ -139,31 +156,42 @@ def create_temp_wmg_snapshot(
     dim_size=3,
     snapshot_name="dummy-snapshot",
     expression_summary_vals_fn: Callable[[List[Tuple]], Dict[str, List]] = random_expression_summary_values,
+    expression_summary_fmg_vals_fn: Callable[[List[Tuple]], Dict[str, List]] = random_expression_summary_fmg_values,
     exclude_logical_coord_fn: Callable[[NamedTuple], bool] = None,
     cell_counts_generator_fn: Callable[[List[Tuple]], List] = random_cell_counts_values,
     cell_ordering_generator_fn: Callable[[List[str]], List[int]] = forward_cell_type_ordering,
 ) -> WmgSnapshot:
     with tempfile.TemporaryDirectory() as cube_dir:
-        expression_summary_cube_dir, cell_counts_cube_dir = create_cubes(
+        expression_summary_cube_dir, expression_summary_fmg_cube_dir, cell_counts_cube_dir = create_cubes(
             cube_dir,
             dim_size,
             exclude_logical_coord_fn=exclude_logical_coord_fn,
             expression_summary_vals_fn=expression_summary_vals_fn,
+            expression_summary_fmg_vals_fn=expression_summary_fmg_vals_fn,
             cell_counts_fn=cell_counts_generator_fn,
         )
 
         cell_type_orderings = build_cell_orderings(cell_counts_cube_dir, cell_ordering_generator_fn)
         primary_filter_dimensions = build_precomputed_primary_filters()
+        dataset_to_gene_ids = build_dataset_to_gene_ids()
 
         with tiledb.open(expression_summary_cube_dir, ctx=create_ctx()) as expression_summary_cube:
-            with tiledb.open(cell_counts_cube_dir, ctx=create_ctx()) as cell_counts_cube:
-                yield WmgSnapshot(
-                    snapshot_identifier=snapshot_name,
-                    expression_summary_cube=expression_summary_cube,
-                    cell_counts_cube=cell_counts_cube,
-                    cell_type_orderings=cell_type_orderings,
-                    primary_filter_dimensions=primary_filter_dimensions,
-                )
+            with tiledb.open(expression_summary_fmg_cube_dir, ctx=create_ctx()) as expression_summary_fmg_cube:
+                with tiledb.open(cell_counts_cube_dir, ctx=create_ctx()) as cell_counts_cube:
+                    yield WmgSnapshot(
+                        snapshot_identifier=snapshot_name,
+                        expression_summary_cube=expression_summary_cube,
+                        expression_summary_fmg_cube=expression_summary_fmg_cube,
+                        cell_counts_cube=cell_counts_cube,
+                        cell_type_orderings=cell_type_orderings,
+                        primary_filter_dimensions=primary_filter_dimensions,
+                        dataset_to_gene_ids=dataset_to_gene_ids,
+                    )
+
+
+def build_dataset_to_gene_ids():
+    # TODO
+    return {}
 
 
 def build_cell_orderings(cell_counts_cube_dir_, cell_ordering_generator_fn) -> DataFrame:
@@ -216,6 +244,7 @@ def create_cubes(
     dim_ontology_term_ids_generator_fn: Callable[[str, int], List[str]] = simple_ontology_terms_generator,
     exclude_logical_coord_fn: Callable[[List[str], Tuple], bool] = None,
     expression_summary_vals_fn: Callable[[List[Tuple]], Dict[str, List]] = random_expression_summary_values,
+    expression_summary_fmg_vals_fn: Callable[[List[Tuple]], Dict[str, List]] = random_expression_summary_fmg_values,
     cell_counts_fn: Callable[[List[Tuple]], List[int]] = random_cell_counts_values,
 ) -> Tuple[str, str]:
     coords, dim_values = build_coords(
@@ -225,12 +254,16 @@ def create_cubes(
         data_dir, coords, dim_values, expression_summary_vals_fn=expression_summary_vals_fn
     )
 
+    expression_summary_fmg_cube_dir = create_expression_summary_fmg_cube(
+        data_dir, coords, dim_values, expression_summary_fmg_vals_fn=expression_summary_fmg_vals_fn
+    )
+
     coords, dim_values = build_coords(
         cell_counts_logical_dims, dim_size, dim_ontology_term_ids_generator_fn, exclude_logical_coord_fn
     )
     cell_counts_cube_dir = create_cell_counts_cube(data_dir, coords, dim_values, cell_counts_fn=cell_counts_fn)
 
-    return expression_summary_cube_dir, cell_counts_cube_dir
+    return expression_summary_cube_dir, expression_summary_fmg_cube_dir, cell_counts_cube_dir
 
 
 def create_cell_counts_cube(data_dir, coords, dim_values, cell_counts_fn: Callable[[List[Tuple]], List[int]]) -> str:
@@ -277,6 +310,32 @@ def create_expression_summary_cube(
     return cube_dir
 
 
+def create_expression_summary_fmg_cube(
+    data_dir,
+    coords,
+    dim_values,
+    expression_summary_fmg_vals_fn: Callable[[List[tuple]], Dict[str, List]] = random_expression_summary_fmg_values,
+) -> str:
+    cube_dir = f"{data_dir}/expression_summary_fmg"
+    tiledb.Array.create(cube_dir, expression_summary_fmg_schema, overwrite=True)
+
+    with tiledb.open(cube_dir, mode="w") as cube:
+        logical_attr_values = expression_summary_fmg_vals_fn(coords)
+        assert all(
+            [len(logical_attr_values[attr.name]) == len(coords) for attr in expression_summary_fmg_logical_attrs]
+        )
+
+        physical_dim_values = dim_values[: len(expression_summary_fmg_indexed_dims)]
+        physical_attr_values = {
+            expression_summary_fmg_logical_dims[i]: dim_values[i]
+            for i in range(len(expression_summary_fmg_indexed_dims), len(expression_summary_fmg_logical_dims))
+        }
+        physical_attr_values.update(logical_attr_values)
+        cube[tuple(physical_dim_values)] = physical_attr_values
+
+    return cube_dir
+
+
 def build_coords(
     logical_dims,
     dim_size,
@@ -312,7 +371,7 @@ if __name__ == "__main__":
     output_cube_dir = sys.argv[1]
     if not os.path.isdir(output_cube_dir):
         sys.exit(f"invalid dir {output_cube_dir} for cube")
-    _, cell_counts_cube_dir = create_cubes(
+    _, _, cell_counts_cube_dir = create_cubes(
         output_cube_dir,
         dim_size=4,
         dim_ontology_term_ids_generator_fn=semi_real_dimension_values_generator,
