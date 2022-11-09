@@ -100,8 +100,10 @@ class BusinessLogic(BusinessLogicInterface):
         # TODO: can collapse with `create_canonical_collection`
         if publisher_metadata:
             self.database_provider.save_collection_publisher_metadata(created_version.version_id, publisher_metadata)
+            # Add this to the returned object, to save another `get_collection` call
+            # TODO: verify something
+            # created_version.publisher_metadata = publisher_metadata 
 
-        # TODO: likely, collection needs to be refetched
         return created_version
 
     def get_published_collection_version(self, collection_id: CollectionId) -> Optional[CollectionVersion]:
@@ -162,11 +164,11 @@ class BusinessLogic(BusinessLogicInterface):
             raise CollectionUpdateException(["Cannot update a published collection"])
         
         # Determine if the DOI has changed
-        old_doi = next((link.uri for link in current_version.metadata.links if link.type == "doi"), None)
+        old_doi = next((link.uri for link in current_version.metadata.links if link.type == "DOI"), None)
         if body.links is None:
             new_doi = None
         else:
-            new_doi = next((link.uri for link in body.links if link.type == "doi"), None)
+            new_doi = next((link.uri for link in body.links if link.type == "DOI"), None)
 
         if old_doi and new_doi is None:
             # If the DOI was deleted, remove the publisher_metadata field

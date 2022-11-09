@@ -1110,6 +1110,7 @@ class TestUpdateCollection(NewBaseTest):
         for field in test_fields:
             self.assertEqual(expected_body[field], actual_body[field])
 
+    # ✅
     def test__update_collection__403(self):
         collection = self.generate_unpublished_collection(owner="someone else")
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
@@ -1117,6 +1118,7 @@ class TestUpdateCollection(NewBaseTest):
         response = self.app.put(f"/dp/v1/collections/{collection.version_id.id}", data=data, headers=headers)
         self.assertEqual(403, response.status_code)
 
+    # ✅
     def test__update_collection_links__OK(self):
         collection = self.generate_unpublished_collection()
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
@@ -1124,21 +1126,21 @@ class TestUpdateCollection(NewBaseTest):
         # add links
         links = [{"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"}]
         data = json.dumps({"links": links})
-        response = self.app.put(f"/dp/v1/collections/{collection.version_id}", data=data, headers=headers)
+        response = self.app.put(f"/dp/v1/collections/{collection.version_id.id}", data=data, headers=headers)
         self.assertEqual(200, response.status_code)
         self.assertEqual(links, json.loads(response.data)["links"])
 
         # remove links
         links.pop()
         data = json.dumps({"links": links})
-        response = self.app.put(f"/dp/v1/collections/{collection.version_id}", data=data, headers=headers)
+        response = self.app.put(f"/dp/v1/collections/{collection.version_id.id}", data=data, headers=headers)
         self.assertEqual(200, response.status_code)
         self.assertEqual(links, json.loads(response.data)["links"])
 
         # update links
         links = [{"link_name": "New name", "link_url": "http://doi.org/10.1016", "link_type": "DOI"}]
         data = json.dumps({"links": links})
-        response = self.app.put(f"/dp/v1/collections/{collection.version_id}", data=data, headers=headers)
+        response = self.app.put(f"/dp/v1/collections/{collection.version_id.id}", data=data, headers=headers)
         self.assertEqual(200, response.status_code)
         self.assertEqual(links, json.loads(response.data)["links"])
 
@@ -1148,7 +1150,7 @@ class TestUpdateCollection(NewBaseTest):
             {"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"},
         ]
         data = json.dumps({"links": links})
-        response = self.app.put(f"/dp/v1/collections/{collection.version_id}", data=data, headers=headers)
+        response = self.app.put(f"/dp/v1/collections/{collection.version_id.id}", data=data, headers=headers)
         self.assertEqual(200, response.status_code)
         self.assertEqual(links, json.loads(response.data)["links"])
 
@@ -1160,12 +1162,13 @@ class TestUpdateCollection(NewBaseTest):
         self.assertEqual(200, response.status_code)
         self.assertEqual(links, json.loads(response.data)["links"])
 
+    # ✅
     def test__update_collection_new_doi_updates_metadata(self):
 
         # Generate a collection with "Old Journal" as publisher metadata
         self.crossref_provider.fetch_metadata = Mock(return_value=generate_mock_publisher_metadata("Old Journal"))
         collection = self.generate_unpublished_collection(
-            links=[Link("Link 1", "doi", "http://doi.org/123")]
+            links=[Link("Link 1", "DOI", "http://doi.org/123")]
         )
 
         self.assertIsNotNone(collection.publisher_metadata)
@@ -1190,12 +1193,13 @@ class TestUpdateCollection(NewBaseTest):
         self.assertIsNotNone(actual_body["publisher_metadata"]["journal"])
         self.assertEqual("New Journal", actual_body["publisher_metadata"]["journal"])
 
+    # ✅
     def test__update_collection_remove_doi_deletes_metadata(self):
 
         # Generate a collection with "Old Journal" as publisher metadata
         self.crossref_provider.fetch_metadata = Mock(return_value=generate_mock_publisher_metadata("Old Journal"))
         collection = self.generate_unpublished_collection(
-            links=[Link("Link 1", "doi", "http://doi.org/123")]
+            links=[Link("Link 1", "DOI", "http://doi.org/123")]
         )
 
         self.assertIsNotNone(collection.publisher_metadata)
@@ -1221,11 +1225,12 @@ class TestUpdateCollection(NewBaseTest):
         actual_body = json.loads(response.data)
         self.assertNotIn("publisher_metadata", actual_body)
 
+    # ✅
     def test__update_collection_same_doi_does_not_update_metadata(self):
         self.crossref_provider.fetch_metadata = Mock(return_value=generate_mock_publisher_metadata("Old Journal"))
 
         collection = self.generate_unpublished_collection(
-            links=[Link("Link 1", "doi", "http://doi.org/123")]
+            links=[Link("Link 1", "DOI", "http://doi.org/123")]
         )
 
         self.assertIsNotNone(collection.publisher_metadata)

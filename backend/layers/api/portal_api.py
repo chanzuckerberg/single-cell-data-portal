@@ -71,6 +71,7 @@ class PortalApi:
             "validation_status": status.validation_status,
         }
 
+    # TODO: use remove_none
     def _link_to_response(self, link: Link):
         response = {
             "link_type": link.type,
@@ -101,6 +102,9 @@ class PortalApi:
 
     def _ontology_term_ids_to_response(self, ontology_term_ids: List[OntologyTermId]):
         return [self._ontology_term_id_to_response(otid) for otid in ontology_term_ids]
+
+    def remove_none(self, body: dict):
+        return {k: v for k, v in body.items() if v is not None}
 
     def _dataset_to_response(self, dataset: DatasetVersion):
         return {
@@ -136,7 +140,7 @@ class PortalApi:
         }
 
     def _collection_to_response(self, collection: CollectionVersion, access_type: str):
-        return {
+        return self.remove_none({
             "access_type": access_type,
             "contact_email": collection.metadata.contact_email,
             "contact_name": collection.metadata.contact_name,
@@ -149,9 +153,10 @@ class PortalApi:
             "links": [self._link_to_response(l) for l in collection.metadata.links],
             "name": collection.metadata.name,
             "published_at": 1234,
+            "publisher_metadata": collection.publisher_metadata, # TODO: convert
             "updated_at": 1234,
             "visibility": "PUBLIC" if collection.published_at is not None else "PRIVATE",
-        }
+        })
 
     def get_collection_details(self, collection_id: str, token_info: dict):
         """
@@ -256,6 +261,12 @@ class PortalApi:
         Updates a collection
         """
 
+        # Ensure that the version exists and the user is authorized to update it
+        # TODO: this should be extracted to a method, I think
+        version = self.business_logic.get_collection_version(CollectionVersionId(collection_id))
+        if version is None or not UserInfo(token_info).is_user_owner_or_allowed(version.owner):
+            raise ForbiddenHTTPException()
+
         payload = CollectionMetadataUpdate(
             body.get("name"),
             body.get("description"),
@@ -266,10 +277,11 @@ class PortalApi:
 
         self.business_logic.update_collection_version(CollectionVersionId(collection_id), payload)
 
+        # Requires strong consistency w.r.t. the operation above - if not available, the update needs 
+        # to be done in memory
         version = self.business_logic.get_collection_version(CollectionVersionId(collection_id))
 
         response = self._collection_to_response(version, "WRITE")
-
         return make_response(jsonify(response), 200)
 
 

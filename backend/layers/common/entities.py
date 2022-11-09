@@ -59,6 +59,9 @@ class CollectionId:
 class CollectionVersionId:
     id: str
 
+    def __repr__(self) -> str:
+        return self.id
+
 @dataclass
 class DatasetId:
     id: str
