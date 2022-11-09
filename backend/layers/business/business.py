@@ -182,6 +182,8 @@ class BusinessLogic(BusinessLogicInterface):
             if hasattr(body, field):
                 setattr(current_metadata, field, getattr(body, field))
 
+        print(" after - ", current_metadata)
+
         self.database_provider.save_collection_metadata(version_id, current_metadata)
 
     def _assert_collection_version_unpublished(self, collection_version_id: CollectionVersionId) -> None:

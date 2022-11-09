@@ -8,9 +8,9 @@ from backend.layers.auth.user_info import UserInfo
 from backend.layers.business.business import BusinessLogic
 
 from backend.layers.business.business_interface import BusinessLogicInterface
-from backend.layers.business.entities import CollectionQueryFilter
+from backend.layers.business.entities import CollectionMetadataUpdate, CollectionQueryFilter
 from backend.layers.business.exceptions import CollectionCreationException
-from backend.layers.common.entities import CollectionId, CollectionMetadata, CollectionVersionId, DatasetArtifact, DatasetStatus, DatasetVersion, Link, OntologyTermId
+from backend.layers.common.entities import CollectionId, CollectionMetadata, CollectionVersion, CollectionVersionId, DatasetArtifact, DatasetStatus, DatasetVersion, Link, OntologyTermId
 
 from backend.corpora.common.utils import authorization_checks as auth
 import itertools
@@ -45,7 +45,8 @@ class PortalApi:
         collections = []
         for c in itertools.chain(all_published_collections, all_owned_collections):
             collections.append({
-                "id": c.collection_id.id,
+                # "id": c.collection_id.id,
+                "id": c.version_id.id if c.published_at is None else c.collection_id.id,
                 "visibility": "PRIVATE" if c.published_at is None else "PUBLIC",
                 "owner": c.owner, # TODO: looks like this isn't returned right now
                 "created_at": 12345, # TODO
@@ -71,11 +72,14 @@ class PortalApi:
         }
 
     def _link_to_response(self, link: Link):
-        return {
-            "link_name": link.name,
+        response = {
             "link_type": link.type,
             "link_url": link.uri,
         }
+        if link.name is not None:
+            response["link_name"] = link.name
+        return response
+
 
     def _dataset_asset_to_response(self, dataset_artifact: DatasetArtifact, dataset_id: str):
         return {
@@ -131,6 +135,24 @@ class PortalApi:
             "x_approximate_distribution": dataset.metadata.x_approximate_distribution,
         }
 
+    def _collection_to_response(self, collection: CollectionVersion, access_type: str):
+        return {
+            "access_type": access_type,
+            "contact_email": collection.metadata.contact_email,
+            "contact_name": collection.metadata.contact_name,
+            "created_at": 1234,
+            "curator_name": "", # TODO
+            "data_submission_policy_version": "1.0", # TODO
+            "datasets": [self._dataset_to_response(d) for d in collection.datasets],
+            "description": collection.metadata.description,
+            "id": collection.collection_id.id,
+            "links": [self._link_to_response(l) for l in collection.metadata.links],
+            "name": collection.metadata.name,
+            "published_at": 1234,
+            "updated_at": 1234,
+            "visibility": "PUBLIC" if collection.published_at is not None else "PRIVATE",
+        }
+
     def get_collection_details(self, collection_id: str, token_info: dict):
         """
         Retrieves the collection information. Will look up for a published collection first,
@@ -149,22 +171,7 @@ class PortalApi:
         print(token_info, user_info.user_id(), version.owner)
         access_type = "WRITE" if user_info.is_user_owner_or_allowed(version.owner) else "READ"
 
-        response = {
-            "access_type": access_type,
-            "contact_email": "example@gmail.com",
-            "contact_name": "Smoke Test User",
-            "created_at": 1234,
-            "curator_name": "", # TODO
-            "data_submission_policy_version": "1.0", # TODO
-            "datasets": [self._dataset_to_response(d) for d in version.datasets],
-            "description": version.metadata.description,
-            "id": version.collection_id.id,
-            "links": [self._link_to_response(l) for l in version.metadata.links],
-            "name": version.metadata.name,
-            "published_at": 1234,
-            "updated_at": 1234,
-            "visibility": "PUBLIC" if version.published_at is not None else "PRIVATE",
-        }
+        response = self._collection_to_response(version, access_type)
  
         return make_response(jsonify(response), 200)
 
@@ -176,7 +183,7 @@ class PortalApi:
 
     def _link_from_request(self, body: dict):
         return Link(
-            body["link_name"],
+            body.get("link_name"),
             body["link_type"],
             body["link_url"],
         )
@@ -213,11 +220,57 @@ class PortalApi:
 
         return make_response(jsonify({"collection_id": version.version_id.id}), 201)
 
+    # TODO: we should use a dataclass here
+    def _publisher_metadata_to_response(self, publisher_metadata: dict):
+        return publisher_metadata
+
+    def get_collection_index(self):
+        """
+        Returns a list of collections that are published and active. 
+        Also returns a subset of fields and not datasets.
+        """
+        collections = self.business_logic.get_collections(CollectionQueryFilter(is_published=True))
+        response = []
+
+        for collection in collections:
+            transformed_collection = {
+                "id": collection.collection_id.id,
+                "name": collection.metadata.name,
+                "published_at": collection.published_at,
+                "revised_at": 0, # TODO
+            }
+
+            if collection.publisher_metadata is not None:
+                transformed_collection["publisher_metadata"] = self._publisher_metadata_to_response(collection.publisher_metadata)
+
+            response.append(transformed_collection)
+
+        return make_response(jsonify(response), 200)
+
+
     def delete_collection(self, collection_id: str, token_info: dict):
         pass
 
     def update_collection(self, collection_id: str, body: dict, token_info: dict):
-        pass
+        """
+        Updates a collection
+        """
+
+        payload = CollectionMetadataUpdate(
+            body.get("name"),
+            body.get("description"),
+            body.get("contact_name"),
+            body.get("contact_email"),
+            [self._link_from_request(node) for node in body.get("links", [])],
+        )
+
+        self.business_logic.update_collection_version(CollectionVersionId(collection_id), payload)
+
+        version = self.business_logic.get_collection_version(CollectionVersionId(collection_id))
+
+        response = self._collection_to_response(version, "WRITE")
+
+        return make_response(jsonify(response), 200)
 
 
     def post(self, collection_id: str, body: object, token_info: dict): # publish
