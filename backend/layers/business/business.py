@@ -26,6 +26,8 @@ from backend.layers.common.entities import (
 )
 from typing import Iterable, List, Optional
 
+import copy
+
 from backend.layers.persistence.persistence import DatabaseProviderInterface
 from backend.layers.thirdparty.crossref_provider import CrossrefProviderInterface
 from backend.layers.thirdparty.s3_provider import S3Provider
@@ -99,6 +101,7 @@ class BusinessLogic(BusinessLogicInterface):
         if publisher_metadata:
             self.database_provider.save_collection_publisher_metadata(created_version.version_id, publisher_metadata)
 
+        # TODO: likely, collection needs to be refetched
         return created_version
 
     def get_published_collection_version(self, collection_id: CollectionId) -> Optional[CollectionVersion]:
@@ -176,13 +179,13 @@ class BusinessLogic(BusinessLogicInterface):
         if errors:
             raise CollectionUpdateException(errors)
 
-        # Merge the updated fields in the existing metadata object
-        current_metadata = current_version.metadata
+        # Merge the updated fields in the existing metadata object. Use a copy to ensure immutability.
+        new_metadata = copy.deepcopy(current_version.metadata)
         for field in vars(body):
-            if hasattr(body, field):
-                setattr(current_metadata, field, getattr(body, field))
+            if hasattr(body, field) and (value := getattr(body, field)) is not None:
+                setattr(new_metadata, field, value)
 
-        self.database_provider.save_collection_metadata(version_id, current_metadata)
+        self.database_provider.save_collection_metadata(version_id, new_metadata)
 
     def _assert_collection_version_unpublished(self, collection_version_id: CollectionVersionId) -> None:
         """
