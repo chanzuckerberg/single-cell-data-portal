@@ -64,20 +64,21 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         version = CollectionVersion(collection_id, version_id, owner, collection_metadata, None, [], None)
         self.collections_versions[version_id.id] = version
         # Don't set mappings here - those will be set when publishing the collection!
-        return version
+        return copy.deepcopy(version)
 
     def get_collection_mapped_version(self, collection_id: CollectionId) -> Optional[CollectionVersion]:
         version_id = self.collections.get(collection_id.id)
         if version_id is not None:
-            return self.collections_versions[version_id]
+            return copy.deepcopy(self.collections_versions[version_id])
 
     def get_all_collections_versions(self) -> Iterable[CollectionVersion]:  # TODO: add filters if needed
-        return self.collections_versions.values()
+        for version in self.collections_versions.values():
+            yield copy.deepcopy(version)
 
     def get_all_mapped_collection_versions(self) -> Iterable[CollectionVersion]:  # TODO: add filters if needed
         for version_id, collection_version in self.collections_versions.items():
             if version_id in self.collections.values():
-                yield collection_version
+                yield copy.deepcopy(collection_version)
 
     def delete_collection(self, collection_id: CollectionId) -> None:
         del self.collections[collection_id.id]
@@ -106,14 +107,14 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             published_at=None
         )
         self.collections_versions[new_version_id.id] = collection_version
-        return collection_version
+        return copy.deepcopy(collection_version)
 
     def delete_collection_version(self, version_id: CollectionVersionId) -> None:
         # Can only delete an unpublished collection
         del self.collections_versions[version_id.id]
 
     def get_collection_version(self, version_id: CollectionVersionId) -> CollectionVersion:
-        return self.collections_versions.get(version_id.id)
+        return copy.deepcopy(self.collections_versions.get(version_id.id))
 
     # MAYBE
     def finalize_collection_version(self, collection_id: CollectionId, version_id: CollectionVersionId, published_at: Optional[datetime]) -> None:
@@ -131,10 +132,10 @@ class DatabaseProviderMock(DatabaseProviderInterface):
 
     def get_dataset(self, dataset_id: DatasetId) -> DatasetVersion:
         version_id = self.datasets[dataset_id.id]
-        return self.datasets_versions[version_id]
+        return copy.deepcopy(self.datasets_versions[version_id])
 
     def get_dataset_version(self, version_id: DatasetVersionId) -> DatasetVersion:
-        return self.datasets_versions.get(version_id.id)
+        return copy.deepcopy(self.datasets_versions.get(version_id.id))
 
     def get_all_datasets(self) -> Iterable[DatasetVersion]:  
         """
@@ -144,7 +145,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         active_datasets = [i.version_id.id for s in [c.datasets for c in active_collections] for i in s]
         for version_id, dataset_version in self.datasets_versions.items():
             if version_id in active_datasets:
-                yield dataset_version
+                yield copy.deepcopy(dataset_version)
 
     def _get_all_datasets(self) -> Iterable[DatasetVersion]:  
         """
@@ -152,11 +153,11 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         """
         for version_id, dataset_version in self.datasets_versions.items():
             if version_id in self.datasets.values():
-                yield dataset_version
+                yield copy.deepcopy(dataset_version)
 
     def get_dataset_artifacts(self, dataset_version_id: DatasetId) -> List[DatasetArtifact]:
         dataset = self.datasets_versions[dataset_version_id.id]
-        return dataset.artifacts
+        return copy.deepcopy(dataset.artifacts)
 
     def create_canonical_dataset(self, collection_version_id: CollectionVersionId) -> DatasetVersion:
         # Creates a dataset and initializes it with one version
@@ -173,7 +174,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         self.datasets[dataset_id.id] = version_id.id
         # Register the dataset to the original collection
         self.collections_versions[collection_version_id.id].datasets.append(version)
-        return version
+        return copy.deepcopy(version)
 
     def add_dataset_version(self, dataset_id: DatasetId) -> str:
         # Unused for now
@@ -186,7 +187,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
 
     def set_dataset_metadata(self, version_id: DatasetVersionId, metadata: DatasetMetadata) -> None:
         version = self.datasets_versions[version_id.id]
-        version.metadata = metadata
+        version.metadata = copy.deepcopy(metadata)
 
     def update_dataset_processing_status(self, version_id: DatasetVersionId, status: DatasetProcessingStatus) -> None:
         dataset_version = self.datasets_versions[version_id.id]
@@ -230,7 +231,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         collection_version = self.collections_versions[collection_version_id.id]
         idx = next(i for i, e in enumerate(collection_version.datasets) if e.version_id == old_dataset_version_id)
         collection_version.datasets[idx] = new_version
-        return new_version
+        return copy.deepcopy(new_version)
 
     def get_dataset_version_status(self, version_id: DatasetVersionId) -> DatasetStatus:
-        return self.datasets_versions[version_id.id].status
+        return copy.deepcopy(self.datasets_versions[version_id.id].status)
