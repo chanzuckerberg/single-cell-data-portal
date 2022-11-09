@@ -12,6 +12,7 @@ from backend.layers.common.entities import (
     CollectionVersion,
     CollectionVersionId,
     DatasetArtifact,
+    DatasetArtifactId,
     DatasetConversionStatus,
     DatasetId,
     DatasetMetadata,
@@ -323,7 +324,7 @@ class BusinessLogic(BusinessLogicInterface):
         else:
             raise DatasetUpdateException(f"Invalid status update for dataset {dataset_version_id}: cannot set {status_key} to {new_dataset_status}")
 
-    def add_dataset_artifact(self, dataset_version_id: DatasetVersionId, artifact_type: str, artifact_uri: str) -> None:
+    def add_dataset_artifact(self, dataset_version_id: DatasetVersionId, artifact_type: str, artifact_uri: str) -> DatasetArtifactId:
         """
         Registers an artifact to a dataset version.
         """
@@ -333,7 +334,7 @@ class BusinessLogic(BusinessLogicInterface):
         if artifact_type not in ["H5AD", "CXG", "RDS"]:
             raise DatasetIngestException(f"Wrong artifact type for {dataset_version_id}: {artifact_type}")
 
-        self.database_provider.add_dataset_artifact(dataset_version_id, artifact_type, artifact_uri)
+        return self.database_provider.add_dataset_artifact(dataset_version_id, artifact_type, artifact_uri)
 
 
     def create_collection_version(self, collection_id: CollectionId) -> CollectionVersion:

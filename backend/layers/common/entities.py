@@ -66,10 +66,13 @@ class DatasetId:
 @dataclass
 class DatasetVersionId:
     id: str
+@dataclass
+class DatasetArtifactId:
+    id: str
 
 @dataclass
 class DatasetArtifact:
-    id: str
+    id: DatasetArtifactId
     type: str
     uri: str
 

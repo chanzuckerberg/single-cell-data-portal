@@ -9,6 +9,7 @@ from backend.layers.common.entities import (
     CollectionVersion,
     CollectionVersionId,
     DatasetArtifact,
+    DatasetArtifactId,
     DatasetConversionStatus,
     DatasetId,
     DatasetMetadata,
@@ -78,7 +79,7 @@ class BusinessLogicInterface:
     ) -> None:
         pass
 
-    def add_dataset_artifact(self, dataset_version_id: DatasetVersionId, artifact_type: str, artifact_uri: str) -> None:
+    def add_dataset_artifact(self, dataset_version_id: DatasetVersionId, artifact_type: str, artifact_uri: str) -> DatasetArtifactId:
         pass
 
     def get_dataset_status(self, dataset_version_id: DatasetVersionId) -> DatasetStatus:

@@ -12,6 +12,7 @@ from backend.layers.common.entities import (
     CollectionVersion,
     CollectionVersionId,
     DatasetArtifact,
+    DatasetArtifactId,
     DatasetConversionStatus,
     DatasetId,
     DatasetMetadata,
@@ -184,10 +185,11 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         # Unused for now
         raise NotImplementedError
 
-    def add_dataset_artifact(self, version_id: DatasetVersionId, artifact_type: str, artifact_uri: str) -> None:
+    def add_dataset_artifact(self, version_id: DatasetVersionId, artifact_type: str, artifact_uri: str) -> DatasetArtifactId:
         version = self.datasets_versions[version_id.id]
-        artifact_id = self._id()
+        artifact_id = DatasetArtifactId(self._id())
         version.artifacts.append(DatasetArtifact(artifact_id, artifact_type, artifact_uri))
+        return artifact_id
 
     def set_dataset_metadata(self, version_id: DatasetVersionId, metadata: DatasetMetadata) -> None:
         version = self.datasets_versions[version_id.id]
