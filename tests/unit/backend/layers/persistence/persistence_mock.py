@@ -30,8 +30,12 @@ class DatabaseProviderMock(DatabaseProviderInterface):
     """
     A mocked implementation for DatabaseProvider that uses in-memory dicts.
     This mock is to be used in tests only.
-    Note: this implementation doesn't use immutability. Tests that assert immutability
+    NOTE: this implementation doesn't use immutability. Tests that assert immutability
     should NOT use this mock.
+    NOTE: this implementation uses copy.deepcopy for each returned entity. This is necessary
+    since in-memory entities are just pointers, so updates will also modify the objects that were
+    previously returned. In a database, this won't happen since changes are persisted to disk.
+    Deep copying solves this and makes the mock behave like a real database.
     """
 
     # A mapping between canonical collection ids and collection versions.
