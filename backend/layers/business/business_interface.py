@@ -84,3 +84,9 @@ class BusinessLogicInterface:
 
     def get_dataset_status(self, dataset_version_id: DatasetVersionId) -> DatasetStatus:
         pass
+
+    def get_dataset_version(self, dataset_version_id: DatasetVersionId) -> DatasetVersion:
+        pass
+
+    def get_dataset_version_from_canonical(self, dataset_id: DatasetId) -> DatasetVersion:
+        pass
