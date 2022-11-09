@@ -420,6 +420,13 @@ class Validation:
             # drop ccl5 cell types with expression value of zero (to match pipeline processing)
             expected_ccl5_by_cell_type = expected_ccl5_by_cell_type[expected_ccl5_by_cell_type != 0]
 
+            # temporary log statements to inspect the two series that are breaking validation
+            logger.info(expected_ccl5_by_cell_type)
+            logger.info(ccl5_expression_sum_by_cell_type)
+            # temporary solution is to make sure that both series have the same exact index ordering
+            expected_malat1_by_cell_type = expected_malat1_by_cell_type[malat1_expression_sum_by_cell_type.index]
+            expected_ccl5_by_cell_type = expected_ccl5_by_cell_type[ccl5_expression_sum_by_cell_type.index]
+
             malat1_comparison = expected_malat1_by_cell_type.compare(malat1_expression_sum_by_cell_type)
             ccl5_comparison = expected_ccl5_by_cell_type.compare(ccl5_expression_sum_by_cell_type)
             logger.info(malat1_comparison)
