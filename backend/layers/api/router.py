@@ -30,38 +30,35 @@ def delete_collection(collection_id: str, token_info: dict):
 def update_collection(collection_id: str, body: dict, token_info: dict):
     return portal_api().update_collection(collection_id, body, token_info)
 
+def publish_post(collection_id: str, body: object, token_info: dict):
+    return portal_api().publish_post(collection_id, body, token_info)
 
-def post(collection_id: str, body: object, token_info: dict): # publish
-    pass
+def upload_link(collection_id: str, body: dict, token_info: dict):
+    return portal_api().upload_link(collection_id, body, token_info)
 
-def link(collection_id: str, body: dict, token_info: dict):
-    pass
-
-def relink(collection_id: str, body: dict, token_info: dict):
-    pass
+def upload_relink(collection_id: str, body: dict, token_info: dict):
+    return portal_api().upload_relink(collection_id, body, token_info)
 
 def upload_from_link(collection_id: str, token_info: dict, url: str, dataset_id: str = None):
-    pass
-
-
+    return portal_api().upload_from_link(collection_id, token_info, url, dataset_id)
 
 def post_dataset_asset(dataset_id: str, asset_id: str):
-    pass
+    return portal_api().post_dataset_asset(dataset_id, asset_id)
 
 def get_dataset_assets(dataset_id: str):
-    pass
+    return portal_api().get_dataset_assets(dataset_id)
 
 def get_status(dataset_id: str, token_info: dict):
-    pass
+    return portal_api().get_status(dataset_id, token_info)
 
 def get_datasets_index():
-    pass
+    return portal_api().get_datasets_index()
 
 def delete_dataset(dataset_id: str, token_info: dict):
-    pass
+    return portal_api().delete_dataset(dataset_id, token_info)
 
 def get_dataset_identifiers(url: str):
-    pass
+    return portal_api().get_dataset_identifiers(url)
 
 def post_dataset_gene_sets(dataset_id: str, body: object, token_info: dict):
-    pass
+    return portal_api().post_dataset_gene_sets(dataset_id, body, token_info)

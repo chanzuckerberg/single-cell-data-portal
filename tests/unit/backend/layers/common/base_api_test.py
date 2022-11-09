@@ -49,6 +49,7 @@ class DatasetData:
     explorer_url: str
     collection_version_id: str
     collection_id: str
+    artifact_ids: List[str]
 
 
 class BaseAuthAPITest(unittest.TestCase):
@@ -136,6 +137,7 @@ class NewBaseTest(BaseAuthAPITest):
         # TODO: generate a real dataset, with artifact and processing status
         if datasets is None:
             datasets = [
+                # TODO: put this in the main class and deepcopy it
                 DatasetMetadata(
                     name = "test_dataset_name",
                     organism = [OntologyTermId(label="test_organism_label", ontology_term_id="test_organism_term_id")],
@@ -183,7 +185,26 @@ class NewBaseTest(BaseAuthAPITest):
         collection = self.generate_unpublished_collection(owner)
         dataset_version_id = self.business_logic.ingest_dataset(collection.version_id, "http://fake.url", None)
         if not metadata:
-            metadata = DatasetMetadata("test_organism","test_tissue","test_assay","test_disease","test_sex","test_self_reported_ethnicity","test_development_stage","test_cell_type", 10)
+            # TODO: put this in the main class and deepcopy it
+            metadata = DatasetMetadata(
+                name = "test_dataset_name",
+                organism = [OntologyTermId(label="test_organism_label", ontology_term_id="test_organism_term_id")],
+                tissue = [OntologyTermId(label="test_tissue_label", ontology_term_id="test_tissue_term_id")],
+                assay = [OntologyTermId(label="test_assay_label", ontology_term_id="test_assay_term_id")],
+                disease = [OntologyTermId(label="test_disease_label", ontology_term_id="test_disease_term_id")],
+                sex = [OntologyTermId(label="test_sex_label", ontology_term_id="test_sex_term_id")],
+                self_reported_ethnicity = [OntologyTermId(label="test_self_reported_ethnicity_label", ontology_term_id="test_self_reported_ethnicity_term_id")],
+                development_stage = [OntologyTermId(label="test_development_stage_label", ontology_term_id="test_development_stage_term_id")],
+                cell_type = [OntologyTermId(label="test_cell_type_label", ontology_term_id="test_cell_type_term_id")],
+                cell_count = 10,
+                schema_version = "3.0.0",
+                mean_genes_per_cell = 0.5,
+                batch_condition = ["test_batch_1", "test_batch_2"],
+                suspension_type = ["test_suspension_type"],
+                donor_id = ["test_donor_1"],
+                is_primary_data = "BOTH",
+                x_approximate_distribution="normal",
+            )
         self.business_logic.set_dataset_metadata(dataset_version_id, metadata)
         for status in statuses:
             self.business_logic.update_dataset_version_status(dataset_version_id, status.status_key, status.status)
@@ -200,6 +221,7 @@ class NewBaseTest(BaseAuthAPITest):
             explorer_url, 
             collection.version_id.id, 
             collection.collection_id.id,
+            
         )
 
 

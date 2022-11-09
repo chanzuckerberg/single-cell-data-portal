@@ -249,7 +249,7 @@ paths:
         An authenticated user can upload a file from a shared link to add a dataset into their collection.
       security:
         - cxguserCookie: []
-      operationId: backend.corpora.lambdas.api.v1.collection_id.upload.link
+      operationId: backend.layers.api.router.upload_link
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       requestBody:
@@ -297,7 +297,7 @@ paths:
         collection revision is published.
       security:
         - cxguserCookie: []
-      operationId: backend.corpora.lambdas.api.v1.collection_id.upload.relink
+      operationId: backend.layers.api.router.upload_relink
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       requestBody:
@@ -386,7 +386,7 @@ paths:
 
         If publishing modification to a previously published collection, this will replace the old collection with the new
         published collection. The old collection will no longer be accessible.
-      operationId: backend.corpora.lambdas.api.v1.collection_id.publish.post
+      operationId: backend.layers.api.router.publish_post
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       requestBody:
@@ -460,7 +460,7 @@ paths:
         Cancels the in process upload of a dataset to the data portal and cleans up (removes) any artifacts created
         in the upload process. If the dataset has already been uploaded and converted, this endpoint deletes it from
         the data portal and removes associated artifacts
-      operationId: backend.corpora.lambdas.api.v1.dataset.delete_dataset
+      operationId: backend.layers.api.router.delete_dataset
       security:
         - cxguserCookie: []
       parameters:
@@ -484,7 +484,7 @@ paths:
         Given a cellxgene Explorer url return some basic metadata about the dataset it represent in the cellxgene
         Portal data model including its associated dataset id, the s3_uri of the dataset, its tombstone status and
         the associated parent collection ID.
-      operationId: backend.corpora.lambdas.api.v1.dataset.get_dataset_identifiers
+      operationId: backend.layers.api.router.get_dataset_identifiers
       parameters:
         - in: query
           required: true
@@ -511,7 +511,7 @@ paths:
       summary: Dataset assets
       description: >-
         Return a list of all the dataset's assets
-      operationId: backend.corpora.lambdas.api.v1.dataset.get_dataset_assets
+      operationId: backend.layers.api.router.get_dataset_assets
       parameters:
         - $ref: "#/components/parameters/path_dataset_id"
       responses:
@@ -535,7 +535,7 @@ paths:
       summary: Request to download a dataset
       description: >-
         Request to download a file which on success will generate a pre-signed URL to download the dataset.
-      operationId: backend.corpora.lambdas.api.v1.dataset.post_dataset_asset
+      operationId: backend.layers.api.router.post_dataset_asset
       parameters:
         - $ref: "#/components/parameters/path_dataset_id"
         - name: asset_id
@@ -616,7 +616,7 @@ paths:
       tags:
         - datasets
       summary: Get the status of a dataset upload.
-      operationId: backend.corpora.lambdas.api.v1.dataset.get_status
+      operationId: backend.layers.api.router.get_status
       security:
         - cxguserCookie: []
       parameters:
@@ -711,7 +711,7 @@ paths:
       description: >-
         Returns all datasets that belong to public, non tombstoned collections. This endpoint is meant to be used 
         for displaying datasets in a compact view. It doesn't return all the fields, so it is not suitable for general usage.
-      operationId: backend.corpora.lambdas.api.v1.dataset.get_datasets_index
+      operationId: backend.layers.api.router.get_datasets_index
       responses:
         "200":
           description: OK

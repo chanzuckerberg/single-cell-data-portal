@@ -3,14 +3,14 @@ from unittest.mock import Mock
 
 from flask import jsonify, make_response
 from backend.corpora.common.utils.authorization_checks import is_user_owner_or_allowed
-from backend.corpora.common.utils.http_exceptions import ForbiddenHTTPException, InvalidParametersHTTPException
+from backend.corpora.common.utils.http_exceptions import ForbiddenHTTPException, InvalidParametersHTTPException, NotFoundHTTPException, ServerErrorHTTPException
 from backend.layers.auth.user_info import UserInfo
 from backend.layers.business.business import BusinessLogic
 
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.business.entities import CollectionMetadataUpdate, CollectionQueryFilter
-from backend.layers.business.exceptions import CollectionCreationException
-from backend.layers.common.entities import CollectionId, CollectionMetadata, CollectionVersion, CollectionVersionId, DatasetArtifact, DatasetStatus, DatasetVersion, Link, OntologyTermId
+from backend.layers.business.exceptions import ArtifactNotFoundException, CollectionCreationException
+from backend.layers.common.entities import CollectionId, CollectionMetadata, CollectionVersion, CollectionVersionId, DatasetArtifact, DatasetId, DatasetStatus, DatasetVersion, Link, OntologyTermId
 
 from backend.corpora.common.utils import authorization_checks as auth
 import itertools
@@ -300,7 +300,31 @@ class PortalApi:
 
 
     def post_dataset_asset(self, dataset_id: str, asset_id: str):
-        pass
+        """
+        Requests to download a dataset asset, by generating a presigned_url
+        """
+
+        # TODO: if dataset not found, raise NotFoundHTTPException(detail=f"'dataset/{dataset_id}' not found.")
+        try:
+            download_data = self.business_logic.get_dataset_artifact_download_data(DatasetId(dataset_id), asset_id)
+        except ArtifactNotFoundException:
+            raise NotFoundHTTPException(detail=f"'dataset/{dataset_id}/asset/{asset_id}' not found.")
+
+        if download_data.file_size is None:
+            raise ServerErrorHTTPException()
+
+        if download_data.presigned_url is None:
+            raise ServerErrorHTTPException()
+
+        response = {
+            "dataset_id": dataset_id,
+            "file_name": download_data.file_name,
+            "file_size": download_data.file_size,
+            "presigned_url": download_data.presigned_url,
+        }
+
+        return make_response(response, 200)
+        
 
     def get_dataset_assets(self, dataset_id: str):
         pass

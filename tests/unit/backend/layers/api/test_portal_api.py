@@ -1262,6 +1262,7 @@ class TestUpdateCollection(NewBaseTest):
 class TestCollectionsCurators(NewBaseTest):
 
 
+    # 🔴 not quite sure why this fails - a non curator should not have access_type of WRITE
     def test_view_non_owned_private_collection__ok(self):
         # Generate test collection
         collection = self.generate_unpublished_collection(owner="another_test_user_id")
@@ -1278,6 +1279,7 @@ class TestCollectionsCurators(NewBaseTest):
         body = json.loads(response.data)
         self.assertEqual(body["access_type"], "WRITE")
 
+    # ✅
     def test_update_non_owned_private_collection_as_super_curator__ok(self):
         # Generate test collection
         collection = self.generate_unpublished_collection(owner="another_test_user_id")
@@ -1295,6 +1297,7 @@ class TestCollectionsCurators(NewBaseTest):
         response = self.app.put(f"/dp/v1/collections/{collection.version_id}", data=data, headers=headers)
         self.assertEqual(200, response.status_code)
 
+    # 🔴 - delete collection will be implemented later
     def test_delete_non_owned_private_collection_as_super_curator__ok(self):
         # Generate test collection
         collection = self.generate_unpublished_collection(owner="another_test_user_id")
@@ -1306,7 +1309,7 @@ class TestCollectionsCurators(NewBaseTest):
         self.assertEqual(204, response.status_code)
 
 
-# TODO: likely, not an API test. Figure out where to put it
+# TODO: Not an API test, but still valuable. Figure out where to put it. Maybe create a test_validation.py?
 class TestVerifyCollection(unittest.TestCase):
     def test_empty_body(self):
         body = dict()
@@ -1384,23 +1387,26 @@ class TestVerifyCollection(unittest.TestCase):
 # TODO: these tests all require the generation of a dataset
 class TestDataset(NewBaseTest):
 
-    # TODO: requires mocking
+    # 🔴 TODO: requires mocking
     def test__post_dataset_asset__OK(self):
-        bucket = self.CORPORA_TEST_CONFIG["bucket_name"]
-        s3_file_name = "test_s3_uri.h5ad"
-        content = "Hello world!"
-        self.create_s3_object(s3_file_name, bucket, content=content)
+        # bucket = self.CORPORA_TEST_CONFIG["bucket_name"]
+        # s3_file_name = "test_s3_uri.h5ad"
+        # content = "Hello world!"
+        # self.create_s3_object(s3_file_name, bucket, content=content)
 
-        expected_body = dict(dataset_id="test_dataset_id", file_name="test_filename", file_size=len(content))
-        test_url = furl(path="/dp/v1/datasets/test_dataset_id/asset/test_dataset_artifact_id")
+        # expected_body = dict(dataset_id="test_dataset_id", file_name="test_filename", file_size=len(content))
+        version = self.generate_dataset(artifacts=[DatasetArtifactUpdate("H5AD", "http://mock.uri/asset.h5ad")])
+        dataset_id = version.dataset_version_id
+        artifact_id = version.
+        test_url = furl(path="/dp/v1/datasets/{test_dataset_id}/asset/test_dataset_artifact_id")
         response = self.app.post(test_url.url, headers=dict(host="localhost"))
         self.assertEqual(200, response.status_code)
         actual_body = json.loads(response.data)
-        presign_url = actual_body.pop("presigned_url")
-        self.assertIsNotNone(presign_url)
-        self.assertEqual(expected_body, actual_body)
+        # presign_url = actual_body.pop("presigned_url")
+        self.assertIsNotNone(actual_body["presigned_url"])
+        # self.assertEqual(expected_body, actual_body)
 
-    # TODO: How is this supposed to work? We should never return 500 errors
+    # TODO: 🔴 How is this supposed to work? We should never return 500 errors
     def test__post_dataset_asset__file_SERVER_ERROR(self):
         test_url = furl(path="/dp/v1/datasets/test_dataset_id/asset/test_dataset_artifact_id")
         response = self.app.post(test_url.url, headers=dict(host="localhost"))
