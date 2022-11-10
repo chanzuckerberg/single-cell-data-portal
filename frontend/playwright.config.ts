@@ -1,8 +1,7 @@
-import { PlaywrightTestConfig } from "@playwright/test";
-import { devices, expect } from "@playwright/test";
+import { devices, expect, PlaywrightTestConfig } from "@playwright/test";
 import { matchers } from "expect-playwright";
-import featureFlags from "./tests/common/featureFlags";
 import fs from "fs";
+import featureFlags from "./tests/common/featureFlags";
 
 expect.extend(matchers);
 
@@ -77,7 +76,7 @@ const config: PlaywrightTestConfig = {
     headless: !isHeadful,
     ignoreHTTPSErrors: true,
     screenshot: "only-on-failure",
-    storageState: {...loginState(), ...featureFlags},
+    storageState: { ...loginState(), ...featureFlags },
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: "retain-on-failure",
     video: {
@@ -97,12 +96,43 @@ const config: PlaywrightTestConfig = {
   // },
 };
 
-function loginState() {
-  let storageState = {}
-  if(fs.existsSync("storageState.json")){
-    storageState = JSON.parse(fs.readFileSync('storageState.json', 'utf-8'));
+function loginState(): {
+  cookies: Array<{
+    name: string;
+
+    value: string;
+
+    /**
+     * domain and path are required
+     */
+    domain: string;
+
+    /**
+     * domain and path are required
+     */
+    path: string;
+
+    /**
+     * Unix time in seconds.
+     */
+    expires: number;
+
+    httpOnly: boolean;
+
+    secure: boolean;
+
+    /**
+     * sameSite flag
+     */
+    sameSite: "Strict" | "Lax" | "None";
+  }>;
+} {
+  let storageState = { cookies: [] };
+
+  if (fs.existsSync("storageState.json")) {
+    storageState = JSON.parse(fs.readFileSync("storageState.json", "utf-8"));
   }
-  console.log(`Login storageState: ${JSON.stringify(storageState, null, 4)}`);
+
   return storageState;
 }
 

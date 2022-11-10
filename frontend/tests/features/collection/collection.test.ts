@@ -5,11 +5,7 @@ import { Collection } from "src/common/entities";
 import { sortByCellCountDescending } from "src/components/Collection/components/CollectionDatasetsGrid/components/DatasetsGrid/common/util";
 import { INVALID_DOI_ERROR_MESSAGE } from "src/components/CreateCollectionModal/components/Content/common/constants";
 import { BLUEPRINT_SAFE_TYPE_OPTIONS, TEST_URL } from "tests/common/constants";
-import {
-  goToPage,
-  isDevStagingProd,
-  tryUntil,
-} from "tests/utils/helpers";
+import { goToPage, isDevStagingProd, tryUntil } from "tests/utils/helpers";
 import { getTestID, getText } from "tests/utils/selectors";
 import datasets from "../fixtures/datasets";
 

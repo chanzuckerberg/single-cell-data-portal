@@ -1,10 +1,44 @@
+import {
+  GetSecretValueCommand,
+  SecretsManagerClient,
+} from "@aws-sdk/client-secrets-manager";
 import { ElementHandle, expect, Page } from "@playwright/test";
 import { TEST_ENV } from "tests/common/constants";
-import { TEST_PASSWORD, TEST_URL, TEST_USERNAME } from "../common/constants";
+import { TEST_URL } from "../common/constants";
 import { getText } from "./selectors";
 
-export const TIMEOUT_MS = 3 * 1000;
+/**
+ * (thuang): From oauth/users.json
+ * `frontend/tests/common/constants.ts` `API_URL` needs to be `"http://backend.corporanet.local:5000"`
+ * If `API_URL` is dev, staging, prod, or rdev, use their corresponding OIDC credentials
+ */
+const LOCAL_CONTAINER_TEST_USERNAME = "User1";
+const LOCAL_CONTAINER_TEST_PASSWORD = "pwd";
 
+const DEPLOYED_TEST_USERNAME = "user@example.com";
+
+let endpoint;
+
+try {
+  endpoint = new URL(process.env["BOTO_ENDPOINT_URL"] as string);
+} catch (e) {
+  console.log("BOTO_ENDPOINT_URL not assigned, assuming running on deployment");
+  endpoint = "";
+}
+
+const client = new SecretsManagerClient({
+  endpoint: String(endpoint),
+});
+
+const deployment_stage = process.env.DEPLOYMENT_STAGE || "test";
+
+const secretValueRequest = {
+  SecretId: `corpora/backend/${deployment_stage}/auth0-secret`,
+};
+
+const command = new GetSecretValueCommand(secretValueRequest);
+
+export const TIMEOUT_MS = 3 * 1000;
 
 // (seve): We use TEST_ENV to describe the environment that playwright is running against. Sometimes the FE tests are run against a local instance of the app which points at a deployed instance of the backend.
 
@@ -29,30 +63,31 @@ export async function goToPage(
 export async function login(page: Page): Promise<void> {
   await goToPage(undefined, page);
 
-  expect(process.env.TEST_ACCOUNT_PASS).toBeDefined();
-
   const cookies = await (await page.context()).cookies();
 
   if (cookies.length) return;
 
-  const username = TEST_USERNAME;
+  const { username, password } = await getTestUsernameAndPassword();
+
+  expect(username).toBeDefined();
 
   await page.click(getText("Log In"));
 
   await page.fill('[name="Username"], [name="email"]', username);
-  await page.fill('[name="Password"], [name="password"]', TEST_PASSWORD);
+  await page.fill('[name="Password"], [name="password"]', password);
 
   await page.click('[value="login"], [name="submit"]');
 
-  console.log("setting storage state...")
-  await page.context().storageState({ path: 'storageState.json' });
+  await tryUntil(
+    () => {
+      expect(page.url()).toContain(TEST_URL);
+    },
+    { page }
+  );
 
-  // await tryUntil(
-  //   () => {
-  //     expect(page.url()).toContain(TEST_URL);
-  //   },
-  //   { page }
-  // );
+  console.log("setting storage state...");
+
+  await page.context().storageState({ path: "storageState.json" });
 }
 
 interface TryUntilConfigs {
@@ -99,4 +134,38 @@ export async function getInnerText(
   >;
 
   return element.innerText();
+}
+
+async function getTestUsernameAndPassword() {
+  try {
+    const secret = JSON.parse(
+      (await client.send(command)).SecretString || "null"
+    );
+
+    const { test_account_username, test_account_password } = secret;
+
+    const deployedTestUsername =
+      test_account_username || DEPLOYED_TEST_USERNAME;
+
+    const userNames = {
+      dev: deployedTestUsername,
+      happy: LOCAL_CONTAINER_TEST_USERNAME,
+      local: LOCAL_CONTAINER_TEST_USERNAME,
+      localProd: LOCAL_CONTAINER_TEST_USERNAME,
+      prod: deployedTestUsername,
+      rdev: deployedTestUsername,
+      staging: deployedTestUsername,
+    };
+
+    return {
+      password: test_account_password || LOCAL_CONTAINER_TEST_PASSWORD || "",
+      username: userNames[TEST_ENV] || deployedTestUsername,
+    };
+  } catch (error) {
+    console.error(error);
+    return {
+      password: null,
+      username: null,
+    };
+  }
 }
