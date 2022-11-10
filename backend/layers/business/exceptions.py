@@ -33,6 +33,8 @@ class InvalidLinkException(BusinessException):
         self.errors = errors
         super().__init__()
 
+class CollectionVersionException(BusinessException):
+    pass
 class ImmutableCollectionException(BusinessException):
     pass
 
