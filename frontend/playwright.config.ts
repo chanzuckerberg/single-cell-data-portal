@@ -77,7 +77,7 @@ const config: PlaywrightTestConfig = {
     headless: !isHeadful,
     ignoreHTTPSErrors: true,
     screenshot: "only-on-failure",
-    storageState: {...JSON.parse(fs.readFileSync('storageState.json', 'utf-8')), ...featureFlags},
+    storageState: {...loginState(), ...featureFlags},
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: "retain-on-failure",
     video: {
@@ -96,5 +96,14 @@ const config: PlaywrightTestConfig = {
   //   port: 3000,
   // },
 };
+
+function loginState() {
+  let storageState = {}
+  if(fs.existsSync("storageState.json")){
+    storageState = JSON.parse(fs.readFileSync('storageState.json', 'utf-8'));
+  }
+  console.log(`Login storageState: ${JSON.stringify(storageState, null, 4)}`);
+  return storageState;
+}
 
 export default config;
