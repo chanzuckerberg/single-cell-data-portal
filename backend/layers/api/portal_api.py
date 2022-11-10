@@ -379,8 +379,8 @@ class PortalApi:
 
     def get_status(self, dataset_id: str, token_info: dict):
 
-        # version = self.business_logic.get_dataset_version(DatasetVersionId(dataset_id))
-        # collection_version = self.business_logic.get_collection_version(version)
+        dataset_version = self.business_logic.get_dataset_version(DatasetVersionId(dataset_id))
+        collection_version = self.business_logic.version
 
         # if version is None:
             # return 
