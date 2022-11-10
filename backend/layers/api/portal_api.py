@@ -185,7 +185,11 @@ class PortalApi:
 
 
     def post_collection_revision(self, collection_id: str, token_info: dict):
-        version = self.business_logic.create_collection_version(CollectionId(collection_id))
+        try:
+            version = self.business_logic.create_collection_version(CollectionId(collection_id))
+        except CollectionVersionException:
+            raise ForbiddenHTTPException("Another revision is already in progress")
+
         response = self._collection_to_response(version, "WRITE")
 
         return make_response(response, 201)

@@ -2044,6 +2044,7 @@ class TestRevision(NewBaseTest):
             ["Link 1", "DOI Link"] 
         )
 
+    # 💛 should pass after merging business in
     def test__revision__403(self):
         """Starting a revision on a revision."""
         published_collection = self.generate_published_collection(add_datasets=2)
@@ -2060,7 +2061,8 @@ class TestRevision(NewBaseTest):
 
     def test__revision_nonexistent__403(self):
         """Start a revision on a non-existing collection."""
-        response = self.app.post("/dp/v1/collections/random", headers=self.headers)
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        response = self.app.post("/dp/v1/collections/random", headers=headers)
         self.assertEqual(403, response.status_code)
 
     def test__revision_not_owner__403(self):
