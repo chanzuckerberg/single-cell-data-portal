@@ -348,7 +348,11 @@ class BusinessLogic(BusinessLogicInterface):
         if any(v for v in all_versions if v.published_at is None):
             raise CollectionVersionException(f"Collection {collection_id} already has an unpublished version")
 
-        new_version = self.database_provider.add_collection_version(collection_id)
+        try:
+            new_version = self.database_provider.add_collection_version(collection_id)
+        except Exception: # TODO: maybe add a RecordNotFound exception for finer grained exceptions
+            raise CollectionVersionException(f"Collection {collection_id} cannot be found")
+
         return new_version
 
     def delete_collection_version(self, version_id: CollectionVersionId) -> None:
