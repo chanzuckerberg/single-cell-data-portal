@@ -5,7 +5,6 @@ import {
   getInnerText,
   goToPage,
   isDevStaging,
-  login,
   tryUntil,
 } from "tests/utils/helpers";
 import { getTestID, getText } from "tests/utils/selectors";

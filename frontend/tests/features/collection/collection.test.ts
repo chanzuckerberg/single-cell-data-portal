@@ -8,7 +8,6 @@ import { BLUEPRINT_SAFE_TYPE_OPTIONS, TEST_URL } from "tests/common/constants";
 import {
   goToPage,
   isDevStagingProd,
-  login,
   tryUntil,
 } from "tests/utils/helpers";
 import { getTestID, getText } from "tests/utils/selectors";
