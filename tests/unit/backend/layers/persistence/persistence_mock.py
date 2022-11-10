@@ -168,9 +168,11 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         # Creates a dataset and initializes it with one version
         dataset_id = DatasetId(self._id())
         version_id = DatasetVersionId(self._id())
+        collection_version = self.collections_versions[collection_version_id.id]
         version = DatasetVersion(
             dataset_id=dataset_id,
             version_id=version_id,
+            collection_id=collection_version.collection_id,
             status=DatasetStatus.empty(),
             metadata=None,
             artifacts=[]
@@ -178,7 +180,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         self.datasets_versions[version_id.id] = version
         self.datasets[dataset_id.id] = version_id.id
         # Register the dataset to the original collection
-        self.collections_versions[collection_version_id.id].datasets.append(version)
+        collection_version.datasets.append(version)
         return copy.deepcopy(version)
 
     def add_dataset_version(self, dataset_id: DatasetId) -> str:
@@ -226,15 +228,17 @@ class DatabaseProviderMock(DatabaseProviderInterface):
     ) -> DatasetVersion:
         new_version_id = DatasetVersionId(self._id())
         old_version = self.get_dataset_version(old_dataset_version_id)
+        collection_version = self.collections_versions[collection_version_id.id]
         new_version = DatasetVersion(
             dataset_id=old_version.dataset_id,
             version_id=new_version_id,
+            collection_id=collection_version.collection_id,
             status=DatasetStatus.empty(),
             metadata=None,
             artifacts=[]
         )
         self.datasets_versions[new_version_id.id] = new_version
-        collection_version = self.collections_versions[collection_version_id.id]
+        
         idx = next(i for i, e in enumerate(collection_version.datasets) if e.version_id == old_dataset_version_id)
         collection_version.datasets[idx] = new_version
         return copy.deepcopy(new_version)

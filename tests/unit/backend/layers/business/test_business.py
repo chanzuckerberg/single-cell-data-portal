@@ -473,6 +473,7 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         new_dataset_version = self.database_provider.get_dataset_version(new_dataset_version_id)
         self.assertIsNotNone(new_dataset_version)
         self.assertIsNone(new_dataset_version.metadata)
+        self.assertEqual(new_dataset_version.collection_id, version.collection_id)
         self.assertEqual(new_dataset_version.status.upload_status, DatasetUploadStatus.WAITING)
         self.assertEqual(new_dataset_version.status.processing_status, DatasetProcessingStatus.PENDING)
 
