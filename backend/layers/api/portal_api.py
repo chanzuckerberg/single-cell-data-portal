@@ -190,6 +190,10 @@ class PortalApi:
 
         if published_collection is None:
             raise ForbiddenHTTPException(f"Collection {collection_id} does not exist")
+
+        print("!@#!@#!@#!@#", UserInfo(token_info).user_id())
+
+        print(published_collection.owner, UserInfo(token_info).user_id())
         
         if not UserInfo(token_info).is_user_owner_or_allowed(published_collection.owner):
             raise ForbiddenHTTPException("Unauthorized")
@@ -271,7 +275,14 @@ class PortalApi:
 
 
     def delete_collection(self, collection_id: str, token_info: dict):
-        pass
+        """
+        Deletes a collection version from the persistence store.
+        """
+        version = self.business_logic.get_collection_version(CollectionVersionId(collection_id))
+        if not UserInfo(token_info).is_user_owner_or_allowed(version.owner):
+            raise ForbiddenHTTPException()
+            
+        self.business_logic.delete_collection_version(CollectionVersionId(collection_id))
 
     def update_collection(self, collection_id: str, body: dict, token_info: dict):
         """

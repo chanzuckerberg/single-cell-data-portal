@@ -1931,7 +1931,8 @@ class TestRevision(NewBaseTest):
         # Starts a revision
         path = f"/dp/v1/collections/{published_collection.collection_id.id}"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
-        response = self.app.post(path, headers)
+        response = self.app.post(path, headers=headers)
+        print(response.data)
         self.assertEqual(201, response.status_code)
         response_post_json = json.loads(response.data)
         
@@ -1973,7 +1974,7 @@ class TestRevision(NewBaseTest):
         # Starts a revision
         path = f"/dp/v1/collections/{published_collection.collection_id.id}"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
-        response = self.app.post(path, headers)
+        response = self.app.post(path, headers=headers)
         self.assertEqual(201, response.status_code)
         response_post_json = json.loads(response.data)
 
@@ -2023,153 +2024,65 @@ class TestRevision(NewBaseTest):
         self.assertEqual(403, response.status_code)
 
 
-class TestDeleteRevision(BaseRevisionTest):
+class TestDeleteRevision(NewBaseTest):
     """Test case for deleting a collection or datasets under revision."""
 
-    def setUp(self):
-        super().setUp()
-        self.test_url_collection_private = f"/dp/v1/collections/{self.rev_collection.id}"
-        self.test_url_collection_public = f"/dp/v1/collections/{self.pub_collection.id}"
+    def _create_revision(self, collection_id: str, user="owner"):
+        """
+        Convenience method for creating a revision on the fly
+        """
+        path = f"/dp/v1/collections/{collection_id}"
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token(user)}
+        response = self.app.post(path, headers=headers)
+        response_post_json = json.loads(response.data)
+        print(response_post_json)
+        revision_id = response_post_json["id"]
+        return revision_id
 
+    # ✅
     def test__revision_deleted__204(self):
-        """Delete a collection under revision."""
+        """
+        Delete a collection under revision.
+        """
+        published_collection = self.generate_published_collection(add_datasets=2)
+        revision_id = self._create_revision(published_collection.collection_id.id)
+
         # Delete the revision
-        resp = self.app.delete(self.test_url_collection_private, headers=self.headers)
+        path = f"/dp/v1/collections/{revision_id}"
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        resp = self.app.delete(path, headers=headers)
         self.assertEqual(204, resp.status_code)
 
         # Cannot get the revision
-        resp = self.app.get(self.test_url_collection_private, headers=self.headers)
+        path = f"/dp/v1/collections/{revision_id}"
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        resp = self.app.get(path, headers=headers)
         self.assertEqual(403, resp.status_code)
 
-    def test__revision_deleted_with_published_datasets(self):
-        """
-        The published dataset artifacts should be intact after deleting a
-        collection revision.
-        """
-        expected_body = json.loads(json.dumps(self.pub_collection.reshape_for_api(), cls=CustomJSONEncoder))
-        pub_s3_objects, rev_s3_objects = self.get_s3_objects_from_collections()
+        # Verify that the published collection still has two datasets
+        path = f"/dp/v1/collections/{published_collection.collection_id.id}"
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        resp = self.app.get(path, headers=headers)
+        self.assertEqual(200, resp.status_code)
+        resp_json = json.loads(resp.data)
+        datasets = resp_json["datasets"]
+        self.assertEqual(2, len(datasets))
 
-        # Revision and Published collection refer to the same S3 resources
-        self.assertEqual(pub_s3_objects, rev_s3_objects)
+    # ✅
+    def test__delete_revision_unauth__403(self):
+        """
+        An unauthorized user should not be able to delete a collection revision
+        """
+        published_collection = self.generate_published_collection(owner ="someone_else", add_datasets=2)
+        revision_id = self._create_revision(published_collection.collection_id.id, user="super")
 
         # Delete the revision
-        resp = self.app.delete(self.test_url_collection_private, headers=self.headers)
-        self.assertEqual(204, resp.status_code)
-        self.assertPublishedCollectionOK(expected_body, pub_s3_objects)
+        path = f"/dp/v1/collections/{revision_id}"
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        resp = self.app.delete(path, headers=headers)
+        self.assertEqual(403, resp.status_code)
 
-    def test__revision_deleted_with_new_datasets(self):
-        """The new datasets should be deleted when the revison is deleted."""
-        # Generate revision dataset
-        rev_dataset = self.generate_dataset_with_s3_resources(
-            self.session, collection_id=self.rev_collection.id, published=False
-        )
-        s3_objects = self.get_s3_object_paths_from_dataset(rev_dataset)
-
-        # Check resources exist
-        with self.subTest("new artifacts and explorer s3 objects exist"):
-            for bucket, file_name in s3_objects:
-                self.assertS3FileExists(bucket, file_name)
-
-        # Delete Revision
-        resp = self.app.delete(self.test_url_collection_private, headers=self.headers)
-        self.assertEqual(204, resp.status_code)
-
-        with self.subTest("new artifacts and explorer s3 objects deleted"):
-            for bucket, file_name in s3_objects:
-                self.assertS3FileDoesNotExist(bucket, file_name)
-
-    def test__revision_deleted_with_refreshed_datasets(self):
-        """
-        The refreshed datasets should be deleted and the published dataset
-        intact. The published dataset artifacts should be intact after
-        deleting a collection revision.
-        """
-        expected_body = json.loads(json.dumps(self.pub_collection.reshape_for_api(), cls=CustomJSONEncoder))
-        self.refresh_datasets()
-        pub_s3_objects, rev_s3_objects = self.get_s3_objects_from_collections()
-
-        # Refreshed datasets do not point to the published resources in s3.
-        for s3_object in rev_s3_objects:
-            self.assertNotIn(s3_object, pub_s3_objects)
-
-        # Delete the revision
-        resp = self.app.delete(self.test_url_collection_private, headers=self.headers)
-        self.assertEqual(204, resp.status_code)
-
-        with self.subTest("refreshed artifacts and explorer s3 objects deleted"):
-            for bucket, file_name in rev_s3_objects:
-                self.assertS3FileDoesNotExist(bucket, file_name)
-        self.assertPublishedCollectionOK(expected_body, pub_s3_objects)
-
-    def test__delete_refreshed_dataset_in_a_revision(self):
-        """
-        The refreshed datasets should be deleted and the published dataset
-        restored in the revision.
-        """
-        expected_pub_body = json.loads(json.dumps(self.pub_collection.reshape_for_api(), cls=CustomJSONEncoder))
-        expected_rev_body = self.remove_timestamps(
-            json.loads(json.dumps(self.rev_collection.reshape_for_api(), cls=CustomJSONEncoder)),
-            remove=["id", "dataset_id", "dataset_deployments"],
-        )
-        refreshed_datasets = self.refresh_datasets()
-        pub_s3_objects, rev_s3_objects = self.get_s3_objects_from_collections()
-
-        # Refreshed datasets do not point to the published resources in s3.
-        for s3_object in rev_s3_objects:
-            self.assertNotIn(s3_object, pub_s3_objects)
-
-        # Delete the refreshed_datasets
-        for ds in refreshed_datasets:
-            resp = self.app.delete(f"/dp/v1/datasets/{ds.id}", headers=self.headers)
-            self.assertEqual(202, resp.status_code)
-
-        with self.subTest("refreshed artifacts and explorer s3 objects deleted"):
-            for bucket, file_name in rev_s3_objects:
-                self.assertS3FileDoesNotExist(bucket, file_name)
-        self.assertPublishedCollectionOK(expected_pub_body, pub_s3_objects)
-
-        # Check that the original datasets info has been restored to the revision dataset.
-        self.session.expire_all()
-        actual_rev_body = self.remove_timestamps(
-            json.loads(json.dumps(self.rev_collection.reshape_for_api(), cls=CustomJSONEncoder)),
-            remove=["id", "dataset_id", "dataset_deployments"],
-        )
-        self.assertEqual(expected_rev_body, actual_rev_body)
-
-    def test__delete_published_dataset_during_revision(self):
-        """
-        The dataset is tombstone in the revision. The published artifacts are
-        intact.
-        """
-        expected_body = json.loads(json.dumps(self.pub_collection.reshape_for_api(), cls=CustomJSONEncoder))
-        pub_s3_objects, _ = self.get_s3_objects_from_collections()
-
-        # Delete a published dataset in the revision
-        rev_dataset_count = len(self.rev_collection.datasets)
-        rev_dataset_id = self.rev_collection.datasets[0].id
-        test_dataset_url = f"/dp/v1/datasets/{rev_dataset_id}"
-        resp = self.app.delete(test_dataset_url, headers=self.headers)
-        self.assertEqual(202, resp.status_code)
-
-        # Get the revision authenticated
-        resp = self.app.get(self.test_url_collection_private, headers=self.headers)
-        self.assertEqual(200, resp.status_code)
-        self.assertEqual(rev_dataset_count, len(json.loads(resp.data)["datasets"]))
-
-        # Get the revision unauthenticated
-        resp = self.app.get(self.test_url_collection_private)
-        self.assertEqual(200, resp.status_code)
-        # The dataset is a tombstone in the revision
-        self.assertEqual(rev_dataset_count - 1, len(json.loads(resp.data)["datasets"]))
-
-        self.session.expire_all()
-        for dataset in self.rev_collection.datasets:
-            if dataset.id == rev_dataset_id:
-                self.assertTrue(dataset.tombstone)
-                break
-        self.assertPublishedCollectionOK(expected_body, pub_s3_objects)
-
-
+        
 class TestPublishRevision(NewBaseTest):
     """Test case for publishing a revision."""
 
