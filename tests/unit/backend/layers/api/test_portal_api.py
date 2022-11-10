@@ -1983,62 +1983,79 @@ class TestRevision(NewBaseTest):
 
     # Everything really starts here
 
+    # ✅
     def test__start_revision_of_a_collection__201(self):
         """Start a revision of a collection."""
-        collection = self.generate_collection(self.session, visibility=CollectionVisibility.PUBLIC)
-        dataset_ids = [
-            self.generate_dataset_with_s3_resources(self.session, collection=collection, published=True).id,
-            self.generate_dataset_with_s3_resources(self.session, collection=collection, published=True).id,
-        ]
 
-        res_post_json = self.verify_start_revision(collection.id)
-        revision_id = res_post_json["id"]
-        res_get_json = self.verify_get_revision(revision_id, dataset_ids)
-        self.assertEqual(res_post_json, res_get_json)
+        # Create a published collection with 2 datasets
+        published_collection = self.generate_published_collection(add_datasets=2)
 
-        self.assertEqual("WRITE", res_get_json.pop("access_type"))
-        self.verify_unauthed_get_revision(revision_id, res_get_json)
+        # Starts a revision
+        path = f"/dp/v1/collections/{published_collection.collection_id.id}"
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        response = self.app.post(path, headers)
+        self.assertEqual(201, response.status_code)
+        response_post_json = json.loads(response.data)
+        
+        # Retrieves the version_id from the response
+        revision_id = response_post_json["id"]
 
+        # Ensures that getting the version has:
+        # - PRIVATE visibility (since it's unpublished)
+        # - WRITE access_type if the header is from the owner
+        # - The response matches the one from the POST request
+        path = f"/dp/v1/collections/{revision_id}"
+        response = self.app.get(path, headers=headers)
+        self.assertEqual(200, response.status_code)
+        response_json = json.loads(response.data)
+        self.assertEqual("PRIVATE", response_json["visibility"])
+        self.assertEqual("WRITE", response_json["access_type"])
+        self.assertEqual(response_post_json, response_json)
+
+        # If no auth is passed, the collection should be returned with access_type=READ
+        path = f"/dp/v1/collections/{revision_id}"
+        response = self.app.get(path)
+        self.assertEqual(200, response.status_code)
+        response_json = json.loads(response.data)
+        self.assertEqual("READ", response_json["access_type"])
+
+    # ✅
     def test__start_revision_of_a_collection_w_links__201(self):
         """Start a revision of a collection with links."""
-        collection = self.generate_collection(
-            self.session,
-            visibility=CollectionVisibility.PUBLIC,
-            links=[
-                {"link_name": "Link 1", "link_url": "http://link.good", "link_type": "OTHER"},
-                {"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"},
-            ],
-        )
-        dataset_ids = [
-            self.generate_dataset_with_s3_resources(self.session, collection=collection, published=True).id,
-            self.generate_dataset_with_s3_resources(self.session, collection=collection, published=True).id,
+
+        # Create a published collection with 2 datasets and 2 links
+        links = [
+            Link("Link 1", "OTHER", "http://link.good"),
+            Link("DOI Link", "DOI", "http://doi.org/10.1016"),
         ]
-        link_names = [link.link_name for link in collection.links]
+        published_collection = self.generate_published_collection(links=links, add_datasets=2)
 
-        res_post_json = self.verify_start_revision(collection.id)
-        revision_id = res_post_json["id"]
+        # Starts a revision
+        path = f"/dp/v1/collections/{published_collection.collection_id.id}"
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        response = self.app.post(path, headers)
+        self.assertEqual(201, response.status_code)
+        response_post_json = json.loads(response.data)
 
-        # Check link names
-        res_links = [link["link_name"] for link in res_post_json["links"]]
-        self.assertListEqual(sorted(link_names), sorted(res_links))
-
-        res_get_json = self.verify_get_revision(revision_id, dataset_ids)
-        self.assertEqual(res_post_json, res_get_json)
-
-        self.assertEqual("WRITE", res_get_json.pop("access_type"))
-        self.verify_unauthed_get_revision(revision_id, res_get_json)
+        # Verify that the links are in the revision
+        self.assertIsNotNone(response_post_json["links"])
+        self.assertCountEqual(
+            [link["link_name"] for link in response_post_json["links"]],
+            ["Link 1", "DOI Link"] 
+        )
 
     def test__revision__403(self):
         """Starting a revision on a revision."""
-        collection = self.generate_collection(self.session, visibility=CollectionVisibility.PUBLIC)
-        test_url = f"/dp/v1/collections/{collection.id}"
+        published_collection = self.generate_published_collection(add_datasets=2)
+        test_url = f"/dp/v1/collections/{published_collection.collection_id.id}"
 
         # Start a revision
-        response = self.app.post(test_url, headers=self.headers)
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        response = self.app.post(test_url, headers=headers)
         self.assertEqual(201, response.status_code)
 
         # Try to start a revision again
-        response = self.app.post(test_url, headers=self.headers)
+        response = self.app.post(test_url, headers=headers)
         self.assertEqual(403, response.status_code)
 
     def test__revision_nonexistent__403(self):
@@ -2204,7 +2221,7 @@ class TestDeleteRevision(BaseRevisionTest):
         self.assertPublishedCollectionOK(expected_body, pub_s3_objects)
 
 
-class TestPublishRevision(BaseRevisionTest):
+class TestPublishRevision(NewBaseTest):
     """Test case for publishing a revision."""
 
     def setUp(self):
@@ -2297,13 +2314,32 @@ class TestPublishRevision(BaseRevisionTest):
 
     def test__with_revision_with_new_dataset__OK(self):
         """Publish a revision with new datasets."""
-        new_dataset_id = self.generate_dataset_with_s3_resources(self.session, collection_id=self.rev_collection.id).id
-        dataset_ids = {ds.id for ds in self.pub_collection.datasets}
-        dataset_ids.add(new_dataset_id)
+        # new_dataset_id = self.generate_dataset_with_s3_resources(self.session, collection_id=self.rev_collection.id).id
+        # dataset_ids = {ds.id for ds in self.pub_collection.datasets}
+        # dataset_ids.add(new_dataset_id)
 
-        # Publish revision
-        response_json = self.publish_collection(self.rev_collection)
-        self.verify_datasets(response_json, dataset_ids)
+        # # Publish revision
+        # response_json = self.publish_collection(self.rev_collection)
+        # self.verify_datasets(response_json, dataset_ids)
+
+        unpublished_collection = self.generate_unpublished_collection(add_datasets=2)
+
+        path = f"{self.base_path}/{unpublished_collection.version_id}/publish"
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        body = {"data_submission_policy_version": "1.0"} # TODO: still in use?
+        response = self.app.post(path, headers=headers, data=json.dumps(body))
+        
+        self.assertEqual(202, response.status_code)
+        self.assertDictEqual({"collection_id": collection_id, "visibility": "PUBLIC"}, json.loads(response.data))
+
+        # Check GET collection/<collection_id>
+        path = f"{self.base_path}/{collection_id}"
+        response = self.app.get(path, headers=headers)
+        self.assertEqual(200, response.status_code)
+
+        response_json = json.loads(response.data)
+        self.assertEqual("PUBLIC", response_json["visibility"])
+        self.assertEqual(collection_id, response_json["id"])
 
         # Check published_at and revised_at
         # Collection: Only revised_at should be updated

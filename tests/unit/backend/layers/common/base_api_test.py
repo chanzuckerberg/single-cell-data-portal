@@ -158,8 +158,8 @@ class NewBaseTest(BaseAuthAPITest):
         return collection
 
     # Public collections need to have at least one dataset!
-    def generate_published_collection(self, owner = "test_user_id", add_datasets: int = 1):
-        unpublished_collection = self.generate_unpublished_collection(owner, add_datasets=add_datasets)
+    def generate_published_collection(self, owner = "test_user_id", links: List[Link] = [], add_datasets: int = 1):
+        unpublished_collection = self.generate_unpublished_collection(owner, links, add_datasets=add_datasets)
         self.business_logic.publish_collection_version(unpublished_collection.version_id)
         return self.business_logic.get_collection_version(unpublished_collection.version_id)
 

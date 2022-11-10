@@ -142,6 +142,7 @@ class PortalApi:
         }
 
     def _collection_to_response(self, collection: CollectionVersion, access_type: str):
+        collection_id = collection.collection_id.id if collection.published_at is not None else collection.version_id.id
         return self.remove_none({
             "access_type": access_type,
             "contact_email": collection.metadata.contact_email,
@@ -151,7 +152,7 @@ class PortalApi:
             "data_submission_policy_version": "1.0", # TODO
             "datasets": [self._dataset_to_response(d) for d in collection.datasets],
             "description": collection.metadata.description,
-            "id": collection.collection_id.id,
+            "id": collection_id,
             "links": [self._link_to_response(l) for l in collection.metadata.links],
             "name": collection.metadata.name,
             "published_at": 1234,
@@ -182,11 +183,12 @@ class PortalApi:
  
         return make_response(jsonify(response), 200)
 
-    def get_collections_index(self):
-        pass
 
     def post_collection_revision(self, collection_id: str, token_info: dict):
-        pass
+        version = self.business_logic.create_collection_version(CollectionId(collection_id))
+        response = self._collection_to_response(version, "WRITE")
+
+        return make_response(response, 201)
 
     def _link_from_request(self, body: dict):
         return Link(
