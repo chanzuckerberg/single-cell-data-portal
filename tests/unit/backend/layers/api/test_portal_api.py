@@ -1919,73 +1919,11 @@ class BaseRevisionTest(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
 class TestRevision(NewBaseTest):
     """Test case for starting a collection's revision."""
 
-    def verify_start_revision(self, collection_id: str) -> dict:
-        """
-        Verify start of a collection's revision.
-        :return: Jsonified response of POST collection/<collection_id>
-        """
-        path = f"/dp/v1/collections/{collection_id}"
-        response = self.app.post(path, self.headers)
-        self.assertEqual(201, response.status_code)
-
-        response_json = json.loads(response.data)
-        self.assertEqual("PRIVATE", response_json["visibility"])
-
-        return response_json
-
-    # def verify_get_revision(self, collection_id: str, dataset_ids: typing.List[str] = None) -> dict:
-    #     """
-    #     Verify the contents of a collection under revision.
-    #     :return: Jsonified response of GET collection/<collection_id>
-    #     """
-    #     path = f"/dp/v1/collections/{collection_id}"
-    #     response = self.app.get(path, headers=self.headers)
-    #     response_json = json.loads(response.data)
-
-    #     with self.subTest("Test datasets in revised collection are not original datasets"):
-    #         new_dataset_ids = [x["id"] for x in response_json["datasets"]]
-    #         for dataset_id in dataset_ids:
-    #             self.assertNotIn(dataset_id, new_dataset_ids)
-
-    #     with self.subTest("Test revised datasets point at original datasets"):
-    #         original_dataset_ids = [x["original_id"] for x in response_json["datasets"]]
-    #         for dataset_id in dataset_ids:
-    #             self.assertIn(dataset_id, original_dataset_ids)
-
-    #     with self.subTest("Check assets point at revised dataset"):
-    #         for dataset in response_json["datasets"]:
-    #             dataset_id = dataset["id"]
-    #             asset_dataset_ids = {asset["dataset_id"] for asset in dataset["dataset_assets"]}
-    #             self.assertEqual(dataset_id, asset_dataset_ids.pop())
-
-    #     with self.subTest("Test revised_at not updated under revision"):
-    #         # Collection revised_at
-    #         self.assertIsNone(response_json.get("revised_at"))
-
-    #         # Dataset revised_at
-    #         for dataset in response_json["datasets"]:
-    #             self.assertIsNone(dataset.get("revised_at"))
-
-    #     return response_json
-
-    # def verify_unauthed_get_revision(self, collection_id: str, expected_body: dict) -> None:
-    #     """Verify unauthorized view of a collection under revision."""
-
-    #     path = f"/dp/v1/collections/{collection_id}"
-    #     headers = {"host": "localhost", "Content-Type": "application/json"}
-    #     response = self.app.get(path, headers=headers)
-    #     self.assertEqual(200, response.status_code)
-
-    #     response_json = json.loads(response.data)
-    #     self.assertEqual("READ", response_json.pop("access_type"))
-    #     self.assertEqual(expected_body, response_json)
-
-
-    # Everything really starts here
-
     # ✅
     def test__start_revision_of_a_collection__201(self):
-        """Start a revision of a collection."""
+        """
+        Start a revision of a collection.
+        """
 
         # Create a published collection with 2 datasets
         published_collection = self.generate_published_collection(add_datasets=2)
@@ -2021,7 +1959,9 @@ class TestRevision(NewBaseTest):
 
     # ✅
     def test__start_revision_of_a_collection_w_links__201(self):
-        """Start a revision of a collection with links."""
+        """
+        Start a revision of a collection with links.
+        """
 
         # Create a published collection with 2 datasets and 2 links
         links = [
@@ -2046,7 +1986,9 @@ class TestRevision(NewBaseTest):
 
     # 💛 should pass after merging business in
     def test__revision__403(self):
-        """Starting a revision on a revision."""
+        """
+        Starting a revision on a revision.
+        """
         published_collection = self.generate_published_collection(add_datasets=2)
         test_url = f"/dp/v1/collections/{published_collection.collection_id.id}"
 
@@ -2059,20 +2001,25 @@ class TestRevision(NewBaseTest):
         response = self.app.post(test_url, headers=headers)
         self.assertEqual(403, response.status_code)
 
+    # ✅
     def test__revision_nonexistent__403(self):
-        """Start a revision on a non-existing collection."""
+        """
+        Start a revision on a non-existing collection.
+        """
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
         response = self.app.post("/dp/v1/collections/random", headers=headers)
         self.assertEqual(403, response.status_code)
 
+    # ✅
     def test__revision_not_owner__403(self):
-        """Start a revision on a collection as a non-owner."""
-        collection = self.generate_collection(
-            self.session, visibility=CollectionVisibility.PUBLIC, owner="someone else"
-        )
-        test_url = f"/dp/v1/collections/{collection.id}"
+        """
+        Start a revision on a collection as a non-owner.
+        """
+        published_collection = self.generate_published_collection(owner="someone_else", add_datasets=2)
+        test_url = f"/dp/v1/collections/{published_collection.collection_id.id}"
 
-        response = self.app.post(test_url, headers=self.headers)
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        response = self.app.post(test_url, headers=headers)
         self.assertEqual(403, response.status_code)
 
 
