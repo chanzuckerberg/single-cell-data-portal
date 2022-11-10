@@ -81,7 +81,7 @@ def main():
     # todo pass in validate_cubes as env arg
     try:
         snapshot_path, stats = load_data_and_create_cube("datasets", ".")
-        success_message = gen_wmg_pipeline_success_message(snapshot_path, stats)
+        success_message = gen_wmg_pipeline_success_message(snapshot_path, **stats)
         notify_slack(success_message)
     except Exception as e:
         logger.exception("Pipeline failed")
