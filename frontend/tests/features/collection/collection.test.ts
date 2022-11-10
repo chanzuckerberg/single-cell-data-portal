@@ -45,7 +45,7 @@ describe("Collection", () => {
 
     test("creates and deletes a collection", async ({ page }) => {
       const timestamp = Date.now();
-      await login(page);
+      // await login(page);
 
       const collectionName = "TEST_COLLECTION" + timestamp;
 
@@ -79,7 +79,7 @@ describe("Collection", () => {
     describe("Publish a collection", () => {
       describe("when no dataset", () => {
         test("shows disabled publish button", async ({ page }) => {
-          await login(page);
+          // await login(page);
 
           await createCollection({ page });
 
@@ -107,7 +107,7 @@ describe("Collection", () => {
       }) => {
         const timestamp = Date.now();
 
-        await login(page);
+        // await login(page);
         await showCreateForm(page);
         await populateRequiredInputs(
           {
@@ -131,7 +131,7 @@ describe("Collection", () => {
       }) => {
         const timestamp = Date.now();
 
-        await login(page);
+        // await login(page);
         await showCreateForm(page);
         await populateRequiredInputs(
           {

@@ -1,7 +1,8 @@
-import type { PlaywrightTestConfig } from "@playwright/test";
+import { PlaywrightTestConfig } from "@playwright/test";
 import { devices, expect } from "@playwright/test";
 import { matchers } from "expect-playwright";
 import featureFlags from "./tests/common/featureFlags";
+import fs from "fs";
 
 expect.extend(matchers);
 
@@ -76,7 +77,7 @@ const config: PlaywrightTestConfig = {
     headless: !isHeadful,
     ignoreHTTPSErrors: true,
     screenshot: "only-on-failure",
-    storageState: featureFlags,
+    storageState: {...JSON.parse(fs.readFileSync('storageState.json', 'utf-8')), ...featureFlags},
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: "retain-on-failure",
     video: {

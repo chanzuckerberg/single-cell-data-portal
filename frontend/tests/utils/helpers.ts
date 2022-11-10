@@ -44,12 +44,15 @@ export async function login(page: Page): Promise<void> {
 
   await page.click('[value="login"], [name="submit"]');
 
-  await tryUntil(
-    () => {
-      expect(page.url()).toContain(TEST_URL);
-    },
-    { page }
-  );
+  console.log("setting storage state...")
+  await page.context().storageState({ path: 'storageState.json' });
+
+  // await tryUntil(
+  //   () => {
+  //     expect(page.url()).toContain(TEST_URL);
+  //   },
+  //   { page }
+  // );
 }
 
 interface TryUntilConfigs {

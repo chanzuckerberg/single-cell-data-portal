@@ -21,7 +21,7 @@ describe("Collection Revision", () => {
   );
 
   test("starts a revision", async ({ page }) => {
-    await login(page);
+    // await login(page);
 
     const collectionName = await startRevision(page);
 
@@ -80,7 +80,7 @@ describe("Collection Revision", () => {
   });
 
   test("allows editing", async ({ page }) => {
-    await login(page);
+    // await login(page);
 
     await startRevision(page);
 
