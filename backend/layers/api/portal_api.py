@@ -185,6 +185,9 @@ class PortalApi:
 
 
     def post_collection_revision(self, collection_id: str, token_info: dict):
+        """
+        Creates a collection revision
+        """
 
         published_collection = self.business_logic.get_published_collection_version(CollectionId(collection_id))
 
@@ -281,7 +284,7 @@ class PortalApi:
         version = self.business_logic.get_collection_version(CollectionVersionId(collection_id))
         if not UserInfo(token_info).is_user_owner_or_allowed(version.owner):
             raise ForbiddenHTTPException()
-            
+
         self.business_logic.delete_collection_version(CollectionVersionId(collection_id))
 
     def update_collection(self, collection_id: str, body: dict, token_info: dict):
@@ -330,12 +333,14 @@ class PortalApi:
     def post_dataset_asset(self, dataset_id: str, asset_id: str):
         """
         Requests to download a dataset asset, by generating a presigned_url.
-        This method will accept a canonical dataset_id
         """
 
-        # TODO: if dataset not found, raise NotFoundHTTPException(detail=f"'dataset/{dataset_id}' not found.")
+        version = self.business_logic.get_dataset_version(DatasetVersionId(dataset_id))
+        if version is None:
+            raise NotFoundHTTPException(detail=f"'dataset/{dataset_id}' not found.")
+
         try:
-            download_data = self.business_logic.get_dataset_artifact_download_data(DatasetId(dataset_id), asset_id)
+            download_data = self.business_logic.get_dataset_artifact_download_data(DatasetVersionId(dataset_id), asset_id)
         except ArtifactNotFoundException:
             raise NotFoundHTTPException(detail=f"'dataset/{dataset_id}/asset/{asset_id}' not found.")
 
@@ -398,6 +403,9 @@ class PortalApi:
         return make_response(response, 200)
 
     def get_datasets_index(self):
+        """
+        Returns a list of all the datasets that currently belong to a published and active collection
+        """
 
         response = []
         for dataset in self.business_logic.get_all_published_datasets():
@@ -413,7 +421,4 @@ class PortalApi:
         pass
 
     def get_dataset_identifiers(self, url: str):
-        pass
-
-    def post_dataset_gene_sets(self, dataset_id: str, body: object, token_info: dict):
         pass

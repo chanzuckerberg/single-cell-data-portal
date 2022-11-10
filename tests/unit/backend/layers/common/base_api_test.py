@@ -81,6 +81,7 @@ class NewBaseTest(BaseAuthAPITest):
 
     business_logic: BusinessLogic
     crossref_provider: CrossrefProviderInterface # Can be mocked from the tests
+    uri_provider: UriProviderInterface
 
     sample_dataset_metadata: DatasetMetadata
     

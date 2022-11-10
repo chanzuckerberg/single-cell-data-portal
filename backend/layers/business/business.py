@@ -87,6 +87,8 @@ class BusinessLogic(BusinessLogicInterface):
 
         # TODO: Maybe switch link.type to be an enum
         doi = next((link.uri for link in collection_metadata.links if link.type == "DOI"), None)
+        print("doi", doi)
+
 
         if doi is not None:
             publisher_metadata = self._get_publisher_metadata(doi, errors)
@@ -102,8 +104,7 @@ class BusinessLogic(BusinessLogicInterface):
         if publisher_metadata:
             self.database_provider.save_collection_publisher_metadata(created_version.version_id, publisher_metadata)
             # Add this to the returned object, to save another `get_collection` call
-            # TODO: verify something
-            # created_version.publisher_metadata = publisher_metadata 
+            created_version.publisher_metadata = publisher_metadata 
 
         return created_version
 
@@ -287,7 +288,7 @@ class BusinessLogic(BusinessLogicInterface):
         Returns download data for an artifact, including a presigned URL
         """
         artifacts = self.get_dataset_artifacts(dataset_version_id)
-        artifact = next((a for a in artifacts if a.id == artifact_id), None)
+        artifact = next((a for a in artifacts if a.id == DatasetArtifactId(artifact_id)), None)
 
         if not artifact:
             raise ArtifactNotFoundException(f"Artifact {artifact_id} not found in dataset {dataset_version_id}")

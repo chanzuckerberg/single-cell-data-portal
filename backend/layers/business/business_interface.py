@@ -70,7 +70,7 @@ class BusinessLogicInterface:
         pass
 
     def get_dataset_artifact_download_data(
-        self, dataset_version_id: DatasetId, artifact_id: str
+        self, dataset_version_id: DatasetVersionId, artifact_id: str
     ) -> DatasetArtifactDownloadData:
         pass
 

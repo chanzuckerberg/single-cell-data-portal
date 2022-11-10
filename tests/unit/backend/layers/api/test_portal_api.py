@@ -5,6 +5,7 @@ from typing import List
 import unittest
 from datetime import datetime
 from unittest.mock import Mock, patch
+from backend.layers.business.entities import DatasetArtifactDownloadData
 from backend.layers.common.entities import CollectionVersionId, DatasetMetadata, DatasetProcessingStatus, DatasetUploadStatus, DatasetVersionId, Link, OntologyTermId
 
 from furl import furl
@@ -1391,43 +1392,50 @@ class TestVerifyCollection(unittest.TestCase):
 # TODO: these tests all require the generation of a dataset
 class TestDataset(NewBaseTest):
 
-    # 🔴 TODO: requires mocking
+    # ✅
     def test__post_dataset_asset__OK(self):
-        # bucket = self.CORPORA_TEST_CONFIG["bucket_name"]
-        # s3_file_name = "test_s3_uri.h5ad"
-        # content = "Hello world!"
-        # self.create_s3_object(s3_file_name, bucket, content=content)
-
-        # expected_body = dict(dataset_id="test_dataset_id", file_name="test_filename", file_size=len(content))
+        self.business_logic.get_dataset_artifact_download_data = Mock(
+            return_value=DatasetArtifactDownloadData("asset.h5ad", "H5AD", 1000, "http://presigned.url")
+        )
         version = self.generate_dataset(artifacts=[DatasetArtifactUpdate("H5AD", "http://mock.uri/asset.h5ad")])
-        dataset_id = version.dataset_version_id
+        dataset_version_id = version.dataset_version_id
         artifact_id = version.artifact_ids[0]
-        test_url = furl(path=f"/dp/v1/datasets/{dataset_id}/asset/{artifact_id}")
+
+        test_url = furl(path=f"/dp/v1/datasets/{dataset_version_id}/asset/{artifact_id}")
         response = self.app.post(test_url.url, headers=dict(host="localhost"))
         self.assertEqual(200, response.status_code)
-        actual_body = json.loads(response.data)
-        # presign_url = actual_body.pop("presigned_url")
-        self.assertIsNotNone(actual_body["presigned_url"])
-        # self.assertEqual(expected_body, actual_body)
 
-    # TODO: 🔴 It is not clear what this test is testing.
+        actual_body = json.loads(response.data)
+        self.assertEqual(actual_body["presigned_url"], "http://presigned.url")
+        self.assertEqual(actual_body["dataset_id"], version.dataset_version_id)
+        self.assertEqual(actual_body["file_size"], 1000)
+        self.assertEqual(actual_body["file_name"], "asset.h5ad")
+
+
+    # ✅, but I think the behavior could be improved
     def test__post_dataset_asset__file_SERVER_ERROR(self):
-        test_url = furl(path="/dp/v1/datasets/test_dataset_id/asset/test_dataset_artifact_id")
+        """
+        `post_dataset_asset` should throw 500 if presigned_url or file_size aren't returned from the server
+        """
+        version = self.generate_dataset(artifacts=[DatasetArtifactUpdate("H5AD", "http://mock.uri/asset.h5ad")])
+        dataset_version_id = version.dataset_version_id
+        artifact_id = version.artifact_ids[0]
+
+        test_url = furl(path=f"/dp/v1/datasets/{dataset_version_id}/asset/{artifact_id}")
         response = self.app.post(test_url.url, headers=dict(host="localhost"))
         self.assertEqual(500, response.status_code)
         body = json.loads(response.data)
         self.assertEqual("An internal server error has occurred. Please try again later.", body["detail"])
 
-    # 🔴
+    # ✅
     def test__post_dataset_asset__dataset_NOT_FOUND(self):
         test_url = furl(path="/dp/v1/datasets/test_user_id/asset/test_dataset_artifact_id")
         response = self.app.post(test_url.url, headers=dict(host="localhost"))
         self.assertEqual(404, response.status_code)
         body = json.loads(response.data)
         self.assertEqual("'dataset/test_user_id' not found.", body["detail"])
-        print(body)
 
-    # 🔴
+    # ✅
     def test__post_dataset_asset__asset_NOT_FOUND(self):
         test_url = furl(path="/dp/v1/datasets/test_dataset_id/asset/fake_asset")
         response = self.app.post(test_url.url, headers=dict(host="localhost"))
@@ -2174,49 +2182,47 @@ class TestPublishRevision(NewBaseTest):
     #             else:
     #                 self.assertS3FileExists(*s3_object)
 
-    def test__with_revision_with_new_dataset__OK(self):
+    def test__publish_revision_with_new_dataset__OK(self):
         """Publish a revision with new datasets."""
-        # new_dataset_id = self.generate_dataset_with_s3_resources(self.session, collection_id=self.rev_collection.id).id
-        # dataset_ids = {ds.id for ds in self.pub_collection.datasets}
-        # dataset_ids.add(new_dataset_id)
 
-        # # Publish revision
-        # response_json = self.publish_collection(self.rev_collection)
-        # self.verify_datasets(response_json, dataset_ids)
+        unpublished_collection = self.generate_unpublished_collection(add_datasets=1)
 
-        unpublished_collection = self.generate_unpublished_collection(add_datasets=2)
-
-        path = f"{self.base_path}/{unpublished_collection.version_id}/publish"
+        path = f"{self.base_path}/{unpublished_collection.version_id.id}/publish"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
         body = {"data_submission_policy_version": "1.0"} # TODO: still in use?
         response = self.app.post(path, headers=headers, data=json.dumps(body))
         
         self.assertEqual(202, response.status_code)
-        self.assertDictEqual({"collection_id": collection_id, "visibility": "PUBLIC"}, json.loads(response.data))
+        self.assertDictEqual(
+            {"collection_id": unpublished_collection.collection_id, "visibility": "PUBLIC"}, 
+            json.loads(response.data)
+        )
 
         # Check GET collection/<collection_id>
-        path = f"{self.base_path}/{collection_id}"
+        path = f"{self.base_path}/{unpublished_collection.collection_id.id}"
         response = self.app.get(path, headers=headers)
         self.assertEqual(200, response.status_code)
 
         response_json = json.loads(response.data)
         self.assertEqual("PUBLIC", response_json["visibility"])
-        self.assertEqual(collection_id, response_json["id"])
+        self.assertEqual(unpublished_collection.collection_id, response_json["id"])
 
         # Check published_at and revised_at
         # Collection: Only revised_at should be updated
         self.assertIsNone(response_json.get("published_at"))
-        self.assertEqual(self.mock_timestamp, datetime.utcfromtimestamp(response_json["revised_at"]))
+        # TODO: timestamp mocking
+        # self.assertEqual(self.mock_timestamp, datetime.utcfromtimestamp(response_json["revised_at"]))
 
         # Datasets: Only the newly added dataset should have published_at updated
-        for dataset in response_json["datasets"]:
-            if dataset["id"] == new_dataset_id:
-                self.assertEqual(self.mock_timestamp, datetime.utcfromtimestamp(dataset["published_at"]))
-            else:
-                self.assertIsNone(dataset.get("published_at"))
-            self.assertIsNone(dataset.get("revised_at"))
+        # TODO: dataset published_at
+        # for dataset in response_json["datasets"]:
+        #     if dataset["id"] == new_dataset_id:
+        #         self.assertEqual(self.mock_timestamp, datetime.utcfromtimestamp(dataset["published_at"]))
+        #     else:
+        #         self.assertIsNone(dataset.get("published_at"))
+        #     self.assertIsNone(dataset.get("revised_at"))
 
-    def test__with_revision_with_tombstoned_datasets__OK(self):
+    def test__with_revision_with_removed_datasets__OK(self):
         """Publish a revision with delete datasets."""
         rev_dataset_id = self.rev_collection.datasets[0].id
         pub_dataset = self.pub_collection.datasets[0]
@@ -2247,55 +2253,8 @@ class TestPublishRevision(NewBaseTest):
             self.assertIsNone(dataset.get("published_at"))
             self.assertIsNone(dataset.get("revised_at"))
 
-    def test__with_revision_with_tombstoned_datasets_rollback__OK(self):
-        """
-        Revision state is restored and s3 assets are unchanged, if the database
-        transactions fails.
-        """
-        rev_dataset_id = self.rev_collection.datasets[0].id
-        pub_dataset = self.pub_collection.datasets[0]
-        published_s3_objects = self.get_s3_object_paths_from_dataset(pub_dataset)
 
-        # Delete a dataset under revision
-        self.app.delete(f"/dp/v1/datasets/{rev_dataset_id}", self.headers)
-        self.session.expire_all()
-
-        # Publish revision with database transaction failure
-        expect_collection = self.rev_collection.reshape_for_api(tombstoned_datasets=True)
-        expect_datasets = expect_collection.pop("datasets")
-        expect_datasets.sort(key=lambda x: x["id"])
-        with self.assertRaises(CorporaException):
-            with db_session_manager() as session:
-                rev_collection = Collection.get(session, self.rev_collection.id)
-                with mock.patch.object(rev_collection.session, "commit", side_effect=SQLAlchemyError):
-                    rev_collection.publish(data_submission_policy_version="v1")
-
-        self.session.expire_all()
-
-        actual_collection = self.rev_collection.reshape_for_api(tombstoned_datasets=True)
-        actual_datasets = actual_collection.pop("datasets")
-        actual_datasets.sort(key=lambda x: x["id"])
-        self.assertEqual(expect_collection, actual_collection)
-        self.assertEqual(expect_datasets, actual_datasets)
-
-        dataset = Dataset.get(self.session, pub_dataset.id, include_tombstones=True)
-        self.assertFalse(dataset.tombstone)
-        for s3_object in published_s3_objects:
-            self.assertS3FileExists(*s3_object)
-
-        # Check published_at and revised_at
-        # Collection: None should be updated
-        self.assertIsNone(actual_collection.get("published_at"))
-        self.assertIsNone(actual_collection.get("revised_at"))
-
-        # Datasets: None should be updated
-        self.assertIsNone(dataset.published_at)
-        self.assertIsNone(dataset.revised_at)
-        for dataset in actual_datasets:
-            self.assertIsNone(dataset.get("published_at"))
-            self.assertIsNone(dataset.get("revised_at"))
-
-    def test__with_revision_with_all_tombstoned_datasets__409(self):
+    def test__publish_revision_with_all_removed_datasets__409(self):
         """Unable to publish a revision with no datasets."""
         for dataset in self.rev_collection.datasets:
             self.app.delete(f"/dp/v1/datasets/{dataset.id}", headers=self.headers)
@@ -2304,7 +2263,7 @@ class TestPublishRevision(NewBaseTest):
         response = self.app.post(path, headers=self.headers, data=json.dumps(body))
         self.assertEqual(409, response.status_code)
 
-    def test__with_revision_with_refreshed_datasets__OK(self):
+    def test__publish_revision_with_updated_datasets__OK(self):
         """ "Publish a revision with refreshed datasets."""
         self.refresh_datasets()
 
@@ -2422,7 +2381,7 @@ class TestPublishRevision(NewBaseTest):
                 self.assertIsNone(dataset.get("published_at"))
                 self.assertEqual(self.mock_timestamp, datetime.utcfromtimestamp(dataset["revised_at"]))
 
-    def test__with_revision_and_existing_datasets(self):
+    def test__publish_revision_and_existing_datasets(self):
         """Publish a revision with the same, existing datasets."""
         response_json = self.publish_collection(self.rev_collection)
         self.verify_datasets(response_json, {ds.id for ds in self.pub_collection.datasets})
@@ -2437,30 +2396,5 @@ class TestPublishRevision(NewBaseTest):
             self.assertIsNone(dataset.get("published_at"))
             self.assertIsNone(dataset.get("revised_at"))
 
-    def test__delete_old_seurat_artifact_when_skipped(self):
-        """
-        Publish a revision and delete obsolete seurat / rds assets
-        """
-
-        for dataset in self.rev_collection.db_object.datasets:
-            # Revision number for rev collection must be greater than for original
-            dataset.revision += 1
-
-        # Mimic seurat conversion failure by setting conversion status to SKIPPED
-        dataset_with_skipped_seurat = self.rev_collection.db_object.datasets[0]
-        dataset_with_skipped_seurat.processing_status.rds_status = ConversionStatus.SKIPPED
-
-        self.session.commit()
-
-        # There are two datasets -- track each id of original dataset that should now lack seurat
-        id_with_skipped_seurat = dataset_with_skipped_seurat.original_id
-
-        # Publishing collection should result in rds artifact no longer existing for dataset_with_skipped_seurat
-        self.publish_collection(self.rev_collection)
-        self.session.expire_all()
-
-        for dataset in self.pub_collection.db_object.datasets:
-            if dataset.id == id_with_skipped_seurat:
-                self.assertFalse(any(da.filetype == DatasetArtifactFileType.RDS for da in dataset.artifacts))
-            else:
-                self.assertTrue(any(da.filetype == DatasetArtifactFileType.RDS for da in dataset.artifacts))
+    def test__publish_revision_unauthorized__403(self):
+        pass
