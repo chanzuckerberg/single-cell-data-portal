@@ -14,7 +14,7 @@ from tests.unit.backend.api_server.base_api_test import BaseAuthAPITest, mock_as
 
 
 class TestAuthToken(BaseAuthAPITest):
-    @patch("backend.portal.api.curation.v1.curation.collections.collection_id.datasets.upload_s3.sts_client")
+    @patch("backend.portal.api.curation.v1.curation.collections.collection_id.s3_upload_credentials.sts_client")
     def test__generate_s3_credentials__OK(self, sts_client: Mock):
         def _test(token, is_super_curator: bool = False):
             sts_client.assume_role_with_web_identity = Mock(

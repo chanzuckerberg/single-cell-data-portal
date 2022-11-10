@@ -21,3 +21,7 @@ class InvalidProcessingStateException(CorporaException):
 
 class NonExistentDatasetException(CorporaException):
     pass
+
+
+class CubeValidationException(Exception):
+    pass

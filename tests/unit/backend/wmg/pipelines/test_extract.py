@@ -159,7 +159,7 @@ class TestExtract(CorporaTestCaseUsingMockAWS, GenerateDataMixin):
         for dataset in expected_datasets:
             assets = dataset.get_assets()
             for asset in assets:
-                if asset.filetype == DatasetArtifactFileType.H5AD:
+                if asset.filetype == DatasetArtifactFileType.H5AD and asset.filename == "local.h5ad":
                     expected_s3_uris.append(asset.s3_uri)
 
         s3_uris = set(backend.wmg.pipeline.integrated_corpus.extract.get_dataset_s3_uris().values())

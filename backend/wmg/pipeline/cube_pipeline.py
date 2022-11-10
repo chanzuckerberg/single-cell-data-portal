@@ -9,6 +9,7 @@ from backend.common.utils.result_notification import (
     gen_wmg_pipeline_success_message,
     gen_wmg_pipeline_failure_message,
 )
+from backend.common.utils.exceptions import CubeValidationException
 from backend.wmg.pipeline import integrated_corpus, summary_cubes
 
 from backend.wmg.data.load_cube import upload_artifacts_to_s3, make_snapshot_active
@@ -50,7 +51,13 @@ def load_data_and_create_cube(
     corpus_path = f"{snapshot_path}/{corpus_name}"
 
     integrated_corpus.run(path_to_h5ad_datasets, corpus_path, extract_data)
-    summary_cubes.run(corpus_path, validate_cube)
+    try:
+        summary_cubes.run(corpus_path, validate_cube)
+    except CubeValidationException as e:
+        upload_artifacts_to_s3(snapshot_path, "latest_validation_failed_snapshot")
+        logger.exception(e)
+        sys.exit("Exiting due to cube validation failure")
+
     stats = dict(
         dataset_count=len(get_all_dataset_ids(corpus_path)),
         gene_count=get_expression_summary_cube_gene_count(f"{corpus_path}/{EXPRESSION_SUMMARY_CUBE_NAME}"),
@@ -74,7 +81,7 @@ def main():
     # todo pass in validate_cubes as env arg
     try:
         snapshot_path, stats = load_data_and_create_cube("datasets", ".")
-        success_message = gen_wmg_pipeline_success_message(snapshot_path, stats)
+        success_message = gen_wmg_pipeline_success_message(snapshot_path, **stats)
         notify_slack(success_message)
     except Exception as e:
         logger.exception("Pipeline failed")

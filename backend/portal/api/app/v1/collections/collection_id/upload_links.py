@@ -20,12 +20,12 @@ from backend.common.utils.http_exceptions import (
 )
 
 
-def link(collection_id: str, body: dict, token_info: dict):
+def post(collection_id: str, body: dict, token_info: dict):
     dataset_id = upload_from_link(collection_id, token_info, body["url"])
     return make_response({"dataset_id": dataset_id}, 202)
 
 
-def relink(collection_id: str, body: dict, token_info: dict):
+def put(collection_id: str, body: dict, token_info: dict):
     dataset_id = upload_from_link(
         collection_id,
         token_info,
