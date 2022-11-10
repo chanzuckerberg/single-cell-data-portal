@@ -27,6 +27,8 @@ from tests.unit.backend.layers.persistence.persistence_mock import DatabaseProvi
 
 from typing import List, Optional
 
+import copy
+
 @dataclass
 class DatasetStatusUpdate:
     status_key: str
@@ -133,7 +135,7 @@ class NewBaseTest(BaseAuthAPITest):
         # self.app = flask_app.test_client(use_cookies=False)
         self.app = app.test_client(use_cookies=False)
 
-    def generate_unpublished_collection(self, owner = "test_user_id", links: List[Link] = []) -> CollectionVersion:
+    def generate_unpublished_collection(self, owner = "test_user_id", links: List[Link] = [], add_datasets: int = 0) -> CollectionVersion:
 
         metadata = CollectionMetadata(
             "test_collection",
@@ -145,51 +147,21 @@ class NewBaseTest(BaseAuthAPITest):
 
         collection = self.business_logic.create_collection(owner, metadata)
 
+        for _ in range(add_datasets):
+            
+            metadata = copy.deepcopy(self.sample_dataset_metadata)
+            # TODO: generate a real dataset, with artifact and processing status
+            dataset_version_id, _ = self.business_logic.ingest_dataset(collection.version_id, "http://fake.url", None)
+            self.business_logic.set_dataset_metadata(dataset_version_id, metadata)
+            # TODO: set a proper dataset status
+
         return collection
 
-    def generate_unpublished_collection_with_publisher_metadata(self, publisher_metadata: dict):
-        # TODO: trickier
-        pass
-
-
-    # TODO: public collections need to have at least one dataset!
-    def generate_published_collection(self, owner = "test_user_id", datasets: Optional[typing.List[DatasetMetadata]] = None):
-        unpublished_collection = self.generate_unpublished_collection(owner)
-
-        # TODO: generate a real dataset, with artifact and processing status
-        if datasets is None:
-            datasets = [
-                # TODO: put this in the main class and deepcopy it
-                DatasetMetadata(
-                    name = "test_dataset_name",
-                    organism = [OntologyTermId(label="test_organism_label", ontology_term_id="test_organism_term_id")],
-                    tissue = [OntologyTermId(label="test_tissue_label", ontology_term_id="test_tissue_term_id")],
-                    assay = [OntologyTermId(label="test_assay_label", ontology_term_id="test_assay_term_id")],
-                    disease = [OntologyTermId(label="test_disease_label", ontology_term_id="test_disease_term_id")],
-                    sex = [OntologyTermId(label="test_sex_label", ontology_term_id="test_sex_term_id")],
-                    self_reported_ethnicity = [OntologyTermId(label="test_self_reported_ethnicity_label", ontology_term_id="test_self_reported_ethnicity_term_id")],
-                    development_stage = [OntologyTermId(label="test_development_stage_label", ontology_term_id="test_development_stage_term_id")],
-                    cell_type = [OntologyTermId(label="test_cell_type_label", ontology_term_id="test_cell_type_term_id")],
-                    cell_count = 10,
-                    schema_version = "3.0.0",
-                    mean_genes_per_cell = 0.5,
-                    batch_condition = ["test_batch_1", "test_batch_2"],
-                    suspension_type = ["test_suspension_type"],
-                    donor_id = ["test_donor_1"],
-                    is_primary_data = "BOTH",
-                    x_approximate_distribution="normal",
-                )
-            ]
-        for dataset in datasets:
-            dataset_version_id, _ = self.business_logic.ingest_dataset(unpublished_collection.version_id, "http://fake.url", None)
-            self.business_logic.set_dataset_metadata(dataset_version_id, dataset)
-            # TODO: set a proper dataset status
+    # Public collections need to have at least one dataset!
+    def generate_published_collection(self, owner = "test_user_id", add_datasets: int = 1):
+        unpublished_collection = self.generate_unpublished_collection(owner, add_datasets=add_datasets)
         self.business_logic.publish_collection_version(unpublished_collection.version_id)
         return self.business_logic.get_collection_version(unpublished_collection.version_id)
-
-    # TODO: move to entities.py
-
-
 
     def generate_dataset(
         self, 
@@ -207,26 +179,7 @@ class NewBaseTest(BaseAuthAPITest):
         collection = self.generate_unpublished_collection(owner)
         dataset_version_id, dataset_id = self.business_logic.ingest_dataset(collection.version_id, "http://fake.url", None)
         if not metadata:
-            # TODO: put this in the main class and deepcopy it
-            metadata = DatasetMetadata(
-                name = "test_dataset_name",
-                organism = [OntologyTermId(label="test_organism_label", ontology_term_id="test_organism_term_id")],
-                tissue = [OntologyTermId(label="test_tissue_label", ontology_term_id="test_tissue_term_id")],
-                assay = [OntologyTermId(label="test_assay_label", ontology_term_id="test_assay_term_id")],
-                disease = [OntologyTermId(label="test_disease_label", ontology_term_id="test_disease_term_id")],
-                sex = [OntologyTermId(label="test_sex_label", ontology_term_id="test_sex_term_id")],
-                self_reported_ethnicity = [OntologyTermId(label="test_self_reported_ethnicity_label", ontology_term_id="test_self_reported_ethnicity_term_id")],
-                development_stage = [OntologyTermId(label="test_development_stage_label", ontology_term_id="test_development_stage_term_id")],
-                cell_type = [OntologyTermId(label="test_cell_type_label", ontology_term_id="test_cell_type_term_id")],
-                cell_count = 10,
-                schema_version = "3.0.0",
-                mean_genes_per_cell = 0.5,
-                batch_condition = ["test_batch_1", "test_batch_2"],
-                suspension_type = ["test_suspension_type"],
-                donor_id = ["test_donor_1"],
-                is_primary_data = "BOTH",
-                x_approximate_distribution="normal",
-            )
+            metadata = copy.deepcopy(self.sample_dataset_metadata)
         self.business_logic.set_dataset_metadata(dataset_version_id, metadata)
         for status in statuses:
             self.business_logic.update_dataset_version_status(dataset_version_id, status.status_key, status.status)
@@ -235,7 +188,6 @@ class NewBaseTest(BaseAuthAPITest):
             artifact_ids.append(self.business_logic.add_dataset_artifact(dataset_version_id, artifact.type, artifact.uri))
         if publish:
             self.business_logic.publish_collection_version(collection.version_id)
-        # TODO: `ingest_dataset` should return the dataset_id as well, because we'll need it here
         explorer_url = f"http://base.url/{dataset_id}"
         return DatasetData(
             dataset_version_id.id, 
