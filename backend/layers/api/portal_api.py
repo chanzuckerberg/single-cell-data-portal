@@ -61,16 +61,16 @@ class PortalApi:
     def _dataset_processing_status_to_response(self, status: DatasetStatus, dataset_id: str):
         return {
             "created_at": 1234,
-            "cxg_status": status.cxg_status,
+            "cxg_status": status.cxg_status or "NA",
             "dataset_id": dataset_id,
-            "h5ad_status": status.h5ad_status,
-            "id": "TODO", # TODO can we purge?
-            "processing_status": status.processing_status,
-            "rds_status": status.rds_status,
+            "h5ad_status": status.h5ad_status or "NA",
+            "id": "NA", # TODO can we purge?
+            "processing_status": status.processing_status or "NA",
+            "rds_status": status.rds_status or "NA",
             "updated_at": 1234,
             "upload_progress": 1234,
-            "upload_status": status.upload_status,
-            "validation_status": status.validation_status,
+            "upload_status": status.upload_status or "NA",
+            "validation_status": status.validation_status or "NA",
         }
 
     # TODO: use remove_none

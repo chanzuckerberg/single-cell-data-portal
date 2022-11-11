@@ -4,6 +4,7 @@ import json
 from typing import List
 import unittest
 from datetime import datetime
+from unittest import mock
 from unittest.mock import Mock, patch
 from backend.layers.business.entities import DatasetArtifactDownloadData
 from backend.layers.common.entities import CollectionVersionId, DatasetMetadata, DatasetProcessingStatus, DatasetUploadStatus, DatasetVersionId, Link, OntologyTermId
@@ -120,141 +121,217 @@ class TestCollection(NewBaseTest):
             self.assertEqual(None, actual_body.get("to_date"))
             self.assertEqual(None, actual_body.get("from_date"))
 
-    # TODO: 🔴 review this test
-    # TODO: needs to be rewritten from scratch. Needs to create a collection and then query the body in a sane way
+    # ✅
     def test__get_collection_id__ok(self):
         """Verify the test collection exists and the expected fields exist."""
+
+        collection = self.generate_published_collection(add_datasets=2)
+
         expected_body = {
+            "access_type": "WRITE",
+            "contact_email": "john.doe@email.com",
+            "contact_name": "john doe",
+            "created_at": 1234,
+            "curator_name": "",
+            "data_submission_policy_version": "1.0",
             "datasets": [
                 {
-                    "assay": [{"ontology_term_id": "test_obo", "label": "test_assay"}],
-                    "dataset_assets": [
+                    "assay": [
                         {
-                            "dataset_id": "test_dataset_id",
-                            "filename": "test_filename",
-                            "filetype": "H5AD",
-                            "id": "test_dataset_artifact_id",
-                            "s3_uri": "s3://bogus-bucket/test_s3_uri.h5ad",
-                            "user_submitted": True,
-                        },
-                        {
-                            "dataset_id": "test_dataset_id",
-                            "filename": "test_filename",
-                            "filetype": "CXG",
-                            "id": "test_dataset_artifact_id_cxg",
-                            "s3_uri": "s3://bogus-bucket/test_s3_uri.h5ad",
-                            "user_submitted": True,
-                        },
+                            "label": "test_assay_label",
+                            "ontology_term_id": "test_assay_term_id"
+                        }
                     ],
-                    "dataset_deployments": [{"url": "test_url"}],
-                    "development_stage": [{"label": "test_development_stage", "ontology_term_id": "test_obo"}],
+                    "batch_condition": [
+                        "test_batch_1",
+                        "test_batch_2"
+                    ],
+                    "cell_count": 10,
+                    "cell_type": [
+                        {
+                            "label": "test_cell_type_label",
+                            "ontology_term_id": "test_cell_type_term_id"
+                        }
+                    ],
+                    "collection_id": "TODO",
+                    "created_at": 1234,
+                    "dataset_assets": [],
+                    "dataset_deployments": [
+                        {
+                            "url": "TODO"
+                        }
+                    ],
+                    "development_stage": [
+                        {
+                            "label": "test_development_stage_label",
+                            "ontology_term_id": "test_development_stage_term_id"
+                        }
+                    ],
                     "disease": [
-                        {"label": "test_disease", "ontology_term_id": "test_obo"},
-                        {"label": "test_disease2", "ontology_term_id": "test_obp"},
-                        {"label": "test_disease3", "ontology_term_id": "test_obq"},
+                        {
+                            "label": "test_disease_label",
+                            "ontology_term_id": "test_disease_term_id"
+                        }
                     ],
-                    "self_reported_ethnicity": [{"label": "test_ethnicity", "ontology_term_id": "test_obo"}],
-                    "linked_genesets": ["test_geneset_with_dataset"],
-                    "id": "test_dataset_id",
-                    "is_primary_data": "PRIMARY",
-                    "mean_genes_per_cell": 0.0,
+                    "donor_id": [
+                        "test_donor_1"
+                    ],
+                    "id": mock.ANY,
+                    "is_primary_data": "BOTH",
+                    "is_valid": True,
+                    "mean_genes_per_cell": 0.5,
                     "name": "test_dataset_name",
-                    "organism": [{"label": "test_organism", "ontology_term_id": "test_obo"}],
-                    "collection_id": "test_collection_id",
-                    "cell_type": [{"label": "test_cell_type", "ontology_term_id": "test_opo"}],
-                    "x_approximate_distribution": "NORMAL",
-                    "batch_condition": ["batchA", "batchB"],
-                    "donor_id": ["donor_1", "donor_2"],
-                    "suspension_type": ["nucleus"],
-                    "is_valid": False,
-                    "revision": 0,
-                    "sex": [
-                        {"label": "test_sex", "ontology_term_id": "test_obo"},
-                        {"label": "test_sex2", "ontology_term_id": "test_obp"},
+                    "organism": [
+                        {
+                            "label": "test_organism_label",
+                            "ontology_term_id": "test_organism_term_id"
+                        }
                     ],
-                    "tissue": [{"label": "test_tissue", "ontology_term_id": "test_obo"}],
-                    "tombstone": False,
                     "processing_status": {
-                        "id": "test_dataset_processing_status_id",
-                        "dataset_id": "test_dataset_id",
-                        "processing_status": "PENDING",
-                        "upload_status": "UPLOADING",
-                        "upload_progress": 4 / 9,
-                        "validation_status": "NA",
-                        "h5ad_status": "NA",
-                        "rds_status": "NA",
+                        "created_at": 1234,
                         "cxg_status": "NA",
+                        "dataset_id": mock.ANY,
+                        "h5ad_status": "NA",
+                        "id": "NA",
+                        "processing_status": "PENDING",
+                        "rds_status": "NA",
+                        "updated_at": 1234,
+                        "upload_progress": 1234,
+                        "upload_status": "WAITING",
+                        "validation_status": "NA"
                     },
-                    "published": False,
-                    "tombstone": False,
+                    "published": True,
+                    "published_at": 1234,
+                    "revision": 1234,
                     "schema_version": "3.0.0",
+                    "self_reported_ethnicity": [
+                        {
+                            "label": "test_self_reported_ethnicity_label",
+                            "ontology_term_id": "test_self_reported_ethnicity_term_id"
+                        }
+                    ],
+                    "sex": [
+                        {
+                            "label": "test_sex_label",
+                            "ontology_term_id": "test_sex_term_id"
+                        }
+                    ],
+                    "suspension_type": [
+                        "test_suspension_type"
+                    ],
+                    "tissue": [
+                        {
+                            "label": "test_tissue_label",
+                            "ontology_term_id": "test_tissue_term_id"
+                        }
+                    ],
+                    "tombstone": False,
+                    "updated_at": 1234,
+                    "x_approximate_distribution": "normal"
+                },
+                {
+                    "assay": [
+                        {
+                            "label": "test_assay_label",
+                            "ontology_term_id": "test_assay_term_id"
+                        }
+                    ],
+                    "batch_condition": [
+                        "test_batch_1",
+                        "test_batch_2"
+                    ],
+                    "cell_count": 10,
+                    "cell_type": [
+                        {
+                            "label": "test_cell_type_label",
+                            "ontology_term_id": "test_cell_type_term_id"
+                        }
+                    ],
+                    "collection_id": "TODO",
+                    "created_at": 1234,
+                    "dataset_assets": [],
+                    "dataset_deployments": [
+                        {
+                            "url": "TODO"
+                        }
+                    ],
+                    "development_stage": [
+                        {
+                            "label": "test_development_stage_label",
+                            "ontology_term_id": "test_development_stage_term_id"
+                        }
+                    ],
+                    "disease": [
+                        {
+                            "label": "test_disease_label",
+                            "ontology_term_id": "test_disease_term_id"
+                        }
+                    ],
+                    "donor_id": [
+                        "test_donor_1"
+                    ],
+                    "id": mock.ANY,
+                    "is_primary_data": "BOTH",
+                    "is_valid": True,
+                    "mean_genes_per_cell": 0.5,
+                    "name": "test_dataset_name",
+                    "organism": [
+                        {
+                            "label": "test_organism_label",
+                            "ontology_term_id": "test_organism_term_id"
+                        }
+                    ],
+                    "processing_status": {
+                        "created_at": 1234,
+                        "cxg_status": "NA",
+                        "dataset_id": mock.ANY,
+                        "h5ad_status": "NA",
+                        "id": "NA",
+                        "processing_status": "PENDING",
+                        "rds_status": "NA",
+                        "updated_at": 1234,
+                        "upload_progress": 1234,
+                        "upload_status": "WAITING",
+                        "validation_status": "NA"
+                    },
+                    "published": True,
+                    "published_at": 1234,
+                    "revision": 1234,
+                    "schema_version": "3.0.0",
+                    "self_reported_ethnicity": [
+                        {
+                            "label": "test_self_reported_ethnicity_label",
+                            "ontology_term_id": "test_self_reported_ethnicity_term_id"
+                        }
+                    ],
+                    "sex": [
+                        {
+                            "label": "test_sex_label",
+                            "ontology_term_id": "test_sex_term_id"
+                        }
+                    ],
+                    "suspension_type": [
+                        "test_suspension_type"
+                    ],
+                    "tissue": [
+                        {
+                            "label": "test_tissue_label",
+                            "ontology_term_id": "test_tissue_term_id"
+                        }
+                    ],
+                    "tombstone": False,
+                    "updated_at": 1234,
+                    "x_approximate_distribution": "normal"
                 }
             ],
-            "description": "test_description",
-            "genesets": [
-                {
-                    "collection_id": "test_collection_id",
-                    "linked_datasets": [],
-                    "description": "this is a geneset",
-                    "id": "test_geneset",
-                    "name": "test_geneset",
-                },
-                {
-                    "collection_id": "test_collection_id",
-                    "linked_datasets": ["test_dataset_id"],
-                    "description": "this is a geneset with a dataset",
-                    "id": "test_geneset_with_dataset",
-                    "name": "test_geneset_with_dataset",
-                },
-            ],
-            "id": "test_collection_id",
-            "links": [
-                {"link_name": "test_doi_link_name", "link_type": "DOI", "link_url": "http://test_doi_url.place"},
-                {"link_name": "", "link_type": "DOI", "link_url": "http://test_no_link_name_doi_url.place"},
-                {
-                    "link_name": "test_raw_data_link_name",
-                    "link_type": "RAW_DATA",
-                    "link_url": "http://test_raw_data_url.place",
-                },
-                {"link_name": "", "link_type": "RAW_DATA", "link_url": "http://test_no_link_name_raw_data_url.place"},
-                {
-                    "link_name": "test_protocol_link_name",
-                    "link_type": "PROTOCOL",
-                    "link_url": "http://test_protocol_url.place",
-                },
-                {"link_name": "", "link_type": "PROTOCOL", "link_url": "http://test_no_link_name_protocol_url.place"},
-                {
-                    "link_name": "test_lab_website_link_name",
-                    "link_type": "LAB_WEBSITE",
-                    "link_url": "http://test_lab_website_url.place",
-                },
-                {
-                    "link_name": "",
-                    "link_type": "LAB_WEBSITE",
-                    "link_url": "http://test_no_link_name_lab_website_url.place",
-                },
-                {"link_name": "test_other_link_name", "link_type": "OTHER", "link_url": "http://test_other_url.place"},
-                {"link_name": "", "link_type": "OTHER", "link_url": "http://test_no_link_name_other_url.place"},
-                {
-                    "link_name": "test_data_source_link_name",
-                    "link_type": "DATA_SOURCE",
-                    "link_url": "http://test_data_source_url.place",
-                },
-                {
-                    "link_name": "",
-                    "link_type": "DATA_SOURCE",
-                    "link_url": "http://test_no_link_name_data_source_url.place",
-                },
-            ],
-            "name": "test_collection_name",
-            "visibility": "PUBLIC",
-            "contact_name": "Some Body",
-            "curator_name": "",
-            "contact_email": "somebody@chanzuckerberg.com",
-            "data_submission_policy_version": "0",
+            "description": "described",
+            "id": mock.ANY,
+            "links": [],
+            "name": "test_collection",
+            "published_at": 1234,
+            "updated_at": 1234,
+            "visibility": "PUBLIC"
         }
-
-        collection = self.generate_published_collection()
 
         with self.subTest("auth cookie"):
             expected_body["access_type"] = "WRITE"
@@ -272,69 +349,6 @@ class TestCollection(NewBaseTest):
             self.assertEqual(200, response.status_code)
             actual_body = self.remove_timestamps(json.loads(response.data))
             self.assertDictEqual(actual_body, expected_body)
-
-    # TODO: 🔴 review this test
-    # TODO: this test is virtually the same as the above one
-    def test_get_collection_minimal__ok(self):
-
-        with self.subTest("With a minimal dataset"):
-            # TODO: review this subtest. The dataset is not in a valid state for publishing, so it should
-            # not belong to a published collection
-
-            # TODO: goes somewhere else
-            dataset_metadata = DatasetMetadata("test_organism","test_tissue","test_assay","test_disease","test_sex","test_self_reported_ethnicity","test_development_stage","test_cell_type", 10)
-            collection = self.generate_published_collection(datasets=[dataset_metadata])
-
-            expected_body = {
-                "access_type": "READ",
-                "contact_email": "",
-                "contact_name": "",
-                "curator_name": "",
-                "data_submission_policy_version": "0",
-                "datasets": [
-                    {
-                        "collection_id": collection.id,
-                        "dataset_assets": [],
-                        "dataset_deployments": [],
-                        "linked_genesets": [],
-                        "name": dataset.name,
-                        "id": dataset.id,
-                        "is_valid": False,
-                        "published": False,
-                        "revision": 0,
-                        "tombstone": False,
-                    }
-                ],
-                "description": "",
-                "genesets": [],
-                "id": collection.id,
-                "links": [],
-                "name": "",
-                "visibility": "PUBLIC",
-            }
-            test_url = furl(path=f"/dp/v1/collections/{collection.id}")
-
-            resp = self.app.get(test_url.url)
-
-            self.assertEqual(200, resp.status_code)
-            actual_body = self.remove_timestamps(json.loads(resp.data))
-            expected_body = self.remove_timestamps(dict(**collection.reshape_for_api(), access_type="READ"))
-
-            # Remove `visibility`, `collection_visibility` and `x_approximate_distribution` from the bodies,
-            # since one will be an Enum and the other will be a string. That's expected since internal objects
-            # should keep stricter data types, but JSON doesn't support Enums and therefore have to be converted
-            # as strings.
-            self.assertEqual(expected_body.pop("visibility").name, actual_body.pop("visibility"))
-            self.assertEqual(
-                expected_body["datasets"][0].pop("x_approximate_distribution").name,
-                actual_body["datasets"][0].pop("x_approximate_distribution"),
-            )
-            self.assertEqual(
-                expected_body["datasets"][0].pop("is_primary_data").name,
-                actual_body["datasets"][0].pop("is_primary_data"),
-            )
-
-            self.assertEqual(expected_body, actual_body)
 
     # ✅
     def test__get_collection__ok(self):

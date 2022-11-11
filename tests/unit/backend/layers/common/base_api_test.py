@@ -142,7 +142,7 @@ class NewBaseTest(BaseAuthAPITest):
             "test_collection",
             "described",
             "john doe",
-            "john.due@email.com", # typo is on purpose
+            "john.doe@email.com",
             links
         )
 
