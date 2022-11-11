@@ -1,27 +1,10 @@
-from backend.wmg.api.query import WmgQuery, FmgQueryCriteria
-from backend.wmg.data.snapshot import load_snapshot, WmgSnapshot
-
-import tiledb
 import pandas as pd
 import numpy as np
 from scipy import stats
 import json
 from functools import lru_cache, wraps
-
-
-def _append_cond(cond, dim, filters):
-    if cond != "":
-        cond += " and "
-    if dim in filters:
-        if isinstance(filters[dim], list):
-            if len(filters[dim]) > 1:
-                cond += f"{dim} in {filters[dim]}"
-            else:
-                cond += f"{dim} == val('{filters[dim][0]}')"
-        else:
-            cond += f"{dim} == val('{filters[dim]}')"
-    return cond
-
+from backend.wmg.api.query import WmgQuery, FmgQueryCriteria
+from backend.wmg.data.snapshot import load_snapshot, WmgSnapshot
 
 def _make_hashable(func):
     class HDict(dict):
@@ -78,7 +61,7 @@ def _query_tiledb(filters, group_by_dims=None, genes=None):
     for i, index in enumerate(n_cells.index):
         n = n_cells[index]
         dataset_id = index[0]
-        present = list(set(dataset_to_genes[dataset_id]).intersection(genes))
+        present = list(set(snapshot.dataset_to_gene_ids[dataset_id]).intersection(genes))
         t_n_cells[i, genes_indexer[present]] = n
 
     ixs = []
@@ -96,7 +79,7 @@ def _query_tiledb(filters, group_by_dims=None, genes=None):
         summer += t_n_cells[i]
         t_n_cells_sum[k] = summer
 
-    return agg, list(t_n_cells_sum.keys()), t_n_cells_sum, genes
+    return agg, t_n_cells_sum, genes
 
 
 @_make_hashable
@@ -104,7 +87,7 @@ def _prepare_indices_and_metrics(target_filters, context_filters):
     context_agg, groups_context_uniq, t_n_cells_sum_context, genes = _query_tiledb(
         context_filters, group_by_dims=list(target_filters.keys())
     )
-    target_agg, groups_target_uniq, t_n_cells_sum_target, _ = _query_tiledb(target_filters, genes=genes)
+    target_agg, t_n_cells_sum_target, _ = _query_tiledb(target_filters, genes=genes)
 
     target_agg = target_agg.groupby("gene_ontology_term_id").sum()
 
@@ -128,7 +111,6 @@ def _prepare_indices_and_metrics(target_filters, context_filters):
     return (
         context_agg,
         groups_context_uniq,
-        t_n_cells_sum_context,
         target_agg,
         n_target,
         n_context,
@@ -143,7 +125,7 @@ def _prepare_indices_and_metrics(target_filters, context_filters):
 def _run_ttest(sum1, sumsq1, n1, sum2, sumsq2, n2):
     with np.errstate(divide="ignore", invalid="ignore"):
         mean1 = sum1 / n1
-        meansq1 = sums1 / n1
+        meansq1 = sumsq1 / n1
 
         mean2 = sum2 / n2
         meansq2 = sumsq2 / n2
@@ -173,7 +155,7 @@ def _run_ttest(sum1, sumsq1, n1, sum2, sumsq2, n2):
 
 
 def _post_process_stats(genes, pvals, effects, nnz, min_num_expr_cells=25, p_bottom_comparisons=0.1, n_markers=10):
-    zero_out = nnz.flatten() < 25
+    zero_out = nnz.flatten() < min_num_expr_cells
     effects[:, zero_out] = 0
     pvals[:, zero_out] = 0
     # aggregate
@@ -196,7 +178,6 @@ def _get_markers_ttest(target_filters, context_filters, n_markers=10, p_bottom_c
     (
         context_agg,
         groups_context_uniq,
-        t_n_cells_sum_context,
         target_agg,
         n_target,
         n_context,
@@ -247,7 +228,6 @@ def _get_markers_binomtest(target_filters, context_filters, n_markers=10, p_bott
     (
         context_agg,
         groups_context_uniq,
-        t_n_cells_sum_context,
         target_agg,
         n_target,
         n_context,
@@ -275,7 +255,7 @@ def get_markers(target_filters, context_filters, test="ttest", n_markers=10, p_b
             target_filters, context_filters, n_markers=n_markers, p_bottom_comparisons=p_bottom_comparisons
         )
     elif test == "binom":
-        return _get_markers_binom(
+        return _get_markers_binomtest(
             target_filters, context_filters, n_markers=n_markers, p_bottom_comparisons=p_bottom_comparisons
         )
     else:

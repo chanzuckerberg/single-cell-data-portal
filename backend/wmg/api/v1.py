@@ -61,6 +61,7 @@ def findmarkers():
     n_markers = request["n_markers"]
     test = request["test"]
     target_filters.update(context_filters)
+    snapshot: WmgSnapshot = load_snapshot()
     marker_genes = get_markers(target_filters, context_filters, n_markers=n_markers, test=test)
     return jsonify(
         dict(
