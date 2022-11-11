@@ -34,6 +34,12 @@ class BusinessLogicInterface:
     def get_collection_version(self, version_id: CollectionVersionId) -> CollectionVersion:
         pass
 
+    def get_collection_versions_from_canonical(self, collection_id: CollectionId) -> Iterable[CollectionVersion]:
+        pass
+
+    def get_collection_version_from_canonical(self, collection_id: CollectionId) -> Optional[CollectionVersion]:
+        pass
+
     def create_collection(self, owner: str, collection_metadata: CollectionMetadata) -> CollectionVersion:
         pass
 
@@ -63,7 +69,7 @@ class BusinessLogicInterface:
     def get_all_published_datasets(self) -> Iterable[DatasetVersion]:
         pass
 
-    def remove_dataset_version(self, dataset_version_id: DatasetVersionId) -> None:
+    def remove_dataset_version(self, collection_version_id: CollectionVersionId, dataset_version_id: DatasetVersionId) -> None:
         pass
 
     def get_dataset_artifacts(self, dataset_version_id: DatasetVersionId) -> Iterable[DatasetArtifact]:

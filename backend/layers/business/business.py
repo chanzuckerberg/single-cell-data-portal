@@ -121,6 +121,24 @@ class BusinessLogic(BusinessLogicInterface):
         """
         return self.database_provider.get_collection_version(version_id)
 
+    def get_collection_versions_from_canonical(self, collection_id: CollectionId) -> Iterable[CollectionVersion]:
+        """
+        Returns all the collection versions connected to a canonical collection
+        """
+        return self.database_provider.get_all_versions_for_collection(collection_id)
+
+    def get_collection_version_from_canonical(self, collection_id: CollectionId) -> Optional[CollectionVersion]:
+        """
+        Returns the published collection version mapped to a canonical collection, if available.
+        Otherwise will return the active unpublished version.
+        """
+        published_version = self.get_published_collection_version(collection_id)
+        if published_version is not None:
+            return published_version
+        else:
+            all_versions = self.get_collection_versions_from_canonical(collection_id)
+            return next(v for v in all_versions if v.published_at is None)
+
     def get_collections(self, filter: CollectionQueryFilter) -> Iterable[CollectionVersion]:
         """
         Returns an iterable with all the collections matching `filter`

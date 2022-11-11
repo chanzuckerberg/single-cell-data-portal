@@ -1,16 +1,16 @@
-from typing import List, Optional
+from typing import List, Optional, Tuple
 from unittest.mock import Mock
 
-from flask import jsonify, make_response
+from flask import Response, jsonify, make_response
 from backend.corpora.common.utils.authorization_checks import is_user_owner_or_allowed
-from backend.corpora.common.utils.http_exceptions import ForbiddenHTTPException, InvalidParametersHTTPException, NotFoundHTTPException, ServerErrorHTTPException
+from backend.corpora.common.utils.http_exceptions import ForbiddenHTTPException, InvalidParametersHTTPException, MethodNotAllowedException, NotFoundHTTPException, ServerErrorHTTPException
 from backend.layers.api.enrichment import enrich_dataset_with_ancestors
 from backend.layers.auth.user_info import UserInfo
 from backend.layers.business.business import BusinessLogic
 
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.business.entities import CollectionMetadataUpdate, CollectionQueryFilter
-from backend.layers.business.exceptions import ArtifactNotFoundException, CollectionCreationException
+from backend.layers.business.exceptions import ArtifactNotFoundException, CollectionCreationException, CollectionUpdateException
 from backend.layers.common.entities import CollectionId, CollectionMetadata, CollectionVersion, CollectionVersionId, DatasetArtifact, DatasetId, DatasetStatus, DatasetVersion, DatasetVersionId, Link, OntologyTermId
 
 from backend.corpora.common.utils import authorization_checks as auth
@@ -194,10 +194,6 @@ class PortalApi:
         if published_collection is None:
             raise ForbiddenHTTPException(f"Collection {collection_id} does not exist")
 
-        print("!@#!@#!@#!@#", UserInfo(token_info).user_id())
-
-        print(published_collection.owner, UserInfo(token_info).user_id())
-        
         if not UserInfo(token_info).is_user_owner_or_allowed(published_collection.owner):
             raise ForbiddenHTTPException("Unauthorized")
 
@@ -377,27 +373,42 @@ class PortalApi:
 
         return make_response(jsonify(response), 200)
 
+    def _assert_dataset_has_right_owner(self, dataset_version_id: DatasetVersionId, user_info: UserInfo) -> Tuple[DatasetVersion, CollectionVersion]:
+        """
+        Ensures that the dataset exists and has the right owner.
+        This requires looking up the collection connected to this dataset.
+        Also returns the dataset version and the collection_version
+        """
+        version = self.business_logic.get_dataset_version(dataset_version_id)
+        if version is None:
+            raise ForbiddenHTTPException(f"Dataset {dataset_version_id} does not exist")
+
+        collection_version = self.business_logic.get_collection_version_from_canonical(version.collection_id)
+        # If the collection does not exist, it means that the dataset is orphaned and therefore we cannot
+        # determine the owner. This should not be a problem - we won't need its state at that stage.
+        if collection_version is None:
+            raise ForbiddenHTTPException(f"Dataset {dataset_version_id} unlinked")
+        if not user_info.is_user_owner_or_allowed(collection_version.owner):
+            raise ForbiddenHTTPException("Unauthorized")
+        return version, collection_version
+
     def get_status(self, dataset_id: str, token_info: dict):
-
-        dataset_version = self.business_logic.get_dataset_version(DatasetVersionId(dataset_id))
-        collection_version = self.business_logic.version
-
-        # if version is None:
-            # return 
-
-        # TODO: needs a review
-        # TODO: this needs to access the collection that owns this dataset - but we don't have that key right now...
+        """
+        Returns the processing status of a dataset.
+        Raises Unauthorized if the dataset does not exist or if the user is not authorized for it
+        """
+        version, _ = self._assert_dataset_has_right_owner(DatasetVersionId(dataset_id), UserInfo(token_info))
 
         response = {
-            "cxg_status": status.cxg_status or "NA",
-            "rds_status": status.rds_status or "NA",
-            "h5ad_status": status.h5ad_status or "NA",
-            "processing_status": status.processing_status or "NA",
+            "cxg_status": version.status.cxg_status or "NA",
+            "rds_status": version.status.rds_status or "NA",
+            "h5ad_status": version.status.h5ad_status or "NA",
+            "processing_status": version.status.processing_status or "NA",
             "dataset_id": dataset_id,
             "id": "NA",
             "upload_progress": 12345,
-            "upload_status": status.upload_status or "NA",
-            "validation_status": status.validation_status or "NA",
+            "upload_status": version.status.upload_status or "NA",
+            "validation_status": version.status.validation_status or "NA",
         }
 
         return make_response(response, 200)
@@ -418,7 +429,23 @@ class PortalApi:
         return make_response(jsonify(response), 200)
 
     def delete_dataset(self, dataset_id: str, token_info: dict):
-        pass
+        """
+        Deletes a dataset version.
+        """
+        dataset_version, collection_version = self._assert_dataset_has_right_owner(
+            DatasetVersionId(dataset_id), UserInfo(token_info)
+        )
+        if dataset_version.version_id not in [v.version_id for v in collection_version.datasets]:
+            raise ForbiddenHTTPException(f"Dataset {dataset_id} does not belong to a collection")
+
+        try:
+            self.business_logic.remove_dataset_version(collection_version.version_id, DatasetVersionId(dataset_id))
+        except CollectionUpdateException:
+            raise MethodNotAllowedException(detail="Cannot delete a public Dataset")
+        return Response(status=202)
 
     def get_dataset_identifiers(self, url: str):
+        """
+        a.k.a. the meta endpoint
+        """
         pass

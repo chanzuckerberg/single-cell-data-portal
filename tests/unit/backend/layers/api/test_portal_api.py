@@ -1471,7 +1471,7 @@ class TestDataset(NewBaseTest):
         }
         self.assertEqual(expected_body, actual_body)
 
-    # 🔴 TODO: need to look up the collection - tricky
+    # ✅
     def test__get_status__403(self):
         dataset = self.generate_dataset(
             owner="someone_else",
@@ -1639,7 +1639,7 @@ class TestDataset(NewBaseTest):
         self.assertEqual(assets[0]["s3_uri"], "s3://mock-bucket/mock-key.cxg")
         self.assertEqual(assets[1]["s3_uri"], "s3://mock-bucket/mock-key.h5ad")
 
-    # 💛 Revisit this test - dataset deletion is now different
+    # ✅
     def test__cancel_dataset_download__ok(self):
         # Test pre upload
         # TODO: this might need additional business logic
@@ -1662,14 +1662,14 @@ class TestDataset(NewBaseTest):
         response = self.app.delete(test_url, headers=headers)
         self.assertEqual(response.status_code, 202)
 
-    # 💛 Revisit this test - dataset deletion is now different
+    # ✅
     def test__cancel_dataset_download__dataset_does_not_exist(self):
         test_url = "/dp/v1/datasets/missing_dataset_id"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
         response = self.app.delete(test_url, headers=headers)
         self.assertEqual(response.status_code, 403)
 
-    # 💛 Revisit this test - dataset deletion is now different
+    # ✅
     def test__delete_uploaded_dataset__ok(self):
         dataset = self.generate_dataset(
             statuses=[DatasetStatusUpdate("upload_status", DatasetUploadStatus.UPLOADING)]
@@ -1698,7 +1698,7 @@ class TestDataset(NewBaseTest):
         dataset_ids = [dataset["id"] for dataset in body["datasets"]]
         self.assertNotIn(dataset.dataset_version_id, dataset_ids)
 
-    # 💛 Revisit this test - dataset deletion is now different
+    # ✅
     def test__call_delete_dataset__twice(self):
         dataset = self.generate_dataset(
             statuses=[DatasetStatusUpdate("upload_status", DatasetUploadStatus.UPLOADING)]
@@ -1716,32 +1716,7 @@ class TestDataset(NewBaseTest):
         response = self.app.delete(test_url, headers=headers)
         self.assertEqual(response.status_code, 403)
 
-    # 💛 Revisit this test - dataset deletion is now different
-    def test__get_deleted_dataset_status__returns_403(self):
-        dataset = self.generate_dataset(
-            statuses=[DatasetStatusUpdate("upload_status", DatasetUploadStatus.UPLOADED)]
-        )
-
-        test_url = f"/dp/v1/datasets/{dataset.dataset_version_id}/status"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
-        response = self.app.get(test_url, headers=headers)
-        self.assertEqual(200, response.status_code)
-        actual_body = json.loads(response.data)
-        expected_body = {
-            "dataset_id": dataset.dataset_version_id,
-            "id": "NA",
-            "upload_progress": 0.0,
-            "upload_status": "UPLOADED",
-        }
-        self.assertEqual(expected_body, actual_body)
-
-        # delete the dataset
-        self.app.delete(f"/dp/v1/datasets/{dataset.dataset_version_id}", headers=headers)
-
-        response = self.app.get(test_url, headers=headers)
-        self.assertEqual(response.status_code, 403)
-
-    # 💛 Revisit this test - dataset deletion is now different
+    # ✅
     def test__delete_public_dataset_returns__405(self):
 
         dataset = self.generate_dataset(
@@ -1755,7 +1730,7 @@ class TestDataset(NewBaseTest):
         self.assertEqual(405, response.status_code)
         self.assertEqual("Cannot delete a public Dataset", json.loads(response.data)["detail"])
 
-    # 💛 Revisit this test - dataset deletion is now different
+    # ✅
     def test__cancel_dataset_download__user_not_collection_owner(self):
 
         dataset = self.generate_dataset(
@@ -1768,7 +1743,7 @@ class TestDataset(NewBaseTest):
         response = self.app.delete(test_url, headers=headers)
         self.assertEqual(response.status_code, 403)
 
-    # 💛 Revisit this test - dataset deletion is now different
+    # ✅
     def test__cancel_dataset_download__user_not_logged_in(self):
 
         dataset = self.generate_dataset(
