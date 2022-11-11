@@ -9,11 +9,10 @@ from pandas import DataFrame
 from backend.common.entities import Dataset
 from backend.common.utils.db_session import db_session_manager
 from backend.wmg.data.ontology_labels import ontology_term_label, gene_term_label
-from backend.wmg.api.query import (
-    WmgQuery,
-    WmgQueryCriteria,
-)
+from backend.wmg.api.query import WmgQuery, WmgQueryCriteria, FmgQueryCriteria
 from backend.wmg.data.snapshot import load_snapshot, WmgSnapshot
+from backend.wmg.api.calculate_markers import get_markers
+
 
 # TODO: add cache directives: no-cache (i.e. revalidate); impl etag
 #  https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data
@@ -51,6 +50,22 @@ def query():
                 ),
             ),
             filter_dims=response_filter_dims_values,
+        )
+    )
+
+
+def findmarkers():
+    request = connexion.request.json
+    target_filters = request["target_filters"]
+    context_filters = request["context_filters"]
+    n_markers = request["n_markers"]
+    test = request["test"]
+    target_filters.update(context_filters)
+    marker_genes = get_markers(target_filters, context_filters, n_markers=n_markers, test=test)
+    return jsonify(
+        dict(
+            snapshot_id=snapshot.snapshot_identifier,
+            marker_genes=marker_genes,
         )
     )
 
