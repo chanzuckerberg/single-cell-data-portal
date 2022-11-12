@@ -325,6 +325,7 @@ paths:
                 target_filter:
                   type: object
                   required:
+                    - organism_ontology_term_id                  
                   properties:
                     organism_ontology_term_id:
                       type: string
@@ -348,6 +349,7 @@ paths:
                 context_filters:
                   type: object
                   required:
+                    - organism_ontology_term_id                  
                   properties:
                     organism_ontology_term_id:
                       type: string
@@ -369,7 +371,7 @@ paths:
                     ethnicity_ontology_term_ids:
                       $ref: "#/components/schemas/wmg_ontology_term_id_list"
                 n_markers:
-                  type: integer
+                  type: int
                   default: 10
                 test:
                   type: string
@@ -404,6 +406,7 @@ paths:
               schema:
                 type: object
                 required:
+                  - snapshot_id                
                   - marker_genes
                 properties:
                   snapshot_id:
