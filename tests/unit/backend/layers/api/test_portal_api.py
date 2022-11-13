@@ -7,7 +7,7 @@ from datetime import datetime
 from unittest import mock
 from unittest.mock import Mock, patch
 from backend.layers.business.entities import DatasetArtifactDownloadData
-from backend.layers.common.entities import CollectionVersionId, DatasetMetadata, DatasetProcessingStatus, DatasetUploadStatus, DatasetVersionId, Link, OntologyTermId
+from backend.layers.common.entities import CollectionId, CollectionVersionId, DatasetMetadata, DatasetProcessingStatus, DatasetUploadStatus, DatasetVersionId, Link, OntologyTermId
 
 from furl import furl
 
@@ -2172,7 +2172,9 @@ class TestPublishRevision(NewBaseTest):
     #                 self.assertS3FileExists(*s3_object)
 
     def test__publish_revision_with_new_dataset__OK(self):
-        """Publish a revision with new datasets."""
+        """
+        Publish a revision with new datasets.
+        """
 
         unpublished_collection = self.generate_unpublished_collection(add_datasets=1)
 
@@ -2213,6 +2215,11 @@ class TestPublishRevision(NewBaseTest):
 
     def test__with_revision_with_removed_datasets__OK(self):
         """Publish a revision with delete datasets."""
+
+
+        unpublished_collection = self.generate_unpublished_collection(add_datasets=2)
+
+
         rev_dataset_id = self.rev_collection.datasets[0].id
         pub_dataset = self.pub_collection.datasets[0]
         pub_dataset_id = pub_dataset.id
@@ -2387,3 +2394,277 @@ class TestPublishRevision(NewBaseTest):
 
     def test__publish_revision_unauthorized__403(self):
         pass
+
+
+###### UPLOAD TESTS START HERE ######
+
+class TestCollectionPostUploadLink(NewBaseTest):
+
+    def setUp(self):
+        super().setUp()
+        self.good_link = "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"
+        self.dummy_link = "https://www.dropbox.com/s/12345678901234/test.h5ad?dl=0"
+
+    # TODO: rebuild the mock 
+    @patch("backend.corpora.common.upload.start_upload_sfn")
+    def test__link__202(self, mocked):
+        path = "/dp/v1/collections/test_collection_id_revision/upload-links"
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        body = {"url": self.good_link}
+
+        test_url = furl(path=path)
+        response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
+        self.assertEqual(202, response.status_code)
+        self.assertIn("dataset_id", json.loads(response.data).keys())
+
+    def test__link_no_auth__401(self):
+        path = "/dp/v1/collections/test_collection_id/upload-links"
+        headers = {"host": "localhost", "Content-Type": "application/json"}
+        body = {"url": self.dummy_link}
+
+        test_url = furl(path=path)
+        response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
+        self.assertEqual(401, response.status_code)
+
+    # TODO: rebuild the mock (already used previously)
+    @patch(
+        "backend.corpora.common.utils.dl_sources.url.DropBoxURL.file_info",
+        return_value={"size": 1, "name": "file.h5ad"},
+    )
+    def test__link_not_owner__403(self, mock_get_file_info):
+        path = "/dp/v1/collections/test_collection_id_not_owner/upload-links"
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        body = {"url": self.dummy_link}
+
+        test_url = furl(path=path)
+        response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
+        self.assertEqual(403, response.status_code)
+
+    def test__bad_link__400(self):
+        path = "/dp/v1/collections/test_collection_id_revision/upload-links"
+
+        with self.subTest("Unsupported Provider"):
+            headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+            body = {"url": "https://test_url.com"}
+            test_url = furl(path=path)
+            response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
+            self.assertEqual(400, response.status_code)
+            self.assertEqual("The dropbox shared link is invalid.", json.loads(response.data)["detail"])
+
+        with self.subTest("Bad Dropbox link"):
+            headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+            body = {"url": self.dummy_link}
+            test_url = furl(path=path)
+            response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
+            self.assertEqual(400, response.status_code)
+            self.assertTrue(
+                "'content-disposition' not present in the header." in json.loads(response.data)["detail"]
+                or "The URL provided causes an error with Dropbox." == json.loads(response.data)["detail"]
+            )
+
+    # TODO: rebuild the mock (already used previously)
+    @patch(
+        "backend.corpora.common.utils.dl_sources.url.DropBoxURL.file_info",
+        return_value={"size": 31 * GB, "name": "file.txt"},
+    )
+    def test__oversized__413(self, mock_func):
+        path = "/dp/v1/collections/test_collection_id_revision/upload-links"
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        body = {"url": self.dummy_link}
+
+        test_url = furl(path=path)
+        response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
+        self.assertEqual(413, response.status_code)
+
+    # TODO: rebuild the mock (already used previously)
+    @patch(
+        "backend.corpora.common.utils.dl_sources.url.DropBoxURL.file_info",
+        return_value={"size": 1, "name": "file.h5ad"},
+    )
+    def test__link_fake_collection__403(self, *mocked):
+        path = "/dp/v1/collections/fake/upload-links"
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        body = {"url": self.good_link}
+
+        test_url = furl(path=path)
+        response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
+        self.assertEqual(403, response.status_code)
+
+    # TODO: rebuild the mock (already used previously)
+    @patch(
+        "backend.corpora.common.utils.dl_sources.url.DropBoxURL.file_info",
+        return_value={"size": 1, "name": "file.h5ad"},
+    )
+    def test_link_public_collection__403(self, *mocked):
+        path = "/dp/v1/collections/test_collection_id_public/upload-links"
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        body = {"url": self.good_link}
+
+        test_url = furl(path=path)
+        response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
+        self.assertEqual(403, response.status_code)
+
+
+# TODO: rewrite the mock
+@patch(
+    "backend.corpora.common.utils.dl_sources.url.DropBoxURL.file_info",
+    return_value={"size": 1, "name": "file.h5ad"},
+)
+class TestCollectionPutUploadLink(NewBaseTest):
+    def setUp(self):
+        super().setUp()
+        self.good_link = "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"
+        self.headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+
+    def assert_datasets_are_updated(self, dataset1, dataset2):
+        """
+        Asserts that dataset2 is an updated revision of dataset1
+        """
+        self.assertIsNotNone(dataset2)
+        if dataset2 is not None: #pylance
+            # The new dataset should have the same canonical id
+            self.assertEqual(dataset2.dataset_id.id, dataset1.dataset_id)
+            # The artifacts for the new datasets should have a different id
+            self.assertNotEqual([a.id for a in dataset2.artifacts], dataset1.artifact_ids)
+
+    # TODO: rewrite the mock
+    @patch("backend.corpora.common.upload.start_upload_sfn")
+    def test__reupload_published_dataset_during_revision__202(self, *mocked):
+        """
+        Reupload a published dataset during a revision
+        """
+
+        dataset = self.generate_dataset(
+            statuses=[DatasetStatusUpdate("processing_Status", DatasetProcessingStatus.SUCCESS)],
+            publish=True
+        )
+
+        self.business_logic.create_collection_version(CollectionId(dataset.collection_id))
+
+        path = f"/dp/v1/collections/{dataset.collection_version_id}/upload-links"
+        body = {"url": self.good_link, "id": dataset.dataset_version_id}
+        response = self.app.put(path, headers=self.headers, data=json.dumps(body))
+        self.assertEqual(202, response.status_code)
+
+        new_dataset_id = json.loads(response.data)["dataset_id"]
+        new_dataset = self.business_logic.get_dataset_version(new_dataset_id)
+        self.assertNotEqual(new_dataset_id, dataset.dataset_version_id)
+        self.assert_datasets_are_updated(dataset, new_dataset)
+
+    @patch("backend.corpora.common.upload.start_upload_sfn")
+    def test__reupload_unpublished_dataset__202(self, *mocked):
+        """
+        Reuploads an unpublished dataset
+        """
+        dataset = self.generate_dataset(
+            statuses=[DatasetStatusUpdate("processing_status", DatasetProcessingStatus.SUCCESS)],
+        )
+
+        path = f"/dp/v1/collections/{dataset.collection_version_id}/upload-links"
+        body = {"url": self.good_link, "id": dataset.dataset_version_id}
+
+        response = self.app.put(path, headers=self.headers, data=json.dumps(body))
+        self.assertEqual(202, response.status_code)
+        
+        new_dataset_id = json.loads(response.data)["dataset_id"]
+        new_dataset = self.business_logic.get_dataset_version(new_dataset_id)
+        self.assertNotEqual(new_dataset_id, dataset.dataset_version_id)
+        self.assert_datasets_are_updated(dataset, new_dataset)
+
+    def test__reupload_public_dataset__403(self, mocked):
+        """cannot reupload a public published dataset"""
+        dataset = self.generate_dataset(
+            statuses=[DatasetStatusUpdate("processing_status", DatasetProcessingStatus.SUCCESS)],
+            publish=True,
+        )
+        path = f"/dp/v1/collections/{dataset.collection_version_id}/upload-links"
+        body = {"url": self.good_link, "id": dataset.dataset_version_id}
+
+        response = self.app.put(path, headers=self.headers, data=json.dumps(body))
+        self.assertEqual(403, response.status_code)
+        # TODO: possibly, assert that no new version has been created, but not too useful
+
+    def test__reupload_while_processing_dataset__405(self, mocked):
+        """cannot reupload a dataset that is pending"""
+        dataset = self.generate_dataset(
+            statuses=[DatasetStatusUpdate("processing_status", DatasetProcessingStatus.PENDING)],
+            publish=True,
+        )
+        path = f"/dp/v1/collections/{dataset.collection_version_id}/upload-links"
+        body = {"url": self.good_link, "id": dataset.dataset_version_id}
+        
+        response = self.app.put(path, headers=self.headers, data=json.dumps(body))
+        self.assertEqual(405, response.status_code)
+
+    def test__reupload_dataset_not_owner__403(self, mocked):
+        dataset = self.generate_dataset(
+            owner="someone else",
+            statuses=[DatasetStatusUpdate("processing_status", DatasetProcessingStatus.SUCCESS)],
+        )
+        
+        path = f"/dp/v1/collections/{dataset.collection_version_id}/upload-links"
+        body = {"url": self.good_link, "id": dataset.dataset_version_id}
+
+        response = self.app.put(path, headers=self.headers, data=json.dumps(body))
+        self.assertEqual(403, response.status_code)
+
+    def test__dataset_not_in_collection__404(self, mocked):
+        """
+        Trying to publish a dataset belonging to a different collection raises a 404
+        """
+        dataset = self.generate_dataset(
+            owner="someone else",
+            statuses=[DatasetStatusUpdate("processing_status", DatasetProcessingStatus.SUCCESS)],
+        )
+        collection = self.generate_unpublished_collection()
+        
+        path = f"/dp/v1/collections/{collection.version_id.id}/upload-links"
+        body = {"url": self.good_link, "id": dataset.dataset_version_id}
+
+        response = self.app.put(path, headers=self.headers, data=json.dumps(body))
+        self.assertEqual(403, response.status_code)
+
+
+@patch(
+    "backend.corpora.common.utils.dl_sources.url.DropBoxURL.file_info",
+    return_value={"size": 1, "name": "file.h5ad"},
+)
+class TestCollectionUploadLinkCurators(NewBaseTest):
+    def setUp(self):
+        super().setUp()
+        self.good_link = "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"
+
+    @patch("backend.corpora.common.upload.start_upload_sfn")
+    def test__can_upload_dataset_to_non_owned_collection_as_super_curator(self, *mocked):
+        """
+        A super curator can upload a dataset to a non-owned collection
+        """
+        collection = self.generate_unpublished_collection(
+            owner="someone else"
+        )
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token("super")}
+        path = f"/dp/v1/collections/{collection.version_id}/upload-links"
+        body = {"url": self.good_link}
+
+        test_url = furl(path=path)
+        response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
+        print(response.data)
+        self.assertEqual(202, response.status_code)
+        self.assertIn("dataset_id", json.loads(response.data).keys())
+
+    @patch("backend.corpora.common.upload.start_upload_sfn")
+    def test__can_reupload_dataset_as_super_curator(self, *mocked):
+        """
+        A super curator can reupload a dataset to a non-owned collection
+        """
+        dataset = self.generate_dataset(
+            owner="someone else",
+            statuses=[DatasetStatusUpdate("processing_status", DatasetProcessingStatus.SUCCESS)],
+        )
+
+        path = f"/dp/v1/collections/{dataset.collection_version_id}/upload-links"
+        body = {"url": self.good_link, "id": dataset.dataset_version_id}
+
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token("super")}
+        response = self.app.put(path, headers=headers, data=json.dumps(body))
+        self.assertEqual(202, response.status_code)
