@@ -25,6 +25,14 @@ resource aws_ecs_service service {
   wait_for_steady_state = var.wait_for_steady_state
 }
 
+data "aws_secretsmanager_secret" "secrets" {
+  arn = "arn:aws:secretsmanager:us-west-2:699936264352:secret:dd_api_key-nGPNwx"
+}
+
+data "aws_secretsmanager_secret_version" "current" {
+  secret_id = data.aws_secretsmanager_secret.secrets.id
+}
+
 resource aws_ecs_task_definition task_definition {
   family                   = "dp-${var.deployment_stage}-${var.custom_stack_name}-${var.app_name}"
   memory                   = var.memory
@@ -42,7 +50,7 @@ resource aws_ecs_task_definition task_definition {
     "environment": [
       {
         "name": "DD_API_KEY",
-        "value": "key"
+        "value": "${data.aws_secretsmanager_secret_version.current.secret_string}"
       },
       {
         "name": "ECS_FARGATE",
