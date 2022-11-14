@@ -105,6 +105,7 @@ class DatasetMetadata:
 class DatasetVersion:
     dataset_id: DatasetId
     version_id: DatasetVersionId
+    collection_id: CollectionId # Pointer to the canonical collection id this dataset belongs to
     status: DatasetStatus
     metadata: DatasetMetadata
     artifacts: List[DatasetArtifact]
