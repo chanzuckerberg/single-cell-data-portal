@@ -64,6 +64,18 @@ class MaxFileSizeExceededException(DatasetIngestException):
     """
     pass
 
+class DatasetInWrongStatusException(DatasetIngestException):
+    """
+    Raised when a dataset cannot be updated due to being in a wrong processing status
+    """
+    pass
+
+class DatasetNotFoundException(BusinessException):
+    """
+    Raised when a write operation was called on a dataset, but it was not found
+    """
+    pass
+
 class DatasetUpdateException(BusinessException):
     pass
 

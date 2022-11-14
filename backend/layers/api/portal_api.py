@@ -10,7 +10,7 @@ from backend.layers.business.business import BusinessLogic
 
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.business.entities import CollectionMetadataUpdate, CollectionQueryFilter
-from backend.layers.business.exceptions import ArtifactNotFoundException, CollectionCreationException, CollectionIsPublishedException, CollectionNotFoundException, CollectionUpdateException, InvalidURIException, MaxFileSizeExceededException
+from backend.layers.business.exceptions import ArtifactNotFoundException, CollectionCreationException, CollectionIsPublishedException, CollectionNotFoundException, CollectionUpdateException, DatasetInWrongStatusException, DatasetNotFoundException, InvalidURIException, MaxFileSizeExceededException
 from backend.layers.common.entities import CollectionId, CollectionMetadata, CollectionVersion, CollectionVersionId, DatasetArtifact, DatasetId, DatasetStatus, DatasetVersion, DatasetVersionId, Link, OntologyTermId
 
 from backend.corpora.common.utils import authorization_checks as auth
@@ -332,10 +332,18 @@ class PortalApi:
             raise ForbiddenHTTPException()
         except CollectionIsPublishedException:
             raise ForbiddenHTTPException()
+        except DatasetNotFoundException:
+            raise NotFoundHTTPException()
         except InvalidURIException:
             raise InvalidParametersHTTPException(detail="The dropbox shared link is invalid.") 
         except MaxFileSizeExceededException:
             raise TooLargeHTTPException()
+        except DatasetInWrongStatusException:
+            raise MethodNotAllowedException(
+                detail="Submission failed. A dataset cannot be updated while a previous update for the same dataset is in "
+                "progress. Please cancel the current submission by deleting the dataset, or wait until the submission has "
+                "finished processing."
+            )
 
     # TODO: those two methods should probably be collapsed into one
     # TODO: not quite sure what's the difference between url and link - investigate

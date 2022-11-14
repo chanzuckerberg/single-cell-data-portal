@@ -2524,7 +2524,7 @@ class TestCollectionPutUploadLink(NewBaseTest):
             self.assertEqual(dataset2.dataset_id.id, dataset1.dataset_id)
             # The artifacts for the new datasets should have a different id
 
-    #  ✅
+    # ✅
     def test__reupload_published_dataset_during_revision__202(self):
         """
         Reupload a published dataset during a revision
@@ -2545,9 +2545,9 @@ class TestCollectionPutUploadLink(NewBaseTest):
         new_dataset = self.business_logic.get_dataset_version(DatasetVersionId(new_dataset_id))
         self.assert_datasets_are_updated(dataset, new_dataset)
 
-    # 🔴
+    # ✅
     @patch("backend.corpora.common.upload.start_upload_sfn")
-    def test__reupload_unpublished_dataset__202(self, *mocked):
+    def test__reupload_unpublished_dataset__202(self):
         """
         Reuploads an unpublished dataset
         """
@@ -2562,11 +2562,12 @@ class TestCollectionPutUploadLink(NewBaseTest):
         self.assertEqual(202, response.status_code)
         
         new_dataset_id = json.loads(response.data)["dataset_id"]
-        new_dataset = self.business_logic.get_dataset_version(new_dataset_id)
+        new_dataset = self.business_logic.get_dataset_version(DatasetVersionId(new_dataset_id))
         self.assertNotEqual(new_dataset_id, dataset.dataset_version_id)
         self.assert_datasets_are_updated(dataset, new_dataset)
 
-    def test__reupload_public_dataset__403(self, mocked):
+    # ✅
+    def test__reupload_public_dataset__403(self):
         """cannot reupload a public published dataset"""
         dataset = self.generate_dataset(
             statuses=[DatasetStatusUpdate("processing_status", DatasetProcessingStatus.SUCCESS)],
@@ -2579,19 +2580,21 @@ class TestCollectionPutUploadLink(NewBaseTest):
         self.assertEqual(403, response.status_code)
         # TODO: possibly, assert that no new version has been created, but not too useful
 
-    def test__reupload_while_processing_dataset__405(self, mocked):
+    # ✅
+    def test__reupload_while_processing_dataset__405(self):
         """cannot reupload a dataset that is pending"""
         dataset = self.generate_dataset(
             statuses=[DatasetStatusUpdate("processing_status", DatasetProcessingStatus.PENDING)],
-            publish=True,
         )
         path = f"/dp/v1/collections/{dataset.collection_version_id}/upload-links"
         body = {"url": self.good_link, "id": dataset.dataset_version_id}
         
         response = self.app.put(path, headers=self.headers, data=json.dumps(body))
+        print(response.data)
         self.assertEqual(405, response.status_code)
 
-    def test__reupload_dataset_not_owner__403(self, mocked):
+    # ✅
+    def test__reupload_dataset_not_owner__403(self):
         dataset = self.generate_dataset(
             owner="someone else",
             statuses=[DatasetStatusUpdate("processing_status", DatasetProcessingStatus.SUCCESS)],
@@ -2603,7 +2606,8 @@ class TestCollectionPutUploadLink(NewBaseTest):
         response = self.app.put(path, headers=self.headers, data=json.dumps(body))
         self.assertEqual(403, response.status_code)
 
-    def test__dataset_not_in_collection__404(self, mocked):
+    # ✅
+    def test__dataset_not_in_collection__404(self):
         """
         Trying to publish a dataset belonging to a different collection raises a 404
         """
@@ -2617,20 +2621,17 @@ class TestCollectionPutUploadLink(NewBaseTest):
         body = {"url": self.good_link, "id": dataset.dataset_version_id}
 
         response = self.app.put(path, headers=self.headers, data=json.dumps(body))
-        self.assertEqual(403, response.status_code)
+        self.assertEqual(404, response.status_code)
 
 
-@patch(
-    "backend.corpora.common.utils.dl_sources.url.DropBoxURL.file_info",
-    return_value={"size": 1, "name": "file.h5ad"},
-)
 class TestCollectionUploadLinkCurators(NewBaseTest):
     def setUp(self):
         super().setUp()
         self.good_link = "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"
+        self.uri_provider.get_file_info = Mock(return_value=FileInfo(1, "file.h5ad"))
 
-    @patch("backend.corpora.common.upload.start_upload_sfn")
-    def test__can_upload_dataset_to_non_owned_collection_as_super_curator(self, *mocked):
+    # ✅
+    def test__can_upload_dataset_to_non_owned_collection_as_super_curator(self):
         """
         A super curator can upload a dataset to a non-owned collection
         """
@@ -2647,8 +2648,8 @@ class TestCollectionUploadLinkCurators(NewBaseTest):
         self.assertEqual(202, response.status_code)
         self.assertIn("dataset_id", json.loads(response.data).keys())
 
-    @patch("backend.corpora.common.upload.start_upload_sfn")
-    def test__can_reupload_dataset_as_super_curator(self, *mocked):
+    # ✅
+    def test__can_reupload_dataset_as_super_curator(self):
         """
         A super curator can reupload a dataset to a non-owned collection
         """
