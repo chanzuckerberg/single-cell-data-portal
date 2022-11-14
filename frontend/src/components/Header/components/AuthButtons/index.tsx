@@ -1,3 +1,4 @@
+import { useAuth0 } from "@auth0/auth0-react";
 import { AnchorButton, Button, MenuDivider } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 import { Menu, MenuItem } from "czifui";
@@ -8,7 +9,7 @@ import { FEATURES } from "src/common/featureFlags/features";
 import { BOOLEAN } from "src/common/localStorage/set";
 import { useUserInfo } from "src/common/queries/auth";
 import { AuthButtonWrapper } from "src/components/Header/style";
-import { API_URL } from "src/configs/configs";
+import { API_URL, AUTH0_AUTHORIZE_URL } from "src/configs/configs";
 import CuratorAPIKeyGenerator from "../CuratorAPIKeyGenerator";
 import { LogOutAnchor, LogOutEmail, LogOutText } from "./style";
 
@@ -61,6 +62,8 @@ function LoggedInButtons({ name, email }: { name?: string; email?: string }) {
 
   function Content() {
     const curatorAPIFeature = get(FEATURES.CURATOR);
+
+    
     return (
       <Menu
         anchorEl={anchorEl}
@@ -87,8 +90,23 @@ function LoggedInButtons({ name, email }: { name?: string; email?: string }) {
 }
 
 function LoggedOutButtons() {
+
+  // function base64URLSafe(buffer: Buffer) {
+  //   return buffer.toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
+  // }
+
+  // const handleAuthFlow = () => {
+  //   const verifier = base64URLSafe(randomBytes(32));
+
+  // }
+
+  const { isAuthenticated, loginWithRedirect, } = useAuth0();
+
+
+
   return (
     <AnchorButton
+      onClick={loginWithRedirect}
       href={`${API_URL}${API.LOG_IN}`}
       minimal
       rightIcon={IconNames.CHEVRON_DOWN}

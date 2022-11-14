@@ -1,3 +1,4 @@
+import { Auth0Provider } from "@auth0/auth0-react";
 import { ThemeProvider as EmotionThemeProvider } from "@emotion/react";
 import { StylesProvider, ThemeProvider } from "@material-ui/core/styles";
 import { NextPage } from "next";
@@ -57,7 +58,13 @@ function App({ Component, pageProps }: AppPropsWithLayout): JSX.Element {
           <EmotionThemeProvider theme={theme}>
             <ThemeProvider theme={theme}>
               <Layout>
-                <Component {...pageProps} />
+                <Auth0Provider
+                  domain="cziscience.com"
+                  clientId="bfpvd3NSj5vnsDuURtqXtZHc2EL0BZvo"
+                  redirectUri={window.location.origin}
+                >
+                  <Component {...pageProps} />
+                </Auth0Provider>
               </Layout>
               <ReactQueryDevtools />
             </ThemeProvider>
