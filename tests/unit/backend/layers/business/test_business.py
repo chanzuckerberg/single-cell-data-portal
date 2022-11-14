@@ -11,9 +11,9 @@ from backend.corpora.common.providers.crossref_provider import CrossrefDOINotFou
 from backend.layers.business.business import BusinessLogic, CollectionQueryFilter, DatasetArtifactDownloadData
 from backend.corpora.common.providers.crossref_provider import CrossrefException
 from backend.layers.business.business import BusinessLogic, CollectionMetadataUpdate, CollectionQueryFilter, DatasetArtifactDownloadData
-from backend.layers.business.exceptions import CollectionUpdateException, InvalidLinkException, \
+from backend.layers.business.exceptions import CollectionUpdateException, CollectionVersionException, InvalidLinkException, \
     CollectionCreationException, DatasetIngestException, CollectionPublishException
-from backend.layers.common.entities import CollectionMetadata, CollectionVersion, CollectionVersionId, DatasetArtifact, DatasetMetadata, DatasetProcessingStatus, DatasetStatus, DatasetUploadStatus, DatasetValidationStatus, DatasetVersionId, Link, OntologyTermId
+from backend.layers.common.entities import CollectionId, CollectionMetadata, CollectionVersion, CollectionVersionId, DatasetArtifact, DatasetMetadata, DatasetProcessingStatus, DatasetStatus, DatasetUploadStatus, DatasetValidationStatus, DatasetVersionId, Link, OntologyTermId
 from backend.layers.thirdparty.uri_provider import UriProviderInterface
 from tests.unit.backend.layers.persistence.persistence_mock import DatabaseProviderMock
 
@@ -473,6 +473,7 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         new_dataset_version = self.database_provider.get_dataset_version(new_dataset_version_id)
         self.assertIsNotNone(new_dataset_version)
         self.assertIsNone(new_dataset_version.metadata)
+        self.assertEqual(new_dataset_version.collection_id, version.collection_id)
         self.assertEqual(new_dataset_version.status.upload_status, DatasetUploadStatus.WAITING)
         self.assertEqual(new_dataset_version.status.processing_status, DatasetProcessingStatus.PENDING)
 
@@ -750,6 +751,23 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         self.assertEqual(version.version_id, published_collection.version_id)
         self.assertNotEqual(version.version_id, new_version.version_id)
 
+    def test_create_collection_version_fails_if_other_versions(self):
+        """
+        A collection version can only be created if there are no other unpublished versions
+        for that specific canonical collection
+        """
+        published_collection = self.initialize_published_collection()
+        self.business_logic.create_collection_version(published_collection.collection_id)
+
+        with self.assertRaises(CollectionVersionException):
+            self.business_logic.create_collection_version(published_collection.collection_id)
+
+    def test_create_collection_version_fails_if_collection_not_exists(self):
+        """
+        A collection version can only be created on an existing collection
+        """
+        with self.assertRaises(CollectionVersionException):
+            self.business_logic.create_collection_version(CollectionId("non_existing_collection_id"))
 
     def test_delete_collection_version_ok(self):
         """
@@ -991,6 +1009,54 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
 
         self.assertEqual(1, len(all_collections))
         self.assertEqual(all_collections[0].version_id, second_version.version_id)
+
+    def test_get_collection_versions_for_canonical_ok(self):
+        """
+        `get_collection_versions_from_canonical` can be used to retrieve all the versions
+        for a canonical collection, whether those are published, active or neither
+        """
+
+        first_version = self.initialize_published_collection()
+        second_version = self.business_logic.create_collection_version(first_version.collection_id)
+        self.business_logic.publish_collection_version(second_version.version_id)
+        third_version = self.business_logic.create_collection_version(first_version.collection_id)
+
+        versions = self.business_logic.get_collection_versions_from_canonical(first_version.collection_id)
+        versions = list(versions)
+
+        self.assertEqual(3, len(versions))
+        self.assertIn(first_version.version_id, [v.version_id for v in versions])
+        self.assertIn(second_version.version_id, [v.version_id for v in versions])
+        self.assertIn(third_version.version_id, [v.version_id for v in versions])
+
+    def test_get_collection_version_from_canonical_published_ok(self):
+        """
+        `get_collection_version_from_canonical` retrieves the active published version connected
+        to the canonical collection, when available
+        """
+
+        first_version = self.initialize_published_collection()
+        second_version = self.business_logic.create_collection_version(first_version.collection_id)
+
+        version = self.business_logic.get_collection_version_from_canonical(first_version.collection_id)
+        self.assertIsNotNone(version)
+        if version is not None: # pylance
+            self.assertEqual(version.version_id, first_version.version_id)
+            self.assertIsNotNone(version.published_at)
+
+    def test_get_collection_version_from_canonical_unpublished_ok(self):
+        """
+        `get_collection_version_from_canonical` retrieves the unpublished version connected 
+        to the canonical collection, if no published version is available
+        """
+
+        first_version = self.initialize_unpublished_collection()
+
+        version = self.business_logic.get_collection_version_from_canonical(first_version.collection_id)
+        self.assertIsNotNone(version)
+        if version is not None: # pylance
+            self.assertEqual(version.version_id, first_version.version_id)
+            self.assertIsNone(version.published_at)
 
 
 if __name__ == '__main__':

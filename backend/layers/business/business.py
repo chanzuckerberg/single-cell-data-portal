@@ -3,7 +3,7 @@ from typing import Iterable, Optional, Tuple
 from backend.corpora.common.providers.crossref_provider import CrossrefDOINotFoundException, CrossrefException
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.business.entities import CollectionMetadataUpdate, CollectionQueryFilter, DatasetArtifactDownloadData
-from backend.layers.business.exceptions import ArtifactNotFoundException, CollectionCreationException, CollectionPublishException, CollectionUpdateException, DatasetIngestException, DatasetUpdateException
+from backend.layers.business.exceptions import ArtifactNotFoundException, CollectionCreationException, CollectionPublishException, CollectionUpdateException, CollectionVersionException, DatasetIngestException, DatasetUpdateException
 
 from backend.layers.common.entities import (
     CollectionId,
@@ -120,6 +120,24 @@ class BusinessLogic(BusinessLogicInterface):
         Returns a specific collection version
         """
         return self.database_provider.get_collection_version(version_id)
+
+    def get_collection_versions_from_canonical(self, collection_id: CollectionId) -> Iterable[CollectionVersion]:
+        """
+        Returns all the collection versions connected to a canonical collection
+        """
+        return self.database_provider.get_all_versions_for_collection(collection_id)
+
+    def get_collection_version_from_canonical(self, collection_id: CollectionId) -> Optional[CollectionVersion]:
+        """
+        Returns the published collection version mapped to a canonical collection, if available.
+        Otherwise will return the active unpublished version.
+        """
+        published_version = self.get_published_collection_version(collection_id)
+        if published_version is not None:
+            return published_version
+        else:
+            all_versions = self.get_collection_versions_from_canonical(collection_id)
+            return next(v for v in all_versions if v.published_at is None)
 
     def get_collections(self, filter: CollectionQueryFilter) -> Iterable[CollectionVersion]:
         """
@@ -342,7 +360,20 @@ class BusinessLogic(BusinessLogicInterface):
 
 
     def create_collection_version(self, collection_id: CollectionId) -> CollectionVersion:
-        new_version = self.database_provider.add_collection_version(collection_id)
+        """
+        Creates a collection version for an existing canonical collection.
+        Also ensures that the collection does not have any active, unpublished version
+        """
+
+        all_versions = self.database_provider.get_all_versions_for_collection(collection_id)
+        if any(v for v in all_versions if v.published_at is None):
+            raise CollectionVersionException(f"Collection {collection_id} already has an unpublished version")
+
+        try:
+            new_version = self.database_provider.add_collection_version(collection_id)
+        except Exception: # TODO: maybe add a RecordNotFound exception for finer grained exceptions
+            raise CollectionVersionException(f"Collection {collection_id} cannot be found")
+
         return new_version
 
     def delete_collection_version(self, version_id: CollectionVersionId) -> None:
