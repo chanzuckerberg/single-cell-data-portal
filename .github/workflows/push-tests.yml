@@ -23,25 +23,25 @@ jobs:
   lint:
     runs-on: ubuntu-20.04
     steps:
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v2
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-west-2
-          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-          role-duration-seconds: 1800
-      - name: Login to ECR
-        uses: docker/login-action@v1
-        with:
-          registry: ${{ secrets.ECR_REPO }}
+          python-version: 3.7
       - uses: actions/checkout@v2
       - name: Lint Python
         run: |
-          docker-compose run --no-deps --rm backend make -C /single-cell-data-portal lint
+           pip3 install flake8
+           make lint
+      - uses: actions/setup-node@v2
+        name: Set up npm
+        with:
+          node-version: "16.14.2"
       - name: Lint frontend
         run: |
-          docker-compose run --no-deps --rm frontend make lint
+          cd frontend
+          npm install prettier
+          npm install typescript
+          make lint
       - uses: 8398a7/action-slack@v3
         with:
           status: ${{ job.status }}
