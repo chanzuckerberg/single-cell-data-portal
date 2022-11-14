@@ -9,7 +9,6 @@ on:
   pull_request:
     branches:
       - "*"
-      - feature/schema-3-0-0
 
 env:
   CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
@@ -24,25 +23,14 @@ jobs:
   lint:
     runs-on: ubuntu-20.04
     steps:
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-west-2
-          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-          role-duration-seconds: 1800
-      - name: Login to ECR
-        uses: docker/login-action@v1
-        with:
-          registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v2
       - name: Lint Python
         run: |
-          docker-compose run --no-deps --rm backend make -C /single-cell-data-portal lint
+           make lint
       - name: Lint frontend
         run: |
-          docker-compose run --no-deps --rm frontend make lint
+          cd frontend 
+          make lint
       - uses: 8398a7/action-slack@v3
         with:
           status: ${{ job.status }}
@@ -75,26 +63,65 @@ jobs:
         with:
           registry: ${{ secrets.ECR_REPO }}
       - uses: actions/checkout@v2
+      - name: Get changed frontend or backend files
+        id: changed-files
+        uses: tj-actions/changed-files@v23.1
+        with:
+          files: |
+            src/**
+            tests/**
+            playwright*
+            ../backend/**
       - name: Install dependencies
+        if: steps.changed-files.outputs.any_modified == 'true'
         run: |
           npm ci
           npx playwright install --with-deps
           cp src/configs/dev.js src/configs/configs.js
           npm run dev&
       - name: Run E2E tests
+        if: steps.changed-files.outputs.any_modified == 'true'
         run: DEBUG=pw:api npm run e2e
       - uses: actions/upload-artifact@v2
-        if: always()
+        # always() ensures this step still runs when e2e tests are cancelled early; steps.changed-files check ensures it only runs if tests did run at all
+        if: always() && steps.changed-files.outputs.any_modified == 'true'
         with:
           name: test-results
           path: frontend/playwright-report/
           retention-days: 30
+      - uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          fields: repo,commit,author,eventName,workflow,job,mention
+          mention: "here"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+        if: failure() && github.ref == 'refs/heads/main'
+
+  build-frontend-backend-images:
+    runs-on: ubuntu-20.04
+    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod' )
+    needs:
+      - e2e-test
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 1800
+      - name: Login to ECR
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ secrets.ECR_REPO }}
+      - uses: actions/checkout@v2
       - name: Install happy
         uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.2.1
         with:
           happy_version: "0.23.0"
       - name: Push images
-        if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod' )
         run: |
           echo "HAPPY_COMMIT=$(git rev-parse --verify HEAD)" >> envfile
           echo "HAPPY_BRANCH=$(git branch --show-current)" >> envfile
@@ -106,9 +133,9 @@ jobs:
           mention: "here"
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-        if: failure() && github.ref == 'refs/heads/main'
+        if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
 
-  build-extra-images:
+  build-batch-job-images:
     runs-on: ubuntu-20.04
     if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod' )
     steps:
@@ -201,8 +228,8 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      - name: Get changed files
-        id: changed-files
+      - name: Get modified docker files
+        id: changed-docker-files
         uses: tj-actions/changed-files@v23.1
         with:
           files: |
@@ -210,12 +237,20 @@ jobs:
             **/Dockerfile
             requirements*.txt
             **/requirements*.txt
+      - name: Get changed backend or unit test files
+        id: changed-backend-files
+        uses: tj-actions/changed-files@v23.1
+        with:
+          files: |
+            tests/unit/backend/**
+            backend/**
       - name: Check if containers need to be rebuilt
-        if: steps.changed-files.outputs.any_changed == 'true'
+        if: steps.changed-docker-files.outputs.any_modified == 'true' && steps.changed-backend-files.outputs.any_modified == 'true'
         run: |
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
           make local-rebuild-backend
       - name: Run tests in docker-compose
+        if: steps.changed-backend-files.outputs.any_modified == 'true'
         run: |
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
           make local-init-test-data
@@ -248,7 +283,7 @@ jobs:
         with:
           fetch-depth: 0
       - name: Get changed files
-        id: changed-files
+        id: changed-docker-files
         uses: tj-actions/changed-files@v23.1
         with:
           files: |
@@ -256,12 +291,21 @@ jobs:
             **/Dockerfile*
             requirements*.txt
             **/requirements*.txt
+      - name: Get changed processing backend or unit test files
+        id: changed-processing-files
+        uses: tj-actions/changed-files@v23.1
+        with:
+          files: |
+            backend/portal/pipeline/**
+            backend/common/**
+            tests/unit/processing_container/**
       - name: Check if containers need to be rebuilt
-        if: steps.changed-files.outputs.any_changed == 'true'
+        if: steps.changed-docker-files.outputs.any_modified == 'true' && steps.changed-processing-files.outputs.any_modified == 'true'
         run: |
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
           make local-rebuild-processing
       - name: Run tests in docker-compose
+        if: steps.changed-processing-files.outputs.any_modified == 'true'
         run: |
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
           make local-init-test-data
@@ -293,8 +337,8 @@ jobs:
       - uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      - name: Get changed files
-        id: changed-files
+      - name: Get changed docker files
+        id: changed-docker-files
         uses: tj-actions/changed-files@v23.1
         with:
           files: |
@@ -302,12 +346,22 @@ jobs:
             **/Dockerfile*
             requirements*.txt
             **/requirements*.txt
+      - name: Get changed wmg backend or unit test files
+        id: changed-wmg-files
+        uses: tj-actions/changed-files@v23.1
+        with:
+          files: |
+            backend/wmg/data/**
+            backend/wmg/pipeline/**
+            backend/common/**
+            tests/unit/wmg_processing/**
       - name: Check if containers need to be rebuilt
-        if: steps.changed-files.outputs.any_changed == 'true'
+        if: steps.changed-docker-files.outputs.any_modified == 'true' && steps.changed-wmg-files.outputs.any_modified == 'true'
         run: |
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
           make local-rebuild-processing
       - name: Run tests in docker-compose
+        if: steps.changed-wmg-files.outputs.any_modified == 'true'
         run: |
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
           make local-unit-test-wmg-processing
