@@ -107,7 +107,7 @@ resource "aws_ecs_task_definition" "task_definition" {
       {
         "name" : "DD_LOGS_CONFIG_CONTAINER_COLLECT_ALL",
         "value" : "true"
-      },
+      }
     ],
     "port_mappings" : [
       {
