@@ -22,3 +22,5 @@ const TEST_ENV_TO_TEST_URL = {
 export const TEST_URL = TEST_ENV_TO_TEST_URL[TEST_ENV];
 
 export const BLUEPRINT_SAFE_TYPE_OPTIONS = { delay: 50 };
+
+export const SKIP_LOGIN = process.env.SKIP_LOGIN === "true" || false;

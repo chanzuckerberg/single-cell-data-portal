@@ -52,15 +52,21 @@ All the E2E test commands can be found in `frontend/Makefile` and `frontend/pack
    1. Make sure you have your local app running already on http://localhost:3000. If not, in `frontend/` directory, run `npm run dev`
 
    1. In `frontend/` directory, run `npm run e2e`
+   
+   - NOTE: `SKIP_LOGIN=true npm run e2e` if login is not required for the tests.
 
 1. local -> local container (app started with `make local-init`)
 
    1. Make sure you have your local app running already on http://frontend.corporanet.local:3000. If not, in the root directory of the repo, run `make local-init` to start all containers
+
    1. In `frontend/` directory, run `npm run e2e`
+
+   - NOTE: `SKIP_LOGIN=true npm run e2e` if login is not required for the tests.
 
 1. local -> dev
 
    1. Manually check https://cellxgene.dev.single-cell.czi.technology is working
+
    1. In `frontend/` directory, run `TEST_ACCOUNT_PASS=PUT_PASSWORD_HERE npm run e2e-dev`
 
    - NOTE: Replace `PUT_PASSWORD_HERE` with `corpora/backend/dev/auth0-secret.test_account_password` in AWS Secret Manager

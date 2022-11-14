@@ -1,6 +1,7 @@
 import { TEST_URL } from "./constants";
 
 const featureFlags = {
+  cookies: [],
   origins: [
     {
       localStorage: [
