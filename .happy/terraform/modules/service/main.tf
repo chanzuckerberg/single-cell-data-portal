@@ -42,7 +42,7 @@ resource aws_ecs_task_definition task_definition {
     "environment": [
       {
         "name": "DD_API_KEY",
-        "value": "a09e8a7942e64775303e46c7ca2a0cc2"
+        "value": "key"
       },
       {
         "name": "ECS_FARGATE",
