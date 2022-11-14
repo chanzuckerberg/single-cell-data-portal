@@ -62,7 +62,8 @@ function LoggedInButtons({ name, email }: { name?: string; email?: string }) {
 
   function Content() {
     const curatorAPIFeature = get(FEATURES.CURATOR);
-
+    const { isAuthenticated, logout, } = useAuth0();
+    const windowLocation = window.location.origin;
     
     return (
       <Menu
@@ -78,12 +79,12 @@ function LoggedInButtons({ name, email }: { name?: string; email?: string }) {
             <MenuDivider />
           </div>
         )}
-        <LogOutAnchor href={`${API_URL}${API.LOG_OUT}`}>
-          <MenuItem data-testid="log-out">
-            <LogOutText>Logout</LogOutText>
+        {/* <LogOutAnchor href={`${API_URL}${API.LOG_OUT}`}> */}
+          <MenuItem data-testid="log-out" onClick={() => {logout({ returnTo: "localhost:3000/" })}}>
+            <LogOutText>Log out</LogOutText>
             <LogOutEmail data-testid="user-email">{email}</LogOutEmail>
           </MenuItem>
-        </LogOutAnchor>
+        {/* </LogOutAnchor> */}
       </Menu>
     );
   }

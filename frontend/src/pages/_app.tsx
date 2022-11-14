@@ -61,7 +61,7 @@ function App({ Component, pageProps }: AppPropsWithLayout): JSX.Element {
                 <Auth0Provider
                   domain="cziscience.com"
                   clientId="bfpvd3NSj5vnsDuURtqXtZHc2EL0BZvo"
-                  redirectUri={window.location.origin}
+                  redirectUri={"localhost:3000/"}
                 >
                   <Component {...pageProps} />
                 </Auth0Provider>
