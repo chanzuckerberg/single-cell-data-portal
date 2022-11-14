@@ -23,6 +23,10 @@ jobs:
   lint:
     runs-on: ubuntu-20.04
     steps:
+      - name: Set up Python 3.7
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.7
       - uses: actions/checkout@v2
       - name: Lint Python
         run: |
