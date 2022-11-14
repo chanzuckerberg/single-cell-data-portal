@@ -1,9 +1,9 @@
 # This is a service managed by ECS attached to the environment's load balancer
 #
 
-data aws_region current {}
+data "aws_region" "current" {}
 
-resource aws_ecs_service service {
+resource "aws_ecs_service" "service" {
   cluster         = var.cluster
   desired_count   = var.desired_count
   task_definition = aws_ecs_task_definition.task_definition.id
@@ -33,7 +33,7 @@ data "aws_secretsmanager_secret_version" "current" {
   secret_id = data.aws_secretsmanager_secret.secrets.id
 }
 
-resource aws_ecs_task_definition task_definition {
+resource "aws_ecs_task_definition" "task_definition" {
   family                   = "dp-${var.deployment_stage}-${var.custom_stack_name}-${var.app_name}"
   memory                   = var.memory
   cpu                      = var.cpu
@@ -41,7 +41,7 @@ resource aws_ecs_task_definition task_definition {
   task_role_arn            = var.task_role_arn
   execution_role_arn       = var.execution_role
   requires_compatibilities = ["FARGATE"]
-  container_definitions = <<EOF
+  container_definitions    = <<EOF
 [
   {
     "name": "datadog-agent",
@@ -59,13 +59,65 @@ resource aws_ecs_task_definition task_definition {
       {
         "name": "DD_SITE",
         "value": "datadoghq.com"
+      },
+      {
+        "name": "DD_SERVICE",
+        "value": "${var.app_name}"
+      },
+      {
+        "name": "DD_ENV",
+        "value": "${var.deployment_stage}"
+      },
+      {
+        "name": "DD_VERSION",
+        "value": "${var.image}"
+      },
+      {
+        "name": "DD_APM_ENABLED",
+        "value": "true"
+      },
+      {
+        "name"  : "DD_DOGSTATSD_NON_LOCAL_TRAFFIC",
+        "value" : "true"
+      },
+      {
+        "name"  : "DD_APM_NON_LOCAL_TRAFFIC",
+        "value" : "true"
+      },
+      {
+        "name"  : "DD_PROCESS_AGENT_ENABLED",
+        "value" : "true"
+      },
+      {
+        "name"  : "DD_TRACE_ANALYTICS_ENABLED",
+        "value" : "true"
+      },
+      {
+        "name"  : "DD_RUNTIME_METRICS_ENABLED",
+        "value" : "true"
+      },
+      {
+        "name"  : "DD_LOGS_INJECTION",
+        "value" : "true"
+      }
+    ],
+    "port_mappings" : [
+      {
+        "containerPort" : 8126,
+        "hostPort"      : 8126,
+        "protocol"      : "tcp"
+      },
+      {
+        "containerPort" : 8125,
+        "hostPort"      : 8125,
+        "protocol"      : "udp"
       }
     ],
     "logConfiguration": {
       "logDriver": "awslogs",
       "options": {
         "awslogs-stream-prefix" : "fargate",
-        "awslogs-group": "${aws_cloudwatch_log_group.cloud_watch_logs_group.id}",
+        "awslogs-group": "${aws_cloudwatch_log_group.cloud_watch_logs_group.id}/datadog-agent",
         "awslogs-region": "${data.aws_region.current.name}"
       }
     }
@@ -140,12 +192,12 @@ resource aws_ecs_task_definition task_definition {
 EOF
 }
 
-resource aws_cloudwatch_log_group cloud_watch_logs_group {
+resource "aws_cloudwatch_log_group" "cloud_watch_logs_group" {
   retention_in_days = 365
   name              = "/dp/${var.deployment_stage}/${var.custom_stack_name}/${var.app_name}"
 }
 
-resource aws_lb_target_group target_group {
+resource "aws_lb_target_group" "target_group" {
   vpc_id               = var.vpc
   port                 = var.service_port
   protocol             = "HTTP"
@@ -162,7 +214,7 @@ resource aws_lb_target_group target_group {
   }
 }
 
-resource aws_lb_listener_rule listener_rule {
+resource "aws_lb_listener_rule" "listener_rule" {
   listener_arn = var.listener
   priority     = var.priority
   # Dev stacks need to match on hostnames
