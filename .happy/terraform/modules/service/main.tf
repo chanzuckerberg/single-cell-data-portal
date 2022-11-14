@@ -93,13 +93,21 @@ resource "aws_ecs_task_definition" "task_definition" {
         "value" : "true"
       },
       {
-        "name"  : "DD_RUNTIME_METRICS_ENABLED",
+        "name"  : "DD_LOGS_INJECTION",
         "value" : "true"
       },
       {
-        "name"  : "DD_LOGS_INJECTION",
+        "name" : "DD_DOGSTATSD_PORT",
+        "value" : "8125"
+      },
+      {
+        "name" : "DD_SYSTEM_PROBE_ENABLED",
         "value" : "true"
-      }
+      },
+      {
+        "name" : "DD_LOGS_CONFIG_CONTAINER_COLLECT_ALL",
+        "value" : "true"
+      },
     ],
     "port_mappings" : [
       {
@@ -135,10 +143,6 @@ resource "aws_ecs_task_definition" "task_definition" {
       {
         "name": "DD_ENV",
         "value": "${var.deployment_stage}"
-      },
-      {
-        "name": "DD_VERSION",
-        "value": "${var.image}"
       },
       {
         "name": "REMOTE_DEV_PREFIX",
