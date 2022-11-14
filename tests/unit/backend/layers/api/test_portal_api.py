@@ -8,6 +8,7 @@ from unittest import mock
 from unittest.mock import Mock, patch
 from backend.layers.business.entities import DatasetArtifactDownloadData
 from backend.layers.common.entities import CollectionId, CollectionVersionId, DatasetMetadata, DatasetProcessingStatus, DatasetUploadStatus, DatasetVersionId, Link, OntologyTermId
+from backend.layers.thirdparty.uri_provider import FileInfo
 
 from furl import furl
 
@@ -2404,11 +2405,12 @@ class TestCollectionPostUploadLink(NewBaseTest):
         super().setUp()
         self.good_link = "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"
         self.dummy_link = "https://www.dropbox.com/s/12345678901234/test.h5ad?dl=0"
+        self.uri_provider.get_file_info = Mock(return_value=FileInfo(1, "file.h5ad"))
 
-    # TODO: rebuild the mock 
-    @patch("backend.corpora.common.upload.start_upload_sfn")
-    def test__link__202(self, mocked):
-        path = "/dp/v1/collections/test_collection_id_revision/upload-links"
+    # ✅
+    def test__link__202(self):
+        collection = self.generate_unpublished_collection()
+        path = f"/dp/v1/collections/{collection.version_id}/upload-links"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
         body = {"url": self.good_link}
 
@@ -2417,8 +2419,10 @@ class TestCollectionPostUploadLink(NewBaseTest):
         self.assertEqual(202, response.status_code)
         self.assertIn("dataset_id", json.loads(response.data).keys())
 
+    # ✅
     def test__link_no_auth__401(self):
-        path = "/dp/v1/collections/test_collection_id/upload-links"
+        collection = self.generate_unpublished_collection()
+        path = f"/dp/v1/collections/{collection.version_id}/upload-links"
         headers = {"host": "localhost", "Content-Type": "application/json"}
         body = {"url": self.dummy_link}
 
@@ -2426,13 +2430,10 @@ class TestCollectionPostUploadLink(NewBaseTest):
         response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
         self.assertEqual(401, response.status_code)
 
-    # TODO: rebuild the mock (already used previously)
-    @patch(
-        "backend.corpora.common.utils.dl_sources.url.DropBoxURL.file_info",
-        return_value={"size": 1, "name": "file.h5ad"},
-    )
-    def test__link_not_owner__403(self, mock_get_file_info):
-        path = "/dp/v1/collections/test_collection_id_not_owner/upload-links"
+    # ✅
+    def test__link_not_owner__403(self):
+        collection = self.generate_unpublished_collection(owner="someone else")
+        path = f"/dp/v1/collections/{collection.version_id}/upload-links"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
         body = {"url": self.dummy_link}
 
@@ -2440,10 +2441,15 @@ class TestCollectionPostUploadLink(NewBaseTest):
         response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
         self.assertEqual(403, response.status_code)
 
+    # 💛 Needs attention
     def test__bad_link__400(self):
-        path = "/dp/v1/collections/test_collection_id_revision/upload-links"
+        collection = self.generate_unpublished_collection()
+        path = f"/dp/v1/collections/{collection.version_id}/upload-links"
 
+        # ✅
         with self.subTest("Unsupported Provider"):
+            # Mocks the URI validator so that it return invalid
+            self.uri_provider.validate = Mock(return_value=False)
             headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
             body = {"url": "https://test_url.com"}
             test_url = furl(path=path)
@@ -2451,7 +2457,10 @@ class TestCollectionPostUploadLink(NewBaseTest):
             self.assertEqual(400, response.status_code)
             self.assertEqual("The dropbox shared link is invalid.", json.loads(response.data)["detail"])
 
+        # 🔴 TODO: requires a finer grained exception management
         with self.subTest("Bad Dropbox link"):
+            self.uri_provider.validate = Mock(return_value=True)
+
             headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
             body = {"url": self.dummy_link}
             test_url = furl(path=path)
@@ -2462,13 +2471,11 @@ class TestCollectionPostUploadLink(NewBaseTest):
                 or "The URL provided causes an error with Dropbox." == json.loads(response.data)["detail"]
             )
 
-    # TODO: rebuild the mock (already used previously)
-    @patch(
-        "backend.corpora.common.utils.dl_sources.url.DropBoxURL.file_info",
-        return_value={"size": 31 * GB, "name": "file.txt"},
-    )
-    def test__oversized__413(self, mock_func):
-        path = "/dp/v1/collections/test_collection_id_revision/upload-links"
+    # ✅
+    def test__oversized__413(self):
+        self.uri_provider.get_file_info = Mock(return_value=FileInfo(40 * 2**30, "file.h5ad"))
+        collection = self.generate_unpublished_collection()
+        path = f"/dp/v1/collections/{collection.version_id}/upload-links"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
         body = {"url": self.dummy_link}
 
@@ -2476,12 +2483,8 @@ class TestCollectionPostUploadLink(NewBaseTest):
         response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
         self.assertEqual(413, response.status_code)
 
-    # TODO: rebuild the mock (already used previously)
-    @patch(
-        "backend.corpora.common.utils.dl_sources.url.DropBoxURL.file_info",
-        return_value={"size": 1, "name": "file.h5ad"},
-    )
-    def test__link_fake_collection__403(self, *mocked):
+    # ✅
+    def test__link_fake_collection__403(self):
         path = "/dp/v1/collections/fake/upload-links"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
         body = {"url": self.good_link}
@@ -2490,13 +2493,10 @@ class TestCollectionPostUploadLink(NewBaseTest):
         response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
         self.assertEqual(403, response.status_code)
 
-    # TODO: rebuild the mock (already used previously)
-    @patch(
-        "backend.corpora.common.utils.dl_sources.url.DropBoxURL.file_info",
-        return_value={"size": 1, "name": "file.h5ad"},
-    )
-    def test_link_public_collection__403(self, *mocked):
-        path = "/dp/v1/collections/test_collection_id_public/upload-links"
+    # ✅
+    def test_link_public_collection__403(self):
+        collection = self.generate_published_collection()
+        path = f"/dp/v1/collections/{collection.version_id}/upload-links"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
         body = {"url": self.good_link}
 
@@ -2505,16 +2505,13 @@ class TestCollectionPostUploadLink(NewBaseTest):
         self.assertEqual(403, response.status_code)
 
 
-# TODO: rewrite the mock
-@patch(
-    "backend.corpora.common.utils.dl_sources.url.DropBoxURL.file_info",
-    return_value={"size": 1, "name": "file.h5ad"},
-)
 class TestCollectionPutUploadLink(NewBaseTest):
     def setUp(self):
         super().setUp()
         self.good_link = "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"
+        # TODO: headers do not follow the same pattern as the rest of the test. Maybe change?
         self.headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        self.uri_provider.get_file_info = Mock(return_value=FileInfo(1, "file.h5ad"))
 
     def assert_datasets_are_updated(self, dataset1, dataset2):
         """
@@ -2523,34 +2520,32 @@ class TestCollectionPutUploadLink(NewBaseTest):
         self.assertIsNotNone(dataset2)
         if dataset2 is not None: #pylance
             # The new dataset should have the same canonical id
+            self.assertNotEqual(dataset1.dataset_version_id, dataset2.version_id)
             self.assertEqual(dataset2.dataset_id.id, dataset1.dataset_id)
             # The artifacts for the new datasets should have a different id
-            self.assertNotEqual([a.id for a in dataset2.artifacts], dataset1.artifact_ids)
 
-    # TODO: rewrite the mock
-    @patch("backend.corpora.common.upload.start_upload_sfn")
-    def test__reupload_published_dataset_during_revision__202(self, *mocked):
+    #  ✅
+    def test__reupload_published_dataset_during_revision__202(self):
         """
         Reupload a published dataset during a revision
         """
-
         dataset = self.generate_dataset(
-            statuses=[DatasetStatusUpdate("processing_Status", DatasetProcessingStatus.SUCCESS)],
+            statuses=[DatasetStatusUpdate("processing_status", DatasetProcessingStatus.SUCCESS)],
             publish=True
         )
 
-        self.business_logic.create_collection_version(CollectionId(dataset.collection_id))
+        new_version = self.business_logic.create_collection_version(CollectionId(dataset.collection_id))
 
-        path = f"/dp/v1/collections/{dataset.collection_version_id}/upload-links"
+        path = f"/dp/v1/collections/{new_version.version_id}/upload-links"
         body = {"url": self.good_link, "id": dataset.dataset_version_id}
         response = self.app.put(path, headers=self.headers, data=json.dumps(body))
         self.assertEqual(202, response.status_code)
 
         new_dataset_id = json.loads(response.data)["dataset_id"]
-        new_dataset = self.business_logic.get_dataset_version(new_dataset_id)
-        self.assertNotEqual(new_dataset_id, dataset.dataset_version_id)
+        new_dataset = self.business_logic.get_dataset_version(DatasetVersionId(new_dataset_id))
         self.assert_datasets_are_updated(dataset, new_dataset)
 
+    # 🔴
     @patch("backend.corpora.common.upload.start_upload_sfn")
     def test__reupload_unpublished_dataset__202(self, *mocked):
         """

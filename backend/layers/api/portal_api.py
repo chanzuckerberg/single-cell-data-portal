@@ -3,14 +3,14 @@ from unittest.mock import Mock
 
 from flask import Response, jsonify, make_response
 from backend.corpora.common.utils.authorization_checks import is_user_owner_or_allowed
-from backend.corpora.common.utils.http_exceptions import ForbiddenHTTPException, InvalidParametersHTTPException, MethodNotAllowedException, NotFoundHTTPException, ServerErrorHTTPException
+from backend.corpora.common.utils.http_exceptions import ForbiddenHTTPException, InvalidParametersHTTPException, MethodNotAllowedException, NotFoundHTTPException, ServerErrorHTTPException, TooLargeHTTPException
 from backend.layers.api.enrichment import enrich_dataset_with_ancestors
 from backend.layers.auth.user_info import UserInfo
 from backend.layers.business.business import BusinessLogic
 
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.business.entities import CollectionMetadataUpdate, CollectionQueryFilter
-from backend.layers.business.exceptions import ArtifactNotFoundException, CollectionCreationException, CollectionUpdateException
+from backend.layers.business.exceptions import ArtifactNotFoundException, CollectionCreationException, CollectionIsPublishedException, CollectionNotFoundException, CollectionUpdateException, InvalidURIException, MaxFileSizeExceededException
 from backend.layers.common.entities import CollectionId, CollectionMetadata, CollectionVersion, CollectionVersionId, DatasetArtifact, DatasetId, DatasetStatus, DatasetVersion, DatasetVersionId, Link, OntologyTermId
 
 from backend.corpora.common.utils import authorization_checks as auth
@@ -315,15 +315,107 @@ class PortalApi:
     def post(self, collection_id: str, body: object, token_info: dict): # publish
         pass
 
-    def link(self, collection_id: str, body: dict, token_info: dict):
-        pass
-
-    def relink(self, collection_id: str, body: dict, token_info: dict):
-        pass
-
     def upload_from_link(self, collection_id: str, token_info: dict, url: str, dataset_id: str = None):
-        pass
 
+        version = self.business_logic.get_collection_version(CollectionVersionId(collection_id))
+        if version is None or not UserInfo(token_info).is_user_owner_or_allowed(version.owner):
+            raise ForbiddenHTTPException()
+
+        try:
+            dataset_version_id, _ = self.business_logic.ingest_dataset(
+                CollectionVersionId(collection_id),
+                url,
+                None if dataset_id is None else DatasetVersionId(dataset_id),
+                )
+            return dataset_version_id
+        except CollectionNotFoundException:
+            raise ForbiddenHTTPException()
+        except CollectionIsPublishedException:
+            raise ForbiddenHTTPException()
+        except InvalidURIException:
+            raise InvalidParametersHTTPException(detail="The dropbox shared link is invalid.") 
+        except MaxFileSizeExceededException:
+            raise TooLargeHTTPException()
+
+    # TODO: those two methods should probably be collapsed into one
+    # TODO: not quite sure what's the difference between url and link - investigate
+    def upload_link(self, collection_id: str, body: dict, token_info: dict):
+        dataset_id = self.upload_from_link(collection_id, token_info, body["url"])
+        return make_response({"dataset_id": dataset_id.id}, 202)
+
+    def upload_relink(self, collection_id: str, body: dict, token_info: dict):
+        dataset_id = self.upload_from_link(
+            collection_id,
+            token_info,
+            body.get("url", body.get("link")),
+            body.get("id"),
+        )
+        return make_response({"dataset_id": dataset_id.id}, 202)
+
+
+    # <TMP>
+
+
+    # def link(collection_id: str, body: dict, token_info: dict):
+    #     dataset_id = upload_from_link(collection_id, token_info, body["url"])
+    #     return make_response({"dataset_id": dataset_id}, 202)
+
+
+    # def relink(collection_id: str, body: dict, token_info: dict):
+    #     dataset_id = upload_from_link(
+    #         collection_id,
+    #         token_info,
+    #         body.get("url", body.get("link")),
+    #         body.get("id"),
+    #     )
+    #     return make_response({"dataset_id": dataset_id}, 202)
+
+
+    # @dbconnect
+    # def upload_from_link(collection_id: str, token_info: dict, url: str, dataset_id: str = None):
+    #     db_session = g.db_session
+
+    #     # Verify Dropbox URL
+    #     valid_link = from_url(url)
+    #     if not valid_link:
+    #         raise InvalidParametersHTTPException(detail="The dropbox shared link is invalid.")
+
+    #     # Get file info
+    #     try:
+    #         resp = valid_link.file_info()
+    #     except requests.HTTPError:
+    #         raise InvalidParametersHTTPException(detail="The URL provided causes an error with Dropbox.")
+    #     except MissingHeaderException as ex:
+    #         raise InvalidParametersHTTPException(detail=ex.detail)
+
+    #     file_size = resp.get("size")
+
+    #     try:
+    #         return upload(
+    #             db_session,
+    #             collection_id=collection_id,
+    #             url=url,
+    #             file_size=file_size,
+    #             user=token_info["sub"],
+    #             scope=token_info["scope"],
+    #             dataset_id=dataset_id,
+    #         )
+    #     except MaxFileSizeExceededException:
+    #         raise TooLargeHTTPException()
+    #     except InvalidFileFormatException:
+    #         raise InvalidParametersHTTPException(detail="The file referred to by the link is not a support file format.")
+    #     except NonExistentCollectionException:
+    #         raise ForbiddenHTTPException()
+    #     except InvalidProcessingStateException:
+    #         raise MethodNotAllowedException(
+    #             detail="Submission failed. A dataset cannot be updated while a previous update for the same dataset is in "
+    #             "progress. Please cancel the current submission by deleting the dataset, or wait until the submission has "
+    #             "finished processing.",
+    #         )
+    #     except NonExistentDatasetException:
+    #         raise NotFoundHTTPException()
+
+    # </TMP>
 
 
     def post_dataset_asset(self, dataset_id: str, asset_id: str):
@@ -406,7 +498,7 @@ class PortalApi:
             "processing_status": version.status.processing_status or "NA",
             "dataset_id": dataset_id,
             "id": "NA",
-            "upload_progress": 12345,
+            "upload_progress": 12345, # TODO
             "upload_status": version.status.upload_status or "NA",
             "validation_status": version.status.validation_status or "NA",
         }

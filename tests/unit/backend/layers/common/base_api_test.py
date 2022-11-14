@@ -93,8 +93,8 @@ class NewBaseTest(BaseAuthAPITest):
         self.crossref_provider = CrossrefProviderInterface()
         step_function_provider = StepFunctionProviderInterface()
         s3_provider = S3Provider()
-        uri_provider = UriProviderInterface()
-        uri_provider.validate = Mock(return_value=True) # By default, every link should be valid
+        self.uri_provider = UriProviderInterface()
+        self.uri_provider.validate = Mock(return_value=True) # By default, every link should be valid
 
         self.sample_dataset_metadata = DatasetMetadata(
             name = "test_dataset_name",
@@ -121,7 +121,7 @@ class NewBaseTest(BaseAuthAPITest):
             self.crossref_provider, 
             step_function_provider, 
             s3_provider, 
-            uri_provider
+            self.uri_provider
         )
 
         pa = PortalApi(self.business_logic)

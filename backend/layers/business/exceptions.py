@@ -24,6 +24,18 @@ class CollectionUpdateException(BusinessException):
         self.errors = errors
         super().__init__()
 
+class CollectionNotFoundException(CollectionUpdateException):
+    """
+    Raised when a collection is expected to be found, but does not exist
+    """
+    pass
+
+class CollectionIsPublishedException(CollectionUpdateException):
+    """
+    Raised when a mutable operation is performed on a published exception
+    """
+    pass
+
 
 class InvalidLinkException(BusinessException):
     
@@ -38,6 +50,18 @@ class ImmutableCollectionException(BusinessException):
 
 
 class DatasetIngestException(BusinessException):
+    pass
+
+class InvalidURIException(DatasetIngestException):
+    """
+    Raised when trying to ingest a dataset with an invalid URI
+    """
+    pass
+
+class MaxFileSizeExceededException(DatasetIngestException):
+    """
+    Raised when trying to ingest a dataset that is too big
+    """
     pass
 
 class DatasetUpdateException(BusinessException):
