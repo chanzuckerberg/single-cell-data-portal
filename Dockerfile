@@ -18,6 +18,7 @@ ADD entrypoint.sh entrypoint.sh
 RUN chmod +x entrypoint.sh
 
 # ddtrace is for Datadog APM metric reporting
+RUN python3 -m pip install cmake
 RUN python3 -m pip install -r requirements-base.txt -r requirements-api.txt ddtrace
 EXPOSE 5000
 
