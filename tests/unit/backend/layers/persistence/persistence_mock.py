@@ -121,6 +121,12 @@ class DatabaseProviderMock(DatabaseProviderInterface):
     def get_collection_version(self, version_id: CollectionVersionId) -> CollectionVersion:
         return copy.deepcopy(self.collections_versions.get(version_id.id))
 
+    def get_all_versions_for_collection(self, collection_id: CollectionId) -> Iterable[CollectionVersion]:
+        # On a database, will require a secondary index on `collection_id` for an optimized lookup
+        for collection_version in self.collections_versions.values():
+            if collection_version.collection_id == collection_id:
+                yield copy.deepcopy(collection_version)
+
     # MAYBE
     def finalize_collection_version(self, collection_id: CollectionId, version_id: CollectionVersionId, published_at: Optional[datetime]) -> None:
         self.collections[collection_id.id] = version_id.id
