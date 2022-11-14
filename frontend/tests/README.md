@@ -204,3 +204,95 @@ Where tests are skipped vs. run in different environments.
   </tr>
 </tbody>
 </table>
+
+# Best Practices
+
+## Define test coverage
+
+1.  Happy Paths:
+
+    Business critical features must at least have the most commonly exercised happy path scenarios covered, so we ensure the majority of the users won't be affected by an uncommon bug
+
+1.  Incremental coverage:
+
+    As uncommon bugs are discovered, create tickets to track and write tests to ensure those edge cases won't happen again. This way we gradually build up the test coverage of our application for quality improvement
+
+## Build meaningful, efficient, and focused tests
+
+1.  Break workflows down with smaller tests:
+
+    Smaller and focused tests increase the team's ability to pinpoint root cause faster, tests also run faster, and thus decrease the bug fix time. For examples:
+
+    1. Testing for a collection revision, seed published collections for the test account, so the revision tests don't waste time creating collections before testing revisions and risk running into bugs related to collection creation, which should be covered by collection creation tests, not revision tests.
+
+    1. Loggedin in tests should avoid exercising the login flow and reuse the authenticated browser state from the login test itself
+
+1.  Create meaningful assertions to verify expected behaviors:
+
+    1. Before writing any tests, think about what major evidences and behaviors that need to happen to prove that the workflow is working. E.g., certain HTML elements exist, certain content exists, URL contains certain query params, etc..
+
+    1. Step into your users' shoes:
+
+       Tests should reflect workflows that our users actually perform. In other words, your test steps should mimic how a user interacts with the application, so we exercise code paths and features our users will use
+
+1.  Anticipate and avoid flakiness:
+
+    End to end tests could go wrong due to many factors outside of your control, such as temporary network blips, spikes in traffic, JS listeners not set up in time to observe user interactions, etc.. Our job as test authors is to anticipate such common conditions and write robust tests that take those conditions into account, so we avoid false alerts as much as possible
+
+    1. Mindset:
+
+       Whenever you write tests, always ask yourself **what could go wrong in your tests**, especially the flaky conditions that are out of your control. Remember Murphy's Law, if anything can go wrong, it will. So identify and handle those factors
+
+    1. Check your test assumptions:
+
+       In your test setup, are you picking the first item from a dropdown? If so, your test assumes that the first item will always be the same one, which is likely untrue as data and/or default sort order changes. As a result, your subsequent assertions must NOT rely on hard coded expected state that tie to the first item today, instead, parse the expected state at run time, so your test is resilient against state changes
+
+       For example, in a Gene Expression test, we select the first tissue from the dropdown list, and instead of hard coding the expected number of cell types from the tissue, we parse the UI to find the expected number of cell types at run time. This way, when BE added/removed cell types associated to the tissue, our test would still pass
+
+    1. Avoid using hard coded wait:
+
+       This is a very common code smell that should be avoided as much as possible.
+
+       For example, it's very easy to write a test to wait for 3 seconds after navigating to a page, hoping 3 seconds would be enough for the page to be loaded and ready for testing. However, due to the flaky conditions listed above, 3 seconds could either be too long or too short, depending on the machine and the network traffic at the time. So it's more reliable to wait for certain conditions and/or events to happen over a hard coded wait. Such as waiting for page load event to happen, or once certain content has been rendered on the page before the actual test begins
+
+    1. Use utility function `tryUntil()`: There will be times when your test assertions will happen before the application is in the expected state due to the flaky factors above. So we have a utility function `tryUntil()` that allows you to retry defined actions/assertions until your expected condition is met. For examples, you can retry clicking on a button until the modal element exists, or retry asserting a certain element exists before throwing an error. There are examples available in the tests that you can look for them by global searching for `tryUntil`
+
+    1. Use `data-test-id` HTML attribute for target elements: Since our application's HTML structure changes over time, it's unreliable to select an element based on properties and structures that could easily change over time, such as css classes and element structures (e.g., first div child of a parent). The more reliable way is to add a `data-test-id` attribute to your test target, so when the element and/or its context changes, we can still reliably target the element
+
+## Maintain application in a predictable state
+
+1.  Create idempotent tests that restore the application state to the state before the tests are run. This way we eliminate side effects and byproducts of said tests that could cause unexpected errors in tests.
+
+    For example, My Collections page tests used to generate a large amount of private collections that were never cleaned up, which led to My Collections page tests to start timing out due to the page loading very slowly. The solution was to delete the transient collections after each test, so we only have an expected amount of data when each test runs
+
+1.  Write atomic tests:
+
+    Atomic tests mean that each test case should have zero dependencies on the test cases before it, so we eliminate the possibility of side effects from other tests polluting the test environment of your current test.
+
+    This helps avoid flakiness that are hard to reproduce and debug, and also allows us to auto retry a test case that fails temporarily due to flaky conditions
+
+## Keep code DRY and readable
+
+1.  Avoid nesting tests with `beforeEach()` and `afterEach()` when you can extract reusable functions to call explicitly inside each test case. This helps improve readability and maintenance, since all the setup and teardown are isolated within a test case. [Read more](https://kentcdodds.com/blog/avoid-nesting-when-youre-testing)
+
+1.  Avoid unnecessary steps that add complexity to tests
+
+    When your tests exercise code paths and features that are not related to your test case, you risk adding noises in test reports, slow down test runs, slow down your debugging speed, and increase points of failure and cost of maintenance
+
+    For examples, performing test steps that users don't do or writing assertions that are irrelevant to your test case.
+
+1.  Write test descriptions that are readable to your team and your future self
+
+    This way it's easier to understand the scope and intention of the test in the test report and helps your team decide whether to add new test cases or modify the existing one when new features are added and/or refactors happen.
+
+    As a bonus point, a well written test description helps code reviewers provide valuable feedback, such as catching test steps that don't assert enough for the intended test case, or suggesting ways to help improve test accuracy and efficiency
+
+## Resources
+
+1. [Datadog testing guide](https://www.datadoghq.com/resources/frontend-monitoring-best-practices/)
+
+   1. The first two sections should be enough! **Best practices for creating
+      end-to-end tests** and **Best practices for
+      maintaining end-to-end tests**
+
+1. [Avoid nesting when you're testing](https://kentcdodds.com/blog/avoid-nesting-when-youre-testing)
