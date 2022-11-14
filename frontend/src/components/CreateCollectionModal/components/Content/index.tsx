@@ -13,7 +13,7 @@ import {
 import { isTombstonedCollection } from "src/common/utils/typeGuards";
 import {
   StyledDefaultButton,
-  StyledPrimaryAnchorButton,
+  StyledPrimaryMinimalButton,
   StyledPrimaryButton,
 } from "src/components/common/Button/common/style";
 import { Value } from "src/components/common/Form/common/constants";
@@ -21,6 +21,7 @@ import Input from "src/components/common/Form/Input";
 import TextArea from "src/components/common/Form/TextArea";
 import { isLinkTypeDOI } from "src/components/CreateCollectionModal/components/Content/common/utils";
 import { getDOIPath } from "src/views/Collection/utils";
+import { INVALID_DOI_ERROR_MESSAGE } from "./common/constants";
 import AddLink from "./components/AddLink";
 import LinkInput, { LinkValue } from "./components/LinkInput";
 import {
@@ -33,12 +34,6 @@ import {
 } from "./style";
 
 const REQUIRED_FIELD_TEXT = "Required";
-
-/**
- * Text displayed when BE has identified DOI as invalid.
- */
-export const INVALID_DOI_ERROR_MESSAGE =
-  "This DOI could not be found. Please correct or remove it.";
 
 interface Props {
   onClose: () => void;
@@ -65,7 +60,7 @@ enum FIELD_NAMES {
 }
 
 const AddMetadataLinkButton = () => (
-  <StyledPrimaryAnchorButton intent={Intent.PRIMARY} minimal text="Add Link" />
+  <StyledPrimaryMinimalButton intent={Intent.PRIMARY} minimal text="Add Link" />
 );
 
 const requiredValidator = (value: string) => value.length > 0 || "Required";

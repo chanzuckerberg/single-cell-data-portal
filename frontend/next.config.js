@@ -12,7 +12,7 @@ const PLAUSIBLE_URL = "https://plausible.io";
 
 const TWITTER_URL = "https://cdn.syndication.twimg.com platform.twitter.com";
 
-const SCRIPT_SRC = ["'self'", PLAUSIBLE_URL, TWITTER_URL];
+const SCRIPT_SRC = ["'self'", "'wasm-unsafe-eval'", PLAUSIBLE_URL, TWITTER_URL];
 
 const defaultSecureHeaders = {
   contentSecurityPolicy: {

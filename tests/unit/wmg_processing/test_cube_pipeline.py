@@ -5,7 +5,7 @@ import tempfile
 from unittest import mock
 from unittest.mock import Mock
 import contextlib
-from backend.wmg.data.cube_pipeline import main, logger
+from backend.wmg.pipeline.cube_pipeline import main, logger
 
 
 @contextlib.contextmanager
@@ -19,8 +19,11 @@ def change_directory(path):
 
 
 class TestCubePipe(unittest.TestCase):
-    @mock.patch("backend.wmg.data.cube_pipeline.notify_slack")
-    @mock.patch("backend.wmg.data.cube_pipeline.load_data_and_create_cube", new=Mock(side_effect=Exception("testing")))
+    @mock.patch("backend.wmg.pipeline.cube_pipeline.notify_slack")
+    @mock.patch(
+        "backend.wmg.pipeline.cube_pipeline.load_data_and_create_cube",
+        new=Mock(side_effect=Exception("testing")),
+    )
     def test_exception_handle_catches_errors(self, mock_notify_slack: Mock):
         with tempfile.TemporaryDirectory() as tempdir:
             last_wd = os.getcwd()

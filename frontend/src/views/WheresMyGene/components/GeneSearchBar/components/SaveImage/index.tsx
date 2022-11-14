@@ -13,8 +13,8 @@ import Modal from "src/components/common/Modal";
 import { CellType } from "src/views/WheresMyGene/common/types";
 import { getHeatmapHeight, getHeatmapWidth } from "../../../HeatMap/utils";
 import { Label } from "../../style";
-import { ButtonWrapper, StyledIconButton } from "../QuickSelect/style";
-import { DownloadButton, StyledDiv } from "./style";
+import { StyledIconButton } from "../QuickSelect/style";
+import { ButtonWrapper, DownloadButton, StyledDiv } from "./style";
 
 export const EXCLUDE_IN_SCREENSHOT_CLASS_NAME = "screenshot-exclude";
 const screenshotFilter =
@@ -77,7 +77,7 @@ export default function SaveImage({
             backgroundColor: "white",
             filter: screenshotFilter(tissue),
             height: getHeatmapHeight(selectedCellTypes[tissue]) + 200,
-            pixelRatio: 2,
+            pixelRatio: 4,
             width: getHeatmapWidth(selectedGenes) + 200,
           });
           // raw URI if only one tissue is selected
@@ -108,7 +108,7 @@ export default function SaveImage({
       }
       link.click();
       link.remove();
-      track(EVENTS.WMG_DOWNLOAD_COMPLETE, { file_type: fileType });
+      track(EVENTS.WMG_DOWNLOAD_COMPLETE, { file_type: fileType , tissues: selectedTissues.toString(), genes: selectedGenes.toString() });
     } catch (error) {
       console.error(error);
     }
@@ -116,14 +116,20 @@ export default function SaveImage({
 
   return (
     <>
-      <ButtonWrapper>
+      <ButtonWrapper className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}>
         <Label>Download</Label>
         <StyledIconButton
-          disabled={selectedTissues.length === 0 || selectedGenes.length === 0}
-          data-test-id={"download-button"}
-          onClick={handleButtonClick}
-          sdsType="primary"
-          sdsSize="medium"
+          data-test-id="download-button"
+          // TODO: put handleButtonClick when svgs are fixed
+          onClick={handleDownload}
+          {...{
+            // (thuang): Move this back to explicit prop={value} after
+            // upgrading SDS to enable type checking again
+            disabled:
+              selectedTissues.length === 0 || selectedGenes.length === 0,
+            sdsSize: "medium",
+            sdsType: "primary",
+          }}
         >
           <Icon sdsIcon="download" sdsSize="l" sdsType="iconButton" />
         </StyledIconButton>

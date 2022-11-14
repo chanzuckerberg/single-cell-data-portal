@@ -70,8 +70,8 @@ export function buildSelectCategoryView(
 
   // Handle special cases where select category may be disabled.
   if (
-    categoryFilterId === CATEGORY_FILTER_ID.ETHNICITY &&
-    !isEthnicityViewEnabled(filterState)
+    categoryFilterId === CATEGORY_FILTER_ID.SELF_REPORTED_ETHNICITY &&
+    !isSelfReportedEthnicityViewEnabled(filterState)
   ) {
     selectView.isDisabled = true;
     selectView.tooltip = tooltip;
@@ -149,14 +149,14 @@ export function buildSelectCategoryValueViews(
 }
 
 /**
- * The ethnicity filter is only view enabled if:
+ * The self-reported ethnicity filter is only view enabled if:
  * 1. Homo sapiens is available as an option in the organism filter.
  * 2. The organism filter has selected values that includes Homo sapiens.
  * @param filterState - Categories, category value and their counts with the current filter applied. Required to
- * determine if ethnicity category should be enabled.
- * @returns True if ethnicity is either na or unknown.
+ * determine if self-reported ethnicity category should be enabled.
+ * @returns True if self-reported ethnicity is either na or unknown.
  */
-function isEthnicityViewEnabled(filterState: FilterState) {
+function isSelfReportedEthnicityViewEnabled(filterState: FilterState) {
   // Check to see if there are Homo sapiens values in the result set.
   const organismCategoryValues = filterState[
     CATEGORY_FILTER_ID.ORGANISM

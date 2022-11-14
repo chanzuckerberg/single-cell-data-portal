@@ -18,6 +18,10 @@ init:
 lint:
 	npm run prettier-check & npm run lint
 
+.PHONY: format
+format:
+	npm run format
+
 .PHONY: clean
 clean:
 	npm run clean
@@ -33,21 +37,9 @@ retrieve-vars:
 upload-vars:
 	aws s3 cp .env.production $(S3_ENVIRONMENT_FILE)
 
-.PHONY: smoke-test-prod-build
-smoke-test-prod-build:
-	npm run smoke-test-prod-build
-
-.PHONY: smoke-test-with-local-backend
-smoke-test-with-local-backend:
-	npm run smoke-test-with-local-backend
-
 .PHONY: e2e
-e2e:
+e2e: ## only used by make local-e2e
 	TEST_ENV=$(DEPLOYMENT_STAGE) npm run e2e
-
-.PHONY: e2e-on-local-dev
-e2e-on-local-dev:
-	docker-compose exec frontend make smoke-test-with-local-dev
 
 .PHONY: smoke-test-with-local-dev
 smoke-test-with-local-dev:

@@ -4,21 +4,21 @@ from unittest.mock import patch
 
 import requests
 
-from backend.corpora.common.corpora_orm import (
+from backend.common.corpora_orm import (
     ConversionStatus,
     UploadStatus,
     ValidationStatus,
     DatasetArtifactFileType,
 )
-from backend.corpora.common.entities import Dataset
-from backend.corpora.dataset_processing.exceptions import (
+from backend.common.entities import Dataset
+from backend.portal.pipeline.processing.exceptions import (
     ProcessingFailed,
     ValidationFailed,
     ConversionFailed,
 )
-from backend.corpora.dataset_processing.process import main
+from backend.portal.pipeline.processing.process import main
 from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
-from tests.unit.backend.corpora.fixtures.environment_setup import EnvironmentSetup
+from tests.unit.backend.fixtures.environment_setup import EnvironmentSetup
 
 
 class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
@@ -41,7 +41,7 @@ class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        cls.h5ad_raw = cls.fixture_file_path("fixtures/2_0_0_raw_valid.h5ad")
+        cls.h5ad_raw = cls.fixture_file_path("fixtures/3_0_0_valid.h5ad")
 
     @staticmethod
     def download(url, local_filename):
@@ -64,8 +64,8 @@ class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
             if os.path.exists(f):
                 os.remove(f)
 
-    @patch("backend.corpora.dataset_processing.process_download_validate.download_from_source_uri")
-    @patch("backend.corpora.dataset_processing.remaster_cxg.process")  # TODO: provide test data to properly test this.
+    @patch("backend.portal.pipeline.processing.process_download_validate.download_from_source_uri")
+    @patch("backend.portal.pipeline.processing.remaster_cxg.process")  # TODO: provide test data to properly test this.
     def test_main(self, mock_remaster_cxg_process, mock_download_from_source_uri):
         """
         Tests full pipeline for processing an uploaded H5AD file, including database updates
@@ -108,9 +108,9 @@ class TestDatasetProcessing(CorporaTestCaseUsingMockAWS):
         # 2. cxg, rds uploaded to s3
         # 3. databases metadata updated and showing successful status
 
-    @patch("backend.corpora.dataset_processing.process_cxg.process")
-    @patch("backend.corpora.dataset_processing.process_seurat.process")
-    @patch("backend.corpora.dataset_processing.process_download_validate.process")
+    @patch("backend.portal.pipeline.processing.process_cxg.process")
+    @patch("backend.portal.pipeline.processing.process_seurat.process")
+    @patch("backend.portal.pipeline.processing.process_download_validate.process")
     def test_main__Exceptions(self, mock_process_download_validate, mock_process_seurat, mock_process_cxg):
         test_environment = {
             "DROPBOX_URL": "https://www.dropbox.com/IGNORED",

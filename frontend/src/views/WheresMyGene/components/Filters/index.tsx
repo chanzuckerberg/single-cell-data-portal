@@ -64,7 +64,7 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
       datasets: rawDatasets,
       development_stage_terms: rawDevelopmentStages,
       disease_terms: rawDiseases,
-      ethnicity_terms: rawEthnicities,
+      self_reported_ethnicity_terms: rawEthnicities,
       sex_terms: rawSexes,
     },
     isLoading: rawIsLoading,
@@ -92,7 +92,7 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
       })),
       development_stage_terms: rawDevelopmentStages,
       disease_terms: rawDiseases,
-      ethnicity_terms: rawEthnicities,
+      self_reported_ethnicity_terms: rawEthnicities,
       sex_terms: rawSexes,
     };
 
@@ -104,7 +104,7 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
   const {
     datasets = EMPTY_ARRAY,
     disease_terms = EMPTY_ARRAY,
-    ethnicity_terms = EMPTY_ARRAY,
+    self_reported_ethnicity_terms = EMPTY_ARRAY,
     sex_terms = EMPTY_ARRAY,
   } = availableFilters;
 
@@ -117,10 +117,10 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
   }, [disease_terms, diseases]);
 
   const selectedEthnicities = useMemo(() => {
-    return ethnicity_terms.filter((ethnicity) =>
+    return self_reported_ethnicity_terms.filter((ethnicity) =>
       ethnicities?.includes(ethnicity.id)
     );
-  }, [ethnicity_terms, ethnicities]);
+  }, [self_reported_ethnicity_terms, ethnicities]);
 
   const selectedSexes = useMemo(() => {
     return sex_terms.filter((sex) => sexes?.includes(sex.id));
@@ -206,8 +206,8 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
           />
           <ComplexFilter
             multiple
-            label="Ethnicity"
-            options={ethnicity_terms}
+            label="Self-Reported Ethnicity"
+            options={self_reported_ethnicity_terms}
             onChange={handleEthnicitiesChange}
             value={selectedEthnicities}
             InputDropdownComponent={

@@ -1,22 +1,29 @@
-import { ElementHandle } from "playwright";
+import { ElementHandle, expect, Page, test } from "@playwright/test";
 import { ROUTES } from "src/common/constants/routes";
 import { TEST_URL } from "tests/common/constants";
 import {
-  describeIfDeployed,
   getInnerText,
   goToPage,
+  isDevStaging,
   login,
   tryUntil,
 } from "tests/utils/helpers";
 import { getTestID, getText } from "tests/utils/selectors";
 
+const { describe, skip } = test;
+
 const COLLECTION_ROW_ID = "collection-row";
 
-describeIfDeployed("Collection Revision", () => {
-  it("starts a revision", async () => {
-    await login();
+describe("Collection Revision", () => {
+  skip(
+    !isDevStaging,
+    "We only seed published collections for revision test in dev and staging"
+  );
 
-    const collectionName = await startRevision();
+  test("starts a revision", async ({ page }) => {
+    await login(page);
+
+    const collectionName = await startRevision(page);
 
     const publishButton = await page.$(getTestID("publish-collection-button"));
 
@@ -34,25 +41,30 @@ describeIfDeployed("Collection Revision", () => {
     // so upping this for avoid flakiness
     const RETRY_TIMES = 100;
 
-    await tryUntil(async () => {
-      const collections = await page.$$(COLLECTION_ROW_SELECTOR);
+    await tryUntil(
+      async () => {
+        const collections = await page.$$(COLLECTION_ROW_SELECTOR);
 
-      for (const collection of collections) {
-        const hasPublished = Boolean(await collection.$(getText("Published")));
-        const hasRevisionPending = Boolean(
-          await collection.$(getText("Revision Pending"))
-        );
+        for (const collection of collections) {
+          const hasPublished = Boolean(
+            await collection.$(getText("Published"))
+          );
+          const hasRevisionPending = Boolean(
+            await collection.$(getText("Revision Pending"))
+          );
 
-        if (hasPublished && hasRevisionPending) {
-          collectionRowContinue = collection;
-          break;
+          if (hasPublished && hasRevisionPending) {
+            collectionRowContinue = collection;
+            break;
+          }
         }
-      }
 
-      if (!collectionRowContinue) {
-        throw new Error("Collection not found");
-      }
-    }, RETRY_TIMES);
+        if (!collectionRowContinue) {
+          throw new Error("Collection not found");
+        }
+      },
+      { maxRetry: RETRY_TIMES, page }
+    );
 
     expect(collectionRowContinue).not.toBe(null);
 
@@ -64,24 +76,29 @@ describeIfDeployed("Collection Revision", () => {
 
     await actionButtonContinue?.click();
 
-    await deleteRevision();
+    await deleteRevision(page);
   });
 
-  it("allows editing", async () => {
-    await login();
+  test("allows editing", async ({ page }) => {
+    await login(page);
 
-    await startRevision();
+    await startRevision(page);
 
-    const collectionName = await getInnerText(getTestID("collection-name"));
+    const collectionName = await getInnerText(
+      getTestID("collection-name"),
+      page
+    );
 
     const collectionDescription = await getInnerText(
-      getTestID("collection-description")
+      getTestID("collection-description"),
+      page
     );
 
     const COLLECTION_CONTACT_ID = "collection-contact";
 
     const collectionContactName = await getInnerText(
-      getTestID(COLLECTION_CONTACT_ID)
+      getTestID(COLLECTION_CONTACT_ID),
+      page
     );
 
     const collectionContactEmail = (
@@ -114,9 +131,12 @@ describeIfDeployed("Collection Revision", () => {
 
     await page.click(getTestID("create-button"));
 
-    await tryUntil(async () => {
-      await expect(page).not.toHaveSelector(getTestID(COLLECTION_CONTENT_ID));
-    });
+    await tryUntil(
+      async () => {
+        await expect(page).not.toHaveSelector(getTestID(COLLECTION_CONTENT_ID));
+      },
+      { page }
+    );
 
     await expect(page).toMatchText(new RegExp(newCollectionName));
     await expect(page).toMatchText(new RegExp(collectionDescription));
@@ -137,34 +157,42 @@ describeIfDeployed("Collection Revision", () => {
 
     await expect(publishButton).toBeEnabled();
 
-    await deleteRevision();
+    await deleteRevision(page);
   });
 });
 
-async function startRevision(): Promise<string> {
-  await goToPage(TEST_URL + ROUTES.MY_COLLECTIONS);
+async function startRevision(page: Page): Promise<string> {
+  await goToPage(TEST_URL + ROUTES.MY_COLLECTIONS, page);
   // (thuang): Wait for collections to load to prevent race condition
   await page.waitForLoadState("networkidle");
 
   const MIN_USABLE_COLLECTION_COUNT = 4;
 
   // (thuang): If we can't find at least 4 usable collections, we'll delete a revision
-  await tryUntil(async () => {
-    try {
-      await expect(page).toHaveSelector(getText("Start Revision"));
+  await tryUntil(
+    async () => {
+      try {
+        await expect(page).toHaveSelector(getText("Start Revision"));
 
-      await tryUntil(async () => {
-        const collectionRows = await page.locator(getText("Start Revision"));
-        expect(await collectionRows.count()).toBeGreaterThan(
-          MIN_USABLE_COLLECTION_COUNT - 1
+        await tryUntil(
+          async () => {
+            const collectionRows = await page.locator(
+              getText("Start Revision")
+            );
+            expect(await collectionRows.count()).toBeGreaterThan(
+              MIN_USABLE_COLLECTION_COUNT - 1
+            );
+          },
+          { page }
         );
-      });
-    } catch {
-      await page.click(getText("Continue"));
-      await deleteRevision();
-      throw new Error("No available collection");
-    }
-  });
+      } catch {
+        await page.click(getText("Continue"));
+        await deleteRevision(page);
+        throw new Error("No available collection");
+      }
+    },
+    { page }
+  );
 
   /**
    * (thuang): NOTE: the `*` at the beginning of the string captures the
@@ -207,7 +235,8 @@ async function startRevision(): Promise<string> {
     "This is a private revision of a public collection.";
 
   await tryUntil(
-    async () => await expect(page).toHaveSelector(getTestID("revision-status"))
+    async () => await expect(page).toHaveSelector(getTestID("revision-status")),
+    { page }
   );
 
   const revisionStatusElement = await page.$(getTestID("revision-status"));
@@ -217,7 +246,7 @@ async function startRevision(): Promise<string> {
   return collectionName as string;
 }
 
-async function deleteRevision() {
+async function deleteRevision(page: Page) {
   const DROPDOWN_CANCEL_ID = "dropdown-cancel-revision";
 
   if (!(await page.$(getTestID(DROPDOWN_CANCEL_ID)))) {

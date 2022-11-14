@@ -1,9 +1,9 @@
 from sqlalchemy.orm import Session
 
-from backend.corpora.common.entities import Collection, Dataset
-from backend.corpora.common.entities.geneset import Geneset
-from backend.corpora.common.entities.collection_link import CollectionLink
-from backend.corpora.common.utils.db_session import db_session_manager
+from backend.common.entities import Collection, Dataset
+from backend.common.entities.geneset import Geneset
+from backend.common.entities.collection_link import CollectionLink
+from backend.common.utils.db_session import db_session_manager
 from tests.unit.backend.utils import (
     BogusCollectionParams,
     BogusDatasetParams,

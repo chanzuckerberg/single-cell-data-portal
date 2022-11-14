@@ -118,7 +118,7 @@ export enum CATEGORY_FILTER_ID {
   "CELL_TYPE_CALCULATED" = "CELL_TYPE_CALCULATED",
   "DEVELOPMENT_STAGE" = "DEVELOPMENT_STAGE",
   "DISEASE" = "DISEASE",
-  "ETHNICITY" = "ETHNICITY",
+  "SELF_REPORTED_ETHNICITY" = "SELF_REPORTED_ETHNICITY",
   "GENE_COUNT" = "GENE_COUNT",
   "ORGANISM" = "ORGANISM",
   "PUBLICATION_AUTHORS" = "PUBLICATION_AUTHORS",
@@ -319,7 +319,7 @@ export interface Categories {
   cellTypeCalculated: string[];
   disease: Ontology[];
   development_stage_ancestors: string[];
-  ethnicity: Ontology[];
+  self_reported_ethnicity: Ontology[];
   organism: Ontology[];
   sex: Ontology[];
   tissue: Ontology[];
@@ -405,9 +405,9 @@ export interface DatasetRow extends Categories, PublisherMetadataCategories {
 }
 
 /**
- * Display values of unspecified ethnicity labels.
+ * Display values of unspecified self-reported ethnicity labels.
  */
-export enum ETHNICITY_UNSPECIFIED_LABEL {
+export enum SELF_REPORTED_ETHNICITY_UNSPECIFIED_LABEL {
   "unknown" = "Unknown",
 }
 

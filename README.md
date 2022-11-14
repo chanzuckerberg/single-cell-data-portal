@@ -27,12 +27,12 @@ Once you have run the pre-requisite sets, you are ready to begin developing for 
 
 ### Common Commands
 
-| Command                      | Description                                                                          | Notes                                                                                                |
-| ---------------------------- | ------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------- |
-| `make fmt`                   | Auto-format codebase using [black](https://pypi.org/project/black/).                 | This should be run before merging in any changes.                                                    |
-| `make lint`                  | Perform lint checks on codebase using [flake8](https://flake8.pycqa.org/en/latest/). | This should be run before merging in any changes.                                                    |
-| `make unit-test`             | Run all unit tests.                                                                  |                                                                                                      |
-| `make local-functional-test` | Run all functional tests.                                                            | These tests run against a deployed environment which is selected by the value of `DEPLOYMENT_STAGE`. |
+| Command                                                                                 | Description                                                                          | Notes                                             |
+|-----------------------------------------------------------------------------------------| ------------------------------------------------------------------------------------ |---------------------------------------------------|
+| `make fmt`                                                                              | Auto-format codebase using [black](https://pypi.org/project/black/).                 | This should be run before merging in any changes. |
+| `make lint`                                                                             | Perform lint checks on codebase using [flake8](https://flake8.pycqa.org/en/latest/). | This should be run before merging in any changes. |
+| `make unit-test`                                                                        | Run all unit tests.                                                                  |                                                   |
+| `DEPLOYMENT_STAGE=<deployed_env> python3 -m unittest discover tests/functional/backend` | Run all functional tests.                                                            |                                                   |
 
 ### Environment variables
 
@@ -56,10 +56,9 @@ If you need to make a change to the CELLxGENE Discover database, see [CELLxGENE 
 
 ### Running Functional Tests
 
-1. Ensure that you have installed Chamber per the instructions in the pre-requisites step above.
-1. Ensure that you have set up your local development environment per the instructions above and run `make local-init` to launch a local dev environment.
-1. If you are running the functional tests locally, set `DEPLOYMENT_STAGE` to be `test`. If you are running the functional test against a deployment environment, then set `DEPLOYMENT_STAGE` to the environment (i.e. `dev`, `staging`, `prod`) and also set `AWS_PROFILE` respectively according to the above table.
-1. Run `make functional-test`.
+1. Set `DEPLOYMENT_STAGE` to deployed environment you want to run tests, as written locally, against (dev, staging, or  prod)
+2. Run a specific suite of tests using `DEPLOYMENT_STAGE=<deployed_env> python3 -m unittest <path_to_functional_test>`. For example, `DEPLOYMENT_STAGE=dev python3 -m unittest tests/functional/backend/corpora/test_revisions.py`
+3. Run all functional tests by using `DEPLOYMENT_STAGE=<deployed_env> python3 -m unittest discover tests/functional/backend`
 
 ### Upload processing container
 

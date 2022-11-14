@@ -15,14 +15,14 @@ class TestApi(BaseFunctionalTestCase):
     def test_version(self):
         res = self.session.get(f"{self.api}/dp/v1/deployed_version")
         res.raise_for_status()
-        self.assertEqual(res.status_code, requests.codes.ok)
+        self.assertStatusCode(requests.codes.ok, res)
         self.assertIsNotNone(res.json()["Data Portal"])
 
     def test_auth(self):
         headers = {"Cookie": f"cxguser={self.curator_cookie}", "Content-Type": "application/json"}
         res = self.session.get(f"{self.api}/dp/v1/userinfo", headers=headers)
         res.raise_for_status()
-        self.assertEqual(res.status_code, requests.codes.ok)
+        self.assertStatusCode(requests.codes.ok, res)
         data = json.loads(res.content)
         self.assertEqual(data["email"], "user@example.com")
 
@@ -30,13 +30,13 @@ class TestApi(BaseFunctionalTestCase):
         res = self.session.get(f"{self.api}/")
 
         res.raise_for_status()
-        self.assertEqual(res.status_code, requests.codes.ok)
+        self.assertStatusCode(requests.codes.ok, res)
 
     def test_get_collections(self):
         res = self.session.get(f"{self.api}/dp/v1/collections")
 
         res.raise_for_status()
-        self.assertEqual(res.status_code, requests.codes.ok)
+        self.assertStatusCode(requests.codes.ok, res)
         data = json.loads(res.content)
         for collection in data["collections"]:
             self.assertIsInstance(collection["id"], str)
@@ -61,7 +61,7 @@ class TestApi(BaseFunctionalTestCase):
         res.raise_for_status()
         data = json.loads(res.content)
         collection_id = data["collection_id"]
-        self.assertEqual(res.status_code, requests.codes.created)
+        self.assertStatusCode(requests.codes.created, res)
         self.assertIn("collection_id", data)
 
         with self.subTest("Test created collection is private"):
@@ -92,7 +92,7 @@ class TestApi(BaseFunctionalTestCase):
             for key in updated_data.keys():
                 self.assertEqual(updated_data[key], data[key])
 
-        self.upload_and_wait(collection_id, "https://www.dropbox.com/s/qiclvn1slmap351/example_valid.h5ad?dl=0")
+        self.upload_and_wait(collection_id, "https://www.dropbox.com/s/m1ur46nleit8l3w/3_0_0_valid.h5ad?dl=0")
 
         # make collection public
         with self.subTest("Test make collection public"):
@@ -101,7 +101,7 @@ class TestApi(BaseFunctionalTestCase):
                 f"{self.api}/dp/v1/collections/{collection_id}/publish", headers=headers, data=json.dumps(body)
             )
             res.raise_for_status()
-            self.assertEqual(res.status_code, requests.codes.accepted)
+            self.assertStatusCode(requests.codes.accepted, res)
 
             # check  collection returns as public
             res = self.session.get(f"{self.api}/dp/v1/collections", headers=headers)
@@ -123,7 +123,7 @@ class TestApi(BaseFunctionalTestCase):
         # can delete public collection
         with self.subTest("Test a public collection can not be deleted"):
             res = self.session.delete(f"{self.api}/dp/v1/collections/{collection_id}", headers=headers)
-            self.assertEqual(res.status_code, requests.codes.no_content)
+            self.assertStatusCode(requests.codes.no_content, res)
 
     def test_delete_private_collection(self):
         # create collection
@@ -143,7 +143,7 @@ class TestApi(BaseFunctionalTestCase):
         data = json.loads(res.content)
         collection_id = data["collection_id"]
         self.addCleanup(self.session.delete, f"{self.api}/dp/v1/collections/{collection_id}", headers=headers)
-        self.assertEqual(res.status_code, requests.codes.created)
+        self.assertStatusCode(requests.codes.created, res)
         self.assertIn("collection_id", data)
 
         # check created collection returns as private
@@ -158,7 +158,7 @@ class TestApi(BaseFunctionalTestCase):
         # delete collection
         res = self.session.delete(f"{self.api}/dp/v1/collections/{collection_id}?visibility=PRIVATE", headers=headers)
         res.raise_for_status()
-        self.assertEqual(res.status_code, requests.codes.no_content)
+        self.assertStatusCode(requests.codes.no_content, res)
 
         # check collection gone
         no_auth_headers = {"Content-Type": "application/json"}
@@ -185,10 +185,10 @@ class TestApi(BaseFunctionalTestCase):
         data = json.loads(res.content)
         collection_id = data["collection_id"]
         self.addCleanup(self.session.delete, f"{self.api}/dp/v1/collections/{collection_id}", headers=headers)
-        self.assertEqual(res.status_code, requests.codes.created)
+        self.assertStatusCode(requests.codes.created, res)
         self.assertIn("collection_id", data)
 
-        body = {"url": "https://www.dropbox.com/s/qiclvn1slmap351/example_valid.h5ad?dl=0"}
+        body = {"url": "https://www.dropbox.com/s/m1ur46nleit8l3w/3_0_0_valid.h5ad?dl=0"}
 
         res = self.session.post(
             f"{self.api}/dp/v1/collections/{collection_id}/upload-links", data=json.dumps(body), headers=headers
@@ -197,12 +197,12 @@ class TestApi(BaseFunctionalTestCase):
         dataset_id = json.loads(res.content)["dataset_id"]
         self.addCleanup(self.session.delete, f"{self.api}/dp/v1/datasets/{dataset_id}", headers=headers)
 
-        self.assertEqual(res.status_code, requests.codes.accepted)
+        self.assertStatusCode(requests.codes.accepted, res)
 
         res = self.session.get(f"{self.api}/dp/v1/datasets/{dataset_id}/status", headers=headers)
         res.raise_for_status()
         data = json.loads(res.content)
-        self.assertEqual(res.status_code, requests.codes.ok)
+        self.assertStatusCode(requests.codes.ok, res)
         self.assertEqual(data["upload_status"], "WAITING")
 
         with self.subTest("Test dataset conversion"):
@@ -249,8 +249,8 @@ class TestApi(BaseFunctionalTestCase):
         with self.subTest("Test dataset deletion"):
             res = self.session.delete(f"{self.api}/dp/v1/datasets/{dataset_id}", headers=headers)
             res.raise_for_status()
-            self.assertEqual(res.status_code, requests.codes.accepted)
+            self.assertStatusCode(requests.codes.accepted, res)
 
             # Check that the dataset is gone
             res = self.session.get(f"{self.api}/dp/v1/datasets/{dataset_id}/status", headers=headers)
-            self.assertEqual(res.status_code, requests.codes.forbidden)
+            self.assertStatusCode(requests.codes.forbidden, res)
