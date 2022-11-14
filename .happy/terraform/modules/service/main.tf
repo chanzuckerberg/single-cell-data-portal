@@ -117,7 +117,7 @@ resource "aws_ecs_task_definition" "task_definition" {
       "logDriver": "awslogs",
       "options": {
         "awslogs-stream-prefix" : "fargate",
-        "awslogs-group": "${aws_cloudwatch_log_group.cloud_watch_logs_group.id}/datadog-agent",
+        "awslogs-group": "${aws_cloudwatch_log_group.cloud_watch_logs_group.id}",
         "awslogs-region": "${data.aws_region.current.name}"
       }
     }
