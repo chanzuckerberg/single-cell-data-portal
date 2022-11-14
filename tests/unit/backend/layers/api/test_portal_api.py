@@ -4,9 +4,11 @@ import json
 from typing import List
 import unittest
 from datetime import datetime
+from unittest import mock
 from unittest.mock import Mock, patch
 from backend.layers.business.entities import DatasetArtifactDownloadData
-from backend.layers.common.entities import CollectionVersionId, DatasetMetadata, DatasetProcessingStatus, DatasetUploadStatus, DatasetVersionId, Link, OntologyTermId
+from backend.layers.common.entities import CollectionId, CollectionVersionId, DatasetMetadata, DatasetProcessingStatus, DatasetUploadStatus, DatasetVersionId, Link, OntologyTermId
+from backend.layers.thirdparty.uri_provider import FileInfo
 
 from furl import furl
 
@@ -120,141 +122,217 @@ class TestCollection(NewBaseTest):
             self.assertEqual(None, actual_body.get("to_date"))
             self.assertEqual(None, actual_body.get("from_date"))
 
-    # TODO: 🔴 review this test
-    # TODO: needs to be rewritten from scratch. Needs to create a collection and then query the body in a sane way
+    # ✅
     def test__get_collection_id__ok(self):
         """Verify the test collection exists and the expected fields exist."""
+
+        collection = self.generate_published_collection(add_datasets=2)
+
         expected_body = {
+            "access_type": "WRITE",
+            "contact_email": "john.doe@email.com",
+            "contact_name": "john doe",
+            "created_at": 1234,
+            "curator_name": "",
+            "data_submission_policy_version": "1.0",
             "datasets": [
                 {
-                    "assay": [{"ontology_term_id": "test_obo", "label": "test_assay"}],
-                    "dataset_assets": [
+                    "assay": [
                         {
-                            "dataset_id": "test_dataset_id",
-                            "filename": "test_filename",
-                            "filetype": "H5AD",
-                            "id": "test_dataset_artifact_id",
-                            "s3_uri": "s3://bogus-bucket/test_s3_uri.h5ad",
-                            "user_submitted": True,
-                        },
-                        {
-                            "dataset_id": "test_dataset_id",
-                            "filename": "test_filename",
-                            "filetype": "CXG",
-                            "id": "test_dataset_artifact_id_cxg",
-                            "s3_uri": "s3://bogus-bucket/test_s3_uri.h5ad",
-                            "user_submitted": True,
-                        },
+                            "label": "test_assay_label",
+                            "ontology_term_id": "test_assay_term_id"
+                        }
                     ],
-                    "dataset_deployments": [{"url": "test_url"}],
-                    "development_stage": [{"label": "test_development_stage", "ontology_term_id": "test_obo"}],
+                    "batch_condition": [
+                        "test_batch_1",
+                        "test_batch_2"
+                    ],
+                    "cell_count": 10,
+                    "cell_type": [
+                        {
+                            "label": "test_cell_type_label",
+                            "ontology_term_id": "test_cell_type_term_id"
+                        }
+                    ],
+                    "collection_id": "TODO",
+                    "created_at": 1234,
+                    "dataset_assets": [],
+                    "dataset_deployments": [
+                        {
+                            "url": "TODO"
+                        }
+                    ],
+                    "development_stage": [
+                        {
+                            "label": "test_development_stage_label",
+                            "ontology_term_id": "test_development_stage_term_id"
+                        }
+                    ],
                     "disease": [
-                        {"label": "test_disease", "ontology_term_id": "test_obo"},
-                        {"label": "test_disease2", "ontology_term_id": "test_obp"},
-                        {"label": "test_disease3", "ontology_term_id": "test_obq"},
+                        {
+                            "label": "test_disease_label",
+                            "ontology_term_id": "test_disease_term_id"
+                        }
                     ],
-                    "self_reported_ethnicity": [{"label": "test_ethnicity", "ontology_term_id": "test_obo"}],
-                    "linked_genesets": ["test_geneset_with_dataset"],
-                    "id": "test_dataset_id",
-                    "is_primary_data": "PRIMARY",
-                    "mean_genes_per_cell": 0.0,
+                    "donor_id": [
+                        "test_donor_1"
+                    ],
+                    "id": mock.ANY,
+                    "is_primary_data": "BOTH",
+                    "is_valid": True,
+                    "mean_genes_per_cell": 0.5,
                     "name": "test_dataset_name",
-                    "organism": [{"label": "test_organism", "ontology_term_id": "test_obo"}],
-                    "collection_id": "test_collection_id",
-                    "cell_type": [{"label": "test_cell_type", "ontology_term_id": "test_opo"}],
-                    "x_approximate_distribution": "NORMAL",
-                    "batch_condition": ["batchA", "batchB"],
-                    "donor_id": ["donor_1", "donor_2"],
-                    "suspension_type": ["nucleus"],
-                    "is_valid": False,
-                    "revision": 0,
-                    "sex": [
-                        {"label": "test_sex", "ontology_term_id": "test_obo"},
-                        {"label": "test_sex2", "ontology_term_id": "test_obp"},
+                    "organism": [
+                        {
+                            "label": "test_organism_label",
+                            "ontology_term_id": "test_organism_term_id"
+                        }
                     ],
-                    "tissue": [{"label": "test_tissue", "ontology_term_id": "test_obo"}],
-                    "tombstone": False,
                     "processing_status": {
-                        "id": "test_dataset_processing_status_id",
-                        "dataset_id": "test_dataset_id",
-                        "processing_status": "PENDING",
-                        "upload_status": "UPLOADING",
-                        "upload_progress": 4 / 9,
-                        "validation_status": "NA",
-                        "h5ad_status": "NA",
-                        "rds_status": "NA",
+                        "created_at": 1234,
                         "cxg_status": "NA",
+                        "dataset_id": mock.ANY,
+                        "h5ad_status": "NA",
+                        "id": "NA",
+                        "processing_status": "PENDING",
+                        "rds_status": "NA",
+                        "updated_at": 1234,
+                        "upload_progress": 1234,
+                        "upload_status": "WAITING",
+                        "validation_status": "NA"
                     },
-                    "published": False,
-                    "tombstone": False,
+                    "published": True,
+                    "published_at": 1234,
+                    "revision": 1234,
                     "schema_version": "3.0.0",
+                    "self_reported_ethnicity": [
+                        {
+                            "label": "test_self_reported_ethnicity_label",
+                            "ontology_term_id": "test_self_reported_ethnicity_term_id"
+                        }
+                    ],
+                    "sex": [
+                        {
+                            "label": "test_sex_label",
+                            "ontology_term_id": "test_sex_term_id"
+                        }
+                    ],
+                    "suspension_type": [
+                        "test_suspension_type"
+                    ],
+                    "tissue": [
+                        {
+                            "label": "test_tissue_label",
+                            "ontology_term_id": "test_tissue_term_id"
+                        }
+                    ],
+                    "tombstone": False,
+                    "updated_at": 1234,
+                    "x_approximate_distribution": "normal"
+                },
+                {
+                    "assay": [
+                        {
+                            "label": "test_assay_label",
+                            "ontology_term_id": "test_assay_term_id"
+                        }
+                    ],
+                    "batch_condition": [
+                        "test_batch_1",
+                        "test_batch_2"
+                    ],
+                    "cell_count": 10,
+                    "cell_type": [
+                        {
+                            "label": "test_cell_type_label",
+                            "ontology_term_id": "test_cell_type_term_id"
+                        }
+                    ],
+                    "collection_id": "TODO",
+                    "created_at": 1234,
+                    "dataset_assets": [],
+                    "dataset_deployments": [
+                        {
+                            "url": "TODO"
+                        }
+                    ],
+                    "development_stage": [
+                        {
+                            "label": "test_development_stage_label",
+                            "ontology_term_id": "test_development_stage_term_id"
+                        }
+                    ],
+                    "disease": [
+                        {
+                            "label": "test_disease_label",
+                            "ontology_term_id": "test_disease_term_id"
+                        }
+                    ],
+                    "donor_id": [
+                        "test_donor_1"
+                    ],
+                    "id": mock.ANY,
+                    "is_primary_data": "BOTH",
+                    "is_valid": True,
+                    "mean_genes_per_cell": 0.5,
+                    "name": "test_dataset_name",
+                    "organism": [
+                        {
+                            "label": "test_organism_label",
+                            "ontology_term_id": "test_organism_term_id"
+                        }
+                    ],
+                    "processing_status": {
+                        "created_at": 1234,
+                        "cxg_status": "NA",
+                        "dataset_id": mock.ANY,
+                        "h5ad_status": "NA",
+                        "id": "NA",
+                        "processing_status": "PENDING",
+                        "rds_status": "NA",
+                        "updated_at": 1234,
+                        "upload_progress": 1234,
+                        "upload_status": "WAITING",
+                        "validation_status": "NA"
+                    },
+                    "published": True,
+                    "published_at": 1234,
+                    "revision": 1234,
+                    "schema_version": "3.0.0",
+                    "self_reported_ethnicity": [
+                        {
+                            "label": "test_self_reported_ethnicity_label",
+                            "ontology_term_id": "test_self_reported_ethnicity_term_id"
+                        }
+                    ],
+                    "sex": [
+                        {
+                            "label": "test_sex_label",
+                            "ontology_term_id": "test_sex_term_id"
+                        }
+                    ],
+                    "suspension_type": [
+                        "test_suspension_type"
+                    ],
+                    "tissue": [
+                        {
+                            "label": "test_tissue_label",
+                            "ontology_term_id": "test_tissue_term_id"
+                        }
+                    ],
+                    "tombstone": False,
+                    "updated_at": 1234,
+                    "x_approximate_distribution": "normal"
                 }
             ],
-            "description": "test_description",
-            "genesets": [
-                {
-                    "collection_id": "test_collection_id",
-                    "linked_datasets": [],
-                    "description": "this is a geneset",
-                    "id": "test_geneset",
-                    "name": "test_geneset",
-                },
-                {
-                    "collection_id": "test_collection_id",
-                    "linked_datasets": ["test_dataset_id"],
-                    "description": "this is a geneset with a dataset",
-                    "id": "test_geneset_with_dataset",
-                    "name": "test_geneset_with_dataset",
-                },
-            ],
-            "id": "test_collection_id",
-            "links": [
-                {"link_name": "test_doi_link_name", "link_type": "DOI", "link_url": "http://test_doi_url.place"},
-                {"link_name": "", "link_type": "DOI", "link_url": "http://test_no_link_name_doi_url.place"},
-                {
-                    "link_name": "test_raw_data_link_name",
-                    "link_type": "RAW_DATA",
-                    "link_url": "http://test_raw_data_url.place",
-                },
-                {"link_name": "", "link_type": "RAW_DATA", "link_url": "http://test_no_link_name_raw_data_url.place"},
-                {
-                    "link_name": "test_protocol_link_name",
-                    "link_type": "PROTOCOL",
-                    "link_url": "http://test_protocol_url.place",
-                },
-                {"link_name": "", "link_type": "PROTOCOL", "link_url": "http://test_no_link_name_protocol_url.place"},
-                {
-                    "link_name": "test_lab_website_link_name",
-                    "link_type": "LAB_WEBSITE",
-                    "link_url": "http://test_lab_website_url.place",
-                },
-                {
-                    "link_name": "",
-                    "link_type": "LAB_WEBSITE",
-                    "link_url": "http://test_no_link_name_lab_website_url.place",
-                },
-                {"link_name": "test_other_link_name", "link_type": "OTHER", "link_url": "http://test_other_url.place"},
-                {"link_name": "", "link_type": "OTHER", "link_url": "http://test_no_link_name_other_url.place"},
-                {
-                    "link_name": "test_data_source_link_name",
-                    "link_type": "DATA_SOURCE",
-                    "link_url": "http://test_data_source_url.place",
-                },
-                {
-                    "link_name": "",
-                    "link_type": "DATA_SOURCE",
-                    "link_url": "http://test_no_link_name_data_source_url.place",
-                },
-            ],
-            "name": "test_collection_name",
-            "visibility": "PUBLIC",
-            "contact_name": "Some Body",
-            "curator_name": "",
-            "contact_email": "somebody@chanzuckerberg.com",
-            "data_submission_policy_version": "0",
+            "description": "described",
+            "id": mock.ANY,
+            "links": [],
+            "name": "test_collection",
+            "published_at": 1234,
+            "updated_at": 1234,
+            "visibility": "PUBLIC"
         }
-
-        collection = self.generate_published_collection()
 
         with self.subTest("auth cookie"):
             expected_body["access_type"] = "WRITE"
@@ -272,69 +350,6 @@ class TestCollection(NewBaseTest):
             self.assertEqual(200, response.status_code)
             actual_body = self.remove_timestamps(json.loads(response.data))
             self.assertDictEqual(actual_body, expected_body)
-
-    # TODO: 🔴 review this test
-    # TODO: this test is virtually the same as the above one
-    def test_get_collection_minimal__ok(self):
-
-        with self.subTest("With a minimal dataset"):
-            # TODO: review this subtest. The dataset is not in a valid state for publishing, so it should
-            # not belong to a published collection
-
-            # TODO: goes somewhere else
-            dataset_metadata = DatasetMetadata("test_organism","test_tissue","test_assay","test_disease","test_sex","test_self_reported_ethnicity","test_development_stage","test_cell_type", 10)
-            collection = self.generate_published_collection(datasets=[dataset_metadata])
-
-            expected_body = {
-                "access_type": "READ",
-                "contact_email": "",
-                "contact_name": "",
-                "curator_name": "",
-                "data_submission_policy_version": "0",
-                "datasets": [
-                    {
-                        "collection_id": collection.id,
-                        "dataset_assets": [],
-                        "dataset_deployments": [],
-                        "linked_genesets": [],
-                        "name": dataset.name,
-                        "id": dataset.id,
-                        "is_valid": False,
-                        "published": False,
-                        "revision": 0,
-                        "tombstone": False,
-                    }
-                ],
-                "description": "",
-                "genesets": [],
-                "id": collection.id,
-                "links": [],
-                "name": "",
-                "visibility": "PUBLIC",
-            }
-            test_url = furl(path=f"/dp/v1/collections/{collection.id}")
-
-            resp = self.app.get(test_url.url)
-
-            self.assertEqual(200, resp.status_code)
-            actual_body = self.remove_timestamps(json.loads(resp.data))
-            expected_body = self.remove_timestamps(dict(**collection.reshape_for_api(), access_type="READ"))
-
-            # Remove `visibility`, `collection_visibility` and `x_approximate_distribution` from the bodies,
-            # since one will be an Enum and the other will be a string. That's expected since internal objects
-            # should keep stricter data types, but JSON doesn't support Enums and therefore have to be converted
-            # as strings.
-            self.assertEqual(expected_body.pop("visibility").name, actual_body.pop("visibility"))
-            self.assertEqual(
-                expected_body["datasets"][0].pop("x_approximate_distribution").name,
-                actual_body["datasets"][0].pop("x_approximate_distribution"),
-            )
-            self.assertEqual(
-                expected_body["datasets"][0].pop("is_primary_data").name,
-                actual_body["datasets"][0].pop("is_primary_data"),
-            )
-
-            self.assertEqual(expected_body, actual_body)
 
     # ✅
     def test__get_collection__ok(self):
@@ -1471,7 +1486,7 @@ class TestDataset(NewBaseTest):
         }
         self.assertEqual(expected_body, actual_body)
 
-    # 🔴 TODO: need to look up the collection - tricky
+    # ✅
     def test__get_status__403(self):
         dataset = self.generate_dataset(
             owner="someone_else",
@@ -1639,7 +1654,7 @@ class TestDataset(NewBaseTest):
         self.assertEqual(assets[0]["s3_uri"], "s3://mock-bucket/mock-key.cxg")
         self.assertEqual(assets[1]["s3_uri"], "s3://mock-bucket/mock-key.h5ad")
 
-    # 💛 Revisit this test - dataset deletion is now different
+    # ✅
     def test__cancel_dataset_download__ok(self):
         # Test pre upload
         # TODO: this might need additional business logic
@@ -1662,14 +1677,14 @@ class TestDataset(NewBaseTest):
         response = self.app.delete(test_url, headers=headers)
         self.assertEqual(response.status_code, 202)
 
-    # 💛 Revisit this test - dataset deletion is now different
+    # ✅
     def test__cancel_dataset_download__dataset_does_not_exist(self):
         test_url = "/dp/v1/datasets/missing_dataset_id"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
         response = self.app.delete(test_url, headers=headers)
         self.assertEqual(response.status_code, 403)
 
-    # 💛 Revisit this test - dataset deletion is now different
+    # ✅
     def test__delete_uploaded_dataset__ok(self):
         dataset = self.generate_dataset(
             statuses=[DatasetStatusUpdate("upload_status", DatasetUploadStatus.UPLOADING)]
@@ -1698,7 +1713,7 @@ class TestDataset(NewBaseTest):
         dataset_ids = [dataset["id"] for dataset in body["datasets"]]
         self.assertNotIn(dataset.dataset_version_id, dataset_ids)
 
-    # 💛 Revisit this test - dataset deletion is now different
+    # ✅
     def test__call_delete_dataset__twice(self):
         dataset = self.generate_dataset(
             statuses=[DatasetStatusUpdate("upload_status", DatasetUploadStatus.UPLOADING)]
@@ -1716,32 +1731,7 @@ class TestDataset(NewBaseTest):
         response = self.app.delete(test_url, headers=headers)
         self.assertEqual(response.status_code, 403)
 
-    # 💛 Revisit this test - dataset deletion is now different
-    def test__get_deleted_dataset_status__returns_403(self):
-        dataset = self.generate_dataset(
-            statuses=[DatasetStatusUpdate("upload_status", DatasetUploadStatus.UPLOADED)]
-        )
-
-        test_url = f"/dp/v1/datasets/{dataset.dataset_version_id}/status"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
-        response = self.app.get(test_url, headers=headers)
-        self.assertEqual(200, response.status_code)
-        actual_body = json.loads(response.data)
-        expected_body = {
-            "dataset_id": dataset.dataset_version_id,
-            "id": "NA",
-            "upload_progress": 0.0,
-            "upload_status": "UPLOADED",
-        }
-        self.assertEqual(expected_body, actual_body)
-
-        # delete the dataset
-        self.app.delete(f"/dp/v1/datasets/{dataset.dataset_version_id}", headers=headers)
-
-        response = self.app.get(test_url, headers=headers)
-        self.assertEqual(response.status_code, 403)
-
-    # 💛 Revisit this test - dataset deletion is now different
+    # ✅
     def test__delete_public_dataset_returns__405(self):
 
         dataset = self.generate_dataset(
@@ -1755,7 +1745,7 @@ class TestDataset(NewBaseTest):
         self.assertEqual(405, response.status_code)
         self.assertEqual("Cannot delete a public Dataset", json.loads(response.data)["detail"])
 
-    # 💛 Revisit this test - dataset deletion is now different
+    # ✅
     def test__cancel_dataset_download__user_not_collection_owner(self):
 
         dataset = self.generate_dataset(
@@ -1768,7 +1758,7 @@ class TestDataset(NewBaseTest):
         response = self.app.delete(test_url, headers=headers)
         self.assertEqual(response.status_code, 403)
 
-    # 💛 Revisit this test - dataset deletion is now different
+    # ✅
     def test__cancel_dataset_download__user_not_logged_in(self):
 
         dataset = self.generate_dataset(
@@ -1869,60 +1859,6 @@ class TestDatasetCurators(NewBaseTest):
 
 
 ##### REVISIONS START HERE #####
-
-class BaseRevisionTest(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
-    pass
-
-    # def setUp(self):
-    #     super().setUp()
-    #     self.public_links = [{"link_name": "old link", "link_type": "OTHER", "link_url": "http://old.com"}]
-    #     pub_collection = self.generate_collection(self.session, visibility="PUBLIC", links=self.public_links)
-    #     for i in range(2):
-    #         self.generate_dataset_with_s3_resources(self.session, collection_id=pub_collection.id, published=True)
-    #     self.pub_collection = pub_collection
-    #     self.rev_collection = pub_collection.create_revision()
-    #     self.headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": get_cxguser_token()}
-
-    # def assertPublishedCollectionOK(self, expected_body, s3_objects):
-    #     """Checks that the published collection is as expected and S3 Objects exist"""
-    #     with self.subTest("published artifacts and explorer s3 object ok"):
-    #         for bucket, file_name in s3_objects:
-    #             self.assertS3FileExists(bucket, file_name)
-    #     with self.subTest("publish collection ok"):
-    #         resp = self.app.get(f"/dp/v1/collections/{self.pub_collection.id}")
-    #         self.assertEqual(200, resp.status_code)
-    #         actual_body = json.loads(resp.data)
-    #         for link in expected_body.pop("links"):
-    #             self.assertIn(link, actual_body["links"])
-    #         for keys in expected_body.keys():
-    #             self.assertEqual(expected_body[keys], actual_body[keys])
-
-    # def refresh_datasets(self) -> List[Dataset]:
-    #     for dataset in self.rev_collection.datasets:
-    #         Dataset(dataset).delete()
-    #     refreshed_datasets = []
-    #     for dataset in self.pub_collection.datasets:
-    #         ds = self.generate_dataset_with_s3_resources(
-    #             self.session,
-    #             collection_id=self.rev_collection.id,
-    #             original_id=dataset.id,
-    #             revision=dataset.revision + 1,
-    #         )
-    #         refreshed_datasets.append(ds)
-    #     return refreshed_datasets
-
-    # def get_s3_objects_from_collections(self) -> typing.Tuple[typing.List, typing.List]:
-    #     """
-    #     :return: a list of s3 objects in the published collection, and a list of s3 objects the revision collection.
-    #     """
-    #     rev_s3_objects = []
-    #     pub_s3_objects = []
-
-    #     for i in range(len(self.pub_collection.datasets)):
-    #         pub_s3_objects.extend(self.get_s3_object_paths_from_dataset(self.pub_collection.datasets[i]))
-    #         rev_s3_objects.extend(self.get_s3_object_paths_from_dataset(self.rev_collection.datasets[i]))
-    #     return pub_s3_objects, rev_s3_objects
-
 
 class TestRevision(NewBaseTest):
     """Test case for starting a collection's revision."""
@@ -2031,7 +1967,6 @@ class TestRevision(NewBaseTest):
         response = self.app.post(test_url, headers=headers)
         self.assertEqual(403, response.status_code)
 
-
 class TestDeleteRevision(NewBaseTest):
     """Test case for deleting a collection or datasets under revision."""
 
@@ -2091,6 +2026,8 @@ class TestDeleteRevision(NewBaseTest):
         self.assertEqual(403, resp.status_code)
 
         
+# Those were the previous revision tests - mostly covered by the business logic layer now
+# A few cases are good, but we don't need to test every single case here
 class TestPublishRevision(NewBaseTest):
     """Test case for publishing a revision."""
 
@@ -2098,92 +2035,14 @@ class TestPublishRevision(NewBaseTest):
         super().setUp()
         self.base_path = "/dp/v1/collections"
         self.mock_timestamp = datetime(2000, 12, 25, 0, 0)
+        # TODO: header pattern
+        self.headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
 
-    # def update_revision_details(self):
-    #     expected_body = {
-    #         "name": "collection name",
-    #         "description": "This is a test collection",
-    #         "contact_name": "person human",
-    #         "contact_email": "person@human.com",
-    #         "links": [
-    #             {"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"},
-    #             {"link_name": "DOI Link 2", "link_url": "http://doi.org/10.1017", "link_type": "OTHER"},
-    #             *self.public_links,
-    #         ],
-    #         "data_submission_policy_version": "1.0",
-    #     }
-    #     self.rev_collection.update(**expected_body)
-    #     return expected_body
-
-    # def publish_collection(self, collection: Collection) -> dict:
-    #     """
-    #     Verify publish a collection under revision.
-    #     :return: Jsonified response of GET collection/<collection_id>.
-    #     """
-    #     # Check initial published_at and revised_at. Since collection creation
-    #     # for the already published collection/datasets do not go through the
-    #     # normal user flow, no initial values for published_at and revised_at
-    #     self.assertIsNone(self.pub_collection.published_at)
-    #     self.assertIsNone(self.pub_collection.revised_at)
-
-    #     revision_id: str = collection.id
-    #     collection_id: str = collection.revision_of
-
-    #     for dataset in self.pub_collection.datasets:
-    #         self.assertIsNone(dataset.published_at)
-    #         self.assertIsNone(dataset.revised_at)
-
-    #     self.session.expire_all()
-    #     body = {"data_submission_policy_version": "1.0"}
-    #     path = f"{self.base_path}/{revision_id}/publish"
-    #     with patch("backend.corpora.common.entities.collection.datetime") as mock_dt:
-    #         mock_dt.utcnow = Mock(return_value=self.mock_timestamp)
-    #         response = self.app.post(path, headers=self.headers, data=json.dumps(body))
-    #     self.assertEqual(202, response.status_code)
-
-    #     self.assertDictEqual({"collection_id": collection_id, "visibility": "PUBLIC"}, json.loads(response.data))
-    #     self.addCleanup(self.delete_collection, collection_id)
-
-    #     # Cannot call publish for an already published collection
-    #     response = self.app.post(path, headers=self.headers, data=json.dumps(body))
-    #     self.assertEqual(403, response.status_code)
-
-    #     # Check that the published collection is listed in /collections
-    #     headers = {"host": "localhost", "Content-Type": "application/json"}
-    #     response = self.app.get(self.base_path, headers=headers)
-    #     self.assertEqual(200, response.status_code)
-
-    #     ids = [col["id"] for col in json.loads(response.data)["collections"]]
-    #     self.assertIn(collection_id, ids)
-
-    #     # Check GET collection/<collection_id>
-    #     path = f"{self.base_path}/{collection_id}"
-    #     response = self.app.get(path, headers=headers)
-    #     self.assertEqual(200, response.status_code)
-
-    #     response_json = json.loads(response.data)
-    #     self.assertEqual("PUBLIC", response_json["visibility"])
-    #     self.assertEqual(collection_id, response_json["id"])
-
-    #     return response_json
-
-    # def verify_datasets(self, actual_body: dict, expected_dataset_ids: typing.Set[str]) -> None:
-    #     """Verify collection datasets."""
-    #     actual_datasets = {d["id"] for d in actual_body["datasets"]}
-    #     self.assertEquals(expected_dataset_ids, actual_datasets)
-    #     self.assertTrue(all([d["published"] for d in actual_body["datasets"]]))
-
-    #     for dataset_id in expected_dataset_ids:
-    #         dataset = Dataset.get(self.session, dataset_id)
-    #         self.assertIn(dataset.id, dataset.explorer_url)
-    #         for s3_object in self.get_s3_object_paths_from_dataset(dataset):
-    #             if dataset.tombstone:
-    #                 self.assertS3FileDoesNotExist(*s3_object)
-    #             else:
-    #                 self.assertS3FileExists(*s3_object)
-
+    # 💛 passes, but assertions need to be improved
     def test__publish_revision_with_new_dataset__OK(self):
-        """Publish a revision with new datasets."""
+        """
+        Publish a revision with new datasets.
+        """
 
         unpublished_collection = self.generate_unpublished_collection(add_datasets=1)
 
@@ -2194,7 +2053,7 @@ class TestPublishRevision(NewBaseTest):
         
         self.assertEqual(202, response.status_code)
         self.assertDictEqual(
-            {"collection_id": unpublished_collection.collection_id, "visibility": "PUBLIC"}, 
+            {"collection_id": unpublished_collection.collection_id.id, "visibility": "PUBLIC"}, 
             json.loads(response.data)
         )
 
@@ -2205,11 +2064,12 @@ class TestPublishRevision(NewBaseTest):
 
         response_json = json.loads(response.data)
         self.assertEqual("PUBLIC", response_json["visibility"])
-        self.assertEqual(unpublished_collection.collection_id, response_json["id"])
+        self.assertEqual(unpublished_collection.collection_id.id, response_json["id"])
 
         # Check published_at and revised_at
         # Collection: Only revised_at should be updated
-        self.assertIsNone(response_json.get("published_at"))
+        self.assertIsNotNone(response_json.get("published_at"))
+        # TODO: revised_at
         # TODO: timestamp mocking
         # self.assertEqual(self.mock_timestamp, datetime.utcfromtimestamp(response_json["revised_at"]))
 
@@ -2222,179 +2082,508 @@ class TestPublishRevision(NewBaseTest):
         #         self.assertIsNone(dataset.get("published_at"))
         #     self.assertIsNone(dataset.get("revised_at"))
 
-    def test__with_revision_with_removed_datasets__OK(self):
-        """Publish a revision with delete datasets."""
-        rev_dataset_id = self.rev_collection.datasets[0].id
-        pub_dataset = self.pub_collection.datasets[0]
-        pub_dataset_id = pub_dataset.id
-        published_s3_objects = self.get_s3_object_paths_from_dataset(pub_dataset)
+    # 💛 passes, but assertions need to be improved
+    def test__publish_revision_with_removed_datasets__OK(self):
+        """
+        Publish a revision with delete datasets.
+        """
+        unpublished_collection = self.generate_unpublished_collection(add_datasets=2)
+        dataset_to_delete = unpublished_collection.datasets[0]
 
         # Delete a dataset under revision
-        self.app.delete(f"/dp/v1/datasets/{rev_dataset_id}", headers=self.headers)
+        self.app.delete(f"/dp/v1/datasets/{dataset_to_delete.version_id.id}", headers=self.headers)
 
         # Publish the revision with the deleted dataset
-        response_json = self.publish_collection(self.rev_collection)
-        self.session.expire_all()
-        dataset = Dataset.get(self.session, pub_dataset_id, include_tombstones=True)
-        self.assertIn(pub_dataset_id, dataset.explorer_url)
-        self.assertTrue(dataset.tombstone)
-        for s3_object in published_s3_objects:
-            self.assertS3FileDoesNotExist(*s3_object)
+        path = f"{self.base_path}/{unpublished_collection.version_id.id}/publish"
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        body = {"data_submission_policy_version": "1.0"} # TODO: still in use?
+        response = self.app.post(path, headers=headers, data=json.dumps(body))
+        self.assertEqual(202, response.status_code)
 
-        # Check published_at and revised_at
-        # Collection: Only revised_at should be updated
-        self.assertIsNone(response_json.get("published_at"))
-        self.assertEqual(self.mock_timestamp, datetime.utcfromtimestamp(response_json["revised_at"]))
+        response_json = json.loads(response.data)
+        print(response.data)
+        id = response_json["collection_id"]
 
-        # Datasets: None should be updated
-        self.assertIsNone(dataset.published_at)
-        self.assertIsNone(dataset.revised_at)
-        for dataset in response_json["datasets"]:
-            self.assertIsNone(dataset.get("published_at"))
-            self.assertIsNone(dataset.get("revised_at"))
+        # Checks that the published revision exists and only has one dataset
+        published_collection = self.business_logic.get_published_collection_version(CollectionId(id))
+        self.assertIsNotNone(published_collection)
+        if published_collection:
+            self.assertIsNotNone(published_collection.published_at)
+            self.assertEqual(published_collection.collection_id, unpublished_collection.collection_id)
+            self.assertEqual(1, len(published_collection.datasets))
 
+        # TODO: published_at, revised_at
 
+    # ✅
     def test__publish_revision_with_all_removed_datasets__409(self):
-        """Unable to publish a revision with no datasets."""
-        for dataset in self.rev_collection.datasets:
-            self.app.delete(f"/dp/v1/datasets/{dataset.id}", headers=self.headers)
-            body = {"data_submission_policy_version": "1.0"}
-        path = f"/dp/v1/collections/{self.rev_collection.id}/publish"
-        response = self.app.post(path, headers=self.headers, data=json.dumps(body))
+        """
+        Unable to publish a revision with no datasets.
+        """
+        unpublished_collection = self.generate_unpublished_collection(add_datasets=1)
+        dataset_to_delete = unpublished_collection.datasets[0]
+
+        # Delete a dataset under revision
+        self.app.delete(f"/dp/v1/datasets/{dataset_to_delete.version_id.id}", headers=self.headers)
+
+        # Publish the revision with the deleted dataset
+        path = f"{self.base_path}/{unpublished_collection.version_id.id}/publish"
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        body = {"data_submission_policy_version": "1.0"} # TODO: still in use?
+        response = self.app.post(path, headers=headers, data=json.dumps(body))
         self.assertEqual(409, response.status_code)
 
-    def test__publish_revision_with_updated_datasets__OK(self):
-        """ "Publish a revision with refreshed datasets."""
-        self.refresh_datasets()
+    # 💛 Returns 401 instead of 403, verify current behavior
+    def test__publish_revision_as_non_autorized__403(self):
+        """
+        Publish a collection as a non authenticated user returns 403
+        """
+        collection = self.generate_unpublished_collection(add_datasets=1)
+        path = f"{self.base_path}/{collection.version_id.id}/publish"
+        body = {"data_submission_policy_version": "1.0"}
+        headers = {"host": "localhost", "Content-Type": "application/json"}
+        response = self.app.post(path, headers=headers, data=json.dumps(body))
+        self.assertEqual(403, response.status_code)
 
-        response_json = self.publish_collection(self.rev_collection)
-        self.verify_datasets(response_json, {ds.id for ds in self.pub_collection.datasets})
+    # ✅
+    def test__publish_revision_as_not_owner__403(self):
+        """
+        Publish a collection as a non-owner returns 403
+        """
+        collection = self.generate_unpublished_collection(add_datasets=1, owner="someone_else")
+        path = f"{self.base_path}/{collection.version_id.id}/publish"
+        body = {"data_submission_policy_version": "1.0"}
+        response = self.app.post(path, headers=self.headers, data=json.dumps(body))
+        self.assertEqual(403, response.status_code)
 
-        # Check published_at and revised_at
-        # Collection: Only revised_at should be updated
-        self.assertIsNone(response_json.get("published_at"))
-        self.assertEqual(self.mock_timestamp, datetime.utcfromtimestamp(response_json["revised_at"]))
+    # ✅
+    def test__publish_revision_bad_id__403(self):
+        """
+        Publish a collection with a bad uuid (non existant) returns 403
+        """
+        collection_id = "bad_id"
+        body = {"data_submission_policy_version": "1.0"}
+        path = f"{self.base_path}/{collection_id}/publish"
+        response = self.app.post(path, headers=self.headers, data=json.dumps(body))
+        self.assertEqual(403, response.status_code)
 
-        # Datatsets: None should be updated
-        for dataset in response_json["datasets"]:
-            self.assertIsNone(dataset.get("published_at"))
-            self.assertEqual(self.mock_timestamp, datetime.utcfromtimestamp(dataset["revised_at"]))
+    # ✅
+    def test__can_publish_owned_collection(self):
+        collection = self.generate_unpublished_collection(add_datasets=1)
+        path = f"{self.base_path}/{collection.version_id.id}/publish"
+        body = {"data_submission_policy_version": "1.0"}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token("owner")}
+        response = self.app.post(path, headers=headers, data=json.dumps(body))
+        self.assertEqual(202, response.status_code)
 
-    def test__publish_revision_with_collection_info_updated__201(self):
-        """Publish a revision with collection detail changes."""
-        expected_body = self.update_revision_details()
-        pub_s3_objects, _ = self.get_s3_objects_from_collections()
+    # ✅
+    def test__can_publish_non_owned_collection_as_super_curator(self):
+        collection = self.generate_unpublished_collection(add_datasets=1, owner="someone else")
+        path = f"{self.base_path}/{collection.version_id.id}/publish"
+        body = {"data_submission_policy_version": "1.0"}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token("super")}
+        response = self.app.post(path, headers=headers, data=json.dumps(body))
+        self.assertEqual(202, response.status_code)
 
-        # Published revision with collection details updated
-        response_json = self.publish_collection(self.rev_collection)
-        self.assertPublishedCollectionOK(expected_body, pub_s3_objects)
+    # The following tests are good to have, but they're essentially business logic tests. We can purge them for now
 
-        self.verify_datasets(response_json, {ds.id for ds in self.pub_collection.datasets})
+    # def test__publish_revision_with_updated_datasets__OK(self):
+    #     """ "Publish a revision with refreshed datasets."""
+    #     self.refresh_datasets()
 
-        # Check published_at and revised_at
-        # Collection: None should be updated
-        self.assertIsNone(response_json.get("published_at"))
-        self.assertIsNone(response_json.get("revised_at"))
+    #     response_json = self.publish_collection(self.rev_collection)
+    #     self.verify_datasets(response_json, {ds.id for ds in self.pub_collection.datasets})
 
-        # Datasets: None should be updated
-        for dataset in response_json["datasets"]:
-            self.assertIsNone(dataset.get("published_at"))
-            self.assertIsNone(dataset.get("revised_at"))
+    #     # Check published_at and revised_at
+    #     # Collection: Only revised_at should be updated
+    #     self.assertIsNone(response_json.get("published_at"))
+    #     self.assertEqual(self.mock_timestamp, datetime.utcfromtimestamp(response_json["revised_at"]))
 
-    def test__publish_revision_with_collection_info_updated_and_refreshed_datasets__201(self):
-        """Publish a revision with collection detail changes and refreshed datasets."""
-        expected_body = self.update_revision_details()
-        self.refresh_datasets()
-        _, rev_s3_objects = self.get_s3_objects_from_collections()
-        # Published revision with collection details updated, new dataset, and refreshed datasets
-        response_json = self.publish_collection(self.rev_collection)
-        self.verify_datasets(response_json, {ds.id for ds in self.pub_collection.datasets})
-        self.assertPublishedCollectionOK(expected_body, rev_s3_objects)
+    #     # Datatsets: None should be updated
+    #     for dataset in response_json["datasets"]:
+    #         self.assertIsNone(dataset.get("published_at"))
+    #         self.assertEqual(self.mock_timestamp, datetime.utcfromtimestamp(dataset["revised_at"]))
 
-        # Check published_at and revised_at
-        # Collection: Only revised_at should be updated
-        self.assertIsNone(response_json.get("published_at"))
-        self.assertEqual(self.mock_timestamp, datetime.utcfromtimestamp(response_json["revised_at"]))
+    # def test__publish_revision_with_collection_info_updated__201(self):
+    #     """Publish a revision with collection detail changes."""
+    #     expected_body = self.update_revision_details()
+    #     pub_s3_objects, _ = self.get_s3_objects_from_collections()
 
-        # Datatsets: None should be updated
-        for dataset in response_json["datasets"]:
-            self.assertIsNone(dataset.get("published_at"))
-            self.assertEqual(self.mock_timestamp, datetime.utcfromtimestamp(dataset["revised_at"]))
+    #     # Published revision with collection details updated
+    #     response_json = self.publish_collection(self.rev_collection)
+    #     self.assertPublishedCollectionOK(expected_body, pub_s3_objects)
 
-    def test__publish_revision_with_collection_info_updated_and_new_datasets__201(self):
-        """Publish a revision with collection detail changes and new datasets."""
-        expected_body = self.update_revision_details()
+    #     self.verify_datasets(response_json, {ds.id for ds in self.pub_collection.datasets})
 
-        # add new dataset
-        new_dataset_id = self.generate_dataset_with_s3_resources(self.session, collection_id=self.rev_collection.id).id
-        dataset_ids = {ds.id for ds in self.pub_collection.datasets}
-        dataset_ids.add(new_dataset_id)
+    #     # Check published_at and revised_at
+    #     # Collection: None should be updated
+    #     self.assertIsNone(response_json.get("published_at"))
+    #     self.assertIsNone(response_json.get("revised_at"))
 
-        # get revision datasets
-        _, rev_s3_objects = self.get_s3_objects_from_collections()
+    #     # Datasets: None should be updated
+    #     for dataset in response_json["datasets"]:
+    #         self.assertIsNone(dataset.get("published_at"))
+    #         self.assertIsNone(dataset.get("revised_at"))
 
-        # Published revision with collection details updated, new dataset, and refreshed datasets
-        response_json = self.publish_collection(self.rev_collection)
-        self.assertPublishedCollectionOK(expected_body, rev_s3_objects)
+    # def test__publish_revision_with_collection_info_updated_and_refreshed_datasets__201(self):
+    #     """Publish a revision with collection detail changes and refreshed datasets."""
+    #     expected_body = self.update_revision_details()
+    #     self.refresh_datasets()
+    #     _, rev_s3_objects = self.get_s3_objects_from_collections()
+    #     # Published revision with collection details updated, new dataset, and refreshed datasets
+    #     response_json = self.publish_collection(self.rev_collection)
+    #     self.verify_datasets(response_json, {ds.id for ds in self.pub_collection.datasets})
+    #     self.assertPublishedCollectionOK(expected_body, rev_s3_objects)
 
-        # Check published_at and revised_at
-        # Collection: Only revised_at should be updated
-        self.assertIsNone(response_json.get("published_at"))
-        self.assertEqual(self.mock_timestamp, datetime.utcfromtimestamp(response_json["revised_at"]))
+    #     # Check published_at and revised_at
+    #     # Collection: Only revised_at should be updated
+    #     self.assertIsNone(response_json.get("published_at"))
+    #     self.assertEqual(self.mock_timestamp, datetime.utcfromtimestamp(response_json["revised_at"]))
 
-        # Datasets: Only the newly added dataset should have published_at updated
-        for dataset in response_json["datasets"]:
-            if dataset["id"] == new_dataset_id:
-                self.assertEqual(self.mock_timestamp, datetime.utcfromtimestamp(dataset["published_at"]))
-            else:
-                self.assertIsNone(dataset.get("published_at"))
-            self.assertIsNone(dataset.get("revised_at"))
+    #     # Datatsets: None should be updated
+    #     for dataset in response_json["datasets"]:
+    #         self.assertIsNone(dataset.get("published_at"))
+    #         self.assertEqual(self.mock_timestamp, datetime.utcfromtimestamp(dataset["revised_at"]))
 
-    def test__publish_revision_with_collection_info_updated_new_and_refreshed_datasets__201(self):
-        """Publish a revision with collection detail changes, new datasets, and refreshed datasets."""
-        expected_body = self.update_revision_details()
-        self.refresh_datasets()
+    # def test__publish_revision_with_collection_info_updated_and_new_datasets__201(self):
+    #     """Publish a revision with collection detail changes and new datasets."""
+    #     expected_body = self.update_revision_details()
 
-        # add new dataset
-        new_dataset_id = self.generate_dataset_with_s3_resources(self.session, collection_id=self.rev_collection.id).id
-        dataset_ids = {ds.id for ds in self.pub_collection.datasets}
-        dataset_ids.add(new_dataset_id)
+    #     # add new dataset
+    #     new_dataset_id = self.generate_dataset_with_s3_resources(self.session, collection_id=self.rev_collection.id).id
+    #     dataset_ids = {ds.id for ds in self.pub_collection.datasets}
+    #     dataset_ids.add(new_dataset_id)
 
-        # get revision datasets
-        _, rev_s3_objects = self.get_s3_objects_from_collections()
+    #     # get revision datasets
+    #     _, rev_s3_objects = self.get_s3_objects_from_collections()
 
-        # Published revision with collection details updated, new dataset, and refreshed datasets
-        response_json = self.publish_collection(self.rev_collection)
-        self.assertPublishedCollectionOK(expected_body, rev_s3_objects)
+    #     # Published revision with collection details updated, new dataset, and refreshed datasets
+    #     response_json = self.publish_collection(self.rev_collection)
+    #     self.assertPublishedCollectionOK(expected_body, rev_s3_objects)
 
-        # Check published_at and revised_at
-        # Collection: Only revised_at should be updated
-        self.assertIsNone(response_json.get("published_at"))
-        self.assertEqual(self.mock_timestamp, datetime.utcfromtimestamp(response_json["revised_at"]))
+    #     # Check published_at and revised_at
+    #     # Collection: Only revised_at should be updated
+    #     self.assertIsNone(response_json.get("published_at"))
+    #     self.assertEqual(self.mock_timestamp, datetime.utcfromtimestamp(response_json["revised_at"]))
 
-        # Datasets: Only the newly added dataset should have published_at updated
-        for dataset in response_json["datasets"]:
-            if dataset["id"] == new_dataset_id:
-                self.assertEqual(self.mock_timestamp, datetime.utcfromtimestamp(dataset["published_at"]))
-                self.assertIsNone(dataset.get("revised_at"))
-            else:
-                self.assertIsNone(dataset.get("published_at"))
-                self.assertEqual(self.mock_timestamp, datetime.utcfromtimestamp(dataset["revised_at"]))
+    #     # Datasets: Only the newly added dataset should have published_at updated
+    #     for dataset in response_json["datasets"]:
+    #         if dataset["id"] == new_dataset_id:
+    #             self.assertEqual(self.mock_timestamp, datetime.utcfromtimestamp(dataset["published_at"]))
+    #         else:
+    #             self.assertIsNone(dataset.get("published_at"))
+    #         self.assertIsNone(dataset.get("revised_at"))
 
-    def test__publish_revision_and_existing_datasets(self):
-        """Publish a revision with the same, existing datasets."""
-        response_json = self.publish_collection(self.rev_collection)
-        self.verify_datasets(response_json, {ds.id for ds in self.pub_collection.datasets})
+    # def test__publish_revision_with_collection_info_updated_new_and_refreshed_datasets__201(self):
+    #     """Publish a revision with collection detail changes, new datasets, and refreshed datasets."""
+    #     expected_body = self.update_revision_details()
+    #     self.refresh_datasets()
 
-        # Check published_at and revised_at
-        # Collection: None should be updated
-        self.assertIsNone(response_json.get("published_at"))
-        self.assertIsNone(response_json.get("revised_at"))
+    #     # add new dataset
+    #     new_dataset_id = self.generate_dataset_with_s3_resources(self.session, collection_id=self.rev_collection.id).id
+    #     dataset_ids = {ds.id for ds in self.pub_collection.datasets}
+    #     dataset_ids.add(new_dataset_id)
 
-        # Datasets: None should be updated
-        for dataset in response_json["datasets"]:
-            self.assertIsNone(dataset.get("published_at"))
-            self.assertIsNone(dataset.get("revised_at"))
+    #     # get revision datasets
+    #     _, rev_s3_objects = self.get_s3_objects_from_collections()
 
-    def test__publish_revision_unauthorized__403(self):
-        pass
+    #     # Published revision with collection details updated, new dataset, and refreshed datasets
+    #     response_json = self.publish_collection(self.rev_collection)
+    #     self.assertPublishedCollectionOK(expected_body, rev_s3_objects)
+
+    #     # Check published_at and revised_at
+    #     # Collection: Only revised_at should be updated
+    #     self.assertIsNone(response_json.get("published_at"))
+    #     self.assertEqual(self.mock_timestamp, datetime.utcfromtimestamp(response_json["revised_at"]))
+
+    #     # Datasets: Only the newly added dataset should have published_at updated
+    #     for dataset in response_json["datasets"]:
+    #         if dataset["id"] == new_dataset_id:
+    #             self.assertEqual(self.mock_timestamp, datetime.utcfromtimestamp(dataset["published_at"]))
+    #             self.assertIsNone(dataset.get("revised_at"))
+    #         else:
+    #             self.assertIsNone(dataset.get("published_at"))
+    #             self.assertEqual(self.mock_timestamp, datetime.utcfromtimestamp(dataset["revised_at"]))
+
+    # def test__publish_revision_and_existing_datasets(self):
+    #     """Publish a revision with the same, existing datasets."""
+    #     response_json = self.publish_collection(self.rev_collection)
+    #     self.verify_datasets(response_json, {ds.id for ds in self.pub_collection.datasets})
+
+    #     # Check published_at and revised_at
+    #     # Collection: None should be updated
+    #     self.assertIsNone(response_json.get("published_at"))
+    #     self.assertIsNone(response_json.get("revised_at"))
+
+    #     # Datasets: None should be updated
+    #     for dataset in response_json["datasets"]:
+    #         self.assertIsNone(dataset.get("published_at"))
+    #         self.assertIsNone(dataset.get("revised_at"))
+
+
+###### UPLOAD TESTS START HERE ######
+
+class TestCollectionPostUploadLink(NewBaseTest):
+
+    def setUp(self):
+        super().setUp()
+        self.good_link = "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"
+        self.dummy_link = "https://www.dropbox.com/s/12345678901234/test.h5ad?dl=0"
+        self.uri_provider.get_file_info = Mock(return_value=FileInfo(1, "file.h5ad"))
+
+    # ✅
+    def test__link__202(self):
+        collection = self.generate_unpublished_collection()
+        path = f"/dp/v1/collections/{collection.version_id}/upload-links"
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        body = {"url": self.good_link}
+
+        test_url = furl(path=path)
+        response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
+        self.assertEqual(202, response.status_code)
+        self.assertIn("dataset_id", json.loads(response.data).keys())
+
+    # ✅
+    def test__link_no_auth__401(self):
+        collection = self.generate_unpublished_collection()
+        path = f"/dp/v1/collections/{collection.version_id}/upload-links"
+        headers = {"host": "localhost", "Content-Type": "application/json"}
+        body = {"url": self.dummy_link}
+
+        test_url = furl(path=path)
+        response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
+        self.assertEqual(401, response.status_code)
+
+    # ✅
+    def test__link_not_owner__403(self):
+        collection = self.generate_unpublished_collection(owner="someone else")
+        path = f"/dp/v1/collections/{collection.version_id}/upload-links"
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        body = {"url": self.dummy_link}
+
+        test_url = furl(path=path)
+        response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
+        self.assertEqual(403, response.status_code)
+
+    # 💛 Needs attention
+    def test__bad_link__400(self):
+        collection = self.generate_unpublished_collection()
+        path = f"/dp/v1/collections/{collection.version_id}/upload-links"
+
+        # ✅
+        with self.subTest("Unsupported Provider"):
+            # Mocks the URI validator so that it return invalid
+            self.uri_provider.validate = Mock(return_value=False)
+            headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+            body = {"url": "https://test_url.com"}
+            test_url = furl(path=path)
+            response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
+            self.assertEqual(400, response.status_code)
+            self.assertEqual("The dropbox shared link is invalid.", json.loads(response.data)["detail"])
+
+        # 🔴 TODO: requires a finer grained exception management
+        with self.subTest("Bad Dropbox link"):
+            self.uri_provider.validate = Mock(return_value=True)
+
+            headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+            body = {"url": self.dummy_link}
+            test_url = furl(path=path)
+            response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
+            self.assertEqual(400, response.status_code)
+            self.assertTrue(
+                "'content-disposition' not present in the header." in json.loads(response.data)["detail"]
+                or "The URL provided causes an error with Dropbox." == json.loads(response.data)["detail"]
+            )
+
+    # ✅
+    def test__oversized__413(self):
+        self.uri_provider.get_file_info = Mock(return_value=FileInfo(40 * 2**30, "file.h5ad"))
+        collection = self.generate_unpublished_collection()
+        path = f"/dp/v1/collections/{collection.version_id}/upload-links"
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        body = {"url": self.dummy_link}
+
+        test_url = furl(path=path)
+        response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
+        self.assertEqual(413, response.status_code)
+
+    # ✅
+    def test__link_fake_collection__403(self):
+        path = "/dp/v1/collections/fake/upload-links"
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        body = {"url": self.good_link}
+
+        test_url = furl(path=path)
+        response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
+        self.assertEqual(403, response.status_code)
+
+    # ✅
+    def test_link_public_collection__403(self):
+        collection = self.generate_published_collection()
+        path = f"/dp/v1/collections/{collection.version_id}/upload-links"
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        body = {"url": self.good_link}
+
+        test_url = furl(path=path)
+        response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
+        self.assertEqual(403, response.status_code)
+
+
+class TestCollectionPutUploadLink(NewBaseTest):
+    def setUp(self):
+        super().setUp()
+        self.good_link = "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"
+        # TODO: headers do not follow the same pattern as the rest of the test. Maybe change?
+        self.headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        self.uri_provider.get_file_info = Mock(return_value=FileInfo(1, "file.h5ad"))
+
+    def assert_datasets_are_updated(self, dataset1, dataset2):
+        """
+        Asserts that dataset2 is an updated revision of dataset1
+        """
+        self.assertIsNotNone(dataset2)
+        if dataset2 is not None: #pylance
+            # The new dataset should have the same canonical id
+            self.assertNotEqual(dataset1.dataset_version_id, dataset2.version_id)
+            self.assertEqual(dataset2.dataset_id.id, dataset1.dataset_id)
+            # The artifacts for the new datasets should have a different id
+
+    # ✅
+    def test__reupload_published_dataset_during_revision__202(self):
+        """
+        Reupload a published dataset during a revision
+        """
+        dataset = self.generate_dataset(
+            statuses=[DatasetStatusUpdate("processing_status", DatasetProcessingStatus.SUCCESS)],
+            publish=True
+        )
+
+        new_version = self.business_logic.create_collection_version(CollectionId(dataset.collection_id))
+
+        path = f"/dp/v1/collections/{new_version.version_id}/upload-links"
+        body = {"url": self.good_link, "id": dataset.dataset_version_id}
+        response = self.app.put(path, headers=self.headers, data=json.dumps(body))
+        self.assertEqual(202, response.status_code)
+
+        new_dataset_id = json.loads(response.data)["dataset_id"]
+        new_dataset = self.business_logic.get_dataset_version(DatasetVersionId(new_dataset_id))
+        self.assert_datasets_are_updated(dataset, new_dataset)
+
+    # ✅
+    @patch("backend.corpora.common.upload.start_upload_sfn")
+    def test__reupload_unpublished_dataset__202(self):
+        """
+        Reuploads an unpublished dataset
+        """
+        dataset = self.generate_dataset(
+            statuses=[DatasetStatusUpdate("processing_status", DatasetProcessingStatus.SUCCESS)],
+        )
+
+        path = f"/dp/v1/collections/{dataset.collection_version_id}/upload-links"
+        body = {"url": self.good_link, "id": dataset.dataset_version_id}
+
+        response = self.app.put(path, headers=self.headers, data=json.dumps(body))
+        self.assertEqual(202, response.status_code)
+        
+        new_dataset_id = json.loads(response.data)["dataset_id"]
+        new_dataset = self.business_logic.get_dataset_version(DatasetVersionId(new_dataset_id))
+        self.assertNotEqual(new_dataset_id, dataset.dataset_version_id)
+        self.assert_datasets_are_updated(dataset, new_dataset)
+
+    # ✅
+    def test__reupload_public_dataset__403(self):
+        """cannot reupload a public published dataset"""
+        dataset = self.generate_dataset(
+            statuses=[DatasetStatusUpdate("processing_status", DatasetProcessingStatus.SUCCESS)],
+            publish=True,
+        )
+        path = f"/dp/v1/collections/{dataset.collection_version_id}/upload-links"
+        body = {"url": self.good_link, "id": dataset.dataset_version_id}
+
+        response = self.app.put(path, headers=self.headers, data=json.dumps(body))
+        self.assertEqual(403, response.status_code)
+        # TODO: possibly, assert that no new version has been created, but not too useful
+
+    # ✅
+    def test__reupload_while_processing_dataset__405(self):
+        """cannot reupload a dataset that is pending"""
+        dataset = self.generate_dataset(
+            statuses=[DatasetStatusUpdate("processing_status", DatasetProcessingStatus.PENDING)],
+        )
+        path = f"/dp/v1/collections/{dataset.collection_version_id}/upload-links"
+        body = {"url": self.good_link, "id": dataset.dataset_version_id}
+        
+        response = self.app.put(path, headers=self.headers, data=json.dumps(body))
+        print(response.data)
+        self.assertEqual(405, response.status_code)
+
+    # ✅
+    def test__reupload_dataset_not_owner__403(self):
+        dataset = self.generate_dataset(
+            owner="someone else",
+            statuses=[DatasetStatusUpdate("processing_status", DatasetProcessingStatus.SUCCESS)],
+        )
+        
+        path = f"/dp/v1/collections/{dataset.collection_version_id}/upload-links"
+        body = {"url": self.good_link, "id": dataset.dataset_version_id}
+
+        response = self.app.put(path, headers=self.headers, data=json.dumps(body))
+        self.assertEqual(403, response.status_code)
+
+    # ✅
+    def test__dataset_not_in_collection__404(self):
+        """
+        Trying to publish a dataset belonging to a different collection raises a 404
+        """
+        dataset = self.generate_dataset(
+            owner="someone else",
+            statuses=[DatasetStatusUpdate("processing_status", DatasetProcessingStatus.SUCCESS)],
+        )
+        collection = self.generate_unpublished_collection()
+        
+        path = f"/dp/v1/collections/{collection.version_id.id}/upload-links"
+        body = {"url": self.good_link, "id": dataset.dataset_version_id}
+
+        response = self.app.put(path, headers=self.headers, data=json.dumps(body))
+        self.assertEqual(404, response.status_code)
+
+
+class TestCollectionUploadLinkCurators(NewBaseTest):
+    def setUp(self):
+        super().setUp()
+        self.good_link = "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"
+        self.uri_provider.get_file_info = Mock(return_value=FileInfo(1, "file.h5ad"))
+
+    # ✅
+    def test__can_upload_dataset_to_non_owned_collection_as_super_curator(self):
+        """
+        A super curator can upload a dataset to a non-owned collection
+        """
+        collection = self.generate_unpublished_collection(
+            owner="someone else"
+        )
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token("super")}
+        path = f"/dp/v1/collections/{collection.version_id}/upload-links"
+        body = {"url": self.good_link}
+
+        test_url = furl(path=path)
+        response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
+        print(response.data)
+        self.assertEqual(202, response.status_code)
+        self.assertIn("dataset_id", json.loads(response.data).keys())
+
+    # ✅
+    def test__can_reupload_dataset_as_super_curator(self):
+        """
+        A super curator can reupload a dataset to a non-owned collection
+        """
+        dataset = self.generate_dataset(
+            owner="someone else",
+            statuses=[DatasetStatusUpdate("processing_status", DatasetProcessingStatus.SUCCESS)],
+        )
+
+        path = f"/dp/v1/collections/{dataset.collection_version_id}/upload-links"
+        body = {"url": self.good_link, "id": dataset.dataset_version_id}
+
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token("super")}
+        response = self.app.put(path, headers=headers, data=json.dumps(body))
+        self.assertEqual(202, response.status_code)

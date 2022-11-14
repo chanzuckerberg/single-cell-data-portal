@@ -2,12 +2,36 @@
 
 
 from typing import Optional
+from unittest.mock import Mock
+
+from backend.layers.api.portal_api import PortalApi
+from backend.layers.business.business import BusinessLogic
+from backend.layers.thirdparty.crossref_provider import CrossrefProviderInterface
+from backend.layers.thirdparty.s3_provider import S3Provider
+from backend.layers.thirdparty.step_function_provider import StepFunctionProviderInterface
+from backend.layers.thirdparty.uri_provider import UriProviderInterface
+from tests.unit.backend.layers.persistence.persistence_mock import DatabaseProviderMock
 # from backend.layers.api.portal_api import PortalApi
 
 def portal_api():
     # TODO: put the real PortalApi here. Tests will mock this method to return a testable version of PortalAPI.
     # This is a poor man dependency injection, basically
-    return NotImplemented
+    database_provider = DatabaseProviderMock()
+    crossref_provider = CrossrefProviderInterface()
+    step_function_provider = StepFunctionProviderInterface()
+    s3_provider = S3Provider()
+    uri_provider = UriProviderInterface()
+    uri_provider.validate = Mock(return_value=True) # By default, every link should be valid
+
+    business_logic = BusinessLogic(
+        database_provider, 
+        crossref_provider, 
+        step_function_provider, 
+        s3_provider, 
+        uri_provider
+    )
+    return PortalApi(business_logic)
+
 
 def get_collections_list(from_date: int = None, to_date: int = None, token_info: Optional[dict] = None):
     return portal_api().get_collections_list(from_date, to_date, token_info)
@@ -59,6 +83,3 @@ def delete_dataset(dataset_id: str, token_info: dict):
 
 def get_dataset_identifiers(url: str):
     return portal_api().get_dataset_identifiers(url)
-
-def post_dataset_gene_sets(dataset_id: str, body: object, token_info: dict):
-    return portal_api().post_dataset_gene_sets(dataset_id, body, token_info)
