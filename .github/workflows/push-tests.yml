@@ -30,8 +30,7 @@ jobs:
           python-version: 3.7
       - name: Lint Python
         run: |
-          python3 -m pip install --upgrade pip
-          pip3 install flake8
+          pip install -r requirements.txt
           make lint
       - uses: actions/setup-node@v2
         name: Set up npm
