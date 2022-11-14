@@ -142,6 +142,11 @@ class DatabaseProviderMock(DatabaseProviderInterface):
     def get_dataset_version(self, version_id: DatasetVersionId) -> DatasetVersion:
         return copy.deepcopy(self.datasets_versions.get(version_id.id))
 
+    def get_all_versions_for_collection(self, collection_id: CollectionId) -> Iterable[CollectionVersion]:
+        for version in self.collections_versions.values():
+            if version.collection_id == collection_id:
+                yield version
+
     def get_all_datasets(self) -> Iterable[DatasetVersion]:  
         """
         For now, this only returns all the active datasets, i.e. the datasets that belong to a published collection

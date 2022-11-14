@@ -11,9 +11,9 @@ from backend.corpora.common.providers.crossref_provider import CrossrefDOINotFou
 from backend.layers.business.business import BusinessLogic, CollectionQueryFilter, DatasetArtifactDownloadData
 from backend.corpora.common.providers.crossref_provider import CrossrefException
 from backend.layers.business.business import BusinessLogic, CollectionMetadataUpdate, CollectionQueryFilter, DatasetArtifactDownloadData
-from backend.layers.business.exceptions import CollectionUpdateException, InvalidLinkException, \
+from backend.layers.business.exceptions import CollectionUpdateException, CollectionVersionException, InvalidLinkException, \
     CollectionCreationException, DatasetIngestException, CollectionPublishException
-from backend.layers.common.entities import CollectionMetadata, CollectionVersion, CollectionVersionId, DatasetArtifact, DatasetMetadata, DatasetProcessingStatus, DatasetStatus, DatasetUploadStatus, DatasetValidationStatus, DatasetVersionId, Link, OntologyTermId
+from backend.layers.common.entities import CollectionId, CollectionMetadata, CollectionVersion, CollectionVersionId, DatasetArtifact, DatasetMetadata, DatasetProcessingStatus, DatasetStatus, DatasetUploadStatus, DatasetValidationStatus, DatasetVersionId, Link, OntologyTermId
 from backend.layers.thirdparty.uri_provider import UriProviderInterface
 from tests.unit.backend.layers.persistence.persistence_mock import DatabaseProviderMock
 
@@ -751,6 +751,23 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         self.assertEqual(version.version_id, published_collection.version_id)
         self.assertNotEqual(version.version_id, new_version.version_id)
 
+    def test_create_collection_version_fails_if_other_versions(self):
+        """
+        A collection version can only be created if there are no other unpublished versions
+        for that specific canonical collection
+        """
+        published_collection = self.initialize_published_collection()
+        self.business_logic.create_collection_version(published_collection.collection_id)
+
+        with self.assertRaises(CollectionVersionException):
+            self.business_logic.create_collection_version(published_collection.collection_id)
+
+    def test_create_collection_version_fails_if_collection_not_exists(self):
+        """
+        A collection version can only be created on an existing collection
+        """
+        with self.assertRaises(CollectionVersionException):
+            self.business_logic.create_collection_version(CollectionId("non_existing_collection_id"))
 
     def test_delete_collection_version_ok(self):
         """
