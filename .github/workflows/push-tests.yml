@@ -176,7 +176,8 @@ jobs:
       - wmg-processing-unit-test
       - e2e-test
       - lint
-      - build-extra-images
+      - build-batch-job-images
+      - build-frontend-backend-images
     runs-on: ubuntu-20.04
     if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
     steps:
@@ -381,7 +382,8 @@ jobs:
       - wmg-processing-unit-test
       - e2e-test
       - lint
-      - build-extra-images
+      - build-batch-job-images
+      - build-frontend-backend-images
     runs-on: ubuntu-20.04
     if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod' )
     steps:
