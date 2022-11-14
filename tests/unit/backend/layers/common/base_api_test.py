@@ -17,7 +17,7 @@ from backend.layers.persistence.persistence import DatabaseProviderInterface
 from backend.layers.thirdparty.crossref_provider import CrossrefProviderInterface
 from backend.layers.thirdparty.s3_provider import S3Provider
 from backend.layers.thirdparty.step_function_provider import StepFunctionProviderInterface
-from backend.layers.thirdparty.uri_provider import UriProviderInterface
+from backend.layers.thirdparty.uri_provider import FileInfo, UriProviderInterface
 from backend.layers.common.entities import CollectionMetadata, CollectionVersion, CollectionVersionId, DatasetMetadata, DatasetStatusGeneric, Link, OntologyTermId
 from tests.unit.backend.corpora.api_server.mock_auth import MockOauthServer
 from tests.unit.backend.corpora.api_server.config import TOKEN_EXPIRES
@@ -95,6 +95,7 @@ class NewBaseTest(BaseAuthAPITest):
         s3_provider = S3Provider()
         self.uri_provider = UriProviderInterface()
         self.uri_provider.validate = Mock(return_value=True) # By default, every link should be valid
+        self.uri_provider.get_file_info = Mock(return_value=FileInfo(1, "file.h5ad"))
 
         self.sample_dataset_metadata = DatasetMetadata(
             name = "test_dataset_name",
@@ -156,7 +157,7 @@ class NewBaseTest(BaseAuthAPITest):
             self.business_logic.set_dataset_metadata(dataset_version_id, metadata)
             # TODO: set a proper dataset status
 
-        return collection
+        return self.business_logic.get_collection_version(collection.version_id)
 
     # Public collections need to have at least one dataset!
     def generate_published_collection(self, owner = "test_user_id", links: List[Link] = [], add_datasets: int = 1):
