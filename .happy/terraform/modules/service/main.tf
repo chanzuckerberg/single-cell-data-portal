@@ -42,7 +42,7 @@ resource aws_ecs_task_definition task_definition {
     "environment": [
       {
         "name": "DD_API_KEY",
-        "valueFrom": "arn:aws:secretsmanager:us-west-2:699936264352:secret:dd_api_key-nGPNwx"
+        "value": "a09e8a7942e64775303e46c7ca2a0cc2"
       },
       {
         "name": "ECS_FARGATE",
@@ -68,6 +68,18 @@ resource aws_ecs_task_definition task_definition {
     "image": "${var.image}",
     "memory": ${var.memory},
     "environment": [
+      {
+        "name": "DD_SERVICE",
+        "value": "${var.app_name}"
+      },
+      {
+        "name": "DD_ENV",
+        "value": "${var.deployment_stage}"
+      },
+      {
+        "name": "DD_VERSION",
+        "value": "${var.image}"
+      },
       {
         "name": "REMOTE_DEV_PREFIX",
         "value": "${var.remote_dev_prefix}"
