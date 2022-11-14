@@ -30,6 +30,7 @@ jobs:
       - uses: actions/checkout@v2
       - name: Lint Python
         run: |
+           pip install flake8
            make lint
       - name: Lint frontend
         run: |
