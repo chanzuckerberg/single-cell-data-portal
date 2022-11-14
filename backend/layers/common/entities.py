@@ -6,6 +6,13 @@ from enum import Enum
 
 # TODO: copy and paste the docs for these
 
+class DatasetStatusKey(Enum):
+    UPLOAD = "upload"
+    VALIDATION = "validation"
+    CXG = "cxg"
+    RDS = "rds"
+    H5AD = "h5ad"
+    PROCESSING = "processing"
 class DatasetStatusGeneric:
     pass
 

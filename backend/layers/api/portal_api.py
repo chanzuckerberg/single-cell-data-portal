@@ -10,7 +10,7 @@ from backend.layers.business.business import BusinessLogic
 
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.business.entities import CollectionMetadataUpdate, CollectionQueryFilter
-from backend.layers.business.exceptions import ArtifactNotFoundException, CollectionCreationException, CollectionIsPublishedException, CollectionNotFoundException, CollectionPublishException, CollectionUpdateException, DatasetInWrongStatusException, DatasetNotFoundException, InvalidURIException, MaxFileSizeExceededException
+from backend.layers.business.exceptions import ArtifactNotFoundException, CollectionCreationException, CollectionIsPublishedException, CollectionNotFoundException, CollectionPublishException, CollectionUpdateException, CollectionVersionException, DatasetInWrongStatusException, DatasetNotFoundException, InvalidURIException, MaxFileSizeExceededException
 from backend.layers.common.entities import CollectionId, CollectionMetadata, CollectionVersion, CollectionVersionId, DatasetArtifact, DatasetId, DatasetStatus, DatasetVersion, DatasetVersionId, Link, OntologyTermId
 
 from backend.corpora.common.utils import authorization_checks as auth
@@ -47,10 +47,9 @@ class PortalApi:
         collections = []
         for c in itertools.chain(all_published_collections, all_owned_collections):
             collections.append({
-                # "id": c.collection_id.id,
                 "id": c.version_id.id if c.published_at is None else c.collection_id.id,
                 "visibility": "PRIVATE" if c.published_at is None else "PUBLIC",
-                "owner": c.owner, # TODO: looks like this isn't returned right now
+                "owner": c.owner,
                 "created_at": 12345, # TODO
                 "revision_of": "TODO", # TODO: looks like this isn't returned right now
             })            
@@ -114,7 +113,7 @@ class PortalApi:
             "batch_condition": dataset.metadata.batch_condition,
             "cell_count": dataset.metadata.cell_count,
             "cell_type": self._ontology_term_ids_to_response(dataset.metadata.cell_type),
-            "collection_id": "TODO", # TODO
+            "collection_id": dataset.collection_id.id,
             "created_at": 1234, # TODO
             "dataset_assets": [self._dataset_asset_to_response(a, dataset.dataset_id.id) for a in dataset.artifacts],
             "dataset_deployments": [{"url": "TODO"}], # TODO: dataset.metadata.explorer_url,
@@ -130,8 +129,8 @@ class PortalApi:
             "processing_status": self._dataset_processing_status_to_response(dataset.status, dataset.dataset_id.id),
             "published": True,
             "published_at": 1234,
-            "revision": 1234,
-            "schema_version": "3.0.0",
+            "revision": 0, # TODO this is the progressive revision number. I don't think we'll need this
+            "schema_version": dataset.metadata.schema_version,
             "self_reported_ethnicity": self._ontology_term_ids_to_response(dataset.metadata.self_reported_ethnicity),
             "sex": self._ontology_term_ids_to_response(dataset.metadata.sex),
             "suspension_type": dataset.metadata.suspension_type,
@@ -316,23 +315,6 @@ class PortalApi:
         """
         Publishes a collection
         """
-
-        # db_session = g.db_session
-        # collection = Collection.get_collection(
-        #     db_session,
-        #     collection_id,
-        #     CollectionVisibility.PRIVATE,
-        #     owner=owner_or_allowed(token_info),
-        # )
-        # if not collection:
-        #     raise ForbiddenHTTPException()
-        # if all([dataset.tombstone for dataset in collection.datasets]):
-        #     raise ConflictException(detail="The collection must have a least one dataset.")
-        # collection_id = collection.revision_of if collection.revision_of else collection.id
-        # data_submission_policy_version = body["data_submission_policy_version"]
-        # collection.publish(data_submission_policy_version=data_submission_policy_version)
-        # cloudfront.create_invalidation_for_index_paths()
-        # return make_response({"collection_id": collection_id, "visibility": CollectionVisibility.PUBLIC}, 202)
 
         version = self.business_logic.get_collection_version(CollectionVersionId(collection_id))
         if version is None or not UserInfo(token_info).is_user_owner_or_allowed(version.owner):

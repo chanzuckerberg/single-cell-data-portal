@@ -1,7 +1,4 @@
 from datetime import datetime
-from ensurepip import version
-from importlib.metadata import metadata
-from nntplib import ArticleInfo
 import uuid
 from backend.corpora.common.entities import dataset
 from backend.layers.persistence.persistence import DatabaseProviderInterface
