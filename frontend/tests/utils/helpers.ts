@@ -4,7 +4,7 @@ import {
 } from "@aws-sdk/client-secrets-manager";
 import { ElementHandle, expect, Page } from "@playwright/test";
 import { TEST_ENV } from "tests/common/constants";
-import { TEST_URL } from "../common/constants";
+import { TEST_URL, LOGIN_STATE_FILENAME } from "../common/constants";
 import { getText } from "./selectors";
 
 /**
@@ -87,7 +87,7 @@ export async function login(page: Page): Promise<void> {
 
   console.log("setting storage state...");
 
-  await page.context().storageState({ path: "storageState.json" });
+  await page.context().storageState({ path: LOGIN_STATE_FILENAME });
 }
 
 interface TryUntilConfigs {
