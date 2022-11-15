@@ -3,6 +3,7 @@ from typing import Callable, List, Literal, Optional
 from backend.corpora.common.utils.corpora_constants import CorporaConstants
 from backend.layers.business.business import BusinessLogic
 from backend.layers.processing.exceptions import ConversionFailed
+from backend.layers.thirdparty.s3_provider import S3Provider
 from backend.layers.thirdparty.uri_provider import UriProvider
 from entities import DatasetConversionStatus, DatasetMetadata, DatasetProcessingStatus, DatasetStatusGeneric, DatasetStatusKey, DatasetValidationStatus, DatasetVersionId, OntologyTermId
 
@@ -19,6 +20,7 @@ class ProcessingLogic: # TODO: ProcessingLogicBase
 
     business_logic: BusinessLogic
     uri_provider: UriProvider
+    s3_provider: S3Provider
     logger: Logger
 
     def update_processing_status(self, dataset_id: DatasetVersionId, status_key: DatasetStatusKey, status_value: DatasetStatusGeneric):
@@ -32,22 +34,17 @@ class ProcessingLogic: # TODO: ProcessingLogicBase
     def make_s3_uri(artifact_bucket, bucket_prefix, file_name):
         return join("s3://", artifact_bucket, bucket_prefix, file_name)
 
-    def upload(
-        self,
-        file_name: str,
-        bucket_prefix: str,
-        artifact_bucket: str,
-    ) -> str:
-        pass
-        # TODO: needs to call an appropriate S3Provider method, but arguments are a bit tricky
-        # file_base = basename(file_name)
-        # buckets.portal_client.upload_file(
-        #     file_name,
-        #     artifact_bucket,
-        #     join(bucket_prefix, file_base),
-        #     ExtraArgs={"ACL": "bucket-owner-full-control"},
-        # )
-        # return ProcessingLogic.make_s3_uri(artifact_bucket, bucket_prefix, file_base)
+    def upload(self, file_name: str, bucket_prefix: str, artifact_bucket: str,) -> str:
+        # TODO: make sure that the files are correct
+        file_base = basename(file_name)
+        self.s3_provider.upload_file(
+            file_name,
+            artifact_bucket,
+            join(bucket_prefix, file_base),
+            extra_args={"ACL": "bucket-owner-full-control"},
+        )
+        return ProcessingLogic.make_s3_uri(artifact_bucket, bucket_prefix, file_base)
+
 
     def create_artifact(
         self,

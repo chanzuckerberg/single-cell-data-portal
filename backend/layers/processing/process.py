@@ -72,13 +72,19 @@ class ProcessMain(ProcessingLogic):
         return True
 
     def main(self):
-        pass
-        # TODO: do stuff
-        # dataset_id = os.environ["DATASET_ID"]
-        # step_name = os.environ["STEP_NAME"]
-        # os.environ["DROPBOX_URL"]
-        # os.environ["ARTIFACT_BUCKET"],
-        # os.environ["CELLXGENE_BUCKET"],
+        dataset_id = os.environ["DATASET_ID"]
+        step_name = os.environ["STEP_NAME"]
+        dropbox_uri = os.environ["DROPBOX_URL"]
+        artifact_bucket = os.environ["ARTIFACT_BUCKET"]
+        cxg_bucket = os.environ["CELLXGENE_BUCKET"]
+        rv = self.process(
+            dataset_id=DatasetVersionId(dataset_id),
+            step_name=step_name,
+            dropbox_uri=dropbox_uri,
+            artifact_bucket=artifact_bucket,
+            cxg_bucket=cxg_bucket
+        )
+        return 0 if rv else 1
 
 if __name__ == "__main__":
     pass # TODO: create all of the above
