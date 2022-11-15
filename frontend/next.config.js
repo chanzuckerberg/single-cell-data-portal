@@ -1,5 +1,7 @@
 const configs = require(__dirname + "/src/configs/configs.js");
 const nodeEnv = require(__dirname + "/src/common/constants/nodeEnv.js");
+const path = require("path");
+const inliner = require("@vgrid/sass-inline-svg");
 
 const cloneDeep = require("lodash/cloneDeep");
 const { createSecureHeaders } = require("next-secure-headers");
@@ -10,7 +12,7 @@ const PLAUSIBLE_URL = "https://plausible.io";
 
 const TWITTER_URL = "https://cdn.syndication.twimg.com platform.twitter.com";
 
-const SCRIPT_SRC = ["'self'", PLAUSIBLE_URL, TWITTER_URL];
+const SCRIPT_SRC = ["'self'", "'wasm-unsafe-eval'", PLAUSIBLE_URL, TWITTER_URL];
 
 const defaultSecureHeaders = {
   contentSecurityPolicy: {
@@ -54,6 +56,7 @@ docSiteSecureHeaders.contentSecurityPolicy.directives.frameSrc =
   docSiteFrameSrc;
 
 module.exports = {
+  compiler: { emotion: true },
   eslint: { dirs: ["doc-site", "pages", "components", "lib"] },
   async generateBuildId() {
     // Return null to allow next.js to fallback to default behavior
@@ -86,5 +89,28 @@ module.exports = {
         source: "/landing-page",
       },
     ];
+  },
+  sassOptions: {
+    functions: {
+      /**
+       * Copied from node_modules\@blueprintjs\core\scripts\sass-custom-functions.js
+       *
+       * Sass function to inline a UI icon svg and change its path color.
+       *
+       * Usage:
+       * svg-icon("16px/icon-name.svg", (path: (fill: $color)) )
+       *
+       * @see https://github.com/palantir/blueprint/issues/4759#issuecomment-1112218581
+       */
+      "svg-icon($path, $selectors: null)": inliner(
+        path.join(__dirname, "blueprint-icons/icons"), // Replaced path to icons
+        {
+          // minimal "uri" encoding is smaller than base64
+          encodingFormat: "uri",
+          // run through SVGO first
+          optimize: true,
+        }
+      ),
+    },
   },
 };

@@ -35,7 +35,6 @@ services:
           - localstack.corporanet.local
   frontend:
     image: "${DOCKER_REPO}corpora-frontend"
-    platform: linux/amd64
     build:
       context: frontend
       cache_from:
@@ -67,7 +66,6 @@ services:
           - frontend.corporanet.local
   upload_failures:
     image: "${DOCKER_REPO}corpora-upload-failures"
-    platform: linux/amd64
     build:
       context: .
       cache_from:
@@ -82,10 +80,9 @@ services:
     ports:
       - "9000:8080"
     volumes:
-      - ./backend/corpora/upload_failures:/var/task
-      - ./backend/corpora/lambdas/upload_failures:/var/task/backend/corpora/upload_failures
-      - ./backend/corpora/common:/var/task/backend/corpora/common
-      - ./backend/corpora/dataset_processing:/var/task/backend/corpora/dataset_processing
+      - ./backend/portal/pipeline/upload_failures:/var/task
+      - ./backend/common:/var/task/backend/common
+      - ./backend/portal/pipeline/processing:/var/task/backend/portal/pipeline/processing
     environment:
       - PYTHONUNBUFFERED=1
       - CORPORA_LOCAL_DEV=true
@@ -103,12 +100,11 @@ services:
           - uploadfailures.corporanet.local
   upload_success:
     image: "${DOCKER_REPO}corpora-upload-success"
-    platform: linux/amd64
     build:
       context: .
       cache_from:
         - "${DOCKER_REPO}corpora-upload-success:branch-main"
-      dockerfile: Dockerfile.handle_success
+      dockerfile: Dockerfile.upload_success
       args:
         - BUILDKIT_INLINE_CACHE=1
         - HAPPY_COMMIT
@@ -118,9 +114,9 @@ services:
     ports:
       - "9001:8080"
     volumes:
-      - ./backend/corpora/upload_success:/var/task
-      - ./backend/corpora/common:/var/task/backend/corpora/common
-      - ./backend/corpora/dataset_processing:/var/task/backend/corpora/dataset_processing
+      - ./backend/portal/pipeline/upload_success:/var/task
+      - ./backend/common:/var/task/backend/common
+      - ./backend/portal/pipeline/processing:/var/task/backend/portal/pipeline/processing
     environment:
       - PYTHONUNBUFFERED=1
       - CORPORA_LOCAL_DEV=true
@@ -138,12 +134,11 @@ services:
           - uploadsuccess.corporanet.local
   dataset_submissions:
     image: "${DOCKER_REPO}dataset-submissions"
-    platform: linux/amd64
     build:
       context: .
       cache_from:
         - "${DOCKER_REPO}dataset-submissions:branch-main"
-      dockerfile: Dockerfile.handle_dataset_submissions
+      dockerfile: Dockerfile.dataset_submissions
       args:
         - BUILDKIT_INLINE_CACHE=1
         - HAPPY_COMMIT
@@ -153,8 +148,8 @@ services:
     ports:
       - "9002:8080"
     volumes:
-      - ./backend/corpora/dataset_submissions:/var/task
-      - ./backend/corpora/common:/var/task/backend/corpora/common
+      - ./backend/portal/pipelines/submissions:/var/task
+      - ./backend/common:/var/task/backend/common
     environment:
       - PYTHONUNBUFFERED=1
       - CORPORA_LOCAL_DEV=true
@@ -172,7 +167,6 @@ services:
           - dataset_submissions.corporanet.local
   processing:
     image: "${DOCKER_REPO}corpora-upload"
-    platform: linux/amd64
     build:
       context: .
       cache_from:
@@ -185,8 +179,8 @@ services:
         - HAPPY_TAG
     restart: "no"
     volumes:
-      - ./backend/corpora/dataset_processing:/backend/corpora/dataset_processing
-      - ./backend/corpora/common:/backend/corpora/common
+      - ./backend/portal/pipeline/processing:/backend/portal/pipeline/processing
+      - ./backend/common:/backend/common
       # Mount dirs in a layout suitable for running tests.
       - .:/single-cell-data-portal
     command: ["sleep", "infinity"]
@@ -207,7 +201,6 @@ services:
           - processing.corporanet.local
   wmg_processing:
     image: "${DOCKER_REPO}wmg-processing"
-    platform: linux/amd64
     build:
       context: .
       cache_from:
@@ -231,13 +224,15 @@ services:
       - DEPLOYMENT_STAGE=test
       - ARTIFACT_BUCKET=artifact-bucket
       - CELLXGENE_BUCKET=cellxgene-bucket
+    volumes:
+      # Mount dirs in a layout suitable for running tests.
+      - .:/single-cell-data-portal
     networks:
       corporanet:
         aliases:
           - processing.corporanet.local
   backend:
     image: "${DOCKER_REPO}corpora-backend"
-    platform: linux/amd64
     build:
       context: .
       cache_from:

@@ -1,3 +1,6 @@
+import os
+import pathlib
+
 import anndata
 import numpy as np
 import pandas as pd
@@ -47,6 +50,10 @@ def create_anndata_test_object(num_genes: int = 3, num_cells: int = 5):
     adata.obs["cell_type"] = pd.Categorical(cell_type)  # Categoricals are preferred for efficiency
     assay_ontologies = np.random.choice(list(INCLUDED_ASSAYS.keys()), size=(adata.n_obs,))
     adata.obs["assay_ontology_term_id"] = pd.Categorical(assay_ontologies)
+    adata.obs["tissue_ontology_term_id"] = "UBERON:0000101"
+    adata.obs["tissue"] = "lobe of lung"
+    adata.obs["tissue_ontology_term_id"] = pd.Categorical(adata.obs["tissue_ontology_term_id"])
+    adata.obs["tissue"] = pd.Categorical(adata.obs["tissue"])
 
     # Add cell level metadata matrices
     # matrix umap embeding
@@ -55,9 +62,24 @@ def create_anndata_test_object(num_genes: int = 3, num_cells: int = 5):
     adata.varm["gene_stuff"] = np.random.normal(0, 1, size=(adata.n_vars, 5))
 
     # unstructured metadata attached to the whole, schema version required
-    adata.uns["schema_version"] = "2.0.0"
+    adata.uns["schema_version"] = "3.0.0"
 
     # Add layers
     adata.layers["log_transformed"] = np.log1p(adata.X)
 
     return adata
+
+
+def store_anndata_test_file(path, dataset_name, annadata_object):
+    dataset_path = f"{path}/{dataset_name}"
+    os.mkdir(dataset_path)
+    test_anndata_file_name = pathlib.Path(dataset_path, "local.h5ad")
+    test_anndata_file_name.touch()
+    annadata_object.write(test_anndata_file_name, compression="gzip")
+    return test_anndata_file_name
+
+
+def create_anndata_test_fixture(path: str, dataset_name: str, num_genes: int = 1000, num_cells: int = 5000) -> str:
+    test_anndata_object = create_anndata_test_object(num_genes=num_genes, num_cells=num_cells)
+    test_anndata_file_name = store_anndata_test_file(path, dataset_name, test_anndata_object)
+    return test_anndata_file_name

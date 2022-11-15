@@ -1,8 +1,9 @@
 import { Button, Classes } from "@blueprintjs/core";
+import { css } from "@emotion/react";
+import styled from "@emotion/styled";
 import { PRIMARY_BLUE } from "src/components/common/theme";
-import styled from "styled-components";
 
-export const ActionButton = styled(Button)`
+const buttonStyle = css`
   &.${Classes.BUTTON}.${Classes.MINIMAL} {
     height: 24px;
     padding: 4px;
@@ -24,4 +25,8 @@ export const ActionButton = styled(Button)`
       outline: none;
     }
   }
+`;
+
+export const StyledButton = styled(Button)`
+  ${buttonStyle}
 `;

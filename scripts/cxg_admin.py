@@ -10,8 +10,8 @@ from click import Context
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
 
-from backend.corpora.common.corpora_config import CorporaDbConfig
-from backend.corpora.common.utils.db_session import DBSessionMaker
+from backend.common.corpora_config import CorporaDbConfig
+from backend.common.utils.db_session import DBSessionMaker
 
 from scripts.cxg_admin_scripts import deletions
 from scripts.cxg_admin_scripts import tombstones
@@ -35,7 +35,12 @@ def get_database_uri() -> str:
 
 
 @click.group()
-@click.option("--deployment", default="test", show_default=True, help="The name of the deployment to target.")
+@click.option(
+    "--deployment",
+    default=lambda: os.environ.get("DEPLOYMENT_STAGE", "test"),
+    show_default=True,
+    help="The name of the deployment to target.",
+)
 @click.pass_context
 def cli(ctx, deployment):
     """
@@ -264,7 +269,7 @@ def reprocess_seurat(ctx: Context, dataset_id: str) -> None:
 @cli.command()
 @click.pass_context
 def cxg_remaster(ctx):
-    """Cxg remaster"""
+    """Cxg remaster v2"""
     reprocess_datafile.cxg_remaster(ctx)
 
 
@@ -277,7 +282,7 @@ def wmg_get_s3_uris(ctx):
     ./scripts/cxg_admin.py --deployment dev wmg-get-s3-uris
     """
 
-    from backend.corpus_asset_pipelines.integrated_corpus.extract import get_dataset_s3_uris
+    from backend.wmg.pipeline.integrated_corpus.extract import get_dataset_s3_uris
 
     s3_uris = get_dataset_s3_uris()
     print(s3_uris)

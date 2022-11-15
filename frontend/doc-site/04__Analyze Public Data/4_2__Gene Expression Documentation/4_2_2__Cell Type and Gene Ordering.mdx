@@ -1,0 +1,47 @@
+# Cell Type and Gene ordering
+
+Cell types and genes shown in a dot plot can be arranged in different ways as described in this section.
+
+# Cell Type Ordering
+
+Cell types are annotated by the original data contributors and mapped to the closest cell ontology (CL) term as defined in the [data schema](https://github.com/chanzuckerberg/single-cell-curation/blob/main/schema/3.0.0/schema.md#cell_type_ontology_term_id).
+
+In some cases there are cell types annotated with a high-level term whereas in some other cases they can be very granularly annotated. For example, there are some cells annotated as "T cells" and others annotated with children terms like "effector CD8-positive, alpha-beta T cell". All of these cell types are shown in the dot plot and they should not be interpreted as one being a subset of the other.
+
+There are two options available for cell type ordering as described below.
+
+## Ontology-based Ordering
+
+Cell types can be ordered according to the CL directed acyclic graph (DAG). Briefly, for each tissue a 2-dimensional representation of the DAG containing the tissue's cell types is built, then an ordered list of cell types is created by traversing the DAG using a depth-first approach.
+
+Children cell types are represented with indentation in the dot plot, and the maximum indentation is 2 tabs for readability.
+
+This method groups cell types together based on their ontological relationships thus providing a loose lineage-based ordering.
+
+### Algorithm
+
+1. Load the CL ontology, using either the cl.obo or cl.owl from the source file [here](https://github.com/obophenotype/cell-ontology/releases/tag/v2022-06-18).
+1. Subset the ontology to only contain the cell types of interest along with their ancestors.
+1. Create a 2-dimensional representation of the DAG using the `dot` method of `graphiz`. See [here](http://www.graphviz.org/pdf/dotguide.pdf) for a full description of this method.
+1. Initialize an empty tree
+1. Traverse the DAG starting at the root:
+   1. If node is present in cell types of interest:
+      1. Add to the final ordered list.
+      1. Add as child of current parent in tree
+   1. Remove the node from nodes of interest.
+   1. Get children nodes
+   1. Perform recursion for each child node, going left-to-right through the children nodes.
+1. Return the ordered list and tree
+
+## Hierarchical Ordering
+
+Cell types can also be ordered using hierarchical clustering which will group cell types with similar expression patterns together based on the genes selected, consequently the ordering will vary based on the information shown in any given dot plot.
+
+The underlying method uses agglomerative hierarchical clustering with Euclidean distances.
+
+# Gene Ordering
+
+Similarly to cell types, genes can be ordered in two different ways:
+
+1. As entered: genes will be shown in the order they were queried.
+2. Hierarchical ordering: genes will be ordered using hierarchical clustering as described for cell types.

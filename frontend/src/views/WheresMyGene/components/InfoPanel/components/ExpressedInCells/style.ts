@@ -6,7 +6,7 @@ interface DotProps extends CommonThemeProps {
 }
 
 export const Wrapper = styled.div`
-  margin-bottom: 24px;
+  padding: 0 10px;
 `;
 
 export const Dot = styled.span`
@@ -26,7 +26,7 @@ export const Dot = styled.span`
 
 export const Dots = styled.div`
   display: flex;
-  margin-bottom: 10px;
+  margin-bottom: 3px;
   justify-content: space-between;
   align-items: center;
 `;

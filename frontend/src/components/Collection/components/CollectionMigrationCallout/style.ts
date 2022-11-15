@@ -1,6 +1,6 @@
 import { Callout, Classes } from "@blueprintjs/core";
+import styled from "@emotion/styled";
 import { ORANGE } from "src/components/common/theme";
-import styled from "styled-components";
 
 export const CollectionMigrationCallout = styled(Callout)`
   background-color: ${ORANGE.F};

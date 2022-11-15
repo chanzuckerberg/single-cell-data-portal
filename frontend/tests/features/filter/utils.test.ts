@@ -2,7 +2,8 @@
  * Test suite for filter-related utils.
  */
 
-import { DEVELOPMENT_STAGE_ONTOLOGY_VIEW } from "src/components/common/Filter/common/entities";
+import { expect, test } from "@playwright/test";
+import { DEVELOPMENT_STAGE_ONTOLOGY_TERM_SET } from "src/components/common/Filter/common/constants";
 import {
   findOntologyNodeById,
   findOntologyParentNode,
@@ -11,6 +12,8 @@ import {
   SYMBOL_MILLION,
   SYMBOL_THOUSAND,
 } from "src/components/common/Filter/common/utils";
+
+const { describe } = test;
 
 describe("filter", () => {
   describe("Format Number to Scale", () => {
@@ -110,7 +113,7 @@ describe("filter", () => {
     ];
     testConfigs.forEach(
       ({ value, formatted }: { value: number; formatted: string }) => {
-        it(`formats ${value} to ${formatted}`, () => {
+        test(`formats ${value} to ${formatted}`, () => {
           const actual = formatNumberToScale(value);
           expect(actual).toEqual(formatted);
         });
@@ -128,17 +131,17 @@ describe("filter", () => {
     const ONTOLOGY_ID_OTHER_EMBRYO = "UBERON:0000068";
 
     describe("getOntologyKey", () => {
-      it(`returns HsapDv for ${ONTOLOGY_ID_HUMAN_PRENATAL}`, () => {
+      test(`returns HsapDv for ${ONTOLOGY_ID_HUMAN_PRENATAL}`, () => {
         const key = "HsapDv";
         const actual = getOntologySpeciesKey(`${key}:000045`);
         expect(actual).toEqual(key);
       });
-      it(`returns MmusDv for ${ONTOLOGY_ID_MOUSE_PRENATAL}`, () => {
+      test(`returns MmusDv for ${ONTOLOGY_ID_MOUSE_PRENATAL}`, () => {
         const key = "MmusDv";
         const actual = getOntologySpeciesKey(`${key}:000045`);
         expect(actual).toEqual(key);
       });
-      it(`returns UBERON for ${ONTOLOGY_ID_OTHER_EMBRYO}`, () => {
+      test(`returns UBERON for ${ONTOLOGY_ID_OTHER_EMBRYO}`, () => {
         const key = "UBERON";
         const actual = getOntologySpeciesKey(`${key}:000045`);
         expect(actual).toEqual(key);
@@ -151,10 +154,10 @@ describe("filter", () => {
         ONTOLOGY_ID_HUMAN_FETAL,
         ONTOLOGY_ID_HUMAN_HUMAN_ADULT,
       ].forEach((ontologyId) => {
-        it(`finds ontology node with ID ${ontologyId}`, () => {
+        test(`finds ontology node with ID ${ontologyId}`, () => {
           const ontologyKey = getOntologySpeciesKey(ontologyId);
           const ontologyRootNodes =
-            DEVELOPMENT_STAGE_ONTOLOGY_VIEW[ontologyKey];
+            DEVELOPMENT_STAGE_ONTOLOGY_TERM_SET[ontologyKey];
           expect(ontologyRootNodes).toBeTruthy();
           const ontologyNode = findOntologyNodeById(
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- truthy check above
@@ -168,10 +171,11 @@ describe("filter", () => {
       });
     });
     describe("findOntologyParentNode", () => {
-      it(`finds parent of ${ONTOLOGY_ID_HUMAN_EMBRYONIC_HUMAN}`, () => {
+      test(`finds parent of ${ONTOLOGY_ID_HUMAN_EMBRYONIC_HUMAN}`, () => {
         const ontologyId = ONTOLOGY_ID_HUMAN_EMBRYONIC_HUMAN;
         const ontologyKey = getOntologySpeciesKey(ontologyId);
-        const ontologyRootNodes = DEVELOPMENT_STAGE_ONTOLOGY_VIEW[ontologyKey];
+        const ontologyRootNodes =
+          DEVELOPMENT_STAGE_ONTOLOGY_TERM_SET[ontologyKey];
         expect(ontologyRootNodes).toBeTruthy();
         const ontologyNode = findOntologyNodeById(
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- truthy check above
@@ -188,10 +192,11 @@ describe("filter", () => {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- truthy check above
         expect(parent!.ontology_term_id).toEqual(ONTOLOGY_ID_HUMAN_PRENATAL);
       });
-      it(`finds parent of ${ONTOLOGY_ID_HUMAN_CARNEGIE_CS1}`, () => {
+      test(`finds parent of ${ONTOLOGY_ID_HUMAN_CARNEGIE_CS1}`, () => {
         const ontologyId = ONTOLOGY_ID_HUMAN_CARNEGIE_CS1;
         const ontologyKey = getOntologySpeciesKey(ontologyId);
-        const ontologyRootNodes = DEVELOPMENT_STAGE_ONTOLOGY_VIEW[ontologyKey];
+        const ontologyRootNodes =
+          DEVELOPMENT_STAGE_ONTOLOGY_TERM_SET[ontologyKey];
         expect(ontologyRootNodes).toBeTruthy();
         const ontologyNode = findOntologyNodeById(
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- truthy check above
@@ -210,10 +215,11 @@ describe("filter", () => {
           ONTOLOGY_ID_HUMAN_EMBRYONIC_HUMAN
         );
       });
-      it(`doesn't find parent of ${ONTOLOGY_ID_HUMAN_PRENATAL}`, () => {
+      test(`doesn't find parent of ${ONTOLOGY_ID_HUMAN_PRENATAL}`, () => {
         const ontologyId = ONTOLOGY_ID_HUMAN_PRENATAL;
         const ontologyKey = getOntologySpeciesKey(ontologyId);
-        const ontologyRootNodes = DEVELOPMENT_STAGE_ONTOLOGY_VIEW[ontologyKey];
+        const ontologyRootNodes =
+          DEVELOPMENT_STAGE_ONTOLOGY_TERM_SET[ontologyKey];
         expect(ontologyRootNodes).toBeTruthy();
         const ontologyNode = findOntologyNodeById(
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- truthy check above

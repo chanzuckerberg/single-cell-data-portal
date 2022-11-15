@@ -1,7 +1,10 @@
 import { AnchorButton } from "@blueprintjs/core";
+import styled from "@emotion/styled";
+import { Popper } from "@material-ui/core";
+import { DefaultMenuSelectOption, InputDropdown, MenuSelect } from "czifui";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { FC } from "react";
+import { FC, useRef, useState } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { ROUTES } from "src/common/constants/routes";
@@ -26,6 +29,25 @@ const Header: FC = () => {
   const { data: userInfo } = useUserInfo(isCurator);
   const { pathname } = useRouter();
   const isMyCollectionsShown = userInfo?.name && isCurator;
+
+  const dropdownRef = useRef(null);
+
+  const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(
+    dropdownRef.current
+  );
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+
+  const FOOTER_OPTIONS = [
+    { id: 1, name: "Documentation", value: ROUTES.WMG_DOCS },
+    { id: 2, name: "Contact", value: "mailto:cellxgene@chanzuckerberg.com" },
+    { id: 3, name: "Terms of Service", value: ROUTES.TOS },
+    { id: 4, name: "Privacy Policy", value: ROUTES.PRIVACY },
+  ];
+
+  const StyledPopper = styled(Popper)`
+    height: 300px;
+    z-index: 99;
+  `;
 
   return (
     <Wrapper>
@@ -65,7 +87,7 @@ const Header: FC = () => {
                   active={isRouteActive(pathname, ROUTES.WHERE_IS_MY_GENE)}
                   href="passHref"
                   minimal
-                  text="scExpression"
+                  text="Gene Expression"
                   onClick={handleWMGClick}
                 />
               </Link>
@@ -86,24 +108,65 @@ const Header: FC = () => {
               </Link>
             </LinkWrapper>
           )}
-          <LinkWrapper>
-            <AnchorButton
-              onClick={() => {
-                track(EVENTS.DOCUMENTATION_CLICK_NAV);
-              }}
-              active={isRouteActive(pathname, ROUTES.DOCS)}
-              href={ROUTES.DOCS}
-              rel="noopener"
-              target="_blank"
-              minimal
-              text="Help & Documentation"
+
+          <InputDropdown
+            disabled={false}
+            label="Help & Documentation"
+            sdsStage="default"
+            onClick={handleHelpOpen}
+            sdsStyle="minimal"
+            sdsType="singleSelect"
+            data-testid="InputDropdown"
+          />
+
+          <StyledPopper
+            ref={dropdownRef}
+            open={dropdownOpen}
+            anchorEl={anchorEl}
+          >
+            <MenuSelect
+              search={false}
+              options={FOOTER_OPTIONS}
+              onChange={handleHelpClick}
             />
-          </LinkWrapper>
+          </StyledPopper>
+
           <AuthButtons />
         </Right>
       </MainWrapper>
     </Wrapper>
   );
+
+  function handleHelpOpen(event: React.MouseEvent<HTMLElement>) {
+    if (!anchorEl) {
+      setAnchorEl(event.currentTarget);
+    }
+
+    if (dropdownOpen) {
+      setDropdownOpen(false);
+    } else {
+      setDropdownOpen(true);
+    }
+  }
+
+  function handleHelpClick(
+    _: React.ChangeEvent<unknown>,
+    newValue: (DefaultMenuSelectOption & { id: number; value: string }) | null
+  ) {
+    let link = newValue!.value;
+
+    if (newValue!.id === 1) {
+      track(EVENTS.DOCUMENTATION_CLICK_NAV);
+
+      link = isRouteActive(pathname, ROUTES.WHERE_IS_MY_GENE)
+        ? ROUTES.WMG_DOCS
+        : ROUTES.PUBLISHED_DATA_DOCS;
+    }
+
+    window.open(link, "_blank", "noopener,noreferrer");
+
+    setDropdownOpen(false);
+  }
 
   function handleWMGClick() {
     track(EVENTS.WMG_CLICK_NAV);

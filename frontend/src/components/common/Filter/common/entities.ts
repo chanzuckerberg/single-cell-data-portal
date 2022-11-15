@@ -1,57 +1,306 @@
-import { ChangeEvent, Dispatch, SetStateAction } from "react";
-import { CellValue, Row } from "react-table";
+import { CellValue, FilterValue, Row } from "react-table";
 import { EVENTS } from "src/common/analytics/events";
 import { Collection, Ontology, PublisherMetadata } from "src/common/entities";
-import { CategoryKey } from "src/common/hooks/useCategoryFilter";
 
 /**
- * Configuration model of category.
+ * Payload key when tracking select of category values. For example, "organ" in FILTER_SELECT_ORGAN : {organ: "brain"}.
  */
-export interface CategoryConfig {
+export enum ANALYTICS_PAYLOAD_KEY {
+  CELL_CLASS = "cellClass",
+  CELL_SUBCLASS = "cellSubclass",
+  CELL_TYPE = "cellType",
+  ORGAN = "organ",
+  SYSTEM = "system",
+  TISSUE = "tissue",
+}
+
+// ** Label discriminating unions ** //
+
+/**
+ * Model of a filter that uses an ID value for filtering and must perform a lookup for display.
+ */
+export interface LookupByTermIdLabelKind {
+  labelKind: "LOOKUP_LABEL_BY_TERM_ID";
+}
+
+/**
+ * Model of a filter that uses the same value for both filtering and display. For example, publication date, cell count,
+ * assay etc.
+ */
+export interface ValueLabelKind {
+  labelKind: "VALUE";
+}
+
+// ** Value source kind discriminating unions ** //
+
+/**
+ * Model of a filter that uses a hand-curated set of terms to determine the filter category values allowed for display.
+ * For example, development stage.
+ */
+export interface CuratedValueSourceKind {
+  isLabelVisible: boolean; // True if ontology label is to be displayed (e.g. "Other Organisms")
+  isSearchable: boolean; // True if ontology category search box is displayed
+  isZerosVisible: boolean; // True if zero values are to be displayed
+  source: OntologyTermSet;
+  valueSourceKind: "CURATED";
+}
+
+/**
+ * Model of a filter that has no restrictions on the filter category values allowed for display. For example, assay,
+ * publication date etc.
+ */
+export interface NoneValueSourceKind {
+  valueSourceKind: "NONE";
+}
+
+// ** Match discriminating unions ** //
+
+/**
+ * Model of a filter that uses a "between" method for filtering values. Terminology matches React Table filters. Used
+ * by filter categories that are ranges.
+ */
+export interface BetweenMatchKind {
+  matchKind: "BETWEEN";
+}
+
+/**
+ * Model of a filter that uses an "includes some" method for filtering values. Terminology matches React Table filters.
+ * Used by any filter category that has checkboxes, either straight-up select filters or ontology-backed filters.
+ */
+export interface IncludesSomeMatchKind {
+  matchKind: "INCLUDES_SOME";
+}
+
+// ** View kind discriminating unions ** //
+
+/**
+ * Model of filter that is ontology-aware and possibly displays multiple view panels (menus) with de/selectble
+ * menu items. For example, tissue.
+ */
+export interface MultiPanelViewKind {
+  descendants: OntologyDescendants;
+  panels: CategoryFilterPanelConfig[];
+  viewKind: "MULTI_PANEL";
+}
+
+/**
+ * Model of filter that is ontology-aware and displays a hierarchy of ontology values possible across multiple panels.
+ * For example, development stage.
+ */
+export interface CuratedOntologyViewKind {
+  viewKind: "CURATED_ONTOLOGY";
+}
+
+/**
+ * Model of filter that is not ontology-aware and displays a single view panel with a range slider. For example, cell
+ * count etc.
+ */
+export interface RangeViewKind {
+  viewKind: "RANGE";
+}
+
+/**
+ * Model of filter that is not ontology-aware and displays as a single view panel (menu) with de/selectable menu items.
+ * For example, assay, disease etc.
+ */
+export interface SelectViewKind {
+  viewKind: "SELECT";
+}
+
+// ** Category filter constants ** //
+
+/**
+ * Complete set of category filter IDs that can possibly be included in filter.
+ */
+export enum CATEGORY_FILTER_ID {
+  "ASSAY" = "ASSAY",
+  "CELL_COUNT" = "CELL_COUNT",
+  "CELL_TYPE_CALCULATED" = "CELL_TYPE_CALCULATED",
+  "DEVELOPMENT_STAGE" = "DEVELOPMENT_STAGE",
+  "DISEASE" = "DISEASE",
+  "SELF_REPORTED_ETHNICITY" = "SELF_REPORTED_ETHNICITY",
+  "GENE_COUNT" = "GENE_COUNT",
+  "ORGANISM" = "ORGANISM",
+  "PUBLICATION_AUTHORS" = "PUBLICATION_AUTHORS",
+  "PUBLICATION_DATE_VALUES" = "PUBLICATION_DATE_VALUES",
+  "SEX" = "SEX",
+  "TISSUE_CALCULATED" = "TISSUE_CALCULATED",
+}
+
+// ** Category filter types ** //
+
+/**
+ * Base category filter configuration model containing values shared across the different types of category filters.
+ */
+export interface BaseCategoryFilterConfig {
   analyticsEvent?: EVENTS;
-  categoryKey: CATEGORY_KEY;
-  categoryType: CATEGORY_FILTER_TYPE;
+  categoryFilterId: CATEGORY_FILTER_ID;
+  filterOnKey: FilterKey; // Key in result set row values to filter on.
+  label: string;
   multiselect: boolean; // True if category can have multiple values selected.
   pinnedCategoryValues?: CATEGORY_VALUE_KEY[];
   tooltip?: string;
 }
 
 /**
- * Configuration model of ontology category.
+ * Filter category that uses checkboxes for filtering, is ontology-aware, and uses a hand-curated set of ontology terms
+ * (or "mask") to determine the values to display as filter category values. For example, development stage, tissue
+ * system and tissue organ.
  */
-export interface OntologyCategoryConfig extends CategoryConfig {
-  isLabelVisible: boolean; // True if ontology label is to be displayed (e.g. "Other Organisms")
-  isSearchable: boolean; // True if ontology category search box is displayed
-  isZerosVisible: boolean; // True if zero values are to be displayed
-  ontology: OntologyView;
+export type CuratedOntologyCategoryFilterConfig = BaseCategoryFilterConfig &
+  IncludesSomeMatchKind &
+  LookupByTermIdLabelKind &
+  CuratedValueSourceKind &
+  CuratedOntologyViewKind;
+
+/**
+ * Filter category that is ontology-aware and displays a set of panels.
+ */
+export type MultiPanelOntologyFilterConfig = BaseCategoryFilterConfig &
+  IncludesSomeMatchKind &
+  LookupByTermIdLabelKind &
+  NoneValueSourceKind &
+  MultiPanelViewKind;
+
+/**
+ * Filter category that uses a range slider for filtering. For example, cell count and gene count.
+ */
+export type RangeCategoryFilterConfig = BaseCategoryFilterConfig &
+  BetweenMatchKind &
+  ValueLabelKind &
+  NoneValueSourceKind &
+  RangeViewKind;
+
+/**
+ * Filter category that uses checkboxes for filtering and is not ontology-aware. For example, publication date and
+ * author. Currently, ontology values such as assay, organism, disease etc. are also this type of filter category as,
+ * although they are based on an ontology term, they are not ontology-aware.
+ */
+export type SelectCategoryFilterConfig = BaseCategoryFilterConfig &
+  IncludesSomeMatchKind &
+  ValueLabelKind &
+  NoneValueSourceKind &
+  SelectViewKind;
+
+/**
+ * Set of all possible filter category configuration types.
+ */
+export type CategoryFilterConfig =
+  | CuratedOntologyCategoryFilterConfig
+  | MultiPanelOntologyFilterConfig
+  | RangeCategoryFilterConfig
+  | SelectCategoryFilterConfig;
+
+// ** Panel search discriminating unions ** //
+
+/**
+ * Model of filter that when a search term is selected, the search input is cleared. For example, system or organ.
+ */
+export interface SearchSingleSelectKind {
+  searchKind: "SEARCH_SINGLE_SELECT";
 }
 
 /**
- * Possible types of category filters, matches React Table's filter types.
+ * Model of filter that when a search term is selected, the search input is not cleared. For example, tissue.
  */
-export enum CATEGORY_FILTER_TYPE {
-  "BETWEEN" = "between",
-  "INCLUDES_SOME" = "includesSome",
+export interface SearchMultiSelect {
+  searchKind: "SEARCH_MULTI_SELECT";
 }
 
 /**
- * Filterable metadata keys.
+ * Model of a filter panel that uses a hand-curated set of terms to determine the filter category values allowed for
+ * display. For example, tissue system and tissue organ.
  */
-export enum CATEGORY_KEY {
-  "ASSAY" = "assay",
-  "CELL_COUNT" = "cell_count",
-  "CELL_TYPE" = "cell_type",
-  "DEVELOPMENT_STAGE_ANCESTORS" = "development_stage_ancestors",
-  "DISEASE" = "disease",
-  "ETHNICITY" = "ethnicity",
-  "MEAN_GENES_PER_CELL" = "mean_genes_per_cell",
-  "ORGANISM" = "organism",
-  "PUBLICATION_AUTHORS" = "publicationAuthors",
-  "PUBLICATION_DATE_VALUES" = "publicationDateValues",
-  "SEX" = "sex",
-  "TISSUE" = "tissue", // TODO(cc) remove with #2569.
-  "TISSUE_ANCESTORS" = "tissue_ancestors",
+interface CuratedOnlyValueSourceKind {
+  source: OntologyTermSet;
+  sourceKind: "CURATED";
 }
+
+/**
+ * Model of a filter panel that displays any value that is explicit only. For example, tissue.
+ */
+interface ExplicitOnlyValueSourceKind {
+  sourceKind: "EXPLICIT_ONLY";
+}
+
+// ** Filter value kind discriminating unions ** //
+
+/**
+ * Model of a filter panel whose category filter values filter for both inferred and explicit values. For example,
+ * tissue system and tissue organ.
+ */
+interface InferredExplicitFilterValueKind {
+  filterValueKind: "INFERRED_EXPLICIT";
+}
+
+/**
+ * Model of a filter panel whose category filter values filter for only explicit values. For example, tissue.
+ */
+interface ExplicitOnlyFilterValueKind {
+  filterValueKind: "EXPLICIT_ONLY";
+}
+
+// ** Category filter panel types ** //
+
+/**
+ * Base category filter panel configuration model containing values shared across the different types of category
+ * filter panels.
+ */
+interface BaseCategoryFilterPanelConfig {
+  analyticsEvent?: EVENTS;
+  analyticsPayloadKey?: ANALYTICS_PAYLOAD_KEY;
+  id: CATEGORY_FILTER_PANEL_ID;
+  label: string;
+}
+
+/**
+ * Complete set of filter panel IDs.
+ */
+export enum CATEGORY_FILTER_PANEL_ID {
+  "CELL_TYPE_CELL_CLASS" = "CELL_TYPE_CELL_CLASS",
+  "CELL_TYPE_CELL_SUBCLASS" = "CELL_TYPE_CELL_SUBCLASS",
+  "CELL_TYPE" = "CELL_TYPE",
+  "TISSUE_SYSTEM" = "TISSUE_SYSTEM",
+  "TISSUE_ORGAN" = "TISSUE_ORGAN",
+  "TISSUE" = "TISSUE",
+}
+
+/**
+ * Filter category panel that uses checkboxes for filtering, is ontology-aware, and whose selected values restrict
+ * allowed displayable values in children category filters. For example, tissue system.
+ */
+type ChildCategoryFilterPanelConfig = BaseCategoryFilterPanelConfig &
+  CuratedOnlyValueSourceKind &
+  InferredExplicitFilterValueKind &
+  SearchSingleSelectKind;
+
+/**
+ * Filter category panel that uses checkboxes for filtering, is ontology-aware, and whose selected values restrict
+ * allowed displayable values in children category filters. For example, tissue system.
+ */
+type LeafCategoryFilterPanelConfig = BaseCategoryFilterPanelConfig &
+  ExplicitOnlyValueSourceKind &
+  ExplicitOnlyFilterValueKind &
+  SearchMultiSelect;
+
+/**
+ * Filter category panel that uses checkboxes for filtering, is ontology-aware, and whose selected values restrict
+ * allowed displayable values in children category filters. For example, tissue system.
+ */
+type ParentCategoryFilterPanelConfig = BaseCategoryFilterPanelConfig &
+  CuratedOnlyValueSourceKind &
+  InferredExplicitFilterValueKind &
+  SearchSingleSelectKind;
+
+export type CategoryFilterPanelConfig =
+  | ChildCategoryFilterPanelConfig
+  | LeafCategoryFilterPanelConfig
+  | ParentCategoryFilterPanelConfig;
+
+/**
+ * Possible set of keys to filter over.
+ */
+export type FilterKey = keyof CollectionRow | keyof DatasetRow;
 
 /**
  * Category value keys.
@@ -66,14 +315,63 @@ export enum CATEGORY_VALUE_KEY {
 export interface Categories {
   assay: Ontology[];
   cell_type: Ontology[];
+  cell_type_ancestors: string[];
+  cellTypeCalculated: string[];
   disease: Ontology[];
   development_stage_ancestors: string[];
-  ethnicity: Ontology[];
+  self_reported_ethnicity: Ontology[];
   organism: Ontology[];
   sex: Ontology[];
-  tissue: Ontology[]; // TODO(cc) remove with #2569.
+  tissue: Ontology[];
   tissue_ancestors: string[];
+  tissueCalculated: string[];
 }
+
+/**
+ * Entry in react-table's filters arrays, models selected category values in a category.
+ */
+export interface CategoryFilter {
+  id: string;
+  value: FilterValue;
+}
+
+/**
+ * Keys of categories that are ontology arrays.
+ */
+export type CategoriesKeyOfTypeOntologyArray = {
+  [K in keyof Categories]: Categories[K] extends Ontology[] ? K : never;
+}[keyof Categories];
+
+/*
+ * Set of all category values in the full result set, keyed by their corresponding category.
+ */
+export type CategorySet = { [K in CATEGORY_FILTER_ID]: CategorySetValue };
+
+/**
+ * Possible category set values, either a set of category key values (for single or multiselect categories, or ontology
+ * categories) or a range.
+ */
+export type CategorySetValue = Set<CategoryValueId> | Range;
+
+/**
+ * Possible category view model types.
+ */
+export type CategoryView =
+  | OntologyCategoryView
+  | MultiPanelOntologyCategoryView
+  | RangeCategoryView
+  | SelectCategoryView;
+
+/**
+ * Category values to be used as keys. For example, "Homo sapiens" or "10X 3' v2 sequencing".
+ * TOOD(cc) rename variables that are called categoryValueKey to categoryValueId, here and throughout
+ */
+export type CategoryValueId = string;
+
+/**
+ * "value" prop passed to react-table's Cell function
+ */
+export type CellPropsValue<T> = { value: CellValue<T> };
 
 /**
  * Join of collection, dataset and aggregated dataset information, optimized for filtering collections (that is,
@@ -88,500 +386,6 @@ export interface CollectionRow extends Categories, PublisherMetadataCategories {
   revised_at?: number;
   summaryCitation: string;
 }
-
-/*
- * Ontology view keys used to lookup ontology nodes for display . For example, for the ontology ID "HsapDv:0000045",
- * the key is "HsapDv".
- */
-export enum ONTOLOGY_VIEW_KEY {
-  "HsapDv" = "HsapDv",
-  "MmusDv" = "MmusDv",
-  "UBERON" = "UBERON",
-}
-
-/**
- * Labels for displaying ontology views. Currently only used by development stage filter.
- */
-export enum ONTOLOGY_VIEW_LABEL {
-  "HsapDv" = "Homo Sapiens",
-  "MmusDv" = "Mus Musculus",
-  "UBERON" = "Other Organisms",
-}
-
-/**
- * Homo sapiens, Mus musculus and other organisms development stage ontology tree.
- */
-/* eslint-disable sort-keys -- disabling key order for readability. */
-export const DEVELOPMENT_STAGE_ONTOLOGY_VIEW: OntologyView = {
-  [ONTOLOGY_VIEW_KEY.HsapDv]: [
-    {
-      label: "Prenatal (conception–birth)",
-      ontology_term_id: "HsapDv:0000045",
-      children: [
-        {
-          label: "Embryonic human (0–56 days)",
-          ontology_term_id: "HsapDv:0000002",
-          children: [
-            {
-              label: "Carnegie (CS1)",
-              ontology_term_id: "HsapDv:0000003",
-            },
-            {
-              label: "Cleavage (CS2)",
-              ontology_term_id: "HsapDv:0000004",
-            },
-            {
-              label: "Blastula (CS3–5)",
-              ontology_term_id: "HsapDv:0000006",
-            },
-            {
-              label: "Gastrula (CS6)",
-              ontology_term_id: "HsapDv:0000010",
-            },
-            {
-              label: "Neurula (CS7–8)",
-              ontology_term_id: "HsapDv:0000012",
-            },
-            {
-              label: "Organogenesis (CS9–23)",
-              ontology_term_id: "HsapDv:0000015",
-            },
-          ],
-        },
-        {
-          label: "Fetal (>56 days–birth)",
-          ontology_term_id: "HsapDv:0000037",
-        },
-      ],
-    },
-    {
-      label: "Immature (0–12 years)",
-      ontology_term_id: "HsapDv:0000080",
-      children: [
-        {
-          label: "Newborn human (0–1 month)",
-          ontology_term_id: "HsapDv:0000082",
-        },
-        {
-          label: "Infant (1–23 months)",
-          ontology_term_id: "HsapDv:0000083",
-        },
-        {
-          label: "Child (2–12 years)",
-          ontology_term_id: "HsapDv:0000081",
-        },
-      ],
-    },
-    {
-      label: "Mature (13+ years)",
-      ontology_term_id: "HsapDv:0000204",
-      children: [
-        {
-          label: "Adolescent (13–19 years)",
-          ontology_term_id: "HsapDv:0000086",
-        },
-        {
-          label: "Human adult (19+ years)",
-          ontology_term_id: "HsapDv:0000087",
-          children: [
-            {
-              label: "Early adulthood (19–45 years)",
-              ontology_term_id: "HsapDv:0000088",
-            },
-            {
-              label: "Late adulthood (45+ years)",
-              ontology_term_id: "HsapDv:0000091",
-            },
-          ],
-        },
-      ],
-    },
-  ],
-  [ONTOLOGY_VIEW_KEY.MmusDv]: [
-    {
-      label: "Prenatal",
-      ontology_term_id: "MmusDv:0000042",
-      children: [
-        {
-          label: "Embryonic mouse",
-          ontology_term_id: "MmusDv:0000002",
-          children: [
-            {
-              label: "Thelier stage 1 (TS1)",
-              ontology_term_id: "MmusDv:0000003",
-            },
-            {
-              label: "Cleavage (TS2–3)",
-              ontology_term_id: "MmusDv:0000004",
-            },
-            {
-              label: "Blastula (TS4–8)",
-              ontology_term_id: "MmusDv:0000007",
-            },
-            {
-              label: "Gastrula (TS9–10)",
-              ontology_term_id: "MmusDv:0000013",
-            },
-            {
-              label: "Thelier stage 11 (TS11)",
-              ontology_term_id: "MmusDv:0000017",
-            },
-            {
-              label: "Organogenesis (TS11–22)",
-              ontology_term_id: "MmusDv:0000018",
-            },
-          ],
-        },
-        {
-          label: "Fetal (TS23–26)",
-          ontology_term_id: "MmusDv:0000031",
-        },
-      ],
-    },
-    {
-      label: "Post-partum (Birth+)",
-      ontology_term_id: "MmusDv:0000092",
-      children: [
-        {
-          label: "Immature (0–6 weeks)",
-          ontology_term_id: "MmusDv:0000043",
-          children: [
-            {
-              label: "Thelier stage 27 (0–3 days)",
-              ontology_term_id: "MmusDv:0000036",
-            },
-            {
-              label: "Premature (3 days–6 weeks)",
-              ontology_term_id: "MmusDv:0000112",
-            },
-          ],
-        },
-        {
-          label: "Mature (6+ weeks)",
-          ontology_term_id: "MmusDv:0000110",
-          children: [
-            {
-              label: "Early adulthood (6 weeks–7 months)",
-              ontology_term_id: "MmusDv:0000061",
-            },
-            {
-              label: "Late adulthood (7+ months)",
-              ontology_term_id: "MmusDv:0000097",
-            },
-          ],
-        },
-      ],
-    },
-  ],
-  [ONTOLOGY_VIEW_KEY.UBERON]: [
-    {
-      label: "Embryo",
-      ontology_term_id: "UBERON:0000068",
-      children: [
-        {
-          label: "Zygote",
-          ontology_term_id: "UBERON:0000106",
-        },
-        {
-          label: "Cleavage",
-          ontology_term_id: "UBERON:0000107",
-        },
-        {
-          label: "Blastula",
-          ontology_term_id: "UBERON:0000108",
-        },
-        {
-          label: "Gastrula",
-          ontology_term_id: "UBERON:0000109",
-        },
-        {
-          label: "Neurula",
-          ontology_term_id: "UBERON:0000110",
-        },
-        {
-          label: "Organogenesis",
-          ontology_term_id: "UBERON:0000111",
-        },
-        {
-          label: "Late embryonic",
-          ontology_term_id: "UBERON:0007220",
-        },
-      ],
-    },
-    {
-      label: "Post embryonic",
-      ontology_term_id: "UBERON:0000092",
-      children: [
-        {
-          label: "Larval",
-          ontology_term_id: "UBERON:0000069",
-        },
-        {
-          label: "Pupal",
-          ontology_term_id: "UBERON:0000070",
-        },
-        {
-          label: "Nursing",
-          ontology_term_id: "UBERON:0018685",
-        },
-        {
-          label: "Fully formed",
-          ontology_term_id: "UBERON:0000066",
-          children: [
-            {
-              label: "Sexually immature",
-              ontology_term_id: "UBERON:0000112",
-            },
-            {
-              label: "Post-juvenile adult",
-              ontology_term_id: "UBERON:0000113",
-            },
-          ],
-        },
-      ],
-    },
-  ],
-};
-/* eslint-enable sort-keys -- disabling key order for readability. */
-
-/**
- * Tissues to be included for display in tissue ontology tree.
- */
-/* eslint-disable sort-keys -- disabling key order for readability. */
-export const TISSUE_ONTOLOGY_VIEW: OntologyView = {
-  [ONTOLOGY_VIEW_KEY.UBERON]: [
-    {
-      label: "Blood",
-      ontology_term_id: "UBERON:0000178",
-    },
-    {
-      label: "Blood Vascular",
-      ontology_term_id: "UBERON:0004537",
-    },
-    {
-      label: "Bone Marrow",
-      ontology_term_id: "UBERON:0002371",
-    },
-    {
-      label: "Brain",
-      ontology_term_id: "UBERON:0000955",
-    },
-    {
-      label: "Eye",
-      ontology_term_id: "UBERON:0000970",
-    },
-    {
-      label: "Fallopian Tube",
-      ontology_term_id: "UBERON:0003889",
-    },
-    {
-      label: "Heart",
-      ontology_term_id: "UBERON:0000948",
-    },
-    {
-      label: "Kidney",
-      ontology_term_id: "UBERON:0002113",
-    },
-    {
-      label: "Knee",
-      ontology_term_id: "UBERON:0001465",
-    },
-    {
-      label: "Large Intestine",
-      ontology_term_id: "UBERON:0000059",
-    },
-    {
-      label: "Liver",
-      ontology_term_id: "UBERON:0002107",
-    },
-    {
-      label: "Lung",
-      ontology_term_id: "UBERON:0002048",
-    },
-    {
-      label: "Lymph Node",
-      ontology_term_id: "UBERON:0000029",
-    },
-    {
-      label: "Lymph Vasculature",
-      ontology_term_id: "UBERON:0004536",
-    },
-    {
-      label: "Ovary",
-      ontology_term_id: "UBERON:0000992",
-    },
-    {
-      label: "Pancreas",
-      ontology_term_id: "UBERON:0001264",
-    },
-    {
-      label: "Peripheral Nervous System",
-      ontology_term_id: "UBERON:0000010",
-    },
-    {
-      label: "Prostate",
-      ontology_term_id: "UBERON:0002367",
-    },
-    {
-      label: "Skin",
-      ontology_term_id: "UBERON:0002097",
-    },
-    {
-      label: "Small Intestine",
-      ontology_term_id: "UBERON:0002108",
-    },
-    {
-      label: "Spleen",
-      ontology_term_id: "UBERON:0002106",
-    },
-    {
-      label: "Thymus",
-      ontology_term_id: "UBERON:0002370",
-    },
-    {
-      label: "Ureter",
-      ontology_term_id: "UBERON:0000056",
-    },
-    {
-      label: "Urinary Bladder",
-      ontology_term_id: "UBERON:0001255",
-    },
-    {
-      label: "Uterus",
-      ontology_term_id: "UBERON:0000995",
-    },
-  ],
-};
-/* eslint-enable sort-keys -- disabling key order for readability. */
-
-/**
- * Configuration for each category.
- */
-const CATEGORY_CONFIGS: (CategoryConfig | OntologyCategoryConfig)[] = [
-  {
-    analyticsEvent: EVENTS.FILTER_SELECT_ASSAY,
-    categoryKey: CATEGORY_KEY.ASSAY,
-    categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
-    multiselect: true,
-  },
-  {
-    analyticsEvent: EVENTS.FILTER_SELECT_CELL_COUNT,
-    categoryKey: CATEGORY_KEY.CELL_COUNT,
-    categoryType: CATEGORY_FILTER_TYPE.BETWEEN,
-    multiselect: false,
-  },
-  {
-    analyticsEvent: EVENTS.FILTER_SELECT_CELL_TYPE,
-    categoryKey: CATEGORY_KEY.CELL_TYPE,
-    categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
-    multiselect: true,
-  },
-  {
-    analyticsEvent: EVENTS.FILTER_SELECT_DEVELOPMENT_STAGE,
-    categoryKey: CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS,
-    categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
-    isLabelVisible: true,
-    isSearchable: false,
-    isZerosVisible: true,
-    multiselect: true,
-    ontology: DEVELOPMENT_STAGE_ONTOLOGY_VIEW,
-  },
-  {
-    analyticsEvent: EVENTS.FILTER_SELECT_DISEASE,
-    categoryKey: CATEGORY_KEY.DISEASE,
-    categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
-    multiselect: true,
-    pinnedCategoryValues: [CATEGORY_VALUE_KEY.NORMAL],
-  },
-  {
-    analyticsEvent: EVENTS.FILTER_SELECT_ETHNICITY,
-    categoryKey: CATEGORY_KEY.ETHNICITY,
-    categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
-    multiselect: true,
-    tooltip:
-      "Ethnicity only applies to Homo sapiens which is not selected in the Organism filter.",
-  },
-  {
-    analyticsEvent: EVENTS.FILTER_SELECT_GENE_COUNT,
-    categoryKey: CATEGORY_KEY.MEAN_GENES_PER_CELL,
-    categoryType: CATEGORY_FILTER_TYPE.BETWEEN,
-    multiselect: false,
-  },
-  {
-    analyticsEvent: EVENTS.FILTER_SELECT_ORGANISM,
-    categoryKey: CATEGORY_KEY.ORGANISM,
-    categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
-    multiselect: true,
-  },
-  {
-    analyticsEvent: EVENTS.FILTER_SELECT_AUTHORS,
-    categoryKey: CATEGORY_KEY.PUBLICATION_AUTHORS,
-    categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
-    multiselect: true,
-  },
-  {
-    analyticsEvent: EVENTS.FILTER_SELECT_PUBLICATION_DATE,
-    categoryKey: CATEGORY_KEY.PUBLICATION_DATE_VALUES,
-    categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
-    multiselect: false,
-  },
-  {
-    analyticsEvent: EVENTS.FILTER_SELECT_SEX,
-    categoryKey: CATEGORY_KEY.SEX,
-    categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
-    multiselect: true,
-  },
-  {
-    // TODO(cc) remove with #2569.
-    analyticsEvent: EVENTS.FILTER_SELECT_TISSUE,
-    categoryKey: CATEGORY_KEY.TISSUE,
-    categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
-    multiselect: true,
-  },
-  {
-    // TODO(cc) add analytics event with #2569.
-    categoryKey: CATEGORY_KEY.TISSUE_ANCESTORS,
-    categoryType: CATEGORY_FILTER_TYPE.INCLUDES_SOME,
-    isLabelVisible: false,
-    isSearchable: true,
-    isZerosVisible: false,
-    multiselect: true,
-    ontology: TISSUE_ONTOLOGY_VIEW,
-  },
-];
-
-/**
- * Category configs keyed by category key, for convenience. Using object literal with type KeyedCategoryConfig rather
- * than generic Map to prevent having to null check values.
- */
-export const CATEGORY_CONFIGS_BY_CATEGORY_KEY: KeyedCategoryConfigs =
-  CATEGORY_CONFIGS.reduce(
-    (accum: KeyedCategoryConfigs, config: CategoryConfig) => {
-      return {
-        ...accum,
-        [config.categoryKey]: config,
-      };
-    },
-    {} as KeyedCategoryConfigs
-  );
-
-/**
- * "value" prop passed to react-table's Cell function
- */
-export type CellPropsValue<T> = { value: CellValue<T> };
-
-/**
- * View model of category.
- */
-export type CategoryView =
-  | OntologyCategoryView
-  | RangeCategoryView
-  | SelectCategoryView;
-
-/**
- * Category values to be used as keys. For example, "Homo sapiens" or "10X 3' v2 sequencing".
- */
-export type CategoryValueKey = string;
 
 /**
  * Join of dataset and collection information, optimized for filtering datasets.
@@ -601,22 +405,85 @@ export interface DatasetRow extends Categories, PublisherMetadataCategories {
 }
 
 /**
- * Display values of unspecified ethnicity labels.
+ * Display values of unspecified self-reported ethnicity labels.
  */
-export enum ETHNICITY_UNSPECIFIED_LABEL {
+export enum SELF_REPORTED_ETHNICITY_UNSPECIFIED_LABEL {
   "unknown" = "Unknown",
 }
 
 /**
- * List of ethnicity ontology labels to exclude from filter functionality.
+ * State backing filter functionality and calculations. Converted to view model for display.
  */
-export const ETHNICITY_DENY_LIST = ["na"];
+export type FilterState = {
+  [K in CATEGORY_FILTER_ID]: RangeCategory | KeyedSelectCategoryValue;
+};
 
 /**
- * Model of category configs keyed by category key. Used instead of generic Map to prevent null checking when grabbing
- * keyed value.
+ * Internal filter model of a single or multiselect category value, or an ontology category value: category value keyed
+ * by category value key (for easy look-up when summarizing category).
  */
-type KeyedCategoryConfigs = { [K in CATEGORY_KEY]: CategoryConfig };
+export type KeyedSelectCategoryValue = Map<
+  CategoryValueId,
+  SelectCategoryValue
+>;
+
+/**
+ * Model of filter category configs keyed by category key. Used instead of generic Map to prevent null checking when
+ * grabbing keyed value.
+ */
+export type KeyedCategoryFilterConfigs = {
+  [K in CATEGORY_FILTER_ID]: CategoryFilterConfig;
+};
+
+/**
+ * Model of selected and partially selected states of a multi-panel category filter. Used both internally to record
+ * the current selected states, as well as externally when storing multi-panel category filter state to local storage.
+ */
+export interface MultiPanelCategoryFilterSelectedUIState {
+  selected: CategoryValueId[];
+  selectedPartial: CategoryValueId[];
+}
+
+/**
+ * Selected and partially selected states of multi-panel categories filters, keyed by category filter. Returned from
+ * hook as an accessor to multi-panel selected state (currently used when saving filter state to local storage).
+ */
+export type MultiPanelSelectedUIState = {
+  [K in CATEGORY_FILTER_ID]?: MultiPanelCategoryFilterSelectedUIState;
+};
+
+/**
+ * UI model of selected values in a multi-panel category filter. This model contains all selected and partial selected
+ * values in a multi-panel category filter and is required as a separate record from react-table's filters which
+ * only contains "overridden" selected values. For example, when "digestive system" and "tongue" are both selected in
+ * the UI, react-table will only know that "tongue" is selected. It also contains a model of the cross-panel ancestor/
+ * descendant relationships.
+ */
+export interface MultiPanelCategoryFilterUIState
+  extends MultiPanelCategoryFilterSelectedUIState {
+  uiNodesByCategoryValueId: Map<CategoryValueId, MultiPanelUINode>;
+}
+
+/**
+ * Model of the cross-panel ancestor/descendant relationships. For example, blood has:
+ * - One UI parent (hematopoietic system),
+ * - Three UI children (blood non-specific, umbilical cord blood, venous blood).
+ * This model facilitates easy traversal and and lookup of ancestor/descendant relationships.
+ */
+export interface MultiPanelUINode {
+  categoryValueId: CategoryValueId;
+  panelIndex: number;
+  uiChildren: CategoryValueId[];
+  uiParents: CategoryValueId[];
+}
+
+/**
+ * UI model of selected values across all multi-panel category filters.
+ */
+export type MultiPanelUIState = Map<
+  CATEGORY_FILTER_ID,
+  MultiPanelCategoryFilterUIState
+>;
 
 /**
  * Possible set of organism values.
@@ -627,57 +494,24 @@ export enum ORGANISM {
 }
 
 /**
- * Filterable metadata keys where the type of the corresponding value is Ontology.
- */
-export type OntologyCategoryKey = keyof Omit<
-  Record<CATEGORY_KEY, string>,
-  | CATEGORY_KEY.CELL_COUNT
-  | CATEGORY_KEY.DEVELOPMENT_STAGE_ANCESTORS
-  | CATEGORY_KEY.MEAN_GENES_PER_CELL
-  | CATEGORY_KEY.PUBLICATION_DATE_VALUES
-  | CATEGORY_KEY.PUBLICATION_AUTHORS
-  | CATEGORY_KEY.TISSUE_ANCESTORS
->;
-
-/**
- * Display value of category labels.
- */
-export enum CATEGORY_LABEL {
-  assay = "Assay",
-  cell_count = "Cell Count",
-  cell_type = "Cell Type",
-  development_stage_ancestors = "Development Stage",
-  disease = "Disease",
-  ethnicity = "Ethnicity",
-  mean_genes_per_cell = "Gene Count",
-  publicationAuthors = "Authors",
-  publicationDateValues = "Publication Date",
-  organism = "Organism",
-  tissue = "Tissue", // TODO(cc) remove with #2569.
-  tissue_ancestors = "Tissue (Ontology)", // TODO(cc) update to "Tissue" with #2569.
-  sex = "Sex",
-}
-
-/**
- * Function invoked when selected state of a category value is toggled or range is selected.
+ * Function invoked when selected state of a category value is toggled or range is selected. Selected value is either
+ * a single category value key for non ontology-aware category filters, an array of category value keys for ontology-
+ * aware category filters or a range.
  */
 export type OnFilterFn = (
-  categoryKey: CategoryKey,
-  selectedValue: CategoryValueKey | Range
+  categoryFilterId: CATEGORY_FILTER_ID,
+  selectedValue: CategoryValueId | Range,
+  selectedLabel: string | Range,
+  source?: ON_FILTER_SOURCE
 ) => void;
 
 /**
- * Function invoked when filter category input value is changed.
+ * Location of click triggering filter action, either a value in a filter menu or the "x" in a selected tag.
  */
-export type OnUpdateSearchValueFn = (
-  changeEvent: ChangeEvent<HTMLInputElement>,
-  setSearchValue: SetSearchValueFn
-) => void;
-
-/**
- * Min and max values selected in range category. Empty array if no range is specified (e.g. on clear of range).
- */
-export type Range = [number, number] | [];
+export enum ON_FILTER_SOURCE {
+  FILTER = "FILTER",
+  TAG = "TAG",
+}
 
 /**
  * Tree view model of ontology view. For example, development stage has three tree views (human, mouse and other)
@@ -705,10 +539,32 @@ export interface OntologyCategoryView {
   isDisabled?: boolean;
   isSearchable: boolean;
   isZerosVisible: boolean;
-  key: CATEGORY_KEY;
-  label: CATEGORY_LABEL;
+  categoryFilterId: CATEGORY_FILTER_ID;
+  label: string;
   views: OntologyCategoryTreeView[];
   tooltip?: string;
+}
+
+/**
+ * View model of an ontology-aware filter that contains multiple panels. For example, tissue.
+ */
+export interface MultiPanelOntologyCategoryView {
+  isDisabled?: boolean;
+  categoryFilterId: CATEGORY_FILTER_ID;
+  label: string;
+  panels: OntologyPanelCategoryView[];
+  selectedViews: SelectCategoryValueView[];
+  tooltip?: string;
+}
+
+/**
+ * View model of single panel view within an ontology-aware filter that contains multiple panels. For example, tissue
+ * system, tissue organ or tissue.
+ */
+export interface OntologyPanelCategoryView {
+  label: string;
+  isSearchMultiselect: boolean;
+  views: SelectCategoryValueView[];
 }
 
 /**
@@ -718,29 +574,75 @@ export interface OntologyNode extends Ontology {
   children?: OntologyNode[];
 }
 
-/**
- * Development stage ontology tree structures, keyed by organism.
+/*
+ * Ontology view keys used to lookup ontology nodes for display . For example, for the ontology ID "HsapDv:0000045",
+ * the key is "HsapDv".
  */
-export type OntologyView = { [K in ONTOLOGY_VIEW_KEY]?: OntologyNode[] };
+export enum ONTOLOGY_VIEW_KEY {
+  "CL" = "CL",
+  "HsapDv" = "HsapDv",
+  "MmusDv" = "MmusDv",
+  "UBERON" = "UBERON",
+}
+
+/**
+ * Labels for displaying ontology views. Currently only used by development stage filter.
+ */
+export enum ONTOLOGY_VIEW_LABEL {
+  "HsapDv" = "Homo Sapiens",
+  "MmusDv" = "Mus Musculus",
+  "UBERON" = "Other Organisms",
+}
+
+/**
+ * Ontology tree structures, keyed by view key. This is the allowed set of ontology values, configured per category.
+ */
+export type OntologyTermSet = { [K in ONTOLOGY_VIEW_KEY]?: OntologyNode[] };
+
+/**
+ * Model of ontology-aware ancestor/descendant relationships; descandant ontology term IDs keyed by ancestor ontology
+ * term ID.
+ */
+export type OntologyDescendants = { [key: string]: string[] };
+
+/**
+ * Prefixes for indicating exact or inferred matches when filtering across category filters that require OR
+ * functionality.
+ */
+export enum OrFilterPrefix {
+  EXPLICIT = "E",
+  INFERRED = "I",
+}
+
+/**
+ * Min and max values selected in range category. Empty array if no range is specified (e.g. on clear of range).
+ */
+export type Range = [number, number] | [];
+
+/**
+ * Internal filter model of a range category.
+ */
+export interface RangeCategory {
+  key: CategoryValueId;
+  max: number;
+  min: number;
+  selectedMax?: number;
+  selectedMin?: number;
+}
 
 /**
  * View model of range metadata key.
  */
 export interface RangeCategoryView {
   isDisabled?: boolean;
-  key: CATEGORY_KEY;
-  label: CATEGORY_LABEL;
+  categoryFilterId: CATEGORY_FILTER_ID;
+  label: string;
   max: number;
   min: number;
   selectedMax?: number;
   selectedMin?: number;
   tooltip?: string;
 }
-
-/**
- * Possible set of values that publication dates can be binned into.
- */
-export const PUBLICATION_DATE_VALUES: number[] = [1, 3, 6, 12, 24, 36];
 
 /**
  * Display values of publicationDateValue labels. Enum must be non-numeric key for reverse lookup.
@@ -763,18 +665,42 @@ export interface PublisherMetadataCategories {
 }
 
 /**
+ * React table count summary values.
+ */
+export interface TableCountSummary {
+  row: number;
+  total: number;
+}
+
+/**
+ * "tableCountSummary" prop passed to react-table's Header function.
+ */
+export type HeaderPropsValue = { tableCountSummary?: TableCountSummary };
+
+/**
  * "row" prop passed to react-table's Cell function.
  */
 export type RowPropsValue<T extends Categories> = { row: Row<T> };
 
 /**
+ * Internal filter model of a single or multiselect category, an ontology category or a multi-panel category.
+ */
+export interface SelectCategoryValue {
+  categoryValueId: CategoryValueId;
+  count: number;
+  selected: boolean;
+  selectedPartial: boolean; // Only applicable to multi-panel categories.
+}
+
+/**
  * View model of metadata value, selected state and count for single or multiselect categories.
  */
 export interface SelectCategoryValueView {
-  key: CategoryValueKey;
+  categoryValueId: CategoryValueId;
   count: number;
   label: string;
   selected: boolean;
+  selectedPartial: boolean;
 }
 
 /**
@@ -782,15 +708,10 @@ export interface SelectCategoryValueView {
  */
 export interface SelectCategoryView {
   isDisabled?: boolean;
-  key: CATEGORY_KEY;
-  label: CATEGORY_LABEL;
+  categoryFilterId: CATEGORY_FILTER_ID;
+  label: string;
   pinnedValues: SelectCategoryValueView[];
   tooltip?: string;
   unpinnedValues: SelectCategoryValueView[];
   values: SelectCategoryValueView[]; // both pinned and unpinned values
 }
-
-/**
- * Function invoked to update state for the filter category input value.
- */
-export type SetSearchValueFn = Dispatch<SetStateAction<string>>;

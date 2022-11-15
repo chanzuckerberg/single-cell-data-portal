@@ -3,6 +3,7 @@
  */
 
 // App dependencies
+import { expect, test } from "@playwright/test";
 import { PublisherMetadata } from "src/common/entities";
 import {
   buildSummaryCitation,
@@ -11,11 +12,13 @@ import {
   CollectionResponse,
   createPublicationDateValues,
 } from "src/common/queries/filter";
-import { PUBLICATION_DATE_VALUES } from "src/components/common/Filter/common/entities";
+import { PUBLICATION_DATE_VALUES } from "src/components/common/Filter/common/constants";
+
+const { describe } = test;
 
 describe("filter", () => {
   describe("Calculate Months Since Publication", () => {
-    it("calculates one month since publication", () => {
+    test("calculates one month since publication", () => {
       // Publication date - 12/2021
       // Today's date - 1/2022
       const monthsSincePublication = calculateMonthsSincePublication(
@@ -26,7 +29,7 @@ describe("filter", () => {
       );
       expect(monthsSincePublication).toEqual(1);
     });
-    it("calculates six months since publication", () => {
+    test("calculates six months since publication", () => {
       // Publication date - 12/2021
       // Today's date - 1/2022
       const monthsSincePublication = calculateMonthsSincePublication(
@@ -37,7 +40,7 @@ describe("filter", () => {
       );
       expect(monthsSincePublication).toEqual(6);
     });
-    it("calculates thirteen months since publication", () => {
+    test("calculates thirteen months since publication", () => {
       // Publication date - 12/2021
       // Today's date - 1/2022
       const monthsSincePublication = calculateMonthsSincePublication(
@@ -49,7 +52,7 @@ describe("filter", () => {
       expect(monthsSincePublication).toEqual(13);
     });
   });
-  it("calculates 23 months since publication", () => {
+  test("calculates 23 months since publication", () => {
     // Publication date - 12/2021
     // Today's date - 1/2022
     const monthsSincePublication = calculateMonthsSincePublication(
@@ -61,31 +64,31 @@ describe("filter", () => {
     expect(monthsSincePublication).toEqual(23);
   });
   describe("Calculate Date Bins", () => {
-    it("calculates bins for 1 month since publication", () => {
+    test("calculates bins for 1 month since publication", () => {
       const dateBins = createPublicationDateValues(1);
       // Expecting all date ranges (that is, 1, 3, 6, 12, 24 and 36).
       expect(dateBins.length).toEqual(6);
       validateDateValue(dateBins, PUBLICATION_DATE_VALUES);
     });
-    it("calculates bins for 2 months since publication", () => {
+    test("calculates bins for 2 months since publication", () => {
       const dateBins = createPublicationDateValues(2);
       // Expecting 3, 6, 12, 24 and 36.
       expect(dateBins.length).toEqual(5);
       validateDateValue(dateBins, PUBLICATION_DATE_VALUES.slice(1));
     });
-    it("calculates bins for 4 months since publication", () => {
+    test("calculates bins for 4 months since publication", () => {
       const dateBins = createPublicationDateValues(4);
       // Expecting 6, 12, 24 and 36.
       expect(dateBins.length).toEqual(4);
       validateDateValue(dateBins, PUBLICATION_DATE_VALUES.slice(2));
     });
-    it("calculates bins for 7 months since publication", () => {
+    test("calculates bins for 7 months since publication", () => {
       const dateBins = createPublicationDateValues(7);
       // Expecting 12, 24 and 36.
       expect(dateBins.length).toEqual(3);
       validateDateValue(dateBins, PUBLICATION_DATE_VALUES.slice(3));
     });
-    it("calculates bins for 32 months since publication", () => {
+    test("calculates bins for 32 months since publication", () => {
       const dateBins = createPublicationDateValues(32);
       // Expecting 36.
       expect(dateBins.length).toEqual(1);
@@ -93,7 +96,7 @@ describe("filter", () => {
     });
   });
   describe("Calculate Recency", () => {
-    it("calculates recency for collection with publisher metadata", () => {
+    test("calculates recency for collection with publisher metadata", () => {
       const publishedAt = 1646092800;
       const collection = {
         publisher_metadata: {
@@ -109,7 +112,7 @@ describe("filter", () => {
       );
       expect(recency).toEqual(publishedAt);
     });
-    it("calculates recency for collection with revised at", () => {
+    test("calculates recency for collection with revised at", () => {
       const revisedAt = 1644527777.095609; // JS month
       const collection = {
         // No publisher metadata
@@ -121,7 +124,7 @@ describe("filter", () => {
       );
       expect(recency).toEqual(revisedAt);
     });
-    it("calculates recency for collection with published at", () => {
+    test("calculates recency for collection with published at", () => {
       const publishedAt = 1644526776.095609;
       const collection = {
         // No publisher metadata or revised_at
@@ -135,7 +138,7 @@ describe("filter", () => {
     });
   });
   describe("Build Summary Citation", () => {
-    it("builds summary citation for consortium first author", () => {
+    test("builds summary citation for consortium first author", () => {
       const consortiumName = "The Tabula Sapiens Consortium";
       const journal = "bioRxiv";
       const year = 2022;
@@ -152,7 +155,7 @@ describe("filter", () => {
         `${consortiumName} et al. (${year}) ${journal}`
       );
     });
-    it("builds summary citation for person first author", () => {
+    test("builds summary citation for person first author", () => {
       const family = "Quake";
       const journal = "bioRxiv";
       const year = 2022;

@@ -1,11 +1,9 @@
 import { Intent, Position, Tooltip } from "@blueprintjs/core";
-import React from "react";
 import DownloadDataset from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DownloadDataset";
 import { OVER_MAX_CELL_COUNT_TOOLTIP } from "src/components/common/Grid/common/constants";
-import ActionButton from "src/components/common/Grid/components/ActionButton";
 import ActionsCell from "src/components/common/Grid/components/ActionsCell";
 import { DownloadButton } from "src/components/Datasets/components/Grid/common/utils";
-import DatasetExploreSvg from "src/components/Datasets/components/Grid/components/DatasetExploreSvg";
+import { StyledPrimaryAnchorButton } from "src/components/common/Button/common/style";
 
 interface Props {
   datasetId: string;
@@ -22,11 +20,6 @@ export default function DatasetsActionsCell({
   name,
   tombstone,
 }: Props): JSX.Element {
-  const exploreTooltipContent = isOverMaxCellCount
-    ? OVER_MAX_CELL_COUNT_TOOLTIP
-    : "Explore";
-  const exploreTooltipIntent = isOverMaxCellCount ? Intent.DANGER : undefined;
-
   // Determine if Explorer link and tooltip is disabled.
   const explorerDisabled = tombstone || !explorerUrl;
 
@@ -40,20 +33,19 @@ export default function DatasetsActionsCell({
       />
       <Tooltip
         boundary="viewport"
-        content={exploreTooltipContent}
-        disabled={explorerDisabled}
-        intent={exploreTooltipIntent}
+        content={OVER_MAX_CELL_COUNT_TOOLTIP}
+        disabled={!isOverMaxCellCount}
+        intent={Intent.DANGER}
         position={Position.TOP}
       >
-        <ActionButton
+        <StyledPrimaryAnchorButton
           data-test-id="view-dataset-link"
-          // @ts-expect-error -- revisit disabled typing
           disabled={explorerDisabled || isOverMaxCellCount} // TODO(cc) isOverMaxCellCount needed to be a boolean...
           href={explorerUrl}
-          iconSvg={<DatasetExploreSvg />}
-          isAnchorButton
+          intent={Intent.PRIMARY}
           rel="noopener"
           target="_blank"
+          text="Explore"
         />
       </Tooltip>
     </ActionsCell>

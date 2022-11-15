@@ -71,6 +71,7 @@ const LandingHeader: FC = () => {
                 <LinkWrapper>
                   <Link href={ROUTES.COLLECTIONS} passHref>
                     <AnchorButton
+                      data-test-id="collection-link"
                       onClick={() => {
                         track(EVENTS.COLLECTIONS_CLICK_NAV);
                       }}
@@ -100,7 +101,7 @@ const LandingHeader: FC = () => {
                       active={isRouteActive(pathname, ROUTES.WHERE_IS_MY_GENE)}
                       href="passHref"
                       minimal
-                      text="scExpression"
+                      text="Gene Expression"
                       onClick={handleWMGClick}
                     />
                   </Link>

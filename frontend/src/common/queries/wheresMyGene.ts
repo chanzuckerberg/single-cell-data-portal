@@ -26,7 +26,7 @@ interface RawOntologyTerm {
 interface RawOntologyTermsByOrganism {
   [organismId: string]: Array<RawOntologyTerm>;
 }
-interface RawPrimaryFilterDimensionsResponse {
+export interface RawPrimaryFilterDimensionsResponse {
   gene_terms: RawOntologyTermsByOrganism;
   organism_terms: Array<RawOntologyTerm>;
   snapshot_id: string;
@@ -135,7 +135,7 @@ interface Filter {
   disease_ontology_term_ids: string[];
   sex_ontology_term_ids: string[];
   development_stage_ontology_term_ids: string[];
-  ethnicity_ontology_term_ids: string[];
+  self_reported_ethnicity_ontology_term_ids: string[];
 }
 
 export interface Query {
@@ -160,7 +160,7 @@ interface QueryResponse {
     disease_terms: { [id: string]: string }[];
     sex_terms: { [id: string]: string }[];
     development_stage_terms: { [id: string]: string }[];
-    ethnicity_terms: { [id: string]: string }[];
+    self_reported_ethnicity_terms: { [id: string]: string }[];
   };
   snapshot_id: string;
   term_id_labels: {
@@ -242,7 +242,7 @@ const EMPTY_FILTER_DIMENSIONS = {
   datasets: [],
   development_stage_terms: [],
   disease_terms: [],
-  ethnicity_terms: [],
+  self_reported_ethnicity_terms: [],
   sex_terms: [],
 };
 
@@ -257,7 +257,7 @@ export interface FilterDimensions {
   datasets: RawDataset[];
   development_stage_terms: { id: string; name: string }[];
   disease_terms: { id: string; name: string }[];
-  ethnicity_terms: { id: string; name: string }[];
+  self_reported_ethnicity_terms: { id: string; name: string }[];
   sex_terms: { id: string; name: string }[];
 }
 
@@ -286,7 +286,7 @@ export function useFilterDimensions(
       datasets,
       development_stage_terms,
       disease_terms,
-      ethnicity_terms,
+      self_reported_ethnicity_terms,
       sex_terms,
     } = filter_dims;
 
@@ -302,7 +302,7 @@ export function useFilterDimensions(
         })),
         development_stage_terms: development_stage_terms.map(toEntity),
         disease_terms: disease_terms.map(toEntity),
-        ethnicity_terms: ethnicity_terms.map(toEntity),
+        self_reported_ethnicity_terms: self_reported_ethnicity_terms.map(toEntity),
         sex_terms: sex_terms.map(toEntity),
       },
       isLoading: false,
@@ -605,7 +605,7 @@ function useWMGQueryRequestBody(options = { includeAllFilterOptions: false }) {
         dataset_ids: datasets,
         development_stage_ontology_term_ids: developmentStages,
         disease_ontology_term_ids: diseases,
-        ethnicity_ontology_term_ids: ethnicities,
+        self_reported_ethnicity_ontology_term_ids: ethnicities,
         gene_ontology_term_ids,
         organism_ontology_term_id: selectedOrganismId,
         sex_ontology_term_ids: sexes,

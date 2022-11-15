@@ -1,5 +1,5 @@
+import styled from "@emotion/styled";
 import { PT_TEXT_COLOR } from "src/components/common/theme";
-import styled from "styled-components";
 
 export const ViewCollection = styled.div`
   padding: 40px;
@@ -11,11 +11,12 @@ export const CollectionHero = styled.div`
   display: flex;
 
   /* collection name */
+
   h3 {
     color: ${PT_TEXT_COLOR};
     flex: 1;
     letter-spacing: -0.23px;
-    margin: 2.5px 0 0; /* facilitates the center alignment of single-line collection name and top alignment of the first line of a multi-line collection name (line height at 25px) with action buttons (height 30px) */
+    margin: 3.5px 0 0; /* facilitates the center alignment of single-line collection name and top alignment of the first line of a multi-line collection name (line height at 25px) with action buttons (height 32px) */
   }
 `;
 

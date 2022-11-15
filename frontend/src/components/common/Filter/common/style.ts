@@ -1,6 +1,8 @@
-import { Icon } from "@blueprintjs/core";
-import { LIGHT_GRAY, PRIMARY_BLUE } from "src/components/common/theme";
-import styled, { css } from "styled-components";
+import { Classes, Icon } from "@blueprintjs/core";
+import { css } from "@emotion/react";
+import styled from "@emotion/styled";
+import { CommonThemeProps, getColors } from "czifui";
+import { PRIMARY_BLUE, PT_TEXT_COLOR } from "src/components/common/theme";
 
 export const Filter = styled.div`
   display: grid;
@@ -9,6 +11,13 @@ export const Filter = styled.div`
 
   &:last-child {
     margin-bottom: 0;
+  }
+
+  /* Filter open with "active" button. */
+  & .${Classes.POPOVER_OPEN} {
+    .${Classes.BUTTON} {
+      color: ${PT_TEXT_COLOR};
+    }
   }
 `;
 
@@ -26,17 +35,23 @@ export const SelectionIcon = styled(Icon)`
       width: 14px;
     }
   }
-}
 `;
 
-export const scrollbar = css`
-  &::-webkit-scrollbar {
-    width: 4px;
-  }
+export const scrollbar = (props: CommonThemeProps) => {
+  const colors = getColors(props);
+  return css`
+    &::-webkit-scrollbar {
+      width: 4px;
+    }
 
-  &::-webkit-scrollbar-thumb {
-    background-clip: content-box;
-    background-color: ${LIGHT_GRAY.A};
-    border-radius: 4px;
-  }
-`;
+    &::-webkit-scrollbar-thumb {
+      background-clip: content-box;
+      background-color: ${colors?.gray["200"]};
+      border-radius: 4px;
+
+      &:hover {
+        background-color: ${colors?.gray["300"]};
+      }
+    }
+  `;
+};

@@ -229,7 +229,10 @@ interface CreateYAxisOptionsProps {
 /**
  * Used to calculate text pixel widths. Should be only created once.
  */
-const CTX = document.createElement("canvas").getContext("2d");
+const CTX =
+  (typeof document !== "undefined" &&
+    document.createElement("canvas").getContext("2d")) ||
+  null;
 
 /**
  * Formats and truncates the cell type name to a given width
@@ -387,7 +390,13 @@ export function createYAxisOptions({
             const { total_count } = deserializeCellTypeMetadata(
               value as CellTypeMetadata
             );
-            return total_count > 10000 ? ">10k" : `${total_count}`;
+            const formattedString = Intl.NumberFormat("en-US", {
+              maximumFractionDigits: 1,
+              notation: "compact",
+            }).format(total_count);
+            return `${formattedString}${
+              formattedString !== total_count.toString() ? "+" : ""
+            }`;
           },
 
           rich: {

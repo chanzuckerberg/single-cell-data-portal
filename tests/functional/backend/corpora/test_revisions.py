@@ -1,6 +1,7 @@
 import json
 import os
 import unittest
+from urllib.parse import quote
 import requests
 from tenacity import retry, stop_after_attempt, wait_fixed
 
@@ -32,7 +33,7 @@ class TestRevisions(BaseFunctionalTestCase):
 
         # Doesn't work since the collection is published. See issue #1375
         self.addCleanup(self.session.delete, f"{self.api}/dp/v1/collections/{collection_id}", headers=headers)
-        self.assertEqual(res.status_code, requests.codes.created)
+        self.assertStatusCode(requests.codes.created, res)
         self.assertIn("collection_id", data)
         return collection_id
 
@@ -46,8 +47,8 @@ class TestRevisions(BaseFunctionalTestCase):
 
         collection_id = self.create_collection(headers)
 
-        dataset_1_dropbox_url = "https://www.dropbox.com/s/qiclvn1slmap351/example_valid.h5ad?dl=0"
-        dataset_2_dropbox_url = "https://www.dropbox.com/s/qiclvn1slmap351/example_valid.h5ad?dl=0"
+        dataset_1_dropbox_url = "https://www.dropbox.com/s/m1ur46nleit8l3w/3_0_0_valid.h5ad?dl=0"
+        dataset_2_dropbox_url = "https://www.dropbox.com/s/m1ur46nleit8l3w/3_0_0_valid.h5ad?dl=0"
 
         # Uploads a dataset
         self.upload_and_wait(collection_id, dataset_1_dropbox_url)
@@ -59,7 +60,7 @@ class TestRevisions(BaseFunctionalTestCase):
                 f"{self.api}/dp/v1/collections/{collection_id}/publish", headers=headers, data=json.dumps(body)
             )
             res.raise_for_status()
-            self.assertEqual(res.status_code, requests.codes.accepted)
+            self.assertStatusCode(requests.codes.accepted, res)
 
         dataset_id = self.session.get(f"{self.api}/dp/v1/collections/{collection_id}").json()["datasets"][0]["id"]
         explorer_url = self.create_explorer_url(dataset_id)
@@ -74,7 +75,7 @@ class TestRevisions(BaseFunctionalTestCase):
         with self.subTest("Test updating a dataset in a revision does not effect the published dataset"):
             # Start a revision
             res = self.session.post(f"{self.api}/dp/v1/collections/{collection_id}", headers=headers)
-            self.assertEqual(res.status_code, 201)
+            self.assertStatusCode(201, res)
             revision_id = res.json()["id"]
             private_dataset_id = res.json()["datasets"][0]["id"]
 
@@ -94,7 +95,7 @@ class TestRevisions(BaseFunctionalTestCase):
             # Check that the published dataset is still the same
             meta_payload_after_revision = self.session.get(f"{self.api}/dp/v1/datasets/meta?url={explorer_url}").json()
             self.assertDictEqual(meta_payload_before_revision, meta_payload_after_revision)
-            schema_after_revision = self.session.get(f"{self.api}/cellxgene/e/{dataset_id}.cxg/api/v0.2/schema").json()
+            schema_after_revision = self.get_schema_with_retries(dataset_id).json()
             self.assertDictEqual(schema_before_revision, schema_after_revision)
 
         with self.subTest("Publishing a revised dataset replaces the original dataset"):
@@ -104,7 +105,7 @@ class TestRevisions(BaseFunctionalTestCase):
                 f"{self.api}/dp/v1/collections/{revision_id}/publish", headers=headers, data=json.dumps(body)
             )
             res.raise_for_status()
-            self.assertEqual(res.status_code, requests.codes.accepted)
+            self.assertStatusCode(requests.codes.accepted, res)
 
             dataset_meta_payload = self.session.get(f"{self.api}/dp/v1/datasets/meta?url={explorer_url}").json()
             self.assertTrue(
@@ -134,7 +135,7 @@ class TestRevisions(BaseFunctionalTestCase):
             # Start a revision
             res = self.session.post(f"{self.api}/dp/v1/collections/{collection_id}", headers=headers)
             revision_id = res.json()["id"]
-            self.assertEqual(res.status_code, 201)
+            self.assertStatusCode(201, res)
 
             # Upload a new dataset
             another_dataset_id = self.upload_and_wait(revision_id, dataset_1_dropbox_url)
@@ -153,7 +154,7 @@ class TestRevisions(BaseFunctionalTestCase):
                 f"{self.api}/dp/v1/collections/{revision_id}/publish", headers=headers, data=json.dumps(body)
             )
             res.raise_for_status()
-            self.assertEqual(res.status_code, requests.codes.accepted)
+            self.assertStatusCode(requests.codes.accepted, res)
 
             # Check if the last updated dataset_id is among the public datasets
             public_datasets = self.session.get(f"{self.api}/dp/v1/collections/{collection_id}").json()["datasets"]
@@ -164,7 +165,7 @@ class TestRevisions(BaseFunctionalTestCase):
         with self.subTest("Deleting a dataset does not effect the published dataset"):
             # Start a revision
             res = self.session.post(f"{self.api}/dp/v1/collections/{collection_id}", headers=headers)
-            self.assertEqual(res.status_code, 201)
+            self.assertStatusCode(201, res)
             revision_id = res.json()["id"]
 
             # This only works if you pick the non replaced dataset.
@@ -175,15 +176,15 @@ class TestRevisions(BaseFunctionalTestCase):
 
             # Delete a dataset within the revision
             res = self.session.delete(f"{self.api}/dp/v1/datasets/{deleted_dataset_id}", headers=headers)
-            self.assertEqual(res.status_code, 202)
+            self.assertStatusCode(202, res)
 
             # Check if the dataset is still available
             res = self.session.get(f"{self.api}/dp/v1/datasets/meta?url={original_explorer_url}")
-            self.assertEqual(res.status_code, 200)
+            self.assertStatusCode(200, res)
 
             # Endpoint is eventually consistent
             res = self.get_schema_with_retries(original_dataset_id)
-            self.assertEqual(res.status_code, 200)
+            self.assertStatusCode(200, res)
 
         with self.subTest("Publishing a revision that deletes a dataset removes it from the data portal"):
             # Publish the revision
@@ -192,7 +193,7 @@ class TestRevisions(BaseFunctionalTestCase):
                 f"{self.api}/dp/v1/collections/{revision_id}/publish", headers=headers, data=json.dumps(body)
             )
             res.raise_for_status()
-            self.assertEqual(res.status_code, requests.codes.accepted)
+            self.assertStatusCode(requests.codes.accepted, res)
 
             # Check that the dataset doesn't exist anymore
             res = self.session.get(f"{self.api}/dp/v1/collections/{collection_id}", headers=headers)
@@ -204,13 +205,32 @@ class TestRevisions(BaseFunctionalTestCase):
 
             # Endpoint is eventually consistent. This redirects to the collection page, so the status we want is 302
             res = self.get_schema_with_retries(original_dataset_id, desired_http_status_code=302)
-            self.assertEqual(res.status_code, 302)
+            self.assertStatusCode(302, res)
 
-    @retry(wait=wait_fixed(1), stop=stop_after_attempt(50))
     def get_schema_with_retries(self, dataset_id, desired_http_status_code=requests.codes.ok):
-        schema_res = self.session.get(f"{self.api}/cellxgene/e/{dataset_id}.cxg/api/v0.2/schema", allow_redirects=False)
+        @retry(wait=wait_fixed(1), stop=stop_after_attempt(50))
+        def get_s3_uri():
+            s3_uri_res = self.session.get(
+                f"{self.api}/cellxgene/e/{dataset_id}.cxg/api/v0.3/s3_uri", allow_redirects=False
+            )
+            if s3_uri_res.status_code != desired_http_status_code:
+                raise UndesiredHttpStatusCodeError
+            return s3_uri_res
 
-        if schema_res.status_code != desired_http_status_code:
-            raise UndesiredHttpStatusCodeError
+        @retry(wait=wait_fixed(1), stop=stop_after_attempt(50))
+        def get_schema(s3_uri_response_object):
+            # parse s3_uri_response_object content
+            s3_path = s3_uri_response_object.content.decode("utf-8").strip().strip('"')
+            # s3_uri endpoints use double-encoded s3 uri path parameters
+            s3_path_url = quote(quote(s3_path, safe=""))
+            schema_res = self.session.get(
+                f"{self.api}/cellxgene/s3_uri/{s3_path_url}/api/v0.3/schema", allow_redirects=False
+            )
+            if schema_res.status_code != requests.codes.ok:
+                raise UndesiredHttpStatusCodeError
+            return schema_res
 
-        return schema_res
+        s3_uri_response = get_s3_uri()
+        if desired_http_status_code != requests.codes.ok:
+            return s3_uri_response
+        return get_schema(s3_uri_response)

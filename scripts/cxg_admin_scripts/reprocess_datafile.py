@@ -11,12 +11,12 @@ from time import time, sleep
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..."))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
 
-from backend.corpora.common.utils.db_session import db_session_manager
-from backend.corpora.common.corpora_orm import (
+from backend.common.utils.db_session import db_session_manager
+from backend.common.corpora_orm import (
     DbDataset,
     DatasetArtifactFileType,
 )
-from backend.corpora.common.entities.dataset import Dataset
+from backend.common.entities.dataset import Dataset
 
 from urllib.parse import urlparse
 
@@ -40,7 +40,7 @@ def get_happy_stack_name(deployment) -> str:
 
 
 def cxg_remaster(ctx):
-    """Cxg remaster"""
+    """Cxg remaster v2"""
 
     with db_session_manager() as session:
         click.confirm(
@@ -77,7 +77,7 @@ def cxg_remaster(ctx):
 
                     response = client.start_execution(
                         stateMachineArn=f"arn:aws:states:us-west-2:{aws_account_id}:stateMachine:dp-"
-                        f"{happy_stack_name}-cxg-remaster-sfn",
+                        f"{happy_stack_name}-cxg-remaster-v2-sfn",
                         name=f"{dataset_id}-{int(time())}",
                         input=json.dumps(input),
                     )

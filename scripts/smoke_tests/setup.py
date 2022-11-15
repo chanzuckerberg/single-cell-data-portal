@@ -22,7 +22,7 @@ class SmokeTestsInitializer(BaseFunctionalTestCase):
         res.raise_for_status()
         data = json.loads(res.content)
         num_collections = 0
-        for collection in data["collections"]:
+        for collection in data:
             if collection["contact_name"] == TEST_ACCT_CONTACT_NAME:
                 num_collections += 1
             if num_collections == NUM_TEST_COLLECTIONS:
@@ -65,7 +65,7 @@ if __name__ == "__main__":
         print("Found sufficient published collections for testing, exiting")
         sys.exit(0)
 
-    dataset_dropbox_url = "https://www.dropbox.com/s/qiclvn1slmap351/example_valid.h5ad?dl=0"
+    dataset_dropbox_url = "https://www.dropbox.com/s/m1ur46nleit8l3w/3_0_0_valid.h5ad?dl=0"
     num_to_create = NUM_TEST_COLLECTIONS - collection_count
     threads = []
     for i in range(num_to_create):

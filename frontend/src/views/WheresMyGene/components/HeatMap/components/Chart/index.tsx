@@ -236,7 +236,7 @@ export default memo(function Chart({
       ((dataPoint.tissuePercentage || 0) * 100).toFixed(2)
     );
 
-    const totalCellCount = Math.round((expressedCellCount / percentage) * 100);
+    const totalCellCount = cellType.total_count;
 
     const data = [
       {
@@ -281,7 +281,7 @@ export default memo(function Chart({
   const tooltipClasses = useMemo(() => ({ tooltip: tooltipCss }), []);
 
   return (
-    <Wrapper height={heatmapHeight} width={heatmapWidth}>
+    <Wrapper height={heatmapHeight} width={heatmapWidth} id={`${tissue}-chart`}>
       <Tooltip
         width="wide"
         classes={tooltipClasses}

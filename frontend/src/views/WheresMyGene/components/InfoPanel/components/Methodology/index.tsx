@@ -13,7 +13,7 @@ export default function Methodology(): JSX.Element {
         distribution. Then normalized cell vectors are concatenated along the
         gene axis. The algorithm is summarized in detail in{" "}
         <a
-          href={`${ROUTES.DOCS}/04__Analyze%20Public%20Data/4_2__scExpression%20Documentation/4_2_1__Get%20Started`}
+          href={`${ROUTES.DOCS}/04__Analyze%20Public%20Data/4_2__Gene%20Expression%20Documentation/4_2_1__Get%20Started`}
           rel="noopener"
           target="_blank"
         >

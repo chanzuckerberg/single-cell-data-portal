@@ -20,6 +20,7 @@ uint32_domain = (np.iinfo(np.uint32).min, np.iinfo(np.uint32).max - 1)
 INTEGRATED_ARRAY_NAME = "integrated"
 OBS_ARRAY_NAME = "obs"
 VAR_ARRAY_NAME = "var"
+DATASET_TO_GENE_IDS_NAME = "dataset_to_gene_ids"
 
 
 class LabelType(
@@ -69,6 +70,7 @@ obs_labels = [
         for key in [
             "cell_type_ontology_term_id",
             "tissue_ontology_term_id",
+            "tissue_original_ontology_term_id",
         ]
     ],
     *[
@@ -81,8 +83,9 @@ obs_labels = [
             "development_stage_ontology_term_id",
             "disease_ontology_term_id",
             "tissue",
-            "ethnicity",
-            "ethnicity_ontology_term_id",
+            "tissue_original",
+            "self_reported_ethnicity",
+            "self_reported_ethnicity_ontology_term_id",
             "sex",
             "sex_ontology_term_id",
             "organism",
@@ -102,18 +105,17 @@ var_labels = [
 ]
 
 
-def create_tdb(corpus_location: str, tdb_group: str):
+def create_tdb_integrated_corpus(corpus_path: str):
     """
     Create the empty tiledb object for the integrated corpus
     """
-    uri = f"{corpus_location}/{tdb_group}"
-    pathlib.Path(uri).mkdir(parents=True, exist_ok=True)
-    tiledb.group_create(uri)
+    pathlib.Path(corpus_path).mkdir(parents=True, exist_ok=True)
+    tiledb.group_create(corpus_path)
 
     filters = tiledb.FilterList([tiledb.ZstdFilter(level=-22)])
-    create_integrated_expression_array(uri, filters)
-    create_obs_array(uri, filters)
-    create_var_array(uri, filters)
+    create_integrated_expression_array(corpus_path, filters)
+    create_obs_array(corpus_path, filters)
+    create_var_array(corpus_path, filters)
 
 
 def create_var_array(uri: str, filters: tiledb.filter.FilterList):

@@ -1,5 +1,4 @@
 import { Tag } from "@blueprintjs/core";
-import React from "react";
 import { SelectedTags } from "./style";
 
 type OnRemoveFn = () => void;
@@ -16,9 +15,9 @@ interface Props {
 export default function FilterTags({ tags }: Props): JSX.Element | null {
   return tags && tags.length ? (
     <SelectedTags>
-      {tags.map(({ label, onRemove }) => (
+      {tags.map(({ label, onRemove }, i) => (
         <Tag
-          key={isLabelRange(label) ? label.join("") : label}
+          key={isLabelRange(label) ? label.join("") : `${label}${i}`}
           large
           minimal
           multiline

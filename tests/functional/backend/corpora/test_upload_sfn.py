@@ -4,7 +4,7 @@ import unittest
 
 import boto3
 
-from backend.corpora.common.upload import start_upload_sfn
+from backend.common.upload import start_upload_sfn
 
 if os.getenv("DEPLOYMENT_STAGE") == "test":
     step_definition = json.loads(

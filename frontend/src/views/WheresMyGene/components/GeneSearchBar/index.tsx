@@ -7,7 +7,6 @@ import Toast from "src/views/Collection/components/Toast";
 import { DispatchContext, StateContext } from "../../common/store";
 import { selectGenes, selectTissues } from "../../common/store/actions";
 import { Gene } from "../../common/types";
-import Organism from "./components/Organism";
 import QuickSelect from "./components/QuickSelect";
 import { ActionWrapper, Container, LoadingIndicatorWrapper } from "./style";
 
@@ -15,7 +14,11 @@ interface Tissue {
   name: string;
 }
 
-export default function GeneSearchBar(): JSX.Element {
+export default function GeneSearchBar({
+  className,
+}: {
+  className?: string;
+}): JSX.Element {
   const dispatch = useContext(DispatchContext);
   const { selectedGenes, selectedTissues, selectedOrganismId } =
     useContext(StateContext);
@@ -78,17 +81,16 @@ export default function GeneSearchBar(): JSX.Element {
   }, []);
 
   return (
-    <Container>
+    <Container {...{ className }}>
       <ActionWrapper>
-        <Organism isLoading={isLoading} />
-
         <QuickSelect
           items={tissues}
           itemsByName={tissuesByName}
           multiple
           selected={selectedTissueOptions}
           setSelected={handleSelectTissues}
-          label="Add Tissue"
+          label="Tissues"
+          text="Tissue"
           dataTestId="add-tissue"
           placeholder="Search"
           isLoading={isLoading}
@@ -102,7 +104,8 @@ export default function GeneSearchBar(): JSX.Element {
           multiple
           setSelected={handleSelectGenes}
           onItemNotFound={handleGeneNotFound}
-          label="Add Gene"
+          label="Genes"
+          text="Gene"
           dataTestId="add-gene"
           placeholder="Search or paste comma separated gene names"
           isLoading={isLoading}

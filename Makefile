@@ -35,6 +35,12 @@ processing-unittest:
 	DEPLOYMENT_STAGE=test PYTHONWARNINGS=ignore:ResourceWarning python3 \
 		-m unittest discover --start-directory tests/unit/processing_container --top-level-directory . --verbose;
 
+.PHONY: wmg-processing-unittest
+wmg-processing-unittest:
+	# This target is intended to be run INSIDE a container
+	DEPLOYMENT_STAGE=test PYTHONWARNINGS=ignore:ResourceWarning python3 \
+		-m unittest discover --start-directory tests/unit/wmg_processing --top-level-directory . --verbose;
+
 .PHONY: functional-test
 functional-test: local-functional-test
 	# Keeping old target name for reverse compatibility
@@ -50,15 +56,7 @@ prod-performance-test:
 
 .PHONY: local-backend
 local-backend:
-	$(MAKE) local-server -C ./backend/corpora/api_server
-
-.PHONY: smoke-test-prod-build
-smoke-test-prod-build:
-	$(MAKE) smoke-test-prod-build -C ./frontend
-
-.PHONY: smoke-test-with-local-backend
-smoke-test-with-local-backend:
-	$(MAKE) smoke-test-with-local-backend -C ./frontend
+	$(MAKE) local-server -C ./backend/api_server
 
 .PHONY: e2e
 e2e:
@@ -112,7 +110,7 @@ local-status: ## Show the status of the containers in the dev environment.
 
 .PHONY: local-rebuild
 local-rebuild: .env.ecr local-ecr-login ## Rebuild local dev without re-importing data
-	docker-compose $(COMPOSE_OPTS) build frontend backend processing
+	docker-compose $(COMPOSE_OPTS) build frontend backend processing wmg_processing
 	docker-compose $(COMPOSE_OPTS) up -d frontend backend processing database oidc localstack
 
 local-rebuild-backend: .env.ecr local-ecr-login
@@ -157,7 +155,7 @@ local-shell: ## Open a command shell in one of the dev containers. ex: make loca
 	docker-compose exec $(CONTAINER) bash
 
 .PHONY: local-unit-test
-local-unit-test: local-unit-test-backend local-unit-test-processing # Run all backend and processing unit tests in the dev environment, with code coverage
+local-unit-test: local-unit-test-backend local-unit-test-processing  local-unit-test-wmg-processing# Run all backend and processing unit tests in the dev environment, with code coverage
 
 # Note: If you are manually running this on localhost, you should run `local-rebuild` target first to test latest changes; this is not needed when running in Github Actions
 .PHONY: local-unit-test-backend
@@ -184,6 +182,13 @@ local-unit-test-processing: # Run processing-unittest target in `processing` Doc
 	echo "Running all processing unit tests"; \
 	docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -T processing \
 	bash -c "cd /single-cell-data-portal && make processing-unittest;"
+
+
+.PHONY: local-unit-test-wmg-processing
+local-unit-test-wmg-processing: # Run processing-unittest target in `wmg_processing` Docker container
+	echo "Running all wmg processing unit tests"; \
+	docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -T wmg_processing \
+	bash -c "cd /single-cell-data-portal && make wmg-processing-unittest;"
 
 # We optionally pass BOTO_ENDPOINT_URL if it is set, even if it is
 # set to be the empty string.
@@ -213,12 +218,6 @@ local-functional-test: ## Run functional tests in the dev environment
 local-smoke-test: ## Run frontend/e2e tests in the dev environment
 	docker-compose $(COMPOSE_OPTS) run --rm -T frontend make smoke-test-with-local-dev
 
-.PHONY: local-e2e
-local-e2e: ## Run frontend/e2e tests
-	if [ -n "$${BOTO_ENDPOINT_URL+set}" ]; then \
-		EXTRA_ARGS="-e BOTO_ENDPOINT_URL"; \
-	fi; \
-	docker-compose $(COMPOSE_OPTS) run --no-deps -e DEPLOYMENT_STAGE -e AWS_REGION -e AWS_DEFAULT_REGION -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e AWS_SESSION_TOKEN $${EXTRA_ARGS} -T frontend make e2e
 
 .PHONY: local-dbconsole
 local-dbconsole: ## Connect to the local postgres database.
@@ -232,6 +231,11 @@ local-uploadjob: .env.ecr ## Run the upload task with a dataset_id and dropbox_u
 local-uploadfailure: .env.ecr ## Run the upload failure lambda with a dataset id and cause
 	docker-compose $(COMPOSE_OPTS) up -d upload_failures
 	curl -v -XPOST "http://127.0.0.1:9000/2015-03-31/functions/function/invocations" -d '{"dataset_id": "$(DATASET_ID)", "error": {"Cause": "$(CAUSE)"}}'
+
+.PHONY: local-uploadsuccess
+local-uploadsuccess: .env.ecr ## Run the upload success lambda with a dataset id and cause
+	docker-compose $(COMPOSE_OPTS) up -d upload_success
+	curl -v -XPOST "http://127.0.0.1:9001/2015-03-31/functions/function/invocations" -d '{"dataset_id": "$(DATASET_ID)"}'
 
 .PHONY: local-cxguser-cookie
 local-cxguser-cookie: ## Get cxguser-cookie

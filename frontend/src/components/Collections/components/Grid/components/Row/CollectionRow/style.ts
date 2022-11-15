@@ -1,5 +1,5 @@
+import styled from "@emotion/styled";
 import { BLUE, PT_TEXT_COLOR } from "src/components/common/theme";
-import styled from "styled-components";
 
 // Collection Title Column
 export const CollectionTitleText = styled.a`

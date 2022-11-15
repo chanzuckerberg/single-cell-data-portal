@@ -1,10 +1,11 @@
 import { List, ListItem } from "czifui";
-import { useMemo } from "react";
+import { useContext, useMemo } from "react";
 import {
   aggregateCollectionsFromDatasets,
   useFilterDimensions,
 } from "src/common/queries/wheresMyGene";
-import { Content, Header, ListSubheader, Wrapper } from "./style";
+import { StateContext } from "src/views/WheresMyGene/common/store";
+import { Content, ListSubheader, Wrapper } from "./style";
 
 interface Collection {
   name: string;
@@ -17,16 +18,18 @@ interface Collections {
 }
 
 export default function SourceData(): JSX.Element {
+  const {
+    selectedFilters,
+  } = useContext(StateContext);  
   const { data: filterDimensions } = useFilterDimensions();
-  const { datasets = [] } = filterDimensions;
-
+  let { datasets = [] } = filterDimensions;
+  datasets = datasets.filter((dataset) => selectedFilters.datasets.includes(dataset.id));
   const collections: Collections = useMemo(() => {
     return aggregateCollectionsFromDatasets(datasets);
   }, [datasets]);
 
   return (
     <Wrapper>
-      <Header>Source Data</Header>
       <Content>
         <List ordered>
           {Object.values(collections).map(({ name, url, datasets }) => {

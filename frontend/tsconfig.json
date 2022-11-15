@@ -12,14 +12,16 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "paths": {
-      "src/*": ["./src/*"]
+      "src/*": ["./src/*"],
+      "tests/*": ["./tests/*"]
     },
     "skipLibCheck": true,
     "strict": true,
     "target": "esnext",
-    "types": ["jest-playwright-preset", "expect-playwright", "jest"],
+    "types": ["expect-playwright"],
     "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "incremental": true
   },
   "exclude": ["node_modules", "public", ".cache"],
   "include": [

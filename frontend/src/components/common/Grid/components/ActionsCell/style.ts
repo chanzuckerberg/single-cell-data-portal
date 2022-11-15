@@ -1,9 +1,8 @@
-import styled from "styled-components";
+import styled from "@emotion/styled";
 
 export const Actions = styled.div`
+  align-items: center; /* required for the "more" dropdown button to center align with buttons i.e. "Download" and "Explore" */
   display: grid;
   gap: 0 8px;
-  grid-auto-columns: 24px; /* specifies an action button slot of 24px */
   grid-auto-flow: column;
-  margin-top: -4px; /* visually top aligns action button icon with td padding and maintains desired action button clickable area */
 `;

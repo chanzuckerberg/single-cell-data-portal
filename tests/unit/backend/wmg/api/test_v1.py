@@ -2,10 +2,10 @@ import json
 import unittest
 from unittest.mock import patch
 
-from backend.corpora.api_server.app import app
+from backend.api_server.app import app
 from backend.wmg.api.v1 import find_dim_option_values
-from backend.wmg.data.schemas.cube_schema import cube_non_indexed_dims
-from tests.unit.backend.corpora.fixtures.environment_setup import EnvironmentSetup
+from backend.wmg.data.schemas.cube_schema import expression_summary_non_indexed_dims
+from tests.unit.backend.fixtures.environment_setup import EnvironmentSetup
 from tests.unit.backend.wmg.fixtures.test_primary_filters import (
     test_snapshot_id,
     test_organism_terms,
@@ -182,7 +182,7 @@ class WmgApiV1Tests(unittest.TestCase):
             # fixture may have changed (e.g. TileDB Array schema) or the logic for creating the test cube fixture has
             # changed
             expected_cell_count_per_cell_type = dim_size ** len(
-                set(cube_non_indexed_dims).difference({"cell_type_ontology_term_id"})
+                set(expression_summary_non_indexed_dims).difference({"cell_type_ontology_term_id"})
             )
             assert expected_cell_count_per_cell_type == 729
 
@@ -190,7 +190,7 @@ class WmgApiV1Tests(unittest.TestCase):
             # and 10 cells per type in the cell counts cube, so we expect 7290 total cells per tissue-cell type
 
             expected_combinations_per_cell_type = dim_size ** len(
-                set(cube_non_indexed_dims).difference({"cell_type_ontology_term_id"})
+                set(expression_summary_non_indexed_dims).difference({"cell_type_ontology_term_id"})
             )
             expected_n_cells_per_cell_type = expected_combinations_per_cell_type * 10
             assert expected_n_cells_per_cell_type == 7290
@@ -202,47 +202,47 @@ class WmgApiV1Tests(unittest.TestCase):
                         "tissue_ontology_term_id_1": [
                             {
                                 "id": "cell_type_ontology_term_id_0",
-                                "n": 729,
+                                "n": 2187,
                                 "me": 1.0,
                                 "pc": 0.1,
-                                "tpc": 729 / (10 * (3**7)),
+                                "tpc": 2187 / (10 * (3**8)),
                             },
                             {
                                 "id": "cell_type_ontology_term_id_1",
-                                "n": 729,
+                                "n": 2187,
                                 "me": 1.0,
                                 "pc": 0.1,
-                                "tpc": 729 / (10 * (3**7)),
+                                "tpc": 2187 / (10 * (3**8)),
                             },
                             {
                                 "id": "cell_type_ontology_term_id_2",
-                                "n": 729,
+                                "n": 2187,
                                 "me": 1.0,
                                 "pc": 0.1,
-                                "tpc": 729 / (10 * (3**7)),
+                                "tpc": 2187 / (10 * (3**8)),
                             },
                         ],
                         "tissue_ontology_term_id_2": [
                             {
                                 "id": "cell_type_ontology_term_id_0",
-                                "n": 729,
+                                "n": 2187,
                                 "me": 1.0,
                                 "pc": 0.1,
-                                "tpc": 729 / (10 * (3**7)),
+                                "tpc": 2187 / (10 * (3**8)),
                             },
                             {
                                 "id": "cell_type_ontology_term_id_1",
-                                "n": 729,
+                                "n": 2187,
                                 "me": 1.0,
                                 "pc": 0.1,
-                                "tpc": 729 / (10 * (3**7)),
+                                "tpc": 2187 / (10 * (3**8)),
                             },
                             {
                                 "id": "cell_type_ontology_term_id_2",
-                                "n": 729,
+                                "n": 2187,
                                 "me": 1.0,
                                 "pc": 0.1,
-                                "tpc": 729 / (10 * (3**7)),
+                                "tpc": 2187 / (10 * (3**8)),
                             },
                         ],
                     },
@@ -250,47 +250,47 @@ class WmgApiV1Tests(unittest.TestCase):
                         "tissue_ontology_term_id_1": [
                             {
                                 "id": "cell_type_ontology_term_id_0",
-                                "n": 729,
+                                "n": 2187,
                                 "me": 1.0,
                                 "pc": 0.1,
-                                "tpc": 729 / (10 * (3**7)),
+                                "tpc": 2187 / (10 * (3**8)),
                             },
                             {
                                 "id": "cell_type_ontology_term_id_1",
-                                "n": 729,
+                                "n": 2187,
                                 "me": 1.0,
                                 "pc": 0.1,
-                                "tpc": 729 / (10 * (3**7)),
+                                "tpc": 2187 / (10 * (3**8)),
                             },
                             {
                                 "id": "cell_type_ontology_term_id_2",
-                                "n": 729,
+                                "n": 2187,
                                 "me": 1.0,
                                 "pc": 0.1,
-                                "tpc": 729 / (10 * (3**7)),
+                                "tpc": 2187 / (10 * (3**8)),
                             },
                         ],
                         "tissue_ontology_term_id_2": [
                             {
                                 "id": "cell_type_ontology_term_id_0",
-                                "n": 729,
+                                "n": 2187,
                                 "me": 1.0,
                                 "pc": 0.1,
-                                "tpc": 729 / (10 * (3**7)),
+                                "tpc": 2187 / (10 * (3**8)),
                             },
                             {
                                 "id": "cell_type_ontology_term_id_1",
-                                "n": 729,
+                                "n": 2187,
                                 "me": 1.0,
                                 "pc": 0.1,
-                                "tpc": 729 / (10 * (3**7)),
+                                "tpc": 2187 / (10 * (3**8)),
                             },
                             {
                                 "id": "cell_type_ontology_term_id_2",
-                                "n": 729,
+                                "n": 2187,
                                 "me": 1.0,
                                 "pc": 0.1,
-                                "tpc": 729 / (10 * (3**7)),
+                                "tpc": 2187 / (10 * (3**8)),
                             },
                         ],
                     },
@@ -301,19 +301,19 @@ class WmgApiV1Tests(unittest.TestCase):
                             {
                                 "cell_type": "cell_type_ontology_term_id_0_label",
                                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_0",
-                                "total_count": 7290,
+                                "total_count": 21870,
                                 "depth": 0,
                             },
                             {
                                 "cell_type": "cell_type_ontology_term_id_1_label",
                                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_1",
-                                "total_count": 7290,
+                                "total_count": 21870,
                                 "depth": 1,
                             },
                             {
                                 "cell_type": "cell_type_ontology_term_id_2_label",
                                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_2",
-                                "total_count": 7290,
+                                "total_count": 21870,
                                 "depth": 2,
                             },
                         ],
@@ -321,19 +321,19 @@ class WmgApiV1Tests(unittest.TestCase):
                             {
                                 "cell_type": "cell_type_ontology_term_id_0_label",
                                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_0",
-                                "total_count": 7290,
+                                "total_count": 21870,
                                 "depth": 0,
                             },
                             {
                                 "cell_type": "cell_type_ontology_term_id_1_label",
                                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_1",
-                                "total_count": 7290,
+                                "total_count": 21870,
                                 "depth": 1,
                             },
                             {
                                 "cell_type": "cell_type_ontology_term_id_2_label",
                                 "cell_type_ontology_term_id": "cell_type_ontology_term_id_2",
-                                "total_count": 7290,
+                                "total_count": 21870,
                                 "depth": 2,
                             },
                         ],
@@ -387,13 +387,13 @@ class WmgApiV1Tests(unittest.TestCase):
                     {
                         "cell_type": "cell_type_ontology_term_id_0_label",
                         "cell_type_ontology_term_id": "cell_type_ontology_term_id_0",
-                        "total_count": 640,
+                        "total_count": 1280,
                         "depth": 0,
                     },
                     {
                         "cell_type": "cell_type_ontology_term_id_1_label",
                         "cell_type_ontology_term_id": "cell_type_ontology_term_id_1",
-                        "total_count": 640,
+                        "total_count": 1280,
                         "depth": 1,
                     },
                 ],
@@ -401,13 +401,13 @@ class WmgApiV1Tests(unittest.TestCase):
                     {
                         "cell_type": "cell_type_ontology_term_id_0_label",
                         "cell_type_ontology_term_id": "cell_type_ontology_term_id_0",
-                        "total_count": 640,
+                        "total_count": 1280,
                         "depth": 0,
                     },
                     {
                         "cell_type": "cell_type_ontology_term_id_1_label",
                         "cell_type_ontology_term_id": "cell_type_ontology_term_id_1",
-                        "total_count": 640,
+                        "total_count": 1280,
                         "depth": 1,
                     },
                 ],
@@ -449,21 +449,22 @@ class WmgApiV1Tests(unittest.TestCase):
             self.assertEqual(200, response.status_code)
 
             # each cell type has `expected_count` cells for each possible combination of secondary filters
-            # given the present constraints (1 organism, both tissues). There are 2**8=256 possible combinations
+            # given the present constraints (1 organism, both tissues). There are 2**9=512 possible combinations
             # of filters. After aggregating the counts across two tissues and two cell types per tissue,
-            # there are 64 entries per cell type-tissue combination. Hence, the toal count will be expected_count * 64
+            # there are 128 entries per cell type-tissue combination. Hence, the toal count will be
+            # expected_count * 128
             expected = {
                 "tissue_ontology_term_id_0": [
                     {
                         "cell_type": "cell_type_ontology_term_id_0_label",
                         "cell_type_ontology_term_id": "cell_type_ontology_term_id_0",
-                        "total_count": expected_count * 64,
+                        "total_count": expected_count * 128,
                         "depth": 0,
                     },
                     {
                         "cell_type": "cell_type_ontology_term_id_1_label",
                         "cell_type_ontology_term_id": "cell_type_ontology_term_id_1",
-                        "total_count": expected_count * 64,
+                        "total_count": expected_count * 128,
                         "depth": 1,
                     },
                 ],
@@ -471,13 +472,13 @@ class WmgApiV1Tests(unittest.TestCase):
                     {
                         "cell_type": "cell_type_ontology_term_id_0_label",
                         "cell_type_ontology_term_id": "cell_type_ontology_term_id_0",
-                        "total_count": expected_count * 64,
+                        "total_count": expected_count * 128,
                         "depth": 0,
                     },
                     {
                         "cell_type": "cell_type_ontology_term_id_1_label",
                         "cell_type_ontology_term_id": "cell_type_ontology_term_id_1",
-                        "total_count": expected_count * 64,
+                        "total_count": expected_count * 128,
                         "depth": 1,
                     },
                 ],
@@ -552,7 +553,7 @@ class WmgApiV1Tests(unittest.TestCase):
                 sex_ontology_term_ids=["sex_ontology_term_id_0"],
                 # these matter for the expected result
                 development_stage_ontology_term_ids=["development_stage_ontology_term_id_0"],
-                ethnicity_ontology_term_ids=["ethnicity_ontology_term_id_0"],
+                self_reported_ethnicity_ontology_term_ids=["self_reported_ethnicity_ontology_term_id_0"],
             )
 
             filter_0_request = dict(
@@ -575,7 +576,9 @@ class WmgApiV1Tests(unittest.TestCase):
                     {"development_stage_ontology_term_id_0": "development_stage_ontology_term_id_0_label"}
                 ],
                 "disease_terms": [{"disease_ontology_term_id_0": "disease_ontology_term_id_0_label"}],
-                "ethnicity_terms": [{"ethnicity_ontology_term_id_0": "ethnicity_ontology_term_id_0_label"}],
+                "self_reported_ethnicity_terms": [
+                    {"self_reported_ethnicity_ontology_term_id_0": "self_reported_ethnicity_ontology_term_id_0_label"}
+                ],
                 "sex_terms": [{"sex_ontology_term_id_0": "sex_ontology_term_id_0_label"}],
             }
             self.assertEqual(json.loads(response.data)["filter_dims"], expected_filters)
@@ -615,7 +618,7 @@ class WmgApiV1Tests(unittest.TestCase):
                     sex_ontology_term_ids=["sex_ontology_term_id_0"],
                     # these matter for the expected result
                     development_stage_ontology_term_ids=["development_stage_ontology_term_id_0"],
-                    ethnicity_ontology_term_ids=["ethnicity_ontology_term_id_0"],
+                    self_reported_ethnicity_ontology_term_ids=["self_reported_ethnicity_ontology_term_id_0"],
                 )
 
                 filter_0_request = dict(
@@ -634,7 +637,7 @@ class WmgApiV1Tests(unittest.TestCase):
                     sex_ontology_term_ids=["sex_ontology_term_id_0"],
                     # these matter for the expected result
                     development_stage_ontology_term_ids=[],
-                    ethnicity_ontology_term_ids=["ethnicity_ontology_term_id_0"],
+                    self_reported_ethnicity_ontology_term_ids=["self_reported_ethnicity_ontology_term_id_0"],
                 )
                 filter_0_no_dev_stage_request = dict(filter=filter_0_no_dev_stage_filter, include_filter_dims=True)
 
@@ -648,14 +651,16 @@ class WmgApiV1Tests(unittest.TestCase):
                     sex_ontology_term_ids=["sex_ontology_term_id_0"],
                     # these matter for the expected result
                     development_stage_ontology_term_ids=["development_stage_ontology_term_id_0"],
-                    ethnicity_ontology_term_ids=[],
+                    self_reported_ethnicity_ontology_term_ids=[],
                 )
                 filter_0_no_ethnicity_request = dict(filter=filter_0_no_ethnicity_filter, include_filter_dims=True)
                 # the values for dev_stage terms when a dev stage filter is included should match the values returned
                 # if no filter is passed in for dev stage
                 response = self.app.post("/wmg/v1/query", json=filter_0_request)
                 dev_stage_terms = json.loads(response.data)["filter_dims"]["development_stage_terms"]
-                ethnicity_terms = json.loads(response.data)["filter_dims"]["ethnicity_terms"]
+                self_reported_ethnicity_terms = json.loads(response.data)["filter_dims"][
+                    "self_reported_ethnicity_terms"
+                ]
 
                 no_dev_stage_filter_response = self.app.post("/wmg/v1/query", json=filter_0_no_dev_stage_request)
                 dev_stage_terms_if_no_dev_stage_filters = json.loads(no_dev_stage_filter_response.data)["filter_dims"][
@@ -663,13 +668,13 @@ class WmgApiV1Tests(unittest.TestCase):
                 ]
 
                 no_ethnicity_filter_response = self.app.post("/wmg/v1/query", json=filter_0_no_ethnicity_request)
-                ethnictiy_terms_if_no_dev_stage_filters = json.loads(no_ethnicity_filter_response.data)["filter_dims"][
-                    "ethnicity_terms"
-                ]
+                self_reported_ethnicity_terms_if_no_dev_stage_filters = json.loads(no_ethnicity_filter_response.data)[
+                    "filter_dims"
+                ]["self_reported_ethnicity_terms"]
 
                 # filter options for dev_stage
                 self.assertEqual(dev_stage_terms, dev_stage_terms_if_no_dev_stage_filters)
-                self.assertEqual(ethnicity_terms, ethnictiy_terms_if_no_dev_stage_filters)
+                self.assertEqual(self_reported_ethnicity_terms, self_reported_ethnicity_terms_if_no_dev_stage_filters)
 
             with self.subTest(
                 "when a secondary dimension has criteria, the remaining filter values for other "
@@ -683,112 +688,132 @@ class WmgApiV1Tests(unittest.TestCase):
 
                 # filtering for ethnicity_0 should return all dev stages
                 # not filtering for dev should return all ethnicities
-                ethnicity_0_filter = dict(
+                self_reported_ethnicity_0_filter = dict(
                     # these don't matter for the expected result
                     gene_ontology_term_ids=["gene_ontology_term_id_0"],
                     organism_ontology_term_id="organism_ontology_term_id_0",
                     tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
                     # these matter for the expected result
                     development_stage_ontology_term_ids=[],
-                    ethnicity_ontology_term_ids=["ethnicity_ontology_term_id_0"],
+                    self_reported_ethnicity_ontology_term_ids=["self_reported_ethnicity_ontology_term_id_0"],
                 )
                 all_development_stage_terms = [
                     {"development_stage_ontology_term_id_0": "development_stage_ontology_term_id_0_label"},
                     {"development_stage_ontology_term_id_1": "development_stage_ontology_term_id_1_label"},
                     {"development_stage_ontology_term_id_2": "development_stage_ontology_term_id_2_label"},
                 ]
-                all_ethnicity_terms = [
-                    {"ethnicity_ontology_term_id_0": "ethnicity_ontology_term_id_0_label"},
-                    {"ethnicity_ontology_term_id_1": "ethnicity_ontology_term_id_1_label"},
-                    {"ethnicity_ontology_term_id_2": "ethnicity_ontology_term_id_2_label"},
+                all_self_reported_ethnicity_terms = [
+                    {"self_reported_ethnicity_ontology_term_id_0": "self_reported_ethnicity_ontology_term_id_0_label"},
+                    {"self_reported_ethnicity_ontology_term_id_1": "self_reported_ethnicity_ontology_term_id_1_label"},
+                    {"self_reported_ethnicity_ontology_term_id_2": "self_reported_ethnicity_ontology_term_id_2_label"},
                 ]
-                ethnicity_0_request = dict(filter=ethnicity_0_filter, include_filter_dims=True)
-                response = self.app.post("/wmg/v1/query", json=ethnicity_0_request)
+                self_reported_ethnicity_0_request = dict(
+                    filter=self_reported_ethnicity_0_filter, include_filter_dims=True
+                )
+                response = self.app.post("/wmg/v1/query", json=self_reported_ethnicity_0_request)
                 dev_stage_terms = json.loads(response.data)["filter_dims"]["development_stage_terms"]
-                ethnicity_terms = json.loads(response.data)["filter_dims"]["ethnicity_terms"]
+                self_reported_ethnicity_terms = json.loads(response.data)["filter_dims"][
+                    "self_reported_ethnicity_terms"
+                ]
                 self.assertEqual(all_development_stage_terms, dev_stage_terms)
-                self.assertEqual(all_ethnicity_terms, ethnicity_terms)
+                self.assertEqual(all_self_reported_ethnicity_terms, self_reported_ethnicity_terms)
 
                 # filtering for ethnicity_1 should return dev_stage_0 (even when filtering for dev_stage_1 or 2)
-                ethnicity_1_filter = dict(
+                self_reported_ethnicity_1_filter = dict(
                     # these don't matter for the expected result
                     gene_ontology_term_ids=["gene_ontology_term_id_0"],
                     organism_ontology_term_id="organism_ontology_term_id_0",
                     tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
                     # these matter for the expected result
                     development_stage_ontology_term_ids=[],
-                    ethnicity_ontology_term_ids=["ethnicity_ontology_term_id_1"],
+                    self_reported_ethnicity_ontology_term_ids=["self_reported_ethnicity_ontology_term_id_1"],
                 )
                 # since secondary filters should not affect term options for their own category, filtering (or not
                 # filtering) for dev stage 1 should not affect the terms returned
                 expected_development_stage_terms = [
                     {"development_stage_ontology_term_id_0": "development_stage_ontology_term_id_0_label"},
                 ]
-                expected_ethnicity_term = [{"ethnicity_ontology_term_id_0": "ethnicity_ontology_term_id_0_label"}]
-                ethnicity_1_request = dict(filter=ethnicity_1_filter, include_filter_dims=True)
-                response = self.app.post("/wmg/v1/query", json=ethnicity_1_request)
+                expected_self_reported_ethnicity_term = [
+                    {"self_reported_ethnicity_ontology_term_id_0": "self_reported_ethnicity_ontology_term_id_0_label"}
+                ]
+                self_reported_ethnicity_1_request = dict(
+                    filter=self_reported_ethnicity_1_filter, include_filter_dims=True
+                )
+                response = self.app.post("/wmg/v1/query", json=self_reported_ethnicity_1_request)
                 dev_stage_terms_no_dev_filter = json.loads(response.data)["filter_dims"]["development_stage_terms"]
-                ethnicity_terms_no_dev_filter = json.loads(response.data)["filter_dims"]["ethnicity_terms"]
+                self_reported_ethnicity_terms_no_dev_filter = json.loads(response.data)["filter_dims"][
+                    "self_reported_ethnicity_terms"
+                ]
                 self.assertEqual(expected_development_stage_terms, dev_stage_terms_no_dev_filter)
-                self.assertEqual(all_ethnicity_terms, ethnicity_terms_no_dev_filter)
+                self.assertEqual(all_self_reported_ethnicity_terms, self_reported_ethnicity_terms_no_dev_filter)
 
-                ethnicity_1_dev_1_filter = dict(
+                self_reported_ethnicity_1_dev_1_filter = dict(
                     # these don't matter for the expected result
                     gene_ontology_term_ids=["gene_ontology_term_id_0"],
                     organism_ontology_term_id="organism_ontology_term_id_0",
                     tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
                     # these matter for the expected result
                     development_stage_ontology_term_ids=["development_stage_ontology_term_id_1"],
-                    ethnicity_ontology_term_ids=["ethnicity_ontology_term_id_1"],
+                    self_reported_ethnicity_ontology_term_ids=["self_reported_ethnicity_ontology_term_id_1"],
                 )
-                ethnicity_1_dev_1_request = dict(filter=ethnicity_1_dev_1_filter, include_filter_dims=True)
+                self_reported_ethnicity_1_dev_1_request = dict(
+                    filter=self_reported_ethnicity_1_dev_1_filter, include_filter_dims=True
+                )
 
-                response = self.app.post("/wmg/v1/query", json=ethnicity_1_dev_1_request)
+                response = self.app.post("/wmg/v1/query", json=self_reported_ethnicity_1_dev_1_request)
                 dev_stage_terms_dev_filter = json.loads(response.data)["filter_dims"]["development_stage_terms"]
-                ethnicity_terms_dev_filter = json.loads(response.data)["filter_dims"]["ethnicity_terms"]
+                self_reported_ethnicity_terms_dev_filter = json.loads(response.data)["filter_dims"][
+                    "self_reported_ethnicity_terms"
+                ]
 
                 self.assertEqual(expected_development_stage_terms, dev_stage_terms_dev_filter)
                 self.assertEqual(dev_stage_terms_no_dev_filter, dev_stage_terms_dev_filter)
-                self.assertEqual(expected_ethnicity_term, ethnicity_terms_dev_filter)
-                self.assertNotEqual(ethnicity_terms_no_dev_filter, ethnicity_terms_dev_filter)
+                self.assertEqual(expected_self_reported_ethnicity_term, self_reported_ethnicity_terms_dev_filter)
+                self.assertNotEqual(
+                    self_reported_ethnicity_terms_no_dev_filter, self_reported_ethnicity_terms_dev_filter
+                )
 
                 # filtering for ethnicity_2 should return dev_stage_0 (even when filtering for dev_stage_1 or 2)
-                ethnicity_2_filter = dict(
+                self_reported_ethnicity_2_filter = dict(
                     # these don't matter for the expected result
                     gene_ontology_term_ids=["gene_ontology_term_id_0"],
                     organism_ontology_term_id="organism_ontology_term_id_0",
                     tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
                     # these matter for the expected result
                     development_stage_ontology_term_ids=[],
-                    ethnicity_ontology_term_ids=["ethnicity_ontology_term_id_2"],
+                    self_reported_ethnicity_ontology_term_ids=["self_reported_ethnicity_ontology_term_id_2"],
                 )
-                ethnicity_2_dev_2_filter = dict(
+                self_reported_ethnicity_2_dev_2_filter = dict(
                     # these don't matter for the expected result
                     gene_ontology_term_ids=["gene_ontology_term_id_0"],
                     organism_ontology_term_id="organism_ontology_term_id_0",
                     tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
                     # these matter for the expected result
                     development_stage_ontology_term_ids=["development_stage_ontology_term_id_2"],
-                    ethnicity_ontology_term_ids=["ethnicity_ontology_term_id_2"],
+                    self_reported_ethnicity_ontology_term_ids=["self_reported_ethnicity_ontology_term_id_2"],
                 )
-                ethnicity_2_request = dict(filter=ethnicity_2_filter, include_filter_dims=True)
-                eth_2_dev_2_request = dict(filter=ethnicity_2_dev_2_filter, include_filter_dims=True)
-                response = self.app.post("/wmg/v1/query", json=ethnicity_2_request)
+                self_reported_ethnicity_2_request = dict(
+                    filter=self_reported_ethnicity_2_filter, include_filter_dims=True
+                )
+                eth_2_dev_2_request = dict(filter=self_reported_ethnicity_2_dev_2_filter, include_filter_dims=True)
+                response = self.app.post("/wmg/v1/query", json=self_reported_ethnicity_2_request)
                 dev_stage_terms_eth_2_no_dev_filter = json.loads(response.data)["filter_dims"][
                     "development_stage_terms"
                 ]
-                ethnicity_terms_eth_2_no_dev_filter = json.loads(response.data)["filter_dims"]["ethnicity_terms"]
+                self_reported_ethnicity_terms_eth_2_no_dev_filter = json.loads(response.data)["filter_dims"][
+                    "self_reported_ethnicity_terms"
+                ]
                 self.assertEqual(expected_development_stage_terms, dev_stage_terms_eth_2_no_dev_filter)
-                self.assertEqual(all_ethnicity_terms, ethnicity_terms_eth_2_no_dev_filter)
+                self.assertEqual(all_self_reported_ethnicity_terms, self_reported_ethnicity_terms_eth_2_no_dev_filter)
 
                 response = self.app.post("/wmg/v1/query", json=eth_2_dev_2_request)
                 dev_stage_terms_eth_2_dev_2 = json.loads(response.data)["filter_dims"]["development_stage_terms"]
-                eth_stage_terms_eth_2_dev_2 = json.loads(response.data)["filter_dims"]["ethnicity_terms"]
+                eth_stage_terms_eth_2_dev_2 = json.loads(response.data)["filter_dims"]["self_reported_ethnicity_terms"]
 
                 self.assertEqual(expected_development_stage_terms, dev_stage_terms_eth_2_dev_2)
-                self.assertEqual(expected_ethnicity_term, eth_stage_terms_eth_2_dev_2)
+                self.assertEqual(expected_self_reported_ethnicity_term, eth_stage_terms_eth_2_dev_2)
                 self.assertEqual(dev_stage_terms_eth_2_dev_2, dev_stage_terms_eth_2_no_dev_filter)
-                self.assertNotEqual(eth_stage_terms_eth_2_dev_2, ethnicity_terms_eth_2_no_dev_filter)
+                self.assertNotEqual(eth_stage_terms_eth_2_dev_2, self_reported_ethnicity_terms_eth_2_no_dev_filter)
 
             with self.subTest("Additional queries are not performed when the secondary dimensions are not set"):
                 with patch("backend.wmg.api.v1.find_dim_option_values") as mock_dims:
@@ -801,7 +826,7 @@ class WmgApiV1Tests(unittest.TestCase):
                         disease_ontology_term_ids=["disease_ontology_term_id_0"],
                         sex_ontology_term_ids=["sex_ontology_term_id_0"],
                         development_stage_ontology_term_ids=["development_stage_ontology_term_id_0"],
-                        ethnicity_ontology_term_ids=["ethnicity_ontology_term_id_0"],
+                        self_reported_ethnicity_ontology_term_ids=["self_reported_ethnicity_ontology_term_id_0"],
                     )
 
                     full_filters_request = dict(
@@ -820,7 +845,7 @@ class WmgApiV1Tests(unittest.TestCase):
                         disease_ontology_term_ids=[],
                         sex_ontology_term_ids=[],
                         development_stage_ontology_term_ids=[],
-                        ethnicity_ontology_term_ids=[],
+                        self_reported_ethnicity_ontology_term_ids=[],
                     )
 
                     no_secondary_filters_request = dict(
@@ -840,7 +865,7 @@ class WmgApiV1Tests(unittest.TestCase):
                         disease_ontology_term_ids=[],
                         sex_ontology_term_ids=[],
                         development_stage_ontology_term_ids=["development_stage_ontology_term_id_0"],
-                        ethnicity_ontology_term_ids=["ethnicity_ontology_term_id_0"],
+                        self_reported_ethnicity_ontology_term_ids=["self_reported_ethnicity_ontology_term_id_0"],
                     )
                     two_secondary_filters_request = dict(
                         filter=two_secondary_filters,

@@ -1,5 +1,12 @@
+import { DrawerSize } from "@blueprintjs/core";
 import Head from "next/head";
-import { useCallback, useContext, useEffect, useMemo, useState } from "react";
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { EMPTY_ARRAY, EMPTY_OBJECT } from "src/common/constants/utils";
 import {
   CellTypeByTissueName,
@@ -8,7 +15,6 @@ import {
   useGeneExpressionSummariesByTissueName,
 } from "src/common/queries/wheresMyGene";
 import SideBar from "src/components/common/SideBar";
-import { Position } from "src/components/common/SideBar/style";
 import { View } from "../../../globalStyle";
 import { DispatchContext, StateContext } from "../../common/store";
 import {
@@ -20,13 +26,16 @@ import { SideBarPositioner, SideBarWrapper, Top, Wrapper } from "../../style";
 import Beta from "../Beta";
 import Filters from "../Filters";
 import GeneSearchBar from "../GeneSearchBar";
+import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../GeneSearchBar/components/SaveImage";
 import GetStarted from "../GetStarted";
 import HeatMap from "../HeatMap";
 import InfoPanel from "../InfoPanel";
+import ColorScale from "../InfoPanel/components/ColorScale";
+import Legend from "../InfoPanel/components/Legend";
 import Loader from "../Loader";
-import { SideBarLabel } from "./style";
+import { SideBarLabel, StyledSidebarDrawer } from "./style";
 
-const INFO_PANEL_WIDTH_PX = 320;
+export const INFO_PANEL_WIDTH_PX = 320;
 
 export default function WheresMyGene(): JSX.Element {
   const state = useContext(StateContext);
@@ -226,18 +235,19 @@ export default function WheresMyGene(): JSX.Element {
     return hasSelectedTissues || hasSelectedGenes;
   }, [hasSelectedTissues, hasSelectedGenes]);
 
-  const shouldEnableSidebars = useMemo(() => {
-    return hasSelectedTissues && hasSelectedGenes;
-  }, [hasSelectedTissues, hasSelectedGenes]);
-
   const handleIsScaledChange = useCallback(() => {
     setIsScaled((prevIsScaled) => !prevIsScaled);
   }, [setIsScaled]);
 
+  const [isRightSidebarOpen, setRightSidebarOpen] = useState(false);
+  const handleRightSidebarButtonClick = useCallback(() => {
+    setRightSidebarOpen(!isRightSidebarOpen);
+  }, [isRightSidebarOpen]);
+
   return (
     <>
       <Head>
-        <title>CELL&times;GENE | scExpression</title>
+        <title>CELL&times;GENE | Gene Expression</title>
       </Head>
 
       <SideBar
@@ -245,37 +255,49 @@ export default function WheresMyGene(): JSX.Element {
         SideBarWrapperComponent={SideBarWrapper}
         SideBarPositionerComponent={SideBarPositioner}
         testId="filters-panel"
-        disabled={!shouldEnableSidebars}
-        forceToggle={shouldEnableSidebars}
+        disabled={false}
+        forceToggle={true}
         wmgSideBar
       >
-        <Filters />
+        <Filters isLoading={isLoading} />
+
+        <ColorScale handleIsScaledChange={handleIsScaledChange} />
       </SideBar>
 
-      <SideBar
-        width={INFO_PANEL_WIDTH_PX}
-        label={<SideBarLabel>Info</SideBarLabel>}
-        position={Position.RIGHT}
-        SideBarWrapperComponent={SideBarWrapper}
-        SideBarPositionerComponent={SideBarPositioner}
-        disabled={!shouldEnableSidebars}
-        forceToggle={shouldEnableSidebars}
-        wmgSideBar
-      >
-        <InfoPanel
-          isScaled={isScaled}
-          handleIsScaledChange={handleIsScaledChange}
-        />
-      </SideBar>
-
-      <View hideOverflow>
+      <View id="view" overflow="hidden">
         <Wrapper>
           {isLoading && !shouldShowHeatMap && <Loader />}
 
           <Top>
-            <GeneSearchBar />
-            <Beta />
+            <GeneSearchBar className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME} />
+            <Legend
+              selectedCellTypes={selectedCellTypes}
+              selectedGenes={selectedGenes}
+              selectedTissues={selectedTissues}
+              isScaled={isScaled}
+              handleRightSidebarButtonClick={handleRightSidebarButtonClick}
+            />
           </Top>
+
+          <Beta className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME} />
+
+          <GetStarted
+            tissueSelected={hasSelectedTissues}
+            isLoading={isLoading}
+            geneSelected={hasSelectedGenes}
+          />
+
+          <StyledSidebarDrawer
+            position="right"
+            isOpen={isRightSidebarOpen}
+            title="Source Data"
+            canEscapeKeyClose={true}
+            canOutsideClickClose={true}
+            onClose={handleRightSidebarButtonClick}
+            size={DrawerSize.SMALL}
+          >
+            <InfoPanel />
+          </StyledSidebarDrawer>
 
           {shouldShowHeatMap ? (
             <HeatMap
@@ -295,7 +317,7 @@ export default function WheresMyGene(): JSX.Element {
               scaledMeanExpressionMin={scaledMeanExpressionMin}
             />
           ) : (
-            <GetStarted />
+            ""
           )}
         </Wrapper>
       </View>

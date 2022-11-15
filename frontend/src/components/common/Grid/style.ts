@@ -1,5 +1,5 @@
+import styled from "@emotion/styled";
 import { GRAY, PT_TEXT_COLOR } from "src/components/common/theme";
-import styled from "styled-components";
 
 export const Grid = styled.table`
   display: grid;
@@ -14,6 +14,7 @@ export const Grid = styled.table`
   }
 
   /* row lines; span across grid gap */
+
   tr::after {
     box-shadow: inset 0px -1px 0px rgba(16, 22, 26, 0.15);
     content: "";
@@ -23,12 +24,14 @@ export const Grid = styled.table`
   }
 
   /* basic head and cell styles */
+
   th,
   td {
     border: none;
+    font-feature-settings: normal; /* required; overrides layout.css specification */
     font-size: 14px;
     letter-spacing: -0.1px;
-    line-height: 18px;
+    line-height: 20px;
   }
 
   th {

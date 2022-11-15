@@ -1,13 +1,16 @@
 import { useRouter } from "next/router";
-import { FC } from "react";
+import { ReactNode } from "react";
 import { ROUTES } from "src/common/constants/routes";
-import Footer from "../Footer";
 import Header from "../Header";
 import LandingFooter from "../LandingFooter";
 import LandingHeader from "../LandingHeader";
 import { Wrapper } from "./style";
 
-const Layout: FC = ({ children }) => {
+interface Props {
+  children: ReactNode;
+}
+
+const Layout = ({ children }: Props) => {
   const { pathname } = useRouter();
 
   if (pathname === ROUTES.HOMEPAGE) {
@@ -23,7 +26,7 @@ const Layout: FC = ({ children }) => {
       <Wrapper>
         <Header />
         {children}
-        <Footer />
+        {/* <Footer /> */}
       </Wrapper>
     );
   }

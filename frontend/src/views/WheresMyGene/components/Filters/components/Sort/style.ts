@@ -2,7 +2,7 @@ import styled from "@emotion/styled";
 import { fontBodyS, fontBodyXxxs, getColors, getFontWeights } from "czifui";
 
 export const Label = styled("div")`
-  ${fontBodyS};
+  ${fontBodyS}
 
   ${(props) => {
     const fontWeights = getFontWeights(props);
@@ -15,7 +15,7 @@ export const Label = styled("div")`
 `;
 
 export const FilterLabel = styled("label")`
-  ${fontBodyXxxs};
+  ${fontBodyXxxs}
 
   ${(props) => {
     const colors = getColors(props);
@@ -23,7 +23,7 @@ export const FilterLabel = styled("label")`
 
     return `
       color: ${colors?.gray["500"]};
-      font-weight: ${fontWeights?.semibold};
+      font-weight: ${fontWeights?.medium};
     `;
   }}
 `;
