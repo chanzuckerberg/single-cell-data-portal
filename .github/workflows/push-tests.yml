@@ -80,12 +80,12 @@ jobs:
         uses: tj-actions/changed-files@v23.1
         with:
           files: |
-            src/**
-            tests/**
-            playwright*
-            package*
-            next*
-            ../backend/**
+            frontend/src/**
+            frontend/tests/**
+            frontend/playwright*
+            frontend/package*
+            frontend/next*
+            backend/**
       - name: Install dependencies
         if: steps.changed-files.outputs.any_modified == 'true'
         run: |
