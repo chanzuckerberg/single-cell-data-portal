@@ -2,6 +2,7 @@ from logging import Logger
 from typing import Callable, List, Literal, Optional
 from backend.corpora.common.utils.corpora_constants import CorporaConstants
 from backend.layers.business.business import BusinessLogic
+from backend.layers.processing.exceptions import ConversionFailed
 from backend.layers.thirdparty.uri_provider import UriProvider
 from entities import DatasetConversionStatus, DatasetMetadata, DatasetProcessingStatus, DatasetStatusGeneric, DatasetStatusKey, DatasetValidationStatus, DatasetVersionId, OntologyTermId
 
@@ -65,10 +66,7 @@ class ProcessingLogic: # TODO: ProcessingLogicBase
             self.business_logic.add_dataset_artifact(dataset_id, artifact_type, s3_uri)
             self.update_processing_status(dataset_id, processing_status_key, DatasetConversionStatus.UPLOADED)
         except Exception as e:
-            # TODO: exception handling
-            logger.error(e)
-            e.args = {processing_status_type: ConversionStatus.FAILED}
-            raise e
+            raise ConversionFailed(processing_status_key)
 
 
     def convert_file(
@@ -87,9 +85,7 @@ class ProcessingLogic: # TODO: ProcessingLogicBase
             self.update_processing_status(dataset_id, processing_status_key, DatasetConversionStatus.CONVERTED)
             self.logger.info(f"Finished converting {converter} in {datetime.now()- start}")
         except Exception as e:
-            self.logger.exception(f"{error_message}: {e}")
-            status = {processing_status_type: ConversionStatus.FAILED} # TODO: why this can't be done here?
-            raise ConversionFailed(status)
+            raise ConversionFailed(processing_status_key)
         return file_dir
 
     def get_bucket_prefix(self, identifier) -> str:

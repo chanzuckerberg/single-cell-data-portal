@@ -2,6 +2,7 @@ from logging import Logger
 from typing import List, Literal, Optional, Tuple
 from backend.corpora.common.utils.corpora_constants import CorporaConstants
 from backend.layers.business.business import BusinessLogic
+from backend.layers.processing.exceptions import ValidationFailed
 from backend.layers.processing.prcess_logic import ProcessingLogic
 from entities import DatasetConversionStatus, DatasetMetadata, DatasetProcessingStatus, DatasetStatusGeneric, DatasetStatusKey, DatasetUploadStatus, DatasetValidationStatus, DatasetVersionId, OntologyTermId
 
@@ -25,20 +26,10 @@ class ProcessDownloadValidate(ProcessingLogic):
         try:
             is_valid, errors, can_convert_to_seurat = validate.validate(local_filename, output_filename)
         except Exception as e:
-            self.logger.error(f"Validation failed with exception: {e}!")
-            status = dict(
-                validation_status=ValidationStatus.INVALID,
-                validation_message=str(e),
-            )
-            raise ValidationFailed(status) # TODO: why raise
+            raise ValidationFailed([str(e)])
 
         if not is_valid:
-            self.logger.error(f"Validation failed with {len(errors)} errors!")
-            status = dict(
-                validation_status=ValidationStatus.INVALID,
-                validation_message=errors,
-            )
-            raise ValidationFailed(status)
+            raise ValidationFailed(errors)
         else:
             self.logger.info("Validation complete")
             # TODO: optionally, these could be batched into one

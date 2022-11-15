@@ -1,81 +1,84 @@
-import logger 
+from backend.layers.processing.exceptions import ConversionFailed, ProcessingCanceled, ProcessingFailed, ValidationFailed
+from backend.layers.processing.prcess_logic import ProcessingLogic
+import os
+from backend.layers.processing.process_cxg import ProcessCxg
 
-def log_batch_environment():
-    batch_environment_variables = [
-        "AWS_BATCH_CE_NAME",
-        "AWS_BATCH_JOB_ATTEMPT",
-        "AWS_BATCH_JOB_ID",
-        "STEP_NAME",
-        "DROPBOX_URL",
-        "ARTIFACT_BUCKET",
-        "CELLXGENE_BUCKET",
-        "DATASET_ID",
-        "DEPLOYMENT_STAGE",
-        "MAX_ATTEMPTS",
-    ]
-    env_vars = dict()
-    for var in batch_environment_variables:
-        env_vars[var] = os.getenv(var)
-    logger.info(f"Batch Job Info: {env_vars}")
+from backend.layers.processing.process_download_validate import ProcessDownloadValidate
+from backend.layers.processing.process_seurat import ProcessSeurat
+from entities import DatasetConversionStatus, DatasetProcessingStatus, DatasetStatusKey, DatasetUploadStatus, DatasetValidationStatus, DatasetVersionId
 
 
-def main():
-    log_batch_environment()
-    dataset_id = os.environ["DATASET_ID"]
-    step_name = os.environ["STEP_NAME"]
-    return_value = 0
-    logger.info(f"Processing dataset {dataset_id}")
-    try:
-        if step_name == "download-validate":
-            from backend.corpora.dataset_processing.process_download_validate import (
-                process,
-            )
+class ProcessMain(ProcessingLogic):
 
-            process(dataset_id, os.environ["DROPBOX_URL"], os.environ["ARTIFACT_BUCKET"])
-        elif step_name == "cxg":
-            from backend.corpora.dataset_processing.process_cxg import process
+    process_download_validate: ProcessDownloadValidate
+    process_seurat: ProcessSeurat
+    process_cxg: ProcessCxg
 
-            process(
-                dataset_id,
-                os.environ["ARTIFACT_BUCKET"],
-                os.environ["CELLXGENE_BUCKET"],
-            )
-        elif step_name == "seurat":
-            from backend.corpora.dataset_processing.process_seurat import process
+    def log_batch_environment(self):
+        batch_environment_variables = [
+            "AWS_BATCH_CE_NAME",
+            "AWS_BATCH_JOB_ATTEMPT",
+            "AWS_BATCH_JOB_ID",
+            "STEP_NAME",
+            "DROPBOX_URL",
+            "ARTIFACT_BUCKET",
+            "CELLXGENE_BUCKET",
+            "DATASET_ID",
+            "DEPLOYMENT_STAGE",
+            "MAX_ATTEMPTS",
+        ]
+        env_vars = dict()
+        for var in batch_environment_variables:
+            env_vars[var] = os.getenv(var)
+        self.logger.info(f"Batch Job Info: {env_vars}")
 
-            process(dataset_id, os.environ["ARTIFACT_BUCKET"])
-        elif step_name == "cxg_remaster":
-            try:
-                from backend.corpora.dataset_processing.remaster_cxg import process
 
-                process(dataset_id, os.environ["CELLXGENE_BUCKET"], dry_run=False)
-            except Exception as e:
-                print(f"Dataset {dataset_id} failed to remaster: {e}")
-        else:
-            logger.error(f"Step function configuration error: Unexpected STEP_NAME '{step_name}'")
+    def process(self, dataset_id: DatasetVersionId, step_name: str, dropbox_uri: str, artifact_bucket: str, cxg_bucket: str):
+        self.log_batch_environment()
+        self.logger.info(f"Processing dataset {dataset_id}")
+        try:
+            if step_name == "download-validate":
+                self.process_download_validate.process(dataset_id, dropbox_uri, artifact_bucket)
+            elif step_name == "cxg":
+                self.process_cxg.process(dataset_id, artifact_bucket, cxg_bucket)
+            elif step_name == "seurat":
+                self.process_seurat.process(dataset_id, artifact_bucket)
+            elif step_name == "cxg_remaster":
+                raise NotImplementedError("cxg remasters are not supported anymore")
+            else:
+                self.logger.error(f"Step function configuration error: Unexpected STEP_NAME '{step_name}'")
 
-    except ProcessingCancelled:
-        cancel_dataset(dataset_id)
-    except (ValidationFailed, ProcessingFailed, ConversionFailed) as e:
-        (status,) = e.args
-        update_db(dataset_id, processing_status=status)
-        logger.exception("An Error occurred while processing.")
-        return_value = 1
-    except Exception as e:
-        logger.exception(f"An unexpected error occurred while processing the data set: {e}")
-        if step_name == "download-validate":
-            update_db(
-                dataset_id,
-                processing_status={"upload_status": UploadStatus.FAILED, "upload_message": str(e)},
-            )
-        elif step_name == "seurat":
-            update_db(dataset_id, processing_status={"rds_status": ConversionStatus.FAILED})
-        elif step_name == "cxg":
-            update_db(dataset_id, processing_status={"cxg_status": ConversionStatus.FAILED})
-        return_value = 1
+        except ProcessingCanceled:
+            pass # TODO: what's the effect of canceling a dataset now?
+        except ValidationFailed:
+            self.update_processing_status(dataset_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.INVALID)
+            return False
+        except ProcessingFailed:
+            self.update_processing_status(dataset_id, DatasetStatusKey.PROCESSING, DatasetProcessingStatus.FAILURE)
+            return False
+        except ConversionFailed as e:
+            self.update_processing_status(dataset_id, e.failed_status, DatasetConversionStatus.FAILED)
+            return False
+        except Exception as e:
+            self.logger.exception(f"An unexpected error occurred while processing the data set: {e}")
+            if step_name == "download-validate":
+                self.update_processing_status(dataset_id, DatasetStatusKey.UPLOAD, DatasetUploadStatus.FAILED)
+            elif step_name == "seurat":
+                self.update_processing_status(dataset_id, DatasetStatusKey.RDS, DatasetConversionStatus.FAILED)
+            elif step_name == "cxg":
+                self.update_processing_status(dataset_id, DatasetStatusKey.CXG, DatasetConversionStatus.FAILED)
+            return False
 
-    return return_value
+        return True
+
+    def main(self):
+        pass
+        # TODO: do stuff
+        # dataset_id = os.environ["DATASET_ID"]
+        # step_name = os.environ["STEP_NAME"]
+        # os.environ["DROPBOX_URL"]
+        # os.environ["ARTIFACT_BUCKET"],
+        # os.environ["CELLXGENE_BUCKET"],
 
 if __name__ == "__main__":
-    rv = main()
-    sys.exit(rv)
+    pass # TODO: create all of the above
