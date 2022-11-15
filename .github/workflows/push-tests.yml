@@ -41,6 +41,7 @@ jobs:
           cd frontend
           npm install prettier
           npm install typescript
+          cp src/configs/local.js src/configs/configs.js
           make lint
       - uses: 8398a7/action-slack@v3
         with:
