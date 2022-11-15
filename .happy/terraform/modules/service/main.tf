@@ -53,10 +53,6 @@ resource "aws_ecs_task_definition" "task_definition" {
         "value": "${data.aws_secretsmanager_secret_version.current.secret_string}"
       },
       {
-        "name": "ECS_FARGATE",
-        "value": "true"
-      },
-      {
         "name": "DD_SITE",
         "value": "datadoghq.com"
       },
@@ -69,44 +65,32 @@ resource "aws_ecs_task_definition" "task_definition" {
         "value": "${var.deployment_stage}"
       },
       {
-        "name": "DD_VERSION",
-        "value": "${var.image}"
+        "name": "ECS_FARGATE",
+        "value": "true"
       },
       {
         "name": "DD_APM_ENABLED",
         "value": "true"
       },
       {
-        "name"  : "DD_DOGSTATSD_NON_LOCAL_TRAFFIC",
-        "value" : "true"
+        "name": "DD_DOGSTATSD_NON_LOCAL_TRAFFIC",
+        "value": "true"
       },
       {
-        "name"  : "DD_APM_NON_LOCAL_TRAFFIC",
-        "value" : "true"
+        "name": "DD_APM_NON_LOCAL_TRAFFIC",
+        "value": "true"
       },
       {
-        "name"  : "DD_PROCESS_AGENT_ENABLED",
-        "value" : "true"
+        "name": "DD_PROCESS_AGENT_ENABLED",
+        "value": "true"
       },
       {
-        "name"  : "DD_TRACE_ANALYTICS_ENABLED",
-        "value" : "true"
+        "name": "DD_RUNTIME_METRICS_ENABLED",
+        "value": "true"
       },
       {
-        "name"  : "DD_LOGS_INJECTION",
-        "value" : "true"
-      },
-      {
-        "name" : "DD_DOGSTATSD_PORT",
-        "value" : "8125"
-      },
-      {
-        "name" : "DD_SYSTEM_PROBE_ENABLED",
-        "value" : "true"
-      },
-      {
-        "name" : "DD_LOGS_CONFIG_CONTAINER_COLLECT_ALL",
-        "value" : "true"
+        "name": "DD_SYSTEM_PROBE_ENABLED",
+        "value": "false"
       }
     ],
     "port_mappings" : [
