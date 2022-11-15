@@ -83,6 +83,8 @@ jobs:
             src/**
             tests/**
             playwright*
+            package*
+            next*
             ../backend/**
       - name: Install dependencies
         if: steps.changed-files.outputs.any_modified == 'true'
