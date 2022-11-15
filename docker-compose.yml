@@ -47,6 +47,7 @@ services:
     restart: always
     depends_on:
       - backend
+      - reverse_proxy
     ports:
       - "3000:3000"
     command: ["./container_init.sh"]
@@ -302,6 +303,17 @@ services:
       corporanet:
         aliases:
           - oidc.corporanet.local
+  reverse_proxy:
+    container_name: reverse_proxy
+    hostname: reverse_proxy
+    image: nginx
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - ./nginx/config:/etc/nginx
+      - ./oauth/pkcs12:/etc/ssl/certs:ro
+      - ./oauth/pkcs12:/etc/ssl/private:ro
 networks:
   corporanet:
 volumes:
