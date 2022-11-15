@@ -6,6 +6,9 @@ from urllib.parse import urlparse
 import connexion
 import gevent.monkey
 
+from ddtrace import tracer
+from ddtrace import patch_all
+
 from connexion import FlaskApi, ProblemException, problem
 from flask import g, request, Response
 from flask_cors import CORS
@@ -21,10 +24,15 @@ APP_NAME = "{}-{}".format(os.environ["APP_NAME"], DEPLOYMENT_STAGE)
 
 
 configure_logging(APP_NAME)
+gevent.monkey.patch_all()
+tracer.configure(
+    hostname=os.environ['DD_AGENT_HOST'],
+    port=os.environ['DD_TRACE_AGENT_PORT'],
+)
+patch_all()
 
 
 def create_flask_app():
-    gevent.monkey.patch_all()
     connexion_app = connexion.FlaskApp(APP_NAME, specification_dir="backend")
 
     # From https://github.com/zalando/connexion/issues/346
@@ -61,7 +69,7 @@ def create_flask_app():
 
     return connexion_app.app
 
-
+@tracer.wrap()
 def configure_flask_app(flask_app):
     flask_app.debug = False if DEPLOYMENT_STAGE == "prod" else True
 
@@ -106,6 +114,7 @@ app = configure_flask_app(create_flask_app())
 
 
 @app.route("/")
+@tracer.wrap()
 def apis_landing_page() -> str:
     """
     Render a page that displays links to all APIs
@@ -128,6 +137,7 @@ if DEPLOYMENT_STAGE == "test":
 
 
 @app.before_request
+@tracer.wrap()
 def before_request():
     g.start = time.time()
     g.request_id = generate_request_id()
@@ -144,6 +154,7 @@ def before_request():
 
 
 @app.after_request
+@tracer.wrap()
 def after_request(response: Response):
     app.logger.info(
         dict(
@@ -160,11 +171,13 @@ def after_request(response: Response):
 
 
 @app.teardown_appcontext
+@tracer.wrap()
 def close_db(e=None):
     g.pop("db_session", None)
 
 
 @app.errorhandler(ProblemException)
+@tracer.wrap()
 def handle_corpora_error(exception):
     if exception.status >= 500:
         app.logger.error("InternalServerError", exc_info=exception)
@@ -182,6 +195,7 @@ def handle_corpora_error(exception):
 
 
 @app.errorhandler(Exception)
+@tracer.wrap()
 def handle_internal_server_error(exception):
     app.logger.exception("InternalServerError", exc_info=exception)
     return FlaskApi.get_response(problem(500, "Internal Server Error", "Internal Server Error"))

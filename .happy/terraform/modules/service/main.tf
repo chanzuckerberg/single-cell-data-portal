@@ -159,7 +159,16 @@ resource "aws_ecs_task_definition" "task_definition" {
       {
         "name": "AWS_DEFAULT_REGION",
         "value": "${data.aws_region.current.name}"
+      },
+      {
+        "name": "DD_AGENT_HOST",
+        "value": "localhost"
+      },
+      {
+        "name": "DD_TRACE_AGENT_PORT",
+        "value": "8126"
       }
+
     ],
     "portMappings": [
       {
