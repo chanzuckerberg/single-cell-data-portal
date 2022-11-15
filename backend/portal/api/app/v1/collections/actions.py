@@ -73,4 +73,5 @@ def post(body: dict, user: str):
         if doi_url := portal_get_normalized_doi_url(doi_node, errors):
             doi_node["link_url"] = doi_url
     collection_id = create_collection_common(body, user, doi_url, errors)
+    # TODO: add comment to test gha workflow
     return make_response(jsonify({"collection_id": collection_id}), 201)
