@@ -4,6 +4,7 @@ import time
 from urllib.parse import urlparse
 
 import connexion
+import gevent.monkey
 
 from connexion import FlaskApi, ProblemException, problem
 from flask import g, request, Response
@@ -23,6 +24,7 @@ configure_logging(APP_NAME)
 
 
 def create_flask_app():
+    gevent.monkey.patch_all()
     connexion_app = connexion.FlaskApp(APP_NAME, specification_dir="backend")
 
     # From https://github.com/zalando/connexion/issues/346
