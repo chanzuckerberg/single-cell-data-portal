@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from backend.corpora.common.utils.dl_sources.url import MissingHeaderException, from_url
+from backend.corpora.common.utils.dl_sources.url import URL, MissingHeaderException, from_url
 import requests
 
 
@@ -26,6 +26,10 @@ class UriProvider(UriProviderInterface):
         # from_url returns a parsed URL, or None if invalid
         link = from_url(uri)
         return link is not None
+
+    # Exposing URL here might not be ideal
+    def parse(self, uri: str) -> URL:
+        return from_url(uri)
 
     def get_file_info(self, uri: str) -> FileInfo:
 

@@ -6,3 +6,5 @@ class S3Provider:
 
     def generate_presigned_url(self, path: str) -> str:
         pass
+
+    def upload_file(self)
