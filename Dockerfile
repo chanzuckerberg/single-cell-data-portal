@@ -36,7 +36,7 @@ ENV COMMIT_BRANCH=${HAPPY_BRANCH}
 ADD entrypoint.sh entrypoint.sh
 RUN chmod +x entrypoint.sh
 
-ENTRYPOINT ["/single-cell-data-portal/entrypoint.sh"]
+CMD ["/single-cell-data-portal/entrypoint.sh"]
 
 # Note: Using just 1 worker for dev/test env. Multiple workers are used in deployment envs, as defined in Terraform code.
 # gunicorn --worker-class gevent --workers 1 --bind 0.0.0.0:5000 backend.api_server.app:app --max-requests 10000 --timeout 180 --keep-alive 5 --log-level info

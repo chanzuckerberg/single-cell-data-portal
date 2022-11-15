@@ -13,6 +13,7 @@
             "aws_profile": "single-cell-dev",
             "secret_arn": "happy/env-rdev-config",
             "terraform_directory": ".happy/terraform/envs/rdev",
+            "task_launch_type": "fargate",
             "auto_run_migrations": true,
             "log_group_prefix": "/dp/rdev"
         },
@@ -21,6 +22,7 @@
             "secret_arn": "happy/env-dev-config",
             "terraform_directory": ".happy/terraform/envs/dev",
             "delete_protected": true,
+            "task_launch_type": "fargate",
             "auto_run_migrations": true,
             "log_group_prefix": "/dp/dev"
         },
@@ -29,6 +31,7 @@
             "secret_arn": "happy/env-stage-config",
             "terraform_directory": ".happy/terraform/envs/stage",
             "delete_protected": true,
+            "task_launch_type": "fargate",
             "auto_run_migrations": true,
             "log_group_prefix": "/dp/staging"
         },
@@ -37,6 +40,7 @@
             "secret_arn": "happy/env-prod-config",
             "terraform_directory": ".happy/terraform/envs/prod",
             "delete_protected": true,
+            "task_launch_type": "fargate",
             "auto_run_migrations": true,
             "log_group_prefix": "/dp/prod"
         }
