@@ -2,14 +2,17 @@ from logging import Logger
 from typing import List, Literal, Optional, Tuple
 from backend.corpora.common.utils.corpora_constants import CorporaConstants
 from backend.layers.business.business import BusinessLogic
+from backend.layers.processing.downloader import Downloader
 from backend.layers.processing.exceptions import ValidationFailed
-from backend.layers.processing.prcess_logic import ProcessingLogic
+from backend.layers.processing.process_logic import ProcessingLogic
 from entities import DatasetConversionStatus, DatasetMetadata, DatasetProcessingStatus, DatasetStatusGeneric, DatasetStatusKey, DatasetUploadStatus, DatasetValidationStatus, DatasetVersionId, OntologyTermId
 
 import scanpy
 import numpy
 
 class ProcessDownloadValidate(ProcessingLogic):
+
+    downloader: Downloader
 
     def validate_h5ad_file_and_add_labels(self, dataset_id: DatasetVersionId, local_filename: str) -> Tuple[str, bool]:
         """
@@ -146,9 +149,8 @@ class ProcessDownloadValidate(ProcessingLogic):
         # This is a bit ugly and should be done polymorphically instead, but Dropbox support will be dropped soon
         if file_url.scheme == "https":
             file_info = file_url.file_info()
-            # TODO: unfortunately, downloader also needs a rewrite
-            status = downloader.download(dataset_id, file_url.url, local_path, file_info["size"])
-            self.logger.info(status)
+            status = self.downloader.download(dataset_id, file_url.url, local_path, file_info["size"])
+            self.logger.info(status) # TODO: this log is awful
         elif file_url.scheme == "s3":
             bucket_name = file_url.netloc
             key = self.remove_prefix(file_url.path, "/")

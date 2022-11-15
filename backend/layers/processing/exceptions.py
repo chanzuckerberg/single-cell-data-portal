@@ -16,7 +16,8 @@ class ValidationFailed(ProcessingException):
 
 class ProcessingFailed(ProcessingException):
     pass
-
+class UploadFailed(ProcessingException):
+    pass
 @dataclass 
 class ConversionFailed(ProcessingException):
     failed_status: DatasetStatusKey

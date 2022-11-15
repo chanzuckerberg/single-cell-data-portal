@@ -5,7 +5,7 @@ from os.path import join
 
 from backend.corpora.dataset_processing.h5ad_data_file import H5ADDataFile
 
-from backend.layers.processing.prcess_logic import ProcessingLogic
+from backend.layers.processing.process_logic import ProcessingLogic
 from entities import DatasetConversionStatus, DatasetStatusKey, DatasetVersionId
 
 class ProcessCxg(ProcessingLogic):

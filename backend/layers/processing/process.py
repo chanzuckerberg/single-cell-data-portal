@@ -1,5 +1,5 @@
-from backend.layers.processing.exceptions import ConversionFailed, ProcessingCanceled, ProcessingFailed, ValidationFailed
-from backend.layers.processing.prcess_logic import ProcessingLogic
+from backend.layers.processing.exceptions import ConversionFailed, ProcessingCanceled, ProcessingFailed, UploadFailed, ValidationFailed
+from backend.layers.processing.process_logic import ProcessingLogic
 import os
 from backend.layers.processing.process_cxg import ProcessCxg
 
@@ -48,6 +48,7 @@ class ProcessMain(ProcessingLogic):
             else:
                 self.logger.error(f"Step function configuration error: Unexpected STEP_NAME '{step_name}'")
 
+        # TODO: this could be better - maybe collapse all these exceptions and pass in the status key and value
         except ProcessingCanceled:
             pass # TODO: what's the effect of canceling a dataset now?
         except ValidationFailed:
@@ -55,6 +56,9 @@ class ProcessMain(ProcessingLogic):
             return False
         except ProcessingFailed:
             self.update_processing_status(dataset_id, DatasetStatusKey.PROCESSING, DatasetProcessingStatus.FAILURE)
+            return False
+        except UploadFailed:
+            self.update_processing_status(dataset_id, DatasetStatusKey.UPLOAD, DatasetUploadStatus.FAILED)
             return False
         except ConversionFailed as e:
             self.update_processing_status(dataset_id, e.failed_status, DatasetConversionStatus.FAILED)

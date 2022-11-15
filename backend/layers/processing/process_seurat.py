@@ -1,5 +1,5 @@
 
-from backend.layers.processing.prcess_logic import ProcessingLogic
+from backend.layers.processing.process_logic import ProcessingLogic
 from entities import DatasetConversionStatus, DatasetStatusKey, DatasetVersionId
 
 import subprocess

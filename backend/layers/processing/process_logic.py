@@ -2,6 +2,7 @@ from logging import Logger
 from typing import Callable, List, Literal, Optional
 from backend.corpora.common.utils.corpora_constants import CorporaConstants
 from backend.layers.business.business import BusinessLogic
+from backend.layers.processing.downloader import Downloader
 from backend.layers.processing.exceptions import ConversionFailed
 from backend.layers.thirdparty.s3_provider import S3Provider
 from backend.layers.thirdparty.uri_provider import UriProvider
@@ -21,6 +22,7 @@ class ProcessingLogic: # TODO: ProcessingLogicBase
     business_logic: BusinessLogic
     uri_provider: UriProvider
     s3_provider: S3Provider
+    downloader: Downloader
     logger: Logger
 
     def update_processing_status(self, dataset_id: DatasetVersionId, status_key: DatasetStatusKey, status_value: DatasetStatusGeneric):

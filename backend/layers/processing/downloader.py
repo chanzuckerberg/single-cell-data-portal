@@ -4,8 +4,9 @@ import threading
 
 import requests
 from backend.layers.business.business import BusinessLogic
+from backend.layers.processing.exceptions import ProcessingFailed, UploadFailed
 
-from entities import DatasetProcessingStatus
+from entities import DatasetProcessingStatus, DatasetUploadStatus, DatasetVersionId
 
 logger = logging.getLogger(__name__)
 
@@ -108,12 +109,10 @@ class Downloader:
 
         def _update():
             progress = tracker.progress()
-            dataset = Dataset.get(db_session, processing_status.dataset_id, include_tombstones=True)
-            if dataset.tombstone:
-                tracker.cancel()
-                return
-
-            elif tracker.stop_updater.is_set():
+            
+            # TODO: dataset canceling?
+            
+            if tracker.stop_updater.is_set():
                 if progress > 1:
                     tracker.stop_downloader.set()
                     status = {"upload_progress": progress}
@@ -145,13 +144,14 @@ class Downloader:
 
 
     def download(
-        dataset_id: str,
+        self,
+        dataset_id: DatasetVersionId,
         url: str,
         local_path: str,
         file_size: int,
-        chunk_size: int = 10 * MB,
+        chunk_size: int = 10 * 2**20,
         update_frequency=3,
-    ) -> dict:
+    ) -> None:
         """
         Download a file from a url and update the processing_status upload fields in the database
 
@@ -164,48 +164,45 @@ class Downloader:
 
         :return: The current dataset processing status.
         """
-        with db_session_manager() as session:
-            logger.info("Setting up download.")
-            logger.info(f"file_size: {file_size}")
-            if file_size and file_size >= shutil.disk_usage("/")[2]:
-                status_dict = {
-                    "upload_status": UploadStatus.FAILED,
-                    "upload_message": "Insufficient disk space.",
-                }
-                logger.error(f"Upload failed: {status_dict}")
-                raise ProcessingFailed(status_dict)
-            processing_status = Dataset.get(session, dataset_id).processing_status
-            processing_status.upload_status = UploadStatus.UPLOADING
-            processing_status.upload_progress = 0
-            if file_size is not None:
-                progress_tracker = ProgressTracker(file_size)
-            else:
-                progress_tracker = NoOpProgressTracker()
+        logger.info("Setting up download.")
+        logger.info(f"file_size: {file_size}")
 
-            progress_thread = threading.Thread(
-                target=updater,
-                kwargs=dict(processing_status=processing_status, tracker=progress_tracker, frequency=update_frequency),
-            )
-            progress_thread.start()
-            download_thread = threading.Thread(
-                target=downloader,
-                kwargs=dict(url=url, local_path=local_path, tracker=progress_tracker, chunk_size=chunk_size),
-            )
-            download_thread.start()
-            download_thread.join()  # Wait for the download thread to complete
-            progress_thread.join()  # Wait for the progress thread to complete
-            if progress_tracker.tombstoned:
-                raise ProcessingCancelled
-            if progress_tracker.error:
-                status = {
-                    "upload_status": UploadStatus.FAILED,
-                    "upload_message": str(progress_tracker.error),
-                }
-                _processing_status_updater(processing_status, status)
+        if file_size and file_size >= shutil.disk_usage("/")[2]:
+            raise UploadFailed("Insufficient disk space.")
 
-            status_dict = processing_status.to_dict()
-            if processing_status.upload_status == UploadStatus.FAILED:
-                logger.error(f"Upload failed: {status_dict}")
-                raise ProcessingFailed(status_dict)
-            else:
-                return status_dict
+        self.business_logic.update_dataset_version_status(dataset_id, "upload", DatasetUploadStatus.UPLOADING)
+        # TODO: set upload_progress to 0
+
+        if file_size is not None:
+            progress_tracker = ProgressTracker(file_size)
+        else:
+            progress_tracker = NoOpProgressTracker()
+
+        # TODO: later
+        # progress_thread = threading.Thread(
+        #     target=updater,
+        #     kwargs=dict(processing_status=processing_status, tracker=progress_tracker, frequency=update_frequency),
+        # )
+        # progress_thread.start()
+        download_thread = threading.Thread(
+            target=self.downloader,
+            kwargs=dict(url=url, local_path=local_path, tracker=progress_tracker, chunk_size=chunk_size),
+        )
+        download_thread.start()
+        download_thread.join()  # Wait for the download thread to complete
+        # progress_thread.join()  # Wait for the progress thread to complete
+        # if progress_tracker.tombstoned:
+        #     raise ProcessingCancelled
+        # if progress_tracker.error:
+        #     status = {
+        #         "upload_status": UploadStatus.FAILED,
+        #         "upload_message": str(progress_tracker.error),
+        #     }
+        #     _processing_status_updater(processing_status, status)
+
+        # status_dict = processing_status.to_dict()
+        # if processing_status.upload_status == UploadStatus.FAILED:
+        #     logger.error(f"Upload failed: {status_dict}")
+        #     raise ProcessingFailed(status_dict)
+        # else:
+        #     return status_dict
