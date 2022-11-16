@@ -90,7 +90,6 @@ class TissueMapper:
         "UBERON_0001868",  # skin of chest
         "UBERON_0001511",  # skin of leg
         "UBERON_0002190",  # subcutaneous adipose tissue
-        "UBERON_0035328",  # upper outer quadrant of breast
         "UBERON_0000014",  # zone of skin
     ]
 

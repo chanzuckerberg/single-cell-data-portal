@@ -20,6 +20,7 @@ uint32_domain = (np.iinfo(np.uint32).min, np.iinfo(np.uint32).max - 1)
 INTEGRATED_ARRAY_NAME = "integrated"
 OBS_ARRAY_NAME = "obs"
 VAR_ARRAY_NAME = "var"
+DATASET_TO_GENE_IDS_NAME = "dataset_to_gene_ids"
 
 
 class LabelType(
@@ -83,8 +84,8 @@ obs_labels = [
             "disease_ontology_term_id",
             "tissue",
             "tissue_original",
-            "ethnicity",
-            "ethnicity_ontology_term_id",
+            "self_reported_ethnicity",
+            "self_reported_ethnicity_ontology_term_id",
             "sex",
             "sex_ontology_term_id",
             "organism",

@@ -5,6 +5,9 @@ import { getText } from "./selectors";
 
 export const TIMEOUT_MS = 3 * 1000;
 
+
+// (seve): We use TEST_ENV to describe the environment that playwright is running against. Sometimes the FE tests are run against a local instance of the app which points at a deployed instance of the backend.
+
 //(thuang): BE API doesn't work in local happy
 const TEST_ENVS_DEV_STAGING_PROD = ["dev", "staging", "prod"];
 

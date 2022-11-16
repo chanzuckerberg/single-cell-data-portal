@@ -56,8 +56,8 @@ def remove_oldest_datasets(timestamp):
 
 
 @log_func_runtime
-def upload_artifacts_to_s3(snapshot_path, timestamp):
-    sync_command = ["aws", "s3", "sync", snapshot_path, f"{_get_wmg_bucket_path()}/{timestamp}"]
+def upload_artifacts_to_s3(snapshot_path, s3_key):
+    sync_command = ["aws", "s3", "sync", snapshot_path, f"{_get_wmg_bucket_path()}/{s3_key}"]
     subprocess.run(sync_command)
 
 

@@ -1,8 +1,10 @@
+import re
 import typing
 
 from sqlalchemy.orm import Session
 from urllib.parse import urlparse
 
+from backend.common.utils.regex import CURIE_REFERENCE_REGEX
 from backend.portal.api.app.v1.authorization import is_user_owner_or_allowed
 from backend.common.corpora_config import CorporaConfig
 from backend.common.corpora_orm import (
@@ -38,6 +40,14 @@ DATASET_ONTOLOGY_ELEMENTS_PREVIEW = (
     "disease",
     "organism",
 )
+
+
+def curation_get_normalized_doi_url(doi: str, errors: list) -> typing.Optional[str]:
+    # Regex below is adapted from https://bioregistry.io/registry/doi 'Pattern for CURIES'
+    if not re.match(CURIE_REFERENCE_REGEX, doi):
+        errors.append({"name": ProjectLinkType.DOI.value, "reason": "DOI must be a CURIE reference."})
+        return None
+    return f"https://doi.org/{doi}"
 
 
 def extract_doi_from_links(collection: dict):

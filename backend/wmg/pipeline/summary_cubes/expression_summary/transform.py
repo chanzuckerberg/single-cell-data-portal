@@ -1,4 +1,3 @@
-import concurrent
 import logging
 
 import numba as nb
@@ -8,7 +7,7 @@ import pandas as pd
 import tiledb
 
 from backend.common.utils.math_utils import MB
-from backend.wmg.pipeline.summary_cubes.expression_summary.extract import extract_obs_data
+from backend.wmg.pipeline.summary_cubes.extract import extract_obs_data
 
 from backend.wmg.data.schemas.corpus_schema import INTEGRATED_ARRAY_NAME
 from backend.wmg.data.tiledb import create_ctx
@@ -42,27 +41,22 @@ def reduce_X(tdb_group: str, cube_indices: np.ndarray, cube_sum: np.ndarray, cub
     Reduce the expression data stored in the integrated corpus by summing it by gene for each cube row (unique combo
     of cell attributes)
     """
-    with concurrent.futures.ThreadPoolExecutor() as executor:
-        cfg = {
-            "py.init_buffer_bytes": 512 * MB,
-            "py.exact_init_buffer_bytes": "true",
-        }
-        with tiledb.open(f"{tdb_group}/{INTEGRATED_ARRAY_NAME}", ctx=create_ctx(config_overrides=cfg)) as expression:
-            iterable = expression.query(return_incomplete=True, order="U", attrs=["rankit"])
-            future = None
-            for i, result in enumerate(iterable.df[:]):
-                logger.info(f"reduce integrated expression data, iter {i}")
-                if future is not None:
-                    future.result()  # forces a wait
-                future = executor.submit(
-                    gene_expression_sum_x_cube_dimension,
-                    result["rankit"].values,
-                    result["obs_idx"].values,
-                    result["var_idx"].values,
-                    cube_indices,
-                    cube_sum,
-                    cube_nnz,
-                )
+    cfg = {
+        "py.init_buffer_bytes": 512 * MB,
+        "py.exact_init_buffer_bytes": "true",
+    }
+    with tiledb.open(f"{tdb_group}/{INTEGRATED_ARRAY_NAME}", ctx=create_ctx(config_overrides=cfg)) as expression:
+        query_results = expression.query(return_incomplete=True, order="U", attrs=["rankit"])
+        for i, result in enumerate(query_results.df[:]):
+            logger.info(f"reduce integrated expression data, i={i}")
+            gene_expression_sum_x_cube_dimension(
+                result["rankit"].values,
+                result["obs_idx"].values,
+                result["var_idx"].values,
+                cube_indices,
+                cube_sum,
+                cube_nnz,
+            )
 
 
 # TODO: this could be further optimize by parallel chunking.  Might help large arrays if compute ends up being a bottleneck. # noqa E501
