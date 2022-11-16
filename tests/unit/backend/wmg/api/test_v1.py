@@ -877,9 +877,7 @@ class WmgApiV1Tests(unittest.TestCase):
     @patch("backend.wmg.api.v1.gene_term_label")
     @patch("backend.wmg.api.v1.ontology_term_label")
     @patch("backend.wmg.api.v1.load_snapshot")
-    def test__findmarkers_returns_200_and_correct_response(
-        self, load_snapshot, ontology_term_label, gene_term_label
-    ):
+    def test__findmarkers_returns_200_and_correct_response(self, load_snapshot, ontology_term_label, gene_term_label):
         dim_size = 1
         with create_temp_wmg_snapshot(
             dim_size=dim_size,
@@ -907,7 +905,7 @@ class WmgApiV1Tests(unittest.TestCase):
                 context_filters=dict(
                     organism_ontology_term_id="organism_ontology_term_id_0",
                     tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
-                ),                
+                ),
             )
 
             response = self.app.post("/wmg/v1/findmarkers", json=request)

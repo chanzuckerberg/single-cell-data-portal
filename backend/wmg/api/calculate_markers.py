@@ -6,6 +6,7 @@ from functools import lru_cache, wraps
 from backend.wmg.api.query import WmgQuery, FmgQueryCriteria
 from backend.wmg.data.snapshot import load_snapshot, WmgSnapshot
 
+
 def _make_hashable(func):
     class HDict(dict):
         def __hash__(self):
