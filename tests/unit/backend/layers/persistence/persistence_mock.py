@@ -3,7 +3,6 @@ from ensurepip import version
 from importlib.metadata import metadata
 from nntplib import ArticleInfo
 import uuid
-from backend.corpora.common.entities import dataset
 from backend.layers.persistence.persistence import DatabaseProviderInterface
 from typing import Dict, Iterable, List, Optional
 from backend.layers.common.entities import (
