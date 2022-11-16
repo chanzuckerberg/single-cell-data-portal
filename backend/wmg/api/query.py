@@ -55,7 +55,7 @@ class WmgQuery:
 
     def expression_summary_fmg(self, criteria: FmgQueryCriteria) -> DataFrame:
         return self._query(
-            cube=self._snapshot.expression_summary_cube,
+            cube=self._snapshot.expression_summary_fmg_cube,
             criteria=criteria,
             indexed_dims=[
                 "tissue_ontology_term_ids",
@@ -64,7 +64,7 @@ class WmgQuery:
             ],
         )
 
-    def cell_counts(self, criteria: WmgQueryCriteria) -> DataFrame:
+    def cell_counts(self, criteria: Union[WmgQueryCriteria, FmgQueryCriteria]) -> DataFrame:
         cell_counts = self._query(
             self._snapshot.cell_counts_cube,
             criteria.copy(exclude={"gene_ontology_term_ids"}),

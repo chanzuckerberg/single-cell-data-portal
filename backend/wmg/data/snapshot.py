@@ -71,7 +71,7 @@ def load_snapshot(corpus_path=None) -> WmgSnapshot:
     been updated.
     @return: WmgSnapshot object
     """
-    if corpus_path:
+    if not corpus_path:
         global cached_snapshot
         if new_snapshot_identifier := _update_latest_snapshot_identifier():
             cached_snapshot = _load_snapshot(new_snapshot_identifier, use_s3=True)
@@ -86,33 +86,35 @@ def _load_snapshot(new_snapshot_identifier, use_s3=True) -> WmgSnapshot:
     dataset_to_gene_ids = _load_dataset_to_gene_ids_data(new_snapshot_identifier, use_s3=use_s3)
 
     if use_s3:
+        logger.info(f"Loading WMG snapshot at {snapshot_base_uri}")
         snapshot_base_uri = _build_snapshot_base_uri(new_snapshot_identifier)
     else:
         snapshot_base_uri = new_snapshot_identifier
         new_snapshot_identifier = new_snapshot_identifier.split("/")[-1]
 
-    logger.info(f"Loading WMG snapshot at {snapshot_base_uri}")
 
     # TODO: Okay to keep TileDB arrays open indefinitely? Is it faster than re-opening each request?
     #  https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell
     #  -data-portal/2134
     return WmgSnapshot(
         snapshot_identifier=new_snapshot_identifier,
-        expression_summary_cube=_open_cube(f"{snapshot_base_uri}/{EXPRESSION_SUMMARY_CUBE_NAME}"),
-        expression_summary_fmg_cube=_open_cube(f"{snapshot_base_uri}/{EXPRESSION_SUMMARY_FMG_CUBE_NAME}"),
-        marker_genes_cube=_open_cube(f"{snapshot_base_uri}/{MARKER_GENES_CUBE_NAME}"),
-        cell_counts_cube=_open_cube(f"{snapshot_base_uri}/{CELL_COUNTS_CUBE_NAME}"),
+        expression_summary_cube=_open_cube(f"{snapshot_base_uri}/{EXPRESSION_SUMMARY_CUBE_NAME}", use_s3=use_s3),
+        expression_summary_fmg_cube=_open_cube(f"{snapshot_base_uri}/{EXPRESSION_SUMMARY_FMG_CUBE_NAME}", use_s3=use_s3),
+        marker_genes_cube=_open_cube(f"{snapshot_base_uri}/{MARKER_GENES_CUBE_NAME}", use_s3=use_s3),
+        cell_counts_cube=_open_cube(f"{snapshot_base_uri}/{CELL_COUNTS_CUBE_NAME}", use_s3=use_s3),
         cell_type_orderings=cell_type_orderings,
         primary_filter_dimensions=primary_filter_dimensions,
         dataset_to_gene_ids=dataset_to_gene_ids,
     )
 
 
-def _open_cube(cube_uri) -> Array:
+def _open_cube(cube_uri, use_s3=True) -> Array:
     try:
-        return tiledb.open(cube_uri, ctx=create_ctx(json.loads(WmgConfig().tiledb_config_overrides)))
+        if use_s3:
+            return tiledb.open(cube_uri, ctx=create_ctx(json.loads(WmgConfig().tiledb_config_overrides)))
+        else:
+            return tiledb.open(cube_uri)
     except tiledb.TileDBError:
-        logger.error("Cube does not exist in the snapshot. Setting the cube value to None.")
         return None
 
 
@@ -120,7 +122,7 @@ def _load_cell_type_order(snapshot_identifier: str, use_s3: bool = True) -> Data
     if use_s3:
         return pd.read_json(_read_s3obj(f"{snapshot_identifier}/{CELL_TYPE_ORDERINGS_FILENAME}"))
     else:
-        return pd.read_json(json.load(open(f"{snapshot_identifier}/{CELL_TYPE_ORDERINGS_FILENAME}", "r")))
+        return pd.DataFrame.from_dict(json.load(open(f"{snapshot_identifier}/{CELL_TYPE_ORDERINGS_FILENAME}", "r")))
 
 
 def _load_primary_filter_data(snapshot_identifier: str, use_s3: bool = True) -> Dict:

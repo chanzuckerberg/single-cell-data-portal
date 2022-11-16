@@ -25,38 +25,62 @@ def create_marker_genes_cube(corpus_path: str):
     """
     Create marker genes cube and write to disk
     """
-    cell_counts = extract_cellcounts()
+    cell_counts = extract_cellcounts(corpus_path)
     tissues_celltypes = (
-        cell_counts.query(attrs=["cell_type_ontology_term_id"], dims=["tissue_ontology_term_id"])
+        cell_counts.query(attrs=["cell_type_ontology_term_id"], dims=["organism_ontology_term_id", "tissue_ontology_term_id"])
         .df[:]
-        .groupby(["tissue_ontology_term_id", "cell_type_ontology_term_id"])
+        .groupby(["tissue_ontology_term_id", "cell_type_ontology_term_id", "organism_ontology_term_id"])
         .first()
     )
-    uniq_tissues = tissues.index.levels[0]
+    uniq_tissues = tissues_celltypes.index.levels[0]
     tissues = np.array(list(tissues_celltypes.index.get_level_values(0)))
     cell_types = np.array(list(tissues_celltypes.index.get_level_values(1)))
-    df = []
+    organisms = np.array(list(tissues_celltypes.index.get_level_values(2)))
+
+    uri = f"{corpus_path}/{MARKER_GENES_CUBE_NAME}"
+    create_empty_cube(uri, marker_genes_schema)
+    
     for tiss in uniq_tissues:
-        tiss_celltypes = cell_types[tissues == tiss]
-        context = {
-            "tissue_ontology_term_ids": [tiss],
-            "cell_type_ontology_term_ids": tiss_celltypes,
-        }
-        for ct in tiss_celltypes:
+        tiss_celltypes = list(cell_types[tissues == tiss])
+        org_celltypes = list(organisms[tissues == tiss])
+        for i, ct in enumerate(tiss_celltypes):
+            organism = org_celltypes[i]
+            
             logger.info("Calculating markers for tissue: %s, cell type: %s", tiss, ct)
             target = {
                 "tissue_ontology_term_ids": [tiss],
                 "cell_type_ontology_term_ids": [ct],
+                "organism_ontology_term_id": organism
             }
+            context = {
+                "tissue_ontology_term_ids": [tiss],
+                "cell_type_ontology_term_ids": tiss_celltypes,
+                "organism_ontology_term_id": organism
+            }            
             t_markers = get_markers(target, context, corpus_path=corpus_path, test="ttest", n_markers=None)
             b_markers = get_markers(target, context, corpus_path=corpus_path, test="binomtest", n_markers=None)
-            for g in t_markers:
-                b_markers[g].update(t_markers[g])
-            df.append(pd.from_json(b_markers))
-    df = pd.concat(df)
+            all_marker_genes = set(list(t_markers.keys())).union(list(b_markers.keys()))
+            markers = []
+            for i,g in enumerate(all_marker_genes):
+                b_stats = b_markers.get(g,{"p_value_binomtest": 1, "effect_size_binomtest": 0})
+                t_stats = t_markers.get(g,{"p_value_ttest": 1, "effect_size_ttest": 0})
+                b_stats.update(t_stats)
+                b_stats.update({
+                    "tissue_ontology_term_id": tiss,
+                    "organism_ontology_term_id": organism,
+                    "cell_type_ontology_term_id": ct,
+                    "gene_ontology_term_id": g
+                })
+                markers.append(b_stats)
 
-    uri = f"{corpus_path}/{MARKER_GENES_CUBE_NAME}"
-    create_empty_cube(uri, marker_genes_schema)
-    tiledb.from_pandas(uri, df, mode="append")
+            df = pd.DataFrame.from_records(markers)
+            if df.shape[0] > 0:
+                df = df.astype({
+                    'p_value_binomtest': 'float32',
+                    'effect_size_binomtest': 'float32',
+                    'p_value_ttest': 'float32',
+                    'effect_size_ttest': 'float32'
+                })
+                tiledb.from_pandas(uri, df, mode="append")
 
     logger.info(f"Marker genes cube created and stored at {uri}")

@@ -57,19 +57,21 @@ def _query_tiledb(filters, corpus_path=None, group_by_dims=None, genes=None):
     cell_counts_query = Q.cell_counts(criteria)
 
     if group_by_dims is None:
-        gb_dims_es = ["gene_ontology_term_id"] + list(filters.keys())
-        gb_dims = ["dataset_id"] + list(filters.keys())
+        depluralized_keys = [i[:-1] if i[-1] == "s" else i for i in filters.keys()]
+        gb_dims_es = ["gene_ontology_term_id"] + depluralized_keys
+        gb_dims = ["dataset_id"] + depluralized_keys
     else:
-        gb_dims_es = ["gene_ontology_term_id"] + group_by_dims
-        gb_dims = ["dataset_id"] + group_by_dims
+        depluralized_keys = [i[:-1] if i[-1] == "s" else i for i in group_by_dims]
+        gb_dims_es = ["gene_ontology_term_id"] + depluralized_keys
+        gb_dims = ["dataset_id"] + depluralized_keys
 
     agg = query.groupby(gb_dims_es).sum()
-    n_cells = cell_counts_query.groupby(gb_dims).sum()["n_cells"]
+    n_cells = cell_counts_query.groupby(gb_dims).sum()["n_total_cells"]
 
     if group_by_dims is None:
         desired_levels = [i.name for i in agg.index.levels][1:]
     else:
-        desired_levels = group_by_dims
+        desired_levels = depluralized_keys
 
     if genes is None:
         genes = list(agg.index.levels[0])
@@ -99,15 +101,14 @@ def _query_tiledb(filters, corpus_path=None, group_by_dims=None, genes=None):
         summer += t_n_cells[i]
         t_n_cells_sum[k] = summer
 
-    return agg, t_n_cells_sum, genes
+    return agg, list(t_n_cells_sum.keys()), t_n_cells_sum, genes
 
 
-@_make_hashable
 def _prepare_indices_and_metrics(target_filters, context_filters, corpus_path=None):
     context_agg, groups_context_uniq, t_n_cells_sum_context, genes = _query_tiledb(
         context_filters, corpus_path=corpus_path, group_by_dims=list(target_filters.keys())
     )
-    target_agg, t_n_cells_sum_target, _ = _query_tiledb(target_filters, genes=genes)
+    target_agg, _, t_n_cells_sum_target, _ = _query_tiledb(target_filters, corpus_path=corpus_path, genes=genes)
 
     target_agg = target_agg.groupby("gene_ontology_term_id").sum()
 
@@ -115,7 +116,6 @@ def _prepare_indices_and_metrics(target_filters, context_filters, corpus_path=No
 
     genes_context = list(context_agg.index.get_level_values(0))
     groups_context = [i[1:] for i in context_agg.index]
-
     groups_indexer = pd.Series(index=groups_context_uniq, data=range(len(groups_context_uniq)))
     genes_indexer = pd.Series(index=genes, data=np.arange(len(genes)))
 
@@ -302,7 +302,7 @@ def get_markers(
             n_markers=n_markers,
             p_bottom_comparisons=p_bottom_comparisons,
         )
-    elif test == "binom":
+    elif test == "binomtest":
         return _get_markers_binomtest(
             target_filters,
             context_filters,
