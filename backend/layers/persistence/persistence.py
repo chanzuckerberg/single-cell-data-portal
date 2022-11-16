@@ -6,9 +6,14 @@ from backend.layers.common.entities import (
     CollectionVersion,
     CollectionVersionId,
     DatasetArtifact,
+    DatasetArtifactId,
+    DatasetConversionStatus,
     DatasetId,
     DatasetMetadata,
+    DatasetProcessingStatus,
     DatasetStatus,
+    DatasetUploadStatus,
+    DatasetValidationStatus,
     DatasetVersion,
     DatasetVersionId,
 )
@@ -28,6 +33,12 @@ class DatabaseProviderInterface:
         """
         pass
 
+    def get_collection_mapped_version(self, collection_id: CollectionId) -> Optional[CollectionVersion]:
+        """
+        Retrieves the latest mapped version for a collection
+        """
+        pass
+
     def get_all_versions_for_collection(self, collection_id: CollectionId) -> List[CollectionVersion]:
         """
         Retrieves all versions for a specific collections, without filtering
@@ -37,7 +48,13 @@ class DatabaseProviderInterface:
     def get_all_collections_versions(self) -> Iterable[CollectionVersion]:
         """
         Retrieves all versions of all collections.
-        # TODO: add a filtering object.
+        TODO: for performance reasons, it might be necessary to add a filtering parameter here.
+        """
+        pass
+
+    def get_all_mapped_collection_versions(self) -> Iterable[CollectionVersion]:
+        """
+        Retrieves all the collection versions that are mapped to a canonical collection.
         """
         pass
 
@@ -55,9 +72,9 @@ class DatabaseProviderInterface:
         """
         pass
 
-    def save_collection_publisher_metadata(self, version_id: CollectionVersionId, publisher_metadata: dict) -> None:
+    def save_collection_publisher_metadata(self, version_id: CollectionVersionId, publisher_metadata: Optional[dict]) -> None:
         """
-        Saves publisher metadata for a collection version
+        Saves publisher metadata for a collection version. Specify None to remove it
         """
         pass
 
@@ -123,7 +140,7 @@ class DatabaseProviderInterface:
         pass
 
     def create_canonical_dataset(
-        self, collection_version_id: CollectionVersionId, dataset_metadata: DatasetMetadata
+        self, collection_version_id: CollectionVersionId
     ) -> DatasetVersion:
         """
         Initializes a canonical dataset, generating a dataset_id and a dataset_version_id.
@@ -131,23 +148,54 @@ class DatabaseProviderInterface:
         """
         pass
 
-    def add_dataset_version(self, dataset_id: DatasetId, dataset_metadata: DatasetMetadata) -> DatasetVersion:
+    def add_dataset_version(self, dataset_id: DatasetId) -> DatasetVersion:
         """
         Adds a new dataset version to a canonical dataset.
         Returns the newly created DatasetVersion.
         """
         pass
 
-    def add_dataset_artifact(self, version_id: DatasetVersionId, artifact_type: str, artifact_uri: str) -> None:
+    def add_dataset_artifact(self, version_id: DatasetVersionId, artifact_type: str, artifact_uri: str) -> DatasetArtifactId:
         """
         Adds a dataset artifact to an existing dataset version.
         """
         pass
 
-    def update_dataset_processing_status(self, version_id: DatasetVersionId, status: DatasetStatus) -> None:
+    def update_dataset_processing_status(self, version_id: DatasetVersionId, status: DatasetProcessingStatus) -> None:
         """
         Updates the processing status for a dataset version.
         """
+        pass
+
+    def update_dataset_validation_status(self, version_id: DatasetVersionId, status: DatasetValidationStatus) -> None:
+        """
+        Updates the validation status for a dataset version.
+        """
+        pass
+
+    def update_dataset_upload_status(self, version_id: DatasetVersionId, status: DatasetUploadStatus) -> None:
+        """
+        Updates the upload status for a dataset version.
+        """
+        pass
+
+    def update_dataset_conversion_status(self, version_id: DatasetVersionId, status_type: str, status: DatasetConversionStatus) -> None:
+        """
+        Updates the conversion status for a dataset version and for `status_type`
+        """
+        pass
+
+    def get_dataset_version_status(self, version_id: DatasetVersionId) -> DatasetStatus:
+        """
+        Returns the status for a dataset version
+        """
+        pass
+
+    def set_dataset_metadata(self, version_id: DatasetVersionId, metadata: DatasetMetadata) -> None:
+        """
+        Sets the metadata for a dataset version
+        """
+        pass
 
     def add_dataset_to_collection_version_mapping(
         self, collection_version_id: CollectionVersionId, dataset_version_id: DatasetVersionId
@@ -168,10 +216,15 @@ class DatabaseProviderInterface:
     def replace_dataset_in_collection_version(
         self,
         collection_version_id: CollectionVersionId,
-        old_dataset_version_id: DatasetVersionId,
-        dataset_metadata: DatasetMetadata,
-    ) -> None:
+        old_dataset_version_id: DatasetVersionId
+    ) -> DatasetVersion:
         """
         Replaces an existing mapping between a collection version and a dataset version
+        """
+        pass
+
+    def get_dataset_mapped_version(self, dataset_id: DatasetId) -> Optional[DatasetVersion]:
+        """
+        Returns the dataset version mapped to a canonical dataset_id, or None if not existing
         """
         pass

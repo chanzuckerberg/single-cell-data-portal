@@ -3,7 +3,13 @@ from datetime import datetime
 from typing import List, Optional
 from enum import Enum
 
-class DatasetStatus(Enum):
+
+# TODO: copy and paste the docs for these
+
+class DatasetStatusGeneric:
+    pass
+
+class DatasetUploadStatus(DatasetStatusGeneric, Enum):
     NA = "N/A"
     WAITING = "Waiting"
     UPLOADING = "Uploading"
@@ -11,6 +17,40 @@ class DatasetStatus(Enum):
     FAILED = "Failed"
     CANCEL_PENDING = "Cancel pending"
     CANCELED = "Canceled"
+
+class DatasetValidationStatus(DatasetStatusGeneric, Enum):
+    NA = "N/A"
+    VALIDATING = "Validating"
+    VALID = "Valid"
+    INVALID = "Invalid"
+
+class DatasetConversionStatus(DatasetStatusGeneric, Enum):
+    NA = "N/A"
+    CONVERTING = "Converting"
+    CONVERTED = "Converted"
+    UPLOADING = "Uploading"
+    UPLOADED = "Uploaded"
+    FAILED = "Failed"
+    SKIPPED = "Skipped"
+
+class DatasetProcessingStatus(DatasetStatusGeneric, Enum):
+    INITIALIZED = "INITIALIZED"
+    PENDING = "PENDING"
+    SUCCESS = "SUCCESS"
+    FAILURE = "FAILURE"
+
+@dataclass
+class DatasetStatus:
+    upload_status: Optional[DatasetUploadStatus]
+    validation_status: Optional[DatasetValidationStatus]
+    cxg_status: Optional[DatasetConversionStatus]
+    rds_status: Optional[DatasetConversionStatus]
+    h5ad_status: Optional[DatasetConversionStatus]
+    processing_status: Optional[DatasetProcessingStatus]
+
+    @staticmethod 
+    def empty():
+        return DatasetStatus(None, None, None, None, None, None)
 
 @dataclass
 class CollectionId:
@@ -26,39 +66,54 @@ class DatasetId:
 @dataclass
 class DatasetVersionId:
     id: str
+@dataclass
+class DatasetArtifactId:
+    id: str
 
 @dataclass
 class DatasetArtifact:
-    id: str
+    id: DatasetArtifactId
     type: str
     uri: str
 
+@dataclass
+class OntologyTermId:
+    label: str
+    ontology_term_id: str
 
 @dataclass
 class DatasetMetadata:
-    organism: str
-    tissue: str
-    assay: str
-    disease: str
-    sex: str
-    self_reported_ethnicity: str
-    development_stage: str
-    cell_type: str
+    name: str
+    organism: List[OntologyTermId]
+    tissue: List[OntologyTermId]
+    assay: List[OntologyTermId]
+    disease: List[OntologyTermId]
+    sex: List[OntologyTermId]
+    self_reported_ethnicity: List[OntologyTermId]
+    development_stage: List[OntologyTermId]
+    cell_type: List[OntologyTermId]
     cell_count: int
-
+    schema_version: str
+    mean_genes_per_cell: float
+    batch_condition: List[str]
+    suspension_type: List[str]
+    donor_id: List[str]
+    is_primary_data: str
+    x_approximate_distribution: str
 
 @dataclass
 class DatasetVersion:
     dataset_id: DatasetId
     version_id: DatasetVersionId
-    processing_status: DatasetStatus
+    collection_id: CollectionId # Pointer to the canonical collection id this dataset belongs to
+    status: DatasetStatus
     metadata: DatasetMetadata
     artifacts: List[DatasetArtifact]
 
 
 @dataclass
 class Link:
-    name: str
+    name: Optional[str]
     type: str
     uri: str
     
@@ -80,3 +135,11 @@ class CollectionVersion:
     publisher_metadata: Optional[dict]  # TODO: use a dataclass
     datasets: List[DatasetVersion] 
     published_at: Optional[datetime]
+
+class CollectionLinkType(Enum):
+    DOI = "doi"
+    RAW_DATA = "raw_data"
+    PROTOCOL = "protocol"
+    LAB_WEBSITE = "lab_website"
+    OTHER = "other"
+    DATA_SOURCE = "data_source"

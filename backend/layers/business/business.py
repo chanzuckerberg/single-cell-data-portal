@@ -1,200 +1,394 @@
 from dataclasses import dataclass
+from typing import Iterable, Optional, Tuple
+from backend.corpora.common.providers.crossref_provider import CrossrefDOINotFoundException, CrossrefException
+from backend.layers.business.business_interface import BusinessLogicInterface
+from backend.layers.business.entities import CollectionMetadataUpdate, CollectionQueryFilter, DatasetArtifactDownloadData
+from backend.layers.business.exceptions import ArtifactNotFoundException, CollectionCreationException, CollectionPublishException, CollectionUpdateException, CollectionVersionException, DatasetIngestException, DatasetUpdateException
+
+from backend.layers.common.entities import (
+    CollectionId,
+    CollectionLinkType,
+    CollectionMetadata,
+    CollectionVersion,
+    CollectionVersionId,
+    DatasetArtifact,
+    DatasetArtifactId,
+    DatasetConversionStatus,
+    DatasetId,
+    DatasetMetadata,
+    DatasetProcessingStatus,
+    DatasetStatus,
+    DatasetStatusGeneric,
+    DatasetUploadStatus,
+    DatasetValidationStatus,
+    DatasetVersion,
+    DatasetVersionId,
+    Link,
+)
 from typing import Iterable, List, Optional
 
-from backend.layers.common.entities import CollectionId, CollectionMetadata, CollectionVersion, CollectionVersionId, DatasetArtifact, DatasetId, DatasetStatus, DatasetVersion, DatasetVersionId, Link
+import copy
+
 from backend.layers.persistence.persistence import DatabaseProviderInterface
 from backend.layers.thirdparty.crossref_provider import CrossrefProviderInterface
+from backend.layers.thirdparty.s3_provider import S3Provider
 from backend.layers.thirdparty.step_function_provider import StepFunctionProviderInterface
 
+import re
+from urllib.parse import urlparse
+from backend.layers.common import validation
+import logging
 
-@dataclass
-class CollectionQueryFilter:
-    is_published: Optional[bool] = None
-    owner: Optional[str] = None
-    # TODO: add list of fields to be returned (if needed)
+from backend.layers.thirdparty.uri_provider import UriProvider, UriProviderInterface
 
-@dataclass
-class DatasetArtifactDownloadData:
-    file_name: str
-    file_type: str
-    file_size: int
-    presigned_url: str
-
-@dataclass
-class CollectionMetadataUpdate:
-    """
-    This class can be used to issue an update to the collection metadata.
-    Since we support partial updates, i.e. missing fields will be ignored, 
-    all the fields are marked an optional
-    """
-    name: Optional[str]
-    description: Optional[str]
-    contact_name: Optional[str]
-    contact_email: Optional[str]
-    links: Optional[List[Link]]
-
-class BusinessLogicInterface:
-
-    # Get_collections
-    # Replaces get_collections_list and get_collections_index
-    # Accepts a CollectionFilter class (or kwargs) with:
-    # Date bounds
-    # Visibility
-    # Ownership
-    # List of fields to be returned
-    # Returns a list of dictionaries that only includes the selected fields for each collection
-    # It should NOT add any information that is required by the current API for compatibility reasons (e.g. access_write). These will be delegated to the upper layer
-    # It should NOT do any operation that is required by Curation API assumptions (e.g. remove None values)
-
-    def get_collections(self, filter: CollectionQueryFilter) -> Iterable[CollectionVersion]:
-        pass
-
-
-    # Get_collection
-    # Replaces get_collection_details
-    # Returns a single collection, with no filtering options
-    # Accepts:
-    # Collection_id
-    # Should reuse most of of the code from the method above
-
-    def get_published_collection_version(self, collection_id: CollectionId) -> CollectionVersion:
-        pass
-
-    def get_collection_version(self, version_id: CollectionVersionId) -> CollectionVersion:
-        pass
-
-    # Create_collection
-    # Replaces the current create_collection
-    # Accepts:
-    # A dictionary (or Class) with the body of the collection to be created
-    # Should validate the body accepted as param (see existing verify_collection_body)
-    # Should call CrossrefProvider to retrieve publisher metadata information
-    # This method currently collects errors in a list, which will be piped upstream to the API response. This is a good idea but it should be refactor into a generalized pattern (otherwise we’ll “pollute” the business layer with logic specific to the API layer).
-
-    def create_collection(self, collection_metadata: CollectionMetadata) -> CollectionVersion:
-        pass
-
-    # Delete_collection
-    # Replaces the current delete_collection
-    # Accepts:
-    # Collection_id
-    # Performs authorization on user/collection
-
-    def delete_collection(self, collection_id: CollectionId) -> None:
-        pass
-
-    # Update_collection
-    # Replaces the current update_collection
-    # Accepts:
-    # Collection_id
-    # A dataclass with the body to be updated
-    # Should validate the body
-    # Should handle DOI updates (re-use the existing logic with minimal refactors)
-    # Can either return nothing or the metadata of the updated collection
-
-    # TODO: body should be a dataclass?
-    def update_collection_version(self, version_id: CollectionVersionId, body: CollectionMetadataUpdate) -> None:
-        pass
-
-    # Create_collection_version
-    # Replaces the current post_collection_revision
-    # Accepts:
-    # Collection_id
-    # Performs authorization on the collection
-    # Since revision logic is database specific, it delegates to the underlying layer
-    # Returns a handle to the revised collection (either id or the full collection metadata)
-
-    def create_collection_version(self, collection_id: CollectionId) -> CollectionVersion:
-        pass
-
-    def delete_collection_version(self, version_id: CollectionVersionId) -> None:
-        pass
-
-
-    # Publish_collection
-    # Replaces post (in publish.py)
-    # Accepts:
-    # Collection_id
-    # Performs validation to make sure that the collection can be published
-    # [Currently] accepts data_submission_policy_version: what is this for?
-    # [Currently] triggers Cloudfront invalidation for the index endpoints. This should arguably NOT be done here but by the API layer
-    # Since revision logic is database specific, it delegates to the underlying layer
-
-    def publish_collection_version(self, version_id: CollectionVersionId) -> None:
-        pass
-
-    # Ingest_dataset
-    # Replaces the existing Upload_from_link
-    # Potentially, also replaces relink (I am not sure why they are 2 separate functions)
-    # Accepts:
-    # Collection_id
-    # URL of the uploadable dataset
-    # [Optional] a dataset_id to be replaced
-    # This is one of the most complex functions. Other than the database provider, It will need two additional providers:
-    # StepFunctionProvider (to call the SFN that triggers the upload)
-    # DropboxProvider to interface with Dropbox (could be more generic: RemoteFileProvider?)
-    # Should handle exceptions from all providers:
-    # Should only raise custom exceptions
-
-    def ingest_dataset(self, collection_version_id: CollectionVersionId, url: str, existing_dataset_version_id: Optional[DatasetVersionId]) -> DatasetVersionId:
-        pass
-
-    # Get_all_datasets
-    # Replaces get_dataset_index
-
-    def get_all_datasets(self) -> Iterable[DatasetVersion]:
-        pass
-
-    # Delete_dataset
-    # Replaces delete_dataset
-
-    def delete_dataset(self, dataset_version_id: DatasetVersionId) -> None:
-        pass
-
-
-    # get_dataset_assets
-    # Replaces get_dataset_assets
-
-    def get_dataset_artifacts(self, dataset_id: DatasetId) -> Iterable[DatasetArtifact]:
-        pass
-
-
-    # Download_dataset_asset
-    # Replaces post_dataset_asset
-
-
-    def get_dataset_artifact_download_data(self, dataset_id: DatasetId, artifact_id: str) -> DatasetArtifactDownloadData:
-        pass
-
-
-    def update_dataset_version_status(self, dataset_version_id: DatasetVersionId, new_dataset_status: DatasetStatus) -> None:
-        pass
-
-    def add_dataset_artifact(self, dataset_version_id: DatasetVersionId, artifact_type: str, artifact_uri: str) -> None:
-        pass
-
-
-    # Get_dataset_status
-    # Replaces get_status
-
-    def get_dataset_status(self, dataset_id: DatasetId) -> DatasetStatus:
-        pass
-
-
-# TODO: move it to a separate file
 class BusinessLogic(BusinessLogicInterface):
 
     database_provider: DatabaseProviderInterface
     crossref_provider: CrossrefProviderInterface
     step_function_provider: StepFunctionProviderInterface
+    s3_provider: S3Provider
+    uri_provider: UriProviderInterface
 
     def __init__(
-        self, 
-        database_provider: DatabaseProviderInterface, 
+        self,
+        database_provider: DatabaseProviderInterface,
         crossref_provider: CrossrefProviderInterface,
         step_function_provider: StepFunctionProviderInterface,
+        s3_provider: S3Provider,
+        uri_provider: UriProviderInterface,
     ) -> None:
         self.crossref_provider = crossref_provider
         self.database_provider = database_provider
         self.step_function_provider = step_function_provider
+        self.s3_provider = s3_provider
+        self.uri_provider = uri_provider
         super().__init__()
+
+    def _get_publisher_metadata(self, doi: str, errors: list) -> Optional[dict]:
+        """
+        Retrieves publisher metadata from Crossref.
+        """
+        try:
+            return self.crossref_provider.fetch_metadata(doi)
+        except CrossrefDOINotFoundException:
+            errors.append({"link_type": CollectionLinkType.DOI, "reason": "DOI cannot be found on Crossref"})
+        except CrossrefException as e:
+            logging.warning(f"CrossrefException on create_collection: {e}. Will ignore metadata.")
+            return None
+
+    def create_collection(self, owner: str, collection_metadata: CollectionMetadata) -> CollectionVersion:
+        """
+        Creates a collection using the specified metadata. If a DOI is defined, will also
+        retrieve publisher metadata from Crossref and add it to the collection.
+        """
+
+        errors = []
+        validation.verify_collection_metadata(collection_metadata, errors)
+
+        # TODO: Maybe switch link.type to be an enum
+        doi = next((link.uri for link in collection_metadata.links if link.type == "doi"), None)
+
+        if doi is not None:
+            publisher_metadata = self._get_publisher_metadata(doi, errors)
+        else:
+            publisher_metadata = None
+
+        if errors:
+            raise CollectionCreationException(errors)
+
+        created_version = self.database_provider.create_canonical_collection(owner, collection_metadata)
+
+        # TODO: can collapse with `create_canonical_collection`
+        if publisher_metadata:
+            self.database_provider.save_collection_publisher_metadata(created_version.version_id, publisher_metadata)
+
+        # TODO: likely, collection needs to be refetched
+        return created_version
+
+    def get_published_collection_version(self, collection_id: CollectionId) -> Optional[CollectionVersion]:
+        """
+        Returns the published collection version that belongs to a canonical collection.
+        Returns None if no published collection exists
+        """
+        return self.database_provider.get_collection_mapped_version(collection_id)
+
+    def get_collection_version(self, version_id: CollectionVersionId) -> CollectionVersion:
+        """
+        Returns a specific collection version
+        """
+        return self.database_provider.get_collection_version(version_id)
+
+    def get_collection_versions_from_canonical(self, collection_id: CollectionId) -> Iterable[CollectionVersion]:
+        """
+        Returns all the collection versions connected to a canonical collection
+        """
+        return self.database_provider.get_all_versions_for_collection(collection_id)
+
+    def get_collection_version_from_canonical(self, collection_id: CollectionId) -> Optional[CollectionVersion]:
+        """
+        Returns the published collection version mapped to a canonical collection, if available.
+        Otherwise will return the active unpublished version.
+        """
+        published_version = self.get_published_collection_version(collection_id)
+        if published_version is not None:
+            return published_version
+        else:
+            all_versions = self.get_collection_versions_from_canonical(collection_id)
+            return next(v for v in all_versions if v.published_at is None)
+
+    def get_collections(self, filter: CollectionQueryFilter) -> Iterable[CollectionVersion]:
+        """
+        Returns an iterable with all the collections matching `filter`
+        """
+        
+        # TODO: instead of `is_published`, we should probably call this `is_active_and_published`
+        if filter.is_published is True:
+            iterable = self.database_provider.get_all_mapped_collection_versions()
+        else:
+            iterable = self.database_provider.get_all_collections_versions()
+
+        def predicate(version: CollectionVersion):
+            # Combines all the filters into a single predicate, so that filtering can happen in a single iteration
+            published = (
+                filter.is_published is None or 
+                (filter.is_published is True and version.published_at is not None) or 
+                (filter.is_published is False and version.published_at is None)
+            )
+            owner = (
+                filter.owner is None or filter.owner == version.owner
+            )
+            return published and owner
+
+        for collection_version in iterable:
+            if predicate(collection_version):
+                yield collection_version
+
+    def update_collection_version(self, version_id: CollectionVersionId, body: CollectionMetadataUpdate) -> None:
+        """
+        Updates a collection version by replacing parts of its metadata. If the DOI in the links changed,
+        it should also update its publisher metadata
+        """
+
+        # TODO: we could collect all the changes and issue a single update at the end
+        # TODO: CollectionMetadataUpdate should probably be used for collection creation as well
+        # TODO: link.type should DEFINITELY move to an enum. pylance will help with the refactor
+
+        errors = []
+        validation.verify_collection_metadata_update(body, errors)
+
+        current_version = self.get_collection_version(version_id)
+        if current_version.published_at is not None:
+            raise CollectionUpdateException(["Cannot update a published collection"])
+        
+        # Determine if the DOI has changed
+        old_doi = next((link.uri for link in current_version.metadata.links if link.type == "doi"), None)
+        if body.links is None:
+            new_doi = None
+        else:
+            new_doi = next((link.uri for link in body.links if link.type == "doi"), None)
+
+        if old_doi and new_doi is None:
+            # If the DOI was deleted, remove the publisher_metadata field
+            self.database_provider.save_collection_publisher_metadata(version_id, None)
+        elif (new_doi is not None) and new_doi != old_doi:
+            # If the DOI has changed, fetch and update the metadata
+            publisher_metadata = self._get_publisher_metadata(new_doi, errors)
+            self.database_provider.save_collection_publisher_metadata(version_id, publisher_metadata)
+
+        if errors:
+            raise CollectionUpdateException(errors)
+
+        # Merge the updated fields in the existing metadata object. Use a copy to ensure immutability.
+        new_metadata = copy.deepcopy(current_version.metadata)
+        for field in vars(body):
+            if hasattr(body, field) and (value := getattr(body, field)) is not None:
+                setattr(new_metadata, field, value)
+
+        self.database_provider.save_collection_metadata(version_id, new_metadata)
+
+    def _assert_collection_version_unpublished(self, collection_version_id: CollectionVersionId) -> None:
+        """
+        Ensures a collection version exists and is unpublished.
+        This method should be called every time an update to a collection version is requested,
+        since published collection versions are not allowed any changes.
+        """
+        collection_version = self.database_provider.get_collection_version(collection_version_id)
+        if collection_version is None:
+            raise CollectionUpdateException([f"Collection version {collection_version_id.id} does not exist"])
+        if collection_version.published_at is not None:
+            raise CollectionUpdateException([f"Collection version {collection_version_id.id} is published"])
+
+    # TODO: Alternatives: 1) return DatasetVersion 2) Return a new class
+    def ingest_dataset(
+        self,
+        collection_version_id: CollectionVersionId,
+        url: str,
+        existing_dataset_version_id: Optional[DatasetVersionId]) -> Tuple[DatasetVersionId, DatasetId]:
+        """
+        Creates a canonical dataset and starts its ingestion by invoking the step function
+        """
+
+        if not self.uri_provider.validate(url):
+            raise DatasetIngestException(f"Trying to upload invalid URI: {url}")
+
+        file_info = self.uri_provider.get_file_info(url)
+
+        # TODO: add file size check
+        # max_file_size_gb = CorporaConfig().upload_max_file_size_gb * GB
+        # if file_size is not None and file_size > max_file_size_gb:
+        #     raise MaxFileSizeExceededException(f"{url} exceeds the maximum allowed file size of {max_file_size_gb} Gb")
+
+        # Ensure that the collection exists and is not published
+        self._assert_collection_version_unpublished(collection_version_id)
+
+        # Creates a dataset version that the processing pipeline will point to
+        new_dataset_version: DatasetVersion
+
+        if existing_dataset_version_id is not None:
+            dataset_version = self.database_provider.get_dataset_version(existing_dataset_version_id)
+            if dataset_version is None:
+                raise DatasetIngestException(f"Trying to replace non existant dataset {existing_dataset_version_id.id}")
+
+            if dataset_version.status.processing_status not in [
+                DatasetProcessingStatus.SUCCESS,
+                DatasetProcessingStatus.FAILURE,
+                DatasetProcessingStatus.INITIALIZED,
+            ]:
+                raise DatasetIngestException(
+                    f"Unable to reprocess dataset {existing_dataset_version_id}: processing status is {dataset_version.status.processing_status.name}"
+                )
+
+            # TODO: this method could very well be called `add_dataset_version`
+            new_dataset_version = self.database_provider.replace_dataset_in_collection_version(collection_version_id, existing_dataset_version_id)
+        else:
+            new_dataset_version = self.database_provider.create_canonical_dataset(collection_version_id)
+
+        # Sets an initial processing status for the new dataset version
+        self.database_provider.update_dataset_upload_status(new_dataset_version.version_id, DatasetUploadStatus.WAITING)
+        self.database_provider.update_dataset_processing_status(new_dataset_version.version_id, DatasetProcessingStatus.PENDING)
+
+        # Starts the step function process
+        self.step_function_provider.start_step_function(collection_version_id, new_dataset_version.version_id, url)
+
+        return (new_dataset_version.version_id, new_dataset_version.dataset_id)
+
+
+    def remove_dataset_version(self, collection_version_id: CollectionVersionId, dataset_version_id: DatasetVersionId) -> None:
+        """
+        Removes a dataset version from an existing collection version
+        """
+        self._assert_collection_version_unpublished(collection_version_id)
+        self.database_provider.delete_dataset_from_collection_version(collection_version_id, dataset_version_id)
+
+    def set_dataset_metadata(self, dataset_version_id: DatasetVersionId, metadata: DatasetMetadata) -> None:
+        """
+        Sets the metadata for a dataset version
+        """
+        self.database_provider.set_dataset_metadata(dataset_version_id, metadata)
+
+    def get_all_published_datasets(self) -> Iterable[DatasetVersion]:
+        """
+        Retrieves all the datasets from the database that belong to a published collection
+        """
+        return self.database_provider.get_all_datasets()
+
+    def get_dataset_artifacts(self, dataset_version_id: DatasetVersionId) -> Iterable[DatasetArtifact]:
+        """
+        Returns all the artifacts for a dataset
+        """
+        return self.database_provider.get_dataset_artifacts(dataset_version_id)
+
+    def get_dataset_artifact_download_data(self, dataset_version_id: DatasetVersionId, artifact_id: str) -> DatasetArtifactDownloadData:
+        """
+        Returns download data for an artifact, including a presigned URL
+        """
+        artifacts = self.get_dataset_artifacts(dataset_version_id)
+        artifact = next((a for a in artifacts if a.id == artifact_id), None)
+
+        if not artifact:
+            raise ArtifactNotFoundException(f"Artifact {artifact_id} not found in dataset {dataset_version_id}")
+
+        artifact_url = urlparse(artifact.uri)
+
+        file_name = artifact_url.path[1:]
+        file_type = artifact.type
+        file_size = self.s3_provider.get_file_size(artifact.uri)
+        presigned_url = self.s3_provider.generate_presigned_url(artifact.uri)
+
+        return DatasetArtifactDownloadData(file_name, file_type, file_size, presigned_url)
+
+    def get_dataset_status(self, dataset_version_id: DatasetVersionId) -> DatasetStatus:
+        """
+        Returns the dataset status for a specific dataset version
+        """
+        return self.database_provider.get_dataset_version_status(dataset_version_id)
+
+    def update_dataset_version_status(self, dataset_version_id: DatasetVersionId, status_key: str, new_dataset_status: DatasetStatusGeneric) -> None:
+        """
+        Updates the status of a dataset version. 
+        status_key can be one of: [upload_status, validation_status, cxg_status, rds_status, h5ad_status, processing_status]
+        """
+        if status_key == "upload_status" and isinstance(new_dataset_status, DatasetUploadStatus):
+            self.database_provider.update_dataset_upload_status(dataset_version_id, new_dataset_status)
+        elif status_key == "processing_status" and isinstance(new_dataset_status, DatasetProcessingStatus):
+            self.database_provider.update_dataset_processing_status(dataset_version_id, new_dataset_status)
+        elif status_key == "validation_status" and isinstance(new_dataset_status, DatasetValidationStatus):
+            self.database_provider.update_dataset_validation_status(dataset_version_id, new_dataset_status)
+        elif status_key == "cxg_status" and isinstance(new_dataset_status, DatasetConversionStatus):
+            self.database_provider.update_dataset_conversion_status(dataset_version_id, "cxg_status", new_dataset_status)
+        elif status_key == "rds_status" and isinstance(new_dataset_status, DatasetConversionStatus):
+            self.database_provider.update_dataset_conversion_status(dataset_version_id, "rds_status", new_dataset_status)
+        elif status_key == "h5ad_status" and isinstance(new_dataset_status, DatasetConversionStatus):
+            self.database_provider.update_dataset_conversion_status(dataset_version_id, "h5ad_status", new_dataset_status)
+        else:
+            raise DatasetUpdateException(f"Invalid status update for dataset {dataset_version_id}: cannot set {status_key} to {new_dataset_status}")
+
+    def add_dataset_artifact(self, dataset_version_id: DatasetVersionId, artifact_type: str, artifact_uri: str) -> DatasetArtifactId:
+        """
+        Registers an artifact to a dataset version.
+        """
+        
+        # TODO: we should probably validate that artifact_uri is a valid S3 URI
+
+        if artifact_type not in ["H5AD", "CXG", "RDS"]:
+            raise DatasetIngestException(f"Wrong artifact type for {dataset_version_id}: {artifact_type}")
+
+        return self.database_provider.add_dataset_artifact(dataset_version_id, artifact_type, artifact_uri)
+
+
+    def create_collection_version(self, collection_id: CollectionId) -> CollectionVersion:
+        """
+        Creates a collection version for an existing canonical collection.
+        Also ensures that the collection does not have any active, unpublished version
+        """
+
+        all_versions = self.database_provider.get_all_versions_for_collection(collection_id)
+        if any(v for v in all_versions if v.published_at is None):
+            raise CollectionVersionException(f"Collection {collection_id} already has an unpublished version")
+
+        try:
+            new_version = self.database_provider.add_collection_version(collection_id)
+        except Exception: # TODO: maybe add a RecordNotFound exception for finer grained exceptions
+            raise CollectionVersionException(f"Collection {collection_id} cannot be found")
+
+        return new_version
+
+    def delete_collection_version(self, version_id: CollectionVersionId) -> None:
+        self.database_provider.delete_collection_version(version_id)
+
+    def publish_collection_version(self, version_id: CollectionVersionId) -> None:
+        version = self.database_provider.get_collection_version(version_id)
+
+        if version.published_at is not None:
+            raise CollectionPublishException("Cannot publish an already published collection")
+
+        if len(version.datasets) == 0:
+            raise CollectionPublishException("Cannot publish a collection with no datasets")
+
+        self.database_provider.finalize_collection_version(version.collection_id, version_id, None)
+
+    def get_dataset_version(self, dataset_version_id: DatasetVersionId) -> Optional[DatasetVersion]:
+        return self.database_provider.get_dataset_version(dataset_version_id)
+
+    def get_dataset_version_from_canonical(self, dataset_id: DatasetId) -> Optional[DatasetVersion]:
+        return self.database_provider.get_dataset_mapped_version(dataset_id)
