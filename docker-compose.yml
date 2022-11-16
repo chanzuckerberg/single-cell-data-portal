@@ -33,7 +33,7 @@ services:
       corporanet:
         aliases:
           - localstack.corporanet.local
-  frontend:
+  frontend_http:
     image: "${DOCKER_REPO}corpora-frontend"
     build:
       context: frontend
@@ -47,9 +47,9 @@ services:
     restart: always
     depends_on:
       - backend
-      - reverse_proxy
+      - frontend
     ports:
-      - "3000:3000"
+      - "3001:3001"
     command: ["./container_init.sh"]
     environment:
       - DEPLOYMENT_STAGE=test
@@ -64,7 +64,7 @@ services:
     networks:
       corporanet:
         aliases:
-          - frontend.corporanet.local
+          - frontend_http.corporanet.local
   upload_failures:
     image: "${DOCKER_REPO}corpora-upload-failures"
     build:
@@ -303,17 +303,19 @@ services:
       corporanet:
         aliases:
           - oidc.corporanet.local
-  reverse_proxy:
-    container_name: reverse_proxy
-    hostname: reverse_proxy
+  frontend:
     image: nginx
     ports:
-      - 80:80
+      - 3000:3000
       - 443:443
     volumes:
       - ./nginx/config:/etc/nginx
       - ./oauth/pkcs12:/etc/ssl/certs:ro
       - ./oauth/pkcs12:/etc/ssl/private:ro
+    networks:
+      corporanet:
+        aliases:
+          - frontend.corporanet.local
 networks:
   corporanet:
 volumes:
