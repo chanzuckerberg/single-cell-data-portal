@@ -91,6 +91,10 @@ resource "aws_ecs_task_definition" "task_definition" {
       {
         "name": "DD_SYSTEM_PROBE_ENABLED",
         "value": "false"
+      },
+      {
+        "name": "DD_GEVENT_PATCH_ALL",
+        "value": "true"
       }
     ],
     "port_mappings" : [
