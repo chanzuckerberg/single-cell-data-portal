@@ -21,7 +21,7 @@ fi
 
 # Build and run without dev mode in remote dev env.
 if [ "${DEPLOYMENT_STAGE}" == "test" ]; then
-  exec npm run dev
+  exec npm run dev -- -p 3001
 else
   # We need "-- --" because `npm run build-and-start-prod`
   # runs `npm run build && npm run serve` under the hood,
