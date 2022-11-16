@@ -33,7 +33,6 @@ import DownloadDataset from "src/components/Collections/components/Dataset/compo
 import { aggregateDatasetsMetadata } from "src/components/Collections/components/Grid/common/utils";
 import { OVER_MAX_CELL_COUNT_TOOLTIP } from "src/components/common/Grid/common/constants";
 import { checkIsOverMaxCellCount } from "src/components/common/Grid/common/utils";
-import ActionButton from "src/components/common/Grid/components/ActionButton";
 import ActionsCell from "src/components/common/Grid/components/ActionsCell";
 import CountCell from "src/components/common/Grid/components/CountCell";
 import DiseaseCell from "src/components/common/Grid/components/DiseaseCell";
@@ -41,10 +40,10 @@ import NTagCell from "src/components/common/Grid/components/NTagCell";
 import { RightAlignCell } from "src/components/common/Grid/components/RightAlignCell";
 import { StatusTags } from "src/components/common/Grid/components/StatusTags";
 import { DownloadButton } from "src/components/Datasets/components/Grid/common/utils";
-import DatasetExploreSvg from "src/components/Datasets/components/Grid/components/DatasetExploreSvg";
 import DatasetNameCell from "src/components/Datasets/components/Grid/components/DatasetNameCell";
 import { UploadingFile } from "src/components/DropboxChooser";
 import { Props as ChooserProps } from "src/components/DropboxChooser/index";
+import { StyledPrimaryAnchorButton } from "src/components/common/Button/common/style";
 
 const AsyncTooltip = loadable(
   () =>
@@ -232,21 +231,18 @@ const DatasetRow: FC<Props> = ({
           {hasCXGFile(dataset) && (
             <Tooltip
               boundary="viewport"
-              content={
-                isOverMaxCellCount ? OVER_MAX_CELL_COUNT_TOOLTIP : "Explore"
-              }
-              disabled={dataset.tombstone}
-              intent={isOverMaxCellCount ? Intent.DANGER : undefined}
+              content={OVER_MAX_CELL_COUNT_TOOLTIP}
+              disabled={!isOverMaxCellCount}
+              intent={Intent.DANGER}
             >
-              <ActionButton
+              <StyledPrimaryAnchorButton
                 data-test-id="view-dataset-link"
-                // @ts-expect-error -- revisit disabled typing
                 disabled={dataset.tombstone || isOverMaxCellCount}
                 href={dataset?.dataset_deployments[0]?.url}
-                iconSvg={<DatasetExploreSvg />}
-                isAnchorButton
+                intent={Intent.PRIMARY}
                 rel="noopener"
                 target="_blank"
+                text="Explore"
               />
             </Tooltip>
           )}

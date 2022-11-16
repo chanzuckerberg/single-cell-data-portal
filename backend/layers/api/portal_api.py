@@ -2,8 +2,8 @@ from typing import List, Optional, Tuple
 from unittest.mock import Mock
 
 from flask import Response, jsonify, make_response
-from backend.corpora.common.utils.authorization_checks import is_user_owner_or_allowed
-from backend.corpora.common.utils.http_exceptions import ConflictException, ForbiddenHTTPException, InvalidParametersHTTPException, MethodNotAllowedException, NotFoundHTTPException, ServerErrorHTTPException, TooLargeHTTPException
+from backend.common.utils.authorization_checks import is_user_owner_or_allowed
+from backend.common.utils.http_exceptions import ConflictException, ForbiddenHTTPException, InvalidParametersHTTPException, MethodNotAllowedException, NotFoundHTTPException, ServerErrorHTTPException, TooLargeHTTPException
 from backend.layers.api.enrichment import enrich_dataset_with_ancestors
 from backend.layers.auth.user_info import UserInfo
 from backend.layers.business.business import BusinessLogic
@@ -13,8 +13,8 @@ from backend.layers.business.entities import CollectionMetadataUpdate, Collectio
 from backend.layers.business.exceptions import ArtifactNotFoundException, CollectionCreationException, CollectionIsPublishedException, CollectionNotFoundException, CollectionPublishException, CollectionUpdateException, CollectionVersionException, DatasetInWrongStatusException, DatasetNotFoundException, InvalidURIException, MaxFileSizeExceededException
 from backend.layers.common.entities import CollectionId, CollectionMetadata, CollectionVersion, CollectionVersionId, DatasetArtifact, DatasetId, DatasetStatus, DatasetVersion, DatasetVersionId, Link, OntologyTermId
 
-from backend.corpora.common.utils import authorization_checks as auth
-from backend.corpora.common.utils.ontology_mappings.ontology_map_loader import ontology_mappings
+from backend.common.utils import authorization_checks as auth
+from backend.common.utils.ontology_mappings.ontology_map_loader import ontology_mappings
 import itertools
 
 from backend.layers.common import doi

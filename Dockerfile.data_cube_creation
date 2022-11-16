@@ -11,15 +11,16 @@ ENV PIP_NO_CACHE_DIR=1
 
 WORKDIR /
 
-ADD backend/wmg/requirements.txt requirements.txt 
+ADD backend/wmg/pipeline/requirements.txt requirements.txt
 ADD requirements.txt requirements-base.txt 
 RUN pip3 install -r requirements-base.txt -r requirements.txt 
 
 ADD backend/__init__.py backend/__init__.py
-ADD backend/wmg backend/wmg
-ADD backend/corpus_asset_pipelines backend/corpus_asset_pipelines
-ADD backend/corpora backend/corpora
-ADD backend/ontology_files backend/ontology_files
+ADD backend/wmg/__init__.py backend/wmg/__init__.py
+ADD backend/wmg/config.py backend/wmg/config.py
+ADD backend/wmg/data backend/wmg/data
+ADD backend/wmg/pipeline backend/wmg/pipeline
+ADD backend/common backend/common
 
 ARG HAPPY_BRANCH="unknown"
 ARG HAPPY_COMMIT=""
@@ -28,4 +29,4 @@ LABEL commit=${HAPPY_COMMIT}
 ENV COMMIT_SHA=${HAPPY_COMMIT}
 ENV COMMIT_BRANCH=${HAPPY_BRANCH}
 
-CMD ["python3", "-m", "backend.wmg.data.cube_pipeline"]
+CMD ["python3", "-m", "backend.wmg.pipeline.cube_pipeline"]

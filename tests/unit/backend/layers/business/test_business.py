@@ -7,9 +7,8 @@ from backend.layers.thirdparty.crossref_provider import CrossrefProviderInterfac
 from backend.layers.thirdparty.s3_provider import S3Provider
 from backend.layers.thirdparty.step_function_provider import StepFunctionProviderInterface
 
-from backend.corpora.common.providers.crossref_provider import CrossrefDOINotFoundException, CrossrefException
+from backend.common.providers.crossref_provider import CrossrefDOINotFoundException, CrossrefException
 from backend.layers.business.business import BusinessLogic, CollectionQueryFilter, DatasetArtifactDownloadData
-from backend.corpora.common.providers.crossref_provider import CrossrefException
 from backend.layers.business.business import BusinessLogic, CollectionMetadataUpdate, CollectionQueryFilter, DatasetArtifactDownloadData
 from backend.layers.business.exceptions import CollectionUpdateException, CollectionVersionException, InvalidLinkException, \
     CollectionCreationException, DatasetIngestException, CollectionPublishException

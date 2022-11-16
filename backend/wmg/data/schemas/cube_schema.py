@@ -26,7 +26,7 @@ expression_summary_non_indexed_dims = [
     "assay_ontology_term_id",
     "development_stage_ontology_term_id",
     "disease_ontology_term_id",
-    "ethnicity_ontology_term_id",
+    "self_reported_ethnicity_ontology_term_id",
     "sex_ontology_term_id",
 ]
 
@@ -44,7 +44,6 @@ expression_summary_domain = tiledb.Domain(
 
 # The cube attributes that comprise the core data stored within the cube.
 expression_summary_logical_attrs = [
-    tiledb.Attr(name="n_cells", dtype=np.uint32, filters=filters),
     tiledb.Attr(name="nnz", dtype=np.uint64, filters=filters),  # TODO: Why uint64?
     tiledb.Attr(name="sum", dtype=np.float32, filters=filters),
 ]
@@ -66,7 +65,6 @@ expression_summary_schema = tiledb.ArraySchema(
     tile_order="row-major",
     capacity=10000,
 )
-
 
 # Cell Counts Array
 

@@ -1,11 +1,7 @@
 import { ElementHandle, expect, Page, test } from "@playwright/test";
 import { ROUTES } from "src/common/constants/routes";
 import type { RawPrimaryFilterDimensionsResponse } from "src/common/queries/wheresMyGene";
-import {
-  describeIfDevStagingProd,
-  goToPage,
-  tryUntil,
-} from "tests/utils/helpers";
+import { goToPage, isDevStagingProd, tryUntil } from "tests/utils/helpers";
 import { TEST_URL } from "../common/constants";
 import { getTestID, getText } from "../utils/selectors";
 import { TISSUE_DENY_LIST } from "./fixtures/wheresMyGene/tissueRollup";
@@ -17,9 +13,11 @@ const CELL_TYPE_LABELS_ID = "cell-type-labels";
 const ADD_TISSUE_ID = "add-tissue";
 const ADD_GENE_ID = "add-gene";
 
-const { describe } = test;
+const { describe, skip } = test;
 
-describeIfDevStagingProd("Where's My Gene", () => {
+describe("Where's My Gene", () => {
+  skip(!isDevStagingProd, "WMG BE API does not work locally or in rdev");
+
   test("renders the getting started UI", async ({ page }) => {
     await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
 
@@ -58,7 +56,7 @@ describeIfDevStagingProd("Where's My Gene", () => {
 
     await expect(filtersPanel).toHaveSelector(getText("Dataset"));
     await expect(filtersPanel).toHaveSelector(getText("Disease"));
-    await expect(filtersPanel).toHaveSelector(getText("Ethnicity"));
+    await expect(filtersPanel).toHaveSelector(getText("Self-Reported Ethnicity"));
     await expect(filtersPanel).toHaveSelector(getText("Sex"));
 
     // Legend

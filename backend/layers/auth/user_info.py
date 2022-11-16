@@ -1,5 +1,5 @@
 
-from backend.corpora.common.utils import authorization_checks as auth
+from backend.common.utils import authorization_checks as auth
 from typing import Optional
 
 from backend.layers.business.entities import CollectionQueryFilter

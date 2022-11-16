@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import Iterable, Optional, Tuple
-from backend.corpora.common.providers.crossref_provider import CrossrefDOINotFoundException, CrossrefException
+from backend.common.providers.crossref_provider import CrossrefDOINotFoundException, CrossrefException
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.business.entities import CollectionMetadataUpdate, CollectionQueryFilter, DatasetArtifactDownloadData
 from backend.layers.business.exceptions import ArtifactNotFoundException, CollectionCreationException, CollectionIsPublishedException, CollectionNotFoundException, CollectionPublishException, CollectionUpdateException, CollectionVersionException, DatasetInWrongStatusException, DatasetIngestException, DatasetNotFoundException, DatasetUpdateException, InvalidURIException, MaxFileSizeExceededException

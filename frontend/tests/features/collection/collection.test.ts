@@ -1,20 +1,20 @@
 import { expect, Page, test } from "@playwright/test";
+import HTTP_STATUS_CODE from "src/common/constants/HTTP_STATUS_CODE";
 import { ROUTES } from "src/common/constants/routes";
 import { Collection } from "src/common/entities";
 import { sortByCellCountDescending } from "src/components/Collection/components/CollectionDatasetsGrid/components/DatasetsGrid/common/util";
 import { INVALID_DOI_ERROR_MESSAGE } from "src/components/CreateCollectionModal/components/Content/common/constants";
 import { BLUEPRINT_SAFE_TYPE_OPTIONS, TEST_URL } from "tests/common/constants";
 import {
-  describeIfDeployed,
-  describeIfDevStaging,
   goToPage,
+  isDevStagingProd,
   login,
   tryUntil,
 } from "tests/utils/helpers";
 import { getTestID, getText } from "tests/utils/selectors";
 import datasets from "../fixtures/datasets";
 
-const { describe } = test;
+const { describe, skip } = test;
 
 const TEST_COLLECTION: CollectionFormInput = {
   contact_email: "TEST@example.com",
@@ -37,7 +37,12 @@ type CollectionFormInput = Pick<
 >;
 
 describe("Collection", () => {
-  describeIfDeployed("Logged In Tests", () => {
+  describe("Logged In Tests", () => {
+    skip(
+      !isDevStagingProd,
+      "Currently push-test runs against dev BE, so login doesn't work for local containers"
+    );
+
     test("creates and deletes a collection", async ({ page }) => {
       const timestamp = Date.now();
       await login(page);
@@ -93,7 +98,9 @@ describe("Collection", () => {
     });
   });
 
-  describeIfDevStaging("Deployed Env Tests", () => {
+  describe("Deployed Env Tests", () => {
+    skip(!isDevStagingProd, "BE DOI endpoints only work in dev, staging, prod");
+
     describe("invalid DOIs", () => {
       test("doesn't create a collection with a DOI in an invalid format", async ({
         page,
@@ -114,7 +121,7 @@ describe("Collection", () => {
         await populatePublicationDOI("INVALID_FORMAT", page);
 
         // Attempt submit, confirm error message is displayed.
-        const [response] = await submitCreateForm(page);
+        const [response] = await submitCreateFormInvalid(page);
         expect(response.status()).toEqual(400);
         await expect(page).toHaveSelector(getText(INVALID_DOI_ERROR_MESSAGE));
       });
@@ -139,7 +146,7 @@ describe("Collection", () => {
         await populatePublicationDOI(VALID_FORMAT_BUT_NON_EXISTENT_DOI, page);
 
         // Attempt submit, confirm error message is displayed.
-        const [response] = await submitCreateForm(page);
+        const [response] = await submitCreateFormInvalid(page);
         expect(response.status()).toEqual(400);
         await expect(page).toHaveSelector(getText(INVALID_DOI_ERROR_MESSAGE));
       });
@@ -179,13 +186,34 @@ async function showCreateForm(page: Page) {
   await page.click(getText("Create Collection"));
 }
 
+const collectionEndpointPath = `/dp/v1/collections`;
+
+/**
+ * Submit create invalid collection form.
+ * @returns Form submit invalid parameters error response (400).
+ */
+async function submitCreateFormInvalid(page: Page) {
+  return await Promise.all([
+    page.waitForResponse(
+      (response) =>
+        response.url().includes(collectionEndpointPath) &&
+        response.status() === HTTP_STATUS_CODE.BAD_REQUEST
+    ),
+    page.click(getTestID("create-button")),
+  ]);
+}
+
 /**
  * Submit create collection form.
  * @returns Form submit response.
  */
 async function submitCreateForm(page: Page) {
   return await Promise.all([
-    page.waitForEvent("response"),
+    page.waitForResponse(
+      (response) =>
+        response.url().includes(collectionEndpointPath) &&
+        response.status() === HTTP_STATUS_CODE.OK
+    ),
     page.click(getTestID("create-button")),
   ]);
 }

@@ -13,7 +13,7 @@ import {
 import { isTombstonedCollection } from "src/common/utils/typeGuards";
 import {
   StyledDefaultButton,
-  StyledPrimaryAnchorButton,
+  StyledPrimaryMinimalButton,
   StyledPrimaryButton,
 } from "src/components/common/Button/common/style";
 import { Value } from "src/components/common/Form/common/constants";
@@ -60,7 +60,7 @@ enum FIELD_NAMES {
 }
 
 const AddMetadataLinkButton = () => (
-  <StyledPrimaryAnchorButton intent={Intent.PRIMARY} minimal text="Add Link" />
+  <StyledPrimaryMinimalButton intent={Intent.PRIMARY} minimal text="Add Link" />
 );
 
 const requiredValidator = (value: string) => value.length > 0 || "Required";
