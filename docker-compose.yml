@@ -47,7 +47,6 @@ services:
     restart: always
     depends_on:
       - backend
-      - frontend
     ports:
       - "3001:3001"
     command: ["./container_init.sh"]
@@ -305,6 +304,8 @@ services:
           - oidc.corporanet.local
   frontend:
     image: nginx
+    depends_on:
+      - frontend_http
     ports:
       - 3000:3000
       - 443:443
