@@ -12,9 +12,8 @@ from backend.layers.thirdparty.uri_provider import FileInfo
 
 from furl import furl
 
-from backend.corpora.common.providers.crossref_provider import CrossrefDOINotFoundException, CrossrefFetchException
-from backend.corpora.common.utils.corpora_constants import CorporaConstants
-from backend.corpora.lambdas.api.v1.collection import verify_collection_body
+from backend.common.providers.crossref_provider import CrossrefDOINotFoundException, CrossrefFetchException
+from backend.common.utils.corpora_constants import CorporaConstants
 from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
 from tests.unit.backend.layers.common.base_api_test import BaseAuthAPITest, DatasetArtifactUpdate, DatasetStatusUpdate, NewBaseTest
 

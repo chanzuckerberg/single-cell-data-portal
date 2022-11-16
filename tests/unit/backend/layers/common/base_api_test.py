@@ -9,7 +9,7 @@ import unittest
 from unittest.mock import Mock, patch
 
 
-from backend.corpora.common.corpora_config import CorporaAuthConfig
+from backend.common.corpora_config import CorporaAuthConfig
 from backend.layers.api.portal_api import PortalApi
 from backend.layers.api.router import portal_api
 from backend.layers.business.business import BusinessLogic
@@ -19,9 +19,9 @@ from backend.layers.thirdparty.s3_provider import S3Provider
 from backend.layers.thirdparty.step_function_provider import StepFunctionProviderInterface
 from backend.layers.thirdparty.uri_provider import FileInfo, UriProviderInterface
 from backend.layers.common.entities import CollectionMetadata, CollectionVersion, CollectionVersionId, DatasetMetadata, DatasetStatusGeneric, Link, OntologyTermId
-from tests.unit.backend.corpora.api_server.mock_auth import MockOauthServer
-from tests.unit.backend.corpora.api_server.config import TOKEN_EXPIRES
-from tests.unit.backend.corpora.fixtures.environment_setup import EnvironmentSetup
+from tests.unit.backend.api_server.mock_auth import MockOauthServer
+from tests.unit.backend.api_server.config import TOKEN_EXPIRES
+from tests.unit.backend.fixtures.environment_setup import EnvironmentSetup
 from tests.unit.backend.fixtures.data_portal_test_case import DataPortalTestCase
 from backend.layers.persistence.persistence_mock import DatabaseProviderMock
 
@@ -58,7 +58,7 @@ class BaseAuthAPITest(unittest.TestCase):
     def setUp(self):
         super().setUp()
         self.mock_assert_authorized_token = patch(
-            "backend.corpora.lambdas.api.v1.authentication.assert_authorized_token",
+            "backend.portal.api.app.v1.authentication.assert_authorized_token",
             side_effect=mock_assert_authorized_token,
         )
         self.mock_assert_authorized_token.start()
@@ -130,7 +130,7 @@ class NewBaseTest(BaseAuthAPITest):
         import backend.layers.api.router
         backend.layers.api.router.portal_api = Mock(return_value=pa)
 
-        from backend.corpora.api_server.app import app
+        from backend.api_server.app import app
         # from backend.corpora.api_server.app import configure_flask_app, create_flask_app
         # with EnvironmentSetup(dict(APP_NAME="corpora-api")):
         # flask_app = configure_flask_app(create_flask_app())
