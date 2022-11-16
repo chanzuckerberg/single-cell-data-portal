@@ -43,6 +43,7 @@ def create_marker_genes_cube(corpus_path: str):
             "cell_type_ontology_term_ids": tiss_celltypes,
         }
         for ct in tiss_celltypes:
+            logger.info("Calculating markers for tissue: %s, cell type: %s", tiss, ct)
             target = {
                 "tissue_ontology_term_ids": [tiss],
                 "cell_type_ontology_term_ids": [ct],
