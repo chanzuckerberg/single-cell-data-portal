@@ -6,17 +6,18 @@ from unittest.mock import Mock
 
 from backend.layers.api.portal_api import PortalApi
 from backend.layers.business.business import BusinessLogic
+from backend.layers.persistence.persistence import DatabaseProviderInterface
 from backend.layers.thirdparty.crossref_provider import CrossrefProviderInterface
 from backend.layers.thirdparty.s3_provider import S3Provider
 from backend.layers.thirdparty.step_function_provider import StepFunctionProviderInterface
 from backend.layers.thirdparty.uri_provider import UriProviderInterface
-from tests.unit.backend.layers.persistence.persistence_mock import DatabaseProviderMock
+# from tests.unit.backend.layers.persistence.persistence_mock import DatabaseProviderMock
 # from backend.layers.api.portal_api import PortalApi
 
 def portal_api():
     # TODO: put the real PortalApi here. Tests will mock this method to return a testable version of PortalAPI.
     # This is a poor man dependency injection, basically
-    database_provider = DatabaseProviderMock()
+    database_provider = DatabaseProviderInterface()
     crossref_provider = CrossrefProviderInterface()
     step_function_provider = StepFunctionProviderInterface()
     s3_provider = S3Provider()

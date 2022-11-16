@@ -14,7 +14,7 @@ from backend.layers.business.exceptions import CollectionUpdateException, Collec
     CollectionCreationException, DatasetIngestException, CollectionPublishException
 from backend.layers.common.entities import CollectionId, CollectionMetadata, CollectionVersion, CollectionVersionId, DatasetArtifact, DatasetMetadata, DatasetProcessingStatus, DatasetStatus, DatasetUploadStatus, DatasetValidationStatus, DatasetVersionId, Link, OntologyTermId
 from backend.layers.thirdparty.uri_provider import UriProviderInterface
-from tests.unit.backend.layers.persistence.persistence_mock import DatabaseProviderMock
+from backend.layers.persistence.persistence_mock import DatabaseProviderMock
 
 class BaseBusinessLogicTestCase(unittest.TestCase):
 
