@@ -71,3 +71,34 @@ expression_summary_fmg_schema = tiledb.ArraySchema(
     tile_order="row-major",
     capacity=10000,
 )
+
+marker_genes_indexed_dims = [
+    "tissue_ontology_term_id",
+    "organism_ontology_term_id",
+    "cell_type_ontology_term_id",
+    "gene_ontology_term_id",
+]
+
+marker_genes_logical_attrs = [
+    tiledb.Attr(name="p_value_ttest", dtype=np.float32, filters=filters),  # TODO: Why uint64?
+    tiledb.Attr(name="effect_size_ttest", dtype=np.float32, filters=filters),
+    tiledb.Attr(name="p_value_binomtest", dtype=np.float32, filters=filters),  # TODO: Why uint64?
+    tiledb.Attr(name="effect_size_binomtest", dtype=np.float32, filters=filters),
+]
+
+marker_genes_domain = tiledb.Domain(
+    [
+        tiledb.Dim(name=marker_genes_indexed_dim, domain=None, tile=None, dtype="ascii", filters=filters)
+        for marker_genes_indexed_dim in marker_genes_indexed_dims
+    ]
+)
+
+marker_genes_schema = tiledb.ArraySchema(
+    domain=marker_genes_domain,
+    sparse=True,
+    allows_duplicates=True,
+    attrs=marker_genes_logical_attrs,
+    cell_order="row-major",
+    tile_order="row-major",
+    capacity=10000,
+)

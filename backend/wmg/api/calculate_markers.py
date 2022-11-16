@@ -16,23 +16,42 @@ def _make_hashable(func):
         def __hash__(self):
             return hash(tuple(self))
 
+    class HDummy(list):
+        def __hash__(self):
+            return hash("")
+
     @wraps(func)
     def wrapped(*args, **kwargs):
-        args = tuple([HDict(arg) if isinstance(arg, dict) else arg for arg in args])
-        kwargs = {k: HDict(v) if isinstance(v, dict) else v for k, v in kwargs.items()}
+        new_args = []
+        for arg in args:
+            if isinstance(arg, dict):
+                arg = HDict(arg)
+            elif isinstance(arg, list):
+                arg = HList(arg)
+            elif isinstance(arg, WmgSnapshot):
+                arg = HDummy()
+            new_args.append(arg)
 
-        args = tuple([HList(arg) if isinstance(arg, list) else arg for arg in args])
-        kwargs = {k: HList(v) if isinstance(v, list) else v for k, v in kwargs.items()}
-        return func(*args, **kwargs)
+        new_kwargs = {}
+        for k, v in kwargs.items():
+            if isinstance(v, dict):
+                v = HDict(v)
+            elif isinstance(v, list):
+                v = HList(v)
+            elif isinstance(v, WmgSnapshot):
+                v = HDummy()
+            new_kwargs[k] = v
+
+        return func(*new_args, **new_kwargs)
 
     return wrapped
 
 
 @_make_hashable
 @lru_cache(maxsize=None)
-def _query_tiledb(filters, group_by_dims=None, genes=None):
+def _query_tiledb(filters, corpus_path=None, group_by_dims=None, genes=None):
     criteria = FmgQueryCriteria(**filters)
-    snapshot: WmgSnapshot = load_snapshot()
+    snapshot: WmgSnapshot = load_snapshot(corpus_path=corpus_path)
     Q = WmgQuery(snapshot)
     query = Q.expression_summary_fmg(criteria)
     cell_counts_query = Q.cell_counts(criteria)
@@ -84,9 +103,9 @@ def _query_tiledb(filters, group_by_dims=None, genes=None):
 
 
 @_make_hashable
-def _prepare_indices_and_metrics(target_filters, context_filters):
+def _prepare_indices_and_metrics(target_filters, context_filters, corpus_path=None):
     context_agg, groups_context_uniq, t_n_cells_sum_context, genes = _query_tiledb(
-        context_filters, group_by_dims=list(target_filters.keys())
+        context_filters, corpus_path=corpus_path, group_by_dims=list(target_filters.keys())
     )
     target_agg, t_n_cells_sum_target, _ = _query_tiledb(target_filters, genes=genes)
 
@@ -155,7 +174,9 @@ def _run_ttest(sum1, sumsq1, n1, sum2, sumsq2, n2):
     return pvals_adj, effects
 
 
-def _post_process_stats(genes, pvals, effects, nnz, min_num_expr_cells=25, p_bottom_comparisons=0.1, n_markers=10):
+def _post_process_stats(
+    genes, pvals, effects, nnz, test="ttest", min_num_expr_cells=25, p_bottom_comparisons=0.1, n_markers=10
+):
     zero_out = nnz.flatten() < min_num_expr_cells
     effects[:, zero_out] = 0
     pvals[:, zero_out] = 0
@@ -164,18 +185,26 @@ def _post_process_stats(genes, pvals, effects, nnz, min_num_expr_cells=25, p_bot
     effects = np.sort(effects, axis=0)[:n_bottom_comparisons].mean(0)
     # todo: fix p-value aggregation
     pvals = np.sort(pvals, axis=0)[:n_bottom_comparisons].mean(0)
-    markers = np.array(genes)[np.argsort(-effects)[:n_markers]]
-    p = pvals[np.argsort(-effects)[:n_markers]]
-    effects = effects[np.argsort(-effects)[:n_markers]]
+    if n_markers:
+        markers = np.array(genes)[np.argsort(-effects)[:n_markers]]
+        p = pvals[np.argsort(-effects)[:n_markers]]
+        effects = effects[np.argsort(-effects)[:n_markers]]
+    else:
+        markers = np.array(genes)[np.argsort(-effects)]
+        p = pvals[np.argsort(-effects)]
+        effects = effects[np.argsort(-effects)]
     statistics = []
+    final_markers = []
     for i in range(len(p)):
         pi = p[i]
         ei = effects[i]
-        statistics.append({"p_value": pi, "effect_size": ei})
-    return dict(zip(list(markers), statistics))
+        if ei > 0:
+            statistics.append({f"p_value_{test}": pi, f"effect_size_{test}": ei})
+            final_markers.append(markers[i])
+    return dict(zip(list(final_markers), statistics))
 
 
-def _get_markers_ttest(target_filters, context_filters, n_markers=10, p_bottom_comparisons=0.1):
+def _get_markers_ttest(target_filters, context_filters, corpus_path=None, n_markers=10, p_bottom_comparisons=0.1):
     (
         context_agg,
         groups_context_uniq,
@@ -187,7 +216,7 @@ def _get_markers_ttest(target_filters, context_filters, n_markers=10, p_bottom_c
         groups_indices_context,
         genes_indices_context,
         genes_indices_target,
-    ) = _prepare_indices_and_metrics(target_filters, context_filters)
+    ) = _prepare_indices_and_metrics(target_filters, context_filters, corpus_path=corpus_path)
 
     target_data_sum = np.zeros((1, len(genes)))
     target_data_sum[0, genes_indices_target] = list(target_agg["sum"])
@@ -204,7 +233,13 @@ def _get_markers_ttest(target_filters, context_filters, n_markers=10, p_bottom_c
     )
 
     return _post_process_stats(
-        genes, pvals, effects, target_data_nnz, n_markers=n_markers, p_bottom_comparisons=p_bottom_comparisons
+        genes,
+        pvals,
+        effects,
+        target_data_nnz,
+        test="ttest",
+        n_markers=n_markers,
+        p_bottom_comparisons=p_bottom_comparisons,
     )
 
 
@@ -225,7 +260,7 @@ def _run_binom(nnz_thr1, n1, nnz_thr2, n2):
     return pvals_adj, effects
 
 
-def _get_markers_binomtest(target_filters, context_filters, n_markers=10, p_bottom_comparisons=0.8):
+def _get_markers_binomtest(target_filters, context_filters, corpus_path=None, n_markers=10, p_bottom_comparisons=0.8):
     (
         context_agg,
         groups_context_uniq,
@@ -237,7 +272,7 @@ def _get_markers_binomtest(target_filters, context_filters, n_markers=10, p_bott
         groups_indices_context,
         genes_indices_context,
         genes_indices_target,
-    ) = _prepare_indices_and_metrics(target_filters, context_filters)
+    ) = _prepare_indices_and_metrics(target_filters, context_filters, corpus_path=corpus_path)
     target_data_nnz_thr = np.zeros((1, len(genes)))
     target_data_nnz_thr[0, genes_indices_target] = list(target_agg["nnz_thr"])
     context_data_nnz_thr = np.zeros((len(groups_context_uniq), len(genes)))
@@ -246,18 +281,34 @@ def _get_markers_binomtest(target_filters, context_filters, n_markers=10, p_bott
     pvals, effects = _run_binom(target_data_nnz_thr, n_target, context_data_nnz_thr, n_context)
 
     return _post_process_stats(
-        genes, pvals, effects, target_data_nnz, n_markers=n_markers, p_bottom_comparisons=p_bottom_comparisons
+        genes,
+        pvals,
+        effects,
+        target_data_nnz,
+        test="binomtest",
+        n_markers=n_markers,
+        p_bottom_comparisons=p_bottom_comparisons,
     )
 
 
-def get_markers(target_filters, context_filters, test="ttest", n_markers=10, p_bottom_comparisons=0.1):
+def get_markers(
+    target_filters, context_filters, corpus_path=None, test="ttest", n_markers=10, p_bottom_comparisons=0.1
+):
     if test == "ttest":
         return _get_markers_ttest(
-            target_filters, context_filters, n_markers=n_markers, p_bottom_comparisons=p_bottom_comparisons
+            target_filters,
+            context_filters,
+            corpus_path=corpus_path,
+            n_markers=n_markers,
+            p_bottom_comparisons=p_bottom_comparisons,
         )
     elif test == "binom":
         return _get_markers_binomtest(
-            target_filters, context_filters, n_markers=n_markers, p_bottom_comparisons=p_bottom_comparisons
+            target_filters,
+            context_filters,
+            corpus_path=corpus_path,
+            n_markers=n_markers,
+            p_bottom_comparisons=p_bottom_comparisons,
         )
     else:
         raise ValueError(f"Test {test} not supported.")

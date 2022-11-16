@@ -19,6 +19,7 @@ PRIMARY_FILTER_DIMENSIONS_FILENAME = "primary_filter_dimensions.json"
 EXPRESSION_SUMMARY_CUBE_NAME = "expression_summary"
 EXPRESSION_SUMMARY_FMG_CUBE_NAME = "expression_summary_fmg"
 CELL_COUNTS_CUBE_NAME = "cell_counts"
+MARKER_GENES_CUBE_NAME = "marker_genes"
 DATASET_TO_GENE_IDS_FILENAME = "dataset_to_gene_ids.json"
 
 logger = logging.getLogger("wmg")
@@ -42,6 +43,8 @@ class WmgSnapshot:
     # See the full schema at backend/wmg/data/schemas/marker_genes_cube_schema.py.
     expression_summary_fmg_cube: Array
 
+    marker_genes_cube: Array
+
     # TileDB array containing the total cell counts (expressed gene count, non-expressed mean, etc.) aggregated by
     # multiple cell metadata dimensions (but no gene dimension). See the full schema at
     # backend/wmg/data/schemas/cube_schema.py.
@@ -62,23 +65,34 @@ class WmgSnapshot:
 cached_snapshot: Optional[WmgSnapshot] = None
 
 
-def load_snapshot() -> WmgSnapshot:
+def load_snapshot(corpus_path=None) -> WmgSnapshot:
     """
     Loads and caches the WMG snapshot. Reloads the snapshot data if the latest_snapshot_identifier S3 object has
     been updated.
     @return: WmgSnapshot object
     """
+    if corpus_path:
+        global cached_snapshot
+        if new_snapshot_identifier := _update_latest_snapshot_identifier():
+            cached_snapshot = _load_snapshot(new_snapshot_identifier, use_s3=True)
+        return cached_snapshot
+    else:
+        return _load_snapshot(corpus_path, use_s3=False)
 
-    global cached_snapshot
 
-    if new_snapshot_identifier := _update_latest_snapshot_identifier():
-        cached_snapshot = _load_snapshot(new_snapshot_identifier)
-    return cached_snapshot
+def _load_snapshot(new_snapshot_identifier, use_s3=True) -> WmgSnapshot:
+    cell_type_orderings = _load_cell_type_order(new_snapshot_identifier, use_s3=use_s3)
+    primary_filter_dimensions = _load_primary_filter_data(new_snapshot_identifier, use_s3=use_s3)
+    dataset_to_gene_ids = _load_dataset_to_gene_ids_data(new_snapshot_identifier, use_s3=use_s3)
 
+    if use_s3:
+        snapshot_base_uri = _build_snapshot_base_uri(new_snapshot_identifier)
+    else:
+        snapshot_base_uri = new_snapshot_identifier
+        new_snapshot_identifier = new_snapshot_identifier.split("/")[-1]
 
-def _load_snapshot(new_snapshot_identifier) -> WmgSnapshot:
-    snapshot_base_uri = _build_snapshot_base_uri(new_snapshot_identifier)
     logger.info(f"Loading WMG snapshot at {snapshot_base_uri}")
+
     # TODO: Okay to keep TileDB arrays open indefinitely? Is it faster than re-opening each request?
     #  https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell
     #  -data-portal/2134
@@ -86,10 +100,11 @@ def _load_snapshot(new_snapshot_identifier) -> WmgSnapshot:
         snapshot_identifier=new_snapshot_identifier,
         expression_summary_cube=_open_cube(f"{snapshot_base_uri}/{EXPRESSION_SUMMARY_CUBE_NAME}"),
         expression_summary_fmg_cube=_open_cube(f"{snapshot_base_uri}/{EXPRESSION_SUMMARY_FMG_CUBE_NAME}"),
+        marker_genes_cube=_open_cube(f"{snapshot_base_uri}/{MARKER_GENES_CUBE_NAME}"),
         cell_counts_cube=_open_cube(f"{snapshot_base_uri}/{CELL_COUNTS_CUBE_NAME}"),
-        cell_type_orderings=_load_cell_type_order(new_snapshot_identifier),
-        primary_filter_dimensions=_load_primary_filter_data(new_snapshot_identifier),
-        dataset_to_gene_ids=_load_dataset_to_gene_ids_data(new_snapshot_identifier),
+        cell_type_orderings=cell_type_orderings,
+        primary_filter_dimensions=primary_filter_dimensions,
+        dataset_to_gene_ids=dataset_to_gene_ids,
     )
 
 
@@ -101,20 +116,25 @@ def _open_cube(cube_uri) -> Array:
         return None
 
 
-def _load_cell_type_order(snapshot_identifier: str) -> DataFrame:
-    return pd.read_json(_read_s3obj(f"{snapshot_identifier}/{CELL_TYPE_ORDERINGS_FILENAME}"))
+def _load_cell_type_order(snapshot_identifier: str, use_s3: bool = True) -> DataFrame:
+    if use_s3:
+        return pd.read_json(_read_s3obj(f"{snapshot_identifier}/{CELL_TYPE_ORDERINGS_FILENAME}"))
+    else:
+        return pd.read_json(json.load(open(f"{snapshot_identifier}/{CELL_TYPE_ORDERINGS_FILENAME}", "r")))
 
 
-def _load_primary_filter_data(snapshot_identifier: str) -> Dict:
-    return json.loads(_read_s3obj(f"{snapshot_identifier}/{PRIMARY_FILTER_DIMENSIONS_FILENAME}"))
+def _load_primary_filter_data(snapshot_identifier: str, use_s3: bool = True) -> Dict:
+    if use_s3:
+        return json.loads(_read_s3obj(f"{snapshot_identifier}/{PRIMARY_FILTER_DIMENSIONS_FILENAME}"))
+    else:
+        return json.load(open(f"{snapshot_identifier}/{PRIMARY_FILTER_DIMENSIONS_FILENAME}", "r"))
 
 
-def _load_dataset_to_gene_ids_data(snapshot_identifier: str) -> Dict:
-    try:
+def _load_dataset_to_gene_ids_data(snapshot_identifier: str, use_s3: bool = True) -> Dict:
+    if use_s3:
         return json.loads(_read_s3obj(f"{snapshot_identifier}/{DATASET_TO_GENE_IDS_FILENAME}"))
-    except ClientError:
-        logger.error("Dataset-to-gene IDs JSON does not exist in the snapshot. Setting it to an empty dictionary.")
-        return {}
+    else:
+        return json.load(open(f"{snapshot_identifier}/{DATASET_TO_GENE_IDS_FILENAME}", "r"))
 
 
 def _read_s3obj(relative_path: str) -> str:
