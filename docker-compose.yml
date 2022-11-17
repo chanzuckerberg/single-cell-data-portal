@@ -33,7 +33,7 @@ services:
       corporanet:
         aliases:
           - localstack.corporanet.local
-  frontend_http:
+  frontend:
     image: "${DOCKER_REPO}corpora-frontend"
     build:
       context: frontend
@@ -302,10 +302,10 @@ services:
       corporanet:
         aliases:
           - oidc.corporanet.local
-  frontend:
+  reverse_proxy:
     image: nginx
     depends_on:
-      - frontend_http
+      - frontend
     ports:
       - 3000:3000
       - 443:443
