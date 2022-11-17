@@ -43,7 +43,7 @@ All the E2E test commands can be found in `frontend/Makefile` and `frontend/pack
    1. In `frontend/` directory, run `npm i`
    2. Ensure your playwright config is connected to a working BE API service.
 
-      1. For BE running in Docker containers, `frontend/src/configs/configs.js` should point to `API_URL: "http://backend.corporanet.local:5000"`
+      1. For BE running in Docker containers, `frontend/src/configs/configs.js` should point to `API_URL: "https://backend.corporanet.local"`
 
       2. To run against Deployed BEs,`frontend/src/configs/configs.js` should point to `API_URL: "https://api.cellxgene.dev.single-cell.czi.technology"`, or any other deployed BE API base url
 

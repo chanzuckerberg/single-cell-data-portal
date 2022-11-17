@@ -21,7 +21,7 @@ const TEST_ENV_TO_TEST_URL = {
 
 /**
  * (thuang): From oauth/users.json
- * `frontend/tests/common/constants.ts` `API_URL` needs to be `"http://backend.corporanet.local:5000"`
+ * `frontend/tests/common/constants.ts` `API_URL` needs to be `"https://backend.corporanet.local"`
  * If `API_URL` is dev, staging, prod, or rdev, use their corresponding OIDC credentials
  */
 const LOCAL_CONTAINER_TEST_USERNAME = "User1";

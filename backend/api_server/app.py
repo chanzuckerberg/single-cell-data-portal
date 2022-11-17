@@ -68,7 +68,7 @@ def configure_flask_app(flask_app):
     allowed_origins = []
     deployment_stage = os.environ["DEPLOYMENT_STAGE"]
     if deployment_stage not in ["prod"]:
-        allowed_origins.extend([r"http://.*\.corporanet\.local:\d+", r"^http://localhost:\d+"])
+        allowed_origins.extend([r"https?://.*\.corporanet\.local(:\d+)?", r"^https?://localhost(:\d+)?"])
     if os.getenv("FRONTEND_URL"):
         allowed_origins.append(os.getenv("FRONTEND_URL"))
     if deployment_stage != "test":  # pragma: no cover

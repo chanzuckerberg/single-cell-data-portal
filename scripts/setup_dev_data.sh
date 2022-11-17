@@ -4,8 +4,8 @@ export AWS_DEFAULT_REGION=us-west-2
 export AWS_ACCESS_KEY_ID=nonce
 export AWS_SECRET_ACCESS_KEY=nonce
 
-export FRONTEND_URL=https://frontend.corporanet.local:3000
-export BACKEND_URL=http://backend.corporanet.local:5000
+export FRONTEND_URL=https://frontend.corporanet.local
+export BACKEND_URL=https://backend.corporanet.local
 
 # NOTE: This script is intended to run INSIDE the dockerized dev environment!
 # If you need to run it directly on your laptop for some reason, change
