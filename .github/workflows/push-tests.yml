@@ -88,14 +88,14 @@ jobs:
       - run: pwd
       - run: ls -lart
 
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         if: always()
         with:
           name: test-results
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/playwright-report
           retention-days: 30
 
-      - uses: actions/upload-artifact@master
+      - uses: actions/upload-artifact@v3
         with:
           name: allure-results
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/allure-results
@@ -114,7 +114,7 @@ jobs:
         if: always()
         id: allure-report
         with:
-          allure_results: allure-results
+          allure_results: frontend/allure-results
           gh_pages: gh-pages
           allure_report: allure-report
           allure_history: allure-history
@@ -123,7 +123,7 @@ jobs:
       - name: Deploy report to Github Pages
         if: always()
         uses: peaceiris/actions-gh-pages@v3
-        env:
+        with:
           PERSONAL_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PUBLISH_BRANCH: gh-pages
           PUBLISH_DIR: allure-history
