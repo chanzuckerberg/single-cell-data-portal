@@ -13,12 +13,9 @@ from datetime import datetime
 from os.path import basename, join
 
 class ProcessingLogic: # TODO: ProcessingLogicBase
-
     """
     Base class that contains all the processing logic methods
     """
-
-    # TODO: logging should arguably be deferred downstream
 
     business_logic: BusinessLogicInterface
     uri_provider: UriProviderInterface

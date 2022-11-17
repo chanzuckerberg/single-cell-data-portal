@@ -1,12 +1,27 @@
 
+from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.processing.process_logic import ProcessingLogic
 from backend.layers.common.entities import DatasetConversionStatus, DatasetStatusKey, DatasetVersionId
 
 import subprocess
 import os
+from backend.layers.thirdparty.s3_provider import S3Provider
+
+from backend.layers.thirdparty.uri_provider import UriProviderInterface
 
 
 class ProcessSeurat(ProcessingLogic):
+
+    def __init__(
+        self,     
+        business_logic: BusinessLogicInterface,
+        uri_provider: UriProviderInterface,
+        s3_provider: S3Provider,
+    ) -> None:
+        super().__init__()
+        self.business_logic = business_logic
+        self.uri_provider = uri_provider
+        self.s3_provider = s3_provider
 
     def process(self, dataset_id: DatasetVersionId, artifact_bucket: str):
         """
@@ -30,7 +45,7 @@ class ProcessSeurat(ProcessingLogic):
 
         labeled_h5ad_filename = "local.h5ad"
 
-        bucket_prefix = self.get_bucket_prefix(dataset_id)
+        bucket_prefix = self.get_bucket_prefix(dataset_id.id)
         object_key = f"{bucket_prefix}/{labeled_h5ad_filename}"
         self.download_from_s3(artifact_bucket, object_key, labeled_h5ad_filename)
 

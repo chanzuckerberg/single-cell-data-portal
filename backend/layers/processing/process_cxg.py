@@ -4,11 +4,25 @@ import subprocess
 from os.path import join
 
 from backend.corpora.dataset_processing.h5ad_data_file import H5ADDataFile
+from backend.layers.business.business_interface import BusinessLogicInterface
 
 from backend.layers.processing.process_logic import ProcessingLogic
 from backend.layers.common.entities import DatasetConversionStatus, DatasetStatusKey, DatasetVersionId
+from backend.layers.thirdparty.s3_provider import S3Provider
+from backend.layers.thirdparty.uri_provider import UriProviderInterface
 
 class ProcessCxg(ProcessingLogic):
+
+    def __init__(
+        self,     
+        business_logic: BusinessLogicInterface,
+        uri_provider: UriProviderInterface,
+        s3_provider: S3Provider,
+    ) -> None:
+        super().__init__()
+        self.business_logic = business_logic
+        self.uri_provider = uri_provider
+        self.s3_provider = s3_provider
 
     def process(self, dataset_id: DatasetVersionId, artifact_bucket: str, cellxgene_bucket: str):
         """
@@ -54,30 +68,12 @@ class ProcessCxg(ProcessingLogic):
         """
         Copy cxg files to the cellxgene bucket (under the given object key) for access by the explorer
         """
-        command = ["aws"]
-        if os.getenv("BOTO_ENDPOINT_URL"):
-            command.append(f"--endpoint-url={os.getenv('BOTO_ENDPOINT_URL')}")
-
-        command.extend(
-            [
-                "s3",
-                "cp",
-                cxg_dir,
-                s3_uri,
-                "--recursive",
-                "--acl",
-                "bucket-owner-full-control",
-            ]
-        )
-        subprocess.run(
-            command,
-            check=True,
-        )
+        self.s3_provider.upload_directory(cxg_dir, s3_uri)
 
 
     def process_cxg(self, local_filename, dataset_id, cellxgene_bucket):
         cxg_dir = self.convert_file(self.make_cxg, local_filename, "Issue creating cxg.", dataset_id, DatasetStatusKey.CXG)
-        bucket_prefix = self.get_bucket_prefix()
+        bucket_prefix = self.get_bucket_prefix(dataset_id.id)
         s3_uri = f"s3://{cellxgene_bucket}/{bucket_prefix}.cxg/"
         self.update_processing_status(dataset_id, DatasetStatusKey.CXG, DatasetConversionStatus.UPLOADING)
         self.copy_cxg_files_to_cxg_bucket(cxg_dir, s3_uri)

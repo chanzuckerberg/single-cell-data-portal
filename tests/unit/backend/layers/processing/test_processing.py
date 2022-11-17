@@ -5,7 +5,9 @@ from unittest.mock import Mock, patch
 from backend.layers.business.business import BusinessLogic
 from backend.layers.persistence.persistence import DatabaseProviderInterface
 from backend.layers.processing.downloader import Downloader
+from backend.layers.processing.process_cxg import ProcessCxg
 from backend.layers.processing.process_download_validate import ProcessDownloadValidate
+from backend.layers.processing.process_seurat import ProcessSeurat
 from backend.layers.thirdparty.s3_provider import S3Provider
 from backend.layers.thirdparty.schema_validator_provider import SchemaValidatorProvider
 from backend.layers.thirdparty.uri_provider import FileInfo, UriProvider
@@ -25,6 +27,9 @@ class MockS3Provider(S3Provider):
         url = f"s3://{bucket_name}/{dst_file}"
         self.mock_s3_fs.append(url)
 
+    def upload_directory(self, src_dir: str, s3_uri: str):
+        self.mock_s3_fs.append(s3_uri)
+
     def download_file(self, bucket_name: str, object_key: str, local_filename: str):
         pass
 
@@ -41,24 +46,31 @@ class MockS3Provider(S3Provider):
 
 class ProcessingTest(NewBaseTest):
 
+    def setUp(self):
+        super().setUp()
+        self.uri_provider = UriProvider()
+        self.uri_provider.get_file_info = Mock(return_value=FileInfo(1, "local.h5ad"))
+        self.s3_provider = MockS3Provider()
+        self.schema_validator = SchemaValidatorProvider()
+        self.schema_validator.validate_and_save_labels = Mock(return_value=(True, [], True))
+        self.downloader = Downloader(self.business_logic)
+        self.downloader.download_file = Mock()
 
     def test_process_download_validate_success(self):
         """
-        ProcessDownloadValidate should do things
+        ProcessDownloadValidate should:
+        1. Download the h5ad artifact
+        2. set validation status to VALID
+        3. Set upload status to UPLOADED
+        4. set h5ad status to UPLOADED
+        5. upload the original file to S3
+        6. upload the labeled file to S3
         """
         dropbox_uri = "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"
 
         collection = self.generate_unpublished_collection()
         dataset_version_id, dataset_id = self.business_logic.ingest_dataset(collection.version_id, dropbox_uri, None)
         # This is where we're at when we start the SFN
-
-        self.uri_provider = UriProvider()
-        self.uri_provider.get_file_info = Mock(return_value=FileInfo(1, "local.h5ad"))
-        self.s3_provider = MockS3Provider()
-        schema_validator = SchemaValidatorProvider()
-        schema_validator.validate_and_save_labels = Mock(return_value=(True, [], True))
-        downloader = Downloader(self.business_logic)
-        downloader.download_file = Mock()
 
         status = self.business_logic.get_dataset_status(dataset_version_id)
         # self.assertEqual(status.validation_status, DatasetValidationStatus.NA)
@@ -68,7 +80,7 @@ class ProcessingTest(NewBaseTest):
 
         # TODO: ideally use a real h5ad so that 
         with patch("backend.layers.processing.process_download_validate.ProcessDownloadValidate.extract_metadata") as mock:
-            pdv = ProcessDownloadValidate(self.business_logic, self.uri_provider, self.s3_provider, downloader, schema_validator)
+            pdv = ProcessDownloadValidate(self.business_logic, self.uri_provider, self.s3_provider, self.downloader, self.schema_validator)
             pdv.process(dataset_version_id, dropbox_uri, "fake_bucket_name")
 
             status = self.business_logic.get_dataset_status(dataset_version_id)
@@ -80,6 +92,55 @@ class ProcessingTest(NewBaseTest):
             self.assertTrue(self.s3_provider.uri_exists(f"s3://fake_bucket_name/{dataset_version_id.id}/raw.h5ad"))
             self.assertTrue(self.s3_provider.uri_exists(f"s3://fake_bucket_name/{dataset_version_id.id}/local.h5ad"))
 
+            artifacts = list(self.business_logic.get_dataset_artifacts(dataset_version_id))
+            self.assertEqual(1, len(artifacts))
+            artifact = artifacts[0]
+            artifact.type = "H5AD"
+            artifact.uri = f"s3://fake_bucket_name/{dataset_version_id.id}/local.h5ad"
+
+    def test_process_seurat_success(self):
+        collection = self.generate_unpublished_collection()
+        dataset_version_id, dataset_id = self.business_logic.ingest_dataset(collection.version_id, "nothing", None)
+
+        with patch("backend.layers.processing.process_seurat.ProcessSeurat.make_seurat") as mock:
+            mock.return_value = "local.rds"
+            ps = ProcessSeurat(self.business_logic, self.uri_provider, self.s3_provider)
+            ps.process(dataset_version_id, "fake_bucket_name")
+
+            status = self.business_logic.get_dataset_status(dataset_version_id)
+            self.assertEqual(status.rds_status, DatasetConversionStatus.UPLOADED)
+
+            self.assertTrue(self.s3_provider.uri_exists(f"s3://fake_bucket_name/{dataset_version_id.id}/local.rds"))
+
+            artifacts = list(self.business_logic.get_dataset_artifacts(dataset_version_id))
+            self.assertEqual(1, len(artifacts))
+            artifact = artifacts[0]
+            artifact.type = "RDS"
+            artifact.uri = f"s3://fake_bucket_name/{dataset_version_id.id}/local.rds"
+
+
+    def test_process_cxg_success(self):
+        collection = self.generate_unpublished_collection()
+        dataset_version_id, dataset_id = self.business_logic.ingest_dataset(collection.version_id, "nothing", None)
+
+        with patch("backend.layers.processing.process_cxg.ProcessCxg.make_cxg") as mock:
+            mock.return_value = "local.cxg"
+            ps = ProcessCxg(self.business_logic, self.uri_provider, self.s3_provider)
+            ps.process(dataset_version_id, "fake_bucket_name", "fake_cxg_bucket")
+
+            status = self.business_logic.get_dataset_status(dataset_version_id)
+            self.assertEqual(status.cxg_status, DatasetConversionStatus.UPLOADED)
+
+            self.assertTrue(self.s3_provider.uri_exists(f"s3://fake_cxg_bucket/{dataset_version_id.id}.cxg/"))
+
+            artifacts = list(self.business_logic.get_dataset_artifacts(dataset_version_id))
+            self.assertEqual(1, len(artifacts))
+            artifact = artifacts[0]
+            artifact.type = "CXG"
+            artifact.uri = f"s3://fake_cxg_bucket/{dataset_version_id.id}.cxg/"
+
+    def test_process_all(self):
+        pass
 
 
     def test_process_download_validate_fail(self):
