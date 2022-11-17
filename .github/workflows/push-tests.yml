@@ -85,9 +85,6 @@ jobs:
       - name: Run E2E tests
         run: DEBUG=pw:api npm run e2e
 
-      - run: pwd
-      - run: ls -lart
-
       - uses: actions/upload-artifact@v3
         if: always()
         with:
