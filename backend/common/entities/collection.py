@@ -14,6 +14,7 @@ from backend.common.entities import Dataset
 from backend.common.entities.entity import Entity
 from backend.common.entities.geneset import Geneset
 from backend.common.utils.db_helpers import clone
+from ddtrace import tracer
 from sqlalchemy import and_
 from sqlalchemy.orm import Session
 
@@ -27,6 +28,7 @@ class Collection(Entity):
         super().__init__(db_object)
 
     @classmethod
+    @tracer.wrap()
     def create(
         cls,
         session: Session,
@@ -66,6 +68,7 @@ class Collection(Entity):
         return cls(new_db_object)
 
     @classmethod
+    @tracer.wrap()
     def get_collection(
         cls,
         session: Session,
@@ -102,12 +105,14 @@ class Collection(Entity):
         return cls(collection) if collection else None
 
     @classmethod
+    @tracer.wrap()
     def list_collections_in_time_range(cls, session: Session, *args, **kwargs):
         return cls.list_attributes_in_time_range(
             session, *args, filters=[DbCollection.visibility == CollectionVisibility.PUBLIC.name], **kwargs
         )
 
     @classmethod
+    @tracer.wrap()
     def list_attributes_in_time_range(
         cls,
         session: Session,
@@ -154,6 +159,7 @@ class Collection(Entity):
         return results
 
     @classmethod
+    @tracer.wrap()
     def list_public_datasets_for_index(cls, session: Session) -> typing.List[typing.Dict]:
         """
         Return a list of all the datasets and associated metadata. For efficiency reasons, this only returns the fields

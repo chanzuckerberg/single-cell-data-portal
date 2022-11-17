@@ -5,6 +5,7 @@ from collections import OrderedDict
 from datetime import datetime
 from pathlib import PurePosixPath
 
+from ddtrace import tracer
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
@@ -37,6 +38,7 @@ class Dataset(Entity):
         super().__init__(db_object)
 
     @classmethod
+    @tracer.wrap()
     def create(
         cls,
         session: Session,
@@ -89,6 +91,7 @@ class Dataset(Entity):
         super().update(commit=commit, **kwargs)
 
     @classmethod
+    @tracer.wrap()
     def get(
         cls, session: Session, dataset_id=None, include_tombstones=False, collection_id=None
     ) -> typing.Optional["Dataset"]:
@@ -104,6 +107,7 @@ class Dataset(Entity):
         return dataset
 
     @classmethod
+    @tracer.wrap()
     def get_by_explorer_url(cls, session: Session, explorer_url):
         """
         Return the most recently created dataset with the given explorer_url or None
@@ -125,6 +129,7 @@ class Dataset(Entity):
         return dataset
 
     @classmethod
+    @tracer.wrap()
     def list(
         cls, session: Session, collection_id: str = None, include_tombstones: bool = False
     ) -> typing.List["Dataset"]:

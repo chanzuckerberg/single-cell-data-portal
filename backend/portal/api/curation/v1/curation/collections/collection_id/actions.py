@@ -6,7 +6,7 @@ from backend.portal.api.app.v1.collection import (
     curation_get_normalized_doi_url,
 )
 
-from backend.api_server.db import dbconnect_and_ddtrace
+from backend.api_server.db import dbconnect
 from backend.common.corpora_orm import (
     CollectionVisibility,
     DbCollectionLink,
@@ -24,7 +24,7 @@ from backend.portal.api.app.v1.common import get_collection_else_forbidden
 from backend.portal.api.curation.v1.curation.collections.common import extract_doi_from_links, reshape_for_curation_api
 
 
-@dbconnect_and_ddtrace
+@dbconnect
 def delete(collection_id: str, token_info: dict):
     db_session = g.db_session
     collection = get_collection_else_forbidden(db_session, collection_id, owner=owner_or_allowed(token_info))
@@ -35,7 +35,7 @@ def delete(collection_id: str, token_info: dict):
     return "", 204
 
 
-@dbconnect_and_ddtrace
+@dbconnect
 def get(collection_id: str, token_info: dict):
     db_session = g.db_session
     collection = get_collection_else_forbidden(db_session, collection_id, include_tombstones=False)
@@ -43,7 +43,7 @@ def get(collection_id: str, token_info: dict):
     return jsonify(collection_response)
 
 
-@dbconnect_and_ddtrace
+@dbconnect
 def patch(collection_id: str, body: dict, token_info: dict) -> Response:
     db_session = g.db_session
 

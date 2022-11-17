@@ -4,10 +4,10 @@ from backend.portal.api.app.v1.authorization import is_super_curator, owner_or_a
 from backend.portal.api.app.v1.collection import create_collection_common, curation_get_normalized_doi_url
 from backend.common.corpora_orm import CollectionVisibility, DbCollection, ProjectLinkType
 from backend.common.utils.http_exceptions import ForbiddenHTTPException, InvalidParametersHTTPException
-from backend.api_server.db import dbconnect_and_ddtrace
+from backend.api_server.db import dbconnect
 
 
-@dbconnect_and_ddtrace
+@dbconnect
 def get(visibility: str, token_info: dict, curator: str = None):
     """
     Collections index endpoint for Curation API. Only return Collection data for which the curator is authorized.

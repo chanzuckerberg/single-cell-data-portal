@@ -1,12 +1,10 @@
-from ddtrace import tracer
-from flask import g
 from functools import wraps
 
 from backend.common.utils.db_session import db_session_manager
+from flask import g
 
 
-@tracer.wrap()
-def dbconnect_and_ddtrace(func):
+def dbconnect(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         with db_session_manager() as session:

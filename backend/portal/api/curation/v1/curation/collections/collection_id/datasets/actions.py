@@ -1,6 +1,6 @@
 from flask import g, make_response, jsonify
 
-from backend.api_server.db import dbconnect_and_ddtrace
+from backend.api_server.db import dbconnect
 from backend.common.corpora_orm import DbCollection, CollectionVisibility, ProcessingStatus
 from backend.common.entities import Dataset
 from backend.common.utils.http_exceptions import (
@@ -17,7 +17,7 @@ from backend.portal.api.app.v1.common import (
 from backend.portal.api.curation.v1.curation.collections.common import EntityColumns, reshape_dataset_for_curation_api
 
 
-@dbconnect_and_ddtrace
+@dbconnect
 def get(collection_id: str, dataset_id: str = None):
     db_session = g.db_session
     if not db_session.query(DbCollection.id).filter(DbCollection.id == collection_id).first():
@@ -27,7 +27,7 @@ def get(collection_id: str, dataset_id: str = None):
     return make_response(jsonify(response_body), 200)
 
 
-@dbconnect_and_ddtrace
+@dbconnect
 def delete(token_info: dict, collection_id: str, dataset_id: str = None):
     db_session = g.db_session
     dataset = get_dataset_else_error(db_session, dataset_id, collection_id, include_tombstones=True)
@@ -35,7 +35,7 @@ def delete(token_info: dict, collection_id: str, dataset_id: str = None):
     return "", 202
 
 
-@dbconnect_and_ddtrace
+@dbconnect
 def post(token_info: dict, collection_id: str):
     db_session = g.db_session
     collection = get_collection_else_forbidden(db_session, collection_id, owner=owner_or_allowed(token_info))

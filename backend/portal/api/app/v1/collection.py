@@ -21,11 +21,11 @@ from backend.common.utils.http_exceptions import (
     InvalidParametersHTTPException,
     ForbiddenHTTPException,
 )
-from backend.api_server.db import dbconnect_and_ddtrace
+from backend.api_server.db import dbconnect
 from backend.common.utils.regex import CONTROL_CHARS, DOI_REGEX_COMPILED, CURIE_REFERENCE_REGEX
 
 
-@dbconnect_and_ddtrace
+@dbconnect
 def get_collections_list(from_date: int = None, to_date: int = None, token_info: Optional[dict] = None):
     db_session = g.db_session
     all_collections = Collection.list_attributes_in_time_range(
@@ -66,7 +66,7 @@ def get_collections_list(from_date: int = None, to_date: int = None, token_info:
     return make_response(jsonify(result), 200)
 
 
-@dbconnect_and_ddtrace
+@dbconnect
 def get_collection_details(collection_id: str, token_info: dict):
     db_session = g.db_session
     collection = get_collection_else_forbidden(db_session, collection_id, include_tombstones=True)
@@ -84,7 +84,7 @@ def get_collection_details(collection_id: str, token_info: dict):
     return make_response(jsonify(result), response)
 
 
-@dbconnect_and_ddtrace
+@dbconnect
 def get_collections_index():
     # TODO (ebezzi): this is very similar to `get_collections_list` above. Eventually they should be consolidated
     db_session = g.db_session
@@ -125,7 +125,7 @@ def post_collection_revision_common(collection_id: str, token_info: dict):
     return collection_revision
 
 
-@dbconnect_and_ddtrace
+@dbconnect
 def post_collection_revision(collection_id: str, token_info: dict):
     collection_revision = post_collection_revision_common(collection_id, token_info)
     result = collection_revision.reshape_for_api()
@@ -242,7 +242,7 @@ def create_collection(body: dict, user: str):
     return make_response(jsonify({"collection_id": collection_id}), 201)
 
 
-@dbconnect_and_ddtrace
+@dbconnect
 def create_collection_common(body: dict, user: str, doi: str, errors: list):
     db_session = g.db_session
     verify_collection_body(body, errors)
@@ -270,7 +270,7 @@ def create_collection_common(body: dict, user: str, doi: str, errors: list):
     return collection.id
 
 
-@dbconnect_and_ddtrace
+@dbconnect
 def delete_collection(collection_id: str, token_info: dict):
     db_session = g.db_session
     collection = get_collection_else_forbidden(db_session, collection_id, owner=owner_or_allowed(token_info))
@@ -288,7 +288,7 @@ def delete_collection(collection_id: str, token_info: dict):
     return "", 204
 
 
-@dbconnect_and_ddtrace
+@dbconnect
 def update_collection(collection_id: str, body: dict, token_info: dict):
     db_session = g.db_session
     collection, errors = get_collection_and_verify_body(db_session, collection_id, body, token_info)

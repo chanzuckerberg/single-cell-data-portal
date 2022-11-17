@@ -11,7 +11,7 @@ from sqlalchemy.orm import Session
 from backend.common.corpora_orm import Base
 
 
-class Entity(metaclass=DatadogTraced):
+class Entity:  #(metaclass=DatadogTraced):
     """
     An abstract base class providing an interface to parse application-level objects to and from their
     database counterparts.
@@ -56,6 +56,7 @@ class Entity(metaclass=DatadogTraced):
         """
         return [cls(obj) for obj in session.query(cls.table)]
 
+    @tracer.wrap()
     def save(self):
         """
         Writes the current object state to the database
@@ -70,6 +71,7 @@ class Entity(metaclass=DatadogTraced):
         """
         return self.db_object.__getattribute__(name)
 
+    @tracer.wrap()
     def delete(self, commit=True):
         """
         Delete an object from the database.
@@ -78,6 +80,7 @@ class Entity(metaclass=DatadogTraced):
         if commit:
             self.session.commit()
 
+    @tracer.wrap()
     def update(self, commit=True, **kwargs):
         for key, value in kwargs.items():
             if hasattr(self.db_object, key):

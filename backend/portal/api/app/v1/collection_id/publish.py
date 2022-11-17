@@ -4,14 +4,14 @@ from backend.common.corpora_orm import CollectionVisibility
 from backend.common.entities import Collection
 from backend.common.utils.http_exceptions import ConflictException
 
-from backend.api_server.db import dbconnect_and_ddtrace
+from backend.api_server.db import dbconnect
 from backend.common.utils.http_exceptions import ForbiddenHTTPException
 from backend.portal.api.app.v1.authorization import owner_or_allowed
 
 from backend.common.utils import cloudfront
 
 
-@dbconnect_and_ddtrace
+@dbconnect
 def post(collection_id: str, body: object, token_info: dict):
     db_session = g.db_session
     collection = Collection.get_collection(

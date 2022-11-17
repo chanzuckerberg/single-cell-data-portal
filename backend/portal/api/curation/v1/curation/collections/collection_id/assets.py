@@ -1,13 +1,13 @@
 from flask import g, make_response, jsonify
 
-from backend.api_server.db import dbconnect_and_ddtrace
+from backend.api_server.db import dbconnect
 from backend.common.corpora_orm import DatasetArtifactFileType
 from backend.common.entities import DatasetAsset
 from backend.common.utils.http_exceptions import NotFoundHTTPException
 from backend.portal.api.app.v1.common import get_dataset_else_error
 
 
-@dbconnect_and_ddtrace
+@dbconnect
 def get(collection_id: str, dataset_id=None):
     db_session = g.db_session
     dataset = get_dataset_else_error(db_session, dataset_id, collection_id)

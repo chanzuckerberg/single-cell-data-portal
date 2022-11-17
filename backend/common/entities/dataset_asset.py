@@ -9,6 +9,7 @@ from botocore.exceptions import ClientError
 from backend.common.entities.entity import Entity
 from backend.common.corpora_orm import DbDatasetArtifact, DatasetArtifactFileType
 from backend.common.utils.s3_buckets import buckets
+from ddtrace import tracer
 
 
 class DatasetAsset(Entity):
@@ -69,6 +70,7 @@ class DatasetAsset(Entity):
         self.session.info["s3_deletion_list"].append(self.delete_from_s3)
 
     @classmethod
+    @tracer.wrap()
     def create(
         cls,
         session,
@@ -98,6 +100,7 @@ class DatasetAsset(Entity):
         return join("s3://", artifact_bucket, bucket_prefix, file_name)
 
     @classmethod
+    @tracer.wrap()
     def upload(
         cls,
         file_name: str,
@@ -114,6 +117,7 @@ class DatasetAsset(Entity):
         return DatasetAsset.make_s3_uri(artifact_bucket, bucket_prefix, file_base)
 
     @classmethod
+    @tracer.wrap()
     def s3_uris_for_datasets(cls, session, dataset_ids, file_type=None) -> typing.Dict:
         """
         Returns a dictionary of dataset_id : s3_uri for a given list of dataset ids
