@@ -98,7 +98,7 @@ resource "aws_ecs_task_definition" "task_definition" {
       },
       {
         "name": "DD_APM_FILTER_TAGS_REJECT",
-        "value": "http.useragent=ELB-HealthChecker/2.0"
+        "value": "http.useragent:ELB-HealthChecker/2.0"
       }
     ],
     "port_mappings" : [
