@@ -1,6 +1,7 @@
-import type { PlaywrightTestConfig } from "@playwright/test";
-import { devices, expect } from "@playwright/test";
+import { devices, expect, PlaywrightTestConfig } from "@playwright/test";
 import { matchers } from "expect-playwright";
+import fs from "fs";
+import { LOGIN_STATE_FILENAME } from "tests/common/constants";
 import featureFlags from "./tests/common/featureFlags";
 
 expect.extend(matchers);
@@ -76,7 +77,7 @@ const config: PlaywrightTestConfig = {
     headless: !isHeadful,
     ignoreHTTPSErrors: true,
     screenshot: "only-on-failure",
-    storageState: featureFlags,
+    storageState: getStorageState(),
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: "retain-on-failure",
     video: {
@@ -95,5 +96,58 @@ const config: PlaywrightTestConfig = {
   //   port: 3000,
   // },
 };
+
+function getStorageState(): {
+  cookies: Array<{
+    name: string;
+
+    value: string;
+
+    /**
+     * domain and path are required
+     */
+    domain: string;
+
+    /**
+     * domain and path are required
+     */
+    path: string;
+
+    /**
+     * Unix time in seconds.
+     */
+    expires: number;
+
+    httpOnly: boolean;
+
+    secure: boolean;
+
+    /**
+     * sameSite flag
+     */
+    sameSite: "Strict" | "Lax" | "None";
+  }>,
+  origins: Array<{
+    origin: string;
+
+    localStorage: Array<{
+      name: string;
+
+      value: string;
+    }>;
+  }>;
+} {
+  let storageState = featureFlags;
+
+  if (fs.existsSync(LOGIN_STATE_FILENAME)) {
+    const loginState = JSON.parse(fs.readFileSync(LOGIN_STATE_FILENAME, "utf-8"));
+
+    // Merge loginState with featureFlags
+    storageState.cookies = storageState.cookies.concat(loginState.cookies);
+    storageState.origins = storageState.origins.concat(loginState.origins);
+  }
+
+  return storageState;
+}
 
 export default config;
