@@ -1,17 +1,13 @@
 import logging
 import typing
-from typing import Any
 
-from backend.common.utils.datadogtraced import DatadogTraced
+from backend.common.corpora_orm import Base
 from ddtrace import tracer
 from sqlalchemy import inspect
 from sqlalchemy.orm import Session
 
 
-from backend.common.corpora_orm import Base
-
-
-class Entity:  #(metaclass=DatadogTraced):
+class Entity:
     """
     An abstract base class providing an interface to parse application-level objects to and from their
     database counterparts.
