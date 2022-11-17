@@ -135,7 +135,7 @@ jobs:
             context: 'Test Results Link'
             state: 'success'
             sha: ${{ github.sha }}
-            target_url: https://chanzuckerberg.github.io/allure-html-reporter-github-pages/${{ github.run_number }}
+            target_url: https://chanzuckerberg.github.io/single-cell-data-portal/${{ github.run_number }}
 
       - name: Install happy
         uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.2.1
