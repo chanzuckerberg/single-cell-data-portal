@@ -24,12 +24,22 @@ APP_NAME = "{}-{}".format(os.environ["APP_NAME"], DEPLOYMENT_STAGE)
 
 
 configure_logging(APP_NAME)
+
+# Datadog APM tracing
+# See https://ddtrace.readthedocs.io/en/stable/basic_usage.html#patch-all
+
+# next line may be redundant with DD_GEVENT_PATCH_ALL env var in .happy/terraform/modules/service/main.tf
 gevent.monkey.patch_all()
 tracer.configure(
     hostname=os.environ['DD_AGENT_HOST'],
     port=os.environ['DD_TRACE_AGENT_PORT'],
 )
 patch_all()
+
+# enable Datadog profiling for development
+if DEPLOYMENT_STAGE in ['dev', 'test']:
+    # noinspection PyPackageRequirements,PyUnresolvedReferences
+    import ddtrace.profiling.auto
 
 
 def create_flask_app():
@@ -68,6 +78,7 @@ def create_flask_app():
     GeneChecker()
 
     return connexion_app.app
+
 
 @tracer.wrap()
 def configure_flask_app(flask_app):
