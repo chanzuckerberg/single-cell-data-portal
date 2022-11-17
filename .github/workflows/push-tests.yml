@@ -81,8 +81,12 @@ jobs:
           npx playwright install --with-deps
           cp src/configs/dev.js src/configs/configs.js
           npm run dev&
+
       - name: Run E2E tests
         run: DEBUG=pw:api npm run e2e
+
+      - run: pwd
+      - run: ls -lart
 
       - uses: actions/upload-artifact@v2
         if: always()
