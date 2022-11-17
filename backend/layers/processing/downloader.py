@@ -4,9 +4,10 @@ import threading
 
 import requests
 from backend.layers.business.business import BusinessLogic
+from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.processing.exceptions import ProcessingFailed, UploadFailed
 
-from entities import DatasetProcessingStatus, DatasetUploadStatus, DatasetVersionId
+from backend.layers.common.entities import DatasetProcessingStatus, DatasetStatusKey, DatasetUploadStatus, DatasetVersionId
 
 logger = logging.getLogger(__name__)
 
@@ -64,7 +65,10 @@ class NoOpProgressTracker:
 
 class Downloader:
 
-    business_logic: BusinessLogic
+    business_logic: BusinessLogicInterface
+
+    def __init__(self, business_logic: BusinessLogicInterface) -> None:
+        self.business_logic = business_logic
 
     def downloader(self, url: str, local_path: str, tracker: ProgressTracker, chunk_size: int):
         """
@@ -170,7 +174,7 @@ class Downloader:
         if file_size and file_size >= shutil.disk_usage("/")[2]:
             raise UploadFailed("Insufficient disk space.")
 
-        self.business_logic.update_dataset_version_status(dataset_id, "upload", DatasetUploadStatus.UPLOADING)
+        self.business_logic.update_dataset_version_status(dataset_id, DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADING)
         # TODO: set upload_progress to 0
 
         if file_size is not None:

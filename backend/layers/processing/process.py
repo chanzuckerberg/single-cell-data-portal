@@ -5,7 +5,7 @@ from backend.layers.processing.process_cxg import ProcessCxg
 
 from backend.layers.processing.process_download_validate import ProcessDownloadValidate
 from backend.layers.processing.process_seurat import ProcessSeurat
-from entities import DatasetConversionStatus, DatasetProcessingStatus, DatasetStatusKey, DatasetUploadStatus, DatasetValidationStatus, DatasetVersionId
+from backend.layers.common.entities import DatasetConversionStatus, DatasetProcessingStatus, DatasetStatusKey, DatasetUploadStatus, DatasetValidationStatus, DatasetVersionId
 
 
 class ProcessMain(ProcessingLogic):

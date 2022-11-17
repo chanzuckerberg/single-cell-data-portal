@@ -2,10 +2,14 @@ from logging import Logger
 from typing import List, Literal, Optional, Tuple
 from backend.corpora.common.utils.corpora_constants import CorporaConstants
 from backend.layers.business.business import BusinessLogic
+from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.processing.downloader import Downloader
 from backend.layers.processing.exceptions import ValidationFailed
 from backend.layers.processing.process_logic import ProcessingLogic
-from entities import DatasetConversionStatus, DatasetMetadata, DatasetProcessingStatus, DatasetStatusGeneric, DatasetStatusKey, DatasetUploadStatus, DatasetValidationStatus, DatasetVersionId, OntologyTermId
+from backend.layers.thirdparty.s3_provider import S3Provider
+from backend.layers.thirdparty.schema_validator_provider import SchemaValidatorProvider
+from backend.layers.thirdparty.uri_provider import UriProvider, UriProviderInterface
+from backend.layers.common.entities import DatasetConversionStatus, DatasetMetadata, DatasetProcessingStatus, DatasetStatusGeneric, DatasetStatusKey, DatasetUploadStatus, DatasetValidationStatus, DatasetVersionId, OntologyTermId
 
 import scanpy
 import numpy
@@ -13,6 +17,22 @@ import numpy
 class ProcessDownloadValidate(ProcessingLogic):
 
     downloader: Downloader
+    schema_validator: SchemaValidatorProvider
+
+    def __init__(
+        self,     
+        business_logic: BusinessLogicInterface,
+        uri_provider: UriProviderInterface,
+        s3_provider: S3Provider,
+        downloader: Downloader,
+        schema_validator: SchemaValidatorProvider,
+    ) -> None:
+        super().__init__()
+        self.business_logic = business_logic
+        self.uri_provider = uri_provider
+        self.s3_provider = s3_provider
+        self.downloader = downloader
+        self.schema_validator = schema_validator
 
     def validate_h5ad_file_and_add_labels(self, dataset_id: DatasetVersionId, local_filename: str) -> Tuple[str, bool]:
         """
@@ -21,13 +41,13 @@ class ProcessDownloadValidate(ProcessingLogic):
         :param local_filename: file name of the dataset to validate and label
         :return: file name of labeled dataset, boolean indicating if seurat conversion is possible
         """
-        from cellxgene_schema import validate
+        # TODO: use a provider here
 
         self.update_processing_status(dataset_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.VALIDATING)
 
         output_filename = CorporaConstants.LABELED_H5AD_ARTIFACT_FILENAME
         try:
-            is_valid, errors, can_convert_to_seurat = validate.validate(local_filename, output_filename)
+            is_valid, errors, can_convert_to_seurat = self.schema_validator.validate_and_save_labels(local_filename, output_filename)
         except Exception as e:
             raise ValidationFailed([str(e)])
 
@@ -204,7 +224,7 @@ class ProcessDownloadValidate(ProcessingLogic):
             self.update_processing_status(dataset_id, DatasetStatusKey.RDS, DatasetConversionStatus.SKIPPED)
             self.logger.info(f"Skipping Seurat conversion for dataset {dataset_id}")
 
-        bucket_prefix = self.get_bucket_prefix(dataset_id)
+        bucket_prefix = self.get_bucket_prefix(dataset_id.id)
         # Upload the original dataset to the artifact bucket
         self.create_artifact(
             local_filename, "H5AD", bucket_prefix, dataset_id, artifact_bucket, DatasetStatusKey.H5AD

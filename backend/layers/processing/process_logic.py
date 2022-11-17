@@ -2,11 +2,12 @@ from logging import Logger
 from typing import Callable, List, Literal, Optional
 from backend.corpora.common.utils.corpora_constants import CorporaConstants
 from backend.layers.business.business import BusinessLogic
+from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.processing.downloader import Downloader
 from backend.layers.processing.exceptions import ConversionFailed
 from backend.layers.thirdparty.s3_provider import S3Provider
-from backend.layers.thirdparty.uri_provider import UriProvider
-from entities import DatasetConversionStatus, DatasetMetadata, DatasetProcessingStatus, DatasetStatusGeneric, DatasetStatusKey, DatasetValidationStatus, DatasetVersionId, OntologyTermId
+from backend.layers.thirdparty.uri_provider import UriProvider, UriProviderInterface
+from backend.layers.common.entities import DatasetConversionStatus, DatasetMetadata, DatasetProcessingStatus, DatasetStatusGeneric, DatasetStatusKey, DatasetValidationStatus, DatasetVersionId, OntologyTermId
 
 from datetime import datetime
 from os.path import basename, join
@@ -19,11 +20,14 @@ class ProcessingLogic: # TODO: ProcessingLogicBase
 
     # TODO: logging should arguably be deferred downstream
 
-    business_logic: BusinessLogic
-    uri_provider: UriProvider
+    business_logic: BusinessLogicInterface
+    uri_provider: UriProviderInterface
     s3_provider: S3Provider
     downloader: Downloader
     logger: Logger
+
+    def __init__(self) -> None:
+        self.logger = Logger("processing")
 
     def update_processing_status(self, dataset_id: DatasetVersionId, status_key: DatasetStatusKey, status_value: DatasetStatusGeneric):
         # TODO: Change to status_key
@@ -88,9 +92,9 @@ class ProcessingLogic: # TODO: ProcessingLogicBase
         return file_dir
 
     def get_bucket_prefix(self, identifier) -> str:
-        pass
-        # remote_dev_prefix = os.environ.get("REMOTE_DEV_PREFIX", "")
-        # if remote_dev_prefix:
-        #     return join(remote_dev_prefix, identifier).strip("/")
-        # else:
-        #     return identifier
+        import os
+        remote_dev_prefix = os.environ.get("REMOTE_DEV_PREFIX", "")
+        if remote_dev_prefix:
+            return join(remote_dev_prefix, identifier).strip("/")
+        else:
+            return identifier

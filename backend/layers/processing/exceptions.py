@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import List
 
-from entities import DatasetStatusKey
+from backend.layers.common.entities import DatasetStatusKey
 
 
 class ProcessingException(Exception):
