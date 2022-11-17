@@ -1,3 +1,4 @@
+from ddtrace import tracer
 from flask import make_response, jsonify, g
 
 from backend.portal.api.app.v1.common import delete_dataset_common, get_collection_else_forbidden
@@ -73,6 +74,7 @@ def get_status(dataset_id: str, token_info: dict):
 
 
 @dbconnect
+@tracer.wrap()
 def get_datasets_index():
     db_session = g.db_session
     datasets = Collection.list_public_datasets_for_index(db_session)

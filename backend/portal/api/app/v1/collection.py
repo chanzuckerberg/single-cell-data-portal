@@ -67,6 +67,7 @@ def get_collections_list(from_date: int = None, to_date: int = None, token_info:
 
 
 @dbconnect
+@tracer.wrap()
 def get_collection_details(collection_id: str, token_info: dict):
     db_session = g.db_session
     collection = get_collection_else_forbidden(db_session, collection_id, include_tombstones=True)
