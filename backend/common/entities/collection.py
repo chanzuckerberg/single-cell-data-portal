@@ -248,6 +248,7 @@ class Collection(Entity):
         result["datasets"] = datasets
         return result
 
+    @tracer.wrap()
     def publish(self, data_submission_policy_version):
         """
         Given a private collection, set the collection to public.
@@ -312,6 +313,7 @@ class Collection(Entity):
 
         self.session.commit()
 
+    @tracer.wrap()
     def create_revision(self) -> "Collection":
         """
         Generate a collection revision from a public collection
@@ -332,6 +334,7 @@ class Collection(Entity):
         self.session.commit()
         return Collection(revision_collection)
 
+    @tracer.wrap()
     def tombstone_collection(self):
         self.update(tombstone=True, commit=False)
         for geneset in self.genesets:
@@ -342,6 +345,7 @@ class Collection(Entity):
             ds.tombstone_dataset_and_delete_child_objects()
         self.session.commit()
 
+    @tracer.wrap()
     def update(self, links: list = None, keep_links=False, **kwargs) -> None:
         """
         Update an existing collection to match provided the parameters. The specified columns are replaced.
@@ -360,6 +364,7 @@ class Collection(Entity):
 
         super().update(**kwargs)
 
+    @tracer.wrap()
     def update_curation(self, links: list = None, keep_links=False, **kwargs) -> None:
         """
         Update an existing collection to match provided the parameters. The specified columns are replaced. The DOI is
@@ -389,6 +394,7 @@ class Collection(Entity):
 
         super().update(**kwargs)
 
+    @tracer.wrap()
     def delete(self):
         for dataset in self.datasets:
             ds = Dataset(dataset)

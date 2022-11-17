@@ -66,6 +66,7 @@ class Dataset(Entity):
 
         return cls(dataset)
 
+    @tracer.wrap()
     def update(self, artifacts: list = None, processing_status: dict = None, commit=True, **kwargs) -> None:
         """
         Update an existing dataset to match provided the parameters. The specified column are replaced.
@@ -152,6 +153,7 @@ class Dataset(Entity):
         else:
             return [cls(obj) for obj in session.query(cls.table)]
 
+    @tracer.wrap()
     def get_asset(self, asset_id) -> typing.Union[DatasetAsset, None]:
         """
         Retrieve the asset if it exists in the dataset.
@@ -231,6 +233,7 @@ class Dataset(Entity):
         # Note: the final slash is mandatory, otherwise the explorer won't load this link
         return f"{new_url}/"
 
+    @tracer.wrap()
     def create_revision(self, revision_collection_id: str) -> "Dataset":
         """
         Generate a dataset revision from a dataset in a public collection
@@ -255,12 +258,14 @@ class Dataset(Entity):
         self.session.commit()
         return Dataset(revision_dataset)
 
+    @tracer.wrap()
     def tombstone_dataset_and_delete_child_objects(self):
         self.update(tombstone=True, artifacts=[], processing_status={})
         self.session.query(DbGenesetDatasetLink).filter(DbGenesetDatasetLink.dataset_id == self.id).delete(
             synchronize_session="evaluate"
         )
 
+    @tracer.wrap()
     def asset_deletion(self):
         for artifact in self.artifacts:
             asset = DatasetAsset.get(self.session, artifact.id)
@@ -275,12 +280,14 @@ class Dataset(Entity):
             "processing_status": ProcessingStatus.PENDING,
         }
 
+    @tracer.wrap()
     def copy_csv_to_s3(self, csv_file: str) -> str:
         object_name = get_cxg_bucket_path(self.explorer_url)
         s3_file = f"{object_name}-genesets.csv"
         buckets.explorer_bucket.upload_file(csv_file, s3_file)
         return s3_file
 
+    @tracer.wrap()
     def generate_tidy_csv_for_all_linked_genesets(self, csv_file_path: str) -> str:
         csv_file = os.path.join(csv_file_path, "geneset.csv")
         fieldnames = ["GENE_SET_NAME", "GENE_SET_DESCRIPTION", "GENE_SYMBOL", "GENE_DESCRIPTION"]
@@ -304,6 +311,7 @@ class Dataset(Entity):
                 writer.writerow(gene)
         return csv_file
 
+    @tracer.wrap()
     def reprocess(self):
         if not self.published:
             self.asset_deletion()
@@ -323,6 +331,7 @@ class Dataset(Entity):
             artifacts=[],
         )
 
+    @tracer.wrap()
     def get_most_recent_artifact(self, filetype=DatasetArtifactFileType.CXG):
         filters = [DbDatasetArtifact.dataset_id == self.id, DbDatasetArtifact.filetype == filetype]
         artifact = (
@@ -334,6 +343,7 @@ class Dataset(Entity):
         )
         return DatasetAsset(artifact[0]) if artifact else None
 
+    @tracer.wrap()
     def publish_new(self, now: datetime):
         """
         Publish a new dataset with the published_at datetime populated
@@ -343,6 +353,7 @@ class Dataset(Entity):
         collection_id = self.collection.revision_of if self.collection.revision_of else self.collection.id
         self.update(collection_id=collection_id, published=True, published_at=now, commit=False)
 
+    @tracer.wrap()
     def publish_revision(self, revision: "Dataset", now: datetime) -> bool:
         """
         Publish a revision of a dataset if the dataset under revision is
