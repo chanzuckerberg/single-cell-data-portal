@@ -701,6 +701,7 @@ export interface SelectCategoryValueView {
   label: string;
   selected: boolean;
   selectedPartial: boolean;
+  visible: boolean;
 }
 
 /**

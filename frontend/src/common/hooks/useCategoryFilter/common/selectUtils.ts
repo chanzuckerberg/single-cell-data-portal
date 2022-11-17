@@ -120,11 +120,14 @@ export function buildNextSelectCategoryFilters<T extends Categories>(
  * @param config - Config model of category to build category value views for.
  * @param selectCategoryValues - Values to build view models from.
  * @param ontologyTermLabelsById - Set of ontology term labels keyed by term ID, used to determine labels for ontology
+ * @param visibleUINodeIds - an optional set of visibleNode ids used when creating SelectCategoryValueViews for the multi panel ontology filters.
+ * @returns an array of SelectCategoryValueViews for a category filter.
  */
 export function buildSelectCategoryValueViews(
   config: CategoryFilterConfig,
   selectCategoryValues: SelectCategoryValue[],
-  ontologyTermLabelsById: Map<string, string>
+  ontologyTermLabelsById: Map<string, string>,
+  visibleUINodeIds?: Set<string>
 ): SelectCategoryValueView[] {
   return selectCategoryValues.map(
     ({
@@ -143,6 +146,9 @@ export function buildSelectCategoryValueViews(
         ),
         selected,
         selectedPartial,
+        visible: visibleUINodeIds
+          ? visibleUINodeIds.has(categoryValueId)
+          : true,
       };
     }
   );
