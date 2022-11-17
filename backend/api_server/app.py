@@ -5,19 +5,18 @@ from urllib.parse import urlparse
 
 import connexion
 import gevent.monkey
-
-from ddtrace import tracer
-from ddtrace import patch_all
-
+from backend.api_server.logger import configure_logging
+from backend.api_server.request_id import get_request_id, generate_request_id
+from backend.common.utils.aws import AwsSecret
+from backend.common.utils.json import CustomJSONEncoder, CurationJSONEncoder
+from backend.gene_info.api.ensembl_ids import GeneChecker
 from connexion import FlaskApi, ProblemException, problem
+from ddtrace import patch_all
+from ddtrace import tracer
+from ddtrace.filters import FilterRequestsOnUrl
 from flask import g, request, Response
 from flask_cors import CORS
 from swagger_ui_bundle import swagger_ui_path
-from backend.api_server.logger import configure_logging
-from backend.common.utils.aws import AwsSecret
-from backend.common.utils.json import CustomJSONEncoder, CurationJSONEncoder
-from backend.api_server.request_id import get_request_id, generate_request_id
-from backend.gene_info.api.ensembl_ids import GeneChecker
 
 DEPLOYMENT_STAGE = os.environ["DEPLOYMENT_STAGE"]
 APP_NAME = "{}-{}".format(os.environ["APP_NAME"], DEPLOYMENT_STAGE)
@@ -36,8 +35,15 @@ tracer.configure(
 )
 patch_all()
 
+# Filter out health check endpoint (index page: '/')
+tracer.configure(settings={
+    'FILTERS': [
+        FilterRequestsOnUrl([r'http://.*/$']),
+    ],
+})
+
 # enable Datadog profiling for development
-if DEPLOYMENT_STAGE in ['dev', 'test']:
+if DEPLOYMENT_STAGE not in ['staging', 'prod']:
     # noinspection PyPackageRequirements,PyUnresolvedReferences
     import ddtrace.profiling.auto
 
