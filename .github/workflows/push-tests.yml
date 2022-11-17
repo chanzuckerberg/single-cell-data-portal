@@ -92,13 +92,13 @@ jobs:
         if: always()
         with:
           name: test-results
-          path: frontend/playwright-report
+          path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/playwright-report
           retention-days: 30
 
       - uses: actions/upload-artifact@master
         with:
           name: allure-results
-          path: allure-results
+          path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/allure-results
           retention-days: 20
 
       - name: Get Allure history
