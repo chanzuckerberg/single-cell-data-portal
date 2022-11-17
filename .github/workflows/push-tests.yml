@@ -125,9 +125,19 @@ jobs:
         if: always()
         uses: peaceiris/actions-gh-pages@v3
         with:
-          PERSONAL_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PUBLISH_BRANCH: gh-pages
-          PUBLISH_DIR: allure-history
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: allure-history
+
+      - name: Post the link to the report
+        if: always()
+        uses: Sibz/github-status-action@v1
+        with: 
+            authToken: ${{secrets.GITHUB_TOKEN}}
+            context: 'Test Results Link'
+            state: 'success'
+            sha: ${{ github.sha }}
+            target_url: https://chanzuckerberg.github.io/allure-html-reporter-github-pages/${{ github.run_number }}
 
       - name: Install happy
         uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.2.1
