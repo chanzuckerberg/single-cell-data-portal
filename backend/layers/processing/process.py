@@ -1,3 +1,5 @@
+from backend.layers.business.business_interface import BusinessLogicInterface
+from backend.layers.processing.downloader import Downloader
 from backend.layers.processing.exceptions import ConversionFailed, ProcessingCanceled, ProcessingFailed, UploadFailed, ValidationFailed
 from backend.layers.processing.process_logic import ProcessingLogic
 import os
@@ -6,6 +8,9 @@ from backend.layers.processing.process_cxg import ProcessCxg
 from backend.layers.processing.process_download_validate import ProcessDownloadValidate
 from backend.layers.processing.process_seurat import ProcessSeurat
 from backend.layers.common.entities import DatasetConversionStatus, DatasetProcessingStatus, DatasetStatusKey, DatasetUploadStatus, DatasetValidationStatus, DatasetVersionId
+from backend.layers.thirdparty.s3_provider import S3ProviderInterface
+from backend.layers.thirdparty.schema_validator_provider import SchemaValidatorProvider
+from backend.layers.thirdparty.uri_provider import UriProviderInterface
 
 
 class ProcessMain(ProcessingLogic):
@@ -13,6 +18,23 @@ class ProcessMain(ProcessingLogic):
     process_download_validate: ProcessDownloadValidate
     process_seurat: ProcessSeurat
     process_cxg: ProcessCxg
+
+    def __init__(self,
+        business_logic: BusinessLogicInterface,
+        uri_provider: UriProviderInterface,
+        s3_provider: S3ProviderInterface,
+        downloader: Downloader,
+        schema_validator: SchemaValidatorProvider
+    ) -> None:
+        super().__init__()
+        self.business_logic = business_logic
+        self.uri_provider = uri_provider
+        self.s3_provider = s3_provider
+        self.downloader = downloader
+        self.schema_validator = schema_validator
+        self.process_download_validate = ProcessDownloadValidate(self.business_logic, self.uri_provider, self.s3_provider, self.downloader, self.schema_validator)
+        self.process_seurat = ProcessSeurat(self.business_logic, self.uri_provider, self.s3_provider)
+        self.process_cxg = ProcessCxg(self.business_logic, self.uri_provider,self.s3_provider)
 
     def log_batch_environment(self):
         batch_environment_variables = [

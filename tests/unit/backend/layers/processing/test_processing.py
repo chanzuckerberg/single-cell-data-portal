@@ -5,6 +5,7 @@ from unittest.mock import Mock, patch
 from backend.layers.business.business import BusinessLogic
 from backend.layers.persistence.persistence import DatabaseProviderInterface
 from backend.layers.processing.downloader import Downloader
+from backend.layers.processing.process import ProcessMain
 from backend.layers.processing.process_cxg import ProcessCxg
 from backend.layers.processing.process_download_validate import ProcessDownloadValidate
 from backend.layers.processing.process_seurat import ProcessSeurat
@@ -93,7 +94,7 @@ class ProcessingTest(NewBaseTest):
             self.assertTrue(self.s3_provider.uri_exists(f"s3://fake_bucket_name/{dataset_version_id.id}/local.h5ad"))
 
             artifacts = list(self.business_logic.get_dataset_artifacts(dataset_version_id))
-            self.assertEqual(1, len(artifacts))
+            self.assertEqual(2, len(artifacts))
             artifact = artifacts[0]
             artifact.type = "H5AD"
             artifact.uri = f"s3://fake_bucket_name/{dataset_version_id.id}/local.h5ad"
@@ -139,9 +140,38 @@ class ProcessingTest(NewBaseTest):
             artifact.type = "CXG"
             artifact.uri = f"s3://fake_cxg_bucket/{dataset_version_id.id}.cxg/"
 
-    def test_process_all(self):
-        pass
+    @patch("backend.layers.processing.process_download_validate.ProcessDownloadValidate.extract_metadata")
+    @patch("backend.layers.processing.process_seurat.ProcessSeurat.make_seurat")
+    @patch("backend.layers.processing.process_cxg.ProcessCxg.make_cxg")
+    def test_process_all(self, mock_cxg, mock_seurat, mock_h5ad):
+        mock_seurat.return_value = "local.rds"
+        mock_cxg.return_value = "local.cxg"
+        dropbox_uri = "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"
+        collection = self.generate_unpublished_collection()
+        dataset_version_id, dataset_id = self.business_logic.ingest_dataset(collection.version_id, dropbox_uri, None)
+        
+        pm = ProcessMain(self.business_logic, self.uri_provider, self.s3_provider, self.downloader, self.schema_validator)
+        for step_name in ["download-validate", "cxg", "seurat"]:
+            pm.process(dataset_version_id, step_name, dropbox_uri, "fake_bucket_name", "fake_cxg_bucket")
 
+        self.assertTrue(self.s3_provider.uri_exists(f"s3://fake_bucket_name/{dataset_version_id.id}/raw.h5ad"))
+        self.assertTrue(self.s3_provider.uri_exists(f"s3://fake_bucket_name/{dataset_version_id.id}/local.h5ad"))
+        self.assertTrue(self.s3_provider.uri_exists(f"s3://fake_bucket_name/{dataset_version_id.id}/local.rds"))
+        self.assertTrue(self.s3_provider.uri_exists(f"s3://fake_cxg_bucket/{dataset_version_id.id}.cxg/"))
+
+        status = self.business_logic.get_dataset_status(dataset_version_id)
+        self.assertEqual(status.cxg_status, DatasetConversionStatus.UPLOADED)
+        self.assertEqual(status.rds_status, DatasetConversionStatus.UPLOADED)
+        self.assertEqual(status.h5ad_status, DatasetConversionStatus.UPLOADED)
+        self.assertEqual(status.validation_status, DatasetValidationStatus.VALID)
+        self.assertEqual(status.upload_status, DatasetUploadStatus.UPLOADED)
+        self.assertEqual(status.processing_status, DatasetProcessingStatus.PENDING)
+        # TODO: DatasetProcessingStatus.SUCCESS is set by a lambda that also needs to be modified. It should belong here
+
+        artifacts = list(self.business_logic.get_dataset_artifacts(dataset_version_id))
+        self.assertEqual(4, len(artifacts))
+
+        
 
     def test_process_download_validate_fail(self):
         pass

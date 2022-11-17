@@ -5,7 +5,7 @@ from backend.layers.common.entities import DatasetConversionStatus, DatasetStatu
 
 import subprocess
 import os
-from backend.layers.thirdparty.s3_provider import S3Provider
+from backend.layers.thirdparty.s3_provider import S3Provider, S3ProviderInterface
 
 from backend.layers.thirdparty.uri_provider import UriProviderInterface
 
@@ -16,7 +16,7 @@ class ProcessSeurat(ProcessingLogic):
         self,     
         business_logic: BusinessLogicInterface,
         uri_provider: UriProviderInterface,
-        s3_provider: S3Provider,
+        s3_provider: S3ProviderInterface,
     ) -> None:
         super().__init__()
         self.business_logic = business_logic

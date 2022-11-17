@@ -8,7 +8,7 @@ from backend.layers.business.business_interface import BusinessLogicInterface
 
 from backend.layers.processing.process_logic import ProcessingLogic
 from backend.layers.common.entities import DatasetConversionStatus, DatasetStatusKey, DatasetVersionId
-from backend.layers.thirdparty.s3_provider import S3Provider
+from backend.layers.thirdparty.s3_provider import S3Provider, S3ProviderInterface
 from backend.layers.thirdparty.uri_provider import UriProviderInterface
 
 class ProcessCxg(ProcessingLogic):
@@ -17,7 +17,7 @@ class ProcessCxg(ProcessingLogic):
         self,     
         business_logic: BusinessLogicInterface,
         uri_provider: UriProviderInterface,
-        s3_provider: S3Provider,
+        s3_provider: S3ProviderInterface,
     ) -> None:
         super().__init__()
         self.business_logic = business_logic

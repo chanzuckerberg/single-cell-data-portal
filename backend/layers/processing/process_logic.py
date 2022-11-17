@@ -5,7 +5,7 @@ from backend.layers.business.business import BusinessLogic
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.processing.downloader import Downloader
 from backend.layers.processing.exceptions import ConversionFailed
-from backend.layers.thirdparty.s3_provider import S3Provider
+from backend.layers.thirdparty.s3_provider import S3Provider, S3ProviderInterface
 from backend.layers.thirdparty.uri_provider import UriProvider, UriProviderInterface
 from backend.layers.common.entities import DatasetConversionStatus, DatasetMetadata, DatasetProcessingStatus, DatasetStatusGeneric, DatasetStatusKey, DatasetValidationStatus, DatasetVersionId, OntologyTermId
 
@@ -19,7 +19,7 @@ class ProcessingLogic: # TODO: ProcessingLogicBase
 
     business_logic: BusinessLogicInterface
     uri_provider: UriProviderInterface
-    s3_provider: S3Provider
+    s3_provider: S3ProviderInterface
     downloader: Downloader
     logger: Logger
 
