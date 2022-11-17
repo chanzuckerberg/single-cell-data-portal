@@ -30,17 +30,17 @@ configure_logging(APP_NAME)
 # next line may be redundant with DD_GEVENT_PATCH_ALL env var in .happy/terraform/modules/service/main.tf
 gevent.monkey.patch_all()
 tracer.configure(
-    hostname=os.environ['DD_AGENT_HOST'],
-    port=os.environ['DD_TRACE_AGENT_PORT'],
+        hostname=os.environ['DD_AGENT_HOST'],
+        port=os.environ['DD_TRACE_AGENT_PORT'],
+        # Filter out health check endpoint (index page: '/')
+        settings={
+            'FILTERS': [
+                FilterRequestsOnUrl([r'http://.*/$']),
+            ],
+        }
 )
 patch_all()
 
-# Filter out health check endpoint (index page: '/')
-tracer.configure(settings={
-    'FILTERS': [
-        FilterRequestsOnUrl([r'http://.*/$']),
-    ],
-})
 
 # enable Datadog profiling for development
 if DEPLOYMENT_STAGE not in ['staging', 'prod']:
