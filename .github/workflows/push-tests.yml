@@ -109,16 +109,17 @@ jobs:
           ref: gh-pages
           path: gh-pages
 
-      - name: Test marketplace action
-        uses: simple-elf/allure-report-action@master
+      - name: Create Playwright Test Results History
+        uses: PavanMudigonda/allure-html-reporter-github-pages@v1.0
         if: always()
         id: allure-report
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          WORKFLOW_ID: push-tests.yml
           allure_results: frontend/allure-results
           gh_pages: gh-pages
-          allure_report: allure-report
-          allure_history: allure-history
-          keep_reports: 20
+          allure_report: frontend/allure-report
+          allure_history: frontend/allure-history
 
       - name: Deploy report to Github Pages
         if: always()
