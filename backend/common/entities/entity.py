@@ -1,6 +1,9 @@
 import logging
 import typing
+from typing import Any
 
+from backend.common.utils.datadogtraced import DatadogTraced
+from ddtrace import tracer
 from sqlalchemy import inspect
 from sqlalchemy.orm import Session
 
@@ -8,7 +11,7 @@ from sqlalchemy.orm import Session
 from backend.common.corpora_orm import Base
 
 
-class Entity:
+class Entity(metaclass=DatadogTraced):
     """
     An abstract base class providing an interface to parse application-level objects to and from their
     database counterparts.
@@ -29,6 +32,7 @@ class Entity:
         self.session = inspect(db_object).session
 
     @classmethod
+    @tracer.wrap()
     def get(cls, session: Session, key: typing.Union[str, typing.Tuple[str, str]]) -> typing.Union["Entity", None]:
         """
         Retrieves an entity from the database given its primary key if found.
@@ -44,6 +48,7 @@ class Entity:
             return None
 
     @classmethod
+    @tracer.wrap()
     def list(cls, session: Session) -> "Entity":
         """
         Retrieves a list of entities from the database

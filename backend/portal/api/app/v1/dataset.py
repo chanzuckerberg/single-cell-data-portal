@@ -1,21 +1,20 @@
-from ddtrace import tracer
 from flask import make_response, jsonify, g
 
-from backend.portal.api.app.v1.common import delete_dataset_common, get_collection_else_forbidden
+from backend.api_server.db import dbconnect_and_ddtrace
 from backend.common.corpora_orm import CollectionVisibility, DatasetArtifactFileType
 from backend.common.entities import Dataset, Collection
 from backend.common.entities.geneset import GenesetDatasetLink
-from backend.api_server.db import dbconnect
+from backend.common.utils.exceptions import CorporaException
 from backend.common.utils.http_exceptions import (
     NotFoundHTTPException,
     ServerErrorHTTPException,
     ForbiddenHTTPException,
 )
-from backend.common.utils.exceptions import CorporaException
 from backend.portal.api.app.v1.authorization import owner_or_allowed
+from backend.portal.api.app.v1.common import delete_dataset_common, get_collection_else_forbidden
 
 
-@dbconnect
+@dbconnect_and_ddtrace
 def post_dataset_asset(dataset_id: str, asset_id: str):
     db_session = g.db_session
     # retrieve the dataset
@@ -49,7 +48,7 @@ def post_dataset_asset(dataset_id: str, asset_id: str):
     )
 
 
-@dbconnect
+@dbconnect_and_ddtrace
 def get_dataset_assets(dataset_id: str):
     db_session = g.db_session
     # retrieve the dataset
@@ -58,7 +57,7 @@ def get_dataset_assets(dataset_id: str):
     return make_response(jsonify(assets=assets))
 
 
-@dbconnect
+@dbconnect_and_ddtrace
 def get_status(dataset_id: str, token_info: dict):
     db_session = g.db_session
     dataset = Dataset.get(db_session, dataset_id)
@@ -73,15 +72,14 @@ def get_status(dataset_id: str, token_info: dict):
     return make_response(jsonify(status), 200)
 
 
-@dbconnect
-@tracer.wrap()
+@dbconnect_and_ddtrace
 def get_datasets_index():
     db_session = g.db_session
     datasets = Collection.list_public_datasets_for_index(db_session)
     return make_response(jsonify(datasets), 200)
 
 
-@dbconnect
+@dbconnect_and_ddtrace
 def delete_dataset(dataset_id: str, token_info: dict):
     """
     Deletes an existing dataset or cancels an in progress upload.
@@ -92,7 +90,7 @@ def delete_dataset(dataset_id: str, token_info: dict):
     return "", 202
 
 
-@dbconnect
+@dbconnect_and_ddtrace
 def get_dataset_identifiers(url: str):
     db_session = g.db_session
     dataset = Dataset.get_by_explorer_url(db_session, url)
@@ -111,7 +109,7 @@ def get_dataset_identifiers(url: str):
     return make_response(jsonify(dataset_identifiers), 200)
 
 
-@dbconnect
+@dbconnect_and_ddtrace
 def post_dataset_gene_sets(dataset_id: str, body: object, token_info: dict):
     db_session = g.db_session
     dataset = Dataset.get(db_session, dataset_id)

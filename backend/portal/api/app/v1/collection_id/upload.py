@@ -1,7 +1,7 @@
 import requests
 from flask import make_response, g
 
-from backend.api_server.db import dbconnect
+from backend.api_server.db import dbconnect_and_ddtrace
 from backend.common.upload import upload
 from backend.common.utils.dl_sources.url import MissingHeaderException, from_url
 from backend.common.utils.exceptions import (
@@ -35,7 +35,7 @@ def relink(collection_id: str, body: dict, token_info: dict):
     return make_response({"dataset_id": dataset_id}, 202)
 
 
-@dbconnect
+@dbconnect_and_ddtrace
 def upload_from_link(collection_id: str, token_info: dict, url: str, dataset_id: str = None):
     db_session = g.db_session
 

@@ -4,7 +4,7 @@ import logging
 import boto3
 from flask import g, request, make_response, jsonify
 
-from backend.api_server.db import dbconnect
+from backend.api_server.db import dbconnect_and_ddtrace
 from backend.common.corpora_config import CorporaConfig
 from backend.common.corpora_orm import CollectionVisibility
 from backend.portal.api.app.v1.authorization import owner_or_allowed, is_super_curator
@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 duration = 43200
 
 
-@dbconnect
+@dbconnect_and_ddtrace
 def get(collection_id: str, token_info: dict):
     db_session = g.db_session
     config = CorporaConfig()

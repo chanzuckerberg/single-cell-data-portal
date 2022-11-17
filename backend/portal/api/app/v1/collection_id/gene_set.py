@@ -4,12 +4,12 @@ from sqlalchemy.exc import IntegrityError
 from backend.common.corpora_orm import CollectionVisibility
 from backend.common.entities import Collection
 from backend.common.entities.geneset import Geneset
-from backend.api_server.db import dbconnect
+from backend.api_server.db import dbconnect_and_ddtrace
 from backend.common.utils.http_exceptions import ForbiddenHTTPException, InvalidParametersHTTPException
 from backend.portal.api.app.v1.authorization import owner_or_allowed
 
 
-@dbconnect
+@dbconnect_and_ddtrace
 def post(collection_id: str, body: dict, token_info: dict):
     db_session = g.db_session
     collection = Collection.get_collection(

@@ -1,11 +1,6 @@
 import typing
 from datetime import datetime
-from sqlalchemy import and_
-from sqlalchemy.orm import Session
 
-from backend.common.entities import Dataset
-from backend.common.entities.entity import Entity
-from backend.common.entities.geneset import Geneset
 from backend.common.corpora_orm import (
     CollectionLinkType,
     DbCollection,
@@ -15,10 +10,16 @@ from backend.common.corpora_orm import (
     ProjectLinkType,
     DbProjectLink,
 )
+from backend.common.entities import Dataset
+from backend.common.entities.entity import Entity
+from backend.common.entities.geneset import Geneset
 from backend.common.utils.db_helpers import clone
+from sqlalchemy import and_
+from sqlalchemy.orm import Session
 
 
 class Collection(Entity):
+
     table = DbCollection
     list_attributes = (DbCollection.id, DbCollection.created_at)
 
