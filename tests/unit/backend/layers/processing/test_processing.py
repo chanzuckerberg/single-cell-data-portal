@@ -10,7 +10,7 @@ from backend.layers.processing.process_cxg import ProcessCxg
 from backend.layers.processing.process_download_validate import ProcessDownloadValidate
 from backend.layers.processing.process_seurat import ProcessSeurat
 from backend.layers.thirdparty.s3_provider import S3Provider
-from backend.layers.thirdparty.schema_validator_provider import SchemaValidatorProvider
+from backend.layers.thirdparty.schema_validator_provider import SchemaValidatorProviderInterface
 from backend.layers.thirdparty.uri_provider import FileInfo, UriProvider
 from backend.layers.common.entities import DatasetConversionStatus, DatasetProcessingStatus, DatasetUploadStatus, DatasetValidationStatus
 from tests.unit.backend.layers.common.base_api_test import NewBaseTest
@@ -52,7 +52,7 @@ class ProcessingTest(NewBaseTest):
         self.uri_provider = UriProvider()
         self.uri_provider.get_file_info = Mock(return_value=FileInfo(1, "local.h5ad"))
         self.s3_provider = MockS3Provider()
-        self.schema_validator = SchemaValidatorProvider()
+        self.schema_validator = SchemaValidatorProviderInterface()
         self.schema_validator.validate_and_save_labels = Mock(return_value=(True, [], True))
         self.downloader = Downloader(self.business_logic)
         self.downloader.download_file = Mock()

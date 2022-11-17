@@ -9,7 +9,7 @@ from backend.layers.processing.process_download_validate import ProcessDownloadV
 from backend.layers.processing.process_seurat import ProcessSeurat
 from backend.layers.common.entities import DatasetConversionStatus, DatasetProcessingStatus, DatasetStatusKey, DatasetUploadStatus, DatasetValidationStatus, DatasetVersionId
 from backend.layers.thirdparty.s3_provider import S3ProviderInterface
-from backend.layers.thirdparty.schema_validator_provider import SchemaValidatorProvider
+from backend.layers.thirdparty.schema_validator_provider import SchemaValidatorProviderInterface
 from backend.layers.thirdparty.uri_provider import UriProviderInterface
 
 
@@ -24,7 +24,7 @@ class ProcessMain(ProcessingLogic):
         uri_provider: UriProviderInterface,
         s3_provider: S3ProviderInterface,
         downloader: Downloader,
-        schema_validator: SchemaValidatorProvider
+        schema_validator: SchemaValidatorProviderInterface
     ) -> None:
         super().__init__()
         self.business_logic = business_logic

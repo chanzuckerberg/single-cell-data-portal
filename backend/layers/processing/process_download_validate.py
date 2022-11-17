@@ -7,7 +7,7 @@ from backend.layers.processing.downloader import Downloader
 from backend.layers.processing.exceptions import ValidationFailed
 from backend.layers.processing.process_logic import ProcessingLogic
 from backend.layers.thirdparty.s3_provider import S3Provider, S3ProviderInterface
-from backend.layers.thirdparty.schema_validator_provider import SchemaValidatorProvider
+from backend.layers.thirdparty.schema_validator_provider import SchemaValidatorProviderInterface
 from backend.layers.thirdparty.uri_provider import UriProvider, UriProviderInterface
 from backend.layers.common.entities import DatasetConversionStatus, DatasetMetadata, DatasetProcessingStatus, DatasetStatusGeneric, DatasetStatusKey, DatasetUploadStatus, DatasetValidationStatus, DatasetVersionId, OntologyTermId
 
@@ -17,7 +17,7 @@ import numpy
 class ProcessDownloadValidate(ProcessingLogic):
 
     downloader: Downloader
-    schema_validator: SchemaValidatorProvider
+    schema_validator: SchemaValidatorProviderInterface
 
     def __init__(
         self,     
@@ -25,7 +25,7 @@ class ProcessDownloadValidate(ProcessingLogic):
         uri_provider: UriProviderInterface,
         s3_provider: S3ProviderInterface,
         downloader: Downloader,
-        schema_validator: SchemaValidatorProvider,
+        schema_validator: SchemaValidatorProviderInterface,
     ) -> None:
         super().__init__()
         self.business_logic = business_logic
