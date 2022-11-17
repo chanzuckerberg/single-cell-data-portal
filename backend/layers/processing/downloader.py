@@ -70,81 +70,24 @@ class Downloader:
     def __init__(self, business_logic: BusinessLogicInterface) -> None:
         self.business_logic = business_logic
 
-    def downloader(self, url: str, local_path: str, tracker: ProgressTracker, chunk_size: int):
+    def download_file(self, url: str, local_path: str, chunk_size: int):
         """
         Download the file pointed at by the URL to the local path.
 
         :param url: The URL of the file to be downloaded.
         :param local_path: The local name of the file to be downloaded
-        :param tracker: Tracks information about the progress of the download.
         :param chunk_size: The size of downloaded data to copy to memory before saving to disk.
         :return:
         """
-        try:
-            with requests.get(url, stream=True) as resp:
-                resp.raise_for_status()
-                with open(local_path, "wb") as fp:
-                    logger.info("Starting download.")
-                    for chunk in resp.iter_content(chunk_size=chunk_size):
-                        if tracker.stop_downloader.is_set():
-                            logger.warning("Download ended early!")
-                            return
-                        elif chunk:
-                            fp.write(chunk)
-                            chunk_size = len(chunk)
-                            tracker.update(chunk_size)
-                            logger.debug(f"chunk size: {chunk_size}")
-        except Exception as ex:
-            tracker.error = ex
-            logger.error(f"Download Failed for {url}")
-        finally:
-            tracker.stop_updater.set()
-
-
-    def updater(self, processing_status: DatasetProcessingStatus, tracker: ProgressTracker, frequency: float):
-        """
-        Update the progress of an upload to the database using the tracker.
-
-        :param processing_status: the SQLAlchemy ProcessingStatus object
-        :param tracker: Tracks information about the progress of the upload.
-        :param frequency: The frequency in which the database is updated in seconds
-        :return:
-        """
-
-        def _update():
-            progress = tracker.progress()
-            
-            # TODO: dataset canceling?
-            
-            if tracker.stop_updater.is_set():
-                if progress > 1:
-                    tracker.stop_downloader.set()
-                    status = {"upload_progress": progress}
-                    tracker.error = ProcessingFailed("The expected file size is smaller than the downloaded file size.")
-                elif progress < 1:
-                    status = {"upload_progress": progress}
-                    tracker.error = ProcessingFailed("The expected file size is greater than the actual file size.")
-                elif progress == 1:
-                    status = {
-                        "upload_progress": progress,
-                        "upload_status": UploadStatus.UPLOADED,
-                    }
-            else:
-                status = {"upload_progress": progress}
-            logger.debug("Updating processing_status")
-            self._processing_status_updater(processing_status, status)
-
-        try:
-            while not tracker.stop_updater.wait(frequency):
-                _update()
-            _update()  # Make sure the progress is updated once the download is complete
-        finally:
-            tracker.stop_downloader.set()
-
-
-    def _processing_status_updater(self, processing_status: DatasetProcessingStatus, updates: dict):
-        for key, value in updates.items():
-            setattr(processing_status, key, value)
+        with requests.get(url, stream=True) as resp:
+            resp.raise_for_status()
+            with open(local_path, "wb") as fp:
+                logger.info("Starting download.")
+                for chunk in resp.iter_content(chunk_size=chunk_size):
+                    if chunk:
+                        fp.write(chunk)
+                        chunk_size = len(chunk)
+                        logger.debug(f"chunk size: {chunk_size}")
 
 
     def download(
@@ -182,18 +125,15 @@ class Downloader:
         else:
             progress_tracker = NoOpProgressTracker()
 
-        # TODO: later
-        # progress_thread = threading.Thread(
-        #     target=updater,
-        #     kwargs=dict(processing_status=processing_status, tracker=progress_tracker, frequency=update_frequency),
-        # )
-        # progress_thread.start()
-        download_thread = threading.Thread(
-            target=self.downloader,
-            kwargs=dict(url=url, local_path=local_path, tracker=progress_tracker, chunk_size=chunk_size),
-        )
-        download_thread.start()
-        download_thread.join()  # Wait for the download thread to complete
+        try:
+            self.download_file(url, local_path, chunk_size)
+            # TODO: maybe add a check on the file size
+        except Exception as e:
+            pass
+
+        self.business_logic.update_dataset_version_status(dataset_id, DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADED)
+
+
         # progress_thread.join()  # Wait for the progress thread to complete
         # if progress_tracker.tombstoned:
         #     raise ProcessingCancelled

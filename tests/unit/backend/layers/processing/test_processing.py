@@ -9,7 +9,7 @@ from backend.layers.processing.process_download_validate import ProcessDownloadV
 from backend.layers.thirdparty.s3_provider import S3Provider
 from backend.layers.thirdparty.schema_validator_provider import SchemaValidatorProvider
 from backend.layers.thirdparty.uri_provider import FileInfo, UriProvider
-from backend.layers.common.entities import DatasetConversionStatus, DatasetUploadStatus, DatasetValidationStatus
+from backend.layers.common.entities import DatasetConversionStatus, DatasetProcessingStatus, DatasetUploadStatus, DatasetValidationStatus
 from tests.unit.backend.layers.common.base_api_test import NewBaseTest
 
 
@@ -58,11 +58,14 @@ class ProcessingTest(NewBaseTest):
         schema_validator = SchemaValidatorProvider()
         schema_validator.validate_and_save_labels = Mock(return_value=(True, [], True))
         downloader = Downloader(self.business_logic)
+        downloader.download_file = Mock()
 
         status = self.business_logic.get_dataset_status(dataset_version_id)
         # self.assertEqual(status.validation_status, DatasetValidationStatus.NA)
         self.assertIsNone(status.validation_status)
-        
+        self.assertEqual(status.processing_status, DatasetProcessingStatus.PENDING)
+        self.assertEqual(status.upload_status, DatasetUploadStatus.WAITING)
+
         # TODO: ideally use a real h5ad so that 
         with patch("backend.layers.processing.process_download_validate.ProcessDownloadValidate.extract_metadata") as mock:
             pdv = ProcessDownloadValidate(self.business_logic, self.uri_provider, self.s3_provider, downloader, schema_validator)
