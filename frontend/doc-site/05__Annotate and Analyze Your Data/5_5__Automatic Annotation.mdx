@@ -109,7 +109,9 @@ mkdir annotations
 cd annotations
 
 # retrieve sample dataset (alternatively, you can use curl to retrieve the file)
-# ex: curl https://cellxgene-annotation-public.s3.us-west-2.amazonaws.com/cell_type/tutorial/minilung.h5ad > minilung.h5adwget https://cellxgene-annotation-public.s3.us-west-2.amazonaws.com/cell_type/tutorial/minilung.h5ad
+# ex: curl https://cellxgene-annotation-public.s3.us-west-2.amazonaws.com/cell_type/tutorial/minilung.h5ad > minilung.h5ad
+wget https://cellxgene-annotation-public.s3.us-west-2.amazonaws.com/cell_type/tutorial/minilung.h5ad
+
 
 # generate annotations
 cellxgene annotate minilung.h5ad -m https://cellxgene-annotation-public.s3.us-west-2.amazonaws.com/cell_type/models/hlca_20220920223732.zip -o minilungAnnotated.h5ad --mlflow-env-manager local --no-use-gpu --gene-column-name feature_name
