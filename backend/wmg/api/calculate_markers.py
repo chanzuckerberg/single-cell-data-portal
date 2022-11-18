@@ -12,6 +12,7 @@ def _make_hashable(func):
     Implicitly convert unhashable data structures (list and dict) to hashable strings
     for memoization.
     """
+
     class HDict(dict):
         def __hash__(self):
             return hash(json.dumps(self))
@@ -42,6 +43,7 @@ def _make_hashable(func):
 
     return wrapped
 
+
 @_make_hashable
 @lru_cache(maxsize=None)
 def _query_tiledb(filters, corpus_path=None, group_by_dims=None, genes=None):
@@ -61,16 +63,16 @@ def _query_tiledb(filters, corpus_path=None, group_by_dims=None, genes=None):
     group_by_dims - list, optional, default None
         A list of filter dimensions to aggregate the tileDB query result by.
         If group-by dimensions not provided, use the keys specified in the `filters`
-    
+
     genes - list, optional, default None
         A list of genes to calculate true population sizes for.
         If None, the genes in the aggregated query results are used.
-    
+
     Returns
     -------
     - agg: query result aggregated by filter keys
     - t_n_cells_sum: a dictionary of 1D numpy arrays with length # of genes
-        each value is the true number of cells present for the combination of 
+        each value is the true number of cells present for the combination of
         filters (keys).
         Ex: {(cell_type1,tissue1,organism1): np.array([0,100,100,0,80])}
     - genes: a list of all genes with nonzero expression found in the query result
@@ -88,13 +90,13 @@ def _query_tiledb(filters, corpus_path=None, group_by_dims=None, genes=None):
         depluralized_keys = [i[:-1] if i[-1] == "s" else i for i in filters.keys()]
     else:
         depluralized_keys = [i[:-1] if i[-1] == "s" else i for i in group_by_dims]
-    
+
     # group-by dimensions for expression summary must include genes
     gb_dims_es = ["gene_ontology_term_id"] + depluralized_keys
     # group-by dimensions for cell counts must include dataset ID
     # by convention, dataset_id will be first entry
-    if 'dataset_id' in depluralized_keys:
-        depluralized_keys.remove('dataset_id')
+    if "dataset_id" in depluralized_keys:
+        depluralized_keys.remove("dataset_id")
     gb_dims = ["dataset_id"] + depluralized_keys
 
     # group-by and sum
@@ -130,7 +132,7 @@ def _query_tiledb(filters, corpus_path=None, group_by_dims=None, genes=None):
                 ixs.append(i)
     groups = list(zip(*[n_cells.index.get_level_values(i) for i in ixs]))
 
-    # sum up the cell count arrays across duplicate groups 
+    # sum up the cell count arrays across duplicate groups
     # (groups can be duplicate after excluding dataset_ids)
     t_n_cells_sum = {}
     for i, k in enumerate(groups):
@@ -157,16 +159,16 @@ def _prepare_indices_and_metrics(target_filters, context_filters, corpus_path=No
         Path to the snapshot.
         If path is provided, then the pipeline is running locally as part of the weekly cube generation.
         Otherwise, the snapshot will be fetched from AWS.
-    
+
     Returns
     -------
-    context_agg - DataFrame, 
+    context_agg - DataFrame,
         aggregated values for the context query across the combinations of
         filters specified in target_filters
 
     target_agg - DataFrame,
         aggregated values for the target query across genes
-    
+
     groups_context_uniq - list of tuples
         List of unique combinations of filter values (length N)
 
@@ -185,19 +187,19 @@ def _prepare_indices_and_metrics(target_filters, context_filters, corpus_path=No
         List of non-zero genes present in the target population
 
     groups_indices_context - list
-        indices of the groups in `context_agg` corresponding to the index location of each group in 
+        indices of the groups in `context_agg` corresponding to the index location of each group in
         `groups_context_uniq`.
         These are the row coordinates of the array in which the expression statistics will be filled
         for the context population.
-        
+
     genes_indices_context - list
-        indices of the genes in `context_agg` corresponding to the index location of each gene in 
+        indices of the genes in `context_agg` corresponding to the index location of each gene in
         `genes`.
         These are the column coordinates of the array in which the expression statistics will be filled
         for the context population.
-            
+
     genes_indices_target - list
-        indices of the genes in `target_agg` corresponding to the index location of each gene in 
+        indices of the genes in `target_agg` corresponding to the index location of each gene in
         `genes`.
         These are the column coordinates of the array in which the expression statistics will be filled
         for the target population.
@@ -265,7 +267,7 @@ def _run_ttest(sum1, sumsq1, n1, sum2, sumsq2, n2):
         adjusted p-values for each comparison for each gene
     effects - np.ndarray
         effect sizes for each comparison for each gene
-    """    
+    """
     with np.errstate(divide="ignore", invalid="ignore"):
         mean1 = sum1 / n1
         meansq1 = sumsq1 / n1
@@ -302,24 +304,24 @@ def _post_process_stats(
 ):
     """
     Process and aggregate statistics into the output dictionary format.
-    
+
     Arguments
     ---------
     genes - list
         List of genes corresponding to each p-value and effect size
-    
+
     pvals - np.ndarray
         N x M array of p-values for each comparison and each gene
 
     effects - np.ndarray
         N x M array of effect sizes for each comparison and each gene
-    
+
     nnz - np.ndarray
         1 x M array of number of nonzero expressions for target population (> 0)
-    
+
     test - str, optional, default "ttest"
         The statistical test used ("ttest" or "binomtest").
-    
+
     min_num_expr_cells - int, optional, default 25
         The minimum number of nonzero expressing cells required for marker genes
 
@@ -329,7 +331,7 @@ def _post_process_stats(
         be averaged for each gene.
 
     n_markers - int, optional, default 10
-        Number of top markers to return. If None, all marker genes with effect size > 0 are returned.        
+        Number of top markers to return. If None, all marker genes with effect size > 0 are returned.
     """
     zero_out = nnz.flatten() < min_num_expr_cells
     effects[:, zero_out] = 0
@@ -374,10 +376,10 @@ def _get_markers_ttest(target_filters, context_filters, corpus_path=None, n_mark
         Path to the snapshot.
         If path is provided, then the pipeline is running locally as part of the weekly cube generation.
         Otherwise, the snapshot will be fetched from AWS.
-    
+
     n_markers - int, optional, default 10
         Number of top markers to return. If None, all marker genes with effect size > 0 are returned.
-    
+
     p_bottom_comparisons - float, optional, default 0.1
         The fraction of lowest scores to average across when aggregating statistics across all
         comparisons to groups in the context population. By default, the lowest 10% of scores will
@@ -479,10 +481,10 @@ def _get_markers_binomtest(target_filters, context_filters, corpus_path=None, n_
         Path to the snapshot.
         If path is provided, then the pipeline is running locally as part of the weekly cube generation.
         Otherwise, the snapshot will be fetched from AWS.
-    
+
     n_markers - int, optional, default 10
         Number of top markers to return. If None, all marker genes with effect size > 0 are returned.
-    
+
     p_bottom_comparisons - float, optional, default 0.1
         The fraction of lowest scores to average across when aggregating statistics across all
         comparisons to groups in the context population. By default, the lowest 10% of scores will
@@ -541,13 +543,13 @@ def get_markers(
         Path to the snapshot.
         If path is provided, then the pipeline is running locally as part of the weekly cube generation.
         Otherwise, the snapshot will be fetched from AWS.
-    
+
     test - str, optional, default "ttest"
         The statistical test to be used ("ttest" or "binomtest").
 
     n_markers - int, optional, default 10
         Number of top markers to return. If None, all marker genes with effect size > 0 are returned.
-    
+
     p_bottom_comparisons - float, optional, default 0.1
         The fraction of lowest scores to average across when aggregating statistics across all
         comparisons to groups in the context population. By default, the lowest 10% of scores will

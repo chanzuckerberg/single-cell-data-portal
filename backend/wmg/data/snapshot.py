@@ -92,14 +92,15 @@ def _load_snapshot(new_snapshot_identifier, use_s3=True) -> WmgSnapshot:
         snapshot_base_uri = new_snapshot_identifier
         new_snapshot_identifier = new_snapshot_identifier.split("/")[-1]
 
-
     # TODO: Okay to keep TileDB arrays open indefinitely? Is it faster than re-opening each request?
     #  https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell
     #  -data-portal/2134
     return WmgSnapshot(
         snapshot_identifier=new_snapshot_identifier,
         expression_summary_cube=_open_cube(f"{snapshot_base_uri}/{EXPRESSION_SUMMARY_CUBE_NAME}", use_s3=use_s3),
-        expression_summary_fmg_cube=_open_cube(f"{snapshot_base_uri}/{EXPRESSION_SUMMARY_FMG_CUBE_NAME}", use_s3=use_s3),
+        expression_summary_fmg_cube=_open_cube(
+            f"{snapshot_base_uri}/{EXPRESSION_SUMMARY_FMG_CUBE_NAME}", use_s3=use_s3
+        ),
         marker_genes_cube=_open_cube(f"{snapshot_base_uri}/{MARKER_GENES_CUBE_NAME}", use_s3=use_s3),
         cell_counts_cube=_open_cube(f"{snapshot_base_uri}/{CELL_COUNTS_CUBE_NAME}", use_s3=use_s3),
         cell_type_orderings=cell_type_orderings,

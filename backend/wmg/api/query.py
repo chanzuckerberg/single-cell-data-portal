@@ -59,7 +59,7 @@ class WmgQuery:
                 "tissue_ontology_term_ids",
                 "organism_ontology_term_id",
                 "cell_type_ontology_term_ids",
-            ]
+            ],
         )
 
     def cell_counts(self, criteria: Union[WmgQueryCriteria, FmgQueryCriteria]) -> DataFrame:
@@ -81,7 +81,7 @@ class WmgQuery:
             attr = depluralize(attr_name)
             if query_cond and len(vals) > 0:
                 query_cond += " and "
-            if len(vals) == 1 and vals[0] != '':
+            if len(vals) == 1 and vals[0] != "":
                 attrs[attr] = vals[0]
                 query_cond += f"{attr} == val('{vals[0]}')"
             elif len(vals) > 1:
@@ -93,8 +93,11 @@ class WmgQuery:
         tiledb_dims_query = []
         for dim_name in indexed_dims:
             # Don't filter on this dimension but return all "original tissues" back
-            if (dim_name == "tissue_original_ontology_term_ids" or
-                len(criteria.dict()[dim_name]) > 0 and criteria.dict()[dim_name][0]==""):
+            if (
+                dim_name == "tissue_original_ontology_term_ids"
+                or len(criteria.dict()[dim_name]) > 0
+                and criteria.dict()[dim_name][0] == ""
+            ):
                 tiledb_dims_query.append([])
             elif criteria.dict()[dim_name]:
                 tiledb_dims_query.append(criteria.dict()[dim_name])

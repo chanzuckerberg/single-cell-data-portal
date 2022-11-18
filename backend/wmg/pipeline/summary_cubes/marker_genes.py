@@ -27,7 +27,9 @@ def create_marker_genes_cube(corpus_path: str):
     """
     cell_counts = extract_cellcounts(corpus_path)
     tissues_celltypes = (
-        cell_counts.query(attrs=["cell_type_ontology_term_id"], dims=["organism_ontology_term_id", "tissue_ontology_term_id"])
+        cell_counts.query(
+            attrs=["cell_type_ontology_term_id"], dims=["organism_ontology_term_id", "tissue_ontology_term_id"]
+        )
         .df[:]
         .groupby(["tissue_ontology_term_id", "cell_type_ontology_term_id", "organism_ontology_term_id"])
         .first()
@@ -39,56 +41,60 @@ def create_marker_genes_cube(corpus_path: str):
 
     uri = f"{corpus_path}/{MARKER_GENES_CUBE_NAME}"
     create_empty_cube(uri, marker_genes_schema)
-    
+
     for tiss in uniq_tissues:
         tiss_celltypes = list(cell_types[tissues == tiss])
         tiss_organisms = list(organisms[tissues == tiss])
         for i, ct in enumerate(tiss_celltypes):
             organism = tiss_organisms[i]
-            
+
             logger.info("Calculating markers for tissue: %s, cell type: %s, organism: %s", tiss, ct, organism)
             target = {
                 "tissue_ontology_term_ids": [tiss],
                 "cell_type_ontology_term_ids": [ct],
-                "organism_ontology_term_id": organism
+                "organism_ontology_term_id": organism,
             }
             context = {
                 "tissue_ontology_term_ids": [tiss],
-                "cell_type_ontology_term_ids": [''],
-                "organism_ontology_term_id": organism
-            }            
+                "cell_type_ontology_term_ids": [""],
+                "organism_ontology_term_id": organism,
+            }
             t_markers = get_markers(target, context, corpus_path=corpus_path, test="ttest", n_markers=None)
             b_markers = get_markers(target, context, corpus_path=corpus_path, test="binomtest", n_markers=None)
             gc.collect()
-            
+
             all_marker_genes = set(list(t_markers.keys())).union(list(b_markers.keys()))
             markers = []
             for g in all_marker_genes:
-                b_stats = b_markers.get(g,{"p_value_binomtest": 1, "effect_size_binomtest": 0})
-                t_stats = t_markers.get(g,{"p_value_ttest": 1, "effect_size_ttest": 0})
+                b_stats = b_markers.get(g, {"p_value_binomtest": 1, "effect_size_binomtest": 0})
+                t_stats = t_markers.get(g, {"p_value_ttest": 1, "effect_size_ttest": 0})
                 b_stats.update(t_stats)
-                b_stats.update({
-                    "tissue_ontology_term_id": tiss,
-                    "organism_ontology_term_id": organism,
-                    "cell_type_ontology_term_id": ct,
-                    "gene_ontology_term_id": g
-                })
+                b_stats.update(
+                    {
+                        "tissue_ontology_term_id": tiss,
+                        "organism_ontology_term_id": organism,
+                        "cell_type_ontology_term_id": ct,
+                        "gene_ontology_term_id": g,
+                    }
+                )
                 markers.append(b_stats)
 
             df = pd.DataFrame.from_records(markers)
             if df.shape[0] > 0:
-                df = df.astype({
-                    'p_value_binomtest': 'float32',
-                    'effect_size_binomtest': 'float32',
-                    'p_value_ttest': 'float32',
-                    'effect_size_ttest': 'float32'
-                })
+                df = df.astype(
+                    {
+                        "p_value_binomtest": "float32",
+                        "effect_size_binomtest": "float32",
+                        "p_value_ttest": "float32",
+                        "effect_size_ttest": "float32",
+                    }
+                )
                 tiledb.from_pandas(uri, df, mode="append")
 
     logger.debug("Cube created, start consolidation")
     tiledb.consolidate(uri)
 
     logger.debug("Cube consolidated, start vacuumming")
-    tiledb.vacuum(uri)    
+    tiledb.vacuum(uri)
 
     logger.info(f"Marker genes cube created and stored at {uri}")
