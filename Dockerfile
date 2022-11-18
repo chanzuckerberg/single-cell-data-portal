@@ -33,6 +33,14 @@ LABEL commit=${HAPPY_COMMIT}
 ENV COMMIT_SHA=${HAPPY_COMMIT}
 ENV COMMIT_BRANCH=${HAPPY_BRANCH}
 
+# For Datadog <-> gunicorn integration
+# https://docs.datadoghq.com/containers/docker/integrations/?tab=docker#configuration
+# https://docs.datadoghq.com/integrations/gunicorn/#metric-collection
+LABEL "com.datadoghq.ad.check_names"='["gunicorn"]'
+LABEL "com.datadoghq.ad.init_configs"='[{}]'
+LABEL "com.datadoghq.ad.instances"='[{ "proc_name": "backend" }]'
+
+
 ADD entrypoint.sh entrypoint.sh
 RUN chmod +x entrypoint.sh
 
