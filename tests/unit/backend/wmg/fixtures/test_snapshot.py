@@ -30,6 +30,8 @@ from backend.wmg.data.schemas.marker_genes_cube_schema import (
     expression_summary_fmg_logical_attrs,
     expression_summary_fmg_logical_dims,
     expression_summary_fmg_schema,
+    marker_genes_indexed_dims,
+    marker_genes_schema,
 )
 from backend.wmg.data.snapshot import WmgSnapshot, CELL_TYPE_ORDERINGS_FILENAME
 from backend.wmg.data.tiledb import create_ctx
@@ -100,6 +102,15 @@ def random_expression_summary_fmg_values(coords):
     }
 
 
+def random_marker_genes_values(coords):
+    return {
+        "p_value_ttest": randint(size=len(coords), low=0, high=1),
+        "effect_size_ttest": randint(size=len(coords), low=0, high=5),
+        "p_value_binomtest": randint(size=len(coords), low=0, high=1),
+        "effect_size_binomtest": randint(size=len(coords), low=0, high=5),
+    }
+
+
 def all_ones_expression_summary_values(coords):
     return {"nnz": np.ones(len(coords)), "sum": np.ones(len(coords))}
 
@@ -157,17 +168,24 @@ def create_temp_wmg_snapshot(
     snapshot_name="dummy-snapshot",
     expression_summary_vals_fn: Callable[[List[Tuple]], Dict[str, List]] = random_expression_summary_values,
     expression_summary_fmg_vals_fn: Callable[[List[Tuple]], Dict[str, List]] = random_expression_summary_fmg_values,
+    marker_genes_vals_fn: Callable[[List[Tuple]], Dict[str, List]] = random_marker_genes_values,
     exclude_logical_coord_fn: Callable[[NamedTuple], bool] = None,
     cell_counts_generator_fn: Callable[[List[Tuple]], List] = random_cell_counts_values,
     cell_ordering_generator_fn: Callable[[List[str]], List[int]] = forward_cell_type_ordering,
 ) -> WmgSnapshot:
     with tempfile.TemporaryDirectory() as cube_dir:
-        expression_summary_cube_dir, expression_summary_fmg_cube_dir, cell_counts_cube_dir = create_cubes(
+        (
+            expression_summary_cube_dir,
+            expression_summary_fmg_cube_dir,
+            cell_counts_cube_dir,
+            marker_genes_cube_dir,
+        ) = create_cubes(
             cube_dir,
             dim_size,
             exclude_logical_coord_fn=exclude_logical_coord_fn,
             expression_summary_vals_fn=expression_summary_vals_fn,
             expression_summary_fmg_vals_fn=expression_summary_fmg_vals_fn,
+            marker_genes_vals_fn=marker_genes_vals_fn,
             cell_counts_fn=cell_counts_generator_fn,
         )
 
@@ -178,15 +196,17 @@ def create_temp_wmg_snapshot(
         with tiledb.open(expression_summary_cube_dir, ctx=create_ctx()) as expression_summary_cube:
             with tiledb.open(expression_summary_fmg_cube_dir, ctx=create_ctx()) as expression_summary_fmg_cube:
                 with tiledb.open(cell_counts_cube_dir, ctx=create_ctx()) as cell_counts_cube:
-                    yield WmgSnapshot(
-                        snapshot_identifier=snapshot_name,
-                        expression_summary_cube=expression_summary_cube,
-                        expression_summary_fmg_cube=expression_summary_fmg_cube,
-                        cell_counts_cube=cell_counts_cube,
-                        cell_type_orderings=cell_type_orderings,
-                        primary_filter_dimensions=primary_filter_dimensions,
-                        dataset_to_gene_ids=dataset_to_gene_ids,
-                    )
+                    with tiledb.open(marker_genes_cube_dir, ctx=create_ctx()) as marker_genes_cube:
+                        yield WmgSnapshot(
+                            snapshot_identifier=snapshot_name,
+                            expression_summary_cube=expression_summary_cube,
+                            expression_summary_fmg_cube=expression_summary_fmg_cube,
+                            marker_genes_cube=marker_genes_cube,
+                            cell_counts_cube=cell_counts_cube,
+                            cell_type_orderings=cell_type_orderings,
+                            primary_filter_dimensions=primary_filter_dimensions,
+                            dataset_to_gene_ids=dataset_to_gene_ids,
+                        )
 
 
 def build_dataset_to_gene_ids():
@@ -245,6 +265,7 @@ def create_cubes(
     exclude_logical_coord_fn: Callable[[List[str], Tuple], bool] = None,
     expression_summary_vals_fn: Callable[[List[Tuple]], Dict[str, List]] = random_expression_summary_values,
     expression_summary_fmg_vals_fn: Callable[[List[Tuple]], Dict[str, List]] = random_expression_summary_fmg_values,
+    marker_genes_vals_fn: Callable[[List[Tuple]], Dict[str, List]] = random_marker_genes_values,
     cell_counts_fn: Callable[[List[Tuple]], List[int]] = random_cell_counts_values,
 ) -> Tuple[str, str]:
     coords, dim_values = build_coords(
@@ -258,12 +279,16 @@ def create_cubes(
         data_dir, coords, dim_values, expression_summary_fmg_vals_fn=expression_summary_fmg_vals_fn
     )
 
+    marker_genes_cube_dir = create_marker_genes_cube(
+        data_dir, coords, dim_values, marker_genes_vals_fn=marker_genes_vals_fn
+    )
+
     coords, dim_values = build_coords(
         cell_counts_logical_dims, dim_size, dim_ontology_term_ids_generator_fn, exclude_logical_coord_fn
     )
     cell_counts_cube_dir = create_cell_counts_cube(data_dir, coords, dim_values, cell_counts_fn=cell_counts_fn)
 
-    return expression_summary_cube_dir, expression_summary_fmg_cube_dir, cell_counts_cube_dir
+    return expression_summary_cube_dir, expression_summary_fmg_cube_dir, cell_counts_cube_dir, marker_genes_cube_dir
 
 
 def create_cell_counts_cube(data_dir, coords, dim_values, cell_counts_fn: Callable[[List[Tuple]], List[int]]) -> str:
@@ -331,6 +356,23 @@ def create_expression_summary_fmg_cube(
             for i in range(len(expression_summary_fmg_indexed_dims), len(expression_summary_fmg_logical_dims))
         }
         physical_attr_values.update(logical_attr_values)
+        cube[tuple(physical_dim_values)] = physical_attr_values
+
+    return cube_dir
+
+
+def create_marker_genes_cube(
+    data_dir,
+    coords,
+    dim_values,
+    marker_genes_vals_fn: Callable[[List[tuple]], Dict[str, List]] = random_marker_genes_values,
+) -> str:
+    cube_dir = f"{data_dir}/marker_genes"
+    tiledb.Array.create(cube_dir, marker_genes_schema, overwrite=True)
+
+    with tiledb.open(cube_dir, mode="w") as cube:
+        physical_attr_values = marker_genes_vals_fn(coords)
+        physical_dim_values = dim_values[: len(marker_genes_indexed_dims)]
         cube[tuple(physical_dim_values)] = physical_attr_values
 
     return cube_dir
