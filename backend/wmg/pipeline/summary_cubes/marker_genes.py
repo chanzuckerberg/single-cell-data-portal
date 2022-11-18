@@ -28,8 +28,7 @@ def create_marker_genes_cube(corpus_path: str):
     cell_counts = extract_cellcounts(corpus_path)
     tissues_celltypes = (
         cell_counts.query(
-            attrs=["cell_type_ontology_term_id"],
-            dims=["organism_ontology_term_id", "tissue_ontology_term_id"]
+            attrs=["cell_type_ontology_term_id"], dims=["organism_ontology_term_id", "tissue_ontology_term_id"]
         )
         .df[:]
         .groupby(["tissue_ontology_term_id", "cell_type_ontology_term_id", "organism_ontology_term_id"])

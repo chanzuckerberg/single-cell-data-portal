@@ -3,7 +3,6 @@ import logging
 import os
 from dataclasses import dataclass
 from typing import Optional, Dict
-from botocore.exceptions import ClientError
 import pandas as pd
 import tiledb
 from pandas import DataFrame
@@ -86,8 +85,8 @@ def _load_snapshot(new_snapshot_identifier, use_s3=True) -> WmgSnapshot:
     dataset_to_gene_ids = _load_dataset_to_gene_ids_data(new_snapshot_identifier, use_s3=use_s3)
 
     if use_s3:
-        logger.info(f"Loading WMG snapshot at {snapshot_base_uri}")
         snapshot_base_uri = _build_snapshot_base_uri(new_snapshot_identifier)
+        logger.info(f"Loading WMG snapshot at {snapshot_base_uri}")
     else:
         snapshot_base_uri = new_snapshot_identifier
         new_snapshot_identifier = new_snapshot_identifier.split("/")[-1]
