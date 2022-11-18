@@ -13,7 +13,7 @@ from backend.layers.business.business import BusinessLogic, CollectionMetadataUp
 from backend.layers.business.exceptions import CollectionUpdateException, CollectionVersionException, InvalidLinkException, \
     CollectionCreationException, DatasetIngestException, CollectionPublishException
 from backend.layers.common.entities import CollectionId, CollectionMetadata, CollectionVersion, CollectionVersionId, DatasetArtifact, DatasetMetadata, DatasetProcessingStatus, DatasetStatus, DatasetUploadStatus, DatasetValidationStatus, DatasetVersionId, Link, OntologyTermId
-from backend.layers.thirdparty.uri_provider import UriProviderInterface
+from backend.layers.thirdparty.uri_provider import FileInfo, UriProviderInterface
 from backend.layers.persistence.persistence_mock import DatabaseProviderMock
 
 class BaseBusinessLogicTestCase(unittest.TestCase):
@@ -32,6 +32,7 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         self.s3_provider = S3Provider()
         self.uri_provider = UriProviderInterface()
         self.uri_provider.validate = Mock(return_value=True) # By default, every link should be valid
+        self.uri_provider.get_file_info = Mock(return_value=FileInfo(1, "file.h5ad"))
 
         self.business_logic = BusinessLogic(
             database_provider=self.database_provider, 
