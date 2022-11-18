@@ -46,7 +46,28 @@ def _make_hashable(func):
 @lru_cache(maxsize=None)
 def _query_tiledb(filters, corpus_path=None, group_by_dims=None, genes=None):
     """
-    Query tileDB and return the following results:
+    Query the tileDB array and return required data artifacts for downstream processing.
+
+    Arguments
+    ---------
+    filters - dict,
+        Dictionary of filters for the target population
+
+    corpus_path - str, optional, default None
+        Path to the snapshot.
+        If path is provided, then the pipeline is running locally as part of the weekly cube generation.
+        Otherwise, the snapshot will be fetched from AWS.
+
+    group_by_dims - list, optional, default None
+        A list of filter dimensions to aggregate the tileDB query result by.
+        If group-by dimensions not provided, use the keys specified in the `filters`
+    
+    genes - list, optional, default None
+        A list of genes to calculate true population sizes for.
+        If None, the genes in the aggregated query results are used.
+    
+    Returns
+    -------
     - agg: query result aggregated by filter keys
     - t_n_cells_sum: a dictionary of 1D numpy arrays with length # of genes
         each value is the true number of cells present for the combination of 
@@ -121,6 +142,66 @@ def _query_tiledb(filters, corpus_path=None, group_by_dims=None, genes=None):
 
 
 def _prepare_indices_and_metrics(target_filters, context_filters, corpus_path=None):
+    """
+    Compute all the necessary indices and metrics for the given target and context filters.
+
+    Arguments
+    ---------
+    target_filters - dict
+        Dictionary of filters for the target population
+
+    context_filters - dict
+        Dictionary of filters describing the context
+
+    corpus_path - str, optional, default None
+        Path to the snapshot.
+        If path is provided, then the pipeline is running locally as part of the weekly cube generation.
+        Otherwise, the snapshot will be fetched from AWS.
+    
+    Returns
+    -------
+    context_agg - DataFrame, 
+        aggregated values for the context query across the combinations of
+        filters specified in target_filters
+
+    target_agg - DataFrame,
+        aggregated values for the target query across genes
+    
+    groups_context_uniq - list of tuples
+        List of unique combinations of filter values (length N)
+
+    n_target - np.ndarray
+        1 x M array of cell counts for the target group
+        (M = number of genes)
+
+    n_context - np.ndarray
+        N x M array of cell counts for the groups present in the context
+        (N = number of groups, M = number of genes)
+
+    target_data_nnz - np.ndarray
+        1 x M array of number of nonzero values for each gene in the target group
+
+    genes - list
+        List of non-zero genes present in the target population
+
+    groups_indices_context - list
+        indices of the groups in `context_agg` corresponding to the index location of each group in 
+        `groups_context_uniq`.
+        These are the row coordinates of the array in which the expression statistics will be filled
+        for the context population.
+        
+    genes_indices_context - list
+        indices of the genes in `context_agg` corresponding to the index location of each gene in 
+        `genes`.
+        These are the column coordinates of the array in which the expression statistics will be filled
+        for the context population.
+            
+    genes_indices_target - list
+        indices of the genes in `target_agg` corresponding to the index location of each gene in 
+        `genes`.
+        These are the column coordinates of the array in which the expression statistics will be filled
+        for the target population.
+    """
     context_agg, t_n_cells_sum_context, genes = _query_tiledb(
         context_filters, corpus_path=corpus_path, group_by_dims=list(target_filters.keys())
     )
@@ -147,8 +228,8 @@ def _prepare_indices_and_metrics(target_filters, context_filters, corpus_path=No
     n_context = np.vstack(list(t_n_cells_sum_context.values()))
     return (
         context_agg,
-        groups_context_uniq,
         target_agg,
+        groups_context_uniq,
         n_target,
         n_context,
         target_data_nnz,
@@ -160,6 +241,31 @@ def _prepare_indices_and_metrics(target_filters, context_filters, corpus_path=No
 
 
 def _run_ttest(sum1, sumsq1, n1, sum2, sumsq2, n2):
+    """
+    Calculate t-test statistics.
+
+    Arguments
+    ---------
+    sum1 - np.ndarray (1 x M)
+        Array of sum expression in target pop for each gene
+    sumsq1 - np.ndarray (1 x M)
+        Array of sum of squared expressions in target pop for each gene
+    n1 - np.ndarray (1 x M)
+        Number of cells in target pop for each gene
+    sum2 - np.ndarray (N x M)
+        Array of sum expression in context pops for each gene
+    sumsq2 - np.ndarray (N x M)
+        Array of sum of squared expressions in context pops for each gene
+    n2 - np.ndarray (N x M)
+        Number of cells in context pops for each gene
+
+    Returns
+    -------
+    pvals_adj - np.ndarray
+        adjusted p-values for each comparison for each gene
+    effects - np.ndarray
+        effect sizes for each comparison for each gene
+    """    
     with np.errstate(divide="ignore", invalid="ignore"):
         mean1 = sum1 / n1
         meansq1 = sumsq1 / n1
@@ -194,6 +300,37 @@ def _run_ttest(sum1, sumsq1, n1, sum2, sumsq2, n2):
 def _post_process_stats(
     genes, pvals, effects, nnz, test="ttest", min_num_expr_cells=25, p_bottom_comparisons=0.1, n_markers=10
 ):
+    """
+    Process and aggregate statistics into the output dictionary format.
+    
+    Arguments
+    ---------
+    genes - list
+        List of genes corresponding to each p-value and effect size
+    
+    pvals - np.ndarray
+        N x M array of p-values for each comparison and each gene
+
+    effects - np.ndarray
+        N x M array of effect sizes for each comparison and each gene
+    
+    nnz - np.ndarray
+        1 x M array of number of nonzero expressions for target population (> 0)
+    
+    test - str, optional, default "ttest"
+        The statistical test used ("ttest" or "binomtest").
+    
+    min_num_expr_cells - int, optional, default 25
+        The minimum number of nonzero expressing cells required for marker genes
+
+    p_bottom_comparisons - float, optional, default 0.1
+        The fraction of lowest scores to average across when aggregating statistics across all
+        comparisons to groups in the context population. By default, the lowest 10% of scores will
+        be averaged for each gene.
+
+    n_markers - int, optional, default 10
+        Number of top markers to return. If None, all marker genes with effect size > 0 are returned.        
+    """
     zero_out = nnz.flatten() < min_num_expr_cells
     effects[:, zero_out] = 0
     pvals[:, zero_out] = 0
@@ -222,10 +359,38 @@ def _post_process_stats(
 
 
 def _get_markers_ttest(target_filters, context_filters, corpus_path=None, n_markers=10, p_bottom_comparisons=0.1):
+    """
+    Calculate marker genes using the t-test.
+
+    Arguments
+    ---------
+    target_filters - dict
+        Dictionary of filters for the target population
+
+    context_filters - dict
+        Dictionary of filters describing the context
+
+    corpus_path - str, optional, default None
+        Path to the snapshot.
+        If path is provided, then the pipeline is running locally as part of the weekly cube generation.
+        Otherwise, the snapshot will be fetched from AWS.
+    
+    n_markers - int, optional, default 10
+        Number of top markers to return. If None, all marker genes with effect size > 0 are returned.
+    
+    p_bottom_comparisons - float, optional, default 0.1
+        The fraction of lowest scores to average across when aggregating statistics across all
+        comparisons to groups in the context population. By default, the lowest 10% of scores will
+        be averaged for each gene.
+
+    Returns
+    -------
+    Dictionary of marker genes as keys and a dictionary of p-value and effect size as values.
+    """
     (
         context_agg,
-        groups_context_uniq,
         target_agg,
+        groups_context_uniq,
         n_target,
         n_context,
         target_data_nnz,
@@ -261,6 +426,27 @@ def _get_markers_ttest(target_filters, context_filters, corpus_path=None, n_mark
 
 
 def _run_binom(nnz_thr1, n1, nnz_thr2, n2):
+    """
+    Calculate binomial test statistics.
+
+    Arguments
+    ---------
+    nnz_thr1 - np.ndarray (1 x M)
+        Array of number of nonzero expressions greater than a threshold (1) for target pop for each gene
+    n1 - np.ndarray (1 x M)
+        Number of cells in target population for each gene
+    nnz_thr2 - np.ndarray (N x M)
+        Array of number of nonzero expressions greater than a threshold (1) for context pops for each gene
+    n2 - np.ndarray (N x M)
+        Number of cells in context populations for each gene
+
+    Returns
+    -------
+    pvals_adj - np.ndarray
+        adjusted p-values for each comparison for each gene
+    effects - np.ndarray
+        effect sizes for each comparison for each gene
+    """
     with np.errstate(divide="ignore", invalid="ignore"):
         p_query = n1 / (n1 + n2)
         size = nnz_thr1 + nnz_thr2
@@ -278,10 +464,39 @@ def _run_binom(nnz_thr1, n1, nnz_thr2, n2):
 
 
 def _get_markers_binomtest(target_filters, context_filters, corpus_path=None, n_markers=10, p_bottom_comparisons=0.8):
+    """
+    Calculate marker genes using the binomial test.
+
+    Arguments
+    ---------
+    target_filters - dict
+        Dictionary of filters for the target population
+
+    context_filters - dict
+        Dictionary of filters describing the context
+
+    corpus_path - str, optional, default None
+        Path to the snapshot.
+        If path is provided, then the pipeline is running locally as part of the weekly cube generation.
+        Otherwise, the snapshot will be fetched from AWS.
+    
+    n_markers - int, optional, default 10
+        Number of top markers to return. If None, all marker genes with effect size > 0 are returned.
+    
+    p_bottom_comparisons - float, optional, default 0.1
+        The fraction of lowest scores to average across when aggregating statistics across all
+        comparisons to groups in the context population. By default, the lowest 10% of scores will
+        be averaged for each gene.
+
+    Returns
+    -------
+    Dictionary of marker genes as keys and a dictionary of p-value and effect size as values.
+    """
+
     (
         context_agg,
-        groups_context_uniq,
         target_agg,
+        groups_context_uniq,
         n_target,
         n_context,
         target_data_nnz,
@@ -311,6 +526,38 @@ def _get_markers_binomtest(target_filters, context_filters, corpus_path=None, n_
 def get_markers(
     target_filters, context_filters, corpus_path=None, test="ttest", n_markers=10, p_bottom_comparisons=0.1
 ):
+    """
+    Calculate marker genes using the t-test.
+
+    Arguments
+    ---------
+    target_filters - dict
+        Dictionary of filters for the target population
+
+    context_filters - dict
+        Dictionary of filters describing the context
+
+    corpus_path - str, optional, default None
+        Path to the snapshot.
+        If path is provided, then the pipeline is running locally as part of the weekly cube generation.
+        Otherwise, the snapshot will be fetched from AWS.
+    
+    test - str, optional, default "ttest"
+        The statistical test to be used ("ttest" or "binomtest").
+
+    n_markers - int, optional, default 10
+        Number of top markers to return. If None, all marker genes with effect size > 0 are returned.
+    
+    p_bottom_comparisons - float, optional, default 0.1
+        The fraction of lowest scores to average across when aggregating statistics across all
+        comparisons to groups in the context population. By default, the lowest 10% of scores will
+        be averaged for each gene.
+
+    Returns
+    -------
+    Dictionary of marker genes as keys and a dictionary of p-value and effect size as values.
+    """
+
     if test == "ttest":
         return _get_markers_ttest(
             target_filters,
