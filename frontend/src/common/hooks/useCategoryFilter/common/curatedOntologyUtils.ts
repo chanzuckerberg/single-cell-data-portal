@@ -183,6 +183,7 @@ export function buildCuratedOntologyCategoryValueView(
       label: ontologyNode.label,
       selected: false,
       selectedPartial: false,
+      visible: true,
     };
   }
 
@@ -199,6 +200,7 @@ export function buildCuratedOntologyCategoryValueView(
       ...view,
       selected: categoryValue.selected,
       selectedPartial: false,
+      visible: true,
     };
   }
 
@@ -217,6 +219,7 @@ export function buildCuratedOntologyCategoryValueView(
     children,
     selected: categoryValue.selected,
     selectedPartial: false,
+    visible: true,
   };
 }
 

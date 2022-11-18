@@ -331,8 +331,13 @@ function buildOntologyPanelCategoryViews(
     // If panel is filtered (that is, there are selected values in this panel's parents), only include values in this
     // panel that are descendants of the selected parent values. If there are no selected values in parent panels,
     // include all values in this panel.
+
+    // Get all UI Nodes configured for this panel.
     const panelUINodes = listPanelUINodes(panelIndex, categoryFilterUIState);
-    const includeUINodes = selectedParentUINodes.length
+
+    // Get the UINodes to be displayed in the panel based on the
+    // selected nodes in parent panels.
+    const visibleUINodeIds = selectedParentUINodes.length
       ? filterPanelUINodes(
           panelUINodes,
           selectedParentUINodes,
@@ -341,8 +346,14 @@ function buildOntologyPanelCategoryViews(
         )
       : panelUINodes;
 
-    // Collect the select category values for the values to be included.
-    const selectCategoryValues = includeUINodes
+    // Create a set of visibleNodeIds to use in the next step where
+    // we mark each node as visible or not.
+    const visibleSet = new Set(
+      visibleUINodeIds.map((node) => node.categoryValueId)
+    );
+
+    // Collect the SelectCategoryValues for the UINodes to be included.
+    const selectCategoryValues = panelUINodes
       .map((uiNode: MultiPanelUINode) =>
         categoryValuesByValue.get(uiNode.categoryValueId)
       )
@@ -352,11 +363,13 @@ function buildOntologyPanelCategoryViews(
         ): selectCategoryValue is SelectCategoryValue => !!selectCategoryValue
       );
 
-    // Build views for each selected category value to be included.
+    // Build the SelectCategoryValueViews for all configured SelectCategoryValues, mark the
+    // ones not filtered out by parent panels as visible=true.
     const panelViews: SelectCategoryValueView[] = buildSelectCategoryValueViews(
       config,
       selectCategoryValues,
-      ontologyTermLabelsById
+      ontologyTermLabelsById,
+      visibleSet
     );
 
     // Apply non-specific labels to values that appear in this panel as well as parent panels.
