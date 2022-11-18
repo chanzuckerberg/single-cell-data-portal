@@ -4,16 +4,14 @@ import time
 from urllib.parse import urlparse
 
 import connexion
-import gevent.monkey
 from backend.api_server.logger import configure_logging
 from backend.api_server.request_id import get_request_id, generate_request_id
 from backend.common.utils.aws import AwsSecret
+from backend.common.utils.datadog import configure_datadog_tracing
 from backend.common.utils.json import CustomJSONEncoder, CurationJSONEncoder
 from backend.gene_info.api.ensembl_ids import GeneChecker
 from connexion import FlaskApi, ProblemException, problem
-from ddtrace import patch_all
 from ddtrace import tracer
-from ddtrace.filters import FilterRequestsOnUrl
 from flask import g, request, Response
 from flask_cors import CORS
 from swagger_ui_bundle import swagger_ui_path
@@ -24,28 +22,7 @@ APP_NAME = "{}-{}".format(os.environ["APP_NAME"], DEPLOYMENT_STAGE)
 
 configure_logging(APP_NAME)
 
-# Datadog APM tracing
-# See https://ddtrace.readthedocs.io/en/stable/basic_usage.html#patch-all
-
-# next line may be redundant with DD_GEVENT_PATCH_ALL env var in .happy/terraform/modules/service/main.tf
-gevent.monkey.patch_all()
-tracer.configure(
-        hostname=os.environ['DD_AGENT_HOST'],
-        port=os.environ['DD_TRACE_AGENT_PORT'],
-        # Filter out health check endpoint (index page: '/')
-        settings={
-            'FILTERS': [
-                FilterRequestsOnUrl([r'http://.*/$']),
-            ],
-        }
-)
-patch_all()
-
-
-# enable Datadog profiling for development
-if DEPLOYMENT_STAGE not in ['staging', 'prod']:
-    # noinspection PyPackageRequirements,PyUnresolvedReferences
-    import ddtrace.profiling.auto
+configure_datadog_tracing()
 
 
 def create_flask_app():
