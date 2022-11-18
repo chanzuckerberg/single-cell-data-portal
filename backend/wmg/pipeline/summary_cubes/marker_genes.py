@@ -3,7 +3,7 @@ import logging
 import pandas as pd
 import tiledb
 import numpy as np
-
+import gc
 from backend.wmg.data.schemas.marker_genes_cube_schema import marker_genes_schema
 from backend.wmg.data.snapshot import CELL_COUNTS_CUBE_NAME, MARKER_GENES_CUBE_NAME
 from backend.wmg.data.utils import create_empty_cube, log_func_runtime
@@ -59,6 +59,8 @@ def create_marker_genes_cube(corpus_path: str):
             }            
             t_markers = get_markers(target, context, corpus_path=corpus_path, test="ttest", n_markers=None)
             b_markers = get_markers(target, context, corpus_path=corpus_path, test="binomtest", n_markers=None)
+            gc.collect()
+            
             all_marker_genes = set(list(t_markers.keys())).union(list(b_markers.keys()))
             markers = []
             for i,g in enumerate(all_marker_genes):

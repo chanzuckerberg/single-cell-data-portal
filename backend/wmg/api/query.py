@@ -1,10 +1,8 @@
 from typing import List, Dict, Union
-
 import tiledb
 from pandas import DataFrame
 from pydantic import BaseModel, Field
 from tiledb import Array
-
 from backend.wmg.data.snapshot import WmgSnapshot
 
 
@@ -62,6 +60,7 @@ class WmgQuery:
                 "organism_ontology_term_id",
                 "cell_type_ontology_term_ids",
             ],
+            use_arrow=False
         )
 
     def cell_counts(self, criteria: Union[WmgQueryCriteria, FmgQueryCriteria]) -> DataFrame:
@@ -76,7 +75,7 @@ class WmgQuery:
     # TODO: refactor for readability: https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues
     #  /chanzuckerberg/single-cell-data-portal/2133
     @staticmethod
-    def _query(cube: Array, criteria: Union[WmgQueryCriteria, FmgQueryCriteria], indexed_dims: List[str]) -> DataFrame:
+    def _query(cube: Array, criteria: Union[WmgQueryCriteria, FmgQueryCriteria], indexed_dims: List[str], use_arrow=True) -> DataFrame:
         query_cond = ""
         attrs = {}
         for attr_name, vals in criteria.dict(exclude=set(indexed_dims)).items():
@@ -118,8 +117,8 @@ class WmgQuery:
             # Return an expected empty DataFrame, but without crashing, thanks to use_arrow=False
             return cube.query(attr_cond=attr_cond, use_arrow=False).df[tiledb_dims_query]
 
-        query_result_df = cube.query(attr_cond=attr_cond, use_arrow=True).df[tiledb_dims_query]
-
+        # use_arrow=True crashes for large dataframe results, so we set it to false for marker genes.
+        query_result_df = cube.query(attr_cond=attr_cond, use_arrow=use_arrow).df[tiledb_dims_query]
         return query_result_df
 
     def list_primary_filter_dimension_term_ids(self, primary_dim_name: str):
