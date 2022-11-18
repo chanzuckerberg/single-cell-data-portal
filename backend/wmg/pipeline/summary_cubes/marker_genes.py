@@ -85,4 +85,10 @@ def create_marker_genes_cube(corpus_path: str):
                 })
                 tiledb.from_pandas(uri, df, mode="append")
 
+    logger.debug("Cube created, start consolidation")
+    tiledb.consolidate(uri)
+
+    logger.debug("Cube consolidated, start vacuumming")
+    tiledb.vacuum(uri)    
+
     logger.info(f"Marker genes cube created and stored at {uri}")
