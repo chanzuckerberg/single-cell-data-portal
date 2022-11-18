@@ -42,11 +42,11 @@ def create_marker_genes_cube(corpus_path: str):
     
     for tiss in uniq_tissues:
         tiss_celltypes = list(cell_types[tissues == tiss])
-        org_celltypes = list(organisms[tissues == tiss])
+        tiss_organisms = list(organisms[tissues == tiss])
         for i, ct in enumerate(tiss_celltypes):
-            organism = org_celltypes[i]
+            organism = tiss_organisms[i]
             
-            logger.info("Calculating markers for tissue: %s, cell type: %s", tiss, ct)
+            logger.info("Calculating markers for tissue: %s, cell type: %s, organism: %s", tiss, ct, organism)
             target = {
                 "tissue_ontology_term_ids": [tiss],
                 "cell_type_ontology_term_ids": [ct],
@@ -63,7 +63,7 @@ def create_marker_genes_cube(corpus_path: str):
             
             all_marker_genes = set(list(t_markers.keys())).union(list(b_markers.keys()))
             markers = []
-            for i,g in enumerate(all_marker_genes):
+            for g in all_marker_genes:
                 b_stats = b_markers.get(g,{"p_value_binomtest": 1, "effect_size_binomtest": 0})
                 t_stats = t_markers.get(g,{"p_value_ttest": 1, "effect_size_ttest": 0})
                 b_stats.update(t_stats)

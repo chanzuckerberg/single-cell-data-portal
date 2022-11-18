@@ -8,6 +8,10 @@ from backend.wmg.data.snapshot import load_snapshot, WmgSnapshot
 
 
 def _make_hashable(func):
+    """
+    Implicitly convert unhashable data structures (list and dict) to hashable strings
+    for memoization.
+    """
     class HDict(dict):
         def __hash__(self):
             return hash(json.dumps(self))
@@ -15,10 +19,6 @@ def _make_hashable(func):
     class HList(list):
         def __hash__(self):
             return hash(tuple(self))
-
-    class HDummy(list):
-        def __hash__(self):
-            return hash("")
 
     @wraps(func)
     def wrapped(*args, **kwargs):
@@ -28,8 +28,6 @@ def _make_hashable(func):
                 arg = HDict(arg)
             elif isinstance(arg, list):
                 arg = HList(arg)
-            elif isinstance(arg, WmgSnapshot):
-                arg = HDummy()
             new_args.append(arg)
 
         new_kwargs = {}
@@ -38,8 +36,6 @@ def _make_hashable(func):
                 v = HDict(v)
             elif isinstance(v, list):
                 v = HList(v)
-            elif isinstance(v, WmgSnapshot):
-                v = HDummy()
             new_kwargs[k] = v
 
         return func(*new_args, **new_kwargs)
@@ -49,23 +45,41 @@ def _make_hashable(func):
 @_make_hashable
 @lru_cache(maxsize=None)
 def _query_tiledb(filters, corpus_path=None, group_by_dims=None, genes=None):
+    """
+    Query tileDB and return the following results:
+    - agg: query result aggregated by filter keys
+    - t_n_cells_sum: a dictionary of 1D numpy arrays with length # of genes
+        each value is the true number of cells present for the combination of 
+        filters (keys).
+        Ex: {(cell_type1,tissue1,organism1): np.array([0,100,100,0,80])}
+    - genes: a list of all genes with nonzero expression found in the query result
+    """
+
     criteria = FmgQueryCriteria(**filters)
     snapshot: WmgSnapshot = load_snapshot(corpus_path=corpus_path)
     Q = WmgQuery(snapshot)
     query = Q.expression_summary_fmg(criteria)
     cell_counts_query = Q.cell_counts(criteria)
 
+    # if group-by dimensions not provided, use the keys specified in the filter JSON
     if group_by_dims is None:
+        # depluralize plural keys to match names in schema
         depluralized_keys = [i[:-1] if i[-1] == "s" else i for i in filters.keys()]
-        gb_dims_es = ["gene_ontology_term_id"] + depluralized_keys
-        gb_dims = ["dataset_id"] + depluralized_keys
     else:
         depluralized_keys = [i[:-1] if i[-1] == "s" else i for i in group_by_dims]
-        gb_dims_es = ["gene_ontology_term_id"] + depluralized_keys
-        gb_dims = ["dataset_id"] + depluralized_keys
+    
+    # group-by dimensions for expression summary must include genes
+    gb_dims_es = ["gene_ontology_term_id"] + depluralized_keys
+    # group-by dimensions for cell counts must include dataset ID
+    # by convention, dataset_id will be first entry
+    if 'dataset_id' in depluralized_keys:
+        depluralized_keys.remove('dataset_id')
+    gb_dims = ["dataset_id"] + depluralized_keys
 
+    # group-by and sum
     agg = query.groupby(gb_dims_es).sum()
     n_cells = cell_counts_query.groupby(gb_dims).sum()["n_total_cells"]
+
     if group_by_dims is None:
         desired_levels = [i.name for i in agg.index.levels][1:]
     else:
@@ -76,37 +90,42 @@ def _query_tiledb(filters, corpus_path=None, group_by_dims=None, genes=None):
 
     genes_indexer = pd.Series(index=genes, data=range(len(genes)))
 
+    # fill in an array stratified across desired filter combinations + dataset ID
+    # with the number of cells in each group for genes that are PRESENT in the dataset
     t_n_cells = np.zeros((n_cells.shape[0], len(genes)))
-
     for i, index in enumerate(n_cells.index):
         n = n_cells[index]
         dataset_id = index[0]
         present = list(set(snapshot.dataset_to_gene_ids[dataset_id]).intersection(genes))
         t_n_cells[i, genes_indexer[present]] = n
 
+    # get the tuples of filter values in the correct order defined in `desired_levels`
+    # this is to exclude dataset_ids from the groups
     ixs = []
     level_names = [i.name for i in n_cells.index.levels]
     for d in desired_levels:
         for i, level in enumerate(level_names):
             if level == d:
                 ixs.append(i)
-
     groups = list(zip(*[n_cells.index.get_level_values(i) for i in ixs]))
 
+    # sum up the cell count arrays across duplicate groups 
+    # (groups can be duplicate after excluding dataset_ids)
     t_n_cells_sum = {}
     for i, k in enumerate(groups):
         summer = t_n_cells_sum.get(k, np.zeros(t_n_cells.shape[1]))
         summer += t_n_cells[i]
         t_n_cells_sum[k] = summer
 
-    return agg, list(t_n_cells_sum.keys()), t_n_cells_sum, genes
+    return agg, t_n_cells_sum, genes
 
 
 def _prepare_indices_and_metrics(target_filters, context_filters, corpus_path=None):
-    context_agg, groups_context_uniq, t_n_cells_sum_context, genes = _query_tiledb(
+    context_agg, t_n_cells_sum_context, genes = _query_tiledb(
         context_filters, corpus_path=corpus_path, group_by_dims=list(target_filters.keys())
     )
-    target_agg, _, t_n_cells_sum_target, _ = _query_tiledb(target_filters, corpus_path=corpus_path, genes=genes)
+    target_agg, t_n_cells_sum_target, _ = _query_tiledb(target_filters, corpus_path=corpus_path, genes=genes)
+    groups_context_uniq = list(t_n_cells_sum_context.keys())
 
     target_agg = target_agg.groupby("gene_ontology_term_id").sum()
 
