@@ -51,7 +51,7 @@ class PortalApi:
                 "visibility": "PRIVATE" if c.published_at is None else "PUBLIC",
                 "owner": c.owner,
                 "created_at": 12345, # TODO
-                "revision_of": "TODO", # TODO: looks like this isn't returned right now
+                "revision_of": "NA", # TODO: looks like this isn't returned right now
             })            
 
         result = {"collections": collections}
@@ -453,7 +453,7 @@ class PortalApi:
             "processing_status": version.status.processing_status or "NA",
             "dataset_id": dataset_id,
             "id": "NA",
-            "upload_progress": 12345, # TODO
+            "upload_progress": 1,
             "upload_status": version.status.upload_status or "NA",
             "validation_status": version.status.validation_status or "NA",
         }

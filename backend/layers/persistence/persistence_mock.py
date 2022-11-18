@@ -62,7 +62,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
     def create_canonical_collection(self, owner: str, collection_metadata: CollectionMetadata) -> CollectionVersion:
         collection_id = CollectionId(self._id())
         version_id = CollectionVersionId(self._id())
-        version = CollectionVersion(collection_id, version_id, owner, collection_metadata, None, [], None)
+        version = CollectionVersion(collection_id, version_id, owner, collection_metadata, None, [], None, datetime.utcnow())
         self.collections_versions[version_id.id] = version
         # Don't set mappings here - those will be set when publishing the collection!
         return copy.deepcopy(version)
@@ -105,7 +105,8 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             metadata=current_version.metadata,
             publisher_metadata=current_version.publisher_metadata,
             datasets=new_dataset_list,
-            published_at=None
+            published_at=None,
+            created_at=datetime.utcnow()
         )
         self.collections_versions[new_version_id.id] = collection_version
         return copy.deepcopy(collection_version)
@@ -182,7 +183,8 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             collection_id=collection_version.collection_id,
             status=DatasetStatus.empty(),
             metadata=None,
-            artifacts=[]
+            artifacts=[],
+            created_at=datetime.utcnow()
         )
         self.datasets_versions[version_id.id] = version
         self.datasets[dataset_id.id] = version_id.id
@@ -242,7 +244,8 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             collection_id=collection_version.collection_id,
             status=DatasetStatus.empty(),
             metadata=None,
-            artifacts=[]
+            artifacts=[],
+            created_at=datetime.utcnow()
         )
         self.datasets_versions[new_version_id.id] = new_version
         
