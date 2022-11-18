@@ -298,12 +298,12 @@ class BusinessLogic(BusinessLogicInterface):
         """
         return self.database_provider.get_dataset_artifacts(dataset_version_id)
 
-    def get_dataset_artifact_download_data(self, dataset_version_id: DatasetVersionId, artifact_id: str) -> DatasetArtifactDownloadData:
+    def get_dataset_artifact_download_data(self, dataset_version_id: DatasetVersionId, artifact_id: DatasetArtifactId) -> DatasetArtifactDownloadData:
         """
         Returns download data for an artifact, including a presigned URL
         """
         artifacts = self.get_dataset_artifacts(dataset_version_id)
-        artifact = next((a for a in artifacts if a.id == artifact_id), None)
+        artifact = next((a for a in artifacts if a == artifact_id), None)
 
         if not artifact:
             raise ArtifactNotFoundException(f"Artifact {artifact_id} not found in dataset {dataset_version_id}")
