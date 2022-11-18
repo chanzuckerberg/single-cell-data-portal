@@ -54,7 +54,7 @@ def create_marker_genes_cube(corpus_path: str):
             }
             context = {
                 "tissue_ontology_term_ids": [tiss],
-                "cell_type_ontology_term_ids": tiss_celltypes,
+                "cell_type_ontology_term_ids": [''],
                 "organism_ontology_term_id": organism
             }            
             t_markers = get_markers(target, context, corpus_path=corpus_path, test="ttest", n_markers=None)

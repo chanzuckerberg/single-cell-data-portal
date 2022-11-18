@@ -65,9 +65,7 @@ def _query_tiledb(filters, corpus_path=None, group_by_dims=None, genes=None):
         gb_dims = ["dataset_id"] + depluralized_keys
 
     agg = query.groupby(gb_dims_es).sum()
-    agg.index = pd.Index([tuple(j.decode('utf-8') for j in i) for i in agg.index],name=agg.index.names)
     n_cells = cell_counts_query.groupby(gb_dims).sum()["n_total_cells"]
-
     if group_by_dims is None:
         desired_levels = [i.name for i in agg.index.levels][1:]
     else:

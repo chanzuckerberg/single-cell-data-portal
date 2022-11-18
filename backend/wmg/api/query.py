@@ -59,8 +59,7 @@ class WmgQuery:
                 "tissue_ontology_term_ids",
                 "organism_ontology_term_id",
                 "cell_type_ontology_term_ids",
-            ],
-            use_arrow=False
+            ]
         )
 
     def cell_counts(self, criteria: Union[WmgQueryCriteria, FmgQueryCriteria]) -> DataFrame:
@@ -75,14 +74,14 @@ class WmgQuery:
     # TODO: refactor for readability: https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues
     #  /chanzuckerberg/single-cell-data-portal/2133
     @staticmethod
-    def _query(cube: Array, criteria: Union[WmgQueryCriteria, FmgQueryCriteria], indexed_dims: List[str], use_arrow=True) -> DataFrame:
+    def _query(cube: Array, criteria: Union[WmgQueryCriteria, FmgQueryCriteria], indexed_dims: List[str]) -> DataFrame:
         query_cond = ""
         attrs = {}
         for attr_name, vals in criteria.dict(exclude=set(indexed_dims)).items():
             attr = depluralize(attr_name)
             if query_cond and len(vals) > 0:
                 query_cond += " and "
-            if len(vals) == 1:
+            if len(vals) == 1 and vals[0] != '':
                 attrs[attr] = vals[0]
                 query_cond += f"{attr} == val('{vals[0]}')"
             elif len(vals) > 1:
@@ -94,7 +93,8 @@ class WmgQuery:
         tiledb_dims_query = []
         for dim_name in indexed_dims:
             # Don't filter on this dimension but return all "original tissues" back
-            if dim_name == "tissue_original_ontology_term_ids":
+            if (dim_name == "tissue_original_ontology_term_ids" or
+                len(criteria.dict()[dim_name]) > 0 and criteria.dict()[dim_name][0]==""):
                 tiledb_dims_query.append([])
             elif criteria.dict()[dim_name]:
                 tiledb_dims_query.append(criteria.dict()[dim_name])
@@ -104,21 +104,7 @@ class WmgQuery:
 
         tiledb_dims_query = tuple(tiledb_dims_query)
 
-        # FIXME: HACK of the century. Prevent realloc() error & crash when query returns an empty result. This forces
-        #  two queries when there should just one.
-        if (
-            len(
-                cube.query(attr_cond=attr_cond, attrs=attrs, dims=["organism_ontology_term_id"]).multi_index[
-                    tiledb_dims_query
-                ]["organism_ontology_term_id"]
-            )
-            == 0
-        ):
-            # Return an expected empty DataFrame, but without crashing, thanks to use_arrow=False
-            return cube.query(attr_cond=attr_cond, use_arrow=False).df[tiledb_dims_query]
-
-        # use_arrow=True crashes for large dataframe results, so we set it to false for marker genes.
-        query_result_df = cube.query(attr_cond=attr_cond, use_arrow=use_arrow).df[tiledb_dims_query]
+        query_result_df = cube.query(attr_cond=attr_cond, use_arrow=True).df[tiledb_dims_query]
         return query_result_df
 
     def list_primary_filter_dimension_term_ids(self, primary_dim_name: str):
