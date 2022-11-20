@@ -877,7 +877,7 @@ class WmgApiV1Tests(unittest.TestCase):
     @patch("backend.wmg.api.v1.gene_term_label")
     @patch("backend.wmg.api.v1.ontology_term_label")
     @patch("backend.wmg.api.v1.load_snapshot")
-    def test__findmarkers_returns_200_and_correct_response(self, load_snapshot, ontology_term_label, gene_term_label):
+    def test__markers_returns_200_and_correct_response(self, load_snapshot, ontology_term_label, gene_term_label):
         dim_size = 1
         with create_temp_wmg_snapshot(
             dim_size=dim_size,
@@ -895,21 +895,13 @@ class WmgApiV1Tests(unittest.TestCase):
             gene_term_label.side_effect = lambda gene_term_id: f"{gene_term_id}_label"
 
             request = dict(
-                target_filters=dict(
-                    cell_type_ontology_term_ids=[
-                        "cell_type_ontology_term_id_0",
-                    ],
-                    organism_ontology_term_id="organism_ontology_term_id_0",
-                    tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
-                ),
-                context_filters=dict(
-                    organism_ontology_term_id="organism_ontology_term_id_0",
-                    tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
-                ),
+                celltype="cell_type_ontology_term_id_0",
+                organism="organism_ontology_term_id_0",
+                tissue="tissue_ontology_term_id_0",
+                n_markers=10,
             )
 
-            response = self.app.post("/wmg/v1/findmarkers", json=request)
-
+            response = self.app.post("/wmg/v1/markers", json=request)
             self.assertEqual(200, response.status_code)
             print("HERE")
             print(json.loads(response.data))

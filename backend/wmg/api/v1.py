@@ -54,15 +54,23 @@ def query():
     )
 
 
-def findmarkers():
-    request = connexion.request.json
-    target_filters = request["target_filters"]
-    context_filters = request["context_filters"]
+def markers():
+    request = connexion.request.args
+    cell_type = request["celltype"]
+    tissue = request["tissue"]
+    organism = request["organism"]
     n_markers = request["n_markers"]
     test = request["test"]
-    target_filters.update(context_filters)
     snapshot: WmgSnapshot = load_snapshot()
-    marker_genes = get_markers(target_filters, context_filters, n_markers=n_markers, test=test)
+    attrs = [f"p_value_{test}", f"effect_size_{test}"]
+    col_names = ["p_value", "effect_size"]
+    markers = (
+        snapshot.marker_genes_cube.query(attrs=attrs, use_arrow=True)
+        .df[(tissue, organism, cell_type, [])][["gene_ontology_term_id"] + attrs]
+        .rename(columns=dict(zip(attrs, col_names)))
+        .nlargest(n_markers, "effect_size")
+    )
+    marker_genes = dict(zip(markers["gene_ontology_term_id"], markers[col_names].to_dict(orient="records")))
     return jsonify(
         dict(
             snapshot_id=snapshot.snapshot_identifier,
