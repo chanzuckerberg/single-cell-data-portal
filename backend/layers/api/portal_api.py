@@ -1,5 +1,6 @@
 from typing import List, Optional, Tuple
 from unittest.mock import Mock
+from urllib.parse import urlparse
 
 from flask import Response, jsonify, make_response
 from backend.common.utils.authorization_checks import is_user_owner_or_allowed
@@ -50,7 +51,7 @@ class PortalApi:
                 "id": c.version_id.id if c.published_at is None else c.collection_id.id,
                 "visibility": "PRIVATE" if c.published_at is None else "PUBLIC",
                 "owner": c.owner,
-                "created_at": 12345, # TODO
+                "created_at": c.created_at,
                 "revision_of": "NA", # TODO: looks like this isn't returned right now
             })            
 
@@ -136,7 +137,7 @@ class PortalApi:
             "suspension_type": dataset.metadata.suspension_type,
             "tissue": self._ontology_term_ids_to_response(dataset.metadata.tissue),
             "tombstone": False,
-            "updated_at": 1234,
+            "updated_at": dataset.created_at, # Legacy: datasets can't be updated anymore
             "x_approximate_distribution": dataset.metadata.x_approximate_distribution,
         }
 
@@ -146,7 +147,7 @@ class PortalApi:
             "access_type": access_type,
             "contact_email": collection.metadata.contact_email,
             "contact_name": collection.metadata.contact_name,
-            "created_at": 1234,
+            "created_at": collection.created_at,
             "curator_name": "", # TODO
             "data_submission_policy_version": "1.0", # TODO
             "datasets": [self._dataset_to_response(d) for d in collection.datasets],
@@ -260,8 +261,8 @@ class PortalApi:
             transformed_collection = {
                 "id": collection.collection_id.id,
                 "name": collection.metadata.name,
-                "published_at": collection.published_at,
-                "revised_at": 0, # TODO
+                "published_at": collection.published_at, # TODO: this is the time of first publishing
+                "revised_at": 0, # TODO: this should be published_at
             }
 
             if collection.publisher_metadata is not None:
@@ -495,4 +496,27 @@ class PortalApi:
         """
         a.k.a. the meta endpoint
         """
-        pass
+        try:
+            path = urlparse(url).path
+            id = [segment for segment in path.split("/") if segment][-1].strip(".cxg")
+        except Exception:
+            raise ServerErrorHTTPException("Cannot parse URL")
+
+        # TODO: if we require it, add double id lookup
+        dataset = self.business_logic.get_dataset_version(DatasetVersionId(id))
+        collection = self.business_logic.get_collection_version_from_canonical(dataset.collection_id)
+
+        if collection is None: # orphaned datasets 
+            raise NotFoundHTTPException()
+
+        # Retrieves the URI of the cxg artifact
+        s3_uri = next(a.uri for a in dataset.artifacts if a.type == "CXG")
+
+        dataset_identifiers = {
+            "s3_uri": s3_uri,
+            "dataset_id": dataset.dataset_id.id,
+            "collection_id": dataset.collection_id.id,
+            "collection_visibility": "PUBLIC" if collection.published_at is not None else "PRIVATE",
+            "tombstoned": False, # No longer applicable
+        }
+        return make_response(jsonify(dataset_identifiers), 200)

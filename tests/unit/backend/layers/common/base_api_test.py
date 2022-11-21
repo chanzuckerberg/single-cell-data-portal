@@ -190,7 +190,7 @@ class NewBaseTest(BaseAuthAPITest):
             artifact_ids.append(self.business_logic.add_dataset_artifact(dataset_version_id, artifact.type, artifact.uri))
         if publish:
             self.business_logic.publish_collection_version(collection.version_id)
-        explorer_url = f"http://base.url/{dataset_id}"
+        explorer_url = f"http://base.url/{dataset_version_id.id}.cxg/"
         return DatasetData(
             dataset_version_id.id, 
             dataset_id.id, 
