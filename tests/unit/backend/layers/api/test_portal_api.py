@@ -122,18 +122,12 @@ class TestCollection(NewBaseTest):
             self.assertEqual(None, actual_body.get("from_date"))
 
     # ✅
-<<<<<<< Updated upstream
-    def test__get_collection_id__ok(self):
-        """Verify the test collection exists and the expected fields exist."""
-
-=======
     @patch("backend.layers.persistence.persistence_mock.datetime")
     def test__get_collection_id__ok(self, mock_dt):
         """Verify the test collection exists and the expected fields exist."""
 
         mock_dt.utcnow.return_value = 1234
 
->>>>>>> Stashed changes
         collection = self.generate_published_collection(add_datasets=2)
 
         expected_body = {
