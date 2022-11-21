@@ -39,6 +39,7 @@ export interface State {
 export const INITIAL_STATE: State = {
   cellTypeIdsToDelete: [],
   genesToDelete: [],
+  markerGenesByCellType: {},
   selectedCellTypeIds: {},
   selectedFilters: EMPTY_FILTERS,
   selectedGenes: [],

@@ -34,6 +34,7 @@ export function useDeleteGenesAndCellTypes(): {
       if (!dispatch) return;
 
       dispatch(toggleCellTypeIdToDelete(cellTypeMetadata));
+      // use the mutation callback here
     },
     [dispatch]
   );

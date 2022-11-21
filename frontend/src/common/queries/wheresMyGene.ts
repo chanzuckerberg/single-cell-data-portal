@@ -1,5 +1,11 @@
 import { useContext, useMemo } from "react";
-import { useQuery, UseQueryResult } from "react-query";
+import {
+  useMutation,
+  UseMutationResult,
+  useQuery,
+  useQueryClient,
+  UseQueryResult,
+} from "react-query";
 import { API_URL } from "src/configs/configs";
 import {
   DispatchContext,
@@ -302,7 +308,8 @@ export function useFilterDimensions(
         })),
         development_stage_terms: development_stage_terms.map(toEntity),
         disease_terms: disease_terms.map(toEntity),
-        self_reported_ethnicity_terms: self_reported_ethnicity_terms.map(toEntity),
+        self_reported_ethnicity_terms:
+          self_reported_ethnicity_terms.map(toEntity),
         sex_terms: sex_terms.map(toEntity),
       },
       isLoading: false,
@@ -690,4 +697,115 @@ export function aggregateCollectionsFromDatasets(
   }
 
   return collections;
+}
+
+interface filters {
+  organism_ontology_term_id: string;
+  tissue_ontology_term_ids: string[];
+  cell_type_ontology_term_ids: string[]; // used to signify target cell type
+  tissue_original_ontology_term_ids: string[]; //complex only
+  dataset_ids: string[]; //complex only
+  development_stage_ontology_term_ids: string[]; //complex only
+  disease_ontology_term_ids: string[]; //complex only
+  ethnicity_ontology_term_ids: string[]; //complex only
+  sex_ontology_term_ids: string[]; //complex only
+}
+
+interface MarkerGeneRequestBody {
+  context_filters: filters;
+  target_filters: filters;
+  n_markers?: number;
+}
+
+// /* {'IGHA1': (0.0, 1.094378390988656), # first element is p-value, second is effect size
+export interface MarkerGeneResponse {
+  [geneName: string]: [number, number];
+}
+
+// maybe we don't need to utilize the WMG Query Body generator hook here
+// If I go to the call site of the mutator, maybe that data is easy to access or at least close to the surface
+// Maybe that's the case now, but by the time we DO want to have complex target filters, it will get harder to generate
+export function useGenerateMarkerGeneBody(
+  cellType: string
+): MarkerGeneRequestBody | null {
+  const requestBody = useWMGQueryRequestBody();
+
+  if (!requestBody) return null;
+
+  const { organism_ontology_term_id, tissue_ontology_term_ids } =
+    requestBody.filter;
+
+  return {
+    context_filters: {
+      organism_ontology_term_id,
+      tissue_ontology_term_ids,
+      cell_type_ontology_term_ids: [],
+      tissue_original_ontology_term_ids: [],
+      dataset_ids: [],
+      development_stage_ontology_term_ids: [],
+      disease_ontology_term_ids: [],
+      ethnicity_ontology_term_ids: [],
+      sex_ontology_term_ids: [],
+    },
+    target_filters: {
+      organism_ontology_term_id,
+      tissue_ontology_term_ids,
+      cell_type_ontology_term_ids: [cellType],
+      tissue_original_ontology_term_ids: [],
+      dataset_ids: [],
+      development_stage_ontology_term_ids: [],
+      disease_ontology_term_ids: [],
+      ethnicity_ontology_term_ids: [],
+      sex_ontology_term_ids: [],
+    },
+    n_markers: undefined,
+  };
+}
+
+enum MUTATION_TYPE {
+  LOSS = "LOSS",
+  GAIN = "GAIN",
+}
+
+export async function fetchMarkerGenes(
+  requestBody: MarkerGeneRequestBody | null
+): Promise<MarkerGeneResponse> {
+  const url = API_URL + API.WMG_MARKER_GENES;
+
+  const response = await fetch(url, {
+    ...DEFAULT_FETCH_OPTIONS,
+    ...JSON_BODY_FETCH_OPTIONS,
+    body: JSON.stringify(requestBody),
+    method: "POST",
+  });
+
+  return await response.json();
+}
+export const USE_MARKER_GENES = {
+  ENTITIES: [ENTITIES.WMG_MARKER_GENES],
+  id: "wmg-marker-genes",
+};
+
+export interface MarkerGenesByCellType {
+  [cellType: string]: MarkerGeneResponse;
+}
+
+export function useMarkerGenes(): UseMutationResult<
+  MarkerGeneResponse,
+  unknown,
+  { body: MarkerGeneRequestBody; mutationType: MUTATION_TYPE },
+  { prevMarkerGenes: MarkerGenesByCellType }
+> {
+  const queryClient = useQueryClient();
+  return useMutation(
+    ({ body, mutationType }) =>
+      mutationType === MUTATION_TYPE["GAIN"]
+        ? fetchMarkerGenes(body)
+        : removeMarkerGenes(),
+    {
+      onSuccess: (data, _, context) => {
+        queryClient.setQueryData([USE_MARKER_GENES], {});
+      },
+    }
+  );
 }
