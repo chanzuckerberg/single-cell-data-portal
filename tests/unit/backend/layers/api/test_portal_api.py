@@ -1435,10 +1435,9 @@ class TestDataset(NewBaseTest):
         body = json.loads(response.data)
         self.assertEqual("'dataset/test_dataset_id/asset/fake_asset' not found.", body["detail"])
 
-    # 💛 TODO: figure out `upload_progress`
+    # ✅
     def test__get_status__ok(self):
         dataset = self.generate_dataset(
-            owner="test_user_1",
             statuses=[
                 DatasetStatusUpdate("processing_status", DatasetProcessingStatus.PENDING),
                 DatasetStatusUpdate("upload_status", DatasetUploadStatus.UPLOADING),
@@ -1457,7 +1456,7 @@ class TestDataset(NewBaseTest):
             "processing_status": "PENDING",
             "dataset_id": dataset.dataset_version_id,
             "id": "NA", # TODO: I am deprecating this, I don't think it has any use.
-            "upload_progress": 0.4444444444444444,
+            "upload_progress": 1,
             "upload_status": "UPLOADING",
             "validation_status": "NA",
         }
