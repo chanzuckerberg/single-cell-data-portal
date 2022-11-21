@@ -47,7 +47,7 @@ export const ClearIconButton = styled(IconButton)`
   }
 
   .MuiSvgIcon-root {
-    height: 16px; // overrides icon size specification - xMarkCircle IconNameToSizes maximum available sdsSize is "s"
-    width: 16px; // overrides icon size specification - xMarkCircle IconNameToSizes maximum available sdsSize is "s"
+    height: 16px; // overrides IconNameToSizes "s" size specification
+    width: 16px; // overrides IconNameToSizes "s" size specification
   }
 `;
