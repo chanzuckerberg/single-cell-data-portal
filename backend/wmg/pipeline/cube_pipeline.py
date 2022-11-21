@@ -70,7 +70,7 @@ def load_data_and_create_cube(
     generate_primary_filter_dimensions(snapshot_path, corpus_name, snapshot_id)
 
     # create marker genes cube after all artifacts have been built
-    create_marker_genes_cube(corpus_path)
+    create_marker_genes_cube(snapshot_path, corpus_path)
 
     upload_artifacts_to_s3(snapshot_path, snapshot_id)
     if validate_cube:
