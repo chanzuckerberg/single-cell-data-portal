@@ -899,12 +899,13 @@ class WmgApiV1Tests(unittest.TestCase):
                 organism="organism_ontology_term_id_0",
                 tissue="tissue_ontology_term_id_0",
                 n_markers=10,
+                test="ttest",
             )
 
             response = self.app.post("/wmg/v1/markers", json=request)
-            self.assertEqual(200, response.status_code)
             print("HERE")
             print(json.loads(response.data))
+            self.assertEqual(200, response.status_code)
 
 
 # mock the dataset and collection entity data that would otherwise be fetched from the db; in this test

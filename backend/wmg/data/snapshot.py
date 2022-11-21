@@ -115,7 +115,6 @@ def _open_cube(cube_uri, use_s3=True) -> Array:
         else:
             return tiledb.open(cube_uri)
     except tiledb.TileDBError:
-        logger.error(f"Error loading {cube_uri}")
         return None
 
 
