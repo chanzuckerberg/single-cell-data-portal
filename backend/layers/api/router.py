@@ -22,7 +22,7 @@ api = None
 def portal_api():
     global api
     if api is None:
-g        database_provider = DatabaseProviderMock()
+        database_provider = DatabaseProviderMock()
         crossref_provider = CrossrefProviderInterface()
         step_function_provider = StepFunctionProviderInterface()
         s3_provider = S3Provider()
