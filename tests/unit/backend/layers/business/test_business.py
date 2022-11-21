@@ -10,11 +10,11 @@ from backend.layers.thirdparty.step_function_provider import StepFunctionProvide
 from backend.common.providers.crossref_provider import CrossrefDOINotFoundException, CrossrefException
 from backend.layers.business.business import BusinessLogic, CollectionQueryFilter, DatasetArtifactDownloadData
 from backend.layers.business.business import BusinessLogic, CollectionMetadataUpdate, CollectionQueryFilter, DatasetArtifactDownloadData
-from backend.layers.business.exceptions import CollectionUpdateException, CollectionVersionException, InvalidLinkException, \
+from backend.layers.business.exceptions import CollectionUpdateException, CollectionVersionException, DatasetNotFoundException, InvalidLinkException, \
     CollectionCreationException, DatasetIngestException, CollectionPublishException
 from backend.layers.common.entities import CollectionId, CollectionMetadata, CollectionVersion, CollectionVersionId, DatasetArtifact, DatasetMetadata, DatasetProcessingStatus, DatasetStatus, DatasetUploadStatus, DatasetValidationStatus, DatasetVersionId, Link, OntologyTermId
-from backend.layers.thirdparty.uri_provider import UriProviderInterface
-from tests.unit.backend.layers.persistence.persistence_mock import DatabaseProviderMock
+from backend.layers.thirdparty.uri_provider import FileInfo, UriProviderInterface
+from backend.layers.persistence.persistence_mock import DatabaseProviderMock
 
 class BaseBusinessLogicTestCase(unittest.TestCase):
 
@@ -32,6 +32,7 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         self.s3_provider = S3Provider()
         self.uri_provider = UriProviderInterface()
         self.uri_provider.validate = Mock(return_value=True) # By default, every link should be valid
+        self.uri_provider.get_file_info = Mock(return_value=FileInfo(1, "file.h5ad"))
 
         self.business_logic = BusinessLogic(
             database_provider=self.database_provider, 
@@ -169,7 +170,7 @@ class TestCreateCollection(BaseBusinessLogicTestCase):
         to the collection
         """
         links_with_doi = [
-            Link("test doi", "doi", "http://good.doi")
+            Link("test doi", "DOI", "http://good.doi")
         ]
         self.sample_collection_metadata.links = links_with_doi
 
@@ -191,7 +192,7 @@ class TestCreateCollection(BaseBusinessLogicTestCase):
         A collection with a DOI that cannot be found on Crossref will not be created
         """
         links_with_doi = [
-            Link("test doi", "doi", "http://bad.doi")
+            Link("test doi", "DOI", "http://bad.doi")
         ]
 
         self.sample_collection_metadata.links = links_with_doi
@@ -206,7 +207,7 @@ class TestCreateCollection(BaseBusinessLogicTestCase):
         A collection with an invalid DOI will be created with empty publisher metadata
         """
         links_with_doi = [
-            Link("test doi", "doi", "http://bad.doi")
+            Link("test doi", "DOI", "http://bad.doi")
         ]
 
         self.sample_collection_metadata.links = links_with_doi
@@ -399,7 +400,7 @@ class TestUpdateCollection(BaseBusinessLogicTestCase):
         A collection updated with the same DOI should not trigger a Crossref call
         """
         metadata = self.sample_collection_metadata
-        links = [Link("test doi", "doi", "http://test.doi")]
+        links = [Link("test doi", "DOI", "http://test.doi")]
         metadata.links = links
 
         expected_publiser_metadata = {"authors": ["Test Author"]}
@@ -429,7 +430,7 @@ class TestUpdateCollection(BaseBusinessLogicTestCase):
         A collection updated with a new DOI should get new publisher metadata from Crossref
         """
         metadata = self.sample_collection_metadata
-        links = [Link("test doi", "doi", "http://test.doi")]
+        links = [Link("test doi", "DOI", "http://test.doi")]
         metadata.links = links
 
         self.crossref_provider.fetch_metadata = Mock(return_value={"authors": ["Test Author"]})
@@ -444,7 +445,7 @@ class TestUpdateCollection(BaseBusinessLogicTestCase):
             description=None,
             contact_name=None,
             contact_email=None,
-            links=[Link("new test doi", "doi", "http://new.test.doi")],
+            links=[Link("new test doi", "DOI", "http://new.test.doi")],
         )
 
         expected_updated_publisher_metadata = {"authors": ["New Test Author"]}
@@ -590,9 +591,9 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         version = self.initialize_unpublished_collection()
         url = "http://test/dataset.url"
 
-        with self.assertRaises(DatasetIngestException) as ex:
+        with self.assertRaises(DatasetNotFoundException) as ex:
             self.business_logic.ingest_dataset(version.version_id, url, DatasetVersionId("fake_id"))
-        self.assertEqual(str(ex.exception), "Trying to replace non existant dataset fake_id")
+        self.assertEqual(str(ex.exception), "Dataset fake_id does not belong to the desired collection")
 
     def test_replace_dataset_in_wrong_status_fail(self):
         """

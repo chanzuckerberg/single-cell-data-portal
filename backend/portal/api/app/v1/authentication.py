@@ -1,3 +1,4 @@
+import logging
 import base64
 import json
 import os
@@ -25,6 +26,8 @@ def get_oauth_client(config: CorporaAuthConfig) -> FlaskRemoteApp:
     :param config:  An object containing the auth configuration.
     :return: The oauth client.
     """
+
+    logging.error(f"DEPLOYMENT_STAGE {os.environ['DEPLOYMENT_STAGE']}")
 
     global oauth_client
     if oauth_client and os.environ["DEPLOYMENT_STAGE"] != "test":
