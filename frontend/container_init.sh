@@ -21,6 +21,13 @@ fi
 
 # Build and run without dev mode in remote dev env.
 if [ "${DEPLOYMENT_STAGE}" == "test" ]; then
+  npm install next-dev-https
+  mkdir -p ./node_modules/.next-dev-mobile
+  cp -r /tmp/pkcs12/* ./node_modules/.next-dev-mobile
+  # next-dev-https looks for cert.pem and key.pem in node_modules/.next-dev-mobile/ (otherwise generates anew 👎)
+  # We want the dev server to find this key and cert because they've already been added to our keychain
+  mv ./node_modules/.next-dev-mobile/server.crt ./node_modules/.next-dev-mobile/cert.pem
+  mv ./node_modules/.next-dev-mobile/server.key ./node_modules/.next-dev-mobile/key.pem
   exec npm run dev
 else
   # We need "-- --" because `npm run build-and-start-prod`

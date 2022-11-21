@@ -60,6 +60,7 @@ services:
     volumes:
       - ./frontend:/corpora-frontend
       - /corpora-frontend/node_modules/
+      - ./oauth/pkcs12:/tmp/pkcs12:ro
     networks:
       corporanet:
         aliases:
@@ -265,6 +266,7 @@ services:
       - .:/single-cell-data-portal
       # SecretsManager population relies on oauth json
       - ./oauth/users.json:/oauth/users.json
+      - ./oauth/pkcs12:/tmp/pkcs12:ro
     networks:
       corporanet:
         aliases:
