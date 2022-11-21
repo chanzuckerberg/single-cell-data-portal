@@ -392,33 +392,6 @@ class TestCollection(NewBaseTest):
                 if expected_response_code == 200:
                     actual_body = json.loads(response.data)
                     self.assertEqual(expected_access_type, actual_body["access_type"])
-    
-    # TODO: 🔴 review this test
-    def test_get_collection_with_original_asset_ok(self):
-        """The original asset should not be in the list of assets."""
-        artifact_1 = dict(
-            filename="filename_1",
-            filetype=DatasetArtifactFileType.H5AD,
-            user_submitted=True,
-            s3_uri="s3://mock-bucket/mock-key.h5ad",
-        )
-        artifact_2 = dict(
-            filename=CorporaConstants.ORIGINAL_H5AD_ARTIFACT_FILENAME,
-            filetype=DatasetArtifactFileType.H5AD,
-            user_submitted=True,
-            s3_uri="s3://mock-bucket/raw.h5ad",
-        )
-        test_collection = self.generate_collection(self.session)
-        self.generate_dataset(self.session, collection=test_collection, artifacts=[artifact_1, artifact_2])
-        test_url = furl(path=f"/dp/v1/collections/{test_collection.id}")
-        headers = dict(host="localhost")
-        headers["Cookie"] = get_cxguser_token()
-        response = self.app.get(test_url.url, headers=headers)
-        self.assertEqual(200, response.status_code)
-        body = json.loads(response.data)
-        assets = body["datasets"][0]["dataset_assets"]
-        self.assertEqual(len(assets), 1)
-        self.assertEqual(assets[0]["s3_uri"], "s3://mock-bucket/mock-key.h5ad")
 
     # ✅
     def test__get_collection_id__403_not_found(self):
