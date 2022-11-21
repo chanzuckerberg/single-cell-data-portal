@@ -1774,7 +1774,7 @@ class TestDataset(NewBaseTest):
         response = self.app.delete(test_url, headers=headers)
         self.assertEqual(response.status_code, 401)
 
-    # 💛 the meta endpoint still needs to be created
+    # ✅
     def test__dataset_meta__ok(self):
 
         headers = {"host": "localhost", "Content-Type": "application/json"}
