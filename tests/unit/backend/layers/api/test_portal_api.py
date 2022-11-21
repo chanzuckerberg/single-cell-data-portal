@@ -122,10 +122,17 @@ class TestCollection(NewBaseTest):
             self.assertEqual(None, actual_body.get("from_date"))
 
     # ✅
-    def test__get_collection_id__ok(self):
+    # with patch("backend.common.entities.collection.datetime") as mock_dt:
+    # @patch("datetime.datetime.uctnow")
+    @patch("backend.layers.persistence.persistence_mock.datetime.utcnow")
+    def test__get_collection_id__ok(self, mock_dt):
         """Verify the test collection exists and the expected fields exist."""
 
+        mock_dt = 1234
+
         collection = self.generate_published_collection(add_datasets=2)
+
+        self.maxDiff = None
 
         expected_body = {
             "access_type": "WRITE",
@@ -153,7 +160,7 @@ class TestCollection(NewBaseTest):
                             "ontology_term_id": "test_cell_type_term_id"
                         }
                     ],
-                    "collection_id": "TODO",
+                    "collection_id": collection.collection_id.id,
                     "created_at": 1234,
                     "dataset_assets": [],
                     "dataset_deployments": [
@@ -202,7 +209,7 @@ class TestCollection(NewBaseTest):
                     },
                     "published": True,
                     "published_at": 1234,
-                    "revision": 1234,
+                    "revision": 0, # NA
                     "schema_version": "3.0.0",
                     "self_reported_ethnicity": [
                         {
@@ -247,7 +254,7 @@ class TestCollection(NewBaseTest):
                             "ontology_term_id": "test_cell_type_term_id"
                         }
                     ],
-                    "collection_id": "TODO",
+                    "collection_id": collection.collection_id.id,
                     "created_at": 1234,
                     "dataset_assets": [],
                     "dataset_deployments": [
@@ -296,7 +303,7 @@ class TestCollection(NewBaseTest):
                     },
                     "published": True,
                     "published_at": 1234,
-                    "revision": 1234,
+                    "revision": 0,
                     "schema_version": "3.0.0",
                     "self_reported_ethnicity": [
                         {

@@ -114,7 +114,7 @@ class PortalApi:
             "cell_count": dataset.metadata.cell_count,
             "cell_type": self._ontology_term_ids_to_response(dataset.metadata.cell_type),
             "collection_id": dataset.collection_id.id,
-            "created_at": 1234, # TODO
+            "created_at": dataset.created_at,
             "dataset_assets": [self._dataset_asset_to_response(a, dataset.dataset_id.id) for a in dataset.artifacts],
             "dataset_deployments": [{"url": "TODO"}], # TODO: dataset.metadata.explorer_url,
             "development_stage": self._ontology_term_ids_to_response(dataset.metadata.development_stage),
