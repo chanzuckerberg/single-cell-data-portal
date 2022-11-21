@@ -55,7 +55,7 @@ def query():
 
 
 def markers():
-    request = connexion.request.args
+    request = connexion.request.json
     cell_type = request["celltype"]
     tissue = request["tissue"]
     organism = request["organism"]
