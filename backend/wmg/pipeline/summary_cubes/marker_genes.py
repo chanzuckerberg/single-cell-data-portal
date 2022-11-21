@@ -21,7 +21,7 @@ def extract_cellcounts(corpus_path: str) -> pd.DataFrame:
 
 
 @log_func_runtime
-def create_marker_genes_cube(snapshot_path: str, corpus_path: str):
+def create_marker_genes_cube(corpus_path: str):
     """
     Create marker genes cube and write to disk
     """
@@ -59,8 +59,8 @@ def create_marker_genes_cube(snapshot_path: str, corpus_path: str):
                 "cell_type_ontology_term_ids": [""],
                 "organism_ontology_term_id": organism,
             }
-            t_markers = get_markers(target, context, corpus_path=snapshot_path, test="ttest", n_markers=None)
-            b_markers = get_markers(target, context, corpus_path=snapshot_path, test="binomtest", n_markers=None)
+            t_markers = get_markers(target, context, corpus_path=corpus_path, test="ttest", n_markers=None)
+            b_markers = get_markers(target, context, corpus_path=corpus_path, test="binomtest", n_markers=None)
             gc.collect()
 
             all_marker_genes = set(list(t_markers.keys())).union(list(b_markers.keys()))
