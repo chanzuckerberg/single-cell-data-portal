@@ -102,8 +102,11 @@ def random_expression_summary_fmg_values(coords):
     }
 
 
-def random_marker_genes_values(coords):
+def random_marker_genes_values(coords, dim_size=3):
     return {
+        "gene_ontology_term_id": (
+            "gene_ontology_term_id_" + randint(size=len(coords), low=0, high=dim_size).astype("str").astype("object")
+        ),
         "p_value_ttest": randint(size=len(coords), low=0, high=1),
         "effect_size_ttest": randint(size=len(coords), low=0, high=5),
         "p_value_binomtest": randint(size=len(coords), low=0, high=1),
@@ -280,7 +283,7 @@ def create_cubes(
     )
 
     marker_genes_cube_dir = create_marker_genes_cube(
-        data_dir, coords, dim_values, marker_genes_vals_fn=marker_genes_vals_fn
+        data_dir, coords, dim_values, dim_size, marker_genes_vals_fn=marker_genes_vals_fn
     )
 
     coords, dim_values = build_coords(
@@ -365,13 +368,14 @@ def create_marker_genes_cube(
     data_dir,
     coords,
     dim_values,
+    dim_size,
     marker_genes_vals_fn: Callable[[List[tuple]], Dict[str, List]] = random_marker_genes_values,
 ) -> str:
     cube_dir = f"{data_dir}/marker_genes"
     tiledb.Array.create(cube_dir, marker_genes_schema, overwrite=True)
 
     with tiledb.open(cube_dir, mode="w") as cube:
-        physical_attr_values = marker_genes_vals_fn(coords)
+        physical_attr_values = marker_genes_vals_fn(coords, dim_size=dim_size)
         physical_dim_values = dim_values[: len(marker_genes_indexed_dims)]
         cube[tuple(physical_dim_values)] = physical_attr_values
 

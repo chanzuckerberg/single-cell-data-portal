@@ -34,6 +34,12 @@ class FmgQueryCriteria(BaseModel):
     sex_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
 
 
+class MarkerGeneQueryCriteria(BaseModel):
+    organism_ontology_term_id: str  # required!
+    tissue_ontology_term_id: str  # required!
+    cell_type_ontology_term_id: str  # required!
+
+
 class WmgQuery:
     def __init__(self, snapshot: WmgSnapshot) -> None:
         super().__init__()
@@ -59,6 +65,17 @@ class WmgQuery:
                 "tissue_ontology_term_ids",
                 "organism_ontology_term_id",
                 "cell_type_ontology_term_ids",
+            ],
+        )
+
+    def marker_genes(self, criteria: MarkerGeneQueryCriteria) -> DataFrame:
+        return self._query(
+            cube=self._snapshot.marker_genes_cube,
+            criteria=criteria,
+            indexed_dims=[
+                "tissue_ontology_term_id",
+                "organism_ontology_term_id",
+                "cell_type_ontology_term_id",
             ],
         )
 
@@ -93,6 +110,7 @@ class WmgQuery:
         tiledb_dims_query = []
         for dim_name in indexed_dims:
             # Don't filter on this dimension but return all "original tissues" back
+            # Or, return all of `dim_name` back if the criteria is an empty string.
             if (
                 dim_name == "tissue_original_ontology_term_ids"
                 or len(criteria.dict()[dim_name]) > 0

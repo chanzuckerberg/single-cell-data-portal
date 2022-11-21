@@ -9,7 +9,7 @@ from pandas import DataFrame
 from backend.common.entities import Dataset
 from backend.common.utils.db_session import db_session_manager
 from backend.wmg.data.ontology_labels import ontology_term_label, gene_term_label
-from backend.wmg.api.query import WmgQuery, WmgQueryCriteria
+from backend.wmg.api.query import WmgQuery, WmgQueryCriteria, MarkerGeneQueryCriteria
 from backend.wmg.data.snapshot import load_snapshot, WmgSnapshot
 
 
@@ -61,11 +61,18 @@ def markers():
     n_markers = request["n_markers"]
     test = request["test"]
     snapshot: WmgSnapshot = load_snapshot()
+    query = WmgQuery(snapshot)
+    criteria = MarkerGeneQueryCriteria(
+        tissue_ontology_term_id=tissue,
+        organism=organism,
+        cell_type_ontology_term_id=cell_type,
+    )
+    df = query.marker_genes(criteria)
+
     attrs = [f"p_value_{test}", f"effect_size_{test}"]
     col_names = ["p_value", "effect_size"]
     markers = (
-        snapshot.marker_genes_cube.query(attrs=attrs, use_arrow=True)
-        .df[(tissue, organism, cell_type, [])][["gene_ontology_term_id"] + attrs]
+        df[["gene_ontology_term_id"] + attrs]
         .rename(columns=dict(zip(attrs, col_names)))
         .nlargest(n_markers, "effect_size")
     )
