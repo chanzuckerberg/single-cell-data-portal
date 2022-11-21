@@ -122,9 +122,18 @@ class TestCollection(NewBaseTest):
             self.assertEqual(None, actual_body.get("from_date"))
 
     # ✅
+<<<<<<< Updated upstream
     def test__get_collection_id__ok(self):
         """Verify the test collection exists and the expected fields exist."""
 
+=======
+    @patch("backend.layers.persistence.persistence_mock.datetime")
+    def test__get_collection_id__ok(self, mock_dt):
+        """Verify the test collection exists and the expected fields exist."""
+
+        mock_dt.utcnow.return_value = 1234
+
+>>>>>>> Stashed changes
         collection = self.generate_published_collection(add_datasets=2)
 
         expected_body = {
@@ -1779,7 +1788,7 @@ class TestDataset(NewBaseTest):
             test_uri_0 = "some_uri_0"
             
             public_dataset = self.generate_dataset(
-                artifacts=[DatasetArtifactUpdate("cxg", test_uri_0)],
+                artifacts=[DatasetArtifactUpdate("CXG", test_uri_0)],
                 publish=True,
             )
 
@@ -1802,8 +1811,8 @@ class TestDataset(NewBaseTest):
             test_uri_1 = "some_uri_1"
    
             private_dataset = self.generate_dataset(
-                artifacts=[DatasetArtifactUpdate("cxg", test_uri_1)],
-                publish=True,
+                artifacts=[DatasetArtifactUpdate("CXG", test_uri_1)],
+                publish=False,
             )
 
             test_url_private = f"/dp/v1/datasets/meta?url={private_dataset.explorer_url}"
