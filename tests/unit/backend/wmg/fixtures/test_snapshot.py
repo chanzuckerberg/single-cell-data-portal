@@ -413,7 +413,7 @@ if __name__ == "__main__":
     output_cube_dir = sys.argv[1]
     if not os.path.isdir(output_cube_dir):
         sys.exit(f"invalid dir {output_cube_dir} for cube")
-    _, _, cell_counts_cube_dir = create_cubes(
+    _, _, cell_counts_cube_dir, _ = create_cubes(
         output_cube_dir,
         dim_size=4,
         dim_ontology_term_ids_generator_fn=semi_real_dimension_values_generator,
