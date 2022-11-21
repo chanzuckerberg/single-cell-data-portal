@@ -24,6 +24,8 @@ from backend.wmg.data.utils import (
     get_expression_summary_cube_gene_count,
     get_cell_count_cube_count,
 )
+from backend.wmg.pipeline.summary_cubes.marker_genes import create_marker_genes_cube
+
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -66,6 +68,10 @@ def load_data_and_create_cube(
     cell_type_by_tissue = get_cell_types_by_tissue(corpus_path)
     cell_type_ordering_create_file(snapshot_path, cell_type_by_tissue)
     generate_primary_filter_dimensions(snapshot_path, corpus_name, snapshot_id)
+
+    # create marker genes cube after all artifacts have been built
+    create_marker_genes_cube(corpus_path)
+
     upload_artifacts_to_s3(snapshot_path, snapshot_id)
     if validate_cube:
         make_snapshot_active(snapshot_id)

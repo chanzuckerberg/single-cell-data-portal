@@ -11,6 +11,7 @@ from tiledb import Array
 from backend.common.utils.s3_buckets import buckets
 from backend.wmg.config import WmgConfig
 from backend.wmg.data.tiledb import create_ctx
+from backend.wmg.data.schemas.corpus_schema import DATASET_TO_GENE_IDS_NAME
 
 # Snapshot data artifact file/dir names
 CELL_TYPE_ORDERINGS_FILENAME = "cell_type_orderings.json"
@@ -19,7 +20,7 @@ EXPRESSION_SUMMARY_CUBE_NAME = "expression_summary"
 EXPRESSION_SUMMARY_FMG_CUBE_NAME = "expression_summary_fmg"
 CELL_COUNTS_CUBE_NAME = "cell_counts"
 MARKER_GENES_CUBE_NAME = "marker_genes"
-DATASET_TO_GENE_IDS_FILENAME = "dataset_to_gene_ids.json"
+DATASET_TO_GENE_IDS_FILENAME = f"{DATASET_TO_GENE_IDS_NAME}.json"
 
 logger = logging.getLogger("wmg")
 
