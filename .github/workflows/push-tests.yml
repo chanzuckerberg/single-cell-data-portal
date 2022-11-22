@@ -87,7 +87,7 @@ jobs:
         run: DEBUG=pw:api npm run e2e
 
       - name: Print debug
-        run: pwd && ls -lart
+        run: pwd && ls -lart && ls -lart playwright-report
 
       # Upload Playwright report as an artifact
       - uses: actions/upload-artifact@v3
