@@ -747,7 +747,7 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         self.assertIsNone(new_version.published_at)
 
         # The canonical collection should be published
-        self.assertIsNotNone(new_version.canonical_collection.published_at)
+        self.assertIsNotNone(new_version.canonical_collection.originally_published_at)
 
         # get_collection still retrieves the original version
         version = self.business_logic.get_published_collection_version(published_collection.collection_id)
@@ -815,8 +815,8 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
 
         published_version = self.database_provider.get_collection_version(unpublished_collection.version_id)
         self.assertIsNotNone(published_version.published_at) # TODO: ideally, do a date assertion here (requires mocking)
-        self.assertIsNotNone(published_version.canonical_collection.published_at)
-        self.assertEqual(published_version.published_at, published_version.canonical_collection.published_at)
+        self.assertIsNotNone(published_version.canonical_collection.originally_published_at)
+        self.assertEqual(published_version.published_at, published_version.canonical_collection.originally_published_at)
 
         # The published and unpublished collection have the same collection_id and version_id
         self.assertEqual(published_version.collection_id, unpublished_collection.collection_id)
@@ -1012,7 +1012,7 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         self.business_logic.publish_collection_version(second_version.version_id)
 
         canonical = self.business_logic.get_collection_version(second_version.version_id).canonical_collection
-        self.assertEqual(canonical.published_at, first_version.published_at)
+        self.assertEqual(canonical.originally_published_at, first_version.published_at)
 
 
     def test_get_all_collections_published_does_not_retrieve_old_versions(self):
@@ -1031,8 +1031,8 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         self.assertEqual(all_collections[0].version_id, second_version.version_id)
 
         # The canonical collection published_at should point to the original publication time
-        self.assertNotEqual(all_collections[0].canonical_collection.published_at, all_collections[0].published_at)
-        self.assertEqual(all_collections[0].canonical_collection.published_at, first_version.published_at)
+        self.assertNotEqual(all_collections[0].canonical_collection.originally_published_at, all_collections[0].published_at)
+        self.assertEqual(all_collections[0].canonical_collection.originally_published_at, first_version.published_at)
 
 
     def test_get_collection_versions_for_canonical_ok(self):

@@ -171,7 +171,7 @@ class CollectionMetadata:
 @dataclass
 class CanonicalCollection:
     id: CollectionId
-    published_at: Optional[datetime]
+    originally_published_at: Optional[datetime]
     tombstoned: bool
 
 @dataclass
