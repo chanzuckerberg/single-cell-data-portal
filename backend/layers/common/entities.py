@@ -178,6 +178,7 @@ class CollectionVersion:
     datasets: List[DatasetVersion]
     published_at: Optional[datetime]
     created_at: datetime
+    curator_name: str
 
 
 class CollectionLinkType(Enum):

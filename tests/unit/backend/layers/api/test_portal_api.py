@@ -1472,30 +1472,6 @@ class TestDataset(NewBaseTest):
         response = self.app.get(test_url.url, headers=headers)
         self.assertEqual(403, response.status_code)
 
-    # 🔴 TODO: processing_status_updater needs to be rewritten - think about it 
-    def test__minimal_status__ok(self):
-        # TODO: why do we need a processing status id?
-        dataset = self.generate_dataset(statuses = [DatasetStatusUpdate("upload_status", DatasetUploadStatus.WAITING)])
-        processing_status_id = "NA"
-        test_url = furl(path=f"/dp/v1/datasets/{dataset.dataset_version_id}/status")
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
-        response = self.app.get(test_url.url, headers=headers)
-        self.assertEqual(200, response.status_code)
-        actual_body = json.loads(response.data)
-        expected_body = {
-            "dataset_id": dataset.dataset_version_id,
-            "id": processing_status_id,
-            "upload_progress": 0.0,
-            "upload_status": "WAITING",
-        }
-        self.assertEqual(expected_body, actual_body)
-
-        for status in DatasetUploadStatus:
-            processing_status = {"upload_status": status, "upload_progress": 0.0}
-            processing_status_updater(self.session, processing_status_id, processing_status)
-            response = self.app.get(test_url.url, headers=headers)
-            self.assertEqual(json.loads(response.data)["upload_status"], status.name)
-
     # 💛, passes, but review the assertions
     def test__get_all_datasets_for_index(self):
         # TODO: here we probably don't need to test the logic - needs to simplify this
@@ -1797,7 +1773,7 @@ class TestDataset(NewBaseTest):
 
             self.assertEqual(json.loads(response.data), expected_identifiers)
 
-    # 💛 the meta endpoint still needs to be created
+    # ✅
     def test__dataset_meta__404(self):
         headers = {"host": "localhost", "Content-Type": "application/json"}
         test_url_404 = "/dp/v1/datasets/meta?url=not_real"
@@ -1808,7 +1784,6 @@ class TestDataset(NewBaseTest):
 
 class TestDatasetCurators(NewBaseTest):
     def setUp(self):
-        # Needed for proper setUp resolution in multiple inheritance
         super().setUp()
 
     def tearDown(self):
@@ -1905,7 +1880,7 @@ class TestRevision(NewBaseTest):
             ["Link 1", "DOI Link"] 
         )
 
-    # 💛 should pass after merging business in
+    # ✅
     def test__revision__403(self):
         """
         Starting a revision on a revision.

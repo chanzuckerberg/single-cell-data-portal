@@ -68,7 +68,7 @@ class PortalApi:
             "processing_status": status.processing_status or "NA",
             "rds_status": status.rds_status or "NA",
             "updated_at": 1234,
-            "upload_progress": 1234,
+            "upload_progress": 1, # No longer supported - always return 1
             "upload_status": status.upload_status or "NA",
             "validation_status": status.validation_status or "NA",
         }
@@ -88,7 +88,7 @@ class PortalApi:
         return {
             "created_at": 1234,
             "dataset_id": dataset_id,
-            "filename": "TODO",
+            "filename": "TODO", # TODO: might need to get it from the url
             "filetype": dataset_artifact.type,
             "id": dataset_artifact.id,
             "s3_uri": dataset_artifact.uri,
@@ -504,8 +504,10 @@ class PortalApi:
 
         # TODO: if we require it, add double id lookup
         dataset = self.business_logic.get_dataset_version(DatasetVersionId(id))
-        collection = self.business_logic.get_collection_version_from_canonical(dataset.collection_id)
+        if dataset is None:
+            raise NotFoundHTTPException()
 
+        collection = self.business_logic.get_collection_version_from_canonical(dataset.collection_id)
         if collection is None: # orphaned datasets 
             raise NotFoundHTTPException()
 
