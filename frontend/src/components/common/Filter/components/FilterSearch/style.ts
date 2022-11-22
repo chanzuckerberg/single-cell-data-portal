@@ -40,18 +40,17 @@ export const ViewSearch = styled(InputGroup)`
 export const ClearIconButton = styled(IconButton)`
   ${(props) => {
     const colors = getColors(props);
-    const textPrimary = props.theme.palette?.text?.primary;
+    const palette = props.theme.palette;
     return css`
       color: ${colors?.gray[400]};
 
       &:hover {
-        color: ${textPrimary};
+        color: ${palette?.text?.primary};
       }
     `;
-  }};
-
+  }}
   .MuiSvgIcon-root {
-    height: 16px; // overrides IconNameToSizes "s" size specification
-    width: 16px; // overrides IconNameToSizes "s" size specification
+    height: 16px; /* overrides IconNameToSizes "s" size specification */
+    width: 16px; /* overrides IconNameToSizes "s" size specification */
   }
 `;
