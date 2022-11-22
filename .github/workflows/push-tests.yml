@@ -132,7 +132,7 @@ jobs:
 
       # Output the link to the github page for this current run
       - name: Post the link to the report in summary
-        run: echo 'https://chanzuckerberg.github.io/single-cell-data-portal/${{ github.run_number }}' >> $GITHUB_STEP_SUMMARY
+        run: "echo 'Test Results Dashboard (Run #${{ github.run_number }}): https://chanzuckerberg.github.io/single-cell-data-portal/${{ github.run_number }}' >> $GITHUB_STEP_SUMMARY"
 
       - name: Install happy
         uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.2.1
