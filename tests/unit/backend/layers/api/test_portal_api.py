@@ -760,7 +760,7 @@ class TestCollection(NewBaseTest):
                 [collection for collection in collections if collection.get("revision_of") == public_owned][0]
             )
 
-    # 💛 TODO: passes but needs work on the last 3 assertions + tombstone
+    # ✅
     def test__get_all_collections_for_index(self):
         """
         The `collections/index` endpoint should only return public collections
@@ -786,10 +786,9 @@ class TestCollection(NewBaseTest):
         self.assertEqual(actual_collection["id"], collection.collection_id.id)
         self.assertEqual(actual_collection["name"], collection.metadata.name)
         self.assertNotIn("description", actual_collection)
-        # TODO: these three fields still need to be added
-        # self.assertEqual(actual_collection["published_at"], collection.published_at.timestamp())
-        # self.assertEqual(actual_collection["revised_at"], collection.revised_at.timestamp())
-        # self.assertEqual(actual_collection["publisher_metadata"], collection.publisher_metadata)
+        # Both `published_at` and `revised_at` should point to the same timestamp
+        self.assertEqual(actual_collection["published_at"], collection.published_at.timestamp())
+        self.assertEqual(actual_collection["revised_at"], collection.published_at.timestamp())
 
     # ✅
     def test__create_collection__InvalidParameters_DOI(self):
