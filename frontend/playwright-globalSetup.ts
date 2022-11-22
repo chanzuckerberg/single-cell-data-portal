@@ -15,7 +15,7 @@ module.exports = async () => {
         storageState: featureFlags,
       });
       const page = await browserContext.newPage();
-      await page.goto(TEST_URL);
+      await page.goto(TEST_URL, {timeout: 60000});
 
       console.log("Logging in...");
 
