@@ -75,19 +75,34 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         # Don't set mappings here - those will be set when publishing the collection!
         return copy.deepcopy(version)
 
+    def _update_version_with_canonical(self, version: CollectionVersion):
+        """
+        Private method that returns a version updated with the canonical collection.
+        This is equivalent to a database double lookup (or join).
+        Note that for methods that require a table scan, this should be optimized by holding the 
+        canonical_collections table in memory
+        """
+        cc = self.collections.get(version.collection_id.id)
+        if cc is None:
+            return version
+        copied_version = copy.deepcopy(version)
+        copied_version.canonical_collection = cc.canonical_collection
+        return copied_version
+
     def get_collection_mapped_version(self, collection_id: CollectionId) -> Optional[CollectionVersion]:
         cc = self.collections.get(collection_id.id)
         if cc is not None:
-            return copy.deepcopy(self.collections_versions[cc.mapped_version.id])
+            version = self.collections_versions[cc.mapped_version.id]
+            return self._update_version_with_canonical(version)
 
     def get_all_collections_versions(self) -> Iterable[CollectionVersion]:  # TODO: add filters if needed
         for version in self.collections_versions.values():
-            yield copy.deepcopy(version)
+            yield self._update_version_with_canonical(version)
 
     def get_all_mapped_collection_versions(self) -> Iterable[CollectionVersion]:  # TODO: add filters if needed
         for version_id, collection_version in self.collections_versions.items():
             if version_id in [c.mapped_version.id for c in self.collections.values()]:
-                yield copy.deepcopy(collection_version)
+                yield self._update_version_with_canonical(collection_version)
 
     def delete_collection(self, collection_id: CollectionId) -> None:
         del self.collections[collection_id.id]
@@ -126,13 +141,15 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         del self.collections_versions[version_id.id]
 
     def get_collection_version(self, version_id: CollectionVersionId) -> CollectionVersion:
-        return copy.deepcopy(self.collections_versions.get(version_id.id))
+        version = self.collections_versions.get(version_id.id)
+        if version is not None:
+            return self._update_version_with_canonical(version)
 
     def get_all_versions_for_collection(self, collection_id: CollectionId) -> Iterable[CollectionVersion]:
         # On a database, will require a secondary index on `collection_id` for an optimized lookup
         for collection_version in self.collections_versions.values():
             if collection_version.collection_id == collection_id:
-                yield copy.deepcopy(collection_version)
+                yield self._update_version_with_canonical(collection_version)
 
     # MAYBE
     def finalize_collection_version(self, collection_id: CollectionId, version_id: CollectionVersionId, published_at: Optional[datetime]) -> None:

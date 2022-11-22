@@ -746,6 +746,9 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         # The new version should not be published (aka Private)
         self.assertIsNone(new_version.published_at)
 
+        # The canonical collection should be published
+        self.assertIsNotNone(new_version.canonical_collection.published_at)
+
         # get_collection still retrieves the original version
         version = self.business_logic.get_published_collection_version(published_collection.collection_id)
         self.assertEqual(version.version_id, published_collection.version_id)
@@ -812,6 +815,8 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
 
         published_version = self.database_provider.get_collection_version(unpublished_collection.version_id)
         self.assertIsNotNone(published_version.published_at) # TODO: ideally, do a date assertion here (requires mocking)
+        self.assertIsNotNone(published_version.canonical_collection.published_at)
+        self.assertEqual(published_version.published_at, published_version.canonical_collection.published_at)
 
         # The published and unpublished collection have the same collection_id and version_id
         self.assertEqual(published_version.collection_id, unpublished_collection.collection_id)
@@ -819,7 +824,9 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
 
         # get_collection retrieves the correct version
         version = self.business_logic.get_published_collection_version(unpublished_collection.collection_id)
-        self.assertEqual(version.version_id, published_version.version_id)
+        if version: # pylance
+            self.assertEqual(version.version_id, published_version.version_id)
+            
 
     def test_publish_collection_with_no_datasets_fail(self):
         """
@@ -995,6 +1002,19 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         self.assertCountEqual([replaced_dataset_version_id, dataset_id_to_keep], [d.version_id for d in version.datasets])
 
 
+    def test_publish_version_does_not_change_original_published_at_ok(self):
+        """
+        When publishing a collection version, the published_at for the canonical collection
+        should not change
+        """
+        first_version = self.initialize_published_collection()
+        second_version = self.business_logic.create_collection_version(first_version.collection_id)
+        self.business_logic.publish_collection_version(second_version.version_id)
+
+        canonical = self.business_logic.get_collection_version(second_version.version_id).canonical_collection
+        self.assertEqual(canonical.published_at, first_version.published_at)
+
+
     def test_get_all_collections_published_does_not_retrieve_old_versions(self):
         """
         `get_collections` with is_published=True should not return versions that were previously
@@ -1009,6 +1029,11 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
 
         self.assertEqual(1, len(all_collections))
         self.assertEqual(all_collections[0].version_id, second_version.version_id)
+
+        # The canonical collection published_at should point to the original publication time
+        self.assertNotEqual(all_collections[0].canonical_collection.published_at, all_collections[0].published_at)
+        self.assertEqual(all_collections[0].canonical_collection.published_at, first_version.published_at)
+
 
     def test_get_collection_versions_for_canonical_ok(self):
         """
