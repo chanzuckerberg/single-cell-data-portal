@@ -136,7 +136,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
 
     # MAYBE
     def finalize_collection_version(self, collection_id: CollectionId, version_id: CollectionVersionId, published_at: Optional[datetime]) -> None:
-        cc = self.collections[collection_id.id]
+        cc = self.collections[collection_id.id]g
         cc.mapped_version = version_id
         now = datetime.utcnow()
         # If the canonical collection has never been published, set the field

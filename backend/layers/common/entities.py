@@ -178,12 +178,13 @@ class CanonicalCollection:
 class CollectionVersion:
     collection_id: CollectionId
     version_id: CollectionVersionId
-g    owner: str
+    owner: str
     metadata: CollectionMetadata
     publisher_metadata: Optional[dict]  # TODO: use a dataclass
     datasets: List[DatasetVersion]
     published_at: Optional[datetime]
     created_at: datetime
+    canonical_collection: CanonicalCollection
 
 
 class CollectionLinkType(Enum):
