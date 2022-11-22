@@ -25,7 +25,7 @@ import copy
 
 
 @dataclass
-class CanonicalCollectionPrivate:
+class _CanonicalCollection:
     canonical_collection: CanonicalCollection
     mapped_version: CollectionVersionId
 
@@ -43,7 +43,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
     """
 
     # A mapping between canonical collection ids and collection versions.
-    collections: Dict[str, CanonicalCollectionPrivate]
+    collections: Dict[str, _CanonicalCollection]
 
     # All the collection versions
     collections_versions: Dict[str, CollectionVersion]
@@ -156,7 +156,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         cc = self.collections.get(collection_id.id)
         now = datetime.utcnow()
         if cc is None:
-            self.collections[collection_id.id] = CanonicalCollectionPrivate(CanonicalCollection(collection_id, now, False), version_id)
+            self.collections[collection_id.id] = _CanonicalCollection(CanonicalCollection(collection_id, now, False), version_id)
         else:
             new_cc = copy.deepcopy(cc)
             new_cc.mapped_version = version_id
