@@ -1,4 +1,4 @@
-import { devices, expect, PlaywrightTestConfig } from "@playwright/test";
+import { devices, expect, PlaywrightTestConfig, ReporterDescription } from "@playwright/test";
 import { matchers } from "expect-playwright";
 import fs from "fs";
 import { LOGIN_STATE_FILENAME } from "tests/common/constants";
@@ -10,7 +10,7 @@ const isHeadful =
   process.env.HEADFUL === "true" || process.env.HEADLESS === "false";
 
 // 'github' for GitHub Actions CI to generate annotations, default otherwise
-const PLAYWRIGHT_REPORTER = process.env.CI ? "github" : "list";
+const PLAYWRIGHT_REPORTER = process.env.CI ? [["github"], ["line"], ["allure-playwright"]] as ReporterDescription[]: "list"
 
 const VIEWPORT = {
   height: 1080,
