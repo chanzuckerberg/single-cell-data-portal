@@ -193,15 +193,15 @@ class TestCollection(NewBaseTest):
                         }
                     ],
                     "processing_status": {
-                        "created_at": 1234,
+                        "created_at": 0,
                         "cxg_status": "NA",
                         "dataset_id": mock.ANY,
                         "h5ad_status": "NA",
                         "id": "NA",
                         "processing_status": "PENDING",
                         "rds_status": "NA",
-                        "updated_at": 1234,
-                        "upload_progress": 1234,
+                        "updated_at": 0,
+                        "upload_progress": 1,
                         "upload_status": "WAITING",
                         "validation_status": "NA"
                     },
@@ -287,15 +287,15 @@ class TestCollection(NewBaseTest):
                         }
                     ],
                     "processing_status": {
-                        "created_at": 1234,
+                        "created_at": 0,
                         "cxg_status": "NA",
                         "dataset_id": mock.ANY,
                         "h5ad_status": "NA",
                         "id": "NA",
                         "processing_status": "PENDING",
                         "rds_status": "NA",
-                        "updated_at": 1234,
-                        "upload_progress": 1234,
+                        "updated_at": 0,
+                        "upload_progress": 1,
                         "upload_status": "WAITING",
                         "validation_status": "NA"
                     },

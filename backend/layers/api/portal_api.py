@@ -60,14 +60,14 @@ class PortalApi:
 
     def _dataset_processing_status_to_response(self, status: DatasetStatus, dataset_id: str):
         return {
-            "created_at": 1234,
+            "created_at": 0, # NA
             "cxg_status": status.cxg_status or "NA",
             "dataset_id": dataset_id,
             "h5ad_status": status.h5ad_status or "NA",
             "id": "NA", # TODO can we purge?
             "processing_status": status.processing_status or "NA",
             "rds_status": status.rds_status or "NA",
-            "updated_at": 1234,
+            "updated_at": 0, # NA
             "upload_progress": 1, # No longer supported - always return 1
             "upload_status": status.upload_status or "NA",
             "validation_status": status.validation_status or "NA",
@@ -86,13 +86,13 @@ class PortalApi:
 
     def _dataset_asset_to_response(self, dataset_artifact: DatasetArtifact, dataset_id: str):
         return {
-            "created_at": 1234,
+            "created_at": 0,
             "dataset_id": dataset_id,
             "filename": "TODO", # TODO: might need to get it from the url
             "filetype": dataset_artifact.type,
             "id": dataset_artifact.id,
             "s3_uri": dataset_artifact.uri,
-            "updated_at": 1234,
+            "updated_at": 0,
             "user_submitted": True,
         }
 
@@ -155,9 +155,9 @@ class PortalApi:
             "id": collection_id,
             "links": [self._link_to_response(l) for l in collection.metadata.links],
             "name": collection.metadata.name,
-            "published_at": 1234,
+            "published_at": collection.published_at,
             "publisher_metadata": collection.publisher_metadata, # TODO: convert
-            "updated_at": 1234,
+            "updated_at": collection.published_at,
             "visibility": "PUBLIC" if collection.published_at is not None else "PRIVATE",
         })
 
@@ -261,8 +261,8 @@ class PortalApi:
             transformed_collection = {
                 "id": collection.collection_id.id,
                 "name": collection.metadata.name,
-                "published_at": collection.published_at, # TODO: this is the time of first publishing
-                "revised_at": 0, # TODO: this should be published_at
+                "published_at": collection.canonical_collection.originally_published_at,
+                "revised_at": collection.published_at
             }
 
             if collection.publisher_metadata is not None:
