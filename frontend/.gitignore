@@ -78,5 +78,6 @@ yarn-error.log
 # Playwright
 /playwright-report/
 /playwright/.cache/
+/allure-results/
 storageState.json
 loginState.json
