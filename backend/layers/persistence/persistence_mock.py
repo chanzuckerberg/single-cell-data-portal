@@ -140,6 +140,10 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         now = datetime.utcnow()
         if cc is None:
             self.collections[collection_id.id] = CanonicalCollectionPrivate(CanonicalCollection(collection_id, now, False), version_id)
+        else:
+            new_cc = copy.deepcopy(cc)
+            new_cc.mapped_version = version_id
+            self.collections[collection_id.id] = new_cc
         self.collections_versions[version_id.id].published_at = now
 
     # OR
