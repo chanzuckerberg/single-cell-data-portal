@@ -1,8 +1,10 @@
+from dataclasses import dataclass
 from datetime import datetime
 import uuid
 from backend.layers.persistence.persistence import DatabaseProviderInterface
 from typing import Dict, Iterable, List, Optional
 from backend.layers.common.entities import (
+    CanonicalCollection,
     CollectionId,
     CollectionMetadata,
     CollectionVersion,
@@ -22,6 +24,11 @@ from backend.layers.common.entities import (
 import copy
 
 
+@dataclass
+class CanonicalCollectionPrivate:
+    canonical_collection: CanonicalCollection
+    mapped_version: CollectionVersionId
+
 class DatabaseProviderMock(DatabaseProviderInterface):
 
     """
@@ -36,7 +43,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
     """
 
     # A mapping between canonical collection ids and collection versions.
-    collections: Dict[str, str]
+    collections: Dict[str, CanonicalCollectionPrivate]
 
     # All the collection versions
     collections_versions: Dict[str, CollectionVersion]
@@ -62,15 +69,16 @@ class DatabaseProviderMock(DatabaseProviderInterface):
     def create_canonical_collection(self, owner: str, collection_metadata: CollectionMetadata) -> CollectionVersion:
         collection_id = CollectionId(self._id())
         version_id = CollectionVersionId(self._id())
-        version = CollectionVersion(collection_id, version_id, owner, collection_metadata, None, [], None, datetime.utcnow())
+        canonical = CanonicalCollection(collection_id, None, False)
+        version = CollectionVersion(collection_id, version_id, owner, collection_metadata, None, [], None, datetime.utcnow(), canonical)
         self.collections_versions[version_id.id] = version
         # Don't set mappings here - those will be set when publishing the collection!
         return copy.deepcopy(version)
 
     def get_collection_mapped_version(self, collection_id: CollectionId) -> Optional[CollectionVersion]:
-        version_id = self.collections.get(collection_id.id)
-        if version_id is not None:
-            return copy.deepcopy(self.collections_versions[version_id])
+        cc = self.collections.get(collection_id.id)
+        if cc is not None:
+            return copy.deepcopy(self.collections_versions[cc.mapped_version.id])
 
     def get_all_collections_versions(self) -> Iterable[CollectionVersion]:  # TODO: add filters if needed
         for version in self.collections_versions.values():
@@ -91,8 +99,9 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         self.collections_versions[version_id.id].publisher_metadata = copy.deepcopy(publisher_metadata)
 
     def add_collection_version(self, collection_id: CollectionId) -> CollectionVersion:
-        current_version_id = self.collections[collection_id.id]
-        current_version = self.collections_versions[current_version_id]
+        cc = self.collections[collection_id.id]
+        current_version_id = cc.mapped_version
+        current_version = self.collections_versions[current_version_id.id]
         new_version_id = CollectionVersionId(self._id())
         # Note: since datasets are immutable, there is no need to clone datasets here, 
         # but the list that contains datasets needs to be copied, since it's a pointer.
@@ -106,7 +115,8 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             publisher_metadata=current_version.publisher_metadata,
             datasets=new_dataset_list,
             published_at=None,
-            created_at=datetime.utcnow()
+            created_at=datetime.utcnow(),
+            canonical_collection=cc.canonical_collection
         )
         self.collections_versions[new_version_id.id] = collection_version
         return copy.deepcopy(collection_version)
@@ -126,15 +136,20 @@ class DatabaseProviderMock(DatabaseProviderInterface):
 
     # MAYBE
     def finalize_collection_version(self, collection_id: CollectionId, version_id: CollectionVersionId, published_at: Optional[datetime]) -> None:
-        self.collections[collection_id.id] = version_id.id
-        self.collections_versions[version_id.id].published_at = datetime.utcnow()
+        cc = self.collections[collection_id.id]
+        cc.mapped_version = version_id
+        now = datetime.utcnow()
+        # If the canonical collection has never been published, set the field
+        if cc.canonical_collection.published_at is None:
+            cc.canonical_collection.published_at = now
+        self.collections_versions[version_id.id].published_at = now
 
     # OR
-    def update_collection_version_mapping(self, collection_id: CollectionId, version_id: CollectionVersionId) -> None:
-        self.collections[collection_id.id] = version_id.id
+    # def update_collection_version_mapping(self, collection_id: CollectionId, version_id: CollectionVersionId) -> None:
+    #     self.collections[collection_id.id] = version_id.id
 
-    def set_collection_version_published_at(self, version_id: CollectionVersionId) -> None:
-        self.collections_versions[version_id.id].published_at = datetime.utcnow()
+    # def set_collection_version_published_at(self, version_id: CollectionVersionId) -> None:
+    #     self.collections_versions[version_id.id].published_at = datetime.utcnow()
 
     # END OR
 
@@ -144,11 +159,6 @@ class DatabaseProviderMock(DatabaseProviderInterface):
 
     def get_dataset_version(self, version_id: DatasetVersionId) -> DatasetVersion:
         return copy.deepcopy(self.datasets_versions.get(version_id.id))
-
-    def get_all_versions_for_collection(self, collection_id: CollectionId) -> Iterable[CollectionVersion]:
-        for version in self.collections_versions.values():
-            if version.collection_id == collection_id:
-                yield version
 
     def get_all_datasets(self) -> Iterable[DatasetVersion]:  
         """

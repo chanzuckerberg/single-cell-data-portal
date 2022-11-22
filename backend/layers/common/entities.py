@@ -169,6 +169,12 @@ class CollectionMetadata:
 
 
 @dataclass
+class CanonicalCollection:
+    id: CollectionId
+    published_at: Optional[datetime]
+    tombstoned: bool
+
+@dataclass
 class CollectionVersion:
     collection_id: CollectionId
     version_id: CollectionVersionId
@@ -178,7 +184,7 @@ class CollectionVersion:
     datasets: List[DatasetVersion]
     published_at: Optional[datetime]
     created_at: datetime
-    curator_name: str
+    canonical_collection: CanonicalCollection
 
 
 class CollectionLinkType(Enum):
