@@ -15,6 +15,7 @@ export default function FilterSearch({
 }: Props): JSX.Element {
   return (
     <ViewSearch
+      autoFocus
       className={className}
       leftIcon={IconNames.SEARCH}
       onChange={(changeEvent) => setSearchValue(changeEvent.target.value)}
