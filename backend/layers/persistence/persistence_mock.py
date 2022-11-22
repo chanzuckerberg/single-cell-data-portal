@@ -86,7 +86,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
 
     def get_all_mapped_collection_versions(self) -> Iterable[CollectionVersion]:  # TODO: add filters if needed
         for version_id, collection_version in self.collections_versions.items():
-            if version_id in self.collections.values():
+            if version_id in [c.mapped_version.id for c in self.collections.values()]:
                 yield copy.deepcopy(collection_version)
 
     def delete_collection(self, collection_id: CollectionId) -> None:
@@ -136,12 +136,10 @@ class DatabaseProviderMock(DatabaseProviderInterface):
 
     # MAYBE
     def finalize_collection_version(self, collection_id: CollectionId, version_id: CollectionVersionId, published_at: Optional[datetime]) -> None:
-        cc = self.collections[collection_id.id]g
-        cc.mapped_version = version_id
+        cc = self.collections.get(collection_id.id)
         now = datetime.utcnow()
-        # If the canonical collection has never been published, set the field
-        if cc.canonical_collection.published_at is None:
-            cc.canonical_collection.published_at = now
+        if cc is None:
+            self.collections[collection_id.id] = CanonicalCollectionPrivate(CanonicalCollection(collection_id, now, False), version_id)
         self.collections_versions[version_id.id].published_at = now
 
     # OR
