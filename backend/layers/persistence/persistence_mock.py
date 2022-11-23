@@ -5,6 +5,7 @@ from backend.layers.persistence.persistence import DatabaseProviderInterface
 from typing import Dict, Iterable, List, Optional
 from backend.layers.common.entities import (
     CanonicalCollection,
+    CanonicalDataset,
     CollectionId,
     CollectionMetadata,
     CollectionVersion,
@@ -29,6 +30,11 @@ class _CanonicalCollection:
     canonical_collection: CanonicalCollection
     mapped_version: CollectionVersionId
 
+@dataclass
+class _CanonicalDataset:
+    canonical_dataset: CanonicalDataset
+    mapped_version: DatasetVersionId
+
 class DatabaseProviderMock(DatabaseProviderInterface):
 
     """
@@ -49,7 +55,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
     collections_versions: Dict[str, CollectionVersion]
 
     # A mapping between canonical dataset ids and dataset versions.
-    datasets: Dict[str, str]
+    datasets: Dict[str, _CanonicalDataset]
 
     # All the dataset versions
     datasets_versions: Dict[str, DatasetVersion]
@@ -84,9 +90,18 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         """
         cc = self.collections.get(version.collection_id.id)
         if cc is None:
-            return version
+            return copy.deepcopy(version)
         copied_version = copy.deepcopy(version)
         copied_version.canonical_collection = cc.canonical_collection
+        copied_version.datasets = [self._update_dataset_version_with_canonical(d) for d in copied_version.datasets]
+        return copied_version
+
+    def _update_dataset_version_with_canonical(self, version: DatasetVersion):
+        cd = self.datasets.get(version.dataset_id.id)
+        if cd is None:
+            return copy.deepcopy(version)
+        copied_version = copy.deepcopy(version)
+        copied_version.canonical_dataset = cd.canonical_dataset
         return copied_version
 
     def get_collection_mapped_version(self, collection_id: CollectionId) -> Optional[CollectionVersion]:
@@ -153,8 +168,15 @@ class DatabaseProviderMock(DatabaseProviderInterface):
 
     # MAYBE
     def finalize_collection_version(self, collection_id: CollectionId, version_id: CollectionVersionId, published_at: Optional[datetime]) -> None:
-        cc = self.collections.get(collection_id.id)
+
         now = datetime.utcnow()
+
+        version = self.collections_versions[version_id.id]
+        for dataset_version in version.datasets:
+            if self.datasets[dataset_version.dataset_id.id].canonical_dataset.published_at is None:
+                self.datasets[dataset_version.dataset_id.id].canonical_dataset.published_at = now
+
+        cc = self.collections.get(collection_id.id)
         if cc is None:
             self.collections[collection_id.id] = _CanonicalCollection(CanonicalCollection(collection_id, now, False), version_id)
         else:
@@ -177,7 +199,9 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         return copy.deepcopy(self.datasets_versions[version_id])
 
     def get_dataset_version(self, version_id: DatasetVersionId) -> DatasetVersion:
-        return copy.deepcopy(self.datasets_versions.get(version_id.id))
+        version = self.datasets_versions.get(version_id.id)
+        if version is not None:
+            return self._update_dataset_version_with_canonical(version)
 
     def get_all_datasets(self) -> Iterable[DatasetVersion]:  
         """
@@ -187,7 +211,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         active_datasets = [i.version_id.id for s in [c.datasets for c in active_collections] for i in s]
         for version_id, dataset_version in self.datasets_versions.items():
             if version_id in active_datasets:
-                yield copy.deepcopy(dataset_version)
+                yield self._update_dataset_version_with_canonical(dataset_version)
 
     def _get_all_datasets(self) -> Iterable[DatasetVersion]:  
         """
@@ -195,7 +219,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         """
         for version_id, dataset_version in self.datasets_versions.items():
             if version_id in self.datasets.values():
-                yield copy.deepcopy(dataset_version)
+                yield self._update_dataset_version_with_canonical(dataset_version)
 
     def get_dataset_artifacts(self, dataset_version_id: DatasetId) -> List[DatasetArtifact]:
         dataset = self.datasets_versions[dataset_version_id.id]
@@ -213,10 +237,11 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             status=DatasetStatus.empty(),
             metadata=None,
             artifacts=[],
-            created_at=datetime.utcnow()
+            created_at=datetime.utcnow(),
+            canonical_dataset=CanonicalDataset(dataset_id, None)
         )
         self.datasets_versions[version_id.id] = version
-        self.datasets[dataset_id.id] = version_id.id
+        self.datasets[dataset_id.id] = _CanonicalDataset(CanonicalDataset(dataset_id, None), version_id)
         # Register the dataset to the original collection
         collection_version.datasets.append(version)
         return copy.deepcopy(version)
@@ -274,7 +299,8 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             status=DatasetStatus.empty(),
             metadata=None,
             artifacts=[],
-            created_at=datetime.utcnow()
+            created_at=datetime.utcnow(),
+            canonical_dataset=CanonicalDataset(old_version.dataset_id, None)
         )
         self.datasets_versions[new_version_id.id] = new_version
         
@@ -286,6 +312,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         return copy.deepcopy(self.datasets_versions[version_id.id].status)
 
     def get_dataset_mapped_version(self, dataset_id: DatasetId) -> Optional[DatasetVersion]:
-        version_id = self.datasets.get(dataset_id.id)
-        if version_id is not None:
-            return copy.deepcopy(self.datasets_versions[version_id])
+        cd = self.collections.get(dataset_id.id)
+        if cd is not None:
+            version = self.datasets_versions[cd.mapped_version.id]
+            return self._update_dataset_version_with_canonical(version)

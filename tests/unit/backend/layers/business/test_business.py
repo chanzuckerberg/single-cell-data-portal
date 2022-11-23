@@ -611,7 +611,6 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         self.assertEqual(str(ex.exception), f"Unable to reprocess dataset {dataset_version.version_id}: processing status is PENDING")
 
 
-
 class TestGetDataset(BaseBusinessLogicTestCase):
 
     def test_get_all_datasets_ok(self):
@@ -1082,6 +1081,74 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         if version is not None: # pylance
             self.assertEqual(version.version_id, first_version.version_id)
             self.assertIsNone(version.published_at)
+
+    def test_dataset_published_at_with_new_dataset_ok(self):
+        """
+        When publishing a collection that contains a new dataset, `published_at` for the new dataset should be updated
+        """
+
+        published_collection = self.initialize_published_collection()
+        new_version = self.business_logic.create_collection_version(published_collection.collection_id)
+
+        added_dataset_version_id, _ = self.business_logic.ingest_dataset(new_version.version_id, "http://fake.url", None)
+        self.complete_dataset_processing_with_success(added_dataset_version_id)
+
+        self.business_logic.publish_collection_version(new_version.version_id)
+
+        version_from_db = self.database_provider.get_collection_version(new_version.version_id)
+        dataset_0 = version_from_db.datasets[0]
+        dataset_1 = version_from_db.datasets[1]
+        dataset_2 = version_from_db.datasets[2]
+
+
+        # dataset_2 is the new dataset
+        self.assertIn(dataset_0.version_id, [d.version_id for d in published_collection.datasets])
+        self.assertIn(dataset_1.version_id, [d.version_id for d in published_collection.datasets])
+        self.assertNotIn(dataset_2.version_id, [d.version_id for d in published_collection.datasets])
+
+        # Published_at should be defined for all 3 datasets
+        self.assertIsNotNone(dataset_0.canonical_dataset.published_at)
+        self.assertIsNotNone(dataset_1.canonical_dataset.published_at)
+        self.assertIsNotNone(dataset_2.canonical_dataset.published_at)
+
+        self.assertEqual(dataset_0.canonical_dataset.published_at, published_collection.published_at)
+        self.assertEqual(dataset_1.canonical_dataset.published_at, published_collection.published_at)
+        self.assertGreater(dataset_2.canonical_dataset.published_at, published_collection.published_at)
+
+    
+    def test_dataset_published_at_with_replaced_dataset_ok(self):
+        """
+        When publishing a collection that contains a replaced dataset, 
+        `published_at` for the replaced dataset should not be updated
+        """
+
+        published_collection = self.initialize_published_collection()
+        new_version = self.business_logic.create_collection_version(published_collection.collection_id)
+
+        # We will replace the first dataset
+        dataset_id_to_replace = published_collection.datasets[0].version_id
+        dataset_id_to_keep = published_collection.datasets[1].version_id
+
+        replaced_dataset_version_id, _ = self.business_logic.ingest_dataset(
+            new_version.version_id, 
+            "http://fake.url", 
+            dataset_id_to_replace
+        )
+
+        self.complete_dataset_processing_with_success(replaced_dataset_version_id)
+
+        self.business_logic.publish_collection_version(new_version.version_id)
+
+        version_from_db = self.database_provider.get_collection_version(new_version.version_id)
+        dataset_0 = version_from_db.datasets[0]
+        dataset_1 = version_from_db.datasets[1]
+
+        self.assertNotEqual(dataset_0.version_id, dataset_id_to_replace)
+        self.assertEqual(dataset_1.version_id, dataset_id_to_keep)
+
+        self.assertEqual(dataset_0.canonical_dataset.published_at, published_collection.published_at)
+        self.assertEqual(dataset_1.canonical_dataset.published_at, published_collection.published_at)
+
 
 
 if __name__ == '__main__':
