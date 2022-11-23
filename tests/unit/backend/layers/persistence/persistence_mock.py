@@ -170,7 +170,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             if version_id in self.datasets.values():
                 yield copy.deepcopy(dataset_version)
 
-    def get_dataset_artifacts(self, dataset_version_id: DatasetId) -> List[DatasetArtifact]:
+    def get_dataset_artifacts_by_version_id(self, dataset_version_id: DatasetId) -> List[DatasetArtifact]:
         dataset = self.datasets_versions[dataset_version_id.id]
         return copy.deepcopy(dataset.artifacts)
 
