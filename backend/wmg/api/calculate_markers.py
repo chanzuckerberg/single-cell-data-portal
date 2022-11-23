@@ -353,13 +353,14 @@ def _post_process_stats(
     effects[:, zero_out] = 0
     pvals[:, zero_out] = 0
     # aggregate
-    n_bottom_comparisons = int(p_bottom_comparisons * effects.shape[0]) + 1
-    effects = np.sort(effects, axis=0)[n_bottom_comparisons]  # .mean(0)
-    # np.percentile(effects,%10, axis=0)
-
     # todo: fix p-value aggregation
-    # todo: try fishers p value again, try stouffer's again
-    pvals = np.sort(pvals, axis=0)[:n_bottom_comparisons].mean(0)
+    # todo: try fishers p value again, try stouffer's again    
+    n_bottom_comparisons = int(p_bottom_comparisons * effects.shape[0]) + 1
+    indices = np.argsort(effects,axis=0)
+    row = min(n_bottom_comparisons,effects.shape[0]-1)
+    effects = np.sort(effects, axis=0)[row]
+    indices = indices[row]
+    pvals = pvals[indices,np.arange(pvals.shape[1])]
     if n_markers:
         markers = np.array(genes)[np.argsort(-effects)[:n_markers]]
         p = pvals[np.argsort(-effects)[:n_markers]]
