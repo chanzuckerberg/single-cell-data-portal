@@ -3,8 +3,6 @@ import tiledb
 from pandas import DataFrame
 from pydantic import BaseModel, Field
 from tiledb import Array
-from backend.wmg.data.snapshot import WmgSnapshot
-
 
 class WmgQueryCriteria(BaseModel):
     gene_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=1)
