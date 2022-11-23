@@ -1,13 +1,13 @@
 import { chromium } from "@playwright/test";
-import { TEST_URL, SKIP_LOGIN } from "tests/common/constants";
+import { SKIP_LOGIN, TEST_URL } from "tests/common/constants";
 import featureFlags from "tests/common/featureFlags";
 import { login } from "tests/utils/helpers";
 
 module.exports = async () => {
   try {
     // Skip login for tests that don't require it
-    if(SKIP_LOGIN){
-      console.log("SKIP_LOGIN was set to true. Skipping log in.")
+    if (SKIP_LOGIN) {
+      console.log("SKIP_LOGIN was set to true. Skipping log in.");
     } else {
       // One time auth
       const browser = await chromium.launch();
@@ -15,7 +15,7 @@ module.exports = async () => {
         storageState: featureFlags,
       });
       const page = await browserContext.newPage();
-      await page.goto(TEST_URL);
+      await page.goto(TEST_URL, { timeout: 60000 });
 
       console.log("Logging in...");
 

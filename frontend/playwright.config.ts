@@ -1,4 +1,9 @@
-import { devices, expect, PlaywrightTestConfig } from "@playwright/test";
+import {
+  devices,
+  expect,
+  PlaywrightTestConfig,
+  ReporterDescription,
+} from "@playwright/test";
 import { matchers } from "expect-playwright";
 import fs from "fs";
 import { LOGIN_STATE_FILENAME } from "tests/common/constants";
@@ -10,7 +15,9 @@ const isHeadful =
   process.env.HEADFUL === "true" || process.env.HEADLESS === "false";
 
 // 'github' for GitHub Actions CI to generate annotations, default otherwise
-const PLAYWRIGHT_REPORTER = process.env.CI ? "github" : "list";
+const PLAYWRIGHT_REPORTER = process.env.CI
+  ? ([["github"], ["line"], ["allure-playwright"]] as ReporterDescription[])
+  : "list";
 
 const VIEWPORT = {
   height: 1080,
@@ -126,7 +133,7 @@ function getStorageState(): {
      * sameSite flag
      */
     sameSite: "Strict" | "Lax" | "None";
-  }>,
+  }>;
   origins: Array<{
     origin: string;
 
@@ -137,10 +144,12 @@ function getStorageState(): {
     }>;
   }>;
 } {
-  let storageState = featureFlags;
+  const storageState = featureFlags;
 
   if (fs.existsSync(LOGIN_STATE_FILENAME)) {
-    const loginState = JSON.parse(fs.readFileSync(LOGIN_STATE_FILENAME, "utf-8"));
+    const loginState = JSON.parse(
+      fs.readFileSync(LOGIN_STATE_FILENAME, "utf-8")
+    );
 
     // Merge loginState with featureFlags
     storageState.cookies = storageState.cookies.concat(loginState.cookies);
