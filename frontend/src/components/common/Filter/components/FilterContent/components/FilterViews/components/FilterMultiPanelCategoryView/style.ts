@@ -15,5 +15,9 @@ export const Search = styled(FilterSearch)`
     .${Classes.ICON} {
       left: 6px;
     }
+
+    .${Classes.INPUT_ACTION} {
+      right: 14px;
+    }
   }
 `;
