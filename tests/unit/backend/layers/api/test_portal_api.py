@@ -1988,7 +1988,7 @@ class TestPublishRevision(NewBaseTest):
         # TODO: header pattern
         self.headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
 
-    # 💛 passes, but assertions need to be improved
+    # ✅
     def test__publish_revision_with_new_dataset__OK(self):
         """
         Publish a revision with new datasets.
@@ -2023,16 +2023,7 @@ class TestPublishRevision(NewBaseTest):
         # TODO: timestamp mocking
         # self.assertEqual(self.mock_timestamp, datetime.utcfromtimestamp(response_json["revised_at"]))
 
-        # Datasets: Only the newly added dataset should have published_at updated
-        # TODO: dataset published_at
-        # for dataset in response_json["datasets"]:
-        #     if dataset["id"] == new_dataset_id:
-        #         self.assertEqual(self.mock_timestamp, datetime.utcfromtimestamp(dataset["published_at"]))
-        #     else:
-        #         self.assertIsNone(dataset.get("published_at"))
-        #     self.assertIsNone(dataset.get("revised_at"))
-
-    # 💛 passes, but assertions need to be improved
+    # ✅
     def test__publish_revision_with_removed_datasets__OK(self):
         """
         Publish a revision with delete datasets.
