@@ -591,7 +591,7 @@ class QueryPrimaryFilterDimensionsTest(unittest.TestCase):
     def test__single_dimension__returns_all_dimension_and_terms(self):
         dim_size = 3
         with create_temp_wmg_snapshot(dim_size=dim_size) as snapshot:
-            result = list_primary_filter_dimension_term_ids("tissue_ontology_term_id")
+            result = list_primary_filter_dimension_term_ids(snapshot.cell_counts_cube, "tissue_ontology_term_id")
             self.assertEquals(
                 ["tissue_ontology_term_id_0", "tissue_ontology_term_id_1", "tissue_ontology_term_id_2"], result
             )
@@ -599,17 +599,17 @@ class QueryPrimaryFilterDimensionsTest(unittest.TestCase):
     def test__multiple_dimensions__returns_all_dimensions_and_terms_as_tuples(self):
         dim_size = 3
 
-        def exclude_one_gene_per_organism(logical_coord: NamedTuple) -> bool:
+        def exclude_one_tissue_per_organism(logical_coord: NamedTuple) -> bool:
             # HACK: method called during building of both "expr summary" and "cell count" cubes, but the latter does not
             # include gene_ontology_term_id
-            if "gene_ontology_term_id" not in logical_coord._fields:
+            if "tissue_ontology_term_id" not in logical_coord._fields:
                 return False
             return logical_coord.gene_ontology_term_id == logical_coord.organism_ontology_term_id.replace(
-                "organism", "gene"
+                "organism", "tissue"
             )
 
         with create_temp_wmg_snapshot(
-            dim_size=dim_size, exclude_logical_coord_fn=exclude_one_gene_per_organism
+            dim_size=dim_size, exclude_logical_coord_fn=exclude_one_tissue_per_organism
         ) as snapshot:
             result = list_grouped_primary_filter_dimensions_term_ids(
                 snapshot.cell_counts_cube, "tissue_ontology_term_id", "organism_ontology_term_id"
