@@ -101,39 +101,6 @@ jobs:
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/allure-results
           retention-days: 20
 
-      # Checkout gh-pages branch and get Allure result history
-      - name: Get Allure history
-        uses: actions/checkout@v3
-        if: always()
-        continue-on-error: true
-        with:
-          ref: gh-pages
-          path: gh-pages
-
-      # Create Playwright test results history as an Allure report
-      - name: Create Playwright Test Results History
-        uses: simple-elf/allure-report-action@master
-        if: always()
-        id: allure-report
-        with:
-          allure_results: frontend/allure-results
-          gh_pages: gh-pages
-          allure_report: allure-report
-          allure_history: allure-history
-
-      # Deploy Allure report to github pages
-      - name: Deploy report to Github Pages
-        if: always()
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_branch: gh-pages
-          publish_dir: allure-history
-
-      # Output the link to the github page for this current run
-      - name: Post the link to the report in summary
-        run: "echo 'Test Results Dashboard (Run #${{ github.run_number }}): https://chanzuckerberg.github.io/single-cell-data-portal/${{ github.run_number }}' >> $GITHUB_STEP_SUMMARY"
-
       - name: Install happy
         uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.2.1
         with:
@@ -265,6 +232,14 @@ jobs:
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
           make local-init-test-data
           make all-local-unit-test-backend
+
+      # Upload Allure results as an artifact
+      - uses: actions/upload-artifact@v3
+        with:
+          name: allure-results
+          path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/allure-results
+          retention-days: 20
+
       - uses: 8398a7/action-slack@v3
         with:
           status: ${{ job.status }}
@@ -364,6 +339,45 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
+
+  publish-test-report:
+    needs:
+      - backend-unit-test
+      - e2e-test
+    runs-on: ubuntu-20.04
+    steps:
+      - # Create test results history as an Allure report
+        - name: Create test results history as an Allure report
+          uses: simple-elf/allure-report-action@master
+          if: always()
+          id: allure-report
+          with:
+            allure_results: allure-results
+            gh_pages: gh-pages
+            allure_report: allure-report
+            allure_history: allure-history
+
+      # Checkout gh-pages branch and get Allure result history
+      - name: Get Allure history
+        uses: actions/checkout@v3
+        if: always()
+        continue-on-error: true
+        with:
+          ref: gh-pages
+          path: gh-pages
+
+      # Deploy Allure report to github pages
+      - name: Deploy report to Github Pages
+        if: always()
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: allure-history
+
+      # Output the link to the github page for this current run
+      - name: Post the link to the report in summary
+        run: "echo 'Test Results Dashboard (Run #${{ github.run_number }}): https://chanzuckerberg.github.io/single-cell-data-portal/${{ github.run_number }}' >> $GITHUB_STEP_SUMMARY"
 
   add-image-tags:
     needs:

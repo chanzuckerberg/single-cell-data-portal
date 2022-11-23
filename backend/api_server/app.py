@@ -16,7 +16,7 @@ from backend.api_server.request_id import get_request_id, generate_request_id
 from backend.gene_info.api.ensembl_ids import GeneChecker
 
 DEPLOYMENT_STAGE = os.environ["DEPLOYMENT_STAGE"]
-APP_NAME = "{}-{}".format(os.environ["APP_NAME"], DEPLOYMENT_STAGE)
+APP_NAME = "{}-{}".format(os.environ.get("APP_NAME", "api"), DEPLOYMENT_STAGE)
 
 
 configure_logging(APP_NAME)

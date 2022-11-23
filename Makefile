@@ -25,9 +25,9 @@ unit-test: local-unit-test
 
 .PHONY: container-unittest
 container-unittest:
-	# This target is intended to be run INSIDE a container
-	DEPLOYMENT_STAGE=test PYTHONWARNINGS=ignore:ResourceWarning python3 \
-		-m unittest discover --start-directory tests/unit/backend --top-level-directory . --verbose;
+	# This target is intended to be run INSIDE the api container
+	DEPLOYMENT_STAGE=test PYTHONWARNINGS=ignore:ResourceWarning pytest tests/unit/backend \
+		--rootdir=. --alluredir=./allure_results --verbose;
 
 .PHONY: processing-unittest
 processing-unittest:
