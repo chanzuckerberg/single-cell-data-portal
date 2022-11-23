@@ -53,7 +53,7 @@ class TestCorpusLoad(unittest.TestCase):
     def setUp(self) -> None:
         super().setUp()
         self.path_to_datasets = pathlib.Path(self.tmp_dir, "datasets")
-        self.corpus_path = f"{self.tmp_dir}"
+        self.corpus_path = f"{self.tmp_dir}/test-corpus"
         if not tiledb.VFS().is_dir(self.corpus_path):
             create_tdb_integrated_corpus(self.corpus_path)
             # self.pbmc3k_anndata_object = get_test_anndata_dataset()
