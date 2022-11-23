@@ -12,7 +12,7 @@ from backend.wmg.api.query import (
 from backend.wmg.data.snapshot import (
     EXPRESSION_SUMMARY_FMG_CUBE_NAME,
     CELL_COUNTS_CUBE_NAME,
-    DATASET_TO_GENE_IDS_FILENAME
+    DATASET_TO_GENE_IDS_FILENAME,
 )
 
 
@@ -354,13 +354,13 @@ def _post_process_stats(
     pvals[:, zero_out] = 0
     # aggregate
     # todo: fix p-value aggregation
-    # todo: try fishers p value again, try stouffer's again    
+    # todo: try fishers p value again, try stouffer's again
     n_bottom_comparisons = int(p_bottom_comparisons * effects.shape[0]) + 1
-    indices = np.argsort(effects,axis=0)
-    row = min(n_bottom_comparisons,effects.shape[0]-1)
+    indices = np.argsort(effects, axis=0)
+    row = min(n_bottom_comparisons, effects.shape[0] - 1)
     effects = np.sort(effects, axis=0)[row]
     indices = indices[row]
-    pvals = pvals[indices,np.arange(pvals.shape[1])]
+    pvals = pvals[indices, np.arange(pvals.shape[1])]
     if n_markers:
         markers = np.array(genes)[np.argsort(-effects)[:n_markers]]
         p = pvals[np.argsort(-effects)[:n_markers]]
