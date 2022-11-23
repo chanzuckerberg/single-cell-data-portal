@@ -24,7 +24,7 @@ from backend.wmg.data.utils import (
     get_expression_summary_cube_gene_count,
     get_cell_count_cube_count,
 )
-from backend.wmg.pipeline.summary_cubes.marker_genes import create_marker_genes_cube
+from backend.wmg.pipeline.marker_genes import create_marker_genes_cube
 
 
 logger = logging.getLogger(__name__)
@@ -54,6 +54,7 @@ def load_data_and_create_cube(
     try:
         summary_cubes.run(corpus_path, validate_cube)
     except CubeValidationException as e:
+        # TODO: should we split integrated/obs/var into separate directory (not under snapshot ID)?
         upload_artifacts_to_s3(corpus_path, "latest_validation_failed_snapshot")
         logger.exception(e)
         sys.exit("Exiting due to cube validation failure")

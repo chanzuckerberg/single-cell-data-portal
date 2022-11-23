@@ -1,10 +1,9 @@
-# Examples of ad hoc queries of the WMG Expression Summary cube using the WmgQuery class
+# Examples of ad hoc queries of the WMG Expression Summary cube using the WmgSnapshot class
 
 import os
 
 import pandas as pd
 
-from backend.wmg.api import query
 from backend.wmg.data.snapshot import (
     EXPRESSION_SUMMARY_CUBE_NAME,
     EXPRESSION_SUMMARY_FMG_CUBE_NAME,
@@ -37,15 +36,15 @@ def load_snapshot(snapshot_id) -> WmgSnapshot:
     )
 
 
-def wmg_query() -> query.WmgQuery:
+def wmg_snapshot() -> WmgSnapshot:
     snapshot_id = 1662103227  # _read_s3obj("latest_snapshot_identifier")
     snapshot = load_snapshot(snapshot_id)
-    return query.WmgQuery(snapshot)
+    return snapshot
 
 
 if __name__ == "__main__":
 
-    q = wmg_query()
+    snapshot = wmg_snapshot()
     genes = ["ENSG00000182149"]
     tissues = ["UBERON:0000160"]
     # tissues = ["UBERON:0002368"]
@@ -54,9 +53,9 @@ if __name__ == "__main__":
     #
     # print(q._snapshot.expression_summary_cube[genes[0], tissues[0], :, organism])
     # print(q._snapshot.expression_summary_cube.multi_index[genes, tissues, [], organism])
-    print(q._snapshot.expression_summary_cube.query().multi_index[genes, tissues, [], organism])
-    print(pd.DataFrame(q._snapshot.expression_summary_cube.multi_index[genes, tissues, [], organism]))
-    print(q._snapshot.expression_summary_cube.query(attrs=["nnz"]).df[genes, tissues, :, organism].shape)
+    print(snapshot.expression_summary_cube.query().multi_index[genes, tissues, [], organism])
+    print(pd.DataFrame(snapshot.expression_summary_cube.multi_index[genes, tissues, [], organism]))
+    print(snapshot.expression_summary_cube.query(attrs=["nnz"]).df[genes, tissues, :, organism].shape)
     # print(q._snapshot.expression_summary_cube.df[genes, tissues, :, organism])
 
     # res = q.expression_summary(

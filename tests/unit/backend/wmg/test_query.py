@@ -2,7 +2,13 @@ import unittest
 from typing import NamedTuple
 
 from backend.wmg.api.v1 import get_dot_plot_data, agg_cell_type_counts, agg_tissue_counts
-from backend.wmg.api.query import WmgQueryCriteria, WmgQuery
+from backend.wmg.api.query import (
+    WmgQueryCriteria,
+    list_primary_filter_dimension_term_ids,
+    list_grouped_primary_filter_dimensions_term_ids,
+    expression_summary_query,
+    cell_counts_query,
+)
 from backend.wmg.data.schemas.cube_schema import expression_summary_non_indexed_dims
 from tests.unit.backend.wmg.fixtures.test_snapshot import (
     create_temp_wmg_snapshot,
@@ -19,7 +25,9 @@ ALL_INDEXED_DIMS_FOR_QUERY = [
 ]
 
 # TODO: Test build_* methods separately in test_v1.py.  This package's unit tests need only test the raw results of
-#  WmgQuery methods
+#  query methods
+
+# todo: add tests for marker_genes_query and expression_summary_fmg_query
 
 
 class QueryTest(unittest.TestCase):
@@ -33,8 +41,10 @@ class QueryTest(unittest.TestCase):
         with create_temp_wmg_snapshot(
             dim_size=dim_size, expression_summary_vals_fn=all_ones_expression_summary_values
         ) as snapshot:
-            query = WmgQuery(snapshot)
-            result, _ = get_dot_plot_data(query.expression_summary(criteria), query.cell_counts(criteria))
+            result, _ = get_dot_plot_data(
+                expression_summary_query(snapshot.expression_summary_cube, criteria),
+                cell_counts_query(snapshot.cell_counts_cube, criteria),
+            )
 
         expected = {
             "cell_type_ontology_term_id": {},
@@ -60,8 +70,10 @@ class QueryTest(unittest.TestCase):
             expression_summary_vals_fn=all_ones_expression_summary_values,
             cell_counts_generator_fn=all_tens_cell_counts_values,
         ) as snapshot:
-            query = WmgQuery(snapshot)
-            result, _ = get_dot_plot_data(query.expression_summary(criteria), query.cell_counts(criteria))
+            result, _ = get_dot_plot_data(
+                expression_summary_query(snapshot.expression_summary_cube, criteria),
+                cell_counts_query(snapshot.cell_counts_cube, criteria),
+            )
 
         # sanity check the expected value of the stats (nnz, sum) for each data viz point; if this fails, the
         # cube test fixture may have changed (e.g. TileDB Array schema) or the logic for creating the test cube fixture
@@ -134,8 +146,10 @@ class QueryTest(unittest.TestCase):
             expression_summary_vals_fn=all_ones_expression_summary_values,
             cell_counts_generator_fn=all_tens_cell_counts_values,
         ) as snapshot:
-            query = WmgQuery(snapshot)
-            result, _ = get_dot_plot_data(query.expression_summary(criteria), query.cell_counts(criteria))
+            result, _ = get_dot_plot_data(
+                expression_summary_query(snapshot.expression_summary_cube, criteria),
+                cell_counts_query(snapshot.cell_counts_cube, criteria),
+            )
 
         # sanity check the expected value of the stats (n_cells, nnz, sum) for each data viz point; if this fails, the
         # cube test fixture may have changed (e.g. TileDB Array schema) or the logic for creating the test cube fixture
@@ -290,8 +304,7 @@ class QueryTest(unittest.TestCase):
             expression_summary_vals_fn=all_ones_expression_summary_values,
             cell_counts_generator_fn=lambda coords: all_X_cell_counts_values(coords, expected_count),
         ) as snapshot:
-            query = WmgQuery(snapshot)
-            result = agg_cell_type_counts(query.cell_counts(criteria))
+            result = agg_cell_type_counts(cell_counts_query(snapshot.cell_counts_cube, criteria))
 
         not_used_cube_indexed_dims = [0 if criteria.dict()[dim_name] else 1 for dim_name in ALL_INDEXED_DIMS_FOR_QUERY]
         expected_n_combinations = dim_size ** (
@@ -324,8 +337,7 @@ class QueryTest(unittest.TestCase):
             expression_summary_vals_fn=all_ones_expression_summary_values,
             cell_counts_generator_fn=lambda coords: all_X_cell_counts_values(coords, expected_count),
         ) as snapshot:
-            query = WmgQuery(snapshot)
-            result = agg_tissue_counts(query.cell_counts(criteria))
+            result = agg_tissue_counts(cell_counts_query(snapshot.cell_counts_cube, criteria))
 
         not_used_cube_indexed_dims = [0 if criteria.dict()[dim_name] else 1 for dim_name in ALL_INDEXED_DIMS_FOR_QUERY]
         expected_n_combinations = dim_size ** (
@@ -358,8 +370,10 @@ class QueryTest(unittest.TestCase):
             expression_summary_vals_fn=all_ones_expression_summary_values,
             cell_counts_generator_fn=all_tens_cell_counts_values,
         ) as snapshot:
-            query = WmgQuery(snapshot)
-            result, _ = get_dot_plot_data(query.expression_summary(criteria), query.cell_counts(criteria))
+            result, _ = get_dot_plot_data(
+                expression_summary_query(snapshot.expression_summary_cube, criteria),
+                cell_counts_query(snapshot.cell_counts_cube, criteria),
+            )
 
         # sanity check the expected value of the stats (n_cells, nnz, sum) for each data viz point; if this fails, the
         # cube test fixture may have changed (e.g. TileDB Array schema) or the logic for creating the test cube fixture
@@ -432,8 +446,10 @@ class QueryTest(unittest.TestCase):
             expression_summary_vals_fn=all_ones_expression_summary_values,
             cell_counts_generator_fn=all_tens_cell_counts_values,
         ) as snapshot:
-            query = WmgQuery(snapshot)
-            result, _ = get_dot_plot_data(query.expression_summary(criteria), query.cell_counts(criteria))
+            result, _ = get_dot_plot_data(
+                expression_summary_query(snapshot.expression_summary_cube, criteria),
+                cell_counts_query(snapshot.cell_counts_cube, criteria),
+            )
 
         # sanity check the expected value of the stats (n_cells, nnz, sum) for each data viz point; if this fails, the
         # cube test fixture may have changed (e.g. TileDB Array schema) or the logic for creating the test cube fixture
@@ -509,8 +525,10 @@ class QueryTest(unittest.TestCase):
             expression_summary_vals_fn=all_ones_expression_summary_values,
             cell_counts_generator_fn=all_tens_cell_counts_values,
         ) as snapshot:
-            query = WmgQuery(snapshot)
-            result, _ = get_dot_plot_data(query.expression_summary(criteria), query.cell_counts(criteria))
+            result, _ = get_dot_plot_data(
+                expression_summary_query(snapshot.expression_summary_cube, criteria),
+                cell_counts_query(snapshot.cell_counts_cube, criteria),
+            )
 
         # sanity check the expected value of the stats (n_cells, nnz, sum) for each data viz point; if this fails, the
         # cube test fixture may have changed (e.g. TileDB Array schema) or the logic for creating the test cube fixture
@@ -573,8 +591,10 @@ class QueryPrimaryFilterDimensionsTest(unittest.TestCase):
     def test__single_dimension__returns_all_dimension_and_terms(self):
         dim_size = 3
         with create_temp_wmg_snapshot(dim_size=dim_size) as snapshot:
-            result = WmgQuery(snapshot).list_primary_filter_dimension_term_ids("gene_ontology_term_id")
-            self.assertEquals(["gene_ontology_term_id_0", "gene_ontology_term_id_1", "gene_ontology_term_id_2"], result)
+            result = list_primary_filter_dimension_term_ids("tissue_ontology_term_id")
+            self.assertEquals(
+                ["tissue_ontology_term_id_0", "tissue_ontology_term_id_1", "tissue_ontology_term_id_2"], result
+            )
 
     def test__multiple_dimensions__returns_all_dimensions_and_terms_as_tuples(self):
         dim_size = 3
@@ -591,14 +611,14 @@ class QueryPrimaryFilterDimensionsTest(unittest.TestCase):
         with create_temp_wmg_snapshot(
             dim_size=dim_size, exclude_logical_coord_fn=exclude_one_gene_per_organism
         ) as snapshot:
-            result = WmgQuery(snapshot).list_grouped_primary_filter_dimensions_term_ids(
-                "gene_ontology_term_id", "organism_ontology_term_id"
+            result = list_grouped_primary_filter_dimensions_term_ids(
+                snapshot.cell_counts_cube, "tissue_ontology_term_id", "organism_ontology_term_id"
             )
             self.assertEquals(
                 {
-                    "organism_ontology_term_id_0": ["gene_ontology_term_id_1", "gene_ontology_term_id_2"],
-                    "organism_ontology_term_id_1": ["gene_ontology_term_id_0", "gene_ontology_term_id_2"],
-                    "organism_ontology_term_id_2": ["gene_ontology_term_id_0", "gene_ontology_term_id_1"],
+                    "organism_ontology_term_id_0": ["tissue_ontology_term_id_1", "tissue_ontology_term_id_2"],
+                    "organism_ontology_term_id_1": ["tissue_ontology_term_id_0", "tissue_ontology_term_id_2"],
+                    "organism_ontology_term_id_2": ["tissue_ontology_term_id_0", "tissue_ontology_term_id_1"],
                 },
                 result,
             )

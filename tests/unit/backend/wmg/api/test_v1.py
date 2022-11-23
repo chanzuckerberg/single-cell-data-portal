@@ -907,6 +907,15 @@ class WmgApiV1Tests(unittest.TestCase):
             print(json.loads(response.data))
             self.assertEqual(200, response.status_code)
 
+    @patch("backend.wmg.api.v1.gene_term_label")
+    @patch("backend.wmg.api.v1.ontology_term_label")
+    @patch("backend.wmg.api.v1.load_snapshot")
+    def test__markers_returns_empty_dictionary_for_bad_celltypes(
+        self, load_snapshot, ontology_term_label, gene_term_label
+    ):
+        # todo: this test is not complete
+        pass
+
 
 # mock the dataset and collection entity data that would otherwise be fetched from the db; in this test
 # we only care that we're building the response correctly from the cube; WMG API integration tests verify

@@ -2,9 +2,17 @@ import pandas as pd
 import numpy as np
 from scipy import stats
 import json
+import tiledb
 from functools import lru_cache, wraps
-from backend.wmg.api.query import WmgQuery, FmgQueryCriteria
-from backend.wmg.data.snapshot import load_snapshot, WmgSnapshot
+from backend.wmg.api.query import (
+    FmgQueryCriteria,
+    expression_summary_fmg_query,
+    cell_counts_query as cell_counts_fmg_query,
+)
+from backend.wmg.data.snapshot import (
+    EXPRESSION_SUMMARY_FMG_CUBE_NAME,
+    CELL_COUNTS_CUBE_NAME,
+)
 
 
 def _make_hashable(func):
@@ -44,6 +52,12 @@ def _make_hashable(func):
     return wrapped
 
 
+# todo: create a very small snapshot from real data and use it for testing
+# todo: add lower level unit test for "_query_tiledb"
+# todo: maybe further break down _query_tiledb into smaller functions for calculating true number of cells
+# todo: search open API for syntax for specifying parameters that are one of two values
+
+
 @_make_hashable
 @lru_cache(maxsize=None)
 def _query_tiledb(filters, corpus_path=None, group_by_dims=None, genes=None):
@@ -79,10 +93,10 @@ def _query_tiledb(filters, corpus_path=None, group_by_dims=None, genes=None):
     """
 
     criteria = FmgQueryCriteria(**filters)
-    snapshot: WmgSnapshot = load_snapshot(corpus_path=corpus_path)
-    Q = WmgQuery(snapshot)
-    query = Q.expression_summary_fmg(criteria)
-    cell_counts_query = Q.cell_counts(criteria)
+    expression_summary_fmg_cube = tiledb.open(f"{corpus_path}/{EXPRESSION_SUMMARY_FMG_CUBE_NAME}")
+    cell_counts_cube = tiledb.open(f"{corpus_path}/{CELL_COUNTS_CUBE_NAME}")
+    query = expression_summary_fmg_query(expression_summary_fmg_cube, criteria)
+    cell_counts_query = cell_counts_fmg_query(cell_counts_cube, criteria)
 
     # if group-by dimensions not provided, use the keys specified in the filter JSON
     if group_by_dims is None:
@@ -338,8 +352,11 @@ def _post_process_stats(
     pvals[:, zero_out] = 0
     # aggregate
     n_bottom_comparisons = int(p_bottom_comparisons * effects.shape[0]) + 1
-    effects = np.sort(effects, axis=0)[:n_bottom_comparisons].mean(0)
+    effects = np.sort(effects, axis=0)[n_bottom_comparisons]  # .mean(0)
+    # np.percentile(effects,%10, axis=0)
+
     # todo: fix p-value aggregation
+    # todo: try fishers p value again, try stouffer's again
     pvals = np.sort(pvals, axis=0)[:n_bottom_comparisons].mean(0)
     if n_markers:
         markers = np.array(genes)[np.argsort(-effects)[:n_markers]]
@@ -550,6 +567,7 @@ def get_markers(
     n_markers - int, optional, default 10
         Number of top markers to return. If None, all marker genes with effect size > 0 are returned.
 
+    # todo: try selecting the specific value at 10% percentile instead of averaging below
     p_bottom_comparisons - float, optional, default 0.1
         The fraction of lowest scores to average across when aggregating statistics across all
         comparisons to groups in the context population. By default, the lowest 10% of scores will
@@ -559,6 +577,8 @@ def get_markers(
     -------
     Dictionary of marker genes as keys and a dictionary of p-value and effect size as values.
     """
+
+    # todo: enforce that queries are well-formed (intersection of target and context filters)
 
     if test == "ttest":
         return _get_markers_ttest(
