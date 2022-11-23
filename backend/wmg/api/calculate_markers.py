@@ -12,6 +12,7 @@ from backend.wmg.api.query import (
 from backend.wmg.data.snapshot import (
     EXPRESSION_SUMMARY_FMG_CUBE_NAME,
     CELL_COUNTS_CUBE_NAME,
+    DATASET_TO_GENE_IDS_FILENAME
 )
 
 
@@ -97,7 +98,7 @@ def _query_tiledb(filters, corpus_path=None, group_by_dims=None, genes=None):
     cell_counts_cube = tiledb.open(f"{corpus_path}/{CELL_COUNTS_CUBE_NAME}")
     query = expression_summary_fmg_query(expression_summary_fmg_cube, criteria)
     cell_counts_query = cell_counts_fmg_query(cell_counts_cube, criteria)
-
+    dataset_to_gene_ids = json.load(open(f"{corpus_path}/{DATASET_TO_GENE_IDS_FILENAME}"))
     # if group-by dimensions not provided, use the keys specified in the filter JSON
     if group_by_dims is None:
         # depluralize plural keys to match names in schema
@@ -133,7 +134,7 @@ def _query_tiledb(filters, corpus_path=None, group_by_dims=None, genes=None):
     for i, index in enumerate(n_cells.index):
         n = n_cells[index]
         dataset_id = index[0]
-        present = list(set(snapshot.dataset_to_gene_ids[dataset_id]).intersection(genes))
+        present = list(set(dataset_to_gene_ids[dataset_id]).intersection(genes))
         t_n_cells[i, genes_indexer[present]] = n
 
     # get the tuples of filter values in the correct order defined in `desired_levels`
@@ -170,6 +171,7 @@ def _prepare_indices_and_metrics(target_filters, context_filters, corpus_path=No
         Dictionary of filters describing the context
 
     corpus_path - str, optional, default None
+        # todo: make this usable in hosted mode as well
         Path to the snapshot.
         If path is provided, then the pipeline is running locally as part of the weekly cube generation.
         Otherwise, the snapshot will be fetched from AWS.
