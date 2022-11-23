@@ -1518,7 +1518,7 @@ class TestDataset(NewBaseTest):
             self.assertEqual(actual_dataset["is_primary_data"], persisted_dataset.metadata.is_primary_data)
             self.assertEqual(actual_dataset["mean_genes_per_cell"], persisted_dataset.metadata.mean_genes_per_cell)
             # self.assertEqual(actual_dataset["explorer_url"], persisted_dataset.explorer_url)
-            # self.assertEqual(actual_dataset["published_at"], persisted_dataset.published_at.timestamp())
+            self.assertEqual(actual_dataset["published_at"], persisted_dataset.canonical_dataset.published_at.timestamp())
             # self.assertEqual(actual_dataset["revised_at"], persisted_dataset.revised_at.timestamp())
 
     # ✅
