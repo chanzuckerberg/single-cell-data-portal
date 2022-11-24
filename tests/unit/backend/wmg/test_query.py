@@ -602,7 +602,7 @@ class QueryPrimaryFilterDimensionsTest(unittest.TestCase):
         def exclude_one_tissue_per_organism(logical_coord: NamedTuple) -> bool:
             # HACK: method called during building of both "expr summary" and "cell count" cubes, but the latter does not
             # include gene_ontology_term_id
-            if "tissue_ontology_term_id" not in logical_coord._fields:
+            if "gene_ontology_term_id" not in logical_coord._fields:
                 return False
             return logical_coord.gene_ontology_term_id == logical_coord.organism_ontology_term_id.replace(
                 "organism", "tissue"
