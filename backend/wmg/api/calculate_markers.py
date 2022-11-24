@@ -334,6 +334,8 @@ def _run_ttest(sum1, sumsq1, n1, sum2, sumsq2, n2):
     tscores[np.isnan(tscores)] = 0
     effects[np.isnan(effects)] = 0
     pvals = stats.t.sf(tscores, dof)
+    pvals[effects < 0] = 1
+    effects[effects < 0] = 0
     pvals_adj = pvals * sum1.size
     pvals_adj[pvals_adj > 1] = 1  # cap adjusted p-value at 1
     return pvals_adj, effects
@@ -373,7 +375,7 @@ def _post_process_stats(genes, pvals, effects, nnz, test="ttest", min_num_expr_c
     effects[:, zero_out] = 0
     pvals[:, zero_out] = 0
     # aggregate
-    effects = np.percentile(effects, percentile, axis=0)
+    effects = np.percentile(effects, percentile * 100, axis=0)
     pvals = 10 ** np.log10(pvals + 1e-200).mean(axis=0)
     if n_markers:
         markers = np.array(genes)[np.argsort(-effects)[:n_markers]]
@@ -447,7 +449,6 @@ def _get_markers_ttest(target_filters, context_filters, corpus_path=None, n_mark
     pvals, effects = _run_ttest(
         target_data_sum, target_data_sumsq, n_target, context_data_sum, context_data_sumsq, n_context
     )
-
     return _post_process_stats(
         genes,
         pvals,
@@ -491,7 +492,8 @@ def _run_binom(nnz_thr1, n1, nnz_thr2, n2):
         effects = np.log2((nnz_thr1 + pn1) / (n1 + 2 * pn1)) - np.log2((nnz_thr2 + pn2) / (n2 + 2 * pn2))
 
     effects[np.isnan(effects)] = 0
-
+    pvals[effects < 0] = 1
+    effects[effects < 0] = 0
     pvals_adj = pvals * nnz_thr1.size
     pvals_adj[pvals_adj > 1] = 1  # cap adjusted p-value at 1
     return pvals_adj, effects
