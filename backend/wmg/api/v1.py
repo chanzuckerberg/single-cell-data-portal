@@ -69,7 +69,7 @@ def markers():
 
     criteria = MarkerGeneQueryCriteria(
         tissue_ontology_term_id=tissue,
-        organism=organism,
+        organism_ontology_term_id=organism,
         cell_type_ontology_term_id=cell_type,
     )
     df = marker_genes_query(snapshot.marker_genes_cube, criteria)
