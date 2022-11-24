@@ -346,6 +346,11 @@ jobs:
       - e2e-test
     runs-on: ubuntu-20.04
     steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: allure-results
+          path: allure-results
+
       - # Create test results history as an Allure report
         - name: Create test results history as an Allure report
           uses: simple-elf/allure-report-action@master
