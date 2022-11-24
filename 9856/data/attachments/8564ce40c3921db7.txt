@@ -1,0 +1,2 @@
+INFO     backend.portal.api.curation.v1.curation.collections.collection_id.s3_upload_credentials:s3_upload_credentials.py:37 {"RoleArn": "test_curation_role", "RoleSessionName": "test_user_id", "WebIdentityToken": "owner", "DurationSeconds": 43200}
+INFO     backend.portal.api.curation.v1.curation.collections.collection_id.s3_upload_credentials:s3_upload_credentials.py:37 {"RoleArn": "test_curation_role", "RoleSessionName": "super", "WebIdentityToken": "super", "DurationSeconds": 43200}

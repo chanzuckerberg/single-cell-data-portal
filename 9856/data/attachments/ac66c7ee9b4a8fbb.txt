@@ -1,0 +1,5 @@
+INFO     root:dataset_asset.py:62 Deleting file ff4266ac-e2dd-4f09-9c32-cc241c5db0b4/data.H5AD in bucket bogus-bucket.
+INFO     root:dataset_asset.py:62 Deleting file ff4266ac-e2dd-4f09-9c32-cc241c5db0b4/data.RDS in bucket bogus-bucket.
+INFO     root:dataset_asset.py:62 Deleting file ff4266ac-e2dd-4f09-9c32-cc241c5db0b4/data.CXG in bucket bogus-bucket.
+INFO     root:dataset_asset.py:58 Deleting all files in bucket hosted-cellxgene-test under ff4266ac-e2dd-4f09-9c32-cc241c5db0b4.
+INFO     root:entity.py:43 Unable to find a row with primary key e2b3cf84-5161-4bda-bb1e-4642c543c0b5, in Collection table.
