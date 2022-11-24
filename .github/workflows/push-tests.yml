@@ -351,16 +351,16 @@ jobs:
           name: allure-results
           path: allure-results
 
-      - # Create test results history as an Allure report
-        - name: Create test results history as an Allure report
-          uses: simple-elf/allure-report-action@master
-          if: always()
-          id: allure-report
-          with:
-            allure_results: allure-results
-            gh_pages: gh-pages
-            allure_report: allure-report
-            allure_history: allure-history
+      # Create test results history as an Allure report
+      - name: Create test results history as an Allure report
+        uses: simple-elf/allure-report-action@master
+        if: always()
+        id: allure-report
+        with:
+          allure_results: allure-results
+          gh_pages: gh-pages
+          allure_report: allure-report
+          allure_history: allure-history
 
       # Checkout gh-pages branch and get Allure result history
       - name: Get Allure history
