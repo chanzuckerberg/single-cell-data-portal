@@ -339,9 +339,7 @@ def _run_ttest(sum1, sumsq1, n1, sum2, sumsq2, n2):
     return pvals_adj, effects
 
 
-def _post_process_stats(
-    genes, pvals, effects, nnz, test="ttest", min_num_expr_cells=25, p_bottom_comparisons=0.1, n_markers=10
-):
+def _post_process_stats(genes, pvals, effects, nnz, test="ttest", min_num_expr_cells=25, percentile=0.15, n_markers=10):
     """
     Process and aggregate statistics into the output dictionary format.
 
@@ -365,10 +363,8 @@ def _post_process_stats(
     min_num_expr_cells - int, optional, default 25
         The minimum number of nonzero expressing cells required for marker genes
 
-    p_bottom_comparisons - float, optional, default 0.1
-        The fraction of lowest scores to average across when aggregating statistics across all
-        comparisons to groups in the context population. By default, the lowest 10% of scores will
-        be averaged for each gene.
+    percentile - float, optional, default 0.15
+        The percentile of effect sizes to select as the representative effect size.
 
     n_markers - int, optional, default 10
         Number of top markers to return. If None, all marker genes with effect size > 0 are returned.
@@ -377,13 +373,8 @@ def _post_process_stats(
     effects[:, zero_out] = 0
     pvals[:, zero_out] = 0
     # aggregate
-    # todo: try fishers p value again
-    n_bottom_comparisons = int(p_bottom_comparisons * effects.shape[0]) + 1
-    indices = np.argsort(effects, axis=0)
-    row = min(n_bottom_comparisons, effects.shape[0] - 1)
-    effects = np.sort(effects, axis=0)[row]
-    indices = indices[row]
-    pvals = pvals[indices, np.arange(pvals.shape[1])]
+    effects = np.percentile(effects, percentile, axis=0)
+    pvals = 10 ** (-np.log10(-pvals).mean(axis=0))
     if n_markers:
         markers = np.array(genes)[np.argsort(-effects)[:n_markers]]
         p = pvals[np.argsort(-effects)[:n_markers]]
@@ -403,7 +394,7 @@ def _post_process_stats(
     return dict(zip(list(final_markers), statistics))
 
 
-def _get_markers_ttest(target_filters, context_filters, corpus_path=None, n_markers=10, p_bottom_comparisons=0.1):
+def _get_markers_ttest(target_filters, context_filters, corpus_path=None, n_markers=10, percentile=0.15):
     """
     Calculate marker genes using the t-test.
 
@@ -423,10 +414,8 @@ def _get_markers_ttest(target_filters, context_filters, corpus_path=None, n_mark
     n_markers - int, optional, default 10
         Number of top markers to return. If None, all marker genes with effect size > 0 are returned.
 
-    p_bottom_comparisons - float, optional, default 0.1
-        The fraction of lowest scores to average across when aggregating statistics across all
-        comparisons to groups in the context population. By default, the lowest 10% of scores will
-        be averaged for each gene.
+    percentile - float, optional, default 0.15
+        The percentile of effect sizes to select as the representative effect size.
 
     Returns
     -------
@@ -466,7 +455,7 @@ def _get_markers_ttest(target_filters, context_filters, corpus_path=None, n_mark
         target_data_nnz,
         test="ttest",
         n_markers=n_markers,
-        p_bottom_comparisons=p_bottom_comparisons,
+        percentile=percentile,
     )
 
 
@@ -508,7 +497,7 @@ def _run_binom(nnz_thr1, n1, nnz_thr2, n2):
     return pvals_adj, effects
 
 
-def _get_markers_binomtest(target_filters, context_filters, corpus_path=None, n_markers=10, p_bottom_comparisons=0.8):
+def _get_markers_binomtest(target_filters, context_filters, corpus_path=None, n_markers=10, percentile=0.8):
     """
     Calculate marker genes using the binomial test.
 
@@ -528,10 +517,8 @@ def _get_markers_binomtest(target_filters, context_filters, corpus_path=None, n_
     n_markers - int, optional, default 10
         Number of top markers to return. If None, all marker genes with effect size > 0 are returned.
 
-    p_bottom_comparisons - float, optional, default 0.1
-        The fraction of lowest scores to average across when aggregating statistics across all
-        comparisons to groups in the context population. By default, the lowest 10% of scores will
-        be averaged for each gene.
+    percentile - float, optional, default 0.8
+        The percentile of effect sizes to select as the representative effect size.
 
     Returns
     -------
@@ -564,13 +551,11 @@ def _get_markers_binomtest(target_filters, context_filters, corpus_path=None, n_
         target_data_nnz,
         test="binomtest",
         n_markers=n_markers,
-        p_bottom_comparisons=p_bottom_comparisons,
+        percentile=percentile,
     )
 
 
-def get_markers(
-    target_filters, context_filters, corpus_path=None, test="ttest", n_markers=10, p_bottom_comparisons=0.1
-):
+def get_markers(target_filters, context_filters, corpus_path=None, test="ttest", n_markers=10, percentile=0.15):
     """
     Calculate marker genes using the t-test.
 
@@ -593,10 +578,8 @@ def get_markers(
     n_markers - int, optional, default 10
         Number of top markers to return. If None, all marker genes with effect size > 0 are returned.
 
-    p_bottom_comparisons - float, optional, default 0.1
-        The fraction of lowest scores to average across when aggregating statistics across all
-        comparisons to groups in the context population. By default, the lowest 10% of scores will
-        be averaged for each gene.
+    percentile - float, optional, default 0.15
+        The percentile of effect sizes to select as the representative effect size.
 
     Returns
     -------
@@ -609,7 +592,7 @@ def get_markers(
             context_filters,
             corpus_path=corpus_path,
             n_markers=n_markers,
-            p_bottom_comparisons=p_bottom_comparisons,
+            percentile=percentile,
         )
     elif test == "binomtest":
         return _get_markers_binomtest(
@@ -617,7 +600,7 @@ def get_markers(
             context_filters,
             corpus_path=corpus_path,
             n_markers=n_markers,
-            p_bottom_comparisons=p_bottom_comparisons,
+            percentile=percentile,
         )
     else:
         raise ValueError(f"Test {test} not supported.")
