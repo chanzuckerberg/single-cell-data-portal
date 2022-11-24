@@ -21,8 +21,8 @@ class WmgQueryCriteria(BaseModel):
 
 class FmgQueryCriteria(BaseModel):
     organism_ontology_term_id: str  # required!
-    tissue_ontology_term_ids: List[str] = (Field(default=[], unique_items=True, min_items=0),)
-    cell_type_ontology_term_ids: List[str] = (Field(default=[], unique_items=True, min_items=0),)
+    tissue_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
+    cell_type_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
     tissue_original_ontology_term_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
     dataset_ids: List[str] = Field(default=[], unique_items=True, min_items=0)
     # excluded per product requirements, but keeping in, commented-out, to reduce future head-scratching
@@ -111,7 +111,7 @@ def _query(cube: Array, criteria: Union[WmgQueryCriteria, FmgQueryCriteria], ind
             tiledb_dims_query.append([])
         elif criteria.dict()[dim_name]:
             tiledb_dims_query.append(criteria.dict()[dim_name])
-        # If an "indexed" dimension is not included in the criteria, 
+        # If an "indexed" dimension is not included in the criteria,
         # then all values will be selected.
         else:
             tiledb_dims_query.append([])
