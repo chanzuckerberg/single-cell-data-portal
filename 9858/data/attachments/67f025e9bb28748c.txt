@@ -1,2 +1,0 @@
-INFO     root:app.py:39 {'message': 's3_event', 'Records': [{'s3': {'bucket': {'name': 'some_bucket'}, 'object': {'key': 'user_name/09e16bca-e499-4a0b-97cc-820e476d791a/12341234-1234-1234-1234-123412341234', 'size': 0}}}]}
-INFO     root:entity.py:43 Unable to find a row with primary key 09e16bca-e499-4a0b-97cc-820e476d791a, in Collection table.
