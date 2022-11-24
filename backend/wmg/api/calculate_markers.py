@@ -10,6 +10,7 @@ from backend.wmg.api.query import (
     cell_counts_query as cell_counts_fmg_query,
 )
 from backend.wmg.data.snapshot import (
+    load_snapshot,
     EXPRESSION_SUMMARY_FMG_CUBE_NAME,
     CELL_COUNTS_CUBE_NAME,
     DATASET_TO_GENE_IDS_FILENAME,
@@ -55,7 +56,6 @@ def _make_hashable(func):
 
 # todo: create a very small snapshot from real data and use it for testing
 # todo: add lower level unit test for "_query_tiledb"
-# todo: maybe further break down _query_tiledb into smaller functions for calculating true number of cells
 # todo: search open API for syntax for specifying parameters that are one of two values
 
 
@@ -94,11 +94,19 @@ def _query_tiledb(filters, corpus_path=None, group_by_dims=None, genes=None):
     """
 
     criteria = FmgQueryCriteria(**filters)
-    expression_summary_fmg_cube = tiledb.open(f"{corpus_path}/{EXPRESSION_SUMMARY_FMG_CUBE_NAME}")
-    cell_counts_cube = tiledb.open(f"{corpus_path}/{CELL_COUNTS_CUBE_NAME}")
-    query = expression_summary_fmg_query(expression_summary_fmg_cube, criteria)
-    cell_counts_query = cell_counts_fmg_query(cell_counts_cube, criteria)
-    dataset_to_gene_ids = json.load(open(f"{corpus_path}/{DATASET_TO_GENE_IDS_FILENAME}"))
+
+    if corpus_path:
+        expression_summary_fmg_cube = tiledb.open(f"{corpus_path}/{EXPRESSION_SUMMARY_FMG_CUBE_NAME}")
+        cell_counts_cube = tiledb.open(f"{corpus_path}/{CELL_COUNTS_CUBE_NAME}")
+        query = expression_summary_fmg_query(expression_summary_fmg_cube, criteria)
+        cell_counts_query = cell_counts_fmg_query(cell_counts_cube, criteria)
+        dataset_to_gene_ids = json.load(open(f"{corpus_path}/{DATASET_TO_GENE_IDS_FILENAME}"))
+    else:
+        snapshot = load_snapshot()
+        query = expression_summary_fmg_query(snapshot.expression_summary_fmg_cube, criteria)
+        cell_counts_query = cell_counts_fmg_query(snapshot.cell_counts_cube, criteria)
+        dataset_to_gene_ids = snapshot.dataset_to_gene_ids
+
     # if group-by dimensions not provided, use the keys specified in the filter JSON
     if group_by_dims is None:
         # depluralize plural keys to match names in schema
@@ -118,13 +126,34 @@ def _query_tiledb(filters, corpus_path=None, group_by_dims=None, genes=None):
     agg = query.groupby(gb_dims_es).sum()
     n_cells = cell_counts_query.groupby(gb_dims).sum()["n_total_cells"]
 
-    if group_by_dims is None:
-        desired_levels = [i.name for i in agg.index.levels][1:]
-    else:
-        desired_levels = depluralized_keys
-
+    keep_dataset_ids = group_by_dims is None and "dataset_id" in filters.keys()
     if genes is None:
         genes = list(agg.index.levels[0])
+
+    t_n_cells_sum = _calculate_true_n_cells(n_cells, genes, dataset_to_gene_ids, keep_dataset_ids)
+    return agg, t_n_cells_sum, genes
+
+
+def _calculate_true_n_cells(n_cells, genes, dataset_to_gene_ids, keep_dataset_ids):
+    """
+    Calculates the true number of cells per gene for each combination of filters.
+
+    Arguments
+    ---------
+    n_cells - pandas.Series
+        A pandas series with the number of cells per combination of filters.
+        The index of the series is a multi-index with the filter keys as levels.
+
+    genes - list
+        A list of genes to calculate true population sizes for.
+
+    dataset_to_gene_ids - dict
+        A dictionary mapping dataset IDs to a list of gene IDs.
+
+    keep_dataset_ids - boolean
+        If True, then the dataset IDs are kept in the index of the returned
+        population sizes. Otherwise, the dataset IDs are removed.
+    """
 
     genes_indexer = pd.Series(index=genes, data=range(len(genes)))
 
@@ -137,15 +166,12 @@ def _query_tiledb(filters, corpus_path=None, group_by_dims=None, genes=None):
         present = list(set(dataset_to_gene_ids[dataset_id]).intersection(genes))
         t_n_cells[i, genes_indexer[present]] = n
 
-    # get the tuples of filter values in the correct order defined in `desired_levels`
-    # this is to exclude dataset_ids from the groups
-    ixs = []
-    level_names = [i.name for i in n_cells.index.levels]
-    for d in desired_levels:
-        for i, level in enumerate(level_names):
-            if level == d:
-                ixs.append(i)
-    groups = list(zip(*[n_cells.index.get_level_values(i) for i in ixs]))
+    # get the tuples of filter values, excluding dataset IDs if they are not specified
+    # as a filter by the user.
+    if keep_dataset_ids:
+        groups = list(n_cells.index)
+    else:
+        groups = list(zip(*[n_cells.index.get_level_values(i) for i in range(1, len(n_cells.index[0]))]))
 
     # sum up the cell count arrays across duplicate groups
     # (groups can be duplicate after excluding dataset_ids)
@@ -154,8 +180,7 @@ def _query_tiledb(filters, corpus_path=None, group_by_dims=None, genes=None):
         summer = t_n_cells_sum.get(k, np.zeros(t_n_cells.shape[1]))
         summer += t_n_cells[i]
         t_n_cells_sum[k] = summer
-
-    return agg, t_n_cells_sum, genes
+    return t_n_cells_sum
 
 
 def _prepare_indices_and_metrics(target_filters, context_filters, corpus_path=None):
@@ -171,7 +196,6 @@ def _prepare_indices_and_metrics(target_filters, context_filters, corpus_path=No
         Dictionary of filters describing the context
 
     corpus_path - str, optional, default None
-        # todo: make this usable in hosted mode as well
         Path to the snapshot.
         If path is provided, then the pipeline is running locally as part of the weekly cube generation.
         Otherwise, the snapshot will be fetched from AWS.
@@ -353,8 +377,7 @@ def _post_process_stats(
     effects[:, zero_out] = 0
     pvals[:, zero_out] = 0
     # aggregate
-    # todo: fix p-value aggregation
-    # todo: try fishers p value again, try stouffer's again
+    # todo: try fishers p value again
     n_bottom_comparisons = int(p_bottom_comparisons * effects.shape[0]) + 1
     indices = np.argsort(effects, axis=0)
     row = min(n_bottom_comparisons, effects.shape[0] - 1)
@@ -570,7 +593,6 @@ def get_markers(
     n_markers - int, optional, default 10
         Number of top markers to return. If None, all marker genes with effect size > 0 are returned.
 
-    # todo: try selecting the specific value at 10% percentile instead of averaging below
     p_bottom_comparisons - float, optional, default 0.1
         The fraction of lowest scores to average across when aggregating statistics across all
         comparisons to groups in the context population. By default, the lowest 10% of scores will
@@ -580,8 +602,6 @@ def get_markers(
     -------
     Dictionary of marker genes as keys and a dictionary of p-value and effect size as values.
     """
-
-    # todo: enforce that queries are well-formed (intersection of target and context filters)
 
     if test == "ttest":
         return _get_markers_ttest(
