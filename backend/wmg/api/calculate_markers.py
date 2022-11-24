@@ -374,7 +374,7 @@ def _post_process_stats(genes, pvals, effects, nnz, test="ttest", min_num_expr_c
     pvals[:, zero_out] = 0
     # aggregate
     effects = np.percentile(effects, percentile, axis=0)
-    pvals = 10 ** (-np.log10(pvals + 1e-200).mean(axis=0))
+    pvals = 10 ** np.log10(pvals + 1e-200).mean(axis=0)
     if n_markers:
         markers = np.array(genes)[np.argsort(-effects)[:n_markers]]
         p = pvals[np.argsort(-effects)[:n_markers]]
