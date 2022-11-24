@@ -286,6 +286,14 @@ jobs:
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
           make local-init-test-data
           make local-unit-test-processing
+
+      # Upload Allure results as an artifact
+      - uses: actions/upload-artifact@v3
+        with:
+          name: allure-results
+          path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/allure-results
+          retention-days: 20
+
       - uses: 8398a7/action-slack@v3
         with:
           status: ${{ job.status }}
@@ -331,6 +339,12 @@ jobs:
         run: |
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
           make local-unit-test-wmg-processing
+      # Upload Allure results as an artifact
+      - uses: actions/upload-artifact@v3
+        with:
+          name: allure-results
+          path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/allure-results
+          retention-days: 20
       - uses: 8398a7/action-slack@v3
         with:
           status: ${{ job.status }}
