@@ -107,18 +107,14 @@ def _query(cube: Array, criteria: Union[WmgQueryCriteria, FmgQueryCriteria], ind
     tiledb_dims_query = []
     for dim_name in indexed_dims:
         # Don't filter on this dimension but return all "original tissues" back
-        # Or, return all of `dim_name` back if the criteria is an empty string.
-        if (
-            dim_name == "tissue_original_ontology_term_ids"
-            or len(criteria.dict()[dim_name]) > 0
-            and criteria.dict()[dim_name][0] == ""
-        ):
+        if dim_name == "tissue_original_ontology_term_ids":
             tiledb_dims_query.append([])
         elif criteria.dict()[dim_name]:
             tiledb_dims_query.append(criteria.dict()[dim_name])
-        # If an "indexed" dimension is not included in the criteria, this will return an empty data frame
+        # If an "indexed" dimension is not included in the criteria, 
+        # then all values will be selected.
         else:
-            tiledb_dims_query.append("")
+            tiledb_dims_query.append([])
 
     tiledb_dims_query = tuple(tiledb_dims_query)
 
