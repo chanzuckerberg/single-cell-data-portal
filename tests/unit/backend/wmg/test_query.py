@@ -31,32 +31,6 @@ ALL_INDEXED_DIMS_FOR_QUERY = [
 
 
 class QueryTest(unittest.TestCase):
-    def test__query_with_no_genes__returns_empty_result(self):
-        criteria = WmgQueryCriteria(
-            organism_ontology_term_id="organism_ontology_term_id_0",
-            tissue_ontology_term_ids=["tissue_ontology_term_id_0"],
-        )
-
-        dim_size = 1
-        with create_temp_wmg_snapshot(
-            dim_size=dim_size, expression_summary_vals_fn=all_ones_expression_summary_values
-        ) as snapshot:
-            result, _ = get_dot_plot_data(
-                expression_summary_query(snapshot.expression_summary_cube, criteria),
-                cell_counts_query(snapshot.cell_counts_cube, criteria),
-            )
-
-        expected = {
-            "cell_type_ontology_term_id": {},
-            "gene_ontology_term_id": {},
-            "n_cells_cell_type": {},
-            "n_cells_tissue": {},
-            "nnz": {},
-            "sum": {},
-            "tissue_ontology_term_id": {},
-        }
-        self.assertEqual(expected, result.to_dict())
-
     def test__query_all_indexed_dims_single_value__returns_correct_result(self):
         criteria = WmgQueryCriteria(
             gene_ontology_term_ids=["gene_ontology_term_id_0"],
