@@ -80,6 +80,7 @@ def markers():
         df[["gene_ontology_term_id"] + attrs]
         .rename(columns=dict(zip(attrs, col_names)))
         .nlargest(n_markers, "effect_size")
+        .sort_values("effect_size", ascending=False)
     )
     marker_genes = dict(zip(markers["gene_ontology_term_id"], markers[col_names].to_dict(orient="records")))
     return jsonify(
