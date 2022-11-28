@@ -12,10 +12,14 @@ import {
   State,
   StateContext,
 } from "src/views/WheresMyGene/common/store";
-import { setSnapshotId } from "src/views/WheresMyGene/common/store/actions";
+import {
+  addSelectedGenes,
+  setSnapshotId,
+} from "src/views/WheresMyGene/common/store/actions";
 import {
   CellType,
   CellTypeGeneExpressionSummaryData,
+  Gene,
   GeneExpressionSummary,
   RawCellTypeGeneExpressionSummaryData,
 } from "src/views/WheresMyGene/common/types";
@@ -583,6 +587,7 @@ function useWMGQueryRequestBody(options = { includeAllFilterOptions: false }) {
     return result;
   }, [data, selectedOrganismId]);
 
+  // This is a nice mapping that may start being used in a few places across WMG, might be worth moving to a global store.
   const tissuesByName = useMemo(() => {
     let result: { [name: string]: OntologyTerm } = {};
 
@@ -699,87 +704,59 @@ export function aggregateCollectionsFromDatasets(
   return collections;
 }
 
-interface filters {
-  organism_ontology_term_id: string;
-  tissue_ontology_term_ids: string[];
-  cell_type_ontology_term_ids: string[]; // used to signify target cell type
-  tissue_original_ontology_term_ids: string[]; //complex only
-  dataset_ids: string[]; //complex only
-  development_stage_ontology_term_ids: string[]; //complex only
-  disease_ontology_term_ids: string[]; //complex only
-  ethnicity_ontology_term_ids: string[]; //complex only
-  sex_ontology_term_ids: string[]; //complex only
-}
-
 interface MarkerGeneRequestBody {
-  context_filters: filters;
-  target_filters: filters;
-  n_markers?: number;
+  celltype: string;
+  n_markers: number;
+  organism: string;
+  test: string;
+  tissue: string;
 }
 
-// /* {'IGHA1': (0.0, 1.094378390988656), # first element is p-value, second is effect size
-export interface MarkerGeneResponse {
-  [geneName: string]: [number, number];
+interface HardcodedMarkerGeneRequest extends MarkerGeneRequestBody {
+  n_markers: 10;
+  test: "ttest";
 }
 
-// maybe we don't need to utilize the WMG Query Body generator hook here
-// If I go to the call site of the mutator, maybe that data is easy to access or at least close to the surface
-// Maybe that's the case now, but by the time we DO want to have complex target filters, it will get harder to generate
-export function useGenerateMarkerGeneBody(
-  cellType: string
-): MarkerGeneRequestBody | null {
-  const requestBody = useWMGQueryRequestBody();
-
-  if (!requestBody) return null;
-
-  const { organism_ontology_term_id, tissue_ontology_term_ids } =
-    requestBody.filter;
-
+export function generateMarkerGeneBody(
+  cellTypeID: string,
+  tissueID: string,
+  organismID: string
+): HardcodedMarkerGeneRequest | null {
   return {
-    context_filters: {
-      organism_ontology_term_id,
-      tissue_ontology_term_ids,
-      cell_type_ontology_term_ids: [],
-      tissue_original_ontology_term_ids: [],
-      dataset_ids: [],
-      development_stage_ontology_term_ids: [],
-      disease_ontology_term_ids: [],
-      ethnicity_ontology_term_ids: [],
-      sex_ontology_term_ids: [],
-    },
-    target_filters: {
-      organism_ontology_term_id,
-      tissue_ontology_term_ids,
-      cell_type_ontology_term_ids: [cellType],
-      tissue_original_ontology_term_ids: [],
-      dataset_ids: [],
-      development_stage_ontology_term_ids: [],
-      disease_ontology_term_ids: [],
-      ethnicity_ontology_term_ids: [],
-      sex_ontology_term_ids: [],
-    },
-    n_markers: undefined,
+    celltype: cellTypeID,
+    n_markers: 10,
+    organism: organismID,
+    test: "ttest",
+    tissue: tissueID,
   };
 }
 
-enum MUTATION_TYPE {
-  LOSS = "LOSS",
-  GAIN = "GAIN",
+export interface FetchMarkerGeneParams {
+  cellTypeID: string;
+  tissueID: string;
+  organismID: string;
 }
 
-export async function fetchMarkerGenes(
-  requestBody: MarkerGeneRequestBody | null
-): Promise<MarkerGeneResponse> {
+export async function fetchMarkerGenes({
+  cellTypeID,
+  organismID,
+  tissueID,
+}: FetchMarkerGeneParams): Promise<MarkerGeneResponse> {
   const url = API_URL + API.WMG_MARKER_GENES;
-
+  const body = generateMarkerGeneBody(cellTypeID, tissueID, organismID);
   const response = await fetch(url, {
     ...DEFAULT_FETCH_OPTIONS,
     ...JSON_BODY_FETCH_OPTIONS,
-    body: JSON.stringify(requestBody),
+    body: JSON.stringify(body),
     method: "POST",
   });
+  const json: MarkerGeneResponse = await response.json();
 
-  return await response.json();
+  if (!response.ok) {
+    throw json;
+  }
+
+  return json;
 }
 export const USE_MARKER_GENES = {
   ENTITIES: [ENTITIES.WMG_MARKER_GENES],
@@ -787,25 +764,42 @@ export const USE_MARKER_GENES = {
 };
 
 export interface MarkerGenesByCellType {
-  [cellType: string]: MarkerGeneResponse;
+  [cellType: string]: MarkerGeneResponse["marker_genes"];
 }
 
-export function useMarkerGenes(): UseMutationResult<
-  MarkerGeneResponse,
-  unknown,
-  { body: MarkerGeneRequestBody; mutationType: MUTATION_TYPE },
-  { prevMarkerGenes: MarkerGenesByCellType }
-> {
+export interface MarkerGeneResponse {
+  marker_genes: {
+    [geneID: string]: {
+      effect_size: number;
+      p_value: number;
+    };
+  };
+  snapshot_id: string;
+}
+
+export function useMarkerGenes(genesByGeneID: {
+  [id: string]: Gene;
+}): UseMutationResult<MarkerGeneResponse, unknown, FetchMarkerGeneParams> {
   const queryClient = useQueryClient();
-  return useMutation(
-    ({ body, mutationType }) =>
-      mutationType === MUTATION_TYPE["GAIN"]
-        ? fetchMarkerGenes(body)
-        : removeMarkerGenes(),
-    {
-      onSuccess: (data, _, context) => {
-        queryClient.setQueryData([USE_MARKER_GENES], {});
-      },
-    }
-  );
+  const dispatch = useContext(DispatchContext);
+  const prevMarkerGenes = queryClient.getQueryData<MarkerGenesByCellType>([
+    USE_MARKER_GENES,
+  ]);
+  return useMutation(fetchMarkerGenes, {
+    onSuccess: (data, { cellTypeID }) => {
+      if (!dispatch || !data) return;
+      const newMarkerGenes = prevMarkerGenes || {};
+      newMarkerGenes[cellTypeID] = data.marker_genes;
+      queryClient.setQueryData([USE_MARKER_GENES], newMarkerGenes);
+      const geneNames = Object.keys(data.marker_genes).map((geneID) => {
+        const gene = genesByGeneID[geneID];
+        if (!gene) {
+          console.error("gene not found", geneID);
+        }
+        return gene.name;
+      });
+      // This dispatch may be pulled out of the on success of this mutation if the panel solution is implemented
+      dispatch(addSelectedGenes(geneNames));
+    },
+  });
 }

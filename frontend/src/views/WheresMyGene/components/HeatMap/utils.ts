@@ -552,6 +552,7 @@ export function deserializeCellTypeMetadata(
   };
 }
 
+// seve: looks like this isn't used anywhere
 export function checkIsTissue(cellTypeMetadata: CellTypeMetadata): boolean {
   const { name, tissue } = deserializeCellTypeMetadata(cellTypeMetadata);
 
