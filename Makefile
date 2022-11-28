@@ -25,21 +25,21 @@ unit-test: local-unit-test
 
 .PHONY: container-unittest
 container-unittest:
-	# This target is intended to be run INSIDE a container
-	DEPLOYMENT_STAGE=test PYTHONWARNINGS=ignore:ResourceWarning python3 \
-		-m unittest discover --start-directory tests/unit/backend --top-level-directory . --verbose;
+	# This target is intended to be run INSIDE the api container
+	DEPLOYMENT_STAGE=test PYTHONWARNINGS=ignore:ResourceWarning pytest tests/unit/backend \
+		--rootdir=. --alluredir=./allure-results --verbose;
 
 .PHONY: processing-unittest
 processing-unittest:
-	# This target is intended to be run INSIDE a container
-	DEPLOYMENT_STAGE=test PYTHONWARNINGS=ignore:ResourceWarning python3 \
-		-m unittest discover --start-directory tests/unit/processing_container --top-level-directory . --verbose;
+	# This target is intended to be run INSIDE the dataset processing container
+	DEPLOYMENT_STAGE=test PYTHONWARNINGS=ignore:ResourceWarning pytest tests/unit/processing_container \
+		--rootdir=. --alluredir=./allure-results --verbose;
 
 .PHONY: wmg-processing-unittest
 wmg-processing-unittest:
-	# This target is intended to be run INSIDE a container
-	DEPLOYMENT_STAGE=test PYTHONWARNINGS=ignore:ResourceWarning python3 \
-		-m unittest discover --start-directory tests/unit/wmg_processing --top-level-directory . --verbose;
+	# This target is intended to be run INSIDE the wmg processing container
+	DEPLOYMENT_STAGE=test PYTHONWARNINGS=ignore:ResourceWarning pytest tests/unit/wmg_processing \
+		--rootdir=. --alluredir=./allure-results --verbose;
 
 .PHONY: functional-test
 functional-test: local-functional-test
