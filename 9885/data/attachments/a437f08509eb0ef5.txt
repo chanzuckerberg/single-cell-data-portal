@@ -1,0 +1,4 @@
+Dropping tables
+Recreating tables
+{"levelname": "INFO", "asctime": "2022-11-28T22:51:01.028Z", "name": "backend.portal.pipeline.processing.download", "message": "Setting up download.", "lineno": 172, "pathname": "/single-cell-data-portal/backend/portal/pipeline/processing/download.py"}
+{"levelname": "INFO", "asctime": "2022-11-28T22:51:01.028Z", "name": "backend.portal.pipeline.processing.download", "message": "file_size: 12", "lineno": 173, "pathname": "/single-cell-data-portal/backend/portal/pipeline/processing/download.py"}
