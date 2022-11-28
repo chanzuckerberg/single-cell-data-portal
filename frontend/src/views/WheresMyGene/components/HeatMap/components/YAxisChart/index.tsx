@@ -2,6 +2,9 @@ import { init } from "echarts";
 import Image from "next/image";
 import { memo, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { EMPTY_OBJECT, noop } from "src/common/constants/utils";
+import { get } from "src/common/featureFlags";
+import { FEATURES } from "src/common/featureFlags/features";
+import { BOOLEAN } from "src/common/localStorage/set";
 import { FetchMarkerGeneParams } from "src/common/queries/wheresMyGene";
 import { DispatchContext } from "src/views/WheresMyGene/common/store";
 import { resetTissueCellTypes } from "src/views/WheresMyGene/common/store/actions";
@@ -55,6 +58,7 @@ export default memo(function YAxisChart({
   const [heatmapHeight, setHeatmapHeight] = useState(
     getHeatmapHeight(cellTypes)
   );
+  const isMarkerGenes = get(FEATURES.MARKER_GENES) === BOOLEAN.TRUE;
 
   // Initialize charts
   useEffect(() => {
@@ -103,13 +107,15 @@ export default memo(function YAxisChart({
 
       handleCellTypeClick(value);
 
-      const { id } = deserializeCellTypeMetadata(value);
+      if (isMarkerGenes) {
+        const { id } = deserializeCellTypeMetadata(value);
 
-      generateMarkerGenes({
-        cellTypeID: id,
-        organismID: selectedOrganismId,
-        tissueID,
-      });
+        generateMarkerGenes({
+          cellTypeID: id,
+          organismID: selectedOrganismId,
+          tissueID,
+        });
+      }
     }
   }, [
     setHandleYAxisChartClick,
@@ -120,6 +126,7 @@ export default memo(function YAxisChart({
     availableCellTypes,
     yAxisChart,
     selectedOrganismId,
+    isMarkerGenes,
   ]);
 
   const cellTypeMetadata = useMemo(() => {
