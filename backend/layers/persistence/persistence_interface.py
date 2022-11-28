@@ -108,7 +108,7 @@ class DatabaseProviderInterface:
         """
         pass
 
-    def set_versions_published_at(self, version_id: CollectionVersionId, published_at: datetime) -> None:
+    def set_collection_version_published_at(self, version_id: CollectionVersionId, published_at: datetime) -> None:
         """
         Sets the `published_at` datetime for a collection version and its datasets
         """

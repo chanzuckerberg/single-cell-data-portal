@@ -1,5 +1,7 @@
 from dataclasses import dataclass, field
-from sqlalchemy import Column, DateTime, Enum, String, Table
+from typing import List
+import uuid
+from sqlalchemy import Column, DateTime, Enum, ForeignKey, String, Table
 from sqlalchemy.dialects.postgresql import ARRAY, BOOLEAN, JSON, TEXT, UUID
 from sqlalchemy.orm import registry
 
@@ -17,7 +19,8 @@ from backend.layers.common.entities import (
     DatasetVersionId,
 )
 
-mapper_registry = registry()
+metadata_obj = MetaData(schema="persistence_schema")
+mapper_registry = registry(metadata=metadata_obj)
 
 
 @mapper_registry.mapped
@@ -28,8 +31,8 @@ class Collection(CanonicalCollection):
         mapper_registry.metadata,
         Column("id", UUID(as_uuid=True), primary_key=True, default=uuid.uuid4),
         Column("version_id", UUID(as_uuid=True), default=uuid.uuid4),
-        Column("originally_published_at", Column(DateTime)),
-        Column("tombstoned", Column(BOOLEAN))
+        Column("originally_published_at", DateTime),
+        Column("tombstoned", BOOLEAN)
     )
 
 
@@ -43,11 +46,11 @@ class CollectionVersion(CollectionVersionModel):
         mapper_registry.metadata,
         Column("version_id", UUID(as_uuid=True), primary_key=True, default=uuid.uuid4),
         Column("collection_id", UUID(as_uuid=True), default=uuid.uuid4),
-        Column("metadata", Column(JSON)),
-        Column("owner", Column(String)),
-        Column("publisher_metadata", Column(JSON)),
-        Column("published_at", Column(DateTime)),
-        Column("datasets", Column(ARRAY(UUID(as_uuid=True))))
+        Column("metadata", JSON),
+        Column("owner", String),
+        Column("publisher_metadata", JSON),
+        Column("published_at", DateTime),
+        Column("datasets", ARRAY(UUID(as_uuid=True)))
     )
 
 
@@ -57,9 +60,9 @@ class Dataset(CanonicalDataset):
     __table__ = Table(
         "Dataset",
         mapper_registry.metadata,
-        Column("dataset_id", Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)),
-        Column("dataset_version_id", Column(UUID(as_uuid=True), default=uuid.uuid4)),
-        Column("published_at", Column(DateTime))
+        Column("dataset_id", UUID(as_uuid=True), primary_key=True, default=uuid.uuid4),
+        Column("dataset_version_id", UUID(as_uuid=True), default=uuid.uuid4),
+        Column("published_at", DateTime)
     )
 
 
@@ -72,12 +75,12 @@ class DatasetVersion(DatasetVersionModel):
     __table__ = Table(
         "DatasetVersion",
         mapper_registry.metadata,
-        Column("version_id", Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)),
-        Column("dataset_id", Column(UUID(as_uuid=True), default=uuid.uuid4)),
-        Column("collection_id", Column(UUID(as_uuid=True), default=uuid.uuid4)),
-        Column("metadata", Column(JSON)),
-        Column("artifacts", Column(ARRAY(UUID(as_uuid=True)))),
-        Column("status", Column(JSON))
+        Column("version_id", UUID(as_uuid=True), primary_key=True, default=uuid.uuid4),
+        Column("dataset_id", UUID(as_uuid=True), ForeignKey("Dataset.dataset_id"), default=uuid.uuid4),
+        Column("collection_id", UUID(as_uuid=True), default=uuid.uuid4),
+        Column("metadata", JSON),
+        Column("artifacts", ARRAY(UUID(as_uuid=True))),
+        Column("status", JSON)
     )
 
 

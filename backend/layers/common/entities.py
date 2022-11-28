@@ -6,6 +6,16 @@ from enum import Enum
 
 # TODO: copy and paste the docs for these
 
+
+class DatasetStatusKey(Enum):
+    UPLOAD = "upload"
+    VALIDATION = "validation"
+    CXG = "cxg"
+    RDS = "rds"
+    H5AD = "h5ad"
+    PROCESSING = "processing"
+
+
 class DatasetStatusGeneric:
     pass
 
@@ -53,34 +63,49 @@ class DatasetStatus:
     h5ad_status: Optional[DatasetConversionStatus]
     processing_status: Optional[DatasetProcessingStatus]
 
-    @staticmethod 
+    @staticmethod
     def empty():
         return DatasetStatus(None, None, None, None, None, None)
 
 
-@dataclass
+@dataclass(eq=True, frozen=True)
 class CollectionId:
     id: str
+
+    def __repr__(self) -> str:
+        return self.id
 
 
 @dataclass
 class CollectionVersionId:
     id: str
 
+    def __repr__(self) -> str:
+        return self.id
+
 
 @dataclass
 class DatasetId:
     id: str
+
+    def __repr__(self) -> str:
+        return self.id
 
 
 @dataclass
 class DatasetVersionId:
     id: str
 
+    def __repr__(self) -> str:
+        return self.id
+
 
 @dataclass
 class DatasetArtifactId:
     id: str
+
+    def __repr__(self) -> str:
+        return self.id
 
 
 @dataclass
@@ -119,13 +144,20 @@ class DatasetMetadata:
 
 
 @dataclass
+class CanonicalDataset:
+    dataset_id: DatasetId
+    dataset_version_id: DatasetVersionId
+    published_at: Optional[datetime]
+
+@dataclass
 class DatasetVersion:
     dataset_id: DatasetId
     version_id: DatasetVersionId
-    collection_id: CollectionId     # Pointer to the canonical collection id this dataset belongs to
+    collection_id: CollectionId  # Pointer to the canonical collection id this dataset belongs to
     status: DatasetStatus
     metadata: DatasetMetadata
     artifacts: List[DatasetArtifact]
+    created_at: datetime
     canonical_dataset: CanonicalDataset
 
 
@@ -153,11 +185,6 @@ class CanonicalCollection:
     tombstoned: bool
 
 
-@dataclass
-class CanonicalDataset:
-    dataset_id: DatasetId
-    dataset_version_id: DatasetVersionId
-    published_at: Optional[datetime]
 
 
 @dataclass
@@ -169,6 +196,7 @@ class CollectionVersion:
     publisher_metadata: Optional[dict]  # TODO: use a dataclass
     datasets: List[DatasetVersionId]
     published_at: Optional[datetime]
+    created_at: datetime
     canonical_collection: CanonicalCollection
 
 
