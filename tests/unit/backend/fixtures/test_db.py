@@ -22,20 +22,20 @@ from backend.scripts.create_db import create_db
 from tests.unit.backend.fixtures import config
 
 
-class TestDatabaseManager:
+class DatabaseManager:
     is_initialized = False
 
     @classmethod
     def initialize_db(cls):
         if cls.is_initialized:
             return
-        testdb = TestDatabase()
+        testdb = DatabaseFixture()
         testdb.create_db()
         testdb.populate_test_data()
         cls.is_initialized = True
 
 
-class TestDatabase:
+class DatabaseFixture:
     def __init__(self, real_data=False):
         self.real_data = real_data
 

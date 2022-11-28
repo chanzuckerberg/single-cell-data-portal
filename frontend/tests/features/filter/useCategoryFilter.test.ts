@@ -489,6 +489,7 @@ describe("useCategoryFilter", () => {
       selected: false,
       selectedPartial: false,
       value: INFERRED_HEMATOPOIETIC_SYSTEM,
+      visible: true,
     };
 
     const INFERRED_IMMUNE_CATEGORY_VALUE_VIEW = {
@@ -498,6 +499,7 @@ describe("useCategoryFilter", () => {
       selected: false,
       selectedPartial: false,
       value: INFERRED_IMMUNE_SYSTEM,
+      visible: true,
     };
 
     const INFERRED_BLOOD_CATEGORY_VALUE_VIEW = {
@@ -507,6 +509,7 @@ describe("useCategoryFilter", () => {
       selected: false,
       selectedPartial: false,
       value: INFERRED_BLOOD,
+      visible: true,
     };
 
     const INFERRED_BONE_MARROW_CATEGORY_VALUE_VIEW = {
@@ -516,6 +519,7 @@ describe("useCategoryFilter", () => {
       selected: false,
       selectedPartial: false,
       value: INFERRED_BONE_MARROW,
+      visible: true,
     };
 
     const INFERRED_LYMPH_NODE_CATEGORY_VALUE_VIEW = {
@@ -525,6 +529,7 @@ describe("useCategoryFilter", () => {
       selected: false,
       selectedPartial: false,
       value: INFERRED_LYMPH_NODE,
+      visible: true,
     };
 
     const INFERRED_SPLEEN_CATEGORY_VALUE_VIEW = {
@@ -534,6 +539,7 @@ describe("useCategoryFilter", () => {
       selected: false,
       selectedPartial: false,
       value: INFERRED_SPLEEN,
+      visible: true,
     };
 
     const INFERRED_THYMUS_CATEGORY_VALUE_VIEW = {
@@ -543,6 +549,7 @@ describe("useCategoryFilter", () => {
       selected: false,
       selectedPartial: false,
       value: INFERRED_THYMUS,
+      visible: true,
     };
 
     const EXPLICIT_BLOOD_CATEGORY_VALUE_VIEW = {
@@ -552,6 +559,7 @@ describe("useCategoryFilter", () => {
       selected: false,
       selectedPartial: false,
       value: EXPLICIT_BLOOD,
+      visible: true,
     };
 
     const EXPLICIT_BONE_MARROW_CATEGORY_VALUE_VIEW = {
@@ -561,6 +569,7 @@ describe("useCategoryFilter", () => {
       selected: false,
       selectedPartial: false,
       value: EXPLICIT_BONE_MARROW,
+      visible: true,
     };
 
     const EXPLICIT_SPLEEN_CATEGORY_VALUE_VIEW = {
@@ -570,6 +579,7 @@ describe("useCategoryFilter", () => {
       selected: false,
       selectedPartial: false,
       value: EXPLICIT_SPLEEN,
+      visible: true,
     };
 
     const EXPLICIT_THYMUS_CATEGORY_VALUE_VIEW = {
@@ -579,6 +589,7 @@ describe("useCategoryFilter", () => {
       selected: false,
       selectedPartial: false,
       value: EXPLICIT_THYMUS,
+      visible: true,
     };
 
     const EXPLICIT_UMBILICAL_CORD_CATEGORY_VALUE_VIEW = {
@@ -588,6 +599,7 @@ describe("useCategoryFilter", () => {
       selected: false,
       selectedPartial: false,
       value: EXPLICIT_UMBILICAL_CORD_BLOOD,
+      visible: true,
     };
 
     const EXPLICIT_VENOUS_BLOOD_CATEGORY_VALUE_VIEW = {
@@ -597,6 +609,7 @@ describe("useCategoryFilter", () => {
       selected: false,
       selectedPartial: false,
       value: EXPLICIT_VENOUS_BLOOD,
+      visible: true,
     };
 
     const EXPLICIT_THORACIC_LYMPH_NODE_VALUE_VIEW = {
@@ -606,6 +619,7 @@ describe("useCategoryFilter", () => {
       selected: false,
       selectedPartial: false,
       value: EXPLICIT_THORACIC_LYMPH_NODE,
+      visible: true,
     };
 
     const VALUE_VIEWS_BY_CATEGORY_VALUE_ID = new Map<
@@ -2137,7 +2151,9 @@ describe("useCategoryFilter", () => {
           const tissuePanelViews =
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
             categoryView.panels[PANEL_INDEX_TISSUE]!.views;
-          expect(tissuePanelViews.length).toEqual(3);
+          expect(
+            tissuePanelViews.filter((view) => view.visible).length
+          ).toEqual(3);
           const tissueCategoryValueIds = listCategoryValueIds(tissuePanelViews);
           [
             EXPLICIT_BLOOD,
@@ -2209,7 +2225,9 @@ describe("useCategoryFilter", () => {
 
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
           const organPanelViews = categoryView.panels[PANEL_INDEX_ORGAN]!.views;
-          expect(organPanelViews.length).toEqual(4);
+          expect(organPanelViews.filter((view) => view.visible).length).toEqual(
+            4
+          );
           const organCategoryValueIds = listCategoryValueIds(organPanelViews);
           [
             INFERRED_BONE_MARROW,
@@ -2223,7 +2241,9 @@ describe("useCategoryFilter", () => {
           const tissuePanelViews =
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
             categoryView.panels[PANEL_INDEX_TISSUE]!.views;
-          expect(tissuePanelViews.length).toEqual(3);
+          expect(
+            tissuePanelViews.filter((view) => view.visible).length
+          ).toEqual(3);
           const tissueCategoryValueIds = listCategoryValueIds(tissuePanelViews);
           [EXPLICIT_BONE_MARROW, EXPLICIT_SPLEEN, EXPLICIT_THYMUS].forEach(
             (categoryValueId) =>
@@ -2309,7 +2329,9 @@ describe("useCategoryFilter", () => {
           const tissuePanelViews =
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
             categoryView.panels[PANEL_INDEX_TISSUE]!.views;
-          expect(tissuePanelViews.length).toEqual(3);
+          expect(
+            tissuePanelViews.filter((view) => view.visible).length
+          ).toEqual(3);
           const tissueCategoryValueIds = listCategoryValueIds(tissuePanelViews);
           [
             EXPLICIT_BLOOD,
@@ -2391,7 +2413,9 @@ describe("useCategoryFilter", () => {
 
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
           const organPanelViews = categoryView.panels[PANEL_INDEX_ORGAN]!.views;
-          expect(organPanelViews.length).toEqual(4);
+          expect(organPanelViews.filter((view) => view.visible).length).toEqual(
+            4
+          );
           const organCategoryValueIds = listCategoryValueIds(organPanelViews);
           [
             INFERRED_BLOOD,
@@ -2405,7 +2429,9 @@ describe("useCategoryFilter", () => {
           const tissuePanelViews =
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
             categoryView.panels[PANEL_INDEX_TISSUE]!.views;
-          expect(tissuePanelViews.length).toEqual(3);
+          expect(
+            tissuePanelViews.filter((view) => view.visible).length
+          ).toEqual(3);
           const tissueCategoryValueIds = listCategoryValueIds(tissuePanelViews);
           [
             EXPLICIT_BLOOD,
@@ -2497,7 +2523,9 @@ describe("useCategoryFilter", () => {
           const tissuePanelViews =
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
             categoryView.panels[PANEL_INDEX_TISSUE]!.views;
-          expect(tissuePanelViews.length).toEqual(2);
+          expect(
+            tissuePanelViews.filter((view) => view.visible).length
+          ).toEqual(2);
           const tissueCategoryValueIds = listCategoryValueIds(tissuePanelViews);
           [EXPLICIT_BLOOD, EXPLICIT_BONE_MARROW].forEach((categoryValueId) =>
             tissueCategoryValueIds.includes(categoryValueId)
@@ -2554,14 +2582,18 @@ describe("useCategoryFilter", () => {
 
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
           const organPanelViews = categoryView.panels[PANEL_INDEX_ORGAN]!.views;
-          expect(organPanelViews.length).toEqual(1);
+          expect(organPanelViews.filter((view) => view.visible).length).toEqual(
+            1
+          );
           const organCategoryValueIds = listCategoryValueIds(organPanelViews);
           expect(organCategoryValueIds.includes(INFERRED_KIDNEY)).toBeTruthy();
 
           const tissuePanelViews =
             // eslint-disable-next-line @typescript-eslint/no-non-null-assertion -- length check above
             categoryView.panels[PANEL_INDEX_TISSUE]!.views;
-          expect(tissuePanelViews.length).toEqual(5);
+          expect(
+            tissuePanelViews.filter((view) => view.visible).length
+          ).toEqual(5);
           const tissueCategoryValueIds = listCategoryValueIds(tissuePanelViews);
           [
             EXPLICIT_BLADDER_LUMEN,
