@@ -292,7 +292,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         """
         with self.db_session_manager as session:
             artifact_ids = session.query(DatasetVersionRow.artifacts).filter_by(version_id=dataset_version_id).one()
-        return get_dataset_artifacts(artifact_ids)
+        return self.get_dataset_artifacts(artifact_ids)
 
     def create_canonical_dataset(self, collection_version_id: CollectionVersionId) -> DatasetVersion:
         """
