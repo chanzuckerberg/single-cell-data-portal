@@ -193,10 +193,6 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         collection_version.datasets.append(version)
         return copy.deepcopy(version)
 
-    def add_dataset_version(self, dataset_id: DatasetId) -> str:
-        # Unused for now
-        raise NotImplementedError
-
     def add_dataset_artifact(self, version_id: DatasetVersionId, artifact_type: str, artifact_uri: str) -> DatasetArtifactId:
         version = self.datasets_versions[version_id.id]
         artifact_id = DatasetArtifactId(self._id())

@@ -73,7 +73,7 @@ class DatasetVersion(DatasetVersionModel):
         "DatasetVersion",
         mapper_registry.metadata,
         Column("version_id", Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)),
-        Column("dataset_id", Column(UUID(as_uuid=True), default=uuid.uuid4)),
+        Column("dataset_id", ForeignKey("Dataset.dataset_id"), Column(UUID(as_uuid=True), default=uuid.uuid4)),
         Column("collection_id", Column(UUID(as_uuid=True), default=uuid.uuid4)),
         Column("metadata", Column(JSON)),
         Column("artifacts", Column(ARRAY(UUID(as_uuid=True)))),

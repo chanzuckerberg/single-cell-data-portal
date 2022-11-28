@@ -205,10 +205,12 @@ class DatabaseProvider(DatabaseProviderInterface):
         """
         Finalizes a collection version. This is equivalent to calling:
         1. update_collection_version_mapping
-        2. set_versions_published_at
+        2. set_collection_version_published_at
+        3. finalize_dataset_versions
         """
         self.update_collection_version_mapping(collection_id, version_id, published_at)
-        self.set_versions_published_at(version_id, published_at)
+        self.set_collection_version_published_at(version_id, published_at)
+        self.finalize_dataset_versions(version_id, published_at)
 
     def update_collection_version_mapping(self, collection_id: CollectionId, version_id: CollectionVersionId,
                                           published_at: datetime) -> None:
@@ -221,19 +223,29 @@ class DatabaseProvider(DatabaseProviderInterface):
             if collection.originally_published_at is None:
                 collection.originally_published_at = published_at
 
-    def set_versions_published_at(self, version_id: CollectionVersionId, published_at: datetime) -> None:
+    def set_collection_version_published_at(self, version_id: CollectionVersionId, published_at: datetime) -> None:
         """
-        Sets the `published_at` datetime for a collection version and its datasets
+        Sets the `published_at` datetime for a collection version
         """
         with self.db_session_manager as session:
             collection_version = session.query(CollectionVersionRow).filter_by(version_id=version_id).one()
             collection_version.published_at = published_at
-            id_cols = session\
-                .query(DatasetVersionRow.dataset_id, DatasetVersionRow.version_id)\
-                .filter(DatasetVersionRow.version_id in collection_version.datasets)\
+
+    def finalize_dataset_versions(self, version_id: CollectionVersionId, published_at: datetime) -> None:
+        """
+        1. Updates the mapping between the canonical dataset and the latest published dataset version for each dataset
+        in a CollectionVersion
+        2. Sets the each canonical dataset's 'published_at' if not previously set
+        """
+        with self.db_session_manager as session:
+            dataset_version_ids = session.query(CollectionVersionRow.datasets).filter_by(version_id=version_id).one()
+            for dataset_version, dataset in (
+                session.query(DatasetVersionRow, DatasetRow)
+                .filter(DatasetVersionRow.dataset_id == DatasetRow.dataset_id)
+                .filter(DatasetVersionRow.version_id in dataset_version_ids)
                 .all()
-            canonical_datasets = session.query(DatasetRow).filter(DatasetRow.dataset_id in id_cols.dataset_id).all()
-            for dataset in canonical_datasets:
+            ):
+                dataset.version_id = dataset_version.version_id
                 if dataset.published_at is None:
                     dataset.published_at = published_at
 
@@ -425,5 +437,3 @@ class DatabaseProvider(DatabaseProviderInterface):
             dataset_version = session.query(DatasetVersionRow).filter_by(version_id=canonical_dataset.version_id).one()
         dataset_version.canonical_dataset = canonical_dataset
         return self._hydrate_dataset_version(dataset_version)
-
-# TODO: Add method to update canonical dataset--either on publish, or standalone
