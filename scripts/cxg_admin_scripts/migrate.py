@@ -207,6 +207,8 @@ def migrate_redesign(ctx):
 
     collections = []
     collection_versions = []
+    datasets = []
+    dataset_versions = []
     with db_session_manager() as session:
         for record in session.query(DbCollection):
             print(record.id, record.name, record.visibility, record.links)
@@ -251,6 +253,51 @@ def migrate_redesign(ctx):
                 "links": [{"type": link.link_type, "url": link.link_url, "name": link.link_name} for link in record.links]
             }
 
+            dataset_ids = []
+            for dataset in record.datasets:
+                pass
+
+            # class Dataset(CanonicalDataset):
+
+#     __table__ = Table(
+#         "Dataset",
+#         mapper_registry.metadata,
+#         Column("dataset_id", Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)),
+#         Column("dataset_version_id", Column(UUID(as_uuid=True), default=uuid.uuid4)),
+#         Column("published_at", Column(DateTime))
+#     )
+
+
+# @mapper_registry.mapped
+# class DatasetVersion(DatasetVersionModel):
+
+#     artifacts: List[DatasetArtifactId] = field(default=list())
+#     canonical_dataset: CanonicalDataset = field(default=None)
+
+#     __table__ = Table(
+#         "DatasetVersion",
+#         mapper_registry.metadata,
+#         Column("version_id", Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)),
+#         Column("dataset_id", Column(UUID(as_uuid=True), default=uuid.uuid4)),
+#         Column("collection_id", Column(UUID(as_uuid=True), default=uuid.uuid4)),
+#         Column("metadata", Column(JSON)),
+#         Column("artifacts", Column(ARRAY(UUID(as_uuid=True)))),
+#         Column("status", Column(JSON))
+#     )
+
+
+# @mapper_registry.mapped
+# class DatasetArtifact(DatasetArtifactModel):
+
+#     __table__ = Table(
+#         "DatasetArtifact",
+#         mapper_registry.metadata,
+#         Column("id", UUID(as_uuid=True), primary_key=True, default=uuid.uuid4),
+#         Column("type", Enum(DatasetArtifactType)),
+#         Column("uri", String)
+#     )
+
+
             version = {
                 "version_id": version_id,
                 "collection_id": collection_id,
@@ -260,6 +307,7 @@ def migrate_redesign(ctx):
                 "published_at": record.published_at,
                 "datasets": [],
             }
+
 
             collection_versions.append(version)
 
