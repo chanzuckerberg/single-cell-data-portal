@@ -43,13 +43,13 @@ All the E2E test commands can be found in `frontend/Makefile` and `frontend/pack
    1. In `frontend/` directory, run `npm i`
    2. Ensure your playwright config is connected to a working BE API service.
 
-      1. For BE running in Docker containers, `frontend/src/configs/configs.js` should point to `API_URL: "http://backend.corporanet.local:5000"`
+      1. For BE running in Docker containers, `frontend/src/configs/configs.js` should point to `API_URL: "https://backend.corporanet.local:5000"`
 
       2. To run against Deployed BEs,`frontend/src/configs/configs.js` should point to `API_URL: "https://api.cellxgene.dev.single-cell.czi.technology"`, or any other deployed BE API base url
 
 1. local -> local (app started with `npm run dev`)
 
-   1. Make sure you have your local app running already on http://localhost:3000. If not, in `frontend/` directory, run `npm run dev`
+   1. Make sure you have your local app running already on https://localhost:3000. If not, in `frontend/` directory, run `npm run dev`
 
    1. In `frontend/` directory, run `npm run e2e`
    
@@ -57,7 +57,7 @@ All the E2E test commands can be found in `frontend/Makefile` and `frontend/pack
 
 1. local -> local container (app started with `make local-init`)
 
-   1. Make sure you have your local app running already on http://frontend.corporanet.local:3000. If not, in the root directory of the repo, run `make local-init` to start all containers
+   1. Make sure you have your local app running already on https://frontend.corporanet.local:3000. If not, in the root directory of the repo, run `make local-init` to start all containers
 
    1. In `frontend/` directory, run `npm run e2e`
 

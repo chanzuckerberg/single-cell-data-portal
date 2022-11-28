@@ -364,7 +364,7 @@ class TestGetCollections(BaseAuthAPITest):
 
 class TestGetCollectionID(BaseAuthAPITest):
     expected_body = {
-        "collection_url": "http://frontend.corporanet.local:3000/collections/test_collection_id",
+        "collection_url": "https://frontend.corporanet.local:3000/collections/test_collection_id",
         "contact_email": "somebody@chanzuckerberg.com",
         "contact_name": "Some Body",
         "curator_name": "",

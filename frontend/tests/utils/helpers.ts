@@ -4,12 +4,12 @@ import {
 } from "@aws-sdk/client-secrets-manager";
 import { ElementHandle, expect, Page } from "@playwright/test";
 import { TEST_ENV } from "tests/common/constants";
-import { TEST_URL, LOGIN_STATE_FILENAME } from "../common/constants";
+import { LOGIN_STATE_FILENAME, TEST_URL } from "../common/constants";
 import { getText } from "./selectors";
 
 /**
  * (thuang): From oauth/users.json
- * `frontend/tests/common/constants.ts` `API_URL` needs to be `"http://backend.corporanet.local:5000"`
+ * `frontend/tests/common/constants.ts` `API_URL` needs to be `"https://backend.corporanet.local:5000"`
  * If `API_URL` is dev, staging, prod, or rdev, use their corresponding OIDC credentials
  */
 const LOCAL_CONTAINER_TEST_USERNAME = "User1";
@@ -63,10 +63,6 @@ export async function goToPage(
 export async function login(page: Page): Promise<void> {
   await goToPage(undefined, page);
 
-  const cookies = await (await page.context()).cookies();
-
-  if (cookies.length) return;
-
   const { username, password } = await getTestUsernameAndPassword();
 
   expect(username).toBeDefined();
@@ -77,6 +73,17 @@ export async function login(page: Page): Promise<void> {
   await page.fill('[name="Password"], [name="password"]', password);
 
   await page.click('[value="login"], [name="submit"]');
+
+  /**
+   * (thuang): This is needed to ensure the browser has been navigated back to
+   * our app
+   */
+  await tryUntil(
+    () => {
+      expect(page.url()).toContain(TEST_URL);
+    },
+    { page }
+  );
 
   console.log("setting storage state...");
 
