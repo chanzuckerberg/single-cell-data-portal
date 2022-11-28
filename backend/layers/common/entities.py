@@ -68,7 +68,7 @@ class DatasetStatus:
         return DatasetStatus(None, None, None, None, None, None)
 
 
-@dataclass
+@dataclass(eq=True, frozen=True)
 class CollectionId:
     id: str
 
