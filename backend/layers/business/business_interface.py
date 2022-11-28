@@ -69,14 +69,14 @@ class BusinessLogicInterface:
     def get_all_published_datasets(self) -> Iterable[DatasetVersion]:
         pass
 
-    def remove_dataset_version(self, dataset_version_id: DatasetVersionId) -> None:
+    def remove_dataset_version(self, collection_version_id: CollectionVersionId, dataset_version_id: DatasetVersionId) -> None:
         pass
 
     def get_dataset_artifacts(self, dataset_version_id: DatasetVersionId) -> Iterable[DatasetArtifact]:
         pass
 
     def get_dataset_artifact_download_data(
-        self, dataset_version_id: DatasetId, artifact_id: str
+        self, dataset_version_id: DatasetVersionId, artifact_id: str
     ) -> DatasetArtifactDownloadData:
         pass
 

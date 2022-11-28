@@ -3,7 +3,7 @@ from typing import Iterable, Optional, Tuple
 from backend.common.providers.crossref_provider import CrossrefDOINotFoundException, CrossrefException
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.business.entities import CollectionMetadataUpdate, CollectionQueryFilter, DatasetArtifactDownloadData
-from backend.layers.business.exceptions import ArtifactNotFoundException, CollectionCreationException, CollectionPublishException, CollectionUpdateException, CollectionVersionException, DatasetIngestException, DatasetUpdateException
+from backend.layers.business.exceptions import ArtifactNotFoundException, CollectionCreationException, CollectionIsPublishedException, CollectionNotFoundException, CollectionPublishException, CollectionUpdateException, CollectionVersionException, DatasetInWrongStatusException, DatasetIngestException, DatasetNotFoundException, DatasetUpdateException, InvalidURIException, MaxFileSizeExceededException
 
 from backend.layers.common.entities import (
     CollectionId,
@@ -86,12 +86,16 @@ class BusinessLogic(BusinessLogicInterface):
         validation.verify_collection_metadata(collection_metadata, errors)
 
         # TODO: Maybe switch link.type to be an enum
-        doi = next((link.uri for link in collection_metadata.links if link.type == "doi"), None)
+        doi = next((link.uri for link in collection_metadata.links if link.type == "DOI"), None)
+        print("doi", doi)
+
 
         if doi is not None:
             publisher_metadata = self._get_publisher_metadata(doi, errors)
         else:
             publisher_metadata = None
+
+        print(errors)
 
         if errors:
             raise CollectionCreationException(errors)
@@ -101,8 +105,9 @@ class BusinessLogic(BusinessLogicInterface):
         # TODO: can collapse with `create_canonical_collection`
         if publisher_metadata:
             self.database_provider.save_collection_publisher_metadata(created_version.version_id, publisher_metadata)
+            # Add this to the returned object, to save another `get_collection` call
+            created_version.publisher_metadata = publisher_metadata 
 
-        # TODO: likely, collection needs to be refetched
         return created_version
 
     def get_published_collection_version(self, collection_id: CollectionId) -> Optional[CollectionVersion]:
@@ -181,11 +186,11 @@ class BusinessLogic(BusinessLogicInterface):
             raise CollectionUpdateException(["Cannot update a published collection"])
         
         # Determine if the DOI has changed
-        old_doi = next((link.uri for link in current_version.metadata.links if link.type == "doi"), None)
+        old_doi = next((link.uri for link in current_version.metadata.links if link.type == "DOI"), None)
         if body.links is None:
             new_doi = None
         else:
-            new_doi = next((link.uri for link in body.links if link.type == "doi"), None)
+            new_doi = next((link.uri for link in body.links if link.type == "DOI"), None)
 
         if old_doi and new_doi is None:
             # If the DOI was deleted, remove the publisher_metadata field
@@ -206,7 +211,7 @@ class BusinessLogic(BusinessLogicInterface):
 
         self.database_provider.save_collection_metadata(version_id, new_metadata)
 
-    def _assert_collection_version_unpublished(self, collection_version_id: CollectionVersionId) -> None:
+    def _assert_collection_version_unpublished(self, collection_version_id: CollectionVersionId) -> CollectionVersion:
         """
         Ensures a collection version exists and is unpublished.
         This method should be called every time an update to a collection version is requested,
@@ -214,9 +219,10 @@ class BusinessLogic(BusinessLogicInterface):
         """
         collection_version = self.database_provider.get_collection_version(collection_version_id)
         if collection_version is None:
-            raise CollectionUpdateException([f"Collection version {collection_version_id.id} does not exist"])
+            raise CollectionNotFoundException([f"Collection version {collection_version_id.id} does not exist"])
         if collection_version.published_at is not None:
-            raise CollectionUpdateException([f"Collection version {collection_version_id.id} is published"])
+            raise CollectionIsPublishedException([f"Collection version {collection_version_id.id} is published"])
+        return collection_version
 
     # TODO: Alternatives: 1) return DatasetVersion 2) Return a new class
     def ingest_dataset(
@@ -229,32 +235,37 @@ class BusinessLogic(BusinessLogicInterface):
         """
 
         if not self.uri_provider.validate(url):
-            raise DatasetIngestException(f"Trying to upload invalid URI: {url}")
+            raise InvalidURIException(f"Trying to upload invalid URI: {url}")
 
         file_info = self.uri_provider.get_file_info(url)
 
-        # TODO: add file size check
+        max_file_size_gb = 30 * 2**30 # TODO: read it from the config - requires smart mocking
         # max_file_size_gb = CorporaConfig().upload_max_file_size_gb * GB
-        # if file_size is not None and file_size > max_file_size_gb:
-        #     raise MaxFileSizeExceededException(f"{url} exceeds the maximum allowed file size of {max_file_size_gb} Gb")
+
+        if file_info.size is not None and file_info.size > max_file_size_gb:
+            raise MaxFileSizeExceededException(f"{url} exceeds the maximum allowed file size of {max_file_size_gb} Gb")
 
         # Ensure that the collection exists and is not published
-        self._assert_collection_version_unpublished(collection_version_id)
+        collection = self._assert_collection_version_unpublished(collection_version_id)
 
         # Creates a dataset version that the processing pipeline will point to
         new_dataset_version: DatasetVersion
 
         if existing_dataset_version_id is not None:
+            # Ensure that the dataset belongs to the collection
+            if existing_dataset_version_id not in [d.version_id for d in collection.datasets]:
+                raise DatasetNotFoundException(f"Dataset {existing_dataset_version_id} does not belong to the desired collection")
+
             dataset_version = self.database_provider.get_dataset_version(existing_dataset_version_id)
             if dataset_version is None:
-                raise DatasetIngestException(f"Trying to replace non existant dataset {existing_dataset_version_id.id}")
+                raise DatasetNotFoundException(f"Trying to replace non existant dataset {existing_dataset_version_id.id}")
 
             if dataset_version.status.processing_status not in [
                 DatasetProcessingStatus.SUCCESS,
                 DatasetProcessingStatus.FAILURE,
                 DatasetProcessingStatus.INITIALIZED,
             ]:
-                raise DatasetIngestException(
+                raise DatasetInWrongStatusException(
                     f"Unable to reprocess dataset {existing_dataset_version_id}: processing status is {dataset_version.status.processing_status.name}"
                 )
 
@@ -298,7 +309,7 @@ class BusinessLogic(BusinessLogicInterface):
         """
         return self.database_provider.get_dataset_artifacts(dataset_version_id)
 
-    def get_dataset_artifact_download_data(self, dataset_version_id: DatasetVersionId, artifact_id: str) -> DatasetArtifactDownloadData:
+    def get_dataset_artifact_download_data(self, dataset_version_id: DatasetVersionId, artifact_id: DatasetArtifactId) -> DatasetArtifactDownloadData:
         """
         Returns download data for an artifact, including a presigned URL
         """

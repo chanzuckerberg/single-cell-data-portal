@@ -10,11 +10,11 @@ from backend.layers.thirdparty.step_function_provider import StepFunctionProvide
 from backend.common.providers.crossref_provider import CrossrefDOINotFoundException, CrossrefException
 from backend.layers.business.business import BusinessLogic, CollectionQueryFilter, DatasetArtifactDownloadData
 from backend.layers.business.business import BusinessLogic, CollectionMetadataUpdate, CollectionQueryFilter, DatasetArtifactDownloadData
-from backend.layers.business.exceptions import CollectionUpdateException, CollectionVersionException, InvalidLinkException, \
+from backend.layers.business.exceptions import CollectionUpdateException, CollectionVersionException, DatasetNotFoundException, InvalidLinkException, \
     CollectionCreationException, DatasetIngestException, CollectionPublishException
 from backend.layers.common.entities import CollectionId, CollectionMetadata, CollectionVersion, CollectionVersionId, DatasetArtifact, DatasetMetadata, DatasetProcessingStatus, DatasetStatus, DatasetUploadStatus, DatasetValidationStatus, DatasetVersionId, Link, OntologyTermId
-from backend.layers.thirdparty.uri_provider import UriProviderInterface
-from tests.unit.backend.layers.persistence.persistence_mock import DatabaseProviderMock
+from backend.layers.thirdparty.uri_provider import FileInfo, UriProviderInterface
+from backend.layers.persistence.persistence_mock import DatabaseProviderMock
 
 class BaseBusinessLogicTestCase(unittest.TestCase):
 
@@ -32,6 +32,7 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         self.s3_provider = S3Provider()
         self.uri_provider = UriProviderInterface()
         self.uri_provider.validate = Mock(return_value=True) # By default, every link should be valid
+        self.uri_provider.get_file_info = Mock(return_value=FileInfo(1, "file.h5ad"))
 
         self.business_logic = BusinessLogic(
             database_provider=self.database_provider, 
@@ -169,7 +170,7 @@ class TestCreateCollection(BaseBusinessLogicTestCase):
         to the collection
         """
         links_with_doi = [
-            Link("test doi", "doi", "http://good.doi")
+            Link("test doi", "DOI", "http://good.doi")
         ]
         self.sample_collection_metadata.links = links_with_doi
 
@@ -191,7 +192,7 @@ class TestCreateCollection(BaseBusinessLogicTestCase):
         A collection with a DOI that cannot be found on Crossref will not be created
         """
         links_with_doi = [
-            Link("test doi", "doi", "http://bad.doi")
+            Link("test doi", "DOI", "http://bad.doi")
         ]
 
         self.sample_collection_metadata.links = links_with_doi
@@ -206,7 +207,7 @@ class TestCreateCollection(BaseBusinessLogicTestCase):
         A collection with an invalid DOI will be created with empty publisher metadata
         """
         links_with_doi = [
-            Link("test doi", "doi", "http://bad.doi")
+            Link("test doi", "DOI", "http://bad.doi")
         ]
 
         self.sample_collection_metadata.links = links_with_doi
@@ -399,7 +400,7 @@ class TestUpdateCollection(BaseBusinessLogicTestCase):
         A collection updated with the same DOI should not trigger a Crossref call
         """
         metadata = self.sample_collection_metadata
-        links = [Link("test doi", "doi", "http://test.doi")]
+        links = [Link("test doi", "DOI", "http://test.doi")]
         metadata.links = links
 
         expected_publiser_metadata = {"authors": ["Test Author"]}
@@ -429,7 +430,7 @@ class TestUpdateCollection(BaseBusinessLogicTestCase):
         A collection updated with a new DOI should get new publisher metadata from Crossref
         """
         metadata = self.sample_collection_metadata
-        links = [Link("test doi", "doi", "http://test.doi")]
+        links = [Link("test doi", "DOI", "http://test.doi")]
         metadata.links = links
 
         self.crossref_provider.fetch_metadata = Mock(return_value={"authors": ["Test Author"]})
@@ -444,7 +445,7 @@ class TestUpdateCollection(BaseBusinessLogicTestCase):
             description=None,
             contact_name=None,
             contact_email=None,
-            links=[Link("new test doi", "doi", "http://new.test.doi")],
+            links=[Link("new test doi", "DOI", "http://new.test.doi")],
         )
 
         expected_updated_publisher_metadata = {"authors": ["New Test Author"]}
@@ -590,9 +591,9 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         version = self.initialize_unpublished_collection()
         url = "http://test/dataset.url"
 
-        with self.assertRaises(DatasetIngestException) as ex:
+        with self.assertRaises(DatasetNotFoundException) as ex:
             self.business_logic.ingest_dataset(version.version_id, url, DatasetVersionId("fake_id"))
-        self.assertEqual(str(ex.exception), "Trying to replace non existant dataset fake_id")
+        self.assertEqual(str(ex.exception), "Dataset fake_id does not belong to the desired collection")
 
     def test_replace_dataset_in_wrong_status_fail(self):
         """
@@ -608,7 +609,6 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         with self.assertRaises(DatasetIngestException) as ex:
             self.business_logic.ingest_dataset(version.version_id, url, dataset_version.version_id)
         self.assertEqual(str(ex.exception), f"Unable to reprocess dataset {dataset_version.version_id}: processing status is PENDING")
-
 
 
 class TestGetDataset(BaseBusinessLogicTestCase):
@@ -745,6 +745,9 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         # The new version should not be published (aka Private)
         self.assertIsNone(new_version.published_at)
 
+        # The canonical collection should be published
+        self.assertIsNotNone(new_version.canonical_collection.originally_published_at)
+
         # get_collection still retrieves the original version
         version = self.business_logic.get_published_collection_version(published_collection.collection_id)
         self.assertEqual(version.version_id, published_collection.version_id)
@@ -811,6 +814,8 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
 
         published_version = self.database_provider.get_collection_version(unpublished_collection.version_id)
         self.assertIsNotNone(published_version.published_at) # TODO: ideally, do a date assertion here (requires mocking)
+        self.assertIsNotNone(published_version.canonical_collection.originally_published_at)
+        self.assertEqual(published_version.published_at, published_version.canonical_collection.originally_published_at)
 
         # The published and unpublished collection have the same collection_id and version_id
         self.assertEqual(published_version.collection_id, unpublished_collection.collection_id)
@@ -818,7 +823,9 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
 
         # get_collection retrieves the correct version
         version = self.business_logic.get_published_collection_version(unpublished_collection.collection_id)
-        self.assertEqual(version.version_id, published_version.version_id)
+        if version: # pylance
+            self.assertEqual(version.version_id, published_version.version_id)
+            
 
     def test_publish_collection_with_no_datasets_fail(self):
         """
@@ -994,6 +1001,19 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         self.assertCountEqual([replaced_dataset_version_id, dataset_id_to_keep], [d.version_id for d in version.datasets])
 
 
+    def test_publish_version_does_not_change_original_published_at_ok(self):
+        """
+        When publishing a collection version, the published_at for the canonical collection
+        should not change
+        """
+        first_version = self.initialize_published_collection()
+        second_version = self.business_logic.create_collection_version(first_version.collection_id)
+        self.business_logic.publish_collection_version(second_version.version_id)
+
+        canonical = self.business_logic.get_collection_version(second_version.version_id).canonical_collection
+        self.assertEqual(canonical.originally_published_at, first_version.published_at)
+
+
     def test_get_all_collections_published_does_not_retrieve_old_versions(self):
         """
         `get_collections` with is_published=True should not return versions that were previously
@@ -1008,6 +1028,11 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
 
         self.assertEqual(1, len(all_collections))
         self.assertEqual(all_collections[0].version_id, second_version.version_id)
+
+        # The canonical collection published_at should point to the original publication time
+        self.assertNotEqual(all_collections[0].canonical_collection.originally_published_at, all_collections[0].published_at)
+        self.assertEqual(all_collections[0].canonical_collection.originally_published_at, first_version.published_at)
+
 
     def test_get_collection_versions_for_canonical_ok(self):
         """
@@ -1056,6 +1081,74 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         if version is not None: # pylance
             self.assertEqual(version.version_id, first_version.version_id)
             self.assertIsNone(version.published_at)
+
+    def test_dataset_published_at_with_new_dataset_ok(self):
+        """
+        When publishing a collection that contains a new dataset, `published_at` for the new dataset should be updated
+        """
+
+        published_collection = self.initialize_published_collection()
+        new_version = self.business_logic.create_collection_version(published_collection.collection_id)
+
+        added_dataset_version_id, _ = self.business_logic.ingest_dataset(new_version.version_id, "http://fake.url", None)
+        self.complete_dataset_processing_with_success(added_dataset_version_id)
+
+        self.business_logic.publish_collection_version(new_version.version_id)
+
+        version_from_db = self.database_provider.get_collection_version(new_version.version_id)
+        dataset_0 = version_from_db.datasets[0]
+        dataset_1 = version_from_db.datasets[1]
+        dataset_2 = version_from_db.datasets[2]
+
+
+        # dataset_2 is the new dataset
+        self.assertIn(dataset_0.version_id, [d.version_id for d in published_collection.datasets])
+        self.assertIn(dataset_1.version_id, [d.version_id for d in published_collection.datasets])
+        self.assertNotIn(dataset_2.version_id, [d.version_id for d in published_collection.datasets])
+
+        # Published_at should be defined for all 3 datasets
+        self.assertIsNotNone(dataset_0.canonical_dataset.published_at)
+        self.assertIsNotNone(dataset_1.canonical_dataset.published_at)
+        self.assertIsNotNone(dataset_2.canonical_dataset.published_at)
+
+        self.assertEqual(dataset_0.canonical_dataset.published_at, published_collection.published_at)
+        self.assertEqual(dataset_1.canonical_dataset.published_at, published_collection.published_at)
+        self.assertGreater(dataset_2.canonical_dataset.published_at, published_collection.published_at)
+
+    
+    def test_dataset_published_at_with_replaced_dataset_ok(self):
+        """
+        When publishing a collection that contains a replaced dataset, 
+        `published_at` for the replaced dataset should not be updated
+        """
+
+        published_collection = self.initialize_published_collection()
+        new_version = self.business_logic.create_collection_version(published_collection.collection_id)
+
+        # We will replace the first dataset
+        dataset_id_to_replace = published_collection.datasets[0].version_id
+        dataset_id_to_keep = published_collection.datasets[1].version_id
+
+        replaced_dataset_version_id, _ = self.business_logic.ingest_dataset(
+            new_version.version_id, 
+            "http://fake.url", 
+            dataset_id_to_replace
+        )
+
+        self.complete_dataset_processing_with_success(replaced_dataset_version_id)
+
+        self.business_logic.publish_collection_version(new_version.version_id)
+
+        version_from_db = self.database_provider.get_collection_version(new_version.version_id)
+        dataset_0 = version_from_db.datasets[0]
+        dataset_1 = version_from_db.datasets[1]
+
+        self.assertNotEqual(dataset_0.version_id, dataset_id_to_replace)
+        self.assertEqual(dataset_1.version_id, dataset_id_to_keep)
+
+        self.assertEqual(dataset_0.canonical_dataset.published_at, published_collection.published_at)
+        self.assertEqual(dataset_1.canonical_dataset.published_at, published_collection.published_at)
+
 
 
 if __name__ == '__main__':
