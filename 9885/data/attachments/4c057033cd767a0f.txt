@@ -1,1 +1,0 @@
-{"levelname": "WARNING", "asctime": "2022-11-28T22:50:56.028Z", "name": "root", "message": "Type float64 will be converted to 32 bit float and may lose precision.", "lineno": 156, "pathname": "/single-cell-data-portal/backend/common/utils/type_conversion_utils.py"}
