@@ -44,31 +44,28 @@ function App({ Component, pageProps }: AppPropsWithLayout): JSX.Element {
   // "...make sure your tracking setup includes the second line as shown below"
   // https://plausible.io/docs/custom-event-goals#1-trigger-custom-events-with-javascript-on-your-site
   useEffect(() => {
-    console.log("PLAUSIBLE");
     window.plausible = window.plausible || tempPlausible;
 
     function tempPlausible(...args: unknown[]): void {
       (window.plausible.q = window.plausible.q || []).push(args);
     }
   }, []);
-  console.log("main body");
+
   let windowLocationOrigin;
 
   const [isMounted, setMounted] = useState(false);
 
   useEffect(() => {
-    console.log("RERENDERED");
-    console.log(`query client ${queryClient}`); 
     windowLocationOrigin = window.location.origin;
     setMounted(true);
   }, []);
-  console.log(`query client ${queryClient}`);
+
   return (
     isMounted ? (
       <>
         <Auth0Provider
-          domain="corporanet.local"
-          clientId="local-client-id"
+          domain="corporanet.local"  // Hard-coded for local dev
+          clientId="local-client-id"  // Hard-coded for local dev
           redirectUri={windowLocationOrigin}
         >
           <QueryClientProvider client={queryClient}>
