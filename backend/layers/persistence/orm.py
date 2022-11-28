@@ -19,7 +19,8 @@ from backend.layers.common.entities import (
     DatasetVersionId,
 )
 
-mapper_registry = registry()
+metadata_obj = MetaData(schema="persistence_schema")
+mapper_registry = registry(metadata=metadata_obj)
 
 
 @mapper_registry.mapped
