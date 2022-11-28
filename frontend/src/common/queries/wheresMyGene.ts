@@ -77,7 +77,7 @@ function flattenOntologyTermsByOrganism(
   }, {} as OntologyTermsByOrganism);
 }
 
-function generateTermsByKey(
+export function generateTermsByKey(
   flattenedTerms: OntologyTermsByOrganism,
   key: keyof OntologyTerm
 ): {
