@@ -299,6 +299,16 @@ def get_public_datasets(ctx):
     published_datasets = dataset_details.get_public_dataset_details()
     print(json.dumps(published_datasets, indent=2))
 
+@cli.command()
+@click.pass_context
+def migrate_redesign(ctx):
+    """
+    Print id, name, organism, tissue, assay, sex, cell_count, explorer_url, and S3 uris for all public datasets
+    ./scripts/cxg_admin.py --deployment dev get-public-datasets
+    """
+    print("redesign migration")
+    migrate.migrate_redesign(ctx)
+
 
 if __name__ == "__main__":
     cli(obj={})
