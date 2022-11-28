@@ -142,6 +142,11 @@ class DatasetMetadata:
 
 
 @dataclass
+class CanonicalDataset:
+    dataset_id: DatasetId
+    published_at: Optional[datetime] # The first time this canonical dataset appeared in a published collection
+
+@dataclass
 class DatasetVersion:
     dataset_id: DatasetId
     version_id: DatasetVersionId
@@ -150,6 +155,7 @@ class DatasetVersion:
     metadata: DatasetMetadata
     artifacts: List[DatasetArtifact]
     created_at: datetime
+    canonical_dataset: CanonicalDataset
 
 
 @dataclass

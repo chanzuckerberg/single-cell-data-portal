@@ -129,7 +129,7 @@ class PortalApi:
             "organism": self._ontology_term_ids_to_response(dataset.metadata.organism),
             "processing_status": self._dataset_processing_status_to_response(dataset.status, dataset.dataset_id.id),
             "published": True,
-            "published_at": 1234,
+            "published_at": dataset.canonical_dataset.published_at,
             "revision": 0, # TODO this is the progressive revision number. I don't think we'll need this
             "schema_version": dataset.metadata.schema_version,
             "self_reported_ethnicity": self._ontology_term_ids_to_response(dataset.metadata.self_reported_ethnicity),
