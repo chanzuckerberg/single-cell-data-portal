@@ -14,7 +14,8 @@ from backend.layers.business.exceptions import CollectionUpdateException, Collec
     CollectionCreationException, DatasetIngestException, CollectionPublishException
 from backend.layers.common.entities import CollectionId, CollectionMetadata, CollectionVersion, CollectionVersionId, DatasetArtifact, DatasetMetadata, DatasetProcessingStatus, DatasetStatus, DatasetUploadStatus, DatasetValidationStatus, DatasetVersionId, Link, OntologyTermId
 from backend.layers.thirdparty.uri_provider import FileInfo, UriProviderInterface
-from backend.layers.persistence.persistence_mock import DatabaseProviderMock
+from backend.layers.persistence.persistence import DatabaseProvider
+
 
 class BaseBusinessLogicTestCase(unittest.TestCase):
 
@@ -24,7 +25,7 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
     test_user_name = "test_user_1"
 
     def setUp(self) -> None:
-        self.database_provider = DatabaseProviderMock()
+        self.database_provider = DatabaseProvider()
 
         # By default these do nothing. They can be mocked by single test cases.
         self.crossref_provider = CrossrefProviderInterface()
@@ -123,6 +124,7 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         self.database_provider.update_dataset_validation_status(dataset_version_id, DatasetValidationStatus.VALID)
         self.database_provider.update_dataset_processing_status(dataset_version_id, DatasetProcessingStatus.SUCCESS)
         # TODO: if required, set the conversion status as well
+
 
 class TestCreateCollection(BaseBusinessLogicTestCase):
 

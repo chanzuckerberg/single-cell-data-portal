@@ -4,27 +4,16 @@ import uuid
 from sqlalchemy import Column, DateTime, Enum, ForeignKey, String, Table
 from sqlalchemy.dialects.postgresql import ARRAY, BOOLEAN, JSON, TEXT, UUID
 from sqlalchemy.orm import registry
+from sqlalchemy.schema import MetaData
 
-from backend.layers.common.entities import (
-    CanonicalCollection,
-    CanonicalDataset,
-    CollectionId,
-    CollectionVersion as CollectionVersionModel,
-    CollectionVersionId,
-    DatasetArtifact as DatasetArtifactModel,
-    DatasetArtifactType,
-    DatasetArtifactId,
-    DatasetId,
-    DatasetVersion as DatasetVersionModel,
-    DatasetVersionId,
-)
+from backend.layers.common.entities import DatasetArtifactType
 
-metadata_obj = MetaData(schema="persistence_schema")
-mapper_registry = registry(metadata=metadata_obj)
+metadata = MetaData(schema="persistence_schema")
+mapper_registry = registry(metadata=metadata)
 
 
 @mapper_registry.mapped
-class Collection(CanonicalCollection):
+class Collection:
 
     __table__ = Table(
         "Collection",
@@ -37,9 +26,7 @@ class Collection(CanonicalCollection):
 
 
 @mapper_registry.mapped
-class CollectionVersion(CollectionVersionModel):
-
-    canonical_collection: CanonicalCollection = field(default=None)
+class CollectionVersion:
 
     __table__ = Table(
         "CollectionVersion",
@@ -55,7 +42,7 @@ class CollectionVersion(CollectionVersionModel):
 
 
 @mapper_registry.mapped
-class Dataset(CanonicalDataset):
+class Dataset:
 
     __table__ = Table(
         "Dataset",
@@ -67,10 +54,7 @@ class Dataset(CanonicalDataset):
 
 
 @mapper_registry.mapped
-class DatasetVersion(DatasetVersionModel):
-
-    artifacts: List[DatasetArtifactId] = field(default=list())
-    canonical_dataset: CanonicalDataset = field(default=None)
+class DatasetVersion:
 
     __table__ = Table(
         "DatasetVersion",
@@ -85,7 +69,7 @@ class DatasetVersion(DatasetVersionModel):
 
 
 @mapper_registry.mapped
-class DatasetArtifact(DatasetArtifactModel):
+class DatasetArtifact:
 
     __table__ = Table(
         "DatasetArtifact",

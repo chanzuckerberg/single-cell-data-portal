@@ -41,6 +41,7 @@ import logging
 
 from backend.layers.thirdparty.uri_provider import UriProvider, UriProviderInterface
 
+
 class BusinessLogic(BusinessLogicInterface):
 
     database_provider: DatabaseProviderInterface

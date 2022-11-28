@@ -3,6 +3,8 @@ from datetime import datetime
 from typing import List, Optional
 from enum import Enum
 
+import json
+
 
 # TODO: copy and paste the docs for these
 
@@ -66,6 +68,9 @@ class DatasetStatus:
     @staticmethod
     def empty():
         return DatasetStatus(None, None, None, None, None, None)
+
+    def to_json(self):
+        return json.dumps(self, default=lambda obj: obj.__dict__)
 
 
 @dataclass(eq=True, frozen=True)
@@ -142,12 +147,16 @@ class DatasetMetadata:
     is_primary_data: str
     x_approximate_distribution: str
 
+    def to_json(self):
+        return json.dumps(self, default=lambda obj: obj.__dict__)
+
 
 @dataclass
 class CanonicalDataset:
     dataset_id: DatasetId
     dataset_version_id: DatasetVersionId
     published_at: Optional[datetime]
+
 
 @dataclass
 class DatasetVersion:
@@ -176,6 +185,9 @@ class CollectionMetadata:
     contact_email: str
     links: List[Link]
 
+    def to_json(self):
+        return json.dumps(self, default=lambda obj: obj.__dict__)
+
 
 @dataclass
 class CanonicalCollection:
@@ -183,8 +195,6 @@ class CanonicalCollection:
     version_id: CollectionVersionId
     originally_published_at: Optional[datetime]
     tombstoned: bool
-
-
 
 
 @dataclass
