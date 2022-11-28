@@ -1,2 +1,0 @@
-INFO     root:dataset_asset.py:62 Deleting file test_head_file.txt in bucket bogus-bucket.
-INFO     root:dataset_asset.py:62 Deleting file test_head_file.txt in bucket bogus-bucket.
