@@ -6,7 +6,7 @@ from unittest.mock import Mock
 
 from backend.layers.api.portal_api import PortalApi
 from backend.layers.business.business import BusinessLogic
-from backend.layers.persistence.persistence import DatabaseProviderInterface
+from backend.layers.persistence.persistence import DatabaseProvider, DatabaseProviderInterface
 from backend.layers.persistence.persistence_mock import DatabaseProviderMock
 from backend.layers.thirdparty.crossref_provider import CrossrefProviderInterface
 from backend.layers.thirdparty.s3_provider import S3Provider
@@ -22,7 +22,7 @@ api = None
 def portal_api():
     global api
     if api is None:
-        database_provider = DatabaseProviderMock()
+        database_provider = DatabaseProvider()
         crossref_provider = CrossrefProviderInterface()
         step_function_provider = StepFunctionProviderInterface()
         s3_provider = S3Provider()

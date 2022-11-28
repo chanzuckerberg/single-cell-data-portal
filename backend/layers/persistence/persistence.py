@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import List, Optional, Iterable
+import uuid
 from backend.layers.common.entities import (
     CanonicalCollection,
     CanonicalDataset,
@@ -28,6 +29,8 @@ from backend.layers.persistence.orm import (
 )
 from backend.layers.persistence.db_session import db_session_manager, _db_session_maker
 from sqlalchemy import select
+
+from backend.layers.persistence.persistence_interface import DatabaseProviderInterface
 
 
 class DatabaseProvider(DatabaseProviderInterface):
@@ -65,7 +68,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         Returns the newly created CollectionVersion
         """
         collection_id = CollectionId((self._generate_id()))
-        version_id = CollectionId((self._generate_id()))
+        version_id = CollectionVersionId((self._generate_id()))
         canonical_collection = CollectionRow(id=collection_id,
                                              version_id=None,
                                              tombstoned=False,
@@ -78,7 +81,8 @@ class DatabaseProvider(DatabaseProviderInterface):
                                                       publisher_metadata=None,
                                                       published_at=None,
                                                       datasets=list(),
-                                                      canonical_collection=canonical_collection
+                                                      canonical_collection=canonical_collection,
+                                                      created_at=datetime.utcnow(),
                                                       )
         with self.db_session_manager as session:
             session.add(canonical_collection)
@@ -308,7 +312,7 @@ class DatabaseProvider(DatabaseProviderInterface):
                                             collection_id=collection_id,
                                             metadata=None,
                                             artifacts=list(),
-                                            status=DatasetStatus.empty()
+                                            status=DatasetStatus.empty(),
                                             )
         with self.db_session_manager as session:
             session.add(canonical_dataset)
