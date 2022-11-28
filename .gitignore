@@ -144,3 +144,6 @@ dmypy.json
 
 # Typescript
 tsconfig.tsbuildinfo
+
+# allure test report files
+allure-results
