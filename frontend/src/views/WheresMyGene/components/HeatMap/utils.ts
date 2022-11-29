@@ -346,8 +346,6 @@ export function createYAxisOptions({
             const { name, depth = 0 } = deserializeCellTypeMetadata(
               value as CellTypeMetadata
             );
-            // TODO: We will have to add a ternary based on hover state too allow for room of the Marker Genes button
-            // I think this means that hover state will have to be in redux store (depends on where this is called from)
             const displayDepth = Math.min(depth, MAX_DEPTH);
 
             const { fontWeight, fontSize, fontFamily } = SELECTED_STYLE;
@@ -550,13 +548,6 @@ export function deserializeCellTypeMetadata(
     tissue,
     total_count: Number(total_count),
   };
-}
-
-// seve: looks like this isn't used anywhere
-export function checkIsTissue(cellTypeMetadata: CellTypeMetadata): boolean {
-  const { name, tissue } = deserializeCellTypeMetadata(cellTypeMetadata);
-
-  return name === tissue;
 }
 
 /**
