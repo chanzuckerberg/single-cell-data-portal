@@ -1,0 +1,66 @@
+ERROR    dataset_processing:process.py:225 An unexpected error occurred while processing the data set: unknown failure
+Traceback (most recent call last):
+  File "/single-cell-data-portal/backend/portal/pipeline/processing/process.py", line 194, in main
+    process(dataset_id, os.environ["DROPBOX_URL"], os.environ["ARTIFACT_BUCKET"])
+  File "/usr/lib/python3.8/unittest/mock.py", line 1081, in __call__
+    return self._mock_call(*args, **kwargs)
+  File "/usr/lib/python3.8/unittest/mock.py", line 1085, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+  File "/usr/lib/python3.8/unittest/mock.py", line 1140, in _execute_mock_call
+    raise effect
+Exception: unknown failure
+ERROR    dataset_processing:process.py:222 An Error occurred while processing.
+Traceback (most recent call last):
+  File "/single-cell-data-portal/backend/portal/pipeline/processing/process.py", line 194, in main
+    process(dataset_id, os.environ["DROPBOX_URL"], os.environ["ARTIFACT_BUCKET"])
+  File "/usr/lib/python3.8/unittest/mock.py", line 1081, in __call__
+    return self._mock_call(*args, **kwargs)
+  File "/usr/lib/python3.8/unittest/mock.py", line 1085, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+  File "/usr/lib/python3.8/unittest/mock.py", line 1140, in _execute_mock_call
+    raise effect
+backend.portal.pipeline.processing.exceptions.ValidationFailed: {'validation_status': <ValidationStatus.INVALID: 'Invalid'>, 'validation_message': 'Schema version is not supported'}
+ERROR    dataset_processing:process.py:222 An Error occurred while processing.
+Traceback (most recent call last):
+  File "/single-cell-data-portal/backend/portal/pipeline/processing/process.py", line 194, in main
+    process(dataset_id, os.environ["DROPBOX_URL"], os.environ["ARTIFACT_BUCKET"])
+  File "/usr/lib/python3.8/unittest/mock.py", line 1081, in __call__
+    return self._mock_call(*args, **kwargs)
+  File "/usr/lib/python3.8/unittest/mock.py", line 1085, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+  File "/usr/lib/python3.8/unittest/mock.py", line 1140, in _execute_mock_call
+    raise effect
+backend.portal.pipeline.processing.exceptions.ProcessingFailed: {'upload_status': <UploadStatus.FAILED: 'Failed'>, 'upload_message': 'Insufficient disk space'}
+ERROR    dataset_processing:process.py:225 An unexpected error occurred while processing the data set: unknown failure
+Traceback (most recent call last):
+  File "/single-cell-data-portal/backend/portal/pipeline/processing/process.py", line 206, in main
+    process(dataset_id, os.environ["ARTIFACT_BUCKET"])
+  File "/usr/lib/python3.8/unittest/mock.py", line 1081, in __call__
+    return self._mock_call(*args, **kwargs)
+  File "/usr/lib/python3.8/unittest/mock.py", line 1085, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+  File "/usr/lib/python3.8/unittest/mock.py", line 1140, in _execute_mock_call
+    raise effect
+Exception: unknown failure
+ERROR    dataset_processing:process.py:225 An unexpected error occurred while processing the data set: unknown failure
+Traceback (most recent call last):
+  File "/single-cell-data-portal/backend/portal/pipeline/processing/process.py", line 198, in main
+    process(
+  File "/usr/lib/python3.8/unittest/mock.py", line 1081, in __call__
+    return self._mock_call(*args, **kwargs)
+  File "/usr/lib/python3.8/unittest/mock.py", line 1085, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+  File "/usr/lib/python3.8/unittest/mock.py", line 1140, in _execute_mock_call
+    raise effect
+Exception: unknown failure
+ERROR    dataset_processing:process.py:222 An Error occurred while processing.
+Traceback (most recent call last):
+  File "/single-cell-data-portal/backend/portal/pipeline/processing/process.py", line 198, in main
+    process(
+  File "/usr/lib/python3.8/unittest/mock.py", line 1081, in __call__
+    return self._mock_call(*args, **kwargs)
+  File "/usr/lib/python3.8/unittest/mock.py", line 1085, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+  File "/usr/lib/python3.8/unittest/mock.py", line 1140, in _execute_mock_call
+    raise effect
+backend.portal.pipeline.processing.exceptions.ConversionFailed: {'cxg_status': <ConversionStatus.FAILED: 'Failed'>}
