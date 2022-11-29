@@ -721,7 +721,7 @@ export function generateMarkerGeneBody(
   cellTypeID: string,
   tissueID: string,
   organismID: string
-): HardcodedMarkerGeneRequest | null {
+): HardcodedMarkerGeneRequest {
   return {
     celltype: cellTypeID,
     n_markers: 10,
