@@ -23,6 +23,12 @@ const defaultSecureHeaders = {
         "sentry.prod.si.czi.technology",
         PLAUSIBLE_URL,
         configs.API_URL,
+        // DEBUG
+        // DEBUG
+        // DEBUG
+        // DEBUG
+        // DEBUG remove when wmg fmg is merged
+        "https://atar-fmg-precube-backend.rdev.single-cell.czi.technology",
       ],
       defaultSrc: ["'self'"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],
