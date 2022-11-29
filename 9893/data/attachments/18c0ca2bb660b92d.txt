@@ -1,0 +1,15 @@
+Look here
+        tissue_ontology_term_id    organism_ontology_term_id  ... nnz nnz_thr
+0     tissue_ontology_term_id_0  organism_ontology_term_id_1  ...  94      82
+1     tissue_ontology_term_id_0  organism_ontology_term_id_1  ...  76      42
+2     tissue_ontology_term_id_0  organism_ontology_term_id_1  ...  68      61
+3     tissue_ontology_term_id_0  organism_ontology_term_id_1  ...  84      49
+4     tissue_ontology_term_id_0  organism_ontology_term_id_1  ...  37      18
+...                         ...                          ...  ...  ..     ...
+6556  tissue_ontology_term_id_0  organism_ontology_term_id_1  ...  67      71
+6557  tissue_ontology_term_id_0  organism_ontology_term_id_1  ...   6      51
+6558  tissue_ontology_term_id_0  organism_ontology_term_id_1  ...  20      88
+6559  tissue_ontology_term_id_0  organism_ontology_term_id_1  ...  53       8
+6560  tissue_ontology_term_id_0  organism_ontology_term_id_1  ...  15      91
+
+[6561 rows x 15 columns]
