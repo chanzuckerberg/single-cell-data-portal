@@ -1,0 +1,15 @@
+Look here
+     tissue_ontology_term_id organism_ontology_term_id  ... nnz nnz_thr
+0             UBERON:0002048            NCBITaxon:9606  ...   1       1
+1             UBERON:0002048            NCBITaxon:9606  ...   1       1
+2             UBERON:0002048            NCBITaxon:9606  ...   1       1
+3             UBERON:0002048            NCBITaxon:9606  ...   6       6
+4             UBERON:0002048            NCBITaxon:9606  ...   4       4
+...                      ...                       ...  ...  ..     ...
+1004          UBERON:0002048            NCBITaxon:9606  ...   4       4
+1005          UBERON:0002048            NCBITaxon:9606  ...   1       1
+1006          UBERON:0002048            NCBITaxon:9606  ...   3       1
+1007          UBERON:0002048            NCBITaxon:9606  ...   1       0
+1008          UBERON:0002048            NCBITaxon:9606  ...   1       1
+
+[1009 rows x 15 columns]

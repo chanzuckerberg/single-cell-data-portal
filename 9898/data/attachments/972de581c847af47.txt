@@ -1,0 +1,4 @@
+INFO     root:entity.py:43 Unable to find a row with primary key 66d84f61-6ac0-4441-b244-64f00af51cc2, in Geneset table.
+INFO     root:entity.py:43 Unable to find a row with primary key abe66d47-15b3-4abd-ac79-bb7988d2ef8e, in Geneset table.
+INFO     root:entity.py:43 Unable to find a row with primary key abe66d47-15b3-4abd-ac79-bb7988d2ef8e, in Geneset table.
+INFO     root:entity.py:43 Unable to find a row with primary key 66d84f61-6ac0-4441-b244-64f00af51cc2, in Geneset table.
