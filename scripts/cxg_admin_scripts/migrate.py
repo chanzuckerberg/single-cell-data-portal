@@ -213,6 +213,23 @@ def migrate_redesign_read(ctx):
     collection_versions = []
     datasets = []
     dataset_versions = []
+    artifacts = []
+
+    def strip_prefixes(v):
+        if v is None:
+            return None
+        v = str(v)
+        if "." in v and v.split(".")[1].isupper():
+            return v.split(".")[1]
+        else :
+            return v
+
+    def strip_prefixes_dict(d):
+        r = {}
+        for k,v in d.items():
+            r[k] = strip_prefixes(v)
+        return r
+
     with db_session_manager() as session:
         for record in session.query(DbCollection):
             print(record.id, record.name, record.visibility, record.links)
@@ -254,15 +271,15 @@ def migrate_redesign_read(ctx):
                 "description": record.description,
                 "contact_name": record.contact_name,
                 "contact_email": record.contact_email,
-                "links": [{"type": link.link_type, "url": link.link_url, "name": link.link_name} for link in record.links]
+                "links": [{"type": strip_prefixes(link.link_type), "url": link.link_url, "name": link.link_name} for link in record.links]
             }
 
             dataset_ids = []
             for record_dataset in record.datasets:
-                version_id = str(uuid.uuid4())
+                dataset_version_id = str(uuid.uuid4())
                 dataset = {
                     "dataset_id": record_dataset.id,
-                    "dataset_version_id": version_id,
+                    "dataset_version_id": dataset_version_id,
                     "published_at": record_dataset.published_at,
                 }
 
@@ -287,16 +304,29 @@ def migrate_redesign_read(ctx):
                     "x_approximate_distribution": record_dataset.x_approximate_distribution,
                 }
 
+                status = record_dataset.processing_status.__dict__
+
+                artifact_ids = []
+                for record_artifact in record_dataset.artifacts:
+                    artifact = {
+                        "id": record_artifact.id,
+                        "type": strip_prefixes(record_artifact.filetype),
+                        "uri": record_artifact.s3_uri,
+                    }
+                    artifact_ids.append(record_artifact.id)
+                    artifacts.append(artifact)
+
+
                 dataset_version = {
-                    "version_id": version_id,
+                    "version_id": dataset_version_id,
                     "dataset_id": record_dataset.id,
                     "collection_id": version_id,
                     "metadata": dataset_metadata,
-                    "artifacts": [],
-                    "status": {},
+                    "artifacts": artifact_ids,
+                    "status": strip_prefixes_dict(status),
                 }
 
-                dataset_ids.append(version_id)
+                dataset_ids.append(dataset_version_id)
                 datasets.append(dataset)
                 dataset_versions.append(dataset_version)
             
@@ -310,8 +340,9 @@ def migrate_redesign_read(ctx):
                 "datasets": dataset_ids,
             }
 
-
             collection_versions.append(version)
+
+            break
 
     import json
     with open("migration/collections.json", "w") as f:
@@ -326,6 +357,9 @@ def migrate_redesign_read(ctx):
     with open("migration/dataset_versions.json", "w") as f:
         json.dump(dataset_versions, f, default=str)
 
+    with open("migration/dataset_artifacts.json", "w") as f:
+        json.dump(artifacts, f, default=str)
+
 
 def migrate_redesign_write(ctx):
     import json
@@ -335,8 +369,16 @@ def migrate_redesign_write(ctx):
     with open("migration/collection_versions.json", "r") as f:
         collection_versions = json.load(f)
 
+    with open("migration/datasets.json", "r") as f:
+        datasets = json.load(f)
+
+    with open("migration/dataset_versions.json", "r") as f:
+        dataset_versions = json.load(f)
+
+    with open("migration/dataset_artifacts.json", "r") as f:
+        artifacts = json.load(f)
+
     from backend.layers.persistence.orm import CollectionVersion
-    # CollectionVersion()
     from sqlalchemy import create_engine
     from sqlalchemy.orm import sessionmaker, session as sql_session
     from sqlalchemy.orm import Session
@@ -355,10 +397,21 @@ def migrate_redesign_write(ctx):
     database_uri = "postgresql://postgres:secret@localhost"
     engine = create_engine(database_uri, connect_args={"connect_timeout": 5})
 
-    engine.execute(schema.CreateSchema('persistence_schema'))
-    metadata_obj.create_all(bind=engine)
+    # engine.execute(schema.CreateSchema('persistence_schema'))
+    # metadata_obj.create_all(bind=engine)
 
     with Session(engine) as session:
+
+        for collection in collections:
+            canonical_collection_row = CollectionRow(
+                id=collection["id"],
+                version_id=collection["version_id"],
+                originally_published_at=collection.get("originally_published_at"),
+                tombstoned=collection["tombstoned"],
+            )
+
+            session.add(canonical_collection_row)
+            session.commit()
 
         for version in collection_versions:
             collection_version_row = CollectionVersionRow(
@@ -372,8 +425,42 @@ def migrate_redesign_write(ctx):
                                                         canonical_collection=None,
                                                         created_at=version.get("created_at"),
                                                     )
-
             session.add(collection_version_row)
             session.commit()
 
-        # for collection in collections:
+        for dataset in datasets:
+            dataset_row = DatasetRow(
+                dataset_id=dataset["dataset_id"],
+                dataset_version_id=dataset["dataset_version_id"],
+                published_at=dataset.get("published_at"),
+            )
+
+            session.add(dataset_row)
+            session.commit()
+
+        for dataset_version in dataset_versions:
+            dataset_version_row = DatasetVersionRow(
+                version_id=dataset_version["version_id"],
+                dataset_id=dataset_version["dataset_id"],
+                collection_id=dataset_version["collection_id"],
+                metadata=dataset_version["metadata"],
+                artifacts=dataset_version["artifacts"],
+                status=dataset_version["status"],
+                created_at=dataset_version.get("created_at"),
+                canonical_dataset=None,
+            )
+
+            session.add(dataset_version_row)
+            session.commit()
+
+
+
+        for artifact in artifacts:
+            artifact_row = DatasetArtifactRow(
+                id=artifact["id"],
+                type=artifact["type"],
+                uri=artifact["uri"],
+            )
+
+            session.add(artifact_row)
+            session.commit()
