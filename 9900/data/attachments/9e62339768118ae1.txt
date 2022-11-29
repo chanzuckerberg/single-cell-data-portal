@@ -1,0 +1,1 @@
+WARNING  cellxgene_schema.validate:validate.py:1385 WARNING: Dataframe 'var' only has 136 rows. Features SHOULD NOT be filtered from expression matrix.
