@@ -24,6 +24,13 @@ class DBSessionMaker:
             # database_uri = CorporaDbConfig().database_uri
             database_uri = "postgresql://postgres:secret@localhost"
         engine = create_engine(database_uri, connect_args={"connect_timeout": 5})
+
+        try:
+            engine.execute(CreateSchema('persistence_schema'))
+            metadata.create_all(bind=engine)
+        except:
+            pass
+
         self._session_maker = sessionmaker(bind=engine)
 
     def make_session(self, **kwargs):

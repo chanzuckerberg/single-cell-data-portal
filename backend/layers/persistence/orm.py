@@ -11,7 +11,6 @@ from backend.layers.common.entities import DatasetArtifactType
 metadata = MetaData(schema="persistence_schema")
 mapper_registry = registry(metadata=metadata)
 
-
 @mapper_registry.mapped
 class Collection:
 
@@ -19,7 +18,7 @@ class Collection:
         "Collection",
         mapper_registry.metadata,
         Column("id", UUID(as_uuid=True), primary_key=True, default=uuid.uuid4),
-        Column("version_id", UUID(as_uuid=True), default=uuid.uuid4),
+        Column("version_id", UUID(as_uuid=True)),
         Column("originally_published_at", DateTime),
         Column("tombstoned", BOOLEAN)
     )
@@ -37,6 +36,7 @@ class CollectionVersion:
         Column("owner", String),
         Column("publisher_metadata", JSON),
         Column("published_at", DateTime),
+        Column("created_at", DateTime),
         Column("datasets", ARRAY(UUID(as_uuid=True)))
     )
 

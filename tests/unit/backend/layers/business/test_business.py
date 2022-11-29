@@ -134,6 +134,8 @@ class TestCreateCollection(BaseBusinessLogicTestCase):
         """
         collection = self.business_logic.create_collection(self.test_user_name, self.sample_collection_metadata)
         collection_from_database = self.database_provider.get_collection_version(collection.version_id)
+        print(collection)
+        print(collection_from_database)
         self.assertEqual(collection, collection_from_database)
 
     def test_create_collection_with_links_ok(self):

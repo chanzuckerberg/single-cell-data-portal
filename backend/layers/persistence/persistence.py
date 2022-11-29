@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List, Optional, Iterable
+from typing import Any, List, Optional, Iterable
 import json
 import uuid
 from backend.layers.common.entities import (
@@ -53,15 +53,28 @@ class DatabaseProvider(DatabaseProviderInterface):
             dataset_version.artifacts = self.get_dataset_artifacts(dataset_version.artifacts)
         return dataset_version
 
+
+
     def get_canonical_collection(self, collection_id: CollectionId) -> CanonicalCollection:
         with self.db_session_manager() as session:
-            collection = session.query(CollectionRow).filter_by(id=collection_id).one()
-        return collection
+            collection = session.query(CollectionRow).filter_by(id=collection_id.id).one()
+            return CanonicalCollection(
+                CollectionId(str(collection.id)),
+                collection.version_id,
+                collection.originally_published_at,
+                collection.tombstoned
+            )
 
     def get_canonical_dataset(self, dataset_id: DatasetId) -> CanonicalDataset:
         with self.db_session_manager() as session:
             dataset = session.query(DatasetRow).filter_by(dataset_id=dataset_id).one()
         return dataset
+
+    @staticmethod
+    def parse_id(id: Any, id_type: Any):
+        if id is None: 
+            return None
+        return type(id_type)(str(id))
 
     def create_canonical_collection(self, owner: str, collection_metadata: CollectionMetadata) -> CollectionVersion:
         """
@@ -70,17 +83,20 @@ class DatabaseProvider(DatabaseProviderInterface):
         """
         collection_id = CollectionId((self._generate_id()))
         version_id = CollectionVersionId((self._generate_id()))
+        now = datetime.utcnow()
         canonical_collection = CollectionRow(id=collection_id.id,
                                              version_id=None,
                                              tombstoned=False,
                                              originally_published_at=None,
                                              )
+
         collection_version_row = CollectionVersionRow(collection_id=collection_id.id,
                                                       version_id=version_id.id,
                                                       owner=owner,
                                                       metadata=collection_metadata.to_json(),
                                                       publisher_metadata=None,
                                                       published_at=None,
+                                                      created_at=now,
                                                       datasets=list(),
                                                       )
 
@@ -89,15 +105,15 @@ class DatabaseProvider(DatabaseProviderInterface):
             session.add(collection_version_row)
 
         return CollectionVersion(
-            collection_id=collection_id.id,
-            version_id=version_id.id,
+            collection_id=CollectionId(collection_id.id),
+            version_id=CollectionVersionId(version_id.id),
             owner=owner,
-            metadata=collection_metadata.to_json(),
+            metadata=collection_metadata,
             publisher_metadata=None,
             published_at=None,
             datasets=list(),
-            created_at=datetime.utcnow(),
-            canonical_collection=CanonicalCollection(collection_id.id, None, False, None)
+            created_at=now,
+            canonical_collection=CanonicalCollection(CollectionId(collection_id.id), None, None, False)
         )
 
     def get_collection_version(self, version_id: CollectionVersionId) -> CollectionVersion:
@@ -105,9 +121,21 @@ class DatabaseProvider(DatabaseProviderInterface):
         Retrieves a specific collection version by id
         """
         with self.db_session_manager() as session:
-            collection_version = session.query(CollectionVersionRow).filter_by(version_id=version_id).one()
-        collection_version.canonical_collection = self.get_canonical_collection(collection_version.collection_id)
-        return collection_version
+            collection_version = session.query(CollectionVersionRow).filter_by(version_id=version_id.id).one()
+            collection_id = CollectionId(str(collection_version.collection_id))
+            canonical_collection = self.get_canonical_collection(collection_id)
+            version = CollectionVersion(
+                collection_id,
+                CollectionVersionId(str(collection_version.version_id)),
+                collection_version.owner,
+                CollectionMetadata.from_json(collection_version.metadata),
+                collection_version.publisher_metadata,
+                collection_version.datasets,
+                collection_version.published_at,
+                collection_version.created_at,
+                canonical_collection
+            )
+            return version
 
     def get_collection_mapped_version(self, collection_id: CollectionId) -> Optional[CollectionVersion]:
         """
@@ -185,8 +213,9 @@ class DatabaseProvider(DatabaseProviderInterface):
         """
         Saves publisher metadata for a collection version. Specify None to remove it
         """
+        print(version_id, publisher_metadata)
         with self.db_session_manager() as session:
-            version = session.query(CollectionVersionRow).filter_by(verison_id=version_id)
+            version = session.query(CollectionVersionRow).filter_by(version_id=version_id.id).one()
             version.publisher_metadata = publisher_metadata
 
     def add_collection_version(self, collection_id: CollectionId) -> CollectionVersion:

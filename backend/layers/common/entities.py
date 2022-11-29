@@ -4,6 +4,7 @@ from typing import List, Optional
 from enum import Enum
 
 import json
+from dataclasses_json import dataclass_json
 
 
 # TODO: copy and paste the docs for these
@@ -177,6 +178,7 @@ class Link:
     uri: str
 
 
+@dataclass_json
 @dataclass
 class CollectionMetadata:
     name: str
@@ -185,14 +187,10 @@ class CollectionMetadata:
     contact_email: str
     links: List[Link]
 
-    def to_json(self):
-        return json.dumps(self, default=lambda obj: obj.__dict__)
-
-
 @dataclass
 class CanonicalCollection:
     id: CollectionId
-    version_id: CollectionVersionId
+    version_id: CollectionVersionId # Needs to be optional, or not exist
     originally_published_at: Optional[datetime]
     tombstoned: bool
 
