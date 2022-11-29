@@ -1,0 +1,2 @@
+HERE
+{'marker_genes': {'gene_ontology_term_id_0': {'effect_size': 2.0, 'p_value': 0.0}}, 'snapshot_id': 'dummy-snapshot'}

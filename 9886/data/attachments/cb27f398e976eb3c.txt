@@ -1,1 +1,0 @@
-{"levelname": "WARNING", "asctime": "2022-11-28T22:50:49.028Z", "name": "root", "message": "CrossrefException on create_collection: Mocked CrossrefFetchException. Will ignore metadata.", "lineno": 34, "pathname": "/single-cell-data-portal/backend/portal/api/collections_common.py"}
