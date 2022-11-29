@@ -31,7 +31,6 @@ logging.basicConfig(level=logging.INFO)
 
 def load_data_and_create_cube(
     path_to_h5ad_datasets: str,
-    corpus_name: str = "corpus_group",
     path=None,
     extract_data=True,
     validate_cube=True,
@@ -47,14 +46,14 @@ def load_data_and_create_cube(
     """
     snapshot_id = int(time.time())
     snapshot_path = path if path else pathlib.Path().resolve()
-    snapshot_path = f"{snapshot_path}/{snapshot_id}"
-    corpus_path = f"{snapshot_path}/{corpus_name}"
+    corpus_path = f"{snapshot_path}/{snapshot_id}"
 
     integrated_corpus.run(path_to_h5ad_datasets, corpus_path, extract_data)
     try:
         summary_cubes.run(corpus_path, validate_cube)
     except CubeValidationException as e:
-        upload_artifacts_to_s3(snapshot_path, "latest_validation_failed_snapshot")
+        # TODO: should we split integrated/obs/var into separate directory (not under snapshot ID)?
+        upload_artifacts_to_s3(corpus_path, "latest_validation_failed_snapshot")
         logger.exception(e)
         sys.exit("Exiting due to cube validation failure")
 
@@ -64,13 +63,14 @@ def load_data_and_create_cube(
         cell_count=get_cell_count_cube_count(f"{corpus_path}/{CELL_COUNTS_CUBE_NAME}"),
     )
     cell_type_by_tissue = get_cell_types_by_tissue(corpus_path)
-    cell_type_ordering_create_file(snapshot_path, cell_type_by_tissue)
-    generate_primary_filter_dimensions(snapshot_path, corpus_name, snapshot_id)
-    upload_artifacts_to_s3(snapshot_path, snapshot_id)
+    cell_type_ordering_create_file(corpus_path, cell_type_by_tissue)
+    generate_primary_filter_dimensions(corpus_path, snapshot_id)
+
+    upload_artifacts_to_s3(corpus_path, snapshot_id)
     if validate_cube:
         make_snapshot_active(snapshot_id)
         logger.info(f"Updated latest_snapshot_identifier in s3. Current snapshot id is {snapshot_id}")
-    return snapshot_path, stats
+    return corpus_path, stats
 
 
 def main():
@@ -80,8 +80,8 @@ def main():
     """
     # todo pass in validate_cubes as env arg
     try:
-        snapshot_path, stats = load_data_and_create_cube("datasets", ".")
-        success_message = gen_wmg_pipeline_success_message(snapshot_path, **stats)
+        corpus_path, stats = load_data_and_create_cube("datasets")
+        success_message = gen_wmg_pipeline_success_message(corpus_path, **stats)
         notify_slack(success_message)
     except Exception as e:
         logger.exception("Pipeline failed")
