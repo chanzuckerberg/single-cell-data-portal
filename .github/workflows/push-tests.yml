@@ -365,6 +365,15 @@ jobs:
           name: allure-results
           path: allure-results
 
+      # Checkout gh-pages branch and get Allure result history
+      - name: Get Allure history
+        uses: actions/checkout@v3
+        if: always()
+        continue-on-error: true
+        with:
+          ref: gh-pages
+          path: gh-pages
+
       # Create test results history as an Allure report
       - name: Create test results history as an Allure report
         uses: simple-elf/allure-report-action@master
@@ -375,15 +384,6 @@ jobs:
           gh_pages: gh-pages
           allure_report: allure-report
           allure_history: allure-history
-
-      # Checkout gh-pages branch and get Allure result history
-      - name: Get Allure history
-        uses: actions/checkout@v3
-        if: always()
-        continue-on-error: true
-        with:
-          ref: gh-pages
-          path: gh-pages
 
       # Deploy Allure report to github pages
       - name: Deploy report to Github Pages
