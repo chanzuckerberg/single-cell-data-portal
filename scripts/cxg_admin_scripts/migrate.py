@@ -6,6 +6,10 @@ import requests
 import os
 import sys
 
+from sqlalchemy import schema
+
+
+
 
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..."))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
@@ -203,7 +207,7 @@ def backfill_processing_status_for_datasets(ctx):
             else:
                 logger.warning(f"{dataset_id} processing status is fine")
 
-def migrate_redesign(ctx):
+def migrate_redesign_read(ctx):
 
     collections = []
     collection_versions = []
@@ -254,50 +258,48 @@ def migrate_redesign(ctx):
             }
 
             dataset_ids = []
-            for dataset in record.datasets:
-                pass
+            for record_dataset in record.datasets:
+                version_id = str(uuid.uuid4())
+                dataset = {
+                    "dataset_id": record_dataset.id,
+                    "dataset_version_id": version_id,
+                    "published_at": record_dataset.published_at,
+                }
 
-            # class Dataset(CanonicalDataset):
+                dataset_metadata = {
+                    "name": record_dataset.name,
+                    "schema_version": record_dataset.schema_version,
+                    "organism": record_dataset.organism,
+                    "tissue": record_dataset.tissue,
+                    "assay": record_dataset.assay,
+                    "disease": record_dataset.disease,
+                    "sex": record_dataset.sex,
+                    "self_reported_ethnicity": record_dataset.self_reported_ethnicity,
+                    "development_stage": record_dataset.development_stage,
+                    "cell_type": record_dataset.cell_type,
+                    "cell_count": record_dataset.cell_count,
+                    "schema_version": record_dataset.schema_version,
+                    "mean_genes_per_cell": record_dataset.mean_genes_per_cell,
+                    "batch_condition": record_dataset.batch_condition,
+                    "suspension_type": record_dataset.suspension_type,
+                    "donor_id": record_dataset.donor_id,
+                    "is_primary_data": record_dataset.is_primary_data,
+                    "x_approximate_distribution": record_dataset.x_approximate_distribution,
+                }
 
-#     __table__ = Table(
-#         "Dataset",
-#         mapper_registry.metadata,
-#         Column("dataset_id", Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)),
-#         Column("dataset_version_id", Column(UUID(as_uuid=True), default=uuid.uuid4)),
-#         Column("published_at", Column(DateTime))
-#     )
+                dataset_version = {
+                    "version_id": version_id,
+                    "dataset_id": record_dataset.id,
+                    "collection_id": version_id,
+                    "metadata": dataset_metadata,
+                    "artifacts": [],
+                    "status": {},
+                }
 
-
-# @mapper_registry.mapped
-# class DatasetVersion(DatasetVersionModel):
-
-#     artifacts: List[DatasetArtifactId] = field(default=list())
-#     canonical_dataset: CanonicalDataset = field(default=None)
-
-#     __table__ = Table(
-#         "DatasetVersion",
-#         mapper_registry.metadata,
-#         Column("version_id", Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)),
-#         Column("dataset_id", Column(UUID(as_uuid=True), default=uuid.uuid4)),
-#         Column("collection_id", Column(UUID(as_uuid=True), default=uuid.uuid4)),
-#         Column("metadata", Column(JSON)),
-#         Column("artifacts", Column(ARRAY(UUID(as_uuid=True)))),
-#         Column("status", Column(JSON))
-#     )
-
-
-# @mapper_registry.mapped
-# class DatasetArtifact(DatasetArtifactModel):
-
-#     __table__ = Table(
-#         "DatasetArtifact",
-#         mapper_registry.metadata,
-#         Column("id", UUID(as_uuid=True), primary_key=True, default=uuid.uuid4),
-#         Column("type", Enum(DatasetArtifactType)),
-#         Column("uri", String)
-#     )
-
-
+                dataset_ids.append(version_id)
+                datasets.append(dataset)
+                dataset_versions.append(dataset_version)
+            
             version = {
                 "version_id": version_id,
                 "collection_id": collection_id,
@@ -305,7 +307,7 @@ def migrate_redesign(ctx):
                 "owner": record.owner,
                 "publisher_metadata": record.publisher_metadata,
                 "published_at": record.published_at,
-                "datasets": [],
+                "datasets": dataset_ids,
             }
 
 
@@ -318,66 +320,60 @@ def migrate_redesign(ctx):
     with open("migration/collection_versions.json", "w") as f:
         json.dump(collection_versions, f, default=str)
 
+    with open("migration/datasets.json", "w") as f:
+        json.dump(datasets, f, default=str)
+
+    with open("migration/dataset_versions.json", "w") as f:
+        json.dump(dataset_versions, f, default=str)
 
 
-            # for dataset in record.datasets:
-                # print(dataset.id)
+def migrate_redesign_write(ctx):
+    import json
+    with open("migration/collections.json", "r") as f:
+        collections = json.load(f)
+
+    with open("migration/collection_versions.json", "r") as f:
+        collection_versions = json.load(f)
+
+    from backend.layers.persistence.orm import CollectionVersion
+    # CollectionVersion()
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import sessionmaker, session as sql_session
+    from sqlalchemy.orm import Session
 
 
-# id                             | 43d4bb39-21af-4d05-b973-4c1fed7b916c
-# owner                          | google-oauth2|106687116196602342983
-# name                           | Transcriptional Programming of Normal and Inflamed Human Epidermis at Single-Cell Resolution
-# description                    | Perturbations in the transcriptional programs specifying epidermal differentiation cause diverse skin pathologies ranging from impaired barrier function to inflammatory skin disease. However, the global scope and organization of this complex cellular program remain undefined. Here we report single-cell RNA sequencing profiles of 92,889 human epidermal cells from 9 normal and 3 inflamed skin samples. Transcriptomics-derived keratinocyte subpopulations reflect classic epidermal strata but also sharply compartmentalize epithelial functions such as cell-cell communication, inflammation, and WNT pathway modulation. In keratinocytes, ∼12% of assessed transcript expression varies in coordinate patterns, revealing undescribed gene expression programs governing epidermal homeostasis. We also identify molecular fingerprints of inflammatory skin states, including S100 activation in the interfollicular epidermis of normal scalp, enrichment of a CD1C+CD301A+ myeloid dendritic cell population in psoriatic epidermis, and IL1βhiCCL3hiCD14+ monocyte-derived macrophages enriched in foreskin. This compendium of RNA profiles provides a critical step toward elucidating epidermal diseases of development, differentiation, and inflammation.
-# created_at                     | 2022-10-04 19:52:10.600886
-# updated_at                     | 2022-10-04 19:52:10.600891
-# visibility                     | PRIVATE
-# contact_email                  | raymond.cho@ucsf.edu
-# contact_name                   | Raymond J. Cho
-# data_submission_policy_version |
-# tombstone                      | f
-# published_at                   |
-# revised_at                     |
-# curator_name                   | Batuhan Cakir
-# publisher_metadata             | {"authors": [{"given": "Jeffrey B.", "family": "Cheng"}, {"given": "Andrew J.", "family": "Sedgewick"}, {"given": "Alex I.", "family": "Finnegan"}, {"given": "Paymann", "family": "Harirchian"}, {"given": "Jerry", "family": "Lee"}, {"given": "Sunjong", "family": "Kwon"}, {"given": "Marlys S.", "family": "Fassett"}, {"given": "Justin", "family": "Golovato"}, {"given": "Matthew", "family": "Gray"}, {"given": "Ruby", "family": "Ghadially"}, {"given": "Wilson", "family": "Liao"}, {"given": "Bethany E.", "family": "Perez White"}, {"given": "Theodora M.", "family": "Mauro"}, {"given": "Thaddeus", "family": "Mully"}, {"given": "Esther A.", "family": "Kim"}, {"given": "Hani", "family": "Sbitany"}, {"given": "Isaac M.", "family": "Neuhaus"}, {"given": "Roy C.", "family": "Grekin"}, {"given": "Siegrid S.", "family": "Yu"}, {"given": "Joe W.", "family": "Gray"}, {"given": "Elizabeth", "family": "Purdom"}, {"given": "Ralf", "family": "Paus"}, {"given": "Charles J.", "family": "Vaske"}, {"given": "Stephen C.", "family": "Benz"}, {"given": "Jun S.", "family": "Song"}, {"given": "Raymond J.", "family": "Cho"}], "published_year": 2018, "published_month": 10, "published_day": 1, "published_at": 1538352000.0, "journal": "Cell Reports", "is_preprint": false}
-# revision_of                    |
+    from backend.layers.persistence.orm import (
+        Collection as CollectionRow,
+        CollectionVersion as CollectionVersionRow,
+        Dataset as DatasetRow,
+        DatasetVersion as DatasetVersionRow,
+        DatasetArtifact as DatasetArtifactRow
+    )
 
+    from backend.layers.persistence.orm import metadata_obj
 
+    database_uri = "postgresql://postgres:secret@localhost"
+    engine = create_engine(database_uri, connect_args={"connect_timeout": 5})
 
-        # for record in session.query()
-            
-            
-            # CollectionMetadata(
-            #     name=record.name,
-            #     description=record.description
-            # )
+    engine.execute(schema.CreateSchema('persistence_schema'))
+    metadata_obj.create_all(bind=engine)
 
+    with Session(engine) as session:
 
+        for version in collection_versions:
+            collection_version_row = CollectionVersionRow(
+                                                        collection_id=version["collection_id"],
+                                                        version_id=version["version_id"],
+                                                        owner=version["owner"],
+                                                        metadata=version["metadata"],
+                                                        publisher_metadata=version["publisher_metadata"],
+                                                        published_at=version["published_at"],
+                                                        datasets=version["datasets"],
+                                                        canonical_collection=None,
+                                                        created_at=version.get("created_at"),
+                                                    )
 
+            session.add(collection_version_row)
+            session.commit()
 
-
-#     __table__ = Table(
-#         "Collection",
-#         mapper_registry.metadata,
-#         Column("id", UUID(as_uuid=True), primary_key=True, default=uuid.uuid4),
-#         Column("version_id", UUID(as_uuid=True), default=uuid.uuid4),
-#         Column("originally_published_at", Column(DateTime)),
-#         Column("tombstoned", Column(BOOLEAN))
-#     )
-
-
-# @mapper_registry.mapped
-# class CollectionVersion(CollectionVersionModel):
-
-#     canonical_collection: CanonicalCollection = field(default=None)
-
-#     __table__ = Table(
-#         "CollectionVersion",
-#         mapper_registry.metadata,
-#         Column("version_id", UUID(as_uuid=True), primary_key=True, default=uuid.uuid4),
-#         Column("collection_id", UUID(as_uuid=True), default=uuid.uuid4),
-#         Column("metadata", Column(JSON)),
-#         Column("owner", Column(String)),
-#         Column("publisher_metadata", Column(JSON)),
-#         Column("published_at", Column(DateTime)),
-#         Column("datasets", Column(ARRAY(UUID(as_uuid=True))))
-#     )
+        # for collection in collections:

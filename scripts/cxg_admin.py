@@ -301,13 +301,23 @@ def get_public_datasets(ctx):
 
 @cli.command()
 @click.pass_context
-def migrate_redesign(ctx):
+def migrate_redesign_read(ctx):
     """
     Print id, name, organism, tissue, assay, sex, cell_count, explorer_url, and S3 uris for all public datasets
     ./scripts/cxg_admin.py --deployment dev get-public-datasets
     """
     print("redesign migration")
-    migrate.migrate_redesign(ctx)
+    migrate.migrate_redesign_read(ctx)
+
+@cli.command()
+@click.pass_context
+def migrate_redesign_write(ctx):
+    """
+    Print id, name, organism, tissue, assay, sex, cell_count, explorer_url, and S3 uris for all public datasets
+    ./scripts/cxg_admin.py --deployment dev get-public-datasets
+    """
+    print("redesign migration")
+    migrate.migrate_redesign_write(ctx)
 
 
 if __name__ == "__main__":
