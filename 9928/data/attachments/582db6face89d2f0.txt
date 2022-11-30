@@ -1,0 +1,1 @@
+{"levelname": "INFO", "asctime": "2022-11-30T18:23:19.030Z", "name": "root", "message": "Unable to find a row with primary key non_existent_id, in Collection table.", "lineno": 43, "pathname": "/single-cell-data-portal/backend/common/entities/entity.py"}
