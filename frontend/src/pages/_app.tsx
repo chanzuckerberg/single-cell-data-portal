@@ -11,7 +11,6 @@ import { EVENTS } from "src/common/analytics/events";
 import { checkFeatureFlags } from "src/common/featureFlags";
 import { theme } from "src/common/theme";
 import DefaultLayout from "src/components/Layout/components/defaultLayout";
-// import Wrapper from 'src/common/utils/auth0Wrapper';
 import configs from "src/configs/configs";
 import "src/global.scss";
 // (thuang): `layout.css` needs to be imported after `global.scss`
@@ -56,13 +55,15 @@ function App({ Component, pageProps }: AppPropsWithLayout): JSX.Element {
   // const [isMounted, setMounted] = useState(false);
 
   useEffect(() => {
+    console.log(`setting redirect uri to ${window.location.origin}`);
     setRedirectUri(window.location.origin);
   }, []);
+  console.log(`current redirectUri is ${redirectUri}`);
 
   return (
     <>
       <Auth0Provider
-        domain="corporanet.local" // Hard-coded for local dev
+        domain="oidc.corporanet.local:8443/connect" // Hard-coded for local dev
         clientId="local-client-id" // Hard-coded for local dev
         redirectUri={redirectUri}
       >
