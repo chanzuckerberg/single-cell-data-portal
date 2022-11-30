@@ -11,6 +11,7 @@ import { EVENTS } from "src/common/analytics/events";
 import { checkFeatureFlags } from "src/common/featureFlags";
 import { theme } from "src/common/theme";
 import DefaultLayout from "src/components/Layout/components/defaultLayout";
+import Wrapper from 'src/common/utils/auth0Wrapper';
 import configs from "src/configs/configs";
 import "src/global.scss";
 // (thuang): `layout.css` needs to be imported after `global.scss`
@@ -68,18 +69,20 @@ function App({ Component, pageProps }: AppPropsWithLayout): JSX.Element {
           clientId="local-client-id"  // Hard-coded for local dev
           redirectUri={windowLocationOrigin}
         >
-          <QueryClientProvider client={queryClient}>
-            <StylesProvider injectFirst>
-              <EmotionThemeProvider theme={theme}>
-                <ThemeProvider theme={theme}>
-                  <Layout>
-                    <Component {...pageProps} />
-                  </Layout>
-                  <ReactQueryDevtools />
-                </ThemeProvider>
-              </EmotionThemeProvider>
-            </StylesProvider>
-          </QueryClientProvider>
+          <Wrapper>
+            <QueryClientProvider client={queryClient}>
+              <StylesProvider injectFirst>
+                <EmotionThemeProvider theme={theme}>
+                  <ThemeProvider theme={theme}>
+                    <Layout>
+                      <Component {...pageProps} />
+                    </Layout>
+                    <ReactQueryDevtools />
+                  </ThemeProvider>
+                </EmotionThemeProvider>
+              </StylesProvider>
+            </QueryClientProvider>
+          </Wrapper>
         </Auth0Provider>
         <Script
           data-domain={configs.PLAUSIBLE_DATA_DOMAIN}
