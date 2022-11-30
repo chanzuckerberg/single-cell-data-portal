@@ -4,12 +4,16 @@ import { EMPTY_OBJECT, noop } from "src/common/constants/utils";
 import { get } from "src/common/featureFlags";
 import { FEATURES } from "src/common/featureFlags/features";
 import { BOOLEAN } from "src/common/localStorage/set";
+<<<<<<< HEAD
 import { FetchMarkerGeneParams } from "src/common/queries/wheresMyGene";
 import Image from "next/image";
 import {
   DispatchContext,
   StateContext,
 } from "src/views/WheresMyGene/common/store";
+=======
+import { DispatchContext } from "src/views/WheresMyGene/common/store";
+>>>>>>> 6c168b94d02 (restructure to query and add to redux store)
 import { resetTissueCellTypes } from "src/views/WheresMyGene/common/store/actions";
 import { CellType, Tissue } from "src/views/WheresMyGene/common/types";
 import { useDeleteGenesAndCellTypes } from "../../hooks/useDeleteGenesAndCellTypes";
@@ -42,7 +46,7 @@ interface Props {
   availableCellTypes: CellType[];
   tissue: Tissue;
   tissueID: string;
-  generateMarkerGenes: (args: FetchMarkerGeneParams) => void;
+  generateMarkerGenes: (cellType: CellType) => void;
   selectedOrganismId: string;
 }
 
@@ -140,6 +144,12 @@ export default memo(function YAxisChart({
        */
       const { value } = params;
       handleCellTypeClick(value);
+
+      if (isMarkerGenes) {
+        const { id, name, total_count } = deserializeCellTypeMetadata(value);
+
+        generateMarkerGenes({ id, name, total_count });
+      }
     }
   }, [
     setHandleYAxisChartClick,

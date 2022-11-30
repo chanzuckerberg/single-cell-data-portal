@@ -32,6 +32,7 @@ export interface State {
    */
   snapshotId: string | null;
   sortBy: { cellTypes: SORT_BY; genes: SORT_BY; scaled: SORT_BY };
+  cellInfoCellTypes: CellType[]; // (seve): could just keep this as IDs
 }
 
 // (thuang): If you have derived states based on the state, use `useMemo`
@@ -50,6 +51,7 @@ export const INITIAL_STATE: State = {
     genes: SORT_BY.USER_ENTERED,
     scaled: SORT_BY.COLOR_SCALED,
   },
+  cellInfoCellTypes: [],
 };
 
 export const REDUCERS = {
@@ -67,6 +69,8 @@ export const REDUCERS = {
   tissueCellTypesFetched,
   toggleCellTypeIdToDelete,
   toggleGeneToDelete,
+  addCellInfoCellType,
+  removeCellInfoCellType,
 };
 
 export function reducer(state: State, action: PayloadAction<unknown>): State {
@@ -360,5 +364,31 @@ function addSelectedGenes(
   return {
     ...state,
     selectedGenes: [...payload, ...state.selectedGenes],
+  };
+}
+
+function addCellInfoCellType(
+  state: State,
+  action: PayloadAction<State["cellInfoCellTypes"][0]>
+): State {
+  const { payload } = action;
+
+  return {
+    ...state,
+    cellInfoCellTypes: [payload, ...state.cellInfoCellTypes],
+  };
+}
+
+function removeCellInfoCellType(
+  state: State,
+  action: PayloadAction<State["cellInfoCellTypes"][0]>
+): State {
+  const { payload } = action;
+
+  return {
+    ...state,
+    cellInfoCellTypes: state.cellInfoCellTypes.filter(
+      (cellType) => cellType !== payload
+    ),
   };
 }

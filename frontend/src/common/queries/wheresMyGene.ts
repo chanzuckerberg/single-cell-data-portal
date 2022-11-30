@@ -1,25 +1,15 @@
 import { useContext, useMemo } from "react";
-import {
-  useMutation,
-  UseMutationResult,
-  useQuery,
-  useQueryClient,
-  UseQueryResult,
-} from "react-query";
+import { useQuery, UseQueryResult } from "react-query";
 import { API_URL } from "src/configs/configs";
 import {
   DispatchContext,
   State,
   StateContext,
 } from "src/views/WheresMyGene/common/store";
-import {
-  addSelectedGenes,
-  setSnapshotId,
-} from "src/views/WheresMyGene/common/store/actions";
+import { setSnapshotId } from "src/views/WheresMyGene/common/store/actions";
 import {
   CellType,
   CellTypeGeneExpressionSummaryData,
-  Gene,
   GeneExpressionSummary,
   RawCellTypeGeneExpressionSummaryData,
 } from "src/views/WheresMyGene/common/types";
@@ -777,29 +767,34 @@ export interface MarkerGeneResponse {
   snapshot_id: string;
 }
 
-export function useMarkerGenes(genesByGeneID: {
-  [id: string]: Gene;
-}): UseMutationResult<MarkerGeneResponse, unknown, FetchMarkerGeneParams> {
-  const queryClient = useQueryClient();
-  const dispatch = useContext(DispatchContext);
-  const prevMarkerGenes = queryClient.getQueryData<MarkerGenesByCellType>([
-    USE_MARKER_GENES,
-  ]);
-  return useMutation(fetchMarkerGenes, {
-    onSuccess: (data, { cellTypeID }) => {
-      if (!dispatch || !data) return;
-      const newMarkerGenes = prevMarkerGenes || {};
-      newMarkerGenes[cellTypeID] = data.marker_genes;
-      queryClient.setQueryData([USE_MARKER_GENES], newMarkerGenes);
-      const geneNames = Object.keys(data.marker_genes).map((geneID) => {
-        const gene = genesByGeneID[geneID];
-        if (!gene) {
-          console.error("gene not found", geneID);
-        }
-        return gene.name;
-      });
-      // This dispatch may be pulled out of the on success of this mutation if the panel solution is implemented
-      dispatch(addSelectedGenes(geneNames));
-    },
-  });
+export function useMarkerGenes({
+  cellTypeID,
+  organismID,
+  tissueID,
+}: FetchMarkerGeneParams): UseQueryResult<MarkerGeneResponse> {
+  return useQuery(
+    [USE_MARKER_GENES, cellTypeID],
+    () => fetchMarkerGenes({ cellTypeID, organismID, tissueID }),
+    {
+      //   genesByGeneID: {
+      //     [id: string]: Gene;
+      //   };
+      // onSuccess: (data) => {
+      //   if (!dispatch || !data) return;
+      //   const newMarkerGenes = prevMarkerGenes || {};
+      //   newMarkerGenes[cellTypeID] = data.marker_genes;
+      //   queryClient.setQueryData([USE_MARKER_GENES], newMarkerGenes);
+      //   const geneNames = Object.keys(data.marker_genes).map((geneID) => {
+      //     const gene = genesByGeneID[geneID];
+      //     if (!gene) {
+      //       console.error("gene not found", geneID);
+      //     }
+      //     return gene.name;
+      //   });
+      //   // This dispatch may be pulled out of the on success of this mutation if the panel solution is implemented
+      //   dispatch(addSelectedGenes(geneNames));
+      // },
+      staleTime: Infinity,
+    }
+  );
 }

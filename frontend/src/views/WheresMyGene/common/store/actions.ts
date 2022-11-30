@@ -136,6 +136,15 @@ export function setSnapshotId(
   };
 }
 
+export function addCellInfoCellType(
+  cellType: State["cellInfoCellTypes"][0]
+): GetActionTypeOfReducer<typeof REDUCERS["addCellInfoCellType"]> {
+  return {
+    payload: cellType,
+    type: "addCellInfoCellType",
+  };
+}
+
 type GetActionTypeOfReducer<T> = T extends (
   state: never,
   action: infer Action
