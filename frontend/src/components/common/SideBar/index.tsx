@@ -1,6 +1,6 @@
 import { Button } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
-import { ReactNode, useCallback, useEffect, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import {
   Position,
   SideBar as SideBarWrapper,
@@ -59,20 +59,17 @@ export default function SideBar({
    * Handle click on open/close icon; update state.
    * @param nextExpanded - Toggled expanded state of side bar.
    */
-  const handleExpandedClick = useCallback(
-    (nextExpanded: boolean) => {
-      setIsExpanded(nextExpanded);
-      if (onToggle) {
-        onToggle(nextExpanded);
-      }
-    },
-    [setIsExpanded, onToggle]
-  );
+  const handleExpandedClick = (nextExpanded: boolean) => {
+    setIsExpanded(nextExpanded);
+    if (onToggle) {
+      onToggle(nextExpanded);
+    }
+  };
 
   useEffect(() => {
     if (!(disabled && !isExpanded) && wmgSideBar)
       handleExpandedClick(!isExpanded);
-  }, [forceToggle, disabled, isExpanded, handleExpandedClick, wmgSideBar]);
+  }, [forceToggle]);
 
   return (
     <SideBarWrapperComponent
