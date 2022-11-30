@@ -305,7 +305,7 @@ services:
     networks:
       corporanet:
         aliases:
-          - login.corporanet.local
+          - oidc.corporanet.local
 networks:
   corporanet:
 volumes:
