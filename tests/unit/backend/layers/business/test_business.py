@@ -576,6 +576,11 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         old_dataset_version = self.database_provider.get_dataset_version(dataset_version_to_replace_id)
         self.assertIsNotNone(old_dataset_version)
 
+        # Verify that the collection version points to the right datasets
+        version_from_db = self.business_logic.get_collection_version(version.version_id)
+        self.assertCountEqual(version_from_db.datasets, [dataset_version_to_keep_id, new_dataset_version.version_id])
+
+
     def test_replace_dataset_in_published_collection_fail(self):
         """
         Replacing a dataset that belongs to a published collection should fail

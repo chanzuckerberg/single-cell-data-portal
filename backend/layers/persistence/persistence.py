@@ -564,8 +564,10 @@ class DatabaseProvider(DatabaseProviderInterface):
 
             collection_version = session.query(CollectionVersionRow).filter_by(version_id=collection_version_id.id).one() # noqa
             # TODO: Verify 
-            collection_version.datasets.remove(uuid.UUID(old_dataset_version_id.id))
-            collection_version.datasets.append(uuid.UUID(new_dataset_version_id.id))
+            datasets = list(collection_version.datasets)
+            datasets.remove(uuid.UUID(old_dataset_version_id.id))
+            datasets.append(uuid.UUID(new_dataset_version_id.id))
+            collection_version.datasets = datasets
 
             return self._hydrate_dataset_version(new_dataset_version)
 
