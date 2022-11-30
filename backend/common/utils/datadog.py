@@ -3,7 +3,6 @@ import os
 import re
 import types
 import gevent.monkey
-from backend.api_server.app import DEPLOYMENT_STAGE
 
 from ddtrace import tracer
 from ddtrace import patch_all
@@ -11,7 +10,7 @@ from ddtrace import patch_all
 from ddtrace.filters import FilterRequestsOnUrl
 
 
-def configure_datadog_tracing():
+def configure_datadog_tracing(deployment_stage):
     """
     Configure Datadog APM tracing.
     See https://ddtrace.readthedocs.io/en/stable/basic_usage.html#patch-all
@@ -40,10 +39,9 @@ def configure_datadog_tracing():
         patch_all()
 
         # enable Datadog profiling for development
-        if DEPLOYMENT_STAGE not in ['staging', 'prod']:
+        if deployment_stage not in ['staging', 'prod']:
             # noinspection PyPackageRequirements,PyUnresolvedReferences
             import ddtrace.profiling.auto
-
 
 
 class DatadogTraced(type):

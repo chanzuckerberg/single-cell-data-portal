@@ -22,7 +22,7 @@ APP_NAME = "{}-{}".format(os.environ["APP_NAME"], DEPLOYMENT_STAGE)
 
 configure_logging(APP_NAME)
 
-configure_datadog_tracing()
+configure_datadog_tracing(DEPLOYMENT_STAGE)
 
 
 def create_flask_app():
