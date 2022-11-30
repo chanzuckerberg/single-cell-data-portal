@@ -29,6 +29,6 @@ LABEL branch=${HAPPY_BRANCH}
 LABEL commit=${HAPPY_COMMIT}
 ENV COMMIT_SHA=${HAPPY_COMMIT}
 ENV COMMIT_BRANCH=${HAPPY_BRANCH}
-RUN ./container_init.sh
-CMD gunicorn ${HTTPS_CERT_AND_KEY} --worker-class gevent --workers 1 --bind 0.0.0.0:5000 backend.api_server.app:app \
-  --max-requests 10000 --timeout 180 --keep-alive 5 --log-level info
+RUN ./container_init.sh > /tmp/HTTPS_CERT_AND_KEY
+CMD gunicorn ${cat /tmp/HTTPS_CERT_AND_KEY} --worker-class gevent --workers 1 --bind 0.0.0.0:5000 \
+	backend.api_server.app:app --max-requests 10000 --timeout 180 --keep-alive 5 --log-level info
