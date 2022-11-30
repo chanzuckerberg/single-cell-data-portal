@@ -197,16 +197,23 @@ class CanonicalCollection:
 
 
 @dataclass
-class CollectionVersion:
+class CollectionVersionBase:
     collection_id: CollectionId
     version_id: CollectionVersionId
     owner: str
     metadata: CollectionMetadata
     publisher_metadata: Optional[dict]  # TODO: use a dataclass
-    datasets: List[DatasetVersionId]
     published_at: Optional[datetime]
     created_at: datetime
     canonical_collection: CanonicalCollection
+
+@dataclass
+class CollectionVersion(CollectionVersionBase):
+    datasets: List[DatasetVersionId]
+
+@dataclass
+class CollectionVersionWithDatasets(CollectionVersionBase):
+    datasets: List[DatasetVersion]
 
 
 class CollectionLinkType(Enum):

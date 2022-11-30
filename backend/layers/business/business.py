@@ -11,6 +11,7 @@ from backend.layers.common.entities import (
     CollectionMetadata,
     CollectionVersion,
     CollectionVersionId,
+    CollectionVersionWithDatasets,
     DatasetArtifact,
     DatasetArtifactId,
     DatasetConversionStatus,
@@ -212,13 +213,13 @@ class BusinessLogic(BusinessLogicInterface):
 
         self.database_provider.save_collection_metadata(version_id, new_metadata)
 
-    def _assert_collection_version_unpublished(self, collection_version_id: CollectionVersionId) -> CollectionVersion:
+    def _assert_collection_version_unpublished(self, collection_version_id: CollectionVersionId) -> CollectionVersionWithDatasets:
         """
         Ensures a collection version exists and is unpublished.
         This method should be called every time an update to a collection version is requested,
         since published collection versions are not allowed any changes.
         """
-        collection_version = self.database_provider.get_collection_version(collection_version_id)
+        collection_version = self.database_provider.get_collection_version_with_datasets(collection_version_id)
         if collection_version is None:
             raise CollectionNotFoundException([f"Collection version {collection_version_id.id} does not exist"])
         if collection_version.published_at is not None:

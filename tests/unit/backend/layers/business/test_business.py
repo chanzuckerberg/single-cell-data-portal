@@ -12,7 +12,7 @@ from backend.layers.business.business import BusinessLogic, CollectionQueryFilte
 from backend.layers.business.business import BusinessLogic, CollectionMetadataUpdate, CollectionQueryFilter, DatasetArtifactDownloadData
 from backend.layers.business.exceptions import CollectionUpdateException, CollectionVersionException, DatasetNotFoundException, InvalidLinkException, \
     CollectionCreationException, DatasetIngestException, CollectionPublishException
-from backend.layers.common.entities import CollectionId, CollectionMetadata, CollectionVersion, CollectionVersionId, DatasetArtifact, DatasetMetadata, DatasetProcessingStatus, DatasetStatus, DatasetUploadStatus, DatasetValidationStatus, DatasetVersionId, Link, OntologyTermId
+from backend.layers.common.entities import CollectionId, CollectionMetadata, CollectionVersion, CollectionVersionId, CollectionVersionWithDatasets, DatasetArtifact, DatasetMetadata, DatasetProcessingStatus, DatasetStatus, DatasetUploadStatus, DatasetValidationStatus, DatasetVersionId, Link, OntologyTermId
 from backend.layers.thirdparty.uri_provider import FileInfo, UriProviderInterface
 from backend.layers.persistence.persistence import DatabaseProvider
 
@@ -86,7 +86,7 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
     def initialize_unpublished_collection(self, 
         owner: str = test_user_name, 
         complete_dataset_ingestion: bool = True
-    ) -> CollectionVersion:
+    ) -> CollectionVersionWithDatasets:
         """
         Initializes an unpublished collection to be used for testing, with two datasets.
         By default also completes dataset ingestion (normally, a process that would be done asynchonously).
@@ -104,15 +104,15 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
             )
             if complete_dataset_ingestion:
                 self.complete_dataset_processing_with_success(dataset_version.version_id)
-        return self.database_provider.get_collection_version(version.version_id)
+        return self.database_provider.get_collection_version_with_datasets(version.version_id)
         
-    def initialize_published_collection(self, owner: str = test_user_name, published_at: datetime = datetime.utcnow()) -> CollectionVersion:
+    def initialize_published_collection(self, owner: str = test_user_name, published_at: datetime = datetime.utcnow()) -> CollectionVersionWithDatasets:
         """
         Initializes a published collection to be used for testing, with a single dataset
         """
         version = self.initialize_unpublished_collection(owner)
         self.database_provider.finalize_collection_version(version.collection_id, version.version_id, published_at)
-        return self.database_provider.get_collection_version(version.version_id)
+        return self.database_provider.get_collection_version_with_datasets(version.version_id)
 
     def complete_dataset_processing_with_success(self, dataset_version_id: DatasetVersionId) -> None:
         """
@@ -556,6 +556,7 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         """
         version = self.initialize_unpublished_collection()
         dataset_version_to_replace_id = version.datasets[0].version_id
+        dataset_version_to_keep_id = version.datasets[1].version_id
         url = "http://test/dataset.url"
 
         new_dataset_version_id, _ = self.business_logic.ingest_dataset(
