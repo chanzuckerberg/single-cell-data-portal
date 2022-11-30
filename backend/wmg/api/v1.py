@@ -74,7 +74,7 @@ def markers():
         cell_type_ontology_term_id=cell_type,
     )
     q = WmgQuery(snapshot)
-    df = q.marker_genes(snapshot.marker_genes_cube, criteria)
+    df = q.marker_genes(criteria)
     marker_genes = retrieve_top_n_markers(df, test, n_markers)
     return jsonify(
         dict(
