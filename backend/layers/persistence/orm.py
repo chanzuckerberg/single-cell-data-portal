@@ -64,6 +64,7 @@ class DatasetVersion:
         Column("collection_id", UUID(as_uuid=True), default=uuid.uuid4),
         Column("metadata", JSON),
         Column("artifacts", ARRAY(UUID(as_uuid=True))),
+        Column("created_at", DateTime),
         Column("status", JSON)
     )
 

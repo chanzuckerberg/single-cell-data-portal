@@ -57,6 +57,7 @@ class DatasetProcessingStatus(DatasetStatusGeneric, Enum):
     FAILURE = "FAILURE"
 
 
+@dataclass_json
 @dataclass
 class DatasetStatus:
     upload_status: Optional[DatasetUploadStatus]

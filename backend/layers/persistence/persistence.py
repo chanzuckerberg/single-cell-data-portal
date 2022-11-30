@@ -57,16 +57,20 @@ class DatabaseProvider(DatabaseProviderInterface):
         return str(uuid.uuid4())
 
     def _row_to_dataset_artifact(self, row: Any):
-        pass
+        return DatasetArtifact(
+            row.id,
+            row.type,
+            row.uri,
+        )
 
-    def _row_to_dataset_version(self, row: Any, canonical_dataset: CanonicalDataset):
+    def _row_to_dataset_version(self, row: Any, canonical_dataset: CanonicalDataset, artifacts: List[DatasetArtifact]):
         return DatasetVersion(
-            row.dataset_id,
-            row.version_id,
-            row.collection_id,
-            row.status,
+            DatasetId(str(row.dataset_id)),
+            DatasetVersionId(str(row.version_id)),
+            CollectionId(str(row.collection_id)),
+            DatasetStatus.from_json(row.status),
             row.metadata,
-            row.artifacts,
+            artifacts,
             row.created_at,
             canonical_dataset
         )
@@ -75,11 +79,14 @@ class DatabaseProvider(DatabaseProviderInterface):
         """
         Populates canonical_dataset, artifacts, and status for DatasetVersionRow
         """
-        if not dataset_version.canonical_dataset:
-            dataset_version.canonical_dataset = self.get_canonical_dataset(dataset_version.dataset_id)
-        if not dataset_version.artifacts:
-            dataset_version.artifacts = self.get_dataset_artifacts(dataset_version.artifacts)
-        return dataset_version
+        canonical_dataset = self.get_canonical_dataset(DatasetId(str(dataset_version.dataset_id)))
+        artifacts = self.get_dataset_artifacts(dataset_version.artifacts) # TODO
+        return self._row_to_dataset_version(dataset_version, canonical_dataset, artifacts)
+        # if not dataset_version.canonical_dataset:
+        #     canonical_dataset = self.get_canonical_dataset(dataset_version.dataset_id)
+        # if not dataset_version.artifacts:
+        #     dataset_version.artifacts = self.get_dataset_artifacts(dataset_version.artifacts)
+        # return dataset_version
 
 
 
@@ -95,14 +102,17 @@ class DatabaseProvider(DatabaseProviderInterface):
 
     def get_canonical_dataset(self, dataset_id: DatasetId) -> CanonicalDataset:
         with self.db_session_manager() as session:
-            dataset = session.query(DatasetRow).filter_by(dataset_id=dataset_id).one()
+            dataset = session.query(DatasetRow).filter_by(dataset_id=dataset_id.id).one()
         return dataset
 
-    @staticmethod
-    def parse_id(id: Any, id_type: Any):
-        if id is None: 
-            return None
-        return type(id_type)(str(id))
+    # from typing import TypeVar, Generic
+    # T = TypeVar('T')
+
+    # @staticmethod
+    # def parse_id(id: Any, id_type: T) -> Optional[T]:
+    #     if id is None: 
+    #         return None
+    #     return type(id_type)(str(id))
 
     def create_canonical_collection(self, owner: str, collection_metadata: CollectionMetadata) -> CollectionVersion:
         """
@@ -273,7 +283,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         Deletes a collection version, if it is unpublished.
         """
         with self.db_session_manager() as session:
-            version = session.query(CollectionVersionRow).filter_by(version_id=version_id).one_or_none()
+            version = session.query(CollectionVersionRow).filter_by(version_id=version_id.id).one_or_none()
             if version and version.published_at is None:
                 session.delete(version)
 
@@ -388,21 +398,17 @@ class DatabaseProvider(DatabaseProviderInterface):
                                             artifacts=list(),
                                             status=DatasetStatus.empty().to_json(),
                                             )
+                                            
         with self.db_session_manager() as session:
             session.add(canonical_dataset)
             session.add(dataset_version)
-        return DatasetVersion(version_id=dataset_version_id.id,
-                              dataset_id=dataset_id.id,
-                              collection_id=collection_id[0],
-                              metadata=None,
-                              artifacts=list(),
-                              status=DatasetStatus.empty(),
-                              created_at=datetime.utcnow(),
-                              canonical_dataset=CanonicalDataset(dataset_id=dataset_id.id,
-                                                                 dataset_version_id=dataset_version_id.id,
-                                                                 published_at=None
-                                                                 )
-                            )
+
+            canonical_dataset=CanonicalDataset(dataset_id=DatasetId(dataset_id.id),
+                                    dataset_version_id=DatasetVersionId(dataset_version_id.id),
+                                    published_at=None
+                                    )
+
+            return self._row_to_dataset_version(dataset_version, canonical_dataset, [])
 
     def add_dataset_artifact(self, version_id: DatasetVersionId, artifact_type: str, artifact_uri: str) -> DatasetArtifactId:
         """
@@ -414,7 +420,7 @@ class DatabaseProvider(DatabaseProviderInterface):
                                       uri=artifact_uri)
         with self.db_session_manager() as session:
             session.add(artifact)
-            dataset_version = session.query(DatasetVersionRow).filter_by(version_id=version_id).one()
+            dataset_version = session.query(DatasetVersionRow).filter_by(version_id=version_id.id).one()
             dataset_version.artifacts.append(artifact_id.id)
         return artifact_id
 
@@ -423,7 +429,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         Updates the processing status for a dataset version.
         """
         with self.db_session_manager() as session:
-            dataset_version = session.query(DatasetVersionRow).filter_by(version_id=version_id).one()
+            dataset_version = session.query(DatasetVersionRow).filter_by(version_id=version_id.id).one()
             dataset_version_status = json.loads(dataset_version.status)
             dataset_version_status['processing_status'] = status.value
             dataset_version.status = json.dumps(dataset_version_status)
@@ -433,7 +439,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         Updates the validation status for a dataset version.
         """
         with self.db_session_manager() as session:
-            dataset_version = session.query(DatasetVersionRow).filter_by(version_id=version_id).one()
+            dataset_version = session.query(DatasetVersionRow).filter_by(version_id=version_id.id).one()
             dataset_version_status = json.loads(dataset_version.status)
             dataset_version_status['validation_status'] = status.value
             dataset_version.status = json.dumps(dataset_version_status)
@@ -443,7 +449,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         Updates the upload status for a dataset version.
         """
         with self.db_session_manager() as session:
-            dataset_version = session.query(DatasetVersionRow).filter_by(version_id=version_id).one()
+            dataset_version = session.query(DatasetVersionRow).filter_by(version_id=version_id.id).one()
             dataset_version_status = json.loads(dataset_version.status)
             dataset_version_status['upload_status'] = status.value
             dataset_version.status = json.dumps(dataset_version_status)
@@ -454,7 +460,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         Updates the conversion status for a dataset version and for `status_type`
         """
         with self.db_session_manager() as session:
-            dataset_version = session.query(DatasetVersionRow).filter_by(version_id=version_id).one()
+            dataset_version = session.query(DatasetVersionRow).filter_by(version_id=version_id.id).one()
             dataset_version_status = json.loads(dataset_version.status)
             dataset_version_status[status_type] = status.value
             dataset_version.status = json.dumps(dataset_version_status)
@@ -464,7 +470,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         Returns the status for a dataset version
         """
         with self.db_session_manager() as session:
-            status = session.query(DatasetVersionRow.status).filter_by(version_id=version_id).one()
+            status = session.query(DatasetVersionRow.status).filter_by(version_id=version_id.id).one()
         return json.loads(status)
 
     def set_dataset_metadata(self, version_id: DatasetVersionId, metadata: DatasetMetadata) -> None:
@@ -472,7 +478,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         Sets the metadata for a dataset version
         """
         with self.db_session_manager() as session:
-            dataset_version = session.query(DatasetVersionRow).filter_by(version_id=version_id).one()
+            dataset_version = session.query(DatasetVersionRow).filter_by(version_id=version_id.id).one()
             dataset_version.metadata = metadata.to_json()
 
     def add_dataset_to_collection_version_mapping(
@@ -481,9 +487,17 @@ class DatabaseProvider(DatabaseProviderInterface):
         """
         Adds a mapping between an existing collection version and a dataset version
         """
+
+        import logging
+        logging.basicConfig()
+        logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
+
         with self.db_session_manager() as session:
             collection_version = session.query(CollectionVersionRow).filter_by(version_id=collection_version_id.id).one()
-            collection_version.datasets.append(dataset_version_id)
+            # TODO: alternatively use postgres `array_append`
+            updated_datasets = list(collection_version.datasets)
+            updated_datasets.append(dataset_version_id.id)
+            collection_version.datasets = updated_datasets
 
     def delete_dataset_from_collection_version(
         self, collection_version_id: CollectionVersionId, dataset_version_id: DatasetVersionId
