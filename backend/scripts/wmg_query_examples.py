@@ -34,7 +34,7 @@ def load_snapshot(snapshot_id) -> WmgSnapshot:
         primary_filter_dimensions=pd.DataFrame(),
         expression_summary_fmg_cube=cube_fmg,
         dataset_to_gene_ids={},
-        marker_genes_cube=None
+        marker_genes_cube=None,
     )
 
 
