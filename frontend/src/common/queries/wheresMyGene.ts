@@ -742,17 +742,7 @@ export async function fetchMarkerGenes({
   organismID,
   tissueID,
 }: FetchMarkerGeneParams): Promise<MarkerGeneResponse> {
-  // TEMP UNTIL BACKEND IS READY
-  // TEMP UNTIL BACKEND IS READY
-  // TEMP UNTIL BACKEND IS READY
-  // TEMP UNTIL BACKEND IS READY
-  // TEMP UNTIL BACKEND IS READY
-  // TEMP UNTIL BACKEND IS READY
-  // This is an rdev url while we wait for the backend to be deployed
-  const TEMP_API_URL =
-    "https://atar-fmg-precube-backend.rdev.single-cell.czi.technology";
-
-  const url = TEMP_API_URL + API.WMG_MARKER_GENES;
+  const url = API_URL + API.WMG_MARKER_GENES;
   const body = generateMarkerGeneBody(cellTypeID, tissueID, organismID);
   const response = await fetch(url, {
     ...DEFAULT_FETCH_OPTIONS,
