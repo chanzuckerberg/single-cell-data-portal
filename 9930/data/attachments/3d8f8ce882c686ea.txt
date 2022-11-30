@@ -1,0 +1,92 @@
+INFO     dataset_processing:common.py:38 Uploading [78565627-04e3-4143-b189-3e4510cc2179/None] to S3 bucket: [test-artifact-bucket].
+ERROR    dataset_processing:common.py:57 expected str, bytes or os.PathLike object, not NoneType
+INFO     dataset_processing:common.py:38 Uploading [78565627-04e3-4143-b189-3e4510cc2179//tmp/tmpvvr95qmi/test.h5ad] to S3 bucket: [test-artifact-bucket].
+INFO     dataset_processing:common.py:42 Updating database with  BadEnum.fake.
+ERROR    backend.common.utils.db_session:db_session.py:57 (builtins.LookupError) 'BadEnum.fake' is not among the defined enum values. Enum name: datasetartifactfiletype. Possible values: H5AD, RDS, CXG
+[SQL: INSERT INTO dataset_artifact (id, created_at, updated_at, dataset_id, filename, filetype, user_submitted, s3_uri) VALUES (%(id)s, %(created_at)s, %(updated_at)s, %(dataset_id)s, %(filename)s, %(filetype)s, %(user_submitted)s, %(s3_uri)s)]
+[parameters: [{'s3_uri': 's3://test-artifact-bucket/78565627-04e3-4143-b189-3e4510cc2179/test.h5ad', 'dataset_id': '78565627-04e3-4143-b189-3e4510cc2179', 'filename': '/tmp/tmpvvr95qmi/test.h5ad', 'user_submitted': True, 'filetype': <BadEnum.fake: 'fake'>}]]
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/dist-packages/sqlalchemy/sql/sqltypes.py", line 1608, in _db_value_for_elem
+    return self._valid_lookup[elem]
+KeyError: <BadEnum.fake: 'fake'>
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.10/dist-packages/sqlalchemy/engine/base.py", line 1800, in _execute_context
+    context = constructor(
+  File "/usr/local/lib/python3.10/dist-packages/sqlalchemy/engine/default.py", line 1121, in _init_compiled
+    param = {
+  File "/usr/local/lib/python3.10/dist-packages/sqlalchemy/engine/default.py", line 1122, in <dictcomp>
+    key: processors[key](compiled_params[key])
+  File "/usr/local/lib/python3.10/dist-packages/sqlalchemy/sql/sqltypes.py", line 1756, in process
+    value = self._db_value_for_elem(value)
+  File "/usr/local/lib/python3.10/dist-packages/sqlalchemy/sql/sqltypes.py", line 1623, in _db_value_for_elem
+    util.raise_(
+  File "/usr/local/lib/python3.10/dist-packages/sqlalchemy/util/compat.py", line 210, in raise_
+    raise exception
+LookupError: 'BadEnum.fake' is not among the defined enum values. Enum name: datasetartifactfiletype. Possible values: H5AD, RDS, CXG
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/single-cell-data-portal/backend/common/utils/db_session.py", line 51, in db_session_manager
+    yield session
+  File "/single-cell-data-portal/backend/portal/pipeline/processing/common.py", line 43, in create_artifact
+    DatasetAsset.create(
+  File "/single-cell-data-portal/backend/common/entities/dataset_asset.py", line 90, in create
+    session.commit()
+  File "/usr/local/lib/python3.10/dist-packages/sqlalchemy/orm/session.py", line 1451, in commit
+    self._transaction.commit(_to_root=self.future)
+  File "/usr/local/lib/python3.10/dist-packages/sqlalchemy/orm/session.py", line 829, in commit
+    self._prepare_impl()
+  File "/usr/local/lib/python3.10/dist-packages/sqlalchemy/orm/session.py", line 808, in _prepare_impl
+    self.session.flush()
+  File "/usr/local/lib/python3.10/dist-packages/sqlalchemy/orm/session.py", line 3444, in flush
+    self._flush(objects)
+  File "/usr/local/lib/python3.10/dist-packages/sqlalchemy/orm/session.py", line 3583, in _flush
+    with util.safe_reraise():
+  File "/usr/local/lib/python3.10/dist-packages/sqlalchemy/util/langhelpers.py", line 70, in __exit__
+    compat.raise_(
+  File "/usr/local/lib/python3.10/dist-packages/sqlalchemy/util/compat.py", line 210, in raise_
+    raise exception
+  File "/usr/local/lib/python3.10/dist-packages/sqlalchemy/orm/session.py", line 3544, in _flush
+    flush_context.execute()
+  File "/usr/local/lib/python3.10/dist-packages/sqlalchemy/orm/unitofwork.py", line 456, in execute
+    rec.execute(self)
+  File "/usr/local/lib/python3.10/dist-packages/sqlalchemy/orm/unitofwork.py", line 630, in execute
+    util.preloaded.orm_persistence.save_obj(
+  File "/usr/local/lib/python3.10/dist-packages/sqlalchemy/orm/persistence.py", line 245, in save_obj
+    _emit_insert_statements(
+  File "/usr/local/lib/python3.10/dist-packages/sqlalchemy/orm/persistence.py", line 1238, in _emit_insert_statements
+    result = connection._execute_20(
+  File "/usr/local/lib/python3.10/dist-packages/sqlalchemy/engine/base.py", line 1705, in _execute_20
+    return meth(self, args_10style, kwargs_10style, execution_options)
+  File "/usr/local/lib/python3.10/dist-packages/sqlalchemy/sql/elements.py", line 334, in _execute_on_connection
+    return connection._execute_clauseelement(
+  File "/usr/local/lib/python3.10/dist-packages/sqlalchemy/engine/base.py", line 1572, in _execute_clauseelement
+    ret = self._execute_context(
+  File "/usr/local/lib/python3.10/dist-packages/sqlalchemy/engine/base.py", line 1806, in _execute_context
+    self._handle_dbapi_exception(
+  File "/usr/local/lib/python3.10/dist-packages/sqlalchemy/engine/base.py", line 2124, in _handle_dbapi_exception
+    util.raise_(
+  File "/usr/local/lib/python3.10/dist-packages/sqlalchemy/util/compat.py", line 210, in raise_
+    raise exception
+  File "/usr/local/lib/python3.10/dist-packages/sqlalchemy/engine/base.py", line 1800, in _execute_context
+    context = constructor(
+  File "/usr/local/lib/python3.10/dist-packages/sqlalchemy/engine/default.py", line 1121, in _init_compiled
+    param = {
+  File "/usr/local/lib/python3.10/dist-packages/sqlalchemy/engine/default.py", line 1122, in <dictcomp>
+    key: processors[key](compiled_params[key])
+  File "/usr/local/lib/python3.10/dist-packages/sqlalchemy/sql/sqltypes.py", line 1756, in process
+    value = self._db_value_for_elem(value)
+  File "/usr/local/lib/python3.10/dist-packages/sqlalchemy/sql/sqltypes.py", line 1623, in _db_value_for_elem
+    util.raise_(
+  File "/usr/local/lib/python3.10/dist-packages/sqlalchemy/util/compat.py", line 210, in raise_
+    raise exception
+sqlalchemy.exc.StatementError: (builtins.LookupError) 'BadEnum.fake' is not among the defined enum values. Enum name: datasetartifactfiletype. Possible values: H5AD, RDS, CXG
+[SQL: INSERT INTO dataset_artifact (id, created_at, updated_at, dataset_id, filename, filetype, user_submitted, s3_uri) VALUES (%(id)s, %(created_at)s, %(updated_at)s, %(dataset_id)s, %(filename)s, %(filetype)s, %(user_submitted)s, %(s3_uri)s)]
+[parameters: [{'s3_uri': 's3://test-artifact-bucket/78565627-04e3-4143-b189-3e4510cc2179/test.h5ad', 'dataset_id': '78565627-04e3-4143-b189-3e4510cc2179', 'filename': '/tmp/tmpvvr95qmi/test.h5ad', 'user_submitted': True, 'filetype': <BadEnum.fake: 'fake'>}]]
+ERROR    dataset_processing:common.py:57 Failed to commit.
+INFO     dataset_processing:common.py:38 Uploading [78565627-04e3-4143-b189-3e4510cc2179//tmp/tmpvvr95qmi/test.h5ad] to S3 bucket: [fake-bucket].
+ERROR    dataset_processing:common.py:57 Failed to upload /tmp/tmpvvr95qmi/test.h5ad to fake-bucket/78565627-04e3-4143-b189-3e4510cc2179/test.h5ad: An error occurred (NoSuchBucket) when calling the PutObject operation: The specified bucket does not exist

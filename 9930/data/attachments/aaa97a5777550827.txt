@@ -1,0 +1,3 @@
+INFO     backend.portal.pipeline.processing.download:download.py:172 Setting up download.
+INFO     backend.portal.pipeline.processing.download:download.py:173 file_size: 4854
+INFO     backend.portal.pipeline.processing.download:download.py:84 Starting download.
