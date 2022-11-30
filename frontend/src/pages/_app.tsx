@@ -1,4 +1,4 @@
-import { Auth0Provider } from '@auth0/auth0-react';
+import { Auth0Provider } from "@auth0/auth0-react";
 import { ThemeProvider as EmotionThemeProvider } from "@emotion/react";
 import { StyledEngineProvider, ThemeProvider } from "@mui/material/styles";
 import { NextPage } from "next";
@@ -11,7 +11,7 @@ import { EVENTS } from "src/common/analytics/events";
 import { checkFeatureFlags } from "src/common/featureFlags";
 import { theme } from "src/common/theme";
 import DefaultLayout from "src/components/Layout/components/defaultLayout";
-import Wrapper from 'src/common/utils/auth0Wrapper';
+// import Wrapper from 'src/common/utils/auth0Wrapper';
 import configs from "src/configs/configs";
 import "src/global.scss";
 // (thuang): `layout.css` needs to be imported after `global.scss`
@@ -40,6 +40,7 @@ type AppPropsWithLayout = AppProps & {
 
 function App({ Component, pageProps }: AppPropsWithLayout): JSX.Element {
   const Layout = Component.Layout || DefaultLayout;
+  const [redirectUri, setRedirectUri] = useState("");
 
   // (thuang): Per Plausible instruction
   // "...make sure your tracking setup includes the second line as shown below"
@@ -52,44 +53,37 @@ function App({ Component, pageProps }: AppPropsWithLayout): JSX.Element {
     }
   }, []);
 
-  let windowLocationOrigin;
-
-  const [isMounted, setMounted] = useState(false);
+  // const [isMounted, setMounted] = useState(false);
 
   useEffect(() => {
-    windowLocationOrigin = window.location.origin;
-    setMounted(true);
+    setRedirectUri(window.location.origin);
   }, []);
 
   return (
-    isMounted ? (
-      <>
-        <Auth0Provider
-          domain="corporanet.local"  // Hard-coded for local dev
-          clientId="local-client-id"  // Hard-coded for local dev
-          redirectUri={windowLocationOrigin}
-        >
-          <Wrapper>
-            <QueryClientProvider client={queryClient}>
-              <StylesProvider injectFirst>
-                <EmotionThemeProvider theme={theme}>
-                  <ThemeProvider theme={theme}>
-                    <Layout>
-                      <Component {...pageProps} />
-                    </Layout>
-                    <ReactQueryDevtools />
-                  </ThemeProvider>
-                </EmotionThemeProvider>
-              </StylesProvider>
-            </QueryClientProvider>
-          </Wrapper>
-        </Auth0Provider>
-        <Script
-          data-domain={configs.PLAUSIBLE_DATA_DOMAIN}
-          src="https://plausible.io/js/script.js"
-        />
-      </>
-    ) : (<></>)
+    <>
+      <Auth0Provider
+        domain="corporanet.local" // Hard-coded for local dev
+        clientId="local-client-id" // Hard-coded for local dev
+        redirectUri={redirectUri}
+      >
+        <QueryClientProvider client={queryClient}>
+          <StylesProvider injectFirst>
+            <EmotionThemeProvider theme={theme}>
+              <ThemeProvider theme={theme}>
+                <Layout>
+                  <Component {...pageProps} />
+                </Layout>
+                <ReactQueryDevtools />
+              </ThemeProvider>
+            </EmotionThemeProvider>
+          </StylesProvider>
+        </QueryClientProvider>
+      </Auth0Provider>
+      <Script
+        data-domain={configs.PLAUSIBLE_DATA_DOMAIN}
+        src="https://plausible.io/js/script.js"
+      />
+    </>
   );
 }
 
