@@ -309,7 +309,8 @@ class BusinessLogic(BusinessLogicInterface):
         """
         Returns all the artifacts for a dataset
         """
-        return self.database_provider.get_dataset_artifacts(dataset_version_id)
+        dataset = self.database_provider.get_dataset_version(dataset_version_id)
+        return dataset.artifacts
 
     def get_dataset_artifact_download_data(self, dataset_version_id: DatasetVersionId, artifact_id: DatasetArtifactId) -> DatasetArtifactDownloadData:
         """

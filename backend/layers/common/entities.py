@@ -128,6 +128,7 @@ class OntologyTermId:
     ontology_term_id: str
 
 
+@dataclass_json
 @dataclass
 class DatasetMetadata:
     name: str

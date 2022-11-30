@@ -70,7 +70,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             DatasetVersionId(str(row.version_id)),
             CollectionId(str(row.collection_id)),
             DatasetStatus.from_json(row.status),
-            row.metadata,
+            None if row.metadata is None else DatasetMetadata.from_json(row.metadata),
             artifacts,
             row.created_at,
             canonical_dataset
@@ -81,15 +81,8 @@ class DatabaseProvider(DatabaseProviderInterface):
         Populates canonical_dataset, artifacts, and status for DatasetVersionRow
         """
         canonical_dataset = self.get_canonical_dataset(DatasetId(str(dataset_version.dataset_id)))
-        artifacts = self.get_dataset_artifacts(dataset_version.artifacts) # TODO
+        artifacts = self.get_dataset_artifacts(dataset_version.artifacts)
         return self._row_to_dataset_version(dataset_version, canonical_dataset, artifacts)
-        # if not dataset_version.canonical_dataset:
-        #     canonical_dataset = self.get_canonical_dataset(dataset_version.dataset_id)
-        # if not dataset_version.artifacts:
-        #     dataset_version.artifacts = self.get_dataset_artifacts(dataset_version.artifacts)
-        # return dataset_version
-
-
 
     def get_canonical_collection(self, collection_id: CollectionId) -> CanonicalCollection:
         with self.db_session_manager() as session:
@@ -388,23 +381,38 @@ class DatabaseProvider(DatabaseProviderInterface):
         Returns all dataset versions.
         # TODO: Add filtering (tombstoned? remove orphaned datasets? canonical only? published?)
         """
-        pass
+
+        import logging
+        logging.basicConfig()
+        logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
+
+        active_collections = self.get_all_mapped_collection_versions()
+        active_datasets = [i.id for s in [c.datasets for c in active_collections] for i in s]
+
+        # TODO: this is doing N fetches - optimize this using INs or by loading the other tables in memory
+        acc = []
+        with self.db_session_manager() as session:
+            for version in session.query(DatasetVersionRow).all(): # noqa
+                if str(version.version_id) in active_datasets:
+                    acc.append(self._hydrate_dataset_version(version))
+        return acc
 
     def get_dataset_artifacts(self, dataset_artifact_id_list: List[DatasetArtifactId]) -> List[DatasetArtifact]:
         """
         Returns all the artifacts given a list of DatasetArtifactIds
         """
         with self.db_session_manager() as session:
-            artifacts = session.query(DatasetArtifactRow).filter(DatasetArtifactRow.id in dataset_artifact_id_list).all() # noqa
-        return artifacts
+            artifacts = session.query(DatasetArtifactRow).filter(DatasetArtifactRow.id.in_([str(i) for i in dataset_artifact_id_list])).all() # noqa
+            return [self._row_to_dataset_artifact(a) for a in artifacts]
 
     def get_dataset_artifacts_by_version_id(self, dataset_version_id: DatasetVersionId) -> List[DatasetArtifact]:
         """
         Returns all the artifacts for a specific dataset version
         """
         with self.db_session_manager() as session:
-            artifact_ids = session.query(DatasetVersionRow.artifacts).filter_by(version_id=dataset_version_id).one()
-        return self.get_dataset_artifacts(artifact_ids)
+            artifact_ids = session.query(DatasetVersionRow.artifacts).filter_by(version_id=dataset_version_id.id).one()
+            print("zzz", artifact_ids)
+        return self.get_dataset_artifacts(artifact_ids[0])
 
     def create_canonical_dataset(self, collection_version_id: CollectionVersionId) -> DatasetVersion:
         """
@@ -449,7 +457,9 @@ class DatabaseProvider(DatabaseProviderInterface):
         with self.db_session_manager() as session:
             session.add(artifact)
             dataset_version = session.query(DatasetVersionRow).filter_by(version_id=version_id.id).one()
-            dataset_version.artifacts.append(artifact_id.id)
+            artifacts = list(dataset_version.artifacts)
+            artifacts.append(artifact_id.id)
+            dataset_version.artifacts = artifacts
         return artifact_id
 
     def update_dataset_processing_status(self, version_id: DatasetVersionId, status: DatasetProcessingStatus) -> None:
@@ -499,7 +509,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         """
         with self.db_session_manager() as session:
             status = session.query(DatasetVersionRow.status).filter_by(version_id=version_id.id).one()
-        return json.loads(status)
+        return DatasetStatus.from_json(status[0])
 
     def set_dataset_metadata(self, version_id: DatasetVersionId, metadata: DatasetMetadata) -> None:
         """

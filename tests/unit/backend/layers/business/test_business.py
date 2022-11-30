@@ -12,7 +12,7 @@ from backend.layers.business.business import BusinessLogic, CollectionQueryFilte
 from backend.layers.business.business import BusinessLogic, CollectionMetadataUpdate, CollectionQueryFilter, DatasetArtifactDownloadData
 from backend.layers.business.exceptions import CollectionUpdateException, CollectionVersionException, DatasetNotFoundException, InvalidLinkException, \
     CollectionCreationException, DatasetIngestException, CollectionPublishException
-from backend.layers.common.entities import CollectionId, CollectionMetadata, CollectionVersion, CollectionVersionId, CollectionVersionWithDatasets, DatasetArtifact, DatasetMetadata, DatasetProcessingStatus, DatasetStatus, DatasetUploadStatus, DatasetValidationStatus, DatasetVersionId, Link, OntologyTermId
+from backend.layers.common.entities import CollectionId, CollectionMetadata, CollectionVersion, CollectionVersionId, CollectionVersionWithDatasets, DatasetArtifact, DatasetArtifactType, DatasetMetadata, DatasetProcessingStatus, DatasetStatus, DatasetUploadStatus, DatasetValidationStatus, DatasetVersionId, Link, OntologyTermId
 from backend.layers.thirdparty.uri_provider import FileInfo, UriProviderInterface
 from backend.layers.persistence.persistence import DatabaseProvider
 
@@ -647,7 +647,7 @@ class TestGetDataset(BaseBusinessLogicTestCase):
 
         artifacts = list(self.business_logic.get_dataset_artifacts(dataset_version_id))
         self.assertEqual(3, len(artifacts))
-        self.assertCountEqual([a.type for a in artifacts], ["H5AD", "CXG", "RDS"])
+        self.assertCountEqual([a.type for a in artifacts], [DatasetArtifactType.H5AD, DatasetArtifactType.CXG, DatasetArtifactType.RDS])
 
     def test_get_dataset_artifact_download_data_ok(self):
         """
@@ -655,7 +655,7 @@ class TestGetDataset(BaseBusinessLogicTestCase):
         """
         published_version = self.initialize_published_collection()
         dataset = published_version.datasets[0]
-        artifact = next(artifact for artifact in dataset.artifacts if artifact.type == "H5AD")
+        artifact = next(artifact for artifact in dataset.artifacts if artifact.type == DatasetArtifactType.H5AD)
         self.assertIsNotNone(artifact)
 
         expected_file_size = 12345
@@ -668,7 +668,7 @@ class TestGetDataset(BaseBusinessLogicTestCase):
         download_data = self.business_logic.get_dataset_artifact_download_data(dataset.version_id, artifact.id)
         expected_download_data = DatasetArtifactDownloadData(
             "artifact.h5ad",
-            "H5AD",
+            DatasetArtifactType.H5AD,
             expected_file_size,
             expected_presigned_url
             )
@@ -712,7 +712,7 @@ class TestUpdateDataset(BaseBusinessLogicTestCase):
 
             version_from_db = self.database_provider.get_dataset_version(dataset.version_id)
             self.assertEqual(1, len(version_from_db.artifacts))
-            self.assertEqual(version_from_db.artifacts[0].type, "H5AD")
+            self.assertEqual(version_from_db.artifacts[0].type, DatasetArtifactType.H5AD)
             self.assertEqual(version_from_db.artifacts[0].uri, "http://fake.uri/artifact.h5ad")
 
     def test_add_dataset_artifact_wrong_type_fail(self):
