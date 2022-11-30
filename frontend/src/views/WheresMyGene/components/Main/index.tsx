@@ -15,6 +15,7 @@ import {
   useGeneExpressionSummariesByTissueName,
 } from "src/common/queries/wheresMyGene";
 import SideBar from "src/components/common/SideBar";
+import { Position } from "src/components/common/SideBar/style";
 import { View } from "../../../globalStyle";
 import { DispatchContext, StateContext } from "../../common/store";
 import {
@@ -240,10 +241,11 @@ export default function WheresMyGene(): JSX.Element {
     setIsScaled((prevIsScaled) => !prevIsScaled);
   }, [setIsScaled]);
 
-  const [isRightSidebarOpen, setRightSidebarOpen] = useState(false);
-  const handleRightSidebarButtonClick = useCallback(() => {
-    setRightSidebarOpen(!isRightSidebarOpen);
-  }, [isRightSidebarOpen]);
+  const [isSourceDatasetSidebarOpen, setSourceDatasetSidebarOpen] =
+    useState(false);
+  const handleSourceDatasetButtonClick = useCallback(() => {
+    setSourceDatasetSidebarOpen(!isSourceDatasetSidebarOpen);
+  }, [isSourceDatasetSidebarOpen]);
 
   return (
     <>
@@ -265,6 +267,19 @@ export default function WheresMyGene(): JSX.Element {
         <ColorScale handleIsScaledChange={handleIsScaledChange} />
       </SideBar>
 
+      <SideBar
+        label="Effector CD8 positive, alpha beta T cell"
+        SideBarWrapperComponent={SideBarWrapper}
+        SideBarPositionerComponent={SideBarPositioner}
+        position={Position.RIGHT}
+        testId="cell-type-details-panel"
+        disabled={false}
+        forceToggle={false}
+        wmgSideBar
+      >
+        "TEST"
+      </SideBar>
+
       <View id="view" overflow="hidden">
         <Wrapper>
           {isLoading && !shouldShowHeatMap && <Loader />}
@@ -276,7 +291,7 @@ export default function WheresMyGene(): JSX.Element {
               selectedGenes={selectedGenes}
               selectedTissues={selectedTissues}
               isScaled={isScaled}
-              handleRightSidebarButtonClick={handleRightSidebarButtonClick}
+              handleRightSidebarButtonClick={handleSourceDatasetButtonClick}
             />
           </Top>
 
@@ -290,11 +305,11 @@ export default function WheresMyGene(): JSX.Element {
 
           <StyledSidebarDrawer
             position="right"
-            isOpen={isRightSidebarOpen}
+            isOpen={isSourceDatasetSidebarOpen}
             title="Source Data"
             canEscapeKeyClose={true}
             canOutsideClickClose={true}
-            onClose={handleRightSidebarButtonClick}
+            onClose={handleSourceDatasetButtonClick}
             size={DrawerSize.SMALL}
           >
             <InfoPanel />
