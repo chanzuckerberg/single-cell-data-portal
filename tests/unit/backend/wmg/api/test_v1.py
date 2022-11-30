@@ -584,6 +584,7 @@ class WmgApiV1Tests(unittest.TestCase):
                 ],
                 "sex_terms": [{"sex_ontology_term_id_0": "sex_ontology_term_id_0_label"}],
             }
+            print(json.loads(response.data))
             self.assertEqual(json.loads(response.data)["filter_dims"], expected_filters)
 
     @patch("backend.wmg.api.v1.fetch_datasets_metadata")
