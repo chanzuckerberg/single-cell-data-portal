@@ -7,6 +7,9 @@ from backend.common.logging_config import format_log_string, DATETIME_FORMAT, LO
 
 def configure_logging(app_name):
 
+    log = logging.getLogger("ddtrace.tracer")
+    log.setLevel(logging.DEBUG)
+
     """https://docs.python.org/3/library/logging.config.html"""
     gunicorn_logger = logging.getLogger("gunicorn.error")
 
