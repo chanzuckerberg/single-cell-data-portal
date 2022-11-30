@@ -26,6 +26,8 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
 
     def setUp(self) -> None:
         self.database_provider = DatabaseProvider()
+        self.database_provider._drop()
+        self.database_provider._create()
 
         # By default these do nothing. They can be mocked by single test cases.
         self.crossref_provider = CrossrefProviderInterface()

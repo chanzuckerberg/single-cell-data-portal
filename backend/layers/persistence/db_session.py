@@ -8,11 +8,9 @@ from sqlalchemy import create_engine
 from sqlalchemy import event
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import sessionmaker, session as sql_session
-from sqlalchemy.schema import CreateSchema
 
 from backend.common.utils.exceptions import CorporaException
 from backend.common.corpora_config import CorporaDbConfig
-from backend.layers.persistence.orm import metadata
 
 logger = logging.getLogger(__name__)
 
@@ -23,15 +21,8 @@ class DBSessionMaker:
         if not database_uri:
             # database_uri = CorporaDbConfig().database_uri
             database_uri = "postgresql://postgres:secret@localhost"
-        engine = create_engine(database_uri, connect_args={"connect_timeout": 5})
-
-        try:
-            engine.execute(CreateSchema('persistence_schema'))
-            metadata.create_all(bind=engine)
-        except:
-            pass
-
-        self._session_maker = sessionmaker(bind=engine)
+        self.engine = create_engine(database_uri, connect_args={"connect_timeout": 5})
+        self._session_maker = sessionmaker(bind=self.engine)
 
     def make_session(self, **kwargs):
         if not self._session_maker:
