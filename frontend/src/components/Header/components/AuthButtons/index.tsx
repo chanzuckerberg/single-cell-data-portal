@@ -1,3 +1,4 @@
+import { useAuth0 } from "@auth0/auth0-react";
 import { AnchorButton, Button, MenuDivider } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 import { Menu, MenuItem } from "czifui";
@@ -86,9 +87,14 @@ function LoggedInButtons({ name, email }: { name?: string; email?: string }) {
 }
 
 function LoggedOutButtons() {
+  const {
+    // isAuthenticated,
+    loginWithRedirect,
+  } = useAuth0();
+
   return (
     <AnchorButton
-      href={`${API_URL}${API.LOG_IN}`}
+      onClick={loginWithRedirect}
       minimal
       rightIcon={IconNames.CHEVRON_DOWN}
       text="Log In"
