@@ -1,4 +1,4 @@
-from backend.corpora.common.corpora_config import CorporaConfig
+from backend.common.corpora_config import CorporaConfig
 from backend.layers.common.entities import CollectionVersionId, DatasetVersionId
 from time import time
 import boto3

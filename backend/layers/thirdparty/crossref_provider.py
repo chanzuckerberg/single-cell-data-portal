@@ -5,7 +5,7 @@ from urllib.parse import urlparse
 from flask import request_started
 import requests
 
-from backend.corpora.common.corpora_config import CorporaConfig
+from backend.common.corpora_config import CorporaConfig
 
 
 class CrossrefProviderInterface:

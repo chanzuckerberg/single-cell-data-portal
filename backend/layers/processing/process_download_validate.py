@@ -1,6 +1,6 @@
 from logging import Logger
 from typing import List, Literal, Optional, Tuple
-from backend.corpora.common.utils.corpora_constants import CorporaConstants
+from backend.common.utils.corpora_constants import CorporaConstants
 from backend.layers.business.business import BusinessLogic
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.processing.downloader import Downloader

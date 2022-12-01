@@ -32,4 +32,4 @@ LABEL commit=${HAPPY_COMMIT}
 ENV COMMIT_SHA=${HAPPY_COMMIT}
 ENV COMMIT_BRANCH=${HAPPY_BRANCH}
 
-CMD ["python3", "-m", "backend.portal.pipeline.processing.process"]
+CMD ["python3", "-m", "backend.layers.processing.process"]

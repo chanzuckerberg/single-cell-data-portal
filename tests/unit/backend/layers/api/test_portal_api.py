@@ -2410,7 +2410,7 @@ class TestCollectionPutUploadLink(NewBaseTest):
         self.assert_datasets_are_updated(dataset, new_dataset)
 
     # ✅
-    @patch("backend.corpora.common.upload.start_upload_sfn")
+    @patch("backend.common.upload.start_upload_sfn")
     def test__reupload_unpublished_dataset__202(self):
         """
         Reuploads an unpublished dataset

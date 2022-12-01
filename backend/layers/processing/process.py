@@ -1,4 +1,6 @@
+from backend.layers.business.business import BusinessLogic
 from backend.layers.business.business_interface import BusinessLogicInterface
+from backend.layers.persistence.persistence import DatabaseProvider
 from backend.layers.processing.downloader import Downloader
 from backend.layers.processing.exceptions import ConversionFailed, ProcessingCanceled, ProcessingFailed, UploadFailed, ValidationFailed
 from backend.layers.processing.process_logic import ProcessingLogic
@@ -8,10 +10,11 @@ from backend.layers.processing.process_cxg import ProcessCxg
 from backend.layers.processing.process_download_validate import ProcessDownloadValidate
 from backend.layers.processing.process_seurat import ProcessSeurat
 from backend.layers.common.entities import DatasetConversionStatus, DatasetProcessingStatus, DatasetStatusKey, DatasetUploadStatus, DatasetValidationStatus, DatasetVersionId
-from backend.layers.thirdparty.s3_provider import S3ProviderInterface
-from backend.layers.thirdparty.schema_validator_provider import SchemaValidatorProviderInterface
+from backend.layers.thirdparty.s3_provider import S3Provider, S3ProviderInterface
+from backend.layers.thirdparty.schema_validator_provider import SchemaValidatorProvider, SchemaValidatorProviderInterface
 from backend.layers.thirdparty.uri_provider import UriProviderInterface
 
+import sys
 
 class ProcessMain(ProcessingLogic):
 
@@ -113,4 +116,29 @@ class ProcessMain(ProcessingLogic):
         return 0 if rv else 1
 
 if __name__ == "__main__":
-    pass # TODO: create all of the above
+
+    database_provider = DatabaseProvider()
+    s3_provider = S3Provider()
+    uri_provider = UriProviderInterface()
+
+    business_logic = BusinessLogic(
+        database_provider, 
+        None, # Not required - decide if we should pass for safety
+        None, # Not required - decide if we should pass for safety
+        s3_provider, 
+        uri_provider
+    )
+
+    downloader = Downloader(business_logic)
+    schema_validator = SchemaValidatorProvider()
+
+    process_main = ProcessMain(
+        business_logic=business_logic,
+        uri_provider=uri_provider,
+        s3_provider=s3_provider,
+        downloader=downloader,
+        schema_validator=schema_validator,
+    )
+
+    rv = process_main.main()
+    sys.exit(rv)
