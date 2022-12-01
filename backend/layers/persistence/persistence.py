@@ -207,7 +207,9 @@ class DatabaseProvider(DatabaseProviderInterface):
         Retrieves a specific collection version by id, with datasets
         """
         with self.db_session_manager() as session:
-            collection_version = session.query(CollectionVersionRow).filter_by(version_id=version_id.id).one()
+            collection_version = session.query(CollectionVersionRow).filter_by(version_id=version_id.id).one_or_none()
+            if collection_version is None:
+                return None
             collection_id = CollectionId(str(collection_version.collection_id))
             canonical_collection = self.get_canonical_collection(collection_id)
             datasets = self._get_datasets([DatasetVersionId(str(id)) for id in collection_version.datasets])
@@ -298,17 +300,18 @@ class DatabaseProvider(DatabaseProviderInterface):
             version = session.query(CollectionVersionRow).filter_by(version_id=version_id.id).one()
             version.publisher_metadata = publisher_metadata
 
-    def add_collection_version(self, collection_id: CollectionId) -> CollectionVersion:
+    def add_collection_version(self, collection_id: CollectionId) -> CollectionVersionId:
         """
         Adds a collection version to an existing canonical collection. The new version copies the following data from
          the previous version: owner, metadata, publisher_metadata, datasets (IDs).
-        Returns the new version.
+        Returns the new version id.
         """
         with self.db_session_manager() as session:
             current_version_id = session.query(CollectionRow.version_id).filter_by(id=collection_id.id).one()[0]
             current_version = session.query(CollectionVersionRow).filter_by(version_id=current_version_id).one()
+            new_version_id = self._generate_id()
             new_version = CollectionVersionRow(
-                version_id=self._generate_id(),
+                version_id=new_version_id,
                 collection_id=collection_id.id,
                 metadata=current_version.metadata,
                 owner=current_version.owner,
@@ -318,8 +321,7 @@ class DatabaseProvider(DatabaseProviderInterface):
                 datasets=current_version.datasets
             )
             session.add(new_version)
-            canonical_collection = self.get_canonical_collection(collection_id)
-            return self._row_to_collection_version(new_version, canonical_collection)
+            return DatasetVersionId(new_version_id)
 
     def delete_collection_version(self, version_id: CollectionVersionId) -> None:
         """
@@ -546,8 +548,10 @@ class DatabaseProvider(DatabaseProviderInterface):
             # TODO: alternatively use postgres `array_append`
             # TODO: make sure that the UUID conversion works
             updated_datasets = list(collection_version.datasets)
+            # print("before", updated_datasets)
             updated_datasets.append(dataset_version_id.id)
             collection_version.datasets = updated_datasets
+            # print("after", updated_datasets)
 
     def delete_dataset_from_collection_version(
         self, collection_version_id: CollectionVersionId, dataset_version_id: DatasetVersionId
@@ -584,8 +588,14 @@ class DatabaseProvider(DatabaseProviderInterface):
                                                     created_at=datetime.utcnow(),
                                                     )
             session.add(new_dataset_version)
-            self.add_dataset_to_collection_version_mapping(collection_version_id, new_dataset_version_id)
-            self.delete_dataset_from_collection_version(collection_version_id, old_dataset_version_id)
+
+            collection_version = session.query(CollectionVersionRow).filter_by(version_id=collection_version_id.id).one() # noqa
+            # This replaces the dataset while preserving the order of datasets
+            datasets = list(collection_version.datasets)
+            idx = next(i for i, e in enumerate(datasets) if str(e) == old_dataset_version_id.id)
+            datasets[idx] = new_dataset_version_id.id
+            collection_version.datasets = datasets
+
             return self._hydrate_dataset_version(new_dataset_version)
 
     def get_dataset_mapped_version(self, dataset_id: DatasetId) -> Optional[DatasetVersion]:

@@ -119,11 +119,11 @@ class BusinessLogic(BusinessLogicInterface):
         """
         return self.database_provider.get_collection_mapped_version(collection_id)
 
-    def get_collection_version(self, version_id: CollectionVersionId) -> CollectionVersion:
+    def get_collection_version(self, version_id: CollectionVersionId) -> CollectionVersionWithDatasets:
         """
         Returns a specific collection version
         """
-        return self.database_provider.get_collection_version(version_id)
+        return self.database_provider.get_collection_version_with_datasets(version_id)
 
     def get_collection_versions_from_canonical(self, collection_id: CollectionId) -> Iterable[CollectionVersion]:
         """
@@ -254,7 +254,7 @@ class BusinessLogic(BusinessLogicInterface):
         new_dataset_version: DatasetVersion
         if existing_dataset_version_id is not None:
             # Ensure that the dataset belongs to the collection
-            if existing_dataset_version_id.id not in [d.id for d in collection.datasets]:
+            if existing_dataset_version_id not in [d.version_id for d in collection.datasets]:
                 raise DatasetNotFoundException(f"Dataset {existing_dataset_version_id.id} does not belong to the desired collection")
 
             dataset_version = self.database_provider.get_dataset_version(existing_dataset_version_id)
@@ -371,7 +371,7 @@ class BusinessLogic(BusinessLogicInterface):
         return self.database_provider.add_dataset_artifact(dataset_version_id, artifact_type, artifact_uri)
 
 
-    def create_collection_version(self, collection_id: CollectionId) -> CollectionVersion:
+    def create_collection_version(self, collection_id: CollectionId) -> CollectionVersionWithDatasets:
         """
         Creates a collection version for an existing canonical collection.
         Also ensures that the collection does not have any active, unpublished version
@@ -385,7 +385,8 @@ class BusinessLogic(BusinessLogicInterface):
         if any(v for v in all_versions if v.published_at is None):
             raise CollectionVersionException(f"Collection {collection_id} already has an unpublished version")
 
-        return self.database_provider.add_collection_version(collection_id)
+        added_version_id = self.database_provider.add_collection_version(collection_id)
+        return self.get_collection_version(added_version_id)
 
     def delete_collection_version(self, version_id: CollectionVersionId) -> None:
         self.database_provider.delete_collection_version(version_id)
