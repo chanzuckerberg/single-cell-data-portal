@@ -57,6 +57,7 @@ class DatasetProcessingStatus(DatasetStatusGeneric, Enum):
     FAILURE = "FAILURE"
 
 
+@dataclass_json
 @dataclass
 class DatasetStatus:
     upload_status: Optional[DatasetUploadStatus]
@@ -127,6 +128,7 @@ class OntologyTermId:
     ontology_term_id: str
 
 
+@dataclass_json
 @dataclass
 class DatasetMetadata:
     name: str

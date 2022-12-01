@@ -62,6 +62,7 @@ class DatasetVersion:
         Column("version_id", UUID(as_uuid=True), primary_key=True, default=uuid.uuid4),
         Column("dataset_id", UUID(as_uuid=True), ForeignKey("Dataset.dataset_id"), default=uuid.uuid4),
         Column("collection_id", UUID(as_uuid=True), default=uuid.uuid4),
+        Column("created_at", DateTime),
         Column("metadata", JSON),
         Column("artifacts", ARRAY(UUID(as_uuid=True))),
         Column("status", JSON)

@@ -251,15 +251,14 @@ class BusinessLogic(BusinessLogicInterface):
 
         # Creates a dataset version that the processing pipeline will point to
         new_dataset_version: DatasetVersion
-
         if existing_dataset_version_id is not None:
             # Ensure that the dataset belongs to the collection
-            if existing_dataset_version_id not in [d.version_id for d in collection.datasets]:
-                raise DatasetNotFoundException(f"Dataset {existing_dataset_version_id} does not belong to the desired collection")
+            if existing_dataset_version_id.id not in [d.id for d in collection.datasets]:
+                raise DatasetNotFoundException(f"Dataset {existing_dataset_version_id.id} does not belong to the desired collection")
 
             dataset_version = self.database_provider.get_dataset_version(existing_dataset_version_id)
             if dataset_version is None:
-                raise DatasetNotFoundException(f"Trying to replace non existant dataset {existing_dataset_version_id.id}")
+                raise DatasetNotFoundException(f"Trying to replace non existent dataset {existing_dataset_version_id.id}")
 
             if dataset_version.status.processing_status not in [
                 DatasetProcessingStatus.SUCCESS,
@@ -267,13 +266,15 @@ class BusinessLogic(BusinessLogicInterface):
                 DatasetProcessingStatus.INITIALIZED,
             ]:
                 raise DatasetInWrongStatusException(
-                    f"Unable to reprocess dataset {existing_dataset_version_id}: processing status is {dataset_version.status.processing_status.name}"
+                    f"Unable to reprocess dataset {existing_dataset_version_id.id}: processing status is {dataset_version.status.processing_status.name}"
                 )
 
             # TODO: this method could very well be called `add_dataset_version`
             new_dataset_version = self.database_provider.replace_dataset_in_collection_version(collection_version_id, existing_dataset_version_id)
         else:
             new_dataset_version = self.database_provider.create_canonical_dataset(collection_version_id)
+            # adds new dataset version to collection version
+            self.database_provider.add_dataset_to_collection_version_mapping(collection_version_id, new_dataset_version.version_id)
 
         # Sets an initial processing status for the new dataset version
         self.database_provider.update_dataset_upload_status(new_dataset_version.version_id, DatasetUploadStatus.WAITING)
@@ -374,16 +375,15 @@ class BusinessLogic(BusinessLogicInterface):
         Also ensures that the collection does not have any active, unpublished version
         """
 
-        all_versions = self.database_provider.get_all_versions_for_collection(collection_id)
+        try:
+            all_versions = self.database_provider.get_all_versions_for_collection(collection_id)
+        except Exception:  # TODO: maybe add a RecordNotFound exception for finer grained exceptions
+            raise CollectionVersionException(f"Collection {collection_id} cannot be found")
+
         if any(v for v in all_versions if v.published_at is None):
             raise CollectionVersionException(f"Collection {collection_id} already has an unpublished version")
 
-        try:
-            new_version = self.database_provider.add_collection_version(collection_id)
-        except Exception: # TODO: maybe add a RecordNotFound exception for finer grained exceptions
-            raise CollectionVersionException(f"Collection {collection_id} cannot be found")
-
-        return new_version
+        return self.database_provider.add_collection_version(collection_id)
 
     def delete_collection_version(self, version_id: CollectionVersionId) -> None:
         self.database_provider.delete_collection_version(version_id)
@@ -397,7 +397,7 @@ class BusinessLogic(BusinessLogicInterface):
         if len(version.datasets) == 0:
             raise CollectionPublishException("Cannot publish a collection with no datasets")
 
-        self.database_provider.finalize_collection_version(version.collection_id, version_id, None)
+        self.database_provider.finalize_collection_version(version.collection_id, version_id)
 
     def get_dataset_version(self, dataset_version_id: DatasetVersionId) -> Optional[DatasetVersion]:
         return self.database_provider.get_dataset_version(dataset_version_id)
