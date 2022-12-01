@@ -1311,7 +1311,7 @@ class TestUpdateCollection(BaseAuthAPITest):
         self.assertEqual("Old Journal", actual_body["publisher_metadata"]["journal"])
 
 
-class TestCollectionsCurators:
+class TestCollectionsCurators(BaseAuthAPITest):
     def test_view_non_owned_private_collection__ok(self):
         # Generate test collection
         collection = self.generate_collection(
@@ -1327,7 +1327,7 @@ class TestCollectionsCurators:
         self.assertEqual(response.status_code, 200)
 
         body = json.loads(response.data)
-        self.assertEqual(body["access_type"], "WRITE")
+        self.assertEqual(body["access_type"], "READ")
 
     def test_update_non_owned_private_collection_as_super_curator__ok(self):
         # Generate test collection
