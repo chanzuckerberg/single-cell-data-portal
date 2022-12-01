@@ -65,6 +65,7 @@ class DatasetVersion:
         Column("created_at", DateTime),
         Column("metadata", JSON),
         Column("artifacts", ARRAY(UUID(as_uuid=True))),
+        Column("created_at", DateTime),
         Column("status", JSON)
     )
 
