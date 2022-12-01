@@ -4,7 +4,7 @@ import { StyledEngineProvider, ThemeProvider } from "@mui/material/styles";
 import { NextPage } from "next";
 import { AppProps } from "next/app";
 import Script from "next/script";
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect, useState, Fragment } from "react";
 import { QueryClient, QueryClientProvider } from "react-query";
 import { ReactQueryDevtools } from "react-query/devtools";
 import { EVENTS } from "src/common/analytics/events";
@@ -52,7 +52,7 @@ function App({ Component, pageProps }: AppPropsWithLayout): JSX.Element {
     }
   }, []);
 
-  // const [isMounted, setMounted] = useState(false);
+  const ConditionalAuth0Provider = redirectUri ? Auth0Provider : Fragment;
 
   useEffect(() => {
     console.log(`setting redirect uri to ${window.location.origin}`);
@@ -62,7 +62,7 @@ function App({ Component, pageProps }: AppPropsWithLayout): JSX.Element {
 
   return (
     <>
-      <Auth0Provider
+      <ConditionalAuth0Provider
         domain="oidc.corporanet.local:8443/connect" // Hard-coded for local dev
         clientId="local-client-id" // Hard-coded for local dev
         redirectUri={redirectUri}
@@ -79,7 +79,7 @@ function App({ Component, pageProps }: AppPropsWithLayout): JSX.Element {
             </EmotionThemeProvider>
           </StylesProvider>
         </QueryClientProvider>
-      </Auth0Provider>
+      </ConditionalAuth0Provider>
       <Script
         data-domain={configs.PLAUSIBLE_DATA_DOMAIN}
         src="https://plausible.io/js/script.js"
