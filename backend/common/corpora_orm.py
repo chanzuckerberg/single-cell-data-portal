@@ -263,6 +263,28 @@ class DatasetArtifactFileType(enum.Enum):
     CXG = "cxg"
 
 
+class CollectionConsortia(enum.Enum):
+    """
+    Enumerates Consortia names.
+
+    """
+    ALLEN_INSTITUTE_FOR_BRAIN_SCIENCE = "Allen Institute for Brain Science"
+    BRAIN_INITIATIVE = "BRAIN Initiative"
+    CZ_BIOHUB = "CZ Biohub"
+    CZI_NDCN = "CZI Neurodegeneration Challenge Network"
+    CZI_SCB = "CZI Single-Cell Biology"
+    EU_HORIZON_2020 = "European Union’s Horizon 2020"
+    GUDMAP = "GenitoUrinary Development Molecular Anatomy Project (GUDMAP)"
+    GUT_CELL_ATLAS = "Gut Cell Atlas"
+    HUBMAP= "Human BioMolecular Atlas Program (HuBMAP)"
+    HPAP = "Human Pancreas Analysis Program (HPAP)"
+    HTAN = "Human Tumor Atlas Network (HTAN)"
+    KPMP = "Kidney Precision Medicine Project (KPMP)"
+    LUNG_MAP = "LungMAP"
+    SEA_AD = "SEA-AD"
+    WELCOME_HCA_STRATEGIC_SCIENCE_SUPPORT = "Wellcome HCA Strategic Science Support"
+
+
 class DbCollection(Base, AuditMixin, TimestampMixin):
     """
     A Corpora collection represents an in progress or live submission of a lab experiment.
@@ -283,6 +305,7 @@ class DbCollection(Base, AuditMixin, TimestampMixin):
     tombstone = Column(Boolean, default=False, nullable=False)
     publisher_metadata = Column(JSON, nullable=True)
     revision_of = Column(String, ForeignKey("project.id"), nullable=True, unique=True)
+    consortia = Column(Enum(CollectionConsortia), nullable=True)
 
     # Relationships
     revision = relationship("DbCollection", cascade="all, delete-orphan", uselist=False)
