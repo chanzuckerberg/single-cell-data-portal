@@ -7,7 +7,7 @@ import time
 
 from requests.adapters import HTTPAdapter, Response
 from requests.packages.urllib3.util import Retry
-from backend.corpora.common.corpora_config import CorporaAuthConfig
+from backend.common.corpora_config import CorporaAuthConfig
 
 API_URL = {
     "prod": "https://api.cellxgene.cziscience.com",
@@ -31,18 +31,22 @@ class BaseFunctionalTestCase(unittest.TestCase):
         cls.deployment_stage = os.environ["DEPLOYMENT_STAGE"]
         cls.config = CorporaAuthConfig()
         cls.session = requests.Session()
-        retry_config = Retry(total=7, backoff_factor=2, status_forcelist=[500, 502, 503, 504])
+        # apply retry config to idempotent http methods we use + POST requests, which are currently all either
+        # idempotent (wmg queries) or low risk to rerun in dev/staging. Update if this changes in functional tests.
+        retry_config = Retry(
+            total=7,
+            backoff_factor=2,
+            status_forcelist=[500, 502, 503, 504],
+            allowed_methods={"DELETE", "GET", "HEAD", "PUT" "POST"},
+        )
         cls.session.mount("https://", HTTPAdapter(max_retries=retry_config))
         token = cls.get_auth_token(cls.config.test_account_username, cls.config.test_account_password)
         cls.curator_cookie = cls.make_cookie(token)
-
-    def setUp(self):
-        super().setUp()
-        self.api = API_URL.get(self.deployment_stage)
-        self.test_collection_id = "005d611a-14d5-4fbf-846e-571a1f874f70"
-        self.test_file_id = "7c93775542b056e048aa474535b8e5c2"
-        self.bad_collection_id = "DNE"
-        self.bad_file_id = "DNE"
+        cls.api = API_URL.get(cls.deployment_stage)
+        cls.test_collection_id = "005d611a-14d5-4fbf-846e-571a1f874f70"
+        cls.test_file_id = "7c93775542b056e048aa474535b8e5c2"
+        cls.bad_collection_id = "DNE"
+        cls.bad_file_id = "DNE"
 
     @classmethod
     def get_auth_token(cls, username: str, password: str, additional_claims: list = None):

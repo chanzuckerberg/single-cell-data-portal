@@ -1,12 +1,14 @@
-import { Button, H6, Intent } from "@blueprintjs/core";
+import { H6, Intent } from "@blueprintjs/core";
 import loadable from "@loadable/component";
 import { ReactElement, useState } from "react";
 import { Collection } from "src/common/entities";
+import { StyledOutlineButton } from "src/components/common/Button/common/style";
 
 const AsyncAlert = loadable(
   () =>
     /*webpackChunkName: 'src/components/Alert' */ import("src/components/Alert")
 );
+
 interface Props {
   handleConfirm: () => void;
   collectionName: Collection["name"];
@@ -29,7 +31,7 @@ const DeleteCollectionButton = ({
 
   return (
     <>
-      <Button
+      <StyledOutlineButton
         onClick={handleClick}
         text="Delete Collection"
         intent={Intent.DANGER}

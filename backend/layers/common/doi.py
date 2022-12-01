@@ -1,7 +1,7 @@
 
 from typing import List, Optional
 from urllib.parse import urlparse
-from backend.corpora.common.utils.regex import CURIE_REFERENCE_REGEX, DOI_REGEX_COMPILED
+from backend.common.utils.regex import CURIE_REFERENCE_REGEX, DOI_REGEX_COMPILED
 
 import re
 

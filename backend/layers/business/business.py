@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import Iterable, Optional, Tuple
-from backend.corpora.common.providers.crossref_provider import CrossrefDOINotFoundException, CrossrefException
+from backend.common.providers.crossref_provider import CrossrefDOINotFoundException, CrossrefException
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.business.entities import CollectionMetadataUpdate, CollectionQueryFilter, DatasetArtifactDownloadData
 from backend.layers.business.exceptions import ArtifactNotFoundException, CollectionCreationException, CollectionIsPublishedException, CollectionNotFoundException, CollectionPublishException, CollectionUpdateException, CollectionVersionException, DatasetInWrongStatusException, DatasetIngestException, DatasetNotFoundException, DatasetUpdateException, InvalidURIException, MaxFileSizeExceededException
@@ -95,6 +95,8 @@ class BusinessLogic(BusinessLogicInterface):
             publisher_metadata = self._get_publisher_metadata(doi, errors)
         else:
             publisher_metadata = None
+
+        print(errors)
 
         if errors:
             raise CollectionCreationException(errors)
@@ -308,12 +310,12 @@ class BusinessLogic(BusinessLogicInterface):
         """
         return self.database_provider.get_dataset_artifacts(dataset_version_id)
 
-    def get_dataset_artifact_download_data(self, dataset_version_id: DatasetVersionId, artifact_id: str) -> DatasetArtifactDownloadData:
+    def get_dataset_artifact_download_data(self, dataset_version_id: DatasetVersionId, artifact_id: DatasetArtifactId) -> DatasetArtifactDownloadData:
         """
         Returns download data for an artifact, including a presigned URL
         """
         artifacts = self.get_dataset_artifacts(dataset_version_id)
-        artifact = next((a for a in artifacts if a.id == DatasetArtifactId(artifact_id)), None)
+        artifact = next((a for a in artifacts if a.id == artifact_id), None)
 
         if not artifact:
             raise ArtifactNotFoundException(f"Artifact {artifact_id} not found in dataset {dataset_version_id}")

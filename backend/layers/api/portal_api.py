@@ -1,9 +1,10 @@
 from typing import List, Optional, Tuple
 from unittest.mock import Mock
+from urllib.parse import urlparse
 
 from flask import Response, jsonify, make_response
-from backend.corpora.common.utils.authorization_checks import is_user_owner_or_allowed
-from backend.corpora.common.utils.http_exceptions import ConflictException, ForbiddenHTTPException, InvalidParametersHTTPException, MethodNotAllowedException, NotFoundHTTPException, ServerErrorHTTPException, TooLargeHTTPException
+from backend.common.utils.authorization_checks import is_user_owner_or_allowed
+from backend.common.utils.http_exceptions import ConflictException, ForbiddenHTTPException, InvalidParametersHTTPException, MethodNotAllowedException, NotFoundHTTPException, ServerErrorHTTPException, TooLargeHTTPException
 from backend.layers.api.enrichment import enrich_dataset_with_ancestors
 from backend.layers.auth.user_info import UserInfo
 from backend.layers.business.business import BusinessLogic
@@ -13,8 +14,8 @@ from backend.layers.business.entities import CollectionMetadataUpdate, Collectio
 from backend.layers.business.exceptions import ArtifactNotFoundException, CollectionCreationException, CollectionIsPublishedException, CollectionNotFoundException, CollectionPublishException, CollectionUpdateException, CollectionVersionException, DatasetInWrongStatusException, DatasetNotFoundException, InvalidURIException, MaxFileSizeExceededException
 from backend.layers.common.entities import CollectionId, CollectionMetadata, CollectionVersion, CollectionVersionId, DatasetArtifact, DatasetId, DatasetStatus, DatasetVersion, DatasetVersionId, Link, OntologyTermId
 
-from backend.corpora.common.utils import authorization_checks as auth
-from backend.corpora.common.utils.ontology_mappings.ontology_map_loader import ontology_mappings
+from backend.common.utils import authorization_checks as auth
+from backend.common.utils.ontology_mappings.ontology_map_loader import ontology_mappings
 import itertools
 
 from backend.layers.common import doi
@@ -50,8 +51,8 @@ class PortalApi:
                 "id": c.version_id.id if c.published_at is None else c.collection_id.id,
                 "visibility": "PRIVATE" if c.published_at is None else "PUBLIC",
                 "owner": c.owner,
-                "created_at": 12345, # TODO
-                "revision_of": "TODO", # TODO: looks like this isn't returned right now
+                "created_at": c.created_at,
+                "revision_of": "NA", # TODO: looks like this isn't returned right now
             })            
 
         result = {"collections": collections}
@@ -59,15 +60,15 @@ class PortalApi:
 
     def _dataset_processing_status_to_response(self, status: DatasetStatus, dataset_id: str):
         return {
-            "created_at": 1234,
+            "created_at": 0, # NA
             "cxg_status": status.cxg_status or "NA",
             "dataset_id": dataset_id,
             "h5ad_status": status.h5ad_status or "NA",
             "id": "NA", # TODO can we purge?
             "processing_status": status.processing_status or "NA",
             "rds_status": status.rds_status or "NA",
-            "updated_at": 1234,
-            "upload_progress": 1234,
+            "updated_at": 0, # NA
+            "upload_progress": 1, # No longer supported - always return 1
             "upload_status": status.upload_status or "NA",
             "validation_status": status.validation_status or "NA",
         }
@@ -85,13 +86,13 @@ class PortalApi:
 
     def _dataset_asset_to_response(self, dataset_artifact: DatasetArtifact, dataset_id: str):
         return {
-            "created_at": 1234,
+            "created_at": 0,
             "dataset_id": dataset_id,
-            "filename": "TODO",
+            "filename": "TODO", # TODO: might need to get it from the url
             "filetype": dataset_artifact.type,
             "id": dataset_artifact.id,
             "s3_uri": dataset_artifact.uri,
-            "updated_at": 1234,
+            "updated_at": 0,
             "user_submitted": True,
         }
 
@@ -114,7 +115,7 @@ class PortalApi:
             "cell_count": dataset.metadata.cell_count,
             "cell_type": self._ontology_term_ids_to_response(dataset.metadata.cell_type),
             "collection_id": dataset.collection_id.id,
-            "created_at": 1234, # TODO
+            "created_at": dataset.created_at,
             "dataset_assets": [self._dataset_asset_to_response(a, dataset.dataset_id.id) for a in dataset.artifacts],
             "dataset_deployments": [{"url": "TODO"}], # TODO: dataset.metadata.explorer_url,
             "development_stage": self._ontology_term_ids_to_response(dataset.metadata.development_stage),
@@ -128,7 +129,7 @@ class PortalApi:
             "organism": self._ontology_term_ids_to_response(dataset.metadata.organism),
             "processing_status": self._dataset_processing_status_to_response(dataset.status, dataset.dataset_id.id),
             "published": True,
-            "published_at": 1234,
+            "published_at": dataset.canonical_dataset.published_at,
             "revision": 0, # TODO this is the progressive revision number. I don't think we'll need this
             "schema_version": dataset.metadata.schema_version,
             "self_reported_ethnicity": self._ontology_term_ids_to_response(dataset.metadata.self_reported_ethnicity),
@@ -136,7 +137,7 @@ class PortalApi:
             "suspension_type": dataset.metadata.suspension_type,
             "tissue": self._ontology_term_ids_to_response(dataset.metadata.tissue),
             "tombstone": False,
-            "updated_at": 1234,
+            "updated_at": dataset.created_at, # Legacy: datasets can't be updated anymore
             "x_approximate_distribution": dataset.metadata.x_approximate_distribution,
         }
 
@@ -146,7 +147,7 @@ class PortalApi:
             "access_type": access_type,
             "contact_email": collection.metadata.contact_email,
             "contact_name": collection.metadata.contact_name,
-            "created_at": 1234,
+            "created_at": collection.created_at,
             "curator_name": "", # TODO
             "data_submission_policy_version": "1.0", # TODO
             "datasets": [self._dataset_to_response(d) for d in collection.datasets],
@@ -154,9 +155,9 @@ class PortalApi:
             "id": collection_id,
             "links": [self._link_to_response(l) for l in collection.metadata.links],
             "name": collection.metadata.name,
-            "published_at": 1234,
+            "published_at": collection.published_at,
             "publisher_metadata": collection.publisher_metadata, # TODO: convert
-            "updated_at": 1234,
+            "updated_at": collection.published_at,
             "visibility": "PUBLIC" if collection.published_at is not None else "PRIVATE",
         })
 
@@ -260,8 +261,8 @@ class PortalApi:
             transformed_collection = {
                 "id": collection.collection_id.id,
                 "name": collection.metadata.name,
-                "published_at": collection.published_at,
-                "revised_at": 0, # TODO
+                "published_at": collection.canonical_collection.originally_published_at,
+                "revised_at": collection.published_at
             }
 
             if collection.publisher_metadata is not None:
@@ -453,7 +454,7 @@ class PortalApi:
             "processing_status": version.status.processing_status or "NA",
             "dataset_id": dataset_id,
             "id": "NA",
-            "upload_progress": 12345, # TODO
+            "upload_progress": 1,
             "upload_status": version.status.upload_status or "NA",
             "validation_status": version.status.validation_status or "NA",
         }
@@ -495,4 +496,29 @@ class PortalApi:
         """
         a.k.a. the meta endpoint
         """
-        pass
+        try:
+            path = urlparse(url).path
+            id = [segment for segment in path.split("/") if segment][-1].strip(".cxg")
+        except Exception:
+            raise ServerErrorHTTPException("Cannot parse URL")
+
+        # TODO: if we require it, add double id lookup
+        dataset = self.business_logic.get_dataset_version(DatasetVersionId(id))
+        if dataset is None:
+            raise NotFoundHTTPException()
+
+        collection = self.business_logic.get_collection_version_from_canonical(dataset.collection_id)
+        if collection is None: # orphaned datasets 
+            raise NotFoundHTTPException()
+
+        # Retrieves the URI of the cxg artifact
+        s3_uri = next(a.uri for a in dataset.artifacts if a.type == "CXG")
+
+        dataset_identifiers = {
+            "s3_uri": s3_uri,
+            "dataset_id": dataset.dataset_id.id,
+            "collection_id": dataset.collection_id.id,
+            "collection_visibility": "PUBLIC" if collection.published_at is not None else "PRIVATE",
+            "tombstoned": False, # No longer applicable
+        }
+        return make_response(jsonify(dataset_identifiers), 200)

@@ -8,7 +8,7 @@ from pathlib import Path
 import tiledb
 
 from backend.wmg.data.snapshot import EXPRESSION_SUMMARY_CUBE_NAME, CELL_COUNTS_CUBE_NAME
-from backend.corpora.common.utils.math_utils import GB
+from backend.common.utils.math_utils import GB
 from backend.wmg.data.validation import fixtures
 
 logger = logging.getLogger(__name__)
@@ -410,7 +410,7 @@ class Validation:
             ccl5_expression_sum_by_cell_type = CCL5_expression.groupby("cell_type_ontology_term_id").sum()["sum"]
 
             expected_values = anndata.read_h5ad(
-                f"{pathlib.Path(__file__).parent.resolve()}/lung_map_3de0ad6d-4378-4f62-b37b-ec0b75a50d94.h5ad"
+                f"{pathlib.Path(__file__).parent.resolve()}/3_0_0_lung_map_3de0ad6d-4378-4f62-b37b-ec0b75a50d94.h5ad"
             )
             malat_expected = expected_values.obs.assign(MALAT1=expected_values.layers["rankit"].toarray()[:, 0])
             ccl5_expected = expected_values.obs.assign(CCL5=expected_values.layers["rankit"].toarray()[:, 1])
@@ -419,6 +419,10 @@ class Validation:
             expected_ccl5_by_cell_type = ccl5_expected.groupby("cell_type_ontology_term_id").sum().CCL5
             # drop ccl5 cell types with expression value of zero (to match pipeline processing)
             expected_ccl5_by_cell_type = expected_ccl5_by_cell_type[expected_ccl5_by_cell_type != 0]
+
+            # ensure that both series have the same exact index ordering
+            expected_malat1_by_cell_type = expected_malat1_by_cell_type[malat1_expression_sum_by_cell_type.index]
+            expected_ccl5_by_cell_type = expected_ccl5_by_cell_type[ccl5_expression_sum_by_cell_type.index]
 
             malat1_comparison = expected_malat1_by_cell_type.compare(malat1_expression_sum_by_cell_type)
             ccl5_comparison = expected_ccl5_by_cell_type.compare(ccl5_expression_sum_by_cell_type)

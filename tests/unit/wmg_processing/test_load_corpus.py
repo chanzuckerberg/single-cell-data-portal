@@ -10,15 +10,19 @@ import numpy as np
 import tiledb
 from scipy import sparse
 from scipy.sparse import coo_matrix, csr_matrix
-from backend.wmg.data.rankit import rankit
-from backend.wmg.data.cube_pipeline import load_data_and_create_cube
-from backend.corpus_asset_pipelines.integrated_corpus.job import build_integrated_corpus
-from backend.corpus_asset_pipelines.integrated_corpus.load import load_dataset
-from backend.corpus_asset_pipelines.integrated_corpus.validate import validate_dataset_properties
-from backend.corpus_asset_pipelines.integrated_corpus.transform import (
+
+from backend.wmg.pipeline.integrated_corpus.job import build_integrated_corpus
+from backend.wmg.pipeline.integrated_corpus.load import load_dataset
+from backend.wmg.pipeline.integrated_corpus.transform import (
     filter_out_rankits_with_low_expression_counts,
     apply_pre_concatenation_filters,
 )
+from backend.wmg.data.rankit import rankit
+from backend.wmg.pipeline.cube_pipeline import load_data_and_create_cube
+
+
+from backend.wmg.pipeline.integrated_corpus.validate import validate_dataset_properties
+
 from backend.wmg.data.constants import RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD
 from backend.wmg.data.schemas.corpus_schema import create_tdb_integrated_corpus, OBS_ARRAY_NAME, VAR_ARRAY_NAME
 from tests.unit.backend.wmg.fixtures.test_anndata_object import create_anndata_test_object, create_anndata_test_fixture
@@ -59,23 +63,24 @@ class TestCorpusLoad(unittest.TestCase):
         super().tearDown()
         shutil.rmtree(self.corpus_path)
 
-    @patch("backend.corpus_asset_pipelines.integrated_corpus.job.tiledb.consolidate")
-    @patch("backend.corpus_asset_pipelines.integrated_corpus.job.tiledb.vacuum")
-    @patch("backend.corpus_asset_pipelines.integrated_corpus.job.process_h5ad_for_corpus")
+    @patch("backend.wmg.pipeline.integrated_corpus.job.tiledb.consolidate")
+    @patch("backend.wmg.pipeline.integrated_corpus.job.tiledb.vacuum")
+    @patch("backend.wmg.pipeline.integrated_corpus.job.process_h5ad_for_corpus")
     def test__load_loads_all_datasets_in_directory(self, mock_process_h5ad, mock_vacuum, mock_consolidate):
+        mock_process_h5ad.return_value = None, None
         build_integrated_corpus(self.path_to_datasets, self.corpus_path)
         self.assertEqual(mock_process_h5ad.call_count, 2)
         self.assertEqual(mock_vacuum.call_count, 3)
         self.assertEqual(mock_consolidate.call_count, 3)
 
-    @patch("backend.corpus_asset_pipelines.integrated_corpus.load.update_corpus_var")
-    @patch("backend.corpus_asset_pipelines.integrated_corpus.job.validate_dataset_properties")
+    @patch("backend.wmg.pipeline.integrated_corpus.load.update_corpus_var")
+    @patch("backend.wmg.pipeline.integrated_corpus.job.validate_dataset_properties")
     def test_invalid_datasets_are_not_added_to_corpus(self, mock_validation, mock_global_var):
         mock_validation.return_value = False
         build_integrated_corpus(self.path_to_datasets, self.corpus_path)
         self.assertEqual(mock_global_var.call_count, 0)
 
-    @patch("backend.corpus_asset_pipelines.integrated_corpus.load.transform_dataset_raw_counts_to_rankit")
+    @patch("backend.wmg.pipeline.integrated_corpus.load.transform_dataset_raw_counts_to_rankit")
     def test_global_var_array_updated_when_dataset_contains_new_genes(self, mock_rankit):
         small_anndata_object = anndata.read_h5ad(self.small_anndata_filename)
         larger_anndata_object = anndata.read_h5ad(self.large_anndata_filename)
@@ -110,13 +115,11 @@ class TestCorpusLoad(unittest.TestCase):
     def test_raw_expression_matrix_normalized_by_rankit(self):
         pass
 
-    @patch("backend.corpus_asset_pipelines.integrated_corpus.transform.GENE_EXPRESSION_COUNT_MIN_THRESHOLD", 1)
-    @patch("backend.corpus_asset_pipelines.integrated_corpus.job.tiledb.consolidate", new=Mock())  # Slow
-    @patch("backend.corpus_asset_pipelines.integrated_corpus.job.tiledb.vacuum", new=Mock())  # Slow
-    @patch("backend.wmg.data.cube_pipeline.upload_artifacts_to_s3", new=Mock())  # Don't upload the cube.
-    @patch(
-        "backend.corpus_asset_pipelines.integrated_corpus.job.extract.get_dataset_s3_uris", new=Mock(return_value={})
-    )
+    @patch("backend.wmg.pipeline.integrated_corpus.transform.GENE_EXPRESSION_COUNT_MIN_THRESHOLD", 1)
+    @patch("backend.wmg.pipeline.integrated_corpus.job.tiledb.consolidate", new=Mock())  # Slow
+    @patch("backend.wmg.pipeline.integrated_corpus.job.tiledb.vacuum", new=Mock())  # Slow
+    @patch("backend.wmg.pipeline.cube_pipeline.upload_artifacts_to_s3", new=Mock())  # Don't upload the cube.
+    @patch("backend.wmg.pipeline.integrated_corpus.job.extract.get_dataset_s3_uris", new=Mock(return_value={}))
     def test_snapshot_creation_works_as_expected(self):
         generate_cells = 5000
         expected_datasets = 2
@@ -264,7 +267,7 @@ class TestCorpusLoad(unittest.TestCase):
             actual = rankit_scores.data[x]
             self.assertAlmostEqual(expected, actual, 2)
 
-    @patch("backend.corpus_asset_pipelines.integrated_corpus.load.transform_dataset_raw_counts_to_rankit")
+    @patch("backend.wmg.pipeline.integrated_corpus.load.transform_dataset_raw_counts_to_rankit")
     def test__filter_out_cells_with_incorrect_assays(self, mock_rankit):
         # Create dataset with mixture of included and not included assays
         CELL_COUNT = 5

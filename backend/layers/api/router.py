@@ -6,31 +6,39 @@ from unittest.mock import Mock
 
 from backend.layers.api.portal_api import PortalApi
 from backend.layers.business.business import BusinessLogic
+from backend.layers.persistence.persistence import DatabaseProviderInterface
+from backend.layers.persistence.persistence_mock import DatabaseProviderMock
 from backend.layers.thirdparty.crossref_provider import CrossrefProviderInterface
 from backend.layers.thirdparty.s3_provider import S3Provider
 from backend.layers.thirdparty.step_function_provider import StepFunctionProviderInterface
 from backend.layers.thirdparty.uri_provider import UriProviderInterface
-from tests.unit.backend.layers.persistence.persistence_mock import DatabaseProviderMock
+# from tests.unit.backend.layers.persistence.persistence_mock import DatabaseProviderMock
 # from backend.layers.api.portal_api import PortalApi
 
-def portal_api():
-    # TODO: put the real PortalApi here. Tests will mock this method to return a testable version of PortalAPI.
-    # This is a poor man dependency injection, basically
-    database_provider = DatabaseProviderMock()
-    crossref_provider = CrossrefProviderInterface()
-    step_function_provider = StepFunctionProviderInterface()
-    s3_provider = S3Provider()
-    uri_provider = UriProviderInterface()
-    uri_provider.validate = Mock(return_value=True) # By default, every link should be valid
+api = None
 
-    business_logic = BusinessLogic(
-        database_provider, 
-        crossref_provider, 
-        step_function_provider, 
-        s3_provider, 
-        uri_provider
-    )
-    return PortalApi(business_logic)
+# TODO: put the real PortalApi here. Tests will mock this method to return a testable version of PortalAPI.
+# This is a poor man dependency injection, basically
+def portal_api():
+    global api
+    if api is None:
+        database_provider = DatabaseProviderMock()
+        crossref_provider = CrossrefProviderInterface()
+        step_function_provider = StepFunctionProviderInterface()
+        s3_provider = S3Provider()
+        uri_provider = UriProviderInterface()
+        uri_provider.validate = Mock(return_value=True) # By default, every link should be valid
+
+        business_logic = BusinessLogic(
+            database_provider, 
+            crossref_provider, 
+            step_function_provider, 
+            s3_provider, 
+            uri_provider
+        )
+        portal_api = PortalApi(business_logic)
+        api = portal_api
+    return api
 
 
 def get_collections_list(from_date: int = None, to_date: int = None, token_info: Optional[dict] = None):

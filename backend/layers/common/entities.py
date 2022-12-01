@@ -6,6 +6,7 @@ from enum import Enum
 
 # TODO: copy and paste the docs for these
 
+
 class DatasetStatusKey(Enum):
     UPLOAD = "upload"
     VALIDATION = "validation"
@@ -13,8 +14,11 @@ class DatasetStatusKey(Enum):
     RDS = "rds"
     H5AD = "h5ad"
     PROCESSING = "processing"
+
+
 class DatasetStatusGeneric:
     pass
+
 
 class DatasetUploadStatus(DatasetStatusGeneric, Enum):
     NA = "N/A"
@@ -25,11 +29,13 @@ class DatasetUploadStatus(DatasetStatusGeneric, Enum):
     CANCEL_PENDING = "Cancel pending"
     CANCELED = "Canceled"
 
+
 class DatasetValidationStatus(DatasetStatusGeneric, Enum):
     NA = "N/A"
     VALIDATING = "Validating"
     VALID = "Valid"
     INVALID = "Invalid"
+
 
 class DatasetConversionStatus(DatasetStatusGeneric, Enum):
     NA = "N/A"
@@ -40,11 +46,13 @@ class DatasetConversionStatus(DatasetStatusGeneric, Enum):
     FAILED = "Failed"
     SKIPPED = "Skipped"
 
+
 class DatasetProcessingStatus(DatasetStatusGeneric, Enum):
     INITIALIZED = "INITIALIZED"
     PENDING = "PENDING"
     SUCCESS = "SUCCESS"
     FAILURE = "FAILURE"
+
 
 @dataclass
 class DatasetStatus:
@@ -55,13 +63,18 @@ class DatasetStatus:
     h5ad_status: Optional[DatasetConversionStatus]
     processing_status: Optional[DatasetProcessingStatus]
 
-    @staticmethod 
+    @staticmethod
     def empty():
         return DatasetStatus(None, None, None, None, None, None)
 
 @dataclass
 class CollectionId:
     id: str
+
+    def __repr__(self) -> str:
+        return self.id
+
+
 @dataclass
 class CollectionVersionId:
     id: str
@@ -69,16 +82,30 @@ class CollectionVersionId:
     def __repr__(self) -> str:
         return self.id
 
+
 @dataclass
 class DatasetId:
     id: str
 
+    def __repr__(self) -> str:
+        return self.id
+
+
 @dataclass
 class DatasetVersionId:
     id: str
+
+    def __repr__(self) -> str:
+        return self.id
+
+
 @dataclass
 class DatasetArtifactId:
     id: str
+
+    def __repr__(self) -> str:
+        return self.id
+
 
 @dataclass
 class DatasetArtifact:
@@ -86,10 +113,12 @@ class DatasetArtifact:
     type: str
     uri: str
 
+
 @dataclass
 class OntologyTermId:
     label: str
     ontology_term_id: str
+
 
 @dataclass
 class DatasetMetadata:
@@ -111,14 +140,22 @@ class DatasetMetadata:
     is_primary_data: str
     x_approximate_distribution: str
 
+
+@dataclass
+class CanonicalDataset:
+    dataset_id: DatasetId
+    published_at: Optional[datetime] # The first time this canonical dataset appeared in a published collection
+
 @dataclass
 class DatasetVersion:
     dataset_id: DatasetId
     version_id: DatasetVersionId
-    collection_id: CollectionId # Pointer to the canonical collection id this dataset belongs to
+    collection_id: CollectionId  # Pointer to the canonical collection id this dataset belongs to
     status: DatasetStatus
     metadata: DatasetMetadata
     artifacts: List[DatasetArtifact]
+    created_at: datetime
+    canonical_dataset: CanonicalDataset
 
 
 @dataclass
@@ -126,7 +163,8 @@ class Link:
     name: Optional[str]
     type: str
     uri: str
-    
+
+
 @dataclass
 class CollectionMetadata:
     name: str
@@ -137,14 +175,23 @@ class CollectionMetadata:
 
 
 @dataclass
+class CanonicalCollection:
+    id: CollectionId
+    originally_published_at: Optional[datetime]
+    tombstoned: bool
+
+@dataclass
 class CollectionVersion:
     collection_id: CollectionId
     version_id: CollectionVersionId
     owner: str
     metadata: CollectionMetadata
     publisher_metadata: Optional[dict]  # TODO: use a dataclass
-    datasets: List[DatasetVersion] 
+    datasets: List[DatasetVersion]
     published_at: Optional[datetime]
+    created_at: datetime
+    canonical_collection: CanonicalCollection
+
 
 class CollectionLinkType(Enum):
     DOI = "doi"

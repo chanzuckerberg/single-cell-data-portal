@@ -35,7 +35,6 @@ export const SelectionIcon = styled(Icon)`
       width: 14px;
     }
   }
-}
 `;
 
 export const scrollbar = (props: CommonThemeProps) => {

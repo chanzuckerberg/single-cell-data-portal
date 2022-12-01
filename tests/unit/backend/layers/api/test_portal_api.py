@@ -12,9 +12,8 @@ from backend.layers.thirdparty.uri_provider import FileInfo
 
 from furl import furl
 
-from backend.corpora.common.providers.crossref_provider import CrossrefDOINotFoundException, CrossrefFetchException
-from backend.corpora.common.utils.corpora_constants import CorporaConstants
-from backend.corpora.lambdas.api.v1.collection import verify_collection_body
+from backend.common.providers.crossref_provider import CrossrefDOINotFoundException, CrossrefFetchException
+from backend.common.utils.corpora_constants import CorporaConstants
 from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
 from tests.unit.backend.layers.common.base_api_test import BaseAuthAPITest, DatasetArtifactUpdate, DatasetStatusUpdate, NewBaseTest
 
@@ -123,10 +122,15 @@ class TestCollection(NewBaseTest):
             self.assertEqual(None, actual_body.get("from_date"))
 
     # ✅
-    def test__get_collection_id__ok(self):
+    @patch("backend.layers.persistence.persistence_mock.datetime")
+    def test__get_collection_id__ok(self, mock_dt):
         """Verify the test collection exists and the expected fields exist."""
 
+        mock_dt.utcnow.return_value = 1234
+
         collection = self.generate_published_collection(add_datasets=2)
+
+        self.maxDiff = None
 
         expected_body = {
             "access_type": "WRITE",
@@ -154,7 +158,7 @@ class TestCollection(NewBaseTest):
                             "ontology_term_id": "test_cell_type_term_id"
                         }
                     ],
-                    "collection_id": "TODO",
+                    "collection_id": collection.collection_id.id,
                     "created_at": 1234,
                     "dataset_assets": [],
                     "dataset_deployments": [
@@ -189,21 +193,21 @@ class TestCollection(NewBaseTest):
                         }
                     ],
                     "processing_status": {
-                        "created_at": 1234,
+                        "created_at": 0,
                         "cxg_status": "NA",
                         "dataset_id": mock.ANY,
                         "h5ad_status": "NA",
                         "id": "NA",
                         "processing_status": "PENDING",
                         "rds_status": "NA",
-                        "updated_at": 1234,
-                        "upload_progress": 1234,
+                        "updated_at": 0,
+                        "upload_progress": 1,
                         "upload_status": "WAITING",
                         "validation_status": "NA"
                     },
                     "published": True,
                     "published_at": 1234,
-                    "revision": 1234,
+                    "revision": 0, # NA
                     "schema_version": "3.0.0",
                     "self_reported_ethnicity": [
                         {
@@ -248,7 +252,7 @@ class TestCollection(NewBaseTest):
                             "ontology_term_id": "test_cell_type_term_id"
                         }
                     ],
-                    "collection_id": "TODO",
+                    "collection_id": collection.collection_id.id,
                     "created_at": 1234,
                     "dataset_assets": [],
                     "dataset_deployments": [
@@ -283,21 +287,21 @@ class TestCollection(NewBaseTest):
                         }
                     ],
                     "processing_status": {
-                        "created_at": 1234,
+                        "created_at": 0,
                         "cxg_status": "NA",
                         "dataset_id": mock.ANY,
                         "h5ad_status": "NA",
                         "id": "NA",
                         "processing_status": "PENDING",
                         "rds_status": "NA",
-                        "updated_at": 1234,
-                        "upload_progress": 1234,
+                        "updated_at": 0,
+                        "upload_progress": 1,
                         "upload_status": "WAITING",
                         "validation_status": "NA"
                     },
                     "published": True,
                     "published_at": 1234,
-                    "revision": 1234,
+                    "revision": 0,
                     "schema_version": "3.0.0",
                     "self_reported_ethnicity": [
                         {
@@ -388,33 +392,6 @@ class TestCollection(NewBaseTest):
                 if expected_response_code == 200:
                     actual_body = json.loads(response.data)
                     self.assertEqual(expected_access_type, actual_body["access_type"])
-    
-    # TODO: 🔴 review this test
-    def test_get_collection_with_original_asset_ok(self):
-        """The original asset should not be in the list of assets."""
-        artifact_1 = dict(
-            filename="filename_1",
-            filetype=DatasetArtifactFileType.H5AD,
-            user_submitted=True,
-            s3_uri="s3://mock-bucket/mock-key.h5ad",
-        )
-        artifact_2 = dict(
-            filename=CorporaConstants.ORIGINAL_H5AD_ARTIFACT_FILENAME,
-            filetype=DatasetArtifactFileType.H5AD,
-            user_submitted=True,
-            s3_uri="s3://mock-bucket/raw.h5ad",
-        )
-        test_collection = self.generate_collection(self.session)
-        self.generate_dataset(self.session, collection=test_collection, artifacts=[artifact_1, artifact_2])
-        test_url = furl(path=f"/dp/v1/collections/{test_collection.id}")
-        headers = dict(host="localhost")
-        headers["Cookie"] = get_cxguser_token()
-        response = self.app.get(test_url.url, headers=headers)
-        self.assertEqual(200, response.status_code)
-        body = json.loads(response.data)
-        assets = body["datasets"][0]["dataset_assets"]
-        self.assertEqual(len(assets), 1)
-        self.assertEqual(assets[0]["s3_uri"], "s3://mock-bucket/mock-key.h5ad")
 
     # ✅
     def test__get_collection_id__403_not_found(self):
@@ -783,7 +760,7 @@ class TestCollection(NewBaseTest):
                 [collection for collection in collections if collection.get("revision_of") == public_owned][0]
             )
 
-    # 💛 TODO: passes but needs work on the last 3 assertions + tombstone
+    # ✅
     def test__get_all_collections_for_index(self):
         """
         The `collections/index` endpoint should only return public collections
@@ -809,10 +786,9 @@ class TestCollection(NewBaseTest):
         self.assertEqual(actual_collection["id"], collection.collection_id.id)
         self.assertEqual(actual_collection["name"], collection.metadata.name)
         self.assertNotIn("description", actual_collection)
-        # TODO: these three fields still need to be added
-        # self.assertEqual(actual_collection["published_at"], collection.published_at.timestamp())
-        # self.assertEqual(actual_collection["revised_at"], collection.revised_at.timestamp())
-        # self.assertEqual(actual_collection["publisher_metadata"], collection.publisher_metadata)
+        # Both `published_at` and `revised_at` should point to the same timestamp
+        self.assertEqual(actual_collection["published_at"], collection.published_at.timestamp())
+        self.assertEqual(actual_collection["revised_at"], collection.published_at.timestamp())
 
     # ✅
     def test__create_collection__InvalidParameters_DOI(self):
@@ -1458,10 +1434,9 @@ class TestDataset(NewBaseTest):
         body = json.loads(response.data)
         self.assertEqual("'dataset/test_dataset_id/asset/fake_asset' not found.", body["detail"])
 
-    # 💛 TODO: figure out `upload_progress`
+    # ✅
     def test__get_status__ok(self):
         dataset = self.generate_dataset(
-            owner="test_user_1",
             statuses=[
                 DatasetStatusUpdate("processing_status", DatasetProcessingStatus.PENDING),
                 DatasetStatusUpdate("upload_status", DatasetUploadStatus.UPLOADING),
@@ -1480,7 +1455,7 @@ class TestDataset(NewBaseTest):
             "processing_status": "PENDING",
             "dataset_id": dataset.dataset_version_id,
             "id": "NA", # TODO: I am deprecating this, I don't think it has any use.
-            "upload_progress": 0.4444444444444444,
+            "upload_progress": 1,
             "upload_status": "UPLOADING",
             "validation_status": "NA",
         }
@@ -1495,30 +1470,6 @@ class TestDataset(NewBaseTest):
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
         response = self.app.get(test_url.url, headers=headers)
         self.assertEqual(403, response.status_code)
-
-    # 🔴 TODO: processing_status_updater needs to be rewritten - think about it 
-    def test__minimal_status__ok(self):
-        # TODO: why do we need a processing status id?
-        dataset = self.generate_dataset(statuses = [DatasetStatusUpdate("upload_status", DatasetUploadStatus.WAITING)])
-        processing_status_id = "NA"
-        test_url = furl(path=f"/dp/v1/datasets/{dataset.dataset_version_id}/status")
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
-        response = self.app.get(test_url.url, headers=headers)
-        self.assertEqual(200, response.status_code)
-        actual_body = json.loads(response.data)
-        expected_body = {
-            "dataset_id": dataset.dataset_version_id,
-            "id": processing_status_id,
-            "upload_progress": 0.0,
-            "upload_status": "WAITING",
-        }
-        self.assertEqual(expected_body, actual_body)
-
-        for status in DatasetUploadStatus:
-            processing_status = {"upload_status": status, "upload_progress": 0.0}
-            processing_status_updater(self.session, processing_status_id, processing_status)
-            response = self.app.get(test_url.url, headers=headers)
-            self.assertEqual(json.loads(response.data)["upload_status"], status.name)
 
     # 💛, passes, but review the assertions
     def test__get_all_datasets_for_index(self):
@@ -1567,7 +1518,7 @@ class TestDataset(NewBaseTest):
             self.assertEqual(actual_dataset["is_primary_data"], persisted_dataset.metadata.is_primary_data)
             self.assertEqual(actual_dataset["mean_genes_per_cell"], persisted_dataset.metadata.mean_genes_per_cell)
             # self.assertEqual(actual_dataset["explorer_url"], persisted_dataset.explorer_url)
-            # self.assertEqual(actual_dataset["published_at"], persisted_dataset.published_at.timestamp())
+            self.assertEqual(actual_dataset["published_at"], persisted_dataset.canonical_dataset.published_at.timestamp())
             # self.assertEqual(actual_dataset["revised_at"], persisted_dataset.revised_at.timestamp())
 
     # ✅
@@ -1770,7 +1721,7 @@ class TestDataset(NewBaseTest):
         response = self.app.delete(test_url, headers=headers)
         self.assertEqual(response.status_code, 401)
 
-    # 💛 the meta endpoint still needs to be created
+    # ✅
     def test__dataset_meta__ok(self):
 
         headers = {"host": "localhost", "Content-Type": "application/json"}
@@ -1780,7 +1731,7 @@ class TestDataset(NewBaseTest):
             test_uri_0 = "some_uri_0"
             
             public_dataset = self.generate_dataset(
-                artifacts=[DatasetArtifactUpdate("cxg", test_uri_0)],
+                artifacts=[DatasetArtifactUpdate("CXG", test_uri_0)],
                 publish=True,
             )
 
@@ -1803,8 +1754,8 @@ class TestDataset(NewBaseTest):
             test_uri_1 = "some_uri_1"
    
             private_dataset = self.generate_dataset(
-                artifacts=[DatasetArtifactUpdate("cxg", test_uri_1)],
-                publish=True,
+                artifacts=[DatasetArtifactUpdate("CXG", test_uri_1)],
+                publish=False,
             )
 
             test_url_private = f"/dp/v1/datasets/meta?url={private_dataset.explorer_url}"
@@ -1821,7 +1772,7 @@ class TestDataset(NewBaseTest):
 
             self.assertEqual(json.loads(response.data), expected_identifiers)
 
-    # 💛 the meta endpoint still needs to be created
+    # ✅
     def test__dataset_meta__404(self):
         headers = {"host": "localhost", "Content-Type": "application/json"}
         test_url_404 = "/dp/v1/datasets/meta?url=not_real"
@@ -1832,7 +1783,6 @@ class TestDataset(NewBaseTest):
 
 class TestDatasetCurators(NewBaseTest):
     def setUp(self):
-        # Needed for proper setUp resolution in multiple inheritance
         super().setUp()
 
     def tearDown(self):
@@ -1929,7 +1879,7 @@ class TestRevision(NewBaseTest):
             ["Link 1", "DOI Link"] 
         )
 
-    # 💛 should pass after merging business in
+    # ✅
     def test__revision__403(self):
         """
         Starting a revision on a revision.
@@ -2038,7 +1988,7 @@ class TestPublishRevision(NewBaseTest):
         # TODO: header pattern
         self.headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
 
-    # 💛 passes, but assertions need to be improved
+    # ✅
     def test__publish_revision_with_new_dataset__OK(self):
         """
         Publish a revision with new datasets.
@@ -2073,16 +2023,7 @@ class TestPublishRevision(NewBaseTest):
         # TODO: timestamp mocking
         # self.assertEqual(self.mock_timestamp, datetime.utcfromtimestamp(response_json["revised_at"]))
 
-        # Datasets: Only the newly added dataset should have published_at updated
-        # TODO: dataset published_at
-        # for dataset in response_json["datasets"]:
-        #     if dataset["id"] == new_dataset_id:
-        #         self.assertEqual(self.mock_timestamp, datetime.utcfromtimestamp(dataset["published_at"]))
-        #     else:
-        #         self.assertIsNone(dataset.get("published_at"))
-        #     self.assertIsNone(dataset.get("revised_at"))
-
-    # 💛 passes, but assertions need to be improved
+    # ✅
     def test__publish_revision_with_removed_datasets__OK(self):
         """
         Publish a revision with delete datasets.

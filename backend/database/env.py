@@ -4,8 +4,8 @@ from logging.config import fileConfig
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
-from backend.corpora.common.corpora_config import CorporaDbConfig
-from backend.corpora.common.corpora_orm import DbCollection
+from backend.common.corpora_config import CorporaDbConfig
+from backend.common.corpora_orm import DbCollection
 
 # this is the Alembic Config object, which provides access to the values within the .ini file in use.
 config = context.config

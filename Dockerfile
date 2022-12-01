@@ -1,7 +1,6 @@
 FROM ubuntu:22.04
 
 ENV APP_NAME=corpora-api
-ENV DEPLOYMENT_STAGE=test
 ENV EXPORT_ENV_VARS_TO_LAMBDA="APP_NAME DEPLOYMENT_STAGE"
 ENV LC_ALL=C.UTF-8
 ENV DEBIAN_FRONTEND=noninteractive
@@ -13,7 +12,7 @@ RUN apt-get update && \
 # Don't re-run pip install unless either requirements.txt has changed.
 WORKDIR /single-cell-data-portal
 ADD requirements.txt requirements-base.txt
-ADD backend/corpora/api_server/requirements.txt requirements-api.txt
+ADD backend/api_server/requirements.txt requirements-api.txt
 RUN python3 -m pip install -r requirements-base.txt -r requirements-api.txt
 EXPOSE 5000
 
@@ -30,4 +29,4 @@ ENV COMMIT_SHA=${HAPPY_COMMIT}
 ENV COMMIT_BRANCH=${HAPPY_BRANCH}
 
 # Note: Using just 1 worker for dev/test env. Multiple workers are used in deployment envs, as defined in Terraform code.
-CMD gunicorn --worker-class gevent --workers 1 --bind 0.0.0.0:5000 backend.corpora.api_server.app:app --max-requests 10000 --timeout 180 --keep-alive 5 --log-level info
+CMD gunicorn --worker-class gevent --workers 1 --bind 0.0.0.0:5000 backend.api_server.app:app --max-requests 10000 --timeout 180 --keep-alive 5 --log-level info
