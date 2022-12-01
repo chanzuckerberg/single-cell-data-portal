@@ -1,3 +1,4 @@
+from asyncio.log import logger
 from datetime import datetime
 from typing import Any, List, Optional, Iterable
 import json
@@ -39,6 +40,11 @@ class DatabaseProvider(DatabaseProviderInterface):
 
     def __init__(self) -> None:
         self.db_session_manager = db_session_manager
+        # Creates the schema if not exists
+        try:
+            self._create()
+        except Exception as e:
+            logger.error("Cannot create database", e)
 
     def _drop(self):
         from sqlalchemy.schema import DropSchema
@@ -208,6 +214,8 @@ class DatabaseProvider(DatabaseProviderInterface):
         with self.db_session_manager() as session:
             version_id = session.query(CollectionRow.version_id).filter_by(id=collection_id.id).one_or_none() # noqa
             # TODO: investigate why one_or_none returns a tuple - it will be rejected by the following line
+            if version_id is None:
+                return None
             collection_version = session.query(CollectionVersionRow).filter_by(version_id=version_id[0]).one_or_none()
             if collection_version is None:
                 return None
@@ -381,11 +389,6 @@ class DatabaseProvider(DatabaseProviderInterface):
         Returns all dataset versions.
         # TODO: Add filtering (tombstoned? remove orphaned datasets? canonical only? published?)
         """
-
-        import logging
-        logging.basicConfig()
-        logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
-
         active_collections = self.get_all_mapped_collection_versions()
         active_datasets = [i.id for s in [c.datasets for c in active_collections] for i in s]
 
@@ -525,11 +528,6 @@ class DatabaseProvider(DatabaseProviderInterface):
         """
         Adds a mapping between an existing collection version and a dataset version
         """
-
-        # import logging
-        # logging.basicConfig()
-        # logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
-
         with self.db_session_manager() as session:
             collection_version = session.query(CollectionVersionRow).filter_by(version_id=collection_version_id.id).one()
             # TODO: alternatively use postgres `array_append`
