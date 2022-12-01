@@ -221,7 +221,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             if version_id in self.datasets.values():
                 yield self._update_dataset_version_with_canonical(dataset_version)
 
-    def get_dataset_artifacts(self, dataset_version_id: DatasetId) -> List[DatasetArtifact]:
+    def get_dataset_artifacts_by_version_id(self, dataset_version_id: DatasetId) -> List[DatasetArtifact]:
         dataset = self.datasets_versions[dataset_version_id.id]
         return copy.deepcopy(dataset.artifacts)
 
@@ -245,10 +245,6 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         # Register the dataset to the original collection
         collection_version.datasets.append(version)
         return copy.deepcopy(version)
-
-    def add_dataset_version(self, dataset_id: DatasetId) -> str:
-        # Unused for now
-        raise NotImplementedError
 
     def add_dataset_artifact(self, version_id: DatasetVersionId, artifact_type: str, artifact_uri: str) -> DatasetArtifactId:
         version = self.datasets_versions[version_id.id]
