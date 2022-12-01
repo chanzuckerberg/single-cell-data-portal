@@ -249,8 +249,8 @@ class DatabaseProvider(DatabaseProviderInterface):
 
     def add_collection_version(self, collection_id: CollectionId) -> CollectionVersion:
         """
-        Adds a collection version to an existing canonical collection. The new version copies the following data from
-         the previous version: owner, metadata, publisher_metadata, datasets (IDs).
+        Adds a collection version to an existing canonical collection. The new version copies all data from
+         the previous version except version_id and datetime-based fields (i.e. created_at, published_at)
         Returns the new version.
         """
         with self.db_session_manager() as session:

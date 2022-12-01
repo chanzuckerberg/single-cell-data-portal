@@ -1,7 +1,6 @@
 import logging
 
 from contextlib import contextmanager
-from flask import g
 from functools import wraps
 
 from sqlalchemy import create_engine

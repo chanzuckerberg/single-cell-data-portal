@@ -17,7 +17,7 @@ class Collection:
     __table__ = Table(
         "Collection",
         mapper_registry.metadata,
-        Column("id", UUID(as_uuid=True), primary_key=True, default=uuid.uuid4),
+        Column("id", UUID(as_uuid=True), primary_key=True),
         Column("version_id", UUID(as_uuid=True)),
         Column("originally_published_at", DateTime),
         Column("tombstoned", BOOLEAN)
@@ -30,8 +30,8 @@ class CollectionVersion:
     __table__ = Table(
         "CollectionVersion",
         mapper_registry.metadata,
-        Column("version_id", UUID(as_uuid=True), primary_key=True, default=uuid.uuid4),
-        Column("collection_id", UUID(as_uuid=True), default=uuid.uuid4),
+        Column("version_id", UUID(as_uuid=True), primary_key=True),
+        Column("collection_id", UUID(as_uuid=True)),
         Column("metadata", JSON),
         Column("owner", String),
         Column("publisher_metadata", JSON),
@@ -47,8 +47,8 @@ class Dataset:
     __table__ = Table(
         "Dataset",
         mapper_registry.metadata,
-        Column("dataset_id", UUID(as_uuid=True), primary_key=True, default=uuid.uuid4),
-        Column("dataset_version_id", UUID(as_uuid=True), default=uuid.uuid4),
+        Column("dataset_id", UUID(as_uuid=True), primary_key=True),
+        Column("dataset_version_id", UUID(as_uuid=True)),
         Column("published_at", DateTime)
     )
 
@@ -59,9 +59,9 @@ class DatasetVersion:
     __table__ = Table(
         "DatasetVersion",
         mapper_registry.metadata,
-        Column("version_id", UUID(as_uuid=True), primary_key=True, default=uuid.uuid4),
-        Column("dataset_id", UUID(as_uuid=True), ForeignKey("Dataset.dataset_id"), default=uuid.uuid4),
-        Column("collection_id", UUID(as_uuid=True), default=uuid.uuid4),
+        Column("version_id", UUID(as_uuid=True), primary_key=True),
+        Column("dataset_id", UUID(as_uuid=True), ForeignKey("Dataset.dataset_id")),
+        Column("collection_id", UUID(as_uuid=True)),
         Column("created_at", DateTime),
         Column("metadata", JSON),
         Column("artifacts", ARRAY(UUID(as_uuid=True))),
@@ -75,7 +75,7 @@ class DatasetArtifact:
     __table__ = Table(
         "DatasetArtifact",
         mapper_registry.metadata,
-        Column("id", UUID(as_uuid=True), primary_key=True, default=uuid.uuid4),
+        Column("id", UUID(as_uuid=True), primary_key=True),
         Column("type", Enum(DatasetArtifactType)),
         Column("uri", String)
     )
