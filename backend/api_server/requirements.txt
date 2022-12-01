@@ -1,5 +1,6 @@
 Authlib==0.14.3
 connexion[swagger-ui]==2.13.0
+dataclasses-json
 Flask-Cors>=3.0.6
 gunicorn[gevent] >=20.1.0, <21.0.0
 numba # required for where's my gene

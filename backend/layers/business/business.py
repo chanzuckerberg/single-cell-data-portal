@@ -11,6 +11,7 @@ from backend.layers.common.entities import (
     CollectionMetadata,
     CollectionVersion,
     CollectionVersionId,
+    CollectionVersionWithDatasets,
     DatasetArtifact,
     DatasetArtifactId,
     DatasetConversionStatus,
@@ -118,11 +119,11 @@ class BusinessLogic(BusinessLogicInterface):
         """
         return self.database_provider.get_collection_mapped_version(collection_id)
 
-    def get_collection_version(self, version_id: CollectionVersionId) -> CollectionVersion:
+    def get_collection_version(self, version_id: CollectionVersionId) -> CollectionVersionWithDatasets:
         """
         Returns a specific collection version
         """
-        return self.database_provider.get_collection_version(version_id)
+        return self.database_provider.get_collection_version_with_datasets(version_id)
 
     def get_collection_versions_from_canonical(self, collection_id: CollectionId) -> Iterable[CollectionVersion]:
         """
@@ -212,13 +213,13 @@ class BusinessLogic(BusinessLogicInterface):
 
         self.database_provider.save_collection_metadata(version_id, new_metadata)
 
-    def _assert_collection_version_unpublished(self, collection_version_id: CollectionVersionId) -> CollectionVersion:
+    def _assert_collection_version_unpublished(self, collection_version_id: CollectionVersionId) -> CollectionVersionWithDatasets:
         """
         Ensures a collection version exists and is unpublished.
         This method should be called every time an update to a collection version is requested,
         since published collection versions are not allowed any changes.
         """
-        collection_version = self.database_provider.get_collection_version(collection_version_id)
+        collection_version = self.database_provider.get_collection_version_with_datasets(collection_version_id)
         if collection_version is None:
             raise CollectionNotFoundException([f"Collection version {collection_version_id.id} does not exist"])
         if collection_version.published_at is not None:
@@ -253,7 +254,7 @@ class BusinessLogic(BusinessLogicInterface):
         new_dataset_version: DatasetVersion
         if existing_dataset_version_id is not None:
             # Ensure that the dataset belongs to the collection
-            if existing_dataset_version_id.id not in [d.id for d in collection.datasets]:
+            if existing_dataset_version_id not in [d.version_id for d in collection.datasets]:
                 raise DatasetNotFoundException(f"Dataset {existing_dataset_version_id.id} does not belong to the desired collection")
 
             dataset_version = self.database_provider.get_dataset_version(existing_dataset_version_id)
@@ -309,7 +310,8 @@ class BusinessLogic(BusinessLogicInterface):
         """
         Returns all the artifacts for a dataset
         """
-        return self.database_provider.get_dataset_artifacts(dataset_version_id)
+        dataset = self.database_provider.get_dataset_version(dataset_version_id)
+        return dataset.artifacts
 
     def get_dataset_artifact_download_data(self, dataset_version_id: DatasetVersionId, artifact_id: DatasetArtifactId) -> DatasetArtifactDownloadData:
         """
@@ -369,7 +371,7 @@ class BusinessLogic(BusinessLogicInterface):
         return self.database_provider.add_dataset_artifact(dataset_version_id, artifact_type, artifact_uri)
 
 
-    def create_collection_version(self, collection_id: CollectionId) -> CollectionVersion:
+    def create_collection_version(self, collection_id: CollectionId) -> CollectionVersionWithDatasets:
         """
         Creates a collection version for an existing canonical collection.
         Also ensures that the collection does not have any active, unpublished version
@@ -383,7 +385,8 @@ class BusinessLogic(BusinessLogicInterface):
         if any(v for v in all_versions if v.published_at is None):
             raise CollectionVersionException(f"Collection {collection_id} already has an unpublished version")
 
-        return self.database_provider.add_collection_version(collection_id)
+        added_version_id = self.database_provider.add_collection_version(collection_id)
+        return self.get_collection_version(added_version_id)
 
     def delete_collection_version(self, version_id: CollectionVersionId) -> None:
         self.database_provider.delete_collection_version(version_id)

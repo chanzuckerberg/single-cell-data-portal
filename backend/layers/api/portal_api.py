@@ -157,7 +157,7 @@ class PortalApi:
             "name": collection.metadata.name,
             "published_at": collection.published_at,
             "publisher_metadata": collection.publisher_metadata, # TODO: convert
-            "updated_at": collection.published_at,
+            "updated_at": collection.published_at or collection.created_at,
             "visibility": "PUBLIC" if collection.published_at is not None else "PRIVATE",
         })
 
