@@ -1,5 +1,10 @@
+# This module contains the schema components for the expression summary cube.
+# used for marker gene calculation (expression_summary_fmg).
+
 import numpy as np
 import tiledb
+
+filters = [tiledb.ZstdFilter(level=+22)]
 
 # These are the queryable cube dimensions that will be modeled as
 # TileDB `Dim`s and thus can be used for _efficiently_ querying
@@ -37,8 +42,6 @@ expression_summary_fmg_non_indexed_dims_no_gene_ontology = [
 # The full set of logical cube dimensions by which the cube can be queried.
 expression_summary_fmg_logical_dims = expression_summary_fmg_indexed_dims + expression_summary_fmg_non_indexed_dims
 
-filters = [tiledb.ZstdFilter(level=+22)]
-
 expression_summary_fmg_domain = tiledb.Domain(
     [
         tiledb.Dim(name=cube_indexed_dim, domain=None, tile=None, dtype="ascii", filters=filters)
@@ -67,37 +70,6 @@ expression_summary_fmg_schema = tiledb.ArraySchema(
     sparse=True,
     allows_duplicates=True,
     attrs=expression_summary_fmg_physical_attrs,
-    cell_order="row-major",
-    tile_order="row-major",
-    capacity=10000,
-)
-
-marker_genes_indexed_dims = [
-    "tissue_ontology_term_id",
-    "organism_ontology_term_id",
-    "cell_type_ontology_term_id",
-]
-
-marker_genes_attrs = [
-    tiledb.Attr(name="gene_ontology_term_id", dtype="ascii", var=True, filters=filters),
-    tiledb.Attr(name="p_value_ttest", dtype=np.float32, filters=filters),
-    tiledb.Attr(name="effect_size_ttest", dtype=np.float32, filters=filters),
-    tiledb.Attr(name="p_value_binomtest", dtype=np.float32, filters=filters),
-    tiledb.Attr(name="effect_size_binomtest", dtype=np.float32, filters=filters),
-]
-
-marker_genes_domain = tiledb.Domain(
-    [
-        tiledb.Dim(name=marker_genes_indexed_dim, domain=None, tile=None, dtype="ascii", filters=filters)
-        for marker_genes_indexed_dim in marker_genes_indexed_dims
-    ]
-)
-
-marker_genes_schema = tiledb.ArraySchema(
-    domain=marker_genes_domain,
-    sparse=True,
-    allows_duplicates=True,
-    attrs=marker_genes_attrs,
     cell_order="row-major",
     tile_order="row-major",
     capacity=10000,

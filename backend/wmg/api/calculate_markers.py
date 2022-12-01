@@ -25,11 +25,11 @@ def _make_hashable(func):
 
     class HDict(dict):
         def __hash__(self):
-            return hash(json.dumps(self))
+            return hash(json.dumps(dict(sorted(self.items()))))
 
     class HList(list):
         def __hash__(self):
-            return hash(tuple(self))
+            return hash(json.dumps(self))
 
     @wraps(func)
     def wrapped(*args, **kwargs):

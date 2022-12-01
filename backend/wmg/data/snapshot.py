@@ -40,9 +40,11 @@ class WmgSnapshot:
     expression_summary_cube: Array
 
     # TileDB array containing expression summary statistics optimized for marker gene computation.
-    # See the full schema at backend/wmg/data/schemas/marker_genes_cube_schema.py.
+    # See the full schema at backend/wmg/data/schemas/expression_summary_fmg_cube_schema.py.
     expression_summary_fmg_cube: Array
 
+    # TileDB array containing the precomputed marker genes.
+    # See the full schema at backend/wmg/data/schemas/marker_gene_cube_schema.py.
     marker_genes_cube: Array
 
     # TileDB array containing the total cell counts (expressed gene count, non-expressed mean, etc.) aggregated by

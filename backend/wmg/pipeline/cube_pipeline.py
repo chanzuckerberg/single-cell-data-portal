@@ -52,7 +52,6 @@ def load_data_and_create_cube(
     try:
         summary_cubes.run(corpus_path, validate_cube)
     except CubeValidationException as e:
-        # TODO: should we split integrated/obs/var into separate directory (not under snapshot ID)?
         upload_artifacts_to_s3(corpus_path, "latest_validation_failed_snapshot")
         logger.exception(e)
         sys.exit("Exiting due to cube validation failure")
