@@ -1,0 +1,2 @@
+{"levelname": "INFO", "asctime": "2022-12-01T19:16:15.001Z", "name": "root", "message": "No Crossref API key found, skipping metadata fetching.", "lineno": 54, "pathname": "/single-cell-data-portal/backend/common/providers/crossref_provider.py"}
+{"levelname": "INFO", "asctime": "2022-12-01T19:16:15.001Z", "name": "root", "message": "No Crossref API key found, skipping metadata fetching.", "lineno": 54, "pathname": "/single-cell-data-portal/backend/common/providers/crossref_provider.py"}
