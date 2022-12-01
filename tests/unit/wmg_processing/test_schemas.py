@@ -9,7 +9,7 @@ from backend.wmg.data.schemas.cube_schema import (
     expression_summary_schema,
     cell_counts_schema,
 )
-from backend.wmg.data.schemas.marker_gene_cube_schema import expression_summary_fmg_schema
+from backend.wmg.data.schemas.expression_summary_fmg_cube_schema import expression_summary_fmg_schema
 
 
 class TestIntegratedCorpusSchema(unittest.TestCase):
