@@ -8,6 +8,9 @@ import shutil
 TEST_SNAPSHOT = "test-fmg-snapshot"
 
 # creates the marker gene cube de novo and compares to the existing fixture
+# note, this test only implicitly tests the marker gene computation logic
+# by ensuring that the generated cube matches that provided in the snapshot fixture
+# the calculation logic is being tested directly in test_marker_gene_calculation.py
 
 
 class MarkerGeneCubeCreationTest(unittest.TestCase):

@@ -1,5 +1,5 @@
 import logging
-
+import contextlib
 import pandas as pd
 import tiledb
 import numpy as np
@@ -7,17 +7,24 @@ import gc
 from backend.wmg.data.schemas.marker_gene_cube_schema import marker_genes_schema
 from backend.wmg.data.snapshot import CELL_COUNTS_CUBE_NAME, MARKER_GENES_CUBE_NAME
 from backend.wmg.data.utils import create_empty_cube, log_func_runtime
-from backend.wmg.api.calculate_markers import get_markers
+from backend.wmg.pipeline.summary_cubes.calculate_markers import get_markers
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
 
 
-def extract_cellcounts(corpus_path: str) -> pd.DataFrame:
-    """
-    get obs data from integrated corpus
-    """
-    return tiledb.open(f"{corpus_path}/{CELL_COUNTS_CUBE_NAME}")
+@contextlib.contextmanager
+def extract_tissue_celltype_organism(corpus_path: str) -> pd.DataFrame:
+    # extract cell counts grouped by tissue, cell type, and organism
+    with tiledb.open(f"{corpus_path}/{CELL_COUNTS_CUBE_NAME}") as array:
+        yield (
+            array.query(
+                attrs=["cell_type_ontology_term_id"], dims=["organism_ontology_term_id", "tissue_ontology_term_id"]
+            )
+            .df[:]
+            .groupby(["tissue_ontology_term_id", "cell_type_ontology_term_id", "organism_ontology_term_id"])
+            .first()
+        )
 
 
 @log_func_runtime
@@ -25,19 +32,11 @@ def create_marker_genes_cube(corpus_path: str):
     """
     Create marker genes cube and write to disk
     """
-    cell_counts = extract_cellcounts(corpus_path)
-    tissues_celltypes = (
-        cell_counts.query(
-            attrs=["cell_type_ontology_term_id"], dims=["organism_ontology_term_id", "tissue_ontology_term_id"]
-        )
-        .df[:]
-        .groupby(["tissue_ontology_term_id", "cell_type_ontology_term_id", "organism_ontology_term_id"])
-        .first()
-    )
-    uniq_tissues = tissues_celltypes.index.levels[0]
-    tissues = np.array(list(tissues_celltypes.index.get_level_values(0)))
-    cell_types = np.array(list(tissues_celltypes.index.get_level_values(1)))
-    organisms = np.array(list(tissues_celltypes.index.get_level_values(2)))
+    with extract_tissue_celltype_organism(corpus_path) as tco:
+        uniq_tissues = tco.index.levels[0]
+        tissues = np.array(list(tco.index.get_level_values(0)))
+        cell_types = np.array(list(tco.index.get_level_values(1)))
+        organisms = np.array(list(tco.index.get_level_values(2)))
 
     uri = f"{corpus_path}/{MARKER_GENES_CUBE_NAME}"
     create_empty_cube(uri, marker_genes_schema)

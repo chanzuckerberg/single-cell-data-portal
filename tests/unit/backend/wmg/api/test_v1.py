@@ -902,6 +902,7 @@ class WmgApiV1Tests(unittest.TestCase):
 
             response = self.app.post("/wmg/v1/markers", json=request)
             received = json.loads(response.data)
+
             expected = {
                 "marker_genes": {
                     "ENSG00000051108": {"effect_size": 1.6856228113174438, "p_value": 0.0},
@@ -947,6 +948,7 @@ class WmgApiV1Tests(unittest.TestCase):
 
             response = self.app.post("/wmg/v1/markers", json=request)
             received = json.loads(response.data)
+
             expected = {"marker_genes": {}, "snapshot_id": "test-fmg-snapshot"}
             self.assertDictEqual(received, expected)
             self.assertEqual(200, response.status_code)

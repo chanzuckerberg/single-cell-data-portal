@@ -54,6 +54,9 @@ def _make_hashable(func):
     return wrapped
 
 
+# this decorator function is required to allow lru_cache to
+# memoize the function as dicts, lists, and WmgSnapshot objects
+# are not typically hashable.
 @_make_hashable
 @lru_cache(maxsize=None)
 def _query_tiledb(
@@ -348,13 +351,9 @@ def _run_ttest(sum1, sumsq1, n1, sum2, sumsq2, n2):
         effects = (mean1 - mean2) / np.sqrt(((n1 - 1) * var1 + (n2 - 1) * var2) / (n1 + n2 - 1))
 
     tscores[np.isnan(tscores)] = 0
-    effects[np.isnan(effects)] = 0
     pvals = stats.t.sf(tscores, dof)
-    pvals[effects < 0] = 1
-    effects[effects < 0] = 0
-    pvals_adj = pvals * sum1.size
-    pvals_adj[pvals_adj > 1] = 1  # cap adjusted p-value at 1
-    return pvals_adj, effects
+    pvals[effects < 0] = np.nan
+    return pvals, effects
 
 
 def _post_process_stats(genes, pvals, effects, nnz, test="ttest", min_num_expr_cells=25, percentile=0.15, n_markers=10):
@@ -391,9 +390,8 @@ def _post_process_stats(genes, pvals, effects, nnz, test="ttest", min_num_expr_c
     effects[:, zero_out] = 0
     pvals[:, zero_out] = 1
     # aggregate
-    effects = np.percentile(effects, percentile * 100, axis=0)
-    pvals = 10 ** np.log10(pvals + 1e-300).mean(axis=0)
-    # pvals = np.array([stats.combine_pvalues(x) for x in pvals.T])
+    effects = np.nanpercentile(effects, percentile * 100, axis=0)
+    pvals = np.array([stats.combine_pvalues(x[np.invert(np.isnan(x))]) for x in pvals.T])
 
     if n_markers:
         markers = np.array(genes)[np.argsort(-effects)[:n_markers]]
@@ -509,13 +507,8 @@ def _run_binom(nnz_thr1, n1, nnz_thr2, n2):
         pn2 = n2 / mean_n
         effects = np.log2((nnz_thr1 + pn1) / (n1 + 2 * pn1)) - np.log2((nnz_thr2 + pn2) / (n2 + 2 * pn2))
 
-    effects[np.isnan(effects)] = 0
-    pvals[np.isnan(pvals)] = 1
-    pvals[effects < 0] = 1
-    effects[effects < 0] = 0
-    pvals_adj = pvals * nnz_thr1.size
-    pvals_adj[pvals_adj > 1] = 1  # cap adjusted p-value at 1
-    return pvals_adj, effects
+    pvals[effects < 0] = np.nan
+    return pvals, effects
 
 
 def _get_markers_binomtest(target_filters, context_filters, corpus=None, n_markers=10, percentile=0.8):
