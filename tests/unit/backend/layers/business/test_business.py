@@ -579,7 +579,6 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         version_from_db = self.business_logic.get_collection_version(version.version_id)
         self.assertCountEqual([d.version_id for d in version_from_db.datasets], [dataset_version_to_keep_id, new_dataset_version.version_id])
 
-
     def test_replace_dataset_in_published_collection_fail(self):
         """
         Replacing a dataset that belongs to a published collection should fail
@@ -735,6 +734,7 @@ class TestUpdateDataset(BaseBusinessLogicTestCase):
             self.business_logic.set_dataset_metadata(dataset.version_id, self.sample_dataset_metadata)
             version_from_db = self.database_provider.get_dataset_version(dataset.version_id)
             self.assertEqual(version_from_db.metadata, self.sample_dataset_metadata)
+
 
 class TestCollectionOperations(BaseBusinessLogicTestCase):
 

@@ -79,7 +79,6 @@ class DatabaseProvider(DatabaseProviderInterface):
 
     def _row_to_collection_version_with_datasets(self, row: Any, canonical_collection: CanonicalCollection, datasets: List[DatasetVersion]) -> CollectionVersionWithDatasets:
         return CollectionVersionWithDatasets(
-            # self.parse_id(row.collection_id, CollectionId),
             collection_id=CollectionId(str(row.collection_id)),
             version_id=CollectionVersionId(str(row.version_id)),
             owner=row.owner,
@@ -476,7 +475,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             session.add(artifact)
             dataset_version = session.query(DatasetVersionRow).filter_by(version_id=version_id.id).one()
             artifacts = list(dataset_version.artifacts)
-            artifacts.append(artifact_id.id)
+            artifacts.append(uuid.UUID(artifact_id.id))
             dataset_version.artifacts = artifacts
         return artifact_id
 
@@ -549,7 +548,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             # TODO: make sure that the UUID conversion works
             updated_datasets = list(collection_version.datasets)
             # print("before", updated_datasets)
-            updated_datasets.append(dataset_version_id.id)
+            updated_datasets.append(uuid.UUID(dataset_version_id.id))
             collection_version.datasets = updated_datasets
             # print("after", updated_datasets)
 

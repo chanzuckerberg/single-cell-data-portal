@@ -4,7 +4,6 @@ from backend.common.providers.crossref_provider import CrossrefDOINotFoundExcept
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.business.entities import CollectionMetadataUpdate, CollectionQueryFilter, DatasetArtifactDownloadData
 from backend.layers.business.exceptions import ArtifactNotFoundException, CollectionCreationException, CollectionIsPublishedException, CollectionNotFoundException, CollectionPublishException, CollectionUpdateException, CollectionVersionException, DatasetInWrongStatusException, DatasetIngestException, DatasetNotFoundException, DatasetUpdateException, InvalidURIException, MaxFileSizeExceededException
-
 from backend.layers.common.entities import (
     CollectionId,
     CollectionLinkType,
@@ -369,7 +368,6 @@ class BusinessLogic(BusinessLogicInterface):
             raise DatasetIngestException(f"Wrong artifact type for {dataset_version_id}: {artifact_type}")
 
         return self.database_provider.add_dataset_artifact(dataset_version_id, artifact_type, artifact_uri)
-
 
     def create_collection_version(self, collection_id: CollectionId) -> CollectionVersionWithDatasets:
         """
