@@ -12,6 +12,9 @@ TEST_SNAPSHOT = "test-fmg-snapshot"
 # by ensuring that the generated cube matches that provided in the snapshot fixture
 # the calculation logic is being tested directly in test_marker_gene_calculation.py
 
+# to regenerate the test FMG snapshot fixture from an existing (full) snapshot, please run:
+# python -m scripts.generate_fmg_test_snapshot "path/to/full/snapshot" "path/to/new/fixture"
+
 
 class MarkerGeneCubeCreationTest(unittest.TestCase):
     def setUp(self):
