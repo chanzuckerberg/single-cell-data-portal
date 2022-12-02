@@ -2,7 +2,6 @@ from datetime import datetime
 import logging
 from urllib.parse import urlparse
 
-from flask import request_started
 import requests
 
 from backend.common.corpora_config import CorporaConfig

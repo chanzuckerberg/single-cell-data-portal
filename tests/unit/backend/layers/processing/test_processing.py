@@ -2,6 +2,10 @@ import tempfile
 import unittest
 from unittest.mock import Mock, patch
 
+import gevent.monkey
+gevent.monkey.patch_all()
+
+
 from backend.layers.business.business import BusinessLogic
 from backend.layers.persistence.persistence import DatabaseProviderInterface
 from backend.layers.processing.downloader import Downloader

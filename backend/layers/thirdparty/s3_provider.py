@@ -27,9 +27,7 @@ class S3ProviderInterface:
 class S3Provider(S3ProviderInterface):
 
     def __init__(self) -> None:
-        self.client = boto3.resource(
-            "s3", endpoint_url=os.getenv("BOTO_ENDPOINT_URL"), config=boto3.session.Config(signature_version="s3v4")
-        )
+        self.client = boto3.client("s3")
 
     def _parse_s3_uri(self, s3_uri: str) -> Tuple[str, str]:
         parsed_url = urlparse(s3_uri)

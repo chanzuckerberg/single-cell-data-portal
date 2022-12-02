@@ -23,6 +23,7 @@ ADD tests /single-cell-data-portal/tests
 ADD backend/__init__.py backend/__init__.py
 ADD backend/portal/pipeline/__init__.py backend/portal/pipeline/__init__.py
 ADD backend/portal/pipeline/processing backend/portal/pipeline/processing
+ADD backend/layers backend/layers
 ADD backend/common backend/common
 
 ARG HAPPY_BRANCH="unknown"

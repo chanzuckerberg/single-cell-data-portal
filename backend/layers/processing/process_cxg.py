@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
-import os
-import subprocess
-from os.path import join
-
-from backend.corpora.dataset_processing.h5ad_data_file import H5ADDataFile
+from backend.portal.pipeline.processing.h5ad_data_file import H5ADDataFile
 from backend.layers.business.business_interface import BusinessLogicInterface
 
 from backend.layers.processing.process_logic import ProcessingLogic
@@ -38,7 +34,7 @@ class ProcessCxg(ProcessingLogic):
         labeled_h5ad_filename = "local.h5ad"
 
         # Download the labeled dataset from the artifact bucket
-        bucket_prefix = self.get_bucket_prefix(dataset_id)
+        bucket_prefix = self.get_bucket_prefix(dataset_id.id)
         object_key = f"{bucket_prefix}/{labeled_h5ad_filename}"
         self.download_from_s3(artifact_bucket, object_key, labeled_h5ad_filename)
 

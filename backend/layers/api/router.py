@@ -10,8 +10,8 @@ from backend.layers.persistence.persistence import DatabaseProvider, DatabasePro
 from backend.layers.persistence.persistence_mock import DatabaseProviderMock
 from backend.layers.thirdparty.crossref_provider import CrossrefProviderInterface
 from backend.layers.thirdparty.s3_provider import S3Provider
-from backend.layers.thirdparty.step_function_provider import StepFunctionProviderInterface
-from backend.layers.thirdparty.uri_provider import UriProviderInterface
+from backend.layers.thirdparty.step_function_provider import StepFunctionProvider, StepFunctionProviderInterface
+from backend.layers.thirdparty.uri_provider import UriProvider, UriProviderInterface
 # from tests.unit.backend.layers.persistence.persistence_mock import DatabaseProviderMock
 # from backend.layers.api.portal_api import PortalApi
 
@@ -24,10 +24,9 @@ def portal_api():
     if api is None:
         database_provider = DatabaseProvider()
         crossref_provider = CrossrefProviderInterface()
-        step_function_provider = StepFunctionProviderInterface()
+        step_function_provider = StepFunctionProvider()
         s3_provider = S3Provider()
-        uri_provider = UriProviderInterface()
-        uri_provider.validate = Mock(return_value=True) # By default, every link should be valid
+        uri_provider = UriProvider()
 
         business_logic = BusinessLogic(
             database_provider, 

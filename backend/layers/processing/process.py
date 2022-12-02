@@ -1,3 +1,4 @@
+from typing import Optional
 from backend.layers.business.business import BusinessLogic
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.persistence.persistence import DatabaseProvider
@@ -12,7 +13,7 @@ from backend.layers.processing.process_seurat import ProcessSeurat
 from backend.layers.common.entities import DatasetConversionStatus, DatasetProcessingStatus, DatasetStatusKey, DatasetUploadStatus, DatasetValidationStatus, DatasetVersionId
 from backend.layers.thirdparty.s3_provider import S3Provider, S3ProviderInterface
 from backend.layers.thirdparty.schema_validator_provider import SchemaValidatorProvider, SchemaValidatorProviderInterface
-from backend.layers.thirdparty.uri_provider import UriProviderInterface
+from backend.layers.thirdparty.uri_provider import UriProvider, UriProviderInterface
 
 import sys
 
@@ -58,7 +59,7 @@ class ProcessMain(ProcessingLogic):
         self.logger.info(f"Batch Job Info: {env_vars}")
 
 
-    def process(self, dataset_id: DatasetVersionId, step_name: str, dropbox_uri: str, artifact_bucket: str, cxg_bucket: str):
+    def process(self, dataset_id: DatasetVersionId, step_name: str, dropbox_uri: Optional[str], artifact_bucket: Optional[str], cxg_bucket: Optional[str]):
         self.log_batch_environment()
         self.logger.info(f"Processing dataset {dataset_id}")
         try:
@@ -103,9 +104,9 @@ class ProcessMain(ProcessingLogic):
     def main(self):
         dataset_id = os.environ["DATASET_ID"]
         step_name = os.environ["STEP_NAME"]
-        dropbox_uri = os.environ["DROPBOX_URL"]
-        artifact_bucket = os.environ["ARTIFACT_BUCKET"]
-        cxg_bucket = os.environ["CELLXGENE_BUCKET"]
+        dropbox_uri = os.environ.get("DROPBOX_URL")
+        artifact_bucket = os.environ.get("ARTIFACT_BUCKET")
+        cxg_bucket = os.environ.get("CELLXGENE_BUCKET")
         rv = self.process(
             dataset_id=DatasetVersionId(dataset_id),
             step_name=step_name,
@@ -119,7 +120,7 @@ if __name__ == "__main__":
 
     database_provider = DatabaseProvider()
     s3_provider = S3Provider()
-    uri_provider = UriProviderInterface()
+    uri_provider = UriProvider()
 
     business_logic = BusinessLogic(
         database_provider, 

@@ -31,7 +31,7 @@ class ProcessingLogic: # TODO: ProcessingLogicBase
         self.business_logic.update_dataset_version_status(dataset_id, status_key, status_value)
 
     def download_from_s3(self, bucket_name: str, object_key: str, local_filename: str):
-        pass
+        self.s3_provider.download_file(bucket_name, object_key, local_filename)
 
     @staticmethod
     def make_s3_uri(artifact_bucket, bucket_prefix, file_name):
@@ -88,7 +88,7 @@ class ProcessingLogic: # TODO: ProcessingLogicBase
             raise ConversionFailed(processing_status_key)
         return file_dir
 
-    def get_bucket_prefix(self, identifier) -> str:
+    def get_bucket_prefix(self, identifier: str) -> str:
         import os
         remote_dev_prefix = os.environ.get("REMOTE_DEV_PREFIX", "")
         if remote_dev_prefix:

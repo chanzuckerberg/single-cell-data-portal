@@ -20,7 +20,7 @@ class StepFunctionProvider(StepFunctionProviderInterface):
             "url": url,
             "dataset_id": dataset_version_id.id,
         }
-        sfn_name = f"{dataset_version_id}_{int(time.time())}"
+        sfn_name = f"{dataset_version_id}_{int(time())}"
         response = self.client.start_execution(
             stateMachineArn=CorporaConfig().upload_sfn_arn,
             name=sfn_name,
