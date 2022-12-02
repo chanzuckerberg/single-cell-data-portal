@@ -1,6 +1,6 @@
 import unittest
 from tests.unit.backend.wmg.fixtures.test_snapshot import load_test_fmg_snapshot
-from backend.wmg.api.calculate_markers import _query_tiledb, get_markers
+from backend.wmg.pipeline.summary_cubes.calculate_markers import _query_tiledb, get_markers
 
 TEST_SNAPSHOT = "test-fmg-snapshot"
 
