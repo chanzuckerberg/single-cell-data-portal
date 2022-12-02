@@ -128,6 +128,11 @@ resource "aws_ecs_task_definition" "task_definition" {
   },
   {
     "name": "web",
+    "dockerLabels": {
+      "com.datadoghq.ad.check_names": "[\"gunicorn\"]",
+      "com.datadoghq.ad.init_configs": "[{}]",
+      "com.datadoghq.ad.instances":"[{ \"proc_name\": \"gunicorn\" }]"
+    },
     "essential": true,
     "image": "${var.image}",
     "memory": ${var.memory},

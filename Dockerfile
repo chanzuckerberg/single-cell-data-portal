@@ -38,7 +38,7 @@ ENV COMMIT_BRANCH=${HAPPY_BRANCH}
 # https://docs.datadoghq.com/integrations/gunicorn/#metric-collection
 LABEL "com.datadoghq.ad.check_names"='["gunicorn"]'
 LABEL "com.datadoghq.ad.init_configs"='[{}]'
-LABEL "com.datadoghq.ad.instances"='[{ "proc_name": "backend" }]'
+LABEL "com.datadoghq.ad.instances"='[{ "proc_name": "gunicorn" }]'
 
 
 ADD entrypoint.sh entrypoint.sh

@@ -17,5 +17,6 @@ SQLAlchemy-Utils>=0.36.8
 SQLAlchemy>=1.3.17,<2
 # For Datadog APM integration
 ddtrace
+datadog
 # For gunicorn-Datadog integration: https://docs.datadoghq.com/integrations/gunicorn/#installation
 setproctitle
