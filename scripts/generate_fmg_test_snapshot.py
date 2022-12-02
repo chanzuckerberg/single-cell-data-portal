@@ -518,7 +518,8 @@ test_genes = [
 ]
 
 if __name__ == "__main__":
-    snapshot, new_snapshot = sys.argv
+    snapshot = sys.argv[1]
+    new_snapshot = sys.argv[2]
 
     if not os.path.isdir(new_snapshot):
         os.mkdir(new_snapshot)
