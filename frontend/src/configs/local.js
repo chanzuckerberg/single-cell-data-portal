@@ -5,6 +5,7 @@ const { PLAUSIBLE_DATA_DOMAIN_STAGING } = require("./common");
 
 const configs = {
   API_URL: "https://backend.corporanet.local:5000",
+  AUTH0_URL: "https://oidc.corporanet.local:8443",
   PLAUSIBLE_DATA_DOMAIN: PLAUSIBLE_DATA_DOMAIN_STAGING,
 };
 

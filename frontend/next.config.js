@@ -23,6 +23,7 @@ const defaultSecureHeaders = {
         "sentry.prod.si.czi.technology",
         PLAUSIBLE_URL,
         configs.API_URL,
+        configs.AUTH0_URL,
       ],
       defaultSrc: ["'self'"],
       fontSrc: ["'self'", "https://fonts.gstatic.com"],

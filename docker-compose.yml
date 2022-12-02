@@ -292,6 +292,7 @@ services:
             "ShowKeySet": true
           }
         }
+      SERVER_CORS_ALLOWED_ORIGINS_INLINE: "[\"https://frontend.corporanet.local:3000\"]"
       API_SCOPES_PATH: /tmp/config/api_scopes.json
       API_RESOURCES_PATH: /tmp/config/api_resources.json
       USERS_CONFIGURATION_PATH: /tmp/config/users.json
