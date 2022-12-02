@@ -3,7 +3,7 @@
     "ClientId": "local-client-id",
     "ClientSecrets": ["local-client-secret"],
     "Description": "Client for client credentials flow",
-    "AllowedGrantTypes": ["authorization_code"],
+    "AllowedGrantTypes": ["authorization_code", "refresh_token"],
     "RedirectUris": [
       "https://backend.corporanet.local:5000/dp/v1/oauth2/callback",
       "https://frontend.corporanet.local:3000"
@@ -20,6 +20,7 @@
     "AllowOfflineAccess": true,
     "IdentityTokenLifetime": 3600,
     "AccessTokenLifetime": 3600,
+    "AllowedCorsOrigins": ["https://frontend.corporanet.local:3000"],
     "ClientClaimsPrefix": "",
     "RequirePkce": false,
     "Claims": [
