@@ -7,17 +7,24 @@ import { API } from "src/common/API";
 import { get } from "src/common/featureFlags";
 import { FEATURES } from "src/common/featureFlags/features";
 import { BOOLEAN } from "src/common/localStorage/set";
-import { useUserInfo } from "src/common/queries/auth";
 import { AuthButtonWrapper } from "src/components/Header/style";
 import { API_URL } from "src/configs/configs";
 import CuratorAPIKeyGenerator from "../CuratorAPIKeyGenerator";
-import { LogOutAnchor, LogOutEmail, LogOutText } from "./style";
+import { LogOutEmail, LogOutText } from "./style";
 
 const AuthButtons = (): JSX.Element | null => {
   const hasAuth = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
 
-  const { data: userInfo, isLoading, error } = useUserInfo(hasAuth);
+  const {
+    error,
+    isAuthenticated,
+    isLoading,
+    loginWithRedirect,
+    logout,
+    user: userInfo,
+  } = useAuth0();
 
+  // const { data: userInfo, isLoading, error } = useUserInfo(hasAuth);
   if (userInfo && error) {
     // (thuang): Force refresh page to log user out
     window.location.reload();
@@ -27,16 +34,16 @@ const AuthButtons = (): JSX.Element | null => {
 
   return (
     <AuthButtonWrapper>
-      {userInfo?.name ? (
-        <LoggedInButtons name={userInfo.name} email={userInfo.email} />
+      {isAuthenticated ? (
+        <LoggedInButtons name={userInfo?.name} email={userInfo?.email} logout={logout} />
       ) : (
-        <LoggedOutButtons />
+        <LoggedOutButtons handleLogin={loginWithRedirect} />
       )}
     </AuthButtonWrapper>
   );
 };
 
-function LoggedInButtons({ name, email }: { name?: string; email?: string }) {
+function LoggedInButtons({ name, email, logout }: { name?: string; email?: string; logout: any }) {
   const authName = isEmail(name) ? "Account" : name;
   const [anchorEl, setAnchorEl] = useState<Element | null>(null);
 
@@ -50,7 +57,7 @@ function LoggedInButtons({ name, email }: { name?: string; email?: string }) {
 
   return (
     <>
-      <Content />
+      <Content logout={logout} />
       <Button
         onClick={handleClick}
         minimal
@@ -60,7 +67,7 @@ function LoggedInButtons({ name, email }: { name?: string; email?: string }) {
     </>
   );
 
-  function Content() {
+  function Content({ logout }: { logout: any }) {
     const curatorAPIFeature = get(FEATURES.CURATOR);
     return (
       <Menu
@@ -76,26 +83,19 @@ function LoggedInButtons({ name, email }: { name?: string; email?: string }) {
             <MenuDivider />
           </div>
         )}
-        <LogOutAnchor href={`${API_URL}${API.LOG_OUT}`}>
-          <MenuItem data-testid="log-out">
-            <LogOutText>Logout</LogOutText>
-            <LogOutEmail data-testid="user-email">{email}</LogOutEmail>
-          </MenuItem>
-        </LogOutAnchor>
+        <MenuItem data-testid="log-out" onClick={logout}>
+          <LogOutText>Logout</LogOutText>
+          <LogOutEmail data-testid="user-email">{email}</LogOutEmail>
+        </MenuItem>
       </Menu>
     );
   }
 }
 
-function LoggedOutButtons() {
-  const {
-    // isAuthenticated,
-    loginWithRedirect,
-  } = useAuth0();
-
+function LoggedOutButtons({ handleLogin }: { handleLogin: any }) {
   return (
     <AnchorButton
-      onClick={loginWithRedirect}
+      onClick={handleLogin}
       minimal
       rightIcon={IconNames.CHEVRON_DOWN}
       text="Log In"
