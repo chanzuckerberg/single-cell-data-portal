@@ -261,20 +261,27 @@ class DatabaseProvider(DatabaseProviderInterface):
         """
         with self.db_session_manager() as session:
             if get_tombstoned:
-                mapped_version_ids = session.query(CollectionRow.version_id).filter(CollectionRow.version_id.isnot(None)).all() # noqa
+                canonical_collections = session.query(CollectionRow).filter(CollectionRow.version_id.isnot(None)).all() # noqa
             else:
-                mapped_version_ids = session.query(CollectionRow.version_id)\
+                canonical_collections = session.query(CollectionRow)\
                     .filter(CollectionRow.version_id.isnot(None))\
                     .filter_by(tombstoned=False)\
                     .all()
 
-                # TODO: Very hacky
-                mapped_version_ids = [i[0] for i in mapped_version_ids]
-
+            mapped_version_ids = [i.version_id for i in canonical_collections]
             versions = session.query(CollectionVersionRow).filter(CollectionVersionRow.version_id.in_(mapped_version_ids)).all() # noqa
 
-            # TODO: do we need to hydrate versions with canonical collections? would require a join or many lookup calls
-            return [self._row_to_collection_version(v, None) for v in versions]
+            for version in versions:
+                # TODO: should be optimized using a map
+                canonical_row = next(cc for cc in canonical_collections if cc.version_id == version.version_id)
+                canonical = CanonicalCollection(
+                    CollectionId(str(canonical_row.id)),
+                    CollectionVersionId(str(canonical_row.version_id)),
+                    canonical_row.originally_published_at,
+                    canonical_row.tombstoned
+                )
+
+                yield self._row_to_collection_version(version, canonical)
 
     def delete_canonical_collection(self, collection_id: CollectionId) -> None:
         """
