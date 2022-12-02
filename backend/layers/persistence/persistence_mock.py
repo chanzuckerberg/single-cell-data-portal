@@ -75,7 +75,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
     def create_canonical_collection(self, owner: str, collection_metadata: CollectionMetadata) -> CollectionVersion:
         collection_id = CollectionId(self._id())
         version_id = CollectionVersionId(self._id())
-        canonical = CanonicalCollection(collection_id, None, False)
+        canonical = CanonicalCollection(collection_id, None, False, False)
         version = CollectionVersion(collection_id, version_id, owner, collection_metadata, None, [], None, datetime.utcnow(), canonical)
         self.collections_versions[version_id.id] = version
         # Don't set mappings here - those will be set when publishing the collection!
@@ -178,7 +178,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
 
         cc = self.collections.get(collection_id.id)
         if cc is None:
-            self.collections[collection_id.id] = _CanonicalCollection(CanonicalCollection(collection_id, now, False), version_id)
+            self.collections[collection_id.id] = _CanonicalCollection(CanonicalCollection(collection_id, now, False, False), version_id)
         else:
             new_cc = copy.deepcopy(cc)
             new_cc.mapped_version = version_id

@@ -92,7 +92,7 @@ class DatabaseProvider(DatabaseProviderInterface):
 
     def _row_to_dataset_artifact(self, row: Any):
         return DatasetArtifact(
-            row.id,
+            DatasetArtifactId(str(row.id)),
             row.type,
             row.uri,
         )
@@ -220,9 +220,11 @@ class DatabaseProvider(DatabaseProviderInterface):
         Retrieves the latest mapped version for a collection
         """
         with self.db_session_manager() as session:
-            version_id = session.query(CollectionRow.version_id).filter_by(id=collection_id.id).one_or_none()[0]
-            if version_id is None:
+            version_id = session.query(CollectionRow.version_id).filter_by(id=collection_id.id).one_or_none()
+            # TODO: figure out this hack
+            if version_id is None or version_id[0] is None:
                 return None
+            version_id = version_id[0]
             collection_version = session.query(CollectionVersionRow).filter_by(version_id=version_id).one()
             canonical_collection = self.get_canonical_collection(collection_id)
             return self._row_to_collection_version(collection_version, canonical_collection)

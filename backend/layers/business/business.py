@@ -19,6 +19,7 @@ from backend.layers.common.entities import (
     DatasetProcessingStatus,
     DatasetStatus,
     DatasetStatusGeneric,
+    DatasetStatusKey,
     DatasetUploadStatus,
     DatasetValidationStatus,
     DatasetVersion,
@@ -29,7 +30,7 @@ from typing import Iterable, List, Optional
 
 import copy
 
-from backend.layers.persistence.persistence import DatabaseProviderInterface
+from backend.layers.persistence.persistence_interface import DatabaseProviderInterface
 from backend.layers.thirdparty.crossref_provider import CrossrefProviderInterface
 from backend.layers.thirdparty.s3_provider import S3Provider
 from backend.layers.thirdparty.step_function_provider import StepFunctionProviderInterface
@@ -337,22 +338,22 @@ class BusinessLogic(BusinessLogicInterface):
         """
         return self.database_provider.get_dataset_version_status(dataset_version_id)
 
-    def update_dataset_version_status(self, dataset_version_id: DatasetVersionId, status_key: str, new_dataset_status: DatasetStatusGeneric) -> None:
+    def update_dataset_version_status(self, dataset_version_id: DatasetVersionId, status_key: DatasetStatusKey, new_dataset_status: DatasetStatusGeneric) -> None:
         """
         Updates the status of a dataset version. 
         status_key can be one of: [upload_status, validation_status, cxg_status, rds_status, h5ad_status, processing_status]
         """
-        if status_key == "upload_status" and isinstance(new_dataset_status, DatasetUploadStatus):
+        if status_key == DatasetStatusKey.UPLOAD and isinstance(new_dataset_status, DatasetUploadStatus):
             self.database_provider.update_dataset_upload_status(dataset_version_id, new_dataset_status)
-        elif status_key == "processing_status" and isinstance(new_dataset_status, DatasetProcessingStatus):
+        elif status_key == DatasetStatusKey.PROCESSING and isinstance(new_dataset_status, DatasetProcessingStatus):
             self.database_provider.update_dataset_processing_status(dataset_version_id, new_dataset_status)
-        elif status_key == "validation_status" and isinstance(new_dataset_status, DatasetValidationStatus):
+        elif status_key == DatasetStatusKey.VALIDATION and isinstance(new_dataset_status, DatasetValidationStatus):
             self.database_provider.update_dataset_validation_status(dataset_version_id, new_dataset_status)
-        elif status_key == "cxg_status" and isinstance(new_dataset_status, DatasetConversionStatus):
+        elif status_key == DatasetStatusKey.CXG and isinstance(new_dataset_status, DatasetConversionStatus):
             self.database_provider.update_dataset_conversion_status(dataset_version_id, "cxg_status", new_dataset_status)
-        elif status_key == "rds_status" and isinstance(new_dataset_status, DatasetConversionStatus):
+        elif status_key == DatasetStatusKey.RDS and isinstance(new_dataset_status, DatasetConversionStatus):
             self.database_provider.update_dataset_conversion_status(dataset_version_id, "rds_status", new_dataset_status)
-        elif status_key == "h5ad_status" and isinstance(new_dataset_status, DatasetConversionStatus):
+        elif status_key == DatasetStatusKey.H5AD and isinstance(new_dataset_status, DatasetConversionStatus):
             self.database_provider.update_dataset_conversion_status(dataset_version_id, "h5ad_status", new_dataset_status)
         else:
             raise DatasetUpdateException(f"Invalid status update for dataset {dataset_version_id}: cannot set {status_key} to {new_dataset_status}")
