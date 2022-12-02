@@ -536,9 +536,9 @@ if __name__ == "__main__":
                     cc = cc_arr.df[(test_tissue, [], test_organism)]
 
                     print("Creating new snapshot...")
-                    tiledb.Array.create(f"{new_snapshot}/expression_summary", es_arr.schema)
-                    tiledb.Array.create(f"{new_snapshot}/expression_summary_fmg", esfmg_arr.schema)
-                    tiledb.Array.create(f"{new_snapshot}/cell_counts", cc_arr.schema)
+                    tiledb.Array.create(f"{new_snapshot}/expression_summary", es_arr.schema, overwrite=True)
+                    tiledb.Array.create(f"{new_snapshot}/expression_summary_fmg", esfmg_arr.schema, overwrite=True)
+                    tiledb.Array.create(f"{new_snapshot}/cell_counts", cc_arr.schema, overwrite=True)
 
                     tiledb.from_pandas(f"{new_snapshot}/expression_summary", es, mode="append")
                     tiledb.from_pandas(f"{new_snapshot}/expression_summary_fmg", esfmg, mode="append")
