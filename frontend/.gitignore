@@ -74,5 +74,10 @@ yarn-error.log
 # Next.js
 .next
 /test-results/
+
+# Playwright
 /playwright-report/
 /playwright/.cache/
+/allure-results/
+storageState.json
+loginState.json

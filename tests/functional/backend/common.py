@@ -13,7 +13,7 @@ API_URL = {
     "prod": "https://api.cellxgene.cziscience.com",
     "staging": "https://api.cellxgene.staging.single-cell.czi.technology",
     "dev": "https://api.cellxgene.dev.single-cell.czi.technology",
-    "test": "http://localhost:5000",
+    "test": "https://localhost:5000",
 }
 
 AUDIENCE = {

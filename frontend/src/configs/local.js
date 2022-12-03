@@ -4,7 +4,7 @@ const { PLAUSIBLE_DATA_DOMAIN_STAGING } = require("./common");
 // to a new file named `configs.js` in this directory.
 
 const configs = {
-  API_URL: "http://backend.corporanet.local:5000",
+  API_URL: "https://backend.corporanet.local:5000",
   PLAUSIBLE_DATA_DOMAIN: PLAUSIBLE_DATA_DOMAIN_STAGING,
 };
 
