@@ -381,11 +381,13 @@ def _post_process_stats(genes, pvals, effects, nnz, test="ttest", min_num_expr_c
         Number of top markers to return. If None, all marker genes with effect size > 0 are returned.
     """
     zero_out = nnz.flatten() < min_num_expr_cells
-    effects[:, zero_out] = np.nan
-    pvals[:, zero_out] = np.nan
+    effects[:, zero_out] = 0
+    pvals[:, zero_out] = 1
     # aggregate
     effects = np.nanpercentile(effects, percentile * 100, axis=0)
     pvals = np.array([stats.combine_pvalues(x[np.invert(np.isnan(x))] + 1e-300)[-1] for x in pvals.T])
+    effects[zero_out] = np.nan
+    pvals[zero_out] = np.nan
 
     if n_markers:
         markers = np.array(genes)[np.argsort(-effects)[:n_markers]]

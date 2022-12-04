@@ -4,6 +4,8 @@ from pandas import DataFrame
 from pydantic import BaseModel, Field
 from tiledb import Array
 from backend.wmg.data.snapshot import WmgSnapshot
+import math
+import numpy as np
 
 
 class WmgQueryCriteria(BaseModel):
@@ -170,5 +172,16 @@ def retrieve_top_n_markers(query_result, test, n_markers):
     markers = query_result[["gene_ontology_term_id"] + attrs].rename(columns=dict(zip(attrs, col_names)))
     if n_markers > 0:
         markers = markers.nlargest(n_markers, "effect_size")
-    marker_genes = dict(zip(markers["gene_ontology_term_id"], markers[col_names].to_dict(orient="records")))
+
+    records = markers[col_names].to_dict(orient="records")
+
+    genes = np.array(list(markers["gene_ontology_term_id"]))
+    final_records = []
+    final_genes = []
+    for i, record in enumerate(records):
+        if not math.isnan(record["p_value"]) and not math.isnan(record["effect_size"]):
+            final_records.append(record)
+            final_genes.append(genes[i])
+
+    marker_genes = dict(zip(final_genes, final_records))
     return marker_genes
