@@ -334,9 +334,6 @@ def _run_ttest(sum1, sumsq1, n1, sum2, sumsq2, n2):
         mean2 = sum2 / n2
         meansq2 = sumsq2 / n2
 
-        for i in [mean1, meansq1, mean2, meansq2]:
-            i[np.isnan(i)] = 0
-
         var1 = meansq1 - mean1**2
         var1[var1 < 0] = 0
         var2 = meansq2 - mean2**2
@@ -346,13 +343,10 @@ def _run_ttest(sum1, sumsq1, n1, sum2, sumsq2, n2):
         var2_n = var2 / n2
         sum_var_n = var1_n + var2_n
         dof = sum_var_n**2 / (var1_n**2 / (n1 - 1) + var2_n**2 / (n2 - 1))
-        dof[np.isnan(dof)] = 1
         tscores = (mean1 - mean2) / np.sqrt(sum_var_n)
         effects = (mean1 - mean2) / np.sqrt(((n1 - 1) * var1 + (n2 - 1) * var2) / (n1 + n2 - 1))
 
-    tscores[np.isnan(tscores)] = 0
     pvals = stats.t.sf(tscores, dof)
-    pvals[effects < 0] = np.nan
     return pvals, effects
 
 
@@ -406,9 +400,8 @@ def _post_process_stats(genes, pvals, effects, nnz, test="ttest", min_num_expr_c
     for i in range(len(p)):
         pi = p[i]
         ei = effects[i]
-        if ei > 0:
-            statistics.append({f"p_value_{test}": pi, f"effect_size_{test}": ei})
-            final_markers.append(markers[i])
+        statistics.append({f"p_value_{test}": pi, f"effect_size_{test}": ei})
+        final_markers.append(markers[i])
     return dict(zip(list(final_markers), statistics))
 
 
@@ -507,7 +500,6 @@ def _run_binom(nnz_thr1, n1, nnz_thr2, n2):
         pn2 = n2 / mean_n
         effects = np.log2((nnz_thr1 + pn1) / (n1 + 2 * pn1)) - np.log2((nnz_thr2 + pn2) / (n2 + 2 * pn2))
 
-    pvals[effects < 0] = np.nan
     return pvals, effects
 
 
