@@ -136,8 +136,6 @@ class TestCreateCollection(BaseBusinessLogicTestCase):
         """
         collection = self.business_logic.create_collection(self.test_user_name, self.sample_collection_metadata)
         collection_from_database = self.database_provider.get_collection_version(collection.version_id)
-        print(collection)
-        print(collection_from_database)
         self.assertEqual(collection, collection_from_database)
 
     def test_create_collection_with_links_ok(self):
@@ -580,7 +578,6 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         version_from_db = self.business_logic.get_collection_version(version.version_id)
         self.assertCountEqual([d.version_id for d in version_from_db.datasets], [dataset_version_to_keep_id, new_dataset_version.version_id])
 
-
     def test_replace_dataset_in_published_collection_fail(self):
         """
         Replacing a dataset that belongs to a published collection should fail
@@ -696,7 +693,7 @@ class TestUpdateDataset(BaseBusinessLogicTestCase):
         unpublished_collection = self.initialize_unpublished_collection(complete_dataset_ingestion=False)
         self.assertEqual(2, len(unpublished_collection.datasets))
         for dataset in unpublished_collection.datasets:
-            self.business_logic.update_dataset_version_status(dataset.version_id, "upload_status", DatasetUploadStatus.UPLOADED)
+            self.business_logic.update_dataset_version_status(dataset.version_id, "upload", DatasetUploadStatus.UPLOADED)
             version_from_db = self.database_provider.get_dataset_version(dataset.version_id)
             self.assertEqual(version_from_db.status.upload_status, DatasetUploadStatus.UPLOADED)
 
@@ -736,6 +733,7 @@ class TestUpdateDataset(BaseBusinessLogicTestCase):
             self.business_logic.set_dataset_metadata(dataset.version_id, self.sample_dataset_metadata)
             version_from_db = self.database_provider.get_dataset_version(dataset.version_id)
             self.assertEqual(version_from_db.metadata, self.sample_dataset_metadata)
+
 
 class TestCollectionOperations(BaseBusinessLogicTestCase):
 

@@ -19,7 +19,7 @@ DEPLOYMENT_STAGE_TO_URL = {
     "prod": "https://cellxgene.cziscience.com/e",
     "rdev": f"https:/{os.environ.get('REMOTE_DEV_PREFIX')}-explorer.rdev.single-cell.czi.technology/e",
     "dev": "https://cellxgene.dev.single-cell.czi.technology/e",
-    "test": "http://frontend.corporanet.local:3000",
+    "test": "https://frontend.corporanet.local:3000",
 }
 
 

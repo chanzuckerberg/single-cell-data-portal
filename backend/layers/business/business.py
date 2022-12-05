@@ -4,7 +4,6 @@ from backend.common.providers.crossref_provider import CrossrefDOINotFoundExcept
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.business.entities import CollectionMetadataUpdate, CollectionQueryFilter, DatasetArtifactDownloadData
 from backend.layers.business.exceptions import ArtifactNotFoundException, CollectionCreationException, CollectionIsPublishedException, CollectionNotFoundException, CollectionPublishException, CollectionUpdateException, CollectionVersionException, DatasetInWrongStatusException, DatasetIngestException, DatasetNotFoundException, DatasetUpdateException, InvalidURIException, MaxFileSizeExceededException
-
 from backend.layers.common.entities import (
     CollectionId,
     CollectionLinkType,
@@ -342,7 +341,7 @@ class BusinessLogic(BusinessLogicInterface):
     def update_dataset_version_status(self, dataset_version_id: DatasetVersionId, status_key: DatasetStatusKey, new_dataset_status: DatasetStatusGeneric) -> None:
         """
         Updates the status of a dataset version. 
-        status_key can be one of: [upload_status, validation_status, cxg_status, rds_status, h5ad_status, processing_status]
+        status_key can be one of: [upload, validation, cxg, rds, h5ad, processing]
         """
         if status_key == DatasetStatusKey.UPLOAD and isinstance(new_dataset_status, DatasetUploadStatus):
             self.database_provider.update_dataset_upload_status(dataset_version_id, new_dataset_status)
@@ -370,7 +369,6 @@ class BusinessLogic(BusinessLogicInterface):
             raise DatasetIngestException(f"Wrong artifact type for {dataset_version_id}: {artifact_type}")
 
         return self.database_provider.add_dataset_artifact(dataset_version_id, artifact_type, artifact_uri)
-
 
     def create_collection_version(self, collection_id: CollectionId) -> CollectionVersionWithDatasets:
         """

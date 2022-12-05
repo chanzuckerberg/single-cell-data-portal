@@ -60,6 +60,7 @@ services:
     volumes:
       - ./frontend:/corpora-frontend
       - /corpora-frontend/node_modules/
+      - ./oauth/pkcs12:/tmp/pkcs12:ro
     networks:
       corporanet:
         aliases:
@@ -237,12 +238,14 @@ services:
       context: .
       cache_from:
         - "${DOCKER_REPO}corpora-backend:branch-main"
+      dockerfile: Dockerfile.backend
       args:
         - BUILDKIT_INLINE_CACHE=1
         - HAPPY_COMMIT
         - HAPPY_BRANCH
         - HAPPY_TAG
     restart: always
+    command: [ "./container_init.sh" ]
     depends_on:
       - localstack
       - database
@@ -265,6 +268,7 @@ services:
       - .:/single-cell-data-portal
       # SecretsManager population relies on oauth json
       - ./oauth/users.json:/oauth/users.json
+      - ./oauth/pkcs12:/tmp/pkcs12:ro
     networks:
       corporanet:
         aliases:

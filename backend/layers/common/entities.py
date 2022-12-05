@@ -10,7 +10,7 @@ from dataclasses_json import dataclass_json
 # TODO: copy and paste the docs for these
 
 
-class DatasetStatusKey(Enum):
+class DatasetStatusKey(str, Enum):
     UPLOAD = "upload"
     VALIDATION = "validation"
     CXG = "cxg"
@@ -70,9 +70,6 @@ class DatasetStatus:
     @staticmethod
     def empty():
         return DatasetStatus(None, None, None, None, None, None)
-
-    def to_json(self):
-        return json.dumps(self, default=lambda obj: obj.__dict__)
 
 
 @dataclass(eq=True, frozen=True)
@@ -150,9 +147,6 @@ class DatasetMetadata:
     is_primary_data: str
     x_approximate_distribution: str
 
-    def to_json(self):
-        return json.dumps(self, default=lambda obj: obj.__dict__)
-
 
 @dataclass
 class CanonicalDataset:
@@ -189,6 +183,7 @@ class CollectionMetadata:
     contact_email: str
     links: List[Link]
 
+
 @dataclass
 class CanonicalCollection:
     id: CollectionId
@@ -217,7 +212,7 @@ class CollectionVersionWithDatasets(CollectionVersionBase):
     datasets: List[DatasetVersion]
 
 
-class CollectionLinkType(Enum):
+class CollectionLinkType(str, Enum):
     DOI = "doi"
     RAW_DATA = "raw_data"
     PROTOCOL = "protocol"
@@ -226,7 +221,7 @@ class CollectionLinkType(Enum):
     DATA_SOURCE = "data_source"
 
 
-class DatasetArtifactType(Enum):
+class DatasetArtifactType(str, Enum):
     """
     Enumerates DatasetArtifact file types.
 
