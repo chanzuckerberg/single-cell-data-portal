@@ -1,0 +1,1 @@
+{"levelname": "INFO", "asctime": "2022-12-05T23:09:36.005Z", "name": "root", "message": "Deleting file 74565d4e-ac5a-4c67-bc8b-07f32472dfac/data.H5AD in bucket bogus-bucket.", "lineno": 62, "pathname": "/single-cell-data-portal/backend/common/entities/dataset_asset.py"}
