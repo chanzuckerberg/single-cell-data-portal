@@ -1,2 +1,0 @@
-{"levelname": "INFO", "asctime": "2022-12-01T19:51:49.001Z", "name": "root", "message": "Unable to find a row with primary key 3d8655fd-c65d-4ffa-8f6d-e295e9a39c5d, in Collection table.", "lineno": 43, "pathname": "/single-cell-data-portal/backend/common/entities/entity.py"}
-{"levelname": "INFO", "asctime": "2022-12-01T19:51:49.001Z", "name": "root", "message": "Unable to find a row with primary key 3d8655fd-c65d-4ffa-8f6d-e295e9a39c5d, in Collection table.", "lineno": 43, "pathname": "/single-cell-data-portal/backend/common/entities/entity.py"}
