@@ -92,7 +92,7 @@ class PortalApi:
             "created_at": 0,
             "dataset_id": dataset_id,
             "filename": "TODO", # TODO: might need to get it from the url
-            "filetype": dataset_artifact.type,
+            "filetype": dataset_artifact.type.upper(),
             "id": dataset_artifact.id.id,
             "s3_uri": dataset_artifact.uri,
             "updated_at": 0,

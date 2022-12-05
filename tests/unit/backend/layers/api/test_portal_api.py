@@ -2403,7 +2403,7 @@ class TestCollectionPutUploadLink(NewBaseTest):
         Reupload a published dataset during a revision
         """
         dataset = self.generate_dataset(
-            statuses=[DatasetStatusUpdate("processing_status", DatasetProcessingStatus.SUCCESS)],
+            statuses=[DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.SUCCESS)],
             publish=True
         )
 
@@ -2425,7 +2425,7 @@ class TestCollectionPutUploadLink(NewBaseTest):
         Reuploads an unpublished dataset
         """
         dataset = self.generate_dataset(
-            statuses=[DatasetStatusUpdate("processing_status", DatasetProcessingStatus.SUCCESS)],
+            statuses=[DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.SUCCESS)],
         )
 
         path = f"/dp/v1/collections/{dataset.collection_version_id}/upload-links"
@@ -2443,7 +2443,7 @@ class TestCollectionPutUploadLink(NewBaseTest):
     def test__reupload_public_dataset__403(self):
         """cannot reupload a public published dataset"""
         dataset = self.generate_dataset(
-            statuses=[DatasetStatusUpdate("processing_status", DatasetProcessingStatus.SUCCESS)],
+            statuses=[DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.SUCCESS)],
             publish=True,
         )
         path = f"/dp/v1/collections/{dataset.collection_version_id}/upload-links"
@@ -2457,7 +2457,7 @@ class TestCollectionPutUploadLink(NewBaseTest):
     def test__reupload_while_processing_dataset__405(self):
         """cannot reupload a dataset that is pending"""
         dataset = self.generate_dataset(
-            statuses=[DatasetStatusUpdate("processing_status", DatasetProcessingStatus.PENDING)],
+            statuses=[DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.PENDING)],
         )
         path = f"/dp/v1/collections/{dataset.collection_version_id}/upload-links"
         body = {"url": self.good_link, "id": dataset.dataset_version_id}
@@ -2470,7 +2470,7 @@ class TestCollectionPutUploadLink(NewBaseTest):
     def test__reupload_dataset_not_owner__403(self):
         dataset = self.generate_dataset(
             owner="someone else",
-            statuses=[DatasetStatusUpdate("processing_status", DatasetProcessingStatus.SUCCESS)],
+            statuses=[DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.SUCCESS)],
         )
         
         path = f"/dp/v1/collections/{dataset.collection_version_id}/upload-links"
@@ -2486,7 +2486,7 @@ class TestCollectionPutUploadLink(NewBaseTest):
         """
         dataset = self.generate_dataset(
             owner="someone else",
-            statuses=[DatasetStatusUpdate("processing_status", DatasetProcessingStatus.SUCCESS)],
+            statuses=[DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.SUCCESS)],
         )
         collection = self.generate_unpublished_collection()
         
