@@ -1,0 +1,4 @@
+Dropping tables
+Recreating tables
+{"levelname": "INFO", "asctime": "2022-12-05T15:10:09.005Z", "name": "dataset_processing", "message": "Converting local.h5ad", "lineno": 89, "pathname": "/single-cell-data-portal/backend/portal/pipeline/processing/common.py"}
+{"levelname": "INFO", "asctime": "2022-12-05T15:10:09.005Z", "name": "dataset_processing", "message": "Finished converting <MagicMock name='make_seurat' id='139785981491376'> in 0:00:00.026813", "lineno": 101, "pathname": "/single-cell-data-portal/backend/portal/pipeline/processing/common.py"}
