@@ -53,8 +53,7 @@ class TestCorpusLoad(unittest.TestCase):
     def setUp(self) -> None:
         super().setUp()
         self.path_to_datasets = pathlib.Path(self.tmp_dir, "datasets")
-        self.corpus_name = "test-group"
-        self.corpus_path = f"{self.tmp_dir}/{self.corpus_name}"
+        self.corpus_path = f"{self.tmp_dir}/test-corpus"
         if not tiledb.VFS().is_dir(self.corpus_path):
             create_tdb_integrated_corpus(self.corpus_path)
             # self.pbmc3k_anndata_object = get_test_anndata_dataset()
@@ -103,7 +102,6 @@ class TestCorpusLoad(unittest.TestCase):
         """
         DO NOT DELETE THIS TEST
         """
-        # load_h5ad(self.path_to_dataset_0, self.corpus_name, False)
         pass
 
     def test_axes_labels_updated_for_new_genes(self):
@@ -134,9 +132,7 @@ class TestCorpusLoad(unittest.TestCase):
                 expected_cell_count = expected_cell_count + generate_cells
 
             # Run
-            snapshot_path, stats = load_data_and_create_cube(
-                path_to_datasets, self.corpus_name, self.tmp_dir, validate_cube=False
-            )
+            snapshot_path, stats = load_data_and_create_cube(path_to_datasets, self.tmp_dir, validate_cube=False)
 
             # Verify
             self.assertEqual(stats["cell_count"], expected_cell_count)

@@ -2,6 +2,7 @@ import os
 import shutil
 from unittest.mock import patch
 
+
 import requests
 
 from backend.common.corpora_orm import (

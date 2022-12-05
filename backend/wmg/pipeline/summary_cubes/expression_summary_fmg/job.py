@@ -7,11 +7,11 @@ import tiledb
 from backend.wmg.pipeline.summary_cubes.extract import extract_var_data
 from backend.wmg.pipeline.summary_cubes.expression_summary_fmg.load import build_in_mem_cube
 from backend.wmg.pipeline.summary_cubes.expression_summary_fmg.transform import transform
-from backend.wmg.data.schemas.marker_genes_cube_schema import expression_summary_fmg_schema
+from backend.wmg.data.schemas.expression_summary_fmg_cube_schema import expression_summary_fmg_schema
 from backend.wmg.data.snapshot import EXPRESSION_SUMMARY_FMG_CUBE_NAME
 from backend.wmg.data.tiledb import create_ctx
 from backend.wmg.data.utils import log_func_runtime, create_empty_cube
-from backend.wmg.data.schemas.marker_genes_cube_schema import (
+from backend.wmg.data.schemas.expression_summary_fmg_cube_schema import (
     expression_summary_fmg_non_indexed_dims,
     expression_summary_fmg_non_indexed_dims_no_gene_ontology,
     expression_summary_fmg_indexed_dims,

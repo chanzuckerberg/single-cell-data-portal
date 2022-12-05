@@ -13,12 +13,12 @@ from backend.common.corpora_config import CorporaAuthConfig
 from backend.layers.api.portal_api import PortalApi
 from backend.layers.api.router import portal_api
 from backend.layers.business.business import BusinessLogic
-from backend.layers.persistence.persistence import DatabaseProviderInterface
+from backend.layers.persistence.persistence import DatabaseProvider, DatabaseProviderInterface
 from backend.layers.thirdparty.crossref_provider import CrossrefProviderInterface
 from backend.layers.thirdparty.s3_provider import S3Provider
 from backend.layers.thirdparty.step_function_provider import StepFunctionProviderInterface
 from backend.layers.thirdparty.uri_provider import FileInfo, UriProviderInterface
-from backend.layers.common.entities import CollectionMetadata, CollectionVersion, CollectionVersionId, DatasetMetadata, DatasetStatusGeneric, Link, OntologyTermId
+from backend.layers.common.entities import CollectionMetadata, CollectionVersion, CollectionVersionId, DatasetMetadata, DatasetStatusGeneric, DatasetStatusKey, Link, OntologyTermId
 from tests.unit.backend.api_server.mock_auth import MockOauthServer
 from tests.unit.backend.api_server.config import TOKEN_EXPIRES
 from tests.unit.backend.fixtures.environment_setup import EnvironmentSetup
@@ -31,7 +31,7 @@ import copy
 
 @dataclass
 class DatasetStatusUpdate:
-    status_key: str
+    status_key: DatasetStatusKey
     status: DatasetStatusGeneric
 
 @dataclass
@@ -98,10 +98,12 @@ class NewBaseTest(BaseAuthAPITest):
         super().setUp()
         os.environ.setdefault("APP_NAME", "corpora-api")
 
-        database_provider = DatabaseProviderMock()
+        database_provider = DatabaseProvider()
+        database_provider._drop()
+        database_provider._create()
         self.crossref_provider = CrossrefProviderInterface()
         step_function_provider = StepFunctionProviderInterface()
-        s3_provider = S3Provider()
+        self.s3_provider = S3Provider()
         self.uri_provider = UriProviderInterface()
         self.uri_provider.validate = Mock(return_value=True) # By default, every link should be valid
         self.uri_provider.get_file_info = Mock(return_value=FileInfo(1, "file.h5ad"))
@@ -130,7 +132,7 @@ class NewBaseTest(BaseAuthAPITest):
             database_provider, 
             self.crossref_provider, 
             step_function_provider, 
-            s3_provider, 
+            self.s3_provider, 
             self.uri_provider
         )
 
