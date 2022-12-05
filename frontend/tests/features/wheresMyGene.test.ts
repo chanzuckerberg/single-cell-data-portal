@@ -172,7 +172,8 @@ describe("Where's My Gene", () => {
     );
     await clickUntilSidebarShowsUp(getSourceDataButton, page);
     await expect(page).toHaveSelector(getText("After filtering cells with low coverage (less than 500 genes expressed)"));
-    
+    const sourceDataListItems = await page.$("[class*=MuiListItem]");
+    if (!sourceDataListItems) throw Error("no source data displayed");
 
   });
   test("Hierarchical Clustering", async ({ page }) => {
