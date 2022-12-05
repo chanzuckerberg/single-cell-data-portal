@@ -112,7 +112,7 @@ class BusinessLogic(BusinessLogicInterface):
 
         return created_version
 
-    def get_published_collection_version(self, collection_id: CollectionId) -> Optional[CollectionVersion]:
+    def get_published_collection_version(self, collection_id: CollectionId) -> Optional[CollectionVersionWithDatasets]:
         """
         Returns the published collection version that belongs to a canonical collection.
         Returns None if no published collection exists
@@ -125,13 +125,13 @@ class BusinessLogic(BusinessLogicInterface):
         """
         return self.database_provider.get_collection_version_with_datasets(version_id)
 
-    def get_collection_versions_from_canonical(self, collection_id: CollectionId) -> Iterable[CollectionVersion]:
+    def get_collection_versions_from_canonical(self, collection_id: CollectionId) -> Iterable[CollectionVersionWithDatasets]:
         """
         Returns all the collection versions connected to a canonical collection
         """
         return self.database_provider.get_all_versions_for_collection(collection_id)
 
-    def get_collection_version_from_canonical(self, collection_id: CollectionId) -> Optional[CollectionVersion]:
+    def get_collection_version_from_canonical(self, collection_id: CollectionId) -> Optional[CollectionVersionWithDatasets]:
         """
         Returns the published collection version mapped to a canonical collection, if available.
         Otherwise will return the active unpublished version.

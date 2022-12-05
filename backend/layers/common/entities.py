@@ -57,6 +57,23 @@ class DatasetProcessingStatus(DatasetStatusGeneric, Enum):
     FAILURE = "FAILURE"
 
 
+class CollectionLinkType(str, Enum):
+    DOI = "doi"
+    RAW_DATA = "raw_data"
+    PROTOCOL = "protocol"
+    LAB_WEBSITE = "lab_website"
+    OTHER = "other"
+    DATA_SOURCE = "data_source"
+
+
+class DatasetArtifactType(str, Enum):
+    RAW_H5AD = "raw_h5ad"
+    H5AD = "h5ad"
+    RDS = "rds"
+    CXG = "cxg"
+
+
+
 @dataclass_json
 @dataclass
 class DatasetStatus:
@@ -115,7 +132,7 @@ class DatasetArtifactId:
 @dataclass
 class DatasetArtifact:
     id: DatasetArtifactId
-    type: str
+    type: DatasetArtifactType
     uri: str
 
 
@@ -210,30 +227,3 @@ class CollectionVersion(CollectionVersionBase):
 @dataclass
 class CollectionVersionWithDatasets(CollectionVersionBase):
     datasets: List[DatasetVersion]
-
-
-class CollectionLinkType(str, Enum):
-    DOI = "doi"
-    RAW_DATA = "raw_data"
-    PROTOCOL = "protocol"
-    LAB_WEBSITE = "lab_website"
-    OTHER = "other"
-    DATA_SOURCE = "data_source"
-
-
-class DatasetArtifactType(str, Enum):
-    """
-    Enumerates DatasetArtifact file types.
-
-    H5AD - An AnnData object describing an expression matrix, post-processing by cellxgene pipeline.
-        Uses the .h5ad extension.
-    RAW_H5AD - An AnnData object describing an expression matrix, as directly uploaded by users.
-        Uses the .h5ad extension.
-    RDS - A Seurat file object describing an expression matrix. Uses the .rds extension.
-    CXG - A TileDb object describing a cellxgene object. Uses .cxg extension.
-    """
-
-    RAW_H5AD = "raw_h5ad"
-    H5AD = "h5ad"
-    RDS = "rds"
-    CXG = "cxg"

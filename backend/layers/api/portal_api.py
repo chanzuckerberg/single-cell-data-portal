@@ -12,7 +12,7 @@ from backend.layers.business.business import BusinessLogic
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.business.entities import CollectionMetadataUpdate, CollectionQueryFilter
 from backend.layers.business.exceptions import ArtifactNotFoundException, CollectionCreationException, CollectionIsPublishedException, CollectionNotFoundException, CollectionPublishException, CollectionUpdateException, CollectionVersionException, DatasetInWrongStatusException, DatasetNotFoundException, InvalidURIException, MaxFileSizeExceededException
-from backend.layers.common.entities import CollectionId, CollectionMetadata, CollectionVersion, CollectionVersionId, DatasetArtifact, DatasetId, DatasetStatus, DatasetVersion, DatasetVersionId, Link, OntologyTermId
+from backend.layers.common.entities import CollectionId, CollectionMetadata, CollectionVersion, CollectionVersionId, DatasetArtifact, DatasetArtifactId, DatasetId, DatasetStatus, DatasetVersion, DatasetVersionId, Link, OntologyTermId
 
 from backend.common.utils import authorization_checks as auth
 from backend.common.utils.ontology_mappings.ontology_map_loader import ontology_mappings
@@ -47,13 +47,16 @@ class PortalApi:
 
         collections = []
         for c in itertools.chain(all_published_collections, all_owned_collections):
-            collections.append({
+            collection = {
                 "id": c.version_id.id if c.published_at is None else c.collection_id.id,
                 "visibility": "PRIVATE" if c.published_at is None else "PUBLIC",
                 "owner": c.owner,
                 "created_at": c.created_at,
-                # "revision_of": "NA", # TODO: looks like this isn't returned right now
-            })            
+            }
+            if c.published_at is None:
+                collection["revision_of"] = c.collection_id.id
+            collections.append(collection)            
+
 
         result = {"collections": collections}
         return make_response(jsonify(result), 200)
@@ -89,7 +92,7 @@ class PortalApi:
             "created_at": 0,
             "dataset_id": dataset_id,
             "filename": "TODO", # TODO: might need to get it from the url
-            "filetype": dataset_artifact.type,
+            "filetype": dataset_artifact.type.upper(),
             "id": dataset_artifact.id.id,
             "s3_uri": dataset_artifact.uri,
             "updated_at": 0,
@@ -117,7 +120,7 @@ class PortalApi:
             "cell_type": None if dataset.metadata is None else self._ontology_term_ids_to_response(dataset.metadata.cell_type),
             "collection_id": dataset.collection_id.id,
             "created_at": dataset.created_at,
-            "dataset_assets": [self._dataset_asset_to_response(a, dataset.dataset_id.id) for a in dataset.artifacts],
+            "dataset_assets": [self._dataset_asset_to_response(a, dataset.version_id.id) for a in dataset.artifacts],
             "dataset_deployments": [{"url": "TODO"}], # TODO: dataset.metadata.explorer_url,
             "development_stage": None if dataset.metadata is None else self._ontology_term_ids_to_response(dataset.metadata.development_stage),
             "disease": None if dataset.metadata is None else self._ontology_term_ids_to_response(dataset.metadata.disease),
@@ -128,7 +131,7 @@ class PortalApi:
             "mean_genes_per_cell": None if dataset.metadata is None else dataset.metadata.mean_genes_per_cell,
             "name": "" if dataset.metadata is None else dataset.metadata.name,
             "organism": None if dataset.metadata is None else self._ontology_term_ids_to_response(dataset.metadata.organism),
-            "processing_status": self._dataset_processing_status_to_response(dataset.status, dataset.dataset_id.id),
+            "processing_status": self._dataset_processing_status_to_response(dataset.status, dataset.version_id.id),
             "published": True, # TODO
             "published_at": dataset.canonical_dataset.published_at,
             "revision": 0, # TODO this is the progressive revision number. I don't think we'll need this
@@ -385,7 +388,7 @@ class PortalApi:
             raise NotFoundHTTPException(detail=f"'dataset/{dataset_id}' not found.")
 
         try:
-            download_data = self.business_logic.get_dataset_artifact_download_data(DatasetVersionId(dataset_id), asset_id)
+            download_data = self.business_logic.get_dataset_artifact_download_data(DatasetVersionId(dataset_id), DatasetArtifactId(asset_id))
         except ArtifactNotFoundException:
             raise NotFoundHTTPException(detail=f"'dataset/{dataset_id}/asset/{asset_id}' not found.")
 

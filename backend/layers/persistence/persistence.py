@@ -216,7 +216,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             return self._row_to_collection_version_with_datasets(collection_version, canonical_collection, datasets)
 
 
-    def get_collection_mapped_version(self, collection_id: CollectionId) -> Optional[CollectionVersion]:
+    def get_collection_mapped_version(self, collection_id: CollectionId) -> Optional[CollectionVersionWithDatasets]:
         """
         Retrieves the latest mapped version for a collection
         """
@@ -228,9 +228,10 @@ class DatabaseProvider(DatabaseProviderInterface):
             version_id = version_id[0]
             collection_version = session.query(CollectionVersionTable).filter_by(version_id=version_id).one()
             canonical_collection = self.get_canonical_collection(collection_id)
-            return self._row_to_collection_version(collection_version, canonical_collection)
+            datasets = self._get_datasets([DatasetVersionId(str(id)) for id in collection_version.datasets])
+            return self._row_to_collection_version_with_datasets(collection_version, canonical_collection, datasets)
 
-    def get_all_versions_for_collection(self, collection_id: CollectionId) -> List[CollectionVersion]:
+    def get_all_versions_for_collection(self, collection_id: CollectionId) -> List[CollectionVersionWithDatasets]:
         """
         Retrieves all versions for a specific collections, without filtering
         """
@@ -239,7 +240,8 @@ class DatabaseProvider(DatabaseProviderInterface):
             canonical_collection = self.get_canonical_collection(collection_id)
             versions = list()
             for i in range(len(version_rows)):
-                version = self._row_to_collection_version(version_rows[i], canonical_collection)
+                datasets = self._get_datasets([DatasetVersionId(str(id)) for id in version_rows[i].datasets])
+                version = self._row_to_collection_version_with_datasets(version_rows[i], canonical_collection, datasets)
                 versions.append(version)
             return versions
 
@@ -259,20 +261,27 @@ class DatabaseProvider(DatabaseProviderInterface):
         """
         with self.db_session_manager() as session:
             if get_tombstoned:
-                mapped_version_ids = session.query(CollectionTable.version_id).filter(CollectionTable.version_id.isnot(None)).all() # noqa
+                canonical_collections = session.query(CollectionTable).filter(CollectionTable.version_id.isnot(None)).all() # noqa
             else:
-                mapped_version_ids = session.query(CollectionTable.version_id)\
+                canonical_collections = session.query(CollectionTable)\
                     .filter(CollectionTable.version_id.isnot(None))\
                     .filter_by(tombstoned=False)\
                     .all()
 
-                # TODO: Very hacky
-                mapped_version_ids = [i[0] for i in mapped_version_ids]
-
+            mapped_version_ids = [i.version_id for i in canonical_collections]
             versions = session.query(CollectionVersionTable).filter(CollectionVersionTable.version_id.in_(mapped_version_ids)).all() # noqa
 
-            # TODO: do we need to hydrate versions with canonical collections? would require a join or many lookup calls
-            return [self._row_to_collection_version(v, None) for v in versions]
+            for version in versions:
+                # TODO: should be optimized using a map
+                canonical_row = next(cc for cc in canonical_collections if cc.version_id == version.version_id)
+                canonical = CanonicalCollection(
+                    CollectionId(str(canonical_row.id)),
+                    CollectionVersionId(str(canonical_row.version_id)),
+                    canonical_row.originally_published_at,
+                    canonical_row.tombstoned
+                )
+
+                yield self._row_to_collection_version(version, canonical)
 
     def delete_canonical_collection(self, collection_id: CollectionId) -> None:
         """

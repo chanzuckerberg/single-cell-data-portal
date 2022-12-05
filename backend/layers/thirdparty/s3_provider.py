@@ -40,7 +40,7 @@ class S3Provider(S3ProviderInterface):
 
     def generate_presigned_url(self, path: str, expiration: int = 604800) -> str:
         bucket, key = self._parse_s3_uri(path)
-        self.client.generate_presigned_url(
+        return self.client.generate_presigned_url(
             "get_object", Params={"Bucket": bucket, "Key": key}, ExpiresIn=expiration
         )
 

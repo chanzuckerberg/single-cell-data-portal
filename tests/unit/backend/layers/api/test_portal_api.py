@@ -10,6 +10,7 @@ from datetime import datetime
 from unittest import mock
 from unittest.mock import Mock, patch
 from backend.layers.business.entities import DatasetArtifactDownloadData
+from backend.layers.common.entities import CollectionId, CollectionVersionId, DatasetMetadata, DatasetProcessingStatus, DatasetStatusKey, DatasetUploadStatus, DatasetVersionId, Link, OntologyTermId
 from backend.layers.common.entities import CollectionId, CollectionLinkType, CollectionVersionId, DatasetMetadata, DatasetProcessingStatus, DatasetUploadStatus, DatasetVersionId, Link, OntologyTermId
 from backend.layers.thirdparty.uri_provider import FileInfo
 
@@ -1424,6 +1425,7 @@ class TestDataset(NewBaseTest):
 
     # ✅
     def test__post_dataset_asset__dataset_NOT_FOUND(self):
+        # TODO: we're requiring UUIDs
         test_url = furl(path="/dp/v1/datasets/test_user_id/asset/test_dataset_artifact_id")
         response = self.app.post(test_url.url, headers=dict(host="localhost"))
         self.assertEqual(404, response.status_code)
@@ -1432,6 +1434,7 @@ class TestDataset(NewBaseTest):
 
     # ✅
     def test__post_dataset_asset__asset_NOT_FOUND(self):
+        # TODO: we're requiring UUIDs
         test_url = furl(path="/dp/v1/datasets/test_dataset_id/asset/fake_asset")
         response = self.app.post(test_url.url, headers=dict(host="localhost"))
         self.assertEqual(404, response.status_code)
@@ -1442,8 +1445,8 @@ class TestDataset(NewBaseTest):
     def test__get_status__ok(self):
         dataset = self.generate_dataset(
             statuses=[
-                DatasetStatusUpdate("processing_status", DatasetProcessingStatus.PENDING),
-                DatasetStatusUpdate("upload_status", DatasetUploadStatus.UPLOADING),
+                DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.PENDING),
+                DatasetStatusUpdate(DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADING),
             ]
         )
         # TODO: why do we need processing_status_id? we can probably remove
@@ -1477,7 +1480,7 @@ class TestDataset(NewBaseTest):
 
     # 💛, passes, but review the assertions
     def test__get_all_datasets_for_index(self):
-        # TODO: here we probably don't need to test the logic - needs to simplify this
+        # TODO: decide whether to use dataset_id or version_id in this endpoint
 
         private_dataset = self.generate_dataset()
         public_dataset = self.generate_dataset(publish=True)
@@ -1489,12 +1492,12 @@ class TestDataset(NewBaseTest):
         body = json.loads(response.data)
 
         ids = [d["id"] for d in body]
-        self.assertIn(public_dataset.dataset_id, ids)
-        self.assertNotIn(private_dataset.dataset_id, ids)
+        self.assertIn(public_dataset.dataset_version_id, ids)
+        self.assertNotIn(private_dataset.dataset_version_id, ids)
 
         actual_dataset = None
         for d in body:
-            if d["id"] == public_dataset.dataset_id:
+            if d["id"] == public_dataset.dataset_version_id:
                 actual_dataset = d
 
         persisted_dataset = self.business_logic.get_dataset_version(DatasetVersionId(public_dataset.dataset_version_id))
@@ -1507,7 +1510,7 @@ class TestDataset(NewBaseTest):
         if actual_dataset is not None and persisted_dataset is not None: #pylance
 
             self.assertNotIn("description", actual_dataset)
-            self.assertEqual(actual_dataset["id"], persisted_dataset.dataset_id.id)
+            self.assertEqual(actual_dataset["id"], persisted_dataset.version_id.id)
             self.assertEqual(actual_dataset["name"], persisted_dataset.metadata.name)
             # self.assertEqual(actual_dataset["collection_id"], persisted_dataset.collection_id)
             self.assertEqual(actual_dataset["assay"], convert_ontology(persisted_dataset.metadata.assay))
@@ -1545,7 +1548,7 @@ class TestDataset(NewBaseTest):
 
         actual_dataset = None
         for d in body:
-            if d["id"] == dataset.dataset_id:
+            if d["id"] == dataset.dataset_version_id:
                 actual_dataset = d
         self.assertIsNotNone(actual_dataset)
 
@@ -1614,7 +1617,7 @@ class TestDataset(NewBaseTest):
         # Test pre upload
         # TODO: this might need additional business logic
         dataset = self.generate_dataset(
-            statuses=[DatasetStatusUpdate("upload_status", DatasetUploadStatus.WAITING)]
+            statuses=[DatasetStatusUpdate(DatasetStatusKey.UPLOAD, DatasetUploadStatus.WAITING)]
         )
         test_url = f"/dp/v1/datasets/{dataset.dataset_version_id}"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
@@ -1624,7 +1627,7 @@ class TestDataset(NewBaseTest):
 
         # Test while uploading
         dataset = self.generate_dataset(
-            statuses=[DatasetStatusUpdate("upload_status", DatasetUploadStatus.UPLOADING)]
+            statuses=[DatasetStatusUpdate(DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADING)]
         )
         test_url = f"/dp/v1/datasets/{dataset.dataset_version_id}"
 
@@ -1642,7 +1645,7 @@ class TestDataset(NewBaseTest):
     # ✅
     def test__delete_uploaded_dataset__ok(self):
         dataset = self.generate_dataset(
-            statuses=[DatasetStatusUpdate("upload_status", DatasetUploadStatus.UPLOADING)]
+            statuses=[DatasetStatusUpdate(DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADING)]
         )
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
 
@@ -1671,7 +1674,7 @@ class TestDataset(NewBaseTest):
     # ✅
     def test__call_delete_dataset__twice(self):
         dataset = self.generate_dataset(
-            statuses=[DatasetStatusUpdate("upload_status", DatasetUploadStatus.UPLOADING)]
+            statuses=[DatasetStatusUpdate(DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADING)]
         )
         # TODO: set upload progress to 10.0
 
@@ -1690,7 +1693,7 @@ class TestDataset(NewBaseTest):
     def test__delete_public_dataset_returns__405(self):
 
         dataset = self.generate_dataset(
-            statuses=[DatasetStatusUpdate("upload_status", DatasetUploadStatus.UPLOADED)],
+            statuses=[DatasetStatusUpdate(DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADED)],
             publish=True,
         )
 
@@ -1705,7 +1708,7 @@ class TestDataset(NewBaseTest):
 
         dataset = self.generate_dataset(
             owner="someone_else",
-            statuses=[DatasetStatusUpdate("upload_status", DatasetUploadStatus.WAITING)],
+            statuses=[DatasetStatusUpdate(DatasetStatusKey.UPLOAD, DatasetUploadStatus.WAITING)],
         )
 
         test_url = f"/dp/v1/datasets/{dataset.dataset_version_id}"
@@ -1717,7 +1720,7 @@ class TestDataset(NewBaseTest):
     def test__cancel_dataset_download__user_not_logged_in(self):
 
         dataset = self.generate_dataset(
-            statuses=[DatasetStatusUpdate("upload_status", DatasetUploadStatus.WAITING)],
+            statuses=[DatasetStatusUpdate(DatasetStatusKey.UPLOAD, DatasetUploadStatus.WAITING)],
         )
 
         test_url = f"/dp/v1/datasets/{dataset.dataset_version_id}"
@@ -1905,6 +1908,7 @@ class TestRevision(NewBaseTest):
         """
         Start a revision on a non-existing collection.
         """
+        # TODO: UUID
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
         response = self.app.post("/dp/v1/collections/random", headers=headers)
         self.assertEqual(403, response.status_code)
@@ -2105,6 +2109,7 @@ class TestPublishRevision(NewBaseTest):
         """
         Publish a collection with a bad uuid (non existant) returns 403
         """
+        # TODO: UUID
         collection_id = "bad_id"
         body = {"data_submission_policy_version": "1.0"}
         path = f"{self.base_path}/{collection_id}/publish"
@@ -2398,7 +2403,7 @@ class TestCollectionPutUploadLink(NewBaseTest):
         Reupload a published dataset during a revision
         """
         dataset = self.generate_dataset(
-            statuses=[DatasetStatusUpdate("processing_status", DatasetProcessingStatus.SUCCESS)],
+            statuses=[DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.SUCCESS)],
             publish=True
         )
 
@@ -2420,7 +2425,7 @@ class TestCollectionPutUploadLink(NewBaseTest):
         Reuploads an unpublished dataset
         """
         dataset = self.generate_dataset(
-            statuses=[DatasetStatusUpdate("processing_status", DatasetProcessingStatus.SUCCESS)],
+            statuses=[DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.SUCCESS)],
         )
 
         path = f"/dp/v1/collections/{dataset.collection_version_id}/upload-links"
@@ -2438,7 +2443,7 @@ class TestCollectionPutUploadLink(NewBaseTest):
     def test__reupload_public_dataset__403(self):
         """cannot reupload a public published dataset"""
         dataset = self.generate_dataset(
-            statuses=[DatasetStatusUpdate("processing_status", DatasetProcessingStatus.SUCCESS)],
+            statuses=[DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.SUCCESS)],
             publish=True,
         )
         path = f"/dp/v1/collections/{dataset.collection_version_id}/upload-links"
@@ -2452,7 +2457,7 @@ class TestCollectionPutUploadLink(NewBaseTest):
     def test__reupload_while_processing_dataset__405(self):
         """cannot reupload a dataset that is pending"""
         dataset = self.generate_dataset(
-            statuses=[DatasetStatusUpdate("processing_status", DatasetProcessingStatus.PENDING)],
+            statuses=[DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.PENDING)],
         )
         path = f"/dp/v1/collections/{dataset.collection_version_id}/upload-links"
         body = {"url": self.good_link, "id": dataset.dataset_version_id}
@@ -2465,7 +2470,7 @@ class TestCollectionPutUploadLink(NewBaseTest):
     def test__reupload_dataset_not_owner__403(self):
         dataset = self.generate_dataset(
             owner="someone else",
-            statuses=[DatasetStatusUpdate("processing_status", DatasetProcessingStatus.SUCCESS)],
+            statuses=[DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.SUCCESS)],
         )
         
         path = f"/dp/v1/collections/{dataset.collection_version_id}/upload-links"
@@ -2481,7 +2486,7 @@ class TestCollectionPutUploadLink(NewBaseTest):
         """
         dataset = self.generate_dataset(
             owner="someone else",
-            statuses=[DatasetStatusUpdate("processing_status", DatasetProcessingStatus.SUCCESS)],
+            statuses=[DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.SUCCESS)],
         )
         collection = self.generate_unpublished_collection()
         
@@ -2523,7 +2528,7 @@ class TestCollectionUploadLinkCurators(NewBaseTest):
         """
         dataset = self.generate_dataset(
             owner="someone else",
-            statuses=[DatasetStatusUpdate("processing_status", DatasetProcessingStatus.SUCCESS)],
+            statuses=[DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.SUCCESS)],
         )
 
         path = f"/dp/v1/collections/{dataset.collection_version_id}/upload-links"
