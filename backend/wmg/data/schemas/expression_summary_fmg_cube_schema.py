@@ -1,5 +1,10 @@
+# This module contains the schema components for the expression summary cube.
+# used for marker gene calculation (expression_summary_fmg).
+
 import numpy as np
 import tiledb
+
+filters = [tiledb.ZstdFilter(level=+22)]
 
 # These are the queryable cube dimensions that will be modeled as
 # TileDB `Dim`s and thus can be used for _efficiently_ querying
@@ -36,8 +41,6 @@ expression_summary_fmg_non_indexed_dims_no_gene_ontology = [
 
 # The full set of logical cube dimensions by which the cube can be queried.
 expression_summary_fmg_logical_dims = expression_summary_fmg_indexed_dims + expression_summary_fmg_non_indexed_dims
-
-filters = [tiledb.ZstdFilter(level=+22)]
 
 expression_summary_fmg_domain = tiledb.Domain(
     [

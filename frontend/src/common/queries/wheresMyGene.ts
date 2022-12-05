@@ -1,15 +1,25 @@
 import { useContext, useMemo } from "react";
-import { useQuery, UseQueryResult } from "react-query";
+import {
+  useMutation,
+  UseMutationResult,
+  useQuery,
+  useQueryClient,
+  UseQueryResult,
+} from "react-query";
 import { API_URL } from "src/configs/configs";
 import {
   DispatchContext,
   State,
   StateContext,
 } from "src/views/WheresMyGene/common/store";
-import { setSnapshotId } from "src/views/WheresMyGene/common/store/actions";
+import {
+  addSelectedGenes,
+  setSnapshotId,
+} from "src/views/WheresMyGene/common/store/actions";
 import {
   CellType,
   CellTypeGeneExpressionSummaryData,
+  Gene,
   GeneExpressionSummary,
   RawCellTypeGeneExpressionSummaryData,
 } from "src/views/WheresMyGene/common/types";
@@ -67,7 +77,7 @@ function flattenOntologyTermsByOrganism(
   }, {} as OntologyTermsByOrganism);
 }
 
-function generateTermsByKey(
+export function generateTermsByKey(
   flattenedTerms: OntologyTermsByOrganism,
   key: keyof OntologyTerm
 ): {
@@ -302,7 +312,8 @@ export function useFilterDimensions(
         })),
         development_stage_terms: development_stage_terms.map(toEntity),
         disease_terms: disease_terms.map(toEntity),
-        self_reported_ethnicity_terms: self_reported_ethnicity_terms.map(toEntity),
+        self_reported_ethnicity_terms:
+          self_reported_ethnicity_terms.map(toEntity),
         sex_terms: sex_terms.map(toEntity),
       },
       isLoading: false,
@@ -576,6 +587,7 @@ function useWMGQueryRequestBody(options = { includeAllFilterOptions: false }) {
     return result;
   }, [data, selectedOrganismId]);
 
+  // This is a nice mapping that may start being used in a few places across WMG, might be worth moving to a global store.
   const tissuesByName = useMemo(() => {
     let result: { [name: string]: OntologyTerm } = {};
 
@@ -690,4 +702,104 @@ export function aggregateCollectionsFromDatasets(
   }
 
   return collections;
+}
+
+interface MarkerGeneRequestBody {
+  celltype: string;
+  n_markers: number;
+  organism: string;
+  test: string;
+  tissue: string;
+}
+
+interface HardcodedMarkerGeneRequest extends MarkerGeneRequestBody {
+  n_markers: 10;
+  test: "ttest";
+}
+
+export function generateMarkerGeneBody(
+  cellTypeID: string,
+  tissueID: string,
+  organismID: string
+): HardcodedMarkerGeneRequest {
+  return {
+    celltype: cellTypeID,
+    n_markers: 10,
+    organism: organismID,
+    test: "ttest",
+    tissue: tissueID,
+  };
+}
+
+export interface FetchMarkerGeneParams {
+  cellTypeID: string;
+  tissueID: string;
+  organismID: string;
+}
+
+export async function fetchMarkerGenes({
+  cellTypeID,
+  organismID,
+  tissueID,
+}: FetchMarkerGeneParams): Promise<MarkerGeneResponse> {
+  const url = API_URL + API.WMG_MARKER_GENES;
+  const body = generateMarkerGeneBody(cellTypeID, tissueID, organismID);
+  const response = await fetch(url, {
+    ...DEFAULT_FETCH_OPTIONS,
+    ...JSON_BODY_FETCH_OPTIONS,
+    body: JSON.stringify(body),
+    method: "POST",
+  });
+  const json: MarkerGeneResponse = await response.json();
+
+  if (!response.ok) {
+    throw json;
+  }
+
+  return json;
+}
+export const USE_MARKER_GENES = {
+  ENTITIES: [ENTITIES.WMG_MARKER_GENES],
+  id: "wmg-marker-genes",
+};
+
+export interface MarkerGenesByCellType {
+  [cellType: string]: MarkerGeneResponse["marker_genes"];
+}
+
+export interface MarkerGeneResponse {
+  marker_genes: {
+    [geneID: string]: {
+      effect_size: number;
+      p_value: number;
+    };
+  };
+  snapshot_id: string;
+}
+
+export function useMarkerGenes(genesByGeneID: {
+  [id: string]: Gene;
+}): UseMutationResult<MarkerGeneResponse, unknown, FetchMarkerGeneParams> {
+  const queryClient = useQueryClient();
+  const dispatch = useContext(DispatchContext);
+  const prevMarkerGenes = queryClient.getQueryData<MarkerGenesByCellType>([
+    USE_MARKER_GENES,
+  ]);
+  return useMutation(fetchMarkerGenes, {
+    onSuccess: (data, { cellTypeID }) => {
+      if (!dispatch || !data) return;
+      const newMarkerGenes = prevMarkerGenes || {};
+      newMarkerGenes[cellTypeID] = data.marker_genes;
+      queryClient.setQueryData([USE_MARKER_GENES], newMarkerGenes);
+      const geneNames = Object.keys(data.marker_genes).map((geneID) => {
+        const gene = genesByGeneID[geneID];
+        if (!gene) {
+          console.error("gene not found", geneID);
+        }
+        return gene.name;
+      });
+      // This dispatch may be pulled out of the on success of this mutation if the panel solution is implemented
+      dispatch(addSelectedGenes(geneNames));
+    },
+  });
 }

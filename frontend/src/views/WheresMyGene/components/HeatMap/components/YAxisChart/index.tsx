@@ -2,6 +2,10 @@ import { init } from "echarts";
 import Image from "next/image";
 import { memo, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { EMPTY_OBJECT, noop } from "src/common/constants/utils";
+import { get } from "src/common/featureFlags";
+import { FEATURES } from "src/common/featureFlags/features";
+import { BOOLEAN } from "src/common/localStorage/set";
+import { FetchMarkerGeneParams } from "src/common/queries/wheresMyGene";
 import { DispatchContext } from "src/views/WheresMyGene/common/store";
 import { resetTissueCellTypes } from "src/views/WheresMyGene/common/store/actions";
 import { CellType, Tissue } from "src/views/WheresMyGene/common/types";
@@ -9,6 +13,7 @@ import { useDeleteGenesAndCellTypes } from "../../hooks/useDeleteGenesAndCellTyp
 import { useUpdateYAxisChart } from "../../hooks/useUpdateYAxisChart";
 import {
   CellTypeMetadata,
+  deserializeCellTypeMetadata,
   getAllSerializedCellTypeMetadata,
   getHeatmapHeight,
 } from "../../utils";
@@ -26,6 +31,9 @@ interface Props {
   hasDeletedCellTypes: boolean;
   availableCellTypes: CellType[];
   tissue: Tissue;
+  tissueID: string;
+  generateMarkerGenes: (args: FetchMarkerGeneParams) => void;
+  selectedOrganismId: string;
 }
 
 export default memo(function YAxisChart({
@@ -33,6 +41,9 @@ export default memo(function YAxisChart({
   hasDeletedCellTypes,
   availableCellTypes,
   tissue,
+  tissueID,
+  generateMarkerGenes,
+  selectedOrganismId,
 }: Props): JSX.Element {
   const dispatch = useContext(DispatchContext);
 
@@ -47,6 +58,7 @@ export default memo(function YAxisChart({
   const [heatmapHeight, setHeatmapHeight] = useState(
     getHeatmapHeight(cellTypes)
   );
+  const isMarkerGenes = get(FEATURES.MARKER_GENES) === BOOLEAN.TRUE;
 
   // Initialize charts
   useEffect(() => {
@@ -94,13 +106,27 @@ export default memo(function YAxisChart({
       const { value } = params;
 
       handleCellTypeClick(value);
+
+      if (isMarkerGenes) {
+        const { id } = deserializeCellTypeMetadata(value);
+
+        generateMarkerGenes({
+          cellTypeID: id,
+          organismID: selectedOrganismId,
+          tissueID,
+        });
+      }
     }
   }, [
     setHandleYAxisChartClick,
     handleCellTypeClick,
     dispatch,
+    generateMarkerGenes,
+    tissueID,
     availableCellTypes,
     yAxisChart,
+    selectedOrganismId,
+    isMarkerGenes,
   ]);
 
   const cellTypeMetadata = useMemo(() => {

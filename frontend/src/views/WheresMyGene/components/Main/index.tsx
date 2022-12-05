@@ -42,6 +42,7 @@ export default function WheresMyGene(): JSX.Element {
   const dispatch = useContext(DispatchContext);
 
   const { selectedGenes, selectedCellTypeIds, selectedTissues, sortBy } = state;
+  const selectedOrganismId = state.selectedOrganismId || "";
 
   const [isScaled, setIsScaled] = useState(true);
 
@@ -315,6 +316,7 @@ export default function WheresMyGene(): JSX.Element {
               allTissueCellTypes={cellTypesByTissueName}
               scaledMeanExpressionMax={scaledMeanExpressionMax}
               scaledMeanExpressionMin={scaledMeanExpressionMin}
+              selectedOrganismId={selectedOrganismId}
               tissueLoaded={hasSelectedTissues}
             />
           ) : (
