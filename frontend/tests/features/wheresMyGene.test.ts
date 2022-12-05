@@ -176,6 +176,7 @@ describe("Where's My Gene", () => {
     if (!sourceDataList) throw Error("no source data displayed");
     
     const sourceDataListItems = await sourceDataList?.$$(".MuiListItem-root")
+    console.log("HELLO", sourceDataListItems?.length)
     expect(sourceDataListItems?.length).toBe(2);
 
 
