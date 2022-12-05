@@ -176,7 +176,7 @@ describe("Where's My Gene", () => {
     if (!sourceDataList) throw Error("no source data displayed");
     
     const sourceDataListItems = await sourceDataList?.$$(".MuiListItem-root")
-    expect(sourceDataListItems?.length).toBe(5);
+    expect(sourceDataListItems?.length).toBe(2);
 
 
     async function getFiltersPanel() {
