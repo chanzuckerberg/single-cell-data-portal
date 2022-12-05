@@ -1,27 +1,54 @@
+import itertools
 from typing import List, Optional, Tuple
-from unittest.mock import Mock
 from urllib.parse import urlparse
 
 from flask import Response, jsonify, make_response
-from backend.common.utils.authorization_checks import is_user_owner_or_allowed
-from backend.common.utils.http_exceptions import ConflictException, ForbiddenHTTPException, InvalidParametersHTTPException, MethodNotAllowedException, NotFoundHTTPException, ServerErrorHTTPException, TooLargeHTTPException
+
+from backend.common.utils.http_exceptions import (
+    ConflictException,
+    ForbiddenHTTPException,
+    InvalidParametersHTTPException,
+    MethodNotAllowedException,
+    NotFoundHTTPException,
+    ServerErrorHTTPException,
+    TooLargeHTTPException,
+)
+from backend.common.utils.ontology_mappings.ontology_map_loader import ontology_mappings
 from backend.layers.api.enrichment import enrich_dataset_with_ancestors
 from backend.layers.auth.user_info import UserInfo
 from backend.layers.business.business import BusinessLogic
-
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.business.entities import CollectionMetadataUpdate, CollectionQueryFilter
-from backend.layers.business.exceptions import ArtifactNotFoundException, CollectionCreationException, CollectionIsPublishedException, CollectionNotFoundException, CollectionPublishException, CollectionUpdateException, CollectionVersionException, DatasetInWrongStatusException, DatasetNotFoundException, InvalidURIException, MaxFileSizeExceededException
-from backend.layers.common.entities import CollectionId, CollectionMetadata, CollectionVersion, CollectionVersionId, DatasetArtifact, DatasetArtifactId, DatasetId, DatasetStatus, DatasetVersion, DatasetVersionId, Link, OntologyTermId
-
-from backend.common.utils import authorization_checks as auth
-from backend.common.utils.ontology_mappings.ontology_map_loader import ontology_mappings
-import itertools
-
+from backend.layers.business.exceptions import (
+    ArtifactNotFoundException,
+    CollectionCreationException,
+    CollectionIsPublishedException,
+    CollectionNotFoundException,
+    CollectionPublishException,
+    CollectionUpdateException,
+    CollectionVersionException,
+    DatasetInWrongStatusException,
+    DatasetNotFoundException,
+    InvalidURIException,
+    MaxFileSizeExceededException,
+)
 from backend.layers.common import doi
+from backend.layers.common.entities import (
+    CollectionId,
+    CollectionMetadata,
+    CollectionVersion,
+    CollectionVersionId,
+    DatasetArtifact,
+    DatasetArtifactId,
+    DatasetStatus,
+    DatasetVersion,
+    DatasetVersionId,
+    Link,
+    OntologyTermId,
+)
+
 
 class PortalApi:
-
     business_logic: BusinessLogicInterface
 
     def __init__(self, business_logic: BusinessLogic) -> None:
@@ -36,14 +63,16 @@ class PortalApi:
 
         all_published_collections = self.business_logic.get_collections(CollectionQueryFilter(is_published=True))
 
-        user_info = UserInfo(token_info) # TODO: ideally, connexion should already return a UserInfo object
+        user_info = UserInfo(token_info)  # TODO: ideally, connexion should already return a UserInfo object
 
         if user_info.is_none():
             all_owned_collections = []
         elif user_info.is_super_curator():
             all_owned_collections = self.business_logic.get_collections(CollectionQueryFilter(is_published=False))
         else:
-            all_owned_collections = self.business_logic.get_collections(CollectionQueryFilter(is_published=False, owner=user_info.user_id()))
+            all_owned_collections = self.business_logic.get_collections(
+                CollectionQueryFilter(is_published=False, owner=user_info.user_id)
+            )
 
         collections = []
         for c in itertools.chain(all_published_collections, all_owned_collections):
@@ -55,23 +84,22 @@ class PortalApi:
             }
             if c.published_at is None:
                 collection["revision_of"] = c.collection_id.id
-            collections.append(collection)            
-
+            collections.append(collection)
 
         result = {"collections": collections}
         return make_response(jsonify(result), 200)
 
     def _dataset_processing_status_to_response(self, status: DatasetStatus, dataset_id: str):
         return {
-            "created_at": 0, # NA
+            "created_at": 0,  # NA
             "cxg_status": status.cxg_status or "NA",
             "dataset_id": dataset_id,
             "h5ad_status": status.h5ad_status or "NA",
-            "id": "NA", # TODO can we purge?
+            "id": "NA",  # TODO can we purge?
             "processing_status": status.processing_status or "NA",
             "rds_status": status.rds_status or "NA",
-            "updated_at": 0, # NA
-            "upload_progress": 1, # No longer supported - always return 1
+            "updated_at": 0,  # NA
+            "upload_progress": 1,  # No longer supported - always return 1
             "upload_status": status.upload_status or "NA",
             "validation_status": status.validation_status or "NA",
         }
@@ -86,12 +114,11 @@ class PortalApi:
             response["link_name"] = link.name
         return response
 
-
     def _dataset_asset_to_response(self, dataset_artifact: DatasetArtifact, dataset_id: str):
         return {
             "created_at": 0,
             "dataset_id": dataset_id,
-            "filename": "TODO", # TODO: might need to get it from the url
+            "filename": "TODO",  # TODO: might need to get it from the url
             "filetype": dataset_artifact.type.upper(),
             "id": dataset_artifact.id.id,
             "s3_uri": dataset_artifact.uri,
@@ -113,57 +140,79 @@ class PortalApi:
 
     # Note: `metadata` can be none while the dataset is uploading
     def _dataset_to_response(self, dataset: DatasetVersion):
-        return self.remove_none({
-            "assay": None if dataset.metadata is None else self._ontology_term_ids_to_response(dataset.metadata.assay),
-            "batch_condition": None if dataset.metadata is None else dataset.metadata.batch_condition,
-            "cell_count": None if dataset.metadata is None else dataset.metadata.cell_count,
-            "cell_type": None if dataset.metadata is None else self._ontology_term_ids_to_response(dataset.metadata.cell_type),
-            "collection_id": dataset.collection_id.id,
-            "created_at": dataset.created_at,
-            "dataset_assets": [self._dataset_asset_to_response(a, dataset.version_id.id) for a in dataset.artifacts],
-            "dataset_deployments": [{"url": "TODO"}], # TODO: dataset.metadata.explorer_url,
-            "development_stage": None if dataset.metadata is None else self._ontology_term_ids_to_response(dataset.metadata.development_stage),
-            "disease": None if dataset.metadata is None else self._ontology_term_ids_to_response(dataset.metadata.disease),
-            "donor_id": None if dataset.metadata is None else dataset.metadata.donor_id,
-            "id": dataset.version_id.id,
-            "is_primary_data": None if dataset.metadata is None else dataset.metadata.is_primary_data,
-            "is_valid": True, # why do we have this
-            "mean_genes_per_cell": None if dataset.metadata is None else dataset.metadata.mean_genes_per_cell,
-            "name": "" if dataset.metadata is None else dataset.metadata.name,
-            "organism": None if dataset.metadata is None else self._ontology_term_ids_to_response(dataset.metadata.organism),
-            "processing_status": self._dataset_processing_status_to_response(dataset.status, dataset.version_id.id),
-            "published": True, # TODO
-            "published_at": dataset.canonical_dataset.published_at,
-            "revision": 0, # TODO this is the progressive revision number. I don't think we'll need this
-            "schema_version": None if dataset.metadata is None else dataset.metadata.schema_version,
-            "self_reported_ethnicity": None if dataset.metadata is None else self._ontology_term_ids_to_response(dataset.metadata.self_reported_ethnicity),
-            "sex": None if dataset.metadata is None else self._ontology_term_ids_to_response(dataset.metadata.sex),
-            "suspension_type": None if dataset.metadata is None else dataset.metadata.suspension_type,
-            "tissue": None if dataset.metadata is None else self._ontology_term_ids_to_response(dataset.metadata.tissue),
-            "tombstone": False, # TODO
-            "updated_at": dataset.created_at, # Legacy: datasets can't be updated anymore
-            "x_approximate_distribution": None if dataset.metadata is None else dataset.metadata.x_approximate_distribution,
-        })
+        return self.remove_none(
+            {
+                "assay": None
+                if dataset.metadata is None
+                else self._ontology_term_ids_to_response(dataset.metadata.assay),
+                "batch_condition": None if dataset.metadata is None else dataset.metadata.batch_condition,
+                "cell_count": None if dataset.metadata is None else dataset.metadata.cell_count,
+                "cell_type": None
+                if dataset.metadata is None
+                else self._ontology_term_ids_to_response(dataset.metadata.cell_type),
+                "collection_id": dataset.collection_id.id,
+                "created_at": dataset.created_at,
+                "dataset_assets": [
+                    self._dataset_asset_to_response(a, dataset.version_id.id) for a in dataset.artifacts
+                ],
+                "dataset_deployments": [{"url": "TODO"}],  # TODO: dataset.metadata.explorer_url,
+                "development_stage": None
+                if dataset.metadata is None
+                else self._ontology_term_ids_to_response(dataset.metadata.development_stage),
+                "disease": None
+                if dataset.metadata is None
+                else self._ontology_term_ids_to_response(dataset.metadata.disease),
+                "donor_id": None if dataset.metadata is None else dataset.metadata.donor_id,
+                "id": dataset.version_id.id,
+                "is_primary_data": None if dataset.metadata is None else dataset.metadata.is_primary_data,
+                "is_valid": True,  # why do we have this
+                "mean_genes_per_cell": None if dataset.metadata is None else dataset.metadata.mean_genes_per_cell,
+                "name": "" if dataset.metadata is None else dataset.metadata.name,
+                "organism": None
+                if dataset.metadata is None
+                else self._ontology_term_ids_to_response(dataset.metadata.organism),
+                "processing_status": self._dataset_processing_status_to_response(dataset.status, dataset.version_id.id),
+                "published": True,  # TODO
+                "published_at": dataset.canonical_dataset.published_at,
+                "revision": 0,  # TODO this is the progressive revision number. I don't think we'll need this
+                "schema_version": None if dataset.metadata is None else dataset.metadata.schema_version,
+                "self_reported_ethnicity": None
+                if dataset.metadata is None
+                else self._ontology_term_ids_to_response(dataset.metadata.self_reported_ethnicity),
+                "sex": None if dataset.metadata is None else self._ontology_term_ids_to_response(dataset.metadata.sex),
+                "suspension_type": None if dataset.metadata is None else dataset.metadata.suspension_type,
+                "tissue": None
+                if dataset.metadata is None
+                else self._ontology_term_ids_to_response(dataset.metadata.tissue),
+                "tombstone": False,  # TODO
+                "updated_at": dataset.created_at,  # Legacy: datasets can't be updated anymore
+                "x_approximate_distribution": None
+                if dataset.metadata is None
+                else dataset.metadata.x_approximate_distribution,
+            }
+        )
 
     def _collection_to_response(self, collection: CollectionVersion, access_type: str):
         collection_id = collection.collection_id.id if collection.published_at is not None else collection.version_id.id
-        return self.remove_none({
-            "access_type": access_type,
-            "contact_email": collection.metadata.contact_email,
-            "contact_name": collection.metadata.contact_name,
-            "created_at": collection.created_at,
-            "curator_name": "", # TODO
-            "data_submission_policy_version": "1.0", # TODO
-            "datasets": [self._dataset_to_response(d) for d in collection.datasets],
-            "description": collection.metadata.description,
-            "id": collection_id,
-            "links": [self._link_to_response(l) for l in collection.metadata.links],
-            "name": collection.metadata.name,
-            "published_at": collection.published_at,
-            "publisher_metadata": collection.publisher_metadata, # TODO: convert
-            "updated_at": collection.published_at or collection.created_at,
-            "visibility": "PUBLIC" if collection.published_at is not None else "PRIVATE",
-        })
+        return self.remove_none(
+            {
+                "access_type": access_type,
+                "contact_email": collection.metadata.contact_email,
+                "contact_name": collection.metadata.contact_name,
+                "created_at": collection.created_at,
+                "curator_name": "",  # TODO
+                "data_submission_policy_version": "1.0",  # TODO
+                "datasets": [self._dataset_to_response(ds) for ds in collection.datasets],
+                "description": collection.metadata.description,
+                "id": collection_id,
+                "links": [self._link_to_response(link) for link in collection.metadata.links],
+                "name": collection.metadata.name,
+                "published_at": collection.published_at,
+                "publisher_metadata": collection.publisher_metadata,  # TODO: convert
+                "updated_at": collection.published_at or collection.created_at,
+                "visibility": "PUBLIC" if collection.published_at is not None else "PRIVATE",
+            }
+        )
 
     def get_collection_details(self, collection_id: str, token_info: dict):
         """
@@ -175,18 +224,17 @@ class PortalApi:
         if version is None:
             version = self.business_logic.get_collection_version(CollectionVersionId(collection_id))
         if version is None:
-            raise ForbiddenHTTPException() # TODO: maybe remake this exception
+            raise ForbiddenHTTPException()  # TODO: maybe remake this exception
 
         # TODO: handle tombstoning
 
         user_info = UserInfo(token_info)
-        print(token_info, user_info.user_id(), version.owner)
+        print(token_info, user_info.user_id, version.owner)
         access_type = "WRITE" if user_info.is_user_owner_or_allowed(version.owner) else "READ"
 
         response = self._collection_to_response(version, access_type)
- 
-        return make_response(jsonify(response), 200)
 
+        return make_response(jsonify(response), 200)
 
     def post_collection_revision(self, collection_id: str, token_info: dict):
         """
@@ -232,7 +280,7 @@ class PortalApi:
                 doi_node["link_url"] = doi_url
 
         if errors:
-            raise InvalidParametersHTTPException(detail=errors) # TODO: rewrite this exception?
+            raise InvalidParametersHTTPException(detail=errors)  # TODO: rewrite this exception?
 
         metadata = CollectionMetadata(
             body["name"],
@@ -255,7 +303,7 @@ class PortalApi:
 
     def get_collection_index(self):
         """
-        Returns a list of collections that are published and active. 
+        Returns a list of collections that are published and active.
         Also returns a subset of fields and not datasets.
         """
         collections = self.business_logic.get_collections(CollectionQueryFilter(is_published=True))
@@ -266,16 +314,17 @@ class PortalApi:
                 "id": collection.collection_id.id,
                 "name": collection.metadata.name,
                 "published_at": collection.canonical_collection.originally_published_at,
-                "revised_at": collection.published_at
+                "revised_at": collection.published_at,
             }
 
             if collection.publisher_metadata is not None:
-                transformed_collection["publisher_metadata"] = self._publisher_metadata_to_response(collection.publisher_metadata)
+                transformed_collection["publisher_metadata"] = self._publisher_metadata_to_response(
+                    collection.publisher_metadata
+                )
 
             response.append(transformed_collection)
 
         return make_response(jsonify(response), 200)
-
 
     def delete_collection(self, collection_id: str, token_info: dict):
         """
@@ -308,13 +357,12 @@ class PortalApi:
 
         self.business_logic.update_collection_version(CollectionVersionId(collection_id), payload)
 
-        # Requires strong consistency w.r.t. the operation above - if not available, the update needs 
+        # Requires strong consistency w.r.t. the operation above - if not available, the update needs
         # to be done in memory
         version = self.business_logic.get_collection_version(CollectionVersionId(collection_id))
 
         response = self._collection_to_response(version, "WRITE")
         return make_response(jsonify(response), 200)
-
 
     def publish_post(self, collection_id: str, body: object, token_info: dict):
         """
@@ -329,7 +377,7 @@ class PortalApi:
             self.business_logic.publish_collection_version(CollectionVersionId(collection_id))
         except CollectionPublishException:
             raise ConflictException(detail="The collection must have a least one dataset.")
-            
+
         return make_response({"collection_id": version.collection_id.id, "visibility": "PUBLIC"}, 202)
 
     def upload_from_link(self, collection_id: str, token_info: dict, url: str, dataset_id: str = None):
@@ -343,7 +391,7 @@ class PortalApi:
                 CollectionVersionId(collection_id),
                 url,
                 None if dataset_id is None else DatasetVersionId(dataset_id),
-                )
+            )
             return dataset_version_id
         except CollectionNotFoundException:
             raise ForbiddenHTTPException()
@@ -352,14 +400,14 @@ class PortalApi:
         except DatasetNotFoundException:
             raise NotFoundHTTPException()
         except InvalidURIException:
-            raise InvalidParametersHTTPException(detail="The dropbox shared link is invalid.") 
+            raise InvalidParametersHTTPException(detail="The dropbox shared link is invalid.")
         except MaxFileSizeExceededException:
             raise TooLargeHTTPException()
         except DatasetInWrongStatusException:
             raise MethodNotAllowedException(
-                detail="Submission failed. A dataset cannot be updated while a previous update for the same dataset is in "
-                "progress. Please cancel the current submission by deleting the dataset, or wait until the submission has "
-                "finished processing."
+                detail="Submission failed. A dataset cannot be updated while a previous update for the same dataset "
+                "is in progress. Please cancel the current submission by deleting the dataset, or wait until "
+                "the submission has finished processing."
             )
 
     # TODO: those two methods should probably be collapsed into one
@@ -377,7 +425,6 @@ class PortalApi:
         )
         return make_response({"dataset_id": dataset_id.id}, 202)
 
-
     def post_dataset_asset(self, dataset_id: str, asset_id: str):
         """
         Requests to download a dataset asset, by generating a presigned_url.
@@ -388,7 +435,9 @@ class PortalApi:
             raise NotFoundHTTPException(detail=f"'dataset/{dataset_id}' not found.")
 
         try:
-            download_data = self.business_logic.get_dataset_artifact_download_data(DatasetVersionId(dataset_id), DatasetArtifactId(asset_id))
+            download_data = self.business_logic.get_dataset_artifact_download_data(
+                DatasetVersionId(dataset_id), DatasetArtifactId(asset_id)
+            )
         except ArtifactNotFoundException:
             raise NotFoundHTTPException(detail=f"'dataset/{dataset_id}/asset/{asset_id}' not found.")
 
@@ -406,7 +455,6 @@ class PortalApi:
         }
 
         return make_response(response, 200)
-        
 
     def get_dataset_assets(self, dataset_id: str):
         """
@@ -416,16 +464,14 @@ class PortalApi:
 
         artifacts = []
         for artifact in self.business_logic.get_dataset_artifacts(DatasetVersionId(dataset_id)):
-            artifacts.append({
-                "id": artifact.id.id,
-                "type": artifact.type,
-                "s3_uri": artifact.uri
-            })
+            artifacts.append({"id": artifact.id.id, "type": artifact.type, "s3_uri": artifact.uri})
         response = {"assets": artifacts}
 
         return make_response(jsonify(response), 200)
 
-    def _assert_dataset_has_right_owner(self, dataset_version_id: DatasetVersionId, user_info: UserInfo) -> Tuple[DatasetVersion, CollectionVersion]:
+    def _assert_dataset_has_right_owner(
+        self, dataset_version_id: DatasetVersionId, user_info: UserInfo
+    ) -> Tuple[DatasetVersion, CollectionVersion]:
         """
         Ensures that the dataset exists and has the right owner.
         This requires looking up the collection connected to this dataset.
@@ -473,7 +519,9 @@ class PortalApi:
         response = []
         for dataset in self.business_logic.get_all_published_datasets():
             payload = self._dataset_to_response(dataset)
-            enrich_dataset_with_ancestors(payload, "development_stage", ontology_mappings.development_stage_ontology_mapping)
+            enrich_dataset_with_ancestors(
+                payload, "development_stage", ontology_mappings.development_stage_ontology_mapping
+            )
             enrich_dataset_with_ancestors(payload, "tissue", ontology_mappings.tissue_ontology_mapping)
             enrich_dataset_with_ancestors(payload, "cell_type", ontology_mappings.cell_type_ontology_mapping)
             response.append(payload)
@@ -512,7 +560,7 @@ class PortalApi:
             raise NotFoundHTTPException()
 
         collection = self.business_logic.get_collection_version_from_canonical(dataset.collection_id)
-        if collection is None: # orphaned datasets 
+        if collection is None:  # orphaned datasets
             raise NotFoundHTTPException()
 
         # Retrieves the URI of the cxg artifact
@@ -523,6 +571,6 @@ class PortalApi:
             "dataset_id": dataset.dataset_id.id,
             "collection_id": dataset.collection_id.id,
             "collection_visibility": "PUBLIC" if collection.published_at is not None else "PRIVATE",
-            "tombstoned": False, # No longer applicable
+            "tombstoned": False,  # No longer applicable
         }
         return make_response(jsonify(dataset_identifiers), 200)
