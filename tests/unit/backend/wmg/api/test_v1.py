@@ -902,7 +902,8 @@ class WmgApiV1Tests(unittest.TestCase):
 
             response = self.app.post("/wmg/v1/markers", json=request)
             received = json.loads(response.data)
-
+            print("Look here")
+            print(received)
             expected = {
                 "marker_genes": {
                     "ENSG00000051108": {"effect_size": 1.6856228113174438, "p_value": 0.0},
