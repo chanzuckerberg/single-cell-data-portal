@@ -106,7 +106,13 @@ def _load_snapshot(new_snapshot_identifier) -> WmgSnapshot:
 
 
 def _open_cube(cube_uri) -> Array:
-    return tiledb.open(cube_uri, ctx=create_ctx(json.loads(WmgConfig().tiledb_config_overrides)))
+    try:
+        return tiledb.open(cube_uri, ctx=create_ctx(json.loads(WmgConfig().tiledb_config_overrides)))
+    except Exception as e:
+        if "marker_genes" in cube_uri:
+            return None
+        else:
+            raise e
 
 
 def _load_cell_type_order(snapshot_identifier: str) -> DataFrame:
