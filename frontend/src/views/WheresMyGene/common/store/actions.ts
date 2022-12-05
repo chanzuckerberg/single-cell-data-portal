@@ -52,6 +52,15 @@ export function selectGenes(
   };
 }
 
+export function addSelectedGenes(
+  genes: State["selectedGenes"]
+): GetActionTypeOfReducer<typeof REDUCERS["addSelectedGenes"]> {
+  return {
+    payload: genes,
+    type: "addSelectedGenes",
+  };
+}
+
 export function selectCellTypeIds(
   cellTypeIndices: State["selectedCellTypeIds"]
 ): GetActionTypeOfReducer<typeof REDUCERS["selectCellTypeIds"]> {
