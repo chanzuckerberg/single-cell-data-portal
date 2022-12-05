@@ -143,7 +143,7 @@ describe("Where's My Gene", () => {
     }
   });
 
-  test.only("Source Data", async ({ page }) => {
+  test("Source Data", async ({ page }) => {
     await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
 
     async function getSourceDataButton() {
