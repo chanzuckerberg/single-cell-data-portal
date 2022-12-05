@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import List, Optional
-from backend.layers.common.entities import Link
+from backend.layers.common.entities import DatasetArtifactType, Link
 
 @dataclass
 class CollectionQueryFilter:
@@ -12,7 +12,7 @@ class CollectionQueryFilter:
 @dataclass
 class DatasetArtifactDownloadData:
     file_name: str
-    file_type: str
+    file_type: DatasetArtifactType
     file_size: int
     presigned_url: str
 

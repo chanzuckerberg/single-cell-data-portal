@@ -52,7 +52,7 @@ class PortalApi:
                 "visibility": "PRIVATE" if c.published_at is None else "PUBLIC",
                 "owner": c.owner,
                 "created_at": c.created_at,
-                "revision_of": "NA", # TODO: looks like this isn't returned right now
+                # "revision_of": "NA", # TODO: looks like this isn't returned right now
             })            
 
         result = {"collections": collections}
@@ -90,7 +90,7 @@ class PortalApi:
             "dataset_id": dataset_id,
             "filename": "TODO", # TODO: might need to get it from the url
             "filetype": dataset_artifact.type,
-            "id": dataset_artifact.id,
+            "id": dataset_artifact.id.id,
             "s3_uri": dataset_artifact.uri,
             "updated_at": 0,
             "user_submitted": True,
@@ -108,38 +108,39 @@ class PortalApi:
     def remove_none(self, body: dict):
         return {k: v for k, v in body.items() if v is not None}
 
+    # Note: `metadata` can be none while the dataset is uploading
     def _dataset_to_response(self, dataset: DatasetVersion):
-        return {
-            "assay": self._ontology_term_ids_to_response(dataset.metadata.assay),
-            "batch_condition": dataset.metadata.batch_condition,
-            "cell_count": dataset.metadata.cell_count,
-            "cell_type": self._ontology_term_ids_to_response(dataset.metadata.cell_type),
+        return self.remove_none({
+            "assay": None if dataset.metadata is None else self._ontology_term_ids_to_response(dataset.metadata.assay),
+            "batch_condition": None if dataset.metadata is None else dataset.metadata.batch_condition,
+            "cell_count": None if dataset.metadata is None else dataset.metadata.cell_count,
+            "cell_type": None if dataset.metadata is None else self._ontology_term_ids_to_response(dataset.metadata.cell_type),
             "collection_id": dataset.collection_id.id,
             "created_at": dataset.created_at,
             "dataset_assets": [self._dataset_asset_to_response(a, dataset.dataset_id.id) for a in dataset.artifacts],
             "dataset_deployments": [{"url": "TODO"}], # TODO: dataset.metadata.explorer_url,
-            "development_stage": self._ontology_term_ids_to_response(dataset.metadata.development_stage),
-            "disease": self._ontology_term_ids_to_response(dataset.metadata.disease),
-            "donor_id": dataset.metadata.donor_id,
-            "id": dataset.dataset_id.id,
-            "is_primary_data": dataset.metadata.is_primary_data,
+            "development_stage": None if dataset.metadata is None else self._ontology_term_ids_to_response(dataset.metadata.development_stage),
+            "disease": None if dataset.metadata is None else self._ontology_term_ids_to_response(dataset.metadata.disease),
+            "donor_id": None if dataset.metadata is None else dataset.metadata.donor_id,
+            "id": dataset.version_id.id,
+            "is_primary_data": None if dataset.metadata is None else dataset.metadata.is_primary_data,
             "is_valid": True, # why do we have this
-            "mean_genes_per_cell": dataset.metadata.mean_genes_per_cell,
-            "name": dataset.metadata.name,
-            "organism": self._ontology_term_ids_to_response(dataset.metadata.organism),
+            "mean_genes_per_cell": None if dataset.metadata is None else dataset.metadata.mean_genes_per_cell,
+            "name": "" if dataset.metadata is None else dataset.metadata.name,
+            "organism": None if dataset.metadata is None else self._ontology_term_ids_to_response(dataset.metadata.organism),
             "processing_status": self._dataset_processing_status_to_response(dataset.status, dataset.dataset_id.id),
-            "published": True,
+            "published": True, # TODO
             "published_at": dataset.canonical_dataset.published_at,
             "revision": 0, # TODO this is the progressive revision number. I don't think we'll need this
-            "schema_version": dataset.metadata.schema_version,
-            "self_reported_ethnicity": self._ontology_term_ids_to_response(dataset.metadata.self_reported_ethnicity),
-            "sex": self._ontology_term_ids_to_response(dataset.metadata.sex),
-            "suspension_type": dataset.metadata.suspension_type,
-            "tissue": self._ontology_term_ids_to_response(dataset.metadata.tissue),
-            "tombstone": False,
+            "schema_version": None if dataset.metadata is None else dataset.metadata.schema_version,
+            "self_reported_ethnicity": None if dataset.metadata is None else self._ontology_term_ids_to_response(dataset.metadata.self_reported_ethnicity),
+            "sex": None if dataset.metadata is None else self._ontology_term_ids_to_response(dataset.metadata.sex),
+            "suspension_type": None if dataset.metadata is None else dataset.metadata.suspension_type,
+            "tissue": None if dataset.metadata is None else self._ontology_term_ids_to_response(dataset.metadata.tissue),
+            "tombstone": False, # TODO
             "updated_at": dataset.created_at, # Legacy: datasets can't be updated anymore
-            "x_approximate_distribution": dataset.metadata.x_approximate_distribution,
-        }
+            "x_approximate_distribution": None if dataset.metadata is None else dataset.metadata.x_approximate_distribution,
+        })
 
     def _collection_to_response(self, collection: CollectionVersion, access_type: str):
         collection_id = collection.collection_id.id if collection.published_at is not None else collection.version_id.id
@@ -157,7 +158,7 @@ class PortalApi:
             "name": collection.metadata.name,
             "published_at": collection.published_at,
             "publisher_metadata": collection.publisher_metadata, # TODO: convert
-            "updated_at": collection.published_at,
+            "updated_at": collection.published_at or collection.created_at,
             "visibility": "PUBLIC" if collection.published_at is not None else "PRIVATE",
         })
 
