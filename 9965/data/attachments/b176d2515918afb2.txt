@@ -1,0 +1,4 @@
+Dropping tables
+Recreating tables
+{"levelname": "INFO", "asctime": "2022-12-05T18:47:57.005Z", "name": "root", "message": "Unable to find a row with primary key a128f24b-e37c-4e15-8c40-147f7730d24f, in Collection table.", "lineno": 43, "pathname": "/single-cell-data-portal/backend/common/entities/entity.py"}
+{"levelname": "INFO", "asctime": "2022-12-05T18:47:57.005Z", "name": "root", "message": "Unable to find a row with primary key 6cfe9dd5-2b8f-4ed5-85f9-012137161540, in Collection table.", "lineno": 43, "pathname": "/single-cell-data-portal/backend/common/entities/entity.py"}
