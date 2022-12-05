@@ -3,11 +3,14 @@ from datetime import datetime
 from typing import List, Optional
 from enum import Enum
 
+import json
+from dataclasses_json import dataclass_json
+
 
 # TODO: copy and paste the docs for these
 
 
-class DatasetStatusKey(Enum):
+class DatasetStatusKey(str, Enum):
     UPLOAD = "upload"
     VALIDATION = "validation"
     CXG = "cxg"
@@ -54,6 +57,24 @@ class DatasetProcessingStatus(DatasetStatusGeneric, Enum):
     FAILURE = "FAILURE"
 
 
+class CollectionLinkType(str, Enum):
+    DOI = "doi"
+    RAW_DATA = "raw_data"
+    PROTOCOL = "protocol"
+    LAB_WEBSITE = "lab_website"
+    OTHER = "other"
+    DATA_SOURCE = "data_source"
+
+
+class DatasetArtifactType(str, Enum):
+    RAW_H5AD = "raw_h5ad"
+    H5AD = "h5ad"
+    RDS = "rds"
+    CXG = "cxg"
+
+
+
+@dataclass_json
 @dataclass
 class DatasetStatus:
     upload_status: Optional[DatasetUploadStatus]
@@ -111,7 +132,7 @@ class DatasetArtifactId:
 @dataclass
 class DatasetArtifact:
     id: DatasetArtifactId
-    type: str
+    type: DatasetArtifactType
     uri: str
 
 
@@ -121,6 +142,7 @@ class OntologyTermId:
     ontology_term_id: str
 
 
+@dataclass_json
 @dataclass
 class DatasetMetadata:
     name: str
@@ -149,6 +171,7 @@ class CanonicalDataset:
     dataset_version_id: DatasetVersionId
     published_at: Optional[datetime]
 
+
 @dataclass
 class DatasetVersion:
     dataset_id: DatasetId
@@ -168,6 +191,7 @@ class Link:
     uri: str
 
 
+@dataclass_json
 @dataclass
 class CollectionMetadata:
     name: str
@@ -180,48 +204,26 @@ class CollectionMetadata:
 @dataclass
 class CanonicalCollection:
     id: CollectionId
-    version_id: CollectionVersionId
+    version_id: CollectionVersionId # Needs to be optional, or not exist
     originally_published_at: Optional[datetime]
     tombstoned: bool
 
 
-
-
 @dataclass
-class CollectionVersion:
+class CollectionVersionBase:
     collection_id: CollectionId
     version_id: CollectionVersionId
     owner: str
     metadata: CollectionMetadata
     publisher_metadata: Optional[dict]  # TODO: use a dataclass
-    datasets: List[DatasetVersionId]
     published_at: Optional[datetime]
     created_at: datetime
     canonical_collection: CanonicalCollection
 
+@dataclass
+class CollectionVersion(CollectionVersionBase):
+    datasets: List[DatasetVersionId]
 
-class CollectionLinkType(Enum):
-    DOI = "doi"
-    RAW_DATA = "raw_data"
-    PROTOCOL = "protocol"
-    LAB_WEBSITE = "lab_website"
-    OTHER = "other"
-    DATA_SOURCE = "data_source"
-
-
-class DatasetArtifactType(Enum):
-    """
-    Enumerates DatasetArtifact file types.
-
-    H5AD - An AnnData object describing an expression matrix, post-processing by cellxgene pipeline.
-        Uses the .h5ad extension.
-    RAW_H5AD - An AnnData object describing an expression matrix, as directly uploaded by users.
-        Uses the .h5ad extension.
-    RDS - A Seurat file object describing an expression matrix. Uses the .rds extension.
-    CXG - A TileDb object describing a cellxgene object. Uses .cxg extension.
-    """
-
-    RAW_H5AD = "raw_h5ad"
-    H5AD = "h5ad"
-    RDS = "rds"
-    CXG = "cxg"
+@dataclass
+class CollectionVersionWithDatasets(CollectionVersionBase):
+    datasets: List[DatasetVersion]

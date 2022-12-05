@@ -4,93 +4,80 @@ import uuid
 from sqlalchemy import Column, DateTime, Enum, ForeignKey, MetaData, String, Table
 from sqlalchemy.dialects.postgresql import ARRAY, BOOLEAN, JSON, TEXT, UUID
 from sqlalchemy.orm import registry
+from sqlalchemy.schema import MetaData
 
-from backend.layers.common.entities import (
-    CanonicalCollection,
-    CanonicalDataset,
-    CollectionId,
-    CollectionVersion as CollectionVersionModel,
-    CollectionVersionId,
-    DatasetArtifact as DatasetArtifactModel,
-    DatasetArtifactType,
-    DatasetArtifactId,
-    DatasetId,
-    DatasetVersion as DatasetVersionModel,
-    DatasetVersionId,
-)
+from backend.layers.common.entities import DatasetArtifactType
 
-metadata_obj = MetaData(schema="persistence_schema")
-mapper_registry = registry(metadata=metadata_obj)
+metadata = MetaData(schema="persistence_schema")
+mapper_registry = registry(metadata=metadata)
 
 
 @mapper_registry.mapped
-class Collection(CanonicalCollection):
+class Collection:
 
     __table__ = Table(
         "Collection",
         mapper_registry.metadata,
-        Column("id", UUID(as_uuid=True), primary_key=True, default=uuid.uuid4),
-        Column("version_id", UUID(as_uuid=True), default=uuid.uuid4),
+        Column("id", UUID(as_uuid=True), primary_key=True),
+        Column("version_id", UUID(as_uuid=True)),
         Column("originally_published_at", DateTime),
         Column("tombstoned", BOOLEAN)
     )
 
 
 @mapper_registry.mapped
-class CollectionVersion(CollectionVersionModel):
-
-    canonical_collection: CanonicalCollection = field(default=None)
+class CollectionVersion:
 
     __table__ = Table(
         "CollectionVersion",
         mapper_registry.metadata,
-        Column("version_id", UUID(as_uuid=True), primary_key=True, default=uuid.uuid4),
-        Column("collection_id", UUID(as_uuid=True), default=uuid.uuid4),
+        Column("version_id", UUID(as_uuid=True), primary_key=True),
+        Column("collection_id", UUID(as_uuid=True)),
         Column("metadata", JSON),
         Column("owner", String),
         Column("publisher_metadata", JSON),
         Column("published_at", DateTime),
+        Column("created_at", DateTime),
         Column("datasets", ARRAY(UUID(as_uuid=True)))
     )
 
 
 @mapper_registry.mapped
-class Dataset(CanonicalDataset):
+class Dataset:
 
     __table__ = Table(
         "Dataset",
         mapper_registry.metadata,
-        Column("dataset_id", UUID(as_uuid=True), primary_key=True, default=uuid.uuid4),
-        Column("dataset_version_id", UUID(as_uuid=True), default=uuid.uuid4),
+        Column("dataset_id", UUID(as_uuid=True), primary_key=True),
+        Column("dataset_version_id", UUID(as_uuid=True)),
         Column("published_at", DateTime)
     )
 
 
 @mapper_registry.mapped
-class DatasetVersion(DatasetVersionModel):
-
-    artifacts: List[DatasetArtifactId] = field(default=list())
-    canonical_dataset: CanonicalDataset = field(default=None)
+class DatasetVersion:
 
     __table__ = Table(
         "DatasetVersion",
         mapper_registry.metadata,
-        Column("version_id", UUID(as_uuid=True), primary_key=True, default=uuid.uuid4),
-        Column("dataset_id", UUID(as_uuid=True), ForeignKey("Dataset.dataset_id"), default=uuid.uuid4),
-        Column("collection_id", UUID(as_uuid=True), default=uuid.uuid4),
+        Column("version_id", UUID(as_uuid=True), primary_key=True),
+        Column("dataset_id", UUID(as_uuid=True), ForeignKey("Dataset.dataset_id")),
+        Column("collection_id", UUID(as_uuid=True)),
+        Column("created_at", DateTime),
         Column("metadata", JSON),
         Column("artifacts", ARRAY(UUID(as_uuid=True))),
+        Column("created_at", DateTime),
         Column("status", JSON)
     )
 
 
 @mapper_registry.mapped
-class DatasetArtifact(DatasetArtifactModel):
+class DatasetArtifact:
 
     __table__ = Table(
         "DatasetArtifact",
         mapper_registry.metadata,
-        Column("id", UUID(as_uuid=True), primary_key=True, default=uuid.uuid4),
+        Column("id", UUID(as_uuid=True), primary_key=True),
         Column("type", Enum(DatasetArtifactType)),
         Column("uri", String)
     )

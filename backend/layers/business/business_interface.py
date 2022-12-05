@@ -16,6 +16,7 @@ from backend.layers.common.entities import (
     DatasetProcessingStatus,
     DatasetStatus,
     DatasetStatusGeneric,
+    DatasetStatusKey,
     DatasetUploadStatus,
     DatasetValidationStatus,
     DatasetVersion,
@@ -76,12 +77,12 @@ class BusinessLogicInterface:
         pass
 
     def get_dataset_artifact_download_data(
-        self, dataset_version_id: DatasetVersionId, artifact_id: str
+        self, dataset_version_id: DatasetVersionId, artifact_id: DatasetArtifactId
     ) -> DatasetArtifactDownloadData:
         pass
 
     def update_dataset_version_status(
-        self, dataset_version_id: DatasetVersionId, status_key: str, new_dataset_status: DatasetStatusGeneric
+        self, dataset_version_id: DatasetVersionId, status_key: DatasetStatusKey, new_dataset_status: DatasetStatusGeneric
     ) -> None:
         pass
 

@@ -5,8 +5,7 @@
     "Description": "Client for client credentials flow",
     "AllowedGrantTypes": ["authorization_code"],
     "RedirectUris": [
-      "https://backend.corporanet.local:5000/dp/v1/oauth2/callback",
-      "http://backend.corporanet.local:5000/dp/v1/oauth2/callback"
+      "https://backend.corporanet.local:5000/dp/v1/oauth2/callback"
     ],
     "AllowedScopes": [
       "openid",

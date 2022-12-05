@@ -1,4 +1,5 @@
 cellxgene-schema==3.0.0
+dataclasses-json
 numba==0.56.2
 numpy==1.23.2
 pandas==1.4.4

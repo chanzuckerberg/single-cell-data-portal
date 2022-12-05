@@ -1,6 +1,11 @@
 import json
 import os
 import time
+
+# TODO: Add StackOverflow link that explains
+import gevent.monkey
+gevent.monkey.patch_all()
+
 from urllib.parse import urlparse
 
 import connexion
@@ -16,7 +21,7 @@ from backend.api_server.request_id import get_request_id, generate_request_id
 from backend.gene_info.api.ensembl_ids import GeneChecker
 
 DEPLOYMENT_STAGE = os.environ["DEPLOYMENT_STAGE"]
-APP_NAME = "{}-{}".format(os.environ["APP_NAME"], DEPLOYMENT_STAGE)
+APP_NAME = "{}-{}".format(os.environ.get("APP_NAME", "api"), DEPLOYMENT_STAGE)
 
 
 configure_logging(APP_NAME)
@@ -68,7 +73,7 @@ def configure_flask_app(flask_app):
     allowed_origins = []
     deployment_stage = os.environ["DEPLOYMENT_STAGE"]
     if deployment_stage not in ["prod"]:
-        allowed_origins.extend([r"http://.*\.corporanet\.local:\d+", r"^http://localhost:\d+"])
+        allowed_origins.extend([r"https?://.*\.corporanet\.local:\d+", r"^https?://localhost:\d+"])
     if os.getenv("FRONTEND_URL"):
         allowed_origins.append(os.getenv("FRONTEND_URL"))
     if deployment_stage != "test":  # pragma: no cover

@@ -78,7 +78,7 @@ class DatabaseProviderInterface:
         """
         pass
 
-    def add_collection_version(self, collection_id: CollectionId) -> CollectionVersion:
+    def add_collection_version(self, collection_id: CollectionId) -> CollectionVersionId:
         """
         Adds a collection version to an existing canonical collection. The new version copies the following data from
          the previous version: owner, metadata, publisher_metadata, datasets (IDs).

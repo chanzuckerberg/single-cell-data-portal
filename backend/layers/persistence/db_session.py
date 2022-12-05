@@ -1,7 +1,6 @@
 import logging
 
 from contextlib import contextmanager
-from flask import g
 from functools import wraps
 
 from sqlalchemy import create_engine
@@ -20,15 +19,21 @@ class DBSessionMaker:
     def __init__(self, database_uri: str = None):
         if not database_uri:
             database_uri = CorporaDbConfig().database_uri
-        engine = create_engine(database_uri, connect_args={"connect_timeout": 5})
-        self._session_maker = sessionmaker(bind=engine)
+            # database_uri = "postgresql://postgres:secret@localhost"
+        self.engine = create_engine(database_uri, connect_args={"connect_timeout": 5})
+        self._session_maker = sessionmaker(bind=self.engine)
 
     def make_session(self, **kwargs):
+        if not self._session_maker:
+            self._session_maker = sessionmaker(bind=self.engine)
         return self._session_maker(**kwargs)
 
 
+_db_session_maker = DBSessionMaker()
+
+
 @contextmanager
-def db_session_manager(db_session_maker, **kwargs):
+def db_session_manager(db_session_maker=_db_session_maker, **kwargs):
     try:
         session = db_session_maker.make_session(**kwargs)
         yield session
@@ -44,6 +49,3 @@ def db_session_manager(db_session_maker, **kwargs):
     finally:
         if session is not None:
             session.close()
-
-
-_db_session_maker = DBSessionMaker()
