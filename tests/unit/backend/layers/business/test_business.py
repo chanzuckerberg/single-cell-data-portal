@@ -694,7 +694,7 @@ class TestUpdateDataset(BaseBusinessLogicTestCase):
         unpublished_collection = self.initialize_unpublished_collection(complete_dataset_ingestion=False)
         self.assertEqual(2, len(unpublished_collection.datasets))
         for dataset in unpublished_collection.datasets:
-            self.business_logic.update_dataset_version_status(dataset.version_id, "upload_status", DatasetUploadStatus.UPLOADED)
+            self.business_logic.update_dataset_version_status(dataset.version_id, "upload", DatasetUploadStatus.UPLOADED)
             version_from_db = self.database_provider.get_dataset_version(dataset.version_id)
             self.assertEqual(version_from_db.status.upload_status, DatasetUploadStatus.UPLOADED)
 

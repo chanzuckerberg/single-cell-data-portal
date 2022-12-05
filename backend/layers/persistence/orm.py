@@ -11,6 +11,7 @@ from backend.layers.common.entities import DatasetArtifactType
 metadata = MetaData(schema="persistence_schema")
 mapper_registry = registry(metadata=metadata)
 
+
 @mapper_registry.mapped
 class Collection:
 

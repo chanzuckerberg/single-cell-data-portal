@@ -1,3 +1,6 @@
+import gevent.monkey
+gevent.monkey.patch_all()
+
 import dataclasses
 import itertools
 import json
@@ -7,13 +10,14 @@ from datetime import datetime
 from unittest import mock
 from unittest.mock import Mock, patch
 from backend.layers.business.entities import DatasetArtifactDownloadData
-from backend.layers.common.entities import CollectionId, CollectionVersionId, DatasetMetadata, DatasetProcessingStatus, DatasetUploadStatus, DatasetVersionId, Link, OntologyTermId
+from backend.layers.common.entities import CollectionId, CollectionLinkType, CollectionVersionId, DatasetMetadata, DatasetProcessingStatus, DatasetUploadStatus, DatasetVersionId, Link, OntologyTermId
 from backend.layers.thirdparty.uri_provider import FileInfo
 
 from furl import furl
 
 from backend.common.providers.crossref_provider import CrossrefDOINotFoundException, CrossrefFetchException
 from backend.common.utils.corpora_constants import CorporaConstants
+from backend.portal.api.collections_common import verify_collection_body
 from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
 from tests.unit.backend.layers.common.base_api_test import BaseAuthAPITest, DatasetArtifactUpdate, DatasetStatusUpdate, NewBaseTest
 
@@ -1354,7 +1358,7 @@ class TestVerifyCollection(unittest.TestCase):
 
     def test__link__INVALID(self):
         test_urls = ["://", "google", ".com", "google.com", "https://"]
-        for link_type in ProjectLinkType:
+        for link_type in CollectionLinkType:
             if link_type.name == "DOI":
                 continue
             for test_url in test_urls:
@@ -1368,7 +1372,7 @@ class TestVerifyCollection(unittest.TestCase):
 
     def test__link__OK(self):
         test_urls = ["https://www.google.com", "http://somewhere.org/path/?abcd=123"]
-        for link_type in ProjectLinkType:
+        for link_type in CollectionLinkType:
             if link_type.name == "DOI":
                 continue
             for test_url in test_urls:

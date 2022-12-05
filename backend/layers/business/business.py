@@ -341,7 +341,7 @@ class BusinessLogic(BusinessLogicInterface):
     def update_dataset_version_status(self, dataset_version_id: DatasetVersionId, status_key: DatasetStatusKey, new_dataset_status: DatasetStatusGeneric) -> None:
         """
         Updates the status of a dataset version. 
-        status_key can be one of: [upload_status, validation_status, cxg_status, rds_status, h5ad_status, processing_status]
+        status_key can be one of: [upload, validation, cxg, rds, h5ad, processing]
         """
         if status_key == DatasetStatusKey.UPLOAD and isinstance(new_dataset_status, DatasetUploadStatus):
             self.database_provider.update_dataset_upload_status(dataset_version_id, new_dataset_status)
