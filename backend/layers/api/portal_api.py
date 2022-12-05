@@ -47,13 +47,16 @@ class PortalApi:
 
         collections = []
         for c in itertools.chain(all_published_collections, all_owned_collections):
-            collections.append({
+            collection = {
                 "id": c.version_id.id if c.published_at is None else c.collection_id.id,
                 "visibility": "PRIVATE" if c.published_at is None else "PUBLIC",
                 "owner": c.owner,
                 "created_at": c.created_at,
-                # "revision_of": "NA", # TODO: looks like this isn't returned right now
-            })            
+            }
+            if c.published_at is None:
+                collection["revision_of"] = c.collection_id.id
+            collections.append(collection)            
+
 
         result = {"collections": collections}
         return make_response(jsonify(result), 200)
