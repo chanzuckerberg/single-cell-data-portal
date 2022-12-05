@@ -342,6 +342,27 @@ export function createYAxisOptions({
       {
         axisLabel: {
           align: "left",
+          formatter() {
+            return "info";
+          },
+          width: 20,
+        },
+        axisLine: {
+          show: false,
+        },
+        axisTick: {
+          show: false,
+        },
+        boundaryGap: true,
+        data: cellTypeMetadata,
+        splitLine: {
+          show: false,
+        },
+        triggerEvent: true,
+      },      
+      {
+        axisLabel: {
+          align: "left",
           formatter(value: number | string) {
             const { name, depth = 0 } = deserializeCellTypeMetadata(
               value as CellTypeMetadata
