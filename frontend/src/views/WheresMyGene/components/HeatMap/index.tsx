@@ -45,6 +45,7 @@ interface Props {
   cellTypeSortBy: SORT_BY;
   geneSortBy: SORT_BY;
   selectedOrganismId: string;
+  tissueLoaded: boolean;
 }
 
 export default memo(function HeatMap({
@@ -62,6 +63,7 @@ export default memo(function HeatMap({
   cellTypeSortBy,
   geneSortBy,
   selectedOrganismId,
+  tissueLoaded,
 }: Props): JSX.Element {
   useTrackHeatMapLoaded({ selectedGenes: genes, selectedTissues });
 
@@ -158,6 +160,7 @@ export default memo(function HeatMap({
       <XAxisChart geneNames={sortedGeneNames} />
       <YAxisWrapper
         height={(chartWrapperRect?.height || 0) - X_AXIS_CHART_HEIGHT_PX}
+        style={ tissueLoaded ? {zIndex: "4"} : {} } // getting started z-index set at 3
       >
         {selectedTissues.map((tissue) => {
           const tissueCellTypes = getTissueCellTypes({

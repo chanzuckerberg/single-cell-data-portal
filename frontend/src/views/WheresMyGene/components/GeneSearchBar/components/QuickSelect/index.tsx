@@ -145,7 +145,7 @@ export default function QuickSelect<
         color: "#586069",
         fontSize: 13,
         width: 377,
-        zIndex: 3, // The x axis wrapper is set at 2
+        zIndex: 99, // The x axis wrapper is set at 2
       },
       popperDisablePortal: {
         position: "relative",
