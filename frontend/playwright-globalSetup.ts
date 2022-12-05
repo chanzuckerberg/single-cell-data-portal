@@ -1,5 +1,6 @@
 import { chromium } from "@playwright/test";
 import { SKIP_LOGIN, TEST_URL } from "tests/common/constants";
+import { COMMON_PLAYWRIGHT_CONTEXT } from "tests/common/context";
 import featureFlags from "tests/common/featureFlags";
 import { login } from "tests/utils/helpers";
 
@@ -12,6 +13,7 @@ module.exports = async () => {
       // One time auth
       const browser = await chromium.launch();
       const browserContext = await browser.newContext({
+        ...COMMON_PLAYWRIGHT_CONTEXT,
         storageState: featureFlags,
       });
       const page = await browserContext.newPage();
