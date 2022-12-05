@@ -176,9 +176,9 @@ describe("Where's My Gene", () => {
     if (!sourceDataList) throw Error("no source data displayed");
     
     const sourceDataListItems = await sourceDataList?.$$(".MuiListItem-root")
-    console.log("HELLO", sourceDataListItems?.length)
-    expect(sourceDataListItems?.length).toBe(2);
+    expect(sourceDataListItems?.length).toBe(17);
 
+    await page.mouse.click(0, 0)
 
     async function getFiltersPanel() {
       return page.$(getTestID("filters-panel"));
@@ -190,26 +190,20 @@ describe("Where's My Gene", () => {
         throw Error("Filters panel not found");
       }
 
-      return filtersPanel.$("*css=div >> text=Dataset");
+      return filtersPanel.$("*css=button >> text=Dataset");
     }    
     const datasetSelector = await getDatasetSelector();
-
     if (!datasetSelector) throw Error("No datasetSelector found");
-
     const selectedDatasetsBefore = await datasetSelector.$$(".MuiChip-root");
-
     await expect(selectedDatasetsBefore.length).toBe(0);
     await clickUntilOptionsShowUp(getDatasetSelector, page);
     await selectFirstOption(page);
-    const selectedDatasetsAfter = await datasetSelector.$$(".MuiChip-root");
-    await expect(selectedDatasetsAfter.length).toBe(1);
-
     await clickUntilSidebarShowsUp(getSourceDataButton, page);
     const sourceDataListAfter = await page.$("[class*=MuiList-root]");
     if (!sourceDataListAfter) throw Error("no source data displayed after selecting dataset filter");
     
     const sourceDataListAfterItems = await sourceDataListAfter?.$$(".MuiListItem-root")
-    expect(sourceDataListAfterItems?.length).toBe(1);    
+    expect(sourceDataListAfterItems?.length).toBe(2);   
 
   });
   test("Hierarchical Clustering", async ({ page }) => {
