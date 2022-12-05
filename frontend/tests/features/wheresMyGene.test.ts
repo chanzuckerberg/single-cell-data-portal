@@ -143,7 +143,7 @@ describe("Where's My Gene", () => {
     }
   });
 
-  test("Source Data", async ({ page }) => {
+  test.only("Source Data", async ({ page }) => {
     await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
 
     async function getSourceDataButton() {
@@ -172,8 +172,43 @@ describe("Where's My Gene", () => {
     );
     await clickUntilSidebarShowsUp(getSourceDataButton, page);
     await expect(page).toHaveSelector(getText("After filtering cells with low coverage (less than 500 genes expressed)"));
-    const sourceDataListItems = await page.$("[class*=MuiListItem]");
-    if (!sourceDataListItems) throw Error("no source data displayed");
+    const sourceDataList = await page.$("[class*=MuiList-root]");
+    if (!sourceDataList) throw Error("no source data displayed");
+    
+    const sourceDataListItems = await sourceDataList?.$$(".MuiListItem-root")
+    expect(sourceDataListItems?.length).toBe(5);
+
+
+    async function getFiltersPanel() {
+      return page.$(getTestID("filters-panel"));
+    }
+    async function getDatasetSelector() {
+      const filtersPanel = await getFiltersPanel();
+
+      if (!filtersPanel) {
+        throw Error("Filters panel not found");
+      }
+
+      return filtersPanel.$("*css=div >> text=Dataset");
+    }    
+    const datasetSelector = await getDatasetSelector();
+
+    if (!datasetSelector) throw Error("No datasetSelector found");
+
+    const selectedDatasetsBefore = await datasetSelector.$$(".MuiChip-root");
+
+    await expect(selectedDatasetsBefore.length).toBe(0);
+    await clickUntilOptionsShowUp(getDatasetSelector, page);
+    await selectFirstOption(page);
+    const selectedDatasetsAfter = await datasetSelector.$$(".MuiChip-root");
+    await expect(selectedDatasetsAfter.length).toBe(1);
+
+    await clickUntilSidebarShowsUp(getSourceDataButton, page);
+    const sourceDataListAfter = await page.$("[class*=MuiList-root]");
+    if (!sourceDataListAfter) throw Error("no source data displayed after selecting dataset filter");
+    
+    const sourceDataListAfterItems = await sourceDataListAfter?.$$(".MuiListItem-root")
+    expect(sourceDataListAfterItems?.length).toBe(1);    
 
   });
   test("Hierarchical Clustering", async ({ page }) => {
