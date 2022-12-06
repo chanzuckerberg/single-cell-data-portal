@@ -1,7 +1,7 @@
 import styled from "@emotion/styled";
 import { X_AXIS_CHART_HEIGHT_PX, Y_AXIS_CHART_WIDTH_PX } from "../../utils";
 
-const Y_AXIS_TISSUE_WIDTH_PX = 30;
+export const Y_AXIS_TISSUE_WIDTH_PX = 30;
 
 export const Wrapper = styled.div`
   display: flex;

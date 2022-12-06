@@ -1,4 +1,4 @@
-import { AnchorButton, Icon } from "@blueprintjs/core";
+import { Dispatch, SetStateAction } from "react";
 import { init } from "echarts";
 import Image from "next/image";
 import { memo, useContext, useEffect, useMemo, useRef, useState } from "react";
@@ -26,6 +26,7 @@ import {
   TissueName,
   TissueWrapper,
   Wrapper,
+  Y_AXIS_TISSUE_WIDTH_PX
 } from "./style";
 
 interface Props {
@@ -38,6 +39,7 @@ interface Props {
   selectedOrganismId: string;
 }
 
+type Coord = [number, number];
 export default memo(function YAxisChart({
   cellTypes = [],
   hasDeletedCellTypes,
@@ -50,8 +52,7 @@ export default memo(function YAxisChart({
   const dispatch = useContext(DispatchContext);
 
   const [isChartInitialized, setIsChartInitialized] = useState(false);
-  const [yAxisTextElements, setYAxisTextElements] = useState<NodeListOf<Element> | null>(null);
-  const [elementToCellMetadata, setElementToCellMetadata] = useState<Map<Element, CellTypeMetadata>>(new Map());
+  const [yAxisInfoCoords, setYAxisInfoCoords] = useState<Coord[] | null>(null);
   const { cellTypeIdsToDelete, handleCellTypeClick } =
     useDeleteGenesAndCellTypes();
 
@@ -63,6 +64,37 @@ export default memo(function YAxisChart({
   );
   const isMarkerGenes = get(FEATURES.MARKER_GENES) === BOOLEAN.TRUE;
 
+  const setInfoCoordinates = (value: CellTypeMetadata | undefined = undefined) => {
+    const container = document.querySelector(`[data-test-id=cell-type-labels-${tissue}]`);
+    const textElements = container?.querySelectorAll(`text[transform*="translate(12"]`)
+    const xOffset = container ? container.getBoundingClientRect().left - Y_AXIS_TISSUE_WIDTH_PX : 0;
+    const yOffset = container ? container.getBoundingClientRect().top : 0;
+
+    if (textElements) {
+      if (value) {
+        let index = 0;
+        for (let i = 0; i < cellTypeMetadata.length; i+=1) {
+          if (cellTypeMetadata[i] === value) {
+            index = i;
+            break
+          }
+        }
+        if (yAxisInfoCoords) {
+          const { right, top } = textElements[index].getBoundingClientRect();
+          const infoCoords = [...yAxisInfoCoords]
+          infoCoords[index] = [right-278, top-238];
+          setYAxisInfoCoords(infoCoords)
+        }
+      } else {
+        const infoCoords: Coord[] = [];
+        textElements.forEach((el) => {
+          const { right, top } = el.getBoundingClientRect();
+          infoCoords.push([right-xOffset, top-yOffset])
+        })
+        setYAxisInfoCoords(infoCoords);
+      }
+    }
+  }
   // Initialize charts
   useEffect(() => {
     const { current: yAxisCurrent } = yAxisRef;
@@ -107,7 +139,7 @@ export default memo(function YAxisChart({
        */
       const { value } = params;
       handleCellTypeClick(value);
-
+      setInfoCoordinates(value);
       if (isMarkerGenes) {
         const { id } = deserializeCellTypeMetadata(value);
 
@@ -129,7 +161,8 @@ export default memo(function YAxisChart({
     yAxisChart,
     selectedOrganismId,
     isMarkerGenes,
-    yAxisRef
+    yAxisRef,
+    yAxisInfoCoords
   ]);
 
 
@@ -139,16 +172,7 @@ export default memo(function YAxisChart({
 
   useEffect(()=>{
     setTimeout(() => {
-    const textElements = document.querySelector(`[data-test-id=cell-type-labels-${tissue}]`)?.querySelectorAll(`text[transform*="translate(12"]`)
-    if (textElements) {
-      setYAxisTextElements(textElements)
-      const elToCell = new Map();
-      textElements.forEach((el, i) => {
-        elToCell.set(el, cellTypeMetadata[i]);
-      })
-      setElementToCellMetadata(elToCell);
-    }
-    
+      setInfoCoordinates();
     }, 200)
   }, [yAxisChart, cellTypeMetadata])  
 
@@ -182,17 +206,16 @@ export default memo(function YAxisChart({
         height={heatmapHeight}
         ref={yAxisRef}
       />
-      {yAxisTextElements && Array.from(yAxisTextElements).map((el) => {
-        const val = el.getBoundingClientRect().top-238
-        const val2 = el.getBoundingClientRect().right
-        const content = elementToCellMetadata.get(el)
+      {yAxisInfoCoords && yAxisInfoCoords.map((coord, i) => {
+        const content = cellTypeMetadata[i]
         return (
           <div
-            key={`${content ?? val}`}
+            id={`${content}`}
+            key={`${content}`}
             style={{
               position: "absolute",
-              left: val2-278,
-              top: val,
+              left: coord[0],
+              top: coord[1],
               cursor: "pointer",
             }}   
             onClick={() => {
