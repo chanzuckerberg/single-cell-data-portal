@@ -103,9 +103,9 @@ export default memo(function HeatMap({
   //   return result;
   // }, [data, selectedOrganismId]);
 
-  const generateMarkerGenes = (cellType: CellType) => {
+  const generateMarkerGenes = (cellType: CellType, tissueID: string) => {
     if (!dispatch) return;
-    dispatch(addCellInfoCellType(cellType));
+    dispatch(addCellInfoCellType({ cellType, tissueID }));
   };
 
   const tissueNameToCellTypeIdToGeneNameToCellTypeGeneExpressionSummaryDataMap =

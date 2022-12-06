@@ -577,7 +577,7 @@ function useWMGQueryRequestBody(options = { includeAllFilterOptions: false }) {
     return result;
   }, [data, selectedOrganismId]);
 
-  // This is a nice mapping that may start being used in a few places across WMG, might be worth moving to a global store.
+  // seve: This is a nice mapping that may start being used in a few places across WMG, might be worth moving to a global store.
   const tissuesByName = useMemo(() => {
     let result: { [name: string]: OntologyTerm } = {};
 
@@ -759,7 +759,8 @@ export interface MarkerGenesByCellType {
 
 export interface MarkerGeneResponse {
   marker_genes: {
-    [geneID: string]: {
+    // key is gene id from backend, but we convert to gene name
+    [key: string]: {
       effect_size: number;
       p_value: number;
     };
@@ -772,28 +773,42 @@ export function useMarkerGenes({
   organismID,
   tissueID,
 }: FetchMarkerGeneParams): UseQueryResult<MarkerGeneResponse> {
+  const { data } = usePrimaryFilterDimensions();
+  const genesByID = useMemo((): { [name: string]: OntologyTerm } => {
+    let result: { [name: string]: OntologyTerm } = {};
+
+    if (!data) return result;
+
+    const { genes } = data;
+
+    result = generateTermsByKey(genes, "id");
+
+    return result;
+  }, [data]);
+
   return useQuery(
     [USE_MARKER_GENES, cellTypeID],
-    () => fetchMarkerGenes({ cellTypeID, organismID, tissueID }),
+    // Getting some weird issues with fetching some times (right side bar is not populated),
+    //  this may be related to receiving NaN's from the backend. Going to ignore for now
+    async () => {
+      const output = await fetchMarkerGenes({
+        cellTypeID,
+        organismID,
+        tissueID,
+      });
+      const markerGenesIndexedByGeneName = Object.fromEntries(
+        [...Object.entries(output.marker_genes)].map(([id, data]) => {
+          try {
+            return [genesByID[id].name, data];
+          } catch (e) {
+            console.log("could not find gene with id", id);
+            return [];
+          }
+        })
+      );
+      return { ...output, marker_genes: markerGenesIndexedByGeneName };
+    },
     {
-      //   genesByGeneID: {
-      //     [id: string]: Gene;
-      //   };
-      // onSuccess: (data) => {
-      //   if (!dispatch || !data) return;
-      //   const newMarkerGenes = prevMarkerGenes || {};
-      //   newMarkerGenes[cellTypeID] = data.marker_genes;
-      //   queryClient.setQueryData([USE_MARKER_GENES], newMarkerGenes);
-      //   const geneNames = Object.keys(data.marker_genes).map((geneID) => {
-      //     const gene = genesByGeneID[geneID];
-      //     if (!gene) {
-      //       console.error("gene not found", geneID);
-      //     }
-      //     return gene.name;
-      //   });
-      //   // This dispatch may be pulled out of the on success of this mutation if the panel solution is implemented
-      //   dispatch(addSelectedGenes(geneNames));
-      // },
       staleTime: Infinity,
     }
   );

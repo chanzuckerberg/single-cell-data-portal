@@ -3,13 +3,10 @@ import {
   ComplexFilterInputDropdown,
   DefaultMenuSelectOption,
   InputDropdownProps,
-  Tooltip,
 } from "czifui";
 import isEqual from "lodash/isEqual";
 import {
-  Fragment,
   memo,
-  ReactElement,
   useCallback,
   useContext,
   useEffect,
@@ -177,75 +174,77 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
   );
 
   return (
-    <TooltipWrapper>
-      <Wrapper>
-        <div>
-          <ComplexFilter
-            multiple
-            label="Dataset"
-            options={datasets as unknown as DefaultMenuSelectOption[]}
-            onChange={handleDatasetsChange}
-            value={selectedDatasets as unknown as DefaultMenuSelectOption[]}
-            InputDropdownComponent={
-              StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
-            }
-            MenuSelectProps={MenuSelectProps}
-            InputDropdownProps={InputDropdownProps}
-          />
-          <ComplexFilter
-            multiple
-            label="Disease"
-            options={disease_terms}
-            onChange={handleDiseasesChange}
-            value={selectedDiseases}
-            InputDropdownComponent={
-              StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
-            }
-            MenuSelectProps={MenuSelectProps}
-            InputDropdownProps={InputDropdownProps}
-          />
-          <ComplexFilter
-            multiple
-            label="Self-Reported Ethnicity"
-            options={self_reported_ethnicity_terms}
-            onChange={handleEthnicitiesChange}
-            value={selectedEthnicities}
-            InputDropdownComponent={
-              StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
-            }
-            MenuSelectProps={MenuSelectProps}
-            InputDropdownProps={InputDropdownProps}
-          />
-          <ComplexFilter
-            multiple
-            label="Sex"
-            options={sex_terms}
-            onChange={handleSexesChange}
-            value={selectedSexes}
-            InputDropdownComponent={
-              StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
-            }
-            MenuSelectProps={MenuSelectProps}
-            InputDropdownProps={InputDropdownProps}
-          />
-        </div>
+    // <TooltipWrapper>
+    <Wrapper>
+      <div>
+        <ComplexFilter
+          multiple
+          label="Dataset"
+          options={datasets as unknown as DefaultMenuSelectOption[]}
+          onChange={handleDatasetsChange}
+          value={selectedDatasets as unknown as DefaultMenuSelectOption[]}
+          InputDropdownComponent={
+            StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
+          }
+          MenuSelectProps={MenuSelectProps}
+          InputDropdownProps={InputDropdownProps}
+        />
+        <ComplexFilter
+          multiple
+          label="Disease"
+          options={disease_terms}
+          onChange={handleDiseasesChange}
+          value={selectedDiseases}
+          InputDropdownComponent={
+            StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
+          }
+          MenuSelectProps={MenuSelectProps}
+          InputDropdownProps={InputDropdownProps}
+        />
+        <ComplexFilter
+          multiple
+          label="Self-Reported Ethnicity"
+          options={self_reported_ethnicity_terms}
+          onChange={handleEthnicitiesChange}
+          value={selectedEthnicities}
+          InputDropdownComponent={
+            StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
+          }
+          MenuSelectProps={MenuSelectProps}
+          InputDropdownProps={InputDropdownProps}
+        />
+        <ComplexFilter
+          multiple
+          label="Sex"
+          options={sex_terms}
+          onChange={handleSexesChange}
+          value={selectedSexes}
+          InputDropdownComponent={
+            StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
+          }
+          MenuSelectProps={MenuSelectProps}
+          InputDropdownProps={InputDropdownProps}
+        />
+      </div>
 
-        <Organism isLoading={isLoading} />
+      <Organism isLoading={isLoading} />
 
-        <Sort areFiltersDisabled={areFiltersDisabled} />
-      </Wrapper>
-    </TooltipWrapper>
+      <Sort areFiltersDisabled={areFiltersDisabled} />
+    </Wrapper>
+    /* </TooltipWrapper> */
   );
 
-  function TooltipWrapper({ children }: { children: ReactElement }) {
-    const Wrapper = areFiltersDisabled ? Tooltip : Fragment;
+  // (seve): temp disable as it was adding a title prop to fragment, leading to errors
 
-    return (
-      <Wrapper title="Please select an organism, tissue and at least one gene to use these filters.">
-        {children}
-      </Wrapper>
-    );
-  }
+  // function TooltipWrapper({ children }: { children: ReactElement }) {
+  //   const Wrapper = areFiltersDisabled ? Tooltip : Fragment;
+
+  //   return (
+  //     <Wrapper title="Please select an organism, tissue and at least one gene to use these filters.">
+  //       {children}
+  //     </Wrapper>
+  //   );
+  // }
 });
 
 function getOptionSelected(

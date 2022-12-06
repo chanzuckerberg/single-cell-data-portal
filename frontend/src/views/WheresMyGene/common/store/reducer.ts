@@ -32,7 +32,11 @@ export interface State {
    */
   snapshotId: string | null;
   sortBy: { cellTypes: SORT_BY; genes: SORT_BY; scaled: SORT_BY };
-  cellInfoCellTypes: CellType[]; // (seve): could just keep this as IDs
+  cellInfoCellTypes: {
+    cellType: CellType;
+    tissueID: string;
+    organismID: string;
+  }[];
 }
 
 // (thuang): If you have derived states based on the state, use `useMemo`
@@ -361,21 +365,40 @@ function addSelectedGenes(
 ): State {
   const { payload } = action;
 
+  // only add unique genes
+  const genesToAdd = payload.filter(
+    (gene) => !state.selectedGenes.includes(gene)
+  );
+  if (genesToAdd.length === 0) return state;
+
   return {
     ...state,
-    selectedGenes: [...payload, ...state.selectedGenes],
+    selectedGenes: [...genesToAdd, ...state.selectedGenes],
   };
+}
+
+export interface AddCellInfoCellTypePayload {
+  cellType: CellType;
+  tissueID: string;
 }
 
 function addCellInfoCellType(
   state: State,
-  action: PayloadAction<State["cellInfoCellTypes"][0]>
+  action: PayloadAction<AddCellInfoCellTypePayload>
 ): State {
   const { payload } = action;
 
+  // Type safety, this should never happen
+  if (!state.selectedOrganismId) return state;
+
+  const newCellInfoCellType = {
+    cellType: payload.cellType,
+    organismID: state.selectedOrganismId,
+    tissueID: payload.tissueID,
+  };
   return {
     ...state,
-    cellInfoCellTypes: [payload, ...state.cellInfoCellTypes],
+    cellInfoCellTypes: [newCellInfoCellType, ...state.cellInfoCellTypes],
   };
 }
 

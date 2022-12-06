@@ -46,7 +46,7 @@ interface Props {
   availableCellTypes: CellType[];
   tissue: Tissue;
   tissueID: string;
-  generateMarkerGenes: (cellType: CellType) => void;
+  generateMarkerGenes: (cellType: CellType, tissueID: string) => void;
   selectedOrganismId: string;
 }
 
@@ -146,9 +146,8 @@ export default memo(function YAxisChart({
       handleCellTypeClick(value);
 
       if (isMarkerGenes) {
-        const { id, name, total_count } = deserializeCellTypeMetadata(value);
-
-        generateMarkerGenes({ id, name, total_count });
+        const cellType = deserializeCellTypeMetadata(value);
+        generateMarkerGenes(cellType, tissueID);
       }
     }
   }, [

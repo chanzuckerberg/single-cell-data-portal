@@ -11,8 +11,10 @@ import { EMPTY_ARRAY, EMPTY_OBJECT } from "src/common/constants/utils";
 import {
   CellTypeByTissueName,
   GeneExpressionSummariesByTissueName,
+  generateTermsByKey,
   useCellTypesByTissueName,
   useGeneExpressionSummariesByTissueName,
+  usePrimaryFilterDimensions,
 } from "src/common/queries/wheresMyGene";
 import SideBar from "src/components/common/SideBar";
 import { Position } from "src/components/common/SideBar/style";
@@ -25,6 +27,7 @@ import {
 import { CellType, GeneExpressionSummary, Tissue } from "../../common/types";
 import { SideBarPositioner, SideBarWrapper, Top, Wrapper } from "../../style";
 import Beta from "../Beta";
+import CellInfoBar from "../CellInfoBar";
 import Filters from "../Filters";
 import GeneSearchBar from "../GeneSearchBar";
 import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../GeneSearchBar/components/SaveImage";
@@ -42,8 +45,21 @@ export default function WheresMyGene(): JSX.Element {
   const state = useContext(StateContext);
   const dispatch = useContext(DispatchContext);
 
-  const { selectedGenes, selectedCellTypeIds, selectedTissues, sortBy } = state;
+  const {
+    selectedGenes,
+    selectedCellTypeIds,
+    selectedTissues,
+    sortBy,
+    cellInfoCellTypes,
+  } = state;
   const selectedOrganismId = state.selectedOrganismId || "";
+
+  const { data: { tissues: allTissues } = {} } = usePrimaryFilterDimensions();
+
+  let tissuesByID;
+  if (allTissues) {
+    tissuesByID = generateTermsByKey(allTissues, "id");
+  }
 
   const [isScaled, setIsScaled] = useState(true);
 
@@ -266,19 +282,20 @@ export default function WheresMyGene(): JSX.Element {
 
         <ColorScale handleIsScaledChange={handleIsScaledChange} />
       </SideBar>
-
-      <SideBar
-        label="Effector CD8 positive, alpha beta T cell"
-        SideBarWrapperComponent={SideBarWrapper}
-        SideBarPositionerComponent={SideBarPositioner}
-        position={Position.RIGHT}
-        testId="cell-type-details-panel"
-        disabled={false}
-        forceToggle={false}
-        wmgSideBar
-      >
-        "TEST"
-      </SideBar>
+      {cellInfoCellTypes.length > 0 && tissuesByID && (
+        <SideBar
+          label={tissuesByID[cellInfoCellTypes[0].tissueID].name}
+          SideBarWrapperComponent={SideBarWrapper}
+          SideBarPositionerComponent={SideBarPositioner}
+          position={Position.RIGHT}
+          testId="cell-type-details-panel"
+          disabled={false}
+          forceToggle={false}
+          wmgSideBar
+        >
+          <CellInfoBar cellInfoCellTypes={cellInfoCellTypes} />
+        </SideBar>
+      )}
 
       <View id="view" overflow="hidden">
         <Wrapper>
