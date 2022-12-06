@@ -1,8 +1,0 @@
-INFO     root:dataset_asset.py:62 Deleting file 87f89e4d-b645-477f-b21d-f69d6430e19a/data.H5AD in bucket bogus-bucket.
-INFO     root:dataset_asset.py:62 Deleting file 87f89e4d-b645-477f-b21d-f69d6430e19a/data.RDS in bucket bogus-bucket.
-INFO     root:dataset_asset.py:62 Deleting file 87f89e4d-b645-477f-b21d-f69d6430e19a/data.CXG in bucket bogus-bucket.
-INFO     root:dataset_asset.py:58 Deleting all files in bucket hosted-cellxgene-test under 87f89e4d-b645-477f-b21d-f69d6430e19a.
-INFO     root:dataset_asset.py:62 Deleting file 95470fc8-4eb0-45d8-bd7f-5878478d517f/data.H5AD in bucket bogus-bucket.
-INFO     root:dataset_asset.py:62 Deleting file 95470fc8-4eb0-45d8-bd7f-5878478d517f/data.RDS in bucket bogus-bucket.
-INFO     root:dataset_asset.py:62 Deleting file 95470fc8-4eb0-45d8-bd7f-5878478d517f/data.CXG in bucket bogus-bucket.
-INFO     root:dataset_asset.py:58 Deleting all files in bucket hosted-cellxgene-test under 95470fc8-4eb0-45d8-bd7f-5878478d517f.

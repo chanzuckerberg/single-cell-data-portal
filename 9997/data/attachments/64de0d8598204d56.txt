@@ -1,0 +1,8 @@
+INFO     dataset_processing:common.py:89 Converting /tmp/tmptmyjiorp/test.h5ad
+ERROR    dataset_processing:common.py:103 error: 'NoneType' object has no attribute 'tombstone'
+Traceback (most recent call last):
+  File "/single-cell-data-portal/backend/portal/pipeline/processing/common.py", line 92, in convert_file
+    update_db(
+  File "/single-cell-data-portal/backend/portal/pipeline/processing/common.py", line 65, in update_db
+    if dataset.tombstone:
+AttributeError: 'NoneType' object has no attribute 'tombstone'
