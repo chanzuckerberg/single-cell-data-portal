@@ -1,9 +1,0 @@
-INFO     root:dataset_asset.py:62 Deleting file 497d280b-8dbd-43ee-b531-9db608c1f9ac/data.H5AD in bucket bogus-bucket.
-INFO     root:dataset_asset.py:62 Deleting file 497d280b-8dbd-43ee-b531-9db608c1f9ac/data.RDS in bucket bogus-bucket.
-INFO     root:dataset_asset.py:62 Deleting file 497d280b-8dbd-43ee-b531-9db608c1f9ac/data.CXG in bucket bogus-bucket.
-INFO     root:dataset_asset.py:58 Deleting all files in bucket hosted-cellxgene-test under 497d280b-8dbd-43ee-b531-9db608c1f9ac.
-INFO     root:dataset_asset.py:62 Deleting file a4ec9ab3-86cc-4645-bdd1-3f92044d3fa3/data.H5AD in bucket bogus-bucket.
-INFO     root:dataset_asset.py:62 Deleting file a4ec9ab3-86cc-4645-bdd1-3f92044d3fa3/data.RDS in bucket bogus-bucket.
-INFO     root:dataset_asset.py:62 Deleting file a4ec9ab3-86cc-4645-bdd1-3f92044d3fa3/data.CXG in bucket bogus-bucket.
-INFO     root:dataset_asset.py:58 Deleting all files in bucket hosted-cellxgene-test under a4ec9ab3-86cc-4645-bdd1-3f92044d3fa3.
-INFO     root:entity.py:43 Unable to find a row with primary key d2e10503-1942-44ca-927f-c36b61dca155, in Collection table.
