@@ -27,7 +27,7 @@ export const ColumnOne = styled.div`
 
   flex: 0 1 350px;
 
-  z-index: 99;
+  z-index: 10;
 
   display: flex;
   flex-direction: column;
@@ -36,7 +36,7 @@ export const ColumnOne = styled.div`
 export const ColumnTwo = styled.div`
   flex: 1 2 calc(10vw);
 
-  z-index: 99;
+  z-index: 10;
 
   display: flex;
   flex-direction: column;
