@@ -338,28 +338,7 @@ export function createYAxisOptions({
         type: "category",
       },
     ],
-    yAxis: [
-      {
-        axisLabel: {
-          align: "left",
-          formatter() {
-            return "info";
-          },
-          width: 20,
-        },
-        axisLine: {
-          show: false,
-        },
-        axisTick: {
-          show: false,
-        },
-        boundaryGap: true,
-        data: cellTypeMetadata,
-        splitLine: {
-          show: false,
-        },
-        triggerEvent: true,
-      },      
+    yAxis: [   
       {
         axisLabel: {
           align: "left",
@@ -403,7 +382,7 @@ export function createYAxisOptions({
           show: false,
         },
         triggerEvent: true,
-      },
+      },              
       {
         axisLabel: {
           formatter(value: number | string) {
@@ -437,7 +416,7 @@ export function createYAxisOptions({
         splitLine: {
           show: false,
         },
-      },
+      }    
     ],
   };
 }

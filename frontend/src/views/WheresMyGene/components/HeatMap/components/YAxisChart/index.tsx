@@ -1,3 +1,4 @@
+import { AnchorButton, Icon } from "@blueprintjs/core";
 import { init } from "echarts";
 import Image from "next/image";
 import { memo, useContext, useEffect, useMemo, useRef, useState } from "react";
@@ -48,7 +49,7 @@ export default memo(function YAxisChart({
   const dispatch = useContext(DispatchContext);
 
   const [isChartInitialized, setIsChartInitialized] = useState(false);
-
+  const [yAxisTextElements, setYAxisTextElements] = useState<NodeListOf<Element> | null>(null);
   const { cellTypeIdsToDelete, handleCellTypeClick } =
     useDeleteGenesAndCellTypes();
 
@@ -86,7 +87,6 @@ export default memo(function YAxisChart({
   const [, setHandleYAxisChartClick] = useState(
     () => noop as (params: { value: CellTypeMetadata }) => void
   );
-
   // Bind yAxisChart events
   useEffect(() => {
     setHandleYAxisChartClick(
@@ -104,7 +104,6 @@ export default memo(function YAxisChart({
        * `value` is set by utils.getAllSerializedCellTypeMetadata()
        */
       const { value } = params;
-
       handleCellTypeClick(value);
 
       if (isMarkerGenes) {
@@ -117,6 +116,7 @@ export default memo(function YAxisChart({
         });
       }
     }
+
   }, [
     setHandleYAxisChartClick,
     handleCellTypeClick,
@@ -127,8 +127,14 @@ export default memo(function YAxisChart({
     yAxisChart,
     selectedOrganismId,
     isMarkerGenes,
+    yAxisRef
   ]);
-
+  useEffect(()=>{
+    setTimeout(() => {
+    const textElements = document.querySelector(`[data-test-id="cell-type-labels"]`)?.querySelectorAll(`text[transform*="translate(12"]`)
+    if (textElements) setYAxisTextElements(textElements)
+    }, 100)
+  }, [yAxisChart])
   const cellTypeMetadata = useMemo(() => {
     return getAllSerializedCellTypeMetadata(cellTypes, tissue);
   }, [cellTypes, tissue]);
@@ -139,7 +145,6 @@ export default memo(function YAxisChart({
     heatmapHeight,
     yAxisChart,
   });
-
   return (
     <Wrapper id={`${tissue}-y-axis`}>
       <TissueWrapper height={heatmapHeight}>
@@ -163,6 +168,27 @@ export default memo(function YAxisChart({
         height={heatmapHeight}
         ref={yAxisRef}
       />
+      {yAxisTextElements && Array.from(yAxisTextElements).map((el) => {
+        const val = parseFloat(`${el.getAttribute("transform")?.split(" ")[1].slice(0,-1)}`)-10;
+        const val2 = el.getBoundingClientRect().right
+        const content = el.textContent?.trim();
+        return (
+          <div
+            key={`${content}-${val}`}
+            style={{
+              position: "absolute",
+              left: val2-278,
+              top: val,
+              cursor: "pointer",
+            }}   
+            onClick={() => {
+              console.log(`Display marker genes for ${content}`)
+            }}       
+          >
+            <Icon icon="info-sign" iconSize={9} />
+          </div>
+        );
+      })}
     </Wrapper>
   );
 
