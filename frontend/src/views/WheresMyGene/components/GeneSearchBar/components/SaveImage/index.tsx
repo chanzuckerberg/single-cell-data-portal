@@ -68,12 +68,16 @@ export default function SaveImage({
   const handleDownload = useCallback(async () => {
     try {
       const heatmapNode = document.getElementById("view") as HTMLCanvasElement;
-      heatmapNode.classList.add("CLONED");
+      
+      const cloned = heatmapNode.cloneNode(true) as HTMLCanvasElement;
+      cloned.classList.add("CLONED");
+      heatmapNode.parentNode!.insertBefore(cloned, heatmapNode);
+
       const isPNG = fileType === "png";
       const convertHTMLtoImage = isPNG ? toPng : toSvg;
       const images = await Promise.all(
         selectedTissues.map(async (tissue) => {
-          const imageURL = await convertHTMLtoImage(heatmapNode, {
+          const imageURL = await convertHTMLtoImage(cloned, {
             backgroundColor: "white",
             filter: screenshotFilter(tissue),
             height: getHeatmapHeight(selectedCellTypes[tissue]) + 200,
@@ -95,6 +99,7 @@ export default function SaveImage({
         })
       );
       heatmapNode.classList.remove("CLONED");
+      heatmapNode.parentNode!.removeChild(cloned);
       const link = document.createElement("a");
 
       if (images.length > 1) {
