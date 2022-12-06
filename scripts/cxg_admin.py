@@ -319,6 +319,17 @@ def migrate_redesign_write(ctx):
     print("redesign migration")
     migrate.migrate_redesign_write(ctx)
 
+@cli.command()
+@click.pass_context
+def migrate_redesign_debug(ctx):
+    """
+    Print id, name, organism, tissue, assay, sex, cell_count, explorer_url, and S3 uris for all public datasets
+    ./scripts/cxg_admin.py --deployment dev get-public-datasets
+    """
+    print("redesign migration")
+    migrate.migrate_redesign_debug(ctx)
+
+
 
 if __name__ == "__main__":
     cli(obj={})

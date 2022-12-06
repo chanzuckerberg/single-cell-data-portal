@@ -9,8 +9,6 @@ import sys
 from sqlalchemy import schema
 
 
-
-
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..."))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
 
@@ -361,6 +359,35 @@ def migrate_redesign_read(ctx):
     with open("migration/dataset_artifacts.json", "w") as f:
         json.dump(artifacts, f, default=str)
 
+def migrate_redesign_debug(ctx):
+    import json
+    with open("migration/collections.json", "r") as f:
+        collections = json.load(f)
+
+    with open("migration/collection_versions.json", "r") as f:
+        collection_versions = json.load(f)
+
+    with open("migration/datasets.json", "r") as f:
+        datasets = json.load(f)
+
+    with open("migration/dataset_versions.json", "r") as f:
+        dataset_versions = json.load(f)
+
+    with open("migration/dataset_artifacts.json", "r") as f:
+        artifacts = json.load(f)
+
+    from backend.layers.common.entities import CollectionMetadata, DatasetStatus
+
+    # for collection in collection_versions:
+    #     print(collection["metadata"])
+    #     CollectionMetadata.from_json(json.dumps(collection["metadata"]))
+
+    for dataset in dataset_versions:
+        if not dataset["status"]:
+            print("skipping")
+            print(dataset)
+            continue
+        DatasetStatus.from_json(json.dumps(dataset["status"]))
 
 def migrate_redesign_write(ctx):
     import json
@@ -420,12 +447,18 @@ def migrate_redesign_write(ctx):
         session.commit()
 
         for version in collection_versions:
+
+            coll_metadata = version["metadata"]
+            for link in coll_metadata["links"]:
+                link["uri"] = link["url"]
+                del link["url"]
+
             collection_version_row = CollectionVersionRow(
                                                         collection_id=version["collection_id"],
                                                         version_id=version["version_id"],
                                                         owner=version["owner"],
-                                                        metadata=version["metadata"],
-                                                        publisher_metadata=version["publisher_metadata"],
+                                                        metadata=json.dumps(coll_metadata),
+                                                        publisher_metadata=json.dumps(version["publisher_metadata"]),
                                                         published_at=version["published_at"],
                                                         datasets=version["datasets"],
                                                         created_at=version.get("created_at"),
@@ -444,13 +477,17 @@ def migrate_redesign_write(ctx):
         session.commit()
 
         for dataset_version in dataset_versions:
+
+            if not dataset_version.get("status"):
+                continue
+
             dataset_version_row = DatasetVersionRow(
                 version_id=dataset_version["version_id"],
                 dataset_id=dataset_version["dataset_id"],
                 collection_id=dataset_version["collection_id"],
-                metadata=dataset_version["metadata"],
+                metadata=json.dumps(dataset_version["metadata"]),
                 artifacts=dataset_version["artifacts"],
-                status=dataset_version["status"],
+                status=json.dumps(dataset_version["status"]),
                 created_at=dataset_version.get("created_at"),
             )
 

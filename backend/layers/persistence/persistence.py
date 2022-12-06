@@ -71,7 +71,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             version_id=CollectionVersionId(str(row.version_id)),
             owner=row.owner,
             metadata=CollectionMetadata.from_json(row.metadata),
-            publisher_metadata=row.publisher_metadata,
+            publisher_metadata=json.loads(row.publisher_metadata),
             datasets=[DatasetVersionId(str(id)) for id in row.datasets],
             published_at=row.published_at,
             created_at=row.created_at,
