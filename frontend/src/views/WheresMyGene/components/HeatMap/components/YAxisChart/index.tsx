@@ -19,6 +19,7 @@ import {
   getHeatmapHeight,
 } from "../../utils";
 import ReplaySVG from "./icons/replay.svg";
+import InfoSVG from "./icons/info-sign-icon.svg";
 import {
   Container,
   ResetImageWrapper,
@@ -50,6 +51,7 @@ export default memo(function YAxisChart({
 
   const [isChartInitialized, setIsChartInitialized] = useState(false);
   const [yAxisTextElements, setYAxisTextElements] = useState<NodeListOf<Element> | null>(null);
+  const [elementToCellMetadata, setElementToCellMetadata] = useState<Map<Element, CellTypeMetadata>>(new Map());
   const { cellTypeIdsToDelete, handleCellTypeClick } =
     useDeleteGenesAndCellTypes();
 
@@ -129,15 +131,26 @@ export default memo(function YAxisChart({
     isMarkerGenes,
     yAxisRef
   ]);
-  useEffect(()=>{
-    setTimeout(() => {
-    const textElements = document.querySelector(`[data-test-id="cell-type-labels"]`)?.querySelectorAll(`text[transform*="translate(12"]`)
-    if (textElements) setYAxisTextElements(textElements)
-    }, 100)
-  }, [yAxisChart])
+
+
   const cellTypeMetadata = useMemo(() => {
     return getAllSerializedCellTypeMetadata(cellTypes, tissue);
   }, [cellTypes, tissue]);
+
+  useEffect(()=>{
+    setTimeout(() => {
+    const textElements = document.querySelector(`[data-test-id=cell-type-labels-${tissue}]`)?.querySelectorAll(`text[transform*="translate(12"]`)
+    if (textElements) {
+      setYAxisTextElements(textElements)
+      const elToCell = new Map();
+      textElements.forEach((el, i) => {
+        elToCell.set(el, cellTypeMetadata[i]);
+      })
+      setElementToCellMetadata(elToCell);
+    }
+    
+    }, 200)
+  }, [yAxisChart, cellTypeMetadata])  
 
   useUpdateYAxisChart({
     cellTypeIdsToDelete,
@@ -145,6 +158,7 @@ export default memo(function YAxisChart({
     heatmapHeight,
     yAxisChart,
   });
+
   return (
     <Wrapper id={`${tissue}-y-axis`}>
       <TissueWrapper height={heatmapHeight}>
@@ -164,17 +178,17 @@ export default memo(function YAxisChart({
         )}
       </TissueWrapper>
       <Container
-        data-test-id="cell-type-labels"
+        data-test-id={`cell-type-labels-${tissue}`}
         height={heatmapHeight}
         ref={yAxisRef}
       />
       {yAxisTextElements && Array.from(yAxisTextElements).map((el) => {
-        const val = parseFloat(`${el.getAttribute("transform")?.split(" ")[1].slice(0,-1)}`)-10;
+        const val = el.getBoundingClientRect().top-238
         const val2 = el.getBoundingClientRect().right
-        const content = el.textContent?.trim();
+        const content = elementToCellMetadata.get(el)
         return (
           <div
-            key={`${content}-${val}`}
+            key={`${content ?? val}`}
             style={{
               position: "absolute",
               left: val2-278,
@@ -185,7 +199,12 @@ export default memo(function YAxisChart({
               console.log(`Display marker genes for ${content}`)
             }}       
           >
-            <Icon icon="info-sign" iconSize={9} />
+            <Image
+              src={InfoSVG.src}
+              width="9"
+              height="9"
+              alt="display marker genes"
+            />            
           </div>
         );
       })}
