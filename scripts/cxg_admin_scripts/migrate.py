@@ -304,7 +304,10 @@ def migrate_redesign_read(ctx):
                     "x_approximate_distribution": record_dataset.x_approximate_distribution,
                 }
 
-                status = record_dataset.processing_status.__dict__
+                if record_dataset.processing_status is not None:
+                    status = record_dataset.processing_status.__dict__
+                else:
+                    status = {}
 
                 artifact_ids = []
                 for record_artifact in record_dataset.artifacts:
@@ -341,8 +344,6 @@ def migrate_redesign_read(ctx):
             }
 
             collection_versions.append(version)
-
-            break
 
     import json
     with open("migration/collections.json", "w") as f:
@@ -392,9 +393,14 @@ def migrate_redesign_write(ctx):
         DatasetArtifact as DatasetArtifactRow
     )
 
-    from backend.layers.persistence.orm import metadata_obj
+    # from backend.layers.persistence.orm import metadata_obj
 
-    database_uri = "postgresql://postgres:secret@localhost"
+    # database_uri = "postgresql://postgres:secret@localhost"
+    database_pass = os.getenv("PGPASSWORD")
+    database_uri = f"postgresql://dataportal:{database_pass}@localhost//ebezzi-redesign-full"
+
+    # Uncomment for local
+    # database_uri = f"postgresql://postgres:secret@localhost"
     engine = create_engine(database_uri, connect_args={"connect_timeout": 5})
 
     # engine.execute(schema.CreateSchema('persistence_schema'))
@@ -411,7 +417,7 @@ def migrate_redesign_write(ctx):
             )
 
             session.add(canonical_collection_row)
-            session.commit()
+        session.commit()
 
         for version in collection_versions:
             collection_version_row = CollectionVersionRow(
@@ -422,11 +428,10 @@ def migrate_redesign_write(ctx):
                                                         publisher_metadata=version["publisher_metadata"],
                                                         published_at=version["published_at"],
                                                         datasets=version["datasets"],
-                                                        canonical_collection=None,
                                                         created_at=version.get("created_at"),
                                                     )
             session.add(collection_version_row)
-            session.commit()
+        session.commit()
 
         for dataset in datasets:
             dataset_row = DatasetRow(
@@ -436,7 +441,7 @@ def migrate_redesign_write(ctx):
             )
 
             session.add(dataset_row)
-            session.commit()
+        session.commit()
 
         for dataset_version in dataset_versions:
             dataset_version_row = DatasetVersionRow(
@@ -447,11 +452,10 @@ def migrate_redesign_write(ctx):
                 artifacts=dataset_version["artifacts"],
                 status=dataset_version["status"],
                 created_at=dataset_version.get("created_at"),
-                canonical_dataset=None,
             )
 
             session.add(dataset_version_row)
-            session.commit()
+        session.commit()
 
 
 
@@ -463,4 +467,4 @@ def migrate_redesign_write(ctx):
             )
 
             session.add(artifact_row)
-            session.commit()
+        session.commit()
