@@ -31,7 +31,7 @@ const Privacy = (): JSX.Element => {
           <main>
             <h1>Privacy Policy</h1>
 
-            <p>Last updated: Oct 19, 2021.</p>
+            <p>Last updated: December 15, 2022.</p>
 
             <br />
 
@@ -48,7 +48,8 @@ const Privacy = (): JSX.Element => {
             </p>
 
             <p>
-              Please read our full <a href={ROUTES.TOS}>Terms</a> (which
+              Please read our full{" "}
+              <a href={ROUTES.TOS}>Terms of Use ("Terms")</a> (which
               incorporates this Privacy Policy) and this Privacy Policy for
               complete details, but here is the key information you should know:
             </p>
@@ -94,7 +95,7 @@ const Privacy = (): JSX.Element => {
                 </p>
               </li>
 
-              <li>
+              <li id="section2">
                 <h3>Data We Collect</h3>
                 <p>
                   Cellxgene is a tool that enables fast visualizations of
@@ -109,21 +110,26 @@ const Privacy = (): JSX.Element => {
                 <ul className="section2">
                   <p>
                     <h4>Data You Provide To Us.</h4> We collect certain
-                    information from you when you provide it to us directly.
-                    Specifically, this includes data you submit for display in
-                    CELLxGENE (ex: single-cell .h5ad matrix files), data you
-                    provide you us as part of submission or registering for an
-                    account (ex: name and email address), as well as if you
-                    contact us for support or with information about a dataset
-                    via email. This information is necessary in order to create
-                    your account and provide you with access to the services we
-                    offer on the Site.
+                    information from you which may include identifiers,
+                    professional or employment-related information, and
+                    information from survey responses when you provide it to us
+                    directly. Specifically, this includes data you submit for
+                    display in CELLxGENE (ex: single-cell .h5ad matrix files),
+                    data you provide us as part of a submission or registering
+                    for an account (ex: name and email address), as well as if
+                    you contact us for support or with information about a
+                    dataset via email. This information is necessary in order to
+                    create your account and provide you with access to the
+                    services we offer on the Site. We also collect data you
+                    include in any survey responses or feedback sessions if you
+                    decide to participate.
                   </p>
                   <p>
                     <h4>Data From Your Browser or Device.</h4> Whenever you use
-                    any online service, certain information gets created and
-                    logged automatically; the same is true when you access or
-                    use the Site. Here’s what we collect:
+                    any online service, certain internet or other electronic
+                    network activity information gets created and logged
+                    automatically; the same is true when you access or use the
+                    Site. Here’s what we collect:
                     <ul>
                       <p>
                         <li>
@@ -135,7 +141,7 @@ const Privacy = (): JSX.Element => {
                           stamps, clickstream data, and duration of time spent
                           on the Site. We collect this data pursuant to our
                           legitimate interests in understanding how Visitors use
-                          our Site and improving our Site.
+                          our Site, improving our Site, and securing our Site.
                         </li>
                         <li>
                           <h5>Device.</h5> In addition to log data, we collect
@@ -168,27 +174,41 @@ const Privacy = (): JSX.Element => {
                       </p>
                     </ul>
                   </p>
+                  <p>
+                    <h4>Other Sources.</h4> We may display publicly available
+                    information about you when you mention us on social media
+                    networks, such as Twitter. This is reflected in the “CELL X
+                    GENE IN THE NEWS” section on the Site.
+                  </p>
+                  <p>
+                    <h4>Sensitive Personal Information.</h4> We do not collect
+                    sensitive personal information about you, and thus we do not
+                    use or disclose your sensitive personal information.
+                  </p>
                 </ul>
               </li>
+
               <li>
                 <h3>How We Use Your Data</h3>
 
                 <p>
-                  CZI does not sell, rent, or lease your personal data to
-                  others. We use your data for the following business purposes
-                  only:
+                  CZIF does not sell your personal information nor do we share
+                  your personal data for behavioral advertising purposes. We do
+                  use your data for the following business purposes:
                 </p>
 
                 <ol className="section3">
                   <p>
                     <h4>Site.</h4> We use the information we collect to provide
-                    the Site, and maintain and improve the Site, including
+                    the Site, maintain, secure, and improve the Site, including
                     understanding the content that Visitors find valuable.
                   </p>
                   <p>
                     <h4>Communications.</h4> We may also use your information to
-                    respond to an email from you, and to engage with you about a
-                    dataset you wish to share.
+                    respond to an email from you, send a survey, and to engage
+                    with you about a dataset you wish to share. Survey responses
+                    and feedback sessions help us understand and improve the
+                    Site.
                   </p>
                   <p>
                     <h4>Aggregate Insights.</h4> We use the privacy-friendly
@@ -199,37 +219,53 @@ const Privacy = (): JSX.Element => {
                     These aggregated insights are not personally identifiable.
                   </p>
                   <p>
+                    <h4>Other Sources.</h4> We use information from Other
+                    Sources to understand what you find valuable, what we can
+                    improve, and what impact our Site is having on the science
+                    community.
+                  </p>
+                  <p>
                     <h4>Security and Investigations.</h4> We use your data
                     (including your communications) if we think it’s necessary
                     for security purposes or to investigate violations of our{" "}
                     <a href={ROUTES.TOS}>Terms of Use</a> or this Privacy
-                    Policy. We may use human and automated systems and
-                    inferences we make to determine whether you or others can be
-                    trusted to engage with the Sites.
+                    Policy.
                   </p>
                 </ol>
               </li>
 
               <li>
-                <h3>How We Share Information</h3>
+                <h3>Retention and Deletion</h3>
+                <p>
+                  We retain your personal data as long as we believe we need it
+                  for the purposes we have collected it or to meet legal
+                  obligations, resolve disputes, maintain security, prevent
+                  fraud and abuse, or enforce our agreements with you. This
+                  includes data you provided to us and data generated or
+                  inferred from your use of the Site.
+                </p>
+              </li>
+
+              <li>
+                <h3>How We Disclose Information</h3>
 
                 <p>
                   Except in the instances listed below, we will not disclose
                   your personal information to others unless you consent to it,
                   nor will we ever sell your personal information to advertisers
-                  or other third parties. However, we share your information in
-                  the following ways:
+                  or other third parties. However, we disclose your information
+                  in the following ways:
                 </p>
 
-                <ol className="section4">
+                <ol className="section5">
                   <p>
                     <h4>Third Party Site Providers.</h4> CZIF works with service
                     providers that help us operate, secure, and improve the
                     Site. These services are, for example, performing
                     statistical analysis, database management services, database
-                    hosting, and security. To the extent they will have access
-                    to your information, their use is limited by this Privacy
-                    Policy.
+                    hosting, survey providers, and security. To the extent they
+                    will have access to your information, their use is limited
+                    by this Privacy Policy.
                   </p>
                   <p>
                     <h4>Legal and Safety Reasons.</h4> We may disclose
@@ -249,22 +285,24 @@ const Privacy = (): JSX.Element => {
                     Service Providers mentioned above, CZI LLC&lsquo;s use of
                     data is limited by this Privacy Policy. “Affiliates” refers
                     to entities controlled by or under common control with CZIF
-                    (such as CZI LLC) and does not include Facebook for purposes
-                    of this policy.
+                    (such as CZI LLC) and does not include Meta Platforms, Inc.
+                    for purposes of this policy.
                   </p>
                   <p>
-                    <h4>Reorganization, Sale or Merger.</h4> We may share your
-                    information in connection with a merger, reorganization, or
-                    sale of all or a portion of our organization or assets
-                    related to CZIF. In the event of a merger, reorganization or
-                    sale of assets, the buyer or other successor entity will
-                    continue to be bound by the terms of this Privacy Policy.
+                    <h4>Reorganization, Sale or Merger.</h4> We may disclose
+                    your information in connection with a merger,
+                    reorganization, or sale of all or a portion of our
+                    organization or assets related to CZIF. In the event of a
+                    merger, reorganization or sale of assets, the buyer or other
+                    successor entity will continue to be bound by the terms of
+                    this Privacy Policy.
                   </p>
                 </ol>
               </li>
+
               <li>
                 <h3>Choices and Rights</h3>
-                <ol className="section5">
+                <ol className="section6">
                   <p>
                     <h4>Rights.</h4> You have the following rights with respect
                     to the personal data we have about you:
@@ -273,12 +311,14 @@ const Privacy = (): JSX.Element => {
                     <ul>
                       <li>
                         <h5>Delete data.</h5> You can ask us to erase or delete
-                        all or some of your personal data.
+                        all or some of your personal data subject to our legal
+                        obligations and lawful exceptions.
                       </li>
                       <li>
                         <h5>Change or correct personal data.</h5> You can also
-                        ask us to change, update or fix your data in certain
-                        cases, particularly if it’s inaccurate.
+                        ask us to change, update, or fix inaccurate data in
+                        certain cases, subject to our legal obligations and
+                        lawful exceptions.
                       </li>
                       <li>
                         <h5>
@@ -295,39 +335,80 @@ const Privacy = (): JSX.Element => {
                         machine-readable form.
                       </li>
                       <li>
+                        <h5>Right to notice.</h5> You have a right to receive
+                        notice of our personal information collection, use,
+                        retention, and disclosure practices at or before
+                        collection of personal information.
+                      </li>
+                      <li>
                         <h5>The right not to be discriminated against.</h5> CZIF
                         will not discriminate against you in any manner for
                         exercising any of the above rights with respect to your
                         personal data.
                       </li>
-                      <li>
-                        Contact us at{" "}
-                        <a href="mailto:privacy@chanzuckerberg.com">
-                          privacy@chanzuckerberg.com
-                        </a>{" "}
-                        if you have questions or would like to exercise any
-                        rights you have under applicable law to control your
-                        personal data. If you wish to raise a concern about our
-                        use of your information (and without prejudice to any
-                        other rights you may have), you have the right to do so
-                        with your local supervisory authority.
-                      </li>
                     </ul>
+                  </p>
+                  <p>
+                    If you would like to exercise your right to any of the
+                    above, email us at{" "}
+                    <a href="mailto:privacy@chanzuckerberg.com">
+                      privacy@chanzuckerberg.com
+                    </a>
+                    . In the email, please provide us with your name, the
+                    country (and state if within the United States) in which you
+                    live, which of the above rights you would like to exercise,
+                    and sufficient information that allows us to reasonably
+                    verify that you are the person about whom we collected
+                    personal information. If you would like an authorized agent
+                    to make a request for you, have that agent email{" "}
+                    <a href="mailto:privacy@chanzuckerberg.com">
+                      privacy@chanzuckerberg.com
+                    </a>{" "}
+                    with the above information along with additional information
+                    sufficient for us to verify that the authorized agent is
+                    acting on your behalf. Please also let us know if you have
+                    questions or concerns related to exercising any rights you
+                    have under applicable law to control your personal data.
+                  </p>
+                  <p>
+                    If you would like to appeal a CZI decision with respect to a
+                    request to exercise any of these rights, please email us at{" "}
+                    <a href="mailto:privacy@chanzuckerberg.com">
+                      privacy@chanzuckerberg.com
+                    </a>{" "}
+                    and explain the basis for your appeal.
+                  </p>
+                  <p>
+                    If you wish to raise a concern about our use of your
+                    information (and without prejudice to any other rights you
+                    may have), you have the right to do so with your local
+                    supervisory authority.
                   </p>
                 </ol>
               </li>
 
               <li>
-                <h3>Retention and Deletion.</h3>
+                <h3>Security</h3>
                 <p>
-                  We retain your personal data as needed to provide the Site.
-                  This includes data you provided to us and data generated or
-                  inferred from your use of the Site.
+                  Security of personal data is important to us. We implement
+                  security safeguards designed to protect your personal data,
+                  including reasonable administrative, technical, and physical
+                  safeguards to protect that personal data from unauthorized
+                  access, use, alteration and destruction. Despite these
+                  efforts, we cannot guarantee that your data may not be
+                  accessed, disclosed, altered, or destroyed by a breach of any
+                  of our physical, technical, or administrative safeguards.
+                  Please notify us immediately at{" "}
+                  <a href="mailto:security@chanzuckerberg.com">
+                    security@chanzuckerberg.com
+                  </a>{" "}
+                  if you become aware of any security issues relating to the
+                  Site.
                 </p>
               </li>
 
               <li>
-                <h3>Data Transfers.</h3>
+                <h3>Data Transfers</h3>
                 <p>
                   CZIF is based in the United States; when you engage with the
                   Site, you are sending personal data into the United States
@@ -338,14 +419,14 @@ const Privacy = (): JSX.Element => {
               </li>
 
               <li>
-                <h3>Our Legal Bases.</h3>
+                <h3>Our Legal Bases</h3>
                 <p>
-                  We will collect, use and share your personal data only where
-                  we have a legal right to do so. This section explains our
-                  legal bases for processing personal data, including under
+                  We will collect, use and disclose your personal data only
+                  where we have a legal right to do so. This section explains
+                  our legal bases for processing personal data, including under
                   GDPR.
                 </p>
-                <ol className="section8">
+                <ol className="section9">
                   <p>
                     <h4>Consent.</h4> We rely on consent to engage in certain
                     data collection activities, like data you choose to submit
@@ -361,71 +442,220 @@ const Privacy = (): JSX.Element => {
                   </p>
                   <p>
                     <h4>Contract.</h4> We rely on contract where processing is
-                    necessary for the performance of a contract with you (e.g.
+                    necessary for the performance of a contract with you (e.g.,
                     to make the data you submitted to us publicly available via
                     CELLxGENE Discover).
                   </p>
+                  <p>
+                    Where we rely on consent, you have the right to revoke your
+                    consent and where we rely on legitimate interests, you have
+                    the right to object by emailing us at{" "}
+                    <a href="mailto:privacy@chanzuckerberg.com">
+                      privacy@chanzuckerberg.com
+                    </a>
+                    . If you have any questions about the lawful bases on which
+                    we collect and use your personal data, please contact us at{" "}
+                    <a href="mailto:GDPR-REP@chanzuckerberg.com">
+                      GDPR-REP@chanzuckerberg.com
+                    </a>
+                    .
+                  </p>
                 </ol>
+              </li>
+
+              <li>
+                <h3>Additional Information For California Residents</h3>
                 <p>
-                  Where we rely on consent, you have the right to revoke your
-                  consent and where we rely on legitimate interests, you have
-                  the right to object by emailing us at{" "}
-                  <a href="mailto:privacy@chanzuckerberg.com">
-                    privacy@chanzuckerberg.com
-                  </a>
-                  . If you have any questions about the lawful bases on which we
-                  collect and use your personal data, please contact our Data
-                  Protection Officer via email at{" "}
-                  <a href="mailto:GDPR-REP@chanzuckerberg.com">
-                    GDPR-REP@chanzuckerberg.com
-                  </a>
-                  .
+                  The California Consumer Privacy Act (“CCPA”) requires certain
+                  businesses to give California residents a number of rights
+                  regarding their personal information. We are offering these
+                  rights to you, including the right to have your personal
+                  information deleted (subject to certain exceptions), the right
+                  to change or correct your personal information, the right to
+                  limit the use or disclosure of your sensitive personal
+                  information (if applicable), the right to access your personal
+                  information, the right to opt-out of the “selling” or
+                  “sharing” of personal information (if applicable), and the
+                  right not to be discriminated against for exercising these
+                  rights.
+                </p>
+                <p>
+                  These rights, and how to exercise them, are described in more
+                  detail in the Section titled “Choices and Rights” of this
+                  Policy Policy. In addition to these rights, we give you a
+                  right to request the following information about your personal
+                  information that we have collected in the past 12 months:
+                </p>
+                <ol className="section10">
+                  <p>
+                    <h4>The Right to Know.</h4> This right allows you to request
+                    the following information about the personal information
+                    that we’ve collected about you in the past 12 months:
+                  </p>
+                  <p>
+                    <ul>
+                      <li>
+                        <h5>Information about Data Collection</h5>
+                        <ul>
+                          <li>
+                            The categories of personal information that have
+                            been collected about you.
+                          </li>
+                          <li>
+                            The categories of sources from which we have
+                            collected personal information.
+                          </li>
+                          <li>
+                            The business purpose for which we have collected
+                            personal information.
+                          </li>
+                        </ul>
+                      </li>
+                      <li>
+                        <h5>Information about Data Disclosure</h5>
+                        <ul>
+                          <li>
+                            The categories of personal information, if any, that
+                            have been sold, shared, or disclosed for a business
+                            purpose to third parties.
+                          </li>
+                          <li>
+                            The categories of third parties to whom personal
+                            information was sold, shared, or disclosed for a
+                            business purpose.
+                          </li>
+                          <li>
+                            Identification of the specific business purpose for
+                            disclosing the consumer’s personal information.
+                          </li>
+                        </ul>
+                      </li>
+                    </ul>
+                  </p>
+                  <p>
+                    We have described in fuller detail in this Privacy Policy
+                    the personal information that we collect, how we use, and
+                    disclose it, but provide the following additional
+                    disclosure:
+                  </p>
+                  <p>
+                    <h5>Information about Data Collection</h5>
+                    <ul>
+                      <li>
+                        <h5>Information we collect.</h5> We have collected the
+                        following categories of personal information from
+                        consumers within the past 12 months: (1) identifiers;
+                        (2) professional or employment-related information; (3)
+                        internet or other electronic network activity; (4)
+                        geolocation data; and (5) information provided through
+                        survey responses or feedback sessions. We have not sold
+                        this information nor have we shared this information for
+                        behavioral advertising purposes.
+                      </li>
+                      <li>
+                        <h5>Sources of information.</h5> We obtain these
+                        categories of personal information from the sources
+                        described in the Section titled “Data We Collect.”
+                      </li>
+                      <li>
+                        <h5>Purposes of collection.</h5> We collect personal
+                        information for one or more of the following business
+                        purposes as described in the Section titled “How We Use
+                        Your Data” above.
+                      </li>
+                    </ul>
+                  </p>
+                  <p>
+                    <h5>Information about Data Disclosure</h5>
+                    <ul>
+                      <li>
+                        <h5>Information we disclose.</h5> We have disclosed the
+                        following categories of personal information within the
+                        past 12 months: (1) identifiers; (2) professional or
+                        employment-related information; (3) internet or other
+                        electronic network activity; (4) geolocation data; and
+                        (5) information provided through survey responses or
+                        feedback sessions. We have not sold this information nor
+                        have we shared this information for behavioral
+                        advertising purposes.
+                      </li>
+                      <li>
+                        <h5>Third parties to whom we disclose.</h5> The
+                        categories of third parties to whom we have disclosed
+                        this personal information are described in the Section
+                        titled “How We Disclose Information” in this Privacy
+                        Policy.
+                      </li>
+                      <li>
+                        <h5>Purposes of disclosure.</h5> We disclose the
+                        personal information we collect about you for one or
+                        more of the following business purposes described in the
+                        Section titled “How We Use Your Data” above.
+                      </li>
+                      <li>
+                        <h5>Sensitive data.</h5> We do not collect sensitive
+                        personal information, and thus we do not disclose or use
+                        your sensitive information.
+                      </li>
+                    </ul>
+                  </p>
+                </ol>
+              </li>
+
+              <li>
+                <h3>
+                  Additional Information for Residents of Virginia, Colorado,
+                  Connecticut, and Utah
+                </h3>
+                <p>
+                  Virginia, Colorado, Connecticut, and Utah also have adopted
+                  privacy laws that give consumers certain rights, including the
+                  right to confirm whether controllers are processing the
+                  consumer’s personal data, the right to access that data, the
+                  right to obtain a copy of that data, the right to correct
+                  inaccuracies in that data, and the right to delete that data.
+                  As discussed above in the Section titled “Choices and Rights,”
+                  we provide these rights to all consumers, regardless of where
+                  they reside.
+                </p>
+                <p>
+                  Additionally, these four states have adopted rights to opt-out
+                  of: (1) targeted advertising; (2) the sale of personal data;
+                  and (3) profiling in furtherance of decisions that produce
+                  legal or similarly significant effects concerning the
+                  consumer. We do not sell your data, use it for targeted
+                  advertising or to profile you in furtherance of decisions that
+                  produce legal or similarly significant effects.
                 </p>
               </li>
 
               <li>
                 <h3>Other Important Information</h3>
-                <ol className="section9">
-                  <p>
-                    <h4>Security.</h4> Security of personal data is important to
-                    us. We implement security safeguards designed to protect
-                    your personal data, including reasonable administrative,
-                    technical and physical safeguards to protect that personal
-                    data from unauthorized access, use, alteration and
-                    destruction. Despite these efforts, we cannot guarantee that
-                    your data may not be accessed, disclosed, altered, or
-                    destroyed by a breach of any of our physical, technical, or
-                    administrative safeguards. Please notify us immediately at{" "}
-                    <a href="mailto:security@chanzuckerberg.com">
-                      security@chanzuckerberg.com
-                    </a>{" "}
-                    if you become aware of any security issues relating to the
-                    Site.
-                  </p>
+                <ol className="section12">
                   <p>
                     <h4>Direct Marketing and Do Not Track Signals.</h4> We don’t
-                    currently share personal data with third parties for their
-                    direct marketing purposes, nor do we support any Do Not
-                    Track signals, since there’s currently no standard for how
-                    online services respond to those signals. As standards
-                    develop, we may establish policies for responding to DNT
-                    signals that we would describe in this Privacy Policy.
+                    currently disclose personal data with third parties for
+                    their direct marketing purposes, nor do we support any Do
+                    Not Track ("DNT") signals, since there’s currently no
+                    standard for how online services respond to those signals.
+                    As standards develop, we may establish policies for
+                    responding to DNT signals that we would describe in this
+                    Privacy Policy.
+                  </p>
+                  <p>
+                    <h4>Children.</h4> We do not have actual knowledge that we
+                    have sold or shared the personal information of users under
+                    16 years of age.
                   </p>
                   <p>
                     <h4>Changes.</h4> We may modify this Privacy Policy from
                     time to time, and you can see when the last update was by
-                    looking at the “Last Updated” date at the top of this page.
-                    If we make material changes to it, we’ll provide you notice
-                    through this Privacy Policy. Your continued use of the Site
-                    after we publish a notice about changes to this Privacy
-                    Policy means that you acknowledge and agree to the updated
-                    Privacy Policy following the date it takes effect.
-                  </p>
-                  <p>
-                    <h4>Children.</h4> The Site is not designed or intended for
-                    children under 16. If we become aware that we have the
-                    information of such children collected through the Site, we
-                    will promptly delete it.
+                    looking at the “Last Updated” date at the top of this
+                    Policy. If we make material changes to it, we’ll provide you
+                    notice through this Privacy Policy. Your continued use of
+                    the Site after we publish a notice about changes to this
+                    Privacy Policy means that you acknowledge and agree to the
+                    updated Privacy Policy following the date it takes effect.
                   </p>
                   <p>
                     <h4>Contact Information.</h4> If you have questions or

@@ -30,6 +30,8 @@ const ToS = (): JSX.Element => {
 
           <h1 id="tos">Terms of Use</h1>
 
+          <p>Last Updated: December 15, 2022.</p>
+
           <p>
             <span className="caps">
               ANY DISPUTE BETWEEN YOU AND US IS SUBJECT TO BINDING ARBITRATION,
@@ -286,9 +288,9 @@ const ToS = (): JSX.Element => {
               <br />
               <address>
                 Chan Zuckerberg Initiative Foundation <br />
-                314 Lytton Ave.
+                801 Jefferson Ave.
                 <br />
-                Palo Alto, CA 94301
+                Redwood City, CA 94063
                 <br />
                 Attn: General Counsel <br />
                 Email: courtesy copy:{" "}

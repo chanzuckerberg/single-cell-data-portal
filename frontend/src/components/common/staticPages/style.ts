@@ -78,7 +78,9 @@ export const PrivacyStyle = styled.div`
   ol.section7,
   ol.section8,
   ol.section9,
-  ol.section10 {
+  ol.section10,
+  ol.section11,
+  ol.section12 {
     list-style-type: none;
   }
 
