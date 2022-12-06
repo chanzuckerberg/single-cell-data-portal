@@ -12,7 +12,6 @@ export const Wrapper = styled.div`
   display: flex;
   position: absolute;
   top: 150px;
-  z-index: 3;
   margin-left: -10px;
   width: calc(96vw - ${EXPANDED_WIDTH_PX}px);
   height: calc(85vh - ${HEADER_HEIGHT_PX}px);
@@ -28,12 +27,16 @@ export const ColumnOne = styled.div`
 
   flex: 0 1 350px;
 
+  z-index: 99;
+
   display: flex;
   flex-direction: column;
 `;
 
 export const ColumnTwo = styled.div`
   flex: 1 2 calc(10vw);
+
+  z-index: 99;
 
   display: flex;
   flex-direction: column;
