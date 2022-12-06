@@ -53,6 +53,7 @@ export const INITIAL_STATE: State = {
 };
 
 export const REDUCERS = {
+  addSelectedGenes,
   deleteSelectedGenesAndSelectedCellTypeIds,
   resetGenesToDeleteAndCellTypeIdsToDelete,
   resetTissueCellTypes,
@@ -347,5 +348,17 @@ function setSnapshotId(
   return {
     ...state,
     snapshotId: payload,
+  };
+}
+
+function addSelectedGenes(
+  state: State,
+  action: PayloadAction<State["selectedGenes"]>
+): State {
+  const { payload } = action;
+
+  return {
+    ...state,
+    selectedGenes: [...payload, ...state.selectedGenes],
   };
 }

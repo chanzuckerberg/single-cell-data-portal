@@ -8,6 +8,7 @@ from backend.wmg.pipeline.summary_cubes.expression_summary.job import create_exp
 from backend.wmg.pipeline.summary_cubes.expression_summary_fmg.job import create_expression_summary_fmg_cube
 from backend.wmg.data.validation.validation import Validation
 from backend.wmg.pipeline.summary_cubes.cell_count import create_cell_count_cube
+from backend.wmg.pipeline.summary_cubes.marker_genes import create_marker_genes_cube
 
 
 def run(corpus_path: str, validate_cube: bool) -> dict:
@@ -20,6 +21,8 @@ def run(corpus_path: str, validate_cube: bool) -> dict:
     create_expression_summary_cube(corpus_path)
     create_expression_summary_fmg_cube(corpus_path)
     create_cell_count_cube(corpus_path)
+    create_marker_genes_cube(corpus_path)
+
     if validate_cube:
         try:
             is_valid = Validation(corpus_path).validate_cube()

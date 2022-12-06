@@ -42,6 +42,7 @@ export default function WheresMyGene(): JSX.Element {
   const dispatch = useContext(DispatchContext);
 
   const { selectedGenes, selectedCellTypeIds, selectedTissues, sortBy } = state;
+  const selectedOrganismId = state.selectedOrganismId || "";
 
   const [isScaled, setIsScaled] = useState(true);
 
@@ -228,7 +229,7 @@ export default function WheresMyGene(): JSX.Element {
     }
   }, [dispatch]);
 
-  const hasSelectedTissues = selectedTissues.length > 0;
+  const hasSelectedTissues = selectedTissues.length > 0 && !isLoading;
   const hasSelectedGenes = selectedGenes.length > 0;
 
   const shouldShowHeatMap = useMemo(() => {
@@ -315,6 +316,8 @@ export default function WheresMyGene(): JSX.Element {
               allTissueCellTypes={cellTypesByTissueName}
               scaledMeanExpressionMax={scaledMeanExpressionMax}
               scaledMeanExpressionMin={scaledMeanExpressionMin}
+              selectedOrganismId={selectedOrganismId}
+              tissueLoaded={hasSelectedTissues}
             />
           ) : (
             ""
