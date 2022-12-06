@@ -199,8 +199,8 @@ const Privacy = (): JSX.Element => {
 
                 <ol className="section3">
                   <p>
-                    <h4>Site.</h4> We use the information we collect to provide
-                    the Site, maintain, secure, and improve the Site, including
+                    <h4>Site.</h4> We use the information we collect to provide,
+                    maintain, secure, and improve the Site, including
                     understanding the content that Visitors find valuable.
                   </p>
                   <p>
