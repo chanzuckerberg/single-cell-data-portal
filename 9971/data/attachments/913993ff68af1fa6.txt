@@ -1,1 +1,0 @@
-INFO     root:entity.py:43 Unable to find a row with primary key 0b76f397-f9a4-4124-aecd-8f11ac5c2936, in Collection table.
