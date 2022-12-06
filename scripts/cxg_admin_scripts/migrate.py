@@ -9,6 +9,7 @@ import sys
 from sqlalchemy import schema
 
 
+
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..."))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
 
@@ -241,7 +242,7 @@ def migrate_redesign_read(ctx):
                     "id": record.id,
                     "version_id": None, # not mapped yet, this is private
                     "originally_published_at": None, # Not yet published
-                    "tombstoned": False,
+                    "tombstoned": record.tombstone,
                 }
 
                 collections.append(collection)
@@ -259,7 +260,7 @@ def migrate_redesign_read(ctx):
                     "id": record.id,
                     "version_id": version_id,
                     "originally_published_at": record.published_at,
-                    "tombstoned": False,
+                    "tombstoned": record.tombstone,
                 }
 
                 collections.append(collection)
@@ -298,8 +299,8 @@ def migrate_redesign_read(ctx):
                     "batch_condition": record_dataset.batch_condition,
                     "suspension_type": record_dataset.suspension_type,
                     "donor_id": record_dataset.donor_id,
-                    "is_primary_data": record_dataset.is_primary_data,
-                    "x_approximate_distribution": record_dataset.x_approximate_distribution,
+                    "is_primary_data": None if record_dataset.is_primary_data is None else record_dataset.is_primary_data.name,
+                    "x_approximate_distribution": None if record_dataset.x_approximate_distribution is None else record_dataset.x_approximate_distribution.name,
                 }
 
                 if record_dataset.processing_status is not None:
@@ -321,10 +322,11 @@ def migrate_redesign_read(ctx):
                 dataset_version = {
                     "version_id": dataset_version_id,
                     "dataset_id": record_dataset.id,
-                    "collection_id": version_id,
+                    "collection_id": collection_id,
                     "metadata": dataset_metadata,
                     "artifacts": artifact_ids,
                     "status": strip_prefixes_dict(status),
+                    "created_at": record_dataset.created_at,
                 }
 
                 dataset_ids.append(dataset_version_id)
@@ -339,6 +341,7 @@ def migrate_redesign_read(ctx):
                 "publisher_metadata": record.publisher_metadata,
                 "published_at": record.published_at,
                 "datasets": dataset_ids,
+                "created_at": record.created_at,
             }
 
             collection_versions.append(version)
@@ -376,18 +379,35 @@ def migrate_redesign_debug(ctx):
     with open("migration/dataset_artifacts.json", "r") as f:
         artifacts = json.load(f)
 
-    from backend.layers.common.entities import CollectionMetadata, DatasetStatus
+    from backend.layers.common.entities import CollectionMetadata, DatasetStatus, DatasetMetadata
 
     # for collection in collection_versions:
     #     print(collection["metadata"])
     #     CollectionMetadata.from_json(json.dumps(collection["metadata"]))
 
+    # for dataset in dataset_versions:
+    #     if not dataset["status"]:
+    #         print("skipping")
+    #         print(dataset)
+    #         continue
+    #     DatasetStatus.from_json(json.dumps(dataset["status"]))
+
     for dataset in dataset_versions:
-        if not dataset["status"]:
-            print("skipping")
-            print(dataset)
+        if dataset["metadata"]["schema_version"] not in  ["3.0.0", "2.0.0"]:
             continue
-        DatasetStatus.from_json(json.dumps(dataset["status"]))
+
+        if dataset["metadata"].get("is_primary_data"):
+            dataset["metadata"]["is_primary_data"] = dataset["metadata"]["is_primary_data"].split(".")[1]
+
+        if dataset["metadata"].get("x_approximate_distribution"):
+            dataset["metadata"]["x_approximate_distribution"] = dataset["metadata"]["x_approximate_distribution"].split(".")[1]
+
+        # dataset["metadata"]
+        metadata = DatasetMetadata.from_json(json.dumps(dataset["metadata"]))
+        print(metadata)
+
+    with open("migration/dataset_versions.json", "w") as f:
+        json.dump(dataset_versions, f, default=str)
 
 def migrate_redesign_write(ctx):
     import json
@@ -432,6 +452,15 @@ def migrate_redesign_write(ctx):
 
     # engine.execute(schema.CreateSchema('persistence_schema'))
     # metadata_obj.create_all(bind=engine)
+
+    from sqlalchemy.schema import DropSchema, CreateSchema
+    from backend.layers.persistence.orm import metadata
+    engine.execute(DropSchema('persistence_schema', cascade=True))
+
+    from sqlalchemy.schema import CreateSchema
+    from backend.layers.persistence.orm import metadata
+    engine.execute(CreateSchema('persistence_schema'))
+    metadata.create_all(bind=engine)
 
     with Session(engine) as session:
 
@@ -480,6 +509,8 @@ def migrate_redesign_write(ctx):
 
             if not dataset_version.get("status"):
                 continue
+
+            metadata = dataset_version["metadata"]
 
             dataset_version_row = DatasetVersionRow(
                 version_id=dataset_version["version_id"],
