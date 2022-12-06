@@ -82,7 +82,7 @@ export default memo(function YAxisChart({
         if (yAxisInfoCoords) {
           const { right, top } = textElements[index].getBoundingClientRect();
           const infoCoords = [...yAxisInfoCoords]
-          infoCoords[index] = [right-278, top-238];
+          infoCoords[index] = [right-xOffset, top-yOffset];
           setYAxisInfoCoords(infoCoords)
         }
       } else {
