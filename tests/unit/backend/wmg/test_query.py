@@ -2,7 +2,7 @@ import unittest
 from typing import NamedTuple
 
 from backend.wmg.api.v1 import get_dot_plot_data, agg_cell_type_counts, agg_tissue_counts
-from backend.wmg.api.query import (
+from backend.wmg.data.query import (
     WmgQueryCriteria,
     WmgQuery,
     MarkerGeneQueryCriteria,

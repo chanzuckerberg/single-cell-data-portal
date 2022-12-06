@@ -9,7 +9,7 @@ from pandas import DataFrame
 from backend.common.entities import Dataset
 from backend.common.utils.db_session import db_session_manager
 from backend.wmg.data.ontology_labels import ontology_term_label, gene_term_label
-from backend.wmg.api.query import (
+from backend.wmg.data.query import (
     WmgQuery,
     WmgQueryCriteria,
     MarkerGeneQueryCriteria,
