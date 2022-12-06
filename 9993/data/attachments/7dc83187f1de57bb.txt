@@ -1,0 +1,1 @@
+{"levelname": "INFO", "asctime": "2022-12-06T17:30:01.006Z", "name": "root", "message": "Unable to find a row with primary key f87ec36a-67fd-4b23-9d42-adad3955d465, in Collection table.", "lineno": 43, "pathname": "/single-cell-data-portal/backend/common/entities/entity.py"}
