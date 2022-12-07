@@ -1,0 +1,4 @@
+INFO     root:dataset_asset.py:62 Deleting file 437f8d4b-8940-44ef-8af6-02c6083fa286/data.H5AD in bucket bogus-bucket.
+INFO     root:dataset_asset.py:62 Deleting file 437f8d4b-8940-44ef-8af6-02c6083fa286/data.RDS in bucket bogus-bucket.
+INFO     root:dataset_asset.py:62 Deleting file 437f8d4b-8940-44ef-8af6-02c6083fa286/data.CXG in bucket bogus-bucket.
+INFO     root:dataset_asset.py:58 Deleting all files in bucket hosted-cellxgene-test under 437f8d4b-8940-44ef-8af6-02c6083fa286.
