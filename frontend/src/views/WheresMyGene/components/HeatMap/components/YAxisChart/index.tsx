@@ -235,7 +235,7 @@ export default memo(function YAxisChart({
                 src={InfoSVG.src}
                 width="10"
                 height="10"
-                alt="display marker genes"
+                alt={`display marker genes for ${deserializeCellTypeMetadata(content).name}`}
               />
             </InfoButtonWrapper>
           );
