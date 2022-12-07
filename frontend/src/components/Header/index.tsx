@@ -128,6 +128,7 @@ const Header: FC = () => {
               search={false}
               options={FOOTER_OPTIONS}
               onChange={handleHelpClick}
+              onBlur={handleOnBlur}
             />
           </StyledPopper>
 
@@ -136,6 +137,10 @@ const Header: FC = () => {
       </MainWrapper>
     </Wrapper>
   );
+
+  function handleOnBlur() {
+    setDropdownOpen(false);
+  }
 
   function handleHelpOpen(event: React.MouseEvent<HTMLElement>) {
     if (!anchorEl) {
