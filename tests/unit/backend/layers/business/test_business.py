@@ -34,6 +34,7 @@ from backend.layers.common.entities import (
     OntologyTermId,
 )
 from backend.layers.persistence.persistence import DatabaseProvider
+from backend.layers.persistence.persistence_mock import DatabaseProviderMock
 from backend.layers.thirdparty.crossref_provider import CrossrefProviderInterface
 from backend.layers.thirdparty.s3_provider import S3Provider
 from backend.layers.thirdparty.step_function_provider import StepFunctionProviderInterface
@@ -47,9 +48,9 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
     test_user_name = "test_user_1"
 
     def setUp(self) -> None:
-        self.database_provider = DatabaseProvider()
-        self.database_provider._drop()
-        self.database_provider._create()
+        self.database_provider = DatabaseProviderMock()
+        # self.database_provider._drop()
+        # self.database_provider._create()
 
         # By default these do nothing. They can be mocked by single test cases.
         self.crossref_provider = CrossrefProviderInterface()

@@ -157,6 +157,10 @@ local-shell: ## Open a command shell in one of the dev containers. ex: make loca
 .PHONY: local-unit-test
 local-unit-test: local-unit-test-backend local-unit-test-processing  local-unit-test-wmg-processing# Run all backend and processing unit tests in the dev environment, with code coverage
 
+.PHONY: redesign-unit-test
+redesign-unit-test: 
+	python -m pytest tests/unit/backend/layers/business/test_business.py
+
 # Note: If you are manually running this on localhost, you should run `local-rebuild` target first to test latest changes; this is not needed when running in Github Actions
 .PHONY: local-unit-test-backend
 local-unit-test-backend: # Run container-unittest target in `backend` Docker container.  If path arg provided, just run those specific backend tests
