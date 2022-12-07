@@ -1,12 +1,15 @@
 import { init } from "echarts";
-import Image from "next/image";
 import { memo, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { EMPTY_OBJECT, noop } from "src/common/constants/utils";
 import { get } from "src/common/featureFlags";
 import { FEATURES } from "src/common/featureFlags/features";
 import { BOOLEAN } from "src/common/localStorage/set";
 import { FetchMarkerGeneParams } from "src/common/queries/wheresMyGene";
-import { DispatchContext } from "src/views/WheresMyGene/common/store";
+import Image from "next/image";
+import {
+  DispatchContext,
+  StateContext,
+} from "src/views/WheresMyGene/common/store";
 import { resetTissueCellTypes } from "src/views/WheresMyGene/common/store/actions";
 import { CellType, Tissue } from "src/views/WheresMyGene/common/types";
 import { useDeleteGenesAndCellTypes } from "../../hooks/useDeleteGenesAndCellTypes";
@@ -18,14 +21,21 @@ import {
   getHeatmapHeight,
 } from "../../utils";
 import ReplaySVG from "./icons/replay.svg";
+import InfoSVG from "./icons/info-sign-icon.svg";
 import {
   Container,
   ResetImageWrapper,
   TissueName,
   TissueWrapper,
   Wrapper,
+  StyledImage,
+  InfoButtonWrapper,
+  Y_AXIS_TISSUE_WIDTH_PX,
 } from "./style";
 
+// the horizontal offset of the y-axis labels
+// determined by echarts
+const Y_AXIS_SVG_X_OFFSET = 12;
 interface Props {
   cellTypes?: CellType[];
   hasDeletedCellTypes: boolean;
@@ -36,6 +46,7 @@ interface Props {
   selectedOrganismId: string;
 }
 
+type Coord = [number, number];
 export default memo(function YAxisChart({
   cellTypes = [],
   hasDeletedCellTypes,
@@ -45,10 +56,14 @@ export default memo(function YAxisChart({
   generateMarkerGenes,
   selectedOrganismId,
 }: Props): JSX.Element {
+  const tissueKey = tissue.replace(" ", "-");
+  const yAxisSelectorQuery = `[data-test-id=cell-type-labels-${tissueKey}]`;
+
   const dispatch = useContext(DispatchContext);
+  const { selectedTissues } = useContext(StateContext);
 
   const [isChartInitialized, setIsChartInitialized] = useState(false);
-
+  const [yAxisInfoCoords, setYAxisInfoCoords] = useState<Coord[] | null>(null);
   const { cellTypeIdsToDelete, handleCellTypeClick } =
     useDeleteGenesAndCellTypes();
 
@@ -60,6 +75,27 @@ export default memo(function YAxisChart({
   );
   const isMarkerGenes = get(FEATURES.MARKER_GENES) === BOOLEAN.TRUE;
 
+  const setInfoCoordinates = () => {
+    const topTissueKey = selectedTissues[0].replace(" ", "-");
+    const containerTop = document.querySelector(
+      `[data-test-id=cell-type-labels-${topTissueKey}]`
+    );
+    const container = document.querySelector(yAxisSelectorQuery);
+    const textElements = container?.querySelectorAll(
+      `text[transform*="translate(${Y_AXIS_SVG_X_OFFSET}"]`
+    );
+    if (container && containerTop && textElements) {
+      const { left, top } = containerTop.getBoundingClientRect();
+      const xOffset = left - Y_AXIS_TISSUE_WIDTH_PX;
+      const yOffset = top;
+      const infoCoords: Coord[] = [];
+      textElements.forEach((el) => {
+        const { right, top } = el.getBoundingClientRect();
+        infoCoords.push([right - xOffset, top - yOffset]);
+      });
+      setYAxisInfoCoords(infoCoords);
+    }
+  };
   // Initialize charts
   useEffect(() => {
     const { current: yAxisCurrent } = yAxisRef;
@@ -86,7 +122,6 @@ export default memo(function YAxisChart({
   const [, setHandleYAxisChartClick] = useState(
     () => noop as (params: { value: CellTypeMetadata }) => void
   );
-
   // Bind yAxisChart events
   useEffect(() => {
     setHandleYAxisChartClick(
@@ -104,18 +139,7 @@ export default memo(function YAxisChart({
        * `value` is set by utils.getAllSerializedCellTypeMetadata()
        */
       const { value } = params;
-
       handleCellTypeClick(value);
-
-      if (isMarkerGenes) {
-        const { id } = deserializeCellTypeMetadata(value);
-
-        generateMarkerGenes({
-          cellTypeID: id,
-          organismID: selectedOrganismId,
-          tissueID,
-        });
-      }
     }
   }, [
     setHandleYAxisChartClick,
@@ -127,6 +151,8 @@ export default memo(function YAxisChart({
     yAxisChart,
     selectedOrganismId,
     isMarkerGenes,
+    yAxisRef,
+    yAxisInfoCoords,
   ]);
 
   const cellTypeMetadata = useMemo(() => {
@@ -140,6 +166,26 @@ export default memo(function YAxisChart({
     yAxisChart,
   });
 
+  useEffect(() => {
+    const targetNode = document.querySelector(yAxisSelectorQuery);
+    const config = { attributes: true, childList: true, subtree: true };
+    const callback = (mutationList: MutationRecord[]) => {
+      for (const mutation of mutationList) {
+        if (mutation.type === "childList" && mutation.target.nodeName === "g") {
+          setInfoCoordinates();
+          break;
+        }
+      }
+    };
+    const observer = new MutationObserver(callback);
+    if (targetNode) {
+      observer.observe(targetNode, config);
+    }
+
+    return () => {
+      observer.disconnect();
+    };
+  }, []);
   return (
     <Wrapper id={`${tissue}-y-axis`}>
       <TissueWrapper height={heatmapHeight}>
@@ -159,10 +205,41 @@ export default memo(function YAxisChart({
         )}
       </TissueWrapper>
       <Container
-        data-test-id="cell-type-labels"
+        data-test-id={`cell-type-labels-${tissueKey}`}
         height={heatmapHeight}
         ref={yAxisRef}
       />
+      {yAxisInfoCoords &&
+        yAxisInfoCoords.map((coord, i) => {
+          const content = cellTypeMetadata[i];
+          return (
+            <InfoButtonWrapper
+              id={content}
+              key={content}
+              left={coord[0]}
+              top={coord[1]}
+              onClick={() => {
+                if (isMarkerGenes) {
+                  const { id } = deserializeCellTypeMetadata(content);
+
+                  generateMarkerGenes({
+                    cellTypeID: id,
+                    organismID: selectedOrganismId,
+                    tissueID,
+                  });
+                }
+              }}
+            >
+              <StyledImage
+                id={"marker-gene-button"}
+                src={InfoSVG.src}
+                width="10"
+                height="10"
+                alt={`display marker genes for ${deserializeCellTypeMetadata(content).name}`}
+              />
+            </InfoButtonWrapper>
+          );
+        })}
     </Wrapper>
   );
 
