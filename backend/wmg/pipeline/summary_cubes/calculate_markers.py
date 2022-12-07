@@ -33,8 +33,8 @@ def _make_hashable(func):
 
     @wraps(func)
     def wrapped(*args, **kwargs):
-        new_args = [HDict(args[0])]
-        for arg in args[1:]:
+        new_args = []
+        for arg in args:
             if isinstance(arg, dict):
                 arg = HDict(arg)
             elif isinstance(arg, list):
@@ -53,49 +53,19 @@ def _make_hashable(func):
 
     return wrapped
 
+    # this decorator function is required to allow lru_cache to
 
-# this decorator function is required to allow lru_cache to
+
 # memoize the function as dicts, lists, and WmgSnapshot objects
 # are not typically hashable.
 @_make_hashable
 @lru_cache(maxsize=None)
-def _query_tiledb_context(
-    target_filters: dict,
+def _query_tiledb_context_memoized(
     context_filters: dict,
+    group_by_dims,
+    keep_dataset_ids,
     corpus: Optional[Union[WmgSnapshot, str]] = None,
 ):
-    """
-    Query the tileDB array and return required data artifacts for downstream processing.
-
-    Arguments
-    ---------
-    target_filters - dict,
-        Dictionary of filters for the target population
-
-    context_filters - dict,
-        Dictionary of filters for the context population
-
-    corpus - str or WmgSnapshot, optional, default None
-        If string, it is the path to the snapshot.
-        If WmgSnapshot, it is the snapshot object.
-        If None, the snapshot will be fetched from AWS.
-
-    Returns
-    -------
-    - agg: query result aggregated by filter keys
-    - n_cells_context: Series of aggregated cell counts from the context query further
-        stratified by dataset IDs.
-    - t_n_cells_sum: a dictionary of 1D numpy arrays with length # of genes
-        each value is the true number of cells present for the combination of
-        filters (keys).
-        Ex: {(cell_type1,tissue1,organism1): np.array([0,100,100,0,80])}
-    - genes: a list of all genes with nonzero expression found in the query result
-    - dataset_to_gene_ids: a dictionary mapping dataset IDs to their corresponding
-        list of genes.
-    """
-    group_by_dims = list(target_filters.keys())
-    keep_dataset_ids = "dataset_ids" in target_filters
-
     criteria = FmgQueryCriteria(**context_filters)
 
     if isinstance(corpus, str):
@@ -143,6 +113,45 @@ def _query_tiledb_context(
     genes = list(agg.index.levels[0])
     t_n_cells_sum = _calculate_true_n_cells(n_cells, genes, dataset_to_gene_ids, keep_dataset_ids)
     return agg, n_cells, t_n_cells_sum, genes, dataset_to_gene_ids
+
+
+def _query_tiledb_context(
+    target_filters: dict,
+    context_filters: dict,
+    corpus: Optional[Union[WmgSnapshot, str]] = None,
+):
+    """
+    Query the tileDB array and return required data artifacts for downstream processing.
+
+    Arguments
+    ---------
+    target_filters - dict,
+        Dictionary of filters for the target population
+
+    context_filters - dict,
+        Dictionary of filters for the context population
+
+    corpus - str or WmgSnapshot, optional, default None
+        If string, it is the path to the snapshot.
+        If WmgSnapshot, it is the snapshot object.
+        If None, the snapshot will be fetched from AWS.
+
+    Returns
+    -------
+    - agg: query result aggregated by filter keys
+    - n_cells_context: Series of aggregated cell counts from the context query further
+        stratified by dataset IDs.
+    - t_n_cells_sum: a dictionary of 1D numpy arrays with length # of genes
+        each value is the true number of cells present for the combination of
+        filters (keys).
+        Ex: {(cell_type1,tissue1,organism1): np.array([0,100,100,0,80])}
+    - genes: a list of all genes with nonzero expression found in the query result
+    - dataset_to_gene_ids: a dictionary mapping dataset IDs to their corresponding
+        list of genes.
+    """
+    group_by_dims = list(target_filters.keys())
+    keep_dataset_ids = "dataset_ids" in target_filters
+    return _query_tiledb_context_memoized(context_filters, group_by_dims, keep_dataset_ids, corpus=corpus)
 
 
 def _query_tiledb_target(
@@ -328,7 +337,7 @@ def _prepare_indices_and_metrics(target_filters, context_filters, corpus=None):
         for the target population.
     """
     context_agg, n_cells_context, t_n_cells_sum_context, genes, dataset_to_gene_ids = _query_tiledb_context(
-        target_filters, context_filters, corpus="../integrated-prod/"
+        target_filters, context_filters, corpus=corpus
     )
     target_agg, t_n_cells_sum_target = _query_tiledb_target(
         target_filters,
