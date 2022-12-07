@@ -426,11 +426,8 @@ def migrate_redesign_write(ctx):
     with open("migration/dataset_artifacts.json", "r") as f:
         artifacts = json.load(f)
 
-    from backend.layers.persistence.orm import CollectionVersion
     from sqlalchemy import create_engine
-    from sqlalchemy.orm import sessionmaker, session as sql_session
     from sqlalchemy.orm import Session
-
 
     from backend.layers.persistence.orm import (
         Collection as CollectionRow,
@@ -440,11 +437,10 @@ def migrate_redesign_write(ctx):
         DatasetArtifact as DatasetArtifactRow
     )
 
-    # from backend.layers.persistence.orm import metadata_obj
 
-    # database_uri = "postgresql://postgres:secret@localhost"
     database_pass = os.getenv("PGPASSWORD")
-    database_uri = f"postgresql://dataportal:{database_pass}@localhost//ebezzi-redesign-full"
+    database_name = os.getenv("PGDB")
+    database_uri = f"postgresql://dataportal:{database_pass}@localhost/{database_name}"
 
     # Uncomment for local
     # database_uri = f"postgresql://postgres:secret@localhost"
