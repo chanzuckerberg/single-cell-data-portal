@@ -209,7 +209,7 @@ export default memo(function YAxisChart({
         height={heatmapHeight}
         ref={yAxisRef}
       />
-      {yAxisInfoCoords &&
+      {yAxisInfoCoords && isMarkerGenes &&
         yAxisInfoCoords.map((coord, i) => {
           const content = cellTypeMetadata[i];
           return (
