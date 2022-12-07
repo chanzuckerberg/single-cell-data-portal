@@ -327,11 +327,8 @@ def _prepare_indices_and_metrics(target_filters, context_filters, corpus=None):
         These are the column coordinates of the array in which the expression statistics will be filled
         for the target population.
     """
-    group_by_dims = list(target_filters.keys())
-
-    keep_dataset_ids = "dataset_ids" in target_filters
     context_agg, n_cells_context, t_n_cells_sum_context, genes, dataset_to_gene_ids = _query_tiledb_context(
-        context_filters, group_by_dims, keep_dataset_ids, corpus="../integrated-prod/"
+        target_filters, context_filters, corpus="../integrated-prod/"
     )
     target_agg, t_n_cells_sum_target = _query_tiledb_target(
         target_filters,
