@@ -6,7 +6,10 @@ import { get } from "src/common/featureFlags";
 import { FEATURES } from "src/common/featureFlags/features";
 import { BOOLEAN } from "src/common/localStorage/set";
 import { FetchMarkerGeneParams } from "src/common/queries/wheresMyGene";
-import { DispatchContext, StateContext } from "src/views/WheresMyGene/common/store";
+import {
+  DispatchContext,
+  StateContext,
+} from "src/views/WheresMyGene/common/store";
 import { resetTissueCellTypes } from "src/views/WheresMyGene/common/store/actions";
 import { CellType, Tissue } from "src/views/WheresMyGene/common/types";
 import { useDeleteGenesAndCellTypes } from "../../hooks/useDeleteGenesAndCellTypes";
@@ -25,7 +28,7 @@ import {
   TissueName,
   TissueWrapper,
   Wrapper,
-  Y_AXIS_TISSUE_WIDTH_PX
+  Y_AXIS_TISSUE_WIDTH_PX,
 } from "./style";
 
 interface Props {
@@ -48,7 +51,7 @@ export default memo(function YAxisChart({
   generateMarkerGenes,
   selectedOrganismId,
 }: Props): JSX.Element {
-  const tissueKey = tissue.replace(' ','-');
+  const tissueKey = tissue.replace(" ", "-");
   const dispatch = useContext(DispatchContext);
   const { selectedTissues } = useContext(StateContext);
 
@@ -66,22 +69,28 @@ export default memo(function YAxisChart({
   const isMarkerGenes = get(FEATURES.MARKER_GENES) === BOOLEAN.TRUE;
 
   const setInfoCoordinates = () => {
-    const topTissueKey = selectedTissues[0].replace(' ','-');
-    const containerTop = document.querySelector(`[data-test-id=cell-type-labels-${topTissueKey}]`);
-    const container = document.querySelector(`[data-test-id=cell-type-labels-${tissueKey}]`);
-    const textElements = container?.querySelectorAll(`text[transform*="translate(12"]`)
+    const topTissueKey = selectedTissues[0].replace(" ", "-");
+    const containerTop = document.querySelector(
+      `[data-test-id=cell-type-labels-${topTissueKey}]`
+    );
+    const container = document.querySelector(
+      `[data-test-id=cell-type-labels-${tissueKey}]`
+    );
+    const textElements = container?.querySelectorAll(
+      `text[transform*="translate(12"]`
+    );
     if (container && containerTop && textElements) {
       const { left, top } = containerTop.getBoundingClientRect();
       const xOffset = left - Y_AXIS_TISSUE_WIDTH_PX;
-      const yOffset =  top;
+      const yOffset = top;
       const infoCoords: Coord[] = [];
       textElements.forEach((el) => {
         const { right, top } = el.getBoundingClientRect();
-        infoCoords.push([right-xOffset, top - yOffset])
-      })
-      setYAxisInfoCoords(infoCoords);    
+        infoCoords.push([right - xOffset, top - yOffset]);
+      });
+      setYAxisInfoCoords(infoCoords);
     }
-  }
+  };
   // Initialize charts
   useEffect(() => {
     const { current: yAxisCurrent } = yAxisRef;
@@ -119,7 +128,7 @@ export default memo(function YAxisChart({
         return newHandle;
       }
     );
-    
+
     function newHandle(params: { value: CellTypeMetadata }) {
       /**
        * `value` is set by utils.getAllSerializedCellTypeMetadata()
@@ -127,7 +136,6 @@ export default memo(function YAxisChart({
       const { value } = params;
       handleCellTypeClick(value);
     }
-
   }, [
     setHandleYAxisChartClick,
     handleCellTypeClick,
@@ -139,9 +147,8 @@ export default memo(function YAxisChart({
     selectedOrganismId,
     isMarkerGenes,
     yAxisRef,
-    yAxisInfoCoords
+    yAxisInfoCoords,
   ]);
-
 
   const cellTypeMetadata = useMemo(() => {
     return getAllSerializedCellTypeMetadata(cellTypes, tissue);
@@ -155,11 +162,13 @@ export default memo(function YAxisChart({
   });
 
   useEffect(() => {
-    const targetNode = document.querySelector(`[data-test-id=cell-type-labels-${tissueKey}]`);
+    const targetNode = document.querySelector(
+      `[data-test-id=cell-type-labels-${tissueKey}]`
+    );
     const config = { attributes: true, childList: true, subtree: true };
     const callback = (mutationList: MutationRecord[]) => {
       for (const mutation of mutationList) {
-        if (mutation.type === 'childList' && mutation.target.nodeName === "g") {
+        if (mutation.type === "childList" && mutation.target.nodeName === "g") {
           setInfoCoordinates();
           break;
         }
@@ -172,7 +181,7 @@ export default memo(function YAxisChart({
 
     return () => {
       observer.disconnect();
-    }
+    };
   }, []);
   return (
     <Wrapper id={`${tissue}-y-axis`}>
@@ -197,39 +206,40 @@ export default memo(function YAxisChart({
         height={heatmapHeight}
         ref={yAxisRef}
       />
-      {yAxisInfoCoords && yAxisInfoCoords.map((coord, i) => {
-        const content = cellTypeMetadata[i]
-        return (
-          <div
-            id={`${content}`}
-            key={`${content}`}
-            style={{
-              position: "absolute",
-              left: coord[0],
-              top: coord[1],
-              cursor: "pointer",
-            }}   
-            onClick={() => {
-              if (isMarkerGenes) {
-                const { id } = deserializeCellTypeMetadata(content);
-        
-                generateMarkerGenes({
-                  cellTypeID: id,
-                  organismID: selectedOrganismId,
-                  tissueID,
-                });
-              }
-            }}       
-          >
-            <Image
-              src={InfoSVG.src}
-              width="9"
-              height="9"
-              alt="display marker genes"
-            />            
-          </div>
-        );
-      })}
+      {yAxisInfoCoords &&
+        yAxisInfoCoords.map((coord, i) => {
+          const content = cellTypeMetadata[i];
+          return (
+            <div
+              id={`${content}`}
+              key={`${content}`}
+              style={{
+                position: "absolute",
+                left: coord[0],
+                top: coord[1],
+                cursor: "pointer",
+              }}
+              onClick={() => {
+                if (isMarkerGenes) {
+                  const { id } = deserializeCellTypeMetadata(content);
+
+                  generateMarkerGenes({
+                    cellTypeID: id,
+                    organismID: selectedOrganismId,
+                    tissueID,
+                  });
+                }
+              }}
+            >
+              <Image
+                src={InfoSVG.src}
+                width="9"
+                height="9"
+                alt="display marker genes"
+              />
+            </div>
+          );
+        })}
     </Wrapper>
   );
 
