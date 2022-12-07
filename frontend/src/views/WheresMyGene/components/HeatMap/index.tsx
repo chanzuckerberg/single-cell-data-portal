@@ -2,6 +2,12 @@ import cloneDeep from "lodash/cloneDeep";
 import { memo, useMemo, useRef, useState } from "react";
 import { EMPTY_ARRAY } from "src/common/constants/utils";
 import { useResizeObserver } from "src/common/hooks/useResizeObserver";
+import {
+  generateTermsByKey,
+  OntologyTerm,
+  useMarkerGenes,
+  usePrimaryFilterDimensions,
+} from "src/common/queries/wheresMyGene";
 import { State } from "../../common/store";
 import {
   CellType,
@@ -38,7 +44,7 @@ interface Props {
   isScaled: boolean;
   cellTypeSortBy: SORT_BY;
   geneSortBy: SORT_BY;
-  tissueLoaded: boolean;
+  selectedOrganismId: string;
 }
 
 export default memo(function HeatMap({
@@ -55,7 +61,7 @@ export default memo(function HeatMap({
   isScaled,
   cellTypeSortBy,
   geneSortBy,
-  tissueLoaded,
+  selectedOrganismId,
 }: Props): JSX.Element {
   useTrackHeatMapLoaded({ selectedGenes: genes, selectedTissues });
 
@@ -63,6 +69,39 @@ export default memo(function HeatMap({
   const [isLoading, setIsLoading] = useState(setInitialIsLoading(cellTypes));
   const chartWrapperRef = useRef<HTMLDivElement>(null);
   const chartWrapperRect = useResizeObserver(chartWrapperRef);
+
+  const { data } = usePrimaryFilterDimensions();
+  // Get tissueName to ID map for use in find marker genes
+  const tissuesByName = useMemo(() => {
+    let result: { [name: string]: OntologyTerm } = {};
+
+    if (!data) return result;
+
+    const { tissues } = data;
+
+    result = generateTermsByKey(tissues, "name");
+
+    return result;
+  }, [data]);
+
+  // Get id to Gene map since expression data is fetched by gene name not id
+  const genesByID = useMemo(() => {
+    const result: { [name: string]: OntologyTerm } = {};
+
+    if (!data || !selectedOrganismId) return result;
+
+    const { genes: allGenes } = data;
+
+    const organismGenes = allGenes[selectedOrganismId];
+
+    for (const gene of organismGenes) {
+      result[gene.id] = gene;
+    }
+
+    return result;
+  }, [data, selectedOrganismId]);
+
+  const { mutate: generateMarkerGenes } = useMarkerGenes(genesByID);
 
   const tissueNameToCellTypeIdToGeneNameToCellTypeGeneExpressionSummaryDataMap =
     useTissueNameToCellTypeIdToGeneNameToCellTypeGeneExpressionSummaryDataMap(
@@ -119,7 +158,6 @@ export default memo(function HeatMap({
       <XAxisChart geneNames={sortedGeneNames} />
       <YAxisWrapper
         height={(chartWrapperRect?.height || 0) - X_AXIS_CHART_HEIGHT_PX}
-        style={ tissueLoaded ? {zIndex: "4"} : {} } // getting started z-index set at 3
       >
         {selectedTissues.map((tissue) => {
           const tissueCellTypes = getTissueCellTypes({
@@ -133,9 +171,12 @@ export default memo(function HeatMap({
             <YAxisChart
               key={tissue}
               tissue={tissue}
+              tissueID={tissuesByName[tissue].id}
               cellTypes={tissueCellTypes}
               hasDeletedCellTypes={tissuesWithDeletedCellTypes.includes(tissue)}
               availableCellTypes={allTissueCellTypes[tissue]}
+              generateMarkerGenes={generateMarkerGenes}
+              selectedOrganismId={selectedOrganismId}
             />
           );
         })}

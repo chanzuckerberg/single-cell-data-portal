@@ -9,11 +9,14 @@ from pandas import DataFrame
 from backend.common.entities import Dataset
 from backend.common.utils.db_session import db_session_manager
 from backend.wmg.data.ontology_labels import ontology_term_label, gene_term_label
-from backend.wmg.api.query import (
+from backend.wmg.data.query import (
     WmgQuery,
     WmgQueryCriteria,
+    MarkerGeneQueryCriteria,
+    retrieve_top_n_markers,
 )
 from backend.wmg.data.snapshot import load_snapshot, WmgSnapshot
+
 
 # TODO: add cache directives: no-cache (i.e. revalidate); impl etag
 #  https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data
@@ -30,15 +33,16 @@ def query():
     criteria = WmgQueryCriteria(**request["filter"])
 
     snapshot: WmgSnapshot = load_snapshot()
-    query = WmgQuery(snapshot)
-    expression_summary = query.expression_summary(criteria)
-    cell_counts = query.cell_counts(criteria)
+    q = WmgQuery(snapshot)
+
+    expression_summary = q.expression_summary(criteria)
+    cell_counts = q.cell_counts(criteria)
     dot_plot_matrix_df, cell_counts_cell_type_agg = get_dot_plot_data(expression_summary, cell_counts)
 
     include_filter_dims = request.get("include_filter_dims", False)
 
     response_filter_dims_values = (
-        build_filter_dims_values(criteria, query, expression_summary) if include_filter_dims else {}
+        build_filter_dims_values(criteria, snapshot, expression_summary) if include_filter_dims else {}
     )
     return jsonify(
         dict(
@@ -51,6 +55,31 @@ def query():
                 ),
             ),
             filter_dims=response_filter_dims_values,
+        )
+    )
+
+
+def markers():
+    request = connexion.request.json
+    cell_type = request["celltype"]
+    tissue = request["tissue"]
+    organism = request["organism"]
+    n_markers = request["n_markers"]
+    test = request["test"]
+    snapshot: WmgSnapshot = load_snapshot()
+
+    criteria = MarkerGeneQueryCriteria(
+        tissue_ontology_term_id=tissue,
+        organism_ontology_term_id=organism,
+        cell_type_ontology_term_id=cell_type,
+    )
+    q = WmgQuery(snapshot)
+    df = q.marker_genes(criteria)
+    marker_genes = retrieve_top_n_markers(df, test, n_markers)
+    return jsonify(
+        dict(
+            snapshot_id=snapshot.snapshot_identifier,
+            marker_genes=marker_genes,
         )
     )
 
@@ -79,17 +108,18 @@ def fetch_datasets_metadata(dataset_ids: Iterable[str]) -> List[Dict]:
         return [get_dataset(dataset_id) for dataset_id in dataset_ids]
 
 
-def find_dim_option_values(criteria: Dict, query: WmgQuery, dimension: str) -> set:
+def find_dim_option_values(criteria: Dict, snapshot: WmgSnapshot, dimension: str) -> set:
     """Find values for the specified dimension that satisfy the given filtering criteria,
     ignoring any criteria specified for the given dimension."""
     filter_options_criteria = criteria.copy(update={dimension + "s": []}, deep=True)
     # todo can we query cell_counts for a performance gain?
-    query_result = query.expression_summary(filter_options_criteria)
+    q = WmgQuery(snapshot)
+    query_result = q.expression_summary(filter_options_criteria)
     filter_dims = query_result.groupby(dimension).groups.keys()
     return filter_dims
 
 
-def build_filter_dims_values(criteria: WmgQueryCriteria, query: WmgQuery, expression_summary: DataFrame) -> Dict:
+def build_filter_dims_values(criteria: WmgQueryCriteria, snapshot: WmgSnapshot, expression_summary: DataFrame) -> Dict:
     dims = {
         "dataset_id": "",
         "disease_ontology_term_id": "",
@@ -101,7 +131,7 @@ def build_filter_dims_values(criteria: WmgQueryCriteria, query: WmgQuery, expres
         if len(criteria.dict()[dim + "s"]) == 0:
             dims[dim] = expression_summary.groupby(dim).groups.keys()
         else:
-            dims[dim] = find_dim_option_values(criteria, query, dim)
+            dims[dim] = find_dim_option_values(criteria, snapshot, dim)
 
     response_filter_dims_values = dict(
         datasets=fetch_datasets_metadata(dims["dataset_id"]),

@@ -62,6 +62,7 @@ pyarrow==7.0.0
 pyasn1==0.4.8
 pycodestyle==2.8.0
 pycparser==2.21
+pydantic>=1.9.0
 pyflakes==2.4.0
 Pygments==2.11.2
 pygraphviz

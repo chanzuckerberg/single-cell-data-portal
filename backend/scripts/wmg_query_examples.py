@@ -4,7 +4,7 @@ import os
 
 import pandas as pd
 
-from backend.wmg.api import query
+from backend.wmg.data import query
 from backend.wmg.data.snapshot import (
     EXPRESSION_SUMMARY_CUBE_NAME,
     EXPRESSION_SUMMARY_FMG_CUBE_NAME,
@@ -34,6 +34,7 @@ def load_snapshot(snapshot_id) -> WmgSnapshot:
         primary_filter_dimensions=pd.DataFrame(),
         expression_summary_fmg_cube=cube_fmg,
         dataset_to_gene_ids={},
+        marker_genes_cube=None,
     )
 
 
