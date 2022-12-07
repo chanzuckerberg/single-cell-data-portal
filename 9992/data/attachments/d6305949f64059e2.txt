@@ -1,1 +1,0 @@
-{"levelname": "ERROR", "asctime": "2022-12-06T17:20:20.006Z", "name": "root", "message": "Unexpected NCBI search result, got failed", "lineno": 74, "pathname": "/single-cell-data-portal/backend/gene_info/api/ncbi_provider.py"}
