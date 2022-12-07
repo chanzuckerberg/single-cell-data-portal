@@ -59,11 +59,11 @@ def _make_hashable(func):
 # are not typically hashable.
 @_make_hashable
 @lru_cache(maxsize=None)
-def _query_tiledb(
+def _query_tiledb_context(
     filters: dict,
+    group_by_dims: list,
+    keep_dataset_ids: bool,
     corpus: Optional[Union[WmgSnapshot, str]] = None,
-    group_by_dims: Optional[list] = None,
-    genes: Optional[list] = None,
 ):
     """
     Query the tileDB array and return required data artifacts for downstream processing.
@@ -126,12 +126,7 @@ def _query_tiledb(
     query = q.expression_summary_fmg(criteria)
     cell_counts_query = q.cell_counts(criteria)
 
-    # if group-by dimensions not provided, use the keys specified in the filter JSON
-    if group_by_dims is None:
-        # depluralize plural keys to match names in schema
-        depluralized_keys = [i[:-1] if i[-1] == "s" else i for i in filters.keys()]
-    else:
-        depluralized_keys = [i[:-1] if i[-1] == "s" else i for i in group_by_dims]
+    depluralized_keys = [i[:-1] if i[-1] == "s" else i for i in group_by_dims]
 
     # group-by dimensions for expression summary must include genes
     gb_dims_es = ["gene_ontology_term_id"] + depluralized_keys
@@ -145,12 +140,78 @@ def _query_tiledb(
     agg = query.groupby(gb_dims_es).sum()
     n_cells = cell_counts_query.groupby(gb_dims).sum()["n_total_cells"]
 
-    keep_dataset_ids = group_by_dims is None and "dataset_id" in filters.keys()
-    if genes is None:
-        genes = list(agg.index.levels[0])
-
+    genes = list(agg.index.levels[0])
     t_n_cells_sum = _calculate_true_n_cells(n_cells, genes, dataset_to_gene_ids, keep_dataset_ids)
-    return agg, t_n_cells_sum, genes
+    return agg, n_cells, t_n_cells_sum, genes, dataset_to_gene_ids
+
+def _query_tiledb_target(
+    target_filters: dict,
+    context_filters: dict,
+    context_agg: pd.DataFrame,
+    n_cells_context: pd.Series,
+    dataset_to_gene_ids: dict,
+    genes: list,
+):
+    """
+    Query the tileDB array and return required data artifacts for downstream processing.
+
+    Arguments
+    ---------
+    filters - dict,
+        Dictionary of filters for the target population
+
+    corpus - str or WmgSnapshot, optional, default None
+        If string, it is the path to the snapshot.
+        If WmgSnapshot, it is the snapshot object.
+        If None, the snapshot will be fetched from AWS.
+
+    group_by_dims - list, optional, default None
+        A list of filter dimensions to aggregate the tileDB query result by.
+        If group-by dimensions not provided, use the keys specified in the `filters`
+
+    genes - list, optional, default None
+        A list of genes to calculate true population sizes for.
+        If None, the genes in the aggregated query results are used.
+
+    Returns
+    -------
+    - agg: query result aggregated by filter keys
+    - t_n_cells_sum: a dictionary of 1D numpy arrays with length # of genes
+        each value is the true number of cells present for the combination of
+        filters (keys).
+        Ex: {(cell_type1,tissue1,organism1): np.array([0,100,100,0,80])}
+    - genes: a list of all genes with nonzero expression found in the query result
+    """
+
+    # find mismatch between target_filter and context_filter
+    target_levels = []
+    for k in target_filters:
+        if k in context_filters:
+            out = list(set(target_filters[k]).symmetric_difference(context_filters[k]))
+            if len(out) > 0:
+                target_levels.append(k[:-1])
+        else:
+            target_levels.append(k[:-1])
+            
+
+    filt = np.ones(context_agg.shape[0],dtype='bool')
+    for level in target_levels:
+        ix = list(context_agg.index.names).index(level)
+        level_values = np.array(list(context_agg.index.get_level_values(ix)))
+        filt = np.logical_and(filt,np.in1d(level_values,target_filters[level+"s"]))
+        
+    filt_ncells = np.ones(n_cells_context.shape[0],dtype='bool')
+    for level in target_levels:
+        ix = list(context_agg.index.names).index(level)
+        level_values = np.array(list(n_cells_context.index.get_level_values(ix)))
+        filt_ncells = np.logical_and(filt_ncells,np.in1d(level_values,target_filters[level+"s"]))
+
+    target_agg = context_agg[filt]
+    n_cells_target = n_cells_context[filt_ncells]
+
+    keep_dataset_ids = "dataset_id" in target_filters.keys()
+    t_n_cells_sum = _calculate_true_n_cells(n_cells_target, genes, dataset_to_gene_ids, keep_dataset_ids)    
+    return target_agg, t_n_cells_sum
 
 
 def _calculate_true_n_cells(n_cells, genes, dataset_to_gene_ids, keep_dataset_ids):
@@ -263,10 +324,20 @@ def _prepare_indices_and_metrics(target_filters, context_filters, corpus=None):
         These are the column coordinates of the array in which the expression statistics will be filled
         for the target population.
     """
-    context_agg, t_n_cells_sum_context, genes = _query_tiledb(
-        context_filters, corpus=corpus, group_by_dims=list(target_filters.keys())
+    group_by_dims=list(target_filters.keys())
+    
+    keep_dataset_ids = 'dataset_ids' in target_filters
+    context_agg, n_cells_context, t_n_cells_sum_context, genes, dataset_to_gene_ids = _query_tiledb_context(
+        context_filters, group_by_dims, keep_dataset_ids, corpus="../integrated-prod/" 
     )
-    target_agg, t_n_cells_sum_target, _ = _query_tiledb(target_filters, corpus=corpus, genes=genes)
+    target_agg, t_n_cells_sum_target = _query_tiledb_target(
+        target_filters,
+        context_filters,
+        context_agg,
+        n_cells_context,
+        dataset_to_gene_ids,
+        genes,
+    )
     groups_context_uniq = list(t_n_cells_sum_context.keys())
 
     target_agg = target_agg.groupby("gene_ontology_term_id").sum()
