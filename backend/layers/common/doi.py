@@ -1,9 +1,8 @@
-
-from typing import List, Optional
-from urllib.parse import urlparse
-from backend.common.utils.regex import CURIE_REFERENCE_REGEX, DOI_REGEX_COMPILED
-
 import re
+from typing import Optional
+from urllib.parse import urlparse
+
+from backend.common.utils.regex import CURIE_REFERENCE_REGEX, DOI_REGEX_COMPILED
 
 
 def get_doi_link_node(body: dict, errors: list) -> Optional[dict]:

@@ -1,18 +1,27 @@
-from logging import Logger
 from typing import List, Literal, Optional, Tuple
+
+import numpy
+import scanpy
+
 from backend.common.utils.corpora_constants import CorporaConstants
-from backend.layers.business.business import BusinessLogic
 from backend.layers.business.business_interface import BusinessLogicInterface
+from backend.layers.common.entities import (
+    DatasetConversionStatus,
+    DatasetMetadata,
+    DatasetProcessingStatus,
+    DatasetStatusKey,
+    DatasetUploadStatus,
+    DatasetValidationStatus,
+    DatasetVersionId,
+    OntologyTermId,
+)
 from backend.layers.processing.downloader import Downloader
 from backend.layers.processing.exceptions import ValidationFailed
 from backend.layers.processing.process_logic import ProcessingLogic
-from backend.layers.thirdparty.s3_provider import S3Provider, S3ProviderInterface
+from backend.layers.thirdparty.s3_provider import S3ProviderInterface
 from backend.layers.thirdparty.schema_validator_provider import SchemaValidatorProviderInterface
-from backend.layers.thirdparty.uri_provider import UriProvider, UriProviderInterface
-from backend.layers.common.entities import DatasetConversionStatus, DatasetMetadata, DatasetProcessingStatus, DatasetStatusGeneric, DatasetStatusKey, DatasetUploadStatus, DatasetValidationStatus, DatasetVersionId, OntologyTermId
+from backend.layers.thirdparty.uri_provider import UriProviderInterface
 
-import scanpy
-import numpy
 
 class ProcessDownloadValidate(ProcessingLogic):
 
@@ -20,7 +29,7 @@ class ProcessDownloadValidate(ProcessingLogic):
     schema_validator: SchemaValidatorProviderInterface
 
     def __init__(
-        self,     
+        self,
         business_logic: BusinessLogicInterface,
         uri_provider: UriProviderInterface,
         s3_provider: S3ProviderInterface,
@@ -47,7 +56,9 @@ class ProcessDownloadValidate(ProcessingLogic):
 
         output_filename = CorporaConstants.LABELED_H5AD_ARTIFACT_FILENAME
         try:
-            is_valid, errors, can_convert_to_seurat = self.schema_validator.validate_and_save_labels(local_filename, output_filename)
+            is_valid, errors, can_convert_to_seurat = self.schema_validator.validate_and_save_labels(
+                local_filename, output_filename
+            )
         except Exception as e:
             raise ValidationFailed([str(e)])
 
@@ -59,7 +70,6 @@ class ProcessDownloadValidate(ProcessingLogic):
             self.update_processing_status(dataset_id, DatasetStatusKey.H5AD, DatasetConversionStatus.CONVERTED)
             self.update_processing_status(dataset_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.VALID)
             return output_filename, can_convert_to_seurat
-
 
     def extract_metadata(self, filename) -> DatasetMetadata:
         """Pull metadata out of the AnnData file to insert into the dataset table."""
@@ -130,16 +140,17 @@ class ProcessDownloadValidate(ProcessingLogic):
             mean_genes_per_cell=numerator / denominator,
             is_primary_data=_get_is_primary_data(),
             cell_type=_get_term_pairs("cell_type"),
-            x_approximate_distribution=_get_x_approximate_distribution(), # TODO: pay attention
+            x_approximate_distribution=_get_x_approximate_distribution(),  # TODO: pay attention
             schema_version=adata.uns["schema_version"],
-            batch_condition=_get_batch_condition(), # TODO: pay attention
+            batch_condition=_get_batch_condition(),  # TODO: pay attention
             donor_id=adata.obs["donor_id"].unique(),
             suspension_type=adata.obs["suspension_type"].unique(),
         )
 
-
     # TODO: not sure we need a method for this
-    def wrapped_download_from_s3(self, dataset_id: DatasetVersionId, bucket_name: str, object_key: str, local_filename: str):
+    def wrapped_download_from_s3(
+        self, dataset_id: DatasetVersionId, bucket_name: str, object_key: str, local_filename: str
+    ):
         """
         Wraps download_from_s3() to update the dataset's upload status
         :param dataset_id:
@@ -156,7 +167,6 @@ class ProcessDownloadValidate(ProcessingLogic):
         )
         self.update_processing_status(dataset_id, DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADED)
 
-
     def download_from_source_uri(self, dataset_id: DatasetVersionId, source_uri: str, local_path: str) -> str:
         """Given a source URI, download it to local_path.
         Handles fixing the url so it downloads directly.
@@ -170,7 +180,7 @@ class ProcessDownloadValidate(ProcessingLogic):
         if file_url.scheme == "https":
             file_info = file_url.file_info()
             status = self.downloader.download(dataset_id, file_url.url, local_path, file_info["size"])
-            self.logger.info(status) # TODO: this log is awful
+            self.logger.info(status)  # TODO: this log is awful
         elif file_url.scheme == "s3":
             bucket_name = file_url.netloc
             key = self.remove_prefix(file_url.path, "/")
@@ -183,9 +193,8 @@ class ProcessDownloadValidate(ProcessingLogic):
         else:
             raise ValueError(f"Download for URI scheme '{file_url.scheme}' not implemented")
 
-        self.logger.info("Download complete") # TODO: remove
+        self.logger.info("Download complete")  # TODO: remove
         return local_path
-
 
     # TODO: after upgrading to Python 3.9, replace this with removeprefix()
     def remove_prefix(self, string: str, prefix: str) -> str:
@@ -226,9 +235,7 @@ class ProcessDownloadValidate(ProcessingLogic):
 
         bucket_prefix = self.get_bucket_prefix(dataset_id.id)
         # Upload the original dataset to the artifact bucket
-        self.create_artifact(
-            local_filename, "H5AD", bucket_prefix, dataset_id, artifact_bucket, DatasetStatusKey.H5AD
-        )
+        self.create_artifact(local_filename, "H5AD", bucket_prefix, dataset_id, artifact_bucket, DatasetStatusKey.H5AD)
         # Upload the labeled dataset to the artifact bucket
         self.create_artifact(
             file_with_labels, "H5AD", bucket_prefix, dataset_id, artifact_bucket, DatasetStatusKey.H5AD

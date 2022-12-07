@@ -1,21 +1,17 @@
 import logging
-
 from contextlib import contextmanager
-from functools import wraps
 
 from sqlalchemy import create_engine
-from sqlalchemy import event
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.orm import sessionmaker, session as sql_session
+from sqlalchemy.orm import sessionmaker
 
-from backend.common.utils.exceptions import CorporaException
 from backend.common.corpora_config import CorporaDbConfig
+from backend.common.utils.exceptions import CorporaException
 
 logger = logging.getLogger(__name__)
 
 
 class DBSessionMaker:
-
     def __init__(self, database_uri: str = None):
         if not database_uri:
             database_uri = CorporaDbConfig().database_uri

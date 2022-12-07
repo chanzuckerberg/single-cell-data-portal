@@ -193,7 +193,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         cc = self.collections.get(collection_id.id)
         if cc is None:
             self.collections[collection_id.id] = _CanonicalCollection(
-                CanonicalCollection(collection_id, published_at, False), version_id
+                CanonicalCollection(collection_id, published_at, False, False), version_id
             )
         else:
             new_cc = copy.deepcopy(cc)
@@ -255,7 +255,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             metadata=None,
             artifacts=[],
             created_at=datetime.utcnow(),
-            canonical_dataset=canonical_dataset,
+            canonical_dataset=CanonicalDataset(dataset_id, None),
         )
         self.datasets_versions[version_id.id] = version
         self.datasets[dataset_id.id] = _CanonicalDataset(canonical_dataset, version_id)

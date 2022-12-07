@@ -3,23 +3,45 @@ from datetime import datetime
 from unittest.mock import Mock
 from uuid import uuid4
 
+from backend.common.providers.crossref_provider import CrossrefDOINotFoundException, CrossrefException
+from backend.layers.business.business import (
+    BusinessLogic,
+    CollectionMetadataUpdate,
+    CollectionQueryFilter,
+    DatasetArtifactDownloadData,
+)
+from backend.layers.business.exceptions import (
+    CollectionCreationException,
+    CollectionPublishException,
+    CollectionUpdateException,
+    CollectionVersionException,
+    DatasetIngestException,
+    DatasetNotFoundException,
+)
+from backend.layers.common.entities import (
+    CollectionId,
+    CollectionMetadata,
+    CollectionVersion,
+    CollectionVersionId,
+    CollectionVersionWithDatasets,
+    DatasetArtifactType,
+    DatasetMetadata,
+    DatasetProcessingStatus,
+    DatasetUploadStatus,
+    DatasetValidationStatus,
+    DatasetVersionId,
+    Link,
+    OntologyTermId,
+)
+from backend.layers.persistence.persistence import DatabaseProvider
 from backend.layers.thirdparty.crossref_provider import CrossrefProviderInterface
 from backend.layers.thirdparty.s3_provider import S3Provider
 from backend.layers.thirdparty.step_function_provider import StepFunctionProviderInterface
-
-from backend.common.providers.crossref_provider import CrossrefDOINotFoundException, CrossrefException
-from backend.layers.business.business import BusinessLogic, CollectionQueryFilter, DatasetArtifactDownloadData
-from backend.layers.business.business import BusinessLogic, CollectionMetadataUpdate, CollectionQueryFilter, DatasetArtifactDownloadData
-from backend.layers.business.exceptions import CollectionUpdateException, CollectionVersionException, DatasetNotFoundException, InvalidLinkException, \
-    CollectionCreationException, DatasetIngestException, CollectionPublishException
-from backend.layers.common.entities import CollectionId, CollectionMetadata, CollectionVersion, CollectionVersionId, CollectionVersionWithDatasets, DatasetArtifact, DatasetArtifactType, DatasetMetadata, DatasetProcessingStatus, DatasetStatus, DatasetUploadStatus, DatasetValidationStatus, DatasetVersionId, Link, OntologyTermId
 from backend.layers.thirdparty.uri_provider import FileInfo, UriProviderInterface
-from backend.layers.persistence.persistence import DatabaseProvider
 
 
 class BaseBusinessLogicTestCase(unittest.TestCase):
-
-    sample_collection_metadata: CollectionMetadata 
+    sample_collection_metadata: CollectionMetadata
     sample_dataset_metadata: DatasetMetadata
 
     test_user_name = "test_user_1"
@@ -34,11 +56,11 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         self.step_function_provider = StepFunctionProviderInterface()
         self.s3_provider = S3Provider()
         self.uri_provider = UriProviderInterface()
-        self.uri_provider.validate = Mock(return_value=True) # By default, every link should be valid
+        self.uri_provider.validate = Mock(return_value=True)  # By default, every link should be valid
         self.uri_provider.get_file_info = Mock(return_value=FileInfo(1, "file.h5ad"))
 
         self.business_logic = BusinessLogic(
-            database_provider=self.database_provider, 
+            database_provider=self.database_provider,
             crossref_provider=self.crossref_provider,
             step_function_provider=self.step_function_provider,
             s3_provider=self.s3_provider,
@@ -46,30 +68,32 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         )
 
         self.sample_collection_metadata = CollectionMetadata(
-            "test collection 1", 
-            "description of test collection 1",
-            "scientist",
-            "scientist@czi.com",
-            []
+            "test collection 1", "description of test collection 1", "scientist", "scientist@czi.com", []
         )
 
         self.sample_dataset_metadata = DatasetMetadata(
-            name = "test_dataset_name",
-            organism = [OntologyTermId(label="test_organism_label", ontology_term_id="test_organism_term_id")],
-            tissue = [OntologyTermId(label="test_tissue_label", ontology_term_id="test_tissue_term_id")],
-            assay = [OntologyTermId(label="test_assay_label", ontology_term_id="test_assay_term_id")],
-            disease = [OntologyTermId(label="test_disease_label", ontology_term_id="test_disease_term_id")],
-            sex = [OntologyTermId(label="test_sex_label", ontology_term_id="test_sex_term_id")],
-            self_reported_ethnicity = [OntologyTermId(label="test_self_reported_ethnicity_label", ontology_term_id="test_self_reported_ethnicity_term_id")],
-            development_stage = [OntologyTermId(label="test_development_stage_label", ontology_term_id="test_development_stage_term_id")],
-            cell_type = [OntologyTermId(label="test_cell_type_label", ontology_term_id="test_cell_type_term_id")],
-            cell_count = 10,
-            schema_version = "3.0.0",
-            mean_genes_per_cell = 0.5,
-            batch_condition = ["test_batch_1", "test_batch_2"],
-            suspension_type = ["test_suspension_type"],
-            donor_id = ["test_donor_1"],
-            is_primary_data = "BOTH",
+            name="test_dataset_name",
+            organism=[OntologyTermId(label="test_organism_label", ontology_term_id="test_organism_term_id")],
+            tissue=[OntologyTermId(label="test_tissue_label", ontology_term_id="test_tissue_term_id")],
+            assay=[OntologyTermId(label="test_assay_label", ontology_term_id="test_assay_term_id")],
+            disease=[OntologyTermId(label="test_disease_label", ontology_term_id="test_disease_term_id")],
+            sex=[OntologyTermId(label="test_sex_label", ontology_term_id="test_sex_term_id")],
+            self_reported_ethnicity=[
+                OntologyTermId(
+                    label="test_self_reported_ethnicity_label", ontology_term_id="test_self_reported_ethnicity_term_id"
+                )
+            ],
+            development_stage=[
+                OntologyTermId(label="test_development_stage_label", ontology_term_id="test_development_stage_term_id")
+            ],
+            cell_type=[OntologyTermId(label="test_cell_type_label", ontology_term_id="test_cell_type_term_id")],
+            cell_count=10,
+            schema_version="3.0.0",
+            mean_genes_per_cell=0.5,
+            batch_condition=["test_batch_1", "test_batch_2"],
+            suspension_type=["test_suspension_type"],
+            donor_id=["test_donor_1"],
+            is_primary_data="BOTH",
             x_approximate_distribution="normal",
         )
 
@@ -83,9 +107,8 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         )
         return version
 
-    def initialize_unpublished_collection(self, 
-        owner: str = test_user_name, 
-        complete_dataset_ingestion: bool = True
+    def initialize_unpublished_collection(
+        self, owner: str = test_user_name, complete_dataset_ingestion: bool = True
     ) -> CollectionVersionWithDatasets:
         """
         Initializes an unpublished collection to be used for testing, with two datasets.
@@ -95,18 +118,19 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         version = self.initialize_empty_unpublished_collection(owner)
         for i in range(2):
             dataset_version = self.database_provider.create_canonical_dataset(
-                version.version_id, 
+                version.version_id,
             )
             self.database_provider.set_dataset_metadata(dataset_version.version_id, self.sample_dataset_metadata)
             self.database_provider.add_dataset_to_collection_version_mapping(
-                version.version_id,
-                dataset_version.version_id
+                version.version_id, dataset_version.version_id
             )
             if complete_dataset_ingestion:
                 self.complete_dataset_processing_with_success(dataset_version.version_id)
         return self.database_provider.get_collection_version_with_datasets(version.version_id)
-        
-    def initialize_published_collection(self, owner: str = test_user_name, published_at: datetime = datetime.utcnow()) -> CollectionVersionWithDatasets:
+
+    def initialize_published_collection(
+        self, owner: str = test_user_name, published_at: datetime = datetime.utcnow()
+    ) -> CollectionVersionWithDatasets:
         """
         Initializes a published collection to be used for testing, with a single dataset
         """
@@ -129,7 +153,6 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
 
 
 class TestCreateCollection(BaseBusinessLogicTestCase):
-
     def test_create_collection_ok(self):
         """
         A collection can be created using `create_collection`
@@ -145,7 +168,7 @@ class TestCreateCollection(BaseBusinessLogicTestCase):
         good_links = [
             Link("test link 1", "protocol", "http://example.com/protocol"),
             Link("test link 2", "other", "http://example.com/other"),
-            Link(None, "other", "http://example.com/other"), # names can be optional
+            Link(None, "other", "http://example.com/other"),  # names can be optional
         ]
         self.sample_collection_metadata.links = good_links
         collection = self.business_logic.create_collection(self.test_user_name, self.sample_collection_metadata)
@@ -156,26 +179,22 @@ class TestCreateCollection(BaseBusinessLogicTestCase):
         """
         A collection where a link isn't a http URI cannot be created
         """
-        bad_links = [
-            Link("test bad link", "other", "incorrect_url")
-        ]
+        bad_links = [Link("test bad link", "other", "incorrect_url")]
         self.sample_collection_metadata.links = bad_links
 
         with self.assertRaises(CollectionCreationException) as ex:
             self.business_logic.create_collection(self.test_user_name, self.sample_collection_metadata)
 
-        self.assertEqual(ex.exception.errors, [
-            {"name": f"links[0]", "reason": "Invalid URL.", "value": "incorrect_url"}
-        ])
+        self.assertEqual(
+            ex.exception.errors, [{"name": "links[0]", "reason": "Invalid URL.", "value": "incorrect_url"}]
+        )
 
     def test_create_collection_with_valid_doi_ok(self):
         """
         A collection can be created with a valid DOI, and the publisher metadata will be added
         to the collection
         """
-        links_with_doi = [
-            Link("test doi", "DOI", "http://good.doi")
-        ]
+        links_with_doi = [Link("test doi", "DOI", "http://good.doi")]
         self.sample_collection_metadata.links = links_with_doi
 
         expected_publiser_metadata = {"authors": ["Test Author"]}
@@ -195,9 +214,7 @@ class TestCreateCollection(BaseBusinessLogicTestCase):
         """
         A collection with a DOI that cannot be found on Crossref will not be created
         """
-        links_with_doi = [
-            Link("test doi", "DOI", "http://bad.doi")
-        ]
+        links_with_doi = [Link("test doi", "DOI", "http://bad.doi")]
 
         self.sample_collection_metadata.links = links_with_doi
 
@@ -210,17 +227,14 @@ class TestCreateCollection(BaseBusinessLogicTestCase):
         """
         A collection with an invalid DOI will be created with empty publisher metadata
         """
-        links_with_doi = [
-            Link("test doi", "DOI", "http://bad.doi")
-        ]
+        links_with_doi = [Link("test doi", "DOI", "http://bad.doi")]
 
         self.sample_collection_metadata.links = links_with_doi
 
         self.crossref_provider.fetch_metadata = Mock(side_effect=CrossrefException("Error!"))
-        
-        
-class TestGetCollectionVersion(BaseBusinessLogicTestCase):
 
+
+class TestGetCollectionVersion(BaseBusinessLogicTestCase):
     def test_get_published_collection_version_for_published_collection_ok(self):
         """
         A published collection can be obtained using `get_collection`
@@ -264,11 +278,12 @@ class TestGetCollectionVersion(BaseBusinessLogicTestCase):
         self.assertIsNotNone(fetched_version.published_at)
         self.assertEqual(fetched_version.metadata, version.metadata)
 
-class TestGetAllCollections(BaseBusinessLogicTestCase):
 
+class TestGetAllCollections(BaseBusinessLogicTestCase):
     def test_get_all_collections_unfiltered_ok(self):
         """
-        All the collection versions should be returned by `get_collections`, including published, unpublished, and all owners
+        All the collection versions should be returned by `get_collections`, including published, unpublished,
+        and all owners
         """
         self.initialize_unpublished_collection()
         self.initialize_unpublished_collection(owner="test_user_2")
@@ -325,6 +340,7 @@ class TestGetAllCollections(BaseBusinessLogicTestCase):
         self.assertEqual(2, len(versions))
         for version in versions:
             self.assertIsNone(version.published_at)
+
 
 class TestUpdateCollection(BaseBusinessLogicTestCase):
     """
@@ -438,7 +454,7 @@ class TestUpdateCollection(BaseBusinessLogicTestCase):
         metadata.links = links
 
         self.crossref_provider.fetch_metadata = Mock(return_value={"authors": ["Test Author"]})
-        
+
         # We need to call `business_logic.create_collection` so that the publisher metadata is populated
         version = self.business_logic.create_collection(self.test_user_name, metadata)
         self.crossref_provider.fetch_metadata.assert_called_once()
@@ -463,7 +479,6 @@ class TestUpdateCollection(BaseBusinessLogicTestCase):
 
 
 class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
-
     def test_add_dataset_to_unpublished_collection_ok(self):
         """
         A dataset can be added to a collection when `ingest_dataset` is called.
@@ -492,7 +507,6 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
             self.business_logic.ingest_dataset(fake_collection_version_id, url, None)
         self.assertEqual(ex.exception.errors, [f"Collection version {fake_collection_version_id} does not exist"])
 
-
     def test_add_dataset_to_published_collection_fail(self):
         """
         Adding a dataset to a published collection should result in a failure
@@ -515,8 +529,7 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
 
         with self.assertRaises(DatasetIngestException) as ex:
             self.business_logic.ingest_dataset(version.version_id, url, None)
-        self.assertEqual(str(ex.exception), f"Trying to upload invalid URI: http://bad.url")
-    
+        self.assertEqual(str(ex.exception), "Trying to upload invalid URI: http://bad.url")
 
     def test_remove_dataset_from_unpublished_collection_ok(self):
         """
@@ -558,9 +571,7 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         url = "http://test/dataset.url"
 
         new_dataset_version_id, _ = self.business_logic.ingest_dataset(
-            version.version_id, 
-            url, 
-            dataset_version_to_replace_id
+            version.version_id, url, dataset_version_to_replace_id
         )
 
         # Verify that the replaced dataset is in the right status
@@ -576,7 +587,10 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
 
         # Verify that the collection version points to the right datasets
         version_from_db = self.business_logic.get_collection_version(version.version_id)
-        self.assertCountEqual([d.version_id for d in version_from_db.datasets], [dataset_version_to_keep_id, new_dataset_version.version_id])
+        self.assertCountEqual(
+            [d.version_id for d in version_from_db.datasets],
+            [dataset_version_to_keep_id, new_dataset_version.version_id],
+        )
 
     def test_replace_dataset_in_published_collection_fail(self):
         """
@@ -587,11 +601,7 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         url = "http://test/dataset.url"
 
         with self.assertRaises(CollectionUpdateException):
-            self.business_logic.ingest_dataset(
-                version.version_id, 
-                url, 
-                dataset_version_to_replace_id
-            )
+            self.business_logic.ingest_dataset(version.version_id, url, dataset_version_to_replace_id)
 
     def test_replace_dataset_on_non_existing_dataset_fail(self):
         """
@@ -613,27 +623,29 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         url = "http://test/dataset.url"
 
         dataset_version = version.datasets[0]
-        self.database_provider.update_dataset_processing_status(dataset_version.version_id, DatasetProcessingStatus.PENDING)
+        self.database_provider.update_dataset_processing_status(
+            dataset_version.version_id, DatasetProcessingStatus.PENDING
+        )
 
         with self.assertRaises(DatasetIngestException) as ex:
             self.business_logic.ingest_dataset(version.version_id, url, dataset_version.version_id)
-        self.assertEqual(str(ex.exception), f"Unable to reprocess dataset {dataset_version.version_id}: processing status is PENDING")
+        self.assertEqual(
+            str(ex.exception), f"Unable to reprocess dataset {dataset_version.version_id}: processing status is PENDING"
+        )
 
 
 class TestGetDataset(BaseBusinessLogicTestCase):
-
     def test_get_all_datasets_ok(self):
         """
         All dataset that belong to a published collection can be retrieved with `get_all_published_datasets`
         """
         # This will add 4 datasets, but only 2 should be retrieved by `get_all_datasets`
-        published_version = self.initialize_published_collection() 
-        unpublished_version = self.initialize_unpublished_collection()
+        published_version = self.initialize_published_collection()
+        self.initialize_unpublished_collection()
 
         datasets = list(self.business_logic.get_all_published_datasets())
         self.assertEqual(2, len(datasets))
         self.assertCountEqual([d.version_id for d in datasets], [d.version_id for d in published_version.datasets])
-        
 
     def test_get_dataset_artifacts_ok(self):
         """
@@ -644,7 +656,9 @@ class TestGetDataset(BaseBusinessLogicTestCase):
 
         artifacts = list(self.business_logic.get_dataset_artifacts(dataset_version_id))
         self.assertEqual(3, len(artifacts))
-        self.assertCountEqual([a.type for a in artifacts], [DatasetArtifactType.H5AD, DatasetArtifactType.CXG, DatasetArtifactType.RDS])
+        self.assertCountEqual(
+            [a.type for a in artifacts], [DatasetArtifactType.H5AD, DatasetArtifactType.CXG, DatasetArtifactType.RDS]
+        )
 
     def test_get_dataset_artifact_download_data_ok(self):
         """
@@ -664,13 +678,9 @@ class TestGetDataset(BaseBusinessLogicTestCase):
         # TODO: requires mocking of the S3 provider. implement later
         download_data = self.business_logic.get_dataset_artifact_download_data(dataset.version_id, artifact.id)
         expected_download_data = DatasetArtifactDownloadData(
-            "artifact.h5ad",
-            DatasetArtifactType.H5AD,
-            expected_file_size,
-            expected_presigned_url
-            )
+            "artifact.h5ad", DatasetArtifactType.H5AD, expected_file_size, expected_presigned_url
+        )
         self.assertEqual(download_data, expected_download_data)
-
 
     def test_get_dataset_status_for_uploaded_dataset_ok(self):
         """
@@ -685,7 +695,6 @@ class TestGetDataset(BaseBusinessLogicTestCase):
 
 
 class TestUpdateDataset(BaseBusinessLogicTestCase):
-
     def test_update_dataset_status_ok(self):
         """
         The dataset processing status can be updated using `update_dataset_status`
@@ -693,7 +702,9 @@ class TestUpdateDataset(BaseBusinessLogicTestCase):
         unpublished_collection = self.initialize_unpublished_collection(complete_dataset_ingestion=False)
         self.assertEqual(2, len(unpublished_collection.datasets))
         for dataset in unpublished_collection.datasets:
-            self.business_logic.update_dataset_version_status(dataset.version_id, "upload", DatasetUploadStatus.UPLOADED)
+            self.business_logic.update_dataset_version_status(
+                dataset.version_id, "upload", DatasetUploadStatus.UPLOADED
+            )
             version_from_db = self.database_provider.get_dataset_version(dataset.version_id)
             self.assertEqual(version_from_db.status.upload_status, DatasetUploadStatus.UPLOADED)
 
@@ -721,7 +732,9 @@ class TestUpdateDataset(BaseBusinessLogicTestCase):
         for dataset in unpublished_collection.datasets:
             self.assertEqual(dataset.artifacts, [])
             with self.assertRaises(DatasetIngestException):
-                self.business_logic.add_dataset_artifact(dataset.version_id, "BAD_TYPE", "http://fake.uri/artifact.h5ad")
+                self.business_logic.add_dataset_artifact(
+                    dataset.version_id, "BAD_TYPE", "http://fake.uri/artifact.h5ad"
+                )
 
     def test_set_dataset_metadata_ok(self):
         """
@@ -736,7 +749,6 @@ class TestUpdateDataset(BaseBusinessLogicTestCase):
 
 
 class TestCollectionOperations(BaseBusinessLogicTestCase):
-
     def test_create_collection_version_ok(self):
         """
         A collection version can be created using `create_collection_version`
@@ -805,7 +817,6 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         self.assertEqual(version.version_id, published_collection.version_id)
         self.assertNotEqual(version.version_id, new_version.version_id)
 
-
     def test_publish_version_fails_on_published_collection(self):
         """
         `publish_collection_version` should fail if called on a collection version that is already published.
@@ -824,7 +835,9 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         self.business_logic.publish_collection_version(unpublished_collection.version_id)
 
         published_version = self.database_provider.get_collection_version(unpublished_collection.version_id)
-        self.assertIsNotNone(published_version.published_at) # TODO: ideally, do a date assertion here (requires mocking)
+        self.assertIsNotNone(
+            published_version.published_at
+        )  # TODO: ideally, do a date assertion here (requires mocking)
         self.assertIsNotNone(published_version.canonical_collection.originally_published_at)
         self.assertEqual(published_version.published_at, published_version.canonical_collection.originally_published_at)
 
@@ -834,7 +847,7 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
 
         # get_collection retrieves the correct version
         version = self.business_logic.get_published_collection_version(unpublished_collection.collection_id)
-        if version: # pylance
+        if version:  # pylance
             self.assertEqual(version.version_id, published_version.version_id)
 
     def test_publish_collection_with_no_datasets_fail(self):
@@ -925,7 +938,9 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         published_collection = self.initialize_published_collection()
         new_version = self.business_logic.create_collection_version(published_collection.collection_id)
 
-        added_dataset_version_id, _ = self.business_logic.ingest_dataset(new_version.version_id, "http://fake.url", None)
+        added_dataset_version_id, _ = self.business_logic.ingest_dataset(
+            new_version.version_id, "http://fake.url", None
+        )
         self.complete_dataset_processing_with_success(added_dataset_version_id)
 
         # The new version should have three datasets (before publishing)
@@ -969,9 +984,7 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         dataset_id_to_keep = published_collection.datasets[1].version_id
 
         replaced_dataset_version_id, _ = self.business_logic.ingest_dataset(
-            new_version.version_id, 
-            "http://fake.url", 
-            dataset_id_to_replace
+            new_version.version_id, "http://fake.url", dataset_id_to_replace
         )
         self.complete_dataset_processing_with_success(replaced_dataset_version_id)
 
@@ -1038,7 +1051,9 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
 
         # The canonical collection published_at should point to the original publication time
         collection_version = self.business_logic.get_collection_version(all_collections[0].version_id)
-        self.assertNotEqual(collection_version.canonical_collection.originally_published_at, all_collections[0].published_at)
+        self.assertNotEqual(
+            collection_version.canonical_collection.originally_published_at, all_collections[0].published_at
+        )
         self.assertEqual(collection_version.canonical_collection.originally_published_at, first_version.published_at)
 
     def test_get_collection_versions_for_canonical_ok(self):
@@ -1067,17 +1082,17 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         """
 
         first_version = self.initialize_published_collection()
-        second_version = self.business_logic.create_collection_version(first_version.collection_id)
+        self.business_logic.create_collection_version(first_version.collection_id)
 
         version = self.business_logic.get_collection_version_from_canonical(first_version.collection_id)
         self.assertIsNotNone(version)
-        if version is not None: # pylance
+        if version is not None:  # pylance
             self.assertEqual(version.version_id, first_version.version_id)
             self.assertIsNotNone(version.published_at)
 
     def test_get_collection_version_from_canonical_unpublished_ok(self):
         """
-        `get_collection_version_from_canonical` retrieves the unpublished version connected 
+        `get_collection_version_from_canonical` retrieves the unpublished version connected
         to the canonical collection, if no published version is available
         """
 
@@ -1085,7 +1100,7 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
 
         version = self.business_logic.get_collection_version_from_canonical(first_version.collection_id)
         self.assertIsNotNone(version)
-        if version is not None: # pylance
+        if version is not None:  # pylance
             self.assertEqual(version.version_id, first_version.version_id)
             self.assertIsNone(version.published_at)
 
@@ -1097,7 +1112,9 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         published_collection = self.initialize_published_collection()
         new_version = self.business_logic.create_collection_version(published_collection.collection_id)
 
-        added_dataset_version_id, _ = self.business_logic.ingest_dataset(new_version.version_id, "http://fake.url", None)
+        added_dataset_version_id, _ = self.business_logic.ingest_dataset(
+            new_version.version_id, "http://fake.url", None
+        )
         self.complete_dataset_processing_with_success(added_dataset_version_id)
 
         self.business_logic.publish_collection_version(new_version.version_id)
@@ -1124,7 +1141,7 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
 
     def test_dataset_published_at_with_replaced_dataset_ok(self):
         """
-        When publishing a collection that contains a replaced dataset, 
+        When publishing a collection that contains a replaced dataset,
         `published_at` for the replaced dataset should not be updated
         """
 
@@ -1136,9 +1153,7 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         dataset_id_to_keep = published_collection.datasets[1].version_id
 
         replaced_dataset_version_id, _ = self.business_logic.ingest_dataset(
-            new_version.version_id, 
-            "http://fake.url", 
-            dataset_id_to_replace
+            new_version.version_id, "http://fake.url", dataset_id_to_replace
         )
 
         self.complete_dataset_processing_with_success(replaced_dataset_version_id)
@@ -1156,6 +1171,5 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         self.assertEqual(dataset_1.canonical_dataset.published_at, published_collection.published_at)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()
-

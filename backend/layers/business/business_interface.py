@@ -1,31 +1,27 @@
-
 from typing import Iterable, Optional, Tuple
-from backend.layers.business.entities import CollectionMetadataUpdate, CollectionQueryFilter, DatasetArtifactDownloadData
 
+from backend.layers.business.entities import (
+    CollectionMetadataUpdate,
+    CollectionQueryFilter,
+    DatasetArtifactDownloadData,
+)
 from backend.layers.common.entities import (
     CollectionId,
-    CollectionLinkType,
     CollectionMetadata,
     CollectionVersion,
     CollectionVersionId,
     DatasetArtifact,
     DatasetArtifactId,
-    DatasetConversionStatus,
     DatasetId,
-    DatasetMetadata,
-    DatasetProcessingStatus,
     DatasetStatus,
     DatasetStatusGeneric,
     DatasetStatusKey,
-    DatasetUploadStatus,
-    DatasetValidationStatus,
     DatasetVersion,
     DatasetVersionId,
-    Link,
 )
 
-class BusinessLogicInterface:
 
+class BusinessLogicInterface:
     def get_collections(self, filter: CollectionQueryFilter) -> Iterable[CollectionVersion]:
         pass
 
@@ -70,7 +66,9 @@ class BusinessLogicInterface:
     def get_all_published_datasets(self) -> Iterable[DatasetVersion]:
         pass
 
-    def remove_dataset_version(self, collection_version_id: CollectionVersionId, dataset_version_id: DatasetVersionId) -> None:
+    def remove_dataset_version(
+        self, collection_version_id: CollectionVersionId, dataset_version_id: DatasetVersionId
+    ) -> None:
         pass
 
     def get_dataset_artifacts(self, dataset_version_id: DatasetVersionId) -> Iterable[DatasetArtifact]:
@@ -82,11 +80,16 @@ class BusinessLogicInterface:
         pass
 
     def update_dataset_version_status(
-        self, dataset_version_id: DatasetVersionId, status_key: DatasetStatusKey, new_dataset_status: DatasetStatusGeneric
+        self,
+        dataset_version_id: DatasetVersionId,
+        status_key: DatasetStatusKey,
+        new_dataset_status: DatasetStatusGeneric,
     ) -> None:
         pass
 
-    def add_dataset_artifact(self, dataset_version_id: DatasetVersionId, artifact_type: str, artifact_uri: str) -> DatasetArtifactId:
+    def add_dataset_artifact(
+        self, dataset_version_id: DatasetVersionId, artifact_type: str, artifact_uri: str
+    ) -> DatasetArtifactId:
         pass
 
     def get_dataset_status(self, dataset_version_id: DatasetVersionId) -> DatasetStatus:

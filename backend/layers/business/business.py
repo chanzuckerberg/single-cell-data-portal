@@ -1,9 +1,31 @@
-from dataclasses import dataclass
+import copy
+import logging
 from typing import Iterable, Optional, Tuple
+from urllib.parse import urlparse
+
 from backend.common.providers.crossref_provider import CrossrefDOINotFoundException, CrossrefException
 from backend.layers.business.business_interface import BusinessLogicInterface
-from backend.layers.business.entities import CollectionMetadataUpdate, CollectionQueryFilter, DatasetArtifactDownloadData
-from backend.layers.business.exceptions import ArtifactNotFoundException, CollectionCreationException, CollectionIsPublishedException, CollectionNotFoundException, CollectionPublishException, CollectionUpdateException, CollectionVersionException, DatasetInWrongStatusException, DatasetIngestException, DatasetNotFoundException, DatasetUpdateException, InvalidURIException, MaxFileSizeExceededException
+from backend.layers.business.entities import (
+    CollectionMetadataUpdate,
+    CollectionQueryFilter,
+    DatasetArtifactDownloadData,
+)
+from backend.layers.business.exceptions import (
+    ArtifactNotFoundException,
+    CollectionCreationException,
+    CollectionIsPublishedException,
+    CollectionNotFoundException,
+    CollectionPublishException,
+    CollectionUpdateException,
+    CollectionVersionException,
+    DatasetInWrongStatusException,
+    DatasetIngestException,
+    DatasetNotFoundException,
+    DatasetUpdateException,
+    InvalidURIException,
+    MaxFileSizeExceededException,
+)
+from backend.layers.common import validation
 from backend.layers.common.entities import (
     CollectionId,
     CollectionLinkType,
@@ -24,27 +46,15 @@ from backend.layers.common.entities import (
     DatasetValidationStatus,
     DatasetVersion,
     DatasetVersionId,
-    Link,
 )
-from typing import Iterable, List, Optional
-
-import copy
-
 from backend.layers.persistence.persistence_interface import DatabaseProviderInterface
 from backend.layers.thirdparty.crossref_provider import CrossrefProviderInterface
 from backend.layers.thirdparty.s3_provider import S3Provider
 from backend.layers.thirdparty.step_function_provider import StepFunctionProviderInterface
-
-import re
-from urllib.parse import urlparse
-from backend.layers.common import validation
-import logging
-
-from backend.layers.thirdparty.uri_provider import UriProvider, UriProviderInterface
+from backend.layers.thirdparty.uri_provider import UriProviderInterface
 
 
 class BusinessLogic(BusinessLogicInterface):
-
     database_provider: DatabaseProviderInterface
     crossref_provider: CrossrefProviderInterface
     step_function_provider: StepFunctionProviderInterface
@@ -91,7 +101,6 @@ class BusinessLogic(BusinessLogicInterface):
         doi = next((link.uri for link in collection_metadata.links if link.type == "DOI"), None)
         print("doi", doi)
 
-
         if doi is not None:
             publisher_metadata = self._get_publisher_metadata(doi, errors)
         else:
@@ -108,7 +117,7 @@ class BusinessLogic(BusinessLogicInterface):
         if publisher_metadata:
             self.database_provider.save_collection_publisher_metadata(created_version.version_id, publisher_metadata)
             # Add this to the returned object, to save another `get_collection` call
-            created_version.publisher_metadata = publisher_metadata 
+            created_version.publisher_metadata = publisher_metadata
 
         return created_version
 
@@ -125,13 +134,17 @@ class BusinessLogic(BusinessLogicInterface):
         """
         return self.database_provider.get_collection_version_with_datasets(version_id)
 
-    def get_collection_versions_from_canonical(self, collection_id: CollectionId) -> Iterable[CollectionVersionWithDatasets]:
+    def get_collection_versions_from_canonical(
+        self, collection_id: CollectionId
+    ) -> Iterable[CollectionVersionWithDatasets]:
         """
         Returns all the collection versions connected to a canonical collection
         """
         return self.database_provider.get_all_versions_for_collection(collection_id)
 
-    def get_collection_version_from_canonical(self, collection_id: CollectionId) -> Optional[CollectionVersionWithDatasets]:
+    def get_collection_version_from_canonical(
+        self, collection_id: CollectionId
+    ) -> Optional[CollectionVersionWithDatasets]:
         """
         Returns the published collection version mapped to a canonical collection, if available.
         Otherwise will return the active unpublished version.
@@ -147,7 +160,7 @@ class BusinessLogic(BusinessLogicInterface):
         """
         Returns an iterable with all the collections matching `filter`
         """
-        
+
         # TODO: instead of `is_published`, we should probably call this `is_active_and_published`
         if filter.is_published is True:
             iterable = self.database_provider.get_all_mapped_collection_versions()
@@ -157,13 +170,11 @@ class BusinessLogic(BusinessLogicInterface):
         def predicate(version: CollectionVersion):
             # Combines all the filters into a single predicate, so that filtering can happen in a single iteration
             published = (
-                filter.is_published is None or 
-                (filter.is_published is True and version.published_at is not None) or 
-                (filter.is_published is False and version.published_at is None)
+                filter.is_published is None
+                or (filter.is_published is True and version.published_at is not None)
+                or (filter.is_published is False and version.published_at is None)
             )
-            owner = (
-                filter.owner is None or filter.owner == version.owner
-            )
+            owner = filter.owner is None or filter.owner == version.owner
             return published and owner
 
         for collection_version in iterable:
@@ -186,7 +197,7 @@ class BusinessLogic(BusinessLogicInterface):
         current_version = self.get_collection_version(version_id)
         if current_version.published_at is not None:
             raise CollectionUpdateException(["Cannot update a published collection"])
-        
+
         # Determine if the DOI has changed
         old_doi = next((link.uri for link in current_version.metadata.links if link.type == "DOI"), None)
         if body.links is None:
@@ -213,7 +224,9 @@ class BusinessLogic(BusinessLogicInterface):
 
         self.database_provider.save_collection_metadata(version_id, new_metadata)
 
-    def _assert_collection_version_unpublished(self, collection_version_id: CollectionVersionId) -> CollectionVersionWithDatasets:
+    def _assert_collection_version_unpublished(
+        self, collection_version_id: CollectionVersionId
+    ) -> CollectionVersionWithDatasets:
         """
         Ensures a collection version exists and is unpublished.
         This method should be called every time an update to a collection version is requested,
@@ -231,7 +244,8 @@ class BusinessLogic(BusinessLogicInterface):
         self,
         collection_version_id: CollectionVersionId,
         url: str,
-        existing_dataset_version_id: Optional[DatasetVersionId]) -> Tuple[DatasetVersionId, DatasetId]:
+        existing_dataset_version_id: Optional[DatasetVersionId],
+    ) -> Tuple[DatasetVersionId, DatasetId]:
         """
         Creates a canonical dataset and starts its ingestion by invoking the step function
         """
@@ -241,7 +255,7 @@ class BusinessLogic(BusinessLogicInterface):
 
         file_info = self.uri_provider.get_file_info(url)
 
-        max_file_size_gb = 30 * 2**30 # TODO: read it from the config - requires smart mocking
+        max_file_size_gb = 30 * 2**30  # TODO: read it from the config - requires smart mocking
         # max_file_size_gb = CorporaConfig().upload_max_file_size_gb * GB
 
         if file_info.size is not None and file_info.size > max_file_size_gb:
@@ -255,11 +269,15 @@ class BusinessLogic(BusinessLogicInterface):
         if existing_dataset_version_id is not None:
             # Ensure that the dataset belongs to the collection
             if existing_dataset_version_id not in [d.version_id for d in collection.datasets]:
-                raise DatasetNotFoundException(f"Dataset {existing_dataset_version_id.id} does not belong to the desired collection")
+                raise DatasetNotFoundException(
+                    f"Dataset {existing_dataset_version_id.id} does not belong to the desired collection"
+                )
 
             dataset_version = self.database_provider.get_dataset_version(existing_dataset_version_id)
             if dataset_version is None:
-                raise DatasetNotFoundException(f"Trying to replace non existent dataset {existing_dataset_version_id.id}")
+                raise DatasetNotFoundException(
+                    f"Trying to replace non existent dataset {existing_dataset_version_id.id}"
+                )
 
             if dataset_version.status.processing_status not in [
                 DatasetProcessingStatus.SUCCESS,
@@ -267,27 +285,35 @@ class BusinessLogic(BusinessLogicInterface):
                 DatasetProcessingStatus.INITIALIZED,
             ]:
                 raise DatasetInWrongStatusException(
-                    f"Unable to reprocess dataset {existing_dataset_version_id.id}: processing status is {dataset_version.status.processing_status.name}"
+                    f"Unable to reprocess dataset {existing_dataset_version_id.id}: processing status is "
+                    f"{dataset_version.status.processing_status.name}"
                 )
 
             # TODO: this method could very well be called `add_dataset_version`
-            new_dataset_version = self.database_provider.replace_dataset_in_collection_version(collection_version_id, existing_dataset_version_id)
+            new_dataset_version = self.database_provider.replace_dataset_in_collection_version(
+                collection_version_id, existing_dataset_version_id
+            )
         else:
             new_dataset_version = self.database_provider.create_canonical_dataset(collection_version_id)
             # adds new dataset version to collection version
-            self.database_provider.add_dataset_to_collection_version_mapping(collection_version_id, new_dataset_version.version_id)
+            self.database_provider.add_dataset_to_collection_version_mapping(
+                collection_version_id, new_dataset_version.version_id
+            )
 
         # Sets an initial processing status for the new dataset version
         self.database_provider.update_dataset_upload_status(new_dataset_version.version_id, DatasetUploadStatus.WAITING)
-        self.database_provider.update_dataset_processing_status(new_dataset_version.version_id, DatasetProcessingStatus.PENDING)
+        self.database_provider.update_dataset_processing_status(
+            new_dataset_version.version_id, DatasetProcessingStatus.PENDING
+        )
 
         # Starts the step function process
         self.step_function_provider.start_step_function(collection_version_id, new_dataset_version.version_id, url)
 
         return (new_dataset_version.version_id, new_dataset_version.dataset_id)
 
-
-    def remove_dataset_version(self, collection_version_id: CollectionVersionId, dataset_version_id: DatasetVersionId) -> None:
+    def remove_dataset_version(
+        self, collection_version_id: CollectionVersionId, dataset_version_id: DatasetVersionId
+    ) -> None:
         """
         Removes a dataset version from an existing collection version
         """
@@ -313,7 +339,9 @@ class BusinessLogic(BusinessLogicInterface):
         dataset = self.database_provider.get_dataset_version(dataset_version_id)
         return dataset.artifacts
 
-    def get_dataset_artifact_download_data(self, dataset_version_id: DatasetVersionId, artifact_id: DatasetArtifactId) -> DatasetArtifactDownloadData:
+    def get_dataset_artifact_download_data(
+        self, dataset_version_id: DatasetVersionId, artifact_id: DatasetArtifactId
+    ) -> DatasetArtifactDownloadData:
         """
         Returns download data for an artifact, including a presigned URL
         """
@@ -338,9 +366,14 @@ class BusinessLogic(BusinessLogicInterface):
         """
         return self.database_provider.get_dataset_version_status(dataset_version_id)
 
-    def update_dataset_version_status(self, dataset_version_id: DatasetVersionId, status_key: DatasetStatusKey, new_dataset_status: DatasetStatusGeneric) -> None:
+    def update_dataset_version_status(
+        self,
+        dataset_version_id: DatasetVersionId,
+        status_key: DatasetStatusKey,
+        new_dataset_status: DatasetStatusGeneric,
+    ) -> None:
         """
-        Updates the status of a dataset version. 
+        Updates the status of a dataset version.
         status_key can be one of: [upload, validation, cxg, rds, h5ad, processing]
         """
         if status_key == DatasetStatusKey.UPLOAD and isinstance(new_dataset_status, DatasetUploadStatus):
@@ -350,19 +383,30 @@ class BusinessLogic(BusinessLogicInterface):
         elif status_key == DatasetStatusKey.VALIDATION and isinstance(new_dataset_status, DatasetValidationStatus):
             self.database_provider.update_dataset_validation_status(dataset_version_id, new_dataset_status)
         elif status_key == DatasetStatusKey.CXG and isinstance(new_dataset_status, DatasetConversionStatus):
-            self.database_provider.update_dataset_conversion_status(dataset_version_id, "cxg_status", new_dataset_status)
+            self.database_provider.update_dataset_conversion_status(
+                dataset_version_id, "cxg_status", new_dataset_status
+            )
         elif status_key == DatasetStatusKey.RDS and isinstance(new_dataset_status, DatasetConversionStatus):
-            self.database_provider.update_dataset_conversion_status(dataset_version_id, "rds_status", new_dataset_status)
+            self.database_provider.update_dataset_conversion_status(
+                dataset_version_id, "rds_status", new_dataset_status
+            )
         elif status_key == DatasetStatusKey.H5AD and isinstance(new_dataset_status, DatasetConversionStatus):
-            self.database_provider.update_dataset_conversion_status(dataset_version_id, "h5ad_status", new_dataset_status)
+            self.database_provider.update_dataset_conversion_status(
+                dataset_version_id, "h5ad_status", new_dataset_status
+            )
         else:
-            raise DatasetUpdateException(f"Invalid status update for dataset {dataset_version_id}: cannot set {status_key} to {new_dataset_status}")
+            raise DatasetUpdateException(
+                f"Invalid status update for dataset {dataset_version_id}: cannot set {status_key} to "
+                f"{new_dataset_status}"
+            )
 
-    def add_dataset_artifact(self, dataset_version_id: DatasetVersionId, artifact_type: str, artifact_uri: str) -> DatasetArtifactId:
+    def add_dataset_artifact(
+        self, dataset_version_id: DatasetVersionId, artifact_type: str, artifact_uri: str
+    ) -> DatasetArtifactId:
         """
         Registers an artifact to a dataset version.
         """
-        
+
         # TODO: we should probably validate that artifact_uri is a valid S3 URI
 
         if artifact_type not in ["H5AD", "CXG", "RDS"]:

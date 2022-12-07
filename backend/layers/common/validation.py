@@ -4,7 +4,7 @@ from typing import List, Union
 from urllib.parse import urlparse
 from backend.layers.business.entities import CollectionMetadataUpdate
 
-from backend.layers.common.entities import CollectionLinkType, CollectionMetadata, Link
+from backend.layers.common.entities import CollectionMetadata, Link
 from backend.layers.common.regex import CONTROL_CHARS, EMAIL_REGEX
 
 control_char_re = re.compile(CONTROL_CHARS)
