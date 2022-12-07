@@ -353,7 +353,7 @@ export function createYAxisOptions({
 
             const paddedName = formatCellLabel(
               name,
-              Y_AXIS_CHART_WIDTH_PX - 75, // scale based on y-axis width
+              Y_AXIS_CHART_WIDTH_PX - 90, // scale based on y-axis width
               selectedFont, // prevents selected style from overlapping count
               displayDepth
             );
