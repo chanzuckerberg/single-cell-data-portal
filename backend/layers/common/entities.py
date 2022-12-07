@@ -168,7 +168,8 @@ class DatasetMetadata:
 class CanonicalDataset:
     dataset_id: DatasetId
     dataset_version_id: DatasetVersionId
-    published_at: Optional[datetime]
+    published_at: Optional[datetime] = None
+    revised_at: Optional[datetime] = None  # The last time this Dataset Version was Published
 
 
 @dataclass
@@ -180,7 +181,6 @@ class DatasetVersion:
     metadata: DatasetMetadata
     artifacts: List[DatasetArtifact]
     created_at: datetime
-    revised_at: Optional[datetime]  # The last time this Dataset Version was Published
     canonical_dataset: CanonicalDataset
 
 

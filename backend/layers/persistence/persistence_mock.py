@@ -187,8 +187,8 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         for dataset_version in version.datasets:
             if self.datasets[dataset_version.dataset_id.id].canonical_dataset.published_at is None:
                 self.datasets[dataset_version.dataset_id.id].canonical_dataset.published_at = published_at
-            if self.datasets_versions[dataset_version.version_id.id].revised_at is None:
-                self.datasets_versions[dataset_version.version_id.id].revised_at = published_at
+            if self.datasets_versions[dataset_version.version_id.id].canonical_dataset.revised_at is None:
+                self.datasets_versions[dataset_version.version_id.id].canonical_dataset.revised_at = published_at
 
         cc = self.collections.get(collection_id.id)
         if cc is None:
@@ -256,7 +256,6 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             artifacts=[],
             created_at=datetime.utcnow(),
             canonical_dataset=canonical_dataset,
-            revised_at=None,
         )
         self.datasets_versions[version_id.id] = version
         self.datasets[dataset_id.id] = _CanonicalDataset(canonical_dataset, version_id)
@@ -321,7 +320,6 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             artifacts=[],
             created_at=datetime.utcnow(),
             canonical_dataset=CanonicalDataset(old_version.dataset_id, None),
-            revised_at=None,
         )
         self.datasets_versions[new_version_id.id] = new_version
 
