@@ -34,7 +34,6 @@ export const Container = styled.div`
 
   background-color: white;
   width: ${Y_AXIS_CHART_WIDTH_PX}px;
-  padding-left: 30x;
 `;
 
 export const ResetImageWrapper = styled.div`
