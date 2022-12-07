@@ -1,4 +1,3 @@
-import { Dispatch, SetStateAction } from "react";
 import { init } from "echarts";
 import Image from "next/image";
 import { memo, useContext, useEffect, useMemo, useRef, useState } from "react";
@@ -7,7 +6,7 @@ import { get } from "src/common/featureFlags";
 import { FEATURES } from "src/common/featureFlags/features";
 import { BOOLEAN } from "src/common/localStorage/set";
 import { FetchMarkerGeneParams } from "src/common/queries/wheresMyGene";
-import { DispatchContext } from "src/views/WheresMyGene/common/store";
+import { DispatchContext, StateContext } from "src/views/WheresMyGene/common/store";
 import { resetTissueCellTypes } from "src/views/WheresMyGene/common/store/actions";
 import { CellType, Tissue } from "src/views/WheresMyGene/common/types";
 import { useDeleteGenesAndCellTypes } from "../../hooks/useDeleteGenesAndCellTypes";
@@ -49,7 +48,9 @@ export default memo(function YAxisChart({
   generateMarkerGenes,
   selectedOrganismId,
 }: Props): JSX.Element {
+  const tissueKey = tissue.replace(' ','-');
   const dispatch = useContext(DispatchContext);
+  const { selectedTissues } = useContext(StateContext);
 
   const [isChartInitialized, setIsChartInitialized] = useState(false);
   const [yAxisInfoCoords, setYAxisInfoCoords] = useState<Coord[] | null>(null);
@@ -64,35 +65,21 @@ export default memo(function YAxisChart({
   );
   const isMarkerGenes = get(FEATURES.MARKER_GENES) === BOOLEAN.TRUE;
 
-  const setInfoCoordinates = (value: CellTypeMetadata | undefined = undefined) => {
-    const container = document.querySelector(`[data-test-id=cell-type-labels-${tissue}]`);
+  const setInfoCoordinates = () => {
+    const topTissueKey = selectedTissues[0].replace(' ','-');
+    const containerTop = document.querySelector(`[data-test-id=cell-type-labels-${topTissueKey}]`);
+    const container = document.querySelector(`[data-test-id=cell-type-labels-${tissueKey}]`);
     const textElements = container?.querySelectorAll(`text[transform*="translate(12"]`)
-    const xOffset = container ? container.getBoundingClientRect().left - Y_AXIS_TISSUE_WIDTH_PX : 0;
-    const yOffset = container ? container.getBoundingClientRect().top : 0;
-
-    if (textElements) {
-      if (value) {
-        let index = 0;
-        for (let i = 0; i < cellTypeMetadata.length; i+=1) {
-          if (cellTypeMetadata[i] === value) {
-            index = i;
-            break
-          }
-        }
-        if (yAxisInfoCoords) {
-          const { right, top } = textElements[index].getBoundingClientRect();
-          const infoCoords = [...yAxisInfoCoords]
-          infoCoords[index] = [right-xOffset, top-yOffset];
-          setYAxisInfoCoords(infoCoords)
-        }
-      } else {
-        const infoCoords: Coord[] = [];
-        textElements.forEach((el) => {
-          const { right, top } = el.getBoundingClientRect();
-          infoCoords.push([right-xOffset, top-yOffset])
-        })
-        setYAxisInfoCoords(infoCoords);
-      }
+    if (container && containerTop && textElements) {
+      const { left, top } = containerTop.getBoundingClientRect();
+      const xOffset = left - Y_AXIS_TISSUE_WIDTH_PX;
+      const yOffset =  top;
+      const infoCoords: Coord[] = [];
+      textElements.forEach((el) => {
+        const { right, top } = el.getBoundingClientRect();
+        infoCoords.push([right-xOffset, top - yOffset])
+      })
+      setYAxisInfoCoords(infoCoords);    
     }
   }
   // Initialize charts
@@ -132,23 +119,13 @@ export default memo(function YAxisChart({
         return newHandle;
       }
     );
-
+    
     function newHandle(params: { value: CellTypeMetadata }) {
       /**
        * `value` is set by utils.getAllSerializedCellTypeMetadata()
        */
       const { value } = params;
       handleCellTypeClick(value);
-      setInfoCoordinates(value);
-      if (isMarkerGenes) {
-        const { id } = deserializeCellTypeMetadata(value);
-
-        generateMarkerGenes({
-          cellTypeID: id,
-          organismID: selectedOrganismId,
-          tissueID,
-        });
-      }
     }
 
   }, [
@@ -170,12 +147,6 @@ export default memo(function YAxisChart({
     return getAllSerializedCellTypeMetadata(cellTypes, tissue);
   }, [cellTypes, tissue]);
 
-  useEffect(()=>{
-    setTimeout(() => {
-      setInfoCoordinates();
-    }, 200)
-  }, [yAxisChart, cellTypeMetadata])  
-
   useUpdateYAxisChart({
     cellTypeIdsToDelete,
     cellTypeMetadata,
@@ -183,6 +154,26 @@ export default memo(function YAxisChart({
     yAxisChart,
   });
 
+  useEffect(() => {
+    const targetNode = document.querySelector(`[data-test-id=cell-type-labels-${tissueKey}]`);
+    const config = { attributes: true, childList: true, subtree: true };
+    const callback = (mutationList: MutationRecord[]) => {
+      for (const mutation of mutationList) {
+        if (mutation.type === 'childList' && mutation.target.nodeName === "g") {
+          setInfoCoordinates();
+          break;
+        }
+      }
+    };
+    const observer = new MutationObserver(callback);
+    if (targetNode) {
+      observer.observe(targetNode, config);
+    }
+
+    return () => {
+      observer.disconnect();
+    }
+  }, []);
   return (
     <Wrapper id={`${tissue}-y-axis`}>
       <TissueWrapper height={heatmapHeight}>
@@ -202,7 +193,7 @@ export default memo(function YAxisChart({
         )}
       </TissueWrapper>
       <Container
-        data-test-id={`cell-type-labels-${tissue}`}
+        data-test-id={`cell-type-labels-${tissueKey}`}
         height={heatmapHeight}
         ref={yAxisRef}
       />
@@ -219,7 +210,15 @@ export default memo(function YAxisChart({
               cursor: "pointer",
             }}   
             onClick={() => {
-              console.log(`Display marker genes for ${content}`)
+              if (isMarkerGenes) {
+                const { id } = deserializeCellTypeMetadata(content);
+        
+                generateMarkerGenes({
+                  cellTypeID: id,
+                  organismID: selectedOrganismId,
+                  tissueID,
+                });
+              }
             }}       
           >
             <Image
