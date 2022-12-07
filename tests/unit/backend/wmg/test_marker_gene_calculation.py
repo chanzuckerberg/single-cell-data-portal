@@ -2,7 +2,7 @@ import unittest
 import json
 import pytest
 from tests.unit.backend.wmg.fixtures.test_snapshot import load_test_fmg_snapshot
-from backend.wmg.pipeline.summary_cubes.calculate_markers import _query_tiledb, get_markers
+from backend.wmg.pipeline.summary_cubes.calculate_markers import _query_tiledb_context, get_markers
 from backend.wmg.data.query import retrieve_top_n_markers
 
 TEST_SNAPSHOT = "test-fmg-snapshot"
@@ -23,7 +23,7 @@ CONTEXT_FILTERS = {
 class MarkerGeneCalculationTest(unittest.TestCase):
     def test__query_tiledb(self):
         with load_test_fmg_snapshot(TEST_SNAPSHOT) as snapshot:
-            agg, t_n_cells_sum, _ = _query_tiledb(TARGET_FILTERS, corpus=snapshot)
+            agg, _, t_n_cells_sum, _, _ = _query_tiledb_context(TARGET_FILTERS, CONTEXT_FILTERS, corpus=snapshot)
             test_sum = list(agg.sum(0))
             # check that returned dataframe is correct
             expected_sum = [28538.255859375, 85875.046875, 11312.0, 11185.0]
