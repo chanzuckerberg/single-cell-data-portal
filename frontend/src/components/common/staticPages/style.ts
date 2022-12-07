@@ -115,7 +115,7 @@ export const TOSStyle = styled(AgreementDocumentStyle)`
 `;
 
 export const PrivacyStyle = styled(AgreementDocumentStyle)`
-  // "Last updated" text.
+  /* "Last updated" text. */
   h1 + p {
     margin-bottom: 20px;
   }
@@ -130,7 +130,7 @@ export const PrivacyStyle = styled(AgreementDocumentStyle)`
     display: block;
   }
 
-  // Inline heading and paragraph.
+  /* Inline heading and paragraph. */
   .inline {
     margin-top: 10px;
   }
