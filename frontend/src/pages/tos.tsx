@@ -5,14 +5,14 @@ import rawCellxgeneLogo from "src/components/common/staticPages/cellxgene.png";
 import {
   CommonStyle,
   Layout,
-  PrivacyStyle,
+  TOSStyle,
 } from "src/components/common/staticPages/style";
 
 const ToS = (): JSX.Element => {
   return (
     <Layout>
       <CommonStyle>
-        <PrivacyStyle>
+        <TOSStyle>
           <Head>
             <title>CELL&times;GENE | Terms of Service</title>
           </Head>
@@ -316,7 +316,7 @@ const ToS = (): JSX.Element => {
               permission.
             </li>
           </ol>
-        </PrivacyStyle>
+        </TOSStyle>
       </CommonStyle>
     </Layout>
   );
