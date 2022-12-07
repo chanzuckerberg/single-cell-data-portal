@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { ComplexFilterInputDropdown } from "czifui";
+import { ComplexFilter, ComplexFilterInputDropdown } from "czifui";
 
 export const StyledComplexFilterInputDropdown = styled(
   ComplexFilterInputDropdown
@@ -20,4 +20,8 @@ export const Wrapper = styled("div")`
   display: flex;
   flex-direction: column;
   gap: 40px;
+`;
+
+export const StyledComplexFilter = styled(ComplexFilter)`
+  width: 100%;
 `;

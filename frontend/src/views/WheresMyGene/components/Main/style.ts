@@ -1,9 +1,9 @@
 import { Drawer } from "@blueprintjs/core";
 import styled from "@emotion/styled";
-import { getFontWeights } from "czifui";
+import { CommonThemeProps, getFontWeights } from "czifui";
 
 export const SideBarLabel = styled("span")`
-  ${(props) => {
+  ${(props: CommonThemeProps) => {
     const fontWeights = getFontWeights(props);
 
     return `

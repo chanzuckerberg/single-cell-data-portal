@@ -35,7 +35,7 @@ import { StyledComplexFilterInputDropdown, Wrapper } from "./style";
  */
 const FILTERS_COUNT = 4;
 
-const MenuSelectProps = {
+const DropdownMenuProps = {
   getOptionSelected,
 };
 
@@ -189,7 +189,7 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
             InputDropdownComponent={
               StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
             }
-            MenuSelectProps={MenuSelectProps}
+            DropdownMenuProps={DropdownMenuProps}
             InputDropdownProps={InputDropdownProps}
           />
           <ComplexFilter
@@ -201,7 +201,7 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
             InputDropdownComponent={
               StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
             }
-            MenuSelectProps={MenuSelectProps}
+            DropdownMenuProps={DropdownMenuProps}
             InputDropdownProps={InputDropdownProps}
           />
           <ComplexFilter
@@ -213,7 +213,7 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
             InputDropdownComponent={
               StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
             }
-            MenuSelectProps={MenuSelectProps}
+            DropdownMenuProps={DropdownMenuProps}
             InputDropdownProps={InputDropdownProps}
           />
           <ComplexFilter
@@ -225,7 +225,7 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
             InputDropdownComponent={
               StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
             }
-            MenuSelectProps={MenuSelectProps}
+            DropdownMenuProps={DropdownMenuProps}
             InputDropdownProps={InputDropdownProps}
           />
         </div>

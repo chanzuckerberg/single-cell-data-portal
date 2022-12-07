@@ -1,8 +1,8 @@
 import { IconNames } from "@blueprintjs/icons";
-import { SetSearchValueFn } from "src/components/common/Filter/components/FilterSearch/common/useFilterSearch";
-import { ClearIconButton, ViewSearch } from "./style";
 import { Icon } from "czifui";
 import { useRef } from "react";
+import { SetSearchValueFn } from "src/components/common/Filter/components/FilterSearch/common/useFilterSearch";
+import { ClearButtonIcon, ViewSearch } from "./style";
 
 interface Props {
   className?: string;
@@ -35,16 +35,13 @@ export default function FilterSearch({
       placeholder="Search"
       rightElement={
         searchValue ? (
-          <ClearIconButton
+          <ClearButtonIcon
             onClick={onClearSearch}
-            {...{
-              // TODO(cc) move this back to explicit prop={value} after upgrading SDS to enable type checking again
-              sdsSize: "small",
-            }}
+            sdsSize="small"
             sdsType="secondary"
           >
             <Icon sdsIcon="xMarkCircle" sdsSize="s" sdsType="iconButton" />
-          </ClearIconButton>
+          </ClearButtonIcon>
         ) : undefined
       }
       value={searchValue}

@@ -1,5 +1,6 @@
-import { Mark, Slider } from "@material-ui/core";
-import React, { ChangeEvent, useState } from "react";
+import { Mark } from "@mui/base/SliderUnstyled";
+import Slider from "@mui/material/Slider";
+import React, { SyntheticEvent, useState } from "react";
 import {
   OnFilterFn,
   RangeCategoryView,
@@ -47,8 +48,7 @@ export default function FilterRange({
   const step = Math.floor((max - min) / STEP_SIZE);
 
   const onChangeSliderRange = (
-    // eslint-disable-next-line @typescript-eslint/ban-types -- {} as per Mui spec.
-    _changeEvent: ChangeEvent<{}>,
+    _changeEvent: Event,
     newRange: SliderRange
   ): void => {
     setRange(newRange);
@@ -56,7 +56,7 @@ export default function FilterRange({
 
   const onCommittedSliderRange = (
     // eslint-disable-next-line @typescript-eslint/ban-types -- {} as per Mui spec.
-    _changeEvent: ChangeEvent<{}>,
+    _changeEvent: SyntheticEvent | Event,
     committedRange: SliderRange
   ): void => {
     const [min, max] = committedRange as number[]; // Always expecting a min/max array here.

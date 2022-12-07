@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { Button, IconButton, MenuItem } from "czifui";
+import { Button, ButtonIcon, MenuItem } from "czifui";
 
 export const ButtonWrapper = styled.div`
   display: flex;
@@ -12,7 +12,7 @@ export const StyledSelectButton = styled(Button)`
   height: 30px;
 `;
 
-export const StyledIconButton = styled(IconButton)`
+export const StyledButtonIcon = styled(ButtonIcon)`
   width: 30px;
   height: 30px;
 `;

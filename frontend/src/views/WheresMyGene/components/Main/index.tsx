@@ -346,8 +346,6 @@ export default function WheresMyGene(): JSX.Element {
             />
           </Top>
 
-          <Beta className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME} />
-
           <GetStarted
             tissueSelected={hasSelectedTissues}
             isLoading={isLoading}
@@ -389,6 +387,8 @@ export default function WheresMyGene(): JSX.Element {
           )}
         </Wrapper>
       </View>
+
+      <Beta className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME} />
     </>
   );
 }

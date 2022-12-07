@@ -1,8 +1,8 @@
 import { Classes, InputGroup } from "@blueprintjs/core";
-import styled from "@emotion/styled";
-import { GRAY, LIGHT_GRAY, PT_TEXT_COLOR } from "src/components/common/theme";
-import { getColors, IconButton } from "czifui";
 import { css } from "@emotion/react";
+import styled from "@emotion/styled";
+import { ButtonIcon, getColors } from "czifui";
+import { GRAY, LIGHT_GRAY, PT_TEXT_COLOR } from "src/components/common/theme";
 
 export const ViewSearch = styled(InputGroup)`
   &.${Classes.INPUT_GROUP} {
@@ -37,7 +37,7 @@ export const ViewSearch = styled(InputGroup)`
   }
 `;
 
-export const ClearIconButton = styled(IconButton)`
+export const ClearButtonIcon = styled(ButtonIcon)`
   ${(props) => {
     const colors = getColors(props);
     const palette = props.theme.palette;
