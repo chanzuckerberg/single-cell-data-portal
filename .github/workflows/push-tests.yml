@@ -225,7 +225,6 @@ jobs:
       - name: Run unit tests
         run: |
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
-          pip install -r requirements.txt
           make redesign-unit-test
 
       # Upload Allure results as an artifact
