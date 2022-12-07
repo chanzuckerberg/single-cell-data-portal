@@ -96,7 +96,7 @@ def _query_tiledb_context(
     group_by_dims = list(target_filters.keys())
     keep_dataset_ids = "dataset_ids" in target_filters
 
-    criteria = FmgQueryCriteria(**filters)
+    criteria = FmgQueryCriteria(**context_filters)
 
     if isinstance(corpus, str):
         expression_summary_fmg_cube = tiledb.open(f"{corpus}/{EXPRESSION_SUMMARY_FMG_CUBE_NAME}")
