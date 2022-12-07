@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from typing import List, Optional
+
 from backend.layers.common.entities import DatasetArtifactType, Link
+
 
 @dataclass
 class CollectionQueryFilter:
@@ -16,13 +18,15 @@ class DatasetArtifactDownloadData:
     file_size: int
     presigned_url: str
 
+
 @dataclass
 class CollectionMetadataUpdate:
     """
     This class can be used to issue an update to the collection metadata.
-    Since we support partial updates, i.e. missing fields will be ignored, 
+    Since we support partial updates, i.e. missing fields will be ignored,
     all the fields are marked an optional
     """
+
     name: Optional[str]
     description: Optional[str]
     contact_name: Optional[str]

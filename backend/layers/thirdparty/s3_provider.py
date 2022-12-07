@@ -1,14 +1,12 @@
-
 import os
 import subprocess
 from typing import Tuple
+from urllib.parse import urlparse
 
 import boto3
-from urllib.parse import urlparse
 
 
 class S3ProviderInterface:
-
     def get_file_size(self, path: str) -> int:
         pass
 
@@ -24,8 +22,8 @@ class S3ProviderInterface:
     def upload_directory(self, src_dir: str, s3_uri: str):
         pass
 
-class S3Provider(S3ProviderInterface):
 
+class S3Provider(S3ProviderInterface):
     def __init__(self) -> None:
         self.client = boto3.client("s3")
 

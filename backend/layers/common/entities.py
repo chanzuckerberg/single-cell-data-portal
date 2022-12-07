@@ -1,9 +1,8 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import List, Optional
 from enum import Enum
+from typing import List, Optional
 
-import json
 from dataclasses_json import dataclass_json
 
 
@@ -71,7 +70,6 @@ class DatasetArtifactType(str, Enum):
     H5AD = "h5ad"
     RDS = "rds"
     CXG = "cxg"
-
 
 
 @dataclass_json
@@ -204,7 +202,7 @@ class CollectionMetadata:
 @dataclass
 class CanonicalCollection:
     id: CollectionId
-    version_id: CollectionVersionId # Needs to be optional, or not exist
+    version_id: CollectionVersionId  # Needs to be optional, or not exist
     originally_published_at: Optional[datetime]
     tombstoned: bool
 
@@ -220,9 +218,11 @@ class CollectionVersionBase:
     created_at: datetime
     canonical_collection: CanonicalCollection
 
+
 @dataclass
 class CollectionVersion(CollectionVersionBase):
     datasets: List[DatasetVersionId]
+
 
 @dataclass
 class CollectionVersionWithDatasets(CollectionVersionBase):

@@ -1,8 +1,5 @@
-from dataclasses import dataclass, field
-from typing import List
-import uuid
 from sqlalchemy import Column, DateTime, Enum, ForeignKey, String, Table
-from sqlalchemy.dialects.postgresql import ARRAY, BOOLEAN, JSON, TEXT, UUID
+from sqlalchemy.dialects.postgresql import ARRAY, BOOLEAN, JSON, UUID
 from sqlalchemy.orm import registry
 from sqlalchemy.schema import MetaData
 
@@ -21,7 +18,7 @@ class Collection:
         Column("id", UUID(as_uuid=True), primary_key=True),
         Column("version_id", UUID(as_uuid=True)),
         Column("originally_published_at", DateTime),
-        Column("tombstoned", BOOLEAN)
+        Column("tombstoned", BOOLEAN),
     )
 
 
@@ -38,7 +35,7 @@ class CollectionVersion:
         Column("publisher_metadata", JSON),
         Column("published_at", DateTime),
         Column("created_at", DateTime),
-        Column("datasets", ARRAY(UUID(as_uuid=True)))
+        Column("datasets", ARRAY(UUID(as_uuid=True))),
     )
 
 
@@ -50,7 +47,7 @@ class Dataset:
         mapper_registry.metadata,
         Column("dataset_id", UUID(as_uuid=True), primary_key=True),
         Column("dataset_version_id", UUID(as_uuid=True)),
-        Column("published_at", DateTime)
+        Column("published_at", DateTime),
     )
 
 
@@ -67,7 +64,7 @@ class DatasetVersion:
         Column("metadata", JSON),
         Column("artifacts", ARRAY(UUID(as_uuid=True))),
         Column("created_at", DateTime),
-        Column("status", JSON)
+        Column("status", JSON),
     )
 
 
@@ -79,7 +76,5 @@ class DatasetArtifact:
         mapper_registry.metadata,
         Column("id", UUID(as_uuid=True), primary_key=True),
         Column("type", Enum(DatasetArtifactType)),
-        Column("uri", String)
+        Column("uri", String),
     )
-
-
