@@ -23,7 +23,7 @@ class TestDeleteCollection(BaseAuthAPITest):
 
     def test__delete_public_collection(self):
         tests = [("not_owner", 403), ("noauth", 401), ("owner", 405), ("super", 405)]
-        public_collection_id = self.generate_collection(self.session, visibility=CollectionVisibility.PUBLIC.name).id
+        public_collection_id = self.generate_published_collection().collection_id
         for auth, expected_response in tests:
             with self.subTest(auth):
                 self._test(public_collection_id, auth, expected_response)
@@ -32,21 +32,17 @@ class TestDeleteCollection(BaseAuthAPITest):
         tests = [("not_owner", 403), ("noauth", 401), ("owner", 204), ("super", 204)]
         for auth, expected_response in tests:
             with self.subTest(auth):
-                public_collection_id = self.generate_collection(
-                    self.session, visibility=CollectionVisibility.PUBLIC.name
-                ).id
+                public_collection_id = self.generate_published_collection().collection_id
                 revision_collection_id = self.generate_collection(
-                    self.session, visibility=CollectionVisibility.PRIVATE.name, revision_of=public_collection_id
-                ).id
+                    visibility=CollectionVisibility.PRIVATE.name, revision_of=public_collection_id
+                ).collection_id
                 self._test(revision_collection_id, auth, expected_response)
 
     def test__delete_private_collection(self):
         tests = [("not_owner", 403), ("noauth", 401), ("owner", 204), ("super", 204)]
         for auth, expected_response in tests:
             with self.subTest(auth):
-                private_collection_id = self.generate_collection(
-                    self.session, visibility=CollectionVisibility.PRIVATE.name
-                ).id
+                private_collection_id = self.generate_unpublished_collection().collection_id
                 self._test(private_collection_id, auth, expected_response)
 
     def test__delete_tombstone_collection(self):
@@ -54,8 +50,8 @@ class TestDeleteCollection(BaseAuthAPITest):
         for auth, expected_response in tests:
             with self.subTest(auth):
                 tombstone_collection_id = self.generate_collection(
-                    self.session, visibility=CollectionVisibility.PUBLIC.name, tombstone=True
-                ).id
+                    visibility=CollectionVisibility.PUBLIC.name, tombstone=True
+                ).collection_id
                 self._test(tombstone_collection_id, auth, expected_response)
 
 

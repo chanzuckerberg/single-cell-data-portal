@@ -1,11 +1,11 @@
 import unittest
-from unittest.mock import patch, Mock
+from unittest.mock import Mock, patch
 
 from backend.common.utils.api_key import generate
-from tests.unit.backend.api_server.base_api_test import BaseAPITest
+from tests.unit.backend.layers.common.base_api_test import NewBaseTest
 
 
-class TestAuthToken(BaseAPITest):
+class TestAuthToken(NewBaseTest):
     @patch("backend.portal.api.curation.v1.curation.auth.token.CorporaAuthConfig")
     @patch("backend.portal.api.curation.v1.curation.auth.token.auth0_management_session")
     def test__post_token__201(self, auth0_management_session: Mock, CorporaAuthConfig: Mock):

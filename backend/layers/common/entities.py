@@ -167,8 +167,8 @@ class DatasetMetadata:
 @dataclass
 class CanonicalDataset:
     dataset_id: DatasetId
-    dataset_version_id: DatasetVersionId
-    published_at: Optional[datetime]
+    dataset_version_id: DatasetVersionId = None
+    published_at: Optional[datetime] = None
 
 
 @dataclass
@@ -219,6 +219,7 @@ class CollectionVersionBase:
     published_at: Optional[datetime]
     created_at: datetime
     canonical_collection: CanonicalCollection
+    curator_name: Optional[str]
 
 
 @dataclass

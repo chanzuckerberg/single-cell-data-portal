@@ -21,16 +21,15 @@ class TestPutLink(BaseAuthAPITest):
     def _test_new(self, headers: dict = None, collection_params: dict = None, body: dict = None):
         headers = headers if headers else {}
         collection_params = collection_params if collection_params else {}
-        collection = self.generate_collection(self.session, **collection_params)
+        collection = self.generate_collection(**collection_params)
         dataset = self.generate_dataset(
-            self.session,
-            collection_id=collection.id,
+            collection_id=collection.collection_id,
             processing_status={"processing_status": ProcessingStatus.INITIALIZED},
         )
         body = body if body else ""
         headers["Content-Type"] = "application/json"
         response = self.app.put(
-            f"/curation/v1/collections/{collection.id}/datasets/{dataset.id}", json=body, headers=headers
+            f"/curation/v1/collections/{collection.collection_id}/datasets/{dataset.id}", json=body, headers=headers
         )
         return response
 
@@ -62,12 +61,14 @@ class TestPutLink(BaseAuthAPITest):
     def _test_existing(self, headers: dict = None):
         headers = headers if headers else {}
         headers["Content-Type"] = "application/json"
-        collection = self.generate_collection(self.session)
+        collection = self.generate_collection()
         processing_status = dict(processing_status=ProcessingStatus.SUCCESS)
-        dataset = self.generate_dataset(self.session, collection_id=collection.id, processing_status=processing_status)
+        dataset = self.generate_dataset(collection_id=collection.collection_id, processing_status=processing_status)
         body = {"link": self.good_link}
         response = self.app.put(
-            f"/curation/v1/collections/{collection.id}/datasets/{dataset.id}", data=json.dumps(body), headers=headers
+            f"/curation/v1/collections/{collection.collection_id}/datasets/{dataset.id}",
+            data=json.dumps(body),
+            headers=headers,
         )
         return response
 

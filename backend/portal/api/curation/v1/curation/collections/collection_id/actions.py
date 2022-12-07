@@ -1,97 +1,124 @@
-from flask import g, jsonify, Response
+from dataclasses import asdict
 
-from backend.api_server.db import dbconnect
-from backend.common.corpora_orm import (
-    CollectionVisibility,
-    DbCollectionLink,
-    DbCollection,
-    ProjectLinkType,
-)
-from backend.common.entities import Collection
+from flask import Response, jsonify, make_response
+
+from backend.common.corpora_config import CorporaConfig
 from backend.common.utils.http_exceptions import (
-    MethodNotAllowedException,
     InvalidParametersHTTPException,
-    ForbiddenHTTPException,
+    MethodNotAllowedException,
 )
-from backend.portal.api.app.v1.authorization import owner_or_allowed
-
-from backend.portal.api.collections_common import (
-    get_publisher_metadata,
-    get_collection_else_forbidden,
-    get_collection_and_verify_body,
-)
+from backend.layers.api.router import get_business_logic
+from backend.layers.auth.user_info import UserInfo
+from backend.layers.business.entities import CollectionMetadataUpdate
+from backend.layers.business.exceptions import CollectionUpdateException
+from backend.layers.common.entities import Link
 from backend.portal.api.curation.v1.curation.collections.common import (
+    allowed_dataset_asset_types,
     extract_doi_from_links,
-    reshape_for_curation_api,
-    curation_get_normalized_doi_url,
+    get_collection_level_processing_status,
+    get_infered_collection_version_else_forbidden,
+    get_visibility,
+    is_owner_or_allowed_else_forbidden,
 )
 
 
-@dbconnect
-def delete(collection_id: str, token_info: dict):
-    db_session = g.db_session
-    collection = get_collection_else_forbidden(db_session, collection_id, owner=owner_or_allowed(token_info))
-    if collection.visibility == CollectionVisibility.PUBLIC:
-        raise MethodNotAllowedException(detail="Cannot delete a public collection through API.")
+def delete(collection_id: str, token_info: dict) -> Response:
+    user_info = UserInfo(token_info)
+    collection_version = get_infered_collection_version_else_forbidden(collection_id)
+    is_owner_or_allowed_else_forbidden(collection_version, user_info)
+    if collection_version.published_at:
+        raise MethodNotAllowedException(detail="Cannot delete a published collection through API.")
     else:
-        collection.delete()
-    return "", 204
+        get_business_logic().delete_collection_version(collection_version.version_id)
+    return make_response("", 204)
 
 
-@dbconnect
-def get(collection_id: str, token_info: dict):
-    db_session = g.db_session
-    collection = get_collection_else_forbidden(db_session, collection_id, include_tombstones=False)
-    collection_response = reshape_for_curation_api(db_session, collection, token_info)
-    return jsonify(collection_response)
+def get(collection_id: str, token_info: dict) -> Response:
+    collection_version = get_infered_collection_version_else_forbidden(collection_id)
+    user_info = UserInfo(token_info)
 
+    # get collectoin attributes based on published status
+    if collection_version.published_at is None:
+        # Unpublished
+        collection_id = collection_version.version_id
+        revision_of = collection_version.collection_id
+        revising_in = None
+    else:
+        # Published
+        collection_id = collection_version.collection_id
+        revision_of = None
+        revising_in = (
+            None
+            if not user_info.is_user_owner_or_allowed(collection_version.owner)
+            else get_business_logic().get_unplublished_collection_version_from_canonical(collection_id)
+        )
 
-@dbconnect
-def patch(collection_id: str, body: dict, token_info: dict) -> Response:
-    db_session = g.db_session
+    # get collection dataset attributes
+    response_datasets = []
+    for dataset in collection_version.datasets:
+        ds = asdict(dataset.metadata)
 
-    keep_links = True  # links have NOT been provided; keep existing links
-    if "links" in body:
-        if not body["links"]:
-            raise InvalidParametersHTTPException(detail="If provided, the 'links' array may not be empty")
-        keep_links = False  # links have been provided; replace all old links
+        # get dataset asset attributes
+        assets = []
+        for artifact in dataset.artifacts:
+            if artifact.type in allowed_dataset_asset_types:
+                assets.append(dict(filetype=artifact.type, filename=artifact.uri.split("/")[-1]))
+        ds["dataset_assets"] = assets
+        ds["processing_status_detail"] = dataset.status.validation_message
+        ds["revised_at"] = get_business_logic().get_last_published_dataset_version(dataset)
+        response_datasets.append(ds)
 
-    try:
-        collection, errors = get_collection_and_verify_body(db_session, collection_id, body, token_info)
-    except ForbiddenHTTPException as err:
-        # If the Collection is public, the get_collection_and_verify_body method throws empty ForbiddenHTTPException
-        if Collection.get_collection(
-            db_session, collection_id, CollectionVisibility.PUBLIC, owner=owner_or_allowed(token_info)
-        ):
-            raise MethodNotAllowedException(
-                detail="Directly editing a public Collection is not allowed; you must create a revision."
-            )
-        raise err
-
-    if new_doi := body.get("doi"):
-        if new_doi_url := curation_get_normalized_doi_url(new_doi, errors):
-            links = body.get("links", [])
-            links.append({"link_type": ProjectLinkType.DOI.name, "link_url": new_doi_url})
-            body["links"] = links
-
-            # Compute the diff between old and new DOI
-            old_doi = collection.get_doi()
-            if new_doi_url != old_doi:
-                # If the DOI has changed, fetch and update the metadata
-                publisher_metadata = get_publisher_metadata(new_doi_url, errors)
-                body["publisher_metadata"] = publisher_metadata
-
-    if errors:
-        raise InvalidParametersHTTPException(ext=dict(invalid_parameters=errors))
-
-    collection.update_curation(**body, keep_links=keep_links)
-    collection_dict = collection.to_dict_keep(
-        {
-            DbCollection: ["name", "description", "contact_name", "contact_email", "links", "publisher_metadata"],
-            DbCollectionLink: ["link_url", "link_name", "link_type"],
-        }
+    # build response
+    doi, links = extract_doi_from_links(collection_version.metadata.links)
+    response = dict(
+        collection_url=f"{CorporaConfig().collections_base_url}/collections/{collection_id}",
+        contact_email=collection_version.metadata.contact_email,
+        contact_name=collection_version.metadata.contact_name,
+        created_at=collection_version.created_at,
+        curator_name=collection_version.owner,
+        datasets=response_datasets,
+        description=collection_version.metadata.description,
+        dio=doi,
+        id=collection_id,
+        links=links,
+        name=collection_version.metadata.name,
+        processing_status=get_collection_level_processing_status(collection_version.datasets),
+        published_at=collection_version.canonical_collection.originally_published_at,
+        publisher_metadata=collection_version.publisher_metadata,
+        revised_at=get_business_logic().get_last_published_collection_version(collection_version),
+        revising_in=revising_in,
+        revision_of=revision_of,
+        visibility=get_visibility(collection_version),
     )
+    return jsonify(response)
 
-    collection_dict["doi"], collection_dict["links"] = extract_doi_from_links(collection_dict)
 
-    return jsonify(collection_dict)
+def patch(collection_id: str, body: dict, token_info: dict) -> Response:
+    user_info = UserInfo(token_info)
+    collection_version = get_infered_collection_version_else_forbidden(collection_id)
+    is_owner_or_allowed_else_forbidden(collection_version, user_info)
+    if collection_version.published_at:
+        raise MethodNotAllowedException(
+            detail="Directly editing a public Collection is not allowed; you must create a revision."
+        )
+
+    # Build CollectionMetadataUpdate object
+    body["links"] = [Link(link.get("link_name"), link["link_type"], link["link_url"]) for link in body.get("links", [])]
+    collection_metadata = CollectionMetadataUpdate(**body)
+
+    # Update the collection
+    try:
+        get_business_logic().update_collection_version(collection_version.version_id, collection_metadata)
+    except CollectionUpdateException as ex:
+        raise InvalidParametersHTTPException(ext=dict(invalid_parameters=ex.errors))
+
+    # Make Response
+    updated_collection_version = get_business_logic().get_collection_version(collection_version.version_id)
+
+    metadata = asdict(updated_collection_version.metadata)
+    metadata.pop("links")
+
+    doi, links = extract_doi_from_links(updated_collection_version.metadata.links)
+
+    response = dict(**metadata, publisher_metadata=updated_collection_version.publisher_metadata, links=links, doi=doi)
+    return jsonify(response)

@@ -11,6 +11,7 @@ from backend.layers.common.entities import (
     CollectionMetadata,
     CollectionVersion,
     CollectionVersionId,
+    CollectionVersionWithDatasets,
     DatasetArtifact,
     DatasetArtifactId,
     DatasetConversionStatus,
@@ -39,7 +40,6 @@ class _CanonicalDataset:
 
 
 class DatabaseProviderMock(DatabaseProviderInterface):
-
     """
     A mocked implementation for DatabaseProvider that uses in-memory dicts.
     This mock is to be used in tests only.
@@ -70,17 +70,37 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         self.datasets = {}  # rename to: active_datasets
         self.datasets_versions = {}
 
+    def _drop(self):
+        self.collections = {}
+        self.collections_versions = {}
+        self.datasets = {}
+        self.datasets_versions = {}
+
+    def _create(self):
+        pass
+
     @staticmethod
     def _id():
         return str(uuid.uuid4())
 
     # TODO: add publisher_metadata here?
-    def create_canonical_collection(self, owner: str, collection_metadata: CollectionMetadata) -> CollectionVersion:
+    def create_canonical_collection(
+        self, owner: str, collection_metadata: CollectionMetadata, curator_name: str
+    ) -> CollectionVersion:
         collection_id = CollectionId(self._id())
         version_id = CollectionVersionId(self._id())
         canonical = CanonicalCollection(collection_id, None, False, False)
         version = CollectionVersion(
-            collection_id, version_id, owner, collection_metadata, None, [], None, datetime.utcnow(), canonical
+            collection_id=collection_id,
+            version_id=version_id,
+            owner=owner,
+            metadata=collection_metadata,
+            publisher_metadata=None,
+            datasets=[],
+            published_at=None,
+            created_at=datetime.utcnow(),
+            canonical_collection=canonical,
+            curator_name=curator_name,
         )
         self.collections_versions[version_id.id] = version
         # Don't set mappings here - those will be set when publishing the collection!
@@ -178,7 +198,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
 
     # MAYBE
     def finalize_collection_version(
-        self, collection_id: CollectionId, version_id: CollectionVersionId, published_at: Optional[datetime]
+        self, collection_id: CollectionId, version_id: CollectionVersionId, published_at: Optional[datetime] = None
     ) -> None:
 
         published_at = published_at if published_at else datetime.utcnow()
@@ -193,7 +213,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         cc = self.collections.get(collection_id.id)
         if cc is None:
             self.collections[collection_id.id] = _CanonicalCollection(
-                CanonicalCollection(collection_id, published_at, False), version_id
+                CanonicalCollection(collection_id, version_id, published_at, False), version_id
             )
         else:
             new_cc = copy.deepcopy(cc)
@@ -337,3 +357,11 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         if cd is not None:
             version = self.datasets_versions[cd.mapped_version.id]
             return self._update_dataset_version_with_canonical(version)
+
+    def get_collection_version_with_datasets(self, version_id: CollectionVersionId) -> CollectionVersionWithDatasets:
+        """
+        Retrieves a specific collection version by id, with datasets
+        """
+        version = self.collections_versions.get(version_id.id)
+        if version is not None:
+            return self._update_version_with_canonical(version)

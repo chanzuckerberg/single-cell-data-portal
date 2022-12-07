@@ -1,24 +1,23 @@
 import json
 import os
 import time
-
-# TODO: Add StackOverflow link that explains
-import gevent.monkey
-gevent.monkey.patch_all()
-
 from urllib.parse import urlparse
 
 import connexion
-
 from connexion import FlaskApi, ProblemException, problem
-from flask import g, request, Response
+from flask import Response, g, request
 from flask_cors import CORS
 from swagger_ui_bundle import swagger_ui_path
+
 from backend.api_server.logger import configure_logging
+from backend.api_server.request_id import generate_request_id, get_request_id
 from backend.common.utils.aws import AwsSecret
-from backend.common.utils.json import CustomJSONEncoder, CurationJSONEncoder
-from backend.api_server.request_id import get_request_id, generate_request_id
+from backend.common.utils.json import CurationJSONEncoder, CustomJSONEncoder
 from backend.gene_info.api.ensembl_ids import GeneChecker
+
+# TODO: Add StackOverflow link that explains
+# import gevent.monkey
+# gevent.monkey.patch_all()
 
 DEPLOYMENT_STAGE = os.environ["DEPLOYMENT_STAGE"]
 APP_NAME = "{}-{}".format(os.environ.get("APP_NAME", "api"), DEPLOYMENT_STAGE)
@@ -160,11 +159,6 @@ def after_request(response: Response):
     )
     response.headers["X-Request-Id"] = get_request_id()
     return response
-
-
-@app.teardown_appcontext
-def close_db(e=None):
-    g.pop("db_session", None)
 
 
 @app.errorhandler(ProblemException)
