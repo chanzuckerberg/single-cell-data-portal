@@ -338,7 +338,7 @@ export function createYAxisOptions({
         type: "category",
       },
     ],
-    yAxis: [   
+    yAxis: [
       {
         axisLabel: {
           align: "left",
@@ -382,7 +382,7 @@ export function createYAxisOptions({
           show: false,
         },
         triggerEvent: true,
-      },              
+      },
       {
         axisLabel: {
           formatter(value: number | string) {
@@ -416,7 +416,7 @@ export function createYAxisOptions({
         splitLine: {
           show: false,
         },
-      }    
+      },
     ],
   };
 }
