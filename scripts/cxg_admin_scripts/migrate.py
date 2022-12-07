@@ -379,41 +379,7 @@ def migrate_redesign_debug(ctx):
     with open("migration/dataset_artifacts.json", "r") as f:
         artifacts = json.load(f)
 
-    from backend.layers.common.entities import CollectionMetadata, DatasetStatus, DatasetMetadata
-
-    # for collection in collection_versions:
-    #     print(collection["metadata"])
-    #     CollectionMetadata.from_json(json.dumps(collection["metadata"]))
-
-    # for dataset in dataset_versions:
-    #     if not dataset["status"]:
-    #         print("skipping")
-    #         print(dataset)
-    #         continue
-    #     DatasetStatus.from_json(json.dumps(dataset["status"]))
-
-    for dataset in dataset_versions:
-        # if not dataset["status"]:
-        if dataset["metadata"]["schema_version"] and dataset["metadata"]["schema_version"] < "3.0.0":
-            print("debug", dataset["dataset_id"], dataset["collection_id"], dataset["metadata"]["schema_version"])
-            coll_id = dataset["collection_id"]
-            coll = [c for c in collections if c["id"] == coll_id][0]
-            print(coll)
-        # if dataset["metadata"]["schema_version"] not in  ["3.0.0", "2.0.0"]:
-        #     continue
-
-        # if dataset["metadata"].get("is_primary_data"):
-        #     dataset["metadata"]["is_primary_data"] = dataset["metadata"]["is_primary_data"].split(".")[1]
-
-        # if dataset["metadata"].get("x_approximate_distribution"):
-        #     dataset["metadata"]["x_approximate_distribution"] = dataset["metadata"]["x_approximate_distribution"].split(".")[1]
-
-        # # dataset["metadata"]
-        # metadata = DatasetMetadata.from_json(json.dumps(dataset["metadata"]))
-        # print(metadata)
-
-    with open("migration/dataset_versions.json", "w") as f:
-        json.dump(dataset_versions, f, default=str)
+ 
 
 def migrate_redesign_write(ctx):
     import json
