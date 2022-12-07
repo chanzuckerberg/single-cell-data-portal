@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 from typing import List
 import uuid
-from sqlalchemy import Column, DateTime, Enum, ForeignKey, String, Table
+from sqlalchemy import Column, DateTime, Enum, ForeignKey, MetaData, String, Table
 from sqlalchemy.dialects.postgresql import ARRAY, BOOLEAN, JSON, TEXT, UUID
 from sqlalchemy.orm import registry
 from sqlalchemy.schema import MetaData
