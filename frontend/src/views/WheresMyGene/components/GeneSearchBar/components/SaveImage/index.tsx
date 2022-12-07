@@ -109,7 +109,13 @@ export default function SaveImage({
           };
         })
       );
+
+      //(thuang): #3569 Restore scrollTop position
       heatmapNode.classList.remove("CLONED");
+      if (heatmapContainer) {
+        heatmapContainer.scrollTop = heatmapContainerScrollTop || 0;
+      }
+
       const link = document.createElement("a");
 
       if (images.length > 1) {
@@ -132,13 +138,8 @@ export default function SaveImage({
       console.error(error);
     }
 
-    //(thuang): #3569 Restore scrollTop position
-    const heatmapContainer = document.getElementById(HEATMAP_CONTAINER_ID);
-    if (heatmapContainer) {
-      heatmapContainer.scrollTop = heatmapContainerScrollTop || 0;
-    }
-
     setIsDownloading(false);
+
   }, [fileType, selectedCellTypes, selectedTissues, selectedGenes]);
 
   return (
