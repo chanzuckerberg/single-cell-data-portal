@@ -33,8 +33,8 @@ def _make_hashable(func):
 
     @wraps(func)
     def wrapped(*args, **kwargs):
-        new_args = []
-        for arg in args:
+        new_args = [args[0]]
+        for arg in args[1:]:
             if isinstance(arg, dict):
                 arg = HDict(arg)
             elif isinstance(arg, list):
