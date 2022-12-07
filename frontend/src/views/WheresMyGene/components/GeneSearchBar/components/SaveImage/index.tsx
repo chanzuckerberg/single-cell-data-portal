@@ -10,11 +10,15 @@ import {
   Title,
 } from "src/components/Collections/components/Dataset/components/DownloadDataset/components/Content/components/common/style";
 import Modal from "src/components/common/Modal";
+import { HEATMAP_CONTAINER_ID } from "src/views/WheresMyGene/common/constants";
 import { CellType } from "src/views/WheresMyGene/common/types";
 import { getHeatmapHeight, getHeatmapWidth } from "../../../HeatMap/utils";
+import Loader from "../../../Loader";
 import { Label } from "../../style";
 import { StyledIconButton } from "../QuickSelect/style";
 import { ButtonWrapper, DownloadButton, StyledDiv } from "./style";
+
+let heatmapContainerScrollTop: number | undefined;
 
 export const EXCLUDE_IN_SCREENSHOT_CLASS_NAME = "screenshot-exclude";
 const screenshotFilter =
@@ -58,6 +62,7 @@ export default function SaveImage({
   selectedGenes: Array<string>;
   selectedCellTypes: { [tissue: string]: CellType[] };
 }): JSX.Element {
+  const [isDownloading, setIsDownloading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [fileType, setFileType] = useState<"png" | "svg">("png");
   const handleButtonClick = useCallback(() => {
@@ -66,9 +71,19 @@ export default function SaveImage({
   }, [isOpen]);
 
   const handleDownload = useCallback(async () => {
+    setIsDownloading(true);
     try {
       const heatmapNode = document.getElementById("view") as HTMLCanvasElement;
+
+      //(ashin): #3569 Get scrollTop to go back to place after downloading image
+      let heatmapContainer = document.getElementById(
+        HEATMAP_CONTAINER_ID
+      ) as HTMLCanvasElement;
+      heatmapContainerScrollTop = heatmapContainer?.scrollTop;
+
+      // Adding this class causes the y-axis scrolling to jump but is required for image download
       heatmapNode.classList.add("CLONED");
+
       const isPNG = fileType === "png";
       const convertHTMLtoImage = isPNG ? toPng : toSvg;
       const images = await Promise.all(
@@ -108,14 +123,27 @@ export default function SaveImage({
       }
       link.click();
       link.remove();
-      track(EVENTS.WMG_DOWNLOAD_COMPLETE, { file_type: fileType , tissues: selectedTissues.toString(), genes: selectedGenes.toString() });
+      track(EVENTS.WMG_DOWNLOAD_COMPLETE, {
+        file_type: fileType,
+        tissues: selectedTissues.toString(),
+        genes: selectedGenes.toString(),
+      });
     } catch (error) {
       console.error(error);
     }
+
+    //(thuang): #3569 Restore scrollTop position
+    const heatmapContainer = document.getElementById(HEATMAP_CONTAINER_ID);
+    if (heatmapContainer) {
+      heatmapContainer.scrollTop = heatmapContainerScrollTop || 0;
+    }
+
+    setIsDownloading(false);
   }, [fileType, selectedCellTypes, selectedTissues, selectedGenes]);
 
   return (
     <>
+      {isDownloading && <Loader />}
       <ButtonWrapper className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}>
         <Label>Download</Label>
         <StyledIconButton

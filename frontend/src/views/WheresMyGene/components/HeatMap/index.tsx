@@ -8,6 +8,7 @@ import {
   useMarkerGenes,
   usePrimaryFilterDimensions,
 } from "src/common/queries/wheresMyGene";
+import { HEATMAP_CONTAINER_ID } from "../../common/constants";
 import { State } from "../../common/store";
 import {
   CellType,
@@ -152,7 +153,7 @@ export default memo(function HeatMap({
   }, [selectedGeneExpressionSummariesByTissueName, geneNameToIndex]);
 
   return (
-    <Container {...{ className }}>
+    <Container {...{ className }} id={HEATMAP_CONTAINER_ID}>
       {isLoadingAPI || isAnyTissueLoading(isLoading) ? <Loader /> : null}
 
       <XAxisChart geneNames={sortedGeneNames} />
