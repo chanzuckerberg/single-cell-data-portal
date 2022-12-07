@@ -1,0 +1,1 @@
+{"levelname": "INFO", "asctime": "2022-12-07T06:53:23.007Z", "name": "root", "message": "Unable to find a row with primary key dc151cac-c057-42f8-97da-a8e1fde664b8, in Geneset table.", "lineno": 43, "pathname": "/single-cell-data-portal/backend/common/entities/entity.py"}
