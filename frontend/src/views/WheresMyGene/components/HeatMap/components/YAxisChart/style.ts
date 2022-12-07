@@ -1,3 +1,4 @@
+import Image from "next/image";
 import styled from "@emotion/styled";
 import { X_AXIS_CHART_HEIGHT_PX, Y_AXIS_CHART_WIDTH_PX } from "../../utils";
 
@@ -46,3 +47,22 @@ function yAxisHeight({ height }: { height: number }) {
     height: ${height - X_AXIS_CHART_HEIGHT_PX}px;
   `;
 }
+
+function infoButtonCoords({ left, top }: { left: number; top: number }) {
+  return `
+    left: ${left}px;
+    top: ${top}px;
+  `;
+}
+
+export const InfoButtonWrapper = styled.div`
+  ${infoButtonCoords}
+  position: absolute;
+  cursor: pointer;
+`;
+
+export const StyledImage = styled(Image)`
+  :hover {
+    filter: brightness(0);
+  }
+`;

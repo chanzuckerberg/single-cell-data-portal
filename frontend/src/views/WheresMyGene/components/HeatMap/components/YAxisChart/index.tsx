@@ -1,11 +1,11 @@
 import { init } from "echarts";
-import Image from "next/image";
 import { memo, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { EMPTY_OBJECT, noop } from "src/common/constants/utils";
 import { get } from "src/common/featureFlags";
 import { FEATURES } from "src/common/featureFlags/features";
 import { BOOLEAN } from "src/common/localStorage/set";
 import { FetchMarkerGeneParams } from "src/common/queries/wheresMyGene";
+import Image from "next/image";
 import {
   DispatchContext,
   StateContext,
@@ -28,9 +28,14 @@ import {
   TissueName,
   TissueWrapper,
   Wrapper,
+  StyledImage,
+  InfoButtonWrapper,
   Y_AXIS_TISSUE_WIDTH_PX,
 } from "./style";
 
+// the horizontal offset of the y-axis labels
+// determined by echarts
+const Y_AXIS_SVG_X_OFFSET = 12;
 interface Props {
   cellTypes?: CellType[];
   hasDeletedCellTypes: boolean;
@@ -52,6 +57,8 @@ export default memo(function YAxisChart({
   selectedOrganismId,
 }: Props): JSX.Element {
   const tissueKey = tissue.replace(" ", "-");
+  const yAxisSelectorQuery = `[data-test-id=cell-type-labels-${tissueKey}]`;
+
   const dispatch = useContext(DispatchContext);
   const { selectedTissues } = useContext(StateContext);
 
@@ -73,11 +80,9 @@ export default memo(function YAxisChart({
     const containerTop = document.querySelector(
       `[data-test-id=cell-type-labels-${topTissueKey}]`
     );
-    const container = document.querySelector(
-      `[data-test-id=cell-type-labels-${tissueKey}]`
-    );
+    const container = document.querySelector(yAxisSelectorQuery);
     const textElements = container?.querySelectorAll(
-      `text[transform*="translate(12"]`
+      `text[transform*="translate(${Y_AXIS_SVG_X_OFFSET}"]`
     );
     if (container && containerTop && textElements) {
       const { left, top } = containerTop.getBoundingClientRect();
@@ -162,9 +167,7 @@ export default memo(function YAxisChart({
   });
 
   useEffect(() => {
-    const targetNode = document.querySelector(
-      `[data-test-id=cell-type-labels-${tissueKey}]`
-    );
+    const targetNode = document.querySelector(yAxisSelectorQuery);
     const config = { attributes: true, childList: true, subtree: true };
     const callback = (mutationList: MutationRecord[]) => {
       for (const mutation of mutationList) {
@@ -210,15 +213,11 @@ export default memo(function YAxisChart({
         yAxisInfoCoords.map((coord, i) => {
           const content = cellTypeMetadata[i];
           return (
-            <div
-              id={`${content}`}
-              key={`${content}`}
-              style={{
-                position: "absolute",
-                left: coord[0],
-                top: coord[1],
-                cursor: "pointer",
-              }}
+            <InfoButtonWrapper
+              id={content}
+              key={content}
+              left={coord[0]}
+              top={coord[1]}
               onClick={() => {
                 if (isMarkerGenes) {
                   const { id } = deserializeCellTypeMetadata(content);
@@ -231,13 +230,14 @@ export default memo(function YAxisChart({
                 }
               }}
             >
-              <Image
+              <StyledImage
+                id={"marker-gene-button"}
                 src={InfoSVG.src}
-                width="9"
-                height="9"
+                width="10"
+                height="10"
                 alt="display marker genes"
               />
-            </div>
+            </InfoButtonWrapper>
           );
         })}
     </Wrapper>
