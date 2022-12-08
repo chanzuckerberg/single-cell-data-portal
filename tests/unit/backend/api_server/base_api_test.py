@@ -10,7 +10,7 @@ from backend.common.corpora_config import CorporaAuthConfig
 from tests.unit.backend.api_server.config import TOKEN_EXPIRES
 from tests.unit.backend.api_server.mock_auth import MockOauthServer
 from tests.unit.backend.fixtures.environment_setup import EnvironmentSetup
-from unit.backend.layers.common.base_api_test import NewBaseTest
+from tests.unit.backend.layers.common.base_api_test import NewBaseTest
 
 
 class BaseAPITest(NewBaseTest):

@@ -253,6 +253,25 @@ class BusinessLogic(BusinessLogicInterface):
             raise CollectionIsPublishedException([f"Collection version {collection_version_id.id} is published"])
         return collection_version
 
+    def create_empty_dataset(self, collection_version_id: CollectionVersionId) -> Tuple[DatasetVersionId, DatasetId]:
+        """
+        Creates an empty dataset that can be later used for ingestion
+        """
+        self._assert_collection_version_unpublished(collection_version_id)
+
+        new_dataset_version = self.database_provider.create_canonical_dataset(collection_version_id)
+        # adds new dataset version to collection version
+        self.database_provider.add_dataset_to_collection_version_mapping(
+            collection_version_id, new_dataset_version.version_id
+        )
+
+        self.database_provider.update_dataset_upload_status(new_dataset_version.version_id, DatasetUploadStatus.WAITING)
+        self.database_provider.update_dataset_processing_status(
+            new_dataset_version.version_id, DatasetProcessingStatus.PENDING
+        )
+
+        return (new_dataset_version.version_id, new_dataset_version.dataset_id)
+
     # TODO: Alternatives: 1) return DatasetVersion 2) Return a new class
     def ingest_dataset(
         self,

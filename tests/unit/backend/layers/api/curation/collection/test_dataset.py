@@ -1,12 +1,13 @@
 import unittest
 
 from backend.common.corpora_orm import CollectionVisibility, IsPrimaryData, UploadStatus
+from backend.layers.common.entities import DatasetStatusKey, DatasetUploadStatus
 from tests.unit.backend.api_server.base_api_test import BaseAuthAPITest
+from tests.unit.backend.layers.common.base_api_test import DatasetStatusUpdate
 
 
 class TestDeleteDataset(BaseAuthAPITest):
     def test__delete_dataset(self):
-        processing_status = {"upload_status": UploadStatus.UPLOADING, "upload_progress": 10.0}
         auth_credentials = [
             (self.make_super_curator_header, "super", 202),
             (self.make_owner_header, "owner", 202),
@@ -15,12 +16,13 @@ class TestDeleteDataset(BaseAuthAPITest):
         ]
         for auth, auth_description, expected_status_code in auth_credentials:
             with self.subTest(f"{auth_description} {expected_status_code}"):
-                collection = self.generate_collection(visibility=CollectionVisibility.PRIVATE.name)
+
                 dataset = self.generate_dataset(
-                    collection=collection,
-                    processing_status=processing_status,
+                    statuses=[DatasetStatusUpdate(DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADING)],
+                    publish=False
                 )
-                test_url = f"/curation/v1/collections/{collection.collection_id}/datasets/{dataset.id}"
+
+                test_url = f"/curation/v1/collections/{dataset.collection_id}/datasets/{dataset.dataset_id}"
                 headers = auth() if callable(auth) else auth
                 response = self.app.delete(test_url, headers=headers)
                 self.assertEqual(expected_status_code, response.status_code)
@@ -28,20 +30,19 @@ class TestDeleteDataset(BaseAuthAPITest):
 
 class TestGetDatasets(BaseAuthAPITest):
     def test_get_dataset_in_a_collection_200(self):
-        collection = self.generate_collection(visibility=CollectionVisibility.PRIVATE.name)
-        dataset = self.generate_dataset(collection=collection, name="test")
-        test_url = f"/curation/v1/collections/{collection.collection_id}/datasets/{dataset.id}"
+        dataset = self.generate_dataset(name="test") # TODO: name?
+        test_url = f"/curation/v1/collections/{dataset.collection_id}/datasets/{dataset.dataset_id}"
 
         response = self.app.get(test_url)
         self.assertEqual(200, response.status_code)
-        self.assertEqual(dataset.id, response.json["id"])
+        self.assertEqual(dataset.dataset_id, response.json["id"])
 
     def test_get_dataset_shape(self):
         collection = self.generate_collection(visibility=CollectionVisibility.PRIVATE.name)
-        dataset = self.generate_dataset(collection=collection, name="test")
-        test_url = f"/curation/v1/collections/{collection.collection_id}/datasets/{dataset.id}"
+        dataset = self.generate_dataset(name="test")
+        test_url = f"/curation/v1/collections/{collection.collection_id}/datasets/{dataset.dataset_id}"
         response = self.app.get(test_url)
-        self.assertEqual(dataset.name, response.json["title"])
+        self.assertEqual("test", response.json["title"])
 
     def test_get_dataset_is_primary_data_shape(self):
         collection = self.generate_collection(visibility=CollectionVisibility.PRIVATE.name)
@@ -52,8 +53,10 @@ class TestGetDatasets(BaseAuthAPITest):
         ]
         for is_primary_data, result in tests:
             with self.subTest(f"{is_primary_data}=={result}"):
-                dataset = self.generate_dataset(collection=collection, is_primary_data=is_primary_data)
-                test_url = f"/curation/v1/collections/{collection.collection_id}/datasets/{dataset.id}"
+                metadata = self.sample_dataset_metadata
+                metadata.is_primary_data=is_primary_data
+                dataset = self.generate_dataset(metadata=metadata)
+                test_url = f"/curation/v1/collections/{collection.collection_id}/datasets/{dataset.dataset_id}"
                 response = self.app.get(test_url)
                 self.assertEqual(result, response.json["is_primary_data"])
 
@@ -63,6 +66,7 @@ class TestGetDatasets(BaseAuthAPITest):
         response = self.app.get(test_url)
         self.assertEqual(404, response.status_code)
 
+    @unittest.skip("Tombstoned datasets do not exist anymore")
     def test_get_tombstoned_dataset_in_a_collection_404(self):
         collection = self.generate_collection(visibility=CollectionVisibility.PRIVATE.name)
         dataset = self.generate_dataset(collection=collection, tombstone=True)
