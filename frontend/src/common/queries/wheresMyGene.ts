@@ -698,25 +698,25 @@ interface MarkerGeneRequestBody {
   celltype: string;
   n_markers: number;
   organism: string;
-  test: string;
+  test: "ttest" | "binometest";
   tissue: string;
 }
 
 interface HardcodedMarkerGeneRequest extends MarkerGeneRequestBody {
-  n_markers: 10;
-  test: "ttest";
+  n_markers: 20;
 }
 
 export function generateMarkerGeneBody(
   cellTypeID: string,
   tissueID: string,
-  organismID: string
+  organismID: string,
+  test: "ttest" | "binomtest"
 ): HardcodedMarkerGeneRequest {
   return {
     celltype: cellTypeID,
-    n_markers: 10,
+    n_markers: 20,
     organism: organismID,
-    test: "ttest",
+    test: test,
     tissue: tissueID,
   };
 }
@@ -725,21 +725,24 @@ export interface FetchMarkerGeneParams {
   cellTypeID: string;
   tissueID: string;
   organismID: string;
+  test?: "ttest" | "binomtest";
 }
 
 export async function fetchMarkerGenes({
   cellTypeID,
   organismID,
   tissueID,
+  test = "ttest",
 }: FetchMarkerGeneParams): Promise<MarkerGeneResponse> {
   const url = API_URL + API.WMG_MARKER_GENES;
-  const body = generateMarkerGeneBody(cellTypeID, tissueID, organismID);
+  const body = generateMarkerGeneBody(cellTypeID, tissueID, organismID, test);
   const response = await fetch(url, {
     ...DEFAULT_FETCH_OPTIONS,
     ...JSON_BODY_FETCH_OPTIONS,
     body: JSON.stringify(body),
     method: "POST",
   });
+
   const json: MarkerGeneResponse = await response.json();
 
   if (!response.ok) {
@@ -772,6 +775,7 @@ export function useMarkerGenes({
   cellTypeID,
   organismID,
   tissueID,
+  test,
 }: FetchMarkerGeneParams): UseQueryResult<MarkerGeneResponse> {
   const { data } = usePrimaryFilterDimensions();
   const genesByID = useMemo((): { [name: string]: OntologyTerm } => {
@@ -787,7 +791,7 @@ export function useMarkerGenes({
   }, [data]);
 
   return useQuery(
-    [USE_MARKER_GENES, cellTypeID],
+    [USE_MARKER_GENES, cellTypeID, test],
     // Getting some weird issues with fetching some times (right side bar is not populated),
     //  this may be related to receiving NaN's from the backend. Going to ignore for now
     async () => {
@@ -795,16 +799,20 @@ export function useMarkerGenes({
         cellTypeID,
         organismID,
         tissueID,
+        test,
       });
       const markerGenesIndexedByGeneName = Object.fromEntries(
-        [...Object.entries(output.marker_genes)].map(([id, data]) => {
-          try {
-            return [genesByID[id].name, data];
-          } catch (e) {
-            console.log("could not find gene with id", id);
-            return [];
-          }
-        })
+        [...Object.entries(output.marker_genes)].reduce(
+          (newEntries, [id, data]) => {
+            try {
+              newEntries.push([genesByID[id].name, data]);
+            } catch (e) {
+              console.log("could not find gene with id", id);
+            }
+            return newEntries;
+          },
+          [] as [string, { effect_size: number; p_value: number }][]
+        )
       );
       return { ...output, marker_genes: markerGenesIndexedByGeneName };
     },

@@ -1,3 +1,4 @@
+import { HTMLTable } from "@blueprintjs/core";
 import styled from "@emotion/styled";
 import { Button, Icon } from "czifui";
 import React, { useCallback, useContext } from "react";
@@ -11,10 +12,17 @@ export interface CellInfoBarProps {
 function CellInfoBar({
   cellInfoCellTypes,
 }: CellInfoBarProps): JSX.Element | null {
+  const urlParams = new URLSearchParams(window.location.search);
+  let testType: "binomtest" | undefined = undefined;
+
+  if (urlParams.get("test") === "binomtest") {
+    testType = "binomtest";
+  }
   const { isLoading, data } = useMarkerGenes({
     cellTypeID: cellInfoCellTypes[0].cellType.id,
     tissueID: cellInfoCellTypes[0].tissueID,
     organismID: cellInfoCellTypes[0].organismID,
+    test: testType,
   });
 
   const dispatch = useContext(DispatchContext);
@@ -36,7 +44,21 @@ function CellInfoBar({
   const ButtonContainer = styled.div`
     display: flex;
     flex-direction: row;
+    justify-content: space-between;
+    border-bottom: 0.5px solid #cccccc;
   `;
+
+  const StyledHTMLTable = styled(HTMLTable)`
+    & td:nth-child(3) {
+      text-align: end;
+    }
+    & thead td {
+      color: #767676 !important;
+      font-weight: 500;
+    }
+  `;
+
+  console.log(data.marker_genes);
 
   const cellInfoCellType = cellInfoCellTypes[0];
   return (
@@ -45,11 +67,12 @@ function CellInfoBar({
       <BetaChip label="Beta" size="small" />
       <ButtonContainer>
         <Button
-          startIcon={<Icon sdsIcon="infoCircle" sdsSize="s" sdsType="button" />}
+          endIcon={<Icon sdsIcon="infoCircle" sdsSize="s" sdsType="button" />}
           onClick={handleCopyGenes}
           sdsStyle="minimal"
-          sdsType="info"
+          sdsType="secondary"
           isAllCaps={false}
+          style={{ fontWeight: "500" }}
         >
           Marker Genes
         </Button>
@@ -59,6 +82,7 @@ function CellInfoBar({
           sdsStyle="minimal"
           sdsType="primary"
           isAllCaps={false}
+          style={{ fontWeight: "500" }}
         >
           Copy Genes
         </Button>
@@ -68,12 +92,12 @@ function CellInfoBar({
           sdsStyle="minimal"
           sdsType="primary"
           isAllCaps={false}
+          style={{ fontWeight: "500" }}
         >
           Add to Dot Plot
         </Button>
       </ButtonContainer>
-      <br />
-      <table>
+      <StyledHTMLTable condensed bordered={false}>
         <thead>
           <tr>
             <td>Gene</td>
@@ -81,14 +105,16 @@ function CellInfoBar({
             <td>Effect Size</td>
           </tr>
         </thead>
-        {Object.entries(data.marker_genes).map((gene) => (
-          <tr key={gene[0]}>
-            <td>{gene[0]}</td>
-            <td>{gene[1].p_value}</td>
-            <td>{gene[1].effect_size}</td>
-          </tr>
-        ))}
-      </table>
+        <tbody>
+          {Object.entries(data.marker_genes).map((gene) => (
+            <tr key={gene[0]}>
+              <td>{gene[0]}</td>
+              <td>{gene[1].p_value.toPrecision(4)}</td>
+              <td>{gene[1].effect_size.toPrecision(4)}</td>
+            </tr>
+          ))}
+        </tbody>
+      </StyledHTMLTable>
     </div>
   );
 }

@@ -292,6 +292,7 @@ export default function WheresMyGene(): JSX.Element {
           disabled={false}
           forceToggle={false}
           wmgSideBar
+          width={400}
         >
           <CellInfoBar cellInfoCellTypes={cellInfoCellTypes} />
         </SideBar>
