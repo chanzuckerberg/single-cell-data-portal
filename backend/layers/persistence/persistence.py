@@ -407,7 +407,9 @@ class DatabaseProvider(DatabaseProviderInterface):
         Returns a dataset version by id.
         """
         with self.db_session_manager() as session:
-            dataset_version = session.query(DatasetVersionTable).filter_by(version_id=dataset_version_id.id).one()
+            dataset_version = session.query(DatasetVersionTable).filter_by(version_id=dataset_version_id.id).one_or_none()
+            if dataset_version is None:
+                return None
             return self._hydrate_dataset_version(dataset_version)
 
     def get_all_versions_for_dataset(self, dataset_id: DatasetId) -> List[DatasetVersion]:
@@ -634,7 +636,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             # This replaces the dataset while preserving the order of datasets
             datasets = list(collection_version.datasets)
             idx = next(i for i, e in enumerate(datasets) if str(e) == old_dataset_version_id.id)
-            datasets[idx] = new_dataset_version_id.id
+            datasets[idx] = uuid.UUID(new_dataset_version_id.id)
             collection_version.datasets = datasets
 
             return self._hydrate_dataset_version(new_dataset_version)

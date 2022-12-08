@@ -139,11 +139,8 @@ class TestCollection(NewBaseTest):
             self.assertEqual(None, actual_body.get("from_date"))
 
     # ✅
-    @patch("backend.layers.persistence.persistence_mock.datetime")
-    def test__get_collection_id__ok(self, mock_dt):
+    def test__get_collection_id__ok(self):
         """Verify the test collection exists and the expected fields exist."""
-
-        mock_dt.utcnow.return_value = 1234
 
         collection = self.generate_published_collection(add_datasets=2)
 
@@ -153,7 +150,7 @@ class TestCollection(NewBaseTest):
             "access_type": "WRITE",
             "contact_email": "john.doe@email.com",
             "contact_name": "john doe",
-            "created_at": 1234,
+            "created_at": mock.ANY,
             "curator_name": "",
             "data_submission_policy_version": "1.0",
             "datasets": [
@@ -163,7 +160,7 @@ class TestCollection(NewBaseTest):
                     "cell_count": 10,
                     "cell_type": [{"label": "test_cell_type_label", "ontology_term_id": "test_cell_type_term_id"}],
                     "collection_id": collection.collection_id.id,
-                    "created_at": 1234,
+                    "created_at": mock.ANY,
                     "dataset_assets": [],
                     "dataset_deployments": [{"url": "TODO"}],
                     "development_stage": [
@@ -191,7 +188,7 @@ class TestCollection(NewBaseTest):
                         "validation_status": "NA",
                     },
                     "published": True,
-                    "published_at": 1234,
+                    "published_at": mock.ANY,
                     "revision": 0,  # NA
                     "schema_version": "3.0.0",
                     "self_reported_ethnicity": [
@@ -204,7 +201,7 @@ class TestCollection(NewBaseTest):
                     "suspension_type": ["test_suspension_type"],
                     "tissue": [{"label": "test_tissue_label", "ontology_term_id": "test_tissue_term_id"}],
                     "tombstone": False,
-                    "updated_at": 1234,
+                    "updated_at": mock.ANY,
                     "x_approximate_distribution": "normal",
                 },
                 {
@@ -213,7 +210,7 @@ class TestCollection(NewBaseTest):
                     "cell_count": 10,
                     "cell_type": [{"label": "test_cell_type_label", "ontology_term_id": "test_cell_type_term_id"}],
                     "collection_id": collection.collection_id.id,
-                    "created_at": 1234,
+                    "created_at": mock.ANY,
                     "dataset_assets": [],
                     "dataset_deployments": [{"url": "TODO"}],
                     "development_stage": [
@@ -241,7 +238,7 @@ class TestCollection(NewBaseTest):
                         "validation_status": "NA",
                     },
                     "published": True,
-                    "published_at": 1234,
+                    "published_at": mock.ANY,
                     "revision": 0,
                     "schema_version": "3.0.0",
                     "self_reported_ethnicity": [
@@ -254,7 +251,7 @@ class TestCollection(NewBaseTest):
                     "suspension_type": ["test_suspension_type"],
                     "tissue": [{"label": "test_tissue_label", "ontology_term_id": "test_tissue_term_id"}],
                     "tombstone": False,
-                    "updated_at": 1234,
+                    "updated_at": mock.ANY,
                     "x_approximate_distribution": "normal",
                 },
             ],
@@ -262,8 +259,8 @@ class TestCollection(NewBaseTest):
             "id": mock.ANY,
             "links": [],
             "name": "test_collection",
-            "published_at": 1234,
-            "updated_at": 1234,
+            "published_at": mock.ANY,
+            "updated_at": mock.ANY,
             "visibility": "PUBLIC",
         }
 
@@ -325,7 +322,8 @@ class TestCollection(NewBaseTest):
     # ✅
     def test__get_collection_id__403_not_found(self):
         """Verify the test collection exists and the expected fields exist."""
-        test_url = furl(path="/dp/v1/collections/AAAA-BBBB-CCCC-DDDD", query_params=dict(visibility="PUBLIC"))
+        fake_id = self._generate_id()
+        test_url = furl(path=f"/dp/v1/collections/{fake_id}", query_params=dict(visibility="PUBLIC"))
         response = self.app.get(test_url.url, headers=dict(host="localhost"))
         self.assertEqual(403, response.status_code)
 
@@ -860,7 +858,7 @@ class TestCollectionDeletion(NewBaseTest):
         self.assertEqual(response.status_code, 403)
 
     def test_delete_collection__does_not_exist(self):
-        fake_id = "fake-collection-id"
+        fake_id = self._generate_id()
         test_url = furl(path=f"/dp/v1/collections/{fake_id}", query_params=dict(visibility="PRIVATE"))
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
         response = self.app.delete(test_url.url, headers=headers)
@@ -1241,11 +1239,12 @@ class TestDataset(NewBaseTest):
 
     # ✅
     def test__post_dataset_asset__dataset_NOT_FOUND(self):
-        test_url = furl(path="/dp/v1/datasets/test_user_id/asset/test_dataset_artifact_id")
+        fake_id = self._generate_id()
+        test_url = furl(path=f"/dp/v1/datasets/{fake_id}/asset/{fake_id}")
         response = self.app.post(test_url.url, headers=dict(host="localhost"))
         self.assertEqual(404, response.status_code)
         body = json.loads(response.data)
-        self.assertEqual("'dataset/test_user_id' not found.", body["detail"])
+        self.assertEqual(f"'dataset/{fake_id}' not found.", body["detail"])
 
     # ✅
     def test__post_dataset_asset__asset_NOT_FOUND(self):
@@ -1462,7 +1461,8 @@ class TestDataset(NewBaseTest):
 
     # ✅
     def test__cancel_dataset_download__dataset_does_not_exist(self):
-        test_url = "/dp/v1/datasets/missing_dataset_id"
+        fake_id = self._generate_id()
+        test_url = f"/dp/v1/datasets/{fake_id}"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
         response = self.app.delete(test_url, headers=headers)
         self.assertEqual(response.status_code, 403)
@@ -1604,8 +1604,10 @@ class TestDataset(NewBaseTest):
 
     # ✅
     def test__dataset_meta__404(self):
+        fake_id = self._generate_id()
         headers = {"host": "localhost", "Content-Type": "application/json"}
-        test_url_404 = "/dp/v1/datasets/meta?url=not_real"
+        fake_url = f"http://base.url/{fake_id}.cxg/"
+        test_url_404 = f"/dp/v1/datasets/meta?url={fake_url}"
 
         response = self.app.get(test_url_404, headers)
         self.assertEqual(response.status_code, 404)
@@ -1735,9 +1737,9 @@ class TestRevision(NewBaseTest):
         """
         Start a revision on a non-existing collection.
         """
-        # TODO: UUID
+        fake_collection_id = self._generate_id()
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
-        response = self.app.post("/dp/v1/collections/random", headers=headers)
+        response = self.app.post(f"/dp/v1/collections/{fake_collection_id}", headers=headers)
         self.assertEqual(403, response.status_code)
 
     # ✅
@@ -1936,8 +1938,7 @@ class TestPublishRevision(NewBaseTest):
         """
         Publish a collection with a bad uuid (non existant) returns 403
         """
-        # TODO: UUID
-        collection_id = "bad_id"
+        collection_id = self._generate_id()
         body = {"data_submission_policy_version": "1.0"}
         path = f"{self.base_path}/{collection_id}/publish"
         response = self.app.post(path, headers=self.headers, data=json.dumps(body))
@@ -2194,7 +2195,8 @@ class TestCollectionPostUploadLink(NewBaseTest):
 
     # ✅
     def test__link_fake_collection__403(self):
-        path = "/dp/v1/collections/fake/upload-links"
+        fake_id = self._generate_id()
+        path = f"/dp/v1/collections/{fake_id}/upload-links"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
         body = {"url": self.good_link}
 

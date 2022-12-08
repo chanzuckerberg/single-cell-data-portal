@@ -103,8 +103,11 @@ class NewBaseTest(BaseAuthAPITest):
         os.environ.setdefault("APP_NAME", "corpora-api")
 
         database_provider = DatabaseProviderMock()
+        # uncomment below and comment out above to run as integration tests, alongside a docker postgres instance
+        # database_provider = DatabaseProvider()
         # database_provider._drop()
         # database_provider._create()
+
         self.crossref_provider = CrossrefProviderInterface()
         step_function_provider = StepFunctionProviderInterface()
         self.s3_provider = S3Provider()
@@ -222,6 +225,9 @@ class NewBaseTest(BaseAuthAPITest):
             collection_version.collection_id.id,
             [a.id for a in artifact_ids],
         )
+
+    def _generate_id(self):
+        return DatabaseProviderMock._generate_id()
 
     def remove_timestamps(self, body: dict, remove: typing.List[str] = None) -> dict:
         # TODO: implement as needed
