@@ -121,7 +121,7 @@ function filterCategoryValues(
 ): SelectCategoryValueView[] {
   if (searchValue) {
     return categoryValues.filter(({ categoryValueId }) =>
-      categoryValueId.toLowerCase().includes(searchValue)
+      categoryValueId.toLowerCase().includes(searchValue.toLowerCase())
     );
   }
   return categoryValues;
