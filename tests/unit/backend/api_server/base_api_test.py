@@ -87,6 +87,14 @@ def get_cxguser_token(user="owner"):
 class BaseAuthAPITest(BaseAPITest):
     def setUp(self):
         super().setUp()
+
+        # TODO: this can be improved, but the current authorization method requires it
+        self.mock = patch(
+            "backend.common.corpora_config.CorporaAuthConfig.__getattr__",
+            return_value="mock_audience"
+        )
+        self.mock.start()
+
         self.mock_assert_authorized_token = patch(
             "backend.portal.api.app.v1.authentication.assert_authorized_token",
             side_effect=mock_assert_authorized_token,

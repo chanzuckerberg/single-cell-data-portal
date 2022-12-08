@@ -82,6 +82,7 @@ class TestGetDatasets(BaseAuthAPITest):
 
 
 class TestPostDataset(BaseAuthAPITest):
+
     def test_post_datasets_nonexistent_collection_403(self):
         test_url = "/curation/v1/collections/nonexistent/datasets"
         headers = self.make_owner_header()
@@ -89,7 +90,7 @@ class TestPostDataset(BaseAuthAPITest):
         self.assertEqual(403, response.status_code)
 
     def test_post_datasets_201(self):
-        collection = self.generate_collection()
+        collection = self.generate_unpublished_collection()
         test_url = f"/curation/v1/collections/{collection.collection_id}/datasets"
         headers = self.make_owner_header()
         response = self.app.post(test_url, headers=headers)
