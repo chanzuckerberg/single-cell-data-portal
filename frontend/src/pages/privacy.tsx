@@ -323,44 +323,43 @@ const Privacy = (): JSX.Element => {
                   <h5>The right not to be discriminated against.</h5> CZIF will
                   not discriminate against you in any manner for exercising any
                   of the above rights with respect to your personal data.
-                  <p>
-                    If you would like to exercise your right to any of the
-                    above, email us at{" "}
-                    <a href="mailto:privacy@chanzuckerberg.com">
-                      privacy@chanzuckerberg.com
-                    </a>
-                    . In the email, please provide us with your name, the
-                    country (and state if within the United States) in which you
-                    live, which of the above rights you would like to exercise,
-                    and sufficient information that allows us to reasonably
-                    verify that you are the person about whom we collected
-                    personal information. If you would like an authorized agent
-                    to make a request for you, have that agent email{" "}
-                    <a href="mailto:privacy@chanzuckerberg.com">
-                      privacy@chanzuckerberg.com
-                    </a>{" "}
-                    with the above information along with additional information
-                    sufficient for us to verify that the authorized agent is
-                    acting on your behalf. Please also let us know if you have
-                    questions or concerns related to exercising any rights you
-                    have under applicable law to control your personal data.
-                  </p>
-                  <p>
-                    If you would like to appeal a CZI decision with respect to a
-                    request to exercise any of these rights, please email us at{" "}
-                    <a href="mailto:privacy@chanzuckerberg.com">
-                      privacy@chanzuckerberg.com
-                    </a>{" "}
-                    and explain the basis for your appeal.
-                  </p>
-                  <p>
-                    If you wish to raise a concern about our use of your
-                    information (and without prejudice to any other rights you
-                    may have), you have the right to do so with your local
-                    supervisory authority.
-                  </p>
                 </li>
               </ul>
+              <p>
+                If you would like to exercise your right to any of the above,
+                email us at{" "}
+                <a href="mailto:privacy@chanzuckerberg.com">
+                  privacy@chanzuckerberg.com
+                </a>
+                . In the email, please provide us with your name, the country
+                (and state if within the United States) in which you live, which
+                of the above rights you would like to exercise, and sufficient
+                information that allows us to reasonably verify that you are the
+                person about whom we collected personal information. If you
+                would like an authorized agent to make a request for you, have
+                that agent email{" "}
+                <a href="mailto:privacy@chanzuckerberg.com">
+                  privacy@chanzuckerberg.com
+                </a>{" "}
+                with the above information along with additional information
+                sufficient for us to verify that the authorized agent is acting
+                on your behalf. Please also let us know if you have questions or
+                concerns related to exercising any rights you have under
+                applicable law to control your personal data.
+              </p>
+              <p>
+                If you would like to appeal a CZI decision with respect to a
+                request to exercise any of these rights, please email us at{" "}
+                <a href="mailto:privacy@chanzuckerberg.com">
+                  privacy@chanzuckerberg.com
+                </a>{" "}
+                and explain the basis for your appeal.
+              </p>
+              <p>
+                If you wish to raise a concern about our use of your information
+                (and without prejudice to any other rights you may have), you
+                have the right to do so with your local supervisory authority.
+              </p>
             </>
             {/* Security */}
             <>

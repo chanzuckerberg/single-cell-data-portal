@@ -42,14 +42,21 @@ const AgreementDocumentStyle = styled.div`
   li {
     margin-top: 10px;
   }
+
+  ol,
+  ul {
+    padding-left: 16px;
+  }
+
+  ol > li,
+  ul > li {
+    padding-left: 0;
+  }
 `;
 
 export const TOSStyle = styled(AgreementDocumentStyle)`
-  ol > li,
-  ul > li,
-  ol > p,
-  ul > p {
-    padding-left: 8px;
+  ol[class^="section"] {
+    padding-left: 0;
   }
 
   .section1 > li,
@@ -139,17 +146,12 @@ export const PrivacyStyle = styled(AgreementDocumentStyle)`
     display: inline;
   }
 
-  ul {
-    padding-left: 16px;
-  }
-
   ul.text-list {
     padding-left: 8px;
   }
 
   ul > li {
     list-style-type: square;
-    padding: 0;
   }
 
   ul.text-list > li {
