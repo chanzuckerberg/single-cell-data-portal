@@ -68,7 +68,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             version_id=CollectionVersionId(str(row.version_id)),
             owner=row.owner,
             metadata=CollectionMetadata.from_json(row.metadata),
-            publisher_metadata=json.loads(row.publisher_metadata),
+            publisher_metadata=None if row.publisher_metadata is None else json.loads(row.publisher_metadata),
             datasets=[DatasetVersionId(str(id)) for id in row.datasets],
             published_at=row.published_at,
             created_at=row.created_at,
@@ -83,7 +83,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             version_id=CollectionVersionId(str(row.version_id)),
             owner=row.owner,
             metadata=CollectionMetadata.from_json(row.metadata),
-            publisher_metadata=json.loads(row.publisher_metadata),
+            publisher_metadata=None if row.publisher_metadata is None else json.loads(row.publisher_metadata),
             datasets=datasets,
             published_at=row.published_at,
             created_at=row.created_at,
@@ -313,7 +313,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         """
         with self.db_session_manager() as session:
             version = session.query(CollectionVersionTable).filter_by(version_id=version_id.id).one()
-            version.publisher_metadata = publisher_metadata
+            version.publisher_metadata = json.dumps(publisher_metadata)
 
     def add_collection_version(self, collection_id: CollectionId) -> CollectionVersionId:
         """

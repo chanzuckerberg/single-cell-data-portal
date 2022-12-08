@@ -197,8 +197,8 @@ class TestCreateCollection(BaseBusinessLogicTestCase):
         links_with_doi = [Link("test doi", "DOI", "http://good.doi")]
         self.sample_collection_metadata.links = links_with_doi
 
-        expected_publiser_metadata = {"authors": ["Test Author"]}
-        self.crossref_provider.fetch_metadata = Mock(return_value=expected_publiser_metadata)
+        expected_publisher_metadata = {"authors": ["Test Author"]}
+        self.crossref_provider.fetch_metadata = Mock(return_value=expected_publisher_metadata)
 
         collection = self.business_logic.create_collection(self.test_user_name, self.sample_collection_metadata)
 
@@ -208,7 +208,7 @@ class TestCreateCollection(BaseBusinessLogicTestCase):
         self.assertEqual(1, len(collection_from_database.metadata.links))
         self.assertEqual(collection_from_database.metadata.links[0].uri, "http://good.doi")
         self.assertIsNotNone(collection_from_database.publisher_metadata)
-        self.assertEqual(collection_from_database.publisher_metadata, expected_publiser_metadata)
+        self.assertEqual(collection_from_database.publisher_metadata, expected_publisher_metadata)
 
     def test_create_collection_with_not_found_doi_fail(self):
         """
@@ -423,8 +423,8 @@ class TestUpdateCollection(BaseBusinessLogicTestCase):
         links = [Link("test doi", "DOI", "http://test.doi")]
         metadata.links = links
 
-        expected_publiser_metadata = {"authors": ["Test Author"]}
-        self.crossref_provider.fetch_metadata = Mock(return_value=expected_publiser_metadata)
+        expected_publisher_metadata = {"authors": ["Test Author"]}
+        self.crossref_provider.fetch_metadata = Mock(return_value=expected_publisher_metadata)
 
         # We need to call `business_logic.create_collection` so that the publisher metadata is populated
         version = self.business_logic.create_collection(self.test_user_name, metadata)
