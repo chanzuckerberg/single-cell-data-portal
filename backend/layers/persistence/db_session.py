@@ -15,7 +15,6 @@ class DBSessionMaker:
     def __init__(self, database_uri: str = None):
         if not database_uri:
             database_uri = CorporaDbConfig().database_uri
-            # database_uri = "postgresql://postgres:secret@localhost"
         self.engine = create_engine(database_uri, connect_args={"connect_timeout": 5})
         self._session_maker = sessionmaker(bind=self.engine)
 
@@ -25,7 +24,8 @@ class DBSessionMaker:
         return self._session_maker(**kwargs)
 
 
-_db_session_maker = DBSessionMaker()
+# T0D0: remove hard-coded
+_db_session_maker = DBSessionMaker(database_uri="postgresql://postgres:secret@localhost")
 
 
 @contextmanager
