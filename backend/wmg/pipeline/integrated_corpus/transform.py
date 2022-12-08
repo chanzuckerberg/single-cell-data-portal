@@ -1,6 +1,5 @@
 import gc
 import logging
-import time
 
 import anndata
 import numpy
