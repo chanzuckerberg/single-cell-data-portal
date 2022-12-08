@@ -139,6 +139,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         new_version_id = CollectionVersionId(self._generate_id())
         # Note: since datasets are immutable, there is no need to clone datasets here,
         # but the list that contains datasets needs to be copied, since it's a pointer.
+        self.datasets_versions
         new_dataset_list = copy.deepcopy(current_version.datasets)
 
         collection_version = CollectionVersion(
@@ -187,14 +188,15 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         self, collection_id: CollectionId, version_id: CollectionVersionId, published_at: Optional[datetime] = None
     ) -> None:
 
-        if not published_at:
-            published_at = datetime.utcnow()
+        published_at = published_at if published_at else datetime.utcnow()
 
         version = self.collections_versions[version_id.id]
         for dataset_version_id in version.datasets:
             dataset_version = self.get_dataset_version(dataset_version_id)
-            if self.datasets[dataset_version.dataset_id.id].published_at is None:
-                self.datasets[dataset_version.dataset_id.id].published_at = published_at
+            if self.datasets[dataset_version.dataset_id.id].canonical_dataset.published_at is None:
+                self.datasets[dataset_version.dataset_id.id].canonical_dataset.published_at = published_at
+            if self.datasets_versions[dataset_version.version_id.id].canonical_dataset.revised_at is None:
+                self.datasets_versions[dataset_version.version_id.id].canonical_dataset.revised_at = published_at
 
         cc = self.collections.get(collection_id.id)
         if cc is None:
@@ -267,6 +269,8 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         self.datasets[dataset_id.id] = CanonicalDataset(
             dataset_id=dataset_id, dataset_version_id=version_id, published_at=None
         )
+        # Register the dataset to the original collection
+        collection_version.datasets.append(version)
         return copy.deepcopy(version)
 
     def add_dataset_to_collection_version_mapping(

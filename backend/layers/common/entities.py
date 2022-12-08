@@ -81,13 +81,14 @@ class DatasetStatus:
     rds_status: Optional[DatasetConversionStatus]
     h5ad_status: Optional[DatasetConversionStatus]
     processing_status: Optional[DatasetProcessingStatus]
+    validation_message: Optional[str] = None
 
     @staticmethod
     def empty():
         return DatasetStatus(None, None, None, None, None, None)
 
 
-@dataclass(eq=True, frozen=True)
+@dataclass
 class CollectionId:
     id: str
 
@@ -167,7 +168,8 @@ class DatasetMetadata:
 class CanonicalDataset:
     dataset_id: DatasetId
     dataset_version_id: DatasetVersionId
-    published_at: Optional[datetime]
+    published_at: Optional[datetime] = None
+    revised_at: Optional[datetime] = None  # The last time this Dataset Version was Published
 
 
 @dataclass

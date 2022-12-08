@@ -1,5 +1,6 @@
-from dataclasses import dataclass
 from typing import List, Optional
+
+from pydantic.dataclasses import dataclass
 
 from backend.layers.common.entities import DatasetArtifactType, Link
 

@@ -8,20 +8,14 @@ class BusinessException(Exception):
 
 # TODO: possibly merge the following 3 classes? They all refer to the same action (validating the collection metadata)
 class CollectionCreationException(BusinessException):
-
-    errors: Optional[List[str]]
-
     def __init__(self, errors: Optional[List[str]] = None) -> None:
-        self.errors = errors
+        self.errors: Optional[List[str]] = errors
         super().__init__()
 
 
 class CollectionUpdateException(BusinessException):
-
-    errors: Optional[List[str]]
-
     def __init__(self, errors: Optional[List[str]] = None) -> None:
-        self.errors = errors
+        self.errors: Optional[List[str]] = errors
         super().__init__()
 
 
@@ -42,11 +36,8 @@ class CollectionIsPublishedException(CollectionUpdateException):
 
 
 class InvalidLinkException(BusinessException):
-
-    errors: Optional[List[str]]
-
     def __init__(self, errors: Optional[List[str]] = None) -> None:
-        self.errors = errors
+        self.errors: Optional[List[str]] = errors
         super().__init__()
 
 
