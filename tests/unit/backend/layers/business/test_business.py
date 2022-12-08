@@ -33,7 +33,6 @@ from backend.layers.common.entities import (
     Link,
     OntologyTermId,
 )
-from backend.layers.persistence.persistence import DatabaseProvider
 from backend.layers.persistence.persistence_mock import DatabaseProviderMock
 from backend.layers.thirdparty.crossref_provider import CrossrefProviderInterface
 from backend.layers.thirdparty.s3_provider import S3Provider
