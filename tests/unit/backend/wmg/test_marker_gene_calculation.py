@@ -3,7 +3,7 @@ import json
 import pytest
 from tests.unit.backend.wmg.fixtures.test_snapshot import load_test_fmg_snapshot
 from backend.wmg.pipeline.summary_cubes.calculate_markers import _query_tiledb, get_markers
-from backend.wmg.api.query import retrieve_top_n_markers
+from backend.wmg.data.query import retrieve_top_n_markers
 
 TEST_SNAPSHOT = "test-fmg-snapshot"
 

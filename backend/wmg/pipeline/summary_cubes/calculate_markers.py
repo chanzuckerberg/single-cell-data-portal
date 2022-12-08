@@ -4,7 +4,7 @@ from scipy import stats
 import json
 import tiledb
 from functools import lru_cache, wraps
-from backend.wmg.api.query import FmgQueryCriteria, WmgQuery
+from backend.wmg.data.query import FmgQueryCriteria, WmgQuery
 from backend.wmg.data.snapshot import (
     load_snapshot,
     WmgSnapshot,

@@ -229,7 +229,7 @@ export default function WheresMyGene(): JSX.Element {
     }
   }, [dispatch]);
 
-  const hasSelectedTissues = selectedTissues.length > 0 && !isLoading;
+  const hasSelectedTissues = selectedTissues.length > 0;
   const hasSelectedGenes = selectedGenes.length > 0;
 
   const shouldShowHeatMap = useMemo(() => {
@@ -317,7 +317,6 @@ export default function WheresMyGene(): JSX.Element {
               scaledMeanExpressionMax={scaledMeanExpressionMax}
               scaledMeanExpressionMin={scaledMeanExpressionMin}
               selectedOrganismId={selectedOrganismId}
-              tissueLoaded={hasSelectedTissues}
             />
           ) : (
             ""
