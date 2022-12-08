@@ -905,16 +905,16 @@ class WmgApiV1Tests(unittest.TestCase):
 
             expected = {
                 "marker_genes": {
-                    "ENSG00000051108": {"effect_size": 1.6856228113174438, "p_value": 0.0},
-                    "ENSG00000099958": {"effect_size": 1.6013718843460083, "p_value": 0.0},
-                    "ENSG00000100219": {"effect_size": 1.4613032341003418, "p_value": 0.0},
-                    "ENSG00000118363": {"effect_size": 1.4760183095932007, "p_value": 0.0},
-                    "ENSG00000132465": {"effect_size": 2.4143028259277344, "p_value": 0.0},
-                    "ENSG00000134285": {"effect_size": 1.8657838106155396, "p_value": 0.0},
-                    "ENSG00000166562": {"effect_size": 1.8400332927703857, "p_value": 0.0},
-                    "ENSG00000170476": {"effect_size": 2.8502309322357178, "p_value": 0.0},
-                    "ENSG00000180879": {"effect_size": 2.5727155208587646, "p_value": 0.0},
-                    "ENSG00000211592": {"effect_size": 1.5220520496368408, "p_value": 0.0},
+                    "ENSG00000132465": {"p_value": 0.0, "effect_size": 2.317647933959961},
+                    "ENSG00000170476": {"p_value": 0.0, "effect_size": 1.908108115196228},
+                    "ENSG00000180879": {"p_value": 0.0, "effect_size": 1.7537814378738403},
+                    "ENSG00000134285": {"p_value": 0.0, "effect_size": 1.7066189050674438},
+                    "ENSG00000099958": {"p_value": 0.0, "effect_size": 1.5534085035324097},
+                    "ENSG00000211592": {"p_value": 0.0, "effect_size": 1.363141417503357},
+                    "ENSG00000051108": {"p_value": 0.0, "effect_size": 1.1919057369232178},
+                    "ENSG00000166562": {"p_value": 0.0, "effect_size": 1.1310830116271973},
+                    "ENSG00000118363": {"p_value": 0.0, "effect_size": 0.9623821377754211},
+                    "ENSG00000173110": {"p_value": 0.0, "effect_size": 0.18932978808879852},
                 },
                 "snapshot_id": "test-fmg-snapshot",
             }
