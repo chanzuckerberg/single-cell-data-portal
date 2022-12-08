@@ -23,30 +23,30 @@ class DatasetStatusGeneric:
 
 
 class DatasetUploadStatus(DatasetStatusGeneric, Enum):
-    NA = "N/A"
-    WAITING = "Waiting"
-    UPLOADING = "Uploading"
-    UPLOADED = "Uploaded"
-    FAILED = "Failed"
-    CANCEL_PENDING = "Cancel pending"
-    CANCELED = "Canceled"
+    NA = "NA"
+    WAITING = "WAITING"
+    UPLOADING = "UPLOADING"
+    UPLOADED = "UPLOADED"
+    FAILED = "FAILED"
+    CANCEL_PENDING = "CANCEL PENDING"
+    CANCELED = "CANCELED"
 
 
 class DatasetValidationStatus(DatasetStatusGeneric, Enum):
-    NA = "N/A"
-    VALIDATING = "Validating"
-    VALID = "Valid"
-    INVALID = "Invalid"
+    NA = "NA"
+    VALIDATING = "VALIDATING"
+    VALID = "VALID"
+    INVALID = "INVALID"
 
 
 class DatasetConversionStatus(DatasetStatusGeneric, Enum):
-    NA = "N/A"
-    CONVERTING = "Converting"
-    CONVERTED = "Converted"
-    UPLOADING = "Uploading"
-    UPLOADED = "Uploaded"
-    FAILED = "Failed"
-    SKIPPED = "Skipped"
+    NA = "NA"
+    CONVERTING = "CONVERTING"
+    CONVERTED = "CONVERTED"
+    UPLOADING = "UPLOADING"
+    UPLOADED = "UPLOADED"
+    FAILED = "FAILED"
+    SKIPPED = "SKIPPED"
 
 
 class DatasetProcessingStatus(DatasetStatusGeneric, Enum):
@@ -167,8 +167,9 @@ class DatasetMetadata:
 @dataclass
 class CanonicalDataset:
     dataset_id: DatasetId
-    dataset_version_id: DatasetVersionId = None
+    dataset_version_id: DatasetVersionId
     published_at: Optional[datetime] = None
+    revised_at: Optional[datetime] = None  # The last time this Dataset Version was Published
 
 
 @dataclass
@@ -180,7 +181,6 @@ class DatasetVersion:
     metadata: DatasetMetadata
     artifacts: List[DatasetArtifact]
     created_at: datetime
-    revised_at: Optional[datetime]  # The last time this Dataset Version was Published
     canonical_dataset: CanonicalDataset
 
 

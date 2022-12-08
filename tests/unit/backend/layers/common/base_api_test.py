@@ -30,7 +30,7 @@ from tests.unit.backend.api_server.config import TOKEN_EXPIRES
 
 @dataclass
 class DatasetStatusUpdate:
-    status_key: str
+    status_key: DatasetStatusKey
     status: DatasetStatusGeneric
 
 
@@ -90,13 +90,15 @@ class BaseAuthAPITest(unittest.TestCase):
 
 
 class NewBaseTest(BaseAuthAPITest):
+
+    business_logic: BusinessLogic
+    crossref_provider: CrossrefProviderInterface  # Can be mocked from the tests
+    uri_provider: UriProviderInterface
+
+    sample_dataset_metadata: DatasetMetadata
+
     def setUp(self):
         super().setUp()
-        self.business_logic: BusinessLogic
-        self.crossref_provider: CrossrefProviderInterface  # Can be mocked from the tests
-        self.uri_provider: UriProviderInterface
-
-        sample_dataset_metadata: DatasetMetadata
         os.environ.setdefault("APP_NAME", "corpora-api")
 
         database_provider = DatabaseProviderMock()
@@ -167,14 +169,15 @@ class NewBaseTest(BaseAuthAPITest):
             return self.generate_unpublished_collection(**params)
 
     def generate_unpublished_collection(
-        self, owner="test_user_id", links: List[Link] = [], add_datasets: int = 0, curator_name="Jane Smith"
+        self, owner="test_user_id", links: List[Link] = [], add_datasets: int = 0
     ) -> CollectionVersion:
 
         metadata = CollectionMetadata("test_collection", "described", "john doe", "john.doe@email.com", links)
 
-        collection = self.business_logic.create_collection(owner, metadata, curator_name)
+        collection = self.business_logic.create_collection(owner, metadata)
 
         for _ in range(add_datasets):
+
             metadata = copy.deepcopy(self.sample_dataset_metadata)
             # TODO: generate a real dataset, with artifact and processing status
             dataset_version_id, _ = self.business_logic.ingest_dataset(collection.version_id, "http://fake.url", None)
@@ -187,10 +190,8 @@ class NewBaseTest(BaseAuthAPITest):
     def generate_published_collection(
         self, owner="test_user_id", links: List[Link] = [], add_datasets: int = 1, curator_name: str = "Jane Smith"
     ) -> CollectionVersion:
-        unpublished_collection = self.generate_unpublished_collection(
-            owner, links, add_datasets=add_datasets, curator_name=curator_name
-        )
-        self.business_logic.publish_collection_version(unpublished_collection.version_id)
+        unpublished_collection = self.generate_unpublished_collection(owner, links, add_datasets=add_datasets)
+        self.business_logic.publish_collection_version(unpublished_collection.version_id, curator_name=curator_name)
         return self.business_logic.get_collection_version(unpublished_collection.version_id)
 
     def generate_dataset(

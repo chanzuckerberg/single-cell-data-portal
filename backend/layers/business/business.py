@@ -36,6 +36,7 @@ from backend.layers.common.entities import (
     CollectionVersionWithDatasets,
     DatasetArtifact,
     DatasetArtifactId,
+    DatasetArtifactType,
     DatasetConversionStatus,
     DatasetId,
     DatasetMetadata,
@@ -89,9 +90,7 @@ class BusinessLogic(BusinessLogicInterface):
             logging.warning(f"CrossrefException on create_collection: {e}. Will ignore metadata.")
             return None
 
-    def create_collection(
-        self, owner: str, collection_metadata: CollectionMetadata, curator_name: str
-    ) -> CollectionVersion:
+    def create_collection(self, owner: str, collection_metadata: CollectionMetadata) -> CollectionVersion:
         """
         Creates a collection using the specified metadata. If a DOI is defined, will also
         retrieve publisher metadata from Crossref and add it to the collection.
@@ -114,7 +113,7 @@ class BusinessLogic(BusinessLogicInterface):
         if errors:
             raise CollectionCreationException(errors)
 
-        created_version = self.database_provider.create_canonical_collection(owner, collection_metadata, curator_name)
+        created_version = self.database_provider.create_canonical_collection(owner, collection_metadata)
 
         # TODO: can collapse with `create_canonical_collection`
         if publisher_metadata:
@@ -423,7 +422,7 @@ class BusinessLogic(BusinessLogicInterface):
 
         # TODO: we should probably validate that artifact_uri is a valid S3 URI
 
-        if artifact_type not in ["H5AD", "CXG", "RDS"]:
+        if artifact_type not in [artifact.value for artifact in DatasetArtifactType]:
             raise DatasetIngestException(f"Wrong artifact type for {dataset_version_id}: {artifact_type}")
 
         return self.database_provider.add_dataset_artifact(dataset_version_id, artifact_type, artifact_uri)

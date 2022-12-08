@@ -1,8 +1,4 @@
-import gevent.monkey
-
 from backend.common.corpora_orm import CollectionVisibility, UploadStatus, generate_id
-
-gevent.monkey.patch_all()
 
 import dataclasses
 import itertools
@@ -12,7 +8,9 @@ from datetime import datetime
 from unittest import mock
 from unittest.mock import Mock, patch
 from backend.layers.business.entities import DatasetArtifactDownloadData
-from backend.layers.common.entities import DatasetStatusKey
+from backend.layers.common.entities import (
+    DatasetStatusKey,
+)
 from backend.layers.common.entities import (
     CollectionId,
     CollectionLinkType,
@@ -29,7 +27,11 @@ from furl import furl
 
 from backend.common.providers.crossref_provider import CrossrefDOINotFoundException, CrossrefFetchException
 from backend.portal.api.collections_common import verify_collection_body
-from tests.unit.backend.layers.common.base_api_test import DatasetArtifactUpdate, DatasetStatusUpdate, NewBaseTest
+from tests.unit.backend.layers.common.base_api_test import (
+    DatasetArtifactUpdate,
+    DatasetStatusUpdate,
+    NewBaseTest,
+)
 
 
 def generate_mock_publisher_metadata(journal_override=None):
@@ -267,7 +269,7 @@ class TestCollection(NewBaseTest):
         with self.subTest("auth cookie"):
             expected_body["access_type"] = "WRITE"
             test_url = furl(path=f"/dp/v1/collections/{collection.version_id}", query_params=dict(visibility="PUBLIC"))
-            cxguser_cookie = self.get_cxguser_token()
+            cxguser_cookie = self.self.get_cxguser_token()
             response = self.app.get(test_url.url, headers=dict(host="localhost", Cookie=cxguser_cookie))
             self.assertEqual(200, response.status_code)
             actual_body = self.remove_timestamps(json.loads(response.data))
@@ -310,7 +312,7 @@ class TestCollection(NewBaseTest):
 
                 headers = dict(host="localhost")
                 if auth:
-                    headers["Cookie"] = self.get_cxguser_token()
+                    headers["Cookie"] = self.self.get_cxguser_token()
                 print("headers - ", headers)
                 response = self.app.get(test_url.url, headers=headers)
 
@@ -339,7 +341,7 @@ class TestCollection(NewBaseTest):
         json_data = json.dumps(data)
         response = self.app.post(
             test_url.url,
-            headers={"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()},
+            headers={"host": "localhost", "Content-Type": "application/json", "Cookie": self.self.get_cxguser_token()},
             data=json_data,
         )
         self.assertEqual(201, response.status_code)
@@ -349,7 +351,7 @@ class TestCollection(NewBaseTest):
         json_data = json.dumps(data)
         response = self.app.post(
             test_url.url,
-            headers={"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()},
+            headers={"host": "localhost", "Content-Type": "application/json", "Cookie": self.self.get_cxguser_token()},
             data=json_data,
         )
         self.assertEqual(201, response.status_code)
@@ -369,7 +371,7 @@ class TestCollection(NewBaseTest):
         json_data = json.dumps(data)
         response = self.app.post(
             test_url.url,
-            headers={"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()},
+            headers={"host": "localhost", "Content-Type": "application/json", "Cookie": self.self.get_cxguser_token()},
             data=json_data,
         )
         self.assertEqual(201, response.status_code)
@@ -395,7 +397,7 @@ class TestCollection(NewBaseTest):
         json_data = json.dumps(data)
         response = self.app.post(
             test_url.url,
-            headers={"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()},
+            headers={"host": "localhost", "Content-Type": "application/json", "Cookie": self.self.get_cxguser_token()},
             data=json_data,
         )
         self.assertEqual(400, response.status_code)
@@ -416,7 +418,7 @@ class TestCollection(NewBaseTest):
         json_data = json.dumps(data)
         response = self.app.post(
             test_url.url,
-            headers={"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()},
+            headers={"host": "localhost", "Content-Type": "application/json", "Cookie": self.self.get_cxguser_token()},
             data=json_data,
         )
         self.assertEqual(400, response.status_code)
@@ -436,7 +438,7 @@ class TestCollection(NewBaseTest):
         json_data = json.dumps(data)
         response = self.app.post(
             test_url.url,
-            headers={"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()},
+            headers={"host": "localhost", "Content-Type": "application/json", "Cookie": self.self.get_cxguser_token()},
             data=json_data,
         )
         self.assertEqual(400, response.status_code)
@@ -459,7 +461,7 @@ class TestCollection(NewBaseTest):
         json_data = json.dumps(data)
         response = self.app.post(
             test_url.url,
-            headers={"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()},
+            headers={"host": "localhost", "Content-Type": "application/json", "Cookie": self.self.get_cxguser_token()},
             data=json_data,
         )
         self.assertEqual(201, response.status_code)
@@ -479,7 +481,7 @@ class TestCollection(NewBaseTest):
         json_data = json.dumps(data)
         response = self.app.post(
             test_url.url,
-            headers={"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()},
+            headers={"host": "localhost", "Content-Type": "application/json", "Cookie": self.self.get_cxguser_token()},
             data=json_data,
         )
         self.assertEqual(201, response.status_code)
@@ -503,7 +505,7 @@ class TestCollection(NewBaseTest):
         json_data = json.dumps(data)
         response = self.app.post(
             test_url.url,
-            headers={"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()},
+            headers={"host": "localhost", "Content-Type": "application/json", "Cookie": self.self.get_cxguser_token()},
             data=json_data,
         )
         self.assertEqual(201, response.status_code)
@@ -551,7 +553,7 @@ class TestCollection(NewBaseTest):
                     headers={
                         "host": "localhost",
                         "Content-Type": "application/json",
-                        "Cookie": self.get_cxguser_token(),
+                        "Cookie": self.self.get_cxguser_token(),
                     },
                     data=json.dumps(data),
                 )
@@ -563,7 +565,7 @@ class TestCollection(NewBaseTest):
         data = json.dumps({"name": "bkjbjbjmbjm"})
         response = self.app.post(
             test_url.url,
-            headers={"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()},
+            headers={"host": "localhost", "Content-Type": "application/json", "Cookie": self.self.get_cxguser_token()},
             data=data,
         )
         self.assertEqual(400, response.status_code)
@@ -571,7 +573,7 @@ class TestCollection(NewBaseTest):
     # ✅
     def test__can_retrieve_created_collection(self):
         test_url = furl(path="/dp/v1/collections")
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.self.get_cxguser_token()}
         data = {
             "name": "another collection name",
             "description": "This is a test collection",
@@ -607,7 +609,7 @@ class TestCollection(NewBaseTest):
     # 🔴 used to be done by the database - we need to decide where this goes now
     def test__create_collection_strip_string_fields(self):
         test_url = furl(path="/dp/v1/collections")
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.self.get_cxguser_token()}
         data = {
             "name": "   another collection name   ",
             "description": "    This is a test collection  ",
@@ -666,7 +668,7 @@ class TestCollection(NewBaseTest):
             self.assertNotIn(revision_owned.id, ids)
 
         with self.subTest("auth"):
-            headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+            headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.self.get_cxguser_token()}
             response = self.app.get(path, headers=headers)
             self.assertEqual(200, response.status_code)
             result = json.loads(response.data)
@@ -744,7 +746,11 @@ class TestCollection(NewBaseTest):
         ]
         for body, expected_errors in tests:
             with self.subTest(body):
-                headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+                headers = {
+                    "host": "localhost",
+                    "Content-Type": "application/json",
+                    "Cookie": self.self.get_cxguser_token(),
+                }
                 response = self.app.post("/dp/v1/collections", headers=headers, data=json.dumps(body))
                 self.assertEqual(400, response.status_code)
                 for error in expected_errors:
@@ -795,17 +801,17 @@ class TestCollectionDeletion(NewBaseTest):
         collection = self.generate_collection(visibility=CollectionVisibility.PUBLIC.name, owner="test_user_id")
         # Generate the public collection with the same id as the private so a tombstone is created
         revision = self.generate_collection(
-            visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id", revision_of=collection.collection_id
+            self.session, visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id", revision_of=collection.id
         )
 
         processing_status_1 = {"upload_status": UploadStatus.WAITING, "upload_progress": 0.0}
         processing_status_2 = {"upload_status": UploadStatus.UPLOADED, "upload_progress": 100.0}
 
-        dataset_1 = self.generate_dataset(collection=revision, processing_status=processing_status_1)
-        dataset_2 = self.generate_dataset(collection=revision, processing_status=processing_status_2)
+        dataset_1 = self.generate_dataset(self.session, collection=revision, processing_status=processing_status_1)
+        dataset_2 = self.generate_dataset(self.session, collection=revision, processing_status=processing_status_2)
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
         test_private_url = furl(path=f"/dp/v1/collections/{revision.id}")
-        test_public_url = furl(path=f"/dp/v1/collections/{collection.collection_id}")
+        test_public_url = furl(path=f"/dp/v1/collections/{collection.id}")
         response = self.app.get(test_private_url.url, headers=headers)
         self.assertEqual(200, response.status_code)
 
@@ -830,23 +836,23 @@ class TestCollectionDeletion(NewBaseTest):
     def test_tombstone_published_collection_with_revision__ok(self):
         """Both the published and revised collections are tombstoned."""
         # Generate the public collection
-        collection = self.generate_collection(visibility=CollectionVisibility.PUBLIC.name, owner="test_user_id")
+        collection = self.generate_collection(
+            self.session, visibility=CollectionVisibility.PUBLIC.name, owner="test_user_id"
+        )
         # Generate test collection
         revision = self.generate_collection(
-            visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id", revision_of=collection.collection_id
+            self.session, visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id", revision_of=collection.id
         )
-        # revision_id = revision.collection_id
+        revision_id = revision.id
 
         processing_status = {"upload_status": UploadStatus.UPLOADED, "upload_progress": 100.0}
 
-        dataset_rev = self.generate_dataset(collection=revision, processing_status=processing_status)
-        dataset_pub = self.generate_dataset(collection=collection, processing_status=processing_status)
+        dataset_rev = self.generate_dataset(self.session, collection=revision, processing_status=processing_status)
+        dataset_pub = self.generate_dataset(self.session, collection=collection, processing_status=processing_status)
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
 
         # Verify private collections exist
-        test_private_url = furl(
-            path=f"/dp/v1/collections/{revision.collection_id}", query_params=dict(visibility="PRIVATE")
-        )
+        test_private_url = furl(path=f"/dp/v1/collections/{revision.id}", query_params=dict(visibility="PRIVATE"))
         response = self.app.get(test_private_url.url, headers=headers)
         self.assertEqual(200, response.status_code)
         body = json.loads(response.data)
@@ -854,9 +860,7 @@ class TestCollectionDeletion(NewBaseTest):
         self.assertIn(dataset_rev.id, dataset_ids)
 
         # Verify public collections exist
-        test_public_url = furl(
-            path=f"/dp/v1/collections/{collection.collection_id}", query_params=dict(visibility="PUBLIC")
-        )
+        test_public_url = furl(path=f"/dp/v1/collections/{collection.id}", query_params=dict(visibility="PUBLIC"))
         response = self.app.get(test_public_url.url, headers=headers)
         self.assertEqual(200, response.status_code)
         body = json.loads(response.data)
@@ -875,34 +879,33 @@ class TestCollectionDeletion(NewBaseTest):
         response = self.app.get(test_public_url.url, headers=headers)
         self.assertEqual(response.status_code, 410)
 
-        # TODO restore below
-        # self.session.expire_all()
-        # # collection = Collection.get_collection(
-        # #     collection.collection_id, CollectionVisibility.PUBLIC.name, include_tombstones=True
-        # # )
-        # self.assertTrue(collection.tombstone)
-        # self.assertTrue(dataset_pub.tombstone)
-        # # rev_collection = Collection.get_collection(revision_id, include_tombstones=True)
-        # self.assertIsNone(rev_collection)  # Revision should be deleted, not tombstoned
+        self.session.expire_all()
+        collection = Collection.get_collection(
+            self.session, collection.id, CollectionVisibility.PUBLIC.name, include_tombstones=True
+        )
+        self.assertTrue(collection.tombstone)
+        self.assertTrue(dataset_pub.tombstone)
+        rev_collection = Collection.get_collection(self.session, revision_id, include_tombstones=True)
+        self.assertIsNone(rev_collection)  # Revision should be deleted, not tombstoned
 
     def test_delete_collection__dataset_not_available(self):
         # Generate the public collection
         collection = self.generate_collection(
-            visibility=CollectionVisibility.PUBLIC.name, owner="test_user_id", tombstone=True
+            self.session, visibility=CollectionVisibility.PUBLIC.name, owner="test_user_id", tombstone=True
         )
         # Generate test collection
         revision = self.generate_collection(
-            visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id", revision_of=collection.collection_id
+            self.session, visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id", revision_of=collection.id
         )
         processing_status = {"upload_status": UploadStatus.UPLOADED, "upload_progress": 100.0}
 
-        dataset = self.generate_dataset(collection=revision, processing_status=processing_status)
+        dataset = self.generate_dataset(self.session, collection=revision, processing_status=processing_status)
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
         dataset_url = furl(path=f"/dp/v1/datasets/{dataset.id}/status")
         response = self.app.get(dataset_url.url, headers=headers)
         self.assertEqual(response.status_code, 200)
 
-        test_url = furl(path=f"/dp/v1/collections/{revision.collection_id}", query_params=dict(visibility="PRIVATE"))
+        test_url = furl(path=f"/dp/v1/collections/{revision.id}", query_params=dict(visibility="PRIVATE"))
         response = self.app.delete(test_url.url, headers=headers)
 
         self.assertEqual(response.status_code, 204)
@@ -913,23 +916,25 @@ class TestCollectionDeletion(NewBaseTest):
     def test_delete_collection__already_tombstoned__ok(self):
         # Generate the public collection
         collection = self.generate_collection(
-            visibility=CollectionVisibility.PUBLIC.name, owner="test_user_id", tombstone=True
+            self.session, visibility=CollectionVisibility.PUBLIC.name, owner="test_user_id", tombstone=True
         )
         # Generate test collection
         self.generate_collection(
-            visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id", revision_of=collection.collection_id
+            self.session, visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id", revision_of=collection.id
         )
 
-        test_url = furl(path=f"/dp/v1/collections/{collection.collection_id}", query_params=dict(visibility="PRIVATE"))
+        test_url = furl(path=f"/dp/v1/collections/{collection.id}", query_params=dict(visibility="PRIVATE"))
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
         response = self.app.delete(test_url.url, headers=headers)
         self.assertEqual(response.status_code, 403)
 
     def test_delete_collection__public__ok(self):
-        collection = self.generate_collection(visibility=CollectionVisibility.PUBLIC.name, owner="test_user_id")
+        collection = self.generate_collection(
+            self.session, visibility=CollectionVisibility.PUBLIC.name, owner="test_user_id"
+        )
 
         test_urls = [
-            furl(path=f"/dp/v1/collections/{collection.collection_id}"),
+            furl(path=f"/dp/v1/collections/{collection.id}"),
         ]
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
         for test_url in test_urls:
@@ -943,8 +948,10 @@ class TestCollectionDeletion(NewBaseTest):
                 self.assertEqual(body, "")
 
     def test_delete_collection__not_owner(self):
-        collection = self.generate_collection(visibility=CollectionVisibility.PRIVATE.name, owner="someone_else")
-        test_url = furl(path=f"/dp/v1/collections/{collection.collection_id}")
+        collection = self.generate_collection(
+            self.session, visibility=CollectionVisibility.PRIVATE.name, owner="someone_else"
+        )
+        test_url = furl(path=f"/dp/v1/collections/{collection.id}")
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
         response = self.app.delete(test_url.url, headers=headers)
         self.assertEqual(response.status_code, 403)
@@ -958,11 +965,13 @@ class TestCollectionDeletion(NewBaseTest):
 
     def test_deleted_collection_does_not_appear_in_collection_lists(self):
         private_collection = self.generate_collection(
-            visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id"
+            self.session, visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id"
         )
-        public_collection = self.generate_collection(visibility=CollectionVisibility.PUBLIC.name, owner="test_user_id")
+        public_collection = self.generate_collection(
+            self.session, visibility=CollectionVisibility.PUBLIC.name, owner="test_user_id"
+        )
         collection_to_delete = self.generate_collection(
-            visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id"
+            self.session, visibility=CollectionVisibility.PRIVATE.name, owner="test_user_id"
         )
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
         response = self.app.get("/dp/v1/collections", headers=headers)
@@ -970,8 +979,8 @@ class TestCollectionDeletion(NewBaseTest):
         print(f"%%%%%%%%%%%% {response.data}")
 
         collection_ids = [collection["id"] for collection in json.loads(response.data)["collections"]]
-        self.assertIn(private_collection.collection_id, collection_ids)
-        self.assertIn(public_collection.collection_id, collection_ids)
+        self.assertIn(private_collection.id, collection_ids)
+        self.assertIn(public_collection.id, collection_ids)
         self.assertIn(collection_to_delete.id, collection_ids)
 
         test_url = furl(path=f"/dp/v1/collections/{collection_to_delete.id}", query_params=dict(visibility="PRIVATE"))
@@ -981,8 +990,8 @@ class TestCollectionDeletion(NewBaseTest):
         # check not returned privately
         response = self.app.get("/dp/v1/collections", headers=headers)
         collection_ids = [collection["id"] for collection in json.loads(response.data)["collections"]]
-        self.assertIn(private_collection.collection_id, collection_ids)
-        self.assertIn(public_collection.collection_id, collection_ids)
+        self.assertIn(private_collection.id, collection_ids)
+        self.assertIn(public_collection.id, collection_ids)
 
         self.assertNotIn(collection_to_delete.id, collection_ids)
 
@@ -990,8 +999,8 @@ class TestCollectionDeletion(NewBaseTest):
         headers = {"host": "localhost", "Content-Type": "application/json"}
         response = self.app.get("/dp/v1/collections", headers=headers)
         collection_ids = [collection["id"] for collection in json.loads(response.data)["collections"]]
-        self.assertIn(public_collection.collection_id, collection_ids)
-        self.assertNotIn(private_collection.collection_id, collection_ids)
+        self.assertIn(public_collection.id, collection_ids)
+        self.assertNotIn(private_collection.id, collection_ids)
         self.assertNotIn(collection_to_delete.id, collection_ids)
 
 
@@ -1007,7 +1016,7 @@ class TestUpdateCollection(NewBaseTest):
             "contact_email",
             "links",
         ]
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.self.get_cxguser_token()}
 
         # Update the collection
         expected_body = {
@@ -1027,7 +1036,7 @@ class TestUpdateCollection(NewBaseTest):
     # ✅
     def test__update_collection__403(self):
         collection = self.generate_unpublished_collection(owner="someone else")
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.self.get_cxguser_token()}
         data = json.dumps({"name": "new name"})
         response = self.app.put(f"/dp/v1/collections/{collection.version_id.id}", data=data, headers=headers)
         self.assertEqual(403, response.status_code)
@@ -1035,7 +1044,7 @@ class TestUpdateCollection(NewBaseTest):
     # ✅
     def test__update_collection_links__OK(self):
         collection = self.generate_unpublished_collection()
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.self.get_cxguser_token()}
 
         # add links
         links = [{"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"}]
@@ -1090,7 +1099,7 @@ class TestUpdateCollection(NewBaseTest):
         # From now on, Crossref will return `New Journal`
         self.crossref_provider.fetch_metadata = Mock(return_value=generate_mock_publisher_metadata("New Journal"))
 
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.self.get_cxguser_token()}
         response = self.app.put(
             f"/dp/v1/collections/{collection.version_id}",
             data=json.dumps({"links": [{"link_name": "Link 1", "link_url": "http://doi.org/456", "link_type": "DOI"}]}),
@@ -1119,7 +1128,7 @@ class TestUpdateCollection(NewBaseTest):
         # From now on, Crossref will return `New Journal`
         self.crossref_provider.fetch_metadata = Mock(return_value=generate_mock_publisher_metadata("New Journal"))
 
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.self.get_cxguser_token()}
         # We're passing an empty links object, therefore the DOI is deleted
         response = self.app.put(
             f"/dp/v1/collections/{collection.version_id}",
@@ -1148,7 +1157,7 @@ class TestUpdateCollection(NewBaseTest):
         # From now on, Crossref will return `New Journal`
         self.crossref_provider.fetch_metadata = Mock(return_value=generate_mock_publisher_metadata("New Journal"))
 
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.self.get_cxguser_token()}
         # Note that the DOI is the same as the original
         response = self.app.put(
             f"/dp/v1/collections/{collection.version_id}",
@@ -1174,7 +1183,7 @@ class TestCollectionsCurators(NewBaseTest):
         # Generate test collection
         collection = self.generate_unpublished_collection(owner="another_test_user_id")
 
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.self.get_cxguser_token()}
         test_url = furl(path=f"/dp/v1/collections/{collection.version_id}", query_params=dict(visibility="PRIVATE"))
         response = self.app.get(test_url.url, headers=headers)
 
@@ -1190,7 +1199,11 @@ class TestCollectionsCurators(NewBaseTest):
         # Generate test collection
         collection = self.generate_unpublished_collection(owner="another_test_user_id")
 
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token("super")}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Cookie": self.self.get_cxguser_token("super"),
+        }
 
         modified_collection = {
             "name": "new name",
@@ -1208,7 +1221,11 @@ class TestCollectionsCurators(NewBaseTest):
         # Generate test collection
         collection = self.generate_unpublished_collection(owner="another_test_user_id")
 
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token("super")}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Cookie": self.self.get_cxguser_token("super"),
+        }
 
         test_url = furl(path=f"/dp/v1/collections/{collection.version_id}", query_params=dict(visibility="PRIVATE"))
         response = self.app.delete(test_url.url, headers=headers)
@@ -1355,7 +1372,7 @@ class TestDataset(NewBaseTest):
         )
         # TODO: why do we need processing_status_id? we can probably remove
         test_url = furl(path=f"/dp/v1/datasets/{dataset.dataset_version_id}/status")
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.self.get_cxguser_token()}
         response = self.app.get(test_url.url, headers=headers)
         self.assertEqual(200, response.status_code)
         actual_body = json.loads(response.data)
@@ -1378,7 +1395,7 @@ class TestDataset(NewBaseTest):
             owner="someone_else",
         )
         test_url = furl(path=f"/dp/v1/datasets/{dataset.dataset_version_id}/status")
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.self.get_cxguser_token()}
         response = self.app.get(test_url.url, headers=headers)
         self.assertEqual(403, response.status_code)
 
@@ -1390,7 +1407,7 @@ class TestDataset(NewBaseTest):
         public_dataset = self.generate_dataset(publish=True)
 
         test_url = furl(path="/dp/v1/datasets/index")
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.self.get_cxguser_token()}
         response = self.app.get(test_url.url, headers=headers)
         self.assertEqual(200, response.status_code)
         body = json.loads(response.data)
@@ -1453,7 +1470,7 @@ class TestDataset(NewBaseTest):
 
         test_url = furl(path="/dp/v1/datasets/index")
 
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.self.get_cxguser_token()}
         response = self.app.get(test_url.url, headers=headers)
         self.assertEqual(200, response.status_code)
         body = json.loads(response.data)
@@ -1534,7 +1551,7 @@ class TestDataset(NewBaseTest):
             statuses=[DatasetStatusUpdate(DatasetStatusKey.UPLOAD, DatasetUploadStatus.WAITING)]
         )
         test_url = f"/dp/v1/datasets/{dataset.dataset_version_id}"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.self.get_cxguser_token()}
         response = self.app.delete(test_url, headers=headers)
 
         self.assertEqual(response.status_code, 202)
@@ -1545,14 +1562,14 @@ class TestDataset(NewBaseTest):
         )
         test_url = f"/dp/v1/datasets/{dataset.dataset_version_id}"
 
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.self.get_cxguser_token()}
         response = self.app.delete(test_url, headers=headers)
         self.assertEqual(response.status_code, 202)
 
     # ✅
     def test__cancel_dataset_download__dataset_does_not_exist(self):
         test_url = "/dp/v1/datasets/missing_dataset_id"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.self.get_cxguser_token()}
         response = self.app.delete(test_url, headers=headers)
         self.assertEqual(response.status_code, 403)
 
@@ -1561,7 +1578,7 @@ class TestDataset(NewBaseTest):
         dataset = self.generate_dataset(
             statuses=[DatasetStatusUpdate(DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADING)]
         )
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.self.get_cxguser_token()}
 
         # check dataset in collection
         collection_url = furl(path=f"/dp/v1/collections/{dataset.collection_version_id}")
@@ -1594,7 +1611,7 @@ class TestDataset(NewBaseTest):
 
         test_url = f"/dp/v1/datasets/{dataset.dataset_version_id}"
 
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.self.get_cxguser_token()}
         response = self.app.delete(test_url, headers=headers)
 
         self.assertEqual(response.status_code, 202)
@@ -1612,7 +1629,7 @@ class TestDataset(NewBaseTest):
         )
 
         test_url = f"/dp/v1/datasets/{dataset.dataset_version_id}"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.self.get_cxguser_token()}
         response = self.app.delete(test_url, headers=headers)
         self.assertEqual(405, response.status_code)
         self.assertEqual("Cannot delete a public Dataset", json.loads(response.data)["detail"])
@@ -1626,7 +1643,7 @@ class TestDataset(NewBaseTest):
         )
 
         test_url = f"/dp/v1/datasets/{dataset.dataset_version_id}"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.self.get_cxguser_token()}
         response = self.app.delete(test_url, headers=headers)
         self.assertEqual(response.status_code, 403)
 
@@ -1713,7 +1730,11 @@ class TestDatasetCurators(NewBaseTest):
         processing_status = DatasetStatusUpdate("upload_status", DatasetUploadStatus.WAITING)
         dataset = self.generate_dataset(owner="someone_else", statuses=[processing_status])
         test_url = f"/dp/v1/datasets/{dataset.dataset_id}/status"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token("super")}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Cookie": self.self.get_cxguser_token("super"),
+        }
         response = self.app.get(test_url, headers=headers)
         self.assertEqual(200, response.status_code)
 
@@ -1722,7 +1743,11 @@ class TestDatasetCurators(NewBaseTest):
         processing_status = DatasetStatusUpdate("upload_status", DatasetUploadStatus.WAITING)
         dataset = self.generate_dataset(owner="someone_else", statuses=[processing_status])
         test_url = f"/dp/v1/datasets/{dataset.dataset_id}"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token("super")}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Cookie": self.self.get_cxguser_token("super"),
+        }
         response = self.app.delete(test_url, headers=headers)
         self.assertEqual(response.status_code, 202)
 
@@ -1744,7 +1769,7 @@ class TestRevision(NewBaseTest):
 
         # Starts a revision
         path = f"/dp/v1/collections/{published_collection.collection_id.id}"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.self.get_cxguser_token()}
         response = self.app.post(path, headers=headers)
         print(response.data)
         self.assertEqual(201, response.status_code)
@@ -1787,7 +1812,7 @@ class TestRevision(NewBaseTest):
 
         # Starts a revision
         path = f"/dp/v1/collections/{published_collection.collection_id.id}"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.self.get_cxguser_token()}
         response = self.app.post(path, headers=headers)
         self.assertEqual(201, response.status_code)
         response_post_json = json.loads(response.data)
@@ -1805,7 +1830,7 @@ class TestRevision(NewBaseTest):
         test_url = f"/dp/v1/collections/{published_collection.collection_id.id}"
 
         # Start a revision
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.self.get_cxguser_token()}
         response = self.app.post(test_url, headers=headers)
         self.assertEqual(201, response.status_code)
 
@@ -1819,7 +1844,7 @@ class TestRevision(NewBaseTest):
         Start a revision on a non-existing collection.
         """
         # TODO: UUID
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.self.get_cxguser_token()}
         response = self.app.post("/dp/v1/collections/random", headers=headers)
         self.assertEqual(403, response.status_code)
 
@@ -1831,7 +1856,7 @@ class TestRevision(NewBaseTest):
         published_collection = self.generate_published_collection(owner="someone_else", add_datasets=2)
         test_url = f"/dp/v1/collections/{published_collection.collection_id.id}"
 
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.self.get_cxguser_token()}
         response = self.app.post(test_url, headers=headers)
         self.assertEqual(403, response.status_code)
 
@@ -1844,7 +1869,7 @@ class TestDeleteRevision(NewBaseTest):
         Convenience method for creating a revision on the fly
         """
         path = f"/dp/v1/collections/{collection_id}"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token(user)}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.self.get_cxguser_token(user)}
         response = self.app.post(path, headers=headers)
         response_post_json = json.loads(response.data)
         print(response_post_json)
@@ -1861,19 +1886,19 @@ class TestDeleteRevision(NewBaseTest):
 
         # Delete the revision
         path = f"/dp/v1/collections/{revision_id}"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.self.get_cxguser_token()}
         resp = self.app.delete(path, headers=headers)
         self.assertEqual(204, resp.status_code)
 
         # Cannot get the revision
         path = f"/dp/v1/collections/{revision_id}"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.self.get_cxguser_token()}
         resp = self.app.get(path, headers=headers)
         self.assertEqual(403, resp.status_code)
 
         # Verify that the published collection still has two datasets
         path = f"/dp/v1/collections/{published_collection.collection_id.id}"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.self.get_cxguser_token()}
         resp = self.app.get(path, headers=headers)
         self.assertEqual(200, resp.status_code)
         resp_json = json.loads(resp.data)
@@ -1890,7 +1915,7 @@ class TestDeleteRevision(NewBaseTest):
 
         # Delete the revision
         path = f"/dp/v1/collections/{revision_id}"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.self.get_cxguser_token()}
         resp = self.app.delete(path, headers=headers)
         self.assertEqual(403, resp.status_code)
 
@@ -1905,7 +1930,11 @@ class TestPublishRevision(NewBaseTest):
         self.base_path = "/dp/v1/collections"
         self.mock_timestamp = datetime(2000, 12, 25, 0, 0)
         # TODO: header pattern
-        self.headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        self.headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Cookie": self.self.get_cxguser_token(),
+        }
 
     # ✅
     def test__publish_revision_with_new_dataset__OK(self):
@@ -1916,7 +1945,7 @@ class TestPublishRevision(NewBaseTest):
         unpublished_collection = self.generate_unpublished_collection(add_datasets=1)
 
         path = f"{self.base_path}/{unpublished_collection.version_id.id}/publish"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.self.get_cxguser_token()}
         body = {"data_submission_policy_version": "1.0"}  # TODO: still in use?
         response = self.app.post(path, headers=headers, data=json.dumps(body))
 
@@ -1955,7 +1984,7 @@ class TestPublishRevision(NewBaseTest):
 
         # Publish the revision with the deleted dataset
         path = f"{self.base_path}/{unpublished_collection.version_id.id}/publish"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.self.get_cxguser_token()}
         body = {"data_submission_policy_version": "1.0"}  # TODO: still in use?
         response = self.app.post(path, headers=headers, data=json.dumps(body))
         self.assertEqual(202, response.status_code)
@@ -1987,7 +2016,7 @@ class TestPublishRevision(NewBaseTest):
 
         # Publish the revision with the deleted dataset
         path = f"{self.base_path}/{unpublished_collection.version_id.id}/publish"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.self.get_cxguser_token()}
         body = {"data_submission_policy_version": "1.0"}  # TODO: still in use?
         response = self.app.post(path, headers=headers, data=json.dumps(body))
         self.assertEqual(409, response.status_code)
@@ -2032,7 +2061,11 @@ class TestPublishRevision(NewBaseTest):
         collection = self.generate_unpublished_collection(add_datasets=1)
         path = f"{self.base_path}/{collection.version_id.id}/publish"
         body = {"data_submission_policy_version": "1.0"}
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token("owner")}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Cookie": self.self.get_cxguser_token("owner"),
+        }
         response = self.app.post(path, headers=headers, data=json.dumps(body))
         self.assertEqual(202, response.status_code)
 
@@ -2041,7 +2074,11 @@ class TestPublishRevision(NewBaseTest):
         collection = self.generate_unpublished_collection(add_datasets=1, owner="someone else")
         path = f"{self.base_path}/{collection.version_id.id}/publish"
         body = {"data_submission_policy_version": "1.0"}
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token("super")}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Cookie": self.self.get_cxguser_token("super"),
+        }
         response = self.app.post(path, headers=headers, data=json.dumps(body))
         self.assertEqual(202, response.status_code)
 
@@ -2110,8 +2147,8 @@ class TestPublishRevision(NewBaseTest):
     #     expected_body = self.update_revision_details()
 
     #     # add new dataset
-    #     new_dataset_id = self.generate_dataset_with_s3_resources(
-    #     collection_id=self.rev_collection.collection_id).collection_id
+    #     new_dataset_id = self.generate_dataset_with_s3_resources(self.session,
+    #     collection_id=self.rev_collection.id).id
     #     dataset_ids = {ds.id for ds in self.pub_collection.datasets}
     #     dataset_ids.add(new_dataset_id)
 
@@ -2141,8 +2178,8 @@ class TestPublishRevision(NewBaseTest):
     #     self.refresh_datasets()
 
     #     # add new dataset
-    #     new_dataset_id = self.generate_dataset_with_s3_resources(
-    #     collection_id=self.rev_collection.collection_id).collection_id
+    #     new_dataset_id = self.generate_dataset_with_s3_resources(self.session,
+    #     collection_id=self.rev_collection.id).id
     #     dataset_ids = {ds.id for ds in self.pub_collection.datasets}
     #     dataset_ids.add(new_dataset_id)
 
@@ -2183,7 +2220,7 @@ class TestPublishRevision(NewBaseTest):
     #         self.assertIsNone(dataset.get("revised_at"))
 
 
-# UPLOAD TESTS START HERE ######
+# ##### UPLOAD TESTS START HERE ######
 
 
 class TestCollectionPostUploadLink(NewBaseTest):
@@ -2197,7 +2234,7 @@ class TestCollectionPostUploadLink(NewBaseTest):
     def test__link__202(self):
         collection = self.generate_unpublished_collection()
         path = f"/dp/v1/collections/{collection.version_id}/upload-links"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.self.get_cxguser_token()}
         body = {"url": self.good_link}
 
         test_url = furl(path=path)
@@ -2220,7 +2257,7 @@ class TestCollectionPostUploadLink(NewBaseTest):
     def test__link_not_owner__403(self):
         collection = self.generate_unpublished_collection(owner="someone else")
         path = f"/dp/v1/collections/{collection.version_id}/upload-links"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.self.get_cxguser_token()}
         body = {"url": self.dummy_link}
 
         test_url = furl(path=path)
@@ -2236,7 +2273,7 @@ class TestCollectionPostUploadLink(NewBaseTest):
         with self.subTest("Unsupported Provider"):
             # Mocks the URI validator so that it return invalid
             self.uri_provider.validate = Mock(return_value=False)
-            headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+            headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.self.get_cxguser_token()}
             body = {"url": "https://test_url.com"}
             test_url = furl(path=path)
             response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
@@ -2247,7 +2284,7 @@ class TestCollectionPostUploadLink(NewBaseTest):
         with self.subTest("Bad Dropbox link"):
             self.uri_provider.validate = Mock(return_value=True)
 
-            headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+            headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.self.get_cxguser_token()}
             body = {"url": self.dummy_link}
             test_url = furl(path=path)
             response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
@@ -2262,7 +2299,7 @@ class TestCollectionPostUploadLink(NewBaseTest):
         self.uri_provider.get_file_info = Mock(return_value=FileInfo(40 * 2**30, "file.h5ad"))
         collection = self.generate_unpublished_collection()
         path = f"/dp/v1/collections/{collection.version_id}/upload-links"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.self.get_cxguser_token()}
         body = {"url": self.dummy_link}
 
         test_url = furl(path=path)
@@ -2272,7 +2309,7 @@ class TestCollectionPostUploadLink(NewBaseTest):
     # ✅
     def test__link_fake_collection__403(self):
         path = "/dp/v1/collections/fake/upload-links"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.self.get_cxguser_token()}
         body = {"url": self.good_link}
 
         test_url = furl(path=path)
@@ -2283,7 +2320,7 @@ class TestCollectionPostUploadLink(NewBaseTest):
     def test_link_public_collection__403(self):
         collection = self.generate_published_collection()
         path = f"/dp/v1/collections/{collection.version_id}/upload-links"
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.self.get_cxguser_token()}
         body = {"url": self.good_link}
 
         test_url = furl(path=path)
@@ -2296,7 +2333,11 @@ class TestCollectionPutUploadLink(NewBaseTest):
         super().setUp()
         self.good_link = "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"
         # TODO: headers do not follow the same pattern as the rest of the test. Maybe change?
-        self.headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        self.headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Cookie": self.self.get_cxguser_token(),
+        }
         self.uri_provider.get_file_info = Mock(return_value=FileInfo(1, "file.h5ad"))
 
     def assert_datasets_are_updated(self, dataset1, dataset2):
@@ -2421,7 +2462,11 @@ class TestCollectionUploadLinkCurators(NewBaseTest):
         A super curator can upload a dataset to a non-owned collection
         """
         collection = self.generate_unpublished_collection(owner="someone else")
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token("super")}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Cookie": self.self.get_cxguser_token("super"),
+        }
         path = f"/dp/v1/collections/{collection.version_id}/upload-links"
         body = {"url": self.good_link}
 
@@ -2444,6 +2489,10 @@ class TestCollectionUploadLinkCurators(NewBaseTest):
         path = f"/dp/v1/collections/{dataset.collection_version_id}/upload-links"
         body = {"url": self.good_link, "id": dataset.dataset_version_id}
 
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token("super")}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Cookie": self.self.get_cxguser_token("super"),
+        }
         response = self.app.put(path, headers=headers, data=json.dumps(body))
         self.assertEqual(202, response.status_code)

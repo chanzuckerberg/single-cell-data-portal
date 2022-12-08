@@ -1,21 +1,37 @@
+import os
+import sys
 from typing import Optional
+
 from backend.layers.business.business import BusinessLogic
 from backend.layers.business.business_interface import BusinessLogicInterface
+from backend.layers.common.entities import (
+    DatasetConversionStatus,
+    DatasetProcessingStatus,
+    DatasetStatusKey,
+    DatasetUploadStatus,
+    DatasetValidationStatus,
+    DatasetVersionId,
+)
 from backend.layers.persistence.persistence import DatabaseProvider
 from backend.layers.processing.downloader import Downloader
-from backend.layers.processing.exceptions import ConversionFailed, ProcessingCanceled, ProcessingFailed, UploadFailed, ValidationFailed
-from backend.layers.processing.process_logic import ProcessingLogic
-import os
+from backend.layers.processing.exceptions import (
+    ConversionFailed,
+    ProcessingCanceled,
+    ProcessingFailed,
+    UploadFailed,
+    ValidationFailed,
+)
 from backend.layers.processing.process_cxg import ProcessCxg
-
 from backend.layers.processing.process_download_validate import ProcessDownloadValidate
+from backend.layers.processing.process_logic import ProcessingLogic
 from backend.layers.processing.process_seurat import ProcessSeurat
-from backend.layers.common.entities import DatasetConversionStatus, DatasetProcessingStatus, DatasetStatusKey, DatasetUploadStatus, DatasetValidationStatus, DatasetVersionId
 from backend.layers.thirdparty.s3_provider import S3Provider, S3ProviderInterface
-from backend.layers.thirdparty.schema_validator_provider import SchemaValidatorProvider, SchemaValidatorProviderInterface
+from backend.layers.thirdparty.schema_validator_provider import (
+    SchemaValidatorProvider,
+    SchemaValidatorProviderInterface,
+)
 from backend.layers.thirdparty.uri_provider import UriProvider, UriProviderInterface
 
-import sys
 
 class ProcessMain(ProcessingLogic):
 
@@ -23,12 +39,13 @@ class ProcessMain(ProcessingLogic):
     process_seurat: ProcessSeurat
     process_cxg: ProcessCxg
 
-    def __init__(self,
+    def __init__(
+        self,
         business_logic: BusinessLogicInterface,
         uri_provider: UriProviderInterface,
         s3_provider: S3ProviderInterface,
         downloader: Downloader,
-        schema_validator: SchemaValidatorProviderInterface
+        schema_validator: SchemaValidatorProviderInterface,
     ) -> None:
         super().__init__()
         self.business_logic = business_logic
@@ -36,9 +53,11 @@ class ProcessMain(ProcessingLogic):
         self.s3_provider = s3_provider
         self.downloader = downloader
         self.schema_validator = schema_validator
-        self.process_download_validate = ProcessDownloadValidate(self.business_logic, self.uri_provider, self.s3_provider, self.downloader, self.schema_validator)
+        self.process_download_validate = ProcessDownloadValidate(
+            self.business_logic, self.uri_provider, self.s3_provider, self.downloader, self.schema_validator
+        )
         self.process_seurat = ProcessSeurat(self.business_logic, self.uri_provider, self.s3_provider)
-        self.process_cxg = ProcessCxg(self.business_logic, self.uri_provider,self.s3_provider)
+        self.process_cxg = ProcessCxg(self.business_logic, self.uri_provider, self.s3_provider)
 
     def log_batch_environment(self):
         batch_environment_variables = [
@@ -58,8 +77,14 @@ class ProcessMain(ProcessingLogic):
             env_vars[var] = os.getenv(var)
         self.logger.info(f"Batch Job Info: {env_vars}")
 
-
-    def process(self, dataset_id: DatasetVersionId, step_name: str, dropbox_uri: Optional[str], artifact_bucket: Optional[str], cxg_bucket: Optional[str]):
+    def process(
+        self,
+        dataset_id: DatasetVersionId,
+        step_name: str,
+        dropbox_uri: Optional[str],
+        artifact_bucket: Optional[str],
+        cxg_bucket: Optional[str],
+    ):
         self.log_batch_environment()
         self.logger.info(f"Processing dataset {dataset_id}")
         try:
@@ -76,7 +101,7 @@ class ProcessMain(ProcessingLogic):
 
         # TODO: this could be better - maybe collapse all these exceptions and pass in the status key and value
         except ProcessingCanceled:
-            pass # TODO: what's the effect of canceling a dataset now?
+            pass  # TODO: what's the effect of canceling a dataset now?
         except ValidationFailed:
             self.update_processing_status(dataset_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.INVALID)
             return False
@@ -112,9 +137,10 @@ class ProcessMain(ProcessingLogic):
             step_name=step_name,
             dropbox_uri=dropbox_uri,
             artifact_bucket=artifact_bucket,
-            cxg_bucket=cxg_bucket
+            cxg_bucket=cxg_bucket,
         )
         return 0 if rv else 1
+
 
 if __name__ == "__main__":
 
@@ -123,11 +149,11 @@ if __name__ == "__main__":
     uri_provider = UriProvider()
 
     business_logic = BusinessLogic(
-        database_provider, 
-        None, # Not required - decide if we should pass for safety
-        None, # Not required - decide if we should pass for safety
-        s3_provider, 
-        uri_provider
+        database_provider,
+        None,  # Not required - decide if we should pass for safety
+        None,  # Not required - decide if we should pass for safety
+        s3_provider,
+        uri_provider,
     )
 
     downloader = Downloader(business_logic)

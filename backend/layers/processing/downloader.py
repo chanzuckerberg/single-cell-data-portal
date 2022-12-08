@@ -3,13 +3,17 @@ import shutil
 import threading
 
 import requests
-from backend.layers.business.business import BusinessLogic
-from backend.layers.business.business_interface import BusinessLogicInterface
-from backend.layers.processing.exceptions import ProcessingFailed, UploadFailed
 
-from backend.layers.common.entities import DatasetProcessingStatus, DatasetStatusKey, DatasetUploadStatus, DatasetVersionId
+from backend.layers.business.business_interface import BusinessLogicInterface
+from backend.layers.common.entities import (
+    DatasetStatusKey,
+    DatasetUploadStatus,
+    DatasetVersionId,
+)
+from backend.layers.processing.exceptions import UploadFailed
 
 logger = logging.getLogger(__name__)
+
 
 class ProgressTracker:
     def __init__(self, file_size: int):
@@ -63,6 +67,7 @@ class NoOpProgressTracker:
         self.stop_downloader.set()
         self.stop_updater.set()
 
+
 class Downloader:
 
     business_logic: BusinessLogicInterface
@@ -88,7 +93,6 @@ class Downloader:
                         fp.write(chunk)
                         chunk_size = len(chunk)
                         logger.debug(f"chunk size: {chunk_size}")
-
 
     def download(
         self,
@@ -117,22 +121,25 @@ class Downloader:
         if file_size and file_size >= shutil.disk_usage("/")[2]:
             raise UploadFailed("Insufficient disk space.")
 
-        self.business_logic.update_dataset_version_status(dataset_id, DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADING)
+        self.business_logic.update_dataset_version_status(
+            dataset_id, DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADING
+        )
         # TODO: set upload_progress to 0
 
-        if file_size is not None:
-            progress_tracker = ProgressTracker(file_size)
-        else:
-            progress_tracker = NoOpProgressTracker()
+        # if file_size is not None:
+        #     progress_tracker = ProgressTracker(file_size)
+        # else:
+        #     progress_tracker = NoOpProgressTracker()
 
         try:
             self.download_file(url, local_path, chunk_size)
             # TODO: maybe add a check on the file size
-        except Exception as e:
+        except Exception:
             pass
 
-        self.business_logic.update_dataset_version_status(dataset_id, DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADED)
-
+        self.business_logic.update_dataset_version_status(
+            dataset_id, DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADED
+        )
 
         # progress_thread.join()  # Wait for the progress thread to complete
         # if progress_tracker.tombstoned:

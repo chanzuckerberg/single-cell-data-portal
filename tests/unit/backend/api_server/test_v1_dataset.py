@@ -251,7 +251,6 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
             tissue=[{"ontology_term_id": "UBERON:0002048", "label": "Test"}],
             cell_type=[{"ontology_term_id": "CL:0000738", "label": "Test"}],
             published_at=datetime.now(),
-            revised_at=datetime.now(),
         )
 
         test_url = furl(path="/dp/v1/datasets/index")
