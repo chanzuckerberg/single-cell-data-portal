@@ -348,7 +348,10 @@ class DatabaseProvider(DatabaseProviderInterface):
                 session.delete(version)
 
     def finalize_collection_version(
-        self, collection_id: CollectionId, version_id: CollectionVersionId, published_at: Optional[datetime] = None
+        self,
+        collection_id: CollectionId,
+        version_id: CollectionVersionId,
+        published_at: Optional[datetime] = None,
     ) -> None:
         """
         Finalizes a collection version. This is equivalent to calling:

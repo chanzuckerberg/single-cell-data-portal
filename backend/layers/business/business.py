@@ -456,7 +456,7 @@ class BusinessLogic(BusinessLogicInterface):
         if len(version.datasets) == 0:
             raise CollectionPublishException("Cannot publish a collection with no datasets")
 
-        self.database_provider.finalize_collection_version(version.collection_id, version_id)
+        self.database_provider.finalize_collection_version(version.collection_id, version_id, None)
 
     def get_dataset_version(self, dataset_version_id: DatasetVersionId) -> Optional[DatasetVersion]:
         return self.database_provider.get_dataset_version(dataset_version_id)

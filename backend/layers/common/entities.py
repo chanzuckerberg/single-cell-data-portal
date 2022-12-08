@@ -1,4 +1,5 @@
-from dataclasses import dataclass
+from pydantic import Field
+from pydantic.dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 from typing import List, Optional
@@ -167,7 +168,7 @@ class DatasetMetadata:
 @dataclass
 class CanonicalDataset:
     dataset_id: DatasetId
-    dataset_version_id: DatasetVersionId
+    dataset_version_id: Optional[DatasetVersionId]
     published_at: Optional[datetime] = None
     revised_at: Optional[datetime] = None  # The last time this Dataset Version was Published
 
@@ -178,7 +179,7 @@ class DatasetVersion:
     version_id: DatasetVersionId
     collection_id: CollectionId  # Pointer to the canonical collection id this dataset belongs to
     status: DatasetStatus
-    metadata: DatasetMetadata
+    metadata: Optional[DatasetMetadata]
     artifacts: List[DatasetArtifact]
     created_at: datetime
     canonical_dataset: CanonicalDataset
@@ -204,7 +205,7 @@ class CollectionMetadata:
 @dataclass
 class CanonicalCollection:
     id: CollectionId
-    version_id: CollectionVersionId  # Needs to be optional, or not exist
+    version_id: Optional[CollectionVersionId]  # Needs to be optional, or not exist
     originally_published_at: Optional[datetime]
     tombstoned: bool
 
@@ -219,14 +220,14 @@ class CollectionVersionBase:
     published_at: Optional[datetime]
     created_at: datetime
     canonical_collection: CanonicalCollection
-    curator_name: Optional[str]
+    curator_name: Optional[str] = ""
 
 
 @dataclass
 class CollectionVersion(CollectionVersionBase):
-    datasets: List[DatasetVersionId]
+    datasets: List[DatasetVersionId] = Field(default_factory=list)
 
 
 @dataclass
 class CollectionVersionWithDatasets(CollectionVersionBase):
-    datasets: List[DatasetVersion]
+    datasets: List[DatasetVersion] = Field(default_factory=list)

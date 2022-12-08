@@ -1,8 +1,6 @@
-import copy
 import uuid
-from dataclasses import dataclass
 from datetime import datetime
-from typing import Dict, Iterable, List, Optional
+from typing import Dict, Iterable, List, Optional, Union
 
 from backend.layers.common.entities import (
     CanonicalCollection,
@@ -25,6 +23,8 @@ from backend.layers.common.entities import (
     DatasetVersionId,
 )
 import copy
+
+from backend.layers.persistence.persistence_interface import DatabaseProviderInterface
 
 
 class DatabaseProviderMock(DatabaseProviderInterface):
@@ -184,7 +184,10 @@ class DatabaseProviderMock(DatabaseProviderInterface):
 
     # MAYBE
     def finalize_collection_version(
-        self, collection_id: CollectionId, version_id: CollectionVersionId, published_at: Optional[datetime] = None
+        self,
+        collection_id: CollectionId,
+        version_id: CollectionVersionId,
+        published_at: Optional[datetime],
     ) -> None:
 
         published_at = published_at if published_at else datetime.utcnow()
@@ -196,7 +199,6 @@ class DatabaseProviderMock(DatabaseProviderInterface):
                 self.datasets[dataset_version.dataset_id.id].published_at = published_at
             if self.datasets[dataset_version.dataset_id.id].revised_at is None:
                 self.datasets[dataset_version.dataset_id.id].revised_at = published_at
-
         cc = self.collections.get(collection_id.id)
         if cc is None:
             self.collections[collection_id.id] = CanonicalCollection(

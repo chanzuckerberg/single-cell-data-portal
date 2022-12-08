@@ -98,7 +98,10 @@ class DatabaseProviderInterface:
         pass
 
     def finalize_collection_version(
-        self, collection_id: CollectionId, version_id: CollectionVersionId, published_at: Optional[datetime]
+        self,
+        collection_id: CollectionId,
+        version_id: CollectionVersionId,
+        published_at: Optional[datetime],
     ) -> None:
         """
         Finalizes a collection version. This is equivalent to calling:

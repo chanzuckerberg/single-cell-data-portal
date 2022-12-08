@@ -263,7 +263,7 @@ class TestGetCollections(NewBaseTest):
                 }
             ],
         )
-        self.generate_dataset(collection=collection)
+        self.generate_dataset(collection_version_id=collection.version_id)
         res = self.app.get("/curation/v1/collections")
         self.assertEqual(200, res.status_code)
         for resp_collection in res.json:
@@ -292,7 +292,7 @@ class TestGetCollections(NewBaseTest):
                 }
             ],
         )
-        self.generate_dataset(collection=collection)
+        self.generate_dataset(collection_version_id=collection.version_id)
         params = {"visibility": "PRIVATE"}
 
         def _test(owner):

@@ -1,9 +1,5 @@
 from unittest.mock import Mock, patch
 
-import gevent.monkey
-
-gevent.monkey.patch_all()
-
 from backend.layers.processing.downloader import Downloader
 from backend.layers.processing.process import ProcessMain
 from backend.layers.processing.process_cxg import ProcessCxg

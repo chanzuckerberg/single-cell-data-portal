@@ -17,6 +17,7 @@ from backend.layers.common.entities import (
     CollectionVersionId,
     DatasetMetadata,
     DatasetStatusGeneric,
+    DatasetStatusKey,
     Link,
     OntologyTermId,
 )
@@ -102,8 +103,6 @@ class NewBaseTest(BaseAuthAPITest):
         os.environ.setdefault("APP_NAME", "corpora-api")
 
         database_provider = DatabaseProviderMock()
-        database_provider._drop()
-        database_provider._create()
         self.crossref_provider = CrossrefProviderInterface()
         step_function_provider = StepFunctionProviderInterface()
         self.s3_provider = S3Provider()
@@ -191,7 +190,7 @@ class NewBaseTest(BaseAuthAPITest):
         self, owner="test_user_id", links: List[Link] = [], add_datasets: int = 1, curator_name: str = "Jane Smith"
     ) -> CollectionVersion:
         unpublished_collection = self.generate_unpublished_collection(owner, links, add_datasets=add_datasets)
-        self.business_logic.publish_collection_version(unpublished_collection.version_id, curator_name=curator_name)
+        self.business_logic.publish_collection_version(unpublished_collection.version_id)
         return self.business_logic.get_collection_version(unpublished_collection.version_id)
 
     def generate_dataset(

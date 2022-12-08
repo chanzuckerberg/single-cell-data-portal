@@ -29,7 +29,7 @@ class TestDeleteDataset(BaseAuthAPITest):
 class TestGetDatasets(BaseAuthAPITest):
     def test_get_dataset_in_a_collection_200(self):
         collection = self.generate_collection(visibility=CollectionVisibility.PRIVATE.name)
-        dataset = self.generate_dataset(collection=collection, name="test")
+        dataset = self.generate_dataset(collection_version_id=collection.version_id, name="test")
         test_url = f"/curation/v1/collections/{collection.collection_id}/datasets/{dataset.id}"
 
         response = self.app.get(test_url)
@@ -38,7 +38,7 @@ class TestGetDatasets(BaseAuthAPITest):
 
     def test_get_dataset_shape(self):
         collection = self.generate_collection(visibility=CollectionVisibility.PRIVATE.name)
-        dataset = self.generate_dataset(collection=collection, name="test")
+        dataset = self.generate_dataset(collection_version_id=collection.version_id, name="test")
         test_url = f"/curation/v1/collections/{collection.collection_id}/datasets/{dataset.id}"
         response = self.app.get(test_url)
         self.assertEqual(dataset.name, response.json["title"])
@@ -52,7 +52,9 @@ class TestGetDatasets(BaseAuthAPITest):
         ]
         for is_primary_data, result in tests:
             with self.subTest(f"{is_primary_data}=={result}"):
-                dataset = self.generate_dataset(collection=collection, is_primary_data=is_primary_data)
+                dataset = self.generate_dataset(
+                    collection_version_id=collection.version_id, is_primary_data=is_primary_data
+                )
                 test_url = f"/curation/v1/collections/{collection.collection_id}/datasets/{dataset.id}"
                 response = self.app.get(test_url)
                 self.assertEqual(result, response.json["is_primary_data"])
@@ -65,7 +67,7 @@ class TestGetDatasets(BaseAuthAPITest):
 
     def test_get_tombstoned_dataset_in_a_collection_404(self):
         collection = self.generate_collection(visibility=CollectionVisibility.PRIVATE.name)
-        dataset = self.generate_dataset(collection=collection, tombstone=True)
+        dataset = self.generate_dataset(collection_version_id=collection.version_id, tombstone=True)
         test_url = f"/curation/v1/collections/{collection.collection_id}/datasets/{dataset.id}"
         response = self.app.get(test_url)
         self.assertEqual(404, response.status_code)
