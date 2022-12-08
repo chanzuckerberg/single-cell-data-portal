@@ -9,7 +9,6 @@ from pandas import DataFrame
 import scanpy
 import tiledb
 from scipy import sparse
-from scipy.sparse import csr_matrix, coo_matrix
 
 from backend.wmg.pipeline.integrated_corpus.extract import get_X_raw
 from backend.wmg.data.constants import (
