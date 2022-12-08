@@ -48,17 +48,17 @@ class DatabaseProvider(DatabaseProviderInterface):
         except Exception as e:
             pass
 
-    def _drop(self):
+    def _drop(self, schema_name='persistence_schema'):
         from sqlalchemy.schema import DropSchema
         from backend.layers.persistence.orm import metadata
         from backend.layers.persistence.db_session import _db_session_maker
-        _db_session_maker.engine.execute(DropSchema('persistence_schema', cascade=True))
+        _db_session_maker.engine.execute(DropSchema(schema_name, cascade=True))
 
-    def _create(self):
+    def _create(self, schema_name='persistence_schema'):
         from sqlalchemy.schema import CreateSchema
         from backend.layers.persistence.orm import metadata
         from backend.layers.persistence.db_session import _db_session_maker
-        _db_session_maker.engine.execute(CreateSchema('persistence_schema'))
+        _db_session_maker.engine.execute(CreateSchema(schema_name))
         metadata.create_all(bind=_db_session_maker.engine)
 
     @staticmethod
@@ -215,7 +215,6 @@ class DatabaseProvider(DatabaseProviderInterface):
             datasets = self._get_datasets([DatasetVersionId(str(id)) for id in collection_version.datasets])
             return self._row_to_collection_version_with_datasets(collection_version, canonical_collection, datasets)
 
-
     def get_collection_mapped_version(self, collection_id: CollectionId) -> Optional[CollectionVersionWithDatasets]:
         """
         Retrieves the latest mapped version for a collection
@@ -332,7 +331,7 @@ class DatabaseProvider(DatabaseProviderInterface):
                 datasets=current_version.datasets
             )
             session.add(new_version)
-            return DatasetVersionId(new_version_id)
+            return CollectionVersionId(new_version_id)
 
     def delete_collection_version(self, version_id: CollectionVersionId) -> None:
         """

@@ -2,13 +2,14 @@ from dataclasses import dataclass
 from datetime import datetime
 import uuid
 from backend.layers.persistence.persistence import DatabaseProviderInterface
-from typing import Dict, Iterable, List, Optional
+from typing import Dict, Iterable, List, Optional, Union
 from backend.layers.common.entities import (
     CanonicalCollection,
     CanonicalDataset,
     CollectionId,
     CollectionMetadata,
     CollectionVersion,
+    CollectionVersionWithDatasets,
     CollectionVersionId,
     DatasetArtifact,
     DatasetArtifactId,
@@ -25,16 +26,6 @@ from backend.layers.common.entities import (
 import copy
 
 
-@dataclass
-class _CanonicalCollection:
-    canonical_collection: CanonicalCollection
-    mapped_version: CollectionVersionId
-
-@dataclass
-class _CanonicalDataset:
-    canonical_dataset: CanonicalDataset
-    mapped_version: DatasetVersionId
-
 class DatabaseProviderMock(DatabaseProviderInterface):
 
     """
@@ -49,13 +40,13 @@ class DatabaseProviderMock(DatabaseProviderInterface):
     """
 
     # A mapping between canonical collection ids and collection versions.
-    collections: Dict[str, _CanonicalCollection]
+    collections: Dict[str, CanonicalCollection]
 
     # All the collection versions
     collections_versions: Dict[str, CollectionVersion]
 
     # A mapping between canonical dataset ids and dataset versions.
-    datasets: Dict[str, _CanonicalDataset]
+    datasets: Dict[str, CanonicalDataset]
 
     # All the dataset versions
     datasets_versions: Dict[str, DatasetVersion]
@@ -68,20 +59,29 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         self.datasets_versions = {}
 
     @staticmethod
-    def _id():
+    def _generate_id():
         return str(uuid.uuid4())
 
     # TODO: add publisher_metadata here?
     def create_canonical_collection(self, owner: str, collection_metadata: CollectionMetadata) -> CollectionVersion:
-        collection_id = CollectionId(self._id())
-        version_id = CollectionVersionId(self._id())
+        collection_id = CollectionId(self._generate_id())
+        version_id = CollectionVersionId(self._generate_id())
         canonical = CanonicalCollection(collection_id, None, False, False)
-        version = CollectionVersion(collection_id, version_id, owner, collection_metadata, None, [], None, datetime.utcnow(), canonical)
+        version = CollectionVersion(collection_id=collection_id,
+                                    version_id=version_id,
+                                    owner=owner,
+                                    metadata=collection_metadata,
+                                    publisher_metadata=None,
+                                    published_at=None,
+                                    created_at=datetime.utcnow(),
+                                    canonical_collection=canonical,
+                                    datasets=[]
+                                    )
         self.collections_versions[version_id.id] = version
         # Don't set mappings here - those will be set when publishing the collection!
         return copy.deepcopy(version)
 
-    def _update_version_with_canonical(self, version: CollectionVersion):
+    def _update_version_with_canonical(self, version: Union[CollectionVersion, CollectionVersionWithDatasets]):
         """
         Private method that returns a version updated with the canonical collection.
         This is equivalent to a database double lookup (or join).
@@ -92,8 +92,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         if cc is None:
             return copy.deepcopy(version)
         copied_version = copy.deepcopy(version)
-        copied_version.canonical_collection = cc.canonical_collection
-        copied_version.datasets = [self._update_dataset_version_with_canonical(d) for d in copied_version.datasets]
+        copied_version.canonical_collection = cc
         return copied_version
 
     def _update_dataset_version_with_canonical(self, version: DatasetVersion):
@@ -101,14 +100,13 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         if cd is None:
             return copy.deepcopy(version)
         copied_version = copy.deepcopy(version)
-        copied_version.canonical_dataset = cd.canonical_dataset
+        copied_version.canonical_dataset = cd
         return copied_version
 
-    def get_collection_mapped_version(self, collection_id: CollectionId) -> Optional[CollectionVersion]:
+    def get_collection_mapped_version(self, collection_id: CollectionId) -> Optional[CollectionVersionWithDatasets]:
         cc = self.collections.get(collection_id.id)
         if cc is not None:
-            version = self.collections_versions[cc.mapped_version.id]
-            return self._update_version_with_canonical(version)
+            return self.get_collection_version_with_datasets(cc.version_id)
 
     def get_all_collections_versions(self) -> Iterable[CollectionVersion]:  # TODO: add filters if needed
         for version in self.collections_versions.values():
@@ -116,7 +114,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
 
     def get_all_mapped_collection_versions(self) -> Iterable[CollectionVersion]:  # TODO: add filters if needed
         for version_id, collection_version in self.collections_versions.items():
-            if version_id in [c.mapped_version.id for c in self.collections.values()]:
+            if version_id in [c.version_id.id for c in self.collections.values()]:
                 yield self._update_version_with_canonical(collection_version)
 
     def delete_collection(self, collection_id: CollectionId) -> None:
@@ -128,11 +126,11 @@ class DatabaseProviderMock(DatabaseProviderInterface):
     def save_collection_publisher_metadata(self, version_id: CollectionVersionId, publisher_metadata: Optional[dict]) -> None:
         self.collections_versions[version_id.id].publisher_metadata = copy.deepcopy(publisher_metadata)
 
-    def add_collection_version(self, collection_id: CollectionId) -> CollectionVersion:
+    def add_collection_version(self, collection_id: CollectionId) -> CollectionVersionId:
         cc = self.collections[collection_id.id]
-        current_version_id = cc.mapped_version
+        current_version_id = cc.version_id
         current_version = self.collections_versions[current_version_id.id]
-        new_version_id = CollectionVersionId(self._id())
+        new_version_id = CollectionVersionId(self._generate_id())
         # Note: since datasets are immutable, there is no need to clone datasets here, 
         # but the list that contains datasets needs to be copied, since it's a pointer.
         new_dataset_list = copy.deepcopy(current_version.datasets)
@@ -146,10 +144,10 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             datasets=new_dataset_list,
             published_at=None,
             created_at=datetime.utcnow(),
-            canonical_collection=cc.canonical_collection
+            canonical_collection=cc
         )
         self.collections_versions[new_version_id.id] = collection_version
-        return copy.deepcopy(collection_version)
+        return new_version_id
 
     def delete_collection_version(self, version_id: CollectionVersionId) -> None:
         # Can only delete an unpublished collection
@@ -160,30 +158,49 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         if version is not None:
             return self._update_version_with_canonical(version)
 
-    def get_all_versions_for_collection(self, collection_id: CollectionId) -> Iterable[CollectionVersion]:
+    def get_all_versions_for_collection(self, collection_id: CollectionId) -> Iterable[CollectionVersionWithDatasets]:
         # On a database, will require a secondary index on `collection_id` for an optimized lookup
+        versions = []
         for collection_version in self.collections_versions.values():
             if collection_version.collection_id == collection_id:
-                yield self._update_version_with_canonical(collection_version)
+                versions.append(self._update_version_with_canonical(collection_version))
+        if not versions:
+            raise ValueError('Could not find matching collection Id')
+        return versions
+
+    def get_collection_version_with_datasets(self, version_id: CollectionVersionId) -> CollectionVersionWithDatasets:
+        version = self.collections_versions.get(version_id.id)
+        if version is not None:
+            copied_version = copy.deepcopy(version)
+            copied_version.datasets = [self.get_dataset_version(d_id) for d_id in copied_version.datasets]
+            copied_version.datasets = [self._update_dataset_version_with_canonical(d) for d in copied_version.datasets]
+            return self._update_version_with_canonical(copied_version)
 
     # MAYBE
-    def finalize_collection_version(self, collection_id: CollectionId, version_id: CollectionVersionId, published_at: Optional[datetime]) -> None:
+    def finalize_collection_version(self, collection_id: CollectionId, version_id: CollectionVersionId, published_at: Optional[datetime] = None) -> None:
 
-        now = datetime.utcnow()
+        if not published_at:
+            published_at = datetime.utcnow()
 
         version = self.collections_versions[version_id.id]
-        for dataset_version in version.datasets:
-            if self.datasets[dataset_version.dataset_id.id].canonical_dataset.published_at is None:
-                self.datasets[dataset_version.dataset_id.id].canonical_dataset.published_at = now
+        for dataset_version_id in version.datasets:
+            dataset_version = self.get_dataset_version(dataset_version_id)
+            if self.datasets[dataset_version.dataset_id.id].published_at is None:
+                self.datasets[dataset_version.dataset_id.id].published_at = published_at
 
         cc = self.collections.get(collection_id.id)
         if cc is None:
-            self.collections[collection_id.id] = _CanonicalCollection(CanonicalCollection(collection_id, now, False, False), version_id)
+            self.collections[collection_id.id] = CanonicalCollection(id=collection_id,
+                                                                     version_id=version_id,
+                                                                     originally_published_at=published_at,
+                                                                     tombstoned=False
+                                                                     )
+
         else:
             new_cc = copy.deepcopy(cc)
-            new_cc.mapped_version = version_id
+            new_cc.version_id = version_id
             self.collections[collection_id.id] = new_cc
-        self.collections_versions[version_id.id].published_at = now
+        self.collections_versions[version_id.id].published_at = published_at
 
     # OR
     # def update_collection_version_mapping(self, collection_id: CollectionId, version_id: CollectionVersionId) -> None:
@@ -208,7 +225,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         For now, this only returns all the active datasets, i.e. the datasets that belong to a published collection
         """
         active_collections = self.get_all_mapped_collection_versions()
-        active_datasets = [i.version_id.id for s in [c.datasets for c in active_collections] for i in s]
+        active_datasets = [i.id for s in [c.datasets for c in active_collections] for i in s]
         for version_id, dataset_version in self.datasets_versions.items():
             if version_id in active_datasets:
                 yield self._update_dataset_version_with_canonical(dataset_version)
@@ -227,8 +244,8 @@ class DatabaseProviderMock(DatabaseProviderInterface):
 
     def create_canonical_dataset(self, collection_version_id: CollectionVersionId) -> DatasetVersion:
         # Creates a dataset and initializes it with one version
-        dataset_id = DatasetId(self._id())
-        version_id = DatasetVersionId(self._id())
+        dataset_id = DatasetId(self._generate_id())
+        version_id = DatasetVersionId(self._generate_id())
         collection_version = self.collections_versions[collection_version_id.id]
         version = DatasetVersion(
             dataset_id=dataset_id,
@@ -238,17 +255,19 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             metadata=None,
             artifacts=[],
             created_at=datetime.utcnow(),
-            canonical_dataset=CanonicalDataset(dataset_id, None)
+            canonical_dataset=CanonicalDataset(dataset_id, None, None)
         )
         self.datasets_versions[version_id.id] = version
-        self.datasets[dataset_id.id] = _CanonicalDataset(CanonicalDataset(dataset_id, None), version_id)
-        # Register the dataset to the original collection
-        collection_version.datasets.append(version)
+        self.datasets[dataset_id.id] = CanonicalDataset(dataset_id=dataset_id, dataset_version_id=version_id,
+                                                        published_at=None)
         return copy.deepcopy(version)
+
+    def add_dataset_to_collection_version_mapping(self, collection_version_id: CollectionVersionId, dataset_version_id: DatasetVersionId) -> None:
+        self.collections_versions[collection_version_id.id].datasets.append(dataset_version_id)
 
     def add_dataset_artifact(self, version_id: DatasetVersionId, artifact_type: str, artifact_uri: str) -> DatasetArtifactId:
         version = self.datasets_versions[version_id.id]
-        artifact_id = DatasetArtifactId(self._id())
+        artifact_id = DatasetArtifactId(self._generate_id())
         version.artifacts.append(DatasetArtifact(artifact_id, artifact_type, artifact_uri))
         return artifact_id
 
@@ -280,12 +299,12 @@ class DatabaseProviderMock(DatabaseProviderInterface):
 
     def delete_dataset_from_collection_version(self, collection_version_id: CollectionVersionId, dataset_version_id: DatasetVersionId) -> None:
         version = self.collections_versions[collection_version_id.id]
-        version.datasets = [d for d in version.datasets if d.version_id != dataset_version_id]
+        version.datasets = [d for d in version.datasets if d != dataset_version_id]
 
     def replace_dataset_in_collection_version(
         self, collection_version_id: CollectionVersionId, old_dataset_version_id: DatasetVersionId
     ) -> DatasetVersion:
-        new_version_id = DatasetVersionId(self._id())
+        new_version_id = DatasetVersionId(self._generate_id())
         old_version = self.get_dataset_version(old_dataset_version_id)
         collection_version = self.collections_versions[collection_version_id.id]
         new_version = DatasetVersion(
@@ -296,12 +315,12 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             metadata=None,
             artifacts=[],
             created_at=datetime.utcnow(),
-            canonical_dataset=CanonicalDataset(old_version.dataset_id, None)
+            canonical_dataset=old_version.canonical_dataset
         )
         self.datasets_versions[new_version_id.id] = new_version
         
-        idx = next(i for i, e in enumerate(collection_version.datasets) if e.version_id == old_dataset_version_id)
-        collection_version.datasets[idx] = new_version
+        idx = next(i for i, e in enumerate(collection_version.datasets) if e == old_dataset_version_id)
+        collection_version.datasets[idx] = new_version_id
         return copy.deepcopy(new_version)
 
     def get_dataset_version_status(self, version_id: DatasetVersionId) -> DatasetStatus:
@@ -310,5 +329,5 @@ class DatabaseProviderMock(DatabaseProviderInterface):
     def get_dataset_mapped_version(self, dataset_id: DatasetId) -> Optional[DatasetVersion]:
         cd = self.collections.get(dataset_id.id)
         if cd is not None:
-            version = self.datasets_versions[cd.mapped_version.id]
+            version = self.datasets_versions[cd.version_id.id]
             return self._update_dataset_version_with_canonical(version)
