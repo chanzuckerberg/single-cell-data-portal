@@ -1,5 +1,0 @@
-Dropping tables
-Recreating tables
-{"levelname": "INFO", "asctime": "2022-12-07T17:21:47.007Z", "name": "dataset_processing", "message": "Converting /tmp/tmp_aofr7rw/local.h5ad", "lineno": 89, "pathname": "/single-cell-data-portal/backend/portal/pipeline/processing/common.py"}
-{"levelname": "INFO", "asctime": "2022-12-07T17:21:47.007Z", "name": "dataset_processing", "message": "Finished converting <MagicMock name='make_cxg' id='139948934941568'> in 0:00:00.025923", "lineno": 101, "pathname": "/single-cell-data-portal/backend/portal/pipeline/processing/common.py"}
-{"levelname": "INFO", "asctime": "2022-12-07T17:21:47.007Z", "name": "dataset_processing", "message": "Updating database with cxg artifact for dataset 8ad02bc4-7fb0-4cd1-b935-4b395c5a26c5. s3_uri is s3://CELLXGENE-HOSTED-TEST/ea480480-1760-491b-8de7-5f91af503b6e.cxg/", "lineno": 109, "pathname": "/single-cell-data-portal/backend/portal/pipeline/processing/process_cxg.py"}
