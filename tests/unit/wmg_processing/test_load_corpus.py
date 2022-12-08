@@ -14,7 +14,6 @@ from scipy.sparse import coo_matrix, csr_matrix
 from backend.wmg.pipeline.integrated_corpus.job import build_integrated_corpus
 from backend.wmg.pipeline.integrated_corpus.load import load_dataset
 from backend.wmg.pipeline.integrated_corpus.transform import (
-    filter_out_rankits_with_low_expression_counts,
     apply_pre_concatenation_filters,
 )
 from backend.wmg.data.rankit import rankit
@@ -171,58 +170,6 @@ class TestCorpusLoad(unittest.TestCase):
                     expected_x_df = x.df[:]
 
                 self.assertTrue(expected_x_df.equals(actual_x_df))
-
-    def test__filter_out_rankits_with_low_expression_counts__boundaries(self):
-        row = [0, 1, 2]
-        col = [0, 1, 2]
-        rankits = [0.5, 0.7, 0.9]  # 0.5 and 0.7 should be filtered
-        raw_counts = [
-            RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD - 1,  # should be filtered
-            RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD,  # should be filtered
-            RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD + 1,  # should not be filtered
-        ]
-        rankit_csr_matrix = csr_matrix((rankits, (row, col)))
-        raw_counts_coo_matrix = coo_matrix((raw_counts, (row, col)))
-
-        rankits_filtered = filter_out_rankits_with_low_expression_counts(rankit_csr_matrix, raw_counts_coo_matrix)
-
-        self.assertEqual(0.9, sum(rankits_filtered.data))
-
-    def test__filter_out_rankits_with_low_expression_counts__majority_filtered(self):
-        row = [0, 1]
-        col = [0, 1]
-        rankits = [0.7, 0.9]  # 0.5 and 0.7 should be filtered
-        raw_counts = [
-            RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD - 1,  # should be filtered
-            RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD + 1,  # should not be filtered
-        ]
-        rankit_csr_matrix = csr_matrix((rankits, (row, col)))
-        raw_counts_coo_matrix = coo_matrix((raw_counts, (row, col)))
-
-        rankits_filtered = filter_out_rankits_with_low_expression_counts(
-            rankit_csr_matrix, raw_counts_coo_matrix, expect_majority_filtered=True
-        )
-
-        self.assertEqual(0.9, sum(rankits_filtered.data))
-
-    def test__filter_out_rankits_with_low_expression_counts__minority_filtered(self):
-        row = [0, 1, 2, 3]
-        col = [0, 1, 2, 3]
-        rankits = [0.3, 0.5, 0.7, 0.9]  # 0.5 and 0.7 should be filtered
-        raw_counts = [
-            RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD - 1,  # should be filtered
-            RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD + 1,  # should not be filtered
-            RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD + 1,  # should not be filtered
-            RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD + 1,  # should not be filtered
-        ]
-        rankit_csr_matrix = csr_matrix((rankits, (row, col)))
-        raw_counts_coo_matrix = coo_matrix((raw_counts, (row, col)))
-
-        rankits_filtered = filter_out_rankits_with_low_expression_counts(
-            rankit_csr_matrix, raw_counts_coo_matrix, expect_majority_filtered=False
-        )
-
-        self.assertEqual(0.5 + 0.7 + 0.9, sum(rankits_filtered.data))
 
     def test__rankit_scores_ties_the_same(self):
         """
