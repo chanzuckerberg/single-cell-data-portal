@@ -44,18 +44,18 @@ class DatabaseProvider(DatabaseProviderInterface):
         except Exception:
             pass
 
-    def _drop(self):
+    def _drop(self, schema_name="persistence_schema"):
         from sqlalchemy.schema import DropSchema
         from backend.layers.persistence.db_session import _db_session_maker
 
-        _db_session_maker.engine.execute(DropSchema("persistence_schema", cascade=True))
+        _db_session_maker.engine.execute(DropSchema(schema_name, cascade=True))
 
-    def _create(self):
+    def _create(self, schema_name="persistence_schema"):
         from sqlalchemy.schema import CreateSchema
         from backend.layers.persistence.orm import metadata
         from backend.layers.persistence.db_session import _db_session_maker
 
-        _db_session_maker.engine.execute(CreateSchema("persistence_schema"))
+        _db_session_maker.engine.execute(CreateSchema(schema_name))
         metadata.create_all(bind=_db_session_maker.engine)
 
     @staticmethod
@@ -68,7 +68,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             version_id=CollectionVersionId(str(row.version_id)),
             owner=row.owner,
             metadata=CollectionMetadata.from_json(row.metadata),
-            publisher_metadata=json.loads(row.publisher_metadata),
+            publisher_metadata=None if row.publisher_metadata is None else json.loads(row.publisher_metadata),
             datasets=[DatasetVersionId(str(id)) for id in row.datasets],
             published_at=row.published_at,
             created_at=row.created_at,
@@ -83,7 +83,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             version_id=CollectionVersionId(str(row.version_id)),
             owner=row.owner,
             metadata=CollectionMetadata.from_json(row.metadata),
-            publisher_metadata=json.loads(row.publisher_metadata),
+            publisher_metadata=None if row.publisher_metadata is None else json.loads(row.publisher_metadata),
             datasets=datasets,
             published_at=row.published_at,
             created_at=row.created_at,
@@ -313,7 +313,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         """
         with self.db_session_manager() as session:
             version = session.query(CollectionVersionTable).filter_by(version_id=version_id.id).one()
-            version.publisher_metadata = publisher_metadata
+            version.publisher_metadata = json.dumps(publisher_metadata)
 
     def add_collection_version(self, collection_id: CollectionId) -> CollectionVersionId:
         """
@@ -336,7 +336,7 @@ class DatabaseProvider(DatabaseProviderInterface):
                 datasets=current_version.datasets,
             )
             session.add(new_version)
-            return DatasetVersionId(new_version_id)
+            return CollectionVersionId(new_version_id)
 
     def delete_collection_version(self, version_id: CollectionVersionId) -> None:
         """

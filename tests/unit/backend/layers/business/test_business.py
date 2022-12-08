@@ -33,6 +33,7 @@ from backend.layers.common.entities import (
     Link,
     OntologyTermId,
 )
+from backend.layers.persistence.persistence import DatabaseProvider
 from backend.layers.persistence.persistence_mock import DatabaseProviderMock
 from backend.layers.thirdparty.crossref_provider import CrossrefProviderInterface
 from backend.layers.thirdparty.s3_provider import S3Provider
@@ -48,6 +49,8 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
 
     def setUp(self) -> None:
         self.database_provider = DatabaseProviderMock()
+        # uncomment below and comment out above to run as integration tests, alongside a docker postgres instance
+        # self.database_provider = DatabaseProvider()
         # self.database_provider._drop()
         # self.database_provider._create()
 
@@ -143,9 +146,15 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         Test method that "completes" a dataset processing. This is necessary since dataset ingestion
         is a complex process which happens asynchronously, and cannot be easily mocked.
         """
-        self.database_provider.add_dataset_artifact(dataset_version_id, "H5AD", "s3://fake-bucket/artifact.h5ad")
-        self.database_provider.add_dataset_artifact(dataset_version_id, "CXG", "s3://fake-bucket/artifact.cxg")
-        self.database_provider.add_dataset_artifact(dataset_version_id, "RDS", "s3://fake-bucket/artifact.rds")
+        self.database_provider.add_dataset_artifact(
+            dataset_version_id, DatasetArtifactType.H5AD.value, "s3://fake-bucket/artifact.h5ad"
+        )
+        self.database_provider.add_dataset_artifact(
+            dataset_version_id, DatasetArtifactType.CXG.value, "s3://fake-bucket/artifact.cxg"
+        )
+        self.database_provider.add_dataset_artifact(
+            dataset_version_id, DatasetArtifactType.RDS.value, "s3://fake-bucket/artifact.rds"
+        )
         self.database_provider.update_dataset_upload_status(dataset_version_id, DatasetUploadStatus.UPLOADED)
         self.database_provider.update_dataset_validation_status(dataset_version_id, DatasetValidationStatus.VALID)
         self.database_provider.update_dataset_processing_status(dataset_version_id, DatasetProcessingStatus.SUCCESS)
@@ -197,8 +206,8 @@ class TestCreateCollection(BaseBusinessLogicTestCase):
         links_with_doi = [Link("test doi", "DOI", "http://good.doi")]
         self.sample_collection_metadata.links = links_with_doi
 
-        expected_publiser_metadata = {"authors": ["Test Author"]}
-        self.crossref_provider.fetch_metadata = Mock(return_value=expected_publiser_metadata)
+        expected_publisher_metadata = {"authors": ["Test Author"]}
+        self.crossref_provider.fetch_metadata = Mock(return_value=expected_publisher_metadata)
 
         collection = self.business_logic.create_collection(self.test_user_name, self.sample_collection_metadata)
 
@@ -208,7 +217,7 @@ class TestCreateCollection(BaseBusinessLogicTestCase):
         self.assertEqual(1, len(collection_from_database.metadata.links))
         self.assertEqual(collection_from_database.metadata.links[0].uri, "http://good.doi")
         self.assertIsNotNone(collection_from_database.publisher_metadata)
-        self.assertEqual(collection_from_database.publisher_metadata, expected_publiser_metadata)
+        self.assertEqual(collection_from_database.publisher_metadata, expected_publisher_metadata)
 
     def test_create_collection_with_not_found_doi_fail(self):
         """
@@ -423,8 +432,8 @@ class TestUpdateCollection(BaseBusinessLogicTestCase):
         links = [Link("test doi", "DOI", "http://test.doi")]
         metadata.links = links
 
-        expected_publiser_metadata = {"authors": ["Test Author"]}
-        self.crossref_provider.fetch_metadata = Mock(return_value=expected_publiser_metadata)
+        expected_publisher_metadata = {"authors": ["Test Author"]}
+        self.crossref_provider.fetch_metadata = Mock(return_value=expected_publisher_metadata)
 
         # We need to call `business_logic.create_collection` so that the publisher metadata is populated
         version = self.business_logic.create_collection(self.test_user_name, metadata)
@@ -716,11 +725,11 @@ class TestUpdateDataset(BaseBusinessLogicTestCase):
         self.assertEqual(2, len(unpublished_collection.datasets))
         for dataset in unpublished_collection.datasets:
             self.assertEqual(dataset.artifacts, [])
-            self.business_logic.add_dataset_artifact(dataset.version_id, "H5AD", "http://fake.uri/artifact.h5ad")
+            self.business_logic.add_dataset_artifact(dataset.version_id, "h5ad", "http://fake.uri/artifact.h5ad")
 
             version_from_db = self.database_provider.get_dataset_version(dataset.version_id)
             self.assertEqual(1, len(version_from_db.artifacts))
-            self.assertEqual(version_from_db.artifacts[0].type, DatasetArtifactType.H5AD)
+            self.assertEqual(version_from_db.artifacts[0].type, DatasetArtifactType.H5AD.value)
             self.assertEqual(version_from_db.artifacts[0].uri, "http://fake.uri/artifact.h5ad")
 
     def test_add_dataset_artifact_wrong_type_fail(self):
@@ -897,10 +906,10 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         published_collection = self.initialize_published_collection()
         new_version = self.business_logic.create_collection_version(published_collection.collection_id)
 
-        dataset_version_to_remove = new_version.datasets[0].version_id
-        dataset_version_to_keep = new_version.datasets[1].version_id
+        dataset_version_to_remove = new_version.datasets[0]
+        dataset_version_to_keep = new_version.datasets[1]
 
-        self.business_logic.remove_dataset_version(new_version.version_id, dataset_version_to_remove)
+        self.business_logic.remove_dataset_version(new_version.version_id, dataset_version_to_remove.version_id)
 
         # The new version should have only one dataset (before publishing)
         version_from_db = self.database_provider.get_collection_version(new_version.version_id)
@@ -970,7 +979,7 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         version = self.business_logic.get_published_collection_version(published_collection.collection_id)
         self.assertEqual(version.version_id, new_version.version_id)
         self.assertEqual(3, len(version.datasets))
-        self.assertIn(added_dataset_version_id, version.datasets)
+        self.assertIn(added_dataset_version_id, [dataset.version_id for dataset in version.datasets])
 
     def test_publish_version_with_replaced_dataset_ok(self):
         """
@@ -1002,7 +1011,9 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         version = self.business_logic.get_published_collection_version(published_collection.collection_id)
         self.assertEqual(version.version_id, published_collection.version_id)
         self.assertEqual(2, len(version.datasets))
-        self.assertCountEqual([dataset_id_to_replace, dataset_id_to_keep], version.datasets)
+        self.assertCountEqual(
+            [dataset_id_to_replace, dataset_id_to_keep], [dataset.version_id for dataset in version.datasets]
+        )
 
         self.business_logic.publish_collection_version(new_version.version_id)
 
@@ -1020,7 +1031,9 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         version = self.business_logic.get_published_collection_version(published_collection.collection_id)
         self.assertEqual(version.version_id, new_version.version_id)
         self.assertEqual(2, len(version.datasets))
-        self.assertCountEqual([replaced_dataset_version_id, dataset_id_to_keep], version.datasets)
+        self.assertCountEqual(
+            [replaced_dataset_version_id, dataset_id_to_keep], [dataset.version_id for dataset in version.datasets]
+        )
 
     def test_publish_version_does_not_change_original_published_at_ok(self):
         """

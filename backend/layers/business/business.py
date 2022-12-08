@@ -35,6 +35,7 @@ from backend.layers.common.entities import (
     CollectionVersionWithDatasets,
     DatasetArtifact,
     DatasetArtifactId,
+    DatasetArtifactType,
     DatasetConversionStatus,
     DatasetId,
     DatasetMetadata,
@@ -409,7 +410,7 @@ class BusinessLogic(BusinessLogicInterface):
 
         # TODO: we should probably validate that artifact_uri is a valid S3 URI
 
-        if artifact_type not in ["H5AD", "CXG", "RDS"]:
+        if artifact_type not in [artifact.value for artifact in DatasetArtifactType]:
             raise DatasetIngestException(f"Wrong artifact type for {dataset_version_id}: {artifact_type}")
 
         return self.database_provider.add_dataset_artifact(dataset_version_id, artifact_type, artifact_uri)

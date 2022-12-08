@@ -12,6 +12,7 @@ const GENE_LABELS_ID = "gene-labels";
 const CELL_TYPE_LABELS_ID = "cell-type-labels";
 const ADD_TISSUE_ID = "add-tissue";
 const ADD_GENE_ID = "add-gene";
+const SOURCE_DATA_BUTTON_ID = "source-data-button";
 
 const { describe, skip } = test;
 
@@ -56,7 +57,9 @@ describe("Where's My Gene", () => {
 
     await expect(filtersPanel).toHaveSelector(getText("Dataset"));
     await expect(filtersPanel).toHaveSelector(getText("Disease"));
-    await expect(filtersPanel).toHaveSelector(getText("Self-Reported Ethnicity"));
+    await expect(filtersPanel).toHaveSelector(
+      getText("Self-Reported Ethnicity")
+    );
     await expect(filtersPanel).toHaveSelector(getText("Sex"));
 
     // Legend
@@ -142,6 +145,87 @@ describe("Where's My Gene", () => {
     }
   });
 
+  test("Source Data", async ({ page }) => {
+    await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
+
+    async function getSourceDataButton() {
+      return page.$(getTestID(SOURCE_DATA_BUTTON_ID));
+    }
+    async function getTissueSelectorButton() {
+      return page.$(getTestID(ADD_TISSUE_ID));
+    }
+
+    async function getGeneSelectorButton() {
+      return page.$(getTestID(ADD_GENE_ID));
+    }
+
+    await clickUntilOptionsShowUp(getTissueSelectorButton, page);
+    await selectFirstOption(page);
+
+    await clickUntilOptionsShowUp(getGeneSelectorButton, page);
+    await selectFirstOption(page);
+
+    await tryUntil(
+      async () => {
+        const canvases = await page.$$("canvas");
+        expect(canvases.length).not.toBe(0);
+      },
+      { page }
+    );
+    await clickUntilSidebarShowsUp(getSourceDataButton, page);
+    await expect(page).toHaveSelector(
+      getText(
+        "After filtering cells with low coverage (less than 500 genes expressed)"
+      )
+    );
+
+    await tryUntil(
+      async () => {
+        const sourceDataList = await page.$("[class*=MuiList-root]");
+        if (!sourceDataList) throw Error("no source data displayed");
+
+        const sourceDataListItems = await sourceDataList?.$$(
+          ".MuiListItem-root"
+        );
+        expect(sourceDataListItems?.length).toBeGreaterThan(0);
+
+        await page.mouse.click(0, 0);
+
+        async function getFiltersPanel() {
+          return page.$(getTestID("filters-panel"));
+        }
+        async function getDatasetSelector() {
+          const filtersPanel = await getFiltersPanel();
+
+          if (!filtersPanel) {
+            throw Error("Filters panel not found");
+          }
+
+          return filtersPanel.$("*css=button >> text=Dataset");
+        }
+        const datasetSelector = await getDatasetSelector();
+        if (!datasetSelector) throw Error("No datasetSelector found");
+        const selectedDatasetsBefore = await datasetSelector.$$(
+          ".MuiChip-root"
+        );
+        await expect(selectedDatasetsBefore.length).toBe(0);
+        await clickUntilOptionsShowUp(getDatasetSelector, page);
+        await selectFirstOption(page);
+        await clickUntilSidebarShowsUp(getSourceDataButton, page);
+        const sourceDataListAfter = await page.$("[class*=MuiList-root]");
+        if (!sourceDataListAfter)
+          throw Error(
+            "no source data displayed after selecting dataset filter"
+          );
+
+        const sourceDataListAfterItems = await sourceDataListAfter?.$$(
+          ".MuiListItem-root"
+        );
+        expect(sourceDataListAfterItems?.length).toBe(2);
+      },
+      { page }
+    );
+  });
   test("Hierarchical Clustering", async ({ page }) => {
     await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
 
@@ -372,7 +456,24 @@ async function clickUntilOptionsShowUp(
     { page }
   );
 }
+async function clickUntilSidebarShowsUp(
+  getTarget: () => Promise<ElementHandle<SVGElement | HTMLElement> | null>,
+  page: Page
+) {
+  await tryUntil(
+    async () => {
+      const target = await getTarget();
 
+      if (!target) throw Error("no target");
+
+      await target.click();
+      const drawer = await page.$("[class=bp4-drawer-header]");
+
+      if (!drawer) throw Error("no drawer");
+    },
+    { page }
+  );
+}
 // (thuang): This only works when a dropdown is open
 async function selectFirstOption(page: Page) {
   await selectFirstNOptions(1, page);

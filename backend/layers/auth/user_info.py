@@ -25,6 +25,7 @@ class UserInfo:
         else:
             return auth.is_super_curator(self.token_info.get("scope", ""))
 
+    @property
     def user_id(self):
         if self.token_info is None:
             raise Exception("Bad")  # TODO: improve
@@ -33,7 +34,7 @@ class UserInfo:
     def is_user_owner_or_allowed(self, owner: str) -> bool:
         if self.is_none():
             return False
-        return self.user_id() == owner or self.is_super_curator()
+        return self.user_id == owner or self.is_super_curator()
 
     # def get_collection_query_filter_for_owner(self, is_published: Optional[bool] = None):
     #     if self.is_super_curator():

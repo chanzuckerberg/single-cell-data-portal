@@ -71,7 +71,7 @@ class PortalApi:
             all_owned_collections = self.business_logic.get_collections(CollectionQueryFilter(is_published=False))
         else:
             all_owned_collections = self.business_logic.get_collections(
-                CollectionQueryFilter(is_published=False, owner=user_info.user_id())
+                CollectionQueryFilter(is_published=False, owner=user_info.user_id)
             )
 
         collections = []
@@ -202,7 +202,7 @@ class PortalApi:
                 "created_at": collection.created_at,
                 "curator_name": "",  # TODO
                 "data_submission_policy_version": "1.0",  # TODO
-                "datasets": [self._dataset_to_response(d) for d in collection.datasets],
+                "datasets": [self._dataset_to_response(ds) for ds in collection.datasets],
                 "description": collection.metadata.description,
                 "id": collection_id,
                 "links": [self._link_to_response(link) for link in collection.metadata.links],
@@ -229,7 +229,7 @@ class PortalApi:
         # TODO: handle tombstoning
 
         user_info = UserInfo(token_info)
-        print(token_info, user_info.user_id(), version.owner)
+        print(token_info, user_info.user_id, version.owner)
         access_type = "WRITE" if user_info.is_user_owner_or_allowed(version.owner) else "READ"
 
         response = self._collection_to_response(version, access_type)
@@ -406,10 +406,8 @@ class PortalApi:
         except DatasetInWrongStatusException:
             raise MethodNotAllowedException(
                 detail="Submission failed. A dataset cannot be updated while a previous update for the same dataset "
-                "is in "
-                "progress. Please cancel the current submission by deleting the dataset, or wait until the "
-                "submission has "
-                "finished processing."
+                "is in progress. Please cancel the current submission by deleting the dataset, or wait until "
+                "the submission has finished processing."
             )
 
     # TODO: those two methods should probably be collapsed into one
