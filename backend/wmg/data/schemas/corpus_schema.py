@@ -190,6 +190,7 @@ def create_integrated_expression_array(uri: str, filters: tiledb.filter.FilterLi
             allows_duplicates=True,
             attrs=[
                 tiledb.Attr(name="rankit", dtype=np.float32, filters=filters),
+                tiledb.Attr(name="rankit_unfiltered", dtype=np.float32, filters=filters),
             ],
             cell_order="row-major",
             tile_order="col-major",

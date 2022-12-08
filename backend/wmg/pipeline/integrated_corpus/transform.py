@@ -88,19 +88,19 @@ def transform_dataset_raw_counts_to_rankit(
             # Compute RankIt
             rankit_integrated_csr_matrix = rankit(raw_expression_csr_matrix)
 
-            rankit_integrated_coo_matrix = filter_out_rankits_with_low_expression_counts(
-                rankit_integrated_csr_matrix, raw_expression_csr_matrix, expect_majority_filtered=True
-            )
+            rankit_integrated_coo_matrix = rankit_integrated_csr_matrix.tocoo(copy=False)
 
             global_rows = rankit_integrated_coo_matrix.row + start + first_obs_idx
             global_cols = global_var_index[rankit_integrated_coo_matrix.col]
 
             rankit_data = rankit_integrated_coo_matrix.data
+            rankit_data_filtered = rankit_data.copy()
+            rankit_data_filtered[rankit_data_filtered < RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD] = 0
 
             assert len(rankit_data) == len(global_rows)
             assert len(rankit_data) == len(global_cols)
 
-            array[global_rows, global_cols] = {"rankit": rankit_data}
+            array[global_rows, global_cols] = {"rankit": rankit_data_filtered, "rankit_unfiltered": rankit_data}
             del (
                 raw_expression_csr_matrix,
                 rankit_integrated_coo_matrix,
@@ -112,51 +112,3 @@ def transform_dataset_raw_counts_to_rankit(
             gc.collect()
 
     logger.debug(f"Saved {array_name}.")
-
-
-def filter_out_rankits_with_low_expression_counts(
-    rankits: csr_matrix, raw_counts_csr: csr_matrix, expect_majority_filtered=True, verbose=False
-) -> coo_matrix:
-    """
-    Keep only rankit values that were computed from expression values above the desired threshold.
-
-    @param expect_majority_filtered: Set this to True if the caller expects the majority of rankit values will be
-    filtered, as we can then use an optimal implementation
-    """
-
-    rankits_nnz_orig = rankits.nnz
-    raw_counts = raw_counts_csr.tocoo(copy=False)
-    to_keep_mask = raw_counts.data > RANKIT_RAW_EXPR_COUNT_FILTERING_MIN_THRESHOLD
-
-    # Unfortunately, it seems to take longer to decide which strategy to use than it does to just run either one.
-    # start = time.time()
-    # expect_majority_filtered = to_keep_mask.sum() < rankits_nnz_orig / 2
-    # end = time.time()
-    # logger.info(f"filter_out_rankits_with_low_expression_counts(): use extract strategy={expect_majority_filtered}; "
-    #             f"decision time={end - start}")
-
-    start = time.time()
-
-    if expect_majority_filtered:
-        rows_to_keep = raw_counts.row[to_keep_mask]
-        cols_to_keep = raw_counts.col[to_keep_mask]
-        rankits_to_keep = rankits.data[to_keep_mask]
-        rankits_filtered = coo_matrix((rankits_to_keep, (rows_to_keep, cols_to_keep)))
-    else:
-        to_filter_mask = ~to_keep_mask
-        rows_to_filter = raw_counts.row[to_filter_mask]
-        cols_to_filter = raw_counts.col[to_filter_mask]
-        rankits[rows_to_filter, cols_to_filter] = 0.0
-        rankits.eliminate_zeros()
-        rankits_filtered = rankits.tocoo()
-
-    end = time.time()
-    if verbose is True:
-        logger.info(
-            f"filter duration={end - start}, "
-            f"orig size={rankits_nnz_orig}, "
-            f"abs reduction={rankits_nnz_orig - rankits_filtered.nnz}, "
-            f"% reduction={(rankits_nnz_orig - rankits_filtered.nnz) / rankits_nnz_orig}"
-        )
-
-    return rankits_filtered
