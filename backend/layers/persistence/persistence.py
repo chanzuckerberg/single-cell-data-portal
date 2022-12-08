@@ -44,18 +44,18 @@ class DatabaseProvider(DatabaseProviderInterface):
         except Exception:
             pass
 
-    def _drop(self):
+    def _drop(self, schema_name="persistence_schema"):
         from sqlalchemy.schema import DropSchema
         from backend.layers.persistence.db_session import _db_session_maker
 
-        _db_session_maker.engine.execute(DropSchema("persistence_schema", cascade=True))
+        _db_session_maker.engine.execute(DropSchema(schema_name, cascade=True))
 
-    def _create(self):
+    def _create(self, schema_name="persistence_schema"):
         from sqlalchemy.schema import CreateSchema
         from backend.layers.persistence.orm import metadata
         from backend.layers.persistence.db_session import _db_session_maker
 
-        _db_session_maker.engine.execute(CreateSchema("persistence_schema"))
+        _db_session_maker.engine.execute(CreateSchema(schema_name))
         metadata.create_all(bind=_db_session_maker.engine)
 
     @staticmethod
@@ -336,7 +336,7 @@ class DatabaseProvider(DatabaseProviderInterface):
                 datasets=current_version.datasets,
             )
             session.add(new_version)
-            return DatasetVersionId(new_version_id)
+            return CollectionVersionId(new_version_id)
 
     def delete_collection_version(self, version_id: CollectionVersionId) -> None:
         """
