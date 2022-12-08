@@ -21,6 +21,7 @@ from backend.layers.common.entities import (
     OntologyTermId,
 )
 from backend.layers.persistence.persistence import DatabaseProvider
+from backend.layers.persistence.persistence_mock import DatabaseProviderMock
 from backend.layers.thirdparty.crossref_provider import CrossrefProviderInterface
 from backend.layers.thirdparty.s3_provider import S3Provider
 from backend.layers.thirdparty.step_function_provider import StepFunctionProviderInterface
@@ -101,9 +102,9 @@ class NewBaseTest(BaseAuthAPITest):
         super().setUp()
         os.environ.setdefault("APP_NAME", "corpora-api")
 
-        database_provider = DatabaseProvider()
-        database_provider._drop()
-        database_provider._create()
+        database_provider = DatabaseProviderMock()
+        # database_provider._drop()
+        # database_provider._create()
         self.crossref_provider = CrossrefProviderInterface()
         step_function_provider = StepFunctionProviderInterface()
         self.s3_provider = S3Provider()
@@ -174,28 +175,32 @@ class NewBaseTest(BaseAuthAPITest):
         return self.business_logic.get_collection_version(collection.version_id)
 
     # Public collections need to have at least one dataset!
-    def generate_published_collection(self, owner="test_user_id", links: List[Link] = [], add_datasets: int = 1):
+    def generate_published_collection(
+            self, owner="test_user_id", links: List[Link] = [], add_datasets: int = 1
+    ) -> CollectionVersion:
         unpublished_collection = self.generate_unpublished_collection(owner, links, add_datasets=add_datasets)
         self.business_logic.publish_collection_version(unpublished_collection.version_id)
         return self.business_logic.get_collection_version(unpublished_collection.version_id)
 
+    def generate_revision(self, collection_id: str) -> CollectionVersion:
+        revision = self.business_logic.create_collection_version(collection_id)
+        return self.business_logic.get_collection_version(revision.version_id)
+
     def generate_dataset(
-        self,
-        owner: str = "test_user_id",
-        # collection_version_id: Optional[CollectionVersionId] = None, # TODO: probably remove
-        metadata: Optional[DatasetMetadata] = None,
-        statuses: List[DatasetStatusUpdate] = [],
+        self, 
+        owner: str = "test_user_id", 
+        collection_version: Optional[CollectionVersion] = None,
+        metadata: Optional[DatasetMetadata] = None, 
+        statuses: List[DatasetStatusUpdate] = [], 
         artifacts: List[DatasetArtifactUpdate] = [],
         publish: bool = False,
-    ):
+    ) -> DatasetData:
         """
         Convenience method for generating a dataset. Also generates an unpublished collection if needed.
         """
-        # if not collection_version_id:
-        collection = self.generate_unpublished_collection(owner)
-        dataset_version_id, dataset_id = self.business_logic.ingest_dataset(
-            collection.version_id, "http://fake.url", None
-        )
+        if not collection_version:
+            collection_version = self.generate_unpublished_collection(owner)
+        dataset_version_id, dataset_id = self.business_logic.ingest_dataset(collection_version.version_id, "http://fake.url", None)
         if not metadata:
             metadata = copy.deepcopy(self.sample_dataset_metadata)
         self.business_logic.set_dataset_metadata(dataset_version_id, metadata)
@@ -207,14 +212,14 @@ class NewBaseTest(BaseAuthAPITest):
                 self.business_logic.add_dataset_artifact(dataset_version_id, artifact.type, artifact.uri)
             )
         if publish:
-            self.business_logic.publish_collection_version(collection.version_id)
+            self.business_logic.publish_collection_version(collection_version.version_id)
         explorer_url = f"http://base.url/{dataset_version_id.id}.cxg/"
         return DatasetData(
-            dataset_version_id.id,
-            dataset_id.id,
-            explorer_url,
-            collection.version_id.id,
-            collection.collection_id.id,
+            dataset_version_id.id, 
+            dataset_id.id, 
+            explorer_url, 
+            collection_version.version_id.id,
+            collection_version.collection_id.id,
             [a.id for a in artifact_ids],
         )
 

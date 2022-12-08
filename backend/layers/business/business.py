@@ -52,7 +52,7 @@ from backend.layers.persistence.persistence_interface import DatabaseProviderInt
 from backend.layers.thirdparty.crossref_provider import CrossrefProviderInterface
 from backend.layers.thirdparty.s3_provider import S3Provider
 from backend.layers.thirdparty.step_function_provider import StepFunctionProviderInterface
-from backend.layers.thirdparty.uri_provider import UriProviderInterface
+from backend.layers.thirdparty.uri_provider import UriProviderInterface, FileInfoException
 
 
 class BusinessLogic(BusinessLogicInterface):
@@ -250,7 +250,6 @@ class BusinessLogic(BusinessLogicInterface):
         """
         Creates a canonical dataset and starts its ingestion by invoking the step function
         """
-
         if not self.uri_provider.validate(url):
             raise InvalidURIException(f"Trying to upload invalid URI: {url}")
 
@@ -356,8 +355,15 @@ class BusinessLogic(BusinessLogicInterface):
 
         file_name = artifact_url.path[1:]
         file_type = artifact.type
-        file_size = self.s3_provider.get_file_size(artifact.uri)
-        presigned_url = self.s3_provider.generate_presigned_url(artifact.uri)
+        try:
+            file_size = self.s3_provider.get_file_size(artifact.uri)
+        except Exception:
+            file_size = None
+
+        try:
+            presigned_url = self.s3_provider.generate_presigned_url(artifact.uri)
+        except Exception:
+            presigned_url = None
 
         return DatasetArtifactDownloadData(file_name, file_type, file_size, presigned_url)
 

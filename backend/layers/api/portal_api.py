@@ -37,6 +37,7 @@ from backend.layers.common.entities import (
     CollectionId,
     CollectionMetadata,
     CollectionVersion,
+    CollectionVersionWithDatasets,
     CollectionVersionId,
     DatasetArtifact,
     DatasetArtifactId,
@@ -46,6 +47,7 @@ from backend.layers.common.entities import (
     Link,
     OntologyTermId,
 )
+from backend.layers.thirdparty.uri_provider import FileInfoException
 
 
 class PortalApi:
@@ -64,7 +66,6 @@ class PortalApi:
         all_published_collections = self.business_logic.get_collections(CollectionQueryFilter(is_published=True))
 
         user_info = UserInfo(token_info)  # TODO: ideally, connexion should already return a UserInfo object
-
         if user_info.is_none():
             all_owned_collections = []
         elif user_info.is_super_curator():
@@ -278,7 +279,6 @@ class PortalApi:
         if doi_node := doi.get_doi_link_node(body, errors):
             if doi_url := doi.portal_get_normalized_doi_url(doi_node, errors):
                 doi_node["link_url"] = doi_url
-
         if errors:
             raise InvalidParametersHTTPException(detail=errors)  # TODO: rewrite this exception?
 
@@ -331,7 +331,7 @@ class PortalApi:
         Deletes a collection version from the persistence store.
         """
         version = self.business_logic.get_collection_version(CollectionVersionId(collection_id))
-        if not UserInfo(token_info).is_user_owner_or_allowed(version.owner):
+        if version is None or not UserInfo(token_info).is_user_owner_or_allowed(version.owner):
             raise ForbiddenHTTPException()
 
         self.business_logic.delete_collection_version(CollectionVersionId(collection_id))
@@ -401,6 +401,8 @@ class PortalApi:
             raise NotFoundHTTPException()
         except InvalidURIException:
             raise InvalidParametersHTTPException(detail="The dropbox shared link is invalid.")
+        except FileInfoException as ex:
+            raise InvalidParametersHTTPException(detail=str(ex))
         except MaxFileSizeExceededException:
             raise TooLargeHTTPException()
         except DatasetInWrongStatusException:
@@ -473,7 +475,7 @@ class PortalApi:
 
     def _assert_dataset_has_right_owner(
         self, dataset_version_id: DatasetVersionId, user_info: UserInfo
-    ) -> Tuple[DatasetVersion, CollectionVersion]:
+    ) -> Tuple[DatasetVersion, CollectionVersionWithDatasets]:
         """
         Ensures that the dataset exists and has the right owner.
         This requires looking up the collection connected to this dataset.
@@ -566,7 +568,7 @@ class PortalApi:
             raise NotFoundHTTPException()
 
         # Retrieves the URI of the cxg artifact
-        s3_uri = next(a.uri for a in dataset.artifacts if a.type == "CXG")
+        s3_uri = next(a.uri for a in dataset.artifacts if a.type == "cxg")
 
         dataset_identifiers = {
             "s3_uri": s3_uri,
