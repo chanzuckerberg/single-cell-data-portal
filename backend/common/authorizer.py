@@ -2,9 +2,6 @@ import os
 from functools import lru_cache
 
 import requests
-from requests.adapters import HTTPAdapter
-from requests.packages.urllib3.util import Retry
-
 from backend.common.corpora_config import CorporaAuthConfig
 from backend.common.utils.http_exceptions import UnauthorizedError
 from backend.common.utils.jwt import jwt_decode, get_unverified_header

@@ -14,6 +14,7 @@ from tests.unit.backend.wmg.fixtures.test_primary_filters import (
 )
 from tests.unit.backend.wmg.fixtures.test_snapshot import (
     create_temp_wmg_snapshot,
+    load_test_fmg_snapshot,
     all_ones_expression_summary_values,
     all_tens_cell_counts_values,
     all_X_cell_counts_values,
@@ -21,6 +22,8 @@ from tests.unit.backend.wmg.fixtures.test_snapshot import (
     exclude_all_but_one_gene_per_organism,
     exclude_dev_stage_and_ethnicity_for_secondary_filter_test,
 )
+
+TEST_SNAPSHOT = "test-fmg-snapshot"
 
 
 class WmgApiV1Tests(unittest.TestCase):
@@ -873,6 +876,82 @@ class WmgApiV1Tests(unittest.TestCase):
                     )
                     self.app.post("/wmg/v1/query", json=two_secondary_filters_request)
                     self.assertEqual(mock_dims.call_count, 2)
+
+    @patch("backend.wmg.api.v1.gene_term_label")
+    @patch("backend.wmg.api.v1.ontology_term_label")
+    @patch("backend.wmg.api.v1.load_snapshot")
+    def test__markers_returns_200_and_correct_response(self, load_snapshot, ontology_term_label, gene_term_label):
+        with load_test_fmg_snapshot(TEST_SNAPSHOT) as snapshot:
+            # setup up API endpoints to use a mocked cube containing all stat values of 1, for a deterministic
+            # expected query response
+            load_snapshot.return_value = snapshot
+
+            # mock the functions in the ontology_labels module, so we can assert deterministic values in the
+            # "term_id_labels" portion of the response body; note that the correct behavior of the ontology_labels
+            # module is separately unit tested, and here we just want to verify the response building logic is correct.
+            ontology_term_label.side_effect = lambda ontology_term_id: f"{ontology_term_id}_label"
+            gene_term_label.side_effect = lambda gene_term_id: f"{gene_term_id}_label"
+
+            request = dict(
+                celltype="CL:0000786",
+                organism="NCBITaxon:9606",
+                tissue="UBERON:0002048",
+                n_markers=10,
+                test="ttest",
+            )
+
+            response = self.app.post("/wmg/v1/markers", json=request)
+            received = json.loads(response.data)
+
+            expected = {
+                "marker_genes": {
+                    "ENSG00000051108": {"effect_size": 1.6856228113174438, "p_value": 0.0},
+                    "ENSG00000099958": {"effect_size": 1.6013718843460083, "p_value": 0.0},
+                    "ENSG00000100219": {"effect_size": 1.4613032341003418, "p_value": 0.0},
+                    "ENSG00000118363": {"effect_size": 1.4760183095932007, "p_value": 0.0},
+                    "ENSG00000132465": {"effect_size": 2.4143028259277344, "p_value": 0.0},
+                    "ENSG00000134285": {"effect_size": 1.8657838106155396, "p_value": 0.0},
+                    "ENSG00000166562": {"effect_size": 1.8400332927703857, "p_value": 0.0},
+                    "ENSG00000170476": {"effect_size": 2.8502309322357178, "p_value": 0.0},
+                    "ENSG00000180879": {"effect_size": 2.5727155208587646, "p_value": 0.0},
+                    "ENSG00000211592": {"effect_size": 1.5220520496368408, "p_value": 0.0},
+                },
+                "snapshot_id": "test-fmg-snapshot",
+            }
+            self.assertDictEqual(received, expected)
+            self.assertEqual(200, response.status_code)
+
+    @patch("backend.wmg.api.v1.gene_term_label")
+    @patch("backend.wmg.api.v1.ontology_term_label")
+    @patch("backend.wmg.api.v1.load_snapshot")
+    def test__markers_returns_200_and_empty_dictionary_for_bad_celltypes(
+        self, load_snapshot, ontology_term_label, gene_term_label
+    ):
+        with load_test_fmg_snapshot(TEST_SNAPSHOT) as snapshot:
+            # setup up API endpoints to use a mocked cube containing all stat values of 1, for a deterministic
+            # expected query response
+            load_snapshot.return_value = snapshot
+
+            # mock the functions in the ontology_labels module, so we can assert deterministic values in the
+            # "term_id_labels" portion of the response body; note that the correct behavior of the ontology_labels
+            # module is separately unit tested, and here we just want to verify the response building logic is correct.
+            ontology_term_label.side_effect = lambda ontology_term_id: f"{ontology_term_id}_label"
+            gene_term_label.side_effect = lambda gene_term_id: f"{gene_term_id}_label"
+
+            request = dict(
+                celltype="CL:9999999",  # bad celltype
+                organism="NCBITaxon:9606",
+                tissue="UBERON:0002048",
+                n_markers=10,
+                test="ttest",
+            )
+
+            response = self.app.post("/wmg/v1/markers", json=request)
+            received = json.loads(response.data)
+
+            expected = {"marker_genes": {}, "snapshot_id": "test-fmg-snapshot"}
+            self.assertDictEqual(received, expected)
+            self.assertEqual(200, response.status_code)
 
 
 # mock the dataset and collection entity data that would otherwise be fetched from the db; in this test

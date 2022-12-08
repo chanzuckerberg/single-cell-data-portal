@@ -346,7 +346,6 @@ export function createYAxisOptions({
             const { name, depth = 0 } = deserializeCellTypeMetadata(
               value as CellTypeMetadata
             );
-
             const displayDepth = Math.min(depth, MAX_DEPTH);
 
             const { fontWeight, fontSize, fontFamily } = SELECTED_STYLE;
@@ -549,12 +548,6 @@ export function deserializeCellTypeMetadata(
     tissue,
     total_count: Number(total_count),
   };
-}
-
-export function checkIsTissue(cellTypeMetadata: CellTypeMetadata): boolean {
-  const { name, tissue } = deserializeCellTypeMetadata(cellTypeMetadata);
-
-  return name === tissue;
 }
 
 /**

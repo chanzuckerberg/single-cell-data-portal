@@ -1,9 +1,8 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import List, Optional
 from enum import Enum
+from typing import List, Optional
 
-import json
 from dataclasses_json import dataclass_json
 
 
@@ -24,30 +23,30 @@ class DatasetStatusGeneric:
 
 
 class DatasetUploadStatus(DatasetStatusGeneric, Enum):
-    NA = "N/A"
-    WAITING = "Waiting"
-    UPLOADING = "Uploading"
-    UPLOADED = "Uploaded"
-    FAILED = "Failed"
-    CANCEL_PENDING = "Cancel pending"
-    CANCELED = "Canceled"
+    NA = "NA"
+    WAITING = "WAITING"
+    UPLOADING = "UPLOADING"
+    UPLOADED = "UPLOADED"
+    FAILED = "FAILED"
+    CANCEL_PENDING = "CANCEL PENDING"
+    CANCELED = "CANCELED"
 
 
 class DatasetValidationStatus(DatasetStatusGeneric, Enum):
-    NA = "N/A"
-    VALIDATING = "Validating"
-    VALID = "Valid"
-    INVALID = "Invalid"
+    NA = "NA"
+    VALIDATING = "VALIDATING"
+    VALID = "VALID"
+    INVALID = "INVALID"
 
 
 class DatasetConversionStatus(DatasetStatusGeneric, Enum):
-    NA = "N/A"
-    CONVERTING = "Converting"
-    CONVERTED = "Converted"
-    UPLOADING = "Uploading"
-    UPLOADED = "Uploaded"
-    FAILED = "Failed"
-    SKIPPED = "Skipped"
+    NA = "NA"
+    CONVERTING = "CONVERTING"
+    CONVERTED = "CONVERTED"
+    UPLOADING = "UPLOADING"
+    UPLOADED = "UPLOADED"
+    FAILED = "FAILED"
+    SKIPPED = "SKIPPED"
 
 
 class DatasetProcessingStatus(DatasetStatusGeneric, Enum):
@@ -71,7 +70,6 @@ class DatasetArtifactType(str, Enum):
     H5AD = "h5ad"
     RDS = "rds"
     CXG = "cxg"
-
 
 
 @dataclass_json
@@ -204,7 +202,7 @@ class CollectionMetadata:
 @dataclass
 class CanonicalCollection:
     id: CollectionId
-    version_id: CollectionVersionId # Needs to be optional, or not exist
+    version_id: CollectionVersionId  # Needs to be optional, or not exist
     originally_published_at: Optional[datetime]
     tombstoned: bool
 
@@ -220,9 +218,11 @@ class CollectionVersionBase:
     created_at: datetime
     canonical_collection: CanonicalCollection
 
+
 @dataclass
 class CollectionVersion(CollectionVersionBase):
     datasets: List[DatasetVersionId]
+
 
 @dataclass
 class CollectionVersionWithDatasets(CollectionVersionBase):

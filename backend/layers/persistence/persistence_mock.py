@@ -1,8 +1,9 @@
+import copy
+import uuid
 from dataclasses import dataclass
 from datetime import datetime
-import uuid
-from backend.layers.persistence.persistence import DatabaseProviderInterface
 from typing import Dict, Iterable, List, Optional, Union
+
 from backend.layers.common.entities import (
     CanonicalCollection,
     CanonicalDataset,
@@ -23,7 +24,7 @@ from backend.layers.common.entities import (
     DatasetVersion,
     DatasetVersionId,
 )
-import copy
+from backend.layers.persistence.persistence import DatabaseProviderInterface
 
 
 class DatabaseProviderMock(DatabaseProviderInterface):

@@ -1,20 +1,26 @@
+import json
+from time import time
+
+import boto3
+
 from backend.common.corpora_config import CorporaConfig
 from backend.layers.common.entities import CollectionVersionId, DatasetVersionId
-from time import time
-import boto3
-import json
+
 
 class StepFunctionProviderInterface:
-    def start_step_function(self, version_id: CollectionVersionId, dataset_version_id: DatasetVersionId, url: str) -> None:
+    def start_step_function(
+        self, version_id: CollectionVersionId, dataset_version_id: DatasetVersionId, url: str
+    ) -> None:
         pass
 
 
 class StepFunctionProvider(StepFunctionProviderInterface):
-
     def __init__(self) -> None:
         self.client = boto3.client("stepfunctions")
 
-    def start_step_function(self, version_id: CollectionVersionId, dataset_version_id: DatasetVersionId, url: str) -> None:
+    def start_step_function(
+        self, version_id: CollectionVersionId, dataset_version_id: DatasetVersionId, url: str
+    ) -> None:
         input_parameters = {
             "collection_id": version_id.id,
             "url": url,

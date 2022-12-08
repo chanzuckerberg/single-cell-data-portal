@@ -206,7 +206,7 @@ def _cell_type_ordering_per_tissue(data_cells: pd.DataFrame, target_cells: List[
 
 
 @log_func_runtime
-def generate_primary_filter_dimensions(snapshot_path: str, corpus_name: str, snapshot_id: int):
+def generate_primary_filter_dimensions(snapshot_path: str, snapshot_id: int):
     def list_primary_filter_dimension_term_ids(cube, primary_dim_name: str):
         return cube.query(attrs=[], dims=[primary_dim_name]).df[:].groupby([primary_dim_name]).first().index.tolist()
 
@@ -231,7 +231,7 @@ def generate_primary_filter_dimensions(snapshot_path: str, corpus_name: str, sna
     def build_ontology_term_id_label_mapping(ontology_term_ids: Iterable[str]) -> List[dict]:
         return [{ontology_term_id: ontology_term_label(ontology_term_id)} for ontology_term_id in ontology_term_ids]
 
-    with tiledb.open(f"{snapshot_path}/{corpus_name}/{EXPRESSION_SUMMARY_CUBE_NAME}") as cube:
+    with tiledb.open(f"{snapshot_path}/{EXPRESSION_SUMMARY_CUBE_NAME}") as cube:
 
         # gene terms are grouped by organism, and represented as a nested lists in dict, keyed by organism
         organism_gene_ids: dict[str, List[str]] = list_grouped_primary_filter_dimensions_term_ids(

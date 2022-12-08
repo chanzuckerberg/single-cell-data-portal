@@ -3,12 +3,7 @@ from datetime import datetime
 from unittest.mock import Mock
 from uuid import uuid4
 
-from backend.layers.thirdparty.crossref_provider import CrossrefProviderInterface
-from backend.layers.thirdparty.s3_provider import S3Provider
-from backend.layers.thirdparty.step_function_provider import StepFunctionProviderInterface
-
 from backend.common.providers.crossref_provider import CrossrefDOINotFoundException, CrossrefException
-from backend.layers.business.business import BusinessLogic, CollectionQueryFilter, DatasetArtifactDownloadData
 from backend.layers.business.business import (
     BusinessLogic,
     CollectionMetadataUpdate,
@@ -16,13 +11,12 @@ from backend.layers.business.business import (
     DatasetArtifactDownloadData,
 )
 from backend.layers.business.exceptions import (
+    CollectionCreationException,
+    CollectionPublishException,
     CollectionUpdateException,
     CollectionVersionException,
-    DatasetNotFoundException,
-    InvalidLinkException,
-    CollectionCreationException,
     DatasetIngestException,
-    CollectionPublishException,
+    DatasetNotFoundException,
 )
 from backend.layers.common.entities import (
     CollectionId,
@@ -30,20 +24,21 @@ from backend.layers.common.entities import (
     CollectionVersion,
     CollectionVersionId,
     CollectionVersionWithDatasets,
-    DatasetArtifact,
     DatasetArtifactType,
     DatasetMetadata,
     DatasetProcessingStatus,
-    DatasetStatus,
     DatasetUploadStatus,
     DatasetValidationStatus,
     DatasetVersionId,
     Link,
     OntologyTermId,
 )
-from backend.layers.thirdparty.uri_provider import FileInfo, UriProviderInterface
 from backend.layers.persistence.persistence import DatabaseProvider
 from backend.layers.persistence.persistence_mock import DatabaseProviderMock
+from backend.layers.thirdparty.crossref_provider import CrossrefProviderInterface
+from backend.layers.thirdparty.s3_provider import S3Provider
+from backend.layers.thirdparty.step_function_provider import StepFunctionProviderInterface
+from backend.layers.thirdparty.uri_provider import FileInfo, UriProviderInterface
 
 
 class BaseBusinessLogicTestCase(unittest.TestCase):
@@ -200,7 +195,7 @@ class TestCreateCollection(BaseBusinessLogicTestCase):
             self.business_logic.create_collection(self.test_user_name, self.sample_collection_metadata)
 
         self.assertEqual(
-            ex.exception.errors, [{"name": f"links[0]", "reason": "Invalid URL.", "value": "incorrect_url"}]
+            ex.exception.errors, [{"name": "links[0]", "reason": "Invalid URL.", "value": "incorrect_url"}]
         )
 
     def test_create_collection_with_valid_doi_ok(self):
@@ -211,8 +206,8 @@ class TestCreateCollection(BaseBusinessLogicTestCase):
         links_with_doi = [Link("test doi", "DOI", "http://good.doi")]
         self.sample_collection_metadata.links = links_with_doi
 
-        expected_publiser_metadata = {"authors": ["Test Author"]}
-        self.crossref_provider.fetch_metadata = Mock(return_value=expected_publiser_metadata)
+        expected_publisher_metadata = {"authors": ["Test Author"]}
+        self.crossref_provider.fetch_metadata = Mock(return_value=expected_publisher_metadata)
 
         collection = self.business_logic.create_collection(self.test_user_name, self.sample_collection_metadata)
 
@@ -222,7 +217,7 @@ class TestCreateCollection(BaseBusinessLogicTestCase):
         self.assertEqual(1, len(collection_from_database.metadata.links))
         self.assertEqual(collection_from_database.metadata.links[0].uri, "http://good.doi")
         self.assertIsNotNone(collection_from_database.publisher_metadata)
-        self.assertEqual(collection_from_database.publisher_metadata, expected_publiser_metadata)
+        self.assertEqual(collection_from_database.publisher_metadata, expected_publisher_metadata)
 
     def test_create_collection_with_not_found_doi_fail(self):
         """
@@ -296,7 +291,8 @@ class TestGetCollectionVersion(BaseBusinessLogicTestCase):
 class TestGetAllCollections(BaseBusinessLogicTestCase):
     def test_get_all_collections_unfiltered_ok(self):
         """
-        All the collection versions should be returned by `get_collections`, including published, unpublished, and all owners
+        All the collection versions should be returned by `get_collections`, including published, unpublished,
+        and all owners
         """
         self.initialize_unpublished_collection()
         self.initialize_unpublished_collection(owner="test_user_2")
@@ -436,8 +432,8 @@ class TestUpdateCollection(BaseBusinessLogicTestCase):
         links = [Link("test doi", "DOI", "http://test.doi")]
         metadata.links = links
 
-        expected_publiser_metadata = {"authors": ["Test Author"]}
-        self.crossref_provider.fetch_metadata = Mock(return_value=expected_publiser_metadata)
+        expected_publisher_metadata = {"authors": ["Test Author"]}
+        self.crossref_provider.fetch_metadata = Mock(return_value=expected_publisher_metadata)
 
         # We need to call `business_logic.create_collection` so that the publisher metadata is populated
         version = self.business_logic.create_collection(self.test_user_name, metadata)
@@ -542,7 +538,7 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
 
         with self.assertRaises(DatasetIngestException) as ex:
             self.business_logic.ingest_dataset(version.version_id, url, None)
-        self.assertEqual(str(ex.exception), f"Trying to upload invalid URI: http://bad.url")
+        self.assertEqual(str(ex.exception), "Trying to upload invalid URI: http://bad.url")
 
     def test_remove_dataset_from_unpublished_collection_ok(self):
         """
@@ -654,7 +650,7 @@ class TestGetDataset(BaseBusinessLogicTestCase):
         """
         # This will add 4 datasets, but only 2 should be retrieved by `get_all_datasets`
         published_version = self.initialize_published_collection()
-        unpublished_version = self.initialize_unpublished_collection()
+        self.initialize_unpublished_collection()
 
         datasets = list(self.business_logic.get_all_published_datasets())
         self.assertEqual(2, len(datasets))
@@ -1099,7 +1095,7 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         """
 
         first_version = self.initialize_published_collection()
-        second_version = self.business_logic.create_collection_version(first_version.collection_id)
+        self.business_logic.create_collection_version(first_version.collection_id)
 
         version = self.business_logic.get_collection_version_from_canonical(first_version.collection_id)
         self.assertIsNotNone(version)
