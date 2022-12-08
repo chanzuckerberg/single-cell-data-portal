@@ -58,7 +58,7 @@ def reduce_X(
         "py.exact_init_buffer_bytes": "true",
     }
     with tiledb.open(f"{tdb_group}/{INTEGRATED_ARRAY_NAME}", ctx=create_ctx(config_overrides=cfg)) as expression:
-        query_results = expression.query(return_incomplete=True, order="U", attrs=["rankit"])
+        query_results = expression.query(return_incomplete=True, order="U", attrs=["rankit_unfiltered"])
         for i, result in enumerate(query_results.df[:]):
             logger.info(f"reduce integrated expression data, i={i}")
             gene_expression_sum_x_cube_dimension(
