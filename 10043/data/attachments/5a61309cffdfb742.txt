@@ -1,0 +1,12 @@
+INFO     dataset_processing:common.py:89 Converting /tmp/tmp_z0bxxll/local.h5ad
+ERROR    dataset_processing:common.py:103 Issue creating cxg.: cxg conversion failed
+Traceback (most recent call last):
+  File "/single-cell-data-portal/backend/portal/pipeline/processing/common.py", line 96, in convert_file
+    file_dir = converter(local_filename)
+  File "/usr/lib/python3.10/unittest/mock.py", line 1104, in __call__
+    return self._mock_call(*args, **kwargs)
+  File "/usr/lib/python3.10/unittest/mock.py", line 1108, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+  File "/usr/lib/python3.10/unittest/mock.py", line 1163, in _execute_mock_call
+    raise effect
+RuntimeError: cxg conversion failed
