@@ -62,7 +62,7 @@ def reduce_X(
         for i, result in enumerate(query_results.df[:]):
             logger.info(f"reduce integrated expression data, i={i}")
             gene_expression_sum_x_cube_dimension(
-                result["rankit"].values,
+                result["rankit_unfiltered"].values,
                 result["obs_idx"].values,
                 result["var_idx"].values,
                 cube_indices,
