@@ -1,14 +1,144 @@
 import json
-import unittest
 from unittest.mock import Mock, patch
 
-from backend.common.corpora_orm import CollectionVisibility, DbDataset, ProcessingStatus, ValidationStatus
+from backend.common.corpora_orm import (
+    CollectionVisibility,
+    DbDataset,
+    IsPrimaryData,
+    ProcessingStatus,
+    UploadStatus,
+    ValidationStatus,
+)
 from backend.common.providers.crossref_provider import CrossrefDOINotFoundException
+from backend.common.utils.api_key import generate
 from backend.portal.api.curation.v1.curation.collections.common import EntityColumns
-from tests.unit.backend.layers.common.base_api_test import NewBaseTest
+from unit.backend.api_server.base_api_test import BaseAuthAPITest
+from unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
+from unit.backend.layers.common.base_api_test import NewBaseTest
 
 
-class TestAuthToken(NewBaseTest):
+class TestAsset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
+    def setUp(self):
+        # Needed for proper setUp resolution in multiple inheritance
+        super().setUp()
+        self.test_dataset_id = "test_dataset_id"
+
+    def test__get_dataset_asset__OK(self):
+        bucket = self.CORPORA_TEST_CONFIG["bucket_name"]
+        s3_file_name = "test_s3_uri.h5ad"
+        content = "Hello world!"
+        self.create_s3_object(s3_file_name, bucket, content=content)
+
+        expected_body = [dict(filename="test_filename", filesize=len(content), filetype="H5AD")]
+
+        response = self.app.get(
+            f"/curation/v1/collections/test_collection_id/datasets/{self.test_dataset_id}/assets",
+        )
+        self.assertEqual(200, response.status_code)
+        actual_body = response.json
+        presign_url = actual_body[0].pop("presigned_url")
+        self.assertIsNotNone(presign_url)
+        self.assertEqual(expected_body, actual_body)
+
+    def test__get_dataset_asset__file_error(self):
+        expected_body = [dict(filename="test_filename", filesize=-1, filetype="H5AD")]
+
+        response = self.app.get(
+            f"/curation/v1/collections/test_collection_id/datasets/{self.test_dataset_id}/assets",
+        )
+        self.assertEqual(202, response.status_code)
+        actual_body = response.json
+        presign_url = actual_body[0].pop("presigned_url", None)
+        self.assertIsNone(presign_url)
+        self.assertEqual(expected_body, actual_body)
+
+    def test__get_dataset_asset__dataset_NOT_FOUND(self):
+        bad_id = "bad_id"
+
+        response = self.app.get(
+            f"/curation/v1/collections/test_collection_id/datasets/{bad_id}/assets",
+        )
+        self.assertEqual(404, response.status_code)
+        actual_body = response.json
+        self.assertEqual("Dataset not found.", actual_body["detail"])
+
+    def test__get_dataset_asset__collection_dataset_NOT_FOUND(self):
+        """Return Not found when the dataset is not part of the collection"""
+        bad_id = "bad_id"
+        test_url = f"/curation/v1/collections/test_collection_id/datasets/{bad_id}/assets"
+        response = self.app.get(test_url)
+        self.assertEqual(404, response.status_code)
+        actual_body = response.json
+        self.assertEqual("Dataset not found.", actual_body["detail"])
+
+    @patch(
+        "backend.portal.api.curation.v1.curation.collections.collection_id.datasets.dataset_id."
+        "assets.get_dataset_else_error",
+        return_value=None,
+    )
+    def test__get_dataset_asset__asset_NOT_FOUND(self, get_dataset_else_error: Mock):
+        mocked_dataset = Mock()
+        mocked_dataset.get_assets.return_value = None
+        get_dataset_else_error.return_value = mocked_dataset
+        response = self.app.get(f"/curation/v1/collections/test_collection_id/datasets/{self.test_dataset_id}/assets")
+        self.assertEqual(404, response.status_code)
+        actual_body = response.json
+        self.assertEqual("No assets found. The dataset may still be processing.", actual_body["detail"])
+        mocked_dataset.get_assets.assert_called()
+
+
+class TestDeleteCollection(BaseAuthAPITest):
+    def _test(self, collection_id, header, expected_status):
+        if header == "owner":
+            headers = self.make_owner_header()
+        elif header == "super":
+            headers = self.make_super_curator_header()
+        elif header == "not_owner":
+            headers = self.make_not_owner_header()
+        elif "noauth":
+            headers = {}
+
+        response = self.app.delete(f"/curation/v1/collections/{collection_id}", headers=headers)
+        self.assertEqual(expected_status, response.status_code)
+        if response.status_code == 204:
+            response = self.app.delete(f"/curation/v1/collections/{collection_id}", headers=headers)
+            self.assertEqual(403, response.status_code)
+
+    def test__delete_public_collection(self):
+        tests = [("not_owner", 403), ("noauth", 401), ("owner", 405), ("super", 405)]
+        public_collection_id = self.generate_published_collection().collection_id
+        for auth, expected_response in tests:
+            with self.subTest(auth):
+                self._test(public_collection_id, auth, expected_response)
+
+    def test__delete_revision_collection(self):
+        tests = [("not_owner", 403), ("noauth", 401), ("owner", 204), ("super", 204)]
+        for auth, expected_response in tests:
+            with self.subTest(auth):
+                public_collection_id = self.generate_published_collection().collection_id
+                revision_collection_id = self.generate_collection(
+                    visibility=CollectionVisibility.PRIVATE.name, revision_of=public_collection_id
+                ).collection_id
+                self._test(revision_collection_id, auth, expected_response)
+
+    def test__delete_private_collection(self):
+        tests = [("not_owner", 403), ("noauth", 401), ("owner", 204), ("super", 204)]
+        for auth, expected_response in tests:
+            with self.subTest(auth):
+                private_collection_id = self.generate_unpublished_collection().collection_id
+                self._test(private_collection_id, auth, expected_response)
+
+    def test__delete_tombstone_collection(self):
+        tests = [("not_owner", 403), ("noauth", 401), ("owner", 403), ("super", 403)]
+        for auth, expected_response in tests:
+            with self.subTest(auth):
+                tombstone_collection_id = self.generate_collection(
+                    visibility=CollectionVisibility.PUBLIC.name, tombstone=True
+                ).collection_id
+                self._test(tombstone_collection_id, auth, expected_response)
+
+
+class TestS3Credentials(NewBaseTest):
     @patch("backend.portal.api.curation.v1.curation.collections.collection_id.s3_upload_credentials.sts_client")
     def test__generate_s3_credentials__OK(self, sts_client: Mock):
         def _test(token, is_super_curator: bool = False):
@@ -760,5 +890,274 @@ class TestPatchCollectionID(NewBaseTest):
         )
 
 
-if __name__ == "__main__":
-    unittest.main()
+class TestDeleteDataset(BaseAuthAPITest):
+    def test__delete_dataset(self):
+        processing_status = {"upload_status": UploadStatus.UPLOADING, "upload_progress": 10.0}
+        auth_credentials = [
+            (self.make_super_curator_header, "super", 202),
+            (self.make_owner_header, "owner", 202),
+            (None, "none", 401),
+            (self.make_not_owner_header, "not_owner", 403),
+        ]
+        for auth, auth_description, expected_status_code in auth_credentials:
+            with self.subTest(f"{auth_description} {expected_status_code}"):
+                collection = self.generate_collection(visibility=CollectionVisibility.PRIVATE.name)
+                dataset = self.generate_dataset(
+                    collection=collection,
+                    processing_status=processing_status,
+                )
+                test_url = f"/curation/v1/collections/{collection.collection_id}/datasets/{dataset.id}"
+                headers = auth() if callable(auth) else auth
+                response = self.app.delete(test_url, headers=headers)
+                self.assertEqual(expected_status_code, response.status_code)
+
+
+class TestGetDatasets(BaseAuthAPITest):
+    def test_get_dataset_in_a_collection_200(self):
+        collection = self.generate_collection(visibility=CollectionVisibility.PRIVATE.name)
+        dataset = self.generate_dataset(collection_version_id=collection.version_id, name="test")
+        test_url = f"/curation/v1/collections/{collection.collection_id}/datasets/{dataset.id}"
+
+        response = self.app.get(test_url)
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(dataset.id, response.json["id"])
+
+    def test_get_dataset_shape(self):
+        collection = self.generate_collection(visibility=CollectionVisibility.PRIVATE.name)
+        dataset = self.generate_dataset(collection_version_id=collection.version_id, name="test")
+        test_url = f"/curation/v1/collections/{collection.collection_id}/datasets/{dataset.id}"
+        response = self.app.get(test_url)
+        self.assertEqual(dataset.name, response.json["title"])
+
+    def test_get_dataset_is_primary_data_shape(self):
+        collection = self.generate_collection(visibility=CollectionVisibility.PRIVATE.name)
+        tests = [
+            (IsPrimaryData.PRIMARY, [True]),
+            (IsPrimaryData.SECONDARY, [False]),
+            (IsPrimaryData.BOTH, [True, False]),
+        ]
+        for is_primary_data, result in tests:
+            with self.subTest(f"{is_primary_data}=={result}"):
+                dataset = self.generate_dataset(
+                    collection_version_id=collection.version_id, is_primary_data=is_primary_data
+                )
+                test_url = f"/curation/v1/collections/{collection.collection_id}/datasets/{dataset.id}"
+                response = self.app.get(test_url)
+                self.assertEqual(result, response.json["is_primary_data"])
+
+    def test_get_nonexistent_dataset_404(self):
+        collection = self.generate_collection(visibility=CollectionVisibility.PRIVATE.name)
+        test_url = f"/curation/v1/collections/{collection.collection_id}/datasets/1234-1243-2134-234-1342"
+        response = self.app.get(test_url)
+        self.assertEqual(404, response.status_code)
+
+    def test_get_tombstoned_dataset_in_a_collection_404(self):
+        collection = self.generate_collection(visibility=CollectionVisibility.PRIVATE.name)
+        dataset = self.generate_dataset(collection_version_id=collection.version_id, tombstone=True)
+        test_url = f"/curation/v1/collections/{collection.collection_id}/datasets/{dataset.id}"
+        response = self.app.get(test_url)
+        self.assertEqual(404, response.status_code)
+
+    def test_get_datasets_nonexistent_collection_404(self):
+        test_url = "/curation/v1/collections/nonexistent/datasets/1234-1243-2134-234-1342"
+        headers = self.make_owner_header()
+        response = self.app.get(test_url, headers=headers)
+        self.assertEqual(404, response.status_code)
+
+
+class TestPostDataset(BaseAuthAPITest):
+    def test_post_datasets_nonexistent_collection_403(self):
+        test_url = "/curation/v1/collections/nonexistent/datasets"
+        headers = self.make_owner_header()
+        response = self.app.post(test_url, headers=headers)
+        self.assertEqual(403, response.status_code)
+
+    def test_post_datasets_201(self):
+        collection = self.generate_collection()
+        test_url = f"/curation/v1/collections/{collection.collection_id}/datasets"
+        headers = self.make_owner_header()
+        response = self.app.post(test_url, headers=headers)
+        self.assertEqual(201, response.status_code)
+        self.assertTrue(response.json["id"])
+
+    def test_post_datasets_super(self):
+        collection = self.generate_collection()
+        test_url = f"/curation/v1/collections/{collection.collection_id}/datasets"
+        headers = self.make_super_curator_header()
+        response = self.app.post(test_url, headers=headers)
+        self.assertEqual(201, response.status_code)
+
+    def test_post_datasets_not_owner_201(self):
+        collection = self.generate_collection()
+        test_url = f"/curation/v1/collections/{collection.collection_id}/datasets"
+        headers = self.make_not_owner_header()
+        response = self.app.post(test_url, headers=headers)
+        self.assertEqual(403, response.status_code)
+
+    def test_post_datasets_public_collection_405(self):
+        collection = self.generate_collection(visibility="PUBLIC")
+        test_url = f"/curation/v1/collections/{collection.collection_id}/datasets"
+        headers = self.make_owner_header()
+        response = self.app.post(test_url, headers=headers)
+        self.assertEqual(405, response.status_code)
+
+    def test_post_datasets_no_auth_401(self):
+        collection = self.generate_collection(visibility="PUBLIC")
+        test_url = f"/curation/v1/collections/{collection.collection_id}/datasets"
+        response = self.app.post(test_url)
+        self.assertEqual(401, response.status_code)
+
+
+class TestPostRevision(BaseAuthAPITest):
+    def test__post_revision__no_auth(self):
+        collection_id = self.generate_collection(visibility=CollectionVisibility.PUBLIC.name).collection_id
+        response = self.app.post(f"/curation/v1/collections/{collection_id}/revision")
+        self.assertEqual(401, response.status_code)
+
+    def test__post_revision__Not_Public(self):
+        collection_id = self.generate_collection().collection_id
+        headers = self.make_super_curator_header()
+        response = self.app.post(f"/curation/v1/collections/{collection_id}/revision", headers=headers)
+        self.assertEqual(403, response.status_code)
+
+    def test__post_revision__Not_Owner(self):
+        collection_id = self.generate_collection(
+            visibility=CollectionVisibility.PUBLIC.name, owner="someone else"
+        ).collection_id
+        response = self.app.post(
+            f"/curation/v1/collections/{collection_id}/revision",
+            headers=self.make_owner_header(),
+        )
+        self.assertEqual(403, response.status_code)
+
+    def test__post_revision__OK(self):
+        collection_id = self.generate_collection(visibility=CollectionVisibility.PUBLIC.name).collection_id
+        response = self.app.post(
+            f"/curation/v1/collections/{collection_id}/revision",
+            headers=self.make_owner_header(),
+        )
+        self.assertEqual(201, response.status_code)
+        self.assertNotEqual(collection_id, response.json["id"])
+
+    def test__post_revision__Super_Curator(self):
+        collection_id = self.generate_collection(visibility=CollectionVisibility.PUBLIC.name).collection_id
+        headers = self.make_super_curator_header()
+        response = self.app.post(f"/curation/v1/collections/{collection_id}/revision", headers=headers)
+        self.assertEqual(201, response.status_code)
+        self.assertNotEqual(collection_id, response.json["id"])
+
+
+@patch(
+    "backend.common.utils.dl_sources.url.DropBoxURL.file_info",
+    return_value={"size": 1, "name": "file.h5ad"},
+)
+@patch("backend.common.upload.start_upload_sfn")
+class TestPutLink(BaseAuthAPITest):
+    @classmethod
+    def setUpClass(cls):
+        super().setUpClass()
+        cls.good_link = "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"
+        cls.dummy_link = "https://www.dropbox.com/s/12345678901234/test.h5ad?dl=0"
+
+    def _test_new(self, headers: dict = None, collection_params: dict = None, body: dict = None):
+        headers = headers if headers else {}
+        collection_params = collection_params if collection_params else {}
+        collection = self.generate_collection(**collection_params)
+        dataset = self.generate_dataset(
+            collection_id=collection.collection_id,
+            processing_status={"processing_status": ProcessingStatus.INITIALIZED},
+        )
+        body = body if body else ""
+        headers["Content-Type"] = "application/json"
+        response = self.app.put(
+            f"/curation/v1/collections/{collection.collection_id}/datasets/{dataset.id}", json=body, headers=headers
+        )
+        return response
+
+    def test__from_link__no_auth(self, *mocks):
+        response = self._test_new(body={"link": self.good_link})
+        self.assertEqual(401, response.status_code)
+
+    def test__from_link__Not_Public(self, *mocks):
+        headers = self.make_owner_header()
+        response = self._test_new(
+            headers, collection_params={"visibility": CollectionVisibility.PUBLIC}, body={"link": self.good_link}
+        )
+        self.assertEqual(403, response.status_code)
+
+    def test__from_link__Not_Owner(self, *mocks):
+        response = self._test_new(self.make_not_owner_header(), body={"link": self.dummy_link})
+        self.assertEqual(403, response.status_code)
+
+    def test__new_from_link__OK(self, *mocks):
+        headers = self.make_owner_header()
+        response = self._test_new(headers, body={"link": self.good_link})
+        self.assertEqual(202, response.status_code)
+
+    def test__new_from_link__Super_Curator(self, *mocks):
+        headers = self.make_super_curator_header()
+        response = self._test_new(headers, body={"link": self.good_link})
+        self.assertEqual(202, response.status_code)
+
+    def _test_existing(self, headers: dict = None):
+        headers = headers if headers else {}
+        headers["Content-Type"] = "application/json"
+        collection = self.generate_collection()
+        processing_status = dict(processing_status=ProcessingStatus.SUCCESS)
+        dataset = self.generate_dataset(collection_id=collection.collection_id, processing_status=processing_status)
+        body = {"link": self.good_link}
+        response = self.app.put(
+            f"/curation/v1/collections/{collection.collection_id}/datasets/{dataset.id}",
+            data=json.dumps(body),
+            headers=headers,
+        )
+        return response
+
+    def test__existing_from_link__OK(self, *mocks):
+        with self.subTest("dataset_id"):
+            response = self._test_existing(self.make_owner_header())
+            self.assertEqual(202, response.status_code)
+
+    def test__existing_from_link__Super_Curator(self, *mocks):
+        headers = self.make_super_curator_header()
+        with self.subTest("dataset_id"):
+            response = self._test_existing(headers)
+            self.assertEqual(202, response.status_code)
+
+
+class TestAuthToken(NewBaseTest):
+    @patch("backend.portal.api.curation.v1.curation.auth.token.CorporaAuthConfig")
+    @patch("backend.portal.api.curation.v1.curation.auth.token.auth0_management_session")
+    def test__post_token__201(self, auth0_management_session: Mock, CorporaAuthConfig: Mock):
+        test_secret = "password1234"
+        test_email = "user@email.com"
+        test_user_id = "test_user_id"
+        CorporaAuthConfig().api_key_secret = test_secret
+        auth0_management_session.get_user_api_key_identity = Mock(return_value={"profileData": {"email": test_email}})
+        auth0_management_session.generate_access_token = Mock(return_value={"access_token": "OK"})
+        user_api_key = generate(test_user_id, test_secret)
+        response = self.app.post("/curation/v1/auth/token", headers={"x-api-key": user_api_key})
+        self.assertEqual(201, response.status_code)
+        token = response.json["access_token"]
+        self.assertEqual("OK", token)
+        auth0_management_session.get_user_api_key_identity.assert_called_once_with(test_user_id)
+
+    @patch("backend.portal.api.curation.v1.curation.auth.token.CorporaAuthConfig")
+    def test__post_token__401(self, CorporaAuthConfig):
+        test_secret = "password1234"
+        test_user_id = "test_user_id"
+        CorporaAuthConfig().api_key_secret = test_secret
+        user_api_key = generate(test_user_id, "not the right secret")
+        response = self.app.post("/curation/v1/auth/token", headers={"x-api-key": user_api_key})
+        self.assertEqual(401, response.status_code)
+
+    @patch("backend.portal.api.curation.v1.curation.auth.token.CorporaAuthConfig")
+    @patch("backend.portal.api.curation.v1.curation.auth.token.auth0_management_session")
+    def test__post_token__404(self, auth0_management_session, CorporaAuthConfig):
+        test_secret = "password1234"
+        test_user_id = "test_user_id"
+        CorporaAuthConfig().api_key_secret = test_secret
+        auth0_management_session.get_user_api_key_identity = Mock(return_value=None)
+        user_api_key = generate(test_user_id, test_secret)
+        response = self.app.post("/curation/v1/auth/token", headers={"x-api-key": user_api_key})
+        self.assertEqual(404, response.status_code)
