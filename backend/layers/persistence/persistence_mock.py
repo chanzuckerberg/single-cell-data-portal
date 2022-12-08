@@ -1,6 +1,5 @@
 import copy
 import uuid
-from dataclasses import dataclass
 from datetime import datetime
 from typing import Dict, Iterable, List, Optional, Union
 
@@ -193,10 +192,10 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         version = self.collections_versions[version_id.id]
         for dataset_version_id in version.datasets:
             dataset_version = self.get_dataset_version(dataset_version_id)
-            if self.datasets[dataset_version.dataset_id.id].canonical_dataset.published_at is None:
-                self.datasets[dataset_version.dataset_id.id].canonical_dataset.published_at = published_at
-            if self.datasets_versions[dataset_version.version_id.id].canonical_dataset.revised_at is None:
-                self.datasets_versions[dataset_version.version_id.id].canonical_dataset.revised_at = published_at
+            if self.datasets[dataset_version.dataset_id.id].published_at is None:
+                self.datasets[dataset_version.dataset_id.id].published_at = published_at
+            if self.datasets[dataset_version.dataset_id.id].revised_at is None:
+                self.datasets[dataset_version.dataset_id.id].revised_at = published_at
 
         cc = self.collections.get(collection_id.id)
         if cc is None:
@@ -269,8 +268,6 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         self.datasets[dataset_id.id] = CanonicalDataset(
             dataset_id=dataset_id, dataset_version_id=version_id, published_at=None
         )
-        # Register the dataset to the original collection
-        collection_version.datasets.append(version)
         return copy.deepcopy(version)
 
     def add_dataset_to_collection_version_mapping(
