@@ -40,6 +40,7 @@ locals {
   wmg_upload_image_repo           = local.secret["ecrs"]["wmg_processing"]["url"]
   batch_role_arn                  = local.secret["batch_queues"]["upload"]["role_arn"]
   job_queue_arn                   = local.secret["batch_queues"]["upload"]["queue_arn"]
+  wmg_batch_role_arn              = local.secret["batch_queues"]["wmg"]["role_arn"]
   external_dns                    = local.secret["external_zone_name"]
   internal_dns                    = local.secret["internal_zone_name"]
 
@@ -181,7 +182,7 @@ module upload_batch {
 module wmg_batch {
   source                        = "../wmg-batch"
   image                         = "${local.wmg_upload_image_repo}:${local.image_tag}"
-  batch_role_arn                = local.batch_role_arn
+  batch_role_arn                = local.wmg_batch_role_arn
   cmd                           = ""
   custom_stack_name             = local.custom_stack_name
   remote_dev_prefix             = local.remote_dev_prefix
