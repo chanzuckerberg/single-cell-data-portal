@@ -1,1 +1,0 @@
-{"levelname": "INFO", "asctime": "2022-12-07T23:47:12.007Z", "name": "dataset_processing", "message": "Download complete", "lineno": 233, "pathname": "/single-cell-data-portal/backend/portal/pipeline/processing/process_download_validate.py"}
