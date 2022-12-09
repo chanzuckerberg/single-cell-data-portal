@@ -98,15 +98,21 @@ class NewBaseTest(BaseAuthAPITest):
 
     sample_dataset_metadata: DatasetMetadata
 
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.run_as_integration = True if os.environ.get('INTEGRATION_TEST', 'false').lower() == 'true' else False
+        if cls.run_as_integration:
+            cls.database_provider = DatabaseProvider(database_uri="postgresql://postgres:secret@localhost")
+            cls.database_provider._drop_schema("persistence_schema")
+
     def setUp(self):
         super().setUp()
         os.environ.setdefault("APP_NAME", "corpora-api")
 
-        database_provider = DatabaseProviderMock()
-        # uncomment below and comment out above to run as integration tests, alongside a docker postgres instance
-        # database_provider = DatabaseProvider()
-        # database_provider._drop()
-        # database_provider._create()
+        if self.run_as_integration:
+            self.database_provider._create_schema("persistence_schema")
+        else:
+            self.database_provider = DatabaseProviderMock()
 
         self.crossref_provider = CrossrefProviderInterface()
         step_function_provider = StepFunctionProviderInterface()
@@ -142,7 +148,7 @@ class NewBaseTest(BaseAuthAPITest):
         )
 
         self.business_logic = BusinessLogic(
-            database_provider, self.crossref_provider, step_function_provider, self.s3_provider, self.uri_provider
+            self.database_provider, self.crossref_provider, step_function_provider, self.s3_provider, self.uri_provider
         )
 
         pa = PortalApi(self.business_logic)
@@ -158,6 +164,16 @@ class NewBaseTest(BaseAuthAPITest):
         # flask_app = configure_flask_app(create_flask_app())
         # self.app = flask_app.test_client(use_cookies=False)
         self.app = app.test_client(use_cookies=False)
+
+    def tearDown(self):
+        super().tearDown()
+        if self.run_as_integration:
+            self.database_provider._drop_schema("persistence_schema")
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        if cls.run_as_integration:
+            cls.database_provider._engine.dispose()
 
     def generate_unpublished_collection(
         self, owner="test_user_id", links: List[Link] = [], add_datasets: int = 0
