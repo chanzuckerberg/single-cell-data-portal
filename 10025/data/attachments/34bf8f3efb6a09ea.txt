@@ -1,3 +1,0 @@
-Dropping tables
-Recreating tables
-{"levelname": "INFO", "asctime": "2022-12-07T23:09:47.007Z", "name": "root", "message": "Unable to find a row with primary key f6c6ccb2-2193-49b5-a8c4-0d9375928391, in Collection table.", "lineno": 43, "pathname": "/single-cell-data-portal/backend/common/entities/entity.py"}
