@@ -41,6 +41,7 @@ from backend.layers.common.entities import (
     CollectionVersionId,
     DatasetArtifact,
     DatasetArtifactId,
+    DatasetArtifactType,
     DatasetStatus,
     DatasetVersion,
     DatasetVersionId,
@@ -331,7 +332,9 @@ class PortalApi:
         Deletes a collection version from the persistence store.
         """
         version = self.business_logic.get_collection_version(CollectionVersionId(collection_id))
-        if version is None or not UserInfo(token_info).is_user_owner_or_allowed(version.owner):
+        if version is None:
+            raise ForbiddenHTTPException()
+        if not UserInfo(token_info).is_user_owner_or_allowed(version.owner):
             raise ForbiddenHTTPException()
 
         self.business_logic.delete_collection_version(CollectionVersionId(collection_id))
@@ -568,7 +571,7 @@ class PortalApi:
             raise NotFoundHTTPException()
 
         # Retrieves the URI of the cxg artifact
-        s3_uri = next(a.uri for a in dataset.artifacts if a.type == "cxg")
+        s3_uri = next(a.uri for a in dataset.artifacts if a.type == DatasetArtifactType.CXG)
 
         dataset_identifiers = {
             "s3_uri": s3_uri,

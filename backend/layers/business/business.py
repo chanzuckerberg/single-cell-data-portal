@@ -47,6 +47,7 @@ from backend.layers.common.entities import (
     DatasetValidationStatus,
     DatasetVersion,
     DatasetVersionId,
+    Link
 )
 from backend.layers.persistence.persistence_interface import DatabaseProviderInterface
 from backend.layers.thirdparty.crossref_provider import CrossrefProviderInterface
@@ -100,18 +101,16 @@ class BusinessLogic(BusinessLogicInterface):
 
         # TODO: Maybe switch link.type to be an enum
         doi = next((link.uri for link in collection_metadata.links if link.type == "DOI"), None)
-        print("doi", doi)
 
         if doi is not None:
             publisher_metadata = self._get_publisher_metadata(doi, errors)
         else:
             publisher_metadata = None
 
-        print(errors)
-
         if errors:
             raise CollectionCreationException(errors)
 
+        collection_metadata.strip_fields()
         created_version = self.database_provider.create_canonical_collection(owner, collection_metadata)
 
         # TODO: can collapse with `create_canonical_collection`
@@ -221,6 +220,10 @@ class BusinessLogic(BusinessLogicInterface):
         new_metadata = copy.deepcopy(current_version.metadata)
         for field in vars(body):
             if hasattr(body, field) and (value := getattr(body, field)) is not None:
+                if isinstance(value, str):
+                    value.strip()
+                if isinstance(value, Link):
+                    value.strip_fields()
                 setattr(new_metadata, field, value)
 
         self.database_provider.save_collection_metadata(version_id, new_metadata)
@@ -355,15 +358,8 @@ class BusinessLogic(BusinessLogicInterface):
 
         file_name = artifact_url.path[1:]
         file_type = artifact.type
-        try:
-            file_size = self.s3_provider.get_file_size(artifact.uri)
-        except Exception:
-            file_size = None
-
-        try:
-            presigned_url = self.s3_provider.generate_presigned_url(artifact.uri)
-        except Exception:
-            presigned_url = None
+        file_size = self.s3_provider.get_file_size(artifact.uri)
+        presigned_url = self.s3_provider.generate_presigned_url(artifact.uri)
 
         return DatasetArtifactDownloadData(file_name, file_type, file_size, presigned_url)
 

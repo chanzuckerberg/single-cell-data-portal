@@ -16,6 +16,7 @@ from backend.layers.common.entities import (
     CollectionId,
     CollectionLinkType,
     CollectionVersionId,
+    DatasetArtifactType,
     DatasetProcessingStatus,
     DatasetUploadStatus,
     DatasetVersionId,
@@ -605,7 +606,39 @@ class TestCollection(NewBaseTest):
         response = self.app.get(test_url.url, headers=no_cookie_headers)
         self.assertEqual("READ", json.loads(response.data)["access_type"])
 
-    # 🔴 TODO: this needs attention
+    def test__create_collection_strip_string_fields(self):
+        test_url = furl(path="/dp/v1/collections")
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        data = {
+            "name": "   another collection name   ",
+            "description": "    This is a test collection  ",
+            "contact_name": " person human   ",
+            "contact_email": "person@human.com  ",
+            "curator_name": "",
+            "links": [
+                {"link_url": "     http://doi.org/10.1016  ", "link_type": "OTHER"},
+                {"link_name": "  DOI Link 2", "link_url": "http://doi.org/10.1017   ", "link_type": "DOI"},
+            ],
+        }
+        response = self.app.post(test_url.url, headers=headers, data=json.dumps(data))
+        self.assertEqual(201, response.status_code)
+        collection_id = json.loads(response.data)["collection_id"]
+
+        test_url = furl(path=f"/dp/v1/collections/{collection_id}")
+        test_url.add(query_params=dict(visibility="PRIVATE"))
+        response = self.app.get(test_url.url, headers=headers)
+        self.assertEqual(200, response.status_code)
+        body = json.loads(response.data)
+
+        self.assertEqual(body["description"], data["description"].strip())
+        self.assertEqual(body["name"], data["name"].strip())
+        self.assertEqual(body["contact_name"], body["contact_name"].strip())
+        self.assertEqual(body["contact_email"], body["contact_email"].strip())
+        self.assertEqual(body["data_submission_policy_version"], body["data_submission_policy_version"].strip())
+
+        for link in body["links"]:
+            self.assertEqual(link["link_url"], link["link_url"].strip())
+
     def test__list_collection__check_owner(self):
 
         # Generate test collection
@@ -1108,7 +1141,6 @@ class TestCollectionsCurators(NewBaseTest):
         response = self.app.put(f"/dp/v1/collections/{collection.version_id}", data=data, headers=headers)
         self.assertEqual(200, response.status_code)
 
-    # 🔴 - delete collection will be implemented later
     def test_delete_non_owned_private_collection_as_super_curator__ok(self):
         # Generate test collection
         collection = self.generate_unpublished_collection(owner="another_test_user_id")
@@ -1205,9 +1237,9 @@ class TestDataset(NewBaseTest):
     # ✅
     def test__post_dataset_asset__OK(self):
         self.business_logic.get_dataset_artifact_download_data = Mock(
-            return_value=DatasetArtifactDownloadData("asset.h5ad", "h5ad", 1000, "http://presigned.url")
+            return_value=DatasetArtifactDownloadData("asset.h5ad", DatasetArtifactType.H5AD, 1000, "http://presigned.url")
         )
-        version = self.generate_dataset(artifacts=[DatasetArtifactUpdate("h5ad", "http://mock.uri/asset.h5ad")])
+        version = self.generate_dataset(artifacts=[DatasetArtifactUpdate(DatasetArtifactType.H5AD, "http://mock.uri/asset.h5ad")])
         dataset_version_id = version.dataset_version_id
         artifact_id = version.artifact_ids[0]
 
@@ -1226,16 +1258,13 @@ class TestDataset(NewBaseTest):
         """
         `post_dataset_asset` should throw 500 if presigned_url or file_size aren't returned from the server
         """
-        version = self.generate_dataset(artifacts=[DatasetArtifactUpdate("h5ad", "http://mock.uri/asset.h5ad")])
+        version = self.generate_dataset(artifacts=[DatasetArtifactUpdate(DatasetArtifactType.H5AD, "http://mock.uri/asset.h5ad")])
         dataset_version_id = version.dataset_version_id
         artifact_id = version.artifact_ids[0]
 
         test_url = furl(path=f"/dp/v1/datasets/{dataset_version_id}/asset/{artifact_id}")
         response = self.app.post(test_url.url, headers=dict(host="localhost"))
         self.assertEqual(500, response.status_code)
-        body = json.loads(response.data)
-        print(body)
-        self.assertEqual("An internal server error has occurred. Please try again later.", body["detail"])
 
     # ✅
     def test__post_dataset_asset__dataset_NOT_FOUND(self):
@@ -1420,8 +1449,8 @@ class TestDataset(NewBaseTest):
         # TODO: I don't think `filename` is relevant - review
         dataset = self.generate_dataset(
             artifacts=[
-                DatasetArtifactUpdate("cxg", "s3://mock-bucket/mock-key.cxg"),
-                DatasetArtifactUpdate("h5ad", "s3://mock-bucket/mock-key.h5ad"),
+                DatasetArtifactUpdate(DatasetArtifactType.CXG, "s3://mock-bucket/mock-key.cxg"),
+                DatasetArtifactUpdate(DatasetArtifactType.H5AD, "s3://mock-bucket/mock-key.h5ad"),
             ]
         )
 
@@ -1562,7 +1591,7 @@ class TestDataset(NewBaseTest):
             test_uri_0 = "some_uri_0"
 
             public_dataset = self.generate_dataset(
-                artifacts=[DatasetArtifactUpdate("cxg", test_uri_0)],
+                artifacts=[DatasetArtifactUpdate(DatasetArtifactType.CXG, test_uri_0)],
                 publish=True,
             )
 
@@ -1584,7 +1613,7 @@ class TestDataset(NewBaseTest):
             test_uri_1 = "some_uri_1"
 
             private_dataset = self.generate_dataset(
-                artifacts=[DatasetArtifactUpdate("cxg", test_uri_1)],
+                artifacts=[DatasetArtifactUpdate(DatasetArtifactType.CXG, test_uri_1)],
                 publish=False,
             )
 
@@ -1621,7 +1650,7 @@ class TestDatasetCurators(NewBaseTest):
         super().tearDown()
 
     def test__get_status__200_for_non_owned_dataset_as_super_curator(self):
-        processing_status = DatasetStatusUpdate("upload", DatasetUploadStatus.WAITING)
+        processing_status = DatasetStatusUpdate(DatasetStatusKey.UPLOAD, DatasetUploadStatus.WAITING)
         dataset = self.generate_dataset(owner="someone_else", statuses=[processing_status])
         test_url = f"/dp/v1/datasets/{dataset.dataset_version_id}/status"
         headers = {
@@ -1634,7 +1663,7 @@ class TestDatasetCurators(NewBaseTest):
 
     # 💛 review later
     def test__cancel_dataset_download__202_user_not_collection_owner_as_super_curator(self):
-        processing_status = DatasetStatusUpdate("upload", DatasetUploadStatus.WAITING)
+        processing_status = DatasetStatusUpdate(DatasetStatusKey.UPLOAD, DatasetUploadStatus.WAITING)
         dataset = self.generate_dataset(owner="someone_else", statuses=[processing_status])
         test_url = f"/dp/v1/datasets/{dataset.dataset_version_id}"
         headers = {
