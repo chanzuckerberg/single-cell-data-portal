@@ -82,17 +82,20 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         # Don't set mappings here - those will be set when publishing the collection!
         return copy.deepcopy(version)
 
-    def _update_version_with_canonical(self, version: Union[CollectionVersion, CollectionVersionWithDatasets]):
+    def _update_version_with_canonical(self, version: Union[CollectionVersion, CollectionVersionWithDatasets],
+                                       update_datasets: bool = False):
         """
         Private method that returns a version updated with the canonical collection.
         This is equivalent to a database double lookup (or join).
         Note that for methods that require a table scan, this should be optimized by holding the
         canonical_collections table in memory
         """
+        copied_version = copy.deepcopy(version)
+        if update_datasets:
+            copied_version.datasets = [self.get_dataset_version(dataset_id) for dataset_id in copied_version.datasets]
         cc = self.collections.get(version.collection_id.id)
         if cc is None:
-            return copy.deepcopy(version)
-        copied_version = copy.deepcopy(version)
+            return copied_version
         copied_version.canonical_collection = cc
         return copied_version
 
@@ -169,7 +172,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         versions = []
         for collection_version in self.collections_versions.values():
             if collection_version.collection_id == collection_id:
-                versions.append(self._update_version_with_canonical(collection_version))
+                versions.append(self._update_version_with_canonical(collection_version, update_datasets=True))
         if not versions:
             raise ValueError("Could not find matching collection Id")
         return versions
@@ -177,10 +180,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
     def get_collection_version_with_datasets(self, version_id: CollectionVersionId) -> CollectionVersionWithDatasets:
         version = self.collections_versions.get(version_id.id)
         if version is not None:
-            copied_version = copy.deepcopy(version)
-            copied_version.datasets = [self.get_dataset_version(d_id) for d_id in copied_version.datasets]
-            copied_version.datasets = [self._update_dataset_version_with_canonical(d) for d in copied_version.datasets]
-            return self._update_version_with_canonical(copied_version)
+            return self._update_version_with_canonical(version, update_datasets=True)
 
     # MAYBE
     def finalize_collection_version(

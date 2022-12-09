@@ -47,12 +47,13 @@ from backend.layers.common.entities import (
     DatasetValidationStatus,
     DatasetVersion,
     DatasetVersionId,
+    Link
 )
 from backend.layers.persistence.persistence_interface import DatabaseProviderInterface
 from backend.layers.thirdparty.crossref_provider import CrossrefProviderInterface
 from backend.layers.thirdparty.s3_provider import S3Provider
 from backend.layers.thirdparty.step_function_provider import StepFunctionProviderInterface
-from backend.layers.thirdparty.uri_provider import UriProviderInterface
+from backend.layers.thirdparty.uri_provider import UriProviderInterface, FileInfoException
 
 
 class BusinessLogic(BusinessLogicInterface):
@@ -100,18 +101,16 @@ class BusinessLogic(BusinessLogicInterface):
 
         # TODO: Maybe switch link.type to be an enum
         doi = next((link.uri for link in collection_metadata.links if link.type == "DOI"), None)
-        print("doi", doi)
 
         if doi is not None:
             publisher_metadata = self._get_publisher_metadata(doi, errors)
         else:
             publisher_metadata = None
 
-        print(errors)
-
         if errors:
             raise CollectionCreationException(errors)
 
+        collection_metadata.strip_fields()
         created_version = self.database_provider.create_canonical_collection(owner, collection_metadata)
 
         # TODO: can collapse with `create_canonical_collection`
@@ -221,6 +220,10 @@ class BusinessLogic(BusinessLogicInterface):
         new_metadata = copy.deepcopy(current_version.metadata)
         for field in vars(body):
             if hasattr(body, field) and (value := getattr(body, field)) is not None:
+                if isinstance(value, str):
+                    value.strip()
+                if isinstance(value, Link):
+                    value.strip_fields()
                 setattr(new_metadata, field, value)
 
         self.database_provider.save_collection_metadata(version_id, new_metadata)
@@ -250,7 +253,6 @@ class BusinessLogic(BusinessLogicInterface):
         """
         Creates a canonical dataset and starts its ingestion by invoking the step function
         """
-
         if not self.uri_provider.validate(url):
             raise InvalidURIException(f"Trying to upload invalid URI: {url}")
 
