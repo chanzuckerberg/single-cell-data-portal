@@ -17,6 +17,7 @@ locals {
   wait_for_steady_state        = var.wait_for_steady_state
   batch_container_memory_limit = var.batch_container_memory_limit
   wmg_batch_container_memory_limit = var.wmg_batch_container_memory_limit
+  desired_vcpus                = var.desired_vcpus
 
   migration_cmd                = ["make", "-C", "/single-cell-data-portal/backend", "db/init_remote_dev"]
   deletion_cmd                 = ["make", "-C", "/single-cell-data-portal/backend", "db/delete_remote_dev"]
@@ -190,6 +191,7 @@ module wmg_batch {
   deployment_stage              = local.deployment_stage
   artifact_bucket               = local.artifact_bucket
   wmg_bucket                    = local.wmg_bucket
+  desired_vcpus                 = local.desired_vcpus
   batch_container_memory_limit  = var.wmg_batch_container_memory_limit
 }
 

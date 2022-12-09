@@ -88,6 +88,12 @@ variable wmg_batch_container_memory_limit {
   default     = 300000
 }
 
+variable desired_vcpus {
+  type        = number
+  description = "Number of desired vCPUs"
+  default     = 128
+}
+
 variable frontend_instance_count {
   type        = number
   description = "How many frontend tasks to run"
