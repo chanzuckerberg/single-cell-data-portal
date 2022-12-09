@@ -6,6 +6,7 @@ from backend.layers.api.router import get_business_logic
 from backend.layers.auth.user_info import UserInfo
 from backend.layers.business.entities import CollectionQueryFilter
 from backend.layers.business.exceptions import CollectionCreationException
+from backend.layers.common import doi
 from backend.layers.common.entities import CollectionMetadata, Link
 from backend.portal.api.curation.v1.curation.collections.common import reshape_for_curation_api
 
@@ -46,15 +47,14 @@ def get(visibility: str, token_info: dict, curator: str = None):
 
 
 def post(body: dict, user: str):
+
+    # Extract DOI into link
     errors = []
-    doi_url = None
-    if doi := body.get("doi"):
-        if doi_url := doi.portal_get_normalized_doi_url(doi, errors):
+    if doi_url := body.get("doi"):
+        if doi_url := doi.curation_get_normalized_doi_url(doi_url, errors):
             links = body.get("links", [])
             links.append({"link_type": ProjectLinkType.DOI.name, "link_url": doi_url})
             body["links"] = links
-    if errors:
-        raise InvalidParametersHTTPException(detail=errors)
 
     # Build CollectionMetadata object
     links = [Link(link.get("link_name"), link["link_type"], link["link_url"]) for link in body.get("links", [])]
@@ -63,7 +63,7 @@ def post(body: dict, user: str):
     try:
         version = get_business_logic().create_collection(user, metadata)
     except CollectionCreationException as ex:
-        ex.ext = dict(invalid_parameters=ex.errors)
-        ex.detail = InvalidParametersHTTPException._default_detail
-        raise ex
+        errors.extend(ex.errors)
+    if errors:
+        raise InvalidParametersHTTPException(ext=dict(invalid_parameters=errors))
     return make_response(jsonify({"id": version.version_id.id}), 201)

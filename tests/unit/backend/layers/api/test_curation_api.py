@@ -222,7 +222,7 @@ class TestPostCollection(NewBaseTest):
                     {"name": "description", "reason": "Cannot be blank."},
                     {"name": "name", "reason": "Cannot be blank."},
                     {"name": "contact_name", "reason": "Cannot be blank."},
-                    {"name": "doi", "reason": "DOI must be a CURIE reference."},
+                    {"name": "DOI", "reason": "DOI must be a CURIE reference."},
                 ],
                 5,
             ),
@@ -236,7 +236,7 @@ class TestPostCollection(NewBaseTest):
                 ),
                 [
                     {"name": "name", "reason": "Invalid characters detected."},
-                    {"name": "doi", "reason": "DOI must be a CURIE reference."},
+                    {"name": "DOI", "reason": "DOI must be a CURIE reference."},
                 ],
                 2,
             ),

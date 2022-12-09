@@ -199,8 +199,7 @@ def check_token(token: dict) -> dict:
 
 
 def curation_access_token_func(token):
-    x = assert_authorized_token(token, CorporaAuthConfig().curation_audience)
-    return x
+    return assert_authorized_token(token, CorporaAuthConfig().curation_audience)
 
 
 def curation_access_token_func_lenient(token: str) -> dict:

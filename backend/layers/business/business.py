@@ -101,14 +101,10 @@ class BusinessLogic(BusinessLogicInterface):
 
         # TODO: Maybe switch link.type to be an enum
         doi = next((link.uri for link in collection_metadata.links if link.type == "DOI"), None)
-        print("doi", doi)
-
         if doi is not None:
             publisher_metadata = self._get_publisher_metadata(doi, errors)
         else:
             publisher_metadata = None
-
-        print(errors)
 
         if errors:
             raise CollectionCreationException(errors)
