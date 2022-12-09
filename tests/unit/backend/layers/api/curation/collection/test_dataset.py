@@ -22,7 +22,7 @@ class TestDeleteDataset(BaseAuthAPITest):
                     publish=False
                 )
 
-                test_url = f"/curation/v1/collections/{dataset.collection_id}/datasets/{dataset.dataset_version_id}"
+                test_url = f"/curation/v1/collections/{dataset.collection_version_id}/datasets/{dataset.dataset_version_id}"
                 headers = auth() if callable(auth) else auth
                 response = self.app.delete(test_url, headers=headers)
                 self.assertEqual(expected_status_code, response.status_code)

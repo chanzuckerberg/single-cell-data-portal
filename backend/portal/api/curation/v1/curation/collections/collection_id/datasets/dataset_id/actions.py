@@ -8,7 +8,7 @@ from backend.layers.auth.user_info import UserInfo
 from backend.layers.business.exceptions import CollectionIsPublishedException, CollectionNotFoundException, CollectionUpdateException, DatasetInWrongStatusException, DatasetNotFoundException, InvalidURIException
 
 from backend.layers.common.entities import CollectionId, CollectionVersionId, DatasetArtifact, DatasetArtifactType, DatasetProcessingStatus, DatasetValidationStatus, DatasetVersion, DatasetVersionId
-from backend.portal.api.curation.v1.curation.collections.common import DATASET_ONTOLOGY_ELEMENTS, DATASET_ONTOLOGY_ELEMENTS_PREVIEW
+from backend.portal.api.curation.v1.curation.collections.common import DATASET_ONTOLOGY_ELEMENTS, DATASET_ONTOLOGY_ELEMENTS_PREVIEW, get_infered_dataset_version_else_forbidden
 
 
 is_primary_data_mapping = {
@@ -80,13 +80,11 @@ def _reshape_dataset_for_curation_api(d: DatasetVersion, preview=False) -> dict:
 def get(collection_id: str, dataset_id: str = None):
     business_logic = get_business_logic()
 
-    # TODO: double lookup
     collection_version = business_logic.get_collection_version_from_canonical(CollectionId(collection_id))
     if collection_version is None:
         raise NotFoundHTTPException("Collection not found!")
 
-    # TODO: double lookup
-    version = business_logic.get_dataset_version(DatasetVersionId(dataset_id))
+    version = get_infered_dataset_version_else_forbidden(dataset_id)
     if version is None:
         raise NotFoundHTTPException("Dataset not found")
 
@@ -100,11 +98,11 @@ def delete(token_info: dict, collection_id: str, dataset_id: str = None):
     user_info = UserInfo(token_info)
 
     # TODO: deduplicate from ApiCommon. We need to settle the class/module level debate before can do that
-    version = business_logic.get_dataset_version(DatasetVersionId(dataset_id))
-    if version is None:
+    dataset_version = business_logic.get_dataset_version(DatasetVersionId(dataset_id))
+    if dataset_version is None:
         raise ForbiddenHTTPException(f"Dataset {dataset_id} does not exist")
 
-    collection_version = business_logic.get_collection_version_from_canonical(version.collection_id)
+    collection_version = business_logic.get_collection_version(CollectionVersionId(collection_id))
     # If the collection does not exist, it means that the dataset is orphaned and therefore we cannot
     # determine the owner. This should not be a problem - we won't need its state at that stage.
     if collection_version is None:
@@ -114,7 +112,7 @@ def delete(token_info: dict, collection_id: str, dataset_id: str = None):
     # End of duplicate block
 
     # TODO: deduplicate from ApiCommon. We need to settle the class/module level debate before can do that
-    if version.version_id not in [v.version_id for v in collection_version.datasets]:
+    if dataset_version.version_id not in [v.version_id for v in collection_version.datasets]:
         raise ForbiddenHTTPException(f"Dataset {dataset_id} does not belong to a collection")
 
     try:
@@ -133,7 +131,7 @@ def put(collection_id: str, dataset_id: str, body: dict, token_info: dict):
     if dataset_version is None:
         raise ForbiddenHTTPException(f"Dataset {dataset_id} does not exist")
 
-    collection_version = business_logic.get_collection_version_from_canonical(dataset_version.collection_id)
+    collection_version = business_logic.get_collection_version(CollectionVersionId(collection_id))
     if collection_version is None or not UserInfo(token_info).is_user_owner_or_allowed(collection_version.owner):
         raise ForbiddenHTTPException()
 

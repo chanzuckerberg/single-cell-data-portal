@@ -22,8 +22,10 @@ from backend.layers.common.entities import (
     CollectionVersion,
     CollectionVersionId,
     CollectionVersionWithDatasets,
+    DatasetId,
     DatasetProcessingStatus,
     DatasetVersion,
+    DatasetVersionId,
     Link,
 )
 
@@ -294,6 +296,19 @@ def get_infered_collection_version_else_forbidden(collection_id: str) -> Collect
     version = get_business_logic().get_published_collection_version(CollectionId(collection_id))
     if version is None:
         version = get_business_logic().get_collection_version(CollectionVersionId(collection_id))
+    if version is None:
+        raise ForbiddenHTTPException()
+    return version
+
+def get_infered_dataset_version_else_forbidden(dataset_id: str) -> DatasetVersion:
+    """
+    Infer the dataset version from either a DatasetId or a DatasetVersionId and return the DatasetVersion.
+    :param dataset_id: identifies the dataset version
+    :return: The DatasetVersion if it exists.
+    """
+    version = get_business_logic().get_dataset_version(DatasetVersionId(dataset_id))
+    if version is None:
+        version = get_business_logic().get_dataset_version_from_canonical(DatasetId(dataset_id))
     if version is None:
         raise ForbiddenHTTPException()
     return version

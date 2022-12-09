@@ -28,7 +28,7 @@ class TestPutLink(BaseAuthAPITest):
         body = {"link": self.good_link}
         headers = None
         response = self.app.put(
-            f"/curation/v1/collections/{dataset.collection_id}/datasets/{dataset.dataset_version_id}", json=body, headers=headers
+            f"/curation/v1/collections/{dataset.collection_version_id}/datasets/{dataset.dataset_version_id}", json=body, headers=headers
         )
 
         self.assertEqual(401, response.status_code)
@@ -45,7 +45,7 @@ class TestPutLink(BaseAuthAPITest):
         body = {"link": self.good_link}
         headers = self.make_owner_header()
         response = self.app.put(
-            f"/curation/v1/collections/{dataset.collection_id}/datasets/{dataset.dataset_version_id}", json=body, headers=headers
+            f"/curation/v1/collections/{dataset.collection_version_id}/datasets/{dataset.dataset_version_id}", json=body, headers=headers
         )
 
         self.assertEqual(403, response.status_code)
@@ -62,7 +62,7 @@ class TestPutLink(BaseAuthAPITest):
         body = {"link": self.dummy_link}
         headers = self.make_not_owner_header()
         response = self.app.put(
-            f"/curation/v1/collections/{dataset.collection_id}/datasets/{dataset.dataset_version_id}", json=body, headers=headers
+            f"/curation/v1/collections/{dataset.collection_version_id}/datasets/{dataset.dataset_version_id}", json=body, headers=headers
         )
 
         self.assertEqual(403, response.status_code)
@@ -78,7 +78,7 @@ class TestPutLink(BaseAuthAPITest):
         body = {"link": self.good_link}
         headers = self.make_owner_header()
         response = self.app.put(
-            f"/curation/v1/collections/{dataset.collection_id}/datasets/{dataset.dataset_version_id}", json=body, headers=headers
+            f"/curation/v1/collections/{dataset.collection_version_id}/datasets/{dataset.dataset_version_id}", json=body, headers=headers
         )
         self.assertEqual(202, response.status_code)
 
@@ -93,7 +93,7 @@ class TestPutLink(BaseAuthAPITest):
         body = {"link": self.good_link}
         headers = self.make_super_curator_header()
         response = self.app.put(
-            f"/curation/v1/collections/{dataset.collection_id}/datasets/{dataset.dataset_version_id}", json=body, headers=headers
+            f"/curation/v1/collections/{dataset.collection_version_id}/datasets/{dataset.dataset_version_id}", json=body, headers=headers
         )
         self.assertEqual(202, response.status_code)
 
@@ -108,7 +108,7 @@ class TestPutLink(BaseAuthAPITest):
         body = {"link": self.good_link}
         headers = self.make_owner_header()
         response = self.app.put(
-            f"/curation/v1/collections/{dataset.collection_id}/datasets/{dataset.dataset_version_id}", json=body, headers=headers
+            f"/curation/v1/collections/{dataset.collection_version_id}/datasets/{dataset.dataset_version_id}", json=body, headers=headers
         )
         self.assertEqual(202, response.status_code)
 
@@ -123,7 +123,7 @@ class TestPutLink(BaseAuthAPITest):
         body = {"link": self.good_link}
         headers = self.make_super_curator_header()
         response = self.app.put(
-            f"/curation/v1/collections/{dataset.collection_id}/datasets/{dataset.dataset_version_id}", json=body, headers=headers
+            f"/curation/v1/collections/{dataset.collection_version_id}/datasets/{dataset.dataset_version_id}", json=body, headers=headers
         )
         self.assertEqual(202, response.status_code)
 
