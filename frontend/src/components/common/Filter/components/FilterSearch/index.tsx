@@ -1,5 +1,4 @@
 import { IconNames } from "@blueprintjs/icons";
-import { Icon } from "czifui";
 import { useRef } from "react";
 import { SetSearchValueFn } from "src/components/common/Filter/components/FilterSearch/common/useFilterSearch";
 import { ClearButtonIcon, ViewSearch } from "./style";
@@ -39,9 +38,8 @@ export default function FilterSearch({
             onClick={onClearSearch}
             sdsSize="small"
             sdsType="secondary"
-          >
-            <Icon sdsIcon="xMarkCircle" sdsSize="s" sdsType="iconButton" />
-          </ClearButtonIcon>
+            sdsIcon="xMarkCircle"
+          />
         ) : undefined
       }
       value={searchValue}

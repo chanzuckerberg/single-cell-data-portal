@@ -1,6 +1,6 @@
 import { Classes, Intent } from "@blueprintjs/core";
 import { FormControlLabel } from "@mui/material";
-import { Icon, InputRadio } from "czifui";
+import { InputRadio } from "czifui";
 import { toPng, toSvg } from "html-to-image";
 import { useCallback, useState } from "react";
 import { track } from "src/common/analytics";
@@ -126,17 +126,11 @@ export default function SaveImage({
           data-test-id="download-button"
           // TODO: put handleButtonClick when svgs are fixed
           onClick={handleDownload}
-          {...{
-            // (thuang): Move this back to explicit prop={value} after
-            // upgrading SDS to enable type checking again
-            disabled:
-              selectedTissues.length === 0 || selectedGenes.length === 0,
-            sdsSize: "medium",
-            sdsType: "primary",
-          }}
-        >
-          <Icon sdsIcon="download" sdsSize="l" sdsType="iconButton" />
-        </StyledButtonIcon>
+          disabled={selectedTissues.length === 0 || selectedGenes.length === 0}
+          sdsSize="medium"
+          sdsType="primary"
+          sdsIcon="download"
+        />
       </ButtonWrapper>
       <Modal
         isOpen={isOpen}
