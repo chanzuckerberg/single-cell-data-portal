@@ -5,6 +5,7 @@ import boto3
 from flask import jsonify, make_response, request
 
 from backend.common.corpora_config import CorporaConfig
+from backend.common.utils.http_exceptions import ForbiddenHTTPException
 from backend.layers.auth.user_info import UserInfo
 from backend.portal.api.curation.v1.curation.collections.common import (
     get_infered_collection_version_else_forbidden,
@@ -20,7 +21,9 @@ def get(collection_id: str, token_info: dict):
     config = CorporaConfig()
     user_info = UserInfo(token_info)
     collection_version = get_infered_collection_version_else_forbidden(collection_id)
-    is_owner_or_allowed_else_forbidden(collection_version.owner, user_info)
+    is_owner_or_allowed_else_forbidden(collection_version, user_info)
+    if collection_version.published_at:
+        raise ForbiddenHTTPException()
     if user_info.is_super_curator():
         upload_key_prefix = f"super/{collection_id}/"
     else:

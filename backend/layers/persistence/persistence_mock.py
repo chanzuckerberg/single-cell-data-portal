@@ -1,3 +1,4 @@
+import copy
 import uuid
 from datetime import datetime
 from typing import Dict, Iterable, List, Optional, Union
@@ -8,8 +9,8 @@ from backend.layers.common.entities import (
     CollectionId,
     CollectionMetadata,
     CollectionVersion,
-    CollectionVersionWithDatasets,
     CollectionVersionId,
+    CollectionVersionWithDatasets,
     DatasetArtifact,
     DatasetArtifactId,
     DatasetConversionStatus,
@@ -22,8 +23,6 @@ from backend.layers.common.entities import (
     DatasetVersion,
     DatasetVersionId,
 )
-import copy
-
 from backend.layers.persistence.persistence_interface import DatabaseProviderInterface
 
 
@@ -66,7 +65,9 @@ class DatabaseProviderMock(DatabaseProviderInterface):
     def create_canonical_collection(self, owner: str, collection_metadata: CollectionMetadata) -> CollectionVersion:
         collection_id = CollectionId(self._generate_id())
         version_id = CollectionVersionId(self._generate_id())
-        canonical = CanonicalCollection(collection_id, None, False, False)
+        canonical = CanonicalCollection(
+            id=collection_id, version_id=version_id, originally_published_at=None, tombstoned=False
+        )
         version = CollectionVersion(
             collection_id=collection_id,
             version_id=version_id,
@@ -79,6 +80,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             datasets=[],
         )
         self.collections_versions[version_id.id] = version
+        self.collections[collection_id.id] = canonical
         # Don't set mappings here - those will be set when publishing the collection!
         return copy.deepcopy(version)
 
