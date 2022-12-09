@@ -5,6 +5,8 @@ export const StyledComplexFilterInputDropdown = styled(
   ComplexFilterInputDropdown
 )`
   padding-left: 0;
+  // (thuang): Sex filter is short and doesn't need the default 64px width
+  min-width: 0;
 
   .MuiButton-label {
     margin-left: 0;
@@ -24,4 +26,5 @@ export const Wrapper = styled("div")`
 
 export const StyledComplexFilter = styled(ComplexFilter)`
   width: 100%;
-`;
+  margin-bottom: 16px;
+` as typeof ComplexFilter;

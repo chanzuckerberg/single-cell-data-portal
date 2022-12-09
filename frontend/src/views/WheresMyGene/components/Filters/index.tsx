@@ -1,5 +1,4 @@
 import {
-  ComplexFilter,
   ComplexFilterInputDropdown,
   DefaultMenuSelectOption,
   InputDropdownProps,
@@ -27,7 +26,11 @@ import { selectFilters } from "../../common/store/actions";
 import { Filters as IFilters } from "../../common/types";
 import Organism from "../GeneSearchBar/components/Organism";
 import Sort from "./components/Sort";
-import { StyledComplexFilterInputDropdown, Wrapper } from "./style";
+import {
+  StyledComplexFilter,
+  StyledComplexFilterInputDropdown,
+  Wrapper,
+} from "./style";
 
 /**
  * NOTE(thuang): Update this count to match the amount of filters we render,
@@ -180,7 +183,7 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
     <TooltipWrapper>
       <Wrapper>
         <div>
-          <ComplexFilter
+          <StyledComplexFilter
             multiple
             label="Dataset"
             options={datasets as unknown as DefaultMenuSelectOption[]}
@@ -192,7 +195,7 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
             DropdownMenuProps={DropdownMenuProps}
             InputDropdownProps={InputDropdownProps}
           />
-          <ComplexFilter
+          <StyledComplexFilter
             multiple
             label="Disease"
             options={disease_terms}
@@ -204,7 +207,7 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
             DropdownMenuProps={DropdownMenuProps}
             InputDropdownProps={InputDropdownProps}
           />
-          <ComplexFilter
+          <StyledComplexFilter
             multiple
             label="Self-Reported Ethnicity"
             options={self_reported_ethnicity_terms}
@@ -216,7 +219,7 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
             DropdownMenuProps={DropdownMenuProps}
             InputDropdownProps={InputDropdownProps}
           />
-          <ComplexFilter
+          <StyledComplexFilter
             multiple
             label="Sex"
             options={sex_terms}
