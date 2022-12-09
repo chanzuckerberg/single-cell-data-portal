@@ -44,6 +44,8 @@ import DatasetNameCell from "src/components/Datasets/components/Grid/components/
 import { UploadingFile } from "src/components/DropboxChooser";
 import { Props as ChooserProps } from "src/components/DropboxChooser/index";
 import { StyledPrimaryAnchorButton } from "src/components/common/Button/common/style";
+import { track } from "src/common/analytics";
+import { EVENTS } from "src/common/analytics/events";
 
 const AsyncTooltip = loadable(
   () =>
@@ -240,6 +242,11 @@ const DatasetRow: FC<Props> = ({
                 disabled={dataset.tombstone || isOverMaxCellCount}
                 href={dataset?.dataset_deployments[0]?.url}
                 intent={Intent.PRIMARY}
+                onClick={() =>
+                  track(EVENTS.DATASET_EXPLORE_CLICKED, {
+                    dataset_name: dataset?.name,
+                  })
+                }
                 rel="noopener"
                 target="_blank"
                 text="Explore"

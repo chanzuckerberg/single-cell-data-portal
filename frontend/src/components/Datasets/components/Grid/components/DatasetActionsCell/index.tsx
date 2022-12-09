@@ -4,6 +4,8 @@ import { OVER_MAX_CELL_COUNT_TOOLTIP } from "src/components/common/Grid/common/c
 import ActionsCell from "src/components/common/Grid/components/ActionsCell";
 import { DownloadButton } from "src/components/Datasets/components/Grid/common/utils";
 import { StyledPrimaryAnchorButton } from "src/components/common/Button/common/style";
+import { track } from "src/common/analytics";
+import { EVENTS } from "src/common/analytics/events";
 
 interface Props {
   datasetId: string;
@@ -43,6 +45,11 @@ export default function DatasetsActionsCell({
           disabled={explorerDisabled || isOverMaxCellCount} // TODO(cc) isOverMaxCellCount needed to be a boolean...
           href={explorerUrl}
           intent={Intent.PRIMARY}
+          onClick={() =>
+            track(EVENTS.DATASET_EXPLORE_CLICKED, {
+              dataset_name: name,
+            })
+          }
           rel="noopener"
           target="_blank"
           text="Explore"
