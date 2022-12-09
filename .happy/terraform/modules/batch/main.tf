@@ -39,7 +39,7 @@ resource aws_batch_job_definition batch_job_def {
       "value": "${var.frontend_url}"
     }
   ],
-  "vcpus": "2",
+  "vcpus": 2,
   "logConfiguration": {
     "logDriver": "awslogs",
     "options": {
