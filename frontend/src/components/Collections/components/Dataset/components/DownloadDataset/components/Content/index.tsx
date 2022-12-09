@@ -89,7 +89,7 @@ const Content: FC<Props> = ({ onClose, name, dataAssets }) => {
   /**
    * Tracks dataset download analytics as specified by the custom analytics event.
    * @param event - Custom analytics event.
-   * @param dataFormat - Data format (optionally specified with event DOWNLOAD_DATA_FORMAT_CLICKED).
+   * @param dataFormat - Data format (optionally specified with event "DOWNLOAD_DATA_FORMAT_CLICKED").
    */
   const handleAnalytics = (
     event: EVENTS,
