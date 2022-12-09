@@ -22,7 +22,7 @@ class TestDeleteDataset(BaseAuthAPITest):
                     publish=False
                 )
 
-                test_url = f"/curation/v1/collections/{dataset.collection_id}/datasets/{dataset.dataset_id}"
+                test_url = f"/curation/v1/collections/{dataset.collection_id}/datasets/{dataset.dataset_version_id}"
                 headers = auth() if callable(auth) else auth
                 response = self.app.delete(test_url, headers=headers)
                 self.assertEqual(expected_status_code, response.status_code)
@@ -31,7 +31,7 @@ class TestDeleteDataset(BaseAuthAPITest):
 class TestGetDatasets(BaseAuthAPITest):
     def test_get_dataset_in_a_collection_200(self):
         dataset = self.generate_dataset(name="test")
-        test_url = f"/curation/v1/collections/{dataset.collection_id}/datasets/{dataset.dataset_id}"
+        test_url = f"/curation/v1/collections/{dataset.collection_id}/datasets/{dataset.dataset_version_id}"
 
         response = self.app.get(test_url)
         print(response)
@@ -39,39 +39,30 @@ class TestGetDatasets(BaseAuthAPITest):
         self.assertEqual(dataset.dataset_id, response.json["id"])
 
     def test_get_dataset_shape(self):
-        collection = self.generate_collection(visibility=CollectionVisibility.PRIVATE.name)
         dataset = self.generate_dataset(name="test")
-        test_url = f"/curation/v1/collections/{collection.collection_id}/datasets/{dataset.dataset_id}"
+        test_url = f"/curation/v1/collections/{dataset.collection_id}/datasets/{dataset.dataset_version_id}"
         response = self.app.get(test_url)
+        print(response.json)
         self.assertEqual("test", response.json["title"])
 
     def test_get_dataset_is_primary_data_shape(self):
-        collection = self.generate_collection(visibility=CollectionVisibility.PRIVATE.name)
         tests = [
-            (IsPrimaryData.PRIMARY, [True]),
-            (IsPrimaryData.SECONDARY, [False]),
-            (IsPrimaryData.BOTH, [True, False]),
+            ("PRIMARY", [True]),
+            ("SECONDARY", [False]),
+            ("BOTH", [True, False]),
         ]
         for is_primary_data, result in tests:
             with self.subTest(f"{is_primary_data}=={result}"):
                 metadata = self.sample_dataset_metadata
                 metadata.is_primary_data=is_primary_data
                 dataset = self.generate_dataset(metadata=metadata)
-                test_url = f"/curation/v1/collections/{collection.collection_id}/datasets/{dataset.dataset_id}"
+                test_url = f"/curation/v1/collections/{dataset.collection_id}/datasets/{dataset.dataset_version_id}"
                 response = self.app.get(test_url)
                 self.assertEqual(result, response.json["is_primary_data"])
 
     def test_get_nonexistent_dataset_404(self):
-        collection = self.generate_collection(visibility=CollectionVisibility.PRIVATE.name)
+        collection = self.generate_unpublished_collection()
         test_url = f"/curation/v1/collections/{collection.collection_id}/datasets/1234-1243-2134-234-1342"
-        response = self.app.get(test_url)
-        self.assertEqual(404, response.status_code)
-
-    @unittest.skip("Tombstoned datasets do not exist anymore")
-    def test_get_tombstoned_dataset_in_a_collection_404(self):
-        collection = self.generate_collection(visibility=CollectionVisibility.PRIVATE.name)
-        dataset = self.generate_dataset(collection=collection, tombstone=True)
-        test_url = f"/curation/v1/collections/{collection.collection_id}/datasets/{dataset.id}"
         response = self.app.get(test_url)
         self.assertEqual(404, response.status_code)
 

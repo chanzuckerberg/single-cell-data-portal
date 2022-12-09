@@ -168,7 +168,7 @@ class BusinessLogic(BusinessLogicInterface):
             return published_version
         else:
             all_versions = self.get_collection_versions_from_canonical(collection_id)
-            return next(v for v in all_versions if v.published_at is None)
+            return next((v for v in all_versions if v.published_at is None), None)
 
     def get_collections(self, filter: CollectionQueryFilter) -> Iterable[CollectionVersion]:
         """

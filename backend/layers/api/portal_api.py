@@ -14,6 +14,7 @@ from backend.common.utils.http_exceptions import (
     TooLargeHTTPException,
 )
 from backend.common.utils.ontology_mappings.ontology_map_loader import ontology_mappings
+from backend.layers.api.common import ApiCommon
 from backend.layers.api.enrichment import enrich_dataset_with_ancestors
 from backend.layers.auth.user_info import UserInfo
 from backend.layers.business.business import BusinessLogic
@@ -48,7 +49,7 @@ from backend.layers.common.entities import (
 )
 
 
-class PortalApi:
+class PortalApi(ApiCommon):
     business_logic: BusinessLogicInterface
 
     def __init__(self, business_logic: BusinessLogic) -> None:
@@ -468,27 +469,6 @@ class PortalApi:
         response = {"assets": artifacts}
 
         return make_response(jsonify(response), 200)
-
-    def _assert_dataset_has_right_owner(
-        self, dataset_version_id: DatasetVersionId, user_info: UserInfo
-    ) -> Tuple[DatasetVersion, CollectionVersion]:
-        """
-        Ensures that the dataset exists and has the right owner.
-        This requires looking up the collection connected to this dataset.
-        Also returns the dataset version and the collection_version
-        """
-        version = self.business_logic.get_dataset_version(dataset_version_id)
-        if version is None:
-            raise ForbiddenHTTPException(f"Dataset {dataset_version_id} does not exist")
-
-        collection_version = self.business_logic.get_collection_version_from_canonical(version.collection_id)
-        # If the collection does not exist, it means that the dataset is orphaned and therefore we cannot
-        # determine the owner. This should not be a problem - we won't need its state at that stage.
-        if collection_version is None:
-            raise ForbiddenHTTPException(f"Dataset {dataset_version_id} unlinked")
-        if not user_info.is_user_owner_or_allowed(collection_version.owner):
-            raise ForbiddenHTTPException("Unauthorized")
-        return version, collection_version
 
     def get_status(self, dataset_id: str, token_info: dict):
         """
