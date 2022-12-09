@@ -12,10 +12,9 @@ from backend.layers.common.entities import CollectionVersionId
 def post(token_info: dict, collection_id: str):
     user_info = UserInfo(token_info)
     business_logic = get_business_logic()
+
     collection_version = get_infered_collection_version_else_forbidden(collection_id)
     is_owner_or_allowed_else_forbidden(collection_version, user_info)
-
-    print(collection_version)
 
     if collection_version.published_at is not None:
         raise MethodNotAllowedException("Collection must be PRIVATE Collection, or a revision of a PUBLIC Collection.")

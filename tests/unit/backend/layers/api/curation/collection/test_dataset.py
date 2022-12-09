@@ -30,10 +30,11 @@ class TestDeleteDataset(BaseAuthAPITest):
 
 class TestGetDatasets(BaseAuthAPITest):
     def test_get_dataset_in_a_collection_200(self):
-        dataset = self.generate_dataset(name="test") # TODO: name?
+        dataset = self.generate_dataset(name="test")
         test_url = f"/curation/v1/collections/{dataset.collection_id}/datasets/{dataset.dataset_id}"
 
         response = self.app.get(test_url)
+        print(response)
         self.assertEqual(200, response.status_code)
         self.assertEqual(dataset.dataset_id, response.json["id"])
 
@@ -91,36 +92,36 @@ class TestPostDataset(BaseAuthAPITest):
 
     def test_post_datasets_201(self):
         collection = self.generate_unpublished_collection()
-        test_url = f"/curation/v1/collections/{collection.collection_id}/datasets"
+        test_url = f"/curation/v1/collections/{collection.version_id}/datasets"
         headers = self.make_owner_header()
         response = self.app.post(test_url, headers=headers)
         self.assertEqual(201, response.status_code)
         self.assertTrue(response.json["id"])
 
     def test_post_datasets_super(self):
-        collection = self.generate_collection()
-        test_url = f"/curation/v1/collections/{collection.collection_id}/datasets"
+        collection = self.generate_unpublished_collection()
+        test_url = f"/curation/v1/collections/{collection.version_id}/datasets"
         headers = self.make_super_curator_header()
         response = self.app.post(test_url, headers=headers)
         self.assertEqual(201, response.status_code)
 
     def test_post_datasets_not_owner_201(self):
         collection = self.generate_collection()
-        test_url = f"/curation/v1/collections/{collection.collection_id}/datasets"
+        test_url = f"/curation/v1/collections/{collection.version_id}/datasets"
         headers = self.make_not_owner_header()
         response = self.app.post(test_url, headers=headers)
         self.assertEqual(403, response.status_code)
 
     def test_post_datasets_public_collection_405(self):
         collection = self.generate_collection(visibility="PUBLIC")
-        test_url = f"/curation/v1/collections/{collection.collection_id}/datasets"
+        test_url = f"/curation/v1/collections/{collection.version_id}/datasets"
         headers = self.make_owner_header()
         response = self.app.post(test_url, headers=headers)
         self.assertEqual(405, response.status_code)
 
     def test_post_datasets_no_auth_401(self):
         collection = self.generate_collection(visibility="PUBLIC")
-        test_url = f"/curation/v1/collections/{collection.collection_id}/datasets"
+        test_url = f"/curation/v1/collections/{collection.version_id}/datasets"
         response = self.app.post(test_url)
         self.assertEqual(401, response.status_code)
 
