@@ -12,6 +12,7 @@ module stack {
   require_okta                 = true
   stack_prefix                 = "/${var.stack_name}"
   batch_container_memory_limit = 28000
+  wmg_batch_container_memory_limit = 300000
   backend_instance_count       = 1
   frontend_instance_count      = 1
   backend_memory               = 8192
