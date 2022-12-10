@@ -162,7 +162,7 @@ class DatasetMetadata:
     suspension_type: List[str]
     donor_id: List[str]
     is_primary_data: str
-    x_approximate_distribution: str
+    x_approximate_distribution: Optional[str]
 
 
 @dataclass

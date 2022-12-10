@@ -131,7 +131,7 @@ class BusinessLogic(BusinessLogicInterface):
     ) -> Optional[CollectionVersionWithDatasets]:
         latest = datetime.datetime.fromtimestamp(0)
         unpublished_collection = None
-        for collection in self.get_collection_versions_from_canonical(CollectionId):
+        for collection in self.get_collection_versions_from_canonical(collection_id):
             if collection.published_at is None and collection.created_at > latest:
                 latest = collection.created_at
                 unpublished_collection = collection
@@ -442,6 +442,9 @@ class BusinessLogic(BusinessLogicInterface):
 
     def delete_collection_version(self, version_id: CollectionVersionId) -> None:
         self.database_provider.delete_collection_version(version_id)
+
+    def delete_collection(self, collection_id: CollectionId) -> None:
+        self.database_provider.delete_canonical_collection(collection_id)
 
     def publish_collection_version(self, version_id: CollectionVersionId) -> None:
         version = self.database_provider.get_collection_version(version_id)

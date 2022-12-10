@@ -133,7 +133,7 @@ class NewBaseTest(BaseAuthAPITest):
             suspension_type=["test_suspension_type"],
             donor_id=["test_donor_1"],
             is_primary_data="BOTH",
-            x_approximate_distribution="normal",
+            x_approximate_distribution="NORMAL",
         )
 
         self.business_logic = BusinessLogic(
@@ -166,6 +166,10 @@ class NewBaseTest(BaseAuthAPITest):
             return self.generate_published_collection(**params)
         else:
             return self.generate_unpublished_collection(**params)
+
+    def generate_collection_revision(self, owner="test_user_id") -> CollectionVersion:
+        published_collection = self.generate_published_collection(owner)
+        return self.business_logic.create_collection_version(published_collection.collection_id)
 
     def generate_unpublished_collection(
         self, owner="test_user_id", links: List[Link] = [], add_datasets: int = 0

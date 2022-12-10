@@ -1,3 +1,4 @@
+import copy
 import json
 from unittest.mock import Mock, patch
 
@@ -111,15 +112,12 @@ class TestDeleteCollection(BaseAuthAPITest):
             with self.subTest(auth):
                 self._test(public_collection_id, auth, expected_response)
 
-    def test__delete_revision_collection(self):
+    def test__delete_revision_collection_by_collection_version_id(self):
         tests = [("not_owner", 403), ("noauth", 401), ("owner", 204), ("super", 204)]
         for auth, expected_response in tests:
             with self.subTest(auth):
-                public_collection_id = self.generate_published_collection().collection_id
-                revision_collection_id = self.generate_collection(
-                    visibility=CollectionVisibility.PRIVATE.name, revision_of=public_collection_id
-                ).collection_id
-                self._test(revision_collection_id, auth, expected_response)
+                revision_collection = self.generate_collection_revision()
+                self._test(revision_collection.version_id.id, auth, expected_response)
 
     def test__delete_private_collection(self):
         tests = [("not_owner", 403), ("noauth", 401), ("owner", 204), ("super", 204)]
@@ -132,10 +130,9 @@ class TestDeleteCollection(BaseAuthAPITest):
         tests = [("not_owner", 403), ("noauth", 401), ("owner", 403), ("super", 403)]
         for auth, expected_response in tests:
             with self.subTest(auth):
-                tombstone_collection_id = self.generate_collection(
-                    visibility=CollectionVisibility.PUBLIC.name, tombstone=True
-                ).collection_id
-                self._test(tombstone_collection_id, auth, expected_response)
+                collection_id = self.generate_published_collection().collection_id
+                self.business_logic.delete_collection(collection_id)
+                self._test(collection_id, auth, expected_response)
 
 
 class TestS3Credentials(NewBaseTest):
@@ -598,9 +595,10 @@ class TestGetCollectionID(NewBaseTest):
         self.assertEqual(json.dumps(self.expected_body, sort_keys=True), json.dumps(res_body))
 
     def test__get_private_collection__OK(self):
-        res = self.app.get("/curation/v1/collections/test_collection_id_revision")
+        collection_id = self.generate_unpublished_collection().collection_id.id
+        res = self.app.get(f"/curation/v1/collections/{collection_id}")
         self.assertEqual(200, res.status_code)
-        self.assertEqual("test_collection_id_revision", res.json["id"])
+        self.assertEqual(collection_id, res.json["id"])
 
     def test__get_collection_with_dataset_failing_validation(self):
         collection = self.generate_collection(
@@ -647,39 +645,42 @@ class TestGetCollectionID(NewBaseTest):
         self.assertEqual(403, res.status_code)
 
     def test_get_collection_with_no_datasets(self):
-        collection = self.generate_collection(name="No Datasets", visibility=CollectionVisibility.PUBLIC)
-        res = self.app.get(f"/curation/v1/collections/{collection.collection_id}")
+        collection_id = self.generate_unpublished_collection(add_datasets=0).collection_id
+        res = self.app.get(f"/curation/v1/collections/{collection_id.id}", headers=self.make_owner_header())
         self.assertEqual(200, res.status_code)
-        self.assertEqual(res.json["processing_status"], None)
+        self.assertEqual(collection_id.id, res.json["id"])
 
     def test__get_collection_with_tombstoned_datasets__OK(self):
-        collection = self.generate_collection(
-            tombstone=False, name="collection", visibility=CollectionVisibility.PUBLIC
-        )
+        collection = self.generate_collection()
+        self.generate_dataset()
         self.generate_dataset(collection_id=collection.collection_id, tombstone=False)
         self.generate_dataset(collection_id=collection.collection_id, tombstone=True)
         res = self.app.get(f"/curation/v1/collections/{collection.collection_id}")
         self.assertEqual(1, len(res.json["datasets"]))
 
     def test__get_public_collection_with_auth_access_type_write__OK(self):
-        res = self.app.get("/curation/v1/collections/test_collection_id", headers=self.make_owner_header())
+        collection_id = self.generate_published_collection().collection_id
+        res = self.app.get(f"/curation/v1/collections/{collection_id.id}", headers=self.make_owner_header())
         self.assertEqual(200, res.status_code)
-        self.assertEqual("test_collection_id", res.json["id"])
+        self.assertEqual(collection_id.id, res.json["id"])
 
     def test__get_public_collection_with_auth_access_type_read__OK(self):
-        res = self.app.get("/curation/v1/collections/test_collection_id_not_owner", headers=self.make_owner_header())
+        collection_id = self.generate_published_collection(owner="someone else").collection_id
+        res = self.app.get(f"/curation/v1/collections/{collection_id.id}", headers=self.make_owner_header())
         self.assertEqual(200, res.status_code)
-        self.assertEqual("test_collection_id_not_owner", res.json["id"])
+        self.assertEqual(collection_id.id, res.json["id"])
 
     def test__get_private_collection_with_auth_access_type_write__OK(self):
-        res = self.app.get("/curation/v1/collections/test_collection_id_revision", headers=self.make_owner_header())
+        collection_id = self.generate_unpublished_collection().collection_id
+        res = self.app.get(f"/curation/v1/collections/{collection_id.id}", headers=self.make_owner_header())
         self.assertEqual(200, res.status_code)
-        self.assertEqual("test_collection_id_revision", res.json["id"])
+        self.assertEqual(collection_id.id, res.json["id"])
 
-    def test__get_collectoin_with_x_approximate_distribution_none__OK(self):
-        collection = self.generate_collection()
-        self.generate_dataset(x_approximate_distribution=None, collection=collection)
-        res = self.app.get(f"/curation/v1/collections/{collection.collection_id}", headers=self.make_owner_header())
+    def test__get_collection_with_x_approximate_distribution_none__OK(self):
+        metadata = copy.deepcopy(self.sample_dataset_metadata)
+        metadata.x_approximate_distribution = None
+        dataset = self.generate_dataset(metadata=metadata)
+        res = self.app.get(f"/curation/v1/collections/{dataset.collection_id}", headers=self.make_owner_header())
         self.assertEqual(200, res.status_code)
         self.assertIsNone(res.json["datasets"][0]["x_approximate_distribution"])
 

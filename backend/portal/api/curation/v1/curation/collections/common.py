@@ -10,7 +10,6 @@ from backend.common.corpora_orm import (
     DbDataset,
     DbDatasetArtifact,
     DbDatasetProcessingStatus,
-    IsPrimaryData,
     ProcessingStatus,
     ValidationStatus,
 )
@@ -169,9 +168,9 @@ def reshape_dataset_for_curation_api(dataset: dict, preview=False) -> dict:
 
 
 is_primary_data_mapping = {
-    IsPrimaryData.PRIMARY: [True],
-    IsPrimaryData.SECONDARY: [False],
-    IsPrimaryData.BOTH: [True, False],
+    "PRIMARY": [True],
+    "SECONDARY": [False],
+    "BOTH": [True, False],
 }
 
 
@@ -293,7 +292,7 @@ def get_infered_collection_version_else_forbidden(collection_id: str) -> Optiona
     version = get_business_logic().get_published_collection_version(CollectionId(collection_id))
     if version is None:
         version = get_business_logic().get_collection_version(CollectionVersionId(collection_id))
-    if version is None:
+    if version is None or version.canonical_collection.tombstoned is True:
         raise ForbiddenHTTPException()
     return version
 

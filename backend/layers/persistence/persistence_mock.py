@@ -161,6 +161,10 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         # Can only delete an unpublished collection
         del self.collections_versions[version_id.id]
 
+    def delete_canonical_collection(self, collection_id: CollectionId) -> None:
+        canonical_collection = self.collections[collection_id.id]
+        canonical_collection.tombstoned = True
+
     def get_collection_version(self, version_id: CollectionVersionId) -> CollectionVersion:
         version = self.collections_versions.get(version_id.id)
         if version is not None:
