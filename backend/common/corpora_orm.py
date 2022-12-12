@@ -268,6 +268,7 @@ class CollectionConsortia(enum.Enum):
     Enumerates Consortia names.
 
     """
+
     ALLEN_INSTITUTE_FOR_BRAIN_SCIENCE = "Allen Institute for Brain Science"
     BRAIN_INITIATIVE = "BRAIN Initiative"
     CZ_BIOHUB = "CZ Biohub"
@@ -276,7 +277,7 @@ class CollectionConsortia(enum.Enum):
     EU_HORIZON_2020 = "European Union’s Horizon 2020"
     GUDMAP = "GenitoUrinary Development Molecular Anatomy Project (GUDMAP)"
     GUT_CELL_ATLAS = "Gut Cell Atlas"
-    HUBMAP= "Human BioMolecular Atlas Program (HuBMAP)"
+    HUBMAP = "Human BioMolecular Atlas Program (HuBMAP)"
     HPAP = "Human Pancreas Analysis Program (HPAP)"
     HTAN = "Human Tumor Atlas Network (HTAN)"
     KPMP = "Kidney Precision Medicine Project (KPMP)"
