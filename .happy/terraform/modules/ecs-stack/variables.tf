@@ -85,7 +85,7 @@ variable batch_container_memory_limit {
 variable wmg_batch_container_memory_limit {
   type        = number
   description = "Memory hard limit for the wmg processing batch container"
-  default     = 300000
+  default     = 248000
 }
 
 variable wmg_desired_vcpus {
