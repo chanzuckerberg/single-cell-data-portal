@@ -13,6 +13,7 @@ from backend.layers.thirdparty.s3_provider import S3Provider
 from backend.layers.thirdparty.schema_validator_provider import SchemaValidatorProviderInterface
 from backend.layers.thirdparty.uri_provider import FileInfo, UriProvider
 from backend.layers.common.entities import (
+    DatasetArtifactType,
     DatasetConversionStatus,
     DatasetProcessingStatus,
     DatasetUploadStatus,
@@ -102,7 +103,7 @@ class ProcessingTest(NewBaseTest):
             artifacts = list(self.business_logic.get_dataset_artifacts(dataset_version_id))
             self.assertEqual(2, len(artifacts))
             artifact = artifacts[0]
-            artifact.type = "H5AD"
+            artifact.type = DatasetArtifactType.H5AD
             artifact.uri = f"s3://fake_bucket_name/{dataset_version_id.id}/local.h5ad"
 
     def test_process_seurat_success(self):

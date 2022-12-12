@@ -6,6 +6,7 @@ import scanpy
 from backend.common.utils.corpora_constants import CorporaConstants
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.common.entities import (
+    DatasetArtifactType,
     DatasetConversionStatus,
     DatasetMetadata,
     DatasetProcessingStatus,
@@ -147,7 +148,6 @@ class ProcessDownloadValidate(ProcessingLogic):
             suspension_type=adata.obs["suspension_type"].unique(),
         )
 
-    # TODO: not sure we need a method for this
     def wrapped_download_from_s3(
         self, dataset_id: DatasetVersionId, bucket_name: str, object_key: str, local_filename: str
     ):
@@ -235,8 +235,8 @@ class ProcessDownloadValidate(ProcessingLogic):
 
         bucket_prefix = self.get_bucket_prefix(dataset_id.id)
         # Upload the original dataset to the artifact bucket
-        self.create_artifact(local_filename, "H5AD", bucket_prefix, dataset_id, artifact_bucket, DatasetStatusKey.H5AD)
+        self.create_artifact(local_filename, DatasetArtifactType.H5AD, bucket_prefix, dataset_id, artifact_bucket, DatasetStatusKey.H5AD)
         # Upload the labeled dataset to the artifact bucket
         self.create_artifact(
-            file_with_labels, "H5AD", bucket_prefix, dataset_id, artifact_bucket, DatasetStatusKey.H5AD
+            file_with_labels, DatasetArtifactType.H5AD, bucket_prefix, dataset_id, artifact_bucket, DatasetStatusKey.H5AD
         )
