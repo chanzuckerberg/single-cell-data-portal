@@ -88,7 +88,7 @@ variable wmg_batch_container_memory_limit {
   default     = 300000
 }
 
-variable desired_vcpus {
+variable wmg_desired_vcpus {
   type        = number
   description = "Number of desired vCPUs"
   default     = 128

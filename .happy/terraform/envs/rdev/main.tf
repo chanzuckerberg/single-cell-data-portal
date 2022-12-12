@@ -13,7 +13,7 @@ module stack {
   stack_prefix                 = "/${var.stack_name}"
   batch_container_memory_limit = 28000
   wmg_batch_container_memory_limit = 300000
-  desired_vcpus                = 128
+  wmg_desired_vcpus                = 128
   backend_instance_count       = 1
   frontend_instance_count      = 1
   backend_memory               = 8192
