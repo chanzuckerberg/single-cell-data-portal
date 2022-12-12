@@ -555,7 +555,7 @@ class PortalApi:
         """
         try:
             path = urlparse(url).path
-            id = [segment for segment in path.split("/") if segment][-1].strip(".cxg")
+            id = [segment for segment in path.split("/") if segment][-1].removesuffix(".cxg")
         except Exception:
             raise ServerErrorHTTPException("Cannot parse URL")
 
