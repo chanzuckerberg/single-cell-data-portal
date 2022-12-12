@@ -157,7 +157,6 @@ jobs:
   push-prod-images:
     needs:
       - backend-unit-test
-      - processing-unit-test
       - wmg-processing-unit-test
       - e2e-test
       - lint
@@ -341,7 +340,6 @@ jobs:
   add-image-tags:
     needs:
       - backend-unit-test
-      - processing-unit-test
       - wmg-processing-unit-test
       - e2e-test
       - lint
