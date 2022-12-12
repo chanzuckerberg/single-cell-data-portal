@@ -32,7 +32,7 @@ resource aws_batch_job_definition batch_job_def {
       "value": "${var.remote_dev_prefix}"
     }
   ],
-  "vcpus": "${var.desired_vcpus}",
+  "vcpus": ${var.desired_vcpus},
   "logConfiguration": {
     "logDriver": "awslogs",
     "options": {
