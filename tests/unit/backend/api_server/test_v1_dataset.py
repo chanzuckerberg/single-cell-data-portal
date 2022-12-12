@@ -192,14 +192,21 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         self.assertCountEqual(
             dataset["tissue_ancestors"],
             [
-                "UBERON:0001004",
+                "UBERON:0005178",
+                "UBERON:0000072",
+                "UBERON:0001558",
+                "UBERON:0000915",
                 "UBERON:0001005",
-                "UBERON:0000065",
+                "UBERON:0005181",
+                "UBERON:0002075",
                 "UBERON:0000170",
                 "UBERON:0002048",
-                "UBERON:0001558",
-                "UBERON:0000072",
+                "UBERON:0002100",
                 "UBERON:0000171",
+                "UBERON:0009569",
+                "UBERON:0000065",
+                "UBERON:0005177",
+                "UBERON:0001004",
             ],
         )
 
@@ -277,14 +284,21 @@ class TestDataset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         self.assertCountEqual(
             actual_dataset["tissue_ancestors"],
             [
-                "UBERON:0001004",
+                "UBERON:0005178",
+                "UBERON:0000072",
+                "UBERON:0001558",
+                "UBERON:0000915",
                 "UBERON:0001005",
-                "UBERON:0000065",
+                "UBERON:0005181",
+                "UBERON:0002075",
                 "UBERON:0000170",
                 "UBERON:0002048",
-                "UBERON:0001558",
-                "UBERON:0000072",
+                "UBERON:0002100",
                 "UBERON:0000171",
+                "UBERON:0009569",
+                "UBERON:0000065",
+                "UBERON:0005177",
+                "UBERON:0001004",
             ],
         )
 
