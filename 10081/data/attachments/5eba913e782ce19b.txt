@@ -1,0 +1,2 @@
+{"levelname": "INFO", "asctime": "2022-12-12T07:36:59.012Z", "name": "backend.portal.pipeline.processing.download", "message": "Setting up download.", "lineno": 172, "pathname": "/single-cell-data-portal/backend/portal/pipeline/processing/download.py"}
+{"levelname": "INFO", "asctime": "2022-12-12T07:36:59.012Z", "name": "backend.portal.pipeline.processing.download", "message": "file_size: 4854", "lineno": 173, "pathname": "/single-cell-data-portal/backend/portal/pipeline/processing/download.py"}
