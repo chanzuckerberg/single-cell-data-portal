@@ -32,6 +32,7 @@ import {
   FormDivider,
   Title,
 } from "./style";
+import Consortia from "src/components/CreateCollectionModal/components/Content/components/Consortia";
 
 const REQUIRED_FIELD_TEXT = "Required";
 
@@ -192,6 +193,7 @@ const Content: FC<Props> = (props) => {
               defaultValue={contact_email}
               syncValidation={[requiredValidator, emailValidation]}
             />
+            <Consortia />
           </CollectionDetail>
           {/* Collection links */}
           {links.length > 0 && (
