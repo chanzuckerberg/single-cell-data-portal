@@ -6,4 +6,4 @@
 !/backend/**
 !/tests/**
 !/scripts/**
-!/container_init.sh
+!/container_init**
