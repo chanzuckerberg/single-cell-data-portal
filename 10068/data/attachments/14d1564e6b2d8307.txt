@@ -1,3 +1,0 @@
-Dropping tables
-Recreating tables
-{"levelname": "INFO", "asctime": "2022-12-09T17:20:17.009Z", "name": "root", "message": "Unable to find a row with primary key 79c17446-63ba-4d95-8c4d-cd7ea5f4f7c3, in Geneset table.", "lineno": 43, "pathname": "/single-cell-data-portal/backend/common/entities/entity.py"}
