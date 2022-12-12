@@ -82,8 +82,9 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         # Don't set mappings here - those will be set when publishing the collection!
         return copy.deepcopy(version)
 
-    def _update_version_with_canonical(self, version: Union[CollectionVersion, CollectionVersionWithDatasets],
-                                       update_datasets: bool = False):
+    def _update_version_with_canonical(
+        self, version: Union[CollectionVersion, CollectionVersionWithDatasets], update_datasets: bool = False
+    ):
         """
         Private method that returns a version updated with the canonical collection.
         This is equivalent to a database double lookup (or join).
