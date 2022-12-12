@@ -101,6 +101,11 @@ paths:
                 curator_name:
                   type: string
                   description: name of the curator of the collection.
+                consortia:
+                  type: array
+                  items:
+                    type: string
+                  description: TBD
                 links:
                   $ref: "#/components/schemas/links"
       responses:
