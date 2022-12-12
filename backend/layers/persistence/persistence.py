@@ -440,7 +440,9 @@ class DatabaseProvider(DatabaseProviderInterface):
         Returns a dataset version by id.
         """
         with self._manage_session() as session:
-            dataset_version = session.query(DatasetVersionTable).filter_by(version_id=dataset_version_id.id).one_or_none()
+            dataset_version = (
+                session.query(DatasetVersionTable).filter_by(version_id=dataset_version_id.id).one_or_none()
+            )
             if dataset_version is None:
                 return None
             return self._hydrate_dataset_version(dataset_version)

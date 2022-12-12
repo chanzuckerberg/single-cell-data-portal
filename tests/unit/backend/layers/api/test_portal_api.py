@@ -1,4 +1,5 @@
 import gevent.monkey
+
 gevent.monkey.patch_all()
 
 import dataclasses
@@ -824,7 +825,9 @@ class TestCollectionDeletion(NewBaseTest):
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
 
         # Verify private collections exist
-        test_private_url = furl(path=f"/dp/v1/collections/{revision.version_id}", query_params=dict(visibility="PRIVATE"))
+        test_private_url = furl(
+            path=f"/dp/v1/collections/{revision.version_id}", query_params=dict(visibility="PRIVATE")
+        )
         response = self.app.get(test_private_url.url, headers=headers)
         self.assertEqual(200, response.status_code)
         body = json.loads(response.data)
@@ -832,7 +835,9 @@ class TestCollectionDeletion(NewBaseTest):
         self.assertIn(dataset_rev.dataset_version_id, dataset_ids)
 
         # Verify public collections exist
-        test_public_url = furl(path=f"/dp/v1/collections/{collection.collection_id}", query_params=dict(visibility="PUBLIC"))
+        test_public_url = furl(
+            path=f"/dp/v1/collections/{collection.collection_id}", query_params=dict(visibility="PUBLIC")
+        )
         response = self.app.get(test_public_url.url, headers=headers)
         self.assertEqual(200, response.status_code)
         body = json.loads(response.data)
@@ -858,7 +863,7 @@ class TestCollectionDeletion(NewBaseTest):
         # Generate the public collection
         collection = self.generate_published_collection()
         # Generate test collection
-        revision = self.generate_revision(collection.collection_id)
+        self.generate_revision(collection.collection_id)
 
         test_url = furl(path=f"/dp/v1/collections/{collection.collection_id}", query_params=dict(visibility="PRIVATE"))
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
@@ -884,7 +889,7 @@ class TestCollectionDeletion(NewBaseTest):
                 self.assertEqual(body, "")
 
     def test_delete_collection__not_owner(self):
-        collection = self.generate_unpublished_collection(owner='not_test_user_id')
+        collection = self.generate_unpublished_collection(owner="not_test_user_id")
         test_url = furl(path=f"/dp/v1/collections/{collection.version_id}")
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
         response = self.app.delete(test_url.url, headers=headers)
@@ -909,7 +914,9 @@ class TestCollectionDeletion(NewBaseTest):
         self.assertIn(public_collection.collection_id.id, collection_ids)
         self.assertIn(collection_to_delete.version_id.id, collection_ids)
 
-        test_url = furl(path=f"/dp/v1/collections/{collection_to_delete.version_id.id}", query_params=dict(visibility="PRIVATE"))
+        test_url = furl(
+            path=f"/dp/v1/collections/{collection_to_delete.version_id.id}", query_params=dict(visibility="PRIVATE")
+        )
         response = self.app.delete(test_url.url, headers=headers)
         self.assertEqual(response.status_code, 204)
 
@@ -1103,12 +1110,15 @@ class TestUpdateCollection(NewBaseTest):
 
 
 class TestCollectionsCurators(NewBaseTest):
-
     def test_view_non_owned_private_collection__ok(self):
         # Generate test collection
         collection = self.generate_unpublished_collection(owner="another_test_user_id")
 
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token(user='not_owner')}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Cookie": self.get_cxguser_token(user="not_owner"),
+        }
         test_url = furl(path=f"/dp/v1/collections/{collection.version_id}", query_params=dict(visibility="PRIVATE"))
         response = self.app.get(test_url.url, headers=headers)
 
@@ -1237,9 +1247,13 @@ class TestDataset(NewBaseTest):
     # ✅
     def test__post_dataset_asset__OK(self):
         self.business_logic.get_dataset_artifact_download_data = Mock(
-            return_value=DatasetArtifactDownloadData("asset.h5ad", DatasetArtifactType.H5AD, 1000, "http://presigned.url")
+            return_value=DatasetArtifactDownloadData(
+                "asset.h5ad", DatasetArtifactType.H5AD, 1000, "http://presigned.url"
+            )
         )
-        version = self.generate_dataset(artifacts=[DatasetArtifactUpdate(DatasetArtifactType.H5AD, "http://mock.uri/asset.h5ad")])
+        version = self.generate_dataset(
+            artifacts=[DatasetArtifactUpdate(DatasetArtifactType.H5AD, "http://mock.uri/asset.h5ad")]
+        )
         dataset_version_id = version.dataset_version_id
         artifact_id = version.artifact_ids[0]
 
@@ -1258,7 +1272,9 @@ class TestDataset(NewBaseTest):
         """
         `post_dataset_asset` should throw 500 if presigned_url or file_size aren't returned from the server
         """
-        version = self.generate_dataset(artifacts=[DatasetArtifactUpdate(DatasetArtifactType.H5AD, "http://mock.uri/asset.h5ad")])
+        version = self.generate_dataset(
+            artifacts=[DatasetArtifactUpdate(DatasetArtifactType.H5AD, "http://mock.uri/asset.h5ad")]
+        )
         dataset_version_id = version.dataset_version_id
         artifact_id = version.artifact_ids[0]
 
@@ -2199,16 +2215,16 @@ class TestCollectionPostUploadLink(NewBaseTest):
 
         with self.subTest("Bad Dropbox link"):
             self.uri_provider.validate = Mock(return_value=True)
-            self.uri_provider.get_file_info.side_effect = FileInfoException("The URL provided causes an error with Dropbox.")
+            self.uri_provider.get_file_info.side_effect = FileInfoException(
+                "The URL provided causes an error with Dropbox."
+            )
             headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
             body = {"url": self.dummy_link}
             test_url = furl(path=path)
             response = self.app.post(test_url.url, headers=headers, data=json.dumps(body))
             self.assertEqual(400, response.status_code)
             print(json.loads(response.data)["detail"])
-            self.assertTrue(
-                "The URL provided causes an error with Dropbox." == json.loads(response.data)["detail"]
-            )
+            self.assertTrue("The URL provided causes an error with Dropbox." == json.loads(response.data)["detail"])
 
     # ✅
     def test__oversized__413(self):
