@@ -235,8 +235,15 @@ class ProcessDownloadValidate(ProcessingLogic):
 
         bucket_prefix = self.get_bucket_prefix(dataset_id.id)
         # Upload the original dataset to the artifact bucket
-        self.create_artifact(local_filename, DatasetArtifactType.H5AD, bucket_prefix, dataset_id, artifact_bucket, DatasetStatusKey.H5AD)
+        self.create_artifact(
+            local_filename, DatasetArtifactType.H5AD, bucket_prefix, dataset_id, artifact_bucket, DatasetStatusKey.H5AD
+        )
         # Upload the labeled dataset to the artifact bucket
         self.create_artifact(
-            file_with_labels, DatasetArtifactType.H5AD, bucket_prefix, dataset_id, artifact_bucket, DatasetStatusKey.H5AD
+            file_with_labels,
+            DatasetArtifactType.H5AD,
+            bucket_prefix,
+            dataset_id,
+            artifact_bucket,
+            DatasetStatusKey.H5AD,
         )

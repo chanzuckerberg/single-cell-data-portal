@@ -100,7 +100,7 @@ class NewBaseTest(BaseAuthAPITest):
 
     @classmethod
     def setUpClass(cls) -> None:
-        cls.run_as_integration = True if os.environ.get('INTEGRATION_TEST', 'false').lower() == 'true' else False
+        cls.run_as_integration = True if os.environ.get("INTEGRATION_TEST", "false").lower() == "true" else False
         if cls.run_as_integration:
             cls.database_provider = DatabaseProvider(database_uri="postgresql://postgres:secret@localhost")
             cls.database_provider._drop_schema("persistence_schema")
@@ -195,7 +195,7 @@ class NewBaseTest(BaseAuthAPITest):
 
     # Public collections need to have at least one dataset!
     def generate_published_collection(
-            self, owner="test_user_id", links: List[Link] = [], add_datasets: int = 1
+        self, owner="test_user_id", links: List[Link] = [], add_datasets: int = 1
     ) -> CollectionVersion:
         unpublished_collection = self.generate_unpublished_collection(owner, links, add_datasets=add_datasets)
         self.business_logic.publish_collection_version(unpublished_collection.version_id)
@@ -206,11 +206,11 @@ class NewBaseTest(BaseAuthAPITest):
         return self.business_logic.get_collection_version(revision.version_id)
 
     def generate_dataset(
-        self, 
-        owner: str = "test_user_id", 
+        self,
+        owner: str = "test_user_id",
         collection_version: Optional[CollectionVersion] = None,
-        metadata: Optional[DatasetMetadata] = None, 
-        statuses: List[DatasetStatusUpdate] = [], 
+        metadata: Optional[DatasetMetadata] = None,
+        statuses: List[DatasetStatusUpdate] = [],
         artifacts: List[DatasetArtifactUpdate] = [],
         publish: bool = False,
     ) -> DatasetData:
@@ -219,7 +219,9 @@ class NewBaseTest(BaseAuthAPITest):
         """
         if not collection_version:
             collection_version = self.generate_unpublished_collection(owner)
-        dataset_version_id, dataset_id = self.business_logic.ingest_dataset(collection_version.version_id, "http://fake.url", None)
+        dataset_version_id, dataset_id = self.business_logic.ingest_dataset(
+            collection_version.version_id, "http://fake.url", None
+        )
         if not metadata:
             metadata = copy.deepcopy(self.sample_dataset_metadata)
         self.business_logic.set_dataset_metadata(dataset_version_id, metadata)
@@ -234,9 +236,9 @@ class NewBaseTest(BaseAuthAPITest):
             self.business_logic.publish_collection_version(collection_version.version_id)
         explorer_url = f"http://base.url/{dataset_version_id.id}.cxg/"
         return DatasetData(
-            dataset_version_id.id, 
-            dataset_id.id, 
-            explorer_url, 
+            dataset_version_id.id,
+            dataset_id.id,
+            explorer_url,
             collection_version.version_id.id,
             collection_version.collection_id.id,
             [a.id for a in artifact_ids],

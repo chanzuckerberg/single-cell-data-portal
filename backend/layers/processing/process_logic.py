@@ -62,7 +62,7 @@ class ProcessingLogic:  # TODO: ProcessingLogicBase
         self,
         file_name: str,
         artifact_type: str,
-        bucket_prefix: str, 
+        bucket_prefix: str,
         dataset_id: DatasetVersionId,
         artifact_bucket: str,
         processing_status_key: DatasetStatusKey,
