@@ -54,7 +54,7 @@ export const DropdownPopper = styled(SDSDropdownPopper, {
         `
       );
     }}
-    ${scrollbar};
+    ${scrollbar}
   }
 
   && .MuiAutocomplete-option {
@@ -79,4 +79,5 @@ export const DropdownPopper = styled(SDSDropdownPopper, {
         white-space: nowrap;
       }
     }
+  }
 `;

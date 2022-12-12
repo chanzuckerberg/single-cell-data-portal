@@ -27,25 +27,21 @@ export const formField = (props: CommonThemeProps) => {
 /* Form label styles with targeted shared styles for form field elements i.e. form group, input, textarea and adornments (danger icon). */
 export const StyledFormLabel = styled(Label)`
   /* Form label */
-
   &.${Classes.LABEL} {
     margin-bottom: 0;
   }
 
   /* Form group */
-
   .${Classes.FORM_GROUP} {
     margin-bottom: 0;
   }
 
   /* Input (shared styles for input and textarea) */
-
   &.${Classes.LABEL} .${Classes.INPUT} {
     margin-top: 8px; /* required; overrides BP label input margin top */
   }
 
   /* Input (shared styles for input and textarea) */
-
   .${Classes.INPUT} {
     ${formField}
     &:focus {
@@ -54,7 +50,6 @@ export const StyledFormLabel = styled(Label)`
   }
 
   /* Text area */
-
   textarea.${Classes.INPUT} {
     height: 32px; /* required; used by TextArea component to set the height of the component on first mount */
     min-height: 32px;
@@ -62,7 +57,6 @@ export const StyledFormLabel = styled(Label)`
   }
 
   /* Danger input */
-
   textarea.${Classes.INPUT}.${Classes.INTENT_DANGER},
     .${Classes.INTENT_DANGER}
     .${Classes.INPUT} {
@@ -74,26 +68,22 @@ export const StyledFormLabel = styled(Label)`
   }
 
   /* Danger icon */
-
   .${Classes.ICON}.${Classes.INTENT_DANGER} {
     color: ${RED.C};
   }
 
   /* Danger icon positioner for input field */
-
   .${Classes.INPUT_GROUP} .${Classes.INPUT_ACTION}:last-child {
     right: 8px;
     top: 8px;
   }
 
   /* Adornment text */
-
   .${Classes.INPUT_GROUP} .${Classes.INPUT_LEFT_CONTAINER} {
     top: 0;
   }
 
   /* Helper text */
-
   .${Classes.FORM_HELPER_TEXT} {
     line-height: 15px;
     margin-top: 8px;
@@ -108,7 +98,7 @@ export const StyledFormLabel = styled(Label)`
 /* Form label styles for select "button" (button to resemble basic form field specification). */
 export const SelectFormLabel = styled.div`
   .${Classes.BUTTON} {
-    ${formField};
+    ${formField}
     border: 1px solid ${LIGHT_GRAY.A}; /* mimics basic form field specification */
     display: flex;
     justify-content: space-between;
