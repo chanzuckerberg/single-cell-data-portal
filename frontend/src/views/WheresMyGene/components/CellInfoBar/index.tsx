@@ -7,10 +7,10 @@ import { BetaChip } from "src/components/Header/style";
 import { DispatchContext, State } from "../../common/store";
 import { addSelectedGenes } from "../../common/store/actions";
 export interface CellInfoBarProps {
-  cellInfoCellTypes: State["cellInfoCellTypes"];
+  cellInfoCellType: Exclude<State["cellInfoCellType"], null>;
 }
 function CellInfoBar({
-  cellInfoCellTypes,
+  cellInfoCellType,
 }: CellInfoBarProps): JSX.Element | null {
   const urlParams = new URLSearchParams(window.location.search);
   let testType: "binomtest" | undefined = undefined;
@@ -19,9 +19,9 @@ function CellInfoBar({
     testType = "binomtest";
   }
   const { isLoading, data } = useMarkerGenes({
-    cellTypeID: cellInfoCellTypes[0].cellType.id,
-    tissueID: cellInfoCellTypes[0].tissueID,
-    organismID: cellInfoCellTypes[0].organismID,
+    cellTypeID: cellInfoCellType.cellType.id,
+    tissueID: cellInfoCellType.tissueID,
+    organismID: cellInfoCellType.organismID,
     test: testType,
   });
 
@@ -58,9 +58,7 @@ function CellInfoBar({
     }
   `;
 
-  console.log(data.marker_genes);
-
-  const cellInfoCellType = cellInfoCellTypes[0];
+  if (!cellInfoCellType) return null;
   return (
     <div>
       <h3>{cellInfoCellType.cellType.name}</h3>
