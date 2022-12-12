@@ -1,19 +1,23 @@
 import { init } from "echarts";
-import { memo, useContext, useEffect, useMemo, useRef, useState } from "react";
+import {
+  memo,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { EMPTY_OBJECT, noop } from "src/common/constants/utils";
 import { get } from "src/common/featureFlags";
 import { FEATURES } from "src/common/featureFlags/features";
 import { BOOLEAN } from "src/common/localStorage/set";
-<<<<<<< HEAD
 import { FetchMarkerGeneParams } from "src/common/queries/wheresMyGene";
 import Image from "next/image";
 import {
   DispatchContext,
   StateContext,
 } from "src/views/WheresMyGene/common/store";
-=======
-import { DispatchContext } from "src/views/WheresMyGene/common/store";
->>>>>>> 6c168b94d02 (restructure to query and add to redux store)
 import { resetTissueCellTypes } from "src/views/WheresMyGene/common/store/actions";
 import { CellType, Tissue } from "src/views/WheresMyGene/common/types";
 import { useDeleteGenesAndCellTypes } from "../../hooks/useDeleteGenesAndCellTypes";
@@ -78,6 +82,10 @@ export default memo(function YAxisChart({
     getHeatmapHeight(cellTypes)
   );
   const isMarkerGenes = get(FEATURES.MARKER_GENES) === BOOLEAN.TRUE;
+  const handleCellInfoClick = useCallback((content: CellTypeMetadata) => {
+    const cellType = deserializeCellTypeMetadata(content);
+    generateMarkerGenes(cellType, tissueID);
+  }, []);
 
   const setInfoCoordinates = () => {
     const topTissueKey = selectedTissues[0].replace(" ", "-");
@@ -144,11 +152,6 @@ export default memo(function YAxisChart({
        */
       const { value } = params;
       handleCellTypeClick(value);
-
-      if (isMarkerGenes) {
-        const cellType = deserializeCellTypeMetadata(value);
-        generateMarkerGenes(cellType, tissueID);
-      }
     }
   }, [
     setHandleYAxisChartClick,
@@ -218,7 +221,8 @@ export default memo(function YAxisChart({
         height={heatmapHeight}
         ref={yAxisRef}
       />
-      {yAxisInfoCoords && isMarkerGenes &&
+      {yAxisInfoCoords &&
+        isMarkerGenes &&
         yAxisInfoCoords.map((coord, i) => {
           const content = cellTypeMetadata[i];
           return (
@@ -229,13 +233,8 @@ export default memo(function YAxisChart({
               top={coord[1]}
               onClick={() => {
                 if (isMarkerGenes) {
-                  const { id } = deserializeCellTypeMetadata(content);
-
-                  generateMarkerGenes({
-                    cellTypeID: id,
-                    organismID: selectedOrganismId,
-                    tissueID,
-                  });
+                  const cellType = deserializeCellTypeMetadata(content);
+                  generateMarkerGenes(cellType, tissueID);
                 }
               }}
             >
@@ -244,7 +243,9 @@ export default memo(function YAxisChart({
                 src={InfoSVG.src}
                 width="10"
                 height="10"
-                alt={`display marker genes for ${deserializeCellTypeMetadata(content).name}`}
+                alt={`display marker genes for ${
+                  deserializeCellTypeMetadata(content).name
+                }`}
               />
             </InfoButtonWrapper>
           );
