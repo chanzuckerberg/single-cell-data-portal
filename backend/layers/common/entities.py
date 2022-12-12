@@ -23,6 +23,22 @@ class DatasetStatusGeneric:
     pass
 
 
+class DatasetProcessingStatus(DatasetStatusGeneric, Enum):
+    """
+    Enumerates the status of processing a dataset.
+
+    INITIALIZED = Dataset id created, and awaiting upload.
+    PENDING = Processing has not started
+    SUCCESS = Processing succeeded
+    FAILURE = Processing failed
+    """
+
+    INITIALIZED = "INITIALIZED"
+    PENDING = "PENDING"
+    SUCCESS = "SUCCESS"
+    FAILURE = "FAILURE"
+
+
 class DatasetUploadStatus(DatasetStatusGeneric, Enum):
     NA = "NA"
     WAITING = "WAITING"
@@ -48,13 +64,6 @@ class DatasetConversionStatus(DatasetStatusGeneric, Enum):
     UPLOADED = "UPLOADED"
     FAILED = "FAILED"
     SKIPPED = "SKIPPED"
-
-
-class DatasetProcessingStatus(DatasetStatusGeneric, Enum):
-    INITIALIZED = "INITIALIZED"
-    PENDING = "PENDING"
-    SUCCESS = "SUCCESS"
-    FAILURE = "FAILURE"
 
 
 class CollectionLinkType(str, Enum):

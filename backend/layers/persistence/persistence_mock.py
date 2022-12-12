@@ -194,7 +194,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         self,
         collection_id: CollectionId,
         version_id: CollectionVersionId,
-        published_at: Optional[datetime],
+        published_at: Optional[datetime] = None,
     ) -> None:
 
         published_at = published_at if published_at else datetime.utcnow()

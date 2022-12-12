@@ -8,14 +8,14 @@ from backend.common.corpora_orm import (
     IsPrimaryData,
     ProcessingStatus,
     UploadStatus,
-    ValidationStatus,
 )
 from backend.common.providers.crossref_provider import CrossrefDOINotFoundException
 from backend.common.utils.api_key import generate
+from backend.layers.common.entities import DatasetProcessingStatus, DatasetStatusKey, DatasetValidationStatus
 from backend.portal.api.curation.v1.curation.collections.common import EntityColumns
 from unit.backend.api_server.base_api_test import BaseAuthAPITest
 from unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
-from unit.backend.layers.common.base_api_test import NewBaseTest
+from unit.backend.layers.common.base_api_test import DatasetStatusUpdate, NewBaseTest
 
 
 class TestAsset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
@@ -606,11 +606,12 @@ class TestGetCollectionID(NewBaseTest):
         )
         dataset = self.generate_dataset(
             collection=collection,
-            processing_status={
-                "processing_status": ProcessingStatus.FAILURE,
-                "validation_status": ValidationStatus.INVALID,
-                "validation_message": "test message",
-            },
+            statuses=[
+                DatasetStatusUpdate(status_key=DatasetStatusKey.PROCESSING, status=DatasetProcessingStatus.FAILURE),
+                DatasetStatusUpdate(status_key=DatasetStatusKey.VALIDATION, status=DatasetValidationStatus.INVALID),
+                DatasetStatusUpdate(status_key=DatasetStatusKey.VALIDATION, status=DatasetValidationStatus.INVALID),
+                "test message",  # TODO add validation message
+            ],
         )
         res = self.app.get(f"/curation/v1/collections/{collection.collection_id}")
         self.assertEqual("FAILURE", res.json["processing_status"])
@@ -624,7 +625,7 @@ class TestGetCollectionID(NewBaseTest):
             visibility=CollectionVisibility.PRIVATE.name,
         )
         dataset = self.generate_dataset(
-            collection=collection, processing_status={"processing_status": ProcessingStatus.FAILURE}
+            collection_version=collection, processing_status={"processing_status": ProcessingStatus.FAILURE}
         )
         res = self.app.get(f"/curation/v1/collections/{collection.collection_id}")
         self.assertEqual("FAILURE", res.json["processing_status"])
@@ -640,7 +641,6 @@ class TestGetCollectionID(NewBaseTest):
         tombstoned_collection = self.generate_collection(
             tombstone=True, name="tombstoned collection", visibility=CollectionVisibility.PUBLIC
         )
-        self.generate_dataset(collection_id=tombstoned_collection.collection_id, tombstone=True)
         res = self.app.get(f"/curation/v1/collections/{tombstoned_collection.collection_id}")
         self.assertEqual(403, res.status_code)
 
@@ -652,9 +652,9 @@ class TestGetCollectionID(NewBaseTest):
 
     def test__get_collection_with_tombstoned_datasets__OK(self):
         collection = self.generate_collection()
-        self.generate_dataset()
-        self.generate_dataset(collection_id=collection.collection_id, tombstone=False)
-        self.generate_dataset(collection_id=collection.collection_id, tombstone=True)
+        self.generate_dataset(collection_id=collection)
+        self.generate_dataset(collection_id=collection, tombstone=False)
+        self.generate_dataset(collection_id=collection, tombstone=True)
         res = self.app.get(f"/curation/v1/collections/{collection.collection_id}")
         self.assertEqual(1, len(res.json["datasets"]))
 
