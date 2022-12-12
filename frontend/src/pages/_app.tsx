@@ -63,7 +63,7 @@ function App({ Component, pageProps }: AppPropsWithLayout): JSX.Element {
   return (
     <>
       <ConditionalAuth0Provider
-        domain="oidc.corporanet.local:8443/connect" // Hard-coded for local dev
+        domain="oidc.corporanet.local" // Hard-coded for local dev
         clientId="local-client-id" // Hard-coded for local dev
         redirectUri={redirectUri}
       >
