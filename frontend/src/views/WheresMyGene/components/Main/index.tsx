@@ -5,6 +5,7 @@ import React, {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { EMPTY_ARRAY, EMPTY_OBJECT } from "src/common/constants/utils";
@@ -50,7 +51,7 @@ export default function WheresMyGene(): JSX.Element {
     selectedCellTypeIds,
     selectedTissues,
     sortBy,
-    cellInfoCellTypes,
+    cellInfoCellType,
   } = state;
   const selectedOrganismId = state.selectedOrganismId || "";
 
@@ -263,6 +264,25 @@ export default function WheresMyGene(): JSX.Element {
     setSourceDatasetSidebarOpen(!isSourceDatasetSidebarOpen);
   }, [isSourceDatasetSidebarOpen]);
 
+  const [forceOpen, setForceOpen] = useState(false);
+
+  const usePrevious = <T,>(value: T): T | undefined => {
+    const ref = useRef<T>();
+    useEffect(() => {
+      ref.current = value;
+    });
+    return ref.current;
+  };
+  const prevAmount = usePrevious({ cellInfoCellType });
+  useEffect(() => {
+    if (
+      prevAmount?.cellInfoCellType?.cellType.id !==
+      cellInfoCellType?.cellType.id
+    ) {
+      setForceOpen(!forceOpen); //the value of this boolean isn't actually read downstream, it just checks for uniqueness across renders
+    }
+  }, [cellInfoCellType, prevAmount?.cellInfoCellType?.cellType.id, forceOpen]);
+
   return (
     <>
       <Head>
@@ -282,19 +302,22 @@ export default function WheresMyGene(): JSX.Element {
 
         <ColorScale handleIsScaledChange={handleIsScaledChange} />
       </SideBar>
-      {cellInfoCellTypes.length > 0 && tissuesByID && (
+      {cellInfoCellType && tissuesByID && (
         <SideBar
-          label={tissuesByID[cellInfoCellTypes[0].tissueID].name}
+          label={`${tissuesByID[cellInfoCellType.tissueID].name}`}
           SideBarWrapperComponent={SideBarWrapper}
           SideBarPositionerComponent={SideBarPositioner}
           position={Position.RIGHT}
           testId="cell-type-details-panel"
           disabled={false}
-          forceToggle={false}
+          forceToggle={forceOpen}
           wmgSideBar
           width={400}
+          truncatedLabel={`${tissuesByID[cellInfoCellType.tissueID].name} - ${
+            cellInfoCellType.cellType.name
+          }`}
         >
-          <CellInfoBar cellInfoCellTypes={cellInfoCellTypes} />
+          <CellInfoBar cellInfoCellType={cellInfoCellType} />
         </SideBar>
       )}
 
