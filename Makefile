@@ -159,7 +159,7 @@ local-unit-test: local-unit-test-backend local-unit-test-processing  local-unit-
 
 .PHONY: redesign-unit-test
 redesign-unit-test: 
-	docker-compose run --rm -T backend bash -c "cd /single-cell-data-portal && python3 -m pytest tests/unit/backend/layers/business/test_business.py";
+	docker-compose run --rm -T backend bash -c "cd /single-cell-data-portal && python3 -m pytest tests/unit/backend/layers/";
 
 # Note: If you are manually running this on localhost, you should run `local-rebuild` target first to test latest changes; this is not needed when running in Github Actions
 .PHONY: local-unit-test-backend
