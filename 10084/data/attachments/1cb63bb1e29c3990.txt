@@ -1,0 +1,4 @@
+Dropping tables
+Recreating tables
+{"levelname": "INFO", "asctime": "2022-12-12T09:41:11.012Z", "name": "dataset_processing", "message": "Converting /tmp/tmpcm8b8m4r/test.h5ad", "lineno": 89, "pathname": "/single-cell-data-portal/backend/portal/pipeline/processing/common.py"}
+{"levelname": "ERROR", "asctime": "2022-12-12T09:41:11.012Z", "name": "dataset_processing", "message": "error: 'NoneType' object has no attribute 'tombstone'", "lineno": 103, "pathname": "/single-cell-data-portal/backend/portal/pipeline/processing/common.py", "exc_info": "Traceback (most recent call last):\n  File \"/single-cell-data-portal/backend/portal/pipeline/processing/common.py\", line 92, in convert_file\n    update_db(\n  File \"/single-cell-data-portal/backend/portal/pipeline/processing/common.py\", line 65, in update_db\n    if dataset.tombstone:\nAttributeError: 'NoneType' object has no attribute 'tombstone'"}
