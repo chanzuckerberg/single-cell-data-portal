@@ -1,16 +1,25 @@
 import { HTMLTable } from "@blueprintjs/core";
 import styled from "@emotion/styled";
-import { Button, Icon } from "czifui";
+import { Button, Icon, IconButton } from "czifui";
 import React, { useCallback, useContext } from "react";
 import { useMarkerGenes } from "src/common/queries/wheresMyGene";
 import { BetaChip } from "src/components/Header/style";
 import { DispatchContext, State } from "../../common/store";
 import { addSelectedGenes } from "../../common/store/actions";
+import {
+  ButtonContainer,
+  CopyGenesButton,
+  StyledHTMLTable,
+  TissueName,
+  TooltipButton,
+} from "./style";
 export interface CellInfoBarProps {
   cellInfoCellType: Exclude<State["cellInfoCellType"], null>;
+  tissueName: string;
 }
-function CellInfoBar({
+function CellInfoSideBar({
   cellInfoCellType,
+  tissueName,
 }: CellInfoBarProps): JSX.Element | null {
   const urlParams = new URLSearchParams(window.location.search);
   let testType: "binomtest" | undefined = undefined;
@@ -41,49 +50,24 @@ function CellInfoBar({
 
   if (isLoading || !data) return null;
 
-  const ButtonContainer = styled.div`
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    border-bottom: 0.5px solid #cccccc;
-  `;
-
-  const StyledHTMLTable = styled(HTMLTable)`
-    & td:nth-child(3) {
-      text-align: end;
-    }
-    & thead td {
-      color: #767676 !important;
-      font-weight: 500;
-    }
-  `;
-
   if (!cellInfoCellType) return null;
   return (
     <div>
-      <h3>{cellInfoCellType.cellType.name}</h3>
-      <BetaChip label="Beta" size="small" />
+      <TissueName>{tissueName}</TissueName>
       <ButtonContainer>
-        <Button
-          endIcon={<Icon sdsIcon="infoCircle" sdsSize="s" sdsType="button" />}
-          onClick={handleCopyGenes}
-          sdsStyle="minimal"
-          sdsType="secondary"
-          isAllCaps={false}
-          style={{ fontWeight: "500" }}
-        >
-          Marker Genes
-        </Button>
-        <Button
-          startIcon={<Icon sdsIcon="copy" sdsSize="s" sdsType="button" />}
-          onClick={handleCopyGenes}
-          sdsStyle="minimal"
-          sdsType="primary"
-          isAllCaps={false}
-          style={{ fontWeight: "500" }}
-        >
-          Copy Genes
-        </Button>
+        <div>
+          <TooltipButton
+            endIcon={<Icon sdsIcon="infoCircle" sdsSize="s" sdsType="button" />}
+            onClick={handleCopyGenes}
+            sdsStyle="minimal"
+            sdsType="secondary"
+            isAllCaps={false}
+            style={{ fontWeight: "500" }}
+          >
+            Marker Genes
+          </TooltipButton>
+          <BetaChip label="Beta" size="small" />
+        </div>
         <Button
           startIcon={<Icon sdsIcon="plus" sdsSize="s" sdsType="button" />}
           onClick={handleDisplayGenes}
@@ -98,7 +82,18 @@ function CellInfoBar({
       <StyledHTMLTable condensed bordered={false}>
         <thead>
           <tr>
-            <td>Gene</td>
+            <td>
+              Gene{" "}
+              <CopyGenesButton
+                onClick={handleCopyGenes}
+                sdsType="primary"
+                sdsStyle="minimal"
+                isAllCaps={false}
+                startIcon={<Icon sdsIcon="copy" sdsSize="s" sdsType="button" />}
+              >
+                Copy
+              </CopyGenesButton>
+            </td>
             <td>P-value</td>
             <td>Effect Size</td>
           </tr>
@@ -117,4 +112,4 @@ function CellInfoBar({
   );
 }
 
-export default CellInfoBar;
+export default CellInfoSideBar;

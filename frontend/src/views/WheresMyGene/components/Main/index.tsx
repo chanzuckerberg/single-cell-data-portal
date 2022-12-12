@@ -1,4 +1,5 @@
-import { DrawerSize } from "@blueprintjs/core";
+import { Classes, DrawerSize } from "@blueprintjs/core";
+import styled from "@emotion/styled";
 import Head from "next/head";
 import React, {
   useCallback,
@@ -18,7 +19,11 @@ import {
   usePrimaryFilterDimensions,
 } from "src/common/queries/wheresMyGene";
 import SideBar from "src/components/common/SideBar";
-import { Position } from "src/components/common/SideBar/style";
+import {
+  GeneSideBarOpenButtonWrapper,
+  Position,
+  SideBarToggleButtonWrapper,
+} from "src/components/common/SideBar/style";
 import { View } from "../../../globalStyle";
 import { DispatchContext, StateContext } from "../../common/store";
 import {
@@ -28,7 +33,7 @@ import {
 import { CellType, GeneExpressionSummary, Tissue } from "../../common/types";
 import { SideBarPositioner, SideBarWrapper, Top, Wrapper } from "../../style";
 import Beta from "../Beta";
-import CellInfoBar from "../CellInfoBar";
+import CellInfoBar from "../CellInfoSideBar";
 import Filters from "../Filters";
 import GeneSearchBar from "../GeneSearchBar";
 import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../GeneSearchBar/components/SaveImage";
@@ -304,9 +309,10 @@ export default function WheresMyGene(): JSX.Element {
       </SideBar>
       {cellInfoCellType && tissuesByID && (
         <SideBar
-          label={`${tissuesByID[cellInfoCellType.tissueID].name}`}
+          label={`${cellInfoCellType.cellType.name}`}
           SideBarWrapperComponent={SideBarWrapper}
           SideBarPositionerComponent={SideBarPositioner}
+          SideBarOpenButtonWrapperComponent={GeneSideBarOpenButtonWrapper}
           position={Position.RIGHT}
           testId="cell-type-details-panel"
           disabled={false}
@@ -317,7 +323,10 @@ export default function WheresMyGene(): JSX.Element {
             cellInfoCellType.cellType.name
           }`}
         >
-          <CellInfoBar cellInfoCellType={cellInfoCellType} />
+          <CellInfoBar
+            cellInfoCellType={cellInfoCellType}
+            tissueName={tissuesByID[cellInfoCellType.tissueID].name}
+          />
         </SideBar>
       )}
 
