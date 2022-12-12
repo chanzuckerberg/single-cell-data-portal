@@ -16,6 +16,8 @@ locals {
   remote_dev_prefix            = var.stack_prefix
   wait_for_steady_state        = var.wait_for_steady_state
   batch_container_memory_limit = var.batch_container_memory_limit
+  wmg_batch_container_memory_limit = var.wmg_batch_container_memory_limit
+  wmg_desired_vcpus                = var.wmg_desired_vcpus
 
   migration_cmd                = ["make", "-C", "/single-cell-data-portal/backend", "db/init_remote_dev"]
   deletion_cmd                 = ["make", "-C", "/single-cell-data-portal/backend", "db/delete_remote_dev"]
@@ -189,7 +191,8 @@ module wmg_batch {
   deployment_stage              = local.deployment_stage
   artifact_bucket               = local.artifact_bucket
   wmg_bucket                    = local.wmg_bucket
-  batch_container_memory_limit  = var.batch_container_memory_limit
+  desired_vcpus                 = local.wmg_desired_vcpus
+  batch_container_memory_limit  = var.wmg_batch_container_memory_limit
 }
 
 module upload_success_lambda {

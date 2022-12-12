@@ -1,4 +1,4 @@
-module "stack" {
+module stack {
   source                       = "./modules/ecs-stack"
   aws_account_id               = var.aws_account_id
   aws_role                     = var.aws_role
@@ -14,6 +14,8 @@ module "stack" {
   backend_url                  = "https://api.cellxgene.dev.single-cell.czi.technology"
   stack_prefix                 = ""
   batch_container_memory_limit = 300000
+  wmg_batch_container_memory_limit = 300000
+  wmg_desired_vcpus                = 128
   backend_memory               = 8192
   frontend_memory              = 8192
   backend_instance_count       = 1
