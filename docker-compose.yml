@@ -273,50 +273,23 @@ services:
       corporanet:
         aliases:
           - backend.corporanet.local
-  oidc:
-#    image: soluto/oidc-server-mock:0.3.0
-    image: oidc-dan:latest
-    # For Mac M1, you may need to build this image from source.
-    # 1. Comment out `image:` line, above, and uncomment the following two lines
-    # 2. In the same directory as this file, run `git clone -b v0.3.0 git@github.com:Soluto/oidc-server-mock.git`
-    # container_name: oidc-server-mock-local
-    # build: oidc-server-mock/src
+  mock_auth:
+    build:
+      cache_from:
+        - "scdp-pkce-mock_auth"
+      context: oauth
+      dockerfile: Dockerfile
+    restart: always
+    command: [ "./container_init.sh" ]
     ports:
-      - "4011:80"
-      - "8443:8443"
-    environment:
-      ASPNETCORE_ENVIRONMENT: Development
-      SERVER_OPTIONS_INLINE: |
-        {
-          "AccessTokenJwtType": "JWT",
-          "Discovery": {
-            "ShowKeySet": true
-          }
-        }
-#          },
-#          "CORS": {
-#            "CorsPaths": [
-#              "/connect/authorize",
-#              "/connect/oauth/token",
-#            ]
-#          }
-#        }
-      SERVER_CORS_ALLOWED_ORIGINS_INLINE: "[\"https://frontend.corporanet.local:3000\"]"
-      SERVER_CORS_ALLOWED_ORIGINS_PATH: /tmp/config/allowed_origins.txt
-      API_SCOPES_PATH: /tmp/config/api_scopes.json
-      API_RESOURCES_PATH: /tmp/config/api_resources.json
-      USERS_CONFIGURATION_PATH: /tmp/config/users.json
-      CLIENTS_CONFIGURATION_PATH: /tmp/config/clients-config.json
-      ASPNETCORE_URLS: https://+:8443;http://+:80
-      # ASPNETCORE_Kestrel__Certificates__Default__Password: <password for pfx file>
-      ASPNETCORE_Kestrel__Certificates__Default__Path: /tmp/pkcs12/certificate.pfx
+      - "443:443"
     volumes:
-      - ./oauth/pkcs12:/tmp/pkcs12:ro
-      - ./oauth:/tmp/config:ro
+      - ./oauth/pkcs12:/tmp/pkcs12/:ro
     networks:
       corporanet:
         aliases:
           - oidc.corporanet.local
+
 networks:
   corporanet:
 volumes:

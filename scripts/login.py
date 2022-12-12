@@ -33,7 +33,7 @@ def get_cxguser_cookie():
     params = dict(parse.parse_qsl(parse.urlsplit(location).query))
 
     # Calling /connect/authorize/
-    location = location.replace("https://localhost:8443", "https://oidc")
+    location = location.replace("https://localhost", "https://oidc")
     response = session.get(location, verify=False, allow_redirects=False)
     location = response.headers["Location"]
 
