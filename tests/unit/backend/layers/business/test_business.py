@@ -1,4 +1,5 @@
 import unittest
+import os
 from datetime import datetime
 from unittest.mock import Mock
 from uuid import uuid4
@@ -33,6 +34,7 @@ from backend.layers.common.entities import (
     Link,
     OntologyTermId,
 )
+from backend.layers.persistence.persistence import DatabaseProvider
 from backend.layers.persistence.persistence_mock import DatabaseProviderMock
 from backend.layers.thirdparty.crossref_provider import CrossrefProviderInterface
 from backend.layers.thirdparty.s3_provider import S3Provider
@@ -45,12 +47,18 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
     sample_collection_metadata: CollectionMetadata
     sample_dataset_metadata: DatasetMetadata
 
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.run_as_integration = True if os.environ.get("INTEGRATION_TEST", "false").lower() == "true" else False
+        if cls.run_as_integration:
+            cls.database_provider = DatabaseProvider(database_uri="postgresql://postgres:secret@localhost")
+            cls.database_provider._drop_schema("persistence_schema")
+
     def setUp(self) -> None:
-        self.database_provider = DatabaseProviderMock()
-        # uncomment below and comment out above to run as integration tests, alongside a docker postgres instance
-        # self.database_provider = DatabaseProvider()
-        # self.database_provider._drop()
-        # self.database_provider._create()
+        if self.run_as_integration:
+            self.database_provider._create_schema("persistence_schema")
+        else:
+            self.database_provider = DatabaseProviderMock()
 
         # By default these do nothing. They can be mocked by single test cases.
         self.crossref_provider = CrossrefProviderInterface()
@@ -97,6 +105,15 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
             is_primary_data="BOTH",
             x_approximate_distribution="normal",
         )
+
+    def tearDown(self):
+        if self.run_as_integration:
+            self.database_provider._drop_schema("persistence_schema")
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        if cls.run_as_integration:
+            cls.database_provider._engine.dispose()
 
     def initialize_empty_unpublished_collection(self, owner: str = test_user_name) -> CollectionVersion:
         """

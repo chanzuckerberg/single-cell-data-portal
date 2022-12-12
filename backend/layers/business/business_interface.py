@@ -13,6 +13,7 @@ from backend.layers.common.entities import (
     DatasetArtifact,
     DatasetArtifactId,
     DatasetId,
+    DatasetMetadata,
     DatasetStatus,
     DatasetStatusGeneric,
     DatasetStatusKey,
@@ -69,6 +70,9 @@ class BusinessLogicInterface:
     def remove_dataset_version(
         self, collection_version_id: CollectionVersionId, dataset_version_id: DatasetVersionId
     ) -> None:
+        pass
+
+    def set_dataset_metadata(self, dataset_version_id: DatasetVersionId, metadata: DatasetMetadata) -> None:
         pass
 
     def get_dataset_artifacts(self, dataset_version_id: DatasetVersionId) -> Iterable[DatasetArtifact]:

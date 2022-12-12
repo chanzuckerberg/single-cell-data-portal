@@ -33,7 +33,6 @@ class ProcessingLogic:  # TODO: ProcessingLogicBase
     def update_processing_status(
         self, dataset_id: DatasetVersionId, status_key: DatasetStatusKey, status_value: DatasetStatusGeneric
     ):
-        # TODO: Change to status_key
         self.business_logic.update_dataset_version_status(dataset_id, status_key, status_value)
 
     def download_from_s3(self, bucket_name: str, object_key: str, local_filename: str):
@@ -63,7 +62,7 @@ class ProcessingLogic:  # TODO: ProcessingLogicBase
         self,
         file_name: str,
         artifact_type: str,
-        bucket_prefix: str,  # Why this is necessary - rdev?
+        bucket_prefix: str,
         dataset_id: DatasetVersionId,
         artifact_bucket: str,
         processing_status_key: DatasetStatusKey,

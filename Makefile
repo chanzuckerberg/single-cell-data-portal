@@ -23,18 +23,6 @@ lint:
 unit-test: local-unit-test
 	# Keeping old target name for reverse comatibility
 
-.PHONY: container-unittest
-container-unittest:
-	# This target is intended to be run INSIDE the api container
-	DEPLOYMENT_STAGE=test PYTHONWARNINGS=ignore:ResourceWarning pytest tests/unit/backend \
-		--rootdir=. --alluredir=./allure-results --verbose;
-
-.PHONY: processing-unittest
-processing-unittest:
-	# This target is intended to be run INSIDE the dataset processing container
-	DEPLOYMENT_STAGE=test PYTHONWARNINGS=ignore:ResourceWarning pytest tests/unit/processing_container \
-		--rootdir=. --alluredir=./allure-results --verbose;
-
 .PHONY: wmg-processing-unittest
 wmg-processing-unittest:
 	# This target is intended to be run INSIDE the wmg processing container
@@ -155,34 +143,13 @@ local-shell: ## Open a command shell in one of the dev containers. ex: make loca
 	docker-compose exec $(CONTAINER) bash
 
 .PHONY: local-unit-test
-local-unit-test: local-unit-test-backend local-unit-test-processing  local-unit-test-wmg-processing# Run all backend and processing unit tests in the dev environment, with code coverage
+local-unit-test: local-unit-test-backend local-unit-test-wmg-processing# Run all backend and processing unit tests in the dev environment, with code coverage
 
-# Note: If you are manually running this on localhost, you should run `local-rebuild` target first to test latest changes; this is not needed when running in Github Actions
+# TODO: add WMG backend (non-processing) unit test
+# TODO: add Curation API unit test
 .PHONY: local-unit-test-backend
-local-unit-test-backend: # Run container-unittest target in `backend` Docker container.  If path arg provided, just run those specific backend tests
-	@if [ -z "$(path)" ]; then \
-            echo "Running all backend unit tests"; \
-            docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -T backend \
-            bash -c "cd /single-cell-data-portal && make container-unittest;"; \
-	else \
-            echo "Running specified backend unit test(s): $(path)"; \
-            docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -T backend \
-            bash -c "cd /single-cell-data-portal && python3 -m unittest $(path)"; \
-	fi
-
-.PHONY: all-local-unit-test-backend
-all-local-unit-test-backend: # Run container-unittest target in `backend` Docker container.  If path arg provided, just run those specific backend tests
-	echo "Running all backend unit tests"; \
-	docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -T backend \
-	bash -c "cd /single-cell-data-portal && make container-unittest;"
-
-# Note: If you are manually running this on localhost, you should run `local-rebuild` target first to test latest changes; this is not needed when running in Github Actions
-.PHONY: local-unit-test-processing
-local-unit-test-processing: # Run processing-unittest target in `processing` Docker container
-	echo "Running all processing unit tests"; \
-	docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -T processing \
-	bash -c "cd /single-cell-data-portal && make processing-unittest;"
-
+local-unit-test-backend:
+	docker-compose run --rm -T backend bash -c "cd /single-cell-data-portal && python3 -m pytest tests/unit/backend/layers/";
 
 .PHONY: local-unit-test-wmg-processing
 local-unit-test-wmg-processing: # Run processing-unittest target in `wmg_processing` Docker container
