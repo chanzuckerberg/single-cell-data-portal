@@ -256,9 +256,11 @@ class TestGetCollections(NewBaseTest):
         )
 
     def test__get_collections_no_auth__OK(self):
+        self.generate_unpublished_collection()
+        self.generate_published_collection()
         res_no_auth = self.app.get("/curation/v1/collections")
         self.assertEqual(200, res_no_auth.status_code)
-        self.assertEqual(6, len(res_no_auth.json))
+        self.assertEqual(1, len(res_no_auth.json))
         [self.assertEqual("PUBLIC", c["visibility"]) for c in res_no_auth.json]
 
     def test__get_collections_with_auth__OK(self):
@@ -301,7 +303,7 @@ class TestGetCollections(NewBaseTest):
                             self.assertEqual("test_dataset_id", d["revision_of"])
             self.assertTrue(1, conditions_tested)
 
-    def test__get_collections_no_auth_visibility_private__OK(self):
+    def test__get_collections_no_auth_visibility_private__403(self):
         params = {"visibility": "PRIVATE"}
         res_private = self.app.get("/curation/v1/collections", query_string=params)
         self.assertEqual(403, res_private.status_code)

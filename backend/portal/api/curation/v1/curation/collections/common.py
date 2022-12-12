@@ -87,23 +87,33 @@ def reshape_for_curation_api(collection_version: CollectionVersion, user_info: U
 
     # get collection dataset attributes
     response_datasets = []
-    for dataset in collection_version.datasets:
-        ds = asdict(dataset.metadata)
+    collection_level_processing_status = None  # Noe if no datasets
+    for dataset_version_id in collection_version.datasets:
+        dataset_version = get_business_logic().get_dataset_version(dataset_version_id)
+        ds = asdict(dataset_version.metadata)
 
         # get dataset asset attributes
         assets = []
-        for artifact in dataset.artifacts:
+        for artifact in dataset_version.artifacts:
             if artifact.type in allowed_dataset_asset_types:
                 assets.append(dict(filetype=artifact.type, filename=artifact.uri.split("/")[-1]))
         ds["dataset_assets"] = assets
-        ds["processing_status_detail"] = dataset.status.validation_message
-        ds["revised_at"] = get_business_logic().get_last_published_dataset_version(dataset)
+        ds["processing_status_detail"] = dataset_version.status.validation_message
+        ds["revised_at"] = dataset_version.canonical_dataset.revised_at
         response_datasets.append(ds)
+
+        # get the Collection-level processing status
+        dataset_processing_status = dataset_version.status.processing_status
+        if dataset_processing_status:
+            if dataset_processing_status in (DatasetProcessingStatus.PENDING, DatasetProcessingStatus.INITIALIZED):
+                collection_level_processing_status = DatasetProcessingStatus.PENDING
+            elif dataset_processing_status == DatasetProcessingStatus.FAILURE:
+                collection_level_processing_status = dataset_processing_status
 
     # build response
     doi, links = extract_doi_from_links(collection_version.metadata.links)
     response = dict(
-        collection_url=f"{CorporaConfig().collections_base_url}/collections/{collection_id}",
+        collection_url=f"{CorporaConfig().collections_base_url}/collections/{collection_id.id}",
         contact_email=collection_version.metadata.contact_email,
         contact_name=collection_version.metadata.contact_name,
         created_at=collection_version.created_at,
@@ -111,13 +121,15 @@ def reshape_for_curation_api(collection_version: CollectionVersion, user_info: U
         datasets=response_datasets,
         description=collection_version.metadata.description,
         dio=doi,
-        id=collection_id,
+        id=collection_id.id,
         links=links,
         name=collection_version.metadata.name,
-        processing_status=get_collection_level_processing_status(collection_version.datasets),
+        processing_status=collection_level_processing_status,
         published_at=collection_version.canonical_collection.originally_published_at,
         publisher_metadata=collection_version.publisher_metadata,
-        revised_at=get_business_logic().get_last_published_collection_version(collection_version),
+        revised_at=get_business_logic()
+        .get_published_collection_version(collection_version.canonical_collection.id)
+        .published_at,
         revising_in=revising_in,
         revision_of=revision_of,
         visibility=get_visibility(collection_version),
@@ -274,7 +286,7 @@ def get_collection_level_processing_status(datasets: List[DatasetVersion]) -> st
         return None
     return_status = DatasetProcessingStatus.SUCCESS
     for dataset in datasets:
-        status = dataset.status
+        status = dataset.status.processing_status
         if status:
             if status in (DatasetProcessingStatus.PENDING, DatasetProcessingStatus.INITIALIZED):
                 return_status = DatasetProcessingStatus.PENDING
