@@ -30,6 +30,7 @@ export interface Props {
   disabled?: boolean;
   forceToggle?: boolean;
   wmgSideBar?: boolean;
+  truncatedLabel?: string;
 }
 
 export default function SideBar({
@@ -45,6 +46,7 @@ export default function SideBar({
   disabled,
   forceToggle,
   wmgSideBar,
+  truncatedLabel = "",
 }: Props): JSX.Element {
   const [isExpanded, setIsExpanded] = useState(isOpen);
   const sideBarWidth = isExpanded ? width : COLLAPSED_WIDTH_PX;
@@ -83,7 +85,7 @@ export default function SideBar({
             minimal
             onClick={() => handleExpandedClick(!isExpanded)}
             rightIcon={rightIcon}
-            text={label}
+            text={!isExpanded && truncatedLabel ? truncatedLabel : label}
             disabled={disabled}
           />
         </SideBarToggleButtonWrapper>
