@@ -1,6 +1,0 @@
-Dropping tables
-Recreating tables
-{"levelname": "INFO", "asctime": "2022-12-08T03:31:16.008Z", "name": "root", "message": "Deleting file 4c33bd12-1b18-48d5-97b8-3be516aeede3/data.H5AD in bucket bogus-bucket.", "lineno": 62, "pathname": "/single-cell-data-portal/backend/common/entities/dataset_asset.py"}
-{"levelname": "INFO", "asctime": "2022-12-08T03:31:16.008Z", "name": "root", "message": "Deleting file 4c33bd12-1b18-48d5-97b8-3be516aeede3/data.RDS in bucket bogus-bucket.", "lineno": 62, "pathname": "/single-cell-data-portal/backend/common/entities/dataset_asset.py"}
-{"levelname": "INFO", "asctime": "2022-12-08T03:31:16.008Z", "name": "root", "message": "Deleting file 4c33bd12-1b18-48d5-97b8-3be516aeede3/data.CXG in bucket bogus-bucket.", "lineno": 62, "pathname": "/single-cell-data-portal/backend/common/entities/dataset_asset.py"}
-{"levelname": "INFO", "asctime": "2022-12-08T03:31:16.008Z", "name": "root", "message": "Deleting all files in bucket hosted-cellxgene-test under 4c33bd12-1b18-48d5-97b8-3be516aeede3.", "lineno": 58, "pathname": "/single-cell-data-portal/backend/common/entities/dataset_asset.py"}

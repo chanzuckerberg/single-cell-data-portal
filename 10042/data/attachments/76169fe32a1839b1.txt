@@ -1,3 +1,0 @@
-INFO     dataset_processing:common.py:89 Converting /tmp/tmpl8kow8p8/local.h5ad
-INFO     dataset_processing:common.py:101 Finished converting <MagicMock name='make_cxg' id='139623724965440'> in 0:00:00.024338
-INFO     dataset_processing:process_cxg.py:109 Updating database with cxg artifact for dataset 72843e2b-5de7-429d-9d0f-2e08038addf7. s3_uri is s3://CELLXGENE-HOSTED-TEST/21b4487c-1c4b-4814-87e5-188fa3d6add4.cxg/
