@@ -17,6 +17,9 @@ class UriProviderInterface:
     def validate(self, uri: str) -> bool:
         pass
 
+    def parse(self, uri: str) -> URL:
+        pass
+
     def get_file_info(self, uri: str) -> FileInfo:
         pass
 
@@ -27,7 +30,6 @@ class UriProvider(UriProviderInterface):
         link = from_url(uri)
         return link is not None
 
-    # Exposing URL here might not be ideal
     def parse(self, uri: str) -> URL:
         return from_url(uri)
 

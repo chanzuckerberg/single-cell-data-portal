@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 from backend.layers.business.business_interface import BusinessLogicInterface
-from backend.layers.common.entities import DatasetConversionStatus, DatasetStatusKey, DatasetVersionId
+from backend.layers.common.entities import DatasetArtifactType, DatasetConversionStatus, DatasetStatusKey, DatasetVersionId
 from backend.layers.processing.process_logic import ProcessingLogic
 from backend.layers.thirdparty.s3_provider import S3ProviderInterface
 from backend.layers.thirdparty.uri_provider import UriProviderInterface
@@ -79,6 +79,6 @@ class ProcessCxg(ProcessingLogic):
         #         "",
         #     )
         # }
-        self.business_logic.add_dataset_artifact(dataset_id, "CXG", s3_uri)
+        self.business_logic.add_dataset_artifact(dataset_id, DatasetArtifactType.CXG, s3_uri)
         self.logger.info(f"Updating database with cxg artifact for dataset {dataset_id}. s3_uri is {s3_uri}")
         self.update_processing_status(dataset_id, DatasetStatusKey.CXG, DatasetConversionStatus.UPLOADED)
