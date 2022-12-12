@@ -17,7 +17,7 @@ class UserInfo:
     #     return is_super_curator_common(token_info.get("scope", ""))
 
     def is_none(self):
-        return self.token_info is None
+        return not self.token_info
 
     def is_super_curator(self):
         if self.token_info is None:

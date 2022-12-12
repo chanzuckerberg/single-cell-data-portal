@@ -190,6 +190,12 @@ class Link:
     type: str
     uri: str
 
+    def strip_fields(self):
+        if self.name:
+            self.name = self.name.strip()
+        self.type = self.type.strip()
+        self.uri = self.uri.strip()
+
 
 @dataclass_json
 @dataclass
@@ -199,6 +205,14 @@ class CollectionMetadata:
     contact_name: str
     contact_email: str
     links: List[Link]
+
+    def strip_fields(self):
+        self.name = self.name.strip()
+        self.description = self.description.strip()
+        self.contact_name = self.contact_name.strip()
+        self.contact_email = self.contact_email.strip()
+        for link in self.links:
+            link.strip_fields()
 
 
 @dataclass
