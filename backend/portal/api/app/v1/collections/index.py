@@ -18,6 +18,7 @@ def get():
             DbCollection.name,
             DbCollection.published_at,
             DbCollection.revised_at,
+            DbCollection.consortia,
             DbCollection.publisher_metadata,
         ],
     )

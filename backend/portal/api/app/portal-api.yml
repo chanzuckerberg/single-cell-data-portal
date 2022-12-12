@@ -445,6 +445,10 @@ paths:
                       type: number
                     revised_at:
                       type: number
+                    consortia:
+                      type: array
+                      items:
+                        type: string
         "400":
           $ref: "#/components/responses/400"
 

@@ -265,8 +265,7 @@ class DatasetArtifactFileType(enum.Enum):
 
 class CollectionConsortia(enum.Enum):
     """
-    Enumerates Consortia names.
-
+    Enumerates consortia names.
     """
 
     ALLEN_INSTITUTE_FOR_BRAIN_SCIENCE = "Allen Institute for Brain Science"

@@ -38,6 +38,7 @@ class Collection(Entity):
         links: list = None,
         data_submission_policy_version: str = "",
         publisher_metadata: dict = None,
+        consortia: list = None,
         **kwargs,
     ) -> "Collection":
         """
@@ -57,6 +58,7 @@ class Collection(Entity):
             contact_email=contact_email,
             data_submission_policy_version=data_submission_policy_version,
             publisher_metadata=publisher_metadata,
+            consortia=consortia,
             **kwargs,
         )
         new_db_object.links = [DbCollectionLink(collection_id=new_db_object.id, **link) for link in links]
@@ -239,6 +241,8 @@ class Collection(Entity):
             Dataset.transform_organism_for_schema_2_0_0(dataset)
 
         result["datasets"] = datasets
+
+        result["consortia"] = result["consortia"] if result["consortia"] else []
         return result
 
     def publish(self, data_submission_policy_version):

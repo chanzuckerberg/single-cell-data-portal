@@ -126,6 +126,7 @@ def create_collection_common(body: dict, user: str, doi: str, errors: list):
         contact_email=body["contact_email"],
         curator_name=body.get("curator_name", ""),
         publisher_metadata=publisher_metadata,
+        consortia=body.get("consortia", []),
     )
 
     return collection.id
