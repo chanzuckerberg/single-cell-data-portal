@@ -691,9 +691,13 @@ class TestCollection(NewBaseTest):
         """
 
         collection = self.generate_published_collection()
+        collection_to_tombstone = self.generate_published_collection()
         private_collection = self.generate_unpublished_collection()
 
-        # TODO: a tombstoned collection should not be returned as well
+        tombstone_url = furl(path=f"/dp/v1/collections/{collection_to_tombstone.collection_id}")
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        response = self.app.delete(tombstone_url.url, headers=headers)
+        self.assertEqual(204, response.status_code)
 
         test_url = furl(path="/dp/v1/collections/index")
         headers = {"host": "localhost", "Content-Type": "application/json"}
@@ -705,6 +709,8 @@ class TestCollection(NewBaseTest):
         self.assertIn(collection.collection_id.id, ids)
         self.assertNotIn(private_collection.collection_id.id, ids)
         self.assertNotIn(private_collection.version_id.id, ids)
+        self.assertNotIn(collection_to_tombstone.collection_id.id, ids)
+        self.assertNotIn(collection_to_tombstone.version_id.id, ids)
 
         actual_collection = body[-1]  # last added collection
         self.assertEqual(actual_collection["id"], collection.collection_id.id)
@@ -756,7 +762,6 @@ class TestCollection(NewBaseTest):
                     self.assertIn(error, response.json["detail"])
 
 
-# 🔴 TODO: This should be reviewed. Collection deletion is a weird beast
 class TestCollectionDeletion(NewBaseTest):
     def test_delete_private_collection_version__ok(self):
         # Generate test collection
@@ -809,84 +814,61 @@ class TestCollectionDeletion(NewBaseTest):
         dataset_ids = [dataset["id"] for dataset in body["datasets"]]
         self.assertNotIn(dataset.dataset_version_id, dataset_ids)
 
-    @unittest.skip("finish once tombstoning logic is done")
-    def test_tombstone_published_collection_with_revision__ok(self):
-        """Both the published and revised collections are tombstoned."""
-        # Generate the public collection
+    def test_delete_collection_version__public__403(self):
         collection = self.generate_published_collection()
-        # Generate test collection
-        revision = self.generate_revision(collection.collection_id)
 
-        processing_status = DatasetStatusUpdate(status_key=DatasetStatusKey.UPLOAD, status=DatasetUploadStatus.UPLOADED)
-
-        dataset_rev = self.generate_dataset(collection_version=revision, statuses=[processing_status])
-        dataset_pub = collection.datasets[0]
-        dataset_pub_id = dataset_pub.version_id.id
-        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
-
-        # Verify private collections exist
-        test_private_url = furl(
-            path=f"/dp/v1/collections/{revision.version_id}", query_params=dict(visibility="PRIVATE")
-        )
-        response = self.app.get(test_private_url.url, headers=headers)
-        self.assertEqual(200, response.status_code)
-        body = json.loads(response.data)
-        dataset_ids = [dataset["id"] for dataset in body["datasets"]]
-        self.assertIn(dataset_rev.dataset_version_id, dataset_ids)
-
-        # Verify public collections exist
-        test_public_url = furl(
-            path=f"/dp/v1/collections/{collection.collection_id}", query_params=dict(visibility="PUBLIC")
-        )
-        response = self.app.get(test_public_url.url, headers=headers)
-        self.assertEqual(200, response.status_code)
-        body = json.loads(response.data)
-        dataset_ids = [dataset["id"] for dataset in body["datasets"]]
-        self.assertIn(dataset_pub_id, dataset_ids)
-
-        # TODO: TEST tombstoned logic
-
-        # delete public collection
-        # response = self.app.delete(test_public_url.url, headers=headers)
-        # self.assertEqual(response.status_code, 204)
-
-        # check collection revision and datasets are gone
-        # response = self.app.get(test_private_url.url, headers=headers)
-        # self.assertEqual(response.status_code, 403)
-
-        # check public collection is tombstoned and datasets deleted.
-        # response = self.app.get(test_public_url.url, headers=headers)
-        # self.assertEqual(response.status_code, 410)
-
-    @unittest.skip("finish once tombstoning logic is done")
-    def test_delete_collection__already_tombstoned__ok(self):
-        # Generate the public collection
-        collection = self.generate_published_collection()
-        # Generate test collection
-        revision = self.generate_revision(collection.collection_id)
-
-        test_url = furl(path=f"/dp/v1/collections/{collection.collection_id}", query_params=dict(visibility="PRIVATE"))
+        test_url = furl(path=f"/dp/v1/collections/{collection.version_id}")
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
         response = self.app.delete(test_url.url, headers=headers)
         self.assertEqual(response.status_code, 403)
 
-    @unittest.skip("finish once tombstoning logic is done")
-    def test_delete_collection__public__ok(self):
+    def test_delete_published_collection__ok(self):
+        """Published collections are tombstoned."""
+        # Generate the public collection
         collection = self.generate_published_collection()
-
-        test_urls = [
-            furl(path=f"/dp/v1/collections/{collection.collection_id}"),
-        ]
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
-        for test_url in test_urls:
-            with self.subTest(test_url.url):
-                response = self.app.delete(test_url.url, headers=headers)
-                self.assertEqual(response.status_code, 204)
+        test_public_url = furl(
+            path=f"/dp/v1/collections/{collection.collection_id}", query_params=dict(visibility="PUBLIC")
+        )
+        # tombstone public collection
+        response = self.app.delete(test_public_url.url, headers=headers)
+        self.assertEqual(response.status_code, 204)
 
-                response = self.app.get(test_url.url, headers=headers)
-                body = json.loads(response.data)
-                self.assertEqual(response.status_code, 410)
-                self.assertEqual(body, "")
+        # check collection is gone
+        response = self.app.get(test_public_url.url, headers=headers)
+        self.assertEqual(response.status_code, 410)
+
+        # check collection version details--datasets are tombstoned
+        test_version_url = furl(
+            path=f"/dp/v1/collections/{collection.version_id}", query_params=dict(visibility="PUBLIC")
+        )
+        response = self.app.get(test_version_url.url, headers=headers)
+        body = json.loads(response.data)
+        datasets_tombstoned = [dataset['tombstone'] for dataset in body['datasets']]
+        self.assertTrue(all(datasets_tombstoned))
+
+        # check that tombstoned collection doesn't appear in collections list endpoint
+        test_list_url = furl(path="/dp/v1/collections")
+        response = self.app.get(test_list_url.url, headers=headers)
+        body = json.loads(response.data)
+        collection_ids = [collection.id for collection in body['collections']]
+        self.assertNotIn(collection.collection_id, collection_ids)
+        self.assertNotIn(collection.version_id, collection_ids)
+
+    def test_delete_collection_version__already_deleted__403(self):
+        collection = self.generate_unpublished_collection()
+
+        # delete private collection
+        test_private_url = furl(
+            path=f"/dp/v1/collections/{collection.version_id}", query_params=dict(visibility="PRIVATE")
+        )
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+        response = self.app.delete(test_private_url.url, headers=headers)
+        self.assertEqual(response.status_code, 204)
+
+        # check that DELETE on an already deleted collection is forbidden
+        response = self.app.delete(test_private_url.url, headers=headers)
+        self.assertEqual(response.status_code, 403)
 
     def test_delete_collection__not_owner(self):
         collection = self.generate_unpublished_collection(owner="not_test_user_id")

@@ -31,6 +31,7 @@ from backend.layers.common.entities import (
     DatasetVersion,
     DatasetVersionId,
 )
+from backend.layers.business.exceptions import CollectionIsPublishedException
 from backend.layers.persistence.orm import (
     Collection as CollectionTable,
     CollectionVersion as CollectionVersionTable,
@@ -38,13 +39,9 @@ from backend.layers.persistence.orm import (
     DatasetArtifact as DatasetArtifactTable,
     DatasetVersion as DatasetVersionTable,
 )
-from backend.layers.persistence.persistence_interface import DatabaseProviderInterface
+from backend.layers.persistence.persistence_interface import DatabaseProviderInterface, PersistenceException
 
 logger = logging.getLogger(__name__)
-
-
-class PersistenceException(Exception):
-    pass
 
 
 class DatabaseProvider(DatabaseProviderInterface):
@@ -160,7 +157,9 @@ class DatabaseProvider(DatabaseProviderInterface):
 
     def get_canonical_collection(self, collection_id: CollectionId) -> CanonicalCollection:
         with self._manage_session() as session:
-            collection = session.query(CollectionTable).filter_by(id=collection_id.id).one()
+            collection = session.query(CollectionTable).filter_by(id=collection_id.id).one_or_none()
+            if collection is None:
+                return None
             return CanonicalCollection(
                 CollectionId(str(collection.id)),
                 None if collection.version_id is None else CollectionVersionId(str(collection.version_id)),
@@ -170,17 +169,10 @@ class DatabaseProvider(DatabaseProviderInterface):
 
     def get_canonical_dataset(self, dataset_id: DatasetId) -> CanonicalDataset:
         with self._manage_session() as session:
-            dataset = session.query(DatasetTable).filter_by(dataset_id=dataset_id.id).one()
+            dataset = session.query(DatasetTable).filter_by(dataset_id=dataset_id.id).one_or_none()
+            if dataset is None:
+                return None
             return CanonicalDataset(dataset_id, DatasetVersionId(str(dataset.dataset_version_id)), dataset.published_at)
-
-    # from typing import TypeVar, Generic
-    # T = TypeVar('T')
-
-    # @staticmethod
-    # def parse_id(id: Any, id_type: T) -> Optional[T]:
-    #     if id is None:
-    #         return None
-    #     return type(id_type)(str(id))
 
     def create_canonical_collection(self, owner: str, collection_metadata: CollectionMetadata) -> CollectionVersion:
         """
@@ -325,8 +317,9 @@ class DatabaseProvider(DatabaseProviderInterface):
         Deletes (tombstones) a canonical collection.
         """
         with self._manage_session() as session:
-            canonical_collection = session.query(CollectionTable).filter_by(id=collection_id).one()
-            canonical_collection.tombstoned = True
+            canonical_collection = session.query(CollectionTable).filter_by(id=collection_id.id).one_or_none()
+            if canonical_collection:
+                canonical_collection.tombstoned = True
 
     def save_collection_metadata(
         self, version_id: CollectionVersionId, collection_metadata: CollectionMetadata
@@ -377,7 +370,9 @@ class DatabaseProvider(DatabaseProviderInterface):
         """
         with self._manage_session() as session:
             version = session.query(CollectionVersionTable).filter_by(version_id=version_id.id).one_or_none()
-            if version and version.published_at is None:
+            if version:
+                if version.published_at:
+                    raise CollectionIsPublishedException(f'Published Collection Version {version_id} cannot be deleted')
                 session.delete(version)
 
     def finalize_collection_version(
