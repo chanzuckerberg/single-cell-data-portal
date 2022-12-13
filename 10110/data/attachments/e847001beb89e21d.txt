@@ -1,0 +1,1 @@
+WARNING  root:collections_common.py:34 CrossrefException on create_collection: Mocked CrossrefFetchException. Will ignore metadata.

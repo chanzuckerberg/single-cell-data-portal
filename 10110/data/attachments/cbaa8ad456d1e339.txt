@@ -1,0 +1,1 @@
+INFO     root:dataset_asset.py:62 Deleting file 52a8258d-ed83-4dee-949f-daf131136b28/data.H5AD in bucket bogus-bucket.
