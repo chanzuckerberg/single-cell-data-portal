@@ -354,9 +354,7 @@ class BusinessLogic(BusinessLogicInterface):
         if not artifact:
             raise ArtifactNotFoundException(f"Artifact {artifact_id} not found in dataset {dataset_version_id}")
 
-        artifact_url = urlparse(artifact.uri)
-
-        file_name = artifact_url.path[1:]
+        file_name = artifact.uri.split("/")[-1]
         file_type = artifact.type
         file_size = self.s3_provider.get_file_size(artifact.uri)
         presigned_url = self.s3_provider.generate_presigned_url(artifact.uri)

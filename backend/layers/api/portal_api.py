@@ -13,6 +13,7 @@ from backend.common.utils.http_exceptions import (
     ServerErrorHTTPException,
     TooLargeHTTPException,
 )
+from backend.layers.common import explorer_url
 from backend.common.utils.ontology_mappings.ontology_map_loader import ontology_mappings
 from backend.layers.api.enrichment import enrich_dataset_with_ancestors
 from backend.layers.auth.user_info import UserInfo
@@ -120,7 +121,7 @@ class PortalApi:
         return {
             "created_at": 0,
             "dataset_id": dataset_id,
-            "filename": "TODO",  # TODO: might need to get it from the url
+            "filename": dataset_artifact.uri.split("/")[-1],
             "filetype": dataset_artifact.type.upper(),
             "id": dataset_artifact.id.id,
             "s3_uri": dataset_artifact.uri,
@@ -141,7 +142,7 @@ class PortalApi:
         return {k: v for k, v in body.items() if v is not None}
 
     # Note: `metadata` can be none while the dataset is uploading
-    def _dataset_to_response(self, dataset: DatasetVersion):
+    def _dataset_to_response(self, dataset: DatasetVersion, is_in_published_collection: bool = False):
         return self.remove_none(
             {
                 "assay": None
@@ -157,7 +158,7 @@ class PortalApi:
                 "dataset_assets": [
                     self._dataset_asset_to_response(a, dataset.version_id.id) for a in dataset.artifacts
                 ],
-                "dataset_deployments": [{"url": "TODO"}],  # TODO: dataset.metadata.explorer_url,
+                "dataset_deployments": [{"url": explorer_url.generate(dataset, is_in_published_collection)}],
                 "development_stage": None
                 if dataset.metadata is None
                 else self._ontology_term_ids_to_response(dataset.metadata.development_stage),
@@ -204,7 +205,7 @@ class PortalApi:
                 "created_at": collection.created_at,
                 "curator_name": "",  # TODO
                 "data_submission_policy_version": "1.0",  # TODO
-                "datasets": [self._dataset_to_response(ds) for ds in collection.datasets],
+                "datasets": [self._dataset_to_response(ds, collection.published_at is not None) for ds in collection.datasets],
                 "description": collection.metadata.description,
                 "id": collection_id,
                 "links": [self._link_to_response(link) for link in collection.metadata.links],
@@ -469,7 +470,7 @@ class PortalApi:
 
         artifacts = []
         for artifact in self.business_logic.get_dataset_artifacts(DatasetVersionId(dataset_id)):
-            artifacts.append({"id": artifact.id.id, "type": artifact.type, "s3_uri": artifact.uri})
+            artifacts.append(self._dataset_asset_to_response(artifact, dataset_id))
         response = {"assets": artifacts}
 
         return make_response(jsonify(response), 200)
@@ -529,6 +530,8 @@ class PortalApi:
             )
             enrich_dataset_with_ancestors(payload, "tissue", ontology_mappings.tissue_ontology_mapping)
             enrich_dataset_with_ancestors(payload, "cell_type", ontology_mappings.cell_type_ontology_mapping)
+            # In this context, datasets always belong to published collections
+            payload["explorer_url"] = explorer_url.generate(dataset, is_published=True)
             response.append(payload)
 
         return make_response(jsonify(response), 200)
