@@ -698,7 +698,7 @@ interface MarkerGeneRequestBody {
   celltype: string;
   n_markers: number;
   organism: string;
-  test: "ttest" | "binometest";
+  test: "ttest" | "binomtest";
   tissue: string;
 }
 

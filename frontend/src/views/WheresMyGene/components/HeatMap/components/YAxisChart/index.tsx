@@ -1,18 +1,9 @@
 import { init } from "echarts";
-import {
-  memo,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { memo, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { EMPTY_OBJECT, noop } from "src/common/constants/utils";
 import { get } from "src/common/featureFlags";
 import { FEATURES } from "src/common/featureFlags/features";
 import { BOOLEAN } from "src/common/localStorage/set";
-import { FetchMarkerGeneParams } from "src/common/queries/wheresMyGene";
 import Image from "next/image";
 import {
   DispatchContext,
@@ -82,10 +73,6 @@ export default memo(function YAxisChart({
     getHeatmapHeight(cellTypes)
   );
   const isMarkerGenes = get(FEATURES.MARKER_GENES) === BOOLEAN.TRUE;
-  const handleCellInfoClick = useCallback((content: CellTypeMetadata) => {
-    const cellType = deserializeCellTypeMetadata(content);
-    generateMarkerGenes(cellType, tissueID);
-  }, []);
 
   const setInfoCoordinates = () => {
     const topTissueKey = selectedTissues[0].replace(" ", "-");

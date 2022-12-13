@@ -1,6 +1,4 @@
-import { HTMLTable } from "@blueprintjs/core";
-import styled from "@emotion/styled";
-import { Button, Icon, IconButton } from "czifui";
+import { Button, Icon } from "czifui";
 import React, { useCallback, useContext } from "react";
 import { useMarkerGenes } from "src/common/queries/wheresMyGene";
 import { BetaChip } from "src/components/Header/style";

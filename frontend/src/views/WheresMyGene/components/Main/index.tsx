@@ -1,5 +1,4 @@
-import { Classes, DrawerSize } from "@blueprintjs/core";
-import styled from "@emotion/styled";
+import { DrawerSize } from "@blueprintjs/core";
 import Head from "next/head";
 import React, {
   useCallback,
@@ -22,7 +21,6 @@ import SideBar from "src/components/common/SideBar";
 import {
   GeneSideBarOpenButtonWrapper,
   Position,
-  SideBarToggleButtonWrapper,
 } from "src/components/common/SideBar/style";
 import { View } from "../../../globalStyle";
 import { DispatchContext, StateContext } from "../../common/store";
@@ -35,7 +33,6 @@ import { SideBarPositioner, SideBarWrapper, Top, Wrapper } from "../../style";
 import Beta from "../Beta";
 import CellInfoBar from "../CellInfoSideBar";
 import {
-  CellInfoSideBarWidth,
   CELL_INFO_SIDEBAR_WIDTH_PX,
 } from "../CellInfoSideBar/style";
 import Filters from "../Filters";
