@@ -792,8 +792,6 @@ export function useMarkerGenes({
 
   return useQuery(
     [USE_MARKER_GENES, cellTypeID, test],
-    // Getting some weird issues with fetching some times (right side bar is not populated),
-    //  this may be related to receiving NaN's from the backend. Going to ignore for now
     async () => {
       const output = await fetchMarkerGenes({
         cellTypeID,
