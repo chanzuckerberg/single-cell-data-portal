@@ -1,2 +1,0 @@
-INFO     dataset_processing:common.py:89 Converting local.h5ad
-INFO     dataset_processing:common.py:101 Finished converting <MagicMock name='make_seurat' id='140045353596624'> in 0:00:00.031321
