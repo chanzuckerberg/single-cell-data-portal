@@ -57,6 +57,14 @@ class DatasetData:
     artifact_ids: List[str]
 
 
+def link_class_to_api_link_dict(link: Link) -> dict:
+    return {"link_name": link.name, "link_type": link.type, "link_url": link.uri}
+
+
+def api_link_dict_to_link_class(link: dict) -> Link:
+    return Link(link["link_name"], link["link_type"], link["link_url"])
+
+
 class BaseAuthAPITest(unittest.TestCase):
     def setUp(self):
         super().setUp()
@@ -173,12 +181,17 @@ class NewBaseTest(BaseAuthAPITest):
         if self.run_as_integration:
             self.database_provider._drop_schema("persistence_schema")
 
-    def generate_collection(self, **params) -> CollectionVersion:
+    def generate_collection(self, links: List[dict] = None, **params) -> CollectionVersion:
+        """Generated a collection
+        Adding to for compatibility with old tests
+        """
+        links = links if links else []
+        links = [api_link_dict_to_link_class(lk) for lk in links]
         visibility = params.pop("visibility", "PUBLIC")
         if visibility == "PUBLIC":
-            return self.generate_published_collection(**params)
+            return self.generate_published_collection(links=links, **params)
         else:
-            return self.generate_unpublished_collection(**params)
+            return self.generate_unpublished_collection(links=links, **params)
 
     def generate_collection_revision(self, owner="test_user_id") -> CollectionVersion:
         published_collection = self.generate_published_collection(owner)

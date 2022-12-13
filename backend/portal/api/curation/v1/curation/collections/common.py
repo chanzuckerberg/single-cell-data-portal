@@ -23,6 +23,7 @@ from backend.layers.common.entities import (
     DatasetProcessingStatus,
     DatasetVersion,
     Link,
+    OntologyTermId,
 )
 
 allowed_dataset_asset_types = ("H5AD", "RDS")
@@ -54,11 +55,11 @@ def extract_doi_from_links(links: List[Link]) -> Tuple[Optional[str], List[dict]
     """
     doi, dict_links = None, []
     for link in links:
-        if link["type"] == "DOI":
-            doi = urlparse(link["uri"]).path.strip("/")
+        if link.type == "DOI":
+            doi = urlparse(link.uri).path.strip("/")
         else:
             dict_links.append(dict(link_name=link.name, link_url=link.uri, link_type=link.type))
-    return doi, links
+    return doi, dict_links
 
 
 def reshape_for_curation_api(collection_version: CollectionVersion, user_info: UserInfo, preview: bool = False) -> dict:
@@ -73,45 +74,65 @@ def reshape_for_curation_api(collection_version: CollectionVersion, user_info: U
     if collection_version.published_at is None:
         # Unpublished
         collection_id = collection_version.version_id
-        revision_of = collection_version.collection_id
+        revision_of = collection_version.collection_id.id
         revising_in = None
     else:
         # Published
         collection_id = collection_version.collection_id
         revision_of = None
-        revising_in = (
-            None
-            if not user_info.is_user_owner_or_allowed(collection_version.owner)
-            else get_business_logic().get_unplublished_collection_version_from_canonical(collection_id)
-        )
+        if not user_info.is_user_owner_or_allowed(collection_version.owner):
+            _revising_in = None
+        else:
+            _revising_in = get_business_logic().get_unplublished_collection_version_from_canonical(
+                collection_version.collection_id
+            )
+        revising_in = _revising_in.version_id.id if _revising_in else None
 
     # get collection dataset attributes
     response_datasets = []
     collection_level_processing_status = None  # Noe if no datasets
     for dataset_version_id in collection_version.datasets:
         dataset_version = get_business_logic().get_dataset_version(dataset_version_id)
-        ds = asdict(dataset_version.metadata)
+        ds = dict()
+        if preview:
+            columns = EntityColumns.dataset_metadata_preview_cols
+        else:
+            columns = EntityColumns.dataset_metadata_cols
+            # get dataset asset attributes
+            assets = []
+            for artifact in dataset_version.artifacts:
+                if artifact.type in allowed_dataset_asset_types:
+                    assets.append(dict(filetype=artifact.type, filename=artifact.uri.split("/")[-1]))
 
-        # get dataset asset attributes
-        assets = []
-        for artifact in dataset_version.artifacts:
-            if artifact.type in allowed_dataset_asset_types:
-                assets.append(dict(filetype=artifact.type, filename=artifact.uri.split("/")[-1]))
-        ds["dataset_assets"] = assets
-        ds["processing_status_detail"] = dataset_version.status.validation_message
-        ds["revised_at"] = dataset_version.canonical_dataset.revised_at
+            ds["dataset_assets"] = assets
+            ds["processing_status_detail"] = dataset_version.status.validation_message
+            ds["revised_at"] = dataset_version.canonical_dataset.revised_at
+            ds["is_primary_data"] = is_primary_data_mapping.get(ds.pop("is_primary_data"), [])
+
+        # Get dataset metadata fields
+        for column in columns:
+            col = getattr(dataset_version.metadata, column)
+            if isinstance(col, list) and len(col) != 0 and isinstance(col[0], OntologyTermId):
+                col = [asdict(i) for i in col]
+            ds[column] = col
+
+        ds["id"] = dataset_version.dataset_id.id
         response_datasets.append(ds)
 
         # get the Collection-level processing status
         dataset_processing_status = dataset_version.status.processing_status
-        if dataset_processing_status:
-            if dataset_processing_status in (DatasetProcessingStatus.PENDING, DatasetProcessingStatus.INITIALIZED):
-                collection_level_processing_status = DatasetProcessingStatus.PENDING
-            elif dataset_processing_status == DatasetProcessingStatus.FAILURE:
-                collection_level_processing_status = dataset_processing_status
+        if dataset_processing_status in (DatasetProcessingStatus.PENDING, DatasetProcessingStatus.INITIALIZED):
+            collection_level_processing_status = DatasetProcessingStatus.PENDING
+        elif dataset_processing_status == DatasetProcessingStatus.FAILURE:
+            collection_level_processing_status = dataset_processing_status
+        elif collection_level_processing_status is None:
+            collection_level_processing_status = dataset_processing_status
 
     # build response
     doi, links = extract_doi_from_links(collection_version.metadata.links)
+    revised_at = (
+        get_business_logic().get_published_collection_version(collection_version.canonical_collection.id).published_at
+    )
     response = dict(
         collection_url=f"{CorporaConfig().collections_base_url}/collections/{collection_id.id}",
         contact_email=collection_version.metadata.contact_email,
@@ -120,16 +141,14 @@ def reshape_for_curation_api(collection_version: CollectionVersion, user_info: U
         curator_name=collection_version.owner,
         datasets=response_datasets,
         description=collection_version.metadata.description,
-        dio=doi,
+        doi=doi,
         id=collection_id.id,
         links=links,
         name=collection_version.metadata.name,
         processing_status=collection_level_processing_status,
         published_at=collection_version.canonical_collection.originally_published_at,
         publisher_metadata=collection_version.publisher_metadata,
-        revised_at=get_business_logic()
-        .get_published_collection_version(collection_version.canonical_collection.id)
-        .published_at,
+        revised_at=revised_at,
         revising_in=revising_in,
         revision_of=revision_of,
         visibility=get_visibility(collection_version),
@@ -187,7 +206,6 @@ is_primary_data_mapping = {
 
 
 class EntityColumns:
-
     collections_cols = [
         "id",
         "name",
@@ -202,7 +220,6 @@ class EntityColumns:
         "description",
         "publisher_metadata",
         "revision_of",
-        "tombstone",
         "owner",  # Needed for determining view permissions
         "links",
         "datasets",
@@ -215,18 +232,16 @@ class EntityColumns:
         "link_type",
     ]
 
-    dataset_preview_cols = [
-        "id",
+    dataset_metadata_preview_cols = [
         "tissue",
         "assay",
         "disease",
         "organism",
-        "tombstone",
         "suspension_type",
     ]
 
-    dataset_cols = [
-        *dataset_preview_cols,
+    dataset_metadata_cols = [
+        *dataset_metadata_preview_cols,
         "original_id",
         "name",
         "revision",
@@ -257,20 +272,20 @@ class EntityColumns:
     columns_for_collections = {
         DbCollectionLink: link_cols,
         DbCollection: collections_cols,
-        DbDataset: dataset_preview_cols,
+        DbDataset: dataset_metadata_preview_cols,
         DbDatasetProcessingStatus: dataset_processing_status_cols,
     }
 
     columns_for_collection_id = {
         DbCollectionLink: link_cols,
         DbCollection: collections_cols,
-        DbDataset: dataset_cols,
+        DbDataset: dataset_metadata_cols,
         DbDatasetArtifact: dataset_asset_cols,
         DbDatasetProcessingStatus: dataset_processing_status_cols,
     }
 
     columns_for_dataset = {
-        DbDataset: dataset_cols,
+        DbDataset: dataset_metadata_cols,
         DbDatasetArtifact: dataset_asset_cols,
         DbDatasetProcessingStatus: dataset_processing_status_cols,
     }

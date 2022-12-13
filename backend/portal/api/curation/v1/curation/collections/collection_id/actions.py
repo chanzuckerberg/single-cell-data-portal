@@ -2,7 +2,6 @@ from dataclasses import asdict
 
 from flask import Response, jsonify, make_response
 
-from backend.common.corpora_config import CorporaConfig
 from backend.common.corpora_orm import ProjectLinkType
 from backend.common.utils.http_exceptions import (
     InvalidParametersHTTPException,
@@ -15,13 +14,10 @@ from backend.layers.business.exceptions import CollectionUpdateException
 from backend.layers.common import doi
 from backend.layers.common.entities import Link
 from backend.portal.api.curation.v1.curation.collections.common import (
-    allowed_dataset_asset_types,
     extract_doi_from_links,
-    get_collection_level_processing_status,
     get_infered_collection_version_else_forbidden,
-    get_visibility,
     is_owner_or_allowed_else_forbidden,
-    is_primary_data_mapping,
+    reshape_for_curation_api,
 )
 
 
@@ -39,63 +35,7 @@ def delete(collection_id: str, token_info: dict) -> Response:
 def get(collection_id: str, token_info: dict) -> Response:
     collection_version = get_infered_collection_version_else_forbidden(collection_id)
     user_info = UserInfo(token_info)
-
-    # get collectoin attributes based on published status
-    if collection_version.published_at is None:
-        # Unpublished
-        resp_collection_id = collection_version.version_id
-        revision_of = collection_version.collection_id.id
-        revising_in = None
-    else:
-        # Published
-        resp_collection_id = collection_version.collection_id
-        revision_of = None
-        if not user_info.is_user_owner_or_allowed(collection_version.owner):
-            _revising_in = None
-        else:
-            _revising_in = get_business_logic().get_unplublished_collection_version_from_canonical(resp_collection_id)
-        revising_in = _revising_in.version_id.id if _revising_in else None
-
-    # get collection dataset attributes
-    response_datasets = []
-    for dataset in collection_version.datasets:
-        ds = asdict(dataset.metadata)
-
-        # get dataset asset attributes
-        assets = []
-        for artifact in dataset.artifacts:
-            if artifact.type in allowed_dataset_asset_types:
-                assets.append(dict(filetype=artifact.type, filename=artifact.uri.split("/")[-1]))
-        ds["dataset_assets"] = assets
-        ds["processing_status_detail"] = dataset.status.validation_message
-        ds["revised_at"] = dataset.canonical_dataset.revised_at
-        ds["is_primary_data"] = is_primary_data_mapping.get(ds.pop("is_primary_data"), [])
-        response_datasets.append(ds)
-
-    # build response
-    processing_status = get_collection_level_processing_status(collection_version.datasets)
-    revised_at = get_business_logic().get_published_collection_version(collection_version.collection_id).published_at
-    doi, links = extract_doi_from_links(collection_version.metadata.links)
-    response = dict(
-        collection_url=f"{CorporaConfig().collections_base_url}/collections/{collection_id}",
-        contact_email=collection_version.metadata.contact_email,
-        contact_name=collection_version.metadata.contact_name,
-        created_at=collection_version.created_at,
-        curator_name=collection_version.owner,
-        datasets=response_datasets,
-        description=collection_version.metadata.description,
-        dio=doi,
-        id=collection_id,
-        links=links,
-        name=collection_version.metadata.name,
-        processing_status=processing_status,
-        published_at=collection_version.canonical_collection.originally_published_at,
-        publisher_metadata=collection_version.publisher_metadata,
-        revised_at=revised_at,
-        revising_in=revising_in,
-        revision_of=revision_of,
-        visibility=get_visibility(collection_version),
-    )
+    response = reshape_for_curation_api(collection_version, user_info)
     return jsonify(response)
 
 

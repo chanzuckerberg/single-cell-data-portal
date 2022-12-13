@@ -6,7 +6,6 @@ from backend.common.corpora_orm import (
     CollectionVisibility,
     DbDataset,
     IsPrimaryData,
-    ProcessingStatus,
     UploadStatus,
 )
 from backend.common.providers.crossref_provider import CrossrefDOINotFoundException
@@ -254,65 +253,95 @@ class TestGetCollections(NewBaseTest):
         self.test_collection = dict(
             name="collection", description="description", contact_name="john doe", contact_email="johndoe@email.com"
         )
+        self.expected_dataset_columns = EntityColumns.dataset_metadata_preview_cols + ["id"]
+        self.expected_collection_columns = EntityColumns.collections_cols.copy()
+        self.expected_collection_columns.remove("tombstone")
+        self.expected_collection_columns.remove("owner")
+        self.expected_collection_columns.append("processing_status")
+        self.expected_collection_columns.append("collection_url")
+        self.expected_collection_columns.append("doi")
+
+    def _test_response(self, visibility=None, auth=False, status_code=200) -> dict:
+        kwargs = {}
+        if auth:
+            kwargs["headers"] = self.make_owner_header()
+        if visibility:
+            kwargs["query_string"] = {"visibility": visibility}
+
+        response = self.app.get("/curation/v1/collections", **kwargs)
+        self.assertEqual(status_code, response.status_code)
+        return response.json
 
     def test__get_collections_no_auth__OK(self):
         self.generate_unpublished_collection()
         self.generate_published_collection()
-        res_no_auth = self.app.get("/curation/v1/collections")
-        self.assertEqual(200, res_no_auth.status_code)
-        self.assertEqual(1, len(res_no_auth.json))
-        [self.assertEqual("PUBLIC", c["visibility"]) for c in res_no_auth.json]
+        response_body = self._test_response()
+        self.assertEqual(1, len(response_body))
+        self.assertEqual("PUBLIC", response_body[0]["visibility"])
+        self.assertIsNone(response_body[0]["revising_in"])
 
-    def test__get_collections_with_auth__OK(self):
-        res_auth = self.app.get("/curation/v1/collections", headers=self.make_owner_header())
-        with self.subTest("The 'revising_in' attribute is None for unauthorized public collections"):
-            conditions_tested = 0
-            for c in res_auth.json:
-                if c["id"] in (
-                    "test_collection_id_public_for_revision_one",
-                    "test_collection_id_public_for_revision_two",
-                ):
-                    conditions_tested += 1
-                    self.assertIsNone(c["revising_in"])
-            self.assertEqual(2, conditions_tested)
-        with self.subTest("The 'revising_in' attribute is None for collections which lack a revision"):
-            conditions_tested = 0
-            for c in res_auth.json:
-                if c["id"] in (
-                    "test_collection_id_public",
-                    "test_collection_with_link",
-                    "test_collection_with_link_and_dataset_changes",
-                ):
-                    conditions_tested += 1
-                    self.assertIsNone(c["revising_in"])
-            self.assertEqual(3, conditions_tested)
-        with self.subTest("The 'revising_in' attribute is equal to the id of the revision Collection"):
-            conditions_tested = 0
-            for c in res_auth.json:
-                if c["id"] == "test_collection_id":
-                    conditions_tested += 1
-                    self.assertEqual("test_collection_id_revision", c["revising_in"])
-            self.assertTrue(1, conditions_tested)
-        with self.subTest("Datasets in a revision contain a reference to their published counterpart, if it exists"):
-            conditions_tested = 0
-            for c in res_auth.json:
-                if c["id"] == "test_collection_id_revision":
-                    for d in c["datasets"]:
-                        if d["id"] == "test_publish_revision_with_links__revision_dataset":
-                            conditions_tested += 1
-                            self.assertEqual("test_dataset_id", d["revision_of"])
-            self.assertTrue(1, conditions_tested)
+    def test__get_collections_with_auth__OK_1(self):
+        "The 'revising_in' attribute is None for unauthorized public collections"
+        collection_id = self.generate_published_collection(owner="Someone Else").collection_id
+        self.generate_revision(collection_id)
+        resp = self._test_response(auth=True)
+        self.assertEqual(1, len(resp))
+        self.assertEqual(collection_id.id, resp[0]["id"])
+        self.assertIsNone(resp[0]["revising_in"])
+
+    def test__get_collections_with_auth__OK_2(self):
+        "The 'revising_in' attribute is None for collections which lack a revision"
+        collection_id = self.generate_published_collection(owner="Someone Else").collection_id
+        resp = self._test_response(auth=True)
+        self.assertEqual(1, len(resp))
+        self.assertEqual(collection_id.id, resp[0]["id"])
+        self.assertIsNone(resp[0]["revising_in"])
+
+    def test__get_collections_with_auth__OK_3(self):
+        "The 'revising_in' attribute is equal to the id of the revision Collection"
+        collection_id = self.generate_published_collection().collection_id
+        revision_id = self.generate_revision(collection_id).version_id
+        resp = self._test_response(auth=True)
+        self.assertEqual(1, len(resp))
+        self.assertEqual(collection_id.id, resp[0]["id"])
+        self.assertEqual(revision_id.id, resp[0]["revising_in"])
+        self.assertIsNone(resp[0]["revision_of"])
+
+    def test__get_collections_with_auth__OK_4(self):
+        "revision_of contains the id to their published counterpart"
+        published_collection_id = self.generate_published_collection().collection_id
+        collection_revision_id = self.generate_revision(published_collection_id).version_id
+        resp = self._test_response(visibility="PRIVATE", auth=True)
+        self.assertEqual(1, len(resp))
+        self.assertEqual(collection_revision_id.id, resp[0]["id"])
+        self.assertEqual(published_collection_id.id, resp[0]["revision_of"])
+
+    def test__get_collections_with_auth__OK_5(self):
+        "revision_of contains None if the collection is public"
+        published_collection_id = self.generate_published_collection().collection_id
+        resp = self._test_response(visibility="PUBLIC", auth=True)
+        self.assertEqual(1, len(resp))
+        resp_collection = resp[0]
+        self.assertEqual(published_collection_id.id, resp_collection["id"])
+        self.assertIsNone(resp_collection["revision_of"])
+
+    def test__get_collections_with_auth__OK_6(self):
+        "revision_of contains None if the collection is unpublished"
+        unpublished_collection_id = self.generate_unpublished_collection()
+        resp = self._test_response(visibility="PRIVATE", auth=True)
+        self.assertEqual(1, len(resp))
+        resp_collection = resp[0]
+        self.assertEqual(unpublished_collection_id.collection_id.id, resp_collection["revision_of"])
 
     def test__get_collections_no_auth_visibility_private__403(self):
-        params = {"visibility": "PRIVATE"}
-        res_private = self.app.get("/curation/v1/collections", query_string=params)
-        self.assertEqual(403, res_private.status_code)
+        self._test_response(visibility="PRIVATE", status_code=403)
 
     def test__get_collections_no_auth_visibility_public__OK(self):
-        params = {"visibility": "PUBLIC"}
-        res_public = self.app.get("/curation/v1/collections", query_string=params)
-        self.assertEqual(200, res_public.status_code)
-        self.assertEqual(6, len(res_public.json))
+        published_collection_id = self.generate_published_collection().collection_id
+        self.generate_unpublished_collection()
+        self.generate_revision(published_collection_id)
+        resp = self._test_response(visibility="PUBLIC")
+        self.assertEqual(1, len(resp))
 
     def test__get_a_curators_collections(self):
         curator_name = "John Smith"
@@ -346,43 +375,61 @@ class TestGetCollections(NewBaseTest):
         with self.subTest("super curators can search private collections by curator"):
             _test({"curator": curator_name, "visibility": "PRIVATE"}, self.make_super_curator_header(), 1)
 
-    def test__get_only_public_collections_with_auth__OK(self):
-        params = {"visibility": "PUBLIC"}
-        res = self.app.get("/curation/v1/collections", query_string=params, headers=self.make_owner_header())
-        self.assertEqual(200, res.status_code)
-        self.assertEqual(6, len(res.json))
-        [self.assertEqual("PUBLIC", c["visibility"]) for c in res.json]
-
     def test__get_only_private_collections_with_auth__OK(self):
-        second_collection = self.generate_collection()
-        for status in (ProcessingStatus.PENDING, ProcessingStatus.SUCCESS):
+        collection_version = self.generate_published_collection()
+        self.generate_revision(collection_version.collection_id)
+        self.generate_unpublished_collection()
+        resp = self._test_response(visibility="PRIVATE", auth=True)
+        self.assertEqual(2, len(resp))
+        [self.assertEqual("PRIVATE", c["visibility"]) for c in resp]
+
+    def test__collection_level_processing_status__INITIALIZED_as_PENDING(self):
+        collection_version = self.generate_unpublished_collection(add_datasets=0)
+        for status in (DatasetProcessingStatus.INITIALIZED, DatasetProcessingStatus.SUCCESS):
             self.generate_dataset(
-                collection_id=second_collection.collection_id,
-                processing_status={"processing_status": status},
+                collection_version=collection_version,
+                statuses=[DatasetStatusUpdate(status_key=DatasetStatusKey.PROCESSING, status=status)],
             )
-        third_collection = self.generate_collection()
-        for status in (ProcessingStatus.INITIALIZED, ProcessingStatus.SUCCESS):
+        resp = self._test_response(visibility="PRIVATE", auth=True)
+        self.assertEqual(1, len(resp))
+        self.assertEqual("PENDING", resp[0]["processing_status"])
+
+    def test__collection_level_processing_status__PENDING(self):
+        collection_version = self.generate_unpublished_collection(add_datasets=0)
+        for status in (DatasetProcessingStatus.PENDING, DatasetProcessingStatus.SUCCESS):
             self.generate_dataset(
-                collection_id=third_collection.collection_id,
-                processing_status={"processing_status": status},
+                collection_version=collection_version,
+                statuses=[DatasetStatusUpdate(status_key=DatasetStatusKey.PROCESSING, status=status)],
             )
-        params = {"visibility": "PRIVATE"}
-        res = self.app.get("/curation/v1/collections", query_string=params, headers=self.make_owner_header())
-        conditions_tested = 0
-        with self.subTest("Summary collection-level processing statuses are accurate"):
-            for collection in res.json:
-                if collection["id"] in (second_collection.collection_id, third_collection.collection_id):
-                    self.assertEqual(collection["processing_status"], "PENDING")
-                    conditions_tested += 1
-                else:
-                    self.assertEqual(collection["processing_status"], "SUCCESS")
-        self.assertEqual(2, conditions_tested)
-        self.assertEqual(200, res.status_code)
-        self.assertEqual(3, len(res.json))
-        [self.assertEqual("PRIVATE", c["visibility"]) for c in res.json]
+        resp = self._test_response(visibility="PRIVATE", auth=True)
+        self.assertEqual(1, len(resp))
+        self.assertEqual("PENDING", resp[0]["processing_status"])
+
+    def test__collection_level_processing_status__FAILURE(self):
+        collection_version = self.generate_unpublished_collection(add_datasets=0)
+        for status in (DatasetProcessingStatus.FAILURE, DatasetProcessingStatus.SUCCESS):
+            self.generate_dataset(
+                collection_version=collection_version,
+                statuses=[DatasetStatusUpdate(status_key=DatasetStatusKey.PROCESSING, status=status)],
+            )
+        resp = self._test_response(visibility="PRIVATE", auth=True)
+        self.assertEqual(1, len(resp))
+        self.assertEqual("FAILURE", resp[0]["processing_status"])
+
+    def test__collection_level_processing_status__SUCCESS(self):
+        collection_version = self.generate_unpublished_collection(add_datasets=0)
+        self.generate_dataset(
+            collection_version=collection_version,
+            statuses=[
+                DatasetStatusUpdate(status_key=DatasetStatusKey.PROCESSING, status=DatasetProcessingStatus.SUCCESS)
+            ],
+        )
+        resp = self._test_response(visibility="PRIVATE", auth=True)
+        self.assertEqual(1, len(resp))
+        self.assertEqual("SUCCESS", resp[0]["processing_status"])
 
     def test__verify_expected_public_collection_fields(self):
-        collection = self.generate_collection(
+        self.generate_collection(
             visibility=CollectionVisibility.PUBLIC.name,
             links=[
                 {
@@ -392,26 +439,15 @@ class TestGetCollections(NewBaseTest):
                 }
             ],
         )
-        self.generate_dataset(collection_version_id=collection.version_id)
-        res = self.app.get("/curation/v1/collections")
-        self.assertEqual(200, res.status_code)
-        for resp_collection in res.json:
-            if resp_collection["id"] is collection.collection_id:
-                break
-
+        resp = self._test_response()
+        self.assertEqual(1, len(resp))
+        resp_collection = resp[0]
         self.check_fields(EntityColumns.link_cols, resp_collection["links"][0], "links")
-        self.check_fields(EntityColumns.dataset_preview_cols, resp_collection["datasets"][0], "datasets")
-
-        collections_cols = EntityColumns.collections_cols.copy()
-        collections_cols.remove("owner")
-        collections_cols.remove("tombstone")
-        collections_cols.append("processing_status")
-        collections_cols.append("collection_url")
-        collections_cols.append("doi")
-        self.check_fields(collections_cols, resp_collection, "collection")
+        self.check_fields(self.expected_dataset_columns, resp_collection["datasets"][0], "datasets")
+        self.check_fields(self.expected_collection_columns, resp_collection, "collection")
 
     def test__verify_expected_private_collection_fields(self):
-        collection = self.generate_collection(
+        self.generate_collection(
             visibility=CollectionVisibility.PRIVATE.name,
             links=[
                 {
@@ -421,7 +457,6 @@ class TestGetCollections(NewBaseTest):
                 }
             ],
         )
-        self.generate_dataset(collection_version_id=collection.version_id)
         params = {"visibility": "PRIVATE"}
 
         def _test(owner):
@@ -431,26 +466,20 @@ class TestGetCollections(NewBaseTest):
             else:
                 header = self.make_not_owner_header()
                 subtest_prefix = "not_owner"
-            res = self.app.get("/curation/v1/collections", query_string=params, headers=header)
-            self.assertEqual(200, res.status_code)
-            for resp_collection in res.json:
-                if resp_collection["id"] is collection.collection_id:
-                    break
+            resp = self.app.get("/curation/v1/collections", query_string=params, headers=header)
+            self.assertEqual(200, resp.status_code)
+            body = resp.json
+            self.assertEqual(1, len(body))
+            resp_collection = body[0]
 
             self.check_fields(EntityColumns.link_cols, resp_collection["links"][0], f"{subtest_prefix}:links")
             self.check_fields(
-                EntityColumns.dataset_preview_cols, resp_collection["datasets"][0], f"{subtest_prefix}:datasets"
+                self.expected_dataset_columns, resp_collection["datasets"][0], f"{subtest_prefix}:datasets"
             )
-
-            collections_cols = EntityColumns.collections_cols.copy()
-            collections_cols.remove("tombstone")
-            collections_cols.remove("owner")
-            collections_cols.append("processing_status")
-            collections_cols.append("collection_url")
-            collections_cols.append("doi")
-            self.check_fields(collections_cols, resp_collection, f"{subtest_prefix}:collection")
+            self.check_fields(self.expected_collection_columns, resp_collection, f"{subtest_prefix}:collection")
 
         _test(True)
+        _test(False)
 
     def check_fields(self, fields: list, response: dict, entity: str):
         for key in fields:
@@ -459,27 +488,6 @@ class TestGetCollections(NewBaseTest):
                 response.pop(key)
         with self.subTest(f"No Extra fields in {entity}"):
             self.assertFalse(response)
-
-    def test__no_tombstoned_collections_or_datasets_included(self):
-        second_collection = self.generate_collection(
-            tombstone=False, name="second collection", visibility=CollectionVisibility.PUBLIC
-        )
-        self.generate_dataset(collection_id=second_collection.collection_id)
-        self.generate_dataset(collection_id=second_collection.collection_id, tombstone=True)
-        tombstoned_collection = self.generate_collection(
-            tombstone=True, name="second collection", visibility=CollectionVisibility.PUBLIC
-        )
-        self.generate_dataset(collection_id=tombstoned_collection.collection_id, tombstone=True)
-
-        res = self.app.get("/curation/v1/collections", headers=self.make_owner_header())
-
-        contains_tombstoned_collection_flag = False
-        for collection in res.json:
-            if collection["id"] == second_collection.collection_id:
-                self.assertEqual(1, len(collection["datasets"]))
-            if collection["id"] == tombstoned_collection.collection_id:
-                contains_tombstoned_collection_flag = True
-        self.assertEqual(False, contains_tombstoned_collection_flag)
 
 
 class TestGetCollectionID(NewBaseTest):
@@ -612,7 +620,7 @@ class TestGetCollectionID(NewBaseTest):
                 DatasetStatusUpdate(status_key=DatasetStatusKey.PROCESSING, status=DatasetProcessingStatus.FAILURE),
                 DatasetStatusUpdate(status_key=DatasetStatusKey.VALIDATION, status=DatasetValidationStatus.INVALID),
                 DatasetStatusUpdate(status_key=DatasetStatusKey.VALIDATION, status=DatasetValidationStatus.INVALID),
-                "test message",  # TODO add validation message
+                # "test message",  # TODO add validation message
             ],
         )
         res = self.app.get(f"/curation/v1/collections/{collection.collection_id}")
@@ -627,7 +635,10 @@ class TestGetCollectionID(NewBaseTest):
             visibility=CollectionVisibility.PRIVATE.name,
         )
         dataset = self.generate_dataset(
-            collection_version=collection, processing_status={"processing_status": ProcessingStatus.FAILURE}
+            collection_version=collection,
+            statuses=[
+                DatasetStatusUpdate(status_key=DatasetStatusKey.PROCESSING, status=DatasetProcessingStatus.FAILURE)
+            ],
         )
         res = self.app.get(f"/curation/v1/collections/{collection.collection_id}")
         self.assertEqual("FAILURE", res.json["processing_status"])
@@ -654,9 +665,9 @@ class TestGetCollectionID(NewBaseTest):
 
     def test__get_collection_with_tombstoned_datasets__OK(self):
         collection = self.generate_collection()
-        self.generate_dataset(collection_id=collection)
-        self.generate_dataset(collection_id=collection, tombstone=False)
-        self.generate_dataset(collection_id=collection, tombstone=True)
+        self.generate_dataset(collection_version=collection)
+        self.generate_dataset(collection_version=collection, tombstone=False)
+        self.generate_dataset(collection_version=collection, tombstone=True)
         res = self.app.get(f"/curation/v1/collections/{collection.collection_id}")
         self.assertEqual(1, len(res.json["datasets"]))
 
@@ -758,7 +769,6 @@ class TestPatchCollectionID(NewBaseTest):
                 self.assertEqual(400, response.status_code)
 
     def test__update_collection__links__OK(self):
-        name = "partial updates test collection"
         links = [
             {"link_name": "name", "link_type": "RAW_DATA", "link_url": "http://test_link.place"},
         ]
@@ -775,7 +785,7 @@ class TestPatchCollectionID(NewBaseTest):
 
         for test_title, initial_links, new_links, expected_status_code, expected_links in links_configurations:
             with self.subTest(test_title):
-                collection_id = self.generate_collection(name=name, links=initial_links).collection_id
+                collection_id = self.generate_collection(links=initial_links).collection_id
                 original_collection = self.app.get(f"curation/v1/collections/{collection_id}").json
                 self.assertEqual(initial_links if initial_links else [], original_collection["links"])
                 metadata = {"links": new_links} if new_links is not None else {}
@@ -786,7 +796,6 @@ class TestPatchCollectionID(NewBaseTest):
                 )
                 self.assertEqual(expected_status_code, response.status_code)
                 if expected_status_code == 200:
-                    self.assertEqual(name, response.json["name"])
                     self.assertEqual(expected_links, response.json["links"])
 
     def test__update_collection__doi__OK(self):
@@ -1018,9 +1027,9 @@ class TestPostRevision(BaseAuthAPITest):
         self.assertEqual(401, response.status_code)
 
     def test__post_revision__Not_Public(self):
-        collection_id = self.generate_collection().collection_id
+        collection_id = self.generate_unpublished_collection().collection_id
         headers = self.make_super_curator_header()
-        response = self.app.post(f"/curation/v1/collections/{collection_id}/revision", headers=headers)
+        response = self.app.post(f"/curation/v1/collections/{collection_id.id}/revision", headers=headers)
         self.assertEqual(403, response.status_code)
 
     def test__post_revision__Not_Owner(self):
@@ -1067,8 +1076,10 @@ class TestPutLink(BaseAuthAPITest):
         collection_params = collection_params if collection_params else {}
         collection = self.generate_collection(**collection_params)
         dataset = self.generate_dataset(
-            collection_id=collection.collection_id,
-            processing_status={"processing_status": ProcessingStatus.INITIALIZED},
+            collection_version=collection.version_id,
+            statuses=DatasetStatusUpdate(
+                status_key=DatasetStatusKey.PROCESSING, status=DatasetProcessingStatus.INITIALIZED
+            ),
         )
         body = body if body else ""
         headers["Content-Type"] = "application/json"
@@ -1106,8 +1117,8 @@ class TestPutLink(BaseAuthAPITest):
         headers = headers if headers else {}
         headers["Content-Type"] = "application/json"
         collection = self.generate_collection()
-        processing_status = dict(processing_status=ProcessingStatus.SUCCESS)
-        dataset = self.generate_dataset(collection_id=collection.collection_id, processing_status=processing_status)
+        statuses = DatasetStatusUpdate(status_key=DatasetStatusKey.PROCESSING, status=DatasetProcessingStatus.SUCCESS)
+        dataset = self.generate_dataset(collection_version=collection, statuses=statuses)
         body = {"link": self.good_link}
         response = self.app.put(
             f"/curation/v1/collections/{collection.collection_id}/datasets/{dataset.id}",
