@@ -86,23 +86,6 @@ export default memo(function HeatMap({
     return result;
   }, [data]);
 
-  // Get id to Gene map since expression data is fetched by gene name not id
-  // const genesByID = useMemo(() => {
-  //   const result: { [name: string]: OntologyTerm } = {};
-
-  //   if (!data || !selectedOrganismId) return result;
-
-  //   const { genes: allGenes } = data;
-
-  //   const organismGenes = allGenes[selectedOrganismId];
-
-  //   for (const gene of organismGenes) {
-  //     result[gene.id] = gene;
-  //   }
-
-  //   return result;
-  // }, [data, selectedOrganismId]);
-
   const generateMarkerGenes = (cellType: CellType, tissueID: string) => {
     if (!dispatch) return;
     dispatch(addCellInfoCellType({ cellType, tissueID }));

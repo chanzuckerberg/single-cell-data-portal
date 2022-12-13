@@ -34,6 +34,10 @@ import { CellType, GeneExpressionSummary, Tissue } from "../../common/types";
 import { SideBarPositioner, SideBarWrapper, Top, Wrapper } from "../../style";
 import Beta from "../Beta";
 import CellInfoBar from "../CellInfoSideBar";
+import {
+  CellInfoSideBarWidth,
+  CELL_INFO_SIDEBAR_WIDTH_PX,
+} from "../CellInfoSideBar/style";
 import Filters from "../Filters";
 import GeneSearchBar from "../GeneSearchBar";
 import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../GeneSearchBar/components/SaveImage";
@@ -318,7 +322,7 @@ export default function WheresMyGene(): JSX.Element {
           disabled={false}
           forceToggle={forceOpen}
           wmgSideBar
-          width={400}
+          width={CELL_INFO_SIDEBAR_WIDTH_PX}
           truncatedLabel={`${tissuesByID[cellInfoCellType.tissueID].name} - ${
             cellInfoCellType.cellType.name
           }`}
