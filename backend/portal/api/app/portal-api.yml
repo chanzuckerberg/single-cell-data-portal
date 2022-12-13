@@ -102,10 +102,7 @@ paths:
                   type: string
                   description: name of the curator of the collection.
                 consortia:
-                  type: array
-                  items:
-                    type: string
-                  description: TBD
+                  $ref: "#/components/schemas/consortia"
                 links:
                   $ref: "#/components/schemas/links"
       responses:
@@ -986,6 +983,11 @@ components:
           link_type:
             type: string
             enum: [PROTOCOL, RAW_DATA, DOI, LAB_WEBSITE, OTHER, DATA_SOURCE]
+    consortia:
+      type: array
+      items:
+        type: string
+        description: TBD
     collection:
       type: object
       required:
@@ -1016,6 +1018,8 @@ components:
           $ref: "#/components/schemas/visibility"
         links:
           $ref: "#/components/schemas/links"
+        consortia:
+          $ref: "#/components/schemas/consortia"
         contact_name:
           type: string
         contact_email:

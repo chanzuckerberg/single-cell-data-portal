@@ -23,6 +23,7 @@ def get(from_date: int = None, to_date: int = None, token_info: Optional[dict] =
             DbCollection.owner,
             DbCollection.created_at,
             DbCollection.revision_of,
+            DbCollection.consortia,
         ],
     )
 
