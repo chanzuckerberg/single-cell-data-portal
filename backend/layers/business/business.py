@@ -51,7 +51,7 @@ from backend.layers.common.entities import (
 )
 from backend.layers.persistence.persistence_interface import DatabaseProviderInterface
 from backend.layers.thirdparty.crossref_provider import CrossrefProviderInterface
-from backend.layers.thirdparty.s3_provider import S3Provider
+from backend.layers.thirdparty.s3_provider import S3Provider, S3ProviderInterface
 from backend.layers.thirdparty.step_function_provider import StepFunctionProviderInterface
 from backend.layers.thirdparty.uri_provider import UriProviderInterface
 
@@ -60,7 +60,7 @@ class BusinessLogic(BusinessLogicInterface):
     database_provider: DatabaseProviderInterface
     crossref_provider: CrossrefProviderInterface
     step_function_provider: StepFunctionProviderInterface
-    s3_provider: S3Provider
+    s3_provider: S3ProviderInterface
     uri_provider: UriProviderInterface
 
     def __init__(
@@ -68,7 +68,7 @@ class BusinessLogic(BusinessLogicInterface):
         database_provider: DatabaseProviderInterface,
         crossref_provider: CrossrefProviderInterface,
         step_function_provider: StepFunctionProviderInterface,
-        s3_provider: S3Provider,
+        s3_provider: S3ProviderInterface,
         uri_provider: UriProviderInterface,
     ) -> None:
         self.crossref_provider = crossref_provider

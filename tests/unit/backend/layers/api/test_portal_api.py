@@ -1,7 +1,7 @@
 import gevent.monkey
-from tests.unit.backend.layers.common.base_api_test import NewBaseAPITest
-
 gevent.monkey.patch_all()
+
+from tests.unit.backend.layers.common.base_api_test import NewBaseAPITest
 
 import dataclasses
 import itertools
