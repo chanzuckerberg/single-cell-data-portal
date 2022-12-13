@@ -23,7 +23,6 @@ def get(from_date: int = None, to_date: int = None, token_info: Optional[dict] =
             DbCollection.owner,
             DbCollection.created_at,
             DbCollection.revision_of,
-            DbCollection.consortia,
         ],
     )
 
@@ -31,13 +30,16 @@ def get(from_date: int = None, to_date: int = None, token_info: Optional[dict] =
     for coll_dict in all_collections:
         visibility = coll_dict["visibility"]
         owner = coll_dict["owner"]
+        consortia = coll_dict["consortia"]
+
         if visibility == CollectionVisibility.PUBLIC:
-            collections.append(dict(id=coll_dict["id"], created_at=coll_dict["created_at"], visibility=visibility.name))
+            collections.append(dict(id=coll_dict["id"], consortia=consortia, created_at=coll_dict["created_at"], visibility=visibility.name))
         elif is_user_owner_or_allowed(token_info, owner):
             collections.append(
                 dict(
                     id=coll_dict["id"],
                     created_at=coll_dict["created_at"],
+                    consortia=consortia,
                     visibility=visibility.name,
                     revision_of=coll_dict["revision_of"],
                 )
