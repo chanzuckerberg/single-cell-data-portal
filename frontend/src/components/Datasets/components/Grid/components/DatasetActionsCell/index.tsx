@@ -2,10 +2,10 @@ import { Intent, Position, Tooltip } from "@blueprintjs/core";
 import DownloadDataset from "src/components/Collection/components/CollectionDatasetsGrid/components/Row/DownloadDataset";
 import { OVER_MAX_CELL_COUNT_TOOLTIP } from "src/components/common/Grid/common/constants";
 import ActionsCell from "src/components/common/Grid/components/ActionsCell";
-import { DownloadButton } from "src/components/Datasets/components/Grid/common/utils";
 import { StyledPrimaryAnchorButton } from "src/components/common/Button/common/style";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
+import DownloadButton from "src/components/common/Grid/components/DownloadButton";
 
 interface Props {
   datasetId: string;

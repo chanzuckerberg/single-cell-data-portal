@@ -3,11 +3,12 @@ import { FC, useState } from "react";
 import { Code, CodeMask, CodeWrapper, Tip } from "./style";
 
 interface Props {
-  link: string;
   fileName: string;
+  handleAnalytics: () => void;
+  link: string;
 }
 
-const CurlLink: FC<Props> = ({ link, fileName }) => {
+const CurlLink: FC<Props> = ({ fileName, handleAnalytics, link }) => {
   const [isCopied, setIsCopied] = useState(false);
 
   const curl = `curl -o ${fileName} "${link}"`;
@@ -15,6 +16,7 @@ const CurlLink: FC<Props> = ({ link, fileName }) => {
   const handleCopyClick = () => {
     setIsCopied(true);
     copy(curl);
+    handleAnalytics();
   };
   const handleCopyMouseEnter = () => setIsCopied(false);
 
