@@ -40,7 +40,7 @@ export const Details = styled.span`
   ${fontHeaderL}
 
   letter-spacing: 0;
-
+  display: inline-block;
   padding-left: 24px;
 
   color: black;

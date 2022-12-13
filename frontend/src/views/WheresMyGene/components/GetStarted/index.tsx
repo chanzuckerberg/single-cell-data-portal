@@ -1,3 +1,7 @@
+import { useEffect, useState } from "react";
+import { get } from "src/common/featureFlags";
+import { FEATURES } from "src/common/featureFlags/features";
+import { BOOLEAN } from "src/common/localStorage/set";
 import Step from "./components/Step";
 import {
   ColumnOne,
@@ -21,7 +25,7 @@ export default function GetStarted({
   tissueSelected,
   isLoading,
   geneSelected,
-}: Props): JSX.Element {
+}: Props): JSX.Element | null {
   if (!tissueHasLoadedOnce && tissueSelected && !isLoading) {
     tissueHasLoadedOnce = true;
   }
@@ -29,26 +33,37 @@ export default function GetStarted({
     geneHasLoadedOnce = true;
   }
 
-  return (
-    <Wrapper
-      style={
-        tissueHasLoadedOnce && geneHasLoadedOnce ? { display: "none" } : {}
-      }
-    >
-      <ColumnOne isHidden={tissueHasLoadedOnce}>
-        <StyledStepOne>
-          <Step step={1} details="Add Tissues" />
-        </StyledStepOne>
-      </ColumnOne>
+  const isMarkerGenes = get(FEATURES.MARKER_GENES) === BOOLEAN.TRUE;
+  const [isClient, setIsClient] = useState(false);
 
-      <ColumnTwo>
-        <StyledStepTwo isHidden={geneHasLoadedOnce}>
-          <Step step={2} details="Add Genes" />
-        </StyledStepTwo>
-        <StyledStepThree isHidden={geneHasLoadedOnce && tissueHasLoadedOnce}>
-          <Step step={3} details="Explore Gene Expression" />
-        </StyledStepThree>
-      </ColumnTwo>
-    </Wrapper>
-  );
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+  if (isClient)
+    return (
+      isClient && (
+        <Wrapper
+          isHidden={tissueHasLoadedOnce && geneHasLoadedOnce}
+          fmg={isMarkerGenes}
+        >
+          <ColumnOne isHidden={tissueHasLoadedOnce}>
+            <StyledStepOne>
+              <Step step={1} details="Add Tissues" />
+            </StyledStepOne>
+          </ColumnOne>
+
+          <ColumnTwo>
+            <StyledStepTwo isHidden={geneHasLoadedOnce}>
+              <Step step={2} details="Add Genes" />
+            </StyledStepTwo>
+            <StyledStepThree
+              isHidden={geneHasLoadedOnce && tissueHasLoadedOnce}
+            >
+              <Step step={3} details="Explore Gene Expression" />
+            </StyledStepThree>
+          </ColumnTwo>
+        </Wrapper>
+      )
+    );
+  return null;
 }

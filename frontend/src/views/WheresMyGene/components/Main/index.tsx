@@ -5,16 +5,23 @@ import React, {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import { EMPTY_ARRAY, EMPTY_OBJECT } from "src/common/constants/utils";
 import {
   CellTypeByTissueName,
   GeneExpressionSummariesByTissueName,
+  generateTermsByKey,
   useCellTypesByTissueName,
   useGeneExpressionSummariesByTissueName,
+  usePrimaryFilterDimensions,
 } from "src/common/queries/wheresMyGene";
 import SideBar from "src/components/common/SideBar";
+import {
+  GeneSideBarOpenButtonWrapper,
+  Position,
+} from "src/components/common/SideBar/style";
 import { View } from "../../../globalStyle";
 import { DispatchContext, StateContext } from "../../common/store";
 import {
@@ -24,6 +31,10 @@ import {
 import { CellType, GeneExpressionSummary, Tissue } from "../../common/types";
 import { SideBarPositioner, SideBarWrapper, Top, Wrapper } from "../../style";
 import Beta from "../Beta";
+import CellInfoBar from "../CellInfoSideBar";
+import {
+  CELL_INFO_SIDEBAR_WIDTH_PX,
+} from "../CellInfoSideBar/style";
 import Filters from "../Filters";
 import GeneSearchBar from "../GeneSearchBar";
 import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../GeneSearchBar/components/SaveImage";
@@ -41,8 +52,21 @@ export default function WheresMyGene(): JSX.Element {
   const state = useContext(StateContext);
   const dispatch = useContext(DispatchContext);
 
-  const { selectedGenes, selectedCellTypeIds, selectedTissues, sortBy } = state;
+  const {
+    selectedGenes,
+    selectedCellTypeIds,
+    selectedTissues,
+    sortBy,
+    cellInfoCellType,
+  } = state;
   const selectedOrganismId = state.selectedOrganismId || "";
+
+  const { data: { tissues: allTissues } = {} } = usePrimaryFilterDimensions();
+
+  let tissuesByID;
+  if (allTissues) {
+    tissuesByID = generateTermsByKey(allTissues, "id");
+  }
 
   const [isScaled, setIsScaled] = useState(true);
 
@@ -240,10 +264,30 @@ export default function WheresMyGene(): JSX.Element {
     setIsScaled((prevIsScaled) => !prevIsScaled);
   }, [setIsScaled]);
 
-  const [isRightSidebarOpen, setRightSidebarOpen] = useState(false);
-  const handleRightSidebarButtonClick = useCallback(() => {
-    setRightSidebarOpen(!isRightSidebarOpen);
-  }, [isRightSidebarOpen]);
+  const [isSourceDatasetSidebarOpen, setSourceDatasetSidebarOpen] =
+    useState(false);
+  const handleSourceDatasetButtonClick = useCallback(() => {
+    setSourceDatasetSidebarOpen(!isSourceDatasetSidebarOpen);
+  }, [isSourceDatasetSidebarOpen]);
+
+  const [forceOpen, setForceOpen] = useState(false);
+
+  const usePrevious = <T,>(value: T): T | undefined => {
+    const ref = useRef<T>();
+    useEffect(() => {
+      ref.current = value;
+    });
+    return ref.current;
+  };
+  const prevAmount = usePrevious({ cellInfoCellType });
+  useEffect(() => {
+    if (
+      prevAmount?.cellInfoCellType?.cellType.id !==
+      cellInfoCellType?.cellType.id
+    ) {
+      setForceOpen(!forceOpen); //the value of this boolean isn't actually read downstream, it just checks for uniqueness across renders
+    }
+  }, [cellInfoCellType, prevAmount?.cellInfoCellType?.cellType.id, forceOpen]);
 
   return (
     <>
@@ -264,6 +308,28 @@ export default function WheresMyGene(): JSX.Element {
 
         <ColorScale handleIsScaledChange={handleIsScaledChange} />
       </SideBar>
+      {cellInfoCellType && tissuesByID && (
+        <SideBar
+          label={`${cellInfoCellType.cellType.name}`}
+          SideBarWrapperComponent={SideBarWrapper}
+          SideBarPositionerComponent={SideBarPositioner}
+          SideBarOpenButtonWrapperComponent={GeneSideBarOpenButtonWrapper}
+          position={Position.RIGHT}
+          testId="cell-type-details-panel"
+          disabled={false}
+          forceToggle={forceOpen}
+          wmgSideBar
+          width={CELL_INFO_SIDEBAR_WIDTH_PX}
+          truncatedLabel={`${tissuesByID[cellInfoCellType.tissueID].name} - ${
+            cellInfoCellType.cellType.name
+          }`}
+        >
+          <CellInfoBar
+            cellInfoCellType={cellInfoCellType}
+            tissueName={tissuesByID[cellInfoCellType.tissueID].name}
+          />
+        </SideBar>
+      )}
 
       <View id="view" overflow="hidden">
         <Wrapper>
@@ -276,7 +342,7 @@ export default function WheresMyGene(): JSX.Element {
               selectedGenes={selectedGenes}
               selectedTissues={selectedTissues}
               isScaled={isScaled}
-              handleRightSidebarButtonClick={handleRightSidebarButtonClick}
+              handleRightSidebarButtonClick={handleSourceDatasetButtonClick}
             />
           </Top>
 
@@ -290,11 +356,11 @@ export default function WheresMyGene(): JSX.Element {
 
           <StyledSidebarDrawer
             position="right"
-            isOpen={isRightSidebarOpen}
+            isOpen={isSourceDatasetSidebarOpen}
             title="Source Data"
             canEscapeKeyClose={true}
             canOutsideClickClose={true}
-            onClose={handleRightSidebarButtonClick}
+            onClose={handleSourceDatasetButtonClick}
             size={DrawerSize.SMALL}
           >
             <InfoPanel />
