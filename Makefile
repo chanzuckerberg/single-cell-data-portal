@@ -145,11 +145,14 @@ local-shell: ## Open a command shell in one of the dev containers. ex: make loca
 .PHONY: local-unit-test
 local-unit-test: local-unit-test-backend local-unit-test-wmg-processing# Run all backend and processing unit tests in the dev environment, with code coverage
 
-# TODO: add WMG backend (non-processing) unit test
-# TODO: add Curation API unit test
 .PHONY: local-unit-test-backend
-local-unit-test-backend:
+local-unit-test-backend: 
 	docker-compose run --rm -T backend bash -c "cd /single-cell-data-portal && python3 -m pytest tests/unit/backend/layers/";
+
+.PHONY: local-unit-test-processing
+local-unit-test-processing: # Run processing-unittest target in `processing` Docker container
+	docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -T processing \
+	bash -c "cd /single-cell-data-portal && python3 -m pytest tests/unit/processing/";
 
 .PHONY: local-unit-test-wmg-processing
 local-unit-test-wmg-processing: # Run processing-unittest target in `wmg_processing` Docker container

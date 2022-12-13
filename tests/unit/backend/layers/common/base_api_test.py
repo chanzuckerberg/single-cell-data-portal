@@ -270,3 +270,6 @@ class NewBaseTest(BaseAuthAPITest):
             ).encode("utf8")
         ).decode("utf8")
         return f"cxguser={cxguser}"
+
+class NewBaseAPITest(NewBaseTest):
+    pass
