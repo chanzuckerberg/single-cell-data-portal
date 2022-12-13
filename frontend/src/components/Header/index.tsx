@@ -119,6 +119,7 @@ const Header: FC = () => {
               search={false}
               options={FOOTER_OPTIONS}
               onChange={handleHelpClick}
+              onClose={handleHelpClose}
             />
           </StyledPopper>
 
@@ -144,9 +145,11 @@ const Header: FC = () => {
     _: React.ChangeEvent<unknown>,
     newValue: (DefaultMenuSelectOption & { id: number; value: string }) | null
   ) {
-    let link = newValue!.value;
+    if (!newValue) return;
 
-    if (newValue!.id === 1) {
+    let link = newValue.value;
+
+    if (newValue.id === 1) {
       track(EVENTS.DOCUMENTATION_CLICK_NAV);
 
       link = isRouteActive(pathname, ROUTES.WHERE_IS_MY_GENE)
@@ -156,6 +159,10 @@ const Header: FC = () => {
 
     window.open(link, "_blank", "noopener,noreferrer");
 
+    setDropdownOpen(false);
+  }
+
+  function handleHelpClose() {
     setDropdownOpen(false);
   }
 
