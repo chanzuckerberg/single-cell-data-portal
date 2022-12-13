@@ -22,12 +22,10 @@ export const Wrapper = styled.div`
 
   display: ${({ isHidden }: WrapperProps) => (isHidden ? "none" : "flex")};
 
-  width: ${({ fmg }: WrapperProps) => {
-    console.log(fmg);
-    return fmg
+  width: ${({ fmg }: WrapperProps) =>
+    fmg
       ? `calc(96vw - ${EXPANDED_WIDTH_PX + CELL_INFO_SIDEBAR_WIDTH_PX}px)`
-      : `calc(96vw - ${EXPANDED_WIDTH_PX}px)`;
-  }};
+      : `calc(96vw - ${EXPANDED_WIDTH_PX}px)`};
   height: calc(85vh - ${HEADER_HEIGHT_PX}px);
 `;
 
