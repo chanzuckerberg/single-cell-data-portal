@@ -7,6 +7,7 @@ import boto3
 
 from backend.layers.thirdparty.s3_provider_interface import S3ProviderInterface
 
+
 class S3Provider(S3ProviderInterface):
     def __init__(self) -> None:
         self.client = boto3.client("s3")

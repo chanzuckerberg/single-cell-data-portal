@@ -1,4 +1,3 @@
-
 import base64
 import json
 import time
@@ -43,18 +42,19 @@ class BaseAuthAPITest(unittest.TestCase):
 
 
 class NewBaseAPITest(BaseAuthAPITest, NewBaseTest):
-
     def setUp(self):
         super().setUp()
 
         pa = PortalApi(self.business_logic)
 
         import backend.layers.api.router
+
         backend.layers.api.router.portal_api = Mock(return_value=pa)
 
         from backend.api_server.app import app
+
         self.app = app.test_client(use_cookies=False)
-    
+
     def get_cxguser_token(self, user="owner"):
         """
         Generated an auth token for testing.

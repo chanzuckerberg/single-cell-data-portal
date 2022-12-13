@@ -4,7 +4,7 @@ import typing
 import unittest
 from dataclasses import dataclass
 from typing import List, Optional
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 
 from backend.layers.business.business import BusinessLogic
 from backend.layers.common.entities import (
@@ -19,7 +19,6 @@ from backend.layers.common.entities import (
 from backend.layers.persistence.persistence import DatabaseProvider
 from backend.layers.persistence.persistence_mock import DatabaseProviderMock
 from backend.layers.thirdparty.crossref_provider import CrossrefProviderInterface
-from backend.layers.thirdparty.s3_provider import S3Provider
 from backend.layers.thirdparty.s3_provider_interface import S3ProviderInterface
 from backend.layers.thirdparty.step_function_provider import StepFunctionProviderInterface
 from backend.layers.thirdparty.uri_provider import FileInfo, UriProviderInterface
