@@ -26,7 +26,6 @@ export const Top = styled.div`
 
 export const SideBarWrapper = styled(SideBar)`
   max-height: calc(100vh - ${HEADER_HEIGHT_PX}px);
-  z-index: 4;
 `;
 
 export const SideBarPositioner = styled(RawSideBarPositioner)`
