@@ -10,7 +10,7 @@ export default function Beta({
     position: "absolute",
     bottom: "10px",
     right: "20px",
-    zIndex: "999",
+    zIndex: "99",
   } as React.CSSProperties;
 
   return (

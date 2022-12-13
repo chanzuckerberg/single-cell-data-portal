@@ -13,7 +13,7 @@ import Modal from "src/components/common/Modal";
 import { HEATMAP_CONTAINER_ID } from "src/views/WheresMyGene/common/constants";
 import { CellType } from "src/views/WheresMyGene/common/types";
 import { getHeatmapHeight, getHeatmapWidth } from "../../../HeatMap/utils";
-import Loader from "../../../Loader";
+import ScreenTint from "../../../ScreenTint";
 import { Label } from "../../style";
 import { StyledIconButton } from "../QuickSelect/style";
 import { ButtonWrapper, DownloadButton, StyledDiv } from "./style";
@@ -144,7 +144,7 @@ export default function SaveImage({
 
   return (
     <>
-      {isDownloading && <Loader />}
+      {isDownloading && <ScreenTint />}
       <ButtonWrapper className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}>
         <Label>Download</Label>
         <StyledIconButton
