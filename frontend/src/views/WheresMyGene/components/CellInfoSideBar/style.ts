@@ -11,12 +11,12 @@ export const ButtonContainer = styled.div`
 `;
 
 export const StyledHTMLTable = styled(HTMLTable)`
-  & td:nth-child(3) {
-    text-align: end;
-  }
   & thead td {
     color: #767676 !important;
     font-weight: 500;
+  }
+  & td:nth-child(3) {
+    text-align: end;
   }
 `;
 

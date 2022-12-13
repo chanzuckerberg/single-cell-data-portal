@@ -9,12 +9,13 @@ export const Header = styled.h1`
   font-weight: bold;
 `;
 
+// (seve): grid should handle the width for us if we set to 100%, but we 
+// will need to change upstream styling due to position: absolute
 export const Wrapper = styled.div`
   display: flex;
   position: absolute;
   top: 150px;
   margin-left: -10px;
-  // (seve): grid should handle the width for us if we set to 100%, but we will need to change upstream styling due to position: absolute
   width: calc(96vw - ${EXPANDED_WIDTH_PX + CELL_INFO_SIDEBAR_WIDTH_PX}px);
   height: calc(85vh - ${HEADER_HEIGHT_PX}px);
 `;
