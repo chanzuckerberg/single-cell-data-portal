@@ -1,7 +1,6 @@
 import copy
 import logging
 from typing import Iterable, Optional, Tuple
-from urllib.parse import urlparse
 
 from backend.common.providers.crossref_provider import CrossrefDOINotFoundException, CrossrefException
 from backend.layers.business.business_interface import BusinessLogicInterface

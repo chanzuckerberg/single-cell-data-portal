@@ -205,7 +205,9 @@ class PortalApi:
                 "created_at": collection.created_at,
                 "curator_name": "",  # TODO
                 "data_submission_policy_version": "1.0",  # TODO
-                "datasets": [self._dataset_to_response(ds, collection.published_at is not None) for ds in collection.datasets],
+                "datasets": [
+                    self._dataset_to_response(ds, collection.published_at is not None) for ds in collection.datasets
+                ],
                 "description": collection.metadata.description,
                 "id": collection_id,
                 "links": [self._link_to_response(link) for link in collection.metadata.links],

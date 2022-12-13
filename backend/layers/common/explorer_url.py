@@ -1,6 +1,7 @@
 import os
 from backend.layers.common.entities import DatasetVersion
 
+
 def generate(dataset: DatasetVersion, is_published=False):
     """
     Generates an explorer_url for the present dataset.
