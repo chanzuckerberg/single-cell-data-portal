@@ -372,7 +372,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             version = session.query(CollectionVersionTable).filter_by(version_id=version_id.id).one_or_none()
             if version:
                 if version.published_at:
-                    raise CollectionIsPublishedException(f'Published Collection Version {version_id} cannot be deleted')
+                    raise CollectionIsPublishedException(f"Published Collection Version {version_id} cannot be deleted")
                 session.delete(version)
 
     def finalize_collection_version(

@@ -838,20 +838,21 @@ class TestCollectionDeletion(NewBaseTest):
         response = self.app.get(test_public_url.url, headers=headers)
         self.assertEqual(response.status_code, 410)
 
-        # check collection version details--datasets are tombstoned
+        # check collection version also returns 'gone'
         test_version_url = furl(
             path=f"/dp/v1/collections/{collection.version_id}", query_params=dict(visibility="PUBLIC")
         )
         response = self.app.get(test_version_url.url, headers=headers)
-        body = json.loads(response.data)
-        datasets_tombstoned = [dataset['tombstone'] for dataset in body['datasets']]
-        self.assertTrue(all(datasets_tombstoned))
+        self.assertEqual(response.status_code, 410)
+        # body = json.loads(response.data)
+        # datasets_tombstoned = [dataset["tombstone"] for dataset in body["datasets"]]
+        # self.assertTrue(all(datasets_tombstoned))
 
         # check that tombstoned collection doesn't appear in collections list endpoint
         test_list_url = furl(path="/dp/v1/collections")
         response = self.app.get(test_list_url.url, headers=headers)
         body = json.loads(response.data)
-        collection_ids = [collection.id for collection in body['collections']]
+        collection_ids = [collection.id for collection in body["collections"]]
         self.assertNotIn(collection.collection_id, collection_ids)
         self.assertNotIn(collection.version_id, collection_ids)
 

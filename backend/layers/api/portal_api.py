@@ -142,7 +142,7 @@ class PortalApi:
         return {k: v for k, v in body.items() if v is not None}
 
     # Note: `metadata` can be none while the dataset is uploading
-    def _dataset_to_response(self, dataset: DatasetVersion, is_tombstoned):
+    def _dataset_to_response(self, dataset: DatasetVersion, is_tombstoned: bool):
         return self.remove_none(
             {
                 "assay": None
@@ -227,14 +227,11 @@ class PortalApi:
         version = self.business_logic.get_published_collection_version(CollectionId(collection_id))
         if version is None:
             version = self.business_logic.get_collection_version(CollectionVersionId(collection_id))
-        else:
-            if version.canonical_collection.tombstoned:
-                raise GoneHTTPException()
+            if version is None:
+                raise ForbiddenHTTPException()
 
-        if version is None:
-            raise ForbiddenHTTPException()  # TODO: maybe remake this exception
-
-
+        if version.canonical_collection.tombstoned:
+            raise GoneHTTPException()
 
         user_info = UserInfo(token_info)
         access_type = "WRITE" if user_info.is_user_owner_or_allowed(version.owner) else "READ"
@@ -343,6 +340,7 @@ class PortalApi:
             version = self.business_logic.get_collection_version_from_canonical(resource_id)
             if version is None:
                 raise ForbiddenHTTPException()
+
         if not UserInfo(token_info).is_user_owner_or_allowed(version.owner):
             raise ForbiddenHTTPException()
 

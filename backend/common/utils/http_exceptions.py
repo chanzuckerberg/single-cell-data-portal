@@ -64,4 +64,3 @@ class ConflictException(ProblemException):
 class GoneHTTPException(ProblemException):
     def __init__(self, detail: str = "Resource has been removed", *args, **kwargs) -> None:
         super().__init__(status=requests.codes.gone, title="Gone", detail=detail, *args, **kwargs)
-
