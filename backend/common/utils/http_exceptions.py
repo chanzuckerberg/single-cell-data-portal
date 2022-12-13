@@ -59,3 +59,8 @@ class MethodNotAllowedException(ProblemException):
 class ConflictException(ProblemException):
     def __init__(self, detail: str = "A duplicate resource already exists.", *args, **kwargs) -> None:
         super().__init__(status=requests.codes.conflict, title="Conflict", detail=detail, *args, **kwargs)
+
+
+class GoneHTTPException(ProblemException):
+    def __init__(self, detail: str = "Resource has been removed", *args, **kwargs) -> None:
+        super().__init__(status=requests.codes.gone, title="Gone", detail=detail, *args, **kwargs)
