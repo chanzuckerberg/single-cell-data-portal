@@ -1,0 +1,2 @@
+INFO     root:entity.py:43 Unable to find a row with primary key dfab572f-d982-494d-ba7b-be0d850bcfc3, in Collection table.
+INFO     root:entity.py:43 Unable to find a row with primary key dfab572f-d982-494d-ba7b-be0d850bcfc3, in Collection table.
