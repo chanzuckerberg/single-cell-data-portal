@@ -14,15 +14,7 @@ import { BOOLEAN } from "src/common/localStorage/set";
 import { useUserInfo } from "src/common/queries/auth";
 import { HomepageLink } from "../common/HomepageLink";
 import AuthButtons from "./components/AuthButtons";
-import {
-  BetaChip,
-  Left,
-  LinkWrapper,
-  MainWrapper,
-  Nav,
-  Right,
-  Wrapper,
-} from "./style";
+import { Left, LinkWrapper, MainWrapper, Nav, Right, Wrapper } from "./style";
 
 const Header: FC = () => {
   const isCurator = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
@@ -91,7 +83,6 @@ const Header: FC = () => {
                   onClick={handleWMGClick}
                 />
               </Link>
-              <BetaChip label="Beta" size="small" />
             </LinkWrapper>
           </Nav>
         </Left>
