@@ -747,7 +747,6 @@ class TestUpdateDataset(BaseBusinessLogicTestCase):
             self.assertEqual(version_from_db.status.validation_status, DatasetValidationStatus.INVALID)
             self.assertEqual(version_from_db.status.validation_message, "Validation error!")
 
-
     def test_add_dataset_artifact_ok(self):
         """
         A dataset artifact can be added using `add_dataset_artifact`
