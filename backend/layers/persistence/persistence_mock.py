@@ -307,6 +307,12 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         existing_status = dataset_version.status
         setattr(existing_status, status_type, copy.deepcopy(status))
 
+    def update_dataset_validation_message(
+        self, version_id: DatasetVersionId, validation_message: str
+    ) -> None:
+        dataset_version = self.datasets_versions[version_id.id]
+        dataset_version.status.validation_message = validation_message
+
     def add_dataset_to_collection_version(self, version_id: CollectionVersionId, dataset_id: DatasetId) -> None:
         # Not needed for now - create_dataset does this
         # As an alternative, this could either be called by create_dataset

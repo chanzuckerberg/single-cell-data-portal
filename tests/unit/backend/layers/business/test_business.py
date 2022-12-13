@@ -733,6 +733,21 @@ class TestUpdateDataset(BaseBusinessLogicTestCase):
             version_from_db = self.database_provider.get_dataset_version(dataset.version_id)
             self.assertEqual(version_from_db.status.upload_status, DatasetUploadStatus.UPLOADED)
 
+    def test_update_dataset_status_validation_message_ok(self):
+        """
+        The dataset validation message can be updated using `update_dataset_status`
+        """
+        unpublished_collection = self.initialize_unpublished_collection(complete_dataset_ingestion=False)
+        self.assertEqual(2, len(unpublished_collection.datasets))
+        for dataset in unpublished_collection.datasets:
+            self.business_logic.update_dataset_version_status(
+                dataset.version_id, "validation", DatasetValidationStatus.INVALID, "Validation error!"
+            )
+            version_from_db = self.database_provider.get_dataset_version(dataset.version_id)
+            self.assertEqual(version_from_db.status.validation_status, DatasetValidationStatus.INVALID)
+            self.assertEqual(version_from_db.status.validation_message, "Validation error!")
+
+
     def test_add_dataset_artifact_ok(self):
         """
         A dataset artifact can be added using `add_dataset_artifact`
