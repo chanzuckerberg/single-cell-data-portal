@@ -197,7 +197,7 @@ export default memo(function YAxisChart({
     return () => {
       observer.disconnect();
     };
-  }, []);
+  }, [selectedTissues]);
   return (
     <Wrapper id={`${tissue}-y-axis`}>
       <TissueWrapper height={heatmapHeight}>
