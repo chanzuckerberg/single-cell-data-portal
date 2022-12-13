@@ -1,4 +1,5 @@
 import { Auth0Provider } from "@auth0/auth0-react";
+import { AUTH0_DOMAIN } from "src/configs/configs";
 import { ThemeProvider as EmotionThemeProvider } from "@emotion/react";
 import { StylesProvider, ThemeProvider } from "@material-ui/core/styles";
 import { NextPage } from "next";
@@ -63,7 +64,7 @@ function App({ Component, pageProps }: AppPropsWithLayout): JSX.Element {
   return (
     <>
       <ConditionalAuth0Provider
-        domain="oidc.corporanet.local" // Hard-coded for local dev
+        domain={AUTH0_DOMAIN} // Hard-coded for local dev
         clientId="local-client-id" // Hard-coded for local dev
         redirectUri={redirectUri}
       >

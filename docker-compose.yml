@@ -273,10 +273,10 @@ services:
       corporanet:
         aliases:
           - backend.corporanet.local
-  mock_auth:
+  auth:
     build:
       cache_from:
-        - "scdp-pkce-mock_auth"
+        - "scdp-pkce-auth"
       context: oauth
       dockerfile: Dockerfile
     restart: always
@@ -288,7 +288,7 @@ services:
     networks:
       corporanet:
         aliases:
-          - oidc.corporanet.local
+          - auth.corporanet.local
 
 networks:
   corporanet:

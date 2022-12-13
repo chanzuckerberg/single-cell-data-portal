@@ -126,7 +126,7 @@ class AuthServerAPITest(BaseAPITest):
         auth_config = CorporaAuthConfig()
 
         os.environ["API_BASE_URL"] = f"http://localhost:{mock_oauth_server.port}"
-        # Overwrite the environment's auth config with our oidc server's config.
+        # Overwrite the environment's auth config with our mock auth server's config.
         authconfig = {
             "api_base_url": f"http://localhost:{mock_oauth_server.port}",
             "callback_base_url": auth_config.callback_base_url,
