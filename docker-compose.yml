@@ -280,7 +280,6 @@ services:
       context: oauth
       dockerfile: Dockerfile
     restart: always
-    command: [ "./container_init.sh" ]
     ports:
       - "443:443"
     volumes:
