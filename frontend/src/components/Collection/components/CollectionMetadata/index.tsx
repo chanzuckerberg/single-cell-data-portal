@@ -22,8 +22,8 @@ export default function CollectionMetadata({
 }: Props): JSX.Element {
   return (
     <Metadata>
-      {collectionMetadataLinks.map(({ label, testId, url, value }) => (
-        <React.Fragment key={label}>
+      {collectionMetadataLinks.map(({ label, testId, url, value }, i) => (
+        <React.Fragment key={`${value}${i}`}>
           <MetadataLabel>{label}</MetadataLabel>
           <Link href={url} passHref>
             <MetadataValue

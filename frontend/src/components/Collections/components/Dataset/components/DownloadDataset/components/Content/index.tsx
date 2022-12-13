@@ -10,6 +10,8 @@ import DataFormat from "./components/DataFormat";
 import Details from "./components/Details";
 import Name from "./components/Name";
 import { CancelButton, DownloadButton, Wrapper } from "./style";
+import { track } from "src/common/analytics";
+import { EVENTS } from "src/common/analytics/events";
 
 interface Props {
   onClose: () => void;
@@ -84,8 +86,24 @@ const Content: FC<Props> = ({ onClose, name, dataAssets }) => {
     }
   }, [selectedFormat, dataAssets]);
 
+  /**
+   * Tracks dataset download analytics as specified by the custom analytics event.
+   * @param event - Custom analytics event.
+   * @param dataFormat - Data format (optionally specified with event "DOWNLOAD_DATA_FORMAT_CLICKED").
+   */
+  const handleAnalytics = (
+    event: EVENTS,
+    dataFormat?: DATASET_ASSET_FORMAT
+  ) => {
+    track(event, {
+      dataset_name: name,
+      data_format: dataFormat || selectedFormat,
+    });
+  };
+
   const handleChange = (format: DATASET_ASSET_FORMAT) => {
     setSelectedFormat(format);
+    handleAnalytics(EVENTS.DOWNLOAD_DATA_FORMAT_CLICKED, format);
   };
 
   const renderDownload = () => {
@@ -95,6 +113,7 @@ const Content: FC<Props> = ({ onClose, name, dataAssets }) => {
         data-test-id="download-asset-download-button"
         href={downloadLink}
         intent={Intent.PRIMARY}
+        onClick={() => handleAnalytics(EVENTS.DOWNLOAD_DATA_COMPLETE)}
       >
         Download
       </DownloadButton>
@@ -120,7 +139,11 @@ const Content: FC<Props> = ({ onClose, name, dataAssets }) => {
             selected={Boolean(fileSize)}
           />
           {downloadLink && !isLoading && (
-            <CurlLink fileName={fileName} link={downloadLink} />
+            <CurlLink
+              fileName={fileName}
+              handleAnalytics={() => handleAnalytics(EVENTS.DOWNLOAD_DATA_COPY)}
+              link={downloadLink}
+            />
           )}
         </Wrapper>
       </div>
