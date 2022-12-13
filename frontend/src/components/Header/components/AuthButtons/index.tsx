@@ -3,12 +3,10 @@ import { AnchorButton, Button, MenuDivider } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 import { Menu, MenuItem } from "czifui";
 import { MouseEventHandler, useState } from "react";
-import { API } from "src/common/API";
 import { get } from "src/common/featureFlags";
 import { FEATURES } from "src/common/featureFlags/features";
 import { BOOLEAN } from "src/common/localStorage/set";
 import { AuthButtonWrapper } from "src/components/Header/style";
-import { API_URL } from "src/configs/configs";
 import CuratorAPIKeyGenerator from "../CuratorAPIKeyGenerator";
 import { LogOutEmail, LogOutText } from "./style";
 
