@@ -703,7 +703,7 @@ interface MarkerGeneRequestBody {
 }
 
 interface HardcodedMarkerGeneRequest extends MarkerGeneRequestBody {
-  n_markers: 20;
+  n_markers: 25;
 }
 
 export function generateMarkerGeneBody(
@@ -714,7 +714,7 @@ export function generateMarkerGeneBody(
 ): HardcodedMarkerGeneRequest {
   return {
     celltype: cellTypeID,
-    n_markers: 20,
+    n_markers: 25,
     organism: organismID,
     test: test,
     tissue: tissueID,
@@ -732,7 +732,7 @@ export async function fetchMarkerGenes({
   cellTypeID,
   organismID,
   tissueID,
-  test = "ttest",
+  test = "binomtest",
 }: FetchMarkerGeneParams): Promise<MarkerGeneResponse> {
   const url = API_URL + API.WMG_MARKER_GENES;
   const body = generateMarkerGeneBody(cellTypeID, tissueID, organismID, test);
