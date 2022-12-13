@@ -12,7 +12,6 @@ import { useUserInfo } from "src/common/queries/auth";
 import AuthButtons from "src/components/Header/components/AuthButtons";
 import { HomepageLink } from "../common/HomepageLink";
 import {
-  BetaChip,
   DesktopHomeLink,
   HiringLink,
   Left,
@@ -105,7 +104,6 @@ const LandingHeader: FC = () => {
                       onClick={handleWMGClick}
                     />
                   </Link>
-                  <BetaChip label="Beta" size="small" />
                 </LinkWrapper>
               </Nav>
             </Left>

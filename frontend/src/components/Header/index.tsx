@@ -14,15 +14,7 @@ import { BOOLEAN } from "src/common/localStorage/set";
 import { useUserInfo } from "src/common/queries/auth";
 import { HomepageLink } from "../common/HomepageLink";
 import AuthButtons from "./components/AuthButtons";
-import {
-  BetaChip,
-  Left,
-  LinkWrapper,
-  MainWrapper,
-  Nav,
-  Right,
-  Wrapper,
-} from "./style";
+import { Left, LinkWrapper, MainWrapper, Nav, Right, Wrapper } from "./style";
 
 const Header: FC = () => {
   const isCurator = get(FEATURES.CURATOR) === BOOLEAN.TRUE;
@@ -91,7 +83,6 @@ const Header: FC = () => {
                   onClick={handleWMGClick}
                 />
               </Link>
-              <BetaChip label="Beta" size="small" />
             </LinkWrapper>
           </Nav>
         </Left>
@@ -128,6 +119,7 @@ const Header: FC = () => {
               search={false}
               options={FOOTER_OPTIONS}
               onChange={handleHelpClick}
+              onClose={handleHelpClose}
             />
           </StyledPopper>
 
@@ -153,9 +145,11 @@ const Header: FC = () => {
     _: React.ChangeEvent<unknown>,
     newValue: (DefaultMenuSelectOption & { id: number; value: string }) | null
   ) {
-    let link = newValue!.value;
+    if (!newValue) return;
 
-    if (newValue!.id === 1) {
+    let link = newValue.value;
+
+    if (newValue.id === 1) {
       track(EVENTS.DOCUMENTATION_CLICK_NAV);
 
       link = isRouteActive(pathname, ROUTES.WHERE_IS_MY_GENE)
@@ -165,6 +159,10 @@ const Header: FC = () => {
 
     window.open(link, "_blank", "noopener,noreferrer");
 
+    setDropdownOpen(false);
+  }
+
+  function handleHelpClose() {
     setDropdownOpen(false);
   }
 

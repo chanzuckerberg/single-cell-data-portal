@@ -4,7 +4,7 @@ data aws_caller_identity current {}
 
 resource aws_batch_job_definition batch_job_def {
   type = "container"
-  name = "dp-${var.deployment_stage}-${var.custom_stack_name}-wmg-processing"
+  name = "wmg-${var.deployment_stage}-${var.custom_stack_name}-wmg-processing"
   container_properties = <<EOF
 {
   "jobRoleArn": "${var.batch_role_arn}",
@@ -32,7 +32,7 @@ resource aws_batch_job_definition batch_job_def {
       "value": "${var.remote_dev_prefix}"
     }
   ],
-  "vcpus": 2,
+  "vcpus": ${var.desired_vcpus},
   "logConfiguration": {
     "logDriver": "awslogs",
     "options": {

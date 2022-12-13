@@ -14,7 +14,7 @@ export default function SourceDataButton({
       <StyledLabel>Source Data</StyledLabel>
 
       <StyledIconButton
-        data-test-id={"download-button"}
+        data-test-id={"source-data-button"}
         onClick={handleRightSidebarButtonClick}
         {...{
           // (thuang): Move this back to explicit prop={value} after
