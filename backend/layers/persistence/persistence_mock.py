@@ -3,6 +3,7 @@ import uuid
 from datetime import datetime
 from typing import Dict, Iterable, List, Optional, Union
 
+from backend.layers.business.exceptions import CollectionIsPublishedException
 from backend.layers.common.entities import (
     CanonicalCollection,
     CanonicalDataset,
@@ -23,7 +24,7 @@ from backend.layers.common.entities import (
     DatasetVersion,
     DatasetVersionId,
 )
-from backend.layers.persistence.persistence_interface import DatabaseProviderInterface
+from backend.layers.persistence.persistence import DatabaseProviderInterface
 
 
 class DatabaseProviderMock(DatabaseProviderInterface):
@@ -122,10 +123,14 @@ class DatabaseProviderMock(DatabaseProviderInterface):
     def get_all_mapped_collection_versions(self) -> Iterable[CollectionVersion]:  # TODO: add filters if needed
         for version_id, collection_version in self.collections_versions.items():
             if version_id in [c.version_id.id for c in self.collections.values()]:
+                collection_id = collection_version.collection_id.id
+                if self.collections[collection_id].tombstoned:
+                    continue
                 yield self._update_version_with_canonical(collection_version)
 
-    def delete_collection(self, collection_id: CollectionId) -> None:
-        del self.collections[collection_id.id]
+    def delete_canonical_collection(self, collection_id: CollectionId) -> None:
+        collection = self.collections[collection_id.id]
+        collection.tombstoned = True
 
     def save_collection_metadata(
         self, version_id: CollectionVersionId, collection_metadata: CollectionMetadata
@@ -162,12 +167,10 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         return new_version_id
 
     def delete_collection_version(self, version_id: CollectionVersionId) -> None:
-        # Can only delete an unpublished collection
+        collection_version = self.collections_versions.get(version_id.id)
+        if collection_version.published_at is not None:
+            raise CollectionIsPublishedException("Can only delete unpublished collections")
         del self.collections_versions[version_id.id]
-
-    def delete_canonical_collection(self, collection_id: CollectionId) -> None:
-        canonical_collection = self.collections[collection_id.id]
-        canonical_collection.tombstoned = True
 
     def get_collection_version(self, version_id: CollectionVersionId) -> CollectionVersion:
         version = self.collections_versions.get(version_id.id)
@@ -180,8 +183,6 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         for collection_version in self.collections_versions.values():
             if collection_version.collection_id == collection_id:
                 versions.append(self._update_version_with_canonical(collection_version, update_datasets=True))
-        if not versions:
-            raise ValueError("Could not find matching collection Id")
         return versions
 
     def get_collection_version_with_datasets(self, version_id: CollectionVersionId) -> CollectionVersionWithDatasets:
