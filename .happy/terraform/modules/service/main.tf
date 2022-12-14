@@ -131,7 +131,7 @@ resource "aws_ecs_task_definition" "task_definition" {
     "dockerLabels": {
       "com.datadoghq.ad.check_names": "[\"gunicorn\"]",
       "com.datadoghq.ad.init_configs": "[{}]",
-      "com.datadoghq.ad.instances":"[{ \"proc_name\": \"backend.api_server.app:app\" }]"
+      "com.datadoghq.ad.instances":"[{ \"proc_name\": \"backend.api_server.app:app\", \"gunicorn\": \"/usr/local/bin/gunicorn\" }]"
     },
     "essential": true,
     "image": "${var.image}",
