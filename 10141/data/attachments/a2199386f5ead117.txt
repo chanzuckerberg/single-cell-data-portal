@@ -1,1 +1,0 @@
-INFO     root:entity.py:43 Unable to find a row with primary key non_existent_id, in Collection table.
