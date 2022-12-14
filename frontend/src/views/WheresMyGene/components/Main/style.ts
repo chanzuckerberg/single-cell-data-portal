@@ -17,3 +17,7 @@ export const StyledSidebarDrawer = styled(Drawer)`
     box-shadow: none;
   }
 `;
+
+export const BetaWrapper = styled("div")`
+  width: 100vw;
+`;
