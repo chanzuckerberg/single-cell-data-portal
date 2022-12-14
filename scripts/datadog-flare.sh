@@ -1,0 +1,1 @@
+AWS_PROFILE=single-cell-dev aws ecs execute-command --cluster arn:aws:ecs:us-west-2:699936264352:cluster/happy-rdev --task 6139bc86979e498ab85908da2be1bb7d --container datadog-agent --interactive --command "agent flare 1023319 -s -e alokshin@chanzuckerberg.com" 
