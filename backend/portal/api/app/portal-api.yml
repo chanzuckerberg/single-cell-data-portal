@@ -448,9 +448,7 @@ paths:
                     revised_at:
                       type: number
                     consortia:
-                      type: array
-                      items:
-                        type: string
+                        $ref: "#/components/schemas/consortia"
         "400":
           $ref: "#/components/responses/400"
 
@@ -987,7 +985,7 @@ components:
       type: array
       items:
         type: string
-        description: TBD
+        description: The broader research groups which contributed to this collection of datasets.
     collection:
       type: object
       required:
