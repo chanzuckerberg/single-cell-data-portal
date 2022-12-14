@@ -100,7 +100,7 @@ def delete(token_info: dict, collection_id: str, dataset_id: str = None):
     # TODO: deduplicate from ApiCommon. We need to settle the class/module level debate before can do that
     dataset_version = business_logic.get_dataset_version(DatasetVersionId(dataset_id))
     if dataset_version is None:
-        raise ForbiddenHTTPException(f"Dataset {dataset_id} does not exist")
+        raise ForbiddenHTTPException()
 
     collection_version = business_logic.get_collection_version(CollectionVersionId(collection_id))
     # If the collection does not exist, it means that the dataset is orphaned and therefore we cannot
