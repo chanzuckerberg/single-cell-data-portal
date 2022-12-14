@@ -10,7 +10,12 @@ from backend.common.corpora_orm import (
 )
 from backend.common.providers.crossref_provider import CrossrefDOINotFoundException
 from backend.common.utils.api_key import generate
-from backend.layers.common.entities import DatasetProcessingStatus, DatasetStatusKey, DatasetValidationStatus
+from backend.layers.common.entities import (
+    CollectionVersion,
+    DatasetProcessingStatus,
+    DatasetStatusKey,
+    DatasetValidationStatus,
+)
 from backend.portal.api.curation.v1.curation.collections.common import EntityColumns
 from unit.backend.api_server.base_api_test import BaseAuthAPITest
 from unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
@@ -130,7 +135,7 @@ class TestDeleteCollection(BaseAuthAPITest):
         for auth, expected_response in tests:
             with self.subTest(auth):
                 collection_id = self.generate_published_collection().collection_id
-                self.business_logic.delete_collection(collection_id)
+                self.business_logic.tombstone_collection(collection_id)
                 self._test(collection_id, auth, expected_response)
 
 
@@ -456,6 +461,7 @@ class TestGetCollections(NewBaseTest):
                     "link_url": "http://test_raw_data_url.place",
                 }
             ],
+            add_datasets=1,
         )
         params = {"visibility": "PRIVATE"}
 
@@ -605,17 +611,15 @@ class TestGetCollectionID(NewBaseTest):
         self.assertEqual(json.dumps(self.expected_body, sort_keys=True), json.dumps(res_body))
 
     def test__get_private_collection__OK(self):
-        collection_id = self.generate_unpublished_collection().collection_id.id
-        res = self.app.get(f"/curation/v1/collections/{collection_id}")
-        self.assertEqual(200, res.status_code)
-        self.assertEqual(collection_id, res.json["id"])
+        collection_version = self.generate_unpublished_collection()
+        self._test_response(collection_version)
 
     def test__get_collection_with_dataset_failing_validation(self):
-        collection = self.generate_collection(
+        collection_version = self.generate_collection(
             visibility=CollectionVisibility.PRIVATE.name,
         )
         dataset = self.generate_dataset(
-            collection=collection,
+            collection_version=collection_version,
             statuses=[
                 DatasetStatusUpdate(status_key=DatasetStatusKey.PROCESSING, status=DatasetProcessingStatus.FAILURE),
                 DatasetStatusUpdate(status_key=DatasetStatusKey.VALIDATION, status=DatasetValidationStatus.INVALID),
@@ -623,10 +627,10 @@ class TestGetCollectionID(NewBaseTest):
                 # "test message",  # TODO add validation message
             ],
         )
-        res = self.app.get(f"/curation/v1/collections/{collection.collection_id}")
+        res = self.app.get(f"/curation/v1/collections/{collection_version.collection_id}")
         self.assertEqual("FAILURE", res.json["processing_status"])
         actual_dataset = res.json["datasets"][0]
-        self.assertEqual(dataset.id, actual_dataset["id"])
+        self.assertEqual(dataset.dataset_id, actual_dataset["id"])
         self.assertEqual("VALIDATION_FAILURE", actual_dataset["processing_status"])
         self.assertEqual("test message", actual_dataset["processing_status_detail"])
 
@@ -643,7 +647,7 @@ class TestGetCollectionID(NewBaseTest):
         res = self.app.get(f"/curation/v1/collections/{collection.collection_id}")
         self.assertEqual("FAILURE", res.json["processing_status"])
         actual_dataset = res.json["datasets"][0]
-        self.assertEqual(dataset.id, actual_dataset["id"])
+        self.assertEqual(dataset.dataset_id, actual_dataset["id"])
         self.assertEqual("PIPELINE_FAILURE", actual_dataset["processing_status"])
 
     def test__get_nonexistent_collection__403(self):
@@ -651,43 +655,57 @@ class TestGetCollectionID(NewBaseTest):
         self.assertEqual(403, res.status_code)
 
     def test__get_tombstoned_collection__403(self):
-        tombstoned_collection = self.generate_collection(
-            tombstone=True, name="tombstoned collection", visibility=CollectionVisibility.PUBLIC
-        )
-        res = self.app.get(f"/curation/v1/collections/{tombstoned_collection.collection_id}")
-        self.assertEqual(403, res.status_code)
+        collection_version = self.generate_published_collection()
+        self.business_logic.tombstone_collection(collection_version.collection_id)
+        self._test_response(collection_version, 403)
 
     def test_get_collection_with_no_datasets(self):
-        collection_id = self.generate_unpublished_collection(add_datasets=0).collection_id
-        res = self.app.get(f"/curation/v1/collections/{collection_id.id}", headers=self.make_owner_header())
-        self.assertEqual(200, res.status_code)
-        self.assertEqual(collection_id.id, res.json["id"])
-
-    def test__get_collection_with_tombstoned_datasets__OK(self):
-        collection = self.generate_collection()
-        self.generate_dataset(collection_version=collection)
-        self.generate_dataset(collection_version=collection, tombstone=False)
-        self.generate_dataset(collection_version=collection, tombstone=True)
-        res = self.app.get(f"/curation/v1/collections/{collection.collection_id}")
-        self.assertEqual(1, len(res.json["datasets"]))
+        collection_version = self.generate_unpublished_collection(add_datasets=0)
+        self._test_response(collection_version)
 
     def test__get_public_collection_with_auth_access_type_write__OK(self):
-        collection_id = self.generate_published_collection().collection_id
-        res = self.app.get(f"/curation/v1/collections/{collection_id.id}", headers=self.make_owner_header())
+        """The Canonical Collection id should be returned"""
+        collection_version = self.generate_published_collection()
+        version_id = collection_version.version_id
+        collection_id = collection_version.collection_id
+
+        res = self.app.get(f"/curation/v1/collections/{version_id}", headers=self.make_owner_header())
+        self.assertEqual(collection_version.collection_id.id, res.json["id"])
+
+        res = self.app.get(f"/curation/v1/collections/{collection_id}", headers=self.make_owner_header())
         self.assertEqual(200, res.status_code)
-        self.assertEqual(collection_id.id, res.json["id"])
+        self.assertEqual(collection_version.collection_id.id, res.json["id"])
 
     def test__get_public_collection_with_auth_access_type_read__OK(self):
-        collection_id = self.generate_published_collection(owner="someone else").collection_id
-        res = self.app.get(f"/curation/v1/collections/{collection_id.id}", headers=self.make_owner_header())
+        """The Canonical Collection id should be returned"""
+        collection_version = self.generate_published_collection(owner="someone else")
+        version_id = collection_version.version_id
+        collection_id = collection_version.collection_id
+
+        res = self.app.get(f"/curation/v1/collections/{version_id}", headers=self.make_owner_header())
+        self.assertEqual(collection_version.collection_id.id, res.json["id"])
+
+        res = self.app.get(f"/curation/v1/collections/{collection_id}", headers=self.make_owner_header())
         self.assertEqual(200, res.status_code)
-        self.assertEqual(collection_id.id, res.json["id"])
+        self.assertEqual(collection_version.collection_id.id, res.json["id"])
 
     def test__get_private_collection_with_auth_access_type_write__OK(self):
-        collection_id = self.generate_unpublished_collection().collection_id
-        res = self.app.get(f"/curation/v1/collections/{collection_id.id}", headers=self.make_owner_header())
-        self.assertEqual(200, res.status_code)
-        self.assertEqual(collection_id.id, res.json["id"])
+        collection_version = self.generate_unpublished_collection()
+        self._test_response(collection_version)
+
+    def _test_response(self, collection_version: CollectionVersion, status_code=200):
+        version_id = collection_version.version_id
+        collection_id = collection_version.collection_id
+
+        res = self.app.get(f"/curation/v1/collections/{version_id}", headers=self.make_owner_header())
+        self.assertEqual(status_code, res.status_code)
+        if status_code == 200:
+            self.assertEqual(collection_version.version_id.id, res.json["id"])
+
+        res = self.app.get(f"/curation/v1/collections/{collection_id}", headers=self.make_owner_header())
+        self.assertEqual(status_code, res.status_code)
+        if status_code == 200:
+            self.assertEqual(collection_version.version_id.id, res.json["id"])
 
     def test__get_collection_with_x_approximate_distribution_none__OK(self):
         metadata = copy.deepcopy(self.sample_dataset_metadata)

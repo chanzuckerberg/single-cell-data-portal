@@ -1,5 +1,7 @@
+import os
 from dataclasses import asdict
-from typing import List, Optional, Tuple
+from os.path import join
+from typing import List, Optional, Tuple, Union
 from urllib.parse import urlparse
 
 from backend.common.corpora_config import CorporaConfig
@@ -20,8 +22,11 @@ from backend.layers.common.entities import (
     CollectionId,
     CollectionVersion,
     CollectionVersionId,
+    CollectionVersionWithDatasets,
     DatasetProcessingStatus,
+    DatasetValidationStatus,
     DatasetVersion,
+    DatasetVersionId,
     Link,
     OntologyTermId,
 )
@@ -62,7 +67,28 @@ def extract_doi_from_links(links: List[Link]) -> Tuple[Optional[str], List[dict]
     return doi, dict_links
 
 
-def reshape_for_curation_api(collection_version: CollectionVersion, user_info: UserInfo, preview: bool = False) -> dict:
+DEPLOYMENT_STAGE_TO_URL = {
+    "staging": "https://cellxgene.staging.single-cell.czi.technology/e",
+    "prod": "https://cellxgene.cziscience.com/e",
+    "rdev": f"https:/{os.environ.get('REMOTE_DEV_PREFIX')}-explorer.rdev.single-cell.czi.technology/e",
+    "dev": "https://cellxgene.dev.single-cell.czi.technology/e",
+    "test": "https://frontend.corporanet.local:3000",
+}
+
+
+def generate_explorer_url(dataset_version: DatasetVersion):
+    return join(
+        DEPLOYMENT_STAGE_TO_URL[os.environ["DEPLOYMENT_STAGE"]],
+        dataset_version.version_id.id + ".cxg",
+        "",
+    )
+
+
+def reshape_for_curation_api(
+    collection_version: Union[CollectionVersion, CollectionVersionWithDatasets],
+    user_info: UserInfo,
+    preview: bool = False,
+) -> dict:
     """
     Reshape Collection data for the Curation API response. Remove tombstoned Datasets.
     :param collection: the Collection being returned in the API response
@@ -91,13 +117,29 @@ def reshape_for_curation_api(collection_version: CollectionVersion, user_info: U
     # get collection dataset attributes
     response_datasets = []
     collection_level_processing_status = None  # Noe if no datasets
-    for dataset_version_id in collection_version.datasets:
-        dataset_version = get_business_logic().get_dataset_version(dataset_version_id)
+    for _dataset_version in collection_version.datasets:
+        if isinstance(_dataset_version, DatasetVersionId):
+            dataset_version = get_business_logic().get_dataset_version(_dataset_version)
+        else:
+            dataset_version = _dataset_version
+
         ds = dict()
+
+        # Determine what columns to include from the dataset
         if preview:
             columns = EntityColumns.dataset_metadata_preview_cols
         else:
             columns = EntityColumns.dataset_metadata_cols
+
+        # Get dataset metadata fields
+        for column in columns:
+            col = getattr(dataset_version.metadata, column)
+            if isinstance(col, list) and len(col) != 0 and isinstance(col[0], OntologyTermId):
+                col = [asdict(i) for i in col]
+            ds[column] = col
+
+        # Get none preview specific dataset fields
+        if not preview:
             # get dataset asset attributes
             assets = []
             for artifact in dataset_version.artifacts:
@@ -107,14 +149,20 @@ def reshape_for_curation_api(collection_version: CollectionVersion, user_info: U
             ds["dataset_assets"] = assets
             ds["processing_status_detail"] = dataset_version.status.validation_message
             ds["revised_at"] = dataset_version.canonical_dataset.revised_at
+            ds["revision_of"] = dataset_version.canonical_dataset.dataset_version_id.id
+            ds["title"] = ds.pop("name", None)
             ds["is_primary_data"] = is_primary_data_mapping.get(ds.pop("is_primary_data"), [])
+            ds["explorer_url"] = generate_explorer_url(dataset_version)
 
-        # Get dataset metadata fields
-        for column in columns:
-            col = getattr(dataset_version.metadata, column)
-            if isinstance(col, list) and len(col) != 0 and isinstance(col[0], OntologyTermId):
-                col = [asdict(i) for i in col]
-            ds[column] = col
+            if status := dataset_version.status:
+                if status.processing_status == DatasetProcessingStatus.FAILURE:
+                    if status.validation_status == DatasetValidationStatus.INVALID:
+                        ds["processing_status_detail"] = status.validation_message
+                        ds["processing_status"] = "VALIDATION_FAILURE"
+                    else:
+                        ds["processing_status"] = "PIPELINE_FAILURE"
+                else:
+                    ds["processing_status"] = status.processing_status
 
         ds["id"] = dataset_version.dataset_id.id
         response_datasets.append(ds)
@@ -242,23 +290,17 @@ class EntityColumns:
 
     dataset_metadata_cols = [
         *dataset_metadata_preview_cols,
-        "original_id",
         "name",
-        "revision",
-        "revised_at",
         "is_primary_data",
-        "artifacts",
         "sex",
         "self_reported_ethnicity",
         "development_stage",
-        "explorer_url",
         "cell_type",
         "cell_count",
         "x_approximate_distribution",
         "batch_condition",
         "mean_genes_per_cell",
         "schema_version",
-        "processing_status",
         "donor_id",
     ]
 
@@ -310,7 +352,7 @@ def get_collection_level_processing_status(datasets: List[DatasetVersion]) -> st
     return return_status
 
 
-def get_infered_collection_version_else_forbidden(collection_id: str) -> Optional[CollectionVersion]:
+def get_infered_collection_version_else_forbidden(collection_id: str) -> Optional[CollectionVersionWithDatasets]:
     """
     Infer the collection version from either a CollectionId or a CollectionVersionId and return the CollectionVersion.
     :param collection_id: identifies the collection version
