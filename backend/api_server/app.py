@@ -15,10 +15,6 @@ from backend.common.utils.aws import AwsSecret
 from backend.common.utils.json import CurationJSONEncoder, CustomJSONEncoder
 from backend.gene_info.api.ensembl_ids import GeneChecker
 
-# TODO: Add StackOverflow link that explains
-# import gevent.monkey
-# gevent.monkey.patch_all()
-
 DEPLOYMENT_STAGE = os.environ["DEPLOYMENT_STAGE"]
 APP_NAME = "{}-{}".format(os.environ.get("APP_NAME", "api"), DEPLOYMENT_STAGE)
 

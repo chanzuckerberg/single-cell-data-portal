@@ -1,8 +1,8 @@
 import json
 import typing
 from datetime import datetime
-from unittest.mock import Mock, patch
 from unittest import mock
+from unittest.mock import Mock, patch
 
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -11,7 +11,7 @@ from backend.common.corpora_orm import (
     ConversionStatus,
     DatasetArtifactFileType,
 )
-from backend.common.entities import Dataset, Collection
+from backend.common.entities import Collection, Dataset
 from backend.common.utils.db_session import db_session_manager
 from backend.common.utils.exceptions import CorporaException
 from backend.common.utils.json import CustomJSONEncoder

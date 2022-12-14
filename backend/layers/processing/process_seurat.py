@@ -1,19 +1,21 @@
+import os
+import subprocess
 
 from backend.layers.business.business_interface import BusinessLogicInterface
+from backend.layers.common.entities import (
+    DatasetArtifactType,
+    DatasetConversionStatus,
+    DatasetStatusKey,
+    DatasetVersionId,
+)
 from backend.layers.processing.process_logic import ProcessingLogic
-from backend.layers.common.entities import DatasetConversionStatus, DatasetStatusKey, DatasetVersionId
-
-import subprocess
-import os
-from backend.layers.thirdparty.s3_provider import S3Provider, S3ProviderInterface
-
+from backend.layers.thirdparty.s3_provider import S3ProviderInterface
 from backend.layers.thirdparty.uri_provider import UriProviderInterface
 
 
 class ProcessSeurat(ProcessingLogic):
-
     def __init__(
-        self,     
+        self,
         business_logic: BusinessLogicInterface,
         uri_provider: UriProviderInterface,
         s3_provider: S3ProviderInterface,
@@ -37,7 +39,7 @@ class ProcessSeurat(ProcessingLogic):
         dataset = self.business_logic.get_dataset_version(dataset_id)
 
         if dataset is None:
-            raise Exception("Dataset not found") # TODO: maybe improve
+            raise Exception("Dataset not found")  # TODO: maybe improve
 
         if dataset.status.rds_status == DatasetConversionStatus.SKIPPED:
             self.logger.info("Skipping Seurat conversion")
@@ -59,13 +61,12 @@ class ProcessSeurat(ProcessingLogic):
 
         self.create_artifact(
             seurat_filename,
-            "RDS",  # TODO: Switch to Enum
+            DatasetArtifactType.RDS,
             bucket_prefix,
             dataset_id,
             artifact_bucket,
             DatasetStatusKey.RDS,
         )
-
 
     def make_seurat(self, local_filename):
         """

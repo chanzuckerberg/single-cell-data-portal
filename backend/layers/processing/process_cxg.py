@@ -1,16 +1,20 @@
 #!/usr/bin/env python3
-from backend.portal.pipeline.processing.h5ad_data_file import H5ADDataFile
 from backend.layers.business.business_interface import BusinessLogicInterface
-
+from backend.layers.common.entities import (
+    DatasetArtifactType,
+    DatasetConversionStatus,
+    DatasetStatusKey,
+    DatasetVersionId,
+)
 from backend.layers.processing.process_logic import ProcessingLogic
-from backend.layers.common.entities import DatasetConversionStatus, DatasetStatusKey, DatasetVersionId
-from backend.layers.thirdparty.s3_provider import S3Provider, S3ProviderInterface
+from backend.layers.thirdparty.s3_provider import S3ProviderInterface
 from backend.layers.thirdparty.uri_provider import UriProviderInterface
+from backend.portal.pipeline.processing.h5ad_data_file import H5ADDataFile
+
 
 class ProcessCxg(ProcessingLogic):
-
     def __init__(
-        self,     
+        self,
         business_logic: BusinessLogicInterface,
         uri_provider: UriProviderInterface,
         s3_provider: S3ProviderInterface,
@@ -41,7 +45,6 @@ class ProcessCxg(ProcessingLogic):
         # Convert the labeled dataset to CXG and upload it to the cellxgene bucket
         self.process_cxg(labeled_h5ad_filename, dataset_id, cellxgene_bucket)
 
-
     def make_cxg(self, local_filename):
         """
         Convert the uploaded H5AD file to the CXG format servicing the cellxgene Explorer.
@@ -59,16 +62,16 @@ class ProcessCxg(ProcessingLogic):
 
         return cxg_output_container
 
-
     def copy_cxg_files_to_cxg_bucket(self, cxg_dir, s3_uri):
         """
         Copy cxg files to the cellxgene bucket (under the given object key) for access by the explorer
         """
         self.s3_provider.upload_directory(cxg_dir, s3_uri)
 
-
     def process_cxg(self, local_filename, dataset_id, cellxgene_bucket):
-        cxg_dir = self.convert_file(self.make_cxg, local_filename, "Issue creating cxg.", dataset_id, DatasetStatusKey.CXG)
+        cxg_dir = self.convert_file(
+            self.make_cxg, local_filename, "Issue creating cxg.", dataset_id, DatasetStatusKey.CXG
+        )
         bucket_prefix = self.get_bucket_prefix(dataset_id.id)
         s3_uri = f"s3://{cellxgene_bucket}/{bucket_prefix}.cxg/"
         self.update_processing_status(dataset_id, DatasetStatusKey.CXG, DatasetConversionStatus.UPLOADING)
@@ -81,6 +84,6 @@ class ProcessCxg(ProcessingLogic):
         #         "",
         #     )
         # }
-        self.business_logic.add_dataset_artifact(dataset_id, "CXG", s3_uri)
+        self.business_logic.add_dataset_artifact(dataset_id, DatasetArtifactType.CXG, s3_uri)
         self.logger.info(f"Updating database with cxg artifact for dataset {dataset_id}. s3_uri is {s3_uri}")
         self.update_processing_status(dataset_id, DatasetStatusKey.CXG, DatasetConversionStatus.UPLOADED)

@@ -8,7 +8,7 @@ from backend.layers.auth.user_info import UserInfo
 from backend.layers.business.exceptions import CollectionIsPublishedException, CollectionNotFoundException, CollectionUpdateException, DatasetInWrongStatusException, DatasetNotFoundException, InvalidURIException
 
 from backend.layers.common.entities import CollectionId, CollectionVersionId, DatasetArtifact, DatasetArtifactType, DatasetProcessingStatus, DatasetValidationStatus, DatasetVersion, DatasetVersionId
-from backend.portal.api.curation.v1.curation.collections.common import DATASET_ONTOLOGY_ELEMENTS, DATASET_ONTOLOGY_ELEMENTS_PREVIEW, get_infered_dataset_version_else_forbidden
+from backend.portal.api.curation.v1.curation.collections.common import DATASET_ONTOLOGY_ELEMENTS, DATASET_ONTOLOGY_ELEMENTS_PREVIEW, get_infered_dataset_version
 
 
 is_primary_data_mapping = {
@@ -84,7 +84,7 @@ def get(collection_id: str, dataset_id: str = None):
     if collection_version is None:
         raise NotFoundHTTPException("Collection not found!")
 
-    version = get_infered_dataset_version_else_forbidden(dataset_id)
+    version = get_infered_dataset_version(dataset_id)
     if version is None:
         raise NotFoundHTTPException("Dataset not found")
 

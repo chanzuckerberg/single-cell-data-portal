@@ -1,13 +1,5 @@
-import tempfile
-import unittest
 from unittest.mock import Mock, patch
 
-import gevent.monkey
-gevent.monkey.patch_all()
-
-
-from backend.layers.business.business import BusinessLogic
-from backend.layers.persistence.persistence import DatabaseProviderInterface
 from backend.layers.processing.downloader import Downloader
 from backend.layers.processing.process import ProcessMain
 from backend.layers.processing.process_cxg import ProcessCxg
@@ -16,7 +8,13 @@ from backend.layers.processing.process_seurat import ProcessSeurat
 from backend.layers.thirdparty.s3_provider import S3Provider
 from backend.layers.thirdparty.schema_validator_provider import SchemaValidatorProviderInterface
 from backend.layers.thirdparty.uri_provider import FileInfo, UriProvider
-from backend.layers.common.entities import DatasetConversionStatus, DatasetProcessingStatus, DatasetUploadStatus, DatasetValidationStatus
+from backend.layers.common.entities import (
+    DatasetArtifactType,
+    DatasetConversionStatus,
+    DatasetProcessingStatus,
+    DatasetUploadStatus,
+    DatasetValidationStatus,
+)
 from tests.unit.backend.layers.common.base_api_test import NewBaseTest
 
 
@@ -50,7 +48,6 @@ class MockS3Provider(S3Provider):
 
 
 class ProcessingTest(NewBaseTest):
-
     def setUp(self):
         super().setUp()
         self.uri_provider = UriProvider()
@@ -83,9 +80,11 @@ class ProcessingTest(NewBaseTest):
         self.assertEqual(status.processing_status, DatasetProcessingStatus.PENDING)
         self.assertEqual(status.upload_status, DatasetUploadStatus.WAITING)
 
-        # TODO: ideally use a real h5ad so that 
-        with patch("backend.layers.processing.process_download_validate.ProcessDownloadValidate.extract_metadata") as mock:
-            pdv = ProcessDownloadValidate(self.business_logic, self.uri_provider, self.s3_provider, self.downloader, self.schema_validator)
+        # TODO: ideally use a real h5ad so that
+        with patch("backend.layers.processing.process_download_validate.ProcessDownloadValidate.extract_metadata"):
+            pdv = ProcessDownloadValidate(
+                self.business_logic, self.uri_provider, self.s3_provider, self.downloader, self.schema_validator
+            )
             pdv.process(dataset_version_id, dropbox_uri, "fake_bucket_name")
 
             status = self.business_logic.get_dataset_status(dataset_version_id)
@@ -100,7 +99,7 @@ class ProcessingTest(NewBaseTest):
             artifacts = list(self.business_logic.get_dataset_artifacts(dataset_version_id))
             self.assertEqual(2, len(artifacts))
             artifact = artifacts[0]
-            artifact.type = "H5AD"
+            artifact.type = DatasetArtifactType.H5AD
             artifact.uri = f"s3://fake_bucket_name/{dataset_version_id.id}/local.h5ad"
 
     def test_process_seurat_success(self):
@@ -122,7 +121,6 @@ class ProcessingTest(NewBaseTest):
             artifact = artifacts[0]
             artifact.type = "RDS"
             artifact.uri = f"s3://fake_bucket_name/{dataset_version_id.id}/local.rds"
-
 
     def test_process_cxg_success(self):
         collection = self.generate_unpublished_collection()
@@ -153,8 +151,10 @@ class ProcessingTest(NewBaseTest):
         dropbox_uri = "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"
         collection = self.generate_unpublished_collection()
         dataset_version_id, dataset_id = self.business_logic.ingest_dataset(collection.version_id, dropbox_uri, None)
-        
-        pm = ProcessMain(self.business_logic, self.uri_provider, self.s3_provider, self.downloader, self.schema_validator)
+
+        pm = ProcessMain(
+            self.business_logic, self.uri_provider, self.s3_provider, self.downloader, self.schema_validator
+        )
         for step_name in ["download-validate", "cxg", "seurat"]:
             pm.process(dataset_version_id, step_name, dropbox_uri, "fake_bucket_name", "fake_cxg_bucket")
 
@@ -174,8 +174,6 @@ class ProcessingTest(NewBaseTest):
 
         artifacts = list(self.business_logic.get_dataset_artifacts(dataset_version_id))
         self.assertEqual(4, len(artifacts))
-
-        
 
     def test_process_download_validate_fail(self):
         pass

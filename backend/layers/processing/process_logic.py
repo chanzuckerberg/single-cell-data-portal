@@ -1,18 +1,22 @@
+from datetime import datetime
 from logging import Logger
-from typing import Callable, List, Literal, Optional
-from backend.common.utils.corpora_constants import CorporaConstants
-from backend.layers.business.business import BusinessLogic
+from os.path import basename, join
+from typing import Callable
+
 from backend.layers.business.business_interface import BusinessLogicInterface
+from backend.layers.common.entities import (
+    DatasetConversionStatus,
+    DatasetStatusGeneric,
+    DatasetStatusKey,
+    DatasetVersionId,
+)
 from backend.layers.processing.downloader import Downloader
 from backend.layers.processing.exceptions import ConversionFailed
-from backend.layers.thirdparty.s3_provider import S3Provider, S3ProviderInterface
-from backend.layers.thirdparty.uri_provider import UriProvider, UriProviderInterface
-from backend.layers.common.entities import DatasetConversionStatus, DatasetMetadata, DatasetProcessingStatus, DatasetStatusGeneric, DatasetStatusKey, DatasetValidationStatus, DatasetVersionId, OntologyTermId
+from backend.layers.thirdparty.s3_provider import S3ProviderInterface
+from backend.layers.thirdparty.uri_provider import UriProviderInterface
 
-from datetime import datetime
-from os.path import basename, join
 
-class ProcessingLogic: # TODO: ProcessingLogicBase
+class ProcessingLogic:  # TODO: ProcessingLogicBase
     """
     Base class that contains all the processing logic methods
     """
@@ -26,8 +30,9 @@ class ProcessingLogic: # TODO: ProcessingLogicBase
     def __init__(self) -> None:
         self.logger = Logger("processing")
 
-    def update_processing_status(self, dataset_id: DatasetVersionId, status_key: DatasetStatusKey, status_value: DatasetStatusGeneric):
-        # TODO: Change to status_key
+    def update_processing_status(
+        self, dataset_id: DatasetVersionId, status_key: DatasetStatusKey, status_value: DatasetStatusGeneric
+    ):
         self.business_logic.update_dataset_version_status(dataset_id, status_key, status_value)
 
     def download_from_s3(self, bucket_name: str, object_key: str, local_filename: str):
@@ -37,7 +42,12 @@ class ProcessingLogic: # TODO: ProcessingLogicBase
     def make_s3_uri(artifact_bucket, bucket_prefix, file_name):
         return join("s3://", artifact_bucket, bucket_prefix, file_name)
 
-    def upload(self, file_name: str, bucket_prefix: str, artifact_bucket: str,) -> str:
+    def upload(
+        self,
+        file_name: str,
+        bucket_prefix: str,
+        artifact_bucket: str,
+    ) -> str:
         # TODO: make sure that the files are correct
         file_base = basename(file_name)
         self.s3_provider.upload_file(
@@ -48,12 +58,11 @@ class ProcessingLogic: # TODO: ProcessingLogicBase
         )
         return ProcessingLogic.make_s3_uri(artifact_bucket, bucket_prefix, file_base)
 
-
     def create_artifact(
         self,
-        file_name: str, 
+        file_name: str,
         artifact_type: str,
-        bucket_prefix: str, # Why this is necessary - rdev?
+        bucket_prefix: str,
         dataset_id: DatasetVersionId,
         artifact_bucket: str,
         processing_status_key: DatasetStatusKey,
@@ -65,9 +74,8 @@ class ProcessingLogic: # TODO: ProcessingLogicBase
             self.logger.info(f"Updating database with  {artifact_type}.")
             self.business_logic.add_dataset_artifact(dataset_id, artifact_type, s3_uri)
             self.update_processing_status(dataset_id, processing_status_key, DatasetConversionStatus.UPLOADED)
-        except Exception as e:
+        except Exception:
             raise ConversionFailed(processing_status_key)
-
 
     def convert_file(
         self,
@@ -84,12 +92,13 @@ class ProcessingLogic: # TODO: ProcessingLogicBase
             file_dir = converter(local_filename)
             self.update_processing_status(dataset_id, processing_status_key, DatasetConversionStatus.CONVERTED)
             self.logger.info(f"Finished converting {converter} in {datetime.now()- start}")
-        except Exception as e:
+        except Exception:
             raise ConversionFailed(processing_status_key)
         return file_dir
 
     def get_bucket_prefix(self, identifier: str) -> str:
         import os
+
         remote_dev_prefix = os.environ.get("REMOTE_DEV_PREFIX", "")
         if remote_dev_prefix:
             return join(remote_dev_prefix, identifier).strip("/")

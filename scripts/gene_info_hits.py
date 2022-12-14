@@ -35,7 +35,7 @@ for row in data:
         result = json.loads(urllib.request.urlopen(get_search_url(row[1])).read())
         try:
             write_row(writer, "SUCCESS ON SECOND SEARCH", row, result)
-        except:
+        except Exception:
             write_row(writer, "FAILED", row, result)
     else:
         if len(result["esearchresult"]["idlist"]) == 1:

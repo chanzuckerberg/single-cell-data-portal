@@ -29,8 +29,14 @@ def get_business_logic():
 def portal_api():
     global api
     if api is None:
+        database_provider = DatabaseProvider()
+        crossref_provider = CrossrefProviderInterface()
+        step_function_provider = StepFunctionProvider()
+        s3_provider = S3Provider()
+        uri_provider = UriProvider()
+
         business_logic = BusinessLogic(
-            DatabaseProvider(), CrossrefProviderInterface(), StepFunctionProvider(), S3Provider(), UriProvider()
+            database_provider, crossref_provider, step_function_provider, s3_provider, uri_provider
         )
         portal_api = PortalApi(business_logic)
         api = portal_api

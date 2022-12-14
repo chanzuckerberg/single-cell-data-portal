@@ -36,6 +36,7 @@ from backend.layers.common.entities import (
     CollectionVersionWithDatasets,
     DatasetArtifact,
     DatasetArtifactId,
+    DatasetArtifactType,
     DatasetConversionStatus,
     DatasetId,
     DatasetMetadata,
@@ -47,6 +48,7 @@ from backend.layers.common.entities import (
     DatasetValidationStatus,
     DatasetVersion,
     DatasetVersionId,
+    Link,
 )
 from backend.layers.persistence.persistence_interface import DatabaseProviderInterface
 from backend.layers.thirdparty.crossref_provider import CrossrefProviderInterface
@@ -89,9 +91,7 @@ class BusinessLogic(BusinessLogicInterface):
             logging.warning(f"CrossrefException on create_collection: {e}. Will ignore metadata.")
             return None
 
-    def create_collection(
-        self, owner: str, collection_metadata: CollectionMetadata, curator_name: str
-    ) -> CollectionVersion:
+    def create_collection(self, owner: str, collection_metadata: CollectionMetadata) -> CollectionVersion:
         """
         Creates a collection using the specified metadata. If a DOI is defined, will also
         retrieve publisher metadata from Crossref and add it to the collection.
@@ -102,19 +102,17 @@ class BusinessLogic(BusinessLogicInterface):
 
         # TODO: Maybe switch link.type to be an enum
         doi = next((link.uri for link in collection_metadata.links if link.type == "DOI"), None)
-        print("doi", doi)
 
         if doi is not None:
             publisher_metadata = self._get_publisher_metadata(doi, errors)
         else:
             publisher_metadata = None
 
-        print(errors)
-
         if errors:
             raise CollectionCreationException(errors)
 
-        created_version = self.database_provider.create_canonical_collection(owner, collection_metadata, curator_name)
+        collection_metadata.strip_fields()
+        created_version = self.database_provider.create_canonical_collection(owner, collection_metadata)
 
         # TODO: can collapse with `create_canonical_collection`
         if publisher_metadata:
@@ -136,7 +134,7 @@ class BusinessLogic(BusinessLogicInterface):
     ) -> Optional[CollectionVersionWithDatasets]:
         latest = datetime.datetime.fromtimestamp(0)
         unpublished_collection = None
-        for collection in self.get_collection_versions_from_canonical(CollectionId):
+        for collection in self.get_collection_versions_from_canonical(collection_id):
             if collection.published_at is None and collection.created_at > latest:
                 latest = collection.created_at
                 unpublished_collection = collection
@@ -168,7 +166,9 @@ class BusinessLogic(BusinessLogicInterface):
             return published_version
         else:
             all_versions = self.get_collection_versions_from_canonical(collection_id)
-            return next((v for v in all_versions if v.published_at is None), None)
+            if not all_versions:
+                return None
+            return next(v for v in all_versions if v.published_at is None)
 
     def get_collections(self, filter: CollectionQueryFilter) -> Iterable[CollectionVersion]:
         """
@@ -234,6 +234,10 @@ class BusinessLogic(BusinessLogicInterface):
         new_metadata = copy.deepcopy(current_version.metadata)
         for field in vars(body):
             if hasattr(body, field) and (value := getattr(body, field)) is not None:
+                if isinstance(value, str):
+                    value.strip()
+                if isinstance(value, Link):
+                    value.strip_fields()
                 setattr(new_metadata, field, value)
 
         self.database_provider.save_collection_metadata(version_id, new_metadata)
@@ -282,7 +286,6 @@ class BusinessLogic(BusinessLogicInterface):
         """
         Creates a canonical dataset and starts its ingestion by invoking the step function
         """
-
         if not self.uri_provider.validate(url):
             raise InvalidURIException(f"Trying to upload invalid URI: {url}")
 
@@ -404,6 +407,7 @@ class BusinessLogic(BusinessLogicInterface):
         dataset_version_id: DatasetVersionId,
         status_key: DatasetStatusKey,
         new_dataset_status: DatasetStatusGeneric,
+        validation_message: Optional[str] = None,
     ) -> None:
         """
         Updates the status of a dataset version.
@@ -433,6 +437,9 @@ class BusinessLogic(BusinessLogicInterface):
                 f"{new_dataset_status}"
             )
 
+        if validation_message is not None:
+            self.database_provider.update_dataset_validation_message(dataset_version_id, validation_message)
+
     def add_dataset_artifact(
         self, dataset_version_id: DatasetVersionId, artifact_type: str, artifact_uri: str
     ) -> DatasetArtifactId:
@@ -442,7 +449,7 @@ class BusinessLogic(BusinessLogicInterface):
 
         # TODO: we should probably validate that artifact_uri is a valid S3 URI
 
-        if artifact_type not in ["H5AD", "CXG", "RDS"]:
+        if artifact_type not in [artifact.value for artifact in DatasetArtifactType]:
             raise DatasetIngestException(f"Wrong artifact type for {dataset_version_id}: {artifact_type}")
 
         return self.database_provider.add_dataset_artifact(dataset_version_id, artifact_type, artifact_uri)
@@ -453,9 +460,8 @@ class BusinessLogic(BusinessLogicInterface):
         Also ensures that the collection does not have any active, unpublished version
         """
 
-        try:
-            all_versions = self.database_provider.get_all_versions_for_collection(collection_id)
-        except Exception:  # TODO: maybe add a RecordNotFound exception for finer grained exceptions
+        all_versions = self.database_provider.get_all_versions_for_collection(collection_id)
+        if not all_versions:
             raise CollectionVersionException(f"Collection {collection_id} cannot be found")
 
         if any(v for v in all_versions if v.published_at is None):
@@ -467,6 +473,9 @@ class BusinessLogic(BusinessLogicInterface):
     def delete_collection_version(self, version_id: CollectionVersionId) -> None:
         self.database_provider.delete_collection_version(version_id)
 
+    def tombstone_collection(self, collection_id: CollectionId) -> None:
+        self.database_provider.delete_canonical_collection(collection_id)
+
     def publish_collection_version(self, version_id: CollectionVersionId) -> None:
         version = self.database_provider.get_collection_version(version_id)
 
@@ -476,7 +485,7 @@ class BusinessLogic(BusinessLogicInterface):
         if len(version.datasets) == 0:
             raise CollectionPublishException("Cannot publish a collection with no datasets")
 
-        self.database_provider.finalize_collection_version(version.collection_id, version_id)
+        self.database_provider.finalize_collection_version(version.collection_id, version_id, None)
 
     def get_dataset_version(self, dataset_version_id: DatasetVersionId) -> Optional[DatasetVersion]:
         return self.database_provider.get_dataset_version(dataset_version_id)

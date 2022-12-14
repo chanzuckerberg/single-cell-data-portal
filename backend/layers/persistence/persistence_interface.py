@@ -20,6 +20,10 @@ from backend.layers.common.entities import (
 )
 
 
+class PersistenceException(Exception):
+    pass
+
+
 class DatabaseProviderInterface:
     def create_canonical_collection(
         self, owner: str, collection_metadata: CollectionMetadata, curator_name: str
@@ -98,7 +102,10 @@ class DatabaseProviderInterface:
         pass
 
     def finalize_collection_version(
-        self, collection_id: CollectionId, version_id: CollectionVersionId, published_at: Optional[datetime]
+        self,
+        collection_id: CollectionId,
+        version_id: CollectionVersionId,
+        published_at: Optional[datetime],
     ) -> None:
         """
         Finalizes a collection version. This is equivalent to calling:
@@ -182,6 +189,12 @@ class DatabaseProviderInterface:
     ) -> None:
         """
         Updates the conversion status for a dataset version and for `status_type`
+        """
+        pass
+
+    def update_dataset_validation_message(self, version_id: DatasetVersionId, validation_message: str) -> None:
+        """
+        Updates the validation message for a dataset version
         """
         pass
 

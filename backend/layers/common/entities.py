@@ -1,4 +1,5 @@
-from dataclasses import dataclass
+from pydantic import Field
+from pydantic.dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 from typing import List, Optional
@@ -22,38 +23,47 @@ class DatasetStatusGeneric:
     pass
 
 
-class DatasetUploadStatus(DatasetStatusGeneric, Enum):
-    NA = "N/A"
-    WAITING = "Waiting"
-    UPLOADING = "Uploading"
-    UPLOADED = "Uploaded"
-    FAILED = "Failed"
-    CANCEL_PENDING = "Cancel pending"
-    CANCELED = "Canceled"
-
-
-class DatasetValidationStatus(DatasetStatusGeneric, Enum):
-    NA = "N/A"
-    VALIDATING = "Validating"
-    VALID = "Valid"
-    INVALID = "Invalid"
-
-
-class DatasetConversionStatus(DatasetStatusGeneric, Enum):
-    NA = "N/A"
-    CONVERTING = "Converting"
-    CONVERTED = "Converted"
-    UPLOADING = "Uploading"
-    UPLOADED = "Uploaded"
-    FAILED = "Failed"
-    SKIPPED = "Skipped"
-
-
 class DatasetProcessingStatus(DatasetStatusGeneric, Enum):
+    """
+    Enumerates the status of processing a dataset.
+
+    INITIALIZED = Dataset id created, and awaiting upload.
+    PENDING = Processing has not started
+    SUCCESS = Processing succeeded
+    FAILURE = Processing failed
+    """
+
     INITIALIZED = "INITIALIZED"
     PENDING = "PENDING"
     SUCCESS = "SUCCESS"
     FAILURE = "FAILURE"
+
+
+class DatasetUploadStatus(DatasetStatusGeneric, Enum):
+    NA = "NA"
+    WAITING = "WAITING"
+    UPLOADING = "UPLOADING"
+    UPLOADED = "UPLOADED"
+    FAILED = "FAILED"
+    CANCEL_PENDING = "CANCEL PENDING"
+    CANCELED = "CANCELED"
+
+
+class DatasetValidationStatus(DatasetStatusGeneric, Enum):
+    NA = "NA"
+    VALIDATING = "VALIDATING"
+    VALID = "VALID"
+    INVALID = "INVALID"
+
+
+class DatasetConversionStatus(DatasetStatusGeneric, Enum):
+    NA = "NA"
+    CONVERTING = "CONVERTING"
+    CONVERTED = "CONVERTED"
+    UPLOADING = "UPLOADING"
+    UPLOADED = "UPLOADED"
+    FAILED = "FAILED"
+    SKIPPED = "SKIPPED"
 
 
 class CollectionLinkType(str, Enum):
@@ -161,14 +171,15 @@ class DatasetMetadata:
     suspension_type: List[str]
     donor_id: List[str]
     is_primary_data: str
-    x_approximate_distribution: str
+    x_approximate_distribution: Optional[str]
 
 
 @dataclass
 class CanonicalDataset:
     dataset_id: DatasetId
-    dataset_version_id: DatasetVersionId = None
+    dataset_version_id: Optional[DatasetVersionId]
     published_at: Optional[datetime] = None
+    revised_at: Optional[datetime] = None  # The last time this Dataset Version was Published
 
 
 @dataclass
@@ -177,10 +188,9 @@ class DatasetVersion:
     version_id: DatasetVersionId
     collection_id: CollectionId  # Pointer to the canonical collection id this dataset belongs to
     status: DatasetStatus
-    metadata: DatasetMetadata
+    metadata: Optional[DatasetMetadata]
     artifacts: List[DatasetArtifact]
     created_at: datetime
-    revised_at: Optional[datetime]  # The last time this Dataset Version was Published
     canonical_dataset: CanonicalDataset
 
 
@@ -189,6 +199,12 @@ class Link:
     name: Optional[str]
     type: str
     uri: str
+
+    def strip_fields(self):
+        if self.name:
+            self.name = self.name.strip()
+        self.type = self.type.strip()
+        self.uri = self.uri.strip()
 
 
 @dataclass_json
@@ -200,11 +216,19 @@ class CollectionMetadata:
     contact_email: str
     links: List[Link]
 
+    def strip_fields(self):
+        self.name = self.name.strip()
+        self.description = self.description.strip()
+        self.contact_name = self.contact_name.strip()
+        self.contact_email = self.contact_email.strip()
+        for link in self.links:
+            link.strip_fields()
+
 
 @dataclass
 class CanonicalCollection:
     id: CollectionId
-    version_id: CollectionVersionId  # Needs to be optional, or not exist
+    version_id: Optional[CollectionVersionId]  # Needs to be optional, or not exist
     originally_published_at: Optional[datetime]
     tombstoned: bool
 
@@ -219,14 +243,14 @@ class CollectionVersionBase:
     published_at: Optional[datetime]
     created_at: datetime
     canonical_collection: CanonicalCollection
-    curator_name: Optional[str]
+    curator_name: Optional[str] = ""
 
 
 @dataclass
 class CollectionVersion(CollectionVersionBase):
-    datasets: List[DatasetVersionId]
+    datasets: List[DatasetVersionId] = Field(default_factory=list)
 
 
 @dataclass
 class CollectionVersionWithDatasets(CollectionVersionBase):
-    datasets: List[DatasetVersion]
+    datasets: List[DatasetVersion] = Field(default_factory=list)
