@@ -14,7 +14,7 @@ from backend.common.utils.http_exceptions import (
     ServerErrorHTTPException,
     TooLargeHTTPException,
 )
-from backend.layers.common import explorer_url
+from backend.layers.api import explorer_url
 from backend.common.utils.ontology_mappings.ontology_map_loader import ontology_mappings
 from backend.layers.api.enrichment import enrich_dataset_with_ancestors
 from backend.layers.auth.user_info import UserInfo
