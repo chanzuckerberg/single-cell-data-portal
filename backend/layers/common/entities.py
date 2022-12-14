@@ -204,6 +204,7 @@ class CollectionMetadata:
     description: str
     contact_name: str
     contact_email: str
+    curator_name: Optional[str]
     links: List[Link]
 
     def strip_fields(self):
@@ -211,6 +212,7 @@ class CollectionMetadata:
         self.description = self.description.strip()
         self.contact_name = self.contact_name.strip()
         self.contact_email = self.contact_email.strip()
+        self.curator_name = self.curator_name.strip() if self.curator_name is not None else None
         for link in self.links:
             link.strip_fields()
 

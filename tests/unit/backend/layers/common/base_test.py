@@ -127,7 +127,7 @@ class BaseTest(unittest.TestCase):
         self, owner="test_user_id", links: List[Link] = [], add_datasets: int = 0
     ) -> CollectionVersion:
 
-        metadata = CollectionMetadata("test_collection", "described", "john doe", "john.doe@email.com", links)
+        metadata = CollectionMetadata("test_collection", "described", "john doe", "john.doe@email.com", "John Doe", links)
 
         collection = self.business_logic.create_collection(owner, metadata)
 

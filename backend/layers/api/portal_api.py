@@ -215,7 +215,7 @@ class PortalApi:
                 "contact_email": collection.metadata.contact_email,
                 "contact_name": collection.metadata.contact_name,
                 "created_at": collection.created_at,
-                "curator_name": "",  # TODO
+                "curator_name": collection.metadata.curator_name,
                 "data_submission_policy_version": "1.0",  # TODO
                 "datasets": [
                     self._dataset_to_response(
@@ -307,6 +307,7 @@ class PortalApi:
             body["description"],
             body["contact_name"],
             body["contact_email"],
+            body.get("curator_name"),
             [self._link_from_request(node) for node in body.get("links", [])],
         )
 

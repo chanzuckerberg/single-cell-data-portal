@@ -78,7 +78,7 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         )
 
         self.sample_collection_metadata = CollectionMetadata(
-            "test collection 1", "description of test collection 1", "scientist", "scientist@czi.com", []
+            "test collection 1", "description of test collection 1", "scientist", "scientist@czi.com", "Curator Name", []
         )
 
         self.sample_dataset_metadata = DatasetMetadata(
