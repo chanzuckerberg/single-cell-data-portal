@@ -214,6 +214,7 @@ class PortalApi:
                 "name": collection.metadata.name,
                 "published_at": collection.published_at,
                 "publisher_metadata": collection.publisher_metadata,  # TODO: convert
+                "revision_of": collection.collection_id.id if (collection.canonical_collection.originally_published_at is not None and collection.published_at is None) else None,
                 "updated_at": collection.published_at or collection.created_at,
                 "visibility": "PUBLIC" if collection.published_at is not None else "PRIVATE",
             }
