@@ -376,6 +376,7 @@ class BusinessLogic(BusinessLogicInterface):
         dataset_version_id: DatasetVersionId,
         status_key: DatasetStatusKey,
         new_dataset_status: DatasetStatusGeneric,
+        validation_message: Optional[str] = None,
     ) -> None:
         """
         Updates the status of a dataset version.
@@ -404,6 +405,9 @@ class BusinessLogic(BusinessLogicInterface):
                 f"Invalid status update for dataset {dataset_version_id}: cannot set {status_key} to "
                 f"{new_dataset_status}"
             )
+
+        if validation_message is not None:
+            self.database_provider.update_dataset_validation_message(dataset_version_id, validation_message)
 
     def add_dataset_artifact(
         self, dataset_version_id: DatasetVersionId, artifact_type: str, artifact_uri: str
