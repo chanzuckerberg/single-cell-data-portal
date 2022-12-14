@@ -1,4 +1,3 @@
-import { Popper } from "@mui/material";
 import { AutocompleteRenderOptionState } from "@mui/material/Autocomplete";
 import {
   AutocompleteCloseReason,
@@ -34,6 +33,7 @@ import {
   ButtonWrapper,
   StyledButtonText,
   StyledMenuItem,
+  StyledPopper,
   StyledSelectButton,
 } from "./style";
 
@@ -198,6 +198,7 @@ export default function QuickSelect<
       return;
     }
     const { nativeEvent } = e;
+
     if (
       (nativeEvent instanceof FocusEvent &&
         nativeEvent.relatedTarget instanceof Element &&
@@ -205,8 +206,9 @@ export default function QuickSelect<
       (nativeEvent instanceof FocusEvent &&
         !(nativeEvent.relatedTarget instanceof Element)) ||
       !(nativeEvent instanceof FocusEvent)
-    )
+    ) {
       setOpen(false);
+    }
 
     setInput("");
   };
@@ -267,7 +269,11 @@ export default function QuickSelect<
           {text}
         </StyledSelectButton>
       </ButtonWrapper>
-      <Popper open={open} className={classes.popper} anchorEl={ref.current}>
+      <StyledPopper
+        open={open}
+        className={classes.popper}
+        anchorEl={ref.current}
+      >
         <MenuSelect
           open
           PopperComponent={DropdownPopper}
@@ -302,7 +308,7 @@ export default function QuickSelect<
               : "No options"
           }
         />
-      </Popper>
+      </StyledPopper>
     </>
   );
 

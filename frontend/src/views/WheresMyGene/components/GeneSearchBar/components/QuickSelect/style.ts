@@ -1,5 +1,7 @@
 import styled from "@emotion/styled";
+import { autocompleteClasses, Popper } from "@mui/material";
 import { Button, ButtonIcon, MenuItem } from "czifui";
+import { OFF_WHITE } from "src/common/theme";
 
 export const ButtonWrapper = styled.div`
   display: flex;
@@ -28,4 +30,17 @@ export const StyledButtonText = styled.span`
 
 export const StyledFixedSizeList = styled.span`
   background-color: pink;
+`;
+
+export const StyledPopper = styled(Popper)`
+  /* Overwrite default MUI styles */
+  && {
+    .${autocompleteClasses.focused}[aria-selected="true"] {
+      background-color: transparent;
+    }
+
+    .${autocompleteClasses.focused}:hover {
+      background-color: ${OFF_WHITE};
+    }
+  }
 `;
