@@ -20,6 +20,10 @@ from backend.layers.common.entities import (
 )
 
 
+class PersistenceException(Exception):
+    pass
+
+
 class DatabaseProviderInterface:
     def create_canonical_collection(self, owner: str, collection_metadata: CollectionMetadata) -> CollectionVersion:
         """

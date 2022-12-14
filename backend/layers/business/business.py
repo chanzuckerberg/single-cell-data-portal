@@ -48,7 +48,7 @@ from backend.layers.common.entities import (
     DatasetVersionId,
     Link,
 )
-from backend.layers.persistence.persistence_interface import DatabaseProviderInterface
+from backend.layers.persistence.persistence_interface import DatabaseProviderInterface, PersistenceException
 from backend.layers.thirdparty.crossref_provider import CrossrefProviderInterface
 from backend.layers.thirdparty.s3_provider import S3Provider
 from backend.layers.thirdparty.step_function_provider import StepFunctionProviderInterface
@@ -153,6 +153,8 @@ class BusinessLogic(BusinessLogicInterface):
             return published_version
         else:
             all_versions = self.get_collection_versions_from_canonical(collection_id)
+            if not all_versions:
+                return None
             return next(v for v in all_versions if v.published_at is None)
 
     def get_collections(self, filter: CollectionQueryFilter) -> Iterable[CollectionVersion]:
@@ -420,9 +422,8 @@ class BusinessLogic(BusinessLogicInterface):
         Also ensures that the collection does not have any active, unpublished version
         """
 
-        try:
-            all_versions = self.database_provider.get_all_versions_for_collection(collection_id)
-        except Exception:  # TODO: maybe add a RecordNotFound exception for finer grained exceptions
+        all_versions = self.database_provider.get_all_versions_for_collection(collection_id)
+        if not all_versions:
             raise CollectionVersionException(f"Collection {collection_id} cannot be found")
 
         if any(v for v in all_versions if v.published_at is None):
@@ -433,6 +434,9 @@ class BusinessLogic(BusinessLogicInterface):
 
     def delete_collection_version(self, version_id: CollectionVersionId) -> None:
         self.database_provider.delete_collection_version(version_id)
+
+    def tombstone_collection(self, collection_id: CollectionId) -> None:
+        self.database_provider.delete_canonical_collection(collection_id)
 
     def publish_collection_version(self, version_id: CollectionVersionId) -> None:
         version = self.database_provider.get_collection_version(version_id)

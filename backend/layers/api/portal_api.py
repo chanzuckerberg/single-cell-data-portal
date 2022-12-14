@@ -6,6 +6,7 @@ from flask import Response, jsonify, make_response
 
 from backend.common.utils.http_exceptions import (
     ConflictException,
+    GoneHTTPException,
     ForbiddenHTTPException,
     InvalidParametersHTTPException,
     MethodNotAllowedException,
@@ -142,7 +143,9 @@ class PortalApi:
         return {k: v for k, v in body.items() if v is not None}
 
     # Note: `metadata` can be none while the dataset is uploading
-    def _dataset_to_response(self, dataset: DatasetVersion, is_in_published_collection: bool = False):
+    def _dataset_to_response(
+        self, dataset: DatasetVersion, is_tombstoned: bool, is_in_published_collection: bool = False
+    ):
         return self.remove_none(
             {
                 "assay": None
@@ -187,7 +190,7 @@ class PortalApi:
                 "tissue": None
                 if dataset.metadata is None
                 else self._ontology_term_ids_to_response(dataset.metadata.tissue),
-                "tombstone": False,  # TODO
+                "tombstone": is_tombstoned,
                 "updated_at": dataset.created_at,  # Legacy: datasets can't be updated anymore
                 "x_approximate_distribution": None
                 if dataset.metadata is None
@@ -197,6 +200,7 @@ class PortalApi:
 
     def _collection_to_response(self, collection: CollectionVersion, access_type: str):
         collection_id = collection.collection_id.id if collection.published_at is not None else collection.version_id.id
+        is_tombstoned = collection.canonical_collection.tombstoned
         return self.remove_none(
             {
                 "access_type": access_type,
@@ -206,7 +210,10 @@ class PortalApi:
                 "curator_name": "",  # TODO
                 "data_submission_policy_version": "1.0",  # TODO
                 "datasets": [
-                    self._dataset_to_response(ds, collection.published_at is not None) for ds in collection.datasets
+                    self._dataset_to_response(
+                        ds, is_tombstoned=is_tombstoned, is_in_published_collection=collection.published_at is not None
+                    )
+                    for ds in collection.datasets
                 ],
                 "description": collection.metadata.description,
                 "id": collection_id,
@@ -214,7 +221,12 @@ class PortalApi:
                 "name": collection.metadata.name,
                 "published_at": collection.published_at,
                 "publisher_metadata": collection.publisher_metadata,  # TODO: convert
-                "revision_of": collection.collection_id.id if (collection.canonical_collection.originally_published_at is not None and collection.published_at is None) else None,
+                "revision_of": collection.collection_id.id
+                if (
+                    collection.canonical_collection.originally_published_at is not None
+                    and collection.published_at is None
+                )
+                else None,
                 "updated_at": collection.published_at or collection.created_at,
                 "visibility": "PUBLIC" if collection.published_at is not None else "PRIVATE",
             }
@@ -229,13 +241,13 @@ class PortalApi:
         version = self.business_logic.get_published_collection_version(CollectionId(collection_id))
         if version is None:
             version = self.business_logic.get_collection_version(CollectionVersionId(collection_id))
-        if version is None:
-            raise ForbiddenHTTPException()  # TODO: maybe remake this exception
+            if version is None:
+                raise ForbiddenHTTPException()
 
-        # TODO: handle tombstoning
+        if version.canonical_collection.tombstoned:
+            raise GoneHTTPException()
 
         user_info = UserInfo(token_info)
-        print(token_info, user_info.user_id, version.owner)
         access_type = "WRITE" if user_info.is_user_owner_or_allowed(version.owner) else "READ"
 
         response = self._collection_to_response(version, access_type)
@@ -333,15 +345,26 @@ class PortalApi:
 
     def delete_collection(self, collection_id: str, token_info: dict):
         """
-        Deletes a collection version from the persistence store.
+        Deletes a collection version from the persistence store, or tombstones a canonical collection.
         """
-        version = self.business_logic.get_collection_version(CollectionVersionId(collection_id))
+        resource_id = CollectionVersionId(collection_id)
+        version = self.business_logic.get_collection_version(resource_id)
         if version is None:
-            raise ForbiddenHTTPException()
+            resource_id = CollectionId(collection_id)
+            version = self.business_logic.get_collection_version_from_canonical(resource_id)
+            if version is None:
+                raise ForbiddenHTTPException()
+
         if not UserInfo(token_info).is_user_owner_or_allowed(version.owner):
             raise ForbiddenHTTPException()
 
-        self.business_logic.delete_collection_version(CollectionVersionId(collection_id))
+        if isinstance(resource_id, CollectionVersionId):
+            try:
+                self.business_logic.delete_collection_version(resource_id)
+            except CollectionIsPublishedException:
+                raise ForbiddenHTTPException()
+        elif isinstance(resource_id, CollectionId):
+            self.business_logic.tombstone_collection(resource_id)
 
     def update_collection(self, collection_id: str, body: dict, token_info: dict):
         """
@@ -527,7 +550,7 @@ class PortalApi:
 
         response = []
         for dataset in self.business_logic.get_all_published_datasets():
-            payload = self._dataset_to_response(dataset)
+            payload = self._dataset_to_response(dataset, is_tombstoned=False)
             enrich_dataset_with_ancestors(
                 payload, "development_stage", ontology_mappings.development_stage_ontology_mapping
             )
