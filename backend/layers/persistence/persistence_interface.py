@@ -192,6 +192,12 @@ class DatabaseProviderInterface:
         """
         pass
 
+    def update_dataset_validation_message(self, version_id: DatasetVersionId, validation_message: str) -> None:
+        """
+        Updates the validation message for a dataset version
+        """
+        pass
+
     def get_dataset_version_status(self, version_id: DatasetVersionId) -> DatasetStatus:
         """
         Returns the status for a dataset version
