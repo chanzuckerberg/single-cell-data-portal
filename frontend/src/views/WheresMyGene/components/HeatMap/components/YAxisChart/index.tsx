@@ -55,7 +55,7 @@ export default memo(function YAxisChart({
   generateMarkerGenes,
   selectedOrganismId,
 }: Props): JSX.Element {
-  const tissueKey = tissue.replace(" ", "-");
+  const tissueKey = tissue.replace(/\s+/g, "-");
   const yAxisSelectorQuery = `[data-test-id=cell-type-labels-${tissueKey}]`;
 
   const dispatch = useContext(DispatchContext);
@@ -75,7 +75,7 @@ export default memo(function YAxisChart({
   const isMarkerGenes = get(FEATURES.MARKER_GENES) === BOOLEAN.TRUE;
 
   const setInfoCoordinates = () => {
-    const topTissueKey = selectedTissues[0].replace(" ", "-");
+    const topTissueKey = selectedTissues[0].replace(/\s+/g, "-");
     const containerTop = document.querySelector(
       `[data-test-id=cell-type-labels-${topTissueKey}]`
     );
