@@ -116,7 +116,7 @@ def delete(token_info: dict, collection_id: str, dataset_id: str = None):
         raise ForbiddenHTTPException(f"Dataset {dataset_id} does not belong to a collection")
 
     try:
-        business_logic.remove_dataset_version(collection_version.version_id, DatasetVersionId(dataset_id))
+        business_logic.remove_dataset_version(collection_version.version_id, dataset_version.version_id)
     except CollectionUpdateException:
         raise MethodNotAllowedException(detail="Cannot delete a public Dataset")
     return Response(status=202)
