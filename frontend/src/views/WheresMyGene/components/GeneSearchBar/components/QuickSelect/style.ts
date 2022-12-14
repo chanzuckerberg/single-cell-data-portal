@@ -25,3 +25,7 @@ export const StyledButtonText = styled.span`
   margin-right: 5px;
   margin-top: 3px;
 `;
+
+export const StyledFixedSizeList = styled.span`
+  background-color: pink;
+`;
