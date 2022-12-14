@@ -1,0 +1,1 @@
+{"levelname": "INFO", "asctime": "2022-12-14T16:24:36.014Z", "name": "root", "message": "Deleting all files in bucket hosted-cellxgene-test under d4754791-6692-47a7-b57e-4d541cf9f940.", "lineno": 58, "pathname": "/single-cell-data-portal/backend/common/entities/dataset_asset.py"}
