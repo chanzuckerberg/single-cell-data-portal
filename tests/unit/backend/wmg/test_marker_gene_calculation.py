@@ -35,7 +35,7 @@ class MarkerGeneCalculationTest(unittest.TestCase):
 
     def test__get_markers_ttest(self):
         with load_test_fmg_snapshot(TEST_SNAPSHOT) as snapshot:
-            result = get_markers(TARGET_FILTERS, CONTEXT_FILTERS, corpus=snapshot, test="ttest")
+            result = get_markers(TARGET_FILTERS, CONTEXT_FILTERS, corpus=snapshot, test="ttest", percentile=0.05)
             result = json.loads(
                 json.dumps(result).replace("p_value_ttest", "p_value").replace("effect_size_ttest", "effect_size")
             )
@@ -50,7 +50,7 @@ class MarkerGeneCalculationTest(unittest.TestCase):
 
     def test__get_markers_binomtest(self):
         with load_test_fmg_snapshot(TEST_SNAPSHOT) as snapshot:
-            result = get_markers(TARGET_FILTERS, CONTEXT_FILTERS, corpus=snapshot, test="binomtest")
+            result = get_markers(TARGET_FILTERS, CONTEXT_FILTERS, corpus=snapshot, test="binomtest", percentile=0.3)
             result = json.loads(
                 json.dumps(result)
                 .replace("p_value_binomtest", "p_value")

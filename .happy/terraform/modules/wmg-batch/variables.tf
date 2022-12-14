@@ -45,3 +45,9 @@ variable batch_container_memory_limit {
   description = "Memory hard limit for the batch container"
   default     = 28000
 }
+
+variable desired_vcpus {
+  type        = number
+  description = "Number of desired vCPUs"
+  default     = 2
+}

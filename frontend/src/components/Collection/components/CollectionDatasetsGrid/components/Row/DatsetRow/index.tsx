@@ -39,11 +39,13 @@ import DiseaseCell from "src/components/common/Grid/components/DiseaseCell";
 import NTagCell from "src/components/common/Grid/components/NTagCell";
 import { RightAlignCell } from "src/components/common/Grid/components/RightAlignCell";
 import { StatusTags } from "src/components/common/Grid/components/StatusTags";
-import { DownloadButton } from "src/components/Datasets/components/Grid/common/utils";
 import DatasetNameCell from "src/components/Datasets/components/Grid/components/DatasetNameCell";
 import { UploadingFile } from "src/components/DropboxChooser";
 import { Props as ChooserProps } from "src/components/DropboxChooser/index";
 import { StyledPrimaryAnchorButton } from "src/components/common/Button/common/style";
+import { track } from "src/common/analytics";
+import { EVENTS } from "src/common/analytics/events";
+import DownloadButton from "src/components/common/Grid/components/DownloadButton";
 
 const AsyncTooltip = loadable(
   () =>
@@ -240,6 +242,11 @@ const DatasetRow: FC<Props> = ({
                 disabled={dataset.tombstone || isOverMaxCellCount}
                 href={dataset?.dataset_deployments[0]?.url}
                 intent={Intent.PRIMARY}
+                onClick={() =>
+                  track(EVENTS.DATASET_EXPLORE_CLICKED, {
+                    dataset_name: dataset?.name,
+                  })
+                }
                 rel="noopener"
                 target="_blank"
                 text="Explore"
