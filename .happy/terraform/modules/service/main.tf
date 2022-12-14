@@ -103,6 +103,10 @@ resource "aws_ecs_task_definition" "task_definition" {
       {
         "name": "DD_TRACE_DEBUG",
         "value": "true"
+      },
+      {
+        "name": "DD_LOG_LEVEL",
+        "value": "debug"
       }
     ],
     "port_mappings" : [
