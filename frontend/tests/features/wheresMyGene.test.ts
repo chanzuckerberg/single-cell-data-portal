@@ -32,9 +32,6 @@ describe("Where's My Gene", () => {
     await expect(page).toHaveSelector(getText("STEP 3"));
     await expect(page).toHaveSelector(getText("Explore Gene Expression"));
 
-    // Beta callout
-    await expect(page).toHaveSelector(getText("This feature is in beta"));
-
     // Filters Panel
     // (thuang): `*` is for intermediate match
     // https://playwright.dev/docs/selectors#intermediate-matches
@@ -241,6 +238,8 @@ describe("Where's My Gene", () => {
     const GENE_COUNT = 3;
 
     await clickUntilOptionsShowUp(getTissueSelectorButton, page);
+    const texts = await page.getByRole("menuitem").allTextContents()
+    const tissueName = texts[0].replace(/\s+/g, "-");
     await selectFirstNOptions(TISSUE_COUNT, page);
 
     await clickUntilOptionsShowUp(getGeneSelectorButton, page);
@@ -252,7 +251,7 @@ describe("Where's My Gene", () => {
     );
 
     const beforeCellTypeNames = await getNames(
-      `${getTestID(CELL_TYPE_LABELS_ID)} text`,
+      `${getTestID(`${CELL_TYPE_LABELS_ID}-${tissueName}`)} text`,
       page
     );
 
@@ -280,7 +279,7 @@ describe("Where's My Gene", () => {
     );
 
     const afterCellTypeNames = await getNames(
-      `${getTestID(CELL_TYPE_LABELS_ID)} text`,
+      `${getTestID(`${CELL_TYPE_LABELS_ID}-${tissueName}`)} text`,
       page
     );
 
@@ -296,7 +295,7 @@ describe("Where's My Gene", () => {
     );
   });
 
-  test("delete genes and cell types", async ({ page }) => {
+  test.only("delete genes and cell types", async ({ page }) => {
     await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
 
     async function getTissueSelectorButton() {
@@ -308,11 +307,13 @@ describe("Where's My Gene", () => {
     }
 
     await clickUntilOptionsShowUp(getTissueSelectorButton, page);
+    const texts = await page.getByRole("menuitem").allTextContents()
+    const tissueName = texts[0].replace(/\s+/g, "-");    
     await selectFirstNOptions(1, page);
 
     await clickUntilOptionsShowUp(getGeneSelectorButton, page);
     await selectFirstNOptions(3, page);
-
+    
     await tryUntil(
       async () => {
         const canvases = await page.$$("canvas");
@@ -326,7 +327,7 @@ describe("Where's My Gene", () => {
       page
     );
     const beforeCellTypeNames = await getNames(
-      `${getTestID(CELL_TYPE_LABELS_ID)} text`,
+      `${getTestID(`${CELL_TYPE_LABELS_ID}-${tissueName}`)} text`,
       page
     );
 
@@ -343,7 +344,7 @@ describe("Where's My Gene", () => {
           page
         );
         const afterCellTypeNames = await getNames(
-          `${getTestID(CELL_TYPE_LABELS_ID)} text`,
+          `${getTestID(`${CELL_TYPE_LABELS_ID}-${tissueName}`)} text`,
           page
         );
 
@@ -383,7 +384,7 @@ describe("Where's My Gene", () => {
     await tryUntil(
       async () => {
         const afterCellTypeNames = await getNames(
-          `${getTestID(CELL_TYPE_LABELS_ID)} text`,
+          `${getTestID(`${CELL_TYPE_LABELS_ID}-${tissueName}`)} text`,
           page
         );
 
