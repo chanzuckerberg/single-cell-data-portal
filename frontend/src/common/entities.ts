@@ -75,6 +75,7 @@ export interface Author {
 
 export interface Collection {
   access_type: ACCESS_TYPE;
+  consortia: string[];
   contact_email: string;
   contact_name: string;
   description: string;

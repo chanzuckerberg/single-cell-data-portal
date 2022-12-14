@@ -25,7 +25,12 @@ import DatasetTab from "src/views/Collection/components/DatasetTab";
 import ActionButtons from "./components/ActionButtons";
 import DeleteCollectionButton from "./components/ActionButtons/components/DeleteButton";
 import Toast from "./components/Toast";
-import { CollectionDetail, CollectionHero, ViewCollection } from "./style";
+import {
+  CollectionConsortia,
+  CollectionDetail,
+  CollectionHero,
+  ViewCollection,
+} from "./style";
 import {
   buildCollectionMetadataLinks,
   getIsPublishable,
@@ -148,6 +153,7 @@ const Collection: FC = () => {
   const shouldShowPublicWriteAction = hasWriteAccess && !isPrivate;
   const shouldShowCollectionRevisionCallout =
     collection.revision_of && isPrivate;
+  const collectionConsortia = collection.consortia;
   const collectionMetadataLinks = buildCollectionMetadataLinks(
     collection.links,
     collection.contact_name,
@@ -201,8 +207,13 @@ const Collection: FC = () => {
             />
           )}
         </CollectionHero>
-        {/* Collection description and metadata */}
+        {/* Collection consortia, description and metadata */}
         <CollectionDetail>
+          {collectionConsortia?.length > 0 && (
+            <CollectionConsortia>
+              {collectionConsortia.join(", ")}
+            </CollectionConsortia>
+          )}
           <CollectionDescription description={collection.description} />
           {collectionMetadataLinks.length > 0 && (
             <CollectionMetadata
