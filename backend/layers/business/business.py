@@ -48,7 +48,7 @@ from backend.layers.common.entities import (
     DatasetVersionId,
     Link,
 )
-from backend.layers.persistence.persistence_interface import DatabaseProviderInterface, PersistenceException
+from backend.layers.persistence.persistence_interface import DatabaseProviderInterface
 from backend.layers.thirdparty.crossref_provider import CrossrefProviderInterface
 from backend.layers.thirdparty.s3_provider import S3Provider
 from backend.layers.thirdparty.step_function_provider import StepFunctionProviderInterface

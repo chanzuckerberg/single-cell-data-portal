@@ -16,7 +16,6 @@ from backend.layers.business.exceptions import (
     CollectionPublishException,
     CollectionUpdateException,
     CollectionVersionException,
-    CollectionNotFoundException,
     DatasetIngestException,
     DatasetNotFoundException,
 )

@@ -23,7 +23,7 @@ from backend.layers.common.entities import (
     DatasetVersion,
     DatasetVersionId,
 )
-from backend.layers.persistence.persistence import DatabaseProviderInterface, PersistenceException
+from backend.layers.persistence.persistence import DatabaseProviderInterface
 from backend.layers.business.exceptions import CollectionIsPublishedException
 
 

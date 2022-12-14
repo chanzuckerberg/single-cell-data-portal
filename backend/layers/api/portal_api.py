@@ -200,7 +200,15 @@ class PortalApi:
 
     def _collection_to_response(self, collection: CollectionVersion, access_type: str):
         collection_id = collection.collection_id.id if collection.published_at is not None else collection.version_id.id
+
+        if collection.canonical_collection.originally_published_at is not None and collection.published_at is None:
+            revision_of = collection.collection_id.id
+        else:
+            revision_of = None
+
         is_tombstoned = collection.canonical_collection.tombstoned
+        is_in_published_collection = collection.published_at is not None
+
         return self.remove_none(
             {
                 "access_type": access_type,
@@ -211,7 +219,7 @@ class PortalApi:
                 "data_submission_policy_version": "1.0",  # TODO
                 "datasets": [
                     self._dataset_to_response(
-                        ds, is_tombstoned=is_tombstoned, is_in_published_collection=collection.published_at is not None
+                        ds, is_tombstoned=is_tombstoned, is_in_published_collection=is_in_published_collection
                     )
                     for ds in collection.datasets
                 ],
@@ -221,12 +229,7 @@ class PortalApi:
                 "name": collection.metadata.name,
                 "published_at": collection.published_at,
                 "publisher_metadata": collection.publisher_metadata,  # TODO: convert
-                "revision_of": collection.collection_id.id
-                if (
-                    collection.canonical_collection.originally_published_at is not None
-                    and collection.published_at is None
-                )
-                else None,
+                "revision_of": revision_of,
                 "updated_at": collection.published_at or collection.created_at,
                 "visibility": "PUBLIC" if collection.published_at is not None else "PRIVATE",
             }
