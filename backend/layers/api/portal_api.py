@@ -15,7 +15,6 @@ from backend.common.utils.http_exceptions import (
     TooLargeHTTPException,
 )
 from backend.common.utils.ontology_mappings.ontology_map_loader import ontology_mappings
-from backend.layers.api.common import ApiCommon
 from backend.layers.api.enrichment import enrich_dataset_with_ancestors
 from backend.layers.auth.user_info import UserInfo
 from backend.layers.business.business import BusinessLogic
@@ -53,7 +52,7 @@ from backend.layers.common.entities import (
 from backend.layers.thirdparty.uri_provider import FileInfoException
 
 
-class PortalApi(ApiCommon):
+class PortalApi:
     business_logic: BusinessLogicInterface
 
     def __init__(self, business_logic: BusinessLogic) -> None:
