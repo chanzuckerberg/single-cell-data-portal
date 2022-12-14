@@ -295,7 +295,7 @@ describe("Where's My Gene", () => {
     );
   });
 
-  test.only("delete genes and cell types", async ({ page }) => {
+  test("delete genes and cell types", async ({ page }) => {
     await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
 
     async function getTissueSelectorButton() {
