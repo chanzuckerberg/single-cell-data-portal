@@ -1,7 +1,6 @@
 import copy
 import logging
 from typing import Iterable, Optional, Tuple
-from urllib.parse import urlparse
 
 from backend.common.providers.crossref_provider import CrossrefDOINotFoundException, CrossrefException
 from backend.layers.business.business_interface import BusinessLogicInterface
@@ -49,7 +48,7 @@ from backend.layers.common.entities import (
     DatasetVersionId,
     Link,
 )
-from backend.layers.persistence.persistence_interface import DatabaseProviderInterface, PersistenceException
+from backend.layers.persistence.persistence_interface import DatabaseProviderInterface
 from backend.layers.thirdparty.crossref_provider import CrossrefProviderInterface
 from backend.layers.thirdparty.s3_provider import S3Provider
 from backend.layers.thirdparty.step_function_provider import StepFunctionProviderInterface
@@ -356,9 +355,7 @@ class BusinessLogic(BusinessLogicInterface):
         if not artifact:
             raise ArtifactNotFoundException(f"Artifact {artifact_id} not found in dataset {dataset_version_id}")
 
-        artifact_url = urlparse(artifact.uri)
-
-        file_name = artifact_url.path[1:]
+        file_name = artifact.uri.split("/")[-1]
         file_type = artifact.type
         file_size = self.s3_provider.get_file_size(artifact.uri)
         presigned_url = self.s3_provider.generate_presigned_url(artifact.uri)

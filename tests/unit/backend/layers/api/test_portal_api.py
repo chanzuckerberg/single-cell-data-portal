@@ -164,7 +164,7 @@ class TestCollection(NewBaseTest):
                     "collection_id": collection.collection_id.id,
                     "created_at": mock.ANY,
                     "dataset_assets": [],
-                    "dataset_deployments": [{"url": "TODO"}],
+                    "dataset_deployments": [{"url": mock.ANY}],
                     "development_stage": [
                         {"label": "test_development_stage_label", "ontology_term_id": "test_development_stage_term_id"}
                     ],
@@ -214,7 +214,7 @@ class TestCollection(NewBaseTest):
                     "collection_id": collection.collection_id.id,
                     "created_at": mock.ANY,
                     "dataset_assets": [],
-                    "dataset_deployments": [{"url": "TODO"}],
+                    "dataset_deployments": [{"url": mock.ANY}],
                     "development_stage": [
                         {"label": "test_development_stage_label", "ontology_term_id": "test_development_stage_term_id"}
                     ],
