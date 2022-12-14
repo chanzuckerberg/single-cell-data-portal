@@ -55,7 +55,6 @@ export default function FilterRange({
   };
 
   const onCommittedSliderRange = (
-    // eslint-disable-next-line @typescript-eslint/ban-types -- {} as per Mui spec.
     _changeEvent: SyntheticEvent | Event,
     committedRange: SliderRange
   ): void => {
