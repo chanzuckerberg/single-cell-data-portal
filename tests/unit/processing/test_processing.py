@@ -15,7 +15,7 @@ from backend.layers.common.entities import (
     DatasetUploadStatus,
     DatasetValidationStatus,
 )
-from tests.unit.backend.layers.common.base_test import NewBaseTest
+from tests.unit.backend.layers.common.base_test import BaseTest
 
 
 class MockS3Provider(S3ProviderInterface):
@@ -47,7 +47,7 @@ class MockS3Provider(S3ProviderInterface):
         return len(self.mock_s3_fs) == 0
 
 
-class ProcessingTest(NewBaseTest):
+class ProcessingTest(BaseTest):
     def setUp(self):
         super().setUp()
         self.uri_provider = UriProvider()

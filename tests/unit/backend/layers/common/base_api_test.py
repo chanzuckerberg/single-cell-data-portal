@@ -5,7 +5,7 @@ import unittest
 from unittest.mock import Mock, patch
 from backend.layers.api.portal_api import PortalApi
 from tests.unit.backend.api_server.config import TOKEN_EXPIRES
-from tests.unit.backend.layers.common.base_test import NewBaseTest
+from tests.unit.backend.layers.common.base_test import BaseTest
 
 
 class BaseAuthAPITest(unittest.TestCase):
@@ -41,7 +41,7 @@ class BaseAuthAPITest(unittest.TestCase):
             raise Exception()
 
 
-class NewBaseAPITest(BaseAuthAPITest, NewBaseTest):
+class BaseAPIPortalTest(BaseAuthAPITest, BaseTest):
     def setUp(self):
         super().setUp()
 

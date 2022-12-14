@@ -842,6 +842,17 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         self.assertEqual(version.version_id, published_collection.version_id)
         self.assertNotEqual(version.version_id, new_version.version_id)
 
+    def test_tombstone_collection_ok(self):
+        """
+        A collection can be marked as tombstoned using 'tombstone_collection'
+        """
+        published_collection = self.initialize_published_collection()
+        self.business_logic.tombstone_collection(published_collection.collection_id)
+
+        # The collection version canonical collection has tombstoned marked as True
+        collection_version = self.business_logic.get_collection_version(published_collection.version_id)
+        self.assertTrue(collection_version.canonical_collection.tombstoned)
+
     def test_publish_version_fails_on_published_collection(self):
         """
         `publish_collection_version` should fail if called on a collection version that is already published.

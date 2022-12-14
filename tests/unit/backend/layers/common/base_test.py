@@ -52,7 +52,7 @@ class DatasetData:
     artifact_ids: List[str]
 
 
-class NewBaseTest(unittest.TestCase):
+class BaseTest(unittest.TestCase):
 
     business_logic: BusinessLogic
     crossref_provider: CrossrefProviderInterface  # Can be mocked from the tests
