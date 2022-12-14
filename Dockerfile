@@ -5,6 +5,7 @@ ENV DEPLOYMENT_STAGE=test
 ENV EXPORT_ENV_VARS_TO_LAMBDA="APP_NAME DEPLOYMENT_STAGE"
 ENV LC_ALL=C.UTF-8
 ENV DEBIAN_FRONTEND=noninteractive
+ENV DD_GEVENT_PATCH_ALL=true
 
 RUN apt-get update && \
     apt-get install -y python3 libhdf5-dev python3-h5py gettext moreutils build-essential libxml2-dev python3-dev python3-pip zlib1g-dev python3-requests python3-aiohttp llvm jq git && \
