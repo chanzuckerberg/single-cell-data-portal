@@ -31,10 +31,17 @@ def get(from_date: int = None, to_date: int = None, token_info: Optional[dict] =
     for coll_dict in all_collections:
         visibility = coll_dict["visibility"]
         owner = coll_dict["owner"]
-        consortia = coll_dict["consortia"]
+        consortia = coll_dict["consortia"] if coll_dict["consortia"] else []
 
         if visibility == CollectionVisibility.PUBLIC:
-            collections.append(dict(id=coll_dict["id"], consortia=consortia, created_at=coll_dict["created_at"], visibility=visibility.name))
+            collections.append(
+                dict(
+                    id=coll_dict["id"],
+                    consortia=consortia,
+                    created_at=coll_dict["created_at"],
+                    visibility=visibility.name,
+                )
+            )
         elif is_user_owner_or_allowed(token_info, owner):
             collections.append(
                 dict(

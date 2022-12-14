@@ -25,7 +25,9 @@ def get():
 
     # Remove entries where the value is None
     updated_collection = []
+    # TODO (noopdog) this seems to break "house style" where empty values are returned
     for d in filtered_collection:
+        d["consortia"] = d["consortia"] if d["consortia"] else []
         updated_collection.append({k: v for k, v in d.items() if v is not None})
 
     return make_response(jsonify(updated_collection), 200)

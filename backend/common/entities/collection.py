@@ -239,10 +239,11 @@ class Collection(Entity):
 
             Dataset.transform_sex_for_schema_2_0_0(dataset)
             Dataset.transform_organism_for_schema_2_0_0(dataset)
-
         result["datasets"] = datasets
 
-        result["consortia"] = result["consortia"] if result["consortia"] else []
+        if "consortia" not in result:
+            result["consortia"] = []
+
         return result
 
     def publish(self, data_submission_policy_version):
