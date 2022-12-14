@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:news="http://www.google.com/schemas/sitemap-news/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:mobile="http://www.google.com/schemas/sitemap-mobile/1.0" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1" xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">
+<url><loc>https://cellxgene.cziscience.com</loc><lastmod>2022-12-14T17:30:34.268Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://cellxgene.cziscience.com/collections</loc><lastmod>2022-12-14T17:30:34.268Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://cellxgene.cziscience.com/datasets</loc><lastmod>2022-12-14T17:30:34.268Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://cellxgene.cziscience.com/gene-expression</loc><lastmod>2022-12-14T17:30:34.268Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://cellxgene.cziscience.com/my-collections</loc><lastmod>2022-12-14T17:30:34.268Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://cellxgene.cziscience.com/privacy</loc><lastmod>2022-12-14T17:30:34.268Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://cellxgene.cziscience.com/tos</loc><lastmod>2022-12-14T17:30:34.268Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://cellxgene.cziscience.com/docs/01__CellxGene</loc><lastmod>2022-12-14T17:30:34.268Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://cellxgene.cziscience.com/docs/02__Find Published Data</loc><lastmod>2022-12-14T17:30:34.268Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://cellxgene.cziscience.com/docs/032__Contribute and Publish Data</loc><lastmod>2022-12-14T17:30:34.268Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://cellxgene.cziscience.com/docs/03__Download Published Data</loc><lastmod>2022-12-14T17:30:34.268Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://cellxgene.cziscience.com/docs/07__Join the CellxGene User Community</loc><lastmod>2022-12-14T17:30:34.268Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://cellxgene.cziscience.com/docs/08__Cite cellxgene in your publications</loc><lastmod>2022-12-14T17:30:34.268Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://cellxgene.cziscience.com/docs/09__Frequently Asked Questions</loc><lastmod>2022-12-14T17:30:34.268Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://cellxgene.cziscience.com/docs/10__Learn About Single Cell Data Analysis</loc><lastmod>2022-12-14T17:30:34.268Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://cellxgene.cziscience.com/docs/.dev/01__writing-documentation</loc><lastmod>2022-12-14T17:30:34.268Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://cellxgene.cziscience.com/docs/04__Analyze Public Data/4_0__Get Started</loc><lastmod>2022-12-14T17:30:34.268Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://cellxgene.cziscience.com/docs/04__Analyze Public Data/4_1__Hosted Tutorials</loc><lastmod>2022-12-14T17:30:34.268Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://cellxgene.cziscience.com/docs/04__Analyze Public Data/4_2__Gene Expression Documentation/4_2_1__Get Started</loc><lastmod>2022-12-14T17:30:34.268Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://cellxgene.cziscience.com/docs/04__Analyze Public Data/4_2__Gene Expression Documentation/4_2_2__Cell Type and Gene Ordering</loc><lastmod>2022-12-14T17:30:34.268Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://cellxgene.cziscience.com/docs/04__Analyze Public Data/4_2__Gene Expression Documentation/4_2_3__Gene Expression Data Processing</loc><lastmod>2022-12-14T17:30:34.268Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://cellxgene.cziscience.com/docs/04__Analyze Public Data/4_2__Gene Expression Documentation/4_2_4__Available Tissues</loc><lastmod>2022-12-14T17:30:34.268Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://cellxgene.cziscience.com/docs/05__Annotate and Analyze Your Data/5_0__Get Started</loc><lastmod>2022-12-14T17:30:34.268Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://cellxgene.cziscience.com/docs/05__Annotate and Analyze Your Data/5_1__Getting Started: Install, Launch, Quick Start</loc><lastmod>2022-12-14T17:30:34.268Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://cellxgene.cziscience.com/docs/05__Annotate and Analyze Your Data/5_2__Self Host cellxgene</loc><lastmod>2022-12-14T17:30:34.268Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://cellxgene.cziscience.com/docs/05__Annotate and Analyze Your Data/5_3__Preparing Data</loc><lastmod>2022-12-14T17:30:34.268Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://cellxgene.cziscience.com/docs/05__Annotate and Analyze Your Data/5_4__Annotating Data</loc><lastmod>2022-12-14T17:30:34.268Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://cellxgene.cziscience.com/docs/05__Annotate and Analyze Your Data/5_5__Automatic Annotation</loc><lastmod>2022-12-14T17:30:34.268Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://cellxgene.cziscience.com/docs/05__Annotate and Analyze Your Data/5_6__Gene Sets</loc><lastmod>2022-12-14T17:30:34.268Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+<url><loc>https://cellxgene.cziscience.com/docs/05__Annotate and Analyze Your Data/5_7__Community Extensions</loc><lastmod>2022-12-14T17:30:34.268Z</lastmod><changefreq>daily</changefreq><priority>0.7</priority></url>
+</urlset>

@@ -147,3 +147,7 @@ tsconfig.tsbuildinfo
 
 # allure test report files
 allure-results
+
+# Sitemap + robots.txt
+/frontend/public/sitemap.xml
+/frontend/public/robots.txt
