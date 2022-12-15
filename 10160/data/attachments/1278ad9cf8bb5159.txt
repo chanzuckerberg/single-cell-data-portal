@@ -1,1 +1,0 @@
-{"levelname": "INFO", "asctime": "2022-12-14T07:15:56.014Z", "name": "root", "message": "Deleting file test_head_file.txt in bucket bogus-bucket.", "lineno": 62, "pathname": "/single-cell-data-portal/backend/common/entities/dataset_asset.py"}
