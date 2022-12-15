@@ -1,0 +1,1 @@
+INFO     root:dataset_asset.py:58 Deleting all files in bucket hosted-cellxgene-test under 62d95649-8f33-4bb3-a0c3-c0885248fe15.
