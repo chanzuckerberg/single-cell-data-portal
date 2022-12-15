@@ -1,4 +1,4 @@
-import { useAuth0 } from "@auth0/auth0-react";
+import { Auth0ContextInterface, useAuth0 } from "@auth0/auth0-react";
 import { AnchorButton, Button, MenuDivider } from "@blueprintjs/core";
 import { IconNames } from "@blueprintjs/icons";
 import { Menu, MenuItem } from "czifui";
@@ -32,7 +32,11 @@ const AuthButtons = (): JSX.Element | null => {
   return (
     <AuthButtonWrapper>
       {isAuthenticated ? (
-        <LoggedInButtons name={userInfo?.name} email={userInfo?.email} logout={logout} />
+        <LoggedInButtons
+          name={userInfo?.name}
+          email={userInfo?.email}
+          logout={logout}
+        />
       ) : (
         <LoggedOutButtons handleLogin={loginWithRedirect} />
       )}
@@ -40,7 +44,15 @@ const AuthButtons = (): JSX.Element | null => {
   );
 };
 
-function LoggedInButtons({ name, email, logout }: { name?: string; email?: string; logout: any }) {
+function LoggedInButtons({
+  name,
+  email,
+  logout,
+}: {
+  name?: string;
+  email?: string;
+  logout: Auth0ContextInterface["logout"];
+}) {
   const authName = isEmail(name) ? "Account" : name;
   const [anchorEl, setAnchorEl] = useState<Element | null>(null);
 
@@ -54,7 +66,7 @@ function LoggedInButtons({ name, email, logout }: { name?: string; email?: strin
 
   return (
     <>
-      <Content logout={logout} />
+      <Content />
       <Button
         onClick={handleClick}
         minimal
@@ -64,8 +76,9 @@ function LoggedInButtons({ name, email, logout }: { name?: string; email?: strin
     </>
   );
 
-  function Content({ logout }: { logout: any }) {
+  function Content() {
     const curatorAPIFeature = get(FEATURES.CURATOR);
+
     return (
       <Menu
         anchorEl={anchorEl}
@@ -80,16 +93,24 @@ function LoggedInButtons({ name, email, logout }: { name?: string; email?: strin
             <MenuDivider />
           </div>
         )}
-        <MenuItem data-testid="log-out" onClick={logout}>
+        <MenuItem data-testid="log-out" onClick={handleLogout}>
           <LogOutText>Logout</LogOutText>
           <LogOutEmail data-testid="user-email">{email}</LogOutEmail>
         </MenuItem>
       </Menu>
     );
   }
+
+  function handleLogout() {
+    logout();
+  }
 }
 
-function LoggedOutButtons({ handleLogin }: { handleLogin: any }) {
+function LoggedOutButtons({
+  handleLogin,
+}: {
+  handleLogin: Auth0ContextInterface["loginWithRedirect"];
+}) {
   return (
     <AnchorButton
       onClick={handleLogin}
