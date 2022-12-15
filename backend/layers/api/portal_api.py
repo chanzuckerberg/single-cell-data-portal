@@ -50,7 +50,7 @@ from backend.layers.common.entities import (
     Link,
     OntologyTermId,
 )
-from backend.layers.thirdparty.cloudfront_provider_interface import CDNProviderInterface
+from backend.layers.thirdparty.cdn_provider_interface import CDNProviderInterface
 from backend.layers.thirdparty.uri_provider import FileInfoException
 
 

@@ -4,7 +4,7 @@ import time
 import unittest
 from unittest.mock import Mock, patch
 from backend.layers.api.portal_api import PortalApi
-from backend.layers.thirdparty.cloudfront_provider_interface import CDNProviderInterface
+from backend.layers.thirdparty.cdn_provider_interface import CDNProviderInterface
 from tests.unit.backend.api_server.config import TOKEN_EXPIRES
 from tests.unit.backend.layers.common.base_test import BaseTest
 

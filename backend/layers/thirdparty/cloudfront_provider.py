@@ -6,7 +6,7 @@ from backend.common.corpora_config import CorporaCloudfrontConfig
 
 import logging
 
-from backend.layers.thirdparty.cloudfront_provider_interface import CDNProviderInterface
+from backend.layers.thirdparty.cdn_provider_interface import CDNProviderInterface
 
 client = boto3.client("cloudfront")
 
