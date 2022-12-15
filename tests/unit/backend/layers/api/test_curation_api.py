@@ -3,17 +3,14 @@ import json
 from dataclasses import asdict
 from unittest.mock import Mock, patch
 
-from backend.common.corpora_orm import (
-    CollectionVisibility,
-    IsPrimaryData,
-    UploadStatus,
-)
+from backend.common.corpora_orm import CollectionVisibility
 from backend.common.providers.crossref_provider import CrossrefDOINotFoundException
 from backend.common.utils.api_key import generate
 from backend.layers.common.entities import (
     CollectionVersion,
     DatasetProcessingStatus,
     DatasetStatusKey,
+    DatasetUploadStatus,
     DatasetValidationStatus,
     OntologyTermId,
 )
@@ -909,7 +906,6 @@ class TestPatchCollectionID(NewBaseTest):
 
 class TestDeleteDataset(BaseAuthAPITest):
     def test__delete_dataset(self):
-        processing_status = {"upload_status": UploadStatus.UPLOADING, "upload_progress": 10.0}
         auth_credentials = [
             (self.make_super_curator_header, "super", 202),
             (self.make_owner_header, "owner", 202),
@@ -918,12 +914,15 @@ class TestDeleteDataset(BaseAuthAPITest):
         ]
         for auth, auth_description, expected_status_code in auth_credentials:
             with self.subTest(f"{auth_description} {expected_status_code}"):
-                collection = self.generate_collection(visibility=CollectionVisibility.PRIVATE.name)
                 dataset = self.generate_dataset(
-                    collection=collection,
-                    processing_status=processing_status,
+                    statuses=[DatasetStatusUpdate(DatasetStatusKey.UPLOAD, DatasetUploadStatus.UPLOADING)],
+                    publish=False,
                 )
-                test_url = f"/curation/v1/collections/{collection.collection_id}/datasets/{dataset.id}"
+
+                test_url = (
+                    f"/curation/v1/collections/{dataset.collection_version_id}/datasets/"
+                    f"{dataset.dataset_version_id}"
+                )
                 headers = auth() if callable(auth) else auth
                 response = self.app.delete(test_url, headers=headers)
                 self.assertEqual(expected_status_code, response.status_code)
@@ -931,47 +930,39 @@ class TestDeleteDataset(BaseAuthAPITest):
 
 class TestGetDatasets(BaseAuthAPITest):
     def test_get_dataset_in_a_collection_200(self):
-        collection = self.generate_collection(visibility=CollectionVisibility.PRIVATE.name)
-        dataset = self.generate_dataset(collection_version_id=collection.version_id, name="test")
-        test_url = f"/curation/v1/collections/{collection.collection_id}/datasets/{dataset.id}"
+        dataset = self.generate_dataset(name="test")
+        test_url = f"/curation/v1/collections/{dataset.collection_id}/datasets/{dataset.dataset_version_id}"
 
         response = self.app.get(test_url)
+        print(response)
         self.assertEqual(200, response.status_code)
-        self.assertEqual(dataset.id, response.json["id"])
+        self.assertEqual(dataset.dataset_id, response.json["id"])
 
     def test_get_dataset_shape(self):
-        collection = self.generate_collection(visibility=CollectionVisibility.PRIVATE.name)
-        dataset = self.generate_dataset(collection_version_id=collection.version_id, name="test")
-        test_url = f"/curation/v1/collections/{collection.collection_id}/datasets/{dataset.id}"
+        dataset = self.generate_dataset(name="test")
+        test_url = f"/curation/v1/collections/{dataset.collection_id}/datasets/{dataset.dataset_version_id}"
         response = self.app.get(test_url)
-        self.assertEqual(dataset.name, response.json["title"])
+        print(response.json)
+        self.assertEqual("test", response.json["title"])
 
     def test_get_dataset_is_primary_data_shape(self):
-        collection = self.generate_collection(visibility=CollectionVisibility.PRIVATE.name)
         tests = [
-            (IsPrimaryData.PRIMARY, [True]),
-            (IsPrimaryData.SECONDARY, [False]),
-            (IsPrimaryData.BOTH, [True, False]),
+            ("PRIMARY", [True]),
+            ("SECONDARY", [False]),
+            ("BOTH", [True, False]),
         ]
         for is_primary_data, result in tests:
             with self.subTest(f"{is_primary_data}=={result}"):
-                dataset = self.generate_dataset(
-                    collection_version_id=collection.version_id, is_primary_data=is_primary_data
-                )
-                test_url = f"/curation/v1/collections/{collection.collection_id}/datasets/{dataset.id}"
+                metadata = self.sample_dataset_metadata
+                metadata.is_primary_data = is_primary_data
+                dataset = self.generate_dataset(metadata=metadata)
+                test_url = f"/curation/v1/collections/{dataset.collection_id}/datasets/{dataset.dataset_version_id}"
                 response = self.app.get(test_url)
                 self.assertEqual(result, response.json["is_primary_data"])
 
     def test_get_nonexistent_dataset_404(self):
-        collection = self.generate_collection(visibility=CollectionVisibility.PRIVATE.name)
+        collection = self.generate_unpublished_collection()
         test_url = f"/curation/v1/collections/{collection.collection_id}/datasets/1234-1243-2134-234-1342"
-        response = self.app.get(test_url)
-        self.assertEqual(404, response.status_code)
-
-    def test_get_tombstoned_dataset_in_a_collection_404(self):
-        collection = self.generate_collection(visibility=CollectionVisibility.PRIVATE.name)
-        dataset = self.generate_dataset(collection_version_id=collection.version_id, tombstone=True)
-        test_url = f"/curation/v1/collections/{collection.collection_id}/datasets/{dataset.id}"
         response = self.app.get(test_url)
         self.assertEqual(404, response.status_code)
 
@@ -990,37 +981,37 @@ class TestPostDataset(BaseAuthAPITest):
         self.assertEqual(403, response.status_code)
 
     def test_post_datasets_201(self):
-        collection = self.generate_collection()
-        test_url = f"/curation/v1/collections/{collection.collection_id}/datasets"
+        collection = self.generate_unpublished_collection()
+        test_url = f"/curation/v1/collections/{collection.version_id}/datasets"
         headers = self.make_owner_header()
         response = self.app.post(test_url, headers=headers)
         self.assertEqual(201, response.status_code)
         self.assertTrue(response.json["id"])
 
     def test_post_datasets_super(self):
-        collection = self.generate_collection()
-        test_url = f"/curation/v1/collections/{collection.collection_id}/datasets"
+        collection = self.generate_unpublished_collection()
+        test_url = f"/curation/v1/collections/{collection.version_id}/datasets"
         headers = self.make_super_curator_header()
         response = self.app.post(test_url, headers=headers)
         self.assertEqual(201, response.status_code)
 
     def test_post_datasets_not_owner_201(self):
         collection = self.generate_collection()
-        test_url = f"/curation/v1/collections/{collection.collection_id}/datasets"
+        test_url = f"/curation/v1/collections/{collection.version_id}/datasets"
         headers = self.make_not_owner_header()
         response = self.app.post(test_url, headers=headers)
         self.assertEqual(403, response.status_code)
 
     def test_post_datasets_public_collection_405(self):
         collection = self.generate_collection(visibility="PUBLIC")
-        test_url = f"/curation/v1/collections/{collection.collection_id}/datasets"
+        test_url = f"/curation/v1/collections/{collection.version_id}/datasets"
         headers = self.make_owner_header()
         response = self.app.post(test_url, headers=headers)
         self.assertEqual(405, response.status_code)
 
     def test_post_datasets_no_auth_401(self):
         collection = self.generate_collection(visibility="PUBLIC")
-        test_url = f"/curation/v1/collections/{collection.collection_id}/datasets"
+        test_url = f"/curation/v1/collections/{collection.version_id}/datasets"
         response = self.app.post(test_url)
         self.assertEqual(401, response.status_code)
 
@@ -1076,72 +1067,128 @@ class TestPutLink(BaseAuthAPITest):
         cls.good_link = "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"
         cls.dummy_link = "https://www.dropbox.com/s/12345678901234/test.h5ad?dl=0"
 
-    def _test_new(self, headers: dict = None, collection_params: dict = None, body: dict = None):
-        headers = headers if headers else {}
-        collection_params = collection_params if collection_params else {}
-        collection = self.generate_collection(**collection_params)
-        dataset = self.generate_dataset(
-            collection_version=collection.version_id,
-            statuses=DatasetStatusUpdate(
-                status_key=DatasetStatusKey.PROCESSING, status=DatasetProcessingStatus.INITIALIZED
-            ),
-        )
-        body = body if body else ""
-        headers["Content-Type"] = "application/json"
-        response = self.app.put(
-            f"/curation/v1/collections/{collection.collection_id}/datasets/{dataset.id}", json=body, headers=headers
-        )
-        return response
-
     def test__from_link__no_auth(self, *mocks):
-        response = self._test_new(body={"link": self.good_link})
+        """
+        Calling PUT /datasets/:dataset_id should fail with 401 Unauthorized if the user is not authenticated
+        """
+        dataset = self.generate_dataset(
+            statuses=[DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.INITIALIZED)]
+        )
+        body = {"link": self.good_link}
+        headers = None
+        response = self.app.put(
+            f"/curation/v1/collections/{dataset.collection_version_id}/datasets/{dataset.dataset_version_id}",
+            json=body,
+            headers=headers,
+        )
+
         self.assertEqual(401, response.status_code)
 
     def test__from_link__Not_Public(self, *mocks):
-        headers = self.make_owner_header()
-        response = self._test_new(
-            headers, collection_params={"visibility": CollectionVisibility.PUBLIC}, body={"link": self.good_link}
+        """
+        Calling PUT /datasets/:dataset_id should fail with 403 Unauthorized
+        if trying to upload to a published collection
+        """
+        dataset = self.generate_dataset(
+            statuses=[DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.INITIALIZED)],
+            publish=True,
         )
+        body = {"link": self.good_link}
+        headers = self.make_owner_header()
+        response = self.app.put(
+            f"/curation/v1/collections/{dataset.collection_version_id}/datasets/{dataset.dataset_version_id}",
+            json=body,
+            headers=headers,
+        )
+
         self.assertEqual(403, response.status_code)
 
     def test__from_link__Not_Owner(self, *mocks):
-        response = self._test_new(self.make_not_owner_header(), body={"link": self.dummy_link})
+        """
+        Calling PUT /datasets/:dataset_id should fail with 403 Unauthorized
+        if the authenticated user is not the owner of a collection
+        """
+
+        dataset = self.generate_dataset(
+            statuses=[DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.INITIALIZED)],
+        )
+        body = {"link": self.dummy_link}
+        headers = self.make_not_owner_header()
+        response = self.app.put(
+            f"/curation/v1/collections/{dataset.collection_version_id}/datasets/{dataset.dataset_version_id}",
+            json=body,
+            headers=headers,
+        )
+
         self.assertEqual(403, response.status_code)
 
     def test__new_from_link__OK(self, *mocks):
+        """
+        Calling PUT /datasets/:dataset_id should succeed if a valid link is uploaded by the owner of the collection
+        """
+
+        dataset = self.generate_dataset(
+            statuses=[DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.INITIALIZED)],
+        )
+        body = {"link": self.good_link}
         headers = self.make_owner_header()
-        response = self._test_new(headers, body={"link": self.good_link})
+        response = self.app.put(
+            f"/curation/v1/collections/{dataset.collection_version_id}/datasets/{dataset.dataset_version_id}",
+            json=body,
+            headers=headers,
+        )
         self.assertEqual(202, response.status_code)
 
     def test__new_from_link__Super_Curator(self, *mocks):
-        headers = self.make_super_curator_header()
-        response = self._test_new(headers, body={"link": self.good_link})
-        self.assertEqual(202, response.status_code)
+        """
+        Calling PUT /datasets/:dataset_id should succeed if a valid link is uploaded by a super curator
+        """
 
-    def _test_existing(self, headers: dict = None):
-        headers = headers if headers else {}
-        headers["Content-Type"] = "application/json"
-        collection = self.generate_collection()
-        statuses = DatasetStatusUpdate(status_key=DatasetStatusKey.PROCESSING, status=DatasetProcessingStatus.SUCCESS)
-        dataset = self.generate_dataset(collection_version=collection, statuses=statuses)
+        dataset = self.generate_dataset(
+            statuses=[DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.INITIALIZED)],
+        )
         body = {"link": self.good_link}
+        headers = self.make_super_curator_header()
         response = self.app.put(
-            f"/curation/v1/collections/{collection.collection_id}/datasets/{dataset.id}",
-            data=json.dumps(body),
+            f"/curation/v1/collections/{dataset.collection_version_id}/datasets/{dataset.dataset_version_id}",
+            json=body,
             headers=headers,
         )
-        return response
+        self.assertEqual(202, response.status_code)
 
     def test__existing_from_link__OK(self, *mocks):
-        with self.subTest("dataset_id"):
-            response = self._test_existing(self.make_owner_header())
-            self.assertEqual(202, response.status_code)
+        """
+        Calling PUT /datasets/:dataset_id on an existing dataset_id
+        should succeed if a valid link is uploaded by the owner of the collection
+        """
+        dataset = self.generate_dataset(
+            statuses=[DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.SUCCESS)],
+        )
+        body = {"link": self.good_link}
+        headers = self.make_owner_header()
+        response = self.app.put(
+            f"/curation/v1/collections/{dataset.collection_version_id}/datasets/{dataset.dataset_version_id}",
+            json=body,
+            headers=headers,
+        )
+        self.assertEqual(202, response.status_code)
 
     def test__existing_from_link__Super_Curator(self, *mocks):
+        """
+        Calling PUT /datasets/:dataset_id on an existing dataset_id
+        should succeed if a valid link is uploaded by a super curator
+        """
+        dataset = self.generate_dataset(
+            statuses=[DatasetStatusUpdate(DatasetStatusKey.PROCESSING, DatasetProcessingStatus.SUCCESS)],
+        )
+        body = {"link": self.good_link}
         headers = self.make_super_curator_header()
-        with self.subTest("dataset_id"):
-            response = self._test_existing(headers)
-            self.assertEqual(202, response.status_code)
+        response = self.app.put(
+            f"/curation/v1/collections/{dataset.collection_version_id}/datasets/{dataset.dataset_version_id}",
+            json=body,
+            headers=headers,
+        )
+        self.assertEqual(202, response.status_code)
 
 
 class TestAuthToken(NewBaseTest):
