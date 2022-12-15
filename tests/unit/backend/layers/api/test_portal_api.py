@@ -2000,6 +2000,20 @@ class TestPublishRevision(BaseAPIPortalTest):
         response = self.app.post(path, headers=headers, data=json.dumps(body))
         self.assertEqual(202, response.status_code)
 
+    def test__publish_collection_triggers_cloudfront_invalidation(self):
+        self.cloudfront_provider.create_invalidation_for_index_paths = Mock()
+        collection = self.generate_unpublished_collection(add_datasets=1)
+        path = f"{self.base_path}/{collection.version_id.id}/publish"
+        body = {"data_submission_policy_version": "1.0"}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Cookie": self.get_cxguser_token(),
+        }
+        response = self.app.post(path, headers=headers, data=json.dumps(body))
+        self.assertEqual(202, response.status_code)
+        self.cloudfront_provider.create_invalidation_for_index_paths.assert_called_once()
+
     # The following tests are good to have, but they're essentially business logic tests. We can purge them for now
 
     # def test__publish_revision_with_updated_datasets__OK(self):
