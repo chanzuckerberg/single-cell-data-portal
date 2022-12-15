@@ -710,12 +710,12 @@ class TestPatchCollectionID(NewBaseTest):
         )
 
     def test__update_collection__no_auth(self):
-        collection_id = self.generate_collection().collection_id
+        collection_id = self.generate_collection(visibility="PRIVATE").collection_id
         response = self.app.patch(f"/curation/v1/collections/{collection_id}", data=json.dumps(self.test_collection))
         self.assertEqual(401, response.status_code)
 
     def test__update_collection__OK(self):
-        collection_id = self.generate_collection().collection_id
+        collection_id = self.generate_collection(visibility="PRIVATE").collection_id
         response = self.app.patch(
             f"/curation/v1/collections/{collection_id}",
             data=json.dumps(self.test_collection),
@@ -742,6 +742,7 @@ class TestPatchCollectionID(NewBaseTest):
             contact_email=contact_email,
             links=links,
             publisher_metadata=publisher_metadata,
+            visibility="PRIVATE",
         ).collection_id
         new_name = "A new name, and only a new name"
         metadata = {"name": new_name}
@@ -762,7 +763,7 @@ class TestPatchCollectionID(NewBaseTest):
     def test_update_collection_with_empty_required_fields(self):
         tests = [dict(description=""), dict(contact_name=""), dict(contact_email=""), dict(name="")]
 
-        collection_id = self.generate_collection().collection_id
+        collection_id = self.generate_collection(visibility="PRIVATE").collection_id
         for test in tests:
             with self.subTest(test):
                 response = self.app.patch(
@@ -789,7 +790,7 @@ class TestPatchCollectionID(NewBaseTest):
 
         for test_title, initial_links, new_links, expected_status_code, expected_links in links_configurations:
             with self.subTest(test_title):
-                collection_id = self.generate_collection(links=initial_links).collection_id
+                collection_id = self.generate_collection(links=initial_links, visibility="PRIVATE").collection_id
                 original_collection = self.app.get(f"curation/v1/collections/{collection_id}").json
                 self.assertEqual(initial_links if initial_links else [], original_collection["links"])
                 metadata = {"links": new_links} if new_links is not None else {}
@@ -808,7 +809,7 @@ class TestPatchCollectionID(NewBaseTest):
             {"link_name": "new doi", "link_type": "DOI", "link_url": initial_doi},
         ]
         new_doi = "10.1016"  # a real DOI (CURIE reference)
-        collection_id = self.generate_collection(links=links).collection_id
+        collection_id = self.generate_collection(links=links, visibility="PRIVATE").collection_id
         original_collection = self.app.get(f"curation/v1/collections/{collection_id}").json
         self.assertEqual(initial_doi, original_collection["doi"])
         metadata = {"doi": new_doi}
@@ -824,7 +825,7 @@ class TestPatchCollectionID(NewBaseTest):
         links = [
             {"link_name": "doi", "link_type": "DOI", "link_url": "http://doi.doi/10.1011/something"},
         ]
-        collection = self.generate_collection(links=links)
+        collection = self.generate_collection(links=links, visibility="PRIVATE")
         collection_id = collection.collection_id
         original_collection = self.app.get(f"curation/v1/collections/{collection_id}").json
 
@@ -839,7 +840,6 @@ class TestPatchCollectionID(NewBaseTest):
         self.assertEqual(original_collection["doi"], original_collection_unchanged["doi"])
 
     def test__update_collection__doi_does_not_exist__BAD_REQUEST(self):
-        name = "bad doi update test collection"
         links = [
             {"link_name": "name", "link_type": "RAW_DATA", "link_url": "http://test_link.place"},
             {"link_name": "doi", "link_type": "DOI", "link_url": "http://doi.doi/10.1011/something"},
@@ -857,7 +857,9 @@ class TestPatchCollectionID(NewBaseTest):
             "backend.common.providers.crossref_provider.CrossrefProvider.fetch_metadata",
             side_effect=CrossrefDOINotFoundException(),
         ):
-            collection = self.generate_collection(name=name, links=links, publisher_metadata=publisher_metadata)
+            collection = self.generate_collection(
+                links=links, publisher_metadata=publisher_metadata, visibility="PRIVATE"
+            )
             collection_id = collection.collection_id
             original_collection = self.app.get(f"curation/v1/collections/{collection_id}").json
 
@@ -871,13 +873,12 @@ class TestPatchCollectionID(NewBaseTest):
             )
             self.assertEqual(400, response.status_code)
             original_collection_unchanged = self.app.get(f"curation/v1/collections/{collection_id}").json
-            self.assertEqual(name, original_collection_unchanged["name"])
             # Only compare to first item in links list because "DOI" type gets removed from Curator API response
             self.assertEqual(links[:1], original_collection_unchanged["links"])
             self.assertEqual(publisher_metadata, original_collection_unchanged["publisher_metadata"])
 
     def test__update_collection__Not_Owner(self):
-        collection_id = self.generate_collection(owner="someone else").collection_id
+        collection_id = self.generate_unpublished_collection(owner="someone else")
         response = self.app.patch(
             f"/curation/v1/collections/{collection_id}",
             data=json.dumps(self.test_collection),
@@ -886,7 +887,7 @@ class TestPatchCollectionID(NewBaseTest):
         self.assertEqual(403, response.status_code)
 
     def test__update_collection__Super_Curator(self):
-        collection_id = self.generate_collection().collection_id
+        collection_id = self.generate_unpublished_collection()
         headers = self.make_super_curator_header()
         response = self.app.patch(
             f"/curation/v1/collections/{collection_id}", data=json.dumps(self.test_collection), headers=headers
@@ -894,7 +895,7 @@ class TestPatchCollectionID(NewBaseTest):
         self.assertEqual(200, response.status_code)
 
     def test__update_public_collection_owner__405(self):
-        collection_id = self.generate_collection(visibility=CollectionVisibility.PUBLIC).collection_id
+        collection_id = self.generate_published_collection()
         headers = self.make_super_curator_header()
         response = self.app.patch(
             f"/curation/v1/collections/{collection_id}", data=json.dumps(self.test_collection), headers=headers

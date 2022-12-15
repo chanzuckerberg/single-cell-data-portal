@@ -74,5 +74,7 @@ def patch(collection_id: str, body: dict, token_info: dict) -> Response:
 
     doi_url, links = extract_doi_from_links(updated_collection_version.metadata.links)
 
-    response = dict(**metadata, publisher_metadata=updated_collection_version.publisher_metadata, links=links, doi=doi)
+    response = dict(
+        **metadata, publisher_metadata=updated_collection_version.publisher_metadata, links=links, doi=doi_url
+    )
     return jsonify(response)
