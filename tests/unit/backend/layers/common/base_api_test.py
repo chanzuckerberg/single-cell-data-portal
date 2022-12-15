@@ -249,6 +249,7 @@ class NewBaseTest(BaseAuthAPITest):
         owner: str = "test_user_id",
         collection_version: Optional[CollectionVersion] = None,
         metadata: Optional[DatasetMetadata] = None,
+        name: Optional[str] = None,
         statuses: List[DatasetStatusUpdate] = [],
         validation_message: str = None,
         artifacts: List[DatasetArtifactUpdate] = [],
@@ -264,6 +265,8 @@ class NewBaseTest(BaseAuthAPITest):
         )
         if not metadata:
             metadata = copy.deepcopy(self.sample_dataset_metadata)
+        if name is not None:
+            metadata.name = name
         self.business_logic.set_dataset_metadata(dataset_version_id, metadata)
         for status in statuses:
             self.business_logic.update_dataset_version_status(dataset_version_id, status.status_key, status.status)

@@ -503,6 +503,24 @@ class TestUpdateCollection(BaseBusinessLogicTestCase):
 
 
 class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
+
+    def test_add_empty_dataset_ok(self):
+        """
+        An empty dataset can be added to a collection when `create_empty_dataset` is called.
+        The resulting dataset should be empty and in a state ready for processing.
+        """
+        version = self.initialize_empty_unpublished_collection()
+        url = "http://test/dataset.url"
+
+        new_dataset_version_id, _ = self.business_logic.create_empty_dataset(version.version_id)
+
+        new_dataset_version = self.database_provider.get_dataset_version(new_dataset_version_id)
+        self.assertIsNotNone(new_dataset_version)
+        self.assertIsNone(new_dataset_version.metadata)
+        self.assertEqual(new_dataset_version.collection_id, version.collection_id)
+        self.assertEqual(new_dataset_version.status.upload_status, DatasetUploadStatus.WAITING)
+        self.assertEqual(new_dataset_version.status.processing_status, DatasetProcessingStatus.PENDING)
+
     def test_add_dataset_to_unpublished_collection_ok(self):
         """
         A dataset can be added to a collection when `ingest_dataset` is called.
