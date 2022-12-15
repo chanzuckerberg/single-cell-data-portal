@@ -1,6 +1,7 @@
 import styled from "@emotion/styled";
 import { EXPANDED_WIDTH_PX } from "src/components/common/SideBar";
 import { HEADER_HEIGHT_PX } from "src/components/Header/style";
+import { CELL_INFO_SIDEBAR_WIDTH_PX } from "../CellInfoSideBar/style";
 
 export const Header = styled.h1`
   margin-bottom: 12px;
@@ -8,12 +9,23 @@ export const Header = styled.h1`
   font-weight: bold;
 `;
 
+interface WrapperProps {
+  fmg: boolean;
+  isHidden: boolean;
+}
+// (seve): grid should handle the width for us if we set to 100%, but we
+// will need to change upstream styling due to position: absolute
 export const Wrapper = styled.div`
-  display: flex;
   position: absolute;
   top: 150px;
   margin-left: -10px;
-  width: calc(96vw - ${EXPANDED_WIDTH_PX}px);
+
+  display: ${({ isHidden }: WrapperProps) => (isHidden ? "none" : "flex")};
+
+  width: ${({ fmg }: WrapperProps) =>
+    fmg
+      ? `calc(96vw - ${EXPANDED_WIDTH_PX + CELL_INFO_SIDEBAR_WIDTH_PX}px)`
+      : `calc(96vw - ${EXPANDED_WIDTH_PX}px)`};
   height: calc(85vh - ${HEADER_HEIGHT_PX}px);
 `;
 

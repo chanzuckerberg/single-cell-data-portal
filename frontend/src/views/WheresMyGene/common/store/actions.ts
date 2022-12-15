@@ -5,7 +5,7 @@
 
 import { CellTypeMetadata } from "../../components/HeatMap/utils";
 import { CellType, Tissue } from "../types";
-import { REDUCERS, State } from "./reducer";
+import { AddCellInfoCellTypePayload, REDUCERS, State } from "./reducer";
 
 export function deleteSelectedGenesAndSelectedCellTypeIds(): GetActionTypeOfReducer<
   typeof REDUCERS["deleteSelectedGenesAndSelectedCellTypeIds"]
@@ -133,6 +133,15 @@ export function setSnapshotId(
   return {
     payload: snapshotId,
     type: "setSnapshotId",
+  };
+}
+
+export function addCellInfoCellType(
+  payload: AddCellInfoCellTypePayload
+): GetActionTypeOfReducer<typeof REDUCERS["addCellInfoCellType"]> {
+  return {
+    payload,
+    type: "addCellInfoCellType",
   };
 }
 
