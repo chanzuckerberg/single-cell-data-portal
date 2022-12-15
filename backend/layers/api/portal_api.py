@@ -50,14 +50,17 @@ from backend.layers.common.entities import (
     Link,
     OntologyTermId,
 )
+from backend.layers.thirdparty.cloudfront_provider_interface import CloudfrontProviderInterface
 from backend.layers.thirdparty.uri_provider import FileInfoException
 
 
 class PortalApi:
     business_logic: BusinessLogicInterface
+    cloudfront_provider: CloudfrontProviderInterface
 
-    def __init__(self, business_logic: BusinessLogic) -> None:
+    def __init__(self, business_logic: BusinessLogic, cloudfront_provider: CloudfrontProviderInterface) -> None:
         self.business_logic = business_logic
+        self.cloudfront_provider = cloudfront_provider
 
     def get_collections_list(self, from_date: int = None, to_date: int = None, token_info: Optional[dict] = None):
         """
@@ -410,6 +413,8 @@ class PortalApi:
             self.business_logic.publish_collection_version(CollectionVersionId(collection_id))
         except CollectionPublishException:
             raise ConflictException(detail="The collection must have a least one dataset.")
+
+        self.cloudfront_provider.create_invalidation_for_index_paths()
 
         return make_response({"collection_id": version.collection_id.id, "visibility": "PUBLIC"}, 202)
 
