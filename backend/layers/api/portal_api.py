@@ -316,14 +316,16 @@ class PortalApi:
             transformed_collection = {
                 "id": collection.collection_id.id,
                 "name": collection.metadata.name,
-                "published_at": collection.canonical_collection.originally_published_at,
-                "revised_at": collection.published_at,
             }
 
             if collection.publisher_metadata is not None:
                 transformed_collection["publisher_metadata"] = self._publisher_metadata_to_response(
                     collection.publisher_metadata
                 )
+
+            if collection.canonical_collection.originally_published_at:
+                transformed_collection["published_at"] = collection.canonical_collection.originally_published_at
+                transformed_collection["revised_at"] = collection.published_at
 
             response.append(transformed_collection)
 
