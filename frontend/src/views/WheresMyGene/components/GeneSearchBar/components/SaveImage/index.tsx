@@ -10,6 +10,7 @@ import {
   Title,
 } from "src/components/Collections/components/Dataset/components/DownloadDataset/components/Content/components/common/style";
 import Modal from "src/components/common/Modal";
+import { State } from "src/views/WheresMyGene/common/store";
 import { CellType } from "src/views/WheresMyGene/common/types";
 import { getHeatmapHeight, getHeatmapWidth } from "../../../HeatMap/utils";
 import { Label } from "../../style";
@@ -55,7 +56,7 @@ export default function SaveImage({
   selectedCellTypes,
 }: {
   selectedTissues: Array<string>;
-  selectedGenes: Array<string>;
+  selectedGenes: State["selectedGenes"];
   selectedCellTypes: { [tissue: string]: CellType[] };
 }): JSX.Element {
   const [isOpen, setIsOpen] = useState(false);

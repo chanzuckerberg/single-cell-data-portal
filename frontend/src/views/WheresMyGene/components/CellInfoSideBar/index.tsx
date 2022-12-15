@@ -43,7 +43,7 @@ function CellInfoSideBar({
   const handleDisplayGenes = useCallback(() => {
     if (!data || !dispatch) return;
     const genes = Object.keys(data.marker_genes);
-    dispatch(addSelectedGenes(genes));
+    dispatch(addSelectedGenes(genes, tissueName, cellInfoCellType));
   }, [data, dispatch]);
 
   if (isLoading || !data) return null;

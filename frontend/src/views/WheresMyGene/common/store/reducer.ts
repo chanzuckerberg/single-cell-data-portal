@@ -5,7 +5,7 @@ import {
   CellTypeMetadata,
   deserializeCellTypeMetadata,
 } from "../../components/HeatMap/utils";
-import { CellType, SORT_BY, Tissue } from "../types";
+import { CellType, SORT_BY, Tissue, Genes } from "../types";
 export interface PayloadAction<Payload> {
   type: keyof typeof REDUCERS;
   payload: Payload;
@@ -13,7 +13,7 @@ export interface PayloadAction<Payload> {
 export interface State {
   cellTypeIdsToDelete: CellTypeMetadata[];
   genesToDelete: string[];
-  selectedGenes: string[];
+  selectedGenes: Map<string,Genes>;
   selectedCellTypeIds: {
     [tissue: Tissue]: string[];
   };
@@ -46,7 +46,7 @@ export const INITIAL_STATE: State = {
   genesToDelete: [],
   selectedCellTypeIds: {},
   selectedFilters: EMPTY_FILTERS,
-  selectedGenes: [],
+  selectedGenes: new Map([["",[]]]),
   selectedOrganismId: null,
   selectedTissues: [],
   snapshotId: null,
@@ -111,12 +111,12 @@ function deleteSelectedGenesAndSelectedCellTypeIds(
 
   const { selectedGenes, selectedCellTypeIds } = state;
 
-  const newSelectedGenes = genesToDelete.length
-    ? deleteByItems<State["selectedGenes"][number]>(
-        selectedGenes,
+  const newGenes = genesToDelete.length
+    ? deleteByItems<Genes[number]>(
+        selectedGenes.get("") || [],
         genesToDelete
       )
-    : selectedGenes;
+    : selectedGenes.get("") || [];
 
   const newSelectedCellTypeIds = cellTypeIdsToDelete.length
     ? deleteSelectedCellTypeIdsByMetadata(
@@ -124,6 +124,9 @@ function deleteSelectedGenesAndSelectedCellTypeIds(
         cellTypeIdsToDelete
       )
     : selectedCellTypeIds;
+  
+  const newSelectedGenes = new Map(Array.from(selectedGenes));
+  newSelectedGenes.set("",newGenes);
 
   return {
     ...state,
@@ -144,7 +147,7 @@ function selectOrganism(
 
   return {
     ...state,
-    selectedGenes: [],
+    selectedGenes: new Map([["",[]]]),
     selectedOrganismId: action.payload,
     selectedTissues: [],
   };
@@ -152,13 +155,15 @@ function selectOrganism(
 
 function selectGenes(
   state: State,
-  action: PayloadAction<State["selectedGenes"]>
+  action: PayloadAction<Genes>
 ): State {
+  const newSelectedGenes = new Map(Array.from(state.selectedGenes));
+  newSelectedGenes.set("", action.payload);
   return {
     ...state,
     cellTypeIdsToDelete: [],
     genesToDelete: [],
-    selectedGenes: action.payload,
+    selectedGenes: newSelectedGenes,
   };
 }
 
@@ -360,19 +365,17 @@ function setSnapshotId(
 
 function addSelectedGenes(
   state: State,
-  action: PayloadAction<State["selectedGenes"]>
+  action: PayloadAction<{genes: Genes, tissue: Tissue, cellType: CellType}>
 ): State {
   const { payload } = action;
-
-  // only add unique genes
-  const genesToAdd = payload.filter(
-    (gene) => !state.selectedGenes.includes(gene)
-  );
-  if (genesToAdd.length === 0) return state;
+  const { genes, tissue, cellType } = payload;
+  const key = tissue && cellType ? `${tissue}-${cellType}` : "";  
+  const newSelectedGenes = new Map(Array.from(state.selectedGenes));
+  newSelectedGenes.set(key, genes);
 
   return {
     ...state,
-    selectedGenes: [...genesToAdd, ...state.selectedGenes],
+    selectedGenes: newSelectedGenes,
   };
 }
 

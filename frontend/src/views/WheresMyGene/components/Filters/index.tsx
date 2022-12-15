@@ -20,6 +20,7 @@ import {
 import { EMPTY_ARRAY, EMPTY_OBJECT } from "src/common/constants/utils";
 import {
   FilterDimensions,
+  getUniqueValuesFromMap,
   useFilterDimensions,
 } from "src/common/queries/wheresMyGene";
 import { DispatchContext, StateContext } from "../../common/store";
@@ -70,7 +71,8 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
     isLoading: rawIsLoading,
   } = useFilterDimensions({ includeAllFilterOptions: true });
 
-  const areFiltersDisabled = !selectedTissues.length || !selectedGenes.length;
+  const allSelectedGenes = getUniqueValuesFromMap(selectedGenes);
+  const areFiltersDisabled = !selectedTissues.length || !allSelectedGenes.length;
 
   const InputDropdownProps = useMemo(() => {
     return {

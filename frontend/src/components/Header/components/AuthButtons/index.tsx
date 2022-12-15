@@ -8,7 +8,7 @@ import { FEATURES } from "src/common/featureFlags/features";
 import { BOOLEAN } from "src/common/localStorage/set";
 import { useUserInfo } from "src/common/queries/auth";
 import { AuthButtonWrapper } from "src/components/Header/style";
-import { API_URL } from "src/configs/configs";
+import { API_URL } from "src/configs/dev";
 import CuratorAPIKeyGenerator from "../CuratorAPIKeyGenerator";
 import { LogOutAnchor, LogOutEmail, LogOutText } from "./style";
 

@@ -36,7 +36,9 @@ interface Props {
   tissuesWithDeletedCellTypes: string[];
   allTissueCellTypes: { [tissue: Tissue]: CellType[] };
   selectedGeneExpressionSummariesByTissueName: {
-    [tissueName: string]: GeneExpressionSummary[];
+      [groupName: string]: {
+        [tissueName: string]: GeneExpressionSummary[]
+      };
   };
   scaledMeanExpressionMax: number;
   scaledMeanExpressionMin: number;
@@ -65,6 +67,7 @@ export default memo(function HeatMap({
 }: Props): JSX.Element {
   useTrackHeatMapLoaded({ selectedGenes: genes, selectedTissues });
 
+  const regularGenes = genes.get("") || [];
   // Loading state per tissue
   const [isLoading, setIsLoading] = useState(setInitialIsLoading(cellTypes));
   const chartWrapperRef = useRef<HTMLDivElement>(null);
@@ -98,14 +101,14 @@ export default memo(function HeatMap({
 
   const sortedGeneNames = useSortedGeneNames({
     geneSortBy,
-    genes,
+    genes: regularGenes,
     selectedCellTypes: cellTypes,
     tissueNameToCellTypeIdToGeneNameToCellTypeGeneExpressionSummaryDataMap,
   });
 
   const sortedCellTypesByTissueName = useSortedCellTypesByTissueName({
     cellTypeSortBy,
-    genes,
+    genes: regularGenes,
     selectedCellTypes: cellTypes,
     tissueNameToCellTypeIdToGeneNameToCellTypeGeneExpressionSummaryDataMap,
   });

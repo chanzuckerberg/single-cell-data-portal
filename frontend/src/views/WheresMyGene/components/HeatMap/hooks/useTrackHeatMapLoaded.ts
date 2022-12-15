@@ -1,10 +1,12 @@
 import { useEffect, useRef } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
+import { getUniqueValuesFromMap } from "src/common/queries/wheresMyGene";
+import { State } from "src/views/WheresMyGene/common/store";
 
 interface Props {
   selectedTissues: string[];
-  selectedGenes: string[];
+  selectedGenes: State["selectedGenes"];
 }
 
 export function useTrackHeatMapLoaded({
@@ -33,7 +35,7 @@ export function useTrackHeatMapLoaded({
    */
   useEffect(() => {
     const hasSelectedTissues = selectedTissues.length > 0;
-    const hasSelectedGenes = selectedGenes.length > 0;
+    const hasSelectedGenes = getUniqueValuesFromMap(selectedGenes).length > 0;
 
     if (!hasSelectedTissues || !hasSelectedGenes) {
       isHeatMapEventFired.current = false;

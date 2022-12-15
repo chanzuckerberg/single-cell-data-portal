@@ -13,6 +13,7 @@ import {
   CellTypeByTissueName,
   GeneExpressionSummariesByTissueName,
   generateTermsByKey,
+  getUniqueValuesFromMap,
   useCellTypesByTissueName,
   useGeneExpressionSummariesByTissueName,
   usePrimaryFilterDimensions,
@@ -122,26 +123,28 @@ export default function WheresMyGene(): JSX.Element {
         continue;
       }
 
-      for (const selectedGeneName of selectedGenes) {
-        const geneExpressionSummary =
-          tissueGeneExpressionSummaries[selectedGeneName];
+      for (const [_, genes] of selectedGenes) {
+        for (const selectedGeneName of genes) {
+          const geneExpressionSummary =
+            tissueGeneExpressionSummaries[selectedGeneName];
 
-        if (geneExpressionSummary) {
-          const { cellTypeGeneExpressionSummaries } = geneExpressionSummary;
+          if (geneExpressionSummary) {
+            const { cellTypeGeneExpressionSummaries } = geneExpressionSummary;
 
-          for (const cellTypeGeneExpressionSummary of cellTypeGeneExpressionSummaries) {
-            if (
-              !tissueSelectedCellTypeIds.includes(
-                cellTypeGeneExpressionSummary.id
-              )
-            ) {
-              continue;
+            for (const cellTypeGeneExpressionSummary of cellTypeGeneExpressionSummaries) {
+              if (
+                !tissueSelectedCellTypeIds.includes(
+                  cellTypeGeneExpressionSummary.id
+                )
+              ) {
+                continue;
+              }
+
+              const { meanExpression } = cellTypeGeneExpressionSummary;
+
+              min = Math.min(min, meanExpression);
+              max = Math.max(max, meanExpression);
             }
-
-            const { meanExpression } = cellTypeGeneExpressionSummary;
-
-            min = Math.min(min, meanExpression);
-            max = Math.max(max, meanExpression);
           }
         }
       }
@@ -198,28 +201,30 @@ export default function WheresMyGene(): JSX.Element {
   }, [cellTypesByTissueName, selectedCellTypeIds]);
 
   const selectedGeneExpressionSummariesByTissueName = useMemo(() => {
-    const result: { [tissueName: string]: GeneExpressionSummary[] } = {};
+    const result: {[groupName: string]: { [tissueName: string]: GeneExpressionSummary[] }} = {};
 
     for (const tissueName of Object.keys(selectedCellTypeIds)) {
       const tissueGeneExpressionSummaries =
         geneExpressionSummariesByTissueName[tissueName];
 
       if (!tissueGeneExpressionSummaries) continue;
-
-      result[tissueName] = selectedGenes.map((geneName) => {
-        // (thuang): This is needed to ensure the heatmap's gene column
-        // is available even if there's no expression data for the column.
-        // Otherwise the heatmap columns and column labels won't match up
-        // where there's holes in the data.
-        const emptyGeneExpressionSummary = {
-          cellTypeGeneExpressionSummaries: EMPTY_ARRAY,
-          name: geneName,
-        };
-
-        return (
-          tissueGeneExpressionSummaries[geneName] || emptyGeneExpressionSummary
-        );
-      });
+      for (const [group, genes] of selectedGenes) {
+        result[group] = {};
+        result[group][tissueName] = genes.map((geneName) => {
+          // (thuang): This is needed to ensure the heatmap's gene column
+          // is available even if there's no expression data for the column.
+          // Otherwise the heatmap columns and column labels won't match up
+          // where there's holes in the data.
+          const emptyGeneExpressionSummary = {
+            cellTypeGeneExpressionSummaries: EMPTY_ARRAY,
+            name: geneName,
+          };
+  
+          return (
+            tissueGeneExpressionSummaries[geneName] || emptyGeneExpressionSummary
+          );
+        });        
+      }
     }
 
     return result;
@@ -254,7 +259,7 @@ export default function WheresMyGene(): JSX.Element {
   }, [dispatch]);
 
   const hasSelectedTissues = selectedTissues.length > 0;
-  const hasSelectedGenes = selectedGenes.length > 0;
+  const hasSelectedGenes = getUniqueValuesFromMap(selectedGenes).length > 0;
 
   const shouldShowHeatMap = useMemo(() => {
     return hasSelectedTissues || hasSelectedGenes;

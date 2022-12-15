@@ -472,7 +472,7 @@ export function dataToChartFormat({
         (cellTypeSummary) => cellTypeSummary.id === dataPoint.id
       );
 
-      const id = `${dataPoint.id}-${geneName}`;
+      const id: string = `${dataPoint.id}-${geneName}`;
 
       return {
         cellTypeIndex,
@@ -500,9 +500,17 @@ const HEAT_MAP_BASE_CELL_PX = 20;
 export function getHeatmapWidth(
   genes:
     | (GeneExpressionSummary | undefined)[]
-    | State["selectedGenes"] = EMPTY_ARRAY
+    | State["selectedGenes"],
+  tissue: Tissue | undefined = undefined,
+  cellType: CellType | undefined = undefined
 ): number {
-  return HEAT_MAP_BASE_WIDTH_PX + HEAT_MAP_BASE_CELL_PX * genes.length;
+  if (genes instanceof Map) {
+    const key = tissue && cellType ? `${tissue}-${cellType}` : "";
+    return HEAT_MAP_BASE_WIDTH_PX + HEAT_MAP_BASE_CELL_PX * (genes.get(key) || []).length;
+  } else {
+    return HEAT_MAP_BASE_WIDTH_PX + HEAT_MAP_BASE_CELL_PX * genes.length;
+  }
+  
 }
 
 /**

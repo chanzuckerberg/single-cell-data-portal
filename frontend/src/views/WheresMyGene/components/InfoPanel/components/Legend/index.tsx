@@ -1,4 +1,5 @@
 import { memo, MouseEventHandler } from "react";
+import { State } from "src/views/WheresMyGene/common/store";
 import { CellType } from "src/views/WheresMyGene/common/types";
 import SaveImage from "../../../GeneSearchBar/components/SaveImage";
 import SourceDataButton from "../../../GeneSearchBar/components/SourceDataButton";
@@ -10,7 +11,7 @@ interface Props {
   isScaled: boolean;
   handleRightSidebarButtonClick: MouseEventHandler<HTMLButtonElement>;
   selectedTissues: Array<string>;
-  selectedGenes: Array<string>;
+  selectedGenes: State["selectedGenes"];
   selectedCellTypes: { [tissue: string]: CellType[] };
 }
 

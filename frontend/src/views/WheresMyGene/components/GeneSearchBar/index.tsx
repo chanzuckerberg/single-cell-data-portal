@@ -68,7 +68,7 @@ export default function GeneSearchBar({
   }, [selectedTissues, tissuesByName]);
 
   const selectedGeneOptions: Gene[] = useMemo(() => {
-    return selectedGenes.map((gene: string) => {
+    return (selectedGenes.get("") || []).map((gene) => {
       return genesByName.get(gene.toLowerCase()) as Gene;
     });
   }, [selectedGenes, genesByName]);

@@ -4,7 +4,7 @@
  */
 
 import { CellTypeMetadata } from "../../components/HeatMap/utils";
-import { CellType, Tissue } from "../types";
+import { CellType, Genes, Tissue } from "../types";
 import { AddCellInfoCellTypePayload, REDUCERS, State } from "./reducer";
 
 export function deleteSelectedGenesAndSelectedCellTypeIds(): GetActionTypeOfReducer<
@@ -44,7 +44,7 @@ export function selectOrganism(
 }
 
 export function selectGenes(
-  genes: State["selectedGenes"]
+  genes: Genes
 ): GetActionTypeOfReducer<typeof REDUCERS["selectGenes"]> {
   return {
     payload: genes,
@@ -53,10 +53,12 @@ export function selectGenes(
 }
 
 export function addSelectedGenes(
-  genes: State["selectedGenes"]
+  genes: Genes,
+  tissue: Tissue,
+  cellType: CellType
 ): GetActionTypeOfReducer<typeof REDUCERS["addSelectedGenes"]> {
   return {
-    payload: genes,
+    payload: {genes, cellType, tissue},
     type: "addSelectedGenes",
   };
 }
