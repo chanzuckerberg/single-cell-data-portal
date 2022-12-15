@@ -22,7 +22,6 @@ const AuthButtons = (): JSX.Element | null => {
     user: userInfo,
   } = useAuth0();
 
-  // const { data: userInfo, isLoading, error } = useUserInfo(hasAuth);
   if (userInfo && error) {
     // (thuang): Force refresh page to log user out
     window.location.reload();
