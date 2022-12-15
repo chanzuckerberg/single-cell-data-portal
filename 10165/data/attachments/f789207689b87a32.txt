@@ -1,2 +1,0 @@
-127.0.0.1 - - [14/Dec/2022 16:23:23] code 404, message File not found
-127.0.0.1 - - [14/Dec/2022 16:23:23] "GET /fake.txt HTTP/1.1" 404 -
