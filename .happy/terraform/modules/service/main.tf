@@ -107,6 +107,18 @@ resource "aws_ecs_task_definition" "task_definition" {
       {
         "name": "DD_LOG_LEVEL",
         "value": "debug"
+      },
+      {
+        "name": "DD_EXPVAR_PORT",
+        "value": "6000"
+      },
+      {
+        "name": "DD_CMD_PORT",
+        "value": "6001"
+      },
+      {
+        "name": "DD_GUI_PORT",
+        "value": "6002"
       }
     ],
     "port_mappings" : [
