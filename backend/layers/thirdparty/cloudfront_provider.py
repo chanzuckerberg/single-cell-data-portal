@@ -6,12 +6,12 @@ from backend.common.corpora_config import CorporaCloudfrontConfig
 
 import logging
 
-from backend.layers.thirdparty.cloudfront_provider_interface import CloudfrontProviderInterface
+from backend.layers.thirdparty.cloudfront_provider_interface import CDNProviderInterface
 
 client = boto3.client("cloudfront")
 
 
-class CloudfrontProvider(CloudfrontProviderInterface):
+class CloudfrontProvider(CDNProviderInterface):
     # Since Cloudfront is only used in deployed environments (dev, staging, prod),
     # only trigger an invalidation if the distribution_id is defined in secrets manager.
     # Otherwise this will be a no-op

@@ -50,15 +50,15 @@ from backend.layers.common.entities import (
     Link,
     OntologyTermId,
 )
-from backend.layers.thirdparty.cloudfront_provider_interface import CloudfrontProviderInterface
+from backend.layers.thirdparty.cloudfront_provider_interface import CDNProviderInterface
 from backend.layers.thirdparty.uri_provider import FileInfoException
 
 
 class PortalApi:
     business_logic: BusinessLogicInterface
-    cloudfront_provider: CloudfrontProviderInterface
+    cloudfront_provider: CDNProviderInterface
 
-    def __init__(self, business_logic: BusinessLogic, cloudfront_provider: CloudfrontProviderInterface) -> None:
+    def __init__(self, business_logic: BusinessLogic, cloudfront_provider: CDNProviderInterface) -> None:
         self.business_logic = business_logic
         self.cloudfront_provider = cloudfront_provider
 
