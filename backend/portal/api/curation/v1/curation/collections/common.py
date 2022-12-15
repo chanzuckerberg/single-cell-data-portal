@@ -24,6 +24,7 @@ from backend.layers.common.entities import (
     CollectionVersionId,
     CollectionVersionWithDatasets,
     DatasetId,
+    DatasetArtifactType,
     DatasetProcessingStatus,
     DatasetValidationStatus,
     DatasetVersion,
@@ -32,7 +33,7 @@ from backend.layers.common.entities import (
     OntologyTermId,
 )
 
-allowed_dataset_asset_types = ("H5AD", "RDS")
+allowed_dataset_asset_types = (DatasetArtifactType.H5AD, DatasetArtifactType.RDS)
 
 DATASET_ONTOLOGY_ELEMENTS = (
     "sex",
@@ -145,15 +146,21 @@ def reshape_for_curation_api(
             assets = []
             for artifact in dataset_version.artifacts:
                 if artifact.type in allowed_dataset_asset_types:
-                    assets.append(dict(filetype=artifact.type, filename=artifact.uri.split("/")[-1]))
+                    assets.append(dict(filetype=artifact.type.value.upper(), filename=artifact.uri.split("/")[-1]))
 
             ds["dataset_assets"] = assets
             ds["processing_status_detail"] = dataset_version.status.validation_message
             ds["revised_at"] = dataset_version.canonical_dataset.revised_at
-            ds["revision_of"] = dataset_version.canonical_dataset.dataset_version_id.id
+            ds["revision_of"] = (
+                dataset_version.canonical_dataset.dataset_version_id.id
+                if collection_version.published_at is None
+                else None
+            )
+            ds["revision"] = 0  # TODO this should be the number of times this dataset has been revised and published
             ds["title"] = ds.pop("name", None)
             ds["is_primary_data"] = is_primary_data_mapping.get(ds.pop("is_primary_data"), [])
             ds["explorer_url"] = generate_explorer_url(dataset_version)
+            ds["tombstone"] = False  # TODO this will always be false. Remove in the future
 
             if status := dataset_version.status:
                 if status.processing_status == DatasetProcessingStatus.FAILURE:
@@ -201,6 +208,7 @@ def reshape_for_curation_api(
         revising_in=revising_in,
         revision_of=revision_of,
         visibility=get_visibility(collection_version),
+        tombstone=collection_version.canonical_collection.tombstoned,
     )
     return response
 

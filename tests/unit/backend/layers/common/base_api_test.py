@@ -105,6 +105,7 @@ class NewBaseTest(BaseAuthAPITest):
     uri_provider: UriProviderInterface
 
     sample_dataset_metadata: DatasetMetadata
+    sample_collectoin_metadata: CollectionMetadata
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -130,29 +131,32 @@ class NewBaseTest(BaseAuthAPITest):
         self.uri_provider.get_file_info = Mock(return_value=FileInfo(1, "file.h5ad"))
 
         self.sample_dataset_metadata = DatasetMetadata(
-            name="test_dataset_name",
-            organism=[OntologyTermId(label="test_organism_label", ontology_term_id="test_organism_term_id")],
-            tissue=[OntologyTermId(label="test_tissue_label", ontology_term_id="test_tissue_term_id")],
             assay=[OntologyTermId(label="test_assay_label", ontology_term_id="test_assay_term_id")],
+            batch_condition=["test_batch_1", "test_batch_2"],
+            cell_count=10,
+            cell_type=[OntologyTermId(label="test_cell_type_label", ontology_term_id="test_cell_type_term_id")],
+            development_stage=[
+                OntologyTermId(label="test_development_stage_label", ontology_term_id="test_development_stage_term_id")
+            ],
             disease=[OntologyTermId(label="test_disease_label", ontology_term_id="test_disease_term_id")],
-            sex=[OntologyTermId(label="test_sex_label", ontology_term_id="test_sex_term_id")],
+            donor_id=["test_donor_1"],
+            is_primary_data="BOTH",
+            name="test_dataset_name",
+            mean_genes_per_cell=0.5,
+            organism=[OntologyTermId(label="test_organism_label", ontology_term_id="test_organism_term_id")],
+            schema_version="3.0.0",
             self_reported_ethnicity=[
                 OntologyTermId(
                     label="test_self_reported_ethnicity_label", ontology_term_id="test_self_reported_ethnicity_term_id"
                 )
             ],
-            development_stage=[
-                OntologyTermId(label="test_development_stage_label", ontology_term_id="test_development_stage_term_id")
-            ],
-            cell_type=[OntologyTermId(label="test_cell_type_label", ontology_term_id="test_cell_type_term_id")],
-            cell_count=10,
-            schema_version="3.0.0",
-            mean_genes_per_cell=0.5,
-            batch_condition=["test_batch_1", "test_batch_2"],
+            sex=[OntologyTermId(label="test_sex_label", ontology_term_id="test_sex_term_id")],
             suspension_type=["test_suspension_type"],
-            donor_id=["test_donor_1"],
-            is_primary_data="BOTH",
+            tissue=[OntologyTermId(label="test_tissue_label", ontology_term_id="test_tissue_term_id")],
             x_approximate_distribution="NORMAL",
+        )
+        self.sample_collection_metadata = CollectionMetadata(
+            "test_collection", "described", "john doe", "john.doe@email.com", []
         )
 
         self.business_logic = BusinessLogic(
@@ -181,17 +185,17 @@ class NewBaseTest(BaseAuthAPITest):
         if self.run_as_integration:
             self.database_provider._drop_schema("persistence_schema")
 
-    def generate_collection(self, links: List[dict] = None, **params) -> CollectionVersion:
+    def generate_collection(self, links: List[dict] = None, **kwargs) -> CollectionVersion:
         """Generated a collection
         Adding to for compatibility with old tests
         """
         links = links if links else []
         links = [api_link_dict_to_link_class(lk) for lk in links]
-        visibility = params.pop("visibility", "PUBLIC")
+        visibility = kwargs.pop("visibility", "PUBLIC")
         if visibility == "PUBLIC":
-            return self.generate_published_collection(links=links, **params)
+            return self.generate_published_collection(links=links, **kwargs)
         else:
-            return self.generate_unpublished_collection(links=links, **params)
+            return self.generate_unpublished_collection(links=links, **kwargs)
 
     def generate_collection_revision(self, owner="test_user_id") -> CollectionVersion:
         published_collection = self.generate_published_collection(owner)
@@ -203,11 +207,12 @@ class NewBaseTest(BaseAuthAPITest):
             cls.database_provider._engine.dispose()
 
     def generate_unpublished_collection(
-        self, owner="test_user_id", links: List[Link] = [], add_datasets: int = 0
+        self, owner="test_user_id", links: List[Link] = None, add_datasets: int = 0, metadata=None
     ) -> CollectionVersion:
-
-        metadata = CollectionMetadata("test_collection", "described", "john doe", "john.doe@email.com", links)
-
+        links = links if links else []
+        if not metadata:
+            metadata = copy.deepcopy(self.sample_collection_metadata)
+            metadata.links = links
         collection = self.business_logic.create_collection(owner, metadata)
 
         for _ in range(add_datasets):
@@ -222,9 +227,16 @@ class NewBaseTest(BaseAuthAPITest):
 
     # Public collections need to have at least one dataset!
     def generate_published_collection(
-        self, owner="test_user_id", links: List[Link] = [], add_datasets: int = 1, curator_name: str = "Jane Smith"
+        self,
+        owner="test_user_id",
+        links: List[Link] = [],
+        add_datasets: int = 1,
+        curator_name: str = "Jane Smith",
+        metadata=None,
     ) -> CollectionVersion:
-        unpublished_collection = self.generate_unpublished_collection(owner, links, add_datasets=add_datasets)
+        unpublished_collection = self.generate_unpublished_collection(
+            owner, links, add_datasets=add_datasets, metadata=metadata
+        )
         self.business_logic.publish_collection_version(unpublished_collection.version_id)
         return self.business_logic.get_collection_version(unpublished_collection.version_id)
 
@@ -239,6 +251,7 @@ class NewBaseTest(BaseAuthAPITest):
         metadata: Optional[DatasetMetadata] = None,
         name: Optional[str] = None,
         statuses: List[DatasetStatusUpdate] = [],
+        validation_message: str = None,
         artifacts: List[DatasetArtifactUpdate] = [],
         publish: bool = False,
     ) -> DatasetData:
@@ -257,6 +270,8 @@ class NewBaseTest(BaseAuthAPITest):
         self.business_logic.set_dataset_metadata(dataset_version_id, metadata)
         for status in statuses:
             self.business_logic.update_dataset_version_status(dataset_version_id, status.status_key, status.status)
+        if validation_message:
+            self.business_logic.update_dataset_version_status(dataset_version_id, validation_message=validation_message)
         artifact_ids = []
         for artifact in artifacts:
             artifact_ids.append(

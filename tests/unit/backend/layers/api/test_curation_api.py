@@ -1,10 +1,10 @@
 import copy
 import json
+from dataclasses import asdict
 from unittest.mock import Mock, patch
 
 from backend.common.corpora_orm import (
     CollectionVisibility,
-    DbDataset,
     IsPrimaryData,
     UploadStatus,
 )
@@ -15,11 +15,12 @@ from backend.layers.common.entities import (
     DatasetProcessingStatus,
     DatasetStatusKey,
     DatasetValidationStatus,
+    OntologyTermId,
 )
 from backend.portal.api.curation.v1.curation.collections.common import EntityColumns
 from unit.backend.api_server.base_api_test import BaseAuthAPITest
 from unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
-from unit.backend.layers.common.base_api_test import DatasetStatusUpdate, NewBaseTest
+from unit.backend.layers.common.base_api_test import DatasetArtifactUpdate, DatasetStatusUpdate, NewBaseTest
 
 
 class TestAsset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
@@ -497,51 +498,13 @@ class TestGetCollections(NewBaseTest):
 
 
 class TestGetCollectionID(NewBaseTest):
-    expected_body = {
-        "collection_url": "https://frontend.corporanet.local:3000/collections/test_collection_id",
-        "contact_email": "somebody@chanzuckerberg.com",
-        "contact_name": "Some Body",
-        "curator_name": "",
-        "datasets": [
-            {
-                "assay": [{"label": "test_assay", "ontology_term_id": "test_obo"}],
-                "batch_condition": ["batchA", "batchB"],
-                "cell_count": None,
-                "cell_type": [{"label": "test_cell_type", "ontology_term_id": "test_opo"}],
-                "dataset_assets": [{"filename": "test_filename", "filetype": "H5AD"}],
-                "development_stage": [{"label": "test_development_stage", "ontology_term_id": "test_obo"}],
-                "disease": [
-                    {"label": "test_disease", "ontology_term_id": "test_obo"},
-                    {"label": "test_disease2", "ontology_term_id": "test_obp"},
-                    {"label": "test_disease3", "ontology_term_id": "test_obq"},
-                ],
-                "donor_id": ["donor_1", "donor_2"],
-                "self_reported_ethnicity": [{"label": "test_ethnicity", "ontology_term_id": "test_obo"}],
-                "explorer_url": "test_url",
-                "id": "test_dataset_id",
-                "is_primary_data": [True],
-                "mean_genes_per_cell": 0.0,
-                "title": "test_dataset_name",
-                "organism": [{"label": "test_organism", "ontology_term_id": "test_obo"}],
-                "processing_status": "PENDING",
-                "revised_at": None,
-                "revision": 0,
-                "revision_of": None,
-                "schema_version": "3.0.0",
-                "sex": [
-                    {"label": "test_sex", "ontology_term_id": "test_obo"},
-                    {"label": "test_sex2", "ontology_term_id": "test_obp"},
-                ],
-                "suspension_type": ["nucleus"],
-                "tissue": [{"label": "test_tissue", "ontology_term_id": "test_obo"}],
-                "tombstone": False,
-                "x_approximate_distribution": "NORMAL",
-            }
-        ],
-        "description": "test_description",
-        "doi": "",
-        "id": "test_collection_id",
-        "links": [
+    def test__get_public_collection_verify_body_is_reshaped_correctly__OK(self):
+
+        # Setup
+        # test fixtures
+        dataset_metadata = copy.deepcopy(self.sample_dataset_metadata)
+        dataset_metadata.sex.append(OntologyTermId(label="test_sex2", ontology_term_id="test_obp"))
+        links = [
             {
                 "link_name": "test_raw_data_link_name",
                 "link_type": "RAW_DATA",
@@ -576,39 +539,63 @@ class TestGetCollectionID(NewBaseTest):
                 "link_type": "DATA_SOURCE",
                 "link_url": "http://test_no_link_name_data_source_url.place",
             },
-        ],
-        "name": "test_collection_name",
-        "processing_status": "PENDING",
-        "published_at": None,
-        "publisher_metadata": None,
-        "revised_at": None,
-        "revision_of": None,
-        "revising_in": None,
-        "tombstone": False,
-        "visibility": "PUBLIC",
-    }
-
-    def setUp(self):
-        super().setUp()
-        self.test_collection = dict(
-            name="collection", description="description", contact_name="john doe", contact_email="johndoe@email.com"
+        ]
+        collection_version = self.generate_collection(links=links, visibility="PRIVATE")
+        self.generate_dataset(
+            collection_version=collection_version,
+            metadata=dataset_metadata,
+            artifacts=[DatasetArtifactUpdate(type="h5ad", uri="http://test_filename")],
+        )
+        self.business_logic.publish_collection_version(collection_version.version_id)
+        collection_version = self.business_logic.get_collection_version(collection_version.version_id)
+        dataset = collection_version.datasets[0]
+        # expected results
+        expect_dataset = asdict(collection_version.datasets[0].metadata)
+        expect_dataset["title"] = expect_dataset.pop("name")
+        expect_dataset.update(
+            **{
+                "explorer_url": f"https://frontend.corporanet.local:3000/{dataset.version_id}.cxg/",
+                "id": dataset.dataset_id.id,
+                "processing_status": "PENDING",
+                "revision": 0,
+                "revision_of": None,
+                "tombstone": False,
+                "processing_status_detail": None,
+                "dataset_assets": [{"filename": "test_filename", "filetype": "H5AD"}],
+                "is_primary_data": [True, False],
+            }
+        )
+        expected_body = asdict(collection_version.metadata)
+        expected_body.update(
+            **{
+                "collection_url": f"https://frontend.corporanet.local:3000/collections/"
+                f"{collection_version.collection_id}",
+                "datasets": [expect_dataset],
+                "doi": None,
+                "id": collection_version.collection_id.id,
+                "links": links,
+                "processing_status": "PENDING",
+                "published_at": collection_version.canonical_collection.originally_published_at,
+                "publisher_metadata": None,
+                "revision_of": None,
+                "revising_in": None,
+                "tombstone": False,
+                "visibility": "PUBLIC",
+                "curator_name": "test_user_id",
+            }
         )
 
-    def test__get_public_collection_verify_body_is_reshaped_correctly__OK(self):
-        dataset = self.session.query(DbDataset).filter(DbDataset.id == "test_dataset_id").one_or_none()
-        self.assertIsInstance(dataset.organism, list)
-        # Make this entry a dict instead of a list to test ability of the handler to reshape to list/array
-        dataset.organism = dataset.organism[0]
-        self.session.flush()
-        dataset_modified = self.session.query(DbDataset).filter(DbDataset.id == "test_dataset_id").one_or_none()
-        self.assertIsInstance(dataset_modified.organism, dict)
-
-        res = self.app.get("/curation/v1/collections/test_collection_id")
+        # test
+        res = self.app.get(f"/curation/v1/collections/{collection_version.collection_id}")
         self.assertEqual(200, res.status_code)
         res_body = res.json
         del res_body["created_at"]  # too finicky; ignore
-        self.assertDictEqual(self.expected_body, res_body)  # Confirm dict has been packaged in list
-        self.assertEqual(json.dumps(self.expected_body, sort_keys=True), json.dumps(res_body))
+        del res_body["revised_at"]  # too finicky; ignore
+        del res_body["datasets"][0]["revised_at"]  # too finicky; ignore
+
+        self.maxDiff = None
+        self.assertDictEqual(expected_body, res_body)  # Confirm dict has been packaged in list
+        self.assertEqual(json.dumps(expected_body, sort_keys=True), json.dumps(res_body))
 
     def test__get_private_collection__OK(self):
         collection_version = self.generate_unpublished_collection()
@@ -623,9 +610,8 @@ class TestGetCollectionID(NewBaseTest):
             statuses=[
                 DatasetStatusUpdate(status_key=DatasetStatusKey.PROCESSING, status=DatasetProcessingStatus.FAILURE),
                 DatasetStatusUpdate(status_key=DatasetStatusKey.VALIDATION, status=DatasetValidationStatus.INVALID),
-                DatasetStatusUpdate(status_key=DatasetStatusKey.VALIDATION, status=DatasetValidationStatus.INVALID),
-                # "test message",  # TODO add validation message
             ],
+            validation_message="test message",
         )
         res = self.app.get(f"/curation/v1/collections/{collection_version.collection_id}")
         self.assertEqual("FAILURE", res.json["processing_status"])
