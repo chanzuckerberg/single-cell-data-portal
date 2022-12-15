@@ -1,14 +1,47 @@
+from typing import Tuple
 from flask import Response, jsonify, make_response
 from backend.common.corpora_orm import IsPrimaryData
 from backend.common.utils.exceptions import MaxFileSizeExceededException
-from backend.common.utils.http_exceptions import ForbiddenHTTPException, InvalidParametersHTTPException, MethodNotAllowedException, NotFoundHTTPException, TooLargeHTTPException
+from backend.common.utils.http_exceptions import (
+    ForbiddenHTTPException,
+    InvalidParametersHTTPException,
+    MethodNotAllowedException,
+    NotFoundHTTPException,
+    TooLargeHTTPException,
+)
 from backend.layers.api.router import get_business_logic
-from backend.layers.api.transform import dataset_asset_to_response, dataset_processing_status_to_response, ontology_term_ids_to_response
+from backend.layers.api.transform import (
+    dataset_asset_to_response,
+    dataset_processing_status_to_response,
+    ontology_term_ids_to_response,
+)
 from backend.layers.auth.user_info import UserInfo
-from backend.layers.business.exceptions import CollectionIsPublishedException, CollectionNotFoundException, CollectionUpdateException, DatasetInWrongStatusException, DatasetNotFoundException, InvalidURIException
+from backend.layers.business.business_interface import BusinessLogicInterface
+from backend.layers.business.exceptions import (
+    CollectionIsPublishedException,
+    CollectionNotFoundException,
+    CollectionUpdateException,
+    DatasetInWrongStatusException,
+    DatasetNotFoundException,
+    InvalidURIException,
+)
 
-from backend.layers.common.entities import CollectionId, CollectionVersionId, DatasetArtifact, DatasetArtifactType, DatasetProcessingStatus, DatasetValidationStatus, DatasetVersion, DatasetVersionId
-from backend.portal.api.curation.v1.curation.collections.common import DATASET_ONTOLOGY_ELEMENTS, DATASET_ONTOLOGY_ELEMENTS_PREVIEW, get_infered_dataset_version
+from backend.layers.common.entities import (
+    CollectionId,
+    CollectionVersionId,
+    CollectionVersionWithDatasets,
+    DatasetArtifact,
+    DatasetArtifactType,
+    DatasetProcessingStatus,
+    DatasetValidationStatus,
+    DatasetVersion,
+    DatasetVersionId,
+)
+from backend.portal.api.curation.v1.curation.collections.common import (
+    DATASET_ONTOLOGY_ELEMENTS,
+    DATASET_ONTOLOGY_ELEMENTS_PREVIEW,
+    get_infered_dataset_version,
+)
 
 
 is_primary_data_mapping = {
@@ -39,7 +72,7 @@ def _reshape_dataset_for_curation_api(d: DatasetVersion, preview=False) -> dict:
         "organism": ontology_term_ids_to_response(d.metadata.organism),
         "processing_status": dataset_processing_status_to_response(d.status, d.dataset_id.id),
         "processing_status_detail": "string",
-        "revised_at": "string", # TODO
+        "revised_at": "string",  # TODO
         "revision": 0,
         "schema_version": d.metadata.schema_version,
         "self_reported_ethnicity": ontology_term_ids_to_response(d.metadata.self_reported_ethnicity),
@@ -92,21 +125,29 @@ def get(collection_id: str, dataset_id: str = None):
     return make_response(jsonify(response_body), 200)
 
 
+def _get_collection_and_dataset(
+    business_logic: BusinessLogicInterface, collection_id: CollectionVersionId, dataset_id: DatasetVersionId
+) -> Tuple[CollectionVersionWithDatasets, DatasetVersion]:
+    dataset_version = business_logic.get_dataset_version(dataset_id)
+    if dataset_version is None:
+        raise ForbiddenHTTPException()
+
+    collection_version = business_logic.get_collection_version(collection_id)
+    if collection_version is None:
+        raise ForbiddenHTTPException()
+
+    return collection_version, dataset_version
+
+
 def delete(token_info: dict, collection_id: str, dataset_id: str = None):
 
     business_logic = get_business_logic()
     user_info = UserInfo(token_info)
 
-    # TODO: deduplicate from ApiCommon. We need to settle the class/module level debate before can do that
-    dataset_version = business_logic.get_dataset_version(DatasetVersionId(dataset_id))
-    if dataset_version is None:
-        raise ForbiddenHTTPException()
+    collection_version, dataset_version = _get_collection_and_dataset(
+        business_logic, CollectionVersionId(collection_id), DatasetVersionId(dataset_id)
+    )
 
-    collection_version = business_logic.get_collection_version(CollectionVersionId(collection_id))
-    # If the collection does not exist, it means that the dataset is orphaned and therefore we cannot
-    # determine the owner. This should not be a problem - we won't need its state at that stage.
-    if collection_version is None:
-        raise ForbiddenHTTPException(f"Dataset {dataset_id} unlinked")
     if not user_info.is_user_owner_or_allowed(collection_version.owner):
         raise ForbiddenHTTPException("Unauthorized")
     # End of duplicate block
@@ -127,12 +168,12 @@ def put(collection_id: str, dataset_id: str, body: dict, token_info: dict):
     # TODO: deduplicate from ApiCommon. We need to settle the class/module level debate before can do that
     url = body.get("url", body.get("link"))
     business_logic = get_business_logic()
-    dataset_version = business_logic.get_dataset_version(DatasetVersionId(dataset_id))
-    if dataset_version is None:
-        raise ForbiddenHTTPException(f"Dataset {dataset_id} does not exist")
 
-    collection_version = business_logic.get_collection_version(CollectionVersionId(collection_id))
-    if collection_version is None or not UserInfo(token_info).is_user_owner_or_allowed(collection_version.owner):
+    collection_version, _ = _get_collection_and_dataset(
+        business_logic, CollectionVersionId(collection_id), DatasetVersionId(dataset_id)
+    )
+
+    if not UserInfo(token_info).is_user_owner_or_allowed(collection_version.owner):
         raise ForbiddenHTTPException()
 
     try:
