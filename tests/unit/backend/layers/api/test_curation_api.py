@@ -202,7 +202,7 @@ class TestPostCollection(BaseAPIPortalTest):
     def setUp(self):
         super().setUp()
         self.test_collection = dict(
-            name="collection", description="description", contact_name="john doe", contact_email="johndoe@email.com"
+            name="collection", description="description", contact_name="john doe", contact_email="johndoe@email.com", curator_name="Curator Name"
         )
 
     def test__create_collection__no_auth(self):
@@ -224,6 +224,7 @@ class TestPostCollection(BaseAPIPortalTest):
                     description="",
                     contact_name="",
                     contact_email="@email.com",
+                    curator_name="Some Body",
                     doi="10.111/not_curie_reference_format",
                 ),
                 [
@@ -241,6 +242,7 @@ class TestPostCollection(BaseAPIPortalTest):
                     description="But\x0anonprintable\x0acharacters\x0bARE_allowed_in_description",
                     contact_name="And\x0ain_contact_name",
                     contact_email="somebody@email.com",
+                    curator_name="Some Body",
                     doi="10.111/not_curie_reference_format",
                 ),
                 [

@@ -48,6 +48,9 @@ def get(visibility: str, token_info: dict, curator: str = None):
 
 def post(body: dict, user: str):
 
+    import logging
+    logging.info("zzzzz")
+
     # Extract DOI into link
     errors = []
     if doi_url := body.get("doi"):
@@ -64,6 +67,7 @@ def post(body: dict, user: str):
         version = get_business_logic().create_collection(user, body["curator_name"], metadata)
     except CollectionCreationException as ex:
         errors.extend(ex.errors)
+    print("AAAAA", errors)
     if errors:
         raise InvalidParametersHTTPException(ext=dict(invalid_parameters=errors))
     return make_response(jsonify({"id": version.version_id.id}), 201)
