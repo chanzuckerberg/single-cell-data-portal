@@ -1,8 +1,0 @@
-Dropping tables
-Recreating tables
- * Serving Flask app 'mock_oauth_app'
- * Debug mode: on
-{"levelname": "INFO", "asctime": "2022-12-14T18:11:01.014Z", "name": "werkzeug", "message": "\u001b[31m\u001b[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.\u001b[0m\n * Running on http://127.0.0.1:17092", "lineno": 224, "pathname": "/usr/local/lib/python3.10/dist-packages/werkzeug/_internal.py"}
-{"levelname": "INFO", "asctime": "2022-12-14T18:11:01.014Z", "name": "werkzeug", "message": "\u001b[33mPress CTRL+C to quit\u001b[0m", "lineno": 224, "pathname": "/usr/local/lib/python3.10/dist-packages/werkzeug/_internal.py"}
-{"levelname": "INFO", "asctime": "2022-12-14T18:11:01.014Z", "name": "werkzeug", "message": "127.0.0.1 - - [14/Dec/2022 18:11:01] \"GET /.well-known/jwks.json HTTP/1.1\" 200 -", "lineno": 224, "pathname": "/usr/local/lib/python3.10/dist-packages/werkzeug/_internal.py"}
-{"levelname": "INFO", "asctime": "2022-12-14T18:11:01.014Z", "name": "werkzeug", "message": "127.0.0.1 - - [14/Dec/2022 18:11:01] \"POST /oauth/token HTTP/1.1\" 200 -", "lineno": 224, "pathname": "/usr/local/lib/python3.10/dist-packages/werkzeug/_internal.py"}
