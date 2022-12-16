@@ -129,13 +129,13 @@ class BaseTest(unittest.TestCase):
             cls.database_provider._engine.dispose()
 
     def generate_unpublished_collection(
-        self, owner="test_user_id", links: List[Link] = None, add_datasets: int = 0, metadata=None
+        self, owner="test_user_id", curator_name="Test User", links: List[Link] = None, add_datasets: int = 0, metadata=None
     ) -> CollectionVersion:
         links = links if links else []
         if not metadata:
             metadata = copy.deepcopy(self.sample_collection_metadata)
             metadata.links = links
-        collection = self.business_logic.create_collection(owner, metadata)
+        collection = self.business_logic.create_collection(owner, curator_name, metadata)
 
         for _ in range(add_datasets):
 
@@ -158,7 +158,7 @@ class BaseTest(unittest.TestCase):
         metadata=None,
     ) -> CollectionVersion:
         unpublished_collection = self.generate_unpublished_collection(
-            owner, links, add_datasets=add_datasets, metadata=metadata
+            owner, curator_name, links, add_datasets=add_datasets, metadata=metadata
         )
         self.business_logic.publish_collection_version(unpublished_collection.version_id)
         return self.business_logic.get_collection_version(unpublished_collection.version_id)

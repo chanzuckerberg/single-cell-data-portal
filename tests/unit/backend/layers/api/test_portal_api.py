@@ -149,7 +149,7 @@ class TestCollection(BaseAPIPortalTest):
             "contact_email": "john.doe@email.com",
             "contact_name": "john doe",
             "created_at": mock.ANY,
-            "curator_name": "",
+            "curator_name": "Jane Smith",
             "data_submission_policy_version": "1.0",
             "datasets": [
                 {
@@ -333,6 +333,7 @@ class TestCollection(BaseAPIPortalTest):
             "description": "This is a test collection",
             "contact_name": "person human",
             "contact_email": "person@human.com",
+            "curator_name": "Curator Name",
             "links": [{"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"}],
         }
         json_data = json.dumps(data)
@@ -361,6 +362,7 @@ class TestCollection(BaseAPIPortalTest):
             "description": "This is a test collection",
             "contact_name": "person human",
             "contact_email": "person@human.com",
+            "curator_name": "Curator Name",
             "links": [
                 {"link_name": "DOI Link", "link_url": "10.1016/foo", "link_type": "DOI"},
             ],
@@ -386,6 +388,7 @@ class TestCollection(BaseAPIPortalTest):
             "description": "This is a test collection",
             "contact_name": "person human",
             "contact_email": "person@human.com",
+            "curator_name": "Curator Name",
             "links": [
                 {"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"},
                 {"link_name": "DOI Link", "link_url": "http://doi.org/10.1017", "link_type": "DOI"},
@@ -410,6 +413,7 @@ class TestCollection(BaseAPIPortalTest):
             "description": "This is a test collection",
             "contact_name": "person human",
             "contact_email": "person@human.com",
+            "curator_name": "Curator Name",
             "links": [{"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"}],
         }
         json_data = json.dumps(data)
@@ -430,6 +434,7 @@ class TestCollection(BaseAPIPortalTest):
             "description": "This is a test collection",
             "contact_name": "person human",
             "contact_email": "person@human.com",
+            "curator_name": "Curator Name",
             "links": [{"link_name": "DOI Link", "link_url": "invalid/doi", "link_type": "DOI"}],
         }
         json_data = json.dumps(data)
@@ -453,6 +458,7 @@ class TestCollection(BaseAPIPortalTest):
             "description": "This is a test collection",
             "contact_name": "person human",
             "contact_email": "person@human.com",
+            "curator_name": "Curator Name",
             "links": [{"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"}],
         }
         json_data = json.dumps(data)
@@ -474,6 +480,7 @@ class TestCollection(BaseAPIPortalTest):
             "description": "This is a test collection",
             "contact_name": "person human",
             "contact_email": "person@human.com",
+            "curator_name": "Curator Name",
         }
         json_data = json.dumps(data)
         response = self.app.post(
@@ -497,6 +504,7 @@ class TestCollection(BaseAPIPortalTest):
             "description": "This is a test collection",
             "contact_name": "person human",
             "contact_email": "person@human.com",
+            "curator_name": "Curator Name",
             "links": [{"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"}],
         }
         json_data = json.dumps(data)

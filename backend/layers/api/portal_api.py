@@ -218,7 +218,7 @@ class PortalApi:
                 "contact_email": collection.metadata.contact_email,
                 "contact_name": collection.metadata.contact_name,
                 "created_at": collection.created_at,
-                "curator_name": "",  # TODO
+                "curator_name": collection.curator_name,
                 "data_submission_policy_version": "1.0",  # TODO
                 "datasets": [
                     self._dataset_to_response(
@@ -313,8 +313,10 @@ class PortalApi:
             [self._link_from_request(node) for node in body.get("links", [])],
         )
 
+        curator_name = body["curator_name"]
+
         try:
-            version = self.business_logic.create_collection(user, metadata)
+            version = self.business_logic.create_collection(user, curator_name, metadata)
         except CollectionCreationException as ex:
             raise InvalidParametersHTTPException(detail=ex.errors)
 

@@ -238,12 +238,12 @@ class CollectionVersionBase:
     collection_id: CollectionId
     version_id: CollectionVersionId
     owner: str
+    curator_name: str
     metadata: CollectionMetadata
     publisher_metadata: Optional[dict]  # TODO: use a dataclass
     published_at: Optional[datetime]
     created_at: datetime
     canonical_collection: CanonicalCollection
-    curator_name: Optional[str] = ""
 
 
 @dataclass
