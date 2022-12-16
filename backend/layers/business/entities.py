@@ -9,6 +9,7 @@ from backend.layers.common.entities import DatasetArtifactType, Link
 class CollectionQueryFilter:
     is_published: Optional[bool] = None
     owner: Optional[str] = None
+    curator_name: Optional[str] = None
     # TODO: add list of fields to be returned (if needed)
 
 

@@ -1,9 +1,3 @@
-import gevent.monkey
-
-gevent.monkey.patch_all()
-
-from tests.unit.backend.layers.common.base_api_test import BaseAPIPortalTest
-
 import dataclasses
 import itertools
 import json
@@ -36,6 +30,7 @@ from tests.unit.backend.layers.common.base_test import (
     DatasetArtifactUpdate,
     DatasetStatusUpdate,
 )
+from tests.unit.backend.layers.common.base_api_test import BaseAPIPortalTest
 
 
 def generate_mock_publisher_metadata(journal_override=None):
@@ -1918,6 +1913,7 @@ class TestPublishRevision(BaseAPIPortalTest):
         path = f"{self.base_path}/{unpublished_collection.version_id.id}/publish"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
         body = {"data_submission_policy_version": "1.0"}  # TODO: still in use?
+
         response = self.app.post(path, headers=headers, data=json.dumps(body))
         self.assertEqual(202, response.status_code)
 

@@ -57,6 +57,15 @@ class BaseAPIPortalTest(BaseAuthAPITest, BaseTest):
 
         self.app = app.test_client(use_cookies=False)
 
+        # enable mocking of business logic for the curation API
+        self.mock_business_logic = patch("backend.layers.api.router._business_logic", new=self.business_logic)
+        self.mock_business_logic.start()
+
+    def tearDown(self):
+        super().tearDown()
+        # disable mocking of business logic for the curation API
+        self.mock_business_logic.stop()
+
     def get_cxguser_token(self, user="owner"):
         """
         Generated an auth token for testing.

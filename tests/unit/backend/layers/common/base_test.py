@@ -59,6 +59,7 @@ class BaseTest(unittest.TestCase):
     uri_provider: UriProviderInterface
 
     sample_dataset_metadata: DatasetMetadata
+    sample_collection_metadata: CollectionMetadata
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -109,6 +110,10 @@ class BaseTest(unittest.TestCase):
             x_approximate_distribution="normal",
         )
 
+        self.sample_collection_metadata = CollectionMetadata(
+            "test_collection", "described", "john doe", "john.doe@email.com", []
+        )
+
         self.business_logic = BusinessLogic(
             self.database_provider, self.crossref_provider, step_function_provider, self.s3_provider, self.uri_provider
         )
@@ -124,11 +129,17 @@ class BaseTest(unittest.TestCase):
             cls.database_provider._engine.dispose()
 
     def generate_unpublished_collection(
-        self, owner="test_user_id", curator_name="Test User", links: List[Link] = [], add_datasets: int = 0
+        self,
+        owner="test_user_id",
+        curator_name="Test User",
+        links: List[Link] = [],
+        add_datasets: int = 0,
+        metadata=None,
     ) -> CollectionVersion:
-
-        metadata = CollectionMetadata("test_collection", "described", "john doe", "john.doe@email.com", links)
-
+        links = links if links else []
+        if not metadata:
+            metadata = copy.deepcopy(self.sample_collection_metadata)
+            metadata.links = links
         collection = self.business_logic.create_collection(owner, curator_name, metadata)
 
         for _ in range(add_datasets):
@@ -143,10 +154,15 @@ class BaseTest(unittest.TestCase):
 
     # Public collections need to have at least one dataset!
     def generate_published_collection(
-        self, owner="test_user_id", curator_name="Test User", links: List[Link] = [], add_datasets: int = 1
+        self,
+        owner="test_user_id",
+        links: List[Link] = [],
+        add_datasets: int = 1,
+        curator_name: str = "Test User",
+        metadata=None,
     ) -> CollectionVersion:
         unpublished_collection = self.generate_unpublished_collection(
-            owner, curator_name, links, add_datasets=add_datasets
+            owner, links, curator_name=curator_name, add_datasets=add_datasets, metadata=metadata
         )
         self.business_logic.publish_collection_version(unpublished_collection.version_id)
         return self.business_logic.get_collection_version(unpublished_collection.version_id)
@@ -160,7 +176,9 @@ class BaseTest(unittest.TestCase):
         owner: str = "test_user_id",
         collection_version: Optional[CollectionVersion] = None,
         metadata: Optional[DatasetMetadata] = None,
+        name: Optional[str] = None,
         statuses: List[DatasetStatusUpdate] = [],
+        validation_message: str = None,
         artifacts: List[DatasetArtifactUpdate] = [],
         publish: bool = False,
     ) -> DatasetData:
@@ -174,9 +192,13 @@ class BaseTest(unittest.TestCase):
         )
         if not metadata:
             metadata = copy.deepcopy(self.sample_dataset_metadata)
+        if name:
+            metadata.name = name
         self.business_logic.set_dataset_metadata(dataset_version_id, metadata)
         for status in statuses:
             self.business_logic.update_dataset_version_status(dataset_version_id, status.status_key, status.status)
+        if validation_message:
+            self.business_logic.update_dataset_version_status(dataset_version_id, validation_message=validation_message)
         artifact_ids = []
         for artifact in artifacts:
             artifact_ids.append(
@@ -200,3 +222,27 @@ class BaseTest(unittest.TestCase):
     def remove_timestamps(self, body: dict, remove: typing.List[str] = None) -> dict:
         # TODO: implement as needed
         return body
+
+    def generate_collection(self, links: List[dict] = None, **kwargs) -> CollectionVersion:
+        """Generated a collection
+        Adding to for compatibility with old tests
+        """
+        links = links if links else []
+        links = [api_link_dict_to_link_class(lk) for lk in links]
+        visibility = kwargs.pop("visibility", "PUBLIC")
+        if visibility == "PUBLIC":
+            return self.generate_published_collection(links=links, **kwargs)
+        else:
+            return self.generate_unpublished_collection(links=links, **kwargs)
+
+    def generate_collection_revision(self, owner="test_user_id") -> CollectionVersion:
+        published_collection = self.generate_published_collection(owner)
+        return self.business_logic.create_collection_version(published_collection.collection_id)
+
+
+def link_class_to_api_link_dict(link: Link) -> dict:
+    return {"link_name": link.name, "link_type": link.type, "link_url": link.uri}
+
+
+def api_link_dict_to_link_class(link: dict) -> Link:
+    return Link(link["link_name"], link["link_type"], link["link_url"])

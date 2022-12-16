@@ -3,14 +3,15 @@ import uuid
 from datetime import datetime
 from typing import Dict, Iterable, List, Optional, Union
 
+from backend.layers.business.exceptions import CollectionIsPublishedException
 from backend.layers.common.entities import (
     CanonicalCollection,
     CanonicalDataset,
     CollectionId,
     CollectionMetadata,
     CollectionVersion,
-    CollectionVersionWithDatasets,
     CollectionVersionId,
+    CollectionVersionWithDatasets,
     DatasetArtifact,
     DatasetArtifactId,
     DatasetConversionStatus,
@@ -24,11 +25,9 @@ from backend.layers.common.entities import (
     DatasetVersionId,
 )
 from backend.layers.persistence.persistence import DatabaseProviderInterface
-from backend.layers.business.exceptions import CollectionIsPublishedException
 
 
 class DatabaseProviderMock(DatabaseProviderInterface):
-
     """
     A mocked implementation for DatabaseProvider that uses in-memory dicts.
     This mock is to be used in tests only.
@@ -69,7 +68,9 @@ class DatabaseProviderMock(DatabaseProviderInterface):
     ) -> CollectionVersion:
         collection_id = CollectionId(self._generate_id())
         version_id = CollectionVersionId(self._generate_id())
-        canonical = CanonicalCollection(collection_id, None, False, False)
+        canonical = CanonicalCollection(
+            id=collection_id, version_id=version_id, originally_published_at=None, tombstoned=False
+        )
         version = CollectionVersion(
             collection_id=collection_id,
             version_id=version_id,
@@ -83,6 +84,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             datasets=[],
         )
         self.collections_versions[version_id.id] = version
+        self.collections[collection_id.id] = canonical
         # Don't set mappings here - those will be set when publishing the collection!
         return copy.deepcopy(version)
 
@@ -194,7 +196,10 @@ class DatabaseProviderMock(DatabaseProviderInterface):
 
     # MAYBE
     def finalize_collection_version(
-        self, collection_id: CollectionId, version_id: CollectionVersionId, published_at: Optional[datetime] = None
+        self,
+        collection_id: CollectionId,
+        version_id: CollectionVersionId,
+        published_at: Optional[datetime] = None,
     ) -> None:
 
         published_at = published_at if published_at else datetime.utcnow()
@@ -206,7 +211,6 @@ class DatabaseProviderMock(DatabaseProviderInterface):
                 self.datasets[dataset_version.dataset_id.id].published_at = published_at
             if self.datasets[dataset_version.dataset_id.id].revised_at is None:
                 self.datasets[dataset_version.dataset_id.id].revised_at = published_at
-
         cc = self.collections.get(collection_id.id)
         if cc is None:
             self.collections[collection_id.id] = CanonicalCollection(
@@ -357,7 +361,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         return copy.deepcopy(self.datasets_versions[version_id.id].status)
 
     def get_dataset_mapped_version(self, dataset_id: DatasetId) -> Optional[DatasetVersion]:
-        cd = self.collections.get(dataset_id.id)
+        cd = self.datasets.get(dataset_id.id)
         if cd is not None:
             version = self.datasets_versions[cd.version_id.id]
             return self._update_dataset_version_with_canonical(version)

@@ -382,7 +382,10 @@ class DatabaseProvider(DatabaseProviderInterface):
                 session.delete(version)
 
     def finalize_collection_version(
-        self, collection_id: CollectionId, version_id: CollectionVersionId, published_at: Optional[datetime] = None
+        self,
+        collection_id: CollectionId,
+        version_id: CollectionVersionId,
+        published_at: Optional[datetime] = None,
     ) -> None:
         """
         Finalizes a collection version. This is equivalent to calling:
@@ -390,8 +393,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         2. set_collection_version_published_at
         3. finalize_dataset_versions
         """
-        if published_at is None:
-            published_at = datetime.utcnow()
+        published_at = published_at if published_at else datetime.utcnow()
         self.update_collection_version_mapping(collection_id, version_id, published_at)
         self.set_collection_version_published_at(version_id, published_at)
         self.finalize_dataset_versions(version_id, published_at)

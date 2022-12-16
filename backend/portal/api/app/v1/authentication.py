@@ -1,6 +1,6 @@
-import logging
 import base64
 import json
+import logging
 import os
 from typing import Optional
 from urllib.parse import urlencode
@@ -8,14 +8,13 @@ from urllib.parse import urlencode
 import requests
 from authlib.integrations.flask_client import OAuth
 from authlib.integrations.flask_client.remote_app import FlaskRemoteApp
-from flask import make_response, jsonify, current_app, request, redirect, after_this_request, g, Response, session
-
+from flask import Response, after_this_request, current_app, g, jsonify, make_response, redirect, request, session
 
 from backend.common.authorizer import assert_authorized_token, get_userinfo_from_auth0
 from backend.common.corpora_config import CorporaAuthConfig
 
 # global oauth client
-from backend.common.utils.http_exceptions import UnauthorizedError, ExpiredCredentialsError
+from backend.common.utils.http_exceptions import ExpiredCredentialsError, UnauthorizedError
 
 oauth_client = None
 

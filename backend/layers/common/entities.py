@@ -1,4 +1,5 @@
-from dataclasses import dataclass
+from pydantic import Field
+from pydantic.dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 from typing import List, Optional
@@ -20,6 +21,22 @@ class DatasetStatusKey(str, Enum):
 
 class DatasetStatusGeneric:
     pass
+
+
+class DatasetProcessingStatus(DatasetStatusGeneric, Enum):
+    """
+    Enumerates the status of processing a dataset.
+
+    INITIALIZED = Dataset id created, and awaiting upload.
+    PENDING = Processing has not started
+    SUCCESS = Processing succeeded
+    FAILURE = Processing failed
+    """
+
+    INITIALIZED = "INITIALIZED"
+    PENDING = "PENDING"
+    SUCCESS = "SUCCESS"
+    FAILURE = "FAILURE"
 
 
 class DatasetUploadStatus(DatasetStatusGeneric, Enum):
@@ -47,13 +64,6 @@ class DatasetConversionStatus(DatasetStatusGeneric, Enum):
     UPLOADED = "UPLOADED"
     FAILED = "FAILED"
     SKIPPED = "SKIPPED"
-
-
-class DatasetProcessingStatus(DatasetStatusGeneric, Enum):
-    INITIALIZED = "INITIALIZED"
-    PENDING = "PENDING"
-    SUCCESS = "SUCCESS"
-    FAILURE = "FAILURE"
 
 
 class CollectionLinkType(str, Enum):
@@ -161,13 +171,13 @@ class DatasetMetadata:
     suspension_type: List[str]
     donor_id: List[str]
     is_primary_data: str
-    x_approximate_distribution: str
+    x_approximate_distribution: Optional[str]
 
 
 @dataclass
 class CanonicalDataset:
     dataset_id: DatasetId
-    dataset_version_id: DatasetVersionId
+    dataset_version_id: Optional[DatasetVersionId]
     published_at: Optional[datetime] = None
     revised_at: Optional[datetime] = None  # The last time this Dataset Version was Published
 
@@ -178,7 +188,7 @@ class DatasetVersion:
     version_id: DatasetVersionId
     collection_id: CollectionId  # Pointer to the canonical collection id this dataset belongs to
     status: DatasetStatus
-    metadata: DatasetMetadata
+    metadata: Optional[DatasetMetadata]
     artifacts: List[DatasetArtifact]
     created_at: datetime
     canonical_dataset: CanonicalDataset
@@ -218,7 +228,7 @@ class CollectionMetadata:
 @dataclass
 class CanonicalCollection:
     id: CollectionId
-    version_id: CollectionVersionId  # Needs to be optional, or not exist
+    version_id: Optional[CollectionVersionId]  # Needs to be optional, or not exist
     originally_published_at: Optional[datetime]
     tombstoned: bool
 
@@ -234,13 +244,14 @@ class CollectionVersionBase:
     published_at: Optional[datetime]
     created_at: datetime
     canonical_collection: CanonicalCollection
+    curator_name: Optional[str] = ""
 
 
 @dataclass
 class CollectionVersion(CollectionVersionBase):
-    datasets: List[DatasetVersionId]
+    datasets: List[DatasetVersionId] = Field(default_factory=list)
 
 
 @dataclass
 class CollectionVersionWithDatasets(CollectionVersionBase):
-    datasets: List[DatasetVersion]
+    datasets: List[DatasetVersion] = Field(default_factory=list)
