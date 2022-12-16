@@ -502,8 +502,7 @@ class TestGetCollections(BaseAPIPortalTest):
             )
             self.check_fields(self.expected_collection_columns, resp_collection, f"{subtest_prefix}:collection")
 
-        # _test(True)
-        _test(False)
+        _test(True)
 
     def check_fields(self, fields: list, response: dict, entity: str):
         for key in fields:
