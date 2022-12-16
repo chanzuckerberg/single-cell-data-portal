@@ -305,7 +305,7 @@ class DbCollection(Base, AuditMixin, TimestampMixin):
     tombstone = Column(Boolean, default=False, nullable=False)
     publisher_metadata = Column(JSON, nullable=True)
     revision_of = Column(String, ForeignKey("project.id"), nullable=True, unique=True)
-    consortia = Column(Enum(CollectionConsortia), nullable=True)
+    consortia = Column(ARRAY(String), nullable=True)
 
     # Relationships
     revision = relationship("DbCollection", cascade="all, delete-orphan", uselist=False)
