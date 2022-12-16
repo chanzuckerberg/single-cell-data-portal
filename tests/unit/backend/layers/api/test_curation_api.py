@@ -483,6 +483,7 @@ class TestGetCollections(BaseAPIPortalTest):
             resp = self.app.get("/curation/v1/collections", query_string=params, headers=header)
             self.assertEqual(200, resp.status_code)
             body = resp.json
+            print("BODY", body)
             self.assertEqual(1, len(body))
             resp_collection = body[0]
 
@@ -621,7 +622,7 @@ class TestGetCollectionID(BaseAPIPortalTest):
             ],
             validation_message="test message",
         )
-        res = self.app.get(f"/curation/v1/collections/{collection_version.collection_id}")
+        res = self.app.get(f"/curation/v1/collections/{collection_version.version_id}")
         self.assertEqual("FAILURE", res.json["processing_status"])
         actual_dataset = res.json["datasets"][0]
         self.assertEqual(dataset.dataset_id, actual_dataset["id"])
@@ -638,7 +639,7 @@ class TestGetCollectionID(BaseAPIPortalTest):
                 DatasetStatusUpdate(status_key=DatasetStatusKey.PROCESSING, status=DatasetProcessingStatus.FAILURE)
             ],
         )
-        res = self.app.get(f"/curation/v1/collections/{collection.collection_id}")
+        res = self.app.get(f"/curation/v1/collections/{collection.version_id}")
         self.assertEqual("FAILURE", res.json["processing_status"])
         actual_dataset = res.json["datasets"][0]
         self.assertEqual(dataset.dataset_id, actual_dataset["id"])
