@@ -64,7 +64,9 @@ class DatabaseProviderMock(DatabaseProviderInterface):
         return str(uuid.uuid4())
 
     # TODO: add publisher_metadata here?
-    def create_canonical_collection(self, owner: str, collection_metadata: CollectionMetadata) -> CollectionVersion:
+    def create_canonical_collection(
+        self, owner: str, curator_name: str, collection_metadata: CollectionMetadata
+    ) -> CollectionVersion:
         collection_id = CollectionId(self._generate_id())
         version_id = CollectionVersionId(self._generate_id())
         canonical = CanonicalCollection(collection_id, None, False, False)
@@ -72,6 +74,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             collection_id=collection_id,
             version_id=version_id,
             owner=owner,
+            curator_name=curator_name,
             metadata=collection_metadata,
             publisher_metadata=None,
             published_at=None,
@@ -154,6 +157,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             collection_id=current_version.collection_id,
             version_id=new_version_id,
             owner=current_version.owner,
+            curator_name=current_version.curator_name,
             metadata=current_version.metadata,
             publisher_metadata=current_version.publisher_metadata,
             datasets=new_dataset_list,

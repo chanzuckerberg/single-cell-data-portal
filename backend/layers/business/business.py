@@ -89,7 +89,9 @@ class BusinessLogic(BusinessLogicInterface):
             logging.warning(f"CrossrefException on create_collection: {e}. Will ignore metadata.")
             return None
 
-    def create_collection(self, owner: str, collection_metadata: CollectionMetadata) -> CollectionVersion:
+    def create_collection(
+        self, owner: str, curator_name: str, collection_metadata: CollectionMetadata
+    ) -> CollectionVersion:
         """
         Creates a collection using the specified metadata. If a DOI is defined, will also
         retrieve publisher metadata from Crossref and add it to the collection.
@@ -110,7 +112,7 @@ class BusinessLogic(BusinessLogicInterface):
             raise CollectionCreationException(errors)
 
         collection_metadata.strip_fields()
-        created_version = self.database_provider.create_canonical_collection(owner, collection_metadata)
+        created_version = self.database_provider.create_canonical_collection(owner, curator_name, collection_metadata)
 
         # TODO: can collapse with `create_canonical_collection`
         if publisher_metadata:

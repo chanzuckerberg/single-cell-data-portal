@@ -124,12 +124,12 @@ class BaseTest(unittest.TestCase):
             cls.database_provider._engine.dispose()
 
     def generate_unpublished_collection(
-        self, owner="test_user_id", links: List[Link] = [], add_datasets: int = 0
+        self, owner="test_user_id", curator_name="Test User", links: List[Link] = [], add_datasets: int = 0
     ) -> CollectionVersion:
 
         metadata = CollectionMetadata("test_collection", "described", "john doe", "john.doe@email.com", links)
 
-        collection = self.business_logic.create_collection(owner, metadata)
+        collection = self.business_logic.create_collection(owner, curator_name, metadata)
 
         for _ in range(add_datasets):
 
@@ -143,9 +143,11 @@ class BaseTest(unittest.TestCase):
 
     # Public collections need to have at least one dataset!
     def generate_published_collection(
-        self, owner="test_user_id", links: List[Link] = [], add_datasets: int = 1
+        self, owner="test_user_id", curator_name="Test User", links: List[Link] = [], add_datasets: int = 1
     ) -> CollectionVersion:
-        unpublished_collection = self.generate_unpublished_collection(owner, links, add_datasets=add_datasets)
+        unpublished_collection = self.generate_unpublished_collection(
+            owner, curator_name, links, add_datasets=add_datasets
+        )
         self.business_logic.publish_collection_version(unpublished_collection.version_id)
         return self.business_logic.get_collection_version(unpublished_collection.version_id)
 
