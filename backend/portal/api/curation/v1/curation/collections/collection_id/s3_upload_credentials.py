@@ -20,6 +20,7 @@ duration = 43200
 def get(collection_id: str, token_info: dict):
     config = CorporaConfig()
     user_info = UserInfo(token_info)
+    # TODO: Since this method only works on private collections, I think we should just accept the version_id here
     collection_version = get_infered_collection_version_else_forbidden(collection_id)
     is_owner_or_allowed_else_forbidden(collection_version, user_info)
     if collection_version.published_at:

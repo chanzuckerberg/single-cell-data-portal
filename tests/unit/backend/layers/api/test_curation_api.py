@@ -17,7 +17,7 @@ from backend.layers.common.entities import (
 from backend.portal.api.curation.v1.curation.collections.common import EntityColumns
 from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
 from tests.unit.backend.layers.common.base_test import DatasetArtifactUpdate, DatasetStatusUpdate
-from unit.backend.layers.common.base_api_test import BaseAPIPortalTest
+from tests.unit.backend.layers.common.base_api_test import BaseAPIPortalTest
 
 
 class TestAsset(CorporaTestCaseUsingMockAWS):
@@ -138,8 +138,18 @@ class TestDeleteCollection(BaseAPIPortalTest):
 
 
 class TestS3Credentials(BaseAPIPortalTest):
+    @patch("backend.common.corpora_config.CorporaConfig.__getattr__")
     @patch("backend.portal.api.curation.v1.curation.collections.collection_id.s3_upload_credentials.sts_client")
-    def test__generate_s3_credentials__OK(self, sts_client: Mock):
+    def test__generate_s3_credentials__OK(self, sts_client: Mock,  mock_config: Mock):
+
+        def mock_config_fn(name):
+            if name == "curator_role_arn":
+                return "test_role_arn"
+            if name == "submission_bucket":
+                return "cellxgene-dataset-submissions-test"
+
+        mock_config.side_effect = mock_config_fn
+
         def _test(token, is_super_curator: bool = False):
             sts_client.assume_role_with_web_identity = Mock(
                 return_value={
@@ -150,17 +160,17 @@ class TestS3Credentials(BaseAPIPortalTest):
                     }
                 }
             )
-            collection_id = self.generate_unpublished_collection().collection_id
+            version_id = self.generate_unpublished_collection().version_id
             headers = {"Authorization": f"Bearer {token}"}
 
-            response = self.app.get(f"/curation/v1/collections/{collection_id}/s3-upload-credentials", headers=headers)
+            response = self.app.get(f"/curation/v1/collections/{version_id}/s3-upload-credentials", headers=headers)
             self.assertEqual(200, response.status_code)
             token_sub = self._mock_assert_authorized_token(token)["sub"]
             self.assertEqual(response.json["Bucket"], "cellxgene-dataset-submissions-test")
             if is_super_curator:
-                self.assertEqual(response.json["UploadKeyPrefix"], f"super/{collection_id}/")
+                self.assertEqual(response.json["UploadKeyPrefix"], f"super/{version_id}/")
             else:
-                self.assertEqual(response.json["UploadKeyPrefix"], f"{token_sub}/{collection_id}/")
+                self.assertEqual(response.json["UploadKeyPrefix"], f"{token_sub}/{version_id}/")
 
         with self.subTest("collection owner"):
             _test("owner")
