@@ -128,7 +128,7 @@ class BusinessLogic(BusinessLogicInterface):
         """
         return self.database_provider.get_collection_mapped_version(collection_id)
 
-    def get_unplublished_collection_version_from_canonical(
+    def get_unpublished_collection_version_from_canonical(
         self, collection_id: CollectionId
     ) -> Optional[CollectionVersionWithDatasets]:
         latest = datetime.datetime.fromtimestamp(0)

@@ -59,7 +59,7 @@ class BaseTest(unittest.TestCase):
     uri_provider: UriProviderInterface
 
     sample_dataset_metadata: DatasetMetadata
-    sample_collectoin_metadata: CollectionMetadata
+    sample_collection_metadata: CollectionMetadata
 
     @classmethod
     def setUpClass(cls) -> None:

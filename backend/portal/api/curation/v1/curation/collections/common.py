@@ -69,7 +69,7 @@ def reshape_for_curation_api(
         if not user_info.is_user_owner_or_allowed(collection_version.owner):
             _revising_in = None
         else:
-            _revising_in = business_logic.get_unplublished_collection_version_from_canonical(
+            _revising_in = business_logic.get_unpublished_collection_version_from_canonical(
                 collection_version.collection_id
             )
         revising_in = _revising_in.version_id.id if _revising_in else None
