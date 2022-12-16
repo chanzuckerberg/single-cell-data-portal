@@ -345,9 +345,8 @@ class PortalApi:
                     collection.publisher_metadata
                 )
 
-            if collection.canonical_collection.originally_published_at:
-                transformed_collection["published_at"] = collection.canonical_collection.originally_published_at
-                transformed_collection["revised_at"] = collection.published_at
+            transformed_collection["published_at"] = collection.canonical_collection.originally_published_at
+            transformed_collection["revised_at"] = collection.published_at
 
             response.append(transformed_collection)
 
