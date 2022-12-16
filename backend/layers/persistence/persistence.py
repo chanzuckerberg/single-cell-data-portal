@@ -97,6 +97,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             collection_id=CollectionId(str(row.collection_id)),
             version_id=CollectionVersionId(str(row.version_id)),
             owner=row.owner,
+            curator_name=row.curator_name,
             metadata=CollectionMetadata.from_json(row.metadata),
             publisher_metadata=None if row.publisher_metadata is None else json.loads(row.publisher_metadata),
             datasets=[DatasetVersionId(str(id)) for id in row.datasets],
@@ -112,6 +113,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             collection_id=CollectionId(str(row.collection_id)),
             version_id=CollectionVersionId(str(row.version_id)),
             owner=row.owner,
+            curator_name=row.curator_name,
             metadata=CollectionMetadata.from_json(row.metadata),
             publisher_metadata=None if row.publisher_metadata is None else json.loads(row.publisher_metadata),
             datasets=datasets,
@@ -174,7 +176,9 @@ class DatabaseProvider(DatabaseProviderInterface):
                 return None
             return CanonicalDataset(dataset_id, DatasetVersionId(str(dataset.dataset_version_id)), dataset.published_at)
 
-    def create_canonical_collection(self, owner: str, collection_metadata: CollectionMetadata) -> CollectionVersion:
+    def create_canonical_collection(
+        self, owner: str, curator_name: str, collection_metadata: CollectionMetadata
+    ) -> CollectionVersion:
         """
         Creates a new canonical collection, generating a canonical collection_id and a new version_id.
         Returns the newly created CollectionVersion
@@ -193,6 +197,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             collection_id=collection_id.id,
             version_id=version_id.id,
             owner=owner,
+            curator_name=curator_name,
             metadata=collection_metadata.to_json(),
             publisher_metadata=None,
             published_at=None,
@@ -356,6 +361,7 @@ class DatabaseProvider(DatabaseProviderInterface):
                 collection_id=collection_id.id,
                 metadata=current_version.metadata,
                 owner=current_version.owner,
+                curator_name=current_version.curator_name,
                 publisher_metadata=current_version.publisher_metadata,
                 published_at=None,
                 created_at=datetime.utcnow(),

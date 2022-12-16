@@ -32,6 +32,7 @@ class CollectionVersion:
         Column("collection_id", UUID(as_uuid=True)),
         Column("metadata", JSON),
         Column("owner", String),
+        Column("curator_name", String),
         Column("publisher_metadata", JSON),
         Column("published_at", DateTime),
         Column("created_at", DateTime),
