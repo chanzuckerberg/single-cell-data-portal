@@ -405,11 +405,12 @@ class BusinessLogic(BusinessLogicInterface):
     def update_dataset_version_status(
         self,
         dataset_version_id: DatasetVersionId,
-        status_key: DatasetStatusKey = None,
-        new_dataset_status: DatasetStatusGeneric = None,
+        status_key: DatasetStatusKey,
+        new_dataset_status: DatasetStatusGeneric,
         validation_message: Optional[str] = None,
     ) -> None:
         """
+        TODO: split into two method, one for updating validation_message, and the other statuses.
         Updates the status of a dataset version.
         status_key can be one of: [upload, validation, cxg, rds, h5ad, processing]
         """
@@ -439,7 +440,6 @@ class BusinessLogic(BusinessLogicInterface):
 
         if validation_message is not None:
             self.database_provider.update_dataset_validation_message(dataset_version_id, validation_message)
-
 
     def add_dataset_artifact(
         self, dataset_version_id: DatasetVersionId, artifact_type: str, artifact_uri: str

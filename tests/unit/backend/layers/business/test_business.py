@@ -42,6 +42,8 @@ from backend.layers.thirdparty.step_function_provider import StepFunctionProvide
 from backend.layers.thirdparty.uri_provider import FileInfo, UriProviderInterface
 from tests.unit.backend.layers.fixtures import test_user_name
 
+test_curator_name = "Test User"
+
 
 class BaseBusinessLogicTestCase(unittest.TestCase):
     sample_collection_metadata: CollectionMetadata
@@ -194,7 +196,7 @@ class TestCreateCollection(BaseBusinessLogicTestCase):
         A collection can be created using `create_collection`
         """
         collection = self.business_logic.create_collection(
-            self.test_user_name, self.test_curator_name, self.sample_collection_metadata
+            test_user_name, test_curator_name, self.sample_collection_metadata
         )
         collection_from_database = self.database_provider.get_collection_version(collection.version_id)
         self.assertEqual(collection, collection_from_database)
@@ -210,7 +212,7 @@ class TestCreateCollection(BaseBusinessLogicTestCase):
         ]
         self.sample_collection_metadata.links = good_links
         collection = self.business_logic.create_collection(
-            self.test_user_name, self.test_curator_name, self.sample_collection_metadata
+            test_user_name, test_curator_name, self.sample_collection_metadata
         )
         collection_from_database = self.database_provider.get_collection_version(collection.version_id)
         self.assertEqual(good_links, collection_from_database.metadata.links)
@@ -223,9 +225,7 @@ class TestCreateCollection(BaseBusinessLogicTestCase):
         self.sample_collection_metadata.links = bad_links
 
         with self.assertRaises(CollectionCreationException) as ex:
-            self.business_logic.create_collection(
-                self.test_user_name, self.test_curator_name, self.sample_collection_metadata
-            )
+            self.business_logic.create_collection(test_user_name, test_curator_name, self.sample_collection_metadata)
 
         self.assertEqual(
             ex.exception.errors, [{"name": "links[0]", "reason": "Invalid URL.", "value": "incorrect_url"}]
@@ -243,7 +243,7 @@ class TestCreateCollection(BaseBusinessLogicTestCase):
         self.crossref_provider.fetch_metadata = Mock(return_value=expected_publisher_metadata)
 
         collection = self.business_logic.create_collection(
-            self.test_user_name, self.test_curator_name, self.sample_collection_metadata
+            test_user_name, test_curator_name, self.sample_collection_metadata
         )
 
         self.crossref_provider.fetch_metadata.assert_called_with("http://good.doi")
@@ -265,9 +265,7 @@ class TestCreateCollection(BaseBusinessLogicTestCase):
         self.crossref_provider.fetch_metadata = Mock(side_effect=CrossrefDOINotFoundException("Error!"))
 
         with self.assertRaises(CollectionCreationException):
-            self.business_logic.create_collection(
-                self.test_user_name, self.test_curator_name, self.sample_collection_metadata
-            )
+            self.business_logic.create_collection(test_user_name, test_curator_name, self.sample_collection_metadata)
 
     def test_create_collection_with_doi_error_ignores_metadata_ok(self):
         """
@@ -473,7 +471,7 @@ class TestUpdateCollection(BaseBusinessLogicTestCase):
         self.crossref_provider.fetch_metadata = Mock(return_value=expected_publisher_metadata)
 
         # We need to call `business_logic.create_collection` so that the publisher metadata is populated
-        version = self.business_logic.create_collection(self.test_user_name, self.test_curator_name, metadata)
+        version = self.business_logic.create_collection(test_user_name, test_curator_name, metadata)
         self.crossref_provider.fetch_metadata.assert_called_once()
         self.crossref_provider.fetch_metadata.reset_mock()
 
@@ -502,7 +500,7 @@ class TestUpdateCollection(BaseBusinessLogicTestCase):
         self.crossref_provider.fetch_metadata = Mock(return_value={"authors": ["Test Author"]})
 
         # We need to call `business_logic.create_collection` so that the publisher metadata is populated
-        version = self.business_logic.create_collection(self.test_user_name, self.test_curator_name, metadata)
+        version = self.business_logic.create_collection(test_user_name, test_curator_name, metadata)
         self.crossref_provider.fetch_metadata.assert_called_once()
         self.crossref_provider.fetch_metadata.reset_mock()
 

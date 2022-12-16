@@ -129,7 +129,12 @@ class BaseTest(unittest.TestCase):
             cls.database_provider._engine.dispose()
 
     def generate_unpublished_collection(
-        self, owner="test_user_id", curator_name="Test User", links: List[Link] = None, add_datasets: int = 0, metadata=None
+        self,
+        owner="test_user_id",
+        curator_name="Test User",
+        links: List[Link] = [],
+        add_datasets: int = 0,
+        metadata=None,
     ) -> CollectionVersion:
         links = links if links else []
         if not metadata:

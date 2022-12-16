@@ -249,9 +249,9 @@ class CollectionVersionBase:
 
 @dataclass
 class CollectionVersion(CollectionVersionBase):
-    datasets: List[DatasetVersionId]# = Field(default_factory=list)
+    datasets: List[DatasetVersionId]
 
 
 @dataclass
 class CollectionVersionWithDatasets(CollectionVersionBase):
-    datasets: List[DatasetVersion]# = Field(default_factory=list)
+    datasets: List[DatasetVersion]

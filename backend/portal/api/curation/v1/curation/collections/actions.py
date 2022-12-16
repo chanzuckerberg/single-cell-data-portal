@@ -43,7 +43,6 @@ def get(visibility: str, token_info: dict, curator: str = None):
     for collection_version in get_business_logic().get_collections(CollectionQueryFilter(**filters)):
         resp_collection = reshape_for_curation_api(collection_version, user_info, preview=True)
         resp_collections.append(resp_collection)
-    print(resp_collections)
     return jsonify(resp_collections)
 
 

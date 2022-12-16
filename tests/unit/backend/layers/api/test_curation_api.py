@@ -213,7 +213,6 @@ class TestPostCollection(BaseAPIPortalTest):
         response = self.app.post(
             "/curation/v1/collections", headers=self.make_owner_header(), data=json.dumps(self.test_collection)
         )
-        print(response.data)
         self.assertIn("id", response.json.keys())
         self.assertEqual(201, response.status_code)
 
