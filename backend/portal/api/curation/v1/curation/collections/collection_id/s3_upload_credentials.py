@@ -12,9 +12,7 @@ from backend.portal.api.curation.v1.curation.collections.common import (
     is_owner_or_allowed_else_forbidden,
 )
 
-def get_sts_client():
-    sts_client = boto3.client("sts")
-    return sts_client
+sts_client = boto3.client("sts")
 
 logger = logging.getLogger(__name__)
 duration = 43200
@@ -39,7 +37,6 @@ def get(collection_id: str, token_info: dict):
         DurationSeconds=duration,
     )
     logger.info(json.dumps(parameters))
-    sts_client = get_sts_client()
     response = sts_client.assume_role_with_web_identity(**parameters)
     response["UploadKeyPrefix"] = f"{upload_key_prefix}"
     response["Bucket"] = config.submission_bucket

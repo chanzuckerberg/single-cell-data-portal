@@ -109,9 +109,6 @@ def reshape_for_curation_api(
         revision_of=revision_of,
         visibility=get_visibility(collection_version),
     )
-    # if collection_version.canonical_collection.tombstoned:
-        # response["tombstone"] = True
-    response["tombstone"] = collection_version.canonical_collection.tombstoned
     return response
 
 

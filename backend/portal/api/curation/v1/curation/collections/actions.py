@@ -27,9 +27,8 @@ def get(visibility: str, token_info: dict, curator: str = None):
         if user_info.is_none():
             raise ForbiddenHTTPException(detail="Not authorized to query for PRIVATE collection.")
         else:
-            owner_filter = user_info.is_super_curator()
-            if owner_filter:  # None means the user is a super curator and don't need to filter by owner.
-                filters["owner"] = owner_filter
+            if not user_info.is_super_curator():  # A super curator and don't need to filter by owner.
+                filters["owner"] = user_info.user_id
     else:
         filters["is_published"] = True
 
@@ -38,6 +37,8 @@ def get(visibility: str, token_info: dict, curator: str = None):
             raise ForbiddenHTTPException(detail="Not authorized to use the curator query parameter.")
         else:
             filters["curator_name"] = curator
+
+    print(filters)
 
     resp_collections = []
     for collection_version in get_business_logic().get_collections(CollectionQueryFilter(**filters)):
