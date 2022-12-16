@@ -404,41 +404,41 @@ class BusinessLogic(BusinessLogicInterface):
     def update_dataset_version_status(
         self,
         dataset_version_id: DatasetVersionId,
-        status_key: Optional[DatasetStatusKey] = None,
-        new_dataset_status: Optional[DatasetStatusGeneric] = None,
+        status_key: DatasetStatusKey = None,
+        new_dataset_status: DatasetStatusGeneric = None,
         validation_message: Optional[str] = None,
     ) -> None:
         """
-        TODO: split into two method, one for updating validation_message, and the other statuses.
         Updates the status of a dataset version.
         status_key can be one of: [upload, validation, cxg, rds, h5ad, processing]
         """
-        if all([status_key, new_dataset_status]):
-            if status_key == DatasetStatusKey.UPLOAD and isinstance(new_dataset_status, DatasetUploadStatus):
-                self.database_provider.update_dataset_upload_status(dataset_version_id, new_dataset_status)
-            elif status_key == DatasetStatusKey.PROCESSING and isinstance(new_dataset_status, DatasetProcessingStatus):
-                self.database_provider.update_dataset_processing_status(dataset_version_id, new_dataset_status)
-            elif status_key == DatasetStatusKey.VALIDATION and isinstance(new_dataset_status, DatasetValidationStatus):
-                self.database_provider.update_dataset_validation_status(dataset_version_id, new_dataset_status)
-            elif status_key == DatasetStatusKey.CXG and isinstance(new_dataset_status, DatasetConversionStatus):
-                self.database_provider.update_dataset_conversion_status(
-                    dataset_version_id, "cxg_status", new_dataset_status
-                )
-            elif status_key == DatasetStatusKey.RDS and isinstance(new_dataset_status, DatasetConversionStatus):
-                self.database_provider.update_dataset_conversion_status(
-                    dataset_version_id, "rds_status", new_dataset_status
-                )
-            elif status_key == DatasetStatusKey.H5AD and isinstance(new_dataset_status, DatasetConversionStatus):
-                self.database_provider.update_dataset_conversion_status(
-                    dataset_version_id, "h5ad_status", new_dataset_status
-                )
-            else:
-                raise DatasetUpdateException(
-                    f"Invalid status update for dataset {dataset_version_id}: cannot set {status_key} to "
-                    f"{new_dataset_status}"
-                )
-        elif validation_message is not None:
+        if status_key == DatasetStatusKey.UPLOAD and isinstance(new_dataset_status, DatasetUploadStatus):
+            self.database_provider.update_dataset_upload_status(dataset_version_id, new_dataset_status)
+        elif status_key == DatasetStatusKey.PROCESSING and isinstance(new_dataset_status, DatasetProcessingStatus):
+            self.database_provider.update_dataset_processing_status(dataset_version_id, new_dataset_status)
+        elif status_key == DatasetStatusKey.VALIDATION and isinstance(new_dataset_status, DatasetValidationStatus):
+            self.database_provider.update_dataset_validation_status(dataset_version_id, new_dataset_status)
+        elif status_key == DatasetStatusKey.CXG and isinstance(new_dataset_status, DatasetConversionStatus):
+            self.database_provider.update_dataset_conversion_status(
+                dataset_version_id, "cxg_status", new_dataset_status
+            )
+        elif status_key == DatasetStatusKey.RDS and isinstance(new_dataset_status, DatasetConversionStatus):
+            self.database_provider.update_dataset_conversion_status(
+                dataset_version_id, "rds_status", new_dataset_status
+            )
+        elif status_key == DatasetStatusKey.H5AD and isinstance(new_dataset_status, DatasetConversionStatus):
+            self.database_provider.update_dataset_conversion_status(
+                dataset_version_id, "h5ad_status", new_dataset_status
+            )
+        else:
+            raise DatasetUpdateException(
+                f"Invalid status update for dataset {dataset_version_id}: cannot set {status_key} to "
+                f"{new_dataset_status}"
+            )
+
+        if validation_message is not None:
             self.database_provider.update_dataset_validation_message(dataset_version_id, validation_message)
+
 
     def add_dataset_artifact(
         self, dataset_version_id: DatasetVersionId, artifact_type: str, artifact_uri: str

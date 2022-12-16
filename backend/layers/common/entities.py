@@ -1,5 +1,6 @@
-from pydantic import Field
-from pydantic.dataclasses import dataclass
+# from pydantic import Field
+# from pydantic.dataclasses import dataclass
+from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 from typing import List, Optional
@@ -248,9 +249,9 @@ class CollectionVersionBase:
 
 @dataclass
 class CollectionVersion(CollectionVersionBase):
-    datasets: List[DatasetVersionId] = Field(default_factory=list)
+    datasets: List[DatasetVersionId]# = Field(default_factory=list)
 
 
 @dataclass
 class CollectionVersionWithDatasets(CollectionVersionBase):
-    datasets: List[DatasetVersion] = Field(default_factory=list)
+    datasets: List[DatasetVersion]# = Field(default_factory=list)
