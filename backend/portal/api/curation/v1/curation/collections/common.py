@@ -12,7 +12,7 @@ from backend.common.corpora_orm import (
 )
 from backend.common.utils.http_exceptions import ForbiddenHTTPException
 from backend.layers.api.explorer_url import generate as generate_explorer_url
-from backend.layers.api.router import get_business_logic
+from backend.layers.api.router import get_business_logic, get_collections_index
 from backend.layers.auth.user_info import UserInfo
 from backend.layers.common.entities import (
     CollectionId,
@@ -31,6 +31,8 @@ from backend.layers.common.entities import (
 
 allowed_dataset_asset_types = (DatasetArtifactType.H5AD, DatasetArtifactType.RDS)
 
+def get_collections_base_url():
+    return CorporaConfig().collections_base_url
 
 def extract_doi_from_links(links: List[Link]) -> Tuple[Optional[str], List[dict]]:
     """
@@ -90,7 +92,7 @@ def reshape_for_curation_api(
     else:
         revised_at = None
     response = dict(
-        collection_url=f"{CorporaConfig().collections_base_url}/collections/{collection_id.id}",
+        collection_url=f"{get_collections_base_url()}/collections/{collection_id.id}",
         contact_email=collection_version.metadata.contact_email,
         contact_name=collection_version.metadata.contact_name,
         created_at=collection_version.created_at,
