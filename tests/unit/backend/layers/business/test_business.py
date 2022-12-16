@@ -52,7 +52,8 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
     def setUpClass(cls) -> None:
         cls.run_as_integration = True if os.environ.get("INTEGRATION_TEST", "false").lower() == "true" else False
         if cls.run_as_integration:
-            cls.database_provider = DatabaseProvider(database_uri="postgresql://postgres:secret@localhost")
+            database_uri = os.environ.get("DB_URI", "postgresql://postgres:secret@localhost")
+            cls.database_provider = DatabaseProvider(database_uri=database_uri)
             cls.database_provider._drop_schema("persistence_schema")
 
     def setUp(self) -> None:
