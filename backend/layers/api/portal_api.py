@@ -14,6 +14,7 @@ from backend.common.utils.http_exceptions import (
     ServerErrorHTTPException,
     TooLargeHTTPException,
 )
+from backend.layers.api import explorer_url
 from backend.common.utils.ontology_mappings.ontology_map_loader import ontology_mappings
 from backend.layers.api.enrichment import enrich_dataset_with_ancestors
 from backend.layers.auth.user_info import UserInfo
@@ -49,14 +50,17 @@ from backend.layers.common.entities import (
     Link,
     OntologyTermId,
 )
+from backend.layers.thirdparty.cdn_provider_interface import CDNProviderInterface
 from backend.layers.thirdparty.uri_provider import FileInfoException
 
 
 class PortalApi:
     business_logic: BusinessLogicInterface
+    cloudfront_provider: CDNProviderInterface
 
-    def __init__(self, business_logic: BusinessLogic) -> None:
+    def __init__(self, business_logic: BusinessLogic, cloudfront_provider: CDNProviderInterface) -> None:
         self.business_logic = business_logic
+        self.cloudfront_provider = cloudfront_provider
 
     def get_collections_list(self, from_date: int = None, to_date: int = None, token_info: Optional[dict] = None):
         """
@@ -121,7 +125,7 @@ class PortalApi:
         return {
             "created_at": 0,
             "dataset_id": dataset_id,
-            "filename": "TODO",  # TODO: might need to get it from the url
+            "filename": dataset_artifact.uri.split("/")[-1],
             "filetype": dataset_artifact.type.upper(),
             "id": dataset_artifact.id.id,
             "s3_uri": dataset_artifact.uri,
@@ -142,7 +146,9 @@ class PortalApi:
         return {k: v for k, v in body.items() if v is not None}
 
     # Note: `metadata` can be none while the dataset is uploading
-    def _dataset_to_response(self, dataset: DatasetVersion, is_tombstoned: bool):
+    def _dataset_to_response(
+        self, dataset: DatasetVersion, is_tombstoned: bool, is_in_published_collection: bool = False
+    ):
         return self.remove_none(
             {
                 "assay": None
@@ -158,7 +164,7 @@ class PortalApi:
                 "dataset_assets": [
                     self._dataset_asset_to_response(a, dataset.version_id.id) for a in dataset.artifacts
                 ],
-                "dataset_deployments": [{"url": "TODO"}],  # TODO: dataset.metadata.explorer_url,
+                "dataset_deployments": [{"url": explorer_url.generate(dataset, is_in_published_collection)}],
                 "development_stage": None
                 if dataset.metadata is None
                 else self._ontology_term_ids_to_response(dataset.metadata.development_stage),
@@ -197,7 +203,15 @@ class PortalApi:
 
     def _collection_to_response(self, collection: CollectionVersion, access_type: str):
         collection_id = collection.collection_id.id if collection.published_at is not None else collection.version_id.id
+
+        if collection.canonical_collection.originally_published_at is not None and collection.published_at is None:
+            revision_of = collection.collection_id.id
+        else:
+            revision_of = None
+
         is_tombstoned = collection.canonical_collection.tombstoned
+        is_in_published_collection = collection.published_at is not None
+
         return self.remove_none(
             {
                 "access_type": access_type,
@@ -206,13 +220,19 @@ class PortalApi:
                 "created_at": collection.created_at,
                 "curator_name": "",  # TODO
                 "data_submission_policy_version": "1.0",  # TODO
-                "datasets": [self._dataset_to_response(ds, is_tombstoned=is_tombstoned) for ds in collection.datasets],
+                "datasets": [
+                    self._dataset_to_response(
+                        ds, is_tombstoned=is_tombstoned, is_in_published_collection=is_in_published_collection
+                    )
+                    for ds in collection.datasets
+                ],
                 "description": collection.metadata.description,
                 "id": collection_id,
                 "links": [self._link_to_response(link) for link in collection.metadata.links],
                 "name": collection.metadata.name,
                 "published_at": collection.published_at,
                 "publisher_metadata": collection.publisher_metadata,  # TODO: convert
+                "revision_of": revision_of,
                 "updated_at": collection.published_at or collection.created_at,
                 "visibility": "PUBLIC" if collection.published_at is not None else "PRIVATE",
             }
@@ -396,6 +416,8 @@ class PortalApi:
         except CollectionPublishException:
             raise ConflictException(detail="The collection must have a least one dataset.")
 
+        self.cloudfront_provider.create_invalidation_for_index_paths()
+
         return make_response({"collection_id": version.collection_id.id, "visibility": "PUBLIC"}, 202)
 
     def upload_from_link(self, collection_id: str, token_info: dict, url: str, dataset_id: str = None):
@@ -484,7 +506,7 @@ class PortalApi:
 
         artifacts = []
         for artifact in self.business_logic.get_dataset_artifacts(DatasetVersionId(dataset_id)):
-            artifacts.append({"id": artifact.id.id, "type": artifact.type, "s3_uri": artifact.uri})
+            artifacts.append(self._dataset_asset_to_response(artifact, dataset_id))
         response = {"assets": artifacts}
 
         return make_response(jsonify(response), 200)
@@ -544,6 +566,8 @@ class PortalApi:
             )
             enrich_dataset_with_ancestors(payload, "tissue", ontology_mappings.tissue_ontology_mapping)
             enrich_dataset_with_ancestors(payload, "cell_type", ontology_mappings.cell_type_ontology_mapping)
+            # In this context, datasets always belong to published collections
+            payload["explorer_url"] = explorer_url.generate(dataset, is_published=True)
             response.append(payload)
 
         return make_response(jsonify(response), 200)

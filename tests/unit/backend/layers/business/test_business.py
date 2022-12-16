@@ -37,7 +37,7 @@ from backend.layers.common.entities import (
 from backend.layers.persistence.persistence import DatabaseProvider
 from backend.layers.persistence.persistence_mock import DatabaseProviderMock
 from backend.layers.thirdparty.crossref_provider import CrossrefProviderInterface
-from backend.layers.thirdparty.s3_provider import S3Provider
+from backend.layers.thirdparty.s3_provider import S3ProviderInterface
 from backend.layers.thirdparty.step_function_provider import StepFunctionProviderInterface
 from backend.layers.thirdparty.uri_provider import FileInfo, UriProviderInterface
 from unit.backend.layers.fixtures import test_user_name
@@ -63,7 +63,7 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         # By default these do nothing. They can be mocked by single test cases.
         self.crossref_provider = CrossrefProviderInterface()
         self.step_function_provider = StepFunctionProviderInterface()
-        self.s3_provider = S3Provider()
+        self.s3_provider = S3ProviderInterface()
         self.uri_provider = UriProviderInterface()
         self.uri_provider.validate = Mock(return_value=True)  # By default, every link should be valid
         self.uri_provider.get_file_info = Mock(return_value=FileInfo(1, "file.h5ad"))
@@ -503,14 +503,12 @@ class TestUpdateCollection(BaseBusinessLogicTestCase):
 
 
 class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
-
     def test_add_empty_dataset_ok(self):
         """
         An empty dataset can be added to a collection when `create_empty_dataset` is called.
         The resulting dataset should be empty and in a state ready for processing.
         """
         version = self.initialize_empty_unpublished_collection()
-        url = "http://test/dataset.url"
 
         new_dataset_version_id, _ = self.business_logic.create_empty_dataset(version.version_id)
 

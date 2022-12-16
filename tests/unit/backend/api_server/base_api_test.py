@@ -10,10 +10,10 @@ from backend.common.corpora_config import CorporaAuthConfig
 from tests.unit.backend.api_server.config import TOKEN_EXPIRES
 from tests.unit.backend.api_server.mock_auth import MockOauthServer
 from tests.unit.backend.fixtures.environment_setup import EnvironmentSetup
-from tests.unit.backend.layers.common.base_api_test import NewBaseTest
+from tests.unit.backend.layers.common.base_test import BaseTest
 
 
-class BaseAPITest(NewBaseTest):
+class BaseAPITest(BaseTest):
     """
     Provide access to the test APIs. All tests for APIs should inherit this class.
     """
@@ -89,10 +89,7 @@ class BaseAuthAPITest(BaseAPITest):
         super().setUp()
 
         # TODO: this can be improved, but the current authorization method requires it
-        self.mock = patch(
-            "backend.common.corpora_config.CorporaAuthConfig.__getattr__",
-            return_value="mock_audience"
-        )
+        self.mock = patch("backend.common.corpora_config.CorporaAuthConfig.__getattr__", return_value="mock_audience")
         self.mock.start()
 
         self.mock_assert_authorized_token = patch(

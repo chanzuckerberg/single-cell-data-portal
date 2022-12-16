@@ -2,7 +2,6 @@ import copy
 import datetime
 import logging
 from typing import Iterable, Optional, Tuple
-from urllib.parse import urlparse
 
 from backend.common.providers.crossref_provider import CrossrefDOINotFoundException, CrossrefException
 from backend.layers.business.business_interface import BusinessLogicInterface
@@ -52,7 +51,7 @@ from backend.layers.common.entities import (
 )
 from backend.layers.persistence.persistence_interface import DatabaseProviderInterface
 from backend.layers.thirdparty.crossref_provider import CrossrefProviderInterface
-from backend.layers.thirdparty.s3_provider import S3Provider
+from backend.layers.thirdparty.s3_provider import S3ProviderInterface
 from backend.layers.thirdparty.step_function_provider import StepFunctionProviderInterface
 from backend.layers.thirdparty.uri_provider import UriProviderInterface
 
@@ -61,7 +60,7 @@ class BusinessLogic(BusinessLogicInterface):
     database_provider: DatabaseProviderInterface
     crossref_provider: CrossrefProviderInterface
     step_function_provider: StepFunctionProviderInterface
-    s3_provider: S3Provider
+    s3_provider: S3ProviderInterface
     uri_provider: UriProviderInterface
 
     def __init__(
@@ -69,7 +68,7 @@ class BusinessLogic(BusinessLogicInterface):
         database_provider: DatabaseProviderInterface,
         crossref_provider: CrossrefProviderInterface,
         step_function_provider: StepFunctionProviderInterface,
-        s3_provider: S3Provider,
+        s3_provider: S3ProviderInterface,
         uri_provider: UriProviderInterface,
     ) -> None:
         self.crossref_provider = crossref_provider
@@ -387,9 +386,7 @@ class BusinessLogic(BusinessLogicInterface):
         if not artifact:
             raise ArtifactNotFoundException(f"Artifact {artifact_id} not found in dataset {dataset_version_id}")
 
-        artifact_url = urlparse(artifact.uri)
-
-        file_name = artifact_url.path[1:]
+        file_name = artifact.uri.split("/")[-1]
         file_type = artifact.type
         file_size = self.s3_provider.get_file_size(artifact.uri)
         presigned_url = self.s3_provider.generate_presigned_url(artifact.uri)

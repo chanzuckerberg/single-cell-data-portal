@@ -26,11 +26,11 @@ from furl import furl
 
 from backend.common.providers.crossref_provider import CrossrefDOINotFoundException, CrossrefFetchException
 from backend.portal.api.collections_common import verify_collection_body
-from tests.unit.backend.layers.common.base_api_test import (
+from tests.unit.backend.layers.common.base_test import (
     DatasetArtifactUpdate,
     DatasetStatusUpdate,
-    NewBaseTest,
 )
+from tests.unit.backend.layers.common.base_api_test import BaseAPIPortalTest
 
 
 def generate_mock_publisher_metadata(journal_override=None):
@@ -45,7 +45,7 @@ def generate_mock_publisher_metadata(journal_override=None):
     }
 
 
-class TestCollection(NewBaseTest):
+class TestCollection(BaseAPIPortalTest):
 
     # TODO: does not belong here
     def validate_collections_response_structure(self, body):
@@ -160,7 +160,7 @@ class TestCollection(NewBaseTest):
                     "collection_id": collection.collection_id.id,
                     "created_at": mock.ANY,
                     "dataset_assets": [],
-                    "dataset_deployments": [{"url": "TODO"}],
+                    "dataset_deployments": [{"url": mock.ANY}],
                     "development_stage": [
                         {"label": "test_development_stage_label", "ontology_term_id": "test_development_stage_term_id"}
                     ],
@@ -210,7 +210,7 @@ class TestCollection(NewBaseTest):
                     "collection_id": collection.collection_id.id,
                     "created_at": mock.ANY,
                     "dataset_assets": [],
-                    "dataset_deployments": [{"url": "TODO"}],
+                    "dataset_deployments": [{"url": mock.ANY}],
                     "development_stage": [
                         {"label": "test_development_stage_label", "ontology_term_id": "test_development_stage_term_id"}
                     ],
@@ -758,7 +758,8 @@ class TestCollection(NewBaseTest):
                     self.assertIn(error, response.json["detail"])
 
 
-class TestCollectionDeletion(NewBaseTest):
+# 🔴 TODO: This should be reviewed. Collection deletion is a weird beast
+class TestCollectionDeletion(BaseAPIPortalTest):
     def test_delete_private_collection_version__ok(self):
         # Generate test collection
         collection = self.generate_unpublished_collection()
@@ -916,7 +917,7 @@ class TestCollectionDeletion(NewBaseTest):
         self.assertNotIn(collection_to_delete.version_id.id, collection_ids)
 
 
-class TestUpdateCollection(NewBaseTest):
+class TestUpdateCollection(BaseAPIPortalTest):
 
     # ✅
     def test__update_collection__OK(self):
@@ -1088,7 +1089,7 @@ class TestUpdateCollection(NewBaseTest):
         self.assertEqual("Old Journal", actual_body["publisher_metadata"]["journal"])
 
 
-class TestCollectionsCurators(NewBaseTest):
+class TestCollectionsCurators(BaseAPIPortalTest):
     def test_view_non_owned_private_collection__ok(self):
         # Generate test collection
         collection = self.generate_unpublished_collection(owner="another_test_user_id")
@@ -1221,7 +1222,7 @@ class TestVerifyCollection(unittest.TestCase):
 
 
 # TODO: these tests all require the generation of a dataset
-class TestDataset(NewBaseTest):
+class TestDataset(BaseAPIPortalTest):
 
     # ✅
     def test__post_dataset_asset__OK(self):
@@ -1637,7 +1638,7 @@ class TestDataset(NewBaseTest):
         self.assertEqual(response.status_code, 404)
 
 
-class TestDatasetCurators(NewBaseTest):
+class TestDatasetCurators(BaseAPIPortalTest):
     def setUp(self):
         super().setUp()
 
@@ -1673,7 +1674,7 @@ class TestDatasetCurators(NewBaseTest):
 # #### REVISIONS START HERE #####
 
 
-class TestRevision(NewBaseTest):
+class TestRevision(BaseAPIPortalTest):
     """Test case for starting a collection's revision."""
 
     # ✅
@@ -1779,7 +1780,7 @@ class TestRevision(NewBaseTest):
         self.assertEqual(403, response.status_code)
 
 
-class TestDeleteRevision(NewBaseTest):
+class TestDeleteRevision(BaseAPIPortalTest):
     """Test case for deleting a collection or datasets under revision."""
 
     def _create_revision(self, collection_id: str, user="owner"):
@@ -1840,7 +1841,7 @@ class TestDeleteRevision(NewBaseTest):
 
 # Those were the previous revision tests - mostly covered by the business logic layer now
 # A few cases are good, but we don't need to test every single case here
-class TestPublishRevision(NewBaseTest):
+class TestPublishRevision(BaseAPIPortalTest):
     """Test case for publishing a revision."""
 
     def setUp(self):
@@ -1995,6 +1996,20 @@ class TestPublishRevision(NewBaseTest):
         response = self.app.post(path, headers=headers, data=json.dumps(body))
         self.assertEqual(202, response.status_code)
 
+    def test__publish_collection_triggers_cloudfront_invalidation(self):
+        self.cloudfront_provider.create_invalidation_for_index_paths = Mock()
+        collection = self.generate_unpublished_collection(add_datasets=1)
+        path = f"{self.base_path}/{collection.version_id.id}/publish"
+        body = {"data_submission_policy_version": "1.0"}
+        headers = {
+            "host": "localhost",
+            "Content-Type": "application/json",
+            "Cookie": self.get_cxguser_token(),
+        }
+        response = self.app.post(path, headers=headers, data=json.dumps(body))
+        self.assertEqual(202, response.status_code)
+        self.cloudfront_provider.create_invalidation_for_index_paths.assert_called_once()
+
     # The following tests are good to have, but they're essentially business logic tests. We can purge them for now
 
     # def test__publish_revision_with_updated_datasets__OK(self):
@@ -2136,7 +2151,7 @@ class TestPublishRevision(NewBaseTest):
 # ##### UPLOAD TESTS START HERE ######
 
 
-class TestCollectionPostUploadLink(NewBaseTest):
+class TestCollectionPostUploadLink(BaseAPIPortalTest):
     def setUp(self):
         super().setUp()
         self.good_link = "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"
@@ -2241,7 +2256,7 @@ class TestCollectionPostUploadLink(NewBaseTest):
         self.assertEqual(403, response.status_code)
 
 
-class TestCollectionPutUploadLink(NewBaseTest):
+class TestCollectionPutUploadLink(BaseAPIPortalTest):
     def setUp(self):
         super().setUp()
         self.good_link = "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"
@@ -2363,7 +2378,7 @@ class TestCollectionPutUploadLink(NewBaseTest):
         self.assertEqual(404, response.status_code)
 
 
-class TestCollectionUploadLinkCurators(NewBaseTest):
+class TestCollectionUploadLinkCurators(BaseAPIPortalTest):
     def setUp(self):
         super().setUp()
         self.good_link = "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"

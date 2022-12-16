@@ -5,7 +5,7 @@ from backend.layers.processing.process import ProcessMain
 from backend.layers.processing.process_cxg import ProcessCxg
 from backend.layers.processing.process_download_validate import ProcessDownloadValidate
 from backend.layers.processing.process_seurat import ProcessSeurat
-from backend.layers.thirdparty.s3_provider import S3Provider
+from backend.layers.thirdparty.s3_provider_interface import S3ProviderInterface
 from backend.layers.thirdparty.schema_validator_provider import SchemaValidatorProviderInterface
 from backend.layers.thirdparty.uri_provider import FileInfo, UriProvider
 from backend.layers.common.entities import (
@@ -15,10 +15,10 @@ from backend.layers.common.entities import (
     DatasetUploadStatus,
     DatasetValidationStatus,
 )
-from tests.unit.backend.layers.common.base_api_test import NewBaseTest
+from tests.unit.backend.layers.common.base_test import BaseTest
 
 
-class MockS3Provider(S3Provider):
+class MockS3Provider(S3ProviderInterface):
     """
     Simple S3 mock that mostly checks if paths are correct
     """
@@ -47,7 +47,7 @@ class MockS3Provider(S3Provider):
         return len(self.mock_s3_fs) == 0
 
 
-class ProcessingTest(NewBaseTest):
+class ProcessingTest(BaseTest):
     def setUp(self):
         super().setUp()
         self.uri_provider = UriProvider()

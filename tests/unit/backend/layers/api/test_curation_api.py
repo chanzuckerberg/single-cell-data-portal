@@ -15,12 +15,12 @@ from backend.layers.common.entities import (
     OntologyTermId,
 )
 from backend.portal.api.curation.v1.curation.collections.common import EntityColumns
-from unit.backend.api_server.base_api_test import BaseAuthAPITest
-from unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
-from unit.backend.layers.common.base_api_test import DatasetArtifactUpdate, DatasetStatusUpdate, NewBaseTest
+from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
+from tests.unit.backend.layers.common.base_test import DatasetArtifactUpdate, DatasetStatusUpdate
+from unit.backend.layers.common.base_api_test import BaseAPIPortalTest
 
 
-class TestAsset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
+class TestAsset(CorporaTestCaseUsingMockAWS):
     def setUp(self):
         # Needed for proper setUp resolution in multiple inheritance
         super().setUp()
@@ -90,7 +90,7 @@ class TestAsset(BaseAuthAPITest, CorporaTestCaseUsingMockAWS):
         mocked_dataset.get_assets.assert_called()
 
 
-class TestDeleteCollection(BaseAuthAPITest):
+class TestDeleteCollection(BaseAPIPortalTest):
     def _test(self, collection_id, header, expected_status):
         if header == "owner":
             headers = self.make_owner_header()
@@ -137,7 +137,7 @@ class TestDeleteCollection(BaseAuthAPITest):
                 self._test(collection_id, auth, expected_response)
 
 
-class TestS3Credentials(NewBaseTest):
+class TestS3Credentials(BaseAPIPortalTest):
     @patch("backend.portal.api.curation.v1.curation.collections.collection_id.s3_upload_credentials.sts_client")
     def test__generate_s3_credentials__OK(self, sts_client: Mock):
         def _test(token, is_super_curator: bool = False):
@@ -188,7 +188,7 @@ class TestS3Credentials(NewBaseTest):
         self.assertEqual(401, response.status_code)
 
 
-class TestPostCollection(NewBaseTest):
+class TestPostCollection(BaseAPIPortalTest):
     def setUp(self):
         super().setUp()
         self.test_collection = dict(
@@ -250,7 +250,7 @@ class TestPostCollection(NewBaseTest):
             self.assertEqual(len(response.json["invalid_parameters"]), num_expected_errors)
 
 
-class TestGetCollections(NewBaseTest):
+class TestGetCollections(BaseAPIPortalTest):
     def setUp(self):
         super().setUp()
         self.test_collection = dict(
@@ -494,7 +494,7 @@ class TestGetCollections(NewBaseTest):
             self.assertFalse(response)
 
 
-class TestGetCollectionID(NewBaseTest):
+class TestGetCollectionID(BaseAPIPortalTest):
     def test__get_public_collection_verify_body_is_reshaped_correctly__OK(self):
 
         # Setup
@@ -551,7 +551,7 @@ class TestGetCollectionID(NewBaseTest):
         expect_dataset["title"] = expect_dataset.pop("name")
         expect_dataset.update(
             **{
-                "explorer_url": f"https://frontend.corporanet.local:3000/{dataset.version_id}.cxg/",
+                "explorer_url": f"/{dataset.version_id}.cxg/",
                 "id": dataset.dataset_id.id,
                 "processing_status": "PENDING",
                 "revision": 0,
@@ -560,6 +560,7 @@ class TestGetCollectionID(NewBaseTest):
                 "processing_status_detail": None,
                 "dataset_assets": [{"filename": "test_filename", "filetype": "H5AD"}],
                 "is_primary_data": [True, False],
+                "x_approximate_distribution": "NORMAL",
             }
         )
         expected_body = asdict(collection_version.metadata)
@@ -699,7 +700,7 @@ class TestGetCollectionID(NewBaseTest):
         self.assertIsNone(res.json["datasets"][0]["x_approximate_distribution"])
 
 
-class TestPatchCollectionID(NewBaseTest):
+class TestPatchCollectionID(BaseAPIPortalTest):
     def setUp(self):
         super().setUp()
         self.test_collection = dict(
@@ -904,7 +905,7 @@ class TestPatchCollectionID(NewBaseTest):
         )
 
 
-class TestDeleteDataset(BaseAuthAPITest):
+class TestDeleteDataset(BaseAPIPortalTest):
     def test__delete_dataset(self):
         auth_credentials = [
             (self.make_super_curator_header, "super", 202),
@@ -928,7 +929,7 @@ class TestDeleteDataset(BaseAuthAPITest):
                 self.assertEqual(expected_status_code, response.status_code)
 
 
-class TestGetDatasets(BaseAuthAPITest):
+class TestGetDatasets(BaseAPIPortalTest):
     def test_get_dataset_in_a_collection_200(self):
         dataset = self.generate_dataset(name="test")
         test_url = f"/curation/v1/collections/{dataset.collection_id}/datasets/{dataset.dataset_version_id}"
@@ -973,7 +974,7 @@ class TestGetDatasets(BaseAuthAPITest):
         self.assertEqual(404, response.status_code)
 
 
-class TestPostDataset(BaseAuthAPITest):
+class TestPostDataset(BaseAPIPortalTest):
     def test_post_datasets_nonexistent_collection_403(self):
         test_url = "/curation/v1/collections/nonexistent/datasets"
         headers = self.make_owner_header()
@@ -1016,7 +1017,7 @@ class TestPostDataset(BaseAuthAPITest):
         self.assertEqual(401, response.status_code)
 
 
-class TestPostRevision(BaseAuthAPITest):
+class TestPostRevision(BaseAPIPortalTest):
     def test__post_revision__no_auth(self):
         collection_id = self.generate_collection(visibility=CollectionVisibility.PUBLIC.name).collection_id
         response = self.app.post(f"/curation/v1/collections/{collection_id}/revision")
@@ -1060,7 +1061,7 @@ class TestPostRevision(BaseAuthAPITest):
     return_value={"size": 1, "name": "file.h5ad"},
 )
 @patch("backend.common.upload.start_upload_sfn")
-class TestPutLink(BaseAuthAPITest):
+class TestPutLink(BaseAPIPortalTest):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
@@ -1191,7 +1192,7 @@ class TestPutLink(BaseAuthAPITest):
         self.assertEqual(202, response.status_code)
 
 
-class TestAuthToken(NewBaseTest):
+class TestAuthToken(BaseAPIPortalTest):
     @patch("backend.portal.api.curation.v1.curation.auth.token.CorporaAuthConfig")
     @patch("backend.portal.api.curation.v1.curation.auth.token.auth0_management_session")
     def test__post_token__201(self, auth0_management_session: Mock, CorporaAuthConfig: Mock):
