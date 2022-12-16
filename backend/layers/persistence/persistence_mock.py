@@ -68,7 +68,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
     ) -> CollectionVersion:
         collection_id = CollectionId(self._generate_id())
         version_id = CollectionVersionId(self._generate_id())
-        canonical = CanonicalCollection(collection_id, None, False, False)
+        canonical = CanonicalCollection(collection_id, None, None, False)
         version = CollectionVersion(
             collection_id=collection_id,
             version_id=version_id,

@@ -84,15 +84,17 @@ def reshape_for_curation_api(
 
     # build response
     doi, links = extract_doi_from_links(collection_version.metadata.links)
-    revised_at = business_logic.get_published_collection_version(
-        collection_version.canonical_collection.id
-    ).published_at
+    published_version = business_logic.get_published_collection_version(collection_version.canonical_collection.id)
+    if published_version is not None:
+        revised_at = published_version.published_at
+    else:
+        revised_at = None
     response = dict(
         collection_url=f"{CorporaConfig().collections_base_url}/collections/{collection_id.id}",
         contact_email=collection_version.metadata.contact_email,
         contact_name=collection_version.metadata.contact_name,
         created_at=collection_version.created_at,
-        curator_name=collection_version.owner,
+        curator_name=collection_version.curator_name,
         datasets=response_datasets,
         description=collection_version.metadata.description,
         doi=doi,

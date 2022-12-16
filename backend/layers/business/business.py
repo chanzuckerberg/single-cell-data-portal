@@ -190,7 +190,8 @@ class BusinessLogic(BusinessLogicInterface):
                 or (filter.is_published is False and version.published_at is None)
             )
             owner = filter.owner is None or filter.owner == version.owner
-            return published and owner
+            curator = filter.curator_name is None or filter.curator_name == version.curator_name
+            return published and owner and curator
 
         for collection_version in iterable:
             if predicate(collection_version):
