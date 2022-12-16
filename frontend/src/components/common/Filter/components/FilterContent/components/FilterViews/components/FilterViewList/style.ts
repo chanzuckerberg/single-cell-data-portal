@@ -1,7 +1,7 @@
 import { css } from "@emotion/react";
 import styled from "@emotion/styled";
-import { ListItemText } from "@material-ui/core";
-import { List, ListItem } from "czifui";
+import { ListItemText } from "@mui/material";
+import { List, ListItem, ListItemProps } from "czifui";
 import { GRAY } from "src/components/common/theme";
 
 interface Props {
@@ -12,7 +12,14 @@ export const ViewSublist = styled(List)`
   margin-left: 22px;
 `;
 
-const StyledListItem = styled(ListItem)`
+// (thuang): MUIv5 deprecated `button` prop, but not removed yet
+// We should add ListItemButton to SDS and use that instead
+// https://mui.com/material-ui/api/list-item/#props
+interface TempListItemProps extends ListItemProps {
+  button?: boolean;
+}
+
+const StyledListItem = styled(ListItem)<TempListItemProps>`
   /* TODO(cc) remove && after updating SDS version that has this commit https://github.com/chanzuckerberg/sci-components/pull/201 */
   && {
     letter-spacing: -0.1px;

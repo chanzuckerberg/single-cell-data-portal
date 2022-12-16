@@ -1,6 +1,6 @@
 import { Classes, Intent } from "@blueprintjs/core";
-import { FormControlLabel } from "@material-ui/core";
-import { Icon, RadioButton } from "czifui";
+import { FormControlLabel } from "@mui/material";
+import { InputRadio } from "czifui";
 import { toPng, toSvg } from "html-to-image";
 import { useCallback, useState } from "react";
 import { track } from "src/common/analytics";
@@ -13,7 +13,7 @@ import Modal from "src/components/common/Modal";
 import { CellType } from "src/views/WheresMyGene/common/types";
 import { getHeatmapHeight, getHeatmapWidth } from "../../../HeatMap/utils";
 import { Label } from "../../style";
-import { StyledIconButton } from "../QuickSelect/style";
+import { StyledButtonIcon } from "../QuickSelect/style";
 import { ButtonWrapper, DownloadButton, StyledDiv } from "./style";
 
 export const EXCLUDE_IN_SCREENSHOT_CLASS_NAME = "screenshot-exclude";
@@ -108,7 +108,11 @@ export default function SaveImage({
       }
       link.click();
       link.remove();
-      track(EVENTS.WMG_DOWNLOAD_COMPLETE, { file_type: fileType , tissues: selectedTissues.toString(), genes: selectedGenes.toString() });
+      track(EVENTS.WMG_DOWNLOAD_COMPLETE, {
+        file_type: fileType,
+        genes: selectedGenes.toString(),
+        tissues: selectedTissues.toString(),
+      });
     } catch (error) {
       console.error(error);
     }
@@ -118,21 +122,15 @@ export default function SaveImage({
     <>
       <ButtonWrapper className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}>
         <Label>Download</Label>
-        <StyledIconButton
+        <StyledButtonIcon
           data-test-id="download-button"
           // TODO: put handleButtonClick when svgs are fixed
           onClick={handleDownload}
-          {...{
-            // (thuang): Move this back to explicit prop={value} after
-            // upgrading SDS to enable type checking again
-            disabled:
-              selectedTissues.length === 0 || selectedGenes.length === 0,
-            sdsSize: "medium",
-            sdsType: "primary",
-          }}
-        >
-          <Icon sdsIcon="download" sdsSize="l" sdsType="iconButton" />
-        </StyledIconButton>
+          disabled={selectedTissues.length === 0 || selectedGenes.length === 0}
+          sdsSize="medium"
+          sdsType="primary"
+          sdsIcon="download"
+        />
       </ButtonWrapper>
       <Modal
         isOpen={isOpen}
@@ -146,7 +144,7 @@ export default function SaveImage({
             <StyledDiv>
               <FormControlLabel
                 control={
-                  <RadioButton
+                  <InputRadio
                     stage={fileType === "png" ? "checked" : "unchecked"}
                   />
                 }
@@ -156,7 +154,7 @@ export default function SaveImage({
 
               <FormControlLabel
                 control={
-                  <RadioButton
+                  <InputRadio
                     stage={fileType === "svg" ? "checked" : "unchecked"}
                   />
                 }

@@ -1,5 +1,5 @@
 import { ThemeProvider as EmotionThemeProvider } from "@emotion/react";
-import { StylesProvider, ThemeProvider } from "@material-ui/core/styles";
+import { StyledEngineProvider, ThemeProvider } from "@mui/material/styles";
 import { NextPage } from "next";
 import { AppProps } from "next/app";
 import Script from "next/script";
@@ -53,7 +53,7 @@ function App({ Component, pageProps }: AppPropsWithLayout): JSX.Element {
   return (
     <>
       <QueryClientProvider client={queryClient}>
-        <StylesProvider injectFirst>
+        <StyledEngineProvider>
           <EmotionThemeProvider theme={theme}>
             <ThemeProvider theme={theme}>
               <Layout>
@@ -62,7 +62,7 @@ function App({ Component, pageProps }: AppPropsWithLayout): JSX.Element {
               <ReactQueryDevtools />
             </ThemeProvider>
           </EmotionThemeProvider>
-        </StylesProvider>
+        </StyledEngineProvider>
       </QueryClientProvider>
       <Script
         data-domain={configs.PLAUSIBLE_DATA_DOMAIN}

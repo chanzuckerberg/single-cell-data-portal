@@ -290,8 +290,6 @@ export default memo(function Chart({
         placement="right-end"
         PopperProps={{
           anchorEl: {
-            clientHeight: 0,
-            clientWidth: 0,
             getBoundingClientRect: () => ({
               bottom: cursorOffset[1],
               height: 0,
@@ -304,9 +302,14 @@ export default memo(function Chart({
               y: cursorOffset[1],
             }),
           },
-          modifiers: {
-            offset: { offset: "0,20" },
-          },
+          modifiers: [
+            {
+              name: "offset",
+              options: {
+                offset: [0, 5],
+              },
+            },
+          ],
         }}
       >
         <ChartContainer height={heatmapHeight} width={heatmapWidth} ref={ref} />
