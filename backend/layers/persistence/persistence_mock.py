@@ -360,5 +360,5 @@ class DatabaseProviderMock(DatabaseProviderInterface):
     def get_dataset_mapped_version(self, dataset_id: DatasetId) -> Optional[DatasetVersion]:
         cd = self.datasets.get(dataset_id.id)
         if cd is not None:
-            version = self.datasets_versions[cd.version_id.id]
+            version = self.datasets_versions[cd.dataset_version_id.id]
             return self._update_dataset_version_with_canonical(version)

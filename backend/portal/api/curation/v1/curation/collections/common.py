@@ -109,8 +109,9 @@ def reshape_for_curation_api(
         revision_of=revision_of,
         visibility=get_visibility(collection_version),
     )
-    if collection_version.canonical_collection.tombstoned:
-        response["tombstone"] = True
+    # if collection_version.canonical_collection.tombstoned:
+        # response["tombstone"] = True
+    response["tombstone"] = collection_version.canonical_collection.tombstoned
     return response
 
 
@@ -119,8 +120,8 @@ def reshape_datasets_for_curation_api(
 ) -> List[dict]:
     active_datasets = []
     for dv in datasets:
-        dataset_versions = get_business_logic().get_dataset_version(dv) if isinstance(dv, DatasetVersionId) else dv
-        active_datasets.append(reshape_dataset_for_curation_api(dataset_versions, is_published, preview))
+        dataset_version = get_business_logic().get_dataset_version(dv) if isinstance(dv, DatasetVersionId) else dv
+        active_datasets.append(reshape_dataset_for_curation_api(dataset_version, is_published, preview))
     return active_datasets
 
 
@@ -148,7 +149,7 @@ def reshape_dataset_for_curation_api(dataset_version: DatasetVersion, is_publish
         assets = []
         for artifact in dataset_version.artifacts:
             if artifact.type in allowed_dataset_asset_types:
-                assets.append(dict(filetype=artifact.type.value.upper(), filename=artifact.uri.split("/")[-1]))
+                assets.append(dict(filetype=artifact.type.upper(), filename=artifact.uri.split("/")[-1]))
 
         ds["dataset_assets"] = assets
         ds["processing_status_detail"] = dataset_version.status.validation_message
@@ -290,6 +291,8 @@ def get_infered_collection_version_else_forbidden(collection_id: str) -> Collect
     version = get_business_logic().get_published_collection_version(CollectionId(collection_id))
     if version is None:
         version = get_business_logic().get_collection_version(CollectionVersionId(collection_id))
+    if version is None:
+        version = get_business_logic().get_unpublished_collection_version_from_canonical(CollectionId(collection_id))
     if version is None or version.canonical_collection.tombstoned is True:
         raise ForbiddenHTTPException()
     return version

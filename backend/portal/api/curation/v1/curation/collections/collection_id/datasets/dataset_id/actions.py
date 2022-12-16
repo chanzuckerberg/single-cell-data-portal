@@ -45,7 +45,7 @@ def get(collection_id: str, dataset_id: str = None):
     if version is None:
         raise NotFoundHTTPException("Dataset not found")
 
-    response_body = reshape_dataset_for_curation_api(version)
+    response_body = reshape_dataset_for_curation_api(version, collection_version.published_at is not None)
     return make_response(jsonify(response_body), 200)
 
 
