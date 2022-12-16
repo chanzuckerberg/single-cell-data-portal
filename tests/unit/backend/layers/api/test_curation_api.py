@@ -1,7 +1,6 @@
 import copy
 import json
 from dataclasses import asdict
-from unittest import mock
 import unittest
 from unittest.mock import Mock, patch
 import uuid
@@ -9,7 +8,6 @@ import uuid
 from backend.common.corpora_orm import CollectionVisibility
 from backend.common.providers.crossref_provider import CrossrefDOINotFoundException
 from backend.common.utils.api_key import generate
-from backend.layers.business.entities import DatasetArtifactDownloadData
 from backend.layers.common.entities import (
     CollectionVersion,
     DatasetArtifactType,
@@ -20,7 +18,6 @@ from backend.layers.common.entities import (
     OntologyTermId,
 )
 from backend.portal.api.curation.v1.curation.collections.common import EntityColumns
-from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
 from tests.unit.backend.layers.common.base_test import DatasetArtifactUpdate, DatasetStatusUpdate
 from tests.unit.backend.layers.common.base_api_test import BaseAPIPortalTest
 
@@ -29,7 +26,6 @@ class TestAsset(BaseAPIPortalTest):
     def setUp(self):
         # Needed for proper setUp resolution in multiple inheritance
         super().setUp()
-
 
     def test__get_dataset_asset__OK(self):
 
@@ -40,9 +36,9 @@ class TestAsset(BaseAPIPortalTest):
             artifacts=[
                 DatasetArtifactUpdate(DatasetArtifactType.H5AD, "http://mock.uri/asset.h5ad"),
                 DatasetArtifactUpdate(DatasetArtifactType.CXG, "http://mock.uri/asset.cxg"),
-                ],
-            publish=True
-            )
+            ],
+            publish=True,
+        )
 
         expected_body = [dict(filename="asset.h5ad", filesize=1000, filetype="H5AD")]
 
@@ -64,9 +60,9 @@ class TestAsset(BaseAPIPortalTest):
             artifacts=[
                 DatasetArtifactUpdate(DatasetArtifactType.H5AD, "http://mock.uri/asset.h5ad"),
                 DatasetArtifactUpdate(DatasetArtifactType.CXG, "http://mock.uri/asset.cxg"),
-                ],
-            publish=True
-            )
+            ],
+            publish=True,
+        )
 
         expected_body = [dict(filename="asset.h5ad", filesize=-1, filetype="H5AD")]
 
@@ -81,7 +77,6 @@ class TestAsset(BaseAPIPortalTest):
 
     def test__get_dataset_asset__dataset_NOT_FOUND(self):
         collection = self.generate_published_collection()
-        dataset = self.generate_dataset()
         bad_id = str(uuid.uuid4())
         test_url = f"/curation/v1/collections/{collection.collection_id}/datasets/{bad_id}/assets"
         response = self.app.get(test_url)
@@ -92,8 +87,10 @@ class TestAsset(BaseAPIPortalTest):
     def test__get_dataset_asset__asset_NOT_FOUND(self):
         dataset = self.generate_dataset(
             artifacts=[],
-            )
-        response = self.app.get(f"/curation/v1/collections/{dataset.collection_id}/datasets/{dataset.dataset_id}/assets")
+        )
+        response = self.app.get(
+            f"/curation/v1/collections/{dataset.collection_id}/datasets/{dataset.dataset_id}/assets"
+        )
         self.assertEqual(404, response.status_code)
         actual_body = response.json
         self.assertEqual("No assets found. The dataset may still be processing.", actual_body["detail"])
@@ -149,8 +146,7 @@ class TestDeleteCollection(BaseAPIPortalTest):
 class TestS3Credentials(BaseAPIPortalTest):
     @patch("backend.common.corpora_config.CorporaConfig.__getattr__")
     @patch("backend.portal.api.curation.v1.curation.collections.collection_id.s3_upload_credentials.sts_client")
-    def test__generate_s3_credentials__OK(self, sts_client: Mock,  mock_config: Mock):
-
+    def test__generate_s3_credentials__OK(self, sts_client: Mock, mock_config: Mock):
         def mock_config_fn(name):
             if name == "curator_role_arn":
                 return "test_role_arn"

@@ -1,8 +1,11 @@
-from flask import g, make_response, jsonify
+from flask import make_response, jsonify
 
-from backend.common.utils.http_exceptions import ForbiddenHTTPException, NotFoundHTTPException
+from backend.common.utils.http_exceptions import NotFoundHTTPException
 from backend.layers.api.router import get_business_logic
-from backend.portal.api.curation.v1.curation.collections.common import get_infered_collection_version_else_forbidden, get_infered_dataset_version
+from backend.portal.api.curation.v1.curation.collections.common import (
+    get_infered_collection_version_else_forbidden,
+    get_infered_dataset_version,
+)
 from backend.layers.common.entities import DatasetArtifactType
 
 
@@ -39,7 +42,7 @@ def get(collection_id: str, dataset_id=None):
             "filetype": download_data.file_type.upper(),
             "presigned_url": download_data.presigned_url,
         }
-        
+
         asset_list.append(result)
 
     response = asset_list

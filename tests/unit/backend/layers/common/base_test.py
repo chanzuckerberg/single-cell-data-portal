@@ -200,7 +200,12 @@ class BaseTest(unittest.TestCase):
         for status in statuses:
             self.business_logic.update_dataset_version_status(dataset_version_id, status.status_key, status.status)
         if validation_message:
-            self.business_logic.update_dataset_version_status(dataset_version_id, DatasetStatusKey.VALIDATION, DatasetValidationStatus.INVALID, validation_message=validation_message)
+            self.business_logic.update_dataset_version_status(
+                dataset_version_id,
+                DatasetStatusKey.VALIDATION,
+                DatasetValidationStatus.INVALID,
+                validation_message=validation_message,
+            )
         artifact_ids = []
         for artifact in artifacts:
             artifact_ids.append(
