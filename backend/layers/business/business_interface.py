@@ -38,7 +38,9 @@ class BusinessLogicInterface:
     def get_collection_version_from_canonical(self, collection_id: CollectionId) -> Optional[CollectionVersion]:
         pass
 
-    def create_collection(self, owner: str, collection_metadata: CollectionMetadata) -> CollectionVersion:
+    def create_collection(
+        self, owner: str, curator_name: str, collection_metadata: CollectionMetadata
+    ) -> CollectionVersion:
         pass
 
     def delete_collection(self, collection_id: CollectionId) -> None:

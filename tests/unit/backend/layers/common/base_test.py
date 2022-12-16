@@ -129,13 +129,18 @@ class BaseTest(unittest.TestCase):
             cls.database_provider._engine.dispose()
 
     def generate_unpublished_collection(
-        self, owner="test_user_id", links: List[Link] = None, add_datasets: int = 0, metadata=None
+        self,
+        owner="test_user_id",
+        curator_name="Test User",
+        links: List[Link] = [],
+        add_datasets: int = 0,
+        metadata=None,
     ) -> CollectionVersion:
         links = links if links else []
         if not metadata:
             metadata = copy.deepcopy(self.sample_collection_metadata)
             metadata.links = links
-        collection = self.business_logic.create_collection(owner, metadata)
+        collection = self.business_logic.create_collection(owner, curator_name, metadata)
 
         for _ in range(add_datasets):
 
@@ -148,17 +153,16 @@ class BaseTest(unittest.TestCase):
         return self.business_logic.get_collection_version(collection.version_id)
 
     # Public collections need to have at least one dataset!
-    # Public collections need to have at least one dataset!
     def generate_published_collection(
         self,
         owner="test_user_id",
         links: List[Link] = [],
         add_datasets: int = 1,
-        curator_name: str = "Jane Smith",
+        curator_name: str = "Test User",
         metadata=None,
     ) -> CollectionVersion:
         unpublished_collection = self.generate_unpublished_collection(
-            owner, links, add_datasets=add_datasets, metadata=metadata
+            owner, links, curator_name=curator_name, add_datasets=add_datasets, metadata=metadata
         )
         self.business_logic.publish_collection_version(unpublished_collection.version_id)
         return self.business_logic.get_collection_version(unpublished_collection.version_id)
@@ -188,7 +192,7 @@ class BaseTest(unittest.TestCase):
         )
         if not metadata:
             metadata = copy.deepcopy(self.sample_dataset_metadata)
-        if name is not None:
+        if name:
             metadata.name = name
         self.business_logic.set_dataset_metadata(dataset_version_id, metadata)
         for status in statuses:
