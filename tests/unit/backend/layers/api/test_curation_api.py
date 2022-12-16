@@ -202,7 +202,7 @@ class TestPostCollection(BaseAPIPortalTest):
     def setUp(self):
         super().setUp()
         self.test_collection = dict(
-            name="collection", description="description", contact_name="john doe", contact_email="johndoe@email.com", curator_name="Curator Name"
+            name="collection", description="description", contact_name="john doe", contact_email="johndoe@email.com"
         )
 
     def test__create_collection__no_auth(self):
@@ -213,6 +213,7 @@ class TestPostCollection(BaseAPIPortalTest):
         response = self.app.post(
             "/curation/v1/collections", headers=self.make_owner_header(), data=json.dumps(self.test_collection)
         )
+        print(response.data)
         self.assertIn("id", response.json.keys())
         self.assertEqual(201, response.status_code)
 
@@ -224,7 +225,6 @@ class TestPostCollection(BaseAPIPortalTest):
                     description="",
                     contact_name="",
                     contact_email="@email.com",
-                    curator_name="Some Body",
                     doi="10.111/not_curie_reference_format",
                 ),
                 [
@@ -242,7 +242,6 @@ class TestPostCollection(BaseAPIPortalTest):
                     description="But\x0anonprintable\x0acharacters\x0bARE_allowed_in_description",
                     contact_name="And\x0ain_contact_name",
                     contact_email="somebody@email.com",
-                    curator_name="Some Body",
                     doi="10.111/not_curie_reference_format",
                 ),
                 [

@@ -50,6 +50,7 @@ def post(body: dict, user: str):
 
     import logging
     logging.info("zzzzz")
+    print(",mmmmmm")
 
     # Extract DOI into link
     errors = []
@@ -64,7 +65,7 @@ def post(body: dict, user: str):
     metadata = CollectionMetadata(body["name"], body["description"], body["contact_name"], body["contact_email"], links)
 
     try:
-        version = get_business_logic().create_collection(user, body["curator_name"], metadata)
+        version = get_business_logic().create_collection(user, body.get("curator_name", ""), metadata)
     except CollectionCreationException as ex:
         errors.extend(ex.errors)
     print("AAAAA", errors)
