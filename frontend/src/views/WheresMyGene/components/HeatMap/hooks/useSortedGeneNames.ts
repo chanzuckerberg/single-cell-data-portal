@@ -4,10 +4,10 @@ import { EMPTY_ARRAY } from "src/common/constants/utils";
 import {
   CellType,
   CellTypeGeneExpressionSummaryData,
-  GeneExpressionSummary,
   SORT_BY,
   Tissue,
 } from "src/views/WheresMyGene/common/types";
+import { SelectedGeneExpressionSummariesByTissueName } from "..";
 
 const TISSUE_CELL_TYPE_DIVIDER = "~";
 
@@ -103,9 +103,8 @@ export function useSortedGeneNames({
   }, [geneSortBy, geneNamesJSON, orderedGeneNamesJSON]);
 }
 
-export function useTissueNameToCellTypeIdToGeneNameToCellTypeGeneExpressionSummaryDataMap(selectedGeneExpressionSummariesByTissueName: {
-  [tissueName: string]: GeneExpressionSummary[];
-}): Map<string, Map<string, Map<string, CellTypeGeneExpressionSummaryData>>> {
+export function useTissueNameToCellTypeIdToGeneNameToCellTypeGeneExpressionSummaryDataMap(
+  selectedGeneExpressionSummariesByTissueName: SelectedGeneExpressionSummariesByTissueName): Map<string, Map<string, Map<string, CellTypeGeneExpressionSummaryData>>> {
   return useMemo(() => {
     return getTissueNameToCellTypeIdToGeneNameToCellTypeGeneExpressionSummaryDataMap(
       selectedGeneExpressionSummariesByTissueName
@@ -113,49 +112,52 @@ export function useTissueNameToCellTypeIdToGeneNameToCellTypeGeneExpressionSumma
   }, [selectedGeneExpressionSummariesByTissueName]);
 }
 
-function getTissueNameToCellTypeIdToGeneNameToCellTypeGeneExpressionSummaryDataMap(selectedGeneExpressionSummariesByTissueName: {
-  [tissueName: string]: GeneExpressionSummary[];
-}) {
+function getTissueNameToCellTypeIdToGeneNameToCellTypeGeneExpressionSummaryDataMap(
+  selectedGeneExpressionSummariesByTissueName: SelectedGeneExpressionSummariesByTissueName) {
   const result = new Map<
     Tissue,
     Map<string, Map<string, CellTypeGeneExpressionSummaryData>>
   >();
 
-  for (const [tissueName, geneExpressionSummaries] of Object.entries(
+  for (const [_, geneExpressionSummariesByTissue] of Object.entries(
     selectedGeneExpressionSummariesByTissueName
   )) {
-    const cellTypeIdToGeneNameToCellTypeGeneExpressionSummaryData =
+    for (const [tissueName, geneExpressionSummaries] of Object.entries(
+      geneExpressionSummariesByTissue
+    )) {
+      const cellTypeIdToGeneNameToCellTypeGeneExpressionSummaryData =
       result.get(tissueName) ||
       new Map<string, Map<string, CellTypeGeneExpressionSummaryData>>();
 
-    for (const geneExpressionSummary of geneExpressionSummaries) {
-      const { name: geneName, cellTypeGeneExpressionSummaries = [] } =
-        geneExpressionSummary || {};
+      for (const geneExpressionSummary of geneExpressionSummaries) {
+        const { name: geneName, cellTypeGeneExpressionSummaries = [] } =
+          geneExpressionSummary || {};
 
-      if (!geneName || !cellTypeGeneExpressionSummaries.length) continue;
+        if (!geneName || !cellTypeGeneExpressionSummaries.length) continue;
 
-      for (const cellTypeGeneExpressionSummary of cellTypeGeneExpressionSummaries) {
-        const geneNameToCellTypeGeneExpressionSummaryData =
-          cellTypeIdToGeneNameToCellTypeGeneExpressionSummaryData.get(
-            cellTypeGeneExpressionSummary.id
-          ) || new Map<string, CellTypeGeneExpressionSummaryData>();
+        for (const cellTypeGeneExpressionSummary of cellTypeGeneExpressionSummaries) {
+          const geneNameToCellTypeGeneExpressionSummaryData =
+            cellTypeIdToGeneNameToCellTypeGeneExpressionSummaryData.get(
+              cellTypeGeneExpressionSummary.id
+            ) || new Map<string, CellTypeGeneExpressionSummaryData>();
 
-        geneNameToCellTypeGeneExpressionSummaryData.set(
-          geneName,
-          cellTypeGeneExpressionSummary
-        );
+          geneNameToCellTypeGeneExpressionSummaryData.set(
+            geneName,
+            cellTypeGeneExpressionSummary
+          );
 
-        cellTypeIdToGeneNameToCellTypeGeneExpressionSummaryData.set(
-          cellTypeGeneExpressionSummary.id,
-          geneNameToCellTypeGeneExpressionSummaryData
-        );
+          cellTypeIdToGeneNameToCellTypeGeneExpressionSummaryData.set(
+            cellTypeGeneExpressionSummary.id,
+            geneNameToCellTypeGeneExpressionSummaryData
+          );
+        }
       }
-    }
 
-    result.set(
-      tissueName,
-      cellTypeIdToGeneNameToCellTypeGeneExpressionSummaryData
-    );
+      result.set(
+        tissueName,
+        cellTypeIdToGeneNameToCellTypeGeneExpressionSummaryData
+      );      
+    }
   }
 
   return result;

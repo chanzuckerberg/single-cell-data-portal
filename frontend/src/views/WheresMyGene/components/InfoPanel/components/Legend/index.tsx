@@ -1,7 +1,7 @@
 import { memo, MouseEventHandler } from "react";
 import { State } from "src/views/WheresMyGene/common/store";
 import { CellType } from "src/views/WheresMyGene/common/types";
-import SaveImage from "../../../GeneSearchBar/components/SaveImage";
+// import SaveImage from "../../../GeneSearchBar/components/SaveImage";
 import SourceDataButton from "../../../GeneSearchBar/components/SourceDataButton";
 import ExpressedInCells from "../ExpressedInCells";
 import RelativeGeneExpression from "../RelativeGeneExpression";
@@ -18,17 +18,17 @@ interface Props {
 export default memo(function Legend({
   isScaled,
   handleRightSidebarButtonClick,
-  selectedTissues,
-  selectedGenes,
-  selectedCellTypes,
+  // selectedTissues,
+  // selectedGenes,
+  // selectedCellTypes,
 }: Props): JSX.Element {
   return (
     <LegendWrapper>
-      <SaveImage
+      {/*<SaveImage
         selectedTissues={selectedTissues}
         selectedGenes={selectedGenes}
         selectedCellTypes={selectedCellTypes}
-      />
+      />*/}
 
       <SourceDataButton
         handleRightSidebarButtonClick={handleRightSidebarButtonClick}

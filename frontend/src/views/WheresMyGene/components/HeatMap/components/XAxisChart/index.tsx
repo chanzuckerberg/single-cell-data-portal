@@ -5,10 +5,7 @@ import { useDeleteGenesAndCellTypes } from "../../hooks/useDeleteGenesAndCellTyp
 import { useUpdateXAxisChart } from "../../hooks/useUpdateXAxisChart";
 import { getHeatmapWidth } from "../../utils";
 import {
-  CellCountLabel,
-  MaskWrapper,
   XAxisContainer,
-  XAxisMask,
   XAxisWrapper,
 } from "./style";
 
@@ -69,17 +66,11 @@ export default function XAxisChart({ geneNames }: Props): JSX.Element {
   return (
     <XAxisWrapper width={heatmapWidth}>
       {/* (thuang): The extra div is needed to implement the mask */}
-      <div>
-        <XAxisContainer
-          data-test-id="gene-labels"
-          width={heatmapWidth}
-          ref={xAxisRef}
-        />
-        <MaskWrapper>
-          <CellCountLabel>Cell Count</CellCountLabel>
-          <XAxisMask />
-        </MaskWrapper>
-      </div>
+      <XAxisContainer
+        data-test-id="gene-labels"
+        width={heatmapWidth}
+        ref={xAxisRef}
+      />
     </XAxisWrapper>
   );
 }

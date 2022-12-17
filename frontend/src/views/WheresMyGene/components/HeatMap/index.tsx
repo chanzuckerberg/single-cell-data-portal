@@ -12,12 +12,14 @@ import { addCellInfoCellType } from "../../common/store/actions";
 import {
   CellType,
   GeneExpressionSummary,
+  Genes,
   SORT_BY,
   Tissue,
 } from "../../common/types";
 import Loader from "../Loader";
 import Chart from "./components/Chart";
 import XAxisChart from "./components/XAxisChart";
+import { CellCountLabel, MaskWrapper } from "./components/XAxisChart/style";
 import YAxisChart from "./components/YAxisChart";
 import { useSortedCellTypesByTissueName } from "./hooks/useSortedCellTypesByTissueName";
 import {
@@ -25,8 +27,14 @@ import {
   useTissueNameToCellTypeIdToGeneNameToCellTypeGeneExpressionSummaryDataMap,
 } from "./hooks/useSortedGeneNames";
 import { useTrackHeatMapLoaded } from "./hooks/useTrackHeatMapLoaded";
-import { ChartWrapper, Container, YAxisWrapper } from "./style";
+import { ChartWrapper, Container, XAxisMask, YAxisWrapper } from "./style";
 import { X_AXIS_CHART_HEIGHT_PX } from "./utils";
+
+export interface SelectedGeneExpressionSummariesByTissueName {
+    [groupName: string]: {
+      [tissueName: string]: GeneExpressionSummary[]
+    };
+};
 
 interface Props {
   className?: string;
@@ -35,11 +43,7 @@ interface Props {
   genes: State["selectedGenes"];
   tissuesWithDeletedCellTypes: string[];
   allTissueCellTypes: { [tissue: Tissue]: CellType[] };
-  selectedGeneExpressionSummariesByTissueName: {
-      [groupName: string]: {
-        [tissueName: string]: GeneExpressionSummary[]
-      };
-  };
+  selectedGeneExpressionSummariesByTissueName: SelectedGeneExpressionSummariesByTissueName;
   scaledMeanExpressionMax: number;
   scaledMeanExpressionMin: number;
   isLoadingAPI: boolean;
@@ -99,12 +103,17 @@ export default memo(function HeatMap({
       selectedGeneExpressionSummariesByTissueName
     );
 
-  const sortedGeneNames = useSortedGeneNames({
-    geneSortBy,
-    genes: regularGenes,
-    selectedCellTypes: cellTypes,
-    tissueNameToCellTypeIdToGeneNameToCellTypeGeneExpressionSummaryDataMap,
-  });
+  const sortedGeneNamesByGroupName: {[groupName: string]: Genes} = {};
+  for (const [group, geneList] of genes) {
+    const sortedGeneNames = useSortedGeneNames({
+      geneSortBy,
+      genes: geneList,
+      selectedCellTypes: cellTypes,
+      tissueNameToCellTypeIdToGeneNameToCellTypeGeneExpressionSummaryDataMap,
+    });
+    sortedGeneNamesByGroupName[group] = sortedGeneNames;
+  }
+
 
   const sortedCellTypesByTissueName = useSortedCellTypesByTissueName({
     cellTypeSortBy,
@@ -114,39 +123,74 @@ export default memo(function HeatMap({
   });
 
   const geneNameToIndex = useMemo(() => {
-    const result: { [key: string]: number } = {};
-
-    for (const [index, gene] of Object.entries(sortedGeneNames)) {
-      result[gene] = Number(index);
+    const result: {[groupName: string]: { [key: string]: number }} = {};
+    for (const [groupName, sortedGeneNames] of Object.entries(sortedGeneNamesByGroupName)) {
+      result[groupName] = {};
+      for (const [index, gene] of Object.entries(sortedGeneNames)) {
+        result[groupName][gene] = Number(index);
+      }
     }
-
     return result;
-  }, [sortedGeneNames]);
+  }, [sortedGeneNamesByGroupName]);
 
   const orderedSelectedGeneExpressionSummariesByTissueName = useMemo(() => {
-    const result: { [tissueName: string]: GeneExpressionSummary[] } = {};
-
-    for (const [tissueName, geneExpressionSummary] of Object.entries(
+    const result: SelectedGeneExpressionSummariesByTissueName = {};
+    for (const [groupName, tissueNameToGeneExpressionSummary] of Object.entries(
       selectedGeneExpressionSummariesByTissueName
     )) {
-      // (thuang): sort() mutates the array, so we need to clone it
-      result[tissueName] = cloneDeep(
-        geneExpressionSummary.sort((a, b) => {
-          if (!a || !b) return -1;
+      result[groupName] = {};
+      for (const [tissueName, geneExpressionSummary] of Object.entries(
+        tissueNameToGeneExpressionSummary
+      )) {
+        // (thuang): sort() mutates the array, so we need to clone it
+        result[groupName][tissueName] = cloneDeep(
+          geneExpressionSummary.sort((a, b) => {
+            if (!a || !b) return -1;
 
-          return geneNameToIndex[a.name] - geneNameToIndex[b.name];
-        })
-      );
+            return geneNameToIndex[groupName][a.name] - geneNameToIndex[groupName][b.name];
+          })
+        );
+      }
     }
-
     return result;
   }, [selectedGeneExpressionSummariesByTissueName, geneNameToIndex]);
 
   return (
     <Container {...{ className }}>
       {isLoadingAPI || isAnyTissueLoading(isLoading) ? <Loader /> : null}
-
-      <XAxisChart geneNames={sortedGeneNames} />
+      <div
+        style={{
+          display: "inline",
+          backgroundColor: "white",
+          zIndex: 2,
+          position: "sticky",
+        }}
+      >
+        <div
+          style={{
+            display: "inline-block",
+            top: 0,
+            backgroundColor: "white",
+            height: X_AXIS_CHART_HEIGHT_PX,
+            position: "sticky",
+            width: 265,
+          }}
+        />
+        <div>
+          <CellCountLabel>Cell Count</CellCountLabel>
+          <MaskWrapper>
+            <XAxisMask />
+          </MaskWrapper>    
+        </div>    
+        <div style={{ display: "inline-block", width: 15 }} />
+        
+        {Object.entries(sortedGeneNamesByGroupName).map(
+          ([_, sortedGeneNames]) => {
+            return <XAxisChart geneNames={sortedGeneNames} />
+          }
+        )}
+      </div>  
+      
       <YAxisWrapper
         height={(chartWrapperRect?.height || 0) - X_AXIS_CHART_HEIGHT_PX}
       >
@@ -180,20 +224,31 @@ export default memo(function HeatMap({
             sortedCellTypesByTissueName,
             tissue,
           });
-
+          const els: JSX.Element[] = [];
+          Object.entries(orderedSelectedGeneExpressionSummariesByTissueName).forEach((
+            [_, orderedSelectedGeneExpressionSummaries]
+          )=>{
+            els.push(
+              <Chart
+                isScaled={isScaled}
+                key={tissue}
+                tissue={tissue}
+                cellTypes={tissueCellTypes}
+                selectedGeneData={
+                  orderedSelectedGeneExpressionSummaries[tissue]
+                }
+                setIsLoading={setIsLoading}
+                scaledMeanExpressionMax={scaledMeanExpressionMax}
+                scaledMeanExpressionMin={scaledMeanExpressionMin}
+              />
+            );
+          });
           return (
-            <Chart
-              isScaled={isScaled}
-              key={tissue}
-              tissue={tissue}
-              cellTypes={tissueCellTypes}
-              selectedGeneData={
-                orderedSelectedGeneExpressionSummariesByTissueName[tissue]
-              }
-              setIsLoading={setIsLoading}
-              scaledMeanExpressionMax={scaledMeanExpressionMax}
-              scaledMeanExpressionMin={scaledMeanExpressionMin}
-            />
+            <div
+              style={{ display: "flex", flexDirection: "row", position: "relative" }}
+            >   
+              {els}               
+            </div>   
           );
         })}
       </ChartWrapper>

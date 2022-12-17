@@ -5,6 +5,7 @@ import { toPng, toSvg } from "html-to-image";
 import { useCallback, useState } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
+import { getUniqueValuesFromMap } from "src/common/queries/wheresMyGene";
 import {
   Section,
   Title,
@@ -114,7 +115,7 @@ export default function SaveImage({
       console.error(error);
     }
   }, [fileType, selectedCellTypes, selectedTissues, selectedGenes]);
-
+  const allGenes = getUniqueValuesFromMap(selectedGenes);
   return (
     <>
       <ButtonWrapper className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}>
@@ -127,7 +128,7 @@ export default function SaveImage({
             // (thuang): Move this back to explicit prop={value} after
             // upgrading SDS to enable type checking again
             disabled:
-              selectedTissues.length === 0 || selectedGenes.length === 0,
+              selectedTissues.length === 0 || allGenes.length === 0,
             sdsSize: "medium",
             sdsType: "primary",
           }}
