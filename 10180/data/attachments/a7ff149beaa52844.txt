@@ -1,1 +1,0 @@
-INFO     root:entity.py:43 Unable to find a row with primary key 91eb5467-0f64-4ed2-800a-2e1ba82897e2, in Geneset table.
