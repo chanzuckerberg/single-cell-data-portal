@@ -1,6 +1,5 @@
 from flask import make_response, jsonify
 
-from backend.api_server.db import dbconnect
 from backend.common.utils.http_exceptions import MethodNotAllowedException
 from backend.layers.api.router import get_business_logic
 from backend.layers.auth.user_info import UserInfo
@@ -11,7 +10,6 @@ from backend.portal.api.curation.v1.curation.collections.common import (
 from backend.layers.common.entities import CollectionVersionId
 
 
-@dbconnect
 def post(token_info: dict, collection_id: str):
     user_info = UserInfo(token_info)
     business_logic = get_business_logic()
