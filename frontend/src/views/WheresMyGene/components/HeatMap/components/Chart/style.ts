@@ -7,7 +7,8 @@ export const ChartContainer = styled.div`
 `;
 
 export const Wrapper = styled.div`
-  ${getWidthAndHeight}
+  ${getWidthAndHeightAndOffset}
+  position: absolute;
 `;
 
 function getWidthAndHeight({
@@ -20,6 +21,22 @@ function getWidthAndHeight({
   return `
     width: ${width}px;
     height: ${height}px;
+  `;
+}
+
+function getWidthAndHeightAndOffset({
+  width,
+  height,
+  left,
+}: {
+  width: number;
+  height: number;
+  left: number;
+}) {
+  return `
+    width: ${width}px;
+    height: ${height}px;
+    left: ${left}px;
   `;
 }
 

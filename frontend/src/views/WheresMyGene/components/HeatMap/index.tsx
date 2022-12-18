@@ -28,7 +28,7 @@ import {
 } from "./hooks/useSortedGeneNames";
 import { useTrackHeatMapLoaded } from "./hooks/useTrackHeatMapLoaded";
 import { ChartWrapper, Container, XAxisMask, YAxisWrapper } from "./style";
-import { X_AXIS_CHART_HEIGHT_PX, Y_AXIS_CHART_WIDTH_PX } from "./utils";
+import { getHeatmapWidth, X_AXIS_CHART_HEIGHT_PX, Y_AXIS_CHART_WIDTH_PX } from "./utils";
 
 export interface SelectedGeneExpressionSummariesByTissueName {
     [groupName: string]: {
@@ -150,6 +150,23 @@ export default memo(function HeatMap({
     return result;
   }, [selectedGeneExpressionSummariesByTissueName, geneNameToIndex]);
 
+  const geneGroups = Object.entries(sortedGeneNamesByGroupName).map(([_, sortedGeneNames]) => {
+    return sortedGeneNames;
+  });
+
+  const heatmapOffsets = useMemo(() => {
+    const result: number[] = [0];
+    for (const [_, sortedGeneNames] of Object.entries(sortedGeneNamesByGroupName)) {
+      result.push(getHeatmapWidth(sortedGeneNames));
+      result[result.length - 1] += result[result.length - 2] + 40;
+      if (result.length === geneGroups.length) {
+        break;
+      }
+    }
+    return result;
+  }, [sortedGeneNamesByGroupName, geneGroups]);
+
+  console.log(heatmapOffsets)
   return (
     <Container {...{ className }}>
       {isLoadingAPI || isAnyTissueLoading(isLoading) ? <Loader /> : null}
@@ -158,17 +175,18 @@ export default memo(function HeatMap({
           display: "flex",
           backgroundColor: "white",
           flexDirection: "row",
-          position: "relative",
-          columnGap: "40px",
+          position: "absolute",
+          top: 0,
+          width: "100%",
           left: Y_AXIS_CHART_WIDTH_PX
         }}
       >
    
 
         
-          {Object.entries(sortedGeneNamesByGroupName).map(
-            ([_, sortedGeneNames]) => {
-              return <XAxisChart geneNames={sortedGeneNames} />
+          {geneGroups.map(
+            (sortedGeneNames, index) => {
+              return <XAxisChart geneNames={sortedGeneNames} leftOffset={heatmapOffsets[index]}/>
             }
           )}
       </div>  
@@ -210,7 +228,7 @@ export default memo(function HeatMap({
           });
           const els: JSX.Element[] = [];
           Object.entries(orderedSelectedGeneExpressionSummariesByTissueName).forEach((
-            [_, orderedSelectedGeneExpressionSummaries]
+            [_, orderedSelectedGeneExpressionSummaries], index
           )=>{
             els.push(
               <Chart
@@ -224,6 +242,7 @@ export default memo(function HeatMap({
                 setIsLoading={setIsLoading}
                 scaledMeanExpressionMax={scaledMeanExpressionMax}
                 scaledMeanExpressionMin={scaledMeanExpressionMin}
+                leftOffset={heatmapOffsets[index]}
               />
             );
           });
@@ -233,7 +252,6 @@ export default memo(function HeatMap({
                 display: "flex",
                 flexDirection: "row",
                 position: "relative",
-                columnGap: "40px",
                 left: Y_AXIS_CHART_WIDTH_PX
               }}
             >   

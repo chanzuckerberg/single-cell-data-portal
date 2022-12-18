@@ -48,6 +48,7 @@ interface Props {
   scaledMeanExpressionMax: number;
   scaledMeanExpressionMin: number;
   isScaled: boolean;
+  leftOffset: number;
 }
 
 const BASE_DEBOUNCE_MS = 200;
@@ -64,6 +65,7 @@ export default memo(function Chart({
   scaledMeanExpressionMax,
   scaledMeanExpressionMin,
   isScaled,
+  leftOffset
 }: Props): JSX.Element {
   const [currentIndices, setCurrentIndices] = useState([-1, -1]);
   const [cursorOffset, setCursorOffset] = useState([-1, -1]);
@@ -282,7 +284,7 @@ export default memo(function Chart({
   const tooltipClasses = useMemo(() => ({ tooltip: tooltipCss }), []);
 
   return (
-    <Wrapper height={heatmapHeight} width={heatmapWidth} id={`${tissue}-chart`}>
+    <Wrapper height={heatmapHeight} width={heatmapWidth} left={leftOffset} id={`${tissue}-chart`}>
       <Tooltip
         width="wide"
         classes={tooltipClasses}

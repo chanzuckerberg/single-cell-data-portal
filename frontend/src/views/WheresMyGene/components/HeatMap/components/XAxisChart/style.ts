@@ -5,11 +5,11 @@ const ECHART_AXIS_LABEL_COLOR_HEX = "#6e7079";
 const ECHART_AXIS_LABEL_FONT_SIZE = 12;
 
 export const XAxisWrapper = styled.div`
-  ${xAxisWidth}
+  ${xAxisWidthAndOffset}
 
   background-color: white;
   height: ${X_AXIS_CHART_HEIGHT_PX}px;
-  position: sticky;
+  position: absolute;
   top: 0;
   z-index: 2;
 `;
@@ -23,7 +23,7 @@ export const XAxisMask = styled.div`
 `;
 
 export const XAxisContainer = styled.div`
-  ${xAxisWidth}
+  ${xAxisWidthAndOffset}
   background-color: white;
   height: ${X_AXIS_CHART_HEIGHT_PX}px;
   position: absolute;
@@ -48,8 +48,9 @@ export const MaskWrapper = styled.div`
   margin-left: -${ECHART_AXIS_LABEL_FONT_SIZE}px;
 `;
 
-function xAxisWidth({ width }: { width: number }) {
+function xAxisWidthAndOffset({ width, left }: { width: number, left: number }) {
   return `
     width: ${width}px;
+    left: ${left}px;
   `;
 }

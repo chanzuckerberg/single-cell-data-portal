@@ -11,9 +11,10 @@ import {
 
 interface Props {
   geneNames: string[];
+  leftOffset: number;
 }
 
-export default function XAxisChart({ geneNames }: Props): JSX.Element {
+export default function XAxisChart({ geneNames, leftOffset }: Props): JSX.Element {
   const [isChartInitialized, setIsChartInitialized] = useState(false);
   const [xAxisChart, setXAxisChart] = useState<echarts.ECharts | null>(null);
   const [heatmapWidth, setHeatmapWidth] = useState(getHeatmapWidth(geneNames));
@@ -64,10 +65,11 @@ export default function XAxisChart({ geneNames }: Props): JSX.Element {
   });
 
   return (
-    <XAxisWrapper width={heatmapWidth}>
+    <XAxisWrapper left={leftOffset} width={heatmapWidth}>
       <XAxisContainer
         data-test-id="gene-labels"
         width={heatmapWidth}
+        left={0}
         ref={xAxisRef}
       />
     </XAxisWrapper>

@@ -37,7 +37,7 @@ export const XAxisContainer = styled.div`
 export const YAxisWrapper = styled.div`
   width: ${Y_AXIS_CHART_WIDTH_PX}px;
   position: sticky;
-  top: 0;
+  top: ${X_AXIS_CHART_HEIGHT_PX}px;
   left: 0;
   z-index: 1;
   /* Somehow Firefox requires this to scroll */

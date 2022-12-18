@@ -14,7 +14,7 @@ interface Props {
 export function useUpdateChart({ chart, chartProps, isScaled, heatmapWidth }: Props): void {
   const throttledUpdateChart = useMemo(() => {
     return throttle(
-      ({ chart, chartProps, isScaled }: Props) => {
+      ({ chart, chartProps, isScaled, heatmapWidth }: Props) => {
         if (!chart || !chartProps) {
           return;
         }
