@@ -1,6 +1,6 @@
 import { useContext, useMemo } from "react";
 import { useQuery, UseQueryResult } from "react-query";
-import { API_URL } from "src/configs/configs";
+import { API_URL } from "src/configs/staging";
 import {
   DispatchContext,
   State,
@@ -316,9 +316,8 @@ export function useExpressionSummary(): {
   data: QueryResponse["expression_summary"];
 } {
   const requestBody = useWMGQueryRequestBody();
-
   const { data, isLoading } = useWMGQuery(requestBody);
-
+  console.log(data)
   return useMemo(() => {
     if (isLoading || !data) return { data: EMPTY_OBJECT, isLoading };
 
@@ -693,7 +692,7 @@ export function aggregateCollectionsFromDatasets(
 }
 
 export function getUniqueValuesFromMap(map: State["selectedGenes"]) {
-  return Array.from(new Set(Object.values(map).flat()));
+  return Array.from(new Set(Object.values(Object.fromEntries(map)).flat()));
 }
 
 interface MarkerGeneRequestBody {

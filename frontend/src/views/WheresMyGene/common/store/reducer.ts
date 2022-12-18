@@ -369,7 +369,7 @@ function addSelectedGenes(
 ): State {
   const { payload } = action;
   const { genes, tissue, cellType } = payload;
-  const key = tissue && cellType ? `${tissue}-${cellType}` : "";  
+  const key = tissue && cellType ? `${tissue}-${cellType.id}` : "";  
   const newSelectedGenes = new Map(Array.from(state.selectedGenes));
   newSelectedGenes.set(key, genes);
 

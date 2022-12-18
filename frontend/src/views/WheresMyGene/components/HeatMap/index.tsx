@@ -103,17 +103,12 @@ export default memo(function HeatMap({
       selectedGeneExpressionSummariesByTissueName
     );
 
-  const sortedGeneNamesByGroupName: {[groupName: string]: Genes} = {};
-  for (const [group, geneList] of genes) {
-    const sortedGeneNames = useSortedGeneNames({
-      geneSortBy,
-      genes: geneList,
-      selectedCellTypes: cellTypes,
-      tissueNameToCellTypeIdToGeneNameToCellTypeGeneExpressionSummaryDataMap,
-    });
-    sortedGeneNamesByGroupName[group] = sortedGeneNames;
-  }
-
+  const sortedGeneNamesByGroupName = useSortedGeneNames({
+    geneSortBy,
+    genes,
+    selectedCellTypes: cellTypes,
+    tissueNameToCellTypeIdToGeneNameToCellTypeGeneExpressionSummaryDataMap,
+  });
 
   const sortedCellTypesByTissueName = useSortedCellTypesByTissueName({
     cellTypeSortBy,
