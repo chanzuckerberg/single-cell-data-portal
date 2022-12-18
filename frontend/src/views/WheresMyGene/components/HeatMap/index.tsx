@@ -28,7 +28,7 @@ import {
 } from "./hooks/useSortedGeneNames";
 import { useTrackHeatMapLoaded } from "./hooks/useTrackHeatMapLoaded";
 import { ChartWrapper, Container, XAxisMask, YAxisWrapper } from "./style";
-import { X_AXIS_CHART_HEIGHT_PX } from "./utils";
+import { X_AXIS_CHART_HEIGHT_PX, Y_AXIS_CHART_WIDTH_PX } from "./utils";
 
 export interface SelectedGeneExpressionSummariesByTissueName {
     [groupName: string]: {
@@ -155,37 +155,26 @@ export default memo(function HeatMap({
       {isLoadingAPI || isAnyTissueLoading(isLoading) ? <Loader /> : null}
       <div
         style={{
-          display: "inline",
+          display: "flex",
           backgroundColor: "white",
-          zIndex: 2,
-          position: "sticky",
+          flexDirection: "row",
+          position: "relative",
+          columnGap: "40px",
+          left: Y_AXIS_CHART_WIDTH_PX
         }}
       >
-        <div
-          style={{
-            display: "inline-block",
-            top: 0,
-            backgroundColor: "white",
-            height: X_AXIS_CHART_HEIGHT_PX,
-            position: "sticky",
-            width: 265,
-          }}
-        />
-        <div>
-          <CellCountLabel>Cell Count</CellCountLabel>
-          <MaskWrapper>
-            <XAxisMask />
-          </MaskWrapper>    
-        </div>    
-        <div style={{ display: "inline-block", width: 15 }} />
+   
+
         
-        {Object.entries(sortedGeneNamesByGroupName).map(
-          ([_, sortedGeneNames]) => {
-            return <XAxisChart geneNames={sortedGeneNames} />
-          }
-        )}
+          {Object.entries(sortedGeneNamesByGroupName).map(
+            ([_, sortedGeneNames]) => {
+              return <XAxisChart geneNames={sortedGeneNames} />
+            }
+          )}
       </div>  
-      
+        
+        
+        
       <YAxisWrapper
         height={(chartWrapperRect?.height || 0) - X_AXIS_CHART_HEIGHT_PX}
       >
@@ -240,7 +229,13 @@ export default memo(function HeatMap({
           });
           return (
             <div
-              style={{ display: "flex", flexDirection: "row", position: "relative" }}
+              style={{ 
+                display: "flex",
+                flexDirection: "row",
+                position: "relative",
+                columnGap: "40px",
+                left: Y_AXIS_CHART_WIDTH_PX
+              }}
             >   
               {els}               
             </div>   

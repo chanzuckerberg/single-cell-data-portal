@@ -76,6 +76,7 @@ export default memo(function Chart({
   const [heatmapWidth, setHeatmapWidth] = useState(
     getHeatmapWidth(selectedGeneData)
   );
+
   const [heatmapHeight, setHeatmapHeight] = useState(
     getHeatmapHeight(cellTypes)
   );
@@ -125,7 +126,7 @@ export default memo(function Chart({
     setHeatmapHeight(getHeatmapHeight(cellTypes));
   }, [cellTypes, selectedGeneData]);
 
-  useUpdateChart({ chart, chartProps, isScaled });
+  useUpdateChart({ chart, chartProps, isScaled, heatmapWidth });
 
   // Calculate cellTypeSummaries
   /**

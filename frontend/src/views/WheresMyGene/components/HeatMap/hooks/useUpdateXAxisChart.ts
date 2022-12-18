@@ -31,6 +31,7 @@ export function useUpdateXAxisChart({
           createXAxisOptions({
             geneNames,
             genesToDelete,
+            heatmapWidth
           })
         );
       },

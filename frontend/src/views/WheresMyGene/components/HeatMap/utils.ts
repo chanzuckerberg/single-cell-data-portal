@@ -31,7 +31,7 @@ const COMMON_OPTIONS = {
 };
 
 const COMMON_SERIES: ScatterSeriesOption = {
-  emphasis: { itemStyle: { color: "inherit" }, scale: false },
+  emphasis: { itemStyle: { color: "inherit" }, scale: true },
   encode: {
     x: "geneIndex",
     y: "cellTypeIndex",
@@ -48,6 +48,7 @@ interface CreateChartOptionsProps {
   chartData: ChartFormat[];
   geneNames: string[];
   isScaled: boolean;
+  heatmapWidth: number;
 }
 
 export function createChartOptions({
@@ -55,6 +56,7 @@ export function createChartOptions({
   chartData,
   geneNames,
   isScaled,
+  heatmapWidth,
 }: CreateChartOptionsProps): EChartsOption {
   return {
     ...COMMON_OPTIONS,
@@ -73,8 +75,9 @@ export function createChartOptions({
     },
     grid: {
       bottom: Y_AXIS_BOTTOM_PADDING,
-      left: Y_AXIS_CHART_WIDTH_PX + "px",
       top: X_AXIS_CHART_HEIGHT_PX + "px",
+      left: "0px",
+      width: `${heatmapWidth}px`,
     },
     series: [
       {
@@ -161,18 +164,21 @@ const SELECTED_STYLE = {
 interface CreateXAxisOptionsProps {
   geneNames: string[];
   genesToDelete: string[];
+  heatmapWidth: number;
 }
 
 export function createXAxisOptions({
   geneNames,
   genesToDelete,
+  heatmapWidth
 }: CreateXAxisOptionsProps): EChartsOption {
   return {
     ...COMMON_OPTIONS,
     grid: {
       bottom: "0",
-      left: Y_AXIS_CHART_WIDTH_PX + "px",
+      left: "0px",
       top: "300px",
+      width: `${heatmapWidth}px`,
     },
     series: [
       {
@@ -193,7 +199,6 @@ export function createXAxisOptions({
           },
           rotate: 270,
           verticalAlign: "middle",
-          width: 200,
         },
         axisTick: {
           show: false,
@@ -489,9 +494,9 @@ export function dataToChartFormat({
   }
 }
 
-const HEAT_MAP_BASE_WIDTH_PX = 200 + Y_AXIS_CHART_WIDTH_PX;
 export const HEAT_MAP_BASE_HEIGHT_PX = 300;
 const HEAT_MAP_BASE_CELL_PX = 20;
+const HEAT_MAP_BASE_CELL_WIDTH_PX = 20;
 
 /**
  * Approximating the heatmap width by the number of genes.
@@ -503,7 +508,7 @@ export function getHeatmapWidth(
     | (GeneExpressionSummary | undefined)[]
     | Genes
 ): number {
-  return HEAT_MAP_BASE_WIDTH_PX + HEAT_MAP_BASE_CELL_PX * genes.length;
+  return HEAT_MAP_BASE_CELL_WIDTH_PX * genes.length;
   
 }
 

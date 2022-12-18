@@ -317,7 +317,7 @@ export function useExpressionSummary(): {
 } {
   const requestBody = useWMGQueryRequestBody();
   const { data, isLoading } = useWMGQuery(requestBody);
-  console.log(data)
+
   return useMemo(() => {
     if (isLoading || !data) return { data: EMPTY_OBJECT, isLoading };
 
@@ -593,7 +593,10 @@ function useWMGQueryRequestBody(options = { includeAllFilterOptions: false }) {
     if (!data || !selectedOrganismId || !selectedTissues.length) {
       return null;
     }
-    const gene_ontology_term_ids = getUniqueValuesFromMap(selectedGenes);
+    const gene_ontology_term_ids = getUniqueValuesFromMap(selectedGenes).map((geneName) => {
+      return organismGenesByName[geneName].id;
+    });
+
     if (!gene_ontology_term_ids.length) gene_ontology_term_ids.push(".");
     const tissue_ontology_term_ids = selectedTissues.map((tissueName) => {
       return tissuesByName[tissueName].id;

@@ -65,7 +65,6 @@ export default function XAxisChart({ geneNames }: Props): JSX.Element {
 
   return (
     <XAxisWrapper width={heatmapWidth}>
-      {/* (thuang): The extra div is needed to implement the mask */}
       <XAxisContainer
         data-test-id="gene-labels"
         width={heatmapWidth}
