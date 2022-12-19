@@ -10,4 +10,4 @@ def generate(dataset: DatasetVersion, is_published=False):
     """
     frontend_url = os.getenv("FRONTEND_URL", "")
     id = dataset.dataset_id if is_published else dataset.version_id
-    return f"{frontend_url}/{id}.cxg/"
+    return f"{frontend_url}/e/{id}.cxg/"
