@@ -419,7 +419,7 @@ def migrate_redesign_write(ctx):
 
     database_pass = os.getenv("PGPASSWORD")
     database_name = os.getenv("PGDB")
-    database_uri = f"postgresql://dataportal:{database_pass}@localhost/{database_name}"
+    database_uri = f"postgresql://corpora_dev:{database_pass}@localhost/{database_name}"
 
     # Uncomment for local
     # database_uri = f"postgresql://postgres:secret@localhost"
@@ -428,9 +428,8 @@ def migrate_redesign_write(ctx):
     # engine.execute(schema.CreateSchema('persistence_schema'))
     # metadata_obj.create_all(bind=engine)
 
-    from sqlalchemy.schema import DropSchema
-
-    engine.execute(DropSchema("persistence_schema", cascade=True))
+    # from sqlalchemy.schema import DropSchema
+    # engine.execute(DropSchema("persistence_schema", cascade=True))
 
     from sqlalchemy.schema import CreateSchema
     from backend.layers.persistence.orm import metadata
