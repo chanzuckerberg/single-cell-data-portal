@@ -30,6 +30,7 @@
     "ml-hclust": "^3.1.0",
     "next": "^12.2.5",
     "next-secure-headers": "^2.1.0",
+    "next-sitemap": "^3.1.32",
     "papaparse": "^5.3.1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
@@ -111,7 +112,8 @@
     "type-check": "tsc --noEmit",
     "lint": "concurrently \"node_modules/.bin/next lint\" \"node_modules/.bin/stylelint '**/*.{js,ts,tsx,css}'\"  \"npm run type-check\"",
     "prettier-check": "npx prettier --check .",
-    "build-and-start-prod": "npm run build && npm run serve"
+    "build-and-start-prod": "npm run build && npm run serve",
+    "postbuild": "next-sitemap"
   },
   "repository": {
     "type": "git",
