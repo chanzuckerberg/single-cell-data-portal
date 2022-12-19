@@ -13,6 +13,7 @@ from backend.layers.common.entities import (
     DatasetMetadata,
     DatasetStatusGeneric,
     DatasetStatusKey,
+    DatasetValidationStatus,
     Link,
     OntologyTermId,
 )
@@ -153,16 +154,17 @@ class BaseTest(unittest.TestCase):
         return self.business_logic.get_collection_version(collection.version_id)
 
     # Public collections need to have at least one dataset!
+    # Public collections need to have at least one dataset!
     def generate_published_collection(
         self,
         owner="test_user_id",
         links: List[Link] = [],
         add_datasets: int = 1,
-        curator_name: str = "Test User",
+        curator_name: str = "Jane Smith",
         metadata=None,
     ) -> CollectionVersion:
         unpublished_collection = self.generate_unpublished_collection(
-            owner, links, curator_name=curator_name, add_datasets=add_datasets, metadata=metadata
+            owner, curator_name, links, add_datasets=add_datasets, metadata=metadata
         )
         self.business_logic.publish_collection_version(unpublished_collection.version_id)
         return self.business_logic.get_collection_version(unpublished_collection.version_id)
@@ -192,13 +194,18 @@ class BaseTest(unittest.TestCase):
         )
         if not metadata:
             metadata = copy.deepcopy(self.sample_dataset_metadata)
-        if name:
+        if name is not None:
             metadata.name = name
         self.business_logic.set_dataset_metadata(dataset_version_id, metadata)
         for status in statuses:
             self.business_logic.update_dataset_version_status(dataset_version_id, status.status_key, status.status)
         if validation_message:
-            self.business_logic.update_dataset_version_status(dataset_version_id, validation_message=validation_message)
+            self.business_logic.update_dataset_version_status(
+                dataset_version_id,
+                DatasetStatusKey.VALIDATION,
+                DatasetValidationStatus.INVALID,
+                validation_message=validation_message,
+            )
         artifact_ids = []
         for artifact in artifacts:
             artifact_ids.append(

@@ -6,6 +6,7 @@ from typing import Optional
 from backend.layers.api.portal_api import PortalApi
 from backend.layers.business.business import BusinessLogic
 from backend.layers.persistence.persistence import DatabaseProvider
+from backend.layers.thirdparty.cloudfront_provider import CloudfrontProvider
 from backend.layers.thirdparty.crossref_provider import CrossrefProvider
 from backend.layers.thirdparty.s3_provider import S3Provider
 from backend.layers.thirdparty.step_function_provider import StepFunctionProvider
@@ -32,13 +33,14 @@ def portal_api():
         database_provider = DatabaseProvider()
         crossref_provider = CrossrefProvider()
         step_function_provider = StepFunctionProvider()
+        cloudfront_provider = CloudfrontProvider()
         s3_provider = S3Provider()
         uri_provider = UriProvider()
 
         business_logic = BusinessLogic(
             database_provider, crossref_provider, step_function_provider, s3_provider, uri_provider
         )
-        portal_api = PortalApi(business_logic)
+        portal_api = PortalApi(business_logic, cloudfront_provider)
         api = portal_api
     return api
 

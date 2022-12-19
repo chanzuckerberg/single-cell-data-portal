@@ -27,9 +27,8 @@ def get(visibility: str, token_info: dict, curator: str = None):
         if user_info.is_none():
             raise ForbiddenHTTPException(detail="Not authorized to query for PRIVATE collection.")
         else:
-            owner_filter = user_info.is_super_curator()
-            if owner_filter:  # None means the user is a super curator and don't need to filter by owner.
-                filters["owner"] = owner_filter
+            if not user_info.is_super_curator():  # A super curator and don't need to filter by owner.
+                filters["owner"] = user_info.user_id
     else:
         filters["is_published"] = True
 
@@ -39,6 +38,8 @@ def get(visibility: str, token_info: dict, curator: str = None):
         else:
             filters["curator_name"] = curator
 
+    print(filters)
+
     resp_collections = []
     for collection_version in get_business_logic().get_collections(CollectionQueryFilter(**filters)):
         resp_collection = reshape_for_curation_api(collection_version, user_info, preview=True)
@@ -47,7 +48,6 @@ def get(visibility: str, token_info: dict, curator: str = None):
 
 
 def post(body: dict, user: str):
-
     # Extract DOI into link
     errors = []
     if doi_url := body.get("doi"):
@@ -61,7 +61,7 @@ def post(body: dict, user: str):
     metadata = CollectionMetadata(body["name"], body["description"], body["contact_name"], body["contact_email"], links)
 
     try:
-        version = get_business_logic().create_collection(user, metadata)
+        version = get_business_logic().create_collection(user, "", metadata)
     except CollectionCreationException as ex:
         errors.extend(ex.errors)
     if errors:

@@ -18,6 +18,12 @@ class BaseAuthAPITest(unittest.TestCase):
         )
         self.mock_assert_authorized_token.start()
 
+        self.mock_config = patch(
+            "backend.portal.api.curation.v1.curation.collections.common.get_collections_base_url",
+            return_value="https://frontend.corporanet.local:3000",
+        )
+        self.mock_config.start()
+
     def tearDown(self):
         super().tearDown()
         self.mock_assert_authorized_token.stop()
@@ -45,6 +51,10 @@ class BaseAuthAPITest(unittest.TestCase):
 class BaseAPIPortalTest(BaseAuthAPITest, BaseTest):
     def setUp(self):
         super().setUp()
+
+        # TODO: this can be improved, but the current authorization method requires it
+        self.mock = patch("backend.common.corpora_config.CorporaAuthConfig.__getattr__", return_value="mock_audience")
+        self.mock.start()
 
         self.cloudfront_provider = CDNProviderInterface()
         pa = PortalApi(self.business_logic, self.cloudfront_provider)

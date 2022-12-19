@@ -32,6 +32,10 @@ from backend.layers.common.entities import (
 allowed_dataset_asset_types = (DatasetArtifactType.H5AD, DatasetArtifactType.RDS)
 
 
+def get_collections_base_url():
+    return CorporaConfig().collections_base_url
+
+
 def extract_doi_from_links(links: List[Link]) -> Tuple[Optional[str], List[dict]]:
     """
     Pull out the DOI from the 'links' list and return it along with the altered links array
@@ -84,15 +88,17 @@ def reshape_for_curation_api(
 
     # build response
     doi, links = extract_doi_from_links(collection_version.metadata.links)
-    revised_at = business_logic.get_published_collection_version(
-        collection_version.canonical_collection.id
-    ).published_at
+    published_version = business_logic.get_published_collection_version(collection_version.canonical_collection.id)
+    if published_version is not None:
+        revised_at = published_version.published_at
+    else:
+        revised_at = None
     response = dict(
-        collection_url=f"{CorporaConfig().collections_base_url}/collections/{collection_id.id}",
+        collection_url=f"{get_collections_base_url()}/collections/{collection_id.id}",
         contact_email=collection_version.metadata.contact_email,
         contact_name=collection_version.metadata.contact_name,
         created_at=collection_version.created_at,
-        curator_name=collection_version.owner,
+        curator_name=collection_version.curator_name,
         datasets=response_datasets,
         description=collection_version.metadata.description,
         doi=doi,
@@ -106,7 +112,6 @@ def reshape_for_curation_api(
         revising_in=revising_in,
         revision_of=revision_of,
         visibility=get_visibility(collection_version),
-        tombstone=collection_version.canonical_collection.tombstoned,
     )
     return response
 
@@ -116,8 +121,8 @@ def reshape_datasets_for_curation_api(
 ) -> List[dict]:
     active_datasets = []
     for dv in datasets:
-        dataset_versions = get_business_logic().get_dataset_version(dv) if isinstance(dv, DatasetVersionId) else dv
-        active_datasets.append(reshape_dataset_for_curation_api(dataset_versions, is_published, preview))
+        dataset_version = get_business_logic().get_dataset_version(dv) if isinstance(dv, DatasetVersionId) else dv
+        active_datasets.append(reshape_dataset_for_curation_api(dataset_version, is_published, preview))
     return active_datasets
 
 
@@ -145,7 +150,7 @@ def reshape_dataset_for_curation_api(dataset_version: DatasetVersion, is_publish
         assets = []
         for artifact in dataset_version.artifacts:
             if artifact.type in allowed_dataset_asset_types:
-                assets.append(dict(filetype=artifact.type.value.upper(), filename=artifact.uri.split("/")[-1]))
+                assets.append(dict(filetype=artifact.type.upper(), filename=artifact.uri.split("/")[-1]))
 
         ds["dataset_assets"] = assets
         ds["processing_status_detail"] = dataset_version.status.validation_message
@@ -278,7 +283,7 @@ def get_collection_level_processing_status(datasets: List[DatasetVersion]) -> st
     return return_status
 
 
-def get_infered_collection_version_else_forbidden(collection_id: str) -> Optional[CollectionVersionWithDatasets]:
+def get_infered_collection_version_else_forbidden(collection_id: str) -> CollectionVersionWithDatasets:
     """
     Infer the collection version from either a CollectionId or a CollectionVersionId and return the CollectionVersion.
     :param collection_id: identifies the collection version
@@ -287,6 +292,8 @@ def get_infered_collection_version_else_forbidden(collection_id: str) -> Optiona
     version = get_business_logic().get_published_collection_version(CollectionId(collection_id))
     if version is None:
         version = get_business_logic().get_collection_version(CollectionVersionId(collection_id))
+    if version is None:
+        version = get_business_logic().get_unpublished_collection_version_from_canonical(CollectionId(collection_id))
     if version is None or version.canonical_collection.tombstoned is True:
         raise ForbiddenHTTPException()
     return version
