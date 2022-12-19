@@ -385,7 +385,6 @@ export default function WheresMyGene(): JSX.Element {
               scaledMeanExpressionMax={scaledMeanExpressionMax}
               scaledMeanExpressionMin={scaledMeanExpressionMin}
               selectedOrganismId={selectedOrganismId}
-              isDownloading={isDownloading}
             />
           ) : (
             ""

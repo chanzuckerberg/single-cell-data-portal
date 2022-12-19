@@ -46,7 +46,6 @@ interface Props {
   cellTypeSortBy: SORT_BY;
   geneSortBy: SORT_BY;
   selectedOrganismId: string;
-  isDownloading: boolean;
 }
 
 export default memo(function HeatMap({
@@ -64,7 +63,6 @@ export default memo(function HeatMap({
   cellTypeSortBy,
   geneSortBy,
   selectedOrganismId,
-  isDownloading,
 }: Props): JSX.Element {
   useTrackHeatMapLoaded({ selectedGenes: genes, selectedTissues });
 
