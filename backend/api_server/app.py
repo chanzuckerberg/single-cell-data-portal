@@ -3,8 +3,8 @@ import os
 import time
 
 # TODO: Add StackOverflow link that explains
-import gevent.monkey
-gevent.monkey.patch_all()
+# import gevent.monkey
+# gevent.monkey.patch_all()
 
 from urllib.parse import urlparse
 

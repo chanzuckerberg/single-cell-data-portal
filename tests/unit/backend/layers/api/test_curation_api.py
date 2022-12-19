@@ -165,17 +165,18 @@ class TestS3Credentials(BaseAPIPortalTest):
                     }
                 }
             )
-            version_id = self.generate_unpublished_collection().version_id
+            unpublished_collection = self.generate_unpublished_collection()
             headers = {"Authorization": f"Bearer {token}"}
 
-            response = self.app.get(f"/curation/v1/collections/{version_id}/s3-upload-credentials", headers=headers)
-            self.assertEqual(200, response.status_code)
-            token_sub = self._mock_assert_authorized_token(token)["sub"]
-            self.assertEqual(response.json["Bucket"], "cellxgene-dataset-submissions-test")
-            if is_super_curator:
-                self.assertEqual(response.json["UploadKeyPrefix"], f"super/{version_id}/")
-            else:
-                self.assertEqual(response.json["UploadKeyPrefix"], f"{token_sub}/{version_id}/")
+            for id in [unpublished_collection.collection_id, unpublished_collection.version_id]:
+                response = self.app.get(f"/curation/v1/collections/{id}/s3-upload-credentials", headers=headers)
+                self.assertEqual(200, response.status_code)
+                token_sub = self._mock_assert_authorized_token(token)["sub"]
+                self.assertEqual(response.json["Bucket"], "cellxgene-dataset-submissions-test")
+                if is_super_curator:
+                    self.assertEqual(response.json["UploadKeyPrefix"], f"super/{id}/")
+                else:
+                    self.assertEqual(response.json["UploadKeyPrefix"], f"{token_sub}/{id}/")
 
         with self.subTest("collection owner"):
             _test("owner")
@@ -625,7 +626,7 @@ class TestGetCollectionID(BaseAPIPortalTest):
             ],
             validation_message="test message",
         )
-        res = self.app.get(f"/curation/v1/collections/{collection_version.version_id}")
+        res = self.app.get(f"/curation/v1/collections/{collection_version.collection_id}")
         self.assertEqual("FAILURE", res.json["processing_status"])
         actual_dataset = res.json["datasets"][0]
         self.assertEqual(dataset.dataset_id, actual_dataset["id"])
@@ -642,7 +643,7 @@ class TestGetCollectionID(BaseAPIPortalTest):
                 DatasetStatusUpdate(status_key=DatasetStatusKey.PROCESSING, status=DatasetProcessingStatus.FAILURE)
             ],
         )
-        res = self.app.get(f"/curation/v1/collections/{collection.version_id}")
+        res = self.app.get(f"/curation/v1/collections/{collection.collection_id}")
         self.assertEqual("FAILURE", res.json["processing_status"])
         actual_dataset = res.json["datasets"][0]
         self.assertEqual(dataset.dataset_id, actual_dataset["id"])
