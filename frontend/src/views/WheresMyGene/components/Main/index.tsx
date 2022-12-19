@@ -36,7 +36,6 @@ import CellInfoBar from "../CellInfoSideBar";
 import { CELL_INFO_SIDEBAR_WIDTH_PX } from "../CellInfoSideBar/style";
 import Filters from "../Filters";
 import GeneSearchBar from "../GeneSearchBar";
-import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../GeneSearchBar/components/SaveImage";
 import GetStarted from "../GetStarted";
 import HeatMap from "../HeatMap";
 import InfoPanel from "../InfoPanel";
@@ -340,7 +339,7 @@ export default function WheresMyGene(): JSX.Element {
           {isLoading && !shouldShowHeatMap && <Loader />}
 
           <Top>
-            <GeneSearchBar className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME} />
+            <GeneSearchBar  />
             <Legend
               selectedCellTypes={selectedCellTypes}
               selectedGenes={selectedGenes}
@@ -350,7 +349,7 @@ export default function WheresMyGene(): JSX.Element {
             />
           </Top>
 
-          <Beta className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME} />
+          <Beta />
 
           <GetStarted
             tissueSelected={hasSelectedTissues}

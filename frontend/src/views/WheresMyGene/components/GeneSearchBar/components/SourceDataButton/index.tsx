@@ -1,7 +1,6 @@
 import { Icon } from "czifui";
 import { MouseEventHandler } from "react";
 import { StyledIconButton } from "../QuickSelect/style";
-import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../SaveImage";
 import { StyledButtonDiv, StyledLabel } from "./style";
 
 export default function SourceDataButton({
@@ -10,7 +9,7 @@ export default function SourceDataButton({
   handleRightSidebarButtonClick: MouseEventHandler<HTMLButtonElement>;
 }): JSX.Element {
   return (
-    <StyledButtonDiv className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}>
+    <StyledButtonDiv >
       <StyledLabel>Source Data</StyledLabel>
 
       <StyledIconButton
