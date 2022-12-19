@@ -650,7 +650,8 @@ class TestGetCollectionID(BaseAPIPortalTest):
         self.assertEqual("PIPELINE_FAILURE", actual_dataset["processing_status"])
 
     def test__get_nonexistent_collection__403(self):
-        res = self.app.get("/curation/v1/collections/test_collection_id_nonexistent")
+        non_existent_id = str(uuid.uuid4())
+        res = self.app.get(f"/curation/v1/collections/{non_existent_id}")
         self.assertEqual(403, res.status_code)
 
     def test__get_tombstoned_collection__403(self):

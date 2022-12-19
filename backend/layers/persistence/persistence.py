@@ -314,6 +314,7 @@ class DatabaseProvider(DatabaseProviderInterface):
                     canonical_row.originally_published_at,
                     canonical_row.tombstoned,
                 )
+                print("CCCCCCCCCCCCC", canonical)
 
                 yield self._row_to_collection_version(version, canonical)
 
@@ -691,11 +692,13 @@ class DatabaseProvider(DatabaseProviderInterface):
         Returns the dataset version mapped to a canonical dataset_id, or None if not existing
         """
         with self._manage_session() as session:
-            canonical_dataset = session.query(DatasetTable).filter_by(dataset_id=dataset_id).one()
-            if not canonical_dataset.version_id:
+            canonical_dataset = session.query(DatasetTable).filter_by(dataset_id=dataset_id.id).one_or_none()
+            if canonical_dataset is None:
+                return None
+            if canonical_dataset.dataset_version_id is None:
                 return None
             dataset_version = (
-                session.query(DatasetVersionTable).filter_by(version_id=canonical_dataset.version_id).one()
+                session.query(DatasetVersionTable).filter_by(version_id=canonical_dataset.dataset_version_id).one()
             )
-        dataset_version.canonical_dataset = canonical_dataset
-        return self._hydrate_dataset_version(dataset_version)
+            dataset_version.canonical_dataset = canonical_dataset
+            return self._hydrate_dataset_version(dataset_version)
