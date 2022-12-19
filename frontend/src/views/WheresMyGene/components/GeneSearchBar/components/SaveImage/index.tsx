@@ -57,12 +57,13 @@ export default function SaveImage({
   selectedTissues,
   selectedGenes,
   selectedCellTypes,
+  setIsDownloading,
 }: {
   selectedTissues: Array<string>;
   selectedGenes: Array<string>;
   selectedCellTypes: { [tissue: string]: CellType[] };
+  setIsDownloading: (isDownloading: boolean) => void
 }): JSX.Element {
-  const [isDownloading, setIsDownloading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [fileType, setFileType] = useState<"png" | "svg">("png");
   const handleButtonClick = useCallback(() => {
@@ -144,7 +145,6 @@ export default function SaveImage({
 
   return (
     <>
-      {isDownloading && <ScreenTint />}
       <ButtonWrapper className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}>
         <Label>Download</Label>
         <StyledIconButton

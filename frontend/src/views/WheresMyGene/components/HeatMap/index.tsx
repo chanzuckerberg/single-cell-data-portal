@@ -46,6 +46,7 @@ interface Props {
   cellTypeSortBy: SORT_BY;
   geneSortBy: SORT_BY;
   selectedOrganismId: string;
+  isDownloading: boolean;
 }
 
 export default memo(function HeatMap({
@@ -63,6 +64,7 @@ export default memo(function HeatMap({
   cellTypeSortBy,
   geneSortBy,
   selectedOrganismId,
+  isDownloading,
 }: Props): JSX.Element {
   useTrackHeatMapLoaded({ selectedGenes: genes, selectedTissues });
 
@@ -141,7 +143,7 @@ export default memo(function HeatMap({
   }, [selectedGeneExpressionSummariesByTissueName, geneNameToIndex]);
 
   return (
-    <Container {...{ className }} id={HEATMAP_CONTAINER_ID}>
+    <Container {...{ className }} id={HEATMAP_CONTAINER_ID} style={isDownloading ? {"filter": "blur(10px)"} : {}}>
       {isLoadingAPI || isAnyTissueLoading(isLoading) ? <Loader /> : null}
 
       <XAxisChart geneNames={sortedGeneNames} />
