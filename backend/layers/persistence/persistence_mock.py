@@ -68,9 +68,7 @@ class DatabaseProviderMock(DatabaseProviderInterface):
     ) -> CollectionVersion:
         collection_id = CollectionId(self._generate_id())
         version_id = CollectionVersionId(self._generate_id())
-        canonical = CanonicalCollection(
-            id=collection_id, version_id=version_id, originally_published_at=None, tombstoned=False
-        )
+        canonical = CanonicalCollection(collection_id, None, None, False)
         version = CollectionVersion(
             collection_id=collection_id,
             version_id=version_id,
@@ -84,7 +82,6 @@ class DatabaseProviderMock(DatabaseProviderInterface):
             datasets=[],
         )
         self.collections_versions[version_id.id] = version
-        self.collections[collection_id.id] = canonical
         # Don't set mappings here - those will be set when publishing the collection!
         return copy.deepcopy(version)
 
@@ -363,5 +360,5 @@ class DatabaseProviderMock(DatabaseProviderInterface):
     def get_dataset_mapped_version(self, dataset_id: DatasetId) -> Optional[DatasetVersion]:
         cd = self.datasets.get(dataset_id.id)
         if cd is not None:
-            version = self.datasets_versions[cd.version_id.id]
+            version = self.datasets_versions[cd.dataset_version_id.id]
             return self._update_dataset_version_with_canonical(version)

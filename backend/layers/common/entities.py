@@ -243,14 +243,13 @@ class CollectionVersionBase:
     published_at: Optional[datetime]
     created_at: datetime
     canonical_collection: CanonicalCollection
-    curator_name: Optional[str] = ""
 
 
 @dataclass
 class CollectionVersion(CollectionVersionBase):
-    datasets: List[DatasetVersionId] = Field(default_factory=list)
+    datasets: List[DatasetVersionId]
 
 
 @dataclass
 class CollectionVersionWithDatasets(CollectionVersionBase):
-    datasets: List[DatasetVersion] = Field(default_factory=list)
+    datasets: List[DatasetVersion]

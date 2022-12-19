@@ -149,7 +149,7 @@ class TestCollection(BaseAPIPortalTest):
             "contact_email": "john.doe@email.com",
             "contact_name": "john doe",
             "created_at": mock.ANY,
-            "curator_name": "Test User",
+            "curator_name": "Jane Smith",
             "data_submission_policy_version": "1.0",
             "datasets": [
                 {
