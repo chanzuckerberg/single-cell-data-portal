@@ -67,7 +67,6 @@ function LoggedInButtons({ name, email }: { name?: string; email?: string }) {
         keepMounted
         open={Boolean(anchorEl)}
         onClose={handleClose}
-        getContentAnchorEl={null}
       >
         {curatorAPIFeature && (
           <div>

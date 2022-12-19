@@ -1,4 +1,4 @@
-import { Dropdown, InputDropdownProps as IInputDropdownProps } from "czifui";
+import { InputDropdownProps as IInputDropdownProps } from "czifui";
 import { useContext, useMemo } from "react";
 import {
   DispatchContext,
@@ -6,7 +6,7 @@ import {
 } from "src/views/WheresMyGene/common/store";
 import { selectSortBy } from "src/views/WheresMyGene/common/store/actions";
 import { SORT_BY } from "src/views/WheresMyGene/common/types";
-import { FilterLabel, FilterWrapper, Label } from "./style";
+import { FilterLabel, FilterWrapper, Label, StyledDropdown } from "./style";
 
 const DEFAULT_INPUT_DROPDOWN_PROPS: Partial<IInputDropdownProps> = {
   sdsStyle: "square",
@@ -57,7 +57,7 @@ export default function Sort({ areFiltersDisabled }: Props): JSX.Element {
       <Label>View Options</Label>
       <FilterWrapper>
         <FilterLabel>Sort Cell Types</FilterLabel>
-        <Dropdown
+        <StyledDropdown
           data-test-id="cell-type-sort-dropdown"
           onChange={cellTypesOnChange}
           label={cellTypeSelectedOptionLabel}
@@ -67,7 +67,7 @@ export default function Sort({ areFiltersDisabled }: Props): JSX.Element {
       </FilterWrapper>
       <FilterWrapper>
         <FilterLabel>Sort Genes</FilterLabel>
-        <Dropdown
+        <StyledDropdown
           data-test-id="gene-sort-dropdown"
           onChange={genesOnChange}
           label={geneSelectedOptionLabel}

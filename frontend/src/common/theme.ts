@@ -1,4 +1,4 @@
-import { createTheme } from "@material-ui/core/styles";
+import createTheme from "@mui/material/styles/createTheme";
 import { defaultAppTheme, makeThemeOptions } from "czifui";
 
 const { fontWeights } = defaultAppTheme;
@@ -186,3 +186,5 @@ themeOptions.colors.info = infoColors;
 const appTheme = makeThemeOptions(themeOptions);
 
 export const theme = createTheme(appTheme);
+
+export const OFF_WHITE = "#f8f8f8";

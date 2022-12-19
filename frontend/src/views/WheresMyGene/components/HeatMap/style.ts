@@ -3,7 +3,7 @@ import { X_AXIS_CHART_HEIGHT_PX, Y_AXIS_CHART_WIDTH_PX } from "./utils";
 
 export const Container = styled.div`
   height: 75vh;
-  width: 80vw;
+  width: 100%;
   overflow: scroll;
   position: relative;
 `;

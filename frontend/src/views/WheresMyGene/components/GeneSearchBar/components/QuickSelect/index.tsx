@@ -1,10 +1,9 @@
-import { Theme } from "@emotion/react";
-import { makeStyles, Popper } from "@material-ui/core";
+import { AutocompleteRenderOptionState } from "@mui/material/Autocomplete";
 import {
   AutocompleteCloseReason,
   AutocompleteInputChangeReason,
-  AutocompleteRenderOptionState,
-} from "@material-ui/lab";
+} from "@mui/material/useAutocomplete";
+import makeStyles from "@mui/styles/makeStyles";
 import {
   DefaultMenuSelectOption,
   DropdownPaper,
@@ -14,9 +13,17 @@ import {
   getShadows,
   Icon,
   MenuSelect,
+  SDSTheme,
 } from "czifui";
 import { pull, uniq } from "lodash";
-import React, { createContext, ReactChild, useRef, useState } from "react";
+import React, {
+  createContext,
+  HTMLAttributes,
+  ReactChild,
+  SyntheticEvent,
+  useRef,
+  useState,
+} from "react";
 import { FixedSizeList, ListChildComponentProps } from "react-window";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
@@ -26,6 +33,7 @@ import {
   ButtonWrapper,
   StyledButtonText,
   StyledMenuItem,
+  StyledPopper,
   StyledSelectButton,
 } from "./style";
 
@@ -128,7 +136,7 @@ export default function QuickSelect<
   const [input, setInput] = useState("");
   const [hasComma, setHasComma] = useState(false);
 
-  const useStyles = makeStyles((theme: Theme) => {
+  const useStyles = makeStyles((theme: SDSTheme) => {
     const colors = getColors({ theme });
     const shadows = getShadows({ theme });
     const corners = getCorners({ theme });
@@ -183,13 +191,14 @@ export default function QuickSelect<
         };
 
   const handleClose = (
-    e: React.ChangeEvent<Record<string, never>>,
+    e: SyntheticEvent<Element, Event>,
     reason: AutocompleteCloseReason
   ) => {
     if (reason === "toggleInput") {
       return;
     }
     const { nativeEvent } = e;
+
     if (
       (nativeEvent instanceof FocusEvent &&
         nativeEvent.relatedTarget instanceof Element &&
@@ -197,14 +206,15 @@ export default function QuickSelect<
       (nativeEvent instanceof FocusEvent &&
         !(nativeEvent.relatedTarget instanceof Element)) ||
       !(nativeEvent instanceof FocusEvent)
-    )
+    ) {
       setOpen(false);
+    }
 
     setInput("");
   };
   const handleChange = (
-    _: React.ChangeEvent<Record<string, never>>,
-    newValue: T[] | T | null
+    _: SyntheticEvent<Element, Event>,
+    newValue: DefaultMenuSelectOption | DefaultMenuSelectOption[] | null
   ) => {
     return setSelected(newValue as Value<T, Multiple>);
   };
@@ -216,7 +226,7 @@ export default function QuickSelect<
   const ref = useRef(null);
 
   const handleInputChange = (
-    _: React.ChangeEvent<Record<string, never>>,
+    _: SyntheticEvent<Element, Event>,
     value: string,
     reason: AutocompleteInputChangeReason
   ) => {
@@ -259,7 +269,11 @@ export default function QuickSelect<
           {text}
         </StyledSelectButton>
       </ButtonWrapper>
-      <Popper open={open} className={classes.popper} anchorEl={ref.current}>
+      <StyledPopper
+        open={open}
+        className={classes.popper}
+        anchorEl={ref.current}
+      >
         <MenuSelect
           open
           PopperComponent={DropdownPopper}
@@ -294,20 +308,22 @@ export default function QuickSelect<
               : "No options"
           }
         />
-      </Popper>
+      </StyledPopper>
     </>
   );
 
   function renderOption(
+    optionProps: HTMLAttributes<HTMLLIElement>,
     option: T,
     { selected }: AutocompleteRenderOptionState
   ) {
     return (
       <StyledMenuItem
-        {...{ component: "div" }}
+        {...{ component: "li" }}
         isMultiSelect={multiple}
         selected={selected}
         onClick={onClick}
+        {...optionProps}
       >
         {option.name}
       </StyledMenuItem>

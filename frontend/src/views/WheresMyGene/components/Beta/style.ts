@@ -1,8 +1,8 @@
 import styled from "@emotion/styled";
-import { getColors, Notification } from "czifui";
+import { CommonThemeProps, getColors, Notification } from "czifui";
 
 export const StyledNotification = styled(Notification)`
-  ${(props) => {
+  ${(props: CommonThemeProps) => {
     const colors = getColors(props);
 
     return `
@@ -24,7 +24,7 @@ export const StyledNotification = styled(Notification)`
 `;
 
 export const SubmitIssue = styled.a`
-  ${(props) => {
+  ${(props: CommonThemeProps) => {
     const colors = getColors(props);
 
     return `
