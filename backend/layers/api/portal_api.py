@@ -150,6 +150,7 @@ class PortalApi:
     def _dataset_to_response(
         self, dataset: DatasetVersion, is_tombstoned: bool, is_in_published_collection: bool = False
     ):
+        dataset_id = dataset.dataset_id.id if is_in_published_collection else dataset.version_id.id
         return self.remove_none(
             {
                 "assay": None
@@ -173,7 +174,7 @@ class PortalApi:
                 if dataset.metadata is None
                 else self._ontology_term_ids_to_response(dataset.metadata.disease),
                 "donor_id": None if dataset.metadata is None else dataset.metadata.donor_id,
-                "id": dataset.version_id.id,
+                "id": dataset_id,
                 "is_primary_data": None if dataset.metadata is None else dataset.metadata.is_primary_data,
                 "is_valid": True,  # why do we have this
                 "mean_genes_per_cell": None if dataset.metadata is None else dataset.metadata.mean_genes_per_cell,
@@ -614,9 +615,11 @@ class PortalApi:
         # Retrieves the URI of the cxg artifact
         s3_uri = next(a.uri for a in dataset.artifacts if a.type == DatasetArtifactType.CXG)
 
+        dataset_id = dataset.dataset_id.id if collection.published_at is not None else dataset.version_id.id
+
         dataset_identifiers = {
             "s3_uri": s3_uri,
-            "dataset_id": dataset.dataset_id.id,
+            "dataset_id": dataset_id,
             "collection_id": dataset.collection_id.id,
             "collection_visibility": "PUBLIC" if collection.published_at is not None else "PRIVATE",
             "tombstoned": False,  # No longer applicable
