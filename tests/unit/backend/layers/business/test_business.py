@@ -1,5 +1,5 @@
-import unittest
 import os
+import unittest
 from datetime import datetime
 from unittest.mock import Mock
 from uuid import uuid4
@@ -40,6 +40,9 @@ from backend.layers.thirdparty.crossref_provider import CrossrefProviderInterfac
 from backend.layers.thirdparty.s3_provider import S3ProviderInterface
 from backend.layers.thirdparty.step_function_provider import StepFunctionProviderInterface
 from backend.layers.thirdparty.uri_provider import FileInfo, UriProviderInterface
+from tests.unit.backend.layers.fixtures import test_user_name
+
+test_curator_name = "Test User"
 
 
 class BaseBusinessLogicTestCase(unittest.TestCase):
@@ -47,6 +50,7 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
     sample_dataset_metadata: DatasetMetadata
 
     test_user_name = "test_user_1"
+    test_curator_name = "Test User"
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -117,25 +121,31 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         if cls.run_as_integration:
             cls.database_provider._engine.dispose()
 
-    def initialize_empty_unpublished_collection(self, owner: str = test_user_name) -> CollectionVersion:
+    def initialize_empty_unpublished_collection(
+        self, owner: str = test_user_name, curator_name: str = test_curator_name
+    ) -> CollectionVersion:
         """
         Initializes an unpublished collection to be used for testing, with no datasets
         """
         version = self.database_provider.create_canonical_collection(
             owner,
+            curator_name,
             self.sample_collection_metadata,
         )
         return version
 
     def initialize_unpublished_collection(
-        self, owner: str = test_user_name, complete_dataset_ingestion: bool = True
+        self,
+        owner: str = test_user_name,
+        curator_name: str = test_curator_name,
+        complete_dataset_ingestion: bool = True,
     ) -> CollectionVersionWithDatasets:
         """
         Initializes an unpublished collection to be used for testing, with two datasets.
         By default also completes dataset ingestion (normally, a process that would be done asynchonously).
         Pass `complete_dataset_ingestion=False` if you want to initialize datasets only.
         """
-        version = self.initialize_empty_unpublished_collection(owner)
+        version = self.initialize_empty_unpublished_collection(owner, curator_name)
         for i in range(2):
             dataset_version = self.database_provider.create_canonical_dataset(
                 version.version_id,
@@ -149,12 +159,15 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         return self.database_provider.get_collection_version_with_datasets(version.version_id)
 
     def initialize_published_collection(
-        self, owner: str = test_user_name, published_at: datetime = datetime.utcnow()
+        self,
+        owner: str = test_user_name,
+        curator_name: str = test_curator_name,
+        published_at: datetime = datetime.utcnow(),
     ) -> CollectionVersionWithDatasets:
         """
         Initializes a published collection to be used for testing, with a single dataset
         """
-        version = self.initialize_unpublished_collection(owner)
+        version = self.initialize_unpublished_collection(owner, curator_name)
         self.database_provider.finalize_collection_version(version.collection_id, version.version_id, published_at)
         return self.database_provider.get_collection_version_with_datasets(version.version_id)
 
@@ -183,7 +196,9 @@ class TestCreateCollection(BaseBusinessLogicTestCase):
         """
         A collection can be created using `create_collection`
         """
-        collection = self.business_logic.create_collection(self.test_user_name, self.sample_collection_metadata)
+        collection = self.business_logic.create_collection(
+            test_user_name, test_curator_name, self.sample_collection_metadata
+        )
         collection_from_database = self.database_provider.get_collection_version(collection.version_id)
         self.assertEqual(collection, collection_from_database)
 
@@ -197,7 +212,9 @@ class TestCreateCollection(BaseBusinessLogicTestCase):
             Link(None, "other", "http://example.com/other"),  # names can be optional
         ]
         self.sample_collection_metadata.links = good_links
-        collection = self.business_logic.create_collection(self.test_user_name, self.sample_collection_metadata)
+        collection = self.business_logic.create_collection(
+            test_user_name, test_curator_name, self.sample_collection_metadata
+        )
         collection_from_database = self.database_provider.get_collection_version(collection.version_id)
         self.assertEqual(good_links, collection_from_database.metadata.links)
 
@@ -209,7 +226,7 @@ class TestCreateCollection(BaseBusinessLogicTestCase):
         self.sample_collection_metadata.links = bad_links
 
         with self.assertRaises(CollectionCreationException) as ex:
-            self.business_logic.create_collection(self.test_user_name, self.sample_collection_metadata)
+            self.business_logic.create_collection(test_user_name, test_curator_name, self.sample_collection_metadata)
 
         self.assertEqual(
             ex.exception.errors, [{"name": "links[0]", "reason": "Invalid URL.", "value": "incorrect_url"}]
@@ -226,7 +243,9 @@ class TestCreateCollection(BaseBusinessLogicTestCase):
         expected_publisher_metadata = {"authors": ["Test Author"]}
         self.crossref_provider.fetch_metadata = Mock(return_value=expected_publisher_metadata)
 
-        collection = self.business_logic.create_collection(self.test_user_name, self.sample_collection_metadata)
+        collection = self.business_logic.create_collection(
+            test_user_name, test_curator_name, self.sample_collection_metadata
+        )
 
         self.crossref_provider.fetch_metadata.assert_called_with("http://good.doi")
 
@@ -247,7 +266,7 @@ class TestCreateCollection(BaseBusinessLogicTestCase):
         self.crossref_provider.fetch_metadata = Mock(side_effect=CrossrefDOINotFoundException("Error!"))
 
         with self.assertRaises(CollectionCreationException):
-            self.business_logic.create_collection(self.test_user_name, self.sample_collection_metadata)
+            self.business_logic.create_collection(test_user_name, test_curator_name, self.sample_collection_metadata)
 
     def test_create_collection_with_doi_error_ignores_metadata_ok(self):
         """
@@ -453,7 +472,7 @@ class TestUpdateCollection(BaseBusinessLogicTestCase):
         self.crossref_provider.fetch_metadata = Mock(return_value=expected_publisher_metadata)
 
         # We need to call `business_logic.create_collection` so that the publisher metadata is populated
-        version = self.business_logic.create_collection(self.test_user_name, metadata)
+        version = self.business_logic.create_collection(test_user_name, test_curator_name, metadata)
         self.crossref_provider.fetch_metadata.assert_called_once()
         self.crossref_provider.fetch_metadata.reset_mock()
 
@@ -482,7 +501,7 @@ class TestUpdateCollection(BaseBusinessLogicTestCase):
         self.crossref_provider.fetch_metadata = Mock(return_value={"authors": ["Test Author"]})
 
         # We need to call `business_logic.create_collection` so that the publisher metadata is populated
-        version = self.business_logic.create_collection(self.test_user_name, metadata)
+        version = self.business_logic.create_collection(test_user_name, test_curator_name, metadata)
         self.crossref_provider.fetch_metadata.assert_called_once()
         self.crossref_provider.fetch_metadata.reset_mock()
 
@@ -505,6 +524,22 @@ class TestUpdateCollection(BaseBusinessLogicTestCase):
 
 
 class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
+    def test_add_empty_dataset_ok(self):
+        """
+        An empty dataset can be added to a collection when `create_empty_dataset` is called.
+        The resulting dataset should be empty and in a state ready for processing.
+        """
+        version = self.initialize_empty_unpublished_collection()
+
+        new_dataset_version_id, _ = self.business_logic.create_empty_dataset(version.version_id)
+
+        new_dataset_version = self.database_provider.get_dataset_version(new_dataset_version_id)
+        self.assertIsNotNone(new_dataset_version)
+        self.assertIsNone(new_dataset_version.metadata)
+        self.assertEqual(new_dataset_version.collection_id, version.collection_id)
+        self.assertEqual(new_dataset_version.status.upload_status, DatasetUploadStatus.WAITING)
+        self.assertEqual(new_dataset_version.status.processing_status, DatasetProcessingStatus.PENDING)
+
     def test_add_dataset_to_unpublished_collection_ok(self):
         """
         A dataset can be added to a collection when `ingest_dataset` is called.

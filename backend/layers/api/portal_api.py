@@ -218,7 +218,7 @@ class PortalApi:
                 "contact_email": collection.metadata.contact_email,
                 "contact_name": collection.metadata.contact_name,
                 "created_at": collection.created_at,
-                "curator_name": "",  # TODO
+                "curator_name": collection.curator_name,
                 "data_submission_policy_version": "1.0",  # TODO
                 "datasets": [
                     self._dataset_to_response(
@@ -313,8 +313,10 @@ class PortalApi:
             [self._link_from_request(node) for node in body.get("links", [])],
         )
 
+        curator_name = body["curator_name"]
+
         try:
-            version = self.business_logic.create_collection(user, metadata)
+            version = self.business_logic.create_collection(user, curator_name, metadata)
         except CollectionCreationException as ex:
             raise InvalidParametersHTTPException(detail=ex.errors)
 
@@ -336,14 +338,16 @@ class PortalApi:
             transformed_collection = {
                 "id": collection.collection_id.id,
                 "name": collection.metadata.name,
-                "published_at": collection.canonical_collection.originally_published_at,
-                "revised_at": collection.published_at,
             }
 
             if collection.publisher_metadata is not None:
                 transformed_collection["publisher_metadata"] = self._publisher_metadata_to_response(
                     collection.publisher_metadata
                 )
+
+            if collection.canonical_collection.originally_published_at:
+                transformed_collection["published_at"] = collection.canonical_collection.originally_published_at
+                transformed_collection["revised_at"] = collection.published_at
 
             response.append(transformed_collection)
 

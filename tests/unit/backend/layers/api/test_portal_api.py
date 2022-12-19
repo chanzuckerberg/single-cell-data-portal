@@ -1,9 +1,3 @@
-import gevent.monkey
-
-gevent.monkey.patch_all()
-
-from tests.unit.backend.layers.common.base_api_test import BaseAPIPortalTest
-
 import dataclasses
 import itertools
 import json
@@ -36,6 +30,7 @@ from tests.unit.backend.layers.common.base_test import (
     DatasetArtifactUpdate,
     DatasetStatusUpdate,
 )
+from tests.unit.backend.layers.common.base_api_test import BaseAPIPortalTest
 
 
 def generate_mock_publisher_metadata(journal_override=None):
@@ -154,7 +149,7 @@ class TestCollection(BaseAPIPortalTest):
             "contact_email": "john.doe@email.com",
             "contact_name": "john doe",
             "created_at": mock.ANY,
-            "curator_name": "",
+            "curator_name": "Test User",
             "data_submission_policy_version": "1.0",
             "datasets": [
                 {
@@ -338,6 +333,7 @@ class TestCollection(BaseAPIPortalTest):
             "description": "This is a test collection",
             "contact_name": "person human",
             "contact_email": "person@human.com",
+            "curator_name": "Curator Name",
             "links": [{"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"}],
         }
         json_data = json.dumps(data)
@@ -366,6 +362,7 @@ class TestCollection(BaseAPIPortalTest):
             "description": "This is a test collection",
             "contact_name": "person human",
             "contact_email": "person@human.com",
+            "curator_name": "Curator Name",
             "links": [
                 {"link_name": "DOI Link", "link_url": "10.1016/foo", "link_type": "DOI"},
             ],
@@ -391,6 +388,7 @@ class TestCollection(BaseAPIPortalTest):
             "description": "This is a test collection",
             "contact_name": "person human",
             "contact_email": "person@human.com",
+            "curator_name": "Curator Name",
             "links": [
                 {"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"},
                 {"link_name": "DOI Link", "link_url": "http://doi.org/10.1017", "link_type": "DOI"},
@@ -415,6 +413,7 @@ class TestCollection(BaseAPIPortalTest):
             "description": "This is a test collection",
             "contact_name": "person human",
             "contact_email": "person@human.com",
+            "curator_name": "Curator Name",
             "links": [{"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"}],
         }
         json_data = json.dumps(data)
@@ -435,6 +434,7 @@ class TestCollection(BaseAPIPortalTest):
             "description": "This is a test collection",
             "contact_name": "person human",
             "contact_email": "person@human.com",
+            "curator_name": "Curator Name",
             "links": [{"link_name": "DOI Link", "link_url": "invalid/doi", "link_type": "DOI"}],
         }
         json_data = json.dumps(data)
@@ -458,6 +458,7 @@ class TestCollection(BaseAPIPortalTest):
             "description": "This is a test collection",
             "contact_name": "person human",
             "contact_email": "person@human.com",
+            "curator_name": "Curator Name",
             "links": [{"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"}],
         }
         json_data = json.dumps(data)
@@ -479,6 +480,7 @@ class TestCollection(BaseAPIPortalTest):
             "description": "This is a test collection",
             "contact_name": "person human",
             "contact_email": "person@human.com",
+            "curator_name": "Curator Name",
         }
         json_data = json.dumps(data)
         response = self.app.post(
@@ -502,6 +504,7 @@ class TestCollection(BaseAPIPortalTest):
             "description": "This is a test collection",
             "contact_name": "person human",
             "contact_email": "person@human.com",
+            "curator_name": "Curator Name",
             "links": [{"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"}],
         }
         json_data = json.dumps(data)
@@ -1910,6 +1913,7 @@ class TestPublishRevision(BaseAPIPortalTest):
         path = f"{self.base_path}/{unpublished_collection.version_id.id}/publish"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
         body = {"data_submission_policy_version": "1.0"}  # TODO: still in use?
+
         response = self.app.post(path, headers=headers, data=json.dumps(body))
         self.assertEqual(202, response.status_code)
 

@@ -11,10 +11,17 @@ from backend.layers.thirdparty.s3_provider import S3Provider
 from backend.layers.thirdparty.step_function_provider import StepFunctionProvider
 from backend.layers.thirdparty.uri_provider import UriProvider
 
-# from tests.unit.backend.layers.persistence.persistence_mock import DatabaseProviderMock
-# from backend.layers.api.portal_api import PortalApi
-
 api = None
+_business_logic = None
+
+
+def get_business_logic():
+    global _business_logic
+    if not _business_logic:
+        _business_logic = BusinessLogic(
+            DatabaseProvider(), CrossrefProvider(), StepFunctionProvider(), S3Provider(), UriProvider()
+        )
+    return _business_logic
 
 
 # TODO: put the real PortalApi here. Tests will mock this method to return a testable version of PortalAPI.

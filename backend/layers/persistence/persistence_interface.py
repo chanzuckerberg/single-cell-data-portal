@@ -25,7 +25,9 @@ class PersistenceException(Exception):
 
 
 class DatabaseProviderInterface:
-    def create_canonical_collection(self, owner: str, collection_metadata: CollectionMetadata) -> CollectionVersion:
+    def create_canonical_collection(
+        self, owner: str, curator_name: str, collection_metadata: CollectionMetadata
+    ) -> CollectionVersion:
         """
         Creates a new canonical collection, generating a canonical collection_id and a new version_id.
         Returns the newly created CollectionVersion
@@ -100,7 +102,10 @@ class DatabaseProviderInterface:
         pass
 
     def finalize_collection_version(
-        self, collection_id: CollectionId, version_id: CollectionVersionId, published_at: Optional[datetime]
+        self,
+        collection_id: CollectionId,
+        version_id: CollectionVersionId,
+        published_at: Optional[datetime],
     ) -> None:
         """
         Finalizes a collection version. This is equivalent to calling:
