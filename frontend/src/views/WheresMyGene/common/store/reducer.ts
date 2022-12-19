@@ -364,7 +364,8 @@ function addSelectedGenes(
 ): State {
   const { payload } = action;
   const { genes, tissue, cellType } = payload;
-  const key = tissue && cellType ? `${tissue}--${cellType.id}--${cellType.name}` : "";
+  const key =
+    tissue && cellType ? `${tissue}--${cellType.id}--${cellType.name}` : "";
   const newSelectedGenes = new Map(Array.from(state.selectedGenes));
   newSelectedGenes.set(key, genes);
 
@@ -382,13 +383,12 @@ function removeSelectedGenes(
   const { groupName } = payload;
   const newSelectedGenes = new Map(Array.from(state.selectedGenes));
   newSelectedGenes.delete(groupName);
-  
+
   return {
     ...state,
     selectedGenes: newSelectedGenes,
   };
 }
-
 
 export interface AddCellInfoCellTypePayload {
   cellType: CellType;

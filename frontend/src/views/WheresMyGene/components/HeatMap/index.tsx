@@ -166,7 +166,6 @@ export default memo(function HeatMap({
     return result;
   }, [selectedGeneExpressionSummariesByTissueName, geneNameToIndex]);
 
-
   const geneGroups = Object.values(sortedGeneNamesByGroupName);
   const geneGroupNames = Object.keys(sortedGeneNamesByGroupName);
   geneGroups.reverse();

@@ -6,13 +6,14 @@ const ECHART_AXIS_LABEL_FONT_SIZE = 12;
 const X_AXIS_TITLE_HEIGHT_PX = 40;
 const TISSUE_BORDER_WIDTH_PX = 4;
 
-export const X_AXIS_CHART_TOTAL_HEIGHT_PX = X_AXIS_CHART_HEIGHT_PX + X_AXIS_TITLE_HEIGHT_PX + TISSUE_BORDER_WIDTH_PX;
+export const X_AXIS_CHART_TOTAL_HEIGHT_PX =
+  X_AXIS_CHART_HEIGHT_PX + X_AXIS_TITLE_HEIGHT_PX + TISSUE_BORDER_WIDTH_PX;
 
 export const XAxisContainer = styled.div`
   ${xAxisWidth}
   background-color: white;
-  height: ${X_AXIS_CHART_HEIGHT_PX+TISSUE_BORDER_WIDTH_PX}px;
-  top: ${X_AXIS_TITLE_HEIGHT_PX+TISSUE_BORDER_WIDTH_PX}px;
+  height: ${X_AXIS_CHART_HEIGHT_PX + TISSUE_BORDER_WIDTH_PX}px;
+  top: ${X_AXIS_TITLE_HEIGHT_PX + TISSUE_BORDER_WIDTH_PX}px;
   position: absolute;
 `;
 
@@ -23,7 +24,6 @@ export const XAxisWrapper = styled.div`
   position: absolute;
   z-index: 2;
 `;
-
 
 export const GeneGroupWrapper = styled.div`
   ${xAxisWidth}
@@ -43,7 +43,7 @@ export const GeneGroupName = styled.div`
 export const MarkerGeneHeader = styled.div`
   font-size: ${ECHART_AXIS_LABEL_FONT_SIZE}px;
   font-weight: normal;
-  top: ${X_AXIS_TITLE_HEIGHT_PX - 2*ECHART_AXIS_LABEL_FONT_SIZE - 10}px;
+  top: ${X_AXIS_TITLE_HEIGHT_PX - 2 * ECHART_AXIS_LABEL_FONT_SIZE - 10}px;
   position: absolute;
   color: ${ECHART_AXIS_LABEL_COLOR_HEX};
 `;
@@ -54,7 +54,7 @@ export const MarkerGeneHeaderButton = styled.button`
   font-weight: normal;
   background-color: white;
   cursor: pointer;
-  top: ${X_AXIS_TITLE_HEIGHT_PX - 2*ECHART_AXIS_LABEL_FONT_SIZE - 10}px;
+  top: ${X_AXIS_TITLE_HEIGHT_PX - 2 * ECHART_AXIS_LABEL_FONT_SIZE - 10}px;
   right: 0;
   position: absolute;
   color: ${ECHART_AXIS_LABEL_COLOR_HEX};
@@ -95,7 +95,7 @@ function xAxisWidthAndOffset({ width, left }: { width: number; left: number }) {
   `;
 }
 
-function xAxisWidth({ width }: { width: number; }) {
+function xAxisWidth({ width }: { width: number }) {
   return `
     width: ${width}px;
   `;

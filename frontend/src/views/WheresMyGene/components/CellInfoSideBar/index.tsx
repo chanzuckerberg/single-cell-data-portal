@@ -3,7 +3,10 @@ import React, { useCallback, useContext } from "react";
 import { useMarkerGenes } from "src/common/queries/wheresMyGene";
 import { BetaChip } from "src/components/Header/style";
 import { DispatchContext, State, StateContext } from "../../common/store";
-import { addSelectedGenes, removeSelectedGenes } from "../../common/store/actions";
+import {
+  addSelectedGenes,
+  removeSelectedGenes,
+} from "../../common/store/actions";
 import {
   ButtonContainer,
   CopyGenesButton,
@@ -19,7 +22,6 @@ function CellInfoSideBar({
   cellInfoCellType,
   tissueName,
 }: CellInfoBarProps): JSX.Element | null {
-
   const { selectedGenes } = useContext(StateContext);
   const urlParams = new URLSearchParams(window.location.search);
   let testType: "ttest" | undefined = undefined;
@@ -52,7 +54,7 @@ function CellInfoSideBar({
   const handleRemoveGenes = useCallback(() => {
     if (!dispatch) return;
     dispatch(removeSelectedGenes(groupName));
-  }, [groupName, dispatch]);  
+  }, [groupName, dispatch]);
 
   if (isLoading || !data) return null;
 
@@ -77,7 +79,13 @@ function CellInfoSideBar({
           <BetaChip label="Beta" size="small" />
         </div>
         <Button
-          startIcon={<Icon sdsIcon={isAdded ? "minus" : "plus"} sdsSize="s" sdsType="button" />}
+          startIcon={
+            <Icon
+              sdsIcon={isAdded ? "minus" : "plus"}
+              sdsSize="s"
+              sdsType="button"
+            />
+          }
           onClick={isAdded ? handleRemoveGenes : handleDisplayGenes}
           sdsStyle="minimal"
           sdsType="primary"
