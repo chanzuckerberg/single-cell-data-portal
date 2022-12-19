@@ -278,8 +278,23 @@ class DatabaseProvider(DatabaseProviderInterface):
         """
         with self._manage_session() as session:
             versions = session.query(CollectionVersionTable).all()
-            # TODO: do we need to hydrate versions with canonical collections? would require a join or many lookup calls
-            return [self._row_to_collection_version(v, None) for v in versions]
+
+            # Create a canonical mapping
+            all_canonical_collections = session.query(CollectionTable).all()
+            all_canonical_map = dict()
+            for collection_row in all_canonical_collections:
+                all_canonical_map[str(collection_row.id)] = CanonicalCollection(
+                    CollectionId(str(collection_row.id)),
+                    None if collection_row.version_id is None else CollectionVersionId(str(collection_row.version_id)),
+                    collection_row.originally_published_at,
+                    collection_row.tombstoned,
+                )
+
+            result = []
+            for v in versions:
+                result.append(self._row_to_collection_version(v, all_canonical_map[str(v.collection_id)]))
+
+            return result
 
     def get_all_mapped_collection_versions(self, get_tombstoned: bool = False) -> Iterable[CollectionVersion]:
         """

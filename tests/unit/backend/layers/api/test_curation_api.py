@@ -980,12 +980,15 @@ class TestGetDatasets(BaseAPIPortalTest):
 
     def test_get_nonexistent_dataset_404(self):
         collection = self.generate_unpublished_collection()
-        test_url = f"/curation/v1/collections/{collection.collection_id}/datasets/1234-1243-2134-234-1342"
+        non_existent_dataset_id = str(uuid.uuid4())
+        test_url = f"/curation/v1/collections/{collection.collection_id}/datasets/{non_existent_dataset_id}"
         response = self.app.get(test_url)
         self.assertEqual(404, response.status_code)
 
     def test_get_datasets_nonexistent_collection_404(self):
-        test_url = "/curation/v1/collections/nonexistent/datasets/1234-1243-2134-234-1342"
+        non_existent_dataset_id = str(uuid.uuid4())
+        non_existent_collection_id = str(uuid.uuid4())
+        test_url = f"/curation/v1/collections/{non_existent_collection_id}/datasets/{non_existent_dataset_id}"
         headers = self.make_owner_header()
         response = self.app.get(test_url, headers=headers)
         self.assertEqual(404, response.status_code)
@@ -993,7 +996,8 @@ class TestGetDatasets(BaseAPIPortalTest):
 
 class TestPostDataset(BaseAPIPortalTest):
     def test_post_datasets_nonexistent_collection_403(self):
-        test_url = "/curation/v1/collections/nonexistent/datasets"
+        non_existent_collection_id = str(uuid.uuid4())
+        test_url = f"/curation/v1/collections/{non_existent_collection_id}/datasets"
         headers = self.make_owner_header()
         response = self.app.post(test_url, headers=headers)
         self.assertEqual(403, response.status_code)
