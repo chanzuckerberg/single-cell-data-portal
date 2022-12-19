@@ -47,7 +47,6 @@ interface Props {
   scaledMeanExpressionMax: number;
   scaledMeanExpressionMin: number;
   isScaled: boolean;
-  leftOffset: number;
 }
 
 const BASE_DEBOUNCE_MS = 200;
@@ -64,7 +63,6 @@ export default memo(function Chart({
   scaledMeanExpressionMax,
   scaledMeanExpressionMin,
   isScaled,
-  leftOffset
 }: Props): JSX.Element {
   const [currentIndices, setCurrentIndices] = useState([-1, -1]);
   const [cursorOffset, setCursorOffset] = useState([-1, -1]);
@@ -310,7 +308,7 @@ export default memo(function Chart({
           },
         }}
       >
-        <ChartContainer left={leftOffset} height={heatmapHeight} width={heatmapWidth} ref={ref} />
+        <ChartContainer height={heatmapHeight} width={heatmapWidth} ref={ref} />
       </Tooltip>
   );
 });

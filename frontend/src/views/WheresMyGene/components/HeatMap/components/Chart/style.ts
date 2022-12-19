@@ -4,23 +4,20 @@ import { fontBodyXs, getColors, getSpaces, TooltipTable } from "czifui";
 import { X_AXIS_CHART_HEIGHT_PX } from "../../utils";
 
 export const ChartContainer = styled.div`
-  ${getWidthAndHeightAndOffset}
+  ${getWidthAndHeight}
   margin-bottom: ${X_AXIS_CHART_HEIGHT_PX}px;
 `;
 
-function getWidthAndHeightAndOffset({
+function getWidthAndHeight({
   width,
   height,
-  left,
 }: {
   width: number;
   height: number;
-  left: number;
 }) {
   return `
     width: ${width}px;
     height: ${height}px;
-    left: ${left}px;
   `;
 }
 

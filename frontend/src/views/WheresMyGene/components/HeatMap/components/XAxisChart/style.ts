@@ -22,7 +22,7 @@ export const CellCountLabel = styled.div`
   writing-mode: vertical-rl;
   padding-top: 16px;
   position: absolute;
-  left: ${Y_AXIS_CHART_WIDTH_PX - ECHART_AXIS_LABEL_FONT_SIZE}px;
+  left: ${Y_AXIS_CHART_WIDTH_PX - 20}px;
   z-index: 2;
 `;
 

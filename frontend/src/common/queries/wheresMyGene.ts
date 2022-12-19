@@ -1,6 +1,6 @@
 import { useContext, useMemo } from "react";
 import { useQuery, UseQueryResult } from "react-query";
-import { API_URL } from "src/configs/staging";
+import { API_URL } from "src/configs/configs";
 import {
   DispatchContext,
   State,

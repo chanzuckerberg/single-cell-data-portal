@@ -26,7 +26,7 @@ import {
   useTissueNameToCellTypeIdToGeneNameToCellTypeGeneExpressionSummaryDataMap,
 } from "./hooks/useSortedGeneNames";
 import { useTrackHeatMapLoaded } from "./hooks/useTrackHeatMapLoaded";
-import { ChartWrapper, Container, YAxisWrapper } from "./style";
+import { ChartRowWrapper, ChartWrapper, CHART_LEFT_PADDING, Container, XAxisMask, XAxisWrapper, YAxisWrapper } from "./style";
 import { getHeatmapWidth, X_AXIS_CHART_HEIGHT_PX, Y_AXIS_CHART_WIDTH_PX } from "./utils";
 
 export interface SelectedGeneExpressionSummariesByTissueName {
@@ -154,7 +154,7 @@ export default memo(function HeatMap({
   });
   geneGroups.reverse();
   const heatmapOffsets = useMemo(() => {
-    const result: number[] = [0];
+    const result: number[] = [CHART_LEFT_PADDING];
     for (const [_, sortedGeneNames] of Object.entries(sortedGeneNamesByGroupName).slice().reverse()) {
       result.push(getHeatmapWidth(sortedGeneNames));
       result[result.length - 1] += result[result.length - 2] + 40;
@@ -169,18 +169,8 @@ export default memo(function HeatMap({
   return (
     <Container {...{ className }}>
       {isLoadingAPI || isAnyTissueLoading(isLoading) ? <Loader /> : null}
-      <div
-        style={{
-          display: "flex",
-          backgroundColor: "white",
-          flexDirection: "row",
-          position: "sticky",
-          top: 0,
-          width: "100%",
-          zIndex: 2
-        }}
-      >
-        <div style={{width: Y_AXIS_CHART_WIDTH_PX, height: X_AXIS_CHART_HEIGHT_PX}}/>
+      <XAxisWrapper>
+        <XAxisMask/>
         <CellCountLabel>Cell Count</CellCountLabel>
           {geneGroups.map(
             (sortedGeneNames, index) => {
@@ -193,8 +183,7 @@ export default memo(function HeatMap({
               );
             }
           )}
-      </div>  
-
+      </XAxisWrapper>
       <YAxisWrapper
         height={(chartWrapperRect?.height || 0) - X_AXIS_CHART_HEIGHT_PX}
       >
@@ -230,7 +219,7 @@ export default memo(function HeatMap({
           });
           const els: JSX.Element[] = [];
           Object.entries(orderedSelectedGeneExpressionSummariesByTissueName).forEach((
-            [groupName, orderedSelectedGeneExpressionSummaries], index
+            [groupName, orderedSelectedGeneExpressionSummaries]
           )=>{
             els.push(
               <Chart
@@ -244,24 +233,14 @@ export default memo(function HeatMap({
                 setIsLoading={setIsLoading}
                 scaledMeanExpressionMax={scaledMeanExpressionMax}
                 scaledMeanExpressionMin={scaledMeanExpressionMin}
-                leftOffset={heatmapOffsets[index]}
               />
             );
           });
           els.reverse();
           return (
-            <div
-              key={`${tissue}-chart`}
-              style={{ 
-                display: "flex",
-                flexDirection: "row",
-                position: "relative",
-                left: Y_AXIS_CHART_WIDTH_PX,
-                columnGap: "40px"
-              }}
-            >   
+            <ChartRowWrapper key={`${tissue}-chart`}>   
               {els}               
-            </div>   
+            </ChartRowWrapper>   
           );
         })}
       </ChartWrapper>

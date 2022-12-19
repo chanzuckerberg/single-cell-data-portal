@@ -1,4 +1,3 @@
-import styled from "@emotion/styled";
 import { memo, useContext, useEffect, useMemo, useState } from "react";
 import { get } from "src/common/featureFlags";
 import { FEATURES } from "src/common/featureFlags/features";
@@ -16,7 +15,6 @@ import {
   formatCellLabel,
   getAllSerializedCellTypeMetadata,
   getHeatmapHeight,
-  HEAT_MAP_BASE_CELL_PX,
   MAX_DEPTH,
   SELECTED_STYLE,
   Y_AXIS_CHART_WIDTH_PX,
@@ -30,8 +28,12 @@ import {
   TissueWrapper,
   Wrapper,
   StyledImage,
+  CellTypeButtonStyle,
+  CellCountLabelStyle,
+  FlexRowJustified,
+  FlexRow,
+  InfoButtonWrapper,
 } from "./style";
-import { LIGHT_GRAY } from "src/components/common/theme";
 
 interface Props {
   cellTypes?: CellType[];
@@ -136,28 +138,6 @@ export default memo(function YAxisChart({
   }
 });
 
-const CellTypeButtonStyle = styled.button`
-  height: ${HEAT_MAP_BASE_CELL_PX}px;
-  background-color: ${({active}: {active: boolean})=> active ? LIGHT_GRAY.D : "white"};
-  font: normal ${({active}: {active: boolean})=> active ? "bold" : "normal"} 12px sans-serif;
-  white-space: pre;
-  cursor: pointer;
-  border: none;
-  width: 100%;
-  color: #6E7079;
-  text-align: left;
-`
-
-const CellCountStyle = styled.div`
-  height: ${HEAT_MAP_BASE_CELL_PX}px;
-  background-color: white;
-  font: normal normal 12px sans-serif;
-  white-space: pre;
-  border: none;
-  color: #6E7079;
-  text-align: right;
-  padding-top: 3px;
-`
 
 const CellTypeButton = ({ name, metadata, onClick, isMarkerGenes, generateMarkerGenes, tissueID }: {name: string, isMarkerGenes: boolean, metadata: CellTypeMetadata, onClick: () => void, generateMarkerGenes: (cellType: CellType, tissueID: string) => void, tissueID: string;}) => {
   const [active, setActive] = useState(false)
@@ -175,16 +155,8 @@ const CellTypeButton = ({ name, metadata, onClick, isMarkerGenes, generateMarker
   }`;
 
   return (
-    <div
-      style={{
-      display: "flex",
-      flexDirection: "row",
-      justifyContent: "space-between",
-      width: "100%"
-    }}>
-      <div
-        style={{display: "flex", flexDirection: "row"}}
-      >
+    <FlexRowJustified>
+      <FlexRow>
         <CellTypeButtonStyle
           active={active}
           onClick={() => {
@@ -194,7 +166,7 @@ const CellTypeButton = ({ name, metadata, onClick, isMarkerGenes, generateMarker
         }>
           {name}
         </CellTypeButtonStyle>
-        <div
+        <InfoButtonWrapper
             style={{
               paddingTop: "3px",
               cursor: "pointer"
@@ -209,18 +181,18 @@ const CellTypeButton = ({ name, metadata, onClick, isMarkerGenes, generateMarker
             <StyledImage
               id={"marker-gene-button"}
               src={InfoSVG.src}
-              width="12"
-              height="12"
+              width="10"
+              height="10"
               alt={`display marker genes for ${
                 deserializeCellTypeMetadata(metadata).name
               }`}
             />
-          </div>   
-      </div>
-      <CellCountStyle>
+          </InfoButtonWrapper>   
+      </FlexRow>
+      <CellCountLabelStyle>
         {countString}
-      </CellCountStyle>
-    </div>
+      </CellCountLabelStyle>
+    </FlexRowJustified>
   )
 }
 
