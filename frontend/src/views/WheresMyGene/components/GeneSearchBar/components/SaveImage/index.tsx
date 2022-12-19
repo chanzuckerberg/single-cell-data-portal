@@ -110,7 +110,11 @@ export default function SaveImage({
       }
       link.click();
       link.remove();
-      track(EVENTS.WMG_DOWNLOAD_COMPLETE, { file_type: fileType , tissues: selectedTissues.toString(), genes: selectedGenes.toString() });
+      track(EVENTS.WMG_DOWNLOAD_COMPLETE, {
+        file_type: fileType,
+        tissues: selectedTissues.toString(),
+        genes: selectedGenes.toString(),
+      });
     } catch (error) {
       console.error(error);
     }
@@ -127,8 +131,7 @@ export default function SaveImage({
           {...{
             // (thuang): Move this back to explicit prop={value} after
             // upgrading SDS to enable type checking again
-            disabled:
-              selectedTissues.length === 0 || allGenes.length === 0,
+            disabled: selectedTissues.length === 0 || allGenes.length === 0,
             sdsSize: "medium",
             sdsType: "primary",
           }}

@@ -1,6 +1,11 @@
 import Image from "next/image";
 import styled from "@emotion/styled";
-import { SELECTED_STYLE, HEAT_MAP_BASE_CELL_PX, X_AXIS_CHART_HEIGHT_PX, Y_AXIS_CHART_WIDTH_PX } from "../../utils";
+import {
+  SELECTED_STYLE,
+  HEAT_MAP_BASE_CELL_PX,
+  X_AXIS_CHART_HEIGHT_PX,
+  Y_AXIS_CHART_WIDTH_PX,
+} from "../../utils";
 
 export const Y_AXIS_TISSUE_WIDTH_PX = 30;
 
@@ -39,16 +44,21 @@ export const Container = styled.div`
 
 export const CellTypeButtonStyle = styled.button`
   height: ${HEAT_MAP_BASE_CELL_PX}px;
-  background-color: ${({active}: {active: boolean})=> active ? SELECTED_STYLE.backgroundColor : "white"};
-  font: normal ${({active}: {active: boolean})=> active ? SELECTED_STYLE.fontWeight : "normal"} ${SELECTED_STYLE.fontSize}px ${SELECTED_STYLE.fontFamily};
-  padding: ${({active}: {active: boolean})=> active ? SELECTED_STYLE.padding : "unset"};
+  background-color: ${({ active }: { active: boolean }) =>
+    active ? SELECTED_STYLE.backgroundColor : "white"};
+  font: normal
+    ${({ active }: { active: boolean }) =>
+      active ? SELECTED_STYLE.fontWeight : "normal"}
+    ${SELECTED_STYLE.fontSize}px ${SELECTED_STYLE.fontFamily};
+  padding: ${({ active }: { active: boolean }) =>
+    active ? SELECTED_STYLE.padding : "unset"};
   white-space: pre;
   cursor: pointer;
   border: none;
   width: 100%;
-  color: #6E7079;
+  color: #6e7079;
   text-align: left;
-`
+`;
 
 export const CellCountLabelStyle = styled.div`
   height: ${HEAT_MAP_BASE_CELL_PX}px;
@@ -56,22 +66,22 @@ export const CellCountLabelStyle = styled.div`
   font: normal normal ${SELECTED_STYLE.fontSize}px ${SELECTED_STYLE.fontFamily};
   white-space: pre;
   border: none;
-  color: #6E7079;
+  color: #6e7079;
   text-align: right;
   padding-top: 3px;
-`
+`;
 export const FlexRowJustified = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   padding-left: 5px;
   width: 100%;
-`
+`;
 
 export const FlexRow = styled.div`
   display: flex;
   flex-direction: row;
-`
+`;
 
 export const InfoButtonWrapper = styled.div`
   padding-left: 2px;

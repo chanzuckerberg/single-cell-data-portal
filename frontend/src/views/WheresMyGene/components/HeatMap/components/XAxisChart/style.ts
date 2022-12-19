@@ -32,7 +32,7 @@ export const MaskWrapper = styled.div`
   margin-left: -${ECHART_AXIS_LABEL_FONT_SIZE}px;
 `;
 
-function xAxisWidthAndOffset({ width, left }: { width: number, left: number }) {
+function xAxisWidthAndOffset({ width, left }: { width: number; left: number }) {
   return `
     width: ${width}px;
     left: ${left}px;

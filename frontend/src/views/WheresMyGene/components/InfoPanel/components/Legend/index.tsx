@@ -18,10 +18,10 @@ interface Props {
 export default memo(function Legend({
   isScaled,
   handleRightSidebarButtonClick,
-  // selectedTissues,
-  // selectedGenes,
-  // selectedCellTypes,
-}: Props): JSX.Element {
+}: // selectedTissues,
+// selectedGenes,
+// selectedCellTypes,
+Props): JSX.Element {
   return (
     <LegendWrapper>
       {/*<SaveImage

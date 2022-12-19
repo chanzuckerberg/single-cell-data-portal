@@ -33,9 +33,7 @@ import { CellType, GeneExpressionSummary, Tissue } from "../../common/types";
 import { SideBarPositioner, SideBarWrapper, Top, Wrapper } from "../../style";
 import Beta from "../Beta";
 import CellInfoBar from "../CellInfoSideBar";
-import {
-  CELL_INFO_SIDEBAR_WIDTH_PX,
-} from "../CellInfoSideBar/style";
+import { CELL_INFO_SIDEBAR_WIDTH_PX } from "../CellInfoSideBar/style";
 import Filters from "../Filters";
 import GeneSearchBar from "../GeneSearchBar";
 import { EXCLUDE_IN_SCREENSHOT_CLASS_NAME } from "../GeneSearchBar/components/SaveImage";
@@ -201,7 +199,9 @@ export default function WheresMyGene(): JSX.Element {
   }, [cellTypesByTissueName, selectedCellTypeIds]);
 
   const selectedGeneExpressionSummariesByTissueName = useMemo(() => {
-    const result: {[groupName: string]: { [tissueName: string]: GeneExpressionSummary[] }} = {};
+    const result: {
+      [groupName: string]: { [tissueName: string]: GeneExpressionSummary[] };
+    } = {};
     for (const tissueName of Object.keys(selectedCellTypeIds)) {
       const tissueGeneExpressionSummaries =
         geneExpressionSummariesByTissueName[tissueName];
@@ -218,11 +218,12 @@ export default function WheresMyGene(): JSX.Element {
             cellTypeGeneExpressionSummaries: EMPTY_ARRAY,
             name: geneName,
           };
-  
+
           return (
-            tissueGeneExpressionSummaries[geneName] || emptyGeneExpressionSummary
+            tissueGeneExpressionSummaries[geneName] ||
+            emptyGeneExpressionSummary
           );
-        });        
+        });
       }
     }
     return result;

@@ -58,7 +58,7 @@ export function addSelectedGenes(
   cellType: CellType
 ): GetActionTypeOfReducer<typeof REDUCERS["addSelectedGenes"]> {
   return {
-    payload: {genes, cellType, tissue},
+    payload: { genes, cellType, tissue },
     type: "addSelectedGenes",
   };
 }

@@ -29,7 +29,7 @@ export const YAxisWrapper = styled.div`
 export const XAxisMask = styled.div`
   width: ${Y_AXIS_CHART_WIDTH_PX}px;
   height: ${X_AXIS_CHART_HEIGHT_PX}px;
-`
+`;
 export const XAxisWrapper = styled.div`
   display: flex;
   background-color: white;

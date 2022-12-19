@@ -26,14 +26,26 @@ import {
   useTissueNameToCellTypeIdToGeneNameToCellTypeGeneExpressionSummaryDataMap,
 } from "./hooks/useSortedGeneNames";
 import { useTrackHeatMapLoaded } from "./hooks/useTrackHeatMapLoaded";
-import { ChartRowWrapper, ChartWrapper, CHART_LEFT_PADDING, Container, XAxisMask, XAxisWrapper, YAxisWrapper } from "./style";
-import { getHeatmapWidth, X_AXIS_CHART_HEIGHT_PX, Y_AXIS_CHART_WIDTH_PX } from "./utils";
+import {
+  ChartRowWrapper,
+  ChartWrapper,
+  CHART_LEFT_PADDING,
+  Container,
+  XAxisMask,
+  XAxisWrapper,
+  YAxisWrapper,
+} from "./style";
+import {
+  getHeatmapWidth,
+  X_AXIS_CHART_HEIGHT_PX,
+  Y_AXIS_CHART_WIDTH_PX,
+} from "./utils";
 
 export interface SelectedGeneExpressionSummariesByTissueName {
-    [groupName: string]: {
-      [tissueName: string]: GeneExpressionSummary[]
-    };
-};
+  [groupName: string]: {
+    [tissueName: string]: GeneExpressionSummary[];
+  };
+}
 
 interface Props {
   className?: string;
@@ -117,8 +129,10 @@ export default memo(function HeatMap({
   });
 
   const geneNameToIndex = useMemo(() => {
-    const result: {[groupName: string]: { [key: string]: number }} = {};
-    for (const [groupName, sortedGeneNames] of Object.entries(sortedGeneNamesByGroupName)) {
+    const result: { [groupName: string]: { [key: string]: number } } = {};
+    for (const [groupName, sortedGeneNames] of Object.entries(
+      sortedGeneNamesByGroupName
+    )) {
       result[groupName] = {};
       for (const [index, gene] of Object.entries(sortedGeneNames)) {
         result[groupName][gene] = Number(index);
@@ -141,7 +155,10 @@ export default memo(function HeatMap({
           geneExpressionSummary.sort((a, b) => {
             if (!a || !b) return -1;
 
-            return geneNameToIndex[groupName][a.name] - geneNameToIndex[groupName][b.name];
+            return (
+              geneNameToIndex[groupName][a.name] -
+              geneNameToIndex[groupName][b.name]
+            );
           })
         );
       }
@@ -149,13 +166,19 @@ export default memo(function HeatMap({
     return result;
   }, [selectedGeneExpressionSummariesByTissueName, geneNameToIndex]);
 
-  const geneGroups = Object.entries(sortedGeneNamesByGroupName).map(([_, sortedGeneNames]) => {
-    return sortedGeneNames;
-  });
+  const geneGroups = Object.entries(sortedGeneNamesByGroupName).map(
+    ([_, sortedGeneNames]) => {
+      return sortedGeneNames;
+    }
+  );
   geneGroups.reverse();
   const heatmapOffsets = useMemo(() => {
     const result: number[] = [CHART_LEFT_PADDING];
-    for (const [_, sortedGeneNames] of Object.entries(sortedGeneNamesByGroupName).slice().reverse()) {
+    for (const [_, sortedGeneNames] of Object.entries(
+      sortedGeneNamesByGroupName
+    )
+      .slice()
+      .reverse()) {
       result.push(getHeatmapWidth(sortedGeneNames));
       result[result.length - 1] += result[result.length - 2] + 40;
       if (result.length === geneGroups.length) {
@@ -165,24 +188,21 @@ export default memo(function HeatMap({
     return result;
   }, [sortedGeneNamesByGroupName, geneGroups]);
 
-
   return (
     <Container {...{ className }}>
       {isLoadingAPI || isAnyTissueLoading(isLoading) ? <Loader /> : null}
       <XAxisWrapper>
-        <XAxisMask/>
+        <XAxisMask />
         <CellCountLabel>Cell Count</CellCountLabel>
-          {geneGroups.map(
-            (sortedGeneNames, index) => {
-              return (
-                <XAxisChart 
-                  key={`${index}-x-axis-chart`}
-                  geneNames={sortedGeneNames}
-                  leftOffset={Y_AXIS_CHART_WIDTH_PX+heatmapOffsets[index]}
-                />
-              );
-            }
-          )}
+        {geneGroups.map((sortedGeneNames, index) => {
+          return (
+            <XAxisChart
+              key={`${index}-x-axis-chart`}
+              geneNames={sortedGeneNames}
+              leftOffset={Y_AXIS_CHART_WIDTH_PX + heatmapOffsets[index]}
+            />
+          );
+        })}
       </XAxisWrapper>
       <YAxisWrapper
         height={(chartWrapperRect?.height || 0) - X_AXIS_CHART_HEIGHT_PX}
@@ -194,7 +214,7 @@ export default memo(function HeatMap({
             sortedCellTypesByTissueName,
             tissue,
           });
-          
+
           return (
             <YAxisChart
               key={tissue}
@@ -218,9 +238,9 @@ export default memo(function HeatMap({
             tissue,
           });
           const els: JSX.Element[] = [];
-          Object.entries(orderedSelectedGeneExpressionSummariesByTissueName).forEach((
-            [groupName, orderedSelectedGeneExpressionSummaries]
-          )=>{
+          Object.entries(
+            orderedSelectedGeneExpressionSummariesByTissueName
+          ).forEach(([groupName, orderedSelectedGeneExpressionSummaries]) => {
             els.push(
               <Chart
                 isScaled={isScaled}
@@ -238,9 +258,7 @@ export default memo(function HeatMap({
           });
           els.reverse();
           return (
-            <ChartRowWrapper key={`${tissue}-chart`}>   
-              {els}               
-            </ChartRowWrapper>   
+            <ChartRowWrapper key={`${tissue}-chart`}>{els}</ChartRowWrapper>
           );
         })}
       </ChartWrapper>

@@ -72,7 +72,8 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
   } = useFilterDimensions({ includeAllFilterOptions: true });
 
   const allSelectedGenes = getUniqueValuesFromMap(selectedGenes);
-  const areFiltersDisabled = !selectedTissues.length || !allSelectedGenes.length;
+  const areFiltersDisabled =
+    !selectedTissues.length || !allSelectedGenes.length;
 
   const InputDropdownProps = useMemo(() => {
     return {

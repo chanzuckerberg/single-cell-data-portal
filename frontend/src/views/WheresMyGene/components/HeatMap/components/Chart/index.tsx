@@ -29,11 +29,7 @@ import {
   getHeatmapHeight,
   getHeatmapWidth,
 } from "../../utils";
-import {
-  ChartContainer,
-  StyledTooltipTable,
-  tooltipCss,
-} from "./style";
+import { ChartContainer, StyledTooltipTable, tooltipCss } from "./style";
 
 interface Props {
   cellTypes: CellType[];
@@ -281,35 +277,35 @@ export default memo(function Chart({
   const tooltipClasses = useMemo(() => ({ tooltip: tooltipCss }), []);
 
   return (
-      <Tooltip
-        width="wide"
-        classes={tooltipClasses}
-        title={tooltipContent || <>No data</>}
-        leaveDelay={0}
-        placement="right-end"
-        PopperProps={{
-          anchorEl: {
-            clientHeight: 0,
-            clientWidth: 0,
-            getBoundingClientRect: () => ({
-              bottom: cursorOffset[1],
-              height: 0,
-              left: cursorOffset[0],
-              right: cursorOffset[0],
-              toJSON: noop,
-              top: cursorOffset[1],
-              width: 0,
-              x: cursorOffset[0],
-              y: cursorOffset[1],
-            }),
-          },
-          modifiers: {
-            offset: { offset: "0,20" },
-          },
-        }}
-      >
-        <ChartContainer height={heatmapHeight} width={heatmapWidth} ref={ref} />
-      </Tooltip>
+    <Tooltip
+      width="wide"
+      classes={tooltipClasses}
+      title={tooltipContent || <>No data</>}
+      leaveDelay={0}
+      placement="right-end"
+      PopperProps={{
+        anchorEl: {
+          clientHeight: 0,
+          clientWidth: 0,
+          getBoundingClientRect: () => ({
+            bottom: cursorOffset[1],
+            height: 0,
+            left: cursorOffset[0],
+            right: cursorOffset[0],
+            toJSON: noop,
+            top: cursorOffset[1],
+            width: 0,
+            x: cursorOffset[0],
+            y: cursorOffset[1],
+          }),
+        },
+        modifiers: {
+          offset: { offset: "0,20" },
+        },
+      }}
+    >
+      <ChartContainer height={heatmapHeight} width={heatmapWidth} ref={ref} />
+    </Tooltip>
   );
 });
 

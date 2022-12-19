@@ -3,9 +3,7 @@ import { get } from "src/common/featureFlags";
 import { FEATURES } from "src/common/featureFlags/features";
 import { BOOLEAN } from "src/common/localStorage/set";
 import Image from "next/image";
-import {
-  DispatchContext,
-} from "src/views/WheresMyGene/common/store";
+import { DispatchContext } from "src/views/WheresMyGene/common/store";
 import { resetTissueCellTypes } from "src/views/WheresMyGene/common/store/actions";
 import { CellType, Tissue } from "src/views/WheresMyGene/common/types";
 import { useDeleteGenesAndCellTypes } from "../../hooks/useDeleteGenesAndCellTypes";
@@ -57,10 +55,8 @@ export default memo(function YAxisChart({
 
   const dispatch = useContext(DispatchContext);
   const isMarkerGenes = get(FEATURES.MARKER_GENES) === BOOLEAN.TRUE;
-  
-  const { handleCellTypeClick } =
-    useDeleteGenesAndCellTypes();
 
+  const { handleCellTypeClick } = useDeleteGenesAndCellTypes();
 
   const [heatmapHeight, setHeatmapHeight] = useState(
     getHeatmapHeight(cellTypes)
@@ -71,7 +67,6 @@ export default memo(function YAxisChart({
     setHeatmapHeight(getHeatmapHeight(cellTypes));
   }, [cellTypes]);
 
-  
   const cellTypeMetadata = useMemo(() => {
     return getAllSerializedCellTypeMetadata(cellTypes, tissue);
   }, [cellTypes, tissue]);
@@ -97,9 +92,11 @@ export default memo(function YAxisChart({
       <Container
         data-test-id={`cell-type-labels-${tissueKey}`}
         height={heatmapHeight}
-      > 
-        {
-          cellTypeMetadata.slice().reverse().map((cellType) => {
+      >
+        {cellTypeMetadata
+          .slice()
+          .reverse()
+          .map((cellType) => {
             const { name, depth = 0 } = deserializeCellTypeMetadata(
               cellType as CellTypeMetadata
             );
@@ -113,9 +110,9 @@ export default memo(function YAxisChart({
               Y_AXIS_CHART_WIDTH_PX - 90, // scale based on y-axis width
               selectedFont, // prevents selected style from overlapping count
               displayDepth
-            );       
+            );
             return (
-              <CellTypeButton 
+              <CellTypeButton
                 key={`${cellType}-cell-type-button`}
                 name={paddedName}
                 metadata={cellType}
@@ -125,8 +122,7 @@ export default memo(function YAxisChart({
                 isMarkerGenes={isMarkerGenes}
               />
             );
-          })
-        }
+          })}
       </Container>
     </Wrapper>
   );
@@ -138,9 +134,22 @@ export default memo(function YAxisChart({
   }
 });
 
-
-const CellTypeButton = ({ name, metadata, onClick, isMarkerGenes, generateMarkerGenes, tissueID }: {name: string, isMarkerGenes: boolean, metadata: CellTypeMetadata, onClick: () => void, generateMarkerGenes: (cellType: CellType, tissueID: string) => void, tissueID: string;}) => {
-  const [active, setActive] = useState(false)
+const CellTypeButton = ({
+  name,
+  metadata,
+  onClick,
+  isMarkerGenes,
+  generateMarkerGenes,
+  tissueID,
+}: {
+  name: string;
+  isMarkerGenes: boolean;
+  metadata: CellTypeMetadata;
+  onClick: () => void;
+  generateMarkerGenes: (cellType: CellType, tissueID: string) => void;
+  tissueID: string;
+}) => {
+  const [active, setActive] = useState(false);
   useEffect(() => {
     setActive(false);
   }, [metadata]);
@@ -150,7 +159,7 @@ const CellTypeButton = ({ name, metadata, onClick, isMarkerGenes, generateMarker
     maximumFractionDigits: 1,
     notation: "compact",
   }).format(total_count);
-  const countString =  `${formattedString}${
+  const countString = `${formattedString}${
     formattedString !== total_count.toString() ? "+" : ""
   }`;
 
@@ -160,41 +169,39 @@ const CellTypeButton = ({ name, metadata, onClick, isMarkerGenes, generateMarker
         <CellTypeButtonStyle
           active={active}
           onClick={() => {
-            setActive(!active)
-            onClick()
-          }
-        }>
+            setActive(!active);
+            onClick();
+          }}
+        >
           {name}
         </CellTypeButtonStyle>
         <InfoButtonWrapper
-            style={{
-              paddingTop: "3px",
-              cursor: "pointer"
-            }}
-            onClick={() => {
-              if (isMarkerGenes) {
-                const cellType = deserializeCellTypeMetadata(metadata);
-                generateMarkerGenes(cellType, tissueID);
-              }
-            }}
-          >
-            <StyledImage
-              id={"marker-gene-button"}
-              src={InfoSVG.src}
-              width="10"
-              height="10"
-              alt={`display marker genes for ${
-                deserializeCellTypeMetadata(metadata).name
-              }`}
-            />
-          </InfoButtonWrapper>   
+          style={{
+            paddingTop: "3px",
+            cursor: "pointer",
+          }}
+          onClick={() => {
+            if (isMarkerGenes) {
+              const cellType = deserializeCellTypeMetadata(metadata);
+              generateMarkerGenes(cellType, tissueID);
+            }
+          }}
+        >
+          <StyledImage
+            id={"marker-gene-button"}
+            src={InfoSVG.src}
+            width="10"
+            height="10"
+            alt={`display marker genes for ${
+              deserializeCellTypeMetadata(metadata).name
+            }`}
+          />
+        </InfoButtonWrapper>
       </FlexRow>
-      <CellCountLabelStyle>
-        {countString}
-      </CellCountLabelStyle>
+      <CellCountLabelStyle>{countString}</CellCountLabelStyle>
     </FlexRowJustified>
-  )
-}
+  );
+};
 
 function capitalize(str: string): string {
   return str.charAt(0).toUpperCase() + str.slice(1);

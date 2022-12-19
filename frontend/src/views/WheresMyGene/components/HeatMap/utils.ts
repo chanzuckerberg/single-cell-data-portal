@@ -58,7 +58,7 @@ export function createChartOptions({
   geneNames,
   isScaled,
   heatmapWidth,
-  heatmapHeight
+  heatmapHeight,
 }: CreateChartOptionsProps): EChartsOption {
   return {
     ...COMMON_OPTIONS,
@@ -173,7 +173,7 @@ interface CreateXAxisOptionsProps {
 export function createXAxisOptions({
   geneNames,
   genesToDelete,
-  heatmapWidth
+  heatmapWidth,
 }: CreateXAxisOptionsProps): EChartsOption {
   return {
     ...COMMON_OPTIONS,
@@ -507,12 +507,9 @@ const HEAT_MAP_BASE_CELL_WIDTH_PX = 20;
  * of the number of genes selected.
  */
 export function getHeatmapWidth(
-  genes:
-    | (GeneExpressionSummary | undefined)[]
-    | Genes
+  genes: (GeneExpressionSummary | undefined)[] | Genes
 ): number {
   return HEAT_MAP_BASE_CELL_WIDTH_PX * genes.length;
-  
 }
 
 /**

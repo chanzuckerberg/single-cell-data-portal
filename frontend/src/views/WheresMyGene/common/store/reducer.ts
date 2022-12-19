@@ -13,7 +13,7 @@ export interface PayloadAction<Payload> {
 export interface State {
   cellTypeIdsToDelete: CellTypeMetadata[];
   genesToDelete: string[];
-  selectedGenes: Map<string,Genes>;
+  selectedGenes: Map<string, Genes>;
   selectedCellTypeIds: {
     [tissue: Tissue]: string[];
   };
@@ -46,7 +46,7 @@ export const INITIAL_STATE: State = {
   genesToDelete: [],
   selectedCellTypeIds: {},
   selectedFilters: EMPTY_FILTERS,
-  selectedGenes: new Map([["",[]]]),
+  selectedGenes: new Map([["", []]]),
   selectedOrganismId: null,
   selectedTissues: [],
   snapshotId: null,
@@ -112,10 +112,7 @@ function deleteSelectedGenesAndSelectedCellTypeIds(
   const { selectedGenes, selectedCellTypeIds } = state;
 
   const newGenes = genesToDelete.length
-    ? deleteByItems<Genes[number]>(
-        selectedGenes.get("") || [],
-        genesToDelete
-      )
+    ? deleteByItems<Genes[number]>(selectedGenes.get("") || [], genesToDelete)
     : selectedGenes.get("") || [];
 
   const newSelectedCellTypeIds = cellTypeIdsToDelete.length
@@ -124,9 +121,9 @@ function deleteSelectedGenesAndSelectedCellTypeIds(
         cellTypeIdsToDelete
       )
     : selectedCellTypeIds;
-  
+
   const newSelectedGenes = new Map(Array.from(selectedGenes));
-  newSelectedGenes.set("",newGenes);
+  newSelectedGenes.set("", newGenes);
 
   return {
     ...state,
@@ -147,16 +144,13 @@ function selectOrganism(
 
   return {
     ...state,
-    selectedGenes: new Map([["",[]]]),
+    selectedGenes: new Map([["", []]]),
     selectedOrganismId: action.payload,
     selectedTissues: [],
   };
 }
 
-function selectGenes(
-  state: State,
-  action: PayloadAction<Genes>
-): State {
+function selectGenes(state: State, action: PayloadAction<Genes>): State {
   const newSelectedGenes = new Map(Array.from(state.selectedGenes));
   newSelectedGenes.set("", action.payload);
   return {
@@ -365,11 +359,11 @@ function setSnapshotId(
 
 function addSelectedGenes(
   state: State,
-  action: PayloadAction<{genes: Genes, tissue: Tissue, cellType: CellType}>
+  action: PayloadAction<{ genes: Genes; tissue: Tissue; cellType: CellType }>
 ): State {
   const { payload } = action;
   const { genes, tissue, cellType } = payload;
-  const key = tissue && cellType ? `${tissue}-${cellType.id}` : "";  
+  const key = tissue && cellType ? `${tissue}-${cellType.id}` : "";
   const newSelectedGenes = new Map(Array.from(state.selectedGenes));
   newSelectedGenes.set(key, genes);
 

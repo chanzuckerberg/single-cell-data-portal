@@ -4,16 +4,17 @@ import { EMPTY_OBJECT } from "src/common/constants/utils";
 import { useDeleteGenesAndCellTypes } from "../../hooks/useDeleteGenesAndCellTypes";
 import { useUpdateXAxisChart } from "../../hooks/useUpdateXAxisChart";
 import { getHeatmapWidth } from "../../utils";
-import {
-  XAxisContainer,
-} from "./style";
+import { XAxisContainer } from "./style";
 
 interface Props {
   geneNames: string[];
   leftOffset: number;
 }
 
-export default function XAxisChart({ geneNames, leftOffset }: Props): JSX.Element {
+export default function XAxisChart({
+  geneNames,
+  leftOffset,
+}: Props): JSX.Element {
   const [isChartInitialized, setIsChartInitialized] = useState(false);
   const [xAxisChart, setXAxisChart] = useState<echarts.ECharts | null>(null);
   const [heatmapWidth, setHeatmapWidth] = useState(getHeatmapWidth(geneNames));
