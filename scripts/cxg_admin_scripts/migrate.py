@@ -346,6 +346,7 @@ def migrate_redesign_read(ctx):
                 "published_at": record.published_at,
                 "datasets": dataset_ids,
                 "created_at": record.created_at,
+                "curator_name": record.curator_name,
             }
 
             collection_versions.append(version)
