@@ -75,6 +75,7 @@ export default function Dropdown({
             {...props}
           />
         )}
+        value={value}
       />
     </DropdownForm>
   );

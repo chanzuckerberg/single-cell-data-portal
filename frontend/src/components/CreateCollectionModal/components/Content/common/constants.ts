@@ -4,7 +4,7 @@ export enum CONSORTIA {
   CZ_BIOHUB = "CZ Biohub",
   CZI_NDCN = "CZI Neurodegeneration Challenge Network",
   CZI_SCB = "CZI Single-Cell Biology",
-  EU_HORIZON_2020 = "European Union's Horizon 2020",
+  EU_HORIZON_2020 = "European Union’s Horizon 2020",
   GUDMAP = "GenitoUrinary Development Molecular Anatomy Project (GUDMAP)",
   GUT_CELL_ATLAS = "Gut Cell Atlas",
   HUBMAP = "Human BioMolecular Atlas Program (HuBMAP)",

@@ -38,7 +38,7 @@ export function sortConsortia(
   consortia: DropdownValue
 ): DefaultMenuSelectOption[] {
   if (Array.isArray(consortia)) {
-    return [...consortia].sort(({ name: c0 }, { name: c1 }) => {
+    return consortia.sort(({ name: c0 }, { name: c1 }) => {
       if (c0 > c1) {
         return 1;
       }

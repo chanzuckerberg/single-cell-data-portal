@@ -115,11 +115,21 @@ const Content: FC<Props> = (props) => {
 
   // Null / tombstone checking is type safety netting.  We shouldn't be getting to these lines/cases since we can't open the modal if the collection is tombstoned/doesn't exist.
   if (isTombstonedCollection(data)) data = null;
-  const { name, description, contact_email, contact_name } = data || {};
+  const {
+    name,
+    description,
+    contact_email,
+    contact_name,
+    consortia: collectionConsortia,
+  } = data || {};
 
-  const [consortia, setConsortia] = useState<DefaultMenuSelectOption[]>(
-    buildConsortiaOptions(data?.consortia || [])
-  );
+  const [consortia, setConsortia] = useState<DefaultMenuSelectOption[]>([]);
+
+  useEffect(() => {
+    if (collectionConsortia) {
+      setConsortia(buildConsortiaOptions(collectionConsortia));
+    }
+  }, [collectionConsortia]);
 
   const [links, setLinks] = useState<Link[]>(
     data?.links.map((link, index) => {

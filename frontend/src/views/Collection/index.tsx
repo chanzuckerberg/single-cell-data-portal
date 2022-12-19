@@ -209,7 +209,7 @@ const Collection: FC = () => {
         </CollectionHero>
         {/* Collection consortia, description and metadata */}
         <CollectionDetail>
-          {collectionConsortia?.length > 0 && (
+          {collectionConsortia.length > 0 && (
             <CollectionConsortia>
               {collectionConsortia.join(", ")}
             </CollectionConsortia>
