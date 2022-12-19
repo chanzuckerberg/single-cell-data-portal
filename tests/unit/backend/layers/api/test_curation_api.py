@@ -489,7 +489,6 @@ class TestGetCollections(BaseAPIPortalTest):
             resp = self.app.get("/curation/v1/collections", query_string=params, headers=header)
             self.assertEqual(200, resp.status_code)
             body = resp.json
-            print("BODY", body)
             self.assertEqual(1, len(body))
             resp_collection = body[0]
 
@@ -952,7 +951,6 @@ class TestGetDatasets(BaseAPIPortalTest):
         test_url = f"/curation/v1/collections/{dataset.collection_id}/datasets/{dataset.dataset_version_id}"
 
         response = self.app.get(test_url)
-        print(response)
         self.assertEqual(200, response.status_code)
         self.assertEqual(dataset.dataset_id, response.json["id"])
 
@@ -960,7 +958,6 @@ class TestGetDatasets(BaseAPIPortalTest):
         dataset = self.generate_dataset(name="test")
         test_url = f"/curation/v1/collections/{dataset.collection_id}/datasets/{dataset.dataset_version_id}"
         response = self.app.get(test_url)
-        print(response.json)
         self.assertEqual("test", response.json["title"])
 
     def test_get_dataset_is_primary_data_shape(self):

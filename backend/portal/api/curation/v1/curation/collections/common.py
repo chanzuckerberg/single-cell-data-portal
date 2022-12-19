@@ -88,7 +88,6 @@ def reshape_for_curation_api(
 
     # build response
     doi, links = extract_doi_from_links(collection_version.metadata.links)
-    print("DDDDDDDDDDDD", collection_version)
     published_version = business_logic.get_published_collection_version(collection_version.canonical_collection.id)
     if published_version is not None:
         revised_at = published_version.published_at

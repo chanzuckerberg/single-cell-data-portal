@@ -329,8 +329,6 @@ class DatabaseProvider(DatabaseProviderInterface):
                     canonical_row.originally_published_at,
                     canonical_row.tombstoned,
                 )
-                print("CCCCCCCCCCCCC", canonical)
-
                 yield self._row_to_collection_version(version, canonical)
 
     def delete_canonical_collection(self, collection_id: CollectionId) -> None:
@@ -513,7 +511,6 @@ class DatabaseProvider(DatabaseProviderInterface):
             artifact_ids = (
                 session.query(DatasetVersionTable.artifacts).filter_by(version_id=dataset_version_id.id).one()
             )
-            print("zzz", artifact_ids)
         return self.get_dataset_artifacts(artifact_ids[0])
 
     def create_canonical_dataset(self, collection_version_id: CollectionVersionId) -> DatasetVersion:
@@ -643,10 +640,8 @@ class DatabaseProvider(DatabaseProviderInterface):
             # TODO: alternatively use postgres `array_append`
             # TODO: make sure that the UUID conversion works
             updated_datasets = list(collection_version.datasets)
-            # print("before", updated_datasets)
             updated_datasets.append(uuid.UUID(dataset_version_id.id))
             collection_version.datasets = updated_datasets
-            # print("after", updated_datasets)
 
     def delete_dataset_from_collection_version(
         self, collection_version_id: CollectionVersionId, dataset_version_id: DatasetVersionId
