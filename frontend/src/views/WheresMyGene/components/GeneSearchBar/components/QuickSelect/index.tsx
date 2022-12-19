@@ -2,6 +2,7 @@ import { AutocompleteRenderOptionState } from "@mui/material/Autocomplete";
 import {
   AutocompleteCloseReason,
   AutocompleteInputChangeReason,
+  AutocompleteValue,
 } from "@mui/material/useAutocomplete";
 import makeStyles from "@mui/styles/makeStyles";
 import {
@@ -91,18 +92,13 @@ const ListboxComponent = React.forwardRef<HTMLDivElement, ListboxProps>(
   }
 );
 
-// (thuang): Value's type is based on generic type placeholder (T) and Multiple
-// type. If Multiple is true, Value's type is T[].
-// Otherwise, Value's type is T.
-// Conditional Type
-// https://www.typescriptlang.org/docs/handbook/2/conditional-types.html
-export type Value<T, Multiple> = Multiple extends undefined | false ? T : T[];
-
 interface Props<T, Multiple> {
   items: T[];
   multiple?: Multiple;
-  setSelected: (selected: Value<T, Multiple>) => void;
-  selected: Value<T, Multiple>;
+  setSelected: (
+    selected: AutocompleteValue<T, Multiple, undefined, undefined>
+  ) => void;
+  selected: AutocompleteValue<T, Multiple, undefined, undefined>;
   itemsByName: Map<string, T>;
   onItemNotFound?: (item: string) => void;
   label: string;
@@ -168,7 +164,7 @@ export default function QuickSelect<
   // Since this functionality is currently only used in the gene search bar, we'll be assuming that `itemsByName` is a Map<string, Gene>.
   // NOTE that `itemsByName` the key is lowercase!
   const handleEnter =
-    !multiple || !("length" in selected) || onItemNotFound === undefined
+    !multiple || !Array.isArray(selected) || onItemNotFound === undefined
       ? noop
       : (event: React.KeyboardEvent<HTMLInputElement>) => {
           if (event.key === "Enter" && hasComma) {
@@ -186,7 +182,14 @@ export default function QuickSelect<
 
             setOpen(false);
 
-            return setSelected(newSelected as Value<T, Multiple>);
+            return setSelected(
+              newSelected as AutocompleteValue<
+                T,
+                Multiple,
+                undefined,
+                undefined
+              >
+            );
           }
         };
 
@@ -216,7 +219,9 @@ export default function QuickSelect<
     _: SyntheticEvent<Element, Event>,
     newValue: DefaultMenuSelectOption | DefaultMenuSelectOption[] | null
   ) => {
-    return setSelected(newValue as Value<T, Multiple>);
+    return setSelected(
+      newValue as AutocompleteValue<T, Multiple, undefined, undefined>
+    );
   };
 
   const handleClick = () => {
@@ -273,6 +278,10 @@ export default function QuickSelect<
         open={open}
         className={classes.popper}
         anchorEl={ref.current}
+        // (thuang): MUI types require `onResize` and `onResizeCapture` for
+        // some reason. Please recheck if we can remove them in the future
+        onResize={noop}
+        onResizeCapture={noop}
       >
         <MenuSelect
           open
