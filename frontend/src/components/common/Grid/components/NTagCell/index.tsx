@@ -1,4 +1,4 @@
-import { Box } from "@material-ui/core";
+import { Box } from "@mui/material";
 import React from "react";
 import { PLURALIZED_METADATA_LABEL } from "src/common/constants/metadata";
 import NTag from "src/components/common/Grid/components/NTag";

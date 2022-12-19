@@ -15,6 +15,7 @@ owlready2
 parameterized
 PyMySQL==0.9.3
 pytest
+pytest-subtests
 python-json-logger
 requests>=2.22.0
 rsa>=4.7 # not directly required, pinned by Snyk to avoid a vulnerability

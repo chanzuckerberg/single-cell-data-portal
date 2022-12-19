@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { FormControlLabel } from "@material-ui/core";
+import { FormControlLabel } from "@mui/material";
 
 export const Wrapper = styled.div`
   padding: 0 10px;

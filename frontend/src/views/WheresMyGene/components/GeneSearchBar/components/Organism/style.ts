@@ -8,6 +8,7 @@ export const Wrapper = styled.div`
 `;
 
 export const StyledDropdown = styled(Dropdown)`
+  width: 100%;
   height: 30px;
   min-width: 135px;
 `;
