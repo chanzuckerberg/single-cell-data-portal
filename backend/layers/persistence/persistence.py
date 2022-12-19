@@ -278,8 +278,23 @@ class DatabaseProvider(DatabaseProviderInterface):
         """
         with self._manage_session() as session:
             versions = session.query(CollectionVersionTable).all()
-            # TODO: do we need to hydrate versions with canonical collections? would require a join or many lookup calls
-            return [self._row_to_collection_version(v, None) for v in versions]
+
+            # Create a canonical mapping
+            all_canonical_collections = session.query(CollectionTable).all()
+            all_canonical_map = dict()
+            for collection_row in all_canonical_collections:
+                all_canonical_map[str(collection_row.id)] = CanonicalCollection(
+                    CollectionId(str(collection_row.id)),
+                    None if collection_row.version_id is None else CollectionVersionId(str(collection_row.version_id)),
+                    collection_row.originally_published_at,
+                    collection_row.tombstoned,
+                )
+
+            result = []
+            for v in versions:
+                result.append(self._row_to_collection_version(v, all_canonical_map[str(v.collection_id)]))
+
+            return result
 
     def get_all_mapped_collection_versions(self, get_tombstoned: bool = False) -> Iterable[CollectionVersion]:
         """
@@ -314,7 +329,6 @@ class DatabaseProvider(DatabaseProviderInterface):
                     canonical_row.originally_published_at,
                     canonical_row.tombstoned,
                 )
-
                 yield self._row_to_collection_version(version, canonical)
 
     def delete_canonical_collection(self, collection_id: CollectionId) -> None:
@@ -497,7 +511,6 @@ class DatabaseProvider(DatabaseProviderInterface):
             artifact_ids = (
                 session.query(DatasetVersionTable.artifacts).filter_by(version_id=dataset_version_id.id).one()
             )
-            print("zzz", artifact_ids)
         return self.get_dataset_artifacts(artifact_ids[0])
 
     def create_canonical_dataset(self, collection_version_id: CollectionVersionId) -> DatasetVersion:
@@ -627,10 +640,8 @@ class DatabaseProvider(DatabaseProviderInterface):
             # TODO: alternatively use postgres `array_append`
             # TODO: make sure that the UUID conversion works
             updated_datasets = list(collection_version.datasets)
-            # print("before", updated_datasets)
             updated_datasets.append(uuid.UUID(dataset_version_id.id))
             collection_version.datasets = updated_datasets
-            # print("after", updated_datasets)
 
     def delete_dataset_from_collection_version(
         self, collection_version_id: CollectionVersionId, dataset_version_id: DatasetVersionId
@@ -691,11 +702,13 @@ class DatabaseProvider(DatabaseProviderInterface):
         Returns the dataset version mapped to a canonical dataset_id, or None if not existing
         """
         with self._manage_session() as session:
-            canonical_dataset = session.query(DatasetTable).filter_by(dataset_id=dataset_id).one()
-            if not canonical_dataset.version_id:
+            canonical_dataset = session.query(DatasetTable).filter_by(dataset_id=dataset_id.id).one_or_none()
+            if canonical_dataset is None:
+                return None
+            if canonical_dataset.dataset_version_id is None:
                 return None
             dataset_version = (
-                session.query(DatasetVersionTable).filter_by(version_id=canonical_dataset.version_id).one()
+                session.query(DatasetVersionTable).filter_by(version_id=canonical_dataset.dataset_version_id).one()
             )
-        dataset_version.canonical_dataset = canonical_dataset
-        return self._hydrate_dataset_version(dataset_version)
+            dataset_version.canonical_dataset = canonical_dataset
+            return self._hydrate_dataset_version(dataset_version)
