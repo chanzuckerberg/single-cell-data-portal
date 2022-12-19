@@ -44,6 +44,7 @@ from backend.layers.common.entities import (
     DatasetArtifact,
     DatasetArtifactId,
     DatasetArtifactType,
+    DatasetId,
     DatasetStatus,
     DatasetVersion,
     DatasetVersionId,
@@ -599,8 +600,10 @@ class PortalApi:
         except Exception:
             raise ServerErrorHTTPException("Cannot parse URL")
 
-        # TODO: if we require it, add double id lookup
         dataset = self.business_logic.get_dataset_version(DatasetVersionId(id))
+        if dataset is None:
+            # Lookup from canonical if the version cannot be found
+            dataset = self.business_logic.get_dataset_version_from_canonical(DatasetId(id))
         if dataset is None:
             raise NotFoundHTTPException()
 
