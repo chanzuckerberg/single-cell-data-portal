@@ -1631,7 +1631,7 @@ class TestDataset(BaseAPIPortalTest):
             test_url_private = f"/dp/v1/datasets/meta?url={private_dataset.explorer_url}"
             expected_identifiers = {
                 "s3_uri": test_uri_1,
-                "dataset_id": private_dataset.dataset_id,
+                "dataset_id": private_dataset.dataset_version_id,
                 "collection_id": private_dataset.collection_id,
                 "collection_visibility": "PRIVATE",
                 "tombstoned": False,

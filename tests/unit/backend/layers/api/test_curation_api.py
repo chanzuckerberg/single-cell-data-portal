@@ -566,7 +566,7 @@ class TestGetCollectionID(BaseAPIPortalTest):
         expect_dataset["title"] = expect_dataset.pop("name")
         expect_dataset.update(
             **{
-                "explorer_url": f"/{dataset.version_id}.cxg/",
+                "explorer_url": f"/e/{dataset.version_id}.cxg/",
                 "id": dataset.dataset_id.id,
                 "processing_status": "PENDING",
                 "revision": 0,
