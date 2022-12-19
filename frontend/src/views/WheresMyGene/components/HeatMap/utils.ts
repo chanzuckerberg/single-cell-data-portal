@@ -7,7 +7,6 @@ import {
 } from "echarts";
 import { EMPTY_ARRAY } from "src/common/constants/utils";
 import { LIGHT_GRAY } from "src/components/common/theme";
-import { State } from "../../common/store";
 import {
   CellType,
   CellTypeSummary,
@@ -17,7 +16,7 @@ import {
 } from "../../common/types";
 
 export const MAX_FIRST_PART_LENGTH_PX = 16;
-export const X_AXIS_CHART_HEIGHT_PX = 80;
+export const X_AXIS_CHART_HEIGHT_PX = 100;
 export const Y_AXIS_CHART_WIDTH_PX = 300;
 
 export const MAX_DEPTH = 2;

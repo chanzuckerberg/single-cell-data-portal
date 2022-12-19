@@ -63,6 +63,15 @@ export function addSelectedGenes(
   };
 }
 
+export function removeSelectedGenes(
+  groupName: string
+): GetActionTypeOfReducer<typeof REDUCERS["removeSelectedGenes"]> {
+  return {
+    payload: { groupName },
+    type: "removeSelectedGenes",
+  };
+}
+
 export function selectCellTypeIds(
   cellTypeIndices: State["selectedCellTypeIds"]
 ): GetActionTypeOfReducer<typeof REDUCERS["selectCellTypeIds"]> {

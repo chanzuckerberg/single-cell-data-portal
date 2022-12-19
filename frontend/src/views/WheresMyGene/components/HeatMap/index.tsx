@@ -166,12 +166,12 @@ export default memo(function HeatMap({
     return result;
   }, [selectedGeneExpressionSummariesByTissueName, geneNameToIndex]);
 
-  const geneGroups = Object.entries(sortedGeneNamesByGroupName).map(
-    ([_, sortedGeneNames]) => {
-      return sortedGeneNames;
-    }
-  );
+
+  const geneGroups = Object.values(sortedGeneNamesByGroupName);
+  const geneGroupNames = Object.keys(sortedGeneNamesByGroupName);
   geneGroups.reverse();
+  geneGroupNames.reverse();
+
   const heatmapOffsets = useMemo(() => {
     const result: number[] = [CHART_LEFT_PADDING];
     for (const [_, sortedGeneNames] of Object.entries(
@@ -200,6 +200,7 @@ export default memo(function HeatMap({
               key={`${index}-x-axis-chart`}
               geneNames={sortedGeneNames}
               leftOffset={Y_AXIS_CHART_WIDTH_PX + heatmapOffsets[index]}
+              groupName={geneGroupNames[index]}
             />
           );
         })}

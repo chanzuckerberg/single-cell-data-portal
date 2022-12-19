@@ -2,8 +2,8 @@ import { Button, Icon } from "czifui";
 import React, { useCallback, useContext } from "react";
 import { useMarkerGenes } from "src/common/queries/wheresMyGene";
 import { BetaChip } from "src/components/Header/style";
-import { DispatchContext, State } from "../../common/store";
-import { addSelectedGenes } from "../../common/store/actions";
+import { DispatchContext, State, StateContext } from "../../common/store";
+import { addSelectedGenes, removeSelectedGenes } from "../../common/store/actions";
 import {
   ButtonContainer,
   CopyGenesButton,
@@ -19,6 +19,8 @@ function CellInfoSideBar({
   cellInfoCellType,
   tissueName,
 }: CellInfoBarProps): JSX.Element | null {
+
+  const { selectedGenes } = useContext(StateContext);
   const urlParams = new URLSearchParams(window.location.search);
   let testType: "ttest" | undefined = undefined;
 
@@ -46,9 +48,17 @@ function CellInfoSideBar({
     dispatch(addSelectedGenes(genes, tissueName, cellInfoCellType.cellType));
   }, [data, dispatch]);
 
+  const groupName = `${tissueName}--${cellInfoCellType.cellType.id}--${cellInfoCellType.cellType.name}`;
+  const handleRemoveGenes = useCallback(() => {
+    if (!dispatch) return;
+    dispatch(removeSelectedGenes(groupName));
+  }, [groupName, dispatch]);  
+
   if (isLoading || !data) return null;
 
   if (!cellInfoCellType) return null;
+
+  const isAdded = selectedGenes.has(groupName);
   return (
     <div>
       <TissueName>{tissueName}</TissueName>
@@ -67,14 +77,14 @@ function CellInfoSideBar({
           <BetaChip label="Beta" size="small" />
         </div>
         <Button
-          startIcon={<Icon sdsIcon="plus" sdsSize="s" sdsType="button" />}
-          onClick={handleDisplayGenes}
+          startIcon={<Icon sdsIcon={isAdded ? "minus" : "plus"} sdsSize="s" sdsType="button" />}
+          onClick={isAdded ? handleRemoveGenes : handleDisplayGenes}
           sdsStyle="minimal"
           sdsType="primary"
           isAllCaps={false}
           style={{ fontWeight: "500" }}
         >
-          Add to Dot Plot
+          {isAdded ? "Remove from Dot Plot" : "Add to Dot Plot"}
         </Button>
       </ButtonContainer>
       <StyledHTMLTable condensed bordered={false}>

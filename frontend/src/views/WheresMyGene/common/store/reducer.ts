@@ -60,6 +60,7 @@ export const INITIAL_STATE: State = {
 
 export const REDUCERS = {
   addSelectedGenes,
+  removeSelectedGenes,
   deleteSelectedGenesAndSelectedCellTypeIds,
   resetGenesToDeleteAndCellTypeIdsToDelete,
   resetTissueCellTypes,
@@ -363,7 +364,7 @@ function addSelectedGenes(
 ): State {
   const { payload } = action;
   const { genes, tissue, cellType } = payload;
-  const key = tissue && cellType ? `${tissue}-${cellType.id}` : "";
+  const key = tissue && cellType ? `${tissue}--${cellType.id}--${cellType.name}` : "";
   const newSelectedGenes = new Map(Array.from(state.selectedGenes));
   newSelectedGenes.set(key, genes);
 
@@ -372,6 +373,22 @@ function addSelectedGenes(
     selectedGenes: newSelectedGenes,
   };
 }
+
+function removeSelectedGenes(
+  state: State,
+  action: PayloadAction<{ groupName: string }>
+): State {
+  const { payload } = action;
+  const { groupName } = payload;
+  const newSelectedGenes = new Map(Array.from(state.selectedGenes));
+  newSelectedGenes.delete(groupName);
+  
+  return {
+    ...state,
+    selectedGenes: newSelectedGenes,
+  };
+}
+
 
 export interface AddCellInfoCellTypePayload {
   cellType: CellType;
