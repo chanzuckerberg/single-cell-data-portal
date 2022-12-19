@@ -1,28 +1,12 @@
 import { css } from "@emotion/css";
 import styled from "@emotion/styled";
 import { fontBodyXs, getColors, getSpaces, TooltipTable } from "czifui";
+import { X_AXIS_CHART_HEIGHT_PX } from "../../utils";
 
 export const ChartContainer = styled.div`
-  ${getWidthAndHeight}
-`;
-
-export const Wrapper = styled.div`
   ${getWidthAndHeightAndOffset}
-  position: absolute;
+  margin-bottom: ${X_AXIS_CHART_HEIGHT_PX}px;
 `;
-
-function getWidthAndHeight({
-  width,
-  height,
-}: {
-  width: number;
-  height: number;
-}) {
-  return `
-    width: ${width}px;
-    height: ${height}px;
-  `;
-}
 
 function getWidthAndHeightAndOffset({
   width,

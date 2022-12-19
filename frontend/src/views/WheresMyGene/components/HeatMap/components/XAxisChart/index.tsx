@@ -6,7 +6,6 @@ import { useUpdateXAxisChart } from "../../hooks/useUpdateXAxisChart";
 import { getHeatmapWidth } from "../../utils";
 import {
   XAxisContainer,
-  XAxisWrapper,
 } from "./style";
 
 interface Props {
@@ -65,13 +64,11 @@ export default function XAxisChart({ geneNames, leftOffset }: Props): JSX.Elemen
   });
 
   return (
-    <XAxisWrapper left={leftOffset} width={heatmapWidth}>
-      <XAxisContainer
-        data-test-id="gene-labels"
-        width={heatmapWidth}
-        left={0}
-        ref={xAxisRef}
-      />
-    </XAxisWrapper>
+    <XAxisContainer
+      data-test-id="gene-labels"
+      width={heatmapWidth}
+      left={leftOffset}
+      ref={xAxisRef}
+    />
   );
 }

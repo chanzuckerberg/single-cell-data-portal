@@ -20,7 +20,7 @@ export const MAX_FIRST_PART_LENGTH_PX = 16;
 export const X_AXIS_CHART_HEIGHT_PX = 80;
 export const Y_AXIS_CHART_WIDTH_PX = 300;
 
-const MAX_DEPTH = 2;
+export const MAX_DEPTH = 2;
 
 const Y_AXIS_BOTTOM_PADDING = "10px";
 
@@ -49,6 +49,7 @@ interface CreateChartOptionsProps {
   geneNames: string[];
   isScaled: boolean;
   heatmapWidth: number;
+  heatmapHeight: number;
 }
 
 export function createChartOptions({
@@ -57,6 +58,7 @@ export function createChartOptions({
   geneNames,
   isScaled,
   heatmapWidth,
+  heatmapHeight
 }: CreateChartOptionsProps): EChartsOption {
   return {
     ...COMMON_OPTIONS,
@@ -75,9 +77,10 @@ export function createChartOptions({
     },
     grid: {
       bottom: Y_AXIS_BOTTOM_PADDING,
-      top: X_AXIS_CHART_HEIGHT_PX + "px",
+      top: "0px",
       left: "0px",
       width: `${heatmapWidth}px`,
+      height: `${heatmapHeight}px`,
     },
     series: [
       {
@@ -153,7 +156,7 @@ export function convertPercentageToDiameter(percentage: number): number {
   return Math.round(2 * radius);
 }
 
-const SELECTED_STYLE = {
+export const SELECTED_STYLE = {
   backgroundColor: LIGHT_GRAY.D,
   fontWeight: "bold" as never,
   fontFamily: "sans-serif",
@@ -249,7 +252,7 @@ const CTX =
  * @param displayDepth The depth of the cell type name (indentation/padding)
  * @returns The string fixed to a certain pixel width
  */
-function formatCellLabel(
+export function formatCellLabel(
   name: string,
   maxWidth: number,
   font: string,
@@ -495,7 +498,7 @@ export function dataToChartFormat({
 }
 
 export const HEAT_MAP_BASE_HEIGHT_PX = 300;
-const HEAT_MAP_BASE_CELL_PX = 20;
+export const HEAT_MAP_BASE_CELL_PX = 20;
 const HEAT_MAP_BASE_CELL_WIDTH_PX = 20;
 
 /**
@@ -516,7 +519,7 @@ export function getHeatmapWidth(
  * Approximating the heatmap height by the number of cells.
  */
 export function getHeatmapHeight(cellTypes: CellType[] = EMPTY_ARRAY): number {
-  return HEAT_MAP_BASE_HEIGHT_PX + HEAT_MAP_BASE_CELL_PX * cellTypes.length;
+  return HEAT_MAP_BASE_CELL_PX * cellTypes.length;
 }
 
 /**

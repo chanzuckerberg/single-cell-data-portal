@@ -9,12 +9,13 @@ interface Props {
   chartProps: ChartProps | null;
   isScaled: boolean;
   heatmapWidth: number;
+  heatmapHeight: number;
 }
 
-export function useUpdateChart({ chart, chartProps, isScaled, heatmapWidth }: Props): void {
+export function useUpdateChart({ chart, chartProps, isScaled, heatmapWidth, heatmapHeight }: Props): void {
   const throttledUpdateChart = useMemo(() => {
     return throttle(
-      ({ chart, chartProps, isScaled, heatmapWidth }: Props) => {
+      ({ chart, chartProps, isScaled, heatmapWidth, heatmapHeight }: Props) => {
         if (!chart || !chartProps) {
           return;
         }
@@ -31,7 +32,8 @@ export function useUpdateChart({ chart, chartProps, isScaled, heatmapWidth }: Pr
             chartData,
             geneNames,
             isScaled,
-            heatmapWidth
+            heatmapWidth,
+            heatmapHeight
           })
         );
       },
@@ -52,7 +54,8 @@ export function useUpdateChart({ chart, chartProps, isScaled, heatmapWidth }: Pr
       chart,
       chartProps,
       isScaled,
-      heatmapWidth
+      heatmapWidth,
+      heatmapHeight
     });
   }, [chart, chartProps, throttledUpdateChart, isScaled, heatmapWidth]);
 }

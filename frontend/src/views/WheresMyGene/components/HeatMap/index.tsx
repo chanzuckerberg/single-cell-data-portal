@@ -12,14 +12,13 @@ import { addCellInfoCellType } from "../../common/store/actions";
 import {
   CellType,
   GeneExpressionSummary,
-  Genes,
   SORT_BY,
   Tissue,
 } from "../../common/types";
 import Loader from "../Loader";
 import Chart from "./components/Chart";
 import XAxisChart from "./components/XAxisChart";
-import { CellCountLabel, MaskWrapper } from "./components/XAxisChart/style";
+import { CellCountLabel } from "./components/XAxisChart/style";
 import YAxisChart from "./components/YAxisChart";
 import { useSortedCellTypesByTissueName } from "./hooks/useSortedCellTypesByTissueName";
 import {
@@ -27,7 +26,7 @@ import {
   useTissueNameToCellTypeIdToGeneNameToCellTypeGeneExpressionSummaryDataMap,
 } from "./hooks/useSortedGeneNames";
 import { useTrackHeatMapLoaded } from "./hooks/useTrackHeatMapLoaded";
-import { ChartWrapper, Container, XAxisMask, YAxisWrapper } from "./style";
+import { ChartWrapper, Container, YAxisWrapper } from "./style";
 import { getHeatmapWidth, X_AXIS_CHART_HEIGHT_PX, Y_AXIS_CHART_WIDTH_PX } from "./utils";
 
 export interface SelectedGeneExpressionSummariesByTissueName {
@@ -153,10 +152,10 @@ export default memo(function HeatMap({
   const geneGroups = Object.entries(sortedGeneNamesByGroupName).map(([_, sortedGeneNames]) => {
     return sortedGeneNames;
   });
-
+  geneGroups.reverse();
   const heatmapOffsets = useMemo(() => {
     const result: number[] = [0];
-    for (const [_, sortedGeneNames] of Object.entries(sortedGeneNamesByGroupName)) {
+    for (const [_, sortedGeneNames] of Object.entries(sortedGeneNamesByGroupName).slice().reverse()) {
       result.push(getHeatmapWidth(sortedGeneNames));
       result[result.length - 1] += result[result.length - 2] + 40;
       if (result.length === geneGroups.length) {
@@ -166,7 +165,7 @@ export default memo(function HeatMap({
     return result;
   }, [sortedGeneNamesByGroupName, geneGroups]);
 
-  console.log(heatmapOffsets)
+
   return (
     <Container {...{ className }}>
       {isLoadingAPI || isAnyTissueLoading(isLoading) ? <Loader /> : null}
@@ -175,24 +174,27 @@ export default memo(function HeatMap({
           display: "flex",
           backgroundColor: "white",
           flexDirection: "row",
-          position: "absolute",
+          position: "sticky",
           top: 0,
           width: "100%",
-          left: Y_AXIS_CHART_WIDTH_PX
+          zIndex: 2
         }}
       >
-   
-
-        
+        <div style={{width: Y_AXIS_CHART_WIDTH_PX, height: X_AXIS_CHART_HEIGHT_PX}}/>
+        <CellCountLabel>Cell Count</CellCountLabel>
           {geneGroups.map(
             (sortedGeneNames, index) => {
-              return <XAxisChart geneNames={sortedGeneNames} leftOffset={heatmapOffsets[index]}/>
+              return (
+                <XAxisChart 
+                  key={`${index}-x-axis-chart`}
+                  geneNames={sortedGeneNames}
+                  leftOffset={Y_AXIS_CHART_WIDTH_PX+heatmapOffsets[index]}
+                />
+              );
             }
           )}
       </div>  
-        
-        
-        
+
       <YAxisWrapper
         height={(chartWrapperRect?.height || 0) - X_AXIS_CHART_HEIGHT_PX}
       >
@@ -203,7 +205,7 @@ export default memo(function HeatMap({
             sortedCellTypesByTissueName,
             tissue,
           });
-
+          
           return (
             <YAxisChart
               key={tissue}
@@ -228,12 +230,12 @@ export default memo(function HeatMap({
           });
           const els: JSX.Element[] = [];
           Object.entries(orderedSelectedGeneExpressionSummariesByTissueName).forEach((
-            [_, orderedSelectedGeneExpressionSummaries], index
+            [groupName, orderedSelectedGeneExpressionSummaries], index
           )=>{
             els.push(
               <Chart
                 isScaled={isScaled}
-                key={tissue}
+                key={`${tissue}-${groupName}`}
                 tissue={tissue}
                 cellTypes={tissueCellTypes}
                 selectedGeneData={
@@ -246,13 +248,16 @@ export default memo(function HeatMap({
               />
             );
           });
+          els.reverse();
           return (
             <div
+              key={`${tissue}-chart`}
               style={{ 
                 display: "flex",
                 flexDirection: "row",
                 position: "relative",
-                left: Y_AXIS_CHART_WIDTH_PX
+                left: Y_AXIS_CHART_WIDTH_PX,
+                columnGap: "40px"
               }}
             >   
               {els}               

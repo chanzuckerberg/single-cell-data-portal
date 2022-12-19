@@ -44,22 +44,9 @@ export const ResetImageWrapper = styled.div`
 
 function yAxisHeight({ height }: { height: number }) {
   return `
-    height: ${height - X_AXIS_CHART_HEIGHT_PX}px;
+    height: ${height}px;
   `;
 }
-
-function infoButtonCoords({ left, top }: { left: number; top: number }) {
-  return `
-    left: ${left}px;
-    top: ${top}px;
-  `;
-}
-
-export const InfoButtonWrapper = styled.div`
-  ${infoButtonCoords}
-  position: absolute;
-  cursor: pointer;
-`;
 
 export const StyledImage = styled(Image)`
   :hover {

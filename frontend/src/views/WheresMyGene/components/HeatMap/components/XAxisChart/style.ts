@@ -4,41 +4,25 @@ import { X_AXIS_CHART_HEIGHT_PX, Y_AXIS_CHART_WIDTH_PX } from "../../utils";
 const ECHART_AXIS_LABEL_COLOR_HEX = "#6e7079";
 const ECHART_AXIS_LABEL_FONT_SIZE = 12;
 
-export const XAxisWrapper = styled.div`
-  ${xAxisWidthAndOffset}
-
-  background-color: white;
-  height: ${X_AXIS_CHART_HEIGHT_PX}px;
-  position: absolute;
-  top: 0;
-  z-index: 2;
-`;
-
-export const XAxisMask = styled.div`
-  background-color: white;
-  height: ${X_AXIS_CHART_HEIGHT_PX}px;
-  width: ${Y_AXIS_CHART_WIDTH_PX}px;
-  position: sticky;
-  left: 0;
-`;
-
 export const XAxisContainer = styled.div`
   ${xAxisWidthAndOffset}
   background-color: white;
   height: ${X_AXIS_CHART_HEIGHT_PX}px;
   position: absolute;
+  z-index: 2;
 `;
 // adjust the left position of CellCountLabel by -20 to center it properly
 export const CellCountLabel = styled.div`
   font: ${ECHART_AXIS_LABEL_FONT_SIZE}px sans-serif;
   color: ${ECHART_AXIS_LABEL_COLOR_HEX};
   width: ${ECHART_AXIS_LABEL_FONT_SIZE}px;
+  height: ${X_AXIS_CHART_HEIGHT_PX}px;
   background-color: white;
   text-orientation: sideways;
   writing-mode: vertical-rl;
-  position: sticky;
-  left: ${Y_AXIS_CHART_WIDTH_PX - 20}px;
   padding-top: 16px;
+  position: absolute;
+  left: ${Y_AXIS_CHART_WIDTH_PX - ECHART_AXIS_LABEL_FONT_SIZE}px;
   z-index: 2;
 `;
 

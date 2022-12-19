@@ -202,14 +202,13 @@ export default function WheresMyGene(): JSX.Element {
 
   const selectedGeneExpressionSummariesByTissueName = useMemo(() => {
     const result: {[groupName: string]: { [tissueName: string]: GeneExpressionSummary[] }} = {};
-
     for (const tissueName of Object.keys(selectedCellTypeIds)) {
       const tissueGeneExpressionSummaries =
         geneExpressionSummariesByTissueName[tissueName];
 
       if (!tissueGeneExpressionSummaries) continue;
       for (const [group, genes] of selectedGenes) {
-        result[group] = {};
+        result[group] = result[group] || {};
         result[group][tissueName] = genes.map((geneName) => {
           // (thuang): This is needed to ensure the heatmap's gene column
           // is available even if there's no expression data for the column.
@@ -226,7 +225,6 @@ export default function WheresMyGene(): JSX.Element {
         });        
       }
     }
-
     return result;
   }, [geneExpressionSummariesByTissueName, selectedGenes, selectedCellTypeIds]);
 

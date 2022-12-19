@@ -33,7 +33,6 @@ import {
   ChartContainer,
   StyledTooltipTable,
   tooltipCss,
-  Wrapper,
 } from "./style";
 
 interface Props {
@@ -128,7 +127,7 @@ export default memo(function Chart({
     setHeatmapHeight(getHeatmapHeight(cellTypes));
   }, [cellTypes, selectedGeneData]);
 
-  useUpdateChart({ chart, chartProps, isScaled, heatmapWidth });
+  useUpdateChart({ chart, chartProps, isScaled, heatmapWidth, heatmapHeight });
 
   // Calculate cellTypeSummaries
   /**
@@ -284,7 +283,6 @@ export default memo(function Chart({
   const tooltipClasses = useMemo(() => ({ tooltip: tooltipCss }), []);
 
   return (
-    <Wrapper height={heatmapHeight} width={heatmapWidth} left={leftOffset} id={`${tissue}-chart`}>
       <Tooltip
         width="wide"
         classes={tooltipClasses}
@@ -312,9 +310,8 @@ export default memo(function Chart({
           },
         }}
       >
-        <ChartContainer height={heatmapHeight} width={heatmapWidth} ref={ref} />
+        <ChartContainer left={leftOffset} height={heatmapHeight} width={heatmapWidth} ref={ref} />
       </Tooltip>
-    </Wrapper>
   );
 });
 

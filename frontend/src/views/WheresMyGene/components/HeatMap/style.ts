@@ -36,7 +36,7 @@ export const XAxisContainer = styled.div`
 
 export const YAxisWrapper = styled.div`
   width: ${Y_AXIS_CHART_WIDTH_PX}px;
-  position: sticky;
+  position: absolute;
   top: ${X_AXIS_CHART_HEIGHT_PX}px;
   left: 0;
   z-index: 1;
@@ -51,10 +51,8 @@ export const YAxisWrapper = styled.div`
 `;
 
 export const ChartWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
   position: absolute;
-  top: 0;
+  top: ${X_AXIS_CHART_HEIGHT_PX}px;
 `;
 
 function xAxisWidth({ width }: { width: number }) {
