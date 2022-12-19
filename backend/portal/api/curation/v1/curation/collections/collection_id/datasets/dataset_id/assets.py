@@ -28,7 +28,6 @@ def get(collection_id: str, dataset_id=None):
         if asset.type == DatasetArtifactType.CXG:
             continue
         download_data = business_logic.get_dataset_artifact_download_data(dataset.version_id, asset.id)
-        print("dd, ", download_data)
         if download_data.file_size is None:
             error_flag = True
             download_data.file_size = -1
