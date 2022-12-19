@@ -1,2 +1,0 @@
-127.0.0.1 - - [14/Dec/2022 19:48:12] "GET /upload_test_file.txt HTTP/1.1" 200 -
-127.0.0.1 - - [14/Dec/2022 19:48:13] "GET /upload_test_file.txt HTTP/1.1" 200 -
