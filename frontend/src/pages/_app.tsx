@@ -56,20 +56,18 @@ function App({ Component, pageProps }: AppPropsWithLayout): JSX.Element {
   const ConditionalAuth0Provider = redirectUri ? Auth0Provider : Fragment;
 
   useEffect(() => {
-    console.log(`setting redirect uri to ${window.location.origin}`);
     setRedirectUri(window.location.origin);
   }, []);
-  console.log(`current redirectUri is ${redirectUri}`);
 
   return (
     <>
       <ConditionalAuth0Provider
-        domain={AUTH0_DOMAIN} // Hard-coded for local dev
-        clientId={AUTH0_CLIENT_ID} // Hard-coded for local dev
+        domain={AUTH0_DOMAIN}
+        clientId={AUTH0_CLIENT_ID}
         redirectUri={redirectUri}
       >
         <QueryClientProvider client={queryClient}>
-          <StylesProvider injectFirst>
+          <StyledEngineProvider injectFirst>
             <EmotionThemeProvider theme={theme}>
               <ThemeProvider theme={theme}>
                 <Layout>
@@ -78,7 +76,7 @@ function App({ Component, pageProps }: AppPropsWithLayout): JSX.Element {
                 <ReactQueryDevtools />
               </ThemeProvider>
             </EmotionThemeProvider>
-          </StylesProvider>
+          </StyledEngineProvider>
         </QueryClientProvider>
       </ConditionalAuth0Provider>
       <Script
