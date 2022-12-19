@@ -467,6 +467,7 @@ def migrate_redesign_write(ctx):
                 published_at=version["published_at"],
                 datasets=version["datasets"],
                 created_at=version.get("created_at"),
+                curator_name=version.get("curator_name"),
             )
             session.add(collection_version_row)
         session.commit()
