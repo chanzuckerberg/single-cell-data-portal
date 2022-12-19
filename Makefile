@@ -149,6 +149,10 @@ local-unit-test: local-unit-test-backend local-unit-test-wmg-processing# Run all
 local-unit-test-backend: 
 	docker-compose run --rm -T backend bash -c "cd /single-cell-data-portal && python3 -m pytest tests/unit/backend/layers/";
 
+.PHONY: local-integration-test-backend
+local-integration-test-backend:
+	docker-compose run --rm -e INTEGRATION_TEST=true -e DB_URI=postgresql://corpora:test_pw@database -T backend bash -c "cd /single-cell-data-portal && python3 -m pytest tests/unit/backend/layers/";
+
 .PHONY: local-unit-test-processing
 local-unit-test-processing: # Run processing-unittest target in `processing` Docker container
 	docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -T processing \

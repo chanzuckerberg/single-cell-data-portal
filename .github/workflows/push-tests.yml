@@ -93,20 +93,49 @@ jobs:
           name: test-results
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/playwright-report
           retention-days: 30
-
       # Upload Allure results as an artifact
       - uses: actions/upload-artifact@v3
         with:
           name: allure-results
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/allure-results
           retention-days: 20
+      - name: Install happy
+        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.2.1
+        with:
+          happy_version: "0.23.0"
+      - uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          fields: repo,commit,author,eventName,workflow,job,mention
+          mention: "here"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+        if: failure() && github.ref == 'refs/heads/main'
 
+  build-frontend-backend-images:
+    runs-on: ubuntu-20.04
+    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod' )
+    needs:
+      - e2e-test
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 1800
+      - name: Login to ECR
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ secrets.ECR_REPO }}
+      - uses: actions/checkout@v2
       - name: Install happy
         uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.2.1
         with:
           happy_version: "0.23.0"
       - name: Push images
-        if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod' )
         run: |
           echo "HAPPY_COMMIT=$(git rev-parse --verify HEAD)" >> envfile
           echo "HAPPY_BRANCH=$(git branch --show-current)" >> envfile
@@ -118,9 +147,9 @@ jobs:
           mention: "here"
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-        if: failure() && github.ref == 'refs/heads/main'
+        if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
 
-  build-extra-images:
+  build-batch-job-images:
     runs-on: ubuntu-20.04
     if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod' )
     steps:
@@ -157,11 +186,13 @@ jobs:
   push-prod-images:
     needs:
       - backend-unit-test
+      - backend-integration-test
       - processing-unit-test
       - wmg-processing-unit-test
       - e2e-test
       - lint
-      - build-extra-images
+      - build-frontend-backend-images
+      - build-batch-job-images
     runs-on: ubuntu-20.04
     if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
     steps:
@@ -347,6 +378,57 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
 
+  backend-integration-test:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 1800
+      - name: Login to ECR
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ secrets.ECR_REPO }}
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v23.1
+        with:
+          files: |
+            Dockerfile*
+            **/Dockerfile
+            requirements*.txt
+            **/requirements*.txt
+      - name: Check if containers need to be rebuilt
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: |
+          echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
+          make local-rebuild-backend
+      - name: Run tests against postgres instance
+        run: |
+          echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
+          make local-integration-test-backend
+      # Upload Allure results as an artifact
+      - uses: actions/upload-artifact@v3
+        with:
+          name: allure-results
+          path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/allure-results
+          retention-days: 20
+      - uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          fields: repo,commit,author,eventName,workflow,job,mention
+          mention: "here"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+        if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
+
   publish-test-report:
     needs:
       - backend-unit-test
@@ -394,11 +476,13 @@ jobs:
   add-image-tags:
     needs:
       - backend-unit-test
+      - backend-integration-test
       - processing-unit-test
       - wmg-processing-unit-test
       - e2e-test
       - lint
-      - build-extra-images
+      - build-frontend-backend-images
+      - build-batch-job-images
     runs-on: ubuntu-20.04
     if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod' )
     steps:
