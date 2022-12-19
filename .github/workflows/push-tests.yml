@@ -405,6 +405,11 @@ jobs:
             **/Dockerfile
             requirements*.txt
             **/requirements*.txt
+      - name: Check if containers need to be rebuilt
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: |
+          echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
+          make local-rebuild-backend
       - name: Run tests against postgres instance
         run: |
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
