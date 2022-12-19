@@ -13,7 +13,6 @@ import Modal from "src/components/common/Modal";
 import { HEATMAP_CONTAINER_ID } from "src/views/WheresMyGene/common/constants";
 import { CellType } from "src/views/WheresMyGene/common/types";
 import { getHeatmapHeight, getHeatmapWidth } from "../../../HeatMap/utils";
-import ScreenTint from "../../../ScreenTint";
 import { Label } from "../../style";
 import { StyledButtonIcon } from "../QuickSelect/style";
 import { ButtonWrapper, DownloadButton, StyledDiv } from "./style";

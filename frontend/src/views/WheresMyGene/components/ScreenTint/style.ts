@@ -12,8 +12,8 @@ export const StyledDiv = styled.div`
   width: 100%;
   min-width: 100vw;
 
-  background: black;
-  opacity: 0.5;
+  background-colour: Reba(255, 255, 255);
+  backdrop-filter: blur(10px);
 
   z-index: 999;
 `;

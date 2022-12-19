@@ -143,7 +143,7 @@ export default memo(function HeatMap({
   }, [selectedGeneExpressionSummariesByTissueName, geneNameToIndex]);
 
   return (
-    <Container {...{ className }} id={HEATMAP_CONTAINER_ID} style={isDownloading ? {"filter": "blur(10px)"} : {}}>
+    <Container {...{ className }} id={HEATMAP_CONTAINER_ID}>
       {isLoadingAPI || isAnyTissueLoading(isLoading) ? <Loader /> : null}
 
       <XAxisChart geneNames={sortedGeneNames} />
