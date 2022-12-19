@@ -1,9 +1,9 @@
 import logging
 
-from tests.unit.backend.api_server.base_api_test import BaseAPITest
+from tests.unit.backend.layers.common.base_api_test import NewBaseTest
 
 
-class TestAPI(BaseAPITest):
+class TestAPI(NewBaseTest):
     def check_request_id(self, response):
         request_id = [header[1] for header in response.headers if header[0] == "X-Request-Id"][0]
         self.assertTrue(len(request_id) > 1)
