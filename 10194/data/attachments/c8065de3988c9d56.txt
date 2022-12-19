@@ -1,1 +1,0 @@
-127.0.0.1 - - [15/Dec/2022 18:56:07] "HEAD /upload_test_file.txt HTTP/1.1" 200 -
