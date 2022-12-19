@@ -61,7 +61,7 @@ def post(body: dict, user: str):
     metadata = CollectionMetadata(body["name"], body["description"], body["contact_name"], body["contact_email"], links)
 
     try:
-        version = get_business_logic().create_collection(user, body.get("curator_name", ""), metadata)
+        version = get_business_logic().create_collection(user, "", metadata)
     except CollectionCreationException as ex:
         errors.extend(ex.errors)
     if errors:
