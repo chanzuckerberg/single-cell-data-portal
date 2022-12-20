@@ -6,9 +6,7 @@ export default function ScreenTint(): JSX.Element {
   return (
     <>
       <Loader />
-      <StyledDiv className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}>
-
-      </StyledDiv>
+      <StyledDiv className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME} />
     </>
   );
 }
