@@ -182,6 +182,7 @@ class PortalApi:
                 "organism": None
                 if dataset.metadata is None
                 else self._ontology_term_ids_to_response(dataset.metadata.organism),
+                "original_id": None if not is_in_published_collection else dataset.dataset_id.id,
                 "processing_status": self._dataset_processing_status_to_response(dataset.status, dataset.version_id.id),
                 "published": True,  # TODO
                 "published_at": dataset.canonical_dataset.published_at,
@@ -304,6 +305,9 @@ class PortalApi:
         if doi_node := doi.get_doi_link_node(body, errors):
             if doi_url := doi.portal_get_normalized_doi_url(doi_node, errors):
                 doi_node["link_url"] = doi_url
+        curator_name = body.get("curator_name")
+        if curator_name is None:
+            errors.append("Create Collection body is missing field 'curator_name'")
         if errors:
             raise InvalidParametersHTTPException(detail=errors)  # TODO: rewrite this exception?
 
@@ -314,8 +318,6 @@ class PortalApi:
             body["contact_email"],
             [self._link_from_request(node) for node in body.get("links", [])],
         )
-
-        curator_name = body["curator_name"]
 
         try:
             version = self.business_logic.create_collection(user, curator_name, metadata)
