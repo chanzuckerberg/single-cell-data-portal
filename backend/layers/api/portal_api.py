@@ -150,7 +150,7 @@ class PortalApi:
     def _dataset_to_response(
         self, dataset: DatasetVersion, is_tombstoned: bool, is_in_published_collection: bool = False
     ):
-        dataset_id = dataset.dataset_id.id if is_in_published_collection else dataset.version_id.id
+        dataset_id = dataset.version_id.id
         return self.remove_none(
             {
                 "assay": None
@@ -388,12 +388,17 @@ class PortalApi:
         if version is None or not UserInfo(token_info).is_user_owner_or_allowed(version.owner):
             raise ForbiddenHTTPException()
 
+        if body.get("links") is not None:
+            update_links = [self._link_from_request(node) for node in body["links"]]
+        else:
+            update_links = None
+
         payload = CollectionMetadataUpdate(
             body.get("name"),
             body.get("description"),
             body.get("contact_name"),
             body.get("contact_email"),
-            [self._link_from_request(node) for node in body.get("links", [])],
+            update_links,
         )
 
         self.business_logic.update_collection_version(CollectionVersionId(collection_id), payload)
@@ -615,7 +620,7 @@ class PortalApi:
         # Retrieves the URI of the cxg artifact
         s3_uri = next(a.uri for a in dataset.artifacts if a.type == DatasetArtifactType.CXG)
 
-        dataset_id = dataset.dataset_id.id if collection.published_at is not None else dataset.version_id.id
+        dataset_id = dataset.version_id.id
 
         dataset_identifiers = {
             "s3_uri": s3_uri,
