@@ -62,8 +62,9 @@ function App({ Component, pageProps }: AppPropsWithLayout): JSX.Element {
   return (
     <>
       <ConditionalAuth0Provider
-        domain={AUTH0_DOMAIN}
+        audience={AUTH0_CLIENT_ID}
         clientId={AUTH0_CLIENT_ID}
+        domain={AUTH0_DOMAIN}
         redirectUri={redirectUri}
       >
         <QueryClientProvider client={queryClient}>
