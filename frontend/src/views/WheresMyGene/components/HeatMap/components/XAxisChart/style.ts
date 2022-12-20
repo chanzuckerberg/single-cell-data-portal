@@ -3,24 +3,19 @@ import { X_AXIS_CHART_HEIGHT_PX, Y_AXIS_CHART_WIDTH_PX } from "../../utils";
 
 const ECHART_AXIS_LABEL_COLOR_HEX = "#6e7079";
 const ECHART_AXIS_LABEL_FONT_SIZE = 12;
-const X_AXIS_TITLE_HEIGHT_PX = 40;
-const TISSUE_BORDER_WIDTH_PX = 4;
-
-export const X_AXIS_CHART_TOTAL_HEIGHT_PX =
-  X_AXIS_CHART_HEIGHT_PX + X_AXIS_TITLE_HEIGHT_PX + TISSUE_BORDER_WIDTH_PX;
 
 export const XAxisContainer = styled.div`
   ${xAxisWidth}
   background-color: white;
-  height: ${X_AXIS_CHART_HEIGHT_PX + TISSUE_BORDER_WIDTH_PX}px;
-  top: ${X_AXIS_TITLE_HEIGHT_PX + TISSUE_BORDER_WIDTH_PX}px;
+  height: ${X_AXIS_CHART_HEIGHT_PX}px;
+  top: 0px;
   position: absolute;
 `;
 
 export const XAxisWrapper = styled.div`
   ${xAxisWidthAndOffset}
   background-color: white;
-  height: ${X_AXIS_CHART_TOTAL_HEIGHT_PX}px;
+  height: ${X_AXIS_CHART_HEIGHT_PX}px;
   position: absolute;
   z-index: 2;
 `;
@@ -36,7 +31,7 @@ export const CellCountLabel = styled.div`
   writing-mode: vertical-rl;
   padding-top: 16px;
   position: absolute;
-  top: ${X_AXIS_TITLE_HEIGHT_PX}px;
+  top: 0px;
   text-align: right;
   left: ${Y_AXIS_CHART_WIDTH_PX - 20}px;
   z-index: 2;

@@ -1,6 +1,5 @@
 import styled from "@emotion/styled";
-import { X_AXIS_CHART_TOTAL_HEIGHT_PX } from "./components/XAxisChart/style";
-import { Y_AXIS_CHART_WIDTH_PX } from "./utils";
+import { X_AXIS_CHART_HEIGHT_PX, Y_AXIS_CHART_WIDTH_PX } from "./utils";
 
 export const CHART_LEFT_PADDING = 10;
 
@@ -14,7 +13,7 @@ export const Container = styled.div`
 export const YAxisWrapper = styled.div`
   width: ${Y_AXIS_CHART_WIDTH_PX}px;
   position: absolute;
-  top: ${X_AXIS_CHART_TOTAL_HEIGHT_PX}px;
+  top: ${X_AXIS_CHART_HEIGHT_PX}px;
   left: 0;
   z-index: 1;
   padding-top: 5px;
@@ -30,7 +29,7 @@ export const YAxisWrapper = styled.div`
 
 export const XAxisMask = styled.div`
   width: ${Y_AXIS_CHART_WIDTH_PX + CHART_LEFT_PADDING}px;
-  height: ${X_AXIS_CHART_TOTAL_HEIGHT_PX}px;
+  height: ${X_AXIS_CHART_HEIGHT_PX}px;
 `;
 export const XAxisWrapper = styled.div`
   display: flex;
@@ -47,5 +46,5 @@ export const ChartWrapper = styled.div`
   padding-left: ${CHART_LEFT_PADDING}px;
   padding-top: 5px;
   left: ${Y_AXIS_CHART_WIDTH_PX}px;
-  top: ${X_AXIS_CHART_TOTAL_HEIGHT_PX}px;
+  top: ${X_AXIS_CHART_HEIGHT_PX}px;
 `;
