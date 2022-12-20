@@ -43,7 +43,7 @@ def patch(collection_id: str, body: dict, token_info: dict) -> Response:
     user_info = UserInfo(token_info)
     collection_version = get_infered_collection_version_else_forbidden(collection_id)
     is_owner_or_allowed_else_forbidden(collection_version, user_info)
-    if collection_version.published_at:
+    if collection_version.published_at is not None:
         raise MethodNotAllowedException(
             detail="Directly editing a public Collection is not allowed; you must create a revision."
         )
@@ -57,9 +57,27 @@ def patch(collection_id: str, body: dict, token_info: dict) -> Response:
             body["links"] = links
 
 
+    # TODO: dedup
+    def _link_from_request(body: dict):
+        return Link(
+            body.get("link_name"),
+            body["link_type"],
+            body["link_url"],
+        )
+
+    if body.get("links") is not None:
+        update_links = [_link_from_request(node) for node in body["links"]]
+    else:
+        update_links = None
+
     # Build CollectionMetadataUpdate object
-    body["links"] = [Link(link.get("link_name"), link["link_type"], link["link_url"]) for link in body.get("links", [])]
-    collection_metadata = CollectionMetadataUpdate(**body)
+    collection_metadata = CollectionMetadataUpdate(
+        body.get("name"),
+        body.get("description"),
+        body.get("contact_name"),
+        body.get("contact_email"),
+        update_links,
+    )
 
     # Update the collection
     try:

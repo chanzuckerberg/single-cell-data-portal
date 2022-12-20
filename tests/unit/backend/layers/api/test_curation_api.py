@@ -9,15 +9,18 @@ from backend.common.corpora_orm import CollectionVisibility
 from backend.common.providers.crossref_provider import CrossrefDOINotFoundException
 from backend.common.utils.api_key import generate
 from backend.layers.common.entities import (
+    CollectionMetadata,
     CollectionVersion,
     DatasetArtifactType,
     DatasetProcessingStatus,
     DatasetStatusKey,
     DatasetUploadStatus,
     DatasetValidationStatus,
+    Link,
     OntologyTermId,
 )
 from backend.portal.api.curation.v1.curation.collections.common import EntityColumns
+from tests.unit.backend.layers.api.test_portal_api import generate_mock_publisher_metadata
 from tests.unit.backend.layers.common.base_test import DatasetArtifactUpdate, DatasetStatusUpdate
 from tests.unit.backend.layers.common.base_api_test import BaseAPIPortalTest
 
@@ -736,26 +739,11 @@ class TestPatchCollectionID(BaseAPIPortalTest):
         self.assertEqual(200, response.status_code)
 
     def test__update_collection_partial_data__OK(self):
-        description = "a description"
-        contact_name = "first last"
-        contact_email = "name@server.domain"
-        links = [
-            {"link_name": "name", "link_type": "RAW_DATA", "link_url": "http://test_link.place"},
-        ]
-        publisher_metadata = {
-            "authors": [{"name": "First Last", "given": "First", "family": "Last"}],
-            "journal": "Journal of Anamolous Results",
-            "published_year": 2022,
-            "published_month": 1,
-        }
-        collection_id = self.generate_collection(
-            description=description,
-            contact_name=contact_name,
-            contact_email=contact_email,
-            links=links,
-            publisher_metadata=publisher_metadata,
-            visibility="PRIVATE",
-        ).collection_id
+        links = [Link("name", "RAW_DATA", "http://test_link.place")]
+        self.crossref_provider.fetch_metadata = Mock(return_value=generate_mock_publisher_metadata())
+        collection = self.generate_unpublished_collection(links=links)
+        collection_id = collection.collection_id
+
         new_name = "A new name, and only a new name"
         metadata = {"name": new_name}
         response = self.app.patch(
@@ -764,13 +752,15 @@ class TestPatchCollectionID(BaseAPIPortalTest):
             headers=self.make_owner_header(),
         )
         self.assertEqual(200, response.status_code)
+
         response = self.app.get(f"curation/v1/collections/{collection_id}")
+        print(response.json)
         self.assertEqual(new_name, response.json["name"])
-        self.assertEqual(description, response.json["description"])
-        self.assertEqual(contact_name, response.json["contact_name"])
-        self.assertEqual(contact_email, response.json["contact_email"])
-        self.assertEqual(links, response.json["links"])
-        self.assertEqual(publisher_metadata, response.json["publisher_metadata"])
+        self.assertEqual(collection.metadata.description, response.json["description"])
+        self.assertEqual(collection.metadata.contact_name, response.json["contact_name"])
+        self.assertEqual(collection.metadata.contact_email, response.json["contact_email"])
+        self.assertEqual([{"link_name": "name", "link_type": "RAW_DATA", "link_url": "http://test_link.place"}], response.json["links"])
+        self.assertEqual(collection.publisher_metadata, response.json["publisher_metadata"])
 
     def test_update_collection_with_empty_required_fields(self):
         tests = [dict(description=""), dict(contact_name=""), dict(contact_email=""), dict(name="")]
