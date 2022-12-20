@@ -22,7 +22,11 @@ def _verify_collection_metadata_fields(
 
     def check(key):
         value = getattr(metadata, key)
-        if check_existence and not value:
+        if check_existence and value is None:
+            # if checks_existence is true, value cannot be None since it must be required
+            errors.append({"name": key, "reason": "Cannot be blank."})
+        elif value is not None and not value:
+            # In any case, if a value is defined, it cannot be falsey (aka blank)
             errors.append({"name": key, "reason": "Cannot be blank."})
         elif value is not None and key == "name" and control_char_re.search(value):
             errors.append({"name": key, "reason": "Invalid characters detected."})

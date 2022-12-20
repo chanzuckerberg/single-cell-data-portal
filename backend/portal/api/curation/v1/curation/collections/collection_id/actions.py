@@ -41,6 +41,11 @@ def get(collection_id: str, token_info: dict) -> Response:
 
 def patch(collection_id: str, body: dict, token_info: dict) -> Response:
     user_info = UserInfo(token_info)
+
+    if "links" in body:
+        if not body["links"]:
+            raise InvalidParametersHTTPException(detail="If provided, the 'links' array may not be empty")
+
     collection_version = get_infered_collection_version_else_forbidden(collection_id)
     is_owner_or_allowed_else_forbidden(collection_version, user_info)
     if collection_version.published_at is not None:
@@ -55,7 +60,6 @@ def patch(collection_id: str, body: dict, token_info: dict) -> Response:
             links = body.get("links", [])
             links.append({"link_type": ProjectLinkType.DOI.name, "link_url": doi_url})
             body["links"] = links
-
 
     # TODO: dedup
     def _link_from_request(body: dict):

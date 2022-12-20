@@ -1,7 +1,6 @@
 import copy
 import json
 from dataclasses import asdict
-import unittest
 from unittest.mock import Mock, patch
 import uuid
 
@@ -9,7 +8,6 @@ from backend.common.corpora_orm import CollectionVisibility
 from backend.common.providers.crossref_provider import CrossrefDOINotFoundException
 from backend.common.utils.api_key import generate
 from backend.layers.common.entities import (
-    CollectionMetadata,
     CollectionVersion,
     DatasetArtifactType,
     DatasetProcessingStatus,
@@ -717,6 +715,7 @@ class TestGetCollectionID(BaseAPIPortalTest):
         self.assertEqual(200, res.status_code)
         self.assertIsNone(res.json["datasets"][0]["x_approximate_distribution"])
 
+
 class TestPatchCollectionID(BaseAPIPortalTest):
     def setUp(self):
         super().setUp()
@@ -759,7 +758,10 @@ class TestPatchCollectionID(BaseAPIPortalTest):
         self.assertEqual(collection.metadata.description, response.json["description"])
         self.assertEqual(collection.metadata.contact_name, response.json["contact_name"])
         self.assertEqual(collection.metadata.contact_email, response.json["contact_email"])
-        self.assertEqual([{"link_name": "name", "link_type": "RAW_DATA", "link_url": "http://test_link.place"}], response.json["links"])
+        self.assertEqual(
+            [{"link_name": "name", "link_type": "RAW_DATA", "link_url": "http://test_link.place"}],
+            response.json["links"],
+        )
         self.assertEqual(collection.publisher_metadata, response.json["publisher_metadata"])
 
     def test_update_collection_with_empty_required_fields(self):
@@ -808,7 +810,7 @@ class TestPatchCollectionID(BaseAPIPortalTest):
     def test__update_collection__doi__OK(self):
         initial_doi = "10.2020"
         links = [
-            {"link_name": "new doi", "link_type": "DOI", "link_url": "10.2020"},
+            {"link_name": "new doi", "link_type": "DOI", "link_url": "http://doi.org/10.2020"},
         ]
         new_doi = "10.1016"  # a real DOI (CURIE reference)
         collection_id = self.generate_collection(links=links, visibility="PRIVATE").collection_id
@@ -849,35 +851,29 @@ class TestPatchCollectionID(BaseAPIPortalTest):
         new_links = [
             {"link_name": "new link", "link_type": "RAW_DATA", "link_url": "http://brand_new_link.place"},
         ]
-        publisher_metadata = {
-            "authors": [{"name": "First Last", "given": "First", "family": "Last"}],
-            "journal": "Journal of Anamolous Results",
-            "published_year": 2022,
-            "published_month": 1,
-        }
-        with patch(
-            "backend.common.providers.crossref_provider.CrossrefProvider.fetch_metadata",
-            side_effect=CrossrefDOINotFoundException(),
-        ):
-            collection = self.generate_collection(
-                links=links, publisher_metadata=publisher_metadata, visibility="PRIVATE"
-            )
-            collection_id = collection.collection_id
-            original_collection = self.app.get(f"curation/v1/collections/{collection_id}").json
+        mock_publisher_metadata = generate_mock_publisher_metadata()
+        self.crossref_provider.fetch_metadata = Mock(return_value=mock_publisher_metadata)
+        collection = self.generate_collection(links=links, visibility="PRIVATE")
+        self.assertIsNotNone(collection.publisher_metadata)
+        collection_id = collection.collection_id
+        original_collection = self.app.get(f"curation/v1/collections/{collection_id}").json
 
-            # Only compare to first item in links list because "DOI" type gets removed from Curator API response
-            self.assertEqual(links[:1], original_collection["links"])
-            metadata = {"links": new_links, "doi": "10.1016/bad_doi"}
-            response = self.app.patch(
-                f"/curation/v1/collections/{collection_id}",
-                data=json.dumps(metadata),
-                headers=self.make_owner_header(),
-            )
-            self.assertEqual(400, response.status_code)
-            original_collection_unchanged = self.app.get(f"curation/v1/collections/{collection_id}").json
-            # Only compare to first item in links list because "DOI" type gets removed from Curator API response
-            self.assertEqual(links[:1], original_collection_unchanged["links"])
-            self.assertEqual(publisher_metadata, original_collection_unchanged["publisher_metadata"])
+        self.crossref_provider.fetch_metadata = Mock(side_effect=CrossrefDOINotFoundException())
+
+        # Only compare to first item in links list because "DOI" type gets removed from Curator API response
+        self.assertEqual(links[:1], original_collection["links"])
+        metadata = {"links": new_links, "doi": "10.1016/bad_doi"}
+        response = self.app.patch(
+            f"/curation/v1/collections/{collection_id}",
+            data=json.dumps(metadata),
+            headers=self.make_owner_header(),
+        )
+        self.assertEqual(400, response.status_code)
+        original_collection_unchanged = self.app.get(f"curation/v1/collections/{collection_id}").json
+
+        # Only compare to first item in links list because "DOI" type gets removed from Curator API response
+        self.assertEqual(links[:1], original_collection_unchanged["links"])
+        self.assertEqual(mock_publisher_metadata, original_collection_unchanged["publisher_metadata"])
 
     def test__update_collection__Not_Owner(self):
         collection_id = self.generate_unpublished_collection(owner="someone else").collection_id
@@ -905,8 +901,9 @@ class TestPatchCollectionID(BaseAPIPortalTest):
         self.assertEqual(405, response.status_code)
         self.assertEqual(
             "Directly editing a public Collection is not allowed; you must create a revision.",
-            json.loads(response.text)["detail"],
+            response.json["detail"],
         )
+
 
 class TestDeleteDataset(BaseAPIPortalTest):
     def test__delete_dataset(self):
