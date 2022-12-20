@@ -1,5 +1,5 @@
 import { Auth0Provider } from "@auth0/auth0-react";
-import { AUTH0_DOMAIN, AUTH0_CLIENT_ID, API_URL } from "src/configs/configs";
+import { AUTH0_DOMAIN, AUTH0_CLIENT_ID } from "src/configs/configs";
 import { ThemeProvider as EmotionThemeProvider } from "@emotion/react";
 import { StyledEngineProvider, ThemeProvider } from "@mui/material/styles";
 import { NextPage } from "next";
