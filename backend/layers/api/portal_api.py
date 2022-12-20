@@ -390,12 +390,17 @@ class PortalApi:
         if version is None or not UserInfo(token_info).is_user_owner_or_allowed(version.owner):
             raise ForbiddenHTTPException()
 
+        if body.get("links") is not None:
+            update_links = [self._link_from_request(node) for node in body["links"]]
+        else:
+            update_links = None
+
         payload = CollectionMetadataUpdate(
             body.get("name"),
             body.get("description"),
             body.get("contact_name"),
             body.get("contact_email"),
-            [self._link_from_request(node) for node in body.get("links", [])],
+            update_links,
         )
 
         self.business_logic.update_collection_version(CollectionVersionId(collection_id), payload)

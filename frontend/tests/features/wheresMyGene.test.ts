@@ -238,7 +238,7 @@ describe("Where's My Gene", () => {
     const GENE_COUNT = 3;
 
     await clickUntilOptionsShowUp(getTissueSelectorButton, page);
-    const texts = await page.getByRole("menuitem").allTextContents()
+    const texts = await page.getByRole("option").allTextContents()
     const tissueName = texts[0].replace(/\s+/g, "-");
     await selectFirstNOptions(TISSUE_COUNT, page);
 
@@ -307,7 +307,7 @@ describe("Where's My Gene", () => {
     }
 
     await clickUntilOptionsShowUp(getTissueSelectorButton, page);
-    const texts = await page.getByRole("menuitem").allTextContents()
+    const texts = await page.getByRole("option").allTextContents()
     const tissueName = texts[0].replace(/\s+/g, "-");    
     await selectFirstNOptions(1, page);
 
