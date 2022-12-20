@@ -714,8 +714,6 @@ class TestGetCollectionID(BaseAPIPortalTest):
         self.assertEqual(200, res.status_code)
         self.assertIsNone(res.json["datasets"][0]["x_approximate_distribution"])
 
-
-@unittest.skip("Trent will work on this")
 class TestPatchCollectionID(BaseAPIPortalTest):
     def setUp(self):
         super().setUp()
@@ -818,9 +816,9 @@ class TestPatchCollectionID(BaseAPIPortalTest):
                     self.assertEqual(expected_links, response.json["links"])
 
     def test__update_collection__doi__OK(self):
-        initial_doi = "12.3456/doi_curie_reference"
+        initial_doi = "10.2020"
         links = [
-            {"link_name": "new doi", "link_type": "DOI", "link_url": initial_doi},
+            {"link_name": "new doi", "link_type": "DOI", "link_url": "10.2020"},
         ]
         new_doi = "10.1016"  # a real DOI (CURIE reference)
         collection_id = self.generate_collection(links=links, visibility="PRIVATE").collection_id
@@ -892,7 +890,7 @@ class TestPatchCollectionID(BaseAPIPortalTest):
             self.assertEqual(publisher_metadata, original_collection_unchanged["publisher_metadata"])
 
     def test__update_collection__Not_Owner(self):
-        collection_id = self.generate_unpublished_collection(owner="someone else")
+        collection_id = self.generate_unpublished_collection(owner="someone else").collection_id
         response = self.app.patch(
             f"/curation/v1/collections/{collection_id}",
             data=json.dumps(self.test_collection),
@@ -901,7 +899,7 @@ class TestPatchCollectionID(BaseAPIPortalTest):
         self.assertEqual(403, response.status_code)
 
     def test__update_collection__Super_Curator(self):
-        collection_id = self.generate_unpublished_collection()
+        collection_id = self.generate_unpublished_collection().collection_id
         headers = self.make_super_curator_header()
         response = self.app.patch(
             f"/curation/v1/collections/{collection_id}", data=json.dumps(self.test_collection), headers=headers
@@ -909,7 +907,7 @@ class TestPatchCollectionID(BaseAPIPortalTest):
         self.assertEqual(200, response.status_code)
 
     def test__update_public_collection_owner__405(self):
-        collection_id = self.generate_published_collection()
+        collection_id = self.generate_published_collection().collection_id
         headers = self.make_super_curator_header()
         response = self.app.patch(
             f"/curation/v1/collections/{collection_id}", data=json.dumps(self.test_collection), headers=headers
@@ -919,7 +917,6 @@ class TestPatchCollectionID(BaseAPIPortalTest):
             "Directly editing a public Collection is not allowed; you must create a revision.",
             json.loads(response.text)["detail"],
         )
-
 
 class TestDeleteDataset(BaseAPIPortalTest):
     def test__delete_dataset(self):

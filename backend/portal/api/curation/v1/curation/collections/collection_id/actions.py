@@ -48,24 +48,26 @@ def patch(collection_id: str, body: dict, token_info: dict) -> Response:
             detail="Directly editing a public Collection is not allowed; you must create a revision."
         )
 
+    errors = []
+    # Verify DOI
+    if doi_url := body.pop("doi", None):
+        if doi_url := doi.curation_get_normalized_doi_url(doi_url, errors):
+            links = body.get("links", [])
+            links.append({"link_type": ProjectLinkType.DOI.name, "link_url": doi_url})
+            body["links"] = links
+
+
     # Build CollectionMetadataUpdate object
     body["links"] = [Link(link.get("link_name"), link["link_type"], link["link_url"]) for link in body.get("links", [])]
     collection_metadata = CollectionMetadataUpdate(**body)
 
     # Update the collection
-    errors = []
-    if doi_url := body.get("doi"):
-        if doi_url := doi.curation_get_normalized_doi_url(doi_url, errors):
-            links = body.get("links", [])
-            links.append({"link_type": ProjectLinkType.DOI.name, "link_url": doi_url})
-            body["links"] = links
     try:
         get_business_logic().update_collection_version(collection_version.version_id, collection_metadata)
     except CollectionUpdateException as ex:
         errors.extend(ex.errors)
     if errors:
         raise InvalidParametersHTTPException(ext=dict(invalid_parameters=errors))
-
     # Make Response
     updated_collection_version = get_business_logic().get_collection_version(collection_version.version_id)
 
