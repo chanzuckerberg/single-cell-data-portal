@@ -263,5 +263,5 @@ class TestApi(BaseFunctionalTestCase):
             res = self.session.get(f"{self.api}/dp/v1/collections/{collection_id}", headers=headers)
             data = json.loads(res.content)
             datasets = data["datasets"]
-            dataset_ids = [dataset.get('id') for dataset in datasets]
+            dataset_ids = [dataset.get("id") for dataset in datasets]
             self.assertNotIn(dataset_id, dataset_ids)

@@ -68,7 +68,9 @@ class TestRevisions(BaseFunctionalTestCase):
         data = json.loads(res.content)
         canonical_collection_id = data["id"]
 
-        dataset_id = self.session.get(f"{self.api}/dp/v1/collections/{canonical_collection_id}").json()["datasets"][0]["id"]
+        dataset_id = self.session.get(f"{self.api}/dp/v1/collections/{canonical_collection_id}").json()["datasets"][0][
+            "id"
+        ]
         explorer_url = self.create_explorer_url(dataset_id)
 
         meta_payload_before_revision_res = self.session.get(f"{self.api}/dp/v1/datasets/meta?url={explorer_url}")
@@ -148,7 +150,9 @@ class TestRevisions(BaseFunctionalTestCase):
 
         with self.subTest("Adding a dataset to a revision does not impact public datasets in that collection"):
             # Get datasets for the collection (after uploading)
-            public_datasets_after = self.session.get(f"{self.api}/dp/v1/collections/{canonical_collection_id}").json()["datasets"]
+            public_datasets_after = self.session.get(f"{self.api}/dp/v1/collections/{canonical_collection_id}").json()[
+                "datasets"
+            ]
             self.assertCountEqual(public_datasets_before, public_datasets_after)
 
         # Publish the revision
@@ -164,7 +168,9 @@ class TestRevisions(BaseFunctionalTestCase):
             "the collection page for the data portal (with the new dataset)"
         ):
             # Check if the last updated dataset_id is among the public datasets
-            public_datasets = self.session.get(f"{self.api}/dp/v1/collections/{canonical_collection_id}").json()["datasets"]
+            public_datasets = self.session.get(f"{self.api}/dp/v1/collections/{canonical_collection_id}").json()[
+                "datasets"
+            ]
             self.assertEqual(len(public_datasets), 2)
             ids = [dataset["id"] for dataset in public_datasets]
             self.assertIn(another_dataset_id, ids)
