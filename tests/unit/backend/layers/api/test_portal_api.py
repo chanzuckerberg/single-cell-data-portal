@@ -962,7 +962,9 @@ class TestUpdateCollection(BaseAPIPortalTest):
             "name": "new collection name",
         }
 
-        response = self.app.put(f"/dp/v1/collections/{collection.version_id.id}", data=json.dumps(payload), headers=headers)
+        response = self.app.put(
+            f"/dp/v1/collections/{collection.version_id.id}", data=json.dumps(payload), headers=headers
+        )
         self.assertEqual(200, response.status_code)
         actual_body = json.loads(response.data)
 
@@ -970,8 +972,14 @@ class TestUpdateCollection(BaseAPIPortalTest):
         self.assertEqual(actual_body["description"], collection.metadata.description)
         self.assertEqual(actual_body["contact_name"], collection.metadata.contact_name)
         self.assertEqual(actual_body["contact_email"], collection.metadata.contact_email)
-        self.assertEqual(actual_body["links"], [{"link_name": l.name, "link_type": l.type, "link_url": l.uri} for l in collection.metadata.links])
-        
+        self.assertEqual(
+            actual_body["links"],
+            [
+                {"link_name": link.name, "link_type": link.type, "link_url": link.uri}
+                for link in collection.metadata.links
+            ],
+        )
+
     # ✅
     def test__update_collection__403(self):
         collection = self.generate_unpublished_collection(owner="someone else")
