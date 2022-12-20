@@ -62,7 +62,7 @@ function App({ Component, pageProps }: AppPropsWithLayout): JSX.Element {
   return (
     <>
       <ConditionalAuth0Provider
-        audience={`https://${API_URL}/dp/v1/`}
+        audience={`${API_URL}/dp/v1/`}
         clientId={AUTH0_CLIENT_ID}
         domain={AUTH0_DOMAIN}
         redirectUri={redirectUri}
