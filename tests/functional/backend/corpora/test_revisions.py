@@ -21,6 +21,7 @@ class TestRevisions(BaseFunctionalTestCase):
         data = {
             "contact_email": "lisbon@gmail.com",
             "contact_name": "Madrid Sparkle",
+            "curator_name": "John Smith",
             "description": "Well here are some words",
             "links": [{"link_name": "a link to somewhere", "link_type": "PROTOCOL", "link_url": "http://protocol.com"}],
             "name": "my2collection",

@@ -119,23 +119,6 @@ paths:
           $ref: "#/components/responses/401"
 
   /v1/collections/{collection_id}:
-    delete:
-      tags:
-        - collections
-      summary: Delete a collection
-      security:
-        - cxguserCookie: [ ]
-      description: >-
-        Deletes an entire private collection from cellxgene data-portal, including any generated artifacts/assets and
-        deployments.
-      operationId: backend.portal.api.app.v1.collections.collection_id.actions.delete
-      parameters:
-        - $ref: "#/components/parameters/path_collection_id"
-      responses:
-        "204":
-          $ref: "#/components/responses/204"
-        "401":
-          $ref: "#/components/responses/401"
     get:
       tags:
         - collections
@@ -236,7 +219,6 @@ paths:
           $ref: "#/components/responses/401"
         "403":
           $ref: "#/components/responses/403"
-
     delete:
       tags:
         - collections

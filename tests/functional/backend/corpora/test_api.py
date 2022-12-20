@@ -103,7 +103,12 @@ class TestApi(BaseFunctionalTestCase):
             res.raise_for_status()
             self.assertStatusCode(requests.codes.accepted, res)
 
-            # check  collection returns as public
+            # get canonical collection_id
+            res = self.session.get(f"{self.api}/dp/v1/collections/{collection_id}", headers=headers)
+            data = json.loads(res.content)
+            canonical_collection_id = data["id"]
+
+            # check collection returns as public
             res = self.session.get(f"{self.api}/dp/v1/collections", headers=headers)
             data = json.loads(res.content)
             public_collection_ids = []
@@ -111,25 +116,28 @@ class TestApi(BaseFunctionalTestCase):
                 if collection["visibility"] == "PUBLIC":
                     public_collection_ids.append(collection["id"])
 
-            self.assertIn(collection_id, public_collection_ids)
+            self.assertIn(canonical_collection_id, public_collection_ids)
 
         with self.subTest("Test everyone can retrieve a public collection"):
             no_auth_headers = {"Content-Type": "application/json"}
             res = self.session.get(f"{self.api}/dp/v1/collections", headers=no_auth_headers)
             data = json.loads(res.content)
             collection_ids = [x["id"] for x in data["collections"]]
-            self.assertIn(collection_id, collection_ids)
+            self.assertIn(canonical_collection_id, collection_ids)
 
-        # can delete public collection
-        with self.subTest("Test a public collection can not be deleted"):
-            res = self.session.delete(f"{self.api}/dp/v1/collections/{collection_id}", headers=headers)
+        with self.subTest("Test a public collection can be tombstoned"):
+            res = self.session.delete(f"{self.api}/dp/v1/collections/{canonical_collection_id}", headers=headers)
             self.assertStatusCode(requests.codes.no_content, res)
+
+            res = self.session.get(f"{self.api}/dp/v1/collections/{collection_id}", headers=headers)
+            self.assertStatusCode(requests.codes.gone, res)
 
     def test_delete_private_collection(self):
         # create collection
         data = {
             "contact_email": "lisbon@gmail.com",
             "contact_name": "Madrid Sparkle",
+            "curator_name": "John Smith",
             "description": "Well here are some words",
             "links": [
                 {"link_name": "a link to somewhere", "link_type": "PROTOCOL", "link_url": "https://protocol.com"}
@@ -209,7 +217,7 @@ class TestApi(BaseFunctionalTestCase):
             keep_trying = True
             expected_upload_statuses = ["WAITING", "UPLOADING", "UPLOADED"]
             # conversion statuses can be `None` when/if we hit the status endpoint too early after an upload
-            expected_conversion_statuses = ["CONVERTING", "CONVERTED", "FAILED", "UPLOADING", "UPLOADED", None]
+            expected_conversion_statuses = ["CONVERTING", "CONVERTED", "FAILED", "UPLOADING", "UPLOADED", "NA", None]
             timer = time.time()
             while keep_trying:
                 data = None
@@ -251,6 +259,9 @@ class TestApi(BaseFunctionalTestCase):
             res.raise_for_status()
             self.assertStatusCode(requests.codes.accepted, res)
 
-            # Check that the dataset is gone
-            res = self.session.get(f"{self.api}/dp/v1/datasets/{dataset_id}/status", headers=headers)
-            self.assertStatusCode(requests.codes.forbidden, res)
+            # Check that the dataset is gone from collection version
+            res = self.session.get(f"{self.api}/dp/v1/collections/{collection_id}", headers=headers)
+            data = json.loads(res.content)
+            datasets = data["datasets"]
+            dataset_ids = [dataset.get('id') for dataset in datasets]
+            self.assertNotIn(dataset_id, dataset_ids)
