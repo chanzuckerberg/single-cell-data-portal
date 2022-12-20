@@ -66,7 +66,7 @@ function App({ Component, pageProps }: AppPropsWithLayout): JSX.Element {
         clientId={AUTH0_CLIENT_ID}
         domain={AUTH0_DOMAIN}
         redirectUri={redirectUri}
-        useRefreshTokens={true}
+        // useRefreshTokens={true}
       >
         <QueryClientProvider client={queryClient}>
           <StyledEngineProvider injectFirst>
