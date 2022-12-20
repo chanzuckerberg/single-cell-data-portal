@@ -954,6 +954,32 @@ class TestUpdateCollection(BaseAPIPortalTest):
         for field in test_fields:
             self.assertEqual(expected_body[field], actual_body[field])
 
+    def test__update_collection_partial__OK(self):
+        collection = self.generate_unpublished_collection(links=[Link("Link 1", "DOI", "http://doi.org/123")])
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+
+        payload = {
+            "name": "new collection name",
+        }
+
+        response = self.app.put(
+            f"/dp/v1/collections/{collection.version_id.id}", data=json.dumps(payload), headers=headers
+        )
+        self.assertEqual(200, response.status_code)
+        actual_body = json.loads(response.data)
+
+        self.assertEqual(actual_body["name"], "new collection name")
+        self.assertEqual(actual_body["description"], collection.metadata.description)
+        self.assertEqual(actual_body["contact_name"], collection.metadata.contact_name)
+        self.assertEqual(actual_body["contact_email"], collection.metadata.contact_email)
+        self.assertEqual(
+            actual_body["links"],
+            [
+                {"link_name": link.name, "link_type": link.type, "link_url": link.uri}
+                for link in collection.metadata.links
+            ],
+        )
+
     # ✅
     def test__update_collection__403(self):
         collection = self.generate_unpublished_collection(owner="someone else")
