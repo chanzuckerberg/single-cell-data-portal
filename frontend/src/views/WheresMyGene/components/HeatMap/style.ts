@@ -1,5 +1,8 @@
 import styled from "@emotion/styled";
-import { X_AXIS_CHART_HEIGHT_PX, Y_AXIS_CHART_WIDTH_PX } from "./utils";
+import { X_AXIS_CHART_TOTAL_HEIGHT_PX } from "./components/XAxisChart/style";
+import { Y_AXIS_CHART_WIDTH_PX } from "./utils";
+
+export const CHART_LEFT_PADDING = 10;
 
 export const Container = styled.div`
   height: 75vh;
@@ -8,38 +11,13 @@ export const Container = styled.div`
   position: relative;
 `;
 
-export const XAxisWrapper = styled.div`
-  ${xAxisWidth}
-
-  background-color: white;
-  height: ${X_AXIS_CHART_HEIGHT_PX}px;
-  position: sticky;
-  top: 0;
-  z-index: 2;
-`;
-
-export const XAxisMask = styled.div`
-  background-color: white;
-  height: ${X_AXIS_CHART_HEIGHT_PX}px;
-  width: ${Y_AXIS_CHART_WIDTH_PX}px;
-  position: sticky;
-  left: 0;
-`;
-
-export const XAxisContainer = styled.div`
-  ${xAxisWidth}
-
-  background-color: white;
-  height: ${X_AXIS_CHART_HEIGHT_PX}px;
-  position: absolute;
-`;
-
 export const YAxisWrapper = styled.div`
   width: ${Y_AXIS_CHART_WIDTH_PX}px;
-  position: sticky;
-  top: 0;
+  position: absolute;
+  top: ${X_AXIS_CHART_TOTAL_HEIGHT_PX}px;
   left: 0;
   z-index: 1;
+  padding-top: 5px;
   /* Somehow Firefox requires this to scroll */
   overflow: hidden;
 
@@ -50,15 +28,24 @@ export const YAxisWrapper = styled.div`
   }}
 `;
 
-export const ChartWrapper = styled.div`
+export const XAxisMask = styled.div`
+  width: ${Y_AXIS_CHART_WIDTH_PX + CHART_LEFT_PADDING}px;
+  height: ${X_AXIS_CHART_TOTAL_HEIGHT_PX}px;
+`;
+export const XAxisWrapper = styled.div`
   display: flex;
-  flex-direction: column;
-  position: absolute;
+  background-color: white;
+  flex-direction: row;
+  position: sticky;
   top: 0;
+  width: 100%;
+  z-index: 2;
 `;
 
-function xAxisWidth({ width }: { width: number }) {
-  return `
-    width: ${width}px;
-  `;
-}
+export const ChartWrapper = styled.div`
+  position: absolute;
+  padding-left: ${CHART_LEFT_PADDING}px;
+  padding-top: 5px;
+  left: ${Y_AXIS_CHART_WIDTH_PX}px;
+  top: ${X_AXIS_CHART_TOTAL_HEIGHT_PX}px;
+`;

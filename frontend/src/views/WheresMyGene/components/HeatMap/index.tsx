@@ -18,6 +18,7 @@ import {
 import Loader from "../Loader";
 import Chart from "./components/Chart";
 import XAxisChart from "./components/XAxisChart";
+import { CellCountLabel } from "./components/XAxisChart/style";
 import YAxisChart from "./components/YAxisChart";
 import { useSortedCellTypesByTissueName } from "./hooks/useSortedCellTypesByTissueName";
 import {
@@ -25,7 +26,13 @@ import {
   useTissueNameToCellTypeIdToGeneNameToCellTypeGeneExpressionSummaryDataMap,
 } from "./hooks/useSortedGeneNames";
 import { useTrackHeatMapLoaded } from "./hooks/useTrackHeatMapLoaded";
-import { ChartWrapper, Container, YAxisWrapper } from "./style";
+import {
+  ChartWrapper,
+  Container,
+  YAxisWrapper,
+  XAxisMask,
+  XAxisWrapper,
+} from "./style";
 import { X_AXIS_CHART_HEIGHT_PX } from "./utils";
 
 interface Props {
@@ -143,7 +150,11 @@ export default memo(function HeatMap({
     <Container {...{ className }}>
       {isLoadingAPI || isAnyTissueLoading(isLoading) ? <Loader /> : null}
 
-      <XAxisChart geneNames={sortedGeneNames} />
+      <XAxisWrapper>
+        <XAxisMask />
+        <CellCountLabel>Cell Count</CellCountLabel>
+        <XAxisChart geneNames={sortedGeneNames} />
+      </XAxisWrapper>
       <YAxisWrapper
         height={(chartWrapperRect?.height || 0) - X_AXIS_CHART_HEIGHT_PX}
       >

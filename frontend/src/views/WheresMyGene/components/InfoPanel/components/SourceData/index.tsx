@@ -18,12 +18,13 @@ interface Collections {
 }
 
 export default function SourceData(): JSX.Element {
-  const {
-    selectedFilters,
-  } = useContext(StateContext);  
+  const { selectedFilters } = useContext(StateContext);
   const { data: filterDimensions } = useFilterDimensions();
   let { datasets = [] } = filterDimensions;
-  if (selectedFilters.datasets.length > 0) datasets = datasets.filter((dataset) => selectedFilters.datasets.includes(dataset.id));
+  if (selectedFilters.datasets.length > 0)
+    datasets = datasets.filter((dataset) =>
+      selectedFilters.datasets.includes(dataset.id)
+    );
   const collections: Collections = useMemo(() => {
     return aggregateCollectionsFromDatasets(datasets);
   }, [datasets]);

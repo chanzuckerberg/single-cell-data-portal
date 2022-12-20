@@ -18,7 +18,7 @@ export function useUpdateXAxisChart({
 }: Props): void {
   const throttledUpdateXAxisChart = useMemo(() => {
     return throttle(
-      ({ geneNames = [], genesToDelete, xAxisChart }: Props) => {
+      ({ geneNames = [], genesToDelete, xAxisChart, heatmapWidth }: Props) => {
         if (!xAxisChart) {
           return;
         }
@@ -31,6 +31,7 @@ export function useUpdateXAxisChart({
           createXAxisOptions({
             geneNames,
             genesToDelete,
+            heatmapWidth,
           })
         );
       },
@@ -56,8 +57,6 @@ export function useUpdateXAxisChart({
   }, [
     geneNames,
     genesToDelete,
-    // (thuang): `heatmapWidth` is needed to make sure the chart resizes AFTER
-    // the DOM width has been updated
     heatmapWidth,
     xAxisChart,
     throttledUpdateXAxisChart,
