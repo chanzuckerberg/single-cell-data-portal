@@ -150,7 +150,7 @@ class PortalApi:
     def _dataset_to_response(
         self, dataset: DatasetVersion, is_tombstoned: bool, is_in_published_collection: bool = False
     ):
-        dataset_id = dataset.dataset_id.id if is_in_published_collection else dataset.version_id.id
+        dataset_id = dataset.version_id.id
         return self.remove_none(
             {
                 "assay": None
@@ -615,7 +615,7 @@ class PortalApi:
         # Retrieves the URI of the cxg artifact
         s3_uri = next(a.uri for a in dataset.artifacts if a.type == DatasetArtifactType.CXG)
 
-        dataset_id = dataset.dataset_id.id if collection.published_at is not None else dataset.version_id.id
+        dataset_id = dataset.version_id.id
 
         dataset_identifiers = {
             "s3_uri": s3_uri,

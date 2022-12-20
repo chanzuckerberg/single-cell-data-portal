@@ -1612,7 +1612,7 @@ class TestDataset(BaseAPIPortalTest):
 
             expected_identifiers = {
                 "s3_uri": test_uri_0,
-                "dataset_id": public_dataset.dataset_id,
+                "dataset_id": public_dataset.dataset_version_id,
                 "collection_id": public_dataset.collection_id,
                 "collection_visibility": "PUBLIC",  # this is a published collection
                 "tombstoned": False,
