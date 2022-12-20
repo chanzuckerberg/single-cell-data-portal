@@ -63,7 +63,12 @@ class TestRevisions(BaseFunctionalTestCase):
             res.raise_for_status()
             self.assertStatusCode(requests.codes.accepted, res)
 
-        dataset_id = self.session.get(f"{self.api}/dp/v1/collections/{collection_id}").json()["datasets"][0]["id"]
+        # get canonical collection id, post-publish
+        res = self.session.get(f"{self.api}/dp/v1/collections/{collection_id}", headers=headers)
+        data = json.loads(res.content)
+        canonical_collection_id = data["id"]
+
+        dataset_id = self.session.get(f"{self.api}/dp/v1/collections/{canonical_collection_id}").json()["datasets"][0]["id"]
         explorer_url = self.create_explorer_url(dataset_id)
 
         meta_payload_before_revision_res = self.session.get(f"{self.api}/dp/v1/datasets/meta?url={explorer_url}")
@@ -73,11 +78,13 @@ class TestRevisions(BaseFunctionalTestCase):
         # Endpoint is eventually consistent
         schema_before_revision = self.get_schema_with_retries(dataset_id).json()
 
+        # Start a revision
+        res = self.session.post(f"{self.api}/dp/v1/collections/{canonical_collection_id}", headers=headers)
+        self.assertStatusCode(201, res)
+        data = json.loads(res.content)
+        revision_id = data["id"]
+
         with self.subTest("Test updating a dataset in a revision does not effect the published dataset"):
-            # Start a revision
-            res = self.session.post(f"{self.api}/dp/v1/collections/{collection_id}", headers=headers)
-            self.assertStatusCode(201, res)
-            revision_id = res.json()["id"]
             private_dataset_id = res.json()["datasets"][0]["id"]
 
             meta_payload_res = self.session.get(f"{self.api}/dp/v1/datasets/meta?url={explorer_url}")
@@ -126,65 +133,64 @@ class TestRevisions(BaseFunctionalTestCase):
 
             # TODO: add `And the explorer url redirects appropriately`
 
+        # Start a new revision
+        res = self.session.post(f"{self.api}/dp/v1/collections/{canonical_collection_id}", headers=headers)
+        revision_id = res.json()["id"]
+        self.assertStatusCode(201, res)
+
+        # Get datasets for the collection (before uploading)
+        public_datasets_before = self.session.get(f"{self.api}/dp/v1/collections/{canonical_collection_id}").json()[
+            "datasets"
+        ]
+
+        # Upload a new dataset
+        another_dataset_id = self.upload_and_wait(revision_id, dataset_1_dropbox_url)
+
         with self.subTest("Adding a dataset to a revision does not impact public datasets in that collection"):
-
-            # Get datasets for the collection (before uploading)
-            public_datasets_before = self.session.get(f"{self.api}/dp/v1/collections/{collection_id}").json()[
-                "datasets"
-            ]
-
-            # Start a revision
-            res = self.session.post(f"{self.api}/dp/v1/collections/{collection_id}", headers=headers)
-            revision_id = res.json()["id"]
-            self.assertStatusCode(201, res)
-
-            # Upload a new dataset
-            another_dataset_id = self.upload_and_wait(revision_id, dataset_1_dropbox_url)
-
             # Get datasets for the collection (after uploading)
-            public_datasets_after = self.session.get(f"{self.api}/dp/v1/collections/{collection_id}").json()["datasets"]
+            public_datasets_after = self.session.get(f"{self.api}/dp/v1/collections/{canonical_collection_id}").json()["datasets"]
             self.assertCountEqual(public_datasets_before, public_datasets_after)
+
+        # Publish the revision
+        body = {"data_submission_policy_version": "1.0"}
+        res = self.session.post(
+            f"{self.api}/dp/v1/collections/{revision_id}/publish", headers=headers, data=json.dumps(body)
+        )
+        res.raise_for_status()
+        self.assertStatusCode(requests.codes.accepted, res)
 
         with self.subTest(
             "Publishing a revision that contains a new dataset updates "
             "the collection page for the data portal (with the new dataset)"
         ):
-            # Publish the revision
-            body = {"data_submission_policy_version": "1.0"}
-            res = self.session.post(
-                f"{self.api}/dp/v1/collections/{revision_id}/publish", headers=headers, data=json.dumps(body)
-            )
-            res.raise_for_status()
-            self.assertStatusCode(requests.codes.accepted, res)
-
             # Check if the last updated dataset_id is among the public datasets
-            public_datasets = self.session.get(f"{self.api}/dp/v1/collections/{collection_id}").json()["datasets"]
+            public_datasets = self.session.get(f"{self.api}/dp/v1/collections/{canonical_collection_id}").json()["datasets"]
             self.assertEqual(len(public_datasets), 2)
             ids = [dataset["id"] for dataset in public_datasets]
             self.assertIn(another_dataset_id, ids)
 
+        # Start a revision
+        res = self.session.post(f"{self.api}/dp/v1/collections/{canonical_collection_id}", headers=headers)
+        self.assertStatusCode(201, res)
+        revision_id = res.json()["id"]
+
+        # This only works if you pick the non replaced dataset.
+        dataset_to_delete = res.json()["datasets"][1]
+        deleted_dataset_id = dataset_to_delete["id"]
+        canonical_dataset_id = dataset_to_delete["original_id"]
+        original_explorer_url = self.create_explorer_url(canonical_dataset_id)
+
+        # Delete a dataset within the revision
+        res = self.session.delete(f"{self.api}/dp/v1/datasets/{deleted_dataset_id}", headers=headers)
+        self.assertStatusCode(202, res)
+
         with self.subTest("Deleting a dataset does not effect the published dataset"):
-            # Start a revision
-            res = self.session.post(f"{self.api}/dp/v1/collections/{collection_id}", headers=headers)
-            self.assertStatusCode(201, res)
-            revision_id = res.json()["id"]
-
-            # This only works if you pick the non replaced dataset.
-            dataset_to_delete = res.json()["datasets"][1]
-            deleted_dataset_id = dataset_to_delete["id"]
-            original_dataset_id = dataset_to_delete["original_id"]
-            original_explorer_url = self.create_explorer_url(original_dataset_id)
-
-            # Delete a dataset within the revision
-            res = self.session.delete(f"{self.api}/dp/v1/datasets/{deleted_dataset_id}", headers=headers)
-            self.assertStatusCode(202, res)
-
             # Check if the dataset is still available
             res = self.session.get(f"{self.api}/dp/v1/datasets/meta?url={original_explorer_url}")
             self.assertStatusCode(200, res)
 
             # Endpoint is eventually consistent
-            res = self.get_schema_with_retries(original_dataset_id)
+            res = self.get_schema_with_retries(canonical_dataset_id)
             self.assertStatusCode(200, res)
 
         with self.subTest("Publishing a revision that deletes a dataset removes it from the data portal"):
@@ -202,10 +208,10 @@ class TestRevisions(BaseFunctionalTestCase):
             datasets = [dataset["id"] for dataset in res.json()["datasets"]]
             self.assertEqual(1, len(datasets))
             self.assertNotIn(deleted_dataset_id, datasets)
-            self.assertNotIn(original_dataset_id, datasets)
+            self.assertNotIn(canonical_dataset_id, datasets)
 
             # Endpoint is eventually consistent. This redirects to the collection page, so the status we want is 302
-            res = self.get_schema_with_retries(original_dataset_id, desired_http_status_code=302)
+            res = self.get_schema_with_retries(canonical_dataset_id, desired_http_status_code=302)
             self.assertStatusCode(302, res)
 
     def get_schema_with_retries(self, dataset_id, desired_http_status_code=requests.codes.ok):
