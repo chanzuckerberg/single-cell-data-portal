@@ -178,12 +178,16 @@ describe("Where's My Gene", () => {
 
     await tryUntil(
       async () => {
-        const sourceDataList = await page.$("[class*=MuiList-root]");
+        const sourceDataList = await page.$(
+          `[data-test-id="data-source-list"]`
+        );
+
         if (!sourceDataList) throw Error("no source data displayed");
 
         const sourceDataListItems = await sourceDataList?.$$(
           ".MuiListItem-root"
         );
+
         expect(sourceDataListItems?.length).toBeGreaterThan(0);
 
         await page.mouse.click(0, 0);
@@ -238,7 +242,7 @@ describe("Where's My Gene", () => {
     const GENE_COUNT = 3;
 
     await clickUntilOptionsShowUp(getTissueSelectorButton, page);
-    const texts = await page.getByRole("option").allTextContents()
+    const texts = await page.getByRole("option").allTextContents();
     const tissueName = texts[0].replace(/\s+/g, "-");
     await selectFirstNOptions(TISSUE_COUNT, page);
 
@@ -307,13 +311,13 @@ describe("Where's My Gene", () => {
     }
 
     await clickUntilOptionsShowUp(getTissueSelectorButton, page);
-    const texts = await page.getByRole("option").allTextContents()
-    const tissueName = texts[0].replace(/\s+/g, "-");    
+    const texts = await page.getByRole("option").allTextContents();
+    const tissueName = texts[0].replace(/\s+/g, "-");
     await selectFirstNOptions(1, page);
 
     await clickUntilOptionsShowUp(getGeneSelectorButton, page);
     await selectFirstNOptions(3, page);
-    
+
     await tryUntil(
       async () => {
         const canvases = await page.$$("canvas");
