@@ -24,7 +24,7 @@ def _verify_collection_metadata_fields(
         value = getattr(metadata, key)
         if check_existence and value is None:
             # if checks_existence is true, value cannot be None since it must be required
-            errors.append({"name": key, "reason": "Cannot be blank."})
+            errors.append({"name": key, "reason": "Cannot be empty."})
         elif value is not None and not value:
             # In any case, if a value is defined, it cannot be falsey (aka blank)
             errors.append({"name": key, "reason": "Cannot be blank."})

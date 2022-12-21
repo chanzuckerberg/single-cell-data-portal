@@ -223,14 +223,14 @@ class BusinessLogic(BusinessLogicInterface):
         # Determine if publisher metadata should be unset, ignored or set at the end of the method.
         # Note: the update needs to be done at the end to ensure atomicity
         unset_publisher_metadata = False
-        set_publisher_metadata = None
+        publisher_metadata_to_set = None
 
         if old_doi and new_doi is None:
             # If the DOI was deleted, remove the publisher_metadata field
             unset_publisher_metadata = True
         elif (new_doi is not None) and new_doi != old_doi:
             # If the DOI has changed, fetch and update the metadata
-            set_publisher_metadata = self._get_publisher_metadata(new_doi, errors)
+            publisher_metadata_to_set = self._get_publisher_metadata(new_doi, errors)
 
         if errors:
             raise CollectionUpdateException(errors)
@@ -248,8 +248,8 @@ class BusinessLogic(BusinessLogicInterface):
         # Issue all updates
         if unset_publisher_metadata:
             self.database_provider.save_collection_publisher_metadata(version_id, None)
-        if set_publisher_metadata is not None:
-            self.database_provider.save_collection_publisher_metadata(version_id, set_publisher_metadata)
+        elif publisher_metadata_to_set is not None:
+            self.database_provider.save_collection_publisher_metadata(version_id, publisher_metadata_to_set)
         self.database_provider.save_collection_metadata(version_id, new_metadata)
 
     def _assert_collection_version_unpublished(
