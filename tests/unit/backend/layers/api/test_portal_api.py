@@ -24,7 +24,7 @@ from backend.layers.thirdparty.uri_provider import FileInfo, FileInfoException
 
 from furl import furl
 
-from backend.common.providers.crossref_provider import CrossrefDOINotFoundException, CrossrefFetchException
+from backend.layers.thirdparty.crossref_provider import CrossrefDOINotFoundException, CrossrefFetchException
 from backend.portal.api.collections_common import verify_collection_body
 from tests.unit.backend.layers.common.base_test import (
     DatasetArtifactUpdate,
@@ -115,7 +115,6 @@ class TestCollection(BaseAPIPortalTest):
                     "mean_genes_per_cell": 0.5,
                     "name": "test_dataset_name",
                     "organism": [{"label": "test_organism_label", "ontology_term_id": "test_organism_term_id"}],
-                    "original_id": mock.ANY,
                     "processing_status": {
                         "created_at": 0,
                         "cxg_status": "NA",
@@ -166,7 +165,6 @@ class TestCollection(BaseAPIPortalTest):
                     "mean_genes_per_cell": 0.5,
                     "name": "test_dataset_name",
                     "organism": [{"label": "test_organism_label", "ontology_term_id": "test_organism_term_id"}],
-                    "original_id": mock.ANY,
                     "processing_status": {
                         "created_at": 0,
                         "cxg_status": "NA",
@@ -1676,12 +1674,15 @@ class TestRevision(BaseAPIPortalTest):
         path = f"/dp/v1/collections/{published_collection.collection_id.id}"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
         response = self.app.post(path, headers=headers)
-        print(response.data)
         self.assertEqual(201, response.status_code)
         response_post_json = json.loads(response.data)
 
         # Retrieves the version_id from the response
         revision_id = response_post_json["id"]
+        # Ensure the revision datasets provide 'original IDs' equal to the published dataset canonical IDs
+        original_ids = [dataset["original_id"] for dataset in response_post_json["datasets"]]
+        canonical_dataset_ids = [dataset.dataset_id.id for dataset in published_collection.datasets]
+        self.assertCountEqual(original_ids, canonical_dataset_ids)
 
         # Ensures that getting the version has:
         # - PRIVATE visibility (since it's unpublished)
