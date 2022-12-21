@@ -24,7 +24,7 @@ from backend.layers.thirdparty.uri_provider import FileInfo, FileInfoException
 
 from furl import furl
 
-from backend.common.providers.crossref_provider import CrossrefDOINotFoundException, CrossrefFetchException
+from backend.layers.thirdparty.crossref_provider import CrossrefDOINotFoundException, CrossrefFetchException
 from backend.portal.api.collections_common import verify_collection_body
 from tests.unit.backend.layers.common.base_test import (
     DatasetArtifactUpdate,
