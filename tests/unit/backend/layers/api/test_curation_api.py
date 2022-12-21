@@ -5,7 +5,7 @@ from unittest.mock import Mock, patch
 import uuid
 
 from backend.common.corpora_orm import CollectionVisibility
-from backend.common.providers.crossref_provider import CrossrefDOINotFoundException
+from backend.layers.thirdparty.crossref_provider import CrossrefDOINotFoundException
 from backend.common.utils.api_key import generate
 from backend.layers.common.entities import (
     CollectionVersion,
