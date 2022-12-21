@@ -10,6 +10,7 @@ from backend.layers.business.business import BusinessLogic
 from backend.layers.common.entities import (
     CollectionMetadata,
     CollectionVersion,
+    CollectionVersionWithDatasets,
     DatasetMetadata,
     DatasetStatusGeneric,
     DatasetStatusKey,
@@ -155,7 +156,6 @@ class BaseTest(unittest.TestCase):
         return self.business_logic.get_collection_version(collection.version_id)
 
     # Public collections need to have at least one dataset!
-    # Public collections need to have at least one dataset!
     def generate_published_collection(
         self,
         owner="test_user_id",
@@ -163,14 +163,14 @@ class BaseTest(unittest.TestCase):
         add_datasets: int = 1,
         curator_name: str = "Jane Smith",
         metadata=None,
-    ) -> CollectionVersion:
+    ) -> CollectionVersionWithDatasets:
         unpublished_collection = self.generate_unpublished_collection(
             owner, curator_name, links, add_datasets=add_datasets, metadata=metadata
         )
         self.business_logic.publish_collection_version(unpublished_collection.version_id)
         return self.business_logic.get_collection_version(unpublished_collection.version_id)
 
-    def generate_revision(self, collection_id: str) -> CollectionVersion:
+    def generate_revision(self, collection_id: str) -> CollectionVersionWithDatasets:
         revision = self.business_logic.create_collection_version(collection_id)
         return self.business_logic.get_collection_version(revision.version_id)
 
@@ -231,7 +231,7 @@ class BaseTest(unittest.TestCase):
         # TODO: implement as needed
         return body
 
-    def generate_collection(self, links: List[dict] = None, **kwargs) -> CollectionVersion:
+    def generate_collection(self, links: List[dict] = None, **kwargs) -> CollectionVersionWithDatasets:
         """Generated a collection
         Adding to for compatibility with old tests
         """
@@ -243,7 +243,7 @@ class BaseTest(unittest.TestCase):
         else:
             return self.generate_unpublished_collection(links=links, **kwargs)
 
-    def generate_collection_revision(self, owner="test_user_id") -> CollectionVersion:
+    def generate_collection_revision(self, owner="test_user_id") -> CollectionVersionWithDatasets:
         published_collection = self.generate_published_collection(owner)
         return self.business_logic.create_collection_version(published_collection.collection_id)
 
