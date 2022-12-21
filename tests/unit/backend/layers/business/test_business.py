@@ -4,7 +4,11 @@ from datetime import datetime
 from unittest.mock import Mock
 from uuid import uuid4
 
-from backend.common.providers.crossref_provider import CrossrefDOINotFoundException, CrossrefException
+from backend.layers.thirdparty.crossref_provider import (
+    CrossrefDOINotFoundException,
+    CrossrefException,
+    CrossrefProviderInterface,
+)
 from backend.layers.business.business import (
     BusinessLogic,
     CollectionMetadataUpdate,
@@ -36,7 +40,6 @@ from backend.layers.common.entities import (
 )
 from backend.layers.persistence.persistence import DatabaseProvider
 from backend.layers.persistence.persistence_mock import DatabaseProviderMock
-from backend.layers.thirdparty.crossref_provider import CrossrefProviderInterface
 from backend.layers.thirdparty.s3_provider import S3ProviderInterface
 from backend.layers.thirdparty.step_function_provider import StepFunctionProviderInterface
 from backend.layers.thirdparty.uri_provider import FileInfo, UriProviderInterface
