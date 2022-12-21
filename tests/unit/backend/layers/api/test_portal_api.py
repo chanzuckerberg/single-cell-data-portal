@@ -1680,7 +1680,7 @@ class TestRevision(BaseAPIPortalTest):
         # Retrieves the version_id from the response
         revision_id = response_post_json["id"]
         # Ensure the revision datasets provide 'original IDs' equal to the published dataset canonical IDs
-        original_ids = [dataset['original_id'] for dataset in response_post_json['datasets']]
+        original_ids = [dataset["original_id"] for dataset in response_post_json["datasets"]]
         canonical_dataset_ids = [dataset.dataset_id.id for dataset in published_collection.datasets]
         self.assertCountEqual(original_ids, canonical_dataset_ids)
 
