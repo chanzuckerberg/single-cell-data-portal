@@ -541,7 +541,7 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         self.assertIsNone(new_dataset_version.metadata)
         self.assertEqual(new_dataset_version.collection_id, version.collection_id)
         self.assertEqual(new_dataset_version.status.upload_status, DatasetUploadStatus.WAITING)
-        self.assertEqual(new_dataset_version.status.processing_status, DatasetProcessingStatus.PENDING)
+        self.assertEqual(new_dataset_version.status.processing_status, DatasetProcessingStatus.INITIALIZED)
 
     def test_add_dataset_to_unpublished_collection_ok(self):
         """
@@ -558,7 +558,7 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         self.assertIsNone(new_dataset_version.metadata)
         self.assertEqual(new_dataset_version.collection_id, version.collection_id)
         self.assertEqual(new_dataset_version.status.upload_status, DatasetUploadStatus.WAITING)
-        self.assertEqual(new_dataset_version.status.processing_status, DatasetProcessingStatus.PENDING)
+        self.assertEqual(new_dataset_version.status.processing_status, DatasetProcessingStatus.INITIALIZED)
 
     def test_add_dataset_to_non_existing_collection_ok(self):
         """
@@ -643,7 +643,7 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         self.assertIsNotNone(new_dataset_version)
         self.assertIsNone(new_dataset_version.metadata)
         self.assertEqual(new_dataset_version.status.upload_status, DatasetUploadStatus.WAITING)
-        self.assertEqual(new_dataset_version.status.processing_status, DatasetProcessingStatus.PENDING)
+        self.assertEqual(new_dataset_version.status.processing_status, DatasetProcessingStatus.INITIALIZED)
 
         # Verify that the old dataset is still existent
         old_dataset_version = self.database_provider.get_dataset_version(dataset_version_to_replace_id)

@@ -630,7 +630,7 @@ paths:
                     $ref: "#/components/schemas/dataset_id"
                   processing_status:
                     type: string
-                    enum: [PENDING, SUCCESS, FAILURE]
+                    enum: [INITIALIZED, PENDING, SUCCESS, FAILURE]
                   upload_status:
                     type: string
                     enum:
