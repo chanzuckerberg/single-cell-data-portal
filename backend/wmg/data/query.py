@@ -173,15 +173,11 @@ def retrieve_top_n_markers(query_result, test, n_markers):
     if n_markers > 0:
         markers = markers.nlargest(n_markers, "effect_size")
 
-    records = markers[col_names].to_dict(orient="records")
+    records = markers[["gene_ontology_term_id"] + col_names].to_dict(orient="records")
 
-    genes = np.array(list(markers["gene_ontology_term_id"]))
-    final_records = []
-    final_genes = []
-    for i, record in enumerate(records):
+    marker_genes = []
+    for record in records:
         if not math.isnan(record["p_value"]) and not math.isnan(record["effect_size"]):
-            final_records.append(record)
-            final_genes.append(genes[i])
+            marker_genes.append(record)
 
-    marker_genes = dict(zip(final_genes, final_records))
     return marker_genes
