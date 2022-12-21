@@ -10,6 +10,7 @@ from backend.common.utils.jwt import jwt_decode, get_unverified_header
 
 _auth0_session_with_retry = None
 
+
 def get_auth0_session_with_retry():
     global _auth0_session_with_retry
     if _auth0_session_with_retry is None:
