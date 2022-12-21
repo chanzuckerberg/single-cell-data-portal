@@ -288,11 +288,13 @@ jobs:
       - e2e-test
       - functional-test
     steps:
+      - uses: martialonline/workflow-status@v4
+        id: check
       - uses: 8398a7/action-slack@v3
         with:
-          status: ${{ job.status }}
+          status: ${{ steps.check.outputs.status }}
           fields: repo,commit,author,eventName,workflow,job,mention
           mention: "here"
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-        if: failure() && github.ref == 'refs/heads/main'
+        if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
