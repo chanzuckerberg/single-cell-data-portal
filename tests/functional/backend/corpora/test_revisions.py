@@ -122,15 +122,10 @@ class TestRevisions(BaseFunctionalTestCase):
                 dataset_meta_payload["s3_uri"].startswith(f"s3://hosted-cellxgene-{os.environ['DEPLOYMENT_STAGE']}/")
             )
             self.assertTrue(dataset_meta_payload["s3_uri"].endswith(".cxg/"))
-            self.assertNotIn(
+            self.assertIn(
                 dataset_meta_payload["dataset_id"],
                 dataset_meta_payload["s3_uri"],
-                "The id of the S3_URI should be different from the revised dataset id.",
-            )
-            self.assertNotIn(
-                dataset_id,
-                dataset_meta_payload["s3_uri"],
-                "The id of the S3_URI should be different from the original dataset id.",
+                "The id of the S3_URI should be the revised dataset id.",
             )
 
             # TODO: add `And the explorer url redirects appropriately`
