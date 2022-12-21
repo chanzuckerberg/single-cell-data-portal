@@ -11,7 +11,7 @@ export default function Beta({
     position: "absolute",
     right: "20px",
     width: "360px",
-    zIndex: "999",
+    zIndex: "99",
   } as React.CSSProperties;
 
   return (

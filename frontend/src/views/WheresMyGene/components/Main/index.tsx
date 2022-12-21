@@ -42,6 +42,7 @@ import InfoPanel from "../InfoPanel";
 import ColorScale from "../InfoPanel/components/ColorScale";
 import Legend from "../InfoPanel/components/Legend";
 import Loader from "../Loader";
+import ScreenTint from "../ScreenTint";
 import { BetaWrapper, SideBarLabel, StyledSidebarDrawer } from "./style";
 
 export const INFO_PANEL_WIDTH_PX = 320;
@@ -270,6 +271,8 @@ export default function WheresMyGene(): JSX.Element {
 
   const [forceOpen, setForceOpen] = useState(false);
 
+  const [isDownloading, setIsDownloading] = useState(false);
+
   const usePrevious = <T,>(value: T): T | undefined => {
     const ref = useRef<T>();
     useEffect(() => {
@@ -341,6 +344,7 @@ export default function WheresMyGene(): JSX.Element {
               selectedTissues={selectedTissues}
               isScaled={isScaled}
               handleRightSidebarButtonClick={handleSourceDatasetButtonClick}
+              setIsDownloading={setIsDownloading}
             />
           </Top>
 
@@ -361,6 +365,8 @@ export default function WheresMyGene(): JSX.Element {
           >
             <InfoPanel />
           </StyledSidebarDrawer>
+
+          {isDownloading && <ScreenTint />}
 
           {shouldShowHeatMap ? (
             <HeatMap

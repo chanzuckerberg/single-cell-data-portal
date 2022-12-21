@@ -36,7 +36,7 @@ functional-test: local-functional-test
 .PHONY: container-functionaltest
 container-functionaltest:
 	# This target is intended to be run INSIDE a container
-	python3 -m unittest discover --start-directory tests/functional --top-level-directory . --verbose
+	python3 -m unittest discover --start-directory tests/functional/ --top-level-directory . --verbose
 
 .PHONY: prod-performance-test
 prod-performance-test:
