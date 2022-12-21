@@ -77,7 +77,7 @@ class ProcessingTest(BaseTest):
         status = self.business_logic.get_dataset_status(dataset_version_id)
         # self.assertEqual(status.validation_status, DatasetValidationStatus.NA)
         self.assertIsNone(status.validation_status)
-        self.assertEqual(status.processing_status, DatasetProcessingStatus.PENDING)
+        self.assertEqual(status.processing_status, DatasetProcessingStatus.INITIALIZED)
         self.assertEqual(status.upload_status, DatasetUploadStatus.WAITING)
 
         # TODO: ideally use a real h5ad so that
