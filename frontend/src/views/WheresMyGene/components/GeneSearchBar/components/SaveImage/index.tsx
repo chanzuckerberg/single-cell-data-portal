@@ -10,11 +10,14 @@ import {
   Title,
 } from "src/components/Collections/components/Dataset/components/DownloadDataset/components/Content/components/common/style";
 import Modal from "src/components/common/Modal";
+import { HEATMAP_CONTAINER_ID } from "src/views/WheresMyGene/common/constants";
 import { CellType } from "src/views/WheresMyGene/common/types";
 import { getHeatmapHeight, getHeatmapWidth } from "../../../HeatMap/utils";
 import { Label } from "../../style";
 import { StyledButtonIcon } from "../QuickSelect/style";
 import { ButtonWrapper, DownloadButton, StyledDiv } from "./style";
+
+let heatmapContainerScrollTop: number | undefined;
 
 export const EXCLUDE_IN_SCREENSHOT_CLASS_NAME = "screenshot-exclude";
 const screenshotFilter =
@@ -53,10 +56,12 @@ export default function SaveImage({
   selectedTissues,
   selectedGenes,
   selectedCellTypes,
+  setIsDownloading,
 }: {
   selectedTissues: Array<string>;
   selectedGenes: Array<string>;
   selectedCellTypes: { [tissue: string]: CellType[] };
+  setIsDownloading: (isDownloading: boolean) => void
 }): JSX.Element {
   const [isOpen, setIsOpen] = useState(false);
   const [fileType, setFileType] = useState<"png" | "svg">("png");
@@ -66,9 +71,19 @@ export default function SaveImage({
   }, [isOpen]);
 
   const handleDownload = useCallback(async () => {
+    setIsDownloading(true);
     try {
       const heatmapNode = document.getElementById("view") as HTMLCanvasElement;
+
+      //(ashin): #3569 Get scrollTop to go back to place after downloading image
+      let heatmapContainer = document.getElementById(
+        HEATMAP_CONTAINER_ID
+      ) as HTMLCanvasElement;
+      heatmapContainerScrollTop = heatmapContainer?.scrollTop;
+
+      // Adding this class causes the y-axis scrolling to jump but is required for image download
       heatmapNode.classList.add("CLONED");
+
       const isPNG = fileType === "png";
       const convertHTMLtoImage = isPNG ? toPng : toSvg;
       const images = await Promise.all(
@@ -94,7 +109,13 @@ export default function SaveImage({
           };
         })
       );
+
+      //(thuang): #3569 Restore scrollTop position
       heatmapNode.classList.remove("CLONED");
+      if (heatmapContainer) {
+        heatmapContainer.scrollTop = heatmapContainerScrollTop || 0;
+      }
+
       const link = document.createElement("a");
 
       if (images.length > 1) {
@@ -116,6 +137,9 @@ export default function SaveImage({
     } catch (error) {
       console.error(error);
     }
+
+    setIsDownloading(false);
+
   }, [fileType, selectedCellTypes, selectedTissues, selectedGenes]);
 
   return (

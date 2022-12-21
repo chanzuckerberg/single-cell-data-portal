@@ -47,62 +47,6 @@ def generate_mock_publisher_metadata(journal_override=None):
 
 class TestCollection(BaseAPIPortalTest):
 
-    # TODO: does not belong here
-    def validate_collections_response_structure(self, body):
-        self.assertIn("collections", body)
-        self.assertTrue(all(k in ["collections", "from_date", "to_date"] for k in body))
-
-        for collection in body["collections"]:
-            self.assertListEqual(sorted(collection.keys()), ["created_at", "id", "visibility"])
-            self.assertEqual(collection["visibility"], "PUBLIC")
-            self.assertGreaterEqual(datetime.fromtimestamp(collection["created_at"]).year, 1969)
-
-    # TODO: does not belong here
-    def validate_collection_id_response_structure(self, body):
-        required_keys = [
-            "name",
-            "description",
-            "id",
-            "visibility",
-            "links",
-            "datasets",
-            "created_at",
-            "updated_at",
-            "contact_email",
-            "contact_name",
-            "curator_name",
-            "access_type",
-        ]
-        self.assertListEqual(sorted(body.keys()), sorted(required_keys))
-        self.assertGreaterEqual(datetime.fromtimestamp(body["created_at"]).year, 1969)
-        self.assertGreaterEqual(datetime.fromtimestamp(body["updated_at"]).year, 1969)
-
-        for link in body["links"]:
-            self.assertListEqual(sorted(link.keys()), ["link_name", "link_type", "link_url"])
-
-        for dataset in body["datasets"]:
-            required_keys = [
-                "id",
-                "assay",
-                "tissue",
-                "disease",
-                "sex",
-                "self_reported_ethnicity",
-                "organism",
-                "development_stage",
-                "name",
-                "revision",
-                "dataset_deployments",
-                "dataset_assets",
-                "processing_status",
-                "created_at",
-                "updated_at",
-                "collection_id",
-                "is_valid",
-                "cell_count",
-            ]
-            self.assertListEqual(sorted(dataset.keys()), sorted(required_keys))
-
     # ✅
     def test__list_collection_options__allow(self):
         origin = "http://localhost:3000"
@@ -131,7 +75,6 @@ class TestCollection(BaseAPIPortalTest):
             response = self.app.get(test_url.url, headers=headers)
             self.assertEqual(200, response.status_code)
             actual_body = json.loads(response.data)
-            # self.validate_collections_response_structure(actual_body) # TODO: maybe later
             self.assertIn(expected_id, [p["id"] for p in actual_body["collections"]])
             self.assertEqual(None, actual_body.get("to_date"))
             self.assertEqual(None, actual_body.get("from_date"))
@@ -172,6 +115,7 @@ class TestCollection(BaseAPIPortalTest):
                     "mean_genes_per_cell": 0.5,
                     "name": "test_dataset_name",
                     "organism": [{"label": "test_organism_label", "ontology_term_id": "test_organism_term_id"}],
+                    "original_id": mock.ANY,
                     "processing_status": {
                         "created_at": 0,
                         "cxg_status": "NA",
@@ -222,6 +166,7 @@ class TestCollection(BaseAPIPortalTest):
                     "mean_genes_per_cell": 0.5,
                     "name": "test_dataset_name",
                     "organism": [{"label": "test_organism_label", "ontology_term_id": "test_organism_term_id"}],
+                    "original_id": mock.ANY,
                     "processing_status": {
                         "created_at": 0,
                         "cxg_status": "NA",
@@ -953,6 +898,32 @@ class TestUpdateCollection(BaseAPIPortalTest):
         actual_body = json.loads(response.data)
         for field in test_fields:
             self.assertEqual(expected_body[field], actual_body[field])
+
+    def test__update_collection_partial__OK(self):
+        collection = self.generate_unpublished_collection(links=[Link("Link 1", "DOI", "http://doi.org/123")])
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+
+        payload = {
+            "name": "new collection name",
+        }
+
+        response = self.app.put(
+            f"/dp/v1/collections/{collection.version_id.id}", data=json.dumps(payload), headers=headers
+        )
+        self.assertEqual(200, response.status_code)
+        actual_body = json.loads(response.data)
+
+        self.assertEqual(actual_body["name"], "new collection name")
+        self.assertEqual(actual_body["description"], collection.metadata.description)
+        self.assertEqual(actual_body["contact_name"], collection.metadata.contact_name)
+        self.assertEqual(actual_body["contact_email"], collection.metadata.contact_email)
+        self.assertEqual(
+            actual_body["links"],
+            [
+                {"link_name": link.name, "link_type": link.type, "link_url": link.uri}
+                for link in collection.metadata.links
+            ],
+        )
 
     # ✅
     def test__update_collection__403(self):
