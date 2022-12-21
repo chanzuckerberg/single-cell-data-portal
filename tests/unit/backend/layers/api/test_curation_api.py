@@ -569,7 +569,7 @@ class TestGetCollectionID(BaseAPIPortalTest):
             **{
                 "explorer_url": f"/e/{dataset.version_id}.cxg/",
                 "id": dataset.dataset_id.id,
-                "processing_status": "PENDING",
+                "processing_status": "INITIALIZED",
                 "revision": 0,
                 "revision_of": None,
                 "tombstone": False,

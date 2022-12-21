@@ -284,7 +284,7 @@ class BusinessLogic(BusinessLogicInterface):
 
         self.database_provider.update_dataset_upload_status(new_dataset_version.version_id, DatasetUploadStatus.WAITING)
         self.database_provider.update_dataset_processing_status(
-            new_dataset_version.version_id, DatasetProcessingStatus.PENDING
+            new_dataset_version.version_id, DatasetProcessingStatus.INITIALIZED
         )
 
         return (new_dataset_version.version_id, new_dataset_version.dataset_id)
@@ -352,7 +352,7 @@ class BusinessLogic(BusinessLogicInterface):
         # Sets an initial processing status for the new dataset version
         self.database_provider.update_dataset_upload_status(new_dataset_version.version_id, DatasetUploadStatus.WAITING)
         self.database_provider.update_dataset_processing_status(
-            new_dataset_version.version_id, DatasetProcessingStatus.PENDING
+            new_dataset_version.version_id, DatasetProcessingStatus.INITIALIZED
         )
 
         # Starts the step function process
