@@ -32,7 +32,7 @@ export default function SourceData(): JSX.Element {
   return (
     <Wrapper>
       <Content>
-        <List ordered data-test-id="data-source-list">
+        <List ordered data-test-id="source-data-list">
           {Object.values(collections).map(({ name, url, datasets }) => {
             return (
               <ListItem ordered key={name} fontSize="xxxs">

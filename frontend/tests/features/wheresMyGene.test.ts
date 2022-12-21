@@ -13,6 +13,7 @@ const CELL_TYPE_LABELS_ID = "cell-type-labels";
 const ADD_TISSUE_ID = "add-tissue";
 const ADD_GENE_ID = "add-gene";
 const SOURCE_DATA_BUTTON_ID = "source-data-button";
+const SOURCE_DATA_LIST_SELECTOR = `[data-test-id="source-data-list"]`;
 
 const { describe, skip } = test;
 
@@ -178,9 +179,7 @@ describe("Where's My Gene", () => {
 
     await tryUntil(
       async () => {
-        const sourceDataList = await page.$(
-          `[data-test-id="data-source-list"]`
-        );
+        const sourceDataList = await page.$(SOURCE_DATA_LIST_SELECTOR);
 
         if (!sourceDataList) throw Error("no source data displayed");
 
@@ -213,7 +212,9 @@ describe("Where's My Gene", () => {
         await clickUntilOptionsShowUp(getDatasetSelector, page);
         await selectFirstOption(page);
         await clickUntilSidebarShowsUp(getSourceDataButton, page);
-        const sourceDataListAfter = await page.$("[class*=MuiList-root]");
+
+        const sourceDataListAfter = await page.$(SOURCE_DATA_LIST_SELECTOR);
+
         if (!sourceDataListAfter)
           throw Error(
             "no source data displayed after selecting dataset filter"
@@ -222,7 +223,8 @@ describe("Where's My Gene", () => {
         const sourceDataListAfterItems = await sourceDataListAfter?.$$(
           ".MuiListItem-root"
         );
-        expect(sourceDataListAfterItems?.length).toBe(2);
+
+        expect(sourceDataListAfterItems?.length).toBeGreaterThan(0);
       },
       { page }
     );
