@@ -936,9 +936,6 @@ components:
     collection_id:
       description: A unique identifier of a Collection.
       type: string
-    original_dataset_id:
-      description: A unique identifier of a published Dataset, used for linking to an Explorer url
-      type: string
     dataset_id:
       description: A unique identifier of a Dataset.
       type: string
@@ -1079,8 +1076,6 @@ components:
       properties:
         id:
           $ref: "#/components/schemas/dataset_id"
-        original_id:
-          $ref: "#/components/schemas/original_dataset_id"
         assay:
           $ref: "#/components/schemas/ontology_element_array"
         tissue:
