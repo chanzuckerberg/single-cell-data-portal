@@ -182,9 +182,6 @@ class PortalApi:
                 "organism": None
                 if dataset.metadata is None
                 else self._ontology_term_ids_to_response(dataset.metadata.organism),
-                "original_id": dataset.dataset_id.id  # only provided on unpublished revisions of published datasets
-                if (not is_in_published_collection and dataset.canonical_dataset.published_at is not None)
-                else None,
                 "processing_status": self._dataset_processing_status_to_response(dataset.status, dataset.version_id.id),
                 "published": True,  # TODO
                 "published_at": dataset.canonical_dataset.published_at,
