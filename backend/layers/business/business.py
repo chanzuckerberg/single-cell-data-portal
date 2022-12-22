@@ -343,10 +343,18 @@ class BusinessLogic(BusinessLogicInterface):
                     f"{dataset_version.status.processing_status.name}"
                 )
 
-            # TODO: this method could very well be called `add_dataset_version`
-            new_dataset_version = self.database_provider.replace_dataset_in_collection_version(
-                collection_version_id, existing_dataset_version_id
-            )
+            # If a dataset is "empty", we will not replace it but instead reuse the existing version id.
+            # Make sure that the conditions are not relaxed or this will break immutability.
+            if (
+                dataset_version.status.processing_status == DatasetProcessingStatus.INITIALIZED
+                and not dataset_version.artifacts
+                and dataset_version.canonical_dataset.published_at is None
+            ):
+                new_dataset_version = dataset_version
+            else:
+                new_dataset_version = self.database_provider.replace_dataset_in_collection_version(
+                    collection_version_id, existing_dataset_version_id
+                )
         else:
             new_dataset_version = self.database_provider.create_canonical_dataset(collection_version_id)
             # adds new dataset version to collection version

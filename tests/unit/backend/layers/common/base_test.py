@@ -4,7 +4,7 @@ import typing
 import unittest
 from dataclasses import dataclass
 from typing import List, Optional
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 from backend.layers.business.business import BusinessLogic
 from backend.layers.common.entities import (
@@ -74,6 +74,15 @@ class BaseTest(unittest.TestCase):
     def setUp(self):
         super().setUp()
         os.environ.setdefault("APP_NAME", "corpora-api")
+
+        # Mock CorporaConfig
+        # TODO: deduplicate with base_api
+        def mock_config_fn(name):
+            if name == "upload_max_file_size_gb":
+                return 30
+
+        mock_config = patch("backend.common.corpora_config.CorporaConfig.__getattr__", side_effect=mock_config_fn)
+        mock_config.start()
 
         if self.run_as_integration:
             self.database_provider._create_schema("persistence_schema")
