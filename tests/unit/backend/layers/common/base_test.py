@@ -138,8 +138,8 @@ class BaseTest(unittest.TestCase):
         links: List[Link] = [],
         add_datasets: int = 0,
         metadata=None,
-    ) -> CollectionVersionWithDatasets:
-        links = links if links else []
+    ) -> CollectionVersion:
+        links = links or []
         if not metadata:
             metadata = copy.deepcopy(self.sample_collection_metadata)
             metadata.links = links
