@@ -13,6 +13,7 @@ from pythonjsonlogger import jsonlogger
 from backend.common.logging_config import DATETIME_FORMAT, LOG_FORMAT
 from backend.common.utils.exceptions import (
     CorporaException,
+    NonExistentCollectionException,
     NonExistentDatasetException,
 )
 from backend.common.utils.regex import USERNAME_REGEX, COLLECTION_ID_REGEX, DATASET_ID_REGEX
@@ -26,8 +27,15 @@ logger.handlers = [log_handler]
 
 REGEX = f"^{USERNAME_REGEX}/{COLLECTION_ID_REGEX}/{DATASET_ID_REGEX}$"
 
-database_provider = DatabaseProvider()
-business_logic = BusinessLogic(database_provider, None, None, None, None)
+_business_logic: BusinessLogic
+
+
+def get_business_logic():
+    global _business_logic
+    if _business_logic is None:
+        database_provider = DatabaseProvider()
+        _business_logic = BusinessLogic(database_provider, None, None, None, None)
+    return _business_logic
 
 
 def dataset_submissions_handler(s3_event: dict, unused_context) -> None:
@@ -52,9 +60,9 @@ def dataset_submissions_handler(s3_event: dict, unused_context) -> None:
         collection_version_id = CollectionVersionId(parsed["collection_id"])
         dataset_version_id = DatasetVersionId(parsed["dataset_id"])
 
-        version = business_logic.get_collection_version(collection_version_id)
+        version = get_business_logic().get_collection_version(collection_version_id)
         if version is None:
-            raise CorporaException(f"Collection {parsed['collection_id']} does not exist")
+            raise NonExistentCollectionException(f"Collection {parsed['collection_id']} does not exist")
 
         if dataset_version_id not in [d.version_id for d in version.datasets]:
             raise NonExistentDatasetException(
@@ -74,7 +82,7 @@ def dataset_submissions_handler(s3_event: dict, unused_context) -> None:
 
         s3_uri = f"s3://{bucket}/{key}"
 
-        business_logic.ingest_dataset(
+        get_business_logic().ingest_dataset(
             collection_version_id=collection_version_id,
             url=s3_uri,
             file_size=size,
