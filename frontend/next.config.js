@@ -41,7 +41,12 @@ const defaultSecureHeaders = {
       scriptSrc: isProdBuild ? SCRIPT_SRC : [...SCRIPT_SRC, "'unsafe-eval'"],
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
       upgradeInsecureRequests: true,
-      workerSrc: ["'https://*.single-cell.czi.technology/'", "'https://cellxgene.cziscience.com'"],
+      workerSrc: [
+        "'https://*.rdev.single-cell.czi.technology'",
+        "'https://cellxgene.dev.single-cell.czi.technology'",
+        "'https://cellxgene.staging.single-cell.czi.technology'",
+        "'https://cellxgene.cziscience.com'",
+      ],
     },
   },
 };
