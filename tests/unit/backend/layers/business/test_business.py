@@ -70,6 +70,7 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
             self.database_provider = DatabaseProviderMock()
 
         # Mock CorporaConfig
+        # TODO: deduplicate with base_api
         def mock_config_fn(name):
             if name == "upload_max_file_size_gb":
                 return 30

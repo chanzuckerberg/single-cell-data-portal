@@ -439,6 +439,7 @@ class PortalApi:
             dataset_version_id, _ = self.business_logic.ingest_dataset(
                 CollectionVersionId(collection_id),
                 url,
+                None,
                 None if dataset_id is None else DatasetVersionId(dataset_id),
             )
             return dataset_version_id
