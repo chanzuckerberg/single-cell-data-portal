@@ -1,7 +1,7 @@
 import os
 import unittest
 from datetime import datetime
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 from uuid import uuid4
 
 from backend.layers.thirdparty.crossref_provider import (
@@ -68,6 +68,14 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
             self.database_provider._create_schema("persistence_schema")
         else:
             self.database_provider = DatabaseProviderMock()
+
+        # Mock CorporaConfig
+        def mock_config_fn(name):
+            if name == "upload_max_file_size_gb":
+                return 30
+
+        mock_config = patch("backend.common.corpora_config.CorporaConfig.__getattr__", side_effect=mock_config_fn)
+        mock_config.start()
 
         # By default these do nothing. They can be mocked by single test cases.
         self.crossref_provider = CrossrefProviderInterface()
