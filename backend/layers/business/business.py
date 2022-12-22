@@ -294,20 +294,24 @@ class BusinessLogic(BusinessLogicInterface):
         self,
         collection_version_id: CollectionVersionId,
         url: str,
+        file_size: Optional[int],
         existing_dataset_version_id: Optional[DatasetVersionId],
     ) -> Tuple[DatasetVersionId, DatasetId]:
         """
         Creates a canonical dataset and starts its ingestion by invoking the step function
+        If `size` is not provided, it will be inferred automatically
         """
         if not self.uri_provider.validate(url):
             raise InvalidURIException(f"Trying to upload invalid URI: {url}")
 
-        file_info = self.uri_provider.get_file_info(url)
+        if file_size is None:
+            file_info = self.uri_provider.get_file_info(url)
+            file_size = file_info.size
 
-        max_file_size_gb = 30 * 2**30  # TODO: read it from the config - requires smart mocking
-        # max_file_size_gb = CorporaConfig().upload_max_file_size_gb * GB
+        from backend.common.corpora_config import CorporaConfig
+        max_file_size_gb = CorporaConfig().upload_max_file_size_gb * 2**30
 
-        if file_info.size is not None and file_info.size > max_file_size_gb:
+        if file_size is not None and file_size > max_file_size_gb:
             raise MaxFileSizeExceededException(f"{url} exceeds the maximum allowed file size of {max_file_size_gb} Gb")
 
         # Ensure that the collection exists and is not published
