@@ -309,6 +309,7 @@ class BusinessLogic(BusinessLogicInterface):
             file_size = file_info.size
 
         from backend.common.corpora_config import CorporaConfig
+
         max_file_size_gb = CorporaConfig().upload_max_file_size_gb * 2**30
 
         if file_size is not None and file_size > max_file_size_gb:

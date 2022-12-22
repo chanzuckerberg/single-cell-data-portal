@@ -103,6 +103,7 @@ def put(collection_id: str, dataset_id: str, body: dict, token_info: dict):
         business_logic.ingest_dataset(
             collection_version.version_id,
             url,
+            None,
             None if dataset_id is None else DatasetVersionId(dataset_id),
         )
         return Response(status=202)

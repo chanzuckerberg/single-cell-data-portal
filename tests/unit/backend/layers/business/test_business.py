@@ -551,7 +551,7 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         version = self.initialize_empty_unpublished_collection()
         url = "http://test/dataset.url"
 
-        new_dataset_version_id, _ = self.business_logic.ingest_dataset(version.version_id, url, None)
+        new_dataset_version_id, _ = self.business_logic.ingest_dataset(version.version_id, url, None, None)
 
         new_dataset_version = self.database_provider.get_dataset_version(new_dataset_version_id)
         self.assertIsNotNone(new_dataset_version)
@@ -568,7 +568,7 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         fake_collection_version_id = CollectionVersionId(str(uuid4()))
 
         with self.assertRaises(CollectionUpdateException) as ex:
-            self.business_logic.ingest_dataset(fake_collection_version_id, url, None)
+            self.business_logic.ingest_dataset(fake_collection_version_id, url, None, None)
         self.assertEqual(ex.exception.errors, [f"Collection version {fake_collection_version_id} does not exist"])
 
     def test_add_dataset_to_published_collection_fail(self):
@@ -579,7 +579,7 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         url = "http://test/dataset.url"
 
         with self.assertRaises(CollectionUpdateException) as ex:
-            self.business_logic.ingest_dataset(version.version_id, url, None)
+            self.business_logic.ingest_dataset(version.version_id, url, None, None)
         self.assertEqual(ex.exception.errors, [f"Collection version {version.version_id.id} is published"])
 
     def test_add_dataset_with_invalid_link_fail(self):
@@ -592,7 +592,7 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         self.uri_provider.validate = Mock(return_value=False)
 
         with self.assertRaises(DatasetIngestException) as ex:
-            self.business_logic.ingest_dataset(version.version_id, url, None)
+            self.business_logic.ingest_dataset(version.version_id, url, None, None)
         self.assertEqual(str(ex.exception), "Trying to upload invalid URI: http://bad.url")
 
     def test_remove_dataset_from_unpublished_collection_ok(self):
@@ -635,7 +635,7 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         url = "http://test/dataset.url"
 
         new_dataset_version_id, _ = self.business_logic.ingest_dataset(
-            version.version_id, url, dataset_version_to_replace_id
+            version.version_id, url, None, dataset_version_to_replace_id
         )
 
         # Verify that the replaced dataset is in the right status
@@ -665,7 +665,7 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         url = "http://test/dataset.url"
 
         with self.assertRaises(CollectionUpdateException):
-            self.business_logic.ingest_dataset(version.version_id, url, dataset_version_to_replace_id)
+            self.business_logic.ingest_dataset(version.version_id, url, None, dataset_version_to_replace_id)
 
     def test_replace_dataset_on_non_existing_dataset_fail(self):
         """
@@ -675,7 +675,7 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         url = "http://test/dataset.url"
 
         with self.assertRaises(DatasetNotFoundException) as ex:
-            self.business_logic.ingest_dataset(version.version_id, url, DatasetVersionId("fake_id"))
+            self.business_logic.ingest_dataset(version.version_id, url, None, DatasetVersionId("fake_id"))
         self.assertEqual(str(ex.exception), "Dataset fake_id does not belong to the desired collection")
 
     def test_replace_dataset_in_wrong_status_fail(self):
@@ -692,7 +692,7 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         )
 
         with self.assertRaises(DatasetIngestException) as ex:
-            self.business_logic.ingest_dataset(version.version_id, url, dataset_version.version_id)
+            self.business_logic.ingest_dataset(version.version_id, url, None, dataset_version.version_id)
         self.assertEqual(
             str(ex.exception), f"Unable to reprocess dataset {dataset_version.version_id}: processing status is PENDING"
         )
@@ -1028,7 +1028,7 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         new_version = self.business_logic.create_collection_version(published_collection.collection_id)
 
         added_dataset_version_id, _ = self.business_logic.ingest_dataset(
-            new_version.version_id, "http://fake.url", None
+            new_version.version_id, "http://fake.url", None, None
         )
         self.complete_dataset_processing_with_success(added_dataset_version_id)
 
@@ -1073,7 +1073,7 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         dataset_id_to_keep = published_collection.datasets[1].version_id
 
         replaced_dataset_version_id, _ = self.business_logic.ingest_dataset(
-            new_version.version_id, "http://fake.url", dataset_id_to_replace
+            new_version.version_id, "http://fake.url", None, dataset_id_to_replace
         )
         self.complete_dataset_processing_with_success(replaced_dataset_version_id)
 
@@ -1206,7 +1206,7 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         new_version = self.business_logic.create_collection_version(published_collection.collection_id)
 
         added_dataset_version_id, _ = self.business_logic.ingest_dataset(
-            new_version.version_id, "http://fake.url", None
+            new_version.version_id, "http://fake.url", None, None
         )
         self.complete_dataset_processing_with_success(added_dataset_version_id)
 
@@ -1246,7 +1246,7 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         dataset_id_to_keep = published_collection.datasets[1].version_id
 
         replaced_dataset_version_id, _ = self.business_logic.ingest_dataset(
-            new_version.version_id, "http://fake.url", dataset_id_to_replace
+            new_version.version_id, "http://fake.url", None, dataset_id_to_replace
         )
 
         self.complete_dataset_processing_with_success(replaced_dataset_version_id)

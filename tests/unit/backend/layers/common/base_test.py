@@ -149,7 +149,7 @@ class BaseTest(unittest.TestCase):
 
             metadata = copy.deepcopy(self.sample_dataset_metadata)
             # TODO: generate a real dataset, with artifact and processing status
-            dataset_version_id, _ = self.business_logic.ingest_dataset(collection.version_id, "http://fake.url", None)
+            dataset_version_id, _ = self.business_logic.ingest_dataset(collection.version_id, "http://fake.url", None, None)
             self.business_logic.set_dataset_metadata(dataset_version_id, metadata)
             # TODO: set a proper dataset status
 
@@ -191,7 +191,7 @@ class BaseTest(unittest.TestCase):
         if not collection_version:
             collection_version = self.generate_unpublished_collection(owner)
         dataset_version_id, dataset_id = self.business_logic.ingest_dataset(
-            collection_version.version_id, "http://fake.url", None
+            collection_version.version_id, "http://fake.url", None, None
         )
         if not metadata:
             metadata = copy.deepcopy(self.sample_dataset_metadata)

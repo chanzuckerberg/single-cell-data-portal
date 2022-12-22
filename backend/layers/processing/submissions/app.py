@@ -9,15 +9,10 @@ from backend.layers.persistence.persistence import DatabaseProvider
 from backend.layers.common.entities import CollectionVersionId, DatasetVersionId
 
 from pythonjsonlogger import jsonlogger
-from sqlalchemy.orm import Session
 
-from backend.common.entities import Dataset, Collection, collection
 from backend.common.logging_config import DATETIME_FORMAT, LOG_FORMAT
-from backend.common.upload import upload
-from backend.common.utils.db_session import db_session_manager
 from backend.common.utils.exceptions import (
     CorporaException,
-    NonExistentCollectionException,
     NonExistentDatasetException,
 )
 from backend.common.utils.regex import USERNAME_REGEX, COLLECTION_ID_REGEX, DATASET_ID_REGEX
@@ -33,6 +28,7 @@ REGEX = f"^{USERNAME_REGEX}/{COLLECTION_ID_REGEX}/{DATASET_ID_REGEX}$"
 
 database_provider = DatabaseProvider()
 business_logic = BusinessLogic(database_provider, None, None, None, None)
+
 
 def dataset_submissions_handler(s3_event: dict, unused_context) -> None:
     """
@@ -61,7 +57,9 @@ def dataset_submissions_handler(s3_event: dict, unused_context) -> None:
             raise CorporaException(f"Collection {parsed['collection_id']} does not exist")
 
         if dataset_version_id not in [d.version_id for d in version.datasets]:
-            raise NonExistentDatasetException(f"No Dataset with {dataset_version_id=} in Collection {collection_version_id}")
+            raise NonExistentDatasetException(
+                f"No Dataset with {dataset_version_id=} in Collection {collection_version_id}"
+            )
 
         collection_owner = version.owner
 
@@ -72,7 +70,7 @@ def dataset_submissions_handler(s3_event: dict, unused_context) -> None:
             raise CorporaException(
                 f"user:{parsed['username']} does not have permission to modify datasets in collection "
                 f"{parsed['collection_id']}."
-                )
+            )
 
         s3_uri = f"s3://{bucket}/{key}"
 
@@ -80,7 +78,7 @@ def dataset_submissions_handler(s3_event: dict, unused_context) -> None:
             collection_version_id=collection_version_id,
             url=s3_uri,
             file_size=size,
-            existing_dataset_version_id=dataset_version_id
+            existing_dataset_version_id=dataset_version_id,
         )
 
 
