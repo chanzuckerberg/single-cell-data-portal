@@ -62,6 +62,7 @@ class BusinessLogicInterface:
         self,
         collection_version_id: CollectionVersionId,
         url: str,
+        file_size: Optional[int],
         existing_dataset_version_id: Optional[DatasetVersionId],
     ) -> Tuple[DatasetVersionId, DatasetId]:
         pass

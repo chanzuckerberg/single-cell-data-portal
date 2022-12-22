@@ -294,20 +294,25 @@ class BusinessLogic(BusinessLogicInterface):
         self,
         collection_version_id: CollectionVersionId,
         url: str,
+        file_size: Optional[int],
         existing_dataset_version_id: Optional[DatasetVersionId],
     ) -> Tuple[DatasetVersionId, DatasetId]:
         """
         Creates a canonical dataset and starts its ingestion by invoking the step function
+        If `size` is not provided, it will be inferred automatically
         """
         if not self.uri_provider.validate(url):
             raise InvalidURIException(f"Trying to upload invalid URI: {url}")
 
-        file_info = self.uri_provider.get_file_info(url)
+        if file_size is None:
+            file_info = self.uri_provider.get_file_info(url)
+            file_size = file_info.size
 
-        max_file_size_gb = 30 * 2**30  # TODO: read it from the config - requires smart mocking
-        # max_file_size_gb = CorporaConfig().upload_max_file_size_gb * GB
+        from backend.common.corpora_config import CorporaConfig
 
-        if file_info.size is not None and file_info.size > max_file_size_gb:
+        max_file_size_gb = CorporaConfig().upload_max_file_size_gb * 2**30
+
+        if file_size is not None and file_size > max_file_size_gb:
             raise MaxFileSizeExceededException(f"{url} exceeds the maximum allowed file size of {max_file_size_gb} Gb")
 
         # Ensure that the collection exists and is not published
@@ -338,10 +343,18 @@ class BusinessLogic(BusinessLogicInterface):
                     f"{dataset_version.status.processing_status.name}"
                 )
 
-            # TODO: this method could very well be called `add_dataset_version`
-            new_dataset_version = self.database_provider.replace_dataset_in_collection_version(
-                collection_version_id, existing_dataset_version_id
-            )
+            # If a dataset is "empty", we will not replace it but instead reuse the existing version id.
+            # Make sure that the conditions are not relaxed or this will break immutability.
+            if (
+                dataset_version.status.processing_status == DatasetProcessingStatus.INITIALIZED
+                and not dataset_version.artifacts
+                and dataset_version.canonical_dataset.published_at is None
+            ):
+                new_dataset_version = dataset_version
+            else:
+                new_dataset_version = self.database_provider.replace_dataset_in_collection_version(
+                    collection_version_id, existing_dataset_version_id
+                )
         else:
             new_dataset_version = self.database_provider.create_canonical_dataset(collection_version_id)
             # adds new dataset version to collection version
