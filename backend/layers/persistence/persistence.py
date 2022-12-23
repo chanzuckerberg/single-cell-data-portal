@@ -459,7 +459,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         acc = []
         with self._manage_session() as session:
             for version in session.query(DatasetVersionTable).all():  # noqa
-                if str(version.version_id) in active_datasets:
+                if str(version.id) in active_datasets:
                     acc.append(self._hydrate_dataset_version(version))
         return acc
 
