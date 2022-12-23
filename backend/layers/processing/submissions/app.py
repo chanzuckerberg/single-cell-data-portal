@@ -7,6 +7,7 @@ from urllib.parse import unquote_plus
 from backend.layers.business.business import BusinessLogic
 from backend.layers.persistence.persistence import DatabaseProvider
 from backend.layers.common.entities import CollectionVersionId, DatasetVersionId
+from backend.layers.thirdparty.uri_provider import UriProvider
 
 from pythonjsonlogger import jsonlogger
 
@@ -34,7 +35,8 @@ def get_business_logic():
     global _business_logic
     if not _business_logic:
         database_provider = DatabaseProvider()
-        _business_logic = BusinessLogic(database_provider, None, None, None, None)
+        uri_provider = UriProvider()
+        _business_logic = BusinessLogic(database_provider, None, None, None, uri_provider)
     return _business_logic
 
 
