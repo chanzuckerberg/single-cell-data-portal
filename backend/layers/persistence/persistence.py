@@ -415,9 +415,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             collection_version.published_at = published_at
 
             # finalize collection version's dataset versions
-            dataset_version_ids = (
-                session.query(CollectionVersionTable.datasets).filter_by(id=version_id.id).one()[0]
-            )
+            dataset_version_ids = session.query(CollectionVersionTable.datasets).filter_by(id=version_id.id).one()[0]
             for dataset_version, dataset in (
                 session.query(DatasetVersionTable, DatasetTable)
                 .filter(DatasetVersionTable.dataset_id == DatasetTable.id)
@@ -433,9 +431,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         Returns a dataset version by id.
         """
         with self._manage_session() as session:
-            dataset_version = (
-                session.query(DatasetVersionTable).filter_by(id=dataset_version_id.id).one_or_none()
-            )
+            dataset_version = session.query(DatasetVersionTable).filter_by(id=dataset_version_id.id).one_or_none()
             if dataset_version is None:
                 return None
             return self._hydrate_dataset_version(dataset_version)
@@ -496,9 +492,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         """
         with self._manage_session() as session:
             collection_id = (
-                session.query(CollectionVersionTable.collection_id)
-                .filter_by(id=collection_version_id.id)
-                .one()[0]
+                session.query(CollectionVersionTable.collection_id).filter_by(id=collection_version_id.id).one()[0]
             )
         dataset_id = DatasetId()
         dataset_version_id = DatasetVersionId()
@@ -610,9 +604,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         Adds a mapping between an existing collection version and a dataset version
         """
         with self._manage_session() as session:
-            collection_version = (
-                session.query(CollectionVersionTable).filter_by(id=collection_version_id.id).one()
-            )
+            collection_version = session.query(CollectionVersionTable).filter_by(id=collection_version_id.id).one()
             # TODO: alternatively use postgres `array_append`
             # TODO: make sure that the UUID conversion works
             updated_datasets = list(collection_version.datasets)
@@ -626,9 +618,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         Removes a mapping between a collection version and a dataset version
         """
         with self._manage_session() as session:
-            collection_version = (
-                session.query(CollectionVersionTable).filter_by(id=collection_version_id.id).one()
-            )
+            collection_version = session.query(CollectionVersionTable).filter_by(id=collection_version_id.id).one()
             # TODO: alternatively use postgres `array_remove`
             updated_datasets = list(collection_version.datasets)
             updated_datasets.remove(uuid.UUID(dataset_version_id.id))
@@ -647,9 +637,7 @@ class DatabaseProvider(DatabaseProviderInterface):
                 .filter_by(version_id=collection_version_id.id)
                 .one()[0]
             )  # noqa
-            dataset_id = (
-                session.query(DatasetVersionTable.dataset_id).filter_by(id=old_dataset_version_id.id).one()[0]
-            )
+            dataset_id = session.query(DatasetVersionTable.dataset_id).filter_by(id=old_dataset_version_id.id).one()[0]
             new_dataset_version_id = DatasetVersionId()
             new_dataset_version = DatasetVersionTable(
                 version_id=new_dataset_version_id.id,
