@@ -51,11 +51,12 @@ The dev environment is initialized with AWS Secrets/S3 data in the [scripts/setu
 
 ### Make targets for running tests in dev
 
-| Command                      | Description                                   | Notes |
-| ---------------------------- | --------------------------------------------- | ----- |
-| `make local-unit-test`       | Run backend tests in the dev environment      |       |
-| `make local-functional-test` | Run functional tests in the dev environment   |       |
-| `make local-smoke-test`      | Run frontend/e2e tests in the dev environment |       |
+| Command                      | Description                                                                                  | Notes |
+|------------------------------|----------------------------------------------------------------------------------------------| ----- |
+| `make local-unit-test`       | Run backend tests in the local dockerized environment, against mock of persistence layer     |       |
+| `make local-integration-test`      | Run backend tests in the local dockerized environment, against dockerized database instance. |       |
+| `make local-functional-test` | Run functional tests in local dockerized environment                                         |       |
+| `make local-smoke-test`      | Run frontend/e2e tests in the local dockerized environment                                   |       |
 
 ### External dependencies
 

@@ -10,71 +10,61 @@ mapper_registry = registry(metadata=metadata)
 
 
 @mapper_registry.mapped
-class Collection:
+class CollectionTable:
 
-    __table__ = Table(
-        "Collection",
-        mapper_registry.metadata,
-        Column("id", UUID(as_uuid=True), primary_key=True),
-        Column("version_id", UUID(as_uuid=True)),
-        Column("originally_published_at", DateTime),
-        Column("tombstoned", BOOLEAN),
-    )
+    __tablename__ = "Collection"
+
+    id = Column(UUID(as_uuid=True), primary_key=True)
+    version_id = Column(UUID(as_uuid=True))
+    originally_published_at = Column(DateTime)
+    tombstone = Column(BOOLEAN)
 
 
 @mapper_registry.mapped
-class CollectionVersion:
+class CollectionVersionTable:
 
-    __table__ = Table(
-        "CollectionVersion",
-        mapper_registry.metadata,
-        Column("version_id", UUID(as_uuid=True), primary_key=True),
-        Column("collection_id", UUID(as_uuid=True)),
-        Column("metadata", JSON),
-        Column("owner", String),
-        Column("curator_name", String),
-        Column("publisher_metadata", JSON),
-        Column("published_at", DateTime),
-        Column("created_at", DateTime),
-        Column("datasets", ARRAY(UUID(as_uuid=True))),
-    )
+    __tablename__ = "CollectionVersion"
+
+    id = Column(UUID(as_uuid=True), primary_key=True)
+    collection_id = Column(UUID(as_uuid=True))
+    collection_metadata = Column(JSON)
+    owner = Column(String)
+    curator_name = Column(String)
+    publisher_metadata = Column(JSON)
+    published_at = Column(DateTime)
+    created_at = Column(DateTime)
+    datasets = Column(ARRAY(UUID(as_uuid=True)))
 
 
 @mapper_registry.mapped
-class Dataset:
+class DatasetTable:
 
-    __table__ = Table(
-        "Dataset",
-        mapper_registry.metadata,
-        Column("dataset_id", UUID(as_uuid=True), primary_key=True),
-        Column("dataset_version_id", UUID(as_uuid=True)),
-        Column("published_at", DateTime),
-    )
+    __tablename__ = "Dataset"
+
+    id = Column(UUID(as_uuid=True), primary_key=True)
+    version_id = Column(UUID(as_uuid=True))
+    published_at = Column(DateTime)
 
 
 @mapper_registry.mapped
-class DatasetVersion:
+class DatasetVersionTable:
 
-    __table__ = Table(
-        "DatasetVersion",
-        mapper_registry.metadata,
-        Column("version_id", UUID(as_uuid=True), primary_key=True),
-        Column("dataset_id", UUID(as_uuid=True), ForeignKey("Dataset.dataset_id")),
-        Column("collection_id", UUID(as_uuid=True)),
-        Column("created_at", DateTime),
-        Column("metadata", JSON),
-        Column("artifacts", ARRAY(UUID(as_uuid=True))),
-        Column("status", JSON),
-    )
+    __tablename__ = "DatasetVersion"
+
+    id = Column(UUID(as_uuid=True), primary_key=True)
+    dataset_id = Column(UUID(as_uuid=True), ForeignKey("Dataset.id"))
+    collection_id = Column(UUID(as_uuid=True))
+    created_at = Column(DateTime)
+    dataset_metadata = Column(JSON)
+    artifacts = Column(ARRAY(UUID(as_uuid=True)))
+    status = Column(JSON)
 
 
 @mapper_registry.mapped
-class DatasetArtifact:
+class DatasetArtifactTable:
 
-    __table__ = Table(
-        "DatasetArtifact",
-        mapper_registry.metadata,
-        Column("id", UUID(as_uuid=True), primary_key=True),
-        Column("type", Enum(DatasetArtifactType)),
-        Column("uri", String),
-    )
+    __tablename__ = "DatasetArtifact"
+
+    id = Column(UUID(as_uuid=True), primary_key=True)
+    type = Column(Enum(DatasetArtifactType))
+    uri = Column(String)
