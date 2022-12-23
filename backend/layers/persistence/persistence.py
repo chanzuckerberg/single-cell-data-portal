@@ -496,9 +496,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             )
         dataset_id = DatasetId()
         dataset_version_id = DatasetVersionId()
-        canonical_dataset = DatasetTable(
-            id=dataset_id.id, version_id=dataset_version_id.id, published_at=None
-        )
+        canonical_dataset = DatasetTable(id=dataset_id.id, version_id=dataset_version_id.id, published_at=None)
         dataset_version = DatasetVersionTable(
             id=dataset_version_id.id,
             dataset_id=dataset_id.id,
