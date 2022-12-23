@@ -318,7 +318,7 @@ class DatabaseProvider(DatabaseProviderInterface):
 
             for version in versions:
                 # TODO: should be optimized using a map
-                canonical_row = next(cc for cc in canonical_collections if cc.version_id == version.version_id)
+                canonical_row = next(cc for cc in canonical_collections if cc.version_id == version.id)
                 canonical = CanonicalCollection(
                     CollectionId(str(canonical_row.id)),
                     CollectionVersionId(str(canonical_row.version_id)),
