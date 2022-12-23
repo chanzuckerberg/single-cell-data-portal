@@ -312,7 +312,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             mapped_version_ids = [i.version_id for i in canonical_collections]
             versions = (
                 session.query(CollectionVersionTable)
-                .filter(CollectionVersionTable.version_id.in_(mapped_version_ids))
+                .filter(CollectionVersionTable.id.in_(mapped_version_ids))
                 .all()
             )  # noqa
 
@@ -632,7 +632,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         with self._manage_session() as session:
             collection_id = (
                 session.query(CollectionVersionTable.collection_id)
-                .filter_by(version_id=collection_version_id.id)
+                .filter_by(id=collection_version_id.id)
                 .one()[0]
             )  # noqa
             dataset_id = session.query(DatasetVersionTable.dataset_id).filter_by(id=old_dataset_version_id.id).one()[0]
