@@ -296,7 +296,7 @@ class BusinessLogic(BusinessLogicInterface):
 
         file_info = self.uri_provider.get_file_info(url)
 
-        max_file_size_gb = 30 * 2**30  # TODO: read it from the config - requires smart mocking
+        max_file_size_gb = 30 * 2 ** 30  # TODO: read it from the config - requires smart mocking
         # max_file_size_gb = CorporaConfig().upload_max_file_size_gb * GB
 
         if file_info.size is not None and file_info.size > max_file_size_gb:

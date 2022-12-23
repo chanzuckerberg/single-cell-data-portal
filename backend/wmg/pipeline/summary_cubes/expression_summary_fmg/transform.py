@@ -95,7 +95,7 @@ def gene_expression_sum_x_cube_dimension(
             cidx = var_idx[k]
             grp_idx = cube_indices[obs_idxs[k]]
             sum_into[grp_idx, cidx] += val
-            sqsum_into[grp_idx, cidx] += val**2
+            sqsum_into[grp_idx, cidx] += val ** 2
             nnz_into[grp_idx, cidx] += 1
             nnz_thr_into[grp_idx, cidx] += val >= BINOMIAL_NNZ_RANKIT_THR
 

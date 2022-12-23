@@ -2210,7 +2210,7 @@ class TestCollectionPostUploadLink(BaseAPIPortalTest):
 
     # ✅
     def test__oversized__413(self):
-        self.uri_provider.get_file_info = Mock(return_value=FileInfo(40 * 2**30, "file.h5ad"))
+        self.uri_provider.get_file_info = Mock(return_value=FileInfo(40 * 2 ** 30, "file.h5ad"))
         collection = self.generate_unpublished_collection()
         path = f"/dp/v1/collections/{collection.version_id}/upload-links"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}

@@ -5,7 +5,6 @@ from pydantic import BaseModel, Field
 from tiledb import Array
 from backend.wmg.data.snapshot import WmgSnapshot
 import math
-import numpy as np
 
 
 class WmgQueryCriteria(BaseModel):
