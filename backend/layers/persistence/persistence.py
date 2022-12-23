@@ -367,7 +367,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             current_version = session.query(CollectionVersionTable).filter_by(id=current_version_id).one()
             new_version_id = CollectionVersionId()
             new_version = CollectionVersionTable(
-                id=new_version_id,
+                id=new_version_id.id,
                 collection_id=collection_id.id,
                 collection_metadata=current_version.collection_metadata,
                 owner=current_version.owner,
