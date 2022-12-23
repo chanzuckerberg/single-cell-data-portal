@@ -170,7 +170,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             dataset = session.query(DatasetTable).filter_by(id=dataset_id.id).one_or_none()
             if dataset is None:
                 return None
-            return CanonicalDataset(dataset_id, DatasetVersionId(str(dataset.dataset_version_id)), dataset.published_at)
+            return CanonicalDataset(dataset_id, DatasetVersionId(str(dataset.version_id)), dataset.published_at)
 
     def create_canonical_collection(
         self, owner: str, curator_name: str, collection_metadata: CollectionMetadata
@@ -667,10 +667,10 @@ class DatabaseProvider(DatabaseProviderInterface):
             canonical_dataset = session.query(DatasetTable).filter_by(id=dataset_id.id).one_or_none()
             if canonical_dataset is None:
                 return None
-            if canonical_dataset.dataset_version_id is None:
+            if canonical_dataset.version_id is None:
                 return None
             dataset_version = (
-                session.query(DatasetVersionTable).filter_by(id=canonical_dataset.dataset_version_id).one()
+                session.query(DatasetVersionTable).filter_by(id=canonical_dataset.version_id).one()
             )
             dataset_version.canonical_dataset = canonical_dataset
             return self._hydrate_dataset_version(dataset_version)
