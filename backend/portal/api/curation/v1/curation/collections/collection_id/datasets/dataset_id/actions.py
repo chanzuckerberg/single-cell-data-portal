@@ -37,7 +37,10 @@ from backend.portal.api.curation.v1.curation.collections.common import (
 def get(collection_id: str, dataset_id: str = None):
     business_logic = get_business_logic()
 
+    # Double lookup
     collection_version = business_logic.get_collection_version_from_canonical(CollectionId(collection_id))
+    if collection_version is None:
+        collection_version = business_logic.get_collection_version(CollectionVersionId(collection_id))
     if collection_version is None:
         raise NotFoundHTTPException("Collection not found!")
 

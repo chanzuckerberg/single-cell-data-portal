@@ -932,11 +932,20 @@ class TestDeleteDataset(BaseAPIPortalTest):
 class TestGetDatasets(BaseAPIPortalTest):
     def test_get_dataset_in_a_collection_200(self):
         dataset = self.generate_dataset(name="test")
-        test_url = f"/curation/v1/collections/{dataset.collection_id}/datasets/{dataset.dataset_version_id}"
 
-        response = self.app.get(test_url)
-        self.assertEqual(200, response.status_code)
-        self.assertEqual(dataset.dataset_id, response.json["id"])
+        with self.subTest("by canonical collection_id"):
+            test_url = f"/curation/v1/collections/{dataset.collection_id}/datasets/{dataset.dataset_version_id}"
+
+            response = self.app.get(test_url)
+            self.assertEqual(200, response.status_code)
+            self.assertEqual(dataset.dataset_id, response.json["id"])
+        
+        with self.subTest("by version_id"):
+            test_url = f"/curation/v1/collections/{dataset.collection_version_id}/datasets/{dataset.dataset_version_id}"
+
+            response = self.app.get(test_url)
+            self.assertEqual(200, response.status_code)
+            self.assertEqual(dataset.dataset_id, response.json["id"])
 
     def test_get_dataset_shape(self):
         dataset = self.generate_dataset(name="test")
