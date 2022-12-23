@@ -7,6 +7,10 @@ from urllib.parse import unquote_plus
 from backend.layers.business.business import BusinessLogic
 from backend.layers.persistence.persistence import DatabaseProvider
 from backend.layers.common.entities import CollectionVersionId, DatasetVersionId
+from backend.layers.thirdparty.crossref_provider import CrossrefProvider
+from backend.layers.thirdparty.s3_provider import S3Provider
+from backend.layers.thirdparty.step_function_provider import StepFunctionProvider
+from backend.layers.thirdparty.uri_provider import UriProvider
 
 from pythonjsonlogger import jsonlogger
 
@@ -34,7 +38,13 @@ def get_business_logic():
     global _business_logic
     if not _business_logic:
         database_provider = DatabaseProvider()
-        _business_logic = BusinessLogic(database_provider, None, None, None, None)
+        uri_provider = UriProvider()
+        step_function_provider = StepFunctionProvider()
+        s3_provider = S3Provider()
+        crossref_provider = CrossrefProvider()
+        _business_logic = BusinessLogic(
+            database_provider, crossref_provider, step_function_provider, s3_provider, uri_provider
+        )
     return _business_logic
 
 
