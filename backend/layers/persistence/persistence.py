@@ -669,8 +669,6 @@ class DatabaseProvider(DatabaseProviderInterface):
                 return None
             if canonical_dataset.version_id is None:
                 return None
-            dataset_version = (
-                session.query(DatasetVersionTable).filter_by(id=canonical_dataset.version_id).one()
-            )
+            dataset_version = session.query(DatasetVersionTable).filter_by(id=canonical_dataset.version_id).one()
             dataset_version.canonical_dataset = canonical_dataset
             return self._hydrate_dataset_version(dataset_version)
