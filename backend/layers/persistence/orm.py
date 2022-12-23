@@ -1,4 +1,4 @@
-from sqlalchemy import Column, DateTime, Enum, ForeignKey, String, Table
+from sqlalchemy import Column, DateTime, Enum, ForeignKey, String
 from sqlalchemy.dialects.postgresql import ARRAY, BOOLEAN, JSON, UUID
 from sqlalchemy.orm import registry
 from sqlalchemy.schema import MetaData
