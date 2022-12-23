@@ -190,8 +190,8 @@ class DatabaseProvider(DatabaseProviderInterface):
         )
 
         collection_version_row = CollectionVersionTable(
+            id=version_id.id,
             collection_id=collection_id.id,
-            version_id=version_id.id,
             owner=owner,
             curator_name=curator_name,
             collection_metadata=collection_metadata.to_json(),
@@ -367,7 +367,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             current_version = session.query(CollectionVersionTable).filter_by(id=current_version_id).one()
             new_version_id = CollectionVersionId()
             new_version = CollectionVersionTable(
-                version_id=new_version_id,
+                id=new_version_id,
                 collection_id=collection_id.id,
                 collection_metadata=current_version.collection_metadata,
                 owner=current_version.owner,
@@ -497,10 +497,10 @@ class DatabaseProvider(DatabaseProviderInterface):
         dataset_id = DatasetId()
         dataset_version_id = DatasetVersionId()
         canonical_dataset = DatasetTable(
-            dataset_id=dataset_id.id, dataset_version_id=dataset_version_id.id, published_at=None
+            id=dataset_id.id, version_id=dataset_version_id.id, published_at=None
         )
         dataset_version = DatasetVersionTable(
-            version_id=dataset_version_id.id,
+            id=dataset_version_id.id,
             dataset_id=dataset_id.id,
             collection_id=collection_id,
             dataset_metadata=None,
@@ -640,7 +640,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             dataset_id = session.query(DatasetVersionTable.dataset_id).filter_by(id=old_dataset_version_id.id).one()[0]
             new_dataset_version_id = DatasetVersionId()
             new_dataset_version = DatasetVersionTable(
-                version_id=new_dataset_version_id.id,
+                id=new_dataset_version_id.id,
                 dataset_id=dataset_id,
                 collection_id=collection_id,
                 dataset_metadata=None,
