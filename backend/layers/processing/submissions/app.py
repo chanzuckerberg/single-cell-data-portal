@@ -27,12 +27,11 @@ logger.handlers = [log_handler]
 
 REGEX = f"^{USERNAME_REGEX}/{COLLECTION_ID_REGEX}/{DATASET_ID_REGEX}$"
 
-_business_logic: BusinessLogic
-
+_business_logic = None
 
 def get_business_logic():
     global _business_logic
-    if _business_logic is None:
+    if not _business_logic:
         database_provider = DatabaseProvider()
         _business_logic = BusinessLogic(database_provider, None, None, None, None)
     return _business_logic
