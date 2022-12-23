@@ -311,9 +311,7 @@ class DatabaseProvider(DatabaseProviderInterface):
 
             mapped_version_ids = [i.version_id for i in canonical_collections]
             versions = (
-                session.query(CollectionVersionTable)
-                .filter(CollectionVersionTable.id.in_(mapped_version_ids))
-                .all()
+                session.query(CollectionVersionTable).filter(CollectionVersionTable.id.in_(mapped_version_ids)).all()
             )  # noqa
 
             for version in versions:
@@ -631,9 +629,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         # TODO: this method should probably be split into multiple - it contains too much logic
         with self._manage_session() as session:
             collection_id = (
-                session.query(CollectionVersionTable.collection_id)
-                .filter_by(id=collection_version_id.id)
-                .one()[0]
+                session.query(CollectionVersionTable.collection_id).filter_by(id=collection_version_id.id).one()[0]
             )  # noqa
             dataset_id = session.query(DatasetVersionTable.dataset_id).filter_by(id=old_dataset_version_id.id).one()[0]
             new_dataset_version_id = DatasetVersionId()
