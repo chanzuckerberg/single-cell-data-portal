@@ -91,7 +91,7 @@ class DatabaseProvider(DatabaseProviderInterface):
     def _row_to_collection_version(self, row: Any, canonical_collection: CanonicalCollection) -> CollectionVersion:
         return CollectionVersion(
             collection_id=CollectionId(str(row.collection_id)),
-            version_id=CollectionVersionId(str(row.version_id)),
+            version_id=CollectionVersionId(str(row.id)),
             owner=row.owner,
             curator_name=row.curator_name,
             metadata=CollectionMetadata.from_json(row.collection_metadata),
@@ -107,7 +107,7 @@ class DatabaseProvider(DatabaseProviderInterface):
     ) -> CollectionVersionWithDatasets:
         return CollectionVersionWithDatasets(
             collection_id=CollectionId(str(row.collection_id)),
-            version_id=CollectionVersionId(str(row.version_id)),
+            version_id=CollectionVersionId(str(row.id)),
             owner=row.owner,
             curator_name=row.curator_name,
             metadata=CollectionMetadata.from_json(row.collection_metadata),
@@ -136,7 +136,7 @@ class DatabaseProvider(DatabaseProviderInterface):
             metadata = DatasetMetadata.from_json(row.dataset_metadata)
         return DatasetVersion(
             DatasetId(str(row.dataset_id)),
-            DatasetVersionId(str(row.version_id)),
+            DatasetVersionId(str(row.id)),
             CollectionId(str(row.collection_id)),
             status,
             metadata,
