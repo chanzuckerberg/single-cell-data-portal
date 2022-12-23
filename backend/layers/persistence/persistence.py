@@ -422,7 +422,7 @@ class DatabaseProvider(DatabaseProviderInterface):
                 .filter(DatasetVersionTable.id.in_(dataset_version_ids))
                 .all()
             ):
-                dataset.version_id = dataset_version.version_id
+                dataset.version_id = dataset_version.id
                 if dataset.published_at is None:
                     dataset.published_at = published_at
 
