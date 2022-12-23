@@ -939,7 +939,7 @@ class TestGetDatasets(BaseAPIPortalTest):
             response = self.app.get(test_url)
             self.assertEqual(200, response.status_code)
             self.assertEqual(dataset.dataset_id, response.json["id"])
-        
+
         with self.subTest("by version_id"):
             test_url = f"/curation/v1/collections/{dataset.collection_version_id}/datasets/{dataset.dataset_version_id}"
 
