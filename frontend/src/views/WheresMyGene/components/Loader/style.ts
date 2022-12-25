@@ -10,4 +10,5 @@ export const Wrapper = styled.div`
   align-items: center;
   gap: 10px;
   justify-content: center;
+  z-index: 1000;
 `;

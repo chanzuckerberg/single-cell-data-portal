@@ -7,6 +7,7 @@ import {
   OntologyTerm,
   usePrimaryFilterDimensions,
 } from "src/common/queries/wheresMyGene";
+import { HEATMAP_CONTAINER_ID } from "../../common/constants";
 import { DispatchContext, State } from "../../common/store";
 import { addCellInfoCellType } from "../../common/store/actions";
 import {
@@ -147,7 +148,7 @@ export default memo(function HeatMap({
   }, [selectedGeneExpressionSummariesByTissueName, geneNameToIndex]);
 
   return (
-    <Container {...{ className }}>
+    <Container {...{ className }} id={HEATMAP_CONTAINER_ID}>
       {isLoadingAPI || isAnyTissueLoading(isLoading) ? <Loader /> : null}
 
       <XAxisWrapper>

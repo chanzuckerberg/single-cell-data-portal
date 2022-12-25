@@ -304,6 +304,9 @@ class PortalApi:
         if doi_node := doi.get_doi_link_node(body, errors):
             if doi_url := doi.portal_get_normalized_doi_url(doi_node, errors):
                 doi_node["link_url"] = doi_url
+        curator_name = body.get("curator_name")
+        if curator_name is None:
+            errors.append("Create Collection body is missing field 'curator_name'")
         if errors:
             raise InvalidParametersHTTPException(detail=errors)  # TODO: rewrite this exception?
 
@@ -314,8 +317,6 @@ class PortalApi:
             body["contact_email"],
             [self._link_from_request(node) for node in body.get("links", [])],
         )
-
-        curator_name = body["curator_name"]
 
         try:
             version = self.business_logic.create_collection(user, curator_name, metadata)
@@ -388,12 +389,17 @@ class PortalApi:
         if version is None or not UserInfo(token_info).is_user_owner_or_allowed(version.owner):
             raise ForbiddenHTTPException()
 
+        if body.get("links") is not None:
+            update_links = [self._link_from_request(node) for node in body["links"]]
+        else:
+            update_links = None
+
         payload = CollectionMetadataUpdate(
             body.get("name"),
             body.get("description"),
             body.get("contact_name"),
             body.get("contact_email"),
-            [self._link_from_request(node) for node in body.get("links", [])],
+            update_links,
         )
 
         self.business_logic.update_collection_version(CollectionVersionId(collection_id), payload)
@@ -433,6 +439,7 @@ class PortalApi:
             dataset_version_id, _ = self.business_logic.ingest_dataset(
                 CollectionVersionId(collection_id),
                 url,
+                None,
                 None if dataset_id is None else DatasetVersionId(dataset_id),
             )
             return dataset_version_id
@@ -519,14 +526,19 @@ class PortalApi:
     ) -> Tuple[DatasetVersion, CollectionVersionWithDatasets]:
         """
         Ensures that the dataset exists and has the right owner.
-        This requires looking up the collection connected to this dataset.
+        This requires looking up the latest collection connected to this dataset.
         Also returns the dataset version and the collection_version
         """
         version = self.business_logic.get_dataset_version(dataset_version_id)
         if version is None:
             raise ForbiddenHTTPException(f"Dataset {dataset_version_id} does not exist")
 
-        collection_version = self.business_logic.get_collection_version_from_canonical(version.collection_id)
+        # if a revision exists, fetch that
+        collection_version = self.business_logic.get_unpublished_collection_version_from_canonical(
+            version.collection_id
+        )
+        if collection_version is None:
+            collection_version = self.business_logic.get_published_collection_version(version.collection_id)
         # If the collection does not exist, it means that the dataset is orphaned and therefore we cannot
         # determine the owner. This should not be a problem - we won't need its state at that stage.
         if collection_version is None:
