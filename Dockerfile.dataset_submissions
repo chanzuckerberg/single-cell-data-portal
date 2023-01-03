@@ -1,6 +1,7 @@
 FROM public.ecr.aws/lambda/python:3.9
 
-COPY backend/portal/pipeline/submissions .
+COPY backend/layers/processing/submissions .
+COPY backend/layers ./backend/layers
 
 # For lighter weight Docker images
 ENV PIP_NO_CACHE_DIR=1

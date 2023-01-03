@@ -206,7 +206,6 @@ class BusinessLogic(BusinessLogicInterface):
         it should also update its publisher metadata
         """
 
-        # TODO: we could collect all the changes and issue a single update at the end
         # TODO: CollectionMetadataUpdate should probably be used for collection creation as well
         # TODO: link.type should DEFINITELY move to an enum. pylance will help with the refactor
 
@@ -224,13 +223,17 @@ class BusinessLogic(BusinessLogicInterface):
         else:
             new_doi = next((link.uri for link in body.links if link.type == "DOI"), None)
 
+        # Determine if publisher metadata should be unset, ignored or set at the end of the method.
+        # Note: the update needs to be done at the end to ensure atomicity
+        unset_publisher_metadata = False
+        publisher_metadata_to_set = None
+
         if old_doi and new_doi is None:
             # If the DOI was deleted, remove the publisher_metadata field
-            self.database_provider.save_collection_publisher_metadata(version_id, None)
+            unset_publisher_metadata = True
         elif (new_doi is not None) and new_doi != old_doi:
             # If the DOI has changed, fetch and update the metadata
-            publisher_metadata = self._get_publisher_metadata(new_doi, errors)
-            self.database_provider.save_collection_publisher_metadata(version_id, publisher_metadata)
+            publisher_metadata_to_set = self._get_publisher_metadata(new_doi, errors)
 
         if errors:
             raise CollectionUpdateException(errors)
@@ -245,6 +248,11 @@ class BusinessLogic(BusinessLogicInterface):
                     value.strip_fields()
                 setattr(new_metadata, field, value)
 
+        # Issue all updates
+        if unset_publisher_metadata:
+            self.database_provider.save_collection_publisher_metadata(version_id, None)
+        elif publisher_metadata_to_set is not None:
+            self.database_provider.save_collection_publisher_metadata(version_id, publisher_metadata_to_set)
         self.database_provider.save_collection_metadata(version_id, new_metadata)
 
     def _assert_collection_version_unpublished(
@@ -276,7 +284,7 @@ class BusinessLogic(BusinessLogicInterface):
 
         self.database_provider.update_dataset_upload_status(new_dataset_version.version_id, DatasetUploadStatus.WAITING)
         self.database_provider.update_dataset_processing_status(
-            new_dataset_version.version_id, DatasetProcessingStatus.PENDING
+            new_dataset_version.version_id, DatasetProcessingStatus.INITIALIZED
         )
 
         return (new_dataset_version.version_id, new_dataset_version.dataset_id)
@@ -286,20 +294,26 @@ class BusinessLogic(BusinessLogicInterface):
         self,
         collection_version_id: CollectionVersionId,
         url: str,
+        file_size: Optional[int],
         existing_dataset_version_id: Optional[DatasetVersionId],
     ) -> Tuple[DatasetVersionId, DatasetId]:
         """
         Creates a canonical dataset and starts its ingestion by invoking the step function
+        If `size` is not provided, it will be inferred automatically
         """
         if not self.uri_provider.validate(url):
             raise InvalidURIException(f"Trying to upload invalid URI: {url}")
 
-        file_info = self.uri_provider.get_file_info(url)
+        if file_size is None:
+            file_info = self.uri_provider.get_file_info(url)
+            file_size = file_info.size
 
-        max_file_size_gb = 30 * 2 ** 30  # TODO: read it from the config - requires smart mocking
-        # max_file_size_gb = CorporaConfig().upload_max_file_size_gb * GB
 
-        if file_info.size is not None and file_info.size > max_file_size_gb:
+        from backend.common.corpora_config import CorporaConfig
+
+        max_file_size_gb = CorporaConfig().upload_max_file_size_gb * 2 ** 30
+
+        if file_size is not None and file_size > max_file_size_gb:
             raise MaxFileSizeExceededException(f"{url} exceeds the maximum allowed file size of {max_file_size_gb} Gb")
 
         # Ensure that the collection exists and is not published
@@ -330,10 +344,18 @@ class BusinessLogic(BusinessLogicInterface):
                     f"{dataset_version.status.processing_status.name}"
                 )
 
-            # TODO: this method could very well be called `add_dataset_version`
-            new_dataset_version = self.database_provider.replace_dataset_in_collection_version(
-                collection_version_id, existing_dataset_version_id
-            )
+            # If a dataset is "empty", we will not replace it but instead reuse the existing version id.
+            # Make sure that the conditions are not relaxed or this will break immutability.
+            if (
+                dataset_version.status.processing_status == DatasetProcessingStatus.INITIALIZED
+                and not dataset_version.artifacts
+                and dataset_version.canonical_dataset.published_at is None
+            ):
+                new_dataset_version = dataset_version
+            else:
+                new_dataset_version = self.database_provider.replace_dataset_in_collection_version(
+                    collection_version_id, existing_dataset_version_id
+                )
         else:
             new_dataset_version = self.database_provider.create_canonical_dataset(collection_version_id)
             # adds new dataset version to collection version
@@ -344,7 +366,7 @@ class BusinessLogic(BusinessLogicInterface):
         # Sets an initial processing status for the new dataset version
         self.database_provider.update_dataset_upload_status(new_dataset_version.version_id, DatasetUploadStatus.WAITING)
         self.database_provider.update_dataset_processing_status(
-            new_dataset_version.version_id, DatasetProcessingStatus.PENDING
+            new_dataset_version.version_id, DatasetProcessingStatus.INITIALIZED
         )
 
         # Starts the step function process
