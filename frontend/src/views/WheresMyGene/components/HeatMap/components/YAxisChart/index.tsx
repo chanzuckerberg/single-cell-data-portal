@@ -45,6 +45,11 @@ interface Props {
   selectedOrganismId: string;
 }
 
+// List of Tissues to exclude from FMG
+const fmgExcludeTissues = [
+  "blood"
+];
+
 type Coord = [number, number];
 export default memo(function YAxisChart({
   cellTypes = [],
@@ -210,6 +215,7 @@ export default memo(function YAxisChart({
       />
       {yAxisInfoCoords &&
         isMarkerGenes &&
+        !fmgExcludeTissues.includes(tissue) &&
         yAxisInfoCoords.map((coord, i) => {
           const content = cellTypeMetadata[i];
           const cellType = isMarkerGenes ? deserializeCellTypeMetadata(content) : null;
