@@ -15,6 +15,8 @@ from backend.layers.common.entities import DatasetArtifactType
 logger = logging.getLogger(__name__)
 
 _business_logic = None
+
+
 def get_business_logic():
     """
     Returns an instance of the business logic handler. Use this to interrogate the database
@@ -23,6 +25,7 @@ def get_business_logic():
     if not _business_logic:
         _business_logic = BusinessLogic(DatabaseProvider(), None, None, None, None)
     return _business_logic
+
 
 def get_X_raw(anndata_object: anndata.AnnData) -> Union[np.ndarray, sparse.spmatrix, ArrayView]:
     """
@@ -41,16 +44,17 @@ def get_dataset_s3_uris() -> Dict[str, str]:
     s3_uris = dict()
     for dataset in get_business_logic().get_all_published_datasets():
         if (
-            (dataset.metadata is not None) and
-            (dataset.metadata.assay is not None) and 
-            (dataset.metadata.is_primary_data == "PRIMARY") and
-            (dataset.metadata.organism is not None)
+            (dataset.metadata is not None)
+            and (dataset.metadata.assay is not None)
+            and (dataset.metadata.is_primary_data == "PRIMARY")
+            and (dataset.metadata.organism is not None)
         ):
             if any(assay.ontology_term_id in INCLUDED_ASSAYS for assay in dataset.metadata.assay):
                 if len(dataset.metadata.organism) < 2:
                     s3_uri = next(a.uri for a in dataset.artifacts if a.type == DatasetArtifactType.H5AD)
                     s3_uris[dataset.dataset_id.id] = s3_uri
     return s3_uris
+
 
 def copy_datasets_to_instance(s3_uris: Dict, dataset_directory: str):
     """Copy given list of s3 uris to the provided path"""

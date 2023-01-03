@@ -9,8 +9,6 @@ import connexion
 from flask import jsonify
 from pandas import DataFrame
 
-from backend.common.entities import Dataset
-from backend.common.utils.db_session import db_session_manager
 from backend.wmg.data.ontology_labels import ontology_term_label, gene_term_label
 from backend.wmg.data.query import (
     WmgQuery,
@@ -88,6 +86,8 @@ def markers():
 
 
 _business_logic = None
+
+
 def get_business_logic():
     """
     Returns an instance of the business logic handler. Use this to interrogate the database
@@ -96,6 +96,7 @@ def get_business_logic():
     if not _business_logic:
         _business_logic = BusinessLogic(DatabaseProvider(), None, None, None, None)
     return _business_logic
+
 
 # TODO: Read this from generated data artifact instead of DB.
 #  https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data

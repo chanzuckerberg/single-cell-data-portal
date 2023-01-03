@@ -1,10 +1,7 @@
 from unittest.mock import patch
 import backend.wmg.pipeline.integrated_corpus.extract
-from backend.common.corpora_orm import DatasetArtifactFileType
 from backend.wmg.data.constants import INCLUDED_ASSAYS
 from backend.layers.common.entities import CollectionId, DatasetArtifactType, DatasetVersionId, OntologyTermId
-from tests.unit.backend.fixtures.generate_data_mixin import GenerateDataMixin
-from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
 from tests.unit.backend.layers.common.base_test import BaseTest
 
 
@@ -15,7 +12,7 @@ class TestExtract(BaseTest):
 
     def generate_base_metadata(self):
         """
-        Generate a set of dataset metadata that verifies the criteria for inclusion in the 
+        Generate a set of dataset metadata that verifies the criteria for inclusion in the
         extraction pipeline
         """
         assay_ontologies = list(INCLUDED_ASSAYS.keys())
@@ -29,7 +26,9 @@ class TestExtract(BaseTest):
         super().setUp()
 
         # enable mocking of business logic
-        self.mock_business_logic = patch("backend.wmg.pipeline.integrated_corpus.extract._business_logic", new=self.business_logic)
+        self.mock_business_logic = patch(
+            "backend.wmg.pipeline.integrated_corpus.extract._business_logic", new=self.business_logic
+        )
         self.mock_business_logic.start()
 
         assay_ontologies = list(INCLUDED_ASSAYS.keys())
@@ -43,7 +42,7 @@ class TestExtract(BaseTest):
         # Only one assay needs to be included in the list of allowed assays
         metadata.assay = [
             OntologyTermId(ontology_term_id="any_other_obo_id", label="test_assay"),
-            OntologyTermId(ontology_term_id=assay_ontologies[0], label="test_assay")
+            OntologyTermId(ontology_term_id=assay_ontologies[0], label="test_assay"),
         ]
         self.dataset_1 = self.generate_dataset(metadata=metadata, publish=True)
 
@@ -52,7 +51,6 @@ class TestExtract(BaseTest):
         metadata.organism = [
             OntologyTermId(ontology_term_id="NCBITaxon:9606", label="Homo Sapiens"),
             OntologyTermId(ontology_term_id="NCBITaxon:10090", label="Mus musculus"),
-
         ]
         self.dataset__multiple_organisms = self.generate_dataset(metadata=metadata, publish=True)
 
@@ -60,7 +58,6 @@ class TestExtract(BaseTest):
         metadata = self.generate_base_metadata()
         metadata.assay = [OntologyTermId(ontology_term_id="any_other_obo_id", label="test_assay")]
         self.dataset__wrong_assay = self.generate_dataset(metadata=metadata, publish=True)
-
 
         # Dataset 5: should NOT be included in the pipeline because is_primary_data is SECONDARY
         metadata = self.generate_base_metadata()
@@ -73,12 +70,11 @@ class TestExtract(BaseTest):
         # Dataset 7: should NOT be included in the pipeline because it belongs to a tombstoned collection
         self.dataset__tombstoned = self.generate_dataset(publish=True)
         self.business_logic.tombstone_collection(CollectionId(self.dataset__tombstoned.collection_id))
-        
+
         # Dataset 8: should NOT be included in the pipeline because it has no organism
         metadata = self.generate_base_metadata()
         metadata.organism = None
         self.dataset__null_organism = self.generate_dataset(metadata=metadata, publish=True)
-
 
     def tearDown(self):
         super().tearDown()
