@@ -201,7 +201,7 @@ class BaseTest(unittest.TestCase):
         name: Optional[str] = None,
         statuses: List[DatasetStatusUpdate] = [],
         validation_message: str = None,
-        artifacts: List[DatasetArtifactUpdate] = [],
+        artifacts: List[DatasetArtifactUpdate] = None,
         publish: bool = False,
     ) -> DatasetData:
         """
@@ -226,7 +226,7 @@ class BaseTest(unittest.TestCase):
                 DatasetValidationStatus.INVALID,
                 validation_message=validation_message,
             )
-        if not artifacts:
+        if artifacts is None:
             artifacts = [
                 DatasetArtifactUpdate(DatasetArtifactType.H5AD, f"s3://fake.bucket/{dataset_version_id}/local.h5ad"),
                 DatasetArtifactUpdate(DatasetArtifactType.CXG, f"s3://fake.bucket/{dataset_version_id}/local.cxg"),
