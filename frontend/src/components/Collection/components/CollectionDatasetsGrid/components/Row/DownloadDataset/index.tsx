@@ -43,6 +43,7 @@ const DownloadDataset: FC<Props> = ({
   return (
     <>
       <Button
+        datasetName={name}
         disabled={isDisabled}
         onClick={toggleOpen}
         data-test-id="dataset-download-button"

@@ -23,13 +23,7 @@ export const CommonStyle = styled.div`
   }
 `;
 
-export const PrivacyStyle = styled.div`
-  h1,
-  h2,
-  h3 {
-    margin: 30px 0 10px 0;
-  }
-
+const AgreementDocumentStyle = styled.div`
   h1,
   h2,
   h3,
@@ -49,11 +43,20 @@ export const PrivacyStyle = styled.div`
     margin-top: 10px;
   }
 
+  ol,
+  ul {
+    padding-left: 16px;
+  }
+
   ol > li,
-  ul > li,
-  ol > p,
-  ul > p {
-    padding-left: 8px;
+  ul > li {
+    padding-left: 0;
+  }
+`;
+
+export const TOSStyle = styled(AgreementDocumentStyle)`
+  ol[class^="section"] {
+    padding-left: 0;
   }
 
   .section1 > li,
@@ -64,8 +67,7 @@ export const PrivacyStyle = styled.div`
   .section6 > li,
   .section7 > li,
   .section8 > li,
-  .section9 > li,
-  .section10 > li {
+  .section9 > li {
     counter-increment: increase-by;
   }
 
@@ -77,8 +79,7 @@ export const PrivacyStyle = styled.div`
   ol.section6,
   ol.section7,
   ol.section8,
-  ol.section9,
-  ol.section10 {
+  ol.section9 {
     list-style-type: none;
   }
 
@@ -87,9 +88,10 @@ export const PrivacyStyle = styled.div`
   .section3 > li:before,
   .section4 > li:before,
   .section5 > li:before,
+  .section6 > li:before,
+  .section7 > li:before,
   .section8 > li:before,
-  .section9 > li:before,
-  .section10 > li:before {
+  .section9 > li:before {
     padding-right: 8px;
   }
 
@@ -117,8 +119,43 @@ export const PrivacyStyle = styled.div`
   .section9 > li:before {
     content: "9." counter(increase-by, decimal) " ";
   }
-  .section10 > li:before {
-    content: "10." counter(increase-by, decimal) " ";
+`;
+
+export const PrivacyStyle = styled(AgreementDocumentStyle)`
+  /* "Last updated" text. */
+  h1 + p {
+    margin-bottom: 20px;
+  }
+
+  h2,
+  h3,
+  h4 {
+    margin: 10px 0;
+  }
+
+  main > h4 {
+    display: block;
+  }
+
+  /* Inline heading and paragraph. */
+  .inline {
+    margin-top: 10px;
+  }
+
+  .inline > * {
+    display: inline;
+  }
+
+  ul.text-list {
+    padding-left: 8px;
+  }
+
+  ul > li {
+    list-style-type: square;
+  }
+
+  ul.text-list > li {
+    list-style-type: none;
   }
 `;
 

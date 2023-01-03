@@ -8,7 +8,7 @@ from sqlalchemy_utils import database_exists, create_database, drop_database
 
 env = os.environ.get("DEPLOYMENT_STAGE")
 from backend.common.corpora_config import CorporaDbConfig
-from tests.unit.backend.fixtures.test_db import TestDatabase
+from tests.unit.backend.fixtures.test_db import DatabaseFixture
 
 # Importing tests.unit overwrites our deployment stage env var.
 # So we're putting it back here.
@@ -32,7 +32,7 @@ def run_db_stuff(create_schema, recreate_db, populate_data, drop_db):
             exit(1)
 
     if recreate_db or populate_data:
-        testdb = TestDatabase(real_data=True)
+        testdb = DatabaseFixture(real_data=True)
 
     # Drop and recreate tables
     if recreate_db:

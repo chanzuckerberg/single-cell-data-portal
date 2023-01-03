@@ -16,6 +16,7 @@ import pathTool from "path";
 import { Fragment, memo, useState } from "react";
 import rehypeSlug from "rehype-slug";
 import { noop } from "src/common/constants/utils";
+import { OFF_WHITE } from "src/common/theme";
 import EmbeddedGoogleSlides from "src/components/EmbeddedGoogleSlides";
 import Layout from "src/components/Layout";
 import { StyledDocsLayout } from "src/components/Layout/style";
@@ -263,7 +264,7 @@ interface Props {
 }
 
 const StyledLeftNav = styled.div`
-  background-color: #f8f8f8;
+  background-color: ${OFF_WHITE};
   border-right: 1px solid #eaeaea;
   grid-area: leftsidebar;
   width: 100%;
@@ -278,7 +279,7 @@ const StyledLeftNav = styled.div`
 
   ::-webkit-scrollbar-thumb {
     background-clip: padding-box;
-    border-right: 4px #f8f8f8 solid;
+    border-right: 4px ${OFF_WHITE} solid;
     background-color: grey;
   }
 `;

@@ -1,14 +1,15 @@
 import cloneDeep from "lodash/cloneDeep";
-import { memo, useMemo, useRef, useState } from "react";
+import { memo, useContext, useMemo, useRef, useState } from "react";
 import { EMPTY_ARRAY } from "src/common/constants/utils";
 import { useResizeObserver } from "src/common/hooks/useResizeObserver";
 import {
   generateTermsByKey,
   OntologyTerm,
-  useMarkerGenes,
   usePrimaryFilterDimensions,
 } from "src/common/queries/wheresMyGene";
-import { State } from "../../common/store";
+import { HEATMAP_CONTAINER_ID } from "../../common/constants";
+import { DispatchContext, State } from "../../common/store";
+import { addCellInfoCellType } from "../../common/store/actions";
 import {
   CellType,
   GeneExpressionSummary,
@@ -70,6 +71,8 @@ export default memo(function HeatMap({
   const chartWrapperRef = useRef<HTMLDivElement>(null);
   const chartWrapperRect = useResizeObserver(chartWrapperRef);
 
+  const dispatch = useContext(DispatchContext);
+
   const { data } = usePrimaryFilterDimensions();
   // Get tissueName to ID map for use in find marker genes
   const tissuesByName = useMemo(() => {
@@ -84,24 +87,10 @@ export default memo(function HeatMap({
     return result;
   }, [data]);
 
-  // Get id to Gene map since expression data is fetched by gene name not id
-  const genesByID = useMemo(() => {
-    const result: { [name: string]: OntologyTerm } = {};
-
-    if (!data || !selectedOrganismId) return result;
-
-    const { genes: allGenes } = data;
-
-    const organismGenes = allGenes[selectedOrganismId];
-
-    for (const gene of organismGenes) {
-      result[gene.id] = gene;
-    }
-
-    return result;
-  }, [data, selectedOrganismId]);
-
-  const { mutate: generateMarkerGenes } = useMarkerGenes(genesByID);
+  const generateMarkerGenes = (cellType: CellType, tissueID: string) => {
+    if (!dispatch) return;
+    dispatch(addCellInfoCellType({ cellType, tissueID }));
+  };
 
   const tissueNameToCellTypeIdToGeneNameToCellTypeGeneExpressionSummaryDataMap =
     useTissueNameToCellTypeIdToGeneNameToCellTypeGeneExpressionSummaryDataMap(
@@ -152,7 +141,7 @@ export default memo(function HeatMap({
   }, [selectedGeneExpressionSummariesByTissueName, geneNameToIndex]);
 
   return (
-    <Container {...{ className }}>
+    <Container {...{ className }} id={HEATMAP_CONTAINER_ID}>
       {isLoadingAPI || isAnyTissueLoading(isLoading) ? <Loader /> : null}
 
       <XAxisChart geneNames={sortedGeneNames} />

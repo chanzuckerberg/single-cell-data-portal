@@ -16,6 +16,8 @@ locals {
   remote_dev_prefix            = var.stack_prefix
   wait_for_steady_state        = var.wait_for_steady_state
   batch_container_memory_limit = var.batch_container_memory_limit
+  wmg_batch_container_memory_limit = var.wmg_batch_container_memory_limit
+  wmg_desired_vcpus                = var.wmg_desired_vcpus
 
   migration_cmd                = ["make", "-C", "/single-cell-data-portal/backend", "db/init_remote_dev"]
   deletion_cmd                 = ["make", "-C", "/single-cell-data-portal/backend", "db/delete_remote_dev"]
@@ -40,6 +42,7 @@ locals {
   wmg_upload_image_repo           = local.secret["ecrs"]["wmg_processing"]["url"]
   batch_role_arn                  = local.secret["batch_queues"]["upload"]["role_arn"]
   job_queue_arn                   = local.secret["batch_queues"]["upload"]["queue_arn"]
+  wmg_batch_role_arn              = local.secret["batch_queues"]["wmg"]["role_arn"]
   external_dns                    = local.secret["external_zone_name"]
   internal_dns                    = local.secret["internal_zone_name"]
 
@@ -181,14 +184,15 @@ module upload_batch {
 module wmg_batch {
   source                        = "../wmg-batch"
   image                         = "${local.wmg_upload_image_repo}:${local.image_tag}"
-  batch_role_arn                = local.batch_role_arn
+  batch_role_arn                = local.wmg_batch_role_arn
   cmd                           = ""
   custom_stack_name             = local.custom_stack_name
   remote_dev_prefix             = local.remote_dev_prefix
   deployment_stage              = local.deployment_stage
   artifact_bucket               = local.artifact_bucket
   wmg_bucket                    = local.wmg_bucket
-  batch_container_memory_limit  = var.batch_container_memory_limit
+  desired_vcpus                 = local.wmg_desired_vcpus
+  batch_container_memory_limit  = var.wmg_batch_container_memory_limit
 }
 
 module upload_success_lambda {

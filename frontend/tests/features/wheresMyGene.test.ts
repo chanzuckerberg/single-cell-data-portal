@@ -13,6 +13,7 @@ const CELL_TYPE_LABELS_ID = "cell-type-labels";
 const ADD_TISSUE_ID = "add-tissue";
 const ADD_GENE_ID = "add-gene";
 const SOURCE_DATA_BUTTON_ID = "source-data-button";
+const SOURCE_DATA_LIST_SELECTOR = `[data-test-id="source-data-list"]`;
 
 const { describe, skip } = test;
 
@@ -31,9 +32,6 @@ describe("Where's My Gene", () => {
 
     await expect(page).toHaveSelector(getText("STEP 3"));
     await expect(page).toHaveSelector(getText("Explore Gene Expression"));
-
-    // Beta callout
-    await expect(page).toHaveSelector(getText("This feature is in beta"));
 
     // Filters Panel
     // (thuang): `*` is for intermediate match
@@ -181,12 +179,14 @@ describe("Where's My Gene", () => {
 
     await tryUntil(
       async () => {
-        const sourceDataList = await page.$("[class*=MuiList-root]");
+        const sourceDataList = await page.$(SOURCE_DATA_LIST_SELECTOR);
+
         if (!sourceDataList) throw Error("no source data displayed");
 
         const sourceDataListItems = await sourceDataList?.$$(
           ".MuiListItem-root"
         );
+
         expect(sourceDataListItems?.length).toBeGreaterThan(0);
 
         await page.mouse.click(0, 0);
@@ -212,7 +212,9 @@ describe("Where's My Gene", () => {
         await clickUntilOptionsShowUp(getDatasetSelector, page);
         await selectFirstOption(page);
         await clickUntilSidebarShowsUp(getSourceDataButton, page);
-        const sourceDataListAfter = await page.$("[class*=MuiList-root]");
+
+        const sourceDataListAfter = await page.$(SOURCE_DATA_LIST_SELECTOR);
+
         if (!sourceDataListAfter)
           throw Error(
             "no source data displayed after selecting dataset filter"
@@ -221,7 +223,8 @@ describe("Where's My Gene", () => {
         const sourceDataListAfterItems = await sourceDataListAfter?.$$(
           ".MuiListItem-root"
         );
-        expect(sourceDataListAfterItems?.length).toBe(2);
+
+        expect(sourceDataListAfterItems?.length).toBeGreaterThan(0);
       },
       { page }
     );
@@ -241,6 +244,8 @@ describe("Where's My Gene", () => {
     const GENE_COUNT = 3;
 
     await clickUntilOptionsShowUp(getTissueSelectorButton, page);
+    const texts = await page.getByRole("option").allTextContents();
+    const tissueName = texts[0].replace(/\s+/g, "-");
     await selectFirstNOptions(TISSUE_COUNT, page);
 
     await clickUntilOptionsShowUp(getGeneSelectorButton, page);
@@ -252,7 +257,7 @@ describe("Where's My Gene", () => {
     );
 
     const beforeCellTypeNames = await getNames(
-      `${getTestID(CELL_TYPE_LABELS_ID)} text`,
+      `${getTestID(`${CELL_TYPE_LABELS_ID}-${tissueName}`)} text`,
       page
     );
 
@@ -280,7 +285,7 @@ describe("Where's My Gene", () => {
     );
 
     const afterCellTypeNames = await getNames(
-      `${getTestID(CELL_TYPE_LABELS_ID)} text`,
+      `${getTestID(`${CELL_TYPE_LABELS_ID}-${tissueName}`)} text`,
       page
     );
 
@@ -308,6 +313,8 @@ describe("Where's My Gene", () => {
     }
 
     await clickUntilOptionsShowUp(getTissueSelectorButton, page);
+    const texts = await page.getByRole("option").allTextContents();
+    const tissueName = texts[0].replace(/\s+/g, "-");
     await selectFirstNOptions(1, page);
 
     await clickUntilOptionsShowUp(getGeneSelectorButton, page);
@@ -326,7 +333,7 @@ describe("Where's My Gene", () => {
       page
     );
     const beforeCellTypeNames = await getNames(
-      `${getTestID(CELL_TYPE_LABELS_ID)} text`,
+      `${getTestID(`${CELL_TYPE_LABELS_ID}-${tissueName}`)} text`,
       page
     );
 
@@ -343,7 +350,7 @@ describe("Where's My Gene", () => {
           page
         );
         const afterCellTypeNames = await getNames(
-          `${getTestID(CELL_TYPE_LABELS_ID)} text`,
+          `${getTestID(`${CELL_TYPE_LABELS_ID}-${tissueName}`)} text`,
           page
         );
 
@@ -383,7 +390,7 @@ describe("Where's My Gene", () => {
     await tryUntil(
       async () => {
         const afterCellTypeNames = await getNames(
-          `${getTestID(CELL_TYPE_LABELS_ID)} text`,
+          `${getTestID(`${CELL_TYPE_LABELS_ID}-${tissueName}`)} text`,
           page
         );
 

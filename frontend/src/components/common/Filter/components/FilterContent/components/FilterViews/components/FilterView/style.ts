@@ -1,6 +1,6 @@
 import styled from "@emotion/styled";
-import { Divider } from "@material-ui/core";
-import { ListSubheader } from "czifui";
+import { Divider } from "@mui/material";
+import { CommonThemeProps, ListSubheader } from "czifui";
 import { scrollbar } from "src/components/common/Filter/common/style";
 import { GRAY } from "src/components/common/theme";
 
@@ -11,7 +11,7 @@ interface PanelProps {
   panelWidth: number;
 }
 
-interface ScrollProps {
+interface ScrollProps extends CommonThemeProps {
   maxHeight: number;
   scrollable?: boolean;
 }

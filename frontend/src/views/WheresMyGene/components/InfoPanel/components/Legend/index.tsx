@@ -12,6 +12,7 @@ interface Props {
   selectedTissues: Array<string>;
   selectedGenes: Array<string>;
   selectedCellTypes: { [tissue: string]: CellType[] };
+  setIsDownloading: (isDownloading: boolean) => void;
 }
 
 export default memo(function Legend({
@@ -20,6 +21,7 @@ export default memo(function Legend({
   selectedTissues,
   selectedGenes,
   selectedCellTypes,
+  setIsDownloading
 }: Props): JSX.Element {
   return (
     <LegendWrapper>
@@ -27,6 +29,7 @@ export default memo(function Legend({
         selectedTissues={selectedTissues}
         selectedGenes={selectedGenes}
         selectedCellTypes={selectedCellTypes}
+        setIsDownloading={setIsDownloading}
       />
 
       <SourceDataButton
