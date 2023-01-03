@@ -11,6 +11,7 @@ from backend.layers.common.entities import (
     CollectionMetadata,
     CollectionVersion,
     CollectionVersionWithDatasets,
+    DatasetArtifactType,
     DatasetMetadata,
     DatasetStatusGeneric,
     DatasetStatusKey,
@@ -225,6 +226,13 @@ class BaseTest(unittest.TestCase):
                 DatasetValidationStatus.INVALID,
                 validation_message=validation_message,
             )
+        if not artifacts:
+            artifacts = [
+                DatasetArtifactUpdate(DatasetArtifactType.H5AD, f"s3://fake.bucket/{dataset_version_id}/local.h5ad"),
+                DatasetArtifactUpdate(DatasetArtifactType.RAW_H5AD, f"s3://fake.bucket/{dataset_version_id}/raw.h5ad"),
+                DatasetArtifactUpdate(DatasetArtifactType.CXG, f"s3://fake.bucket/{dataset_version_id}/local.cxg"),
+                DatasetArtifactUpdate(DatasetArtifactType.RDS, f"s3://fake.bucket/{dataset_version_id}/local.rds"),
+            ]
         artifact_ids = []
         for artifact in artifacts:
             artifact_ids.append(

@@ -7,9 +7,6 @@ import numpy as np
 from anndata._core.views import ArrayView
 from scipy import sparse
 
-from backend.common.corpora_orm import DatasetArtifactFileType
-from backend.common.entities import Dataset, Collection, DatasetAsset
-from backend.common.utils.db_session import db_session_manager
 from backend.layers.business.business import BusinessLogic
 from backend.layers.persistence.persistence import DatabaseProvider
 from backend.wmg.data.constants import INCLUDED_ASSAYS
@@ -51,7 +48,7 @@ def get_dataset_s3_uris() -> Dict[str, str]:
         ):
             if any(assay.ontology_term_id in INCLUDED_ASSAYS for assay in dataset.metadata.assay):
                 if len(dataset.metadata.organism) < 2:
-                    s3_uri = next(a for a in dataset.artifacts if a.type == DatasetArtifactType.H5AD)
+                    s3_uri = next(a.uri for a in dataset.artifacts if a.type == DatasetArtifactType.H5AD)
                     s3_uris[dataset.dataset_id.id] = s3_uri
     return s3_uris
 

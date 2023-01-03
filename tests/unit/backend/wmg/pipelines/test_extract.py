@@ -1,7 +1,8 @@
+from unittest.mock import patch
 import backend.wmg.pipeline.integrated_corpus.extract
 from backend.common.corpora_orm import DatasetArtifactFileType
 from backend.wmg.data.constants import INCLUDED_ASSAYS
-from backend.layers.common.entities import CollectionId, OntologyTermId
+from backend.layers.common.entities import CollectionId, DatasetArtifactType, DatasetVersionId, OntologyTermId
 from tests.unit.backend.fixtures.generate_data_mixin import GenerateDataMixin
 from tests.unit.backend.fixtures.mock_aws_test_case import CorporaTestCaseUsingMockAWS
 from tests.unit.backend.layers.common.base_test import BaseTest
@@ -26,7 +27,11 @@ class TestExtract(BaseTest):
 
     def setUp(self):
         super().setUp()
-        pub_collection = self.generate_collection(visibility="PUBLIC")
+
+        # enable mocking of business logic
+        self.mock_business_logic = patch("backend.wmg.pipeline.integrated_corpus.extract._business_logic", new=self.business_logic)
+        self.mock_business_logic.start()
+
         assay_ontologies = list(INCLUDED_ASSAYS.keys())
 
         # Dataset 1: should be included in the extraction pipeline
@@ -41,7 +46,6 @@ class TestExtract(BaseTest):
             OntologyTermId(ontology_term_id=assay_ontologies[0], label="test_assay")
         ]
         self.dataset_1 = self.generate_dataset(metadata=metadata, publish=True)
-
 
         # Dataset 3: should NOT be included in the pipeline, since it has multiple organisms
         metadata = self.generate_base_metadata()
@@ -72,6 +76,7 @@ class TestExtract(BaseTest):
         
         # Dataset 8: should NOT be included in the pipeline because it has no organism
         metadata = self.generate_base_metadata()
+        metadata.organism = None
         self.dataset__null_organism = self.generate_dataset(metadata=metadata, publish=True)
 
 
@@ -100,15 +105,20 @@ class TestExtract(BaseTest):
             self.dataset__multiple_organisms,
             self.dataset__null_organism,
         ]
-        for dataset in not_expected_datasets:
-            dataset_assets = dataset.get_assets()
-            for asset in dataset_assets:
-                not_expected_s3_uris.append(asset.s3_uri)
-        for dataset in expected_datasets:
-            assets = dataset.get_assets()
-            for asset in assets:
-                if asset.filetype == DatasetArtifactFileType.H5AD and asset.filename == "local.h5ad":
-                    expected_s3_uris.append(asset.s3_uri)
 
-        s3_uris = set(backend.wmg.pipeline.integrated_corpus.extract.get_dataset_s3_uris().values())
-        self.assertEquals(set(expected_s3_uris), s3_uris)
+        for dataset in not_expected_datasets:
+            dataset_assets = self.business_logic.get_dataset_artifacts(DatasetVersionId(dataset.dataset_version_id))
+            for asset in dataset_assets:
+                not_expected_s3_uris.append(asset.uri)
+
+        for dataset in expected_datasets:
+            assets = self.business_logic.get_dataset_artifacts(DatasetVersionId(dataset.dataset_version_id))
+            for asset in assets:
+                if asset.type == DatasetArtifactType.H5AD:
+                    expected_s3_uris.append(asset.uri)
+
+        s3_uris = backend.wmg.pipeline.integrated_corpus.extract.get_dataset_s3_uris().values()
+
+        self.assertCountEqual(s3_uris, expected_s3_uris)
+        for uri in not_expected_datasets:
+            self.assertNotIn(uri, s3_uris)
