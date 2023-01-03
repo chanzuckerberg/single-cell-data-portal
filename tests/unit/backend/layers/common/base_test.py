@@ -229,7 +229,6 @@ class BaseTest(unittest.TestCase):
         if not artifacts:
             artifacts = [
                 DatasetArtifactUpdate(DatasetArtifactType.H5AD, f"s3://fake.bucket/{dataset_version_id}/local.h5ad"),
-                DatasetArtifactUpdate(DatasetArtifactType.RAW_H5AD, f"s3://fake.bucket/{dataset_version_id}/raw.h5ad"),
                 DatasetArtifactUpdate(DatasetArtifactType.CXG, f"s3://fake.bucket/{dataset_version_id}/local.cxg"),
                 DatasetArtifactUpdate(DatasetArtifactType.RDS, f"s3://fake.bucket/{dataset_version_id}/local.rds"),
             ]
