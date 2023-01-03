@@ -1,0 +1,1 @@
+{"total":2,"items":[{"uid":"36c900977e1d8b81a2c6893cc82bfc01","name":"chromium","statistic":{"failed":0,"broken":0,"skipped":14,"passed":127,"unknown":0,"total":141}},{"uid":"d54743fa13e6272f8609e1ab5e2b36c5","name":"tests.unit.wmg_processing","statistic":{"failed":0,"broken":0,"skipped":1,"passed":36,"unknown":0,"total":37}}]}
