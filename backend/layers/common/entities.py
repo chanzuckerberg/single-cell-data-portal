@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
 from typing import List, Optional
@@ -211,6 +211,7 @@ class CollectionMetadata:
     contact_name: str
     contact_email: str
     links: List[Link]
+    consortia: List[str] = field(default_factory=list)
 
     def strip_fields(self):
         self.name = self.name.strip()
@@ -219,6 +220,9 @@ class CollectionMetadata:
         self.contact_email = self.contact_email.strip()
         for link in self.links:
             link.strip_fields()
+        if self.consortia is not None:
+            for consortium in self.consortia:
+                consortium.strip()
 
 
 @dataclass

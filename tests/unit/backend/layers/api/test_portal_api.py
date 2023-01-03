@@ -82,12 +82,15 @@ class TestCollection(BaseAPIPortalTest):
     def test__get_collection_id__ok(self):
         """Verify the test collection exists and the expected fields exist."""
 
-        collection = self.generate_published_collection(add_datasets=2)
+        collection = self.generate_published_collection(
+            add_datasets=2,
+        )
 
         self.maxDiff = None
 
         expected_body = {
             "access_type": "WRITE",
+            "consortia": ["Consortia 1", "Consortia 2"],
             "contact_email": "john.doe@email.com",
             "contact_name": "john doe",
             "created_at": mock.ANY,
@@ -323,6 +326,7 @@ class TestCollection(BaseAPIPortalTest):
             "contact_email": "person@human.com",
             "curator_name": "Curator Name",
             "links": [{"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"}],
+            "consortia": ["Consortia 1"],
         }
         json_data = json.dumps(data)
         response = self.app.post(
@@ -347,6 +351,28 @@ class TestCollection(BaseAPIPortalTest):
         )
         self.assertEqual(201, response.status_code)
 
+    def test__post_collection_rejects_invalid_consortia(self):
+        test_url = furl(path="/dp/v1/collections")
+
+        data = {
+            "name": "collection name",
+            "description": "This is a test collection",
+            "contact_name": "person human",
+            "contact_email": "person@human.com",
+            "curator_name": "Curator Name",
+            "links": [],
+            "consortia": ["Invalid Consortia"],
+        }
+
+        json_data = json.dumps(data)
+        response = self.app.post(
+            test_url.url,
+            headers={"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()},
+            data=json_data,
+        )
+
+        self.assertEqual(400, response.status_code)
+
     # ✅
     def test__post_collection_normalizes_doi(self):
         test_url = furl(path="/dp/v1/collections")
@@ -359,6 +385,7 @@ class TestCollection(BaseAPIPortalTest):
             "links": [
                 {"link_name": "DOI Link", "link_url": "10.1016/foo", "link_type": "DOI"},
             ],
+            "consortia": ["Consortia 1"],
         }
         json_data = json.dumps(data)
         response = self.app.post(
@@ -386,6 +413,7 @@ class TestCollection(BaseAPIPortalTest):
                 {"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"},
                 {"link_name": "DOI Link", "link_url": "http://doi.org/10.1017", "link_type": "DOI"},
             ],
+            "consortia": ["Consortia 1"],
         }
         json_data = json.dumps(data)
         response = self.app.post(
@@ -408,6 +436,7 @@ class TestCollection(BaseAPIPortalTest):
             "contact_email": "person@human.com",
             "curator_name": "Curator Name",
             "links": [{"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"}],
+            "consortia": ["Consortia 1"],
         }
         json_data = json.dumps(data)
         response = self.app.post(
@@ -429,6 +458,7 @@ class TestCollection(BaseAPIPortalTest):
             "contact_email": "person@human.com",
             "curator_name": "Curator Name",
             "links": [{"link_name": "DOI Link", "link_url": "invalid/doi", "link_type": "DOI"}],
+            "consortia": ["Consortia 1"],
         }
         json_data = json.dumps(data)
         response = self.app.post(
@@ -453,6 +483,7 @@ class TestCollection(BaseAPIPortalTest):
             "contact_email": "person@human.com",
             "curator_name": "Curator Name",
             "links": [{"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"}],
+            "consortia": ["Consortia 1"],
         }
         json_data = json.dumps(data)
         response = self.app.post(
@@ -475,6 +506,7 @@ class TestCollection(BaseAPIPortalTest):
             "contact_name": "person human",
             "contact_email": "person@human.com",
             "curator_name": "Curator Name",
+            "consortia": ["Consortia 1"],
         }
         json_data = json.dumps(data)
         response = self.app.post(
@@ -501,6 +533,7 @@ class TestCollection(BaseAPIPortalTest):
             "contact_email": "person@human.com",
             "curator_name": "Curator Name",
             "links": [{"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"}],
+            "consortia": ["Consortia 1"],
         }
         json_data = json.dumps(data)
         response = self.app.post(
@@ -932,6 +965,7 @@ class TestUpdateCollection(BaseAPIPortalTest):
             "contact_name",
             "contact_email",
             "links",
+            "consortia",
         ]
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
 
@@ -942,6 +976,7 @@ class TestUpdateCollection(BaseAPIPortalTest):
             "contact_name": "person human",
             "contact_email": "person@human.com",
             "links": [{"link_name": "DOI Link", "link_url": "http://doi.org/10.1016", "link_type": "DOI"}],
+            "consortia": ["Consortia 1"],
         }
         data = json.dumps(expected_body)
         response = self.app.put(f"/dp/v1/collections/{collection.version_id.id}", data=data, headers=headers)
@@ -968,6 +1003,7 @@ class TestUpdateCollection(BaseAPIPortalTest):
         self.assertEqual(actual_body["description"], collection.metadata.description)
         self.assertEqual(actual_body["contact_name"], collection.metadata.contact_name)
         self.assertEqual(actual_body["contact_email"], collection.metadata.contact_email)
+        self.assertEqual(actual_body["consortia"], collection.metadata.consortia)
         self.assertEqual(
             actual_body["links"],
             [
@@ -983,6 +1019,90 @@ class TestUpdateCollection(BaseAPIPortalTest):
         data = json.dumps({"name": "new name"})
         response = self.app.put(f"/dp/v1/collections/{collection.version_id.id}", data=data, headers=headers)
         self.assertEqual(403, response.status_code)
+
+    def test__update_collection_consortia(self):
+        collection = self.generate_unpublished_collection()
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+
+        # Change Consortia
+        payload = {
+            "consortia": ["Consortia 1", "Consortia 3"],
+        }
+
+        response = self.app.put(
+            f"/dp/v1/collections/{collection.version_id.id}", data=json.dumps(payload), headers=headers
+        )
+        self.assertEqual(200, response.status_code)
+        actual_body = json.loads(response.data)
+
+        self.assertEqual(actual_body["name"], collection.metadata.name)
+        self.assertEqual(actual_body["description"], collection.metadata.description)
+        self.assertEqual(actual_body["contact_name"], collection.metadata.contact_name)
+        self.assertEqual(actual_body["contact_email"], collection.metadata.contact_email)
+        self.assertEqual(actual_body["consortia"], ["Consortia 1", "Consortia 3"])
+
+        # Remove Consortia
+        payload = {
+            "consortia": ["Consortia 1"],
+        }
+
+        response = self.app.put(
+            f"/dp/v1/collections/{collection.version_id.id}", data=json.dumps(payload), headers=headers
+        )
+        self.assertEqual(200, response.status_code)
+        actual_body = json.loads(response.data)
+
+        self.assertEqual(actual_body["name"], collection.metadata.name)
+        self.assertEqual(actual_body["description"], collection.metadata.description)
+        self.assertEqual(actual_body["contact_name"], collection.metadata.contact_name)
+        self.assertEqual(actual_body["contact_email"], collection.metadata.contact_email)
+        self.assertEqual(actual_body["consortia"], ["Consortia 1"])
+
+        # Remove All Consortia
+        payload = {
+            "consortia": [],
+        }
+
+        response = self.app.put(
+            f"/dp/v1/collections/{collection.version_id.id}", data=json.dumps(payload), headers=headers
+        )
+        self.assertEqual(200, response.status_code)
+        actual_body = json.loads(response.data)
+
+        self.assertEqual(actual_body["name"], collection.metadata.name)
+        self.assertEqual(actual_body["description"], collection.metadata.description)
+        self.assertEqual(actual_body["contact_name"], collection.metadata.contact_name)
+        self.assertEqual(actual_body["contact_email"], collection.metadata.contact_email)
+        self.assertEqual(actual_body["consortia"], [])
+
+        # Add Consortia
+        payload = {
+            "consortia": ["Consortia 4"],
+        }
+
+        response = self.app.put(
+            f"/dp/v1/collections/{collection.version_id.id}", data=json.dumps(payload), headers=headers
+        )
+        self.assertEqual(200, response.status_code)
+        actual_body = json.loads(response.data)
+
+        self.assertEqual(actual_body["name"], collection.metadata.name)
+        self.assertEqual(actual_body["description"], collection.metadata.description)
+        self.assertEqual(actual_body["contact_name"], collection.metadata.contact_name)
+        self.assertEqual(actual_body["contact_email"], collection.metadata.contact_email)
+        self.assertEqual(actual_body["consortia"], ["Consortia 4"])
+
+        # Invalid Consortia
+        payload = {
+            "consortia": ["Invalid Consortia"],
+        }
+
+        response = self.app.put(
+            f"/dp/v1/collections/{collection.version_id.id}", data=json.dumps(payload), headers=headers
+        )
+        self.assertEqual(400, response.status_code)
+        error_payload = json.loads(response.data)
+        self.assertEqual([{"name": "consortia", "reason": "Invalid consortia."}], error_payload["detail"])
 
     # ✅
     def test__update_collection_links__OK(self):

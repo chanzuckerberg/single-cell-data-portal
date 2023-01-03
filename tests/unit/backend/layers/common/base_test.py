@@ -85,6 +85,15 @@ class BaseTest(unittest.TestCase):
         mock_config = patch("backend.common.corpora_config.CorporaConfig.__getattr__", side_effect=mock_config_fn)
         mock_config.start()
 
+        from backend.layers.common import validation
+
+        validation.valid_consortia = {
+            "Consortia 1",
+            "Consortia 2",
+            "Consortia 3",
+            "Consortia 4",
+        }
+
         if self.run_as_integration:
             self.database_provider._create_schema()
         else:
@@ -124,7 +133,12 @@ class BaseTest(unittest.TestCase):
         )
 
         self.sample_collection_metadata = CollectionMetadata(
-            "test_collection", "described", "john doe", "john.doe@email.com", []
+            "test_collection",
+            "described",
+            "john doe",
+            "john.doe@email.com",
+            [],
+            ["Consortia 1", "Consortia 2"],
         )
 
         self.business_logic = BusinessLogic(
