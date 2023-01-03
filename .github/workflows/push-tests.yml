@@ -186,6 +186,7 @@ jobs:
   push-prod-images:
     needs:
       - backend-unit-test
+      - backend-unit-wmg-test
       - backend-integration-test
       - processing-unit-test
       - wmg-processing-unit-test
@@ -273,6 +274,56 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
+
+
+  backend-wmg-unit-test:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 1800
+      - name: Login to ECR
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ secrets.ECR_REPO }}
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v23.1
+        with:
+          files: |
+            Dockerfile*
+            **/Dockerfile
+            requirements*.txt
+            **/requirements*.txt
+      - name: Run unit tests
+        run: |
+          echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
+          make local-unit-test-wmg-backend
+
+      # Upload Allure results as an artifact
+      - uses: actions/upload-artifact@v3
+        with:
+          name: allure-results
+          path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/allure-results
+          retention-days: 20
+
+      - uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          fields: repo,commit,author,eventName,workflow,job,mention
+          mention: "here"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+        if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
+
 
   processing-unit-test:
     runs-on: ubuntu-20.04
@@ -432,6 +483,7 @@ jobs:
   publish-test-report:
     needs:
       - backend-unit-test
+      - backend-unit-wmg-test
       - e2e-test
     runs-on: ubuntu-20.04
     steps:
@@ -476,6 +528,7 @@ jobs:
   add-image-tags:
     needs:
       - backend-unit-test
+      - backend-unit-wmg-test
       - backend-integration-test
       - processing-unit-test
       - wmg-processing-unit-test
