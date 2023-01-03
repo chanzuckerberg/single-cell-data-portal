@@ -1,6 +1,9 @@
 from collections import defaultdict
 from typing import Dict, List, Any, Iterable, Tuple
 from math import isnan
+from backend.layers.business.business import BusinessLogic
+from backend.layers.persistence.persistence import DatabaseProvider
+from backend.layers.common.entities import DatasetId
 
 import connexion
 from flask import jsonify
@@ -84,6 +87,16 @@ def markers():
     )
 
 
+_business_logic = None
+def get_business_logic():
+    """
+    Returns an instance of the business logic handler. Use this to interrogate the database
+    """
+    global _business_logic
+    if not _business_logic:
+        _business_logic = BusinessLogic(DatabaseProvider(), None, None, None, None)
+    return _business_logic
+
 # TODO: Read this from generated data artifact instead of DB.
 #  https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell-data
 #  -portal/2086. This code is without a unit test, but we are intending to replace it.
@@ -91,21 +104,27 @@ def fetch_datasets_metadata(dataset_ids: Iterable[str]) -> List[Dict]:
     # We return a DTO because the db entity can't access its attributes after the db session ends,
     # and we want to keep session management out of the calling method
 
-    with db_session_manager() as session:
+    business_logic = get_business_logic()
 
-        def get_dataset(dataset_id_):
-            dataset = Dataset.get(session, dataset_id_)
-            if dataset is None:
-                # Handle possible missing dataset due to db state evolving past wmg snapshot
-                return dict(id=dataset_id_, label="", collection_id="", collection_label="")
-            return dict(
-                id=dataset.id,
-                label=dataset.name,
-                collection_id=dataset.collection.id,
-                collection_label=dataset.collection.name,
-            )
+    def get_dataset(dataset_id_):
 
-        return [get_dataset(dataset_id) for dataset_id in dataset_ids]
+        dataset = business_logic.get_dataset_version_from_canonical(DatasetId(dataset_id_))
+        if dataset is None:
+            # Handle possible missing dataset due to db state evolving past wmg snapshot
+            return dict(id=dataset_id_, label="", collection_id="", collection_label="")
+        collection = business_logic.get_collection_version_from_canonical(dataset.collection_id)
+        if collection is None:
+            # Handle possible missing dataset due to db state evolving past wmg snapshot
+            return dict(id=dataset_id_, label="", collection_id="", collection_label="")
+
+        return dict(
+            id=dataset.dataset_id.id,
+            label=dataset.metadata.name,
+            collection_id=collection.collection_id.id,
+            collection_label=collection.metadata.name,
+        )
+
+    return [get_dataset(dataset_id) for dataset_id in dataset_ids]
 
 
 def find_dim_option_values(criteria: Dict, snapshot: WmgSnapshot, dimension: str) -> set:
