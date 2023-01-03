@@ -39,14 +39,18 @@ class MarkerGeneCalculationTest(unittest.TestCase):
             result = json.loads(
                 json.dumps(result).replace("p_value_ttest", "p_value").replace("effect_size_ttest", "effect_size")
             )
+            result = [
+                {"gene_ontology_term_id": k, "p_value": v["p_value"], "effect_size": v["effect_size"]}
+                for k, v in result.items()
+            ]
             tissue = TARGET_FILTERS["tissue_ontology_term_ids"]
             celltype = TARGET_FILTERS["cell_type_ontology_term_ids"]
             organism = TARGET_FILTERS["organism_ontology_term_id"]
 
             expected = snapshot.marker_genes_cube.df[(tissue, organism, celltype)]
             expected = retrieve_top_n_markers(expected, "ttest", 10)
-            for k in result:
-                assert pytest.approx(result[k]) == expected[k]
+            for i, elem in enumerate(result):
+                assert pytest.approx(elem) == expected[i]
 
     def test__get_markers_binomtest(self):
         with load_test_fmg_snapshot(TEST_SNAPSHOT) as snapshot:
@@ -56,6 +60,10 @@ class MarkerGeneCalculationTest(unittest.TestCase):
                 .replace("p_value_binomtest", "p_value")
                 .replace("effect_size_binomtest", "effect_size")
             )
+            result = [
+                {"gene_ontology_term_id": k, "p_value": v["p_value"], "effect_size": v["effect_size"]}
+                for k, v in result.items()
+            ]
             tissue = TARGET_FILTERS["tissue_ontology_term_ids"]
             celltype = TARGET_FILTERS["cell_type_ontology_term_ids"]
             organism = TARGET_FILTERS["organism_ontology_term_id"]
