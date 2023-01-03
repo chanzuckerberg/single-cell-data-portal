@@ -13,7 +13,7 @@ from backend.common.utils.db_session import db_session_manager
 from backend.layers.business.business import BusinessLogic
 from backend.layers.persistence.persistence import DatabaseProvider
 from backend.wmg.data.constants import INCLUDED_ASSAYS
-from entities import DatasetArtifactType
+from backend.layers.common.entities import DatasetArtifactType
 
 logger = logging.getLogger(__name__)
 
