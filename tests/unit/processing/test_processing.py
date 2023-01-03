@@ -71,13 +71,15 @@ class ProcessingTest(BaseTest):
         dropbox_uri = "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"
 
         collection = self.generate_unpublished_collection()
-        dataset_version_id, dataset_id = self.business_logic.ingest_dataset(collection.version_id, dropbox_uri, None)
+        dataset_version_id, dataset_id = self.business_logic.ingest_dataset(
+            collection.version_id, dropbox_uri, None, None
+        )
         # This is where we're at when we start the SFN
 
         status = self.business_logic.get_dataset_status(dataset_version_id)
         # self.assertEqual(status.validation_status, DatasetValidationStatus.NA)
         self.assertIsNone(status.validation_status)
-        self.assertEqual(status.processing_status, DatasetProcessingStatus.PENDING)
+        self.assertEqual(status.processing_status, DatasetProcessingStatus.INITIALIZED)
         self.assertEqual(status.upload_status, DatasetUploadStatus.WAITING)
 
         # TODO: ideally use a real h5ad so that
@@ -104,7 +106,9 @@ class ProcessingTest(BaseTest):
 
     def test_process_seurat_success(self):
         collection = self.generate_unpublished_collection()
-        dataset_version_id, dataset_id = self.business_logic.ingest_dataset(collection.version_id, "nothing", None)
+        dataset_version_id, dataset_id = self.business_logic.ingest_dataset(
+            collection.version_id, "nothing", None, None
+        )
 
         with patch("backend.layers.processing.process_seurat.ProcessSeurat.make_seurat") as mock:
             mock.return_value = "local.rds"
@@ -124,7 +128,9 @@ class ProcessingTest(BaseTest):
 
     def test_process_cxg_success(self):
         collection = self.generate_unpublished_collection()
-        dataset_version_id, dataset_id = self.business_logic.ingest_dataset(collection.version_id, "nothing", None)
+        dataset_version_id, dataset_id = self.business_logic.ingest_dataset(
+            collection.version_id, "nothing", None, None
+        )
 
         with patch("backend.layers.processing.process_cxg.ProcessCxg.make_cxg") as mock:
             mock.return_value = "local.cxg"
@@ -150,7 +156,9 @@ class ProcessingTest(BaseTest):
         mock_cxg.return_value = "local.cxg"
         dropbox_uri = "https://www.dropbox.com/s/ow84zm4h0wkl409/test.h5ad?dl=0"
         collection = self.generate_unpublished_collection()
-        dataset_version_id, dataset_id = self.business_logic.ingest_dataset(collection.version_id, dropbox_uri, None)
+        dataset_version_id, dataset_id = self.business_logic.ingest_dataset(
+            collection.version_id, dropbox_uri, None, None
+        )
 
         pm = ProcessMain(
             self.business_logic, self.uri_provider, self.s3_provider, self.downloader, self.schema_validator

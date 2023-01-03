@@ -2,14 +2,22 @@ import os
 from functools import lru_cache
 
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3 import Retry
 from backend.common.corpora_config import CorporaAuthConfig
 from backend.common.utils.http_exceptions import UnauthorizedError
 from backend.common.utils.jwt import jwt_decode, get_unverified_header
 
-auth0_session_with_retry = requests.Session()
-# TODO: these read the configuration on initialization and cause problems with tests
-# retry_config = Retry(total=3, backoff_factor=1, status_forcelist=CorporaAuthConfig().retry_status_forcelist)
-# auth0_session_with_retry.mount("https://", HTTPAdapter(max_retries=retry_config))
+_auth0_session_with_retry = None
+
+
+def get_auth0_session_with_retry():
+    global _auth0_session_with_retry
+    if _auth0_session_with_retry is None:
+        _auth0_session_with_retry = requests.Session()
+        retry_config = Retry(total=3, backoff_factor=1, status_forcelist=CorporaAuthConfig().retry_status_forcelist)
+        _auth0_session_with_retry.mount("https://", HTTPAdapter(max_retries=retry_config))
+    return _auth0_session_with_retry
 
 
 def assert_authorized_token(token: str, audience: str = None) -> dict:
@@ -46,7 +54,7 @@ def assert_authorized_token(token: str, audience: str = None) -> dict:
 
 def get_userinfo_from_auth0(token: str) -> dict:
     auth_config = CorporaAuthConfig()
-    res = auth0_session_with_retry.get(auth_config.api_userinfo_url, headers={"Authorization": f"Bearer {token}"})
+    res = get_auth0_session_with_retry().get(auth_config.api_userinfo_url, headers={"Authorization": f"Bearer {token}"})
     res.raise_for_status()
     return res.json()
 
@@ -57,7 +65,7 @@ def get_openid_config(openid_provider: str):
     :param openid_provider: the openid provider's domain.
     :return: the openid configuration
     """
-    res = auth0_session_with_retry.get("{op}/.well-known/openid-configuration".format(op=openid_provider))
+    res = get_auth0_session_with_retry().get("{op}/.well-known/openid-configuration".format(op=openid_provider))
     res.raise_for_status()
     return res.json()
 
@@ -69,5 +77,5 @@ def get_public_keys(openid_provider: str):
     :param openid_provider: the openid provider's domain.
     :return: Public Keys
     """
-    keys = auth0_session_with_retry.get(get_openid_config(openid_provider)["jwks_uri"]).json()["keys"]
+    keys = get_auth0_session_with_retry().get(get_openid_config(openid_provider)["jwks_uri"]).json()["keys"]
     return {key["kid"]: key for key in keys}
