@@ -37,7 +37,10 @@ from backend.portal.api.curation.v1.curation.collections.common import (
 def get(collection_id: str, dataset_id: str = None):
     business_logic = get_business_logic()
 
+    # Look up assuming that `collection_id` is the canonical id, then look up assuming is the version_id if not found
     collection_version = business_logic.get_collection_version_from_canonical(CollectionId(collection_id))
+    if collection_version is None:
+        collection_version = business_logic.get_collection_version(CollectionVersionId(collection_id))
     if collection_version is None:
         raise NotFoundHTTPException("Collection not found!")
 
@@ -103,6 +106,7 @@ def put(collection_id: str, dataset_id: str, body: dict, token_info: dict):
         business_logic.ingest_dataset(
             collection_version.version_id,
             url,
+            None,
             None if dataset_id is None else DatasetVersionId(dataset_id),
         )
         return Response(status=202)
