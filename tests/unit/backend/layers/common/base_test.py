@@ -4,7 +4,7 @@ import typing
 import unittest
 from dataclasses import dataclass
 from typing import List, Optional
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 from backend.layers.business.business import BusinessLogic
 from backend.layers.common.entities import (
@@ -75,6 +75,15 @@ class BaseTest(unittest.TestCase):
         super().setUp()
         os.environ.setdefault("APP_NAME", "corpora-api")
 
+        # Mock CorporaConfig
+        # TODO: deduplicate with base_api
+        def mock_config_fn(name):
+            if name == "upload_max_file_size_gb":
+                return 30
+
+        mock_config = patch("backend.common.corpora_config.CorporaConfig.__getattr__", side_effect=mock_config_fn)
+        mock_config.start()
+
         if self.run_as_integration:
             self.database_provider._create_schema("persistence_schema")
         else:
@@ -138,8 +147,8 @@ class BaseTest(unittest.TestCase):
         links: List[Link] = [],
         add_datasets: int = 0,
         metadata=None,
-    ) -> CollectionVersionWithDatasets:
-        links = links if links else []
+    ) -> CollectionVersion:
+        links = links or []
         if not metadata:
             metadata = copy.deepcopy(self.sample_collection_metadata)
             metadata.links = links
@@ -149,7 +158,9 @@ class BaseTest(unittest.TestCase):
 
             metadata = copy.deepcopy(self.sample_dataset_metadata)
             # TODO: generate a real dataset, with artifact and processing status
-            dataset_version_id, _ = self.business_logic.ingest_dataset(collection.version_id, "http://fake.url", None)
+            dataset_version_id, _ = self.business_logic.ingest_dataset(
+                collection.version_id, "http://fake.url", None, None
+            )
             self.business_logic.set_dataset_metadata(dataset_version_id, metadata)
             # TODO: set a proper dataset status
 
@@ -191,7 +202,7 @@ class BaseTest(unittest.TestCase):
         if not collection_version:
             collection_version = self.generate_unpublished_collection(owner)
         dataset_version_id, dataset_id = self.business_logic.ingest_dataset(
-            collection_version.version_id, "http://fake.url", None
+            collection_version.version_id, "http://fake.url", None, None
         )
         if not metadata:
             metadata = copy.deepcopy(self.sample_dataset_metadata)

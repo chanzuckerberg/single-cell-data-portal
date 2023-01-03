@@ -1,7 +1,7 @@
 import os
 import unittest
 from datetime import datetime
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 from uuid import uuid4
 
 from backend.layers.thirdparty.crossref_provider import (
@@ -69,9 +69,19 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         else:
             self.database_provider = DatabaseProviderMock()
 
+        # Mock CorporaConfig
+        # TODO: deduplicate with base_api
+        def mock_config_fn(name):
+            if name == "upload_max_file_size_gb":
+                return 30
+
+        mock_config = patch("backend.common.corpora_config.CorporaConfig.__getattr__", side_effect=mock_config_fn)
+        mock_config.start()
+
         # By default these do nothing. They can be mocked by single test cases.
         self.crossref_provider = CrossrefProviderInterface()
         self.step_function_provider = StepFunctionProviderInterface()
+        self.step_function_provider.start_step_function = Mock()
         self.s3_provider = S3ProviderInterface()
         self.uri_provider = UriProviderInterface()
         self.uri_provider.validate = Mock(return_value=True)  # By default, every link should be valid
@@ -541,7 +551,7 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         self.assertIsNone(new_dataset_version.metadata)
         self.assertEqual(new_dataset_version.collection_id, version.collection_id)
         self.assertEqual(new_dataset_version.status.upload_status, DatasetUploadStatus.WAITING)
-        self.assertEqual(new_dataset_version.status.processing_status, DatasetProcessingStatus.PENDING)
+        self.assertEqual(new_dataset_version.status.processing_status, DatasetProcessingStatus.INITIALIZED)
 
     def test_add_dataset_to_unpublished_collection_ok(self):
         """
@@ -551,16 +561,18 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         version = self.initialize_empty_unpublished_collection()
         url = "http://test/dataset.url"
 
-        new_dataset_version_id, _ = self.business_logic.ingest_dataset(version.version_id, url, None)
+        new_dataset_version_id, _ = self.business_logic.ingest_dataset(version.version_id, url, None, None)
 
         new_dataset_version = self.database_provider.get_dataset_version(new_dataset_version_id)
         self.assertIsNotNone(new_dataset_version)
         self.assertIsNone(new_dataset_version.metadata)
         self.assertEqual(new_dataset_version.collection_id, version.collection_id)
         self.assertEqual(new_dataset_version.status.upload_status, DatasetUploadStatus.WAITING)
-        self.assertEqual(new_dataset_version.status.processing_status, DatasetProcessingStatus.PENDING)
+        self.assertEqual(new_dataset_version.status.processing_status, DatasetProcessingStatus.INITIALIZED)
 
-    def test_add_dataset_to_non_existing_collection_ok(self):
+        self.step_function_provider.start_step_function.assert_called_once()
+
+    def test_add_dataset_to_non_existing_collection_fail(self):
         """
         Calling `ingest_dataset` on a collection that does not exist should fail
         """
@@ -568,8 +580,10 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         fake_collection_version_id = CollectionVersionId(str(uuid4()))
 
         with self.assertRaises(CollectionUpdateException) as ex:
-            self.business_logic.ingest_dataset(fake_collection_version_id, url, None)
+            self.business_logic.ingest_dataset(fake_collection_version_id, url, None, None)
         self.assertEqual(ex.exception.errors, [f"Collection version {fake_collection_version_id} does not exist"])
+
+        self.step_function_provider.start_step_function.assert_not_called()
 
     def test_add_dataset_to_published_collection_fail(self):
         """
@@ -579,8 +593,10 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         url = "http://test/dataset.url"
 
         with self.assertRaises(CollectionUpdateException) as ex:
-            self.business_logic.ingest_dataset(version.version_id, url, None)
+            self.business_logic.ingest_dataset(version.version_id, url, None, None)
         self.assertEqual(ex.exception.errors, [f"Collection version {version.version_id.id} is published"])
+
+        self.step_function_provider.start_step_function.assert_not_called()
 
     def test_add_dataset_with_invalid_link_fail(self):
         """
@@ -592,8 +608,10 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         self.uri_provider.validate = Mock(return_value=False)
 
         with self.assertRaises(DatasetIngestException) as ex:
-            self.business_logic.ingest_dataset(version.version_id, url, None)
+            self.business_logic.ingest_dataset(version.version_id, url, None, None)
         self.assertEqual(str(ex.exception), "Trying to upload invalid URI: http://bad.url")
+
+        self.step_function_provider.start_step_function.assert_not_called()
 
     def test_remove_dataset_from_unpublished_collection_ok(self):
         """
@@ -635,15 +653,17 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         url = "http://test/dataset.url"
 
         new_dataset_version_id, _ = self.business_logic.ingest_dataset(
-            version.version_id, url, dataset_version_to_replace_id
+            version.version_id, url, None, dataset_version_to_replace_id
         )
+
+        self.assertNotEqual(new_dataset_version_id, dataset_version_to_replace_id)
 
         # Verify that the replaced dataset is in the right status
         new_dataset_version = self.database_provider.get_dataset_version(new_dataset_version_id)
         self.assertIsNotNone(new_dataset_version)
         self.assertIsNone(new_dataset_version.metadata)
         self.assertEqual(new_dataset_version.status.upload_status, DatasetUploadStatus.WAITING)
-        self.assertEqual(new_dataset_version.status.processing_status, DatasetProcessingStatus.PENDING)
+        self.assertEqual(new_dataset_version.status.processing_status, DatasetProcessingStatus.INITIALIZED)
 
         # Verify that the old dataset is still existent
         old_dataset_version = self.database_provider.get_dataset_version(dataset_version_to_replace_id)
@@ -656,6 +676,32 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
             [dataset_version_to_keep_id, new_dataset_version.version_id],
         )
 
+        self.step_function_provider.start_step_function.assert_called_once()
+
+    def test_replace_dataset_on_empty_dataset_does_not_generate_new_ok(self):
+        """
+        Calling `ingest_dataset` and specifying an existing dataset that is empty should start the ingestion
+        without creating a new dataset version
+        """
+        version = self.initialize_empty_unpublished_collection()
+        dataset_version_to_replace_id, _ = self.business_logic.create_empty_dataset(version.version_id)
+        dataset_version_to_replace = self.business_logic.get_dataset_version(dataset_version_to_replace_id)
+        url = "http://test/dataset.url"
+
+        # Verify that the newly created dataset meets the condition for emptiness
+        self.assertIsNotNone(dataset_version_to_replace)
+        self.assertEqual(dataset_version_to_replace.status.processing_status, DatasetProcessingStatus.INITIALIZED)
+        self.assertEqual(dataset_version_to_replace.artifacts, [])
+        self.assertIsNone(dataset_version_to_replace.canonical_dataset.published_at)
+
+        new_dataset_version_id, _ = self.business_logic.ingest_dataset(
+            version.version_id, url, None, dataset_version_to_replace_id
+        )
+
+        self.assertEqual(new_dataset_version_id, dataset_version_to_replace_id)
+
+        self.step_function_provider.start_step_function.assert_called_once()
+
     def test_replace_dataset_in_published_collection_fail(self):
         """
         Replacing a dataset that belongs to a published collection should fail
@@ -665,7 +711,9 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         url = "http://test/dataset.url"
 
         with self.assertRaises(CollectionUpdateException):
-            self.business_logic.ingest_dataset(version.version_id, url, dataset_version_to_replace_id)
+            self.business_logic.ingest_dataset(version.version_id, url, None, dataset_version_to_replace_id)
+
+        self.step_function_provider.start_step_function.assert_not_called()
 
     def test_replace_dataset_on_non_existing_dataset_fail(self):
         """
@@ -675,8 +723,10 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         url = "http://test/dataset.url"
 
         with self.assertRaises(DatasetNotFoundException) as ex:
-            self.business_logic.ingest_dataset(version.version_id, url, DatasetVersionId("fake_id"))
+            self.business_logic.ingest_dataset(version.version_id, url, None, DatasetVersionId("fake_id"))
         self.assertEqual(str(ex.exception), "Dataset fake_id does not belong to the desired collection")
+
+        self.step_function_provider.start_step_function.assert_not_called()
 
     def test_replace_dataset_in_wrong_status_fail(self):
         """
@@ -692,10 +742,12 @@ class TestUpdateCollectionDatasets(BaseBusinessLogicTestCase):
         )
 
         with self.assertRaises(DatasetIngestException) as ex:
-            self.business_logic.ingest_dataset(version.version_id, url, dataset_version.version_id)
+            self.business_logic.ingest_dataset(version.version_id, url, None, dataset_version.version_id)
         self.assertEqual(
             str(ex.exception), f"Unable to reprocess dataset {dataset_version.version_id}: processing status is PENDING"
         )
+
+        self.step_function_provider.start_step_function.assert_not_called()
 
 
 class TestGetDataset(BaseBusinessLogicTestCase):
@@ -1028,7 +1080,7 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         new_version = self.business_logic.create_collection_version(published_collection.collection_id)
 
         added_dataset_version_id, _ = self.business_logic.ingest_dataset(
-            new_version.version_id, "http://fake.url", None
+            new_version.version_id, "http://fake.url", None, None
         )
         self.complete_dataset_processing_with_success(added_dataset_version_id)
 
@@ -1073,7 +1125,7 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         dataset_id_to_keep = published_collection.datasets[1].version_id
 
         replaced_dataset_version_id, _ = self.business_logic.ingest_dataset(
-            new_version.version_id, "http://fake.url", dataset_id_to_replace
+            new_version.version_id, "http://fake.url", None, dataset_id_to_replace
         )
         self.complete_dataset_processing_with_success(replaced_dataset_version_id)
 
@@ -1206,7 +1258,7 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         new_version = self.business_logic.create_collection_version(published_collection.collection_id)
 
         added_dataset_version_id, _ = self.business_logic.ingest_dataset(
-            new_version.version_id, "http://fake.url", None
+            new_version.version_id, "http://fake.url", None, None
         )
         self.complete_dataset_processing_with_success(added_dataset_version_id)
 
@@ -1246,7 +1298,7 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         dataset_id_to_keep = published_collection.datasets[1].version_id
 
         replaced_dataset_version_id, _ = self.business_logic.ingest_dataset(
-            new_version.version_id, "http://fake.url", dataset_id_to_replace
+            new_version.version_id, "http://fake.url", None, dataset_id_to_replace
         )
 
         self.complete_dataset_processing_with_success(replaced_dataset_version_id)
