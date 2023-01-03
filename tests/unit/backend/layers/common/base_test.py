@@ -140,6 +140,13 @@ class BaseTest(unittest.TestCase):
         if cls.run_as_integration:
             cls.database_provider._engine.dispose()
 
+    def get_sample_dataset_metadata(self):
+        """
+        Returns a copy of the sample metadata. This can be freely modified and passed
+        to one of the generate methods below.
+        """
+        return copy.deepcopy(self.sample_dataset_metadata)
+
     def generate_unpublished_collection(
         self,
         owner="test_user_id",
