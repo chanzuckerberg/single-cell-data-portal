@@ -212,15 +212,15 @@ export default memo(function YAxisChart({
         isMarkerGenes &&
         yAxisInfoCoords.map((coord, i) => {
           const content = cellTypeMetadata[i];
-          return (
+          const cellType = isMarkerGenes ? deserializeCellTypeMetadata(content) : null;
+          return cellType && cellType.total_count < 25 ? null : (
             <InfoButtonWrapper
               id={content}
               key={content}
               left={coord[0]}
               top={coord[1]}
               onClick={() => {
-                if (isMarkerGenes) {
-                  const cellType = deserializeCellTypeMetadata(content);
+                if (cellType) {
                   generateMarkerGenes(cellType, tissueID);
                 }
               }}
