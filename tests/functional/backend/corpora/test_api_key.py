@@ -1,4 +1,5 @@
 import unittest
+import time
 
 from tests.functional.backend.common import BaseFunctionalTestCase
 
@@ -31,6 +32,9 @@ class TestApiKey(BaseFunctionalTestCase):
         access_token = response.json()["access_token"]
         self.assertTrue(access_token)
 
+        # wait for auth0 User-Api-Key link to update
+        time.sleep(30)
+
         response = self.session.get(f"{self.api}/dp/v1/auth/key", headers=headers)
         self.assertStatusCode(200, response)
 
@@ -38,6 +42,9 @@ class TestApiKey(BaseFunctionalTestCase):
         self.assertStatusCode(201, response)
         key_2 = response.json()["key"]
         self.assertNotEqual(key_1, key_2)
+
+        # wait for auth0 User-Api-Key link to update
+        time.sleep(30)
 
         response = self.session.get(f"{self.api}/dp/v1/auth/key", headers=headers)
         self.assertStatusCode(200, response)
