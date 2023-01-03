@@ -212,6 +212,7 @@ export default memo(function YAxisChart({
         isMarkerGenes &&
         yAxisInfoCoords.map((coord, i) => {
           const content = cellTypeMetadata[i];
+          const cellType = isMarkerGenes ? deserializeCellTypeMetadata(content) : null;
           return (
             <InfoButtonWrapper
               id={content}
@@ -219,11 +220,11 @@ export default memo(function YAxisChart({
               left={coord[0]}
               top={coord[1]}
               onClick={() => {
-                if (isMarkerGenes) {
-                  const cellType = deserializeCellTypeMetadata(content);
+                if (cellType) {
                   generateMarkerGenes(cellType, tissueID);
                 }
               }}
+              style={cellType && cellType.total_count < 25 ? {visibility: "hidden"} : {}}
             >
               <StyledImage
                 id={"marker-gene-button"}

@@ -61,80 +61,75 @@ function CellInfoSideBar({
   return (
     <div>
       <TissueName>{tissueName}</TissueName>
-      { cellInfoCellType.cellType.total_count < 25
-        ? <p>Marker genes are unavailable for cell types with less than 25 cells.</p> 
-        : <>
-          <ButtonContainer>
-            <div>
-              <TooltipButton
-                endIcon={<Icon sdsIcon="infoCircle" sdsSize="s" sdsType="button" />}
+      <ButtonContainer>
+        <div>
+          <TooltipButton
+            endIcon={<Icon sdsIcon="infoCircle" sdsSize="s" sdsType="button" />}
+            onClick={handleCopyGenes}
+            sdsStyle="minimal"
+            sdsType="secondary"
+            isAllCaps={false}
+            style={{ fontWeight: "500" }}
+          >
+            Marker Genes
+          </TooltipButton>
+          <BetaChip label="Beta" size="small" />
+        </div>
+        <Button
+          startIcon={<Icon sdsIcon="plus" sdsSize="s" sdsType="button" />}
+          onClick={handleDisplayGenes}
+          sdsStyle="minimal"
+          sdsType="primary"
+          isAllCaps={false}
+          style={{ fontWeight: "500" }}
+        >
+          Add to Dot Plot
+        </Button>
+      </ButtonContainer>
+      <Table>
+        <TableHeader>
+          <GeneCellHeader hideSortIcon>
+            <GeneHeaderWrapper>
+              Gene{" "}
+              <CopyGenesButton
                 onClick={handleCopyGenes}
+                sdsType="primary"
                 sdsStyle="minimal"
-                sdsType="secondary"
                 isAllCaps={false}
-                style={{ fontWeight: "500" }}
+                startIcon={<Icon sdsIcon="copy" sdsSize="s" sdsType="button" />}
               >
-                Marker Genes
-              </TooltipButton>
-              <BetaChip label="Beta" size="small" />
-            </div>
-            <Button
-              startIcon={<Icon sdsIcon="plus" sdsSize="s" sdsType="button" />}
-              onClick={handleDisplayGenes}
-              sdsStyle="minimal"
-              sdsType="primary"
-              isAllCaps={false}
-              style={{ fontWeight: "500" }}
-            >
-              Add to Dot Plot
-            </Button>
-          </ButtonContainer>
-          <Table>
-            <TableHeader>
-              <GeneCellHeader hideSortIcon>
-                <GeneHeaderWrapper>
-                  Gene{" "}
-                  <CopyGenesButton
-                    onClick={handleCopyGenes}
-                    sdsType="primary"
-                    sdsStyle="minimal"
-                    isAllCaps={false}
-                    startIcon={<Icon sdsIcon="copy" sdsSize="s" sdsType="button" />}
-                  >
-                    Copy
-                  </CopyGenesButton>
-                </GeneHeaderWrapper>
-              </GeneCellHeader>
-              <CellHeader hideSortIcon horizontalAlign="right">
-                P-value
-              </CellHeader>
-              <CellHeader hideSortIcon horizontalAlign="right">
-                Effect Size
-              </CellHeader>
-            </TableHeader>
-            <tbody>
-              {Object.entries(data.marker_genes).map((gene) => (
-                <TableRow key={gene[0]}>
-                  <CellBasic
-                    shouldShowTooltipOnHover={false}
-                    primaryText={gene[0]}
-                  />
-                  <CellBasic
-                    shouldShowTooltipOnHover={false}
-                    horizontalAlign="right"
-                    primaryText={gene[1].p_value.toPrecision(4)}
-                  />
-                  <CellBasic
-                    shouldShowTooltipOnHover={false}
-                    horizontalAlign="right"
-                    primaryText={gene[1].effect_size.toPrecision(4)}
-                  />
-                </TableRow>
-              ))}
-            </tbody>
-          </Table>
-        </>
-      }
+                Copy
+              </CopyGenesButton>
+            </GeneHeaderWrapper>
+          </GeneCellHeader>
+          <CellHeader hideSortIcon horizontalAlign="right">
+            P-value
+          </CellHeader>
+          <CellHeader hideSortIcon horizontalAlign="right">
+            Effect Size
+          </CellHeader>
+        </TableHeader>
+        <tbody>
+          {Object.entries(data.marker_genes).map((gene) => (
+            <TableRow key={gene[0]}>
+              <CellBasic
+                shouldShowTooltipOnHover={false}
+                primaryText={gene[0]}
+              />
+              <CellBasic
+                shouldShowTooltipOnHover={false}
+                horizontalAlign="right"
+                primaryText={gene[1].p_value.toPrecision(4)}
+              />
+              <CellBasic
+                shouldShowTooltipOnHover={false}
+                horizontalAlign="right"
+                primaryText={gene[1].effect_size.toPrecision(4)}
+              />
+            </TableRow>
+          ))}
+        </tbody>
+      </Table>
     </div>
   );
 }
