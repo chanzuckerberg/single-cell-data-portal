@@ -186,7 +186,7 @@ jobs:
   push-prod-images:
     needs:
       - backend-unit-test
-      - backend-unit-wmg-test
+      - backend-wmg-unit-test
       - backend-integration-test
       - processing-unit-test
       - wmg-processing-unit-test
@@ -483,7 +483,7 @@ jobs:
   publish-test-report:
     needs:
       - backend-unit-test
-      - backend-unit-wmg-test
+      - backend-wmg-unit-test
       - e2e-test
     runs-on: ubuntu-20.04
     steps:
@@ -528,7 +528,7 @@ jobs:
   add-image-tags:
     needs:
       - backend-unit-test
-      - backend-unit-wmg-test
+      - backend-wmg-unit-test
       - backend-integration-test
       - processing-unit-test
       - wmg-processing-unit-test
