@@ -5,7 +5,7 @@ from alembic import context
 from sqlalchemy import engine_from_config, pool
 
 from backend.common.corpora_config import CorporaDbConfig
-from backend.common.corpora_orm import DbCollection
+from backend.layers.persistence.orm import metadata
 
 # this is the Alembic Config object, which provides access to the values within the .ini file in use.
 config = context.config
@@ -18,7 +18,7 @@ fileConfig(config.config_file_name)
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-target_metadata = DbCollection.metadata
+target_metadata = metadata
 
 # other values from the config, defined by the needs of env.py, can be acquired:
 # my_important_option = config.get_main_option("my_important_option")

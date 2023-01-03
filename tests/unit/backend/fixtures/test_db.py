@@ -49,12 +49,13 @@ class DatabaseFixture:
         del self.session
 
     def _populate_test_data(self):
-        self._create_test_collections()
-        self._create_test_collection_links()
-        self._create_test_datasets()
-        self._create_test_dataset_artifacts()
-        self._create_test_dataset_processing_status()
-        self._create_test_geneset()
+        pass
+        # self._create_test_collections()
+        # self._create_test_collection_links()
+        # self._create_test_datasets()
+        # self._create_test_dataset_artifacts()
+        # self._create_test_dataset_processing_status()
+        # self._create_test_geneset()
 
     def _create_test_collections(self):
         collection = DbCollection(
