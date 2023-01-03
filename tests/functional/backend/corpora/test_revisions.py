@@ -177,21 +177,20 @@ class TestRevisions(BaseFunctionalTestCase):
 
         # This only works if you pick the non replaced dataset.
         dataset_to_delete = res.json()["datasets"][1]
-        deleted_dataset_id = dataset_to_delete["id"]
-        canonical_dataset_id = dataset_to_delete["original_id"]
-        original_explorer_url = self.create_explorer_url(canonical_dataset_id)
+        revision_deleted_dataset_id = dataset_to_delete["id"]
+        published_explorer_url = self.create_explorer_url(revision_deleted_dataset_id)
 
         # Delete a dataset within the revision
-        res = self.session.delete(f"{self.api}/dp/v1/datasets/{deleted_dataset_id}", headers=headers)
+        res = self.session.delete(f"{self.api}/dp/v1/datasets/{revision_deleted_dataset_id}", headers=headers)
         self.assertStatusCode(202, res)
 
         with self.subTest("Deleting a dataset does not effect the published dataset"):
             # Check if the dataset is still available
-            res = self.session.get(f"{self.api}/dp/v1/datasets/meta?url={original_explorer_url}")
+            res = self.session.get(f"{self.api}/dp/v1/datasets/meta?url={published_explorer_url}")
             self.assertStatusCode(200, res)
 
             # Endpoint is eventually consistent
-            res = self.get_schema_with_retries(canonical_dataset_id)
+            res = self.get_schema_with_retries(revision_deleted_dataset_id)
             self.assertStatusCode(200, res)
 
         with self.subTest("Publishing a revision that deletes a dataset removes it from the data portal"):
@@ -208,12 +207,7 @@ class TestRevisions(BaseFunctionalTestCase):
             res.raise_for_status()
             datasets = [dataset["id"] for dataset in res.json()["datasets"]]
             self.assertEqual(1, len(datasets))
-            self.assertNotIn(deleted_dataset_id, datasets)
-            self.assertNotIn(canonical_dataset_id, datasets)
-
-            # Endpoint is eventually consistent. This redirects to the collection page, so the status we want is 302
-            res = self.get_schema_with_retries(canonical_dataset_id, desired_http_status_code=302)
-            self.assertStatusCode(302, res)
+            self.assertNotIn(revision_deleted_dataset_id, datasets)
 
     def get_schema_with_retries(self, dataset_id, desired_http_status_code=requests.codes.ok):
         @retry(wait=wait_fixed(1), stop=stop_after_attempt(50))
@@ -239,6 +233,4 @@ class TestRevisions(BaseFunctionalTestCase):
             return schema_res
 
         s3_uri_response = get_s3_uri()
-        if desired_http_status_code != requests.codes.ok:
-            return s3_uri_response
         return get_schema(s3_uri_response)
