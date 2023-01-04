@@ -11,6 +11,7 @@ from backend.layers.common.entities import (
     CollectionMetadata,
     CollectionVersion,
     CollectionVersionWithDatasets,
+    DatasetArtifactType,
     DatasetMetadata,
     DatasetStatusGeneric,
     DatasetStatusKey,
@@ -140,6 +141,13 @@ class BaseTest(unittest.TestCase):
         if cls.run_as_integration:
             cls.database_provider._engine.dispose()
 
+    def get_sample_dataset_metadata(self):
+        """
+        Returns a copy of the sample metadata. This can be freely modified and passed
+        to one of the generate methods below.
+        """
+        return copy.deepcopy(self.sample_dataset_metadata)
+
     def generate_unpublished_collection(
         self,
         owner="test_user_id",
@@ -193,7 +201,7 @@ class BaseTest(unittest.TestCase):
         name: Optional[str] = None,
         statuses: List[DatasetStatusUpdate] = [],
         validation_message: str = None,
-        artifacts: List[DatasetArtifactUpdate] = [],
+        artifacts: List[DatasetArtifactUpdate] = None,
         publish: bool = False,
     ) -> DatasetData:
         """
@@ -218,6 +226,12 @@ class BaseTest(unittest.TestCase):
                 DatasetValidationStatus.INVALID,
                 validation_message=validation_message,
             )
+        if artifacts is None:
+            artifacts = [
+                DatasetArtifactUpdate(DatasetArtifactType.H5AD, f"s3://fake.bucket/{dataset_version_id}/local.h5ad"),
+                DatasetArtifactUpdate(DatasetArtifactType.CXG, f"s3://fake.bucket/{dataset_version_id}/local.cxg"),
+                DatasetArtifactUpdate(DatasetArtifactType.RDS, f"s3://fake.bucket/{dataset_version_id}/local.rds"),
+            ]
         artifact_ids = []
         for artifact in artifacts:
             artifact_ids.append(

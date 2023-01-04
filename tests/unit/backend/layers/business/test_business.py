@@ -190,13 +190,13 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         is a complex process which happens asynchronously, and cannot be easily mocked.
         """
         self.database_provider.add_dataset_artifact(
-            dataset_version_id, DatasetArtifactType.H5AD.value, "s3://fake-bucket/artifact.h5ad"
+            dataset_version_id, DatasetArtifactType.H5AD.value, "s3://fake-bucket/local.h5ad"
         )
         self.database_provider.add_dataset_artifact(
-            dataset_version_id, DatasetArtifactType.CXG.value, "s3://fake-bucket/artifact.cxg"
+            dataset_version_id, DatasetArtifactType.CXG.value, "s3://fake-bucket/local.cxg"
         )
         self.database_provider.add_dataset_artifact(
-            dataset_version_id, DatasetArtifactType.RDS.value, "s3://fake-bucket/artifact.rds"
+            dataset_version_id, DatasetArtifactType.RDS.value, "s3://fake-bucket/local.rds"
         )
         self.database_provider.update_dataset_upload_status(dataset_version_id, DatasetUploadStatus.UPLOADED)
         self.database_provider.update_dataset_validation_status(dataset_version_id, DatasetValidationStatus.VALID)
@@ -775,6 +775,7 @@ class TestGetDataset(BaseBusinessLogicTestCase):
         self.assertCountEqual(
             [a.type for a in artifacts], [DatasetArtifactType.H5AD, DatasetArtifactType.CXG, DatasetArtifactType.RDS]
         )
+        self.assertCountEqual([a.get_file_name() for a in artifacts], ["local.h5ad", "local.cxg", "local.rds"])
 
     def test_get_dataset_artifact_download_data_ok(self):
         """
@@ -794,7 +795,7 @@ class TestGetDataset(BaseBusinessLogicTestCase):
         # TODO: requires mocking of the S3 provider. implement later
         download_data = self.business_logic.get_dataset_artifact_download_data(dataset.version_id, artifact.id)
         expected_download_data = DatasetArtifactDownloadData(
-            "artifact.h5ad", DatasetArtifactType.H5AD, expected_file_size, expected_presigned_url
+            "local.h5ad", DatasetArtifactType.H5AD, expected_file_size, expected_presigned_url
         )
         self.assertEqual(download_data, expected_download_data)
 
