@@ -1,4 +1,4 @@
-import { useContext, useMemo } from "react";
+import { useContext, useMemo, useState } from "react";
 import { useQuery, UseQueryResult } from "react-query";
 import { API_URL } from "src/configs/configs";
 import {
@@ -13,6 +13,7 @@ import {
   GeneExpressionSummary,
   RawCellTypeGeneExpressionSummaryData,
 } from "src/views/WheresMyGene/common/types";
+import Filters from "src/views/WheresMyGene/components/Filters";
 import { API } from "../API";
 import { ROUTES } from "../constants/routes";
 import { EMPTY_OBJECT } from "../constants/utils";
@@ -217,6 +218,11 @@ export function useWMGQuery(
 
   // (thuang): Refresh query when the snapshotId changes
   const currentSnapshotId = useSnapshotId();
+
+  query = clobberQueryIfSubsetofPrev(query, [
+    "gene_ontology_term_ids",
+    "tissue_ontology_term_ids",
+  ]);
 
   return useQuery(
     [USE_QUERY, query, currentSnapshotId],
@@ -628,6 +634,33 @@ function useWMGQueryRequestBody(options = { includeAllFilterOptions: false }) {
     ethnicities,
     sexes,
   ]);
+}
+let prevQuery: Query | null;
+
+function clobberQueryIfSubsetofPrev(
+  query: Query | null,
+  filtersToCheck: (keyof Filter)[]
+): Query | null {
+  if (prevQuery == query) return prevQuery;
+  if (
+    !prevQuery ||
+    prevQuery?.include_filter_dims !== query?.include_filter_dims
+  ) {
+    prevQuery = query;
+    return query;
+  }
+  if (
+    (Object.entries(query.filter) as [keyof Filter, string[]][]).every(
+      ([key, value]) => {
+        if (!filtersToCheck.includes(key)) return true; //skip filters we're not checking
+        return value.every((elem) => prevQuery?.filter[key].includes(elem));
+      }
+    )
+  ) {
+    return prevQuery;
+  }
+  prevQuery = query;
+  return query;
 }
 
 function toEntity(item: RawOntologyTerm) {
