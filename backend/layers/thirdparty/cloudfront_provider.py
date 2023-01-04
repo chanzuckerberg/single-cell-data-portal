@@ -12,7 +12,6 @@ client = boto3.client("cloudfront")
 
 
 class CloudfrontProvider(CDNProviderInterface):
-
     def create_invalidation(self, paths: List[str]):
         """
         Creates an invalidation for the specified paths.
