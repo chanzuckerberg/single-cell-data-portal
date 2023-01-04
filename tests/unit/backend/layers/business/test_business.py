@@ -775,9 +775,7 @@ class TestGetDataset(BaseBusinessLogicTestCase):
         self.assertCountEqual(
             [a.type for a in artifacts], [DatasetArtifactType.H5AD, DatasetArtifactType.CXG, DatasetArtifactType.RDS]
         )
-        self.assertCountEqual(
-            [a.get_file_name() for a in artifacts], ["local.h5ad", "local.cxg", "local.rds"]
-        )
+        self.assertCountEqual([a.get_file_name() for a in artifacts], ["local.h5ad", "local.cxg", "local.rds"])
 
     def test_get_dataset_artifact_download_data_ok(self):
         """
