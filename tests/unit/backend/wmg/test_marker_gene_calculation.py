@@ -72,4 +72,3 @@ class MarkerGeneCalculationTest(unittest.TestCase):
             expected = retrieve_top_n_markers(expected, "binomtest", 10)
             for i, elem in enumerate(result):
                 assert pytest.approx(elem) == expected[i]
-
