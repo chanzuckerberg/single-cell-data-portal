@@ -98,6 +98,9 @@ class PortalApi:
         return make_response(jsonify(result), 200)
 
     def _dataset_processing_status_to_response(self, status: DatasetStatus, dataset_id: str):
+        """
+        Converts a DatasetStatus object to an object compliant to the API specifications
+        """
         return {
             "created_at": 0,  # NA
             "cxg_status": status.cxg_status or "NA",
@@ -114,6 +117,9 @@ class PortalApi:
 
     # TODO: use remove_none
     def _link_to_response(self, link: Link):
+        """
+        Converts a Link object to an object compliant to the API specifications
+        """
         response = {
             "link_type": link.type,
             "link_url": link.uri,
@@ -123,6 +129,9 @@ class PortalApi:
         return response
 
     def _dataset_asset_to_response(self, dataset_artifact: DatasetArtifact, dataset_id: str):
+        """
+        Converts a DatasetArtifact object to an object compliant to the API specifications
+        """
         return {
             "created_at": 0,
             "dataset_id": dataset_id,
@@ -135,21 +144,35 @@ class PortalApi:
         }
 
     def _ontology_term_id_to_response(self, ontology_term_id: OntologyTermId):
+        """
+        Converts an OntologyTermId object to an object compliant to the API specifications
+        """
         return {
             "label": ontology_term_id.label,
             "ontology_term_id": ontology_term_id.ontology_term_id,
         }
 
     def _ontology_term_ids_to_response(self, ontology_term_ids: List[OntologyTermId]):
+        """
+        Converts a list of OntologyTermId objects to an object compliant to the API specifications.
+        This is useful because dataset metadata contain all the possible values for that ontology
+        that exist in the dataset proper.
+        """
         return [self._ontology_term_id_to_response(otid) for otid in ontology_term_ids]
 
     def remove_none(self, body: dict):
+        """
+        Removes the values of an object that are None
+        """
         return {k: v for k, v in body.items() if v is not None}
 
     # Note: `metadata` can be none while the dataset is uploading
     def _dataset_to_response(
         self, dataset: DatasetVersion, is_tombstoned: bool, is_in_published_collection: bool = False
     ):
+        """
+        Converts a DatasetVersion object to an object compliant to the API specifications
+        """
         dataset_id = dataset.version_id.id
         return self.remove_none(
             {
@@ -204,6 +227,9 @@ class PortalApi:
         )
 
     def _collection_to_response(self, collection: CollectionVersion, access_type: str):
+        """
+        Converts a CollectionVersion object to an object compliant to the API specifications
+        """
         collection_id = collection.collection_id.id if collection.published_at is not None else collection.version_id.id
 
         if collection.canonical_collection.originally_published_at is not None and collection.published_at is None:
@@ -380,7 +406,7 @@ class PortalApi:
 
     def update_collection(self, collection_id: str, body: dict, token_info: dict):
         """
-        Updates a collection
+        Updates a collection using the fields specified in `body`
         """
 
         # Ensure that the version exists and the user is authorized to update it
@@ -430,6 +456,9 @@ class PortalApi:
         return make_response({"collection_id": version.collection_id.id, "visibility": "PUBLIC"}, 202)
 
     def upload_from_link(self, collection_id: str, token_info: dict, url: str, dataset_id: str = None):
+        """
+        Triggers a dataset ingestion using the link provided in `url`
+        """
 
         version = self.business_logic.get_collection_version(CollectionVersionId(collection_id))
         if version is None or not UserInfo(token_info).is_user_owner_or_allowed(version.owner):
@@ -465,10 +494,18 @@ class PortalApi:
     # TODO: those two methods should probably be collapsed into one
     # TODO: not quite sure what's the difference between url and link - investigate
     def upload_link(self, collection_id: str, body: dict, token_info: dict):
+        """
+        Triggers a dataset ingestion using the link provided in the `body` object.
+        This method is used to generate a new dataset.
+        """
         dataset_id = self.upload_from_link(collection_id, token_info, body["url"])
         return make_response({"dataset_id": dataset_id.id}, 202)
 
     def upload_relink(self, collection_id: str, body: dict, token_info: dict):
+        """
+        Triggers a dataset ingestion using the link provided in the `body` object.
+        This method is used to replace a new existing dataset.
+        """
         dataset_id = self.upload_from_link(
             collection_id,
             token_info,
@@ -511,7 +548,6 @@ class PortalApi:
     def get_dataset_assets(self, dataset_id: str):
         """
         Returns a list of all the artifacts registered to a dataset.
-        TODO: not sure where this is used and what the response should be
         """
 
         artifacts = []
@@ -572,7 +608,6 @@ class PortalApi:
         """
         Returns a list of all the datasets that currently belong to a published and active collection
         """
-
         response = []
         for dataset in self.business_logic.get_all_published_datasets():
             payload = self._dataset_to_response(dataset, is_tombstoned=False)
@@ -605,7 +640,8 @@ class PortalApi:
 
     def get_dataset_identifiers(self, url: str):
         """
-        a.k.a. the meta endpoint
+        Returns a list of dataset identifiers, given an explorer_url
+        This endpoint is used exclusively by the Explorer.
         """
         try:
             path = urlparse(url).path

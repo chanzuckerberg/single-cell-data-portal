@@ -34,6 +34,9 @@ from backend.layers.thirdparty.uri_provider import UriProvider, UriProviderInter
 
 
 class ProcessMain(ProcessingLogic):
+    """
+    Main class for the dataset pipeline processing
+    """
 
     process_download_validate: ProcessDownloadValidate
     process_seurat: ProcessSeurat
@@ -85,6 +88,9 @@ class ProcessMain(ProcessingLogic):
         artifact_bucket: Optional[str],
         cxg_bucket: Optional[str],
     ):
+        """
+        Gets called by the step function at every different step, as defined by `step_name`
+        """
         self.log_batch_environment()
         self.logger.info(f"Processing dataset {dataset_id}")
         try:

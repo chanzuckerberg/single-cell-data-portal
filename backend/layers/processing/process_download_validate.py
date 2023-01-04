@@ -25,6 +25,18 @@ from backend.layers.thirdparty.uri_provider import UriProviderInterface
 
 
 class ProcessDownloadValidate(ProcessingLogic):
+    """
+    Base class for handling the `Download and Validate` step of the step function.
+    This will:
+    1. Download the original artifact from the provided URI
+    2. Run the cellxgene-schema validator
+    3. Save and upload a labeled copy of the original artifact (local.h5ad)
+    4. Upload a copy of the original artifact (raw.h5ad)
+    5. Persist the dataset metadata on the database
+    6. Determine if a Seurat conversion is possible (it is not if the X matrix has more than 2**32-1 nonzero values)
+    If this step completes successfully, ProcessCxg and ProcessSeurat will start in parallel.
+    If this step fails, the handle_failures lambda will be invoked
+    """
 
     downloader: Downloader
     schema_validator: SchemaValidatorProviderInterface
