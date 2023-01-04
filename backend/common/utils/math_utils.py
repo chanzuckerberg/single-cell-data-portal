@@ -6,5 +6,5 @@ def sizeof_formatted(num, suffix="B"):
     return "%.1f %s%s" % (num, "Yi", suffix)
 
 
-GB = 2 ** 30
-MB = 2 ** 20
+GB = 2**30
+MB = 2**20

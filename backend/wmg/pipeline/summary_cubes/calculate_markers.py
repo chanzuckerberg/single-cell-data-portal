@@ -334,15 +334,15 @@ def _run_ttest(sum1, sumsq1, n1, sum2, sumsq2, n2):
         mean2 = sum2 / n2
         meansq2 = sumsq2 / n2
 
-        var1 = meansq1 - mean1 ** 2
+        var1 = meansq1 - mean1**2
         var1[var1 < 0] = 0
-        var2 = meansq2 - mean2 ** 2
+        var2 = meansq2 - mean2**2
         var2[var2 < 0] = 0
 
         var1_n = var1 / n1
         var2_n = var2 / n2
         sum_var_n = var1_n + var2_n
-        dof = sum_var_n ** 2 / (var1_n ** 2 / (n1 - 1) + var2_n ** 2 / (n2 - 1))
+        dof = sum_var_n**2 / (var1_n**2 / (n1 - 1) + var2_n**2 / (n2 - 1))
         tscores = (mean1 - mean2) / np.sqrt(sum_var_n)
         effects = (mean1 - mean2) / np.sqrt(((n1 - 1) * var1 + (n2 - 1) * var2) / (n1 + n2 - 1))
 

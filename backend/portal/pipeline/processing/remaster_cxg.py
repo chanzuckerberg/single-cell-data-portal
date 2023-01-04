@@ -252,8 +252,8 @@ def evolve_X(**kwargs):
 
     ctx = create_fast_ctx(
         {
-            "py.init_buffer_bytes": 4 * 1024 ** 3,
-            "sm.tile_cache_size": 1 * 1024 ** 3,
+            "py.init_buffer_bytes": 4 * 1024**3,
+            "sm.tile_cache_size": 1 * 1024**3,
         }
     )
 
@@ -348,17 +348,17 @@ def create_ctx(config: dict = {}) -> tiledb.Ctx:
 
 def frac_mem(f):
     mem_size = psutil.virtual_memory().total
-    return int(f * mem_size) // (1024 ** 2) * (1024 ** 2)
+    return int(f * mem_size) // (1024**2) * (1024**2)
 
 
 def fast_config(config_overrides: dict = {}) -> dict:
     # consolidation buffer heuristic to prevent thrashing: total_mem/io_concurrency_level, rounded to GB
     io_concurrency_level = int(tiledb.Config()["sm.io_concurrency_level"])
     consolidation_buffer_size = (
-        (int(frac_mem(0.1) / io_concurrency_level) + (1024 ** 3 - 1)) // (1024 ** 3) * (1024 ** 3)
+        (int(frac_mem(0.1) / io_concurrency_level) + (1024**3 - 1)) // (1024**3) * (1024**3)
     )
     config = {
-        "py.init_buffer_bytes": 16 * 1024 ** 3,
+        "py.init_buffer_bytes": 16 * 1024**3,
         "sm.tile_cache_size": frac_mem(0.5),
         "sm.consolidation.buffer_size": consolidation_buffer_size,
     }

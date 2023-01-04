@@ -58,7 +58,7 @@ class QueryTest(unittest.TestCase):
                 ],
             )
 
-            self.assertDictEqual(marker_genes, expected)
+            self.assertEqual(marker_genes, expected)
 
     def test__query_marker_genes_cube__returns_correct_all_markers(self):
         criteria = MarkerGeneQueryCriteria(
@@ -105,7 +105,7 @@ class QueryTest(unittest.TestCase):
                 {"gene_ontology_term_id": "ENSG00000170476", "p_value": 0.0, "effect_size": 1.908108115196228},
                 {"gene_ontology_term_id": "ENSG00000113580", "p_value": 0.0, "effect_size": -0.5699092745780945},
             ]
-            self.assertDictEqual(marker_genes, expected)
+            self.assertEqual(marker_genes, expected)
 
     def test__query_expression_summary_fmg_cube__returns_correct_results(self):
         criteria = FmgQueryCriteria(

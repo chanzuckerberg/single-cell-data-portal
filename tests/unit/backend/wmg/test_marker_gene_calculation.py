@@ -70,5 +70,6 @@ class MarkerGeneCalculationTest(unittest.TestCase):
 
             expected = snapshot.marker_genes_cube.df[(tissue, organism, celltype)]
             expected = retrieve_top_n_markers(expected, "binomtest", 10)
-            for k in result:
-                assert pytest.approx(result[k]) == expected[k]
+            for i, elem in enumerate(result):
+                assert pytest.approx(elem) == expected[i]
+

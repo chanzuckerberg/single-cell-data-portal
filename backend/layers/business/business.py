@@ -308,10 +308,9 @@ class BusinessLogic(BusinessLogicInterface):
             file_info = self.uri_provider.get_file_info(url)
             file_size = file_info.size
 
-
         from backend.common.corpora_config import CorporaConfig
 
-        max_file_size_gb = CorporaConfig().upload_max_file_size_gb * 2 ** 30
+        max_file_size_gb = CorporaConfig().upload_max_file_size_gb * 2**30
 
         if file_size is not None and file_size > max_file_size_gb:
             raise MaxFileSizeExceededException(f"{url} exceeds the maximum allowed file size of {max_file_size_gb} Gb")

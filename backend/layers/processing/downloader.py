@@ -100,7 +100,7 @@ class Downloader:
         url: str,
         local_path: str,
         file_size: int,
-        chunk_size: int = 10 * 2 ** 20,
+        chunk_size: int = 10 * 2**20,
         update_frequency=3,
     ) -> None:
         """
