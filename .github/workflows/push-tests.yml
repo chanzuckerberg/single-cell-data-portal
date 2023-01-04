@@ -168,8 +168,8 @@ jobs:
         with:
           name: build
           path: |
-            path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/.next
-            public: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/public
+            path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/.next
+            public: /home/runner/work/single-cell-data-portal/single-cell-data-portal/public
           retention-days: 7
 
   build-frontend-backend-images:
