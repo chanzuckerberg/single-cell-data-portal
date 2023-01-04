@@ -103,7 +103,7 @@ function CellInfoSideBar({
             </GeneHeaderWrapper>
           </GeneCellHeader>
           <CellHeader hideSortIcon horizontalAlign="right">
-            Effect Size
+            Marker Score
           </CellHeader>
         </TableHeader>
         <tbody>
