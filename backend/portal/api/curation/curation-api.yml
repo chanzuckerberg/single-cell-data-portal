@@ -10,6 +10,9 @@ info:
     ## For Examples
     * [Python Notebooks](https://github.com/chanzuckerberg/single-cell-curation/tree/main/notebooks/curation_api/python_raw)
     * [R Notebooks](https://github.com/chanzuckerberg/single-cell-curation/tree/main/notebooks/curation_api/R)
+    
+    ## Data Model
+     <img src="/static/discover-api-data-model.png" width="50%"/>
 servers:
   - description: Production environment
     url: https://api.cellxgene.cziscience.com/
