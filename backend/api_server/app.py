@@ -24,8 +24,9 @@ configure_logging(APP_NAME)
 
 
 def create_flask_app():
-    connexion_app = connexion.FlaskApp(APP_NAME, specification_dir="backend",
-                                       server_args=dict(static_folder="backend/api_server/static"))
+    connexion_app = connexion.FlaskApp(
+        APP_NAME, specification_dir="backend", server_args=dict(static_folder="backend/api_server/static")
+    )
 
     # From https://github.com/zalando/connexion/issues/346
     connexion_app.app.url_map.strict_slashes = False
