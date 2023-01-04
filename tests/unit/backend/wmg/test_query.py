@@ -43,20 +43,18 @@ class QueryTest(unittest.TestCase):
             result = q.marker_genes(criteria)
             marker_genes = retrieve_top_n_markers(result, "ttest", 10)
 
-            expected = (
-                [
-                    {"gene_ontology_term_id": "ENSG00000132465", "p_value": 0.0, "effect_size": 2.317647933959961},
-                    {"gene_ontology_term_id": "ENSG00000170476", "p_value": 0.0, "effect_size": 1.908108115196228},
-                    {"gene_ontology_term_id": "ENSG00000180879", "p_value": 0.0, "effect_size": 1.7537814378738403},
-                    {"gene_ontology_term_id": "ENSG00000134285", "p_value": 0.0, "effect_size": 1.7066189050674438},
-                    {"gene_ontology_term_id": "ENSG00000099958", "p_value": 0.0, "effect_size": 1.5534085035324097},
-                    {"gene_ontology_term_id": "ENSG00000211592", "p_value": 0.0, "effect_size": 1.363141417503357},
-                    {"gene_ontology_term_id": "ENSG00000051108", "p_value": 0.0, "effect_size": 1.1919057369232178},
-                    {"gene_ontology_term_id": "ENSG00000166562", "p_value": 0.0, "effect_size": 1.1310830116271973},
-                    {"gene_ontology_term_id": "ENSG00000118363", "p_value": 0.0, "effect_size": 0.9623821377754211},
-                    {"gene_ontology_term_id": "ENSG00000173110", "p_value": 0.0, "effect_size": 0.18932978808879852},
-                ],
-            )
+            expected = [
+                {"gene_ontology_term_id": "ENSG00000132465", "p_value": 0.0, "effect_size": 2.317647933959961},
+                {"gene_ontology_term_id": "ENSG00000170476", "p_value": 0.0, "effect_size": 1.908108115196228},
+                {"gene_ontology_term_id": "ENSG00000180879", "p_value": 0.0, "effect_size": 1.7537814378738403},
+                {"gene_ontology_term_id": "ENSG00000134285", "p_value": 0.0, "effect_size": 1.7066189050674438},
+                {"gene_ontology_term_id": "ENSG00000099958", "p_value": 0.0, "effect_size": 1.5534085035324097},
+                {"gene_ontology_term_id": "ENSG00000211592", "p_value": 0.0, "effect_size": 1.363141417503357},
+                {"gene_ontology_term_id": "ENSG00000051108", "p_value": 0.0, "effect_size": 1.1919057369232178},
+                {"gene_ontology_term_id": "ENSG00000166562", "p_value": 0.0, "effect_size": 1.1310830116271973},
+                {"gene_ontology_term_id": "ENSG00000118363", "p_value": 0.0, "effect_size": 0.9623821377754211},
+                {"gene_ontology_term_id": "ENSG00000173110", "p_value": 0.0, "effect_size": 0.18932978808879852},
+            ]
 
             self.assertEqual(marker_genes, expected)
 
