@@ -13,7 +13,7 @@ def create_db():
     print("Dropping tables")
     metadata.drop_all(engine)
     print("Recreating tables")
-    metadata.create_all(engine)
+    # metadata.create_all(engine)
 
 
 if __name__ == "__main__":
