@@ -112,11 +112,67 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: failure() && github.ref == 'refs/heads/main'
 
+  # (thuang): https://dev.to/thakkaryash94/build-nextjs-application-using-github-workflow-and-docker-3foj
+  next-build:
+    # DEBUG
+    # DEBUG
+    # DEBUG
+    # DEBUG
+    # if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod' )
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/setup-node@v2
+        with:
+          node-version: "16.14.2"
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 1800
+      - name: Login to ECR
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ secrets.ECR_REPO }}
+      - uses: actions/checkout@v2
+      - name: Install dependencies
+        run: |
+          npm ci
+
+          # DEBUG
+          # DEBUG
+          # DEBUG
+          echo $HAPPY_COMMIT
+          echo $HAPPY_COMMIT
+          echo $HAPPY_COMMIT
+          echo $HAPPY_COMMIT
+
+          npm run build
+        env:
+          HAPPY_COMMIT: ${{ github.sha }}
+      - name: Upload Next build # Upload the artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: build
+          path: |
+            .next
+            public
+          retention-days: 7
+
   build-frontend-backend-images:
     runs-on: ubuntu-20.04
-    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod' )
+    # DEBUG
+    # DEBUG
+    # DEBUG
+    # if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod' )
     needs:
       - e2e-test
+      - next-build # Job depends on next-build(above)
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -135,6 +191,10 @@ jobs:
         uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.2.1
         with:
           happy_version: "0.23.0"
+      - name: Download next build # Download the above next-build uploaded artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: build
       - name: Push images
         run: |
           echo "HAPPY_COMMIT=$(git rev-parse --verify HEAD)" >> envfile
@@ -275,7 +335,6 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
 
-
   backend-wmg-unit-test:
     runs-on: ubuntu-20.04
     steps:
@@ -323,7 +382,6 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
-
 
   processing-unit-test:
     runs-on: ubuntu-20.04

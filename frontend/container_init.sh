@@ -29,9 +29,5 @@ if [ "${DEPLOYMENT_STAGE}" == "test" ]; then
   mv ./node_modules/.next-dev-mobile/server.key ./node_modules/.next-dev-mobile/key.pem
   exec npm run dev
 else
-  # We need "-- --" because `npm run build-and-start-prod`
-  # runs `npm run build && npm run serve` under the hood,
-  # so we need to pass `-- -p 9000` to `npm run serve`, which
-  # will then call `next start -p 9000` correctly
-  exec npm run build-and-start-prod -- -- -p 9000
+  exec npm run start -p 9000
 fi

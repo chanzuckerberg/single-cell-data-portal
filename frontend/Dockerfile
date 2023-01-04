@@ -19,6 +19,12 @@ RUN apt-get update && apt-get install -y make wget \
     && rm -rf /var/lib/apt/lists/*
 
 COPY package*.json ./
+
+# (thuang): This copies next build output to the container
+# https://dev.to/thakkaryash94/build-nextjs-application-using-github-workflow-and-docker-3foj
+COPY --chown=node:node .next .next
+COPY --chown=node:node public public
+
 # the official node image provides an unprivileged user as a security best practice
 # but we have to manually enable it. We put it here so npm installs dependencies as the same
 # user who runs the app.
