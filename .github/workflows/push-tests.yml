@@ -144,6 +144,14 @@ jobs:
         run: |
           npm ci
 
+          if [[ "${{ github.ref }}" == "refs/heads/prod" ]]; then
+            cat src/configs/prod.js | envsubst >src/configs/configs.js
+          elif [[ "${{ github.ref }}" == "refs/heads/staging" ]]; then
+            cat src/configs/staging.js | envsubst >src/configs/configs.js
+          else
+            cat src/configs/local.js | envsubst >src/configs/configs.js
+          fi
+
           # DEBUG
           # DEBUG
           # DEBUG
