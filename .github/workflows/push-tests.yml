@@ -152,6 +152,8 @@ jobs:
             cat src/configs/local.js | envsubst >src/configs/configs.js
           fi
 
+          HAPPY_COMMIT=$(git rev-parse --verify HEAD)
+
           # DEBUG
           # DEBUG
           # DEBUG
@@ -161,15 +163,13 @@ jobs:
           echo $HAPPY_COMMIT
 
           npm run build
-        env:
-          HAPPY_COMMIT: ${{ github.sha }}
       - name: Upload Next build # Upload the artifact
         uses: actions/upload-artifact@v2
         with:
           name: build
           path: |
-            .next
-            public
+            path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/.next
+            public: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/public
           retention-days: 7
 
   build-frontend-backend-images:
