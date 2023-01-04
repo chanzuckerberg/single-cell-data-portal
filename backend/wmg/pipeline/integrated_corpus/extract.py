@@ -7,12 +7,24 @@ import numpy as np
 from anndata._core.views import ArrayView
 from scipy import sparse
 
-from backend.common.corpora_orm import DatasetArtifactFileType
-from backend.common.entities import Dataset, Collection, DatasetAsset
-from backend.common.utils.db_session import db_session_manager
+from backend.layers.business.business import BusinessLogic
+from backend.layers.persistence.persistence import DatabaseProvider
 from backend.wmg.data.constants import INCLUDED_ASSAYS
+from backend.layers.common.entities import DatasetArtifactType
 
 logger = logging.getLogger(__name__)
+
+_business_logic = None
+
+
+def get_business_logic():
+    """
+    Returns an instance of the business logic handler. Use this to interrogate the database
+    """
+    global _business_logic
+    if not _business_logic:
+        _business_logic = BusinessLogic(DatabaseProvider(), None, None, None, None)
+    return _business_logic
 
 
 def get_X_raw(anndata_object: anndata.AnnData) -> Union[np.ndarray, sparse.spmatrix, ArrayView]:
@@ -25,33 +37,22 @@ def get_X_raw(anndata_object: anndata.AnnData) -> Union[np.ndarray, sparse.spmat
     return raw_expression_matrix if raw_expression_matrix is not None else anndata_object.X
 
 
-def get_dataset_s3_uris() -> Dict:
+def get_dataset_s3_uris() -> Dict[str, str]:
     """
     Retrieve list of s3 uris for datasets included in the wmg cube
     """
-    with db_session_manager() as session:
-
-        dataset_ids = []
-        published_dataset_non_null_assays = (
-            session.query(Dataset.table.id, Dataset.table.assay, Dataset.table.organism)
-            .join(Dataset.table.collection)
-            .filter(
-                Dataset.table.assay != "null",
-                Dataset.table.published == "TRUE",
-                Dataset.table.is_primary_data == "PRIMARY",
-                Collection.table.visibility == "PUBLIC",
-                Dataset.table.tombstone == "FALSE",
-                Dataset.table.organism != "null",
-            )
-            .all()
-        )
-
-        for dataset_id, assays, organisms in published_dataset_non_null_assays:
-            if any(assay["ontology_term_id"] in INCLUDED_ASSAYS for assay in assays):
-                if len(organisms) < 2:
-                    dataset_ids.append(dataset_id)
-
-        s3_uris = DatasetAsset.s3_uris_for_datasets(session, dataset_ids, DatasetArtifactFileType.H5AD, "local.h5ad")
+    s3_uris = dict()
+    for dataset in get_business_logic().get_all_published_datasets():
+        if (
+            (dataset.metadata is not None)
+            and (dataset.metadata.assay is not None)
+            and (dataset.metadata.is_primary_data == "PRIMARY")
+            and (dataset.metadata.organism is not None)
+        ):
+            if any(assay.ontology_term_id in INCLUDED_ASSAYS for assay in dataset.metadata.assay):
+                if len(dataset.metadata.organism) < 2:
+                    s3_uri = next(a.uri for a in dataset.artifacts if a.type == DatasetArtifactType.H5AD)
+                    s3_uris[dataset.dataset_id.id] = s3_uri
     return s3_uris
 
 
