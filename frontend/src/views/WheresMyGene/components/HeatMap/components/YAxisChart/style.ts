@@ -6,6 +6,7 @@ import {
   X_AXIS_CHART_HEIGHT_PX,
   Y_AXIS_CHART_WIDTH_PX,
 } from "../../utils";
+import { ECHART_AXIS_LABEL_COLOR_HEX } from "../XAxisChart/style";
 
 export const Y_AXIS_TISSUE_WIDTH_PX = 30;
 
@@ -56,7 +57,7 @@ export const CellTypeButtonStyle = styled.button`
   cursor: pointer;
   border: none;
   width: 100%;
-  color: #6e7079;
+  color: ${ECHART_AXIS_LABEL_COLOR_HEX};
   text-align: left;
 `;
 
@@ -66,7 +67,7 @@ export const CellCountLabelStyle = styled.div`
   font: normal normal ${SELECTED_STYLE.fontSize}px ${SELECTED_STYLE.fontFamily};
   white-space: pre;
   border: none;
-  color: #6e7079;
+  color: ${ECHART_AXIS_LABEL_COLOR_HEX};
   text-align: right;
   padding-top: 3px;
 `;

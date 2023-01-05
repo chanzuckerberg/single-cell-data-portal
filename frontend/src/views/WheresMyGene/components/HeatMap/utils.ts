@@ -75,6 +75,8 @@ export function createChartOptions({
       bottom: Y_AXIS_BOTTOM_PADDING,
       top: "0px",
       left: "0px",
+      // (atarashansky): this is the key change to align x and y axis
+      // labels to fixed spacings
       width: `${heatmapWidth}px`,
       height: `${heatmapHeight}px`,
     },

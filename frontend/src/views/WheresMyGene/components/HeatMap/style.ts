@@ -12,7 +12,7 @@ export const Container = styled.div`
 
 export const YAxisWrapper = styled.div`
   width: ${Y_AXIS_CHART_WIDTH_PX}px;
-  position: absolute;
+  position: sticky;
   top: ${X_AXIS_CHART_HEIGHT_PX}px;
   left: 0;
   z-index: 1;
