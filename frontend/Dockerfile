@@ -32,8 +32,9 @@ LABEL deployment_stage=${DEPLOYMENT_STAGE}
 ENV COMMIT_SHA=${HAPPY_COMMIT}
 ENV COMMIT_BRANCH=${HAPPY_BRANCH}
 
-COPY src/configs/${DEPLOYMENT_STAGE}.js src/configs/configs.js
+RUN mkdir -p ./node_modules
 
+COPY src/configs/${DEPLOYMENT_STAGE}.js src/configs/configs.js
 COPY package*.json ./
 
 # the official node image provides an unprivileged user as a security best practice
