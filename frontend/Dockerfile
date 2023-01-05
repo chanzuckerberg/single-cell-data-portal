@@ -19,6 +19,8 @@ RUN apt-get update && apt-get install -y make wget \
     && rm -rf /var/lib/apt/lists/*
 
 COPY package*.json ./
+
+ARG DEPLOYMENT_STAGE="dev"
 COPY src/configs/${DEPLOYMENT_STAGE}.js src/configs/configs.js
 
 # the official node image provides an unprivileged user as a security best practice
@@ -36,13 +38,11 @@ WORKDIR /corpora-frontend
 
 ARG HAPPY_BRANCH="unknown"
 ARG HAPPY_COMMIT=""
-ARG DEPLOYMENT_STAGE="dev"
 LABEL branch=${HAPPY_BRANCH}
 LABEL commit=${HAPPY_COMMIT}
 LABEL deployment_stage=${DEPLOYMENT_STAGE}
 ENV COMMIT_SHA=${HAPPY_COMMIT}
 ENV COMMIT_BRANCH=${HAPPY_BRANCH}
-ENV DEPLOYMENT_STAGE="dev"
 
 # (thuang): This is currently run for tests too, but we can optimize it later
 RUN npm run build
