@@ -7,7 +7,6 @@ from backend.portal.api.curation.v1.curation.collections.common import (
     get_infered_collection_version_else_forbidden,
     get_infered_dataset_version,
 )
-from backend.layers.common.entities import DatasetArtifactType
 
 
 def get(collection_id: str, dataset_id=None):
