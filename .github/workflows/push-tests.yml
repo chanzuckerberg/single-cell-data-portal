@@ -215,7 +215,7 @@ jobs:
           if [[ "${{ github.ref }}" == "refs/heads/prod" ]]; then
             echo "DEPLOYMENT_STAGE=prod" >> envfile
           elif [[ "${{ github.ref }}" == "refs/heads/staging" ]]; then
-            echo "DEPLOYMENT_STAGE=stage" >> envfile
+            echo "DEPLOYMENT_STAGE=staging" >> envfile
           else
             echo "DEPLOYMENT_STAGE=dev" >> envfile
           fi
