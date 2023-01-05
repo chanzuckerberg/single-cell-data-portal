@@ -9,6 +9,7 @@ import {
   Tooltip,
 } from "czifui";
 import React, { useCallback, useContext } from "react";
+import { ROUTES } from "src/common/constants/routes";
 import { useMarkerGenes } from "src/common/queries/wheresMyGene";
 import { BetaChip } from "src/components/Header/style";
 import { DispatchContext, State } from "../../common/store";
@@ -73,7 +74,16 @@ function CellInfoSideBar({
               <>
                 <div>Marker genes are highly and uniquely expressed in the cell type relative to all other cell types.</div>
                 <br/>
-                <div><a href={``} style={{color: "inherit"}}>Click to read more about the identification method.</a></div>
+                <div>
+                  <a 
+                    href={ROUTES.FMG_DOCS} 
+                    rel="noopener" 
+                    target="_blank" 
+                    style={{color: "inherit"}}
+                  >
+                    Click to read more about the identification method.
+                  </a>
+                </div>
               </>
             }
           >
