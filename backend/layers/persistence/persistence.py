@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import Any, Iterable, List, Optional
 
 from sqlalchemy import create_engine
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import SQLAlchemyError, ProgrammingError
 from sqlalchemy.orm import sessionmaker
 
 from backend.common.corpora_config import CorporaDbConfig
@@ -59,10 +59,11 @@ class DatabaseProvider(DatabaseProviderInterface):
 
     def _drop_schema(self):
         from sqlalchemy.schema import DropSchema
-        from backend.layers.persistence.orm import metadata
 
-        self._engine.execute(DropSchema(self._schema_name, cascade=True))
-        metadata.drop_all(self._engine)
+        try:
+            self._engine.execute(DropSchema(self._schema_name, cascade=True))
+        except ProgrammingError:
+            pass
 
     def _create_schema(self):
         from sqlalchemy.schema import CreateSchema
