@@ -46,6 +46,10 @@ db/new_migration_auto:
 	# Usage: make db/new_migration_auto MESSAGE="purpose_of_migration"
 	PYTHONPATH=.. alembic -c=./database/database.ini revision --autogenerate --message "$(MESSAGE)"
 
+db/check:
+	# Check if the database needs to be migrated due to changes in the schema.
+	PYTHONPATH=.. alembic --name schema2 -c=./database/database.ini check
+
 # interactive mode usage: AWS_PROFILE=single-cell-dev DEPLOYMENT_STAGE=dev make db/connect
 # ARGS usage: AWS_PROFILE=single-cell-dev DEPLOYMENT_STAGE=dev make db/connect ARGS="-c \"select * from dataset_artifact where filetype='CXG'\""
 db/connect:
