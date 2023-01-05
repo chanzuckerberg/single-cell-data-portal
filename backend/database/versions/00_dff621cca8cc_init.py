@@ -85,5 +85,6 @@ def downgrade():
     op.drop_table("Dataset", schema="persistence_schema")
     op.drop_table("CollectionVersion", schema="persistence_schema")
     op.drop_table("Collection", schema="persistence_schema")
+    sa.Enum(name="datasetartifacttype").drop(op.get_bind(), checkfirst=False)
     # ### end Alembic commands ###
     op.execute("DROP SCHEMA persistence_schema")
