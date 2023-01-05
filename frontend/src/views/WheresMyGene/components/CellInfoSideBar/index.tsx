@@ -119,10 +119,7 @@ function CellInfoSideBar({
             </GeneHeaderWrapper>
           </GeneCellHeader>
           <CellHeader hideSortIcon horizontalAlign="right">
-            P-value
-          </CellHeader>
-          <CellHeader hideSortIcon horizontalAlign="right">
-            Effect Size
+            Marker Score
           </CellHeader>
         </TableHeader>
         <tbody>
@@ -131,11 +128,6 @@ function CellInfoSideBar({
               <CellBasic
                 shouldShowTooltipOnHover={false}
                 primaryText={gene[0]}
-              />
-              <CellBasic
-                shouldShowTooltipOnHover={false}
-                horizontalAlign="right"
-                primaryText={gene[1].p_value.toPrecision(4)}
               />
               <CellBasic
                 shouldShowTooltipOnHover={false}
