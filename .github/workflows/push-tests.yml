@@ -168,12 +168,12 @@ jobs:
 
           ls
       - name: Upload Next build # Upload the artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: build
           path: |
-            .next: home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/.next
-            public: home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/public
+            public
+            .next
           retention-days: 7
 
   build-frontend-backend-images:
