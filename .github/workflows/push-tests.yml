@@ -211,6 +211,15 @@ jobs:
         run: |
           echo "HAPPY_COMMIT=$(git rev-parse --verify HEAD)" >> envfile
           echo "HAPPY_BRANCH=$(git branch --show-current)" >> envfile
+
+          if [[ "${{ github.ref }}" == "refs/heads/prod" ]]; then
+            echo "DEPLOYMENT_STAGE=prod" >> envfile
+          elif [[ "${{ github.ref }}" == "refs/heads/staging" ]]; then
+            echo "DEPLOYMENT_STAGE=stage" >> envfile
+          else
+            echo "DEPLOYMENT_STAGE=dev" >> envfile
+          fi
+
           happy push --docker-compose-env-file envfile --aws-profile "" --tag sha-${GITHUB_SHA:0:8} frontend backend
       - uses: 8398a7/action-slack@v3
         with:
