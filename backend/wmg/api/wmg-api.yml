@@ -312,7 +312,7 @@ paths:
                         $ref: "#/components/schemas/wmg_ontology_term_id_label_list"
   /v1/markers:
     post:
-      summary: Given a cell type, organism, and tissue, returns the top `n_markers` precomputed marker genes for one of two statistical tests, the t-test or binomial test (`test="ttest"` or `test="binomtest"`, respectively). By default, `n_markers=10`. If `n_markers=0`, all marker genes will be returned. 
+      summary: Given a cell type, organism, and tissue, returns the top `n_markers` precomputed marker genes for one of two statistical tests, the t-test or binomial test (`test="ttest"` or `test="binomtest"`, respectively). By default, `n_markers=10`. If `n_markers=0`, all marker genes will be returned.
       tags:
         - wmg
       operationId: backend.wmg.api.v1.markers
@@ -334,14 +334,14 @@ paths:
                 test:
                   type: string
                   enum:
-                   - ttest
-                   - binomtest
+                    - ttest
+                    - binomtest
               required:
-               - celltype
-               - organism
-               - tissue
-               - n_markers
-               - test              
+                - celltype
+                - organism
+                - tissue
+                - n_markers
+                - test
       responses:
         "200":
           description: OK
@@ -351,18 +351,18 @@ paths:
                 {
                   "snapshot_id": "8ce15034-162a-4e2e-9987-eb1af08bd4d4",
                   "marker_genes":
-                    {
-                      "gene1":
-                        {
-                          "p_value": 0.001,
-                          "effect_size": 1.1
-                        },
-                      "gene2":
-                        {
-                          "p_value": 0.02,
-                          "effect_size": 0.82
-                        },                        
-                    },
+                    [
+                      {
+                        "gene_ontology_term_id": "gene1",
+                        "p_value": 0.001,
+                        "effect_size": 1.1,
+                      },
+                      {
+                        "gene_ontology_term_id": "gene2",
+                        "p_value": 0.02,
+                        "effect_size": 0.82,
+                      },
+                    ],
                 }
               schema:
                 type: object
@@ -372,29 +372,30 @@ paths:
                   snapshot_id:
                     $ref: "#/components/schemas/wmg_snapshot_id"
                   marker_genes:
-                    type: object
-                    # we use `additionalProperties` instead of `properties`, since the object's property names are
-                    # ontology term ids, rather than a fixed set of names
-                    additionalProperties:
+                    description: ->
+                      An ordered array of marker genes, where each element in an object with the gene ontology term id and effect size.
+                    type: array
+                    items:
                       description: ->
-                        One property per gene, where the gene ontology term id is the property name, and the property
-                        value is an object of statistics.
+                        Object with gene id and effect size.
                       type: object
                       properties:
+                        gene_ontology_term_id:
+                          description: gene ontology term id
+                          type: string
                         p_value:
                           description: adjusted p-value
                           type: number
                           format: float
                           maxLength: 4
                           minimum: 0.0
-                          maximum: 1.0                        
+                          maximum: 1.0
                         effect_size:
                           description: effect size
                           type: number
                           format: float
                           maxLength: 4
                           minimum: 0.0
-
 
 components:
   schemas:

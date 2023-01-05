@@ -1,4 +1,12 @@
-import { Button, Icon } from "czifui";
+import {
+  Button,
+  CellBasic,
+  CellHeader,
+  Icon,
+  Table,
+  TableHeader,
+  TableRow,
+} from "czifui";
 import React, { useCallback, useContext } from "react";
 import { useMarkerGenes } from "src/common/queries/wheresMyGene";
 import { BetaChip } from "src/components/Header/style";
@@ -7,7 +15,8 @@ import { addSelectedGenes } from "../../common/store/actions";
 import {
   ButtonContainer,
   CopyGenesButton,
-  StyledHTMLTable,
+  GeneCellHeader,
+  GeneHeaderWrapper,
   TissueName,
   TooltipButton,
 } from "./style";
@@ -77,10 +86,10 @@ function CellInfoSideBar({
           Add to Dot Plot
         </Button>
       </ButtonContainer>
-      <StyledHTMLTable condensed bordered={false}>
-        <thead>
-          <tr>
-            <td>
+      <Table>
+        <TableHeader>
+          <GeneCellHeader hideSortIcon>
+            <GeneHeaderWrapper>
               Gene{" "}
               <CopyGenesButton
                 onClick={handleCopyGenes}
@@ -91,21 +100,28 @@ function CellInfoSideBar({
               >
                 Copy
               </CopyGenesButton>
-            </td>
-            <td>P-value</td>
-            <td>Effect Size</td>
-          </tr>
-        </thead>
+            </GeneHeaderWrapper>
+          </GeneCellHeader>
+          <CellHeader hideSortIcon horizontalAlign="right">
+            Marker Score
+          </CellHeader>
+        </TableHeader>
         <tbody>
           {Object.entries(data.marker_genes).map((gene) => (
-            <tr key={gene[0]}>
-              <td>{gene[0]}</td>
-              <td>{gene[1].p_value.toPrecision(4)}</td>
-              <td>{gene[1].effect_size.toPrecision(4)}</td>
-            </tr>
+            <TableRow key={gene[0]}>
+              <CellBasic
+                shouldShowTooltipOnHover={false}
+                primaryText={gene[0]}
+              />
+              <CellBasic
+                shouldShowTooltipOnHover={false}
+                horizontalAlign="right"
+                primaryText={gene[1].effect_size.toPrecision(4)}
+              />
+            </TableRow>
           ))}
         </tbody>
-      </StyledHTMLTable>
+      </Table>
     </div>
   );
 }

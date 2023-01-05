@@ -81,3 +81,7 @@ yarn-error.log
 /allure-results/
 storageState.json
 loginState.json
+
+# Sitemap + robots.txt
+public/sitemap*
+public/robots.txt

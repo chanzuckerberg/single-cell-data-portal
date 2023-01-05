@@ -1,6 +1,6 @@
 import { Classes, Intent } from "@blueprintjs/core";
-import { FormControlLabel } from "@material-ui/core";
-import { Icon, RadioButton } from "czifui";
+import { FormControlLabel } from "@mui/material";
+import { InputRadio } from "czifui";
 import { toPng, toSvg } from "html-to-image";
 import { useCallback, useState } from "react";
 import { track } from "src/common/analytics";
@@ -10,11 +10,14 @@ import {
   Title,
 } from "src/components/Collections/components/Dataset/components/DownloadDataset/components/Content/components/common/style";
 import Modal from "src/components/common/Modal";
+import { HEATMAP_CONTAINER_ID } from "src/views/WheresMyGene/common/constants";
 import { CellType } from "src/views/WheresMyGene/common/types";
 import { getHeatmapHeight, getHeatmapWidth } from "../../../HeatMap/utils";
 import { Label } from "../../style";
-import { StyledIconButton } from "../QuickSelect/style";
+import { StyledButtonIcon } from "../QuickSelect/style";
 import { ButtonWrapper, DownloadButton, StyledDiv } from "./style";
+
+let heatmapContainerScrollTop: number | undefined;
 
 export const EXCLUDE_IN_SCREENSHOT_CLASS_NAME = "screenshot-exclude";
 const screenshotFilter =
@@ -53,10 +56,12 @@ export default function SaveImage({
   selectedTissues,
   selectedGenes,
   selectedCellTypes,
+  setIsDownloading,
 }: {
   selectedTissues: Array<string>;
   selectedGenes: Array<string>;
   selectedCellTypes: { [tissue: string]: CellType[] };
+  setIsDownloading: (isDownloading: boolean) => void
 }): JSX.Element {
   const [isOpen, setIsOpen] = useState(false);
   const [fileType, setFileType] = useState<"png" | "svg">("png");
@@ -66,9 +71,19 @@ export default function SaveImage({
   }, [isOpen]);
 
   const handleDownload = useCallback(async () => {
+    setIsDownloading(true);
     try {
       const heatmapNode = document.getElementById("view") as HTMLCanvasElement;
+
+      //(ashin): #3569 Get scrollTop to go back to place after downloading image
+      let heatmapContainer = document.getElementById(
+        HEATMAP_CONTAINER_ID
+      ) as HTMLCanvasElement;
+      heatmapContainerScrollTop = heatmapContainer?.scrollTop;
+
+      // Adding this class causes the y-axis scrolling to jump but is required for image download
       heatmapNode.classList.add("CLONED");
+
       const isPNG = fileType === "png";
       const convertHTMLtoImage = isPNG ? toPng : toSvg;
       const images = await Promise.all(
@@ -94,7 +109,13 @@ export default function SaveImage({
           };
         })
       );
+
+      //(thuang): #3569 Restore scrollTop position
       heatmapNode.classList.remove("CLONED");
+      if (heatmapContainer) {
+        heatmapContainer.scrollTop = heatmapContainerScrollTop || 0;
+      }
+
       const link = document.createElement("a");
 
       if (images.length > 1) {
@@ -108,31 +129,32 @@ export default function SaveImage({
       }
       link.click();
       link.remove();
-      track(EVENTS.WMG_DOWNLOAD_COMPLETE, { file_type: fileType , tissues: selectedTissues.toString(), genes: selectedGenes.toString() });
+      track(EVENTS.WMG_DOWNLOAD_COMPLETE, {
+        file_type: fileType,
+        genes: selectedGenes.toString(),
+        tissues: selectedTissues.toString(),
+      });
     } catch (error) {
       console.error(error);
     }
+
+    setIsDownloading(false);
+
   }, [fileType, selectedCellTypes, selectedTissues, selectedGenes]);
 
   return (
     <>
       <ButtonWrapper className={EXCLUDE_IN_SCREENSHOT_CLASS_NAME}>
         <Label>Download</Label>
-        <StyledIconButton
+        <StyledButtonIcon
           data-test-id="download-button"
           // TODO: put handleButtonClick when svgs are fixed
           onClick={handleDownload}
-          {...{
-            // (thuang): Move this back to explicit prop={value} after
-            // upgrading SDS to enable type checking again
-            disabled:
-              selectedTissues.length === 0 || selectedGenes.length === 0,
-            sdsSize: "medium",
-            sdsType: "primary",
-          }}
-        >
-          <Icon sdsIcon="download" sdsSize="l" sdsType="iconButton" />
-        </StyledIconButton>
+          disabled={selectedTissues.length === 0 || selectedGenes.length === 0}
+          sdsSize="medium"
+          sdsType="primary"
+          sdsIcon="download"
+        />
       </ButtonWrapper>
       <Modal
         isOpen={isOpen}
@@ -146,7 +168,7 @@ export default function SaveImage({
             <StyledDiv>
               <FormControlLabel
                 control={
-                  <RadioButton
+                  <InputRadio
                     stage={fileType === "png" ? "checked" : "unchecked"}
                   />
                 }
@@ -156,7 +178,7 @@ export default function SaveImage({
 
               <FormControlLabel
                 control={
-                  <RadioButton
+                  <InputRadio
                     stage={fileType === "svg" ? "checked" : "unchecked"}
                   />
                 }
