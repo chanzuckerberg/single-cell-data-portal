@@ -37,6 +37,7 @@ class TestAsset(BaseAPIPortalTest):
             artifacts=[
                 DatasetArtifactUpdate(DatasetArtifactType.H5AD, "http://mock.uri/asset.h5ad"),
                 DatasetArtifactUpdate(DatasetArtifactType.CXG, "http://mock.uri/asset.cxg"),
+                DatasetArtifactUpdate(DatasetArtifactType.RAW_H5AD, "http://mock.uri/raw.h5ad"),
             ],
             publish=True,
         )
@@ -61,6 +62,7 @@ class TestAsset(BaseAPIPortalTest):
             artifacts=[
                 DatasetArtifactUpdate(DatasetArtifactType.H5AD, "http://mock.uri/asset.h5ad"),
                 DatasetArtifactUpdate(DatasetArtifactType.CXG, "http://mock.uri/asset.cxg"),
+                DatasetArtifactUpdate(DatasetArtifactType.RAW_H5AD, "http://mock.uri/raw.h5ad"),
             ],
             publish=True,
         )
