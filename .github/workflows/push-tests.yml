@@ -182,9 +182,9 @@ jobs:
     # DEBUG
     # DEBUG
     # if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod' )
-    needs:
-      - e2e-test
-      # - next-build # Job depends on next-build(above)
+    # needs:
+    # - e2e-test
+    # - next-build # Job depends on next-build(above)
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
