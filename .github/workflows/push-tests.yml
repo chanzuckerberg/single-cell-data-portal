@@ -165,6 +165,8 @@ jobs:
           echo $HAPPY_COMMIT
 
           npm run build
+
+          ls
       - name: Upload Next build # Upload the artifact
         uses: actions/upload-artifact@v2
         with:
