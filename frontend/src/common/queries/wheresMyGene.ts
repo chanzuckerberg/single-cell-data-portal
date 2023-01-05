@@ -762,12 +762,10 @@ export interface MarkerGenesByCellType {
 
 export interface MarkerGeneResponse {
   marker_genes: {
-    // key is gene id from backend, but we convert to gene name
-    [key: string]: {
-      effect_size: number;
-      p_value: number;
-    };
-  };
+    gene_ontology_term_id: string;
+    effect_size: number;
+    p_value: number;
+  }[];
   snapshot_id: string;
 }
 
@@ -800,12 +798,12 @@ export function useMarkerGenes({
         test,
       });
       const markerGenesIndexedByGeneName = Object.fromEntries(
-        [...Object.entries(output.marker_genes)].reduce(
-          (newEntries, [id, data]) => {
+        output.marker_genes.reduce(
+          (newEntries, { gene_ontology_term_id, ...data }) => {
             try {
-              newEntries.push([genesByID[id].name, data]);
+              newEntries.push([genesByID[gene_ontology_term_id].name, data]);
             } catch (e) {
-              console.log("could not find gene with id", id);
+              console.log("could not find gene with id", gene_ontology_term_id);
             }
             return newEntries;
           },

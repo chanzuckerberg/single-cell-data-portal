@@ -43,6 +43,12 @@ interface Props {
   selectedOrganismId: string;
 }
 
+// List of Tissues to exclude from FMG
+const FMG_EXCLUDE_TISSUES = [
+  "blood"
+];
+
+type Coord = [number, number];
 export default memo(function YAxisChart({
   cellTypes = [],
   hasDeletedCellTypes,
@@ -175,7 +181,8 @@ const CellTypeButton = ({
         >
           {name}
         </CellTypeButtonStyle>
-        <InfoButtonWrapper
+        {!FMG_EXCLUDE_TISSUES.includes(tissue) &&
+         <InfoButtonWrapper
           style={{
             paddingTop: "3px",
             cursor: "pointer",
@@ -196,7 +203,7 @@ const CellTypeButton = ({
               deserializeCellTypeMetadata(metadata).name
             }`}
           />
-        </InfoButtonWrapper>
+        </InfoButtonWrapper>}
       </FlexRow>
       <CellCountLabelStyle>{countString}</CellCountLabelStyle>
     </FlexRowJustified>
