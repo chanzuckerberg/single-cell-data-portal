@@ -42,6 +42,7 @@ LABEL commit=${HAPPY_COMMIT}
 LABEL deployment_stage=${DEPLOYMENT_STAGE}
 ENV COMMIT_SHA=${HAPPY_COMMIT}
 ENV COMMIT_BRANCH=${HAPPY_BRANCH}
+ENV DEPLOYMENT_STAGE="dev"
 
 # (thuang): This is currently run for tests too, but we can optimize it later
 RUN npm run build
