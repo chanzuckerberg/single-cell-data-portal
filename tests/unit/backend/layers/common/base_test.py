@@ -86,7 +86,7 @@ class BaseTest(unittest.TestCase):
         mock_config.start()
 
         if self.run_as_integration:
-            self.database_provider._create_schema("persistence_schema")
+            self.database_provider._create_schema()
         else:
             self.database_provider = DatabaseProviderMock()
 

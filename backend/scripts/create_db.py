@@ -1,5 +1,5 @@
 """
-Drops and recreates all tables according to corpora_orm.py
+Drops and recreates all tables according to orm.py
 """
 from backend.layers.persistence.persistence import DatabaseProvider
 
