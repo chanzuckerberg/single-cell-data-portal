@@ -93,7 +93,7 @@ export default function SaveImage({
             filter: screenshotFilter(tissue),
             height: getHeatmapHeight(selectedCellTypes[tissue]) + 200,
             pixelRatio: 4,
-            width: getHeatmapWidth(selectedGenes) + 200,
+            width: getHeatmapWidth(selectedGenes) + 750,
           });
           // raw URI if only one tissue is selected
           const input =
