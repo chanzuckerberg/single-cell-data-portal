@@ -18,16 +18,6 @@ RUN apt-get update && apt-get install -y make wget \
     lsb-release xdg-utils nano vim procps \
     && rm -rf /var/lib/apt/lists/*
 
-COPY package*.json ./
-
-# the official node image provides an unprivileged user as a security best practice
-# but we have to manually enable it. We put it here so npm installs dependencies as the same
-# user who runs the app.
-# https://github.com/nodejs/docker-node/blob/master/docs/BestPractices.md#non-root-user
-USER node
-RUN npm ci --verbose --no-optional && npm cache clean --force
-ENV PATH /opt/node_app/node_modules/.bin:$PATH
-
 # -- TODO, we should try turning this back on later.
 # ADD --chown=node . /corpora-frontend
 ADD . /corpora-frontend
@@ -43,6 +33,16 @@ ENV COMMIT_SHA=${HAPPY_COMMIT}
 ENV COMMIT_BRANCH=${HAPPY_BRANCH}
 
 COPY src/configs/${DEPLOYMENT_STAGE}.js src/configs/configs.js
+
+COPY package*.json ./
+
+# the official node image provides an unprivileged user as a security best practice
+# but we have to manually enable it. We put it here so npm installs dependencies as the same
+# user who runs the app.
+# https://github.com/nodejs/docker-node/blob/master/docs/BestPractices.md#non-root-user
+USER node
+RUN npm ci --verbose --no-optional && npm cache clean --force
+ENV PATH /opt/node_app/node_modules/.bin:$PATH
 
 # (thuang): This is currently run for tests too, but we can optimize it later
 RUN npm run build
