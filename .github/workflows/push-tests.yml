@@ -113,70 +113,68 @@ jobs:
         if: failure() && github.ref == 'refs/heads/main'
 
   # (thuang): https://dev.to/thakkaryash94/build-nextjs-application-using-github-workflow-and-docker-3foj
-  next-build:
-    # DEBUG
-    # DEBUG
-    # DEBUG
-    # DEBUG
-    # if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod' )
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend
-    steps:
-      - uses: actions/setup-node@v2
-        with:
-          node-version: "16.14.2"
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-west-2
-          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
-          role-duration-seconds: 1800
-      - name: Login to ECR
-        uses: docker/login-action@v1
-        with:
-          registry: ${{ secrets.ECR_REPO }}
-      - uses: actions/checkout@v2
-      - name: Install dependencies
-        run: |
-          npm ci
+  # next-build:
+  #   # DEBUG
+  #   # DEBUG
+  #   # DEBUG
+  #   # DEBUG
+  #   # if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod' )
+  #   runs-on: ubuntu-latest
+  #   defaults:
+  #     run:
+  #       working-directory: frontend
+  #   steps:
+  #     - uses: actions/setup-node@v2
+  #       with:
+  #         node-version: "16.14.2"
+  #     - name: Configure AWS Credentials
+  #       uses: aws-actions/configure-aws-credentials@v1
+  #       with:
+  #         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+  #         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #         aws-region: us-west-2
+  #         role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+  #         role-duration-seconds: 1800
+  #     - name: Login to ECR
+  #       uses: docker/login-action@v1
+  #       with:
+  #         registry: ${{ secrets.ECR_REPO }}
+  #     - uses: actions/checkout@v2
+  #     - name: Install dependencies
+  #       run: |
+  #         npm ci
 
-          if [[ "${{ github.ref }}" == "refs/heads/prod" ]]; then
-            cat src/configs/prod.js | envsubst >src/configs/configs.js
-          elif [[ "${{ github.ref }}" == "refs/heads/staging" ]]; then
-            cat src/configs/staging.js | envsubst >src/configs/configs.js
-          else
-            cat src/configs/local.js | envsubst >src/configs/configs.js
-          fi
+  #         if [[ "${{ github.ref }}" == "refs/heads/prod" ]]; then
+  #           cat src/configs/prod.js | envsubst >src/configs/configs.js
+  #         elif [[ "${{ github.ref }}" == "refs/heads/staging" ]]; then
+  #           cat src/configs/staging.js | envsubst >src/configs/configs.js
+  #         else
+  #           cat src/configs/local.js | envsubst >src/configs/configs.js
+  #         fi
 
-          # (thuang): Make sure when main/staging/prod triggers the app build
-          # the commit SHA actually matches the latest HEAD of the branch
-          HAPPY_COMMIT_2=$(git rev-parse --verify HEAD)
+  #         # DEBUG
+  #         # DEBUG
+  #         # DEBUG
+  #         # (thuang): Make sure when main/staging/prod triggers the app build
+  #         # the commit SHA actually matches the latest HEAD of the branch
+  #         echo $HAPPY_COMMIT
+  #         echo $HAPPY_COMMIT
+  #         echo $HAPPY_COMMIT
+  #         echo $HAPPY_COMMIT
 
-          # DEBUG
-          # DEBUG
-          # DEBUG
-          echo $HAPPY_COMMIT
-          echo $HAPPY_COMMIT_2
-          echo $HAPPY_COMMIT
-          echo $HAPPY_COMMIT_2
+  #         npm run build
 
-          npm run build
-
-          ls
-        env:
-          HAPPY_COMMIT: ${{github.sha}}
-      - name: Upload Next build # Upload the artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: build
-          path: |
-            public
-            .next
-          retention-days: 7
+  #         ls
+  #       env:
+  #         HAPPY_COMMIT: ${{github.sha}}
+  #     - name: Upload Next build # Upload the artifact
+  #       uses: actions/upload-artifact@v3
+  #       with:
+  #         name: build
+  #         path: |
+  #           public
+  #           .next
+  #         retention-days: 7
 
   build-frontend-backend-images:
     runs-on: ubuntu-20.04
@@ -186,7 +184,7 @@ jobs:
     # if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod' )
     needs:
       - e2e-test
-      - next-build # Job depends on next-build(above)
+      # - next-build # Job depends on next-build(above)
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1

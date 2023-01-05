@@ -19,11 +19,7 @@ RUN apt-get update && apt-get install -y make wget \
     && rm -rf /var/lib/apt/lists/*
 
 COPY package*.json ./
-
-# (thuang): This copies next build output to the container
-# https://dev.to/thakkaryash94/build-nextjs-application-using-github-workflow-and-docker-3foj
-COPY --chown=node:node .next .next
-COPY --chown=node:node public public
+COPY src/configs/${DEPLOYMENT_STAGE}.js src/configs/configs.js
 
 # the official node image provides an unprivileged user as a security best practice
 # but we have to manually enable it. We put it here so npm installs dependencies as the same
@@ -44,6 +40,11 @@ LABEL branch=${HAPPY_BRANCH}
 LABEL commit=${HAPPY_COMMIT}
 ENV COMMIT_SHA=${HAPPY_COMMIT}
 ENV COMMIT_BRANCH=${HAPPY_BRANCH}
+
+# (thuang): This is currently run for tests too, but we can optimize it later
+RUN npm run build
+
+RUN ls
 
 # (thuang): Change back to root before running the app
 USER root
