@@ -61,7 +61,7 @@ export default function SaveImage({
   selectedTissues: Array<string>;
   selectedGenes: Array<string>;
   selectedCellTypes: { [tissue: string]: CellType[] };
-  setIsDownloading: (isDownloading: boolean) => void
+  setIsDownloading: (isDownloading: boolean) => void;
 }): JSX.Element {
   const [isOpen, setIsOpen] = useState(false);
   const [fileType, setFileType] = useState<"png" | "svg">("png");
@@ -139,7 +139,6 @@ export default function SaveImage({
     }
 
     setIsDownloading(false);
-
   }, [fileType, selectedCellTypes, selectedTissues, selectedGenes]);
 
   return (
