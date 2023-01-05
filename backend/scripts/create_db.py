@@ -1,19 +1,15 @@
 """
 Drops and recreates all tables according to corpora_orm.py
 """
-
-from sqlalchemy import create_engine
-
-from backend.common.corpora_config import CorporaDbConfig
-from backend.layers.persistence.orm import metadata
+from backend.layers.persistence.persistence import DatabaseProvider
 
 
 def create_db():
-    engine = create_engine(CorporaDbConfig().database_uri)
+    db_provider = DatabaseProvider()
     print("Dropping tables")
-    metadata.drop_all(engine)
+    db_provider._drop_schema()
     print("Recreating tables")
-    # metadata.create_all(engine)
+    db_provider._create_schema()
 
 
 if __name__ == "__main__":
