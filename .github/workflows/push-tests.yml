@@ -203,10 +203,10 @@ jobs:
         uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.2.1
         with:
           happy_version: "0.23.0"
-      - name: Download next build # Download the above next-build uploaded artifact
-        uses: actions/download-artifact@v2
-        with:
-          name: build
+      # - name: Download next build # Download the above next-build uploaded artifact
+      #   uses: actions/download-artifact@v2
+      #   with:
+      #     name: build
       - name: Push images
         run: |
           echo "HAPPY_COMMIT=$(git rev-parse --verify HEAD)" >> envfile
