@@ -154,19 +154,21 @@ jobs:
 
           # (thuang): Make sure when main/staging/prod triggers the app build
           # the commit SHA actually matches the latest HEAD of the branch
-          HAPPY_COMMIT=$(git rev-parse --verify HEAD)
+          HAPPY_COMMIT_2=$(git rev-parse --verify HEAD)
 
           # DEBUG
           # DEBUG
           # DEBUG
           echo $HAPPY_COMMIT
+          echo $HAPPY_COMMIT_2
           echo $HAPPY_COMMIT
-          echo $HAPPY_COMMIT
-          echo $HAPPY_COMMIT
+          echo $HAPPY_COMMIT_2
 
           npm run build
 
           ls
+        env:
+          HAPPY_COMMIT: ${{github.sha}}
       - name: Upload Next build # Upload the artifact
         uses: actions/upload-artifact@v3
         with:
