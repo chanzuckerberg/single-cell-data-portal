@@ -152,6 +152,8 @@ jobs:
             cat src/configs/local.js | envsubst >src/configs/configs.js
           fi
 
+          # (thuang): Make sure when main/staging/prod triggers the app build
+          # the commit SHA actually matches the latest HEAD of the branch
           HAPPY_COMMIT=$(git rev-parse --verify HEAD)
 
           # DEBUG
@@ -168,8 +170,8 @@ jobs:
         with:
           name: build
           path: |
-            path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/.next
-            public: /home/runner/work/single-cell-data-portal/single-cell-data-portal/public
+            .next: home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/.next
+            public: home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/public
           retention-days: 7
 
   build-frontend-backend-images:
