@@ -363,16 +363,13 @@ function addSelectedGenes(
   action: PayloadAction<State["selectedGenes"]>
 ): State {
   const { payload } = action;
+  let newSelectedGenes = state.selectedGenes;
 
-  // only add unique genes
-  const genesToAdd = payload.filter(
-    (gene) => !state.selectedGenes.includes(gene)
-  );
-  if (genesToAdd.length === 0) return state;
+  newSelectedGenes = newSelectedGenes.filter((gene) => !payload.includes(gene));
 
   return {
     ...state,
-    selectedGenes: [...genesToAdd, ...state.selectedGenes],
+    selectedGenes: [...payload, ...newSelectedGenes],
   };
 }
 
