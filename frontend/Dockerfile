@@ -33,7 +33,6 @@ ENV COMMIT_SHA=${HAPPY_COMMIT}
 ENV COMMIT_BRANCH=${HAPPY_BRANCH}
 
 RUN mkdir -p ./node_modules
-RUN ln -sf /opt/node_app/node_modules/* /opt/node_app/node_modules/.bin ./node_modules/.
 
 COPY src/configs/${DEPLOYMENT_STAGE}.js src/configs/configs.js
 COPY package*.json ./
@@ -44,6 +43,7 @@ COPY package*.json ./
 # https://github.com/nodejs/docker-node/blob/master/docs/BestPractices.md#non-root-user
 USER node
 
+RUN ln -sf /opt/node_app/node_modules/* /opt/node_app/node_modules/.bin ./node_modules/.
 RUN npm ci --verbose --no-optional && npm cache clean --force
 
 ENV PATH /opt/node_app/node_modules/.bin:$PATH
