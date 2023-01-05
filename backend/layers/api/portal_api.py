@@ -156,7 +156,7 @@ class PortalApi:
         if any(a for a in dataset.artifacts if a.type == DatasetArtifactType.CXG):
             dataset_deployments = [{"url": explorer_url.generate(dataset, is_in_published_collection)}]
         else:
-            dataset_deployments = None
+            dataset_deployments = []
         return self.remove_none(
             {
                 "assay": None
