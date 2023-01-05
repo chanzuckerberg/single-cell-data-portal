@@ -1,4 +1,4 @@
-import { useContext, useMemo, useState } from "react";
+import { useContext, useMemo } from "react";
 import { useQuery, UseQueryResult } from "react-query";
 import { API_URL } from "src/configs/configs";
 import {
@@ -13,7 +13,6 @@ import {
   GeneExpressionSummary,
   RawCellTypeGeneExpressionSummaryData,
 } from "src/views/WheresMyGene/common/types";
-import Filters from "src/views/WheresMyGene/components/Filters";
 import { API } from "../API";
 import { ROUTES } from "../constants/routes";
 import { EMPTY_OBJECT } from "../constants/utils";
