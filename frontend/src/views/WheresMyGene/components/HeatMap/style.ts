@@ -10,6 +10,20 @@ export const Container = styled.div`
   position: relative;
 `;
 
+export const ContainerWrapper = styled.div`
+  position: relative;
+`;
+
+export const TopLeftCornerMask = styled.div`
+  position: absolute;
+  background-color: white;
+  z-index: 3;
+  top: 0px;
+  left: 0px;
+  width: ${Y_AXIS_CHART_WIDTH_PX}px;
+  height: ${X_AXIS_CHART_HEIGHT_PX}px;
+`;
+
 export const YAxisWrapper = styled.div`
   width: ${Y_AXIS_CHART_WIDTH_PX}px;
   position: sticky;
@@ -31,6 +45,12 @@ export const XAxisMask = styled.div`
   width: ${Y_AXIS_CHART_WIDTH_PX + CHART_LEFT_PADDING}px;
   height: ${X_AXIS_CHART_HEIGHT_PX}px;
 `;
+
+export const FlexRow = styled.div`
+  display: flex;
+  flex-direction: row;
+`;
+
 export const XAxisWrapper = styled.div`
   display: flex;
   background-color: white;

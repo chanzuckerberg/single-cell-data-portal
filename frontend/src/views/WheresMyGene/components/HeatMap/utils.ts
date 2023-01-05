@@ -27,7 +27,7 @@ const COMMON_OPTIONS = {
 };
 
 const COMMON_SERIES: ScatterSeriesOption = {
-  emphasis: { itemStyle: { color: "inherit" }, scale: true },
+  emphasis: { itemStyle: { color: "inherit" }, scale: false },
   encode: {
     x: "geneIndex",
     y: "cellTypeIndex",

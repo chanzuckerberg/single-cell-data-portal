@@ -57,7 +57,7 @@ export function useUpdateXAxisChart({
   }, [
     geneNames,
     genesToDelete,
-    // (thuang): `heatmapWidth` is needed to make sure the chart resizes AFTER    
+    // (thuang): `heatmapWidth` is needed to make sure the chart resizes AFTER
     // the DOM width has been updated
     heatmapWidth,
     xAxisChart,

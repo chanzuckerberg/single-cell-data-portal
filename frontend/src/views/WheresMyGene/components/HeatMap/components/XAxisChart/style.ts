@@ -31,7 +31,7 @@ export const CellCountLabel = styled.div`
   writing-mode: vertical-rl;
   padding-top: 16px;
   position: absolute;
-  top: 0px;
+  top: -8px;
   text-align: right;
   left: ${Y_AXIS_CHART_WIDTH_PX - 20}px;
   z-index: 2;

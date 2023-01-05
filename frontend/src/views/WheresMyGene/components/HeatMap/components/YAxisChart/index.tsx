@@ -44,11 +44,8 @@ interface Props {
 }
 
 // List of Tissues to exclude from FMG
-const FMG_EXCLUDE_TISSUES = [
-  "blood"
-];
+const FMG_EXCLUDE_TISSUES = ["blood"];
 
-type Coord = [number, number];
 export default memo(function YAxisChart({
   cellTypes = [],
   hasDeletedCellTypes,
@@ -124,6 +121,7 @@ export default memo(function YAxisChart({
                 metadata={cellType}
                 onClick={() => handleCellTypeClick(cellType)}
                 tissueID={tissueID}
+                tissue={tissue}
                 generateMarkerGenes={generateMarkerGenes}
                 isMarkerGenes={isMarkerGenes}
               />
@@ -147,6 +145,7 @@ const CellTypeButton = ({
   isMarkerGenes,
   generateMarkerGenes,
   tissueID,
+  tissue,
 }: {
   name: string;
   isMarkerGenes: boolean;
@@ -154,6 +153,7 @@ const CellTypeButton = ({
   onClick: () => void;
   generateMarkerGenes: (cellType: CellType, tissueID: string) => void;
   tissueID: string;
+  tissue: Tissue;
 }) => {
   const [active, setActive] = useState(false);
   useEffect(() => {
@@ -181,29 +181,30 @@ const CellTypeButton = ({
         >
           {name}
         </CellTypeButtonStyle>
-        {!FMG_EXCLUDE_TISSUES.includes(tissue) &&
-         <InfoButtonWrapper
-          style={{
-            paddingTop: "3px",
-            cursor: "pointer",
-          }}
-          onClick={() => {
-            if (isMarkerGenes) {
-              const cellType = deserializeCellTypeMetadata(metadata);
-              generateMarkerGenes(cellType, tissueID);
-            }
-          }}
-        >
-          <StyledImage
-            id={"marker-gene-button"}
-            src={InfoSVG.src}
-            width="10"
-            height="10"
-            alt={`display marker genes for ${
-              deserializeCellTypeMetadata(metadata).name
-            }`}
-          />
-        </InfoButtonWrapper>}
+        {!FMG_EXCLUDE_TISSUES.includes(tissue) && (
+          <InfoButtonWrapper
+            style={{
+              paddingTop: "3px",
+              cursor: "pointer",
+            }}
+            onClick={() => {
+              if (isMarkerGenes) {
+                const cellType = deserializeCellTypeMetadata(metadata);
+                generateMarkerGenes(cellType, tissueID);
+              }
+            }}
+          >
+            <StyledImage
+              id={"marker-gene-button"}
+              src={InfoSVG.src}
+              width="10"
+              height="10"
+              alt={`display marker genes for ${
+                deserializeCellTypeMetadata(metadata).name
+              }`}
+            />
+          </InfoButtonWrapper>
+        )}
       </FlexRow>
       <CellCountLabelStyle>{countString}</CellCountLabelStyle>
     </FlexRowJustified>

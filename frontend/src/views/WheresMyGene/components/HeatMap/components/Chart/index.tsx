@@ -277,7 +277,7 @@ export default memo(function Chart({
   const tooltipClasses = useMemo(() => ({ tooltip: tooltipCss }), []);
 
   return (
-      <Tooltip
+    <Tooltip
       width="wide"
       classes={tooltipClasses}
       title={tooltipContent || <>No data</>}
