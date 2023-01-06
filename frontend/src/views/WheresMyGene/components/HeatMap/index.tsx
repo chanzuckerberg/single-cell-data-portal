@@ -1,7 +1,6 @@
 import cloneDeep from "lodash/cloneDeep";
 import { memo, useContext, useMemo, useRef, useState } from "react";
 import { EMPTY_ARRAY } from "src/common/constants/utils";
-import { useResizeObserver } from "src/common/hooks/useResizeObserver";
 import {
   generateTermsByKey,
   OntologyTerm,
@@ -28,7 +27,6 @@ import {
 } from "./hooks/useSortedGeneNames";
 import { useTrackHeatMapLoaded } from "./hooks/useTrackHeatMapLoaded";
 import {
-  FlexRow,
   ChartWrapper,
   Container,
   ContainerWrapper,
@@ -37,7 +35,6 @@ import {
   XAxisMask,
   XAxisWrapper,
 } from "./style";
-import { X_AXIS_CHART_HEIGHT_PX } from "./utils";
 
 interface Props {
   className?: string;
@@ -79,7 +76,6 @@ export default memo(function HeatMap({
   // Loading state per tissue
   const [isLoading, setIsLoading] = useState(setInitialIsLoading(cellTypes));
   const chartWrapperRef = useRef<HTMLDivElement>(null);
-  const chartWrapperRect = useResizeObserver(chartWrapperRef);
 
   const dispatch = useContext(DispatchContext);
 
@@ -161,60 +157,56 @@ export default memo(function HeatMap({
           <XAxisMask />
           <XAxisChart geneNames={sortedGeneNames} />
         </XAxisWrapper>
-        <FlexRow>
-          <YAxisWrapper
-            height={(chartWrapperRect?.height || 0) - X_AXIS_CHART_HEIGHT_PX}
-          >
-            {selectedTissues.map((tissue) => {
-              const tissueCellTypes = getTissueCellTypes({
-                cellTypeSortBy,
-                cellTypes,
-                sortedCellTypesByTissueName,
-                tissue,
-              });
+        <YAxisWrapper>
+          {selectedTissues.map((tissue) => {
+            const tissueCellTypes = getTissueCellTypes({
+              cellTypeSortBy,
+              cellTypes,
+              sortedCellTypesByTissueName,
+              tissue,
+            });
 
-              return (
-                <YAxisChart
-                  key={tissue}
-                  tissue={tissue}
-                  tissueID={tissuesByName[tissue].id}
-                  cellTypes={tissueCellTypes}
-                  hasDeletedCellTypes={tissuesWithDeletedCellTypes.includes(
-                    tissue
-                  )}
-                  availableCellTypes={allTissueCellTypes[tissue]}
-                  generateMarkerGenes={generateMarkerGenes}
-                  selectedOrganismId={selectedOrganismId}
-                />
-              );
-            })}
-          </YAxisWrapper>
-          <ChartWrapper ref={chartWrapperRef}>
-            {selectedTissues.map((tissue) => {
-              const tissueCellTypes = getTissueCellTypes({
-                cellTypeSortBy,
-                cellTypes,
-                sortedCellTypesByTissueName,
-                tissue,
-              });
+            return (
+              <YAxisChart
+                key={tissue}
+                tissue={tissue}
+                tissueID={tissuesByName[tissue].id}
+                cellTypes={tissueCellTypes}
+                hasDeletedCellTypes={tissuesWithDeletedCellTypes.includes(
+                  tissue
+                )}
+                availableCellTypes={allTissueCellTypes[tissue]}
+                generateMarkerGenes={generateMarkerGenes}
+                selectedOrganismId={selectedOrganismId}
+              />
+            );
+          })}
+        </YAxisWrapper>
+        <ChartWrapper ref={chartWrapperRef}>
+          {selectedTissues.map((tissue) => {
+            const tissueCellTypes = getTissueCellTypes({
+              cellTypeSortBy,
+              cellTypes,
+              sortedCellTypesByTissueName,
+              tissue,
+            });
 
-              return (
-                <Chart
-                  isScaled={isScaled}
-                  key={tissue}
-                  tissue={tissue}
-                  cellTypes={tissueCellTypes}
-                  selectedGeneData={
-                    orderedSelectedGeneExpressionSummariesByTissueName[tissue]
-                  }
-                  setIsLoading={setIsLoading}
-                  scaledMeanExpressionMax={scaledMeanExpressionMax}
-                  scaledMeanExpressionMin={scaledMeanExpressionMin}
-                />
-              );
-            })}
-          </ChartWrapper>
-        </FlexRow>
+            return (
+              <Chart
+                isScaled={isScaled}
+                key={tissue}
+                tissue={tissue}
+                cellTypes={tissueCellTypes}
+                selectedGeneData={
+                  orderedSelectedGeneExpressionSummariesByTissueName[tissue]
+                }
+                setIsLoading={setIsLoading}
+                scaledMeanExpressionMax={scaledMeanExpressionMax}
+                scaledMeanExpressionMin={scaledMeanExpressionMin}
+              />
+            );
+          })}
+        </ChartWrapper>
       </Container>
     </ContainerWrapper>
   );
