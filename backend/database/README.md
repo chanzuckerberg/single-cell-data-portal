@@ -16,7 +16,7 @@
 5. In the generated file, update the `Revision ID` and the `revision` (used by Alembic) to include the migration count.
    For example `Revision ID: a8cd0dc08805` becomes `Revision ID: 18_a8cd0dc08805` and `revision = "a8cd0dc08805"` becomes `revision = "18_a8cd0dc08805"`
 6. [Test your migration](#test-a-migration)
-7. Check that [corpora_orm.py](../common/corpora_orm.py) matches up with your changes.
+7. Check that [orm.py](../common/corpora_orm.py) matches up with your changes.
 8. Once you've completed the changes, create a PR to get the functions reviewed.
 9. Once the PR is merged, migrations will be run as part of the deployment process to each env.
 10. [Connect to Remote RDS](#connect-to-remote-rds) to single-cell-dev
