@@ -38,7 +38,6 @@ const COMMON_SERIES: ScatterSeriesOption = {
 
 const MAX_MEAN_EXPRESSION_VALUE = 6;
 
-
 /**
  * Used to calculate text pixel widths. Should be only created once.
  */

@@ -13,7 +13,7 @@ import {
   getAllSerializedCellTypeMetadata,
   getHeatmapHeight,
   Y_AXIS_CHART_WIDTH_PX,
-  formatLabel
+  formatLabel,
 } from "../../utils";
 import ReplaySVG from "./icons/replay.svg";
 import InfoSVG from "./icons/info-sign-icon.svg";
