@@ -5,27 +5,24 @@ import unittest
 from datetime import datetime
 from unittest import mock
 from unittest.mock import Mock, patch
+from furl import furl
+
 from backend.layers.business.entities import DatasetArtifactDownloadData
-from backend.layers.common.entities import (
-    DatasetStatusKey,
-)
 from backend.layers.common.entities import (
     CollectionId,
     CollectionLinkType,
     CollectionVersionId,
     DatasetArtifactType,
     DatasetProcessingStatus,
+    DatasetStatusKey,
     DatasetUploadStatus,
     DatasetVersionId,
     Link,
     OntologyTermId,
 )
+from backend.layers.common.validation import verify_collection_metadata
 from backend.layers.thirdparty.uri_provider import FileInfo, FileInfoException
-
-from furl import furl
-
 from backend.layers.thirdparty.crossref_provider import CrossrefDOINotFoundException, CrossrefFetchException
-from backend.portal.api.collections_common import verify_collection_body
 from tests.unit.backend.layers.common.base_test import (
     DatasetArtifactUpdate,
     DatasetStatusUpdate,
@@ -1128,13 +1125,13 @@ class TestVerifyCollection(unittest.TestCase):
     def test_empty_body(self):
         body = dict()
         errors = []
-        verify_collection_body(body, errors)
+        verify_collection_metadata(body, errors)
         self.assertFalse(errors)
 
     def test_blank_fields(self):
         errors = []
         body = dict(name="", contact_name="", description="", contact_email="")
-        verify_collection_body(body, errors)
+        verify_collection_metadata(body, errors)
         error_message = "Cannot be blank."
         self.assertIn({"name": "description", "reason": error_message}, errors)
         self.assertIn({"name": "name", "reason": error_message}, errors)
@@ -1148,7 +1145,7 @@ class TestVerifyCollection(unittest.TestCase):
                 errors = []
                 string = test_string.decode(encoding="utf-8")
                 body = dict(name=string, contact_name=string, description=string, contact_email="email@email.com")
-                verify_collection_body(body, errors)
+                verify_collection_metadata(body, errors)
                 error_message = "Invalid characters detected."
                 self.assertEqual(1, len(errors))
                 self.assertIn({"name": "name", "reason": error_message}, errors)
@@ -1161,13 +1158,13 @@ class TestVerifyCollection(unittest.TestCase):
             with self.subTest(email):
                 body["contact_email"] = email
                 errors = []
-                verify_collection_body(body, errors)
+                verify_collection_metadata(body, errors)
                 self.assertEqual([{"name": "contact_email", "reason": "Invalid format."}], errors)
 
     def test_OK(self):
         body = dict(name="something", contact_name="a name", description="description", contact_email="email@place.com")
         errors = []
-        verify_collection_body(body, errors)
+        verify_collection_metadata(body, errors)
         self.assertFalse(errors)
 
     def test__link__INVALID(self):
@@ -1180,7 +1177,7 @@ class TestVerifyCollection(unittest.TestCase):
                 with self.subTest(link_body):
                     errors = []
                     body = dict(links=link_body)
-                    verify_collection_body(body, errors)
+                    verify_collection_metadata(body, errors)
                     expected_error = [dict(reason="Invalid URL.", name="links[0]", value=link_body[0]["link_url"])]
                     self.assertEqual(expected_error, errors)
 
@@ -1194,7 +1191,7 @@ class TestVerifyCollection(unittest.TestCase):
                 with self.subTest(link_body):
                     errors = []
                     body = dict(links=link_body)
-                    verify_collection_body(body, errors)
+                    verify_collection_metadata(body, errors)
                     self.assertFalse(errors)
 
 
