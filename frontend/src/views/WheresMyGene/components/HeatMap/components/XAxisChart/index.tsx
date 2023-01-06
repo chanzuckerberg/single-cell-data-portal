@@ -3,14 +3,9 @@ import { useEffect, useRef, useState } from "react";
 import { EMPTY_OBJECT } from "src/common/constants/utils";
 import { useDeleteGenesAndCellTypes } from "../../hooks/useDeleteGenesAndCellTypes";
 import { useUpdateXAxisChart } from "../../hooks/useUpdateXAxisChart";
-import { getHeatmapWidth } from "../../utils";
-import {
-  CellCountLabel,
-  MaskWrapper,
-  XAxisContainer,
-  XAxisMask,
-  XAxisWrapper,
-} from "./style";
+import { CHART_LEFT_PADDING } from "../../style";
+import { getHeatmapWidth, Y_AXIS_CHART_WIDTH_PX } from "../../utils";
+import { XAxisWrapper, XAxisContainer } from "./style";
 
 interface Props {
   geneNames: string[];
@@ -65,21 +60,16 @@ export default function XAxisChart({ geneNames }: Props): JSX.Element {
     heatmapWidth,
     xAxisChart,
   });
-
   return (
-    <XAxisWrapper width={heatmapWidth}>
-      {/* (thuang): The extra div is needed to implement the mask */}
-      <div>
-        <XAxisContainer
-          data-test-id="gene-labels"
-          width={heatmapWidth}
-          ref={xAxisRef}
-        />
-        <MaskWrapper>
-          <CellCountLabel>Cell Count</CellCountLabel>
-          <XAxisMask />
-        </MaskWrapper>
-      </div>
+    <XAxisWrapper
+      width={heatmapWidth}
+      left={Y_AXIS_CHART_WIDTH_PX + CHART_LEFT_PADDING}
+    >
+      <XAxisContainer
+        data-test-id="gene-labels"
+        width={heatmapWidth}
+        ref={xAxisRef}
+      />
     </XAxisWrapper>
   );
 }
