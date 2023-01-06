@@ -33,7 +33,6 @@ export const XAxisLabel = styled.div`
   display: inline-block;
   user-select: none;
   color: ${ECHART_AXIS_LABEL_COLOR_HEX};
-  width: ${HEAT_MAP_BASE_CELL_WIDTH_PX}px;
 `;
 
 export const GeneButtonStyle = styled.button`
