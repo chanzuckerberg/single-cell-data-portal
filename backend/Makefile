@@ -48,7 +48,7 @@ db/new_migration_auto:
 
 db/check:
 	# Check if the database needs to be migrated due to changes in the schema.
-	PYTHONPATH=.. alembic --name schema2 -c=./database/database.ini check
+	PYTHONPATH=.. alembic -c=./database/database.ini check
 
 # interactive mode usage: AWS_PROFILE=single-cell-dev DEPLOYMENT_STAGE=dev make db/connect
 # ARGS usage: AWS_PROFILE=single-cell-dev DEPLOYMENT_STAGE=dev make db/connect ARGS="-c \"select * from dataset_artifact where filetype='CXG'\""
