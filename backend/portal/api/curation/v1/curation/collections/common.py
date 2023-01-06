@@ -65,7 +65,7 @@ def reshape_for_curation_api(
     """
     business_logic = get_business_logic()
     is_published = collection_version.published_at is not None
-    # get collectoin attributes based on published status
+    # get collection attributes based on published status
     if is_published:
         # Published
         collection_id = collection_version.collection_id

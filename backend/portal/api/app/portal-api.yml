@@ -1140,7 +1140,7 @@ components:
           type: string
         filetype:
           type: string
-          enum: [H5AD, RDS, CXG]
+          enum: [RAW_H5AD, H5AD, RDS, CXG]
         filename:
           type: string
         s3_uri:
