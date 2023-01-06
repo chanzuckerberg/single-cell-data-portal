@@ -40,6 +40,7 @@ export const XAxisMask = styled.div`
   height: ${X_AXIS_CHART_HEIGHT_PX}px;
 `;
 
+// (atarashansky): inline display needed to make y axis properly sticky
 export const InlineRow = styled.div`
   display: inline;
 `;
