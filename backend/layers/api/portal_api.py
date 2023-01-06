@@ -17,7 +17,7 @@ from backend.common.utils.http_exceptions import (
 from backend.layers.api import explorer_url
 from backend.common.utils.ontology_mappings.ontology_map_loader import ontology_mappings
 from backend.layers.api.enrichment import enrich_dataset_with_ancestors
-from backend.layers.api.router import get_business_logic, get_cloudfront_provider
+from backend.layers.api.providers import get_business_logic, get_cloudfront_provider
 from backend.layers.auth.user_info import UserInfo
 from backend.layers.business.entities import CollectionMetadataUpdate, CollectionQueryFilter
 from backend.layers.business.exceptions import (

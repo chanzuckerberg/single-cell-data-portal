@@ -62,11 +62,11 @@ class BaseAPIPortalTest(BaseAuthAPITest, BaseTest):
         self.app = app.test_client(use_cookies=False)
 
         # Mock all the dependencies of the API classes
-        self.mock_business_logic = patch("backend.layers.api.router._business_logic", new=self.business_logic)
+        self.mock_business_logic = patch("backend.layers.api.providers._business_logic", new=self.business_logic)
         self.mock_business_logic.start()
 
         self.mock_cloudfront_provider = patch(
-            "backend.layers.api.router._cloudfront_provider", new=self.cloudfront_provider
+            "backend.layers.api.providers._cloudfront_provider", new=self.cloudfront_provider
         )
         self.mock_cloudfront_provider.start()
 
