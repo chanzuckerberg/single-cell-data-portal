@@ -33,12 +33,6 @@ export const YAxisWrapper = styled.div`
   padding-top: 5px;
   /* Somehow Firefox requires this to scroll */
   overflow: hidden;
-
-  ${({ height }: { height: number }) => {
-    return `
-      height: ${height}px
-    `;
-  }}
 `;
 
 export const XAxisMask = styled.div`
@@ -46,9 +40,8 @@ export const XAxisMask = styled.div`
   height: ${X_AXIS_CHART_HEIGHT_PX}px;
 `;
 
-export const FlexRow = styled.div`
-  display: flex;
-  flex-direction: row;
+export const InlineRow = styled.div`
+  display: inline;
 `;
 
 export const XAxisWrapper = styled.div`

@@ -1,7 +1,6 @@
 import cloneDeep from "lodash/cloneDeep";
 import { memo, useContext, useMemo, useRef, useState } from "react";
 import { EMPTY_ARRAY } from "src/common/constants/utils";
-import { useResizeObserver } from "src/common/hooks/useResizeObserver";
 import {
   generateTermsByKey,
   OntologyTerm,
@@ -28,7 +27,7 @@ import {
 } from "./hooks/useSortedGeneNames";
 import { useTrackHeatMapLoaded } from "./hooks/useTrackHeatMapLoaded";
 import {
-  FlexRow,
+  InlineRow,
   ChartWrapper,
   Container,
   ContainerWrapper,
@@ -37,7 +36,6 @@ import {
   XAxisMask,
   XAxisWrapper,
 } from "./style";
-import { X_AXIS_CHART_HEIGHT_PX } from "./utils";
 
 interface Props {
   className?: string;
@@ -79,7 +77,6 @@ export default memo(function HeatMap({
   // Loading state per tissue
   const [isLoading, setIsLoading] = useState(setInitialIsLoading(cellTypes));
   const chartWrapperRef = useRef<HTMLDivElement>(null);
-  const chartWrapperRect = useResizeObserver(chartWrapperRef);
 
   const dispatch = useContext(DispatchContext);
 
@@ -161,10 +158,8 @@ export default memo(function HeatMap({
           <XAxisMask />
           <XAxisChart geneNames={sortedGeneNames} />
         </XAxisWrapper>
-        <FlexRow>
-          <YAxisWrapper
-            height={(chartWrapperRect?.height || 0) - X_AXIS_CHART_HEIGHT_PX}
-          >
+        <InlineRow>
+          <YAxisWrapper>
             {selectedTissues.map((tissue) => {
               const tissueCellTypes = getTissueCellTypes({
                 cellTypeSortBy,
@@ -214,7 +209,7 @@ export default memo(function HeatMap({
               );
             })}
           </ChartWrapper>
-        </FlexRow>
+        </InlineRow>
       </Container>
     </ContainerWrapper>
   );
