@@ -307,7 +307,12 @@ export default memo(function Chart({
         ],
       }}
     >
-      <ChartContainer height={heatmapHeight} width={heatmapWidth} ref={ref} />
+      <ChartContainer
+        height={heatmapHeight}
+        width={heatmapWidth}
+        ref={ref}
+        id={`${tissue}-chart`}
+      />
     </Tooltip>
   );
 });
