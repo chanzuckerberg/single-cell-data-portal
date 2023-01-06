@@ -12,7 +12,12 @@ import {
 import Modal from "src/components/common/Modal";
 import { HEATMAP_CONTAINER_ID } from "src/views/WheresMyGene/common/constants";
 import { CellType } from "src/views/WheresMyGene/common/types";
-import { getHeatmapHeight, getHeatmapWidth } from "../../../HeatMap/utils";
+import {
+  getHeatmapHeight,
+  getHeatmapWidth,
+  X_AXIS_CHART_HEIGHT_PX,
+  Y_AXIS_CHART_WIDTH_PX,
+} from "../../../HeatMap/utils";
 import { Label } from "../../style";
 import { StyledButtonIcon } from "../QuickSelect/style";
 import { ButtonWrapper, DownloadButton, StyledDiv } from "./style";
@@ -74,7 +79,6 @@ export default function SaveImage({
     setIsDownloading(true);
     try {
       const heatmapNode = document.getElementById("view") as HTMLCanvasElement;
-
       //(ashin): #3569 Get scrollTop to go back to place after downloading image
       let heatmapContainer = document.getElementById(
         HEATMAP_CONTAINER_ID
@@ -83,7 +87,10 @@ export default function SaveImage({
 
       // Adding this class causes the y-axis scrolling to jump but is required for image download
       heatmapNode.classList.add("CLONED");
-
+      const initialWidth = heatmapNode.style.width;
+      heatmapNode.style.width = `${
+        getHeatmapWidth(selectedGenes) + Y_AXIS_CHART_WIDTH_PX + 100
+      }px`;
       const isPNG = fileType === "png";
       const convertHTMLtoImage = isPNG ? toPng : toSvg;
       const images = await Promise.all(
@@ -91,9 +98,12 @@ export default function SaveImage({
           const imageURL = await convertHTMLtoImage(heatmapNode, {
             backgroundColor: "white",
             filter: screenshotFilter(tissue),
-            height: getHeatmapHeight(selectedCellTypes[tissue]) + 200,
+            height:
+              getHeatmapHeight(selectedCellTypes[tissue]) +
+              X_AXIS_CHART_HEIGHT_PX +
+              120,
             pixelRatio: 4,
-            width: getHeatmapWidth(selectedGenes) + 200,
+            width: heatmapNode.width,
           });
           // raw URI if only one tissue is selected
           const input =
@@ -112,6 +122,7 @@ export default function SaveImage({
 
       //(thuang): #3569 Restore scrollTop position
       heatmapNode.classList.remove("CLONED");
+      heatmapNode.style.width = initialWidth;
       if (heatmapContainer) {
         heatmapContainer.scrollTop = heatmapContainerScrollTop || 0;
       }
