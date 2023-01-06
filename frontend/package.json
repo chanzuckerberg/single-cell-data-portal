@@ -29,7 +29,6 @@
     "lodash": "^4.17.20",
     "ml-hclust": "^3.1.0",
     "next": "^12.2.5",
-    "next-link": "^2.0.0",
     "next-secure-headers": "^2.1.0",
     "next-sitemap": "^3.1.32",
     "papaparse": "^5.3.1",
