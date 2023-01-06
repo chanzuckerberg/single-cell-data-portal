@@ -3,6 +3,7 @@ import { useDeleteGenesAndCellTypes } from "../../hooks/useDeleteGenesAndCellTyp
 import { CHART_LEFT_PADDING, SELECTED_STYLE } from "../../style";
 import {
   getHeatmapWidth,
+  formatLabel,
   X_AXIS_CHART_HEIGHT_PX,
   Y_AXIS_CHART_WIDTH_PX,
 } from "../../utils";
@@ -12,7 +13,6 @@ import {
   XAxisLabel,
   GeneButtonStyle,
 } from "./style";
-import { formatLabel } from "../YAxisChart";
 
 interface Props {
   geneNames: string[];
