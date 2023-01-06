@@ -17,10 +17,8 @@ from backend.common.utils.http_exceptions import (
 from backend.layers.api import explorer_url
 from backend.common.utils.ontology_mappings.ontology_map_loader import ontology_mappings
 from backend.layers.api.enrichment import enrich_dataset_with_ancestors
-from backend.layers.api.router import get_business_logic
+from backend.layers.api.router import get_business_logic, get_cloudfront_provider
 from backend.layers.auth.user_info import UserInfo
-from backend.layers.business.business import BusinessLogic
-from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.business.entities import CollectionMetadataUpdate, CollectionQueryFilter
 from backend.layers.business.exceptions import (
     ArtifactNotFoundException,
@@ -54,8 +52,6 @@ from backend.layers.common.entities import (
 )
 from backend.layers.thirdparty.cdn_provider_interface import CDNProviderInterface
 from backend.layers.thirdparty.uri_provider import FileInfoException
-
-cloudfront_provider: CDNProviderInterface
 
 
 def get_collections_list(from_date: int = None, to_date: int = None, token_info: Optional[dict] = None):
@@ -324,7 +320,7 @@ def create_collection(body: dict, user: str):
 def _publisher_metadata_to_response(publisher_metadata: dict) -> dict:
     return publisher_metadata
 
-def get_collection_index(self):
+def get_collection_index():
     """
     Returns a list of collections that are published and active.
     Also returns a subset of fields and not datasets.
@@ -420,7 +416,7 @@ def publish_post(collection_id: str, body: object, token_info: dict):
     except CollectionPublishException:
         raise ConflictException(detail="The collection must have a least one dataset.")
 
-    cloudfront_provider.create_invalidation_for_index_paths()
+    get_cloudfront_provider().create_invalidation_for_index_paths()
 
     return make_response({"collection_id": version.collection_id.id, "visibility": "PUBLIC"}, 202)
 
@@ -563,7 +559,7 @@ def get_status(dataset_id: str, token_info: dict):
 
     return make_response(response, 200)
 
-def get_datasets_index(self):
+def get_datasets_index():
     """
     Returns a list of all the datasets that currently belong to a published and active collection
     """

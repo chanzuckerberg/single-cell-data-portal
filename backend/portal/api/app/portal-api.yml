@@ -24,7 +24,7 @@ paths:
       description: >-
         This lists all collections and their IDs that currently exist in the corpora. If a parameter is specified as
         a filter, then only collections that meet the status criteria will be outputted.
-      operationId: backend.layers.api.router.get_collections_list
+      operationId: backend.layers.api.portal_api.get_collections_list
       parameters:
         - $ref: "#/components/parameters/query_user_id"
         - name: from_date
@@ -73,7 +73,7 @@ paths:
         - cxguserCookie: []
       description: >-
         Creates a new collection in corpora. Once a collection is created it can be linked to datasets.
-      operationId: backend.layers.api.router.create_collection
+      operationId: backend.layers.api.portal_api.create_collection
       requestBody:
         content:
           application/json:
@@ -128,7 +128,7 @@ paths:
         - {}
       description: >-
         This will return all datasets and associated attributes.
-      operationId: backend.layers.api.router.get_collection_details
+      operationId: backend.layers.api.portal_api.get_collection_details
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       responses:
@@ -156,7 +156,7 @@ paths:
       description: >-
         This will return a private version of the public collection with all datasets and assoicated attributes of the
         public collection.
-      operationId: backend.layers.api.router.post_collection_revision
+      operationId: backend.layers.api.portal_api.post_collection_revision
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       responses:
@@ -182,7 +182,7 @@ paths:
         - cxguserCookie: []
       description: >-
         Update a private collection's summary, links, contact info, and description details.
-      operationId: backend.layers.api.router.update_collection
+      operationId: backend.layers.api.portal_api.update_collection
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       requestBody:
@@ -228,7 +228,7 @@ paths:
       description: >-
         Deletes an entire private collection from cellxgene data-portal, including any generated artifacts/assets and
         deployments.
-      operationId: backend.layers.api.router.delete_collection
+      operationId: backend.layers.api.portal_api.delete_collection
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       responses:
@@ -247,7 +247,7 @@ paths:
         An authenticated user can upload a file from a shared link to add a dataset into their collection.
       security:
         - cxguserCookie: []
-      operationId: backend.layers.api.router.upload_link
+      operationId: backend.layers.api.portal_api.upload_link
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       requestBody:
@@ -294,7 +294,7 @@ paths:
         collection revision is published.
       security:
         - cxguserCookie: []
-      operationId: backend.layers.api.router.upload_relink
+      operationId: backend.layers.api.portal_api.upload_relink
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       requestBody:
@@ -383,7 +383,7 @@ paths:
 
         If publishing modification to a previously published collection, this will replace the old collection with the new
         published collection. The old collection will no longer be accessible.
-      operationId: backend.layers.api.router.publish_post
+      operationId: backend.layers.api.portal_api.publish_post
       parameters:
         - $ref: "#/components/parameters/path_collection_id"
       requestBody:
@@ -421,7 +421,7 @@ paths:
       summary: >-
         Returns all public, non tombstoned collections. This endpoint is meant to be used for displaying collections
         in a compact view. It doesn't return all the fields, so it is not suitable for general usage.
-      operationId: backend.layers.api.router.get_collections_index
+      operationId: backend.layers.api.portal_api.get_collection_index
       responses:
         "200":
           description: OK
@@ -457,7 +457,7 @@ paths:
         Cancels the in process upload of a dataset to the data portal and cleans up (removes) any artifacts created
         in the upload process. If the dataset has already been uploaded and converted, this endpoint deletes it from
         the data portal and removes associated artifacts
-      operationId: backend.layers.api.router.delete_dataset
+      operationId: backend.layers.api.portal_api.delete_dataset
       security:
         - cxguserCookie: []
       parameters:
@@ -481,7 +481,7 @@ paths:
         Given a cellxgene Explorer url return some basic metadata about the dataset it represent in the cellxgene
         Portal data model including its associated dataset id, the s3_uri of the dataset, its tombstone status and
         the associated parent collection ID.
-      operationId: backend.layers.api.router.get_dataset_identifiers
+      operationId: backend.layers.api.portal_api.get_dataset_identifiers
       parameters:
         - in: query
           required: true
@@ -508,7 +508,7 @@ paths:
       summary: Dataset assets
       description: >-
         Return a list of all the dataset's assets
-      operationId: backend.layers.api.router.get_dataset_assets
+      operationId: backend.layers.api.portal_api.get_dataset_assets
       parameters:
         - $ref: "#/components/parameters/path_dataset_id"
       responses:
@@ -532,7 +532,7 @@ paths:
       summary: Request to download a dataset
       description: >-
         Request to download a file which on success will generate a pre-signed URL to download the dataset.
-      operationId: backend.layers.api.router.post_dataset_asset
+      operationId: backend.layers.api.portal_api.post_dataset_asset
       parameters:
         - $ref: "#/components/parameters/path_dataset_id"
         - name: asset_id
@@ -613,7 +613,7 @@ paths:
       tags:
         - datasets
       summary: Get the status of a dataset upload.
-      operationId: backend.layers.api.router.get_status
+      operationId: backend.layers.api.portal_api.get_status
       security:
         - cxguserCookie: []
       parameters:
@@ -708,7 +708,7 @@ paths:
       description: >-
         Returns all datasets that belong to public, non tombstoned collections. This endpoint is meant to be used 
         for displaying datasets in a compact view. It doesn't return all the fields, so it is not suitable for general usage.
-      operationId: backend.layers.api.router.get_datasets_index
+      operationId: backend.layers.api.portal_api.get_datasets_index
       responses:
         "200":
           description: OK
