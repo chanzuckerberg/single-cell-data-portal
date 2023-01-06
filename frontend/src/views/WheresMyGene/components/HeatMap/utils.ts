@@ -6,7 +6,6 @@ import {
   ScatterSeriesOption,
 } from "echarts";
 import { EMPTY_ARRAY } from "src/common/constants/utils";
-import { LIGHT_GRAY } from "src/components/common/theme";
 import {
   CellType,
   CellTypeSummary,
@@ -38,6 +37,85 @@ const COMMON_SERIES: ScatterSeriesOption = {
 };
 
 const MAX_MEAN_EXPRESSION_VALUE = 6;
+
+/**
+ * Used to calculate text pixel widths. Should be only created once.
+ */
+const CTX =
+  (typeof document !== "undefined" &&
+    document.createElement("canvas").getContext("2d")) ||
+  null;
+
+/**
+ * Formats and truncates the cell type name to a given width
+ *
+ * @param name The text to truncate
+ * @param maxWidth The max width in pixels the string should be
+ * @param font The font family and font size as a string. Ex. "bold 12px sans-serif"
+ * @param displayDepth The depth of the cell type name (indentation/padding)
+ * @returns The string fixed to a certain pixel width
+ */
+export function formatLabel(
+  name: string,
+  maxWidth: number,
+  font: string,
+  displayDepth = 0
+): string {
+  CTX!.font = font;
+  const ellipsisWidth = CTX!.measureText("...").width;
+
+  const padding = " ".repeat(displayDepth * 8);
+  const paddingWidth = CTX!.measureText(padding).width;
+
+  if (CTX!.measureText(name).width + paddingWidth <= maxWidth) {
+    return padding + name;
+  }
+
+  const labelHalfWidth = (maxWidth - paddingWidth - ellipsisWidth) / 2;
+
+  const firstHalf = getFixedWidth(name, labelHalfWidth, font);
+  const secondHalf = getFixedWidth(name, labelHalfWidth, font, true);
+
+  return padding + firstHalf + "..." + secondHalf;
+}
+
+/**
+ * Truncates the string to a given width
+ *
+ * @param text The text to truncate
+ * @param maxWidth The max width in pixels the string should be
+ * @param font The font family and font size as a string. Ex. "bold 12px sans-serif"
+ * @param reverse Whether to truncate the end or beginning of the string
+ * @returns The string fixed to a certain pixel width
+ */
+export function getFixedWidth(
+  text: string,
+  maxWidth: number,
+  font: string,
+  reverse = false
+): string {
+  CTX!.font = font;
+
+  if (reverse) {
+    for (let i = text.length; i >= 0; i--) {
+      const substring = text.substring(i - 1);
+      const textWidth = CTX!.measureText(substring).width;
+      if (textWidth > maxWidth) {
+        return text.substring(i);
+      }
+    }
+  } else {
+    for (let i = 0; i < text.length; i++) {
+      const substring = text.substring(0, i + 1);
+      const textWidth = CTX!.measureText(substring).width;
+      if (textWidth > maxWidth) {
+        return text.substring(0, i);
+      }
+    }
+  }
+
+  return text;
+}
 
 interface CreateChartOptionsProps {
   cellTypeMetadata: string[];
@@ -153,80 +231,6 @@ export function convertPercentageToDiameter(percentage: number): number {
 
   return Math.round(2 * radius);
 }
-
-export const SELECTED_STYLE = {
-  backgroundColor: LIGHT_GRAY.D,
-  fontWeight: "bold" as never,
-  fontFamily: "sans-serif",
-  fontSize: 12,
-  padding: 4,
-};
-
-interface CreateXAxisOptionsProps {
-  geneNames: string[];
-  genesToDelete: string[];
-  heatmapWidth: number;
-}
-
-export function createXAxisOptions({
-  geneNames,
-  genesToDelete,
-  heatmapWidth,
-}: CreateXAxisOptionsProps): EChartsOption {
-  return {
-    ...COMMON_OPTIONS,
-    grid: {
-      bottom: "0",
-      left: "0px",
-      top: "300px",
-      width: `${heatmapWidth}px`,
-    },
-    series: [
-      {
-        ...COMMON_SERIES,
-        symbolSize: 0,
-      },
-    ],
-    xAxis: [
-      {
-        axisLabel: {
-          formatter(value) {
-            return genesToDelete.includes(value)
-              ? `{selected|${value}}`
-              : value;
-          },
-          rich: {
-            selected: SELECTED_STYLE,
-          },
-          rotate: 270,
-          verticalAlign: "middle",
-        },
-        axisTick: {
-          show: false,
-        },
-        boundaryGap: true,
-        data: geneNames,
-        position: "top",
-        triggerEvent: true,
-        type: "category",
-      },
-    ],
-    yAxis: [
-      {
-        axisLabel: { fontSize: 0 },
-        axisLine: {
-          show: false,
-        },
-        axisTick: {
-          show: false,
-        },
-        splitLine: {
-          show: false,
-        },
-      },
-    ],
-  };
-}
 export interface ChartFormat {
   cellTypeIndex: number;
   geneIndex: number;
@@ -296,7 +300,7 @@ export function dataToChartFormat({
 
 export const HEAT_MAP_BASE_HEIGHT_PX = 300;
 export const HEAT_MAP_BASE_CELL_PX = 20;
-const HEAT_MAP_BASE_CELL_WIDTH_PX = 20;
+export const HEAT_MAP_BASE_CELL_WIDTH_PX = 20;
 
 /**
  * Approximating the heatmap width by the number of genes.
