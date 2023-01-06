@@ -9,6 +9,7 @@ from backend.layers.thirdparty.uri_provider import UriProvider
 _business_logic = None
 _cloudfront_provider = None
 
+
 def get_business_logic():
     global _business_logic
     if not _business_logic:
@@ -16,6 +17,7 @@ def get_business_logic():
             DatabaseProvider(), CrossrefProvider(), StepFunctionProvider(), S3Provider(), UriProvider()
         )
     return _business_logic
+
 
 def get_cloudfront_provider():
     global _cloudfront_provider

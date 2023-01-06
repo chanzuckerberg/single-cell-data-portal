@@ -37,7 +37,6 @@ from backend.layers.common import doi
 from backend.layers.common.entities import (
     CollectionId,
     CollectionMetadata,
-    CollectionVersion,
     CollectionVersionWithDatasets,
     CollectionVersionId,
     DatasetArtifact,
@@ -50,7 +49,6 @@ from backend.layers.common.entities import (
     Link,
     OntologyTermId,
 )
-from backend.layers.thirdparty.cdn_provider_interface import CDNProviderInterface
 from backend.layers.thirdparty.uri_provider import FileInfoException
 
 
@@ -88,6 +86,7 @@ def get_collections_list(from_date: int = None, to_date: int = None, token_info:
     result = {"collections": collections}
     return make_response(jsonify(result), 200)
 
+
 def _dataset_processing_status_to_response(status: DatasetStatus, dataset_id: str):
     return {
         "created_at": 0,  # NA
@@ -103,6 +102,7 @@ def _dataset_processing_status_to_response(status: DatasetStatus, dataset_id: st
         "validation_status": status.validation_status or "NA",
     }
 
+
 # TODO: use remove_none
 def _link_to_response(link: Link):
     response = {
@@ -112,6 +112,7 @@ def _link_to_response(link: Link):
     if link.name is not None:
         response["link_name"] = link.name
     return response
+
 
 def _dataset_asset_to_response(dataset_artifact: DatasetArtifact, dataset_id: str):
     return {
@@ -125,28 +126,28 @@ def _dataset_asset_to_response(dataset_artifact: DatasetArtifact, dataset_id: st
         "user_submitted": True,
     }
 
+
 def _ontology_term_id_to_response(ontology_term_id: OntologyTermId):
     return {
         "label": ontology_term_id.label,
         "ontology_term_id": ontology_term_id.ontology_term_id,
     }
 
+
 def _ontology_term_ids_to_response(ontology_term_ids: List[OntologyTermId]):
     return [_ontology_term_id_to_response(otid) for otid in ontology_term_ids]
+
 
 def remove_none(body: dict):
     return {k: v for k, v in body.items() if v is not None}
 
+
 # Note: `metadata` can be none while the dataset is uploading
-def _dataset_to_response(
-    dataset: DatasetVersion, is_tombstoned: bool, is_in_published_collection: bool = False
-):
+def _dataset_to_response(dataset: DatasetVersion, is_tombstoned: bool, is_in_published_collection: bool = False):
     dataset_id = dataset.version_id.id
     return remove_none(
         {
-            "assay": None
-            if dataset.metadata is None
-            else _ontology_term_ids_to_response(dataset.metadata.assay),
+            "assay": None if dataset.metadata is None else _ontology_term_ids_to_response(dataset.metadata.assay),
             "batch_condition": None if dataset.metadata is None else dataset.metadata.batch_condition,
             "cell_count": None if dataset.metadata is None else dataset.metadata.cell_count,
             "cell_type": None
@@ -154,25 +155,19 @@ def _dataset_to_response(
             else _ontology_term_ids_to_response(dataset.metadata.cell_type),
             "collection_id": dataset.collection_id.id,
             "created_at": dataset.created_at,
-            "dataset_assets": [
-                _dataset_asset_to_response(a, dataset.version_id.id) for a in dataset.artifacts
-            ],
+            "dataset_assets": [_dataset_asset_to_response(a, dataset.version_id.id) for a in dataset.artifacts],
             "dataset_deployments": [{"url": explorer_url.generate(dataset, is_in_published_collection)}],
             "development_stage": None
             if dataset.metadata is None
             else _ontology_term_ids_to_response(dataset.metadata.development_stage),
-            "disease": None
-            if dataset.metadata is None
-            else _ontology_term_ids_to_response(dataset.metadata.disease),
+            "disease": None if dataset.metadata is None else _ontology_term_ids_to_response(dataset.metadata.disease),
             "donor_id": None if dataset.metadata is None else dataset.metadata.donor_id,
             "id": dataset_id,
             "is_primary_data": None if dataset.metadata is None else dataset.metadata.is_primary_data,
             "is_valid": True,  # why do we have this
             "mean_genes_per_cell": None if dataset.metadata is None else dataset.metadata.mean_genes_per_cell,
             "name": "" if dataset.metadata is None else dataset.metadata.name,
-            "organism": None
-            if dataset.metadata is None
-            else _ontology_term_ids_to_response(dataset.metadata.organism),
+            "organism": None if dataset.metadata is None else _ontology_term_ids_to_response(dataset.metadata.organism),
             "processing_status": _dataset_processing_status_to_response(dataset.status, dataset.version_id.id),
             "published": True,  # TODO
             "published_at": dataset.canonical_dataset.published_at,
@@ -183,9 +178,7 @@ def _dataset_to_response(
             else _ontology_term_ids_to_response(dataset.metadata.self_reported_ethnicity),
             "sex": None if dataset.metadata is None else _ontology_term_ids_to_response(dataset.metadata.sex),
             "suspension_type": None if dataset.metadata is None else dataset.metadata.suspension_type,
-            "tissue": None
-            if dataset.metadata is None
-            else _ontology_term_ids_to_response(dataset.metadata.tissue),
+            "tissue": None if dataset.metadata is None else _ontology_term_ids_to_response(dataset.metadata.tissue),
             "tombstone": is_tombstoned,
             "updated_at": dataset.created_at,  # Legacy: datasets can't be updated anymore
             "x_approximate_distribution": None
@@ -193,6 +186,7 @@ def _dataset_to_response(
             else dataset.metadata.x_approximate_distribution,
         }
     )
+
 
 def _collection_to_response(collection: CollectionVersionWithDatasets, access_type: str):
     collection_id = collection.collection_id.id if collection.published_at is not None else collection.version_id.id
@@ -231,6 +225,7 @@ def _collection_to_response(collection: CollectionVersionWithDatasets, access_ty
         }
     )
 
+
 def get_collection_details(collection_id: str, token_info: dict):
     """
     Retrieves the collection information. Will look up for a published collection first,
@@ -252,6 +247,7 @@ def get_collection_details(collection_id: str, token_info: dict):
     response = _collection_to_response(version, access_type)
 
     return make_response(jsonify(response), 200)
+
 
 def post_collection_revision(collection_id: str, token_info: dict):
     """
@@ -275,12 +271,14 @@ def post_collection_revision(collection_id: str, token_info: dict):
 
     return make_response(response, 201)
 
+
 def _link_from_request(body: dict):
     return Link(
         body.get("link_name"),
         body["link_type"],
         body["link_url"],
     )
+
 
 # TODO: why do we have `user` and not `token_info`? This seems weird
 def create_collection(body: dict, user: str):
@@ -316,9 +314,11 @@ def create_collection(body: dict, user: str):
 
     return make_response(jsonify({"collection_id": version.version_id.id}), 201)
 
+
 # TODO: we should use a dataclass here
 def _publisher_metadata_to_response(publisher_metadata: dict) -> dict:
     return publisher_metadata
+
 
 def get_collection_index():
     """
@@ -346,6 +346,7 @@ def get_collection_index():
 
     return make_response(jsonify(response), 200)
 
+
 def delete_collection(collection_id: str, token_info: dict):
     """
     Deletes a collection version from the persistence store, or tombstones a canonical collection.
@@ -368,6 +369,7 @@ def delete_collection(collection_id: str, token_info: dict):
             raise ForbiddenHTTPException()
     elif isinstance(resource_id, CollectionId):
         get_business_logic().tombstone_collection(resource_id)
+
 
 def update_collection(collection_id: str, body: dict, token_info: dict):
     """
@@ -402,6 +404,7 @@ def update_collection(collection_id: str, body: dict, token_info: dict):
     response = _collection_to_response(version, "WRITE")
     return make_response(jsonify(response), 200)
 
+
 def publish_post(collection_id: str, body: object, token_info: dict):
     """
     Publishes a collection
@@ -419,6 +422,7 @@ def publish_post(collection_id: str, body: object, token_info: dict):
     get_cloudfront_provider().create_invalidation_for_index_paths()
 
     return make_response({"collection_id": version.collection_id.id, "visibility": "PUBLIC"}, 202)
+
 
 def upload_from_link(collection_id: str, token_info: dict, url: str, dataset_id: str = None):
 
@@ -453,11 +457,13 @@ def upload_from_link(collection_id: str, token_info: dict, url: str, dataset_id:
             "the submission has finished processing."
         )
 
+
 # TODO: those two methods should probably be collapsed into one
 # TODO: not quite sure what's the difference between url and link - investigate
 def upload_link(collection_id: str, body: dict, token_info: dict):
     dataset_id = upload_from_link(collection_id, token_info, body["url"])
     return make_response({"dataset_id": dataset_id.id}, 202)
+
 
 def upload_relink(collection_id: str, body: dict, token_info: dict):
     dataset_id = upload_from_link(
@@ -467,6 +473,7 @@ def upload_relink(collection_id: str, body: dict, token_info: dict):
         body.get("id"),
     )
     return make_response({"dataset_id": dataset_id.id}, 202)
+
 
 def post_dataset_asset(dataset_id: str, asset_id: str):
     """
@@ -499,6 +506,7 @@ def post_dataset_asset(dataset_id: str, asset_id: str):
 
     return make_response(response, 200)
 
+
 def get_dataset_assets(dataset_id: str):
     """
     Returns a list of all the artifacts registered to a dataset.
@@ -511,6 +519,7 @@ def get_dataset_assets(dataset_id: str):
     response = {"assets": artifacts}
 
     return make_response(jsonify(response), 200)
+
 
 def _assert_dataset_has_right_owner(
     dataset_version_id: DatasetVersionId, user_info: UserInfo
@@ -525,9 +534,7 @@ def _assert_dataset_has_right_owner(
         raise ForbiddenHTTPException(f"Dataset {dataset_version_id} does not exist")
 
     # if a revision exists, fetch that
-    collection_version = get_business_logic().get_unpublished_collection_version_from_canonical(
-        version.collection_id
-    )
+    collection_version = get_business_logic().get_unpublished_collection_version_from_canonical(version.collection_id)
     if collection_version is None:
         collection_version = get_business_logic().get_published_collection_version(version.collection_id)
     # If the collection does not exist, it means that the dataset is orphaned and therefore we cannot
@@ -537,6 +544,7 @@ def _assert_dataset_has_right_owner(
     if not user_info.is_user_owner_or_allowed(collection_version.owner):
         raise ForbiddenHTTPException("Unauthorized")
     return version, collection_version
+
 
 def get_status(dataset_id: str, token_info: dict):
     """
@@ -559,6 +567,7 @@ def get_status(dataset_id: str, token_info: dict):
 
     return make_response(response, 200)
 
+
 def get_datasets_index():
     """
     Returns a list of all the datasets that currently belong to a published and active collection
@@ -578,6 +587,7 @@ def get_datasets_index():
 
     return make_response(jsonify(response), 200)
 
+
 def delete_dataset(dataset_id: str, token_info: dict):
     """
     Deletes a dataset version.
@@ -593,6 +603,7 @@ def delete_dataset(dataset_id: str, token_info: dict):
     except CollectionUpdateException:
         raise MethodNotAllowedException(detail="Cannot delete a public Dataset")
     return Response(status=202)
+
 
 def get_dataset_identifiers(url: str):
     """
