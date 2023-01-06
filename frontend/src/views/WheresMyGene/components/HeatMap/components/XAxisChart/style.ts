@@ -26,27 +26,24 @@ export const XAxisWrapper = styled.div`
 `;
 
 export const XAxisLabel = styled.div`
-  color: ${ECHART_AXIS_LABEL_COLOR_HEX};
+  ${selectedStyle}
   width: ${HEAT_MAP_BASE_CELL_WIDTH_PX}px;
-  height: ${X_AXIS_CHART_HEIGHT_PX}px;
-
-  background-color: ${({ active }: { active: boolean }) =>
-    active ? SELECTED_STYLE.backgroundColor : "white"};
-  font: normal
-    ${({ active }: { active: boolean }) =>
-      active ? SELECTED_STYLE.fontWeight : "normal"}
-    ${SELECTED_STYLE.fontSize}px ${SELECTED_STYLE.fontFamily};
-  padding: ${({ active }: { active: boolean }) =>
-    active ? SELECTED_STYLE.padding : "unset"};
-
   text-orientation: sideways;
   writing-mode: vertical-rl;
-  text-align: right;
-  z-index: 2;
-  cursor: pointer;
+  display: inline-block;
   user-select: none;
-  padding-right: 3px;
-  text-overflow: ellipsis;
+  color: ${ECHART_AXIS_LABEL_COLOR_HEX};
+  width: ${HEAT_MAP_BASE_CELL_WIDTH_PX}px;
+`;
+
+export const GeneButtonStyle = styled.button`
+  cursor: pointer;
+  background-color: white;
+  border: none;
+  z-index: 2;
+  display: inline-flex;
+  justify-content: center;
+  align-items: end;
   white-space: nowrap;
   overflow: hidden;
 `;
@@ -78,5 +75,12 @@ function xAxisWidthAndOffset({ width, left }: { width: number; left: number }) {
 function xAxisWidth({ width }: { width: number }) {
   return `
     width: ${width}px;
+  `;
+}
+
+function selectedStyle({ font, active }: { font: string; active: boolean }) {
+  return `
+    font: ${font};
+    background-color: ${active ? SELECTED_STYLE.backgroundColor : "white"};
   `;
 }

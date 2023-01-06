@@ -108,7 +108,7 @@ export default memo(function YAxisChart({
             const { fontWeight, fontSize, fontFamily } = SELECTED_STYLE;
             const selectedFont = `${fontWeight} ${fontSize}px ${fontFamily}`;
 
-            const paddedName = formatCellLabel(
+            const paddedName = formatLabel(
               name,
               Y_AXIS_CHART_WIDTH_PX - 90, // scale based on y-axis width
               selectedFont, // prevents selected style from overlapping count
@@ -232,7 +232,7 @@ const CTX =
  * @param displayDepth The depth of the cell type name (indentation/padding)
  * @returns The string fixed to a certain pixel width
  */
-function formatCellLabel(
+export function formatLabel(
   name: string,
   maxWidth: number,
   font: string,
