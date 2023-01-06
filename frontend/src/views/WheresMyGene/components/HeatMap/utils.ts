@@ -6,7 +6,6 @@ import {
   ScatterSeriesOption,
 } from "echarts";
 import { EMPTY_ARRAY } from "src/common/constants/utils";
-import { LIGHT_GRAY } from "src/components/common/theme";
 import {
   CellType,
   CellTypeSummary,
@@ -153,80 +152,6 @@ export function convertPercentageToDiameter(percentage: number): number {
 
   return Math.round(2 * radius);
 }
-
-export const SELECTED_STYLE = {
-  backgroundColor: LIGHT_GRAY.D,
-  fontWeight: "bold" as never,
-  fontFamily: "sans-serif",
-  fontSize: 12,
-  padding: 4,
-};
-
-interface CreateXAxisOptionsProps {
-  geneNames: string[];
-  genesToDelete: string[];
-  heatmapWidth: number;
-}
-
-export function createXAxisOptions({
-  geneNames,
-  genesToDelete,
-  heatmapWidth,
-}: CreateXAxisOptionsProps): EChartsOption {
-  return {
-    ...COMMON_OPTIONS,
-    grid: {
-      bottom: "0",
-      left: "0px",
-      top: "300px",
-      width: `${heatmapWidth}px`,
-    },
-    series: [
-      {
-        ...COMMON_SERIES,
-        symbolSize: 0,
-      },
-    ],
-    xAxis: [
-      {
-        axisLabel: {
-          formatter(value) {
-            return genesToDelete.includes(value)
-              ? `{selected|${value}}`
-              : value;
-          },
-          rich: {
-            selected: SELECTED_STYLE,
-          },
-          rotate: 270,
-          verticalAlign: "middle",
-        },
-        axisTick: {
-          show: false,
-        },
-        boundaryGap: true,
-        data: geneNames,
-        position: "top",
-        triggerEvent: true,
-        type: "category",
-      },
-    ],
-    yAxis: [
-      {
-        axisLabel: { fontSize: 0 },
-        axisLine: {
-          show: false,
-        },
-        axisTick: {
-          show: false,
-        },
-        splitLine: {
-          show: false,
-        },
-      },
-    ],
-  };
-}
 export interface ChartFormat {
   cellTypeIndex: number;
   geneIndex: number;
@@ -296,7 +221,7 @@ export function dataToChartFormat({
 
 export const HEAT_MAP_BASE_HEIGHT_PX = 300;
 export const HEAT_MAP_BASE_CELL_PX = 20;
-const HEAT_MAP_BASE_CELL_WIDTH_PX = 20;
+export const HEAT_MAP_BASE_CELL_WIDTH_PX = 20;
 
 /**
  * Approximating the heatmap width by the number of genes.

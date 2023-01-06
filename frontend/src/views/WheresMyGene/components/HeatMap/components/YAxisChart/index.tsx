@@ -12,7 +12,6 @@ import {
   deserializeCellTypeMetadata,
   getAllSerializedCellTypeMetadata,
   getHeatmapHeight,
-  SELECTED_STYLE,
   Y_AXIS_CHART_WIDTH_PX,
 } from "../../utils";
 import ReplaySVG from "./icons/replay.svg";
@@ -30,6 +29,7 @@ import {
   FlexRow,
   InfoButtonWrapper,
 } from "./style";
+import { SELECTED_STYLE } from "../../style";
 
 const MAX_DEPTH = 2;
 
