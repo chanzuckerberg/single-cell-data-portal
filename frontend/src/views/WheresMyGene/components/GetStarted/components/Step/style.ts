@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { fontCapsXxs, fontHeaderL, getColors } from "czifui";
+import { CommonThemeProps, fontCapsXxs, fontHeaderL, getColors } from "czifui";
 
 export const Wrapper = styled.div`
   /* Number is 40px wide, gap: 16px, Content: 200px */
@@ -8,7 +8,7 @@ export const Wrapper = styled.div`
 
   border-radius: 4px;
 
-  ${(props) => {
+  ${(props: CommonThemeProps) => {
     const colors = getColors(props);
 
     return `

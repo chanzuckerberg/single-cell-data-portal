@@ -1,6 +1,5 @@
-import { HTMLTable } from "@blueprintjs/core";
 import styled from "@emotion/styled";
-import { Button } from "czifui";
+import { Button, CellHeader, CellHeaderProps, getColors } from "czifui";
 
 export const CELL_INFO_SIDEBAR_WIDTH_PX = 400;
 
@@ -10,14 +9,28 @@ export const ButtonContainer = styled.div`
   justify-content: space-between;
 `;
 
-export const StyledHTMLTable = styled(HTMLTable)`
-  & thead td {
-    color: #767676 !important;
-    font-weight: 500;
-  }
-  & td:nth-child(3) {
-    text-align: end;
-  }
+export const GeneHeaderWrapper = styled("span")`
+  display: flex;
+  align-items: center;
+`;
+
+export const GeneCellHeader = styled(CellHeader)`
+  ${(props: CellHeaderProps) => {
+    const { active = false } = props;
+
+    const colors = getColors(props);
+
+    return `
+      &:hover {
+        color: ${active ? colors?.primary[500] : "black"};
+
+        & .MuiButtonBase-root {
+          /* (thuang): Maintain button hover style  */
+          color: ${colors?.primary[500]}
+        }
+      }
+    `;
+  }}
 `;
 
 export const TooltipButton = styled(Button)`
@@ -28,6 +41,7 @@ export const TooltipButton = styled(Button)`
 export const CopyGenesButton = styled(Button)`
   font-weight: 500;
   font-size: 14px;
+  margin-left: 10px;
 `;
 
 export const TissueName = styled.div`

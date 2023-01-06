@@ -1,5 +1,4 @@
 import {
-  Dropdown,
   Icon,
   InputDropdownProps as IInputDropdownProps,
   Tooltip,
@@ -11,7 +10,7 @@ import {
 } from "src/views/WheresMyGene/common/store";
 import { selectSortBy } from "src/views/WheresMyGene/common/store/actions";
 import { SORT_BY } from "src/views/WheresMyGene/common/types";
-import { FlexDiv, Label, LabelWrapper, Wrapper } from "./style";
+import { FlexDiv, Label, LabelWrapper, StyledDropdown, Wrapper } from "./style";
 
 interface Props {
   handleIsScaledChange: () => void;
@@ -51,7 +50,7 @@ export default function ColorScale({
         </Tooltip>
       </LabelWrapper>
 
-      <Dropdown
+      <StyledDropdown
         data-test-id="color-scale-dropdown"
         onChange={colorScaleOnChange}
         label={colorScaledOptionLabel}

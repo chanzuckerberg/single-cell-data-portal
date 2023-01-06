@@ -29,12 +29,7 @@ import {
   getHeatmapHeight,
   getHeatmapWidth,
 } from "../../utils";
-import {
-  ChartContainer,
-  StyledTooltipTable,
-  tooltipCss,
-  Wrapper,
-} from "./style";
+import { ChartContainer, StyledTooltipTable, tooltipCss } from "./style";
 
 interface Props {
   cellTypes: CellType[];
@@ -76,6 +71,7 @@ export default memo(function Chart({
   const [heatmapWidth, setHeatmapWidth] = useState(
     getHeatmapWidth(selectedGeneData)
   );
+
   const [heatmapHeight, setHeatmapHeight] = useState(
     getHeatmapHeight(cellTypes)
   );
@@ -125,7 +121,7 @@ export default memo(function Chart({
     setHeatmapHeight(getHeatmapHeight(cellTypes));
   }, [cellTypes, selectedGeneData]);
 
-  useUpdateChart({ chart, chartProps, isScaled });
+  useUpdateChart({ chart, chartProps, isScaled, heatmapWidth, heatmapHeight });
 
   // Calculate cellTypeSummaries
   /**
@@ -281,37 +277,43 @@ export default memo(function Chart({
   const tooltipClasses = useMemo(() => ({ tooltip: tooltipCss }), []);
 
   return (
-    <Wrapper height={heatmapHeight} width={heatmapWidth} id={`${tissue}-chart`}>
-      <Tooltip
-        width="wide"
-        classes={tooltipClasses}
-        title={tooltipContent || <>No data</>}
-        leaveDelay={0}
-        placement="right-end"
-        PopperProps={{
-          anchorEl: {
-            clientHeight: 0,
-            clientWidth: 0,
-            getBoundingClientRect: () => ({
-              bottom: cursorOffset[1],
-              height: 0,
-              left: cursorOffset[0],
-              right: cursorOffset[0],
-              toJSON: noop,
-              top: cursorOffset[1],
-              width: 0,
-              x: cursorOffset[0],
-              y: cursorOffset[1],
-            }),
+    <Tooltip
+      width="wide"
+      classes={tooltipClasses}
+      title={tooltipContent || <>No data</>}
+      leaveDelay={0}
+      placement="right-end"
+      PopperProps={{
+        anchorEl: {
+          getBoundingClientRect: () => ({
+            bottom: cursorOffset[1],
+            height: 0,
+            left: cursorOffset[0],
+            right: cursorOffset[0],
+            toJSON: noop,
+            top: cursorOffset[1],
+            width: 0,
+            x: cursorOffset[0],
+            y: cursorOffset[1],
+          }),
+        },
+        modifiers: [
+          {
+            name: "offset",
+            options: {
+              offset: [0, 5],
+            },
           },
-          modifiers: {
-            offset: { offset: "0,20" },
-          },
-        }}
-      >
-        <ChartContainer height={heatmapHeight} width={heatmapWidth} ref={ref} />
-      </Tooltip>
-    </Wrapper>
+        ],
+      }}
+    >
+      <ChartContainer
+        height={heatmapHeight}
+        width={heatmapWidth}
+        ref={ref}
+        id={`${tissue}-chart`}
+      />
+    </Tooltip>
   );
 });
 

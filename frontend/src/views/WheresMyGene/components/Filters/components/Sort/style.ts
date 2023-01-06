@@ -1,5 +1,11 @@
 import styled from "@emotion/styled";
-import { fontBodyS, fontBodyXxxs, getColors, getFontWeights } from "czifui";
+import {
+  Dropdown,
+  fontBodyS,
+  fontBodyXxxs,
+  getColors,
+  getFontWeights,
+} from "czifui";
 
 export const Label = styled("div")`
   ${fontBodyS}
@@ -32,3 +38,7 @@ export const FilterWrapper = styled("div")`
   display: flex;
   flex-direction: column;
 `;
+
+export const StyledDropdown = styled(Dropdown)`
+  width: 100%;
+` as typeof Dropdown;

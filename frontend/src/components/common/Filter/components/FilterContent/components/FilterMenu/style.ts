@@ -1,6 +1,7 @@
 import { Classes, MenuItem } from "@blueprintjs/core";
 import styled from "@emotion/styled";
-import { Divider } from "@material-ui/core";
+import Divider from "@mui/material/Divider";
+import { CommonThemeProps } from "czifui";
 import { GRAY, PT_TEXT_COLOR } from "src/components/common/theme";
 import { scrollbar } from "../../../../common/style";
 
@@ -18,7 +19,7 @@ interface Props {
   menuWidth: number;
 }
 
-interface MenuListProps {
+interface MenuListProps extends CommonThemeProps {
   isMenuDivided?: boolean;
 }
 
