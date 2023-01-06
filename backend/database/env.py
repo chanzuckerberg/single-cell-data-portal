@@ -19,6 +19,7 @@ fileConfig(config.config_file_name)
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
+# TODO remove support for corpora_orm.metadata once the old database is fully deprecaited.
 target_metadata = [corpora_orm.metadata, persistence_orm.metadata]
 
 # other values from the config, defined by the needs of env.py, can be acquired:
