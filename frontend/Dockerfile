@@ -19,11 +19,6 @@ RUN apt-get update && apt-get install -y make wget \
     && rm -rf /var/lib/apt/lists/*
 
 COPY package*.json ./
-# the official node image provides an unprivileged user as a security best practice
-# but we have to manually enable it. We put it here so npm installs dependencies as the same
-# user who runs the app.
-# https://github.com/nodejs/docker-node/blob/master/docs/BestPractices.md#non-root-user
-USER node
 RUN npm ci --verbose --no-optional && npm cache clean --force
 ENV PATH /opt/node_app/node_modules/.bin:$PATH
 
@@ -31,6 +26,7 @@ ENV PATH /opt/node_app/node_modules/.bin:$PATH
 # ADD --chown=node . /corpora-frontend
 ADD . /corpora-frontend
 WORKDIR /corpora-frontend
+RUN next build
 
 ARG HAPPY_BRANCH="unknown"
 ARG HAPPY_COMMIT=""
