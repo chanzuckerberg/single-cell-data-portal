@@ -36,14 +36,24 @@ def query():
     snapshot: WmgSnapshot = load_snapshot()
     q = WmgQuery(snapshot)
 
-    expression_summary = q.expression_summary(criteria)
+    default=True
+    for dim in criteria.dict():
+        if len(criteria.dict()[dim + "s"]) > 0 and dim not in snapshot.primary_filter_dimensions:
+            default=False 
+            break
+
+    if default:
+        expression_summary = q.expression_summary_default(criteria)
+    else:
+        expression_summary = q.expression_summary(criteria)
+    
     cell_counts = q.cell_counts(criteria)
     dot_plot_matrix_df, cell_counts_cell_type_agg = get_dot_plot_data(expression_summary, cell_counts)
 
     include_filter_dims = request.get("include_filter_dims", False)
 
     response_filter_dims_values = (
-        build_filter_dims_values(criteria, snapshot, expression_summary) if include_filter_dims else {}
+        build_filter_dims_values(criteria, snapshot, cell_counts) if include_filter_dims else {}
     )
     return jsonify(
         dict(
@@ -134,12 +144,12 @@ def find_dim_option_values(criteria: Dict, snapshot: WmgSnapshot, dimension: str
     filter_options_criteria = criteria.copy(update={dimension + "s": []}, deep=True)
     # todo can we query cell_counts for a performance gain?
     q = WmgQuery(snapshot)
-    query_result = q.expression_summary(filter_options_criteria)
+    query_result = q.cell_counts(filter_options_criteria)
     filter_dims = query_result.groupby(dimension).groups.keys()
     return filter_dims
 
 
-def build_filter_dims_values(criteria: WmgQueryCriteria, snapshot: WmgSnapshot, expression_summary: DataFrame) -> Dict:
+def build_filter_dims_values(criteria: WmgQueryCriteria, snapshot: WmgSnapshot, cell_counts: DataFrame) -> Dict:
     dims = {
         "dataset_id": "",
         "disease_ontology_term_id": "",
@@ -149,7 +159,7 @@ def build_filter_dims_values(criteria: WmgQueryCriteria, snapshot: WmgSnapshot, 
     }
     for dim in dims:
         if len(criteria.dict()[dim + "s"]) == 0:
-            dims[dim] = expression_summary.groupby(dim).groups.keys()
+            dims[dim] = cell_counts.groupby(dim).groups.keys()
         else:
             dims[dim] = find_dim_option_values(criteria, snapshot, dim)
 
