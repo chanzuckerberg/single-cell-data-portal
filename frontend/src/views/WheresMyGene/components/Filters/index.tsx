@@ -6,7 +6,6 @@ import {
 } from "czifui";
 import isEqual from "lodash/isEqual";
 import {
-  Fragment,
   memo,
   ReactElement,
   useCallback,
@@ -241,13 +240,15 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
   );
 
   function TooltipWrapper({ children }: { children: ReactElement }) {
-    const Wrapper = areFiltersDisabled ? Tooltip : Fragment;
+    if (areFiltersDisabled) {
+      return (
+        <Tooltip title="Please select an organism, tissue and at least one gene to use these filters.">
+          {children}
+        </Tooltip>
+      );
+    }
 
-    return (
-      <Wrapper title="Please select an organism, tissue and at least one gene to use these filters.">
-        {children}
-      </Wrapper>
-    );
+    return <>{children}</>;
   }
 });
 
