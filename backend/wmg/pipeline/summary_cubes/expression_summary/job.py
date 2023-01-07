@@ -5,7 +5,7 @@ import pandas as pd
 import tiledb
 
 from backend.wmg.pipeline.summary_cubes.extract import extract_var_data
-from backend.wmg.pipeline.summary_cubes.expression_summary.load import build_in_mem_cube
+from backend.wmg.pipeline.summary_cubes.expression_summary.load import build_in_mem_cube_default, build_in_mem_cube
 from backend.wmg.pipeline.summary_cubes.expression_summary.transform import transform
 from backend.wmg.data.schemas.cube_schema import expression_summary_schema
 from backend.wmg.data.snapshot import EXPRESSION_SUMMARY_CUBE_NAME, EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME
@@ -31,12 +31,14 @@ def _load(
     """
     if default:
         non_indexed_dims = expression_summary_non_indexed_dims_default
+        dims, vals = build_in_mem_cube_default(
+            gene_ontology_term_ids, cube_index, non_indexed_dims, cube_sum, cube_nnz
+        )
     else:
         non_indexed_dims = expression_summary_non_indexed_dims
-
-    dims, vals = build_in_mem_cube(
-        gene_ontology_term_ids, cube_index, non_indexed_dims, cube_sum, cube_nnz
-    )
+        dims, vals = build_in_mem_cube(
+            gene_ontology_term_ids, cube_index, non_indexed_dims, cube_sum, cube_nnz
+        )
 
     logger.debug("Saving cube to tiledb")
     with tiledb.open(uri, "w") as cube:
