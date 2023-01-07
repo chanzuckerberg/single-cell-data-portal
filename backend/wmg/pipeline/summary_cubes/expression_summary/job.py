@@ -7,15 +7,16 @@ import tiledb
 from backend.wmg.pipeline.summary_cubes.extract import extract_var_data
 from backend.wmg.pipeline.summary_cubes.expression_summary.load import build_in_mem_cube_default, build_in_mem_cube
 from backend.wmg.pipeline.summary_cubes.expression_summary.transform import transform
-from backend.wmg.data.schemas.cube_schema import expression_summary_schema
 from backend.wmg.data.snapshot import EXPRESSION_SUMMARY_CUBE_NAME, EXPRESSION_SUMMARY_DEFAULT_CUBE_NAME
 from backend.wmg.data.tiledb import create_ctx
 from backend.wmg.data.utils import log_func_runtime, create_empty_cube
 from backend.wmg.data.schemas.cube_schema import (
+    expression_summary_schema,
     expression_summary_non_indexed_dims,
     expression_summary_indexed_dims_no_gene_ontology,
 )
 from backend.wmg.data.schemas.cube_schema_default import (
+    expression_summary_schema as expression_summary_default_schema,
     expression_summary_non_indexed_dims as expression_summary_non_indexed_dims_default,
     expression_summary_indexed_dims_no_gene_ontology as expression_summary_indexed_dims_no_gene_ontology_default,
 )
@@ -68,7 +69,10 @@ def create_expression_summary_cube(corpus_path: str, default=False):
 
     with tiledb.scope_ctx(ctx):
         # Create cube
-        create_empty_cube(uri, expression_summary_schema)
+        if default:
+            create_empty_cube(uri, expression_summary_default_schema)
+        else:
+            create_empty_cube(uri, expression_summary_schema)
 
         # extract data
         gene_ontology_term_ids = extract_var_data(corpus_path, ctx)
