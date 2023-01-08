@@ -119,6 +119,7 @@ def _query_tiledb(
         dataset_to_gene_ids=dataset_to_gene_ids,
         marker_genes_cube=None,
         expression_summary_cube=None,
+        expression_summary_default_cube=None,
         cell_type_orderings=None,
         primary_filter_dimensions=None,
     )
