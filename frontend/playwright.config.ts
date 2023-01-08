@@ -1,21 +1,21 @@
-import { devices, expect, PlaywrightTestConfig } from "@playwright/test";
+import {
+  devices,
+  expect,
+  PlaywrightTestConfig,
+  ReporterDescription,
+} from "@playwright/test";
 import { matchers } from "expect-playwright";
 import fs from "fs";
 import { LOGIN_STATE_FILENAME } from "tests/common/constants";
+import { COMMON_PLAYWRIGHT_CONTEXT } from "tests/common/context";
 import featureFlags from "./tests/common/featureFlags";
 
 expect.extend(matchers);
 
-const isHeadful =
-  process.env.HEADFUL === "true" || process.env.HEADLESS === "false";
-
 // 'github' for GitHub Actions CI to generate annotations, default otherwise
-const PLAYWRIGHT_REPORTER = process.env.CI ? "github" : "list";
-
-const VIEWPORT = {
-  height: 1080,
-  width: 1920,
-};
+const PLAYWRIGHT_REPORTER = process.env.CI
+  ? ([["github"], ["line"], ["allure-playwright"]] as ReporterDescription[])
+  : "list";
 
 /**
  * See https://playwright.dev/docs/test-configuration.
@@ -71,20 +71,8 @@ const config: PlaywrightTestConfig = {
   timeout: 3 * 60 * 1000,
 
   use: {
-    acceptDownloads: true,
-    /* Maximum time each action such as `click()` can take. Defaults to 0 (no limit). */
-    actionTimeout: 0,
-    headless: !isHeadful,
-    ignoreHTTPSErrors: true,
-    screenshot: "only-on-failure",
+    ...COMMON_PLAYWRIGHT_CONTEXT,
     storageState: getStorageState(),
-    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-    trace: "retain-on-failure",
-    video: {
-      mode: "retain-on-failure",
-      size: VIEWPORT,
-    },
-    viewport: VIEWPORT,
   },
 
   /* Opt out of parallel tests. */
@@ -126,7 +114,7 @@ function getStorageState(): {
      * sameSite flag
      */
     sameSite: "Strict" | "Lax" | "None";
-  }>,
+  }>;
   origins: Array<{
     origin: string;
 
@@ -137,10 +125,12 @@ function getStorageState(): {
     }>;
   }>;
 } {
-  let storageState = featureFlags;
+  const storageState = featureFlags;
 
   if (fs.existsSync(LOGIN_STATE_FILENAME)) {
-    const loginState = JSON.parse(fs.readFileSync(LOGIN_STATE_FILENAME, "utf-8"));
+    const loginState = JSON.parse(
+      fs.readFileSync(LOGIN_STATE_FILENAME, "utf-8")
+    );
 
     // Merge loginState with featureFlags
     storageState.cookies = storageState.cookies.concat(loginState.cookies);

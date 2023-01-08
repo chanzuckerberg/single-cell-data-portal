@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { fontBodyXxs, getColors, IconButton } from "czifui";
+import { ButtonIcon, fontBodyXxs, getColors } from "czifui";
 
 export const StyledButtonDiv = styled.div`
   display: flex;
@@ -22,7 +22,7 @@ export const StyledLabel = styled.div`
   }}
 `;
 
-export const StyledIconButton = styled(IconButton)`
+export const StyledButtonIcon = styled(ButtonIcon)`
   width: 30px;
   height: 30px;
 `;

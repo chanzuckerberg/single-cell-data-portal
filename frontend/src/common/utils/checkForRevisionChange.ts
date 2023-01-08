@@ -12,6 +12,7 @@ const IGNORED_COLLECTION_FIELDS = [
   "revision_of",
   "id",
   "revision_diff",
+  "published_at",
   "datasets",
   "genesets",
   "links",

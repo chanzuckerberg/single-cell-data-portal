@@ -29,8 +29,9 @@ function filterViews(
   searchValue: string
 ): SelectCategoryValueView[] {
   if (searchValue) {
+    const lowerCaseSearchValue = searchValue.toLowerCase();
     return views.filter(({ label }) =>
-      label.toLowerCase().includes(searchValue)
+      label.toLowerCase().includes(lowerCaseSearchValue)
     );
   } else {
     return views.filter((view) => view.visible);

@@ -7,9 +7,10 @@ export default function Beta({
   className?: string;
 }): JSX.Element {
   const position = {
-    position: "absolute",
     bottom: "10px",
+    position: "absolute",
     right: "20px",
+    width: "360px",
     zIndex: "99",
   } as React.CSSProperties;
 
@@ -22,10 +23,9 @@ export default function Beta({
       style={position}
       className={"elevated " + className}
     >
-      This feature is in beta. We would appreciate your feedback, please fill
-      out a{" "}
+      We would appreciate your feedback, please fill out a{" "}
       <SubmitIssue
-        href="https://docs.google.com/forms/d/e/1FAIpQLSde_zIFZPQD2p0ovaX3Pb7lDOajWJCmOeuX4wQ8Z8Ab5NXUjw/viewform"
+        href="https://airtable.com/shrLwepDSEX1HI6bo"
         target="_blank"
         rel="noopener"
       >

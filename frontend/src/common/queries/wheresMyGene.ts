@@ -67,7 +67,7 @@ function flattenOntologyTermsByOrganism(
   }, {} as OntologyTermsByOrganism);
 }
 
-function generateTermsByKey(
+export function generateTermsByKey(
   flattenedTerms: OntologyTermsByOrganism,
   key: keyof OntologyTerm
 ): {
@@ -218,6 +218,11 @@ export function useWMGQuery(
   // (thuang): Refresh query when the snapshotId changes
   const currentSnapshotId = useSnapshotId();
 
+  query = clobberQueryIfSubsetofPrev(query, [
+    "gene_ontology_term_ids",
+    "tissue_ontology_term_ids",
+  ]);
+
   return useQuery(
     [USE_QUERY, query, currentSnapshotId],
     ({ signal }) => fetchQuery({ query, signal }),
@@ -302,7 +307,8 @@ export function useFilterDimensions(
         })),
         development_stage_terms: development_stage_terms.map(toEntity),
         disease_terms: disease_terms.map(toEntity),
-        self_reported_ethnicity_terms: self_reported_ethnicity_terms.map(toEntity),
+        self_reported_ethnicity_terms:
+          self_reported_ethnicity_terms.map(toEntity),
         sex_terms: sex_terms.map(toEntity),
       },
       isLoading: false,
@@ -576,6 +582,7 @@ function useWMGQueryRequestBody(options = { includeAllFilterOptions: false }) {
     return result;
   }, [data, selectedOrganismId]);
 
+  // seve: This is a nice mapping that may start being used in a few places across WMG, might be worth moving to a global store.
   const tissuesByName = useMemo(() => {
     let result: { [name: string]: OntologyTerm } = {};
 
@@ -626,6 +633,33 @@ function useWMGQueryRequestBody(options = { includeAllFilterOptions: false }) {
     ethnicities,
     sexes,
   ]);
+}
+let prevQuery: Query | null;
+
+function clobberQueryIfSubsetofPrev(
+  query: Query | null,
+  filtersToCheck: (keyof Filter)[]
+): Query | null {
+  if (prevQuery == query) return prevQuery;
+  if (
+    !prevQuery ||
+    prevQuery?.include_filter_dims !== query?.include_filter_dims
+  ) {
+    prevQuery = query;
+    return query;
+  }
+  if (
+    (Object.entries(query.filter) as [keyof Filter, string[]][]).every(
+      ([key, value]) => {
+        if (!filtersToCheck.includes(key)) return true; //skip filters we're not checking
+        return value.every((elem) => prevQuery?.filter[key].includes(elem));
+      }
+    )
+  ) {
+    return prevQuery;
+  }
+  prevQuery = query;
+  return query;
 }
 
 function toEntity(item: RawOntologyTerm) {
@@ -690,4 +724,128 @@ export function aggregateCollectionsFromDatasets(
   }
 
   return collections;
+}
+
+interface MarkerGeneRequestBody {
+  celltype: string;
+  n_markers: number;
+  organism: string;
+  test: "ttest" | "binomtest";
+  tissue: string;
+}
+
+interface HardcodedMarkerGeneRequest extends MarkerGeneRequestBody {
+  n_markers: 25;
+}
+
+export function generateMarkerGeneBody(
+  cellTypeID: string,
+  tissueID: string,
+  organismID: string,
+  test: "ttest" | "binomtest"
+): HardcodedMarkerGeneRequest {
+  return {
+    celltype: cellTypeID,
+    n_markers: 25,
+    organism: organismID,
+    test: test,
+    tissue: tissueID,
+  };
+}
+
+export interface FetchMarkerGeneParams {
+  cellTypeID: string;
+  tissueID: string;
+  organismID: string;
+  test?: "ttest" | "binomtest";
+}
+
+export async function fetchMarkerGenes({
+  cellTypeID,
+  organismID,
+  tissueID,
+  test = "binomtest",
+}: FetchMarkerGeneParams): Promise<MarkerGeneResponse> {
+  const url = API_URL + API.WMG_MARKER_GENES;
+  const body = generateMarkerGeneBody(cellTypeID, tissueID, organismID, test);
+  const response = await fetch(url, {
+    ...DEFAULT_FETCH_OPTIONS,
+    ...JSON_BODY_FETCH_OPTIONS,
+    body: JSON.stringify(body),
+    method: "POST",
+  });
+
+  const json: MarkerGeneResponse = await response.json();
+
+  if (!response.ok) {
+    throw json;
+  }
+
+  return json;
+}
+export const USE_MARKER_GENES = {
+  ENTITIES: [ENTITIES.WMG_MARKER_GENES],
+  id: "wmg-marker-genes",
+};
+
+export interface MarkerGenesByCellType {
+  [cellType: string]: MarkerGeneResponse["marker_genes"];
+}
+
+export interface MarkerGeneResponse {
+  marker_genes: {
+    gene_ontology_term_id: string;
+    effect_size: number;
+    p_value: number;
+  }[];
+  snapshot_id: string;
+}
+
+export function useMarkerGenes({
+  cellTypeID,
+  organismID,
+  tissueID,
+  test,
+}: FetchMarkerGeneParams): UseQueryResult<MarkerGeneResponse> {
+  const { data } = usePrimaryFilterDimensions();
+  const genesByID = useMemo((): { [name: string]: OntologyTerm } => {
+    let result: { [name: string]: OntologyTerm } = {};
+
+    if (!data) return result;
+
+    const { genes } = data;
+
+    result = generateTermsByKey(genes, "id");
+
+    return result;
+  }, [data]);
+
+  return useQuery(
+    [USE_MARKER_GENES, cellTypeID, test],
+    async () => {
+      const output = await fetchMarkerGenes({
+        cellTypeID,
+        organismID,
+        tissueID,
+        test,
+      });
+      const markerGenesIndexedByGeneName = Object.fromEntries(
+        output.marker_genes.reduce(
+          (newEntries, { gene_ontology_term_id, ...data }) => {
+            try {
+              newEntries.push([genesByID[gene_ontology_term_id].name, data]);
+            } catch (e) {
+              console.log("could not find gene with id", gene_ontology_term_id);
+            }
+            return newEntries;
+          },
+          [] as [string, { effect_size: number; p_value: number }][]
+        )
+      );
+      return { ...output, marker_genes: markerGenesIndexedByGeneName };
+    },
+    {
+      staleTime: Infinity,
+    }
+  );
 }

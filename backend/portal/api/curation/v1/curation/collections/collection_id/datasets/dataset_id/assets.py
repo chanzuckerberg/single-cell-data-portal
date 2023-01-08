@@ -1,47 +1,47 @@
-from flask import g, make_response, jsonify
+from flask import make_response, jsonify
 
-from backend.api_server.db import dbconnect
-from backend.common.corpora_orm import DatasetArtifactFileType
-from backend.common.entities import DatasetAsset
 from backend.common.utils.http_exceptions import NotFoundHTTPException
-from backend.portal.api.collections_common import get_dataset_else_error
+from backend.layers.api.router import get_business_logic
+from backend.portal.api.curation.v1.curation.collections.common import (
+    allowed_dataset_asset_types,
+    get_infered_collection_version_else_forbidden,
+    get_infered_dataset_version,
+)
 
 
-@dbconnect
 def get(collection_id: str, dataset_id=None):
-    db_session = g.db_session
-    dataset = get_dataset_else_error(db_session, dataset_id, collection_id)
+    business_logic = get_business_logic()
 
-    # retrieve the artifact
-    assets = dataset.get_assets()
+    dataset = get_infered_dataset_version(dataset_id)
+
+    if dataset is None:
+        get_infered_collection_version_else_forbidden(collection_id)
+        raise NotFoundHTTPException(detail="Dataset not found.")
+
+    assets = dataset.artifacts
     if not assets:
         raise NotFoundHTTPException(detail="No assets found. The dataset may still be processing.")
 
     asset_list = []
     error_flag = False
-    for a in assets:
-        asset = DatasetAsset(a)
-        if asset.filetype == DatasetArtifactFileType.CXG:
+    for asset in assets:
+        if asset.type not in allowed_dataset_asset_types:
             continue
-        result = dict(filetype=asset.filetype, filename=asset.filename)
-
-        # Retrieve S3 metadata
-        filesize = asset.get_file_size()
-        if not filesize:
-            result["filesize"] = -1
-            asset_list.append(result)
+        download_data = business_logic.get_dataset_artifact_download_data(dataset.version_id, asset.id)
+        if download_data.file_size is None:
             error_flag = True
-            continue
-        else:
-            result["filesize"] = filesize
-
-        # Generate pre-signed URL
-        presigned_url = asset.generate_file_url()
-        if not presigned_url:
-            result["presigned_url"] = "Not Found."
+            download_data.file_size = -1
+        if not download_data.presigned_url:
             error_flag = True
-        else:
-            result["presigned_url"] = presigned_url
+            download_data.presigned_url = "Not Found."
+
+        result = {
+            "filename": download_data.file_name,
+            "filesize": download_data.file_size,
+            "filetype": download_data.file_type.upper(),
+            "presigned_url": download_data.presigned_url,
+        }
+
         asset_list.append(result)
 
     response = asset_list

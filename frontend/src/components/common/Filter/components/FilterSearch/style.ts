@@ -1,5 +1,7 @@
 import { Classes, InputGroup } from "@blueprintjs/core";
+import { css } from "@emotion/react";
 import styled from "@emotion/styled";
+import { ButtonIcon, getColors } from "czifui";
 import { GRAY, LIGHT_GRAY, PT_TEXT_COLOR } from "src/components/common/theme";
 
 export const ViewSearch = styled(InputGroup)`
@@ -26,5 +28,29 @@ export const ViewSearch = styled(InputGroup)`
         opacity: 0.6;
       }
     }
+
+    .${Classes.INPUT_ACTION} {
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+  }
+`;
+
+export const ClearButtonIcon = styled(ButtonIcon)`
+  ${(props) => {
+    const colors = getColors(props);
+    const palette = props.theme.palette;
+    return css`
+      color: ${colors?.gray[400]};
+
+      &:hover {
+        color: ${palette?.text?.primary};
+      }
+    `;
+  }}
+  .MuiSvgIcon-root {
+    height: 16px; /* overrides IconNameToSizes "s" size specification */
+    width: 16px; /* overrides IconNameToSizes "s" size specification */
   }
 `;

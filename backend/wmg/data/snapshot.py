@@ -3,7 +3,6 @@ import logging
 import os
 from dataclasses import dataclass
 from typing import Optional, Dict
-from botocore.exceptions import ClientError
 import pandas as pd
 import tiledb
 from pandas import DataFrame
@@ -12,6 +11,7 @@ from tiledb import Array
 from backend.common.utils.s3_buckets import buckets
 from backend.wmg.config import WmgConfig
 from backend.wmg.data.tiledb import create_ctx
+from backend.wmg.data.schemas.corpus_schema import DATASET_TO_GENE_IDS_NAME
 
 # Snapshot data artifact file/dir names
 CELL_TYPE_ORDERINGS_FILENAME = "cell_type_orderings.json"
@@ -19,7 +19,8 @@ PRIMARY_FILTER_DIMENSIONS_FILENAME = "primary_filter_dimensions.json"
 EXPRESSION_SUMMARY_CUBE_NAME = "expression_summary"
 EXPRESSION_SUMMARY_FMG_CUBE_NAME = "expression_summary_fmg"
 CELL_COUNTS_CUBE_NAME = "cell_counts"
-DATASET_TO_GENE_IDS_FILENAME = "dataset_to_gene_ids.json"
+MARKER_GENES_CUBE_NAME = "marker_genes"
+DATASET_TO_GENE_IDS_FILENAME = f"{DATASET_TO_GENE_IDS_NAME}.json"
 
 logger = logging.getLogger("wmg")
 
@@ -39,8 +40,12 @@ class WmgSnapshot:
     expression_summary_cube: Array
 
     # TileDB array containing expression summary statistics optimized for marker gene computation.
-    # See the full schema at backend/wmg/data/schemas/marker_genes_cube_schema.py.
+    # See the full schema at backend/wmg/data/schemas/expression_summary_fmg_cube_schema.py.
     expression_summary_fmg_cube: Array
+
+    # TileDB array containing the precomputed marker genes.
+    # See the full schema at backend/wmg/data/schemas/marker_gene_cube_schema.py.
+    marker_genes_cube: Array
 
     # TileDB array containing the total cell counts (expressed gene count, non-expressed mean, etc.) aggregated by
     # multiple cell metadata dimensions (but no gene dimension). See the full schema at
@@ -57,6 +62,9 @@ class WmgSnapshot:
     # dictionary of gene IDs mapped to dataset IDs
     dataset_to_gene_ids: Dict
 
+    def __hash__(self):
+        return hash(None)  # hash is not used for WmgSnapshot
+
 
 # Cached data
 cached_snapshot: Optional[WmgSnapshot] = None
@@ -68,17 +76,20 @@ def load_snapshot() -> WmgSnapshot:
     been updated.
     @return: WmgSnapshot object
     """
-
     global cached_snapshot
-
     if new_snapshot_identifier := _update_latest_snapshot_identifier():
         cached_snapshot = _load_snapshot(new_snapshot_identifier)
     return cached_snapshot
 
 
 def _load_snapshot(new_snapshot_identifier) -> WmgSnapshot:
+    cell_type_orderings = _load_cell_type_order(new_snapshot_identifier)
+    primary_filter_dimensions = _load_primary_filter_data(new_snapshot_identifier)
+    dataset_to_gene_ids = _load_dataset_to_gene_ids_data(new_snapshot_identifier)
+
     snapshot_base_uri = _build_snapshot_base_uri(new_snapshot_identifier)
     logger.info(f"Loading WMG snapshot at {snapshot_base_uri}")
+
     # TODO: Okay to keep TileDB arrays open indefinitely? Is it faster than re-opening each request?
     #  https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues/chanzuckerberg/single-cell
     #  -data-portal/2134
@@ -86,19 +97,26 @@ def _load_snapshot(new_snapshot_identifier) -> WmgSnapshot:
         snapshot_identifier=new_snapshot_identifier,
         expression_summary_cube=_open_cube(f"{snapshot_base_uri}/{EXPRESSION_SUMMARY_CUBE_NAME}"),
         expression_summary_fmg_cube=_open_cube(f"{snapshot_base_uri}/{EXPRESSION_SUMMARY_FMG_CUBE_NAME}"),
+        marker_genes_cube=_open_cube(f"{snapshot_base_uri}/{MARKER_GENES_CUBE_NAME}"),
         cell_counts_cube=_open_cube(f"{snapshot_base_uri}/{CELL_COUNTS_CUBE_NAME}"),
-        cell_type_orderings=_load_cell_type_order(new_snapshot_identifier),
-        primary_filter_dimensions=_load_primary_filter_data(new_snapshot_identifier),
-        dataset_to_gene_ids=_load_dataset_to_gene_ids_data(new_snapshot_identifier),
+        cell_type_orderings=cell_type_orderings,
+        primary_filter_dimensions=primary_filter_dimensions,
+        dataset_to_gene_ids=dataset_to_gene_ids,
     )
 
 
 def _open_cube(cube_uri) -> Array:
     try:
         return tiledb.open(cube_uri, ctx=create_ctx(json.loads(WmgConfig().tiledb_config_overrides)))
-    except tiledb.TileDBError:
-        logger.error("Cube does not exist in the snapshot. Setting the cube value to None.")
-        return None
+    except Exception as e:
+        # todo (alec): remove this once the pipeline has run for the first time
+        # if marker_genes cube fails to load, it is because the processing pipeline has not run
+        # for the first time since merging the FMG changes. This try/except block is temporary
+        # until the pipeline finishes running for the first time.
+        if "marker_genes" in cube_uri:
+            return None
+        else:
+            raise e
 
 
 def _load_cell_type_order(snapshot_identifier: str) -> DataFrame:
@@ -110,11 +128,7 @@ def _load_primary_filter_data(snapshot_identifier: str) -> Dict:
 
 
 def _load_dataset_to_gene_ids_data(snapshot_identifier: str) -> Dict:
-    try:
-        return json.loads(_read_s3obj(f"{snapshot_identifier}/{DATASET_TO_GENE_IDS_FILENAME}"))
-    except ClientError:
-        logger.error("Dataset-to-gene IDs JSON does not exist in the snapshot. Setting it to an empty dictionary.")
-        return {}
+    return json.loads(_read_s3obj(f"{snapshot_identifier}/{DATASET_TO_GENE_IDS_FILENAME}"))
 
 
 def _read_s3obj(relative_path: str) -> str:

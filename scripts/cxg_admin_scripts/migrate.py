@@ -1,9 +1,13 @@
-import click
 import datetime
 import logging
-import requests
 import os
 import sys
+import uuid
+
+import click
+import requests
+
+from backend.common.utils.s3_buckets import buckets
 
 pkg_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..."))  # noqa
 sys.path.insert(0, pkg_root)  # noqa
@@ -19,7 +23,6 @@ from backend.common.corpora_orm import (
     ProcessingStatus,
 )
 from backend.common.entities import DatasetAsset
-from backend.common import buckets
 
 logging.basicConfig()
 logger = logging.getLogger(__name__)
@@ -201,3 +204,314 @@ def backfill_processing_status_for_datasets(ctx):
                 logger.warning(f"Setting processing status for dataset {dataset_id} {record.collection_id}")
             else:
                 logger.warning(f"{dataset_id} processing status is fine")
+
+
+def migrate_redesign_read(ctx):
+    collections = []
+    collection_versions = []
+    datasets = []
+    dataset_versions = []
+    artifacts = []
+
+    def strip_prefixes(v):
+        if v is None:
+            return None
+        v = str(v)
+        if "." in v and v.split(".")[1].isupper():
+            return v.split(".")[1]
+        else:
+            return v
+
+    def strip_prefixes_dict(d):
+        r = {}
+        for k, v in d.items():
+            r[k] = strip_prefixes(v)
+        return r
+
+    with db_session_manager() as session:
+        for record in session.query(DbCollection):
+            print(record.id, record.name, record.visibility, record.links)
+
+            if record.visibility == CollectionVisibility.PRIVATE and record.revision_of is None:
+                # New, unpublished collection
+                version_id = str(uuid.uuid4())
+                collection_id = record.id
+
+                collection = {
+                    "id": record.id,
+                    "version_id": None,  # not mapped yet, this is private
+                    "originally_published_at": None,  # Not yet published
+                    "tombstoned": record.tombstone,
+                }
+
+                collections.append(collection)
+
+            elif record.visibility == CollectionVisibility.PRIVATE and record.revision_of is not None:
+                # Private revision of an existing collection
+                version_id = record.id
+                collection_id = record.revision_of
+            else:
+                # Published collection
+                version_id = str(uuid.uuid4())
+                collection_id = record.id
+
+                collection = {
+                    "id": record.id,
+                    "version_id": version_id,
+                    "originally_published_at": record.published_at,
+                    "tombstoned": record.tombstone,
+                }
+
+                collections.append(collection)
+
+            metadata = {
+                "name": record.name,
+                "description": record.description,
+                "contact_name": record.contact_name,
+                "contact_email": record.contact_email,
+                "links": [
+                    {"type": strip_prefixes(link.link_type), "url": link.link_url, "name": link.link_name}
+                    for link in record.links
+                ],
+            }
+
+            dataset_ids = []
+            for record_dataset in record.datasets:
+                dataset_version_id = str(uuid.uuid4())
+                dataset = {
+                    "dataset_id": record_dataset.id,
+                    "dataset_version_id": dataset_version_id,
+                    "published_at": record_dataset.published_at,
+                }
+
+                dataset_metadata = {
+                    "name": record_dataset.name,
+                    "schema_version": record_dataset.schema_version,
+                    "organism": record_dataset.organism,
+                    "tissue": record_dataset.tissue,
+                    "assay": record_dataset.assay,
+                    "disease": record_dataset.disease,
+                    "sex": record_dataset.sex,
+                    "self_reported_ethnicity": record_dataset.self_reported_ethnicity,
+                    "development_stage": record_dataset.development_stage,
+                    "cell_type": record_dataset.cell_type,
+                    "cell_count": record_dataset.cell_count,
+                    "mean_genes_per_cell": record_dataset.mean_genes_per_cell,
+                    "batch_condition": record_dataset.batch_condition,
+                    "suspension_type": record_dataset.suspension_type,
+                    "donor_id": record_dataset.donor_id,
+                    "is_primary_data": None
+                    if record_dataset.is_primary_data is None
+                    else record_dataset.is_primary_data.name,
+                    "x_approximate_distribution": None
+                    if record_dataset.x_approximate_distribution is None
+                    else record_dataset.x_approximate_distribution.name,
+                }
+
+                if record_dataset.processing_status is not None:
+                    status = record_dataset.processing_status.__dict__
+                else:
+                    status = {}
+
+                artifact_ids = []
+                for record_artifact in record_dataset.artifacts:
+                    if record_artifact.s3_uri.endswith("raw.h5ad"):
+                        filetype = "RAW_H5AD"
+                    else:
+                        filetype = strip_prefixes(record_artifact.filetype)
+                    artifact = {
+                        "id": record_artifact.id,
+                        "type": filetype,
+                        "uri": record_artifact.s3_uri,
+                    }
+                    artifact_ids.append(record_artifact.id)
+                    artifacts.append(artifact)
+
+                dataset_version = {
+                    "version_id": dataset_version_id,
+                    "dataset_id": record_dataset.id,
+                    "collection_id": collection_id,
+                    "metadata": dataset_metadata,
+                    "artifacts": artifact_ids,
+                    "status": strip_prefixes_dict(status),
+                    "created_at": record_dataset.created_at,
+                }
+
+                dataset_ids.append(dataset_version_id)
+                datasets.append(dataset)
+                dataset_versions.append(dataset_version)
+
+            version = {
+                "version_id": version_id,
+                "collection_id": collection_id,
+                "metadata": metadata,
+                "owner": record.owner,
+                "publisher_metadata": record.publisher_metadata,
+                "published_at": record.published_at,
+                "datasets": dataset_ids,
+                "created_at": record.created_at,
+                "curator_name": record.curator_name,
+            }
+
+            collection_versions.append(version)
+
+    import json
+
+    with open("migration/collections.json", "w") as f:
+        json.dump(collections, f, default=str)
+
+    with open("migration/collection_versions.json", "w") as f:
+        json.dump(collection_versions, f, default=str)
+
+    with open("migration/datasets.json", "w") as f:
+        json.dump(datasets, f, default=str)
+
+    with open("migration/dataset_versions.json", "w") as f:
+        json.dump(dataset_versions, f, default=str)
+
+    with open("migration/dataset_artifacts.json", "w") as f:
+        json.dump(artifacts, f, default=str)
+
+
+def migrate_redesign_debug(ctx):
+    import json
+
+    with open("migration/collections.json", "r") as f:
+        json.load(f)
+
+    with open("migration/collection_versions.json", "r") as f:
+        json.load(f)
+
+    with open("migration/datasets.json", "r") as f:
+        json.load(f)
+
+    with open("migration/dataset_versions.json", "r") as f:
+        json.load(f)
+
+    with open("migration/dataset_artifacts.json", "r") as f:
+        json.load(f)
+
+
+def migrate_redesign_write(ctx):
+    import json
+
+    with open("migration/collections.json", "r") as f:
+        collections = json.load(f)
+
+    with open("migration/collection_versions.json", "r") as f:
+        collection_versions = json.load(f)
+
+    with open("migration/datasets.json", "r") as f:
+        datasets = json.load(f)
+
+    with open("migration/dataset_versions.json", "r") as f:
+        dataset_versions = json.load(f)
+
+    with open("migration/dataset_artifacts.json", "r") as f:
+        artifacts = json.load(f)
+
+    from sqlalchemy import create_engine
+    from sqlalchemy.orm import Session
+
+    from backend.layers.persistence.orm import (
+        Collection as CollectionRow,
+        CollectionVersion as CollectionVersionRow,
+        Dataset as DatasetRow,
+        DatasetVersion as DatasetVersionRow,
+        DatasetArtifact as DatasetArtifactRow,
+    )
+
+    database_pass = os.getenv("PGPASSWORD")
+    database_name = os.getenv("PGDB")
+    database_user = os.getenv("PGUSER")
+    database_uri = f"postgresql://{database_user}:{database_pass}@localhost/{database_name}"
+
+    # Uncomment for local
+    # database_uri = f"postgresql://postgres:secret@localhost"
+    engine = create_engine(database_uri, connect_args={"connect_timeout": 5})
+
+    # engine.execute(schema.CreateSchema('persistence_schema'))
+    # metadata_obj.create_all(bind=engine)
+
+    # from sqlalchemy.schema import DropSchema
+    # engine.execute(DropSchema("persistence_schema", cascade=True))
+
+    from sqlalchemy.schema import CreateSchema
+    from backend.layers.persistence.orm import metadata
+
+    engine.execute(CreateSchema("persistence_schema"))
+    metadata.create_all(bind=engine)
+
+    with Session(engine) as session:
+
+        for collection in collections:
+            canonical_collection_row = CollectionRow(
+                id=collection["id"],
+                version_id=collection["version_id"],
+                originally_published_at=collection.get("originally_published_at"),
+                tombstoned=collection["tombstoned"],
+            )
+
+            session.add(canonical_collection_row)
+        session.commit()
+
+        for version in collection_versions:
+
+            coll_metadata = version["metadata"]
+            for link in coll_metadata["links"]:
+                link["uri"] = link["url"]
+                del link["url"]
+
+            collection_version_row = CollectionVersionRow(
+                collection_id=version["collection_id"],
+                version_id=version["version_id"],
+                owner=version["owner"],
+                metadata=json.dumps(coll_metadata),
+                publisher_metadata=json.dumps(version["publisher_metadata"]),
+                published_at=version["published_at"],
+                datasets=version["datasets"],
+                created_at=version.get("created_at"),
+                curator_name=version.get("curator_name"),
+            )
+            session.add(collection_version_row)
+        session.commit()
+
+        for dataset in datasets:
+            dataset_row = DatasetRow(
+                dataset_id=dataset["dataset_id"],
+                dataset_version_id=dataset["dataset_version_id"],
+                published_at=dataset.get("published_at"),
+            )
+
+            session.add(dataset_row)
+        session.commit()
+
+        for dataset_version in dataset_versions:
+
+            if not dataset_version.get("status"):
+                continue
+
+            metadata = dataset_version["metadata"]
+
+            dataset_version_row = DatasetVersionRow(
+                version_id=dataset_version["version_id"],
+                dataset_id=dataset_version["dataset_id"],
+                collection_id=dataset_version["collection_id"],
+                metadata=json.dumps(dataset_version["metadata"]),
+                artifacts=dataset_version["artifacts"],
+                status=json.dumps(dataset_version["status"]),
+                created_at=dataset_version.get("created_at"),
+            )
+
+            session.add(dataset_version_row)
+        session.commit()
+
+        for artifact in artifacts:
+            artifact_row = DatasetArtifactRow(
+                id=artifact["id"],
+                type=artifact["type"],
+                uri=artifact["uri"],
+            )
+
+            session.add(artifact_row)
+        session.commit()

@@ -26,10 +26,12 @@ export interface Props {
   position?: typeof Position[keyof typeof Position];
   SideBarWrapperComponent?: typeof SideBarWrapper;
   SideBarPositionerComponent?: typeof SideBarPositioner;
+  SideBarOpenButtonWrapperComponent?: typeof SideBarOpenButtonWrapper;
   testId?: string;
   disabled?: boolean;
   forceToggle?: boolean;
   wmgSideBar?: boolean;
+  truncatedLabel?: string;
 }
 
 export default function SideBar({
@@ -41,15 +43,17 @@ export default function SideBar({
   position = Position.LEFT,
   SideBarWrapperComponent = SideBarWrapper,
   SideBarPositionerComponent = SideBarPositioner,
+  SideBarOpenButtonWrapperComponent = SideBarOpenButtonWrapper,
   testId,
   disabled,
   forceToggle,
   wmgSideBar,
+  truncatedLabel = "",
 }: Props): JSX.Element {
   const [isExpanded, setIsExpanded] = useState(isOpen);
   const sideBarWidth = isExpanded ? width : COLLAPSED_WIDTH_PX;
   const SideBarToggleButtonWrapper = isExpanded
-    ? SideBarOpenButtonWrapper
+    ? SideBarOpenButtonWrapperComponent
     : SideBarClosedButtonWrapper;
   const rightIcon = (position === Position.LEFT ? isExpanded : !isExpanded)
     ? IconNames.CHEVRON_LEFT
@@ -67,8 +71,7 @@ export default function SideBar({
   };
 
   useEffect(() => {
-    if (!(disabled && !isExpanded) && wmgSideBar)
-      handleExpandedClick(!isExpanded);
+    if (!(disabled && !isExpanded) && wmgSideBar) handleExpandedClick(true);
   }, [forceToggle]);
 
   return (
@@ -83,7 +86,7 @@ export default function SideBar({
             minimal
             onClick={() => handleExpandedClick(!isExpanded)}
             rightIcon={rightIcon}
-            text={label}
+            text={!isExpanded && truncatedLabel ? truncatedLabel : label}
             disabled={disabled}
           />
         </SideBarToggleButtonWrapper>

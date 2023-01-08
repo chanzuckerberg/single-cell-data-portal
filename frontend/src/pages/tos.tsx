@@ -5,14 +5,14 @@ import rawCellxgeneLogo from "src/components/common/staticPages/cellxgene.png";
 import {
   CommonStyle,
   Layout,
-  PrivacyStyle,
+  TOSStyle,
 } from "src/components/common/staticPages/style";
 
 const ToS = (): JSX.Element => {
   return (
     <Layout>
       <CommonStyle>
-        <PrivacyStyle>
+        <TOSStyle>
           <Head>
             <title>CELL&times;GENE | Terms of Service</title>
           </Head>
@@ -29,6 +29,8 @@ const ToS = (): JSX.Element => {
           <br />
 
           <h1 id="tos">Terms of Use</h1>
+
+          <p>Last Updated: December 15, 2022.</p>
 
           <p>
             <span className="caps">
@@ -286,9 +288,9 @@ const ToS = (): JSX.Element => {
               <br />
               <address>
                 Chan Zuckerberg Initiative Foundation <br />
-                314 Lytton Ave.
+                801 Jefferson Ave.
                 <br />
-                Palo Alto, CA 94301
+                Redwood City, CA 94063
                 <br />
                 Attn: General Counsel <br />
                 Email: courtesy copy:{" "}
@@ -314,7 +316,7 @@ const ToS = (): JSX.Element => {
               permission.
             </li>
           </ol>
-        </PrivacyStyle>
+        </TOSStyle>
       </CommonStyle>
     </Layout>
   );

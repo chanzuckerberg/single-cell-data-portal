@@ -9,7 +9,7 @@ on:
   pull_request:
     branches:
       - "*"
-      - feature/schema-3-0-0
+      - ebezzi/business-layer-unit-tests
 
 env:
   CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
@@ -81,20 +81,61 @@ jobs:
           npx playwright install --with-deps
           cp src/configs/dev.js src/configs/configs.js
           npm run dev&
+
+      # Run E2E tests
       - name: Run E2E tests
         run: DEBUG=pw:api npm run e2e
-      - uses: actions/upload-artifact@v2
+
+      # Upload Playwright report as an artifact
+      - uses: actions/upload-artifact@v3
         if: always()
         with:
           name: test-results
-          path: frontend/playwright-report/
+          path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/playwright-report
           retention-days: 30
+      # Upload Allure results as an artifact
+      - uses: actions/upload-artifact@v3
+        with:
+          name: allure-results
+          path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/frontend/allure-results
+          retention-days: 20
+      - name: Install happy
+        uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.2.1
+        with:
+          happy_version: "0.23.0"
+      - uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          fields: repo,commit,author,eventName,workflow,job,mention
+          mention: "here"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+        if: failure() && github.ref == 'refs/heads/main'
+
+  build-frontend-backend-images:
+    runs-on: ubuntu-20.04
+    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod' )
+    needs:
+      - e2e-test
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 1800
+      - name: Login to ECR
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ secrets.ECR_REPO }}
+      - uses: actions/checkout@v2
       - name: Install happy
         uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.2.1
         with:
           happy_version: "0.23.0"
       - name: Push images
-        if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod' )
         run: |
           echo "HAPPY_COMMIT=$(git rev-parse --verify HEAD)" >> envfile
           echo "HAPPY_BRANCH=$(git branch --show-current)" >> envfile
@@ -106,9 +147,9 @@ jobs:
           mention: "here"
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-        if: failure() && github.ref == 'refs/heads/main'
+        if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
 
-  build-extra-images:
+  build-batch-job-images:
     runs-on: ubuntu-20.04
     if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod' )
     steps:
@@ -145,11 +186,14 @@ jobs:
   push-prod-images:
     needs:
       - backend-unit-test
+      - backend-wmg-unit-test
+      - backend-integration-test
       - processing-unit-test
       - wmg-processing-unit-test
       - e2e-test
       - lint
-      - build-extra-images
+      - build-frontend-backend-images
+      - build-batch-job-images
     runs-on: ubuntu-20.04
     if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
     steps:
@@ -210,16 +254,18 @@ jobs:
             **/Dockerfile
             requirements*.txt
             **/requirements*.txt
-      - name: Check if containers need to be rebuilt
-        if: steps.changed-files.outputs.any_changed == 'true'
+      - name: Run unit tests
         run: |
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
-          make local-rebuild-backend
-      - name: Run tests in docker-compose
-        run: |
-          echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
-          make local-init-test-data
-          make all-local-unit-test-backend
+          make local-unit-test-backend
+
+      # Upload Allure results as an artifact
+      - uses: actions/upload-artifact@v3
+        with:
+          name: allure-results
+          path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/allure-results
+          retention-days: 20
+
       - uses: 8398a7/action-slack@v3
         with:
           status: ${{ job.status }}
@@ -228,6 +274,56 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
+
+
+  backend-wmg-unit-test:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 1800
+      - name: Login to ECR
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ secrets.ECR_REPO }}
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v23.1
+        with:
+          files: |
+            Dockerfile*
+            **/Dockerfile
+            requirements*.txt
+            **/requirements*.txt
+      - name: Run unit tests
+        run: |
+          echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
+          make local-unit-test-wmg-backend
+
+      # Upload Allure results as an artifact
+      - uses: actions/upload-artifact@v3
+        with:
+          name: allure-results
+          path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/allure-results
+          retention-days: 20
+
+      - uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          fields: repo,commit,author,eventName,workflow,job,mention
+          mention: "here"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+        if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
+
 
   processing-unit-test:
     runs-on: ubuntu-20.04
@@ -264,8 +360,15 @@ jobs:
       - name: Run tests in docker-compose
         run: |
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
-          make local-init-test-data
           make local-unit-test-processing
+
+      # Upload Allure results as an artifact
+      - uses: actions/upload-artifact@v3
+        with:
+          name: allure-results
+          path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/allure-results
+          retention-days: 20
+
       - uses: 8398a7/action-slack@v3
         with:
           status: ${{ job.status }}
@@ -311,6 +414,12 @@ jobs:
         run: |
           echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
           make local-unit-test-wmg-processing
+      # Upload Allure results as an artifact
+      - uses: actions/upload-artifact@v3
+        with:
+          name: allure-results
+          path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/allure-results
+          retention-days: 20
       - uses: 8398a7/action-slack@v3
         with:
           status: ${{ job.status }}
@@ -320,14 +429,113 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
 
+  backend-integration-test:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          role-duration-seconds: 1800
+      - name: Login to ECR
+        uses: docker/login-action@v1
+        with:
+          registry: ${{ secrets.ECR_REPO }}
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v23.1
+        with:
+          files: |
+            Dockerfile*
+            **/Dockerfile
+            requirements*.txt
+            **/requirements*.txt
+      - name: Check if containers need to be rebuilt
+        if: steps.changed-files.outputs.any_changed == 'true'
+        run: |
+          echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
+          make local-rebuild-backend
+      - name: Run tests against postgres instance
+        run: |
+          echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
+          make local-integration-test-backend
+      # Upload Allure results as an artifact
+      - uses: actions/upload-artifact@v3
+        with:
+          name: allure-results
+          path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/allure-results
+          retention-days: 20
+      - uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          fields: repo,commit,author,eventName,workflow,job,mention
+          mention: "here"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+        if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
+
+  publish-test-report:
+    needs:
+      - backend-unit-test
+      - backend-wmg-unit-test
+      - e2e-test
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: allure-results
+          path: allure-results
+
+      # Checkout gh-pages branch and get Allure result history
+      - name: Get Allure history
+        uses: actions/checkout@v3
+        if: always()
+        continue-on-error: true
+        with:
+          ref: gh-pages
+          path: gh-pages
+
+      # Create test results history as an Allure report
+      - name: Create test results history as an Allure report
+        uses: simple-elf/allure-report-action@master
+        if: always()
+        id: allure-report
+        with:
+          allure_results: allure-results
+          gh_pages: gh-pages
+          allure_report: allure-report
+          allure_history: allure-history
+
+      # Deploy Allure report to github pages
+      - name: Deploy report to Github Pages
+        if: always()
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
+          publish_dir: allure-history
+
+      # Output the link to the github page for this current run
+      - name: Post the link to the report in summary
+        run: "echo 'Test Results Dashboard (Run #${{ github.run_number }}): https://chanzuckerberg.github.io/single-cell-data-portal/${{ github.run_number }}' >> $GITHUB_STEP_SUMMARY"
+
   add-image-tags:
     needs:
       - backend-unit-test
+      - backend-wmg-unit-test
+      - backend-integration-test
       - processing-unit-test
       - wmg-processing-unit-test
       - e2e-test
       - lint
-      - build-extra-images
+      - build-frontend-backend-images
+      - build-batch-job-images
     runs-on: ubuntu-20.04
     if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod' )
     steps:
@@ -347,7 +555,7 @@ jobs:
       - name: Install happy
         uses: chanzuckerberg/github-actions/.github/actions/install-happy@install-happy-v1.2.1
         with:
-          happy_version: "0.23.0"
+          happy_version: "0.42.1"
       - name: Docker re-tag
         shell: bash
         run: |

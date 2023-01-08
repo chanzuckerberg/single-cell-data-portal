@@ -53,7 +53,7 @@ export const SideBarPositioner = styled.div<PositionerProps>`
   }
 `;
 
-const SideBarToggleButtonWrapper = styled.span`
+export const SideBarToggleButtonWrapper = styled.span`
   .${Classes.BUTTON} {
     color: ${PT_TEXT_COLOR};
     display: flex;
@@ -103,5 +103,19 @@ export const SideBarOpenButtonWrapper = styled(SideBarToggleButtonWrapper)`
     justify-content: space-between;
     padding: 0;
     width: 100%;
+  }
+`;
+
+export const GeneSideBarOpenButtonWrapper = styled(SideBarToggleButtonWrapper)`
+  display: block;
+
+  .${Classes.BUTTON} {
+    height: auto; /* overrides specificity of bp4 button height rule */
+    justify-content: space-between;
+    padding: 0;
+    width: 100%;
+    font-weight: 800;
+    font-size: 20px;
+    line-height: 24px;
   }
 `;

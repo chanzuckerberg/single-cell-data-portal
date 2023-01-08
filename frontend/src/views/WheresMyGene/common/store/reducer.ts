@@ -32,6 +32,11 @@ export interface State {
    */
   snapshotId: string | null;
   sortBy: { cellTypes: SORT_BY; genes: SORT_BY; scaled: SORT_BY };
+  cellInfoCellType: {
+    cellType: CellType;
+    tissueID: string;
+    organismID: string;
+  } | null;
 }
 
 // (thuang): If you have derived states based on the state, use `useMemo`
@@ -50,9 +55,11 @@ export const INITIAL_STATE: State = {
     genes: SORT_BY.USER_ENTERED,
     scaled: SORT_BY.COLOR_SCALED,
   },
+  cellInfoCellType: null,
 };
 
 export const REDUCERS = {
+  addSelectedGenes,
   deleteSelectedGenesAndSelectedCellTypeIds,
   resetGenesToDeleteAndCellTypeIdsToDelete,
   resetTissueCellTypes,
@@ -66,6 +73,7 @@ export const REDUCERS = {
   tissueCellTypesFetched,
   toggleCellTypeIdToDelete,
   toggleGeneToDelete,
+  addCellInfoCellType,
 };
 
 export function reducer(state: State, action: PayloadAction<unknown>): State {
@@ -347,5 +355,45 @@ function setSnapshotId(
   return {
     ...state,
     snapshotId: payload,
+  };
+}
+
+function addSelectedGenes(
+  state: State,
+  action: PayloadAction<State["selectedGenes"]>
+): State {
+  const { payload } = action;
+  let newSelectedGenes = state.selectedGenes;
+
+  newSelectedGenes = newSelectedGenes.filter((gene) => !payload.includes(gene));
+
+  return {
+    ...state,
+    selectedGenes: [...payload, ...newSelectedGenes],
+  };
+}
+
+export interface AddCellInfoCellTypePayload {
+  cellType: CellType;
+  tissueID: string;
+}
+
+function addCellInfoCellType(
+  state: State,
+  action: PayloadAction<AddCellInfoCellTypePayload>
+): State {
+  const { payload } = action;
+
+  // Type safety, this should never happen
+  if (!state.selectedOrganismId) return state;
+
+  const newCellInfoCellType = {
+    cellType: payload.cellType,
+    organismID: state.selectedOrganismId,
+    tissueID: payload.tissueID,
+  };
+  return {
+    ...state,
+    cellInfoCellType: newCellInfoCellType,
   };
 }

@@ -1,5 +1,4 @@
 import {
-  ComplexFilter,
   ComplexFilterInputDropdown,
   DefaultMenuSelectOption,
   InputDropdownProps,
@@ -7,7 +6,6 @@ import {
 } from "czifui";
 import isEqual from "lodash/isEqual";
 import {
-  Fragment,
   memo,
   ReactElement,
   useCallback,
@@ -27,7 +25,11 @@ import { selectFilters } from "../../common/store/actions";
 import { Filters as IFilters } from "../../common/types";
 import Organism from "../GeneSearchBar/components/Organism";
 import Sort from "./components/Sort";
-import { StyledComplexFilterInputDropdown, Wrapper } from "./style";
+import {
+  StyledComplexFilter,
+  StyledComplexFilterInputDropdown,
+  Wrapper,
+} from "./style";
 
 /**
  * NOTE(thuang): Update this count to match the amount of filters we render,
@@ -35,7 +37,7 @@ import { StyledComplexFilterInputDropdown, Wrapper } from "./style";
  */
 const FILTERS_COUNT = 4;
 
-const MenuSelectProps = {
+const DropdownMenuProps = {
   getOptionSelected,
 };
 
@@ -180,7 +182,7 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
     <TooltipWrapper>
       <Wrapper>
         <div>
-          <ComplexFilter
+          <StyledComplexFilter
             multiple
             label="Dataset"
             options={datasets as unknown as DefaultMenuSelectOption[]}
@@ -189,10 +191,10 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
             InputDropdownComponent={
               StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
             }
-            MenuSelectProps={MenuSelectProps}
+            DropdownMenuProps={DropdownMenuProps}
             InputDropdownProps={InputDropdownProps}
           />
-          <ComplexFilter
+          <StyledComplexFilter
             multiple
             label="Disease"
             options={disease_terms}
@@ -201,10 +203,10 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
             InputDropdownComponent={
               StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
             }
-            MenuSelectProps={MenuSelectProps}
+            DropdownMenuProps={DropdownMenuProps}
             InputDropdownProps={InputDropdownProps}
           />
-          <ComplexFilter
+          <StyledComplexFilter
             multiple
             label="Self-Reported Ethnicity"
             options={self_reported_ethnicity_terms}
@@ -213,10 +215,10 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
             InputDropdownComponent={
               StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
             }
-            MenuSelectProps={MenuSelectProps}
+            DropdownMenuProps={DropdownMenuProps}
             InputDropdownProps={InputDropdownProps}
           />
-          <ComplexFilter
+          <StyledComplexFilter
             multiple
             label="Sex"
             options={sex_terms}
@@ -225,7 +227,7 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
             InputDropdownComponent={
               StyledComplexFilterInputDropdown as typeof ComplexFilterInputDropdown
             }
-            MenuSelectProps={MenuSelectProps}
+            DropdownMenuProps={DropdownMenuProps}
             InputDropdownProps={InputDropdownProps}
           />
         </div>
@@ -238,13 +240,15 @@ export default memo(function Filters({ isLoading }: Props): JSX.Element {
   );
 
   function TooltipWrapper({ children }: { children: ReactElement }) {
-    const Wrapper = areFiltersDisabled ? Tooltip : Fragment;
+    if (areFiltersDisabled) {
+      return (
+        <Tooltip title="Please select an organism, tissue and at least one gene to use these filters.">
+          {children}
+        </Tooltip>
+      );
+    }
 
-    return (
-      <Wrapper title="Please select an organism, tissue and at least one gene to use these filters.">
-        {children}
-      </Wrapper>
-    );
+    return <>{children}</>;
   }
 });
 

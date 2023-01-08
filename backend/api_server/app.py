@@ -1,29 +1,32 @@
 import json
 import os
 import time
+
 from urllib.parse import urlparse
 
 import connexion
-
 from connexion import FlaskApi, ProblemException, problem
-from flask import g, request, Response
+from flask import Response, g, request
 from flask_cors import CORS
 from swagger_ui_bundle import swagger_ui_path
+
 from backend.api_server.logger import configure_logging
+from backend.api_server.request_id import generate_request_id, get_request_id
 from backend.common.utils.aws import AwsSecret
-from backend.common.utils.json import CustomJSONEncoder, CurationJSONEncoder
-from backend.api_server.request_id import get_request_id, generate_request_id
+from backend.common.utils.json import CurationJSONEncoder, CustomJSONEncoder
 from backend.gene_info.api.ensembl_ids import GeneChecker
 
 DEPLOYMENT_STAGE = os.environ["DEPLOYMENT_STAGE"]
-APP_NAME = "{}-{}".format(os.environ["APP_NAME"], DEPLOYMENT_STAGE)
+APP_NAME = "{}-{}".format(os.environ.get("APP_NAME", "api"), DEPLOYMENT_STAGE)
 
 
 configure_logging(APP_NAME)
 
 
 def create_flask_app():
-    connexion_app = connexion.FlaskApp(APP_NAME, specification_dir="backend")
+    connexion_app = connexion.FlaskApp(
+        APP_NAME, specification_dir="backend", server_args=dict(static_folder="backend/api_server/static")
+    )
 
     # From https://github.com/zalando/connexion/issues/346
     connexion_app.app.url_map.strict_slashes = False
@@ -68,7 +71,7 @@ def configure_flask_app(flask_app):
     allowed_origins = []
     deployment_stage = os.environ["DEPLOYMENT_STAGE"]
     if deployment_stage not in ["prod"]:
-        allowed_origins.extend([r"http://.*\.corporanet\.local:\d+", r"^http://localhost:\d+"])
+        allowed_origins.extend([r"https?://.*\.corporanet\.local:\d+", r"^https?://localhost:\d+"])
     if os.getenv("FRONTEND_URL"):
         allowed_origins.append(os.getenv("FRONTEND_URL"))
     if deployment_stage != "test":  # pragma: no cover
@@ -155,11 +158,6 @@ def after_request(response: Response):
     )
     response.headers["X-Request-Id"] = get_request_id()
     return response
-
-
-@app.teardown_appcontext
-def close_db(e=None):
-    g.pop("db_session", None)
 
 
 @app.errorhandler(ProblemException)

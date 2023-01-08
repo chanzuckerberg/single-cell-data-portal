@@ -8,6 +8,7 @@ charset-normalizer==2.0.12
 clickclick==20.10.2
 connexion==2.12.0
 cycler==0.11.0
+dataclasses-json
 decorator==5.1.1
 executing==0.8.2
 fastobo==0.11.1
@@ -62,6 +63,7 @@ pyarrow==7.0.0
 pyasn1==0.4.8
 pycodestyle==2.8.0
 pycparser==2.21
+pydantic>=1.9.0
 pyflakes==2.4.0
 Pygments==2.11.2
 pygraphviz

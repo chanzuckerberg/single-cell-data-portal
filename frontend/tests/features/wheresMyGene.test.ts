@@ -12,6 +12,8 @@ const GENE_LABELS_ID = "gene-labels";
 const CELL_TYPE_LABELS_ID = "cell-type-labels";
 const ADD_TISSUE_ID = "add-tissue";
 const ADD_GENE_ID = "add-gene";
+const SOURCE_DATA_BUTTON_ID = "source-data-button";
+const SOURCE_DATA_LIST_SELECTOR = `[data-test-id="source-data-list"]`;
 
 const { describe, skip } = test;
 
@@ -30,9 +32,6 @@ describe("Where's My Gene", () => {
 
     await expect(page).toHaveSelector(getText("STEP 3"));
     await expect(page).toHaveSelector(getText("Explore Gene Expression"));
-
-    // Beta callout
-    await expect(page).toHaveSelector(getText("This feature is in beta"));
 
     // Filters Panel
     // (thuang): `*` is for intermediate match
@@ -56,7 +55,9 @@ describe("Where's My Gene", () => {
 
     await expect(filtersPanel).toHaveSelector(getText("Dataset"));
     await expect(filtersPanel).toHaveSelector(getText("Disease"));
-    await expect(filtersPanel).toHaveSelector(getText("Self-Reported Ethnicity"));
+    await expect(filtersPanel).toHaveSelector(
+      getText("Self-Reported Ethnicity")
+    );
     await expect(filtersPanel).toHaveSelector(getText("Sex"));
 
     // Legend
@@ -142,6 +143,92 @@ describe("Where's My Gene", () => {
     }
   });
 
+  test("Source Data", async ({ page }) => {
+    await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
+
+    async function getSourceDataButton() {
+      return page.$(getTestID(SOURCE_DATA_BUTTON_ID));
+    }
+    async function getTissueSelectorButton() {
+      return page.$(getTestID(ADD_TISSUE_ID));
+    }
+
+    async function getGeneSelectorButton() {
+      return page.$(getTestID(ADD_GENE_ID));
+    }
+
+    await clickUntilOptionsShowUp(getTissueSelectorButton, page);
+    await selectFirstOption(page);
+
+    await clickUntilOptionsShowUp(getGeneSelectorButton, page);
+    await selectFirstOption(page);
+
+    await tryUntil(
+      async () => {
+        const canvases = await page.$$("canvas");
+        expect(canvases.length).not.toBe(0);
+      },
+      { page }
+    );
+    await clickUntilSidebarShowsUp(getSourceDataButton, page);
+    await expect(page).toHaveSelector(
+      getText(
+        "After filtering cells with low coverage (less than 500 genes expressed)"
+      )
+    );
+
+    await tryUntil(
+      async () => {
+        const sourceDataList = await page.$(SOURCE_DATA_LIST_SELECTOR);
+
+        if (!sourceDataList) throw Error("no source data displayed");
+
+        const sourceDataListItems = await sourceDataList?.$$(
+          ".MuiListItem-root"
+        );
+
+        expect(sourceDataListItems?.length).toBeGreaterThan(0);
+
+        await page.mouse.click(0, 0);
+
+        async function getFiltersPanel() {
+          return page.$(getTestID("filters-panel"));
+        }
+        async function getDatasetSelector() {
+          const filtersPanel = await getFiltersPanel();
+
+          if (!filtersPanel) {
+            throw Error("Filters panel not found");
+          }
+
+          return filtersPanel.$("*css=button >> text=Dataset");
+        }
+        const datasetSelector = await getDatasetSelector();
+        if (!datasetSelector) throw Error("No datasetSelector found");
+        const selectedDatasetsBefore = await datasetSelector.$$(
+          ".MuiChip-root"
+        );
+        await expect(selectedDatasetsBefore.length).toBe(0);
+        await clickUntilOptionsShowUp(getDatasetSelector, page);
+        await selectFirstOption(page);
+        await clickUntilSidebarShowsUp(getSourceDataButton, page);
+
+        const sourceDataListAfter = await page.$(SOURCE_DATA_LIST_SELECTOR);
+
+        if (!sourceDataListAfter)
+          throw Error(
+            "no source data displayed after selecting dataset filter"
+          );
+
+        const sourceDataListAfterItems = await sourceDataListAfter?.$$(
+          ".MuiListItem-root"
+        );
+
+        expect(sourceDataListAfterItems?.length).toBeGreaterThan(0);
+      },
+      { page }
+    );
+  });
   test("Hierarchical Clustering", async ({ page }) => {
     await goToPage(`${TEST_URL}${ROUTES.WHERE_IS_MY_GENE}`, page);
 
@@ -157,6 +244,8 @@ describe("Where's My Gene", () => {
     const GENE_COUNT = 3;
 
     await clickUntilOptionsShowUp(getTissueSelectorButton, page);
+    const texts = await page.getByRole("option").allTextContents();
+    const tissueName = texts[0].replace(/\s+/g, "-");
     await selectFirstNOptions(TISSUE_COUNT, page);
 
     await clickUntilOptionsShowUp(getGeneSelectorButton, page);
@@ -168,7 +257,7 @@ describe("Where's My Gene", () => {
     );
 
     const beforeCellTypeNames = await getNames(
-      `${getTestID(CELL_TYPE_LABELS_ID)} text`,
+      `${getTestID(`${CELL_TYPE_LABELS_ID}-${tissueName}`)} button`,
       page
     );
 
@@ -196,7 +285,7 @@ describe("Where's My Gene", () => {
     );
 
     const afterCellTypeNames = await getNames(
-      `${getTestID(CELL_TYPE_LABELS_ID)} text`,
+      `${getTestID(`${CELL_TYPE_LABELS_ID}-${tissueName}`)} button`,
       page
     );
 
@@ -224,6 +313,8 @@ describe("Where's My Gene", () => {
     }
 
     await clickUntilOptionsShowUp(getTissueSelectorButton, page);
+    const texts = await page.getByRole("option").allTextContents();
+    const tissueName = texts[0].replace(/\s+/g, "-");
     await selectFirstNOptions(1, page);
 
     await clickUntilOptionsShowUp(getGeneSelectorButton, page);
@@ -242,7 +333,7 @@ describe("Where's My Gene", () => {
       page
     );
     const beforeCellTypeNames = await getNames(
-      `${getTestID(CELL_TYPE_LABELS_ID)} text`,
+      `${getTestID(`${CELL_TYPE_LABELS_ID}-${tissueName}`)} button`,
       page
     );
 
@@ -259,7 +350,7 @@ describe("Where's My Gene", () => {
           page
         );
         const afterCellTypeNames = await getNames(
-          `${getTestID(CELL_TYPE_LABELS_ID)} text`,
+          `${getTestID(`${CELL_TYPE_LABELS_ID}-${tissueName}`)} button`,
           page
         );
 
@@ -268,12 +359,7 @@ describe("Where's My Gene", () => {
         // (thuang): Sometimes when API response is slow, we'll not capture all the
         // cell type names, so a sanity check that we expect at least 100 names
         expect(beforeCellTypeNames.length).toBeGreaterThan(100);
-
-        // (thuang): We need to half the cellTypeName count, because it's grabbing
-        // Cell Count text elements as well.
-        expect(afterCellTypeNames.length / 2).toBe(
-          beforeCellTypeNames.length / 2 - 1
-        );
+        expect(afterCellTypeNames.length).toBe(beforeCellTypeNames.length-1);
 
         expect(afterGeneNames).not.toEqual(beforeGeneNames);
         expect(afterCellTypeNames).not.toEqual(beforeCellTypeNames);
@@ -299,7 +385,7 @@ describe("Where's My Gene", () => {
     await tryUntil(
       async () => {
         const afterCellTypeNames = await getNames(
-          `${getTestID(CELL_TYPE_LABELS_ID)} text`,
+          `${getTestID(`${CELL_TYPE_LABELS_ID}-${tissueName}`)} button`,
           page
         );
 
@@ -338,7 +424,6 @@ describe("Where's My Gene", () => {
 
 async function getNames(selector: string, page: Page): Promise<string[]> {
   const geneLabelsLocator = await page.locator(selector);
-
   await tryUntil(
     async () => {
       const names = await geneLabelsLocator.allTextContents();
@@ -372,7 +457,24 @@ async function clickUntilOptionsShowUp(
     { page }
   );
 }
+async function clickUntilSidebarShowsUp(
+  getTarget: () => Promise<ElementHandle<SVGElement | HTMLElement> | null>,
+  page: Page
+) {
+  await tryUntil(
+    async () => {
+      const target = await getTarget();
 
+      if (!target) throw Error("no target");
+
+      await target.click();
+      const drawer = await page.$("[class=bp4-drawer-header]");
+
+      if (!drawer) throw Error("no drawer");
+    },
+    { page }
+  );
+}
 // (thuang): This only works when a dropdown is open
 async function selectFirstOption(page: Page) {
   await selectFirstNOptions(1, page);
