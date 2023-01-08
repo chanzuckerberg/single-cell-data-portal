@@ -6,8 +6,10 @@ import {
   Table,
   TableHeader,
   TableRow,
+  Tooltip,
 } from "czifui";
 import React, { useCallback, useContext } from "react";
+import { ROUTES } from "src/common/constants/routes";
 import { useMarkerGenes } from "src/common/queries/wheresMyGene";
 import { BetaChip } from "src/components/Header/style";
 import { DispatchContext, State } from "../../common/store";
@@ -63,6 +65,28 @@ function CellInfoSideBar({
       <TissueName>{tissueName}</TissueName>
       <ButtonContainer>
         <div>
+          <Tooltip
+            sdsStyle="dark"
+            placement="bottom"
+            width="default"
+            arrow={true}
+            title={
+              <>
+                <div>Marker genes are highly and uniquely expressed in the cell type relative to all other cell types.</div>
+                <br/>
+                <div>
+                  <a 
+                    href={ROUTES.FMG_DOCS} 
+                    rel="noopener" 
+                    target="_blank" 
+                    style={{color: "inherit"}}
+                  >
+                    Click to read more about the identification method.
+                  </a>
+                </div>
+              </>
+            }
+          >
           <TooltipButton
             endIcon={<Icon sdsIcon="infoCircle" sdsSize="s" sdsType="button" />}
             onClick={handleCopyGenes}
@@ -73,6 +97,8 @@ function CellInfoSideBar({
           >
             Marker Genes
           </TooltipButton>
+
+          </Tooltip>
           <BetaChip label="Beta" size="small" />
         </div>
         <Button
