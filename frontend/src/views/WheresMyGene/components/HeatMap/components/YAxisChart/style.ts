@@ -1,12 +1,12 @@
 import Image from "next/image";
 import styled from "@emotion/styled";
 import {
-  SELECTED_STYLE,
   HEAT_MAP_BASE_CELL_PX,
   X_AXIS_CHART_HEIGHT_PX,
   Y_AXIS_CHART_WIDTH_PX,
 } from "../../utils";
 import { ECHART_AXIS_LABEL_COLOR_HEX } from "../XAxisChart/style";
+import { SELECTED_STYLE } from "../../style";
 
 export const Y_AXIS_TISSUE_WIDTH_PX = 30;
 

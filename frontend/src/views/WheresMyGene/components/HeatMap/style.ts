@@ -1,7 +1,16 @@
 import styled from "@emotion/styled";
 import { X_AXIS_CHART_HEIGHT_PX, Y_AXIS_CHART_WIDTH_PX } from "./utils";
+import { LIGHT_GRAY } from "src/components/common/theme";
 
 export const CHART_LEFT_PADDING = 10;
+
+export const SELECTED_STYLE = {
+  backgroundColor: LIGHT_GRAY.D,
+  fontWeight: "bold" as never,
+  fontFamily: "sans-serif",
+  fontSize: 12,
+  padding: 4,
+};
 
 export const Container = styled.div`
   height: 75vh;

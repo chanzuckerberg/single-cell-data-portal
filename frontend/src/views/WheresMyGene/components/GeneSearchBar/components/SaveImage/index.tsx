@@ -32,6 +32,7 @@ const screenshotFilter =
       EXCLUDE_IN_SCREENSHOT_CLASS_NAME
     );
     const isNoScript = domNode.tagName === "NOSCRIPT";
+
     const isNonTissueChart =
       domNode.id &&
       domNode.id.includes("chart") &&
@@ -80,7 +81,7 @@ export default function SaveImage({
     try {
       const heatmapNode = document.getElementById("view") as HTMLCanvasElement;
       //(ashin): #3569 Get scrollTop to go back to place after downloading image
-      let heatmapContainer = document.getElementById(
+      const heatmapContainer = document.getElementById(
         HEATMAP_CONTAINER_ID
       ) as HTMLCanvasElement;
       heatmapContainerScrollTop = heatmapContainer?.scrollTop;
