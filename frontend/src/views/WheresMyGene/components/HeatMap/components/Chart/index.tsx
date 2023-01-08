@@ -119,7 +119,7 @@ export default memo(function Chart({
     });
 
     setChart(chart);
-  }, [ref, isChartInitialized, throttledSetCurrentIndices]);
+  }, [ref, isChartInitialized, throttledSetCurrentIndices, heatmapWidth, heatmapHeight]);
 
   // Update heatmap size
   useEffect(() => {
