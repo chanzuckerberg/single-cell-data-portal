@@ -12,8 +12,8 @@ import {
   deserializeCellTypeMetadata,
   getAllSerializedCellTypeMetadata,
   getHeatmapHeight,
-  SELECTED_STYLE,
   Y_AXIS_CHART_WIDTH_PX,
+  formatLabel,
 } from "../../utils";
 import ReplaySVG from "./icons/replay.svg";
 import InfoSVG from "./icons/info-sign-icon.svg";
@@ -30,6 +30,7 @@ import {
   FlexRow,
   InfoButtonWrapper,
 } from "./style";
+import { SELECTED_STYLE } from "../../style";
 
 const MAX_DEPTH = 2;
 
@@ -108,7 +109,7 @@ export default memo(function YAxisChart({
             const { fontWeight, fontSize, fontFamily } = SELECTED_STYLE;
             const selectedFont = `${fontWeight} ${fontSize}px ${fontFamily}`;
 
-            const paddedName = formatCellLabel(
+            const paddedName = formatLabel(
               name,
               Y_AXIS_CHART_WIDTH_PX - 90, // scale based on y-axis width
               selectedFont, // prevents selected style from overlapping count
@@ -213,83 +214,4 @@ const CellTypeButton = ({
 
 function capitalize(str: string): string {
   return str.charAt(0).toUpperCase() + str.slice(1);
-}
-
-/**
- * Used to calculate text pixel widths. Should be only created once.
- */
-const CTX =
-  (typeof document !== "undefined" &&
-    document.createElement("canvas").getContext("2d")) ||
-  null;
-
-/**
- * Formats and truncates the cell type name to a given width
- *
- * @param name The text to truncate
- * @param maxWidth The max width in pixels the string should be
- * @param font The font family and font size as a string. Ex. "bold 12px sans-serif"
- * @param displayDepth The depth of the cell type name (indentation/padding)
- * @returns The string fixed to a certain pixel width
- */
-function formatCellLabel(
-  name: string,
-  maxWidth: number,
-  font: string,
-  displayDepth = 0
-): string {
-  CTX!.font = font;
-  const ellipsisWidth = CTX!.measureText("...").width;
-
-  const padding = " ".repeat(displayDepth * 8);
-  const paddingWidth = CTX!.measureText(padding).width;
-
-  if (CTX!.measureText(name).width + paddingWidth <= maxWidth) {
-    return padding + name;
-  }
-
-  const labelHalfWidth = (maxWidth - paddingWidth - ellipsisWidth) / 2;
-
-  const firstHalf = getFixedWidth(name, labelHalfWidth, font);
-  const secondHalf = getFixedWidth(name, labelHalfWidth, font, true);
-
-  return padding + firstHalf + "..." + secondHalf;
-}
-
-/**
- * Truncates the string to a given width
- *
- * @param text The text to truncate
- * @param maxWidth The max width in pixels the string should be
- * @param font The font family and font size as a string. Ex. "bold 12px sans-serif"
- * @param reverse Whether to truncate the end or beginning of the string
- * @returns The string fixed to a certain pixel width
- */
-export function getFixedWidth(
-  text: string,
-  maxWidth: number,
-  font: string,
-  reverse = false
-): string {
-  CTX!.font = font;
-
-  if (reverse) {
-    for (let i = text.length; i >= 0; i--) {
-      const substring = text.substring(i - 1);
-      const textWidth = CTX!.measureText(substring).width;
-      if (textWidth > maxWidth) {
-        return text.substring(i);
-      }
-    }
-  } else {
-    for (let i = 0; i < text.length; i++) {
-      const substring = text.substring(0, i + 1);
-      const textWidth = CTX!.measureText(substring).width;
-      if (textWidth > maxWidth) {
-        return text.substring(0, i);
-      }
-    }
-  }
-
-  return text;
 }
