@@ -29,7 +29,7 @@ export default function GetStarted({
   if (!tissueHasLoadedOnce && tissueSelected && !isLoading) {
     tissueHasLoadedOnce = true;
   }
-  if (!geneHasLoadedOnce && geneSelected && !isLoading) {
+  if (!geneHasLoadedOnce && geneSelected) {
     geneHasLoadedOnce = true;
   }
 

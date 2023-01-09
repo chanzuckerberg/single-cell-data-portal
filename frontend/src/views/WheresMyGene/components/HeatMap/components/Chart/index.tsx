@@ -66,7 +66,7 @@ export default memo(function Chart({
   const [isChartInitialized, setIsChartInitialized] = useState(false);
 
   const [chart, setChart] = useState<echarts.ECharts | null>(null);
-  const ref = useRef(null);
+  const ref = useRef<HTMLDivElement | null>(null);
 
   const [heatmapWidth, setHeatmapWidth] = useState(
     getHeatmapWidth(selectedGeneData)
@@ -100,7 +100,13 @@ export default memo(function Chart({
   useEffect(() => {
     const { current } = ref;
 
-    if (!current || isChartInitialized) {
+    if (
+      !current ||
+      isChartInitialized ||
+      // (thuang): echart's `init()` will throw error if the container has 0 width or height
+      current?.getAttribute("height") === "0" ||
+      current?.getAttribute("width") === "0"
+    ) {
       return;
     }
 
@@ -121,7 +127,13 @@ export default memo(function Chart({
     setHeatmapHeight(getHeatmapHeight(cellTypes));
   }, [cellTypes, selectedGeneData]);
 
-  useUpdateChart({ chart, chartProps, isScaled, heatmapWidth, heatmapHeight });
+  useUpdateChart({
+    chart,
+    chartProps,
+    heatmapHeight,
+    heatmapWidth,
+    isScaled,
+  });
 
   // Calculate cellTypeSummaries
   /**
@@ -307,7 +319,12 @@ export default memo(function Chart({
         ],
       }}
     >
-      <ChartContainer height={heatmapHeight} width={heatmapWidth} ref={ref} />
+      <ChartContainer
+        height={heatmapHeight}
+        width={heatmapWidth}
+        ref={ref}
+        id={`${tissue}-chart`}
+      />
     </Tooltip>
   );
 });
