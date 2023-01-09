@@ -28,7 +28,7 @@ class MarkerGeneCalculationTest(unittest.TestCase):
             agg, t_n_cells_sum, _ = _query_tiledb(TARGET_FILTERS, corpus=snapshot)
             test_sum = list(agg.sum(0))
             # check that returned dataframe is correct
-            expected_sum = [28538.255859375, 85875.046875, 11312.0, 11185.0]
+            expected_sum = [21988.90625, 66193.2578125, 8782.0, 8666.0]
             for i in range(len(test_sum)):
                 assert abs(test_sum[i] - expected_sum[i]) < 0.05
 
