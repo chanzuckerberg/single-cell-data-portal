@@ -15,6 +15,10 @@ from backend.wmg.data.snapshot import (
 from typing import Union, Optional
 
 
+class TargetPopulationEmptyError(Exception):
+    pass
+
+
 def _make_hashable(func):
     """
     Implicitly convert unhashable data structures (list and dict) to hashable strings
@@ -148,8 +152,10 @@ def _query_tiledb(
     keep_dataset_ids = group_by_dims is None and "dataset_id" in filters.keys()
     if genes is None:
         genes = list(agg.index.levels[0])
-
-    t_n_cells_sum = _calculate_true_n_cells(n_cells, genes, dataset_to_gene_ids, keep_dataset_ids)
+    try:
+        t_n_cells_sum = _calculate_true_n_cells(n_cells, genes, dataset_to_gene_ids, keep_dataset_ids)
+    except IndexError:
+        raise TargetPopulationEmptyError("Target population is empty.")
     return agg, t_n_cells_sum, genes
 
 
