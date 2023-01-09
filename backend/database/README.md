@@ -50,8 +50,7 @@ AWS_PROFILE=single-cell-{dev,prod} DEPLOYMENT_STAGE={dev,staging,prod} CORPORA_L
 
 The following steps will test that a migration script works on a local database using data downloaded from a deployed database.
 
-1. [Connect to Remote RDS](#connect-to-remote-rds)
-2. Open a new terminal and using the same values for `AWS_PROFILE` and `DEPLOYMENT_STAGE`, download the remote dev database schema:
+1. Open a new terminal and using the same values for `AWS_PROFILE` and `DEPLOYMENT_STAGE`, download the remote dev database schema:
 
 ```shell
 cd $REPO_ROOT/backend
@@ -60,15 +59,15 @@ AWS_PROFILE=single-cell-{dev,prod} DEPLOYMENT_STAGE={dev,staging,prod} make db/d
 
 This will download the database to `$REPO_ROOT/backend/corpora_dev.sqlc`.
 
-3. The tunnel to dev should close automatically (but worth verifying `ps ax | grep ssh`)
-4. Start the local database environment:
+2. The tunnel to dev should close automatically (but worth verifying `ps ax | grep ssh`)
+3. Start the local database environment:
 
 ```shell
 cd $REPO_ROOT
 make local-start
 ```
 
-5. Import the remote database schema into your local database:
+4. Import the remote database schema into your local database:
 
 ```shell
 cd $REPO_ROOT/backend
@@ -85,7 +84,7 @@ You may need to run this a few times, until there are no significant errors.
 
 - Note: `pg_restore: error: could not execute query: ERROR: role "rdsadmin" does not exist` is not a significant error
 
-6. Run the migration test:
+5. Run the migration test:
 
 ```shell
 AWS_PROFILE=single-cell-{dev,prod} DEPLOYMENT_STAGE=test make db/test_migration
@@ -99,7 +98,7 @@ This test will:
 1. Dump the schema (after)
 1. Compare the before vs after schemas. These should be identical if the database migration's `upgrade()` and `downgrade()` functions were implemented correctly.
 
-If there are no differences then the test passed. If the test didn't pass, make adjustments to your migration script and restart from step 5. Repeat until there are no errors.
+If there are no differences then the test passed. If the test didn't pass, make adjustments to your migration script and restart from step 4. Repeat until there are no errors.
 
 ## Connect to Remote RDS
 
