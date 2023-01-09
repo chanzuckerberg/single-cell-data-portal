@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { Button, CellHeader, CellHeaderProps, getColors } from "czifui";
+import { Button, CellHeader, CellHeaderProps, getColors, Tooltip } from "czifui";
 
 export const CELL_INFO_SIDEBAR_WIDTH_PX = 400;
 
@@ -14,8 +14,30 @@ export const GeneHeaderWrapper = styled("span")`
   align-items: center;
 `;
 
+export const StyledTooltipWrapper = styled(Tooltip)`
+  ${(props: CellHeaderProps) => {
+    const colors = getColors(props);
+
+    return `
+      svg {
+        fill: ${colors?.gray[500]};
+      }
+
+      &:hover  {
+        svg {
+          fill: ${colors?.gray[600]};
+        }
+      }
+    `;
+  }}
+`;
+
 export const StyledTooltip = styled("div")`
   text-align: left;
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 500;
+  padding: 8px 14px;
 
   a {
     text-decoration: underline;

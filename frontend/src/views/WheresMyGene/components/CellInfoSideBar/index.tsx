@@ -1,4 +1,3 @@
-import Image from "next/image";
 import {
   Button,
   CellBasic,
@@ -7,9 +6,7 @@ import {
   Table,
   TableHeader,
   TableRow,
-  Tooltip,
 } from "czifui";
-import questionMarkIcon from "src/common/images/question-mark-icon.svg";
 import React, { useCallback, useContext } from "react";
 import { ROUTES } from "src/common/constants/routes";
 import { useMarkerGenes } from "src/common/queries/wheresMyGene";
@@ -23,9 +20,11 @@ import {
   GeneHeaderWrapper,
   StyledMarkerGeneHeader,
   StyledTooltip,
+  StyledTooltipWrapper,
   TissueName,
   TooltipButton,
 } from "./style";
+import QuestionMarkIconSvg from "./QuestionMarkIconSvg";
 export interface CellInfoBarProps {
   cellInfoCellType: Exclude<State["cellInfoCellType"], null>;
   tissueName: string;
@@ -70,7 +69,7 @@ function CellInfoSideBar({
       <ButtonContainer>
         <div>
           <StyledMarkerGeneHeader>Marker Genes</StyledMarkerGeneHeader>
-          <Tooltip
+          <StyledTooltipWrapper
             sdsStyle="dark"
             placement="bottom"
             width="default"
@@ -97,9 +96,9 @@ function CellInfoSideBar({
               isAllCaps={false}
               style={{ fontWeight: "500" }}
             >
-              <Image src={questionMarkIcon} alt="Find Marker Gene Documentation Tooltip" />
+              <QuestionMarkIconSvg />
             </TooltipButton>
-          </Tooltip>
+          </StyledTooltipWrapper>
           <BetaChip label="Beta" size="small" />
         </div>
         <Button
