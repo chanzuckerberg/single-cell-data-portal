@@ -6,6 +6,7 @@ import {
   Table,
   TableHeader,
   TableRow,
+  Tooltip,
 } from "czifui";
 import React, { useCallback, useContext } from "react";
 import { ROUTES } from "src/common/constants/routes";
@@ -20,7 +21,6 @@ import {
   GeneHeaderWrapper,
   StyledMarkerGeneHeader,
   StyledTooltip,
-  StyledTooltipWrapper,
   TissueName,
   TooltipButton,
 } from "./style";
@@ -69,10 +69,11 @@ function CellInfoSideBar({
       <ButtonContainer>
         <div>
           <StyledMarkerGeneHeader>Marker Genes</StyledMarkerGeneHeader>
-          <StyledTooltipWrapper
+          <Tooltip
             sdsStyle="dark"
             placement="bottom"
             width="default"
+            className="fmg-tooltip-icon"
             arrow={true}
             title={
               <StyledTooltip>
@@ -98,7 +99,7 @@ function CellInfoSideBar({
             >
               <QuestionMarkIconSvg />
             </TooltipButton>
-          </StyledTooltipWrapper>
+          </Tooltip>
           <BetaChip label="Beta" size="small" />
         </div>
         <Button

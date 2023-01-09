@@ -7,29 +7,29 @@ export const ButtonContainer = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: space-between;
+
+  .fmg-tooltip-icon {
+    ${(props: CellHeaderProps) => {
+      const colors = getColors(props);
+  
+      return `
+        svg {
+          fill: ${colors?.gray[500]};
+        }
+  
+        &:hover  {
+          svg {
+            fill: ${colors?.gray[600]};
+          }
+        }
+      `;
+    }}
+  }
 `;
 
 export const GeneHeaderWrapper = styled("span")`
   display: flex;
   align-items: center;
-`;
-
-export const StyledTooltipWrapper = styled(Tooltip)`
-  ${(props: CellHeaderProps) => {
-    const colors = getColors(props);
-
-    return `
-      svg {
-        fill: ${colors?.gray[500]};
-      }
-
-      &:hover  {
-        svg {
-          fill: ${colors?.gray[600]};
-        }
-      }
-    `;
-  }}
 `;
 
 export const StyledTooltip = styled("div")`
