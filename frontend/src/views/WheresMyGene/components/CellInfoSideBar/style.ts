@@ -1,5 +1,5 @@
 import styled from "@emotion/styled";
-import { Button, CellHeader, CellHeaderProps, getColors, Tooltip } from "czifui";
+import { Button, CellHeader, CellHeaderProps, getColors } from "czifui";
 
 export const CELL_INFO_SIDEBAR_WIDTH_PX = 400;
 
