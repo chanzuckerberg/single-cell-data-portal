@@ -53,7 +53,7 @@ class DatabaseProvider(DatabaseProviderInterface):
         self._session_maker = sessionmaker(bind=self._engine)
         self._schema_name = schema_name
         try:
-            self._create_schema(self._schema_name)
+            self._create_schema()
         except Exception:
             pass
 
