@@ -532,7 +532,7 @@ jobs:
           path: .
       - name: coverage report
         run: |
-          make coverage/report
+          make coverage/report-xml
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
