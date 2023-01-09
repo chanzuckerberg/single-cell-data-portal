@@ -5,7 +5,8 @@ from alembic import context
 from sqlalchemy import engine_from_config, pool
 
 from backend.common.corpora_config import CorporaDbConfig
-from backend.common.corpora_orm import DbCollection
+from backend.common.corpora_orm import Base as corpora_orm
+from backend.layers.persistence import orm as persistence_orm
 
 # this is the Alembic Config object, which provides access to the values within the .ini file in use.
 config = context.config
@@ -18,7 +19,8 @@ fileConfig(config.config_file_name)
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-target_metadata = DbCollection.metadata
+# TODO remove support for corpora_orm.metadata once the old database is fully deprecaited.
+target_metadata = [corpora_orm.metadata, persistence_orm.metadata]
 
 # other values from the config, defined by the needs of env.py, can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
@@ -38,7 +40,7 @@ def run_migrations_offline():
     """
 
     url = config.get_main_option("sqlalchemy.url")
-    context.configure(url=url, target_metadata=target_metadata, literal_binds=True)
+    context.configure(url=url, target_metadata=target_metadata, literal_binds=True, include_schemas=True)
 
     with context.begin_transaction():
         context.run_migrations()
@@ -69,7 +71,7 @@ def run_migrations_online():
     connectable = engine_from_config(alembic_config, prefix="sqlalchemy.", poolclass=pool.NullPool)
 
     with connectable.connect() as connection:
-        context.configure(connection=connection, target_metadata=target_metadata)
+        context.configure(connection=connection, target_metadata=target_metadata, include_schemas=True)
 
         with context.begin_transaction():
             context.run_migrations()
