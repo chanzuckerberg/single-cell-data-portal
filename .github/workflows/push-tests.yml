@@ -275,7 +275,6 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
 
-
   backend-wmg-unit-test:
     runs-on: ubuntu-20.04
     steps:
@@ -324,7 +323,6 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         if: failure() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/staging' || github.ref == 'refs/heads/prod')
 
-
   processing-unit-test:
     runs-on: ubuntu-20.04
     steps:
@@ -368,6 +366,12 @@ jobs:
           name: allure-results
           path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/allure-results
           retention-days: 20
+
+      - uses: actions/upload-artifact@v3
+        with:
+          name: coverage
+          path: /home/runner/work/single-cell-data-portal/single-cell-data-portal/.coverage*
+          retention-days: 3
 
       - uses: 8398a7/action-slack@v3
         with:
@@ -520,6 +524,23 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
           publish_dir: allure-history
+
+      # Post Code coverage
+      - uses: actions/download-artifact@v3
+        with:
+          name: coverage
+          path: .
+      - name: coverage report
+        run: |
+          make coverage/report
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          env_vars: OS,PYTHON
+          files: ./coverage.xml
+          flags: unittests
+          name: codecov-umbrella
 
       # Output the link to the github page for this current run
       - name: Post the link to the report in summary
