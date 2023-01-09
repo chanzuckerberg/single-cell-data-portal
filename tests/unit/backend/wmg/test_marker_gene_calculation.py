@@ -11,10 +11,12 @@ TARGET_FILTERS = {
     "tissue_ontology_term_ids": ["UBERON:0002048"],
     "cell_type_ontology_term_ids": ["CL:0000786"],
     "organism_ontology_term_id": "NCBITaxon:9606",
+    "disease_ontology_term_ids": ["PATO:0000461"],
 }
 CONTEXT_FILTERS = {
     "tissue_ontology_term_ids": ["UBERON:0002048"],
     "organism_ontology_term_id": "NCBITaxon:9606",
+    "disease_ontology_term_ids": ["PATO:0000461"],
 }
 
 # tests key functions in calculate_markers.py in order from most to least nested
