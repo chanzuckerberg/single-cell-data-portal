@@ -1,7 +1,7 @@
 from flask import make_response, jsonify
 
 from backend.common.utils.http_exceptions import ForbiddenHTTPException
-from backend.layers.api.router import get_business_logic
+from backend.layers.api.providers import get_business_logic
 from backend.layers.auth.user_info import UserInfo
 from backend.layers.business.exceptions import CollectionVersionException
 from backend.layers.common.entities import CollectionId
