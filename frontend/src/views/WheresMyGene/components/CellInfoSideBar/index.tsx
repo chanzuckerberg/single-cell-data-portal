@@ -1,3 +1,4 @@
+import Image from "next/image";
 import {
   Button,
   CellBasic,
@@ -8,6 +9,7 @@ import {
   TableRow,
   Tooltip,
 } from "czifui";
+import questionMarkIcon from "src/common/images/question-mark-icon.svg";
 import React, { useCallback, useContext } from "react";
 import { ROUTES } from "src/common/constants/routes";
 import { useMarkerGenes } from "src/common/queries/wheresMyGene";
@@ -95,7 +97,7 @@ function CellInfoSideBar({
               isAllCaps={false}
               style={{ fontWeight: "500" }}
             >
-              <Icon sdsIcon="infoCircle" sdsSize="s" sdsType="button" />
+              <Image src={questionMarkIcon} alt="Find Marker Gene Documentation Tooltip" />
             </TooltipButton>
           </Tooltip>
           <BetaChip label="Beta" size="small" />
