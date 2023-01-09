@@ -170,6 +170,15 @@ class BaseTest(unittest.TestCase):
                 collection.version_id, "http://fake.url", None, None
             )
             self.business_logic.set_dataset_metadata(dataset_version_id, metadata)
+            self.business_logic.add_dataset_artifact(
+                dataset_version_id, DatasetArtifactType.H5AD, f"s3://fake.bucket/{dataset_version_id}/local.h5ad"
+            )
+            self.business_logic.add_dataset_artifact(
+                dataset_version_id, DatasetArtifactType.CXG, f"s3://fake.bucket/{dataset_version_id}/local.cxg"
+            )
+            self.business_logic.add_dataset_artifact(
+                dataset_version_id, DatasetArtifactType.RDS, f"s3://fake.bucket/{dataset_version_id}/local.rds"
+            )
             # TODO: set a proper dataset status
 
         return self.business_logic.get_collection_version(collection.version_id)

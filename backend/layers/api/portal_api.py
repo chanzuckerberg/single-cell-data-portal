@@ -151,6 +151,12 @@ class PortalApi:
         self, dataset: DatasetVersion, is_tombstoned: bool, is_in_published_collection: bool = False
     ):
         dataset_id = dataset.version_id.id
+        # Only return `dataset_deployments` if a CXG artifact is available. This is to prevent the "Explore"
+        # button to show up while a dataset upload is in progress
+        if any(a for a in dataset.artifacts if a.type == DatasetArtifactType.CXG):
+            dataset_deployments = [{"url": explorer_url.generate(dataset, is_in_published_collection)}]
+        else:
+            dataset_deployments = []
         return self.remove_none(
             {
                 "assay": None
@@ -166,7 +172,7 @@ class PortalApi:
                 "dataset_assets": [
                     self._dataset_asset_to_response(a, dataset.version_id.id) for a in dataset.artifacts
                 ],
-                "dataset_deployments": [{"url": explorer_url.generate(dataset, is_in_published_collection)}],
+                "dataset_deployments": dataset_deployments,
                 "development_stage": None
                 if dataset.metadata is None
                 else self._ontology_term_ids_to_response(dataset.metadata.development_stage),
