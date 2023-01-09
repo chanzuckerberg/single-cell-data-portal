@@ -31,9 +31,9 @@ import {
   Container,
   ContainerWrapper,
   TopLeftCornerMask,
-  YAxisWrapper,
   XAxisMask,
   XAxisWrapper,
+  YAxisWrapper,
 } from "./style";
 
 interface Props {
@@ -190,6 +190,16 @@ export default memo(function HeatMap({
               sortedCellTypesByTissueName,
               tissue,
             });
+
+            const selectedGeneData =
+              orderedSelectedGeneExpressionSummariesByTissueName[tissue];
+
+            /**
+             * (thuang): If there is no selected gene data, we don't want to render
+             * the chart, because it will cause the chart to render with 0 width,
+             * which is an error for echarts
+             */
+            if (!selectedGeneData?.length) return null;
 
             return (
               <Chart
