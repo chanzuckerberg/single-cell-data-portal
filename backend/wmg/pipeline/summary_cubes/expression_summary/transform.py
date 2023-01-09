@@ -5,14 +5,13 @@ import numpy as np
 import pandas as pd
 
 import tiledb
-from pronto import Ontology
 from backend.common.utils.math_utils import MB
 from backend.wmg.pipeline.summary_cubes.extract import extract_obs_data
 
 from backend.wmg.data.schemas.corpus_schema import INTEGRATED_ARRAY_NAME
 from backend.wmg.data.tiledb import create_ctx
 from backend.wmg.data.utils import log_func_runtime
-from backend.wmg.data.constants import CL_BASIC_PERMANENT_URL
+from backend.wmg.pipeline.summary_cubes.aggregate import aggregate_across_cell_type_descendants
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +22,25 @@ def transform(
     """
     Build the summary cube with rankit expression sum, nnz (num cells with non zero expression) values for
     each gene for each possible group of cell attributes (cube row)
+
+    Returns
+    -------
+    cube_index: pd.DataFrame
+        The index of the summary cube, with one row per possible group of cell attributes
+
+    cube_sum: np.ndarray
+        The sum of expression values for each gene for each group of cell attributes
+        Aggregated across the descendants of the cell type in each group.
+
+    cube_nnz: np.ndarray
+        The number of cells with non zero expression for each gene for each group of cell attributes
+        Aggregated across the descendants of the cell type in each group.
+
+    cube_sum_raw: np.ndarray
+        The sum of expression values for each gene for each group of cell attributes
+
+    cube_nnz_raw: np.ndarray
+        The number of cells with non zero expression for each gene for each group of cell attributes
     """
 
     cell_labels, cube_index = make_cube_index(corpus_path, cube_dims)
@@ -34,9 +52,11 @@ def transform(
     cube_sum_raw = np.zeros((n_groups, n_genes), dtype=np.float32)
     cube_nnz_raw = np.zeros((n_groups, n_genes), dtype=np.uint64)
 
-    reduce_X_agg(corpus_path, cell_labels.cube_idx.values, cube_sum, cube_nnz, cube_index)
     reduce_X(corpus_path, cell_labels.cube_idx.values, cube_sum_raw, cube_nnz_raw)
-    return cube_index, cube_sum, cube_nnz
+
+    cell_types = list(cube_index.index.get_level_values("cell_type_ontology_term_id").astype("str"))
+    cube_sum, cube_nnz = aggregate_across_cell_type_descendants(cell_types, [cube_sum_raw, cube_nnz_raw])
+    return cube_index, cube_sum, cube_nnz, cube_sum_raw, cube_nnz_raw
 
 
 @log_func_runtime
@@ -61,39 +81,6 @@ def reduce_X(tdb_group: str, cube_indices: np.ndarray, cube_sum: np.ndarray, cub
                 cube_sum,
                 cube_nnz,
             )
-
-
-@log_func_runtime
-def reduce_X_agg(tdb_group: str, cube_indices: np.ndarray, cube_sum: np.ndarray, cube_nnz: np.ndarray, cube_index):
-    """
-    Reduce the expression data stored in the integrated corpus by summing it by gene for each cube row (unique combo
-    of cell attributes)
-    """
-    cfg = {
-        "py.init_buffer_bytes": 512 * MB,
-        "py.exact_init_buffer_bytes": "true",
-    }
-    with tiledb.open(f"{tdb_group}/{INTEGRATED_ARRAY_NAME}", ctx=create_ctx(config_overrides=cfg)) as expression:
-        query_results = expression.query(return_incomplete=True, order="U", attrs=["rankit"])
-        for i, result in enumerate(query_results.df[:]):
-            logger.info(f"reduce integrated expression data, i={i}")
-            gene_expression_sum_x_cube_dimension(
-                result["rankit"].values,
-                result["obs_idx"].values,
-                result["var_idx"].values,
-                cube_indices,
-                cube_sum,
-                cube_nnz,
-            )
-
-    cell_types = list(cube_index.index.get_level_values("cell_type_ontology_term_id").astype("str"))
-    onto = Ontology(CL_BASIC_PERMANENT_URL)
-    descendants_for_node = lambda cl: list(onto[cl].subclasses().to_set().ids)
-    descendants = [descendants_for_node(i) for i in cell_types]
-    indexer = pd.Series(index=cell_types, data=range(len(cell_types)))
-    for i, children in enumerate(descendants):
-        cube_sum[i] = cube_sum[indexer[children]].sum(0)
-        cube_nnz[i] = cube_nnz[indexer[children]].sum(0)
 
 
 # TODO: this could be further optimize by parallel chunking.  Might help large arrays if compute ends up being a bottleneck. # noqa E501
