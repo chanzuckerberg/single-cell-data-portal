@@ -12,6 +12,7 @@ from backend.wmg.data.snapshot import (
     PRIMARY_FILTER_DIMENSIONS_FILENAME,
 )
 from backend.wmg.data.utils import log_func_runtime
+from backend.wmg.data.constants import CL_BASIC_PERMANENT_URL
 
 
 @log_func_runtime
@@ -94,7 +95,7 @@ def _cell_type_ordering_compute(cells: Set[str], root: str) -> pd.DataFrame:
     from pronto import Ontology
     import pygraphviz as pgv
 
-    onto = Ontology.from_obo_library("cl-basic.obo")
+    onto = Ontology(CL_BASIC_PERMANENT_URL)
     ancestors = [list(onto[t].superclasses()) for t in cells if t in onto]
     ancestors = [i for s in ancestors for i in s]
     ancestors = set(ancestors)
