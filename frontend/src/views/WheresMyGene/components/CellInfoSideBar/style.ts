@@ -14,6 +14,23 @@ export const GeneHeaderWrapper = styled("span")`
   align-items: center;
 `;
 
+export const StyledTooltip = styled("div")`
+  text-align: left;
+
+  a {
+    text-decoration: underline;
+    color: inherit;
+  }
+`;
+
+export const StyledMarkerGeneHeader = styled("span")`
+  color: black;
+  font-weight: 600;
+  font-size: 16px;
+  line-height: 24px;
+  vertical-align: middle;
+`;
+
 export const GeneCellHeader = styled(CellHeader)`
   ${(props: CellHeaderProps) => {
     const { active = false } = props;
@@ -37,6 +54,8 @@ export const TooltipButton = styled(Button)`
   font-weight: 500;
   margin-right: 8px;
   font-size: 16px;
+  min-width: unset;
+  margin: 0 4px;
 `;
 
 export const CopyGenesButton = styled(Button)`

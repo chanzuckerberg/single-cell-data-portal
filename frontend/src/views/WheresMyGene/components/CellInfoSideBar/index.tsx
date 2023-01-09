@@ -19,6 +19,8 @@ import {
   CopyGenesButton,
   GeneCellHeader,
   GeneHeaderWrapper,
+  StyledMarkerGeneHeader,
+  StyledTooltip,
   TissueName,
   TooltipButton,
 } from "./style";
@@ -65,13 +67,14 @@ function CellInfoSideBar({
       <TissueName>{tissueName}</TissueName>
       <ButtonContainer>
         <div>
+          <StyledMarkerGeneHeader>Marker Genes</StyledMarkerGeneHeader>
           <Tooltip
             sdsStyle="dark"
             placement="bottom"
             width="default"
             arrow={true}
             title={
-              <>
+              <StyledTooltip>
                 <div>Marker genes are highly and uniquely expressed in the cell type relative to all other cell types.</div>
                 <br/>
                 <div>
@@ -79,25 +82,21 @@ function CellInfoSideBar({
                     href={ROUTES.FMG_DOCS} 
                     rel="noopener" 
                     target="_blank" 
-                    style={{color: "inherit"}}
                   >
                     Click to read more about the identification method.
                   </a>
                 </div>
-              </>
+              </StyledTooltip>
             }
           >
-          <TooltipButton
-            endIcon={<Icon sdsIcon="infoCircle" sdsSize="s" sdsType="button" />}
-            onClick={handleCopyGenes}
-            sdsStyle="minimal"
-            sdsType="secondary"
-            isAllCaps={false}
-            style={{ fontWeight: "500" }}
-          >
-            Marker Genes
-          </TooltipButton>
-
+            <TooltipButton
+              sdsStyle="minimal"
+              sdsType="secondary"
+              isAllCaps={false}
+              style={{ fontWeight: "500" }}
+            >
+              <Icon sdsIcon="infoCircle" sdsSize="s" sdsType="button" />
+            </TooltipButton>
           </Tooltip>
           <BetaChip label="Beta" size="small" />
         </div>
