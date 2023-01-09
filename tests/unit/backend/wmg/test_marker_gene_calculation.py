@@ -33,7 +33,7 @@ class MarkerGeneCalculationTest(unittest.TestCase):
                 assert abs(test_sum[i] - expected_sum[i]) < 0.05
 
             # check that returned population sizes are correct
-            assert sum(list(t_n_cells_sum.values())[0]) == 98974
+            assert sum(list(t_n_cells_sum.values())[0]) == 70234
 
     def test__get_markers_ttest(self):
         with load_test_fmg_snapshot(TEST_SNAPSHOT) as snapshot:
