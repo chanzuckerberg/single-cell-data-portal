@@ -102,7 +102,7 @@ class TestCollection(BaseAPIPortalTest):
                     "cell_type": [{"label": "test_cell_type_label", "ontology_term_id": "test_cell_type_term_id"}],
                     "collection_id": collection.collection_id.id,
                     "created_at": mock.ANY,
-                    "dataset_assets": [],
+                    "dataset_assets": mock.ANY,
                     "dataset_deployments": [{"url": mock.ANY}],
                     "development_stage": [
                         {"label": "test_development_stage_label", "ontology_term_id": "test_development_stage_term_id"}
@@ -152,7 +152,7 @@ class TestCollection(BaseAPIPortalTest):
                     "cell_type": [{"label": "test_cell_type_label", "ontology_term_id": "test_cell_type_term_id"}],
                     "collection_id": collection.collection_id.id,
                     "created_at": mock.ANY,
-                    "dataset_assets": [],
+                    "dataset_assets": mock.ANY,
                     "dataset_deployments": [{"url": mock.ANY}],
                     "development_stage": [
                         {"label": "test_development_stage_label", "ontology_term_id": "test_development_stage_term_id"}

@@ -36,6 +36,7 @@ export const GeneCellHeader = styled(CellHeader)`
 export const TooltipButton = styled(Button)`
   font-weight: 500;
   margin-right: 8px;
+  font-size: 16px;
 `;
 
 export const CopyGenesButton = styled(Button)`
