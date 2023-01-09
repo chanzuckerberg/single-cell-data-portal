@@ -6,7 +6,7 @@ from datetime import datetime
 from typing import Any, Iterable, List, Optional
 
 from sqlalchemy import create_engine
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import SQLAlchemyError, ProgrammingError
 from sqlalchemy.orm import sessionmaker
 
 from backend.common.corpora_config import CorporaDbConfig
@@ -32,6 +32,7 @@ from backend.layers.common.entities import (
     DatasetVersionId,
 )
 from backend.layers.business.exceptions import CollectionIsPublishedException
+from backend.layers.persistence.constants import SCHEMA_NAME
 from backend.layers.persistence.orm import (
     CollectionTable,
     CollectionVersionTable,
@@ -45,27 +46,31 @@ logger = logging.getLogger(__name__)
 
 
 class DatabaseProvider(DatabaseProviderInterface):
-    def __init__(self, database_uri: str = None, schema_name: str = "persistence_schema") -> None:
+    def __init__(self, database_uri: str = None, schema_name: str = SCHEMA_NAME) -> None:
         if not database_uri:
             database_uri = CorporaDbConfig().database_uri
         self._engine = create_engine(database_uri, connect_args={"connect_timeout": 5})
         self._session_maker = sessionmaker(bind=self._engine)
+        self._schema_name = schema_name
         try:
-            self._create_schema(schema_name)
+            self._create_schema()
         except Exception:
             pass
 
-    def _drop_schema(self, schema_name: str):
+    def _drop_schema(self):
         from sqlalchemy.schema import DropSchema
 
-        self._engine.execute(DropSchema(schema_name, cascade=True))
+        try:
+            self._engine.execute(DropSchema(self._schema_name, cascade=True))
+        except ProgrammingError:
+            pass
 
-    def _create_schema(self, schema_name: str):
+    def _create_schema(self):
         from sqlalchemy.schema import CreateSchema
         from backend.layers.persistence.orm import metadata
 
-        self._engine.execute(CreateSchema(schema_name))
-        metadata.schema = schema_name
+        self._engine.execute(CreateSchema(self._schema_name))
+        metadata.schema = self._schema_name
         metadata.create_all(bind=self._engine)
 
     @contextmanager

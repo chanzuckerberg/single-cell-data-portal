@@ -21,7 +21,7 @@ export default memo(function Legend({
   selectedTissues,
   selectedGenes,
   selectedCellTypes,
-  setIsDownloading
+  setIsDownloading,
 }: Props): JSX.Element {
   return (
     <LegendWrapper>

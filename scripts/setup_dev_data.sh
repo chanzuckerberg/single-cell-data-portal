@@ -38,7 +38,7 @@ ${local_aws} s3api create-bucket --bucket artifact-bucket &>/dev/null || true
 ${local_aws} s3api create-bucket --bucket cellxgene-bucket &>/dev/null || true
 ${local_aws} secretsmanager create-secret --name corpora/backend/test/auth0-secret &>/dev/null || true
 ${local_aws} secretsmanager create-secret --name corpora/cicd/test/auth0-secret &>/dev/null || true
-${local_aws} secretsmanager create-secret --name corpora/backend/test/database_local &>/dev/null || true
+${local_aws} secretsmanager create-secret --name corpora/backend/test/database &>/dev/null || true
 ${local_aws} secretsmanager create-secret --name corpora/backend/test/config &>/dev/null || true
 
 echo "Creating default state machine"
@@ -81,7 +81,8 @@ ${local_aws} secretsmanager update-secret --secret-id corpora/cicd/test/auth0-se
     "grant_type": ""
 }' || true
 
-${local_aws} secretsmanager update-secret --secret-id corpora/backend/test/database_local --secret-string '{"database_uri": "postgresql://corpora:test_pw@database.corporanet.local:5432"}' || true
+${local_aws} secretsmanager update-secret --secret-id corpora/backend/test/database --secret-string '{"database_uri":
+ "postgresql://corpora:test_pw@database.corporanet.local:5432"}' || true
 ${local_aws} secretsmanager update-secret --secret-id corpora/backend/test/config --secret-string '{"upload_sfn_arn": "arn:aws:states:us-west-2:000000000000:stateMachine:uploader-dev-sfn", "curator_role_arn":"test_curation_role"}' || true
 
 # Make a 1mb data file
@@ -91,7 +92,6 @@ ${local_aws} s3 cp fake-h5ad-file.h5ad s3://corpora-data-dev/
 rm fake-h5ad-file.h5ad
 
 echo "Populating test db"
-export CORPORA_LOCAL_DEV=true
 export BOTO_ENDPOINT_URL=${LOCALSTACK_URL}
 cd $(dirname ${BASH_SOURCE[0]})/..
 python3 -m scripts.populate_db

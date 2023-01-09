@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 from typing import List, Optional
+from urllib.parse import urlparse
 
 import uuid
 
@@ -135,6 +136,9 @@ class DatasetArtifact:
     id: DatasetArtifactId
     type: DatasetArtifactType
     uri: str
+
+    def get_file_name(self):
+        return urlparse(self.uri).path.split("/")[-1]
 
 
 @dataclass

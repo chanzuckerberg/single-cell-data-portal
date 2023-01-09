@@ -315,9 +315,13 @@ def migrate_redesign_read(ctx):
 
                 artifact_ids = []
                 for record_artifact in record_dataset.artifacts:
+                    if record_artifact.s3_uri.endswith("raw.h5ad"):
+                        filetype = "RAW_H5AD"
+                    else:
+                        filetype = strip_prefixes(record_artifact.filetype)
                     artifact = {
                         "id": record_artifact.id,
-                        "type": strip_prefixes(record_artifact.filetype),
+                        "type": filetype,
                         "uri": record_artifact.s3_uri,
                     }
                     artifact_ids.append(record_artifact.id)
@@ -419,23 +423,12 @@ def migrate_redesign_write(ctx):
 
     database_pass = os.getenv("PGPASSWORD")
     database_name = os.getenv("PGDB")
-    database_uri = f"postgresql://corpora_dev:{database_pass}@localhost/{database_name}"
+    database_user = os.getenv("PGUSER")
+    database_uri = f"postgresql://{database_user}:{database_pass}@localhost/{database_name}"
 
     # Uncomment for local
     # database_uri = f"postgresql://postgres:secret@localhost"
     engine = create_engine(database_uri, connect_args={"connect_timeout": 5})
-
-    # engine.execute(schema.CreateSchema('persistence_schema'))
-    # metadata_obj.create_all(bind=engine)
-
-    # from sqlalchemy.schema import DropSchema
-    # engine.execute(DropSchema("persistence_schema", cascade=True))
-
-    from sqlalchemy.schema import CreateSchema
-    from backend.layers.persistence.orm import metadata
-
-    engine.execute(CreateSchema("persistence_schema"))
-    metadata.create_all(bind=engine)
 
     with Session(engine) as session:
 

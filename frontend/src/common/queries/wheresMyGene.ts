@@ -218,6 +218,11 @@ export function useWMGQuery(
   // (thuang): Refresh query when the snapshotId changes
   const currentSnapshotId = useSnapshotId();
 
+  query = clobberQueryIfSubsetofPrev(query, [
+    "gene_ontology_term_ids",
+    "tissue_ontology_term_ids",
+  ]);
+
   return useQuery(
     [USE_QUERY, query, currentSnapshotId],
     ({ signal }) => fetchQuery({ query, signal }),
@@ -629,6 +634,33 @@ function useWMGQueryRequestBody(options = { includeAllFilterOptions: false }) {
     sexes,
   ]);
 }
+let prevQuery: Query | null;
+
+function clobberQueryIfSubsetofPrev(
+  query: Query | null,
+  filtersToCheck: (keyof Filter)[]
+): Query | null {
+  if (prevQuery == query) return prevQuery;
+  if (
+    !prevQuery ||
+    prevQuery?.include_filter_dims !== query?.include_filter_dims
+  ) {
+    prevQuery = query;
+    return query;
+  }
+  if (
+    (Object.entries(query.filter) as [keyof Filter, string[]][]).every(
+      ([key, value]) => {
+        if (!filtersToCheck.includes(key)) return true; //skip filters we're not checking
+        return value.every((elem) => prevQuery?.filter[key].includes(elem));
+      }
+    )
+  ) {
+    return prevQuery;
+  }
+  prevQuery = query;
+  return query;
+}
 
 function toEntity(item: RawOntologyTerm) {
   const [id, name] = Object.entries(item)[0];
@@ -762,12 +794,10 @@ export interface MarkerGenesByCellType {
 
 export interface MarkerGeneResponse {
   marker_genes: {
-    // key is gene id from backend, but we convert to gene name
-    [key: string]: {
-      effect_size: number;
-      p_value: number;
-    };
-  };
+    gene_ontology_term_id: string;
+    effect_size: number;
+    p_value: number;
+  }[];
   snapshot_id: string;
 }
 
@@ -800,12 +830,12 @@ export function useMarkerGenes({
         test,
       });
       const markerGenesIndexedByGeneName = Object.fromEntries(
-        [...Object.entries(output.marker_genes)].reduce(
-          (newEntries, [id, data]) => {
+        output.marker_genes.reduce(
+          (newEntries, { gene_ontology_term_id, ...data }) => {
             try {
-              newEntries.push([genesByID[id].name, data]);
+              newEntries.push([genesByID[gene_ontology_term_id].name, data]);
             } catch (e) {
-              console.log("could not find gene with id", id);
+              console.log("could not find gene with id", gene_ontology_term_id);
             }
             return newEntries;
           },
