@@ -31,7 +31,6 @@ export const View = styled.div`
     width: fit-content;
     & ${Wrapper}, ${Container} {
       height: fit-content;
-      width: fit-content;
       overflow: hidden;
     }
   }
