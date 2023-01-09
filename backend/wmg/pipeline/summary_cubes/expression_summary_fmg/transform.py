@@ -5,6 +5,7 @@ import numpy as np
 import pandas as pd
 
 import tiledb
+from pronto import Ontology
 
 from backend.common.utils.math_utils import MB
 from backend.wmg.pipeline.summary_cubes.extract import extract_obs_data
@@ -12,6 +13,7 @@ from backend.wmg.pipeline.summary_cubes.extract import extract_obs_data
 from backend.wmg.data.schemas.corpus_schema import INTEGRATED_ARRAY_NAME
 from backend.wmg.data.tiledb import create_ctx
 from backend.wmg.data.utils import log_func_runtime
+from backend.wmg.data.constants import CL_BASIC_PERMANENT_URL
 
 logger = logging.getLogger(__name__)
 
@@ -36,18 +38,19 @@ def transform(
     cube_nnz = np.zeros((n_groups, n_genes), dtype=np.uint64)
     cube_nnz_thr = np.zeros((n_groups, n_genes), dtype=np.uint64)
 
-    reduce_X(corpus_path, cell_labels.cube_idx.values, cube_sum, cube_sqsum, cube_nnz, cube_nnz_thr)
+    reduce_X_agg(corpus_path, cell_labels.cube_idx.values, cube_sum, cube_sqsum, cube_nnz, cube_nnz_thr, cube_index)
     return cube_index, cube_sum, cube_sqsum, cube_nnz, cube_nnz_thr
 
 
 @log_func_runtime
-def reduce_X(
+def reduce_X_agg(
     tdb_group: str,
     cube_indices: np.ndarray,
     cube_sum: np.ndarray,
     cube_sqsum: np.ndarray,
     cube_nnz: np.ndarray,
     cube_nnz_thr: np.ndarray,
+    cube_index: pd.DataFrame,
 ):
     """
     Reduce the expression data stored in the integrated corpus by summing it by gene for each cube row (unique combo
@@ -71,6 +74,16 @@ def reduce_X(
                 cube_nnz,
                 cube_nnz_thr,
             )
+    cell_types = list(cube_index.index.get_level_values("cell_type_ontology_term_id").astype("str"))
+    onto = Ontology(CL_BASIC_PERMANENT_URL)
+    descendants_for_node = lambda cl: list(onto[cl].subclasses().to_set().ids)
+    descendants = [descendants_for_node(i) for i in cell_types]
+    indexer = pd.Series(index=cell_types, data=range(len(cell_types)))
+    for i, children in enumerate(descendants):
+        cube_sum[i] = cube_sum[indexer[children]].sum(0)
+        cube_sqsum[i] = cube_sqsum[indexer[children]].sum(0)
+        cube_nnz[i] = cube_nnz[indexer[children]].sum(0)
+        cube_nnz_thr[i] = cube_nnz_thr[indexer[children]].sum(0)
 
 
 # TODO: this could be further optimize by parallel chunking.  Might help large arrays if compute ends up being a bottleneck. # noqa E501

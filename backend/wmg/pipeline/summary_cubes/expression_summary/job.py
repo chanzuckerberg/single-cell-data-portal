@@ -20,13 +20,25 @@ logger = logging.getLogger(__name__)
 
 
 def _load(
-    uri: str, gene_ontology_term_ids: list, cube_index: pd.DataFrame, cube_sum: np.ndarray, cube_nnz: np.ndarray
+    uri: str,
+    gene_ontology_term_ids: list,
+    cube_index: pd.DataFrame,
+    cube_sum: np.ndarray,
+    cube_nnz: np.ndarray,
+    cube_sum_raw: np.ndarray,
+    cube_nnz_raw: np.ndarray,
 ) -> (list, dict):
     """
     Build expression summary cube in memory and write to disk
     """
     dims, vals = build_in_mem_cube(
-        gene_ontology_term_ids, cube_index, expression_summary_non_indexed_dims, cube_sum, cube_nnz
+        gene_ontology_term_ids,
+        cube_index,
+        expression_summary_non_indexed_dims,
+        cube_sum,
+        cube_nnz,
+        cube_sum_raw,
+        cube_nnz_raw,
     )
 
     logger.debug("Saving cube to tiledb")
@@ -57,7 +69,9 @@ def create_expression_summary_cube(corpus_path: str):
         gene_ontology_term_ids = extract_var_data(corpus_path, ctx)
 
         # transform
-        cube_index, cube_sum, cube_nnz = transform(corpus_path, gene_ontology_term_ids, cube_dims)
-        _load(uri, gene_ontology_term_ids, cube_index, cube_sum, cube_nnz)
+        cube_index, cube_sum, cube_nnz, cube_sum_raw, cube_nnz_raw = transform(
+            corpus_path, gene_ontology_term_ids, cube_dims
+        )
+        _load(uri, gene_ontology_term_ids, cube_index, cube_sum, cube_nnz, cube_sum_raw, cube_nnz_raw)
     gene_count = len(gene_ontology_term_ids)
     logger.info(f"create_expression_summary_cube: {gene_count=}")
