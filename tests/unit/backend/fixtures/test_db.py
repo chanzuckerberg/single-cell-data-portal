@@ -49,6 +49,7 @@ class DatabaseFixture:
         del self.session
 
     def _populate_test_data(self):
+        # TODO update for the redesign
         self._create_test_collections()
         self._create_test_collection_links()
         self._create_test_datasets()
