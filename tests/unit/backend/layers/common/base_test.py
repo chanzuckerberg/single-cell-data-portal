@@ -70,7 +70,7 @@ class BaseTest(unittest.TestCase):
         if cls.run_as_integration:
             database_uri = os.environ.get("DB_URI", "postgresql://postgres:secret@localhost")
             cls.database_provider = DatabaseProvider(database_uri=database_uri)
-            cls.database_provider._drop_schema("persistence_schema")
+            cls.database_provider._drop_schema()
 
     def setUp(self):
         super().setUp()
@@ -86,7 +86,7 @@ class BaseTest(unittest.TestCase):
         mock_config.start()
 
         if self.run_as_integration:
-            self.database_provider._create_schema("persistence_schema")
+            self.database_provider._create_schema()
         else:
             self.database_provider = DatabaseProviderMock()
 
@@ -134,7 +134,7 @@ class BaseTest(unittest.TestCase):
     def tearDown(self):
         super().tearDown()
         if self.run_as_integration:
-            self.database_provider._drop_schema("persistence_schema")
+            self.database_provider._drop_schema()
 
     @classmethod
     def tearDownClass(cls) -> None:
