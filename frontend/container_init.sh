@@ -9,7 +9,7 @@ if [ ! -e ./node_modules ]; then
 fi
 ln -sf /opt/node_app/node_modules/* /opt/node_app/node_modules/.bin ./node_modules/.
 if [ ! -z "$API_URL" ]; then
-  envsubst < runtime_configs/env.$DEPLOYMENT_STAGE | sponge src/configs/configs.js
+  envsubst < runtime_configs/$DEPLOYMENT_STAGE.env | sponge src/configs/configs.js
 else
   cp src/configs/local.js src/configs/configs.js
 fi
@@ -21,12 +21,10 @@ if [ $# -ne 0 ]; then
 fi
 
 # no verbose
-set +x# config
+set -x # config
 
 function apply_path {
-  envDataFile="./runtime_configs/env.${DEPLOYMENT_STAGE}"
-  envMapFile="./runtime_configs/var_map"
-  source $DataFile
+  envDataFile="./runtime_configs/${DEPLOYMENT_STAGE}.env"
   nextFolder='./.next/'
 
   # read all config file  
@@ -39,15 +37,11 @@ function apply_path {
     # split
     configName="$(cut -d'=' -f1 <<<"$line")"
     configValue="$(cut -d'=' -f2 <<<"$line")"    # get system env
-    envValue=$(env | grep "^$configName=" | grep -oe '[^=]*$');
     
-    # if config found
-    if [ -n "$configValue" ] && [ -n "$envValue" ]; then
-      # replace all
-      echo "Replace: ${configValue} with: ${envValue}"
-      find $nextFolder \( -type d -name .git -prune \) -o -type f -print0 | xargs -0 sed -i "s#$configValue#$envValue#g"
-    fi
-  done < $envMapFile
+    # replace all
+    echo "Replace: ${configName} with: ${configValue}"
+    find $nextFolder \( -type d -name .git -prune \) -o -type f -print0 | xargs -0 sed -i "s#$configName#$configValue#g"
+  done < $envDataFile
 }
 
 # Build and run without dev mode in remote dev env.
