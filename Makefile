@@ -230,7 +230,7 @@ coverage/combine:
 
 .PHONY: coverage/report
 coverage/report-xml: coverage/combine
-	docker-compose $(COMPOSE_OPTS) run --rm -T backend bash -c "cd /single-cell-data-portal && overage xml --data-file=$(COVERAGE_DATA_FILE) -i --skip-empty"
+	docker-compose $(COMPOSE_OPTS) run --rm -T backend bash -c "cd /single-cell-data-portal && coverage xml --data-file=$(COVERAGE_DATA_FILE) -i --skip-empty"
 
 .PHONY: coverage/report
 coverage/report-html: coverage/combine
