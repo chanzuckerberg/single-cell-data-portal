@@ -23,12 +23,6 @@ lint:
 unit-test: local-unit-test
 	# Keeping old target name for reverse comatibility
 
-.PHONY: wmg-processing-unittest
-wmg-processing-unittest:
-	# This target is intended to be run INSIDE the wmg processing container
-	DEPLOYMENT_STAGE=test PYTHONWARNINGS=ignore:ResourceWarning pytest tests/unit/wmg_processing \
-		--rootdir=. --alluredir=./allure-results --verbose;
-
 .PHONY: functional-test
 functional-test: local-functional-test
 	# Keeping old target name for reverse compatibility
@@ -143,15 +137,18 @@ local-shell: ## Open a command shell in one of the dev containers. ex: make loca
 	docker-compose exec $(CONTAINER) bash
 
 .PHONY: local-unit-test
-local-unit-test: local-unit-test-backend local-unit-test-wmg-processing# Run all backend and processing unit tests in the dev environment, with code coverage
+local-unit-test: local-unit-test-backend local-unit-test-wmg-backend local-unit-test-wmg-processing local-unit-test-processing
+# Run all backend and processing unit tests in the dev environment, with code coverage
 
 .PHONY: local-unit-test-backend
 local-unit-test-backend: 
-	docker-compose run --rm -T backend bash -c "cd /single-cell-data-portal && python3 -m pytest tests/unit/backend/layers/";
+	docker-compose run --rm -T backend bash -c \
+	"cd /single-cell-data-portal && pytest --alluredir=./allure-results tests/unit/backend/layers/";
 
 .PHONY: local-unit-test-wmg-backend
 local-unit-test-wmg-backend: 
-	docker-compose run --rm -T backend bash -c "cd /single-cell-data-portal && python3 -m pytest tests/unit/backend/wmg/";
+	docker-compose run --rm -T backend bash -c \
+	"cd /single-cell-data-portal && pytest --alluredir=./allure-results tests/unit/backend/wmg/";
 
 .PHONY: local-integration-test-backend
 local-integration-test-backend:
@@ -160,13 +157,12 @@ local-integration-test-backend:
 .PHONY: local-unit-test-processing
 local-unit-test-processing: # Run processing-unittest target in `processing` Docker container
 	docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -T processing \
-	bash -c "cd /single-cell-data-portal && python3 -m pytest tests/unit/processing/";
+	bash -c "cd /single-cell-data-portal && pytest --alluredir=./allure-results tests/unit/processing/";
 
 .PHONY: local-unit-test-wmg-processing
 local-unit-test-wmg-processing: # Run processing-unittest target in `wmg_processing` Docker container
-	echo "Running all wmg processing unit tests"; \
 	docker-compose $(COMPOSE_OPTS) run --rm -e DEV_MODE_COOKIES= -T wmg_processing \
-	bash -c "cd /single-cell-data-portal && make wmg-processing-unittest;"
+	bash -c "cd /single-cell-data-portal && pytest tests/unit/wmg_processing/ --rootdir=. --alluredir=./allure-results;"
 
 # We optionally pass BOTO_ENDPOINT_URL if it is set, even if it is
 # set to be the empty string.
