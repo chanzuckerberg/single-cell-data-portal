@@ -307,7 +307,7 @@ class TestCollection(BaseAPIPortalTest):
 
     def test__get_collection_id__403_not_found(self):
         """
-        GET /collections/:collection_id returns 403 if a valid is specified
+        GET /collections/:collection_id returns 403 if an invalid is specified
         """
         fake_id = CollectionId()
         test_url = furl(path=f"/dp/v1/collections/{fake_id}", query_params=dict(visibility="PUBLIC"))
