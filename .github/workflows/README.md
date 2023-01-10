@@ -24,16 +24,6 @@
   - If environment is `prod` run `make prod-performance-test`
   - https://github.com/chanzuckerberg/single-cell-data-portal/blob/6a423183c255737d2a44e40447a91d0ece041a41/Makefile#L54-L55
 
-### Workflow: `lint-pr.yml`
-
-#### Ran on:
-
-- `pull_request_target`
-
-  - opening, editing, and syncing a pull request
-
-  #### Summary: Runs a GitHub action that lints the PR commit message according to conventional commit standards
-
 ### Workflow: `push-processing-base.yml`
 
 TODO
