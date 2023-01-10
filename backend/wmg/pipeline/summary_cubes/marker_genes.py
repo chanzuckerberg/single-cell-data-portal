@@ -7,7 +7,7 @@ import gc
 from backend.wmg.data.schemas.marker_gene_cube_schema import marker_genes_schema
 from backend.wmg.data.snapshot import CELL_COUNTS_CUBE_NAME, MARKER_GENES_CUBE_NAME
 from backend.wmg.data.utils import create_empty_cube, log_func_runtime
-from backend.wmg.pipeline.summary_cubes.calculate_markers import get_markers, TargetPopulationEmptyError
+from backend.wmg.pipeline.summary_cubes.calculate_markers import get_markers
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -52,23 +52,17 @@ def create_marker_genes_cube(corpus_path: str):
                 "tissue_ontology_term_ids": [tiss],
                 "cell_type_ontology_term_ids": [ct],
                 "organism_ontology_term_id": organism,
-                "disease_ontology_term_ids": ["PATO:0000461"],
             }
             context = {
                 "tissue_ontology_term_ids": [tiss],
                 "organism_ontology_term_id": organism,
-                "disease_ontology_term_ids": ["PATO:0000461"],
             }
-            try:
-                t_markers = get_markers(
-                    target, context, corpus=corpus_path, test="ttest", percentile=0.05, n_markers=None
-                )
-                b_markers = get_markers(
-                    target, context, corpus=corpus_path, test="binomtest", percentile=0.3, n_markers=None
-                )
-            except TargetPopulationEmptyError:
-                logger.info("Target population is empty, skipping...")
-                continue
+            t_markers = get_markers(
+                target, context, corpus=corpus_path, test="ttest", percentile=0.05, n_markers=None
+            )
+            b_markers = get_markers(
+                target, context, corpus=corpus_path, test="binomtest", percentile=0.3, n_markers=None
+            )
 
             gc.collect()
 
