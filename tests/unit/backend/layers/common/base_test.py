@@ -258,9 +258,6 @@ class BaseTest(unittest.TestCase):
             [a.id for a in artifact_ids],
         )
 
-    def _generate_id(self):
-        return DatabaseProviderMock._generate_id()
-
     def remove_timestamps(self, body: dict, remove: typing.List[str] = None) -> dict:
         # TODO: implement as needed
         return body
