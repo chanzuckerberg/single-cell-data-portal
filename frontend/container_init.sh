@@ -8,9 +8,8 @@ if [ ! -e ./node_modules ]; then
   mkdir -p ./node_modules
 fi
 ln -sf /opt/node_app/node_modules/* /opt/node_app/node_modules/.bin ./node_modules/.
-if [ ! -z "$API_URL" ]; then
-  envsubst < runtime_configs/$DEPLOYMENT_STAGE.env | sponge src/configs/configs.js
-else
+
+if [ -z "$API_URL" ]; then
   cp src/configs/local.js src/configs/configs.js
 fi
 
@@ -23,13 +22,26 @@ fi
 # no verbose
 set -x # config
 
+# We build the next.js app during our CI process, but then we need to be able
+# to run the resulting docker image in dev/rdev/staging/prod. This isn't really
+# possible to control well with next.js native utilities, so we have to rewrite
+# any environment-specific configuration in our *pre-built* nextjs app on 
+# container startup.
+#
+# This function is *intentionally* idempotent - it can be executed multiple
+# times with different api_url / deployment_env vars and it should get the
+# built app to a sane state on each run.
 function apply_path {
-  envDataFile="./runtime_configs/${DEPLOYMENT_STAGE}.env"
+  envDataFile="./runtime_configs/${DEPLOYMENT_STAGE}"
   nextFolder='.next'
   nextFolderBackup='.next.original'
 
+  # Expand any env vars in the original runtime var file and write it
+  # to the file we're going to use for replacing vars in our next build.
+  envsubst < $envDataFile.env > $envDataFile
+
   # Make a backup of the original next build files on the first run
-  # and in subsequent runs, start from that original set of files
+  # and in subsequent runs, start from that backup set of files
   # so we can safely run this script multiple times.
   if [ ! -e $nextFolderBackup ]; then
     cp -r $nextFolder $nextFolderBackup
@@ -37,18 +49,20 @@ function apply_path {
     cp -r $nextFolderBackup/. $nextFolder
   fi
 
-  # read all config file  
+  # read in the runtime config file a line at a time, reading variable names and values.
+  # The variable names need to match the names we've given in our src/configs/build.js file!
+  # Then any occurrences of these var names are replaced with their values in the .next dir.
   while read line; do
     # no comment or not empty
     if [ "${line:0:1}" == "#" ] || [ "${line}" == "" ]; then
       continue
     fi
     
-    # split
+    # read variable names and values
     configName="$(cut -d'=' -f1 <<<"$line")"
     configValue="$(cut -d'=' -f2 <<<"$line")"    # get system env
     
-    # replace all
+    # replace the variable names in our built app with the appropriate values. Use rg (ripgrep) for speed.
     echo "Replace: ${configName} with: ${configValue}"
     rg $configName --files-with-matches -0 $nextFolder | xargs -0 sed -i "s#$configName#$configValue#g"
   done < $envDataFile
