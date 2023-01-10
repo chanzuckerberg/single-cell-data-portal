@@ -24,6 +24,9 @@ class GeneInfoAPIv1Tests(unittest.TestCase):
             "show_warning_banner": False,
         }
 
+        mock_config = patch("backend.gene_info.config.GeneInfoConfig.__getattr__", return_value="mock_key")
+        mock_config.start()
+
     @classmethod
     def setUpClass(cls) -> None:
         cls.maxDiff = None
