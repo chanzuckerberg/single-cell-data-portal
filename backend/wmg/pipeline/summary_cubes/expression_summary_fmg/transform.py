@@ -12,6 +12,7 @@ from backend.wmg.pipeline.summary_cubes.extract import extract_obs_data
 from backend.wmg.data.schemas.corpus_schema import INTEGRATED_ARRAY_NAME
 from backend.wmg.data.tiledb import create_ctx
 from backend.wmg.data.utils import log_func_runtime
+from backend.wmg.data.constants import NORMAL_CELL_DISEASE_ONTOLOGY_TERM_ID
 
 logger = logging.getLogger(__name__)
 
@@ -105,6 +106,10 @@ def make_cube_index(tdb_group: str, cube_dims: list) -> (pd.DataFrame, pd.DataFr
     Create index for queryable dimensions
     """
     cell_labels = extract_obs_data(tdb_group, cube_dims)
+    healthy_filter = cell_labels["disease_ontology_term_id"].astype("str") == NORMAL_CELL_DISEASE_ONTOLOGY_TERM_ID
+    if np.any(healthy_filter):
+        cell_labels = cell_labels[healthy_filter]
+
     # number of cells with specific tuple of dims
     cube_index = pd.DataFrame(cell_labels.value_counts(), columns=["n"])
     cube_index["cube_idx"] = range(len(cube_index))
