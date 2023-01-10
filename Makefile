@@ -224,10 +224,14 @@ local-uploadsuccess: .env.ecr ## Run the upload success lambda with a dataset id
 local-cxguser-cookie: ## Get cxguser-cookie
 	docker-compose $(COMPOSE_OPTS) run --rm backend bash -c "cd /single-cell-data-portal && python login.py"
 
-.PHONY: coverage/report
-coverage/report-xml:
-	docker-compose $(COMPOSE_OPTS) run --rm -T backend bash -c "cd /single-cell-data-portal && 	coverage combine --data-file=$(COVERAGE_DATA_FILE) && coverage xml --data-file=$(COVERAGE_DATA_FILE) -i --skip-empty"
+.PHONY: coverage/combine
+coverage/combine:
+	- docker-compose $(COMPOSE_OPTS) run --rm -T backend bash -c "cd /single-cell-data-portal && coverage combine --data-file=$(COVERAGE_DATA_FILE)"
 
 .PHONY: coverage/report
-coverage/report-html:
-	docker-compose $(COMPOSE_OPTS) run --rm -T backend bash -c "cd /single-cell-data-portal && 	coverage combine --data-file=$(COVERAGE_DATA_FILE) && coverage html --data-file=$(COVERAGE_DATA_FILE) -i --skip-empty"
+coverage/report-xml: coverage/combine
+	docker-compose $(COMPOSE_OPTS) run --rm -T backend bash -c "cd /single-cell-data-portal && overage xml --data-file=$(COVERAGE_DATA_FILE) -i --skip-empty"
+
+.PHONY: coverage/report
+coverage/report-html: coverage/combine
+	docker-compose $(COMPOSE_OPTS) run --rm -T backend bash -c "cd /single-cell-data-portal && coverage html --data-file=$(COVERAGE_DATA_FILE) -i --skip-empty"
