@@ -77,9 +77,9 @@ db/local/load-schema:
     # Imports the corpora_dev.sqlc schema (schema ONLY) into the corpora_test database
 	# Usage: make db/local/load-schema INFILE=<file>
     $(eval DB_PW = $(shell aws secretsmanager get-secret-value --secret-id corpora/backend/test/database --region us-west-2 | jq -r '.SecretString | match(":([^:]*)@").captures[0].string'))
-	PGPASSWORD=${DB_PW} pg_restore --schema-only --clean --no-owner --host 0.0.0.0 --dbname corpora $(INFILE)
+	PGPASSWORD=${DB_PW} pg_restore --schema-only --schema=persistence-schema --clean --no-owner --host 0.0.0.0 --username corpora --dbname corpora $(INFILE)
 	# Also import alembic schema version
-	PGPASSWORD=${DB_PW} pg_restore --data-only --table=alembic_version --no-owner --host 0.0.0.0 --dbname corpora $(INFILE)
+	PGPASSWORD=${DB_PW} pg_restore --data-only --table=alembic_version --no-owner --host 0.0.0.0 --username corpora --dbname corpora $(INFILE)
 
 db/dump_schema:
 ifeq ($(DEPLOYMENT_STAGE),test)
