@@ -274,9 +274,9 @@ function withAccessToken(
   getAccessTokenSilently: Auth0ContextInterface["getAccessTokenSilently"],
   fetcher: CallableFunction
 ): MutationFunction {
-  const token: Promise<string> = getAccessTokenSilently();
   return async (...args) => {
-    return fetcher(...args, await token);
+    const token: string = await getAccessTokenSilently();
+    return fetcher(...args, token);
   }
 }
 
