@@ -12,7 +12,7 @@ from backend.common.corpora_orm import (
 )
 from backend.common.utils.http_exceptions import ForbiddenHTTPException
 from backend.layers.api.explorer_url import generate as generate_explorer_url
-from backend.layers.api.router import get_business_logic
+from backend.layers.api.providers import get_business_logic
 from backend.layers.auth.user_info import UserInfo
 from backend.layers.common.entities import (
     CollectionId,

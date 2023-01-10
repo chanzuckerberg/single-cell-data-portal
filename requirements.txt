@@ -1,4 +1,4 @@
-alembic
+alembic>=1.9, <2
 anndata==0.8.0
 allure-pytest<3
 black==22.3.0  # Must be kept in sync with black version in .pre-commit-config.yaml
@@ -20,5 +20,7 @@ python-json-logger
 requests>=2.22.0
 rsa>=4.7 # not directly required, pinned by Snyk to avoid a vulnerability
 s3fs==0.4.2
+SQLAlchemy-Utils>=0.36.8
+SQLAlchemy>=1.4.0,<1.5
 tenacity
 tiledb==0.16.5  # Portal's tiledb version should always be the same or older than Explorer's

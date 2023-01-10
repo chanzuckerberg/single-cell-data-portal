@@ -1,7 +1,7 @@
 from flask import make_response, jsonify
 
 from backend.common.utils.http_exceptions import MethodNotAllowedException
-from backend.layers.api.router import get_business_logic
+from backend.layers.api.providers import get_business_logic
 from backend.layers.auth.user_info import UserInfo
 from backend.portal.api.curation.v1.curation.collections.common import (
     get_infered_collection_version_else_forbidden,

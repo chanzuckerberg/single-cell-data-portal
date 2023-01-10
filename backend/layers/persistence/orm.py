@@ -4,8 +4,9 @@ from sqlalchemy.orm import registry
 from sqlalchemy.schema import MetaData
 
 from backend.layers.common.entities import DatasetArtifactType
+from backend.layers.persistence.constants import SCHEMA_NAME
 
-metadata = MetaData(schema="persistence_schema")
+metadata = MetaData(schema=SCHEMA_NAME)
 mapper_registry = registry(metadata=metadata)
 
 

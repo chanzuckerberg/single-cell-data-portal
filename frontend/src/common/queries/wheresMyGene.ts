@@ -218,7 +218,7 @@ export function useWMGQuery(
   // (thuang): Refresh query when the snapshotId changes
   const currentSnapshotId = useSnapshotId();
 
-  query = clobberQueryIfSubsetofPrev(query, [
+  query = clobberQueryIfSubsetOfPrev(query, [
     "gene_ontology_term_ids",
     "tissue_ontology_term_ids",
   ]);
@@ -636,7 +636,7 @@ function useWMGQueryRequestBody(options = { includeAllFilterOptions: false }) {
 }
 let prevQuery: Query | null;
 
-function clobberQueryIfSubsetofPrev(
+function clobberQueryIfSubsetOfPrev(
   query: Query | null,
   filtersToCheck: (keyof Filter)[]
 ): Query | null {
@@ -651,7 +651,11 @@ function clobberQueryIfSubsetofPrev(
   if (
     (Object.entries(query.filter) as [keyof Filter, string[]][]).every(
       ([key, value]) => {
-        if (!filtersToCheck.includes(key)) return true; //skip filters we're not checking
+        //just check for equality on the filters we aren't checking for subsets
+        if (!filtersToCheck.includes(key))
+          return (
+            JSON.stringify(value) === JSON.stringify(prevQuery?.filter[key])
+          );
         return value.every((elem) => prevQuery?.filter[key].includes(elem));
       }
     )

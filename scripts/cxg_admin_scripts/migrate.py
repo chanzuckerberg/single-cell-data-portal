@@ -430,18 +430,6 @@ def migrate_redesign_write(ctx):
     # database_uri = f"postgresql://postgres:secret@localhost"
     engine = create_engine(database_uri, connect_args={"connect_timeout": 5})
 
-    # engine.execute(schema.CreateSchema('persistence_schema'))
-    # metadata_obj.create_all(bind=engine)
-
-    # from sqlalchemy.schema import DropSchema
-    # engine.execute(DropSchema("persistence_schema", cascade=True))
-
-    from sqlalchemy.schema import CreateSchema
-    from backend.layers.persistence.orm import metadata
-
-    engine.execute(CreateSchema("persistence_schema"))
-    metadata.create_all(bind=engine)
-
     with Session(engine) as session:
 
         for collection in collections:
@@ -490,8 +478,6 @@ def migrate_redesign_write(ctx):
 
             if not dataset_version.get("status"):
                 continue
-
-            metadata = dataset_version["metadata"]
 
             dataset_version_row = DatasetVersionRow(
                 version_id=dataset_version["version_id"],
