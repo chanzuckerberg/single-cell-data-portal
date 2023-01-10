@@ -4,6 +4,8 @@ from enum import Enum
 from typing import List, Optional
 from urllib.parse import urlparse
 
+import uuid
+
 from dataclasses_json import dataclass_json
 
 
@@ -99,43 +101,34 @@ class DatasetStatus:
 
 
 @dataclass
-class CollectionId:
+class EntityId:
     id: str
+
+    def __init__(self, entity_id: str = None):
+        self.id = str(entity_id) if entity_id is not None else str(uuid.uuid4())
 
     def __repr__(self) -> str:
         return self.id
 
 
-@dataclass
-class CollectionVersionId:
-    id: str
-
-    def __repr__(self) -> str:
-        return self.id
+class CollectionId(EntityId):
+    pass
 
 
-@dataclass
-class DatasetId:
-    id: str
-
-    def __repr__(self) -> str:
-        return self.id
+class CollectionVersionId(EntityId):
+    pass
 
 
-@dataclass
-class DatasetVersionId:
-    id: str
-
-    def __repr__(self) -> str:
-        return self.id
+class DatasetId(EntityId):
+    pass
 
 
-@dataclass
-class DatasetArtifactId:
-    id: str
+class DatasetVersionId(EntityId):
+    pass
 
-    def __repr__(self) -> str:
-        return self.id
+
+class DatasetArtifactId(EntityId):
+    pass
 
 
 @dataclass
