@@ -38,6 +38,4 @@ LABEL commit=${HAPPY_COMMIT}
 ENV COMMIT_SHA=${HAPPY_COMMIT}
 ENV COMMIT_BRANCH=${HAPPY_BRANCH}
 
-# (thuang): Change back to root before running the app
-USER root
 ENTRYPOINT ["./container_init.sh"]
