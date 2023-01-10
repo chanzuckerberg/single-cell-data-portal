@@ -225,7 +225,7 @@ local-cxguser-cookie: ## Get cxguser-cookie
 	docker-compose $(COMPOSE_OPTS) run --rm backend bash -c "cd /single-cell-data-portal && python login.py"
 
 .PHONY: coverage/report
-coverage/report-xlm:
+coverage/report-xml:
 	docker-compose $(COMPOSE_OPTS) run --rm -T backend bash -c "cd /single-cell-data-portal && 	coverage combine --data-file=$(COVERAGE_DATA_FILE) && coverage xml --data-file=$(COVERAGE_DATA_FILE) -i --skip-empty"
 
 .PHONY: coverage/report

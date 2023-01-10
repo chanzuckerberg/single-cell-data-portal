@@ -514,6 +514,7 @@ jobs:
           path: .
       - name: coverage report
         run: |
+          echo "DOCKER_REPO=${DOCKER_REPO}" > .env.ecr
           make coverage/report-xml
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
