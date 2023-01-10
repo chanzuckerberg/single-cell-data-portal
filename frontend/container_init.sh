@@ -25,7 +25,17 @@ set -x # config
 
 function apply_path {
   envDataFile="./runtime_configs/${DEPLOYMENT_STAGE}.env"
-  nextFolder='./.next/'
+  nextFolder='.next'
+  nextFolderBackup='.next.original'
+
+  # Make a backup of the original next build files on the first run
+  # and in subsequent runs, start from that original set of files
+  # so we can safely run this script multiple times.
+  if [ ! -e $nextFolderBackup ]; then
+    cp -r $nextFolder $nextFolderBackup
+  else
+    cp -r $nextFolderBackup/. $nextFolder
+  fi
 
   # read all config file  
   while read line; do
@@ -40,7 +50,7 @@ function apply_path {
     
     # replace all
     echo "Replace: ${configName} with: ${configValue}"
-    find $nextFolder \( -type d -name .git -prune \) -o -type f -print0 | xargs -0 sed -i "s#$configName#$configValue#g"
+    rg $configName --files-with-matches -0 $nextFolder | xargs -0 sed -i "s#$configName#$configValue#g"
   done < $envDataFile
 }
 
