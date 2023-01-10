@@ -1,5 +1,6 @@
 import styled from "@emotion/styled";
 import { Button, CellHeader, CellHeaderProps, getColors } from "czifui";
+import Image from "next/image";
 
 export const CELL_INFO_SIDEBAR_WIDTH_PX = 400;
 
@@ -7,23 +8,11 @@ export const ButtonContainer = styled.div`
   display: flex;
   flex-direction: row;
   justify-content: space-between;
+`;
 
-  .fmg-tooltip-icon {
-    ${(props: CellHeaderProps) => {
-      const colors = getColors(props);
-  
-      return `
-        svg {
-          fill: ${colors?.gray[500]};
-        }
-  
-        &:hover  {
-          svg {
-            fill: ${colors?.gray[600]};
-          }
-        }
-      `;
-    }}
+export const StyledIconImage = styled(Image)`
+  :hover {
+    filter: brightness(0);
   }
 `;
 
@@ -76,7 +65,7 @@ export const TooltipButton = styled(Button)`
   font-weight: 500;
   font-size: 16px;
   min-width: unset;
-  margin: 0px 8px 0px 4px;
+  margin: 0px 4px 0px 4px;
 `;
 
 export const CopyGenesButton = styled(Button)`

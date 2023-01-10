@@ -19,12 +19,13 @@ import {
   CopyGenesButton,
   GeneCellHeader,
   GeneHeaderWrapper,
+  StyledIconImage,
   StyledMarkerGeneHeader,
   StyledTooltip,
   TissueName,
   TooltipButton,
 } from "./style";
-import QuestionMarkIconSvg from "./QuestionMarkIconSvg";
+import questionMarkIcon from "src/common/images/question-mark-icon.svg";
 export interface CellInfoBarProps {
   cellInfoCellType: Exclude<State["cellInfoCellType"], null>;
   tissueName: string;
@@ -97,7 +98,7 @@ function CellInfoSideBar({
               isAllCaps={false}
               style={{ fontWeight: "500" }}
             >
-              <QuestionMarkIconSvg />
+              <StyledIconImage src={questionMarkIcon} />
             </TooltipButton>
           </Tooltip>
           <BetaChip label="Beta" size="small" />
