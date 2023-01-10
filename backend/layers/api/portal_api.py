@@ -238,17 +238,15 @@ def get_collection_details(collection_id: str, token_info: dict):
     only if the previous returns None.
     Returns None only if no lookup was successful.
     1. A published collection that has `collection_id` as the canonical id
-    2. A collection version with `collection_id` as the version_id (published or not)
-    3. An unpublished collection that has `collection_id` as the canonical id. This matches the case
+    2. An unpublished collection that has `collection_id` as the canonical id. This matches the case
        where a collection doesn't have any published version yet, but we want to access it
        via its permalink
+    3. A collection version with `collection_id` as the version_id (published or not)
     """
     # TODO: this logic might belong to the business layer?
-    version = get_business_logic().get_published_collection_version(CollectionId(collection_id))
+    version = get_business_logic().get_collection_version_from_canonical(CollectionId(collection_id))
     if version is None:
         version = get_business_logic().get_collection_version(CollectionVersionId(collection_id))
-    if version is None:
-        version = get_business_logic().get_collection_version_from_canonical(CollectionId(collection_id))
     if version is None:
         raise ForbiddenHTTPException()
 
