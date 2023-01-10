@@ -56,7 +56,7 @@ function apply_path {
 
     # read variable names and values
     configName="$(cut -d'=' -f1 <<<"$line")"
-    configValue="$(cut -d'=' -f2 <<<"$line")"    # get system env
+    configValue="$(cut -d'=' -f2 <<<"$line")"
 
     # replace the variable names in our built app with the appropriate values. Use rg (ripgrep) for speed.
     echo "Replace: ${configName} with: ${configValue}"
