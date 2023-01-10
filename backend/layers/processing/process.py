@@ -146,7 +146,6 @@ class ProcessMain(ProcessingLogic):
 
 
 if __name__ == "__main__":
-    # configure_logging()
     database_provider = DatabaseProvider()
     s3_provider = S3Provider()
     uri_provider = UriProvider()
