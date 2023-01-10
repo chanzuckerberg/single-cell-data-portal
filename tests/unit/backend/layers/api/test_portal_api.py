@@ -260,9 +260,55 @@ class TestCollection(BaseAPIPortalTest):
                     actual_body = json.loads(response.data)
                     self.assertEqual(expected_access_type, actual_body["access_type"])
 
-    # ✅
+    def test__get_collection_id_retrieves_published_version_by_collection_id(self):
+        """
+        GET /collections/:collection_id retrieves the published version given a canonical collection_id
+        """
+        version = self.generate_published_collection()
+        test_url = furl(path=f"/dp/v1/collections/{version.collection_id}")
+        response = self.app.get(test_url.url, headers=dict(host="localhost"))
+        self.assertEqual(200, response.status_code)
+        body = json.loads(response.data)
+        self.assertEqual(body["visibility"], "PUBLIC")
+
+    def test__get_collection_id_retrieves_published_version_by_collection_id_if_revision(self):
+        """
+        When there is a revision of a published collection, GET /collections/:collection_id retrieves:
+        1. the published version given the canonical collection_id
+        2. the revision if given the version_id
+        """
+        version = self.generate_published_collection()
+        revision = self.business_logic.create_collection_version(version.collection_id)
+
+        test_url = furl(path=f"/dp/v1/collections/{revision.collection_id}")
+        response = self.app.get(test_url.url, headers=dict(host="localhost"))
+        self.assertEqual(200, response.status_code)
+        body = json.loads(response.data)
+        self.assertEqual(body["visibility"], "PUBLIC")
+
+        test_url = furl(path=f"/dp/v1/collections/{revision.version_id}")
+        response = self.app.get(test_url.url, headers=dict(host="localhost"))
+        self.assertEqual(200, response.status_code)
+        body = json.loads(response.data)
+        self.assertEqual(body["visibility"], "PRIVATE")
+
+    def test__get_collection_id_retrieves_unpublished_version(self):
+        """
+        If a collection is unpublished, GET /collections/:collection_id retrieves the unpublished version
+        when passed the canonical collection_id
+        """
+        version = self.generate_unpublished_collection()
+
+        test_url = furl(path=f"/dp/v1/collections/{version.collection_id}")
+        response = self.app.get(test_url.url, headers=dict(host="localhost"))
+        self.assertEqual(200, response.status_code)
+        body = json.loads(response.data)
+        self.assertEqual(body["visibility"], "PRIVATE")
+
     def test__get_collection_id__403_not_found(self):
-        """Verify the test collection exists and the expected fields exist."""
+        """
+        GET /collections/:collection_id returns 403 if a valid is specified
+        """
         fake_id = CollectionId()
         test_url = furl(path=f"/dp/v1/collections/{fake_id}", query_params=dict(visibility="PUBLIC"))
         response = self.app.get(test_url.url, headers=dict(host="localhost"))
