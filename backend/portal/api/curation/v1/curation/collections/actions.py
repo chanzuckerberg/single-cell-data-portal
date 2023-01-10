@@ -2,7 +2,7 @@ from flask import jsonify, make_response
 
 from backend.common.corpora_orm import CollectionVisibility, ProjectLinkType
 from backend.common.utils.http_exceptions import ForbiddenHTTPException, InvalidParametersHTTPException
-from backend.layers.api.router import get_business_logic
+from backend.layers.api.providers import get_business_logic
 from backend.layers.auth.user_info import UserInfo
 from backend.layers.business.entities import CollectionQueryFilter
 from backend.layers.business.exceptions import CollectionCreationException

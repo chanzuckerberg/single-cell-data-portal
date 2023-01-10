@@ -70,7 +70,7 @@ class BaseTest(unittest.TestCase):
         if cls.run_as_integration:
             database_uri = os.environ.get("DB_URI", "postgresql://postgres:secret@localhost")
             cls.database_provider = DatabaseProvider(database_uri=database_uri)
-            cls.database_provider._drop_schema("persistence_schema")
+            cls.database_provider._drop_schema()
 
     def setUp(self):
         super().setUp()
@@ -86,7 +86,7 @@ class BaseTest(unittest.TestCase):
         mock_config.start()
 
         if self.run_as_integration:
-            self.database_provider._create_schema("persistence_schema")
+            self.database_provider._create_schema()
         else:
             self.database_provider = DatabaseProviderMock()
 
@@ -134,7 +134,7 @@ class BaseTest(unittest.TestCase):
     def tearDown(self):
         super().tearDown()
         if self.run_as_integration:
-            self.database_provider._drop_schema("persistence_schema")
+            self.database_provider._drop_schema()
 
     @classmethod
     def tearDownClass(cls) -> None:
@@ -170,6 +170,15 @@ class BaseTest(unittest.TestCase):
                 collection.version_id, "http://fake.url", None, None
             )
             self.business_logic.set_dataset_metadata(dataset_version_id, metadata)
+            self.business_logic.add_dataset_artifact(
+                dataset_version_id, DatasetArtifactType.H5AD, f"s3://fake.bucket/{dataset_version_id}/local.h5ad"
+            )
+            self.business_logic.add_dataset_artifact(
+                dataset_version_id, DatasetArtifactType.CXG, f"s3://fake.bucket/{dataset_version_id}/local.cxg"
+            )
+            self.business_logic.add_dataset_artifact(
+                dataset_version_id, DatasetArtifactType.RDS, f"s3://fake.bucket/{dataset_version_id}/local.rds"
+            )
             # TODO: set a proper dataset status
 
         return self.business_logic.get_collection_version(collection.version_id)

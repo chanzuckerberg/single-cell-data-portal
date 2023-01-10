@@ -7,7 +7,7 @@ from backend.common.utils.http_exceptions import (
     InvalidParametersHTTPException,
     MethodNotAllowedException,
 )
-from backend.layers.api.router import get_business_logic
+from backend.layers.api.providers import get_business_logic
 from backend.layers.auth.user_info import UserInfo
 from backend.layers.business.entities import CollectionMetadataUpdate
 from backend.layers.business.exceptions import CollectionUpdateException
