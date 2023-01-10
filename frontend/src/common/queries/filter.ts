@@ -768,8 +768,11 @@ function sanitizeDatasetResponse(
 ): DatasetResponse {
   const sanitizedDatasetResponse = { ...datasetResponse };
 
-  sanitizedDatasetResponse.self_reported_ethnicity = (datasetResponse.self_reported_ethnicity ?? []).filter(
-    (self_reported_ethnicity) => !SELF_REPORTED_ETHNICITY_DENY_LIST.includes(self_reported_ethnicity.label)
+  sanitizedDatasetResponse.self_reported_ethnicity = (
+    datasetResponse.self_reported_ethnicity ?? []
+  ).filter(
+    (self_reported_ethnicity) =>
+      !SELF_REPORTED_ETHNICITY_DENY_LIST.includes(self_reported_ethnicity.label)
   );
 
   sanitizedDatasetResponse.assay = datasetResponse.assay ?? [];

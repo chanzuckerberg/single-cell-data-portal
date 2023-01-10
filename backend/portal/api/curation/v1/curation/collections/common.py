@@ -12,7 +12,7 @@ from backend.common.corpora_orm import (
 )
 from backend.common.utils.http_exceptions import ForbiddenHTTPException
 from backend.layers.api.explorer_url import generate as generate_explorer_url
-from backend.layers.api.router import get_business_logic
+from backend.layers.api.providers import get_business_logic
 from backend.layers.auth.user_info import UserInfo
 from backend.layers.common.entities import (
     CollectionId,
@@ -65,7 +65,7 @@ def reshape_for_curation_api(
     """
     business_logic = get_business_logic()
     is_published = collection_version.published_at is not None
-    # get collectoin attributes based on published status
+    # get collection attributes based on published status
     if is_published:
         # Published
         collection_id = collection_version.collection_id

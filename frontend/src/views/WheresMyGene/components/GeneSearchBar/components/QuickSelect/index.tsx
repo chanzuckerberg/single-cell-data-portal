@@ -20,6 +20,7 @@ import { pull, uniq } from "lodash";
 import React, {
   createContext,
   HTMLAttributes,
+  MouseEvent,
   ReactChild,
   SyntheticEvent,
   useRef,
@@ -322,6 +323,11 @@ export default function QuickSelect<
   );
 
   function renderOption(
+    /**
+     * (thuang): MUI passes their own event handlers via `optionProps`, so if we
+     * need our own event handlers, we need to make sure to call their handlers
+     * too
+     */
     optionProps: HTMLAttributes<HTMLLIElement>,
     option: T,
     { selected }: AutocompleteRenderOptionState
@@ -329,16 +335,18 @@ export default function QuickSelect<
     return (
       <StyledMenuItem
         {...{ component: "li" }}
+        {...optionProps}
         isMultiSelect={multiple}
         selected={selected}
         onClick={onClick}
-        {...optionProps}
       >
         {option.name}
       </StyledMenuItem>
     );
 
-    function onClick() {
+    function onClick(event: MouseEvent<HTMLLIElement>): void {
+      optionProps.onClick && optionProps.onClick(event);
+
       // (thuang): Only track select, not deselect
       if (selected) return;
 

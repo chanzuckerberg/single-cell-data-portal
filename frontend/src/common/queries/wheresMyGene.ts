@@ -218,6 +218,11 @@ export function useWMGQuery(
   // (thuang): Refresh query when the snapshotId changes
   const currentSnapshotId = useSnapshotId();
 
+  query = clobberQueryIfSubsetOfPrev(query, [
+    "gene_ontology_term_ids",
+    "tissue_ontology_term_ids",
+  ]);
+
   return useQuery(
     [USE_QUERY, query, currentSnapshotId],
     ({ signal }) => fetchQuery({ query, signal }),
@@ -628,6 +633,37 @@ function useWMGQueryRequestBody(options = { includeAllFilterOptions: false }) {
     ethnicities,
     sexes,
   ]);
+}
+let prevQuery: Query | null;
+
+function clobberQueryIfSubsetOfPrev(
+  query: Query | null,
+  filtersToCheck: (keyof Filter)[]
+): Query | null {
+  if (prevQuery == query) return prevQuery;
+  if (
+    !prevQuery ||
+    prevQuery?.include_filter_dims !== query?.include_filter_dims
+  ) {
+    prevQuery = query;
+    return query;
+  }
+  if (
+    (Object.entries(query.filter) as [keyof Filter, string[]][]).every(
+      ([key, value]) => {
+        //just check for equality on the filters we aren't checking for subsets
+        if (!filtersToCheck.includes(key))
+          return (
+            JSON.stringify(value) === JSON.stringify(prevQuery?.filter[key])
+          );
+        return value.every((elem) => prevQuery?.filter[key].includes(elem));
+      }
+    )
+  ) {
+    return prevQuery;
+  }
+  prevQuery = query;
+  return query;
 }
 
 function toEntity(item: RawOntologyTerm) {

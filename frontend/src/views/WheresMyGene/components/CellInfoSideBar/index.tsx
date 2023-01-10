@@ -6,8 +6,10 @@ import {
   Table,
   TableHeader,
   TableRow,
+  Tooltip,
 } from "czifui";
 import React, { useCallback, useContext } from "react";
+import { ROUTES } from "src/common/constants/routes";
 import { useMarkerGenes } from "src/common/queries/wheresMyGene";
 import { BetaChip } from "src/components/Header/style";
 import { DispatchContext, State } from "../../common/store";
@@ -17,9 +19,13 @@ import {
   CopyGenesButton,
   GeneCellHeader,
   GeneHeaderWrapper,
+  StyledIconImage,
+  StyledMarkerGeneHeader,
+  StyledTooltip,
   TissueName,
   TooltipButton,
 } from "./style";
+import questionMarkIcon from "src/common/images/question-mark-icon.svg";
 export interface CellInfoBarProps {
   cellInfoCellType: Exclude<State["cellInfoCellType"], null>;
   tissueName: string;
@@ -63,16 +69,38 @@ function CellInfoSideBar({
       <TissueName>{tissueName}</TissueName>
       <ButtonContainer>
         <div>
-          <TooltipButton
-            endIcon={<Icon sdsIcon="infoCircle" sdsSize="s" sdsType="button" />}
-            onClick={handleCopyGenes}
-            sdsStyle="minimal"
-            sdsType="secondary"
-            isAllCaps={false}
-            style={{ fontWeight: "500" }}
+          <StyledMarkerGeneHeader>Marker Genes</StyledMarkerGeneHeader>
+          <Tooltip
+            sdsStyle="dark"
+            placement="bottom"
+            width="default"
+            className="fmg-tooltip-icon"
+            arrow={true}
+            title={
+              <StyledTooltip>
+                <div>Marker genes are highly and uniquely expressed in the cell type relative to all other cell types.</div>
+                <br/>
+                <div>
+                  <a 
+                    href={ROUTES.FMG_DOCS} 
+                    rel="noopener" 
+                    target="_blank" 
+                  >
+                    Click to read more about the identification method.
+                  </a>
+                </div>
+              </StyledTooltip>
+            }
           >
-            Marker Genes
-          </TooltipButton>
+            <TooltipButton
+              sdsStyle="minimal"
+              sdsType="secondary"
+              isAllCaps={false}
+              style={{ fontWeight: "500" }}
+            >
+              <StyledIconImage src={questionMarkIcon} />
+            </TooltipButton>
+          </Tooltip>
           <BetaChip label="Beta" size="small" />
         </div>
         <Button

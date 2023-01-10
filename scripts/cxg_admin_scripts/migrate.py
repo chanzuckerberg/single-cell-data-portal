@@ -315,9 +315,13 @@ def migrate_redesign_read(ctx):
 
                 artifact_ids = []
                 for record_artifact in record_dataset.artifacts:
+                    if record_artifact.s3_uri.endswith("raw.h5ad"):
+                        filetype = "RAW_H5AD"
+                    else:
+                        filetype = strip_prefixes(record_artifact.filetype)
                     artifact = {
                         "id": record_artifact.id,
-                        "type": strip_prefixes(record_artifact.filetype),
+                        "type": filetype,
                         "uri": record_artifact.s3_uri,
                     }
                     artifact_ids.append(record_artifact.id)
@@ -410,32 +414,21 @@ def migrate_redesign_write(ctx):
     from sqlalchemy.orm import Session
 
     from backend.layers.persistence.orm import (
-        Collection as CollectionRow,
-        CollectionVersion as CollectionVersionRow,
-        Dataset as DatasetRow,
-        DatasetVersion as DatasetVersionRow,
-        DatasetArtifact as DatasetArtifactRow,
+        CollectionTable as CollectionRow,
+        CollectionVersionTable as CollectionVersionRow,
+        DatasetTable as DatasetRow,
+        DatasetVersionTable as DatasetVersionRow,
+        DatasetArtifactTabel as DatasetArtifactRow,
     )
 
     database_pass = os.getenv("PGPASSWORD")
     database_name = os.getenv("PGDB")
-    database_uri = f"postgresql://corpora_dev:{database_pass}@localhost/{database_name}"
+    database_user = os.getenv("PGUSER")
+    database_uri = f"postgresql://{database_user}:{database_pass}@localhost/{database_name}"
 
     # Uncomment for local
     # database_uri = f"postgresql://postgres:secret@localhost"
     engine = create_engine(database_uri, connect_args={"connect_timeout": 5})
-
-    # engine.execute(schema.CreateSchema('persistence_schema'))
-    # metadata_obj.create_all(bind=engine)
-
-    # from sqlalchemy.schema import DropSchema
-    # engine.execute(DropSchema("persistence_schema", cascade=True))
-
-    from sqlalchemy.schema import CreateSchema
-    from backend.layers.persistence.orm import metadata
-
-    engine.execute(CreateSchema("persistence_schema"))
-    metadata.create_all(bind=engine)
 
     with Session(engine) as session:
 
@@ -444,7 +437,7 @@ def migrate_redesign_write(ctx):
                 id=collection["id"],
                 version_id=collection["version_id"],
                 originally_published_at=collection.get("originally_published_at"),
-                tombstoned=collection["tombstoned"],
+                tombstone=collection["tombstoned"],
             )
 
             session.add(canonical_collection_row)
@@ -458,10 +451,10 @@ def migrate_redesign_write(ctx):
                 del link["url"]
 
             collection_version_row = CollectionVersionRow(
+                id=version["version_id"],
                 collection_id=version["collection_id"],
-                version_id=version["version_id"],
                 owner=version["owner"],
-                metadata=json.dumps(coll_metadata),
+                collection_metadata=json.dumps(coll_metadata),
                 publisher_metadata=json.dumps(version["publisher_metadata"]),
                 published_at=version["published_at"],
                 datasets=version["datasets"],
@@ -473,8 +466,8 @@ def migrate_redesign_write(ctx):
 
         for dataset in datasets:
             dataset_row = DatasetRow(
-                dataset_id=dataset["dataset_id"],
-                dataset_version_id=dataset["dataset_version_id"],
+                id=dataset["dataset_id"],
+                version_id=dataset["dataset_version_id"],
                 published_at=dataset.get("published_at"),
             )
 
@@ -486,13 +479,11 @@ def migrate_redesign_write(ctx):
             if not dataset_version.get("status"):
                 continue
 
-            metadata = dataset_version["metadata"]
-
             dataset_version_row = DatasetVersionRow(
-                version_id=dataset_version["version_id"],
+                id=dataset_version["version_id"],
                 dataset_id=dataset_version["dataset_id"],
                 collection_id=dataset_version["collection_id"],
-                metadata=json.dumps(dataset_version["metadata"]),
+                dataset_metadata=json.dumps(dataset_version["metadata"]),
                 artifacts=dataset_version["artifacts"],
                 status=json.dumps(dataset_version["status"]),
                 created_at=dataset_version.get("created_at"),

@@ -252,12 +252,12 @@ describe("Where's My Gene", () => {
     await selectFirstNOptions(GENE_COUNT, page);
 
     const beforeGeneNames = await getNames(
-      `${getTestID(GENE_LABELS_ID)} text`,
+      `${getTestID(GENE_LABELS_ID)} button`,
       page
     );
 
     const beforeCellTypeNames = await getNames(
-      `${getTestID(`${CELL_TYPE_LABELS_ID}-${tissueName}`)} text`,
+      `${getTestID(`${CELL_TYPE_LABELS_ID}-${tissueName}`)} button`,
       page
     );
 
@@ -280,12 +280,12 @@ describe("Where's My Gene", () => {
     await selectNthOption(2, page);
 
     const afterGeneNames = await getNames(
-      `${getTestID(GENE_LABELS_ID)} text`,
+      `${getTestID(GENE_LABELS_ID)} button`,
       page
     );
 
     const afterCellTypeNames = await getNames(
-      `${getTestID(`${CELL_TYPE_LABELS_ID}-${tissueName}`)} text`,
+      `${getTestID(`${CELL_TYPE_LABELS_ID}-${tissueName}`)} button`,
       page
     );
 
@@ -329,11 +329,11 @@ describe("Where's My Gene", () => {
     );
 
     const beforeGeneNames = await getNames(
-      `${getTestID(GENE_LABELS_ID)} text`,
+      `${getTestID(GENE_LABELS_ID)} button`,
       page
     );
     const beforeCellTypeNames = await getNames(
-      `${getTestID(`${CELL_TYPE_LABELS_ID}-${tissueName}`)} text`,
+      `${getTestID(`${CELL_TYPE_LABELS_ID}-${tissueName}`)} button`,
       page
     );
 
@@ -346,11 +346,11 @@ describe("Where's My Gene", () => {
         await page.keyboard.press("Backspace");
 
         const afterGeneNames = await getNames(
-          `${getTestID(GENE_LABELS_ID)} text`,
+          `${getTestID(GENE_LABELS_ID)} button`,
           page
         );
         const afterCellTypeNames = await getNames(
-          `${getTestID(`${CELL_TYPE_LABELS_ID}-${tissueName}`)} text`,
+          `${getTestID(`${CELL_TYPE_LABELS_ID}-${tissueName}`)} button`,
           page
         );
 
@@ -359,12 +359,7 @@ describe("Where's My Gene", () => {
         // (thuang): Sometimes when API response is slow, we'll not capture all the
         // cell type names, so a sanity check that we expect at least 100 names
         expect(beforeCellTypeNames.length).toBeGreaterThan(100);
-
-        // (thuang): We need to half the cellTypeName count, because it's grabbing
-        // Cell Count text elements as well.
-        expect(afterCellTypeNames.length / 2).toBe(
-          beforeCellTypeNames.length / 2 - 1
-        );
+        expect(afterCellTypeNames.length).toBe(beforeCellTypeNames.length-1);
 
         expect(afterGeneNames).not.toEqual(beforeGeneNames);
         expect(afterCellTypeNames).not.toEqual(beforeCellTypeNames);
@@ -390,7 +385,7 @@ describe("Where's My Gene", () => {
     await tryUntil(
       async () => {
         const afterCellTypeNames = await getNames(
-          `${getTestID(`${CELL_TYPE_LABELS_ID}-${tissueName}`)} text`,
+          `${getTestID(`${CELL_TYPE_LABELS_ID}-${tissueName}`)} button`,
           page
         );
 
@@ -429,7 +424,6 @@ describe("Where's My Gene", () => {
 
 async function getNames(selector: string, page: Page): Promise<string[]> {
   const geneLabelsLocator = await page.locator(selector);
-
   await tryUntil(
     async () => {
       const names = await geneLabelsLocator.allTextContents();
