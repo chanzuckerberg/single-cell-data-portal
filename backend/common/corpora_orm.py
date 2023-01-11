@@ -529,5 +529,5 @@ class DbGenesetDatasetLink(Base, AuditMixin):
 
     __tablename__ = "geneset_dataset_link"
 
-    geneset_id = Column(String, ForeignKey("geneset.id"), index=True, nullable=False)
-    dataset_id = Column(String, ForeignKey("dataset.id"), index=True, nullable=False)
+    geneset_id = Column(String, ForeignKey("geneset.id"), nullable=False)
+    dataset_id = Column(String, ForeignKey("dataset.id"), nullable=False)

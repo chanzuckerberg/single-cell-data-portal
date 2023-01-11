@@ -1,12 +1,14 @@
 import logging
 
 import pandas as pd
+import numpy as np
 import tiledb
 
 from backend.wmg.data.schemas.corpus_schema import OBS_ARRAY_NAME
 from backend.wmg.data.schemas.cube_schema import cell_counts_schema
 from backend.wmg.data.snapshot import CELL_COUNTS_CUBE_NAME
 from backend.wmg.data.utils import create_empty_cube, log_func_runtime
+from backend.wmg.pipeline.summary_cubes.aggregate import aggregate_across_cell_type_descendants
 
 logger = logging.getLogger(__name__)
 logging.basicConfig(level=logging.INFO)
@@ -63,6 +65,13 @@ def create_cell_count_cube(corpus_path: str):
     """
     obs = extract(corpus_path)
     df = transform(obs)
+
+    cell_types = list(df["cell_type_ontology_term_id"])
+    n_cells = np.array(list(df["n_cells"]))
+    (n_cells_agg,) = aggregate_across_cell_type_descendants(cell_types, [n_cells])
+    df["n_cells"] = n_cells_agg
+    df["n_cells_raw"] = n_cells
+
     uri = load(corpus_path, df)
     cell_count = df.n_cells.sum()
     logger.info(f"{cell_count=}")

@@ -187,14 +187,18 @@ def agg_cell_type_counts(cell_counts: DataFrame) -> DataFrame:
     cell_counts_cell_type_agg = cell_counts.groupby(
         ["tissue_ontology_term_id", "cell_type_ontology_term_id"], as_index=True
     ).sum()
-    cell_counts_cell_type_agg.rename(columns={"n_total_cells": "n_cells_cell_type"}, inplace=True)
+    cell_counts_cell_type_agg.rename(
+        columns={"n_total_cells": "n_cells_cell_type", "n_total_cells_raw": "n_cells_cell_type_raw"}, inplace=True
+    )
     return cell_counts_cell_type_agg
 
 
 def agg_tissue_counts(cell_counts: DataFrame) -> DataFrame:
     # Aggregate cube data by tissue
     cell_counts_tissue_agg = cell_counts.groupby(["tissue_ontology_term_id"], as_index=True).sum()
-    cell_counts_tissue_agg.rename(columns={"n_total_cells": "n_cells_tissue"}, inplace=True)
+    cell_counts_tissue_agg.rename(
+        columns={"n_total_cells": "n_cells_tissue", "n_total_cells_raw": "n_cells_tissue_raw"}, inplace=True
+    )
     return cell_counts_tissue_agg
 
 

@@ -10,7 +10,7 @@ from backend.common.utils.http_exceptions import (
     NotFoundHTTPException,
     TooLargeHTTPException,
 )
-from backend.layers.api.router import get_business_logic
+from backend.layers.api.providers import get_business_logic
 from backend.layers.auth.user_info import UserInfo
 from backend.layers.business.business_interface import BusinessLogicInterface
 from backend.layers.business.exceptions import (

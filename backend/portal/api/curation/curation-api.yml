@@ -582,7 +582,9 @@ components:
       description: Collection metadata
       properties:
         collection_url:
-          description: The CELLxGENE Discover URL for the Collection.
+          description: |
+            The CELLxGENE Discover URL for the Collection. This points to the canonical link unless it's a revision, 
+            in which case it points to the unpublished revision version.
           type: string
         contact_email:
           $ref: "#/components/schemas/contact_email"

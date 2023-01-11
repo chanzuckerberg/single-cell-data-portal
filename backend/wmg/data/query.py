@@ -4,7 +4,6 @@ from pandas import DataFrame
 from pydantic import BaseModel, Field
 from tiledb import Array
 from backend.wmg.data.snapshot import WmgSnapshot
-import math
 
 
 class WmgQueryCriteria(BaseModel):
@@ -86,6 +85,7 @@ class WmgQuery:
             indexed_dims=["tissue_ontology_term_ids", "tissue_original_ontology_term_ids", "organism_ontology_term_id"],
         )
         cell_counts.rename(columns={"n_cells": "n_total_cells"}, inplace=True)  # expressed & non-expressed cells
+        cell_counts.rename(columns={"n_cells_raw": "n_total_cells_raw"}, inplace=True)
         return cell_counts
 
     # TODO: refactor for readability: https://app.zenhub.com/workspaces/single-cell-5e2a191dad828d52cc78b028/issues
@@ -169,14 +169,10 @@ def retrieve_top_n_markers(query_result, test, n_markers):
     attrs = [f"p_value_{test}", f"effect_size_{test}"]
     col_names = ["p_value", "effect_size"]
     markers = query_result[["gene_ontology_term_id"] + attrs].rename(columns=dict(zip(attrs, col_names)))
+    markers = markers[markers["effect_size"].notna()]
     if n_markers > 0:
         markers = markers.nlargest(n_markers, "effect_size")
-
+    else:
+        markers = markers.sort_values("effect_size", ascending=False)
     records = markers[["gene_ontology_term_id"] + col_names].to_dict(orient="records")
-
-    marker_genes = []
-    for record in records:
-        if not math.isnan(record["p_value"]) and not math.isnan(record["effect_size"]):
-            marker_genes.append(record)
-
-    return marker_genes
+    return records
