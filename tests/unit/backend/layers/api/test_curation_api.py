@@ -353,7 +353,7 @@ class TestGetCollections(BaseAPIPortalTest):
         resp = self._test_response(visibility="PRIVATE", auth=True)
         self.assertEqual(1, len(resp))
         resp_collection = resp[0]
-        self.assertEqual(unpublished_collection_id.collection_id.id, resp_collection["revision_of"])
+        self.assertIsNone(resp_collection["revision_of"])
 
     def test__get_collections_no_auth_visibility_private__403(self):
         self._test_response(visibility="PRIVATE", status_code=403)
