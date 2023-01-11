@@ -164,6 +164,8 @@ class QueryTest(unittest.TestCase):
                 "n_cells_tissue_raw": 65610,
                 "nnz": 2187,
                 "sum": 2187.0,
+                "nnz_raw": 2187,
+                "sum_raw": 2187.0,
             },
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_0",
@@ -175,6 +177,8 @@ class QueryTest(unittest.TestCase):
                 "n_cells_tissue_raw": 65610,
                 "nnz": 2187,
                 "sum": 2187.0,
+                "nnz_raw": 2187,
+                "sum_raw": 2187.0,
             },
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_0",
@@ -186,6 +190,8 @@ class QueryTest(unittest.TestCase):
                 "n_cells_tissue_raw": 65610,
                 "nnz": 2187,
                 "sum": 2187.0,
+                "nnz_raw": 2187,
+                "sum_raw": 2187.0,
             },
         ]
 
@@ -243,6 +249,8 @@ class QueryTest(unittest.TestCase):
                 "n_cells_tissue_raw": 65610,
                 "nnz": 2187,
                 "sum": 2187.0,
+                "nnz_raw": 2187,
+                "sum_raw": 2187.0,
             },
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_0",
@@ -254,6 +262,8 @@ class QueryTest(unittest.TestCase):
                 "n_cells_tissue_raw": 65610,
                 "nnz": 2187,
                 "sum": 2187.0,
+                "nnz_raw": 2187,
+                "sum_raw": 2187.0,
             },
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_0",
@@ -265,6 +275,8 @@ class QueryTest(unittest.TestCase):
                 "n_cells_tissue_raw": 65610,
                 "nnz": 2187,
                 "sum": 2187.0,
+                "nnz_raw": 2187,
+                "sum_raw": 2187.0,
             },
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_0",
@@ -276,6 +288,8 @@ class QueryTest(unittest.TestCase):
                 "n_cells_tissue_raw": 65610,
                 "nnz": 2187,
                 "sum": 2187.0,
+                "nnz_raw": 2187,
+                "sum_raw": 2187.0,
             },
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_0",
@@ -287,6 +301,8 @@ class QueryTest(unittest.TestCase):
                 "n_cells_tissue_raw": 65610,
                 "nnz": 2187,
                 "sum": 2187.0,
+                "nnz_raw": 2187,
+                "sum_raw": 2187.0,
             },
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_0",
@@ -298,6 +314,8 @@ class QueryTest(unittest.TestCase):
                 "n_cells_tissue_raw": 65610,
                 "nnz": 2187,
                 "sum": 2187.0,
+                "nnz_raw": 2187,
+                "sum_raw": 2187.0,
             },
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_2",
@@ -309,6 +327,8 @@ class QueryTest(unittest.TestCase):
                 "n_cells_tissue_raw": 65610,
                 "nnz": 2187,
                 "sum": 2187.0,
+                "nnz_raw": 2187,
+                "sum_raw": 2187.0,
             },
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_2",
@@ -320,6 +340,8 @@ class QueryTest(unittest.TestCase):
                 "n_cells_tissue_raw": 65610,
                 "nnz": 2187,
                 "sum": 2187.0,
+                "nnz_raw": 2187,
+                "sum_raw": 2187.0,
             },
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_2",
@@ -331,6 +353,8 @@ class QueryTest(unittest.TestCase):
                 "n_cells_tissue_raw": 65610,
                 "nnz": 2187,
                 "sum": 2187.0,
+                "nnz_raw": 2187,
+                "sum_raw": 2187.0,
             },
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_2",
@@ -342,6 +366,8 @@ class QueryTest(unittest.TestCase):
                 "n_cells_tissue_raw": 65610,
                 "nnz": 2187,
                 "sum": 2187.0,
+                "nnz_raw": 2187,
+                "sum_raw": 2187.0,
             },
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_2",
@@ -353,6 +379,8 @@ class QueryTest(unittest.TestCase):
                 "n_cells_tissue_raw": 65610,
                 "nnz": 2187,
                 "sum": 2187.0,
+                "nnz_raw": 2187,
+                "sum_raw": 2187.0,
             },
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_2",
@@ -364,6 +392,8 @@ class QueryTest(unittest.TestCase):
                 "n_cells_tissue_raw": 65610,
                 "nnz": 2187,
                 "sum": 2187.0,
+                "nnz_raw": 2187,
+                "sum_raw": 2187.0,
             },
         ]
 
@@ -446,7 +476,9 @@ class QueryTest(unittest.TestCase):
 
         # after aggregating, we will get three tissues,
         # with 729 * expected_count * (# cell types per tissue = 3) total cells
-        expected = [{"n_cells_tissue": 2187 * expected_count * dim_size}] * len(criteria.tissue_ontology_term_ids)
+        expected = [
+            {"n_cells_tissue": 2187 * expected_count * dim_size, "n_cells_tissue_raw": 2187 * expected_count * dim_size}
+        ] * len(criteria.tissue_ontology_term_ids)
         self.assertEqual(expected, result.to_dict("records"))
 
     @classmethod
@@ -500,6 +532,8 @@ class QueryTest(unittest.TestCase):
                 "n_cells_tissue_raw": 21870,
                 "nnz": 729,
                 "sum": 729.0,
+                "nnz_raw": 729,
+                "sum_raw": 729.0,
             },
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_0",
@@ -511,6 +545,8 @@ class QueryTest(unittest.TestCase):
                 "n_cells_tissue_raw": 21870,
                 "nnz": 729,
                 "sum": 729.0,
+                "nnz_raw": 729,
+                "sum_raw": 729.0,
             },
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_0",
@@ -522,6 +558,8 @@ class QueryTest(unittest.TestCase):
                 "n_cells_tissue_raw": 21870,
                 "nnz": 729,
                 "sum": 729.0,
+                "nnz_raw": 729,
+                "sum_raw": 729.0,
             },
         ]
 
@@ -583,6 +621,8 @@ class QueryTest(unittest.TestCase):
                 "n_cells_tissue_raw": 43740,
                 "nnz": 1458,
                 "sum": 1458.0,
+                "nnz_raw": 1458,
+                "sum_raw": 1458.0,
             },
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_0",
@@ -594,6 +634,8 @@ class QueryTest(unittest.TestCase):
                 "n_cells_tissue_raw": 43740,
                 "nnz": 1458,
                 "sum": 1458.0,
+                "nnz_raw": 1458,
+                "sum_raw": 1458.0,
             },
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_0",
@@ -605,6 +647,8 @@ class QueryTest(unittest.TestCase):
                 "n_cells_tissue_raw": 43740,
                 "nnz": 1458,
                 "sum": 1458.0,
+                "nnz_raw": 1458,
+                "sum_raw": 1458.0,
             },
         ]
 
@@ -668,6 +712,8 @@ class QueryTest(unittest.TestCase):
                 "n_cells_tissue_raw": 14580,
                 "nnz": 486,
                 "sum": 486.0,
+                "nnz_raw": 486,
+                "sum_raw": 486.0,
             },
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_0",
@@ -679,6 +725,8 @@ class QueryTest(unittest.TestCase):
                 "n_cells_tissue_raw": 14580,
                 "nnz": 486,
                 "sum": 486.0,
+                "nnz_raw": 486,
+                "sum_raw": 486.0,
             },
             {
                 "gene_ontology_term_id": "gene_ontology_term_id_0",
@@ -690,6 +738,8 @@ class QueryTest(unittest.TestCase):
                 "n_cells_tissue_raw": 14580,
                 "nnz": 486,
                 "sum": 486.0,
+                "nnz_raw": 486,
+                "sum_raw": 486.0,
             },
         ]
 
