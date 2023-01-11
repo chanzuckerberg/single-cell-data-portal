@@ -37,7 +37,7 @@ def get_expression_summary_cube_gene_count(tbd_group: str) -> int:
 @log_func_runtime
 def get_cell_count_cube_count(tbd_group: str) -> int:
     with tiledb.open(tbd_group) as obs:
-        cell_count = obs.query(attrs=["n_cells"]).df[:].n_cells.sum()
+        cell_count = obs.query(attrs=["n_cells_raw"]).df[:].n_cells.sum()
     return cell_count
 
 
