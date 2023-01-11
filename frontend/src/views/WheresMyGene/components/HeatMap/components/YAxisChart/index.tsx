@@ -31,6 +31,8 @@ import {
   InfoButtonWrapper,
 } from "./style";
 import { SELECTED_STYLE } from "../../style";
+import { track } from "src/common/analytics";
+import { EVENTS } from "src/common/analytics/events";
 
 const MAX_DEPTH = 2;
 
@@ -192,6 +194,9 @@ const CellTypeButton = ({
               if (isMarkerGenes) {
                 const cellType = deserializeCellTypeMetadata(metadata);
                 generateMarkerGenes(cellType, tissueID);
+                track(EVENTS.WMG_FMG_INFO_CLICKED, {
+                  combination: `${cellType.name}, ${tissue}}`,
+                });
               }
             }}
           >
