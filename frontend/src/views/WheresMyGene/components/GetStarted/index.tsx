@@ -1,7 +1,4 @@
 import { useEffect, useState } from "react";
-import { get } from "src/common/featureFlags";
-import { FEATURES } from "src/common/featureFlags/features";
-import { BOOLEAN } from "src/common/localStorage/set";
 import Step from "./components/Step";
 import {
   ColumnOne,
