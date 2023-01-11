@@ -8,7 +8,7 @@ import {
   TableRow,
   Tooltip,
 } from "czifui";
-import React, { useCallback, useContext, useEffect, useState } from "react";
+import React, { useCallback, useContext, useState } from "react";
 import { track } from "src/common/analytics";
 import { EVENTS } from "src/common/analytics/events";
 import { ROUTES } from "src/common/constants/routes";
@@ -101,7 +101,10 @@ function CellInfoSideBar({
                     href={ROUTES.FMG_DOCS}
                     rel="noopener"
                     target="_blank"
-                    onClick={() => track(EVENTS.WMG_FMG_DOCUMENTATION_CLICKED)}
+                    onClick={() => {
+                      handleHoverEnd();
+                      track(EVENTS.WMG_FMG_DOCUMENTATION_CLICKED);
+                    }}
                   >
                     Click to read more about the identification method.
                   </a>
