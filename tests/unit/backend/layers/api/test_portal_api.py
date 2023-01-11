@@ -332,6 +332,11 @@ class TestCollection(BaseAPIPortalTest):
         )
         self.assertEqual(201, response.status_code)
 
+        # Check that the collection_id is the canonical collection ID
+        collection_id = response.json["collection_id"]
+        version = self.business_logic.get_collection_version_from_canonical(CollectionId(collection_id))
+        self.assertEqual(version.collection_id.id, collection_id)
+
         # Add curator_name
         data["curator_name"] = "john smith"
         json_data = json.dumps(data)
@@ -365,9 +370,8 @@ class TestCollection(BaseAPIPortalTest):
         collection_id = json.loads(response.data)["collection_id"]
         # TODO: this endpoint should also return `version_id`
         collection = self.business_logic.get_collection_version_from_canonical(CollectionId(collection_id))
-        if collection is not None:
-            doi = next(link.uri for link in collection.metadata.links if link.type == "DOI")  # TODO: careful
-            self.assertEquals(doi, "https://doi.org/10.1016/foo")
+        doi = next(link.uri for link in collection.metadata.links if link.type == "DOI")  # TODO: careful
+        self.assertEquals(doi, "https://doi.org/10.1016/foo")
 
     # ✅
     def test__post_collection_rejects_two_dois(self):
@@ -460,8 +464,7 @@ class TestCollection(BaseAPIPortalTest):
         collection_id = json.loads(response.data)["collection_id"]
         # TODO: this endpoint should also return `version_id`
         collection = self.business_logic.get_collection_version_from_canonical(CollectionId(collection_id))
-        if collection is not None:
-            self.assertIsNone(collection.publisher_metadata)
+        self.assertIsNone(collection.publisher_metadata)
 
     # ✅
     def test__post_collection_ignores_metadata_if_no_doi(self):
@@ -483,8 +486,7 @@ class TestCollection(BaseAPIPortalTest):
         collection_id = json.loads(response.data)["collection_id"]
         # TODO: this endpoint should also return `version_id`
         collection = self.business_logic.get_collection_version_from_canonical(CollectionId(collection_id))
-        if collection is not None:
-            self.assertIsNone(collection.publisher_metadata)
+        self.assertIsNone(collection.publisher_metadata)
 
     # ✅
     def test__post_collection_adds_publisher_metadata(self):
@@ -510,9 +512,8 @@ class TestCollection(BaseAPIPortalTest):
         collection_id = json.loads(response.data)["collection_id"]
         # TODO: this endpoint should also return `version_id`
         collection = self.business_logic.get_collection_version_from_canonical(CollectionId(collection_id))
-        if collection is not None:
-            self.assertIsNotNone(collection.publisher_metadata)
-            self.assertEqual(collection.publisher_metadata, generate_mock_publisher_metadata())
+        self.assertIsNotNone(collection.publisher_metadata)
+        self.assertEqual(collection.publisher_metadata, generate_mock_publisher_metadata())
 
     # ✅
     def test__post_collection_fails_with_extra_fields(self):
