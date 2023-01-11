@@ -8,7 +8,9 @@ import {
   TableRow,
   Tooltip,
 } from "czifui";
-import React, { useCallback, useContext } from "react";
+import React, { useCallback, useContext, useState } from "react";
+import { track } from "src/common/analytics";
+import { EVENTS } from "src/common/analytics/events";
 import { ROUTES } from "src/common/constants/routes";
 import { useMarkerGenes } from "src/common/queries/wheresMyGene";
 import { BetaChip } from "src/components/Header/style";
@@ -30,6 +32,7 @@ export interface CellInfoBarProps {
   cellInfoCellType: Exclude<State["cellInfoCellType"], null>;
   tissueName: string;
 }
+
 function CellInfoSideBar({
   cellInfoCellType,
   tissueName,
@@ -53,13 +56,23 @@ function CellInfoSideBar({
     if (!data) return;
     const genes = Object.keys(data.marker_genes);
     navigator.clipboard.writeText(genes.join(", "));
+    track(EVENTS.WMG_FMG_COPY_GENES_CLICKED);
   }, [data]);
 
   const handleDisplayGenes = useCallback(() => {
     if (!data || !dispatch) return;
     const genes = Object.keys(data.marker_genes);
     dispatch(addSelectedGenes(genes));
+    track(EVENTS.WMG_FMG_ADD_GENES_CLICKED);
   }, [data, dispatch]);
+
+  const [hoverStartTime, setHoverStartTime] = useState(0);
+
+  const handleHoverEnd = useCallback(() => {
+    if (Date.now() - hoverStartTime > 2 * 1000) {
+      track(EVENTS.WMG_FMG_QUESTION_BUTTON_HOVER);
+    }
+  }, [hoverStartTime]);
 
   if (isLoading || !data) return null;
 
@@ -84,7 +97,15 @@ function CellInfoSideBar({
                 </div>
                 <br />
                 <div>
-                  <a href={ROUTES.FMG_DOCS} rel="noopener" target="_blank">
+                  <a
+                    href={ROUTES.FMG_DOCS}
+                    rel="noopener"
+                    target="_blank"
+                    onClick={() => {
+                      handleHoverEnd();
+                      track(EVENTS.WMG_FMG_DOCUMENTATION_CLICKED);
+                    }}
+                  >
                     Click to read more about the identification method.
                   </a>
                 </div>
@@ -96,6 +117,8 @@ function CellInfoSideBar({
               sdsType="secondary"
               isAllCaps={false}
               style={{ fontWeight: "500" }}
+              onMouseEnter={() => setHoverStartTime(Date.now())}
+              onMouseLeave={handleHoverEnd}
             >
               <StyledIconImage src={questionMarkIcon} />
             </TooltipButton>
