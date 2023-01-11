@@ -33,7 +33,6 @@ export default function GetStarted({
     geneHasLoadedOnce = true;
   }
 
-  const isMarkerGenes = get(FEATURES.MARKER_GENES) === BOOLEAN.TRUE;
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
@@ -42,10 +41,7 @@ export default function GetStarted({
   if (isClient)
     return (
       isClient && (
-        <Wrapper
-          isHidden={tissueHasLoadedOnce && geneHasLoadedOnce}
-          fmg={isMarkerGenes}
-        >
+        <Wrapper isHidden={tissueHasLoadedOnce && geneHasLoadedOnce}>
           <ColumnOne isHidden={tissueHasLoadedOnce}>
             <StyledStepOne>
               <Step step={1} details="Add Tissues" />
