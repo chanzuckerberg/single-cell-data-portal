@@ -16,7 +16,7 @@ import {
 import { API } from "../API";
 import { ROUTES } from "../constants/routes";
 import { EMPTY_OBJECT } from "../constants/utils";
-import { DEFAULT_FETCH_OPTIONS, JSON_BODY_FETCH_OPTIONS } from "./common";
+import { DEFAULT_FETCH_OPTIONS, CONTENT_TYPE_APPLICATION_JSON } from "./common";
 import { ENTITIES } from "./entities";
 
 interface RawOntologyTerm {
@@ -191,7 +191,9 @@ async function fetchQuery({
 
   const response = await fetch(url, {
     ...DEFAULT_FETCH_OPTIONS,
-    ...JSON_BODY_FETCH_OPTIONS,
+    headers: {
+      ...CONTENT_TYPE_APPLICATION_JSON
+    },
     body: JSON.stringify(query),
     method: "POST",
     signal,
@@ -774,7 +776,9 @@ export async function fetchMarkerGenes({
   const body = generateMarkerGeneBody(cellTypeID, tissueID, organismID, test);
   const response = await fetch(url, {
     ...DEFAULT_FETCH_OPTIONS,
-    ...JSON_BODY_FETCH_OPTIONS,
+    headers: {
+      ...CONTENT_TYPE_APPLICATION_JSON
+    },
     body: JSON.stringify(body),
     method: "POST",
   });

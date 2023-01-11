@@ -1,6 +1,5 @@
 import { Auth0ContextInterface } from "@auth0/auth0-react";
 import {
-  MutationFunction,
   useMutation,
   UseMutationResult,
   useQuery,
@@ -18,7 +17,8 @@ import { isTombstonedCollection } from "../utils/typeGuards";
 import {
   DEFAULT_FETCH_OPTIONS,
   DELETE_FETCH_OPTIONS,
-  JSON_BODY_FETCH_OPTIONS,
+  CONTENT_TYPE_APPLICATION_JSON,
+  withAccessToken,
 } from "./common";
 import { ENTITIES } from "./entities";
 
@@ -248,7 +248,10 @@ export async function createCollection(
 ): Promise<CollectionCreateResponse> {
   const response = await fetch(`${API_URL}${API.CREATE_COLLECTION}`, {
     ...DEFAULT_FETCH_OPTIONS,
-    ...JSON_BODY_FETCH_OPTIONS,
+    headers: {
+      ...CONTENT_TYPE_APPLICATION_JSON,
+      "Authorization": `Bearer ${token}`
+    },
     body: payload,
     method: "POST",
   });
@@ -268,16 +271,6 @@ export async function createCollection(
   return {
     collectionId: json.collection_id,
   };
-}
-
-function withAccessToken(
-  getAccessTokenSilently: Auth0ContextInterface["getAccessTokenSilently"],
-  fetcher: CallableFunction
-): MutationFunction {
-  return async (...args) => {
-    const token: string = await getAccessTokenSilently();
-    return fetcher(...args, token);
-  }
 }
 
 export function useCreateCollection(getAccessTokenSilently: Auth0ContextInterface["getAccessTokenSilently"]) {
@@ -319,7 +312,9 @@ async function collectionUploadLinks({
 
   const response = await fetch(url, {
     ...DEFAULT_FETCH_OPTIONS,
-    ...JSON_BODY_FETCH_OPTIONS,
+    headers: {
+      ...CONTENT_TYPE_APPLICATION_JSON
+    },
     body: payload,
     method: "POST",
   });
@@ -422,7 +417,9 @@ async function publishCollection({ id, payload }: PublishCollection) {
   console.log("attempting to publish via API call");
   const response = await fetch(url, {
     ...DEFAULT_FETCH_OPTIONS,
-    ...JSON_BODY_FETCH_OPTIONS,
+    headers: {
+      ...CONTENT_TYPE_APPLICATION_JSON
+    },
     body: payload,
     method: "POST",
   });
@@ -462,7 +459,9 @@ const editCollection = async function ({
 
   const response = await fetch(url, {
     ...DEFAULT_FETCH_OPTIONS,
-    ...JSON_BODY_FETCH_OPTIONS,
+    headers: {
+      ...CONTENT_TYPE_APPLICATION_JSON
+    },
     body: payload,
     method: "PUT",
   });
@@ -587,7 +586,9 @@ const reuploadDataset = async function ({
 
   const response = await fetch(url, {
     ...DEFAULT_FETCH_OPTIONS,
-    ...JSON_BODY_FETCH_OPTIONS,
+    headers: {
+      ...CONTENT_TYPE_APPLICATION_JSON
+    },
     body: payload,
     method: "PUT",
   });

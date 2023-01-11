@@ -21,14 +21,16 @@ const AuthButtons = (): JSX.Element | null => {
     logout,
     user: userInfo,
   } = useAuth0();
-
+  console.log("error");
+  console.log(error);
   if (userInfo && error) {
     // (thuang): Force refresh page to log user out
     window.location.reload();
   }
-
+  console.log("getting past");
+  console.log(hasAuth, isLoading);
   if (!hasAuth || isLoading) return null;
-
+  console.log("further");
   return (
     <AuthButtonWrapper>
       {isAuthenticated ? (
