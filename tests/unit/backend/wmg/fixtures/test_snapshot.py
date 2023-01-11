@@ -272,7 +272,10 @@ def create_cell_counts_cube(data_dir, coords, dim_values, cell_counts_fn: Callab
     tiledb.Array.create(cube_dir, cell_counts_schema, overwrite=True)
 
     with tiledb.open(cube_dir, mode="w") as cube:
-        logical_attr_values: Dict[str, list] = {"n_cells": cell_counts_fn(coords)}
+        logical_attr_values: Dict[str, list] = {
+            "n_cells": cell_counts_fn(coords),
+            "n_cells_raw": cell_counts_fn(coords),
+        }
         assert all([len(logical_attr_values[attr.name]) == len(coords) for attr in cell_counts_logical_attrs])
 
         physical_dim_values = dim_values[: len(cell_counts_indexed_dims)]
