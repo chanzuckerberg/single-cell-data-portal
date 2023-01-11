@@ -8,6 +8,7 @@ from backend.common.corpora_orm import CollectionVisibility
 from backend.layers.thirdparty.crossref_provider import CrossrefDOINotFoundException
 from backend.common.utils.api_key import generate
 from backend.layers.common.entities import (
+    CollectionId,
     CollectionVersion,
     DatasetArtifactType,
     DatasetProcessingStatus,
@@ -224,6 +225,11 @@ class TestPostCollection(BaseAPIPortalTest):
         )
         self.assertIn("id", response.json.keys())
         self.assertEqual(201, response.status_code)
+
+        # Check that the collection_id is the canonical collection ID
+        collection_id = response.json["id"]
+        version = self.business_logic.get_collection_version_from_canonical(CollectionId(collection_id))
+        self.assertEqual(version.collection_id.id, collection_id)
 
     def test__create_collection__InvalidParameters(self):
         requests = [
