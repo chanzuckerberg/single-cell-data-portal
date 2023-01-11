@@ -195,12 +195,24 @@ def _dataset_to_response(dataset: DatasetVersion, is_tombstoned: bool, is_in_pub
 
 
 def _collection_to_response(collection: CollectionVersionWithDatasets, access_type: str):
-    collection_id = collection.collection_id.id if collection.published_at is not None else collection.version_id.id
-
+    """
+    Converts a CollectionVersion to a format that can be used as an API response. The returned id
+    """
     if collection.canonical_collection.originally_published_at is not None and collection.published_at is None:
+        # In this case, the collection version is a revision of an already published collection.
+        # We should expose version_id as the collection_id
         revision_of = collection.collection_id.id
-    else:
+        collection_id = collection.version_id.id
+    elif collection.canonical_collection.originally_published_at is None and collection.published_at is None:
+        # In this case, we're dealing with a freshly created collection - we should expose the canonical id here,
+        # since the curators will circulate the permalink immediately. `revision_of` is also null.
+        # Note that this case is effectively equivalent to a published collection
         revision_of = None
+        collection_id = collection.collection_id.id
+    else:
+        # The last case is a published collection. We just return the canonical id and set revision_of to None
+        revision_of = None
+        collection_id = collection.collection_id.id
 
     is_tombstoned = collection.canonical_collection.tombstoned
     is_in_published_collection = collection.published_at is not None
@@ -232,6 +244,16 @@ def _collection_to_response(collection: CollectionVersionWithDatasets, access_ty
     )
 
 
+def lookup_collection(collection_id: str):
+    """
+    Look up a collection by either its version id or its canonical id
+    """
+    version = get_business_logic().get_collection_version_from_canonical(CollectionId(collection_id))
+    if version is None:
+        version = get_business_logic().get_collection_version(CollectionVersionId(collection_id))
+    return version
+
+
 def get_collection_details(collection_id: str, token_info: dict):
     """
     Retrieves the collection information. Will operate the following lookups, moving to the next one
@@ -244,9 +266,7 @@ def get_collection_details(collection_id: str, token_info: dict):
     3. A collection version with `collection_id` as the version_id (published or not)
     """
     # TODO: this logic might belong to the business layer?
-    version = get_business_logic().get_collection_version_from_canonical(CollectionId(collection_id))
-    if version is None:
-        version = get_business_logic().get_collection_version(CollectionVersionId(collection_id))
+    version = lookup_collection(collection_id)
     if version is None:
         raise ForbiddenHTTPException()
 
@@ -324,7 +344,7 @@ def create_collection(body: dict, user: str):
     except CollectionCreationException as ex:
         raise InvalidParametersHTTPException(detail=ex.errors)
 
-    return make_response(jsonify({"collection_id": version.version_id.id}), 201)
+    return make_response(jsonify({"collection_id": version.collection_id.id}), 201)
 
 
 # TODO: we should use a dataclass here
@@ -389,8 +409,7 @@ def update_collection(collection_id: str, body: dict, token_info: dict):
     """
 
     # Ensure that the version exists and the user is authorized to update it
-    # TODO: this should be extracted to a method, I think
-    version = get_business_logic().get_collection_version(CollectionVersionId(collection_id))
+    version = lookup_collection(collection_id)
     if version is None or not UserInfo(token_info).is_user_owner_or_allowed(version.owner):
         raise ForbiddenHTTPException()
 
@@ -407,11 +426,11 @@ def update_collection(collection_id: str, body: dict, token_info: dict):
         update_links,
     )
 
-    get_business_logic().update_collection_version(CollectionVersionId(collection_id), payload)
+    get_business_logic().update_collection_version(version.version_id, payload)
 
     # Requires strong consistency w.r.t. the operation above - if not available, the update needs
     # to be done in memory
-    version = get_business_logic().get_collection_version(CollectionVersionId(collection_id))
+    version = get_business_logic().get_collection_version(version.version_id)
 
     response = _collection_to_response(version, "WRITE")
     return make_response(jsonify(response), 200)
@@ -421,13 +440,12 @@ def publish_post(collection_id: str, body: object, token_info: dict):
     """
     Publishes a collection
     """
-
-    version = get_business_logic().get_collection_version(CollectionVersionId(collection_id))
+    version = lookup_collection(collection_id)
     if version is None or not UserInfo(token_info).is_user_owner_or_allowed(version.owner):
         raise ForbiddenHTTPException()
 
     try:
-        get_business_logic().publish_collection_version(CollectionVersionId(collection_id))
+        get_business_logic().publish_collection_version(version.version_id)
     except CollectionPublishException:
         raise ConflictException(detail="The collection must have a least one dataset.")
 
@@ -438,13 +456,13 @@ def publish_post(collection_id: str, body: object, token_info: dict):
 
 def upload_from_link(collection_id: str, token_info: dict, url: str, dataset_id: str = None):
 
-    version = get_business_logic().get_collection_version(CollectionVersionId(collection_id))
+    version = lookup_collection(collection_id)
     if version is None or not UserInfo(token_info).is_user_owner_or_allowed(version.owner):
         raise ForbiddenHTTPException()
 
     try:
         dataset_version_id, _ = get_business_logic().ingest_dataset(
-            CollectionVersionId(collection_id),
+            version.version_id,
             url,
             None,
             None if dataset_id is None else DatasetVersionId(dataset_id),
