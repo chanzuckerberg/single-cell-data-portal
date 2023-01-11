@@ -38,10 +38,10 @@ function CellInfoSideBar({
   tissueName,
 }: CellInfoBarProps): JSX.Element | null {
   const urlParams = new URLSearchParams(window.location.search);
-  let testType: "ttest" | undefined = undefined;
+  let testType: "binomtest" | undefined = undefined;
 
-  if (urlParams.get("test") === "ttest") {
-    testType = "ttest";
+  if (urlParams.get("test") === "binomtest") {
+    testType = "binomtest";
   }
   const { isLoading, data } = useMarkerGenes({
     cellTypeID: cellInfoCellType.cellType.id,
