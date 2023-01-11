@@ -68,7 +68,7 @@ def create_cell_count_cube(corpus_path: str):
 
     cell_types = list(df["cell_type_ontology_term_id"])
     n_cells = np.array(list(df["n_cells"]))
-    n_cells_agg = aggregate_across_cell_type_descendants(cell_types, n_cells)
+    (n_cells_agg,) = aggregate_across_cell_type_descendants(cell_types, [n_cells])
     df["n_cells"] = n_cells_agg
     df["n_cells_raw"] = n_cells
 

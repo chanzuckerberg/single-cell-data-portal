@@ -15,7 +15,7 @@ def aggregate_across_cell_type_descendants(cell_types, arrays_to_sum):
 
     arrays_to_sum : list
         List of numpy arrays to aggregate across descendants. Each array
-        should have the same number of rows as cell_types.
+        should have the same length as cell_types.
 
     Returns
     -------
