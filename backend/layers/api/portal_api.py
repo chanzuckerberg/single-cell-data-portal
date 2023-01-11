@@ -1,5 +1,5 @@
 import itertools
-from typing import List, Optional, Tuple, Union
+from typing import List, Optional, Tuple
 from urllib.parse import urlparse
 
 from flask import Response, jsonify, make_response
@@ -242,6 +242,7 @@ def _collection_to_response(collection: CollectionVersionWithDatasets, access_ty
             "visibility": "PUBLIC" if collection.published_at is not None else "PRIVATE",
         }
     )
+
 
 def lookup_collection(collection_id: str):
     """
