@@ -61,11 +61,11 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
         if cls.run_as_integration:
             database_uri = os.environ.get("DB_URI", "postgresql://postgres:secret@localhost")
             cls.database_provider = DatabaseProvider(database_uri=database_uri)
-            cls.database_provider._drop_schema("persistence_schema")
+            cls.database_provider._drop_schema()
 
     def setUp(self) -> None:
         if self.run_as_integration:
-            self.database_provider._create_schema("persistence_schema")
+            self.database_provider._create_schema()
         else:
             self.database_provider = DatabaseProviderMock()
 
@@ -127,7 +127,7 @@ class BaseBusinessLogicTestCase(unittest.TestCase):
 
     def tearDown(self):
         if self.run_as_integration:
-            self.database_provider._drop_schema("persistence_schema")
+            self.database_provider._drop_schema()
 
     @classmethod
     def tearDownClass(cls) -> None:
@@ -921,7 +921,7 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         """
         A collection version can only be created on an existing collection
         """
-        non_existing_collection_id = self.database_provider._generate_id()
+        non_existing_collection_id = CollectionId()
         with self.assertRaises(CollectionVersionException):
             self.business_logic.create_collection_version(CollectionId(non_existing_collection_id))
 

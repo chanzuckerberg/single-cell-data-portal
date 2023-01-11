@@ -252,7 +252,7 @@ describe("Where's My Gene", () => {
     await selectFirstNOptions(GENE_COUNT, page);
 
     const beforeGeneNames = await getNames(
-      `${getTestID(GENE_LABELS_ID)} text`,
+      `${getTestID(GENE_LABELS_ID)} button`,
       page
     );
 
@@ -280,7 +280,7 @@ describe("Where's My Gene", () => {
     await selectNthOption(2, page);
 
     const afterGeneNames = await getNames(
-      `${getTestID(GENE_LABELS_ID)} text`,
+      `${getTestID(GENE_LABELS_ID)} button`,
       page
     );
 
@@ -329,7 +329,7 @@ describe("Where's My Gene", () => {
     );
 
     const beforeGeneNames = await getNames(
-      `${getTestID(GENE_LABELS_ID)} text`,
+      `${getTestID(GENE_LABELS_ID)} button`,
       page
     );
     const beforeCellTypeNames = await getNames(
@@ -346,7 +346,7 @@ describe("Where's My Gene", () => {
         await page.keyboard.press("Backspace");
 
         const afterGeneNames = await getNames(
-          `${getTestID(GENE_LABELS_ID)} text`,
+          `${getTestID(GENE_LABELS_ID)} button`,
           page
         );
         const afterCellTypeNames = await getNames(
