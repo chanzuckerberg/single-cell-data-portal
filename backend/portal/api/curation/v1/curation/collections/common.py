@@ -69,6 +69,7 @@ def reshape_for_curation_api(
     if is_published:
         # Published
         collection_id = collection_version.collection_id
+        collection_url = f"{get_collections_base_url()}/collections/{collection_id.id}"
         revision_of = None
         if not user_info.is_user_owner_or_allowed(collection_version.owner):
             _revising_in = None
@@ -78,9 +79,21 @@ def reshape_for_curation_api(
             )
         revising_in = _revising_in.version_id.id if _revising_in else None
     else:
-        # Unpublished
-        collection_id = collection_version.version_id
-        revision_of = collection_version.collection_id.id
+        # Unpublished - need to determine if it's a revision or first time collection
+        # For that, we look at whether the canonical collection is published
+        is_revision = collection_version.canonical_collection.originally_published_at is not None
+        if is_revision:
+            # If it's a revision, both collection_id and collection_url need to point to the version_id
+            collection_id = collection_version.version_id
+            collection_url = f"{get_collections_base_url()}/collections/{collection_id.id}"
+            revision_of = collection_version.collection_id.id
+        else:
+            # If it's an unpublished, unrevised collection, then collection_url will point to the permalink
+            # (aka the link to the canonical_id) and the collection_id will point to version_id.
+            # Also, revision_of should be None
+            collection_id = collection_version.version_id
+            collection_url = f"{get_collections_base_url()}/collections/{collection_version.collection_id}"
+            revision_of = None
         revising_in = None
 
     # get collection dataset attributes
@@ -94,7 +107,7 @@ def reshape_for_curation_api(
     else:
         revised_at = None
     response = dict(
-        collection_url=f"{get_collections_base_url()}/collections/{collection_id.id}",
+        collection_url=collection_url,
         contact_email=collection_version.metadata.contact_email,
         contact_name=collection_version.metadata.contact_name,
         created_at=collection_version.created_at,
