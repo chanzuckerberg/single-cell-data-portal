@@ -12,6 +12,7 @@ TOKEN_EXPIRES = 5 * 60  # seconds (5 minutes)
 
 # A mocked out oauth server, which serves all the endpoints needed by the oauth type.
 class MockOauthApp:
+
     def __init__(self, port, additional_scope=None, token_duration=TOKEN_EXPIRES):
         self.port = port
         self.additional_scope = additional_scope if additional_scope else []
@@ -25,6 +26,7 @@ class MockOauthApp:
             SESSION_COOKIE_SAMESITE="Lax",
             JSON_SORT_KEYS=True,
         )
+        self.nonce = None  # used by Auth0 for PKCE
 
         self.app.add_url_rule("/authorize", view_func=self.api_authorize)
         self.app.add_url_rule("/oauth/token", view_func=self.api_oauth_token, methods=["OPTIONS", "POST"])
@@ -38,11 +40,12 @@ class MockOauthApp:
         """
         Skip identity provider interaction and go straight to code exchange
         """
-        session["code_djh"] = request.args.get("code_challenge")
+        self.nonce = request.args.get("nonce")
         callback = request.args.get("redirect_uri")
         state = request.args.get("state")
         scope = request.args.get("scope")
-        return redirect(callback + f"?code=fakecode&scope={quote(scope)}&state={quote(state)}")
+        code = "fakecode"
+        return redirect(callback + f"?code={code}&scope={quote(scope)}&state={quote(state)}")
 
     def api_userinfo(self):
         return dict(
@@ -57,7 +60,13 @@ class MockOauthApp:
         if request.method == "OPTIONS":
             return make_response("", 200)
         elif request.method == "POST":
-            token_claims = dict(name="Fake User", sub="test_user_id", email="fake_user@email.com", email_verified=True)
+            token_claims = dict(
+                name="Fake User",
+                sub="test_user_id",
+                email="fake_user@email.com",
+                email_verified=True,
+                nonce=self.nonce,
+            )
             jwt = make_token(token_claims, self.token_duration, self.additional_scope)
             r = {
                 "access_token": jwt,
@@ -75,7 +84,7 @@ class MockOauthApp:
         return redirect(return_to)
 
     def api_openid_configuration(self):
-        data = dict(jwks_uri=f"http://localhost:{self.port}/.well-known/jwks.json")
+        data = dict(jwks_uri=f"https://oidc.corporanet.local:{self.port}/.well-known/jwks.json")
         return make_response(jsonify(data))
 
     def api_jwks(self):
@@ -110,9 +119,12 @@ def make_token(token_claims: dict, token_duration: int = 5, additional_scope: li
     token_claims.update(
         exp=expires_at,
         iat=issued_at,
-        aud="local-audience",
+        # For some reason, Auth0 requires the client id here for the audience value even though the Auth0Provider takes
+        # distinct prop values 'audience' and 'clientId'. Without this configuration, the Auth0 React package rejects
+        # the JWT.
+        aud="local-client-id",
         scope=additional_scope,
-        iss="https://oidc.corporanet.local/"
+        iss="https://oidc.corporanet.local/",
     )
 
     private_key_jwk = {
