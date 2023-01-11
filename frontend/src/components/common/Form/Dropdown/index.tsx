@@ -15,6 +15,7 @@ export type Value =
   | null;
 
 interface Props {
+  disablePortal?: boolean;
   label: string;
   multiple?: boolean;
   onChange: onChangeFn;
@@ -38,6 +39,7 @@ const DropdownMenuProps = {
 };
 
 export default function Dropdown({
+  disablePortal = false,
   label,
   multiple = false,
   onChange,
@@ -65,6 +67,7 @@ export default function Dropdown({
         options={options}
         PopperComponent={({ ...props }) => (
           <DropdownPopper
+            disablePortal={disablePortal}
             open={props.open}
             placement="bottom-start"
             style={{

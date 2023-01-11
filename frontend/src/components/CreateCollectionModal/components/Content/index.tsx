@@ -215,6 +215,9 @@ const Content: FC<Props> = (props) => {
               syncValidation={[requiredValidator, emailValidation]}
             />
             <Dropdown
+              // To maintain Dialog component focus, the consortia menu Popper component should be
+              // rendered under the DOM hierarchy of the Dropdown component and therefore the Dialog component.
+              disablePortal
               label="Select Consortia"
               multiple
               onChange={handleConsortiaChange}
