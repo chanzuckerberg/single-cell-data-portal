@@ -1,5 +1,5 @@
 import itertools
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Union
 from urllib.parse import urlparse
 
 from flask import Response, jsonify, make_response
@@ -243,6 +243,15 @@ def _collection_to_response(collection: CollectionVersionWithDatasets, access_ty
         }
     )
 
+def lookup_collection(collection_id: str):
+    """
+    Look up a collection by either its version id or its canonical id
+    """
+    version = get_business_logic().get_collection_version_from_canonical(CollectionId(collection_id))
+    if version is None:
+        version = get_business_logic().get_collection_version(CollectionVersionId(collection_id))
+    return version
+
 
 def get_collection_details(collection_id: str, token_info: dict):
     """
@@ -256,9 +265,7 @@ def get_collection_details(collection_id: str, token_info: dict):
     3. A collection version with `collection_id` as the version_id (published or not)
     """
     # TODO: this logic might belong to the business layer?
-    version = get_business_logic().get_collection_version_from_canonical(CollectionId(collection_id))
-    if version is None:
-        version = get_business_logic().get_collection_version(CollectionVersionId(collection_id))
+    version = lookup_collection(collection_id)
     if version is None:
         raise ForbiddenHTTPException()
 
@@ -401,10 +408,7 @@ def update_collection(collection_id: str, body: dict, token_info: dict):
     """
 
     # Ensure that the version exists and the user is authorized to update it
-    # TODO: this should be extracted to a method, I think
-    version = get_business_logic().get_collection_version(CollectionVersionId(collection_id))
-    if version is None:
-        version = get_business_logic().get_collection_version_from_canonical(CollectionId(collection_id))
+    version = lookup_collection(collection_id)
     if version is None or not UserInfo(token_info).is_user_owner_or_allowed(version.owner):
         raise ForbiddenHTTPException()
 
@@ -435,10 +439,7 @@ def publish_post(collection_id: str, body: object, token_info: dict):
     """
     Publishes a collection
     """
-
-    version = get_business_logic().get_collection_version(CollectionVersionId(collection_id))
-    if version is None:
-        version = get_business_logic().get_collection_version_from_canonical(CollectionId(collection_id))
+    version = lookup_collection(collection_id)
     if version is None or not UserInfo(token_info).is_user_owner_or_allowed(version.owner):
         raise ForbiddenHTTPException()
 
@@ -454,9 +455,7 @@ def publish_post(collection_id: str, body: object, token_info: dict):
 
 def upload_from_link(collection_id: str, token_info: dict, url: str, dataset_id: str = None):
 
-    version = get_business_logic().get_collection_version(CollectionVersionId(collection_id))
-    if version is None:
-        version = get_business_logic().get_collection_version_from_canonical(CollectionId(collection_id))
+    version = lookup_collection(collection_id)
     if version is None or not UserInfo(token_info).is_user_owner_or_allowed(version.owner):
         raise ForbiddenHTTPException()
 
