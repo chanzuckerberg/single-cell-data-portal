@@ -260,10 +260,56 @@ class TestCollection(BaseAPIPortalTest):
                     actual_body = json.loads(response.data)
                     self.assertEqual(expected_access_type, actual_body["access_type"])
 
-    # ✅
+    def test__get_collection_id_retrieves_published_version_by_collection_id(self):
+        """
+        GET /collections/:collection_id retrieves the published version given a canonical collection_id
+        """
+        version = self.generate_published_collection()
+        test_url = furl(path=f"/dp/v1/collections/{version.collection_id}")
+        response = self.app.get(test_url.url, headers=dict(host="localhost"))
+        self.assertEqual(200, response.status_code)
+        body = json.loads(response.data)
+        self.assertEqual(body["visibility"], "PUBLIC")
+
+    def test__get_collection_id_retrieves_published_version_by_collection_id_if_revision(self):
+        """
+        When there is a revision of a published collection, GET /collections/:collection_id retrieves:
+        1. the published version given the canonical collection_id
+        2. the revision if given the version_id
+        """
+        version = self.generate_published_collection()
+        revision = self.business_logic.create_collection_version(version.collection_id)
+
+        test_url = furl(path=f"/dp/v1/collections/{revision.collection_id}")
+        response = self.app.get(test_url.url, headers=dict(host="localhost"))
+        self.assertEqual(200, response.status_code)
+        body = json.loads(response.data)
+        self.assertEqual(body["visibility"], "PUBLIC")
+
+        test_url = furl(path=f"/dp/v1/collections/{revision.version_id}")
+        response = self.app.get(test_url.url, headers=dict(host="localhost"))
+        self.assertEqual(200, response.status_code)
+        body = json.loads(response.data)
+        self.assertEqual(body["visibility"], "PRIVATE")
+
+    def test__get_collection_id_retrieves_unpublished_version(self):
+        """
+        If a collection is unpublished, GET /collections/:collection_id retrieves the unpublished version
+        when passed the canonical collection_id
+        """
+        version = self.generate_unpublished_collection()
+
+        test_url = furl(path=f"/dp/v1/collections/{version.collection_id}")
+        response = self.app.get(test_url.url, headers=dict(host="localhost"))
+        self.assertEqual(200, response.status_code)
+        body = json.loads(response.data)
+        self.assertEqual(body["visibility"], "PRIVATE")
+
     def test__get_collection_id__403_not_found(self):
-        """Verify the test collection exists and the expected fields exist."""
-        fake_id = self._generate_id()
+        """
+        GET /collections/:collection_id returns 403 if an invalid is specified
+        """
+        fake_id = CollectionId()
         test_url = furl(path=f"/dp/v1/collections/{fake_id}", query_params=dict(visibility="PUBLIC"))
         response = self.app.get(test_url.url, headers=dict(host="localhost"))
         self.assertEqual(403, response.status_code)
@@ -827,7 +873,7 @@ class TestCollectionDeletion(BaseAPIPortalTest):
         self.assertEqual(response.status_code, 403)
 
     def test_delete_collection__does_not_exist(self):
-        fake_id = self._generate_id()
+        fake_id = CollectionId()
         test_url = furl(path=f"/dp/v1/collections/{fake_id}", query_params=dict(visibility="PRIVATE"))
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
         response = self.app.delete(test_url.url, headers=headers)
@@ -1241,7 +1287,7 @@ class TestDataset(BaseAPIPortalTest):
 
     # ✅
     def test__post_dataset_asset__dataset_NOT_FOUND(self):
-        fake_id = self._generate_id()
+        fake_id = DatasetVersionId()
         test_url = furl(path=f"/dp/v1/datasets/{fake_id}/asset/{fake_id}")
         response = self.app.post(test_url.url, headers=dict(host="localhost"))
         self.assertEqual(404, response.status_code)
@@ -1470,7 +1516,7 @@ class TestDataset(BaseAPIPortalTest):
 
     # ✅
     def test__cancel_dataset_download__dataset_does_not_exist(self):
-        fake_id = self._generate_id()
+        fake_id = DatasetVersionId()
         test_url = f"/dp/v1/datasets/{fake_id}"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
         response = self.app.delete(test_url, headers=headers)
@@ -1613,7 +1659,7 @@ class TestDataset(BaseAPIPortalTest):
 
     # ✅
     def test__dataset_meta__404(self):
-        fake_id = self._generate_id()
+        fake_id = DatasetVersionId()
         headers = {"host": "localhost", "Content-Type": "application/json"}
         fake_url = f"http://base.url/{fake_id}.cxg/"
         test_url_404 = f"/dp/v1/datasets/meta?url={fake_url}"
@@ -1745,7 +1791,7 @@ class TestRevision(BaseAPIPortalTest):
         """
         Start a revision on a non-existing collection.
         """
-        fake_collection_id = self._generate_id()
+        fake_collection_id = CollectionId()
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
         response = self.app.post(f"/dp/v1/collections/{fake_collection_id}", headers=headers)
         self.assertEqual(403, response.status_code)
@@ -1947,7 +1993,7 @@ class TestPublishRevision(BaseAPIPortalTest):
         """
         Publish a collection with a bad uuid (non existant) returns 403
         """
-        collection_id = self._generate_id()
+        collection_id = CollectionId()
         body = {"data_submission_policy_version": "1.0"}
         path = f"{self.base_path}/{collection_id}/publish"
         response = self.app.post(path, headers=self.headers, data=json.dumps(body))
@@ -2218,7 +2264,7 @@ class TestCollectionPostUploadLink(BaseAPIPortalTest):
 
     # ✅
     def test__link_fake_collection__403(self):
-        fake_id = self._generate_id()
+        fake_id = CollectionId()
         path = f"/dp/v1/collections/{fake_id}/upload-links"
         headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
         body = {"url": self.good_link}

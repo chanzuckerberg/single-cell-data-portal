@@ -921,7 +921,7 @@ class TestCollectionOperations(BaseBusinessLogicTestCase):
         """
         A collection version can only be created on an existing collection
         """
-        non_existing_collection_id = self.database_provider._generate_id()
+        non_existing_collection_id = CollectionId()
         with self.assertRaises(CollectionVersionException):
             self.business_logic.create_collection_version(CollectionId(non_existing_collection_id))
 

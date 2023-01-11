@@ -46,6 +46,8 @@ expression_summary_domain = tiledb.Domain(
 expression_summary_logical_attrs = [
     tiledb.Attr(name="nnz", dtype=np.uint64, filters=filters),  # TODO: Why uint64?
     tiledb.Attr(name="sum", dtype=np.float32, filters=filters),
+    tiledb.Attr(name="nnz_raw", dtype=np.uint64, filters=filters),
+    tiledb.Attr(name="sum_raw", dtype=np.float32, filters=filters),
 ]
 
 # The TileDB `Attr`s of the cube TileDB Array. This includes the
@@ -88,6 +90,7 @@ cell_counts_domain = tiledb.Domain(
 cell_counts_logical_attrs = [
     # total count of cells, regardless of expression level
     tiledb.Attr(name="n_cells", dtype=np.uint32, filters=filters),
+    tiledb.Attr(name="n_cells_raw", dtype=np.uint32, filters=filters),
 ]
 
 cell_counts_physical_attrs = [
