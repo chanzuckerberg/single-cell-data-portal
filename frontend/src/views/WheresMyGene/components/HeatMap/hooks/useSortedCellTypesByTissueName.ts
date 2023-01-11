@@ -3,7 +3,6 @@ import { useMemo } from "react";
 import {
   CellType,
   CellTypeGeneExpressionSummaryData,
-  SORT_BY,
   Tissue,
 } from "src/views/WheresMyGene/common/types";
 
@@ -14,19 +13,15 @@ interface Props {
   >;
   selectedCellTypes: { [tissue: Tissue]: CellType[] };
   genes: string[];
-  cellTypeSortBy: SORT_BY;
 }
 
 export function useSortedCellTypesByTissueName({
   tissueNameToCellTypeIdToGeneNameToCellTypeGeneExpressionSummaryDataMap,
   selectedCellTypes,
   genes,
-  cellTypeSortBy,
 }: Props): { [tissue: Tissue]: CellType[] } {
   return useMemo(() => {
-    const isSortByCellOntology = cellTypeSortBy === SORT_BY.CELL_ONTOLOGY;
-
-    if (isSortByCellOntology) {
+    if (genes.length === 0) {
       return selectedCellTypes;
     }
 
@@ -84,6 +79,5 @@ export function useSortedCellTypesByTissueName({
     tissueNameToCellTypeIdToGeneNameToCellTypeGeneExpressionSummaryDataMap,
     selectedCellTypes,
     genes,
-    cellTypeSortBy,
   ]);
 }
