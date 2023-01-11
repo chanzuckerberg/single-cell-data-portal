@@ -35,10 +35,10 @@ function CellInfoSideBar({
   tissueName,
 }: CellInfoBarProps): JSX.Element | null {
   const urlParams = new URLSearchParams(window.location.search);
-  let testType: "ttest" | undefined = undefined;
+  let testType: "binomtest" | undefined = undefined;
 
-  if (urlParams.get("test") === "ttest") {
-    testType = "ttest";
+  if (urlParams.get("test") === "binomtest") {
+    testType = "binomtest";
   }
   const { isLoading, data } = useMarkerGenes({
     cellTypeID: cellInfoCellType.cellType.id,
@@ -78,14 +78,13 @@ function CellInfoSideBar({
             arrow={true}
             title={
               <StyledTooltip>
-                <div>Marker genes are highly and uniquely expressed in the cell type relative to all other cell types.</div>
-                <br/>
                 <div>
-                  <a 
-                    href={ROUTES.FMG_DOCS} 
-                    rel="noopener" 
-                    target="_blank" 
-                  >
+                  Marker genes are highly and uniquely expressed in the cell
+                  type relative to all other cell types.
+                </div>
+                <br />
+                <div>
+                  <a href={ROUTES.FMG_DOCS} rel="noopener" target="_blank">
                     Click to read more about the identification method.
                   </a>
                 </div>
