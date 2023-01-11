@@ -83,11 +83,18 @@ def random_expression_summary_values(coords):
     return {
         "nnz": randint(size=len(coords), low=0, high=100),
         "sum": random(size=len(coords)) * 10,
+        "nnz_raw": randint(size=len(coords), low=0, high=100),
+        "sum_raw": random(size=len(coords)) * 10,
     }
 
 
 def all_ones_expression_summary_values(coords):
-    return {"nnz": np.ones(len(coords)), "sum": np.ones(len(coords))}
+    return {
+        "nnz": np.ones(len(coords)),
+        "sum": np.ones(len(coords)),
+        "nnz_raw": np.ones(len(coords)),
+        "sum_raw": np.ones(len(coords)),
+    }
 
 
 def all_tens_cell_counts_values(coords) -> List[int]:
