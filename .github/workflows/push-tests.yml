@@ -492,7 +492,6 @@ jobs:
       - processing-unit-test
     runs-on: ubuntu-20.04
     steps:
-      # Post Code coverage
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
