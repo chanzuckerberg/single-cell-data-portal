@@ -24,8 +24,16 @@ def aggregate_across_cell_type_descendants(cell_types, arrays_to_sum):
         with values aggregated across descendants for each cell type (row).
     """
     onto = Ontology(CL_BASIC_PERMANENT_URL)
-    descendants_for_node = lambda cl: list(onto[cl].subclasses().to_set().ids)
-    descendants = [descendants_for_node(i) for i in cell_types]
+
+    def descendants_for_node(cl):
+        return list(onto[cl].subclasses().to_set().ids)
+
+    descendants = []
+    for i in cell_types:
+        try:
+            descendants.append(descendants_for_node(i))
+        except KeyError:
+            descendants.append([i])
     for i, children in enumerate(descendants):
         descendants[i] = list(set(children).intersection(cell_types))
     indexer = pd.Series(index=cell_types, data=range(len(cell_types)))

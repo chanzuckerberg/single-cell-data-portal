@@ -89,6 +89,8 @@ class TestSummaryCubeSchema(unittest.TestCase):
             self.assertTrue(summary_cube_schema.has_attr("sex_ontology_term_id"))
             self.assertTrue(summary_cube_schema.has_attr("nnz"))
             self.assertTrue(summary_cube_schema.has_attr("sum"))
+            self.assertTrue(summary_cube_schema.has_attr("nnz_raw"))
+            self.assertTrue(summary_cube_schema.has_attr("sum_raw"))
 
 
 class TestFmgSummaryCubeSchema(unittest.TestCase):
@@ -142,3 +144,4 @@ class TestCellCountCubeSchema(unittest.TestCase):
             self.assertTrue(cell_count_cube_schema.has_attr("self_reported_ethnicity_ontology_term_id"))
             self.assertTrue(cell_count_cube_schema.has_attr("sex_ontology_term_id"))
             self.assertTrue(cell_count_cube_schema.has_attr("n_cells"))
+            self.assertTrue(cell_count_cube_schema.has_attr("n_cells_raw"))

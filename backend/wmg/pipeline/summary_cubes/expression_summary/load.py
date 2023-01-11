@@ -37,7 +37,7 @@ def build_in_mem_cube(
         "sum": np.empty((total_vals,)),
         "nnz": np.empty((total_vals,), dtype=np.uint64),
         "sum_raw": np.empty((total_vals,)),
-        "nnz_raw": np.empty((total_vals,), dtype=np.uint64),        
+        "nnz_raw": np.empty((total_vals,), dtype=np.uint64),
         **{k: np.empty((total_vals,), dtype=object) for k in other_cube_attrs},
     }
 
