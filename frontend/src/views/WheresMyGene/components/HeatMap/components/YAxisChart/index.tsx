@@ -1,7 +1,4 @@
 import { memo, useContext, useEffect, useMemo, useState } from "react";
-import { get } from "src/common/featureFlags";
-import { FEATURES } from "src/common/featureFlags/features";
-import { BOOLEAN } from "src/common/localStorage/set";
 import Image from "next/image";
 import { DispatchContext } from "src/views/WheresMyGene/common/store";
 import { resetTissueCellTypes } from "src/views/WheresMyGene/common/store/actions";
@@ -60,7 +57,6 @@ export default memo(function YAxisChart({
   const tissueKey = tissue.replace(/\s+/g, "-");
 
   const dispatch = useContext(DispatchContext);
-  const isMarkerGenes = get(FEATURES.MARKER_GENES) === BOOLEAN.TRUE;
 
   const { handleCellTypeClick } = useDeleteGenesAndCellTypes();
 
@@ -126,7 +122,6 @@ export default memo(function YAxisChart({
                 tissueID={tissueID}
                 tissue={tissue}
                 generateMarkerGenes={generateMarkerGenes}
-                isMarkerGenes={isMarkerGenes}
               />
             );
           })}
@@ -145,13 +140,11 @@ const CellTypeButton = ({
   name,
   metadata,
   onClick,
-  isMarkerGenes,
   generateMarkerGenes,
   tissueID,
   tissue,
 }: {
   name: string;
-  isMarkerGenes: boolean;
   metadata: CellTypeMetadata;
   onClick: () => void;
   generateMarkerGenes: (cellType: CellType, tissueID: string) => void;
@@ -191,13 +184,11 @@ const CellTypeButton = ({
               cursor: "pointer",
             }}
             onClick={() => {
-              if (isMarkerGenes) {
-                const cellType = deserializeCellTypeMetadata(metadata);
-                generateMarkerGenes(cellType, tissueID);
-                track(EVENTS.WMG_FMG_INFO_CLICKED, {
-                  combination: `${cellType.name}, ${tissue}}`,
-                });
-              }
+              const cellType = deserializeCellTypeMetadata(metadata);
+              generateMarkerGenes(cellType, tissueID);
+              track(EVENTS.WMG_FMG_INFO_CLICKED, {
+                combination: `${cellType.name}, ${tissue}}`,
+              });
             }}
           >
             <StyledImage
