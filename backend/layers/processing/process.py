@@ -21,6 +21,7 @@ from backend.layers.processing.exceptions import (
     UploadFailed,
     ValidationFailed,
 )
+from backend.layers.processing.logger import configure_logging
 from backend.layers.processing.process_cxg import ProcessCxg
 from backend.layers.processing.process_download_validate import ProcessDownloadValidate
 from backend.layers.processing.process_logic import ProcessingLogic
@@ -31,6 +32,8 @@ from backend.layers.thirdparty.schema_validator_provider import (
     SchemaValidatorProviderInterface,
 )
 from backend.layers.thirdparty.uri_provider import UriProvider, UriProviderInterface
+
+configure_logging()
 
 
 class ProcessMain(ProcessingLogic):
@@ -143,7 +146,6 @@ class ProcessMain(ProcessingLogic):
 
 
 if __name__ == "__main__":
-
     database_provider = DatabaseProvider()
     s3_provider = S3Provider()
     uri_provider = UriProvider()

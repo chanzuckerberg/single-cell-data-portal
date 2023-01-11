@@ -10,7 +10,7 @@ from pandas import Series, DataFrame, Categorical
 import tiledb
 
 from backend.common.utils.corpora_constants import CorporaConstants
-from backend.portal.pipeline.processing.h5ad_data_file import H5ADDataFile
+from backend.layers.processing.h5ad_data_file import H5ADDataFile
 
 from tests.unit.backend.fixtures.environment_setup import fixture_file_path
 
