@@ -9,7 +9,6 @@ on:
   pull_request:
     branches:
       - "*"
-      - ebezzi/business-layer-unit-tests
 
 env:
   CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
