@@ -349,6 +349,7 @@ class TestGetCollections(BaseAPIPortalTest):
 
     def test__get_collections_with_auth__OK_6(self):
         "revision_of contains None if the collection is unpublished"
+        self.generate_unpublished_collection()
         resp = self._test_response(visibility="PRIVATE", auth=True)
         self.assertEqual(1, len(resp))
         resp_collection = resp[0]
