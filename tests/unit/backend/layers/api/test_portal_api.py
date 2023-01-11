@@ -631,8 +631,9 @@ class TestCollection(BaseAPIPortalTest):
 
         self.assertEqual(body["description"], data["description"])
         self.assertEqual(body["name"], data["name"])
-        self.assertEqual(body["contact_name"], body["contact_name"])
-        self.assertEqual(body["contact_email"], body["contact_email"])
+        self.assertEqual(body["contact_name"], data["contact_name"])
+        self.assertEqual(body["contact_email"], data["contact_email"])
+        self.assertEqual(body["consortia"], [])
 
         # test that non owners only have read access
         no_cookie_headers = {"host": "localhost", "Content-Type": "application/json"}
@@ -653,6 +654,7 @@ class TestCollection(BaseAPIPortalTest):
                 {"link_url": "     http://doi.org/10.1016  ", "link_type": "OTHER"},
                 {"link_name": "  DOI Link 2", "link_url": "http://doi.org/10.1017   ", "link_type": "DOI"},
             ],
+            "consortia": ["Consortia 1   "],
         }
         response = self.app.post(test_url.url, headers=headers, data=json.dumps(data))
         self.assertEqual(201, response.status_code)
@@ -666,9 +668,10 @@ class TestCollection(BaseAPIPortalTest):
 
         self.assertEqual(body["description"], data["description"].strip())
         self.assertEqual(body["name"], data["name"].strip())
-        self.assertEqual(body["contact_name"], body["contact_name"].strip())
+        self.assertEqual(body["contact_name"], data["contact_name"].strip())
         self.assertEqual(body["contact_email"], body["contact_email"].strip())
         self.assertEqual(body["data_submission_policy_version"], body["data_submission_policy_version"].strip())
+        self.assertEqual(body["consortia"], ["Consortia 1"])
 
         for link in body["links"]:
             self.assertEqual(link["link_url"], link["link_url"].strip())
@@ -1041,6 +1044,10 @@ class TestUpdateCollection(BaseAPIPortalTest):
         self.assertEqual(actual_body["contact_email"], collection.metadata.contact_email)
         self.assertEqual(actual_body["consortia"], ["Consortia 1", "Consortia 3"])
 
+    def test__remove_collection_consortia(self):
+        collection = self.generate_unpublished_collection()
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+
         # Remove Consortia
         payload = {
             "consortia": ["Consortia 1"],
@@ -1057,6 +1064,10 @@ class TestUpdateCollection(BaseAPIPortalTest):
         self.assertEqual(actual_body["contact_name"], collection.metadata.contact_name)
         self.assertEqual(actual_body["contact_email"], collection.metadata.contact_email)
         self.assertEqual(actual_body["consortia"], ["Consortia 1"])
+
+    def test__remove_all_collection_consortia(self):
+        collection = self.generate_unpublished_collection()
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
 
         # Remove All Consortia
         payload = {
@@ -1075,6 +1086,10 @@ class TestUpdateCollection(BaseAPIPortalTest):
         self.assertEqual(actual_body["contact_email"], collection.metadata.contact_email)
         self.assertEqual(actual_body["consortia"], [])
 
+    def test__add_new_collection_consortia(self):
+        collection = self.generate_unpublished_collection()
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
+
         # Add Consortia
         payload = {
             "consortia": ["Consortia 4"],
@@ -1091,6 +1106,10 @@ class TestUpdateCollection(BaseAPIPortalTest):
         self.assertEqual(actual_body["contact_name"], collection.metadata.contact_name)
         self.assertEqual(actual_body["contact_email"], collection.metadata.contact_email)
         self.assertEqual(actual_body["consortia"], ["Consortia 4"])
+
+    def test__update_with_invalid_collection_consortia(self):
+        collection = self.generate_unpublished_collection()
+        headers = {"host": "localhost", "Content-Type": "application/json", "Cookie": self.get_cxguser_token()}
 
         # Invalid Consortia
         payload = {

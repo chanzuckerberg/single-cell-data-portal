@@ -221,8 +221,7 @@ class CollectionMetadata:
         for link in self.links:
             link.strip_fields()
         if self.consortia is not None:
-            for consortium in self.consortia:
-                consortium.strip()
+            self.consortia = [consortium.strip() for consortium in self.consortia]
 
 
 @dataclass
