@@ -66,15 +66,13 @@ function CellInfoSideBar({
     track(EVENTS.WMG_FMG_ADD_GENES_CLICKED);
   }, [data, dispatch]);
 
-  const [hoverTime, setHoverTime] = useState({ start: -1, end: -1 });
+  const [hoverStartTime, setHoverStartTime] = useState(0);
 
-  useEffect(() => {
-    const { start, end } = hoverTime;
-    if (start !== -1 && end !== -1 && end - start > 2 * 1000) {
+  const handleHoverEnd = useCallback(() => {
+    if (Date.now() - hoverStartTime > 2 * 1000) {
       track(EVENTS.WMG_FMG_QUESTION_BUTTON_HOVER);
-      setHoverTime({ start: -1, end: -1 });
     }
-  }, [hoverTime]);
+  }, [hoverStartTime]);
 
   if (isLoading || !data) return null;
 
@@ -93,13 +91,16 @@ function CellInfoSideBar({
             arrow={true}
             title={
               <StyledTooltip>
-                <div>Marker genes are highly and uniquely expressed in the cell type relative to all other cell types.</div>
-                <br/>
                 <div>
-                  <a 
-                    href={ROUTES.FMG_DOCS} 
-                    rel="noopener" 
-                    target="_blank" 
+                  Marker genes are highly and uniquely expressed in the cell
+                  type relative to all other cell types.
+                </div>
+                <br />
+                <div>
+                  <a
+                    href={ROUTES.FMG_DOCS}
+                    rel="noopener"
+                    target="_blank"
                     onClick={() => track(EVENTS.WMG_FMG_DOCUMENTATION_CLICKED)}
                   >
                     Click to read more about the identification method.
@@ -113,10 +114,8 @@ function CellInfoSideBar({
               sdsType="secondary"
               isAllCaps={false}
               style={{ fontWeight: "500" }}
-              onHoverStart={() => setHoverTime({ start: Date.now(), end: -1 })}
-              onHoverEnd={() =>
-                setHoverTime({ start: hoverTime.start, end: Date.now() })
-              }
+              onMouseEnter={() => setHoverStartTime(Date.now())}
+              onMouseLeave={handleHoverEnd}
             >
               <StyledIconImage src={questionMarkIcon} />
             </TooltipButton>
