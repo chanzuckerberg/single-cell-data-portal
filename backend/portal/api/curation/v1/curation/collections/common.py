@@ -144,7 +144,9 @@ def reshape_datasets_for_curation_api(
     active_datasets = []
     for dv in datasets:
         dataset_version = get_business_logic().get_dataset_version(dv) if isinstance(dv, DatasetVersionId) else dv
-        active_datasets.append(reshape_dataset_for_curation_api(dataset_version, is_published, use_canonical_url, preview))
+        active_datasets.append(
+            reshape_dataset_for_curation_api(dataset_version, is_published, use_canonical_url, preview)
+        )
     return active_datasets
 
 
