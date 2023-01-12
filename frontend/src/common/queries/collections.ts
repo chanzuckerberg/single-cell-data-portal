@@ -1,4 +1,3 @@
-import { Auth0ContextInterface } from "@auth0/auth0-react";
 import {
   useMutation,
   UseMutationResult,
@@ -243,14 +242,12 @@ export function useCollection({
 }
 
 export async function createCollection(
-  payload: string,
-  token: string
+  payload: string
 ): Promise<CollectionCreateResponse> {
   const response = await fetch(`${API_URL}${API.CREATE_COLLECTION}`, {
     ...DEFAULT_FETCH_OPTIONS,
     headers: {
       ...CONTENT_TYPE_APPLICATION_JSON,
-      "Authorization": `Bearer ${token}`
     },
     body: payload,
     method: "POST",
@@ -273,10 +270,10 @@ export async function createCollection(
   };
 }
 
-export function useCreateCollection(getAccessTokenSilently: Auth0ContextInterface["getAccessTokenSilently"]) {
+export function useCreateCollection() {
   const queryClient = useQueryClient();
 
-  return useMutation(withAccessToken(getAccessTokenSilently, createCollection), {
+  return useMutation(createCollection, {
     onSuccess: () => {
       queryClient.invalidateQueries([USE_COLLECTIONS]);
     },
