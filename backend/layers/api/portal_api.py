@@ -679,7 +679,7 @@ def get_dataset_identifiers(url: str):
     for version in reversed(list(all_versions)):
         if dataset.version_id in [v.version_id for v in version.datasets]:
             collection_id, dataset_id = version.version_id.id, dataset.version_id.id
-            
+
     if not collection_id or not dataset_id:
         raise NotFoundHTTPException()
 

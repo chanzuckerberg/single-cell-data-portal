@@ -1846,14 +1846,12 @@ class TestDataset(BaseAPIPortalTest):
             datasets = response_data["datasets"]
             self.assertIn(returned_dataset_id, [dataset["id"] for dataset in datasets])
 
-        
         with self.subTest("Dataset belonging to a published collection"):
 
             test_uri = "some_uri_1"
 
             dataset = self.generate_dataset(
-                artifacts=[DatasetArtifactUpdate(DatasetArtifactType.CXG, test_uri)],
-                publish=True
+                artifacts=[DatasetArtifactUpdate(DatasetArtifactType.CXG, test_uri)], publish=True
             )
             # In this case, explorer_url points to the canonical link
             explorer_url = f"http://base.url/{dataset.dataset_id}.cxg/"
@@ -1872,14 +1870,12 @@ class TestDataset(BaseAPIPortalTest):
             datasets = response_data["datasets"]
             self.assertIn(returned_dataset_id, [dataset["id"] for dataset in datasets])
 
-        
         with self.subTest("Dataset belonging to a revision of a published collection, not replaced"):
 
             test_uri = "some_uri_2"
 
             dataset = self.generate_dataset(
-                artifacts=[DatasetArtifactUpdate(DatasetArtifactType.CXG, test_uri)],
-                publish=True
+                artifacts=[DatasetArtifactUpdate(DatasetArtifactType.CXG, test_uri)], publish=True
             )
             self.business_logic.create_collection_version(CollectionId(dataset.collection_id))
 
@@ -1905,8 +1901,7 @@ class TestDataset(BaseAPIPortalTest):
             test_uri = "some_uri_1"
 
             dataset = self.generate_dataset(
-                artifacts=[DatasetArtifactUpdate(DatasetArtifactType.CXG, test_uri)],
-                publish=True
+                artifacts=[DatasetArtifactUpdate(DatasetArtifactType.CXG, test_uri)], publish=True
             )
             revision = self.business_logic.create_collection_version(CollectionId(dataset.collection_id))
             revised_dataset = self.generate_dataset(
@@ -1925,8 +1920,10 @@ class TestDataset(BaseAPIPortalTest):
             response_data = json.loads(response.data)
             datasets = response_data["datasets"]
             self.assertIn(revised_dataset.dataset_version_id, [dataset["id"] for dataset in datasets])
-            replaced_dataset = next(dataset for dataset in datasets if dataset["id"] == revised_dataset.dataset_version_id)
-            
+            replaced_dataset = next(
+                dataset for dataset in datasets if dataset["id"] == revised_dataset.dataset_version_id
+            )
+
             explorer_url = replaced_dataset["dataset_deployments"][0]["url"]
 
             test_url = f"/dp/v1/datasets/meta?url={explorer_url}"
@@ -1943,7 +1940,7 @@ class TestDataset(BaseAPIPortalTest):
 
             datasets = response_data["datasets"]
             self.assertIn(returned_dataset_id, [dataset["id"] for dataset in datasets])
-        
+
 
 class TestDatasetCurators(BaseAPIPortalTest):
     def setUp(self):
