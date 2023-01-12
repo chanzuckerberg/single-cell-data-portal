@@ -48,7 +48,17 @@ def get(collection_id: str, dataset_id: str = None):
     if version is None:
         raise NotFoundHTTPException("Dataset not found")
 
-    response_body = reshape_dataset_for_curation_api(version, collection_version.published_at is not None)
+    # A canonical url should be only used in two cases:
+    # 1. the collection version is unpublished but it's not a revision
+    # 2. the collection version is published
+    use_canonical_url = (
+        collection_version.canonical_collection.originally_published_at is None
+        or collection_version.published_at is not None
+    )
+
+    response_body = reshape_dataset_for_curation_api(
+        version, collection_version.published_at is not None, use_canonical_url
+    )
     return make_response(jsonify(response_body), 200)
 
 

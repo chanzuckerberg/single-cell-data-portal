@@ -78,26 +78,32 @@ def reshape_for_curation_api(
                 collection_version.collection_id
             )
         revising_in = _revising_in.version_id.id if _revising_in else None
+        use_canonical_url = True
     else:
         # Unpublished - need to determine if it's a revision or first time collection
         # For that, we look at whether the canonical collection is published
         is_revision = collection_version.canonical_collection.originally_published_at is not None
         if is_revision:
-            # If it's a revision, both collection_id and collection_url need to point to the version_id
+            # If it's a revision, both collection_id and collection_url need to point to the version_id,
+            # and datasets should expose the private url (based on version_id)
             collection_id = collection_version.version_id
             collection_url = f"{get_collections_base_url()}/collections/{collection_id.id}"
             revision_of = collection_version.collection_id.id
+            use_canonical_url = False
         else:
             # If it's an unpublished, unrevised collection, then collection_url will point to the permalink
             # (aka the link to the canonical_id) and the collection_id will point to version_id.
-            # Also, revision_of should be None
+            # Also, revision_of should be None, and the datasets should expose the canonical url
             collection_id = collection_version.version_id
             collection_url = f"{get_collections_base_url()}/collections/{collection_version.collection_id}"
             revision_of = None
+            use_canonical_url = True
         revising_in = None
 
     # get collection dataset attributes
-    response_datasets = reshape_datasets_for_curation_api(collection_version.datasets, is_published, preview)
+    response_datasets = reshape_datasets_for_curation_api(
+        collection_version.datasets, is_published, use_canonical_url, preview
+    )
 
     # build response
     doi, links = extract_doi_from_links(collection_version.metadata.links)
@@ -131,16 +137,23 @@ def reshape_for_curation_api(
 
 
 def reshape_datasets_for_curation_api(
-    datasets: List[Union[DatasetVersionId, DatasetVersion]], is_published: bool, preview: bool = False
+    datasets: List[Union[DatasetVersionId, DatasetVersion]],
+    is_published: bool,
+    use_canonical_url: bool,
+    preview: bool = False,
 ) -> List[dict]:
     active_datasets = []
     for dv in datasets:
         dataset_version = get_business_logic().get_dataset_version(dv) if isinstance(dv, DatasetVersionId) else dv
-        active_datasets.append(reshape_dataset_for_curation_api(dataset_version, is_published, preview))
+        active_datasets.append(
+            reshape_dataset_for_curation_api(dataset_version, is_published, use_canonical_url, preview)
+        )
     return active_datasets
 
 
-def reshape_dataset_for_curation_api(dataset_version: DatasetVersion, is_published: bool, preview=False) -> dict:
+def reshape_dataset_for_curation_api(
+    dataset_version: DatasetVersion, is_published: bool, use_canonical_url: bool, preview=False
+) -> dict:
     ds = dict()
 
     # Determine what columns to include from the dataset
@@ -173,7 +186,7 @@ def reshape_dataset_for_curation_api(dataset_version: DatasetVersion, is_publish
         ds["revision"] = 0  # TODO this should be the number of times this dataset has been revised and published
         ds["title"] = ds.pop("name", None)
         ds["is_primary_data"] = is_primary_data_mapping.get(ds.pop("is_primary_data"), [])
-        ds["explorer_url"] = generate_explorer_url(dataset_version)
+        ds["explorer_url"] = generate_explorer_url(dataset_version, use_canonical_url)
         ds["tombstone"] = False  # TODO this will always be false. Remove in the future
         if ds["x_approximate_distribution"]:
             ds["x_approximate_distribution"] = ds["x_approximate_distribution"].upper()
