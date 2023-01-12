@@ -1038,22 +1038,28 @@ class TestPostDataset(BaseAPIPortalTest):
         response = self.app.post(test_url, headers=headers)
         self.assertEqual(403, response.status_code)
 
-    def test_post_datasets_201(self):
+    def test_post_datasets_with_collection_201(self):
         collection = self.generate_unpublished_collection()
-        test_url = f"/curation/v1/collections/{collection.version_id}/datasets"
-        headers = self.make_owner_header()
-        response = self.app.post(test_url, headers=headers)
-        self.assertEqual(201, response.status_code)
-        self.assertTrue(response.json["id"])
+        test_ids = [(collection.version_id, "version_id"), (collection.collection_id, "canonical_collection_id")]
+        for test_id, test_name in test_ids:
+            test_url = f"/curation/v1/collections/{test_id}/datasets"
+            with self.subTest(test_name):
+                headers = self.make_owner_header()
+                response = self.app.post(test_url, headers=headers)
+                self.assertEqual(201, response.status_code)
+                self.assertTrue(response.json["id"])
 
     def test_post_datasets_super(self):
         collection = self.generate_unpublished_collection()
-        test_url = f"/curation/v1/collections/{collection.version_id}/datasets"
-        headers = self.make_super_curator_header()
-        response = self.app.post(test_url, headers=headers)
-        self.assertEqual(201, response.status_code)
+        test_ids = [(collection.version_id, "version_id"), (collection.collection_id, "canonical_collection_id")]
+        for test_id, test_name in test_ids:
+            test_url = f"/curation/v1/collections/{test_id}/datasets"
+            with self.subTest(test_name):
+                headers = self.make_super_curator_header()
+                response = self.app.post(test_url, headers=headers)
+                self.assertEqual(201, response.status_code)
 
-    def test_post_datasets_not_owner_201(self):
+    def test_post_datasets_not_owner_403(self):
         collection = self.generate_collection()
         test_url = f"/curation/v1/collections/{collection.version_id}/datasets"
         headers = self.make_not_owner_header()
