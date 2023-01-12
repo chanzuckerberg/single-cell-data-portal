@@ -12,7 +12,6 @@ from backend.layers.common.entities import (
 from backend.layers.common.entities import (
     CollectionId,
     CollectionLinkType,
-    CollectionVersionId,
     DatasetArtifactType,
     DatasetProcessingStatus,
     DatasetUploadStatus,
@@ -333,6 +332,11 @@ class TestCollection(BaseAPIPortalTest):
         )
         self.assertEqual(201, response.status_code)
 
+        # Check that the collection_id is the canonical collection ID
+        collection_id = response.json["collection_id"]
+        version = self.business_logic.get_collection_version_from_canonical(CollectionId(collection_id))
+        self.assertEqual(version.collection_id.id, collection_id)
+
         # Add curator_name
         data["curator_name"] = "john smith"
         json_data = json.dumps(data)
@@ -364,8 +368,8 @@ class TestCollection(BaseAPIPortalTest):
         )
         self.assertEqual(201, response.status_code)
         collection_id = json.loads(response.data)["collection_id"]
-        collection = self.business_logic.get_collection_version(CollectionVersionId(collection_id))
-        print(collection)
+        # TODO: this endpoint should also return `version_id`
+        collection = self.business_logic.get_collection_version_from_canonical(CollectionId(collection_id))
         doi = next(link.uri for link in collection.metadata.links if link.type == "DOI")  # TODO: careful
         self.assertEquals(doi, "https://doi.org/10.1016/foo")
 
@@ -458,7 +462,8 @@ class TestCollection(BaseAPIPortalTest):
         )
         self.assertEqual(201, response.status_code)
         collection_id = json.loads(response.data)["collection_id"]
-        collection = self.business_logic.get_collection_version(CollectionVersionId(collection_id))
+        # TODO: this endpoint should also return `version_id`
+        collection = self.business_logic.get_collection_version_from_canonical(CollectionId(collection_id))
         self.assertIsNone(collection.publisher_metadata)
 
     # ✅
@@ -479,7 +484,8 @@ class TestCollection(BaseAPIPortalTest):
         )
         self.assertEqual(201, response.status_code)
         collection_id = json.loads(response.data)["collection_id"]
-        collection = self.business_logic.get_collection_version(CollectionVersionId(collection_id))
+        # TODO: this endpoint should also return `version_id`
+        collection = self.business_logic.get_collection_version_from_canonical(CollectionId(collection_id))
         self.assertIsNone(collection.publisher_metadata)
 
     # ✅
@@ -504,7 +510,8 @@ class TestCollection(BaseAPIPortalTest):
         )
         self.assertEqual(201, response.status_code)
         collection_id = json.loads(response.data)["collection_id"]
-        collection = self.business_logic.get_collection_version(CollectionVersionId(collection_id))
+        # TODO: this endpoint should also return `version_id`
+        collection = self.business_logic.get_collection_version_from_canonical(CollectionId(collection_id))
         self.assertIsNotNone(collection.publisher_metadata)
         self.assertEqual(collection.publisher_metadata, generate_mock_publisher_metadata())
 
