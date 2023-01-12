@@ -161,9 +161,12 @@ export interface TombstonedCollection {
   tombstone: true;
 }
 
-function fetchCollection(allCollections: CollectionResponsesMap | undefined) {
+function fetchCollection(
+  allCollections: CollectionResponsesMap | undefined
+) {
   return async function (
-    id: string
+    id: string,
+    token: string,
   ): Promise<Collection | TombstonedCollection | null> {
     if (!id) {
       return null;
@@ -171,7 +174,7 @@ function fetchCollection(allCollections: CollectionResponsesMap | undefined) {
 
     const url = apiTemplateToUrl(API_URL + API.COLLECTION, { id });
 
-    let response = await fetch(url, DEFAULT_FETCH_OPTIONS);
+    let response = await fetch(url, withAuthorizationHeader(DEFAULT_FETCH_OPTIONS, token));
     let json = await response.json();
 
     if (response.status === HTTP_STATUS_CODE.GONE) {
@@ -200,7 +203,10 @@ function fetchCollection(allCollections: CollectionResponsesMap | undefined) {
       const publicCollectionURL = apiTemplateToUrl(API_URL + API.COLLECTION, {
         id: collection.revision_of,
       });
-      response = await fetch(publicCollectionURL, DEFAULT_FETCH_OPTIONS);
+      response = await fetch(
+        publicCollectionURL,
+        withAuthorizationHeader(DEFAULT_FETCH_OPTIONS, token)
+      );
       json = await response.json();
 
       if (response.ok) {
@@ -238,7 +244,7 @@ export function useCollection({
 
   return useQuery<Collection | TombstonedCollection | null>(
     [USE_COLLECTION, id, collections],
-    () => queryFn(id),
+    useAccessToken((token: string) => queryFn(id, token)),
     {
       enabled: !!collections,
     }
@@ -303,24 +309,25 @@ export function formDataToObject(formData: FormData): {
 export type CollectionUploadLinks = {
   collectionId: string;
   payload: string;
+  token: string;
 };
 
 async function collectionUploadLinks({
   collectionId,
   payload,
+  token,
 }: CollectionUploadLinks) {
   const url = apiTemplateToUrl(API_URL + API.COLLECTION_UPLOAD_LINKS, {
     id: collectionId,
   });
 
-  const response = await fetch(url, {
-    ...DEFAULT_FETCH_OPTIONS,
-    headers: {
-      ...CONTENT_TYPE_APPLICATION_JSON
-    },
-    body: payload,
-    method: "POST",
-  });
+  const response = await fetch(url, withAuthorizationHeader({
+      ...DEFAULT_FETCH_OPTIONS,
+      ...JSON_BODY_FETCH_OPTIONS,
+      body: payload,
+      method: "POST",
+    }, token)
+  );
 
   const json = await response.json();
 
@@ -334,7 +341,7 @@ async function collectionUploadLinks({
 export function useCollectionUploadLinks(id: string) {
   const queryCache = useQueryClient();
 
-  return useMutation(collectionUploadLinks, {
+  return useMutation(useAccessToken(collectionUploadLinks), {
     onSuccess: () => {
       queryCache.invalidateQueries([USE_COLLECTION, id]);
     },
@@ -343,14 +350,16 @@ export function useCollectionUploadLinks(id: string) {
 
 async function deleteCollection({
   collectionID,
+  token,
 }: {
   collectionID: Collection["id"];
+  token: string;
 }) {
   const finalURL = apiTemplateToUrl(API_URL + API.COLLECTION, {
     id: collectionID,
   });
 
-  const response = await fetch(finalURL, DELETE_FETCH_OPTIONS);
+  const response = await fetch(finalURL, withAuthorizationHeader(DELETE_FETCH_OPTIONS, token));
 
   if (!response.ok) {
     throw await response.json();
@@ -367,7 +376,7 @@ export function useDeleteCollection(
   { previousCollections: CollectionResponsesMap }
 > {
   const queryClient = useQueryClient();
-  return useMutation(deleteCollection, {
+  return useMutation(useAccessToken(deleteCollection), {
     onError: (
       _,
       __,
@@ -448,9 +457,11 @@ export function usePublishCollection() {
 const editCollection = async function ({
   id,
   payload,
+  token,
 }: {
   id: string;
   payload: string;
+  token: string;
 }): Promise<CollectionEditResponse> {
   idError(id);
 
@@ -460,14 +471,13 @@ const editCollection = async function ({
 
   const url = apiTemplateToUrl(API_URL + API.COLLECTION, { id });
 
-  const response = await fetch(url, {
-    ...DEFAULT_FETCH_OPTIONS,
-    headers: {
-      ...CONTENT_TYPE_APPLICATION_JSON
-    },
-    body: payload,
-    method: "PUT",
-  });
+  const response = await fetch(url, withAuthorizationHeader({
+      ...DEFAULT_FETCH_OPTIONS,
+      ...JSON_BODY_FETCH_OPTIONS,
+      body: payload,
+      method: "PUT",
+    }, token)
+  );
 
   const result = await response.json();
 
@@ -509,7 +519,7 @@ export function useEditCollection(
     id: publicID,
   });
 
-  return useMutation(editCollection, {
+  return useMutation(useAccessToken(editCollection), {
     // newCollection is the result of the PUT on the revision
     onSuccess: ({ collection: newCollection }) => {
       // Check for updated collection: it's possible server-side validation errors have occurred where the error has
@@ -544,14 +554,15 @@ export function useEditCollection(
   });
 }
 
-const createRevision = async function (id: string) {
+const createRevision = async function (id: string, token: string) {
   idError(id);
   const url = apiTemplateToUrl(API_URL + API.COLLECTION, { id });
 
-  const response = await fetch(url, {
-    ...DEFAULT_FETCH_OPTIONS,
-    method: "POST",
-  });
+  const response = await fetch(url, withAuthorizationHeader({
+      ...DEFAULT_FETCH_OPTIONS,
+      method: "POST",
+    }, token)
+  );
 
   if (!response.ok) throw await response.json();
   return response.json();
@@ -560,7 +571,7 @@ const createRevision = async function (id: string) {
 export function useCreateRevision(callback: (id: Collection["id"]) => void) {
   const queryClient = useQueryClient();
 
-  return useMutation(createRevision, {
+  return useMutation(useAccessToken(createRevision), {
     onSuccess: async (collection: Collection) => {
       await queryClient.invalidateQueries([USE_COLLECTIONS]);
       await queryClient.invalidateQueries([USE_COLLECTION, collection.id]);
@@ -572,11 +583,13 @@ export function useCreateRevision(callback: (id: Collection["id"]) => void) {
 export interface ReuploadLink {
   payload: string;
   collectionId: string;
+  token: string;
 }
 
 const reuploadDataset = async function ({
   payload,
   collectionId,
+  token,
 }: ReuploadLink) {
   if (!payload) {
     throw Error("No payload given");
@@ -587,14 +600,13 @@ const reuploadDataset = async function ({
     id: collectionId,
   });
 
-  const response = await fetch(url, {
-    ...DEFAULT_FETCH_OPTIONS,
-    headers: {
-      ...CONTENT_TYPE_APPLICATION_JSON
-    },
-    body: payload,
-    method: "PUT",
-  });
+  const response = await fetch(url, withAuthorizationHeader({
+      ...DEFAULT_FETCH_OPTIONS,
+      ...JSON_BODY_FETCH_OPTIONS,
+      body: payload,
+      method: "PUT",
+    }, token)
+  );
 
   const result = await response.json();
   if (!response.ok) throw result;
@@ -607,7 +619,7 @@ export function useReuploadDataset(
 ): UseMutationResult<unknown, unknown, ReuploadLink, unknown> {
   const queryClient = useQueryClient();
 
-  return useMutation(reuploadDataset, {
+  return useMutation(useAccessToken(reuploadDataset), {
     onSuccess: () => {
       queryClient.invalidateQueries([USE_COLLECTION, collectionId]);
     },

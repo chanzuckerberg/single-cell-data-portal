@@ -18,11 +18,12 @@ export const USE_DATASET_STATUS = {
 };
 
 async function fetchDatasetStatus(
-  dataset_id: string
+  dataset_id: string,
+  token: string,
 ): Promise<DatasetUploadStatus> {
   const url = apiTemplateToUrl(API_URL + API.DATASET_STATUS, { dataset_id });
 
-  return await (await fetch(url, DEFAULT_FETCH_OPTIONS)).json();
+  return await (await fetch(url, withAuthorizationHeader(DEFAULT_FETCH_OPTIONS, token))).json();
 }
 
 const REFETCH_INTERVAL_MS = 10 * 1000;
@@ -33,7 +34,7 @@ export function useDatasetStatus(
 ): UseQueryResult<DatasetUploadStatus> {
   return useQuery<DatasetUploadStatus>(
     [USE_DATASET_STATUS, dataset_id],
-    () => fetchDatasetStatus(dataset_id),
+    useAccessToken((token: string) => fetchDatasetStatus(dataset_id, token)),
     { enabled: shouldFetch, refetchInterval: REFETCH_INTERVAL_MS }
   );
 }
