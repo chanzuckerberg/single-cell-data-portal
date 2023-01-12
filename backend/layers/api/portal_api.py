@@ -203,19 +203,22 @@ def _collection_to_response(collection: CollectionVersionWithDatasets, access_ty
         # We should expose version_id as the collection_id
         revision_of = collection.collection_id.id
         collection_id = collection.version_id.id
+        is_in_published_collection = False
     elif collection.canonical_collection.originally_published_at is None and collection.published_at is None:
         # In this case, we're dealing with a freshly created collection - we should expose the canonical id here,
         # since the curators will circulate the permalink immediately. `revision_of` is also null.
-        # Note that this case is effectively equivalent to a published collection
+        # We should also expose the canonical CXG link for each dataset
+        # Note that this case is effectively equivalent to a published collection.
         revision_of = None
         collection_id = collection.collection_id.id
+        is_in_published_collection = True
     else:
         # The last case is a published collection. We just return the canonical id and set revision_of to None
         revision_of = None
         collection_id = collection.collection_id.id
+        is_in_published_collection = True
 
     is_tombstoned = collection.canonical_collection.tombstoned
-    is_in_published_collection = collection.published_at is not None
 
     return remove_none(
         {
